@@ -24,8 +24,18 @@ tape('blockchain test', (t) => {
     const blockchain = new Blockchain({ common })
 
     const head = await blockchain.getHead()
+    const iteratorHead = await blockchain.getIteratorHead()
 
-    st.equals(head.hash().toString('hex'), common.genesis().hash.slice(2), 'correct genesis hash')
+    st.equals(
+      head.hash().toString('hex'),
+      common.genesis().hash.slice(2),
+      'correct genesis hash (getHead())'
+    )
+    st.equals(
+      iteratorHead.hash().toString('hex'),
+      common.genesis().hash.slice(2),
+      'correct genesis hash (getIteratorHead())'
+    )
     st.end()
   })
 
@@ -430,14 +440,14 @@ tape('blockchain test', (t) => {
     // Note: if st.end() is not called (Promise did not throw), then this test fails, as it does not end.
   })
 
-  t.test('should test setHead method', async (st) => {
+  t.test('should test setHead (@deprecated)/setIteratorHead method', async (st) => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
     st.error(error, 'no error')
 
     const headBlockIndex = 5
 
     const headHash = blocks[headBlockIndex].hash()
-    await blockchain.setHead('myHead', headHash)
+    await blockchain.setIteratorHead('myHead', headHash)
     const currentHeadBlock = await blockchain.getHead('myHead')
 
     st.ok(headHash.equals(currentHeadBlock.hash()), 'head hash equals the provided head hash')

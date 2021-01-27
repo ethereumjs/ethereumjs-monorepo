@@ -641,7 +641,36 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * Returns the specified iterator head.
    *
-   * @param name - Optional name of the state root head (default: 'vm')
+   * This function replaces the old `getHead()` method. Note that
+   * the function deviates from the old behavior and returns the
+   * genesis hash instead of the current head block if an iterator
+   * has not been run. This matches the behavior of the `iterator()`
+   * method.
+   *
+   * @param name - Optional name of the iterator head (default: 'vm')
+   */
+  async getIteratorHead(name = 'vm'): Promise<Block> {
+    return await this.initAndLock<Block>(async () => {
+      // if the head is not found return the genesis hash
+      const hash = this._heads[name] || this._genesis
+      if (!hash) {
+        throw new Error('No head found.')
+      }
+
+      const block = await this._getBlock(hash)
+      return block
+    })
+  }
+
+  /**
+   * Returns the specified iterator head.
+   *
+   * @param name - Optional name of the iterator head (default: 'vm')
+   *
+   * @deprecated use `getIteratorHead()` instead. Note that `getIteratorHead()`
+   * doesn't return the `headHeader` but the genesis hash as an initial
+   * iterator head value (now matching the behavior of the `iterator()`
+   * method on a first run)
    */
   async getHead(name = 'vm'): Promise<Block> {
     return await this.initAndLock<Block>(async () => {
@@ -1159,6 +1188,18 @@ export default class Blockchain implements BlockchainInterface {
    * When calling the iterator, the iterator will start running the first child block after the header hash currenntly stored.
    * @param tag - The tag to save the headHash to
    * @param headHash - The head hash to save
+   */
+  async setIteratorHead(tag: string, headHash: Buffer) {
+    return await this.setHead(tag, headHash)
+  }
+
+  /**
+   * Set header hash of a certain `tag`.
+   * When calling the iterator, the iterator will start running the first child block after the header hash currenntly stored.
+   * @param tag - The tag to save the headHash to
+   * @param headHash - The head hash to save
+   *
+   * @deprecated use `setIteratorHead()` instead
    */
   async setHead(tag: string, headHash: Buffer) {
     await this.initAndLock<void>(async () => {

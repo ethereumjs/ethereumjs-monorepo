@@ -17,13 +17,13 @@ tape('[VMExecution]', async (t) => {
       config,
       chain,
     })
-    t.equals(exec.vm, vm, 'should use provided')
+    t.equals(exec.vm, vm, 'should use vm provided')
     t.end()
   })
 
   async function testSetup(blockchain: Blockchain, common?: Common) {
-    const vm = new VM()
-    const config = new Config({ common, vm, loglevel: 'error', transports: [] })
+    const config = new Config({ common, loglevel: 'error', transports: [] })
+
     const chain = new Chain({ config, blockchain })
     const exec = new VMExecution({
       config,

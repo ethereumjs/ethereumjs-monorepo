@@ -38,9 +38,11 @@ export async function setup(
       ...serviceOpts,
       lightserv: true,
     })
-    service.synchronizer.execution.syncing = false
   }
   await service.open()
+  if ('execution' in service.synchronizer) {
+    service.synchronizer.execution.syncing = false
+  }
   await service.start()
 
   return [server, service]
