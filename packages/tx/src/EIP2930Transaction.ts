@@ -119,7 +119,7 @@ export class EIP2930Transaction extends BaseTransaction<JsonEIP2930Tx, EIP2930Tr
       throw new Error('EIP-2930 not enabled on Common')
     }
 
-    if (txData.chainId?.eqn(this.common.chainId())) {
+    if (!txData.chainId?.eqn(this.common.chainId())) {
       throw new Error('The chain ID does not match the chain ID of Common')
     }
 
@@ -179,7 +179,7 @@ export class EIP2930Transaction extends BaseTransaction<JsonEIP2930Tx, EIP2930Tr
       this.data,
       this.accessList,
     ]
-    return rlphash(Buffer.from(base))
+    return rlphash(base)
   }
 
   /**

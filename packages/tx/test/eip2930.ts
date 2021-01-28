@@ -1,7 +1,7 @@
 import Common from '@ethereumjs/common'
-import { privateToAddress, rlp } from 'ethereumjs-util'
+import { Address, BN, privateToAddress } from 'ethereumjs-util'
 import tape from 'tape'
-import { EIP2930Transaction, TransactionFactory } from '../src'
+import { EIP2930Transaction } from '../src'
 
 const pKey = Buffer.from('4646464646464646464646464646464646464646464646464646464646464646', 'hex')
 const address = privateToAddress(pKey)
@@ -15,6 +15,23 @@ const common = new Common({
 const validAddress = Buffer.from('01'.repeat(20), 'hex')
 const validSlot = Buffer.from('01'.repeat(32), 'hex')
 
+// tests from https://github.com/ethereum/go-ethereum/blob/ac8e5900e6d38f7577251e7e36da9b371b2e5488/core/types/transaction_test.go#L56
+const GethUnsignedEIP2930Transaction = EIP2930Transaction.fromTxData(
+  {
+    chainId: new BN(1),
+    nonce: new BN(3),
+    to: new Address(Buffer.from('b94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')),
+    value: new BN(10),
+    gasLimit: new BN(25000),
+    gasPrice: new BN(1),
+    data: Buffer.from('5544', 'hex'),
+    accessList: [],
+  },
+  { common }
+)
+
+const chainId = new BN(1)
+
 tape('[EIP2930 transactions]: Basic functions', function (t) {
   t.test('should throw on invalid access list data', function (st) {
     let accessList: any[] = [
@@ -25,7 +42,7 @@ tape('[EIP2930 transactions]: Basic functions', function (t) {
     ]
 
     st.throws(() => {
-      EIP2930Transaction.fromTxData({ accessList }, { common })
+      EIP2930Transaction.fromTxData({ chainId, accessList }, { common })
     })
 
     accessList = [
@@ -38,31 +55,31 @@ tape('[EIP2930 transactions]: Basic functions', function (t) {
     ]
 
     st.throws(() => {
-      EIP2930Transaction.fromTxData({ accessList }, { common })
+      EIP2930Transaction.fromTxData({ chainId, accessList }, { common })
     })
 
     accessList = [[]] // Address does not exist
 
     st.throws(() => {
-      EIP2930Transaction.fromTxData({ accessList }, { common })
+      EIP2930Transaction.fromTxData({ chainId, accessList }, { common })
     })
 
     accessList = [[validAddress]] // Slots does not exist
 
     st.throws(() => {
-      EIP2930Transaction.fromTxData({ accessList }, { common })
+      EIP2930Transaction.fromTxData({ chainId, accessList }, { common })
     })
 
     accessList = [[validAddress, validSlot]] // Slots is not an array
 
     st.throws(() => {
-      EIP2930Transaction.fromTxData({ accessList }, { common })
+      EIP2930Transaction.fromTxData({ chainId, accessList }, { common })
     })
 
     accessList = [[validAddress, [], []]] // 3 items where 2 are expected
 
     st.throws(() => {
-      EIP2930Transaction.fromTxData({ accessList }, { common })
+      EIP2930Transaction.fromTxData({ chainId, accessList }, { common })
     })
 
     st.end()
@@ -74,6 +91,7 @@ tape('[EIP2930 transactions]: Basic functions', function (t) {
         data: Buffer.from('010200', 'hex'),
         to: validAddress,
         accessList: [[validAddress, [validSlot]]],
+        chainId,
       },
       { common }
     )
@@ -103,6 +121,7 @@ tape('[EIP2930 transactions]: Basic functions', function (t) {
       {
         data: Buffer.from('010200', 'hex'),
         accessList: [[validAddress, [validSlot]]],
+        chainId,
       },
       { common }
     )
@@ -128,6 +147,7 @@ tape('[EIP2930 transactions]: Basic functions', function (t) {
           [validAddress, [validSlot]],
           [validAddress, [validSlot, validSlot]],
         ],
+        chainId,
       },
       { common }
     )
@@ -143,6 +163,7 @@ tape('[EIP2930 transactions]: Basic functions', function (t) {
         data: Buffer.from('010200', 'hex'),
         to: validAddress,
         accessList: [[validAddress, [validSlot]]],
+        chainId,
       },
       { common }
     )
@@ -153,6 +174,28 @@ tape('[EIP2930 transactions]: Basic functions', function (t) {
 
     signed.verifySignature() // If this throws, test will not end.
 
+    t.end()
+  })
+
+  t.test('should reject transactions with wrong chain ID', function (t) {
+    t.throws(() => {
+      EIP2930Transaction.fromTxData(
+        {
+          chainId: chainId.addn(1),
+        },
+        { common }
+      )
+    })
+    t.end()
+  })
+
+  t.test('should produce right hash-to-sign values', function (t) {
+    const hash = GethUnsignedEIP2930Transaction.getMessageToSign()
+    const expected = Buffer.from(
+      'c44faa8f50803df8edd97e72c4dbae32343b2986c91e382fc3e329e6c9a36f31',
+      'hex'
+    )
+    t.ok(hash.equals(expected))
     t.end()
   })
 })
