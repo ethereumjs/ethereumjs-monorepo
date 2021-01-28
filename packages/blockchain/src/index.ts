@@ -1,6 +1,6 @@
 import Semaphore from 'semaphore-async-await'
 import { Address, BN, rlp } from 'ethereumjs-util'
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
 import Common from '@ethereumjs/common'
 import { DBManager } from './db/manager'
@@ -178,6 +178,41 @@ export default class Blockchain implements BlockchainInterface {
   private _cliqueLatestBlockSigners: CliqueLatestBlockSigners = []
 
   /**
+   * Safe creation of a new Blockchain object awaiting the initialization function,
+   * encouraged method to use when creating a blockchain object.
+   *
+   * @param opts Constructor options, see [[BlockchainOptions]]
+   */
+
+  public static async create(opts: BlockchainOptions = {}) {
+    const blockchain = new Blockchain(opts)
+    await blockchain.initPromise!.catch((e) => {
+      throw e
+    })
+    return blockchain
+  }
+
+  /**
+   * Creates a blockchain from a list of block objects,
+   * objects must be readable by the `Block.fromBlockData()` method
+   *
+   * @param blockData List of block objects
+   * @param opts Constructor options, see [[BlockchainOptions]]
+   */
+  public static async fromBlocksData(blocksData: BlockData[], opts: BlockchainOptions = {}) {
+    const blockchain = await Blockchain.create(opts)
+    for (const blockData of blocksData) {
+      const common = Object.assign(
+        Object.create(Object.getPrototypeOf(blockchain._common)),
+        blockchain._common
+      )
+      const block = Block.fromBlockData(blockData, { common, hardforkByBlockNumber: true })
+      await blockchain.putBlock(block)
+    }
+    return blockchain
+  }
+
+  /**
    * Creates new Blockchain object
    *
    * @param opts - An object with the options that this constructor takes. See
@@ -234,22 +269,6 @@ export default class Blockchain implements BlockchainInterface {
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.initPromise = this._init(opts.genesisBlock)
-  }
-
-  /**
-   * This static constructor safely creates a new Blockchain object, which also
-   * awaits the initialization function. If this initialization function throws,
-   * then this constructor will throw as well, and is therefore the encouraged
-   * method to use when creating a blockchain object.
-   * @param opts Constructor options, see [[BlockchainOptions]]
-   */
-
-  public static async create(opts: BlockchainOptions = {}) {
-    const blockchain = new Blockchain(opts)
-    await blockchain.initPromise!.catch((e) => {
-      throw e
-    })
-    return blockchain
   }
 
   /**
@@ -622,7 +641,36 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * Returns the specified iterator head.
    *
-   * @param name - Optional name of the state root head (default: 'vm')
+   * This function replaces the old `getHead()` method. Note that
+   * the function deviates from the old behavior and returns the
+   * genesis hash instead of the current head block if an iterator
+   * has not been run. This matches the behavior of the `iterator()`
+   * method.
+   *
+   * @param name - Optional name of the iterator head (default: 'vm')
+   */
+  async getIteratorHead(name = 'vm'): Promise<Block> {
+    return await this.initAndLock<Block>(async () => {
+      // if the head is not found return the genesis hash
+      const hash = this._heads[name] || this._genesis
+      if (!hash) {
+        throw new Error('No head found.')
+      }
+
+      const block = await this._getBlock(hash)
+      return block
+    })
+  }
+
+  /**
+   * Returns the specified iterator head.
+   *
+   * @param name - Optional name of the iterator head (default: 'vm')
+   *
+   * @deprecated use `getIteratorHead()` instead. Note that `getIteratorHead()`
+   * doesn't return the `headHeader` but the genesis hash as an initial
+   * iterator head value (now matching the behavior of the `iterator()`
+   * method on a first run)
    */
   async getHead(name = 'vm'): Promise<Block> {
     return await this.initAndLock<Block>(async () => {
@@ -1140,6 +1188,18 @@ export default class Blockchain implements BlockchainInterface {
    * When calling the iterator, the iterator will start running the first child block after the header hash currenntly stored.
    * @param tag - The tag to save the headHash to
    * @param headHash - The head hash to save
+   */
+  async setIteratorHead(tag: string, headHash: Buffer) {
+    return await this.setHead(tag, headHash)
+  }
+
+  /**
+   * Set header hash of a certain `tag`.
+   * When calling the iterator, the iterator will start running the first child block after the header hash currenntly stored.
+   * @param tag - The tag to save the headHash to
+   * @param headHash - The head hash to save
+   *
+   * @deprecated use `setIteratorHead()` instead
    */
   async setHead(tag: string, headHash: Buffer) {
     await this.initAndLock<void>(async () => {

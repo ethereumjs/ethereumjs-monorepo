@@ -4,7 +4,8 @@ import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
 import tape from 'tape'
 import Blockchain from '../src'
 import { generateBlockchain, generateBlocks, isConsecutive, createTestDB } from './util'
-import * as testData from './testdata.json'
+import * as testData from './testdata/testdata.json'
+import blocksData from './testdata/blocks_mainnet.json'
 
 const level = require('level-mem')
 
@@ -23,8 +24,32 @@ tape('blockchain test', (t) => {
     const blockchain = new Blockchain({ common })
 
     const head = await blockchain.getHead()
+    const iteratorHead = await blockchain.getIteratorHead()
 
-    st.equals(head.hash().toString('hex'), common.genesis().hash.slice(2), 'correct genesis hash')
+    st.equals(
+      head.hash().toString('hex'),
+      common.genesis().hash.slice(2),
+      'correct genesis hash (getHead())'
+    )
+    st.equals(
+      iteratorHead.hash().toString('hex'),
+      common.genesis().hash.slice(2),
+      'correct genesis hash (getIteratorHead())'
+    )
+    st.end()
+  })
+
+  t.test('should initialize correctly with Blockchain.fromBlocksData()', async (st) => {
+    const common = new Common({ chain: 'mainnet' })
+    const blockchain = await Blockchain.fromBlocksData(blocksData, {
+      validateBlocks: true,
+      validateConsensus: false,
+      common,
+    })
+
+    const head = await blockchain.getHead()
+
+    st.equals(head.header.number.toNumber(), 5, 'correct block number')
     st.end()
   })
 
@@ -415,14 +440,14 @@ tape('blockchain test', (t) => {
     // Note: if st.end() is not called (Promise did not throw), then this test fails, as it does not end.
   })
 
-  t.test('should test setHead method', async (st) => {
+  t.test('should test setHead (@deprecated)/setIteratorHead method', async (st) => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
     st.error(error, 'no error')
 
     const headBlockIndex = 5
 
     const headHash = blocks[headBlockIndex].hash()
-    await blockchain.setHead('myHead', headHash)
+    await blockchain.setIteratorHead('myHead', headHash)
     const currentHeadBlock = await blockchain.getHead('myHead')
 
     st.ok(headHash.equals(currentHeadBlock.hash()), 'head hash equals the provided head hash')

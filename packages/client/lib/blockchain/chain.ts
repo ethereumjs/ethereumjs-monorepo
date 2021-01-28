@@ -108,7 +108,7 @@ export class Chain extends EventEmitter {
       options.blockchain ??
       new Blockchain({
         db: options.chainDB,
-        common: this.config.common,
+        common: this.config.chainCommon,
         validateBlocks: false,
         validateConsensus: false,
       })
@@ -138,14 +138,14 @@ export class Chain extends EventEmitter {
    * @return {number}
    */
   get networkId(): number {
-    return this.config.common.networkId()
+    return this.config.chainCommon.networkId()
   }
 
   /**
    * Genesis block parameters
    */
   get genesis(): GenesisBlockParams {
-    const genesis = this.config.common.genesis()
+    const genesis = this.config.chainCommon.genesis()
     Object.entries(genesis).forEach(([k, v]) => {
       genesis[k] = toBuffer(v as string)
     })
@@ -267,7 +267,7 @@ export class Chain extends EventEmitter {
     }
     await this.open()
     blocks = blocks.map((b: Block) =>
-      Block.fromValuesArray(b.raw(), { common: this.config.common })
+      Block.fromValuesArray(b.raw(), { common: this.config.chainCommon })
     )
     await this.blockchain.putBlocks(blocks)
     await this.update()
@@ -302,7 +302,7 @@ export class Chain extends EventEmitter {
     }
     await this.open()
     headers = headers.map((h) =>
-      BlockHeader.fromValuesArray(h.raw(), { common: this.config.common })
+      BlockHeader.fromValuesArray(h.raw(), { common: this.config.chainCommon })
     )
     await this.blockchain.putHeaders(headers)
     await this.update()

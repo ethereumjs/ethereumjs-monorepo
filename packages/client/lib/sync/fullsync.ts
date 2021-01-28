@@ -4,9 +4,7 @@ import { short } from '../util'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import { BlockFetcher } from './fetcher'
 import { Block } from '@ethereumjs/block'
-import VM from '@ethereumjs/vm'
-import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
-import { SecureTrie as Trie } from '@ethereumjs/trie'
+import { VMExecution } from './execution/vmexecution'
 
 /**
  * Implements an ethereum full sync synchronizer
@@ -15,107 +13,29 @@ import { SecureTrie as Trie } from '@ethereumjs/trie'
 export class FullSynchronizer extends Synchronizer {
   private blockFetcher: BlockFetcher | null
 
-  public vm: VM
-  public runningBlocks: boolean
-
-  private stopSyncing: boolean
-  private vmPromise?: Promise<void | number>
+  public hardfork: string = ''
+  public execution: VMExecution
 
   constructor(options: SynchronizerOptions) {
     super(options)
     this.blockFetcher = null
 
-    if (!this.config.vm) {
-      const trie = new Trie(this.stateDB)
-
-      const stateManager = new DefaultStateManager({
-        common: this.config.common,
-        trie,
-      })
-
-      this.vm = new VM({
-        common: this.config.common,
-        blockchain: this.chain.blockchain,
-        stateManager,
-      })
-    } else {
-      this.vm = this.config.vm
-      //@ts-ignore blockchain has readonly property
-      this.vm.blockchain = this.chain.blockchain
-    }
-
-    this.runningBlocks = false
-    this.stopSyncing = false
+    this.execution = new VMExecution({
+      config: options.config,
+      stateDB: options.stateDB,
+      chain: options.chain,
+    })
 
     const self = this
     this.chain.on('updated', async function () {
-      // for some reason, if we use .on('updated', this.runBlocks), it runs in the context of the Chain and not in the FullSync context..?
-      await self.runBlocks()
+      // for some reason, if we use .on('updated', this.runBlocks)
+      // it runs in the context of the Chain and not in the FullSync context..?
+      if (self.running) {
+        await self.execution.run()
+      }
     })
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.chain.update()
-  }
-
-  /**
-   * This updates the VM once blocks were put in the VM
-   */
-  async runBlocks() {
-    if (!this.running || this.runningBlocks) {
-      return
-    }
-    this.runningBlocks = true
-    let blockCounter = 0
-    let txCounter = 0
-    const NUM_BLOCKS_PER_LOG_MSG = 50
-    try {
-      let oldHead = Buffer.alloc(0)
-      const newHeadBlock = await this.vm.blockchain.getHead()
-      let newHead = newHeadBlock.hash()
-      let firstHeadBlock = newHeadBlock
-      let lastHeadBlock = newHeadBlock
-      while (!newHead.equals(oldHead) && !this.stopSyncing) {
-        oldHead = newHead
-        this.vmPromise = this.vm.runBlockchain(this.vm.blockchain, 1)
-        const numExecuted = (await this.vmPromise) as number
-        if (numExecuted === 0) {
-          this.config.logger.warn(
-            `No blocks executed past chain head hash=${short(
-              newHead
-            )} number=${newHeadBlock.header.number.toNumber()}`
-          )
-          this.runningBlocks = false
-          return
-        }
-        const headBlock = await this.vm.blockchain.getHead()
-        newHead = headBlock.hash()
-        if (blockCounter === 0) {
-          firstHeadBlock = headBlock
-        }
-        // check if we did run a new block:
-        if (!newHead.equals(oldHead)) {
-          blockCounter += 1
-          txCounter += headBlock.transactions.length
-          lastHeadBlock = headBlock
-
-          if (blockCounter >= NUM_BLOCKS_PER_LOG_MSG) {
-            const firstNumber = firstHeadBlock.header.number.toNumber()
-            const firstHash = short(firstHeadBlock.hash())
-            const lastNumber = lastHeadBlock.header.number.toNumber()
-            const lastHash = short(lastHeadBlock.hash())
-            this.config.logger.info(
-              `Executed blocks count=${blockCounter} first=${firstNumber} hash=${firstHash} last=${lastNumber} hash=${lastHash} with txs=${txCounter}`
-            )
-            blockCounter = 0
-            txCounter = 0
-          }
-        }
-      }
-    } catch (error) {
-      this.emit('error', error)
-    } finally {
-      this.runningBlocks = false
-    }
-    return blockCounter
   }
 
   /**
@@ -182,6 +102,14 @@ export class FullSynchronizer extends Synchronizer {
     const count = height.sub(first).addn(1)
     if (count.lten(0)) return false
 
+    const nextForkBlock = this.config.chainCommon.nextHardforkBlock()
+    if (nextForkBlock) {
+      if (first.gten(nextForkBlock)) {
+        this.config.chainCommon.setHardforkByBlockNumber(first.toNumber())
+        this.hardfork = this.config.chainCommon.hardfork()
+      }
+    }
+
     this.config.logger.debug(
       `Syncing with peer: ${peer.toString(true)} height=${height.toString(10)}`
     )
@@ -202,9 +130,9 @@ export class FullSynchronizer extends Synchronizer {
         const first = new BN(blocks[0].header.number)
         const hash = short(blocks[0].hash())
         this.config.logger.info(
-          `Imported blocks count=${blocks.length} number=${first.toString(10)} hash=${hash} peers=${
-            this.pool.size
-          }`
+          `Imported blocks count=${blocks.length} number=${first.toString(
+            10
+          )} hash=${hash} hardfork=${this.hardfork} peers=${this.pool.size}`
         )
       })
     await this.blockFetcher.fetch()
@@ -242,11 +170,17 @@ export class FullSynchronizer extends Synchronizer {
    */
   async open(): Promise<void> {
     await this.chain.open()
+    await this.execution.open()
     await this.pool.open()
-    const number = this.chain.blocks.height.toString(10)
+    this.execution.syncing = true
+    const number = this.chain.blocks.height.toNumber()
     const td = this.chain.blocks.td.toString(10)
     const hash = this.chain.blocks.latest!.hash()
-    this.config.logger.info(`Latest local block: number=${number} td=${td} hash=${short(hash)}`)
+    this.config.chainCommon.setHardforkByBlockNumber(number)
+    this.hardfork = this.config.chainCommon.hardfork()
+    this.config.logger.info(
+      `Latest local block: number=${number} td=${td} hash=${short(hash)} hardfork=${this.hardfork}`
+    )
   }
 
   /**
@@ -254,16 +188,13 @@ export class FullSynchronizer extends Synchronizer {
    * @return {Promise}
    */
   async stop(): Promise<boolean> {
-    this.stopSyncing = true
-    if (this.vmPromise) {
-      // ensure that we wait that the VM finishes executing the block (and flushes the trie cache)
-      await this.vmPromise
-    }
-    await this.stateDB?.close()
+    this.execution.syncing = false
+    await this.execution.stop()
 
     if (!this.running) {
       return false
     }
+
     if (this.blockFetcher) {
       this.blockFetcher.destroy()
       // TODO: Should this be deleted?

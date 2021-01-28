@@ -103,7 +103,7 @@ export class RlpxPeer extends Peer {
     await Promise.all(this.protocols.map((p) => p.open()))
     this.rlpx = new Devp2pRLPx(key, {
       capabilities: RlpxPeer.capabilities(this.protocols),
-      common: this.config.common,
+      common: this.config.chainCommon,
     })
     await this.rlpx.connect({
       id: Buffer.from(this.id, 'hex'),

@@ -123,7 +123,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @param result fetch result
    * @return {Promise}
    */
-  abstract async store(_result: StorageItem[]): Promise<void>
+  abstract store(_result: StorageItem[]): Promise<void>
 
   /**
    * Generate list of tasks to fetch

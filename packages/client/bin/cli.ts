@@ -114,7 +114,7 @@ async function runNode(config: Config) {
   client.on('synchronized', () => {
     config.logger.info('Synchronized')
   })
-  config.logger.info(`Connecting to network: ${config.common.chainName()}`)
+  config.logger.info(`Connecting to network: ${config.chainCommon.chainName()}`)
   await client.open()
   config.logger.info('Synchronizing blockchain...')
   await client.start()

@@ -212,7 +212,7 @@ export class RlpxServer extends Server {
       capabilities: RlpxPeer.capabilities(Array.from(this.protocols)),
       remoteClientIdFilter: this.clientFilter,
       listenPort: this.port,
-      common: this.config.common,
+      common: this.config.chainCommon,
     })
 
     this.rlpx.on('peer:added', async (rlpxPeer: Devp2pRLPxPeer) => {
