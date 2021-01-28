@@ -5,7 +5,8 @@
   "defaultHardfork": "istanbul",
   "consensus": {
     "type": "poa",
-    "algorithm": "aura"
+    "algorithm": "aura",
+    "aura": {}
   },
   "comment": "Parity PoA test network",
   "url": "https://kovan-testnet.github.io/website/",

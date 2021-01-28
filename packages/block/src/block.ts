@@ -1,7 +1,7 @@
 /* eslint-disable no-dupe-class-members */
 
 import { BaseTrie as Trie } from '@ethereumjs/trie'
-import { BN, rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
+import { Address, BN, rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Transaction, TxOptions } from '@ethereumjs/tx'
 import { BlockHeader } from './header'
@@ -105,6 +105,9 @@ export class Block {
     this.transactions = transactions
     this.uncleHeaders = uncleHeaders
     this._common = this.header._common
+    if (this._common.consensusType() === 'poa' && uncleHeaders.length > 0) {
+      throw new Error('Block initialization with uncleHeaders on a PoA network is not allowed')
+    }
 
     const freeze = opts?.freeze ?? true
     if (freeze) {
@@ -135,6 +138,42 @@ export class Block {
    */
   isGenesis(): boolean {
     return this.header.isGenesis()
+  }
+
+  /**
+   * Checks if the block is an epoch transition
+   * block (only clique PoA, throws otherwise)
+   */
+  cliqueIsEpochTransition(): boolean {
+    return this.header.cliqueIsEpochTransition()
+  }
+
+  /**
+   * Returns extra vanity data
+   * (only clique PoA, throws otherwise)
+   */
+  cliqueExtraVanity(): Buffer {
+    return this.header.cliqueExtraVanity()
+  }
+
+  /**
+   * Returns extra seal data
+   * (only clique PoA, throws otherwise)
+   */
+  cliqueExtraSeal(): Buffer {
+    return this.header.cliqueExtraSeal()
+  }
+
+  /**
+   * Returns a list of signers
+   * (only clique PoA, throws otherwise)
+   *
+   * This function throws if not called on an epoch
+   * transition block and should therefore be used
+   * in conjunction with `cliqueIsEpochTransition()`
+   */
+  cliqueEpochTransitionSigners(): Address[] {
+    return this.header.cliqueEpochTransitionSigners()
   }
 
   /**

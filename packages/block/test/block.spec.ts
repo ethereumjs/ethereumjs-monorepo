@@ -1,9 +1,11 @@
 import tape from 'tape'
-import { BN, rlp, zeros } from 'ethereumjs-util'
+import { Address, BN, rlp, zeros } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block, BlockBuffer } from '../src'
+import blockFromRpc from '../src/from-rpc'
 import { Mockchain } from './mockchain'
 import { createBlock } from './util'
+import * as testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
 
 tape('[Block]: block functions', function (t) {
   t.test('should test block initialization', function (st) {
@@ -67,6 +69,21 @@ tape('[Block]: block functions', function (t) {
       st.end()
     })
   })
+  t.test(
+    'should throw when trying to initialize with uncle headers on a PoA network',
+    function (st) {
+      const common = new Common({ chain: 'rinkeby' })
+      const uncleBlock = Block.fromBlockData(
+        { header: { extraData: Buffer.alloc(117) } },
+        { common }
+      )
+
+      st.throws(function () {
+        Block.fromBlockData({ uncleHeaders: [uncleBlock.header] }, { common })
+      })
+      st.end()
+    }
+  )
 
   const testData = require('./testdata/testdata.json')
 
@@ -74,7 +91,8 @@ tape('[Block]: block functions', function (t) {
     const blockRlp = testData.blocks[0].rlp
     const block = Block.fromRLPSerializedBlock(blockRlp)
     const blockchain = new Mockchain()
-    await blockchain.putBlock(Block.fromRLPSerializedBlock(testData.genesisRLP))
+    const genesisBlock = Block.fromRLPSerializedBlock(testData.genesisRLP)
+    await blockchain.putBlock(genesisBlock)
     st.doesNotThrow(async () => {
       await block.validate(blockchain)
       st.end()
@@ -82,15 +100,34 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test block validation on poa chain', async function (st) {
-    const blockRlp = testData.blocks[0].rlp
-    const common = new Common({ chain: 'goerli' })
-    const block = Block.fromRLPSerializedBlock(blockRlp, { common })
+    const common = new Common({ chain: 'goerli', hardfork: 'chainstart' })
     const blockchain = new Mockchain()
-    await blockchain.putBlock(Block.fromRLPSerializedBlock(testData.genesisRLP))
+    const block = blockFromRpc(testDataFromRpcGoerli, [], { common })
+
+    const genesis = Block.genesis({}, { common })
+    await blockchain.putBlock(genesis)
+
+    const parentBlock = Block.fromBlockData(
+      {
+        header: {
+          number: block.header.number.subn(1),
+          timestamp: block.header.timestamp.subn(1000),
+          gasLimit: block.header.gasLimit,
+        },
+      },
+      { common, freeze: false }
+    )
+    parentBlock.hash = () => {
+      return block.header.parentHash
+    }
+    await blockchain.putBlock(parentBlock)
+
+    await blockchain.putBlock(block)
     try {
       await block.validate(blockchain)
+      st.pass('does not throw')
     } catch (error) {
-      st.ok(error.toString().match(/block validation is currently only supported on PoW chains/))
+      st.fail('error thrown')
     }
     st.end()
   })
@@ -390,6 +427,32 @@ tape('[Block]: block functions', function (t) {
     st.notEqual(block.isGenesis(), true)
     const genesisBlock = Block.fromBlockData({ header: { number: 0 } }, { common })
     st.equal(genesisBlock.isGenesis(), true)
+    st.end()
+  })
+
+  t.test('should correctly call into header clique functions', function (st) {
+    const common = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
+    const block = Block.fromBlockData(
+      { header: { number: 60000, extraData: Buffer.alloc(137) } },
+      { common }
+    )
+    st.ok(
+      block.cliqueIsEpochTransition(),
+      'header.cliqueIsEpochTransition() -> should get the header function results'
+    )
+    st.deepEqual(
+      block.cliqueExtraVanity(),
+      Buffer.alloc(32),
+      'header.cliqueExtraVanity() -> should get the header function results'
+    )
+    st.deepEqual(
+      block.cliqueExtraSeal(),
+      Buffer.alloc(65),
+      'header.cliqueExtraSeal() -> should get the header function results'
+    )
+    const msg = 'header.cliqueEpochTransitionSigners() -> should get the header function results'
+    st.deepEqual(block.cliqueEpochTransitionSigners(), [Address.zero(), Address.zero()], msg)
+
     st.end()
   })
 

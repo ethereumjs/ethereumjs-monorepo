@@ -672,4 +672,19 @@ export default class Common {
   consensusAlgorithm(): string {
     return (<any>this._chainParams)['consensus']['algorithm']
   }
+
+  /**
+   * Returns a dictionary with consensus configuration
+   * parameters based on the consensus algorithm
+   *
+   * Expected returns (parameters must be present in
+   * the respective chain json files):
+   *
+   * ethash: -
+   * clique: period, epoch
+   * aura: -
+   */
+  consensusConfig(): any {
+    return (<any>this._chainParams)['consensus'][this.consensusAlgorithm()]
+  }
 }

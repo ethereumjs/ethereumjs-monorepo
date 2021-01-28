@@ -27,6 +27,10 @@ export interface Chain {
   consensus?: {
     type: string
     algorithm: string
+    clique: {
+      period: number
+      epoch: number
+    }
   }
 }
 

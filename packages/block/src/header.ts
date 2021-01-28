@@ -3,6 +3,7 @@ import {
   Address,
   BN,
   bnToHex,
+  ecrecover,
   KECCAK256_RLP_ARRAY,
   KECCAK256_RLP,
   rlp,
@@ -10,8 +11,15 @@ import {
   toBuffer,
   unpadBuffer,
   zeros,
+  bufferToInt,
 } from 'ethereumjs-util'
 import { HeaderData, JsonHeader, BlockHeaderBuffer, Blockchain, BlockOptions } from './types'
+import {
+  CLIQUE_EXTRA_VANITY,
+  CLIQUE_EXTRA_SEAL,
+  CLIQUE_DIFF_INTURN,
+  CLIQUE_DIFF_NOTURN,
+} from './clique'
 
 const DEFAULT_GAS_LIMIT = new BN(Buffer.from('ffffffffffffff', 'hex'))
 
@@ -220,7 +228,7 @@ export class BlockHeader {
     this.mixHash = mixHash
     this.nonce = nonce
 
-    this._validateBufferLengths()
+    this._validateHeaderFields()
     this._checkDAOExtraData()
 
     // Now we have set all the values of this Header, we possibly have set a dummy
@@ -239,7 +247,7 @@ export class BlockHeader {
   /**
    * Validates correct buffer lengths, throws if invalid.
    */
-  _validateBufferLengths() {
+  _validateHeaderFields() {
     const { parentHash, stateRoot, transactionsTrie, receiptTrie, mixHash, nonce } = this
     if (parentHash.length !== 32) {
       throw new Error(`parentHash must be 32 bytes, received ${parentHash.length} bytes`)
@@ -258,6 +266,7 @@ export class BlockHeader {
     if (mixHash.length !== 32) {
       throw new Error(`mixHash must be 32 bytes, received ${mixHash.length} bytes`)
     }
+
     if (nonce.length !== 8) {
       throw new Error(`nonce must be 8 bytes, received ${nonce.length} bytes`)
     }
@@ -357,10 +366,34 @@ export class BlockHeader {
    * @param parentBlockHeader - the header from the parent `Block` of this header
    */
   validateDifficulty(parentBlockHeader: BlockHeader): boolean {
-    if (this._common.consensusType() !== 'pow') {
-      throw new Error('difficulty validation is currently only supported on PoW chains')
-    }
     return this.canonicalDifficulty(parentBlockHeader).eq(this.difficulty)
+  }
+
+  /**
+   * For poa, validates `difficulty` is correctly identified as INTURN or NOTURN.
+   */
+  validateCliqueDifficulty(blockchain: Blockchain): boolean {
+    if (!this.difficulty.eq(CLIQUE_DIFF_INTURN) && !this.difficulty.eq(CLIQUE_DIFF_NOTURN)) {
+      throw new Error(
+        `difficulty for clique block must be INTURN (2) or NOTURN (1), received: ${this.difficulty.toString()}`
+      )
+    }
+    const signers = blockchain.cliqueActiveSigners()
+    if (signers.length === 0) {
+      // abort if signers are unavailable
+      return true
+    }
+    const signerIndex = signers.findIndex((address: Address) =>
+      address.toBuffer().equals(this.cliqueSigner().toBuffer())
+    )
+    const inTurn = this.number.modn(signers.length) === signerIndex
+    if (
+      (inTurn && this.difficulty.eq(CLIQUE_DIFF_INTURN)) ||
+      (!inTurn && this.difficulty.eq(CLIQUE_DIFF_NOTURN))
+    ) {
+      return true
+    }
+    return false
   }
 
   /**
@@ -393,7 +426,8 @@ export class BlockHeader {
    * - The `parentHash` is part of the blockchain (it is a valid header)
    * - Current block number is parent block number + 1
    * - Current block has a strictly higher timestamp
-   * - Current block has valid difficulty and gas limit
+   * - Additional PoA -> Clique check: Current block has a timestamp diff greater or equal to PERIOD
+   * - Current block has valid difficulty (only PoW, otherwise pass) and gas limit
    * - In case that the header is an uncle header, it should not be too old or young in the chain.
    * @param blockchain - validate against a @ethereumjs/blockchain
    * @param height - If this is an uncle header, this is the height of the block that is including it
@@ -403,37 +437,79 @@ export class BlockHeader {
       return
     }
     const hardfork = this._getHardfork()
-    if (this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)) {
-      throw new Error('invalid amount of extra data')
+    if (this._common.consensusAlgorithm() !== 'clique') {
+      if (
+        this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)
+      ) {
+        throw new Error('invalid amount of extra data')
+      }
+    } else {
+      const minLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
+      if (!this.cliqueIsEpochTransition()) {
+        // ExtraData length on epoch transition
+        if (this.extraData.length !== minLength) {
+          throw new Error(
+            `extraData must be ${minLength} bytes on non-epoch transition blocks, received ${this.extraData.length} bytes`
+          )
+        }
+      } else {
+        const signerLength = this.extraData.length - minLength
+        if (signerLength % 20 !== 0) {
+          throw new Error(
+            `invalid signer list length in extraData, received signer length of ${signerLength} (not divisible by 20)`
+          )
+        }
+        // coinbase (beneficiary) on epoch transition
+        if (!this.coinbase.isZero()) {
+          throw new Error(
+            `coinbase must be filled with zeros on epoch transition blocks, received ${this.coinbase.toString()}`
+          )
+        }
+      }
+      // MixHash format
+      if (!this.mixHash.equals(Buffer.alloc(32))) {
+        throw new Error(`mixHash must be filled with zeros, received ${this.mixHash}`)
+      }
+      if (!this.validateCliqueDifficulty(blockchain)) {
+        throw new Error('invalid clique difficulty')
+      }
     }
 
-    const header = await this._getHeaderByHash(blockchain, this.parentHash)
+    const parentHeader = await this._getHeaderByHash(blockchain, this.parentHash)
 
-    if (!header) {
+    if (!parentHeader) {
       throw new Error('could not find parent header')
     }
 
     const { number } = this
-    if (!number.eq(header.number.addn(1))) {
+    if (!number.eq(parentHeader.number.addn(1))) {
       throw new Error('invalid number')
     }
 
-    if (this.timestamp.lte(header.timestamp)) {
+    if (this.timestamp.lte(parentHeader.timestamp)) {
       throw new Error('invalid timestamp')
     }
 
+    if (this._common.consensusAlgorithm() === 'clique') {
+      const period = this._common.consensusConfig().period
+      // Timestamp diff between blocks is lower than PERIOD (clique)
+      if (parentHeader.timestamp.addn(period).gt(this.timestamp)) {
+        throw new Error('invalid timestamp diff (lower than period)')
+      }
+    }
+
     if (this._common.consensusType() === 'pow') {
-      if (!this.validateDifficulty(header)) {
+      if (!this.validateDifficulty(parentHeader)) {
         throw new Error('invalid difficulty')
       }
     }
 
-    if (!this.validateGasLimit(header)) {
+    if (!this.validateGasLimit(parentHeader)) {
       throw new Error('invalid gas limit')
     }
 
     if (height) {
-      const dif = height.sub(header.number)
+      const dif = height.sub(parentHeader.number)
       if (!(dif.ltn(8) && dif.gtn(1))) {
         throw new Error('uncle block has a parent that is too old or too young')
       }
@@ -467,6 +543,9 @@ export class BlockHeader {
    * Returns the hash of the block header.
    */
   hash(): Buffer {
+    if (this._common.consensusAlgorithm() === 'clique' && !this.isGenesis()) {
+      return this.cliqueHash()
+    }
     return rlphash(this.raw())
   }
 
@@ -475,6 +554,106 @@ export class BlockHeader {
    */
   isGenesis(): boolean {
     return this.number.isZero()
+  }
+
+  private _requireClique(name: string) {
+    if (this._common.consensusAlgorithm() !== 'clique') {
+      throw new Error(`BlockHeader.${name}() call only supported for clique PoA networks`)
+    }
+  }
+
+  /**
+   * Hash for PoA clique blocks is created without the seal.
+   * @hidden
+   */
+  private cliqueHash() {
+    const raw = this.raw()
+    raw[12] = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
+    return rlphash(raw)
+  }
+
+  /**
+   * Checks if the block header is an epoch transition
+   * header (only clique PoA, throws otherwise)
+   */
+  cliqueIsEpochTransition(): boolean {
+    this._requireClique('cliqueIsEpochTransition')
+    const epoch = new BN(this._common.consensusConfig().epoch)
+    // Epoch transition block if the block number has no
+    // remainder on the division by the epoch length
+    return this.number.mod(epoch).isZero()
+  }
+
+  /**
+   * Returns extra vanity data
+   * (only clique PoA, throws otherwise)
+   */
+  cliqueExtraVanity(): Buffer {
+    this._requireClique('cliqueExtraVanity')
+    return this.extraData.slice(0, CLIQUE_EXTRA_VANITY)
+  }
+
+  /**
+   * Returns extra seal data
+   * (only clique PoA, throws otherwise)
+   */
+  cliqueExtraSeal(): Buffer {
+    this._requireClique('cliqueExtraSeal')
+    return this.extraData.slice(-CLIQUE_EXTRA_SEAL)
+  }
+
+  /**
+   * Returns a list of signers
+   * (only clique PoA, throws otherwise)
+   *
+   * This function throws if not called on an epoch
+   * transition block and should therefore be used
+   * in conjunction with `cliqueIsEpochTransition()`
+   */
+  cliqueEpochTransitionSigners(): Address[] {
+    this._requireClique('cliqueEpochTransitionSigners')
+    if (!this.cliqueIsEpochTransition()) {
+      throw new Error('Signers are only included in epoch transition blocks (clique)')
+    }
+
+    const start = CLIQUE_EXTRA_VANITY
+    const end = this.extraData.length - CLIQUE_EXTRA_SEAL
+    const signerBuffer = this.extraData.slice(start, end)
+
+    const signerList: Buffer[] = []
+    const signerLength = 20
+    for (let start = 0; start <= signerBuffer.length - signerLength; start += signerLength) {
+      signerList.push(signerBuffer.slice(start, start + signerLength))
+    }
+    return signerList.map((buf) => new Address(buf))
+  }
+
+  /**
+   * Verifies the signature of the block (last 65 bytes of extraData field)
+   * (only clique PoA, throws otherwise)
+   *
+   *  Method throws if signature is invalid
+   */
+  cliqueVerifySignature(signerList: Address[]): boolean {
+    this._requireClique('cliqueVerifySignature')
+    const signerAddress = this.cliqueSigner().toBuffer()
+    const signerFound = signerList.find((signer) => {
+      return signer.toBuffer().equals(signerAddress)
+    })
+    return !!signerFound
+  }
+
+  /**
+   * Returns the signer address
+   */
+  cliqueSigner(): Address {
+    this._requireClique('cliqueSigner')
+    const extraSeal = this.cliqueExtraSeal()
+    const r = extraSeal.slice(0, 32)
+    const s = extraSeal.slice(32, 64)
+    const v = bufferToInt(extraSeal.slice(64, 65)) + 27
+    const pubKey = ecrecover(this.hash(), v, r, s)
+    return Address.fromPublicKey(pubKey)
   }
 
   /**

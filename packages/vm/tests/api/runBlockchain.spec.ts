@@ -68,6 +68,7 @@ tape('runBlockchain', (t) => {
   })
 
   t.test('should run with valid and invalid blocks', async (st) => {
+    const blockchainDB = level()
     // Produce error on the third time runBlock is called
     let runBlockInvocations = 0
     ;(<any>vm).runBlock = () =>
@@ -79,7 +80,7 @@ tape('runBlockchain', (t) => {
         resolve({})
       })
 
-    const common = new Common({ chain: 'goerli', hardfork: 'chainstart' })
+    const common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
     const genesisBlock = Block.genesis(undefined, { common })
     const newBlockchain = new Blockchain({
       db: blockchainDB,

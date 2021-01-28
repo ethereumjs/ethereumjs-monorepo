@@ -3,6 +3,8 @@ import { Address, BN, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from 'ethereum
 import Common from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src'
+import { Mockchain } from './mockchain'
+const testData = require('./testdata/testdata.json')
 
 tape('[Block]: Header functions', function (t) {
   t.test('should create with default constructor', function (st) {
@@ -36,7 +38,10 @@ tape('[Block]: Header functions', function (t) {
   t.test('should test header initialization', function (st) {
     const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
     let header = BlockHeader.genesis(undefined, { common })
-    st.ok(header.hash().toString('hex'), 'block should initialize')
+    st.ok(header.hash().toString('hex'), 'genesis block should initialize')
+
+    header = BlockHeader.fromHeaderData({}, { common })
+    st.ok(header.hash().toString('hex'), 'default block should initialize')
 
     // test default freeze values
     // also test if the options are carried over to the constructor
@@ -77,6 +82,195 @@ tape('[Block]: Header functions', function (t) {
     st.end()
   })
 
+  t.test('should test header initialization -> clique', function (st) {
+    const common = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
+    let header = BlockHeader.genesis(undefined, { common })
+    st.ok(header.hash().toString('hex'), 'genesis block should initialize')
+
+    header = BlockHeader.fromHeaderData({}, { common })
+    st.ok(header.hash().toString('hex'), 'default block should initialize')
+
+    st.end()
+  })
+
+  t.test('should validate extraData', async function (st) {
+    // PoW
+    let blockchain = new Mockchain()
+    let common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
+    let genesis = Block.genesis({}, { common })
+    await blockchain.putBlock(genesis)
+
+    const number = 1
+    let parentHash = genesis.hash()
+    const timestamp = Date.now()
+    let { gasLimit } = genesis.header
+    let data = { number, parentHash, timestamp, gasLimit }
+    let opts = { common, calcDifficultyFromHeader: genesis.header }
+
+    // valid extraData: at limit
+    let testCase = 'pow block should validate with 32 bytes of extraData'
+    let extraData = Buffer.alloc(32)
+    let header = BlockHeader.fromHeaderData({ ...data, extraData }, opts)
+    try {
+      await header.validate(blockchain)
+      st.pass(testCase)
+    } catch (error) {
+      st.fail(testCase)
+    }
+
+    // valid extraData: fewer than limit
+    testCase = 'pow block should validate with 12 bytes of extraData'
+    extraData = Buffer.alloc(12)
+    header = BlockHeader.fromHeaderData({ ...data, extraData }, opts)
+    try {
+      await header.validate(blockchain)
+      st.ok(testCase)
+    } catch (error) {
+      st.fail(testCase)
+    }
+
+    // extraData beyond limit
+    testCase = 'pow block should throw with excess amount of extraData'
+    extraData = Buffer.alloc(42)
+    header = BlockHeader.fromHeaderData({ ...data, extraData }, opts)
+    try {
+      await header.validate(blockchain)
+      st.fail(testCase)
+    } catch (error) {
+      st.equal(error.message, 'invalid amount of extra data', testCase)
+    }
+
+    // PoA
+    blockchain = new Mockchain()
+    common = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
+    genesis = Block.genesis({}, { common })
+    await blockchain.putBlock(genesis)
+
+    parentHash = genesis.hash()
+    gasLimit = genesis.header.gasLimit
+    data = { number, parentHash, timestamp, gasLimit, difficulty: new BN(1) } as any
+    opts = { common } as any
+
+    // valid extraData (32 byte vanity + 65 byte seal)
+    testCase =
+      'clique block should validate with valid number of bytes in extraData: 32 byte vanity + 65 byte seal'
+    extraData = Buffer.concat([Buffer.alloc(32), Buffer.alloc(65)])
+    header = BlockHeader.fromHeaderData({ ...data, extraData }, opts)
+    try {
+      await header.validate(blockchain)
+      t.pass(testCase)
+    } catch (error) {
+      t.fail(testCase)
+    }
+
+    // invalid extraData length
+    testCase = 'clique block should throw on invalid extraData length'
+    extraData = Buffer.alloc(32)
+    header = BlockHeader.fromHeaderData({ ...data, extraData }, opts)
+    try {
+      await header.validate(blockchain)
+      t.fail(testCase)
+    } catch (error) {
+      t.equal(
+        error.message,
+        'extraData must be 97 bytes on non-epoch transition blocks, received 32 bytes',
+        testCase
+      )
+    }
+
+    // signer list indivisible by 20
+    testCase = 'clique blocks should throw on invalid extraData length: indivisible by 20'
+    extraData = Buffer.concat([
+      Buffer.alloc(32),
+      Buffer.alloc(65),
+      Buffer.alloc(20),
+      Buffer.alloc(21),
+    ])
+    const epoch = new BN(common.consensusConfig().epoch)
+    header = BlockHeader.fromHeaderData({ ...data, number: epoch, extraData }, opts)
+    try {
+      await header.validate(blockchain)
+      st.fail(testCase)
+    } catch (error) {
+      st.equals(
+        error.message,
+        'invalid signer list length in extraData, received signer length of 41 (not divisible by 20)',
+        testCase
+      )
+    }
+
+    st.end()
+  })
+
+  t.test('header validation -> poa checks', async function (st) {
+    const headerData = testData.blocks[0].blockHeader
+
+    const common = new Common({ chain: 'goerli' })
+    const blockchain = new Mockchain()
+
+    const block = Block.fromRLPSerializedBlock(testData.genesisRLP, { common })
+    await blockchain.putBlock(block)
+
+    headerData.number = 1
+    headerData.timestamp = new BN(1422494850)
+    headerData.extraData = Buffer.alloc(97)
+    headerData.mixHash = Buffer.alloc(32)
+    headerData.difficulty = new BN(2)
+
+    let testCase = 'should throw on lower than period timestamp diffs'
+    let header = BlockHeader.fromHeaderData(headerData, { common })
+    try {
+      await header.validate(blockchain)
+      st.fail(testCase)
+    } catch (error) {
+      st.equals(error.message, 'invalid timestamp diff (lower than period)', testCase)
+    }
+
+    testCase = 'should not throw on timestamp diff equal to period'
+    headerData.timestamp = new BN(1422494864)
+    header = BlockHeader.fromHeaderData(headerData, { common })
+    try {
+      await header.validate(blockchain)
+      st.pass(testCase)
+    } catch (error) {
+      st.fail(testCase)
+    }
+
+    testCase = 'should throw on non-zero beneficiary (coinbase) for epoch transition block'
+    headerData.number = common.consensusConfig().epoch
+    headerData.coinbase = Address.fromString('0x091dcd914fCEB1d47423e532955d1E62d1b2dAEf')
+    header = BlockHeader.fromHeaderData(headerData, { common })
+    try {
+      await header.validate(blockchain)
+      st.fail('should throw')
+    } catch (error) {
+      if (error.message.includes('coinbase must be filled with zeros on epoch transition blocks')) {
+        st.pass('error thrown')
+      } else {
+        st.fail('should throw with appropriate error')
+      }
+    }
+    headerData.number = 1
+    headerData.coinbase = Address.zero()
+
+    testCase = 'should throw on non-zero mixHash'
+    headerData.mixHash = Buffer.alloc(32).fill(1)
+    header = BlockHeader.fromHeaderData(headerData, { common })
+    try {
+      await header.validate(blockchain)
+      st.fail('should throw')
+    } catch (error) {
+      if (error.message.includes('mixHash must be filled with zeros')) {
+        st.pass('error thrown')
+      } else {
+        st.fail('should throw with appropriate error')
+      }
+    }
+    headerData.mixHash = Buffer.alloc(32)
+
+    st.end()
+  })
+
   t.test('should test validateGasLimit', function (st) {
     const testData = require('./testdata/bcBlockGasLimitTest.json').tests
     const bcBlockGasLimitTestData = testData.BlockGasLimit2p63m1
@@ -92,7 +286,7 @@ tape('[Block]: Header functions', function (t) {
     st.end()
   })
 
-  t.test('should test isGenesis', function (st) {
+  t.test('should test isGenesis()', function (st) {
     const header1 = BlockHeader.fromHeaderData({ number: 1 })
     st.equal(header1.isGenesis(), false)
 

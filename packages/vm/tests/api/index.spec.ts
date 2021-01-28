@@ -120,7 +120,7 @@ tape('VM with blockchain', (t) => {
   })
 
   t.test('should run blockchain with mocked runBlock', async (st) => {
-    const common = new Common({ chain: 'goerli' })
+    const common = new Common({ chain: 'ropsten' })
     const genesisRlp = Buffer.from(testData.genesisRLP.slice(2), 'hex')
     const genesisBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
 

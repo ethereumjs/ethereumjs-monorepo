@@ -18,7 +18,7 @@
     "tsc": "ethereumjs-config-ts-compile",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
-    "test": "tape -r ts-node/register ./tests/*.ts",
+    "test": "tape -r ts-node/register ./tests/*.spec.ts",
     "docs:build": "typedoc --options typedoc.js"
   },
   "repository": {

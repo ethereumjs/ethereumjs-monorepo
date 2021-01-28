@@ -5,7 +5,8 @@
   "defaultHardfork": "istanbul",
   "consensus": {
     "type": "pow",
-    "algorithm": "ethash"
+    "algorithm": "ethash",
+    "ethash": {}
   },
   "comment": "The Ethereum main chain",
   "url": "https://ethstats.net/",

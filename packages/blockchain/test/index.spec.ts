@@ -38,10 +38,10 @@ tape('blockchain test', (t) => {
     })
 
     common = new Common({ chain: 'goerli' })
-    st.throws(() => {
+    st.doesNotThrow(() => {
       new Blockchain({ common, validateConsensus: true })
     })
-    st.throws(() => {
+    st.doesNotThrow(() => {
       new Blockchain({ common, validateBlocks: true })
     })
     st.end()

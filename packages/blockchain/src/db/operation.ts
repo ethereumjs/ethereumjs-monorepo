@@ -8,6 +8,9 @@ import {
   bodyKey,
   numberToHashKey,
   hashToNumberKey,
+  CLIQUE_SIGNERS_KEY as CLIQUE_SIGNER_STATES_KEY,
+  CLIQUE_VOTES_KEY,
+  CLIQUE_BLOCK_SIGNERS_KEY,
 } from './constants'
 
 import { CacheMap } from './manager'
@@ -21,6 +24,9 @@ export enum DBTarget {
   TotalDifficulty,
   Body,
   Header,
+  CliqueSignerStates,
+  CliqueVotes,
+  CliqueBlockSigners,
 }
 
 /**
@@ -95,6 +101,18 @@ export class DBOp {
       case DBTarget.Header: {
         this.baseDBOp.key = headerKey(key!.blockNumber!, key!.blockHash!)
         this.cacheString = 'header'
+        break
+      }
+      case DBTarget.CliqueSignerStates: {
+        this.baseDBOp.key = CLIQUE_SIGNER_STATES_KEY
+        break
+      }
+      case DBTarget.CliqueVotes: {
+        this.baseDBOp.key = CLIQUE_VOTES_KEY
+        break
+      }
+      case DBTarget.CliqueBlockSigners: {
+        this.baseDBOp.key = CLIQUE_BLOCK_SIGNERS_KEY
         break
       }
     }
