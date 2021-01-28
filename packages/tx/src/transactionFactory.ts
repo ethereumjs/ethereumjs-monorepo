@@ -1,7 +1,9 @@
 import Common from '@ethereumjs/common'
 import { default as LegacyTransaction } from './legacyTransaction'
 import { default as EIP2930Transaction } from './eip2930Transaction'
-import { TxOptions, Transaction } from './types'
+import { TxOptions, Transaction, TxData } from './types'
+import { assert } from 'console'
+import BN from 'bn.js'
 
 const DEFAULT_COMMON = new Common({ chain: 'mainnet' })
 
@@ -9,19 +11,38 @@ export default class TransactionFactory {
   // It is not possible to instantiate a TransactionFactory object.
   private constructor() {}
 
+  public static fromTxData(txData: TxData, transactionOptions: TxOptions = {}): Transaction {
+    const common = transactionOptions.common ?? DEFAULT_COMMON
+    if (txData.type === undefined) {
+      // Assume LegacyTransaction
+      return LegacyTransaction.fromTxData(txData, transactionOptions)
+    } else {
+      assert(
+        TransactionFactory.typedTransactionsSupport(common),
+        'Common does not support TypedTransactions. Activate EIP-2718.'
+      )
+      const txType = new BN(txData.type).toNumber()
+      return TransactionFactory.getTransactionClass(txType, common).fromTxData(
+        txData,
+        transactionOptions
+      )
+    }
+  }
+
   /**
    * This method tries to decode `raw` data. It is somewhat equivalent to `fromRlpSerializedTx`.
    * However, it could be that the data is not directly RLP-encoded (it is a Typed Transaction)
    * @param rawData - The raw data buffer
    * @param transactionOptions - The transaction options
    */
-  public static fromRawData(rawData: Buffer, transactionOptions: TxOptions): Transaction {
+  public static fromRawData(rawData: Buffer, transactionOptions: TxOptions = {}): Transaction {
     const common = transactionOptions.common ?? DEFAULT_COMMON
     if (rawData[0] <= 0x7f) {
       // It is an EIP-2718 Typed Transaction
-      if (!common.eips().includes(2718)) {
-        throw new Error('Cannot create a TypedTransaction: EIP-2718 is not enabled')
-      }
+      assert(
+        TransactionFactory.typedTransactionsSupport(common),
+        'Common does not support TypedTransactions. Activate EIP-2718.'
+      )
       // Determine the type.
       let EIP: number
       switch (rawData[0]) {
@@ -32,7 +53,7 @@ export default class TransactionFactory {
           throw new Error(`TypedTransaction with ID ${rawData[0]} unknown`)
       }
 
-      if (!common.eips().includes(EIP)) {
+      if (!TransactionFactory.eipSupport(common, EIP)) {
         throw new Error(
           `Cannot create TypedTransaction with ID ${rawData[0]}: EIP ${EIP} not activated`
         )
@@ -52,7 +73,7 @@ export default class TransactionFactory {
    * @param rawData - Either a Buffer or a Buffer[]
    * @param transactionOptions - The transaction options
    */
-  public static fromBlockBodyData(rawData: Buffer | Buffer[], transactionOptions: TxOptions) {
+  public static fromBlockBodyData(rawData: Buffer | Buffer[], transactionOptions: TxOptions = {}) {
     if (Buffer.isBuffer(rawData)) {
       return this.fromRawData(rawData, transactionOptions)
     } else if (Array.isArray(rawData)) {
@@ -72,7 +93,7 @@ export default class TransactionFactory {
   public static getTransactionClass(transactionID?: number, common?: Common) {
     const usedCommon = common ?? DEFAULT_COMMON
     if (transactionID) {
-      if (transactionID !== 0 && !usedCommon.eips().includes(2718)) {
+      if (transactionID !== 0 && !TransactionFactory.typedTransactionsSupport(usedCommon)) {
         throw new Error('Cannot create a TypedTransaction: EIP-2718 is not enabled')
       }
       switch (transactionID) {
@@ -84,5 +105,18 @@ export default class TransactionFactory {
           throw new Error(`TypedTransaction with ID ${transactionID} unknown`)
       }
     }
+    throw new Error(`TypedTransaction with ID ${transactionID} unknown`)
+  }
+
+  // Helpers
+  public static typedTransactionsSupport(common: Common): boolean {
+    return common.eips().includes(2718)
+  }
+
+  public static eipSupport(common: Common, eip: number): boolean {
+    if (!TransactionFactory.typedTransactionsSupport(common)) {
+      return false
+    }
+    return common.eips().includes(eip)
   }
 }
