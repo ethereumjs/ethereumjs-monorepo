@@ -13,17 +13,18 @@ export interface RlpxServerOptions extends ServerOptions {
 
 const ignoredErrors = new RegExp(
   [
-    'EPIPE',
     'ECONNRESET',
+    'EPIPE',
     'ETIMEDOUT',
-    'NetworkId mismatch',
-    'Timeout error: ping',
     'Genesis block mismatch',
     'Handshake timed out',
+    'Hash verification failed',
     'Invalid address buffer',
     'Invalid MAC',
     'Invalid timestamp buffer',
-    'Hash verification failed',
+    'NetworkId mismatch',
+    'Timeout error: ping',
+    'Unknown fork hash',
   ].join('|')
 )
 
