@@ -146,7 +146,7 @@ export default class Blockchain implements BlockchainInterface {
    * [ [BLOCK_NUMBER_1, [SIGNER1, SIGNER 2,]], [BLOCK_NUMBER2, [SIGNER1, SIGNER3]], ...]
    *
    * The top element from the array represents the list of current signers.
-   * On reorgs delete the top elements from the array until BLOCK_NUMBER > REORG_BLOCK
+   * On reorgs elements from the array are removed until BLOCK_NUMBER > REORG_BLOCK.
    *
    * Always keep at least one item on the stack
    */
@@ -164,7 +164,7 @@ export default class Blockchain implements BlockchainInterface {
    * (nevertheless keep entries with blocks before EPOCH_BLOCK in case a reorg happens
    * during an epoch change)
    *
-   * On reorgs delete the top elements from the array until BLOCK_NUMBER > REORG_BLOCK.
+   * On reorgs elements from the array are removed until BLOCK_NUMBER > REORG_BLOCK.
    */
   private _cliqueLatestVotes: CliqueLatestVotes = []
 
@@ -173,7 +173,7 @@ export default class Blockchain implements BlockchainInterface {
    * Kept as a snapshot for quickly checking for "recently signed" error.
    * Format: [ [BLOCK_NUMBER, SIGNER_ADDRESS], ...]
    *
-   * On reorgs delete the top elements from the array until BLOCK_NUMBER > REORG_BLOCK.
+   * On reorgs elements from the array are removed until BLOCK_NUMBER > REORG_BLOCK.
    */
   private _cliqueLatestBlockSigners: CliqueLatestBlockSigners = []
 
@@ -308,14 +308,14 @@ export default class Blockchain implements BlockchainInterface {
       DBSetBlockOrHeader(genesisBlock).map((op) => dbOps.push(op))
       DBSaveLookups(genesisHash, new BN(0)).map((op) => dbOps.push(op))
 
+      await this.dbManager.batch(dbOps)
+
       if (this._common.consensusAlgorithm() === 'clique') {
         await this.cliqueSaveGenesisSigners(genesisBlock)
       }
-
-      await this.dbManager.batch(dbOps)
     }
 
-    // Clique: read current signer list
+    // Clique: read current signer states, signer votes, and block signers
     if (this._common.consensusAlgorithm() === 'clique') {
       this._cliqueLatestSignerStates = await this.dbManager.getCliqueLatestSignerStates()
       this._cliqueLatestVotes = await this.dbManager.getCliqueLatestVotes()
@@ -424,24 +424,36 @@ export default class Blockchain implements BlockchainInterface {
    */
   private async cliqueSaveGenesisSigners(genesisBlock: Block) {
     const genesisSignerState: CliqueSignerState = [
-      genesisBlock.header.number,
+      new BN(0),
       genesisBlock.header.cliqueEpochTransitionSigners(),
     ]
     await this.cliqueUpdateSignerStates(genesisSignerState)
     await this.cliqueUpdateVotes()
   }
 
-  private async cliqueUpdateSignerStates(signerState: CliqueSignerState) {
+  /**
+   * Save signer state to db
+   * @param signerState
+   * @hidden
+   */
+  private async cliqueUpdateSignerStates(signerState?: CliqueSignerState) {
     const dbOps: DBOp[] = []
-    this._cliqueLatestSignerStates.push(signerState)
 
-    // trim length to CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
-    const length = this._cliqueLatestSignerStates.length
-    const limit = this.CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
-    if (length > limit) {
-      this._cliqueLatestSignerStates = this._cliqueLatestSignerStates.slice(length - limit, length)
+    if (signerState) {
+      this._cliqueLatestSignerStates.push(signerState)
+
+      // trim length to CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
+      const length = this._cliqueLatestSignerStates.length
+      const limit = this.CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
+      if (length > limit) {
+        this._cliqueLatestSignerStates = this._cliqueLatestSignerStates.slice(
+          length - limit,
+          length
+        )
+      }
     }
 
+    // save to db
     const formatted = this._cliqueLatestSignerStates.map((state) => [
       state[0].toBuffer(),
       state[1].map((a) => a.toBuffer()),
@@ -543,7 +555,7 @@ export default class Blockchain implements BlockchainInterface {
     const dbOps: DBOp[] = []
     const formatted = this._cliqueLatestVotes.map((v) => [
       v[0].toBuffer(),
-      [v[1][0].toBuffer(), v[1][0].toBuffer(), v[1][2]],
+      [v[1][0].toBuffer(), v[1][1].toBuffer(), v[1][2]],
     ])
     dbOps.push(DBOp.set(DBTarget.CliqueVotes, rlp.encode(formatted)))
 
@@ -556,21 +568,27 @@ export default class Blockchain implements BlockchainInterface {
    * @param header BlockHeader
    * @hidden
    */
-  private async cliqueUpdateLatestBlockSigners(header: BlockHeader) {
-    if (header.isGenesis()) {
-      return
-    }
+  private async cliqueUpdateLatestBlockSigners(header?: BlockHeader) {
     const dbOps: DBOp[] = []
 
-    // add this block's signer
-    const signer: CliqueBlockSigner = [header.number, header.cliqueSigner()]
-    this._cliqueLatestBlockSigners.push(signer)
+    if (header) {
+      if (header.isGenesis()) {
+        return
+      }
 
-    // trim length to `this.cliqueSignerLimit()`
-    const length = this._cliqueLatestBlockSigners.length
-    const limit = this.cliqueSignerLimit()
-    if (length > limit) {
-      this._cliqueLatestBlockSigners = this._cliqueLatestBlockSigners.slice(length - limit, length)
+      // add this block's signer
+      const signer: CliqueBlockSigner = [header.number, header.cliqueSigner()]
+      this._cliqueLatestBlockSigners.push(signer)
+
+      // trim length to `this.cliqueSignerLimit()`
+      const length = this._cliqueLatestBlockSigners.length
+      const limit = this.cliqueSignerLimit()
+      if (length > limit) {
+        this._cliqueLatestBlockSigners = this._cliqueLatestBlockSigners.slice(
+          length - limit,
+          length
+        )
+      }
     }
 
     // save to db
@@ -586,7 +604,8 @@ export default class Blockchain implements BlockchainInterface {
    */
   public cliqueActiveSigners(): Address[] {
     this._requireClique()
-    return this._cliqueLatestSignerStates[this._cliqueLatestSignerStates.length - 1][1]
+    const signers = this._cliqueLatestSignerStates
+    return [...signers[signers.length - 1][1]]
   }
 
   /**
@@ -1167,6 +1186,23 @@ export default class Blockchain implements BlockchainInterface {
       // reset stale headBlock to current canonical
       if (this._headBlockHash?.equals(hash)) {
         this._headBlockHash = headHash
+      }
+
+      if (this._common.consensusAlgorithm() === 'clique') {
+        // remove blockNumber from clique snapshots
+        // (latest signer states, latest votes, latest block signers)
+        this._cliqueLatestSignerStates = this._cliqueLatestSignerStates.filter(
+          (s) => !s[0].eq(blockNumber)
+        )
+        await this.cliqueUpdateSignerStates()
+
+        this._cliqueLatestVotes = this._cliqueLatestVotes.filter((v) => !v[0].eq(blockNumber))
+        await this.cliqueUpdateVotes()
+
+        this._cliqueLatestBlockSigners = this._cliqueLatestBlockSigners.filter(
+          (s) => !s[0].eq(blockNumber)
+        )
+        await this.cliqueUpdateLatestBlockSigners()
       }
 
       blockNumber.iaddn(1)
