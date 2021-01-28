@@ -1,9 +1,10 @@
 import Common from '@ethereumjs/common'
+import { rlp } from 'ethereumjs-util'
 import tape from 'tape'
 import { EIP2930Transaction, TransactionFactory, LegacyTransaction } from '../src'
 
 const EIP2930Common = new Common({
-  eips: [2718, 2930],
+  eips: [2718, 2929, 2930],
   chain: 'mainnet',
   hardfork: 'berlin',
 })
@@ -72,5 +73,37 @@ tape('[TransactionFactory]: Basic functions', function (t) {
       TransactionFactory.getTransactionClass(1)
     })
     st.end()
+  })
+
+  // TestData from https://github.com/ethereum/go-ethereum/tree/ac8e5900e6d38f7577251e7e36da9b371b2e5488/core/testdata
+  // This tries to decode the transaction from the block.
+  // It checks afterwards if the created transaction is of the right type.
+  t.test('should succesfully decode block transactions', function (t) {
+    const testCommon = new Common({
+      eips: [2718, 2929, 2930],
+      chain: 'mainnet',
+      hardfork: 'berlin',
+    })
+
+    for (let i = 0; i <= 9; i++) {
+      // Hackish; cannot put this above for loop or typescript complains that
+      // it is used "before declaration" (?)
+      (testCommon as any)._chainParams.chainId = 133519467574834
+      const blockData = require(`./json/eip2930/acl_block_${i}.json`)
+      const decodedBlock = rlp.decode(Buffer.from(blockData.rlp, 'hex'))
+      const transactionList: any = decodedBlock[1]
+      for (let transaction = 0; transaction < transactionList.length; transaction++) {
+        const tx = TransactionFactory.fromBlockBodyData(transactionList[transaction], {
+          common: testCommon,
+        })
+        const type = tx.constructor.name
+        const txData = blockData.json.transactions[transaction]
+        const txType = parseInt(txData.type.slice(2), 16)
+        const expected = TransactionFactory.getTransactionClass(txType, testCommon)
+        t.equals(type, expected.name)
+      }
+    }
+
+    t.end()
   })
 })

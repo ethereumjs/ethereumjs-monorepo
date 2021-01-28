@@ -1,7 +1,7 @@
 import Common from '@ethereumjs/common'
-import { privateToAddress } from 'ethereumjs-util'
+import { privateToAddress, rlp } from 'ethereumjs-util'
 import tape from 'tape'
-import { EIP2930Transaction } from '../src'
+import { EIP2930Transaction, TransactionFactory } from '../src'
 
 const pKey = Buffer.from('4646464646464646464646464646464646464646464646464646464646464646', 'hex')
 const address = privateToAddress(pKey)

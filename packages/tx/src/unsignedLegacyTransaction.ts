@@ -62,9 +62,9 @@ export class LegacyTransaction extends BaseTransaction<JsonLegacyTx, LegacyTrans
           to: to && to.length > 0 ? new Address(to) : undefined,
           value: new BN(value),
           data: data ?? emptyBuffer,
-          v: !v?.equals(emptyBuffer) ? new BN(v) : undefined,
-          r: !r?.equals(emptyBuffer) ? new BN(r) : undefined,
-          s: !s?.equals(emptyBuffer) ? new BN(s) : undefined,
+          v: v !== undefined && !v?.equals(emptyBuffer) ? new BN(v) : undefined,
+          r: r !== undefined && !r?.equals(emptyBuffer) ? new BN(r) : undefined,
+          s: s !== undefined && !s?.equals(emptyBuffer) ? new BN(s) : undefined,
         },
         opts
       )

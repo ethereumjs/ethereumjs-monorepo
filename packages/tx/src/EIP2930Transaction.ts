@@ -80,11 +80,12 @@ export class EIP2930Transaction extends BaseTransaction<JsonEIP2930Tx, EIP2930Tr
           value: new BN(value),
           data: data ?? emptyBuffer,
           accessList: accessList ?? emptyBuffer,
-          yParity: !yParity?.equals(emptyBuffer)
-            ? parseInt(yParity.toString('hex'), 16)
-            : undefined,
-          r: !r?.equals(emptyBuffer) ? new BN(r) : undefined,
-          s: !s?.equals(emptyBuffer) ? new BN(s) : undefined,
+          yParity:
+            yParity !== undefined && !yParity.equals(emptyBuffer)
+              ? parseInt(yParity.toString('hex'), 16)
+              : undefined,
+          r: r !== undefined && !r?.equals(emptyBuffer) ? new BN(r) : undefined,
+          s: s !== undefined && !s?.equals(emptyBuffer) ? new BN(s) : undefined,
         },
         opts ?? {}
       )

@@ -9,6 +9,12 @@ export default class TransactionFactory {
   // It is not possible to instantiate a TransactionFactory object.
   private constructor() {}
 
+  /**
+   * This method tries to decode `raw` data. It is somewhat equivalent to `fromRlpSerializedTx`.
+   * However, it could be that the data is not directly RLP-encoded (it is a Typed Transaction)
+   * @param rawData - The raw data buffer
+   * @param transactionOptions - The transaction options
+   */
   public static fromRawData(rawData: Buffer, transactionOptions: TxOptions): Transaction {
     const common = transactionOptions.common ?? DEFAULT_COMMON
     if (rawData[0] <= 0x7f) {
@@ -35,6 +41,25 @@ export default class TransactionFactory {
       return EIP2930Transaction.fromRlpSerializedTx(rawData, transactionOptions)
     } else {
       return LegacyTransaction.fromRlpSerializedTx(rawData, transactionOptions)
+    }
+  }
+
+  /**
+   * When decoding a BlockBody, in the transactions field, a field is either:
+   * A Buffer (a TypedTransaction - encoded as TransactionType || rlp(TransactionPayload))
+   * A Buffer[] (LegacyTransaction)
+   * This method returns the right transaction.
+   * @param rawData - Either a Buffer or a Buffer[]
+   * @param transactionOptions - The transaction options
+   */
+  public static fromBlockBodyData(rawData: Buffer | Buffer[], transactionOptions: TxOptions) {
+    if (Buffer.isBuffer(rawData)) {
+      return this.fromRawData(rawData, transactionOptions)
+    } else if (Array.isArray(rawData)) {
+      // It is a LegacyTransaction
+      return LegacyTransaction.fromValuesArray(rawData, transactionOptions)
+    } else {
+      throw new Error('Cannot decode transaction: unknown type input')
     }
   }
 
