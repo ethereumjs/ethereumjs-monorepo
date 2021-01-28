@@ -27,10 +27,11 @@ export interface Chain {
   consensus?: {
     type: string
     algorithm: string
-    clique: {
+    clique?: {
       period: number
       epoch: number
     }
+    ethash?: any
   }
 }
 
