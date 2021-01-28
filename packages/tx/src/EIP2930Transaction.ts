@@ -10,15 +10,15 @@ import {
   toBuffer,
 } from 'ethereumjs-util'
 import { BaseTransaction } from './baseTransaction'
-import { EIP2930TxData, TxOptions, JsonEIP2930Tx } from './types'
+import { JsonTx, TxData, TxOptions } from './types'
 
 // secp256k1n/2
 const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
 
-export class EIP2930Transaction extends BaseTransaction<JsonEIP2930Tx, EIP2930Transaction> {
+export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
   public readonly chainId: BN
   public readonly accessList: any
-  public readonly yParity?: number
+  public readonly v?: BN
   public readonly r?: BN
   public readonly s?: BN
 
@@ -32,7 +32,13 @@ export class EIP2930Transaction extends BaseTransaction<JsonEIP2930Tx, EIP2930Tr
     return this.r
   }
 
-  public static fromTxData(txData: EIP2930TxData, opts?: TxOptions) {
+  // EIP-2930 alias for `v`
+
+  get yParity() {
+    return this.v
+  }
+
+  public static fromTxData(txData: TxData, opts?: TxOptions) {
     return new EIP2930Transaction(txData, opts ?? {})
   }
 
@@ -55,19 +61,7 @@ export class EIP2930Transaction extends BaseTransaction<JsonEIP2930Tx, EIP2930Tr
   // The format is: chainId, nonce, gasPrice, gasLimit, to, value, data, access_list, [yParity, senderR, senderS]
   public static fromValuesArray(values: Buffer[], opts?: TxOptions) {
     if (values.length == 8 || values.length == 11) {
-      const [
-        chainId,
-        nonce,
-        gasPrice,
-        gasLimit,
-        to,
-        value,
-        data,
-        accessList,
-        yParity,
-        r,
-        s,
-      ] = values
+      const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = values
       const emptyBuffer = Buffer.from([])
 
       return new EIP2930Transaction(
@@ -80,12 +74,9 @@ export class EIP2930Transaction extends BaseTransaction<JsonEIP2930Tx, EIP2930Tr
           value: new BN(value),
           data: data ?? emptyBuffer,
           accessList: accessList ?? emptyBuffer,
-          yParity:
-            yParity !== undefined && !yParity.equals(emptyBuffer)
-              ? parseInt(yParity.toString('hex'), 16)
-              : undefined,
-          r: r !== undefined && !r?.equals(emptyBuffer) ? new BN(r) : undefined,
-          s: s !== undefined && !s?.equals(emptyBuffer) ? new BN(s) : undefined,
+          v: v !== undefined && !v.equals(emptyBuffer) ? new BN(v) : undefined,
+          r: r !== undefined && !r.equals(emptyBuffer) ? new BN(r) : undefined,
+          s: s !== undefined && !s.equals(emptyBuffer) ? new BN(s) : undefined,
         },
         opts ?? {}
       )
@@ -96,20 +87,8 @@ export class EIP2930Transaction extends BaseTransaction<JsonEIP2930Tx, EIP2930Tr
     }
   }
 
-  protected constructor(txData: EIP2930TxData, opts: TxOptions) {
-    const {
-      chainId,
-      nonce,
-      gasPrice,
-      gasLimit,
-      to,
-      value,
-      data,
-      accessList,
-      yParity,
-      r,
-      s,
-    } = txData
+  protected constructor(txData: TxData, opts: TxOptions) {
+    const { chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s } = txData
 
     super({ nonce, gasPrice, gasLimit, to, value, data }, opts)
 
@@ -119,25 +98,21 @@ export class EIP2930Transaction extends BaseTransaction<JsonEIP2930Tx, EIP2930Tr
       throw new Error('EIP-2930 not enabled on Common')
     }
 
-    if (!txData.chainId?.eqn(this.common.chainId())) {
-      throw new Error('The chain ID does not match the chain ID of Common')
-    }
-
-    if (txData.yParity && txData.yParity != 0 && txData.yParity != 1) {
-      throw new Error('The y-parity of the transaction should either be 0 or 1')
-    }
-
     // TODO: verify the signature.
-
-    this.yParity = txData.yParity
-    this.r = txData.r
-    this.s = txData.s
 
     this.chainId = new BN(toBuffer(chainId))
     this.accessList = accessList ?? []
-    this.yParity = yParity ?? 0
+    this.v = v ? new BN(v) : undefined
     this.r = r ? new BN(toBuffer(r)) : undefined
     this.s = s ? new BN(toBuffer(s)) : undefined
+
+    if (!this.chainId.eq(new BN(this.common.chainId()))) {
+      throw new Error('The chain ID does not match the chain ID of Common')
+    }
+
+    if (this.v && !this.v.eqn(0) && !this.v.eqn(1)) {
+      throw new Error('The y-parity of the transaction should either be 0 or 1')
+    }
 
     // todo verify max BN of r,s
 
@@ -220,7 +195,7 @@ export class EIP2930Transaction extends BaseTransaction<JsonEIP2930Tx, EIP2930Tr
     ]
     if (this.isSigned()) {
       return base.concat([
-        this.yParity == 0 ? Buffer.from('00', 'hex') : Buffer.from('01', 'hex'),
+        this.v?.eqn(0) ? Buffer.from('00', 'hex') : Buffer.from('01', 'hex'),
         bnToRlp(this.r!),
         bnToRlp(this.s!),
       ])
@@ -241,7 +216,7 @@ export class EIP2930Transaction extends BaseTransaction<JsonEIP2930Tx, EIP2930Tr
   /**
    * Returns an object with the JSON representation of the transaction
    */
-  toJSON(): JsonEIP2930Tx {
+  toJSON(): JsonTx {
     // TODO: fix type
     const accessListJSON = []
     for (let index = 0; index < this.accessList.length; index++) {
@@ -310,7 +285,7 @@ export class EIP2930Transaction extends BaseTransaction<JsonEIP2930Tx, EIP2930Tr
     try {
       return ecrecover(
         msgHash,
-        yParity + 27, // Recover the 27 which was stripped from ecsign
+        yParity.toNumber() + 27, // Recover the 27 which was stripped from ecsign
         bnToRlp(r),
         bnToRlp(s)
       )
@@ -334,7 +309,7 @@ export class EIP2930Transaction extends BaseTransaction<JsonEIP2930Tx, EIP2930Tr
         value: this.value,
         data: this.data,
         accessList: this.accessList,
-        yParity: v - 27, // This looks extremely hacky: ethereumjs-util actually adds 27 to the value, the recovery bit is either 0 or 1.
+        v: new BN(v - 27), // This looks extremely hacky: ethereumjs-util actually adds 27 to the value, the recovery bit is either 0 or 1.
         r: new BN(r),
         s: new BN(s),
       },

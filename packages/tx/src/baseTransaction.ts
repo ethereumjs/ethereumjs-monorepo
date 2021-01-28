@@ -8,9 +8,9 @@ import {
   ecsign,
   publicToAddress,
 } from 'ethereumjs-util'
-import { BaseTransactionData, BaseTxOptions, DEFAULT_COMMON } from './types'
+import { BaseTransactionData, BaseTxOptions, DEFAULT_COMMON, JsonTx } from './types'
 
-export abstract class BaseTransaction<JsonTx, TransactionObject> {
+export abstract class BaseTransaction<TransactionObject> {
   public readonly nonce: BN
   public readonly gasLimit: BN
   public readonly gasPrice: BN
