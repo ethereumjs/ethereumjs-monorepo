@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
-import { Address, intToBuffer, ecsign, BN } from 'ethereumjs-util'
+import { Address, BN } from 'ethereumjs-util'
 import tape from 'tape'
 import Blockchain from '../src'
 import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP } from '../src/clique'
@@ -173,15 +173,10 @@ tape('Clique: Initialization', (t) => {
     const inTurn = number % signers.length === signerIndex
     blockData.header.difficulty = inTurn ? new BN(2) : new BN(1)
 
-    let block = Block.fromBlockData(blockData, { common, freeze: false })
+    // set signer
+    const cliqueSigner = signer.privateKey
 
-    // add signature in extraData
-    const signature = ecsign(block.header.hash(), signer.privateKey)
-    const signatureB = Buffer.concat([signature.r, signature.s, intToBuffer(signature.v - 27)])
-    extraData = Buffer.concat([extraData.slice(0, extraData.length - 65), signatureB])
-    blockData.header.extraData = extraData
-
-    block = Block.fromBlockData(blockData, { common, freeze: false })
+    const block = Block.fromBlockData(blockData, { common, freeze: false, cliqueSigner })
 
     await blockchain.putBlock(block)
     blocks.push(block)
@@ -224,7 +219,7 @@ tape('Clique: Initialization', (t) => {
     ;(blockchain as any)._validateBlocks = false
 
     const number = new BN(1)
-    let extraData = Buffer.alloc(97)
+    const extraData = Buffer.alloc(97)
     let difficulty = new BN(5)
     let block = Block.fromBlockData(
       { header: { number, extraData, difficulty } },
@@ -243,14 +238,11 @@ tape('Clique: Initialization', (t) => {
     }
 
     difficulty = new BN(1)
-    block = Block.fromBlockData({ header: { number, extraData, difficulty } }, { common: COMMON })
-
-    // add signature
-    const signature = ecsign(block.header.hash(), A.privateKey)
-    const signatureB = Buffer.concat([signature.r, signature.s, intToBuffer(signature.v - 27)])
-    extraData = Buffer.concat([block.header.cliqueExtraVanity(), signatureB])
-
-    block = Block.fromBlockData({ header: { number, extraData, difficulty } }, { common: COMMON })
+    const cliqueSigner = A.privateKey
+    block = Block.fromBlockData(
+      { header: { number, extraData, difficulty } },
+      { common: COMMON, cliqueSigner }
+    )
 
     try {
       await block.validate(blockchain)

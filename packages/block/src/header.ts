@@ -4,6 +4,8 @@ import {
   BN,
   bnToHex,
   ecrecover,
+  ecsign,
+  intToBuffer,
   KECCAK256_RLP_ARRAY,
   KECCAK256_RLP,
   rlp,
@@ -236,6 +238,11 @@ export class BlockHeader {
     // block option parameter, we instead set difficulty to this value.
     if (options.calcDifficultyFromHeader) {
       this.difficulty = this.canonicalDifficulty(options.calcDifficultyFromHeader)
+    }
+
+    // If cliqueSigner is provided, seal block with provided privateKey.
+    if (options.cliqueSigner) {
+      this.extraData = this.cliqueSealBlock(options.cliqueSigner)
     }
 
     const freeze = options?.freeze ?? true
@@ -600,6 +607,20 @@ export class BlockHeader {
   cliqueExtraSeal(): Buffer {
     this._requireClique('cliqueExtraSeal')
     return this.extraData.slice(-CLIQUE_EXTRA_SEAL)
+  }
+
+  /**
+   * Seal block with the provided signer.
+   * Returns the final extraData field to be assigned to `this.extraData`.
+   * @hidden
+   */
+  private cliqueSealBlock(privateKey: Buffer) {
+    this._requireClique('cliqueSealBlock')
+    const signature = ecsign(this.hash(), privateKey)
+    const signatureB = Buffer.concat([signature.r, signature.s, intToBuffer(signature.v - 27)])
+    const extraDataWithoutSeal = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
+    const extraData = Buffer.concat([extraDataWithoutSeal, signatureB])
+    return extraData
   }
 
   /**

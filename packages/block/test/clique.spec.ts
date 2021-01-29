@@ -1,7 +1,7 @@
 import tape from 'tape'
 import Common from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
-import { Address, ecsign, intToBuffer } from 'ethereumjs-util'
+import { Address } from 'ethereumjs-util'
 
 tape('[Header]: Clique PoA Functionality', function (t) {
   const common = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
@@ -78,15 +78,12 @@ tape('[Header]: Clique PoA Functionality', function (t) {
   }
 
   t.test('Signing', function (st) {
-    let header = BlockHeader.fromHeaderData(
-      { number: 1, extraData: Buffer.alloc(97) },
-      { common, freeze: false }
-    )
-    const signature = ecsign(header.hash(), A.privateKey)
-    const signatureB = Buffer.concat([signature.r, signature.s, intToBuffer(signature.v - 27)])
-    const extraData = Buffer.concat([header.cliqueExtraVanity(), signatureB])
+    const cliqueSigner = A.privateKey
 
-    header = BlockHeader.fromHeaderData({ number: 1, extraData }, { common, freeze: false })
+    const header = BlockHeader.fromHeaderData(
+      { number: 1, extraData: Buffer.alloc(97) },
+      { common, freeze: false, cliqueSigner }
+    )
 
     st.equal(header.extraData.length, 97)
     st.ok(header.cliqueVerifySignature([A.address]), 'should verify signature')

@@ -54,6 +54,11 @@ export interface BlockOptions {
    * Default: true
    */
   freeze?: boolean
+  /**
+   * Provide a clique signer's privateKey to seal this block.
+   * Will throw if provided on a non-PoA chain.
+   */
+  cliqueSigner?: Buffer
 }
 
 /**
