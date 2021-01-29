@@ -11,7 +11,7 @@ export default class TransactionFactory {
   // It is not possible to instantiate a TransactionFactory object.
   private constructor() {}
 
-  public static fromTxData(txData: TxData, transactionOptions: TxOptions): Transaction {
+  public static fromTxData(txData: TxData, transactionOptions: TxOptions = {}): Transaction {
     const common = transactionOptions.common ?? DEFAULT_COMMON
     if (txData.type === undefined) {
       // Assume LegacyTransaction
@@ -35,7 +35,7 @@ export default class TransactionFactory {
    * @param rawData - The raw data buffer
    * @param transactionOptions - The transaction options
    */
-  public static fromRawData(rawData: Buffer, transactionOptions: TxOptions): Transaction {
+  public static fromRawData(rawData: Buffer, transactionOptions: TxOptions = {}): Transaction {
     const common = transactionOptions.common ?? DEFAULT_COMMON
     if (rawData[0] <= 0x7f) {
       // It is an EIP-2718 Typed Transaction
@@ -73,7 +73,7 @@ export default class TransactionFactory {
    * @param rawData - Either a Buffer or a Buffer[]
    * @param transactionOptions - The transaction options
    */
-  public static fromBlockBodyData(rawData: Buffer | Buffer[], transactionOptions: TxOptions) {
+  public static fromBlockBodyData(rawData: Buffer | Buffer[], transactionOptions: TxOptions = {}) {
     if (Buffer.isBuffer(rawData)) {
       return this.fromRawData(rawData, transactionOptions)
     } else if (Array.isArray(rawData)) {

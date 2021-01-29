@@ -38,12 +38,12 @@ export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
     return this.v
   }
 
-  public static fromTxData(txData: TxData, opts?: TxOptions) {
-    return new EIP2930Transaction(txData, opts ?? {})
+  public static fromTxData(txData: TxData, opts: TxOptions = {}) {
+    return new EIP2930Transaction(txData, opts)
   }
 
   // Instantiate a transaction from the raw RLP serialized tx. This means that the RLP should start with 0x01.
-  public static fromRlpSerializedTx(serialized: Buffer, opts?: TxOptions) {
+  public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     if (serialized[0] !== 1) {
       throw 'This is not an EIP-2930 transaction'
     }
@@ -59,7 +59,7 @@ export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
 
   // Create a transaction from a values array.
   // The format is: chainId, nonce, gasPrice, gasLimit, to, value, data, access_list, [yParity, senderR, senderS]
-  public static fromValuesArray(values: Buffer[], opts?: TxOptions) {
+  public static fromValuesArray(values: Buffer[], opts: TxOptions = {}) {
     if (values.length == 8 || values.length == 11) {
       const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = values
       const emptyBuffer = Buffer.from([])
@@ -87,7 +87,7 @@ export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
     }
   }
 
-  protected constructor(txData: TxData, opts: TxOptions) {
+  protected constructor(txData: TxData, opts: TxOptions = {}) {
     const { chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s } = txData
 
     super({ nonce, gasPrice, gasLimit, to, value, data }, opts)

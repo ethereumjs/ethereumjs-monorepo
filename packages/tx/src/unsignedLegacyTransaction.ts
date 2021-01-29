@@ -26,11 +26,11 @@ export class LegacyTransaction extends BaseTransaction<LegacyTransaction> {
   public readonly r?: BN
   public readonly s?: BN
 
-  public static fromTxData(txData: TxData, opts?: TxOptions) {
+  public static fromTxData(txData: TxData, opts: TxOptions = {}) {
     return new LegacyTransaction(txData, opts)
   }
 
-  public static fromRlpSerializedTx(serialized: Buffer, opts?: TxOptions) {
+  public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     const values = rlp.decode(serialized)
 
     if (!Array.isArray(values)) {
@@ -40,7 +40,7 @@ export class LegacyTransaction extends BaseTransaction<LegacyTransaction> {
     return this.fromValuesArray(values, opts)
   }
 
-  public static fromValuesArray(values: Buffer[], opts?: TxOptions) {
+  public static fromValuesArray(values: Buffer[], opts: TxOptions = {}) {
     if (values.length !== 6 && values.length !== 9) {
       throw new Error(
         'Invalid transaction. Only expecting 6 values (for unsigned tx) or 9 values (for signed tx).'
@@ -80,7 +80,7 @@ export class LegacyTransaction extends BaseTransaction<LegacyTransaction> {
    * Use the static factory methods to assist in creating a Transaction object from varying data types.
    * @note Transaction objects implement EIP155 by default. To disable it, pass in an `@ethereumjs/common` object set before EIP155 activation (i.e. before Spurious Dragon).
    */
-  protected constructor(txData: TxData, opts?: TxOptions) {
+  protected constructor(txData: TxData, opts: TxOptions = {}) {
     const { nonce, gasPrice, gasLimit, to, value, data, v, r, s } = txData
 
     super({ nonce, gasPrice, gasLimit, to, value, data }, opts)
