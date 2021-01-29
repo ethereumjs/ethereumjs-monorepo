@@ -618,7 +618,14 @@ export class BlockHeader {
     this._requireClique('cliqueSealBlock')
     const signature = ecsign(this.hash(), privateKey)
     const signatureB = Buffer.concat([signature.r, signature.s, intToBuffer(signature.v - 27)])
-    const extraDataWithoutSeal = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
+
+    let extraDataWithoutSeal = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
+    // ensure extraDataWithoutSeal is at least 32 bytes (CLIQUE_EXTRA_VANITY)
+    if (extraDataWithoutSeal.length < CLIQUE_EXTRA_VANITY) {
+      const remainingLength = Buffer.alloc(CLIQUE_EXTRA_VANITY - extraDataWithoutSeal.length)
+      extraDataWithoutSeal = Buffer.concat([extraDataWithoutSeal, remainingLength])
+    }
+
     const extraData = Buffer.concat([extraDataWithoutSeal, signatureB])
     return extraData
   }
