@@ -13,18 +13,28 @@ export interface RlpxServerOptions extends ServerOptions {
 
 const ignoredErrors = new RegExp(
   [
+    // Peer socket connection
     'ECONNRESET',
-    'EPIPE',
-    'ETIMEDOUT',
+    'EPIPE', // (?)
+    'ETIMEDOUT', // (?)
+
+    // ETH status handling
     'Genesis block mismatch',
-    'Handshake timed out',
+    'NetworkId mismatch',
+    'Unknown fork hash',
+
+    // DPT message decoding
     'Hash verification failed',
     'Invalid address buffer',
-    'Invalid MAC',
     'Invalid timestamp buffer',
-    'NetworkId mismatch',
-    'Timeout error: ping',
-    'Unknown fork hash',
+    'Invalid type',
+    'Timeout error: ping', // connection
+
+    // ECIES message encryption
+    'Invalid MAC',
+
+    // Client
+    'Handshake timed out', // Protocol handshake
   ].join('|')
 )
 

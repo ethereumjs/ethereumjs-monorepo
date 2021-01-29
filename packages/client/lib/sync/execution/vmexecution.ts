@@ -44,7 +44,7 @@ export class VMExecution extends Execution {
    * Initializes VM execution. Must be called before run() is called
    */
   async open(): Promise<void> {
-    const headBlock = await this.vm.blockchain.getHead()
+    const headBlock = await this.vm.blockchain.getIteratorHead()
     const blockNumber = headBlock.header.number.toNumber()
     this.config.execCommon.setHardforkByBlockNumber(blockNumber)
     this.hardfork = this.config.execCommon.hardfork()
