@@ -79,16 +79,10 @@ tape('[TransactionFactory]: Basic functions', function (t) {
   // This tries to decode the transaction from the block.
   // It checks afterwards if the created transaction is of the right type.
   t.test('should succesfully decode block transactions', function (t) {
-    const testCommon = new Common({
-      eips: [2718, 2929, 2930],
-      chain: 'mainnet',
-      hardfork: 'berlin',
-    })
+    const testCommon = Common.forCustomChain('mainnet', { chainId: 133519467574834 }, 'berlin')
+    testCommon.setEIPs([2718, 2929, 2930])
 
     for (let i = 0; i <= 9; i++) {
-      // Hackish; cannot put this above for loop or typescript complains that
-      // it is used "before declaration" (?)
-      (testCommon as any)._chainParams.chainId = 133519467574834
       const blockData = require(`./json/eip2930/acl_block_${i}.json`)
       const decodedBlock = rlp.decode(Buffer.from(blockData.rlp, 'hex'))
       const transactionList: any = decodedBlock[1]

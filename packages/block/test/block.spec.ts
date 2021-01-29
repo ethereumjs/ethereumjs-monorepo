@@ -576,19 +576,14 @@ tape('[Block]: block functions', function (t) {
   )
 
   t.test('should succesfully decode EIP2930 blocks', function (st) {
-    const testCommon = new Common({
-      eips: [2718, 2929, 2930],
-      chain: 'mainnet',
-      hardfork: 'berlin',
-    })
+    const common = Common.forCustomChain('mainnet', { chainId: 133519467574834 }, 'berlin')
+    common.setEIPs([2718, 2929, 2930])
 
     const fileHead = './testdata/eip2930/acl_block_'
     for (let i = 0; i <= 9; i++) {
-      // eslint-disable-next-line prettier/prettier
-      (testCommon as any)._chainParams.chainId = 133519467574834
       const rawData = require(`${fileHead}${i}.json`)
       const rlp = Buffer.from(rawData.rlp, 'hex')
-      Block.fromRLPSerializedBlock(rlp, { common: testCommon })
+      Block.fromRLPSerializedBlock(rlp, { common })
       st.ok('succesfully decoded block')
     }
     st.end()
