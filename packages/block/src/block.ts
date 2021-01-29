@@ -201,15 +201,17 @@ export class Block {
    * and do a check on the root hash.
    */
   async validateTransactionsTrie(): Promise<boolean> {
+    let result
     if (this.transactions.length === 0) {
-      return this.header.transactionsTrie.equals(KECCAK256_RLP)
+      result = this.header.transactionsTrie.equals(KECCAK256_RLP)
+      return result
     }
 
     if (this.txTrie.root.equals(KECCAK256_RLP)) {
       await this.genTxTrie()
     }
-
-    return this.txTrie.root.equals(this.header.transactionsTrie)
+    result = this.txTrie.root.equals(this.header.transactionsTrie)
+    return result
   }
 
   /**

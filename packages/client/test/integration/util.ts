@@ -2,6 +2,7 @@ import { Config } from '../../lib/config'
 import { FullEthereumService, LightEthereumService } from '../../lib/service'
 import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
+import Blockchain from '@ethereumjs/blockchain'
 
 interface SetupOptions {
   location?: string
@@ -20,7 +21,11 @@ export async function setup(
   const config = new Config({ loglevel, syncmode, lightserv })
 
   const server = new MockServer({ config, location })
-  const chain = new MockChain({ config, height })
+  const blockchain = new Blockchain({
+    validateBlocks: false,
+    validateConsensus: false,
+  })
+  const chain = new MockChain({ config, blockchain, height })
 
   const servers = [server] as any
   const serviceConfig = new Config({ loglevel, syncmode, servers, lightserv, minPeers: 1 })

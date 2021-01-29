@@ -112,10 +112,16 @@ export class VMExecution extends Execution {
             // set as new head block
             headBlock = block
           } catch (error) {
-            // remove invalid block
-            await blockchain!.delBlock(block.header.hash())
             const blockNumber = block.header.number.toNumber()
             const hash = short(block.hash())
+            // remove invalid block
+            try {
+              await blockchain!.delBlock(block.header.hash())
+            } catch (error) {
+              this.config.logger.error(
+                `Error deleting block number=${blockNumber} hash=${hash} on failed execution`
+              )
+            }
             this.config.logger.warn(
               `Deleted block number=${blockNumber} hash=${hash} on failed execution`
             )

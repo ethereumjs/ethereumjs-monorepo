@@ -5,13 +5,18 @@ import { FullEthereumService } from '../../lib/service'
 import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
 import { destroy } from './util'
+import Blockchain from '@ethereumjs/blockchain'
 
 tape('[Integration:FullEthereumService]', async (t) => {
   async function setup(): Promise<[MockServer, FullEthereumService]> {
     const loglevel = 'error'
     const config = new Config({ loglevel })
     const server = new MockServer({ config })
-    const chain = new MockChain({ config })
+    const blockchain = new Blockchain({
+      validateBlocks: false,
+      validateConsensus: false,
+    })
+    const chain = new MockChain({ config, blockchain })
     const serviceConfig = new Config({ loglevel, servers: [server as any], lightserv: true })
     const service = new FullEthereumService({
       config: serviceConfig,

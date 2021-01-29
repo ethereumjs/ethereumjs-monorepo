@@ -8,6 +8,7 @@ import { Config } from '../../lib/config'
 // needed for karma-typescript bundling
 import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
 import { Buffer } from 'buffer' // eslint-disable-line @typescript-eslint/no-unused-vars
+import Blockchain from '@ethereumjs/blockchain'
 
 const config = new Config()
 
@@ -42,7 +43,11 @@ tape('[Chain]', (t) => {
   })
 
   t.test('should detect unopened chain', async (t) => {
-    const chain = new Chain({ config })
+    const blockchain = new Blockchain({
+      validateBlocks: false,
+      validateConsensus: false,
+    })
+    const chain = new Chain({ config, blockchain })
     const headerData: HeaderData = {
       number: new BN(1),
       difficulty: new BN('abcdffff', 16),
@@ -81,7 +86,12 @@ tape('[Chain]', (t) => {
   })
 
   t.test('should add block to chain', async (t) => {
-    const chain = new Chain({ config })
+    // TODO: add test cases with activated block validation
+    const blockchain = new Blockchain({
+      validateBlocks: false,
+      validateConsensus: false,
+    })
+    const chain = new Chain({ config, blockchain })
     await chain.open()
     const headerData: HeaderData = {
       number: new BN(1),
