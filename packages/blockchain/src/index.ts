@@ -131,10 +131,10 @@ export default class Blockchain implements BlockchainInterface {
   _ethash?: Ethash
 
   /**
-   * Keep signer history data (signer states and votes) for all
-   * block numbers >= HEAD_BLOCK - CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
+   * Keep signer history data (signer states and votes)
+   * for all block numbers >= HEAD_BLOCK - CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
    *
-   * This defines a limit for reorgs on PoA clique chains
+   * This defines a limit for reorgs on PoA clique chains.
    */
   private CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT = 100
 
@@ -148,12 +148,12 @@ export default class Blockchain implements BlockchainInterface {
    * The top element from the array represents the list of current signers.
    * On reorgs elements from the array are removed until BLOCK_NUMBER > REORG_BLOCK.
    *
-   * Always keep at least one item on the stack
+   * Always keep at least one item on the stack.
    */
   private _cliqueLatestSignerStates: CliqueLatestSignerStates = []
 
   /**
-   * List with the latest signer votes
+   * List with the latest signer votes.
    *
    * Format:
    * [ [BLOCK_NUMBER_1, [SIGNER, BENEFICIARY, AUTH]], [BLOCK_NUMBER_1, [SIGNER, BENEFICIARY, AUTH]] ]
@@ -460,16 +460,17 @@ export default class Blockchain implements BlockchainInterface {
 
     if (signerState) {
       this._cliqueLatestSignerStates.push(signerState)
+    }
 
-      // trim length to CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
-      const length = this._cliqueLatestSignerStates.length
-      const limit = this.CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
-      if (length > limit) {
-        this._cliqueLatestSignerStates = this._cliqueLatestSignerStates.slice(
-          length - limit,
-          length
-        )
-      }
+    // trim to CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
+    const limit = this.CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
+    const blockSigners = this._cliqueLatestBlockSigners
+    const lastBlockNumber = blockSigners[blockSigners.length - 1]?.[0]
+    if (lastBlockNumber) {
+      const blockLimit = lastBlockNumber.subn(limit)
+      this._cliqueLatestSignerStates = this._cliqueLatestSignerStates.filter((state) =>
+        state[0].gte(blockLimit)
+      )
     }
 
     // save to db
@@ -523,13 +524,18 @@ export default class Blockchain implements BlockchainInterface {
       // If same vote not already in history see if there is a new majority consensus
       // to update the signer list
       if (!alreadyVoted) {
+        const lastEpochBlockNumber = header.number.sub(
+          header.number.mod(new BN(this._common.consensusConfig().epoch))
+        )
         const beneficiaryVotesAuth = this._cliqueLatestVotes.filter(
           (vote) =>
+            vote[0].gte(lastEpochBlockNumber) &&
             vote[1][1].toBuffer().equals(beneficiary.toBuffer()) &&
             vote[1][2].equals(CLIQUE_NONCE_AUTH)
         )
         const beneficiaryVotesDrop = this._cliqueLatestVotes.filter(
           (vote) =>
+            vote[0].gte(lastEpochBlockNumber) &&
             vote[1][1].toBuffer().equals(beneficiary.toBuffer()) &&
             vote[1][2].equals(CLIQUE_NONCE_DROP)
         )
@@ -563,11 +569,13 @@ export default class Blockchain implements BlockchainInterface {
       }
     }
 
-    // trim latest votes length to CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
-    const length = this._cliqueLatestVotes.length
+    // trim to CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
     const limit = this.CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
-    if (length > limit) {
-      this._cliqueLatestVotes = this._cliqueLatestVotes.slice(length - limit, length)
+    const blockSigners = this._cliqueLatestBlockSigners
+    const lastBlockNumber = blockSigners[blockSigners.length - 1]?.[0]
+    if (lastBlockNumber) {
+      const blockLimit = lastBlockNumber.subn(limit)
+      this._cliqueLatestVotes = this._cliqueLatestVotes.filter((state) => state[0].gte(blockLimit))
     }
 
     // save votes to db
@@ -868,10 +876,9 @@ export default class Blockchain implements BlockchainInterface {
 
         // Clique: update signer votes and state
         if (this._common.consensusAlgorithm() === 'clique') {
-          // Reset all votes on epoch transition blocks
           if (header.cliqueIsEpochTransition()) {
-            this._cliqueLatestVotes = []
-            await this.cliqueUpdateVotes()
+            // note: keep votes on epoch transition blocks in case of reorgs.
+            // only active (non-stale) votes will counted (if vote.blockNumber >= lastEpochBlockNumber)
 
             // validate checkpoint signers towards active signers
             const checkpointSigners = header.cliqueEpochTransitionSigners()
