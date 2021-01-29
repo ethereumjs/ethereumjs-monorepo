@@ -31,7 +31,7 @@ const txParams = {
   data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
 }
 
-const commmon = new Common({ chain: 'mainnet' })
+const common = new Common({ chain: 'mainnet' })
 const tx = Transaction.fromTxData(txParams, { common })
 
 const privateKey = Buffer.from(
