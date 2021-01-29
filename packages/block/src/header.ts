@@ -439,10 +439,13 @@ export class BlockHeader {
    * - The `parentHash` is part of the blockchain (it is a valid header)
    * - Current block number is parent block number + 1
    * - Current block has a strictly higher timestamp
-   * - Additional PoA -> Clique check: Current block has a timestamp diff greater or equal to PERIOD
-   * - Current block has valid difficulty (only PoW, otherwise pass) and gas limit
-   * - In case that the header is an uncle header, it should not be too old or young in the chain.
-   * @param blockchain - validate against a @ethereumjs/blockchain
+   * - Additional PoW checks ->
+   *   - Current block has valid difficulty and gas limit
+   *   - In case that the header is an uncle header, it should not be too old or young in the chain.
+   * - Additional PoA clique checks ->
+   *   - Current block has a timestamp diff greater or equal to PERIOD
+   *   - Current block has difficulty correctly marked as INTURN or NOTURN
+   * @param blockchain - validate against an @ethereumjs/blockchain
    * @param height - If this is an uncle header, this is the height of the block that is including it
    */
   async validate(blockchain: Blockchain, height?: BN): Promise<void> {
