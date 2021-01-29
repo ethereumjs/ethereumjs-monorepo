@@ -200,11 +200,7 @@ tape('Clique: Initialization', (t) => {
       await blockchain.putBlock(block)
       st.fail('should fail')
     } catch (error) {
-      if (
-        error.message.includes(
-          'checkpoint signer not found in active signers list: ' + unauthorizedSigner.toString()
-        )
-      ) {
+      if (error.message.includes('checkpoint signer not found in active signers list')) {
         st.pass('correct error')
       } else {
         st.fail('should fail with appropriate error')
