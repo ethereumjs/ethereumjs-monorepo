@@ -1,7 +1,7 @@
 import Common from '@ethereumjs/common'
-import { Address, BN, privateToAddress } from 'ethereumjs-util'
+import { Address, BN, bufferToHex, privateToAddress } from 'ethereumjs-util'
 import tape from 'tape'
-import { EIP2930Transaction } from '../src'
+import { AccessList, EIP2930Transaction } from '../src'
 
 const pKey = Buffer.from('4646464646464646464646464646464646464646464646464646464646464646', 'hex')
 const address = privateToAddress(pKey)
@@ -33,6 +33,48 @@ const GethUnsignedEIP2930Transaction = EIP2930Transaction.fromTxData(
 const chainId = new BN(1)
 
 tape('[EIP2930 transactions]: Basic functions', function (t) {
+  t.test('should allow json-typed access lists', function (st) {
+    const access: AccessList = [
+      {
+        address: bufferToHex(validAddress),
+        storageKeys: [bufferToHex(validSlot)],
+      },
+    ]
+    const txn = EIP2930Transaction.fromTxData(
+      {
+        accessList: access,
+        chainId: 1,
+      },
+      { common }
+    )
+
+    // Check if everything is converted
+
+    const BufferArray = txn.accessList
+    const JSON = txn.AccessListJSON
+
+    st.ok(BufferArray[0][0].equals(validAddress))
+    st.ok(BufferArray[0][1][0].equals(validSlot))
+
+    st.deepEqual(JSON, access)
+
+    // also verify that we can always get the json access list, even if we don't provide one.
+
+    const txnRaw = EIP2930Transaction.fromTxData(
+      {
+        accessList: BufferArray,
+        chainId: 1,
+      },
+      { common }
+    )
+
+    const JSONRaw = txnRaw.AccessListJSON
+
+    st.deepEqual(JSONRaw, access)
+
+    st.end()
+  })
+
   t.test('should throw on invalid access list data', function (st) {
     let accessList: any[] = [
       [
