@@ -3,6 +3,7 @@ import {
   BN,
   bnToHex,
   bnToRlp,
+  bufferToHex,
   ecrecover,
   keccak256,
   rlp,
@@ -10,17 +11,41 @@ import {
   toBuffer,
 } from 'ethereumjs-util'
 import { BaseTransaction } from './baseTransaction'
-import { JsonTx, TxData, TxOptions } from './types'
+import {
+  AccessList,
+  AccessListBuffer,
+  AccessListItem,
+  isAccessList,
+  JsonTx,
+  TxData,
+  TxOptions,
+} from './types'
 
 // secp256k1n/2
 const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
 
+type EIP2930ValuesArray = [
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+  AccessListBuffer,
+  Buffer?,
+  Buffer?,
+  Buffer?
+]
+
 export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
   public readonly chainId: BN
-  public readonly accessList: any
+  public readonly accessList: AccessListBuffer
   public readonly v?: BN
   public readonly r?: BN
   public readonly s?: BN
+
+  public readonly AccessListJSON: AccessList
 
   // EIP-2930 alias for `s`
   get senderS() {
@@ -59,9 +84,11 @@ export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
 
   // Create a transaction from a values array.
   // The format is: chainId, nonce, gasPrice, gasLimit, to, value, data, access_list, [yParity, senderR, senderS]
-  public static fromValuesArray(values: Buffer[], opts: TxOptions = {}) {
+  public static fromValuesArray(values: (Buffer | AccessListBuffer)[], opts: TxOptions = {}) {
     if (values.length == 8 || values.length == 11) {
-      const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = values
+      const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = <
+        EIP2930ValuesArray
+      >values
       const emptyBuffer = Buffer.from([])
 
       return new EIP2930Transaction(
@@ -87,7 +114,7 @@ export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
     }
   }
 
-  protected constructor(txData: TxData, opts: TxOptions = {}) {
+  private constructor(txData: TxData, opts: TxOptions = {}) {
     const { chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s } = txData
 
     super({ nonce, gasPrice, gasLimit, to, value, data }, opts)
@@ -100,8 +127,47 @@ export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
 
     // TODO: verify the signature.
 
+    // check  the type of AccessList. If it's a JSON-type, we have to convert it to a buffer.
+
+    let usedAccessList
+    if (accessList && isAccessList(accessList)) {
+      this.AccessListJSON = accessList
+
+      const newAccessList: AccessListBuffer = []
+
+      for (let i = 0; i < accessList.length; i++) {
+        const item: AccessListItem = accessList[i]
+        //const addItem: AccessListBufferItem = []
+        const addressBuffer = toBuffer(item.address)
+        const storageItems: Buffer[] = []
+        for (let index = 0; index < item.storageKeys.length; index++) {
+          storageItems.push(toBuffer(item.storageKeys[index]))
+        }
+        newAccessList.push([addressBuffer, storageItems])
+      }
+      usedAccessList = newAccessList
+    } else {
+      usedAccessList = accessList ?? []
+      // build the JSON
+      const json: AccessList = []
+      for (let i = 0; i < usedAccessList.length; i++) {
+        const data = usedAccessList[i]
+        const address = bufferToHex(data[0])
+        const storageKeys: string[] = []
+        for (let item = 0; item < data[1].length; item++) {
+          storageKeys.push(bufferToHex(data[1][item]))
+        }
+        const jsonItem: AccessListItem = {
+          address,
+          storageKeys,
+        }
+        json.push(jsonItem)
+      }
+      this.AccessListJSON = json
+    }
+
     this.chainId = new BN(toBuffer(chainId))
-    this.accessList = accessList ?? []
+    this.accessList = usedAccessList
     this.v = v ? new BN(v) : undefined
     this.r = r ? new BN(toBuffer(r)) : undefined
     this.s = s ? new BN(toBuffer(s)) : undefined
@@ -119,9 +185,9 @@ export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
     // Verify the access list format.
     for (let key = 0; key < this.accessList.length; key++) {
       const accessListItem = this.accessList[key]
-      const address: Buffer = accessListItem[0]
-      const storageSlots: Buffer[] = accessListItem[1]
-      if (accessListItem[2] !== undefined) {
+      const address = <Buffer>accessListItem[0]
+      const storageSlots = <Buffer[]>accessListItem[1]
+      if ((<any>accessListItem)[2] !== undefined) {
         throw new Error(
           'Access list item cannot have 3 elements. It can only have an address, and an array of storage slots.'
         )
@@ -183,7 +249,7 @@ export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
    * If that is the case, it is only callable if it is signed.
    */
   raw(): Buffer[] {
-    const base = [
+    const base = <Buffer[]>[
       bnToRlp(this.chainId),
       bnToRlp(this.nonce),
       bnToRlp(this.gasPrice),
