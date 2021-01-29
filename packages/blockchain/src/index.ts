@@ -468,9 +468,13 @@ export default class Blockchain implements BlockchainInterface {
     const lastBlockNumber = blockSigners[blockSigners.length - 1]?.[0]
     if (lastBlockNumber) {
       const blockLimit = lastBlockNumber.subn(limit)
-      this._cliqueLatestSignerStates = this._cliqueLatestSignerStates.filter((state) =>
-        state[0].gte(blockLimit)
-      )
+      const states = this._cliqueLatestSignerStates
+      const lastItem = states[states.length - 1]
+      this._cliqueLatestSignerStates = states.filter((state) => state[0].gte(blockLimit))
+      if (this._cliqueLatestSignerStates.length === 0) {
+        // always keep at least one item on the stack
+        this._cliqueLatestSignerStates.push(lastItem)
+      }
     }
 
     // save to db
@@ -569,12 +573,15 @@ export default class Blockchain implements BlockchainInterface {
       }
     }
 
-    // trim to CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
+    // trim to lastEpochBlockNumber - CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
     const limit = this.CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
     const blockSigners = this._cliqueLatestBlockSigners
     const lastBlockNumber = blockSigners[blockSigners.length - 1]?.[0]
     if (lastBlockNumber) {
-      const blockLimit = lastBlockNumber.subn(limit)
+      const lastEpochBlockNumber = lastBlockNumber.sub(
+        lastBlockNumber.mod(new BN(this._common.consensusConfig().epoch))
+      )
+      const blockLimit = lastEpochBlockNumber.subn(limit)
       this._cliqueLatestVotes = this._cliqueLatestVotes.filter((state) => state[0].gte(blockLimit))
     }
 
@@ -591,7 +598,8 @@ export default class Blockchain implements BlockchainInterface {
 
   /**
    * Update snapshot of latest clique block signers.
-   * Length trimmed to `this.cliqueSignerLimit()`
+   * Used for checking for 'recently signed' error.
+   * Length trimmed to `this.cliqueSignerLimit()`.
    * @param header BlockHeader
    * @hidden
    */
