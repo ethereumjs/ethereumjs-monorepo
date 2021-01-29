@@ -378,6 +378,7 @@ export class BlockHeader {
 
   /**
    * For poa, validates `difficulty` is correctly identified as INTURN or NOTURN.
+   * Returns false if invalid.
    */
   validateCliqueDifficulty(blockchain: Blockchain): boolean {
     if (!this.difficulty.eq(CLIQUE_DIFF_INTURN) && !this.difficulty.eq(CLIQUE_DIFF_NOTURN)) {
@@ -385,7 +386,12 @@ export class BlockHeader {
         `difficulty for clique block must be INTURN (2) or NOTURN (1), received: ${this.difficulty.toString()}`
       )
     }
-    const signers = blockchain.cliqueActiveSigners()
+    if ('cliqueActiveSigners' in blockchain === false) {
+      throw new Error(
+        'PoA blockchain requires method blockchain.cliqueActiveSigners() to validate clique difficulty'
+      )
+    }
+    const signers = (blockchain as any).cliqueActiveSigners()
     if (signers.length === 0) {
       // abort if signers are unavailable
       return true
