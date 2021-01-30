@@ -261,7 +261,7 @@ export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
     ]
     if (this.isSigned()) {
       return base.concat([
-        this.v?.eqn(0) ? Buffer.from('00', 'hex') : Buffer.from('01', 'hex'),
+        this.v?.eqn(0) ? Buffer.from('', 'hex') : Buffer.from('01', 'hex'),
         bnToRlp(this.r!),
         bnToRlp(this.s!),
       ])
@@ -321,7 +321,7 @@ export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
       throw new Error('Cannot call hash method if transaction is not signed')
     }
 
-    return keccak256(Buffer.from(this.raw()))
+    return keccak256(Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(this.raw())]))
   }
 
   public getMessageToVerifySignature(): Buffer {

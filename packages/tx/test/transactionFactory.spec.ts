@@ -96,6 +96,8 @@ tape('[TransactionFactory]: Basic functions', function (t) {
         const expected = TransactionFactory.getTransactionClass(txType, testCommon)
         t.equals(type, expected.name)
         t.ok(tx.isSigned())
+        const expectedHash = Buffer.from(txData.hash.slice(2), 'hex')
+        t.ok(tx.hash().equals(expectedHash))
       }
     }
 
