@@ -101,7 +101,7 @@ export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
           value: new BN(value),
           data: data ?? emptyBuffer,
           accessList: accessList ?? emptyBuffer,
-          v: v !== undefined && !v.equals(emptyBuffer) ? new BN(v) : undefined,
+          v: v !== undefined ? new BN(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
           r: r !== undefined && !r.equals(emptyBuffer) ? new BN(r) : undefined,
           s: s !== undefined && !s.equals(emptyBuffer) ? new BN(s) : undefined,
         },

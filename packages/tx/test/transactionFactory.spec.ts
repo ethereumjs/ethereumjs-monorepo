@@ -95,6 +95,7 @@ tape('[TransactionFactory]: Basic functions', function (t) {
         const txType = parseInt(txData.type.slice(2), 16)
         const expected = TransactionFactory.getTransactionClass(txType, testCommon)
         t.equals(type, expected.name)
+        t.ok(tx.isSigned())
       }
     }
 
