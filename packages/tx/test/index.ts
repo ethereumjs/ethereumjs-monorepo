@@ -9,4 +9,6 @@ if (argv.a) {
 } else {
   require('./api')
   require('./transactionRunner')
+  require('./transactionFactory.spec')
+  require('./eip2930')
 }

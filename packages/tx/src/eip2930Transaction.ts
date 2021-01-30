@@ -101,7 +101,7 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
           value: new BN(value),
           data: data ?? emptyBuffer,
           accessList: accessList ?? emptyBuffer,
-          v: v !== undefined && !v.equals(emptyBuffer) ? new BN(v) : undefined,
+          v: v !== undefined ? new BN(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
           r: r !== undefined && !r.equals(emptyBuffer) ? new BN(r) : undefined,
           s: s !== undefined && !s.equals(emptyBuffer) ? new BN(s) : undefined,
         },
@@ -210,7 +210,6 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
 
   getMessageToSign() {
     const base = [
-      Buffer.from('01', 'hex'),
       bnToRlp(this.chainId),
       bnToRlp(this.nonce),
       bnToRlp(this.gasPrice),
@@ -220,7 +219,7 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
       this.data,
       this.accessList,
     ]
-    return rlphash(base)
+    return Buffer.concat([Buffer.from('01', 'hex'), rlphash(base)])
   }
 
   /**
@@ -261,7 +260,7 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
     ]
     if (this.isSigned()) {
       return base.concat([
-        this.v?.eqn(0) ? Buffer.from('00', 'hex') : Buffer.from('01', 'hex'),
+        this.v?.eqn(0) ? Buffer.from('', 'hex') : Buffer.from('01', 'hex'),
         bnToRlp(this.r!),
         bnToRlp(this.s!),
       ])
@@ -321,7 +320,7 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
       throw new Error('Cannot call hash method if transaction is not signed')
     }
 
-    return keccak256(Buffer.from(this.raw()))
+    return keccak256(Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(this.raw())]))
   }
 
   public getMessageToVerifySignature(): Buffer {
