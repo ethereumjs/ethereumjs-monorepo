@@ -8,7 +8,7 @@ import { createBlock } from './util'
 import * as testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
 
 tape('[Block]: block functions', function (t) {
-  /*t.test('should test block initialization', function (st) {
+  t.test('should test block initialization', function (st) {
     const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
     const genesis = Block.genesis({}, { common })
     st.ok(genesis.hash().toString('hex'), 'block should initialize')
@@ -573,7 +573,7 @@ tape('[Block]: block functions', function (t) {
       )
       st.end()
     }
-  ) */
+  )
 
   t.test('should succesfully decode EIP2930 blocks', async function (st) {
     const common = Common.forCustomChain('mainnet', { chainId: 133519467574834 }, 'berlin')
@@ -590,7 +590,7 @@ tape('[Block]: block functions', function (t) {
     // The genesis block is not of a default RLP-encoded one, but instead a Geth genesis block
     // We currently cannot process that, so create a mock block.
     const mockBlock = {
-      hash: function() {
+      hash: function () {
         return expectedHash
       },
       header: {
@@ -598,11 +598,11 @@ tape('[Block]: block functions', function (t) {
         timestamp: new BN(genesisJSON.timestamp.slice(2), 'hex'),
         difficulty: new BN(0x20000),
         uncleHash: KECCAK256_RLP_ARRAY,
-        gasLimit: new BN(block0.json.header.gasLimit.slice(2), 'hex')
+        gasLimit: new BN(block0.json.header.gasLimit.slice(2), 'hex'),
       },
     }
 
-    mock.putBlock(<any>mockBlock)
+    await mock.putBlock(<any>mockBlock)
 
     const fileHead = './testdata/eip2930/acl_block_'
     for (let i = 0; i <= 9; i++) {
@@ -610,12 +610,14 @@ tape('[Block]: block functions', function (t) {
       const rlp = Buffer.from(rawData.rlp, 'hex')
       const block = Block.fromRLPSerializedBlock(rlp, { common })
       st.ok('succesfully decoded block')
-      mock.putBlock(block)
+      await mock.putBlock(block)
+      const expectedHash = Buffer.from(rawData.json.header.hash.slice(2), 'hex')
+      st.ok(block.hash().equals(expectedHash))
       try {
         await block.validate(mock)
-        st.pass("succesfully verified block")
+        st.pass('succesfully verified block')
       } catch (e) {
-        st.fail("block verification failed")
+        st.fail('block verification failed')
       }
     }
     st.end()
