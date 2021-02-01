@@ -405,7 +405,7 @@ export default class Transaction {
    * Validates tx's `v` value
    */
   private _validateTxV(v: BN | undefined): void {
-    if (v === undefined || v.toNumber() === 0) {
+    if (v === undefined) {
       return
     }
 
