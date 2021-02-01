@@ -46,6 +46,20 @@ describe('ecsign', function() {
     )
     assert.equal(sig.v, 41)
   })
+
+  it('should produce a signature for chainId=150', function() {
+    const chainId = 150
+    const sig = ecsign(echash, ecprivkey, chainId)
+    assert.deepEqual(
+      sig.r,
+      Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex'),
+    )
+    assert.deepEqual(
+      sig.s,
+      Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex'),
+    )
+    assert.equal(sig.v, chainId * 2 + 35)
+  })
 })
 
 describe('ecrecover', function() {
@@ -60,6 +74,14 @@ describe('ecrecover', function() {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     const v = 41
+    const pubkey = ecrecover(echash, v, r, s, chainId)
+    assert.deepEqual(pubkey, privateToPublic(ecprivkey))
+  })
+  it('should recover a public key (chainId = 150)', function() {
+    const chainId = 150
+    const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+    const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+    const v = chainId * 2 + 35
     const pubkey = ecrecover(echash, v, r, s, chainId)
     assert.deepEqual(pubkey, privateToPublic(ecprivkey))
   })
@@ -160,6 +182,13 @@ describe('isValidSignature', function() {
     const v = 41
     assert.equal(isValidSignature(v, r, s, false, chainId), true)
   })
+  it('should work otherwise(chainId=150)', function() {
+    const chainId = 150
+    const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+    const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+    const v = chainId * 2 + 35
+    assert.equal(isValidSignature(v, r, s, false, chainId), true)
+  })
   // FIXME: add homestead test
 })
 
@@ -194,13 +223,32 @@ describe('message sig', function() {
     )
   })
 
-  it('should throw on invalid length', function() {
+  it('should return hex strings that the RPC can use (chainId=150)', function() {
+    const chainId = 150
+    const v = chainId * 2 + 35
+    assert.equal(
+      toRpcSig(v, r, s, chainId),
+      '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66014f',
+    )
+    assert.deepEqual(
+      fromRpcSig(
+        '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66014f',
+      ),
+      {
+        v,
+        r: r,
+        s: s,
+      },
+    )
+  })
+
+  it('should throw on shorter length', function() {
     assert.throws(function() {
       fromRpcSig('')
     })
     assert.throws(function() {
       fromRpcSig(
-        '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca660042',
+        '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca',
       )
     })
   })

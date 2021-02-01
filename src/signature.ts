@@ -1,6 +1,6 @@
 const { ecdsaSign, ecdsaRecover, publicKeyConvert } = require('ethereum-cryptography/secp256k1')
 import * as BN from 'bn.js'
-import { toBuffer, setLengthLeft, bufferToHex } from './bytes'
+import { toBuffer, setLengthLeft, bufferToHex, bufferToInt } from './bytes'
 import { keccak } from './hash'
 import { assertIsBuffer } from './helpers'
 
@@ -71,12 +71,11 @@ export const toRpcSig = function(v: number, r: Buffer, s: Buffer, chainId?: numb
 export const fromRpcSig = function(sig: string): ECDSASignature {
   const buf: Buffer = toBuffer(sig)
 
-  // NOTE: with potential introduction of chainId this might need to be updated
-  if (buf.length !== 65) {
+  if (buf.length < 65) {
     throw new Error('Invalid signature length')
   }
 
-  let v = buf[64]
+  let v = bufferToInt(buf.slice(64))
   // support both versions of `eth_sign` responses
   if (v < 27) {
     v += 27
