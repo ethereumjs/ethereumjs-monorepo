@@ -380,6 +380,12 @@ tape('[Transaction]: Basic functions', function (t) {
     st.ok(tx.isSigned())
     tx = Transaction.fromRlpSerializedTx(rawSigned)
     st.ok(tx.isSigned())
+
+    const signedValues = (rlp.decode(rawSigned) as any) as Buffer[]
+    tx = Transaction.fromValuesArray(signedValues)
+    st.ok(tx.isSigned())
+    tx = Transaction.fromValuesArray(signedValues.slice(0, 6))
+    st.notOk(tx.isSigned())
     st.end()
   })
 

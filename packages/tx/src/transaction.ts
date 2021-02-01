@@ -69,9 +69,9 @@ export default class Transaction {
         to: to && to.length > 0 ? new Address(to) : undefined,
         value: new BN(value),
         data: data ?? emptyBuffer,
-        v: !v?.equals(emptyBuffer) ? new BN(v) : undefined,
-        r: !r?.equals(emptyBuffer) ? new BN(r) : undefined,
-        s: !s?.equals(emptyBuffer) ? new BN(s) : undefined,
+        v: v && !v.equals(emptyBuffer) ? new BN(v) : undefined,
+        r: r && !r.equals(emptyBuffer) ? new BN(r) : undefined,
+        s: s && !s.equals(emptyBuffer) ? new BN(s) : undefined,
       },
       opts
     )
