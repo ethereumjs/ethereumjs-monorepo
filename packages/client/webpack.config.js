@@ -47,4 +47,5 @@ module.exports = {
   performance: {
     hints: false, // suppress maxAssetSize warnings etc..
   },
+  externals: ['dns'],
 }
