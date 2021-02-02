@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [7.0.8] - 2021-02-01
+
+- New `Address.equals(address: Address)` function for easier address equality comparions, PR [#285](https://github.com/ethereumjs/ethereumjs-util/pull/285)
+- Fixed a bug in `fromRpcSig()` in the `signature` module not working correctly for chain IDs greater than 110, PR [#287](https://github.com/ethereumjs/ethereumjs-util/pull/287)
+
+[7.0.8]: https://github.com/ethereumjs/ethereumjs-util/compare/v7.0.7...v7.0.8
+
 ## [7.0.7] - 2020-10-15
 
 - Removed `stateRoot` check for `Account.isEmpty()` to make emptiness check `EIP-161` compliant, PR [#279](https://github.com/ethereumjs/ethereumjs-util/pull/279)
