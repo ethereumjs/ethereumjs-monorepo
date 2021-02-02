@@ -626,6 +626,14 @@ export default class Common {
   }
 
   /**
+   * Returns DNS networks for the current chain
+   * @returns {String[]} Array of DNS ENR urls
+   */
+  dnsNetworks(): any {
+    return (<any>this._chainParams)['dnsNetworks']
+  }
+
+  /**
    * Returns the hardfork set
    * @returns Hardfork name
    */
