@@ -46,9 +46,9 @@ tape('DNS', async (t) => {
     initializeDns()
     const peers = await dns.getPeers(1, [mockData.enrTree])
 
-    t.equal(peers.length, 1)
-    t.equal(peers[0].address, '45.77.40.127')
-    t.equal(peers[0].tcpPort, 30303)
+    t.equal(peers.length, 1, 'returns single peer')
+    t.equal(peers[0].address, '45.77.40.127', 'peer has correct address')
+    t.equal(peers[0].tcpPort, 30303, 'peer has correct port')
     t.end()
   })
 
@@ -60,8 +60,8 @@ tape('DNS', async (t) => {
     initializeDns()
     const peers = await dns.getPeers(50, [mockData.enrTree])
 
-    t.equal(peers.length, 2)
-    t.ok(peers[0].address !== peers[1].address)
+    t.equal(peers.length, 2, 'returns two peers')
+    t.ok(peers[0].address !== peers[1].address, 'peer addresses are different')
     t.end()
   })
 
@@ -78,10 +78,10 @@ tape('DNS', async (t) => {
       initializeDns()
       const peers = await dns.getPeers(50, [mockData.enrTree])
 
-      t.equal(peers.length, 3)
-      t.ok(peers[0].address !== peers[1].address)
-      t.ok(peers[0].address !== peers[2].address)
-      t.ok(peers[1].address !== peers[2].address)
+      t.equal(peers.length, 3, 'returns three peers')
+      t.ok(peers[0].address !== peers[1].address, 'peer 0 is not peer 1')
+      t.ok(peers[0].address !== peers[2].address, 'peer 0 is not peer 2')
+      t.ok(peers[1].address !== peers[2].address, 'peer 1 is not peer 2')
       t.end()
     }
   )
@@ -94,7 +94,7 @@ tape('DNS', async (t) => {
 
     initializeDns()
     const peers = await dns.getPeers(1, [mockData.enrTree])
-    t.equal(peers.length, 0)
+    t.equal(peers.length, 0, 'method resolves (zero peers)')
     t.end()
   })
 
@@ -106,13 +106,13 @@ tape('DNS', async (t) => {
 
     initializeDns()
     let peers = await dns.getPeers(1, [mockData.enrTree])
-    t.equal(peers.length, 0)
+    t.equal(peers.length, 0, 'method resolves when dns response is [] (zero peers)')
 
     // No TXT records case
     td.when(mockDns.resolve(`${branchDomainA}.${host}`, 'TXT')).thenReturn([[]])
 
     peers = await dns.getPeers(1, [mockData.enrTree])
-    t.equal(peers.length, 0)
+    t.equal(peers.length, 0, 'method resolves when dns response is [[]] (zero peers)')
     t.end()
   })
 
@@ -122,7 +122,7 @@ tape('DNS', async (t) => {
 
     initializeDns()
     const peers = await dns.getPeers(1, [mockData.enrTree])
-    t.equal(peers.length, 0)
+    t.equal(peers.length, 0, 'method resolves (zero peers)')
     t.end()
   })
 
@@ -133,7 +133,7 @@ tape('DNS', async (t) => {
 
     initializeDns()
     const peers = await dns.getPeers(1, [mockData.enrTree])
-    t.equal(peers.length, 0)
+    t.equal(peers.length, 0, 'method resolves (zero peers)')
     t.end()
   })
 
@@ -144,15 +144,15 @@ tape('DNS', async (t) => {
     // Run initial fetch...
     initializeDns()
     const peersA = await dns.getPeers(1, [mockData.enrTree])
-    t.equal(peersA.length, 1)
+    t.equal(peersA.length, 1, 'returns a  network fetched peer')
 
     // Specify that a subsequent network call retrieving the same peer should throw.
     // This test passes only if the peer is fetched from cache
     td.when(mockDns.resolve(`${branchDomainD}.${host}`, 'TXT')).thenThrow(new Error('failure'))
 
     const peersB = await dns.getPeers(1, [mockData.enrTree])
-    t.equal(peersB.length, 1)
-    t.equal(peersA[0].address, peersB[0].address)
+    t.equal(peersB.length, 1, 'returns a cached peer')
+    t.equal(peersA[0].address, peersB[0].address, 'network fetched and cached peers are same')
     t.end()
   })
 
@@ -173,12 +173,12 @@ tape('DNS: (integration)', async (t) => {
     const dns = new DNS({ dnsServerAddress: '8.8.8.8' })
     const peers = await dns.getPeers(5, [enrTree])
 
-    t.equal(peers.length, 5)
+    t.equal(peers.length, 5, 'returns 5 peers')
 
     const seen: string[] = []
     for (const peer of peers) {
-      t.ok(peer!.address!.match(ipTestRegex)) // Check valid ip addresses
-      t.ok(!seen.includes(peer!.address as string)) // Check no duplicates
+      t.ok(peer!.address!.match(ipTestRegex), 'address is a valid ip')
+      t.ok(!seen.includes(peer!.address as string), 'peer is not duplicate')
       seen.push(peer!.address as string)
     }
     t.end()
