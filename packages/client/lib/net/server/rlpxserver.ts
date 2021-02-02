@@ -1,5 +1,10 @@
 import { randomBytes } from 'crypto'
-import { RLPx as Devp2pRLPx, Peer as Devp2pRLPxPeer, DPT as Devp2pDPT } from '@ethereumjs/devp2p'
+import {
+  RLPx as Devp2pRLPx,
+  Peer as Devp2pRLPxPeer,
+  DPT as Devp2pDPT,
+  DNS as Devp2pDNS,
+} from '@ethereumjs/devp2p'
 import { RlpxPeer } from '../peer/rlpxpeer'
 import { Server, ServerOptions } from './server'
 
@@ -128,7 +133,7 @@ export class RlpxServer extends Server {
   }
 
   /**
-   * Bootstrap bootnode peers from the network
+   * Bootstrap DNS mapped peers and then bootnode peers from the network
    */
   async bootstrap(): Promise<void> {
     const promises = this.bootnodes.map((node) => {
@@ -139,10 +144,27 @@ export class RlpxServer extends Server {
       }
       return this.dpt!.bootstrap(bootnode)
     })
-    try {
-      await Promise.all(promises)
-    } catch (e) {
-      this.error(e)
+    for (const promise of promises) {
+      try {
+        await promise
+      } catch (e) {
+        this.error(e)
+      }
+    }
+    // Fill remainder by obtaining maxPeers from DNS records
+    if (this.dnsNetworks.length) {
+      const dns = new Devp2pDNS({ dnsServerAddress: this.config.dnsAddr })
+      const nodes = await dns.getPeers(200, this.dnsNetworks)
+      const promises = nodes.map((node) => {
+        return this.dpt!.bootstrap(node)
+      })
+      for (const promise of promises) {
+        try {
+          await promise
+        } catch (e) {
+          this.error(e)
+        }
+      }
     }
   }
 

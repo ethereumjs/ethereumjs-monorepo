@@ -102,6 +102,13 @@ export interface ConfigOptions {
    * Default: `25`
    */
   maxPeers?: number
+
+  /**
+   * DNS server to query DNS TXT records from for peer discovery
+   *
+   * Default `8.8.8.8` (Google)
+   */
+  dnsAddr?: string
 }
 
 export class Config {
@@ -116,6 +123,7 @@ export class Config {
   public static readonly LOGLEVEL_DEFAULT = 'info'
   public static readonly MINPEERS_DEFAULT = 2
   public static readonly MAXPEERS_DEFAULT = 25
+  public static readonly DNSADDR_DEFAULT = '8.8.8.8'
 
   public readonly logger: Logger
   public readonly syncmode: string
@@ -129,6 +137,7 @@ export class Config {
   public readonly loglevel: string
   public readonly minPeers: number
   public readonly maxPeers: number
+  public readonly dnsAddr: string
 
   public readonly chainCommon: Common
   public readonly execCommon: Common
@@ -147,6 +156,7 @@ export class Config {
     this.loglevel = options.loglevel ?? Config.LOGLEVEL_DEFAULT
     this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
     this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT
+    this.dnsAddr = options.dnsAddr ?? Config.DNSADDR_DEFAULT
 
     // TODO: map chainParams (and lib/util.parseParams) to new Common format
     const common =
@@ -179,6 +189,7 @@ export class Config {
       this.servers = parseTransports(this.transports).map((t) => {
         if (t.name === 'rlpx') {
           t.options.bootnodes = t.options.bootnodes || this.chainCommon.bootstrapNodes()
+          t.options.dnsNetworks = t.options.dnsNetworks || this.chainCommon.dnsNetworks()
           return new RlpxServer({ config: this, ...t.options })
         } else {
           return new Libp2pServer({ config: this, ...t.options })

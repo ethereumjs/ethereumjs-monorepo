@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import { Config } from '../../config'
-import { Bootnode, BootnodeLike, KeyLike } from '../../types'
+import { Bootnode, BootnodeLike, KeyLike, DnsNetwork } from '../../types'
 import { parseKey, parseBootnodes } from '../../util/parse'
 import { Protocol } from '../protocol/protocol'
 
@@ -16,6 +16,9 @@ export interface ServerOptions {
 
   /* List of bootnodes to use for discovery */
   bootnodes?: BootnodeLike
+
+  /* DNS record tree to search for discovery */
+  dnsNetworks?: DnsNetwork[]
 }
 
 /**
@@ -26,6 +29,7 @@ export class Server extends EventEmitter {
   public config: Config
   public key: Buffer | undefined
   public bootnodes: Bootnode[] = []
+  public dnsNetworks: DnsNetwork[]
 
   protected refreshInterval: number
   protected protocols: Set<Protocol>
@@ -42,6 +46,7 @@ export class Server extends EventEmitter {
     this.config = options.config
     this.key = options.key ? parseKey(options.key) : undefined
     this.bootnodes = options.bootnodes ? parseBootnodes(options.bootnodes) : []
+    this.dnsNetworks = options.dnsNetworks ?? []
     this.refreshInterval = options.refreshInterval ?? 30000
 
     this.protocols = new Set()
