@@ -27,6 +27,11 @@ export class FullSynchronizer extends Synchronizer {
     })
 
     const self = this
+    this.execution.on('error', async (error: Error) => {
+      self.emit('error', error)
+      await self.stop()
+    })
+
     this.chain.on('updated', async function () {
       // for some reason, if we use .on('updated', this.runBlocks)
       // it runs in the context of the Chain and not in the FullSync context..?

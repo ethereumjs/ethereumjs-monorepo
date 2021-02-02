@@ -46,6 +46,7 @@ export abstract class Execution extends EventEmitter {
    */
   async stop(): Promise<boolean> {
     this.running = false
+    this.config.logger.info('Stopped execution.')
     return true
   }
 }

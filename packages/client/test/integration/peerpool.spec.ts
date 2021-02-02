@@ -4,6 +4,7 @@ import { EthProtocol } from '../../lib/net/protocol'
 import { PeerPool } from '../../lib/net/peerpool'
 import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
+import Blockchain from '@ethereumjs/blockchain'
 
 tape('[Integration:PeerPool]', async (t) => {
   async function setup(protocols: EthProtocol[] = []): Promise<[MockServer, PeerPool]> {
@@ -57,7 +58,11 @@ tape('[Integration:PeerPool]', async (t) => {
 
   t.test('should handle peer messages', async (t) => {
     const config = new Config({ transports: [], loglevel: 'error' })
-    const chain = new MockChain({ config })
+    const blockchain = new Blockchain({
+      validateBlocks: false,
+      validateConsensus: false,
+    })
+    const chain = new MockChain({ config, blockchain })
     await chain.open()
     const protocols = [
       new EthProtocol({

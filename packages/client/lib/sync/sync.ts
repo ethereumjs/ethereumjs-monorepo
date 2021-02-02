@@ -119,6 +119,7 @@ export abstract class Synchronizer extends EventEmitter {
     }
     await new Promise((resolve) => setTimeout(resolve, this.interval))
     this.running = false
+    this.config.logger.info('Stopped synchronization.')
     return true
   }
 }

@@ -44,7 +44,7 @@ export class VMExecution extends Execution {
    * Initializes VM execution. Must be called before run() is called
    */
   async open(): Promise<void> {
-    const headBlock = await this.vm.blockchain.getHead()
+    const headBlock = await this.vm.blockchain.getIteratorHead()
     const blockNumber = headBlock.header.number.toNumber()
     this.config.execCommon.setHardforkByBlockNumber(blockNumber)
     this.hardfork = this.config.execCommon.hardfork()
@@ -71,6 +71,7 @@ export class VMExecution extends Execution {
 
     let headBlock: Block | undefined
     let parentState: Buffer | undefined
+    let errorBlock: Block | undefined
     while (
       (numExecuted === undefined || numExecuted === this.NUM_BLOCKS_PER_ITERATION) &&
       !startHeadBlock.hash().equals(canonicalHead.hash()) &&
@@ -79,10 +80,14 @@ export class VMExecution extends Execution {
     ) {
       headBlock = undefined
       parentState = undefined
+      errorBlock = undefined
 
       this.vmPromise = blockchain.iterator(
         'vm',
         async (block: Block, reorg: boolean) => {
+          if (errorBlock) {
+            return
+          }
           // determine starting state for block run
           // if we are just starting or if a chain re-org has happened
           if (!headBlock || reorg) {
@@ -112,10 +117,26 @@ export class VMExecution extends Execution {
             // set as new head block
             headBlock = block
           } catch (error) {
+            // TODO: determine if there is a way to differentiate between the cases
+            // a) a bad block is served by a bad peer -> delete the block and restart sync
+            //    sync from parent block
+            // b) there is a consensus error in the VM -> stop execution until the
+            //    consensus error is fixed
+            //
+            // For now only option b) is implemented, atm this is a very likely case
+            // and the implemented behavior helps on debugging.
+            // Option a) would likely need some block comparison of the same blocks
+            // received by different peer to decide on bad blocks
+            // (minimal solution: receive block from 3 peers and take block if there is
+            // is equally served from at least 2 peers)
+            /*try {
             // remove invalid block
-            await blockchain!.delBlock(block.header.hash())
-            const blockNumber = block.header.number.toNumber()
-            const hash = short(block.hash())
+              await blockchain!.delBlock(block.header.hash())
+            } catch (error) {
+              this.config.logger.error(
+                `Error deleting block number=${blockNumber} hash=${hash} on failed execution`
+              )
+            }
             this.config.logger.warn(
               `Deleted block number=${blockNumber} hash=${hash} on failed execution`
             )
@@ -126,13 +147,25 @@ export class VMExecution extends Execution {
                 `Set back hardfork along block deletion number=${blockNumber} hash=${hash} old=${this.hardfork} new=${hardfork}`
               )
               this.config.execCommon.setHardforkByBlockNumber(blockNumber)
-            }
-            throw error
+            }*/
+            // Option a): set iterator head to the parent block so that an
+            // error can repeatedly processed for debugging
+            const blockNumber = block.header.number.toNumber()
+            const hash = short(block.hash())
+            this.config.logger.warn(`Execution of block number=${blockNumber} hash=${hash} failed`)
+            this.emit('error', error)
+            errorBlock = block
           }
         },
         this.NUM_BLOCKS_PER_ITERATION
       )
       numExecuted = (await this.vmPromise) as number
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (errorBlock) {
+        await this.chain.blockchain.setIteratorHead('vm', (errorBlock as Block).header.parentHash)
+        return 0
+      }
 
       const endHeadBlock = await this.vm.blockchain.getHead()
       if (numExecuted > 0) {

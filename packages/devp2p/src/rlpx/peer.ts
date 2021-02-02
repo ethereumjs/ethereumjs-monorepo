@@ -198,11 +198,14 @@ export class Peer extends EventEmitter {
     if (this._closed) return false
     const msg = Buffer.concat([rlp.encode(code), data])
     const header = this._eciesSession.createHeader(msg.length)
-    if (!header) return
+    if (!header || this._socket.destroyed) return
     this._socket.write(header)
 
     const body = this._eciesSession.createBody(msg)
-    if (!body) return
+    // this._socket.destroyed added here and above to safeguard against
+    // occasional "Cannot call write after a stream was destroyed" errors.
+    // Eventually this can be caught earlier down the line.
+    if (!body || this._socket.destroyed) return
     this._socket.write(body)
     return true
   }
