@@ -130,7 +130,12 @@ export class DPT extends EventEmitter {
   async bootstrap(peer: PeerInfo): Promise<void> {
     debug(`bootstrap with peer ${peer.address}:${peer.udpPort}`)
 
-    peer = await this.addPeer(peer)
+    try {
+      peer = await this.addPeer(peer)
+    } catch (error) {
+      this.emit('error', error)
+      return
+    }
     if (!this._id) return
     this._server.findneighbours(peer, this._id)
   }
