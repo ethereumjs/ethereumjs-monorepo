@@ -73,7 +73,6 @@ export class ENR {
     const { ipCode, tcpCode, udpCode } = this._getIpProtocolConversionCodes(obj.id)
 
     const peerInfo: PeerInfo = {
-      id: obj.id,
       address: Convert.toString(ipCode, obj.ip) as string,
       tcpPort: Convert.toString(tcpCode, toNewUint8Array(obj.tcp)) as number,
       udpPort: Convert.toString(udpCode, toNewUint8Array(obj.udp)) as number,

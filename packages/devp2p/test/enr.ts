@@ -66,7 +66,7 @@ test('ENR (tree): should error if DNS tree entry is misformatted', (t) => {
 })
 
 // Branch entries
-test('ENR (branch): should parse and verify and DNS branch entry', (t) => {
+test('ENR (branch): should parse and verify a single component DNS branch entry', (t) => {
   const expected = [
     'D2SNLTAGWNQ34NTQTPHNZDECFU',
     '67BLTJEU5R2D5S3B4QKJSBRFCY',
@@ -89,9 +89,8 @@ test('ENR (branch): should error if DNS branch entry is mis-prefixed', (t) => {
 
 // ENR DNS entries
 test('ENR (enr): should convert an Ethereum Name Record string', (t) => {
-  const { id, address, tcpPort, udpPort } = ENR.parseAndVerifyRecord(dns.enr)
+  const { address, tcpPort, udpPort } = ENR.parseAndVerifyRecord(dns.enr)
 
-  t.equal(id!.toString(), 'v4', 'Invalid id')
   t.equal(address, '40.113.111.135')
   t.equal(tcpPort, 30303)
   t.equal(udpPort, 30303)

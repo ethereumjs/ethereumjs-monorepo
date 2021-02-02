@@ -2,7 +2,6 @@ import tape from 'tape'
 import td from 'testdouble'
 import testdata from './testdata.json'
 import { DNS } from '../src/dns'
-import { PeerInfo } from '../src/dpt'
 
 tape('DNS', async (t) => {
   const mockData = testdata.dns
@@ -24,8 +23,14 @@ tape('DNS', async (t) => {
   const branchDomainB = 'D3SNLTAGWNQ34NTQTPHNZDECFU'
   const branchDomainC = 'D4SNLTAGWNQ34NTQTPHNZDECFU'
   const branchDomainD = 'D5SNLTAGWNQ34NTQTPHNZDECFU'
+  const partialBranchA = 'AAAA'
+  const partialBranchB = 'BBBB'
   const singleBranch = `enrtree-branch:${branchDomainA}`
   const doubleBranch = `enrtree-branch:${branchDomainA},${branchDomainB}`
+  const multiComponentBranch = [
+    `enrtree-branch:${branchDomainA},${partialBranchA}`,
+    `${partialBranchB},${branchDomainB}`,
+  ]
 
   // Note: once td.when is asked to throw for an input it will always throw.
   // Input can't be re-used for a passing case.
@@ -39,7 +44,7 @@ tape('DNS', async (t) => {
     td.when(mockDns.resolve(`${branchDomainA}.${host}`, 'TXT')).thenReturn([[mockData.enrA]])
 
     initializeDns()
-    const peers = await dns.getPeers(1, mockData.enrTree)
+    const peers = await dns.getPeers(1, [mockData.enrTree])
 
     t.equal(peers.length, 1)
     t.equal(peers[0].address, '45.77.40.127')
@@ -53,32 +58,33 @@ tape('DNS', async (t) => {
     td.when(mockDns.resolve(`${branchDomainB}.${host}`, 'TXT')).thenReturn([[mockData.enrB]])
 
     initializeDns()
-    const peers = await dns.getPeers(50, mockData.enrTree)
+    const peers = await dns.getPeers(50, [mockData.enrTree])
 
     t.equal(peers.length, 2)
     t.ok(peers[0].address !== peers[1].address)
     t.end()
   })
 
-  t.test('filters a peer it should ignore', async (t) => {
-    td.when(mockDns.resolve(`${rootDomain}.${host}`, 'TXT')).thenReturn([[doubleBranch]])
-    td.when(mockDns.resolve(`${branchDomainA}.${host}`, 'TXT')).thenReturn([[mockData.enrA]])
-    td.when(mockDns.resolve(`${branchDomainB}.${host}`, 'TXT')).thenReturn([[mockData.enrB]])
+  t.test(
+    'retrieves all peers (3) when branch entries are composed of multiple strings',
+    async (t) => {
+      td.when(mockDns.resolve(`${rootDomain}.${host}`, 'TXT')).thenReturn([multiComponentBranch])
+      td.when(mockDns.resolve(`${branchDomainA}.${host}`, 'TXT')).thenReturn([[mockData.enr]])
+      td.when(mockDns.resolve(`${branchDomainB}.${host}`, 'TXT')).thenReturn([[mockData.enrA]])
+      td.when(mockDns.resolve(`${partialBranchA}${partialBranchB}.${host}`, 'TXT')).thenReturn([
+        [mockData.enrB],
+      ])
 
-    const enrB: PeerInfo = {
-      id: Buffer.from('v4'),
-      address: '188.95.248.61',
-      tcpPort: 30303,
-      udpPort: 30303,
+      initializeDns()
+      const peers = await dns.getPeers(50, [mockData.enrTree])
+
+      t.equal(peers.length, 3)
+      t.ok(peers[0].address !== peers[1].address)
+      t.ok(peers[0].address !== peers[2].address)
+      t.ok(peers[1].address !== peers[2].address)
+      t.end()
     }
-
-    initializeDns()
-    const peers = await dns.getPeers(50, mockData.enrTree, [enrB])
-
-    t.equal(peers.length, 1)
-    t.ok(peers[0].address !== enrB.address)
-    t.end()
-  })
+  )
 
   t.test('it tolerates circular branch references', async (t) => {
     // root --> branchA
@@ -87,7 +93,7 @@ tape('DNS', async (t) => {
     td.when(mockDns.resolve(`${branchDomainA}.${host}`, 'TXT')).thenReturn([[singleBranch]])
 
     initializeDns()
-    const peers = await dns.getPeers(1, mockData.enrTree)
+    const peers = await dns.getPeers(1, [mockData.enrTree])
     t.equal(peers.length, 0)
     t.end()
   })
@@ -99,13 +105,13 @@ tape('DNS', async (t) => {
     td.when(mockDns.resolve(`${branchDomainA}.${host}`, 'TXT')).thenReturn([])
 
     initializeDns()
-    let peers = await dns.getPeers(1, mockData.enrTree)
+    let peers = await dns.getPeers(1, [mockData.enrTree])
     t.equal(peers.length, 0)
 
     // No TXT records case
     td.when(mockDns.resolve(`${branchDomainA}.${host}`, 'TXT')).thenReturn([[]])
 
-    peers = await dns.getPeers(1, mockData.enrTree)
+    peers = await dns.getPeers(1, [mockData.enrTree])
     t.equal(peers.length, 0)
     t.end()
   })
@@ -115,7 +121,7 @@ tape('DNS', async (t) => {
     td.when(mockDns.resolve(`${branchDomainC}.${host}`, 'TXT')).thenThrow(new Error('failure'))
 
     initializeDns()
-    const peers = await dns.getPeers(1, mockData.enrTree)
+    const peers = await dns.getPeers(1, [mockData.enrTree])
     t.equal(peers.length, 0)
     t.end()
   })
@@ -126,7 +132,7 @@ tape('DNS', async (t) => {
     ])
 
     initializeDns()
-    const peers = await dns.getPeers(1, mockData.enrTree)
+    const peers = await dns.getPeers(1, [mockData.enrTree])
     t.equal(peers.length, 0)
     t.end()
   })
@@ -137,14 +143,14 @@ tape('DNS', async (t) => {
 
     // Run initial fetch...
     initializeDns()
-    const peersA = await dns.getPeers(1, mockData.enrTree)
+    const peersA = await dns.getPeers(1, [mockData.enrTree])
     t.equal(peersA.length, 1)
 
     // Specify that a subsequent network call retrieving the same peer should throw.
     // This test passes only if the peer is fetched from cache
     td.when(mockDns.resolve(`${branchDomainD}.${host}`, 'TXT')).thenThrow(new Error('failure'))
 
-    const peersB = await dns.getPeers(1, mockData.enrTree)
+    const peersB = await dns.getPeers(1, [mockData.enrTree])
     t.equal(peersB.length, 1)
     t.equal(peersA[0].address, peersB[0].address)
     t.end()
@@ -165,7 +171,7 @@ tape('DNS: (integration)', async (t) => {
   t.test('should retrieve 5 PeerInfos for goerli', async (t) => {
     // Google's dns server address. Needs to be set explicitly to run in CI
     const dns = new DNS({ dnsServerAddress: '8.8.8.8' })
-    const peers = await dns.getPeers(5, enrTree)
+    const peers = await dns.getPeers(5, [enrTree])
 
     t.equal(peers.length, 5)
 

@@ -14,13 +14,6 @@ type SearchContext = {
 
 export type DNSOptions = {
   /**
-   * Number of unsuccessful record retrieval attempts to allow while
-   * searching the DNS tree. Default = 5
-   * @type {number}
-   */
-  errorTolerance?: number
-
-  /**
    * ipv4 or ipv6 address of server to pass to native dns.setServers()
    * Sets the IP address of servers to be used when performing
    * DNS resolution.
@@ -30,12 +23,11 @@ export type DNSOptions = {
 }
 
 export class DNS {
-  _DNSTreeCache: { [key: string]: string }
-  _tolerance: number
+  private _DNSTreeCache: { [key: string]: string }
+  private readonly _errorTolerance: number = 10
 
   constructor(options: DNSOptions = {}) {
     this._DNSTreeCache = {}
-    this._tolerance = options.errorTolerance || 5
 
     if (options.dnsServerAddress) {
       dns.setServers([options.dnsServerAddress])
@@ -50,20 +42,16 @@ export class DNS {
    *
    * @param {number}        maxQuantity  max number to get
    * @param {string}        treeEntry enrtree string (See EIP-1459 for format)
-   * @param {PeerInfo[] = []} ignorePeers peers to ignore
    * @return {PeerInfo}
    */
-  async getPeers(
-    maxQuantity: number,
-    treeEntry: string,
-    ignorePeers: PeerInfo[] = []
-  ): Promise<PeerInfo[]> {
+  async getPeers(maxQuantity: number, dnsNetworks: string[]): Promise<PeerInfo[]> {
     let totalSearches: number = 0
     const peers: PeerInfo[] = []
 
-    const { publicKey, domain } = ENR.parseTree(treeEntry)
+    const networkIndex = Math.floor(Math.random() * dnsNetworks.length)
+    const { publicKey, domain } = ENR.parseTree(dnsNetworks[networkIndex])
 
-    while (peers.length < maxQuantity && totalSearches < maxQuantity + this._tolerance) {
+    while (peers.length < maxQuantity && totalSearches < maxQuantity + this._errorTolerance) {
       const context: SearchContext = {
         domain,
         publicKey,
@@ -72,7 +60,7 @@ export class DNS {
 
       const peer = await this._search(domain, context)
 
-      if (this._isNewPeer(peer, peers, ignorePeers)) {
+      if (this._isNewPeer(peer, peers)) {
         peers.push(peer as PeerInfo)
       }
 
@@ -182,30 +170,29 @@ export class DNS {
     assert(response.length, 'Received empty result array while fetching TXT record')
     assert(response[0].length, 'Received empty TXT record')
 
-    this._DNSTreeCache[subdomain] = response[0][0]
-    return response[0][0]
+    // Branch entries can be an array of strings of comma delimited subdomains, with
+    // some subdomain strings split across the array elements
+    // (e.g btw end of arr[0] and beginning of arr[1])
+    const result = response[0].length > 1 ? response[0].join('') : response[0][0]
+
+    this._DNSTreeCache[subdomain] = result
+    return result
   }
 
   /**
    * Returns false if candidate peer already exists in the
-   * current collection of peers or a list of banned peers.
+   * current collection of peers.
    * Returns true otherwise.
    *
    * @param  {PeerInfo}   peer
    * @param  {PeerInfo[]} peers
    * @return {boolean}
    */
-  private _isNewPeer(peer: PeerInfo | null, peers: PeerInfo[], ignorePeers: PeerInfo[]): boolean {
+  private _isNewPeer(peer: PeerInfo | null, peers: PeerInfo[]): boolean {
     if (!peer || !peer!.address) return false
 
     for (const existingPeer of peers) {
       if (peer.address === existingPeer.address) {
-        return false
-      }
-    }
-
-    for (const ingnorable of ignorePeers) {
-      if (peer.address === ingnorable.address) {
         return false
       }
     }
