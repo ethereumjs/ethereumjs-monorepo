@@ -1,3 +1,4 @@
+import { debug as createDebugLogger } from 'debug'
 import { Address, BN } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { Transaction } from '@ethereumjs/tx'
@@ -6,6 +7,8 @@ import Bloom from './bloom'
 import { default as EVM, EVMResult } from './evm/evm'
 import Message from './evm/message'
 import TxContext from './evm/txContext'
+
+const debug = createDebugLogger('vm:tx')
 
 /**
  * Options for the `runTx` method.
@@ -157,6 +160,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     data,
   })
   const evm = new EVM(this, txContext, block)
+  debug(
+    `Running tx=0x${tx
+      .hash()
+      .toString('hex')} with caller=${caller.toString()} gasLimit=${gasLimit.toString()} to=${
+      to ? to.toString() : ''
+    } value=${value.toString()} data=0x${data.toString('hex')}`
+  )
   const results = (await evm.executeMessage(message)) as RunTxResult
 
   /*
