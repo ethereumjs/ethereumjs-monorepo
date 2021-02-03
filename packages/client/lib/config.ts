@@ -109,6 +109,11 @@ export interface ConfigOptions {
    * Default `8.8.8.8` (Google)
    */
   dnsAddr?: string
+
+  /**
+   * EIP-1459 ENR Tree urls to query via DNS for peer discovery
+   */
+  dnsNetworks?: string[]
 }
 
 export class Config {
@@ -189,7 +194,7 @@ export class Config {
       this.servers = parseTransports(this.transports).map((t) => {
         if (t.name === 'rlpx') {
           t.options.bootnodes = t.options.bootnodes || this.chainCommon.bootstrapNodes()
-          t.options.dnsNetworks = t.options.dnsNetworks || this.chainCommon.dnsNetworks()
+          t.options.dnsNetworks = options.dnsNetworks || this.chainCommon.dnsNetworks()
           return new RlpxServer({ config: this, ...t.options })
         } else {
           return new Libp2pServer({ config: this, ...t.options })
