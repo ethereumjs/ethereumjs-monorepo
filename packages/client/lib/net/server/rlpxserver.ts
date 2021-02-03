@@ -154,7 +154,7 @@ export class RlpxServer extends Server {
     // Fill remainder by obtaining maxPeers from DNS records
     if (this.dnsNetworks.length) {
       const dns = new Devp2pDNS({ dnsServerAddress: this.config.dnsAddr })
-      const nodes = await dns.getPeers(200, this.dnsNetworks)
+      const nodes = await dns.getPeers(this.config.maxPeers, this.dnsNetworks)
       const promises = nodes.map((node) => {
         return this.dpt!.bootstrap(node)
       })
