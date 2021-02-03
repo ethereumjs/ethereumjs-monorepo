@@ -72,7 +72,6 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
   if (!opts.tx) {
     throw new Error('invalid input, tx is required')
   }
-  debug(`New tx run hash=${opts.tx.hash().toString('hex')}`)
 
   // create a reasonable default if no block is given
   opts.block = opts.block ?? Block.fromBlockData({}, { common: opts.tx.common })
@@ -118,6 +117,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   await this._emit('beforeTx', tx)
 
   const caller = tx.getSenderAddress()
+  debug(`New tx run hash=${opts.tx.hash().toString('hex')} sender=${caller.toString()}`)
 
   // Validate gas limit against base fee
   const basefee = tx.getBaseFee()
@@ -259,7 +259,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    */
   const event: AfterTxEvent = { transaction: tx, ...results }
   await this._emit('afterTx', event)
-  debug(`tx run finished hash=${opts.tx.hash().toString('hex')}`)
+  debug(`tx run finished hash=${opts.tx.hash().toString('hex')} sender=${caller.toString()}`)
 
   return results
 }

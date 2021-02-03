@@ -1,3 +1,4 @@
+import { debug as createDebugLogger } from 'debug'
 import {
   Account,
   Address,
@@ -15,6 +16,9 @@ import TxContext from './txContext'
 import Message from './message'
 import EEI from './eei'
 import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
+
+const debug = createDebugLogger('vm:evm')
+const debugGas = createDebugLogger('vm:evm:gas')
 
 /**
  * Result of executing a message via the [[EVM]].
@@ -132,13 +136,30 @@ export default class EVM {
     await this._vm._emit('beforeMessage', message)
 
     await this._state.checkpoint()
+    debug(`message checkpoint`)
 
     let result
+    debug(
+      `New message caller=${message.caller.toString()} gasLimit=${message.gasLimit.toString()} to=${
+        message.to ? message.to.toString() : ''
+      } value=${message.value.toString()} delegatecall=${message.delegatecall ? 'yes' : 'no'}`
+    )
     if (message.to) {
+      debug(`Message CALL execution (to: ${message.to.toString()})`)
       result = await this._executeCall(message)
     } else {
+      debug(`Message CREATE execution (to undefined)`)
       result = await this._executeCreate(message)
     }
+    debug(
+      `Received message results gasUsed=${result.gasUsed} execResult: [ gasUsed=${
+        result.gasUsed
+      } exceptionError=${
+        result.execResult.exceptionError ? result.execResult.exceptionError.toString() : ''
+      } returnValue=${result.execResult.returnValue.toString(
+        'hex'
+      )} gasRefund=${result.execResult.gasRefund?.toString()} ]`
+    )
     // TODO: Move `gasRefund` to a tx-level result object
     // instead of `ExecResult`.
     result.execResult.gasRefund = this._refund.clone()
@@ -148,13 +169,16 @@ export default class EVM {
       if (this._vm._common.gteHardfork('homestead') || err.error != ERROR.CODESTORE_OUT_OF_GAS) {
         result.execResult.logs = []
         await this._state.revert()
+        debug(`message checkpoint reverted`)
       } else {
         // we are in chainstart and the error was the code deposit error
         // we do like nothing happened.
         await this._state.commit()
+        debug(`message checkpoint committed`)
       }
     } else {
       await this._state.commit()
+      debug(`message checkpoint committed`)
     }
 
     await this._vm._emit('afterMessage', result)
@@ -182,8 +206,8 @@ export default class EVM {
 
     // Load code
     await this._loadCode(message)
-    // Exit early if there's no code or value transfer overflowed
     if (!message.code || message.code.length === 0 || errorMessage) {
+      debug(`Exit early on no code or value tranfer overflowed`)
       return {
         gasUsed: new BN(0),
         execResult: {
@@ -196,12 +220,14 @@ export default class EVM {
 
     let result: ExecResult
     if (message.isCompiled) {
+      debug(`Run precompile`)
       result = await this.runPrecompile(
         message.code as PrecompileFunc,
         message.data,
         message.gasLimit
       )
     } else {
+      debug(`Start bytecode processing...`)
       result = await this.runInterpreter(message)
     }
 
@@ -219,9 +245,11 @@ export default class EVM {
     message.code = message.data
     message.data = Buffer.alloc(0)
     message.to = await this._generateAddress(message)
+    debug(`Generated CREATE contract address ${message.to.toString()}`)
     let toAccount = await this._state.getAccount(message.to)
     // Check for collision
     if ((toAccount.nonce && toAccount.nonce.gtn(0)) || !toAccount.codeHash.equals(KECCAK256_NULL)) {
+      debug(`Returning on address collision`)
       return {
         gasUsed: message.gasLimit,
         createdAddress: message.to,
@@ -256,8 +284,8 @@ export default class EVM {
       errorMessage = e
     }
 
-    // Exit early if there's no contract code or value transfer overflowed
     if (!message.code || message.code.length === 0 || errorMessage) {
+      debug(`Exit early on no code or value tranfer overflowed`)
       return {
         gasUsed: new BN(0),
         createdAddress: message.to,
@@ -269,6 +297,7 @@ export default class EVM {
       }
     }
 
+    debug(`Start bytecode processing...`)
     let result = await this.runInterpreter(message)
 
     // fee for size of the return value
@@ -279,6 +308,9 @@ export default class EVM {
         this._vm._common.param('gasPrices', 'createData')
       )
       totalGas = totalGas.add(returnFee)
+      debugGas(
+        `Add return value size fee (${returnFee.toString()} to gas used (-> ${totalGas.toString()}))`
+      )
     }
 
     // Check for SpuriousDragon EIP-170 code size limit
@@ -297,9 +329,11 @@ export default class EVM {
       result.gasUsed = totalGas
     } else {
       if (this._vm._common.gteHardfork('homestead')) {
+        debug(`Not enough gas or code size not allowed (>= Homestead)`)
         result = { ...result, ...OOGResult(message.gasLimit) }
       } else {
         // we are in Frontier
+        debug(`Not enough gas or code size not allowed (Frontier)`)
         if (totalGas.sub(returnFee).lte(message.gasLimit)) {
           // we cannot pay the code deposit fee (but the deposit code actually did run)
           result = { ...result, ...COOGResult(totalGas.sub(returnFee)) }
@@ -312,6 +346,7 @@ export default class EVM {
     // Save code if a new contract was created
     if (!result.exceptionError && result.returnValue && result.returnValue.toString() !== '') {
       await this._state.putContractCode(message.to, result.returnValue)
+      debug(`Code saved on new contract creation`)
     }
 
     return {
@@ -438,7 +473,9 @@ export default class EVM {
 
   async _reduceSenderBalance(account: Account, message: Message): Promise<void> {
     account.balance.isub(message.value)
-    return this._state.putAccount(message.caller, account)
+    const result = this._state.putAccount(message.caller, account)
+    debug(`Reduce sender (${message.caller.toString()}) balance (-> ${account.balance.toString()})`)
+    return result
   }
 
   async _addToBalance(toAccount: Account, message: Message): Promise<void> {
@@ -448,7 +485,9 @@ export default class EVM {
     }
     toAccount.balance = newBalance
     // putAccount as the nonce may have changed for contract creation
-    return this._state.putAccount(message.to, toAccount)
+    const result = this._state.putAccount(message.to, toAccount)
+    debug(`Add toAccount (${message.to.toString()}) balance (-> ${toAccount.balance.toString()})`)
+    return result
   }
 
   async _touchAccount(address: Address): Promise<void> {
