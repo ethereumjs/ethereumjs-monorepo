@@ -1,4 +1,5 @@
 const Set = require('core-js-pure/es/set')
+import { debug as createDebugLogger } from 'debug'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
 import {
   Account,
@@ -15,6 +16,8 @@ import { genesisStateByName } from '@ethereumjs/common/dist/genesisStates'
 import { StateManager, StorageDump } from './interface'
 import Cache from './cache'
 import { ripemdPrecompileAddress } from '../evm/precompiles'
+
+const debug = createDebugLogger('vm:state')
 
 type AddressHex = string
 
@@ -540,6 +543,7 @@ export default class DefaultStateManager implements StateManager {
         const empty = await this.accountIsEmpty(address)
         if (empty) {
           this._cache.del(address)
+          debug(`Cleanup touched account address=${address.toString()} (>= SpuriousDragon)`)
         }
       }
     }

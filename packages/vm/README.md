@@ -167,6 +167,43 @@ by it, the exception will bubble into the VM and interrupt it, possibly
 corrupting its state. It's strongly recommended not to throw from withing
 event handlers.
 
+# Understanding the VM
+
+If you want to understand your VM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CL with `DEBUG=[Logger Selection] node [Your Script to Run].js` and produce output like the following:
+
+![EthereumJS VM Debug Logger](./debug.png?raw=true)
+
+The following loggers are currently available:
+
+| Logger | Description |
+| - | - |
+| `vm:tx` | Transaction operations (account updates, checkpointing,...) |
+| `vm:tx:gas` | Transaction gas logger |
+| `vm:evm` | EVM control flow, CALL or CREATE message execution |
+| `vm:evm:gas` | EVM gas logger |
+| `vm:ops` | Opcode traces |
+| `vm:ops:[Lower-case opcode name]` | Traces on a specific opcode |
+
+Here are some examples for useful logger combinations.
+
+Run one specific logger:
+
+```shell
+DEBUG=vm:tx ts-node test.ts
+```
+
+Run all loggers currently available:
+
+```shell
+DEBUG=vm:*,vm:*:* ts-node test.ts
+```
+
+Run some specific loggers including a logger specifically logging the `SSTORE` executions from the VM (this is from the screenshot above):
+
+```shell
+DEBUG=vm:tx,vm:evm,vm:ops:sstore,vm:*:gas ts-node test.ts
+```
+
 # Internal Structure
 
 The VM processes state changes at many levels.

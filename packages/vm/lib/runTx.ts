@@ -1,11 +1,16 @@
+import { debug as createDebugLogger } from 'debug'
 import { Address, BN } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { Transaction } from '@ethereumjs/tx'
 import VM from './index'
 import Bloom from './bloom'
 import { default as EVM, EVMResult } from './evm/evm'
+import { short } from './evm/opcodes/util'
 import Message from './evm/message'
 import TxContext from './evm/txContext'
+
+const debug = createDebugLogger('vm:tx')
+const debugGas = createDebugLogger('vm:tx:gas')
 
 /**
  * Options for the `runTx` method.
@@ -81,13 +86,17 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
 
   const state = this.stateManager
   await state.checkpoint()
+  debug('-'.repeat(100))
+  debug(`tx checkpoint`)
 
   try {
     const result = await _runTx.bind(this)(opts)
     await state.commit()
+    debug(`tx checkpoint committed`)
     return result
   } catch (e) {
     await state.revert()
+    debug(`tx checkpoint reverted`)
     throw e
   }
 }
@@ -110,6 +119,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   await this._emit('beforeTx', tx)
 
   const caller = tx.getSenderAddress()
+  debug(`New tx run hash=${opts.tx.hash().toString('hex')} sender=${caller.toString()}`)
 
   // Validate gas limit against base fee
   const basefee = tx.getBaseFee()
@@ -118,6 +128,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     throw new Error('base fee exceeds gas limit')
   }
   gasLimit.isub(basefee)
+  debugGas(`Subtracting base fee (${basefee.toString()}) from gasLimit (-> ${gasLimit.toString()})`)
 
   // Check from account's balance and nonce
   let fromAccount = await state.getAccount(caller)
@@ -143,6 +154,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const txCost = tx.gasLimit.mul(tx.gasPrice)
   fromAccount.balance.isub(txCost)
   await state.putAccount(caller, fromAccount)
+  debug(
+    `Update fromAccount (caller) nonce (-> ${fromAccount.nonce.toString()}) and balance(-> ${fromAccount.balance.toString()})`
+  )
 
   /*
    * Execute message
@@ -157,23 +171,47 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     data,
   })
   const evm = new EVM(this, txContext, block)
+  debug(
+    `Running tx=0x${tx
+      .hash()
+      .toString('hex')} with caller=${caller.toString()} gasLimit=${gasLimit.toString()} to=${
+      to ? to.toString() : ''
+    } value=${value.toString()} data=0x${data.toString('hex')}`
+  )
   const results = (await evm.executeMessage(message)) as RunTxResult
+  debug('-'.repeat(100))
+  debug(
+    `Received tx results gasUsed=${results.gasUsed} execResult: [ gasUsed=${
+      results.gasUsed
+    } exceptionError=${
+      results.execResult.exceptionError ? results.execResult.exceptionError.error : ''
+    } returnValue=${short(
+      results.execResult.returnValue
+    )} gasRefund=${results.execResult.gasRefund?.toString()} ]`
+  )
 
   /*
    * Parse results
    */
   // Generate the bloom for the tx
   results.bloom = txLogsBloom(results.execResult.logs)
+  debug(`Generate tx bloom`)
   // Caculate the total gas used
   results.gasUsed.iadd(basefee)
+  debugGas(`tx add baseFee ${basefee.toString()} to gasUsed (-> ${results.gasUsed.toString()})`)
   // Process any gas refund
-  const gasRefund = evm._refund
+  // TODO: determine why the gasRefund from execResult is not used here directly
+  let gasRefund = evm._refund
   if (gasRefund.gtn(0)) {
-    if (gasRefund.lt(results.gasUsed.divn(2))) {
-      results.gasUsed.isub(gasRefund)
-    } else {
-      results.gasUsed.isub(results.gasUsed.divn(2))
+    if (!gasRefund.lt(results.gasUsed.divn(2))) {
+      gasRefund = results.gasUsed.divn(2)
     }
+    results.gasUsed.isub(gasRefund)
+    debug(
+      `Subtract tx gasRefund (${gasRefund.toString()}) from gasUsed (-> ${results.gasUsed.toString()})`
+    )
+  } else {
+    debug(`No tx gasRefund`)
   }
   results.amountSpent = results.gasUsed.mul(tx.gasPrice)
 
@@ -183,6 +221,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const txCostDiff = txCost.sub(actualTxCost)
   fromAccount.balance.iadd(txCostDiff)
   await state.putAccount(caller, fromAccount)
+  debug(
+    `Refund txCostDiff (${txCostDiff.toString()}) to fromAccount (caller) balance (-> ${fromAccount.balance.toString()})`
+  )
 
   // Update miner's balance
   const miner = block.header.coinbase
@@ -194,6 +235,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // the state.putAccount function puts this into the "touched" accounts. This will thus be removed when
   // we clean the touched accounts below in case we are in a fork >= SpuriousDragon
   await state.putAccount(miner, minerAccount)
+  debug(
+    `tx update miner account (${miner.toString()}) balance (-> ${minerAccount.balance.toString()})`
+  )
 
   /*
    * Cleanup accounts
@@ -203,6 +247,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     for (const k of keys) {
       const address = new Address(Buffer.from(k, 'hex'))
       await state.deleteAccount(address)
+      debug(`tx selfdestruct on address=${address.toString()}`)
     }
   }
   await state.cleanupTouchedAccounts()
@@ -217,6 +262,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    */
   const event: AfterTxEvent = { transaction: tx, ...results }
   await this._emit('afterTx', event)
+  debug(`tx run finished hash=${opts.tx.hash().toString('hex')} sender=${caller.toString()}`)
 
   return results
 }

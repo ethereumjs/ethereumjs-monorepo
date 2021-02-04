@@ -43,18 +43,19 @@
     "VM"
   ],
   "dependencies": {
-    "@ethereumjs/trie": "^4.0.0",
-    "async-eventemitter": "^0.2.4",
-    "core-js-pure": "^3.0.1",
     "@ethereumjs/block": "^3.0.0",
     "@ethereumjs/blockchain": "^5.0.0",
     "@ethereumjs/common": "^2.0.0",
+    "@ethereumjs/trie": "^4.0.0",
     "@ethereumjs/tx": "^3.0.0",
+    "async-eventemitter": "^0.2.4",
+    "core-js-pure": "^3.0.1",
+    "debug": "^2.2.0",
     "ethereumjs-util": "^7.0.7",
     "functional-red-black-tree": "^1.0.1",
+    "mcl-wasm": "^0.7.1",
     "rustbn.js": "~0.2.0",
-    "util.promisify": "^1.0.1",
-    "mcl-wasm": "^0.7.1"
+    "util.promisify": "^1.0.1"
   },
   "devDependencies": {
     "@ethereumjs/config-coverage": "^2.0.0",
