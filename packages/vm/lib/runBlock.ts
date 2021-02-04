@@ -8,6 +8,7 @@ import { RunTxResult } from './runTx'
 import { StateManager } from './state'
 
 import * as DAOConfig from './config/dao_fork_accounts_config.json'
+import { Log } from './evm/types'
 
 /* DAO account list */
 
@@ -79,7 +80,7 @@ interface TxReceipt {
   /**
    * Logs emitted
    */
-  logs: any[]
+  logs: Log[]
 }
 
 /**
