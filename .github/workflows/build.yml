@@ -25,6 +25,6 @@ jobs:
       - run: npm run test
 
       - uses: codecov/codecov-action@v1
-        if: ${{ matrix.node-version == 12 }}
+        if: matrix.node-version == '12.x'
         with:
           file: ./coverage/lcov.info
