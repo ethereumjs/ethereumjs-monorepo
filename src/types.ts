@@ -1,4 +1,4 @@
-import * as BN from 'bn.js'
+import BN from 'bn.js'
 import { Address } from './address'
 import { unpadBuffer } from './bytes'
 

@@ -1,5 +1,5 @@
-import * as assert from 'assert'
-import * as BN from 'bn.js'
+import assert from 'assert'
+import BN from 'bn.js'
 import {
   ecsign,
   ecrecover,
@@ -7,16 +7,16 @@ import {
   hashPersonalMessage,
   isValidSignature,
   fromRpcSig,
-  toRpcSig,
+  toRpcSig
 } from '../src'
 
 const echash = Buffer.from(
   '82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28',
-  'hex',
+  'hex'
 )
 const ecprivkey = Buffer.from(
   '3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1',
-  'hex',
+  'hex'
 )
 const chainId = 3 // ropsten
 
@@ -25,11 +25,11 @@ describe('ecsign', function() {
     const sig = ecsign(echash, ecprivkey)
     assert.deepEqual(
       sig.r,
-      Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex'),
+      Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     )
     assert.deepEqual(
       sig.s,
-      Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex'),
+      Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     )
     assert.equal(sig.v, 27)
   })
@@ -38,11 +38,11 @@ describe('ecsign', function() {
     const sig = ecsign(echash, ecprivkey, chainId)
     assert.deepEqual(
       sig.r,
-      Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex'),
+      Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     )
     assert.deepEqual(
       sig.s,
-      Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex'),
+      Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     )
     assert.equal(sig.v, 41)
   })
@@ -52,11 +52,11 @@ describe('ecsign', function() {
     const sig = ecsign(echash, ecprivkey, chainId)
     assert.deepEqual(
       sig.r,
-      Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex'),
+      Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     )
     assert.deepEqual(
       sig.s,
-      Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex'),
+      Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     )
     assert.equal(sig.v, chainId * 2 + 35)
   })
@@ -113,7 +113,7 @@ describe('hashPersonalMessage', function() {
     const h = hashPersonalMessage(Buffer.from('Hello world'))
     assert.deepEqual(
       h,
-      Buffer.from('8144a6fa26be252b86456491fbcd43c1de7e022241845ffea1c3df066f7cfede', 'hex'),
+      Buffer.from('8144a6fa26be252b86456491fbcd43c1de7e022241845ffea1c3df066f7cfede', 'hex')
     )
   })
   it('should throw if input is not a buffer', function() {
@@ -149,7 +149,7 @@ describe('isValidSignature', function() {
   it('should fail when on homestead and s > secp256k1n/2', function() {
     const SECP256K1_N_DIV_2 = new BN(
       '7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
-      16,
+      16
     )
 
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
@@ -161,7 +161,7 @@ describe('isValidSignature', function() {
   it('should not fail when not on homestead but s > secp256k1n/2', function() {
     const SECP256K1_N_DIV_2 = new BN(
       '7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
-      16,
+      16
     )
 
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
@@ -199,27 +199,27 @@ describe('message sig', function() {
   it('should return hex strings that the RPC can use', function() {
     assert.equal(
       toRpcSig(27, r, s),
-      '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca661b',
+      '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca661b'
     )
     assert.deepEqual(
       fromRpcSig(
-        '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca661b',
+        '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca661b'
       ),
       {
         v: 27,
         r: r,
-        s: s,
-      },
+        s: s
+      }
     )
     assert.deepEqual(
       fromRpcSig(
-        '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca6600',
+        '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca6600'
       ),
       {
         v: 27,
         r: r,
-        s: s,
-      },
+        s: s
+      }
     )
   })
 
@@ -228,17 +228,17 @@ describe('message sig', function() {
     const v = chainId * 2 + 35
     assert.equal(
       toRpcSig(v, r, s, chainId),
-      '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66014f',
+      '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66014f'
     )
     assert.deepEqual(
       fromRpcSig(
-        '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66014f',
+        '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66014f'
       ),
       {
         v,
         r: r,
-        s: s,
-      },
+        s: s
+      }
     )
   })
 
@@ -248,7 +248,7 @@ describe('message sig', function() {
     })
     assert.throws(function() {
       fromRpcSig(
-        '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca',
+        '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca'
       )
     })
   })
@@ -256,7 +256,7 @@ describe('message sig', function() {
   it('pad short r and s values', function() {
     assert.equal(
       toRpcSig(27, r.slice(20), s.slice(20)),
-      '0x00000000000000000000000000000000000000004a1579cf389ef88b20a1abe90000000000000000000000000000000000000000326fa689f228040429e3ca661b',
+      '0x00000000000000000000000000000000000000004a1579cf389ef88b20a1abe90000000000000000000000000000000000000000326fa689f228040429e3ca661b'
     )
   })
 

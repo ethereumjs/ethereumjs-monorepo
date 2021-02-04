@@ -1,6 +1,5 @@
 const { keccak224, keccak384, keccak256: k256, keccak512 } = require('ethereum-cryptography/keccak')
 const createHash = require('create-hash')
-import * as ethjsUtil from 'ethjs-util'
 import * as rlp from 'rlp'
 import { toBuffer, setLengthLeft } from './bytes'
 import { assertIsString, assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
@@ -71,6 +70,17 @@ export const keccakFromArray = function(a: number[], bits: number = 256) {
 }
 
 /**
+ * Creates SHA256 hash of an input.
+ * @param  a The input data (Buffer|Array|String)
+ */
+const _sha256 = function(a: any): Buffer {
+  a = toBuffer(a)
+  return createHash('sha256')
+    .update(a)
+    .digest()
+}
+
+/**
  * Creates SHA256 hash of a Buffer input.
  * @param a The input data (Buffer)
  */
@@ -98,14 +108,20 @@ export const sha256FromArray = function(a: number[]): Buffer {
 }
 
 /**
- * Creates SHA256 hash of an input.
- * @param  a The input data (Buffer|Array|String)
+ * Creates RIPEMD160 hash of the input.
+ * @param a The input data (Buffer|Array|String|Number)
+ * @param padded Whether it should be padded to 256 bits or not
  */
-const _sha256 = function(a: any): Buffer {
+const _ripemd160 = function(a: any, padded: boolean): Buffer {
   a = toBuffer(a)
-  return createHash('sha256')
+  const hash = createHash('rmd160')
     .update(a)
     .digest()
+  if (padded === true) {
+    return setLengthLeft(hash, 32)
+  } else {
+    return hash
+  }
 }
 
 /**
@@ -136,23 +152,6 @@ export const ripemd160FromString = function(a: string, padded: boolean): Buffer 
 export const ripemd160FromArray = function(a: number[], padded: boolean): Buffer {
   assertIsArray(a)
   return _ripemd160(a, padded)
-}
-
-/**
- * Creates RIPEMD160 hash of the input.
- * @param a The input data (Buffer|Array|String|Number)
- * @param padded Whether it should be padded to 256 bits or not
- */
-const _ripemd160 = function(a: any, padded: boolean): Buffer {
-  a = toBuffer(a)
-  const hash = createHash('rmd160')
-    .update(a)
-    .digest()
-  if (padded === true) {
-    return setLengthLeft(hash, 32)
-  } else {
-    return hash
-  }
 }
 
 /**

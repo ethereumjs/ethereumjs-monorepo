@@ -1,4 +1,4 @@
-import * as assert from 'assert'
+import assert from 'assert'
 import {
   keccak,
   keccak256,
@@ -12,7 +12,7 @@ import {
   ripemd160FromString,
   ripemd160FromArray,
   rlphash,
-  toBuffer,
+  toBuffer
 } from '../src'
 
 describe('keccak', function() {

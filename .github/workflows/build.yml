@@ -24,7 +24,7 @@ jobs:
       - run: npm install
       - run: npm run test
 
-      - name: Upload coverage to Coveralls
-        uses: coverallsapp/github-action@master
+      - uses: codecov/codecov-action@v1
+        if: ${{ matrix.node-version == 12 }}
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./coverage/lcov.info

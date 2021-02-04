@@ -1,5 +1,5 @@
 const { ecdsaSign, ecdsaRecover, publicKeyConvert } = require('ethereum-cryptography/secp256k1')
-import * as BN from 'bn.js'
+import BN from 'bn.js'
 import { toBuffer, setLengthLeft, bufferToHex, bufferToInt } from './bytes'
 import { keccak } from './hash'
 import { assertIsBuffer } from './helpers'
@@ -16,7 +16,7 @@ export interface ECDSASignature {
 export const ecsign = function(
   msgHash: Buffer,
   privateKey: Buffer,
-  chainId?: number,
+  chainId?: number
 ): ECDSASignature {
   const sig = ecdsaSign(msgHash, privateKey)
   const recovery: number = sig.recid
@@ -24,10 +24,18 @@ export const ecsign = function(
   const ret = {
     r: Buffer.from(sig.signature.slice(0, 32)),
     s: Buffer.from(sig.signature.slice(32, 64)),
-    v: chainId ? recovery + (chainId * 2 + 35) : recovery + 27,
+    v: chainId ? recovery + (chainId * 2 + 35) : recovery + 27
   }
 
   return ret
+}
+
+function calculateSigRecovery(v: number, chainId?: number): number {
+  return chainId ? v - (2 * chainId + 35) : v - 27
+}
+
+function isValidSigRecovery(recovery: number): boolean {
+  return recovery === 0 || recovery === 1
 }
 
 /**
@@ -39,7 +47,7 @@ export const ecrecover = function(
   v: number,
   r: Buffer,
   s: Buffer,
-  chainId?: number,
+  chainId?: number
 ): Buffer {
   const signature = Buffer.concat([setLengthLeft(r, 32), setLengthLeft(s, 32)], 64)
   const recovery = calculateSigRecovery(v, chainId)
@@ -84,7 +92,7 @@ export const fromRpcSig = function(sig: string): ECDSASignature {
   return {
     v: v,
     r: buf.slice(0, 32),
-    s: buf.slice(32, 64),
+    s: buf.slice(32, 64)
   }
 }
 
@@ -97,11 +105,11 @@ export const isValidSignature = function(
   r: Buffer,
   s: Buffer,
   homesteadOrLater: boolean = true,
-  chainId?: number,
+  chainId?: number
 ): boolean {
   const SECP256K1_N_DIV_2 = new BN(
     '7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
-    16,
+    16
   )
   const SECP256K1_N = new BN('fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141', 16)
 
@@ -137,15 +145,7 @@ export const hashPersonalMessage = function(message: Buffer): Buffer {
   assertIsBuffer(message)
   const prefix = Buffer.from(
     `\u0019Ethereum Signed Message:\n${message.length.toString()}`,
-    'utf-8',
+    'utf-8'
   )
   return keccak(Buffer.concat([prefix, message]))
-}
-
-function calculateSigRecovery(v: number, chainId?: number): number {
-  return chainId ? v - (2 * chainId + 35) : v - 27
-}
-
-function isValidSigRecovery(recovery: number): boolean {
-  return recovery === 0 || recovery === 1
 }

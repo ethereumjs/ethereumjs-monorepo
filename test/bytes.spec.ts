@@ -1,5 +1,5 @@
-import * as assert from 'assert'
-import * as BN from 'bn.js'
+import assert from 'assert'
+import BN from 'bn.js'
 import {
   Address,
   zeros,
@@ -16,7 +16,7 @@ import {
   toUnsigned,
   addHexPrefix,
   toBuffer,
-  baToJSON,
+  baToJSON
 } from '../src'
 
 describe('zeros function', function() {
@@ -218,9 +218,9 @@ describe('toBuffer', function() {
       toBuffer({
         toArray: function(): any {
           return [1]
-        },
+        }
       }),
-      Buffer.from([1]),
+      Buffer.from([1])
     )
   })
   it('should fail', function() {
