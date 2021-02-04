@@ -137,6 +137,7 @@ export default class EVM {
     await this._vm._emit('beforeMessage', message)
 
     await this._state.checkpoint()
+    debug('-'.repeat(100))
     debug(`message checkpoint`)
 
     let result

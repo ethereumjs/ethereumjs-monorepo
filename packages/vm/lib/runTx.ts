@@ -86,6 +86,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
 
   const state = this.stateManager
   await state.checkpoint()
+  debug('-'.repeat(100))
   debug(`tx checkpoint`)
 
   try {
@@ -178,6 +179,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     } value=${value.toString()} data=0x${data.toString('hex')}`
   )
   const results = (await evm.executeMessage(message)) as RunTxResult
+  debug('-'.repeat(100))
   debug(
     `Received tx results gasUsed=${results.gasUsed} execResult: [ gasUsed=${
       results.gasUsed
