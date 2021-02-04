@@ -177,9 +177,7 @@ tape('reorg tests', (t) => {
 
       let signerStates = (blockchain as any)._cliqueLatestSignerStates
       t.ok(
-        !signerStates.find(
-          (s: any) => s[0].eqn(2) && s[1][1].toBuffer().equals(beneficiary1.toBuffer())
-        ),
+        !signerStates.find((s: any) => s[0].eqn(2) && s[1][1].equals(beneficiary1)),
         'should not find reorged signer state'
       )
 
@@ -188,8 +186,8 @@ tape('reorg tests', (t) => {
         !signerVotes.find(
           (v: any) =>
             v[0].eqn(2) &&
-            v[1][0].toBuffer().equals(block1_low.header.cliqueSigner().toBuffer()) &&
-            v[1][1].toBuffer().equals(beneficiary1.toBuffer()) &&
+            v[1][0].equals(block1_low.header.cliqueSigner()) &&
+            v[1][1].equals(beneficiary1) &&
             v[1][2].equals(CLIQUE_NONCE_AUTH)
         ),
         'should not find reorged clique vote'
@@ -198,17 +196,14 @@ tape('reorg tests', (t) => {
       let blockSigners = (blockchain as any)._cliqueLatestBlockSigners
       t.ok(
         !blockSigners.find(
-          (s: any) =>
-            s[0].eqn(1) && s[1].toBuffer().equals(block1_low.header.cliqueSigner().toBuffer())
+          (s: any) => s[0].eqn(1) && s[1].equals(block1_low.header.cliqueSigner())
         ),
         'should not find reorged block signer'
       )
 
       signerStates = (blockchain as any)._cliqueLatestSignerStates
       t.ok(
-        !!signerStates.find(
-          (s: any) => s[0].eqn(2) && s[1][1].toBuffer().equals(beneficiary2.toBuffer())
-        ),
+        !!signerStates.find((s: any) => s[0].eqn(2) && s[1][1].equals(beneficiary2)),
         'should find reorged signer state'
       )
 
@@ -218,8 +213,7 @@ tape('reorg tests', (t) => {
       blockSigners = (blockchain as any)._cliqueLatestBlockSigners
       t.ok(
         !!blockSigners.find(
-          (s: any) =>
-            s[0].eqn(2) && s[1].toBuffer().equals(block2_high.header.cliqueSigner().toBuffer())
+          (s: any) => s[0].eqn(2) && s[1].equals(block2_high.header.cliqueSigner())
         ),
         'should find reorged block signer'
       )

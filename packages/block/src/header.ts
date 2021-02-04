@@ -396,9 +396,7 @@ export class BlockHeader {
       // abort if signers are unavailable
       return true
     }
-    const signerIndex = signers.findIndex((address: Address) =>
-      address.toBuffer().equals(this.cliqueSigner().toBuffer())
-    )
+    const signerIndex = signers.findIndex((address: Address) => address.equals(this.cliqueSigner()))
     const inTurn = this.number.modn(signers.length) === signerIndex
     if (
       (inTurn && this.difficulty.eq(CLIQUE_DIFF_INTURN)) ||
@@ -673,9 +671,9 @@ export class BlockHeader {
    */
   cliqueVerifySignature(signerList: Address[]): boolean {
     this._requireClique('cliqueVerifySignature')
-    const signerAddress = this.cliqueSigner().toBuffer()
+    const signerAddress = this.cliqueSigner()
     const signerFound = signerList.find((signer) => {
-      return signer.toBuffer().equals(signerAddress)
+      return signer.equals(signerAddress)
     })
     return !!signerFound
   }

@@ -167,9 +167,7 @@ tape('Clique: Initialization', (t) => {
 
     // calculate difficulty
     const signers = blockchain.cliqueActiveSigners()
-    const signerIndex = signers.findIndex((address: Address) =>
-      address.toBuffer().equals(signer.address.toBuffer())
-    )
+    const signerIndex = signers.findIndex((address: Address) => address.equals(signer.address))
     const inTurn = number % signers.length === signerIndex
     blockData.header.difficulty = inTurn ? new BN(2) : new BN(1)
 

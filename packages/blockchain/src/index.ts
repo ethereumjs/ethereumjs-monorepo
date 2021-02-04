@@ -431,8 +431,7 @@ export default class Blockchain implements BlockchainInterface {
     let signers = this._cliqueLatestBlockSigners
     signers = signers.slice(signers.length < limit ? 0 : 1)
     signers.push([header.number, header.cliqueSigner()])
-    const seen = signers.filter((s) => s[1].toBuffer().equals(header.cliqueSigner().toBuffer()))
-      .length
+    const seen = signers.filter((s) => s[1].equals(header.cliqueSigner())).length
     return seen > 1
   }
 
@@ -502,9 +501,7 @@ export default class Blockchain implements BlockchainInterface {
 
       const alreadyVoted = this._cliqueLatestVotes.find((vote) => {
         return (
-          vote[1][0].toBuffer().equals(signer.toBuffer()) &&
-          vote[1][1].toBuffer().equals(beneficiary.toBuffer()) &&
-          vote[1][2].equals(nonce)
+          vote[1][0].equals(signer) && vote[1][1].equals(beneficiary) && vote[1][2].equals(nonce)
         )
       })
         ? true
@@ -519,8 +516,8 @@ export default class Blockchain implements BlockchainInterface {
       this._cliqueLatestVotes = this._cliqueLatestVotes.filter(
         (vote) =>
           !(
-            vote[1][0].toBuffer().equals(signer.toBuffer()) &&
-            vote[1][1].toBuffer().equals(beneficiary.toBuffer()) &&
+            vote[1][0].equals(signer) &&
+            vote[1][1].equals(beneficiary) &&
             vote[1][2].equals(oppositeNonce)
           )
       )
@@ -534,13 +531,13 @@ export default class Blockchain implements BlockchainInterface {
         const beneficiaryVotesAuth = this._cliqueLatestVotes.filter(
           (vote) =>
             vote[0].gte(lastEpochBlockNumber) &&
-            vote[1][1].toBuffer().equals(beneficiary.toBuffer()) &&
+            vote[1][1].equals(beneficiary) &&
             vote[1][2].equals(CLIQUE_NONCE_AUTH)
         )
         const beneficiaryVotesDrop = this._cliqueLatestVotes.filter(
           (vote) =>
             vote[0].gte(lastEpochBlockNumber) &&
-            vote[1][1].toBuffer().equals(beneficiary.toBuffer()) &&
+            vote[1][1].equals(beneficiary) &&
             vote[1][2].equals(CLIQUE_NONCE_DROP)
         )
         const limit = this.cliqueSignerLimit()
@@ -555,16 +552,14 @@ export default class Blockchain implements BlockchainInterface {
             activeSigners.push(beneficiary)
             // Discard votes for added signer
             this._cliqueLatestVotes = this._cliqueLatestVotes.filter(
-              (vote) => !vote[1][1].toBuffer().equals(beneficiary.toBuffer())
+              (vote) => !vote[1][1].equals(beneficiary)
             )
           } else {
             // Drop signer
-            activeSigners = activeSigners.filter(
-              (signer) => !signer.toBuffer().equals(beneficiary.toBuffer())
-            )
+            activeSigners = activeSigners.filter((signer) => !signer.equals(beneficiary))
             // Discard votes from removed signer
             this._cliqueLatestVotes = this._cliqueLatestVotes.filter(
-              (vote) => !vote[1][0].toBuffer().equals(beneficiary.toBuffer())
+              (vote) => !vote[1][0].equals(beneficiary)
             )
           }
           const newSignerState: CliqueSignerState = [header.number, activeSigners]
@@ -892,7 +887,7 @@ export default class Blockchain implements BlockchainInterface {
             const checkpointSigners = header.cliqueEpochTransitionSigners()
             const activeSigners = this.cliqueActiveSigners()
             for (const [i, cSigner] of checkpointSigners.entries()) {
-              if (!activeSigners[i] || !activeSigners[i].toBuffer().equals(cSigner.toBuffer())) {
+              if (!activeSigners[i] || !activeSigners[i].equals(cSigner)) {
                 throw new Error(
                   `checkpoint signer not found in active signers list at index ${i}: ${cSigner.toString()}`
                 )

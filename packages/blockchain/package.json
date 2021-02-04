@@ -39,7 +39,7 @@
     "@ethereumjs/block": "^3.0.0",
     "@ethereumjs/common": "^2.0.0",
     "@ethereumjs/ethash": "^1.0.0",
-    "ethereumjs-util": "^7.0.7",
+    "ethereumjs-util": "^7.0.8",
     "level-mem": "^5.0.1",
     "lru-cache": "^5.1.1",
     "rlp": "^2.2.3",

@@ -50,7 +50,7 @@
     "@ethereumjs/blockchain": "^5.0.0",
     "@ethereumjs/common": "^2.0.0",
     "@ethereumjs/tx": "^3.0.0",
-    "ethereumjs-util": "^7.0.7",
+    "ethereumjs-util": "^7.0.8",
     "functional-red-black-tree": "^1.0.1",
     "rustbn.js": "~0.2.0",
     "util.promisify": "^1.0.1",

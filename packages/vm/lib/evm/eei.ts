@@ -126,7 +126,7 @@ export default class EEI {
    */
   async getExternalBalance(address: Address): Promise<BN> {
     // shortcut if current account
-    if (address.buf.equals(this._env.address.buf)) {
+    if (address.equals(this._env.address)) {
       return this._env.contract.balance
     }
 

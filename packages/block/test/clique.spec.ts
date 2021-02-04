@@ -87,10 +87,7 @@ tape('[Header]: Clique PoA Functionality', function (t) {
 
     st.equal(header.extraData.length, 97)
     st.ok(header.cliqueVerifySignature([A.address]), 'should verify signature')
-    st.ok(
-      header.cliqueSigner().toBuffer().equals(A.address.toBuffer()),
-      'should recover the correct signer address'
-    )
+    st.ok(header.cliqueSigner().equals(A.address), 'should recover the correct signer address')
 
     st.end()
   })
