@@ -15,6 +15,7 @@ import { getPrecompile, PrecompileFunc } from './precompiles'
 import TxContext from './txContext'
 import Message from './message'
 import EEI from './eei'
+import { short } from './opcodes/util'
 import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
 
 const debug = createDebugLogger('vm:evm')
@@ -156,8 +157,8 @@ export default class EVM {
         result.gasUsed
       } exceptionError=${
         result.execResult.exceptionError ? result.execResult.exceptionError.toString() : ''
-      } returnValue=${result.execResult.returnValue.toString(
-        'hex'
+      } returnValue=${short(
+        result.execResult.returnValue
       )} gasRefund=${result.execResult.gasRefund?.toString()} ]`
     )
     // TODO: Move `gasRefund` to a tx-level result object
@@ -336,7 +337,8 @@ export default class EVM {
         debug(`Not enough gas or code size not allowed (Frontier)`)
         if (totalGas.sub(returnFee).lte(message.gasLimit)) {
           // we cannot pay the code deposit fee (but the deposit code actually did run)
-          result = { ...result, ...COOGResult(totalGas.sub(returnFee)) }
+          //result = { ...result, ...COOGResult(totalGas.sub(returnFee)) }
+          result.gasUsed = totalGas.sub(returnFee)
         } else {
           result = { ...result, ...OOGResult(message.gasLimit) }
         }

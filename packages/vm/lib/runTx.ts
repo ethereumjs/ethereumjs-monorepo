@@ -5,6 +5,7 @@ import { Transaction } from '@ethereumjs/tx'
 import VM from './index'
 import Bloom from './bloom'
 import { default as EVM, EVMResult } from './evm/evm'
+import { short } from './evm/opcodes/util'
 import Message from './evm/message'
 import TxContext from './evm/txContext'
 
@@ -181,9 +182,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     `Received tx results gasUsed=${results.gasUsed} execResult: [ gasUsed=${
       results.gasUsed
     } exceptionError=${
-      results.execResult.exceptionError ? results.execResult.exceptionError.toString() : ''
-    } returnValue=${results.execResult.returnValue.toString(
-      'hex'
+      results.execResult.exceptionError ? results.execResult.exceptionError.error : ''
+    } returnValue=${short(
+      results.execResult.returnValue
     )} gasRefund=${results.execResult.gasRefund?.toString()} ]`
   )
 
