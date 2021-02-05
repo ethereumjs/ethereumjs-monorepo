@@ -72,6 +72,15 @@ export function divCeil(a: BN, b: BN): BN {
   return div.isNeg() ? div.isubn(1) : div.iaddn(1)
 }
 
+export function short(buffer: Buffer): string {
+  const MAX_LENGTH = 50
+  const bufferStr = buffer.toString('hex')
+  if (bufferStr.length <= MAX_LENGTH) {
+    return bufferStr
+  }
+  return bufferStr.slice(0, MAX_LENGTH) + '...'
+}
+
 /**
  * Calls relevant stateManager.getContractStorage method based on hardfork
  *
