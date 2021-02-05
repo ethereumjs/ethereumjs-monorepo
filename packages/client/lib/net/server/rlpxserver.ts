@@ -1,10 +1,5 @@
 import { randomBytes } from 'crypto'
-import {
-  RLPx as Devp2pRLPx,
-  Peer as Devp2pRLPxPeer,
-  DPT as Devp2pDPT,
-  DNS as Devp2pDNS,
-} from '@ethereumjs/devp2p'
+import { RLPx as Devp2pRLPx, Peer as Devp2pRLPxPeer, DPT as Devp2pDPT } from '@ethereumjs/devp2p'
 import { RlpxPeer } from '../peer/rlpxpeer'
 import { Server, ServerOptions } from './server'
 
@@ -34,6 +29,7 @@ const ignoredErrors = new RegExp(
     'Invalid timestamp buffer',
     'Invalid type',
     'Timeout error: ping', // connection
+    'Peer is banned', // connection
 
     // ECIES message encryption
     'Invalid MAC',
@@ -133,10 +129,13 @@ export class RlpxServer extends Server {
   }
 
   /**
-   * Bootstrap DNS mapped peers and then bootnode peers from the network
+   * Bootstrap bootnode and DNS mapped peers from the network
    */
   async bootstrap(): Promise<void> {
-    const promises = this.bootnodes.map((node) => {
+    const self = this
+
+    // Bootnodes
+    let promises = this.bootnodes.map((node) => {
       const bootnode = {
         address: node.ip!,
         udpPort: node.port,
@@ -144,26 +143,18 @@ export class RlpxServer extends Server {
       }
       return this.dpt!.bootstrap(bootnode)
     })
+
+    // DNS peers
+    // lint complains that conditional value "is always truthy" but it's not, due to `!`
+    // eslint-disable-next-line
+    const dnsPeers = (await this.dpt!.getDnsPeers()) || []
+    promises = promises.concat(dnsPeers.map((node) => self.dpt!.bootstrap(node)))
+
     for (const promise of promises) {
       try {
         await promise
       } catch (e) {
         this.error(e)
-      }
-    }
-    // Fill remainder by obtaining maxPeers from DNS records
-    if (this.dnsNetworks.length) {
-      const dns = new Devp2pDNS({ dnsServerAddress: this.config.dnsAddr })
-      const nodes = await dns.getPeers(this.config.maxPeers, this.dnsNetworks)
-      const promises = nodes.map((node) => {
-        return this.dpt!.bootstrap(node)
-      })
-      for (const promise of promises) {
-        try {
-          await promise
-        } catch (e) {
-          this.error(e)
-        }
       }
     }
   }
@@ -225,6 +216,10 @@ export class RlpxServer extends Server {
         udpPort: null,
         tcpPort: null,
       },
+      shouldFindNeighbours: this.dnsNetworks.length ? false : true,
+      dnsRefreshQuantity: this.config.maxPeers,
+      dnsNetworks: this.dnsNetworks,
+      dnsAddr: this.config.dnsAddr,
     })
 
     this.dpt.on('error', (e: Error) => this.error(e))

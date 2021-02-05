@@ -1,6 +1,7 @@
 import { Test } from 'tape'
 import { DPT, ETH, RLPx, genPrivateKey } from '../../src'
 import Common from '@ethereumjs/common'
+import testdata from '../testdata.json'
 
 export const localhost = '127.0.0.1'
 export const basePort = 30306
@@ -16,6 +17,26 @@ export function getTestDPTs(numDPTs: number) {
         tcpPort: basePort + i,
       },
       timeout: 100,
+    })
+    dpt.bind(basePort + i)
+    dpts.push(dpt)
+  }
+  return dpts
+}
+
+export function getTestDPTsWithDns(numDPTs: number) {
+  const dpts = []
+
+  for (let i = 0; i < numDPTs; ++i) {
+    const dpt = new DPT(genPrivateKey(), {
+      endpoint: {
+        address: localhost,
+        udpPort: basePort + i,
+        tcpPort: basePort + i,
+      },
+      timeout: 100,
+      refreshInterval: 10,
+      dnsNetworks: [testdata.dns.enrTree],
     })
     dpt.bind(basePort + i)
     dpts.push(dpt)

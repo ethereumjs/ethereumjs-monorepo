@@ -62,6 +62,7 @@ export class DNS {
 
       if (this._isNewPeer(peer, peers)) {
         peers.push(peer as PeerInfo)
+        debug(`got new peer candidate from DNS address=${peer!.address}`)
       }
 
       totalSearches++
