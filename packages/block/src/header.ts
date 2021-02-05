@@ -4,6 +4,8 @@ import {
   BN,
   bnToHex,
   ecrecover,
+  ecsign,
+  intToBuffer,
   KECCAK256_RLP_ARRAY,
   KECCAK256_RLP,
   rlp,
@@ -238,6 +240,11 @@ export class BlockHeader {
       this.difficulty = this.canonicalDifficulty(options.calcDifficultyFromHeader)
     }
 
+    // If cliqueSigner is provided, seal block with provided privateKey.
+    if (options.cliqueSigner) {
+      this.extraData = this.cliqueSealBlock(options.cliqueSigner)
+    }
+
     const freeze = options?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -371,6 +378,7 @@ export class BlockHeader {
 
   /**
    * For poa, validates `difficulty` is correctly identified as INTURN or NOTURN.
+   * Returns false if invalid.
    */
   validateCliqueDifficulty(blockchain: Blockchain): boolean {
     if (!this.difficulty.eq(CLIQUE_DIFF_INTURN) && !this.difficulty.eq(CLIQUE_DIFF_NOTURN)) {
@@ -378,14 +386,17 @@ export class BlockHeader {
         `difficulty for clique block must be INTURN (2) or NOTURN (1), received: ${this.difficulty.toString()}`
       )
     }
-    const signers = blockchain.cliqueActiveSigners()
+    if ('cliqueActiveSigners' in blockchain === false) {
+      throw new Error(
+        'PoA blockchain requires method blockchain.cliqueActiveSigners() to validate clique difficulty'
+      )
+    }
+    const signers = (blockchain as any).cliqueActiveSigners()
     if (signers.length === 0) {
       // abort if signers are unavailable
       return true
     }
-    const signerIndex = signers.findIndex((address: Address) =>
-      address.toBuffer().equals(this.cliqueSigner().toBuffer())
-    )
+    const signerIndex = signers.findIndex((address: Address) => address.equals(this.cliqueSigner()))
     const inTurn = this.number.modn(signers.length) === signerIndex
     if (
       (inTurn && this.difficulty.eq(CLIQUE_DIFF_INTURN)) ||
@@ -426,10 +437,13 @@ export class BlockHeader {
    * - The `parentHash` is part of the blockchain (it is a valid header)
    * - Current block number is parent block number + 1
    * - Current block has a strictly higher timestamp
-   * - Additional PoA -> Clique check: Current block has a timestamp diff greater or equal to PERIOD
-   * - Current block has valid difficulty (only PoW, otherwise pass) and gas limit
-   * - In case that the header is an uncle header, it should not be too old or young in the chain.
-   * @param blockchain - validate against a @ethereumjs/blockchain
+   * - Additional PoW checks ->
+   *   - Current block has valid difficulty and gas limit
+   *   - In case that the header is an uncle header, it should not be too old or young in the chain.
+   * - Additional PoA clique checks ->
+   *   - Current block has a timestamp diff greater or equal to PERIOD
+   *   - Current block has difficulty correctly marked as INTURN or NOTURN
+   * @param blockchain - validate against an @ethereumjs/blockchain
    * @param height - If this is an uncle header, this is the height of the block that is including it
    */
   async validate(blockchain: Blockchain, height?: BN): Promise<void> {
@@ -603,6 +617,27 @@ export class BlockHeader {
   }
 
   /**
+   * Seal block with the provided signer.
+   * Returns the final extraData field to be assigned to `this.extraData`.
+   * @hidden
+   */
+  private cliqueSealBlock(privateKey: Buffer) {
+    this._requireClique('cliqueSealBlock')
+    const signature = ecsign(this.hash(), privateKey)
+    const signatureB = Buffer.concat([signature.r, signature.s, intToBuffer(signature.v - 27)])
+
+    let extraDataWithoutSeal = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
+    // ensure extraDataWithoutSeal is at least 32 bytes (CLIQUE_EXTRA_VANITY)
+    if (extraDataWithoutSeal.length < CLIQUE_EXTRA_VANITY) {
+      const remainingLength = Buffer.alloc(CLIQUE_EXTRA_VANITY - extraDataWithoutSeal.length)
+      extraDataWithoutSeal = Buffer.concat([extraDataWithoutSeal, remainingLength])
+    }
+
+    const extraData = Buffer.concat([extraDataWithoutSeal, signatureB])
+    return extraData
+  }
+
+  /**
    * Returns a list of signers
    * (only clique PoA, throws otherwise)
    *
@@ -636,9 +671,9 @@ export class BlockHeader {
    */
   cliqueVerifySignature(signerList: Address[]): boolean {
     this._requireClique('cliqueVerifySignature')
-    const signerAddress = this.cliqueSigner().toBuffer()
+    const signerAddress = this.cliqueSigner()
     const signerFound = signerList.find((signer) => {
-      return signer.toBuffer().equals(signerAddress)
+      return signer.equals(signerAddress)
     })
     return !!signerFound
   }

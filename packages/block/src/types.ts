@@ -1,4 +1,4 @@
-import { Address, AddressLike, BNLike, BufferLike } from 'ethereumjs-util'
+import { AddressLike, BNLike, BufferLike } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { TxData, JsonTx } from '@ethereumjs/tx'
 import { Block } from './block'
@@ -54,6 +54,11 @@ export interface BlockOptions {
    * Default: true
    */
   freeze?: boolean
+  /**
+   * Provide a clique signer's privateKey to seal this block.
+   * Will throw if provided on a non-PoA chain.
+   */
+  cliqueSigner?: Buffer
 }
 
 /**
@@ -130,5 +135,4 @@ export interface JsonHeader {
 
 export interface Blockchain {
   getBlock(hash: Buffer): Promise<Block>
-  cliqueActiveSigners(): Address[]
 }

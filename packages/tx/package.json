@@ -32,7 +32,7 @@
   "license": "MPL-2.0",
   "dependencies": {
     "@ethereumjs/common": "^2.0.0",
-    "ethereumjs-util": "^7.0.7"
+    "ethereumjs-util": "^7.0.8"
   },
   "devDependencies": {
     "@ethereumjs/config-coverage": "^2.0.0",
