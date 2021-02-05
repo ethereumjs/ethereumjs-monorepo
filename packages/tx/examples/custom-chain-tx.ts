@@ -1,4 +1,4 @@
-import { privateToAddress } from 'ethereumjs-util'
+import { Address } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Transaction } from '../src'
 
@@ -38,8 +38,9 @@ const privateKey = Buffer.from(
 )
 
 const signedTx = tx.sign(privateKey)
+const address = Address.fromPrivateKey(privateKey)
 
-if (signedTx.validate() && signedTx.getSenderAddress().buf.equals(privateToAddress(privateKey))) {
+if (signedTx.validate() && signedTx.getSenderAddress().equals(address)) {
   console.log('Valid signature')
 } else {
   console.log('Invalid signature')

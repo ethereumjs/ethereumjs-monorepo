@@ -11,7 +11,7 @@ tape('[Block]: Header functions', function (t) {
     function compareDefaultHeader(st: tape.Test, header: BlockHeader) {
       st.ok(header.parentHash.equals(zeros(32)))
       st.ok(header.uncleHash.equals(KECCAK256_RLP_ARRAY))
-      st.ok(header.coinbase.buf.equals(Address.zero().buf))
+      st.ok(header.coinbase.equals(Address.zero()))
       st.ok(header.stateRoot.equals(zeros(32)))
       st.ok(header.transactionsTrie.equals(KECCAK256_RLP))
       st.ok(header.receiptTrie.equals(KECCAK256_RLP))
