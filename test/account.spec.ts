@@ -1,5 +1,5 @@
-import * as assert from 'assert'
-import * as BN from 'bn.js'
+import assert from 'assert'
+import BN from 'bn.js'
 import * as rlp from 'rlp'
 import {
   Account,
@@ -14,7 +14,7 @@ import {
   toBuffer,
   isValidChecksumAddress,
   isValidAddress,
-  toChecksumAddress,
+  toChecksumAddress
 } from '../src'
 const eip1014Testdata = require('./testdata/eip1014Examples.json')
 
@@ -30,13 +30,13 @@ describe('Account', function() {
     it('should have stateRoot equal to KECCAK256_RLP', function() {
       assert.ok(
         account.stateRoot.toString('hex'),
-        '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+        '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
       )
     })
     it('should have codeHash equal to KECCAK256_NULL', function() {
       assert.equal(
         account.codeHash.toString('hex'),
-        'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+        'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
       )
     })
   })
@@ -46,7 +46,7 @@ describe('Account', function() {
       '0x02', // nonce
       '0x0384', // balance
       '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', // stateRoot
-      '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470', // codeHash
+      '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470' // codeHash
     ]
     const account = Account.fromValuesArray(raw.map(toBuffer))
     it('should have correct nonce', function() {
@@ -58,13 +58,13 @@ describe('Account', function() {
     it('should have correct stateRoot', function() {
       assert.equal(
         account.stateRoot.toString('hex'),
-        '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+        '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
       )
     })
     it('should have correct codeHash', function() {
       assert.equal(
         account.codeHash.toString('hex'),
-        'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+        'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
       )
     })
   })
@@ -74,7 +74,7 @@ describe('Account', function() {
       nonce: '0x02',
       balance: '0x0384',
       stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      codeHash: '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      codeHash: '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
     }
     const account = Account.fromAccountData(raw)
     it('should have correct nonce', function() {
@@ -86,13 +86,13 @@ describe('Account', function() {
     it('should have correct stateRoot', function() {
       assert.equal(
         account.stateRoot.toString('hex'),
-        '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+        '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
       )
     })
     it('should have correct codeHash', function() {
       assert.equal(
         account.codeHash.toString('hex'),
-        'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+        'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
       )
     })
   })
@@ -100,7 +100,7 @@ describe('Account', function() {
   describe('from RLP data', function() {
     const accountRlp = Buffer.from(
       'f84602820384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
-      'hex',
+      'hex'
     )
     const account = Account.fromRlpSerializedAccount(accountRlp)
     it('should have correct nonce', function() {
@@ -112,13 +112,13 @@ describe('Account', function() {
     it('should have correct stateRoot', function() {
       assert.equal(
         account.stateRoot.toString('hex'),
-        '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+        '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
       )
     })
     it('should have correct codeHash', function() {
       assert.equal(
         account.codeHash.toString('hex'),
-        'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+        'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
       )
     })
   })
@@ -128,7 +128,7 @@ describe('Account', function() {
       nonce: '0x01',
       balance: '0x42',
       stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
     }
     const account = Account.fromAccountData(raw)
     const accountRlp = rlp.encode([raw.nonce, raw.balance, raw.stateRoot, raw.codeHash])
@@ -141,7 +141,7 @@ describe('Account', function() {
     it('should return false for a non-contract account', function() {
       const accountRlp = Buffer.from(
         'f84602820384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
-        'hex',
+        'hex'
       )
       const account = Account.fromRlpSerializedAccount(accountRlp)
       assert.equal(account.isContract(), false)
@@ -152,7 +152,7 @@ describe('Account', function() {
         nonce: '0x01',
         balance: '0x0042',
         stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-        codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+        codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
       }
       const account = Account.fromAccountData(raw)
       assert.ok(account.isContract())
@@ -170,7 +170,7 @@ describe('Account', function() {
         nonce: '0x01',
         balance: '0x0042',
         stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-        codeHash: '0xd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b',
+        codeHash: '0xd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b'
       }
       const account = Account.fromAccountData(raw)
       assert.equal(account.isEmpty(), false)
@@ -253,56 +253,56 @@ describe('isValidPublic', function() {
   it('should fail on too short input', function() {
     const pubKey = Buffer.from(
       '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae744',
-      'hex',
+      'hex'
     )
     assert.equal(isValidPublic(pubKey), false)
   })
   it('should fail on too big input', function() {
     const pubKey = Buffer.from(
       '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d00',
-      'hex',
+      'hex'
     )
     assert.equal(isValidPublic(pubKey), false)
   })
   it('should fail on SEC1 key', function() {
     const pubKey = Buffer.from(
       '043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
-      'hex',
+      'hex'
     )
     assert.equal(isValidPublic(pubKey), false)
   })
   it("shouldn't fail on SEC1 key with sanitize enabled", function() {
     const pubKey = Buffer.from(
       '043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
-      'hex',
+      'hex'
     )
     assert.equal(isValidPublic(pubKey, true), true)
   })
   it('should fail with an invalid SEC1 public key', function() {
     const pubKey = Buffer.from(
       '023a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
-      'hex',
+      'hex'
     )
     assert.equal(isValidPublic(pubKey, true), false)
   })
   it('should work with compressed keys with sanitize enabled', function() {
     const pubKey = Buffer.from(
       '033a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a',
-      'hex',
+      'hex'
     )
     assert.equal(isValidPublic(pubKey, true), true)
   })
   it('should work with sanitize enabled', function() {
     const pubKey = Buffer.from(
       '043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
-      'hex',
+      'hex'
     )
     assert.equal(isValidPublic(pubKey, true), true)
   })
   it('should work otherwise', function() {
     const pubKey = Buffer.from(
       '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
-      'hex',
+      'hex'
     )
     assert.equal(isValidPublic(pubKey), true)
   })
@@ -345,7 +345,7 @@ describe('publicToAddress', function() {
   it('should produce an address given a public key', function() {
     const pubKey = Buffer.from(
       '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
-      'hex',
+      'hex'
     )
     const address = '2f015c60e0be116b1f0cd534704db9c92118fb6a'
     const r = publicToAddress(pubKey)
@@ -354,7 +354,7 @@ describe('publicToAddress', function() {
   it('should produce an address given a SEC1 public key', function() {
     const pubKey = Buffer.from(
       '043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
-      'hex',
+      'hex'
     )
     const address = '2f015c60e0be116b1f0cd534704db9c92118fb6a'
     const r = publicToAddress(pubKey, true)
@@ -363,7 +363,7 @@ describe('publicToAddress', function() {
   it("shouldn't produce an address given an invalid SEC1 public key", function() {
     const pubKey = Buffer.from(
       '023a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
-      'hex',
+      'hex'
     )
     assert.throws(function() {
       publicToAddress(pubKey, true)
@@ -372,7 +372,7 @@ describe('publicToAddress', function() {
   it("shouldn't produce an address given an invalid public key", function() {
     const pubKey = Buffer.from(
       '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae744',
-      'hex',
+      'hex'
     )
     assert.throws(function() {
       publicToAddress(pubKey)
@@ -393,7 +393,7 @@ describe('privateToPublic', function() {
       '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
     const privateKey = Buffer.from(
       'ea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c5f',
-      'hex',
+      'hex'
     )
     const r: any = privateToPublic(privateKey).toString('hex')
     assert.equal(r.toString('hex'), pubKey)
@@ -401,11 +401,11 @@ describe('privateToPublic', function() {
   it("shouldn't produce a public key given an invalid private key", function() {
     const privateKey1 = Buffer.from(
       'ea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c5f2a',
-      'hex',
+      'hex'
     )
     const privateKey2 = Buffer.from(
       'ea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c',
-      'hex',
+      'hex'
     )
     assert.throws(function() {
       privateToPublic(privateKey1)
@@ -432,7 +432,7 @@ describe('privateToAddress', function() {
     // Our private key
     const privateKey = Buffer.from(
       'ea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c5f',
-      'hex',
+      'hex'
     )
     const r: any = privateToAddress(privateKey).toString('hex')
     assert.equal(r.toString('hex'), address)
@@ -443,7 +443,7 @@ describe('generateAddress', function() {
   it('should produce an address given a public key', function() {
     const add: any = generateAddress(
       Buffer.from('990ccf8a0de58091c028d6ff76bb235ee67c1c39', 'utf8'),
-      toBuffer(14),
+      toBuffer(14)
     ).toString('hex')
     assert.equal(add.toString('hex'), '936a4295d8d74e310c0c95f0a63e53737b998d12')
   })
@@ -453,7 +453,7 @@ describe('generateAddress with hex prefix', function() {
   it('should produce an address given a public key', function() {
     const add: any = generateAddress(
       toBuffer('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
-      toBuffer(14),
+      toBuffer(14)
     ).toString('hex')
     assert.equal(add.toString('hex'), 'd658a4b8247c14868f3c512fa5cbb6e458e4a989')
   })
@@ -463,7 +463,7 @@ describe('generateAddress with nonce 0 (special case)', function() {
   it('should produce an address given a public key', function() {
     const add: any = generateAddress(
       toBuffer('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
-      toBuffer(0),
+      toBuffer(0)
     ).toString('hex')
     assert.equal(add.toString('hex'), 'bfa69ba91385206bfdd2d8b9c1a5d6c10097a85b')
   })
@@ -474,7 +474,7 @@ describe('generateAddress with non-buffer inputs', function() {
     assert.throws(function() {
       generateAddress(
         (<unknown>'0x990ccf8a0de58091c028d6ff76bb235ee67c1c39') as Buffer,
-        toBuffer(0),
+        toBuffer(0)
       )
     })
   })
@@ -482,7 +482,7 @@ describe('generateAddress with non-buffer inputs', function() {
     assert.throws(function() {
       generateAddress(
         toBuffer('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
-        (<unknown>0) as Buffer,
+        (<unknown>0) as Buffer
       )
     })
   })
@@ -490,12 +490,12 @@ describe('generateAddress with non-buffer inputs', function() {
 
 describe('generateAddress2: EIP-1014 testdata examples', function() {
   for (let i = 0; i <= 6; i++) {
-    let e = eip1014Testdata[i]
+    const e = eip1014Testdata[i]
     it(`${e['comment']}: should generate the addresses provided`, function() {
-      let result = generateAddress2(
+      const result = generateAddress2(
         toBuffer(e['address']),
         toBuffer(e['salt']),
-        toBuffer(e['initCode']),
+        toBuffer(e['initCode'])
       )
       assert.equal('0x' + result.toString('hex'), e['result'])
     })
@@ -510,7 +510,7 @@ describe('generateAddress2: non-buffer inputs', function() {
       generateAddress2(
         (<unknown>e['address']) as Buffer,
         toBuffer(e['salt']),
-        toBuffer(e['initCode']),
+        toBuffer(e['initCode'])
       )
     })
   })
@@ -519,7 +519,7 @@ describe('generateAddress2: non-buffer inputs', function() {
       generateAddress2(
         toBuffer(e['address']),
         (<unknown>e['salt']) as Buffer,
-        toBuffer(e['initCode']),
+        toBuffer(e['initCode'])
       )
     })
   })
@@ -528,7 +528,7 @@ describe('generateAddress2: non-buffer inputs', function() {
       generateAddress2(
         toBuffer(e['address']),
         toBuffer(e['salt']),
-        (<unknown>e['initCode']) as Buffer,
+        (<unknown>e['initCode']) as Buffer
       )
     })
   })
@@ -545,7 +545,7 @@ const eip55ChecksumAddresses = [
   '0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed',
   '0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359',
   '0xdbF03B407c01E7cD3CBea99509d93f8DDDC8C6FB',
-  '0xD1220A0cf47c7B9Be7A2E6BA89F429762e7b9aDb',
+  '0xD1220A0cf47c7B9Be7A2E6BA89F429762e7b9aDb'
 ]
 
 const eip1191ChecksummAddresses = {
@@ -558,7 +558,7 @@ const eip1191ChecksummAddresses = {
     '0xd1220a0CF47C7B9Be7A2E6ba89F429762E7B9Adb',
     '0xdBf03b407c01e7cD3CBea99509d93f8dDDC8C6fB',
     '0xDe709F2102306220921060314715629080E2fb77',
-    '0xfb6916095Ca1dF60bB79cE92ce3ea74C37c5D359',
+    '0xfb6916095Ca1dF60bB79cE92ce3ea74C37c5D359'
   ],
   30: [
     '0x6549F4939460DE12611948B3F82B88C3C8975323',
@@ -570,7 +570,7 @@ const eip1191ChecksummAddresses = {
     '0xD1220A0Cf47c7B9BE7a2e6ba89F429762E7B9adB',
     '0xDBF03B407c01E7CD3cBea99509D93F8Dddc8C6FB',
     '0xDe709F2102306220921060314715629080e2FB77',
-    '0xFb6916095cA1Df60bb79ce92cE3EA74c37c5d359',
+    '0xFb6916095cA1Df60bb79ce92cE3EA74c37c5d359'
   ],
   31: [
     '0x42712D45473476B98452F434E72461577D686318',
@@ -583,15 +583,15 @@ const eip1191ChecksummAddresses = {
     '0xDE709F2102306220921060314715629080e2Fb77',
     '0xFb6916095CA1dF60bb79CE92ce3Ea74C37c5D359',
     '0xd1220a0CF47c7B9Be7A2E6Ba89f429762E7b9adB',
-    '0xdbF03B407C01E7cd3cbEa99509D93f8dDDc8C6fB',
-  ],
+    '0xdbF03B407C01E7cd3cbEa99509D93f8dDDc8C6fB'
+  ]
 }
 
 describe('.toChecksumAddress()', function() {
   describe('EIP55', function() {
     it('should work', function() {
       for (let i = 0; i < eip55ChecksumAddresses.length; i++) {
-        let tmp = eip55ChecksumAddresses[i]
+        const tmp = eip55ChecksumAddresses[i]
         assert.equal(toChecksumAddress(tmp.toLowerCase()), tmp)
       }
     })

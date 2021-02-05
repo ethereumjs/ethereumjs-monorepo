@@ -1,6 +1,6 @@
-import * as assert from 'assert'
+import assert from 'assert'
 
-import * as BN_export from 'bn.js'
+import BN_export from 'bn.js'
 import * as rlp_export from 'rlp'
 
 import * as src from '../src'
@@ -43,8 +43,8 @@ describe('External rlp export', () => {
 
   it('should use a rlp function correctly', () => {
     const nestedList = [[], [[]], [[], [[]]]]
-    var encoded = src.rlp.encode(nestedList)
-    var decoded = src.rlp.decode(encoded)
+    const encoded = src.rlp.encode(nestedList)
+    const decoded = src.rlp.decode(encoded)
     assert.deepEqual(nestedList, decoded)
   })
 
@@ -52,24 +52,28 @@ describe('External rlp export', () => {
     // bad values: wrong encoded a zero
     const val = Buffer.from(
       'f9005f030182520894b94f5374fce5edbc8e2a8697c15331677e6ebf0b0a801ca098ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4aa08887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a3',
-      'hex',
+      'hex'
     )
     let result
     try {
       result = src.rlp.decode(val)
-    } catch (e) {}
+    } catch (e) {
+      // pass
+    }
     assert.equal(result, undefined)
 
     // bad values: invalid length
     const a = Buffer.from(
       'f86081000182520894b94f5374fce5edbc8e2a8697c15331677e6ebf0b0a801ca098ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4aa08887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a3',
-      'hex',
+      'hex'
     )
 
     let res
     try {
       result = src.rlp.decode(a)
-    } catch (e) {}
+    } catch (e) {
+      // pass
+    }
     assert.equal(res, undefined)
   })
 })
@@ -90,11 +94,11 @@ describe('External ethjsUtil export', () => {
       'toAscii',
       'getKeys',
       'isHexString',
-      'toUtf8',
+      'toUtf8'
     ]
 
     expected.forEach(prop => {
-      assert.ok(src.hasOwnProperty(prop))
+      assert.ok(prop in src)
     })
   })
 

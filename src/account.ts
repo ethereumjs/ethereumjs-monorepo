@@ -1,5 +1,5 @@
-import * as assert from 'assert'
-import * as BN from 'bn.js'
+import assert from 'assert'
+import BN from 'bn.js'
 import * as rlp from 'rlp'
 import { stripHexPrefix } from 'ethjs-util'
 import { KECCAK256_RLP, KECCAK256_NULL } from './constants'
@@ -12,7 +12,7 @@ const {
   privateKeyVerify,
   publicKeyCreate,
   publicKeyVerify,
-  publicKeyConvert,
+  publicKeyConvert
 } = require('ethereum-cryptography/secp256k1')
 
 export interface AccountData {
@@ -35,7 +35,7 @@ export class Account {
       nonce ? new BN(toBuffer(nonce)) : undefined,
       balance ? new BN(toBuffer(balance)) : undefined,
       stateRoot ? toBuffer(stateRoot) : undefined,
-      codeHash ? toBuffer(codeHash) : undefined,
+      codeHash ? toBuffer(codeHash) : undefined
     )
   }
 
@@ -52,12 +52,7 @@ export class Account {
   public static fromValuesArray(values: Buffer[]) {
     const [nonce, balance, stateRoot, codeHash] = values
 
-    return new Account(
-      nonce ? new BN(nonce) : undefined,
-      balance ? new BN(balance) : undefined,
-      stateRoot,
-      codeHash,
-    )
+    return new Account(new BN(nonce), new BN(balance), stateRoot, codeHash)
   }
 
   /**
@@ -68,7 +63,7 @@ export class Account {
     nonce = new BN(0),
     balance = new BN(0),
     stateRoot = KECCAK256_RLP,
-    codeHash = KECCAK256_NULL,
+    codeHash = KECCAK256_NULL
   ) {
     this.nonce = nonce
     this.balance = balance
@@ -169,7 +164,7 @@ export const toChecksumAddress = function(hexAddress: string, eip1191ChainId?: n
  */
 export const isValidChecksumAddress = function(
   hexAddress: string,
-  eip1191ChainId?: number,
+  eip1191ChainId?: number
 ): boolean {
   return isValidAddress(hexAddress) && toChecksumAddress(hexAddress, eip1191ChainId) === hexAddress
 }
@@ -209,7 +204,7 @@ export const generateAddress2 = function(from: Buffer, salt: Buffer, initCode: B
   assert(salt.length === 32)
 
   const address = keccak256(
-    Buffer.concat([Buffer.from('ff', 'hex'), from, salt, keccak256(initCode)]),
+    Buffer.concat([Buffer.from('ff', 'hex'), from, salt, keccak256(initCode)])
   )
 
   return address.slice(-20)
@@ -260,14 +255,6 @@ export const pubToAddress = function(pubKey: Buffer, sanitize: boolean = false):
 export const publicToAddress = pubToAddress
 
 /**
- * Returns the ethereum address of a given private key.
- * @param privateKey A private key must be 256 bits wide
- */
-export const privateToAddress = function(privateKey: Buffer): Buffer {
-  return publicToAddress(privateToPublic(privateKey))
-}
-
-/**
  * Returns the ethereum public key of a given private key.
  * @param privateKey A private key must be 256 bits wide
  */
@@ -275,6 +262,14 @@ export const privateToPublic = function(privateKey: Buffer): Buffer {
   assertIsBuffer(privateKey)
   // skip the type flag and use the X, Y points
   return Buffer.from(publicKeyCreate(privateKey, false)).slice(1)
+}
+
+/**
+ * Returns the ethereum address of a given private key.
+ * @param privateKey A private key must be 256 bits wide
+ */
+export const privateToAddress = function(privateKey: Buffer): Buffer {
+  return publicToAddress(privateToPublic(privateKey))
 }
 
 /**

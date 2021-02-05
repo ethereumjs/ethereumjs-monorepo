@@ -1,4 +1,4 @@
-import * as BN from 'bn.js'
+import BN from 'bn.js'
 import { intToBuffer, stripHexPrefix, padToEven, isHexString, isHexPrefixed } from 'ethjs-util'
 import { TransformableToArray, TransformableToBuffer } from './types'
 import { assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
@@ -9,6 +9,31 @@ import { assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
  */
 export const zeros = function(bytes: number): Buffer {
   return Buffer.allocUnsafe(bytes).fill(0)
+}
+
+/**
+ * Pads a `Buffer` with zeros till it has `length` bytes.
+ * Truncates the beginning or end of input if its length exceeds `length`.
+ * @param msg the value to pad (Buffer)
+ * @param length the number of bytes the output should be
+ * @param right whether to start padding form the left or right
+ * @return (Buffer)
+ */
+const setLength = function(msg: Buffer, length: number, right: boolean) {
+  const buf = zeros(length)
+  if (right) {
+    if (msg.length < length) {
+      msg.copy(buf)
+      return buf
+    }
+    return msg.slice(0, length)
+  } else {
+    if (msg.length < length) {
+      msg.copy(buf, length - msg.length)
+      return buf
+    }
+    return msg.slice(-length)
+  }
 }
 
 /**
@@ -36,28 +61,17 @@ export const setLengthRight = function(msg: Buffer, length: number) {
 }
 
 /**
- * Pads a `Buffer` with zeros till it has `length` bytes.
- * Truncates the beginning or end of input if its length exceeds `length`.
- * @param msg the value to pad (Buffer)
- * @param length the number of bytes the output should be
- * @param right whether to start padding form the left or right
- * @return (Buffer)
+ * Trims leading zeros from a `Buffer`, `String` or `Number[]`.
+ * @param a (Buffer|Array|String)
+ * @return (Buffer|Array|String)
  */
-const setLength = function(msg: Buffer, length: number, right: boolean) {
-  const buf = zeros(length)
-  if (right) {
-    if (msg.length < length) {
-      msg.copy(buf)
-      return buf
-    }
-    return msg.slice(0, length)
-  } else {
-    if (msg.length < length) {
-      msg.copy(buf, length - msg.length)
-      return buf
-    }
-    return msg.slice(-length)
+const stripZeros = function(a: any): Buffer | number[] | string {
+  let first = a[0]
+  while (a.length > 0 && first.toString() === '0') {
+    a = a.slice(1)
+    first = a[0]
   }
+  return a
 }
 
 /**
@@ -92,20 +106,6 @@ export const unpadHexString = function(a: string): string {
 }
 
 /**
- * Trims leading zeros from a `Buffer`, `String` or `Number[]`.
- * @param a (Buffer|Array|String)
- * @return (Buffer|Array|String)
- */
-const stripZeros = function(a: any): Buffer | number[] | string {
-  let first = a[0]
-  while (a.length > 0 && first.toString() === '0') {
-    a = a.slice(1)
-    first = a[0]
-  }
-  return a
-}
-
-/**
  * Attempts to turn a value into a `Buffer`.
  * Inputs supported: `Buffer`, `String`, `Number`, null/undefined, `BN` and other objects with a `toArray()` or `toBuffer()` method.
  * @param v the value
@@ -121,7 +121,7 @@ export const toBuffer = function(
     | TransformableToArray
     | TransformableToBuffer
     | null
-    | undefined,
+    | undefined
 ): Buffer {
   if (v === null || v === undefined) {
     return Buffer.allocUnsafe(0)
@@ -138,7 +138,7 @@ export const toBuffer = function(
   if (typeof v === 'string') {
     if (!isHexString(v)) {
       throw new Error(
-        `Cannot convert string to buffer. toBuffer only supports 0x-prefixed hex strings and this string was given: ${v}`,
+        `Cannot convert string to buffer. toBuffer only supports 0x-prefixed hex strings and this string was given: ${v}`
       )
     }
     return Buffer.from(padToEven(stripHexPrefix(v)), 'hex')

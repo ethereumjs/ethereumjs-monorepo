@@ -1,5 +1,5 @@
+import assert from 'assert'
 import * as ethjsUtil from 'ethjs-util'
-import * as assert from 'assert'
 import * as rlp from 'rlp'
 import { toBuffer, baToJSON, unpadBuffer } from './bytes'
 
@@ -51,12 +51,12 @@ export const defineProperties = function(self: any, fields: any, data?: any) {
         v = unpadBuffer(v)
         assert(
           field.length >= v.length,
-          `The field ${field.name} must not have more ${field.length} bytes`,
+          `The field ${field.name} must not have more ${field.length} bytes`
         )
       } else if (!(field.allowZero && v.length === 0) && field.length) {
         assert(
           field.length === v.length,
-          `The field ${field.name} must have byte length of ${field.length}`,
+          `The field ${field.name} must have byte length of ${field.length}`
         )
       }
 
@@ -67,7 +67,7 @@ export const defineProperties = function(self: any, fields: any, data?: any) {
       enumerable: true,
       configurable: true,
       get: getter,
-      set: setter,
+      set: setter
     })
 
     if (field.default) {
@@ -80,7 +80,7 @@ export const defineProperties = function(self: any, fields: any, data?: any) {
         enumerable: false,
         configurable: true,
         set: setter,
-        get: getter,
+        get: getter
       })
     }
   })

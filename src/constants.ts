@@ -1,12 +1,12 @@
 const Buffer = require('buffer').Buffer
-import * as BN from 'bn.js'
+import BN from 'bn.js'
 
 /**
  * The max integer that this VM can handle
  */
 export const MAX_INTEGER: BN = new BN(
   'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
-  16,
+  16
 )
 
 /**
@@ -14,7 +14,7 @@ export const MAX_INTEGER: BN = new BN(
  */
 export const TWO_POW256: BN = new BN(
   '10000000000000000000000000000000000000000000000000000000000000000',
-  16,
+  16
 )
 
 /**
