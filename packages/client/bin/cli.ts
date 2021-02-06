@@ -79,6 +79,15 @@ const args = require('yargs')
       describe: 'Path to chain parameters json file',
       coerce: path.resolve,
     },
+    dnsAddr: {
+      describe: 'IPv4 address of DNS server to use when acquiring peer discovery targets',
+      string: true,
+      default: Config.DNSADDR_DEFAULT,
+    },
+    dnsNetworks: {
+      describe: 'EIP-1459 ENR tree urls to query for peer discovery targets',
+      array: true,
+    },
   })
   .locale('en_EN').argv
 
@@ -157,6 +166,8 @@ async function run() {
     loglevel: args.loglevel,
     minPeers: args.minPeers,
     maxPeers: args.maxPeers,
+    dnsAddr: args.dnsAddr,
+    dnsNetworks: args.dnsNetworks,
   })
   logger = config.logger
 

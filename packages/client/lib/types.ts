@@ -11,6 +11,8 @@ export interface Bootnode {
 }
 export type BootnodeLike = string | string[] | Bootnode | Bootnode[]
 
+export type DnsNetwork = string
+
 // QHeap types. @types/qheap does not exist, so we create a custom interface here.
 type QHeapOptions = {
   comparBefore(a: any, b: any): boolean

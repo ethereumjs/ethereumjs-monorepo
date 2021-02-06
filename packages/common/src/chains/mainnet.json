@@ -133,5 +133,8 @@
       "location": "westus-001",
       "comment": "bootnode-azure-westus-001"
     }
+  ],
+  "dnsNetworks": [
+    "enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@all.mainnet.ethdisco.net"
   ]
 }
