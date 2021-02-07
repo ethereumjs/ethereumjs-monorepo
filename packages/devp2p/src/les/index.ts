@@ -159,7 +159,7 @@ export class LES extends EventEmitter {
   }
 
   /**
-   * 
+   *
    * @param code Message code
    * @param payload Payload (including reqId, e.g. `[1, [437000, 1, 0, 0]]`)
    */
