@@ -158,7 +158,12 @@ export class LES extends EventEmitter {
     this._handleStatus()
   }
 
-  sendMessage(code: LES.MESSAGE_CODES, reqId: number, payload: any) {
+  /**
+   * 
+   * @param code Message code
+   * @param payload Payload (including reqId, e.g. `[1, [437000, 1, 0, 0]]`)
+   */
+  sendMessage(code: LES.MESSAGE_CODES, payload: any) {
     const debugMsg = `Send ${this.getMsgPrefix(code)} message to ${
       this._peer._socket.remoteAddress
     }:${this._peer._socket.remotePort}`
@@ -197,7 +202,7 @@ export class LES extends EventEmitter {
         throw new Error(`Unknown code ${code}`)
     }
 
-    this._send(code, rlp.encode([reqId, payload]))
+    this._send(code, rlp.encode(payload))
   }
 
   getMsgPrefix(msgCode: LES.MESSAGE_CODES) {

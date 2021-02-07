@@ -85,7 +85,7 @@ test('LES: send valid message', async (t) => {
   opts.status1 = Object.assign({}, status)
   opts.onOnceStatus0 = function (rlpxs: any, les: any) {
     t.equal(les.getVersion(), 2, 'should use les2 as protocol version')
-    les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_HEADERS, 1, [437000, 1, 0, 0])
+    les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_HEADERS, [1, [437000, 1, 0, 0]])
     t.pass('should send GET_BLOCK_HEADERS message')
   }
   opts.onOnMsg1 = function (rlpxs: any, eth: any, code: any) {
@@ -104,7 +104,7 @@ test('LES: send unknown message code', async (t) => {
   opts.status1 = Object.assign({}, status)
   opts.onOnceStatus0 = function (rlpxs: any, les: any) {
     try {
-      les.sendMessage(0x55, 1, [])
+      les.sendMessage(0x55, [1, []])
     } catch (err) {
       const msg = 'Error: Unknown code 85'
       t.equal(err.toString(), msg, `should emit error: ${msg}`)
