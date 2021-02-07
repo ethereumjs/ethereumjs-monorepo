@@ -1,5 +1,4 @@
 import { Sender } from './sender'
-import { rlp } from 'ethereumjs-util'
 import { ETH as Devp2pETH, LES as Devp2pLES } from '@ethereumjs/devp2p'
 
 /**
@@ -45,7 +44,8 @@ export class RlpxSender extends Sender {
    */
   sendMessage(code: number, data: any) {
     try {
-      this.sender._send(code, rlp.encode(data))
+      //@ts-ignore "type number is not assignable to type never"
+      this.sender.sendMessage(code, data)
     } catch (err) {
       this.emit('error', err)
     }
