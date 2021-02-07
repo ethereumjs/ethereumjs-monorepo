@@ -126,7 +126,7 @@ export class Config {
   public static readonly RPCPORT_DEFAULT = 8545
   public static readonly RPCADDR_DEFAULT = 'localhost'
   public static readonly LOGLEVEL_DEFAULT = 'info'
-  public static readonly MINPEERS_DEFAULT = 2
+  public static readonly MINPEERS_DEFAULT = 1
   public static readonly MAXPEERS_DEFAULT = 25
   public static readonly DNSADDR_DEFAULT = '8.8.8.8'
 
