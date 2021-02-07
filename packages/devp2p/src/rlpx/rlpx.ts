@@ -266,11 +266,13 @@ export class RLPx extends EventEmitter {
 
   _refillConnections() {
     if (!this._isAlive()) return
-    debug(
-      `refill connections.. (selector ${this._refillIntervalSelectionCounter}) peers: ${
-        this._peers.size
-      }, queue size: ${this._peersQueue.length}, open slots: ${this._getOpenSlots()}`
-    )
+    if (this._refillIntervalSelectionCounter === 0) {
+      debug(
+        `Restart connection refill .. with selector ${this._refillIntervalSelectionCounter} peers: ${
+          this._peers.size
+        }, queue size: ${this._peersQueue.length}, open slots: ${this._getOpenSlots()}`
+      )
+    }
     // Rotating selection counter going in loop from 0..9
     this._refillIntervalSelectionCounter = (this._refillIntervalSelectionCounter + 1) % 10
 
