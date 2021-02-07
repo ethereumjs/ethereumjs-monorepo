@@ -21,7 +21,7 @@ tape('[RlpxSender]', (t) => {
     const rlpxProtocol = td.object() as any
     const sender = new RlpxSender(rlpxProtocol)
     sender.sendMessage(1, 5)
-    td.verify(rlpxProtocol._send(1, rlp.encode(5)))
+    td.verify(rlpxProtocol.sendMessage(1, 5))
     td.reset()
     t.pass('message sent')
     t.end()

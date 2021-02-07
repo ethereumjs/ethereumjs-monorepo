@@ -45,7 +45,8 @@ export class RlpxSender extends Sender {
    */
   sendMessage(code: number, data: any) {
     try {
-      this.sender._send(code, rlp.encode(data))
+      //@ts-ignore "type number is not assignable to type never"
+      this.sender.sendMessage(code, data)
     } catch (err) {
       this.emit('error', err)
     }
