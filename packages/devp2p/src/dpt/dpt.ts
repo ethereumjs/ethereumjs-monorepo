@@ -7,6 +7,7 @@ import { buffer2int, pk2id } from '../util'
 import { KBucket } from './kbucket'
 import { BanList } from './ban-list'
 import { Server as DPTServer } from './server'
+import { DNS } from '../dns'
 
 const debug = createDebugLogger('devp2p:dpt')
 
@@ -45,24 +46,63 @@ export interface DPTOptions {
    * Default: 60s
    */
   refreshInterval?: number
+
+  /**
+   * Toggles whether or not peers should be queried with 'findNeighbours'
+   * to discover more peers
+   *
+   * Default: true
+   */
+  shouldFindNeighbours?: boolean
+
+  /**
+   * Max number of candidate peers to retrieve from DNS records when
+   * attempting to discover new nodes
+   *
+   * Default: 25
+   */
+  dnsRefreshQuantity?: number
+
+  /**
+   * EIP-1459 ENR tree urls to query for peer discovery
+   *
+   * Default: (network dependent)
+   */
+  dnsNetworks?: string[]
+
+  /**
+   * DNS server to query DNS TXT records from for peer discovery
+   */
+  dnsAddr?: string
 }
 
 export class DPT extends EventEmitter {
   privateKey: Buffer
   banlist: BanList
+  dns: DNS
 
   private _id: Buffer | undefined
   private _kbucket: KBucket
   private _server: DPTServer
   private _refreshIntervalId: NodeJS.Timeout
   private _refreshIntervalSelectionCounter: number = 0
+  private _shouldFindNeighbours: boolean
+  private _dnsRefreshQuantity: number
+  private _dnsNetworks: string[]
+  private _dnsAddr: string
 
   constructor(privateKey: Buffer, options: DPTOptions) {
     super()
 
     this.privateKey = Buffer.from(privateKey)
     this._id = pk2id(Buffer.from(publicKeyCreate(this.privateKey, false)))
+    this._shouldFindNeighbours = options.shouldFindNeighbours === false ? false : true
+    // By default, tries to connect to 12 new peers every 3s
+    this._dnsRefreshQuantity = Math.floor((options.dnsRefreshQuantity ?? 25) / 2)
+    this._dnsNetworks = options.dnsNetworks ?? []
+    this._dnsAddr = options.dnsAddr ?? '8.8.8.8'
 
+    this.dns = new DNS({ dnsServerAddress: this._dnsAddr })
     this.banlist = new BanList()
 
     this._kbucket = new KBucket(this._id)
@@ -80,6 +120,7 @@ export class DPT extends EventEmitter {
     this._server.on('peers', (peers) => this._onServerPeers(peers))
     this._server.on('error', (err) => this.emit('error', err))
 
+    // By default calls refresh every 3s
     const refreshIntervalSubdivided = Math.floor((options.refreshInterval ?? ms('60s')) / 10)
     this._refreshIntervalId = setInterval(() => this.refresh(), refreshIntervalSubdivided)
   }
@@ -115,6 +156,11 @@ export class DPT extends EventEmitter {
   }
 
   _onServerPeers(peers: PeerInfo[]): void {
+    // We don't want this to run when using
+    // dns - it's fired in the server.on:peer hook
+    // and results in duplicate addition attempts
+    if (!this._shouldFindNeighbours) return
+
     const DIFF_TIME_MS = 200
     let ms = 0
     for (const peer of peers) {
@@ -128,11 +174,16 @@ export class DPT extends EventEmitter {
   }
 
   async bootstrap(peer: PeerInfo): Promise<void> {
-    debug(`bootstrap with peer ${peer.address}:${peer.udpPort}`)
-
-    peer = await this.addPeer(peer)
+    try {
+      peer = await this.addPeer(peer)
+    } catch (error) {
+      this.emit('error', error)
+      return
+    }
     if (!this._id) return
-    this._server.findneighbours(peer, this._id)
+    if (this._shouldFindNeighbours) {
+      this._server.findneighbours(peer, this._id)
+    }
   }
 
   async addPeer(obj: PeerInfo): Promise<any> {
@@ -176,22 +227,40 @@ export class DPT extends EventEmitter {
     this._kbucket.remove(obj)
   }
 
-  refresh(): void {
-    // Rotating selection counter going in loop from 0..9
-    this._refreshIntervalSelectionCounter = (this._refreshIntervalSelectionCounter + 1) % 10
+  async getDnsPeers(): Promise<PeerInfo[]> {
+    return this.dns.getPeers(this._dnsRefreshQuantity, this._dnsNetworks)
+  }
 
-    const peers = this.getPeers()
+  async refresh(): Promise<void> {
+    if (this._shouldFindNeighbours) {
+      // Rotating selection counter going in loop from 0..9
+      this._refreshIntervalSelectionCounter = (this._refreshIntervalSelectionCounter + 1) % 10
+
+      const peers = this.getPeers()
+      debug(
+        `call .refresh() (selector ${this._refreshIntervalSelectionCounter}) (${peers.length} peers in table)`
+      )
+
+      for (const peer of peers) {
+        // Randomly distributed selector based on peer ID
+        // to decide on subdivided execution
+        const selector = buffer2int((peer.id! as Buffer).slice(0, 1)) % 10
+        if (selector === this._refreshIntervalSelectionCounter) {
+          this._server.findneighbours(peer, randomBytes(64))
+        }
+      }
+    }
+
+    const dnsPeers = await this.getDnsPeers()
+
     debug(
-      `call .refresh() (selector ${this._refreshIntervalSelectionCounter}) (${peers.length} peers in table)`
+      `.refresh() (Adding ${dnsPeers.length}) from DNS tree, (${
+        this.getPeers().length
+      } current peers in table)`
     )
 
-    for (const peer of peers) {
-      // Randomly distributed selector based on peer ID
-      // to decide on subdivided execution
-      const selector = buffer2int((peer.id! as Buffer).slice(0, 1)) % 10
-      if (selector === this._refreshIntervalSelectionCounter) {
-        this._server.findneighbours(peer, randomBytes(64))
-      }
+    for (const peer of dnsPeers) {
+      await this.bootstrap(peer)
     }
   }
 }

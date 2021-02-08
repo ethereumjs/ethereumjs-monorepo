@@ -131,10 +131,10 @@ export default class Blockchain implements BlockchainInterface {
   _ethash?: Ethash
 
   /**
-   * Keep signer history data (signer states and votes) for all
-   * block numbers >= HEAD_BLOCK - CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
+   * Keep signer history data (signer states and votes)
+   * for all block numbers >= HEAD_BLOCK - CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
    *
-   * This defines a limit for reorgs on PoA clique chains
+   * This defines a limit for reorgs on PoA clique chains.
    */
   private CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT = 100
 
@@ -148,12 +148,12 @@ export default class Blockchain implements BlockchainInterface {
    * The top element from the array represents the list of current signers.
    * On reorgs elements from the array are removed until BLOCK_NUMBER > REORG_BLOCK.
    *
-   * Always keep at least one item on the stack
+   * Always keep at least one item on the stack.
    */
   private _cliqueLatestSignerStates: CliqueLatestSignerStates = []
 
   /**
-   * List with the latest signer votes
+   * List with the latest signer votes.
    *
    * Format:
    * [ [BLOCK_NUMBER_1, [SIGNER, BENEFICIARY, AUTH]], [BLOCK_NUMBER_1, [SIGNER, BENEFICIARY, AUTH]] ]
@@ -431,8 +431,7 @@ export default class Blockchain implements BlockchainInterface {
     let signers = this._cliqueLatestBlockSigners
     signers = signers.slice(signers.length < limit ? 0 : 1)
     signers.push([header.number, header.cliqueSigner()])
-    const seen = signers.filter((s) => s[1].toBuffer().equals(header.cliqueSigner().toBuffer()))
-      .length
+    const seen = signers.filter((s) => s[1].equals(header.cliqueSigner())).length
     return seen > 1
   }
 
@@ -460,15 +459,20 @@ export default class Blockchain implements BlockchainInterface {
 
     if (signerState) {
       this._cliqueLatestSignerStates.push(signerState)
+    }
 
-      // trim length to CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
-      const length = this._cliqueLatestSignerStates.length
-      const limit = this.CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
-      if (length > limit) {
-        this._cliqueLatestSignerStates = this._cliqueLatestSignerStates.slice(
-          length - limit,
-          length
-        )
+    // trim to CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
+    const limit = this.CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
+    const blockSigners = this._cliqueLatestBlockSigners
+    const lastBlockNumber = blockSigners[blockSigners.length - 1]?.[0]
+    if (lastBlockNumber) {
+      const blockLimit = lastBlockNumber.subn(limit)
+      const states = this._cliqueLatestSignerStates
+      const lastItem = states[states.length - 1]
+      this._cliqueLatestSignerStates = states.filter((state) => state[0].gte(blockLimit))
+      if (this._cliqueLatestSignerStates.length === 0) {
+        // always keep at least one item on the stack
+        this._cliqueLatestSignerStates.push(lastItem)
       }
     }
 
@@ -497,9 +501,7 @@ export default class Blockchain implements BlockchainInterface {
 
       const alreadyVoted = this._cliqueLatestVotes.find((vote) => {
         return (
-          vote[1][0].toBuffer().equals(signer.toBuffer()) &&
-          vote[1][1].toBuffer().equals(beneficiary.toBuffer()) &&
-          vote[1][2].equals(nonce)
+          vote[1][0].equals(signer) && vote[1][1].equals(beneficiary) && vote[1][2].equals(nonce)
         )
       })
         ? true
@@ -514,8 +516,8 @@ export default class Blockchain implements BlockchainInterface {
       this._cliqueLatestVotes = this._cliqueLatestVotes.filter(
         (vote) =>
           !(
-            vote[1][0].toBuffer().equals(signer.toBuffer()) &&
-            vote[1][1].toBuffer().equals(beneficiary.toBuffer()) &&
+            vote[1][0].equals(signer) &&
+            vote[1][1].equals(beneficiary) &&
             vote[1][2].equals(oppositeNonce)
           )
       )
@@ -523,14 +525,19 @@ export default class Blockchain implements BlockchainInterface {
       // If same vote not already in history see if there is a new majority consensus
       // to update the signer list
       if (!alreadyVoted) {
+        const lastEpochBlockNumber = header.number.sub(
+          header.number.mod(new BN(this._common.consensusConfig().epoch))
+        )
         const beneficiaryVotesAuth = this._cliqueLatestVotes.filter(
           (vote) =>
-            vote[1][1].toBuffer().equals(beneficiary.toBuffer()) &&
+            vote[0].gte(lastEpochBlockNumber) &&
+            vote[1][1].equals(beneficiary) &&
             vote[1][2].equals(CLIQUE_NONCE_AUTH)
         )
         const beneficiaryVotesDrop = this._cliqueLatestVotes.filter(
           (vote) =>
-            vote[1][1].toBuffer().equals(beneficiary.toBuffer()) &&
+            vote[0].gte(lastEpochBlockNumber) &&
+            vote[1][1].equals(beneficiary) &&
             vote[1][2].equals(CLIQUE_NONCE_DROP)
         )
         const limit = this.cliqueSignerLimit()
@@ -545,16 +552,14 @@ export default class Blockchain implements BlockchainInterface {
             activeSigners.push(beneficiary)
             // Discard votes for added signer
             this._cliqueLatestVotes = this._cliqueLatestVotes.filter(
-              (vote) => !vote[1][1].toBuffer().equals(beneficiary.toBuffer())
+              (vote) => !vote[1][1].equals(beneficiary)
             )
           } else {
             // Drop signer
-            activeSigners = activeSigners.filter(
-              (signer) => !signer.toBuffer().equals(beneficiary.toBuffer())
-            )
+            activeSigners = activeSigners.filter((signer) => !signer.equals(beneficiary))
             // Discard votes from removed signer
             this._cliqueLatestVotes = this._cliqueLatestVotes.filter(
-              (vote) => !vote[1][0].toBuffer().equals(beneficiary.toBuffer())
+              (vote) => !vote[1][0].equals(beneficiary)
             )
           }
           const newSignerState: CliqueSignerState = [header.number, activeSigners]
@@ -563,11 +568,16 @@ export default class Blockchain implements BlockchainInterface {
       }
     }
 
-    // trim latest votes length to CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
-    const length = this._cliqueLatestVotes.length
+    // trim to lastEpochBlockNumber - CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
     const limit = this.CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
-    if (length > limit) {
-      this._cliqueLatestVotes = this._cliqueLatestVotes.slice(length - limit, length)
+    const blockSigners = this._cliqueLatestBlockSigners
+    const lastBlockNumber = blockSigners[blockSigners.length - 1]?.[0]
+    if (lastBlockNumber) {
+      const lastEpochBlockNumber = lastBlockNumber.sub(
+        lastBlockNumber.mod(new BN(this._common.consensusConfig().epoch))
+      )
+      const blockLimit = lastEpochBlockNumber.subn(limit)
+      this._cliqueLatestVotes = this._cliqueLatestVotes.filter((state) => state[0].gte(blockLimit))
     }
 
     // save votes to db
@@ -583,7 +593,8 @@ export default class Blockchain implements BlockchainInterface {
 
   /**
    * Update snapshot of latest clique block signers.
-   * Length trimmed to `this.cliqueSignerLimit()`
+   * Used for checking for 'recently signed' error.
+   * Length trimmed to `this.cliqueSignerLimit()`.
    * @param header BlockHeader
    * @hidden
    */
@@ -868,18 +879,17 @@ export default class Blockchain implements BlockchainInterface {
 
         // Clique: update signer votes and state
         if (this._common.consensusAlgorithm() === 'clique') {
-          // Reset all votes on epoch transition blocks
           if (header.cliqueIsEpochTransition()) {
-            this._cliqueLatestVotes = []
-            await this.cliqueUpdateVotes()
+            // note: keep votes on epoch transition blocks in case of reorgs.
+            // only active (non-stale) votes will counted (if vote.blockNumber >= lastEpochBlockNumber)
 
             // validate checkpoint signers towards active signers
             const checkpointSigners = header.cliqueEpochTransitionSigners()
             const activeSigners = this.cliqueActiveSigners()
-            for (const cSigner of checkpointSigners) {
-              if (!activeSigners.find((aSigner) => aSigner.toBuffer().equals(cSigner.toBuffer()))) {
+            for (const [i, cSigner] of checkpointSigners.entries()) {
+              if (!activeSigners[i] || !activeSigners[i].equals(cSigner)) {
                 throw new Error(
-                  'checkpoint signer not found in active signers list: ' + cSigner.toString()
+                  `checkpoint signer not found in active signers list at index ${i}: ${cSigner.toString()}`
                 )
               }
             }

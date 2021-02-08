@@ -110,6 +110,17 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
     st.end()
   })
 
+  t.test('Should provide DNS network information in a uniform way', function (st: tape.Test) {
+    const configs = ['mainnet', 'ropsten', 'rinkeby', 'goerli']
+    for (const network of configs) {
+      const c = new Common({ chain: network })
+      const dnsNetworks = c.dnsNetworks()
+      st.ok(Array.isArray(dnsNetworks), 'is an array')
+      st.equal(typeof dnsNetworks[0], 'string', 'returns the DNS ENR url as a string')
+    }
+    st.end()
+  })
+
   t.test('Should be able to access data for all chains provided', function (st: tape.Test) {
     const c = new Common({ chain: 'mainnet' })
     let hash = '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'

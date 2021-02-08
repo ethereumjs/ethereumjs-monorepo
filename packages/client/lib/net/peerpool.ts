@@ -212,7 +212,13 @@ export class PeerPool extends EventEmitter {
         await Promise.all(promises)
         this.noPeerPeriods = 0
       } else {
-        this.config.logger.info('Looking for suited peers...')
+        let tablesize: number | undefined = 0
+        this.config.servers.forEach((server) => {
+          if (server instanceof RlpxServer) {
+            tablesize = server.dpt?.getPeers().length
+          }
+        })
+        this.config.logger.info(`Looking for suited peers: peertablesize=${tablesize}`)
       }
     } else {
       this.noPeerPeriods = 0

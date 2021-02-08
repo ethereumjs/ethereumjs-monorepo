@@ -1,7 +1,6 @@
 import { EventEmitter } from 'events'
 import tape from 'tape-catch'
 import td from 'testdouble'
-import * as rlp from 'rlp'
 import { ETH as Devp2pETH } from '@ethereumjs/devp2p'
 import { RlpxSender } from '../../../lib/net/protocol'
 
@@ -21,7 +20,7 @@ tape('[RlpxSender]', (t) => {
     const rlpxProtocol = td.object() as any
     const sender = new RlpxSender(rlpxProtocol)
     sender.sendMessage(1, 5)
-    td.verify(rlpxProtocol._send(1, rlp.encode(5)))
+    td.verify(rlpxProtocol.sendMessage(1, 5))
     td.reset()
     t.pass('message sent')
     t.end()

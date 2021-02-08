@@ -66,9 +66,8 @@ tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', asyn
     // run the actual call
     const res = await vm.runCall(runCallArgs)
     // retrieve the return value and convert it to an address (remove the first 12 bytes from the 32-byte return value)
-    const executionReturnValue = res.execResult.returnValue.slice(12)
-    if (!expectedAddress.buf.equals(executionReturnValue)) {
-      console.log('not equal')
+    const executionReturnValue = new Address(res.execResult.returnValue.slice(12))
+    if (!expectedAddress.equals(executionReturnValue)) {
       t.fail('contract address not equal')
     }
   }

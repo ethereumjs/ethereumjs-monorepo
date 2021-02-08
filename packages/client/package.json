@@ -58,7 +58,7 @@
     "@ethereumjs/trie": "^4.0.0",
     "@ethereumjs/vm": "^5.0.0",
     "chalk": "^2.4.2",
-    "ethereumjs-util": "^7.0.7",
+    "ethereumjs-util": "^7.0.8",
     "fs-extra": "^7.0.1",
     "jayson": "^3.3.4",
     "level": "^6.0.0",

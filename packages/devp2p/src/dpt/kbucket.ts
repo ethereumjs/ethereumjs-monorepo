@@ -43,7 +43,7 @@ export class KBucket extends EventEmitter {
 
     const keys = []
     if (Buffer.isBuffer(obj.id)) keys.push(obj.id.toString('hex'))
-    //if (obj.address && obj.port) keys.push(`${obj.address}:${obj.port}`)
+    if (obj.address && obj.tcpPort) keys.push(`${obj.address}:${obj.tcpPort}`)
     return keys
   }
 

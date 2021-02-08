@@ -1,6 +1,7 @@
 import async from 'async'
 import test from 'tape'
 import * as util from './util'
+import testdata from '../testdata.json'
 
 async function delay(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms))
@@ -159,5 +160,22 @@ test('DPT: simulate bootstrap', async (t) => {
 
   util.destroyDPTs(dpts)
 
+  t.end()
+})
+
+test('DPT: simulate acquiring peers via DNS', async (t) => {
+  const dpts = util.getTestDPTsWithDns(1)
+
+  const mockDns = {
+    resolve: () => {
+      return [[testdata.dns.enr]]
+    },
+  }
+
+  dpts[0].dns.__setNativeDNSModuleResolve(mockDns)
+  dpts[0].refresh()
+  await delay(400)
+
+  util.destroyDPTs(dpts)
   t.end()
 })

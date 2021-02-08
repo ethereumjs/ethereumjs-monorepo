@@ -27,8 +27,11 @@ tape('[RlpxServer]', async (t) => {
   RLPx.prototype.listen = td.func<any>()
   class DPT extends EventEmitter {
     bind(_: any, _2: any) {}
+    getDnsPeers() {}
   }
   DPT.prototype.bind = td.func<any>()
+  DPT.prototype.getDnsPeers = td.func<any>()
+
   td.replace('@ethereumjs/devp2p', { DPT, RLPx })
 
   const { RlpxServer } = await import('../../../lib/net/server/rlpxserver')
@@ -91,6 +94,24 @@ tape('[RlpxServer]', async (t) => {
     td.verify(server.rlpx!.destroy())
     t.notOk(server.running, 'stopped')
     t.notOk(await server.stop(), 'already stopped')
+    t.end()
+  })
+
+  t.test('should bootstrap with dns acquired peers', async (t) => {
+    const dnsPeerInfo = { address: '10.0.0.5', udpPort: 1234, tcpPort: 1234 }
+    const config = new Config({ loglevel: 'error', transports: [] })
+    const server = new RlpxServer({
+      config,
+      dnsNetworks: ['enrtree:A'],
+    })
+    server.initDpt = td.func<typeof server['initDpt']>()
+    server.initRlpx = td.func<typeof server['initRlpx']>()
+    server.rlpx = td.object()
+    server.dpt = td.object<typeof server['dpt']>()
+    td.when(server.dpt!.getDnsPeers()).thenResolve([dnsPeerInfo])
+    await server.start()
+    td.verify(server.dpt!.bootstrap(dnsPeerInfo))
+    await server.stop()
     t.end()
   })
 

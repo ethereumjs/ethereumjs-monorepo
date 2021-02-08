@@ -29,6 +29,7 @@ const ignoredErrors = new RegExp(
     'Invalid timestamp buffer',
     'Invalid type',
     'Timeout error: ping', // connection
+    'Peer is banned', // connection
 
     // ECIES message encryption
     'Invalid MAC',
@@ -121,17 +122,24 @@ export class RlpxServer extends Server {
     await super.start()
     this.initDpt()
     this.initRlpx()
-    await this.bootstrap()
     this.started = true
+    // Boostrapping is technically not needed for a server start
+    // (this is a repeated process) and setting `started` to `true`
+    // before allows other services to resolve earlier and makes
+    // the sync pick-up more reliable
+    await this.bootstrap()
 
     return true
   }
 
   /**
-   * Bootstrap bootnode peers from the network
+   * Bootstrap bootnode and DNS mapped peers from the network
    */
   async bootstrap(): Promise<void> {
-    const promises = this.bootnodes.map((node) => {
+    const self = this
+
+    // Bootnodes
+    let promises = this.bootnodes.map((node) => {
       const bootnode = {
         address: node.ip!,
         udpPort: node.port,
@@ -139,10 +147,19 @@ export class RlpxServer extends Server {
       }
       return this.dpt!.bootstrap(bootnode)
     })
-    try {
-      await Promise.all(promises)
-    } catch (e) {
-      this.error(e)
+
+    // DNS peers
+    // lint complains that conditional value "is always truthy" but it's not, due to `!`
+    // eslint-disable-next-line
+    const dnsPeers = (await this.dpt!.getDnsPeers()) || []
+    promises = promises.concat(dnsPeers.map((node) => self.dpt!.bootstrap(node)))
+
+    for (const promise of promises) {
+      try {
+        await promise
+      } catch (e) {
+        this.error(e)
+      }
     }
   }
 
@@ -203,6 +220,10 @@ export class RlpxServer extends Server {
         udpPort: null,
         tcpPort: null,
       },
+      shouldFindNeighbours: this.dnsNetworks.length ? false : true,
+      dnsRefreshQuantity: this.config.maxPeers,
+      dnsNetworks: this.dnsNetworks,
+      dnsAddr: this.config.dnsAddr,
     })
 
     this.dpt.on('error', (e: Error) => this.error(e))
