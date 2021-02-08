@@ -557,9 +557,6 @@ export class BlockHeader {
    * Returns the hash of the block header.
    */
   hash(): Buffer {
-    if (this._common.consensusAlgorithm() === 'clique' && !this.isGenesis()) {
-      return this.cliqueHash()
-    }
     return rlphash(this.raw())
   }
 
@@ -577,10 +574,9 @@ export class BlockHeader {
   }
 
   /**
-   * Hash for PoA clique blocks is created without the seal.
-   * @hidden
+   * PoA clique signature hash without the seal.
    */
-  private cliqueHash() {
+  cliqueSigHash() {
     const raw = this.raw()
     raw[12] = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
     return rlphash(raw)
@@ -623,7 +619,7 @@ export class BlockHeader {
    */
   private cliqueSealBlock(privateKey: Buffer) {
     this._requireClique('cliqueSealBlock')
-    const signature = ecsign(this.hash(), privateKey)
+    const signature = ecsign(this.cliqueSigHash(), privateKey)
     const signatureB = Buffer.concat([signature.r, signature.s, intToBuffer(signature.v - 27)])
 
     let extraDataWithoutSeal = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
@@ -687,7 +683,7 @@ export class BlockHeader {
     const r = extraSeal.slice(0, 32)
     const s = extraSeal.slice(32, 64)
     const v = bufferToInt(extraSeal.slice(64, 65)) + 27
-    const pubKey = ecrecover(this.hash(), v, r, s)
+    const pubKey = ecrecover(this.cliqueSigHash(), v, r, s)
     return Address.fromPublicKey(pubKey)
   }
 

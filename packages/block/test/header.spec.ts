@@ -5,6 +5,8 @@ import { BlockHeader } from '../src/header'
 import { Block } from '../src'
 import { Mockchain } from './mockchain'
 const testData = require('./testdata/testdata.json')
+const blocksMainnet = require('./testdata/blocks_mainnet.json')
+const blocksGoerli = require('./testdata/blocks_goerli.json')
 
 tape('[Block]: Header functions', function (t) {
   t.test('should create with default constructor', function (st) {
@@ -271,7 +273,7 @@ tape('[Block]: Header functions', function (t) {
     st.end()
   })
 
-  t.test('should test validateGasLimit', function (st) {
+  t.test('should test validateGasLimit()', function (st) {
     const testData = require('./testdata/bcBlockGasLimitTest.json').tests
     const bcBlockGasLimitTestData = testData.BlockGasLimit2p63m1
 
@@ -311,6 +313,25 @@ tape('[Block]: Header functions', function (t) {
     const genesis = BlockHeader.genesis({}, { common })
     const ropstenStateRoot = '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
     st.strictEqual(genesis.stateRoot.toString('hex'), ropstenStateRoot, 'genesis stateRoot match')
+    st.end()
+  })
+
+  t.test('should test hash() function', function (st) {
+    let common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
+    let header = BlockHeader.fromHeaderData(blocksMainnet[0]['header'], { common })
+    st.equal(
+      header.hash().toString('hex'),
+      '88e96d4537bea4d9c05d12549907b32561d3bf31f45aae734cdc119f13406cb6',
+      'correct PoW hash (mainnet block 1)'
+    )
+
+    common = new Common({ chain: 'goerli', hardfork: 'chainstart' })
+    header = BlockHeader.fromHeaderData(blocksGoerli[0]['header'], { common })
+    st.equal(
+      header.hash().toString('hex'),
+      '8f5bab218b6bb34476f51ca588e9f4553a3a7ce5e13a66c660a5283e97e9a85a',
+      'correct PoA clique hash (goerli block 1)'
+    )
     st.end()
   })
 })
