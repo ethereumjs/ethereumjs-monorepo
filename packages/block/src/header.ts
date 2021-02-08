@@ -451,6 +451,9 @@ export class BlockHeader {
       return
     }
     const hardfork = this._getHardfork()
+    const errorPostfix = `(block number=${this.number.toNumber()} hash=${this.hash().toString(
+      'hex'
+    )})`
     if (this._common.consensusAlgorithm() !== 'clique') {
       if (
         this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)
@@ -463,29 +466,31 @@ export class BlockHeader {
         // ExtraData length on epoch transition
         if (this.extraData.length !== minLength) {
           throw new Error(
-            `extraData must be ${minLength} bytes on non-epoch transition blocks, received ${this.extraData.length} bytes`
+            `extraData must be ${minLength} bytes on non-epoch transition blocks, received ${this.extraData.length} bytes ${errorPostfix}`
           )
         }
       } else {
         const signerLength = this.extraData.length - minLength
         if (signerLength % 20 !== 0) {
           throw new Error(
-            `invalid signer list length in extraData, received signer length of ${signerLength} (not divisible by 20)`
+            `invalid signer list length in extraData, received signer length of ${signerLength} (not divisible by 20) ${errorPostfix}`
           )
         }
         // coinbase (beneficiary) on epoch transition
         if (!this.coinbase.isZero()) {
           throw new Error(
-            `coinbase must be filled with zeros on epoch transition blocks, received ${this.coinbase.toString()}`
+            `coinbase must be filled with zeros on epoch transition blocks, received ${this.coinbase.toString()} ${errorPostfix}`
           )
         }
       }
       // MixHash format
       if (!this.mixHash.equals(Buffer.alloc(32))) {
-        throw new Error(`mixHash must be filled with zeros, received ${this.mixHash}`)
+        throw new Error(
+          `mixHash must be filled with zeros, received ${this.mixHash} ${errorPostfix}`
+        )
       }
       if (!this.validateCliqueDifficulty(blockchain)) {
-        throw new Error('invalid clique difficulty')
+        throw new Error('invalid clique difficulty ${errorPostfix}')
       }
     }
 

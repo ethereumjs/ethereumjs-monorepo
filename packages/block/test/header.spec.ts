@@ -173,9 +173,10 @@ tape('[Block]: Header functions', function (t) {
       await header.validate(blockchain)
       t.fail(testCase)
     } catch (error) {
-      t.equal(
-        error.message,
-        'extraData must be 97 bytes on non-epoch transition blocks, received 32 bytes',
+      t.ok(
+        error.message.includes(
+          'extraData must be 97 bytes on non-epoch transition blocks, received 32 bytes'
+        ),
         testCase
       )
     }
@@ -194,9 +195,10 @@ tape('[Block]: Header functions', function (t) {
       await header.validate(blockchain)
       st.fail(testCase)
     } catch (error) {
-      st.equals(
-        error.message,
-        'invalid signer list length in extraData, received signer length of 41 (not divisible by 20)',
+      st.ok(
+        error.message.includes(
+          'invalid signer list length in extraData, received signer length of 41 (not divisible by 20)'
+        ),
         testCase
       )
     }
