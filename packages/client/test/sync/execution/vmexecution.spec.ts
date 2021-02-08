@@ -4,7 +4,8 @@ import Blockchain from '@ethereumjs/blockchain'
 import { Config } from '../../../lib/config'
 import { Chain } from '../../../lib/blockchain'
 import { VMExecution } from '../../../lib/sync/execution/vmexecution'
-import blocksData from './../../testdata/blocks_mainnet.json'
+import blocksDataMainnet from './../../testdata/blocks_mainnet.json'
+import blocksDataGoerli from './../../testdata/blocks_goerli.json'
 import testnet from './../../testdata/testnet.json'
 import Common from '@ethereumjs/common'
 
@@ -34,7 +35,7 @@ tape('[VMExecution]', async (t) => {
     return exec
   }
 
-  t.test('Block execution / Hardforks', async (t) => {
+  t.test('Block execution / Hardforks PoW (mainnet)', async (t) => {
     let blockchain = new Blockchain({
       validateBlocks: true,
       validateConsensus: false,
@@ -45,7 +46,7 @@ tape('[VMExecution]', async (t) => {
     let newHead = await exec.vm.blockchain.getHead()
     t.deepEqual(newHead.hash(), oldHead.hash(), 'should not modify blockchain on empty run')
 
-    blockchain = await Blockchain.fromBlocksData(blocksData, {
+    blockchain = await Blockchain.fromBlocksData(blocksDataMainnet, {
       validateBlocks: true,
       validateConsensus: false,
     })
@@ -58,6 +59,32 @@ tape('[VMExecution]', async (t) => {
     exec = await testSetup(blockchain, common)
     await exec.run()
     t.equal(exec.hardfork, 'byzantium', 'should update HF on block run')
+
+    t.end()
+  })
+
+  t.test('Block execution / Hardforks PoA (goerli)', async (t) => {
+    const common = new Common({ chain: 'goerli', hardfork: 'chainstart' })
+    let blockchain = new Blockchain({
+      validateBlocks: true,
+      validateConsensus: false,
+      common,
+    })
+    let exec = await testSetup(blockchain, common)
+    const oldHead = await exec.vm.blockchain.getHead()
+    await exec.run()
+    let newHead = await exec.vm.blockchain.getHead()
+    t.deepEqual(newHead.hash(), oldHead.hash(), 'should not modify blockchain on empty run')
+
+    blockchain = await Blockchain.fromBlocksData(blocksDataGoerli, {
+      validateBlocks: true,
+      validateConsensus: false,
+      common,
+    })
+    exec = await testSetup(blockchain, common)
+    await exec.run()
+    newHead = await exec.vm.blockchain.getHead()
+    t.deepEqual(newHead.header.number.toNumber(), 7, 'should run all blocks')
 
     t.end()
   })

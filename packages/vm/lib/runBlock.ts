@@ -229,7 +229,9 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   // Apply transactions
   const txResults = await applyTransactions.bind(this)(block, opts)
   // Pay ommers and miners
-  await assignBlockRewards.bind(this)(block)
+  if (this._common.consensusType() === 'pow') {
+    await assignBlockRewards.bind(this)(block)
+  }
   return txResults
 }
 
