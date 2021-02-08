@@ -7,6 +7,7 @@ import EthereumClient from '../lib/client'
 import { Config } from '../lib/config'
 import { Logger } from '../lib/logging'
 import { RPCManager } from '../lib/rpc'
+const os = require('os')
 const path = require('path')
 const fs = require('fs-extra')
 const chains = require('@ethereumjs/common/dist/chains').chains
@@ -38,7 +39,7 @@ const args = require('yargs')
     },
     datadir: {
       describe: 'Data directory for the blockchain',
-      default: Config.DATADIR_DEFAULT,
+      default: `${os.homedir()}/Library/Ethereum/ethereumjs`,
     },
     transports: {
       describe: 'Network transports',

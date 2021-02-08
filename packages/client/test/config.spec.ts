@@ -1,6 +1,5 @@
 import tape from 'tape-catch'
 import { Config } from '../lib/config'
-const os = require('os')
 
 tape('[Config]', (t) => {
   t.test('Initialization with default parameters', (t) => {
@@ -17,19 +16,13 @@ tape('[Config]', (t) => {
 
   t.test('getChainDataDirectory() default directory', (t) => {
     const config = new Config()
-    t.equal(
-      config.getChainDataDirectory(),
-      `${os.homedir()}/Library/Ethereum/ethereumjs/mainnet/chain`
-    )
+    t.equal(config.getChainDataDirectory(), './datadir/mainnet/chain')
     t.end()
   })
 
   t.test('getStateDataDirectory() default directory', (t) => {
     const config = new Config()
-    t.equal(
-      config.getStateDataDirectory(),
-      `${os.homedir()}/Library/Ethereum/ethereumjs/mainnet/state`
-    )
+    t.equal(config.getStateDataDirectory(), './datadir/mainnet/state')
     t.end()
   })
 })
