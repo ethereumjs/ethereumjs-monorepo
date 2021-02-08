@@ -57,7 +57,7 @@ export function createClient(args: any) {
 
 export async function run(args: any) {
   const client = createClient(args)
-  const { logger, common } = client.config
+  const { logger, chainCommon: common } = client.config
   logger.info('Initializing Ethereumjs client...')
   logger.info(`Connecting to network: ${common.chainName()}`)
   client.on('error', (err: any) => logger.error(err))
