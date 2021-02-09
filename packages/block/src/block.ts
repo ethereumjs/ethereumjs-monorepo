@@ -25,7 +25,11 @@ export class Block {
     // parse transactions
     const transactions = []
     for (const txData of txsData || []) {
-      const tx = Transaction.fromTxData(txData, opts as TxOptions)
+      const tx = Transaction.fromTxData(txData, {
+        ...opts,
+        // Use header common in case of hardforkByBlockNumber being activated
+        common: header._common,
+      } as TxOptions)
       transactions.push(tx)
     }
 
@@ -34,7 +38,10 @@ export class Block {
     for (const uhData of uhsData || []) {
       const uh = BlockHeader.fromHeaderData(uhData, {
         ...opts,
-        // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
+        // Use header common in case of hardforkByBlockNumber being activated
+        common: header._common,
+        // Disable this option here (all other options carried over), since this overwrites
+        // the provided Difficulty to an incorrect value
         calcDifficultyFromHeader: undefined,
       })
       uncleHeaders.push(uh)
@@ -65,7 +72,13 @@ export class Block {
     // parse transactions
     const transactions = []
     for (const txData of txsData || []) {
-      transactions.push(Transaction.fromValuesArray(txData, opts))
+      transactions.push(
+        Transaction.fromValuesArray(txData, {
+          ...opts,
+          // Use header common in case of hardforkByBlockNumber being activated
+          common: header._common,
+        })
+      )
     }
 
     // parse uncle headers
@@ -74,6 +87,8 @@ export class Block {
       uncleHeaders.push(
         BlockHeader.fromValuesArray(uncleHeaderData, {
           ...opts,
+          // Use header common in case of hardforkByBlockNumber being activated
+          common: header._common,
           // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
           calcDifficultyFromHeader: undefined,
         })

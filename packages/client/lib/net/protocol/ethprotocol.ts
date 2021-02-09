@@ -63,14 +63,14 @@ export class EthProtocol extends Protocol {
       name: 'BlockHeaders',
       code: 0x04,
       encode: (headers: BlockHeader[]) => headers.map((h) => h.raw()),
-      decode: (headers: BlockHeaderBuffer[]) =>
-        headers.map((h) =>
+      decode: (headers: BlockHeaderBuffer[]) => {
+        return headers.map((h) =>
           BlockHeader.fromValuesArray(h, {
-            /* eslint-disable-next-line no-invalid-this */
-            common: this.config.chainCommon,
             hardforkByBlockNumber: true,
+            common: this.config.chainCommon, // eslint-disable-line no-invalid-this
           })
-        ),
+        )
+      },
     },
     {
       name: 'GetBlockBodies',

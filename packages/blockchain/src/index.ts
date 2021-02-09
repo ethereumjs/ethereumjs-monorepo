@@ -202,7 +202,10 @@ export default class Blockchain implements BlockchainInterface {
   public static async fromBlocksData(blocksData: BlockData[], opts: BlockchainOptions = {}) {
     const blockchain = await Blockchain.create(opts)
     for (const blockData of blocksData) {
-      const block = Block.fromBlockData(blockData, { common: blockchain._common, hardforkByBlockNumber: true })
+      const block = Block.fromBlockData(blockData, {
+        common: blockchain._common,
+        hardforkByBlockNumber: true,
+      })
       await blockchain.putBlock(block)
     }
     return blockchain
@@ -794,7 +797,10 @@ export default class Blockchain implements BlockchainInterface {
     await this.runWithLock<void>(async () => {
       const block =
         item instanceof BlockHeader
-          ? new Block(item, undefined, undefined, { common: this._common })
+          ? new Block(item, undefined, undefined, {
+              common: this._common,
+              hardforkByBlockNumber: true,
+            })
           : item
       const isGenesis = block.isGenesis()
 
