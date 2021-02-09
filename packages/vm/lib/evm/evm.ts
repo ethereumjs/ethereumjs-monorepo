@@ -209,8 +209,16 @@ export default class EVM {
 
     // Load code
     await this._loadCode(message)
-    if (!message.code || message.code.length === 0 || errorMessage) {
-      debug(`Exit early on no code or value tranfer overflowed`)
+    let exit = false
+    if (!message.code || message.code.length === 0) {
+      exit = true
+      debug(`Exit early on no code`)
+    }
+    if (errorMessage) {
+      exit = true
+      debug(`Exit early on value tranfer overflowed`)
+    }
+    if (exit) {
       return {
         gasUsed: new BN(0),
         execResult: {
@@ -287,8 +295,16 @@ export default class EVM {
       errorMessage = e
     }
 
-    if (!message.code || message.code.length === 0 || errorMessage) {
-      debug(`Exit early on no code or value tranfer overflowed`)
+    let exit = false
+    if (!message.code || message.code.length === 0) {
+      exit = true
+      debug(`Exit early on no code`)
+    }
+    if (errorMessage) {
+      exit = true
+      debug(`Exit early on value tranfer overflowed`)
+    }
+    if (exit) {
       return {
         gasUsed: new BN(0),
         createdAddress: message.to,
