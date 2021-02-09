@@ -6,6 +6,7 @@ import { StateManager } from '../state/index'
 import { VmError, ERROR } from '../exceptions'
 import Message from './message'
 import EVM, { EVMResult } from './evm'
+import { Log } from './types'
 
 function trap(err: ERROR) {
   throw new VmError(err)
@@ -41,7 +42,7 @@ export interface Env {
  * Immediate (unprocessed) result of running an EVM bytecode.
  */
 export interface RunResult {
-  logs: any // TODO: define type for Log (each log: [Buffer(address), [Buffer(topic0), ...]])
+  logs: Log[]
   returnValue?: Buffer
   /**
    * A map from the accounts that have self-destructed to the addresses to send their funds to
@@ -392,12 +393,7 @@ export default class EEI {
       trap(ERROR.INTERNAL_ERROR)
     }
 
-    // add address
-    const log: any = [this._env.address.buf]
-    log.push(topics)
-
-    // add data
-    log.push(data)
+    const log: Log = [this._env.address.buf, topics, data]
     this._result.logs.push(log)
   }
 

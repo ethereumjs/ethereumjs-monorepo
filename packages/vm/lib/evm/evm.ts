@@ -16,6 +16,7 @@ import TxContext from './txContext'
 import Message from './message'
 import EEI from './eei'
 import { short } from './opcodes/util'
+import { Log } from './types'
 import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
 
 const debug = createDebugLogger('vm:evm')
@@ -63,7 +64,7 @@ export interface ExecResult {
   /**
    * Array of logs that the contract emitted
    */
-  logs?: any[]
+  logs?: Log[]
   /**
    * A map from the accounts that have self-destructed to the addresses to send their funds to
    */
