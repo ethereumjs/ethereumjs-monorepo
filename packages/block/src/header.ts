@@ -490,7 +490,7 @@ export class BlockHeader {
         )
       }
       if (!this.validateCliqueDifficulty(blockchain)) {
-        throw new Error('invalid clique difficulty ${errorPostfix}')
+        throw new Error(`invalid clique difficulty ${errorPostfix}`)
       }
     }
 
