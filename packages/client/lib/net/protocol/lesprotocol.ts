@@ -92,8 +92,11 @@ export class LesProtocol extends Protocol {
         reqId: new BN(reqId),
         bv: new BN(bv),
         headers: headers.map((h: BlockHeaderBuffer) =>
-          /* eslint-disable-next-line no-invalid-this */
-          BlockHeader.fromValuesArray(h, { common: this.config.chainCommon })
+          BlockHeader.fromValuesArray(h, {
+            /* eslint-disable-next-line no-invalid-this */
+            common: this.config.chainCommon,
+            hardforkByBlockNumber: true,
+          })
         ),
       }),
     },

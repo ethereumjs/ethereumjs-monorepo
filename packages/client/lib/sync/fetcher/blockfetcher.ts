@@ -53,6 +53,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
     const blocks: Block[] = bodies.map(([txsData, unclesData]: BlockBodyBuffer, i: number) =>
       Block.fromValuesArray([headers[i].raw(), txsData, unclesData], {
         common: this.config.chainCommon,
+        hardforkByBlockNumber: true,
       })
     )
     return blocks

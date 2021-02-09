@@ -267,7 +267,10 @@ export class Chain extends EventEmitter {
     }
     await this.open()
     blocks = blocks.map((b: Block) =>
-      Block.fromValuesArray(b.raw(), { common: this.config.chainCommon })
+      Block.fromValuesArray(b.raw(), {
+        common: this.config.chainCommon,
+        hardforkByBlockNumber: true,
+      })
     )
     await this.blockchain.putBlocks(blocks)
     await this.update()
@@ -302,7 +305,10 @@ export class Chain extends EventEmitter {
     }
     await this.open()
     headers = headers.map((h) =>
-      BlockHeader.fromValuesArray(h.raw(), { common: this.config.chainCommon })
+      BlockHeader.fromValuesArray(h.raw(), {
+        common: this.config.chainCommon,
+        hardforkByBlockNumber: true,
+      })
     )
     await this.blockchain.putHeaders(headers)
     await this.update()
