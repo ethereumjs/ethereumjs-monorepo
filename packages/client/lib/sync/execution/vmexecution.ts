@@ -110,7 +110,7 @@ export class VMExecution extends Execution {
               this.config.logger.info(
                 `Execution hardfork switch on block number=${blockNumber} hash=${hash} old=${this.hardfork} new=${hardfork}`
               )
-              this.config.execCommon.setHardforkByBlockNumber(blockNumber)
+              this.hardfork = this.config.execCommon.setHardforkByBlockNumber(blockNumber)
             }
             await this.vm.runBlock({ block, root: parentState })
             txCounter += block.transactions.length
