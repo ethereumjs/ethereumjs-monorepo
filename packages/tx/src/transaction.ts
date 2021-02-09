@@ -110,7 +110,7 @@ export default class Transaction {
     }
 
     if (opts?.common) {
-      this.common = opts.common
+      this.common = Object.assign(Object.create(Object.getPrototypeOf(opts.common)), opts.common)
     } else {
       const DEFAULT_CHAIN = 'mainnet'
       this.common = new Common({ chain: DEFAULT_CHAIN })
