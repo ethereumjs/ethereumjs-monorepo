@@ -263,7 +263,8 @@ export class Block {
   async validateData(): Promise<void> {
     const txErrors = this.validateTransactions(true)
     if (txErrors.length > 0) {
-      throw new Error(`invalid transactions: ${txErrors.join(' ')}`)
+      const msg = `invalid transactions: ${txErrors.join(' ')}`
+      throw this.header._error(msg)
     }
 
     const validateTxTrie = await this.validateTransactionsTrie()
@@ -356,6 +357,16 @@ export class Block {
       transactions: this.transactions.map((tx) => tx.toJSON()),
       uncleHeaders: this.uncleHeaders.map((uh) => uh.toJSON()),
     }
+  }
+
+  /**
+   * Internal helper function to create an annotated error message
+   *
+   * @param msg Base error message
+   * @hidden
+   */
+  _error(msg: string) {
+    return this.header._error(msg)
   }
 
   /**

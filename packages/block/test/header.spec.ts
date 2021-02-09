@@ -139,7 +139,7 @@ tape('[Block]: Header functions', function (t) {
       await header.validate(blockchain)
       st.fail(testCase)
     } catch (error) {
-      st.equal(error.message, 'invalid amount of extra data', testCase)
+      st.ok(error.message.includes('invalid amount of extra data'), testCase)
     }
 
     // PoA

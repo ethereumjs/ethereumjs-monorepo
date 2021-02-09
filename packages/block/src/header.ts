@@ -46,6 +46,7 @@ export class BlockHeader {
   public readonly nonce: Buffer
 
   public readonly _common: Common
+  public _errorPostfix = ''
 
   public static fromHeaderData(headerData: HeaderData = {}, opts?: BlockOptions) {
     const {
@@ -244,6 +245,10 @@ export class BlockHeader {
     if (options.cliqueSigner) {
       this.extraData = this.cliqueSealBlock(options.cliqueSigner)
     }
+
+    this._errorPostfix = `block number=${this.number.toNumber()} hash=${this.hash().toString(
+      'hex'
+    )}`
 
     const freeze = options?.freeze ?? true
     if (freeze) {
@@ -451,46 +456,41 @@ export class BlockHeader {
       return
     }
     const hardfork = this._getHardfork()
-    const errorPostfix = `(block number=${this.number.toNumber()} hash=${this.hash().toString(
-      'hex'
-    )})`
     if (this._common.consensusAlgorithm() !== 'clique') {
       if (
         this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)
       ) {
-        throw new Error('invalid amount of extra data')
+        const msg = 'invalid amount of extra data'
+        throw this._error(msg)
       }
     } else {
       const minLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
       if (!this.cliqueIsEpochTransition()) {
         // ExtraData length on epoch transition
         if (this.extraData.length !== minLength) {
-          throw new Error(
-            `extraData must be ${minLength} bytes on non-epoch transition blocks, received ${this.extraData.length} bytes ${errorPostfix}`
-          )
+          const msg = `extraData must be ${minLength} bytes on non-epoch transition blocks, received ${this.extraData.length} bytes`
+          throw this._error(msg)
         }
       } else {
         const signerLength = this.extraData.length - minLength
         if (signerLength % 20 !== 0) {
-          throw new Error(
-            `invalid signer list length in extraData, received signer length of ${signerLength} (not divisible by 20) ${errorPostfix}`
-          )
+          const msg = `invalid signer list length in extraData, received signer length of ${signerLength} (not divisible by 20)`
+          throw this._error(msg)
         }
         // coinbase (beneficiary) on epoch transition
         if (!this.coinbase.isZero()) {
-          throw new Error(
-            `coinbase must be filled with zeros on epoch transition blocks, received ${this.coinbase.toString()} ${errorPostfix}`
-          )
+          const msg = `coinbase must be filled with zeros on epoch transition blocks, received ${this.coinbase.toString()}`
+          throw this._error(msg)
         }
       }
       // MixHash format
       if (!this.mixHash.equals(Buffer.alloc(32))) {
-        throw new Error(
-          `mixHash must be filled with zeros, received ${this.mixHash} ${errorPostfix}`
-        )
+        const msg = `mixHash must be filled with zeros, received ${this.mixHash}`
+        throw this._error(msg)
       }
       if (!this.validateCliqueDifficulty(blockchain)) {
-        throw new Error(`invalid clique difficulty ${errorPostfix}`)
+        const msg = `invalid clique difficulty`
+        throw this._error(msg)
       }
     }
 
@@ -720,6 +720,18 @@ export class BlockHeader {
       mixHash: '0x' + this.mixHash.toString('hex'),
       nonce: '0x' + this.nonce.toString('hex'),
     }
+  }
+
+  /**
+   * Internal helper function to create an annotated error message
+   *
+   * @param msg Base error message
+   * @hidden
+   */
+  _error(msg: string) {
+    msg += ` (${this._errorPostfix})`
+    const e = new Error(msg)
+    return e
   }
 
   private _getHardfork(): string {
