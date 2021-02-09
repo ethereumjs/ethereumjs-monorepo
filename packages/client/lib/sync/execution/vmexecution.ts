@@ -152,7 +152,9 @@ export class VMExecution extends Execution {
             // error can repeatedly processed for debugging
             const blockNumber = block.header.number.toNumber()
             const hash = short(block.hash())
-            this.config.logger.warn(`Execution of block number=${blockNumber} hash=${hash} failed`)
+            this.config.logger.warn(
+              `Execution of block number=${blockNumber} hash=${hash} hardfork=${this.hardfork} failed`
+            )
             this.emit('error', error)
             errorBlock = block
           }
