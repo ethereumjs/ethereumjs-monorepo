@@ -41,6 +41,14 @@ tape('[Block]: Header functions', function (t) {
     const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
     let header = BlockHeader.genesis(undefined, { common })
     st.ok(header.hash().toString('hex'), 'genesis block should initialize')
+    st.equal(header._common.hardfork(), 'chainstart', 'should initialize with correct HF provided')
+
+    common.setHardfork('byzantium')
+    st.equal(
+      header._common.hardfork(),
+      'chainstart',
+      'should stay on correct HF if outer common HF changes'
+    )
 
     header = BlockHeader.fromHeaderData({}, { common })
     st.ok(header.hash().toString('hex'), 'default block should initialize')

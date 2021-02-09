@@ -173,7 +173,10 @@ export class BlockHeader {
     options: BlockOptions = {}
   ) {
     if (options.common) {
-      this._common = options.common
+      this._common = Object.assign(
+        Object.create(Object.getPrototypeOf(options.common)),
+        options.common
+      )
     } else {
       const chain = 'mainnet' // default
       if (options.initWithGenesisHeader) {

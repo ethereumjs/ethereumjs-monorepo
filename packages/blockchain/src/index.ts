@@ -202,11 +202,7 @@ export default class Blockchain implements BlockchainInterface {
   public static async fromBlocksData(blocksData: BlockData[], opts: BlockchainOptions = {}) {
     const blockchain = await Blockchain.create(opts)
     for (const blockData of blocksData) {
-      const common = Object.assign(
-        Object.create(Object.getPrototypeOf(blockchain._common)),
-        blockchain._common
-      )
-      const block = Block.fromBlockData(blockData, { common, hardforkByBlockNumber: true })
+      const block = Block.fromBlockData(blockData, { common: blockchain._common, hardforkByBlockNumber: true })
       await blockchain.putBlock(block)
     }
     return blockchain
