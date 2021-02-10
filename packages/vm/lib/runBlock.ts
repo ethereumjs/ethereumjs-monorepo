@@ -334,7 +334,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     let txReceipt
     let receiptLog = `Generate tx receipt gasUsed=${gasUsed} bitvector=${short(
       abstractTxReceipt.bitvector
-    )} (${abstractTxReceipt.bitvector.length} bytes) logs=${abstractTxReceipt.logs.length} `
+    )} (${abstractTxReceipt.bitvector.length} bytes) logs=${abstractTxReceipt.logs.length}`
     if (this._common.gteHardfork('byzantium')) {
       txReceipt = {
         status: txRes.execResult.exceptionError ? 0 : 1, // Receipts have a 0 as status on error

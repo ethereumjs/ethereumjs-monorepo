@@ -96,7 +96,11 @@ export default class DefaultStateManager implements StateManager {
    * @param account - The account to store
    */
   async putAccount(address: Address, account: Account): Promise<void> {
-    debug(`Save account ${address}`)
+    debug(
+      `Save account address=${address} nonce=${account.nonce} balance=${account.balance} contract=${
+        account.isContract() ? 'yes' : 'no'
+      } empty=${account.isEmpty() ? 'yes' : 'no'}`
+    )
     this._cache.put(address, account)
     this.touchAccount(address)
   }
