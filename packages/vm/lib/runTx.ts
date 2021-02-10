@@ -224,7 +224,18 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   )
 
   // Update miner's balance
-  const miner = block.header.coinbase
+  let miner
+  if (this._common.consensusType() === 'pow') {
+    miner = block.header.coinbase
+  } else {
+    // Backwards-compatibilty check
+    // TODO: can be removed along VM v5 release
+    if ('cliqueSigner' in block.header) {
+      miner = block.header.cliqueSigner()
+    } else {
+      miner = Address.zero()
+    }
+  }
   const minerAccount = await state.getAccount(miner)
   // add the amount spent on gas to the miner's account
   minerAccount.balance.iadd(results.amountSpent)

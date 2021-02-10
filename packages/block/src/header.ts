@@ -688,6 +688,10 @@ export class BlockHeader {
   cliqueSigner(): Address {
     this._requireClique('cliqueSigner')
     const extraSeal = this.cliqueExtraSeal()
+    // Reasonable default for default blocks
+    if (extraSeal.length === 0) {
+      return Address.zero()
+    }
     const r = extraSeal.slice(0, 32)
     const s = extraSeal.slice(32, 64)
     const v = bufferToInt(extraSeal.slice(64, 65)) + 27
