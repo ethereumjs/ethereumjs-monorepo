@@ -177,12 +177,12 @@ The following loggers are currently available:
 
 | Logger | Description |
 | - | - |
+| `vm:block` | Block operations (run txs, generating receipts, block rewards,...)
 | `vm:tx` | Transaction operations (account updates, checkpointing,...) |
 | `vm:tx:gas` | Transaction gas logger |
 | `vm:evm` | EVM control flow, CALL or CREATE message execution |
 | `vm:evm:gas` | EVM gas logger |
 | `vm:state`| StateManager logger |
-| `vm:state:root`| Updates on the state root |
 | `vm:ops` | Opcode traces |
 | `vm:ops:[Lower-case opcode name]` | Traces on a specific opcode |
 
@@ -200,10 +200,10 @@ Run all loggers currently available:
 DEBUG=vm:*,vm:*:* ts-node test.ts
 ```
 
-Excluding the state root logger:
+Excluding the state logger:
 
 ```shell
-DEBUG=vm:*,vm:*:*,-vm:state:root ts-node test.ts
+DEBUG=vm:*,vm:*:*,-vm:state ts-node test.ts
 ```
 
 Run some specific loggers including a logger specifically logging the `SSTORE` executions from the VM (this is from the screenshot above):

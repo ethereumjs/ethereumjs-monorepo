@@ -19,7 +19,6 @@ import { ripemdPrecompileAddress } from '../evm/precompiles'
 import { short } from '../evm/opcodes'
 
 const debug = createDebugLogger('vm:state')
-const debugRoot = createDebugLogger('vm:state:root')
 
 type AddressHex = string
 
@@ -423,7 +422,6 @@ export default class DefaultStateManager implements StateManager {
     await this._cache.flush()
 
     if (stateRoot === this._trie.EMPTY_TRIE_ROOT) {
-      debugRoot(`Set state root to empty`)
       this._trie.root = stateRoot
       this._cache.clear()
       this._storageTries = {}
@@ -435,7 +433,6 @@ export default class DefaultStateManager implements StateManager {
       throw new Error('State trie does not contain state root')
     }
 
-    debugRoot(`Set new state root (-> ${stateRoot.toString('hex')})`)
     this._trie.root = stateRoot
     this._cache.clear()
     this._storageTries = {}
