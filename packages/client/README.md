@@ -348,7 +348,7 @@ To update the structure diagram files in the root folder open the `client.drawio
 
 This project will be embedded in the EthereumJS ecosystem and many submodules already exist and
 can be used within the project, have a look e.g. at [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/block), [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/vm),
-[@ethereumjs/trie](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/trie) or the
+[merkle-patricia-tree](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/trie) or the
 [@ethereumjs/devp2p](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/devp2p) implementation. Work needs to be done both within these repos and related libraries.
 
 ## EthereumJS

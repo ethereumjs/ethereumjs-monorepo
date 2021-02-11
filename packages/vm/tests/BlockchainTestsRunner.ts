@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 import { addHexPrefix, BN, toBuffer } from 'ethereumjs-util'
-import { SecureTrie as Trie } from '@ethereumjs/trie'
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import { setupPreConditions, verifyPostConditions } from './util'

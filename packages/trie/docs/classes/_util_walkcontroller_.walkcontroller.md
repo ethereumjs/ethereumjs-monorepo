@@ -1,4 +1,4 @@
-[@ethereumjs/trie](../README.md) › ["util/walkController"](../modules/_util_walkcontroller_.md) › [WalkController](_util_walkcontroller_.walkcontroller.md)
+[merkle-patricia-tree](../README.md) › ["util/walkController"](../modules/_util_walkcontroller_.md) › [WalkController](_util_walkcontroller_.walkcontroller.md)
 
 # Class: WalkController
 

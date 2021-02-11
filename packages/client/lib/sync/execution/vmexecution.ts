@@ -2,7 +2,7 @@ import { Execution, ExecutionOptions } from './execution'
 import { short } from '../../util'
 import VM from '@ethereumjs/vm'
 import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
-import { SecureTrie as Trie } from '@ethereumjs/trie'
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Block } from '@ethereumjs/block'
 import { debugCodeReplayBlock } from '../../util/debug'
 

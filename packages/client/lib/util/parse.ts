@@ -1,6 +1,6 @@
 import { parse } from 'url'
 import { BlockHeader } from '@ethereumjs/block'
-import { SecureTrie as Trie } from '@ethereumjs/trie'
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Account, BN, keccak, rlp, toBuffer, unpadBuffer, isHexPrefixed } from 'ethereumjs-util'
 import { Bootnode, BootnodeLike, Multiaddrs, MultiaddrsLike } from '../types'
 

@@ -1,4 +1,4 @@
-[@ethereumjs/trie](../README.md) › ["baseTrie"](_basetrie_.md)
+[merkle-patricia-tree](../README.md) › ["baseTrie"](_basetrie_.md)
 
 # Module: "baseTrie"
 
