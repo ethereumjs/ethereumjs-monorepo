@@ -209,8 +209,16 @@ export default class EVM {
 
     // Load code
     await this._loadCode(message)
-    if (!message.code || message.code.length === 0 || errorMessage) {
-      debug(`Exit early on no code or value tranfer overflowed`)
+    let exit = false
+    if (!message.code || message.code.length === 0) {
+      exit = true
+      debug(`Exit early on no code`)
+    }
+    if (errorMessage) {
+      exit = true
+      debug(`Exit early on value tranfer overflowed`)
+    }
+    if (exit) {
       return {
         gasUsed: new BN(0),
         execResult: {
@@ -287,8 +295,16 @@ export default class EVM {
       errorMessage = e
     }
 
-    if (!message.code || message.code.length === 0 || errorMessage) {
-      debug(`Exit early on no code or value tranfer overflowed`)
+    let exit = false
+    if (!message.code || message.code.length === 0) {
+      exit = true
+      debug(`Exit early on no code`)
+    }
+    if (errorMessage) {
+      exit = true
+      debug(`Exit early on value tranfer overflowed`)
+    }
+    if (exit) {
       return {
         gasUsed: new BN(0),
         createdAddress: message.to,
@@ -478,7 +494,9 @@ export default class EVM {
   async _reduceSenderBalance(account: Account, message: Message): Promise<void> {
     account.balance.isub(message.value)
     const result = this._state.putAccount(message.caller, account)
-    debug(`Reduce sender (${message.caller.toString()}) balance (-> ${account.balance.toString()})`)
+    debug(
+      `Reduced sender (${message.caller.toString()}) balance (-> ${account.balance.toString()})`
+    )
     return result
   }
 
@@ -490,7 +508,7 @@ export default class EVM {
     toAccount.balance = newBalance
     // putAccount as the nonce may have changed for contract creation
     const result = this._state.putAccount(message.to, toAccount)
-    debug(`Add toAccount (${message.to.toString()}) balance (-> ${toAccount.balance.toString()})`)
+    debug(`Added toAccount (${message.to.toString()}) balance (-> ${toAccount.balance.toString()})`)
     return result
   }
 

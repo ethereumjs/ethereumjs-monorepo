@@ -13,6 +13,9 @@ export interface BlockOptions {
   /**
    * A Common object defining the chain and the hardfork a block/block header belongs to.
    *
+   * Object will be internally copied so that tx behavior don't incidentally
+   * change on future HF changes.
+   *
    * Default: `Common` object set to `mainnet` and the HF currently defined as the default
    * hardfork in the `Common` class.
    *

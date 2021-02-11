@@ -167,7 +167,7 @@ export class DBManager {
       }
     }
     const blockData = [header, ...body] as BlockBuffer
-    const opts = { common: this._common }
+    const opts = { common: this._common, hardforkByBlockNumber: true }
     return Block.fromValuesArray(blockData, opts)
   }
 
@@ -184,7 +184,7 @@ export class DBManager {
    */
   async getHeader(blockHash: Buffer, blockNumber: BN) {
     const encodedHeader = await this.get(DBTarget.Header, { blockHash, blockNumber })
-    const opts = { common: this._common }
+    const opts = { common: this._common, hardforkByBlockNumber: true }
     return BlockHeader.fromRLPSerializedHeader(encodedHeader, opts)
   }
 

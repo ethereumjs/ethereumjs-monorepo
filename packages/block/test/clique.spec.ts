@@ -80,7 +80,7 @@ tape('[Header]: Clique PoA Functionality', function (t) {
   t.test('Signing', function (st) {
     const cliqueSigner = A.privateKey
 
-    const header = BlockHeader.fromHeaderData(
+    let header = BlockHeader.fromHeaderData(
       { number: 1, extraData: Buffer.alloc(97) },
       { common, freeze: false, cliqueSigner }
     )
@@ -88,6 +88,13 @@ tape('[Header]: Clique PoA Functionality', function (t) {
     st.equal(header.extraData.length, 97)
     st.ok(header.cliqueVerifySignature([A.address]), 'should verify signature')
     st.ok(header.cliqueSigner().equals(A.address), 'should recover the correct signer address')
+
+    header = BlockHeader.fromHeaderData({}, { common })
+    st.deepEqual(
+      header.cliqueSigner(),
+      Address.zero(),
+      'should return zero address on default block'
+    )
 
     st.end()
   })

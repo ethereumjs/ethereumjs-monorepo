@@ -114,7 +114,7 @@ tape('should fail when tx gas limit higher than block gas limit', async (t) => {
 tape('should correctly use the selectHardforkByBlockNumber option', async (t) => {
   const common1 = new Common({
     chain: 'mainnet',
-    hardfork: 'chainstart',
+    hardfork: 'muirGlacier',
   })
 
   // Have to use an unique common, otherwise the HF will be set to muirGlacier and then will not change back to chainstart.

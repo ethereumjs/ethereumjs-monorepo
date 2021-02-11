@@ -1,4 +1,4 @@
-import { Block, BlockBodyBuffer } from '@ethereumjs/block'
+import { Block, BlockBodyBuffer, BlockBuffer } from '@ethereumjs/block'
 import { Peer } from '../../net/peer'
 import { EthProtocolMethods } from '../../net/protocol'
 import { Job } from './types'
@@ -50,11 +50,14 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
     const bodies: BlockBodyBuffer[] = <BlockBodyBuffer[]>(
       await peer!.eth!.getBlockBodies(headers.map((h) => h.hash()))
     )
-    const blocks: Block[] = bodies.map(([txsData, unclesData]: BlockBodyBuffer, i: number) =>
-      Block.fromValuesArray([headers[i].raw(), txsData, unclesData], {
+    const blocks: Block[] = bodies.map(([txsData, unclesData]: BlockBodyBuffer, i: number) => {
+      const opts = {
         common: this.config.chainCommon,
-      })
-    )
+        hardforkByBlockNumber: true,
+      }
+      const values: BlockBuffer = [headers[i].raw(), txsData, unclesData]
+      return Block.fromValuesArray(values, opts)
+    })
     return blocks
   }
 
