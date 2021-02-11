@@ -202,11 +202,10 @@ export default class Blockchain implements BlockchainInterface {
   public static async fromBlocksData(blocksData: BlockData[], opts: BlockchainOptions = {}) {
     const blockchain = await Blockchain.create(opts)
     for (const blockData of blocksData) {
-      const common = Object.assign(
-        Object.create(Object.getPrototypeOf(blockchain._common)),
-        blockchain._common
-      )
-      const block = Block.fromBlockData(blockData, { common, hardforkByBlockNumber: true })
+      const block = Block.fromBlockData(blockData, {
+        common: blockchain._common,
+        hardforkByBlockNumber: true,
+      })
       await blockchain.putBlock(block)
     }
     return blockchain
@@ -796,7 +795,13 @@ export default class Blockchain implements BlockchainInterface {
    */
   private async _putBlockOrHeader(item: Block | BlockHeader) {
     await this.runWithLock<void>(async () => {
-      const block = item instanceof BlockHeader ? new Block(item) : item
+      const block =
+        item instanceof BlockHeader
+          ? new Block(item, undefined, undefined, {
+              common: this._common,
+              hardforkByBlockNumber: true,
+            })
+          : item
       const isGenesis = block.isGenesis()
 
       // we cannot overwrite the Genesis block after initializing the Blockchain
@@ -841,22 +846,41 @@ export default class Blockchain implements BlockchainInterface {
         }
       }
 
-      if (this._common.consensusAlgorithm() === 'ethash') {
-        // set total difficulty in the current context scope
-        if (this._headHeaderHash) {
-          currentTd.header = await this.getTotalDifficulty(this._headHeaderHash)
-        }
-        if (this._headBlockHash) {
-          currentTd.block = await this.getTotalDifficulty(this._headBlockHash)
-        }
+      if (this._common.consensusAlgorithm() === 'clique') {
+        // validate checkpoint signers towards active signers on epoch transition blocks
+        if (header.cliqueIsEpochTransition()) {
+          // note: keep votes on epoch transition blocks in case of reorgs.
+          // only active (non-stale) votes will counted (if vote.blockNumber >= lastEpochBlockNumber)
 
-        // calculate the total difficulty of the new block
-        const parentTd = await this.getTotalDifficulty(header.parentHash, blockNumber.subn(1))
-        td.iadd(parentTd)
-
-        // save total difficulty to the database
-        dbOps = dbOps.concat(DBSetTD(td, blockNumber, blockHash))
+          const checkpointSigners = header.cliqueEpochTransitionSigners()
+          const activeSigners = this.cliqueActiveSigners()
+          for (const [i, cSigner] of checkpointSigners.entries()) {
+            if (!activeSigners[i] || !activeSigners[i].equals(cSigner)) {
+              throw new Error(
+                `checkpoint signer not found in active signers list at index ${i}: ${cSigner.toString()}`
+              )
+            }
+          }
+        }
       }
+
+      // set total difficulty in the current context scope
+      if (this._headHeaderHash) {
+        currentTd.header = await this.getTotalDifficulty(this._headHeaderHash)
+      }
+      if (this._headBlockHash) {
+        currentTd.block = await this.getTotalDifficulty(this._headBlockHash)
+      }
+
+      // calculate the total difficulty of the new block
+      let parentTd = new BN(0)
+      if (!block.isGenesis()) {
+        parentTd = await this.getTotalDifficulty(header.parentHash, blockNumber.subn(1))
+      }
+      td.iadd(parentTd)
+
+      // save total difficulty to the database
+      dbOps = dbOps.concat(DBSetTD(td, blockNumber, blockHash))
 
       // save header/block to the database
       dbOps = dbOps.concat(DBSetBlockOrHeader(block))
@@ -879,24 +903,9 @@ export default class Blockchain implements BlockchainInterface {
 
         // Clique: update signer votes and state
         if (this._common.consensusAlgorithm() === 'clique') {
-          if (header.cliqueIsEpochTransition()) {
-            // note: keep votes on epoch transition blocks in case of reorgs.
-            // only active (non-stale) votes will counted (if vote.blockNumber >= lastEpochBlockNumber)
-
-            // validate checkpoint signers towards active signers
-            const checkpointSigners = header.cliqueEpochTransitionSigners()
-            const activeSigners = this.cliqueActiveSigners()
-            for (const [i, cSigner] of checkpointSigners.entries()) {
-              if (!activeSigners[i] || !activeSigners[i].equals(cSigner)) {
-                throw new Error(
-                  `checkpoint signer not found in active signers list at index ${i}: ${cSigner.toString()}`
-                )
-              }
-            }
-          } else {
+          if (!header.cliqueIsEpochTransition()) {
             await this.cliqueUpdateVotes(header)
           }
-
           await this.cliqueUpdateLatestBlockSigners(header)
         }
 

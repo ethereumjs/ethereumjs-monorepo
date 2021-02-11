@@ -262,7 +262,13 @@ export default class EEI {
   getBlockCoinbase(): BN {
     let coinbase: Address
     if (this._common.consensusAlgorithm() === 'clique') {
-      coinbase = this._env.block.header.cliqueSigner()
+      // Backwards-compatibilty check
+      // TODO: can be removed along VM v5 release
+      if ('cliqueSigner' in this._env.block.header) {
+        coinbase = this._env.block.header.cliqueSigner()
+      } else {
+        coinbase = Address.zero()
+      }
     } else {
       coinbase = this._env.block.header.coinbase
     }

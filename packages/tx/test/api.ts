@@ -24,6 +24,17 @@ tape('[Transaction]: Basic functions', function (t) {
     st.equal(tx.common.hardfork(), 'istanbul', 'should initialize with correct default HF')
     st.ok(Object.isFrozen(tx), 'tx should be frozen by default')
 
+    const common = new Common({ chain: 'mainnet', hardfork: 'spuriousDragon' })
+    tx = Transaction.fromTxData({}, { common })
+    st.equal(tx.common.hardfork(), 'spuriousDragon', 'should initialize with correct HF provided')
+
+    common.setHardfork('byzantium')
+    st.equal(
+      tx.common.hardfork(),
+      'spuriousDragon',
+      'should stay on correct HF if outer common HF changes'
+    )
+
     tx = Transaction.fromTxData({}, { freeze: false })
     st.ok(!Object.isFrozen(tx), 'tx should not be frozen when freeze deactivated in options')
 

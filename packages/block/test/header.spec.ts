@@ -5,6 +5,8 @@ import { BlockHeader } from '../src/header'
 import { Block } from '../src'
 import { Mockchain } from './mockchain'
 const testData = require('./testdata/testdata.json')
+const blocksMainnet = require('./testdata/blocks_mainnet.json')
+const blocksGoerli = require('./testdata/blocks_goerli.json')
 
 tape('[Block]: Header functions', function (t) {
   t.test('should create with default constructor', function (st) {
@@ -39,6 +41,14 @@ tape('[Block]: Header functions', function (t) {
     const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
     let header = BlockHeader.genesis(undefined, { common })
     st.ok(header.hash().toString('hex'), 'genesis block should initialize')
+    st.equal(header._common.hardfork(), 'chainstart', 'should initialize with correct HF provided')
+
+    common.setHardfork('byzantium')
+    st.equal(
+      header._common.hardfork(),
+      'chainstart',
+      'should stay on correct HF if outer common HF changes'
+    )
 
     header = BlockHeader.fromHeaderData({}, { common })
     st.ok(header.hash().toString('hex'), 'default block should initialize')
@@ -137,7 +147,7 @@ tape('[Block]: Header functions', function (t) {
       await header.validate(blockchain)
       st.fail(testCase)
     } catch (error) {
-      st.equal(error.message, 'invalid amount of extra data', testCase)
+      st.ok(error.message.includes('invalid amount of extra data'), testCase)
     }
 
     // PoA
@@ -171,9 +181,10 @@ tape('[Block]: Header functions', function (t) {
       await header.validate(blockchain)
       t.fail(testCase)
     } catch (error) {
-      t.equal(
-        error.message,
-        'extraData must be 97 bytes on non-epoch transition blocks, received 32 bytes',
+      t.ok(
+        error.message.includes(
+          'extraData must be 97 bytes on non-epoch transition blocks, received 32 bytes'
+        ),
         testCase
       )
     }
@@ -192,9 +203,10 @@ tape('[Block]: Header functions', function (t) {
       await header.validate(blockchain)
       st.fail(testCase)
     } catch (error) {
-      st.equals(
-        error.message,
-        'invalid signer list length in extraData, received signer length of 41 (not divisible by 20)',
+      st.ok(
+        error.message.includes(
+          'invalid signer list length in extraData, received signer length of 41 (not divisible by 20)'
+        ),
         testCase
       )
     }
@@ -271,7 +283,7 @@ tape('[Block]: Header functions', function (t) {
     st.end()
   })
 
-  t.test('should test validateGasLimit', function (st) {
+  t.test('should test validateGasLimit()', function (st) {
     const testData = require('./testdata/bcBlockGasLimitTest.json').tests
     const bcBlockGasLimitTestData = testData.BlockGasLimit2p63m1
 
@@ -311,6 +323,25 @@ tape('[Block]: Header functions', function (t) {
     const genesis = BlockHeader.genesis({}, { common })
     const ropstenStateRoot = '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
     st.strictEqual(genesis.stateRoot.toString('hex'), ropstenStateRoot, 'genesis stateRoot match')
+    st.end()
+  })
+
+  t.test('should test hash() function', function (st) {
+    let common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
+    let header = BlockHeader.fromHeaderData(blocksMainnet[0]['header'], { common })
+    st.equal(
+      header.hash().toString('hex'),
+      '88e96d4537bea4d9c05d12549907b32561d3bf31f45aae734cdc119f13406cb6',
+      'correct PoW hash (mainnet block 1)'
+    )
+
+    common = new Common({ chain: 'goerli', hardfork: 'chainstart' })
+    header = BlockHeader.fromHeaderData(blocksGoerli[0]['header'], { common })
+    st.equal(
+      header.hash().toString('hex'),
+      '8f5bab218b6bb34476f51ca588e9f4553a3a7ce5e13a66c660a5283e97e9a85a',
+      'correct PoA clique hash (goerli block 1)'
+    )
     st.end()
   })
 })

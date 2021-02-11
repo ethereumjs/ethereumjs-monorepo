@@ -28,54 +28,60 @@ export interface EthProtocolMethods {
   getBlockBodies: (hashes: Buffer[]) => Promise<BlockBodyBuffer[]>
 }
 
-const messages: Message[] = [
-  {
-    name: 'NewBlockHashes',
-    code: 0x01,
-    encode: (hashes: any[]) => hashes.map((hn) => [hn[0], hn[1].toArrayLike(Buffer)]),
-    decode: (hashes: any[]) => hashes.map((hn) => [hn[0], new BN(hn[1])]),
-  },
-  {
-    name: 'GetBlockHeaders',
-    code: 0x03,
-    response: 0x04,
-    encode: ({ block, max, skip = 0, reverse = false }: GetBlockHeadersOpts) => [
-      BN.isBN(block) ? block.toArrayLike(Buffer) : block,
-      max,
-      skip,
-      !reverse ? 0 : 1,
-    ],
-    decode: ([block, max, skip, reverse]: any) => ({
-      block: block.length === 32 ? block : new BN(block),
-      max: bufferToInt(max),
-      skip: bufferToInt(skip),
-      reverse: bufferToInt(reverse) === 0 ? false : true,
-    }),
-  },
-  {
-    name: 'BlockHeaders',
-    code: 0x04,
-    encode: (headers: BlockHeader[]) => headers.map((h) => h.raw()),
-    decode: (headers: BlockHeaderBuffer[]) =>
-      headers.map((h) => BlockHeader.fromValuesArray(h, {})),
-  },
-  {
-    name: 'GetBlockBodies',
-    code: 0x05,
-    response: 0x06,
-  },
-  {
-    name: 'BlockBodies',
-    code: 0x06,
-  },
-]
-
 /**
  * Implements eth/62 and eth/63 protocols
  * @memberof module:net/protocol
  */
 export class EthProtocol extends Protocol {
   private chain: Chain
+
+  private protocolMessages: Message[] = [
+    {
+      name: 'NewBlockHashes',
+      code: 0x01,
+      encode: (hashes: any[]) => hashes.map((hn) => [hn[0], hn[1].toArrayLike(Buffer)]),
+      decode: (hashes: any[]) => hashes.map((hn) => [hn[0], new BN(hn[1])]),
+    },
+    {
+      name: 'GetBlockHeaders',
+      code: 0x03,
+      response: 0x04,
+      encode: ({ block, max, skip = 0, reverse = false }: GetBlockHeadersOpts) => [
+        BN.isBN(block) ? block.toArrayLike(Buffer) : block,
+        max,
+        skip,
+        !reverse ? 0 : 1,
+      ],
+      decode: ([block, max, skip, reverse]: any) => ({
+        block: block.length === 32 ? block : new BN(block),
+        max: bufferToInt(max),
+        skip: bufferToInt(skip),
+        reverse: bufferToInt(reverse) === 0 ? false : true,
+      }),
+    },
+    {
+      name: 'BlockHeaders',
+      code: 0x04,
+      encode: (headers: BlockHeader[]) => headers.map((h) => h.raw()),
+      decode: (headers: BlockHeaderBuffer[]) => {
+        return headers.map((h) =>
+          BlockHeader.fromValuesArray(h, {
+            hardforkByBlockNumber: true,
+            common: this.config.chainCommon, // eslint-disable-line no-invalid-this
+          })
+        )
+      },
+    },
+    {
+      name: 'GetBlockBodies',
+      code: 0x05,
+      response: 0x06,
+    },
+    {
+      name: 'BlockBodies',
+      code: 0x06,
+    },
+  ]
 
   /**
    * Create eth protocol
@@ -108,7 +114,7 @@ export class EthProtocol extends Protocol {
    * @type {Protocol~Message[]}
    */
   get messages(): Message[] {
-    return messages
+    return this.protocolMessages
   }
 
   /**

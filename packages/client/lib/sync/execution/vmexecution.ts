@@ -110,7 +110,7 @@ export class VMExecution extends Execution {
               this.config.logger.info(
                 `Execution hardfork switch on block number=${blockNumber} hash=${hash} old=${this.hardfork} new=${hardfork}`
               )
-              this.config.execCommon.setHardforkByBlockNumber(blockNumber)
+              this.hardfork = this.config.execCommon.setHardforkByBlockNumber(blockNumber)
             }
             await this.vm.runBlock({ block, root: parentState })
             txCounter += block.transactions.length
@@ -152,7 +152,9 @@ export class VMExecution extends Execution {
             // error can repeatedly processed for debugging
             const blockNumber = block.header.number.toNumber()
             const hash = short(block.hash())
-            this.config.logger.warn(`Execution of block number=${blockNumber} hash=${hash} failed`)
+            this.config.logger.warn(
+              `Execution of block number=${blockNumber} hash=${hash} hardfork=${this.hardfork} failed`
+            )
             this.emit('error', error)
             errorBlock = block
           }
