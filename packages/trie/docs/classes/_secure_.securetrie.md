@@ -25,9 +25,6 @@ It has the same methods and constructor as `Trie`.
 ### Properties
 
 * [EMPTY_TRIE_ROOT](_secure_.securetrie.md#empty_trie_root)
-* [_checkpoints](_secure_.securetrie.md#_checkpoints)
-* [_mainDB](_secure_.securetrie.md#_maindb)
-* [_scratch](_secure_.securetrie.md#_scratch)
 * [db](_secure_.securetrie.md#db)
 
 ### Accessors
@@ -38,10 +35,7 @@ It has the same methods and constructor as `Trie`.
 ### Methods
 
 * [_createInitialNode](_secure_.securetrie.md#private-_createinitialnode)
-* [_createScratchReadStream](_secure_.securetrie.md#private-_createscratchreadstream)
 * [_deleteNode](_secure_.securetrie.md#private-_deletenode)
-* [_enterCpMode](_secure_.securetrie.md#private-_entercpmode)
-* [_exitCpMode](_secure_.securetrie.md#private-_exitcpmode)
 * [_findDbNodes](_secure_.securetrie.md#private-_finddbnodes)
 * [_findValueNodes](_secure_.securetrie.md#private-_findvaluenodes)
 * [_formatNode](_secure_.securetrie.md#private-_formatnode)
@@ -98,45 +92,15 @@ The root for an empty trie
 
 ___
 
-###  _checkpoints
-
-• **_checkpoints**: *Buffer[]*
-
-*Inherited from [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[_checkpoints](_checkpointtrie_.checkpointtrie.md#_checkpoints)*
-
-*Defined in [checkpointTrie.ts:13](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/checkpointTrie.ts#L13)*
-
-___
-
-###  _mainDB
-
-• **_mainDB**: *DB*
-
-*Inherited from [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[_mainDB](_checkpointtrie_.checkpointtrie.md#_maindb)*
-
-*Defined in [checkpointTrie.ts:11](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/checkpointTrie.ts#L11)*
-
-___
-
-###  _scratch
-
-• **_scratch**: *ScratchDB | null*
-
-*Inherited from [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[_scratch](_checkpointtrie_.checkpointtrie.md#_scratch)*
-
-*Defined in [checkpointTrie.ts:12](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/checkpointTrie.ts#L12)*
-
-___
-
 ###  db
 
-• **db**: *DB*
+• **db**: *CheckpointDB*
 
-*Inherited from [Trie](_basetrie_.trie.md).[db](_basetrie_.trie.md#db)*
+*Inherited from [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[db](_checkpointtrie_.checkpointtrie.md#db)*
 
-*Defined in [baseTrie.ts:43](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/baseTrie.ts#L43)*
+*Overrides [Trie](_basetrie_.trie.md).[db](_basetrie_.trie.md#db)*
 
-The backend DB
+*Defined in [checkpointTrie.ts:8](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/checkpointTrie.ts#L8)*
 
 ## Accessors
 
@@ -148,7 +112,7 @@ The backend DB
 
 *Overrides [Trie](_basetrie_.trie.md).[isCheckpoint](_basetrie_.trie.md#ischeckpoint)*
 
-*Defined in [checkpointTrie.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/checkpointTrie.ts#L28)*
+*Defined in [checkpointTrie.ts:18](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/checkpointTrie.ts#L18)*
 
 Is the trie during a checkpoint phase?
 
@@ -207,27 +171,6 @@ Name | Type |
 
 ___
 
-### `Private` _createScratchReadStream
-
-▸ **_createScratchReadStream**(`scratchDb?`: ScratchDB): *ScratchReadStream‹›*
-
-*Inherited from [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[_createScratchReadStream](_checkpointtrie_.checkpointtrie.md#private-_createscratchreadstream)*
-
-*Defined in [checkpointTrie.ts:135](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/checkpointTrie.ts#L135)*
-
-Returns a `ScratchReadStream` based on the state updates
-since checkpoint.
-
-**Parameters:**
-
-Name | Type |
------- | ------ |
-`scratchDb?` | ScratchDB |
-
-**Returns:** *ScratchReadStream‹›*
-
-___
-
 ### `Private` _deleteNode
 
 ▸ **_deleteNode**(`k`: Buffer, `stack`: TrieNode[]): *Promise‹void›*
@@ -244,40 +187,6 @@ Name | Type |
 ------ | ------ |
 `k` | Buffer |
 `stack` | TrieNode[] |
-
-**Returns:** *Promise‹void›*
-
-___
-
-### `Private` _enterCpMode
-
-▸ **_enterCpMode**(): *void*
-
-*Inherited from [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[_enterCpMode](_checkpointtrie_.checkpointtrie.md#private-_entercpmode)*
-
-*Defined in [checkpointTrie.ts:105](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/checkpointTrie.ts#L105)*
-
-Enter into checkpoint mode.
-
-**Returns:** *void*
-
-___
-
-### `Private` _exitCpMode
-
-▸ **_exitCpMode**(`commitState`: boolean): *Promise‹void›*
-
-*Inherited from [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[_exitCpMode](_checkpointtrie_.checkpointtrie.md#private-_exitcpmode)*
-
-*Defined in [checkpointTrie.ts:114](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/checkpointTrie.ts#L114)*
-
-Exit from checkpoint mode.
-
-**Parameters:**
-
-Name | Type |
------- | ------ |
-`commitState` | boolean |
 
 **Returns:** *Promise‹void›*
 
@@ -470,11 +379,10 @@ ___
 
 *Inherited from [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[checkpoint](_checkpointtrie_.checkpointtrie.md#checkpoint)*
 
-*Defined in [checkpointTrie.ts:37](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/checkpointTrie.ts#L37)*
+*Defined in [checkpointTrie.ts:26](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/checkpointTrie.ts#L26)*
 
 Creates a checkpoint that can later be reverted to or committed.
-After this is called, no changes to the trie will be permanently saved until `commit` is called.
-To override the checkpointing mechanism use `_maindb.put` to write directly write to db.
+After this is called, all changes can be reverted until `commit` is called.
 
 **Returns:** *void*
 
@@ -486,7 +394,7 @@ ___
 
 *Inherited from [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[commit](_checkpointtrie_.checkpointtrie.md#commit)*
 
-*Defined in [checkpointTrie.ts:52](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/checkpointTrie.ts#L52)*
+*Defined in [checkpointTrie.ts:35](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/checkpointTrie.ts#L35)*
 
 Commits a checkpoint to disk, if current checkpoint is not nested.
 If nested, only sets the parent checkpoint as current checkpoint.
@@ -644,7 +552,7 @@ ___
 
 *Inherited from [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[revert](_checkpointtrie_.checkpointtrie.md#revert)*
 
-*Defined in [checkpointTrie.ts:73](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/checkpointTrie.ts#L73)*
+*Defined in [checkpointTrie.ts:50](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/checkpointTrie.ts#L50)*
 
 Reverts the trie to the state it was at when `checkpoint` was first called.
 If during a nested checkpoint, sets root to most recent checkpoint, and sets
