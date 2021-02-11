@@ -4,6 +4,7 @@ import VM from '@ethereumjs/vm'
 import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
 import { Block } from '@ethereumjs/block'
+import { debugCodeReplayBlock } from '../../util/debug'
 
 export class VMExecution extends Execution {
   public vm: VM
@@ -155,6 +156,9 @@ export class VMExecution extends Execution {
             this.config.logger.warn(
               `Execution of block number=${blockNumber} hash=${hash} hardfork=${this.hardfork} failed`
             )
+            if (this.config.debugCode) {
+              await debugCodeReplayBlock(this, block)
+            }
             this.emit('error', error)
             errorBlock = block
           }
