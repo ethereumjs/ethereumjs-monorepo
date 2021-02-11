@@ -566,7 +566,10 @@ export default class EEI {
       this._lastReturned = results.execResult.returnValue
     }
 
-    if (!results.execResult.exceptionError) {
+    if (
+      !results.execResult.exceptionError ||
+      results.execResult.exceptionError.error === ERROR.CODESTORE_OUT_OF_GAS
+    ) {
       Object.assign(this._result.selfdestruct, selfdestruct)
       // update stateRoot on current contract
       const account = await this._state.getAccount(this._env.address)
