@@ -47,4 +47,6 @@ export function compareTrace(vm: VM, traceJSON: any) {
 
     opCounter++
   })
+
+  vm.on('afterTx', console.log)
 }
