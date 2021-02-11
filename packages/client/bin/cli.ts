@@ -88,6 +88,11 @@ const args = require('yargs')
       describe: 'EIP-1459 ENR tree urls to query for peer discovery targets',
       array: true,
     },
+    debugCode: {
+      describe: 'Generate code for local debugging (internal usage mostly)',
+      boolean: true,
+      default: Config.DEBUGCODE_DEFAULT,
+    },
   })
   .locale('en_EN').argv
 
@@ -168,6 +173,7 @@ async function run() {
     maxPeers: args.maxPeers,
     dnsAddr: args.dnsAddr,
     dnsNetworks: args.dnsNetworks,
+    debugCode: args.debugCode,
   })
   logger = config.logger
 

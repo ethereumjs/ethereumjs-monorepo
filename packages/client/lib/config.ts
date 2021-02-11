@@ -114,6 +114,15 @@ export interface ConfigOptions {
    * EIP-1459 ENR Tree urls to query via DNS for peer discovery
    */
   dnsNetworks?: string[]
+
+  /**
+   * Generate code for local debugging, currently providing a
+   * code snippet which can be used to run blocks on the
+   * EthereumJS VM on execution errors
+   *
+   * (meant to be used internally for the most part)
+   */
+  debugCode?: boolean
 }
 
 export class Config {
@@ -129,6 +138,7 @@ export class Config {
   public static readonly MINPEERS_DEFAULT = 1
   public static readonly MAXPEERS_DEFAULT = 25
   public static readonly DNSADDR_DEFAULT = '8.8.8.8'
+  public static readonly DEBUGCODE_DEFAULT = false
 
   public readonly logger: Logger
   public readonly syncmode: string
@@ -143,6 +153,7 @@ export class Config {
   public readonly minPeers: number
   public readonly maxPeers: number
   public readonly dnsAddr: string
+  public readonly debugCode: boolean
 
   public readonly chainCommon: Common
   public readonly execCommon: Common
@@ -162,6 +173,7 @@ export class Config {
     this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
     this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT
     this.dnsAddr = options.dnsAddr ?? Config.DNSADDR_DEFAULT
+    this.debugCode = options.debugCode ?? Config.DEBUGCODE_DEFAULT
 
     // TODO: map chainParams (and lib/util.parseParams) to new Common format
     const common =

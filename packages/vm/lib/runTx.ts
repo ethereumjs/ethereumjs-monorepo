@@ -176,7 +176,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       .hash()
       .toString('hex')} with caller=${caller.toString()} gasLimit=${gasLimit} to=${
       to ? to.toString() : ''
-    } value=${value} data=0x${data.toString('hex')}`
+    } value=${value} data=0x${short(data)}`
   )
   const results = (await evm.executeMessage(message)) as RunTxResult
   debug('-'.repeat(100))
