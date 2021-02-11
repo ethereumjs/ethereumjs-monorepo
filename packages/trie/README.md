@@ -1,4 +1,4 @@
-# @ethereumjs/trie
+# merkle-patricia-tree
 
 [![NPM Package][trie-npm-badge]][trie-npm-link]
 [![GitHub Issues][trie-issues-badge]][trie-issues-link]
@@ -16,7 +16,7 @@ Note: this `README` reflects the state of the library from `v5.0.0` (UNRELEASED)
 
 # INSTALL
 
-`npm install @ethereumjs/trie`
+`npm install merkle-patricia-tree`
 
 # USAGE
 
@@ -26,7 +26,7 @@ There are 3 variants of the tree implemented in this library, namely: `BaseTrie`
 
 ```typescript
 import level from 'level'
-import { BaseTrie as Trie } from '@ethereumjs/trie'
+import { BaseTrie as Trie } from 'merkle-patricia-tree'
 
 const db = level('./testdb')
 const trie = new Trie(db)
@@ -59,7 +59,7 @@ test()
 
 ```typescript
 import level from 'level'
-import { SecureTrie as Trie } from '@ethereumjs/trie'
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
 
 const db = level('YOUR_PATH_TO_THE_GETH_CHAIN_DB')
 // Set stateRoot to block #222
@@ -82,7 +82,7 @@ import level from 'level'
 import rlp from 'rlp'
 import { BN, bufferToHex } from 'ethereumjs-util'
 import Account from 'ethereumjs-account'
-import { SecureTrie as Trie } from '@ethereumjs/trie'
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
 
 const stateRoot = 'STATE_ROOT_OF_A_BLOCK'
 
@@ -175,8 +175,8 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR
-[trie-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/trie.svg
-[trie-npm-link]: https://www.npmjs.com/package/@ethereumjs/trie
+[trie-npm-badge]: https://img.shields.io/npm/v/merkle-patricia-tree.svg
+[trie-npm-link]: https://www.npmjs.com/package/merkle-patricia-tree
 [trie-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20trie?label=issues
 [trie-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+trie"
 [trie-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Trie%20Test/badge.svg

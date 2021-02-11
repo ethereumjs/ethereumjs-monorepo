@@ -1,9 +1,9 @@
-[@ethereumjs/trie](../README.md) › ["secure"](../modules/_secure_.md) › [SecureTrie](_secure_.securetrie.md)
+[merkle-patricia-tree](../README.md) › ["secure"](../modules/_secure_.md) › [SecureTrie](_secure_.securetrie.md)
 
 # Class: SecureTrie
 
 You can create a secure Trie where the keys are automatically hashed
-using **keccak256** by using `import { SecureTrie as Trie } from '@ethereumjs/trie'`.
+using **keccak256** by using `import { SecureTrie as Trie } from 'merkle-patricia-tree'`.
 It has the same methods and constructor as `Trie`.
 
 **`class`** SecureTrie
