@@ -567,6 +567,10 @@ export default class Blockchain implements BlockchainInterface {
           if (auth) {
             // Authorize new signer
             activeSigners.push(beneficiary)
+            activeSigners.sort((a, b) => {
+              // Sort by buffer size
+              return a.toBuffer().compare(b.toBuffer())
+            })
             // Discard votes for added signer
             this._cliqueLatestVotes = this._cliqueLatestVotes.filter(
               (vote) => !vote[1][1].equals(beneficiary)
