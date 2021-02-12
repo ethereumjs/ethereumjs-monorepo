@@ -56,6 +56,13 @@ export interface DPTOptions {
   shouldFindNeighbours?: boolean
 
   /**
+   * Toggles whether or not peers should be discovered by querying EIP-1459 DNS lists
+   *
+   * Default: false
+   */
+  shouldGetDnsPeers?: boolean
+
+  /**
    * Max number of candidate peers to retrieve from DNS records when
    * attempting to discover new nodes
    *
@@ -87,6 +94,7 @@ export class DPT extends EventEmitter {
   private _refreshIntervalId: NodeJS.Timeout
   private _refreshIntervalSelectionCounter: number = 0
   private _shouldFindNeighbours: boolean
+  private _shouldGetDnsPeers: boolean
   private _dnsRefreshQuantity: number
   private _dnsNetworks: string[]
   private _dnsAddr: string
@@ -97,6 +105,7 @@ export class DPT extends EventEmitter {
     this.privateKey = Buffer.from(privateKey)
     this._id = pk2id(Buffer.from(publicKeyCreate(this.privateKey, false)))
     this._shouldFindNeighbours = options.shouldFindNeighbours === false ? false : true
+    this._shouldGetDnsPeers = options.shouldGetDnsPeers ?? false
     // By default, tries to connect to 12 new peers every 3s
     this._dnsRefreshQuantity = Math.floor((options.dnsRefreshQuantity ?? 25) / 2)
     this._dnsNetworks = options.dnsNetworks ?? []
@@ -117,8 +126,14 @@ export class DPT extends EventEmitter {
     })
     this._server.once('listening', () => this.emit('listening'))
     this._server.once('close', () => this.emit('close'))
-    this._server.on('peers', (peers) => this._onServerPeers(peers))
     this._server.on('error', (err) => this.emit('error', err))
+
+    // When not using peer neighbour discovery we don't add peers here
+    // because it results in duplicate calls for the same targets
+    this._server.on('peers', (peers) => {
+      if (!this._shouldFindNeighbours) return
+      this._addPeerBatch(peers)
+    })
 
     // By default calls refresh every 3s
     const refreshIntervalSubdivided = Math.floor((options.refreshInterval ?? ms('60s')) / 10)
@@ -155,12 +170,7 @@ export class DPT extends EventEmitter {
     }
   }
 
-  _onServerPeers(peers: PeerInfo[]): void {
-    // We don't want this to run when using
-    // dns - it's fired in the server.on:peer hook
-    // and results in duplicate addition attempts
-    if (!this._shouldFindNeighbours) return
-
+  _addPeerBatch(peers: PeerInfo[]): void {
     const DIFF_TIME_MS = 200
     let ms = 0
     for (const peer of peers) {
@@ -251,16 +261,16 @@ export class DPT extends EventEmitter {
       }
     }
 
-    const dnsPeers = await this.getDnsPeers()
+    if (this._shouldGetDnsPeers) {
+      const dnsPeers = await this.getDnsPeers()
 
-    debug(
-      `.refresh() (Adding ${dnsPeers.length}) from DNS tree, (${
-        this.getPeers().length
-      } current peers in table)`
-    )
+      debug(
+        `.refresh() Adding ${dnsPeers.length} from DNS tree, (${
+          this.getPeers().length
+        } current peers in table)`
+      )
 
-    for (const peer of dnsPeers) {
-      await this.bootstrap(peer)
+      this._addPeerBatch(dnsPeers)
     }
   }
 }

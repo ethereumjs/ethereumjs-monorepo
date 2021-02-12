@@ -93,6 +93,14 @@ const args = require('yargs')
       boolean: true,
       default: Config.DEBUGCODE_DEFAULT,
     },
+    discDns: {
+      describe: 'Query EIP-1459 DNS TXT records for peer discovery',
+      boolean: true,
+    },
+    discV4: {
+      describe: 'Use v4 ("findneighbour" node requests) for peer discovery',
+      boolean: true,
+    },
   })
   .locale('en_EN').argv
 
@@ -174,6 +182,8 @@ async function run() {
     dnsAddr: args.dnsAddr,
     dnsNetworks: args.dnsNetworks,
     debugCode: args.debugCode,
+    discDns: args.discDns,
+    discV4: args.discV4,
   })
   logger = config.logger
 
