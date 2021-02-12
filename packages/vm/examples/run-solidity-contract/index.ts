@@ -1,11 +1,10 @@
 import assert from 'assert'
-import * as path from 'path'
-import * as fs from 'fs'
-import { Account, Address, BN, privateToAddress, bufferToHex } from 'ethereumjs-util'
+import { join } from 'path'
+import { readFileSync } from 'fs'
+import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
+import { Account, Address, BN } from 'ethereumjs-util'
 import { Transaction } from '@ethereumjs/tx'
 import VM from '../../dist'
-
-const abi = require('ethereumjs-abi')
 const solc = require('solc')
 
 const INITIAL_GREETING = 'Hello, World!'
@@ -21,7 +20,7 @@ function getSolcInput() {
     language: 'Solidity',
     sources: {
       'contracts/Greeter.sol': {
-        content: fs.readFileSync(path.join(__dirname, 'contracts', 'Greeter.sol'), 'utf8'),
+        content: readFileSync(join(__dirname, 'contracts', 'Greeter.sol'), 'utf8'),
       },
       // If more contracts were to be compiled, they should have their own entries here
     },
@@ -75,7 +74,7 @@ function getGreeterDeploymentBytecode(solcOutput: any): any {
 }
 
 async function getAccountNonce(vm: VM, accountPrivateKey: Buffer) {
-  const address = privateToAddress(accountPrivateKey)
+  const address = Address.fromPrivateKey(accountPrivateKey)
   const account = await vm.stateManager.getAccount(address)
   return account.nonce
 }
@@ -88,12 +87,12 @@ async function deployContract(
 ): Promise<Address> {
   // Contracts are deployed by sending their deployment bytecode to the address 0
   // The contract params should be abi-encoded and appended to the deployment bytecode.
-  const params = abi.rawEncode(['string'], [greeting])
+  const params = AbiCoder.encode(['string'], [greeting])
   const txData = {
     value: 0,
     gasLimit: 2000000, // We assume that 2M is enough,
     gasPrice: 1,
-    data: '0x' + deploymentBytecode + params.toString('hex'),
+    data: '0x' + deploymentBytecode.toString('hex') + params.slice(2),
     nonce: await getAccountNonce(vm, senderPrivateKey),
   }
 
@@ -114,13 +113,14 @@ async function setGreeting(
   contractAddress: Address,
   greeting: string,
 ) {
-  const params = abi.rawEncode(['string'], [greeting])
+  const params = AbiCoder.encode(['string'], [greeting])
+  const sigHash = new Interface(['function setGreeting(string)']).getSighash('setGreeting')
   const txData = {
     to: contractAddress,
     value: 0,
     gasLimit: 2000000, // We assume that 2M is enough,
     gasPrice: 1,
-    data: '0x' + abi.methodID('setGreeting', ['string']).toString('hex') + params.toString('hex'),
+    data: sigHash + params.slice(2),
     nonce: await getAccountNonce(vm, senderPrivateKey),
   }
 
@@ -134,18 +134,19 @@ async function setGreeting(
 }
 
 async function getGreeting(vm: VM, contractAddress: Address, caller: Address) {
+  const sigHash = new Interface(['function greet()']).getSighash('greet')
   const greetResult = await vm.runCall({
     to: contractAddress,
     caller: caller,
     origin: caller, // The tx.origin is also the caller here
-    data: abi.methodID('greet', []),
+    data: Buffer.from(sigHash.slice(2), 'hex'),
   })
 
   if (greetResult.execResult.exceptionError) {
     throw greetResult.execResult.exceptionError
   }
 
-  const results = abi.rawDecode(['string'], greetResult.execResult.returnValue)
+  const results = AbiCoder.decode(['string'], greetResult.execResult.returnValue)
 
   return results[0]
 }
@@ -156,7 +157,7 @@ async function main() {
     'hex',
   )
 
-  const accountAddress = new Address(privateToAddress(accountPk))
+  const accountAddress = Address.fromPrivateKey(accountPk)
 
   console.log('Account: ', accountAddress.toString())
 
