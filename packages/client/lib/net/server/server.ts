@@ -1,7 +1,8 @@
 import { EventEmitter } from 'events'
+import multiaddr from 'multiaddr'
 import { Config } from '../../config'
-import { Bootnode, BootnodeLike, KeyLike, DnsNetwork } from '../../types'
-import { parseKey, parseBootnodes } from '../../util/parse'
+import { MultiaddrLike, KeyLike, DnsNetwork } from '../../types'
+import { parseKey, parseMultiaddrs } from '../../util/parse'
 import { Protocol } from '../protocol/protocol'
 
 export interface ServerOptions {
@@ -15,7 +16,7 @@ export interface ServerOptions {
   key?: KeyLike
 
   /* List of bootnodes to use for discovery */
-  bootnodes?: BootnodeLike
+  bootnodes?: MultiaddrLike
 
   /* DNS record tree to search for discovery */
   dnsNetworks?: DnsNetwork[]
@@ -28,7 +29,7 @@ export interface ServerOptions {
 export class Server extends EventEmitter {
   public config: Config
   public key: Buffer | undefined
-  public bootnodes: Bootnode[] = []
+  public bootnodes: multiaddr[] = []
   public dnsNetworks: DnsNetwork[]
 
   protected refreshInterval: number
@@ -45,7 +46,7 @@ export class Server extends EventEmitter {
 
     this.config = options.config
     this.key = options.key ? parseKey(options.key) : undefined
-    this.bootnodes = options.bootnodes ? parseBootnodes(options.bootnodes) : []
+    this.bootnodes = options.bootnodes ? parseMultiaddrs(options.bootnodes) : []
     this.dnsNetworks = options.dnsNetworks ?? []
     this.refreshInterval = options.refreshInterval ?? 30000
 

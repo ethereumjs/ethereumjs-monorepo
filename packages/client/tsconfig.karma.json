@@ -2,9 +2,6 @@
   "extends": "@ethereumjs/config-typescript",
   "include": ["bin", "lib", "test"],
   "compilerOptions": {
-    "typeRoots": [
-      "../../node_modules/@polkadot/ts"
-    ],
-    "skipLibCheck": true
+    "skipLibCheck": true,
   }
 }

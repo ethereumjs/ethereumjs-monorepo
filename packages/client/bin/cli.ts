@@ -39,7 +39,7 @@ const args = require('yargs')
     },
     datadir: {
       describe: 'Data directory for the blockchain',
-      default: Config.DATADIR_DEFAULT,
+      default: `${os.homedir()}/Library/Ethereum/ethereumjs`,
     },
     transports: {
       describe: 'Network transports',
@@ -163,7 +163,7 @@ async function run() {
     common,
     syncmode: args.syncmode,
     lightserv: args.lightserv,
-    datadir: `${os.homedir()}/Library/Ethereum/ethereumjs`,
+    datadir: args.datadir,
     transports: args.transports,
     rpc: args.rpc,
     rpcport: args.rpcport,

@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events'
 import tape from 'tape-catch'
 import td from 'testdouble'
+import multiaddr from 'multiaddr'
 import { Config } from '../../../lib/config'
 
 tape('[RlpxServer]', async (t) => {
@@ -51,17 +52,7 @@ tape('[RlpxServer]', async (t) => {
     t.ok(server.key!.equals(Buffer.from('abcd', 'hex')), 'key parse')
     t.deepEquals(
       server.bootnodes,
-      [
-        {
-          ip: '10.0.0.1',
-          port: 1234,
-        },
-        {
-          id: 'abcd',
-          ip: '10.0.0.2',
-          port: 1234,
-        },
-      ],
+      [multiaddr('/ip4/10.0.0.1/tcp/1234'), multiaddr('/ip4/10.0.0.2/tcp/1234')],
       'bootnodes split'
     )
     t.end()
