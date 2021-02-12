@@ -23,7 +23,7 @@ tape('[Integration:FullSync]', async (t) => {
       t.fail('synced with a stale peer')
     })
     await localServer.discover('remotePeer', '127.0.0.2')
-    await wait(100)
+    await wait(300)
     await destroy(localServer, localService)
     await destroy(remoteServer, remoteService)
     t.pass('did not sync')

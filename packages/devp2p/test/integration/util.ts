@@ -37,6 +37,8 @@ export function getTestDPTsWithDns(numDPTs: number) {
       timeout: 100,
       refreshInterval: 10,
       dnsNetworks: [testdata.dns.enrTree],
+      shouldFindNeighbours: false,
+      shouldGetDnsPeers: true,
     })
     dpt.bind(basePort + i)
     dpts.push(dpt)

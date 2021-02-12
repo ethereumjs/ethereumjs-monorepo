@@ -86,7 +86,7 @@ export class LesProtocol extends Protocol {
       encode: ({ reqId, bv, headers }: any) => [
         new BN(reqId).toArrayLike(Buffer),
         new BN(bv).toArrayLike(Buffer),
-        headers.map((h: any) => h.raw()),
+        headers.map((h: BlockHeader) => h.raw()),
       ],
       decode: ([reqId, bv, headers]: any) => ({
         reqId: new BN(reqId),

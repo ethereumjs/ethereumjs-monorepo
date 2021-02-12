@@ -1,13 +1,15 @@
+import EventEmitter from 'events'
+import pipe from 'it-pipe'
+import pushable from 'it-pushable'
 import { Peer, PeerOptions } from '../../../lib/net/peer'
 import MockServer from './mockserver'
 import MockSender from './mocksender'
-import * as network from './network'
-import { EventEmitter } from 'events'
+import { RemoteStream, createStream } from './network'
 
-// TODO: polkadot/ts types seem wrong (?)
-// "pull_pushable_1.default is not a function"
-const Pushable = require('pull-pushable')
-const pull = require('pull-stream')
+// TypeScript doesn't have support yet for ReturnType
+// with generic types, so this wrapper is used as a helper.
+const wrapperPushable = () => pushable<Buffer>()
+export type Pushable = ReturnType<typeof wrapperPushable>
 
 interface MockPeerOptions extends PeerOptions {
   location: string
@@ -27,7 +29,7 @@ export default class MockPeer extends Peer {
     if (this.connected) {
       return
     }
-    await this.createConnection(this.location)
+    await this.createStream(this.location)
     this.emit('connected')
   }
 
@@ -35,30 +37,34 @@ export default class MockPeer extends Peer {
     if (this.connected) {
       return
     }
-    await this.createConnection(server.location)
+    await this.createStream(server.location)
     this.server = server
     this.inbound = true
   }
 
-  async createConnection(location: string) {
+  async createStream(location: string) {
     const protocols = this.protocols.map((p) => `${p.name}/${p.versions[0]}`)
-    const connection = network.createConnection(this.id, location, protocols)
-    await this.bindProtocols(connection)
+    const stream = createStream(this.id, location, protocols)
+    await this.bindProtocols(stream)
   }
 
-  async bindProtocols(connection: any) {
+  async bindProtocols(stream: RemoteStream) {
     const receiver = new EventEmitter()
-    const pushable = new Pushable()
-    pull(pushable, connection)
-    pull(
-      connection,
-      pull.drain((data: any) => receiver.emit('data', data))
-    )
+    const pushableFn: Pushable = pushable()
+    pipe(pushableFn, stream)
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    pipe(stream, async (source: any) => {
+      for await (const data of source) {
+        setTimeout(() => {
+          receiver.emit('data', data)
+        }, 100)
+      }
+    })
     await Promise.all(
       this.protocols.map(async (p) => {
-        if (!connection.protocols.includes(`${p.name}/${p.versions[0]}`)) return
+        if (!stream.protocols.includes(`${p.name}/${p.versions[0]}`)) return
         await p.open()
-        await this.bindProtocol(p, new MockSender(p.name, pushable, receiver))
+        await this.bindProtocol(p, new MockSender(p.name, pushableFn, receiver))
       })
     )
     this.connected = true

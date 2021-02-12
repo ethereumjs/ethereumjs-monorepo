@@ -1,6 +1,6 @@
 import events from 'events'
 import { LevelUp } from 'levelup'
-import { BootnodeLike } from './types'
+import { MultiaddrLike } from './types'
 import { Config } from './config'
 import { FullEthereumService, LightEthereumService } from './service'
 
@@ -23,7 +23,7 @@ export interface EthereumClientOptions {
   stateDB?: LevelUp
 
   /* List of bootnodes to use for discovery */
-  bootnodes?: BootnodeLike[]
+  bootnodes?: MultiaddrLike[]
 
   /* List of supported clients */
   clientFilter?: string[]

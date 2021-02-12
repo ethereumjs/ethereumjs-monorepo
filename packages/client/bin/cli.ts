@@ -39,7 +39,7 @@ const args = require('yargs')
     },
     datadir: {
       describe: 'Data directory for the blockchain',
-      default: Config.DATADIR_DEFAULT,
+      default: `${os.homedir()}/Library/Ethereum/ethereumjs`,
     },
     transports: {
       describe: 'Network transports',
@@ -92,6 +92,14 @@ const args = require('yargs')
       describe: 'Generate code for local debugging (internal usage mostly)',
       boolean: true,
       default: Config.DEBUGCODE_DEFAULT,
+    },
+    discDns: {
+      describe: 'Query EIP-1459 DNS TXT records for peer discovery',
+      boolean: true,
+    },
+    discV4: {
+      describe: 'Use v4 ("findneighbour" node requests) for peer discovery',
+      boolean: true,
     },
   })
   .locale('en_EN').argv
@@ -163,7 +171,7 @@ async function run() {
     common,
     syncmode: args.syncmode,
     lightserv: args.lightserv,
-    datadir: `${os.homedir()}/Library/Ethereum/ethereumjs`,
+    datadir: args.datadir,
     transports: args.transports,
     rpc: args.rpc,
     rpcport: args.rpcport,
@@ -174,6 +182,8 @@ async function run() {
     dnsAddr: args.dnsAddr,
     dnsNetworks: args.dnsNetworks,
     debugCode: args.debugCode,
+    discDns: args.discDns,
+    discV4: args.discV4,
   })
   logger = config.logger
 

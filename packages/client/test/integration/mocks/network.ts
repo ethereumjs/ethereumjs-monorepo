@@ -1,103 +1,68 @@
 import { EventEmitter } from 'events'
+const DuplexPair = require('it-pair/duplex')
 
-const Pipe = function () {
-  const buffer: any[] = []
-  let closed = false
-
+const Stream = function (protocols: string[]) {
+  const [local, remote] = DuplexPair()
   return {
-    source: (end: any, cb: any) => {
-      if (closed) end = true
-      if (end) return cb(end)
-      const next = function () {
-        if (closed) return
-        if (buffer.length) {
-          setTimeout(() => {
-            const data = buffer.shift()
-            cb(null, data)
-          }, 1)
-        } else {
-          setTimeout(next, 1)
-        }
-      }
-      next()
-    },
-    sink: (read: any) => {
-      read(null, function next(end: any, data: any) {
-        if (end === true || closed === true) return
-        if (end) throw end
-        buffer.push(data)
-        read(null, next)
-      })
-    },
-    close: () => {
-      closed = true
-    },
+    local: (remoteId: string) => ({ ...local, remoteId, protocols }),
+    remote: (location: string) => ({ ...remote, location, protocols }),
   }
-} as any
+}
 
-const Connection = function (protocols: any) {
-  const outgoing = new Pipe()
-  const incoming = new Pipe()
+export type Stream = ReturnType<typeof Stream>
+export type RemoteStream = ReturnType<Stream['remote']>
 
-  return {
-    local: (remoteId: any) => ({
-      source: incoming.source,
-      sink: outgoing.sink,
-      remoteId,
-      protocols,
-    }),
-    remote: (location: any) => ({
-      source: outgoing.source,
-      sink: incoming.sink,
-      location,
-      protocols,
-    }),
-    close: () => {
-      incoming.close()
-      outgoing.close()
-    },
+interface ServerDetails {
+  [key: string]: {
+    server: EventEmitter
+    streams: {
+      [key: string]: Stream
+    }
   }
-} as any
+}
+export const servers: ServerDetails = {}
 
-export const servers: any = {}
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 
-export function createServer(location: any) {
+export function createServer(location: string) {
   if (servers[location]) {
     throw new Error(`Already running a server at ${location}`)
   }
   servers[location] = {
     server: new EventEmitter(),
-    connections: {},
+    streams: {},
   }
   setTimeout(() => servers[location].server.emit('listening'), 10)
   return servers[location].server
 }
 
-export function destroyConnection(id: any, location: any) {
+export function destroyStream(id: string, location: string) {
   if (servers[location]) {
-    const conn = servers[location].connections[id]
-    if (conn) {
-      conn.close()
-      delete servers[location].connections[id]
+    const stream = servers[location].streams[id]
+    if (stream) {
+      delete servers[location].streams[id]
     }
   }
 }
 
-export function destroyServer(location: any) {
+export function destroyServer(location: string) {
   if (servers[location]) {
-    for (const id of Object.keys(servers[location].connections)) {
-      destroyConnection(id, location)
+    for (const id of Object.keys(servers[location].streams)) {
+      destroyStream(id, location)
     }
   }
   delete servers[location]
 }
 
-export function createConnection(id: any, location: any, protocols: any) {
+export function createStream(id: string, location: string, protocols: string[]) {
   if (!servers[location]) {
     throw new Error(`There is no server at ${location}`)
   }
-  const connection = new Connection(protocols)
-  servers[location].connections[id] = connection
-  setTimeout(() => servers[location].server.emit('connection', connection.local(id)), 10)
-  return connection.remote(location)
+  const stream = Stream(protocols)
+  servers[location].streams[id] = stream
+  setTimeout(
+    () => servers[location].server.emit('connection', { id, stream: stream.local(id) }),
+    10
+  )
+  return stream.remote(location)
 }
