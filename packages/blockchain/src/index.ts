@@ -823,7 +823,11 @@ export default class Blockchain implements BlockchainInterface {
 
       if (this._validateBlocks && !isGenesis) {
         // this calls into `getBlock`, which is why we cannot lock yet
-        await block.validate(this)
+        if (item instanceof BlockHeader) {
+          await block.header.validate(this)
+        } else {
+          await block.validate(this)
+        }
       }
 
       if (this._validateConsensus) {
