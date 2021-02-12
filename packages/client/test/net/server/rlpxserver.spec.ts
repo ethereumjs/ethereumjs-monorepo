@@ -90,7 +90,7 @@ tape('[RlpxServer]', async (t) => {
 
   t.test('should bootstrap with dns acquired peers', async (t) => {
     const dnsPeerInfo = { address: '10.0.0.5', udpPort: 1234, tcpPort: 1234 }
-    const config = new Config({ loglevel: 'error', transports: [] })
+    const config = new Config({ loglevel: 'error', transports: [], discDns: true })
     const server = new RlpxServer({
       config,
       dnsNetworks: ['enrtree:A'],

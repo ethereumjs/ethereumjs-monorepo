@@ -123,6 +123,20 @@ export interface ConfigOptions {
    * (meant to be used internally for the most part)
    */
   debugCode?: boolean
+
+  /**
+   * Query EIP-1459 DNS TXT records for peer discovery
+   *
+   * Default: `true` for testnets, false for mainnet
+   */
+  discDns?: boolean
+
+  /**
+   * Use v4 ("findneighbour" node requests) for peer discovery
+   *
+   * Default: `false` for testnets, true for mainnet
+   */
+  discV4?: boolean
 }
 
 export class Config {
@@ -154,6 +168,8 @@ export class Config {
   public readonly maxPeers: number
   public readonly dnsAddr: string
   public readonly debugCode: boolean
+  public readonly discDns: boolean
+  public readonly discV4: boolean
 
   public readonly chainCommon: Common
   public readonly execCommon: Common
@@ -180,6 +196,9 @@ export class Config {
       options.common ?? new Common({ chain: Config.CHAIN_DEFAULT, hardfork: 'chainstart' })
     this.chainCommon = Object.assign(Object.create(Object.getPrototypeOf(common)), common)
     this.execCommon = Object.assign(Object.create(Object.getPrototypeOf(common)), common)
+
+    this.discDns = this.getDnsDiscovery(options.discDns)
+    this.discV4 = this.getV4Discovery(options.discV4)
 
     if (options.logger) {
       if (options.loglevel) {
@@ -243,5 +262,24 @@ export class Config {
 
     const dataDir = `${this.datadir}/${networkDirName}/state`
     return dataDir
+  }
+
+  /**
+   * Returns specified option or the default setting for whether DNS-based peer discovery
+   * is enabled based on chainName. `true` for ropsten, rinkeby, and goerli
+   */
+  getDnsDiscovery(option: boolean | undefined): boolean {
+    if (option !== undefined) return option
+    const dnsNets = ['ropsten', 'rinkeby', 'goerli']
+    return dnsNets.includes(this.chainCommon.chainName())
+  }
+
+  /**
+   * Returns specified option or the default setting for whether v4 peer discovery
+   * is enabled based on chainName. `true` for `mainnet`
+   */
+  getV4Discovery(option: boolean | undefined): boolean {
+    if (option !== undefined) return option
+    return this.chainCommon.chainName() === 'mainnet'
   }
 }

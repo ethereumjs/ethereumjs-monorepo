@@ -150,8 +150,10 @@ export class RlpxServer extends Server {
     })
 
     // DNS peers
-    const dnsPeers = (await this.dpt?.getDnsPeers()) ?? []
-    promises = promises.concat(dnsPeers.map((node) => self.dpt!.bootstrap(node)))
+    if (this.config.discDns) {
+      const dnsPeers = (await this.dpt?.getDnsPeers()) ?? []
+      promises = promises.concat(dnsPeers.map((node) => self.dpt!.bootstrap(node)))
+    }
 
     for (const promise of promises) {
       try {
@@ -219,7 +221,8 @@ export class RlpxServer extends Server {
         udpPort: null,
         tcpPort: null,
       },
-      shouldFindNeighbours: this.dnsNetworks.length ? false : true,
+      shouldFindNeighbours: this.config.discV4,
+      shouldGetDnsPeers: this.config.discDns,
       dnsRefreshQuantity: this.config.maxPeers,
       dnsNetworks: this.dnsNetworks,
       dnsAddr: this.config.dnsAddr,
