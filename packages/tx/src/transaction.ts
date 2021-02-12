@@ -69,9 +69,9 @@ export default class Transaction {
         to: to && to.length > 0 ? new Address(to) : undefined,
         value: new BN(value),
         data: data ?? emptyBuffer,
-        v: !v?.equals(emptyBuffer) ? new BN(v) : undefined,
-        r: !r?.equals(emptyBuffer) ? new BN(r) : undefined,
-        s: !s?.equals(emptyBuffer) ? new BN(s) : undefined,
+        v: v && !v.equals(emptyBuffer) ? new BN(v) : undefined,
+        r: r && !r.equals(emptyBuffer) ? new BN(r) : undefined,
+        s: s && !s.equals(emptyBuffer) ? new BN(s) : undefined,
       },
       opts
     )
@@ -135,19 +135,7 @@ export default class Transaction {
    * Computes a sha3-256 hash of the serialized tx
    */
   hash(): Buffer {
-    const values = [
-      bnToRlp(this.nonce),
-      bnToRlp(this.gasPrice),
-      bnToRlp(this.gasLimit),
-      this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bnToRlp(this.value),
-      this.data,
-      this.v ? bnToRlp(this.v) : Buffer.from([]),
-      this.r ? bnToRlp(this.r) : Buffer.from([]),
-      this.s ? bnToRlp(this.s) : Buffer.from([]),
-    ]
-
-    return rlphash(values)
+    return rlphash(this.raw())
   }
 
   getMessageToSign() {
@@ -383,14 +371,7 @@ export default class Transaction {
   }
 
   private _getMessageToSign(withEIP155: boolean) {
-    const values = [
-      bnToRlp(this.nonce),
-      bnToRlp(this.gasPrice),
-      bnToRlp(this.gasLimit),
-      this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bnToRlp(this.value),
-      this.data,
-    ]
+    const values = this.raw().slice(0, 6)
 
     if (withEIP155) {
       values.push(toBuffer(this.getChainId()))
@@ -405,7 +386,7 @@ export default class Transaction {
    * Validates tx's `v` value
    */
   private _validateTxV(v: BN | undefined): void {
-    if (v === undefined || v.toNumber() === 0) {
+    if (v === undefined) {
       return
     }
 
