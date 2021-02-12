@@ -5,7 +5,7 @@
     "example": "ts-node index.ts"
   },
   "dependencies": {
-    "ethereumjs-abi": "^0.6.7",
-    "solc": "^0.5.10"
+    "@ethersproject/abi": "^5.0.12",
+    "solc": "^0.8.1"
   }
 }
