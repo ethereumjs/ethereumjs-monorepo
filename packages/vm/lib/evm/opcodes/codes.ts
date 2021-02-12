@@ -191,11 +191,27 @@ const opcodes = {
 
 // Array of hard forks in order. These changes are repeatedly applied to `opcodes` until the hard fork is in the future based upon the common
 // TODO: All gas price changes should be moved to common
+// If the base gas cost of any of the operations change, then these should also be added to this list.
+// If there are context variables changed (such as "warm slot reads") which are not the base gas fees,
+// Then this does not have to be added.
 const hardforkOpcodes = [
   {
     hardforkName: 'homestead',
     opcodes: {
       0xf4: { name: 'DELEGATECALL', isAsync: true }, // EIP 7
+    },
+  },
+  {
+    hardforkName: 'tangerineWhistle',
+    opcodes: {
+      0x54: { name: 'SLOAD', isAsync: true },
+      0xf1: { name: 'CALL', isAsync: true },
+      0xf2: { name: 'CALLCODE', isAsync: true },
+      0x3b: { name: 'EXTCODESIZE', isAsync: true },
+      0x3c: { name: 'EXTCODECOPY', isAsync: true },
+      0xf4: { name: 'DELEGATECALL', isAsync: true }, // EIP 7
+      0xff: { name: 'SELFDESTRUCT', isAsync: true },
+      0x31: { name: 'BALANCE', isAsync: true },
     },
   },
   {
