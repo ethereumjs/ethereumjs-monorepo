@@ -1,3 +1,4 @@
+import { debug as createDebugLogger } from 'debug'
 import Semaphore from 'semaphore-async-await'
 import { Address, BN, rlp } from 'ethereumjs-util'
 import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
@@ -16,6 +17,8 @@ import {
   CLIQUE_NONCE_AUTH,
   CLIQUE_NONCE_DROP,
 } from './clique'
+
+const debug = createDebugLogger('blockchain:clique')
 
 import type { LevelUp } from 'levelup'
 const level = require('level-mem')
@@ -445,6 +448,7 @@ export default class Blockchain implements BlockchainInterface {
       genesisBlock.header.cliqueEpochTransitionSigners(),
     ]
     await this.cliqueUpdateSignerStates(genesisSignerState)
+    debug(`[Block 0] Genesis block -> update signer states`)
     await this.cliqueUpdateVotes()
   }
 
@@ -483,6 +487,12 @@ export default class Blockchain implements BlockchainInterface {
     dbOps.push(DBOp.set(DBTarget.CliqueSignerStates, rlp.encode(formatted)))
 
     await this.dbManager.batch(dbOps)
+    // Output active signers for debugging purposes
+    let i = 0
+    for (const signer of this.cliqueActiveSigners()) {
+      debug(`Clique signer [${i}]: ${signer}`)
+      i++
+    }
   }
 
   /**
@@ -509,6 +519,11 @@ export default class Blockchain implements BlockchainInterface {
       // Always add the latest vote to the history no matter if already voted
       // the same vote or not
       this._cliqueLatestVotes.push(latestVote)
+      debug(
+        `[Block ${header.number.toNumber()}] New clique vote: ${signer} -> ${beneficiary} ${
+          nonce.equals(CLIQUE_NONCE_AUTH) ? 'AUTH' : 'DROP'
+        }`
+      )
 
       // remove any opposite votes for [signer, beneficiary]
       const oppositeNonce = nonce.equals(CLIQUE_NONCE_AUTH) ? CLIQUE_NONCE_DROP : CLIQUE_NONCE_AUTH
@@ -545,6 +560,9 @@ export default class Blockchain implements BlockchainInterface {
         const auth = beneficiaryVotesAuth.length >= limit
         // Majority consensus
         if (consensus) {
+          debug(
+            `[Block ${header.number.toNumber()}] Clique majority consensus -> update signer states`
+          )
           let activeSigners = this.cliqueActiveSigners()
           if (auth) {
             // Authorize new signer

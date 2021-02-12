@@ -177,7 +177,7 @@ The following loggers are currently available:
 
 | Logger | Description |
 | - | - |
-| `vm:block` | Block operations (run txs, generating receipts, block rewards,...)
+| `vm:block` | Block operations (run txs, generating receipts, block rewards,...) |
 | `vm:tx` | Transaction operations (account updates, checkpointing,...) |
 | `vm:tx:gas` | Transaction gas logger |
 | `vm:evm` | EVM control flow, CALL or CREATE message execution |
