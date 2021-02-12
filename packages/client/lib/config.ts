@@ -2,7 +2,7 @@ import Common from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 import { getLogger, Logger } from './logging'
 import { Libp2pServer, RlpxServer } from './net/server'
-import { parseTransports } from './util'
+import { parseMultiaddrs, parseTransports } from './util'
 
 export interface ConfigOptions {
   /**
@@ -223,9 +223,16 @@ export class Config {
     } else {
       // Otherwise parse transports from transports option
       this.servers = parseTransports(this.transports).map((t) => {
+        // format multiaddrs as multiaddr[]
+        if (t.options.multiaddrs) {
+          t.options.multiaddrs = parseMultiaddrs(t.options.multiaddrs) as any
+        }
         if (t.name === 'rlpx') {
-          t.options.bootnodes = t.options.bootnodes || this.chainCommon.bootstrapNodes()
-          t.options.dnsNetworks = options.dnsNetworks || this.chainCommon.dnsNetworks()
+          if (!t.options.bootnodes) {
+            t.options.bootnodes = this.chainCommon.bootstrapNodes()
+          }
+          t.options.bootnodes = parseMultiaddrs(t.options.bootnodes) as any
+          t.options.dnsNetworks = options.dnsNetworks ?? this.chainCommon.dnsNetworks()
           return new RlpxServer({ config: this, ...t.options })
         } else {
           return new Libp2pServer({ config: this, ...t.options })

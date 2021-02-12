@@ -1,67 +1,36 @@
 import tape from 'tape'
 import td from 'testdouble'
+import multiaddr from 'multiaddr'
 import { Config } from '../../../lib/config'
 import { Protocol } from '../../../lib/net/protocol'
 
 tape('[Libp2pPeer]', async (t) => {
-  const PeerInfo = td.replace('peer-info')
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const PeerId = td.replace('peer-id')
 
-  const Libp2pNode = td.constructor([
-    'asyncStart',
-    'asyncStop',
-    'asyncDial',
-    'asyncDialProtocol',
-  ] as any)
+  const Libp2pNode = td.constructor(['start', 'stop', 'dial', 'dialProtocol'] as any)
   td.replace('../../../lib/net/peer/libp2pnode', { Libp2pNode })
   const Libp2pSender = td.replace('../../../lib/net/protocol/libp2psender')
 
-  const peerInfo = { multiaddrs: { add: td.func() }, id: { toB58String: td.func() } }
-  const peerInfo0 = { multiaddrs: { add: td.func() } }
-
-  td.when(PeerId.createFromB58String('id0')).thenReturn('peerId0')
-  td.when(PeerId.createFromB58String('id1')).thenReturn('peerId1')
-  td.when(PeerInfo.create('peerId0')).thenCallback(null, peerInfo0)
-  td.when(PeerInfo.create('peerId1')).thenCallback(new Error('error0'), null)
-  td.when(PeerInfo.create()).thenCallback(null, peerInfo)
-  td.when(peerInfo.id.toB58String()).thenReturn('id')
-
-  td.when(Libp2pNode.prototype.asyncStart()).thenResolve(null)
-  td.when(Libp2pNode.prototype.asyncDial(peerInfo)).thenResolve(null)
+  td.when(Libp2pNode.prototype.start()).thenResolve(null)
+  td.when(Libp2pNode.prototype.dial(td.matchers.anything())).thenResolve(null)
 
   const { Libp2pPeer } = await import('../../../lib/net/peer/libp2ppeer')
 
   t.test('should initialize correctly', async (t) => {
     const config = new Config({ loglevel: 'error' })
-    const peer = new Libp2pPeer({ config, multiaddrs: 'ma0,ma1' })
-    t.deepEquals((peer as any).multiaddrs, ['ma0', 'ma1'], 'multiaddrs split')
-    t.equals(peer.address, 'ma0,ma1', 'address correct')
-    t.end()
-  })
-
-  t.test('should create PeerInfo', async (t) => {
-    const config = new Config({ loglevel: 'error' })
-    const peer = new Libp2pPeer({ config })
-    t.equals(await peer.createPeerInfo({ multiaddrs: ['ma0'] }), peerInfo, 'created')
-    td.verify(peerInfo.multiaddrs.add('ma0'))
-    t.equals(
-      await peer.createPeerInfo({ multiaddrs: ['ma0'], id: 'id0' }),
-      peerInfo0,
-      'created with id'
-    )
-    try {
-      await peer.createPeerInfo({ multiaddrs: ['ma0'], id: 'id1' })
-    } catch (err) {
-      t.equals(err.message, 'error0', 'handle error')
-    }
+    const multiaddrs = [
+      multiaddr('/ip4/192.0.2.1/tcp/12345'),
+      multiaddr('/ip4/192.0.2.1/tcp/23456'),
+    ]
+    const peer = new Libp2pPeer({ config, multiaddrs })
+    t.equals(peer.address, '/ip4/192.0.2.1/tcp/12345,/ip4/192.0.2.1/tcp/23456', 'address correct')
     t.end()
   })
 
   t.test('should connect to peer', async (t) => {
     const config = new Config({ loglevel: 'error' })
-    const peer: any = new Libp2pPeer({ config })
-    peer.bindProtocols = td.func<typeof peer['bindProtocol']>()
-    td.when(peer.bindProtocols(td.matchers.anything(), peerInfo)).thenResolve(null)
+    const peer = new Libp2pPeer({ config })
     peer.on('connected', () => {
       t.pass('connected')
       t.end()
@@ -91,9 +60,9 @@ tape('[Libp2pPeer]', async (t) => {
     badProto.open = td.func<Protocol['open']>()
     td.when(peer.bindProtocol(protocol, td.matchers.isA(Libp2pSender))).thenResolve(null)
     td.when(protocol.open()).thenResolve()
-    td.when(node.asyncDialProtocol(peerInfo, '/proto/1')).thenResolve(null)
-    td.when(node.asyncDialProtocol(peerInfo, '/bad/1')).thenReject(new Error('bad'))
-    await peer.bindProtocols(node, peerInfo, 'server')
+    td.when(node.dialProtocol(td.matchers.anything(), '/proto/1')).thenResolve(null)
+    td.when(node.dialProtocol(td.matchers.anything(), '/bad/1')).thenReject(new Error('bad'))
+    await peer.bindProtocols(node, td.matchers.anything(), 'server')
     t.equals(peer.server, 'server', 'server set')
     t.ok((peer as any).connected, 'connected set to true')
     t.end()

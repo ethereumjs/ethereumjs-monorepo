@@ -1,7 +1,6 @@
+import multiaddr from 'multiaddr'
 import PeerId from 'peer-id'
-import PeerInfo from 'peer-info'
-import { Multiaddrs, MultiaddrsLike } from '../../types'
-import { parseMultiaddrs } from '../../util'
+import { Libp2pMuxedStream as MuxedStream } from '../../types'
 import { Libp2pSender } from '../protocol/libp2psender'
 import { Peer, PeerOptions } from './peer'
 import { Libp2pNode } from './libp2pnode'
@@ -9,8 +8,8 @@ import { Protocol } from '../protocol'
 import { Libp2pServer } from '../server'
 
 export interface Libp2pPeerOptions extends Omit<PeerOptions, 'address' | 'transport'> {
-  /* Multiaddrs to listen on (can be a comma separated string or list) */
-  multiaddrs?: MultiaddrsLike
+  /* Multiaddrs to listen on */
+  multiaddrs?: multiaddr[]
 }
 
 /**
@@ -18,23 +17,24 @@ export interface Libp2pPeerOptions extends Omit<PeerOptions, 'address' | 'transp
  * @memberof module:net/peer
  * @example
  *
+ * import multiaddr from 'multiaddr'
  * import { Libp2pPeer } from './lib/net/peer'
  * import { Chain } from './lib/blockchain'
  * import { EthProtocol } from './lib/net/protocol'
  *
  * const chain = new Chain()
- * const protocols = [ new EthProtocol({ chain })]
+ * const protocols = [new EthProtocol({ chain })]
  * const id = 'QmWYhkpLFDhQBwHCMSWzEebbJ5JzXWBKLJxjEuiL8wGzUu'
- * const multiaddrs = [ '/ip4/192.0.2.1/tcp/12345' ]
+ * const multiaddrs = [multiaddr('/ip4/192.0.2.1/tcp/12345')]
  *
  * new Libp2pPeer({ id, multiaddrs, protocols })
- *   .on('error', (err) => console.log('Error:', err))
+ *   .on('error', (err) => console.log('Error: ', err))
  *   .on('connected', () => console.log('Connected'))
- *   .on('disconnected', (reason) => console.log('Disconnected:', reason))
+ *   .on('disconnected', (reason) => console.log('Disconnected: ', reason))
  *   .connect()
  */
 export class Libp2pPeer extends Peer {
-  private multiaddrs: Multiaddrs
+  private multiaddrs: multiaddr[]
   private connected: boolean
 
   /**
@@ -42,15 +42,13 @@ export class Libp2pPeer extends Peer {
    * @param {Libp2pPeerOptions}
    */
   constructor(options: Libp2pPeerOptions) {
-    options.multiaddrs = options.multiaddrs
-      ? parseMultiaddrs(options.multiaddrs)
-      : ['/ip4/0.0.0.0/tcp/0']
+    const multiaddrs = options.multiaddrs ?? [multiaddr('/ip4/0.0.0.0/tcp/0')]
+    const address = multiaddrs.map((ma) => ma.toString().split('/p2p')[0]).join(',')
 
-    super({ ...options, transport: 'libp2p', address: options.multiaddrs[0] })
+    super({ ...options, transport: 'libp2p', address })
 
-    this.multiaddrs = options.multiaddrs
+    this.multiaddrs = multiaddrs
     this.connected = false
-    this.address = this.multiaddrs.map((ma: string) => ma.split('/ipfs')[0]).join(',')
   }
 
   /**
@@ -61,12 +59,14 @@ export class Libp2pPeer extends Peer {
     if (this.connected) {
       return
     }
-    const nodeInfo = await this.createPeerInfo({ multiaddrs: ['/ip4/0.0.0.0/tcp/0'] })
-    const peerInfo = await this.createPeerInfo({ multiaddrs: [] })
-    const node = new Libp2pNode({ peerInfo: nodeInfo })
-    await node.asyncStart()
-    await node.asyncDial(peerInfo)
-    await this.bindProtocols(node, peerInfo)
+    const peerId = PeerId.createFromB58String(this.id)
+    const addresses = { listen: ['/ip4/0.0.0.0/tcp/0'] }
+    const node = new Libp2pNode({ peerId, addresses })
+    await node.start()
+    for (const ma of this.multiaddrs) {
+      await node.dial(ma)
+      await this.bindProtocols(node, ma)
+    }
     this.emit('connected')
   }
 
@@ -75,68 +75,41 @@ export class Libp2pPeer extends Peer {
    * @private
    * @return {Promise}
    */
-  async accept(protocol: Protocol, connection: any, server: Libp2pServer): Promise<void> {
-    await this.bindProtocol(protocol, new Libp2pSender(connection))
+  async accept(protocol: Protocol, stream: MuxedStream, server: Libp2pServer): Promise<void> {
+    await this.bindProtocol(protocol, new Libp2pSender(stream))
     this.inbound = true
     this.server = server
   }
 
   /**
-   * Adds protocols to the peer given a libp2p node and peerInfo
+   * Adds protocols to the peer given a libp2p node and peerId or multiaddr
    * @private
-   * @param  {Libp2pNode} node libp2p node
-   * @param  {PeerInfo}   peerInfo libp2p peerInfo
-   * @param  {Server}     [server] optional server that initiated connection
-   * @return {Promise}
+   * @param node libp2p node
+   * @param peer libp2p peerId or mutliaddr
+   * @param server server that initiated connection
    */
-  async bindProtocols(node: Libp2pNode, peerInfo: any, server?: Libp2pServer): Promise<void> {
+  async bindProtocols(
+    node: Libp2pNode,
+    peer: PeerId | multiaddr,
+    server?: Libp2pServer
+  ): Promise<void> {
     await Promise.all(
-      this.protocols.map(async (p: any) => {
+      this.protocols.map(async (p) => {
         await p.open()
         const protocol = `/${p.name}/${p.versions[0]}`
         try {
-          const conn = await node.asyncDialProtocol(peerInfo, protocol)
-          await this.bindProtocol(p, new Libp2pSender(conn))
+          const { stream } = await node.dialProtocol(peer, protocol)
+          await this.bindProtocol(p, new Libp2pSender(stream))
         } catch (err) {
-          const id = peerInfo.id.toB58String()
+          const peerInfo =
+            peer instanceof PeerId ? `id=${peer.toB58String()}` : `multiaddr=${peer.toString()}`
           this.config.logger.debug(
-            `Peer doesn't support protocol=${protocol} id=${id} ${err.stack}`
+            `Peer doesn't support protocol=${protocol} ${peerInfo} ${err.stack}`
           )
         }
       })
     )
     this.server = server
     this.connected = true
-  }
-
-  async createPeerInfo({
-    multiaddrs,
-    id,
-  }: {
-    multiaddrs: string[]
-    id?: string
-  }): Promise<PeerInfo> {
-    return new Promise<PeerInfo>((resolve, reject) => {
-      const handler = (err: Error | null, peerInfo?: PeerInfo): any => {
-        if (err) {
-          return reject(err)
-        }
-        multiaddrs.forEach((ma) => {
-          if (peerInfo) {
-            peerInfo.multiaddrs.add(ma)
-          }
-        })
-        resolve(peerInfo)
-      }
-      if (id) {
-        // TODO: PeerInfo types are wrong...
-        PeerInfo.create(
-          (<unknown>PeerId.createFromB58String(id)) as PeerInfo.CreateOptions,
-          handler
-        )
-      } else {
-        PeerInfo.create(handler)
-      }
-    })
   }
 }
