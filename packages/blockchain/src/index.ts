@@ -488,8 +488,10 @@ export default class Blockchain implements BlockchainInterface {
 
     await this.dbManager.batch(dbOps)
     // Output active signers for debugging purposes
-    for (const [i, signer] of this.cliqueActiveSigners().entries()) {
+    let i = 0
+    for (const signer of this.cliqueActiveSigners()) {
       debug(`Clique signer [${i}]: ${signer}`)
+      i++
     }
   }
 
@@ -506,63 +508,34 @@ export default class Blockchain implements BlockchainInterface {
       const nonce = header.nonce
       const latestVote: CliqueVote = [header.number, [signer, beneficiary, nonce]]
 
-      const alreadyVoted = this._cliqueLatestVotes.find((vote) => {
-        return (
-          vote[1][0].equals(signer) && vote[1][1].equals(beneficiary) && vote[1][2].equals(nonce)
-        )
-      })
-        ? true
-        : false
+      // Do two rounds here, one to execute on a potential previously reached consensus
+      // on the newly touched beneficiary, one with the added new vote
+      for (let round = 1; round <= 2; round++) {
 
-      // Always add the latest vote to the history no matter if already voted
-      // the same vote or not
-      this._cliqueLatestVotes.push(latestVote)
-      debug(
-        `[Block ${header.number.toNumber()}] New clique vote: ${signer} -> ${beneficiary} ${
-          nonce.equals(CLIQUE_NONCE_AUTH) ? 'AUTH' : 'DROP'
-        }`
-      )
-
-      // remove any opposite votes for [signer, beneficiary]
-      const oppositeNonce = nonce.equals(CLIQUE_NONCE_AUTH) ? CLIQUE_NONCE_DROP : CLIQUE_NONCE_AUTH
-      this._cliqueLatestVotes = this._cliqueLatestVotes.filter(
-        (vote) =>
-          !(
-            vote[1][0].equals(signer) &&
-            vote[1][1].equals(beneficiary) &&
-            vote[1][2].equals(oppositeNonce)
-          )
-      )
-
-      // If same vote not already in history see if there is a new majority consensus
-      // to update the signer list
-      if (!alreadyVoted) {
+        // See if there is a new majority consensus to update the signer list
         const lastEpochBlockNumber = header.number.sub(
           header.number.mod(new BN(this._common.consensusConfig().epoch))
         )
-        const beneficiaryVotesAuth = this._cliqueLatestVotes.filter(
-          (vote) =>
-            vote[0].gte(lastEpochBlockNumber) &&
-            vote[1][1].equals(beneficiary) &&
-            vote[1][2].equals(CLIQUE_NONCE_AUTH)
-        )
-        const beneficiaryVotesDrop = this._cliqueLatestVotes.filter(
-          (vote) =>
-            vote[0].gte(lastEpochBlockNumber) &&
-            vote[1][1].equals(beneficiary) &&
-            vote[1][2].equals(CLIQUE_NONCE_DROP)
-        )
         const limit = this.cliqueSignerLimit()
-        const consensus =
-          beneficiaryVotesAuth.length >= limit || beneficiaryVotesDrop.length >= limit
-        const auth = beneficiaryVotesAuth.length >= limit
-        // Majority consensus
-        if (consensus) {
-          debug(
-            `[Block ${header.number.toNumber()}] Clique majority consensus -> update signer states`
-          )
-          let activeSigners = this.cliqueActiveSigners()
-          if (auth) {
+        let activeSigners = this.cliqueActiveSigners()
+        let consensus = false
+
+        // AUTH vote analysis
+        if (round === 1 || round === 2 && nonce.equals(CLIQUE_NONCE_AUTH)) {
+          let beneficiaryVotesAUTH = this._cliqueLatestVotes.filter((vote) => {
+            return (
+              vote[0].gte(lastEpochBlockNumber) &&
+              !vote[1][0].equals(signer) &&
+              vote[1][1].equals(beneficiary) &&
+              vote[1][2].equals(CLIQUE_NONCE_AUTH)
+            )
+          }).length
+          if (round === 2 && nonce.equals(CLIQUE_NONCE_AUTH)) {
+            beneficiaryVotesAUTH += 1
+          }
+          // Majority consensus
+          if (beneficiaryVotesAUTH >= limit) {
+            consensus = true
             // Authorize new signer
             activeSigners.push(beneficiary)
             activeSigners.sort((a, b) => {
@@ -573,16 +546,61 @@ export default class Blockchain implements BlockchainInterface {
             this._cliqueLatestVotes = this._cliqueLatestVotes.filter(
               (vote) => !vote[1][1].equals(beneficiary)
             )
-          } else {
+            debug(
+              `[Block ${header.number.toNumber()}] Clique majority consensus (AUTH ${beneficiary})`
+            )
+          }
+        }
+        // DROP vote
+        if (round === 1 || round === 2 && nonce.equals(CLIQUE_NONCE_DROP)) {
+          let beneficiaryVotesDROP = this._cliqueLatestVotes.filter((vote) => {
+            return (
+              vote[0].gte(lastEpochBlockNumber) &&
+              !vote[1][0].equals(signer) &&
+              vote[1][1].equals(beneficiary) &&
+              vote[1][2].equals(CLIQUE_NONCE_DROP)
+            )
+          }).length
+          if (round === 2 && nonce.equals(CLIQUE_NONCE_DROP)) {
+            beneficiaryVotesDROP += 1
+          }
+          // Majority consensus
+          if (beneficiaryVotesDROP >= limit) {
+            consensus = true
             // Drop signer
             activeSigners = activeSigners.filter((signer) => !signer.equals(beneficiary))
             // Discard votes from removed signer
             this._cliqueLatestVotes = this._cliqueLatestVotes.filter(
               (vote) => !vote[1][0].equals(beneficiary)
             )
+            debug(
+              `[Block ${header.number.toNumber()}] Clique majority consensus (DROP ${beneficiary})`
+            )
+          }
+        }
+        if (round === 1) {
+          // Always add the latest vote to the history no matter if already voted
+          // the same vote or not
+          this._cliqueLatestVotes.push(latestVote)
+          debug(
+            `[Block ${header.number.toNumber()}] New clique vote: ${signer} -> ${beneficiary} ${
+              nonce.equals(CLIQUE_NONCE_AUTH) ? 'AUTH' : 'DROP'
+            }`
+          )
+        }
+        if (consensus) {
+          if (round === 1) {
+            debug(
+              `[Block ${header.number.toNumber()}] Clique majority consensus on existing votes -> update signer states`
+            )
+          } else {
+            debug(
+              `[Block ${header.number.toNumber()}] Clique majority consensus on new vote -> update signer states`
+            )
           }
           const newSignerState: CliqueSignerState = [header.number, activeSigners]
           await this.cliqueUpdateSignerStates(newSignerState)
+          return
         }
       }
     }
@@ -843,11 +861,7 @@ export default class Blockchain implements BlockchainInterface {
 
       if (this._validateBlocks && !isGenesis) {
         // this calls into `getBlock`, which is why we cannot lock yet
-        if (item instanceof BlockHeader) {
-          await block.header.validate(this)
-        } else {
-          await block.validate(this)
-        }
+        await block.validate(this)
       }
 
       if (this._validateConsensus) {
