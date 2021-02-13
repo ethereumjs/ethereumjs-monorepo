@@ -488,10 +488,8 @@ export default class Blockchain implements BlockchainInterface {
 
     await this.dbManager.batch(dbOps)
     // Output active signers for debugging purposes
-    let i = 0
-    for (const signer of this.cliqueActiveSigners()) {
+    for (const [i, signer] of this.cliqueActiveSigners().entries()) {
       debug(`Clique signer [${i}]: ${signer}`)
-      i++
     }
   }
 
