@@ -115,7 +115,10 @@ export class VMExecution extends Execution {
               this.hardfork = this.config.execCommon.setHardforkByBlockNumber(blockNumber)
               this.vm._updateOpcodes()
             }
-            await this.vm.runBlock({ block, root: parentState })
+            // Block validation is redundant here and leads to consistency problems
+            // on PoA clique along blockchain-including validation checks
+            // (signer states might have moved on when sync is ahead)
+            await this.vm.runBlock({ block, root: parentState, skipBlockValidation: true })
             txCounter += block.transactions.length
             // set as new head block
             headBlock = block
