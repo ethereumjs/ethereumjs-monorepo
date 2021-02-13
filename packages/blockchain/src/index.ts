@@ -511,7 +511,6 @@ export default class Blockchain implements BlockchainInterface {
       // Do two rounds here, one to execute on a potential previously reached consensus
       // on the newly touched beneficiary, one with the added new vote
       for (let round = 1; round <= 2; round++) {
-
         // See if there is a new majority consensus to update the signer list
         const lastEpochBlockNumber = header.number.sub(
           header.number.mod(new BN(this._common.consensusConfig().epoch))
@@ -521,7 +520,7 @@ export default class Blockchain implements BlockchainInterface {
         let consensus = false
 
         // AUTH vote analysis
-        if (round === 1 || round === 2 && nonce.equals(CLIQUE_NONCE_AUTH)) {
+        if (round === 1 || (round === 2 && nonce.equals(CLIQUE_NONCE_AUTH))) {
           let beneficiaryVotesAUTH = this._cliqueLatestVotes.filter((vote) => {
             return (
               vote[0].gte(lastEpochBlockNumber) &&
@@ -552,7 +551,7 @@ export default class Blockchain implements BlockchainInterface {
           }
         }
         // DROP vote
-        if (round === 1 || round === 2 && nonce.equals(CLIQUE_NONCE_DROP)) {
+        if (round === 1 || (round === 2 && nonce.equals(CLIQUE_NONCE_DROP))) {
           let beneficiaryVotesDROP = this._cliqueLatestVotes.filter((vote) => {
             return (
               vote[0].gte(lastEpochBlockNumber) &&
@@ -569,9 +568,9 @@ export default class Blockchain implements BlockchainInterface {
             consensus = true
             // Drop signer
             activeSigners = activeSigners.filter((signer) => !signer.equals(beneficiary))
-            // Discard votes from removed signer
             this._cliqueLatestVotes = this._cliqueLatestVotes.filter(
-              (vote) => !vote[1][0].equals(beneficiary)
+              // Discard votes from removed signer and for removed signer
+              (vote) => !vote[1][0].equals(beneficiary) && !vote[1][1].equals(beneficiary)
             )
             debug(
               `[Block ${header.number.toNumber()}] Clique majority consensus (DROP ${beneficiary})`
