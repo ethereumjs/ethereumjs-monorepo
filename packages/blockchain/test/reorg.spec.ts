@@ -177,7 +177,9 @@ tape('reorg tests', (t) => {
 
       let signerStates = (blockchain as any)._cliqueLatestSignerStates
       t.ok(
-        !signerStates.find((s: any) => s[0].eqn(2) && s[1][1].equals(beneficiary1)),
+        !signerStates.find(
+          (s: any) => s[0].eqn(2) && s[1].find((a: Address) => a.equals(beneficiary1))
+        ),
         'should not find reorged signer state'
       )
 
@@ -203,7 +205,9 @@ tape('reorg tests', (t) => {
 
       signerStates = (blockchain as any)._cliqueLatestSignerStates
       t.ok(
-        !!signerStates.find((s: any) => s[0].eqn(2) && s[1][1].equals(beneficiary2)),
+        !!signerStates.find(
+          (s: any) => s[0].eqn(2) && s[1].find((a: Address) => a.equals(beneficiary2))
+        ),
         'should find reorged signer state'
       )
 

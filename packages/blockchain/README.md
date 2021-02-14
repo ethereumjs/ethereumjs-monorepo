@@ -46,6 +46,24 @@ blockchain.iterator('i', (block) => {
 
 [Documentation](./docs/README.md)
 
+# DEVELOPER
+
+For debugging blockchain control flows the [debug](https://github.com/visionmedia/debug) library is used and can be activated on the CL with `DEBUG=[Logger Selection] node [Your Script to Run].js`.
+
+The following initial logger is currently available:
+
+| Logger | Description |
+| - | - |
+| `blockchain:clique` | Clique operations like updating the vote and/or signer list  |
+
+The following is an example for a logger run:
+
+Run with the clique logger:
+
+```shell
+DEBUG=blockchain:clique ts-node test.ts
+```
+
 # EthereumJS
 
 See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.

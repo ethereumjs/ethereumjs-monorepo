@@ -44,42 +44,6 @@ tape('Clique: Initialization', (t) => {
   }
 
   const B: Signer = {
-    address: new Address(Buffer.from('dc7bc81ddf67d037d7439f8e6ff12f3d2a100f71', 'hex')),
-    privateKey: Buffer.from(
-      '86b0ff7b6cf70786f29f297c57562905ab0b6c32d69e177a46491e56da9e486e',
-      'hex'
-    ),
-    publicKey: Buffer.from(
-      'd3e3d2b722e325bfc085ff5638a112b4e7e88ff13f92fc7f6cfc14b5a25e8d1545a2f27d8537b96e8919949d5f8c139ae7fc81aea7cf7fe5d43d7faaa038e35b',
-      'hex'
-    ),
-  }
-
-  const C: Signer = {
-    address: new Address(Buffer.from('8458f408106c4875c96679f3f556a511beabe138', 'hex')),
-    privateKey: Buffer.from(
-      '159e95d07a6c64ddbafa6036cdb7b8114e6e8cdc449ca4b0468a6d0c955f991b',
-      'hex'
-    ),
-    publicKey: Buffer.from(
-      'f02724341e2df54cf53515f079b1354fa8d437e79c5b091b8d8cc7cbcca00fd8ad854cb3b3a85b06c44ecb7269404a67be88b561f2224c94d133e5fc21be915c',
-      'hex'
-    ),
-  }
-
-  const D: Signer = {
-    address: new Address(Buffer.from('83c30730d1972baa09765a1ac72a43db27fedce5', 'hex')),
-    privateKey: Buffer.from(
-      'f216ddcf276079043c52b5dd144aa073e6b272ad4bfeaf4fbbc044aa478d1927',
-      'hex'
-    ),
-    publicKey: Buffer.from(
-      '555b19a5cbe6dd082a4a1e1e0520dd52a82ba24fd5598ea31f0f31666c40905ed319314c5fb06d887b760229e1c0e616294e7b1cb5dfefb71507c9112132ce56',
-      'hex'
-    ),
-  }
-
-  const E: Signer = {
     address: new Address(Buffer.from('6f62d8382bf2587361db73ceca28be91b2acb6df', 'hex')),
     privateKey: Buffer.from(
       '2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6',
@@ -91,7 +55,31 @@ tape('Clique: Initialization', (t) => {
     ),
   }
 
-  const F: Signer = {
+  const C: Signer = {
+    address: new Address(Buffer.from('83c30730d1972baa09765a1ac72a43db27fedce5', 'hex')),
+    privateKey: Buffer.from(
+      'f216ddcf276079043c52b5dd144aa073e6b272ad4bfeaf4fbbc044aa478d1927',
+      'hex'
+    ),
+    publicKey: Buffer.from(
+      '555b19a5cbe6dd082a4a1e1e0520dd52a82ba24fd5598ea31f0f31666c40905ed319314c5fb06d887b760229e1c0e616294e7b1cb5dfefb71507c9112132ce56',
+      'hex'
+    ),
+  }
+
+  const D: Signer = {
+    address: new Address(Buffer.from('8458f408106c4875c96679f3f556a511beabe138', 'hex')),
+    privateKey: Buffer.from(
+      '159e95d07a6c64ddbafa6036cdb7b8114e6e8cdc449ca4b0468a6d0c955f991b',
+      'hex'
+    ),
+    publicKey: Buffer.from(
+      'f02724341e2df54cf53515f079b1354fa8d437e79c5b091b8d8cc7cbcca00fd8ad854cb3b3a85b06c44ecb7269404a67be88b561f2224c94d133e5fc21be915c',
+      'hex'
+    ),
+  }
+
+  const E: Signer = {
     address: new Address(Buffer.from('ab80a948c661aa32d09952d2a6c4ad77a4c947be', 'hex')),
     privateKey: Buffer.from(
       '48ec5a6c4a7fc67b10a9d4c8a8f594a81ae42e41ed061fa5218d96abb6012344',
@@ -99,6 +87,18 @@ tape('Clique: Initialization', (t) => {
     ),
     publicKey: Buffer.from(
       'adefb82b9f54e80aa3532263e4478739de16fcca6828f4ae842f8a07941c347fa59d2da1300569237009f0f122dc1fd6abb0db8fcb534280aa94948a5cc95f94',
+      'hex'
+    ),
+  }
+
+  const F: Signer = {
+    address: new Address(Buffer.from('dc7bc81ddf67d037d7439f8e6ff12f3d2a100f71', 'hex')),
+    privateKey: Buffer.from(
+      '86b0ff7b6cf70786f29f297c57562905ab0b6c32d69e177a46491e56da9e486e',
+      'hex'
+    ),
+    publicKey: Buffer.from(
+      'd3e3d2b722e325bfc085ff5638a112b4e7e88ff13f92fc7f6cfc14b5a25e8d1545a2f27d8537b96e8919949d5f8c139ae7fc81aea7cf7fe5d43d7faaa038e35b',
       'hex'
     ),
   }
@@ -384,7 +384,7 @@ tape('Clique: Initialization', (t) => {
     await addNextBlock(blockchain, blocks, A)
     await addNextBlock(blockchain, blocks, B, [C, true])
 
-    st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address, D.address, C.address])
+    st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address, C.address, D.address])
     st.end()
   })
 
