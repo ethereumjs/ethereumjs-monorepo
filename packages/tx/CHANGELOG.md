@@ -11,7 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 Follow-up release on `v3.0.1` which only partly addressed a **critical** bug. An update is - again - strongly recommended.
 
-- Fixes `tx.isSigned()` always returning true when using the `Tx.fromValuesArray() static constructor, see PR [#1077](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1077)
+- Fixes `tx.isSigned()` always returning true when using the `Tx.fromValuesArray()` static constructor, see PR [#1077](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1077)
 
 ## 3.0.1 - 2021-01-20
 
