@@ -348,7 +348,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       this.config.logger.debug(
         `Task timed out for peer (banning) ${JSON.stringify(job.task)} ${job.peer}`
       )
-      this.pool.ban(job.peer!, 300000)
+      this.pool.ban(job.peer!, this.banTime)
     } else {
       this.config.logger.debug(
         `Peer disconnected while performing task ${JSON.stringify(job.task)} ${job.peer}`

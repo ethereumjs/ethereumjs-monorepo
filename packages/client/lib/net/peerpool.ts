@@ -205,8 +205,9 @@ export class PeerPool extends EventEmitter {
       if (this.noPeerPeriods >= 3) {
         const promises = this.config.servers.map(async (server) => {
           if (server instanceof RlpxServer) {
-            this.config.logger.info('Retriggering bootstrap.')
-            await server.bootstrap()
+            this.config.logger.info('Restarting RLPx server: bootstrap')
+            await server.stop()
+            await server.start()
           }
         })
         await Promise.all(promises)
