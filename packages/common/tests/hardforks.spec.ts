@@ -51,6 +51,15 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.end()
   })
 
+  t.test('setHardfork(): hardforkChanged event', function (st) {
+    const c = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+    c.on('hardforkChanged', (hardfork: string) => {
+      st.equal(hardfork, 'byzantium', 'should send correct hardforkChanged event')
+      st.end()
+    })
+    c.setHardfork('byzantium')
+  })
+
   t.test('hardforkBlock()', function (st: tape.Test) {
     let c = new Common({ chain: 'ropsten' })
     let msg = 'should return the correct HF change block for byzantium (provided)'

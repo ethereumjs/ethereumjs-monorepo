@@ -1,3 +1,4 @@
+import { EventEmitter } from 'events'
 import { buf as crc32Buffer } from 'crc-32'
 import { _getInitializedChains } from './chains'
 import { hardforks as HARDFORK_CHANGES } from './hardforks'
@@ -56,7 +57,7 @@ interface hardforkOptions {
 /**
  * Common class to access chain and hardfork parameters
  */
-export default class Common {
+export default class Common extends EventEmitter {
   readonly DEFAULT_HARDFORK: string
 
   private _chainParams: Chain
@@ -115,6 +116,7 @@ export default class Common {
    * @constructor
    */
   constructor(opts: CommonOpts) {
+    super()
     this._customChains = opts.customChains ?? []
     this._chainParams = this.setChain(opts.chain)
     this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? 'istanbul'
@@ -166,14 +168,17 @@ export default class Common {
     if (!this._isSupportedHardfork(hardfork)) {
       throw new Error(`Hardfork ${hardfork} not set as supported in supportedHardforks`)
     }
-    let changed = false
+    let existing = false
     for (const hfChanges of HARDFORK_CHANGES) {
       if (hfChanges[0] === hardfork) {
-        this._hardfork = hardfork
-        changed = true
+        if (this._hardfork !== hardfork) {
+          this._hardfork = hardfork
+          this.emit('hardforkChanged', hardfork)
+        }
+        existing = true
       }
     }
-    if (!changed) {
+    if (!existing) {
       throw new Error(`Hardfork with name ${hardfork} not supported`)
     }
   }
