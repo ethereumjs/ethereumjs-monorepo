@@ -75,8 +75,8 @@ export class Trie {
   /**
    * This method is deprecated.
    * Please use `Trie.root(value)` instead.
-   * 
-   * @param value 
+   *
+   * @param value
    * @deprecated
    */
   setRoot(value?: Buffer) {

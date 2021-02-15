@@ -12,8 +12,6 @@ This is an implementation of the modified merkle patricia tree as specified in t
 
 The only backing store supported is LevelDB through the `levelup` module.
 
-Note: this `README` reflects the state of the library from `v5.0.0` (UNRELEASED) onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/merkle-patricia-tree) for an introduction on the last preceeding release.
-
 # INSTALL
 
 `npm install merkle-patricia-tree`

@@ -6,11 +6,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## UNRELEASED
+## 4.1.0 - 2021-02-16
 
-## New features
+This release comes with a reworked checkpointing mechanism (PR [#1030](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1030) and subsequently PR [#1035](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1035)). Instead of copying over the whole DB on checkpoints the operations in between checkpoints are now recorded in memory and either applied in batch on a `Trie.checkpoint()` call or discarded along a `Trie.revert()`. This more fine-grained operational mode leads to a substantial performance gain (up to 50x) when working with larger tries.
 
-There is a new exported `WalkController` class. Also, `trie.walkTrie()` is now a public method. Using the `WalkController`, one can create own custom ways to traverse the trie. [#135](https://github.com/ethereumjs/merkle-patricia-tree/pull/135)
+Another performance related bug has been fixed along PR [#127](https://github.com/ethereumjs/merkle-patricia-tree/pull/127) removing an unnecessary double-serialization call on nodes. This gives a general performance gain of 10-20% on putting new values in a trie.
+
+Other changes:
+
+## New Features
+
+A new exported `WalkController` class has been added and `trie.walkTrie()` has been made a public method along. This allows for creating own custom ways to traverse a trie. PR [#135](https://github.com/ethereumjs/merkle-patricia-tree/pull/135)
+
+### Refactoring, Development and Documentation
+
+- Better `Trie` code documentation, PR [#125](https://github.com/ethereumjs/merkle-patricia-tree/pull/125)
+- Internal `Trie` function reordering & partial retwrite, PR [#125](https://github.com/ethereumjs/merkle-patricia-tree/pull/125)
+- Added simple integrated profiling, PR [#128](https://github.com/ethereumjs/merkle-patricia-tree/pull/128)
+- Reworked benchmarking to be based on `benchmark.js`, basic CI integration, PR [#130](https://github.com/ethereumjs/merkle-patricia-tree/pull/130)
+- Upgrade to `ethereumjs-config` `2.0` libs for linting and formatting, PR [#133](https://github.com/ethereumjs/merkle-patricia-tree/pull/133)
+- Switched coverage from `coverall` to `codecov`, PR [#137](https://github.com/ethereumjs/merkle-patricia-tree/pull/137)
 
 ## [4.0.0] - 2020-04-17
 
