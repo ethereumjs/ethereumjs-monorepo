@@ -132,11 +132,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   await this._emit('beforeBlock', block)
 
   if (this._selectHardforkByBlockNumber) {
-    const currentHf = this._common.hardfork()
     this._common.setHardforkByBlockNumber(block.header.number.toNumber())
-    if (this._common.hardfork() != currentHf) {
-      this._updateOpcodes()
-    }
   }
   debug('-'.repeat(100))
   debug(

@@ -192,6 +192,9 @@ export default class VM extends AsyncEventEmitter {
         supportedHardforks,
       })
     }
+    this._common.on('hardforkChanged', () => {
+      this._updateOpcodes()
+    })
 
     // Set list of opcodes based on HF
     // TODO: make this EIP-friendly
