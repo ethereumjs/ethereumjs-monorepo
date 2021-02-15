@@ -58,13 +58,13 @@ export class Trie {
     this.db = db ? new DB(db) : new DB()
     this._root = this.EMPTY_TRIE_ROOT
     if (root) {
-      this._setRoot(root)
+      this.setRoot(root)
     }
   }
 
   /** Sets the current root of the `trie` */
   set root(value: Buffer) {
-    this._setRoot(value)
+    this.setRoot(value)
   }
 
   /** Gets the current root of the `trie` */
@@ -72,7 +72,14 @@ export class Trie {
     return this._root
   }
 
-  _setRoot(value?: Buffer) {
+  /**
+   * This method is deprecated.
+   * Please use `Trie.root(value)` instead.
+   * 
+   * @param value 
+   * @deprecated
+   */
+  setRoot(value?: Buffer) {
     if (!value) {
       value = this.EMPTY_TRIE_ROOT
     }
