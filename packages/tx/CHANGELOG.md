@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+
+## 3.0.2 - 2021-02-16
+
+Follow-up release on `v3.0.1` which only partly addressed a **critical** bug. An update is - again - strongly recommended.
+
+- Fixes `tx.isSigned()` always returning true when using the `Tx.fromValuesArray() static constructor, see PR [#1077](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1077)
+
 ## 3.0.1 - 2021-01-20
 
 - Fixes `tx.isSigned()` always returning true - so also for unsigned transactions - due to a bug in the `Transaction` class constructor. This bug is regarded as **critical** and an update is strongly recommended. See PR [#1042](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1042)
