@@ -334,6 +334,14 @@ export default class VM extends AsyncEventEmitter {
   }
 
   /**
+   * Returns a list with the currently activated opcodes
+   * available for VM execution
+   */
+  getActiveOpcodes(): OpcodeList {
+    return getOpcodesForHF(this._common)
+  }
+
+  /**
    * Returns a copy of the [[VM]] instance.
    */
   copy(): VM {

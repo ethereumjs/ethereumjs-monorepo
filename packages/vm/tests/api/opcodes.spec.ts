@@ -1,25 +1,58 @@
 import tape from 'tape'
 import Common from '@ethereumjs/common'
-import { getOpcodesForHF } from '../../lib/evm/opcodes'
+import VM from '../../lib'
 
-const CHAINID = 0x46
+tape('VM -> getActiveOpcodes()', (t) => {
+  const CHAINID = 0x46 //istanbul opcode
 
-tape('getOpcodesForHF', (t) => {
-  t.test('shouldnt apply istanbul opcode changes for petersburg', (st) => {
-    const c = new Common({ chain: 'mainnet', hardfork: 'petersburg' })
-    const opcodes = getOpcodesForHF(c)
-    st.assert(opcodes.get(CHAINID) === undefined)
+  t.test('should not expose opcodes from a follow-up HF (istanbul -> petersburg)', (st) => {
+    const common = new Common({ chain: 'mainnet', hardfork: 'petersburg' })
+    const vm = new VM({ common })
+    st.equal(
+      vm.getActiveOpcodes().get(CHAINID),
+      undefined,
+      'istanbul opcode not exposed (HF: < istanbul (petersburg)'
+    )
     st.end()
   })
 
-  t.test('should correctly apply istanbul opcode when hf >= istanbul', (st) => {
-    let c = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
-    let opcodes = getOpcodesForHF(c)
-    st.equal(opcodes.get(CHAINID)!.name, 'CHAINID')
+  t.test('should expose opcodes when HF is active (>= istanbul)', (st) => {
+    let common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+    let vm = new VM({ common })
+    st.equal(
+      vm.getActiveOpcodes().get(CHAINID)!.name,
+      'CHAINID',
+      'istanbul opcode exposed (HF: istanbul)'
+    )
 
-    c = new Common({ chain: 'mainnet', hardfork: 'muirGlacier' })
-    opcodes = getOpcodesForHF(c)
-    st.equal(opcodes.get(CHAINID)!.name, 'CHAINID')
+    common = new Common({ chain: 'mainnet', hardfork: 'muirGlacier' })
+    vm = new VM({ common })
+    st.equal(
+      vm.getActiveOpcodes().get(CHAINID)!.name,
+      'CHAINID',
+      'istanbul opcode exposed (HF: > istanbul (muirGlacier)'
+    )
+
+    st.end()
+  })
+
+  t.test('should update opcodes on a hardfork change', async (st) => {
+    const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+    const vm = new VM({ common })
+
+    common.setHardfork('byzantium')
+    st.equal(
+      vm.getActiveOpcodes().get(CHAINID),
+      undefined,
+      'opcode not exposed after HF change (-> < istanbul)'
+    )
+
+    common.setHardfork('istanbul')
+    st.equal(
+      vm.getActiveOpcodes().get(CHAINID)!.name,
+      'CHAINID',
+      'opcode exposed after HF change (-> istanbul)'
+    )
 
     st.end()
   })
