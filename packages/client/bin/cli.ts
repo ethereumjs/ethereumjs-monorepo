@@ -1,6 +1,6 @@
 #!/usr/bin/env client
 
-import { Server as RPCServer } from 'jayson'
+import { Server as RPCServer } from 'jayson/promise'
 import Common from '@ethereumjs/common'
 import { parseParams } from '../lib/util'
 import EthereumClient from '../lib/client'
