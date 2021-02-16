@@ -36,6 +36,7 @@ const ignoredErrors = new RegExp(
 
     // Client
     'Handshake timed out', // Protocol handshake
+    'Server already destroyed', // Bootstrap retrigger
   ].join('|')
 )
 
