@@ -10,13 +10,7 @@ const prefix = 'rpc/validation:'
 tape(`${prefix} should work without \`params\` when it's optional`, (t) => {
   const mockMethodName = 'mock'
   const server = startRPC({
-    [mockMethodName]: middleware(
-      (params: any, cb: any) => {
-        cb()
-      },
-      0,
-      []
-    ),
+    [mockMethodName]: middleware((_params: any) => true, 0, []),
   })
 
   const req = {
@@ -33,13 +27,7 @@ tape(`${prefix} should work without \`params\` when it's optional`, (t) => {
 tape(`${prefix} should return error without \`params\` when it's required`, (t) => {
   const mockMethodName = 'mock'
   const server = startRPC({
-    [mockMethodName]: middleware(
-      (params: any, cb: any) => {
-        cb()
-      },
-      1,
-      []
-    ),
+    [mockMethodName]: middleware((_params: any) => true, 1, []),
   })
 
   const req = {

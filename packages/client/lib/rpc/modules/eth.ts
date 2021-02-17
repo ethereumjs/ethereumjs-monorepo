@@ -1,6 +1,6 @@
 import { Chain } from '../../blockchain'
 import { middleware, validators } from '../validation'
-import { toBuffer, stripHexPrefix, BN } from 'ethereumjs-util'
+import { BN, bufferToHex, toBuffer, stripHexPrefix } from 'ethereumjs-util'
 import { EthereumClient } from '../..'
 
 /**
@@ -16,9 +16,9 @@ export class Eth {
    * @param {Node} Node to which the module binds
    */
   constructor(node: EthereumClient) {
-    const service = node.services.find((s: any) => s.name === 'eth')
+    const service = node.services.find((s) => s.name === 'eth')
     this._chain = service!.chain
-    const ethProtocol = service!.protocols.find((p: any) => p.name === 'eth')
+    const ethProtocol = service!.protocols.find((p) => p.name === 'eth')
     this.ethVersion = Math.max.apply(Math, ethProtocol!.versions)
 
     this.blockNumber = middleware(this.blockNumber.bind(this), 0)
@@ -43,99 +43,66 @@ export class Eth {
   }
 
   /**
-   * Returns Returns the number of most recent block.
+   * Returns number of the most recent block.
    * @param  {Array<*>} [params] An empty array
-   * @param  {Function} [cb] A function with an error object as the first argument and an actual value
-   * as the second argument
    * @return {Promise}
    */
-  async blockNumber(_params = [], cb: (err: Error | null, val?: string) => void) {
-    try {
-      const latestHeader = await this._chain.getLatestHeader()
-      cb(null, `0x${latestHeader.number.toString(16)}`)
-    } catch (err) {
-      cb(err)
-    }
+  async blockNumber(_params = []) {
+    const latestHeader = await this._chain.getLatestHeader()
+    return `0x${latestHeader.number.toString(16)}`
   }
 
   /**
    * Returns information about a block by block number
    * @param  {Array<BN|bool>} [params] An array of two parameters: An big integer of a block number and a
    * boolean determining whether it returns full transaction objects or just the transaction hashes
-   * @param  {Function} [cb] A function with an error object as the first argument and an actual value
-   * as the second argument
    * @return {Promise}
    */
-  async getBlockByNumber(params: [string, boolean], cb: (err: Error | null, val?: any) => void) {
-    // eslint-disable-next-line prefer-const
-    let [blockNumber, includeTransactions] = params
+  async getBlockByNumber(params: [string, boolean]) {
+    const [blockNumber, includeTransactions] = params
     const blockNumberBN = new BN(stripHexPrefix(blockNumber), 16)
-    try {
-      const block = await this._chain.getBlock(blockNumberBN)
-      const json = block.toJSON()
-      if (!includeTransactions) {
-        json.transactions = json.transactions!.map((tx: any) => tx.hash)
-      }
-      cb(null, json)
-    } catch (err) {
-      cb(err)
+    const block = await this._chain.getBlock(blockNumberBN)
+    const json = block.toJSON()
+    if (!includeTransactions) {
+      json.transactions = block.transactions.map((tx) => bufferToHex(tx.hash())) as any
     }
+    return json
   }
 
   /**
    * Returns information about a block by hash
    * @param  {Array<string|bool>} [params] An array of two parameters: A block hash as the first argument and a
    * boolean determining whether it returns full transaction objects or just the transaction hashes
-   * @param  {Function} [cb] A function with an error object as the first argument and an actual value
-   * as the second argument
    * @return {Promise}
    */
-  async getBlockByHash(params: [string, boolean], cb: (err: Error | null, val?: any) => void) {
+  async getBlockByHash(params: [string, boolean]) {
     const [blockHash, includeTransactions] = params
 
-    try {
-      const block = await this._chain.getBlock(toBuffer(blockHash))
-      const json = block.toJSON()
-
-      if (!includeTransactions) {
-        json.transactions = json.transactions!.map((tx: any) => tx.hash)
-      }
-      cb(null, json)
-    } catch (err) {
-      cb(err)
+    const block = await this._chain.getBlock(toBuffer(blockHash))
+    const json = block.toJSON()
+    if (!includeTransactions) {
+      json.transactions = block.transactions.map((tx) => bufferToHex(tx.hash())) as any
     }
+    return json
   }
 
   /**
    * Returns the transaction count for a block given by the block hash
    * @param  {Array<string>} [params] An array of one parameter: A block hash
-   * @param  {Function} [cb] A function with an error object as the first argument and an actual value
-   * as the second argument
    * @return {Promise}
    */
-  async getBlockTransactionCountByHash(
-    params: [string],
-    cb: (err: Error | null, val?: any) => void
-  ) {
+  async getBlockTransactionCountByHash(params: [string]) {
     const [blockHash] = params
-
-    try {
-      const block = await this._chain.getBlock(toBuffer(blockHash))
-
-      const json = block.toJSON()
-      cb(null, `0x${json.transactions!.length.toString(16)}`)
-    } catch (err) {
-      cb(err)
-    }
+    const block = await this._chain.getBlock(toBuffer(blockHash))
+    const json = block.toJSON()
+    return `0x${json.transactions!.length.toString(16)}`
   }
 
   /**
-   * Returns the current ethereum protocol version
+   * Returns the current ethereum protocol version as a hex-encoded string
    * @param  {Array<*>} [params] An empty array
-   * @param  {Function} [cb] A function with an error object as the first argument and a
-   * hex-encoded string of the current protocol version as the second argument
    */
-  protocolVersion(_params = [], cb: (err: null, val: string) => void) {
-    cb(null, `0x${this.ethVersion.toString(16)}`)
+  protocolVersion(_params = []) {
+    return `0x${this.ethVersion.toString(16)}`
   }
 }

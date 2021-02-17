@@ -1,15 +1,23 @@
+import { bufferToHex } from 'ethereumjs-util'
 import tape from 'tape'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { startRPC, createManager, createNode, params, baseRequest } from '../helpers'
 import { checkError } from '../util'
 
 function createBlockchain() {
-  const transactions = [
-    {
-      hash: '0xc6ef2fc5426d6ad6fd9e2a26abeab0aa2411b7ab17f30a99d3cb96aed1d1055b',
-    },
-  ]
+  const txHash = Buffer.from(
+    'c6ef2fc5426d6ad6fd9e2a26abeab0aa2411b7ab17f30a99d3cb96aed1d1055b',
+    'hex'
+  )
+  const transactions = [{ hash: bufferToHex(txHash) }]
   const block = {
+    transactions: [
+      {
+        hash: () => {
+          return txHash
+        },
+      },
+    ],
     toJSON: () => ({ number: 1, transactions }),
   }
   return {

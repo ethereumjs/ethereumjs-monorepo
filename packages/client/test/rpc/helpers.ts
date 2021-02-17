@@ -1,5 +1,5 @@
 import tape from 'tape'
-const jayson = require('jayson')
+import { Server as RPCServer, HttpServer } from 'jayson/promise'
 const request = require('supertest')
 import Common from '@ethereumjs/common'
 import { RPCManager as Manager } from '../../lib/rpc'
@@ -14,13 +14,13 @@ const config: any = { loglevel: 'error' }
 config.logger = Logger.getLogger(config)
 
 export function startRPC(methods: any, port: number = 3000) {
-  const server = jayson.server(methods)
+  const server = new RPCServer(methods)
   const httpServer = server.http()
   httpServer.listen(port)
   return httpServer
 }
 
-export function closeRPC(server: any) {
+export function closeRPC(server: HttpServer) {
   server.close()
 }
 
@@ -29,7 +29,8 @@ export function createManager(node: any) {
 }
 
 export function createNode(nodeConfig?: any) {
-  const config = new Config({ transports: [] })
+  const common = nodeConfig?.commonChain ?? new Common({ chain: 'mainnet' })
+  const config = new Config({ transports: [], common })
   const chain = new Chain({
     config,
     blockchain: (<unknown>blockChain({})) as Blockchain,
@@ -38,7 +39,6 @@ export function createNode(nodeConfig?: any) {
   const defaultNodeConfig = {
     blockchain: chain,
     opened: true,
-    commonChain: new Common({ chain: 'mainnet' }),
     ethProtocolVersions: [63],
   }
   const trueNodeConfig = { ...defaultNodeConfig, ...nodeConfig }
@@ -63,7 +63,6 @@ export function createNode(nodeConfig?: any) {
       },
     ],
     servers,
-    common: trueNodeConfig.commonChain,
     opened: trueNodeConfig.opened,
     server: (name: string) => {
       return servers.find((s) => s.name === name)
@@ -80,8 +79,8 @@ export function baseSetup() {
 export function params(method: any, params: any[] = []) {
   const req = {
     jsonrpc: '2.0',
-    method: method,
-    params: params,
+    method,
+    params,
     id: 1,
   }
   return req

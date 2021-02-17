@@ -8,9 +8,9 @@ tape(`${method}: call with valid arguments`, (t) => {
   const mockBlockNumber = 123
   const mockBlockChain = {
     getLatestHeader: async function (): Promise<any> {
-      return Promise.resolve({
+      return {
         number: new BN(mockBlockNumber),
-      })
+      }
     },
   }
   const manager = createManager(createNode({ blockchain: mockBlockChain }))
