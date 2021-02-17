@@ -69,6 +69,15 @@ to ease `blockNumber` based access to parameters.
 
 - [API Docs](./docs/README.md)
 
+# EVENTS
+
+The `Common` class is implemented as an `EventEmitter` and is emitting the following events
+on which you can react within your code:
+
+| Event | Description |
+| - | - |
+| `hardforkChanged` | Emitted when a hardfork change occurs in the Common object |
+
 # SETUP
 
 ## Chains

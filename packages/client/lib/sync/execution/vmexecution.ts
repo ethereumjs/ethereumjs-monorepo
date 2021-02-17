@@ -49,7 +49,6 @@ export class VMExecution extends Execution {
     const blockNumber = headBlock.header.number.toNumber()
     this.config.execCommon.setHardforkByBlockNumber(blockNumber)
     this.hardfork = this.config.execCommon.hardfork()
-    this.vm._updateOpcodes()
     this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
   }
 
@@ -113,7 +112,6 @@ export class VMExecution extends Execution {
                 `Execution hardfork switch on block number=${blockNumber} hash=${hash} old=${this.hardfork} new=${hardfork}`
               )
               this.hardfork = this.config.execCommon.setHardforkByBlockNumber(blockNumber)
-              this.vm._updateOpcodes()
             }
             // Block validation is redundant here and leads to consistency problems
             // on PoA clique along blockchain-including validation checks

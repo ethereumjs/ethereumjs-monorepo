@@ -192,6 +192,9 @@ export default class VM extends AsyncEventEmitter {
         supportedHardforks,
       })
     }
+    this._common.on('hardforkChanged', () => {
+      this._updateOpcodes()
+    })
 
     // Set list of opcodes based on HF
     // TODO: make this EIP-friendly
@@ -328,6 +331,14 @@ export default class VM extends AsyncEventEmitter {
   async runCode(opts: RunCodeOpts): Promise<ExecResult> {
     await this.init()
     return runCode.bind(this)(opts)
+  }
+
+  /**
+   * Returns a list with the currently activated opcodes
+   * available for VM execution
+   */
+  getActiveOpcodes(): OpcodeList {
+    return getOpcodesForHF(this._common)
   }
 
   /**
