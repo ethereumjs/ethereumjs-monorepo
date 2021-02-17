@@ -83,7 +83,7 @@ client.start()
 client.stop()
 ```
 
-You can also provide your custom [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/vm) instance:
+You can also provide your custom [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) instance:
 
 ```typescript
 import VM from '@ethereumjs/vm'
@@ -119,7 +119,7 @@ ethereumjs --rpc --maxPeers=0
 
 Currently only a small subset of `RPC` methods are implemented.(\*) You can have a look at the
 [./lib/rpc/modules/](./lib/rpc/modules) source folder or the tracking issue
-[#17](https://github.com/ethereumjs/ethereumjs-client/issues/17) for an overview.
+[#1114](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1114) for an overview.
 
 (*) Side note: implementing RPC methods is actually an extremely thankful task for a first-time
 contribution on the project *hint\* _hint_. 😄
@@ -242,9 +242,9 @@ In this example, we will again perform a light sync by connecting to the first c
 First, let's make the bundle:
 
 ```
-git clone https://github.com/ethereumjs/ethereumjs-vm
-cd ethereumjs-vm
-npm run bootstrap
+git clone https://github.com/ethereumjs/ethereumjs-monorepo
+cd ethereumjs-monorepo
+npm i
 cd packages/client
 npm run build:browser
 ```
@@ -346,9 +346,9 @@ To update the structure diagram files in the root folder open the `client.drawio
 **EthereumJS Ecosystem**
 
 This project will be embedded in the EthereumJS ecosystem and many submodules already exist and
-can be used within the project, have a look e.g. at [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/block), [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/vm),
-[merkle-patricia-tree](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/trie) or the
-[@ethereumjs/devp2p](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/devp2p) implementation. Work needs to be done both within these repos and related libraries.
+can be used within the project, have a look e.g. at [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block), [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm),
+[merkle-patricia-tree](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie) or the
+[@ethereumjs/devp2p](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/devp2p) implementation. Work needs to be done both within these repos and related libraries.
 
 ## EthereumJS
 
@@ -358,10 +358,10 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 [client-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/client.svg
 [client-npm-link]: https://www.npmjs.com/package/@ethereumjs/client
-[client-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20client?label=issues
-[client-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+client"
-[client-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Client/badge.svg
-[client-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22Client%22
+[client-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20client?label=issues
+[client-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+client"
+[client-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/Client/badge.svg
+[client-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22Client%22
 [client-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=client
 [client-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/client
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
