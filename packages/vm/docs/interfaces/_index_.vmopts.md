@@ -16,6 +16,7 @@ Options for instantiating a [VM](../classes/_index_.vm.md).
 * [allowUnlimitedContractSize](_index_.vmopts.md#optional-allowunlimitedcontractsize)
 * [blockchain](_index_.vmopts.md#optional-blockchain)
 * [common](_index_.vmopts.md#optional-common)
+* [selectHardforkByBlockNumber](_index_.vmopts.md#optional-selecthardforkbyblocknumber)
 * [state](_index_.vmopts.md#optional-state)
 * [stateManager](_index_.vmopts.md#optional-statemanager)
 
@@ -97,13 +98,25 @@ Default setup if no `Common` instance is provided:
 
 ___
 
+### `Optional` selectHardforkByBlockNumber
+
+• **selectHardforkByBlockNumber**? : *undefined | false | true*
+
+*Defined in [index.ts:98](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L98)*
+
+Select hardfork based upon block number. This automatically switches to the right hard fork based upon the block number.
+
+Default: `false`
+
+___
+
 ### `Optional` state
 
 • **state**? : *any*
 
 *Defined in [index.ts:67](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L67)*
 
-A [merkle-patricia-tree](https://github.com/ethereumjs/merkle-patricia-tree) instance for the state tree (ignored if stateManager is passed)
+An [merkle-patricia-tree](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/trie) instance for the state tree (ignored if stateManager is passed)
 
 **`deprecated`** 
 

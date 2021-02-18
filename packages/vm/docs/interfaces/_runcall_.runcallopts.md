@@ -52,7 +52,7 @@ ___
 
 *Defined in [runCall.ts:23](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runCall.ts#L23)*
 
-This is for CALLCODE where the code to load is different than the code from the to account
+This is for CALLCODE where the code to load is different than the code from the `opts.to` address.
 
 ___
 
