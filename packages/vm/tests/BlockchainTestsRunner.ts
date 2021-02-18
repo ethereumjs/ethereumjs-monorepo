@@ -91,7 +91,6 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     }
   }
 
-  let currentFork = common.hardfork()
   let currentBlock = new BN(0)
   for (const raw of testData.blocks) {
     const paramFork = `expectException${options.forkConfigTestSuite}`
@@ -115,12 +114,8 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     }
 
     try {
-      // check if we should update common.
-      const newFork = common.setHardforkByBlockNumber(currentBlock.toNumber())
-      if (newFork != currentFork) {
-        currentFork = newFork
-        vm._updateOpcodes()
-      }
+      // Update common HF
+      common.setHardforkByBlockNumber(currentBlock.toNumber())
 
       const blockRlp = Buffer.from(raw.rlp.slice(2), 'hex')
       const block = Block.fromRLPSerializedBlock(blockRlp, { common })
