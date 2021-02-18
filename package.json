@@ -39,6 +39,7 @@
     "test": "lerna exec npm run test --parallel",
     "coverage": "lerna run coverage --stream",
     "docs:build": "lerna run docs:build --ignore @ethereumjs/ethash",
-    "clean": "rm -rf node_modules packages/*/node_modules packages/*/test-build packages/*/dist packages/*/dist.browser packages/*/package-lock.json"
+    "clean": "rm -rf node_modules packages/*/node_modules packages/*/test-build packages/*/dist packages/*/dist.browser packages/*/package-lock.json",
+    "check:compatibility": "bash ./scripts/check-compatibility.sh"
   }
 }
