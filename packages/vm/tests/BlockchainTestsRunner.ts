@@ -32,7 +32,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   // Only run with block validation when sealEngine present in test file
   // and being set to Ethash PoW validation
   if (testData.sealEngine && testData.sealEngine === 'Ethash') {
-    if (common.consensusType() !== 'ethash') {
+    if (common.consensusAlgorithm() !== 'ethash') {
       t.skip('SealEngine setting is not matching chain consensus type, skip test.')
     }
     validatePow = true

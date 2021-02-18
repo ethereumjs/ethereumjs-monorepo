@@ -322,7 +322,7 @@ export function getCommon(network: string) {
 const expectedTestsFull: any = {
   BlockchainTests: {
     Chainstart: 4385,
-    Homestead: 6997,
+    Homestead: 7004,
     Dao: 0,
     TangerineWhistle: 4255,
     SpuriousDragon: 4305,
@@ -347,8 +347,8 @@ const expectedTestsFull: any = {
     Byzantium: 4754,
     Constantinople: 10530,
     Petersburg: 10525,
-    Istanbul: 10759,
-    MuirGlacier: 10759,
+    Istanbul: 10715,
+    MuirGlacier: 10715,
     Berlin: 1414,
     ByzantiumToConstantinopleFixAt5: 0,
     EIP158ToByzantiumAt5: 0,
