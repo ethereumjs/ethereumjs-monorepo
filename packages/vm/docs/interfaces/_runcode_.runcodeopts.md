@@ -47,7 +47,7 @@ ___
 
 *Defined in [runCode.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runCode.ts#L28)*
 
-The [`Block`](https://github.com/ethereumjs/ethereumjs-block) the `tx` belongs to. If omitted a blank block will be used
+The `@ethereumjs/block` the `tx` belongs to. If omitted a default blank block will be used.
 
 ___
 

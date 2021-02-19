@@ -27,8 +27,8 @@ This class is an AsyncEventEmitter, please consult the README to learn how to us
 
 ### Methods
 
-* [_updateOpcodes](_index_.vm.md#_updateopcodes)
 * [copy](_index_.vm.md#copy)
+* [getActiveOpcodes](_index_.vm.md#getactiveopcodes)
 * [init](_index_.vm.md#init)
 * [runBlock](_index_.vm.md#runblock)
 * [runBlockchain](_index_.vm.md#runblockchain)
@@ -43,7 +43,7 @@ This class is an AsyncEventEmitter, please consult the README to learn how to us
 
 \+ **new VM**(`opts`: [VMOpts](../interfaces/_index_.vmopts.md)): *[VM](_index_.vm.md)*
 
-*Defined in [index.ts:139](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L139)*
+*Defined in [index.ts:147](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L147)*
 
 Instantiates a new [VM](_index_.vm.md) Object.
 
@@ -61,7 +61,7 @@ Name | Type | Default | Description |
 
 • **_common**: *Common*
 
-*Defined in [index.ts:110](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L110)*
+*Defined in [index.ts:117](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L117)*
 
 ___
 
@@ -69,7 +69,7 @@ ___
 
 • **blockchain**: *Blockchain*
 
-*Defined in [index.ts:108](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L108)*
+*Defined in [index.ts:115](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L115)*
 
 The blockchain the VM operates on
 
@@ -79,27 +79,17 @@ ___
 
 • **stateManager**: *[StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [index.ts:104](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L104)*
+*Defined in [index.ts:111](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L111)*
 
 The StateManager used by the VM
 
 ## Methods
 
-###  _updateOpcodes
-
-▸ **_updateOpcodes**(): *void*
-
-*Defined in [index.ts:219](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L219)*
-
-**Returns:** *void*
-
-___
-
 ###  copy
 
 ▸ **copy**(): *[VM](_index_.vm.md)*
 
-*Defined in [index.ts:326](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L326)*
+*Defined in [index.ts:343](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L343)*
 
 Returns a copy of the [VM](_index_.vm.md) instance.
 
@@ -107,11 +97,24 @@ Returns a copy of the [VM](_index_.vm.md) instance.
 
 ___
 
+###  getActiveOpcodes
+
+▸ **getActiveOpcodes**(): *OpcodeList*
+
+*Defined in [index.ts:336](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L336)*
+
+Returns a list with the currently activated opcodes
+available for VM execution
+
+**Returns:** *OpcodeList*
+
+___
+
 ###  init
 
 ▸ **init**(): *Promise‹void›*
 
-*Defined in [index.ts:223](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L223)*
+*Defined in [index.ts:232](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L232)*
 
 **Returns:** *Promise‹void›*
 
@@ -121,7 +124,7 @@ ___
 
 ▸ **runBlock**(`opts`: [RunBlockOpts](../interfaces/_runblock_.runblockopts.md)): *Promise‹[RunBlockResult](../interfaces/_runblock_.runblockresult.md)›*
 
-*Defined in [index.ts:280](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L280)*
+*Defined in [index.ts:289](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L289)*
 
 Processes the `block` running all of the transactions it contains and updating the miner's account
 
@@ -141,9 +144,9 @@ ___
 
 ###  runBlockchain
 
-▸ **runBlockchain**(`blockchain?`: Blockchain): *Promise‹void›*
+▸ **runBlockchain**(`blockchain?`: Blockchain, `maxBlocks?`: undefined | number): *Promise‹void | number›*
 
-*Defined in [index.ts:265](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L265)*
+*Defined in [index.ts:274](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L274)*
 
 Processes blocks and adds them to the blockchain.
 
@@ -154,16 +157,17 @@ This method modifies the state.
 Name | Type | Description |
 ------ | ------ | ------ |
 `blockchain?` | Blockchain | An [@ethereumjs/blockchain](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/blockchain) object to process  |
+`maxBlocks?` | undefined &#124; number | - |
 
-**Returns:** *Promise‹void›*
+**Returns:** *Promise‹void | number›*
 
 ___
 
 ###  runCall
 
-▸ **runCall**(`opts`: [RunCallOpts](../interfaces/_runcall_.runcallopts.md)): *Promise‹[EVMResult](../interfaces/_evm_evm_.evmresult.md)›*
+▸ **runCall**(`opts`: [RunCallOpts](../interfaces/_runcall_.runcallopts.md)): *Promise‹EVMResult›*
 
-*Defined in [index.ts:306](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L306)*
+*Defined in [index.ts:315](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L315)*
 
 runs a call (or create) operation.
 
@@ -175,15 +179,15 @@ Name | Type | Description |
 ------ | ------ | ------ |
 `opts` | [RunCallOpts](../interfaces/_runcall_.runcallopts.md) |   |
 
-**Returns:** *Promise‹[EVMResult](../interfaces/_evm_evm_.evmresult.md)›*
+**Returns:** *Promise‹EVMResult›*
 
 ___
 
 ###  runCode
 
-▸ **runCode**(`opts`: [RunCodeOpts](../interfaces/_runcode_.runcodeopts.md)): *Promise‹[ExecResult](../interfaces/_evm_evm_.execresult.md)›*
+▸ **runCode**(`opts`: [RunCodeOpts](../interfaces/_runcode_.runcodeopts.md)): *Promise‹ExecResult›*
 
-*Defined in [index.ts:318](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L318)*
+*Defined in [index.ts:327](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L327)*
 
 Runs EVM code.
 
@@ -195,7 +199,7 @@ Name | Type | Description |
 ------ | ------ | ------ |
 `opts` | [RunCodeOpts](../interfaces/_runcode_.runcodeopts.md) |   |
 
-**Returns:** *Promise‹[ExecResult](../interfaces/_evm_evm_.execresult.md)›*
+**Returns:** *Promise‹ExecResult›*
 
 ___
 
@@ -203,7 +207,7 @@ ___
 
 ▸ **runTx**(`opts`: [RunTxOpts](../interfaces/_runtx_.runtxopts.md)): *Promise‹[RunTxResult](../interfaces/_runtx_.runtxresult.md)›*
 
-*Defined in [index.ts:294](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L294)*
+*Defined in [index.ts:303](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L303)*
 
 Process a transaction. Run the vm. Transfers eth. Checks balances.
 
@@ -225,7 +229,7 @@ ___
 
 ▸ **create**(`opts`: [VMOpts](../interfaces/_index_.vmopts.md)): *Promise‹[VM](_index_.vm.md)›*
 
-*Defined in [index.ts:135](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L135)*
+*Defined in [index.ts:143](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L143)*
 
 VM async constructor. Creates engine instance and initializes it.
 

@@ -14,6 +14,7 @@ Options for the `runTx` method.
 
 * [block](_runtx_.runtxopts.md#optional-block)
 * [skipBalance](_runtx_.runtxopts.md#optional-skipbalance)
+* [skipBlockGasLimitValidation](_runtx_.runtxopts.md#optional-skipblockgaslimitvalidation)
 * [skipNonce](_runtx_.runtxopts.md#optional-skipnonce)
 * [tx](_runtx_.runtxopts.md#tx)
 
@@ -23,9 +24,9 @@ Options for the `runTx` method.
 
 • **block**? : *Block*
 
-*Defined in [runTx.ts:17](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L17)*
+*Defined in [runTx.ts:22](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L22)*
 
-The block to which the `tx` belongs
+The `@ethereumjs/block` the `tx` belongs to. If omitted a default blank block will be used.
 
 ___
 
@@ -33,9 +34,20 @@ ___
 
 • **skipBalance**? : *undefined | false | true*
 
-*Defined in [runTx.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L29)*
+*Defined in [runTx.ts:34](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L34)*
 
 If true, skips the balance check
+
+___
+
+### `Optional` skipBlockGasLimitValidation
+
+• **skipBlockGasLimitValidation**? : *undefined | false | true*
+
+*Defined in [runTx.ts:40](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L40)*
+
+If true, skips the validation of the tx's gas limit
+agains the block's gas limit.
 
 ___
 
@@ -43,7 +55,7 @@ ___
 
 • **skipNonce**? : *undefined | false | true*
 
-*Defined in [runTx.ts:25](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L25)*
+*Defined in [runTx.ts:30](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L30)*
 
 If true, skips the nonce check
 
@@ -53,6 +65,6 @@ ___
 
 • **tx**: *Transaction*
 
-*Defined in [runTx.ts:21](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L21)*
+*Defined in [runTx.ts:26](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L26)*
 
-An [`@ethereumjs/tx`](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/tx) to run
+An `@ethereumjs/tx` to run

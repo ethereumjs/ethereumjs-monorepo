@@ -1,33 +1,32 @@
-[@ethereumjs/vm](../README.md) › ["runTx"](../modules/_runtx_.md) › [RunTxResult](_runtx_.runtxresult.md)
+[@ethereumjs/vm](../README.md) › ["runTx"](../modules/_runtx_.md) › [AfterTxEvent](_runtx_.aftertxevent.md)
 
-# Interface: RunTxResult
-
-Execution result of a transaction
+# Interface: AfterTxEvent
 
 ## Hierarchy
 
-* EVMResult
+  ↳ [RunTxResult](_runtx_.runtxresult.md)
 
-  ↳ **RunTxResult**
-
-  ↳ [AfterTxEvent](_runtx_.aftertxevent.md)
+  ↳ **AfterTxEvent**
 
 ## Index
 
 ### Properties
 
-* [amountSpent](_runtx_.runtxresult.md#amountspent)
-* [bloom](_runtx_.runtxresult.md#bloom)
-* [createdAddress](_runtx_.runtxresult.md#optional-createdaddress)
-* [execResult](_runtx_.runtxresult.md#execresult)
-* [gasRefund](_runtx_.runtxresult.md#optional-gasrefund)
-* [gasUsed](_runtx_.runtxresult.md#gasused)
+* [amountSpent](_runtx_.aftertxevent.md#amountspent)
+* [bloom](_runtx_.aftertxevent.md#bloom)
+* [createdAddress](_runtx_.aftertxevent.md#optional-createdaddress)
+* [execResult](_runtx_.aftertxevent.md#execresult)
+* [gasRefund](_runtx_.aftertxevent.md#optional-gasrefund)
+* [gasUsed](_runtx_.aftertxevent.md#gasused)
+* [transaction](_runtx_.aftertxevent.md#transaction)
 
 ## Properties
 
 ###  amountSpent
 
 • **amountSpent**: *BN*
+
+*Inherited from [RunTxResult](_runtx_.runtxresult.md).[amountSpent](_runtx_.runtxresult.md#amountspent)*
 
 *Defined in [runTx.ts:54](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L54)*
 
@@ -38,6 +37,8 @@ ___
 ###  bloom
 
 • **bloom**: *Bloom*
+
+*Inherited from [RunTxResult](_runtx_.runtxresult.md).[bloom](_runtx_.runtxresult.md#bloom)*
 
 *Defined in [runTx.ts:50](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L50)*
 
@@ -73,6 +74,8 @@ ___
 
 • **gasRefund**? : *BN*
 
+*Inherited from [RunTxResult](_runtx_.runtxresult.md).[gasRefund](_runtx_.runtxresult.md#optional-gasrefund)*
+
 *Defined in [runTx.ts:58](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L58)*
 
 The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
@@ -88,3 +91,13 @@ ___
 *Defined in [evm/evm.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/evm.ts#L32)*
 
 Amount of gas used by the transaction
+
+___
+
+###  transaction
+
+• **transaction**: *Transaction*
+
+*Defined in [runTx.ts:65](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L65)*
+
+The transaction which just got finished

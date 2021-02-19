@@ -193,7 +193,7 @@ export default class VM extends AsyncEventEmitter {
       })
     }
     this._common.on('hardforkChanged', () => {
-      this._updateOpcodes()
+      this._opcodes = getOpcodesForHF(this._common)
     })
 
     // Set list of opcodes based on HF
@@ -227,10 +227,6 @@ export default class VM extends AsyncEventEmitter {
     // We cache this promisified function as it's called from the main execution loop, and
     // promisifying each time has a huge performance impact.
     this._emit = promisify(this.emit.bind(this))
-  }
-
-  _updateOpcodes() {
-    this._opcodes = getOpcodesForHF(this._common)
   }
 
   async init(): Promise<void> {

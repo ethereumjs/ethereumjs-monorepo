@@ -28,7 +28,7 @@ state root field with a status code field (EIP-658)
 
 *Inherited from [PreByzantiumTxReceipt](_runblock_.prebyzantiumtxreceipt.md).[bitvector](_runblock_.prebyzantiumtxreceipt.md#bitvector)*
 
-*Defined in [runBlock.ts:78](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L78)*
+*Defined in [runBlock.ts:82](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L82)*
 
 Bloom bitvector
 
@@ -40,7 +40,7 @@ ___
 
 *Inherited from [PreByzantiumTxReceipt](_runblock_.prebyzantiumtxreceipt.md).[gasUsed](_runblock_.prebyzantiumtxreceipt.md#gasused)*
 
-*Defined in [runBlock.ts:74](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L74)*
+*Defined in [runBlock.ts:78](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L78)*
 
 Gas used
 
@@ -48,11 +48,11 @@ ___
 
 ###  logs
 
-• **logs**: *any[]*
+• **logs**: *Log[]*
 
 *Inherited from [PreByzantiumTxReceipt](_runblock_.prebyzantiumtxreceipt.md).[logs](_runblock_.prebyzantiumtxreceipt.md#logs)*
 
-*Defined in [runBlock.ts:82](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L82)*
+*Defined in [runBlock.ts:86](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L86)*
 
 Logs emitted
 
@@ -62,6 +62,6 @@ ___
 
 • **status**: *0 | 1*
 
-*Defined in [runBlock.ts:104](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L104)*
+*Defined in [runBlock.ts:108](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L108)*
 
 Status of transaction, `1` if successful, `0` if an exception occured

@@ -21,7 +21,7 @@ Options for constructing a [StateManager](_state_index_.statemanager.md).
 
 • **common**? : *Common*
 
-*Defined in [state/stateManager.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L28)*
+*Defined in [state/stateManager.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L32)*
 
 Parameters of the chain ([`Common`](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/common))
 
@@ -31,6 +31,6 @@ ___
 
 • **trie**? : *Trie*
 
-*Defined in [state/stateManager.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L32)*
+*Defined in [state/stateManager.ts:36](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L36)*
 
-A [`merkle-patricia-tree`](https://github.com/ethereumjs/merkle-patricia-tree) instance
+An [`merkle-patricia-tree`](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/trie) instance
