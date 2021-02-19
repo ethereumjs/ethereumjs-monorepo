@@ -115,7 +115,7 @@ files like `mainnet.json` in the `chains` directory, or to the `Chain` type in [
 
 There are two distinct APIs available for setting up custom(ized) chains.
 
-### Activate with a single custom Chain setup
+#### Activate with a single custom Chain setup
 
 If you want to initialize a `Common` instance with a single custom chain which is then directly activated
 you can pass a dictionary - conforming to the parameter format described above - with your custom chain 
@@ -136,7 +136,7 @@ const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
 const customChainCommon = Common.forCustomChain('mainnet', customChainParams, 'byzantium')
 ```
 
-### Initialize using customChains Array
+#### Initialize using customChains Array
 
 A second way for custom chain initialization is to use the `customChains` constructor option. This
 option comes with more flexibility and allows for an arbitrary number of custom chains to be initialized on

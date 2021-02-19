@@ -53,7 +53,7 @@
   "dependencies": {
     "@ethereumjs/block": "^3.0.0",
     "@ethereumjs/blockchain": "^5.0.0",
-    "@ethereumjs/common": "^2.0.0",
+    "@ethereumjs/common": "^2.1.0",
     "@ethereumjs/devp2p": "^3.0.3",
     "merkle-patricia-tree": "^4.1.0",
     "@ethereumjs/vm": "^5.0.0",

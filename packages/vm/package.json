@@ -45,7 +45,7 @@
   "dependencies": {
     "@ethereumjs/block": "^3.0.0",
     "@ethereumjs/blockchain": "^5.0.0",
-    "@ethereumjs/common": "^2.0.0",
+    "@ethereumjs/common": "^2.1.0",
     "merkle-patricia-tree": "^4.1.0",
     "@ethereumjs/tx": "^3.0.2",
     "async-eventemitter": "^0.2.4",
