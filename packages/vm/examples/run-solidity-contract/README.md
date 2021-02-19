@@ -15,10 +15,9 @@ The example does these things:
 
 ## Installation
 
-1. Run `npm install` in the root of this project
-1. Run `npm install` in this directory
+1. Run `npm i` in the root of this project
+1. Run `npm i` in this directory
 
 ## Running the example
 
-1. Run `npm run build:dist` in the root of this project
 1. Run `npm run example` in this directory
