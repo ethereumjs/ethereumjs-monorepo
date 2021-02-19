@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/block",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Provides Block serialization and help functions",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

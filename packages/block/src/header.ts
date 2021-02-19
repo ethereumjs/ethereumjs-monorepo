@@ -389,6 +389,7 @@ export class BlockHeader {
    * Returns false if invalid.
    */
   validateCliqueDifficulty(blockchain: Blockchain): boolean {
+    this._requireClique('validateCliqueDifficulty')
     if (!this.difficulty.eq(CLIQUE_DIFF_INTURN) && !this.difficulty.eq(CLIQUE_DIFF_NOTURN)) {
       throw new Error(
         `difficulty for clique block must be INTURN (2) or NOTURN (1), received: ${this.difficulty.toString()}`
@@ -449,6 +450,8 @@ export class BlockHeader {
    *   - Current block has valid difficulty and gas limit
    *   - In case that the header is an uncle header, it should not be too old or young in the chain.
    * - Additional PoA clique checks ->
+   *   - Various extraData checks
+   *   - Checks on coinbase and mixHash
    *   - Current block has a timestamp diff greater or equal to PERIOD
    *   - Current block has difficulty correctly marked as INTURN or NOTURN
    * @param blockchain - validate against an @ethereumjs/blockchain
@@ -585,6 +588,7 @@ export class BlockHeader {
    * PoA clique signature hash without the seal.
    */
   cliqueSigHash() {
+    this._requireClique('cliqueSigHash')
     const raw = this.raw()
     raw[12] = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
     return rlphash(raw)
