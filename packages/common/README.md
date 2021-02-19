@@ -104,9 +104,11 @@ The following chain-specific parameters are provided:
 - `networkId`
 - `consensusType` (e.g. `pow` or `poa`)
 - `consensusAlgorithm` (e.g. `ethash` or `clique`)
+- `consensusConfig` (depends on `consensusAlgorithm`, e.g. `period` and `epoch` for `clique`)
 - `genesis` block header values
 - `hardforks` block numbers
 - `bootstrapNodes` list
+- `dnsNetworks` list ([EIP-1459](https://eips.ethereum.org/EIPS/eip-1459)-compliant list of DNS networks for peer discovery)
 
 To get an overview of the different parameters have a look at one of the chain-specifc
 files like `mainnet.json` in the `chains` directory, or to the `Chain` type in [./src/types.ts](./src/types.ts).
@@ -216,13 +218,14 @@ const c = new Common({ chain: 'mainnet', eips: [2537] })
 
 The following EIPs are currently supported:
 
+- [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315): Simple subroutines for the EVM
 - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537): BLS precompiles
+- [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565): ModExp gas cost
 - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929): gas cost increases for state access opcodes
 
 ## Bootstrap Nodes
 
-There is no separate config file for bootstrap nodes like in the old `ethereum-common` library.
-Instead use the `common.bootstrapNodes()` function to get nodes for a specific chain/network.
+You can use `common.bootstrapNodes()` function to get nodes for a specific chain/network.
 
 ## Genesis States
 

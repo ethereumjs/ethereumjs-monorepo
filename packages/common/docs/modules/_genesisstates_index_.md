@@ -15,7 +15,7 @@
 
 ▸ **genesisStateById**(`id`: number): *any*
 
-*Defined in [genesisStates/index.ts:23](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/genesisStates/index.ts#L23)*
+*Defined in [packages/common/src/genesisStates/index.ts:23](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/genesisStates/index.ts#L23)*
 
 Returns the genesis state by network ID
 
@@ -35,7 +35,7 @@ ___
 
 ▸ **genesisStateByName**(`name`: string): *any*
 
-*Defined in [genesisStates/index.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/genesisStates/index.ts#L32)*
+*Defined in [packages/common/src/genesisStates/index.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/genesisStates/index.ts#L32)*
 
 Returns the genesis state by network name
 
