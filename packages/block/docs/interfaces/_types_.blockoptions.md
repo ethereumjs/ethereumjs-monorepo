@@ -15,6 +15,7 @@ hardfork.
 ### Properties
 
 * [calcDifficultyFromHeader](_types_.blockoptions.md#optional-calcdifficultyfromheader)
+* [cliqueSigner](_types_.blockoptions.md#optional-cliquesigner)
 * [common](_types_.blockoptions.md#optional-common)
 * [freeze](_types_.blockoptions.md#optional-freeze)
 * [hardforkByBlockNumber](_types_.blockoptions.md#optional-hardforkbyblocknumber)
@@ -26,7 +27,7 @@ hardfork.
 
 • **calcDifficultyFromHeader**? : *[BlockHeader](../classes/_header_.blockheader.md)*
 
-*Defined in [types.ts:45](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L45)*
+*Defined in [types.ts:48](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L48)*
 
 If a preceding `BlockHeader` (usually the parent header) is given the preceding
 header will be used to calculate the difficulty for this block and the calculated
@@ -34,13 +35,27 @@ difficulty takes precedence over a provided static `difficulty` value.
 
 ___
 
+### `Optional` cliqueSigner
+
+• **cliqueSigner**? : *Buffer*
+
+*Defined in [types.ts:64](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L64)*
+
+Provide a clique signer's privateKey to seal this block.
+Will throw if provided on a non-PoA chain.
+
+___
+
 ### `Optional` common
 
 • **common**? : *Common*
 
-*Defined in [types.ts:21](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L21)*
+*Defined in [types.ts:24](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L24)*
 
 A Common object defining the chain and the hardfork a block/block header belongs to.
+
+Object will be internally copied so that tx behavior don't incidentally
+change on future HF changes.
 
 Default: `Common` object set to `mainnet` and the HF currently defined as the default
 hardfork in the `Common` class.
@@ -53,7 +68,7 @@ ___
 
 • **freeze**? : *undefined | false | true*
 
-*Defined in [types.ts:56](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L56)*
+*Defined in [types.ts:59](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L59)*
 
 A block object by default gets frozen along initialization. This gives you
 strong additional security guarantees on the consistency of the block parameters.
@@ -70,7 +85,7 @@ ___
 
 • **hardforkByBlockNumber**? : *undefined | false | true*
 
-*Defined in [types.ts:27](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L27)*
+*Defined in [types.ts:30](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L30)*
 
 Determine the HF by the block number
 
@@ -82,7 +97,7 @@ ___
 
 • **initWithGenesisHeader**? : *undefined | false | true*
 
-*Defined in [types.ts:38](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L38)*
+*Defined in [types.ts:41](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L41)*
 
 Turns the block header into the canonical genesis block header
 

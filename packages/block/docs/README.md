@@ -7,6 +7,7 @@
 ### Modules
 
 * ["block"](modules/_block_.md)
+* ["clique"](modules/_clique_.md)
 * ["from-rpc"](modules/_from_rpc_.md)
 * ["header"](modules/_header_.md)
 * ["header-from-rpc"](modules/_header_from_rpc_.md)
