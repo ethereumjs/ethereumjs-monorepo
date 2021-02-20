@@ -111,7 +111,7 @@ tape('should fail when tx gas limit higher than block gas limit', async (t) => {
   t.end()
 })
 
-tape('should correctly use the selectHardforkByBlockNumber option', async (t) => {
+tape('should correctly use the hardforkByBlockNumber option', async (t) => {
   const common1 = new Common({
     chain: 'mainnet',
     hardfork: 'muirGlacier',
@@ -148,7 +148,7 @@ tape('should correctly use the selectHardforkByBlockNumber option', async (t) =>
     )
   }
 
-  const vm = new VM({ common: common1, selectHardforkByBlockNumber: true })
+  const vm = new VM({ common: common1, hardforkByBlockNumber: true })
   const vm_noSelect = new VM({ common: common2 })
 
   const txResultMuirGlacier = await vm.runBlock({

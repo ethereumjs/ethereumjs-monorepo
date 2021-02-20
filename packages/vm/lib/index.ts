@@ -95,7 +95,7 @@ export interface VMOpts {
    *
    * Default: `false`
    */
-  selectHardforkByBlockNumber?: boolean
+  hardforkByBlockNumber?: boolean
 }
 
 /**
@@ -120,7 +120,7 @@ export default class VM extends AsyncEventEmitter {
   protected _isInitialized: boolean = false
   protected readonly _allowUnlimitedContractSize: boolean
   protected _opcodes: OpcodeList
-  protected readonly _selectHardforkByBlockNumber: boolean
+  protected readonly _hardforkByBlockNumber: boolean
 
   /**
    * Cached emit() function, not for public usage
@@ -214,7 +214,7 @@ export default class VM extends AsyncEventEmitter {
 
     this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize || false
 
-    this._selectHardforkByBlockNumber = opts.selectHardforkByBlockNumber ?? false
+    this._hardforkByBlockNumber = opts.hardforkByBlockNumber ?? false
 
     if (this._common.eips().includes(2537)) {
       if (IS_BROWSER) {
