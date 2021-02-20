@@ -17,6 +17,12 @@ export class Block {
   public readonly txTrie = new Trie()
   public readonly _common: Common
 
+  /**
+   * Static constructor to create a block from a block data dictionary
+   * 
+   * @param blockData 
+   * @param opts 
+   */
   public static fromBlockData(blockData: BlockData = {}, opts?: BlockOptions) {
     const { header: headerData, transactions: txsData, uncleHeaders: uhsData } = blockData
 
@@ -50,6 +56,12 @@ export class Block {
     return new Block(header, transactions, uncleHeaders, opts)
   }
 
+  /**
+   * Static constructor to create a block from a RLP-serialized block
+   * 
+   * @param serialized 
+   * @param opts 
+   */
   public static fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions) {
     const values = (rlp.decode(serialized) as any) as BlockBuffer
 
@@ -60,6 +72,12 @@ export class Block {
     return Block.fromValuesArray(values, opts)
   }
 
+  /**
+   * Static constructor to create a block from an array of Buffer values
+   * 
+   * @param values 
+   * @param opts 
+   */
   public static fromValuesArray(values: BlockBuffer, opts?: BlockOptions) {
     if (values.length > 3) {
       throw new Error('invalid block. More values than expected were received')

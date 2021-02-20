@@ -63,9 +63,31 @@ The block library supports the creation as well as format and consensus validati
 
 ## Ethash/PoW
 
+An Ethash/PoW block can be instantiated as follows:
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import Common from '@ethereumjs/common'
+const common = new Common({ chain: 'mainnet' })
+console.log(common.consensusType()) // 'pow'
+console.log(common.consensusAlgorithm()) // 'ethash'
+const block = Block.fromBlockData({}, { common })
+```
+
 TODO
 
 ## Clique/PoA (since v3.1.0)
+
+A clique block can be instantiated as follows:
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import Common from '@ethereumjs/common'
+const common = new Common({ chain: 'goerli' })
+console.log(common.consensusType()) // 'poa'
+console.log(common.consensusAlgorithm()) // 'clique'
+const block = Block.fromBlockData({}, { common })
+```
 
 For clique PoA `BlockHeader.validate()` function validates the various Clique/PoA-specific properties (`extraData` checks and others, see API documentation) and `BlockHeader.validateConsensus()` can be used to properly validate that a Clique/PoA block has the correct signature.
 
