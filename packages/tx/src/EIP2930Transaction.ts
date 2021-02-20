@@ -210,7 +210,6 @@ export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
 
   getMessageToSign() {
     const base = [
-      Buffer.from('01', 'hex'),
       bnToRlp(this.chainId),
       bnToRlp(this.nonce),
       bnToRlp(this.gasPrice),
@@ -220,7 +219,7 @@ export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
       this.data,
       this.accessList,
     ]
-    return rlphash(base)
+    return Buffer.concat([Buffer.from('01', 'hex'), rlphash(base)])
   }
 
   /**
