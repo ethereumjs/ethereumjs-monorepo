@@ -90,11 +90,13 @@ export class Block {
     // parse transactions
     const transactions = []
     for (const txData of txsData || []) {
-      transactions.push(TransactionFactory.fromBlockBodyData(txData, {
-        ...opts,
-        // Use header common in case of hardforkByBlockNumber being activated
-        common: header._common,
-      }))
+      transactions.push(
+        TransactionFactory.fromBlockBodyData(txData, {
+          ...opts,
+          // Use header common in case of hardforkByBlockNumber being activated
+          common: header._common,
+        })
+      )
     }
 
     // parse uncle headers

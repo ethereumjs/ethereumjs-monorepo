@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, KECCAK256_RLP_ARRAY, rlp, zeros } from 'ethereumjs-util'
+import { BN, KECCAK256_RLP_ARRAY, rlp, zeros } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block, BlockBuffer } from '../src'
 import blockFromRpc from '../src/from-rpc'

@@ -45,6 +45,10 @@ export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
   public readonly r?: BN
   public readonly s?: BN
 
+  get transactionType(): number {
+    return 1
+  }
+
   public readonly AccessListJSON: AccessList
 
   // EIP-2930 alias for `s`
