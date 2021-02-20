@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Clique/PoA Support
 
-This release introduces Clique/PoA support for the `Block` library, see the main PR [#1032](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1032) as well as the follow-up PRs [#1074](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1074) and PR [#1088](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1088). The `BlockHeader.validate()` function now properly validates the various Clique/PoA-specific properties (`extraData` checks and others, see API documentation) and `BlockHeader.validataConsensus()` can be used to properly validate that a Clique/PoA block has the correct signature.
+This release introduces Clique/PoA support for the `Block` library, see the main PR [#1032](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1032) as well as the follow-up PRs [#1074](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1074) and PR [#1088](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1088). The `BlockHeader.validate()` function now properly validates the various Clique/PoA-specific properties (`extraData` checks and others, see API documentation) and `BlockHeader.validateConsensus()` can be used to properly validate that a Clique/PoA block has the correct signature.
 
 For sealing a block on instantiation there is a new `cliqueSigner` constructor option:
 
@@ -19,7 +19,7 @@ const cliqueSigner = Buffer.from('PRIVATE_KEY_HEX_STRING', 'hex')
 const block = Block.fromHeaderData(headerData, { cliqueSigner })
 ```
 
-Additionally there are the following new utility methods for Clique/PoA relatec functionality in the `BlockHeader` class:
+Additionally there are the following new utility methods for Clique/PoA related functionality in the `BlockHeader` class:
 
 - `BlockHeader.validateCliqueDifficulty(blockchain: Blockchain): boolean`
 - `BlockHeader.cliqueSigHash()`

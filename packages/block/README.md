@@ -67,7 +67,7 @@ TODO
 
 ## Clique/PoA (since v3.1.0)
 
-For clique PoA `BlockHeader.validate()` function validates the various Clique/PoA-specific properties (`extraData` checks and others, see API documentation) and `BlockHeader.validataConsensus()` can be used to properly validate that a Clique/PoA block has the correct signature.
+For clique PoA `BlockHeader.validate()` function validates the various Clique/PoA-specific properties (`extraData` checks and others, see API documentation) and `BlockHeader.validateConsensus()` can be used to properly validate that a Clique/PoA block has the correct signature.
 
 For sealing a block on instantiation you can use the `cliqueSigner` constructor option:
 
@@ -76,7 +76,7 @@ const cliqueSigner = Buffer.from('PRIVATE_KEY_HEX_STRING', 'hex')
 const block = Block.fromHeaderData(headerData, { cliqueSigner })
 ```
 
-Additionally there are the following utility methods for Clique/PoA relatec functionality in the `BlockHeader` class:
+Additionally there are the following utility methods for Clique/PoA related functionality in the `BlockHeader` class:
 
 - `BlockHeader.validateCliqueDifficulty(blockchain: Blockchain): boolean`
 - `BlockHeader.cliqueSigHash()`
@@ -87,7 +87,7 @@ Additionally there are the following utility methods for Clique/PoA relatec func
 - `BlockHeader.cliqueVerifySignature(signerList: Address[]): boolean`
 - `BlockHeader.cliqueSigner(): Address`
 
-See the API docs for a detailed documentation. Note that these methods will throw if called in a non-Clique/PoA context.
+See the API docs for detailed documentation. Note that these methods will throw if called in a non-Clique/PoA context.
 
 # TESTING
 
