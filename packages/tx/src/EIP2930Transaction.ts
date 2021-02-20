@@ -114,7 +114,7 @@ export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
     }
   }
 
-  private constructor(txData: TxData, opts: TxOptions = {}) {
+  public constructor(txData: TxData, opts: TxOptions = {}) {
     const { chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s } = txData
 
     super({ nonce, gasPrice, gasLimit, to, value, data }, opts)

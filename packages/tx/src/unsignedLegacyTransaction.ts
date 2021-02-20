@@ -80,7 +80,7 @@ export class LegacyTransaction extends BaseTransaction<LegacyTransaction> {
    * Use the static factory methods to assist in creating a Transaction object from varying data types.
    * @note Transaction objects implement EIP155 by default. To disable it, pass in an `@ethereumjs/common` object set before EIP155 activation (i.e. before Spurious Dragon).
    */
-  protected constructor(txData: TxData, opts: TxOptions = {}) {
+  public constructor(txData: TxData, opts: TxOptions = {}) {
     const { nonce, gasPrice, gasLimit, to, value, data, v, r, s } = txData
 
     super({ nonce, gasPrice, gasLimit, to, value, data }, opts)

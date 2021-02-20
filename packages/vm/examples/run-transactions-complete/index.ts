@@ -1,5 +1,5 @@
 import { Account, BN, toBuffer, pubToAddress, bufferToHex } from 'ethereumjs-util'
-import { Transaction, TxData } from '@ethereumjs/tx'
+import { LegacyTransaction, TxData } from '@ethereumjs/tx'
 import VM from '../..'
 
 async function main() {
@@ -50,7 +50,7 @@ async function main() {
 }
 
 async function runTx(vm: VM, txData: TxData, privateKey: Buffer) {
-  const tx = Transaction.fromTxData(txData).sign(privateKey)
+  const tx = LegacyTransaction.fromTxData(txData).sign(privateKey)
 
   console.log('----running tx-------')
   const results = await vm.runTx({ tx })
