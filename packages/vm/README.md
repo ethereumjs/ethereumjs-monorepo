@@ -75,6 +75,37 @@ To build the VM for standalone use in the browser, see: [Running the VM in a bro
 
 # SETUP
 
+## Chain Support
+
+Starting with `v5.1.0` the VM supports running both `Ethash/PoW` and `Clique/PoA` blocks and transactions. Clique support has been added along the work on PR [#1032](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1032) and follow-up PRs and (block) validation checks and the switch of the execution context now happens correctly.
+
+### Ethash/PoW Chains
+
+TODO
+
+### Clique/PoA Chains
+
+For the VM to work correctly in a `Clique/PoA` context you need to use the library with the following library versions or higher:
+
+- @ethereumjs/block -> `v3.1.0`
+- @ethereumjs/blockchain -> `v5.1.0`
+- @ethereumjs/common" -> `v2.1.0`
+
+The following is a simple example for a block run on `Goerli`:
+
+```typescript
+import VM from '@ethereumjs/vm'
+import Common from '@ethereumjs/common'
+
+const common = new Common({ chain: 'goerli' })
+const hardforkByBlockNumber = true
+const vm = new VM({ common, hardforkByBlockNumber })
+
+const serialized = Buffer.from('f901f7a06bfee7294bf4457...', 'hex')
+const block = Block.fromRLPSerializedBlock(serialized, { hardforkByBlockNumber })
+const result = await vm.runBlock(block)
+```
+
 ## Hardfork Support
 
 Starting with the `v5` release series all hardforks from `Frontier` (`chainstart`) up to the latest active mainnet hardfork are supported.

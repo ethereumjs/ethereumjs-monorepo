@@ -50,9 +50,9 @@ export class BlockHeader {
 
   /**
    * Static constructor to create a block header from a header data dictionary
-   * 
-   * @param headerData 
-   * @param opts 
+   *
+   * @param headerData
+   * @param opts
    */
   public static fromHeaderData(headerData: HeaderData = {}, opts?: BlockOptions) {
     const {
@@ -95,9 +95,9 @@ export class BlockHeader {
 
   /**
    * Static constructor to create a block header from a RLP-serialized header
-   * 
-   * @param headerData 
-   * @param opts 
+   *
+   * @param headerData
+   * @param opts
    */
   public static fromRLPSerializedHeader(serialized: Buffer, opts?: BlockOptions) {
     const values = rlp.decode(serialized)
@@ -111,9 +111,9 @@ export class BlockHeader {
 
   /**
    * Static constructor to create a block header from an array of Buffer values
-   * 
-   * @param headerData 
-   * @param opts 
+   *
+   * @param headerData
+   * @param opts
    */
   public static fromValuesArray(values: BlockHeaderBuffer, opts?: BlockOptions) {
     if (values.length > 15) {
