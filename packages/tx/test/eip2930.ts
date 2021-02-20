@@ -15,21 +15,6 @@ const common = new Common({
 const validAddress = Buffer.from('01'.repeat(20), 'hex')
 const validSlot = Buffer.from('01'.repeat(32), 'hex')
 
-// tests from https://github.com/ethereum/go-ethereum/blob/ac8e5900e6d38f7577251e7e36da9b371b2e5488/core/types/transaction_test.go#L56
-const GethUnsignedEIP2930Transaction = EIP2930Transaction.fromTxData(
-  {
-    chainId: new BN(1),
-    nonce: new BN(3),
-    to: new Address(Buffer.from('b94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')),
-    value: new BN(10),
-    gasLimit: new BN(25000),
-    gasPrice: new BN(1),
-    data: Buffer.from('5544', 'hex'),
-    accessList: [],
-  },
-  { common }
-)
-
 const chainId = new BN(1)
 
 tape('[EIP2930 transactions]: Basic functions', function (t) {
@@ -139,12 +124,12 @@ tape('[EIP2930 transactions]: Basic functions', function (t) {
     )
     // Cost should be:
     // Base fee + 2*TxDataNonZero + TxDataZero + AccessListAddressCost + AccessListSlotCost
-    const txDataZero = common.param('gasPrices', 'txDataZero')
-    const txDataNonZero = common.param('gasPrices', 'txDataNonZero')
-    const accessListStorageKeyCost = common.param('gasPrices', 'accessListStorageKeyCost')
-    const accessListAddressCost = common.param('gasPrices', 'accessListAddressCost')
-    const baseFee = common.param('gasPrices', 'tx')
-    const creationFee = common.param('gasPrices', 'txCreation')
+    const txDataZero: number = common.param('gasPrices', 'txDataZero')
+    const txDataNonZero: number = common.param('gasPrices', 'txDataNonZero')
+    const accessListStorageKeyCost: number = common.param('gasPrices', 'accessListStorageKeyCost')
+    const accessListAddressCost: number = common.param('gasPrices', 'accessListAddressCost')
+    const baseFee: number = common.param('gasPrices', 'tx')
+    const creationFee: number = common.param('gasPrices', 'txCreation')
 
     st.ok(
       tx
@@ -243,13 +228,72 @@ tape('[EIP2930 transactions]: Basic functions', function (t) {
     t.end()
   })
 
-  t.test('should produce right hash-to-sign values', function (t) {
-    const hash = GethUnsignedEIP2930Transaction.getMessageToSign()
-    const expected = Buffer.from(
-      'c44faa8f50803df8edd97e72c4dbae32343b2986c91e382fc3e329e6c9a36f31',
+  // Data from
+  // https://github.com/INFURA/go-ethlibs/blob/75b2a52a39d353ed8206cffaf68d09bd1b154aae/eth/transaction_signing_test.go#L87
+
+  t.test('should sign transaction correctly', function (t) {
+    const address = Buffer.from('0000000000000000000000000000000000001337', 'hex')
+    const slot1 = Buffer.from(
+      '0000000000000000000000000000000000000000000000000000000000000000',
       'hex'
     )
-    t.ok(hash.equals(expected))
+    const txData = {
+      data: Buffer.from('', 'hex'),
+      gasLimit: 0x62d4,
+      gasPrice: 0x3b9aca00,
+      nonce: 0x00,
+      to: new Address(Buffer.from('df0a88b2b68c673713a8ec826003676f272e3573', 'hex')),
+      value: 0x01,
+      chainId: new BN(Buffer.from('796f6c6f763378', 'hex')),
+      accessList: <any>[[address, [slot1]]],
+    }
+
+    const customChainParams = {
+      name: 'custom',
+      chainId: parseInt(txData.chainId.toString()),
+      eips: [2718, 2929, 2930],
+    }
+    const usedCommon = Common.forCustomChain('mainnet', customChainParams, 'berlin')
+    usedCommon.setEIPs([2718, 2929, 2930])
+
+    const expectedUnsignedRaw = Buffer.from(
+      '01f86587796f6c6f76337880843b9aca008262d494df0a88b2b68c673713a8ec826003676f272e35730180f838f7940000000000000000000000000000000000001337e1a00000000000000000000000000000000000000000000000000000000000000000808080',
+      'hex'
+    )
+    const pkey = Buffer.from(
+      'fad9c8855b740a0b7ed4c221dbad0f33a83a49cad6b3fe8d5817ac83d38b6a19',
+      'hex'
+    )
+    const expectedSigned = Buffer.from(
+      '01f8a587796f6c6f76337880843b9aca008262d494df0a88b2b68c673713a8ec826003676f272e35730180f838f7940000000000000000000000000000000000001337e1a0000000000000000000000000000000000000000000000000000000000000000080a0294ac94077b35057971e6b4b06dfdf55a6fbed819133a6c1d31e187f1bca938da00be950468ba1c25a5cb50e9f6d8aa13c8cd21f24ba909402775b262ac76d374d',
+      'hex'
+    )
+    const expectedHash = Buffer.from(
+      'bbd570a3c6acc9bb7da0d5c0322fe4ea2a300db80226f7df4fef39b2d6649eec',
+      'hex'
+    )
+    const v = new BN(0)
+    const r = new BN(
+      Buffer.from('294ac94077b35057971e6b4b06dfdf55a6fbed819133a6c1d31e187f1bca938d', 'hex')
+    )
+    const s = new BN(
+      Buffer.from('0be950468ba1c25a5cb50e9f6d8aa13c8cd21f24ba909402775b262ac76d374d', 'hex')
+    )
+
+    const unsignedTx = EIP2930Transaction.fromTxData(txData, { common: usedCommon })
+
+    const serializedMessageRaw = unsignedTx.serialize()
+
+    t.ok(expectedUnsignedRaw.equals(serializedMessageRaw), 'serialized unsigned message correct')
+
+    const signed = unsignedTx.sign(pkey)
+
+    t.ok(v.eq(signed.v!), 'v correct')
+    t.ok(r.eq(signed.r!), 'r correct')
+    t.ok(s.eq(signed.s!), 's correct')
+    t.ok(expectedSigned.equals(signed.serialize()), 'serialized signed message correct')
+    t.ok(expectedHash.equals(signed.hash()), 'hash correct')
+
     t.end()
   })
 })

@@ -7,7 +7,6 @@ import {
   ecrecover,
   keccak256,
   rlp,
-  rlphash,
   toBuffer,
 } from 'ethereumjs-util'
 import { BaseTransaction } from './baseTransaction'
@@ -45,6 +44,10 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
   public readonly r?: BN
   public readonly s?: BN
 
+  get transactionType(): number {
+    return 1
+  }
+
   public readonly AccessListJSON: AccessList
 
   // EIP-2930 alias for `s`
@@ -74,7 +77,6 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
     }
 
     const values = rlp.decode(serialized.slice(1))
-
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized tx input. Must be array')
     }
@@ -172,7 +174,7 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
     this.r = r ? new BN(toBuffer(r)) : undefined
     this.s = s ? new BN(toBuffer(s)) : undefined
 
-    if (!this.chainId.eq(new BN(this.common.chainId()))) {
+    if (!this.chainId.eq(new BN(this.common.chainId().toString()))) {
       throw new Error('The chain ID does not match the chain ID of Common')
     }
 
@@ -219,7 +221,7 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
       this.data,
       this.accessList,
     ]
-    return Buffer.concat([Buffer.from('01', 'hex'), rlphash(base)])
+    return keccak256(Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base)]))
   }
 
   /**
@@ -257,25 +259,18 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
       bnToRlp(this.value),
       this.data,
       this.accessList,
+      this.v !== undefined ? bnToRlp(this.v) : Buffer.from([]),
+      this.r !== undefined ? bnToRlp(this.r) : Buffer.from([]),
+      this.s !== undefined ? bnToRlp(this.s) : Buffer.from([]),
     ]
-    if (this.isSigned()) {
-      return base.concat([
-        this.v?.eqn(0) ? Buffer.from('', 'hex') : Buffer.from('01', 'hex'),
-        bnToRlp(this.r!),
-        bnToRlp(this.s!),
-      ])
-    } else {
-      return base
-    }
+    return base
   }
 
   /**
    * Returns the rlp encoding of the transaction.
    */
   serialize(): Buffer {
-    const RLPEncodedTx = rlp.encode(this.raw())
-
-    return Buffer.concat([Buffer.from('01', 'hex'), RLPEncodedTx])
+    return Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(this.raw())])
   }
 
   /**
@@ -320,7 +315,7 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
       throw new Error('Cannot call hash method if transaction is not signed')
     }
 
-    return keccak256(Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(this.raw())]))
+    return keccak256(this.serialize())
   }
 
   public getMessageToVerifySignature(): Buffer {

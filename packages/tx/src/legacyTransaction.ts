@@ -29,6 +29,10 @@ export default class LegacyTransaction extends BaseTransaction<LegacyTransaction
   public readonly r?: BN
   public readonly s?: BN
 
+  get transactionType(): number {
+    return 1
+  }
+
   public static fromTxData(txData: TxData, opts: TxOptions = {}) {
     return new LegacyTransaction(txData, opts)
   }
