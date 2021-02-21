@@ -50,6 +50,16 @@ export default class DefaultStateManager implements StateManager {
   _checkpointCount: number
   _originalStorageCache: Map<AddressHex, Map<AddressHex, Buffer>>
 
+  // EIP-2929 address/storage trackers.
+  // This maps both the accessed accounts and the accessed storage slots.
+  // It is a Map(Address => StorageSlots)
+  // It is possible that the storage slots set is empty. This means that the address is warm.
+  // It is not possible to have an accessed storage slot on a cold address (which is why this structure works)
+  // Each call level tracks their access themselves.
+  // In case of a commit, copy everything if the value does not exist, to the level above
+  // In case of a revert, discard any warm slots.
+  _accessedStorage: Map<string, Set<string>>[]
+
   /**
    * Instantiate the StateManager interface.
    */
@@ -67,6 +77,7 @@ export default class DefaultStateManager implements StateManager {
     this._touchedStack = []
     this._checkpointCount = 0
     this._originalStorageCache = new Map()
+    this._accessedStorage = []
   }
 
   /**
@@ -344,6 +355,7 @@ export default class DefaultStateManager implements StateManager {
     this._trie.checkpoint()
     this._cache.checkpoint()
     this._touchedStack.push(new Set(Array.from(this._touched)))
+    this._accessedStorage.push(new Map())
     this._checkpointCount++
   }
 
@@ -358,6 +370,26 @@ export default class DefaultStateManager implements StateManager {
     this._cache.commit()
     this._touchedStack.pop()
     this._checkpointCount--
+
+    // Copy the contents of the map of the current level to a map higher.
+
+    const storageMap = this._accessedStorage.pop()
+    // mapTarget is current level, since the pop operation is above
+    const mapTarget = this._accessedStorage[this._accessedStorage.length - 1]
+
+    if (mapTarget) {
+      // Note: storageMap is always defined here per definition (TypeScript cannot infer this)
+      storageMap?.forEach((slotSet: Set<string>, addressString: string) => {
+        const addressExists = mapTarget.get(addressString)
+        if (!addressExists) {
+          mapTarget.set(addressString, new Set())
+        }
+        const storageSet = mapTarget.get(addressString)
+        slotSet.forEach((value: string) => {
+          storageSet!.add(value)
+        })
+      })
+    }
 
     if (this._checkpointCount === 0) {
       await this._cache.flush()
@@ -375,6 +407,7 @@ export default class DefaultStateManager implements StateManager {
     // setup cache checkpointing
     this._cache.revert()
     this._storageTries = {}
+    this._accessedStorage.pop()
     const touched = this._touchedStack.pop()
     if (!touched) {
       throw new Error('Reverting to invalid state checkpoint failed')
@@ -540,6 +573,71 @@ export default class DefaultStateManager implements StateManager {
       return true
     }
     return false
+  }
+
+  /** EIP-2929 logic
+   * This should only be called from within the EVM
+   */
+
+  /**
+   * Returns true if the address is warm in the current context
+   * @param address - The address (as a Buffer) to check
+   */
+  isWarmAddress(address: Buffer): boolean {
+    for (let i = this._accessedStorage.length; i >= 0; i--) {
+      const currentMap = this._accessedStorage[this._accessedStorage.length - 1]
+      if (currentMap.has(address.toString('hex'))) {
+        return true
+      }
+    }
+    return false
+  }
+
+  /**
+   * Add a warm address in the current context
+   * @param address - The address (as a Buffer) to check
+   */
+  addWarmAddress(address: Buffer): void {
+    const key = address.toString('hex')
+    const storageSet = this._accessedStorage[this._accessedStorage.length - 1].get(key)
+    if (!storageSet) {
+      const emptyStorage = new Set()
+      this._accessedStorage[this._accessedStorage.length - 1].set(key, emptyStorage)
+    }
+  }
+
+  /**
+   * Returns true if the slot of the address is warm
+   * @param address - The address (as a Buffer) to check
+   * @param slot - The slot (as a Buffer) to check
+   */
+  isWarmStorage(address: Buffer, slot: Buffer): boolean {
+    const addressKey = address.toString('hex')
+    const storageKey = slot.toString('hex')
+
+    for (let i = this._accessedStorage.length; i >= 0; i--) {
+      const currentMap = this._accessedStorage[this._accessedStorage.length - 1]
+      if (currentMap.has(addressKey) && currentMap.get(addressKey)!.has(storageKey)) {
+        return true
+      }
+    }
+
+    return false
+  }
+
+  /**
+   * Mark the storage slot in the address as warm in the current context
+   * @param address - The address (as a Buffer) to check
+   * @param slot - The slot (as a Buffer) to check
+   */
+  addWarmStorage(address: Buffer, slot: Buffer): void {
+    const addressKey = address.toString('hex')
+    let storageSet = this._accessedStorage[this._accessedStorage.length - 1].get(addressKey)
+    if (!storageSet) {
+      storageSet = new Set<string>()
+      this._accessedStorage[this._accessedStorage.length - 1].set(addressKey, storageSet!)
+    }
+    storageSet!.add(slot.toString('hex'))
   }
 
   /**
