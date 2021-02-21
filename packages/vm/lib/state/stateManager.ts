@@ -634,7 +634,7 @@ export default class DefaultStateManager implements StateManager {
     const addressKey = address.toString('hex')
     let storageSet = this._accessedStorage[this._accessedStorage.length - 1].get(addressKey)
     if (!storageSet) {
-      storageSet = new Set<string>()
+      storageSet = new Set()
       this._accessedStorage[this._accessedStorage.length - 1].set(addressKey, storageSet!)
     }
     storageSet!.add(slot.toString('hex'))

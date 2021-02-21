@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Address, BN } from 'ethereumjs-util'
+import { Address, BN, setLengthLeft } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { Transaction } from '@ethereumjs/tx'
 import VM from './index'
@@ -126,8 +126,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // Add origin and precompiles to warm addresses
     for (let addressInt = 1; addressInt <= numPrecompiles; addressInt++) {
       // Check if precompile exists on the current Common of the Block
-      if (getPrecompile(new Address(Buffer.from(addressInt)), block._common)) {
-        state.addWarmAddress(new Address(Buffer.from(addressInt)))
+      if (
+        getPrecompile(
+          new Address(setLengthLeft(Buffer.from(addressInt.toString()), 20)),
+          block._common
+        )
+      ) {
+        state.addWarmAddress(setLengthLeft(Buffer.from(addressInt.toString()), 20))
       }
     }
     state.addWarmAddress(caller.buf)
