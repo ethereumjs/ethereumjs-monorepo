@@ -258,6 +258,7 @@ export default class EVM {
     message.to = await this._generateAddress(message)
     debug(`Generated CREATE contract address ${message.to.toString()}`)
     let toAccount = await this._state.getAccount(message.to)
+
     // Check for collision
     if ((toAccount.nonce && toAccount.nonce.gtn(0)) || !toAccount.codeHash.equals(KECCAK256_NULL)) {
       debug(`Returning on address collision`)
@@ -270,6 +271,10 @@ export default class EVM {
           gasUsed: message.gasLimit,
         },
       }
+    }
+
+    if (this._vm._common.eips().includes(2929)) {
+      this._state.addWarmAddress(message.to.buf)
     }
 
     await this._state.clearContractStorage(message.to)

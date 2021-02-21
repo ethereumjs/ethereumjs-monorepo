@@ -32,4 +32,8 @@ export interface StateManager {
   accountExists(address: Address): Promise<boolean>
   cleanupTouchedAccounts(): Promise<void>
   clearOriginalStorageCache(): void
+  addWarmAddress(address: Buffer): void
+  isWarmAddress(address: Buffer): boolean
+  addWarmStorage(address: Buffer, slot: Buffer): void
+  isWarmStorage(address: Buffer, slot: Buffer): boolean
 }

@@ -8,6 +8,7 @@ import { default as EVM, EVMResult } from './evm/evm'
 import { short } from './evm/opcodes/util'
 import Message from './evm/message'
 import TxContext from './evm/txContext'
+import { numPrecompiles, getPrecompile } from './evm/precompiles'
 
 const debug = createDebugLogger('vm:tx')
 const debugGas = createDebugLogger('vm:tx:gas')
@@ -120,6 +121,21 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   const caller = tx.getSenderAddress()
   debug(`New tx run hash=${opts.tx.hash().toString('hex')} sender=${caller.toString()}`)
+
+  if (block._common.eips().includes(2929)) {
+    // Add origin and precompiles to warm addresses
+    for (let addressInt = 1; addressInt <= numPrecompiles; addressInt++) {
+      // Check if precompile exists on the current Common of the Block
+      if (getPrecompile(new Address(Buffer.from(addressInt)), block._common)) {
+        state.addWarmAddress(new Address(Buffer.from(addressInt)))
+      }
+    }
+    state.addWarmAddress(caller.buf)
+    if (tx.to) {
+      // Note: in case we create a contract, we do this in EVMs `_executeCreate` (this is also correct in inner calls, per the EIP)
+      state.addWarmAddress(tx.to.buf)
+    }
+  }
 
   // Validate gas limit against base fee
   const basefee = tx.getBaseFee()
