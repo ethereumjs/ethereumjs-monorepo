@@ -137,7 +137,7 @@ export default class EVM {
   async executeMessage(message: Message): Promise<EVMResult> {
     await this._vm._emit('beforeMessage', message)
 
-    if (!message.to && this._vm._common.eips().includes(2929)) {
+    if (!message.to && this._vm._common.isActivatedEIP(2929)) {
       // eslint-disable-next-line prettier/prettier
       (<any>this._state).addWarmedAddress((await this._generateAddress(message)).buf)
     }

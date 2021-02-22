@@ -19,7 +19,7 @@
     "docs:build": "typedoc --options typedoc.js",
     "test:state": "ts-node ./tests/tester --state",
     "test:state:allForks": "echo 'Chainstart Homestead dao TangerineWhistle SpuriousDragon Byzantium Constantinople Petersburg Istanbul MuirGlacier Berlin ByzantiumToConstantinopleFixAt5 EIP158ToByzantiumAt5 FrontierToHomesteadAt5 HomesteadToDaoAt5 HomesteadToEIP150At5' | xargs -n1 | xargs -I v1 npm run test:state -- --fork=v1 --verify-test-amount-alltests",
-    "test:state:selectedForks": "echo 'Homestead TangerineWhistle SpuriousDragon Petersburg' | xargs -n1 | xargs -I v1 npm run test:state -- --fork=v1 --verify-test-amount-alltests",
+    "test:state:selectedForks": "echo 'Homestead TangerineWhistle SpuriousDragon Petersburg Berlin' | xargs -n1 | xargs -I v1 npm run test:state -- --fork=v1 --verify-test-amount-alltests",
     "test:state:slow": "npm run test:state -- --runSkipped=slow",
     "test:buildIntegrity": "npm run test:state -- --test='stackOverflow'",
     "test:blockchain": "node -r ts-node/register --stack-size=1500 ./tests/tester --blockchain",

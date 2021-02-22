@@ -11,7 +11,7 @@ import { RunState } from './../interpreter'
  * @param {BN}       address
  */
 export function accessAddressEIP2929(runState: RunState, address: Address, baseFee?: number) {
-  if (!runState._common.eips().includes(2929)) return
+  if (!runState._common.isActivatedEIP(2929)) return
 
   const addressStr = address.buf
 
@@ -41,7 +41,7 @@ export function accessAddressEIP2929(runState: RunState, address: Address, baseF
  * @param {Buffer} key (to storage slot)
  */
 export function accessStorageEIP2929(runState: RunState, key: Buffer, isSstore: boolean) {
-  if (!runState._common.eips().includes(2929)) return
+  if (!runState._common.isActivatedEIP(2929)) return
 
   const baseFee = !isSstore ? runState._common.param('gasPrices', 'sload') : 0
   const address = runState.eei.getAddress().buf
@@ -73,7 +73,7 @@ export function adjustSstoreGasEIP2929(
   defaultCost: number,
   costName: string
 ): number {
-  if (!runState._common.eips().includes(2929)) return defaultCost
+  if (!runState._common.isActivatedEIP(2929)) return defaultCost
 
   const address = runState.eei.getAddress().buf
   const warmRead = runState._common.param('gasPrices', 'warmstorageread')

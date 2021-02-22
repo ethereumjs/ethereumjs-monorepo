@@ -89,7 +89,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
   const state: any = this.stateManager
 
   // Ensure we start with a clear warmed accounts Map
-  if (this._common.eips().includes(2929)) {
+  if (this._common.isActivatedEIP(2929)) {
     state.clearWarmedAccounts()
   }
 
@@ -107,7 +107,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
     debug(`tx checkpoint reverted`)
     throw e
   } finally {
-    if (this._common.eips().includes(2929)) {
+    if (this._common.isActivatedEIP(2929)) {
       state.clearWarmedAccounts()
     }
   }
@@ -134,7 +134,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const caller = tx.getSenderAddress()
   debug(`New tx run hash=${opts.tx.hash().toString('hex')} sender=${caller.toString()}`)
 
-  if (this._common.eips().includes(2929)) {
+  if (this._common.isActivatedEIP(2929)) {
     // Add origin and precompiles to warm addresses
     getActivePrecompiles(this._common).forEach((address: Address) =>
       state.addWarmedAddress(address.buf)
