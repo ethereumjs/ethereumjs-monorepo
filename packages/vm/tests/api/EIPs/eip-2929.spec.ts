@@ -8,6 +8,10 @@ import { Transaction } from '@ethereumjs/tx'
 tape('EIP 2929: gas cost tests', (t) => {
   const initialGas = new BN(0xffffffffff)
   const address = new Address(Buffer.from('000000000000000000000000636F6E7472616374', 'hex'))
+  const senderKey = Buffer.from(
+    'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
+    'hex'
+  )
   const common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [2929] })
 
   const runTest = async function (test: any, st: tape.Test) {
@@ -44,15 +48,19 @@ tape('EIP 2929: gas cost tests', (t) => {
       i++
     })
 
-    const result = await vm.runCode({
-      code: Buffer.from(test.code, 'hex'),
-      gasLimit: initialGas,
-      address: address,
-      origin: address,
+    await vm.stateManager.putContractCode(address, Buffer.from(test.code, 'hex'))
+
+    const unsignedTx = Transaction.fromTxData({
+      gasLimit: initialGas, // ensure we pass a lot of gas, so we do not run out of gas
+      to: address, // call to the contract address,
     })
 
+    const tx = unsignedTx.sign(senderKey)
+
+    const result = await vm.runTx({ tx })
+
     const totalGasUsed = initialGas.sub(currentGas)
-    st.equal(true, totalGasUsed.eq(new BN(test.totalGasUsed)))
+    st.equal(true, totalGasUsed.eq(new BN(test.totalGasUsed).addn(21000))) // Add tx upfront cost.
     return result
   }
 
@@ -145,7 +153,7 @@ tape('EIP 2929: gas cost tests', (t) => {
     }
 
     const result = await runTest(test, st)
-    st.equal(undefined, result.exceptionError)
+    st.equal(undefined, result.execResult.exceptionError)
     st.end()
   })
 
@@ -176,7 +184,7 @@ tape('EIP 2929: gas cost tests', (t) => {
     }
 
     const result = await runTest(test, st)
-    st.equal(undefined, result.exceptionError)
+    st.equal(undefined, result.execResult.exceptionError)
     st.end()
   })
 
@@ -208,7 +216,7 @@ tape('EIP 2929: gas cost tests', (t) => {
     }
 
     const result = await runTest(test, st)
-    st.equal(undefined, result.exceptionError)
+    st.equal(undefined, result.execResult.exceptionError)
     st.end()
   })
 
@@ -251,13 +259,13 @@ tape('EIP 2929: gas cost tests', (t) => {
     }
 
     const result = await runTest(test, st)
-    st.equal(undefined, result.exceptionError)
+    st.equal(undefined, result.execResult.exceptionError)
     st.end()
   })
 
   tape('ensure storage slots are tracked transaction-wide', async (t) => {
     // load same storage slot twice (also in inner call)
-    await runCodeTest('60005460003415601357600080808080305AF15B00', 1, t)
+    //await runCodeTest('60005460003415601357600080808080305AF15B00', 1, t)
     // call to contract, load slot 0, revert inner call. load slot 0 in outer call.
     //await runCodeTest('3415600B57600054600080FD5B600080808080305A60005400', 1, t)
 

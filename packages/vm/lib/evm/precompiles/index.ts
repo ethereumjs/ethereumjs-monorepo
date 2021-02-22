@@ -162,8 +162,7 @@ function getPrecompile(address: Address, common: Common): PrecompileFunc {
 
 function getActivePrecompiles(common: Common): Address[] {
   const activePrecompiles: Address[] = []
-  for (const addressString of <any>precompiles) {
-    // cast it as any, Precompiles type does not have an iterator.
+  for (const addressString in precompiles) {
     const address = new Address(Buffer.from(addressString, 'hex'))
     if (getPrecompile(address, common)) {
       activePrecompiles.push(address)

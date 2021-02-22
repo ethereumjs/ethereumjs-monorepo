@@ -134,9 +134,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const caller = tx.getSenderAddress()
   debug(`New tx run hash=${opts.tx.hash().toString('hex')} sender=${caller.toString()}`)
 
-  if (block._common.eips().includes(2929)) {
+  if (this._common.eips().includes(2929)) {
     // Add origin and precompiles to warm addresses
-    getActivePrecompiles(block._common).forEach((address: Address) =>
+    getActivePrecompiles(this._common).forEach((address: Address) =>
       state.addWarmedAddress(address.buf)
     )
     state.addWarmedAddress(caller.buf)
