@@ -138,8 +138,8 @@ export default class EVM {
     await this._vm._emit('beforeMessage', message)
 
     if (!message.to && this._vm._common.isActivatedEIP(2929)) {
-      // eslint-disable-next-line prettier/prettier
-      (<any>this._state).addWarmedAddress((await this._generateAddress(message)).buf)
+      message.code = message.data
+      ;(<any>this._state).addWarmedAddress((await this._generateAddress(message)).buf)
     }
 
     await this._state.checkpoint()
