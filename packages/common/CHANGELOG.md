@@ -61,6 +61,7 @@ The [README section](https://github.com/ethereumjs/ethereumjs-monorepo/tree/mast
 ### Other Changes
 
 - `Common` is now implemented as an `EventEmitter` and emits a `hardforkChanged` event upon a HF change, PR [#1112](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1112)
+- New `Common.isActivatedEIP()` method, PR [#1125](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1125)
 - Updated `Goerli` bootnodes, PR [#1031](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1031)
 
 ## 2.0.0 - 2020-11-24
