@@ -74,7 +74,9 @@ console.log(common.consensusAlgorithm()) // 'ethash'
 const block = Block.fromBlockData({}, { common })
 ```
 
-TODO
+To validate that the difficulty of the block matches the canonical difficulty use `block.validate(blockchain)`.
+
+To calculate the difficulty when creating the block pass in the block option `calcDifficultyFromHeader` with the preceding (parent) `BlockHeader`.
 
 ## Clique/PoA (since v3.1.0)
 

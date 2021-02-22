@@ -81,7 +81,7 @@ Starting with `v5.1.0` the VM supports running both `Ethash/PoW` and `Clique/PoA
 
 ### Ethash/PoW Chains
 
-TODO
+`@ethereumjs/blockchain` validates the PoW algorithm with `@ethereumjs/ethash` and validates blocks' difficulty to match their canonical difficulty.
 
 ### Clique/PoA Chains
 
