@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Address, BN, setLengthLeft } from 'ethereumjs-util'
+import { Address, BN } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { Transaction } from '@ethereumjs/tx'
 import VM from './index'
@@ -8,7 +8,7 @@ import { default as EVM, EVMResult } from './evm/evm'
 import { short } from './evm/opcodes/util'
 import Message from './evm/message'
 import TxContext from './evm/txContext'
-import { numPrecompiles, getPrecompile } from './evm/precompiles'
+import { getActivePrecompiles } from './evm/precompiles'
 
 const debug = createDebugLogger('vm:tx')
 const debugGas = createDebugLogger('vm:tx:gas')
@@ -85,7 +85,14 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
     throw new Error('tx has a higher gas limit than the block')
   }
 
-  const state = this.stateManager
+  // Have to cast as `any` to access clearWarmedAccounts
+  const state: any = this.stateManager
+
+  // Ensure we start with a clear warmed accounts Map
+  if (this._common.eips().includes(2929)) {
+    state.clearWarmedAccounts()
+  }
+
   await state.checkpoint()
   debug('-'.repeat(100))
   debug(`tx checkpoint`)
@@ -99,11 +106,16 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
     await state.revert()
     debug(`tx checkpoint reverted`)
     throw e
+  } finally {
+    if (this._common.eips().includes(2929)) {
+      state.clearWarmedAccounts()
+    }
   }
 }
 
 async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
-  const state = this.stateManager
+  // Casted as `any` to access the EIP2929 methods
+  const state: any = this.stateManager
   const { tx, block } = opts
 
   if (!block) {
@@ -124,21 +136,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (block._common.eips().includes(2929)) {
     // Add origin and precompiles to warm addresses
-    for (let addressInt = 1; addressInt <= numPrecompiles; addressInt++) {
-      // Check if precompile exists on the current Common of the Block
-      if (
-        getPrecompile(
-          new Address(setLengthLeft(Buffer.from(addressInt.toString()), 20)),
-          block._common
-        )
-      ) {
-        state.addWarmAddress(setLengthLeft(Buffer.from(addressInt.toString()), 20))
-      }
-    }
-    state.addWarmAddress(caller.buf)
+    getActivePrecompiles(block._common).forEach((address: Address) =>
+      state.addWarmedAddress(address.buf)
+    )
+    state.addWarmedAddress(caller.buf)
     if (tx.to) {
       // Note: in case we create a contract, we do this in EVMs `_executeCreate` (this is also correct in inner calls, per the EIP)
-      state.addWarmAddress(tx.to.buf)
+      state.addWarmedAddress(tx.to.buf)
     }
   }
 

@@ -20,8 +20,6 @@ import { default as p10 } from './10-bls12-pairing'
 import { default as p11 } from './11-bls12-map-fp-to-g1'
 import { default as p12 } from './12-bls12-map-fp2-to-g2'
 
-const numPrecompiles = 18
-
 interface Precompiles {
   [key: string]: PrecompileFunc
 }
@@ -162,11 +160,23 @@ function getPrecompile(address: Address, common: Common): PrecompileFunc {
   return precompiles['']
 }
 
+function getActivePrecompiles(common: Common): Address[] {
+  const activePrecompiles: Address[] = []
+  for (const addressString of <any>precompiles) {
+    // cast it as any, Precompiles type does not have an iterator.
+    const address = new Address(Buffer.from(addressString, 'hex'))
+    if (getPrecompile(address, common)) {
+      activePrecompiles.push(address)
+    }
+  }
+  return activePrecompiles
+}
+
 export {
   precompiles,
   getPrecompile,
   PrecompileFunc,
   PrecompileInput,
   ripemdPrecompileAddress,
-  numPrecompiles,
+  getActivePrecompiles,
 }

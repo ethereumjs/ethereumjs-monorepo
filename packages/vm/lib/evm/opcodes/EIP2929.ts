@@ -1,5 +1,6 @@
 import BN = require('bn.js')
 import { Address } from 'ethereumjs-util'
+import { EIP2929StateManager } from '../../state/interface'
 import { RunState } from './../interpreter'
 
 /**
@@ -15,8 +16,9 @@ export function accessAddressEIP2929(runState: RunState, address: Address, baseF
   const addressStr = address.buf
 
   // Cold
-  if (!runState.stateManager.isWarmAddress(addressStr)) {
-    runState.stateManager.addWarmAddress(addressStr)
+  if (!(<EIP2929StateManager>runState.stateManager).isWarmedAddress(addressStr)) {
+    // eslint-disable-next-line prettier/prettier
+    (<EIP2929StateManager>runState.stateManager).addWarmedAddress(addressStr)
 
     // CREATE, CREATE2 opcodes have the address warmed for free.
     // selfdestruct beneficiary address reads are charged an *additional* cold access
@@ -44,11 +46,12 @@ export function accessStorageEIP2929(runState: RunState, key: Buffer, isSstore: 
   const baseFee = !isSstore ? runState._common.param('gasPrices', 'sload') : 0
   const address = runState.eei.getAddress().buf
 
-  const slotIsCold = !runState.stateManager.isWarmStorage(address, key)
+  const slotIsCold = !(<EIP2929StateManager>runState.stateManager).isWarmedStorage(address, key)
 
   // Cold (SLOAD and SSTORE)
   if (slotIsCold) {
-    runState.stateManager.addWarmStorage(address, key)
+    // eslint-disable-next-line prettier/prettier
+    (<EIP2929StateManager>runState.stateManager).addWarmedStorage(address, key)
     runState.eei.useGas(new BN(runState._common.param('gasPrices', 'coldsload') - baseFee))
   } else if (!isSstore) {
     runState.eei.useGas(new BN(runState._common.param('gasPrices', 'warmstorageread') - baseFee))
@@ -76,8 +79,7 @@ export function adjustSstoreGasEIP2929(
   const warmRead = runState._common.param('gasPrices', 'warmstorageread')
   const coldSload = runState._common.param('gasPrices', 'coldsload')
 
-  // @ts-ignore Set Object is possibly 'undefined'
-  if (runState.stateManager.isWarmStorage(address, key)) {
+  if ((<EIP2929StateManager>runState.stateManager).isWarmedStorage(address, key)) {
     switch (costName) {
       case 'reset':
         return defaultCost - coldSload

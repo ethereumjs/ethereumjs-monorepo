@@ -77,7 +77,7 @@ export default class DefaultStateManager implements StateManager {
     this._touchedStack = []
     this._checkpointCount = 0
     this._originalStorageCache = new Map()
-    this._accessedStorage = []
+    this._accessedStorage = [new Map()]
   }
 
   /**
@@ -583,7 +583,7 @@ export default class DefaultStateManager implements StateManager {
    * Returns true if the address is warm in the current context
    * @param address - The address (as a Buffer) to check
    */
-  isWarmAddress(address: Buffer): boolean {
+  isWarmedAddress(address: Buffer): boolean {
     for (let i = this._accessedStorage.length - 1; i >= 0; i--) {
       const currentMap = this._accessedStorage[i]
       if (currentMap.has(address.toString('hex'))) {
@@ -597,7 +597,7 @@ export default class DefaultStateManager implements StateManager {
    * Add a warm address in the current context
    * @param address - The address (as a Buffer) to check
    */
-  addWarmAddress(address: Buffer): void {
+  addWarmedAddress(address: Buffer): void {
     const key = address.toString('hex')
     const storageSet = this._accessedStorage[this._accessedStorage.length - 1].get(key)
     if (!storageSet) {
@@ -611,7 +611,7 @@ export default class DefaultStateManager implements StateManager {
    * @param address - The address (as a Buffer) to check
    * @param slot - The slot (as a Buffer) to check
    */
-  isWarmStorage(address: Buffer, slot: Buffer): boolean {
+  isWarmedStorage(address: Buffer, slot: Buffer): boolean {
     const addressKey = address.toString('hex')
     const storageKey = slot.toString('hex')
 
@@ -630,7 +630,7 @@ export default class DefaultStateManager implements StateManager {
    * @param address - The address (as a Buffer) to check
    * @param slot - The slot (as a Buffer) to check
    */
-  addWarmStorage(address: Buffer, slot: Buffer): void {
+  addWarmedStorage(address: Buffer, slot: Buffer): void {
     const addressKey = address.toString('hex')
     let storageSet = this._accessedStorage[this._accessedStorage.length - 1].get(addressKey)
     if (!storageSet) {
@@ -638,6 +638,13 @@ export default class DefaultStateManager implements StateManager {
       this._accessedStorage[this._accessedStorage.length - 1].set(addressKey, storageSet!)
     }
     storageSet!.add(slot.toString('hex'))
+  }
+
+  /**
+   * Clear the warm accounts and storage. To be called after a transaction finished.
+   */
+  clearWarmedAccounts(): void {
+    this._accessedStorage = [new Map()]
   }
 
   /**

@@ -137,6 +137,11 @@ export default class EVM {
   async executeMessage(message: Message): Promise<EVMResult> {
     await this._vm._emit('beforeMessage', message)
 
+    if (!message.to && this._vm._common.eips().includes(2929)) {
+      // eslint-disable-next-line prettier/prettier
+      (<any>this._state).addWarmedAddress((await this._generateAddress(message)).buf)
+    }
+
     await this._state.checkpoint()
     debug('-'.repeat(100))
     debug(`message checkpoint`)
@@ -271,10 +276,6 @@ export default class EVM {
           gasUsed: message.gasLimit,
         },
       }
-    }
-
-    if (this._vm._common.eips().includes(2929)) {
-      this._state.addWarmAddress(message.to.buf)
     }
 
     await this._state.clearContractStorage(message.to)
