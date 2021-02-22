@@ -4,7 +4,7 @@
   "comment": "Simple subroutines for the EVM",
   "url": "https://eips.ethereum.org/EIPS/eip-2315",
   "status": "Draft",
-  "minimumHardfork": "berlin",
+  "minimumHardfork": "istanbul",
   "gasConfig": {},
   "gasPrices": {
     "beginsub": {
