@@ -584,8 +584,8 @@ export default class DefaultStateManager implements StateManager {
    * @param address - The address (as a Buffer) to check
    */
   isWarmAddress(address: Buffer): boolean {
-    for (let i = this._accessedStorage.length; i >= 0; i--) {
-      const currentMap = this._accessedStorage[this._accessedStorage.length - 1]
+    for (let i = this._accessedStorage.length - 1; i >= 0; i--) {
+      const currentMap = this._accessedStorage[i]
       if (currentMap.has(address.toString('hex'))) {
         return true
       }
@@ -615,8 +615,8 @@ export default class DefaultStateManager implements StateManager {
     const addressKey = address.toString('hex')
     const storageKey = slot.toString('hex')
 
-    for (let i = this._accessedStorage.length; i >= 0; i--) {
-      const currentMap = this._accessedStorage[this._accessedStorage.length - 1]
+    for (let i = this._accessedStorage.length - 1; i >= 0; i--) {
+      const currentMap = this._accessedStorage[i]
       if (currentMap.has(addressKey) && currentMap.get(addressKey)!.has(storageKey)) {
         return true
       }

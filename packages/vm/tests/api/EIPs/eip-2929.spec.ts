@@ -1,7 +1,8 @@
 import tape from 'tape'
-import { Address, BN } from 'ethereumjs-util'
+import { Account, Address, BN } from 'ethereumjs-util'
 import VM from '../../../lib'
 import Common from '@ethereumjs/common'
+import { Transaction } from '@ethereumjs/tx'
 
 // Test cases source: https://gist.github.com/holiman/174548cad102096858583c6fbbb0649a
 tape('EIP 2929: gas cost tests', (t) => {
@@ -53,6 +54,48 @@ tape('EIP 2929: gas cost tests', (t) => {
     const totalGasUsed = initialGas.sub(currentGas)
     st.equal(true, totalGasUsed.eq(new BN(test.totalGasUsed)))
     return result
+  }
+
+  const runCodeTest = async function (code: string, expectedGasUsed: number, st: tape.Test) {
+    // setup the accounts for this test
+    const privateKey = Buffer.from(
+      'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
+      'hex'
+    )
+    const contractAddress = new Address(
+      Buffer.from('00000000000000000000000000000000000000ff', 'hex')
+    )
+
+    const common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [2929] })
+    const vm = new VM({ common })
+
+    vm.on('step', (o: any) => {
+      console.log(o.pc, o.opcode.name, o.gasLeft.toNumber())
+    })
+
+    await vm.stateManager.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code
+
+    // setup the call arguments
+    const unsignedTx = Transaction.fromTxData({
+      gasLimit: new BN(21000 + 9000), // ensure we pass a lot of gas, so we do not run out of gas
+      to: contractAddress, // call to the contract address,
+      value: new BN(1),
+    })
+
+    const tx = unsignedTx.sign(privateKey)
+
+    const address = Address.fromPrivateKey(privateKey)
+    const initialBalance = new BN(10).pow(new BN(18))
+
+    const account = await vm.stateManager.getAccount(address)
+    await vm.stateManager.putAccount(
+      address,
+      Account.fromAccountData({ ...account, balance: initialBalance })
+    )
+
+    const result = await vm.runTx({ tx })
+
+    st.ok(result.gasUsed.toNumber() == expectedGasUsed)
   }
 
   // Checks EXT(codehash,codesize,balance) of precompiles, which should be 100,
@@ -210,5 +253,19 @@ tape('EIP 2929: gas cost tests', (t) => {
     const result = await runTest(test, st)
     st.equal(undefined, result.exceptionError)
     st.end()
+  })
+
+  tape('ensure storage slots are tracked transaction-wide', async (t) => {
+    // load same storage slot twice (also in inner call)
+    await runCodeTest('60005460003415601357600080808080305AF15B00', 1, t)
+    // call to contract, load slot 0, revert inner call. load slot 0 in outer call.
+    //await runCodeTest('3415600B57600054600080FD5B600080808080305A60005400', 1, t)
+
+    // call to address 0xFFFF..FF
+    //const callFF = '6000808080806000195AF1'
+    //await runCodeTest(callFF + '60003415601C57600080808080305AF15B00', 1, t)
+    //await runCodeTest('3415601557' + callFF + '600080FD5B600080808080305A60005400', 1, t)
+
+    t.end()
   })
 })
