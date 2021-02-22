@@ -1102,6 +1102,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       subMemUsage(runState, inOffset, inLength)
       subMemUsage(runState, outOffset, outLength)
+      accessAddressEIP2929(runState, toAddress, runState._common.param('gasPrices', 'delegatecall'))
       const gasLimit = maxCallGas(currentGasLimit, runState.eei.getGasLeft(), runState)
       // note that TangerineWhistle or later this cannot happen (it could have ran out of gas prior to getting here though)
       if (gasLimit.gt(runState.eei.getGasLeft())) {
