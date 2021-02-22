@@ -32,4 +32,16 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
 
     st.end()
   })
+
+  t.test('isActivatedEIP()', function (st) {
+    let c = new Common({ chain: 'rinkeby', hardfork: 'istanbul' })
+    st.equal(c.isActivatedEIP(2315), false, 'istanbul, eips: [] -> false (EIP-2315)')
+    c = new Common({ chain: 'rinkeby', hardfork: 'istanbul', eips: [2315] })
+    st.equal(c.isActivatedEIP(2315), true, 'istanbul, eips: [2315] -> true (EIP-2315)')
+    c = new Common({ chain: 'rinkeby', hardfork: 'berlin' })
+    st.equal(c.isActivatedEIP(2315), true, 'berlin, eips: [] -> true (EIP-2315)')
+    st.equal(c.isActivatedEIP(2537), false, 'berlin, eips: [] -> false (EIP-2537)')
+
+    st.end()
+  })
 })
