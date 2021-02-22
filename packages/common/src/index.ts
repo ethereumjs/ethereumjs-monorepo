@@ -371,6 +371,30 @@ export default class Common extends EventEmitter {
   }
 
   /**
+   * Checks if an EIP is activated by either being included in the EIPs
+   * manually passed in with the `eips` constructor option or in a
+   * hardfork currently being active
+   *
+   * Note: this method only works for EIPs being supported
+   * by the `eips` constructor option
+   * @param eip
+   */
+  isActivatedEIP(eip: number): boolean {
+    if (this.eips().includes(eip)) {
+      return true
+    }
+    for (const hfChanges of HARDFORK_CHANGES) {
+      const hf = hfChanges[1]
+      if (this.gteHardfork(hf['name']) && 'eips' in hf) {
+        if (hf['eips'].includes(eip)) {
+          return true
+        }
+      }
+    }
+    return false
+  }
+
+  /**
    * Checks if set or provided hardfork is active on block number
    * @param hardfork Hardfork name or null (for HF set)
    * @param blockNumber
