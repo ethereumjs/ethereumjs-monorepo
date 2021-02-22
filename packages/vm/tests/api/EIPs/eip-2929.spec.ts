@@ -77,10 +77,6 @@ tape('EIP 2929: gas cost tests', (t) => {
     const common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [2929] })
     const vm = new VM({ common })
 
-    vm.on('step', (o: any) => {
-      console.log(o.pc, o.opcode.name, o.gasLeft.toNumber())
-    })
-
     await vm.stateManager.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code
 
     // setup the call arguments
@@ -263,16 +259,34 @@ tape('EIP 2929: gas cost tests', (t) => {
     st.end()
   })
 
-  tape('ensure storage slots are tracked transaction-wide', async (t) => {
+  tape('ensure warm addresses/slots are tracked transaction-wide', async (t) => {
+    // Note: these tests were manually analyzed to check if these are correct.
+    // The gas cost has been taken from these tests.
+
+    // What is covered:
+    // The called address is warm.
+    // (1) Warm storage slots are kept warm during inner calls
+    // (2) If a slot is marked warm, and the inner call reverts, and originally it was cold
+    // then it is still cold.
+    // (1) and (2) are also checked for accounts.
+    // These are manually explicitly checked to ensure the right gas costs are used on
+    // SLOAD or CALL operations.
+
     // load same storage slot twice (also in inner call)
-    //await runCodeTest('60005460003415601357600080808080305AF15B00', 1, t)
+    await runCodeTest('60005460003415601357600080808080305AF15B00', 23369, t)
     // call to contract, load slot 0, revert inner call. load slot 0 in outer call.
-    //await runCodeTest('3415600B57600054600080FD5B600080808080305A60005400', 1, t)
+    await runCodeTest('341515600D57600054600080FD5B600080808080305AF160005400', 25374, t)
 
     // call to address 0xFFFF..FF
-    //const callFF = '6000808080806000195AF1'
-    //await runCodeTest(callFF + '60003415601C57600080808080305AF15B00', 1, t)
-    //await runCodeTest('3415601557' + callFF + '600080FD5B600080808080305A60005400', 1, t)
+    const callFF = '6000808080806000195AF1'
+    // call address 0xFF..FF, now call same contract again, call 0xFF..FF again (it is now warm)
+    await runCodeTest(callFF + '60003415601B57600080808080305AF15B00', 23909, t)
+    // call to contract, call 0xFF..FF, revert, call 0xFF..FF (should be cold)
+    await runCodeTest(
+      '341515601557' + callFF + '600080FD5B600080808080305AF1' + callFF + '00',
+      26414,
+      t
+    )
 
     t.end()
   })
