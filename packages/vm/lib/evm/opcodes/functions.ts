@@ -745,8 +745,6 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       // TODO: Replace getContractStorage with EEI method
       const found = await getContractStorage(runState, runState.eei.getAddress(), keyBuf)
-      accessStorageEIP2929(runState, keyBuf, true)
-
       if (runState._common.hardfork() === 'constantinople') {
         updateSstoreGasEIP1283(runState, found, setLengthLeftStorage(value))
       } else if (runState._common.gteHardfork('istanbul')) {
@@ -754,6 +752,10 @@ export const handlers: Map<number, OpHandler> = new Map([
       } else {
         updateSstoreGas(runState, found, setLengthLeftStorage(value), keyBuf)
       }
+
+      // We have to do this after the Istanbul (EIP2200) checks.
+      // Otherwise, we might run out of gas, due to "sentry check" of 2300 gas, if we deduct extra gas first.
+      accessStorageEIP2929(runState, keyBuf, true)
 
       await runState.eei.storageStore(keyBuf, value)
     },
