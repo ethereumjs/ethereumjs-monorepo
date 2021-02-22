@@ -100,7 +100,7 @@ export default function (opts: PrecompileInput): ExecResult {
   const mStart = eEnd
   const mEnd = mStart.add(mLen)
 
-  if (!opts._common.eips().includes(2565)) {
+  if (!opts._common.isActivatedEIP(2565)) {
     gasUsed = adjustedELen.mul(multComplexity(maxLen)).divn(Gquaddivisor)
   } else {
     gasUsed = adjustedELen.mul(multComplexityEIP2565(maxLen)).divn(Gquaddivisor)
