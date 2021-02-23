@@ -54,8 +54,9 @@ jobs:
     strategy:
       matrix:
         fork: [
-          'MuirGlacier',
-          'Istanbul'
+          'Berlin',
+          'Istanbul',
+          'MuirGlacier'
         ]
       fail-fast: false
     steps:
@@ -137,7 +138,9 @@ jobs:
         # Tests were splitted with --dir and --excludeDir to balance execution times below the 9min mark.
         args: [
           '--fork=Istanbul --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
-          '--fork=Istanbul --excludeDir=stTimeConsuming --expected-test-amount=19817'
+          '--fork=Istanbul --excludeDir=stTimeConsuming --expected-test-amount=19817',
+          '--fork=Berlin --dir=GeneralStateTests/stTimeConsuming',
+          '--fork=Berlin --excludeDir=stTimeConsuming'
         ]
       fail-fast: false
     steps:

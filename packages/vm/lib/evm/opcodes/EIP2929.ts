@@ -1,5 +1,6 @@
 import BN = require('bn.js')
 import { Address } from 'ethereumjs-util'
+import { EIP2929StateManager } from '../../state/interface'
 import { RunState } from './../interpreter'
 
 /**
@@ -9,25 +10,35 @@ import { RunState } from './../interpreter'
  * @param {RunState} runState
  * @param {BN}       address
  */
-export function accessAddressEIP2929(runState: RunState, address: Address, baseFee?: number) {
-  if (!runState._common.eips().includes(2929)) return
+export function accessAddressEIP2929(
+  runState: RunState,
+  address: Address,
+  chargeGas = true,
+  isSelfdestruct = false
+) {
+  if (!runState._common.isActivatedEIP(2929)) return
 
-  const addressStr = address.toString()
+  const addressStr = address.buf
 
   // Cold
-  if (!runState.accessedAddresses.has(addressStr)) {
-    runState.accessedAddresses.add(addressStr)
+  if (!(<EIP2929StateManager>runState.stateManager).isWarmedAddress(addressStr)) {
+    // eslint-disable-next-line prettier/prettier
+    (<EIP2929StateManager>runState.stateManager).addWarmedAddress(addressStr)
 
     // CREATE, CREATE2 opcodes have the address warmed for free.
     // selfdestruct beneficiary address reads are charged an *additional* cold access
-    if (baseFee !== undefined) {
+    if (chargeGas) {
       runState.eei.useGas(
-        new BN(runState._common.param('gasPrices', 'coldaccountaccess') - baseFee)
+        new BN(runState._common.param('gasPrices', 'coldaccountaccess')),
+        'EIP-2929 -> coldaccountaccess'
       )
     }
     // Warm: (selfdestruct beneficiary address reads are not charged when warm)
-  } else if (baseFee !== undefined && baseFee > 0) {
-    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'warmstorageread') - baseFee))
+  } else if (chargeGas && !isSelfdestruct) {
+    runState.eei.useGas(
+      new BN(runState._common.param('gasPrices', 'warmstorageread')),
+      'EIP-2929 -> warmstorageread'
+    )
   }
 }
 
@@ -39,25 +50,25 @@ export function accessAddressEIP2929(runState: RunState, address: Address, baseF
  * @param {Buffer} key (to storage slot)
  */
 export function accessStorageEIP2929(runState: RunState, key: Buffer, isSstore: boolean) {
-  if (!runState._common.eips().includes(2929)) return
+  if (!runState._common.isActivatedEIP(2929)) return
 
-  const keyStr = key.toString('hex')
-  const baseFee = !isSstore ? runState._common.param('gasPrices', 'sload') : 0
-  const address = runState.eei.getAddress().toString()
-  const keysAtAddress = runState.accessedStorage.get(address)
+  const address = runState.eei.getAddress().buf
+
+  const slotIsCold = !(<EIP2929StateManager>runState.stateManager).isWarmedStorage(address, key)
 
   // Cold (SLOAD and SSTORE)
-  if (!keysAtAddress) {
-    runState.accessedStorage.set(address, new Set())
-    // @ts-ignore Set Object is possibly 'undefined'
-    runState.accessedStorage.get(address).add(keyStr)
-    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'coldsload') - baseFee))
-  } else if (keysAtAddress && !keysAtAddress.has(keyStr)) {
-    keysAtAddress.add(keyStr)
-    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'coldsload') - baseFee))
-    // Warm (SLOAD only)
+  if (slotIsCold) {
+    // eslint-disable-next-line prettier/prettier
+    (<EIP2929StateManager>runState.stateManager).addWarmedStorage(address, key)
+    runState.eei.useGas(
+      new BN(runState._common.param('gasPrices', 'coldsload')),
+      'EIP-2929 -> coldsload'
+    )
   } else if (!isSstore) {
-    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'warmstorageread') - baseFee))
+    runState.eei.useGas(
+      new BN(runState._common.param('gasPrices', 'warmstorageread')),
+      'EIP-2929 -> warmstorageread'
+    )
   }
 }
 
@@ -76,15 +87,13 @@ export function adjustSstoreGasEIP2929(
   defaultCost: number,
   costName: string
 ): number {
-  if (!runState._common.eips().includes(2929)) return defaultCost
+  if (!runState._common.isActivatedEIP(2929)) return defaultCost
 
-  const keyStr = key.toString('hex')
-  const address = runState.eei.getAddress().toString()
+  const address = runState.eei.getAddress().buf
   const warmRead = runState._common.param('gasPrices', 'warmstorageread')
   const coldSload = runState._common.param('gasPrices', 'coldsload')
 
-  // @ts-ignore Set Object is possibly 'undefined'
-  if (runState.accessedStorage.has(address) && runState.accessedStorage.get(address).has(keyStr)) {
+  if ((<EIP2929StateManager>runState.stateManager).isWarmedStorage(address, key)) {
     switch (costName) {
       case 'reset':
         return defaultCost - coldSload

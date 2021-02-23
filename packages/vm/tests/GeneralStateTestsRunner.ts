@@ -61,12 +61,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const state = new Trie()
   const hardfork = options.forkConfigVM
 
-  let eips: number[] = []
-  if (hardfork == 'berlin') {
-    // currently, the BLS tests run on the Berlin network, but our VM does not activate EIP2537
-    // if you run the Berlin HF
-    eips = [2537]
-  }
+  const eips: number[] = []
 
   const common = new Common({ chain: 'mainnet', hardfork, eips })
 

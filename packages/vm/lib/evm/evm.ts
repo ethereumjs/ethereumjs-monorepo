@@ -137,6 +137,11 @@ export default class EVM {
   async executeMessage(message: Message): Promise<EVMResult> {
     await this._vm._emit('beforeMessage', message)
 
+    if (!message.to && this._vm._common.isActivatedEIP(2929)) {
+      message.code = message.data
+      ;(<any>this._state).addWarmedAddress((await this._generateAddress(message)).buf)
+    }
+
     await this._state.checkpoint()
     debug('-'.repeat(100))
     debug(`message checkpoint`)
@@ -258,6 +263,7 @@ export default class EVM {
     message.to = await this._generateAddress(message)
     debug(`Generated CREATE contract address ${message.to.toString()}`)
     let toAccount = await this._state.getAccount(message.to)
+
     // Check for collision
     if ((toAccount.nonce && toAccount.nonce.gtn(0)) || !toAccount.codeHash.equals(KECCAK256_NULL)) {
       debug(`Returning on address collision`)

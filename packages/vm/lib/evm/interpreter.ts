@@ -6,7 +6,6 @@ import { ERROR, VmError } from '../exceptions'
 import Memory from './memory'
 import Stack from './stack'
 import EEI from './eei'
-import { precompiles } from './precompiles'
 import { Opcode, handlers as opHandlers, OpHandler, AsyncOpHandler } from './opcodes'
 
 export interface InterpreterOpts {
@@ -27,8 +26,6 @@ export interface RunState {
   _common: Common
   stateManager: StateManager
   eei: EEI
-  accessedAddresses: Set<string>
-  accessedStorage: Map<string, Set<string>>
 }
 
 export interface InterpreterResult {
@@ -91,8 +88,6 @@ export default class Interpreter {
       _common: this._vm._common,
       stateManager: this._state,
       eei: this._eei,
-      accessedAddresses: new Set(),
-      accessedStorage: new Map(),
     }
   }
 
@@ -103,8 +98,6 @@ export default class Interpreter {
     const valid = this._getValidJumpDests(code)
     this._runState.validJumps = valid.jumps
     this._runState.validJumpSubs = valid.jumpSubs
-    this._initAccessedAddresses()
-    this._runState.accessedStorage.clear()
 
     // Check that the programCounter is in range
     const pc = this._runState.programCounter
@@ -149,7 +142,7 @@ export default class Interpreter {
     }
 
     // Reduce opcode's base fee
-    this._eei.useGas(new BN(opInfo.fee))
+    this._eei.useGas(new BN(opInfo.fee), `${opInfo.name} (base fee)`)
     // Advance program counter
     this._runState.programCounter++
 
@@ -205,7 +198,6 @@ export default class Interpreter {
     })
 
     const name = eventObj.opcode.name
-    const nameLC = name.toLowerCase()
     const opTrace = {
       pc: eventObj.pc,
       op: name,
@@ -215,10 +207,10 @@ export default class Interpreter {
       depth: eventObj.depth,
     }
 
-    if (!(nameLC in this.opDebuggers)) {
-      this.opDebuggers[nameLC] = createDebugLogger(`vm:ops:${nameLC}`)
+    if (!(name in this.opDebuggers)) {
+      this.opDebuggers[name] = createDebugLogger(`vm:ops:${name}`)
     }
-    this.opDebuggers[nameLC](JSON.stringify(opTrace))
+    this.opDebuggers[name](JSON.stringify(opTrace))
 
     /**
      * The `step` event for trace output
@@ -263,18 +255,5 @@ export default class Interpreter {
     }
 
     return { jumps, jumpSubs }
-  }
-
-  // Populates accessedAddresses with 'pre-warmed' addresses. Includes
-  // tx.origin, `this` (e.g the address of the code being executed), and
-  // all the precompiles. (EIP 2929)
-  _initAccessedAddresses() {
-    this._runState.accessedAddresses.clear()
-    this._runState.accessedAddresses.add(this._eei._env.origin.toString())
-    this._runState.accessedAddresses.add(this._eei.getAddress().toString())
-
-    for (const address of Object.keys(precompiles)) {
-      this._runState.accessedAddresses.add(`0x${address}`)
-    }
   }
 }

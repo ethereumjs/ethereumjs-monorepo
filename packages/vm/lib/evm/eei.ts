@@ -1,3 +1,4 @@
+import { debug as createDebugLogger } from 'debug'
 import { Account, Address, BN } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
@@ -7,6 +8,8 @@ import { VmError, ERROR } from '../exceptions'
 import Message from './message'
 import EVM, { EVMResult } from './evm'
 import { Log } from './types'
+
+const debugGas = createDebugLogger('vm:eei:gas')
 
 function trap(err: ERROR) {
   throw new VmError(err)
@@ -84,10 +87,12 @@ export default class EEI {
   /**
    * Subtracts an amount from the gas counter.
    * @param amount - Amount of gas to consume
+   * @param context - Usage context for debugging
    * @throws if out of gas
    */
-  useGas(amount: BN): void {
+  useGas(amount: BN, context?: string): void {
     this._gasLeft.isub(amount)
+    debugGas(`${context ? context + ': ' : ''}used ${amount} gas (-> ${this._gasLeft})`)
     if (this._gasLeft.ltn(0)) {
       this._gasLeft = new BN(0)
       trap(ERROR.OUT_OF_GAS)
@@ -97,16 +102,20 @@ export default class EEI {
   /**
    * Adds a positive amount to the gas counter.
    * @param amount - Amount of gas refunded
+   * @param context - Usage context for debugging
    */
-  refundGas(amount: BN): void {
+  refundGas(amount: BN, context?: string): void {
+    debugGas(`${context ? context + ': ' : ''}refund ${amount} gas (-> ${this._evm._refund})`)
     this._evm._refund.iadd(amount)
   }
 
   /**
    * Reduces amount of gas to be refunded by a positive value.
    * @param amount - Amount to subtract from gas refunds
+   * @param context - Usage context for debugging
    */
-  subRefund(amount: BN): void {
+  subRefund(amount: BN, context?: string): void {
+    debugGas(`${context ? context + ': ' : ''}sub gas refund ${amount} (-> ${this._evm._refund})`)
     this._evm._refund.isub(amount)
     if (this._evm._refund.ltn(0)) {
       this._evm._refund = new BN(0)
@@ -499,7 +508,7 @@ export default class EEI {
     }
 
     // this should always be safe
-    this.useGas(results.gasUsed)
+    this.useGas(results.gasUsed, 'CALL, STATICCALL, DELEGATECALL, CALLCODE')
 
     // Set return value
     if (
@@ -556,7 +565,7 @@ export default class EEI {
     }
 
     // this should always be safe
-    this.useGas(results.gasUsed)
+    this.useGas(results.gasUsed, 'CREATE')
 
     // Set return buffer in case revert happened
     if (

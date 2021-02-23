@@ -216,7 +216,7 @@ export default class VM extends AsyncEventEmitter {
 
     this._hardforkByBlockNumber = opts.hardforkByBlockNumber ?? false
 
-    if (this._common.eips().includes(2537)) {
+    if (this._common.isActivatedEIP(2537)) {
       if (IS_BROWSER) {
         throw new Error('EIP-2537 is currently not supported in browsers')
       } else {
@@ -250,7 +250,7 @@ export default class VM extends AsyncEventEmitter {
       await this.stateManager.commit()
     }
 
-    if (this._common.eips().includes(2537)) {
+    if (this._common.isActivatedEIP(2537)) {
       if (IS_BROWSER) {
         throw new Error('EIP-2537 is currently not supported in browsers')
       } else {

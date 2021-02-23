@@ -8,6 +8,7 @@ import { default as EVM, EVMResult } from './evm/evm'
 import { short } from './evm/opcodes/util'
 import Message from './evm/message'
 import TxContext from './evm/txContext'
+import { getActivePrecompiles } from './evm/precompiles'
 
 const debug = createDebugLogger('vm:tx')
 const debugGas = createDebugLogger('vm:tx:gas')
@@ -84,7 +85,14 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
     throw new Error('tx has a higher gas limit than the block')
   }
 
-  const state = this.stateManager
+  // Have to cast as `any` to access clearWarmedAccounts
+  const state: any = this.stateManager
+
+  // Ensure we start with a clear warmed accounts Map
+  if (this._common.isActivatedEIP(2929)) {
+    state.clearWarmedAccounts()
+  }
+
   await state.checkpoint()
   debug('-'.repeat(100))
   debug(`tx checkpoint`)
@@ -98,11 +106,16 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
     await state.revert()
     debug(`tx checkpoint reverted`)
     throw e
+  } finally {
+    if (this._common.isActivatedEIP(2929)) {
+      state.clearWarmedAccounts()
+    }
   }
 }
 
 async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
-  const state = this.stateManager
+  // Casted as `any` to access the EIP2929 methods
+  const state: any = this.stateManager
   const { tx, block } = opts
 
   if (!block) {
@@ -120,6 +133,18 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   const caller = tx.getSenderAddress()
   debug(`New tx run hash=${opts.tx.hash().toString('hex')} sender=${caller.toString()}`)
+
+  if (this._common.isActivatedEIP(2929)) {
+    // Add origin and precompiles to warm addresses
+    getActivePrecompiles(this._common).forEach((address: Address) =>
+      state.addWarmedAddress(address.buf)
+    )
+    state.addWarmedAddress(caller.buf)
+    if (tx.to) {
+      // Note: in case we create a contract, we do this in EVMs `_executeCreate` (this is also correct in inner calls, per the EIP)
+      state.addWarmedAddress(tx.to.buf)
+    }
+  }
 
   // Validate gas limit against base fee
   const basefee = tx.getBaseFee()

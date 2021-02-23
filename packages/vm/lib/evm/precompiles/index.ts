@@ -160,4 +160,22 @@ function getPrecompile(address: Address, common: Common): PrecompileFunc {
   return precompiles['']
 }
 
-export { precompiles, getPrecompile, PrecompileFunc, PrecompileInput, ripemdPrecompileAddress }
+function getActivePrecompiles(common: Common): Address[] {
+  const activePrecompiles: Address[] = []
+  for (const addressString in precompiles) {
+    const address = new Address(Buffer.from(addressString, 'hex'))
+    if (getPrecompile(address, common)) {
+      activePrecompiles.push(address)
+    }
+  }
+  return activePrecompiles
+}
+
+export {
+  precompiles,
+  getPrecompile,
+  PrecompileFunc,
+  PrecompileInput,
+  ripemdPrecompileAddress,
+  getActivePrecompiles,
+}

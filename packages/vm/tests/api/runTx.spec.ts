@@ -11,7 +11,9 @@ import { createAccount } from './utils'
 function setup(vm?: any) {
   if (!vm) {
     const stateManager = new DefaultStateManager({})
+    const common = new Common({ chain: 'mainnet' })
     vm = {
+      _common: common,
       stateManager,
       emit: (e: any, val: any, cb: Function) => {
         cb()
@@ -40,9 +42,9 @@ tape('runTx', (t) => {
 
   t.test('should fail without sufficient funds', async (st) => {
     const tx = getTransaction(true)
-    shouldFail(st, suite.runTx({ tx }), (e: Error) =>
+    shouldFail(st, suite.runTx({ tx }), (e: Error) => {
       st.ok(e.message.toLowerCase().includes('enough funds'), 'error should include "enough funds"')
-    )
+    })
     st.end()
   })
 })

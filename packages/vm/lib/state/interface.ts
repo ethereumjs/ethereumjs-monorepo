@@ -33,3 +33,11 @@ export interface StateManager {
   cleanupTouchedAccounts(): Promise<void>
   clearOriginalStorageCache(): void
 }
+
+export interface EIP2929StateManager extends StateManager {
+  addWarmedAddress(address: Buffer): void
+  isWarmedAddress(address: Buffer): boolean
+  addWarmedStorage(address: Buffer, slot: Buffer): void
+  isWarmedStorage(address: Buffer, slot: Buffer): boolean
+  clearWarmedAccounts(): void
+}
