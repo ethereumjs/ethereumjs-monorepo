@@ -6,6 +6,64 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.1.0 - 2021-02-22
+
+### Clique/PoA Support
+
+This release completes on Clique/PoA support (see also Clique/PoA related changes in `v2.0.0`), see PR [#1032](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1032). The chain configuration files (e.g. `chains/goerli.json`) are extended by a consensus algorithm-specific config parameter section, here is a sample `consensus` parameter section, note that the `config` parameter dict must be named after the consensus algorithm:
+
+```json
+{
+  "consensus": {
+    "type": "poa",
+    "algorithm": "clique",
+    "clique": {
+      "period": 15,
+      "epoch": 30000
+    }
+  }
+}
+```
+
+For now this is done in a backwards-compatible way and the `consensus` parameter section is still marked as optional. You nevertheless might want to add this section already to your custom chain files - even if you don't make usage of the parameters - to remain compatible in the future.
+
+The new parameter section is complemented by a new `Common.consensusConfig()` function to request these parameters in addition to the `Common.consensusType()` and `Common.consensusAlgorithm()` methods introduced in `v2.0.0`.
+
+### Custom Chain File Support
+
+There is now a more convenient and flexible way to integrate custom chains into Common instances complementing the existing `Common.fromCustomChain()` static constructor, see PR [#1034](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1034).
+
+This new way adds a new `customChains` constructor option and can be used as following:
+
+```typescript
+import myCustomChain1 from './[PATH]/myCustomChain1.json'
+import myCustomChain2 from './[PATH]/myCustomChain2.json'
+// Add two custom chains, initial mainnet activation
+const common1 = new Common({ chain: 'mainnet', customChains: [ myCustomChain1, myCustomChain2 ] })
+// Somewhat later down the road...
+common1.setChain('customChain1')
+// Add two custom chains, activate customChain1
+const common1 = new Common({ chain: 'customChain1', customChains: [ myCustomChain1, myCustomChain2 ] })
+```
+
+The [README section](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common#working-with-privatecustom-chains) on working with custom chains has been significantly expanded along the way and is a recommended read if you use common for custom chain initialization.
+
+### New EIPs
+
+#### EIP-1459 DNS Peer Discovery
+
+[EIP-1459](https://eips.ethereum.org/EIPS/eip-1459) introduces a way to discover nodes for an Ethereum network connection via DNS. This release adds a new optional chain config file parameter `dnsNetworks` and an associated method `Common.dnsNetworks()` to request DNS networks for a chain.
+
+#### EIP-2565 ModExp Precompile Gas Costs
+
+[EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) introduces a new algorithm for ModExp precompile gas cost calculation. A new EIP file `eips/2565.json` has been added along the work on PR [#1026](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1026) with respective parameter updates.
+
+### Other Changes
+
+- `Common` is now implemented as an `EventEmitter` and emits a `hardforkChanged` event upon a HF change, PR [#1112](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1112)
+- New `Common.isActivatedEIP()` method, PR [#1125](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1125)
+- Updated `Goerli` bootnodes, PR [#1031](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1031)
+
 ## 2.0.0 - 2020-11-24
 
 ### New Package Name

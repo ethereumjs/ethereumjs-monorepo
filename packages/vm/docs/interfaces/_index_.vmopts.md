@@ -16,7 +16,7 @@ Options for instantiating a [VM](../classes/_index_.vm.md).
 * [allowUnlimitedContractSize](_index_.vmopts.md#optional-allowunlimitedcontractsize)
 * [blockchain](_index_.vmopts.md#optional-blockchain)
 * [common](_index_.vmopts.md#optional-common)
-* [selectHardforkByBlockNumber](_index_.vmopts.md#optional-selecthardforkbyblocknumber)
+* [hardforkByBlockNumber](_index_.vmopts.md#optional-hardforkbyblocknumber)
 * [state](_index_.vmopts.md#optional-state)
 * [stateManager](_index_.vmopts.md#optional-statemanager)
 
@@ -98,9 +98,9 @@ Default setup if no `Common` instance is provided:
 
 ___
 
-### `Optional` selectHardforkByBlockNumber
+### `Optional` hardforkByBlockNumber
 
-• **selectHardforkByBlockNumber**? : *undefined | false | true*
+• **hardforkByBlockNumber**? : *undefined | false | true*
 
 *Defined in [index.ts:98](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L98)*
 

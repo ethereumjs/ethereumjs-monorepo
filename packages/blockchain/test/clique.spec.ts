@@ -15,7 +15,7 @@ tape('Clique: Initialization', (t) => {
 
     st.deepEquals(
       blockchain.cliqueActiveSigners(),
-      head.cliqueEpochTransitionSigners(),
+      head.header.cliqueEpochTransitionSigners(),
       'correct genesis signers'
     )
     st.end()

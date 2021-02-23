@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.1.0 2021-02-22
+
+### Clique/PoA Support
+
+This release introduces Clique/PoA support for the `Blockchain` library, see the main PR [#1032](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1032) as well as the follow-up PRs [#1074](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1074) and PR [#1088](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1088).
+
+The blockchain package now keeps track of the latest signers and votes on new Clique/PoA signers and saves them to DB. Block format validation is now also taking all the Clique/PoA specifics into account (`extraData` format and other formal requirements from the EIP) and consensus validation is now also working for Clique/PoA chains (this verifies the respective block signatures from the corresponding authorized signers) and can be activated with the `validateConsensus` constructor flag. There is a new public method `Blockchain.cliqueActiveSigners()` to get the currently active signer list.
+
+### Other Features/Changes
+
+- Added optional `maxBlocks` parameter to `Blockchain.iterator()` method, PR [#965](https://github.com/ethereumjs/ethereumjs-monorepo/pull/965)
+- `Blockchain.iterator()` now returns a `number` (instead of `void`) with the blocks actually iterated (the `Blockchain` interface allows for both for backwards-compatibility reasons for now, `void` is considered deprecated though), PR [#1065](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1065)
+- Blocks in the blockchain package are now always created with the `hardforkByBlockNumber` option set to `true` to avoid inconsistencies in block behavior, PR [#1089](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1089)
+- New `Blockchain.setHead(tag: string, headHash: Buffer)` method to set a specific iterator head to a certain block, PR [#965](https://github.com/ethereumjs/ethereumjs-monorepo/pull/965)
+- Added `debug` logger integration, first `blockchain:clique` debug logger (see README), PR [#1103](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1103)
+- Fixed a bug in the validation logic to only validate the block header if a header is passed to the internal `Blockchain._putBlockOrHeader()` function, PR [#1105](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1105)
+
 ## 5.0.0 - 2020-11-24
 
 ### New Package Name

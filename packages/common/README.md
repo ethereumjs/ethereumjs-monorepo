@@ -104,9 +104,11 @@ The following chain-specific parameters are provided:
 - `networkId`
 - `consensusType` (e.g. `pow` or `poa`)
 - `consensusAlgorithm` (e.g. `ethash` or `clique`)
+- `consensusConfig` (depends on `consensusAlgorithm`, e.g. `period` and `epoch` for `clique`)
 - `genesis` block header values
 - `hardforks` block numbers
 - `bootstrapNodes` list
+- `dnsNetworks` list ([EIP-1459](https://eips.ethereum.org/EIPS/eip-1459)-compliant list of DNS networks for peer discovery)
 
 To get an overview of the different parameters have a look at one of the chain-specifc
 files like `mainnet.json` in the `chains` directory, or to the `Chain` type in [./src/types.ts](./src/types.ts).
@@ -115,7 +117,7 @@ files like `mainnet.json` in the `chains` directory, or to the `Chain` type in [
 
 There are two distinct APIs available for setting up custom(ized) chains.
 
-### Activate with a single custom Chain setup
+#### Activate with a single custom Chain setup
 
 If you want to initialize a `Common` instance with a single custom chain which is then directly activated
 you can pass a dictionary - conforming to the parameter format described above - with your custom chain 
@@ -136,7 +138,7 @@ const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
 const customChainCommon = Common.forCustomChain('mainnet', customChainParams, 'byzantium')
 ```
 
-### Initialize using customChains Array
+#### Initialize using customChains Array
 
 A second way for custom chain initialization is to use the `customChains` constructor option. This
 option comes with more flexibility and allows for an arbitrary number of custom chains to be initialized on
@@ -216,13 +218,14 @@ const c = new Common({ chain: 'mainnet', eips: [2537] })
 
 The following EIPs are currently supported:
 
+- [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315): Simple subroutines for the EVM
 - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537): BLS precompiles
+- [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565): ModExp gas cost
 - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929): gas cost increases for state access opcodes
 
 ## Bootstrap Nodes
 
-There is no separate config file for bootstrap nodes like in the old `ethereum-common` library.
-Instead use the `common.bootstrapNodes()` function to get nodes for a specific chain/network.
+You can use `common.bootstrapNodes()` function to get nodes for a specific chain/network.
 
 ## Genesis States
 

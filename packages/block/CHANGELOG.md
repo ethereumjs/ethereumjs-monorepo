@@ -6,6 +6,38 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.1.0 - 2021-02-22
+
+### Clique/PoA Support
+
+This release introduces Clique/PoA support for the `Block` library, see the main PR [#1032](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1032) as well as the follow-up PRs [#1074](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1074) and PR [#1088](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1088). The `BlockHeader.validate()` function now properly validates the various Clique/PoA-specific properties (`extraData` checks and others, see API documentation) and `BlockHeader.validateConsensus()` can be used to properly validate that a Clique/PoA block has the correct signature.
+
+For sealing a block on instantiation there is a new `cliqueSigner` constructor option:
+
+```typescript
+const cliqueSigner = Buffer.from('PRIVATE_KEY_HEX_STRING', 'hex')
+const block = Block.fromHeaderData(headerData, { cliqueSigner })
+```
+
+Additionally there are the following new utility methods for Clique/PoA related functionality in the `BlockHeader` class:
+
+- `BlockHeader.validateCliqueDifficulty(blockchain: Blockchain): boolean`
+- `BlockHeader.cliqueSigHash()`
+- `BlockHeader.cliqueIsEpochTransition(): boolean`
+- `BlockHeader.cliqueExtraVanity(): Buffer`
+- `BlockHeader.cliqueExtraSeal(): Buffer`
+- `BlockHeader.cliqueEpochTransitionSigners(): Address[]`
+- `BlockHeader.cliqueVerifySignature(signerList: Address[]): boolean`
+- `BlockHeader.cliqueSigner(): Address`
+
+See the API docs for a detailed documentation. Note that these methods will throw if called in a non-Clique/PoA context.
+
+### Other Changes
+
+- The `Common` instance passed is now copied to avoid side-effects towards the outer common instance on HF updates, PR [#1089](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1089)
+- Fixed a bug where txs have been created with the wrong HF when `hardforkByBlockNumber` is used along with the static constructors, PR [#1089](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1089)
+- Fixed a bug where `Common` has not been passed to the returned block in the `blockFromRpc()` method, PR [#1032](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1032)
+
 ## 3.0.0 - 2020-11-24
 
 ### New Package Name

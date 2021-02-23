@@ -50,7 +50,7 @@ An object that represents the block.
 
 \+ **new Block**(`header?`: [BlockHeader](_header_.blockheader.md), `transactions`: Transaction[], `uncleHeaders`: [BlockHeader](_header_.blockheader.md)[], `opts`: [BlockOptions](../interfaces/_index_.blockoptions.md)): *[Block](_block_.block.md)*
 
-*Defined in [block.ts:92](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L92)*
+*Defined in [block.ts:107](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L107)*
 
 This constructor takes the values, validates them, assigns them and freezes the object.
 Use the static factory methods to assist in creating a Block object from varying data types and options.
@@ -112,7 +112,7 @@ ___
 
 ▸ **canonicalDifficulty**(`parentBlock`: [Block](_block_.block.md)): *BN*
 
-*Defined in [block.ts:286](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L286)*
+*Defined in [block.ts:307](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L307)*
 
 Returns the canonical difficulty for this block.
 
@@ -130,7 +130,7 @@ ___
 
 ▸ **genTxTrie**(): *Promise‹void›*
 
-*Defined in [block.ts:150](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L150)*
+*Defined in [block.ts:168](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L168)*
 
 Generates transaction trie for validation.
 
@@ -142,7 +142,7 @@ ___
 
 ▸ **hash**(): *Buffer*
 
-*Defined in [block.ts:129](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L129)*
+*Defined in [block.ts:147](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L147)*
 
 Produces a hash the RLP of the block.
 
@@ -154,7 +154,7 @@ ___
 
 ▸ **isGenesis**(): *boolean*
 
-*Defined in [block.ts:136](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L136)*
+*Defined in [block.ts:154](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L154)*
 
 Determines if this block is the genesis block.
 
@@ -166,7 +166,7 @@ ___
 
 ▸ **raw**(): *[BlockBuffer](../modules/_index_.md#blockbuffer)*
 
-*Defined in [block.ts:118](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L118)*
+*Defined in [block.ts:136](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L136)*
 
  Returns a Buffer Array of the raw Buffers of this block, in order.
 
@@ -178,7 +178,7 @@ ___
 
 ▸ **serialize**(): *Buffer*
 
-*Defined in [block.ts:143](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L143)*
+*Defined in [block.ts:161](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L161)*
 
 Returns the rlp encoding of the block.
 
@@ -190,7 +190,7 @@ ___
 
 ▸ **toJSON**(): *[JsonBlock](../interfaces/_index_.jsonblock.md)*
 
-*Defined in [block.ts:312](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L312)*
+*Defined in [block.ts:333](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L333)*
 
 Returns the block in JSON format.
 
@@ -202,7 +202,7 @@ ___
 
 ▸ **validate**(`blockchain`: [Blockchain](../interfaces/_index_.blockchain.md)): *Promise‹void›*
 
-*Defined in [block.ts:209](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L209)*
+*Defined in [block.ts:229](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L229)*
 
 Performs the following consistency checks on the block:
 
@@ -227,7 +227,7 @@ ___
 
 ▸ **validateData**(): *Promise‹void›*
 
-*Defined in [block.ts:222](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L222)*
+*Defined in [block.ts:242](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L242)*
 
 Validates the block data, throwing if invalid.
 This can be checked on the Block itself without needing access to any parent block
@@ -244,7 +244,7 @@ ___
 
 ▸ **validateDifficulty**(`parentBlock`: [Block](_block_.block.md)): *boolean*
 
-*Defined in [block.ts:295](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L295)*
+*Defined in [block.ts:316](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L316)*
 
 Checks that the block's `difficulty` matches the canonical difficulty.
 
@@ -262,7 +262,7 @@ ___
 
 ▸ **validateGasLimit**(`parentBlock`: [Block](_block_.block.md)): *boolean*
 
-*Defined in [block.ts:305](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L305)*
+*Defined in [block.ts:326](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L326)*
 
 Validates if the block gasLimit remains in the
 boundaries set by the protocol.
@@ -281,7 +281,7 @@ ___
 
 ▸ **validateTransactions**(): *boolean*
 
-*Defined in [block.ts:181](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L181)*
+*Defined in [block.ts:201](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L201)*
 
 Validates transaction signatures and minimum gas requirements.
 
@@ -289,7 +289,7 @@ Validates transaction signatures and minimum gas requirements.
 
 ▸ **validateTransactions**(`stringError`: false): *boolean*
 
-*Defined in [block.ts:182](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L182)*
+*Defined in [block.ts:202](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L202)*
 
 **Parameters:**
 
@@ -301,7 +301,7 @@ Name | Type |
 
 ▸ **validateTransactions**(`stringError`: true): *string[]*
 
-*Defined in [block.ts:183](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L183)*
+*Defined in [block.ts:203](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L203)*
 
 **Parameters:**
 
@@ -317,7 +317,7 @@ ___
 
 ▸ **validateTransactionsTrie**(): *Promise‹boolean›*
 
-*Defined in [block.ts:164](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L164)*
+*Defined in [block.ts:182](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L182)*
 
 Validates the transaction trie by generating a trie
 and do a check on the root hash.
@@ -330,7 +330,7 @@ ___
 
 ▸ **validateUncles**(`blockchain`: [Blockchain](../interfaces/_index_.blockchain.md)): *Promise‹void›*
 
-*Defined in [block.ts:262](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L262)*
+*Defined in [block.ts:283](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L283)*
 
 Consistency checks and header validation for uncles included,
 in the block, if any.
@@ -359,7 +359,7 @@ ___
 
 ▸ **validateUnclesHash**(): *boolean*
 
-*Defined in [block.ts:241](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L241)*
+*Defined in [block.ts:262](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L262)*
 
 Validates the uncle's hash.
 
@@ -388,7 +388,7 @@ ___
 
 ▸ **fromRLPSerializedBlock**(`serialized`: Buffer, `opts?`: [BlockOptions](../interfaces/_index_.blockoptions.md)): *[Block](_block_.block.md)‹›*
 
-*Defined in [block.ts:46](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L46)*
+*Defined in [block.ts:53](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L53)*
 
 **Parameters:**
 
@@ -405,7 +405,7 @@ ___
 
 ▸ **fromValuesArray**(`values`: [BlockBuffer](../modules/_index_.md#blockbuffer), `opts?`: [BlockOptions](../interfaces/_index_.blockoptions.md)): *[Block](_block_.block.md)‹›*
 
-*Defined in [block.ts:56](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L56)*
+*Defined in [block.ts:63](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L63)*
 
 **Parameters:**
 
@@ -422,7 +422,7 @@ ___
 
 ▸ **genesis**(`blockData`: [BlockData](../interfaces/_index_.blockdata.md), `opts?`: [BlockOptions](../interfaces/_index_.blockoptions.md)): *[Block](_block_.block.md)‹›*
 
-*Defined in [block.ts:89](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L89)*
+*Defined in [block.ts:104](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/block.ts#L104)*
 
 Alias for Block.fromBlockData() with initWithGenesisHeader set to true.
 

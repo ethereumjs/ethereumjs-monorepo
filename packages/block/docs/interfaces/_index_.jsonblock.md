@@ -22,7 +22,7 @@ An object with the block's data represented as strings.
 
 • **header**? : *[JsonHeader](_index_.jsonheader.md)*
 
-*Defined in [types.ts:105](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L105)*
+*Defined in [types.ts:113](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L113)*
 
 Header data for the block
 
@@ -32,7 +32,7 @@ ___
 
 • **transactions**? : *JsonTx[]*
 
-*Defined in [types.ts:106](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L106)*
+*Defined in [types.ts:114](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L114)*
 
 ___
 
@@ -40,4 +40,4 @@ ___
 
 • **uncleHeaders**? : *[JsonHeader](_index_.jsonheader.md)[]*
 
-*Defined in [types.ts:107](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L107)*
+*Defined in [types.ts:115](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L115)*

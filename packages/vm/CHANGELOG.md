@@ -6,6 +6,86 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+### 5.1.0 - 2021-02-22
+
+### Clique/PoA Support
+
+This release introduces Clique/PoA support, see the main PR [#1032](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1032) as well as the follow-up PRs [#1074](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1074) and PR [#1088](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1088). This means that you now can run a VM with blocks or transactions from the main PoA networks `Goerli` and `Rinkeby` and generally can use the VM in a Clique/PoA context.
+
+Here is a simple example:
+
+```typescript
+import VM from '@ethereumjs/vm'
+import Common from '@ethereumjs/common'
+
+const common = new Common({ chain: 'goerli' })
+const hardforkByBlockNumber = true
+const vm = new VM({ common, hardforkByBlockNumber })
+
+const serialized = Buffer.from('f901f7a06bfee7294bf4457...', 'hex')
+const block = Block.fromRLPSerializedBlock(serialized, { hardforkByBlockNumber })
+const result = await vm.runBlock(block)
+```
+
+All the corresponding internal dependencies have been updated to Clique/PoA supporting versions, namely:
+
+- @ethereumjs/block -> `v3.1.0`
+- @ethereumjs/blockchain -> `v5.1.0`
+- @ethereumjs/common" -> `v2.1.0`
+
+Note that you need to also use library versions equal or higher than the ones mentioned above when you pass in an instance from one of the libraries to an API call (e.g. `VM.runBlock()`, see example above) to ensure everything is working properly in a Clique/PoA context.
+
+New VM behavior in a Clique/PoA context:
+
+- `VM.runBlock()`: If you do block validation along block runs blocks are now validated to comply with the various Clique/PoA block format specifications (various `extraData` checks e.g.)
+- `VM.runBlock()`: There is no assignment of block rewards to the `coinbase` account taking place
+- `VM.runTx()`: Tx fees are attributed to the block signer instead of the `coinbase` account
+- `COINBASE` opcode: The `COINBASE` opcode returns the block signer instead of the `coinbase` address (Clique specification)
+
+### StateManager Checkpointing Performance
+
+This is the first release which reliably exposes performance gains on all checkpointing operations by integrating the respective `merkle-patricia-trie` [v4.1.0](https://github.com/ethereumjs/ethereumjs-monorepo/releases/tag/merkle-patricia-tree%404.1.0) where the checkpointing mechanism has been reworked substantially.
+
+This leads to linearly growing performance gains on all checkpointing operations (in `VM.runBlock()`, `VM.runTx()` as well as along all `message` calls) along with the size of the trie (state) being operated upon. In practice we have seen 10-50x increases when working on blocks from `mainnet` or the other test networks.
+
+We would be happy on some feedback if this integration is noticeable in your execution context! 😀
+
+### New EIPs
+
+#### EIP-2565: ModExp precompile gas cost
+
+This release adds support for [EIP 2565](https://eips.ethereum.org/EIPS/eip-2565), ModExp precompile gas cost, which is planned to be included in the Berlin hardfork, see PR [#1026](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1026).
+
+#### VM Debug Logger
+
+The VM now comes with an integrated debug logger which gives you fine-grained control to display selected log output along the VM execution flow, see PR [#1080](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1080). These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CL with `DEBUG=[Logger Selection] node [Your Script to Run].js` and produce output like the following:
+
+![EthereumJS VM Debug Logger](./debug.png?raw=true)
+
+For an overview on the different loggers available see the respective [README section](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#understanding-the-vm).
+
+### Other Features
+
+- The `afterBlock` (`VM.runBlock()`) and `afterTx` (`VM.runTx()`) events now expose the respective block or transaction in the event results, PR [#965](https://github.com/ethereumjs/ethereumjs-monorepo/pull/965)
+- New `hardforkByBlockNumber` VM constructor option for `VM.runBlock()` runs (see also corresponding `Block` option), PR [#966](https://github.com/ethereumjs/ethereumjs-monorepo/pull/966) and [#967](https://github.com/ethereumjs/ethereumjs-monorepo/pull/967) (option renamed along release PR)
+- Added new optional `maxBlocks` option to `VM.runBlockchain()`, PR [#1025](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1025)
+- `VM.runBlockchain()` now returns the number of actual blocks run (needs `Blockchain` `v5.1.0` or higher, `void` kept in `TypeScript` function signature for backwards-compatibility), PR [#1065](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1065)
+- New option `skipBlockGasLimitValidation` to disable the block gas limit check in `VM.runTx()`, PR [#1039](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1039)
+- Added type definition `Log` for logs in `TxReceipt` items returned (result of `VM.runBlocks()` and `afterBlock` event), PR [#1084](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1084)
+
+### Bug Fixes
+
+- **Consensus**: fixed `Frontier` consensus bug along `CREATE` with not enough gas, PR [#1081](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1081)
+- Update opcodes along HF switches, added a dedicated `tangerineWhistle` opcode list (no need for calls to `VM._updateOpcodes()` on HF switches manually any more), PR [#1101](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1101) and [#1112](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1112)
+- Use `common` from VM when creating default blocks in `VM.runCall()` and `VM.runCode()`, PR [#1011](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1011)
+- Fixed a bug when the result of the `MODEXP` opcode is 0, PR [#1026](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1026)
+
+### Maintenance
+
+- Updated `run-solidity-contract` example, PR [#1104](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1104)
+- Updated `ethereum/tests` submodule to `1fcd4e5` (2021-02-02), PR [#1116](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1116)
+- Only expose API method on docs, PR [#1119](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1119)
+
 ## 5.0.0 - 2020-11-24
 
 ### New Package Name

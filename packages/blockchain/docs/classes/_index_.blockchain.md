@@ -31,10 +31,12 @@ This class stores and interacts with blocks.
 
 ### Methods
 
+* [cliqueActiveSigners](_index_.blockchain.md#cliqueactivesigners)
 * [delBlock](_index_.blockchain.md#delblock)
 * [getBlock](_index_.blockchain.md#getblock)
 * [getBlocks](_index_.blockchain.md#getblocks)
 * [getHead](_index_.blockchain.md#gethead)
+* [getIteratorHead](_index_.blockchain.md#getiteratorhead)
 * [getLatestBlock](_index_.blockchain.md#getlatestblock)
 * [getLatestHeader](_index_.blockchain.md#getlatestheader)
 * [getTotalDifficulty](_index_.blockchain.md#gettotaldifficulty)
@@ -45,7 +47,10 @@ This class stores and interacts with blocks.
 * [putHeaders](_index_.blockchain.md#putheaders)
 * [safeNumberToHash](_index_.blockchain.md#safenumbertohash)
 * [selectNeededHashes](_index_.blockchain.md#selectneededhashes)
+* [setHead](_index_.blockchain.md#sethead)
+* [setIteratorHead](_index_.blockchain.md#setiteratorhead)
 * [create](_index_.blockchain.md#static-create)
+* [fromBlocksData](_index_.blockchain.md#static-fromblocksdata)
 
 ## Constructors
 
@@ -53,7 +58,7 @@ This class stores and interacts with blocks.
 
 \+ **new Blockchain**(`opts`: [BlockchainOptions](../interfaces/_index_.blockchainoptions.md)): *[Blockchain](_index_.blockchain.md)*
 
-*Defined in [index.ts:119](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L119)*
+*Defined in [index.ts:215](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L215)*
 
 Creates new Blockchain object
 
@@ -71,7 +76,7 @@ Name | Type | Default | Description |
 
 • **_ethash**? : *Ethash*
 
-*Defined in [index.ts:99](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L99)*
+*Defined in [index.ts:134](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L134)*
 
 ___
 
@@ -79,7 +84,7 @@ ___
 
 • **db**: *LevelUp*
 
-*Defined in [index.ts:96](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L96)*
+*Defined in [index.ts:111](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L111)*
 
 ___
 
@@ -87,7 +92,7 @@ ___
 
 • **dbManager**: *DBManager*
 
-*Defined in [index.ts:97](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L97)*
+*Defined in [index.ts:112](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L112)*
 
 ___
 
@@ -95,7 +100,7 @@ ___
 
 • **initPromise**: *Promise‹void›*
 
-*Defined in [index.ts:114](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L114)*
+*Defined in [index.ts:127](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L127)*
 
 ## Accessors
 
@@ -103,7 +108,7 @@ ___
 
 • **get meta**(): *object*
 
-*Defined in [index.ts:194](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L194)*
+*Defined in [index.ts:280](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L280)*
 
 Returns an object with metadata about the Blockchain. It's defined for
 backwards compatibility.
@@ -118,13 +123,26 @@ backwards compatibility.
 
 ## Methods
 
+###  cliqueActiveSigners
+
+▸ **cliqueActiveSigners**(): *Address[]*
+
+*Defined in [index.ts:688](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L688)*
+
+Returns a list with the current block signers
+(only clique PoA, throws otherwise)
+
+**Returns:** *Address[]*
+
+___
+
 ###  delBlock
 
 ▸ **delBlock**(`blockHash`: Buffer): *Promise‹void›*
 
 *Implementation of [BlockchainInterface](../interfaces/_index_.blockchaininterface.md)*
 
-*Defined in [index.ts:644](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L644)*
+*Defined in [index.ts:1112](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L1112)*
 
 Completely deletes a block from the blockchain including any references to
 this block. If this block was in the canonical chain, then also each child
@@ -151,7 +169,7 @@ ___
 
 *Implementation of [BlockchainInterface](../interfaces/_index_.blockchaininterface.md)*
 
-*Defined in [index.ts:527](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L527)*
+*Defined in [index.ts:995](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L995)*
 
 Gets a block by its hash.
 
@@ -169,7 +187,7 @@ ___
 
 ▸ **getBlocks**(`blockId`: Buffer | BN | number, `maxBlocks`: number, `skip`: number, `reverse`: boolean): *Promise‹Block[]›*
 
-*Defined in [index.ts:562](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L562)*
+*Defined in [index.ts:1030](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L1030)*
 
 Looks up many blocks relative to blockId Note: due to `GetBlockHeaders
 (0x03)` (ETH wire protocol) we have to support skip/reverse as well.
@@ -191,15 +209,44 @@ ___
 
 ▸ **getHead**(`name`: string): *Promise‹Block›*
 
-*Defined in [index.ts:321](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L321)*
+*Defined in [index.ts:739](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L739)*
 
 Returns the specified iterator head.
+
+**`deprecated`** use `getIteratorHead()` instead. Note that `getIteratorHead()`
+doesn't return the `headHeader` but the genesis hash as an initial
+iterator head value (now matching the behavior of the `iterator()`
+method on a first run)
 
 **Parameters:**
 
 Name | Type | Default | Description |
 ------ | ------ | ------ | ------ |
-`name` | string | "vm" | Optional name of the state root head (default: 'vm')  |
+`name` | string | "vm" | Optional name of the iterator head (default: 'vm')  |
+
+**Returns:** *Promise‹Block›*
+
+___
+
+###  getIteratorHead
+
+▸ **getIteratorHead**(`name`: string): *Promise‹Block›*
+
+*Defined in [index.ts:716](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L716)*
+
+Returns the specified iterator head.
+
+This function replaces the old `getHead()` method. Note that
+the function deviates from the old behavior and returns the
+genesis hash instead of the current head block if an iterator
+has not been run. This matches the behavior of the `iterator()`
+method.
+
+**Parameters:**
+
+Name | Type | Default | Description |
+------ | ------ | ------ | ------ |
+`name` | string | "vm" | Optional name of the iterator head (default: 'vm')  |
 
 **Returns:** *Promise‹Block›*
 
@@ -209,7 +256,7 @@ ___
 
 ▸ **getLatestBlock**(): *Promise‹Block›*
 
-*Defined in [index.ts:351](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L351)*
+*Defined in [index.ts:769](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L769)*
 
 Returns the latest full block in the canonical chain.
 
@@ -221,7 +268,7 @@ ___
 
 ▸ **getLatestHeader**(): *Promise‹BlockHeader›*
 
-*Defined in [index.ts:337](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L337)*
+*Defined in [index.ts:755](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L755)*
 
 Returns the latest header in the canonical chain.
 
@@ -233,7 +280,7 @@ ___
 
 ▸ **getTotalDifficulty**(`hash`: Buffer, `number?`: BN): *Promise‹BN›*
 
-*Defined in [index.ts:547](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L547)*
+*Defined in [index.ts:1015](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L1015)*
 
 Gets total difficulty for a block specified by hash and number
 
@@ -250,11 +297,9 @@ ___
 
 ###  iterator
 
-▸ **iterator**(`name`: string, `onBlock`: OnBlock): *Promise‹void›*
+▸ **iterator**(`name`: string, `onBlock`: OnBlock, `maxBlocks?`: undefined | number): *Promise‹number›*
 
-*Implementation of [BlockchainInterface](../interfaces/_index_.blockchaininterface.md)*
-
-*Defined in [index.ts:740](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L740)*
+*Defined in [index.ts:1210](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L1210)*
 
 Iterates through blocks starting at the specified iterator head and calls
 the onBlock function on each block. The current location of an iterator
@@ -265,9 +310,12 @@ head can be retrieved using the `getHead()` method.
 Name | Type | Description |
 ------ | ------ | ------ |
 `name` | string | Name of the state root head |
-`onBlock` | OnBlock | Function called on each block with params (block, reorg)  |
+`onBlock` | OnBlock | Function called on each block with params (block, reorg) |
+`maxBlocks?` | undefined &#124; number | How many blocks to run. By default, run all unprocessed blocks in the canonical chain. |
 
-**Returns:** *Promise‹void›*
+**Returns:** *Promise‹number›*
+
+number of blocks actually iterated
 
 ___
 
@@ -277,7 +325,7 @@ ___
 
 *Implementation of [BlockchainInterface](../interfaces/_index_.blockchaininterface.md)*
 
-*Defined in [index.ts:386](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L386)*
+*Defined in [index.ts:804](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L804)*
 
 Adds a block to the blockchain.
 
@@ -299,7 +347,7 @@ ___
 
 ▸ **putBlocks**(`blocks`: Block[]): *Promise‹void›*
 
-*Defined in [index.ts:371](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L371)*
+*Defined in [index.ts:789](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L789)*
 
 Adds blocks to the blockchain.
 
@@ -322,7 +370,7 @@ ___
 
 ▸ **putHeader**(`header`: BlockHeader): *Promise‹void›*
 
-*Defined in [index.ts:415](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L415)*
+*Defined in [index.ts:833](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L833)*
 
 Adds a header to the blockchain.
 
@@ -344,7 +392,7 @@ ___
 
 ▸ **putHeaders**(`headers`: Array‹any›): *Promise‹void›*
 
-*Defined in [index.ts:400](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L400)*
+*Defined in [index.ts:818](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L818)*
 
 Adds many headers to the blockchain.
 
@@ -367,7 +415,7 @@ ___
 
 ▸ **safeNumberToHash**(`number`: BN): *Promise‹Buffer | false›*
 
-*Defined in [index.ts:962](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L962)*
+*Defined in [index.ts:1478](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L1478)*
 
 This method either returns a Buffer if there exists one in the DB or if it
 does not exist (DB throws a `NotFoundError`) then return false If DB throws
@@ -387,7 +435,7 @@ ___
 
 ▸ **selectNeededHashes**(`hashes`: Array‹Buffer›): *Promise‹Buffer[]›*
 
-*Defined in [index.ts:604](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L604)*
+*Defined in [index.ts:1072](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L1072)*
 
 Given an ordered array, returns an array of hashes that are not in the
 blockchain yet. Uses binary search to find out what hashes are missing.
@@ -403,21 +451,81 @@ Name | Type | Description |
 
 ___
 
+###  setHead
+
+▸ **setHead**(`tag`: string, `headHash`: Buffer): *Promise‹void›*
+
+*Defined in [index.ts:1277](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L1277)*
+
+Set header hash of a certain `tag`.
+When calling the iterator, the iterator will start running the first child block after the header hash currenntly stored.
+
+**`deprecated`** use `setIteratorHead()` instead
+
+**Parameters:**
+
+Name | Type | Description |
+------ | ------ | ------ |
+`tag` | string | The tag to save the headHash to |
+`headHash` | Buffer | The head hash to save  |
+
+**Returns:** *Promise‹void›*
+
+___
+
+###  setIteratorHead
+
+▸ **setIteratorHead**(`tag`: string, `headHash`: Buffer): *Promise‹void›*
+
+*Defined in [index.ts:1265](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L1265)*
+
+Set header hash of a certain `tag`.
+When calling the iterator, the iterator will start running the first child block after the header hash currenntly stored.
+
+**Parameters:**
+
+Name | Type | Description |
+------ | ------ | ------ |
+`tag` | string | The tag to save the headHash to |
+`headHash` | Buffer | The head hash to save  |
+
+**Returns:** *Promise‹void›*
+
+___
+
 ### `Static` create
 
 ▸ **create**(`opts`: [BlockchainOptions](../interfaces/_index_.blockchainoptions.md)): *Promise‹[Blockchain](_index_.blockchain.md)‹››*
 
-*Defined in [index.ts:182](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L182)*
+*Defined in [index.ts:190](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L190)*
 
-This static constructor safely creates a new Blockchain object, which also
-awaits the initialization function. If this initialization function throws,
-then this constructor will throw as well, and is therefore the encouraged
-method to use when creating a blockchain object.
+Safe creation of a new Blockchain object awaiting the initialization function,
+encouraged method to use when creating a blockchain object.
 
 **Parameters:**
 
 Name | Type | Default | Description |
 ------ | ------ | ------ | ------ |
+`opts` | [BlockchainOptions](../interfaces/_index_.blockchainoptions.md) | {} | Constructor options, see [BlockchainOptions](../interfaces/_index_.blockchainoptions.md)  |
+
+**Returns:** *Promise‹[Blockchain](_index_.blockchain.md)‹››*
+
+___
+
+### `Static` fromBlocksData
+
+▸ **fromBlocksData**(`blocksData`: BlockData[], `opts`: [BlockchainOptions](../interfaces/_index_.blockchainoptions.md)): *Promise‹[Blockchain](_index_.blockchain.md)‹››*
+
+*Defined in [index.ts:205](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L205)*
+
+Creates a blockchain from a list of block objects,
+objects must be readable by the `Block.fromBlockData()` method
+
+**Parameters:**
+
+Name | Type | Default | Description |
+------ | ------ | ------ | ------ |
+`blocksData` | BlockData[] | - | - |
 `opts` | [BlockchainOptions](../interfaces/_index_.blockchainoptions.md) | {} | Constructor options, see [BlockchainOptions](../interfaces/_index_.blockchainoptions.md)  |
 
 **Returns:** *Promise‹[Blockchain](_index_.blockchain.md)‹››*

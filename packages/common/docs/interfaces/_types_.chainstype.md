@@ -22,7 +22,7 @@
 
 • **names**: *object*
 
-*Defined in [types.ts:9](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L9)*
+*Defined in [packages/common/src/types.ts:9](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L9)*
 
 #### Type declaration:
 
