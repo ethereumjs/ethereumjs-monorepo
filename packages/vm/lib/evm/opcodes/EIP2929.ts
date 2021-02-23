@@ -10,7 +10,12 @@ import { RunState } from './../interpreter'
  * @param {RunState} runState
  * @param {BN}       address
  */
-export function accessAddressEIP2929(runState: RunState, address: Address, baseFee?: number) {
+export function accessAddressEIP2929(
+  runState: RunState,
+  address: Address,
+  chargeGas = true,
+  isSelfdestruct = false
+) {
   if (!runState._common.isActivatedEIP(2929)) return
 
   const addressStr = address.buf
@@ -22,16 +27,16 @@ export function accessAddressEIP2929(runState: RunState, address: Address, baseF
 
     // CREATE, CREATE2 opcodes have the address warmed for free.
     // selfdestruct beneficiary address reads are charged an *additional* cold access
-    if (baseFee !== undefined) {
+    if (chargeGas) {
       runState.eei.useGas(
-        new BN(runState._common.param('gasPrices', 'coldaccountaccess') - baseFee),
+        new BN(runState._common.param('gasPrices', 'coldaccountaccess')),
         'EIP-2929 -> coldaccountaccess'
       )
     }
     // Warm: (selfdestruct beneficiary address reads are not charged when warm)
-  } else if (baseFee !== undefined && baseFee > 0) {
+  } else if (chargeGas && !isSelfdestruct) {
     runState.eei.useGas(
-      new BN(runState._common.param('gasPrices', 'warmstorageread') - baseFee),
+      new BN(runState._common.param('gasPrices', 'warmstorageread')),
       'EIP-2929 -> warmstorageread'
     )
   }
@@ -47,7 +52,6 @@ export function accessAddressEIP2929(runState: RunState, address: Address, baseF
 export function accessStorageEIP2929(runState: RunState, key: Buffer, isSstore: boolean) {
   if (!runState._common.isActivatedEIP(2929)) return
 
-  const baseFee = !isSstore ? runState._common.param('gasPrices', 'sload') : 0
   const address = runState.eei.getAddress().buf
 
   const slotIsCold = !(<EIP2929StateManager>runState.stateManager).isWarmedStorage(address, key)
@@ -57,12 +61,12 @@ export function accessStorageEIP2929(runState: RunState, key: Buffer, isSstore: 
     // eslint-disable-next-line prettier/prettier
     (<EIP2929StateManager>runState.stateManager).addWarmedStorage(address, key)
     runState.eei.useGas(
-      new BN(runState._common.param('gasPrices', 'coldsload') - baseFee),
+      new BN(runState._common.param('gasPrices', 'coldsload')),
       'EIP-2929 -> coldsload'
     )
   } else if (!isSstore) {
     runState.eei.useGas(
-      new BN(runState._common.param('gasPrices', 'warmstorageread') - baseFee),
+      new BN(runState._common.param('gasPrices', 'warmstorageread')),
       'EIP-2929 -> warmstorageread'
     )
   }

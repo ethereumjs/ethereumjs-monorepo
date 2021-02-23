@@ -22,10 +22,6 @@
       "v": 2900,
       "d": "Once per SSTORE operation from clean non-zero to something else"
     },
-    "sload": {
-      "v": 100,
-      "d": "Base fee of the SLOAD opcode"
-    },
     "sstoreNoopGasEIP2200": {
       "v": 100,
       "d": "Once per SSTORE operation if the value doesn't change"
@@ -41,6 +37,46 @@
     "sstoreCleanRefundEIP2200": {
       "v": 4900,
       "d": "Once per SSTORE operation for resetting to the original non-zero value"
+    },
+    "call": {
+      "v": 0,
+      "d": "Base fee of the CALL opcode"
+    },
+    "callcode": {
+      "v": 0,
+      "d": "Base fee of the CALLCODE opcode"
+    },
+    "delegatecall": {
+      "v": 0,
+      "d": "Base fee of the DELEGATECALL opcode"
+    },
+    "staticcall": {
+      "v": 0,
+      "d": "Base fee of the STATICCALL opcode"
+    },
+    "balance": {
+      "v": 0,
+      "d": "Base fee of the BALANCE opcode"
+    },
+    "extcodesize": {
+      "v": 0,
+      "d": "Base fee of the EXTCODESIZE opcode"
+    },
+    "extcodecopy": {
+      "v": 0,
+      "d": "Base fee of the EXTCODECOPY opcode"
+    },
+    "extcodehash": {
+      "v": 0,
+      "d": "Base fee of the EXTCODEHASH opcode"
+    },
+    "sload": {
+      "v": 0,
+      "d": "Base fee of the SLOAD opcode"
+    },
+    "sstore": {
+      "v": 0,
+      "d": "Base fee of the SSTORE opcode"
     }
   },
   "vm": {},
