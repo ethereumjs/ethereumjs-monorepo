@@ -213,6 +213,7 @@ The following loggers are currently available:
 | `vm:tx:gas` | Transaction gas logger |
 | `vm:evm` | EVM control flow, CALL or CREATE message execution |
 | `vm:evm:gas` | EVM gas logger |
+| `vm:eei:gas` | EEI gas logger |
 | `vm:state`| StateManager logger |
 | `vm:ops` | Opcode traces |
 | `vm:ops:[Lower-case opcode name]` | Traces on a specific opcode |
@@ -229,6 +230,12 @@ Run all loggers currently available:
 
 ```shell
 DEBUG=vm:*,vm:*:* ts-node test.ts
+```
+
+Run only the gas loggers:
+
+```shell
+DEBUG=vm:*:gas ts-node test.ts
 ```
 
 Excluding the state logger:

@@ -142,7 +142,7 @@ export default class Interpreter {
     }
 
     // Reduce opcode's base fee
-    this._eei.useGas(new BN(opInfo.fee))
+    this._eei.useGas(new BN(opInfo.fee), `${opInfo.name} (base fee)`)
     // Advance program counter
     this._runState.programCounter++
 
@@ -198,7 +198,6 @@ export default class Interpreter {
     })
 
     const name = eventObj.opcode.name
-    const nameLC = name.toLowerCase()
     const opTrace = {
       pc: eventObj.pc,
       op: name,
@@ -208,10 +207,10 @@ export default class Interpreter {
       depth: eventObj.depth,
     }
 
-    if (!(nameLC in this.opDebuggers)) {
-      this.opDebuggers[nameLC] = createDebugLogger(`vm:ops:${nameLC}`)
+    if (!(name in this.opDebuggers)) {
+      this.opDebuggers[name] = createDebugLogger(`vm:ops:${name}`)
     }
-    this.opDebuggers[nameLC](JSON.stringify(opTrace))
+    this.opDebuggers[name](JSON.stringify(opTrace))
 
     /**
      * The `step` event for trace output
