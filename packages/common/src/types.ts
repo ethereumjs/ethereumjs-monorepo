@@ -23,7 +23,7 @@ export interface Chain {
   genesis: GenesisBlock
   hardforks: Hardfork[]
   bootstrapNodes: BootstrapNode[]
-  dnsNetwork?: string[]
+  dnsNetworks?: string[]
   // TODO: make mandatory in next breaking release
   consensus?: {
     type: string

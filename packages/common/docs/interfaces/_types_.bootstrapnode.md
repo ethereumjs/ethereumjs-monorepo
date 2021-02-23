@@ -24,7 +24,7 @@
 
 • **chainId**? : *undefined | number*
 
-*Defined in [types.ts:49](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L49)*
+*Defined in [packages/common/src/types.ts:63](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L63)*
 
 ___
 
@@ -32,7 +32,7 @@ ___
 
 • **comment**: *string*
 
-*Defined in [types.ts:52](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L52)*
+*Defined in [packages/common/src/types.ts:66](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L66)*
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 • **id**: *string*
 
-*Defined in [types.ts:50](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L50)*
+*Defined in [packages/common/src/types.ts:64](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L64)*
 
 ___
 
@@ -48,7 +48,7 @@ ___
 
 • **ip**: *string*
 
-*Defined in [types.ts:46](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L46)*
+*Defined in [packages/common/src/types.ts:60](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L60)*
 
 ___
 
@@ -56,7 +56,7 @@ ___
 
 • **location**: *string*
 
-*Defined in [types.ts:51](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L51)*
+*Defined in [packages/common/src/types.ts:65](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L65)*
 
 ___
 
@@ -64,7 +64,7 @@ ___
 
 • **network**? : *undefined | string*
 
-*Defined in [types.ts:48](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L48)*
+*Defined in [packages/common/src/types.ts:62](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L62)*
 
 ___
 
@@ -72,4 +72,4 @@ ___
 
 • **port**: *number | string*
 
-*Defined in [types.ts:47](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L47)*
+*Defined in [packages/common/src/types.ts:61](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L61)*

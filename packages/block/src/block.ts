@@ -1,7 +1,7 @@
 /* eslint-disable no-dupe-class-members */
 
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { Address, BN, rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
+import { BN, rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Transaction, TxOptions } from '@ethereumjs/tx'
 import { BlockHeader } from './header'
@@ -17,6 +17,12 @@ export class Block {
   public readonly txTrie = new Trie()
   public readonly _common: Common
 
+  /**
+   * Static constructor to create a block from a block data dictionary
+   *
+   * @param blockData
+   * @param opts
+   */
   public static fromBlockData(blockData: BlockData = {}, opts?: BlockOptions) {
     const { header: headerData, transactions: txsData, uncleHeaders: uhsData } = blockData
 
@@ -50,6 +56,12 @@ export class Block {
     return new Block(header, transactions, uncleHeaders, opts)
   }
 
+  /**
+   * Static constructor to create a block from a RLP-serialized block
+   *
+   * @param serialized
+   * @param opts
+   */
   public static fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions) {
     const values = (rlp.decode(serialized) as any) as BlockBuffer
 
@@ -60,6 +72,12 @@ export class Block {
     return Block.fromValuesArray(values, opts)
   }
 
+  /**
+   * Static constructor to create a block from an array of Buffer values
+   *
+   * @param values
+   * @param opts
+   */
   public static fromValuesArray(values: BlockBuffer, opts?: BlockOptions) {
     if (values.length > 3) {
       throw new Error('invalid block. More values than expected were received')
@@ -153,42 +171,6 @@ export class Block {
    */
   isGenesis(): boolean {
     return this.header.isGenesis()
-  }
-
-  /**
-   * Checks if the block is an epoch transition
-   * block (only clique PoA, throws otherwise)
-   */
-  cliqueIsEpochTransition(): boolean {
-    return this.header.cliqueIsEpochTransition()
-  }
-
-  /**
-   * Returns extra vanity data
-   * (only clique PoA, throws otherwise)
-   */
-  cliqueExtraVanity(): Buffer {
-    return this.header.cliqueExtraVanity()
-  }
-
-  /**
-   * Returns extra seal data
-   * (only clique PoA, throws otherwise)
-   */
-  cliqueExtraSeal(): Buffer {
-    return this.header.cliqueExtraSeal()
-  }
-
-  /**
-   * Returns a list of signers
-   * (only clique PoA, throws otherwise)
-   *
-   * This function throws if not called on an epoch
-   * transition block and should therefore be used
-   * in conjunction with `cliqueIsEpochTransition()`
-   */
-  cliqueEpochTransitionSigners(): Address[] {
-    return this.header.cliqueEpochTransitionSigners()
   }
 
   /**

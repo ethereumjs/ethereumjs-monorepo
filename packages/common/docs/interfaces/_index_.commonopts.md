@@ -13,6 +13,7 @@ Options for instantiating a [Common](../classes/_index_.common.md) instance.
 ### Properties
 
 * [chain](_index_.commonopts.md#chain)
+* [customChains](_index_.commonopts.md#optional-customchains)
 * [eips](_index_.commonopts.md#optional-eips)
 * [hardfork](_index_.commonopts.md#optional-hardfork)
 * [supportedHardforks](_index_.commonopts.md#optional-supportedhardforks)
@@ -23,9 +24,28 @@ Options for instantiating a [Common](../classes/_index_.common.md) instance.
 
 • **chain**: *string | number | object*
 
-*Defined in [index.ts:14](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L14)*
+*Defined in [packages/common/src/index.ts:16](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L16)*
 
-String ('mainnet') or Number (1) chain
+Chain name ('mainnet') or id (1), either from a chain directly supported
+or a custom chain passed in via `customChains`
+
+___
+
+### `Optional` customChains
+
+• **customChains**? : *[Chain](_types_.chain.md)[]*
+
+*Defined in [packages/common/src/index.ts:47](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L47)*
+
+Initialize (in addition to the supported chains) with the selected
+custom chains
+
+Usage (directly with the respective chain intialization via the `chain` option):
+
+```javascript
+import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
+const common = new Common({ chain: 'myCustomChain1', customChains: [ myCustomChain1 ]})
+```
 
 ___
 
@@ -33,7 +53,7 @@ ___
 
 • **eips**? : *number[]*
 
-*Defined in [index.ts:33](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L33)*
+*Defined in [packages/common/src/index.ts:35](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L35)*
 
 Selected EIPs which can be activated, please use an array for instantiation
 (e.g. `eips: [ 2537, ]`)
@@ -48,7 +68,7 @@ ___
 
 • **hardfork**? : *undefined | string*
 
-*Defined in [index.ts:20](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L20)*
+*Defined in [packages/common/src/index.ts:22](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L22)*
 
 String identifier ('byzantium') for hardfork
 
@@ -60,6 +80,6 @@ ___
 
 • **supportedHardforks**? : *Array‹string›*
 
-*Defined in [index.ts:24](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L24)*
+*Defined in [packages/common/src/index.ts:26](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L26)*
 
 Limit parameter returns to the given hardforks

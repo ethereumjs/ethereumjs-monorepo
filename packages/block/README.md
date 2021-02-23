@@ -57,6 +57,62 @@ try {
 
 [Documentation](./docs/README.md)
 
+# CONSENSUS TYPES
+
+The block library supports the creation as well as format and consensus validation of PoW `ethash` and PoA `clique` blocks.
+
+## Ethash/PoW
+
+An Ethash/PoW block can be instantiated as follows:
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import Common from '@ethereumjs/common'
+const common = new Common({ chain: 'mainnet' })
+console.log(common.consensusType()) // 'pow'
+console.log(common.consensusAlgorithm()) // 'ethash'
+const block = Block.fromBlockData({}, { common })
+```
+
+To validate that the difficulty of the block matches the canonical difficulty use `block.validate(blockchain)`.
+
+To calculate the difficulty when creating the block pass in the block option `calcDifficultyFromHeader` with the preceding (parent) `BlockHeader`.
+
+## Clique/PoA (since v3.1.0)
+
+A clique block can be instantiated as follows:
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import Common from '@ethereumjs/common'
+const common = new Common({ chain: 'goerli' })
+console.log(common.consensusType()) // 'poa'
+console.log(common.consensusAlgorithm()) // 'clique'
+const block = Block.fromBlockData({}, { common })
+```
+
+For clique PoA `BlockHeader.validate()` function validates the various Clique/PoA-specific properties (`extraData` checks and others, see API documentation) and `BlockHeader.validateConsensus()` can be used to properly validate that a Clique/PoA block has the correct signature.
+
+For sealing a block on instantiation you can use the `cliqueSigner` constructor option:
+
+```typescript
+const cliqueSigner = Buffer.from('PRIVATE_KEY_HEX_STRING', 'hex')
+const block = Block.fromHeaderData(headerData, { cliqueSigner })
+```
+
+Additionally there are the following utility methods for Clique/PoA related functionality in the `BlockHeader` class:
+
+- `BlockHeader.validateCliqueDifficulty(blockchain: Blockchain): boolean`
+- `BlockHeader.cliqueSigHash()`
+- `BlockHeader.cliqueIsEpochTransition(): boolean`
+- `BlockHeader.cliqueExtraVanity(): Buffer`
+- `BlockHeader.cliqueExtraSeal(): Buffer`
+- `BlockHeader.cliqueEpochTransitionSigners(): Address[]`
+- `BlockHeader.cliqueVerifySignature(signerList: Address[]): boolean`
+- `BlockHeader.cliqueSigner(): Address`
+
+See the API docs for detailed documentation. Note that these methods will throw if called in a non-Clique/PoA context.
+
 # TESTING
 
 Tests in the `tests` directory are partly outdated and testing is primarily done by running the `BlockchainTests` from within the [ethereumjs-vm](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/vm#synopsis) package.

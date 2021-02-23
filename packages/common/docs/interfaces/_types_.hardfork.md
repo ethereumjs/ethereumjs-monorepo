@@ -11,6 +11,7 @@
 ### Properties
 
 * [block](_types_.hardfork.md#block)
+* [forkHash](_types_.hardfork.md#optional-forkhash)
 * [name](_types_.hardfork.md#name)
 
 ## Properties
@@ -19,7 +20,15 @@
 
 • **block**: *number | null*
 
-*Defined in [types.ts:42](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L42)*
+*Defined in [packages/common/src/types.ts:55](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L55)*
+
+___
+
+### `Optional` forkHash
+
+• **forkHash**? : *string | null*
+
+*Defined in [packages/common/src/types.ts:56](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L56)*
 
 ___
 
@@ -27,4 +36,4 @@ ___
 
 • **name**: *string*
 
-*Defined in [types.ts:41](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L41)*
+*Defined in [packages/common/src/types.ts:54](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L54)*
