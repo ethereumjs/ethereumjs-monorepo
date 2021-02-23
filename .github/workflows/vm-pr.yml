@@ -55,7 +55,8 @@ jobs:
       matrix:
         fork: [
           'Berlin',
-          'Istanbul'
+          'Istanbul',
+          'MuirGlacier'
         ]
       fail-fast: false
     steps:
