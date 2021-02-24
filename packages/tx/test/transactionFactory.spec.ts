@@ -1,5 +1,5 @@
 import Common from '@ethereumjs/common'
-import { BN, rlp } from 'ethereumjs-util'
+import { BN } from 'ethereumjs-util'
 import tape from 'tape'
 import { EIP2930Transaction, TransactionFactory, LegacyTransaction } from '../src'
 
@@ -73,34 +73,5 @@ tape('[TransactionFactory]: Basic functions', function (t) {
       TransactionFactory.getTransactionClass(1)
     })
     st.end()
-  })
-
-  // TestData from https://github.com/ethereum/go-ethereum/tree/ac8e5900e6d38f7577251e7e36da9b371b2e5488/core/testdata
-  // This tries to decode the transaction from the block.
-  // It checks afterwards if the created transaction is of the right type.
-  t.test('should succesfully decode block transactions', function (t) {
-    const testCommon = Common.forCustomChain('mainnet', { chainId: 133519467574834 }, 'berlin')
-    testCommon.setEIPs([2718, 2929, 2930])
-
-    for (let i = 0; i <= 9; i++) {
-      const blockData = require(`./json/eip2930/acl_block_${i}.json`)
-      const decodedBlock = rlp.decode(Buffer.from(blockData.rlp, 'hex'))
-      const transactionList: any = decodedBlock[1]
-      for (let transaction = 0; transaction < transactionList.length; transaction++) {
-        const tx = TransactionFactory.fromBlockBodyData(transactionList[transaction], {
-          common: testCommon,
-        })
-        const type = tx.constructor.name
-        const txData = blockData.json.transactions[transaction]
-        const txType = parseInt(txData.type.slice(2), 16)
-        const expected = TransactionFactory.getTransactionClass(txType, testCommon)
-        t.equals(type, expected.name)
-        t.ok(tx.isSigned())
-        const expectedHash = Buffer.from(txData.hash.slice(2), 'hex')
-        t.ok(tx.hash().equals(expectedHash))
-      }
-    }
-
-    t.end()
   })
 })

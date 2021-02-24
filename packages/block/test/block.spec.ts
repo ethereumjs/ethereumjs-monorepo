@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { BN, KECCAK256_RLP_ARRAY, rlp, zeros } from 'ethereumjs-util'
+import { BN, rlp, zeros } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block, BlockBuffer } from '../src'
 import blockFromRpc from '../src/from-rpc'
@@ -574,52 +574,4 @@ tape('[Block]: block functions', function (t) {
       st.end()
     }
   )
-
-  t.test('should succesfully decode EIP2930 blocks', async function (st) {
-    const common = Common.forCustomChain('mainnet', { chainId: 133519467574834 }, 'berlin')
-    common.setEIPs([2718, 2929, 2930])
-    const mock = new Mockchain()
-
-    const genesisJSON = require('./testdata/eip2930/acl_genesis.json')
-
-    const block0 = require('./testdata/eip2930/acl_block_0.json')
-    const hash = block0.json.header.parentHash.slice(2)
-
-    const expectedHash = Buffer.from(hash, 'hex')
-
-    // The genesis block is not of a default RLP-encoded one, but instead a Geth genesis block
-    // We currently cannot process that, so create a mock block.
-    const mockBlock = {
-      hash: function () {
-        return expectedHash
-      },
-      header: {
-        number: new BN(genesisJSON.number.slice(2), 'hex'),
-        timestamp: new BN(genesisJSON.timestamp.slice(2), 'hex'),
-        difficulty: new BN(0x20000),
-        uncleHash: KECCAK256_RLP_ARRAY,
-        gasLimit: new BN(block0.json.header.gasLimit.slice(2), 'hex'),
-      },
-    }
-
-    await mock.putBlock(<any>mockBlock)
-
-    const fileHead = './testdata/eip2930/acl_block_'
-    for (let i = 0; i <= 9; i++) {
-      const rawData = require(`${fileHead}${i}.json`)
-      const rlp = Buffer.from(rawData.rlp, 'hex')
-      const block = Block.fromRLPSerializedBlock(rlp, { common })
-      st.ok('succesfully decoded block')
-      await mock.putBlock(block)
-      const expectedHash = Buffer.from(rawData.json.header.hash.slice(2), 'hex')
-      st.ok(block.hash().equals(expectedHash))
-      try {
-        await block.validate(mock)
-        st.pass('succesfully verified block')
-      } catch (e) {
-        st.fail('block verification failed')
-      }
-    }
-    st.end()
-  })
 })
