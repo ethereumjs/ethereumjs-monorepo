@@ -1,7 +1,7 @@
 import { debug as createDebugLogger } from 'debug'
 import { Address, BN } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
-import { Transaction } from '@ethereumjs/tx'
+import { AccessListItem, EIP2930Transaction, Transaction } from '@ethereumjs/tx'
 import VM from './index'
 import Bloom from './bloom'
 import { default as EVM, EVMResult } from './evm/evm'
@@ -9,6 +9,7 @@ import { short } from './evm/opcodes/util'
 import Message from './evm/message'
 import TxContext from './evm/txContext'
 import { getActivePrecompiles } from './evm/precompiles'
+import { EIP2929StateManager } from './state/interface'
 
 const debug = createDebugLogger('vm:tx')
 const debugGas = createDebugLogger('vm:tx:gas')
@@ -85,8 +86,8 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
     throw new Error('tx has a higher gas limit than the block')
   }
 
-  // Have to cast as `any` to access clearWarmedAccounts
-  const state: any = this.stateManager
+  // Have to cast as `EIP2929StateManager` to access clearWarmedAccounts
+  const state: EIP2929StateManager = <EIP2929StateManager>this.stateManager
 
   // Ensure we start with a clear warmed accounts Map
   if (this._common.isActivatedEIP(2929)) {
@@ -96,6 +97,23 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
   await state.checkpoint()
   debug('-'.repeat(100))
   debug(`tx checkpoint`)
+
+  // Is it an Access List transaction?
+  if (opts.tx.transactionType == 1 && this._common.isActivatedEIP(2929)) {
+    if (!this._common.isActivatedEIP(2930)) {
+      throw new Error('Cannot run transaction: EIP 2930 is not activated.')
+    }
+
+    const castedTx = <EIP2930Transaction>opts.tx
+
+    castedTx.AccessListJSON.forEach((accessListItem: AccessListItem) => {
+      const address = Buffer.from(accessListItem.address.slice(2), 'hex')
+      state.addWarmedAddress(address)
+      accessListItem.storageKeys.forEach((storageKey: string) => {
+        state.addWarmedStorage(address, Buffer.from(storageKey.slice(2), 'hex'))
+      })
+    })
+  }
 
   try {
     const result = await _runTx.bind(this)(opts)
