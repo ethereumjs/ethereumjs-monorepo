@@ -1,8 +1,7 @@
 import Common from '@ethereumjs/common'
-import { LegacyTransaction } from './unsignedLegacyTransaction'
+import { LegacyTransaction } from './legacyTransaction'
 import { EIP2930Transaction } from './EIP2930Transaction'
 import { TxOptions, Transaction, TxData } from './types'
-import { assert } from 'console'
 import BN from 'bn.js'
 
 const DEFAULT_COMMON = new Common({ chain: 'mainnet' })
@@ -17,10 +16,9 @@ export default class TransactionFactory {
       // Assume LegacyTransaction
       return LegacyTransaction.fromTxData(txData, transactionOptions)
     } else {
-      assert(
-        TransactionFactory.typedTransactionsSupport(common),
-        'Common does not support TypedTransactions. Activate EIP-2718.'
-      )
+      if (!TransactionFactory.typedTransactionsSupport(common)) {
+        throw new Error('Common does not support TypedTransactions. Activate EIP-2718.')
+      }
       const txType = new BN(txData.type).toNumber()
       return TransactionFactory.getTransactionClass(txType, common).fromTxData(
         txData,
@@ -39,10 +37,9 @@ export default class TransactionFactory {
     const common = transactionOptions.common ?? DEFAULT_COMMON
     if (rawData[0] <= 0x7f) {
       // It is an EIP-2718 Typed Transaction
-      assert(
-        TransactionFactory.typedTransactionsSupport(common),
-        'Common does not support TypedTransactions. Activate EIP-2718.'
-      )
+      if (!TransactionFactory.typedTransactionsSupport(common)) {
+        throw new Error('Common does not support TypedTransactions. Activate EIP-2718.')
+      }
       // Determine the type.
       let EIP: number
       switch (rawData[0]) {
@@ -100,10 +97,9 @@ export default class TransactionFactory {
   ) {
     const usedCommon = common ?? DEFAULT_COMMON
     if (transactionID !== 0) {
-      assert(
-        TransactionFactory.typedTransactionsSupport(usedCommon),
-        'Common does not support TypedTransactions. Activate EIP-2718.'
-      )
+      if (!TransactionFactory.typedTransactionsSupport(usedCommon)) {
+        throw new Error('Common does not support TypedTransactions. Activate EIP-2718.')
+      }
     }
 
     const legacyTxn = transactionID == 0 || (transactionID >= 0x80 && transactionID <= 0xff)

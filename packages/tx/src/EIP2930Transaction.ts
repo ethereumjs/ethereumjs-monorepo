@@ -7,7 +7,6 @@ import {
   ecrecover,
   keccak256,
   rlp,
-  rlphash,
   toBuffer,
 } from 'ethereumjs-util'
 import { BaseTransaction } from './baseTransaction'
@@ -223,7 +222,7 @@ export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
       this.data,
       this.accessList,
     ]
-    return Buffer.concat([Buffer.from('01', 'hex'), rlphash(base)])
+    return keccak256(Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base)]))
   }
 
   /**

@@ -139,12 +139,12 @@ tape('[EIP2930 transactions]: Basic functions', function (t) {
     )
     // Cost should be:
     // Base fee + 2*TxDataNonZero + TxDataZero + AccessListAddressCost + AccessListSlotCost
-    const txDataZero = common.param('gasPrices', 'txDataZero')
-    const txDataNonZero = common.param('gasPrices', 'txDataNonZero')
-    const accessListStorageKeyCost = common.param('gasPrices', 'accessListStorageKeyCost')
-    const accessListAddressCost = common.param('gasPrices', 'accessListAddressCost')
-    const baseFee = common.param('gasPrices', 'tx')
-    const creationFee = common.param('gasPrices', 'txCreation')
+    const txDataZero: number = common.param('gasPrices', 'txDataZero')
+    const txDataNonZero: number = common.param('gasPrices', 'txDataNonZero')
+    const accessListStorageKeyCost: number = common.param('gasPrices', 'accessListStorageKeyCost')
+    const accessListAddressCost: number = common.param('gasPrices', 'accessListAddressCost')
+    const baseFee: number = common.param('gasPrices', 'tx')
+    const creationFee: number = common.param('gasPrices', 'txCreation')
 
     st.ok(
       tx

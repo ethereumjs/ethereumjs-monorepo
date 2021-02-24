@@ -383,9 +383,9 @@ tape('[Transaction]: Basic functions', function (t) {
     st.ok(tx.isSigned())
 
     const signedValues = (rlp.decode(rawSigned) as any) as Buffer[]
-    tx = Transaction.fromValuesArray(signedValues)
+    tx = LegacyTransaction.fromValuesArray(signedValues)
     st.ok(tx.isSigned())
-    tx = Transaction.fromValuesArray(signedValues.slice(0, 6))
+    tx = LegacyTransaction.fromValuesArray(signedValues.slice(0, 6))
     st.notOk(tx.isSigned())
     st.end()
   })
@@ -463,25 +463,28 @@ tape('[Transaction]: Basic functions', function (t) {
         common,
       }).sign(privateKey)
 
-      let signedWithEIP155 = LegacyTransaction.fromTxData(fixtureTxSignedWithEIP155.toJSON()).sign(
-        privateKey
-      )
+      let signedWithEIP155 = LegacyTransaction.fromTxData(
+        <any>fixtureTxSignedWithEIP155.toJSON()
+      ).sign(privateKey)
 
       st.true(signedWithEIP155.verifySignature())
       st.notEqual(signedWithEIP155.v?.toString('hex'), '1c')
       st.notEqual(signedWithEIP155.v?.toString('hex'), '1b')
 
-      signedWithEIP155 = LegacyTransaction.fromTxData(fixtureTxSignedWithoutEIP155.toJSON()).sign(
-        privateKey
-      )
+      signedWithEIP155 = LegacyTransaction.fromTxData(
+        <any>fixtureTxSignedWithoutEIP155.toJSON()
+      ).sign(privateKey)
 
       st.true(signedWithEIP155.verifySignature())
       st.notEqual(signedWithEIP155.v?.toString('hex'), '1c')
       st.notEqual(signedWithEIP155.v?.toString('hex'), '1b')
 
-      let signedWithoutEIP155 = LegacyTransaction.fromTxData(fixtureTxSignedWithEIP155.toJSON(), {
-        common,
-      }).sign(privateKey)
+      let signedWithoutEIP155 = LegacyTransaction.fromTxData(
+        <any>fixtureTxSignedWithEIP155.toJSON(),
+        {
+          common,
+        }
+      ).sign(privateKey)
 
       st.true(signedWithoutEIP155.verifySignature())
       st.true(
@@ -490,9 +493,12 @@ tape('[Transaction]: Basic functions', function (t) {
         "v shouldn't be EIP155 encoded"
       )
 
-      signedWithoutEIP155 = LegacyTransaction.fromTxData(fixtureTxSignedWithoutEIP155.toJSON(), {
-        common,
-      }).sign(privateKey)
+      signedWithoutEIP155 = LegacyTransaction.fromTxData(
+        <any>fixtureTxSignedWithoutEIP155.toJSON(),
+        {
+          common,
+        }
+      ).sign(privateKey)
 
       st.true(signedWithoutEIP155.verifySignature())
       st.true(

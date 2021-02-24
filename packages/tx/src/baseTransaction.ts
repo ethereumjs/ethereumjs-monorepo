@@ -19,7 +19,7 @@ export abstract class BaseTransaction<TransactionObject> {
   public readonly data: Buffer
   public readonly common: Common
 
-  constructor(txData: BaseTransactionData, txOptions?: BaseTxOptions) {
+  constructor(txData: BaseTransactionData, txOptions: BaseTxOptions = {}) {
     const { nonce, gasLimit, gasPrice, to, value, data } = txData
 
     this.nonce = new BN(toBuffer(nonce))
@@ -38,7 +38,10 @@ export abstract class BaseTransaction<TransactionObject> {
 
     this.validateExcdeedsMaxInteger(validateCannotExceedMaxInteger)
 
-    this.common = txOptions?.common ?? DEFAULT_COMMON
+    this.common =
+      (txOptions.common &&
+        Object.assign(Object.create(Object.getPrototypeOf(txOptions.common)), txOptions.common)) ??
+      DEFAULT_COMMON
   }
 
   protected validateExcdeedsMaxInteger(validateCannotExceedMaxInteger: { [key: string]: BN }) {
@@ -113,8 +116,11 @@ export abstract class BaseTransaction<TransactionObject> {
    * (DataFee + TxFee + Creation Fee).
    */
   validate(): boolean
+  /* eslint-disable-next-line no-dupe-class-members */
   validate(stringError: false): boolean
+  /* eslint-disable-next-line no-dupe-class-members */
   validate(stringError: true): string[]
+  /* eslint-disable-next-line no-dupe-class-members */
   validate(stringError: boolean = false): boolean | string[] {
     const errors = []
 

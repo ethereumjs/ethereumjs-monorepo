@@ -1,6 +1,6 @@
 import { AddressLike, BNLike, BufferLike } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { LegacyTransaction } from './unsignedLegacyTransaction'
+import { LegacyTransaction } from './legacyTransaction'
 import { EIP2930Transaction } from './EIP2930Transaction'
 
 /**
