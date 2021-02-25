@@ -27,7 +27,7 @@ export class LegacyTransaction extends BaseTransaction<LegacyTransaction> {
   public readonly s?: BN
 
   get transactionType(): number {
-    return 1
+    return 0
   }
 
   public static fromTxData(txData: TxData, opts: TxOptions = {}) {
