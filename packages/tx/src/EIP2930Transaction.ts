@@ -7,6 +7,7 @@ import {
   ecrecover,
   keccak256,
   rlp,
+  setLengthLeft,
   toBuffer,
 } from 'ethereumjs-util'
 import { BaseTransaction } from './baseTransaction'
@@ -183,7 +184,11 @@ export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
       throw new Error('The y-parity of the transaction should either be 0 or 1')
     }
 
-    // todo verify max BN of r,s
+    if (this.common.gteHardfork('homestead') && this.s && this.s.gt(N_DIV_2)) {
+      throw new Error(
+        'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
+      )
+    }
 
     // Verify the access list format.
     for (let key = 0; key < this.accessList.length; key++) {
@@ -283,18 +288,19 @@ export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
    * Returns an object with the JSON representation of the transaction
    */
   toJSON(): JsonTx {
-    // TODO: fix type
     const accessListJSON = []
+
     for (let index = 0; index < this.accessList.length; index++) {
       const item: any = this.accessList[index]
-      const JSONItem: any = ['0x' + (<Buffer>item[0]).toString('hex')]
+      const JSONItem: any = {
+        address: '0x' + setLengthLeft(<Buffer>item[0], 20).toString('hex'),
+        storageKeys: [],
+      }
       const storageSlots: Buffer[] = item[1]
-      const JSONSlots = []
       for (let slot = 0; slot < storageSlots.length; slot++) {
         const storageSlot = storageSlots[slot]
-        JSONSlots.push('0x' + storageSlot.toString('hex'))
+        JSONItem.storageKeys.push('0x' + setLengthLeft(storageSlot, 32).toString('hex'))
       }
-      JSONItem.push(JSONSlots)
       accessListJSON.push(JSONItem)
     }
 

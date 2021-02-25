@@ -165,6 +165,8 @@ export type BaseTransactionData = {
   data?: BufferLike
 }
 
+type JsonAccessListItem = { address: string; storageKeys: string[] }
+
 /**
  * An object with all of the transaction's values represented as strings.
  */
@@ -179,7 +181,7 @@ export interface JsonTx {
   s?: string
   value?: string
   chainId?: string
-  accessList?: string[]
+  accessList?: JsonAccessListItem[]
   type?: string
 }
 

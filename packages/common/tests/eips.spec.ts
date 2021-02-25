@@ -57,8 +57,4 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
 
     st.end()
   })
-
-  t.test('Initialization', function (st: tape.Test) {
-    st.end()
-  })
 })
