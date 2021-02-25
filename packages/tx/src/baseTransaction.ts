@@ -160,7 +160,9 @@ export abstract class BaseTransaction<TransactionObject> {
     }
   }
 
-  abstract raw(): Buffer[]
+  // In case of a LegacyTransaction, this is a Buffer[]
+  // For a TypedTransaction, this is a Buffer
+  abstract raw(): Buffer[] | Buffer
   abstract hash(): Buffer
 
   abstract getMessageToVerifySignature(): Buffer

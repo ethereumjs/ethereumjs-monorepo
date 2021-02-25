@@ -154,7 +154,7 @@ export class Block {
   raw(): BlockBuffer {
     return [
       this.header.raw(),
-      this.transactions.map((tx) => tx.raw()),
+      this.transactions.map((tx) => <Buffer[]>tx.raw()),
       this.uncleHeaders.map((uh) => uh.raw()),
     ]
   }

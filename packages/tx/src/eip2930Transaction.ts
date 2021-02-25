@@ -250,7 +250,7 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
    * TODO: check what raw means - is this the raw transaction as in block body?
    * If that is the case, it is only callable if it is signed.
    */
-  raw(): Buffer[] {
+  raw(asList = false): Buffer[] | Buffer {
     const base = <Buffer[]>[
       bnToRlp(this.chainId),
       bnToRlp(this.nonce),
@@ -264,14 +264,18 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
       this.r !== undefined ? bnToRlp(this.r) : Buffer.from([]),
       this.s !== undefined ? bnToRlp(this.s) : Buffer.from([]),
     ]
-    return base
+    if (!asList) {
+      return Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base)])
+    } else {
+      return base
+    }
   }
 
   /**
    * Returns the rlp encoding of the transaction.
    */
   serialize(): Buffer {
-    return Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(this.raw())])
+    return <Buffer>this.raw()
   }
 
   /**

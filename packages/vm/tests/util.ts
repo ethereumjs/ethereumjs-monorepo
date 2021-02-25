@@ -8,7 +8,7 @@ import {
   setLengthLeft,
   toBuffer,
 } from 'ethereumjs-util'
-import { LegacyTransaction, TxOptions } from '@ethereumjs/tx'
+import { EIP2930Transaction, LegacyTransaction, TxOptions } from '@ethereumjs/tx'
 import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 
@@ -99,7 +99,12 @@ const format = (exports.format = function (
  * @returns {Transaction} Transaction to be passed to VM.runTx function
  */
 export function makeTx(txData: any, opts?: TxOptions) {
-  const tx = LegacyTransaction.fromTxData(txData, opts)
+  let tx
+  if (txData.accessLists) {
+    tx = EIP2930Transaction.fromTxData(txData, opts)
+  } else {
+    tx = LegacyTransaction.fromTxData(txData, opts)
+  }
 
   if (txData.secretKey) {
     const privKey = toBuffer(txData.secretKey)
