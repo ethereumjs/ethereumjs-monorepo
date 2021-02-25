@@ -73,12 +73,14 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
   // Instantiate a transaction from the raw RLP serialized tx. This means that the RLP should start with 0x01.
   public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     if (serialized[0] !== 1) {
-      throw 'This is not an EIP-2930 transaction'
+      throw new Error(
+        `Invalid serialized tx input: not an EIP-2930 transaction (wrong tx type, expected: 1, received: ${serialized[0]}`
+      )
     }
 
     const values = rlp.decode(serialized.slice(1))
     if (!Array.isArray(values)) {
-      throw new Error('Invalid serialized tx input. Must be array')
+      throw new Error('Invalid serialized tx input: must be array')
     }
 
     return EIP2930Transaction.fromValuesArray(values, opts)
