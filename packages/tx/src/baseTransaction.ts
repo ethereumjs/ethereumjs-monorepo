@@ -36,7 +36,7 @@ export abstract class BaseTransaction<TransactionObject> {
       value: this.value,
     }
 
-    this.validateExcdeedsMaxInteger(validateCannotExceedMaxInteger)
+    this.validateExceedsMaxInteger(validateCannotExceedMaxInteger)
 
     this.common =
       (txOptions.common &&
@@ -44,7 +44,7 @@ export abstract class BaseTransaction<TransactionObject> {
       DEFAULT_COMMON
   }
 
-  protected validateExcdeedsMaxInteger(validateCannotExceedMaxInteger: { [key: string]: BN }) {
+  protected validateExceedsMaxInteger(validateCannotExceedMaxInteger: { [key: string]: BN }) {
     for (const [key, value] of Object.entries(validateCannotExceedMaxInteger)) {
       if (value && value.gt(MAX_INTEGER)) {
         throw new Error(`${key} cannot exceed MAX_INTEGER, given ${value}`)

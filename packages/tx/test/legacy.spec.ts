@@ -21,7 +21,7 @@ tape('[Transaction]: Basic functions', function (t) {
 
   t.test('should initialize correctly', function (st) {
     let tx = LegacyTransaction.fromTxData({})
-    st.equal(tx.common.hardfork(), 'istanbul', 'should initialize with correct default HF')
+    st.equal(tx.common.hardfork(), 'berlin', 'should initialize with correct default HF')
     st.ok(Object.isFrozen(tx), 'tx should be frozen by default')
 
     const common = new Common({ chain: 'mainnet', hardfork: 'spuriousDragon' })
