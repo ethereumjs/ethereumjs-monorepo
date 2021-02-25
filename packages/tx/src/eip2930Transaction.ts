@@ -123,9 +123,9 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
 
     super({ nonce, gasPrice, gasLimit, to, value, data }, opts)
 
-    if (!this.common.eips().includes(2718)) {
+    if (!this.common.isActivatedEIP(2718)) {
       throw new Error('EIP-2718 not enabled on Common')
-    } else if (!this.common.eips().includes(2930)) {
+    } else if (!this.common.isActivatedEIP(2930)) {
       throw new Error('EIP-2930 not enabled on Common')
     }
 

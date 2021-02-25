@@ -3,7 +3,8 @@
     "comment": "Optional access lists",
     "url": "https://eips.ethereum.org/EIPS/eip-2930",
     "status": "Draft",
-    "minimumHardfork": "berlin",
+    "minimumHardfork": "istanbul",
+    "requiredEIPs": [2718, 2929],
     "gasConfig": {},
     "gasPrices": {
       "accessListStorageKeyCost": {
@@ -15,7 +16,6 @@
         "d": "Gas cost per storage key in an Access List transaction"
       }
     },
-    "requiredEIPs": [2718, 2929],
     "vm": {},
     "pow": {}
   }
