@@ -332,11 +332,12 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     }
     let txReceipt
     let encodedReceipt
-    let receiptLog = `Generate tx receipt gasUsed=${gasUsed} bitvector=${short(
-      abstractTxReceipt.bitvector
-    )} (${abstractTxReceipt.bitvector.length} bytes) logs=${abstractTxReceipt.logs.length}`
-    if (tx.transactionType == 0) {
-      receiptLog += 'transactionType=0'
+    let receiptLog = `Generate tx receipt transactionType=${
+      tx.transactionType
+    } gasUsed=${gasUsed} bitvector=${short(abstractTxReceipt.bitvector)} (${
+      abstractTxReceipt.bitvector.length
+    } bytes) logs=${abstractTxReceipt.logs.length}`
+    if (tx.transactionType === 0) {
       if (this._common.gteHardfork('byzantium')) {
         txReceipt = {
           status: txRes.execResult.exceptionError ? 0 : 1, // Receipts have a 0 as status on error
@@ -353,7 +354,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
         receiptLog += ` stateRoot=${txReceipt.stateRoot.toString('hex')} (< Byzantium)`
       }
       encodedReceipt = encode(Object.values(txReceipt))
-    } else if (tx.transactionType == 1) {
+    } else if (tx.transactionType === 1) {
       txReceipt = {
         status: txRes.execResult.exceptionError ? 0 : 1,
         ...abstractTxReceipt,

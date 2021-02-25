@@ -99,7 +99,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
   debug(`tx checkpoint`)
 
   // Is it an Access List transaction?
-  if (opts.tx.transactionType == 1 && this._common.isActivatedEIP(2929)) {
+  if (opts.tx.transactionType === 1 && this._common.isActivatedEIP(2929)) {
     if (!this._common.isActivatedEIP(2930)) {
       throw new Error('Cannot run transaction: EIP 2930 is not activated.')
     }
