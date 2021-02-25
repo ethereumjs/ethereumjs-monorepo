@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## UNRELEASED
+
+- Fixes for [EIP2929](https://eips.ethereum.org/EIPS/eip-2929) (Gas cost increases for state access opcodes), PR [#1124](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1124)
+- Integration of [EIP2718](https://eips.ethereum.org/EIPS/eip-2718) (Typed Transactions) and [EIP2930](https://eips.ethereum.org/EIPS/eip-2930) (Access List Transaction), PR [#1048](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1048). VM now has support for access list transactions.
+
 ### 5.1.0 - 2021-02-22
 
 ### Clique/PoA Support

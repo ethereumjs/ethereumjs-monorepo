@@ -360,8 +360,6 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
         ...abstractTxReceipt,
       } as EIP2930Receipt
 
-      // rlp([status, cumulativeGasUsed, logsBloom, logs])
-
       encodedReceipt = Buffer.concat([Buffer.from('01', 'hex'), encode(Object.values(txReceipt))])
     } else {
       throw new Error(`Unsupported transaction type ${tx.transactionType}`)

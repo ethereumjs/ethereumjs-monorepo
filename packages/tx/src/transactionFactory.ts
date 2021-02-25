@@ -10,6 +10,11 @@ export default class TransactionFactory {
   // It is not possible to instantiate a TransactionFactory object.
   private constructor() {}
 
+  /**
+   * Create a transaction from a `txData` object
+   * @param txData - The transaction data. The `type` field will determine which transaction type is returned (if undefined, create a LegacyTransaction)
+   * @param txOptions - Options to pass on to the constructor of the transaction
+   */
   public static fromTxData(txData: TxData, txOptions: TxOptions = {}): Transaction {
     const common = txOptions.common ?? DEFAULT_COMMON
     if (txData.type === undefined) {
@@ -107,6 +112,11 @@ export default class TransactionFactory {
     throw new Error(`TypedTransaction with ID ${transactionID} unknown`)
   }
 
+  /**
+   * Check if a typed transaction eip is supported by common
+   * @param common - The common to use
+   * @param eip - The EIP to check
+   */
   public static eipSupport(common: Common, eip: number): boolean {
     if (!common.isActivatedEIP(2718)) {
       return false

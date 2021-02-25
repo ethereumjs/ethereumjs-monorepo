@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## UNRELEASED
+
+- Integration of [EIP2718](https://eips.ethereum.org/EIPS/eip-2718) (Typed Transactions) and [EIP2930](https://eips.ethereum.org/EIPS/eip-2930) (Access List Transaction), PR [#1048](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1048).
+
+This PR integrates the Typed Transactions. In order to produce the right transactions, there is a new class called the `TransactionFactory`. This factory helps to create the correct transaction. When decoding directly from blocks, use the `fromBlockBodyData` method. The PR also refactors the internals of the legacy transaction and the new typed transaction: there is a base transaction class, which both transaction classes extends. It is also possible to import `EIP2930Transaction` (an access list transaction).
+
+### How to migrate
+
+The old `Transaction` class has been renamed to `LegacyTransaction`. This class works just how it used to work.
+
 
 ## 3.0.2 - 2021-02-16
 

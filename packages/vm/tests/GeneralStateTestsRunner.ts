@@ -34,6 +34,13 @@ function parseTestCases(
       tx.gasLimit = testData.transaction.gasLimit[testIndexes['gas']]
       tx.value = testData.transaction.value[testIndexes['value']]
 
+      if (tx.accessLists) {
+        tx.accessList = testData.transaction.accessLists[testIndexes['data']]
+        if (tx.chainId == undefined) {
+          tx.chainId = 1
+        }
+      }
+
       return {
         transaction: tx,
         postStateRoot: testCase['hash'],

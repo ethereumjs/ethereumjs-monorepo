@@ -7,6 +7,7 @@ import {
   ecrecover,
   keccak256,
   rlp,
+  setLengthLeft,
   toBuffer,
 } from 'ethereumjs-util'
 import { BaseTransaction } from './baseTransaction'
@@ -183,7 +184,11 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
       throw new Error('The y-parity of the transaction should either be 0 or 1')
     }
 
-    // todo verify max BN of r,s
+    if (this.common.gteHardfork('homestead') && this.s && this.s.gt(N_DIV_2)) {
+      throw new Error(
+        'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
+      )
+    }
 
     // Verify the access list format.
     for (let key = 0; key < this.accessList.length; key++) {
@@ -247,8 +252,8 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
 
   /**
    * Returns a Buffer Array of the raw Buffers of this transaction, in order.
-   * TODO: check what raw means - is this the raw transaction as in block body?
-   * If that is the case, it is only callable if it is signed.
+   * @param asList - By default, this method returns a concatenated Buffer
+   *                 If this is not desired, then set this to `true`, to get a Buffer array.
    */
   raw(asList = false): Buffer[] | Buffer {
     const base = <Buffer[]>[
@@ -272,7 +277,8 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
   }
 
   /**
-   * Returns the rlp encoding of the transaction.
+   * Returns the encoding of the transaction. For typed transaction, this is the raw Buffer.
+   * In LegacyTransaction, this is a Buffer array.
    */
   serialize(): Buffer {
     return <Buffer>this.raw()
@@ -282,18 +288,19 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
    * Returns an object with the JSON representation of the transaction
    */
   toJSON(): JsonTx {
-    // TODO: fix type
     const accessListJSON = []
+
     for (let index = 0; index < this.accessList.length; index++) {
       const item: any = this.accessList[index]
-      const JSONItem: any = ['0x' + (<Buffer>item[0]).toString('hex')]
+      const JSONItem: any = {
+        address: '0x' + setLengthLeft(<Buffer>item[0], 20).toString('hex'),
+        storageKeys: [],
+      }
       const storageSlots: Buffer[] = item[1]
-      const JSONSlots = []
       for (let slot = 0; slot < storageSlots.length; slot++) {
         const storageSlot = storageSlots[slot]
-        JSONSlots.push('0x' + storageSlot.toString('hex'))
+        JSONItem.storageKeys.push('0x' + setLengthLeft(storageSlot, 32).toString('hex'))
       }
-      JSONItem.push(JSONSlots)
       accessListJSON.push(JSONItem)
     }
 

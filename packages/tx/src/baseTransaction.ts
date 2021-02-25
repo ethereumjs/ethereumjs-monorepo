@@ -160,8 +160,10 @@ export abstract class BaseTransaction<TransactionObject> {
     }
   }
 
-  // In case of a LegacyTransaction, this is a Buffer[]
-  // For a TypedTransaction, this is a Buffer
+  /**
+   * Returns the raw `Buffer[]` (LegacyTransaction) or `Buffer` (typed transaction).
+   * This is the data which is found in the transactions of the block body.
+   */
   abstract raw(): Buffer[] | Buffer
   abstract hash(): Buffer
 
