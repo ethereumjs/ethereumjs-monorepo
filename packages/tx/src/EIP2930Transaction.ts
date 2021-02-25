@@ -247,8 +247,8 @@ export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
 
   /**
    * Returns a Buffer Array of the raw Buffers of this transaction, in order.
-   * TODO: check what raw means - is this the raw transaction as in block body?
-   * If that is the case, it is only callable if it is signed.
+   * @param asList - By default, this method returns a concatenated Buffer
+   *                 If this is not desired, then set this to `true`, to get a Buffer array.
    */
   raw(asList = false): Buffer[] | Buffer {
     const base = <Buffer[]>[
@@ -272,7 +272,8 @@ export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
   }
 
   /**
-   * Returns the rlp encoding of the transaction.
+   * Returns the encoding of the transaction. For typed transaction, this is the raw Buffer.
+   * In LegacyTransaction, this is a Buffer array.
    */
   serialize(): Buffer {
     return <Buffer>this.raw()
