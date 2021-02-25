@@ -16,7 +16,7 @@ export default class TransactionFactory {
       // Assume LegacyTransaction
       return LegacyTransaction.fromTxData(txData, txOptions)
     } else {
-      if (!TransactionFactory.typedTransactionsSupport(common)) {
+      if (!common.isActivatedEIP(2718)) {
         throw new Error('Common support for TypedTransactions (EIP-2718) not activated')
       }
       const txType = new BN(txData.type).toNumber()
@@ -34,7 +34,7 @@ export default class TransactionFactory {
     const common = txOptions.common ?? DEFAULT_COMMON
     if (rawData[0] <= 0x7f) {
       // It is an EIP-2718 Typed Transaction
-      if (!TransactionFactory.typedTransactionsSupport(common)) {
+      if (!common.isActivatedEIP(2718)) {
         throw new Error('Common support for TypedTransactions (EIP-2718) not activated')
       }
       // Determine the type.
@@ -87,7 +87,7 @@ export default class TransactionFactory {
   public static getTransactionClass(transactionID: number = 0, common?: Common) {
     const usedCommon = common ?? DEFAULT_COMMON
     if (transactionID !== 0) {
-      if (!TransactionFactory.typedTransactionsSupport(usedCommon)) {
+      if (!usedCommon.isActivatedEIP(2718)) {
         throw new Error('Common support for TypedTransactions (EIP-2718) not activated')
       }
     }
@@ -107,13 +107,8 @@ export default class TransactionFactory {
     throw new Error(`TypedTransaction with ID ${transactionID} unknown`)
   }
 
-  // Helpers
-  public static typedTransactionsSupport(common: Common): boolean {
-    return common.isActivatedEIP(2718)
-  }
-
   public static eipSupport(common: Common, eip: number): boolean {
-    if (!TransactionFactory.typedTransactionsSupport(common)) {
+    if (!common.isActivatedEIP(2718)) {
       return false
     }
     return common.isActivatedEIP(eip)
