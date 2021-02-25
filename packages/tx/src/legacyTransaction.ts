@@ -101,7 +101,7 @@ export default class LegacyTransaction extends BaseTransaction<LegacyTransaction
       s: this.s ?? new BN(0),
     }
 
-    this.validateExcdeedsMaxInteger(validateCannotExceedMaxInteger)
+    this.validateExceedsMaxInteger(validateCannotExceedMaxInteger)
 
     if (this.v) {
       this._validateTxV(this.v)
