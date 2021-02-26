@@ -1,14 +1,6 @@
 import tape from 'tape'
 import { Buffer } from 'buffer'
-import {
-  BN,
-  rlp,
-  zeros,
-  privateToPublic,
-  toBuffer,
-  bufferToHex,
-  unpadBuffer,
-} from 'ethereumjs-util'
+import { BN, rlp, privateToPublic, toBuffer, bufferToHex, unpadBuffer } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { LegacyTransaction, TxData } from '../src'
 import { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
@@ -45,38 +37,6 @@ tape('[Transaction]', function (t) {
       const s2 = rlp.encode(txFixtures[i].raw)
       st.ok(s1.equals(s2))
     })
-    st.end()
-  })
-
-  t.test('verifySignature()', function (st) {
-    transactions.forEach(function (tx) {
-      st.equals((<LegacyTransaction>tx).verifySignature(), true)
-    })
-    st.end()
-  })
-
-  t.test('verifySignature() -> invalid', function (st) {
-    const txs: LegacyTransaction[] = []
-
-    txFixtures.slice(0, 4).forEach(function (txFixture: any) {
-      const txData = txFixture.raw.map(toBuffer)
-      // set `s` to zero
-      txData[8] = zeros(32)
-      const tx = LegacyTransaction.fromValuesArray(txData)
-      txs.push(tx)
-    })
-
-    txs.forEach(function (tx) {
-      st.equals(tx.verifySignature(), false)
-
-      st.ok(
-        tx.validate(true).includes('Invalid Signature'),
-        'should give a string about not verifying signatures'
-      )
-
-      st.notOk(tx.validate(), 'should validate correctly')
-    })
-
     st.end()
   })
 

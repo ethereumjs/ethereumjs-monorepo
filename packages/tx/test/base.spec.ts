@@ -1,5 +1,4 @@
 import tape from 'tape'
-import { toBuffer } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { LegacyTransaction, EIP2930Transaction } from '../src'
 import { TxsJsonEntry } from './types'
@@ -9,8 +8,7 @@ tape('[BaseTransaction]', function (t) {
   const legacyFixtures: TxsJsonEntry[] = require('./json/txs.json')
   const legacyTxs: BaseTransaction<LegacyTransaction>[] = []
   legacyFixtures.slice(0, 4).forEach(function (tx: any) {
-    const txData = tx.raw.map(toBuffer)
-    legacyTxs.push(LegacyTransaction.fromValuesArray(txData))
+    legacyTxs.push(LegacyTransaction.fromTxData(tx.data))
   })
 
   const eip2930Fixtures = require('./json/eip2930txs.json')
@@ -120,6 +118,33 @@ tape('[BaseTransaction]', function (t) {
         )
       })
     }
+    st.end()
+  })
+
+  t.test('verifySignature()', function (st) {
+    for (const txType of txTypes) {
+      txType.txs.forEach(function (tx: any) {
+        st.equals(tx.verifySignature(), true, `${txType.name}: signature should be valid`)
+      })
+    }
+    st.end()
+  })
+
+  t.test('verifySignature() -> invalid', function (st) {
+    for (const txType of txTypes) {
+      txType.txs.slice(0, 4).forEach(function (txFixture: any) {
+        // set `s` to zero
+        txFixture.data.s = `0x` + '0'.repeat(16)
+        const tx = txType.class.fromTxData(txFixture.data)
+        st.equals(tx.verifySignature(), false, `${txType.name}: signature should not be valid`)
+        /*st.ok(
+          (<string[]>tx.validate(true)).includes('Invalid Signature'),
+          'should give a string about not verifying signatures'
+        )
+        st.notOk(tx.validate(), 'should validate correctly')*/
+      })
+    }
+
     st.end()
   })
 })
