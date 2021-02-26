@@ -16,52 +16,10 @@ import { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
 const txFixtures: TxsJsonEntry[] = require('./json/txs.json')
 const txFixturesEip155: VitaliksTestsDataEntry[] = require('./json/ttTransactionTestEip155VitaliksTests.json')
 
-tape('[Transaction]: Basic functions', function (t) {
+tape('[Transaction]', function (t) {
   const transactions: LegacyTransaction[] = []
 
-  t.test('should initialize correctly', function (st) {
-    let tx = LegacyTransaction.fromTxData({})
-    st.equal(tx.common.hardfork(), 'berlin', 'should initialize with correct default HF')
-    st.ok(Object.isFrozen(tx), 'tx should be frozen by default')
-
-    const common = new Common({ chain: 'mainnet', hardfork: 'spuriousDragon' })
-    tx = LegacyTransaction.fromTxData({}, { common })
-    st.equal(tx.common.hardfork(), 'spuriousDragon', 'should initialize with correct HF provided')
-
-    common.setHardfork('byzantium')
-    st.equal(
-      tx.common.hardfork(),
-      'spuriousDragon',
-      'should stay on correct HF if outer common HF changes'
-    )
-
-    tx = LegacyTransaction.fromTxData({}, { freeze: false })
-    tx = LegacyTransaction.fromTxData({}, { freeze: false })
-    st.ok(!Object.isFrozen(tx), 'tx should not be frozen when freeze deactivated in options')
-
-    // Perform the same test as above, but now using a different construction method. This also implies that passing on the
-    // options object works as expected.
-    const rlpData = tx.serialize()
-
-    const zero = Buffer.alloc(0)
-    const valuesArray = [zero, zero, zero, zero, zero, zero]
-
-    tx = LegacyTransaction.fromRlpSerializedTx(rlpData)
-    st.ok(Object.isFrozen(tx), 'tx should be frozen by default')
-
-    tx = LegacyTransaction.fromRlpSerializedTx(rlpData, { freeze: false })
-    st.ok(!Object.isFrozen(tx), 'tx should not be frozen when freeze deactivated in options')
-
-    tx = LegacyTransaction.fromValuesArray(valuesArray)
-    st.ok(Object.isFrozen(tx), 'tx should be frozen by default')
-
-    tx = LegacyTransaction.fromValuesArray(valuesArray, { freeze: false })
-    st.ok(!Object.isFrozen(tx), 'tx should not be frozen when freeze deactivated in options')
-
-    st.end()
-  })
-
-  t.test('should decode transactions', function (st) {
+  t.test('Initialization -> decode with fromValuesArray()', function (st) {
     txFixtures.slice(0, 4).forEach(function (tx: any) {
       const txData = tx.raw.map(toBuffer)
       const pt = LegacyTransaction.fromValuesArray(txData)
@@ -81,7 +39,7 @@ tape('[Transaction]: Basic functions', function (t) {
     st.end()
   })
 
-  t.test('should serialize', function (st) {
+  t.test('serialize()', function (st) {
     transactions.forEach(function (tx, i) {
       const s1 = tx.serialize()
       const s2 = rlp.encode(txFixtures[i].raw)
@@ -90,54 +48,14 @@ tape('[Transaction]: Basic functions', function (t) {
     st.end()
   })
 
-  t.test('should hash', function (st) {
-    const common = new Common({
-      chain: 'mainnet',
-      hardfork: 'tangerineWhistle',
-    })
-    const tx = LegacyTransaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), {
-      common,
-    })
-    st.deepEqual(
-      tx.hash(),
-      Buffer.from('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa', 'hex')
-    )
-    st.deepEqual(
-      tx.getMessageToSign(),
-      Buffer.from('61e1ec33764304dddb55348e7883d4437426f44ab3ef65e6da1e025734c03ff0', 'hex')
-    )
-    st.deepEqual(
-      tx.hash(),
-      Buffer.from('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa', 'hex')
-    )
-    st.end()
-  })
-
-  t.test('should hash with defined chainId', function (st) {
-    const tx = LegacyTransaction.fromValuesArray(txFixtures[4].raw.map(toBuffer))
-    st.equal(
-      tx.hash().toString('hex'),
-      '0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4'
-    )
-    st.equal(
-      tx.hash().toString('hex'),
-      '0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4'
-    )
-    st.equal(
-      tx.getMessageToSign().toString('hex'),
-      'f97c73fdca079da7652dbc61a46cd5aeef804008e057be3e712c43eac389aaf0'
-    )
-    st.end()
-  })
-
-  t.test('should verify Signatures', function (st) {
+  t.test('verifySignature()', function (st) {
     transactions.forEach(function (tx) {
       st.equals((<LegacyTransaction>tx).verifySignature(), true)
     })
     st.end()
   })
 
-  t.test('should not verify invalid signatures', function (st) {
+  t.test('verifySignature() -> invalid', function (st) {
     const txs: LegacyTransaction[] = []
 
     txFixtures.slice(0, 4).forEach(function (txFixture: any) {
@@ -162,11 +80,51 @@ tape('[Transaction]: Basic functions', function (t) {
     st.end()
   })
 
-  t.test('should sign tx', function (st) {
+  t.test('hash()', function (st) {
+    const common = new Common({
+      chain: 'mainnet',
+      hardfork: 'tangerineWhistle',
+    })
+    const tx = LegacyTransaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), {
+      common,
+    })
+    st.deepEqual(
+      tx.hash(),
+      Buffer.from('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa', 'hex')
+    )
+    st.deepEqual(
+      tx.getMessageToSign(),
+      Buffer.from('61e1ec33764304dddb55348e7883d4437426f44ab3ef65e6da1e025734c03ff0', 'hex')
+    )
+    st.deepEqual(
+      tx.hash(),
+      Buffer.from('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa', 'hex')
+    )
+    st.end()
+  })
+
+  t.test('hash() -> with defined chainId', function (st) {
+    const tx = LegacyTransaction.fromValuesArray(txFixtures[4].raw.map(toBuffer))
+    st.equal(
+      tx.hash().toString('hex'),
+      '0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4'
+    )
+    st.equal(
+      tx.hash().toString('hex'),
+      '0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4'
+    )
+    st.equal(
+      tx.getMessageToSign().toString('hex'),
+      'f97c73fdca079da7652dbc61a46cd5aeef804008e057be3e712c43eac389aaf0'
+    )
+    st.end()
+  })
+
+  t.test('sign()', function (st) {
     transactions.forEach(function (tx, i) {
       const { privateKey } = txFixtures[i]
       if (privateKey) {
-        st.ok(tx.sign(Buffer.from(privateKey, 'hex')))
+        st.ok(tx.sign(Buffer.from(privateKey, 'hex')), 'should sign tx')
       }
     })
     st.end()
