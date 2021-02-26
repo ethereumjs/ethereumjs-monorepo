@@ -3,6 +3,7 @@ import Common from '@ethereumjs/common'
 import { LegacyTransaction, EIP2930Transaction } from '../src'
 import { TxsJsonEntry } from './types'
 import { BaseTransaction } from '../src/baseTransaction'
+import { privateToPublic } from 'ethereumjs-util'
 
 tape('[BaseTransaction]', function (t) {
   const legacyFixtures: TxsJsonEntry[] = require('./json/txs.json')
@@ -144,7 +145,66 @@ tape('[BaseTransaction]', function (t) {
         st.notOk(tx.validate(), `${txType.name}: should not validate correctly`)
       })
     }
+    st.end()
+  })
 
+  t.test('sign()', function (st) {
+    for (const txType of txTypes) {
+      txType.txs.forEach(function (tx: any, i: number) {
+        const { privateKey } = txType.fixtures[i]
+        if (privateKey) {
+          st.ok(tx.sign(Buffer.from(privateKey, 'hex')), `${txType.name}: should sign tx`)
+        }
+      })
+    }
+    st.end()
+  })
+
+  t.test('getSenderAddress()', function (st) {
+    for (const txType of txTypes) {
+      txType.txs.forEach(function (tx: any, i: number) {
+        const { privateKey, sendersAddress } = txType.fixtures[i]
+        if (privateKey) {
+          const signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
+          st.equals(
+            signedTx.getSenderAddress().toString(),
+            `0x${sendersAddress}`,
+            `${txType.name}: should get sender's address after signing it`
+          )
+        }
+      })
+    }
+    st.end()
+  })
+
+  t.test('getSenderPublicKey()', function (st) {
+    for (const txType of txTypes) {
+      txType.txs.forEach(function (tx: any, i: number) {
+        const { privateKey } = txType.fixtures[i]
+        if (privateKey) {
+          const signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
+          const txPubKey = signedTx.getSenderPublicKey()
+          const pubKeyFromPriv = privateToPublic(Buffer.from(privateKey, 'hex'))
+          st.ok(
+            txPubKey.equals(pubKeyFromPriv),
+            `${txType.name}: should get sender's public key after signing it`
+          )
+        }
+      })
+    }
+    st.end()
+  })
+
+  t.test('verifySignature()', function (st) {
+    for (const txType of txTypes) {
+      txType.txs.forEach(function (tx: any, i: number) {
+        const { privateKey } = txType.fixtures[i]
+        if (privateKey) {
+          const signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
+          st.ok(signedTx.verifySignature(), `${txType.name}: should verify signing it`)
+        }
+      })
+    }
     st.end()
   })
 })
