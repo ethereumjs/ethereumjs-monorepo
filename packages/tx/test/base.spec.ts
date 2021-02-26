@@ -13,10 +13,10 @@ tape('[BaseTransaction]', function (t) {
     legacyTxs.push(LegacyTransaction.fromValuesArray(txData))
   })
 
-  const eip2930Fixtures: TxsJsonEntry[] = require('./json/eip2930txs.json')
+  const eip2930Fixtures = require('./json/eip2930txs.json')
   const eip2930Txs: BaseTransaction<EIP2930Transaction>[] = []
-  eip2930Fixtures.forEach(function (txData) {
-    eip2930Txs.push(EIP2930Transaction.fromTxData(txData))
+  eip2930Fixtures.forEach(function (tx: any) {
+    eip2930Txs.push(EIP2930Transaction.fromTxData(tx.data))
   })
 
   const zero = Buffer.alloc(0)
@@ -26,12 +26,14 @@ tape('[BaseTransaction]', function (t) {
       name: 'LegacyTransaction',
       values: Array(6).fill(zero),
       txs: legacyTxs,
+      fixtures: legacyFixtures,
     },
     {
       class: EIP2930Transaction,
       name: 'EIP2930Transaction',
       values: [Buffer.from([1])].concat(Array(7).fill(zero)),
       txs: eip2930Txs,
+      fixtures: eip2930Fixtures,
     },
   ]
 
@@ -93,6 +95,30 @@ tape('[BaseTransaction]', function (t) {
         !Object.isFrozen(tx),
         `${txType.name}: tx should not be frozen when freeze deactivated in options`
       )
+    }
+    st.end()
+  })
+
+  t.test('serialize()', function (st) {
+    for (const txType of txTypes) {
+      txType.txs.forEach(function (tx: any) {
+        st.ok(
+          txType.class.fromRlpSerializedTx(tx.serialize()),
+          `${txType.name}: should do roundtrip serialize() -> fromRlpSerializedTx()`
+        )
+      })
+    }
+    st.end()
+  })
+
+  t.test('raw()', function (st) {
+    for (const txType of txTypes) {
+      txType.txs.forEach(function (tx: any) {
+        st.ok(
+          txType.class.fromValuesArray(tx.raw(true)),
+          `${txType.name}: should do roundtrip raw() -> fromValuesArray()`
+        )
+      })
     }
     st.end()
   })
