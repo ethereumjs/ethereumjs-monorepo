@@ -141,7 +141,7 @@ tape('[BaseTransaction]', function (t) {
           (<string[]>tx.validate(true)).includes('Invalid Signature'),
           `${txType.name}: should return an error string about not verifying signatures`
         )
-        st.notOk(tx.validate(), 'should not validate correctly')
+        st.notOk(tx.validate(), `${txType.name}: should not validate correctly`)
       })
     }
 
