@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { Buffer } from 'buffer'
-import { BN, rlp, privateToPublic, toBuffer, bufferToHex, unpadBuffer } from 'ethereumjs-util'
+import { BN, rlp, toBuffer, bufferToHex, unpadBuffer } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { LegacyTransaction, TxData } from '../src'
 import { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
@@ -77,51 +77,6 @@ tape('[Transaction]', function (t) {
       tx.getMessageToSign().toString('hex'),
       'f97c73fdca079da7652dbc61a46cd5aeef804008e057be3e712c43eac389aaf0'
     )
-    st.end()
-  })
-
-  t.test('sign()', function (st) {
-    transactions.forEach(function (tx, i) {
-      const { privateKey } = txFixtures[i]
-      if (privateKey) {
-        st.ok(tx.sign(Buffer.from(privateKey, 'hex')), 'should sign tx')
-      }
-    })
-    st.end()
-  })
-
-  t.test("should get sender's address after signing it", function (st) {
-    transactions.forEach(function (tx, i) {
-      const { privateKey, sendersAddress } = txFixtures[i]
-      if (privateKey) {
-        const signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
-        st.equals(signedTx.getSenderAddress().toString(), '0x' + sendersAddress)
-      }
-    })
-    st.end()
-  })
-
-  t.test("should get sender's public key after signing it", function (st) {
-    transactions.forEach(function (tx, i) {
-      const { privateKey } = txFixtures[i]
-      if (privateKey) {
-        const signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
-        const txPubKey = signedTx.getSenderPublicKey()
-        const pubKeyFromPriv = privateToPublic(Buffer.from(privateKey, 'hex'))
-        st.ok(txPubKey.equals(pubKeyFromPriv))
-      }
-    })
-    st.end()
-  })
-
-  t.test('should verify signing it', function (st) {
-    transactions.forEach(function (tx, i) {
-      const { privateKey } = txFixtures[i]
-      if (privateKey) {
-        const signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
-        st.ok(signedTx.verifySignature())
-      }
-    })
     st.end()
   })
 
