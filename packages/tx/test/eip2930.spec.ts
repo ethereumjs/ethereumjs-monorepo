@@ -228,7 +228,7 @@ tape('[EIP2930Transaction]', function (t) {
   // Data from
   // https://github.com/INFURA/go-ethlibs/blob/75b2a52a39d353ed8206cffaf68d09bd1b154aae/eth/transaction_signing_test.go#L87
 
-  t.test('should sign transaction correctly', function (t) {
+  t.test('should sign transaction correctly and return expected JSON', function (t) {
     const address = Buffer.from('0000000000000000000000000000000000001337', 'hex')
     const slot1 = Buffer.from(
       '0000000000000000000000000000000000000000000000000000000000000000',
@@ -290,6 +290,24 @@ tape('[EIP2930Transaction]', function (t) {
     t.ok(s.eq(signed.s!), 's correct')
     t.ok(expectedSigned.equals(signed.serialize()), 'serialized signed message correct')
     t.ok(expectedHash.equals(signed.hash()), 'hash correct')
+
+    const expectedJSON = {
+      chainId: '0x796f6c6f763378',
+      nonce: '0x0',
+      gasPrice: '0x3b9aca00',
+      gasLimit: '0x62d4',
+      to: '0xdf0a88b2b68c673713a8ec826003676f272e3573',
+      value: '0x1',
+      data: '0x',
+      accessList: [
+        {
+          address: '0x0000000000000000000000000000000000001337',
+          storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+        },
+      ],
+    }
+
+    t.deepEqual(signed.toJSON(), expectedJSON)
 
     t.end()
   })
