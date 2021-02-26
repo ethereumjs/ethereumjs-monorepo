@@ -13,10 +13,17 @@ const EIP2930Common = new Common({
   hardfork: 'berlin',
 })
 
+const pKey = Buffer.from('4646464646464646464646464646464646464646464646464646464646464646', 'hex')
+
 const simpleUnsignedEIP2930Transaction = EIP2930Transaction.fromTxData(
   { chainId: new BN(1) },
   { common: EIP2930Common }
 )
+
+const simpleUnsignedLegacyTransaction = LegacyTransaction.fromTxData({})
+
+const simpleSignedEIP2930Transaction = simpleUnsignedEIP2930Transaction.sign(pKey)
+const simpleSignedLegacyTransaction = simpleUnsignedLegacyTransaction.sign(pKey)
 
 tape('[TransactionFactory]: Basic functions', function (t) {
   t.test('should return the right type', function (st) {
@@ -76,6 +83,40 @@ tape('[TransactionFactory]: Basic functions', function (t) {
     st.throws(() => {
       TransactionFactory.getTransactionClass(1)
     })
+    st.end()
+  })
+
+  t.test('should decode raw block body data', function (st) {
+    const rawLegacy = simpleSignedLegacyTransaction.raw()
+    const rawEIP2930 = simpleSignedEIP2930Transaction.raw()
+
+    const legacyTx = TransactionFactory.fromBlockBodyData(rawLegacy)
+    const eip2930Tx = TransactionFactory.fromBlockBodyData(rawEIP2930, { common: EIP2930Common })
+
+    st.equals(legacyTx.constructor.name, LegacyTransaction.name)
+    st.equals(eip2930Tx.constructor.name, EIP2930Transaction.name)
+    st.end()
+  })
+
+  t.test('should create the right transaction types from tx data', function (st) {
+    const legacyTx = TransactionFactory.fromTxData({ type: 0 })
+    const legacyTx2 = TransactionFactory.fromTxData({})
+    const eip2930Tx = TransactionFactory.fromTxData({ type: 1 }, { common: EIP2930Common })
+    st.throws(() => {
+      TransactionFactory.fromTxData({ type: 1 })
+    })
+
+    st.equals(legacyTx.constructor.name, LegacyTransaction.name)
+    st.equals(legacyTx2.constructor.name, LegacyTransaction.name)
+    st.equals(eip2930Tx.constructor.name, EIP2930Transaction.name)
+    st.end()
+  })
+
+  t.test('if eip2718 is not activated, always return that the eip is not activated', function (st) {
+    const newCommon = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+
+    const eip2930Active = TransactionFactory.eipSupport(newCommon, 2930)
+    st.ok(!eip2930Active)
     st.end()
   })
 })

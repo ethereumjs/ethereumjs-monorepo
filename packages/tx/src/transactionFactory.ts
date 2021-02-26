@@ -21,9 +21,6 @@ export default class TransactionFactory {
       // Assume LegacyTransaction
       return LegacyTransaction.fromTxData(txData, txOptions)
     } else {
-      if (!common.isActivatedEIP(2718)) {
-        throw new Error('Common support for TypedTransactions (EIP-2718) not activated')
-      }
       const txType = new BN(txData.type).toNumber()
       return TransactionFactory.getTransactionClass(txType, common).fromTxData(txData, txOptions)
     }
