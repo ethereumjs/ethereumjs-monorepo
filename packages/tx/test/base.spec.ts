@@ -105,6 +105,10 @@ tape('[BaseTransaction]', function (t) {
           txType.class.fromRlpSerializedTx(tx.serialize()),
           `${txType.name}: should do roundtrip serialize() -> fromRlpSerializedTx()`
         )
+        st.ok(
+          txType.class.fromSerializedTx(tx.serialize()),
+          `${txType.name}: should do roundtrip serialize() -> fromRlpSerializedTx()`
+        )
       })
     }
     st.end()
