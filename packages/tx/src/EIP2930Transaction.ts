@@ -172,7 +172,7 @@ export class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
 
     this.chainId = chainId ? new BN(toBuffer(chainId)) : new BN(this.common.chainId())
     this.accessList = usedAccessList
-    this.v = v ? new BN(v) : undefined
+    this.v = v ? new BN(toBuffer(v)) : undefined
     this.r = r ? new BN(toBuffer(r)) : undefined
     this.s = s ? new BN(toBuffer(s)) : undefined
 
