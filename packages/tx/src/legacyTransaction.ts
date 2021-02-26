@@ -47,6 +47,11 @@ export default class LegacyTransaction extends BaseTransaction<LegacyTransaction
     return this.fromValuesArray(values, opts)
   }
 
+  // alias of fromRlpSerializedTx
+  public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
+    return LegacyTransaction.fromRlpSerializedTx(serialized, opts)
+  }
+
   public static fromValuesArray(values: Buffer[], opts: TxOptions = {}) {
     if (values.length !== 6 && values.length !== 9) {
       throw new Error(

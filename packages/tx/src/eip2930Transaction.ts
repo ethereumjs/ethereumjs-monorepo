@@ -71,8 +71,8 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
     return new EIP2930Transaction(txData, opts)
   }
 
-  // Instantiate a transaction from the raw RLP serialized tx. This means that the RLP should start with 0x01.
-  public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
+  // Instantiate a transaction from the serialized tx. This means that the Buffer should start with 0x01.
+  public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     if (serialized[0] !== 1) {
       throw new Error(
         `Invalid serialized tx input: not an EIP-2930 transaction (wrong tx type, expected: 1, received: ${serialized[0]}`
@@ -85,6 +85,12 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
     }
 
     return EIP2930Transaction.fromValuesArray(values, opts)
+  }
+
+  // Instantiate a transaction from the serialized tx. This means that the Buffer should start with 0x01.
+  // Alias of fromSerializedTx
+  public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
+    return EIP2930Transaction.fromSerializedTx(serialized, opts)
   }
 
   // Create a transaction from a values array.
@@ -128,8 +134,6 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
     if (!this.common.isActivatedEIP(2930)) {
       throw new Error('EIP-2930 not enabled on Common')
     }
-
-    // TODO: verify the signature.
 
     // check  the type of AccessList. If it's a JSON-type, we have to convert it to a buffer.
 
@@ -217,16 +221,7 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
   }
 
   getMessageToSign() {
-    const base = [
-      bnToRlp(this.chainId),
-      bnToRlp(this.nonce),
-      bnToRlp(this.gasPrice),
-      bnToRlp(this.gasLimit),
-      this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bnToRlp(this.value),
-      this.data,
-      this.accessList,
-    ]
+    const base = this.raw(true).slice(0, 8)
     return keccak256(Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base)]))
   }
 
@@ -322,7 +317,6 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
   }
 
   public hash(): Buffer {
-    // TODO add decorator
     if (!this.isSigned()) {
       throw new Error('Cannot call hash method if transaction is not signed')
     }
