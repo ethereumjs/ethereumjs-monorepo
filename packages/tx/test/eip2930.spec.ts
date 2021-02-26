@@ -17,7 +17,28 @@ const validSlot = Buffer.from('01'.repeat(32), 'hex')
 
 const chainId = new BN(1)
 
-tape('[EIP2930 transactions]: Basic functions', function (t) {
+tape('[EIP2930Transaction]', function (t) {
+  t.test('Initialization / Getter', function (t) {
+    t.throws(() => {
+      EIP2930Transaction.fromTxData(
+        {
+          chainId: chainId.addn(1),
+        },
+        { common }
+      )
+    }, 'should reject transactions with wrong chain ID')
+
+    t.throws(() => {
+      EIP2930Transaction.fromTxData(
+        {
+          v: 2,
+        },
+        { common }
+      )
+    }, 'should reject transactions with invalid yParity (v) values')
+    t.end()
+  })
+
   t.test('should allow json-typed access lists', function (st) {
     const access: AccessList = [
       {
@@ -201,30 +222,6 @@ tape('[EIP2930 transactions]: Basic functions', function (t) {
 
     signed.verifySignature() // If this throws, test will not end.
 
-    t.end()
-  })
-
-  t.test('should reject transactions with wrong chain ID', function (t) {
-    t.throws(() => {
-      EIP2930Transaction.fromTxData(
-        {
-          chainId: chainId.addn(1),
-        },
-        { common }
-      )
-    })
-    t.end()
-  })
-
-  t.test('should reject transactions with invalid yParity (v) values', function (t) {
-    t.throws(() => {
-      EIP2930Transaction.fromTxData(
-        {
-          v: 2,
-        },
-        { common }
-      )
-    })
     t.end()
   })
 

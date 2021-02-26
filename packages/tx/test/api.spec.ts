@@ -1,14 +1,6 @@
 import tape from 'tape'
 import { Buffer } from 'buffer'
-import {
-  BN,
-  rlp,
-  zeros,
-  privateToPublic,
-  toBuffer,
-  bufferToHex,
-  unpadBuffer,
-} from 'ethereumjs-util'
+import { BN, rlp, privateToPublic, toBuffer, bufferToHex, unpadBuffer } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { LegacyTransaction, TxData } from '../src'
 import { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
@@ -16,51 +8,10 @@ import { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
 const txFixtures: TxsJsonEntry[] = require('./json/txs.json')
 const txFixturesEip155: VitaliksTestsDataEntry[] = require('./json/ttTransactionTestEip155VitaliksTests.json')
 
-tape('[Transaction]: Basic functions', function (t) {
+tape('[Transaction]', function (t) {
   const transactions: LegacyTransaction[] = []
 
-  t.test('should initialize correctly', function (st) {
-    let tx = LegacyTransaction.fromTxData({})
-    st.equal(tx.common.hardfork(), 'berlin', 'should initialize with correct default HF')
-    st.ok(Object.isFrozen(tx), 'tx should be frozen by default')
-
-    const common = new Common({ chain: 'mainnet', hardfork: 'spuriousDragon' })
-    tx = LegacyTransaction.fromTxData({}, { common })
-    st.equal(tx.common.hardfork(), 'spuriousDragon', 'should initialize with correct HF provided')
-
-    common.setHardfork('byzantium')
-    st.equal(
-      tx.common.hardfork(),
-      'spuriousDragon',
-      'should stay on correct HF if outer common HF changes'
-    )
-
-    tx = LegacyTransaction.fromTxData({}, { freeze: false })
-    st.ok(!Object.isFrozen(tx), 'tx should not be frozen when freeze deactivated in options')
-
-    // Perform the same test as above, but now using a different construction method. This also implies that passing on the
-    // options object works as expected.
-    const rlpData = tx.serialize()
-
-    const zero = Buffer.alloc(0)
-    const valuesArray = [zero, zero, zero, zero, zero, zero]
-
-    tx = LegacyTransaction.fromRlpSerializedTx(rlpData)
-    st.ok(Object.isFrozen(tx), 'tx should be frozen by default')
-
-    tx = LegacyTransaction.fromRlpSerializedTx(rlpData, { freeze: false })
-    st.ok(!Object.isFrozen(tx), 'tx should not be frozen when freeze deactivated in options')
-
-    tx = LegacyTransaction.fromValuesArray(valuesArray)
-    st.ok(Object.isFrozen(tx), 'tx should be frozen by default')
-
-    tx = LegacyTransaction.fromValuesArray(valuesArray, { freeze: false })
-    st.ok(!Object.isFrozen(tx), 'tx should not be frozen when freeze deactivated in options')
-
-    st.end()
-  })
-
-  t.test('should decode transactions', function (st) {
+  t.test('Initialization -> decode with fromValuesArray()', function (st) {
     txFixtures.slice(0, 4).forEach(function (tx: any) {
       const txData = tx.raw.map(toBuffer)
       const pt = LegacyTransaction.fromValuesArray(txData)
@@ -80,7 +31,7 @@ tape('[Transaction]: Basic functions', function (t) {
     st.end()
   })
 
-  t.test('should serialize', function (st) {
+  t.test('serialize()', function (st) {
     transactions.forEach(function (tx, i) {
       const s1 = tx.serialize()
       const s2 = rlp.encode(txFixtures[i].raw)
@@ -89,7 +40,7 @@ tape('[Transaction]: Basic functions', function (t) {
     st.end()
   })
 
-  t.test('should hash', function (st) {
+  t.test('hash()', function (st) {
     const common = new Common({
       chain: 'mainnet',
       hardfork: 'tangerineWhistle',
@@ -112,7 +63,7 @@ tape('[Transaction]: Basic functions', function (t) {
     st.end()
   })
 
-  t.test('should hash with defined chainId', function (st) {
+  t.test('hash() -> with defined chainId', function (st) {
     const tx = LegacyTransaction.fromValuesArray(txFixtures[4].raw.map(toBuffer))
     st.equal(
       tx.hash().toString('hex'),
@@ -129,43 +80,11 @@ tape('[Transaction]: Basic functions', function (t) {
     st.end()
   })
 
-  t.test('should verify Signatures', function (st) {
-    transactions.forEach(function (tx) {
-      st.equals((<LegacyTransaction>tx).verifySignature(), true)
-    })
-    st.end()
-  })
-
-  t.test('should not verify invalid signatures', function (st) {
-    const txs: LegacyTransaction[] = []
-
-    txFixtures.slice(0, 4).forEach(function (txFixture: any) {
-      const txData = txFixture.raw.map(toBuffer)
-      // set `s` to zero
-      txData[8] = zeros(32)
-      const tx = LegacyTransaction.fromValuesArray(txData)
-      txs.push(tx)
-    })
-
-    txs.forEach(function (tx) {
-      st.equals(tx.verifySignature(), false)
-
-      st.ok(
-        tx.validate(true).includes('Invalid Signature'),
-        'should give a string about not verifying signatures'
-      )
-
-      st.notOk(tx.validate(), 'should validate correctly')
-    })
-
-    st.end()
-  })
-
-  t.test('should sign tx', function (st) {
+  t.test('sign()', function (st) {
     transactions.forEach(function (tx, i) {
       const { privateKey } = txFixtures[i]
       if (privateKey) {
-        st.ok(tx.sign(Buffer.from(privateKey, 'hex')))
+        st.ok(tx.sign(Buffer.from(privateKey, 'hex')), 'should sign tx')
       }
     })
     st.end()
