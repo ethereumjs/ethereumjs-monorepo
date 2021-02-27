@@ -31,52 +31,52 @@
         {
           "name": "chainstart",
           "block": 0,
-          "forkHash": "0xfc64ec04"
+          "forkHash": "0xa308affe"
         },
         {
           "name": "homestead",
           "block": 0,
-          "forkHash": "0x97c2c34c"
+          "forkHash": "0xa308affe"
         },
         {
           "name": "tangerineWhistle",
           "block": 0,
-          "forkHash": "0x7a64da13"
+          "forkHash": "0xa308affe"
         },
         {
           "name": "spuriousDragon",
           "block": 0,
-          "forkHash": "0x3edd5b10"
+          "forkHash": "0xa308affe"
         },
         {
           "name": "byzantium",
           "block": 0,
-          "forkHash": "0xa00bc324"
+          "forkHash": "0xa308affe"
         },
         {
           "name": "constantinople",
           "block": 0,
-          "forkHash": "0x668db0af"
+          "forkHash": "0xa308affe"
         },
         {
           "name": "petersburg",
           "block": 0,
-          "forkHash": "0x668db0af"
+          "forkHash": "0xa308affe"
         },
         {
           "name": "istanbul",
           "block": 0,
-          "forkHash": "0x879d6e30"
+          "forkHash": "0xa308affe"
         },
         {
           "name": "muirGlacier",
           "block": 0,
-          "forkHash": "0xe029e991"
+          "forkHash": "0xa308affe"
         },
         {
           "name": "berlin",
           "block": 0,
-          "forkHash": "0x00000000"
+          "forkHash": "0xa308affe"
         }
       ],
       "bootstrapNodes": [
