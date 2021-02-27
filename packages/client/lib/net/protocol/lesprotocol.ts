@@ -202,7 +202,7 @@ export class LesProtocol extends Protocol {
       }
     }
     return {
-      networkId: bufferToInt(status.networkId),
+      networkId: new BN(status.networkId),
       headTd: new BN(status.headTd),
       headHash: status.headHash,
       headNum: new BN(status.headNum),
