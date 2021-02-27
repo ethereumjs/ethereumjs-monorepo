@@ -30,12 +30,15 @@ export const ecsign = function(
   return ret
 }
 
-function calculateSigRecovery(v: number, chainId?: number): number {
-  return chainId ? v - (2 * chainId + 35) : v - 27
+function calculateSigRecovery(v: number | BN | Buffer, chainId?: number | BN | Buffer): BN {
+  const vBN = new BN(toBuffer(v))
+  const chainIdBN = chainId ? new BN(toBuffer(chainId)) : undefined
+  return chainIdBN ? vBN.sub(chainIdBN.muln(2).addn(35)) : vBN.subn(27)
 }
 
-function isValidSigRecovery(recovery: number): boolean {
-  return recovery === 0 || recovery === 1
+function isValidSigRecovery(recovery: number | BN): boolean {
+  const rec = new BN(recovery)
+  return rec.eqn(0) || rec.eqn(1)
 }
 
 /**
@@ -44,17 +47,17 @@ function isValidSigRecovery(recovery: number): boolean {
  */
 export const ecrecover = function(
   msgHash: Buffer,
-  v: number,
+  v: number | BN | Buffer,
   r: Buffer,
   s: Buffer,
-  chainId?: number
+  chainId?: number | BN | Buffer
 ): Buffer {
   const signature = Buffer.concat([setLengthLeft(r, 32), setLengthLeft(s, 32)], 64)
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
   }
-  const senderPubKey = ecdsaRecover(signature, recovery, msgHash)
+  const senderPubKey = ecdsaRecover(signature, recovery.toNumber(), msgHash)
   return Buffer.from(publicKeyConvert(senderPubKey, false).slice(1))
 }
 
