@@ -82,7 +82,7 @@ tape('[LesProtocol]', (t) => {
     status = { ...status, networkId: [0x01] }
     status = p.decodeStatus(status)
     t.ok(
-      status.networkId === 1 &&
+      status.networkId.toNumber() === 1 &&
         status.headTd.toString('hex') === '64' &&
         status.headHash === '0xaa' &&
         status.headNum.toNumber() === 100 &&

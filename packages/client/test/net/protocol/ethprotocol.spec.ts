@@ -64,7 +64,7 @@ tape('[EthProtocol]', (t) => {
       genesisHash: '0xbb',
     })
     t.ok(
-      status.networkId === 1 &&
+      status.networkId.toNumber() === 1 &&
         status.td.toNumber() === 100 &&
         status.bestHash === '0xaa' &&
         status.genesisHash === '0xbb',
