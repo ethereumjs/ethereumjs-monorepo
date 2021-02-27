@@ -1,11 +1,11 @@
 import { bufferToHex } from 'ethereumjs-util'
-import { Chain } from '../../blockchain'
-import { EthProtocol } from '../../net/protocol'
-import { RlpxServer } from '../../net/server'
-import EthereumClient from '../../client'
-import { EthereumService } from '../../service'
 import { getClientVersion } from '../../util'
 import { middleware } from '../validation'
+import type { Chain } from '../../blockchain'
+import type { EthProtocol } from '../../net/protocol'
+import type { RlpxServer } from '../../net/server'
+import type EthereumClient from '../../client'
+import type { EthereumService } from '../../service'
 
 /**
  * admin_* RPC module
@@ -18,7 +18,7 @@ export class Admin {
 
   /**
    * Create admin_* RPC module
-   * @param {client} EthereumClient to which the module binds
+   * @param client Client to which the module binds
    */
   constructor(client: EthereumClient) {
     const service = client.services.find((s) => s.name === 'eth') as EthereumService
@@ -32,7 +32,7 @@ export class Admin {
   /**
    * Returns information about the currently running node.
    * see for reference: https://geth.ethereum.org/docs/rpc/ns-admin#admin_nodeinfo
-   * @param {*} [params] An empty array
+   * @param params An empty array
    */
   async nodeInfo(_params: []) {
     const rlpxInfo = (this._client.server('rlpx') as RlpxServer).getRlpxInfo()

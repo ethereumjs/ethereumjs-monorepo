@@ -9,8 +9,8 @@ import * as modules from './modules'
 /**
  * get all methods. e.g., getBlockByNumber in eth module
  * @private
- * @param  {Object}   mod
- * @return {string[]}
+ * @param Object mod
+ * @returns string[]
  */
 function getMethodNames(mod: any): string[] {
   return Object.getOwnPropertyNames(mod.prototype)

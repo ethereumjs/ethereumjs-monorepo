@@ -13,7 +13,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const manager = createManager(createClient({ blockchain, includeVM: true }))
   const server = startRPC(manager.getMethods())
 
-  // random genesis address
+  // a genesis address
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
   // verify nonce is 0
@@ -39,7 +39,7 @@ tape(`${method}: ensure count increments after a tx`, async (t) => {
   const service = client.services.find((s) => s.name === 'eth')
   const vm = (service!.synchronizer as FullSynchronizer).execution.vm
 
-  // random genesis address with existing balance
+  // a genesis address
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
   // construct tx

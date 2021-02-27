@@ -1,3 +1,4 @@
+import { Transaction } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -8,13 +9,14 @@ import {
   unpadBuffer,
   setLengthLeft,
 } from 'ethereumjs-util'
-import { Transaction } from '@ethereumjs/tx'
 import { decode } from 'rlp'
-import { Chain } from '../../blockchain'
 import { middleware, validators } from '../validation'
-import { EthereumClient } from '../..'
 import { INVALID_PARAMS } from '../error-code'
 import { RpcCallTx } from '../types'
+import type { Chain } from '../../blockchain'
+import type { EthereumClient } from '../..'
+import type { EthereumService } from '../../service'
+import type { EthProtocol } from '../../net/protocol'
 import type VM from '@ethereumjs/vm'
 
 /**
@@ -31,17 +33,11 @@ export class Eth {
    * @param client Client to which the module binds
    */
   constructor(client: EthereumClient) {
-    const service = client.services.find((s) => s.name === 'eth')
-    if (!service) {
-      throw new Error('cannot find eth service')
-    }
+    const service = client.services.find((s) => s.name === 'eth') as EthereumService
     this._chain = service.chain
     this._vm = (service.synchronizer as any)?.execution?.vm
 
-    const ethProtocol = service.protocols.find((p) => p.name === 'eth')
-    if (!ethProtocol) {
-      throw new Error('cannot find eth protocol')
-    }
+    const ethProtocol = service.protocols.find((p) => p.name === 'eth') as EthProtocol
     this.ethVersion = Math.max(...ethProtocol.versions)
 
     this.blockNumber = middleware(this.blockNumber.bind(this), 0)
@@ -158,7 +154,8 @@ export class Eth {
   /**
    * Generates and returns an estimate of how much gas is necessary to allow the transaction to complete.
    * The transaction will not be added to the blockchain.
-   * Note that the estimate may be significantly more than the amount of gas actually used by the transaction, for a variety of reasons including EVM mechanics and node performance.
+   * Note that the estimate may be significantly more than the amount of gas actually used by the transaction,
+   * for a variety of reasons including EVM mechanics and node performance.
    * Currently only "latest" block number is supported.
    * @param params An array of two parameters:
    *   1. The transaction object
@@ -244,7 +241,7 @@ export class Eth {
    * Returns information about a block by block number.
    * @param params An array of two parameters:
    *   1. integer of a block number
-   *   2. boolean determining whether it returns full transaction objects or just the transaction hashes
+   *   2. boolean - if true returns the full transaction objects, if false only the hashes of the transactions.
    */
   async getBlockByNumber(params: [string, boolean]) {
     const [blockNumber, includeTransactions] = params
@@ -261,7 +258,7 @@ export class Eth {
    * Returns information about a block by hash.
    * @param params An array of two parameters:
    *   1. a block hash
-   *   2. boolean to determine returning full transaction objects or just transaction hashes
+   *   2. boolean - if true returns the full transaction objects, if false only the hashes of the transactions.
    */
   async getBlockByHash(params: [string, boolean]) {
     const [blockHash, includeTransactions] = params
@@ -315,7 +312,7 @@ export class Eth {
   /**
    * Returns the value from a storage position at a given address.
    * Currently only "latest" block number is supported.
-   * @param  {Array<string>} [params] An array of three parameters:
+   * @param params An array of three parameters:
    *   1. address of the storage
    *   2. integer of the position in the storage
    *   3. integer block number, or the string "latest", "earliest" or "pending"
@@ -373,7 +370,7 @@ export class Eth {
 
   /**
    * Returns the current ethereum protocol version as a hex-encoded string
-   * @param  {Array<*>} [params] An empty array
+   * @param params An empty array
    */
   protocolVersion(_params = []) {
     return `0x${this.ethVersion.toString(16)}`

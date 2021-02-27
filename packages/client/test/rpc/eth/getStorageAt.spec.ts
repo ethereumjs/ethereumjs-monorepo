@@ -17,10 +17,6 @@ const setup = async () => {
   const service = client.services.find((s) => s.name === 'eth')
   const vm = (service!.synchronizer as FullSynchronizer).execution.vm
 
-  // since synchronizer.run() is not executed in the mock setup,
-  // manually run stateManager.generateCanonicalGenesis()
-  await vm.stateManager.generateCanonicalGenesis()
-
   // genesis address with balance
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
