@@ -103,7 +103,7 @@ export class Eth {
 
   /**
    * Executes a new message call immediately without creating a transaction on the block chain.
-   * Currently only "latest" block number is supported.
+   * Currently only "latest" block is supported.
    * @param params An array of two parameters:
    *   1. The transaction object
    *       * from (optional) - The address the transaction is sent from
@@ -118,12 +118,13 @@ export class Eth {
   async call(params: [RpcCallTx, string]) {
     const [transaction, blockOpt] = params
 
-    const latestBlockNumber = await this.blockNumber()
-    if (blockOpt !== 'latest' && blockOpt !== latestBlockNumber) {
-      // todo: this can be resolved with some kind of functionality of stateAt(blockNumber)
-      return {
-        code: INVALID_PARAMS,
-        message: `Currently only block option "latest" supported`,
+    if (blockOpt !== 'latest') {
+      const latest = await this.blockNumber()
+      if (blockOpt !== latest) {
+        return {
+          code: INVALID_PARAMS,
+          message: `Currently only "latest" block supported`,
+        }
       }
     }
 
@@ -156,7 +157,7 @@ export class Eth {
    * The transaction will not be added to the blockchain.
    * Note that the estimate may be significantly more than the amount of gas actually used by the transaction,
    * for a variety of reasons including EVM mechanics and node performance.
-   * Currently only "latest" block number is supported.
+   * Currently only "latest" block is supported.
    * @param params An array of two parameters:
    *   1. The transaction object
    *       * from (optional) - The address the transaction is sent from
@@ -171,12 +172,13 @@ export class Eth {
   async estimateGas(params: [RpcCallTx, string]) {
     const [transaction, blockOpt] = params
 
-    const latestBlockNumber = await this.blockNumber()
-    if (blockOpt !== 'latest' && blockOpt !== latestBlockNumber) {
-      // todo: this can be resolved with some kind of functionality of stateAt(blockNumber)
-      return {
-        code: INVALID_PARAMS,
-        message: `Currently only block option "latest" supported`,
+    if (blockOpt !== 'latest') {
+      const latest = await this.blockNumber()
+      if (blockOpt !== latest) {
+        return {
+          code: INVALID_PARAMS,
+          message: `Currently only "latest" block supported`,
+        }
       }
     }
 
@@ -211,7 +213,7 @@ export class Eth {
 
   /**
    * Returns the balance of the account at the given address.
-   * Currently only "latest" block number is supported.
+   * Currently only "latest" block is supported.
    * @param params An array of two parameters:
    *   1. address of the account
    *   2. integer block number, or the string "latest", "earliest" or "pending"
@@ -219,12 +221,13 @@ export class Eth {
   async getBalance(params: [string, string]) {
     const [addressHex, blockOpt] = params
 
-    const latestBlockNumber = await this.blockNumber()
-    if (blockOpt !== 'latest' && blockOpt !== latestBlockNumber) {
-      // todo: this can be resolved with some kind of functionality of stateAt(blockNumber)
-      return {
-        code: INVALID_PARAMS,
-        message: `Currently only block option "latest" supported`,
+    if (blockOpt !== 'latest') {
+      const latest = await this.blockNumber()
+      if (blockOpt !== latest) {
+        return {
+          code: INVALID_PARAMS,
+          message: `Currently only "latest" block supported`,
+        }
       }
     }
 
@@ -284,7 +287,7 @@ export class Eth {
 
   /**
    * Returns code of the account at the given address.
-   * Currently only "latest" block number is supported.
+   * Currently only "latest" block is supported.
    * @param params An array of two parameters:
    *   1. address of the account
    *   2. integer block number, or the string "latest", "earliest" or "pending"
@@ -292,12 +295,13 @@ export class Eth {
   async getCode(params: [string, string]) {
     const [addressHex, blockOpt] = params
 
-    const latestBlockNumber = await this.blockNumber()
-    if (blockOpt !== 'latest' && blockOpt !== latestBlockNumber) {
-      // todo: this can be resolved with some kind of functionality of stateAt(blockNumber)
-      return {
-        code: INVALID_PARAMS,
-        message: `Currently only block option "latest" supported`,
+    if (blockOpt !== 'latest') {
+      const latest = await this.blockNumber()
+      if (blockOpt !== latest) {
+        return {
+          code: INVALID_PARAMS,
+          message: `Currently only "latest" block supported`,
+        }
       }
     }
 
@@ -311,7 +315,7 @@ export class Eth {
 
   /**
    * Returns the value from a storage position at a given address.
-   * Currently only "latest" block number is supported.
+   * Currently only "latest" block is supported.
    * @param params An array of three parameters:
    *   1. address of the storage
    *   2. integer of the position in the storage
@@ -320,12 +324,13 @@ export class Eth {
   async getStorageAt(params: [string, string, string]) {
     const [addressHex, positionHex, blockOpt] = params
 
-    const latestBlockNumber = await this.blockNumber()
-    if (blockOpt !== 'latest' && blockOpt !== latestBlockNumber) {
-      // todo: this can be resolved with some kind of functionality of stateAt(blockNumber)
-      return {
-        code: INVALID_PARAMS,
-        message: `Currently only block option "latest" supported`,
+    if (blockOpt !== 'latest') {
+      const latest = await this.blockNumber()
+      if (blockOpt !== latest) {
+        return {
+          code: INVALID_PARAMS,
+          message: `Currently only "latest" block supported`,
+        }
       }
     }
 
@@ -342,7 +347,7 @@ export class Eth {
 
   /**
    * Returns the number of transactions sent from an address.
-   * Currently only "latest" block number is supported.
+   * Currently only "latest" block is supported.
    * @param params An array of two parameters:
    *   1. address of the account
    *   2. integer block number, or the string "latest", "earliest" or "pending"
@@ -350,12 +355,13 @@ export class Eth {
   async getTransactionCount(params: [string, string]) {
     const [addressHex, blockOpt] = params
 
-    const latestBlockNumber = await this.blockNumber()
-    if (blockOpt !== 'latest' && blockOpt !== latestBlockNumber) {
-      // todo: this can be resolved with some kind of functionality of stateAt(blockNumber)
-      return {
-        code: INVALID_PARAMS,
-        message: `Currently only block option "latest" supported`,
+    if (blockOpt !== 'latest') {
+      const latest = await this.blockNumber()
+      if (blockOpt !== latest) {
+        return {
+          code: INVALID_PARAMS,
+          message: `Currently only "latest" block supported`,
+        }
       }
     }
 
