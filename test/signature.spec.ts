@@ -106,6 +106,43 @@ describe('ecrecover', function() {
       ecrecover(echash, 27, s, r)
     })
   })
+  it('should return the right sender when using very high chain id / v values', function() {
+    // This data is from a transaction of the YoloV3 network, block 77, txhash c6121a23ca17b8ff70d4706c7d134920c1da43c8329444c96b4c63a55af1c760
+    /*
+      {
+        nonce: '0x8',
+        gasPrice: '0x3b9aca00',
+        gasLimit: '0x1a965',
+        to: undefined,
+        value: '0x0',
+        data: '0x608060405234801561001057600080fd5b50610101806100206000396000f3fe608060405260043610601f5760003560e01c8063776d1a0114603b576020565b5b6000543660008037600080366000845af43d6000803e3d6000f35b348015604657600080fd5b50608660048036036020811015605b57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff1690602001909291905050506088565b005b806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505056fea26469706673582212206d3160e3f009c6ebac579877e529c0a1ca8313678f08fe311659d440067d26ea64736f6c63430007040033',
+        v: '0xf2ded8deec6714',
+        r: '0xec212841e0b7aaffc3b3e33a08adf32fa07159e856ef23db85175a4f6d71dc0f',
+        s: '0x4b8e02b96b94064a5aa2f8d72bd0040616ba8e482a5dd96422e38c9a4611f8d5'
+      }
+    */
+    const senderPubKey = Buffer.from(
+      '78988201fbceed086cfca7b64e382d08d0bd776898731443d2907c097745b7324c54f522087f5964412cddba019f192de0fd57a0ffa63f098c2b200e53594b15',
+      'hex'
+    )
+    const msgHash = Buffer.from(
+      '8ae8cb685a7a9f29494b07b287c3f6a103b73fa178419d10d1184861a40f6afe',
+      'hex'
+    )
+    const v = Buffer.from('f2ded8deec6714', 'hex')
+    const r = Buffer.from('ec212841e0b7aaffc3b3e33a08adf32fa07159e856ef23db85175a4f6d71dc0f', 'hex')
+    const s = Buffer.from('4b8e02b96b94064a5aa2f8d72bd0040616ba8e482a5dd96422e38c9a4611f8d5', 'hex')
+    const chainID = Buffer.from('796f6c6f763378', 'hex')
+    const sender = ecrecover(msgHash, v, r, s, chainID)
+    assert.ok(sender.equals(senderPubKey), 'sender pubkey correct')
+    const chainIDNumber = parseInt(chainID.toString('hex'), 16)
+    const vNumber = parseInt(v.toString('hex'), 16)
+    assert.throws(() => {
+      // If we would use numbers for the `v` and `chainId` parameters, then it should throw.
+      // (The numbers are too high to perform arithmetic on)
+      ecrecover(msgHash, vNumber, r, s, chainIDNumber)
+    })
+  })
 })
 
 describe('hashPersonalMessage', function() {
