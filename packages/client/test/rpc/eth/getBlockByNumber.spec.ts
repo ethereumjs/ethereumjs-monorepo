@@ -1,7 +1,7 @@
 import { bufferToHex } from 'ethereumjs-util'
 import tape from 'tape'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import { startRPC, createManager, createNode, params, baseRequest } from '../helpers'
+import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
 import { checkError } from '../util'
 
 function createBlockchain() {
@@ -28,7 +28,7 @@ function createBlockchain() {
 const method = 'eth_getBlockByNumber'
 
 tape(`${method}: call with valid arguments`, (t) => {
-  const manager = createManager(createNode({ blockchain: createBlockchain() }))
+  const manager = createManager(createClient({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
   const req = params(method, ['0x1', true])
@@ -44,7 +44,7 @@ tape(`${method}: call with valid arguments`, (t) => {
 })
 
 tape(`${method}: call with false for second argument`, (t) => {
-  const manager = createManager(createNode({ blockchain: createBlockchain() }))
+  const manager = createManager(createClient({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
   const req = params(method, ['0x1', false])
@@ -66,7 +66,7 @@ tape(`${method}: call with false for second argument`, (t) => {
 })
 
 tape(`${method}: call with invalid block number`, (t) => {
-  const manager = createManager(createNode({ blockchain: createBlockchain() }))
+  const manager = createManager(createClient({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
   const req = params(method, ['WRONG BLOCK NUMBER', true])
@@ -79,7 +79,7 @@ tape(`${method}: call with invalid block number`, (t) => {
 })
 
 tape(`${method}: call without second parameter`, (t) => {
-  const manager = createManager(createNode({ blockchain: createBlockchain() }))
+  const manager = createManager(createClient({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
   const req = params(method, ['0x0'])
@@ -88,7 +88,7 @@ tape(`${method}: call without second parameter`, (t) => {
 })
 
 tape(`${method}: call with invalid second parameter`, (t) => {
-  const manager = createManager(createNode({ blockchain: createBlockchain() }))
+  const manager = createManager(createClient({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
   const req = params(method, ['0x0', 'INVALID PARAMETER'])

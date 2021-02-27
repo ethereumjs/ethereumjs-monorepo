@@ -3,9 +3,9 @@ import { INVALID_PARAMS } from './error-code'
 /**
  * middleware for parameters validation
  * @memberof module:rpc
- * @param {Function} method            function to add middleware
- * @param {number} requiredParamsCount required parameters count
- * @param {Function[]} validators      array of validator
+ * @param method function to add middleware
+ * @param requiredParamsCount required parameters count
+ * @param validators array of validators
  */
 export function middleware(method: any, requiredParamsCount: number, validators: any[] = []): any {
   return function (params: any[] = []) {
@@ -39,11 +39,41 @@ export function middleware(method: any, requiredParamsCount: number, validators:
  */
 export const validators = {
   /**
-   * hex validator to ensure has `0x` prefix
-   * @param {any[]} params parameters of method
-   * @param {number} index index of parameter
+   * address validator to ensure has `0x` prefix and 20 bytes length
+   * @param params parameters of method
+   * @param index index of parameter
    */
-  hex(params: any[], index: number): any {
+  address(params: any[], index: number) {
+    if (typeof params[index] !== 'string') {
+      return {
+        code: INVALID_PARAMS,
+        message: `invalid argument ${index}: argument must be a hex string`,
+      }
+    }
+
+    if (params[index].substr(0, 2) !== '0x') {
+      return {
+        code: INVALID_PARAMS,
+        message: `invalid argument ${index}: missing 0x prefix`,
+      }
+    }
+
+    const address = params[index].substr(2)
+
+    if (!/^[0-9a-fA-F]+$/.test(address) || address.length !== 40) {
+      return {
+        code: INVALID_PARAMS,
+        message: `invalid argument ${index}: invalid address`,
+      }
+    }
+  },
+
+  /**
+   * hex validator to ensure has `0x` prefix
+   * @param params parameters of method
+   * @param index index of parameter
+   */
+  hex(params: any[], index: number) {
     if (typeof params[index] !== 'string') {
       return {
         code: INVALID_PARAMS,
@@ -61,10 +91,10 @@ export const validators = {
 
   /**
    * hex validator to validate block hash
-   * @param {any[]} params parameters of method
-   * @param {number} index index of parameter
+   * @param params parameters of method
+   * @param index index of parameter
    */
-  blockHash(params: any[], index: number): any {
+  blockHash(params: any[], index: number) {
     if (typeof params[index] !== 'string') {
       return {
         code: INVALID_PARAMS,
@@ -83,15 +113,87 @@ export const validators = {
   },
 
   /**
-   * bool validator to check if type is boolean
-   * @param {any[]} params parameters of method
-   * @param {number} index index of parameter
+   * validator to ensure valid block integer or hash, or string option ["latest", "earliest", "pending"]
+   * @param params parameters of method
+   * @param index index of parameter
    */
-  bool(params: any[], index: number): any {
+  blockOption(params: any[], index: number) {
+    if (typeof params[index] !== 'string') {
+      return {
+        code: INVALID_PARAMS,
+        message: `invalid argument ${index}: argument must be a string`,
+      }
+    }
+
+    const blockOption = params[index]
+
+    if (!['latest', 'earliest', 'pending'].includes(blockOption)) {
+      if (blockOption.substr(0, 2) === '0x') {
+        // valid block integer or hash
+        return
+      }
+      return {
+        code: INVALID_PARAMS,
+        message: `invalid argument ${index}: block option must be value "latest", "earliest" or "pending"`,
+      }
+    }
+  },
+
+  /**
+   * bool validator to check if type is boolean
+   * @param params parameters of method
+   * @param index index of parameter
+   */
+  bool(params: any[], index: number) {
     if (typeof params[index] !== 'boolean') {
       return {
         code: INVALID_PARAMS,
         message: `invalid argument ${index}: argument is not boolean`,
+      }
+    }
+  },
+
+  /**
+   * validator to ensure required transaction fields are present and checks for valid address and hex values.
+   * @param params parameters of method
+   * @param index index of parameter
+   */
+  transaction(requiredFields: string[]) {
+    return (params: any[], index: number) => {
+      if (typeof params[index] !== 'object') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be an object`,
+        }
+      }
+
+      const tx = params[index]
+
+      for (const field of requiredFields) {
+        if (!tx[field]) {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: required field ${field}`,
+          }
+        }
+      }
+
+      const validate = (field: any, validator: Function) => {
+        if (!field) return
+        const v = validator([field], 0)
+        if (v) return v
+      }
+
+      // validate addresses
+      for (const field of [tx.to, tx.from]) {
+        const v = validate(field, this.address)
+        if (v) return v
+      }
+
+      // valdiate hex
+      for (const field of [tx.gas, tx.gasPrice, tx.value, tx.data]) {
+        const v = validate(field, this.hex)
+        if (v) return v
       }
     }
   },

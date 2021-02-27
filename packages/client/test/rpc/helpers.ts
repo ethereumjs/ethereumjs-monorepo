@@ -1,12 +1,13 @@
 import tape from 'tape'
 import { Server as RPCServer, HttpServer } from 'jayson/promise'
+import VM from '@ethereumjs/vm'
 import Common from '@ethereumjs/common'
 import { RPCManager as Manager } from '../../lib/rpc'
 import { getLogger } from '../../lib/logging'
-import { mockBlockchain } from './mockBlockchain'
+import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain/chain'
 import { RlpxServer } from '../../lib/net/server/rlpxserver'
-import { Config } from '../../lib/config'
+import { mockBlockchain } from './mockBlockchain'
 import type Blockchain from '@ethereumjs/blockchain'
 import type EthereumClient from '../../lib/client'
 const request = require('supertest')
@@ -32,7 +33,7 @@ export function createManager(client: EthereumClient) {
 export function createClient(clientOpts: any = {}) {
   const common = clientOpts.commonChain ?? new Common({ chain: 'mainnet' })
   const config = new Config({ transports: [], common })
-  const blockchain = (<any>mockBlockchain()) as Blockchain
+  const blockchain = clientOpts.blockchain ?? ((<any>mockBlockchain()) as Blockchain)
 
   const chain = new Chain({ config, blockchain })
   chain.opened = true
@@ -51,6 +52,11 @@ export function createClient(clientOpts: any = {}) {
     }),
   ]
 
+  let synchronizer
+  if (clientOpts.includeVM) {
+    synchronizer = { execution: { vm: new VM({ blockchain, common }) } }
+  }
+
   const client: any = {
     services: [
       {
@@ -63,6 +69,7 @@ export function createClient(clientOpts: any = {}) {
             versions: clientConfig.ethProtocolVersions,
           },
         ],
+        synchronizer,
       },
     ],
     servers,

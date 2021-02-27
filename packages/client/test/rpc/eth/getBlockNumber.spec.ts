@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { intToHex, BN } from 'ethereumjs-util'
-import { startRPC, createManager, createNode, params, baseRequest } from '../helpers'
+import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
 
 const method = 'eth_blockNumber'
 
@@ -13,7 +13,7 @@ tape(`${method}: call with valid arguments`, (t) => {
       }
     },
   }
-  const manager = createManager(createNode({ blockchain: mockBlockChain }))
+  const manager = createManager(createClient({ blockchain: mockBlockChain }))
   const server = startRPC(manager.getMethods())
 
   const req = params(method)
