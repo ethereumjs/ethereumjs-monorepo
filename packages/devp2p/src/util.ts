@@ -27,7 +27,10 @@ export function id2pk(id: Buffer): Buffer {
   return Buffer.concat([Buffer.from([0x04]), id])
 }
 
-export function int2buffer(v: number): Buffer {
+export function int2buffer(v: number | null): Buffer {
+  if (v === null) {
+    return Buffer.alloc(0)
+  }
   let hex = v.toString(16)
   if (hex.length % 2 === 1) hex = '0' + hex
   return Buffer.from(hex, 'hex')
