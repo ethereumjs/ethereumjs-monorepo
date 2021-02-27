@@ -635,7 +635,7 @@ export default class Common extends EventEmitter {
     const resArray = this.hardforks().filter((hf: any) => {
       return hf.forkHash === forkHash
     })
-    return resArray.length === 1 ? resArray[0] : null
+    return resArray.length >= 1 ? resArray[resArray.length - 1] : null
   }
 
   /**
