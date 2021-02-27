@@ -150,7 +150,7 @@ export class EthProtocol extends Protocol {
    */
   decodeStatus(status: any): any {
     return {
-      networkId: bufferToInt(status.networkId),
+      networkId: new BN(status.networkId),
       td: new BN(status.td),
       bestHash: status.bestHash,
       genesisHash: status.genesisHash,
