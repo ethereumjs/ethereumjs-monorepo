@@ -129,12 +129,18 @@ export const validators = {
 
     if (!['latest', 'earliest', 'pending'].includes(blockOption)) {
       if (blockOption.substr(0, 2) === '0x') {
-        // valid block integer or hash
-        return
+        const hash = this.blockHash([blockOption], 0)
+        // todo: make integer validator?
+        const integer = this.hex([blockOption], 0)
+        // valid if undefined
+        if (hash === undefined || integer === undefined) {
+          // valid
+          return
+        }
       }
       return {
         code: INVALID_PARAMS,
-        message: `invalid argument ${index}: block option must be value "latest", "earliest" or "pending"`,
+        message: `invalid argument ${index}: block option must be a valid 0x-prefixed block hash or hex integer, or "latest", "earliest" or "pending"`,
       }
     }
   },
