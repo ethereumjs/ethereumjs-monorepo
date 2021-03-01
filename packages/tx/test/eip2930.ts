@@ -189,6 +189,18 @@ tape('[EIP2930 transactions]: Basic functions', function (t) {
     t.end()
   })
 
+  t.test('should reject transactions with invalid yParity (v) values', function (t) {
+    t.throws(() => {
+      EIP2930Transaction.fromTxData(
+        {
+          v: 2,
+        },
+        { common }
+      )
+    })
+    t.end()
+  })
+
   t.test('should produce right hash-to-sign values', function (t) {
     const hash = GethUnsignedEIP2930Transaction.getMessageToSign()
     const expected = Buffer.from(

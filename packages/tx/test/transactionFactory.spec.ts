@@ -1,4 +1,5 @@
 import Common from '@ethereumjs/common'
+import { BN } from 'ethereumjs-util'
 import tape from 'tape'
 import {
   EIP2930Transaction,
@@ -13,7 +14,7 @@ const EIP2930Common = new Common({
 })
 
 const simpleUnsignedEIP2930Transaction = EIP2930Transaction.fromTxData(
-  {},
+  { chainId: new BN(1) },
   { common: EIP2930Common }
 )
 

@@ -15,7 +15,7 @@ import {
   publicToAddress,
   MAX_INTEGER,
 } from 'ethereumjs-util'
-import { TxOptions, LegacyTxData, JsonLegacyTx } from './types'
+import { TxOptions, TxData, JsonTx } from './types'
 import { BaseTransaction } from './baseTransaction'
 
 // secp256k1n/2
@@ -24,15 +24,12 @@ const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46
 /**
  * An Ethereum transaction.
  */
-export default class LegacyTransaction extends BaseTransaction<
-  LegacyTransaction,
-  JsonLegacyTx
-> {
+export default class LegacyTransaction extends BaseTransaction<LegacyTransaction> {
   public readonly v?: BN
   public readonly r?: BN
   public readonly s?: BN
 
-  public static fromTxData(txData: LegacyTxData, opts?: TxOptions) {
+  public static fromTxData(txData: TxData, opts?: TxOptions) {
     return new LegacyTransaction(txData, opts)
   }
 
@@ -86,7 +83,7 @@ export default class LegacyTransaction extends BaseTransaction<
    * Use the static factory methods to assist in creating a Transaction object from varying data types.
    * @note Transaction objects implement EIP155 by default. To disable it, pass in an `@ethereumjs/common` object set before EIP155 activation (i.e. before Spurious Dragon).
    */
-  protected constructor(txData: LegacyTxData, opts?: TxOptions) {
+  protected constructor(txData: TxData, opts?: TxOptions) {
     const { nonce, gasPrice, gasLimit, to, value, data, v, r, s } = txData
 
     super({ nonce, gasPrice, gasLimit, to, value, data }, opts)
@@ -148,7 +145,7 @@ export default class LegacyTransaction extends BaseTransaction<
   /**
    * Returns an object with the JSON representation of the transaction
    */
-  toJSON(): JsonLegacyTx {
+  toJSON(): JsonTx {
     return {
       nonce: bnToHex(this.nonce),
       gasPrice: bnToHex(this.gasPrice),

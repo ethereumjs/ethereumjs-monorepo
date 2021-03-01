@@ -1,4 +1,4 @@
-import { AddressLike, BN, BNLike, BufferLike } from 'ethereumjs-util'
+import { AddressLike, BNLike, BufferLike } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { default as LegacyTransaction } from './legacyTransaction'
 import { default as EIP2930Transaction } from './eip2930Transaction'
@@ -41,7 +41,12 @@ export interface BaseTxOptions {
 /**
  * An object with an optional field with each of the transaction's values.
  */
-export interface LegacyTxData {
+export interface TxData {
+  /**
+   * The transaction's chain ID
+   */
+  chainId?: BNLike
+
   /**
    * The transaction's nonce.
    */
@@ -86,46 +91,6 @@ export interface LegacyTxData {
    * EC signature parameter.
    */
   s?: BNLike
-}
-
-/**
- * An object with an optional field with each of the transaction's values.
- */
-export interface EIP2930TxData {
-  /**
-   * The transaction's chain ID
-   */
-  chainId?: BN
-
-  /**
-   * The transaction's nonce.
-   */
-  nonce?: BN
-
-  /**
-   * The transaction's gas price.
-   */
-  gasPrice?: BN
-
-  /**
-   * The transaction's gas limit.
-   */
-  gasLimit?: BN
-
-  /**
-   * The transaction's the address is sent to.
-   */
-  to?: AddressLike
-
-  /**
-   * The amount of Ether sent.
-   */
-  value?: BN
-
-  /**
-   * This will contain the data of the message or the init of a contract.
-   */
-  data?: Buffer
 
   /**
    * The access list which contains the addresses/storage slots which the transaction wishes to access
@@ -133,22 +98,11 @@ export interface EIP2930TxData {
   accessList?: any // TODO: typesafe this
 
   /**
-   * Parity of the transaction
+   * The transaction type
    */
-  yParity?: number
 
-  /**
-   * EC signature parameter. (This is senderR in the EIP)
-   */
-  r?: BN
-
-  /**
-   * EC signature parameter. (This is senderS in the EIP)
-   */
-  s?: BN
+  type?: BNLike
 }
-
-export type TxData = LegacyTxData | EIP2930TxData
 
 export type Transaction = LegacyTransaction | EIP2930Transaction
 
@@ -187,7 +141,7 @@ export type BaseTransactionData = {
 /**
  * An object with all of the transaction's values represented as strings.
  */
-export interface JsonLegacyTx {
+export interface JsonTx {
   nonce?: string
   gasPrice?: string
   gasLimit?: string
@@ -197,23 +151,9 @@ export interface JsonLegacyTx {
   r?: string
   s?: string
   value?: string
-}
-
-/**
- * An object with all of the transaction's values represented as strings.
- */
-export interface JsonEIP2930Tx {
-  nonce?: string
-  gasPrice?: string
-  gasLimit?: string
-  to?: string
-  data?: string
-  v?: string
-  r?: string
-  s?: string
-  value?: string
-  chainId: string
-  accessList: string[]
+  chainId?: string
+  accessList?: string[]
+  type?: string
 }
 
 export const DEFAULT_COMMON = new Common({ chain: 'mainnet' })
