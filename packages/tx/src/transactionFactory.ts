@@ -47,17 +47,16 @@ export default class TransactionFactory {
   public static getTransactionClass(transactionID?: number, common?: Common) {
     const usedCommon = common ?? DEFAULT_COMMON
     if (transactionID) {
-      if (!usedCommon.eips().includes(2718)) {
+      if (transactionID !== 0 && !usedCommon.eips().includes(2718)) {
         throw new Error('Cannot create a TypedTransaction: EIP-2718 is not enabled')
       }
       switch (transactionID) {
+        case 0: 
+          return LegacyTransaction
         case 1:
           return EIP2930Transaction
         default:
           throw new Error(`TypedTransaction with ID ${transactionID} unknown`)
       }
     }
-
-    return LegacyTransaction
-  }
 }

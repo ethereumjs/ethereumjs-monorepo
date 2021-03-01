@@ -34,7 +34,7 @@ export default class EIP2930Transaction {
       throw 'This is not an EIP-2930 transaction'
     }
 
-    const values = rlp.decode(serialized)
+    const values = rlp.decode(serialized.slice(1))
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized tx input. Must be array')
@@ -298,7 +298,6 @@ export default class EIP2930Transaction {
    */
   raw(): Buffer[] {
     return [
-      Buffer.from('01', 'hex'),
       this.chainId.toBuffer(),
       this.nonce.toBuffer(),
       this.gasPrice.toBuffer(),
@@ -314,7 +313,9 @@ export default class EIP2930Transaction {
    * Returns the rlp encoding of the transaction.
    */
   serialize(): Buffer {
-    return rlp.encode(this.raw())
+    const RLPEncodedTx = rlp.encode(this.raw())
+
+    return Buffer.concat([Buffer.from('01', 'hex'), RLPEncodedTx])
   }
 
   /**
