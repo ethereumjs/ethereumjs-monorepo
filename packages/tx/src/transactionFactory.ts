@@ -59,4 +59,5 @@ export default class TransactionFactory {
           throw new Error(`TypedTransaction with ID ${transactionID} unknown`)
       }
     }
+  }
 }
