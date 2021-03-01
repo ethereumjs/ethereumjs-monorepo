@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, bufferToHex, unpadBuffer } from 'ethereumjs-util'
+import { Address, BN, bufferToHex } from 'ethereumjs-util'
 import Blockchain from '@ethereumjs/blockchain'
 import { Transaction } from '@ethereumjs/tx'
 import { FullSynchronizer } from '../../../lib/sync'

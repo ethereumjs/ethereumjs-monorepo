@@ -117,9 +117,18 @@ export class Eth {
   async call(params: [RpcCallTx, string]) {
     const [transaction, blockOpt] = params
 
+    if (!this._vm) {
+      throw new Error('missing vm')
+    }
+
+    // use a copy of the vm in case new blocks are executed,
+    // and to not make any underlying changes during the call
+    const vm = this._vm.copy()
+
     if (blockOpt !== 'latest') {
-      const latest = await this.blockNumber()
-      if (blockOpt !== latest) {
+      const latest = await vm.blockchain.getLatestHeader()
+      const number = latest.number.toString(16)
+      if (blockOpt !== `0x${number}`) {
         return {
           code: INVALID_PARAMS,
           message: `Currently only "latest" block supported`,
@@ -127,17 +136,12 @@ export class Eth {
       }
     }
 
-    if (!this._vm) {
-      throw new Error('missing vm')
-    }
-
     if (!transaction.gas) {
       // If no gas limit is specified use the last block gas limit as an upper bound.
-      const latestHeader = await this._chain.getLatestHeader()
-      transaction.gas = latestHeader.gasLimit as any
+      const latest = await vm.blockchain.getLatestHeader()
+      transaction.gas = latest.gasLimit as any
     }
 
-    const vm = this._vm.copy()
     const txData = { ...transaction, gasLimit: transaction.gas }
     const tx = Transaction.fromTxData(txData, { common: vm._common, freeze: false })
 
@@ -171,9 +175,17 @@ export class Eth {
   async estimateGas(params: [RpcCallTx, string]) {
     const [transaction, blockOpt] = params
 
+    if (!this._vm) {
+      throw new Error('missing vm')
+    }
+
+    // use a copy of the vm in case new blocks are executed
+    const vm = this._vm.copy()
+
     if (blockOpt !== 'latest') {
-      const latest = await this.blockNumber()
-      if (blockOpt !== latest) {
+      const latest = await vm.blockchain.getLatestHeader()
+      const number = latest.number.toString(16)
+      if (blockOpt !== `0x${number}`) {
         return {
           code: INVALID_PARAMS,
           message: `Currently only "latest" block supported`,
@@ -181,17 +193,12 @@ export class Eth {
       }
     }
 
-    if (!this._vm) {
-      throw new Error('missing vm')
-    }
-
     if (!transaction.gas) {
       // If no gas limit is specified use the last block gas limit as an upper bound.
-      const latestHeader = await this._chain.getLatestHeader()
-      transaction.gas = latestHeader.gasLimit as any
+      const latest = await this._chain.getLatestHeader()
+      transaction.gas = latest.gasLimit as any
     }
 
-    const vm = this._vm.copy()
     const txData = { ...transaction, gasLimit: transaction.gas }
     const tx = Transaction.fromTxData(txData, { common: vm._common, freeze: false })
 
@@ -220,9 +227,17 @@ export class Eth {
   async getBalance(params: [string, string]) {
     const [addressHex, blockOpt] = params
 
+    if (!this._vm) {
+      throw new Error('missing vm')
+    }
+
+    // use a copy of the vm in case new blocks are sync'd
+    const vm = this._vm.copy()
+
     if (blockOpt !== 'latest') {
-      const latest = await this.blockNumber()
-      if (blockOpt !== latest) {
+      const latest = await vm.blockchain.getLatestHeader()
+      const number = latest.number.toString(16)
+      if (blockOpt !== `0x${number}`) {
         return {
           code: INVALID_PARAMS,
           message: `Currently only "latest" block supported`,
@@ -230,12 +245,8 @@ export class Eth {
       }
     }
 
-    if (!this._vm) {
-      throw new Error('missing vm')
-    }
-
     const address = Address.fromString(addressHex)
-    const account: Account = await (this._vm.stateManager as any).getAccount(address)
+    const account: Account = await vm.stateManager.getAccount(address)
     return `0x${account.balance.toString(16)}`
   }
 
@@ -294,9 +305,17 @@ export class Eth {
   async getCode(params: [string, string]) {
     const [addressHex, blockOpt] = params
 
+    if (!this._vm) {
+      throw new Error('missing vm')
+    }
+
+    // use a copy of the vm in case new blocks are sync'd
+    const vm = this._vm.copy()
+
     if (blockOpt !== 'latest') {
-      const latest = await this.blockNumber()
-      if (blockOpt !== latest) {
+      const latest = await vm.blockchain.getLatestHeader()
+      const number = latest.number.toString(16)
+      if (blockOpt !== `0x${number}`) {
         return {
           code: INVALID_PARAMS,
           message: `Currently only "latest" block supported`,
@@ -304,11 +323,8 @@ export class Eth {
       }
     }
 
-    if (!this._vm) {
-      throw new Error('missing vm')
-    }
     const address = Address.fromString(addressHex)
-    const code = await (this._vm.stateManager as any).getContractCode(address)
+    const code = await vm.stateManager.getContractCode(address)
     return bufferToHex(code)
   }
 
@@ -323,9 +339,17 @@ export class Eth {
   async getStorageAt(params: [string, string, string]) {
     const [addressHex, positionHex, blockOpt] = params
 
+    if (!this._vm) {
+      throw new Error('missing vm')
+    }
+
+    // use a copy of the vm in case new blocks are executed
+    const vm = this._vm.copy()
+
     if (blockOpt !== 'latest') {
-      const latest = await this.blockNumber()
-      if (blockOpt !== latest) {
+      const latest = await vm.blockchain.getLatestHeader()
+      const number = latest.number.toString(16)
+      if (blockOpt !== `0x${number}`) {
         return {
           code: INVALID_PARAMS,
           message: `Currently only "latest" block supported`,
@@ -333,12 +357,8 @@ export class Eth {
       }
     }
 
-    if (!this._vm) {
-      throw new Error('missing vm')
-    }
-
     const address = Address.fromString(addressHex)
-    const storageTrie = await (this._vm.stateManager as any)._getStorageTrie(address)
+    const storageTrie = await (vm.stateManager as any)._getStorageTrie(address)
     const position = setLengthLeft(toBuffer(positionHex), 32)
     const storage = await storageTrie.get(position)
     return storage ? bufferToHex(setLengthLeft(decode(storage), 32)) : '0x'
@@ -354,9 +374,17 @@ export class Eth {
   async getTransactionCount(params: [string, string]) {
     const [addressHex, blockOpt] = params
 
+    if (!this._vm) {
+      throw new Error('missing vm')
+    }
+
+    // use a copy of the vm in case new blocks are executed
+    const vm = this._vm.copy()
+
     if (blockOpt !== 'latest') {
-      const latest = await this.blockNumber()
-      if (blockOpt !== latest) {
+      const latest = await vm.blockchain.getLatestHeader()
+      const number = latest.number.toString(16)
+      if (blockOpt !== `0x${number}`) {
         return {
           code: INVALID_PARAMS,
           message: `Currently only "latest" block supported`,
@@ -364,12 +392,8 @@ export class Eth {
       }
     }
 
-    if (!this._vm) {
-      throw new Error('missing vm')
-    }
-
     const address = Address.fromString(addressHex)
-    const account: Account = await (this._vm.stateManager as any).getAccount(address)
+    const account: Account = await vm.stateManager.getAccount(address)
     return `0x${account.nonce.toString(16)}`
   }
 
