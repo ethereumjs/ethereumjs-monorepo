@@ -307,7 +307,7 @@ to help contributors better understand how the project is organized.
 **Components**
 
 - `Chain` [**In Progress**] This class represents the blockchain and is a wrapper around
-  `ethereumjs-blockchain`. It handles creation of the data directory, provides basic blockchain operations
+  `@ethereumjs/blockchain`. It handles creation of the data directory, provides basic blockchain operations
   and maintains an updated current state of the blockchain, including current height, total difficulty, and
   latest block.
 - `Server` This class represents a server that discovers new peers and handles incoming and dropped
@@ -328,11 +328,11 @@ to help contributors better understand how the project is organized.
 - `Handler` Subclasses of this class implements a protocol message handler. Handlers respond to incoming requests from peers.
   - `EthHandler` [**In Progress**] Handles incoming ETH requests
   - `LesHandler` [**In Progress**] Handles incoming LES requests
-- `Service` Subclasses of `Service` will implement specific functionality of a `Node`. For example, the `EthereumService` subclasses will synchronize the blockchain using the full or light sync protocols. Each service must specify which protocols it needs and define a `start()` and `stop()` function.
+- `Service` Subclasses of `Service` will implement specific functionality of a `Client`. For example, the `EthereumService` subclasses will synchronize the blockchain using the full or light sync protocols. Each service must specify which protocols it needs and define a `start()` and `stop()` function.
   - `FullEthereumService` [**In Progress**] Implementation of ethereum full sync.
   - `LightEthereumService` [**In Progress**] Implementation of ethereum light sync.
   - `WhisperService` [**Not Started**] Implementation of an ethereum whisper node.
-- `Node` [**In Progress**] Represents the top-level ethereum node, and is responsible for managing the lifecycle of included services.
+- `Client` [**In Progress**] Represents the top-level ethereum client, and is responsible for managing the lifecycle of included services.
 - `RPCManager` [**In Progress**] Implements an embedded JSON-RPC server to handle incoming RPC requests.
 
 ## Developer
