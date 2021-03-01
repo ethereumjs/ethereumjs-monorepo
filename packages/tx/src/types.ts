@@ -1,5 +1,7 @@
-import { AddressLike, BNLike, BufferLike } from 'ethereumjs-util'
+import { AddressLike, BN, BNLike, BufferLike } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
+import { default as LegacyTransaction } from './legacyTransaction'
+import { default as EIP2930Transaction } from './eip2930Transaction'
 
 /**
  * The options for initializing a Transaction.
@@ -32,7 +34,7 @@ export interface TxOptions {
 /**
  * An object with an optional field with each of the transaction's values.
  */
-export interface TxData {
+export interface LegacyTxData {
   /**
    * The transaction's nonce.
    */
@@ -80,6 +82,70 @@ export interface TxData {
 }
 
 /**
+ * An object with an optional field with each of the transaction's values.
+ */
+export interface EIP2930TxData {
+  /**
+   * The transaction's chain ID
+   */
+  chainId?: BN
+
+  /**
+   * The transaction's nonce.
+   */
+  nonce?: BN
+
+  /**
+   * The transaction's gas price.
+   */
+  gasPrice?: BN
+
+  /**
+   * The transaction's gas limit.
+   */
+  gasLimit?: BN
+
+  /**
+   * The transaction's the address is sent to.
+   */
+  to?: AddressLike
+
+  /**
+   * The amount of Ether sent.
+   */
+  value?: BN
+
+  /**
+   * This will contain the data of the message or the init of a contract.
+   */
+  data?: Buffer
+
+  /**
+   * The access list which contains the addresses/storage slots which the transaction wishes to access
+   */
+  accessList?: any // TODO: typesafe this
+
+  /**
+   * Parity of the transaction
+   */
+  yParity?: number
+
+  /**
+   * EC signature parameter. (This is senderR in the EIP)
+   */
+  r?: BN
+
+  /**
+   * EC signature parameter. (This is senderS in the EIP)
+   */
+  s?: BN
+}
+
+export type TxData = LegacyTxData | EIP2930TxData
+
+export type Transaction = LegacyTransaction | EIP2930Transaction
+
+/**
  * An object with all of the transaction's values represented as strings.
  */
 export interface JsonTx {
@@ -93,3 +159,5 @@ export interface JsonTx {
   s?: string
   value?: string
 }
+
+export const DEFAULT_COMMON = new Common({ chain: 'mainnet' })

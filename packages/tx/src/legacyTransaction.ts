@@ -16,7 +16,7 @@ import {
   MAX_INTEGER,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { TxOptions, TxData, JsonTx } from './types'
+import { TxOptions, LegacyTxData, JsonTx, DEFAULT_COMMON } from './types'
 
 // secp256k1n/2
 const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
@@ -24,7 +24,7 @@ const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46
 /**
  * An Ethereum transaction.
  */
-export default class Transaction {
+export default class LegacyTransaction {
   public readonly common: Common
   public readonly nonce: BN
   public readonly gasLimit: BN
@@ -36,8 +36,8 @@ export default class Transaction {
   public readonly r?: BN
   public readonly s?: BN
 
-  public static fromTxData(txData: TxData, opts?: TxOptions) {
-    return new Transaction(txData, opts)
+  public static fromTxData(txData: LegacyTxData, opts?: TxOptions) {
+    return new LegacyTransaction(txData, opts)
   }
 
   public static fromRlpSerializedTx(serialized: Buffer, opts?: TxOptions) {
@@ -61,7 +61,7 @@ export default class Transaction {
 
     const emptyBuffer = Buffer.from([])
 
-    return new Transaction(
+    return new LegacyTransaction(
       {
         nonce: new BN(nonce),
         gasPrice: new BN(gasPrice),
@@ -82,7 +82,7 @@ export default class Transaction {
    * Use the static factory methods to assist in creating a Transaction object from varying data types.
    * @note Transaction objects implement EIP155 by default. To disable it, pass in an `@ethereumjs/common` object set before EIP155 activation (i.e. before Spurious Dragon).
    */
-  constructor(txData: TxData, opts?: TxOptions) {
+  private constructor(txData: LegacyTxData, opts?: TxOptions) {
     const { nonce, gasPrice, gasLimit, to, value, data, v, r, s } = txData
 
     this.nonce = new BN(toBuffer(nonce))
@@ -112,8 +112,7 @@ export default class Transaction {
     if (opts?.common) {
       this.common = Object.assign(Object.create(Object.getPrototypeOf(opts.common)), opts.common)
     } else {
-      const DEFAULT_CHAIN = 'mainnet'
-      this.common = new Common({ chain: DEFAULT_CHAIN })
+      this.common = DEFAULT_COMMON
     }
 
     this._validateTxV(this.v)
@@ -233,7 +232,7 @@ export default class Transaction {
       common: this.common,
     }
 
-    return new Transaction(
+    return new LegacyTransaction(
       {
         nonce: this.nonce,
         gasPrice: this.gasPrice,
