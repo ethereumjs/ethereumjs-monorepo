@@ -11,7 +11,7 @@ import {
 import { decode } from 'rlp'
 import { middleware, validators } from '../validation'
 import { INVALID_PARAMS } from '../error-code'
-import { RpcCallTx } from '../types'
+import { RpcTx } from '../types'
 import type { Chain } from '../../blockchain'
 import type { EthereumClient } from '../..'
 import type { EthereumService } from '../../service'
@@ -47,7 +47,7 @@ export class Eth {
     ])
 
     this.estimateGas = middleware(this.estimateGas.bind(this), 2, [
-      [validators.transaction(['to'])],
+      [validators.transaction()],
       [validators.blockOption],
     ])
 
@@ -114,7 +114,7 @@ export class Eth {
    *   2. integer block number, or the string "latest", "earliest" or "pending"
    * @returns The return value of the executed contract.
    */
-  async call(params: [RpcCallTx, string]) {
+  async call(params: [RpcTx, string]) {
     const [transaction, blockOpt] = params
 
     if (!this._vm) {
@@ -172,7 +172,7 @@ export class Eth {
    *   2. integer block number, or the string "latest", "earliest" or "pending"
    * @returns The amount of gas used.
    */
-  async estimateGas(params: [RpcCallTx, string]) {
+  async estimateGas(params: [RpcTx, string]) {
     const [transaction, blockOpt] = params
 
     if (!this._vm) {

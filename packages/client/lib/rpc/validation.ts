@@ -160,11 +160,13 @@ export const validators = {
   },
 
   /**
-   * validator to ensure required transaction fields are present and checks for valid address and hex values.
-   * @param params parameters of method
-   * @param index index of parameter
+   * validator to ensure required transaction fields are present, and checks for valid address and hex values.
+   * @param requiredFields array of required fields
+   * @returns validator function with params:
+   *   - @param params parameters of method
+   *   - @param index index of parameter
    */
-  transaction(requiredFields: string[]) {
+  transaction(requiredFields: string[] = []) {
     return (params: any[], index: number) => {
       if (typeof params[index] !== 'object') {
         return {

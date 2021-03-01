@@ -1,6 +1,6 @@
-export interface RpcCallTx {
+export interface RpcTx {
   from?: string
-  to: string
+  to?: string
   gas?: string
   gasPrice?: string
   value?: string
