@@ -1,4 +1,4 @@
-import { Transaction, TxData } from '@ethereumjs/tx'
+import { TransactionFactory, Transaction, TxData } from '@ethereumjs/tx'
 import { toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { Block, BlockOptions } from './index'
 
@@ -37,7 +37,7 @@ export default function blockFromRpc(blockParams: any, uncles: any[] = [], optio
     const opts = { common: header._common }
     for (const _txParams of blockParams.transactions) {
       const txParams = normalizeTxParams(_txParams)
-      const tx = Transaction.fromTxData(txParams as TxData, opts)
+      const tx = TransactionFactory.fromTxData(txParams as TxData, opts)
       transactions.push(tx)
     }
   }

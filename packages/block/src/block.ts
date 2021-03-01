@@ -3,7 +3,7 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { BN, rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { Transaction, TxOptions } from '@ethereumjs/tx'
+import { TransactionFactory, Transaction, TxOptions } from '@ethereumjs/tx'
 import { BlockHeader } from './header'
 import { BlockData, BlockOptions, JsonBlock, BlockBuffer, Blockchain } from './types'
 
@@ -31,7 +31,7 @@ export class Block {
     // parse transactions
     const transactions = []
     for (const txData of txsData || []) {
-      const tx = Transaction.fromTxData(txData, {
+      const tx = TransactionFactory.fromTxData(txData, {
         ...opts,
         // Use header common in case of hardforkByBlockNumber being activated
         common: header._common,
@@ -90,13 +90,11 @@ export class Block {
     // parse transactions
     const transactions = []
     for (const txData of txsData || []) {
-      transactions.push(
-        Transaction.fromValuesArray(txData, {
-          ...opts,
-          // Use header common in case of hardforkByBlockNumber being activated
-          common: header._common,
-        })
-      )
+      transactions.push(TransactionFactory.fromBlockBodyData(txData, {
+        ...opts,
+        // Use header common in case of hardforkByBlockNumber being activated
+        common: header._common,
+      }))
     }
 
     // parse uncle headers
@@ -223,7 +221,7 @@ export class Block {
     const errors: string[] = []
 
     this.transactions.forEach(function (tx, i) {
-      const errs = tx.validate(true)
+      const errs = <string[]>tx.validate(true)
       if (errs.length > 0) {
         errors.push(`errors at tx ${i}: ${errs.join(', ')}`)
       }
