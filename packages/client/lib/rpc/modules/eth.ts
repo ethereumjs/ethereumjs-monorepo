@@ -6,7 +6,6 @@ import {
   bufferToHex,
   toBuffer,
   stripHexPrefix,
-  unpadBuffer,
   setLengthLeft,
 } from 'ethereumjs-util'
 import { decode } from 'rlp'
@@ -149,7 +148,7 @@ export class Eth {
     }
 
     const { execResult } = await vm.runTx({ tx })
-    return bufferToHex(unpadBuffer(execResult.returnValue))
+    return bufferToHex(execResult.returnValue)
   }
 
   /**

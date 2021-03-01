@@ -66,7 +66,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'latest'])
   const expectRes = (res: any) => {
     const msg = 'should return the correct return value'
-    if (res.body.result === bufferToHex(unpadBuffer(execResult.returnValue))) {
+    if (res.body.result === bufferToHex(execResult.returnValue)) {
       t.pass(msg)
     } else {
       throw new Error(msg)
