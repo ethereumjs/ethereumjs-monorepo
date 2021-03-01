@@ -154,9 +154,34 @@ export type Transaction = LegacyTransaction | EIP2930Transaction
 
 export type BaseTransactionData = {
   /**
+   * The transaction's nonce.
+   */
+  nonce?: BNLike
+
+  /**
+   * The transaction's gas price.
+   */
+  gasPrice?: BNLike
+
+  /**
+   * The transaction's gas limit.
+   */
+  gasLimit?: BNLike
+
+  /**
    * The transaction's the address is sent to.
    */
   to?: AddressLike
+
+  /**
+   * The amount of Ether sent.
+   */
+  value?: BNLike
+
+  /**
+   * This will contain the data of the message or the init of a contract.
+   */
+  data?: BufferLike
 }
 
 /**

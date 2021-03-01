@@ -54,10 +54,10 @@ tape('[TransactionFactory]: Basic functions', function (t) {
   )
 
   t.test('should give me the right classes in getTransactionClass', function (st) {
-    let legacyTx = TransactionFactory.getTransactionClass()
+    const legacyTx = TransactionFactory.getTransactionClass()
     st.equals(legacyTx!.name, LegacyTransaction.name)
 
-    let eip2930Tx = TransactionFactory.getTransactionClass(1, EIP2930Common)
+    const eip2930Tx = TransactionFactory.getTransactionClass(1, EIP2930Common)
     st.equals(eip2930Tx!.name, EIP2930Transaction.name)
 
     st.end()

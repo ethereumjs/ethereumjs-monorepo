@@ -2,7 +2,7 @@ import tape from 'tape'
 import minimist from 'minimist'
 import { toBuffer } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import LegacyTransaction from '../src/legacyTransaction'
+import { LegacyTransaction } from '../src/'
 import { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types'
 
 const testing = require('./testLoader')

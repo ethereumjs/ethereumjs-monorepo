@@ -16,7 +16,7 @@ import {
   MAX_INTEGER,
 } from 'ethereumjs-util'
 import { TxOptions, LegacyTxData, JsonLegacyTx } from './types'
-import { BaseTransaction, SignedTransactionInterface } from './baseTransaction'
+import { BaseTransaction } from './baseTransaction'
 
 // secp256k1n/2
 const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
@@ -28,12 +28,6 @@ export default class LegacyTransaction extends BaseTransaction<
   LegacyTransaction,
   JsonLegacyTx
 > {
-  public readonly nonce: BN
-  public readonly gasLimit: BN
-  public readonly gasPrice: BN
-  public readonly to?: Address
-  public readonly value: BN
-  public readonly data: Buffer
   public readonly v?: BN
   public readonly r?: BN
   public readonly s?: BN
@@ -59,24 +53,32 @@ export default class LegacyTransaction extends BaseTransaction<
       )
     }
 
-    const [nonce, gasPrice, gasLimit, to, value, data, v, r, s] = values
+    // If length is not 6, it has length 9. If v/r/s are empty Buffers, it is still an unsigned transaction
+    // This happens if you get the RLP data from `raw()`
+    if (values.length === 6 || values.length == 9) {
+      const [nonce, gasPrice, gasLimit, to, value, data, v, r, s] = values
 
-    const emptyBuffer = Buffer.from([])
+      const emptyBuffer = Buffer.from([])
 
-    return new LegacyTransaction(
-      {
-        nonce: new BN(nonce),
-        gasPrice: new BN(gasPrice),
-        gasLimit: new BN(gasLimit),
-        to: to && to.length > 0 ? new Address(to) : undefined,
-        value: new BN(value),
-        data: data ?? emptyBuffer,
-        v: v && !v.equals(emptyBuffer) ? new BN(v) : undefined,
-        r: r && !r.equals(emptyBuffer) ? new BN(r) : undefined,
-        s: s && !s.equals(emptyBuffer) ? new BN(s) : undefined,
-      },
-      opts
-    )
+      return new LegacyTransaction(
+        {
+          nonce: new BN(nonce),
+          gasPrice: new BN(gasPrice),
+          gasLimit: new BN(gasLimit),
+          to: to && to.length > 0 ? new Address(to) : undefined,
+          value: new BN(value),
+          data: data ?? emptyBuffer,
+          v: v !== undefined && !v.equals(emptyBuffer) ? new BN(v) : undefined,
+          r: r !== undefined && !r.equals(emptyBuffer) ? new BN(r) : undefined,
+          s: s !== undefined && !s.equals(emptyBuffer) ? new BN(s) : undefined,
+        },
+        opts
+      )
+    } else {
+      throw new Error(
+        'Invalid transaction. Only expecting 6 values (for unsigned tx) or 9 values (for signed tx).'
+      )
+    }
   }
 
   /**
@@ -84,33 +86,24 @@ export default class LegacyTransaction extends BaseTransaction<
    * Use the static factory methods to assist in creating a Transaction object from varying data types.
    * @note Transaction objects implement EIP155 by default. To disable it, pass in an `@ethereumjs/common` object set before EIP155 activation (i.e. before Spurious Dragon).
    */
-  private constructor(txData: LegacyTxData, opts?: TxOptions) {
+  protected constructor(txData: LegacyTxData, opts?: TxOptions) {
     const { nonce, gasPrice, gasLimit, to, value, data, v, r, s } = txData
 
-    super({ to }, opts)
+    super({ nonce, gasPrice, gasLimit, to, value, data }, opts)
 
-    this.nonce = new BN(toBuffer(nonce))
-    this.gasPrice = new BN(toBuffer(gasPrice))
-    this.gasLimit = new BN(toBuffer(gasLimit))
-    this.to = to ? new Address(toBuffer(to)) : undefined
-    this.value = new BN(toBuffer(value))
-    this.data = toBuffer(data)
     this.v = v ? new BN(toBuffer(v)) : undefined
     this.r = r ? new BN(toBuffer(r)) : undefined
     this.s = s ? new BN(toBuffer(s)) : undefined
 
     const validateCannotExceedMaxInteger = {
-      nonce: this.nonce,
-      gasPrice: this.gasPrice,
-      gasLimit: this.gasLimit,
-      value: this.value,
-      r: this.r,
-      s: this.s,
+      r: this.r ?? new BN(0),
+      s: this.s ?? new BN(0),
     }
-    for (const [key, value] of Object.entries(validateCannotExceedMaxInteger)) {
-      if (value && value.gt(MAX_INTEGER)) {
-        throw new Error(`${key} cannot exceed MAX_INTEGER, given ${value}`)
-      }
+
+    this.validateExcdeedsMaxInteger(validateCannotExceedMaxInteger)
+
+    if (this.v) {
+      this._validateTxV(this.v)
     }
 
     this._validateTxV(this.v)
@@ -122,27 +115,122 @@ export default class LegacyTransaction extends BaseTransaction<
   }
 
   /**
+   * Returns the rlp encoding of the transaction.
+   */
+  serialize(): Buffer {
+    return rlp.encode(this.raw())
+  }
+
+  /**
+   * Returns a Buffer Array of the raw Buffers of this transaction, in order.
+   */
+  raw(): Buffer[] {
+    return [
+      bnToRlp(this.nonce),
+      bnToRlp(this.gasPrice),
+      bnToRlp(this.gasLimit),
+      this.to !== undefined ? this.to.buf : Buffer.from([]),
+      bnToRlp(this.value),
+      this.data,
+      this.v !== undefined ? bnToRlp(this.v) : Buffer.from([]),
+      this.r !== undefined ? bnToRlp(this.r) : Buffer.from([]),
+      this.s !== undefined ? bnToRlp(this.s) : Buffer.from([]),
+    ]
+  }
+
+  /**
    * Computes a sha3-256 hash of the serialized tx
    */
   hash(): Buffer {
     return rlphash(this.raw())
   }
 
+  /**
+   * Returns an object with the JSON representation of the transaction
+   */
+  toJSON(): JsonLegacyTx {
+    return {
+      nonce: bnToHex(this.nonce),
+      gasPrice: bnToHex(this.gasPrice),
+      gasLimit: bnToHex(this.gasLimit),
+      to: this.to !== undefined ? this.to.toString() : undefined,
+      value: bnToHex(this.value),
+      data: '0x' + this.data.toString('hex'),
+      v: this.v !== undefined ? bnToHex(this.v) : undefined,
+      r: this.r !== undefined ? bnToHex(this.r) : undefined,
+      s: this.s !== undefined ? bnToHex(this.s) : undefined,
+    }
+  }
+
+  public isSigned(): boolean {
+    const { v, r, s } = this
+    return !!v && !!r && !!s
+  }
+
+  private _unsignedTxImplementsEIP155() {
+    return this.common.gteHardfork('spuriousDragon')
+  }
+
+  private _getMessageToSign(withEIP155: boolean) {
+    const values = [
+      bnToRlp(this.nonce),
+      bnToRlp(this.gasPrice),
+      bnToRlp(this.gasLimit),
+      this.to !== undefined ? this.to.buf : Buffer.from([]),
+      bnToRlp(this.value),
+      this.data,
+    ]
+
+    if (withEIP155) {
+      values.push(toBuffer(this.getChainId()))
+      values.push(unpadBuffer(toBuffer(0)))
+      values.push(unpadBuffer(toBuffer(0)))
+    }
+
+    return rlphash(values)
+  }
+
   getMessageToSign() {
     return this._getMessageToSign(this._unsignedTxImplementsEIP155())
   }
 
+  /**
+   * Process the v, r, s values from the `sign` method of the base transaction.
+   */
+  protected processSignature(v: number, r: Buffer, s: Buffer) {
+    if (this._unsignedTxImplementsEIP155()) {
+      v += this.getChainId() * 2 + 8
+    }
+
+    const opts = {
+      common: this.common,
+    }
+
+    return LegacyTransaction.fromTxData(
+      {
+        nonce: this.nonce,
+        gasPrice: this.gasPrice,
+        gasLimit: this.gasLimit,
+        to: this.to,
+        value: this.value,
+        data: this.data,
+        v: new BN(v),
+        r: new BN(r),
+        s: new BN(s),
+      },
+      opts
+    )
+  }
+
   getMessageToVerifySignature() {
-    return this._getMessageToSign(this._signedTxImplementsEIP155())
+    const withEIP155 = this._signedTxImplementsEIP155()
+
+    return this._getMessageToSign(withEIP155)
   }
 
   /**
-   * Returns the sender's address
+   * Returns the public key of the sender
    */
-  getSenderAddress(): Address {
-    return new Address(publicToAddress(this.getSenderPublicKey()))
-  }
-
   /**
    * Returns the public key of the sender
    */
@@ -175,197 +263,6 @@ export default class LegacyTransaction extends BaseTransaction<
   }
 
   /**
-   * Determines if the signature is valid
-   */
-  verifySignature(): boolean {
-    try {
-      // Main signature verification is done in `getSenderPublicKey()`
-      const publicKey = this.getSenderPublicKey()
-      return unpadBuffer(publicKey).length !== 0
-    } catch (e) {
-      return false
-    }
-  }
-
-  /**
-   * Sign a transaction with a given private key.
-   * Returns a new Transaction object (the original tx will not be modified).
-   * Example:
-   * ```typescript
-   * const unsignedTx = Transaction.fromTxData(txData)
-   * const signedTx = unsignedTx.sign(privKey)
-   * ```
-   * @param privateKey Must be 32 bytes in length.
-   */
-  sign(privateKey: Buffer) {
-    if (privateKey.length !== 32) {
-      throw new Error('Private key must be 32 bytes in length.')
-    }
-
-    const msgHash = this.getMessageToSign()
-
-    // Only `v` is reassigned.
-    /* eslint-disable-next-line prefer-const */
-    let { v, r, s } = ecsign(msgHash, privateKey)
-
-    if (this._unsignedTxImplementsEIP155()) {
-      v += this.getChainId() * 2 + 8
-    }
-
-    const opts = {
-      common: this.common,
-    }
-
-    return new LegacyTransaction(
-      {
-        nonce: this.nonce,
-        gasPrice: this.gasPrice,
-        gasLimit: this.gasLimit,
-        to: this.to,
-        value: this.value,
-        data: this.data,
-        v: new BN(v),
-        r: new BN(r),
-        s: new BN(s),
-      },
-      opts
-    )
-  }
-
-  /**
-   * The amount of gas paid for the data in this tx
-   */
-  getDataFee(): BN {
-    const txDataZero = this.common.param('gasPrices', 'txDataZero')
-    const txDataNonZero = this.common.param('gasPrices', 'txDataNonZero')
-
-    let cost = 0
-    for (let i = 0; i < this.data.length; i++) {
-      this.data[i] === 0 ? (cost += txDataZero) : (cost += txDataNonZero)
-    }
-    return new BN(cost)
-  }
-
-  /**
-   * The minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
-   */
-  getBaseFee(): BN {
-    const fee = this.getDataFee().addn(this.common.param('gasPrices', 'tx'))
-    if (this.common.gteHardfork('homestead') && this.toCreationAddress()) {
-      fee.iaddn(this.common.param('gasPrices', 'txCreation'))
-    }
-    return fee
-  }
-
-  /**
-   * The up front amount that an account must have for this transaction to be valid
-   */
-  getUpfrontCost(): BN {
-    return this.gasLimit.mul(this.gasPrice).add(this.value)
-  }
-
-  /**
-   * Validates the signature and checks if
-   * the transaction has the minimum amount of gas required
-   * (DataFee + TxFee + Creation Fee).
-   */
-  validate(): boolean
-  validate(stringError: false): boolean
-  validate(stringError: true): string[]
-  validate(stringError: boolean = false): boolean | string[] {
-    const errors = []
-
-    if (!this.verifySignature()) {
-      errors.push('Invalid Signature')
-    }
-
-    if (this.getBaseFee().gt(this.gasLimit)) {
-      errors.push(`gasLimit is too low. given ${this.gasLimit}, need at least ${this.getBaseFee()}`)
-    }
-
-    return stringError ? errors : errors.length === 0
-  }
-
-  /**
-   * Returns a Buffer Array of the raw Buffers of this transaction, in order.
-   */
-  raw(): Buffer[] {
-    return [
-      bnToRlp(this.nonce),
-      bnToRlp(this.gasPrice),
-      bnToRlp(this.gasLimit),
-      this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bnToRlp(this.value),
-      this.data,
-      this.v !== undefined ? bnToRlp(this.v) : Buffer.from([]),
-      this.r !== undefined ? bnToRlp(this.r) : Buffer.from([]),
-      this.s !== undefined ? bnToRlp(this.s) : Buffer.from([]),
-    ]
-  }
-
-  /**
-   * Returns the rlp encoding of the transaction.
-   */
-  serialize(): Buffer {
-    return rlp.encode(this.raw())
-  }
-
-  /**
-   * Returns an object with the JSON representation of the transaction
-   */
-  toJSON(): JsonLegacyTx {
-    return {
-      nonce: bnToHex(this.nonce),
-      gasPrice: bnToHex(this.gasPrice),
-      gasLimit: bnToHex(this.gasLimit),
-      to: this.to !== undefined ? this.to.toString() : undefined,
-      value: bnToHex(this.value),
-      data: '0x' + this.data.toString('hex'),
-      v: this.v !== undefined ? bnToHex(this.v) : undefined,
-      r: this.r !== undefined ? bnToHex(this.r) : undefined,
-      s: this.s !== undefined ? bnToHex(this.s) : undefined,
-    }
-  }
-
-  public isSigned(): boolean {
-    const { v, r, s } = this
-    return !!v && !!r && !!s
-  }
-
-  private _unsignedTxImplementsEIP155() {
-    return this.common.gteHardfork('spuriousDragon')
-  }
-
-  private _signedTxImplementsEIP155() {
-    if (!this.isSigned()) {
-      throw Error('This transaction is not signed')
-    }
-
-    const onEIP155BlockOrLater = this.common.gteHardfork('spuriousDragon')
-
-    // EIP155 spec:
-    // If block.number >= 2,675,000 and v = CHAIN_ID * 2 + 35 or v = CHAIN_ID * 2 + 36, then when computing the hash of a transaction for purposes of signing or recovering, instead of hashing only the first six elements (i.e. nonce, gasprice, startgas, to, value, data), hash nine elements, with v replaced by CHAIN_ID, r = 0 and s = 0.
-    const v = this.v?.toNumber()
-
-    const vAndChainIdMeetEIP155Conditions =
-      v === this.getChainId() * 2 + 35 || v === this.getChainId() * 2 + 36
-
-    return vAndChainIdMeetEIP155Conditions && onEIP155BlockOrLater
-  }
-
-  private _getMessageToSign(withEIP155: boolean) {
-    const values = this.raw().slice(0, 6)
-
-    if (withEIP155) {
-      values.push(toBuffer(this.getChainId()))
-      values.push(unpadBuffer(toBuffer(0)))
-      values.push(unpadBuffer(toBuffer(0)))
-    }
-
-    return rlphash(values)
-  }
-
-  /**
    * Validates tx's `v` value
    */
   private _validateTxV(v: BN | undefined): void {
@@ -391,5 +288,22 @@ export default class LegacyTransaction extends BaseTransaction<
         `Incompatible EIP155-based V ${vInt} and chain id ${this.getChainId()}. See the Common parameter of the Transaction constructor to set the chain id.`
       )
     }
+  }
+
+  private _signedTxImplementsEIP155() {
+    if (!this.isSigned()) {
+      throw Error('This transaction is not signed')
+    }
+
+    const onEIP155BlockOrLater = this.common.gteHardfork('spuriousDragon')
+
+    // EIP155 spec:
+    // If block.number >= 2,675,000 and v = CHAIN_ID * 2 + 35 or v = CHAIN_ID * 2 + 36, then when computing the hash of a transaction for purposes of signing or recovering, instead of hashing only the first six elements (i.e. nonce, gasprice, startgas, to, value, data), hash nine elements, with v replaced by CHAIN_ID, r = 0 and s = 0.
+    const v = this.v?.toNumber()
+
+    const vAndChainIdMeetEIP155Conditions =
+      v === this.getChainId() * 2 + 35 || v === this.getChainId() * 2 + 36
+
+    return vAndChainIdMeetEIP155Conditions && onEIP155BlockOrLater
   }
 }
