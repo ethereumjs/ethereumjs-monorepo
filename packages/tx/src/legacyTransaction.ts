@@ -15,8 +15,8 @@ import {
   publicToAddress,
   MAX_INTEGER,
 } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
-import { TxOptions, LegacyTxData, JsonTx, DEFAULT_COMMON } from './types'
+import { TxOptions, LegacyTxData, JsonLegacyTx } from './types'
+import { BaseTransaction, SignedTransactionInterface } from './baseTransaction'
 
 // secp256k1n/2
 const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
@@ -24,8 +24,10 @@ const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46
 /**
  * An Ethereum transaction.
  */
-export default class LegacyTransaction {
-  public readonly common: Common
+export default class LegacyTransaction extends BaseTransaction<
+  LegacyTransaction,
+  JsonLegacyTx
+> {
   public readonly nonce: BN
   public readonly gasLimit: BN
   public readonly gasPrice: BN
@@ -85,6 +87,8 @@ export default class LegacyTransaction {
   private constructor(txData: LegacyTxData, opts?: TxOptions) {
     const { nonce, gasPrice, gasLimit, to, value, data, v, r, s } = txData
 
+    super({ to }, opts)
+
     this.nonce = new BN(toBuffer(nonce))
     this.gasPrice = new BN(toBuffer(gasPrice))
     this.gasLimit = new BN(toBuffer(gasLimit))
@@ -109,25 +113,12 @@ export default class LegacyTransaction {
       }
     }
 
-    if (opts?.common) {
-      this.common = Object.assign(Object.create(Object.getPrototypeOf(opts.common)), opts.common)
-    } else {
-      this.common = DEFAULT_COMMON
-    }
-
     this._validateTxV(this.v)
 
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
     }
-  }
-
-  /**
-   * If the tx's `to` is to the creation address
-   */
-  toCreationAddress(): boolean {
-    return this.to === undefined || this.to.buf.length === 0
   }
 
   /**
@@ -143,13 +134,6 @@ export default class LegacyTransaction {
 
   getMessageToVerifySignature() {
     return this._getMessageToSign(this._signedTxImplementsEIP155())
-  }
-
-  /**
-   * Returns chain ID
-   */
-  getChainId(): number {
-    return this.common.chainId()
   }
 
   /**
@@ -329,7 +313,7 @@ export default class LegacyTransaction {
   /**
    * Returns an object with the JSON representation of the transaction
    */
-  toJSON(): JsonTx {
+  toJSON(): JsonLegacyTx {
     return {
       nonce: bnToHex(this.nonce),
       gasPrice: bnToHex(this.gasPrice),

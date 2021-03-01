@@ -32,6 +32,13 @@ export interface TxOptions {
 }
 
 /**
+ * The options for initializing a Transaction.
+ */
+export interface BaseTxOptions {
+  common?: Common
+}
+
+/**
  * An object with an optional field with each of the transaction's values.
  */
 export interface LegacyTxData {
@@ -145,10 +152,17 @@ export type TxData = LegacyTxData | EIP2930TxData
 
 export type Transaction = LegacyTransaction | EIP2930Transaction
 
+export type BaseTransactionData = {
+  /**
+   * The transaction's the address is sent to.
+   */
+  to?: AddressLike
+}
+
 /**
  * An object with all of the transaction's values represented as strings.
  */
-export interface JsonTx {
+export interface JsonLegacyTx {
   nonce?: string
   gasPrice?: string
   gasLimit?: string
@@ -158,6 +172,23 @@ export interface JsonTx {
   r?: string
   s?: string
   value?: string
+}
+
+/**
+ * An object with all of the transaction's values represented as strings.
+ */
+export interface JsonEIP2930Tx {
+  nonce?: string
+  gasPrice?: string
+  gasLimit?: string
+  to?: string
+  data?: string
+  v?: string
+  r?: string
+  s?: string
+  value?: string
+  chainId: string
+  accessList: string[]
 }
 
 export const DEFAULT_COMMON = new Common({ chain: 'mainnet' })
