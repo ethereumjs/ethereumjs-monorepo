@@ -1,4 +1,4 @@
 [submodule "ethereum-tests"]
 	path = packages/ethereum-tests
 	url = https://github.com/qbzzt/tests.git
-	branch = eip2930
+	branch = develop

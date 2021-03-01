@@ -106,7 +106,6 @@ export default class TransactionFactory {
       default:
         throw new Error(`TypedTransaction with ID ${transactionID} unknown`)
     }
-    throw new Error(`TypedTransaction with ID ${transactionID} unknown`)
   }
 
   /**

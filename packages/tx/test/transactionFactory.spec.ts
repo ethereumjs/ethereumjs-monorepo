@@ -1,11 +1,7 @@
 import Common from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
 import tape from 'tape'
-import {
-  EIP2930Transaction,
-  TransactionFactory,
-  LegacyTransaction
-} from '../src'
+import { EIP2930Transaction, TransactionFactory, LegacyTransaction } from '../src'
 
 const EIP2930Common = new Common({
   eips: [2718, 2929, 2930],

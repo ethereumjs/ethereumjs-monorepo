@@ -7,13 +7,10 @@ import {
   bnToHex,
   bnToRlp,
   ecrecover,
-  ecsign,
   rlp,
   rlphash,
   toBuffer,
   unpadBuffer,
-  publicToAddress,
-  MAX_INTEGER,
 } from 'ethereumjs-util'
 import { TxOptions, TxData, JsonTx } from './types'
 import { BaseTransaction } from './baseTransaction'
