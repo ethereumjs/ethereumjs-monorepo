@@ -149,7 +149,7 @@ NODE_OPTIONS="--max-old-space-size=4096" clinic flame -- node ./tests/tester.js 
 
 This helps us see how the VM performs when running mainnet blocks.
 
-View the historical benchmark data for the master branch on the [github page](http://ethereumjs.github.io/ethereumjs-vm/dev/bench/).
+View the historical benchmark data for the master branch on the [github page](http://ethereumjs.github.io/ethereumjs-monorepo/dev/bench/vm).
 
 We want to use the compiled JS so `ts-node` does not show up in the profile. So run:
 
