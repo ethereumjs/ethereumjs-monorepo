@@ -602,8 +602,26 @@ describe('.toChecksumAddress()', function() {
       for (const [chainId, addresses] of Object.entries(eip1191ChecksummAddresses)) {
         for (const addr of addresses) {
           assert.equal(toChecksumAddress(addr.toLowerCase(), Number(chainId)), addr)
+          assert.equal(toChecksumAddress(addr.toLowerCase(), Buffer.from([chainId])), addr)
+          assert.equal(toChecksumAddress(addr.toLowerCase(), new BN(chainId)), addr)
+          assert.equal(
+            toChecksumAddress(addr.toLowerCase(), '0x' + Buffer.from([chainId]).toString('hex')),
+            addr
+          )
         }
       }
+    })
+    it('Should encode large chain ids greater than MAX_INTEGER correctly', function() {
+      const addr = '0x88021160C5C792225E4E5452585947470010289D'
+      const chainIDBuffer = Buffer.from('796f6c6f763378', 'hex')
+      assert.equal(toChecksumAddress(addr.toLowerCase(), chainIDBuffer), addr)
+      assert.equal(toChecksumAddress(addr.toLowerCase(), new BN(chainIDBuffer)), addr)
+      assert.equal(
+        toChecksumAddress(addr.toLowerCase(), '0x' + chainIDBuffer.toString('hex')),
+        addr
+      )
+      const chainIDNumber = parseInt(chainIDBuffer.toString('hex'), 16)
+      assert.equal(toChecksumAddress(addr.toLowerCase(), chainIDNumber), addr)
     })
   })
 
@@ -611,6 +629,11 @@ describe('.toChecksumAddress()', function() {
     it('Should throw when the address is not hex-prefixed', function() {
       assert.throws(function() {
         toChecksumAddress('52908400098527886E0F7030069857D2E4169EE7'.toLowerCase())
+      })
+    })
+    it('Should throw when the chainId is not hex-prefixed', function() {
+      assert.throws(function() {
+        toChecksumAddress('0xde709f2102306220921060314715629080e2fb77', '1234')
       })
     })
   })
@@ -633,6 +656,12 @@ describe('.isValidChecksumAddress()', function() {
       for (const [chainId, addresses] of Object.entries(eip1191ChecksummAddresses)) {
         for (const addr of addresses) {
           assert.equal(isValidChecksumAddress(addr, Number(chainId)), true)
+          assert.equal(isValidChecksumAddress(addr, Buffer.from([chainId])), true)
+          assert.equal(isValidChecksumAddress(addr, new BN(chainId)), true)
+          assert.equal(
+            isValidChecksumAddress(addr, '0x' + Buffer.from([chainId]).toString('hex')),
+            true
+          )
         }
       }
     })
