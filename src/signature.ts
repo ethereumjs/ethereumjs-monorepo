@@ -3,17 +3,11 @@ import BN from 'bn.js'
 import { toBuffer, setLengthLeft, bufferToHex, bufferToInt } from './bytes'
 import { keccak } from './hash'
 import { assertIsBuffer } from './helpers'
-import { BNLike, PrefixedHexString } from './types'
+import { BNLike } from './types'
 import { isHexString } from '.'
 
 export interface ECDSASignature {
   v: number
-  r: Buffer
-  s: Buffer
-}
-
-export interface ECDSASignatureBN {
-  v: BN
   r: Buffer
   s: Buffer
 }
@@ -24,74 +18,47 @@ export interface ECDSASignatureBuffer {
   s: Buffer
 }
 
-export interface ECDSASignatureHexString {
-  v: PrefixedHexString
-  r: Buffer
-  s: Buffer
-}
-
 /**
  * Returns the ECDSA signature of a message hash.
  */
 export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: number): ECDSASignature
-export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: BN): ECDSASignatureBN
-export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: Buffer): ECDSASignatureBuffer
 export function ecsign(
   msgHash: Buffer,
   privateKey: Buffer,
-  chainId: PrefixedHexString
-): ECDSASignatureHexString
+  chainId: BN | string | Buffer
+): ECDSASignatureBuffer
 export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: any): any {
   const sig = ecdsaSign(msgHash, privateKey)
   const recovery: number = sig.recid
 
   let ret
-  if (typeof chainId === 'number') {
-    return {
-      r: Buffer.from(sig.signature.slice(0, 32)),
-      s: Buffer.from(sig.signature.slice(32, 64)),
-      v: recovery + (chainId * 2 + 35)
-    }
-  } else if (BN.isBN(chainId)) {
-    ret = {
-      r: Buffer.from(sig.signature.slice(0, 32)),
-      s: Buffer.from(sig.signature.slice(32, 64)),
-      v: (chainId as BN)
-        .muln(2)
-        .addn(35)
-        .addn(recovery)
-    }
-  } else if (Buffer.isBuffer(chainId)) {
-    ret = {
-      r: Buffer.from(sig.signature.slice(0, 32)),
-      s: Buffer.from(sig.signature.slice(32, 64)),
-      v: toBuffer(
-        new BN(chainId)
-          .muln(2)
-          .addn(35)
-          .addn(recovery)
+  const r = Buffer.from(sig.signature.slice(0, 32))
+  const s = Buffer.from(sig.signature.slice(32, 64))
+  if (!chainId || typeof chainId === 'number') {
+    if (chainId && !Number.isSafeInteger(chainId)) {
+      throw new Error(
+        'The provided chainId is greater than MAX_SAFE_INTEGER (please use an alternative input type)'
       )
     }
-  } else if (typeof chainId === 'string') {
-    if (!isHexString(chainId)) {
+    return {
+      r,
+      s,
+      v: chainId ? recovery + (chainId * 2 + 35) : recovery + 27
+    }
+  } else {
+    // BN, string, Buffer
+    if (typeof chainId === 'string' && !isHexString(chainId)) {
       throw new Error(`A chainId string must be provided with a 0x-prefix, given: ${chainId}`)
     }
     ret = {
-      r: Buffer.from(sig.signature.slice(0, 32)),
-      s: Buffer.from(sig.signature.slice(32, 64)),
-      v:
-        '0x' +
+      r,
+      s,
+      v: toBuffer(
         new BN(toBuffer(chainId))
           .muln(2)
           .addn(35)
           .addn(recovery)
-          .toString('hex')
-    }
-  } else {
-    ret = {
-      r: Buffer.from(sig.signature.slice(0, 32)),
-      s: Buffer.from(sig.signature.slice(32, 64)),
-      v: recovery + 27
+      )
     }
   }
 
@@ -120,6 +87,23 @@ export const ecrecover = function(
   s: Buffer,
   chainId?: BNLike
 ): Buffer {
+  if (typeof v === 'string' && !isHexString(v)) {
+    throw new Error(`A v value string must be provided with a 0x-prefix, given: ${v}`)
+  }
+  if (typeof chainId === 'string' && !isHexString(chainId)) {
+    throw new Error(`A chainId string must be provided with a 0x-prefix, given: ${chainId}`)
+  }
+  if (typeof v === 'number' && !Number.isSafeInteger(v)) {
+    throw new Error(
+      'The provided v is greater than MAX_SAFE_INTEGER (please use an alternative input type)'
+    )
+  }
+  if (typeof chainId === 'number' && !Number.isSafeInteger(chainId)) {
+    throw new Error(
+      'The provided chainId is greater than MAX_SAFE_INTEGER (please use an alternative input type)'
+    )
+  }
+
   const signature = Buffer.concat([setLengthLeft(r, 32), setLengthLeft(s, 32)], 64)
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {

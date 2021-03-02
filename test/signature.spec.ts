@@ -56,30 +56,58 @@ describe('ecsign', function() {
       '129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66',
       'hex'
     )
+    const expectedSigV = Buffer.from('014f', 'hex')
 
     const sig = ecsign(echash, ecprivkey, 150)
     assert.deepEqual(sig.r, expectedSigR)
     assert.deepEqual(sig.s, expectedSigS)
     assert.equal(sig.v, 150 * 2 + 35)
 
-    const sigBN = ecsign(echash, ecprivkey, new BN(150))
-    assert.deepEqual(sigBN.r, expectedSigR)
-    assert.deepEqual(sigBN.s, expectedSigS)
-    assert.deepEqual(sigBN.v, new BN(150).muln(2).addn(35))
-
-    const sigBuffer = ecsign(echash, ecprivkey, Buffer.from([150]))
+    let sigBuffer = ecsign(echash, ecprivkey, new BN(150))
     assert.deepEqual(sigBuffer.r, expectedSigR)
     assert.deepEqual(sigBuffer.s, expectedSigS)
-    assert.deepEqual(sigBuffer.v, Buffer.from('014f', 'hex'))
+    assert.deepEqual(sigBuffer.v, expectedSigV)
 
-    const sigHexString = ecsign(echash, ecprivkey, '0x96')
-    assert.deepEqual(sigHexString.r, expectedSigR)
-    assert.deepEqual(sigHexString.s, expectedSigS)
-    assert.equal(sigHexString.v, '0x14f')
+    sigBuffer = ecsign(echash, ecprivkey, Buffer.from([150]))
+    assert.deepEqual(sigBuffer.v, expectedSigV)
+
+    sigBuffer = ecsign(echash, ecprivkey, '0x96')
+    assert.deepEqual(sigBuffer.v, expectedSigV)
 
     assert.throws(function() {
       ecsign(echash, ecprivkey, '96')
     })
+  })
+})
+
+it('should produce a signature for a high number chainId greater than MAX_SAFE_INTEGER', function() {
+  const chainIDBuffer = Buffer.from('796f6c6f763378', 'hex')
+  const expectedSigR = Buffer.from(
+    '99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9',
+    'hex'
+  )
+  const expectedSigS = Buffer.from(
+    '129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66',
+    'hex'
+  )
+  const expectedSigV = Buffer.from('f2ded8deec6713', 'hex')
+
+  let sigBuffer = ecsign(echash, ecprivkey, new BN(chainIDBuffer))
+  assert.deepEqual(sigBuffer.r, expectedSigR)
+  assert.deepEqual(sigBuffer.s, expectedSigS)
+  assert.deepEqual(sigBuffer.v, expectedSigV)
+
+  sigBuffer = ecsign(echash, ecprivkey, chainIDBuffer)
+  assert.deepEqual(sigBuffer.v, expectedSigV)
+
+  sigBuffer = ecsign(echash, ecprivkey, '0x' + chainIDBuffer.toString('hex'))
+  assert.deepEqual(sigBuffer.v, expectedSigV)
+
+  const chainIDNumber = parseInt(chainIDBuffer.toString('hex'), 16)
+  assert.throws(() => {
+    // If we would use a number for the `chainId` parameter then it should throw.
+    // (The numbers are too high to perform arithmetic on)
+    ecsign(echash, ecprivkey, chainIDNumber)
   })
 })
 
@@ -168,6 +196,13 @@ describe('ecrecover', function() {
     const chainIDHexString = '0x796f6c6f763378'
     sender = ecrecover(msgHash, vHexString, r, s, chainIDHexString)
     assert.ok(sender.equals(senderPubKey), 'sender pubkey correct (HexString)')
+
+    assert.throws(function() {
+      ecrecover(msgHash, 'f2ded8deec6714', r, s, chainIDHexString)
+    })
+    assert.throws(function() {
+      ecrecover(msgHash, vHexString, r, s, '796f6c6f763378')
+    })
 
     const chainIDNumber = parseInt(chainIDBuffer.toString('hex'), 16)
     const vNumber = parseInt(vBuffer.toString('hex'), 16)
