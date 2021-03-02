@@ -185,8 +185,10 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   try {
     result = await applyBlock.bind(this)(block, opts)
     debug(
-      `Received block results gasUsed=${result.gasUsed} bloom=${short(result.bloom.bitvector)} (${result.bloom.bitvector.length
-      } bytes) receiptRoot=${result.receiptRoot.toString('hex')} receipts=${result.receipts.length
+      `Received block results gasUsed=${result.gasUsed} bloom=${short(result.bloom.bitvector)} (${
+        result.bloom.bitvector.length
+      } bytes) receiptRoot=${result.receiptRoot.toString('hex')} receipts=${
+        result.receipts.length
       } txResults=${result.results.length}`
     )
   } catch (err) {

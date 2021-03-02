@@ -1,6 +1,5 @@
 import { readFileSync } from 'fs'
 import Benchmark = require('benchmark')
-import { bufferToInt } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import blockFromRPC from '@ethereumjs/block/dist/from-rpc'
