@@ -83,6 +83,9 @@ jobs:
       - run: npm run benchmarks | tee output.txt
         working-directory: ${{ env.cwd }}
 
+      # Run git stash in case github-action-benchmark has trouble switching to gh-pages branch due to differing package-locks
+      - run: git stash
+
       - name: Set auto-push for benchmarks to true if on master
         id: auto_push
         run: |
