@@ -8,16 +8,13 @@ import { getPreState, getBlockchain, verifyResult } from './util'
 
 const BLOCK_FIXTURE = 'benchmarks/fixture/blocks-prestate.json'
 
-const onAdd = async (vm: VM, block: Block, receipts: any) => {
-  const vmCopy = vm.copy()
-
-  const result = await vmCopy.runBlock({
+const runBlock = async (vm: VM, block: Block, receipts: any) => {
+  await vm.copy().runBlock({
     block,
     generate: true,
     skipBlockValidation: true,
   })
-
-  verifyResult(block, result)
+  verifyResult(block, receipts)
 }
 
 export async function mainnetBlocks(suite?: Benchmark.Suite, numSamples?: number) {
@@ -25,14 +22,14 @@ export async function mainnetBlocks(suite?: Benchmark.Suite, numSamples?: number
   if (!Array.isArray(data)) data = [data]
   console.log(`Total number of blocks in data set: ${data.length}`)
 
-  numSamples = numSamples ? numSamples : data.length
+  numSamples = numSamples ?? data.length
   console.log(`Number of blocks to sample: ${numSamples}`)
   data = data.slice(0, numSamples)
 
   const common = new Common({ chain: 'mainnet', hardfork: 'muirGlacier' })
 
   for (const blockData of data) {
-    const block = blockFromRPC(blockData.block, [], { common: common })
+    const block = blockFromRPC(blockData.block, [], { common })
     const blockNumber = block.header.number.toNumber()
     const { receipts, preState, blockhashes } = blockData
 
@@ -41,9 +38,11 @@ export async function mainnetBlocks(suite?: Benchmark.Suite, numSamples?: number
     const vm = new VM({ stateManager, common, blockchain })
 
     if (suite) {
-      suite.add(`Block ${blockNumber}`, onAdd.bind(vm, block, receipts))
+      suite.add(`Block ${blockNumber}`, async () => {
+        await runBlock(vm, block, receipts)
+      })
     } else {
-      await onAdd(vm, block, receipts)
+      await runBlock(vm, block, receipts)
     }
   }
 }
