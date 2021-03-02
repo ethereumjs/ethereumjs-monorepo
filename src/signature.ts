@@ -76,17 +76,7 @@ function isValidSigRecovery(recovery: number | BN): boolean {
   return rec.eqn(0) || rec.eqn(1)
 }
 
-/**
- * ECDSA public key recovery from signature.
- * @returns Recovered public key
- */
-export const ecrecover = function(
-  msgHash: Buffer,
-  v: BNLike,
-  r: Buffer,
-  s: Buffer,
-  chainId?: BNLike
-): Buffer {
+function vAndChainIdTypeChecks(v: BNLike, chainId?: BNLike) {
   if (typeof v === 'string' && !isHexString(v)) {
     throw new Error(`A v value string must be provided with a 0x-prefix, given: ${v}`)
   }
@@ -103,6 +93,20 @@ export const ecrecover = function(
       'The provided chainId is greater than MAX_SAFE_INTEGER (please use an alternative input type)'
     )
   }
+}
+
+/**
+ * ECDSA public key recovery from signature.
+ * @returns Recovered public key
+ */
+export const ecrecover = function(
+  msgHash: Buffer,
+  v: BNLike,
+  r: Buffer,
+  s: Buffer,
+  chainId?: BNLike
+): Buffer {
+  vAndChainIdTypeChecks(v, chainId)
 
   const signature = Buffer.concat([setLengthLeft(r, 32), setLengthLeft(s, 32)], 64)
   const recovery = calculateSigRecovery(v, chainId)
@@ -117,7 +121,8 @@ export const ecrecover = function(
  * Convert signature parameters into the format of `eth_sign` RPC method.
  * @returns Signature
  */
-export const toRpcSig = function(v: number, r: Buffer, s: Buffer, chainId?: number): string {
+export const toRpcSig = function(v: BNLike, r: Buffer, s: Buffer, chainId?: BNLike): string {
+  vAndChainIdTypeChecks(v, chainId)
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
@@ -156,12 +161,13 @@ export const fromRpcSig = function(sig: string): ECDSASignature {
  * @param homesteadOrLater Indicates whether this is being used on either the homestead hardfork or a later one
  */
 export const isValidSignature = function(
-  v: number,
+  v: BNLike,
   r: Buffer,
   s: Buffer,
   homesteadOrLater: boolean = true,
-  chainId?: number
+  chainId?: BNLike
 ): boolean {
+  vAndChainIdTypeChecks(v, chainId)
   const SECP256K1_N_DIV_2 = new BN(
     '7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
     16

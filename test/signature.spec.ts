@@ -7,7 +7,8 @@ import {
   hashPersonalMessage,
   isValidSignature,
   fromRpcSig,
-  toRpcSig
+  toRpcSig,
+  intToBuffer
 } from '../src'
 
 const echash = Buffer.from(
@@ -294,6 +295,45 @@ describe('isValidSignature', function() {
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     const v = chainId * 2 + 35
     assert.equal(isValidSignature(v, r, s, false, chainId), true)
+    assert.equal(isValidSignature(intToBuffer(v), r, s, false, intToBuffer(chainId)), true)
+    assert.equal(isValidSignature(new BN(v), r, s, false, new BN(chainId)), true)
+    assert.equal(
+      isValidSignature(
+        '0x' + intToBuffer(v).toString('hex'),
+        r,
+        s,
+        false,
+        '0x' + intToBuffer(chainId).toString('hex')
+      ),
+      true
+    )
+  })
+  it('should work otherwise(chainId larger than MAX_INTEGER)', function() {
+    const r = Buffer.from('ec212841e0b7aaffc3b3e33a08adf32fa07159e856ef23db85175a4f6d71dc0f', 'hex')
+    const s = Buffer.from('4b8e02b96b94064a5aa2f8d72bd0040616ba8e482a5dd96422e38c9a4611f8d5', 'hex')
+
+    const vBuffer = Buffer.from('f2ded8deec6714', 'hex')
+    const chainIDBuffer = Buffer.from('796f6c6f763378', 'hex')
+    assert.equal(isValidSignature(vBuffer, r, s, false, chainIDBuffer), true)
+    assert.equal(isValidSignature(new BN(vBuffer), r, s, false, new BN(chainIDBuffer)), true)
+    assert.equal(
+      isValidSignature(
+        '0x' + vBuffer.toString('hex'),
+        r,
+        s,
+        false,
+        '0x' + chainIDBuffer.toString('hex')
+      ),
+      true
+    )
+
+    const chainIDNumber = parseInt(chainIDBuffer.toString('hex'), 16)
+    const vNumber = parseInt(vBuffer.toString('hex'), 16)
+    assert.throws(() => {
+      // If we would use numbers for the `v` and `chainId` parameters, then it should throw.
+      // (The numbers are too high to perform arithmetic on)
+      isValidSignature(vNumber, r, s, false, chainIDNumber)
+    })
   })
   // FIXME: add homestead test
 })
@@ -303,49 +343,57 @@ describe('message sig', function() {
   const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
 
   it('should return hex strings that the RPC can use', function() {
-    assert.equal(
-      toRpcSig(27, r, s),
+    const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca661b'
-    )
-    assert.deepEqual(
-      fromRpcSig(
-        '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca661b'
-      ),
-      {
-        v: 27,
-        r: r,
-        s: s
-      }
-    )
-    assert.deepEqual(
-      fromRpcSig(
-        '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca6600'
-      ),
-      {
-        v: 27,
-        r: r,
-        s: s
-      }
-    )
+    assert.equal(toRpcSig(27, r, s), sig)
+    assert.deepEqual(fromRpcSig(sig), {
+      v: 27,
+      r: r,
+      s: s
+    })
   })
 
   it('should return hex strings that the RPC can use (chainId=150)', function() {
+    const sig =
+      '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66014f'
     const chainId = 150
     const v = chainId * 2 + 35
+    assert.equal(toRpcSig(v, r, s, chainId), sig)
+    assert.equal(toRpcSig(intToBuffer(v), r, s, intToBuffer(chainId)), sig)
+    assert.equal(toRpcSig(new BN(v), r, s, new BN(chainId)), sig)
     assert.equal(
-      toRpcSig(v, r, s, chainId),
-      '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66014f'
-    )
-    assert.deepEqual(
-      fromRpcSig(
-        '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66014f'
+      toRpcSig(
+        '0x' + intToBuffer(v).toString('hex'),
+        r,
+        s,
+        '0x' + intToBuffer(chainId).toString('hex')
       ),
-      {
-        v,
-        r: r,
-        s: s
-      }
+      sig
     )
+    assert.deepEqual(fromRpcSig(sig), {
+      v,
+      r: r,
+      s: s
+    })
+  })
+
+  it('should return hex strings that the RPC can use (chainId larger than MAX_SAFE_INTEGER)', function() {
+    const sig =
+      '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66f2ded8deec6714'
+    const chainIDBuffer = Buffer.from('796f6c6f763378', 'hex')
+    const vBuffer = Buffer.from('f2ded8deec6714', 'hex')
+    assert.equal(toRpcSig(vBuffer, r, s, chainIDBuffer), sig)
+    assert.equal(toRpcSig(new BN(vBuffer), r, s, new BN(chainIDBuffer)), sig)
+    assert.equal(
+      toRpcSig('0x' + vBuffer.toString('hex'), r, s, '0x' + chainIDBuffer.toString('hex')),
+      sig
+    )
+
+    const chainIDNumber = parseInt(chainIDBuffer.toString('hex'), 16)
+    const vNumber = parseInt(vBuffer.toString('hex'), 16)
+    assert.throws(function() {
+      toRpcSig(vNumber, r, s, chainIDNumber)
+    })
   })
 
   it('should throw on shorter length', function() {
