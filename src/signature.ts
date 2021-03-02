@@ -1,9 +1,10 @@
-const { ecdsaSign, ecdsaRecover, publicKeyConvert } = require('ethereum-cryptography/secp256k1')
+import { ecdsaSign, ecdsaRecover, publicKeyConvert } from 'ethereum-cryptography/secp256k1'
 import BN from 'bn.js'
 import { toBuffer, setLengthLeft, bufferToHex, bufferToInt } from './bytes'
 import { keccak } from './hash'
 import { assertIsBuffer } from './helpers'
-import { BNLike } from './types'
+import { BNLike, PrefixedHexString } from './types'
+import { isHexString } from '.'
 
 export interface ECDSASignature {
   v: number
@@ -11,21 +12,87 @@ export interface ECDSASignature {
   s: Buffer
 }
 
+export interface ECDSASignatureBN {
+  v: BN
+  r: Buffer
+  s: Buffer
+}
+
+export interface ECDSASignatureBuffer {
+  v: Buffer
+  r: Buffer
+  s: Buffer
+}
+
+export interface ECDSASignatureHexString {
+  v: PrefixedHexString
+  r: Buffer
+  s: Buffer
+}
+
 /**
  * Returns the ECDSA signature of a message hash.
  */
-export const ecsign = function(
+export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: number): ECDSASignature
+export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: BN): ECDSASignatureBN
+export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: Buffer): ECDSASignatureBuffer
+export function ecsign(
   msgHash: Buffer,
   privateKey: Buffer,
-  chainId?: number
-): ECDSASignature {
+  chainId: PrefixedHexString
+): ECDSASignatureHexString
+export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: any): any {
   const sig = ecdsaSign(msgHash, privateKey)
   const recovery: number = sig.recid
 
-  const ret = {
-    r: Buffer.from(sig.signature.slice(0, 32)),
-    s: Buffer.from(sig.signature.slice(32, 64)),
-    v: chainId ? recovery + (chainId * 2 + 35) : recovery + 27
+  let ret
+  if (typeof chainId === 'number') {
+    return {
+      r: Buffer.from(sig.signature.slice(0, 32)),
+      s: Buffer.from(sig.signature.slice(32, 64)),
+      v: recovery + (chainId * 2 + 35)
+    }
+  } else if (BN.isBN(chainId)) {
+    ret = {
+      r: Buffer.from(sig.signature.slice(0, 32)),
+      s: Buffer.from(sig.signature.slice(32, 64)),
+      v: (chainId as BN)
+        .muln(2)
+        .addn(35)
+        .addn(recovery)
+    }
+  } else if (Buffer.isBuffer(chainId)) {
+    ret = {
+      r: Buffer.from(sig.signature.slice(0, 32)),
+      s: Buffer.from(sig.signature.slice(32, 64)),
+      v: toBuffer(
+        new BN(chainId)
+          .muln(2)
+          .addn(35)
+          .addn(recovery)
+      )
+    }
+  } else if (typeof chainId === 'string') {
+    if (!isHexString(chainId)) {
+      throw new Error(`A chainId string must be provided with a 0x-prefix, given: ${chainId}`)
+    }
+    ret = {
+      r: Buffer.from(sig.signature.slice(0, 32)),
+      s: Buffer.from(sig.signature.slice(32, 64)),
+      v:
+        '0x' +
+        new BN(toBuffer(chainId))
+          .muln(2)
+          .addn(35)
+          .addn(recovery)
+          .toString('hex')
+    }
+  } else {
+    ret = {
+      r: Buffer.from(sig.signature.slice(0, 32)),
+      s: Buffer.from(sig.signature.slice(32, 64)),
+      v: recovery + 27
+    }
   }
 
   return ret

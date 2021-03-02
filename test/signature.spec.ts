@@ -48,17 +48,38 @@ describe('ecsign', function() {
   })
 
   it('should produce a signature for chainId=150', function() {
-    const chainId = 150
-    const sig = ecsign(echash, ecprivkey, chainId)
-    assert.deepEqual(
-      sig.r,
-      Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+    const expectedSigR = Buffer.from(
+      '99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9',
+      'hex'
     )
-    assert.deepEqual(
-      sig.s,
-      Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+    const expectedSigS = Buffer.from(
+      '129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66',
+      'hex'
     )
-    assert.equal(sig.v, chainId * 2 + 35)
+
+    const sig = ecsign(echash, ecprivkey, 150)
+    assert.deepEqual(sig.r, expectedSigR)
+    assert.deepEqual(sig.s, expectedSigS)
+    assert.equal(sig.v, 150 * 2 + 35)
+
+    const sigBN = ecsign(echash, ecprivkey, new BN(150))
+    assert.deepEqual(sigBN.r, expectedSigR)
+    assert.deepEqual(sigBN.s, expectedSigS)
+    assert.deepEqual(sigBN.v, new BN(150).muln(2).addn(35))
+
+    const sigBuffer = ecsign(echash, ecprivkey, Buffer.from([150]))
+    assert.deepEqual(sigBuffer.r, expectedSigR)
+    assert.deepEqual(sigBuffer.s, expectedSigS)
+    assert.deepEqual(sigBuffer.v, Buffer.from('014f', 'hex'))
+
+    const sigHexString = ecsign(echash, ecprivkey, '0x96')
+    assert.deepEqual(sigHexString.r, expectedSigR)
+    assert.deepEqual(sigHexString.s, expectedSigS)
+    assert.equal(sigHexString.v, '0x14f')
+
+    assert.throws(function() {
+      ecsign(echash, ecprivkey, '96')
+    })
   })
 })
 
