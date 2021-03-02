@@ -5,7 +5,7 @@ import { unpadBuffer } from './bytes'
 /*
  * A type that represents a BNLike input that can be converted to a BN.
  */
-export type BNLike = BN | string | number
+export type BNLike = BN | PrefixedHexString | number | Buffer
 
 /*
  * A type that represents a BufferLike input that can be converted to a Buffer.
@@ -28,7 +28,7 @@ export type PrefixedHexString = string
  * A type that represents an Address-like value.
  * To convert to address, use `new Address(toBuffer(value))`
  */
-export type AddressLike = Address | Buffer | string
+export type AddressLike = Address | Buffer | PrefixedHexString
 
 /*
  * A type that represents an object that has a `toArray()` method.

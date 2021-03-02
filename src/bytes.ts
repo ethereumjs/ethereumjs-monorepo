@@ -1,6 +1,6 @@
 import BN from 'bn.js'
 import { intToBuffer, stripHexPrefix, padToEven, isHexString, isHexPrefixed } from 'ethjs-util'
-import { TransformableToArray, TransformableToBuffer } from './types'
+import { PrefixedHexString, TransformableToArray, TransformableToBuffer } from './types'
 import { assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
 
 /**
@@ -112,7 +112,7 @@ export const unpadHexString = function(a: string): string {
  */
 export const toBuffer = function(
   v:
-    | string
+    | PrefixedHexString
     | number
     | BN
     | Buffer

@@ -129,14 +129,27 @@ describe('ecrecover', function() {
       '8ae8cb685a7a9f29494b07b287c3f6a103b73fa178419d10d1184861a40f6afe',
       'hex'
     )
-    const v = Buffer.from('f2ded8deec6714', 'hex')
+
     const r = Buffer.from('ec212841e0b7aaffc3b3e33a08adf32fa07159e856ef23db85175a4f6d71dc0f', 'hex')
     const s = Buffer.from('4b8e02b96b94064a5aa2f8d72bd0040616ba8e482a5dd96422e38c9a4611f8d5', 'hex')
-    const chainID = Buffer.from('796f6c6f763378', 'hex')
-    const sender = ecrecover(msgHash, v, r, s, chainID)
-    assert.ok(sender.equals(senderPubKey), 'sender pubkey correct')
-    const chainIDNumber = parseInt(chainID.toString('hex'), 16)
-    const vNumber = parseInt(v.toString('hex'), 16)
+
+    const vBuffer = Buffer.from('f2ded8deec6714', 'hex')
+    const chainIDBuffer = Buffer.from('796f6c6f763378', 'hex')
+    let sender = ecrecover(msgHash, vBuffer, r, s, chainIDBuffer)
+    assert.ok(sender.equals(senderPubKey), 'sender pubkey correct (Buffer)')
+
+    const vBN = new BN(vBuffer)
+    const chainIDBN = new BN(chainIDBuffer)
+    sender = ecrecover(msgHash, vBN, r, s, chainIDBN)
+    assert.ok(sender.equals(senderPubKey), 'sender pubkey correct (BN)')
+
+    const vHexString = '0xf2ded8deec6714'
+    const chainIDHexString = '0x796f6c6f763378'
+    sender = ecrecover(msgHash, vHexString, r, s, chainIDHexString)
+    assert.ok(sender.equals(senderPubKey), 'sender pubkey correct (HexString)')
+
+    const chainIDNumber = parseInt(chainIDBuffer.toString('hex'), 16)
+    const vNumber = parseInt(vBuffer.toString('hex'), 16)
     assert.throws(() => {
       // If we would use numbers for the `v` and `chainId` parameters, then it should throw.
       // (The numbers are too high to perform arithmetic on)

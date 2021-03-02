@@ -3,6 +3,7 @@ import BN from 'bn.js'
 import { toBuffer, setLengthLeft, bufferToHex, bufferToInt } from './bytes'
 import { keccak } from './hash'
 import { assertIsBuffer } from './helpers'
+import { BNLike } from './types'
 
 export interface ECDSASignature {
   v: number
@@ -30,7 +31,7 @@ export const ecsign = function(
   return ret
 }
 
-function calculateSigRecovery(v: number | BN | Buffer, chainId?: number | BN | Buffer): BN {
+function calculateSigRecovery(v: BNLike, chainId?: BNLike): BN {
   const vBN = new BN(toBuffer(v))
   const chainIdBN = chainId ? new BN(toBuffer(chainId)) : undefined
   return chainIdBN ? vBN.sub(chainIdBN.muln(2).addn(35)) : vBN.subn(27)
@@ -47,10 +48,10 @@ function isValidSigRecovery(recovery: number | BN): boolean {
  */
 export const ecrecover = function(
   msgHash: Buffer,
-  v: number | BN | Buffer,
+  v: BNLike,
   r: Buffer,
   s: Buffer,
-  chainId?: number | BN | Buffer
+  chainId?: BNLike
 ): Buffer {
   const signature = Buffer.concat([setLengthLeft(r, 32), setLengthLeft(s, 32)], 64)
   const recovery = calculateSigRecovery(v, chainId)
