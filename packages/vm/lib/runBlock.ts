@@ -241,13 +241,16 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
     }
   }
 
-  const { receipts, results } = result
-
-  const afterBlockEvent: AfterBlockEvent = {
-    receipts,
-    results,
-    block,
+  const results: RunBlockResult = {
+    receipts: result.receipts,
+    results: result.results,
+    stateRoot,
+    gasUsed: result.gasUsed,
+    logsBloom: result.bloom.bitvector,
+    receiptRoot: result.receiptRoot,
   }
+
+  const afterBlockEvent: AfterBlockEvent = { ...results, block }
 
   /**
    * The `afterBlock` event
@@ -265,7 +268,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
       )} number=${block.header.number.toNumber()} hardfork=${this._common.hardfork()}`
   )
 
-  return { receipts, results }
+  return results
 }
 
 /**
