@@ -28,17 +28,24 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: any): any {
   const r = Buffer.from(signature.slice(0, 32))
   const s = Buffer.from(signature.slice(32, 64))
 
-  if (!chainId) {
-    return { r, s, v: recovery + 27 }
-  } else {
-    const chainIdBN = toType(chainId, TypeOutput.BN)
-    const vValue = chainIdBN
-      .muln(2)
-      .addn(35)
-      .addn(recovery)
-    const v = typeof chainId === 'number' ? vValue.toNumber() : vValue.toArrayLike(Buffer)
+  if (!chainId || typeof chainId === 'number') {
+    // return legacy type ECDSASignature (deprecated in favor of ECDSASignatureBuffer to handle large chainIds)
+    if (chainId && !Number.isSafeInteger(chainId)) {
+      throw new Error(
+        'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative input type)'
+      )
+    }
+    const v = chainId ? recovery + (chainId * 2 + 35) : recovery + 27
     return { r, s, v }
   }
+
+  const chainIdBN = toType(chainId, TypeOutput.BN)
+  const v = chainIdBN
+    .muln(2)
+    .addn(35)
+    .addn(recovery)
+    .toArrayLike(Buffer)
+  return { r, s, v }
 }
 
 function calculateSigRecovery(v: BNLike, chainId?: BNLike): BN {
