@@ -75,7 +75,7 @@ export enum TypeOutput {
 }
 
 export type TypeOutputReturnType = {
-  [TypeOutput.Number]: Number
+  [TypeOutput.Number]: number
   [TypeOutput.BN]: BN
   [TypeOutput.Buffer]: Buffer
   [TypeOutput.PrefixedHexString]: PrefixedHexString
@@ -105,7 +105,14 @@ export function toType<T extends TypeOutput>(
   } else if (outputType === TypeOutput.BN) {
     return new BN(input) as any
   } else if (outputType === TypeOutput.Number) {
-    return new BN(input).toNumber() as any
+    const bn = new BN(input)
+    const max = new BN(Number.MAX_SAFE_INTEGER.toString())
+    if (bn.gt(max)) {
+      throw new Error(
+        'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative output type)'
+      )
+    }
+    return bn.toNumber() as any
   } else {
     // outputType === TypeOutput.PrefixedHexString
     return `0x${input.toString('hex')}` as any
