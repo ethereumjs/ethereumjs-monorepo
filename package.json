@@ -3,7 +3,9 @@
   "private": true,
   "devDependencies": {
     "husky": "^4.2.5",
-    "lerna": "^3.20.2"
+    "lerna": "^3.20.2",
+    "npm-auth-to-token": "1.0.0",
+    "verdaccio": "4.4.4"
   },
   "husky": {
     "hooks": {
@@ -41,6 +43,8 @@
     "test": "lerna exec npm run test --parallel",
     "coverage": "lerna run coverage --stream",
     "docs:build": "lerna run docs:build --ignore @ethereumjs/ethash",
+    "e2e:publish": "./scripts/e2e-publish.sh",
+    "e2e:resolutions": "node ./scripts/e2e-resolutions.js",
     "clean": "rm -rf node_modules packages/*/node_modules packages/*/test-build packages/*/dist packages/*/dist.browser packages/*/package-lock.json"
   }
 }

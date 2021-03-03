@@ -1,0 +1,64 @@
+name: E2E
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - '*'
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+env:
+  cwd: ${{github.workspace}}
+
+jobs:
+  virtual-npm-publish:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [12]
+    steps:
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Dependency cache
+        uses: actions/cache@v2
+        id: cache
+        with:
+          key: E2E-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          path: '**/node_modules'
+
+      # Installs all dependencies, bootstrapping everything.
+      - run: npm install
+        if: steps.cache.outputs.cache-hit != 'true'
+
+      # Publishes all packages to a virtual npm registry after giving each a minor version bump
+      - name: Publish to virtual registry
+        run: npm run e2e:publish
+
+      # An example installation with some checks that everything worked ok
+      - name: Validate
+        run: |
+          echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          echo "Verify resolutions.json object is correct  "
+          echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          npm run e2e:resolutions
+          cat resolutions.json
+          echo ""
+          mkdir test-publish && cd test-publish
+          npm init --yes
+          yarn add @ethereumjs/vm@e2e --registry http://localhost:4873 --network-timeout 500000
+          echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          echo "Verify virtually published vm was installed"
+          echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          cat package.json
+          echo ""
+          echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          echo "Verify vm uses virtually published dependencies"
+          echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          cat node_modules/@ethereumjs/vm/package.json
