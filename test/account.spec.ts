@@ -621,7 +621,15 @@ describe('.toChecksumAddress()', function() {
         addr
       )
       const chainIDNumber = parseInt(chainIDBuffer.toString('hex'), 16)
-      assert.equal(toChecksumAddress(addr.toLowerCase(), chainIDNumber), addr)
+      assert.throws(
+        () => {
+          toChecksumAddress(addr.toLowerCase(), chainIDNumber)
+        },
+        {
+          message:
+            'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative input type)'
+        }
+      )
     })
   })
 

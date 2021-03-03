@@ -3,8 +3,7 @@ import BN from 'bn.js'
 import { toBuffer, setLengthLeft, bufferToHex, bufferToInt } from './bytes'
 import { keccak } from './hash'
 import { assertIsBuffer } from './helpers'
-import { BNLike } from './types'
-import { isHexString } from '.'
+import { BNLike, toType, TypeOutput } from './types'
 
 export interface ECDSASignature {
   v: number
@@ -22,77 +21,38 @@ export interface ECDSASignatureBuffer {
  * Returns the ECDSA signature of a message hash.
  */
 export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: number): ECDSASignature
-export function ecsign(
-  msgHash: Buffer,
-  privateKey: Buffer,
-  chainId: BN | string | Buffer
-): ECDSASignatureBuffer
+export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: BNLike): ECDSASignatureBuffer
 export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: any): any {
-  const sig = ecdsaSign(msgHash, privateKey)
-  const recovery: number = sig.recid
+  const { signature, recid: recovery } = ecdsaSign(msgHash, privateKey)
 
-  let ret
-  const r = Buffer.from(sig.signature.slice(0, 32))
-  const s = Buffer.from(sig.signature.slice(32, 64))
-  if (!chainId || typeof chainId === 'number') {
-    if (chainId && !Number.isSafeInteger(chainId)) {
-      throw new Error(
-        'The provided chainId is greater than MAX_SAFE_INTEGER (please use an alternative input type)'
-      )
-    }
-    return {
-      r,
-      s,
-      v: chainId ? recovery + (chainId * 2 + 35) : recovery + 27
-    }
+  const r = Buffer.from(signature.slice(0, 32))
+  const s = Buffer.from(signature.slice(32, 64))
+
+  if (!chainId) {
+    return { r, s, v: recovery + 27 }
   } else {
-    // BN, string, Buffer
-    if (typeof chainId === 'string' && !isHexString(chainId)) {
-      throw new Error(`A chainId string must be provided with a 0x-prefix, given: ${chainId}`)
-    }
-    ret = {
-      r,
-      s,
-      v: toBuffer(
-        new BN(toBuffer(chainId))
-          .muln(2)
-          .addn(35)
-          .addn(recovery)
-      )
-    }
+    const chainIdBN = toType(chainId, TypeOutput.BN)
+    const vValue = chainIdBN
+      .muln(2)
+      .addn(35)
+      .addn(recovery)
+    const v = typeof chainId === 'number' ? vValue.toNumber() : vValue.toArrayLike(Buffer)
+    return { r, s, v }
   }
-
-  return ret
 }
 
 function calculateSigRecovery(v: BNLike, chainId?: BNLike): BN {
-  const vBN = new BN(toBuffer(v))
-  const chainIdBN = chainId ? new BN(toBuffer(chainId)) : undefined
-  return chainIdBN ? vBN.sub(chainIdBN.muln(2).addn(35)) : vBN.subn(27)
+  const vBN = toType(v, TypeOutput.BN)
+  if (!chainId) {
+    return vBN.subn(27)
+  }
+  const chainIdBN = toType(chainId, TypeOutput.BN)
+  return vBN.sub(chainIdBN.muln(2).addn(35))
 }
 
 function isValidSigRecovery(recovery: number | BN): boolean {
   const rec = new BN(recovery)
   return rec.eqn(0) || rec.eqn(1)
-}
-
-function vAndChainIdTypeChecks(v: BNLike, chainId?: BNLike) {
-  if (typeof v === 'string' && !isHexString(v)) {
-    throw new Error(`A v value string must be provided with a 0x-prefix, given: ${v}`)
-  }
-  if (typeof chainId === 'string' && !isHexString(chainId)) {
-    throw new Error(`A chainId string must be provided with a 0x-prefix, given: ${chainId}`)
-  }
-  if (typeof v === 'number' && !Number.isSafeInteger(v)) {
-    throw new Error(
-      'The provided v is greater than MAX_SAFE_INTEGER (please use an alternative input type)'
-    )
-  }
-  if (typeof chainId === 'number' && !Number.isSafeInteger(chainId)) {
-    throw new Error(
-      'The provided chainId is greater than MAX_SAFE_INTEGER (please use an alternative input type)'
-    )
-  }
 }
 
 /**
@@ -106,8 +66,6 @@ export const ecrecover = function(
   s: Buffer,
   chainId?: BNLike
 ): Buffer {
-  vAndChainIdTypeChecks(v, chainId)
-
   const signature = Buffer.concat([setLengthLeft(r, 32), setLengthLeft(s, 32)], 64)
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
@@ -122,7 +80,6 @@ export const ecrecover = function(
  * @returns Signature
  */
 export const toRpcSig = function(v: BNLike, r: Buffer, s: Buffer, chainId?: BNLike): string {
-  vAndChainIdTypeChecks(v, chainId)
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
@@ -167,7 +124,6 @@ export const isValidSignature = function(
   homesteadOrLater: boolean = true,
   chainId?: BNLike
 ): boolean {
-  vAndChainIdTypeChecks(v, chainId)
   const SECP256K1_N_DIV_2 = new BN(
     '7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
     16
@@ -182,8 +138,8 @@ export const isValidSignature = function(
     return false
   }
 
-  const rBN: BN = new BN(r)
-  const sBN: BN = new BN(s)
+  const rBN = new BN(r)
+  const sBN = new BN(s)
 
   if (rBN.isZero() || rBN.gt(SECP256K1_N) || sBN.isZero() || sBN.gt(SECP256K1_N)) {
     return false

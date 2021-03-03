@@ -1,12 +1,12 @@
 import assert from 'assert'
 import BN from 'bn.js'
 import * as rlp from 'rlp'
-import { isHexString, stripHexPrefix } from 'ethjs-util'
+import { stripHexPrefix } from 'ethjs-util'
 import { KECCAK256_RLP, KECCAK256_NULL } from './constants'
 import { zeros, bufferToHex, toBuffer } from './bytes'
 import { keccak, keccak256, keccakFromString, rlphash } from './hash'
 import { assertIsHexString, assertIsBuffer } from './helpers'
-import { BNLike, BufferLike, bnToRlp } from './types'
+import { BNLike, BufferLike, bnToRlp, toType, TypeOutput } from './types'
 
 const {
   privateKeyVerify,
@@ -139,20 +139,12 @@ export const isValidAddress = function(hexAddress: string): boolean {
  */
 export const toChecksumAddress = function(hexAddress: string, eip1191ChainId?: BNLike): string {
   assertIsHexString(hexAddress)
-  if (typeof eip1191ChainId === 'string' && !isHexString(eip1191ChainId)) {
-    throw new Error(`A chainId string must be provided with a 0x-prefix, given: ${eip1191ChainId}`)
-  }
   const address = stripHexPrefix(hexAddress).toLowerCase()
 
   let prefix = ''
   if (eip1191ChainId) {
-    // Performance optimization
-    if (typeof eip1191ChainId === 'number' && Number.isSafeInteger(eip1191ChainId)) {
-      prefix = eip1191ChainId.toString()
-    } else {
-      prefix = new BN(toBuffer(eip1191ChainId)).toString()
-    }
-    prefix += '0x'
+    const chainId = toType(eip1191ChainId, TypeOutput.BN)
+    prefix = chainId.toString() + '0x'
   }
 
   const hash = keccakFromString(prefix + address).toString('hex')

@@ -348,8 +348,8 @@ describe('message sig', function() {
     assert.equal(toRpcSig(27, r, s), sig)
     assert.deepEqual(fromRpcSig(sig), {
       v: 27,
-      r: r,
-      s: s
+      r,
+      s
     })
   })
 
@@ -372,8 +372,8 @@ describe('message sig', function() {
     )
     assert.deepEqual(fromRpcSig(sig), {
       v,
-      r: r,
-      s: s
+      r,
+      s
     })
   })
 
