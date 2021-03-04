@@ -1,2 +1,2 @@
 .cachedb
-scripts/benchmarks/*.js
+benchmarks/*.js

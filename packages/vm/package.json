@@ -12,7 +12,8 @@
   "scripts": {
     "build": "ethereumjs-config-ts-build",
     "build:benchmarks": "npm run build && tsc -p tsconfig.benchmarks.json",
-    "benchmarks": "node --max-old-space-size=4096 ./scripts/benchmarks/mainnetBlocks.js scripts/benchmarks/fixture/blocks-prestate.json",
+    "benchmarks": "node --max-old-space-size=4096 ./benchmarks/run.js benchmarks mainnetBlocks:10",
+    "profiling": "0x ./benchmarks/run.js profiling",
     "prepublishOnly": "npm run build && npm run test:buildIntegrity",
     "coverage": "nyc npm run coverage:test && nyc report --reporter=lcov",
     "coverage:test": "tape -r ts-node/register './tests/api/**/*.ts' ./tests/tester.ts --state",

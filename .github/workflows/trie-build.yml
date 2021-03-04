@@ -83,6 +83,9 @@ jobs:
       - run: npm run benchmarks | tee output.txt
         working-directory: ${{ env.cwd }}
 
+      # Run git stash in case github-action-benchmark has trouble switching to gh-pages branch due to differing package-locks
+      - run: git stash
+
       - name: Set auto-push for benchmarks to true if on master
         id: auto_push
         run: |
@@ -102,6 +105,8 @@ jobs:
           tool: 'benchmarkjs'
           # Where the output from the benchmark tool is stored
           output-file-path: ${{ env.cwd }}/output.txt
+          # Location of data in gh-pages branch
+          benchmark-data-dir-path: dev/bench/trie
           # Enable alert commit comment
           comment-on-alert: true
           # GitHub API token to make a commit comment

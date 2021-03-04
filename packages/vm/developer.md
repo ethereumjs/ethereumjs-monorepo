@@ -149,7 +149,7 @@ NODE_OPTIONS="--max-old-space-size=4096" clinic flame -- node ./tests/tester.js 
 
 This helps us see how the VM performs when running mainnet blocks.
 
-View the historical benchmark data for the master branch on the [github page](http://ethereumjs.github.io/ethereumjs-vm/dev/bench/).
+View the historical benchmark data for the master branch on the [github page](http://ethereumjs.github.io/ethereumjs-monorepo/dev/bench/vm).
 
 We want to use the compiled JS so `ts-node` does not show up in the profile. So run:
 
@@ -157,17 +157,14 @@ We want to use the compiled JS so `ts-node` does not show up in the profile. So 
 
 Then:
 
-`npm run benchmarks`
+`npm run benchmarks -- mainnetBlocks`
 
-To define the number of samples to be run pass in a number like so: `npm run benchmarks -- 10`
+To define the number of samples to be run pass in a number like so: `npm run benchmarks -- mainnetBlocks:10`
 
-If you want to get a more detailed look to find bottlenecks we can use [0x](https://github.com/davidmarkclements/0x).
-
-So run:
+If you want to get a more detailed look to find bottlenecks we can use [0x](https://github.com/davidmarkclements/0x):
 
 ```
-npm i -g 0x
-0x scripts/benchmarks/mainnetBlocks.js scripts/benchmarks/fixture/blocks-prestate.json
+npm run profiling -- mainnetBlocks:10
 ```
 
 and open the link it generates.

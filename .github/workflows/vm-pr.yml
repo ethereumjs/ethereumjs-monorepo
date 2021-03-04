@@ -245,7 +245,7 @@ jobs:
       - run: npm run build:benchmarks
         working-directory: ${{ env.cwd }}
 
-      - run: npm run benchmarks -- 10 | tee output.txt
+      - run: npm run benchmarks -- mainnetBlocks:10 | tee output.txt
         working-directory: ${{ env.cwd }}
 
       # Run git stash in case github-action-benchmark has trouble switching to gh-pages branch due to differing package-locks
@@ -257,6 +257,8 @@ jobs:
           tool: 'benchmarkjs'
           # Where the output from the benchmark tool is stored
           output-file-path: ${{ env.cwd }}/output.txt
+          # Location of data in gh-pages branch
+          benchmark-data-dir-path: dev/bench/vm
           # Enable alert commit comment (default alert threshold: 200%)
           comment-on-alert: true
           # GitHub API token to make a commit comment
