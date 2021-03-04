@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [7.0.9] - 2021-03-04
+
+This release adds support for very high `chainId` numbers exceeding `MAX_SAFE_INTEGER` (an example is the chain ID `34180983699157880` used for the ephemeral Yolov3 testnet preparing for the `berlin` hardfork, but high chain IDs might be used for things like private test networks and the like as well).
+
+Function signatures for methods in `address` and `signature` are therefore expanded to allow for a `BNLike` input type (`BN | PrefixedHexString | number | Buffer`) for chain ID related parameters.
+
+All function signatures are still taking in a `number` input for backwards-compatibility reasons. If you use one of the following functions to implement generic use cases in your library where the chain ID is not yet known it is recommended to updated to one of the other input types (with plain `Buffer` likely be the most future-proof). Note that on some functions this changes the return value as well.
+
+- `account`: `toChecksumAddresss(hexAddress: string, eip1191ChainId?: number): string`
+  - -> `toChecksumAddress = function(hexAddress: string, eip1191ChainId?: BNLike): string`
+- `account`: `isValidChecksumAddress(hexAddress: string, eip1191ChainId?: number)`
+  - -> `isValidChecksumAddress(hexAddress: string, eip1191ChainId?: BNLike)`
+- `signature`: `ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: number): ECDSASignature`
+  - -> `ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: number): ECDSASignature` (return value stays the same on `number` input)
+  - -> `ecsign(msgHash: Buffer, privateKey: Buffer, chainId: BNLike): ECDSASignatureBuffer` (changed return value for other type inputs)
+- `signature`: `ecrecover(msgHash: Buffer, v: number, r: Buffer, s: Buffer, chainId?: number): Buffer`
+  - -> `ecrecover(msgHash: Buffer, v: BNLike, r: Buffer, s: Buffer, chainId?: BNLike): Buffer`
+- `signature`: `toRpcSig(v: number, r: Buffer, s: Buffer, chainId?: number): string`
+  - -> `toRpcSig(v: BNLike, r: Buffer, s: Buffer, chainId?: BNLike): string`
+- `signature`: `isValidSignature(v: number, r: Buffer, s: Buffer, homesteadOrLater: boolean = true, chainId?: number)`
+  - -> `isValidSignature(v: BNLike, r: Buffer, s: Buffer, homesteadOrLater: boolean = true, chainId?: BNLike)`
+
+[7.0.9]: https://github.com/ethereumjs/ethereumjs-util/compare/v7.0.8...v7.0.9
+
 ## [7.0.8] - 2021-02-01
 
 - New `Address.equals(address: Address)` function for easier address equality comparions, PR [#285](https://github.com/ethereumjs/ethereumjs-util/pull/285)
