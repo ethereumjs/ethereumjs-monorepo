@@ -1,6 +1,5 @@
-const { padToEven } = require('ethereumjs-util')
+import { padToEven, BN } from 'ethereumjs-util'
 import { VmError, ERROR } from '../../../exceptions'
-import { BN } from 'ethereumjs-util'
 
 // base field modulus as described in the EIP
 const fieldModulus = new BN(
