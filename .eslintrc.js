@@ -1,6 +1,3 @@
 module.exports = {
-  extends: '@ethereumjs/eslint-config-defaults',
-  env: {
-    mocha: true
-  }
+  extends: '@ethereumjs/eslint-config-defaults'
 }

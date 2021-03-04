@@ -1,7 +1,7 @@
-import assert from 'assert'
-import BN from 'bn.js'
+import tape from 'tape'
 import {
   Address,
+  BN,
   zeros,
   zeroAddress,
   isZeroAddress,
@@ -19,237 +19,271 @@ import {
   baToJSON
 } from '../src'
 
-describe('zeros function', function() {
-  it('should produce lots of 0s', function() {
+tape('zeros function', function(t) {
+  t.test('should produce lots of 0s', function(st) {
     const z60 = zeros(30)
     const zs60 = '000000000000000000000000000000000000000000000000000000000000'
-    assert.equal(z60.toString('hex'), zs60)
+    st.equal(z60.toString('hex'), zs60)
+    st.end()
   })
 })
 
-describe('zero address', function() {
-  it('should generate a zero address', function() {
-    assert.equal(zeroAddress(), '0x0000000000000000000000000000000000000000')
+tape('zero address', function(t) {
+  t.test('should generate a zero address', function(st) {
+    st.equal(zeroAddress(), '0x0000000000000000000000000000000000000000')
+    st.end()
   })
 })
 
-describe('is zero address', function() {
-  it('should return true when a zero address is passed', function() {
-    assert.equal(isZeroAddress('0x0000000000000000000000000000000000000000'), true)
+tape('is zero address', function(t) {
+  t.test('should return true when a zero address is passed', function(st) {
+    st.equal(isZeroAddress('0x0000000000000000000000000000000000000000'), true)
+    st.end()
   })
 
-  it('should return false when the address is not equal to zero', function() {
+  t.test('should return false when the address is not equal to zero', function(st) {
     const nonZeroAddress = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
-    assert.equal(isZeroAddress(nonZeroAddress), false)
+    st.equal(isZeroAddress(nonZeroAddress), false)
+    st.end()
   })
 
-  it('should throw when address is not hex-prefixed', function() {
-    assert.throws(function() {
+  t.test('should throw when address is not hex-prefixed', function(st) {
+    st.throws(function() {
       isZeroAddress('0000000000000000000000000000000000000000')
     })
+    st.end()
   })
 })
 
-describe('unpadBuffer', function() {
-  it('should unpad a Buffer', function() {
+tape('unpadBuffer', function(t) {
+  t.test('should unpad a Buffer', function(st) {
     const buf = toBuffer('0x0000000006600')
     const r = unpadBuffer(buf)
-    assert.deepEqual(r, toBuffer('0x6600'))
+    st.ok(r.equals(toBuffer('0x6600')))
+    st.end()
   })
-  it('should throw if input is not a Buffer', function() {
-    assert.throws(function() {
+  t.test('should throw if input is not a Buffer', function(st) {
+    st.throws(function() {
       unpadBuffer((<unknown>'0000000006600') as Buffer)
     })
+    st.end()
   })
 })
 
-describe('unpadArray', function() {
-  it('should unpad an Array', function() {
+tape('unpadArray', function(t) {
+  t.test('should unpad an Array', function(st) {
     const arr = [0, 0, 0, 1]
     const r = unpadArray(arr)
-    assert.deepEqual(r, [1])
+    st.deepEqual(r, [1])
+    st.end()
   })
-  it('should throw if input is not an Array', function() {
-    assert.throws(function() {
+  t.test('should throw if input is not an Array', function(st) {
+    st.throws(function() {
       unpadArray((<unknown>toBuffer([0, 0, 0, 1])) as number[])
     })
+    st.end()
   })
 })
 
-describe('unpadHexString', function() {
-  it('should unpad a hex prefixed string', function() {
+tape('unpadHexString', function(t) {
+  t.test('should unpad a hex prefixed string', function(st) {
     const str = '0x0000000006600'
     const r = unpadHexString(str)
-    assert.equal(r, '6600')
+    st.equal(r, '6600')
+    st.end()
   })
-  it('should throw if input is not hex-prefixed', function() {
-    assert.throws(function() {
+  t.test('should throw if input is not hex-prefixed', function(st) {
+    st.throws(function() {
       unpadHexString('0000000006600')
     })
+    st.end()
   })
 })
 
-describe('setLengthLeft', function() {
-  it('should left pad a Buffer', function() {
+tape('setLengthLeft', function(t) {
+  t.test('should left pad a Buffer', function(st) {
     const buf = Buffer.from([9, 9])
     const padded = setLengthLeft(buf, 3)
-    assert.equal(padded.toString('hex'), '000909')
+    st.equal(padded.toString('hex'), '000909')
+    st.end()
   })
-  it('should left truncate a Buffer', function() {
+  t.test('should left truncate a Buffer', function(st) {
     const buf = Buffer.from([9, 0, 9])
     const padded = setLengthLeft(buf, 2)
-    assert.equal(padded.toString('hex'), '0009')
+    st.equal(padded.toString('hex'), '0009')
+    st.end()
   })
-  it('should throw if input is not a Buffer', function() {
-    assert.throws(function() {
+  t.test('should throw if input is not a Buffer', function(st) {
+    st.throws(function() {
       setLengthLeft((<unknown>[9, 9]) as Buffer, 3)
     })
+    st.end()
   })
 })
 
-describe('setLengthRight', function() {
-  it('should right pad a Buffer', function() {
+tape('setLengthRight', function(t) {
+  t.test('should right pad a Buffer', function(st) {
     const buf = Buffer.from([9, 9])
     const padded = setLengthRight(buf, 3)
-    assert.equal(padded.toString('hex'), '090900')
+    st.equal(padded.toString('hex'), '090900')
+    st.end()
   })
-  it('should right truncate a Buffer', function() {
+  t.test('should right truncate a Buffer', function(st) {
     const buf = Buffer.from([9, 0, 9])
     const padded = setLengthRight(buf, 2)
-    assert.equal(padded.toString('hex'), '0900')
+    st.equal(padded.toString('hex'), '0900')
+    st.end()
   })
-  it('should throw if input is not a Buffer', function() {
-    assert.throws(function() {
+  t.test('should throw if input is not a Buffer', function(st) {
+    st.throws(function() {
       setLengthRight((<unknown>[9, 9]) as Buffer, 3)
     })
+    st.end()
   })
 })
 
-describe('bufferToHex', function() {
-  it('should convert a buffer to hex', function() {
+tape('bufferToHex', function(t) {
+  t.test('should convert a buffer to hex', function(st) {
     const buf = Buffer.from('5b9ac8', 'hex')
     const hex = bufferToHex(buf)
-    assert.equal(hex, '0x5b9ac8')
+    st.equal(hex, '0x5b9ac8')
+    st.end()
   })
-  it('empty buffer', function() {
+  t.test('empty buffer', function(st) {
     const buf = Buffer.alloc(0)
     const hex = bufferToHex(buf)
-    assert.strictEqual(hex, '0x')
+    st.strictEqual(hex, '0x')
+    st.end()
   })
 })
 
-describe('bufferToInt', function() {
-  it('should convert a int to hex', function() {
+tape('bufferToInt', function(t) {
+  t.test('should convert an int to hex', function(st) {
     const buf = Buffer.from('5b9ac8', 'hex')
     const i = bufferToInt(buf)
-    assert.equal(i, 6003400)
-    assert.equal(bufferToInt(Buffer.allocUnsafe(0)), 0)
+    st.equal(i, 6003400)
+    st.equal(bufferToInt(Buffer.allocUnsafe(0)), 0)
+    st.end()
   })
-  it('should convert empty input to 0', function() {
-    assert.equal(bufferToInt(Buffer.allocUnsafe(0)), 0)
+  t.test('should convert empty input to 0', function(st) {
+    st.equal(bufferToInt(Buffer.allocUnsafe(0)), 0)
+    st.end()
   })
 })
 
-describe('fromSigned', function() {
-  it('should convert an unsigned (negative) buffer to a singed number', function() {
+tape('fromSigned', function(t) {
+  t.test('should convert an unsigned (negative) buffer to a signed number', function(st) {
     const neg = '-452312848583266388373324160190187140051835877600158453279131187530910662656'
     const buf = Buffer.allocUnsafe(32).fill(0)
     buf[0] = 255
 
-    assert.equal(fromSigned(buf), neg)
+    st.equal(fromSigned(buf).toString(), neg)
+    st.end()
   })
-  it('should convert an unsigned (positive) buffer to a singed number', function() {
+  t.test('should convert an unsigned (positive) buffer to a signed number', function(st) {
     const neg = '452312848583266388373324160190187140051835877600158453279131187530910662656'
     const buf = Buffer.allocUnsafe(32).fill(0)
     buf[0] = 1
 
-    assert.equal(fromSigned(buf), neg)
+    st.equal(fromSigned(buf).toString(), neg)
+    st.end()
   })
 })
 
-describe('toUnsigned', function() {
-  it('should convert a signed (negative) number to unsigned', function() {
+tape('toUnsigned', function(t) {
+  t.test('should convert a signed (negative) number to unsigned', function(st) {
     const neg = '-452312848583266388373324160190187140051835877600158453279131187530910662656'
     const hex = 'ff00000000000000000000000000000000000000000000000000000000000000'
     const num = new BN(neg)
 
-    assert.equal(toUnsigned(num).toString('hex'), hex)
+    st.equal(toUnsigned(num).toString('hex'), hex)
+    st.end()
   })
 
-  it('should convert a signed (positive) number to unsigned', function() {
+  t.test('should convert a signed (positive) number to unsigned', function(st) {
     const neg = '452312848583266388373324160190187140051835877600158453279131187530910662656'
     const hex = '0100000000000000000000000000000000000000000000000000000000000000'
     const num = new BN(neg)
 
-    assert.equal(toUnsigned(num).toString('hex'), hex)
+    st.equal(toUnsigned(num).toString('hex'), hex)
+    st.end()
   })
 })
 
-describe('hex prefix', function() {
+tape('hex prefix', function(t) {
   const string = 'd658a4b8247c14868f3c512fa5cbb6e458e4a989'
-  it('should add', function() {
-    assert.equal(addHexPrefix(string), '0x' + string)
+  t.test('should add', function(st) {
+    st.equal(addHexPrefix(string), '0x' + string)
+    st.end()
   })
-  it('should return on non-string input', function() {
-    assert.equal(addHexPrefix(1 as any), 1)
+  t.test('should return on non-string input', function(st) {
+    st.equal(addHexPrefix(1 as any), 1)
+    st.end()
   })
 })
 
-describe('toBuffer', function() {
-  it('should work', function() {
+tape('toBuffer', function(t) {
+  t.test('should work', function(st) {
     // Buffer
-    assert.deepEqual(toBuffer(Buffer.allocUnsafe(0)), Buffer.allocUnsafe(0))
+    st.ok(toBuffer(Buffer.allocUnsafe(0)).equals(Buffer.allocUnsafe(0)))
     // Array
-    assert.deepEqual(toBuffer([]), Buffer.allocUnsafe(0))
+    st.ok(toBuffer([]).equals(Buffer.allocUnsafe(0)))
     // String
-    assert.deepEqual(toBuffer('0x11'), Buffer.from([17]))
-    assert.deepEqual(toBuffer('0x1234').toString('hex'), '1234')
-    assert.deepEqual(toBuffer('0x'), Buffer.from([]))
+    st.ok(toBuffer('0x11').equals(Buffer.from([17])))
+    st.equal(toBuffer('0x1234').toString('hex'), '1234')
+    st.ok(toBuffer('0x').equals(Buffer.from([])))
     // Number
-    assert.deepEqual(toBuffer(1), Buffer.from([1]))
+    st.ok(toBuffer(1).equals(Buffer.from([1])))
     // null
-    assert.deepEqual(toBuffer(null), Buffer.allocUnsafe(0))
+    st.ok(toBuffer(null).equals(Buffer.allocUnsafe(0)))
     // undefined
-    assert.deepEqual(toBuffer(undefined), Buffer.allocUnsafe(0))
+    st.ok(toBuffer(undefined).equals(Buffer.allocUnsafe(0)))
     // 'toBN'
-    assert.deepEqual(toBuffer(new BN(1)), Buffer.from([1]))
+    st.ok(toBuffer(new BN(1)).equals(Buffer.from([1])))
     // 'toArray'
-    assert.deepEqual(
+    st.ok(
       toBuffer({
         toArray: function(): any {
           return [1]
         }
-      }),
-      Buffer.from([1])
+      }).equals(Buffer.from([1]))
     )
+    st.end()
   })
-  it('should fail', function() {
-    assert.throws(function() {
-      // @ts-ignore
-      toBuffer({ test: 1 })
+  t.test('should fail', function(st) {
+    st.throws(function() {
+      toBuffer({ test: 1 } as any)
     })
+    st.end()
   })
 
-  it('should fail with non 0x-prefixed hex strings', function() {
-    assert.throws(() => toBuffer('11'), '11')
-    assert.throws(() => toBuffer(''))
-    assert.throws(() => toBuffer('0xR'), '0xR')
+  t.test('should fail with non 0x-prefixed hex strings', function(st) {
+    st.throws(() => toBuffer('11'), '11')
+    st.throws(() => toBuffer(''))
+    st.throws(() => toBuffer('0xR'), '0xR')
+    st.end()
   })
 
-  it('should convert a TransformableToBuffer like the Address class (i.e. provides a toBuffer method)', function() {
-    const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
-    const address = Address.fromString(str)
-    const addressBuf = toBuffer(address)
-    assert.ok(addressBuf.equals(address.toBuffer()))
-  })
+  t.test(
+    'should convert a TransformableToBuffer like the Address class (i.e. provides a toBuffer method)',
+    function(st) {
+      const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
+      const address = Address.fromString(str)
+      const addressBuf = toBuffer(address)
+      st.ok(addressBuf.equals(address.toBuffer()))
+      st.end()
+    }
+  )
 })
 
-describe('baToJSON', function() {
-  it('should turn a array of buffers into a pure json object', function() {
+tape('baToJSON', function(t) {
+  t.test('should turn a array of buffers into a pure json object', function(st) {
     const ba = [Buffer.from([0]), Buffer.from([1]), [Buffer.from([2])]]
-    assert.deepEqual(baToJSON(ba), ['0x00', '0x01', ['0x02']])
+    st.deepEqual(baToJSON(ba), ['0x00', '0x01', ['0x02']])
+    st.end()
   })
-  it('should turn a buffers into string', function() {
-    assert.deepEqual(baToJSON(Buffer.from([0])), '0x00')
+  t.test('should turn a buffers into string', function(st) {
+    st.deepEqual(baToJSON(Buffer.from([0])), '0x00')
+    st.end()
   })
 })

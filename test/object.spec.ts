@@ -1,7 +1,7 @@
-import assert from 'assert'
+import tape from 'tape'
 import { zeros, defineProperties } from '../src'
 
-describe('define', function() {
+tape('define', function(t) {
   const fields = [
     {
       name: 'aword',
@@ -32,22 +32,23 @@ describe('define', function() {
     }
   ]
 
-  it('should trim zeros', function() {
+  t.test('should trim zeros', function(st) {
     const someOb: any = {}
     defineProperties(someOb, fields)
     // Define Properties
     someOb.r = '0x00004'
-    assert.equal(someOb.r.toString('hex'), '04')
+    st.equal(someOb.r.toString('hex'), '04')
 
     someOb.r = Buffer.from([0, 0, 0, 0, 4])
-    assert.equal(someOb.r.toString('hex'), '04')
+    st.equal(someOb.r.toString('hex'), '04')
+    st.end()
   })
 
-  it("shouldn't allow wrong size for exact size requirements", function() {
+  t.test("shouldn't allow wrong size for exact size requirements", function(st) {
     const someOb = {}
     defineProperties(someOb, fields)
 
-    assert.throws(function() {
+    st.throws(function() {
       const tmp = [
         {
           name: 'mustBeExactSize',
@@ -58,9 +59,10 @@ describe('define', function() {
       ]
       defineProperties(someOb, tmp)
     })
+    st.end()
   })
 
-  it('it should accept rlp encoded intial data', function() {
+  t.test('it should accept rlp encoded intial data', function(st) {
     const someOb: any = {}
     const data = {
       aword: '0x01',
@@ -80,12 +82,12 @@ describe('define', function() {
     const expectedArray = ['0x01', '0x', '0x02', '0x03', '0x04']
 
     defineProperties(someOb, fields, data)
-    assert.deepEqual(someOb.toJSON(true), expected, 'should produce the correctly labeled object')
+    st.deepEqual(someOb.toJSON(true), expected, 'should produce the correctly labeled object')
 
     const someOb2: any = {}
     const rlpEncoded = someOb.serialize().toString('hex')
     defineProperties(someOb2, fields, rlpEncoded)
-    assert.equal(
+    st.equal(
       someOb2.serialize().toString('hex'),
       rlpEncoded,
       'the constuctor should accept rlp encoded buffers'
@@ -93,21 +95,23 @@ describe('define', function() {
 
     const someOb3 = {}
     defineProperties(someOb3, fields, expectedArray)
-    assert.deepEqual(someOb.toJSON(), expectedArray, 'should produce the correctly object')
+    st.deepEqual(someOb.toJSON(), expectedArray, 'should produce the correctly object')
+    st.end()
   })
 
-  it('it should not accept invalid values in the constuctor', function() {
+  t.test('it should not accept invalid values in the constuctor', function(st) {
     const someOb = {}
-    assert.throws(function() {
+    st.throws(function() {
       defineProperties(someOb, fields, 5)
     }, 'should throw on nonsensical data')
 
-    assert.throws(function() {
+    st.throws(function() {
       defineProperties(someOb, fields, Array(6))
     }, 'should throw on invalid arrays')
+    st.end()
   })
 
-  it('alias should work ', function() {
+  t.test('alias should work ', function(st) {
     const someOb: any = {}
     const data = {
       aword: '0x01',
@@ -117,18 +121,20 @@ describe('define', function() {
     }
 
     defineProperties(someOb, fields, data)
-    assert.equal(someOb.blah.toString('hex'), '01')
+    st.equal(someOb.blah.toString('hex'), '01')
     someOb.blah = '0x09'
-    assert.equal(someOb.blah.toString('hex'), '09')
-    assert.equal(someOb.aword.toString('hex'), '09')
+    st.equal(someOb.blah.toString('hex'), '09')
+    st.equal(someOb.aword.toString('hex'), '09')
+    st.end()
   })
 
-  it('alias should work #2', function() {
+  t.test('alias should work #2', function(st) {
     const someOb: any = {}
     const data = { blah: '0x1' }
 
     defineProperties(someOb, fields, data)
-    assert.equal(someOb.blah.toString('hex'), '01')
-    assert.equal(someOb.aword.toString('hex'), '01')
+    st.equal(someOb.blah.toString('hex'), '01')
+    st.equal(someOb.aword.toString('hex'), '01')
+    st.end()
   })
 })
