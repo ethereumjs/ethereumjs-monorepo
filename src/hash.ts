@@ -1,4 +1,4 @@
-const { keccak224, keccak384, keccak256: k256, keccak512 } = require('ethereum-cryptography/keccak')
+import { keccak224, keccak384, keccak256 as k256, keccak512 } from 'ethereum-cryptography/keccak'
 const createHash = require('create-hash')
 import * as rlp from 'rlp'
 import { toBuffer, setLengthLeft } from './bytes'

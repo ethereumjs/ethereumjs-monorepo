@@ -1,5 +1,5 @@
-const assert = require('assert')
-import BN = require('bn.js')
+import assert from 'assert'
+import BN from 'bn.js'
 import { toBuffer, zeros } from './bytes'
 import {
   isValidAddress,
