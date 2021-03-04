@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## UNRELEASED
+
+- Integration of [EIP2718](https://eips.ethereum.org/EIPS/eip-2718) (Typed Transactions) and [EIP2930](https://eips.ethereum.org/EIPS/eip-2930) (Access List Transaction), PR [#1048](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1048). It is now possible to create blocks with access list transactions.
+
 ## 3.1.0 - 2021-02-22
 
 ### Clique/PoA Support

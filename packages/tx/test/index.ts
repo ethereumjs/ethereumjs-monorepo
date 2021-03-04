@@ -2,11 +2,26 @@ import minimist from 'minimist'
 
 const argv = minimist(process.argv.slice(2))
 
-if (argv.a) {
-  require('./api')
+if (argv.b) {
+  require('./base.spec')
+} else if (argv.l) {
+  require('./legacy.spec')
+} else if (argv.e) {
+  require('./eip2930.spec')
 } else if (argv.t) {
   require('./transactionRunner')
+} else if (argv.f) {
+  require('./transactionFactory.spec')
+} else if (argv.a) {
+  // All manual API tests
+  require('./base.spec')
+  require('./legacy.spec')
+  require('./eip2930.spec')
+  require('./transactionFactory.spec')
 } else {
-  require('./api')
   require('./transactionRunner')
+  require('./base.spec')
+  require('./legacy.spec')
+  require('./eip2930.spec')
+  require('./transactionFactory.spec')
 }

@@ -61,7 +61,7 @@ export interface RunBlockResult {
   /**
    * Receipts generated for transactions in the block
    */
-  receipts: (PreByzantiumTxReceipt | PostByzantiumTxReceipt)[]
+  receipts: (PreByzantiumTxReceipt | PostByzantiumTxReceipt | EIP2930Receipt)[]
   /**
    * Results of executing the transactions in the block
    */
@@ -107,6 +107,9 @@ export interface PostByzantiumTxReceipt extends TxReceipt {
    */
   status: 0 | 1
 }
+
+// EIP290Receipt, which has the same fields as PostByzantiumTxReceipt
+export interface EIP2930Receipt extends PostByzantiumTxReceipt {}
 
 export interface AfterBlockEvent extends RunBlockResult {
   // The block which just finished processing
@@ -328,30 +331,45 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
       logs: txRes.execResult.logs || [],
     }
     let txReceipt
-    let receiptLog = `Generate tx receipt gasUsed=${gasUsed} bitvector=${short(
-      abstractTxReceipt.bitvector
-    )} (${abstractTxReceipt.bitvector.length} bytes) logs=${abstractTxReceipt.logs.length}`
-    if (this._common.gteHardfork('byzantium')) {
+    let encodedReceipt
+    let receiptLog = `Generate tx receipt transactionType=${
+      tx.transactionType
+    } gasUsed=${gasUsed} bitvector=${short(abstractTxReceipt.bitvector)} (${
+      abstractTxReceipt.bitvector.length
+    } bytes) logs=${abstractTxReceipt.logs.length}`
+    if (tx.transactionType === 0) {
+      if (this._common.gteHardfork('byzantium')) {
+        txReceipt = {
+          status: txRes.execResult.exceptionError ? 0 : 1, // Receipts have a 0 as status on error
+          ...abstractTxReceipt,
+        } as PostByzantiumTxReceipt
+        const statusInfo = txRes.execResult.exceptionError ? 'error' : 'ok'
+        receiptLog += ` status=${txReceipt.status} (${statusInfo}) (>= Byzantium)`
+      } else {
+        const stateRoot = await this.stateManager.getStateRoot(true)
+        txReceipt = {
+          stateRoot: stateRoot,
+          ...abstractTxReceipt,
+        } as PreByzantiumTxReceipt
+        receiptLog += ` stateRoot=${txReceipt.stateRoot.toString('hex')} (< Byzantium)`
+      }
+      encodedReceipt = encode(Object.values(txReceipt))
+    } else if (tx.transactionType === 1) {
       txReceipt = {
-        status: txRes.execResult.exceptionError ? 0 : 1, // Receipts have a 0 as status on error
+        status: txRes.execResult.exceptionError ? 0 : 1,
         ...abstractTxReceipt,
-      } as PostByzantiumTxReceipt
-      const statusInfo = txRes.execResult.exceptionError ? 'error' : 'ok'
-      receiptLog += ` status=${txReceipt.status} (${statusInfo}) (>= Byzantium)`
+      } as EIP2930Receipt
+
+      encodedReceipt = Buffer.concat([Buffer.from('01', 'hex'), encode(Object.values(txReceipt))])
     } else {
-      const stateRoot = await this.stateManager.getStateRoot(true)
-      txReceipt = {
-        stateRoot: stateRoot,
-        ...abstractTxReceipt,
-      } as PreByzantiumTxReceipt
-      receiptLog += ` stateRoot=${txReceipt.stateRoot.toString('hex')} (< Byzantium)`
+      throw new Error(`Unsupported transaction type ${tx.transactionType}`)
     }
     debug(receiptLog)
 
     receipts.push(txReceipt)
 
     // Add receipt to trie to later calculate receipt root
-    await receiptTrie.put(encode(txIdx), encode(Object.values(txReceipt)))
+    await receiptTrie.put(encode(txIdx), encodedReceipt)
   }
 
   return {

@@ -2,7 +2,7 @@ import tape from 'tape'
 import { Address, BN, rlp } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
-import { Transaction } from '@ethereumjs/tx'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import { DefaultStateManager } from '../../lib/state'
 import runBlock from '../../lib/runBlock'
 import { setupPreConditions, getDAOCommon } from '../util'
@@ -98,7 +98,7 @@ tape('should fail when tx gas limit higher than block gas limit', async (t) => {
 
   const gasLimit = new BN(Buffer.from('3fefba', 'hex'))
   const opts = { common: block._common }
-  block.transactions[0] = new Transaction(
+  block.transactions[0] = new LegacyTransaction(
     { nonce, gasPrice, gasLimit, to, value, data, v, r, s },
     opts
   )
@@ -135,7 +135,7 @@ tape('should correctly use the hardforkByBlockNumber option', async (t) => {
           number: new BN(10000000),
         },
         transactions: [
-          Transaction.fromTxData(
+          LegacyTransaction.fromTxData(
             {
               data: '0x600154', // PUSH 01 SLOAD
               gasLimit: new BN(100000),

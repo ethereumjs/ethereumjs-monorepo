@@ -274,6 +274,14 @@ export default class Common extends EventEmitter {
           `${eip} cannot be activated on hardfork ${this.hardfork()}, minimumHardfork: ${minHF}`
         )
       }
+      if (EIPs[eip].requiredEIPs) {
+        // eslint-disable-next-line prettier/prettier
+        (<number[]>EIPs[eip].requiredEIPs).forEach((elem: number) => {
+          if (!(eips.includes(elem) || this.isActivatedEIP(elem))) {
+            throw new Error(`${eip} requires EIP ${elem}, but is not included in the EIP list`)
+          }
+        })
+      }
     }
     this._eips = eips
   }

@@ -3,9 +3,22 @@ import Common from '../src/'
 
 tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
   t.test('Correct initialization', function (st: tape.Test) {
-    const eips = [2537, 2929]
+    let eips = [2537, 2929]
     const c = new Common({ chain: 'mainnet', eips })
     st.equal(c.eips(), eips, 'should initialize with supported EIP')
+
+    eips = [2718, 2929, 2930]
+    new Common({ chain: 'mainnet', eips, hardfork: 'istanbul' })
+    st.pass('Should not throw when initializing with a consistent EIP list')
+
+    eips = [2930]
+    const msg =
+      'should throw when initializing with an EIP with required EIPs not being activated along'
+    const f = () => {
+      new Common({ chain: 'mainnet', eips, hardfork: 'istanbul' })
+    }
+    st.throws(f, msg)
+
     st.end()
   })
 
