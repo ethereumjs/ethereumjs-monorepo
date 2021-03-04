@@ -63,7 +63,6 @@
     "@ethereumjs/config-typescript": "^2.0.0",
     "@ethereumjs/eslint-config-defaults": "^2.0.0",
     "@types/benchmark": "^1.0.33",
-    "@types/bn.js": "^4.11.6",
     "@types/core-js": "^2.5.0",
     "@types/lru-cache": "^5.1.0",
     "@types/node": "^11.13.4",
