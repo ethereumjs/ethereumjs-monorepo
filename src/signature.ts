@@ -1,8 +1,9 @@
-const { ecdsaSign, ecdsaRecover, publicKeyConvert } = require('ethereum-cryptography/secp256k1')
+import { ecdsaSign, ecdsaRecover, publicKeyConvert } from 'ethereum-cryptography/secp256k1'
 import BN from 'bn.js'
 import { toBuffer, setLengthLeft, bufferToHex, bufferToInt } from './bytes'
 import { keccak } from './hash'
 import { assertIsBuffer } from './helpers'
+import { BNLike, toType, TypeOutput } from './types'
 
 export interface ECDSASignature {
   v: number
@@ -10,32 +11,55 @@ export interface ECDSASignature {
   s: Buffer
 }
 
+export interface ECDSASignatureBuffer {
+  v: Buffer
+  r: Buffer
+  s: Buffer
+}
+
 /**
  * Returns the ECDSA signature of a message hash.
  */
-export const ecsign = function(
-  msgHash: Buffer,
-  privateKey: Buffer,
-  chainId?: number
-): ECDSASignature {
-  const sig = ecdsaSign(msgHash, privateKey)
-  const recovery: number = sig.recid
+export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: number): ECDSASignature
+export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: BNLike): ECDSASignatureBuffer
+export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: any): any {
+  const { signature, recid: recovery } = ecdsaSign(msgHash, privateKey)
 
-  const ret = {
-    r: Buffer.from(sig.signature.slice(0, 32)),
-    s: Buffer.from(sig.signature.slice(32, 64)),
-    v: chainId ? recovery + (chainId * 2 + 35) : recovery + 27
+  const r = Buffer.from(signature.slice(0, 32))
+  const s = Buffer.from(signature.slice(32, 64))
+
+  if (!chainId || typeof chainId === 'number') {
+    // return legacy type ECDSASignature (deprecated in favor of ECDSASignatureBuffer to handle large chainIds)
+    if (chainId && !Number.isSafeInteger(chainId)) {
+      throw new Error(
+        'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative input type)'
+      )
+    }
+    const v = chainId ? recovery + (chainId * 2 + 35) : recovery + 27
+    return { r, s, v }
   }
 
-  return ret
+  const chainIdBN = toType(chainId, TypeOutput.BN)
+  const v = chainIdBN
+    .muln(2)
+    .addn(35)
+    .addn(recovery)
+    .toArrayLike(Buffer)
+  return { r, s, v }
 }
 
-function calculateSigRecovery(v: number, chainId?: number): number {
-  return chainId ? v - (2 * chainId + 35) : v - 27
+function calculateSigRecovery(v: BNLike, chainId?: BNLike): BN {
+  const vBN = toType(v, TypeOutput.BN)
+  if (!chainId) {
+    return vBN.subn(27)
+  }
+  const chainIdBN = toType(chainId, TypeOutput.BN)
+  return vBN.sub(chainIdBN.muln(2).addn(35))
 }
 
-function isValidSigRecovery(recovery: number): boolean {
-  return recovery === 0 || recovery === 1
+function isValidSigRecovery(recovery: number | BN): boolean {
+  const rec = new BN(recovery)
+  return rec.eqn(0) || rec.eqn(1)
 }
 
 /**
@@ -44,17 +68,17 @@ function isValidSigRecovery(recovery: number): boolean {
  */
 export const ecrecover = function(
   msgHash: Buffer,
-  v: number,
+  v: BNLike,
   r: Buffer,
   s: Buffer,
-  chainId?: number
+  chainId?: BNLike
 ): Buffer {
   const signature = Buffer.concat([setLengthLeft(r, 32), setLengthLeft(s, 32)], 64)
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
   }
-  const senderPubKey = ecdsaRecover(signature, recovery, msgHash)
+  const senderPubKey = ecdsaRecover(signature, recovery.toNumber(), msgHash)
   return Buffer.from(publicKeyConvert(senderPubKey, false).slice(1))
 }
 
@@ -62,7 +86,7 @@ export const ecrecover = function(
  * Convert signature parameters into the format of `eth_sign` RPC method.
  * @returns Signature
  */
-export const toRpcSig = function(v: number, r: Buffer, s: Buffer, chainId?: number): string {
+export const toRpcSig = function(v: BNLike, r: Buffer, s: Buffer, chainId?: BNLike): string {
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
@@ -101,11 +125,11 @@ export const fromRpcSig = function(sig: string): ECDSASignature {
  * @param homesteadOrLater Indicates whether this is being used on either the homestead hardfork or a later one
  */
 export const isValidSignature = function(
-  v: number,
+  v: BNLike,
   r: Buffer,
   s: Buffer,
   homesteadOrLater: boolean = true,
-  chainId?: number
+  chainId?: BNLike
 ): boolean {
   const SECP256K1_N_DIV_2 = new BN(
     '7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
@@ -121,8 +145,8 @@ export const isValidSignature = function(
     return false
   }
 
-  const rBN: BN = new BN(r)
-  const sBN: BN = new BN(s)
+  const rBN = new BN(r)
+  const sBN = new BN(s)
 
   if (rBN.isZero() || rBN.gt(SECP256K1_N) || sBN.isZero() || sBN.gt(SECP256K1_N)) {
     return false

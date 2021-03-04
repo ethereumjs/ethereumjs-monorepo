@@ -6,7 +6,7 @@ import { KECCAK256_RLP, KECCAK256_NULL } from './constants'
 import { zeros, bufferToHex, toBuffer } from './bytes'
 import { keccak, keccak256, keccakFromString, rlphash } from './hash'
 import { assertIsHexString, assertIsBuffer } from './helpers'
-import { BNLike, BufferLike, bnToRlp } from './types'
+import { BNLike, BufferLike, bnToRlp, toType, TypeOutput } from './types'
 
 const {
   privateKeyVerify,
@@ -137,11 +137,15 @@ export const isValidAddress = function(hexAddress: string): boolean {
  * WARNING: Checksums with and without the chainId will differ. As of 2019-06-26, the most commonly
  * used variation in Ethereum was without the chainId. This may change in the future.
  */
-export const toChecksumAddress = function(hexAddress: string, eip1191ChainId?: number): string {
+export const toChecksumAddress = function(hexAddress: string, eip1191ChainId?: BNLike): string {
   assertIsHexString(hexAddress)
   const address = stripHexPrefix(hexAddress).toLowerCase()
 
-  const prefix = eip1191ChainId !== undefined ? eip1191ChainId.toString() + '0x' : ''
+  let prefix = ''
+  if (eip1191ChainId) {
+    const chainId = toType(eip1191ChainId, TypeOutput.BN)
+    prefix = chainId.toString() + '0x'
+  }
 
   const hash = keccakFromString(prefix + address).toString('hex')
   let ret = '0x'
@@ -164,7 +168,7 @@ export const toChecksumAddress = function(hexAddress: string, eip1191ChainId?: n
  */
 export const isValidChecksumAddress = function(
   hexAddress: string,
-  eip1191ChainId?: number
+  eip1191ChainId?: BNLike
 ): boolean {
   return isValidAddress(hexAddress) && toChecksumAddress(hexAddress, eip1191ChainId) === hexAddress
 }

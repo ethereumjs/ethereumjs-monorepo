@@ -1,6 +1,6 @@
 import BN from 'bn.js'
 import { intToBuffer, stripHexPrefix, padToEven, isHexString, isHexPrefixed } from 'ethjs-util'
-import { TransformableToArray, TransformableToBuffer } from './types'
+import { PrefixedHexString, TransformableToArray, TransformableToBuffer } from './types'
 import { assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
 
 /**
@@ -105,24 +105,24 @@ export const unpadHexString = function(a: string): string {
   return stripZeros(a) as string
 }
 
+export type ToBufferInputTypes =
+  | PrefixedHexString
+  | number
+  | BN
+  | Buffer
+  | Uint8Array
+  | number[]
+  | TransformableToArray
+  | TransformableToBuffer
+  | null
+  | undefined
+
 /**
  * Attempts to turn a value into a `Buffer`.
  * Inputs supported: `Buffer`, `String`, `Number`, null/undefined, `BN` and other objects with a `toArray()` or `toBuffer()` method.
  * @param v the value
  */
-export const toBuffer = function(
-  v:
-    | string
-    | number
-    | BN
-    | Buffer
-    | Uint8Array
-    | number[]
-    | TransformableToArray
-    | TransformableToBuffer
-    | null
-    | undefined
-): Buffer {
+export const toBuffer = function(v: ToBufferInputTypes): Buffer {
   if (v === null || v === undefined) {
     return Buffer.allocUnsafe(0)
   }

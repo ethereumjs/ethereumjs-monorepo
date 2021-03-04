@@ -16,7 +16,7 @@
     "docs:build": "npx typedoc --options typedoc.js",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
-    "test": "npm run lint && npm run test:node && npm run test:browser",
+    "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
     "test:node": "nyc --reporter=lcov mocha --require ts-node/register 'test/*.spec.ts'",
     "tsc": "ethereumjs-config-tsc"
