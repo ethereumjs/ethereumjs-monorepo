@@ -3,7 +3,7 @@ import { join } from 'path'
 import { readFileSync } from 'fs'
 import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
 import { Account, Address, BN } from 'ethereumjs-util'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { Transaction } from '@ethereumjs/tx'
 import VM from '../../dist'
 const solc = require('solc')
 
@@ -96,7 +96,7 @@ async function deployContract(
     nonce: await getAccountNonce(vm, senderPrivateKey),
   }
 
-  const tx = LegacyTransaction.fromTxData(txData).sign(senderPrivateKey)
+  const tx = Transaction.fromTxData(txData).sign(senderPrivateKey)
 
   const deploymentResult = await vm.runTx({ tx })
 
@@ -124,7 +124,7 @@ async function setGreeting(
     nonce: await getAccountNonce(vm, senderPrivateKey),
   }
 
-  const tx = LegacyTransaction.fromTxData(txData).sign(senderPrivateKey)
+  const tx = Transaction.fromTxData(txData).sign(senderPrivateKey)
 
   const setGreetingResult = await vm.runTx({ tx })
 

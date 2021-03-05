@@ -273,7 +273,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
   /**
    * Returns the encoding of the transaction. For typed transaction, this is the raw Buffer.
-   * In LegacyTransaction, this is a Buffer array.
+   * In Transaction, this is a Buffer array.
    */
   serialize(): Buffer {
     return <Buffer>this.raw()

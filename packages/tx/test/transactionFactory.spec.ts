@@ -1,7 +1,7 @@
 import Common from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
 import tape from 'tape'
-import { AccessListEIP2930Transaction, TransactionFactory, LegacyTransaction } from '../src'
+import { AccessListEIP2930Transaction, TransactionFactory, Transaction } from '../src'
 
 const EIP2930Common = new Common({
   eips: [2718, 2929, 2930],
@@ -16,12 +16,12 @@ const simpleUnsignedAccessListEIP2930Transaction = AccessListEIP2930Transaction.
   { common: EIP2930Common }
 )
 
-const simpleUnsignedLegacyTransaction = LegacyTransaction.fromTxData({})
+const simpleUnsignedTransaction = Transaction.fromTxData({})
 
 const simpleSignedAccessListEIP2930Transaction = simpleUnsignedAccessListEIP2930Transaction.sign(
   pKey
 )
-const simpleSignedLegacyTransaction = simpleUnsignedLegacyTransaction.sign(pKey)
+const simpleSignedTransaction = simpleUnsignedTransaction.sign(pKey)
 
 tape('[TransactionFactory]: Basic functions', function (t) {
   t.test('should return the right type', function (st) {
@@ -29,10 +29,10 @@ tape('[TransactionFactory]: Basic functions', function (t) {
     const factoryTx = TransactionFactory.fromRawData(serialized, { common: EIP2930Common })
     st.equals(factoryTx.constructor.name, AccessListEIP2930Transaction.name)
 
-    const legacyTx = LegacyTransaction.fromTxData({})
+    const legacyTx = Transaction.fromTxData({})
     const serializedLegacyTx = legacyTx.serialize()
     const factoryLegacyTx = TransactionFactory.fromRawData(serializedLegacyTx, {})
-    st.equals(factoryLegacyTx.constructor.name, LegacyTransaction.name)
+    st.equals(factoryLegacyTx.constructor.name, Transaction.name)
 
     st.end()
   })
@@ -61,7 +61,7 @@ tape('[TransactionFactory]: Basic functions', function (t) {
 
   t.test('should give me the right classes in getTransactionClass', function (st) {
     const legacyTx = TransactionFactory.getTransactionClass()
-    st.equals(legacyTx!.name, LegacyTransaction.name)
+    st.equals(legacyTx!.name, Transaction.name)
 
     const eip2930Tx = TransactionFactory.getTransactionClass(1, EIP2930Common)
     st.equals(eip2930Tx!.name, AccessListEIP2930Transaction.name)
@@ -85,13 +85,13 @@ tape('[TransactionFactory]: Basic functions', function (t) {
   })
 
   t.test('should decode raw block body data', function (st) {
-    const rawLegacy = simpleSignedLegacyTransaction.raw()
+    const rawLegacy = simpleSignedTransaction.raw()
     const rawEIP2930 = simpleSignedAccessListEIP2930Transaction.raw()
 
     const legacyTx = TransactionFactory.fromBlockBodyData(rawLegacy)
     const eip2930Tx = TransactionFactory.fromBlockBodyData(rawEIP2930, { common: EIP2930Common })
 
-    st.equals(legacyTx.constructor.name, LegacyTransaction.name)
+    st.equals(legacyTx.constructor.name, Transaction.name)
     st.equals(eip2930Tx.constructor.name, AccessListEIP2930Transaction.name)
     st.end()
   })
@@ -104,8 +104,8 @@ tape('[TransactionFactory]: Basic functions', function (t) {
       TransactionFactory.fromTxData({ type: 1 })
     })
 
-    st.equals(legacyTx.constructor.name, LegacyTransaction.name)
-    st.equals(legacyTx2.constructor.name, LegacyTransaction.name)
+    st.equals(legacyTx.constructor.name, Transaction.name)
+    st.equals(legacyTx2.constructor.name, Transaction.name)
     st.equals(eip2930Tx.constructor.name, AccessListEIP2930Transaction.name)
     st.end()
   })

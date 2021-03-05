@@ -21,7 +21,7 @@ const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46
 /**
  * An Ethereum transaction.
  */
-export default class LegacyTransaction extends BaseTransaction<LegacyTransaction> {
+export default class Transaction extends BaseTransaction<Transaction> {
   public readonly v?: BN
   public readonly r?: BN
   public readonly s?: BN
@@ -31,7 +31,7 @@ export default class LegacyTransaction extends BaseTransaction<LegacyTransaction
   }
 
   public static fromTxData(txData: TxData, opts: TxOptions = {}) {
-    return new LegacyTransaction(txData, opts)
+    return new Transaction(txData, opts)
   }
 
   public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
@@ -46,7 +46,7 @@ export default class LegacyTransaction extends BaseTransaction<LegacyTransaction
 
   // alias of fromRlpSerializedTx
   public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
-    return LegacyTransaction.fromRlpSerializedTx(serialized, opts)
+    return Transaction.fromRlpSerializedTx(serialized, opts)
   }
 
   public static fromValuesArray(values: Buffer[], opts: TxOptions = {}) {
@@ -63,7 +63,7 @@ export default class LegacyTransaction extends BaseTransaction<LegacyTransaction
 
       const emptyBuffer = Buffer.from([])
 
-      return new LegacyTransaction(
+      return new Transaction(
         {
           nonce: new BN(nonce),
           gasPrice: new BN(gasPrice),
@@ -209,7 +209,7 @@ export default class LegacyTransaction extends BaseTransaction<LegacyTransaction
       common: this.common,
     }
 
-    return LegacyTransaction.fromTxData(
+    return Transaction.fromTxData(
       {
         nonce: this.nonce,
         gasPrice: this.gasPrice,

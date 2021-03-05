@@ -2,19 +2,19 @@ import tape from 'tape'
 import { Buffer } from 'buffer'
 import { BN, rlp, toBuffer, bufferToHex, unpadBuffer } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { LegacyTransaction, TxData } from '../src'
+import { Transaction, TxData } from '../src'
 import { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
 
 const txFixtures: TxsJsonEntry[] = require('./json/txs.json')
 const txFixturesEip155: VitaliksTestsDataEntry[] = require('./json/ttTransactionTestEip155VitaliksTests.json')
 
 tape('[Transaction]', function (t) {
-  const transactions: LegacyTransaction[] = []
+  const transactions: Transaction[] = []
 
   t.test('Initialization -> decode with fromValuesArray()', function (st) {
     txFixtures.slice(0, 4).forEach(function (tx: any) {
       const txData = tx.raw.map(toBuffer)
-      const pt = LegacyTransaction.fromValuesArray(txData)
+      const pt = Transaction.fromValuesArray(txData)
 
       st.equal(bufferToHex(unpadBuffer(toBuffer(pt.nonce))), tx.raw[0])
       st.equal(bufferToHex(toBuffer(pt.gasPrice)), tx.raw[1])
@@ -45,7 +45,7 @@ tape('[Transaction]', function (t) {
       chain: 'mainnet',
       hardfork: 'tangerineWhistle',
     })
-    const tx = LegacyTransaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), {
+    const tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), {
       common,
     })
     st.deepEqual(
@@ -64,7 +64,7 @@ tape('[Transaction]', function (t) {
   })
 
   t.test('hash() -> with defined chainId', function (st) {
-    const tx = LegacyTransaction.fromValuesArray(txFixtures[4].raw.map(toBuffer))
+    const tx = Transaction.fromValuesArray(txFixtures[4].raw.map(toBuffer))
     st.equal(
       tx.hash().toString('hex'),
       '0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4'
@@ -88,11 +88,11 @@ tape('[Transaction]', function (t) {
   })
 
   t.test('should round trip decode a tx', function (st) {
-    const tx = LegacyTransaction.fromTxData({ value: 5000 })
+    const tx = Transaction.fromTxData({ value: 5000 })
     const s1 = tx.serialize()
 
     const s1Rlp = toBuffer('0x' + s1.toString('hex'))
-    const tx2 = LegacyTransaction.fromRlpSerializedTx(s1Rlp)
+    const tx2 = Transaction.fromRlpSerializedTx(s1Rlp)
     const s2 = tx2.serialize()
 
     st.ok(s1.equals(s2))
@@ -100,29 +100,29 @@ tape('[Transaction]', function (t) {
   })
 
   t.test('should accept lesser r values', function (st) {
-    const tx = LegacyTransaction.fromTxData({ r: new BN(toBuffer('0x0005')) })
+    const tx = Transaction.fromTxData({ r: new BN(toBuffer('0x0005')) })
     st.equals(tx.r!.toString('hex'), '5')
     st.end()
   })
 
   t.test('should return data fee', function (st) {
-    let tx = LegacyTransaction.fromTxData({})
+    let tx = Transaction.fromTxData({})
     st.equals(tx.getDataFee().toNumber(), 0)
 
-    tx = LegacyTransaction.fromValuesArray(txFixtures[3].raw.map(toBuffer))
+    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer))
     st.equals(tx.getDataFee().toNumber(), 1716)
 
     st.end()
   })
 
   t.test('should return base fee', function (st) {
-    const tx = LegacyTransaction.fromTxData({})
+    const tx = Transaction.fromTxData({})
     st.equals(tx.getBaseFee().toNumber(), 53000)
     st.end()
   })
 
   t.test('should return upfront cost', function (st) {
-    const tx = LegacyTransaction.fromTxData({
+    const tx = Transaction.fromTxData({
       gasPrice: 1000,
       gasLimit: 10000000,
       value: 42,
@@ -133,7 +133,7 @@ tape('[Transaction]', function (t) {
 
   t.test("Verify EIP155 Signature based on Vitalik's tests", function (st) {
     txFixturesEip155.forEach(function (tx) {
-      const pt = LegacyTransaction.fromRlpSerializedTx(toBuffer(tx.rlp))
+      const pt = Transaction.fromRlpSerializedTx(toBuffer(tx.rlp))
       st.equal(pt.getMessageToSign().toString('hex'), tx.hash)
       st.equal('0x' + pt.serialize().toString('hex'), tx.rlp)
       st.equal(pt.getSenderAddress().toString(), '0x' + tx.sender)
@@ -155,7 +155,7 @@ tape('[Transaction]', function (t) {
       '4646464646464646464646464646464646464646464646464646464646464646',
       'hex'
     )
-    const pt = LegacyTransaction.fromValuesArray(txRaw.map(toBuffer))
+    const pt = Transaction.fromValuesArray(txRaw.map(toBuffer))
 
     // Note that Vitalik's example has a very similar value denoted "signing data".
     // It's not the output of `serialize()`, but the pre-image of the hash returned by `tx.hash(false)`.
@@ -192,7 +192,7 @@ tape('[Transaction]', function (t) {
         'hex'
       )
       const common = new Common({ chain: 3 })
-      const tx = LegacyTransaction.fromValuesArray(txRaw.map(toBuffer), { common })
+      const tx = Transaction.fromValuesArray(txRaw.map(toBuffer), { common })
       const signedTx = tx.sign(privateKey)
       st.equal(
         signedTx.serialize().toString('hex'),
@@ -205,7 +205,7 @@ tape('[Transaction]', function (t) {
 
   t.test('sign tx with chainId specified in params', function (st) {
     const common = new Common({ chain: 42, hardfork: 'petersburg' })
-    let tx = LegacyTransaction.fromTxData({}, { common })
+    let tx = Transaction.fromTxData({}, { common })
     st.equal(tx.getChainId(), 42)
 
     const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
@@ -213,7 +213,7 @@ tape('[Transaction]', function (t) {
 
     const serialized = tx.serialize()
 
-    const reTx = LegacyTransaction.fromRlpSerializedTx(serialized, { common })
+    const reTx = Transaction.fromRlpSerializedTx(serialized, { common })
     st.equal(reTx.verifySignature(), true)
     st.equal(reTx.getChainId(), 42)
 
@@ -221,7 +221,7 @@ tape('[Transaction]', function (t) {
   })
 
   t.test('returns correct values for isSigned', function (st) {
-    let tx = LegacyTransaction.fromTxData({})
+    let tx = Transaction.fromTxData({})
     st.notOk(tx.isSigned())
 
     const txData: TxData = {
@@ -236,29 +236,29 @@ tape('[Transaction]', function (t) {
       '4646464646464646464646464646464646464646464646464646464646464646',
       'hex'
     )
-    tx = LegacyTransaction.fromTxData(txData)
+    tx = Transaction.fromTxData(txData)
     st.notOk(tx.isSigned())
     tx = tx.sign(privateKey)
     st.ok(tx.isSigned())
 
-    tx = LegacyTransaction.fromTxData(txData)
+    tx = Transaction.fromTxData(txData)
     st.notOk(tx.isSigned())
     const rawUnsigned = tx.serialize()
     tx = tx.sign(privateKey)
     const rawSigned = tx.serialize()
     st.ok(tx.isSigned())
 
-    tx = LegacyTransaction.fromRlpSerializedTx(rawUnsigned)
+    tx = Transaction.fromRlpSerializedTx(rawUnsigned)
     st.notOk(tx.isSigned())
     tx = tx.sign(privateKey)
     st.ok(tx.isSigned())
-    tx = LegacyTransaction.fromRlpSerializedTx(rawSigned)
+    tx = Transaction.fromRlpSerializedTx(rawSigned)
     st.ok(tx.isSigned())
 
     const signedValues = (rlp.decode(rawSigned) as any) as Buffer[]
-    tx = LegacyTransaction.fromValuesArray(signedValues)
+    tx = Transaction.fromValuesArray(signedValues)
     st.ok(tx.isSigned())
-    tx = LegacyTransaction.fromValuesArray(signedValues.slice(0, 6))
+    tx = Transaction.fromValuesArray(signedValues.slice(0, 6))
     st.notOk(tx.isSigned())
     st.end()
   })
@@ -267,12 +267,12 @@ tape('[Transaction]', function (t) {
     'throws when creating a a transaction with incompatible chainid and v value',
     function (st) {
       const common = new Common({ chain: 42, hardfork: 'petersburg' })
-      let tx = LegacyTransaction.fromTxData({}, { common })
+      let tx = Transaction.fromTxData({}, { common })
       st.equal(tx.getChainId(), 42)
       const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
       tx = tx.sign(privKey)
       const serialized = tx.serialize()
-      st.throws(() => LegacyTransaction.fromRlpSerializedTx(serialized))
+      st.throws(() => Transaction.fromRlpSerializedTx(serialized))
       st.end()
     }
   )
@@ -282,7 +282,7 @@ tape('[Transaction]', function (t) {
     function (st) {
       st.throws(() => {
         const common = new Common({ chain: 42, hardfork: 'petersburg' })
-        LegacyTransaction.fromTxData({ v: new BN(1) }, { common })
+        Transaction.fromTxData({ v: new BN(1) }, { common })
       })
       st.end()
     }
@@ -291,7 +291,7 @@ tape('[Transaction]', function (t) {
   t.test('EIP155 hashing when singing', function (st) {
     const common = new Common({ chain: 1, hardfork: 'petersburg' })
     txFixtures.slice(0, 3).forEach(function (txData) {
-      const tx = LegacyTransaction.fromValuesArray(txData.raw.slice(0, 6).map(toBuffer), {
+      const tx = Transaction.fromValuesArray(txData.raw.slice(0, 6).map(toBuffer), {
         common,
       })
 
@@ -325,39 +325,36 @@ tape('[Transaction]', function (t) {
         'hex'
       )
 
-      const fixtureTxSignedWithEIP155 = LegacyTransaction.fromTxData(txData).sign(privateKey)
+      const fixtureTxSignedWithEIP155 = Transaction.fromTxData(txData).sign(privateKey)
 
       const common = new Common({
         chain: 'mainnet',
         hardfork: 'tangerineWhistle',
       })
 
-      const fixtureTxSignedWithoutEIP155 = LegacyTransaction.fromTxData(txData, {
+      const fixtureTxSignedWithoutEIP155 = Transaction.fromTxData(txData, {
         common,
       }).sign(privateKey)
 
-      let signedWithEIP155 = LegacyTransaction.fromTxData(
-        <any>fixtureTxSignedWithEIP155.toJSON()
-      ).sign(privateKey)
+      let signedWithEIP155 = Transaction.fromTxData(<any>fixtureTxSignedWithEIP155.toJSON()).sign(
+        privateKey
+      )
 
       st.true(signedWithEIP155.verifySignature())
       st.notEqual(signedWithEIP155.v?.toString('hex'), '1c')
       st.notEqual(signedWithEIP155.v?.toString('hex'), '1b')
 
-      signedWithEIP155 = LegacyTransaction.fromTxData(
-        <any>fixtureTxSignedWithoutEIP155.toJSON()
-      ).sign(privateKey)
+      signedWithEIP155 = Transaction.fromTxData(<any>fixtureTxSignedWithoutEIP155.toJSON()).sign(
+        privateKey
+      )
 
       st.true(signedWithEIP155.verifySignature())
       st.notEqual(signedWithEIP155.v?.toString('hex'), '1c')
       st.notEqual(signedWithEIP155.v?.toString('hex'), '1b')
 
-      let signedWithoutEIP155 = LegacyTransaction.fromTxData(
-        <any>fixtureTxSignedWithEIP155.toJSON(),
-        {
-          common,
-        }
-      ).sign(privateKey)
+      let signedWithoutEIP155 = Transaction.fromTxData(<any>fixtureTxSignedWithEIP155.toJSON(), {
+        common,
+      }).sign(privateKey)
 
       st.true(signedWithoutEIP155.verifySignature())
       st.true(
@@ -366,12 +363,9 @@ tape('[Transaction]', function (t) {
         "v shouldn't be EIP155 encoded"
       )
 
-      signedWithoutEIP155 = LegacyTransaction.fromTxData(
-        <any>fixtureTxSignedWithoutEIP155.toJSON(),
-        {
-          common,
-        }
-      ).sign(privateKey)
+      signedWithoutEIP155 = Transaction.fromTxData(<any>fixtureTxSignedWithoutEIP155.toJSON(), {
+        common,
+      }).sign(privateKey)
 
       st.true(signedWithoutEIP155.verifySignature())
       st.true(
@@ -386,10 +380,10 @@ tape('[Transaction]', function (t) {
 
   t.test('should return correct data fee for istanbul', function (st) {
     const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
-    let tx = LegacyTransaction.fromTxData({}, { common })
+    let tx = Transaction.fromTxData({}, { common })
     st.equals(tx.getDataFee().toNumber(), 0)
 
-    tx = LegacyTransaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), {
+    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), {
       common,
     })
     st.equals(tx.getDataFee().toNumber(), 1716)

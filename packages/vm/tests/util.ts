@@ -8,7 +8,7 @@ import {
   setLengthLeft,
   toBuffer,
 } from 'ethereumjs-util'
-import { AccessListEIP2930Transaction, LegacyTransaction, TxOptions } from '@ethereumjs/tx'
+import { AccessListEIP2930Transaction, Transaction, TxOptions } from '@ethereumjs/tx'
 import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 
@@ -103,7 +103,7 @@ export function makeTx(txData: any, opts?: TxOptions) {
   if (txData.accessLists) {
     tx = AccessListEIP2930Transaction.fromTxData(txData, opts)
   } else {
-    tx = LegacyTransaction.fromTxData(txData, opts)
+    tx = Transaction.fromTxData(txData, opts)
   }
 
   if (txData.secretKey) {

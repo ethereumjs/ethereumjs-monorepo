@@ -2,7 +2,7 @@ import tape from 'tape'
 import { Account, Address, BN, MAX_INTEGER } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { Transaction } from '@ethereumjs/tx'
 import VM from '../../lib'
 import { DefaultStateManager } from '../../lib/state'
 import runTx from '../../lib/runTx'
@@ -129,7 +129,7 @@ tape('should clear storage cache after every transaction', async (t) => {
     Buffer.from('00'.repeat(32), 'hex'),
     Buffer.from('00'.repeat(31) + '01', 'hex')
   )
-  const tx = LegacyTransaction.fromTxData(
+  const tx = Transaction.fromTxData(
     {
       nonce: '0x00',
       gasPrice: 1,
@@ -165,7 +165,7 @@ tape('should be possible to disable the block gas limit validation', async (t) =
 
   const transferCost = 21000
 
-  const unsignedTx = LegacyTransaction.fromTxData({
+  const unsignedTx = Transaction.fromTxData({
     to: address,
     gasLimit: transferCost,
     gasPrice: 1,
@@ -234,7 +234,7 @@ function getTransaction(sign = false, value = '0x00', createContract = false) {
     data,
   }
 
-  const tx = LegacyTransaction.fromTxData(txParams)
+  const tx = Transaction.fromTxData(txParams)
 
   if (sign) {
     const privateKey = Buffer.from(
