@@ -1,7 +1,7 @@
 import Common from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
 import tape from 'tape'
-import { EIP2930Transaction, TransactionFactory, LegacyTransaction } from '../src'
+import { AccessListEIP2930Transaction, TransactionFactory, LegacyTransaction } from '../src'
 
 const EIP2930Common = new Common({
   eips: [2718, 2929, 2930],
@@ -11,21 +11,23 @@ const EIP2930Common = new Common({
 
 const pKey = Buffer.from('4646464646464646464646464646464646464646464646464646464646464646', 'hex')
 
-const simpleUnsignedEIP2930Transaction = EIP2930Transaction.fromTxData(
+const simpleUnsignedAccessListEIP2930Transaction = AccessListEIP2930Transaction.fromTxData(
   { chainId: new BN(1) },
   { common: EIP2930Common }
 )
 
 const simpleUnsignedLegacyTransaction = LegacyTransaction.fromTxData({})
 
-const simpleSignedEIP2930Transaction = simpleUnsignedEIP2930Transaction.sign(pKey)
+const simpleSignedAccessListEIP2930Transaction = simpleUnsignedAccessListEIP2930Transaction.sign(
+  pKey
+)
 const simpleSignedLegacyTransaction = simpleUnsignedLegacyTransaction.sign(pKey)
 
 tape('[TransactionFactory]: Basic functions', function (t) {
   t.test('should return the right type', function (st) {
-    const serialized = simpleUnsignedEIP2930Transaction.serialize()
+    const serialized = simpleUnsignedAccessListEIP2930Transaction.serialize()
     const factoryTx = TransactionFactory.fromRawData(serialized, { common: EIP2930Common })
-    st.equals(factoryTx.constructor.name, EIP2930Transaction.name)
+    st.equals(factoryTx.constructor.name, AccessListEIP2930Transaction.name)
 
     const legacyTx = LegacyTransaction.fromTxData({})
     const serializedLegacyTx = legacyTx.serialize()
@@ -39,7 +41,7 @@ tape('[TransactionFactory]: Basic functions', function (t) {
     'should throw when trying to create EIP-2718 typed transactions when not allowed in Common',
     function (st) {
       st.throws(() => {
-        TransactionFactory.fromRawData(simpleUnsignedEIP2930Transaction.serialize(), {})
+        TransactionFactory.fromRawData(simpleUnsignedAccessListEIP2930Transaction.serialize(), {})
       })
       st.end()
     }
@@ -49,7 +51,7 @@ tape('[TransactionFactory]: Basic functions', function (t) {
     'should throw when trying to create EIP-2718 typed transactions when not allowed in Common',
     function (st) {
       st.throws(() => {
-        const serialized = simpleUnsignedEIP2930Transaction.serialize()
+        const serialized = simpleUnsignedAccessListEIP2930Transaction.serialize()
         serialized[0] = 2 // edit the transaction type
         TransactionFactory.fromRawData(serialized, { common: EIP2930Common })
       })
@@ -62,7 +64,7 @@ tape('[TransactionFactory]: Basic functions', function (t) {
     st.equals(legacyTx!.name, LegacyTransaction.name)
 
     const eip2930Tx = TransactionFactory.getTransactionClass(1, EIP2930Common)
-    st.equals(eip2930Tx!.name, EIP2930Transaction.name)
+    st.equals(eip2930Tx!.name, AccessListEIP2930Transaction.name)
 
     st.end()
   })
@@ -84,13 +86,13 @@ tape('[TransactionFactory]: Basic functions', function (t) {
 
   t.test('should decode raw block body data', function (st) {
     const rawLegacy = simpleSignedLegacyTransaction.raw()
-    const rawEIP2930 = simpleSignedEIP2930Transaction.raw()
+    const rawEIP2930 = simpleSignedAccessListEIP2930Transaction.raw()
 
     const legacyTx = TransactionFactory.fromBlockBodyData(rawLegacy)
     const eip2930Tx = TransactionFactory.fromBlockBodyData(rawEIP2930, { common: EIP2930Common })
 
     st.equals(legacyTx.constructor.name, LegacyTransaction.name)
-    st.equals(eip2930Tx.constructor.name, EIP2930Transaction.name)
+    st.equals(eip2930Tx.constructor.name, AccessListEIP2930Transaction.name)
     st.end()
   })
 
@@ -104,7 +106,7 @@ tape('[TransactionFactory]: Basic functions', function (t) {
 
     st.equals(legacyTx.constructor.name, LegacyTransaction.name)
     st.equals(legacyTx2.constructor.name, LegacyTransaction.name)
-    st.equals(eip2930Tx.constructor.name, EIP2930Transaction.name)
+    st.equals(eip2930Tx.constructor.name, AccessListEIP2930Transaction.name)
     st.end()
   })
 

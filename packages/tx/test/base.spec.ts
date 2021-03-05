@@ -1,6 +1,6 @@
 import tape from 'tape'
 import Common from '@ethereumjs/common'
-import { LegacyTransaction, EIP2930Transaction } from '../src'
+import { LegacyTransaction, AccessListEIP2930Transaction } from '../src'
 import { TxsJsonEntry } from './types'
 import { BaseTransaction } from '../src/baseTransaction'
 import { privateToPublic } from 'ethereumjs-util'
@@ -13,9 +13,9 @@ tape('[BaseTransaction]', function (t) {
   })
 
   const eip2930Fixtures = require('./json/eip2930txs.json')
-  const eip2930Txs: BaseTransaction<EIP2930Transaction>[] = []
+  const eip2930Txs: BaseTransaction<AccessListEIP2930Transaction>[] = []
   eip2930Fixtures.forEach(function (tx: any) {
-    eip2930Txs.push(EIP2930Transaction.fromTxData(tx.data))
+    eip2930Txs.push(AccessListEIP2930Transaction.fromTxData(tx.data))
   })
 
   const zero = Buffer.alloc(0)
@@ -28,8 +28,8 @@ tape('[BaseTransaction]', function (t) {
       fixtures: legacyFixtures,
     },
     {
-      class: EIP2930Transaction,
-      name: 'EIP2930Transaction',
+      class: AccessListEIP2930Transaction,
+      name: 'AccessListEIP2930Transaction',
       values: [Buffer.from([1])].concat(Array(7).fill(zero)),
       txs: eip2930Txs,
       fixtures: eip2930Fixtures,

@@ -1,6 +1,6 @@
 import Common from '@ethereumjs/common'
 import { default as LegacyTransaction } from './legacyTransaction'
-import { default as EIP2930Transaction } from './eip2930Transaction'
+import { default as AccessListEIP2930Transaction } from './eip2930Transaction'
 import { TxOptions, Transaction, TxData } from './types'
 import { BN } from 'ethereumjs-util'
 
@@ -55,7 +55,7 @@ export default class TransactionFactory {
         )
       }
 
-      return EIP2930Transaction.fromRlpSerializedTx(rawData, txOptions)
+      return AccessListEIP2930Transaction.fromRlpSerializedTx(rawData, txOptions)
     } else {
       return LegacyTransaction.fromRlpSerializedTx(rawData, txOptions)
     }
@@ -102,7 +102,7 @@ export default class TransactionFactory {
 
     switch (transactionID) {
       case 1:
-        return EIP2930Transaction
+        return AccessListEIP2930Transaction
       default:
         throw new Error(`TypedTransaction with ID ${transactionID} unknown`)
     }

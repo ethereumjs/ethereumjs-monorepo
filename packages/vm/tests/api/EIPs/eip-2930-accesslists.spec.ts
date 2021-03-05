@@ -2,7 +2,7 @@ import tape from 'tape'
 import { Account, Address, BN, bufferToHex } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import VM from '../../../lib'
-import { EIP2930Transaction } from '@ethereumjs/tx'
+import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
 
 const common = new Common({
   eips: [2718, 2929, 2930],
@@ -28,7 +28,7 @@ tape('EIP-2930 Optional Access Lists tests', (t) => {
         storageKeys: [bufferToHex(validSlot)],
       },
     ]
-    const txnWithAccessList = EIP2930Transaction.fromTxData(
+    const txnWithAccessList = AccessListEIP2930Transaction.fromTxData(
       {
         accessList: access,
         chainId: 1,
@@ -37,7 +37,7 @@ tape('EIP-2930 Optional Access Lists tests', (t) => {
       },
       { common }
     ).sign(privateKey)
-    const txnWithoutAccessList = EIP2930Transaction.fromTxData(
+    const txnWithoutAccessList = AccessListEIP2930Transaction.fromTxData(
       {
         accessList: [],
         chainId: 1,

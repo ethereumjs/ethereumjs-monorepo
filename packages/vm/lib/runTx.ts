@@ -1,7 +1,7 @@
 import { debug as createDebugLogger } from 'debug'
 import { Address, BN } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
-import { AccessListItem, EIP2930Transaction, Transaction } from '@ethereumjs/tx'
+import { AccessListItem, AccessListEIP2930Transaction, Transaction } from '@ethereumjs/tx'
 import VM from './index'
 import Bloom from './bloom'
 import { default as EVM, EVMResult } from './evm/evm'
@@ -104,7 +104,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
       throw new Error('Cannot run transaction: EIP 2930 is not activated.')
     }
 
-    const castedTx = <EIP2930Transaction>opts.tx
+    const castedTx = <AccessListEIP2930Transaction>opts.tx
 
     castedTx.AccessListJSON.forEach((accessListItem: AccessListItem) => {
       const address = Buffer.from(accessListItem.address.slice(2), 'hex')
