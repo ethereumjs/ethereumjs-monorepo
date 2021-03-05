@@ -38,7 +38,7 @@ type EIP2930ValuesArray = [
   Buffer?
 ]
 
-export default class EIP2930Transaction extends BaseTransaction<EIP2930Transaction> {
+export default class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2930Transaction> {
   public readonly chainId: BN
   public readonly accessList: AccessListBuffer
   public readonly v?: BN
@@ -68,7 +68,7 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
   }
 
   public static fromTxData(txData: TxData, opts: TxOptions = {}) {
-    return new EIP2930Transaction(txData, opts)
+    return new AccessListEIP2930Transaction(txData, opts)
   }
 
   // Instantiate a transaction from the serialized tx. This means that the Buffer should start with 0x01.
@@ -84,13 +84,13 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
       throw new Error('Invalid serialized tx input: must be array')
     }
 
-    return EIP2930Transaction.fromValuesArray(values, opts)
+    return AccessListEIP2930Transaction.fromValuesArray(values, opts)
   }
 
   // Instantiate a transaction from the serialized tx. This means that the Buffer should start with 0x01.
   // Alias of fromSerializedTx
   public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
-    return EIP2930Transaction.fromSerializedTx(serialized, opts)
+    return AccessListEIP2930Transaction.fromSerializedTx(serialized, opts)
   }
 
   // Create a transaction from a values array.
@@ -102,7 +102,7 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
       >values
       const emptyBuffer = Buffer.from([])
 
-      return new EIP2930Transaction(
+      return new AccessListEIP2930Transaction(
         {
           chainId: new BN(chainId),
           nonce: new BN(nonce),
@@ -273,7 +273,7 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
 
   /**
    * Returns the encoding of the transaction. For typed transaction, this is the raw Buffer.
-   * In LegacyTransaction, this is a Buffer array.
+   * In Transaction, this is a Buffer array.
    */
   serialize(): Buffer {
     return <Buffer>this.raw()
@@ -365,7 +365,7 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
       common: this.common,
     }
 
-    return EIP2930Transaction.fromTxData(
+    return AccessListEIP2930Transaction.fromTxData(
       {
         chainId: this.chainId,
         nonce: this.nonce,

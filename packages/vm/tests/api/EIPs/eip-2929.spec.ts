@@ -2,7 +2,7 @@ import tape from 'tape'
 import { Account, Address, BN } from 'ethereumjs-util'
 import VM from '../../../lib'
 import Common from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { Transaction } from '@ethereumjs/tx'
 
 // Test cases source: https://gist.github.com/holiman/174548cad102096858583c6fbbb0649a
 tape('EIP 2929: gas cost tests', (t) => {
@@ -50,7 +50,7 @@ tape('EIP 2929: gas cost tests', (t) => {
 
     await vm.stateManager.putContractCode(address, Buffer.from(test.code, 'hex'))
 
-    const unsignedTx = LegacyTransaction.fromTxData({
+    const unsignedTx = Transaction.fromTxData({
       gasLimit: initialGas, // ensure we pass a lot of gas, so we do not run out of gas
       to: address, // call to the contract address,
     })
@@ -80,7 +80,7 @@ tape('EIP 2929: gas cost tests', (t) => {
     await vm.stateManager.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code
 
     // setup the call arguments
-    const unsignedTx = LegacyTransaction.fromTxData({
+    const unsignedTx = Transaction.fromTxData({
       gasLimit: new BN(21000 + 9000), // ensure we pass a lot of gas, so we do not run out of gas
       to: contractAddress, // call to the contract address,
       value: new BN(1),

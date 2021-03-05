@@ -1,7 +1,7 @@
 import Common from '@ethereumjs/common'
 import { Address, BN, bufferToHex, privateToAddress } from 'ethereumjs-util'
 import tape from 'tape'
-import { AccessList, EIP2930Transaction } from '../src'
+import { AccessList, AccessListEIP2930Transaction } from '../src'
 
 const pKey = Buffer.from('4646464646464646464646464646464646464646464646464646464646464646', 'hex')
 const address = privateToAddress(pKey)
@@ -17,10 +17,10 @@ const validSlot = Buffer.from('01'.repeat(32), 'hex')
 
 const chainId = new BN(1)
 
-tape('[EIP2930Transaction]', function (t) {
+tape('[AccessListEIP2930Transaction]', function (t) {
   t.test('Initialization / Getter', function (t) {
     t.throws(() => {
-      EIP2930Transaction.fromTxData(
+      AccessListEIP2930Transaction.fromTxData(
         {
           chainId: chainId.addn(1),
         },
@@ -29,7 +29,7 @@ tape('[EIP2930Transaction]', function (t) {
     }, 'should reject transactions with wrong chain ID')
 
     t.throws(() => {
-      EIP2930Transaction.fromTxData(
+      AccessListEIP2930Transaction.fromTxData(
         {
           v: 2,
         },
@@ -46,7 +46,7 @@ tape('[EIP2930Transaction]', function (t) {
         storageKeys: [bufferToHex(validSlot)],
       },
     ]
-    const txn = EIP2930Transaction.fromTxData(
+    const txn = AccessListEIP2930Transaction.fromTxData(
       {
         accessList: access,
         chainId: 1,
@@ -66,7 +66,7 @@ tape('[EIP2930Transaction]', function (t) {
 
     // also verify that we can always get the json access list, even if we don't provide one.
 
-    const txnRaw = EIP2930Transaction.fromTxData(
+    const txnRaw = AccessListEIP2930Transaction.fromTxData(
       {
         accessList: BufferArray,
         chainId: 1,
@@ -90,7 +90,7 @@ tape('[EIP2930Transaction]', function (t) {
     ]
 
     st.throws(() => {
-      EIP2930Transaction.fromTxData({ chainId, accessList }, { common })
+      AccessListEIP2930Transaction.fromTxData({ chainId, accessList }, { common })
     })
 
     accessList = [
@@ -103,38 +103,38 @@ tape('[EIP2930Transaction]', function (t) {
     ]
 
     st.throws(() => {
-      EIP2930Transaction.fromTxData({ chainId, accessList }, { common })
+      AccessListEIP2930Transaction.fromTxData({ chainId, accessList }, { common })
     })
 
     accessList = [[]] // Address does not exist
 
     st.throws(() => {
-      EIP2930Transaction.fromTxData({ chainId, accessList }, { common })
+      AccessListEIP2930Transaction.fromTxData({ chainId, accessList }, { common })
     })
 
     accessList = [[validAddress]] // Slots does not exist
 
     st.throws(() => {
-      EIP2930Transaction.fromTxData({ chainId, accessList }, { common })
+      AccessListEIP2930Transaction.fromTxData({ chainId, accessList }, { common })
     })
 
     accessList = [[validAddress, validSlot]] // Slots is not an array
 
     st.throws(() => {
-      EIP2930Transaction.fromTxData({ chainId, accessList }, { common })
+      AccessListEIP2930Transaction.fromTxData({ chainId, accessList }, { common })
     })
 
     accessList = [[validAddress, [], []]] // 3 items where 2 are expected
 
     st.throws(() => {
-      EIP2930Transaction.fromTxData({ chainId, accessList }, { common })
+      AccessListEIP2930Transaction.fromTxData({ chainId, accessList }, { common })
     })
 
     st.end()
   })
 
   t.test('should return right upfront cost', (st) => {
-    let tx = EIP2930Transaction.fromTxData(
+    let tx = AccessListEIP2930Transaction.fromTxData(
       {
         data: Buffer.from('010200', 'hex'),
         to: validAddress,
@@ -165,7 +165,7 @@ tape('[EIP2930Transaction]', function (t) {
     )
 
     // In this Tx, `to` is `undefined`, so we should charge homestead creation gas.
-    tx = EIP2930Transaction.fromTxData(
+    tx = AccessListEIP2930Transaction.fromTxData(
       {
         data: Buffer.from('010200', 'hex'),
         accessList: [[validAddress, [validSlot]]],
@@ -188,7 +188,7 @@ tape('[EIP2930Transaction]', function (t) {
     )
 
     // Explicilty check that even if we have duplicates in our list, we still charge for those
-    tx = EIP2930Transaction.fromTxData(
+    tx = AccessListEIP2930Transaction.fromTxData(
       {
         to: validAddress,
         accessList: [
@@ -206,7 +206,7 @@ tape('[EIP2930Transaction]', function (t) {
   })
 
   t.test('should sign a transaction', function (t) {
-    const tx = EIP2930Transaction.fromTxData(
+    const tx = AccessListEIP2930Transaction.fromTxData(
       {
         data: Buffer.from('010200', 'hex'),
         to: validAddress,
@@ -277,7 +277,7 @@ tape('[EIP2930Transaction]', function (t) {
       Buffer.from('0be950468ba1c25a5cb50e9f6d8aa13c8cd21f24ba909402775b262ac76d374d', 'hex')
     )
 
-    const unsignedTx = EIP2930Transaction.fromTxData(txData, { common: usedCommon })
+    const unsignedTx = AccessListEIP2930Transaction.fromTxData(txData, { common: usedCommon })
 
     const serializedMessageRaw = unsignedTx.serialize()
 

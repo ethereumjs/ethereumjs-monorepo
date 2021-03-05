@@ -3,7 +3,7 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { BN, rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { TransactionFactory, Transaction, TxOptions } from '@ethereumjs/tx'
+import { TransactionFactory, TypedTransaction, TxOptions } from '@ethereumjs/tx'
 import { BlockHeader } from './header'
 import { BlockData, BlockOptions, JsonBlock, BlockBuffer, Blockchain } from './types'
 
@@ -12,7 +12,7 @@ import { BlockData, BlockOptions, JsonBlock, BlockBuffer, Blockchain } from './t
  */
 export class Block {
   public readonly header: BlockHeader
-  public readonly transactions: Transaction[] = []
+  public readonly transactions: TypedTransaction[] = []
   public readonly uncleHeaders: BlockHeader[] = []
   public readonly txTrie = new Trie()
   public readonly _common: Common
@@ -130,7 +130,7 @@ export class Block {
    */
   constructor(
     header?: BlockHeader,
-    transactions: Transaction[] = [],
+    transactions: TypedTransaction[] = [],
     uncleHeaders: BlockHeader[] = [],
     opts: BlockOptions = {}
   ) {

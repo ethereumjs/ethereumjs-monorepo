@@ -1,4 +1,4 @@
-import { TransactionFactory, Transaction, TxData } from '@ethereumjs/tx'
+import { TransactionFactory, TypedTransaction, TxData } from '@ethereumjs/tx'
 import { toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { Block, BlockOptions } from './index'
 
@@ -32,7 +32,7 @@ function normalizeTxParams(_txParams: any) {
 export default function blockFromRpc(blockParams: any, uncles: any[] = [], options?: BlockOptions) {
   const header = blockHeaderFromRpc(blockParams, options)
 
-  const transactions: Transaction[] = []
+  const transactions: TypedTransaction[] = []
   if (blockParams.transactions) {
     const opts = { common: header._common }
     for (const _txParams of blockParams.transactions) {

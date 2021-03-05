@@ -1,35 +1,35 @@
 import tape from 'tape'
 import Common from '@ethereumjs/common'
-import { LegacyTransaction, EIP2930Transaction } from '../src'
+import { Transaction, AccessListEIP2930Transaction } from '../src'
 import { TxsJsonEntry } from './types'
 import { BaseTransaction } from '../src/baseTransaction'
 import { privateToPublic } from 'ethereumjs-util'
 
 tape('[BaseTransaction]', function (t) {
   const legacyFixtures: TxsJsonEntry[] = require('./json/txs.json')
-  const legacyTxs: BaseTransaction<LegacyTransaction>[] = []
+  const legacyTxs: BaseTransaction<Transaction>[] = []
   legacyFixtures.slice(0, 4).forEach(function (tx: any) {
-    legacyTxs.push(LegacyTransaction.fromTxData(tx.data))
+    legacyTxs.push(Transaction.fromTxData(tx.data))
   })
 
   const eip2930Fixtures = require('./json/eip2930txs.json')
-  const eip2930Txs: BaseTransaction<EIP2930Transaction>[] = []
+  const eip2930Txs: BaseTransaction<AccessListEIP2930Transaction>[] = []
   eip2930Fixtures.forEach(function (tx: any) {
-    eip2930Txs.push(EIP2930Transaction.fromTxData(tx.data))
+    eip2930Txs.push(AccessListEIP2930Transaction.fromTxData(tx.data))
   })
 
   const zero = Buffer.alloc(0)
   const txTypes = [
     {
-      class: LegacyTransaction,
-      name: 'LegacyTransaction',
+      class: Transaction,
+      name: 'Transaction',
       values: Array(6).fill(zero),
       txs: legacyTxs,
       fixtures: legacyFixtures,
     },
     {
-      class: EIP2930Transaction,
-      name: 'EIP2930Transaction',
+      class: AccessListEIP2930Transaction,
+      name: 'AccessListEIP2930Transaction',
       values: [Buffer.from([1])].concat(Array(7).fill(zero)),
       txs: eip2930Txs,
       fixtures: eip2930Fixtures,

@@ -1,7 +1,7 @@
 import Common from '@ethereumjs/common'
-import { default as LegacyTransaction } from './legacyTransaction'
-import { default as EIP2930Transaction } from './eip2930Transaction'
-import { TxOptions, Transaction, TxData } from './types'
+import { default as Transaction } from './legacyTransaction'
+import { default as AccessListEIP2930Transaction } from './eip2930Transaction'
+import { TxOptions, TypedTransaction, TxData } from './types'
 import { BN } from 'ethereumjs-util'
 
 const DEFAULT_COMMON = new Common({ chain: 'mainnet' })
@@ -12,14 +12,14 @@ export default class TransactionFactory {
 
   /**
    * Create a transaction from a `txData` object
-   * @param txData - The transaction data. The `type` field will determine which transaction type is returned (if undefined, create a LegacyTransaction)
+   * @param txData - The transaction data. The `type` field will determine which transaction type is returned (if undefined, create a Transaction)
    * @param txOptions - Options to pass on to the constructor of the transaction
    */
-  public static fromTxData(txData: TxData, txOptions: TxOptions = {}): Transaction {
+  public static fromTxData(txData: TxData, txOptions: TxOptions = {}): TypedTransaction {
     const common = txOptions.common ?? DEFAULT_COMMON
     if (txData.type === undefined) {
-      // Assume LegacyTransaction
-      return LegacyTransaction.fromTxData(txData, txOptions)
+      // Assume Transaction
+      return Transaction.fromTxData(txData, txOptions)
     } else {
       const txType = new BN(txData.type).toNumber()
       return TransactionFactory.getTransactionClass(txType, common).fromTxData(txData, txOptions)
@@ -32,7 +32,7 @@ export default class TransactionFactory {
    * @param rawData - The raw data buffer
    * @param txOptions - The transaction options
    */
-  public static fromRawData(rawData: Buffer, txOptions: TxOptions = {}): Transaction {
+  public static fromRawData(rawData: Buffer, txOptions: TxOptions = {}): TypedTransaction {
     const common = txOptions.common ?? DEFAULT_COMMON
     if (rawData[0] <= 0x7f) {
       // It is an EIP-2718 Typed Transaction
@@ -55,16 +55,16 @@ export default class TransactionFactory {
         )
       }
 
-      return EIP2930Transaction.fromRlpSerializedTx(rawData, txOptions)
+      return AccessListEIP2930Transaction.fromRlpSerializedTx(rawData, txOptions)
     } else {
-      return LegacyTransaction.fromRlpSerializedTx(rawData, txOptions)
+      return Transaction.fromRlpSerializedTx(rawData, txOptions)
     }
   }
 
   /**
    * When decoding a BlockBody, in the transactions field, a field is either:
    * A Buffer (a TypedTransaction - encoded as TransactionType || rlp(TransactionPayload))
-   * A Buffer[] (LegacyTransaction)
+   * A Buffer[] (Transaction)
    * This method returns the right transaction.
    * @param rawData - Either a Buffer or a Buffer[]
    * @param txOptions - The transaction options
@@ -73,8 +73,8 @@ export default class TransactionFactory {
     if (Buffer.isBuffer(rawData)) {
       return this.fromRawData(rawData, txOptions)
     } else if (Array.isArray(rawData)) {
-      // It is a LegacyTransaction
-      return LegacyTransaction.fromValuesArray(rawData, txOptions)
+      // It is a Transaction
+      return Transaction.fromValuesArray(rawData, txOptions)
     } else {
       throw new Error('Cannot decode transaction: unknown type input')
     }
@@ -82,7 +82,7 @@ export default class TransactionFactory {
 
   /**
    * This helper method allows one to retrieve the class which matches the transactionID
-   * If transactionID is undefined, return the LegacyTransaction class.
+   * If transactionID is undefined, return the Transaction class.
    * @param transactionID
    * @param common
    */
@@ -97,12 +97,12 @@ export default class TransactionFactory {
     const legacyTxn = transactionID == 0 || (transactionID >= 0x80 && transactionID <= 0xff)
 
     if (legacyTxn) {
-      return LegacyTransaction
+      return Transaction
     }
 
     switch (transactionID) {
       case 1:
-        return EIP2930Transaction
+        return AccessListEIP2930Transaction
       default:
         throw new Error(`TypedTransaction with ID ${transactionID} unknown`)
     }

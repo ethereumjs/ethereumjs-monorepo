@@ -352,11 +352,11 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     let txReceipt
     let encodedReceipt
     let receiptLog = `Generate tx receipt transactionType=${
-      tx.transactionType
+      'transactionType' in tx ? tx.transactionType : 'NaN'
     } gasUsed=${gasUsed} bitvector=${short(abstractTxReceipt.bitvector)} (${
       abstractTxReceipt.bitvector.length
     } bytes) logs=${abstractTxReceipt.logs.length}`
-    if (tx.transactionType === 0) {
+    if (!('transactionType' in tx) || tx.transactionType === 0) {
       if (this._common.gteHardfork('byzantium')) {
         txReceipt = {
           status: txRes.execResult.exceptionError ? 0 : 1, // Receipts have a 0 as status on error
@@ -373,7 +373,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
         receiptLog += ` stateRoot=${txReceipt.stateRoot.toString('hex')} (< Byzantium)`
       }
       encodedReceipt = encode(Object.values(txReceipt))
-    } else if (tx.transactionType === 1) {
+    } else if ('transactionType' in tx && tx.transactionType === 1) {
       txReceipt = {
         status: txRes.execResult.exceptionError ? 0 : 1,
         ...abstractTxReceipt,
@@ -381,7 +381,9 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
 
       encodedReceipt = Buffer.concat([Buffer.from('01', 'hex'), encode(Object.values(txReceipt))])
     } else {
-      throw new Error(`Unsupported transaction type ${tx.transactionType}`)
+      throw new Error(
+        `Unsupported transaction type ${'transactionType' in tx ? tx.transactionType : 'NaN'}`
+      )
     }
     debug(receiptLog)
 

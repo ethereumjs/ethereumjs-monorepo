@@ -1,7 +1,7 @@
 import { AddressLike, BNLike, BufferLike } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { default as LegacyTransaction } from './legacyTransaction'
-import { default as EIP2930Transaction } from './eip2930Transaction'
+import { default as Transaction } from './legacyTransaction'
+import { default as AccessListEIP2930Transaction } from './eip2930Transaction'
 
 /**
  * The options for initializing a Transaction.
@@ -131,7 +131,7 @@ export interface TxData {
   type?: BNLike
 }
 
-export type Transaction = LegacyTransaction | EIP2930Transaction
+export type TypedTransaction = Transaction | AccessListEIP2930Transaction
 
 export type BaseTransactionData = {
   /**
