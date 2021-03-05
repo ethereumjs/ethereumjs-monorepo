@@ -258,7 +258,7 @@ export default class LegacyTransaction extends BaseTransaction<LegacyTransaction
         v,
         bnToRlp(r),
         bnToRlp(s),
-        this._signedTxImplementsEIP155() ? this.getChainId() : undefined
+        this._signedTxImplementsEIP155() ? new BN(this.getChainId().toString()) : undefined
       )
     } catch (e) {
       throw new Error('Invalid Signature')
