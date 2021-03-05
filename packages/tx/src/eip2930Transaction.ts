@@ -351,7 +351,7 @@ export default class EIP2930Transaction extends BaseTransaction<EIP2930Transacti
     try {
       return ecrecover(
         msgHash,
-        yParity.toNumber() + 27, // Recover the 27 which was stripped from ecsign
+        yParity.addn(27), // Recover the 27 which was stripped from ecsign
         bnToRlp(r),
         bnToRlp(s)
       )

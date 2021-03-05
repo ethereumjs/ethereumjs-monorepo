@@ -23,7 +23,7 @@ export class ETH extends EventEmitter {
   _hardfork: string = 'chainstart'
   _latestBlock: number = 0
   _forkHash: string = ''
-  _nextForkBlock: number = 0
+  _nextForkBlock: number | null = null
 
   constructor(version: number, peer: Peer, send: SendMethod) {
     super()
@@ -47,8 +47,7 @@ export class ETH extends EventEmitter {
       this._latestBlock = c.hardforkBlock(this._hardfork)
       this._forkHash = c.forkHash(this._hardfork)
       // Next fork block number or 0 if none available
-      const nextForkBlock = c.nextHardforkBlock(this._hardfork)
-      this._nextForkBlock = nextForkBlock ? nextForkBlock : 0
+      this._nextForkBlock = c.nextHardforkBlock(this._hardfork)
     }
   }
 
@@ -182,7 +181,7 @@ export class ETH extends EventEmitter {
       verbose
     )}`
     if (this._version >= 64) {
-      sStr += `, ForkHash: 0x${status[5] ? '0x' + (status[5][0] as Buffer).toString('hex') : '-'}`
+      sStr += `, ForkHash: ${status[5] ? '0x' + (status[5][0] as Buffer).toString('hex') : '-'}`
       sStr += `, ForkNext: ${status[5] ? buffer2int(status[5][1] as Buffer) : '-'}`
     }
     sStr += `]`

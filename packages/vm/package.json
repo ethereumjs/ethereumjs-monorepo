@@ -52,7 +52,7 @@
     "async-eventemitter": "^0.2.4",
     "core-js-pure": "^3.0.1",
     "debug": "^2.2.0",
-    "ethereumjs-util": "^7.0.8",
+    "ethereumjs-util": "^7.0.9",
     "functional-red-black-tree": "^1.0.1",
     "mcl-wasm": "^0.7.1",
     "rustbn.js": "~0.2.0",

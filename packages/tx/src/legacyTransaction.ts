@@ -255,10 +255,10 @@ export default class LegacyTransaction extends BaseTransaction<LegacyTransaction
     try {
       return ecrecover(
         msgHash,
-        v.toNumber(),
+        v,
         bnToRlp(r),
         bnToRlp(s),
-        this._signedTxImplementsEIP155() ? this.getChainId() : undefined
+        this._signedTxImplementsEIP155() ? new BN(this.getChainId().toString()) : undefined
       )
     } catch (e) {
       throw new Error('Invalid Signature')
@@ -269,7 +269,7 @@ export default class LegacyTransaction extends BaseTransaction<LegacyTransaction
    * Validates tx's `v` value
    */
   private _validateTxV(v: BN | undefined): void {
-    if (v === undefined) {
+    if (v === undefined || v.eqn(0)) {
       return
     }
 
@@ -277,18 +277,17 @@ export default class LegacyTransaction extends BaseTransaction<LegacyTransaction
       return
     }
 
-    const vInt = v.toNumber()
-
-    if (vInt === 27 || vInt === 28) {
+    if (v.eqn(27) || v.eqn(28)) {
       return
     }
 
-    const isValidEIP155V =
-      vInt === this.getChainId() * 2 + 35 || vInt === this.getChainId() * 2 + 36
+    const chainIdDoubled = new BN(this.getChainId().toString()).imuln(2)
+
+    const isValidEIP155V = v.eq(chainIdDoubled.addn(35)) || v.eq(chainIdDoubled.addn(36))
 
     if (!isValidEIP155V) {
       throw new Error(
-        `Incompatible EIP155-based V ${vInt} and chain id ${this.getChainId()}. See the Common parameter of the Transaction constructor to set the chain id.`
+        `Incompatible EIP155-based V ${v.toString()} and chain id ${this.getChainId()}. See the Common parameter of the Transaction constructor to set the chain id.`
       )
     }
   }
@@ -302,10 +301,12 @@ export default class LegacyTransaction extends BaseTransaction<LegacyTransaction
 
     // EIP155 spec:
     // If block.number >= 2,675,000 and v = CHAIN_ID * 2 + 35 or v = CHAIN_ID * 2 + 36, then when computing the hash of a transaction for purposes of signing or recovering, instead of hashing only the first six elements (i.e. nonce, gasprice, startgas, to, value, data), hash nine elements, with v replaced by CHAIN_ID, r = 0 and s = 0.
-    const v = this.v?.toNumber()
+    const v = this.v!
+
+    const chainIdDoubled = new BN(this.getChainId().toString()).imuln(2)
 
     const vAndChainIdMeetEIP155Conditions =
-      v === this.getChainId() * 2 + 35 || v === this.getChainId() * 2 + 36
+      v.eq(chainIdDoubled.addn(35)) || v.eq(chainIdDoubled.addn(36))
 
     return vAndChainIdMeetEIP155Conditions && onEIP155BlockOrLater
   }

@@ -1,0 +1,91 @@
+{
+    "name": "yolov3",
+    "chainId": 34180983699157880,
+    "networkId": 34180983699157880,
+    "defaultHardfork": "berlin",
+    "consensus": {
+        "type": "poa",
+        "algorithm": "clique",
+        "clique": {
+          "period": 15,
+          "epoch": 30000
+        }
+      },
+    "comment": "The YoloV3 chain",
+    "url": "https://yolov3.ethdevops.io",
+    "genesis": {
+      "hash": "0xf1f2876e8500c77afcc03228757b39477eceffccf645b734967fe3c7e16967b7",
+      "nonce": "0x0000000000000000",
+      "timestamp": "0x6027dd2e",
+      "extraData": "0x00000000000000000000000000000000000000000000000000000000000000001041afbcb359d5a8dc58c15b2ff51354ff8a217d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "gasLimit": "0x47b760",
+      "difficulty": "0x1",
+      "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "coinbase": "0x0000000000000000000000000000000000000000",
+      "stateRoot": "0x18fe5753b162ee86c08809d8cfde565e2ca40c869c5f34b19f9e4478759e35e3",
+      "number": "0x0",
+      "gasUsed": "0x0",
+      "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "hardforks": [
+        {
+          "name": "chainstart",
+          "block": 0,
+          "forkHash": "0xa308affe"
+        },
+        {
+          "name": "homestead",
+          "block": 0,
+          "forkHash": "0xa308affe"
+        },
+        {
+          "name": "tangerineWhistle",
+          "block": 0,
+          "forkHash": "0xa308affe"
+        },
+        {
+          "name": "spuriousDragon",
+          "block": 0,
+          "forkHash": "0xa308affe"
+        },
+        {
+          "name": "byzantium",
+          "block": 0,
+          "forkHash": "0xa308affe"
+        },
+        {
+          "name": "constantinople",
+          "block": 0,
+          "forkHash": "0xa308affe"
+        },
+        {
+          "name": "petersburg",
+          "block": 0,
+          "forkHash": "0xa308affe"
+        },
+        {
+          "name": "istanbul",
+          "block": 0,
+          "forkHash": "0xa308affe"
+        },
+        {
+          "name": "muirGlacier",
+          "block": 0,
+          "forkHash": "0xa308affe"
+        },
+        {
+          "name": "berlin",
+          "block": 0,
+          "forkHash": "0xa308affe"
+        }
+      ],
+      "bootstrapNodes": [
+          {
+            "ip": "3.9.20.133",
+            "port": 30303,
+            "id": "9e1096aa59862a6f164994cb5cb16f5124d6c992cdbf4535ff7dea43ea1512afe5448dca9df1b7ab0726129603f1a3336b631e4d7a1a44c94daddd03241587f9",
+            "location": "unknown",
+            "comment": "yolov3 bootnode"
+          }
+      ]
+  }
