@@ -1,4 +1,4 @@
-import BN = require('bn.js')
+import { BN } from 'ethereumjs-util'
 import { PrecompileInput } from './types'
 import { VmErrorResult, ExecResult, OOGResult } from '../evm'
 import { ERROR, VmError } from '../../exceptions'

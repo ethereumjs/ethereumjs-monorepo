@@ -1,4 +1,4 @@
-import BN = require('bn.js')
+import { BN } from 'ethereumjs-util'
 import { RunState } from './../interpreter'
 import { ERROR } from '../../exceptions'
 import { adjustSstoreGasEIP2929 } from './EIP2929'

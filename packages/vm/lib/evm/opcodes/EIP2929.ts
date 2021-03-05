@@ -1,5 +1,4 @@
-import BN = require('bn.js')
-import { Address } from 'ethereumjs-util'
+import { Address, BN } from 'ethereumjs-util'
 import { EIP2929StateManager } from '../../state/interface'
 import { RunState } from './../interpreter'
 
