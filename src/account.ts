@@ -1,19 +1,18 @@
 import assert from 'assert'
 import BN from 'bn.js'
 import * as rlp from 'rlp'
+import {
+  privateKeyVerify,
+  publicKeyCreate,
+  publicKeyVerify,
+  publicKeyConvert
+} from 'ethereum-cryptography/secp256k1'
 import { stripHexPrefix } from 'ethjs-util'
 import { KECCAK256_RLP, KECCAK256_NULL } from './constants'
 import { zeros, bufferToHex, toBuffer } from './bytes'
 import { keccak, keccak256, keccakFromString, rlphash } from './hash'
 import { assertIsHexString, assertIsBuffer } from './helpers'
 import { BNLike, BufferLike, bnToRlp, toType, TypeOutput } from './types'
-
-const {
-  privateKeyVerify,
-  publicKeyCreate,
-  publicKeyVerify,
-  publicKeyConvert
-} = require('ethereum-cryptography/secp256k1')
 
 export interface AccountData {
   nonce?: BNLike

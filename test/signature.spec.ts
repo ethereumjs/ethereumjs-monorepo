@@ -1,6 +1,6 @@
-import assert from 'assert'
-import BN from 'bn.js'
+import tape from 'tape'
 import {
+  BN,
   ecsign,
   ecrecover,
   privateToPublic,
@@ -21,34 +21,40 @@ const ecprivkey = Buffer.from(
 )
 const chainId = 3 // ropsten
 
-describe('ecsign', function() {
-  it('should produce a signature', function() {
+tape('ecsign', function(t) {
+  t.test('should produce a signature', function(st) {
     const sig = ecsign(echash, ecprivkey)
-    assert.deepEqual(
-      sig.r,
-      Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+    st.ok(
+      sig.r.equals(
+        Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+      )
     )
-    assert.deepEqual(
-      sig.s,
-      Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+    st.ok(
+      sig.s.equals(
+        Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+      )
     )
-    assert.equal(sig.v, 27)
+    st.equal(sig.v, 27)
+    st.end()
   })
 
-  it('should produce a signature for Ropsten testnet', function() {
+  t.test('should produce a signature for Ropsten testnet', function(st) {
     const sig = ecsign(echash, ecprivkey, chainId)
-    assert.deepEqual(
-      sig.r,
-      Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+    st.ok(
+      sig.r.equals(
+        Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+      )
     )
-    assert.deepEqual(
-      sig.s,
-      Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+    st.ok(
+      sig.s.equals(
+        Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+      )
     )
-    assert.equal(sig.v, 41)
+    st.equal(sig.v, 41)
+    st.end()
   })
 
-  it('should produce a signature for chainId=150', function() {
+  t.test('should produce a signature for chainId=150', function(st) {
     const expectedSigR = Buffer.from(
       '99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9',
       'hex'
@@ -60,103 +66,114 @@ describe('ecsign', function() {
     const expectedSigV = Buffer.from('014f', 'hex')
 
     const sig = ecsign(echash, ecprivkey, 150)
-    assert.deepEqual(sig.r, expectedSigR)
-    assert.deepEqual(sig.s, expectedSigS)
-    assert.equal(sig.v, 150 * 2 + 35)
+    st.ok(sig.r.equals(expectedSigR))
+    st.ok(sig.s.equals(expectedSigS))
+    st.equal(sig.v, 150 * 2 + 35)
 
     let sigBuffer = ecsign(echash, ecprivkey, new BN(150))
-    assert.deepEqual(sigBuffer.r, expectedSigR)
-    assert.deepEqual(sigBuffer.s, expectedSigS)
-    assert.deepEqual(sigBuffer.v, expectedSigV)
+    st.ok(sigBuffer.r.equals(expectedSigR))
+    st.ok(sigBuffer.s.equals(expectedSigS))
+    st.ok(sigBuffer.v.equals(expectedSigV))
 
     sigBuffer = ecsign(echash, ecprivkey, Buffer.from([150]))
-    assert.deepEqual(sigBuffer.v, expectedSigV)
+    st.ok(sigBuffer.v.equals(expectedSigV))
 
     sigBuffer = ecsign(echash, ecprivkey, '0x96')
-    assert.deepEqual(sigBuffer.v, expectedSigV)
+    st.ok(sigBuffer.v.equals(expectedSigV))
 
-    assert.throws(function() {
+    st.throws(function() {
       ecsign(echash, ecprivkey, '96')
     })
+    st.end()
   })
+
+  t.test(
+    'should produce a signature for a high number chainId greater than MAX_SAFE_INTEGER',
+    function(st) {
+      const chainIDBuffer = Buffer.from('796f6c6f763378', 'hex')
+      const expectedSigR = Buffer.from(
+        '99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9',
+        'hex'
+      )
+      const expectedSigS = Buffer.from(
+        '129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66',
+        'hex'
+      )
+      const expectedSigV = Buffer.from('f2ded8deec6713', 'hex')
+
+      let sigBuffer = ecsign(echash, ecprivkey, new BN(chainIDBuffer))
+      st.ok(sigBuffer.r.equals(expectedSigR))
+      st.ok(sigBuffer.s.equals(expectedSigS))
+      st.ok(sigBuffer.v.equals(expectedSigV))
+
+      sigBuffer = ecsign(echash, ecprivkey, chainIDBuffer)
+      st.ok(sigBuffer.v.equals(expectedSigV))
+
+      sigBuffer = ecsign(echash, ecprivkey, '0x' + chainIDBuffer.toString('hex'))
+      st.ok(sigBuffer.v.equals(expectedSigV))
+
+      const chainIDNumber = parseInt(chainIDBuffer.toString('hex'), 16)
+      st.throws(() => {
+        // If we would use a number for the `chainId` parameter then it should throw.
+        // (The numbers are too high to perform arithmetic on)
+        ecsign(echash, ecprivkey, chainIDNumber)
+      })
+      st.end()
+    }
+  )
 })
 
-it('should produce a signature for a high number chainId greater than MAX_SAFE_INTEGER', function() {
-  const chainIDBuffer = Buffer.from('796f6c6f763378', 'hex')
-  const expectedSigR = Buffer.from(
-    '99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9',
-    'hex'
-  )
-  const expectedSigS = Buffer.from(
-    '129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66',
-    'hex'
-  )
-  const expectedSigV = Buffer.from('f2ded8deec6713', 'hex')
-
-  let sigBuffer = ecsign(echash, ecprivkey, new BN(chainIDBuffer))
-  assert.deepEqual(sigBuffer.r, expectedSigR)
-  assert.deepEqual(sigBuffer.s, expectedSigS)
-  assert.deepEqual(sigBuffer.v, expectedSigV)
-
-  sigBuffer = ecsign(echash, ecprivkey, chainIDBuffer)
-  assert.deepEqual(sigBuffer.v, expectedSigV)
-
-  sigBuffer = ecsign(echash, ecprivkey, '0x' + chainIDBuffer.toString('hex'))
-  assert.deepEqual(sigBuffer.v, expectedSigV)
-
-  const chainIDNumber = parseInt(chainIDBuffer.toString('hex'), 16)
-  assert.throws(() => {
-    // If we would use a number for the `chainId` parameter then it should throw.
-    // (The numbers are too high to perform arithmetic on)
-    ecsign(echash, ecprivkey, chainIDNumber)
-  })
-})
-
-describe('ecrecover', function() {
-  it('should recover a public key', function() {
+tape('ecrecover', function(t) {
+  t.test('should recover a public key', function(st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     const v = 27
     const pubkey = ecrecover(echash, v, r, s)
-    assert.deepEqual(pubkey, privateToPublic(ecprivkey))
+    st.ok(pubkey.equals(privateToPublic(ecprivkey)))
+    st.end()
   })
-  it('should recover a public key (chainId = 3)', function() {
+  t.test('should recover a public key (chainId = 3)', function(st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     const v = 41
     const pubkey = ecrecover(echash, v, r, s, chainId)
-    assert.deepEqual(pubkey, privateToPublic(ecprivkey))
+    st.ok(pubkey.equals(privateToPublic(ecprivkey)))
+    st.end()
   })
-  it('should recover a public key (chainId = 150)', function() {
+  t.test('should recover a public key (chainId = 150)', function(st) {
     const chainId = 150
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     const v = chainId * 2 + 35
     const pubkey = ecrecover(echash, v, r, s, chainId)
-    assert.deepEqual(pubkey, privateToPublic(ecprivkey))
+    st.ok(pubkey.equals(privateToPublic(ecprivkey)))
+    st.end()
   })
-  it('should fail on an invalid signature (v = 21)', function() {
+  t.test('should fail on an invalid signature (v = 21)', function(st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    assert.throws(function() {
+    st.throws(function() {
       ecrecover(echash, 21, r, s)
     })
+    st.end()
   })
-  it('should fail on an invalid signature (v = 29)', function() {
+  t.test('should fail on an invalid signature (v = 29)', function(st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    assert.throws(function() {
+    st.throws(function() {
       ecrecover(echash, 29, r, s)
     })
+    st.end()
   })
-  it('should fail on an invalid signature (swapped points)', function() {
+  t.test('should fail on an invalid signature (swapped points)', function(st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    assert.throws(function() {
+    st.throws(function() {
       ecrecover(echash, 27, s, r)
     })
+    st.end()
   })
-  it('should return the right sender when using very high chain id / v values', function() {
+  t.test('should return the right sender when using very high chain id / v values', function(st) {
     // This data is from a transaction of the YoloV3 network, block 77, txhash c6121a23ca17b8ff70d4706c7d134920c1da43c8329444c96b4c63a55af1c760
     /*
       {
@@ -186,74 +203,82 @@ describe('ecrecover', function() {
     const vBuffer = Buffer.from('f2ded8deec6714', 'hex')
     const chainIDBuffer = Buffer.from('796f6c6f763378', 'hex')
     let sender = ecrecover(msgHash, vBuffer, r, s, chainIDBuffer)
-    assert.ok(sender.equals(senderPubKey), 'sender pubkey correct (Buffer)')
+    st.ok(sender.equals(senderPubKey), 'sender pubkey correct (Buffer)')
 
     const vBN = new BN(vBuffer)
     const chainIDBN = new BN(chainIDBuffer)
     sender = ecrecover(msgHash, vBN, r, s, chainIDBN)
-    assert.ok(sender.equals(senderPubKey), 'sender pubkey correct (BN)')
+    st.ok(sender.equals(senderPubKey), 'sender pubkey correct (BN)')
 
     const vHexString = '0xf2ded8deec6714'
     const chainIDHexString = '0x796f6c6f763378'
     sender = ecrecover(msgHash, vHexString, r, s, chainIDHexString)
-    assert.ok(sender.equals(senderPubKey), 'sender pubkey correct (HexString)')
+    st.ok(sender.equals(senderPubKey), 'sender pubkey correct (HexString)')
 
-    assert.throws(function() {
+    st.throws(function() {
       ecrecover(msgHash, 'f2ded8deec6714', r, s, chainIDHexString)
     })
-    assert.throws(function() {
+    st.throws(function() {
       ecrecover(msgHash, vHexString, r, s, '796f6c6f763378')
     })
 
     const chainIDNumber = parseInt(chainIDBuffer.toString('hex'), 16)
     const vNumber = parseInt(vBuffer.toString('hex'), 16)
-    assert.throws(() => {
+    st.throws(() => {
       // If we would use numbers for the `v` and `chainId` parameters, then it should throw.
       // (The numbers are too high to perform arithmetic on)
       ecrecover(msgHash, vNumber, r, s, chainIDNumber)
     })
+    st.end()
   })
 })
 
-describe('hashPersonalMessage', function() {
-  it('should produce a deterministic hash', function() {
+tape('hashPersonalMessage', function(t) {
+  t.test('should produce a deterministic hash', function(st) {
     const h = hashPersonalMessage(Buffer.from('Hello world'))
-    assert.deepEqual(
-      h,
-      Buffer.from('8144a6fa26be252b86456491fbcd43c1de7e022241845ffea1c3df066f7cfede', 'hex')
+    st.ok(
+      h.equals(
+        Buffer.from('8144a6fa26be252b86456491fbcd43c1de7e022241845ffea1c3df066f7cfede', 'hex')
+      )
     )
+    st.end()
   })
-  it('should throw if input is not a buffer', function() {
+  t.test('should throw if input is not a buffer', function(st) {
     try {
       hashPersonalMessage((<unknown>[0, 1, 2, 3, 4]) as Buffer)
     } catch (err) {
-      assert(err.message.includes('This method only supports Buffer'))
+      st.ok(err.message.includes('This method only supports Buffer'))
     }
+    st.end()
   })
 })
 
-describe('isValidSignature', function() {
-  it('should fail on an invalid signature (shorter r))', function() {
+tape('isValidSignature', function(t) {
+  t.test('should fail on an invalid signature (shorter r))', function(st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1ab', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    assert.equal(isValidSignature(27, r, s), false)
+    st.notOk(isValidSignature(27, r, s))
+    st.end()
   })
-  it('should fail on an invalid signature (shorter s))', function() {
+  t.test('should fail on an invalid signature (shorter s))', function(st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca', 'hex')
-    assert.equal(isValidSignature(27, r, s), false)
+    st.notOk(isValidSignature(27, r, s))
+    st.end()
   })
-  it('should fail on an invalid signature (v = 21)', function() {
+  t.test('should fail on an invalid signature (v = 21)', function(st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    assert.equal(isValidSignature(21, r, s), false)
+    st.notOk(isValidSignature(21, r, s))
+    st.end()
   })
-  it('should fail on an invalid signature (v = 29)', function() {
+  t.test('should fail on an invalid signature (v = 29)', function(st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    assert.equal(isValidSignature(29, r, s), false)
+    st.notOk(isValidSignature(29, r, s))
+    st.end()
   })
-  it('should fail when on homestead and s > secp256k1n/2', function() {
+  t.test('should fail when on homestead and s > secp256k1n/2', function(st) {
     const SECP256K1_N_DIV_2 = new BN(
       '7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
       16
@@ -263,9 +288,10 @@ describe('isValidSignature', function() {
     const s = Buffer.from(SECP256K1_N_DIV_2.add(new BN('1', 16)).toString(16), 'hex')
 
     const v = 27
-    assert.equal(isValidSignature(v, r, s, true), false)
+    st.notOk(isValidSignature(v, r, s, true))
+    st.end()
   })
-  it('should not fail when not on homestead but s > secp256k1n/2', function() {
+  t.test('should not fail when not on homestead but s > secp256k1n/2', function(st) {
     const SECP256K1_N_DIV_2 = new BN(
       '7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
       16
@@ -275,93 +301,97 @@ describe('isValidSignature', function() {
     const s = Buffer.from(SECP256K1_N_DIV_2.add(new BN('1', 16)).toString(16), 'hex')
 
     const v = 27
-    assert.equal(isValidSignature(v, r, s, false), true)
+    st.ok(isValidSignature(v, r, s, false))
+    st.end()
   })
-  it('should work otherwise', function() {
+  t.test('should work otherwise', function(st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     const v = 27
-    assert.equal(isValidSignature(v, r, s), true)
+    st.ok(isValidSignature(v, r, s))
+    st.end()
   })
-  it('should work otherwise(chainId=3)', function() {
+  t.test('should work otherwise (chainId=3)', function(st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     const v = 41
-    assert.equal(isValidSignature(v, r, s, false, chainId), true)
+    st.ok(isValidSignature(v, r, s, false, chainId))
+    st.end()
   })
-  it('should work otherwise(chainId=150)', function() {
+  t.test('should work otherwise (chainId=150)', function(st) {
     const chainId = 150
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     const v = chainId * 2 + 35
-    assert.equal(isValidSignature(v, r, s, false, chainId), true)
-    assert.equal(isValidSignature(intToBuffer(v), r, s, false, intToBuffer(chainId)), true)
-    assert.equal(isValidSignature(new BN(v), r, s, false, new BN(chainId)), true)
-    assert.equal(
+    st.ok(isValidSignature(v, r, s, false, chainId))
+    st.ok(isValidSignature(intToBuffer(v), r, s, false, intToBuffer(chainId)))
+    st.ok(isValidSignature(new BN(v), r, s, false, new BN(chainId)))
+    st.ok(
       isValidSignature(
         '0x' + intToBuffer(v).toString('hex'),
         r,
         s,
         false,
         '0x' + intToBuffer(chainId).toString('hex')
-      ),
-      true
+      )
     )
+    st.end()
   })
-  it('should work otherwise(chainId larger than MAX_INTEGER)', function() {
+  t.test('should work otherwise (chainId larger than MAX_INTEGER)', function(st) {
     const r = Buffer.from('ec212841e0b7aaffc3b3e33a08adf32fa07159e856ef23db85175a4f6d71dc0f', 'hex')
     const s = Buffer.from('4b8e02b96b94064a5aa2f8d72bd0040616ba8e482a5dd96422e38c9a4611f8d5', 'hex')
 
     const vBuffer = Buffer.from('f2ded8deec6714', 'hex')
     const chainIDBuffer = Buffer.from('796f6c6f763378', 'hex')
-    assert.equal(isValidSignature(vBuffer, r, s, false, chainIDBuffer), true)
-    assert.equal(isValidSignature(new BN(vBuffer), r, s, false, new BN(chainIDBuffer)), true)
-    assert.equal(
+    st.ok(isValidSignature(vBuffer, r, s, false, chainIDBuffer))
+    st.ok(isValidSignature(new BN(vBuffer), r, s, false, new BN(chainIDBuffer)))
+    st.ok(
       isValidSignature(
         '0x' + vBuffer.toString('hex'),
         r,
         s,
         false,
         '0x' + chainIDBuffer.toString('hex')
-      ),
-      true
+      )
     )
 
     const chainIDNumber = parseInt(chainIDBuffer.toString('hex'), 16)
     const vNumber = parseInt(vBuffer.toString('hex'), 16)
-    assert.throws(() => {
+    st.throws(() => {
       // If we would use numbers for the `v` and `chainId` parameters, then it should throw.
       // (The numbers are too high to perform arithmetic on)
       isValidSignature(vNumber, r, s, false, chainIDNumber)
     })
+    st.end()
   })
   // FIXME: add homestead test
 })
 
-describe('message sig', function() {
+tape('message sig', function(t) {
   const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
   const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
 
-  it('should return hex strings that the RPC can use', function() {
+  t.test('should return hex strings that the RPC can use', function(st) {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca661b'
-    assert.equal(toRpcSig(27, r, s), sig)
-    assert.deepEqual(fromRpcSig(sig), {
+    st.equal(toRpcSig(27, r, s), sig)
+    st.deepEqual(fromRpcSig(sig), {
       v: 27,
       r,
       s
     })
+    st.end()
   })
 
-  it('should return hex strings that the RPC can use (chainId=150)', function() {
+  t.test('should return hex strings that the RPC can use (chainId=150)', function(st) {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66014f'
     const chainId = 150
     const v = chainId * 2 + 35
-    assert.equal(toRpcSig(v, r, s, chainId), sig)
-    assert.equal(toRpcSig(intToBuffer(v), r, s, intToBuffer(chainId)), sig)
-    assert.equal(toRpcSig(new BN(v), r, s, new BN(chainId)), sig)
-    assert.equal(
+    st.equal(toRpcSig(v, r, s, chainId), sig)
+    st.equal(toRpcSig(intToBuffer(v), r, s, intToBuffer(chainId)), sig)
+    st.equal(toRpcSig(new BN(v), r, s, new BN(chainId)), sig)
+    st.equal(
       toRpcSig(
         '0x' + intToBuffer(v).toString('hex'),
         r,
@@ -370,53 +400,61 @@ describe('message sig', function() {
       ),
       sig
     )
-    assert.deepEqual(fromRpcSig(sig), {
+    st.deepEqual(fromRpcSig(sig), {
       v,
       r,
       s
     })
+    st.end()
   })
 
-  it('should return hex strings that the RPC can use (chainId larger than MAX_SAFE_INTEGER)', function() {
-    const sig =
-      '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66f2ded8deec6714'
-    const chainIDBuffer = Buffer.from('796f6c6f763378', 'hex')
-    const vBuffer = Buffer.from('f2ded8deec6714', 'hex')
-    assert.equal(toRpcSig(vBuffer, r, s, chainIDBuffer), sig)
-    assert.equal(toRpcSig(new BN(vBuffer), r, s, new BN(chainIDBuffer)), sig)
-    assert.equal(
-      toRpcSig('0x' + vBuffer.toString('hex'), r, s, '0x' + chainIDBuffer.toString('hex')),
-      sig
-    )
+  t.test(
+    'should return hex strings that the RPC can use (chainId larger than MAX_SAFE_INTEGER)',
+    function(st) {
+      const sig =
+        '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66f2ded8deec6714'
+      const chainIDBuffer = Buffer.from('796f6c6f763378', 'hex')
+      const vBuffer = Buffer.from('f2ded8deec6714', 'hex')
+      st.equal(toRpcSig(vBuffer, r, s, chainIDBuffer), sig)
+      st.equal(toRpcSig(new BN(vBuffer), r, s, new BN(chainIDBuffer)), sig)
+      st.equal(
+        toRpcSig('0x' + vBuffer.toString('hex'), r, s, '0x' + chainIDBuffer.toString('hex')),
+        sig
+      )
 
-    const chainIDNumber = parseInt(chainIDBuffer.toString('hex'), 16)
-    const vNumber = parseInt(vBuffer.toString('hex'), 16)
-    assert.throws(function() {
-      toRpcSig(vNumber, r, s, chainIDNumber)
-    })
-  })
+      const chainIDNumber = parseInt(chainIDBuffer.toString('hex'), 16)
+      const vNumber = parseInt(vBuffer.toString('hex'), 16)
+      st.throws(function() {
+        toRpcSig(vNumber, r, s, chainIDNumber)
+      })
+      st.end()
+    }
+  )
 
-  it('should throw on shorter length', function() {
-    assert.throws(function() {
+  t.test('should throw on shorter length', function(st) {
+    st.throws(function() {
       fromRpcSig('')
     })
-    assert.throws(function() {
+    st.throws(function() {
       fromRpcSig(
         '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca'
       )
     })
+    st.end()
   })
 
-  it('pad short r and s values', function() {
-    assert.equal(
+  t.test('pad short r and s values', function(st) {
+    st.equal(
       toRpcSig(27, r.slice(20), s.slice(20)),
       '0x00000000000000000000000000000000000000004a1579cf389ef88b20a1abe90000000000000000000000000000000000000000326fa689f228040429e3ca661b'
     )
+    st.end()
   })
 
-  it('should throw on invalid v value', function() {
-    assert.throws(function() {
+  t.test('should throw on invalid v value', function(st) {
+    st.throws(function() {
       toRpcSig(1, r, s)
     })
+    st.end()
   })
 })
