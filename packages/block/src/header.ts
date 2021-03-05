@@ -13,7 +13,6 @@ import {
   toBuffer,
   unpadBuffer,
   zeros,
-  bufferToInt,
 } from 'ethereumjs-util'
 import { HeaderData, JsonHeader, BlockHeaderBuffer, Blockchain, BlockOptions } from './types'
 import {
@@ -716,7 +715,7 @@ export class BlockHeader {
     }
     const r = extraSeal.slice(0, 32)
     const s = extraSeal.slice(32, 64)
-    const v = bufferToInt(extraSeal.slice(64, 65)) + 27
+    const v = new BN(extraSeal.slice(64, 65)).addn(27)
     const pubKey = ecrecover(this.cliqueSigHash(), v, r, s)
     return Address.fromPublicKey(pubKey)
   }

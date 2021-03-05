@@ -21,7 +21,7 @@ export default function (opts: PrecompileInput): ExecResult {
 
   let publicKey
   try {
-    publicKey = ecrecover(msgHash, new BN(v).toNumber(), r, s)
+    publicKey = ecrecover(msgHash, new BN(v), r, s)
   } catch (e) {
     return {
       gasUsed,
