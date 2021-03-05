@@ -131,7 +131,7 @@ export interface TxData {
   type?: BNLike
 }
 
-export type Transaction = Transaction | AccessListEIP2930Transaction
+export type TypedTransaction = Transaction | AccessListEIP2930Transaction
 
 export type BaseTransactionData = {
   /**

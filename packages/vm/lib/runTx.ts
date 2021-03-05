@@ -1,7 +1,7 @@
 import { debug as createDebugLogger } from 'debug'
 import { Address, BN } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
-import { AccessListItem, AccessListEIP2930Transaction, Transaction } from '@ethereumjs/tx'
+import { AccessListItem, AccessListEIP2930Transaction, TypedTransaction } from '@ethereumjs/tx'
 import VM from './index'
 import Bloom from './bloom'
 import { default as EVM, EVMResult } from './evm/evm'
@@ -25,7 +25,7 @@ export interface RunTxOpts {
   /**
    * An `@ethereumjs/tx` to run
    */
-  tx: Transaction
+  tx: TypedTransaction
   /**
    * If true, skips the nonce check
    */
@@ -64,7 +64,7 @@ export interface AfterTxEvent extends RunTxResult {
   /**
    * The transaction which just got finished
    */
-  transaction: Transaction
+  transaction: TypedTransaction
 }
 
 /**
@@ -99,7 +99,11 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
   debug(`tx checkpoint`)
 
   // Is it an Access List transaction?
-  if (opts.tx.transactionType === 1 && this._common.isActivatedEIP(2929)) {
+  if (
+    'transactionType' in opts.tx &&
+    opts.tx.transactionType === 1 &&
+    this._common.isActivatedEIP(2929)
+  ) {
     if (!this._common.isActivatedEIP(2930)) {
       throw new Error('Cannot run transaction: EIP 2930 is not activated.')
     }
