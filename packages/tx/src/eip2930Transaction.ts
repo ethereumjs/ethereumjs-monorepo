@@ -220,11 +220,6 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     }
   }
 
-  getMessageToSign() {
-    const base = this.raw(true).slice(0, 8)
-    return keccak256(Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base)]))
-  }
-
   /**
    * The amount of gas paid for the data in this tx
    */
@@ -279,41 +274,9 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     return <Buffer>this.raw()
   }
 
-  /**
-   * Returns an object with the JSON representation of the transaction
-   */
-  toJSON(): JsonTx {
-    const accessListJSON = []
-
-    for (let index = 0; index < this.accessList.length; index++) {
-      const item: any = this.accessList[index]
-      const JSONItem: any = {
-        address: '0x' + setLengthLeft(<Buffer>item[0], 20).toString('hex'),
-        storageKeys: [],
-      }
-      const storageSlots: Buffer[] = item[1]
-      for (let slot = 0; slot < storageSlots.length; slot++) {
-        const storageSlot = storageSlots[slot]
-        JSONItem.storageKeys.push('0x' + setLengthLeft(storageSlot, 32).toString('hex'))
-      }
-      accessListJSON.push(JSONItem)
-    }
-
-    return {
-      chainId: bnToHex(this.chainId),
-      nonce: bnToHex(this.nonce),
-      gasPrice: bnToHex(this.gasPrice),
-      gasLimit: bnToHex(this.gasLimit),
-      to: this.to !== undefined ? this.to.toString() : undefined,
-      value: bnToHex(this.value),
-      data: '0x' + this.data.toString('hex'),
-      accessList: accessListJSON,
-    }
-  }
-
-  public isSigned(): boolean {
-    const { yParity, r, s } = this
-    return yParity !== undefined && !!r && !!s
+  getMessageToSign() {
+    const base = this.raw(true).slice(0, 8)
+    return keccak256(Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base)]))
   }
 
   public hash(): Buffer {
@@ -326,6 +289,11 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
   public getMessageToVerifySignature(): Buffer {
     return this.getMessageToSign()
+  }
+
+  public isSigned(): boolean {
+    const { yParity, r, s } = this
+    return yParity !== undefined && !!r && !!s
   }
 
   public getSenderPublicKey(): Buffer {
@@ -360,7 +328,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     }
   }
 
-  processSignature(v: number, r: Buffer, s: Buffer) {
+  _processSignature(v: number, r: Buffer, s: Buffer) {
     const opts = {
       common: this.common,
     }
@@ -381,5 +349,37 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       },
       opts
     )
+  }
+
+  /**
+   * Returns an object with the JSON representation of the transaction
+   */
+  toJSON(): JsonTx {
+    const accessListJSON = []
+
+    for (let index = 0; index < this.accessList.length; index++) {
+      const item: any = this.accessList[index]
+      const JSONItem: any = {
+        address: '0x' + setLengthLeft(<Buffer>item[0], 20).toString('hex'),
+        storageKeys: [],
+      }
+      const storageSlots: Buffer[] = item[1]
+      for (let slot = 0; slot < storageSlots.length; slot++) {
+        const storageSlot = storageSlots[slot]
+        JSONItem.storageKeys.push('0x' + setLengthLeft(storageSlot, 32).toString('hex'))
+      }
+      accessListJSON.push(JSONItem)
+    }
+
+    return {
+      chainId: bnToHex(this.chainId),
+      nonce: bnToHex(this.nonce),
+      gasPrice: bnToHex(this.gasPrice),
+      gasLimit: bnToHex(this.gasLimit),
+      to: this.to !== undefined ? this.to.toString() : undefined,
+      value: bnToHex(this.value),
+      data: '0x' + this.data.toString('hex'),
+      accessList: accessListJSON,
+    }
   }
 }

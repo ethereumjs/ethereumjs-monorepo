@@ -103,7 +103,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
       s: this.s ?? new BN(0),
     }
 
-    this.validateExceedsMaxInteger(validateCannotExceedMaxInteger)
+    this._validateExceedsMaxInteger(validateCannotExceedMaxInteger)
 
     if (this.v) {
       this._validateTxV(this.v)
@@ -115,13 +115,6 @@ export default class Transaction extends BaseTransaction<Transaction> {
     if (freeze) {
       Object.freeze(this)
     }
-  }
-
-  /**
-   * Returns the rlp encoding of the transaction.
-   */
-  serialize(): Buffer {
-    return rlp.encode(this.raw())
   }
 
   /**
@@ -142,32 +135,10 @@ export default class Transaction extends BaseTransaction<Transaction> {
   }
 
   /**
-   * Computes a sha3-256 hash of the serialized tx
+   * Returns the rlp encoding of the transaction.
    */
-  hash(): Buffer {
-    return rlphash(this.raw())
-  }
-
-  /**
-   * Returns an object with the JSON representation of the transaction
-   */
-  toJSON(): JsonTx {
-    return {
-      nonce: bnToHex(this.nonce),
-      gasPrice: bnToHex(this.gasPrice),
-      gasLimit: bnToHex(this.gasLimit),
-      to: this.to !== undefined ? this.to.toString() : undefined,
-      value: bnToHex(this.value),
-      data: '0x' + this.data.toString('hex'),
-      v: this.v !== undefined ? bnToHex(this.v) : undefined,
-      r: this.r !== undefined ? bnToHex(this.r) : undefined,
-      s: this.s !== undefined ? bnToHex(this.s) : undefined,
-    }
-  }
-
-  public isSigned(): boolean {
-    const { v, r, s } = this
-    return !!v && !!r && !!s
+  serialize(): Buffer {
+    return rlp.encode(this.raw())
   }
 
   private _unsignedTxImplementsEIP155() {
@@ -185,7 +156,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
     ]
 
     if (withEIP155) {
-      values.push(toBuffer(this.getChainId()))
+      values.push(toBuffer(this.common.chainId()))
       values.push(unpadBuffer(toBuffer(0)))
       values.push(unpadBuffer(toBuffer(0)))
     }
@@ -198,37 +169,21 @@ export default class Transaction extends BaseTransaction<Transaction> {
   }
 
   /**
-   * Process the v, r, s values from the `sign` method of the base transaction.
+   * Computes a sha3-256 hash of the serialized tx
    */
-  protected processSignature(v: number, r: Buffer, s: Buffer) {
-    if (this._unsignedTxImplementsEIP155()) {
-      v += this.getChainId() * 2 + 8
-    }
-
-    const opts = {
-      common: this.common,
-    }
-
-    return Transaction.fromTxData(
-      {
-        nonce: this.nonce,
-        gasPrice: this.gasPrice,
-        gasLimit: this.gasLimit,
-        to: this.to,
-        value: this.value,
-        data: this.data,
-        v: new BN(v),
-        r: new BN(r),
-        s: new BN(s),
-      },
-      opts
-    )
+  hash(): Buffer {
+    return rlphash(this.raw())
   }
 
   getMessageToVerifySignature() {
     const withEIP155 = this._signedTxImplementsEIP155()
 
     return this._getMessageToSign(withEIP155)
+  }
+
+  public isSigned(): boolean {
+    const { v, r, s } = this
+    return !!v && !!r && !!s
   }
 
   /**
@@ -258,10 +213,55 @@ export default class Transaction extends BaseTransaction<Transaction> {
         v,
         bnToRlp(r),
         bnToRlp(s),
-        this._signedTxImplementsEIP155() ? new BN(this.getChainId().toString()) : undefined
+        this._signedTxImplementsEIP155() ? new BN(this.common.chainId().toString()) : undefined
       )
     } catch (e) {
       throw new Error('Invalid Signature')
+    }
+  }
+
+  /**
+   * Process the v, r, s values from the `sign` method of the base transaction.
+   */
+  protected _processSignature(v: number, r: Buffer, s: Buffer) {
+    if (this._unsignedTxImplementsEIP155()) {
+      v += this.common.chainId() * 2 + 8
+    }
+
+    const opts = {
+      common: this.common,
+    }
+
+    return Transaction.fromTxData(
+      {
+        nonce: this.nonce,
+        gasPrice: this.gasPrice,
+        gasLimit: this.gasLimit,
+        to: this.to,
+        value: this.value,
+        data: this.data,
+        v: new BN(v),
+        r: new BN(r),
+        s: new BN(s),
+      },
+      opts
+    )
+  }
+
+  /**
+   * Returns an object with the JSON representation of the transaction
+   */
+  toJSON(): JsonTx {
+    return {
+      nonce: bnToHex(this.nonce),
+      gasPrice: bnToHex(this.gasPrice),
+      gasLimit: bnToHex(this.gasLimit),
+      to: this.to !== undefined ? this.to.toString() : undefined,
+      value: bnToHex(this.value),
+      data: '0x' + this.data.toString('hex'),
+      v: this.v !== undefined ? bnToHex(this.v) : undefined,
+      r: this.r !== undefined ? bnToHex(this.r) : undefined,
+      s: this.s !== undefined ? bnToHex(this.s) : undefined,
     }
   }
 
@@ -281,13 +281,13 @@ export default class Transaction extends BaseTransaction<Transaction> {
       return
     }
 
-    const chainIdDoubled = new BN(this.getChainId().toString()).imuln(2)
+    const chainIdDoubled = new BN(this.common.chainId().toString()).imuln(2)
 
     const isValidEIP155V = v.eq(chainIdDoubled.addn(35)) || v.eq(chainIdDoubled.addn(36))
 
     if (!isValidEIP155V) {
       throw new Error(
-        `Incompatible EIP155-based V ${v.toString()} and chain id ${this.getChainId()}. See the Common parameter of the Transaction constructor to set the chain id.`
+        `Incompatible EIP155-based V ${v.toString()} and chain id ${this.common.chainId()}. See the Common parameter of the Transaction constructor to set the chain id.`
       )
     }
   }
@@ -303,7 +303,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
     // If block.number >= 2,675,000 and v = CHAIN_ID * 2 + 35 or v = CHAIN_ID * 2 + 36, then when computing the hash of a transaction for purposes of signing or recovering, instead of hashing only the first six elements (i.e. nonce, gasprice, startgas, to, value, data), hash nine elements, with v replaced by CHAIN_ID, r = 0 and s = 0.
     const v = this.v!
 
-    const chainIdDoubled = new BN(this.getChainId().toString()).imuln(2)
+    const chainIdDoubled = new BN(this.common.chainId().toString()).imuln(2)
 
     const vAndChainIdMeetEIP155Conditions =
       v.eq(chainIdDoubled.addn(35)) || v.eq(chainIdDoubled.addn(36))

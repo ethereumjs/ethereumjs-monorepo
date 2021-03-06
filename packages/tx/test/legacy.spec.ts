@@ -215,7 +215,7 @@ tape('[Transaction]', function (t) {
   t.test('sign tx with chainId specified in params', function (st) {
     const common = new Common({ chain: 42, hardfork: 'petersburg' })
     let tx = Transaction.fromTxData({}, { common })
-    st.equal(tx.getChainId(), 42)
+    st.equal(tx.common.chainId(), 42)
 
     const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
     tx = tx.sign(privKey)
@@ -224,7 +224,7 @@ tape('[Transaction]', function (t) {
 
     const reTx = Transaction.fromRlpSerializedTx(serialized, { common })
     st.equal(reTx.verifySignature(), true)
-    st.equal(reTx.getChainId(), 42)
+    st.equal(reTx.common.chainId(), 42)
 
     st.end()
   })
@@ -277,7 +277,7 @@ tape('[Transaction]', function (t) {
     function (st) {
       const common = new Common({ chain: 42, hardfork: 'petersburg' })
       let tx = Transaction.fromTxData({}, { common })
-      st.equal(tx.getChainId(), 42)
+      st.equal(tx.common.chainId(), 42)
       const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
       tx = tx.sign(privKey)
       const serialized = tx.serialize()
