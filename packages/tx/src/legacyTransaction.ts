@@ -22,9 +22,6 @@ const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46
  * An Ethereum transaction.
  */
 export default class Transaction extends BaseTransaction<Transaction> {
-  public readonly v?: BN
-  public readonly r?: BN
-  public readonly s?: BN
 
   get transactionType(): number {
     return 0
@@ -90,13 +87,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * @note Transaction objects implement EIP155 by default. To disable it, pass in an `@ethereumjs/common` object set before EIP155 activation (i.e. before Spurious Dragon).
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
-    const { nonce, gasPrice, gasLimit, to, value, data, v, r, s } = txData
-
-    super({ nonce, gasPrice, gasLimit, to, value, data }, opts)
-
-    this.v = v ? new BN(toBuffer(v)) : undefined
-    this.r = r ? new BN(toBuffer(r)) : undefined
-    this.s = s ? new BN(toBuffer(s)) : undefined
+    super(txData, opts)
 
     const validateCannotExceedMaxInteger = {
       r: this.r ?? new BN(0),

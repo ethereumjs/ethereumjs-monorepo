@@ -1,7 +1,7 @@
 import Common from '@ethereumjs/common'
 import { default as Transaction } from './legacyTransaction'
 import { default as AccessListEIP2930Transaction } from './eip2930Transaction'
-import { TxOptions, TypedTransaction, TxData } from './types'
+import { TxOptions, TypedTransaction, TxData, AccessListEIP2930TxData } from './types'
 import { BN } from 'ethereumjs-util'
 
 const DEFAULT_COMMON = new Common({ chain: 'mainnet' })
@@ -15,14 +15,14 @@ export default class TransactionFactory {
    * @param txData - The transaction data. The `type` field will determine which transaction type is returned (if undefined, create a Transaction)
    * @param txOptions - Options to pass on to the constructor of the transaction
    */
-  public static fromTxData(txData: TxData, txOptions: TxOptions = {}): TypedTransaction {
+  public static fromTxData(txData: TxData | AccessListEIP2930TxData, txOptions: TxOptions = {}): TypedTransaction {
     const common = txOptions.common ?? DEFAULT_COMMON
-    if (txData.type === undefined) {
+    if (!('type' in txData) || txData.type === undefined) {
       // Assume Transaction
-      return Transaction.fromTxData(txData, txOptions)
+      return Transaction.fromTxData(<TxData>txData, txOptions)
     } else {
       const txType = new BN(txData.type).toNumber()
-      return TransactionFactory.getTransactionClass(txType, common).fromTxData(txData, txOptions)
+      return TransactionFactory.getTransactionClass(txType, common).fromTxData(<AccessListEIP2930TxData>txData, txOptions)
     }
   }
 

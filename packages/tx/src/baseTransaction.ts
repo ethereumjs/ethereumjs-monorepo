@@ -8,7 +8,7 @@ import {
   ecsign,
   publicToAddress,
 } from 'ethereumjs-util'
-import { BaseTransactionData, BaseTxOptions, JsonTx } from './types'
+import { TxData, TxOptions, JsonTx } from './types'
 
 export abstract class BaseTransaction<TransactionObject> {
   public readonly nonce: BN
@@ -23,8 +23,8 @@ export abstract class BaseTransaction<TransactionObject> {
   public readonly r?: BN
   public readonly s?: BN
 
-  constructor(txData: BaseTransactionData, txOptions: BaseTxOptions = {}) {
-    const { nonce, gasLimit, gasPrice, to, value, data } = txData
+  constructor(txData: TxData, txOptions: TxOptions = {}) {
+    const { nonce, gasLimit, gasPrice, to, value, data, v, r, s } = txData
 
     this.nonce = new BN(toBuffer(nonce))
     this.gasPrice = new BN(toBuffer(gasPrice))
@@ -32,6 +32,10 @@ export abstract class BaseTransaction<TransactionObject> {
     this.to = to ? new Address(toBuffer(to)) : undefined
     this.value = new BN(toBuffer(value))
     this.data = toBuffer(data)
+
+    this.v = v ? new BN(toBuffer(v)) : undefined
+    this.r = r ? new BN(toBuffer(r)) : undefined
+    this.s = s ? new BN(toBuffer(s)) : undefined
 
     const validateCannotExceedMaxInteger = {
       nonce: this.nonce,

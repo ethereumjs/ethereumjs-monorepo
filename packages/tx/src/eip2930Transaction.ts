@@ -14,10 +14,10 @@ import { BaseTransaction } from './baseTransaction'
 import {
   AccessList,
   AccessListBuffer,
+  AccessListEIP2930TxData,
   AccessListItem,
   isAccessList,
   JsonTx,
-  TxData,
   TxOptions,
 } from './types'
 
@@ -41,9 +41,6 @@ type EIP2930ValuesArray = [
 export default class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2930Transaction> {
   public readonly chainId: BN
   public readonly accessList: AccessListBuffer
-  public readonly v?: BN
-  public readonly r?: BN
-  public readonly s?: BN
 
   get transactionType(): number {
     return 1
@@ -67,7 +64,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     return this.v
   }
 
-  public static fromTxData(txData: TxData, opts: TxOptions = {}) {
+  public static fromTxData(txData: AccessListEIP2930TxData, opts: TxOptions = {}) {
     return new AccessListEIP2930Transaction(txData, opts)
   }
 
@@ -125,10 +122,10 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     }
   }
 
-  public constructor(txData: TxData, opts: TxOptions = {}) {
-    const { chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s } = txData
+  public constructor(txData: AccessListEIP2930TxData, opts: TxOptions = {}) {
+    const { chainId, accessList } = txData
 
-    super({ nonce, gasPrice, gasLimit, to, value, data }, opts)
+    super(txData, opts)
 
     // EIP-2718 check is done in Common
     if (!this.common.isActivatedEIP(2930)) {
@@ -176,9 +173,6 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
     this.chainId = chainId ? new BN(toBuffer(chainId)) : new BN(this.common.chainId())
     this.accessList = usedAccessList
-    this.v = v ? new BN(toBuffer(v)) : undefined
-    this.r = r ? new BN(toBuffer(r)) : undefined
-    this.s = s ? new BN(toBuffer(s)) : undefined
 
     if (!this.chainId.eq(new BN(this.common.chainId().toString()))) {
       throw new Error('The chain ID does not match the chain ID of Common')
