@@ -173,8 +173,14 @@ export abstract class BaseTransaction<TransactionObject> {
     return new Address(publicToAddress(this.getSenderPublicKey()))
   }
 
+  /**
+   * Returns the public key of the sender
+   */
   abstract getSenderPublicKey(): Buffer
 
+  /**
+   * Signs a tx and returns a new signed tx object
+   */
   sign(privateKey: Buffer): TransactionObject {
     if (privateKey.length !== 32) {
       throw new Error('Private key must be 32 bytes in length.')
@@ -189,13 +195,13 @@ export abstract class BaseTransaction<TransactionObject> {
     return this._processSignature(v, r, s)
   }
 
-  // Accept the v,r,s values from the `sign` method, and convert this into a TransactionObject
-  protected abstract _processSignature(v: number, r: Buffer, s: Buffer): TransactionObject
-
   /**
    * Returns an object with the JSON representation of the transaction
    */
   abstract toJSON(): JsonTx
+
+  // Accept the v,r,s values from the `sign` method, and convert this into a TransactionObject
+  protected abstract _processSignature(v: number, r: Buffer, s: Buffer): TransactionObject
 
   protected _validateExceedsMaxInteger(validateCannotExceedMaxInteger: { [key: string]: BN }) {
     for (const [key, value] of Object.entries(validateCannotExceedMaxInteger)) {

@@ -41,12 +41,11 @@ type EIP2930ValuesArray = [
 export default class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2930Transaction> {
   public readonly chainId: BN
   public readonly accessList: AccessListBuffer
+  public readonly AccessListJSON: AccessList
 
   get transactionType(): number {
     return 1
   }
-
-  public readonly AccessListJSON: AccessList
 
   // EIP-2930 alias for `s`
   get senderS() {
@@ -59,16 +58,22 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   }
 
   // EIP-2930 alias for `v`
-
   get yParity() {
     return this.v
   }
 
+  /**
+   * Instantiate a transaction from a data dictionary
+   */
   public static fromTxData(txData: AccessListEIP2930TxData, opts: TxOptions = {}) {
     return new AccessListEIP2930Transaction(txData, opts)
   }
 
-  // Instantiate a transaction from the serialized tx. This means that the Buffer should start with 0x01.
+  /**
+   * Instantiate a transaction from the serialized tx.
+   *
+   * Note: this means that the Buffer should start with 0x01.
+   */
   public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     if (serialized[0] !== 1) {
       throw new Error(
@@ -84,14 +89,25 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     return AccessListEIP2930Transaction.fromValuesArray(values, opts)
   }
 
-  // Instantiate a transaction from the serialized tx. This means that the Buffer should start with 0x01.
-  // Alias of fromSerializedTx
+  /**
+   * Instantiate a transaction from the serialized tx.
+   * (alias of fromSerializedTx())
+   *
+   * Note: This means that the Buffer should start with 0x01.
+   *
+   * @deprecated this constructor alias is deprecated and will be removed
+   * in favor of the from SerializedTx() constructor
+   */
   public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     return AccessListEIP2930Transaction.fromSerializedTx(serialized, opts)
   }
 
-  // Create a transaction from a values array.
-  // The format is: chainId, nonce, gasPrice, gasLimit, to, value, data, access_list, [yParity, senderR, senderS]
+  /**
+   * Create a transaction from a values array.
+   *
+   * The format is:
+   * chainId, nonce, gasPrice, gasLimit, to, value, data, access_list, yParity (v), senderR (r), senderS (s)
+   */
   public static fromValuesArray(values: (Buffer | AccessListBuffer)[], opts: TxOptions = {}) {
     if (values.length == 8 || values.length == 11) {
       const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = <
@@ -122,6 +138,10 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     }
   }
 
+  /**
+   * This constructor takes the values, validates them, assigns them and freezes the object.
+   * Use the static factory methods to assist in creating a Transaction object from varying data types.
+   */
   public constructor(txData: AccessListEIP2930TxData, opts: TxOptions = {}) {
     const { chainId, accessList } = txData
 
@@ -236,6 +256,16 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
   /**
    * Returns a Buffer Array of the raw Buffers of this transaction, in order.
+   *
+   * Note that if you want to use this function in a tx type independent way
+   * to then use the raw data output for tx instantiation with
+   * `Tx.fromValuesArray()` you should set the `asList` parameter to `true` -
+   * which is ignored on a legacy tx but provides the correct format on
+   * a typed tx.
+   *
+   * To prepare a tx to be added as block data with `Block.fromValuesArray()`
+   * just use the plain `raw()` method.
+   *
    * @param asList - By default, this method returns a concatenated Buffer
    *                 If this is not desired, then set this to `true`, to get a Buffer array.
    */
@@ -268,11 +298,17 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     return <Buffer>this.raw()
   }
 
+  /**
+   * Computes a sha3-256 hash of the serialized unsigned tx, which is used to sign the transaction.
+   */
   getMessageToSign() {
     const base = this.raw(true).slice(0, 8)
     return keccak256(Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base)]))
   }
 
+  /**
+   * Computes a sha3-256 hash of the serialized tx
+   */
   public hash(): Buffer {
     if (!this.isSigned()) {
       throw new Error('Cannot call hash method if transaction is not signed')
@@ -281,10 +317,16 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     return keccak256(this.serialize())
   }
 
+  /**
+   * Computes a sha3-256 hash which can be used to verify the signature
+   */
   public getMessageToVerifySignature(): Buffer {
     return this.getMessageToSign()
   }
 
+  /**
+   * Returns the public key of the sender
+   */
   public getSenderPublicKey(): Buffer {
     if (!this.isSigned()) {
       throw new Error('Cannot call this method if transaction is not signed')

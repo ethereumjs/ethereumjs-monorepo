@@ -19,18 +19,24 @@ import { BaseTransaction } from './baseTransaction'
 const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
 
 /**
- * An Ethereum transaction.
+ * An Ethereum non-typed (legacy) transaction
  */
 export default class Transaction extends BaseTransaction<Transaction> {
   get transactionType(): number {
     return 0
   }
 
+  /**
+   * Instantiate a transaction from a data dictionary
+   */
   public static fromTxData(txData: TxData, opts: TxOptions = {}) {
     return new Transaction(txData, opts)
   }
 
-  public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
+  /**
+   * Instantiate a transaction from the serialized tx.
+   */
+  public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     const values = rlp.decode(serialized)
 
     if (!Array.isArray(values)) {
@@ -40,11 +46,23 @@ export default class Transaction extends BaseTransaction<Transaction> {
     return this.fromValuesArray(values, opts)
   }
 
-  // alias of fromRlpSerializedTx
-  public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
-    return Transaction.fromRlpSerializedTx(serialized, opts)
+  /**
+   * Instantiate a transaction from the serialized tx.
+   * (alias of fromSerializedTx())
+   *
+   * @deprecated this constructor alias is deprecated and will be removed
+   * in favor of the from SerializedTx() constructor
+   */
+  public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
+    return Transaction.fromSerializedTx(serialized, opts)
   }
 
+  /**
+   * Create a transaction from a values array.
+   *
+   * The format is:
+   * nonce, gasPrice, gasLimit, to, value, data, v, r, s
+   */
   public static fromValuesArray(values: Buffer[], opts: TxOptions = {}) {
     if (values.length !== 6 && values.length !== 9) {
       throw new Error(
@@ -83,7 +101,9 @@ export default class Transaction extends BaseTransaction<Transaction> {
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
    * Use the static factory methods to assist in creating a Transaction object from varying data types.
-   * @note Transaction objects implement EIP155 by default. To disable it, pass in an `@ethereumjs/common` object set before EIP155 activation (i.e. before Spurious Dragon).
+   *
+   * @note Transaction objects implement EIP155 by default. To disable it, pass in an `@ethereumjs/common`
+   * object set before EIP155 activation (i.e. before Spurious Dragon).
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
     super(txData, opts)
@@ -109,6 +129,15 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
   /**
    * Returns a Buffer Array of the raw Buffers of this transaction, in order.
+   *
+   * Note that if you want to use this function in a tx type independent way
+   * to then use the raw data output for tx instantiation with
+   * `Tx.fromValuesArray()` you should set the `asList` parameter to `true` -
+   * which is ignored on a legacy tx but provides the correct format on
+   * a typed tx.
+   *
+   * To prepare a tx to be added as block data with `Block.fromValuesArray()`
+   * just use the plain `raw()` method.
    */
   raw(): Buffer[] {
     return [
@@ -154,6 +183,9 @@ export default class Transaction extends BaseTransaction<Transaction> {
     return rlphash(values)
   }
 
+  /**
+   * Computes a sha3-256 hash of the serialized unsigned tx, which is used to sign the transaction.
+   */
   getMessageToSign() {
     return this._getMessageToSign(this._unsignedTxImplementsEIP155())
   }
@@ -165,14 +197,14 @@ export default class Transaction extends BaseTransaction<Transaction> {
     return rlphash(this.raw())
   }
 
+  /**
+   * Computes a sha3-256 hash which can be used to verify the signature
+   */
   getMessageToVerifySignature() {
     const withEIP155 = this._signedTxImplementsEIP155()
     return this._getMessageToSign(withEIP155)
   }
 
-  /**
-   * Returns the public key of the sender
-   */
   /**
    * Returns the public key of the sender
    */
