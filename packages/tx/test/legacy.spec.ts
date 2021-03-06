@@ -40,12 +40,101 @@ tape('[Transaction]', function (t) {
     st.end()
   })
 
+  t.test('Initialization -> should accept lesser r values', function (st) {
+    const tx = Transaction.fromTxData({ r: new BN(toBuffer('0x0005')) })
+    st.equals(tx.r!.toString('hex'), '5')
+    st.end()
+  })
+
+  t.test(
+    'Initialization -> throws when creating a a transaction with incompatible chainid and v value',
+    function (st) {
+      const common = new Common({ chain: 42, hardfork: 'petersburg' })
+      let tx = Transaction.fromTxData({}, { common })
+      st.equal(tx.common.chainId(), 42)
+      const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
+      tx = tx.sign(privKey)
+      const serialized = tx.serialize()
+      st.throws(() => Transaction.fromRlpSerializedTx(serialized))
+      st.end()
+    }
+  )
+
+  t.test(
+    'Initialization -> throws if v is set to an EIP155-encoded value incompatible with the chain id',
+    function (st) {
+      st.throws(() => {
+        const common = new Common({ chain: 42, hardfork: 'petersburg' })
+        Transaction.fromTxData({ v: new BN(1) }, { common })
+      })
+      st.end()
+    }
+  )
+
+  t.test('validate() -> should validate with string option', function (st) {
+    transactions.forEach(function (tx) {
+      st.ok(typeof tx.validate(true)[0] === 'string')
+    })
+    st.end()
+  })
+
+  t.test('getBaseFee() -> should return base fee', function (st) {
+    const tx = Transaction.fromTxData({})
+    st.equals(tx.getBaseFee().toNumber(), 53000)
+    st.end()
+  })
+
+  t.test('getDataFee() -> should return data fee', function (st) {
+    let tx = Transaction.fromTxData({})
+    st.equals(tx.getDataFee().toNumber(), 0)
+
+    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer))
+    st.equals(tx.getDataFee().toNumber(), 1716)
+
+    st.end()
+  })
+
+  t.test('getDataFee() -> should return correct data fee for istanbul', function (st) {
+    const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+    let tx = Transaction.fromTxData({}, { common })
+    st.equals(tx.getDataFee().toNumber(), 0)
+
+    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), {
+      common,
+    })
+    st.equals(tx.getDataFee().toNumber(), 1716)
+
+    st.end()
+  })
+
+  t.test('getUpfrontCost() -> should return upfront cost', function (st) {
+    const tx = Transaction.fromTxData({
+      gasPrice: 1000,
+      gasLimit: 10000000,
+      value: 42,
+    })
+    st.equals(tx.getUpfrontCost().toNumber(), 10000000042)
+    st.end()
+  })
+
   t.test('serialize()', function (st) {
     transactions.forEach(function (tx, i) {
       const s1 = tx.serialize()
       const s2 = rlp.encode(txFixtures[i].raw)
       st.ok(s1.equals(s2))
     })
+    st.end()
+  })
+
+  t.test('serialize() -> should round trip decode a tx', function (st) {
+    const tx = Transaction.fromTxData({ value: 5000 })
+    const s1 = tx.serialize()
+
+    const s1Rlp = toBuffer('0x' + s1.toString('hex'))
+    const tx2 = Transaction.fromRlpSerializedTx(s1Rlp)
+    const s2 = tx2.serialize()
+
+    st.ok(s1.equals(s2))
     st.end()
   })
 
@@ -89,104 +178,82 @@ tape('[Transaction]', function (t) {
     st.end()
   })
 
-  t.test('should validate with string option', function (st) {
-    transactions.forEach(function (tx) {
-      st.ok(typeof tx.validate(true)[0] === 'string')
-    })
-    st.end()
-  })
-
-  t.test('should round trip decode a tx', function (st) {
-    const tx = Transaction.fromTxData({ value: 5000 })
-    const s1 = tx.serialize()
-
-    const s1Rlp = toBuffer('0x' + s1.toString('hex'))
-    const tx2 = Transaction.fromRlpSerializedTx(s1Rlp)
-    const s2 = tx2.serialize()
-
-    st.ok(s1.equals(s2))
-    st.end()
-  })
-
-  t.test('should accept lesser r values', function (st) {
-    const tx = Transaction.fromTxData({ r: new BN(toBuffer('0x0005')) })
-    st.equals(tx.r!.toString('hex'), '5')
-    st.end()
-  })
-
-  t.test('should return data fee', function (st) {
-    let tx = Transaction.fromTxData({})
-    st.equals(tx.getDataFee().toNumber(), 0)
-
-    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer))
-    st.equals(tx.getDataFee().toNumber(), 1716)
-
-    st.end()
-  })
-
-  t.test('should return base fee', function (st) {
-    const tx = Transaction.fromTxData({})
-    st.equals(tx.getBaseFee().toNumber(), 53000)
-    st.end()
-  })
-
-  t.test('should return upfront cost', function (st) {
-    const tx = Transaction.fromTxData({
-      gasPrice: 1000,
-      gasLimit: 10000000,
-      value: 42,
-    })
-    st.equals(tx.getUpfrontCost().toNumber(), 10000000042)
-    st.end()
-  })
-
-  t.test("Verify EIP155 Signature based on Vitalik's tests", function (st) {
-    txFixturesEip155.forEach(function (tx) {
-      const pt = Transaction.fromRlpSerializedTx(toBuffer(tx.rlp))
-      st.equal(pt.getMessageToSign().toString('hex'), tx.hash)
-      st.equal('0x' + pt.serialize().toString('hex'), tx.rlp)
-      st.equal(pt.getSenderAddress().toString(), '0x' + tx.sender)
-    })
-    st.end()
-  })
-
-  t.test('Verify EIP155 Signature before and after signing with private key', function (st) {
-    // Inputs and expected results for this test are taken directly from the example in https://eips.ethereum.org/EIPS/eip-155
-    const txRaw = [
-      '0x09',
-      '0x4a817c800',
-      '0x5208',
-      '0x3535353535353535353535353535353535353535',
-      '0x0de0b6b3a7640000',
-      '0x',
-    ]
-    const privateKey = Buffer.from(
-      '4646464646464646464646464646464646464646464646464646464646464646',
-      'hex'
-    )
-    const pt = Transaction.fromValuesArray(txRaw.map(toBuffer))
-
-    // Note that Vitalik's example has a very similar value denoted "signing data".
-    // It's not the output of `serialize()`, but the pre-image of the hash returned by `tx.hash(false)`.
-    // We don't have a getter for such a value in Transaction.
-    st.equal(
-      pt.serialize().toString('hex'),
-      'ec098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a764000080808080'
-    )
-    const signedTx = pt.sign(privateKey)
-    st.equal(
-      signedTx.getMessageToSign().toString('hex'),
-      'daf5a779ae972f972197303d7b574746c7ef83eadac0f2791ad23db92e4c8e53'
-    )
-    st.equal(
-      signedTx.serialize().toString('hex'),
-      'f86c098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a76400008025a028ef61340bd939bc2195fe537567866003e1a15d3c71ff63e1590620aa636276a067cbe9d8997f761aecb703304b3800ccf555c9f3dc64214b297fb1966a3b6d83'
-    )
-    st.end()
-  })
+  t.test(
+    "getMessageToSign(), getSenderPublicKey() (implicit call) -> verify EIP155 signature based on Vitalik's tests",
+    function (st) {
+      txFixturesEip155.forEach(function (tx) {
+        const pt = Transaction.fromRlpSerializedTx(toBuffer(tx.rlp))
+        st.equal(pt.getMessageToSign().toString('hex'), tx.hash)
+        st.equal('0x' + pt.serialize().toString('hex'), tx.rlp)
+        st.equal(pt.getSenderAddress().toString(), '0x' + tx.sender)
+      })
+      st.end()
+    }
+  )
 
   t.test(
-    'Serialize correctly after being signed with EIP155 Signature for tx created on ropsten',
+    'getMessageToSign(), sign(), getSenderPublicKey() (implicit call) -> verify EIP155 signature before and after signing',
+    function (st) {
+      // Inputs and expected results for this test are taken directly from the example in https://eips.ethereum.org/EIPS/eip-155
+      const txRaw = [
+        '0x09',
+        '0x4a817c800',
+        '0x5208',
+        '0x3535353535353535353535353535353535353535',
+        '0x0de0b6b3a7640000',
+        '0x',
+      ]
+      const privateKey = Buffer.from(
+        '4646464646464646464646464646464646464646464646464646464646464646',
+        'hex'
+      )
+      const pt = Transaction.fromValuesArray(txRaw.map(toBuffer))
+
+      // Note that Vitalik's example has a very similar value denoted "signing data".
+      // It's not the output of `serialize()`, but the pre-image of the hash returned by `tx.hash(false)`.
+      // We don't have a getter for such a value in Transaction.
+      st.equal(
+        pt.serialize().toString('hex'),
+        'ec098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a764000080808080'
+      )
+      const signedTx = pt.sign(privateKey)
+      st.equal(
+        signedTx.getMessageToSign().toString('hex'),
+        'daf5a779ae972f972197303d7b574746c7ef83eadac0f2791ad23db92e4c8e53'
+      )
+      st.equal(
+        signedTx.serialize().toString('hex'),
+        'f86c098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a76400008025a028ef61340bd939bc2195fe537567866003e1a15d3c71ff63e1590620aa636276a067cbe9d8997f761aecb703304b3800ccf555c9f3dc64214b297fb1966a3b6d83'
+      )
+      st.end()
+    }
+  )
+
+  t.test(
+    'sign(), getSenderPublicKey() (implicit call) -> EIP155 hashing when singing',
+    function (st) {
+      const common = new Common({ chain: 1, hardfork: 'petersburg' })
+      txFixtures.slice(0, 3).forEach(function (txData) {
+        const tx = Transaction.fromValuesArray(txData.raw.slice(0, 6).map(toBuffer), {
+          common,
+        })
+
+        const privKey = Buffer.from(txData.privateKey, 'hex')
+        const txSigned = tx.sign(privKey)
+
+        st.equal(
+          txSigned.getSenderAddress().toString(),
+          '0x' + txData.sendersAddress,
+          "computed sender address should equal the fixture's one"
+        )
+      })
+
+      st.end()
+    }
+  )
+
+  t.test(
+    'sign(), serialize(): serialize correctly after being signed with EIP155 Signature for tx created on ropsten',
     function (st) {
       const txRaw = [
         '0x1',
@@ -212,113 +279,8 @@ tape('[Transaction]', function (t) {
     }
   )
 
-  t.test('sign tx with chainId specified in params', function (st) {
-    const common = new Common({ chain: 42, hardfork: 'petersburg' })
-    let tx = Transaction.fromTxData({}, { common })
-    st.equal(tx.common.chainId(), 42)
-
-    const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
-    tx = tx.sign(privKey)
-
-    const serialized = tx.serialize()
-
-    const reTx = Transaction.fromRlpSerializedTx(serialized, { common })
-    st.equal(reTx.verifySignature(), true)
-    st.equal(reTx.common.chainId(), 42)
-
-    st.end()
-  })
-
-  t.test('returns correct values for isSigned', function (st) {
-    let tx = Transaction.fromTxData({})
-    st.notOk(tx.isSigned())
-
-    const txData: TxData = {
-      data: '0x7cf5dab00000000000000000000000000000000000000000000000000000000000000005',
-      gasLimit: '0x15f90',
-      gasPrice: '0x1',
-      nonce: '0x01',
-      to: '0xd9024df085d09398ec76fbed18cac0e1149f50dc',
-      value: '0x0',
-    }
-    const privateKey = Buffer.from(
-      '4646464646464646464646464646464646464646464646464646464646464646',
-      'hex'
-    )
-    tx = Transaction.fromTxData(txData)
-    st.notOk(tx.isSigned())
-    tx = tx.sign(privateKey)
-    st.ok(tx.isSigned())
-
-    tx = Transaction.fromTxData(txData)
-    st.notOk(tx.isSigned())
-    const rawUnsigned = tx.serialize()
-    tx = tx.sign(privateKey)
-    const rawSigned = tx.serialize()
-    st.ok(tx.isSigned())
-
-    tx = Transaction.fromRlpSerializedTx(rawUnsigned)
-    st.notOk(tx.isSigned())
-    tx = tx.sign(privateKey)
-    st.ok(tx.isSigned())
-    tx = Transaction.fromRlpSerializedTx(rawSigned)
-    st.ok(tx.isSigned())
-
-    const signedValues = (rlp.decode(rawSigned) as any) as Buffer[]
-    tx = Transaction.fromValuesArray(signedValues)
-    st.ok(tx.isSigned())
-    tx = Transaction.fromValuesArray(signedValues.slice(0, 6))
-    st.notOk(tx.isSigned())
-    st.end()
-  })
-
   t.test(
-    'throws when creating a a transaction with incompatible chainid and v value',
-    function (st) {
-      const common = new Common({ chain: 42, hardfork: 'petersburg' })
-      let tx = Transaction.fromTxData({}, { common })
-      st.equal(tx.common.chainId(), 42)
-      const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
-      tx = tx.sign(privKey)
-      const serialized = tx.serialize()
-      st.throws(() => Transaction.fromRlpSerializedTx(serialized))
-      st.end()
-    }
-  )
-
-  t.test(
-    'Throws if v is set to an EIP155-encoded value incompatible with the chain id',
-    function (st) {
-      st.throws(() => {
-        const common = new Common({ chain: 42, hardfork: 'petersburg' })
-        Transaction.fromTxData({ v: new BN(1) }, { common })
-      })
-      st.end()
-    }
-  )
-
-  t.test('EIP155 hashing when singing', function (st) {
-    const common = new Common({ chain: 1, hardfork: 'petersburg' })
-    txFixtures.slice(0, 3).forEach(function (txData) {
-      const tx = Transaction.fromValuesArray(txData.raw.slice(0, 6).map(toBuffer), {
-        common,
-      })
-
-      const privKey = Buffer.from(txData.privateKey, 'hex')
-      const txSigned = tx.sign(privKey)
-
-      st.equal(
-        txSigned.getSenderAddress().toString(),
-        '0x' + txData.sendersAddress,
-        "computed sender address should equal the fixture's one"
-      )
-    })
-
-    st.end()
-  })
-
-  t.test(
-    'Should ignore any previous signature when decided if EIP155 should be used in a new one',
+    'sign(), verifySignature(): should ignore any previous signature when decided if EIP155 should be used in a new one',
     function (st) {
       const txData: TxData = {
         data: '0x7cf5dab00000000000000000000000000000000000000000000000000000000000000005',
@@ -387,16 +349,63 @@ tape('[Transaction]', function (t) {
     }
   )
 
-  t.test('should return correct data fee for istanbul', function (st) {
-    const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+  t.test('sign(), verifySignature(): sign tx with chainId specified in params', function (st) {
+    const common = new Common({ chain: 42, hardfork: 'petersburg' })
     let tx = Transaction.fromTxData({}, { common })
-    st.equals(tx.getDataFee().toNumber(), 0)
+    st.equal(tx.common.chainId(), 42)
 
-    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), {
-      common,
-    })
-    st.equals(tx.getDataFee().toNumber(), 1716)
+    const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
+    tx = tx.sign(privKey)
 
+    const serialized = tx.serialize()
+
+    const reTx = Transaction.fromRlpSerializedTx(serialized, { common })
+    st.equal(reTx.verifySignature(), true)
+    st.equal(reTx.common.chainId(), 42)
+
+    st.end()
+  })
+
+  t.test('isSigned() -> returns correct values', function (st) {
+    let tx = Transaction.fromTxData({})
+    st.notOk(tx.isSigned())
+
+    const txData: TxData = {
+      data: '0x7cf5dab00000000000000000000000000000000000000000000000000000000000000005',
+      gasLimit: '0x15f90',
+      gasPrice: '0x1',
+      nonce: '0x01',
+      to: '0xd9024df085d09398ec76fbed18cac0e1149f50dc',
+      value: '0x0',
+    }
+    const privateKey = Buffer.from(
+      '4646464646464646464646464646464646464646464646464646464646464646',
+      'hex'
+    )
+    tx = Transaction.fromTxData(txData)
+    st.notOk(tx.isSigned())
+    tx = tx.sign(privateKey)
+    st.ok(tx.isSigned())
+
+    tx = Transaction.fromTxData(txData)
+    st.notOk(tx.isSigned())
+    const rawUnsigned = tx.serialize()
+    tx = tx.sign(privateKey)
+    const rawSigned = tx.serialize()
+    st.ok(tx.isSigned())
+
+    tx = Transaction.fromRlpSerializedTx(rawUnsigned)
+    st.notOk(tx.isSigned())
+    tx = tx.sign(privateKey)
+    st.ok(tx.isSigned())
+    tx = Transaction.fromRlpSerializedTx(rawSigned)
+    st.ok(tx.isSigned())
+
+    const signedValues = (rlp.decode(rawSigned) as any) as Buffer[]
+    tx = Transaction.fromValuesArray(signedValues)
+    st.ok(tx.isSigned())
+    tx = Transaction.fromValuesArray(signedValues.slice(0, 6))
+    st.notOk(tx.isSigned())
     st.end()
   })
 })
