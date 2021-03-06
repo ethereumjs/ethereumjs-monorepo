@@ -148,7 +148,10 @@ export abstract class BaseTransaction<TransactionObject> {
 
   abstract getMessageToVerifySignature(): Buffer
 
-  abstract isSigned(): boolean
+  public isSigned(): boolean {
+    const { v, r, s } = this
+    return !!v && !!r && !!s
+  }
 
   /**
    * Determines if the signature is valid

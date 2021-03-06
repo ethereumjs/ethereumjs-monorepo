@@ -22,7 +22,6 @@ const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46
  * An Ethereum transaction.
  */
 export default class Transaction extends BaseTransaction<Transaction> {
-
   get transactionType(): number {
     return 0
   }
@@ -169,11 +168,6 @@ export default class Transaction extends BaseTransaction<Transaction> {
   getMessageToVerifySignature() {
     const withEIP155 = this._signedTxImplementsEIP155()
     return this._getMessageToSign(withEIP155)
-  }
-
-  public isSigned(): boolean {
-    const { v, r, s } = this
-    return !!v && !!r && !!s
   }
 
   /**

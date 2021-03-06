@@ -94,17 +94,17 @@ export type TxData = {
   /**
    * EC recovery ID.
    */
-   v?: BNLike
+  v?: BNLike
 
-   /**
-    * EC signature parameter.
-    */
-   r?: BNLike
- 
-   /**
-    * EC signature parameter.
-    */
-   s?: BNLike
+  /**
+   * EC signature parameter.
+   */
+  r?: BNLike
+
+  /**
+   * EC signature parameter.
+   */
+  s?: BNLike
 }
 
 /**

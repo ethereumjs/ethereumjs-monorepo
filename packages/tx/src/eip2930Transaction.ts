@@ -285,11 +285,6 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     return this.getMessageToSign()
   }
 
-  public isSigned(): boolean {
-    const { yParity, r, s } = this
-    return yParity !== undefined && !!r && !!s
-  }
-
   public getSenderPublicKey(): Buffer {
     if (!this.isSigned()) {
       throw new Error('Cannot call this method if transaction is not signed')
