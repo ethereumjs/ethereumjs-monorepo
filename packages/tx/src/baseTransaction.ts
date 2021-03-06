@@ -19,6 +19,10 @@ export abstract class BaseTransaction<TransactionObject> {
   public readonly data: Buffer
   public readonly common: Common
 
+  public readonly v?: BN
+  public readonly r?: BN
+  public readonly s?: BN
+
   constructor(txData: BaseTransactionData, txOptions: BaseTxOptions = {}) {
     const { nonce, gasLimit, gasPrice, to, value, data } = txData
 
@@ -134,13 +138,11 @@ export abstract class BaseTransaction<TransactionObject> {
   /**
    * Computes a sha3-256 hash of the serialized unsigned tx, which is used to sign the transaction.
    */
-  rawTxHash(): Buffer {
-    return this.getMessageToSign()
-  }
-
   abstract getMessageToSign(): Buffer
 
   abstract hash(): Buffer
+
+  abstract getMessageToVerifySignature(): Buffer
 
   abstract isSigned(): boolean
 
@@ -157,14 +159,13 @@ export abstract class BaseTransaction<TransactionObject> {
     }
   }
 
-  abstract getMessageToVerifySignature(): Buffer
-
   /**
    * Returns the sender's address
    */
   getSenderAddress(): Address {
     return new Address(publicToAddress(this.getSenderPublicKey()))
   }
+
   abstract getSenderPublicKey(): Buffer
 
   sign(privateKey: Buffer): TransactionObject {

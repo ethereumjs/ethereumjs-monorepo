@@ -177,7 +177,6 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
   getMessageToVerifySignature() {
     const withEIP155 = this._signedTxImplementsEIP155()
-
     return this._getMessageToSign(withEIP155)
   }
 
