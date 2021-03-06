@@ -38,6 +38,12 @@ type EIP2930ValuesArray = [
   Buffer?
 ]
 
+/**
+ * Typed transaction with optional access lists
+ *
+ * - TransactionType: 1
+ * - EIP: [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930)
+ */
 export default class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2930Transaction> {
   public readonly chainId: BN
   public readonly accessList: AccessListBuffer
