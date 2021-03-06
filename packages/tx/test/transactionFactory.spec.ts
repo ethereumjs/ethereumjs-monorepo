@@ -109,12 +109,4 @@ tape('[TransactionFactory]: Basic functions', function (t) {
     st.equals(eip2930Tx.constructor.name, AccessListEIP2930Transaction.name)
     st.end()
   })
-
-  t.test('if eip2718 is not activated, always return that the eip is not activated', function (st) {
-    const newCommon = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
-
-    const eip2930Active = TransactionFactory.eipSupport(newCommon, 2930)
-    st.ok(!eip2930Active)
-    st.end()
-  })
 })
