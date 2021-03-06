@@ -184,5 +184,3 @@ export interface JsonTx {
   accessList?: JsonAccessListItem[]
   type?: string
 }
-
-export const DEFAULT_COMMON = new Common({ chain: 'mainnet', hardfork: 'berlin' })

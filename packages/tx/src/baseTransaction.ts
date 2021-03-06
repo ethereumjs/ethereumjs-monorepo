@@ -8,7 +8,7 @@ import {
   ecsign,
   publicToAddress,
 } from 'ethereumjs-util'
-import { BaseTransactionData, BaseTxOptions, DEFAULT_COMMON, JsonTx } from './types'
+import { BaseTransactionData, BaseTxOptions, JsonTx } from './types'
 
 export abstract class BaseTransaction<TransactionObject> {
   public readonly nonce: BN
@@ -41,7 +41,7 @@ export abstract class BaseTransaction<TransactionObject> {
     this.common =
       (txOptions.common &&
         Object.assign(Object.create(Object.getPrototypeOf(txOptions.common)), txOptions.common)) ??
-      DEFAULT_COMMON
+      new Common({ chain: 'mainnet' })
   }
 
   protected validateExceedsMaxInteger(validateCannotExceedMaxInteger: { [key: string]: BN }) {

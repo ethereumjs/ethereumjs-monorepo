@@ -11,6 +11,15 @@ const txFixturesEip155: VitaliksTestsDataEntry[] = require('./json/ttTransaction
 tape('[Transaction]', function (t) {
   const transactions: Transaction[] = []
 
+  t.test('Initialization', function (st) {
+    const nonEIP2930Common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+    st.ok(
+      Transaction.fromTxData({}, { common: nonEIP2930Common }),
+      'should initialize on a pre-Berlin Harfork (EIP-2930 not activated)'
+    )
+    st.end()
+  })
+
   t.test('Initialization -> decode with fromValuesArray()', function (st) {
     txFixtures.slice(0, 4).forEach(function (tx: any) {
       const txData = tx.raw.map(toBuffer)

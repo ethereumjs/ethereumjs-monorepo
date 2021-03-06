@@ -19,6 +19,13 @@ const chainId = new BN(1)
 
 tape('[AccessListEIP2930Transaction]', function (t) {
   t.test('Initialization / Getter', function (t) {
+    t.ok(AccessListEIP2930Transaction.fromTxData({}, { common }), 'should initialize correctly')
+
+    const nonEIP2930Common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+    t.throws(() => {
+      AccessListEIP2930Transaction.fromTxData({}, { common: nonEIP2930Common })
+    }, 'should throw on a pre-Berlin Harfork (EIP-2930 not activated)')
+
     t.throws(() => {
       AccessListEIP2930Transaction.fromTxData(
         {
