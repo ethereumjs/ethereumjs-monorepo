@@ -31,13 +31,6 @@ export interface TxOptions {
   freeze?: boolean
 }
 
-/**
- * The options for initializing a Transaction.
- */
-export interface BaseTxOptions {
-  common?: Common
-}
-
 export type AccessListItem = {
   address: string
   storageKeys: string[]
@@ -65,15 +58,9 @@ export function isAccessList(input: AccessListBuffer | AccessList): input is Acc
   return !isAccessListBuffer(input) // This is exactly the same method, except the output is negated.
 }
 
-/**
- * An object with an optional field with each of the transaction's values.
- */
-export interface TxData {
-  /**
-   * The transaction's chain ID
-   */
-  chainId?: BNLike
+export type TypedTransaction = Transaction | AccessListEIP2930Transaction
 
+export type TxData = {
   /**
    * The transaction's nonce.
    */
@@ -118,6 +105,16 @@ export interface TxData {
    * EC signature parameter.
    */
   s?: BNLike
+}
+
+/**
+ * An object with an optional field with each of the transaction's values.
+ */
+export interface AccessListEIP2930TxData extends TxData {
+  /**
+   * The transaction's chain ID
+   */
+  chainId?: BNLike
 
   /**
    * The access list which contains the addresses/storage slots which the transaction wishes to access
@@ -129,40 +126,6 @@ export interface TxData {
    */
 
   type?: BNLike
-}
-
-export type TypedTransaction = Transaction | AccessListEIP2930Transaction
-
-export type BaseTransactionData = {
-  /**
-   * The transaction's nonce.
-   */
-  nonce?: BNLike
-
-  /**
-   * The transaction's gas price.
-   */
-  gasPrice?: BNLike
-
-  /**
-   * The transaction's gas limit.
-   */
-  gasLimit?: BNLike
-
-  /**
-   * The transaction's the address is sent to.
-   */
-  to?: AddressLike
-
-  /**
-   * The amount of Ether sent.
-   */
-  value?: BNLike
-
-  /**
-   * This will contain the data of the message or the init of a contract.
-   */
-  data?: BufferLike
 }
 
 type JsonAccessListItem = { address: string; storageKeys: string[] }
@@ -184,5 +147,3 @@ export interface JsonTx {
   accessList?: JsonAccessListItem[]
   type?: string
 }
-
-export const DEFAULT_COMMON = new Common({ chain: 'mainnet', hardfork: 'berlin' })

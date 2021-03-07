@@ -6,16 +6,19 @@ import { BaseTransaction } from '../src/baseTransaction'
 import { privateToPublic } from 'ethereumjs-util'
 
 tape('[BaseTransaction]', function (t) {
+  // EIP-2930 is not enabled in Common by default (2021-03-06)
+  const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+
   const legacyFixtures: TxsJsonEntry[] = require('./json/txs.json')
   const legacyTxs: BaseTransaction<Transaction>[] = []
   legacyFixtures.slice(0, 4).forEach(function (tx: any) {
-    legacyTxs.push(Transaction.fromTxData(tx.data))
+    legacyTxs.push(Transaction.fromTxData(tx.data, { common }))
   })
 
   const eip2930Fixtures = require('./json/eip2930txs.json')
   const eip2930Txs: BaseTransaction<AccessListEIP2930Transaction>[] = []
   eip2930Fixtures.forEach(function (tx: any) {
-    eip2930Txs.push(AccessListEIP2930Transaction.fromTxData(tx.data))
+    eip2930Txs.push(AccessListEIP2930Transaction.fromTxData(tx.data, { common }))
   })
 
   const zero = Buffer.alloc(0)
@@ -38,7 +41,7 @@ tape('[BaseTransaction]', function (t) {
 
   t.test('Initialization', function (st) {
     for (const txType of txTypes) {
-      let tx = txType.class.fromTxData({})
+      let tx = txType.class.fromTxData({}, { common })
       st.equal(
         tx.common.hardfork(),
         'berlin',
@@ -46,27 +49,27 @@ tape('[BaseTransaction]', function (t) {
       )
       st.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
 
-      const common = new Common({
+      const initCommon = new Common({
         chain: 'mainnet',
         hardfork: 'istanbul',
         eips: [2718, 2929, 2930],
       })
-      tx = txType.class.fromTxData({}, { common })
+      tx = txType.class.fromTxData({}, { common: initCommon })
       st.equal(
         tx.common.hardfork(),
         'istanbul',
         `${txType.name}: should initialize with correct HF provided`
       )
 
-      common.setHardfork('byzantium')
+      initCommon.setHardfork('byzantium')
       st.equal(
         tx.common.hardfork(),
         'istanbul',
         `${txType.name}: should stay on correct HF if outer common HF changes`
       )
 
-      tx = txType.class.fromTxData({}, { freeze: false })
-      tx = txType.class.fromTxData({}, { freeze: false })
+      tx = txType.class.fromTxData({}, { common, freeze: false })
+      tx = txType.class.fromTxData({}, { common, freeze: false })
       st.ok(
         !Object.isFrozen(tx),
         `${txType.name}: tx should not be frozen when freeze deactivated in options`
@@ -74,22 +77,22 @@ tape('[BaseTransaction]', function (t) {
 
       // Perform the same test as above, but now using a different construction method. This also implies that passing on the
       // options object works as expected.
-      tx = txType.class.fromTxData({}, { freeze: false })
+      tx = txType.class.fromTxData({}, { common, freeze: false })
       const rlpData = tx.serialize()
 
-      tx = txType.class.fromRlpSerializedTx(rlpData)
+      tx = txType.class.fromRlpSerializedTx(rlpData, { common })
       st.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
 
-      tx = txType.class.fromRlpSerializedTx(rlpData, { freeze: false })
+      tx = txType.class.fromRlpSerializedTx(rlpData, { common, freeze: false })
       st.ok(
         !Object.isFrozen(tx),
         `${txType.name}: tx should not be frozen when freeze deactivated in options`
       )
 
-      tx = txType.class.fromValuesArray(txType.values)
+      tx = txType.class.fromValuesArray(txType.values, { common })
       st.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
 
-      tx = txType.class.fromValuesArray(txType.values, { freeze: false })
+      tx = txType.class.fromValuesArray(txType.values, { common, freeze: false })
       st.ok(
         !Object.isFrozen(tx),
         `${txType.name}: tx should not be frozen when freeze deactivated in options`
@@ -102,11 +105,11 @@ tape('[BaseTransaction]', function (t) {
     for (const txType of txTypes) {
       txType.txs.forEach(function (tx: any) {
         st.ok(
-          txType.class.fromRlpSerializedTx(tx.serialize()),
+          txType.class.fromRlpSerializedTx(tx.serialize(), { common }),
           `${txType.name}: should do roundtrip serialize() -> fromRlpSerializedTx()`
         )
         st.ok(
-          txType.class.fromSerializedTx(tx.serialize()),
+          txType.class.fromSerializedTx(tx.serialize(), { common }),
           `${txType.name}: should do roundtrip serialize() -> fromRlpSerializedTx()`
         )
       })
@@ -118,7 +121,7 @@ tape('[BaseTransaction]', function (t) {
     for (const txType of txTypes) {
       txType.txs.forEach(function (tx: any) {
         st.ok(
-          txType.class.fromValuesArray(tx.raw(true)),
+          txType.class.fromValuesArray(tx.raw(true), { common }),
           `${txType.name}: should do roundtrip raw() -> fromValuesArray()`
         )
       })
@@ -140,7 +143,7 @@ tape('[BaseTransaction]', function (t) {
       txType.fixtures.slice(0, 4).forEach(function (txFixture: any) {
         // set `s` to zero
         txFixture.data.s = `0x` + '0'.repeat(16)
-        const tx = txType.class.fromTxData(txFixture.data)
+        const tx = txType.class.fromTxData(txFixture.data, { common })
         st.equals(tx.verifySignature(), false, `${txType.name}: signature should not be valid`)
         st.ok(
           (<string[]>tx.validate(true)).includes('Invalid Signature'),

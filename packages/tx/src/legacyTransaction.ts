@@ -19,22 +19,24 @@ import { BaseTransaction } from './baseTransaction'
 const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
 
 /**
- * An Ethereum transaction.
+ * An Ethereum non-typed (legacy) transaction
  */
 export default class Transaction extends BaseTransaction<Transaction> {
-  public readonly v?: BN
-  public readonly r?: BN
-  public readonly s?: BN
-
   get transactionType(): number {
     return 0
   }
 
+  /**
+   * Instantiate a transaction from a data dictionary
+   */
   public static fromTxData(txData: TxData, opts: TxOptions = {}) {
     return new Transaction(txData, opts)
   }
 
-  public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
+  /**
+   * Instantiate a transaction from the serialized tx.
+   */
+  public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     const values = rlp.decode(serialized)
 
     if (!Array.isArray(values)) {
@@ -44,11 +46,23 @@ export default class Transaction extends BaseTransaction<Transaction> {
     return this.fromValuesArray(values, opts)
   }
 
-  // alias of fromRlpSerializedTx
-  public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
-    return Transaction.fromRlpSerializedTx(serialized, opts)
+  /**
+   * Instantiate a transaction from the serialized tx.
+   * (alias of fromSerializedTx())
+   *
+   * @deprecated this constructor alias is deprecated and will be removed
+   * in favor of the from SerializedTx() constructor
+   */
+  public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
+    return Transaction.fromSerializedTx(serialized, opts)
   }
 
+  /**
+   * Create a transaction from a values array.
+   *
+   * The format is:
+   * nonce, gasPrice, gasLimit, to, value, data, v, r, s
+   */
   public static fromValuesArray(values: Buffer[], opts: TxOptions = {}) {
     if (values.length !== 6 && values.length !== 9) {
       throw new Error(
@@ -87,23 +101,19 @@ export default class Transaction extends BaseTransaction<Transaction> {
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
    * Use the static factory methods to assist in creating a Transaction object from varying data types.
-   * @note Transaction objects implement EIP155 by default. To disable it, pass in an `@ethereumjs/common` object set before EIP155 activation (i.e. before Spurious Dragon).
+   *
+   * @note Transaction objects implement EIP155 by default. To disable it, pass in an `@ethereumjs/common`
+   * object set before EIP155 activation (i.e. before Spurious Dragon).
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
-    const { nonce, gasPrice, gasLimit, to, value, data, v, r, s } = txData
-
-    super({ nonce, gasPrice, gasLimit, to, value, data }, opts)
-
-    this.v = v ? new BN(toBuffer(v)) : undefined
-    this.r = r ? new BN(toBuffer(r)) : undefined
-    this.s = s ? new BN(toBuffer(s)) : undefined
+    super(txData, opts)
 
     const validateCannotExceedMaxInteger = {
       r: this.r ?? new BN(0),
       s: this.s ?? new BN(0),
     }
 
-    this.validateExceedsMaxInteger(validateCannotExceedMaxInteger)
+    this._validateExceedsMaxInteger(validateCannotExceedMaxInteger)
 
     if (this.v) {
       this._validateTxV(this.v)
@@ -118,14 +128,16 @@ export default class Transaction extends BaseTransaction<Transaction> {
   }
 
   /**
-   * Returns the rlp encoding of the transaction.
-   */
-  serialize(): Buffer {
-    return rlp.encode(this.raw())
-  }
-
-  /**
    * Returns a Buffer Array of the raw Buffers of this transaction, in order.
+   *
+   * Note that if you want to use this function in a tx type independent way
+   * to then use the raw data output for tx instantiation with
+   * `Tx.fromValuesArray()` you should set the `asList` parameter to `true` -
+   * which is ignored on a legacy tx but provides the correct format on
+   * a typed tx.
+   *
+   * To prepare a tx to be added as block data with `Block.fromValuesArray()`
+   * just use the plain `raw()` method.
    */
   raw(): Buffer[] {
     return [
@@ -142,32 +154,10 @@ export default class Transaction extends BaseTransaction<Transaction> {
   }
 
   /**
-   * Computes a sha3-256 hash of the serialized tx
+   * Returns the rlp encoding of the transaction.
    */
-  hash(): Buffer {
-    return rlphash(this.raw())
-  }
-
-  /**
-   * Returns an object with the JSON representation of the transaction
-   */
-  toJSON(): JsonTx {
-    return {
-      nonce: bnToHex(this.nonce),
-      gasPrice: bnToHex(this.gasPrice),
-      gasLimit: bnToHex(this.gasLimit),
-      to: this.to !== undefined ? this.to.toString() : undefined,
-      value: bnToHex(this.value),
-      data: '0x' + this.data.toString('hex'),
-      v: this.v !== undefined ? bnToHex(this.v) : undefined,
-      r: this.r !== undefined ? bnToHex(this.r) : undefined,
-      s: this.s !== undefined ? bnToHex(this.s) : undefined,
-    }
-  }
-
-  public isSigned(): boolean {
-    const { v, r, s } = this
-    return !!v && !!r && !!s
+  serialize(): Buffer {
+    return rlp.encode(this.raw())
   }
 
   private _unsignedTxImplementsEIP155() {
@@ -185,7 +175,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
     ]
 
     if (withEIP155) {
-      values.push(toBuffer(this.getChainId()))
+      values.push(toBuffer(this.common.chainId()))
       values.push(unpadBuffer(toBuffer(0)))
       values.push(unpadBuffer(toBuffer(0)))
     }
@@ -193,47 +183,28 @@ export default class Transaction extends BaseTransaction<Transaction> {
     return rlphash(values)
   }
 
+  /**
+   * Computes a sha3-256 hash of the serialized unsigned tx, which is used to sign the transaction.
+   */
   getMessageToSign() {
     return this._getMessageToSign(this._unsignedTxImplementsEIP155())
   }
 
   /**
-   * Process the v, r, s values from the `sign` method of the base transaction.
+   * Computes a sha3-256 hash of the serialized tx
    */
-  protected processSignature(v: number, r: Buffer, s: Buffer) {
-    if (this._unsignedTxImplementsEIP155()) {
-      v += this.getChainId() * 2 + 8
-    }
-
-    const opts = {
-      common: this.common,
-    }
-
-    return Transaction.fromTxData(
-      {
-        nonce: this.nonce,
-        gasPrice: this.gasPrice,
-        gasLimit: this.gasLimit,
-        to: this.to,
-        value: this.value,
-        data: this.data,
-        v: new BN(v),
-        r: new BN(r),
-        s: new BN(s),
-      },
-      opts
-    )
-  }
-
-  getMessageToVerifySignature() {
-    const withEIP155 = this._signedTxImplementsEIP155()
-
-    return this._getMessageToSign(withEIP155)
+  hash(): Buffer {
+    return rlphash(this.raw())
   }
 
   /**
-   * Returns the public key of the sender
+   * Computes a sha3-256 hash which can be used to verify the signature
    */
+  getMessageToVerifySignature() {
+    const withEIP155 = this._signedTxImplementsEIP155()
+    return this._getMessageToSign(withEIP155)
+  }
+
   /**
    * Returns the public key of the sender
    */
@@ -258,10 +229,55 @@ export default class Transaction extends BaseTransaction<Transaction> {
         v,
         bnToRlp(r),
         bnToRlp(s),
-        this._signedTxImplementsEIP155() ? new BN(this.getChainId().toString()) : undefined
+        this._signedTxImplementsEIP155() ? new BN(this.common.chainId().toString()) : undefined
       )
     } catch (e) {
       throw new Error('Invalid Signature')
+    }
+  }
+
+  /**
+   * Process the v, r, s values from the `sign` method of the base transaction.
+   */
+  protected _processSignature(v: number, r: Buffer, s: Buffer) {
+    if (this._unsignedTxImplementsEIP155()) {
+      v += this.common.chainId() * 2 + 8
+    }
+
+    const opts = {
+      common: this.common,
+    }
+
+    return Transaction.fromTxData(
+      {
+        nonce: this.nonce,
+        gasPrice: this.gasPrice,
+        gasLimit: this.gasLimit,
+        to: this.to,
+        value: this.value,
+        data: this.data,
+        v: new BN(v),
+        r: new BN(r),
+        s: new BN(s),
+      },
+      opts
+    )
+  }
+
+  /**
+   * Returns an object with the JSON representation of the transaction
+   */
+  toJSON(): JsonTx {
+    return {
+      nonce: bnToHex(this.nonce),
+      gasPrice: bnToHex(this.gasPrice),
+      gasLimit: bnToHex(this.gasLimit),
+      to: this.to !== undefined ? this.to.toString() : undefined,
+      value: bnToHex(this.value),
+      data: '0x' + this.data.toString('hex'),
+      v: this.v !== undefined ? bnToHex(this.v) : undefined,
+      r: this.r !== undefined ? bnToHex(this.r) : undefined,
+      s: this.s !== undefined ? bnToHex(this.s) : undefined,
     }
   }
 
@@ -281,13 +297,13 @@ export default class Transaction extends BaseTransaction<Transaction> {
       return
     }
 
-    const chainIdDoubled = new BN(this.getChainId().toString()).imuln(2)
+    const chainIdDoubled = new BN(this.common.chainId().toString()).imuln(2)
 
     const isValidEIP155V = v.eq(chainIdDoubled.addn(35)) || v.eq(chainIdDoubled.addn(36))
 
     if (!isValidEIP155V) {
       throw new Error(
-        `Incompatible EIP155-based V ${v.toString()} and chain id ${this.getChainId()}. See the Common parameter of the Transaction constructor to set the chain id.`
+        `Incompatible EIP155-based V ${v.toString()} and chain id ${this.common.chainId()}. See the Common parameter of the Transaction constructor to set the chain id.`
       )
     }
   }
@@ -303,7 +319,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
     // If block.number >= 2,675,000 and v = CHAIN_ID * 2 + 35 or v = CHAIN_ID * 2 + 36, then when computing the hash of a transaction for purposes of signing or recovering, instead of hashing only the first six elements (i.e. nonce, gasprice, startgas, to, value, data), hash nine elements, with v replaced by CHAIN_ID, r = 0 and s = 0.
     const v = this.v!
 
-    const chainIdDoubled = new BN(this.getChainId().toString()).imuln(2)
+    const chainIdDoubled = new BN(this.common.chainId().toString()).imuln(2)
 
     const vAndChainIdMeetEIP155Conditions =
       v.eq(chainIdDoubled.addn(35)) || v.eq(chainIdDoubled.addn(36))

@@ -1,7 +1,7 @@
 import Common from '@ethereumjs/common'
 import { default as Transaction } from './legacyTransaction'
 import { default as AccessListEIP2930Transaction } from './eip2930Transaction'
-import { TxOptions, TypedTransaction, TxData } from './types'
+import { TxOptions, TypedTransaction, TxData, AccessListEIP2930TxData } from './types'
 import { BN } from 'ethereumjs-util'
 
 const DEFAULT_COMMON = new Common({ chain: 'mainnet' })
@@ -12,23 +12,31 @@ export default class TransactionFactory {
 
   /**
    * Create a transaction from a `txData` object
+   *
    * @param txData - The transaction data. The `type` field will determine which transaction type is returned (if undefined, create a Transaction)
    * @param txOptions - Options to pass on to the constructor of the transaction
    */
-  public static fromTxData(txData: TxData, txOptions: TxOptions = {}): TypedTransaction {
+  public static fromTxData(
+    txData: TxData | AccessListEIP2930TxData,
+    txOptions: TxOptions = {}
+  ): TypedTransaction {
     const common = txOptions.common ?? DEFAULT_COMMON
-    if (txData.type === undefined) {
+    if (!('type' in txData) || txData.type === undefined) {
       // Assume Transaction
-      return Transaction.fromTxData(txData, txOptions)
+      return Transaction.fromTxData(<TxData>txData, txOptions)
     } else {
       const txType = new BN(txData.type).toNumber()
-      return TransactionFactory.getTransactionClass(txType, common).fromTxData(txData, txOptions)
+      return TransactionFactory.getTransactionClass(txType, common).fromTxData(
+        <AccessListEIP2930TxData>txData,
+        txOptions
+      )
     }
   }
 
   /**
    * This method tries to decode `raw` data. It is somewhat equivalent to `fromRlpSerializedTx`.
    * However, it could be that the data is not directly RLP-encoded (it is a Typed Transaction)
+   *
    * @param rawData - The raw data buffer
    * @param txOptions - The transaction options
    */
@@ -49,7 +57,7 @@ export default class TransactionFactory {
           throw new Error(`TypedTransaction with ID ${rawData[0]} unknown`)
       }
 
-      if (!TransactionFactory.eipSupport(common, EIP)) {
+      if (!common.isActivatedEIP(EIP)) {
         throw new Error(
           `Cannot create TypedTransaction with ID ${rawData[0]}: EIP ${EIP} not activated`
         )
@@ -66,6 +74,7 @@ export default class TransactionFactory {
    * A Buffer (a TypedTransaction - encoded as TransactionType || rlp(TransactionPayload))
    * A Buffer[] (Transaction)
    * This method returns the right transaction.
+   *
    * @param rawData - Either a Buffer or a Buffer[]
    * @param txOptions - The transaction options
    */
@@ -83,6 +92,7 @@ export default class TransactionFactory {
   /**
    * This helper method allows one to retrieve the class which matches the transactionID
    * If transactionID is undefined, return the Transaction class.
+   *
    * @param transactionID
    * @param common
    */
@@ -106,17 +116,5 @@ export default class TransactionFactory {
       default:
         throw new Error(`TypedTransaction with ID ${transactionID} unknown`)
     }
-  }
-
-  /**
-   * Check if a typed transaction eip is supported by common
-   * @param common - The common to use
-   * @param eip - The EIP to check
-   */
-  public static eipSupport(common: Common, eip: number): boolean {
-    if (!common.isActivatedEIP(2718)) {
-      return false
-    }
-    return common.isActivatedEIP(eip)
   }
 }
