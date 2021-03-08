@@ -240,12 +240,15 @@ const hardforkOpcodes = [
       0x47: { name: 'SELFBALANCE', isAsync: false }, // EIP 1884
     },
   },
+]
+
+const eipOpcodes = [
   {
-    hardforkName: 'berlin',
+    eip: 2315,
     opcodes: {
-      0x5c: { name: 'BEGINSUB', isAsync: false }, // EIP 2315
-      0x5d: { name: 'RETURNSUB', isAsync: false }, // EIP 2315
-      0x5e: { name: 'JUMPSUB', isAsync: false }, // EIP 2315
+      0x5c: { name: 'BEGINSUB', isAsync: false },
+      0x5d: { name: 'RETURNSUB', isAsync: false },
+      0x5e: { name: 'JUMPSUB', isAsync: false },
     },
   },
 ]
@@ -286,6 +289,11 @@ export function getOpcodesForHF(common: Common): OpcodeList {
   for (let fork = 0; fork < hardforkOpcodes.length; fork++) {
     if (common.gteHardfork(hardforkOpcodes[fork].hardforkName)) {
       opcodeBuilder = { ...opcodeBuilder, ...hardforkOpcodes[fork].opcodes }
+    }
+  }
+  for (const eipOps of eipOpcodes) {
+    if (common.isActivatedEIP(eipOps.eip)) {
+      opcodeBuilder = { ...opcodeBuilder, ...eipOps.opcodes }
     }
   }
 

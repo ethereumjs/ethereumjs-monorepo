@@ -72,8 +72,8 @@
     },
     {
       "name": "berlin",
-      "block": null,
-      "forkHash": null
+      "block": 12244000,
+      "forkHash": "0xeb440f6"
     }
   ],
   "bootstrapNodes": [

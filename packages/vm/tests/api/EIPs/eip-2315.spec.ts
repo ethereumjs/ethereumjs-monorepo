@@ -4,7 +4,7 @@ import VM from '../../../lib'
 import Common from '@ethereumjs/common'
 
 tape('Berlin: EIP 2315 tests', (t) => {
-  const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+  const common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [2315] })
 
   const runTest = async function (test: any, st: tape.Test) {
     let i = 0
