@@ -4,6 +4,7 @@ import VM from '../../lib'
 
 tape('VM -> getActiveOpcodes()', (t) => {
   const CHAINID = 0x46 //istanbul opcode
+  const BEGINSUB = 0x5c // EIP-2315 opcode
 
   t.test('should not expose opcodes from a follow-up HF (istanbul -> petersburg)', (st) => {
     const common = new Common({ chain: 'mainnet', hardfork: 'petersburg' })
@@ -31,6 +32,26 @@ tape('VM -> getActiveOpcodes()', (t) => {
       vm.getActiveOpcodes().get(CHAINID)!.name,
       'CHAINID',
       'istanbul opcode exposed (HF: > istanbul (muirGlacier)'
+    )
+
+    st.end()
+  })
+
+  t.test('should expose opcodes when EIP is active', (st) => {
+    let common = new Common({ chain: 'mainnet', hardfork: 'istanbul', eips: [2315] })
+    let vm = new VM({ common })
+    st.equal(
+      vm.getActiveOpcodes().get(BEGINSUB)!.name,
+      'BEGINSUB',
+      'EIP-2315 opcode BEGINSUB exposed (EIP-2315 activated)'
+    )
+
+    common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+    vm = new VM({ common })
+    st.equal(
+      vm.getActiveOpcodes().get(BEGINSUB),
+      undefined,
+      'EIP-2315 opcode BEGINSUB not exposed (EIP-2315 not activated)'
     )
 
     st.end()
