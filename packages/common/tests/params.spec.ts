@@ -14,8 +14,6 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
     st.equal(c.param('gasPrices', 'ecAdd'), 150, msg)
     c.setHardfork('muirGlacier')
     st.equal(c.param('gasPrices', 'ecAdd'), 150, msg)
-    c.setHardfork('berlin')
-    st.equal(c.param('gasPrices', 'beginsub'), 2, msg)
 
     msg = 'Should return null for non-existing value'
     st.equal(c.param('gasPrices', 'notexistingvalue'), null, msg)
