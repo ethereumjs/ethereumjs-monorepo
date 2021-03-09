@@ -63,7 +63,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
         with:
           submodules: recursive
       
@@ -86,21 +86,8 @@ jobs:
       # Run git stash in case github-action-benchmark has trouble switching to gh-pages branch due to differing package-locks
       - run: git stash
 
-      - name: Set auto-push for benchmarks to true if on master
-        id: auto_push
-        run: |
-          if [$REF == 'refs/heads/master']
-          then
-              echo "::set-output name=auto_push::true"
-          else
-              echo "::set-output name=auto_push::false"
-          fi
-        env:
-          REF: ${{ github.ref }}
-
       - name: Compare benchmarks
         uses: rhysd/github-action-benchmark@v1
-        if: github.ref == 'refs/heads/master'
         with:
           tool: 'benchmarkjs'
           # Where the output from the benchmark tool is stored
@@ -112,7 +99,9 @@ jobs:
           # GitHub API token to make a commit comment
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # Push and deploy to GitHub pages branch automatically (if on master)
-          auto-push: ${{ steps.auto_push.outputs.auto_push }}
+          auto-push: ${{ github.ref == 'refs/heads/master' }}
+          # Only keep and display the last 30 commits worth of benchmark data
+          max-items-in-chart: 30
 
       # Re-apply git stash to prepare for saving back to cache.
       # Avoids exit code 1 by checking if there are changes to be stashed first
