@@ -61,11 +61,8 @@ export abstract class BaseTransaction<TransactionObject> {
    * (DataFee + TxFee + Creation Fee).
    */
   validate(): boolean
-  /* eslint-disable-next-line no-dupe-class-members */
   validate(stringError: false): boolean
-  /* eslint-disable-next-line no-dupe-class-members */
   validate(stringError: true): string[]
-  /* eslint-disable-next-line no-dupe-class-members */
   validate(stringError: boolean = false): boolean | string[] {
     const errors = []
 
@@ -185,13 +182,8 @@ export abstract class BaseTransaction<TransactionObject> {
     if (privateKey.length !== 32) {
       throw new Error('Private key must be 32 bytes in length.')
     }
-
     const msgHash = this.getMessageToSign()
-
-    // Only `v` is reassigned.
-    /* eslint-disable-next-line prefer-const */
-    let { v, r, s } = ecsign(msgHash, privateKey)
-
+    const { v, r, s } = ecsign(msgHash, privateKey)
     return this._processSignature(v, r, s)
   }
 

@@ -1,4 +1,4 @@
-import { AddressLike, BNLike, BufferLike } from 'ethereumjs-util'
+import { BN, AddressLike, BNLike, BufferLike } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { default as Transaction } from './legacyTransaction'
 import { default as AccessListEIP2930Transaction } from './eip2930Transaction'
@@ -128,6 +128,23 @@ export interface AccessListEIP2930TxData extends TxData {
   type?: BNLike
 }
 
+/**
+ * Buffer values array for EIP2930 transaction
+ */
+export type AccessListEIP2930ValuesArray = [
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+  AccessListBuffer,
+  Buffer?,
+  Buffer?,
+  Buffer?
+]
+
 type JsonAccessListItem = { address: string; storageKeys: string[] }
 
 /**
@@ -147,3 +164,11 @@ export interface JsonTx {
   accessList?: JsonAccessListItem[]
   type?: string
 }
+
+/**
+ * A const defining secp256k1n/2
+ */
+export const N_DIV_2 = new BN(
+  '7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
+  16
+)

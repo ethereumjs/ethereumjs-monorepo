@@ -15,28 +15,13 @@ import {
   AccessList,
   AccessListBuffer,
   AccessListEIP2930TxData,
+  AccessListEIP2930ValuesArray,
   AccessListItem,
   isAccessList,
   JsonTx,
   TxOptions,
+  N_DIV_2,
 } from './types'
-
-// secp256k1n/2
-const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
-
-type EIP2930ValuesArray = [
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  AccessListBuffer,
-  Buffer?,
-  Buffer?,
-  Buffer?
-]
 
 /**
  * Typed transaction with optional access lists
@@ -115,33 +100,33 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * chainId, nonce, gasPrice, gasLimit, to, value, data, access_list, yParity (v), senderR (r), senderS (s)
    */
   public static fromValuesArray(values: (Buffer | AccessListBuffer)[], opts: TxOptions = {}) {
-    if (values.length == 8 || values.length == 11) {
-      const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = <
-        EIP2930ValuesArray
-      >values
-      const emptyBuffer = Buffer.from([])
-
-      return new AccessListEIP2930Transaction(
-        {
-          chainId: new BN(chainId),
-          nonce: new BN(nonce),
-          gasPrice: new BN(gasPrice),
-          gasLimit: new BN(gasLimit),
-          to: to && to.length > 0 ? new Address(to) : undefined,
-          value: new BN(value),
-          data: data ?? emptyBuffer,
-          accessList: accessList ?? emptyBuffer,
-          v: v !== undefined ? new BN(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
-          r: r !== undefined && !r.equals(emptyBuffer) ? new BN(r) : undefined,
-          s: s !== undefined && !s.equals(emptyBuffer) ? new BN(s) : undefined,
-        },
-        opts ?? {}
-      )
-    } else {
+    if (values.length !== 8 && values.length !== 11) {
       throw new Error(
         'Invalid EIP-2930 transaction. Only expecting 8 values (for unsigned tx) or 11 values (for signed tx).'
       )
     }
+
+    const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = <
+      AccessListEIP2930ValuesArray
+      >values
+    const emptyBuffer = Buffer.from([])
+
+    return new AccessListEIP2930Transaction(
+      {
+        chainId: new BN(chainId),
+        nonce: new BN(nonce),
+        gasPrice: new BN(gasPrice),
+        gasLimit: new BN(gasLimit),
+        to: to && to.length > 0 ? new Address(to) : undefined,
+        value: new BN(value),
+        data: data ?? emptyBuffer,
+        accessList: accessList ?? emptyBuffer,
+        v: v !== undefined ? new BN(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
+        r: r !== undefined && !r.equals(emptyBuffer) ? new BN(r) : undefined,
+        s: s !== undefined && !s.equals(emptyBuffer) ? new BN(s) : undefined,
+      },
+      opts
+    )
   }
 
   /**
@@ -158,8 +143,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       throw new Error('EIP-2930 not enabled on Common')
     }
 
-    // check  the type of AccessList. If it's a JSON-type, we have to convert it to a buffer.
-
+    // check the type of AccessList. If it's a JSON-type, we have to convert it to a buffer.
     let usedAccessList
     if (accessList && isAccessList(accessList)) {
       this.AccessListJSON = accessList
@@ -168,7 +152,6 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
       for (let i = 0; i < accessList.length; i++) {
         const item: AccessListItem = accessList[i]
-        //const addItem: AccessListBufferItem = []
         const addressBuffer = toBuffer(item.address)
         const storageItems: Buffer[] = []
         for (let index = 0; index < item.storageKeys.length; index++) {
@@ -208,7 +191,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       throw new Error('The y-parity of the transaction should either be 0 or 1')
     }
 
-    if (this.common.gteHardfork('homestead') && this.s && this.s.gt(N_DIV_2)) {
+    if (this.common.gteHardfork('homestead') && this.s?.gt(N_DIV_2)) {
       throw new Error(
         'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
       )
@@ -342,7 +325,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
     // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
     // TODO: verify if this is the case for EIP-2930
-    if (this.common.gteHardfork('homestead') && this.s && this.s.gt(N_DIV_2)) {
+    if (this.common.gteHardfork('homestead') && this.s?.gt(N_DIV_2)) {
       throw new Error(
         'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
       )
