@@ -1,8 +1,8 @@
+import { BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { default as Transaction } from './legacyTransaction'
 import { default as AccessListEIP2930Transaction } from './eip2930Transaction'
 import { TxOptions, TypedTransaction, TxData, AccessListEIP2930TxData } from './types'
-import { BN } from 'ethereumjs-util'
 
 const DEFAULT_COMMON = new Common({ chain: 'mainnet' })
 
@@ -13,7 +13,7 @@ export default class TransactionFactory {
   /**
    * Create a transaction from a `txData` object
    *
-   * @param txData - The transaction data. The `type` field will determine which transaction type is returned (if undefined, create a Transaction)
+   * @param txData - The transaction data. The `type` field will determine which transaction type is returned (if undefined, creates a legacy transaction)
    * @param txOptions - Options to pass on to the constructor of the transaction
    */
   public static fromTxData(
@@ -22,7 +22,7 @@ export default class TransactionFactory {
   ): TypedTransaction {
     const common = txOptions.common ?? DEFAULT_COMMON
     if (!('type' in txData) || txData.type === undefined) {
-      // Assume Transaction
+      // Assume legacy transaction
       return Transaction.fromTxData(<TxData>txData, txOptions)
     } else {
       const txType = new BN(txData.type).toNumber()
@@ -34,8 +34,7 @@ export default class TransactionFactory {
   }
 
   /**
-   * This method tries to decode `raw` data. It is somewhat equivalent to `fromRlpSerializedTx`.
-   * However, it could be that the data is not directly RLP-encoded (it is a Typed Transaction)
+   * This method tries to decode `raw` data. It is somewhat equivalent to `fromSerializedTx`, however it could be that the data is not directly RLP-encoded (it is a Typed Transaction)
    *
    * @param rawData - The raw data buffer
    * @param txOptions - The transaction options
@@ -72,7 +71,7 @@ export default class TransactionFactory {
   /**
    * When decoding a BlockBody, in the transactions field, a field is either:
    * A Buffer (a TypedTransaction - encoded as TransactionType || rlp(TransactionPayload))
-   * A Buffer[] (Transaction)
+   * A Buffer[] (Legacy Transaction)
    * This method returns the right transaction.
    *
    * @param rawData - Either a Buffer or a Buffer[]
@@ -82,7 +81,7 @@ export default class TransactionFactory {
     if (Buffer.isBuffer(rawData)) {
       return this.fromRawData(rawData, txOptions)
     } else if (Array.isArray(rawData)) {
-      // It is a Transaction
+      // It is a legacy transaction
       return Transaction.fromValuesArray(rawData, txOptions)
     } else {
       throw new Error('Cannot decode transaction: unknown type input')
@@ -91,7 +90,7 @@ export default class TransactionFactory {
 
   /**
    * This helper method allows one to retrieve the class which matches the transactionID
-   * If transactionID is undefined, return the Transaction class.
+   * If transactionID is undefined, returns the legacy transaction class.
    *
    * @param transactionID
    * @param common

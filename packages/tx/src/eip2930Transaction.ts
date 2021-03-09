@@ -108,7 +108,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
     const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = <
       AccessListEIP2930ValuesArray
-      >values
+    >values
     const emptyBuffer = Buffer.from([])
 
     return new AccessListEIP2930Transaction(
