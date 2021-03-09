@@ -37,14 +37,12 @@ export abstract class BaseTransaction<TransactionObject> {
     this.r = r ? new BN(toBuffer(r)) : undefined
     this.s = s ? new BN(toBuffer(s)) : undefined
 
-    const validateCannotExceedMaxInteger = {
+    this._validateCannotExceedMaxInteger({
       nonce: this.nonce,
       gasPrice: this.gasPrice,
       gasLimit: this.gasLimit,
       value: this.value,
-    }
-
-    this._validateExceedsMaxInteger(validateCannotExceedMaxInteger)
+    })
 
     this.common = txOptions.common?.copy() ?? new Common({ chain: 'mainnet' })
   }
@@ -192,9 +190,9 @@ export abstract class BaseTransaction<TransactionObject> {
   // Accept the v,r,s values from the `sign` method, and convert this into a TransactionObject
   protected abstract _processSignature(v: number, r: Buffer, s: Buffer): TransactionObject
 
-  protected _validateExceedsMaxInteger(validateCannotExceedMaxInteger: { [key: string]: BN }) {
-    for (const [key, value] of Object.entries(validateCannotExceedMaxInteger)) {
-      if (value && value.gt(MAX_INTEGER)) {
+  protected _validateCannotExceedMaxInteger(values: { [key: string]: BN | undefined }) {
+    for (const [key, value] of Object.entries(values)) {
+      if (value?.gt(MAX_INTEGER)) {
         throw new Error(`${key} cannot exceed MAX_INTEGER, given ${value}`)
       }
     }

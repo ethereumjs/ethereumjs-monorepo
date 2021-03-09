@@ -96,16 +96,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
   public constructor(txData: TxData, opts: TxOptions = {}) {
     super(txData, opts)
 
-    const validateCannotExceedMaxInteger = {
-      r: this.r ?? new BN(0),
-      s: this.s ?? new BN(0),
-    }
-
-    this._validateExceedsMaxInteger(validateCannotExceedMaxInteger)
-
-    if (this.v) {
-      this._validateTxV(this.v)
-    }
+    this._validateCannotExceedMaxInteger({ r: this.r, s: this.s })
 
     this._validateTxV(this.v)
 
