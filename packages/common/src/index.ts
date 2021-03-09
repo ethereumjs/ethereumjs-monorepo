@@ -742,4 +742,11 @@ export default class Common extends EventEmitter {
   consensusConfig(): any {
     return (<any>this._chainParams)['consensus'][this.consensusAlgorithm()]
   }
+
+  /**
+   * Returns a deep copy of this common instance.
+   */
+  copy(): Common {
+    return Object.assign(Object.create(Object.getPrototypeOf(this)), this)
+  }
 }

@@ -46,10 +46,7 @@ export abstract class BaseTransaction<TransactionObject> {
 
     this._validateExceedsMaxInteger(validateCannotExceedMaxInteger)
 
-    this.common =
-      (txOptions.common &&
-        Object.assign(Object.create(Object.getPrototypeOf(txOptions.common)), txOptions.common)) ??
-      new Common({ chain: 'mainnet' })
+    this.common = txOptions.common?.copy() ?? new Common({ chain: 'mainnet' })
   }
 
   /**
