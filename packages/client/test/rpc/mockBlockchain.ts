@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { bufferToHex } from 'ethereumjs-util'
 
-export function blockChain(options: any) {
+export function mockBlockchain(options: any = {}) {
   const txHash = Buffer.from(
     '0be3065cf288b071ccff922c1c601e2e5628d488b66e781c260ecee36054a2dc',
     'hex'
@@ -21,10 +21,10 @@ export function blockChain(options: any) {
     }),
   }
   return {
-    getBlock: async function (_data: any) {
-      return Promise.resolve(block)
+    getBlock: async (_data: any) => {
+      return block
     },
-    getLatestHeader() {
+    getLatestHeader: () => {
       return Block.fromBlockData().header
     },
   }

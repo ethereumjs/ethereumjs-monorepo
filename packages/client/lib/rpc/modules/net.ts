@@ -1,9 +1,9 @@
-import { Chain } from '../../blockchain'
-import { EthereumService } from '../../service/ethereumservice'
 import { middleware } from '../validation'
 import { addHexPrefix } from 'ethereumjs-util'
-import { EthereumClient } from '../..'
-import { PeerPool } from '../../net/peerpool'
+import type { EthereumClient } from '../..'
+import type { Chain } from '../../blockchain'
+import type { PeerPool } from '../../net/peerpool'
+import type { EthereumService } from '../../service/ethereumservice'
 
 /**
  * net_* RPC module
@@ -11,17 +11,17 @@ import { PeerPool } from '../../net/peerpool'
  */
 export class Net {
   private _chain: Chain
-  private _node: EthereumClient
+  private _client: EthereumClient
   private _peerPool: PeerPool
 
   /**
    * Create net_* RPC module
-   * @param {Node} Node to which the module binds
+   * @param client Client to which the module binds
    */
-  constructor(node: EthereumClient) {
-    const service: EthereumService = node.services.find((s) => s.name === 'eth')!
+  constructor(client: EthereumClient) {
+    const service: EthereumService = client.services.find((s) => s.name === 'eth')!
     this._chain = service.chain
-    this._node = node
+    this._client = client
     this._peerPool = service.pool
 
     this.version = middleware(this.version.bind(this), 0, [])
@@ -31,7 +31,7 @@ export class Net {
 
   /**
    * Returns the current network id
-   * @param  {Array<*>} [params] An empty array
+   * @param params An empty array
    */
   version(_params = []) {
     return `${this._chain.config.chainCommon.chainId()}`
@@ -39,15 +39,15 @@ export class Net {
 
   /**
    * Returns true if client is actively listening for network connections
-   * @param  {Array<*>} [params] An empty array
+   * @param params An empty array
    */
   listening(_params = []) {
-    return this._node.opened
+    return this._client.opened
   }
 
   /**
    * Returns number of peers currently connected to the client
-   * @param  {Array<*>} [params] An empty array
+   * @param params An empty array
    */
   peerCount(_params = []) {
     return addHexPrefix(this._peerPool.peers.length.toString(16))

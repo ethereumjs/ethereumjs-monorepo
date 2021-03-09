@@ -1,10 +1,10 @@
 import tape from 'tape'
-import { startRPC, createManager, createNode, params, baseRequest } from '../helpers'
+import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
 
 const method = 'net_peerCount'
 
 tape(`${method}: call`, (t) => {
-  const manager = createManager(createNode({ opened: true }))
+  const manager = createManager(createClient({ opened: true }))
   const server = startRPC(manager.getMethods())
 
   const req = params(method, [])

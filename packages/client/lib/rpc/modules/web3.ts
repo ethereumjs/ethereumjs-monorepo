@@ -1,8 +1,9 @@
-import { middleware, validators } from '../validation'
 import { addHexPrefix, keccak, toBuffer } from 'ethereumjs-util'
+import { middleware, validators } from '../validation'
 import { getClientVersion } from '../../util'
-import { EthereumClient } from '../..'
-import { Chain } from '../../blockchain'
+import type { EthereumClient } from '../..'
+import type { Chain } from '../../blockchain'
+import type { EthereumService } from '../../service'
 
 /**
  * web3_* RPC module
@@ -13,11 +14,11 @@ export class Web3 {
 
   /**
    * Create web3_* RPC module
-   * @param {Node} Node to which the module binds
+   * @param client Client to which the module binds
    */
-  constructor(node: EthereumClient) {
-    const service = node.services.find((s) => s.name === 'eth')
-    this._chain = service?.chain
+  constructor(client: EthereumClient) {
+    const service = client.services.find((s) => s.name === 'eth') as EthereumService
+    this._chain = service.chain
 
     this.clientVersion = middleware(this.clientVersion.bind(this), 0, [])
 
@@ -26,7 +27,7 @@ export class Web3 {
 
   /**
    * Returns the current client version
-   * @param  {Array<*>} [params] An empty array
+   * @param params An empty array
    */
   clientVersion(_params = []) {
     return getClientVersion()
@@ -34,7 +35,7 @@ export class Web3 {
 
   /**
    * Returns Keccak-256 (not the standardized SHA3-256) of the given data
-   * @param  {Array<string>} [params] The data to convert into a SHA3 hash
+   * @param params The data to convert into a SHA3 hash
    */
   sha3(params: string[]) {
     const rawDigest = keccak(toBuffer(params[0]))

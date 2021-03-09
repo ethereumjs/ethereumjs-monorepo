@@ -1,10 +1,10 @@
 import tape from 'tape'
-import { startRPC, createManager, createNode, params, baseRequest } from '../helpers'
+import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
 
 const method = 'net_listening'
 
 tape(`${method}: call while listening`, (t) => {
-  const manager = createManager(createNode({ opened: true }))
+  const manager = createManager(createClient({ opened: true }))
   const server = startRPC(manager.getMethods())
 
   const req = params(method, [])
@@ -28,7 +28,7 @@ tape(`${method}: call while listening`, (t) => {
 })
 
 tape(`${method}: call while not listening`, (t) => {
-  const manager = createManager(createNode({ opened: false }))
+  const manager = createManager(createClient({ opened: false }))
   const server = startRPC(manager.getMethods())
 
   const req = params(method, [])
