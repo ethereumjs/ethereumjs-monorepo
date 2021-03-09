@@ -108,15 +108,6 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
   /**
    * Returns a Buffer Array of the raw Buffers of this transaction, in order.
-   *
-   * Note that if you want to use this function in a tx type independent way
-   * to then use the raw data output for tx instantiation with
-   * `Tx.fromValuesArray()` you should set the `asList` parameter to `true` -
-   * which is ignored on a legacy tx but provides the correct format on
-   * a typed tx.
-   *
-   * To prepare a tx to be added as block data with `Block.fromValuesArray()`
-   * just use the plain `raw()` method.
    */
   raw(): Buffer[] {
     return [

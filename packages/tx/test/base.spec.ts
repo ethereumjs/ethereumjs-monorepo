@@ -121,7 +121,7 @@ tape('[BaseTransaction]', function (t) {
     for (const txType of txTypes) {
       txType.txs.forEach(function (tx: any) {
         st.ok(
-          txType.class.fromValuesArray(tx.raw(true), { common }),
+          txType.class.fromValuesArray(tx.raw(), { common }),
           `${txType.name}: should do roundtrip raw() -> fromValuesArray()`
         )
       })

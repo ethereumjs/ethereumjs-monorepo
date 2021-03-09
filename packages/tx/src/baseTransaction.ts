@@ -112,19 +112,9 @@ export abstract class BaseTransaction<TransactionObject> {
   }
 
   /**
-   * Returns the raw `Buffer[]` (Transaction) or `Buffer` (typed transaction).
-   * This is the data which is found in the transactions of the block body.
-   *
-   * Note that if you want to use this function in a tx type independent way
-   * to then use the raw data output for tx instantiation with
-   * `Tx.fromValuesArray()` you should set the `asList` parameter to `true` -
-   * which is ignored on a legacy tx but provides the correct format on
-   * a typed tx.
-   *
-   * To prepare a tx to be added as block data with `Block.fromValuesArray()`
-   * just use the plain `raw()` method.
+   * Returns a Buffer Array of the raw Buffers of this transaction, in order.
    */
-  abstract raw(asList: boolean): Buffer[] | Buffer
+  abstract raw(): Buffer[]
 
   /**
    * Returns the encoding of the transaction.

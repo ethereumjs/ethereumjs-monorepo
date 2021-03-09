@@ -246,20 +246,10 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   /**
    * Returns a Buffer Array of the raw Buffers of this transaction, in order.
    *
-   * Note that if you want to use this function in a tx type independent way
-   * to then use the raw data output for tx instantiation with
-   * `Tx.fromValuesArray()` you should set the `asList` parameter to `true` -
-   * which is ignored on a legacy tx but provides the correct format on
-   * a typed tx.
-   *
-   * To prepare a tx to be added as block data with `Block.fromValuesArray()`
-   * just use the plain `raw()` method.
-   *
-   * @param asList - By default, this method returns a concatenated Buffer
-   *                 If this is not desired, then set this to `true`, to get a Buffer array.
+   * Use `serialize()` to add to block data for `Block.fromValuesArray()`.
    */
-  raw(asList = false): Buffer[] | Buffer {
-    const base = <Buffer[]>[
+  raw(): Buffer[] {
+    return [
       bnToRlp(this.chainId),
       bnToRlp(this.nonce),
       bnToRlp(this.gasPrice),
@@ -267,31 +257,25 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       this.to !== undefined ? this.to.buf : Buffer.from([]),
       bnToRlp(this.value),
       this.data,
-      this.accessList,
+      <any>this.accessList,
       this.v !== undefined ? bnToRlp(this.v) : Buffer.from([]),
       this.r !== undefined ? bnToRlp(this.r) : Buffer.from([]),
       this.s !== undefined ? bnToRlp(this.s) : Buffer.from([]),
     ]
-    if (!asList) {
-      return Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base)])
-    } else {
-      return base
-    }
   }
 
   /**
-   * Returns the encoding of the transaction. For typed transaction, this is the raw Buffer.
-   * In Transaction, this is a Buffer array.
+   * Returns the serialized encoding of the transaction.
    */
   serialize(): Buffer {
-    return <Buffer>this.raw()
+    return Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(this.raw())])
   }
 
   /**
    * Computes a sha3-256 hash of the serialized unsigned tx, which is used to sign the transaction.
    */
   getMessageToSign() {
-    const base = this.raw(true).slice(0, 8)
+    const base = this.raw().slice(0, 8)
     return keccak256(Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base)]))
   }
 

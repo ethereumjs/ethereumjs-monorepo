@@ -86,7 +86,7 @@ tape('[TransactionFactory]: Basic functions', function (t) {
 
   t.test('should decode raw block body data', function (st) {
     const rawLegacy = simpleSignedTransaction.raw()
-    const rawEIP2930 = simpleSignedAccessListEIP2930Transaction.raw()
+    const rawEIP2930 = simpleSignedAccessListEIP2930Transaction.serialize()
 
     const legacyTx = TransactionFactory.fromBlockBodyData(rawLegacy)
     const eip2930Tx = TransactionFactory.fromBlockBodyData(rawEIP2930, { common: EIP2930Common })
