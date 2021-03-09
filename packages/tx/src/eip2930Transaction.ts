@@ -82,12 +82,12 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
   /**
    * Instantiate a transaction from the serialized tx.
-   * (alias of fromSerializedTx())
+   * (alias of `fromSerializedTx()`)
    *
    * Note: This means that the Buffer should start with 0x01.
    *
    * @deprecated this constructor alias is deprecated and will be removed
-   * in favor of the from SerializedTx() constructor
+   * in favor of the `fromSerializedTx() constructor
    */
   public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     return AccessListEIP2930Transaction.fromSerializedTx(serialized, opts)

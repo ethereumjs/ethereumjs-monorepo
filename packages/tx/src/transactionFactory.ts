@@ -63,9 +63,9 @@ export default class TransactionFactory {
         )
       }
 
-      return AccessListEIP2930Transaction.fromRlpSerializedTx(rawData, txOptions)
+      return AccessListEIP2930Transaction.fromSerializedTx(rawData, txOptions)
     } else {
-      return Transaction.fromRlpSerializedTx(rawData, txOptions)
+      return Transaction.fromSerializedTx(rawData, txOptions)
     }
   }
 

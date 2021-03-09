@@ -42,10 +42,10 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
   /**
    * Instantiate a transaction from the serialized tx.
-   * (alias of fromSerializedTx())
+   * (alias of `fromSerializedTx()`)
    *
    * @deprecated this constructor alias is deprecated and will be removed
-   * in favor of the from SerializedTx() constructor
+   * in favor of the `fromSerializedTx()` constructor
    */
   public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     return Transaction.fromSerializedTx(serialized, opts)

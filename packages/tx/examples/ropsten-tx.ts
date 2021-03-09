@@ -7,7 +7,7 @@ const txData = toBuffer(
 )
 
 const common = new Common({ chain: 'ropsten', hardfork: 'petersburg' })
-const tx = Transaction.fromRlpSerializedTx(txData, { common })
+const tx = Transaction.fromSerializedTx(txData, { common })
 
 if (
   tx.validate() &&
