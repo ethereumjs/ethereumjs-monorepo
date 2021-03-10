@@ -87,7 +87,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * Note: This means that the Buffer should start with 0x01.
    *
    * @deprecated this constructor alias is deprecated and will be removed
-   * in favor of the `fromSerializedTx() constructor
+   * in favor of the `fromSerializedTx()` constructor
    */
   public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     return AccessListEIP2930Transaction.fromSerializedTx(serialized, opts)
@@ -143,7 +143,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       throw new Error('EIP-2930 not enabled on Common')
     }
 
-    // check the type of AccessList. If it's a JSON-type, we have to convert it to a buffer.
+    // check the type of AccessList. If it's a JSON-type, we have to convert it to a Buffer.
     let usedAccessList
     if (accessList && isAccessList(accessList)) {
       this.AccessListJSON = accessList
