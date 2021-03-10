@@ -26,12 +26,12 @@ const simpleSignedTransaction = simpleUnsignedTransaction.sign(pKey)
 tape('[TransactionFactory]: Basic functions', function (t) {
   t.test('should return the right type', function (st) {
     const serialized = simpleUnsignedAccessListEIP2930Transaction.serialize()
-    const factoryTx = TransactionFactory.fromRawData(serialized, { common: EIP2930Common })
+    const factoryTx = TransactionFactory.fromSerializedData(serialized, { common: EIP2930Common })
     st.equals(factoryTx.constructor.name, AccessListEIP2930Transaction.name)
 
     const legacyTx = Transaction.fromTxData({})
     const serializedLegacyTx = legacyTx.serialize()
-    const factoryLegacyTx = TransactionFactory.fromRawData(serializedLegacyTx, {})
+    const factoryLegacyTx = TransactionFactory.fromSerializedData(serializedLegacyTx, {})
     st.equals(factoryLegacyTx.constructor.name, Transaction.name)
 
     st.end()
@@ -41,7 +41,10 @@ tape('[TransactionFactory]: Basic functions', function (t) {
     'should throw when trying to create EIP-2718 typed transactions when not allowed in Common',
     function (st) {
       st.throws(() => {
-        TransactionFactory.fromRawData(simpleUnsignedAccessListEIP2930Transaction.serialize(), {})
+        TransactionFactory.fromSerializedData(
+          simpleUnsignedAccessListEIP2930Transaction.serialize(),
+          {}
+        )
       })
       st.end()
     }
@@ -53,7 +56,7 @@ tape('[TransactionFactory]: Basic functions', function (t) {
       st.throws(() => {
         const serialized = simpleUnsignedAccessListEIP2930Transaction.serialize()
         serialized[0] = 2 // edit the transaction type
-        TransactionFactory.fromRawData(serialized, { common: EIP2930Common })
+        TransactionFactory.fromSerializedData(serialized, { common: EIP2930Common })
       })
       st.end()
     }

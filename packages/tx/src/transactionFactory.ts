@@ -34,37 +34,37 @@ export default class TransactionFactory {
   }
 
   /**
-   * This method tries to decode `raw` data. It is somewhat equivalent to `fromSerializedTx`, however it could be that the data is not directly RLP-encoded (it is a Typed Transaction)
+   * This method tries to decode serialized data.
    *
-   * @param rawData - The raw data buffer
+   * @param data - The data Buffer
    * @param txOptions - The transaction options
    */
-  public static fromRawData(rawData: Buffer, txOptions: TxOptions = {}): TypedTransaction {
+  public static fromSerializedData(data: Buffer, txOptions: TxOptions = {}): TypedTransaction {
     const common = txOptions.common ?? DEFAULT_COMMON
-    if (rawData[0] <= 0x7f) {
+    if (data[0] <= 0x7f) {
       // It is an EIP-2718 Typed Transaction
       if (!common.isActivatedEIP(2718)) {
         throw new Error('Common support for TypedTransactions (EIP-2718) not activated')
       }
       // Determine the type.
       let EIP: number
-      switch (rawData[0]) {
+      switch (data[0]) {
         case 1:
           EIP = 2930
           break
         default:
-          throw new Error(`TypedTransaction with ID ${rawData[0]} unknown`)
+          throw new Error(`TypedTransaction with ID ${data[0]} unknown`)
       }
 
       if (!common.isActivatedEIP(EIP)) {
         throw new Error(
-          `Cannot create TypedTransaction with ID ${rawData[0]}: EIP ${EIP} not activated`
+          `Cannot create TypedTransaction with ID ${data[0]}: EIP ${EIP} not activated`
         )
       }
 
-      return AccessListEIP2930Transaction.fromSerializedTx(rawData, txOptions)
+      return AccessListEIP2930Transaction.fromSerializedTx(data, txOptions)
     } else {
-      return Transaction.fromSerializedTx(rawData, txOptions)
+      return Transaction.fromSerializedTx(data, txOptions)
     }
   }
 
