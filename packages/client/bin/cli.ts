@@ -2,7 +2,7 @@
 
 import { Server as RPCServer } from 'jayson/promise'
 import Common from '@ethereumjs/common'
-import { parseParams } from '../lib/util'
+import { parseParams, parseMultiaddrs } from '../lib/util'
 import EthereumClient from '../lib/client'
 import { Config } from '../lib/config'
 import { Logger } from '../lib/logging'
@@ -44,6 +44,14 @@ const args = require('yargs')
     transports: {
       describe: 'Network transports',
       default: Config.TRANSPORTS_DEFAULT,
+      array: true,
+    },
+    bootnodes: {
+      describe: 'Network bootnodes',
+      array: true,
+    },
+    multiaddrs: {
+      describe: 'Network multiaddrs',
       array: true,
     },
     rpc: {
@@ -173,6 +181,8 @@ async function run() {
     lightserv: args.lightserv,
     datadir: args.datadir,
     transports: args.transports,
+    bootnodes: args.bootnodes ? parseMultiaddrs(args.bootnodes) : undefined,
+    multiaddrs: args.multiaddrs ? parseMultiaddrs(args.multiaddrs) : undefined,
     rpc: args.rpc,
     rpcport: args.rpcport,
     rpcaddr: args.rpcaddr,
@@ -203,4 +213,5 @@ async function run() {
   })
 }
 
-run().catch((err) => logger!.error(err))
+// eslint-disable-next-line no-console
+run().catch((err) => logger?.error(err) ?? console.error(err))

@@ -5,6 +5,9 @@ import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Account, BN, keccak, rlp, toBuffer, unpadBuffer, isHexPrefixed } from 'ethereumjs-util'
 import { MultiaddrLike } from '../types'
 
+/**
+ * Parses multiaddrs and bootnodes to multiaddr format.
+ */
 export function parseMultiaddrs(input: MultiaddrLike): multiaddr[] {
   if (!input) {
     return []

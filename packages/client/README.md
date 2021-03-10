@@ -213,7 +213,7 @@ listener. The second client will use libp2p to connect to the first client.
 Run the first client and start downloading blocks:
 
 ```
-ethereumjs --syncmode full --lightserv true  --datadir first --network rinkeby --transports rlpx libp2p:multiaddrs=/ip4/127.0.0.1/tcp/50505/ws
+ethereumjs --syncmode full --lightserv true  --datadir first --network rinkeby --transports rlpx libp2p --multiaddrs /ip4/127.0.0.1/tcp/50505/ws
 ```
 
 Output:
@@ -230,10 +230,10 @@ Copy the libp2p URL from the output. In this example, the url is `/ip4/127.0.0.1
 Wait until a few thousand blocks are downloaded and then run the second client in a new terminal, using the url above to connect to the first client:
 
 <pre>
-ethereumjs --syncmode light --network rinkeby --datadir second --transports libp2p:multiaddrs=/ip4/0.0.0.0/tcp/50506,bootnodes=<b>/ip4/127.0.0.1/tcp/50505/ws/p2p/QmYAuYxw6QX1x5aafs6g3bUrPbMDifP5pDun3N9zbVLpEa</b>
+ethereumjs --syncmode light --network rinkeby --datadir second --transports libp2p --multiaddrs /ip4/0.0.0.0/tcp/50506 --bootnodes=<b>/ip4/127.0.0.1/tcp/50505/ws/p2p/QmYAuYxw6QX1x5aafs6g3bUrPbMDifP5pDun3N9zbVLpEa</b>
 </pre>
 
-Notice that we have to run the second client on port 50506 using the `multiaddrs=/ip4/0.0.0.0/tcp/50506` libp2p option to avoid port conflicts.
+Notice that we have to run the second client on port 50506 using the `--multiaddrs /ip4/0.0.0.0/tcp/50506` libp2p option to avoid port conflicts.
 
 ### Example 2: Light sync from within a browser
 
