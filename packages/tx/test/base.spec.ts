@@ -80,19 +80,19 @@ tape('[BaseTransaction]', function (t) {
       tx = txType.class.fromTxData({}, { common, freeze: false })
       const rlpData = tx.serialize()
 
-      tx = txType.class.fromRlpSerializedTx(rlpData, { common })
+      tx = txType.class.fromSerializedTx(rlpData, { common })
       st.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
 
-      tx = txType.class.fromRlpSerializedTx(rlpData, { common, freeze: false })
+      tx = txType.class.fromSerializedTx(rlpData, { common, freeze: false })
       st.ok(
         !Object.isFrozen(tx),
         `${txType.name}: tx should not be frozen when freeze deactivated in options`
       )
 
-      tx = txType.class.fromValuesArray(txType.values, { common })
+      tx = txType.class.fromValuesArray(txType.values as any, { common })
       st.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
 
-      tx = txType.class.fromValuesArray(txType.values, { common, freeze: false })
+      tx = txType.class.fromValuesArray(txType.values as any, { common, freeze: false })
       st.ok(
         !Object.isFrozen(tx),
         `${txType.name}: tx should not be frozen when freeze deactivated in options`
@@ -105,12 +105,12 @@ tape('[BaseTransaction]', function (t) {
     for (const txType of txTypes) {
       txType.txs.forEach(function (tx: any) {
         st.ok(
-          txType.class.fromRlpSerializedTx(tx.serialize(), { common }),
-          `${txType.name}: should do roundtrip serialize() -> fromRlpSerializedTx()`
+          txType.class.fromSerializedTx(tx.serialize(), { common }),
+          `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`
         )
         st.ok(
           txType.class.fromSerializedTx(tx.serialize(), { common }),
-          `${txType.name}: should do roundtrip serialize() -> fromRlpSerializedTx()`
+          `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`
         )
       })
     }
@@ -121,7 +121,7 @@ tape('[BaseTransaction]', function (t) {
     for (const txType of txTypes) {
       txType.txs.forEach(function (tx: any) {
         st.ok(
-          txType.class.fromValuesArray(tx.raw(true), { common }),
+          txType.class.fromValuesArray(tx.raw(), { common }),
           `${txType.name}: should do roundtrip raw() -> fromValuesArray()`
         )
       })

@@ -8,7 +8,7 @@ import {
   ecsign,
   publicToAddress,
 } from 'ethereumjs-util'
-import { TxData, TxOptions, JsonTx } from './types'
+import { TxData, TxOptions, JsonTx, AccessListEIP2930ValuesArray } from './types'
 
 export abstract class BaseTransaction<TransactionObject> {
   public readonly nonce: BN
@@ -37,19 +37,14 @@ export abstract class BaseTransaction<TransactionObject> {
     this.r = r ? new BN(toBuffer(r)) : undefined
     this.s = s ? new BN(toBuffer(s)) : undefined
 
-    const validateCannotExceedMaxInteger = {
+    this._validateCannotExceedMaxInteger({
       nonce: this.nonce,
       gasPrice: this.gasPrice,
       gasLimit: this.gasLimit,
       value: this.value,
-    }
+    })
 
-    this._validateExceedsMaxInteger(validateCannotExceedMaxInteger)
-
-    this.common =
-      (txOptions.common &&
-        Object.assign(Object.create(Object.getPrototypeOf(txOptions.common)), txOptions.common)) ??
-      new Common({ chain: 'mainnet' })
+    this.common = txOptions.common?.copy() ?? new Common({ chain: 'mainnet' })
   }
 
   /**
@@ -61,11 +56,8 @@ export abstract class BaseTransaction<TransactionObject> {
    * (DataFee + TxFee + Creation Fee).
    */
   validate(): boolean
-  /* eslint-disable-next-line no-dupe-class-members */
   validate(stringError: false): boolean
-  /* eslint-disable-next-line no-dupe-class-members */
   validate(stringError: true): string[]
-  /* eslint-disable-next-line no-dupe-class-members */
   validate(stringError: boolean = false): boolean | string[] {
     const errors = []
 
@@ -120,19 +112,9 @@ export abstract class BaseTransaction<TransactionObject> {
   }
 
   /**
-   * Returns the raw `Buffer[]` (Transaction) or `Buffer` (typed transaction).
-   * This is the data which is found in the transactions of the block body.
-   *
-   * Note that if you want to use this function in a tx type independent way
-   * to then use the raw data output for tx instantiation with
-   * `Tx.fromValuesArray()` you should set the `asList` parameter to `true` -
-   * which is ignored on a legacy tx but provides the correct format on
-   * a typed tx.
-   *
-   * To prepare a tx to be added as block data with `Block.fromValuesArray()`
-   * just use the plain `raw()` method.
+   * Returns a Buffer Array of the raw Buffers of this transaction, in order.
    */
-  abstract raw(asList: boolean): Buffer[] | Buffer
+  abstract raw(): Buffer[] | AccessListEIP2930ValuesArray
 
   /**
    * Returns the encoding of the transaction.
@@ -185,13 +167,8 @@ export abstract class BaseTransaction<TransactionObject> {
     if (privateKey.length !== 32) {
       throw new Error('Private key must be 32 bytes in length.')
     }
-
     const msgHash = this.getMessageToSign()
-
-    // Only `v` is reassigned.
-    /* eslint-disable-next-line prefer-const */
-    let { v, r, s } = ecsign(msgHash, privateKey)
-
+    const { v, r, s } = ecsign(msgHash, privateKey)
     return this._processSignature(v, r, s)
   }
 
@@ -203,9 +180,9 @@ export abstract class BaseTransaction<TransactionObject> {
   // Accept the v,r,s values from the `sign` method, and convert this into a TransactionObject
   protected abstract _processSignature(v: number, r: Buffer, s: Buffer): TransactionObject
 
-  protected _validateExceedsMaxInteger(validateCannotExceedMaxInteger: { [key: string]: BN }) {
-    for (const [key, value] of Object.entries(validateCannotExceedMaxInteger)) {
-      if (value && value.gt(MAX_INTEGER)) {
+  protected _validateCannotExceedMaxInteger(values: { [key: string]: BN | undefined }) {
+    for (const [key, value] of Object.entries(values)) {
+      if (value?.gt(MAX_INTEGER)) {
         throw new Error(`${key} cannot exceed MAX_INTEGER, given ${value}`)
       }
     }

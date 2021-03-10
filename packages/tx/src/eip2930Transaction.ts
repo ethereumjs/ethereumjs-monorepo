@@ -15,28 +15,13 @@ import {
   AccessList,
   AccessListBuffer,
   AccessListEIP2930TxData,
+  AccessListEIP2930ValuesArray,
   AccessListItem,
   isAccessList,
   JsonTx,
   TxOptions,
+  N_DIV_2,
 } from './types'
-
-// secp256k1n/2
-const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
-
-type EIP2930ValuesArray = [
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  AccessListBuffer,
-  Buffer?,
-  Buffer?,
-  Buffer?
-]
 
 /**
  * Typed transaction with optional access lists
@@ -88,21 +73,22 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     }
 
     const values = rlp.decode(serialized.slice(1))
+
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized tx input: must be array')
     }
 
-    return AccessListEIP2930Transaction.fromValuesArray(values, opts)
+    return AccessListEIP2930Transaction.fromValuesArray(values as any, opts)
   }
 
   /**
    * Instantiate a transaction from the serialized tx.
-   * (alias of fromSerializedTx())
+   * (alias of `fromSerializedTx()`)
    *
    * Note: This means that the Buffer should start with 0x01.
    *
    * @deprecated this constructor alias is deprecated and will be removed
-   * in favor of the from SerializedTx() constructor
+   * in favor of the `fromSerializedTx()` constructor
    */
   public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     return AccessListEIP2930Transaction.fromSerializedTx(serialized, opts)
@@ -114,34 +100,33 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * The format is:
    * chainId, nonce, gasPrice, gasLimit, to, value, data, access_list, yParity (v), senderR (r), senderS (s)
    */
-  public static fromValuesArray(values: (Buffer | AccessListBuffer)[], opts: TxOptions = {}) {
-    if (values.length == 8 || values.length == 11) {
-      const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = <
-        EIP2930ValuesArray
-      >values
-      const emptyBuffer = Buffer.from([])
-
-      return new AccessListEIP2930Transaction(
-        {
-          chainId: new BN(chainId),
-          nonce: new BN(nonce),
-          gasPrice: new BN(gasPrice),
-          gasLimit: new BN(gasLimit),
-          to: to && to.length > 0 ? new Address(to) : undefined,
-          value: new BN(value),
-          data: data ?? emptyBuffer,
-          accessList: accessList ?? emptyBuffer,
-          v: v !== undefined ? new BN(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
-          r: r !== undefined && !r.equals(emptyBuffer) ? new BN(r) : undefined,
-          s: s !== undefined && !s.equals(emptyBuffer) ? new BN(s) : undefined,
-        },
-        opts ?? {}
-      )
-    } else {
+  public static fromValuesArray(values: AccessListEIP2930ValuesArray, opts: TxOptions = {}) {
+    if (values.length !== 8 && values.length !== 11) {
       throw new Error(
         'Invalid EIP-2930 transaction. Only expecting 8 values (for unsigned tx) or 11 values (for signed tx).'
       )
     }
+
+    const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = values
+
+    const emptyBuffer = Buffer.from([])
+
+    return new AccessListEIP2930Transaction(
+      {
+        chainId: new BN(chainId),
+        nonce: new BN(nonce),
+        gasPrice: new BN(gasPrice),
+        gasLimit: new BN(gasLimit),
+        to: to && to.length > 0 ? new Address(to) : undefined,
+        value: new BN(value),
+        data: data ?? emptyBuffer,
+        accessList: accessList ?? emptyBuffer,
+        v: v !== undefined ? new BN(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
+        r: r !== undefined && !r.equals(emptyBuffer) ? new BN(r) : undefined,
+        s: s !== undefined && !s.equals(emptyBuffer) ? new BN(s) : undefined,
+      },
+      opts
+    )
   }
 
   /**
@@ -158,17 +143,14 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       throw new Error('EIP-2930 not enabled on Common')
     }
 
-    // check  the type of AccessList. If it's a JSON-type, we have to convert it to a buffer.
-
+    // check the type of AccessList. If it's a JSON-type, we have to convert it to a Buffer.
     let usedAccessList
     if (accessList && isAccessList(accessList)) {
       this.AccessListJSON = accessList
-
       const newAccessList: AccessListBuffer = []
 
       for (let i = 0; i < accessList.length; i++) {
         const item: AccessListItem = accessList[i]
-        //const addItem: AccessListBufferItem = []
         const addressBuffer = toBuffer(item.address)
         const storageItems: Buffer[] = []
         for (let index = 0; index < item.storageKeys.length; index++) {
@@ -208,7 +190,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       throw new Error('The y-parity of the transaction should either be 0 or 1')
     }
 
-    if (this.common.gteHardfork('homestead') && this.s && this.s.gt(N_DIV_2)) {
+    if (this.common.gteHardfork('homestead') && this.s?.gt(N_DIV_2)) {
       throw new Error(
         'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
       )
@@ -263,20 +245,10 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   /**
    * Returns a Buffer Array of the raw Buffers of this transaction, in order.
    *
-   * Note that if you want to use this function in a tx type independent way
-   * to then use the raw data output for tx instantiation with
-   * `Tx.fromValuesArray()` you should set the `asList` parameter to `true` -
-   * which is ignored on a legacy tx but provides the correct format on
-   * a typed tx.
-   *
-   * To prepare a tx to be added as block data with `Block.fromValuesArray()`
-   * just use the plain `raw()` method.
-   *
-   * @param asList - By default, this method returns a concatenated Buffer
-   *                 If this is not desired, then set this to `true`, to get a Buffer array.
+   * Use `serialize()` to add to block data for `Block.fromValuesArray()`.
    */
-  raw(asList = false): Buffer[] | Buffer {
-    const base = <Buffer[]>[
+  raw(): AccessListEIP2930ValuesArray {
+    return [
       bnToRlp(this.chainId),
       bnToRlp(this.nonce),
       bnToRlp(this.gasPrice),
@@ -289,27 +261,22 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       this.r !== undefined ? bnToRlp(this.r) : Buffer.from([]),
       this.s !== undefined ? bnToRlp(this.s) : Buffer.from([]),
     ]
-    if (!asList) {
-      return Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base)])
-    } else {
-      return base
-    }
   }
 
   /**
-   * Returns the encoding of the transaction. For typed transaction, this is the raw Buffer.
-   * In Transaction, this is a Buffer array.
+   * Returns the serialized encoding of the transaction.
    */
   serialize(): Buffer {
-    return <Buffer>this.raw()
+    const base = this.raw()
+    return Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base as any)])
   }
 
   /**
    * Computes a sha3-256 hash of the serialized unsigned tx, which is used to sign the transaction.
    */
   getMessageToSign() {
-    const base = this.raw(true).slice(0, 8)
-    return keccak256(Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base)]))
+    const base = this.raw().slice(0, 8)
+    return keccak256(Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base as any)]))
   }
 
   /**
@@ -342,7 +309,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
     // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
     // TODO: verify if this is the case for EIP-2930
-    if (this.common.gteHardfork('homestead') && this.s && this.s.gt(N_DIV_2)) {
+    if (this.common.gteHardfork('homestead') && this.s?.gt(N_DIV_2)) {
       throw new Error(
         'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
       )

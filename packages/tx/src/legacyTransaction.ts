@@ -1,6 +1,3 @@
-/* eslint-disable no-dupe-class-members */
-
-import { Buffer } from 'buffer'
 import {
   Address,
   BN,
@@ -12,11 +9,8 @@ import {
   toBuffer,
   unpadBuffer,
 } from 'ethereumjs-util'
-import { TxOptions, TxData, JsonTx } from './types'
+import { TxOptions, TxData, JsonTx, N_DIV_2 } from './types'
 import { BaseTransaction } from './baseTransaction'
-
-// secp256k1n/2
-const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
 
 /**
  * An Ethereum non-typed (legacy) transaction
@@ -48,10 +42,10 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
   /**
    * Instantiate a transaction from the serialized tx.
-   * (alias of fromSerializedTx())
+   * (alias of `fromSerializedTx()`)
    *
    * @deprecated this constructor alias is deprecated and will be removed
-   * in favor of the from SerializedTx() constructor
+   * in favor of the `fromSerializedTx()` constructor
    */
   public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     return Transaction.fromSerializedTx(serialized, opts)
@@ -64,38 +58,32 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * nonce, gasPrice, gasLimit, to, value, data, v, r, s
    */
   public static fromValuesArray(values: Buffer[], opts: TxOptions = {}) {
+    // If length is not 6, it has length 9. If v/r/s are empty Buffers, it is still an unsigned transaction
+    // This happens if you get the RLP data from `raw()`
     if (values.length !== 6 && values.length !== 9) {
       throw new Error(
         'Invalid transaction. Only expecting 6 values (for unsigned tx) or 9 values (for signed tx).'
       )
     }
 
-    // If length is not 6, it has length 9. If v/r/s are empty Buffers, it is still an unsigned transaction
-    // This happens if you get the RLP data from `raw()`
-    if (values.length === 6 || values.length == 9) {
-      const [nonce, gasPrice, gasLimit, to, value, data, v, r, s] = values
+    const [nonce, gasPrice, gasLimit, to, value, data, v, r, s] = values
 
-      const emptyBuffer = Buffer.from([])
+    const emptyBuffer = Buffer.from([])
 
-      return new Transaction(
-        {
-          nonce: new BN(nonce),
-          gasPrice: new BN(gasPrice),
-          gasLimit: new BN(gasLimit),
-          to: to && to.length > 0 ? new Address(to) : undefined,
-          value: new BN(value),
-          data: data ?? emptyBuffer,
-          v: v !== undefined && !v.equals(emptyBuffer) ? new BN(v) : undefined,
-          r: r !== undefined && !r.equals(emptyBuffer) ? new BN(r) : undefined,
-          s: s !== undefined && !s.equals(emptyBuffer) ? new BN(s) : undefined,
-        },
-        opts
-      )
-    } else {
-      throw new Error(
-        'Invalid transaction. Only expecting 6 values (for unsigned tx) or 9 values (for signed tx).'
-      )
-    }
+    return new Transaction(
+      {
+        nonce: new BN(nonce),
+        gasPrice: new BN(gasPrice),
+        gasLimit: new BN(gasLimit),
+        to: to && to.length > 0 ? new Address(to) : undefined,
+        value: new BN(value),
+        data: data ?? emptyBuffer,
+        v: v !== undefined && !v.equals(emptyBuffer) ? new BN(v) : undefined,
+        r: r !== undefined && !r.equals(emptyBuffer) ? new BN(r) : undefined,
+        s: s !== undefined && !s.equals(emptyBuffer) ? new BN(s) : undefined,
+      },
+      opts
+    )
   }
 
   /**
@@ -108,16 +96,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
   public constructor(txData: TxData, opts: TxOptions = {}) {
     super(txData, opts)
 
-    const validateCannotExceedMaxInteger = {
-      r: this.r ?? new BN(0),
-      s: this.s ?? new BN(0),
-    }
-
-    this._validateExceedsMaxInteger(validateCannotExceedMaxInteger)
-
-    if (this.v) {
-      this._validateTxV(this.v)
-    }
+    this._validateCannotExceedMaxInteger({ r: this.r, s: this.s })
 
     this._validateTxV(this.v)
 
@@ -129,15 +108,6 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
   /**
    * Returns a Buffer Array of the raw Buffers of this transaction, in order.
-   *
-   * Note that if you want to use this function in a tx type independent way
-   * to then use the raw data output for tx instantiation with
-   * `Tx.fromValuesArray()` you should set the `asList` parameter to `true` -
-   * which is ignored on a legacy tx but provides the correct format on
-   * a typed tx.
-   *
-   * To prepare a tx to be added as block data with `Block.fromValuesArray()`
-   * just use the plain `raw()` method.
    */
   raw(): Buffer[] {
     return [
@@ -212,7 +182,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
     const msgHash = this.getMessageToVerifySignature()
 
     // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
-    if (this.common.gteHardfork('homestead') && this.s && this.s.gt(N_DIV_2)) {
+    if (this.common.gteHardfork('homestead') && this.s?.gt(N_DIV_2)) {
       throw new Error(
         'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
       )

@@ -194,8 +194,8 @@ export class Config {
     // TODO: map chainParams (and lib/util.parseParams) to new Common format
     const common =
       options.common ?? new Common({ chain: Config.CHAIN_DEFAULT, hardfork: 'chainstart' })
-    this.chainCommon = Object.assign(Object.create(Object.getPrototypeOf(common)), common)
-    this.execCommon = Object.assign(Object.create(Object.getPrototypeOf(common)), common)
+    this.chainCommon = common.copy()
+    this.execCommon = common.copy()
 
     this.discDns = this.getDnsDiscovery(options.discDns)
     this.discV4 = this.getV4Discovery(options.discV4)

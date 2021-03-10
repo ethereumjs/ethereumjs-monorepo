@@ -55,7 +55,7 @@ tape('[Transaction]', function (t) {
       const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
       tx = tx.sign(privKey)
       const serialized = tx.serialize()
-      st.throws(() => Transaction.fromRlpSerializedTx(serialized))
+      st.throws(() => Transaction.fromSerializedTx(serialized))
       st.end()
     }
   )
@@ -131,7 +131,7 @@ tape('[Transaction]', function (t) {
     const s1 = tx.serialize()
 
     const s1Rlp = toBuffer('0x' + s1.toString('hex'))
-    const tx2 = Transaction.fromRlpSerializedTx(s1Rlp)
+    const tx2 = Transaction.fromSerializedTx(s1Rlp)
     const s2 = tx2.serialize()
 
     st.ok(s1.equals(s2))
@@ -182,7 +182,7 @@ tape('[Transaction]', function (t) {
     "getMessageToSign(), getSenderPublicKey() (implicit call) -> verify EIP155 signature based on Vitalik's tests",
     function (st) {
       txFixturesEip155.forEach(function (tx) {
-        const pt = Transaction.fromRlpSerializedTx(toBuffer(tx.rlp))
+        const pt = Transaction.fromSerializedTx(toBuffer(tx.rlp))
         st.equal(pt.getMessageToSign().toString('hex'), tx.hash)
         st.equal('0x' + pt.serialize().toString('hex'), tx.rlp)
         st.equal(pt.getSenderAddress().toString(), '0x' + tx.sender)
@@ -359,7 +359,7 @@ tape('[Transaction]', function (t) {
 
     const serialized = tx.serialize()
 
-    const reTx = Transaction.fromRlpSerializedTx(serialized, { common })
+    const reTx = Transaction.fromSerializedTx(serialized, { common })
     st.equal(reTx.verifySignature(), true)
     st.equal(reTx.common.chainId(), 42)
 
@@ -394,11 +394,11 @@ tape('[Transaction]', function (t) {
     const rawSigned = tx.serialize()
     st.ok(tx.isSigned())
 
-    tx = Transaction.fromRlpSerializedTx(rawUnsigned)
+    tx = Transaction.fromSerializedTx(rawUnsigned)
     st.notOk(tx.isSigned())
     tx = tx.sign(privateKey)
     st.ok(tx.isSigned())
-    tx = Transaction.fromRlpSerializedTx(rawSigned)
+    tx = Transaction.fromSerializedTx(rawSigned)
     st.ok(tx.isSigned())
 
     const signedValues = (rlp.decode(rawSigned) as any) as Buffer[]
