@@ -74,15 +74,22 @@ export default class TransactionFactory {
    * A Buffer[] (Legacy Transaction)
    * This method returns the right transaction.
    *
-   * @param rawData - Either a Buffer or a Buffer[]
+   * @param data - A Buffer or Buffer[]
    * @param txOptions - The transaction options
    */
-  public static fromBlockBodyData(rawData: Buffer | Buffer[], txOptions: TxOptions = {}) {
-    if (Buffer.isBuffer(rawData)) {
-      return this.fromRawData(rawData, txOptions)
-    } else if (Array.isArray(rawData)) {
-      // It is a legacy transaction
-      return Transaction.fromValuesArray(rawData, txOptions)
+  public static fromBlockBodyData(data: Buffer | Buffer[], txOptions: TxOptions = {}) {
+    if (Buffer.isBuffer(data)) {
+      return this.fromSerializedData(data, txOptions)
+    } else if (Array.isArray(data)) {
+      if (data.length === 6 || data.length === 9) {
+        // It is a legacy transaction
+        return Transaction.fromValuesArray(data, txOptions)
+      } else if (data.length === 8 || data.length === 11) {
+        // It is an Access List Transaction
+        return AccessListEIP2930Transaction.fromValuesArray(data, txOptions)
+      } else {
+        throw new Error('Cannot decode transaction: unknown array length')
+      }
     } else {
       throw new Error('Cannot decode transaction: unknown type input')
     }
