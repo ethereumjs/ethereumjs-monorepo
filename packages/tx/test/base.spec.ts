@@ -89,10 +89,10 @@ tape('[BaseTransaction]', function (t) {
         `${txType.name}: tx should not be frozen when freeze deactivated in options`
       )
 
-      tx = txType.class.fromValuesArray(txType.values, { common })
+      tx = txType.class.fromValuesArray(txType.values as any, { common })
       st.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
 
-      tx = txType.class.fromValuesArray(txType.values, { common, freeze: false })
+      tx = txType.class.fromValuesArray(txType.values as any, { common, freeze: false })
       st.ok(
         !Object.isFrozen(tx),
         `${txType.name}: tx should not be frozen when freeze deactivated in options`

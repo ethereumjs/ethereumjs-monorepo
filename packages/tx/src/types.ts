@@ -31,15 +31,21 @@ export interface TxOptions {
   freeze?: boolean
 }
 
+/*
+ * Access List types
+ */
+
 export type AccessListItem = {
   address: string
   storageKeys: string[]
 }
 
+/*
+ * An Access List as a tuple of [address: Buffer, storageKeys: Buffer[]]
+ */
 export type AccessListBufferItem = [Buffer, Buffer[]]
-
-export type AccessList = AccessListItem[]
 export type AccessListBuffer = AccessListBufferItem[]
+export type AccessList = AccessListItem[]
 
 export function isAccessListBuffer(
   input: AccessListBuffer | AccessList

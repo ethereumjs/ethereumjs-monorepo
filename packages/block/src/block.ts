@@ -149,12 +149,14 @@ export class Block {
   }
 
   /**
-   *  Returns a Buffer Array of the raw Buffers of this block, in order.
+   * Returns a Buffer Array of the raw Buffers of this block, in order.
    */
   raw(): BlockBuffer {
     return [
       this.header.raw(),
-      this.transactions.map((tx) => <Buffer[]>tx.raw()),
+      this.transactions.map((tx) =>
+        'transactionType' in tx && tx.transactionType > 0 ? tx.serialize() : tx.raw()
+      ) as Buffer[],
       this.uncleHeaders.map((uh) => uh.raw()),
     ]
   }

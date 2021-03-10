@@ -81,15 +81,8 @@ export default class TransactionFactory {
     if (Buffer.isBuffer(data)) {
       return this.fromSerializedData(data, txOptions)
     } else if (Array.isArray(data)) {
-      if (data.length === 6 || data.length === 9) {
-        // It is a legacy transaction
-        return Transaction.fromValuesArray(data, txOptions)
-      } else if (data.length === 8 || data.length === 11) {
-        // It is an Access List Transaction
-        return AccessListEIP2930Transaction.fromValuesArray(data, txOptions)
-      } else {
-        throw new Error('Cannot decode transaction: unknown array length')
-      }
+      // It is a legacy transaction
+      return Transaction.fromValuesArray(data, txOptions)
     } else {
       throw new Error('Cannot decode transaction: unknown type input')
     }

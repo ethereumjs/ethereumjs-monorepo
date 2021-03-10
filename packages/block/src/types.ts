@@ -100,7 +100,10 @@ export interface BlockData {
 export type BlockBuffer = [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer]
 export type BlockHeaderBuffer = Buffer[]
 export type BlockBodyBuffer = [TransactionsBuffer, UncleHeadersBuffer]
-export type TransactionsBuffer = Buffer[][]
+/**
+ * TransactionsBuffer can be an array of serialized txs for Typed Transactions or an array of Buffer Arrays for legacy transactions.
+ */
+export type TransactionsBuffer = Buffer[][] | Buffer[]
 export type UncleHeadersBuffer = Buffer[][]
 
 /**

@@ -73,11 +73,12 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     }
 
     const values = rlp.decode(serialized.slice(1))
+
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized tx input: must be array')
     }
 
-    return AccessListEIP2930Transaction.fromValuesArray(values, opts)
+    return AccessListEIP2930Transaction.fromValuesArray(values as any, opts)
   }
 
   /**
@@ -99,16 +100,15 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * The format is:
    * chainId, nonce, gasPrice, gasLimit, to, value, data, access_list, yParity (v), senderR (r), senderS (s)
    */
-  public static fromValuesArray(values: (Buffer | AccessListBuffer)[], opts: TxOptions = {}) {
+  public static fromValuesArray(values: AccessListEIP2930ValuesArray, opts: TxOptions = {}) {
     if (values.length !== 8 && values.length !== 11) {
       throw new Error(
         'Invalid EIP-2930 transaction. Only expecting 8 values (for unsigned tx) or 11 values (for signed tx).'
       )
     }
 
-    const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = <
-      AccessListEIP2930ValuesArray
-    >values
+    const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = values
+
     const emptyBuffer = Buffer.from([])
 
     return new AccessListEIP2930Transaction(
@@ -147,7 +147,6 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     let usedAccessList
     if (accessList && isAccessList(accessList)) {
       this.AccessListJSON = accessList
-
       const newAccessList: AccessListBuffer = []
 
       for (let i = 0; i < accessList.length; i++) {
@@ -248,7 +247,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    *
    * Use `serialize()` to add to block data for `Block.fromValuesArray()`.
    */
-  raw(): Buffer[] {
+  raw(): AccessListEIP2930ValuesArray {
     return [
       bnToRlp(this.chainId),
       bnToRlp(this.nonce),
@@ -257,7 +256,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       this.to !== undefined ? this.to.buf : Buffer.from([]),
       bnToRlp(this.value),
       this.data,
-      <any>this.accessList,
+      this.accessList,
       this.v !== undefined ? bnToRlp(this.v) : Buffer.from([]),
       this.r !== undefined ? bnToRlp(this.r) : Buffer.from([]),
       this.s !== undefined ? bnToRlp(this.s) : Buffer.from([]),
@@ -268,7 +267,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * Returns the serialized encoding of the transaction.
    */
   serialize(): Buffer {
-    return Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(this.raw())])
+    const base = this.raw()
+    return Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base as any)])
   }
 
   /**
@@ -276,7 +276,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    */
   getMessageToSign() {
     const base = this.raw().slice(0, 8)
-    return keccak256(Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base)]))
+    return keccak256(Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base as any)]))
   }
 
   /**
