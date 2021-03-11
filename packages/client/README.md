@@ -337,6 +337,27 @@ to help contributors better understand how the project is organized.
 
 ## Developer
 
+### Debugging
+
+#### Networking
+
+For debugging on networking issues two npm start scripts exist to set up two local client nodes to test networking connection flow.
+
+Start a first client listening on the default port and using the default data directory with:
+
+```shell
+DEBUG=devp2p:* npm run client:start:dev1
+DEBUG=devp2p:* npm run client:start:dev1 -- --datadir=datadir-dev1
+```
+
+Then take the enode address from the started client instance (use `127.0.0.1` for the IP address) and start a second client with:
+
+```shell
+DEBUG=devp2p:* npm run client:start:dev2 -- --bootnodes=enode://[NODE_ID]@127.0.0.1:30303
+```
+
+This second client is using './datadir-dev2' for its data directory.
+
 ### Diagram Updates
 
 To update the structure diagram files in the root folder open the `client.drawio` file in [draw.io](https://draw.io/), make your changes, and open a PR with the updated files. Export `svg` and `png` with `border` `width=20` and `transparency=false`. For `png` go to "Advanced" and select `300 DPI`.
