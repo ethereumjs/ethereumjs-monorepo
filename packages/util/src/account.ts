@@ -5,7 +5,7 @@ import {
   privateKeyVerify,
   publicKeyCreate,
   publicKeyVerify,
-  publicKeyConvert
+  publicKeyConvert,
 } from 'ethereum-cryptography/secp256k1'
 import { stripHexPrefix } from 'ethjs-util'
 import { KECCAK256_RLP, KECCAK256_NULL } from './constants'
@@ -121,7 +121,7 @@ export class Account {
 /**
  * Checks if the address is a valid. Accepts checksummed addresses too.
  */
-export const isValidAddress = function(hexAddress: string): boolean {
+export const isValidAddress = function (hexAddress: string): boolean {
   assertIsHexString(hexAddress)
   return /^0x[0-9a-fA-F]{40}$/.test(hexAddress)
 }
@@ -136,7 +136,7 @@ export const isValidAddress = function(hexAddress: string): boolean {
  * WARNING: Checksums with and without the chainId will differ. As of 2019-06-26, the most commonly
  * used variation in Ethereum was without the chainId. This may change in the future.
  */
-export const toChecksumAddress = function(hexAddress: string, eip1191ChainId?: BNLike): string {
+export const toChecksumAddress = function (hexAddress: string, eip1191ChainId?: BNLike): string {
   assertIsHexString(hexAddress)
   const address = stripHexPrefix(hexAddress).toLowerCase()
 
@@ -165,7 +165,7 @@ export const toChecksumAddress = function(hexAddress: string, eip1191ChainId?: B
  *
  * See toChecksumAddress' documentation for details about the eip1191ChainId parameter.
  */
-export const isValidChecksumAddress = function(
+export const isValidChecksumAddress = function (
   hexAddress: string,
   eip1191ChainId?: BNLike
 ): boolean {
@@ -177,7 +177,7 @@ export const isValidChecksumAddress = function(
  * @param from The address which is creating this new address
  * @param nonce The nonce of the from account
  */
-export const generateAddress = function(from: Buffer, nonce: Buffer): Buffer {
+export const generateAddress = function (from: Buffer, nonce: Buffer): Buffer {
   assertIsBuffer(from)
   assertIsBuffer(nonce)
   const nonceBN = new BN(nonce)
@@ -198,7 +198,7 @@ export const generateAddress = function(from: Buffer, nonce: Buffer): Buffer {
  * @param salt A salt
  * @param initCode The init code of the contract being created
  */
-export const generateAddress2 = function(from: Buffer, salt: Buffer, initCode: Buffer): Buffer {
+export const generateAddress2 = function (from: Buffer, salt: Buffer, initCode: Buffer): Buffer {
   assertIsBuffer(from)
   assertIsBuffer(salt)
   assertIsBuffer(initCode)
@@ -216,7 +216,7 @@ export const generateAddress2 = function(from: Buffer, salt: Buffer, initCode: B
 /**
  * Checks if the private key satisfies the rules of the curve secp256k1.
  */
-export const isValidPrivate = function(privateKey: Buffer): boolean {
+export const isValidPrivate = function (privateKey: Buffer): boolean {
   return privateKeyVerify(privateKey)
 }
 
@@ -226,7 +226,7 @@ export const isValidPrivate = function(privateKey: Buffer): boolean {
  * @param publicKey The two points of an uncompressed key, unless sanitize is enabled
  * @param sanitize Accept public keys in other formats
  */
-export const isValidPublic = function(publicKey: Buffer, sanitize: boolean = false): boolean {
+export const isValidPublic = function (publicKey: Buffer, sanitize: boolean = false): boolean {
   assertIsBuffer(publicKey)
   if (publicKey.length === 64) {
     // Convert to SEC1 for secp256k1
@@ -246,7 +246,7 @@ export const isValidPublic = function(publicKey: Buffer, sanitize: boolean = fal
  * @param pubKey The two points of an uncompressed key, unless sanitize is enabled
  * @param sanitize Accept public keys in other formats
  */
-export const pubToAddress = function(pubKey: Buffer, sanitize: boolean = false): Buffer {
+export const pubToAddress = function (pubKey: Buffer, sanitize: boolean = false): Buffer {
   assertIsBuffer(pubKey)
   if (sanitize && pubKey.length !== 64) {
     pubKey = Buffer.from(publicKeyConvert(pubKey, false).slice(1))
@@ -261,7 +261,7 @@ export const publicToAddress = pubToAddress
  * Returns the ethereum public key of a given private key.
  * @param privateKey A private key must be 256 bits wide
  */
-export const privateToPublic = function(privateKey: Buffer): Buffer {
+export const privateToPublic = function (privateKey: Buffer): Buffer {
   assertIsBuffer(privateKey)
   // skip the type flag and use the X, Y points
   return Buffer.from(publicKeyCreate(privateKey, false)).slice(1)
@@ -271,14 +271,14 @@ export const privateToPublic = function(privateKey: Buffer): Buffer {
  * Returns the ethereum address of a given private key.
  * @param privateKey A private key must be 256 bits wide
  */
-export const privateToAddress = function(privateKey: Buffer): Buffer {
+export const privateToAddress = function (privateKey: Buffer): Buffer {
   return publicToAddress(privateToPublic(privateKey))
 }
 
 /**
  * Converts a public key to the Ethereum format.
  */
-export const importPublic = function(publicKey: Buffer): Buffer {
+export const importPublic = function (publicKey: Buffer): Buffer {
   assertIsBuffer(publicKey)
   if (publicKey.length !== 64) {
     publicKey = Buffer.from(publicKeyConvert(publicKey, false).slice(1))
@@ -289,7 +289,7 @@ export const importPublic = function(publicKey: Buffer): Buffer {
 /**
  * Returns the zero address.
  */
-export const zeroAddress = function(): string {
+export const zeroAddress = function (): string {
   const addressLength = 20
   const addr = zeros(addressLength)
   return bufferToHex(addr)
@@ -298,7 +298,7 @@ export const zeroAddress = function(): string {
 /**
  * Checks if a given address is the zero address.
  */
-export const isZeroAddress = function(hexAddress: string): boolean {
+export const isZeroAddress = function (hexAddress: string): boolean {
   assertIsHexString(hexAddress)
   const zeroAddr = zeroAddress()
   return zeroAddr === hexAddress

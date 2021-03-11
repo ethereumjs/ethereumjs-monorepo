@@ -14,12 +14,12 @@ import {
   toBuffer,
   isValidChecksumAddress,
   isValidAddress,
-  toChecksumAddress
+  toChecksumAddress,
 } from '../src'
 const eip1014Testdata = require('./testdata/eip1014Examples.json')
 
-tape('Account', function(t) {
-  t.test('empty constructor', function(st) {
+tape('Account', function (t) {
+  t.test('empty constructor', function (st) {
     const account = new Account()
     st.ok(account.nonce.isZero(), 'should have zero nonce')
     st.ok(account.balance.isZero(), 'should have zero balance')
@@ -36,12 +36,12 @@ tape('Account', function(t) {
     st.end()
   })
 
-  t.test('from Array data', function(st) {
+  t.test('from Array data', function (st) {
     const raw = [
       '0x02', // nonce
       '0x0384', // balance
       '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', // stateRoot
-      '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470' // codeHash
+      '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470', // codeHash
     ]
     const account = Account.fromValuesArray(raw.map(toBuffer))
     st.ok(account.nonce.eqn(2), 'should have correct nonce')
@@ -59,12 +59,12 @@ tape('Account', function(t) {
     st.end()
   })
 
-  t.test('from Object data', function(st) {
+  t.test('from Object data', function (st) {
     const raw = {
       nonce: '0x02',
       balance: '0x0384',
       stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      codeHash: '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+      codeHash: '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     }
     const account = Account.fromAccountData(raw)
     st.ok(account.nonce.eqn(2), 'should have correct nonce')
@@ -82,7 +82,7 @@ tape('Account', function(t) {
     st.end()
   })
 
-  t.test('from RLP data', function(st) {
+  t.test('from RLP data', function (st) {
     const accountRlp = Buffer.from(
       'f84602820384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
       'hex'
@@ -103,12 +103,12 @@ tape('Account', function(t) {
     st.end()
   })
 
-  t.test('serialize', function(st) {
+  t.test('serialize', function (st) {
     const raw = {
       nonce: '0x01',
       balance: '0x42',
       stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+      codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     }
     const account = Account.fromAccountData(raw)
     const accountRlp = encode([raw.nonce, raw.balance, raw.stateRoot, raw.codeHash])
@@ -116,7 +116,7 @@ tape('Account', function(t) {
     st.end()
   })
 
-  t.test('isContract', function(st) {
+  t.test('isContract', function (st) {
     const accountRlp = Buffer.from(
       'f84602820384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
       'hex'
@@ -128,14 +128,14 @@ tape('Account', function(t) {
       nonce: '0x01',
       balance: '0x0042',
       stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+      codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     }
     account = Account.fromAccountData(raw)
     st.ok(account.isContract(), 'should return true for a contract account')
     st.end()
   })
 
-  t.test('isEmpty', function(st) {
+  t.test('isEmpty', function (st) {
     let account = new Account()
     st.ok(account.isEmpty(), 'should return true for an empty account')
 
@@ -143,14 +143,14 @@ tape('Account', function(t) {
       nonce: '0x01',
       balance: '0x0042',
       stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      codeHash: '0xd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b'
+      codeHash: '0xd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b',
     }
     account = Account.fromAccountData(raw)
     st.notOk(account.isEmpty(), 'should return false for a non-empty account')
     st.end()
   })
 
-  t.test('validation', function(st) {
+  t.test('validation', function (st) {
     st.throws(() => {
       new Account(undefined, undefined, Buffer.from('hey'), undefined)
     }, 'should only accept length 32 buffer for stateRoot')
@@ -175,25 +175,25 @@ tape('Account', function(t) {
   })
 })
 
-tape('Utility Functions', function(t) {
-  t.test('isValidPrivate', function(st) {
+tape('Utility Functions', function (t) {
+  t.test('isValidPrivate', function (st) {
     const SECP256K1_N = new BN(
       'fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141',
       16
     )
 
     let tmp = '0011223344'
-    st.throws(function() {
+    st.throws(function () {
       isValidPrivate(Buffer.from(tmp, 'hex'))
     }, 'should fail on short input')
 
     tmp =
       '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
-    st.throws(function() {
+    st.throws(function () {
       isValidPrivate(Buffer.from(tmp, 'hex'))
     }, 'should fail on too big input')
 
-    st.throws(function() {
+    st.throws(function () {
       isValidPrivate((<unknown>'WRONG_INPUT_TYPE') as Buffer)
     }, 'should fail on wrong input type')
 
@@ -211,7 +211,7 @@ tape('Utility Functions', function(t) {
     st.end()
   })
 
-  t.test('isValidPublic', function(st) {
+  t.test('isValidPublic', function (st) {
     let pubKey = Buffer.from(
       '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae744',
       'hex'
@@ -275,7 +275,7 @@ tape('Utility Functions', function(t) {
     st.end()
   })
 
-  t.test('importPublic', function(st) {
+  t.test('importPublic', function (st) {
     const pubKey =
       '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
 
@@ -302,13 +302,13 @@ tape('Utility Functions', function(t) {
       'should work wt.testh compressed SEC1 keys'
     )
 
-    st.throws(function() {
+    st.throws(function () {
       importPublic((<unknown>pubKey) as Buffer)
     }, 'should throw if input is not Buffer')
     st.end()
   })
 
-  t.test('publicToAddress', function(st) {
+  t.test('publicToAddress', function (st) {
     let pubKey = Buffer.from(
       '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
       'hex'
@@ -329,7 +329,7 @@ tape('Utility Functions', function(t) {
       '023a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
       'hex'
     )
-    st.throws(function() {
+    st.throws(function () {
       publicToAddress(pubKey, true)
     }, "shouldn't produce an address given an invalid SEC1 public key")
 
@@ -337,18 +337,18 @@ tape('Utility Functions', function(t) {
       '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae744',
       'hex'
     )
-    st.throws(function() {
+    st.throws(function () {
       publicToAddress(pubKey)
     }, "shouldn't produce an address given an invalid public key")
 
     pubKey = '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d' as any
-    st.throws(function() {
+    st.throws(function () {
       publicToAddress(pubKey)
     }, 'should throw if input is not a buffer')
     st.end()
   })
 
-  t.test('privateToPublic', function(st) {
+  t.test('privateToPublic', function (st) {
     const pubKey =
       '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
     let privateKey = Buffer.from(
@@ -362,7 +362,7 @@ tape('Utility Functions', function(t) {
       'ea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c5f2a',
       'hex'
     )
-    st.throws(function() {
+    st.throws(function () {
       privateToPublic(privateKey)
     }, "shouldn't produce a public key given an invalid private key")
 
@@ -370,7 +370,7 @@ tape('Utility Functions', function(t) {
       'ea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c',
       'hex'
     )
-    st.throws(function() {
+    st.throws(function () {
       privateToPublic(privateKey)
     }, "shouldn't produce a public key given an invalid private key")
 
@@ -387,7 +387,7 @@ tape('Utility Functions', function(t) {
     st.end()
   })
 
-  t.test('privateToAddress', function(st) {
+  t.test('privateToAddress', function (st) {
     const address = '2f015c60e0be116b1f0cd534704db9c92118fb6a'
     // Our private key
     const privateKey = Buffer.from(
@@ -399,7 +399,7 @@ tape('Utility Functions', function(t) {
     st.end()
   })
 
-  t.test('generateAddress', function(st) {
+  t.test('generateAddress', function (st) {
     const addr = generateAddress(
       Buffer.from('990ccf8a0de58091c028d6ff76bb235ee67c1c39', 'utf8'),
       toBuffer(14)
@@ -412,7 +412,7 @@ tape('Utility Functions', function(t) {
     st.end()
   })
 
-  t.test('generateAddress wt.testh hex prefix', function(st) {
+  t.test('generateAddress wt.testh hex prefix', function (st) {
     const addr = generateAddress(
       toBuffer('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
       toBuffer(14)
@@ -425,7 +425,7 @@ tape('Utility Functions', function(t) {
     st.end()
   })
 
-  t.test('generateAddress wt.testh nonce 0 (special case)', function(st) {
+  t.test('generateAddress wt.testh nonce 0 (special case)', function (st) {
     const addr = generateAddress(
       toBuffer('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
       toBuffer(0)
@@ -438,15 +438,15 @@ tape('Utility Functions', function(t) {
     st.end()
   })
 
-  t.test('generateAddress wt.testh non-buffer inputs', function(st) {
-    st.throws(function() {
+  t.test('generateAddress wt.testh non-buffer inputs', function (st) {
+    st.throws(function () {
       generateAddress(
         (<unknown>'0x990ccf8a0de58091c028d6ff76bb235ee67c1c39') as Buffer,
         toBuffer(0)
       )
     }, 'should throw if address is not Buffer')
 
-    st.throws(function() {
+    st.throws(function () {
       generateAddress(
         toBuffer('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
         (<unknown>0) as Buffer
@@ -455,7 +455,7 @@ tape('Utility Functions', function(t) {
     st.end()
   })
 
-  t.test('generateAddress2: EIP-1014 testdata examples', function(st) {
+  t.test('generateAddress2: EIP-1014 testdata examples', function (st) {
     for (const testdata of eip1014Testdata) {
       const { address, comment, result, salt, initCode } = testdata
       const addr = generateAddress2(toBuffer(address), toBuffer(salt), toBuffer(initCode))
@@ -468,18 +468,18 @@ tape('Utility Functions', function(t) {
     st.end()
   })
 
-  t.test('generateAddress2: non-buffer inputs', function(st) {
+  t.test('generateAddress2: non-buffer inputs', function (st) {
     const { address, salt, initCode } = eip1014Testdata[0]
 
-    st.throws(function() {
+    st.throws(function () {
       generateAddress2((<unknown>address) as Buffer, toBuffer(salt), toBuffer(initCode))
     }, 'should throw if address is not Buffer')
 
-    st.throws(function() {
+    st.throws(function () {
       generateAddress2(toBuffer(address), (<unknown>salt) as Buffer, toBuffer(initCode))
     }, 'should throw if salt is not Buffer')
 
-    st.throws(function() {
+    st.throws(function () {
       generateAddress2(toBuffer(address), toBuffer(salt), (<unknown>initCode) as Buffer)
     }, 'should throw if initCode is not Buffer')
     st.end()
@@ -496,7 +496,7 @@ tape('Utility Functions', function(t) {
     '0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed',
     '0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359',
     '0xdbF03B407c01E7cD3CBea99509d93f8DDDC8C6FB',
-    '0xD1220A0cf47c7B9Be7A2E6BA89F429762e7b9aDb'
+    '0xD1220A0cf47c7B9Be7A2E6BA89F429762e7b9aDb',
   ]
 
   const eip1191ChecksummAddresses = {
@@ -509,7 +509,7 @@ tape('Utility Functions', function(t) {
       '0xd1220a0CF47C7B9Be7A2E6ba89F429762E7B9Adb',
       '0xdBf03b407c01e7cD3CBea99509d93f8dDDC8C6fB',
       '0xDe709F2102306220921060314715629080E2fb77',
-      '0xfb6916095Ca1dF60bB79cE92ce3ea74C37c5D359'
+      '0xfb6916095Ca1dF60bB79cE92ce3ea74C37c5D359',
     ],
     30: [
       '0x6549F4939460DE12611948B3F82B88C3C8975323',
@@ -521,7 +521,7 @@ tape('Utility Functions', function(t) {
       '0xD1220A0Cf47c7B9BE7a2e6ba89F429762E7B9adB',
       '0xDBF03B407c01E7CD3cBea99509D93F8Dddc8C6FB',
       '0xDe709F2102306220921060314715629080e2FB77',
-      '0xFb6916095cA1Df60bb79ce92cE3EA74c37c5d359'
+      '0xFb6916095cA1Df60bb79ce92cE3EA74c37c5d359',
     ],
     31: [
       '0x42712D45473476B98452F434E72461577D686318',
@@ -534,12 +534,12 @@ tape('Utility Functions', function(t) {
       '0xDE709F2102306220921060314715629080e2Fb77',
       '0xFb6916095CA1dF60bb79CE92ce3Ea74C37c5D359',
       '0xd1220a0CF47c7B9Be7A2E6Ba89f429762E7b9adB',
-      '0xdbF03B407C01E7cd3cbEa99509D93f8dDDc8C6fB'
-    ]
+      '0xdbF03B407C01E7cd3cbEa99509D93f8dDDc8C6fB',
+    ],
   }
 
-  t.test('toChecksumAddress()', function(st) {
-    st.test('EIP55', function(st) {
+  t.test('toChecksumAddress()', function (st) {
+    st.test('EIP55', function (st) {
       for (let i = 0; i < eip55ChecksumAddresses.length; i++) {
         const tmp = eip55ChecksumAddresses[i]
         st.equal(toChecksumAddress(tmp.toLowerCase()), tmp)
@@ -547,8 +547,8 @@ tape('Utility Functions', function(t) {
       st.end()
     })
 
-    st.test('EIP1191', function(st) {
-      st.test('Should encode the example addresses correctly', function(st) {
+    st.test('EIP1191', function (st) {
+      st.test('Should encode the example addresses correctly', function (st) {
         for (const [chainId, addresses] of Object.entries(eip1191ChecksummAddresses)) {
           for (const addr of addresses) {
             st.equal(toChecksumAddress(addr.toLowerCase(), Number(chainId)), addr)
@@ -562,7 +562,7 @@ tape('Utility Functions', function(t) {
         }
         st.end()
       })
-      st.test('Should encode large chain ids greater than MAX_INTEGER correctly', function(st) {
+      st.test('Should encode large chain ids greater than MAX_INTEGER correctly', function (st) {
         const addr = '0x88021160C5C792225E4E5452585947470010289D'
         const chainIDBuffer = Buffer.from('796f6c6f763378', 'hex')
         st.equal(toChecksumAddress(addr.toLowerCase(), chainIDBuffer), addr)
@@ -577,20 +577,20 @@ tape('Utility Functions', function(t) {
       st.end()
     })
 
-    st.test('input format', function(st) {
-      st.throws(function() {
+    st.test('input format', function (st) {
+      st.throws(function () {
         toChecksumAddress('52908400098527886E0F7030069857D2E4169EE7'.toLowerCase())
       }, 'Should throw when the address is not hex-prefixed')
 
-      st.throws(function() {
+      st.throws(function () {
         toChecksumAddress('0xde709f2102306220921060314715629080e2fb77', '1234')
       }, 'Should throw when the chainId is not hex-prefixed')
       st.end()
     })
   })
 
-  t.test('isValidChecksumAddress()', function(st) {
-    st.test('EIP55', function(st) {
+  t.test('isValidChecksumAddress()', function (st) {
+    st.test('EIP55', function (st) {
       for (let i = 0; i < eip55ChecksumAddresses.length; i++) {
         st.ok(isValidChecksumAddress(eip55ChecksumAddresses[i]))
       }
@@ -598,8 +598,8 @@ tape('Utility Functions', function(t) {
       st.end()
     })
 
-    st.test('EIP1191', function(st) {
-      st.test('Should return true for the example addresses', function(st) {
+    st.test('EIP1191', function (st) {
+      st.test('Should return true for the example addresses', function (st) {
         for (const [chainId, addresses] of Object.entries(eip1191ChecksummAddresses)) {
           for (const addr of addresses) {
             st.ok(isValidChecksumAddress(addr, Number(chainId)))
@@ -614,7 +614,7 @@ tape('Utility Functions', function(t) {
         st.end()
       })
 
-      st.test('Should return false for invalid cases', function(st) {
+      st.test('Should return false for invalid cases', function (st) {
         // If we set the chain id, an EIP55 encoded address should be invalid
         for (let i = 0; i < eip55ChecksumAddresses.length; i++) {
           st.notOk(isValidChecksumAddress(eip55ChecksumAddresses[i], 1))
@@ -624,7 +624,7 @@ tape('Utility Functions', function(t) {
         st.end()
       })
 
-      st.test('Should return false if the wrong chain id is used', function(st) {
+      st.test('Should return false if the wrong chain id is used', function (st) {
         for (const [chainId, addresses] of Object.entries(eip1191ChecksummAddresses)) {
           for (const addr of addresses) {
             st.notOk(isValidChecksumAddress(addr, Number(chainId) + 1))
@@ -633,7 +633,7 @@ tape('Utility Functions', function(t) {
         st.end()
       })
 
-      st.test('input format', function(st) {
+      st.test('input format', function (st) {
         st.throws(() => {
           isValidChecksumAddress('2f015c60e0be116b1f0cd534704db9c92118fb6a')
         }, 'Should throw when the address is not hex-prefixed')
@@ -644,30 +644,30 @@ tape('Utility Functions', function(t) {
     })
   })
 
-  t.test('isValidAddress()', function(st) {
-    st.test('should return true', function(st) {
+  t.test('isValidAddress()', function (st) {
+    st.test('should return true', function (st) {
       st.ok(isValidAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6a'))
       st.ok(isValidAddress('0x52908400098527886E0F7030069857D2E4169EE7'))
       st.end()
     })
-    st.test('should return false', function(st) {
+    st.test('should return false', function (st) {
       st.notOk(isValidAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6'))
       st.notOk(isValidAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6aa'))
       st.end()
     })
-    st.test('should throw when input is not hex prefixed', function(st) {
-      st.throws(function() {
+    st.test('should throw when input is not hex prefixed', function (st) {
+      st.throws(function () {
         isValidAddress('2f015c60e0be116b1f0cd534704db9c92118fb6a')
       })
-      st.throws(function() {
+      st.throws(function () {
         isValidAddress('x2f015c60e0be116b1f0cd534704db9c92118fb6a')
       })
-      st.throws(function() {
+      st.throws(function () {
         isValidAddress('0X52908400098527886E0F7030069857D2E4169EE7')
       })
       st.end()
     })
-    st.test('error message should have correct format', function(st) {
+    st.test('error message should have correct format', function (st) {
       const input = '2f015c60e0be116b1f0cd534704db9c92118fb6a'
       try {
         isValidAddress('2f015c60e0be116b1f0cd534704db9c92118fb6a')

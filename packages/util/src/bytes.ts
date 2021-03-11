@@ -7,7 +7,7 @@ import { assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
  * Returns a buffer filled with 0s.
  * @param bytes the number of bytes the buffer should be
  */
-export const zeros = function(bytes: number): Buffer {
+export const zeros = function (bytes: number): Buffer {
   return Buffer.allocUnsafe(bytes).fill(0)
 }
 
@@ -19,7 +19,7 @@ export const zeros = function(bytes: number): Buffer {
  * @param right whether to start padding form the left or right
  * @return (Buffer)
  */
-const setLength = function(msg: Buffer, length: number, right: boolean) {
+const setLength = function (msg: Buffer, length: number, right: boolean) {
   const buf = zeros(length)
   if (right) {
     if (msg.length < length) {
@@ -43,7 +43,7 @@ const setLength = function(msg: Buffer, length: number, right: boolean) {
  * @param length the number of bytes the output should be
  * @return (Buffer)
  */
-export const setLengthLeft = function(msg: Buffer, length: number) {
+export const setLengthLeft = function (msg: Buffer, length: number) {
   assertIsBuffer(msg)
   return setLength(msg, length, false)
 }
@@ -55,7 +55,7 @@ export const setLengthLeft = function(msg: Buffer, length: number) {
  * @param length the number of bytes the output should be
  * @return (Buffer)
  */
-export const setLengthRight = function(msg: Buffer, length: number) {
+export const setLengthRight = function (msg: Buffer, length: number) {
   assertIsBuffer(msg)
   return setLength(msg, length, true)
 }
@@ -65,7 +65,7 @@ export const setLengthRight = function(msg: Buffer, length: number) {
  * @param a (Buffer|Array|String)
  * @return (Buffer|Array|String)
  */
-const stripZeros = function(a: any): Buffer | number[] | string {
+const stripZeros = function (a: any): Buffer | number[] | string {
   let first = a[0]
   while (a.length > 0 && first.toString() === '0') {
     a = a.slice(1)
@@ -79,7 +79,7 @@ const stripZeros = function(a: any): Buffer | number[] | string {
  * @param a (Buffer)
  * @return (Buffer)
  */
-export const unpadBuffer = function(a: Buffer): Buffer {
+export const unpadBuffer = function (a: Buffer): Buffer {
   assertIsBuffer(a)
   return stripZeros(a) as Buffer
 }
@@ -89,7 +89,7 @@ export const unpadBuffer = function(a: Buffer): Buffer {
  * @param a (number[])
  * @return (number[])
  */
-export const unpadArray = function(a: number[]): number[] {
+export const unpadArray = function (a: number[]): number[] {
   assertIsArray(a)
   return stripZeros(a) as number[]
 }
@@ -99,7 +99,7 @@ export const unpadArray = function(a: number[]): number[] {
  * @param a (String)
  * @return (String)
  */
-export const unpadHexString = function(a: string): string {
+export const unpadHexString = function (a: string): string {
   assertIsHexString(a)
   a = stripHexPrefix(a)
   return stripZeros(a) as string
@@ -122,7 +122,7 @@ export type ToBufferInputTypes =
  * Inputs supported: `Buffer`, `String`, `Number`, null/undefined, `BN` and other objects with a `toArray()` or `toBuffer()` method.
  * @param v the value
  */
-export const toBuffer = function(v: ToBufferInputTypes): Buffer {
+export const toBuffer = function (v: ToBufferInputTypes): Buffer {
   if (v === null || v === undefined) {
     return Buffer.allocUnsafe(0)
   }
@@ -169,7 +169,7 @@ export const toBuffer = function(v: ToBufferInputTypes): Buffer {
  * @param buf `Buffer` object to convert
  * @throws If the input number exceeds 53 bits.
  */
-export const bufferToInt = function(buf: Buffer): number {
+export const bufferToInt = function (buf: Buffer): number {
   return new BN(toBuffer(buf)).toNumber()
 }
 
@@ -177,7 +177,7 @@ export const bufferToInt = function(buf: Buffer): number {
  * Converts a `Buffer` into a `0x`-prefixed hex `String`.
  * @param buf `Buffer` object to convert
  */
-export const bufferToHex = function(buf: Buffer): string {
+export const bufferToHex = function (buf: Buffer): string {
   buf = toBuffer(buf)
   return '0x' + buf.toString('hex')
 }
@@ -186,7 +186,7 @@ export const bufferToHex = function(buf: Buffer): string {
  * Interprets a `Buffer` as a signed integer and returns a `BN`. Assumes 256-bit numbers.
  * @param num Signed integer value
  */
-export const fromSigned = function(num: Buffer): BN {
+export const fromSigned = function (num: Buffer): BN {
   return new BN(num).fromTwos(256)
 }
 
@@ -194,14 +194,14 @@ export const fromSigned = function(num: Buffer): BN {
  * Converts a `BN` to an unsigned integer and returns it as a `Buffer`. Assumes 256-bit numbers.
  * @param num
  */
-export const toUnsigned = function(num: BN): Buffer {
+export const toUnsigned = function (num: BN): Buffer {
   return Buffer.from(num.toTwos(256).toArray())
 }
 
 /**
  * Adds "0x" to a given `String` if it does not already start with "0x".
  */
-export const addHexPrefix = function(str: string): string {
+export const addHexPrefix = function (str: string): string {
   if (typeof str !== 'string') {
     return str
   }
@@ -214,7 +214,7 @@ export const addHexPrefix = function(str: string): string {
  * @param ba (Buffer|Array)
  * @return (Array|String|null)
  */
-export const baToJSON = function(ba: any): any {
+export const baToJSON = function (ba: any): any {
   if (Buffer.isBuffer(ba)) {
     return `0x${ba.toString('hex')}`
   } else if (ba instanceof Array) {

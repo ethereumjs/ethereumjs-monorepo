@@ -40,11 +40,7 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: any): any {
   }
 
   const chainIdBN = toType(chainId, TypeOutput.BN)
-  const v = chainIdBN
-    .muln(2)
-    .addn(35)
-    .addn(recovery)
-    .toArrayLike(Buffer)
+  const v = chainIdBN.muln(2).addn(35).addn(recovery).toArrayLike(Buffer)
   return { r, s, v }
 }
 
@@ -66,7 +62,7 @@ function isValidSigRecovery(recovery: number | BN): boolean {
  * ECDSA public key recovery from signature.
  * @returns Recovered public key
  */
-export const ecrecover = function(
+export const ecrecover = function (
   msgHash: Buffer,
   v: BNLike,
   r: Buffer,
@@ -86,7 +82,7 @@ export const ecrecover = function(
  * Convert signature parameters into the format of `eth_sign` RPC method.
  * @returns Signature
  */
-export const toRpcSig = function(v: BNLike, r: Buffer, s: Buffer, chainId?: BNLike): string {
+export const toRpcSig = function (v: BNLike, r: Buffer, s: Buffer, chainId?: BNLike): string {
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
@@ -100,7 +96,7 @@ export const toRpcSig = function(v: BNLike, r: Buffer, s: Buffer, chainId?: BNLi
  * Convert signature format of the `eth_sign` RPC method to signature parameters
  * NOTE: all because of a bug in geth: https://github.com/ethereum/go-ethereum/issues/2053
  */
-export const fromRpcSig = function(sig: string): ECDSASignature {
+export const fromRpcSig = function (sig: string): ECDSASignature {
   const buf: Buffer = toBuffer(sig)
 
   if (buf.length < 65) {
@@ -116,7 +112,7 @@ export const fromRpcSig = function(sig: string): ECDSASignature {
   return {
     v: v,
     r: buf.slice(0, 32),
-    s: buf.slice(32, 64)
+    s: buf.slice(32, 64),
   }
 }
 
@@ -124,7 +120,7 @@ export const fromRpcSig = function(sig: string): ECDSASignature {
  * Validate a ECDSA signature.
  * @param homesteadOrLater Indicates whether this is being used on either the homestead hardfork or a later one
  */
-export const isValidSignature = function(
+export const isValidSignature = function (
   v: BNLike,
   r: Buffer,
   s: Buffer,
@@ -165,7 +161,7 @@ export const isValidSignature = function(
  * call for a given `message`, or fed to `ecrecover` along with a signature to recover the public key
  * used to produce the signature.
  */
-export const hashPersonalMessage = function(message: Buffer): Buffer {
+export const hashPersonalMessage = function (message: Buffer): Buffer {
   assertIsBuffer(message)
   const prefix = Buffer.from(
     `\u0019Ethereum Signed Message:\n${message.length.toString()}`,

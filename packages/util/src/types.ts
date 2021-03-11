@@ -71,7 +71,7 @@ export enum TypeOutput {
   Number,
   BN,
   Buffer,
-  PrefixedHexString
+  PrefixedHexString,
 }
 
 export type TypeOutputReturnType = {

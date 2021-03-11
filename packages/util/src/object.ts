@@ -14,12 +14,12 @@ import { toBuffer, baToJSON, unpadBuffer } from './bytes'
  * @param data data to be validated against the definitions
  * @deprecated
  */
-export const defineProperties = function(self: any, fields: any, data?: any) {
+export const defineProperties = function (self: any, fields: any, data?: any) {
   self.raw = []
   self._fields = []
 
   // attach the `toJSON`
-  self.toJSON = function(label: boolean = false) {
+  self.toJSON = function (label: boolean = false) {
     if (label) {
       type Dict = { [key: string]: string }
       const obj: Dict = {}
@@ -67,7 +67,7 @@ export const defineProperties = function(self: any, fields: any, data?: any) {
       enumerable: true,
       configurable: true,
       get: getter,
-      set: setter
+      set: setter,
     })
 
     if (field.default) {
@@ -80,7 +80,7 @@ export const defineProperties = function(self: any, fields: any, data?: any) {
         enumerable: false,
         configurable: true,
         set: setter,
-        get: getter
+        get: getter,
       })
     }
   })

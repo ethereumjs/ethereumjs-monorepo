@@ -8,7 +8,7 @@ import {
   isValidSignature,
   fromRpcSig,
   toRpcSig,
-  intToBuffer
+  intToBuffer,
 } from '../src'
 
 const echash = Buffer.from(
@@ -21,8 +21,8 @@ const ecprivkey = Buffer.from(
 )
 const chainId = 3 // ropsten
 
-tape('ecsign', function(t) {
-  t.test('should produce a signature', function(st) {
+tape('ecsign', function (t) {
+  t.test('should produce a signature', function (st) {
     const sig = ecsign(echash, ecprivkey)
     st.ok(
       sig.r.equals(
@@ -38,7 +38,7 @@ tape('ecsign', function(t) {
     st.end()
   })
 
-  t.test('should produce a signature for Ropsten testnet', function(st) {
+  t.test('should produce a signature for Ropsten testnet', function (st) {
     const sig = ecsign(echash, ecprivkey, chainId)
     st.ok(
       sig.r.equals(
@@ -54,7 +54,7 @@ tape('ecsign', function(t) {
     st.end()
   })
 
-  t.test('should produce a signature for chainId=150', function(st) {
+  t.test('should produce a signature for chainId=150', function (st) {
     const expectedSigR = Buffer.from(
       '99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9',
       'hex'
@@ -81,7 +81,7 @@ tape('ecsign', function(t) {
     sigBuffer = ecsign(echash, ecprivkey, '0x96')
     st.ok(sigBuffer.v.equals(expectedSigV))
 
-    st.throws(function() {
+    st.throws(function () {
       ecsign(echash, ecprivkey, '96')
     })
     st.end()
@@ -89,7 +89,7 @@ tape('ecsign', function(t) {
 
   t.test(
     'should produce a signature for a high number chainId greater than MAX_SAFE_INTEGER',
-    function(st) {
+    function (st) {
       const chainIDBuffer = Buffer.from('796f6c6f763378', 'hex')
       const expectedSigR = Buffer.from(
         '99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9',
@@ -123,8 +123,8 @@ tape('ecsign', function(t) {
   )
 })
 
-tape('ecrecover', function(t) {
-  t.test('should recover a public key', function(st) {
+tape('ecrecover', function (t) {
+  t.test('should recover a public key', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     const v = 27
@@ -132,7 +132,7 @@ tape('ecrecover', function(t) {
     st.ok(pubkey.equals(privateToPublic(ecprivkey)))
     st.end()
   })
-  t.test('should recover a public key (chainId = 3)', function(st) {
+  t.test('should recover a public key (chainId = 3)', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     const v = 41
@@ -140,7 +140,7 @@ tape('ecrecover', function(t) {
     st.ok(pubkey.equals(privateToPublic(ecprivkey)))
     st.end()
   })
-  t.test('should recover a public key (chainId = 150)', function(st) {
+  t.test('should recover a public key (chainId = 150)', function (st) {
     const chainId = 150
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
@@ -149,31 +149,31 @@ tape('ecrecover', function(t) {
     st.ok(pubkey.equals(privateToPublic(ecprivkey)))
     st.end()
   })
-  t.test('should fail on an invalid signature (v = 21)', function(st) {
+  t.test('should fail on an invalid signature (v = 21)', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    st.throws(function() {
+    st.throws(function () {
       ecrecover(echash, 21, r, s)
     })
     st.end()
   })
-  t.test('should fail on an invalid signature (v = 29)', function(st) {
+  t.test('should fail on an invalid signature (v = 29)', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    st.throws(function() {
+    st.throws(function () {
       ecrecover(echash, 29, r, s)
     })
     st.end()
   })
-  t.test('should fail on an invalid signature (swapped points)', function(st) {
+  t.test('should fail on an invalid signature (swapped points)', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    st.throws(function() {
+    st.throws(function () {
       ecrecover(echash, 27, s, r)
     })
     st.end()
   })
-  t.test('should return the right sender when using very high chain id / v values', function(st) {
+  t.test('should return the right sender when using very high chain id / v values', function (st) {
     // This data is from a transaction of the YoloV3 network, block 77, txhash c6121a23ca17b8ff70d4706c7d134920c1da43c8329444c96b4c63a55af1c760
     /*
       {
@@ -215,10 +215,10 @@ tape('ecrecover', function(t) {
     sender = ecrecover(msgHash, vHexString, r, s, chainIDHexString)
     st.ok(sender.equals(senderPubKey), 'sender pubkey correct (HexString)')
 
-    st.throws(function() {
+    st.throws(function () {
       ecrecover(msgHash, 'f2ded8deec6714', r, s, chainIDHexString)
     })
-    st.throws(function() {
+    st.throws(function () {
       ecrecover(msgHash, vHexString, r, s, '796f6c6f763378')
     })
 
@@ -233,8 +233,8 @@ tape('ecrecover', function(t) {
   })
 })
 
-tape('hashPersonalMessage', function(t) {
-  t.test('should produce a deterministic hash', function(st) {
+tape('hashPersonalMessage', function (t) {
+  t.test('should produce a deterministic hash', function (st) {
     const h = hashPersonalMessage(Buffer.from('Hello world'))
     st.ok(
       h.equals(
@@ -243,7 +243,7 @@ tape('hashPersonalMessage', function(t) {
     )
     st.end()
   })
-  t.test('should throw if input is not a buffer', function(st) {
+  t.test('should throw if input is not a buffer', function (st) {
     try {
       hashPersonalMessage((<unknown>[0, 1, 2, 3, 4]) as Buffer)
     } catch (err) {
@@ -253,32 +253,32 @@ tape('hashPersonalMessage', function(t) {
   })
 })
 
-tape('isValidSignature', function(t) {
-  t.test('should fail on an invalid signature (shorter r))', function(st) {
+tape('isValidSignature', function (t) {
+  t.test('should fail on an invalid signature (shorter r))', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1ab', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     st.notOk(isValidSignature(27, r, s))
     st.end()
   })
-  t.test('should fail on an invalid signature (shorter s))', function(st) {
+  t.test('should fail on an invalid signature (shorter s))', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca', 'hex')
     st.notOk(isValidSignature(27, r, s))
     st.end()
   })
-  t.test('should fail on an invalid signature (v = 21)', function(st) {
+  t.test('should fail on an invalid signature (v = 21)', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     st.notOk(isValidSignature(21, r, s))
     st.end()
   })
-  t.test('should fail on an invalid signature (v = 29)', function(st) {
+  t.test('should fail on an invalid signature (v = 29)', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     st.notOk(isValidSignature(29, r, s))
     st.end()
   })
-  t.test('should fail when on homestead and s > secp256k1n/2', function(st) {
+  t.test('should fail when on homestead and s > secp256k1n/2', function (st) {
     const SECP256K1_N_DIV_2 = new BN(
       '7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
       16
@@ -291,7 +291,7 @@ tape('isValidSignature', function(t) {
     st.notOk(isValidSignature(v, r, s, true))
     st.end()
   })
-  t.test('should not fail when not on homestead but s > secp256k1n/2', function(st) {
+  t.test('should not fail when not on homestead but s > secp256k1n/2', function (st) {
     const SECP256K1_N_DIV_2 = new BN(
       '7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
       16
@@ -304,21 +304,21 @@ tape('isValidSignature', function(t) {
     st.ok(isValidSignature(v, r, s, false))
     st.end()
   })
-  t.test('should work otherwise', function(st) {
+  t.test('should work otherwise', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     const v = 27
     st.ok(isValidSignature(v, r, s))
     st.end()
   })
-  t.test('should work otherwise (chainId=3)', function(st) {
+  t.test('should work otherwise (chainId=3)', function (st) {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     const v = 41
     st.ok(isValidSignature(v, r, s, false, chainId))
     st.end()
   })
-  t.test('should work otherwise (chainId=150)', function(st) {
+  t.test('should work otherwise (chainId=150)', function (st) {
     const chainId = 150
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
@@ -337,7 +337,7 @@ tape('isValidSignature', function(t) {
     )
     st.end()
   })
-  t.test('should work otherwise (chainId larger than MAX_INTEGER)', function(st) {
+  t.test('should work otherwise (chainId larger than MAX_INTEGER)', function (st) {
     const r = Buffer.from('ec212841e0b7aaffc3b3e33a08adf32fa07159e856ef23db85175a4f6d71dc0f', 'hex')
     const s = Buffer.from('4b8e02b96b94064a5aa2f8d72bd0040616ba8e482a5dd96422e38c9a4611f8d5', 'hex')
 
@@ -367,23 +367,23 @@ tape('isValidSignature', function(t) {
   // FIXME: add homestead test
 })
 
-tape('message sig', function(t) {
+tape('message sig', function (t) {
   const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
   const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
 
-  t.test('should return hex strings that the RPC can use', function(st) {
+  t.test('should return hex strings that the RPC can use', function (st) {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca661b'
     st.equal(toRpcSig(27, r, s), sig)
     st.deepEqual(fromRpcSig(sig), {
       v: 27,
       r,
-      s
+      s,
     })
     st.end()
   })
 
-  t.test('should return hex strings that the RPC can use (chainId=150)', function(st) {
+  t.test('should return hex strings that the RPC can use (chainId=150)', function (st) {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66014f'
     const chainId = 150
@@ -403,14 +403,14 @@ tape('message sig', function(t) {
     st.deepEqual(fromRpcSig(sig), {
       v,
       r,
-      s
+      s,
     })
     st.end()
   })
 
   t.test(
     'should return hex strings that the RPC can use (chainId larger than MAX_SAFE_INTEGER)',
-    function(st) {
+    function (st) {
       const sig =
         '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66f2ded8deec6714'
       const chainIDBuffer = Buffer.from('796f6c6f763378', 'hex')
@@ -424,18 +424,18 @@ tape('message sig', function(t) {
 
       const chainIDNumber = parseInt(chainIDBuffer.toString('hex'), 16)
       const vNumber = parseInt(vBuffer.toString('hex'), 16)
-      st.throws(function() {
+      st.throws(function () {
         toRpcSig(vNumber, r, s, chainIDNumber)
       })
       st.end()
     }
   )
 
-  t.test('should throw on shorter length', function(st) {
-    st.throws(function() {
+  t.test('should throw on shorter length', function (st) {
+    st.throws(function () {
       fromRpcSig('')
     })
-    st.throws(function() {
+    st.throws(function () {
       fromRpcSig(
         '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca'
       )
@@ -443,7 +443,7 @@ tape('message sig', function(t) {
     st.end()
   })
 
-  t.test('pad short r and s values', function(st) {
+  t.test('pad short r and s values', function (st) {
     st.equal(
       toRpcSig(27, r.slice(20), s.slice(20)),
       '0x00000000000000000000000000000000000000004a1579cf389ef88b20a1abe90000000000000000000000000000000000000000326fa689f228040429e3ca661b'
@@ -451,8 +451,8 @@ tape('message sig', function(t) {
     st.end()
   })
 
-  t.test('should throw on invalid v value', function(st) {
-    st.throws(function() {
+  t.test('should throw on invalid v value', function (st) {
+    st.throws(function () {
       toRpcSig(1, r, s)
     })
     st.end()

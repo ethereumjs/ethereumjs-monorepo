@@ -6,7 +6,7 @@ import {
   pubToAddress,
   privateToAddress,
   generateAddress,
-  generateAddress2
+  generateAddress2,
 } from './account'
 
 export class Address {
