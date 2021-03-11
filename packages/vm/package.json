@@ -37,7 +37,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ethereumjs/ethereumjs-vm.git"
+    "url": "git+https://github.com/ethereumjs/ethereumjs-monorepo.git"
   },
   "keywords": [
     "ethereum",
@@ -100,7 +100,7 @@
   ],
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-vm/issues"
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues"
   },
-  "homepage": "https://github.com/ethereumjs/ethereumjs-vm"
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo"
 }

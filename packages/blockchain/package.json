@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ethereumjs/ethereumjs-vm.git"
+    "url": "git+https://github.com/ethereumjs/ethereumjs-monorepo.git"
   },
   "keywords": [
     "ethereum",
@@ -32,9 +32,9 @@
   "author": "mjbecze <mjbecze@gmail.com>",
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aissue+label%3A%22package%3A+blockchain%22"
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+blockchain%22"
   },
-  "homepage": "https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/blockchain#readme",
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/blockchain#readme",
   "dependencies": {
     "@ethereumjs/block": "^3.1.0",
     "@ethereumjs/common": "^2.1.0",

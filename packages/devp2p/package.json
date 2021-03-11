@@ -14,9 +14,9 @@
     "les",
     "les2"
   ],
-  "homepage": "https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/devp2p#readme",
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/devp2p#readme",
   "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aissue+label%3A%22package%3A+devp2p%22"
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+devp2p%22"
   },
   "license": "MIT",
   "contributors": [
@@ -33,7 +33,7 @@
   "main": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ethereumjs/ethereumjs-vm.git"
+    "url": "git+https://github.com/ethereumjs/ethereumjs-monorepo.git"
   },
   "engines": {
     "node": ">=10.0"

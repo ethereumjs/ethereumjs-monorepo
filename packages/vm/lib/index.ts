@@ -29,7 +29,7 @@ if (!IS_BROWSER) {
  */
 export interface VMOpts {
   /**
-   * Use a [common](https://github.com/ethereumjs/ethereumjs-vm/packages/common) instance
+   * Use a [common](https://github.com/ethereumjs/ethereumjs-monorepo/packages/common) instance
    * if you want to change the chain setup.
    *
    * ### Possible Values
@@ -62,12 +62,12 @@ export interface VMOpts {
    */
   stateManager?: StateManager
   /**
-   * An [merkle-patricia-tree](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/trie) instance for the state tree (ignored if stateManager is passed)
+   * An [merkle-patricia-tree](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie) instance for the state tree (ignored if stateManager is passed)
    * @deprecated
    */
   state?: any // TODO
   /**
-   * A [blockchain](https://github.com/ethereumjs/ethereumjs-vm/packages/blockchain) object for storing/retrieving blocks
+   * A [blockchain](https://github.com/ethereumjs/ethereumjs-monorepo/packages/blockchain) object for storing/retrieving blocks
    */
   blockchain?: Blockchain
   /**
@@ -270,7 +270,7 @@ export default class VM extends AsyncEventEmitter {
    *
    * This method modifies the state.
    *
-   * @param blockchain -  An [@ethereumjs/blockchain](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/blockchain) object to process
+   * @param blockchain -  An [@ethereumjs/blockchain](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/blockchain) object to process
    */
   async runBlockchain(blockchain?: Blockchain, maxBlocks?: number): Promise<void | number> {
     await this.init()
