@@ -1,8 +1,9 @@
 import Common from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
+import Multiaddr from 'multiaddr'
 import { getLogger, Logger } from './logging'
 import { Libp2pServer, RlpxServer } from './net/server'
-import { parseMultiaddrs, parseTransports } from './util'
+import { parseTransports } from './util'
 
 export interface ConfigOptions {
   /**
@@ -45,6 +46,18 @@ export interface ConfigOptions {
    * Default: `['rlpx:port=30303', 'libp2p']`
    */
   transports?: string[]
+
+  /**
+   * Network bootnodes
+   * (e.g. abc@18.138.108.67 or /ip4/127.0.0.1/tcp/50505/p2p/QmABC)
+   */
+  bootnodes?: Multiaddr[]
+
+  /**
+   * Network multiaddrs for libp2p
+   * (e.g. /ip4/127.0.0.1/tcp/50505/p2p/QmABC)
+   */
+  multiaddrs?: Multiaddr[]
 
   /**
    * Transport servers (RLPx or Libp2p)
@@ -160,6 +173,8 @@ export class Config {
   public readonly lightserv: boolean
   public readonly datadir: string
   public readonly transports: string[]
+  public readonly bootnodes?: Multiaddr[]
+  public readonly multiaddrs?: Multiaddr[]
   public readonly rpc: boolean
   public readonly rpcport: number
   public readonly rpcaddr: string
@@ -181,6 +196,8 @@ export class Config {
     this.vm = options.vm
     this.lightserv = options.lightserv ?? Config.LIGHTSERV_DEFAULT
     this.transports = options.transports ?? Config.TRANSPORTS_DEFAULT
+    this.bootnodes = options.bootnodes
+    this.multiaddrs = options.multiaddrs
     this.datadir = options.datadir ?? Config.DATADIR_DEFAULT
     this.rpc = options.rpc ?? Config.RPC_DEFAULT
     this.rpcport = options.rpcport ?? Config.RPCPORT_DEFAULT
@@ -217,25 +234,20 @@ export class Config {
           'Config initialization with both servers and transports options not allowed'
         )
       }
-
       // Servers option takes precedence
       this.servers = options.servers
     } else {
       // Otherwise parse transports from transports option
       this.servers = parseTransports(this.transports).map((t) => {
-        // format multiaddrs as multiaddr[]
-        if (t.options.multiaddrs) {
-          t.options.multiaddrs = parseMultiaddrs(t.options.multiaddrs) as any
-        }
         if (t.name === 'rlpx') {
-          if (!t.options.bootnodes) {
-            t.options.bootnodes = this.chainCommon.bootstrapNodes()
-          }
-          t.options.bootnodes = parseMultiaddrs(t.options.bootnodes) as any
-          t.options.dnsNetworks = options.dnsNetworks ?? this.chainCommon.dnsNetworks()
-          return new RlpxServer({ config: this, ...t.options })
+          const bootnodes = this.bootnodes ?? this.chainCommon.bootstrapNodes()
+          const dnsNetworks = options.dnsNetworks ?? this.chainCommon.dnsNetworks()
+          return new RlpxServer({ config: this, bootnodes, dnsNetworks })
         } else {
-          return new Libp2pServer({ config: this, ...t.options })
+          // t.name === 'libp2p'
+          const multiaddrs = this.multiaddrs
+          const bootnodes = this.bootnodes
+          return new Libp2pServer({ config: this, multiaddrs, bootnodes })
         }
       })
     }
