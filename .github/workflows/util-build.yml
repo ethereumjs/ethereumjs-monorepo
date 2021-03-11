@@ -21,7 +21,6 @@ jobs:
     strategy:
       matrix:
         node-version: [12]
-
     steps:
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
@@ -32,11 +31,11 @@ jobs:
           submodules: recursive
 
     - name: Dependency cache
-        uses: actions/cache@v2
-        id: cache
-        with:
-          key: Util-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
-          path: '**/node_modules'
+      uses: actions/cache@v2
+      id: cache
+      with:
+        key: Util-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+        path: '**/node_modules'
 
       # Installs root dependencies, ignoring Bootstrap All script.
       # Bootstraps the current package only
