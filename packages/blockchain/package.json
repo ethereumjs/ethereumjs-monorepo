@@ -43,7 +43,7 @@
     "ethereumjs-util": "^7.0.9",
     "level-mem": "^5.0.1",
     "lru-cache": "^5.1.1",
-    "rlp": "^2.2.3",
+    "rlp": "^2.2.4",
     "semaphore-async-await": "^1.5.1"
   },
   "devDependencies": {
