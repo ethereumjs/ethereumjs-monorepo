@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [12]
+        node-version: [15]
     steps:
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
@@ -41,24 +41,16 @@ jobs:
       - name: Publish to virtual registry
         run: npm run e2e:publish
 
-      # An example installation with some checks that everything worked ok
-      - name: Validate
+      # This project is simple / does not require resolutions injection
+      - name: E2E Target - NoahZinsmeister/as-you-permit
         run: |
-          echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-          echo "Verify resolutions.json object is correct  "
-          echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-          npm run e2e:resolutions
-          cat resolutions.json
-          echo ""
-          mkdir test-publish && cd test-publish
-          npm init --yes
-          yarn add @ethereumjs/vm@e2e --registry http://localhost:4873 --network-timeout 500000
-          echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-          echo "Verify virtually published vm was installed"
-          echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-          cat package.json
-          echo ""
-          echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-          echo "Verify vm uses virtually published dependencies"
-          echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-          cat node_modules/@ethereumjs/vm/package.json
+          rm -rf as-you-permit
+          git clone https://github.com/NoahZinsmeister/as-you-permit.git
+          cd as-you-permit
+          yarn
+          rm -rf dist
+          yarn remove @ethereumjs/vm
+          yarn add @ethereumjs/vm@e2e
+          yarn test --verbose
+        env:
+          URL_MAINNET: ${{ secrets.URL_MAINNET }}
