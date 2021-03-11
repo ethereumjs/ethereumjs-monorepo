@@ -1,0 +1,118 @@
+{
+  "name": "ethereumjs-util",
+  "version": "7.0.9",
+  "description": "a collection of utility functions for Ethereum",
+  "main": "dist/index.js",
+  "types": "./dist/index.d.ts",
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "ethereumjs-config-ts-build",
+    "prepublishOnly": "npm run test && npm run build",
+    "coverage": "ethereumjs-config-coverage",
+    "docs:build": "npx typedoc --options typedoc.js",
+    "lint": "ethereumjs-config-lint",
+    "lint:fix": "ethereumjs-config-lint-fix",
+    "test": "npm run test:node && npm run test:browser",
+    "test:browser": "karma start karma.conf.js",
+    "test:node": "tape -r ts-node/register test/*.spec.ts",
+    "tsc": "ethereumjs-config-tsc"
+  },
+  "husky": {
+    "hooks": {
+      "pre-push": "npm run lint"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-util.git"
+  },
+  "keywords": [
+    "ethereum",
+    "utilties"
+  ],
+  "author": "mjbecze <mjbecze@gmail.com>",
+  "contributors": [
+    {
+      "name": "Tim Coulter",
+      "email": "tim@timothyjcoulter.com",
+      "url": "https://github.com/tcoulter"
+    },
+    {
+      "name": "Nick Dodson",
+      "url": "https://github.com/SilentCicero"
+    },
+    {
+      "name": "Mr. Chico",
+      "url": "https://github.com/MrChico"
+    },
+    {
+      "name": "Dũng Trần",
+      "email": "tad88.dev@gmail.com",
+      "url": "https://github.com/tad88dev"
+    },
+    {
+      "name": "Alex Beregszaszi",
+      "email": "alex@rtfs.hu",
+      "url": "https://github.com/axic"
+    },
+    {
+      "name": "Taylor Gerring",
+      "url": "https://github.com/tgerring"
+    },
+    {
+      "name": "Kirill Fomichev",
+      "email": "fanatid@ya.ru",
+      "url": "https://github.com/fanatid"
+    },
+    {
+      "name": "kumavis",
+      "email": "aaron@kumavis.me",
+      "url": "https://github.com/kumavis"
+    },
+    {
+      "name": "Alexander Sinyagin",
+      "email": "sinyagin.alexander@gmail.com",
+      "url": "https://github.com/asinyagin"
+    }
+  ],
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-util/issues"
+  },
+  "homepage": "https://github.com/ethereumjs/ethereumjs-util",
+  "dependencies": {
+    "@types/bn.js": "^5.1.0",
+    "bn.js": "^5.1.2",
+    "create-hash": "^1.1.2",
+    "ethereum-cryptography": "^0.1.3",
+    "ethjs-util": "0.1.6",
+    "rlp": "^2.2.4"
+  },
+  "devDependencies": {
+    "@ethereumjs/config-coverage": "^2.0.0",
+    "@ethereumjs/config-typescript": "^2.0.0",
+    "@ethereumjs/eslint-config-defaults": "^2.0.0",
+    "@types/assert": "^1.5.4",
+    "@types/node": "^11.9.0",
+    "@types/secp256k1": "^4.0.1",
+    "@types/tape": "^4.13.0",
+    "husky": "^2.1.0",
+    "karma": "^5.0.2",
+    "karma-chrome-launcher": "^2.0.0",
+    "karma-firefox-launcher": "^1.0.0",
+    "karma-tap": "^4.2.0",
+    "karma-typescript": "^4.1.1",
+    "nyc": "^15.0.0",
+    "prettier": "^1.15.3",
+    "tape": "^5.2.2",
+    "ts-node": "^8.6.2",
+    "typedoc": "next",
+    "typedoc-plugin-markdown": "^2.2.16",
+    "typescript": "^3.8.3"
+  }
+}
