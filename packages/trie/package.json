@@ -10,17 +10,17 @@
   ],
   "browser": "dist.browser/index.js",
   "scripts": {
-    "benchmarks": "npm run build && node -r ts-node/register --max-old-space-size=8024 benchmarks",
-    "profiling": "npm run build && tsc --target ES5 benchmarks/random.ts && 0x benchmarks/random.js",
-    "build": "tsc -p tsconfig.prod.json && tsc -p tsconfig.browser.json",
+    "benchmarks": "node -r ts-node/register --max-old-space-size=8024 benchmarks",
+    "profiling": "tsc --target ES5 benchmarks/random.ts && 0x benchmarks/random.js",
     "prepublishOnly": "npm run build && npm run test",
-    "coverage": "nyc --reporter=lcov npm run test:node",
+    "build": "ethereumjs-config-ts-build",
+    "coverage": "ethereumjs-config-coverage",
     "docs:build": "typedoc",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
     "tsc": "ethereumjs-config-tsc",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "npm run build && karma start karma.conf.js",
+    "test:browser": "karma start karma.conf.js",
     "test:node": "tape -r ts-node/register test/*.ts"
   },
   "author": {
@@ -29,10 +29,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ethereumjs/ethereumjs-vm.git"
+    "url": "git+https://github.com/ethereumjs/ethereumjs-monorepo.git"
   },
   "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aissue+label%3A%22package%3A+trie%22"
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+trie%22"
   },
   "keywords": [
     "merkle",
@@ -47,7 +47,7 @@
     "level-mem": "^5.0.1",
     "level-ws": "^2.0.0",
     "readable-stream": "^3.6.0",
-    "rlp": "^2.2.3",
+    "rlp": "^2.2.4",
     "semaphore-async-await": "^1.5.1"
   },
   "devDependencies": {

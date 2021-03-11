@@ -192,7 +192,7 @@ tape('should be possible to disable the block gas limit validation', async (t) =
 // The following test tries to verify that running a tx
 // would work, even when stateManager is not using a cache.
 // It fails at the moment, and has been therefore commented.
-// Please refer to https://github.com/ethereumjs/ethereumjs-vm/issues/353
+// Please refer to https://github.com/ethereumjs/ethereumjs-monorepo/issues/353
 /* tape('should behave the same when not using cache', async (t) => {
   const suite = setup()
 

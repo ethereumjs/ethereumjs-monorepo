@@ -27,11 +27,11 @@ type AddressHex = string
  */
 export interface DefaultStateManagerOpts {
   /**
-   * Parameters of the chain ([`Common`](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/common))
+   * Parameters of the chain ([`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common))
    */
   common?: Common
   /**
-   * An [`merkle-patricia-tree`](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/trie) instance
+   * An [`merkle-patricia-tree`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie) instance
    */
   trie?: Trie
 }

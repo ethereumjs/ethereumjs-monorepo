@@ -75,6 +75,10 @@ jobs:
       - name: Test Tx
         run: npm run test
         working-directory: packages/tx
+      
+      - name: Test Util
+        run: npm run test
+        working-directory: packages/util
 
       - name: Test VM
         run: npm run test:API
