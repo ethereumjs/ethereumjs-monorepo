@@ -50,6 +50,7 @@ export class RlpxServer extends Server {
   private peers: Map<string, RlpxPeer> = new Map()
 
   public port: number
+  public discovery: boolean
   private clientFilter: string[]
 
   public rlpx: Devp2pRLPx | null = null
@@ -66,6 +67,7 @@ export class RlpxServer extends Server {
     // TODO: get the external ip from the upnp service
     this.ip = '::'
     this.port = options.port ?? 30303
+    this.discovery = options.config.discV4 || options.config.discDns
     this.clientFilter = options.clientFilter ?? [
       'go1.5',
       'go1.6',

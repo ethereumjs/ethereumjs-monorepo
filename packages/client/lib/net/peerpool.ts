@@ -204,7 +204,7 @@ export class PeerPool extends EventEmitter {
       this.noPeerPeriods += 1
       if (this.noPeerPeriods >= 3) {
         const promises = this.config.servers.map(async (server) => {
-          if (server instanceof RlpxServer) {
+          if (server instanceof RlpxServer && server.discovery) {
             this.config.logger.info('Restarting RLPx server: bootstrap')
             await server.stop()
             await server.start()
@@ -215,11 +215,11 @@ export class PeerPool extends EventEmitter {
       } else {
         let tablesize: number | undefined = 0
         this.config.servers.forEach((server) => {
-          if (server instanceof RlpxServer) {
+          if (server instanceof RlpxServer && server.discovery) {
             tablesize = server.dpt?.getPeers().length
+            this.config.logger.info(`Looking for suited peers: peertablesize=${tablesize}`)
           }
         })
-        this.config.logger.info(`Looking for suited peers: peertablesize=${tablesize}`)
       }
     } else {
       this.noPeerPeriods = 0
