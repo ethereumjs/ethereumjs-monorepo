@@ -1,4 +1,5 @@
 import PeerId from 'peer-id'
+import crypto from 'libp2p-crypto'
 import multiaddr from 'multiaddr'
 import { Libp2pConnection as Connection } from '../../types'
 import { Libp2pNode } from '../peer/libp2pnode'
@@ -55,7 +56,7 @@ export class Libp2pServer extends Server {
     let peerId: PeerId
     await super.start()
     if (!this.node) {
-      peerId = await this.createPeerId()
+      peerId = await this.getPeerId()
       const addresses = { listen: this.multiaddrs.map((ma) => ma.toString()) }
       this.node = new Libp2pNode({
         peerId,
@@ -153,8 +154,10 @@ export class Libp2pServer extends Server {
     this.emit('error', error)
   }
 
-  async createPeerId() {
-    return this.key ? PeerId.createFromPrivKey(this.key) : PeerId.create()
+  async getPeerId() {
+    const privKey = await crypto.keys.generateKeyPairFromSeed('ed25519', this.key, 512)
+    const protoBuf = crypto.keys.marshalPrivateKey(privKey)
+    return PeerId.createFromPrivKey(protoBuf)
   }
 
   getPeerInfo(connection: Connection): [PeerId, multiaddr] {

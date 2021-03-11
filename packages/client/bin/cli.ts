@@ -175,11 +175,14 @@ async function run() {
   }
 
   const common = new Common({ chain, hardfork: 'chainstart' })
+  const datadir = args.datadir ?? Config.DATADIR_DEFAULT
+  const key = await Config.getClientKey(datadir, common)
   const config = new Config({
     common,
     syncmode: args.syncmode,
     lightserv: args.lightserv,
-    datadir: args.datadir,
+    datadir,
+    key,
     transports: args.transports,
     bootnodes: args.bootnodes ? parseMultiaddrs(args.bootnodes) : undefined,
     multiaddrs: args.multiaddrs ? parseMultiaddrs(args.multiaddrs) : undefined,

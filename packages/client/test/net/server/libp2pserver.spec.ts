@@ -5,8 +5,6 @@ import multiaddr from 'multiaddr'
 import { Config } from '../../../lib/config'
 
 tape('[Libp2pServer]', async (t) => {
-  const PeerId = td.replace('peer-id')
-
   const Libp2pPeer = td.replace('../../../lib/net/peer/libp2ppeer')
   Libp2pPeer.id = 'id0'
 
@@ -36,16 +34,6 @@ tape('[Libp2pServer]', async (t) => {
   td.when(Libp2pNode.prototype.start()).thenResolve()
   td.when(Libp2pNode.prototype.stop()).thenResolve()
 
-  td.when(PeerId.create()).thenResolve('id0')
-  td.when(PeerId.createFromPrivKey(Buffer.from('1'))).thenResolve('id1')
-  td.when(PeerId.createFromPrivKey(Buffer.from('2'))).thenResolve('id2')
-  td.when(PeerId.createFromPrivKey(Buffer.from('3'))).thenReject(new Error('err0'))
-  td.when(PeerId.createFromPrivKey(Buffer.from('4'))).thenResolve({
-    toB58String: () => {
-      return 'id4'
-    },
-  })
-
   const { Libp2pServer } = await import('../../../lib/net/server/libp2pserver')
 
   t.test('should initialize correctly', async (t) => {
@@ -68,24 +56,6 @@ tape('[Libp2pServer]', async (t) => {
     )
     t.equals(server.key!.toString(), 'abcd', 'key is correct')
     t.equals(server.name, 'libp2p', 'get name')
-    t.end()
-  })
-
-  t.test('should create peer id', async (t) => {
-    const config = new Config({ transports: [] })
-    const multiaddrs = [multiaddr('/ip4/6.6.6.6')]
-    let server = new Libp2pServer({ config, multiaddrs })
-    t.equals(await server.createPeerId(), 'id0', 'created')
-    server = new Libp2pServer({ config, multiaddrs, key: Buffer.from('1') })
-    t.equals(await server.createPeerId(), 'id1', 'created with id')
-    server = new Libp2pServer({ config, multiaddrs, key: Buffer.from('2') })
-    t.equals(await server.createPeerId(), 'id2', 'created with id')
-    server = new Libp2pServer({ config, multiaddrs, key: Buffer.from('3') })
-    try {
-      await server.createPeerId()
-    } catch (err) {
-      t.equals(err.message, 'err0', 'handle error')
-    }
     t.end()
   })
 
@@ -130,6 +100,7 @@ tape('[Libp2pServer]', async (t) => {
     })
     server.createPeer = td.func<typeof server['createPeer']>()
     server.getPeerInfo = td.func<typeof server['getPeerInfo']>()
+    server.getPeerId = td.func<typeof server['getPeerId']>()
     const peerId = {
       toB58String() {
         return 'id'
@@ -145,6 +116,7 @@ tape('[Libp2pServer]', async (t) => {
         return 'id3'
       },
     } as any
+    td.when(server.getPeerId()).thenResolve(peerId)
     td.when(server.getPeerInfo(conn0)).thenReturn([peerId])
     td.when(server.getPeerInfo(conn1)).thenReturn([peerId2])
     td.when(server.createPeer(peerId2)).thenReturn(peer2)
@@ -152,7 +124,7 @@ tape('[Libp2pServer]', async (t) => {
     ;(server as any).peers.set('id', peer)
     server.addProtocols(protos)
     server.on('listening', (info: any) =>
-      t.deepEquals(info, { transport: 'libp2p', url: 'ma0/p2p/id4' }, 'listening')
+      t.deepEquals(info, { transport: 'libp2p', url: 'ma0/p2p/id' }, 'listening')
     )
     server.once('connected', (p: any) => t.equals(p, peer, 'peer connected'))
     server.on('error', (err: Error) => t.equals(err.message, 'err0', 'got err0'))
