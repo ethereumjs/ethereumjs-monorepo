@@ -1,4 +1,3 @@
-import { randomBytes } from 'crypto'
 import { RLPx as Devp2pRLPx, Peer as Devp2pRLPxPeer, DPT as Devp2pDPT } from '@ethereumjs/devp2p'
 import { RlpxPeer } from '../peer/rlpxpeer'
 import { Server, ServerOptions } from './server'
@@ -215,7 +214,7 @@ export class RlpxServer extends Server {
    * @private
    */
   initDpt() {
-    this.dpt = new Devp2pDPT(this.key ?? randomBytes(32), {
+    this.dpt = new Devp2pDPT(this.key, {
       refreshInterval: this.refreshInterval,
       endpoint: {
         address: '0.0.0.0',
@@ -241,7 +240,7 @@ export class RlpxServer extends Server {
    * @private
    */
   initRlpx() {
-    this.rlpx = new Devp2pRLPx(this.key ?? randomBytes(32), {
+    this.rlpx = new Devp2pRLPx(this.key, {
       dpt: this.dpt!,
       maxPeers: this.config.maxPeers,
       capabilities: RlpxPeer.capabilities(Array.from(this.protocols)),

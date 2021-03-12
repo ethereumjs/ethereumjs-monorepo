@@ -1,9 +1,12 @@
 import Common from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
+import { genPrivateKey } from '@ethereumjs/devp2p'
 import Multiaddr from 'multiaddr'
 import { getLogger, Logger } from './logging'
 import { Libp2pServer, RlpxServer } from './net/server'
 import { parseTransports } from './util'
+import type { LevelUp } from 'levelup'
+const level = require('level')
 
 export interface ConfigOptions {
   /**
@@ -39,6 +42,13 @@ export interface ConfigOptions {
    * Root data directory for the blockchain
    */
   datadir?: string
+
+  /**
+   * Private key for the client.
+   * Use return value of `await Config.getClientKey(datadir, common)`
+   * If left blank, a random key will be generated and used.
+   */
+  key?: Buffer
 
   /**
    * Network transports ('rlpx' and/or 'libp2p')
@@ -172,6 +182,7 @@ export class Config {
   public readonly vm?: VM
   public readonly lightserv: boolean
   public readonly datadir: string
+  public readonly key: Buffer
   public readonly transports: string[]
   public readonly bootnodes?: Multiaddr[]
   public readonly multiaddrs?: Multiaddr[]
@@ -199,6 +210,7 @@ export class Config {
     this.bootnodes = options.bootnodes
     this.multiaddrs = options.multiaddrs
     this.datadir = options.datadir ?? Config.DATADIR_DEFAULT
+    this.key = options.key ?? genPrivateKey()
     this.rpc = options.rpc ?? Config.RPC_DEFAULT
     this.rpcport = options.rpcport ?? Config.RPCPORT_DEFAULT
     this.rpcaddr = options.rpcaddr ?? Config.RPCADDR_DEFAULT
@@ -243,14 +255,24 @@ export class Config {
           const bootnodes = this.bootnodes ?? this.chainCommon.bootstrapNodes()
           const dnsNetworks = options.dnsNetworks ?? this.chainCommon.dnsNetworks()
           return new RlpxServer({ config: this, bootnodes, dnsNetworks })
-        } else {
-          // t.name === 'libp2p'
+        } else if (t.name === 'libp2p') {
           const multiaddrs = this.multiaddrs
           const bootnodes = this.bootnodes
           return new Libp2pServer({ config: this, multiaddrs, bootnodes })
+        } else {
+          throw new Error(`unknown transport: ${t.name}`)
         }
       })
     }
+  }
+
+  /**
+   * Returns the network directory for the chain.
+   */
+  getNetworkDirectory(): string {
+    const networkDirName = this.chainCommon.chainName()
+    const dataDir = `${this.datadir}/${networkDirName}`
+    return dataDir
   }
 
   /**
@@ -258,10 +280,8 @@ export class Config {
    * based on syncmode and selected chain (subdirectory of 'datadir')
    */
   getChainDataDirectory(): string {
-    const networkDirName = this.chainCommon.chainName()
     const chainDataDirName = this.syncmode === 'light' ? 'lightchain' : 'chain'
-
-    const dataDir = `${this.datadir}/${networkDirName}/${chainDataDirName}`
+    const dataDir = `${this.getNetworkDirectory()}/${chainDataDirName}`
     return dataDir
   }
 
@@ -270,10 +290,36 @@ export class Config {
    * based selected chain (subdirectory of 'datadir')
    */
   getStateDataDirectory(): string {
-    const networkDirName = this.chainCommon.chainName()
+    return `${this.getNetworkDirectory()}/state`
+  }
 
-    const dataDir = `${this.datadir}/${networkDirName}/state`
-    return dataDir
+  /**
+   * Returns the config level db.
+   */
+  static getConfigDB(networkDir: string): LevelUp {
+    const db = level(`${networkDir}/config` as any)
+    return db
+  }
+
+  /**
+   * Gets the client private key from the config db.
+   */
+  static async getClientKey(datadir: string, common: Common) {
+    const networkDir = `${datadir}/${common.chainName()}`
+    const db = this.getConfigDB(networkDir)
+    const encodingOpts = { keyEncoding: 'utf8', valueEncoding: 'binary' }
+    const dbKey = 'config:client_key'
+    let key
+    try {
+      key = await db.get(dbKey, encodingOpts)
+    } catch (error) {
+      if (error.type === 'NotFoundError') {
+        // generate and save a new key
+        key = genPrivateKey()
+        await db.put(dbKey, key, encodingOpts)
+      }
+    }
+    return key
   }
 
   /**
