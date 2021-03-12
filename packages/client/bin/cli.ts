@@ -180,6 +180,8 @@ async function run() {
 
   const common = new Common({ chain, hardfork: 'chainstart' })
   const datadir = args.datadir ?? Config.DATADIR_DEFAULT
+  const configDirectory = `${datadir}/${common.chainName()}/config`
+  fs.ensureDirSync(configDirectory)
   const key = await Config.getClientKey(datadir, common)
   const config = new Config({
     common,
