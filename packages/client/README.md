@@ -341,7 +341,9 @@ to help contributors better understand how the project is organized.
 
 #### Networking
 
-For debugging on networking issues two npm start scripts exist to set up two local client nodes to test networking connection flow.
+##### Local Connection: EthereumJS <- EthereumJS
+
+For debugging on networking issues there are two custom npm start scripts with appropriate settings.
 
 Start a first client listening on the default port and using the default data directory with:
 
@@ -353,10 +355,42 @@ DEBUG=devp2p:* npm run client:start:dev1 -- --datadir=datadir-dev1
 Then take the enode address from the started client instance (use `127.0.0.1` for the IP address) and start a second client with:
 
 ```shell
-DEBUG=devp2p:* npm run client:start:dev2 -- --bootnodes=enode://[NODE_ID]@127.0.0.1:30303
+DEBUG=devp2p:* npm run client:start:dev2 -- --bootnodes=enode://[DEV1_NODE_ID]@127.0.0.1:30303
 ```
 
 This second client is using './datadir-dev2' for its data directory.
+
+##### Local Connection: EthereumJS <- Geth
+
+To connect Geth to a running EthereumJS instance start a client with:
+
+```shell
+DEBUG=devp2p:* npm run client:start:dev1
+```
+
+Then connect with your Geth instance via:
+
+```shell
+geth --maxpeers=1 --bootnodes=enode://[DEV1_NODE_ID]@127.0.0.1:30303
+```
+
+Depending on your use case you might want to turn off your internet connection to not allow further incoming connections on your Geth instance in case the EthereumJS connection gets disconnected.
+
+##### Local Connection: Geth <- EthereumJS
+
+Start your Geth instance:
+
+```shell
+geth [--syncmode=full] [--verbosity=5]
+```
+
+Note that you might want to turn off your internet connection to limit on the Geth discovery process (setting the `--nodiscover` flag won't work since this also disallows our local client from connecting).
+
+Then connect with your EthereumJS instance via:
+
+```shell
+DEBUG=devp2p:* npm run client:start:dev2 -- --bootnodes=enode://[GETH_NODE_ID]@127.0.0.1:30303
+```
 
 ### Diagram Updates
 
