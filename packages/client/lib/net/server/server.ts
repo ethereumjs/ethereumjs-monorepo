@@ -28,7 +28,7 @@ export interface ServerOptions {
  */
 export class Server extends EventEmitter {
   public config: Config
-  public key: Buffer | undefined
+  public key: Buffer
   public bootnodes: multiaddr[] = []
   public dnsNetworks: DnsNetwork[]
 
@@ -45,7 +45,7 @@ export class Server extends EventEmitter {
     super()
 
     this.config = options.config
-    this.key = options.key ? parseKey(options.key) : undefined
+    this.key = options.key ? parseKey(options.key) : this.config.key
     this.bootnodes = options.bootnodes ? parseMultiaddrs(options.bootnodes) : []
     this.dnsNetworks = options.dnsNetworks ?? []
     this.refreshInterval = options.refreshInterval ?? 30000

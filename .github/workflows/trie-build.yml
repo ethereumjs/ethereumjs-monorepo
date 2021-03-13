@@ -98,8 +98,6 @@ jobs:
           output-file-path: ${{ env.cwd }}/output.txt
           # Location of data in gh-pages branch
           benchmark-data-dir-path: dev/bench/trie
-          # Enable alert commit comment
-          comment-on-alert: true
           # GitHub API token to make a commit comment
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # Push and deploy to GitHub pages branch automatically (if on master)

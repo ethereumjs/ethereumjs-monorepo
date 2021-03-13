@@ -44,11 +44,15 @@ import { Config } from '../lib/config'
 export * from './logging'
 import { getLogger } from './logging'
 
-export function createClient(args: any) {
+export async function createClient(args: any) {
   const logger = getLogger({ loglevel: args.loglevel ?? 'info' })
+  const datadir = args.datadir ?? Config.DATADIR_DEFAULT
+  const common = new Common({ chain: args.network ?? 'mainnet' })
+  const key = await Config.getClientKey(datadir, common)
   const config = new Config({
-    common: new Common({ chain: args.network ?? 'mainnet' }),
-    servers: [new Libp2pServer({ multiaddrs: [], config: new Config({ logger }), ...args })],
+    common,
+    key,
+    servers: [new Libp2pServer({ multiaddrs: [], config: new Config({ key, logger }), ...args })],
     syncmode: args.syncmode ?? 'full',
     logger,
   })
@@ -56,7 +60,7 @@ export function createClient(args: any) {
 }
 
 export async function run(args: any) {
-  const client = createClient(args)
+  const client = await createClient(args)
   const { logger, chainCommon: common } = client.config
   logger.info('Initializing Ethereumjs client...')
   logger.info(`Connecting to network: ${common.chainName()}`)

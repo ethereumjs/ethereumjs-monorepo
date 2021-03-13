@@ -19,6 +19,8 @@
     "prepublishOnly": "npm run build && npm run test",
     "bundle": "webpack",
     "client:start": "ts-node bin/cli.ts",
+    "client:start:dev1": "npm run client:start -- --discDns=false --discV4=false --bootnodes",
+    "client:start:dev2": "npm run client:start -- --discDns=false --discV4=false --transports=rlpx --port=30304 --datadir=datadir-dev2",
     "coverage": "nyc npm run test && nyc report --reporter=lcov",
     "docs:build": "typedoc --tsconfig tsconfig.prod.json",
     "lint": "ethereumjs-config-lint",
