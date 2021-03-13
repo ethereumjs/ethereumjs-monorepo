@@ -50,6 +50,10 @@ const args = require('yargs')
       describe: 'Network bootnodes',
       array: true,
     },
+    port: {
+      describe: 'RLPx listening port',
+      default: Config.PORT_DEFAULT,
+    },
     multiaddrs: {
       describe: 'Network multiaddrs',
       array: true,
@@ -176,6 +180,8 @@ async function run() {
 
   const common = new Common({ chain, hardfork: 'chainstart' })
   const datadir = args.datadir ?? Config.DATADIR_DEFAULT
+  const configDirectory = `${datadir}/${common.chainName()}/config`
+  fs.ensureDirSync(configDirectory)
   const key = await Config.getClientKey(datadir, common)
   const config = new Config({
     common,
@@ -185,6 +191,7 @@ async function run() {
     key,
     transports: args.transports,
     bootnodes: args.bootnodes ? parseMultiaddrs(args.bootnodes) : undefined,
+    port: args.port,
     multiaddrs: args.multiaddrs ? parseMultiaddrs(args.multiaddrs) : undefined,
     rpc: args.rpc,
     rpcport: args.rpcport,

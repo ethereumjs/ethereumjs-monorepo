@@ -3,9 +3,6 @@ import { RlpxPeer } from '../peer/rlpxpeer'
 import { Server, ServerOptions } from './server'
 
 export interface RlpxServerOptions extends ServerOptions {
-  /* Local port to listen on (default: 30303) */
-  port?: number
-
   /* List of supported clients */
   clientFilter?: string[]
 }
@@ -49,7 +46,7 @@ const ignoredErrors = new RegExp(
 export class RlpxServer extends Server {
   private peers: Map<string, RlpxPeer> = new Map()
 
-  public port: number
+  public discovery: boolean
   private clientFilter: string[]
 
   public rlpx: Devp2pRLPx | null = null
@@ -65,7 +62,7 @@ export class RlpxServer extends Server {
 
     // TODO: get the external ip from the upnp service
     this.ip = '::'
-    this.port = options.port ?? 30303
+    this.discovery = options.config.discV4 || options.config.discDns
     this.clientFilter = options.clientFilter ?? [
       'go1.5',
       'go1.6',
@@ -97,17 +94,17 @@ export class RlpxServer extends Server {
         enode: undefined,
         id: undefined,
         ip: this.ip,
-        listenAddr: `[${this.ip}]:${this.port}`,
-        ports: { discovery: this.port, listener: this.port },
+        listenAddr: `[${this.ip}]:${this.config.port}`,
+        ports: { discovery: this.config.port, listener: this.config.port },
       }
     }
     const id = this.rlpx._id.toString('hex')
     return {
-      enode: `enode://${id}@[${this.ip}]:${this.port}`,
+      enode: `enode://${id}@[${this.ip}]:${this.config.port}`,
       id: id,
       ip: this.ip,
-      listenAddr: `[${this.ip}]:${this.port}`,
-      ports: { discovery: this.port, listener: this.port },
+      listenAddr: `[${this.ip}]:${this.config.port}`,
+      ports: { discovery: this.config.port, listener: this.config.port },
     }
   }
 
@@ -230,8 +227,8 @@ export class RlpxServer extends Server {
 
     this.dpt.on('error', (e: Error) => this.error(e))
 
-    if (this.port) {
-      this.dpt.bind(this.port, '0.0.0.0')
+    if (this.config.port) {
+      this.dpt.bind(this.config.port, '0.0.0.0')
     }
   }
 
@@ -245,7 +242,7 @@ export class RlpxServer extends Server {
       maxPeers: this.config.maxPeers,
       capabilities: RlpxPeer.capabilities(Array.from(this.protocols)),
       remoteClientIdFilter: this.clientFilter,
-      listenPort: this.port,
+      listenPort: this.config.port,
       common: this.config.chainCommon,
     })
 
@@ -301,8 +298,8 @@ export class RlpxServer extends Server {
       })
     })
 
-    if (this.port) {
-      this.rlpx.listen(this.port, '0.0.0.0')
+    if (this.config.port) {
+      this.rlpx.listen(this.config.port, '0.0.0.0')
     }
   }
 }

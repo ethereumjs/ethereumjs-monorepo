@@ -53,7 +53,7 @@ export interface ConfigOptions {
   /**
    * Network transports ('rlpx' and/or 'libp2p')
    *
-   * Default: `['rlpx:port=30303', 'libp2p']`
+   * Default: `['rlpx', 'libp2p']`
    */
   transports?: string[]
 
@@ -62,6 +62,13 @@ export interface ConfigOptions {
    * (e.g. abc@18.138.108.67 or /ip4/127.0.0.1/tcp/50505/p2p/QmABC)
    */
   bootnodes?: Multiaddr[]
+
+  /**
+   * RLPx listening port
+   *
+   * Default: `30303`
+   */
+  port?: number
 
   /**
    * Network multiaddrs for libp2p
@@ -167,7 +174,8 @@ export class Config {
   public static readonly SYNCMODE_DEFAULT = 'full'
   public static readonly LIGHTSERV_DEFAULT = false
   public static readonly DATADIR_DEFAULT = `./datadir`
-  public static readonly TRANSPORTS_DEFAULT = ['rlpx:port=30303', 'libp2p']
+  public static readonly TRANSPORTS_DEFAULT = ['rlpx', 'libp2p']
+  public static readonly PORT_DEFAULT = 30303
   public static readonly RPC_DEFAULT = false
   public static readonly RPCPORT_DEFAULT = 8545
   public static readonly RPCADDR_DEFAULT = 'localhost'
@@ -185,6 +193,7 @@ export class Config {
   public readonly key: Buffer
   public readonly transports: string[]
   public readonly bootnodes?: Multiaddr[]
+  public readonly port?: number
   public readonly multiaddrs?: Multiaddr[]
   public readonly rpc: boolean
   public readonly rpcport: number
@@ -208,6 +217,7 @@ export class Config {
     this.lightserv = options.lightserv ?? Config.LIGHTSERV_DEFAULT
     this.transports = options.transports ?? Config.TRANSPORTS_DEFAULT
     this.bootnodes = options.bootnodes
+    this.port = options.port ?? Config.PORT_DEFAULT
     this.multiaddrs = options.multiaddrs
     this.datadir = options.datadir ?? Config.DATADIR_DEFAULT
     this.key = options.key ?? genPrivateKey()
