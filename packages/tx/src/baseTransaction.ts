@@ -8,7 +8,13 @@ import {
   ecsign,
   publicToAddress,
 } from 'ethereumjs-util'
-import { TxData, TxOptions, JsonTx, AccessListEIP2930ValuesArray } from './types'
+import {
+  TxData,
+  TxOptions,
+  JsonTx,
+  AccessListEIP2930ValuesArray,
+  FeeMarketEIP1559ValuesArray,
+} from './types'
 
 export abstract class BaseTransaction<TransactionObject> {
   public readonly nonce: BN
@@ -114,7 +120,7 @@ export abstract class BaseTransaction<TransactionObject> {
   /**
    * Returns a Buffer Array of the raw Buffers of this transaction, in order.
    */
-  abstract raw(): Buffer[] | AccessListEIP2930ValuesArray
+  abstract raw(): Buffer[] | AccessListEIP2930ValuesArray | FeeMarketEIP1559ValuesArray
 
   /**
    * Returns the encoding of the transaction.
