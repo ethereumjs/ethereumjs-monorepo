@@ -13,6 +13,7 @@ import {
   TxOptions,
   JsonTx,
   AccessListEIP2930ValuesArray,
+<<<<<<< HEAD
   AccessListEIP2930TxData,
 } from './types'
 
@@ -23,6 +24,11 @@ import {
  *
  * It is therefore not recommended to use directly.
  */
+=======
+  FeeMarketEIP1559ValuesArray,
+} from './types'
+
+>>>>>>> tx: implement EIP1559 transaction base body
 export abstract class BaseTransaction<TransactionObject> {
   private readonly _type: number
 
@@ -151,7 +157,7 @@ export abstract class BaseTransaction<TransactionObject> {
   /**
    * Returns a Buffer Array of the raw Buffers of this transaction, in order.
    */
-  abstract raw(): Buffer[] | AccessListEIP2930ValuesArray
+  abstract raw(): Buffer[] | AccessListEIP2930ValuesArray | FeeMarketEIP1559ValuesArray
 
   /**
    * Returns the encoding of the transaction.

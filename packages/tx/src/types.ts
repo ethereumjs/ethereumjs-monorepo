@@ -134,10 +134,36 @@ export interface AccessListEIP2930TxData extends TxData {
   type?: BNLike
 }
 
+export interface FeeMarketEIP1559TxData extends AccessListEIP2930TxData {
+  /**
+   * The maximum inclusion fee per gas (this fee is given to the miner)
+   */
+  maxInclusionFeePerGas?: BNLike
+  /**
+   * The maximum total fee
+   */
+  maxFeePerGas?: BNLike
+}
+
 /**
  * Buffer values array for EIP2930 transaction
  */
 export type AccessListEIP2930ValuesArray = [
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+  AccessListBuffer,
+  Buffer?,
+  Buffer?,
+  Buffer?
+]
+
+export type FeeMarketEIP1559ValuesArray = [
+  Buffer,
   Buffer,
   Buffer,
   Buffer,
@@ -169,6 +195,8 @@ export interface JsonTx {
   chainId?: string
   accessList?: JsonAccessListItem[]
   type?: string
+  maxInclusionFeePerGas?: string
+  maxFeePerGas?: string
 }
 
 /**

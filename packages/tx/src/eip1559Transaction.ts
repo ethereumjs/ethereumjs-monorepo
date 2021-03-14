@@ -1,54 +1,32 @@
-import { BN, bnToHex, bnToRlp, ecrecover, keccak256, rlp, toBuffer } from 'ethereumjs-util'
+import { Address, BN, bnToHex, bnToRlp, ecrecover, keccak256, rlp, toBuffer } from 'ethereumjs-util'
 import { BaseTransaction } from './baseTransaction'
 import {
   AccessList,
   AccessListBuffer,
-  AccessListEIP2930TxData,
-  AccessListEIP2930ValuesArray,
+  FeeMarketEIP1559TxData,
+  FeeMarketEIP1559ValuesArray,
   JsonTx,
-  TxOptions,
   N_DIV_2,
+  TxOptions,
 } from './types'
-
 import { AccessLists } from './util'
 
-/**
- * Typed transaction with optional access lists
- *
- * - TransactionType: 1
- * - EIP: [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930)
- */
-export default class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2930Transaction> {
+const TRANSACTION_TYPE = 2
+const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(2, '0'))
+
+export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP1559Transaction> {
   public readonly chainId: BN
   public readonly accessList: AccessListBuffer
   public readonly AccessListJSON: AccessList
+  public readonly maxInclusionFeePerGas: BN
+  public readonly maxFeePerGas: BN
 
-  /**
-   * EIP-2930 alias for `r`
-   */
-  get senderR() {
-    return this.r
+  get transactionType(): number {
+    return TRANSACTION_TYPE
   }
 
-  /**
-   * EIP-2930 alias for `s`
-   */
-  get senderS() {
-    return this.s
-  }
-
-  /**
-   * EIP-2930 alias for `v`
-   */
-  get yParity() {
-    return this.v
-  }
-
-  /**
-   * Instantiate a transaction from a data dictionary
-   */
-  public static fromTxData(txData: AccessListEIP2930TxData, opts: TxOptions = {}) {
-    return new AccessListEIP2930Transaction(txData, opts)
+  public static fromTxData(txData: FeeMarketEIP1559TxData, opts: TxOptions = {}) {
+    return new FeeMarketEIP1559Transaction(txData, opts)
   }
 
   /**
@@ -57,9 +35,9 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * Note: this means that the Buffer should start with 0x01.
    */
   public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
-    if (serialized[0] !== 1) {
+    if (serialized[0] !== TRANSACTION_TYPE) {
       throw new Error(
-        `Invalid serialized tx input: not an EIP-2930 transaction (wrong tx type, expected: 1, received: ${serialized[0]}`
+        `Invalid serialized tx input: not an EIP-1559 transaction (wrong tx type, expected: ${TRANSACTION_TYPE}, received: ${serialized[0]}`
       )
     }
 
@@ -69,7 +47,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       throw new Error('Invalid serialized tx input: must be array')
     }
 
-    return AccessListEIP2930Transaction.fromValuesArray(values as any, opts)
+    return FeeMarketEIP1559Transaction.fromValuesArray(values as any, opts)
   }
 
   /**
@@ -82,57 +60,65 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * in favor of the `fromSerializedTx()` constructor
    */
   public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
-    return AccessListEIP2930Transaction.fromSerializedTx(serialized, opts)
+    return FeeMarketEIP1559Transaction.fromSerializedTx(serialized, opts)
   }
 
   /**
    * Create a transaction from a values array.
    *
    * The format is:
-   * chainId, nonce, gasPrice, gasLimit, to, value, data, access_list, yParity (v), senderR (r), senderS (s)
+   * chainId, nonce, maxInclusionFeePerGas, maxFeePerGas, gasLimit, to, value, data, accessList, signatureYParity, signatureR, signatureS
    */
-  public static fromValuesArray(values: AccessListEIP2930ValuesArray, opts: TxOptions = {}) {
-    if (values.length !== 8 && values.length !== 11) {
+  public static fromValuesArray(values: FeeMarketEIP1559ValuesArray, opts: TxOptions = {}) {
+    if (values.length !== 9 && values.length !== 12) {
       throw new Error(
-        'Invalid EIP-2930 transaction. Only expecting 8 values (for unsigned tx) or 11 values (for signed tx).'
+        'Invalid EIP-2930 transaction. Only expecting 9 values (for unsigned tx) or 12 values (for signed tx).'
       )
     }
 
-    const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = values
+    const [
+      chainId,
+      nonce,
+      maxInclusionFeePerGas,
+      maxFeePerGas,
+      gasLimit,
+      to,
+      value,
+      data,
+      accessList,
+      v,
+      r,
+      s,
+    ] = values
 
-    return new AccessListEIP2930Transaction(
+    const emptyBuffer = Buffer.from([])
+
+    return new FeeMarketEIP1559Transaction(
       {
         chainId: new BN(chainId),
-        nonce,
-        gasPrice,
-        gasLimit,
-        to,
-        value,
-        data,
-        accessList: accessList ?? emptyAccessList,
+        nonce: new BN(nonce),
+        maxInclusionFeePerGas: new BN(maxInclusionFeePerGas),
+        maxFeePerGas: new BN(maxFeePerGas),
+        gasLimit: new BN(gasLimit),
+        to: to && to.length > 0 ? new Address(to) : undefined,
+        value: new BN(value),
+        data: data ?? emptyBuffer,
+        accessList: accessList ?? emptyBuffer,
         v: v !== undefined ? new BN(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
-        r,
-        s,
+        r: r !== undefined && !r.equals(emptyBuffer) ? new BN(r) : undefined,
+        s: s !== undefined && !s.equals(emptyBuffer) ? new BN(s) : undefined,
       },
       opts
     )
   }
 
-  /**
-   * This constructor takes the values, validates them, assigns them and freezes the object.
-   *
-   * It is not recommended to use this constructor directly. Instead use
-   * the static factory methods to assist in creating a Transaction object from
-   * varying data types.
-   */
-  public constructor(txData: AccessListEIP2930TxData, opts: TxOptions = {}) {
-    const { chainId, accessList } = txData
+  public constructor(txData: FeeMarketEIP1559TxData, opts: TxOptions = {}) {
+    const { chainId, accessList, maxFeePerGas, maxInclusionFeePerGas } = txData
 
-    super({ ...txData, type: 1 }, opts)
+    super(txData, opts)
 
-    // EIP-2718 check is done in Common
-    if (!this.common.isActivatedEIP(2930)) {
-      throw new Error('EIP-2930 not enabled on Common')
+    if (!this.common.isActivatedEIP(1559)) {
+      throw new Error('EIP-1559 not enabled on Common')
     }
 
     // Populate the access list fields
@@ -142,9 +128,16 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     // Verify the access list format.
     AccessLists.verifyAccessList(this.accessList)
 
-    this.chainId = chainId ? new BN(toBuffer(chainId)) : this.common.chainIdBN()
+    this.chainId = chainId ? new BN(toBuffer(chainId)) : new BN(this.common.chainId())
+    this.maxFeePerGas = new BN(toBuffer(maxFeePerGas))
+    this.maxInclusionFeePerGas = new BN(toBuffer(maxInclusionFeePerGas))
 
-    if (!this.chainId.eq(this.common.chainIdBN())) {
+    this._validateCannotExceedMaxInteger({
+      maxFeePerGas: this.maxFeePerGas,
+      maxInclusionFeePerGas: this.maxInclusionFeePerGas,
+    })
+
+    if (!this.chainId.eq(new BN(this.common.chainId().toString()))) {
       throw new Error('The chain ID does not match the chain ID of Common')
     }
 
@@ -178,11 +171,12 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    *
    * Use `serialize()` to add to block data for `Block.fromValuesArray()`.
    */
-  raw(): AccessListEIP2930ValuesArray {
+  raw(): FeeMarketEIP1559ValuesArray {
     return [
       bnToRlp(this.chainId),
       bnToRlp(this.nonce),
-      bnToRlp(this.gasPrice),
+      bnToRlp(this.maxInclusionFeePerGas),
+      bnToRlp(this.maxFeePerGas),
       bnToRlp(this.gasLimit),
       this.to !== undefined ? this.to.buf : Buffer.from([]),
       bnToRlp(this.value),
@@ -199,24 +193,15 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    */
   serialize(): Buffer {
     const base = this.raw()
-    return Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base as any)])
+    return Buffer.concat([TRANSACTION_TYPE_BUFFER, rlp.encode(base as any)])
   }
 
   /**
-   * Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
-   *
-   * @param hashMessage - Return hashed message if set to true (default: true)
+   * Computes a sha3-256 hash of the serialized unsigned tx, which is used to sign the transaction.
    */
-  getMessageToSign(hashMessage: false): Buffer[]
-  getMessageToSign(hashMessage?: true): Buffer
-  getMessageToSign(hashMessage = true): Buffer | Buffer[] {
-    const base = this.raw().slice(0, 8)
-    const message = Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base as any)])
-    if (hashMessage) {
-      return keccak256(message)
-    } else {
-      return message
-    }
+  getMessageToSign() {
+    const base = this.raw().slice(0, 9)
+    return keccak256(Buffer.concat([TRANSACTION_TYPE_BUFFER, rlp.encode(base as any)]))
   }
 
   /**
@@ -255,15 +240,15 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       )
     }
 
-    const { yParity, r, s } = this
-    if (yParity === undefined || !r || !s) {
+    const { v, r, s } = this
+    if (v === undefined || !r || !s) {
       throw new Error('Missing values to derive sender public key from signed tx')
     }
 
     try {
       return ecrecover(
         msgHash,
-        yParity.addn(27), // Recover the 27 which was stripped from ecsign
+        v.addn(27), // Recover the 27 which was stripped from ecsign
         bnToRlp(r),
         bnToRlp(s)
       )
@@ -277,12 +262,12 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       common: this.common,
     }
 
-    return AccessListEIP2930Transaction.fromTxData(
+    return FeeMarketEIP1559Transaction.fromTxData(
       {
         chainId: this.chainId,
         nonce: this.nonce,
-        gasPrice: this.gasPrice,
-        gasLimit: this.gasLimit,
+        maxInclusionFeePerGas: this.maxInclusionFeePerGas,
+        maxFeePerGas: this.maxFeePerGas,
         to: this.to,
         value: this.value,
         data: this.data,
@@ -304,7 +289,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     return {
       chainId: bnToHex(this.chainId),
       nonce: bnToHex(this.nonce),
-      gasPrice: bnToHex(this.gasPrice),
+      maxInclusionFeePerGas: bnToHex(this.maxInclusionFeePerGas),
+      maxFeePerGas: bnToHex(this.maxFeePerGas),
       gasLimit: bnToHex(this.gasLimit),
       to: this.to !== undefined ? this.to.toString() : undefined,
       value: bnToHex(this.value),
