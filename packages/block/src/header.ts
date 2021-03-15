@@ -793,7 +793,7 @@ export class BlockHeader {
     if (this._common.hardforkIsActiveOnChain('dao')) {
       // verify the extraData field.
       const blockNumber = this.number
-      const DAOActivationBlock = new BN(this._common.hardforkBlock('dao'))
+      const DAOActivationBlock = this._common.hardforkBlockBN('dao')
       if (blockNumber.gte(DAOActivationBlock)) {
         const drift = blockNumber.sub(DAOActivationBlock)
         if (drift.lte(DAO_ForceExtraDataRange)) {
