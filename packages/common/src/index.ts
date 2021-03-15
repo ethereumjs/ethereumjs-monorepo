@@ -14,7 +14,7 @@ export interface CommonOpts {
    * Chain name ('mainnet') or id (1), either from a chain directly supported
    * or a custom chain passed in via `customChains`
    */
-  chain: string | number | object
+  chain: string | number | BN | object
   /**
    * String identifier ('byzantium') for hardfork
    *
@@ -95,9 +95,13 @@ export default class Common extends EventEmitter {
     })
   }
 
-  private static _getChainParams(chain: string | number, customChains?: Chain[]): Chain {
+  private static _getChainParams(chain: string | number | BN, customChains?: Chain[]): Chain {
     const initializedChains: any = _getInitializedChains(customChains)
-    if (typeof chain === 'number') {
+    if (typeof chain === 'number' || BN.isBN(chain)) {
+      if (BN.isBN(chain)) {
+        chain = chain.toNumber()
+      }
+
       if (initializedChains['names'][chain]) {
         const name: string = initializedChains['names'][chain]
         return initializedChains[name]
@@ -139,13 +143,13 @@ export default class Common extends EventEmitter {
    *     representation. Or, a Dictionary of chain parameters for a private network.
    * @returns The dictionary with parameters set as chain
    */
-  setChain(chain: string | number | object): any {
-    if (typeof chain === 'number' || typeof chain === 'string') {
+  setChain(chain: string | number | BN | object): any {
+    if (typeof chain === 'number' || typeof chain === 'string' || BN.isBN(chain)) {
       this._chainParams = Common._getChainParams(chain, this._customChains)
     } else if (typeof chain === 'object') {
       if (this._customChains.length > 0) {
         throw new Error(
-          'Chain must be a string or number when initialized with customChains passed in'
+          'Chain must be a string, number, or BN when initialized with customChains passed in'
         )
       }
       const required = ['networkId', 'genesis', 'hardforks', 'bootstrapNodes']
