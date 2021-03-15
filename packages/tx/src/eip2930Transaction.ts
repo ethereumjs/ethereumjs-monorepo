@@ -179,10 +179,10 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       this.AccessListJSON = json
     }
 
-    this.chainId = chainId ? new BN(toBuffer(chainId)) : new BN(this.common.chainId())
+    this.chainId = chainId ? new BN(toBuffer(chainId)) : this.common.chainIdBN()
     this.accessList = usedAccessList
 
-    if (!this.chainId.eq(new BN(this.common.chainId().toString()))) {
+    if (!this.chainId.eq(this.common.chainIdBN())) {
       throw new Error('The chain ID does not match the chain ID of Common')
     }
 

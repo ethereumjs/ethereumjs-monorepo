@@ -145,7 +145,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
     ]
 
     if (withEIP155) {
-      values.push(toBuffer(this.common.chainId()))
+      values.push(toBuffer(this.common.chainIdBN()))
       values.push(unpadBuffer(toBuffer(0)))
       values.push(unpadBuffer(toBuffer(0)))
     }
@@ -199,7 +199,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
         v,
         bnToRlp(r),
         bnToRlp(s),
-        this._signedTxImplementsEIP155() ? new BN(this.common.chainId().toString()) : undefined
+        this._signedTxImplementsEIP155() ? this.common.chainIdBN() : undefined
       )
     } catch (e) {
       throw new Error('Invalid Signature')
@@ -210,8 +210,9 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * Process the v, r, s values from the `sign` method of the base transaction.
    */
   protected _processSignature(v: number, r: Buffer, s: Buffer) {
+    const vBN = new BN(v)
     if (this._unsignedTxImplementsEIP155()) {
-      v += this.common.chainId() * 2 + 8
+      vBN.iadd(this.common.chainIdBN().muln(2).addn(8))
     }
 
     const opts = {
@@ -226,7 +227,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
         to: this.to,
         value: this.value,
         data: this.data,
-        v: new BN(v),
+        v: vBN,
         r: new BN(r),
         s: new BN(s),
       },
@@ -267,13 +268,15 @@ export default class Transaction extends BaseTransaction<Transaction> {
       return
     }
 
-    const chainIdDoubled = new BN(this.common.chainId().toString()).imuln(2)
+    const chainIdDoubled = this.common.chainIdBN().muln(2)
 
     const isValidEIP155V = v.eq(chainIdDoubled.addn(35)) || v.eq(chainIdDoubled.addn(36))
 
     if (!isValidEIP155V) {
       throw new Error(
-        `Incompatible EIP155-based V ${v.toString()} and chain id ${this.common.chainId()}. See the Common parameter of the Transaction constructor to set the chain id.`
+        `Incompatible EIP155-based V ${v.toString()} and chain id ${this.common
+          .chainIdBN()
+          .toString()}. See the Common parameter of the Transaction constructor to set the chain id.`
       )
     }
   }
@@ -289,7 +292,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
     // If block.number >= 2,675,000 and v = CHAIN_ID * 2 + 35 or v = CHAIN_ID * 2 + 36, then when computing the hash of a transaction for purposes of signing or recovering, instead of hashing only the first six elements (i.e. nonce, gasprice, startgas, to, value, data), hash nine elements, with v replaced by CHAIN_ID, r = 0 and s = 0.
     const v = this.v!
 
-    const chainIdDoubled = new BN(this.common.chainId().toString()).imuln(2)
+    const chainIdDoubled = this.common.chainIdBN().muln(2)
 
     const vAndChainIdMeetEIP155Conditions =
       v.eq(chainIdDoubled.addn(35)) || v.eq(chainIdDoubled.addn(36))
