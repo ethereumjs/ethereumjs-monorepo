@@ -98,9 +98,7 @@ export default class Common extends EventEmitter {
   private static _getChainParams(chain: string | number | BN, customChains?: Chain[]): Chain {
     const initializedChains: any = _getInitializedChains(customChains)
     if (typeof chain === 'number' || BN.isBN(chain)) {
-      if (BN.isBN(chain)) {
-        chain = chain.toNumber()
-      }
+      chain = chain.toString()
 
       if (initializedChains['names'][chain]) {
         const name: string = initializedChains['names'][chain]

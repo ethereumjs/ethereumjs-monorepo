@@ -1,3 +1,5 @@
+import { BN } from 'ethereumjs-util'
+
 export interface genesisStatesType {
   names: {
     [key: string]: string
@@ -14,8 +16,8 @@ export interface chainsType {
 
 export interface Chain {
   name: string
-  chainId: number
-  networkId: number
+  chainId: number | BN
+  networkId: number | BN
   // TODO: make mandatory in next breaking release
   defaultHardfork?: string
   comment: string
