@@ -31,7 +31,7 @@ tape('[EthProtocol]', (t) => {
     const p = new EthProtocol({ config, chain })
     Object.defineProperty(chain, 'networkId', {
       get: () => {
-        return 1
+        return new BN(1)
       },
     })
     Object.defineProperty(chain, 'blocks', {
@@ -64,8 +64,8 @@ tape('[EthProtocol]', (t) => {
       genesisHash: '0xbb',
     })
     t.ok(
-      status.networkId.toNumber() === 1 &&
-        status.td.toNumber() === 100 &&
+      status.networkId.eqn(1) &&
+        status.td.eqn(100) &&
         status.bestHash === '0xaa' &&
         status.genesisHash === '0xbb',
       'decode status'

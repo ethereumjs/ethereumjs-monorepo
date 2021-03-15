@@ -34,7 +34,7 @@ export class Net {
    * @param params An empty array
    */
   version(_params = []) {
-    return `${this._chain.config.chainCommon.chainId()}`
+    return this._chain.config.chainCommon.chainIdBN().toString()
   }
 
   /**

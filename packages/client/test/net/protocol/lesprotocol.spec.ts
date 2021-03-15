@@ -36,7 +36,7 @@ tape('[LesProtocol]', (t) => {
     const p = new LesProtocol({ config, chain, flow })
     Object.defineProperty(chain, 'networkId', {
       get: () => {
-        return 1
+        return new BN(1)
       },
     })
     Object.defineProperty(chain, 'blocks', {

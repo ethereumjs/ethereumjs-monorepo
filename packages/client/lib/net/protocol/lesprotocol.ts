@@ -174,7 +174,7 @@ export class LesProtocol extends Protocol {
     }
 
     return {
-      networkId: this.chain.networkId,
+      networkId: this.chain.networkId.toNumber(),
       headTd: this.chain.headers.td.toArrayLike(Buffer),
       headHash: this.chain.headers.latest?.hash(),
       headNum: this.chain.headers.latest?.number,
