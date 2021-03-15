@@ -1,8 +1,14 @@
-import dns from 'dns'
 import assert from 'assert'
 import { PeerInfo } from '../dpt'
 import { ENR } from './enr'
 import { debug as createDebugLogger } from 'debug'
+
+let dns: any
+try {
+  dns = require('dns')
+} catch (e) {
+  dns = require('../browser/dns')
+}
 
 const debug = createDebugLogger('devp2p:dns:dns')
 
