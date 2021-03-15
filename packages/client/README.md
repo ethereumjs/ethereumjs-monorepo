@@ -259,8 +259,13 @@ http-server
 
 Now, open a new browser window and navigate to `http://localhost:8080`. Open the developer console in your browser and run the following command to start syncing to the first client. Again, remember to change the value of bootnodes to match the url of the first client from above:
 
-```
-ethereumjs.run({ network: 'rinkeby', syncmode: 'light', bootnodes: '/ip4/127.0.0.1/tcp/50505/ws/p2p/QmYAuYxw6QX1x5aafs6g3bUrPbMDifP5pDun3N9zbVLpEa' })
+```js
+ethereumjs.run({
+  network: 'rinkeby',
+  syncmode: 'light',
+  bootnodes: '/ip4/127.0.0.1/tcp/50505/ws/p2p/QmYAuYxw6QX1x5aafs6g3bUrPbMDifP5pDun3N9zbVLpEa',
+  discDns: false
+})
 ```
 
 That's it! Now, you should start seeing headers being downloaded to the local storage of your browser. Since IndexDB is being used, even if you close and re-open the browser window, the headers you've downloaded will be saved.
