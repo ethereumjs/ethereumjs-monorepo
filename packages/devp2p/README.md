@@ -344,6 +344,13 @@ Events emitted:
 
 - [Light client protocol](https://github.com/ethereum/wiki/wiki/Light-client-protocol)
 
+## Browser
+
+While it's possible to bundle this package for the browser, some features do not work:
++ EIP-1459 (DNS Peer Discovery) is disabled due to the absence of a standard polyfill for Node's `dns`
+module. DNS discovery mode can be toggled on/off via the DPTOption `shouldGetDnsPeers` ("false"
+by default).
+
 ## Tests
 
 There are unit tests in the `test/` directory which can be run with:
