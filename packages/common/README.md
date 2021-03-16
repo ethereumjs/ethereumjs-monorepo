@@ -95,6 +95,7 @@ Supported chains:
 - `rinkeby`
 - `kovan`
 - `goerli`
+- `yolov3`
 - Private/custom chain parameters
 
 The following chain-specific parameters are provided:
@@ -180,15 +181,12 @@ library supported:
 - `constantinople`
 - `petersburg` (aka `constantinopleFix`, apply together with `constantinople`)
 - `istanbul` (`DEFAULT_HARDFORK` (`v2.0.0` release series))
-- `muirGlacier` (since `v1.5.0`)
+- `muirGlacier`
+- `berlin` (since `v2.2.0`)
 
 ### Future Hardforks
 
-General support for the `berlin` hardfork has been added along `v2.0.0`, specification of the hardfork regarding EIPs included was not finalized upon release date.
-
-Currently supported `berlin` EIPs:
-
-- `EIP-2315`
+The `london` hardfork targeted for summer 2021 is currently not yet supported by this library.
 
 ### Parameter Access
 
@@ -221,7 +219,9 @@ The following EIPs are currently supported:
 - [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315): Simple subroutines for the EVM
 - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537): BLS precompiles
 - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565): ModExp gas cost
+- [EIP-2718](https://eips.ethereum.org/EIPS/eip-2565): Transaction Types
 - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929): gas cost increases for state access opcodes
+- [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930): Optional accesss list tx type
 
 ## Bootstrap Nodes
 

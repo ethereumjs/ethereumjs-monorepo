@@ -24,7 +24,7 @@
 
 • **chainId**? : *undefined | number*
 
-*Defined in [packages/common/src/types.ts:63](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L63)*
+*Defined in [packages/common/src/types.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L65)*
 
 ___
 
@@ -32,7 +32,7 @@ ___
 
 • **comment**: *string*
 
-*Defined in [packages/common/src/types.ts:66](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L66)*
+*Defined in [packages/common/src/types.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L68)*
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 • **id**: *string*
 
-*Defined in [packages/common/src/types.ts:64](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L64)*
+*Defined in [packages/common/src/types.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L66)*
 
 ___
 
@@ -48,7 +48,7 @@ ___
 
 • **ip**: *string*
 
-*Defined in [packages/common/src/types.ts:60](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L60)*
+*Defined in [packages/common/src/types.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L62)*
 
 ___
 
@@ -56,7 +56,7 @@ ___
 
 • **location**: *string*
 
-*Defined in [packages/common/src/types.ts:65](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L65)*
+*Defined in [packages/common/src/types.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L67)*
 
 ___
 
@@ -64,7 +64,7 @@ ___
 
 • **network**? : *undefined | string*
 
-*Defined in [packages/common/src/types.ts:62](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L62)*
+*Defined in [packages/common/src/types.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L64)*
 
 ___
 
@@ -72,4 +72,4 @@ ___
 
 • **port**: *number | string*
 
-*Defined in [packages/common/src/types.ts:61](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L61)*
+*Defined in [packages/common/src/types.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L63)*

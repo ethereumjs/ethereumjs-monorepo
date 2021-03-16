@@ -28,15 +28,15 @@
 
 • **bootstrapNodes**: *[BootstrapNode](_types_.bootstrapnode.md)[]*
 
-*Defined in [packages/common/src/types.ts:25](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L25)*
+*Defined in [packages/common/src/types.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L27)*
 
 ___
 
 ###  chainId
 
-• **chainId**: *number*
+• **chainId**: *number | BN*
 
-*Defined in [packages/common/src/types.ts:17](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L17)*
+*Defined in [packages/common/src/types.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L19)*
 
 ___
 
@@ -44,7 +44,7 @@ ___
 
 • **comment**: *string*
 
-*Defined in [packages/common/src/types.ts:21](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L21)*
+*Defined in [packages/common/src/types.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L23)*
 
 ___
 
@@ -52,7 +52,7 @@ ___
 
 • **consensus**? : *undefined | object*
 
-*Defined in [packages/common/src/types.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L28)*
+*Defined in [packages/common/src/types.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L30)*
 
 ___
 
@@ -60,7 +60,7 @@ ___
 
 • **defaultHardfork**? : *undefined | string*
 
-*Defined in [packages/common/src/types.ts:20](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L20)*
+*Defined in [packages/common/src/types.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L22)*
 
 ___
 
@@ -68,7 +68,7 @@ ___
 
 • **dnsNetworks**? : *string[]*
 
-*Defined in [packages/common/src/types.ts:26](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L26)*
+*Defined in [packages/common/src/types.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L28)*
 
 ___
 
@@ -76,7 +76,7 @@ ___
 
 • **genesis**: *[GenesisBlock](_types_.genesisblock.md)*
 
-*Defined in [packages/common/src/types.ts:23](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L23)*
+*Defined in [packages/common/src/types.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L25)*
 
 ___
 
@@ -84,7 +84,7 @@ ___
 
 • **hardforks**: *[Hardfork](_types_.hardfork.md)[]*
 
-*Defined in [packages/common/src/types.ts:24](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L24)*
+*Defined in [packages/common/src/types.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L26)*
 
 ___
 
@@ -92,15 +92,15 @@ ___
 
 • **name**: *string*
 
-*Defined in [packages/common/src/types.ts:16](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L16)*
+*Defined in [packages/common/src/types.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L18)*
 
 ___
 
 ###  networkId
 
-• **networkId**: *number*
+• **networkId**: *number | BN*
 
-*Defined in [packages/common/src/types.ts:18](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L18)*
+*Defined in [packages/common/src/types.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L20)*
 
 ___
 
@@ -108,4 +108,4 @@ ___
 
 • **url**: *string*
 
-*Defined in [packages/common/src/types.ts:22](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L22)*
+*Defined in [packages/common/src/types.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L24)*

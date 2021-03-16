@@ -24,7 +24,7 @@
 
 • **difficulty**: *number*
 
-*Defined in [packages/common/src/types.ts:47](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L47)*
+*Defined in [packages/common/src/types.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L49)*
 
 ___
 
@@ -32,7 +32,7 @@ ___
 
 • **extraData**: *string*
 
-*Defined in [packages/common/src/types.ts:49](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L49)*
+*Defined in [packages/common/src/types.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L51)*
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 • **gasLimit**: *number*
 
-*Defined in [packages/common/src/types.ts:46](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L46)*
+*Defined in [packages/common/src/types.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L48)*
 
 ___
 
@@ -48,7 +48,7 @@ ___
 
 • **hash**: *string*
 
-*Defined in [packages/common/src/types.ts:44](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L44)*
+*Defined in [packages/common/src/types.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L46)*
 
 ___
 
@@ -56,7 +56,7 @@ ___
 
 • **nonce**: *string*
 
-*Defined in [packages/common/src/types.ts:48](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L48)*
+*Defined in [packages/common/src/types.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L50)*
 
 ___
 
@@ -64,7 +64,7 @@ ___
 
 • **stateRoot**: *string*
 
-*Defined in [packages/common/src/types.ts:50](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L50)*
+*Defined in [packages/common/src/types.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L52)*
 
 ___
 
@@ -72,4 +72,4 @@ ___
 
 • **timestamp**: *string | null*
 
-*Defined in [packages/common/src/types.ts:45](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L45)*
+*Defined in [packages/common/src/types.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L47)*

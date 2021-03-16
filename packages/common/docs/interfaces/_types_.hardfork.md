@@ -20,7 +20,7 @@
 
 • **block**: *number | null*
 
-*Defined in [packages/common/src/types.ts:55](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L55)*
+*Defined in [packages/common/src/types.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L57)*
 
 ___
 
@@ -28,7 +28,7 @@ ___
 
 • **forkHash**? : *string | null*
 
-*Defined in [packages/common/src/types.ts:56](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L56)*
+*Defined in [packages/common/src/types.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L58)*
 
 ___
 
@@ -36,4 +36,4 @@ ___
 
 • **name**: *string*
 
-*Defined in [packages/common/src/types.ts:54](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L54)*
+*Defined in [packages/common/src/types.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L56)*
