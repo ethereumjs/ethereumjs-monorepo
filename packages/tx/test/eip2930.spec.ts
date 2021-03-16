@@ -254,7 +254,7 @@ tape('[AccessListEIP2930Transaction]', function (t) {
 
     const customChainParams = {
       name: 'custom',
-      chainId: parseInt(txData.chainId.toString()),
+      chainId: txData.chainId,
       eips: [2718, 2929, 2930],
     }
     const usedCommon = Common.forCustomChain('mainnet', customChainParams, 'berlin')

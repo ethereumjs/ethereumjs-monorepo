@@ -107,10 +107,10 @@ export class FullSynchronizer extends Synchronizer {
     const count = height.sub(first).addn(1)
     if (count.lten(0)) return false
 
-    const nextForkBlock = this.config.chainCommon.nextHardforkBlock()
+    const nextForkBlock = this.config.chainCommon.nextHardforkBlockBN()
     if (nextForkBlock) {
-      if (first.gten(nextForkBlock)) {
-        this.config.chainCommon.setHardforkByBlockNumber(first.toNumber())
+      if (first.gte(nextForkBlock)) {
+        this.config.chainCommon.setHardforkByBlockNumber(first)
         this.hardfork = this.config.chainCommon.hardfork()
       }
     }

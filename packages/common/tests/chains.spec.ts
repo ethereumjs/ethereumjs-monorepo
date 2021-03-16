@@ -6,7 +6,9 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
     let c = new Common({ chain: 'mainnet' })
     st.equal(c.chainName(), 'mainnet', 'should initialize with chain name')
     st.equal(c.chainId(), 1, 'should return correct chain Id')
+    st.ok(c.chainIdBN().eqn(1), 'should return correct chain Id')
     st.equal(c.networkId(), 1, 'should return correct network Id')
+    st.ok(c.networkIdBN().eqn(1), 'should return correct network Id')
     st.equal(c.hardfork(), 'istanbul', 'should set hardfork to current default hardfork')
     st.equal(
       c.hardfork(),

@@ -135,10 +135,9 @@ export class Chain extends EventEmitter {
 
   /**
    * Network ID
-   * @return {number}
    */
-  get networkId(): number {
-    return this.config.chainCommon.networkId()
+  get networkId(): BN {
+    return this.config.chainCommon.networkIdBN()
   }
 
   /**

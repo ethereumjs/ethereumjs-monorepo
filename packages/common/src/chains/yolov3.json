@@ -1,7 +1,7 @@
 {
     "name": "yolov3",
-    "chainId": 34180983699157880,
-    "networkId": 34180983699157880,
+    "chainId": "34180983699157880",
+    "networkId": "34180983699157880",
     "defaultHardfork": "berlin",
     "consensus": {
         "type": "poa",

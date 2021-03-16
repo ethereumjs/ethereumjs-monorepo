@@ -2,6 +2,7 @@ import assert from 'assert'
 import { EventEmitter } from 'events'
 import * as rlp from 'rlp'
 import ms from 'ms'
+import { BN } from 'ethereumjs-util'
 import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 
@@ -21,9 +22,9 @@ export class ETH extends EventEmitter {
 
   // Eth64
   _hardfork: string = 'chainstart'
-  _latestBlock: number = 0
+  _latestBlock = new BN(0)
   _forkHash: string = ''
-  _nextForkBlock: number | null = null
+  _nextForkBlock = new BN(0)
 
   constructor(version: number, peer: Peer, send: SendMethod) {
     super()
@@ -44,10 +45,10 @@ export class ETH extends EventEmitter {
       this._hardfork = c.hardfork() ? c.hardfork() : this._hardfork
       // Set latestBlock minimally to start block of fork to have some more
       // accurate basis if no latestBlock is provided along status send
-      this._latestBlock = c.hardforkBlock(this._hardfork)
+      this._latestBlock = c.hardforkBlockBN(this._hardfork)
       this._forkHash = c.forkHash(this._hardfork)
       // Next fork block number or 0 if none available
-      this._nextForkBlock = c.nextHardforkBlock(this._hardfork)
+      this._nextForkBlock = c.nextHardforkBlockBN(this._hardfork) ?? new BN(0)
     }
   }
 
@@ -108,12 +109,12 @@ export class ETH extends EventEmitter {
     const c = this._peer._common
 
     const peerForkHash = `0x${forkId[0].toString('hex')}`
-    const peerNextFork = buffer2int(forkId[1])
+    const peerNextFork = new BN(forkId[1])
 
     if (this._forkHash === peerForkHash) {
       // There is a known next fork
-      if (peerNextFork !== 0) {
-        if (this._latestBlock >= peerNextFork) {
+      if (!peerNextFork.isZero()) {
+        if (this._latestBlock.gte(peerNextFork)) {
           const msg = 'Remote is advertising a future fork that passed locally'
           debug(msg)
           throw new assert.AssertionError({ message: msg })
@@ -128,7 +129,8 @@ export class ETH extends EventEmitter {
     }
 
     if (!c.hardforkGteHardfork(peerFork.name, this._hardfork)) {
-      if (peerNextFork === null || c.nextHardforkBlock(peerFork.name) !== peerNextFork) {
+      const nextHardforkBlock = c.nextHardforkBlockBN(peerFork.name)
+      if (peerNextFork === null || !nextHardforkBlock || !nextHardforkBlock.eq(peerNextFork)) {
         const msg = 'Outdated fork status, remote needs software update'
         debug(msg)
         throw new assert.AssertionError({ message: msg })
@@ -192,22 +194,23 @@ export class ETH extends EventEmitter {
     if (this._status !== null) return
     this._status = [
       int2buffer(this._version),
-      int2buffer(this._peer._common.chainId()),
+      this._peer._common.chainIdBN().toArrayLike(Buffer),
       status.td,
       status.bestHash,
       status.genesisHash,
     ]
     if (this._version >= 64) {
       if (status.latestBlock) {
-        if (status.latestBlock < this._latestBlock) {
+        const latestBlock = new BN(status.latestBlock)
+        if (latestBlock.lt(this._latestBlock)) {
           throw new Error(
             'latest block provided is not matching the HF setting of the Common instance (Rlpx)'
           )
         }
-        this._latestBlock = status.latestBlock
+        this._latestBlock = latestBlock
       }
       const forkHashB = Buffer.from(this._forkHash.substr(2), 'hex')
-      const nextForkB = int2buffer(this._nextForkBlock)
+      const nextForkB = this._nextForkBlock.toArrayLike(Buffer)
       this._status.push([forkHashB, nextForkB])
     }
 

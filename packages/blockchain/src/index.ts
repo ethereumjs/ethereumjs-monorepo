@@ -305,7 +305,7 @@ export default class Blockchain implements BlockchainInterface {
 
     if (!genesisBlock) {
       const common = new Common({
-        chain: this._common.chainId(),
+        chain: this._common.chainIdBN(),
         hardfork: 'chainstart',
       })
       genesisBlock = Block.genesis({}, { common })
@@ -871,7 +871,7 @@ export default class Blockchain implements BlockchainInterface {
       const currentTd = { header: new BN(0), block: new BN(0) }
       let dbOps: DBOp[] = []
 
-      if (block._common.chainId() !== this._common.chainId()) {
+      if (!block._common.chainIdBN().eq(this._common.chainIdBN())) {
         throw new Error('Chain mismatch while trying to put block or header')
       }
 

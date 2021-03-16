@@ -136,7 +136,7 @@ export class EthProtocol extends Protocol {
   encodeStatus(): any {
     // TODO: add latestBlock for more precise ETH/64 forkhash switch
     return {
-      networkId: this.chain.networkId,
+      networkId: this.chain.networkId.toNumber(),
       td: this.chain.blocks.td.toArrayLike(Buffer),
       bestHash: this.chain.blocks.latest!.hash(),
       genesisHash: this.chain.genesis.hash,
