@@ -27,7 +27,7 @@ hardfork.
 
 • **calcDifficultyFromHeader**? : *[BlockHeader](../classes/_index_.blockheader.md)*
 
-*Defined in [types.ts:48](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L48)*
+*Defined in [types.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L48)*
 
 If a preceding `BlockHeader` (usually the parent header) is given the preceding
 header will be used to calculate the difficulty for this block and the calculated
@@ -39,7 +39,7 @@ ___
 
 • **cliqueSigner**? : *Buffer*
 
-*Defined in [types.ts:64](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L64)*
+*Defined in [types.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L64)*
 
 Provide a clique signer's privateKey to seal this block.
 Will throw if provided on a non-PoA chain.
@@ -50,7 +50,7 @@ ___
 
 • **common**? : *Common*
 
-*Defined in [types.ts:24](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L24)*
+*Defined in [types.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L24)*
 
 A Common object defining the chain and the hardfork a block/block header belongs to.
 
@@ -68,7 +68,7 @@ ___
 
 • **freeze**? : *undefined | false | true*
 
-*Defined in [types.ts:59](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L59)*
+*Defined in [types.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L59)*
 
 A block object by default gets frozen along initialization. This gives you
 strong additional security guarantees on the consistency of the block parameters.
@@ -85,7 +85,7 @@ ___
 
 • **hardforkByBlockNumber**? : *undefined | false | true*
 
-*Defined in [types.ts:30](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L30)*
+*Defined in [types.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L30)*
 
 Determine the HF by the block number
 
@@ -97,7 +97,7 @@ ___
 
 • **initWithGenesisHeader**? : *undefined | false | true*
 
-*Defined in [types.ts:41](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L41)*
+*Defined in [types.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L41)*
 
 Turns the block header into the canonical genesis block header
 

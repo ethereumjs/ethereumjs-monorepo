@@ -32,7 +32,7 @@
 
 Ƭ **BlockBodyBuffer**: *[[TransactionsBuffer](_index_.md#transactionsbuffer), [UncleHeadersBuffer](_index_.md#uncleheadersbuffer)]*
 
-*Defined in [types.ts:102](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L102)*
+*Defined in [types.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L102)*
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 Ƭ **BlockBuffer**: *[[BlockHeaderBuffer](_index_.md#blockheaderbuffer), [TransactionsBuffer](_index_.md#transactionsbuffer), [UncleHeadersBuffer](_index_.md#uncleheadersbuffer)]*
 
-*Defined in [types.ts:100](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L100)*
+*Defined in [types.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L100)*
 
 ___
 
@@ -48,15 +48,17 @@ ___
 
 Ƭ **BlockHeaderBuffer**: *Buffer[]*
 
-*Defined in [types.ts:101](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L101)*
+*Defined in [types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L101)*
 
 ___
 
 ###  TransactionsBuffer
 
-Ƭ **TransactionsBuffer**: *Buffer[][]*
+Ƭ **TransactionsBuffer**: *Buffer[][] | Buffer[]*
 
-*Defined in [types.ts:103](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L103)*
+*Defined in [types.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L106)*
+
+TransactionsBuffer can be an array of serialized txs for Typed Transactions or an array of Buffer Arrays for legacy transactions.
 
 ___
 
@@ -64,4 +66,4 @@ ___
 
 Ƭ **UncleHeadersBuffer**: *Buffer[][]*
 
-*Defined in [types.ts:104](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L104)*
+*Defined in [types.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L107)*
