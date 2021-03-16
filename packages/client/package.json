@@ -53,7 +53,7 @@
   },
   "homepage": "https://github.com/ethereumjs/ethereumjs-client#readme",
   "dependencies": {
-    "@ethereumjs/block": "^3.1.0",
+    "@ethereumjs/block": "^3.2.0",
     "@ethereumjs/blockchain": "^5.1.0",
     "@ethereumjs/common": "^2.2.0",
     "@ethereumjs/devp2p": "^3.0.3",
