@@ -22,9 +22,9 @@ Options for instantiating a [Common](../classes/_index_.common.md) instance.
 
 ###  chain
 
-• **chain**: *string | number | object*
+• **chain**: *string | number | BN | object*
 
-*Defined in [packages/common/src/index.ts:16](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L16)*
+*Defined in [packages/common/src/index.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L17)*
 
 Chain name ('mainnet') or id (1), either from a chain directly supported
 or a custom chain passed in via `customChains`
@@ -35,7 +35,7 @@ ___
 
 • **customChains**? : *[Chain](_types_.chain.md)[]*
 
-*Defined in [packages/common/src/index.ts:47](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L47)*
+*Defined in [packages/common/src/index.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L48)*
 
 Initialize (in addition to the supported chains) with the selected
 custom chains
@@ -53,7 +53,7 @@ ___
 
 • **eips**? : *number[]*
 
-*Defined in [packages/common/src/index.ts:35](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L35)*
+*Defined in [packages/common/src/index.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L36)*
 
 Selected EIPs which can be activated, please use an array for instantiation
 (e.g. `eips: [ 2537, ]`)
@@ -68,7 +68,7 @@ ___
 
 • **hardfork**? : *undefined | string*
 
-*Defined in [packages/common/src/index.ts:22](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L22)*
+*Defined in [packages/common/src/index.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L23)*
 
 String identifier ('byzantium') for hardfork
 
@@ -80,6 +80,6 @@ ___
 
 • **supportedHardforks**? : *Array‹string›*
 
-*Defined in [packages/common/src/index.ts:26](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L26)*
+*Defined in [packages/common/src/index.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L27)*
 
 Limit parameter returns to the given hardforks

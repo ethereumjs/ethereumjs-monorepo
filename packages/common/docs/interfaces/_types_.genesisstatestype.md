@@ -22,7 +22,7 @@
 
 • **names**: *object*
 
-*Defined in [packages/common/src/types.ts:2](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L2)*
+*Defined in [packages/common/src/types.ts:4](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L4)*
 
 #### Type declaration:
 
