@@ -14,12 +14,12 @@ import runBlockchain from './runBlockchain'
 const AsyncEventEmitter = require('async-eventemitter')
 const promisify = require('util.promisify')
 
-// eslint-disable-next-line no-undef
-const IS_BROWSER = typeof (<any>globalThis).window === 'object' // very ugly way to detect if we are running in a browser
+// very ugly way to detect if we are running in a browser
+const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 let mcl: any
 let mclInitPromise: any
 
-if (!IS_BROWSER) {
+if (!isBrowser()) {
   mcl = require('mcl-wasm')
   mclInitPromise = mcl.init(mcl.BLS12_381)
 }
@@ -218,7 +218,7 @@ export default class VM extends AsyncEventEmitter {
     this._hardforkByBlockNumber = opts.hardforkByBlockNumber ?? false
 
     if (this._common.isActivatedEIP(2537)) {
-      if (IS_BROWSER) {
+      if (isBrowser()) {
         throw new Error('EIP-2537 is currently not supported in browsers')
       } else {
         this._mcl = mcl
@@ -252,7 +252,7 @@ export default class VM extends AsyncEventEmitter {
     }
 
     if (this._common.isActivatedEIP(2537)) {
-      if (IS_BROWSER) {
+      if (isBrowser()) {
         throw new Error('EIP-2537 is currently not supported in browsers')
       } else {
         const mcl = this._mcl
