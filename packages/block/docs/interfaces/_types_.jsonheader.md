@@ -34,7 +34,7 @@ An object with the block header's data represented as strings.
 
 • **bloom**? : *undefined | string*
 
-*Defined in [types.ts:128](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L128)*
+*Defined in [types.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L131)*
 
 ___
 
@@ -42,7 +42,7 @@ ___
 
 • **coinbase**? : *undefined | string*
 
-*Defined in [types.ts:124](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L124)*
+*Defined in [types.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L127)*
 
 ___
 
@@ -50,7 +50,7 @@ ___
 
 • **difficulty**? : *undefined | string*
 
-*Defined in [types.ts:129](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L129)*
+*Defined in [types.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L132)*
 
 ___
 
@@ -58,7 +58,7 @@ ___
 
 • **extraData**? : *undefined | string*
 
-*Defined in [types.ts:134](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L134)*
+*Defined in [types.ts:137](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L137)*
 
 ___
 
@@ -66,7 +66,7 @@ ___
 
 • **gasLimit**? : *undefined | string*
 
-*Defined in [types.ts:131](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L131)*
+*Defined in [types.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L134)*
 
 ___
 
@@ -74,7 +74,7 @@ ___
 
 • **gasUsed**? : *undefined | string*
 
-*Defined in [types.ts:132](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L132)*
+*Defined in [types.ts:135](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L135)*
 
 ___
 
@@ -82,7 +82,7 @@ ___
 
 • **mixHash**? : *undefined | string*
 
-*Defined in [types.ts:135](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L135)*
+*Defined in [types.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L138)*
 
 ___
 
@@ -90,7 +90,7 @@ ___
 
 • **nonce**? : *undefined | string*
 
-*Defined in [types.ts:136](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L136)*
+*Defined in [types.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L139)*
 
 ___
 
@@ -98,7 +98,7 @@ ___
 
 • **number**? : *undefined | string*
 
-*Defined in [types.ts:130](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L130)*
+*Defined in [types.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L133)*
 
 ___
 
@@ -106,7 +106,7 @@ ___
 
 • **parentHash**? : *undefined | string*
 
-*Defined in [types.ts:122](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L122)*
+*Defined in [types.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L125)*
 
 ___
 
@@ -114,7 +114,7 @@ ___
 
 • **receiptTrie**? : *undefined | string*
 
-*Defined in [types.ts:127](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L127)*
+*Defined in [types.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L130)*
 
 ___
 
@@ -122,7 +122,7 @@ ___
 
 • **stateRoot**? : *undefined | string*
 
-*Defined in [types.ts:125](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L125)*
+*Defined in [types.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L128)*
 
 ___
 
@@ -130,7 +130,7 @@ ___
 
 • **timestamp**? : *undefined | string*
 
-*Defined in [types.ts:133](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L133)*
+*Defined in [types.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L136)*
 
 ___
 
@@ -138,7 +138,7 @@ ___
 
 • **transactionsTrie**? : *undefined | string*
 
-*Defined in [types.ts:126](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L126)*
+*Defined in [types.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L129)*
 
 ___
 
@@ -146,4 +146,4 @@ ___
 
 • **uncleHash**? : *undefined | string*
 
-*Defined in [types.ts:123](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L123)*
+*Defined in [types.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L126)*

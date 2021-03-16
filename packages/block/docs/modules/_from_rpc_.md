@@ -14,7 +14,7 @@
 
 ▸ **blockFromRpc**(`blockParams`: any, `uncles`: any[], `options?`: [BlockOptions](../interfaces/_index_.blockoptions.md)): *[Block](../classes/_block_.block.md)‹›*
 
-*Defined in [from-rpc.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/from-rpc.ts#L32)*
+*Defined in [from-rpc.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/from-rpc.ts#L32)*
 
 Creates a new block object from Ethereum JSON RPC.
 

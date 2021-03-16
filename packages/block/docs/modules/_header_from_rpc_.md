@@ -14,7 +14,7 @@
 
 ▸ **blockHeaderFromRpc**(`blockParams`: any, `options?`: [BlockOptions](../interfaces/_index_.blockoptions.md)): *[BlockHeader](../classes/_header_.blockheader.md)‹›*
 
-*Defined in [header-from-rpc.ts:10](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header-from-rpc.ts#L10)*
+*Defined in [header-from-rpc.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header-from-rpc.ts#L10)*
 
 Creates a new block header object from Ethereum JSON RPC.
 

@@ -17,7 +17,7 @@
 
 • **CLIQUE_DIFF_INTURN**: *BN‹›* = new BN(2)
 
-*Defined in [clique.ts:9](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/clique.ts#L9)*
+*Defined in [clique.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/clique.ts#L9)*
 
 ___
 
@@ -25,7 +25,7 @@ ___
 
 • **CLIQUE_DIFF_NOTURN**: *BN‹›* = new BN(1)
 
-*Defined in [clique.ts:11](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/clique.ts#L11)*
+*Defined in [clique.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/clique.ts#L11)*
 
 ___
 
@@ -33,7 +33,7 @@ ___
 
 • **CLIQUE_EXTRA_SEAL**: *65* = 65
 
-*Defined in [clique.ts:6](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/clique.ts#L6)*
+*Defined in [clique.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/clique.ts#L6)*
 
 ___
 
@@ -41,4 +41,4 @@ ___
 
 • **CLIQUE_EXTRA_VANITY**: *32* = 32
 
-*Defined in [clique.ts:4](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/clique.ts#L4)*
+*Defined in [clique.ts:4](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/clique.ts#L4)*
