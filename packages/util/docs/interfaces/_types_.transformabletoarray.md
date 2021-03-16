@@ -19,7 +19,7 @@
 
 ▸ **toArray**(): *Uint8Array*
 
-*Defined in [types.ts:30](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/types.ts#L30)*
+*Defined in [types.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L38)*
 
 **Returns:** *Uint8Array*
 
@@ -29,6 +29,6 @@ ___
 
 ▸ **toBuffer**(): *Buffer*
 
-*Defined in [types.ts:31](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/types.ts#L31)*
+*Defined in [types.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L39)*
 
 **Returns:** *Buffer*
