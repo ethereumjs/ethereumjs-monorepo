@@ -14,7 +14,7 @@
 
 ▸ **defineProperties**(`self`: any, `fields`: any, `data?`: any): *void*
 
-*Defined in [object.ts:17](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/object.ts#L17)*
+*Defined in [object.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/object.ts#L17)*
 
 Defines properties on a `Object`. It make the assumption that underlying data is binary.
 
