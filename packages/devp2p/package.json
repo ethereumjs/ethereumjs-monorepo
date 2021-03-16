@@ -72,7 +72,7 @@
     "secp256k1": "^4.0.2"
   },
   "devDependencies": {
-    "@ethereumjs/block": "^3.1.0",
+    "@ethereumjs/block": "^3.2.0",
     "@ethereumjs/config-coverage": "^2.0.0",
     "@ethereumjs/config-typescript": "^2.0.0",
     "@ethereumjs/eslint-config-defaults": "^2.0.0",
