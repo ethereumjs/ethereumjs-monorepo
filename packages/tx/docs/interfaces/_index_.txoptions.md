@@ -21,9 +21,12 @@ The options for initializing a Transaction.
 
 • **common**? : *Common*
 
-*Defined in [types.ts:15](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L15)*
+*Defined in [types.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L20)*
 
 A Common object defining the chain and hardfork for the transaction.
+
+Object will be internally copied so that tx behavior don't incidentally
+change on future HF changes.
 
 Default: `Common` object set to `mainnet` and the default hardfork as defined in the `Common` class.
 
@@ -35,7 +38,7 @@ ___
 
 • **freeze**? : *undefined | false | true*
 
-*Defined in [types.ts:26](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L26)*
+*Defined in [types.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L31)*
 
 A transaction object by default gets frozen along initialization. This gives you
 strong additional security guarantees on the consistency of the tx parameters.
