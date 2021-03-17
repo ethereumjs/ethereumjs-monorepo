@@ -24,7 +24,7 @@ This are the options that the Blockchain constructor can receive.
 
 • **common**? : *Common*
 
-*Defined in [index.ts:70](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L70)*
+*Defined in [index.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L70)*
 
 Specify the chain and hardfork by passing a Common instance.
 
@@ -36,7 +36,7 @@ ___
 
 • **db**? : *LevelUp*
 
-*Defined in [index.ts:76](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L76)*
+*Defined in [index.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L76)*
 
 Database to store blocks and metadata. Should be an abstract-leveldown
 compliant store.
@@ -47,7 +47,7 @@ ___
 
 • **genesisBlock**? : *Block*
 
-*Defined in [index.ts:104](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L104)*
+*Defined in [index.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L104)*
 
 The blockchain only initializes succesfully if it has a genesis block. If
 there is no block available in the DB and a `genesisBlock` is provided,
@@ -61,7 +61,7 @@ ___
 
 • **validateBlocks**? : *undefined | false | true*
 
-*Defined in [index.ts:95](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L95)*
+*Defined in [index.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L95)*
 
 This flag indicates if protocol-given consistency checks on
 block headers and included uncles and transactions should be performed,
@@ -73,7 +73,7 @@ ___
 
 • **validateConsensus**? : *undefined | false | true*
 
-*Defined in [index.ts:87](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L87)*
+*Defined in [index.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L87)*
 
 This flags indicates if a block should be validated along the consensus algorithm
 or protocol used by the chain, e.g. by verifying the PoW on the block.
