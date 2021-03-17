@@ -10,6 +10,13 @@ import {
 } from 'ethereumjs-util'
 import { TxData, TxOptions, JsonTx, AccessListEIP2930ValuesArray } from './types'
 
+/**
+ * This base class will likely be subject to further
+ * refactoring along the introduction of additional tx types
+ * on the Ethereum network.
+ *
+ * It is therefore not recommended to use directly.
+ */
 export abstract class BaseTransaction<TransactionObject> {
   public readonly nonce: BN
   public readonly gasLimit: BN
