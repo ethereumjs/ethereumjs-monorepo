@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 3.1.0 - 2021-03-18
 
-## Berlin HF Support
+### Berlin HF Support
 
 This release comes with full support for the `berlin` hardfork by updating the library to support typed transactions ([EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)). The first supported transaction type is the `AccessListEIP2930Transaction` ([EIP-2930](https://eips.ethereum.org/EIPS/eip-2930)) which adds optional access lists to the mix and is activated along with the `berlin` hardfork. 
 
@@ -50,7 +50,17 @@ The now called "legacy" transactions are still supported and can be used as befo
 
 For more guidance on how to use the new tx types and the tx factory have a look at the [README](./README.md) of this library which has perceived an extensive update along with this release.
 
-#### EIP-2718/EIP-2930 Changes
+#### EthereumJS Libraries - Typed Transactions Readiness
+
+If you are using this library in conjunction with other EthereumJS libraries make sure to minimally have the following library versions installed for typed transaction support:
+
+- `@ethereumjs/common` `v2.2.0`
+- `@ethereumjs/tx` `v3.1.0`
+- `@ethereumjs/block` `v3.2.0`
+- `@ethereumjs/blockchain` `v5.2.0`
+- `@ethereumjs/vm` `v5.2.0`
+
+### EIP-2718/EIP-2930 Changes
 
 - Base implementation of both EIPs, PR [#1048](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1048)
 - Tx Renaming / Improve backwards-compatibility, PR [#1138](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1138)

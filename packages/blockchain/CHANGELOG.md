@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.2.0 - 2021-03-18
+
+### Berlin HF Support
+
+This release comes with full `berlin` HF support by setting the `Block`, `Tx` and `Common` dependencies to versions which ensure a working set of `berlin`-enabled library versions. In particular this allows for running a blockchain with blocks containing typed transactions.
+
+#### EthereumJS Libraries - Typed Transactions Readiness
+
+If you are using this library in conjunction with other EthereumJS libraries make sure to minimally have the following library versions installed for typed transaction support:
+
+- `@ethereumjs/common` `v2.2.0`
+- `@ethereumjs/tx` `v3.1.0`
+- `@ethereumjs/block` `v3.2.0`
+- `@ethereumjs/blockchain` `v5.2.0`
+- `@ethereumjs/vm` `v5.2.0`
+
 ## 5.1.0 2021-02-22
 
 ### Clique/PoA Support
