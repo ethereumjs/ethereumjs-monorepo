@@ -1,4 +1,4 @@
-[@ethereumjs/tx](../README.md) › ["index"](../modules/_index_.md) › [Transaction](_index_.transaction.md)
+[@ethereumjs/tx](../README.md) › ["legacyTransaction"](../modules/_legacytransaction_.md) › [Transaction](_legacytransaction_.transaction.md)
 
 # Class: Transaction
 
@@ -14,53 +14,53 @@ An Ethereum non-typed (legacy) transaction
 
 ### Constructors
 
-* [constructor](_index_.transaction.md#constructor)
+* [constructor](_legacytransaction_.transaction.md#constructor)
 
 ### Properties
 
-* [common](_index_.transaction.md#common)
-* [data](_index_.transaction.md#data)
-* [gasLimit](_index_.transaction.md#gaslimit)
-* [gasPrice](_index_.transaction.md#gasprice)
-* [nonce](_index_.transaction.md#nonce)
-* [r](_index_.transaction.md#optional-r)
-* [s](_index_.transaction.md#optional-s)
-* [to](_index_.transaction.md#optional-to)
-* [v](_index_.transaction.md#optional-v)
-* [value](_index_.transaction.md#value)
+* [common](_legacytransaction_.transaction.md#common)
+* [data](_legacytransaction_.transaction.md#data)
+* [gasLimit](_legacytransaction_.transaction.md#gaslimit)
+* [gasPrice](_legacytransaction_.transaction.md#gasprice)
+* [nonce](_legacytransaction_.transaction.md#nonce)
+* [r](_legacytransaction_.transaction.md#optional-r)
+* [s](_legacytransaction_.transaction.md#optional-s)
+* [to](_legacytransaction_.transaction.md#optional-to)
+* [v](_legacytransaction_.transaction.md#optional-v)
+* [value](_legacytransaction_.transaction.md#value)
 
 ### Accessors
 
-* [transactionType](_index_.transaction.md#transactiontype)
+* [transactionType](_legacytransaction_.transaction.md#transactiontype)
 
 ### Methods
 
-* [getBaseFee](_index_.transaction.md#getbasefee)
-* [getDataFee](_index_.transaction.md#getdatafee)
-* [getMessageToSign](_index_.transaction.md#getmessagetosign)
-* [getMessageToVerifySignature](_index_.transaction.md#getmessagetoverifysignature)
-* [getSenderAddress](_index_.transaction.md#getsenderaddress)
-* [getSenderPublicKey](_index_.transaction.md#getsenderpublickey)
-* [getUpfrontCost](_index_.transaction.md#getupfrontcost)
-* [hash](_index_.transaction.md#hash)
-* [isSigned](_index_.transaction.md#issigned)
-* [raw](_index_.transaction.md#raw)
-* [serialize](_index_.transaction.md#serialize)
-* [sign](_index_.transaction.md#sign)
-* [toCreationAddress](_index_.transaction.md#tocreationaddress)
-* [toJSON](_index_.transaction.md#tojson)
-* [validate](_index_.transaction.md#validate)
-* [verifySignature](_index_.transaction.md#verifysignature)
-* [fromRlpSerializedTx](_index_.transaction.md#static-fromrlpserializedtx)
-* [fromSerializedTx](_index_.transaction.md#static-fromserializedtx)
-* [fromTxData](_index_.transaction.md#static-fromtxdata)
-* [fromValuesArray](_index_.transaction.md#static-fromvaluesarray)
+* [getBaseFee](_legacytransaction_.transaction.md#getbasefee)
+* [getDataFee](_legacytransaction_.transaction.md#getdatafee)
+* [getMessageToSign](_legacytransaction_.transaction.md#getmessagetosign)
+* [getMessageToVerifySignature](_legacytransaction_.transaction.md#getmessagetoverifysignature)
+* [getSenderAddress](_legacytransaction_.transaction.md#getsenderaddress)
+* [getSenderPublicKey](_legacytransaction_.transaction.md#getsenderpublickey)
+* [getUpfrontCost](_legacytransaction_.transaction.md#getupfrontcost)
+* [hash](_legacytransaction_.transaction.md#hash)
+* [isSigned](_legacytransaction_.transaction.md#issigned)
+* [raw](_legacytransaction_.transaction.md#raw)
+* [serialize](_legacytransaction_.transaction.md#serialize)
+* [sign](_legacytransaction_.transaction.md#sign)
+* [toCreationAddress](_legacytransaction_.transaction.md#tocreationaddress)
+* [toJSON](_legacytransaction_.transaction.md#tojson)
+* [validate](_legacytransaction_.transaction.md#validate)
+* [verifySignature](_legacytransaction_.transaction.md#verifysignature)
+* [fromRlpSerializedTx](_legacytransaction_.transaction.md#static-fromrlpserializedtx)
+* [fromSerializedTx](_legacytransaction_.transaction.md#static-fromserializedtx)
+* [fromTxData](_legacytransaction_.transaction.md#static-fromtxdata)
+* [fromValuesArray](_legacytransaction_.transaction.md#static-fromvaluesarray)
 
 ## Constructors
 
 ###  constructor
 
-\+ **new Transaction**(`txData`: [TxData](../modules/_index_.md#txdata), `opts`: [TxOptions](../interfaces/_index_.txoptions.md)): *[Transaction](_index_.transaction.md)*
+\+ **new Transaction**(`txData`: [TxData](../modules/_index_.md#txdata), `opts`: [TxOptions](../interfaces/_index_.txoptions.md)): *[Transaction](_legacytransaction_.transaction.md)*
 
 *Overrides [BaseTransaction](_basetransaction_.basetransaction.md).[constructor](_basetransaction_.basetransaction.md#constructor)*
 
@@ -79,7 +79,7 @@ Name | Type | Default |
 `txData` | [TxData](../modules/_index_.md#txdata) | - |
 `opts` | [TxOptions](../interfaces/_index_.txoptions.md) | {} |
 
-**Returns:** *[Transaction](_index_.transaction.md)*
+**Returns:** *[Transaction](_legacytransaction_.transaction.md)*
 
 ## Properties
 
