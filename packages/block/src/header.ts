@@ -209,11 +209,6 @@ export class BlockHeader {
     }
 
     if (options.initWithGenesisHeader) {
-      if (this._common.hardfork() !== 'chainstart') {
-        throw new Error(
-          'Genesis parameters can only be set with a Common instance set to chainstart'
-        )
-      }
       number = new BN(0)
       if (gasLimit.eq(DEFAULT_GAS_LIMIT)) {
         gasLimit = new BN(toBuffer(this._common.genesis().gasLimit))
