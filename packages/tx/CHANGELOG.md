@@ -6,16 +6,56 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## UNRELEASED
+## 3.1.0 - 2021-03-18
 
-- Integration of [EIP2718](https://eips.ethereum.org/EIPS/eip-2718) (Typed Transactions) and [EIP2930](https://eips.ethereum.org/EIPS/eip-2930) (Access List Transaction), PR [#1048](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1048).
+## Berlin HF Support
 
-This PR integrates the Typed Transactions. In order to produce the right transactions, there is a new class called the `TransactionFactory`. This factory helps to create the correct transaction. When decoding directly from blocks, use the `fromBlockBodyData` method. The PR also refactors the internals of the legacy transaction and the new typed transaction: there is a base transaction class, which both transaction classes extends. It is also possible to import `EIP2930Transaction` (an access list transaction).
+This release comes with full support for the `berlin` hardfork by updating the library to support typed transactions ([EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)). The first supported transaction type is the `AccessListEIP2930Transaction` ([EIP-2930](https://eips.ethereum.org/EIPS/eip-2930)) which adds optional access lists to the mix and is activated along with the `berlin` hardfork. 
 
-### How to migrate
+`EIP-2930` transactions can be instantiated with:
 
-The old `Transaction` class has been renamed to `LegacyTransaction`. This class works just how it used to work.
+```typescript
+import Common from '@ethereumjs/common'
+import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
 
+const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+
+const txData = {
+  "data": "0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+  "gasLimit": "0x02625a00",
+  "gasPrice": "0x01",
+  "nonce": "0x00",
+  "to": "0xcccccccccccccccccccccccccccccccccccccccc",
+  "value": "0x0186a0",
+  "v": "0x01",
+  "r": "0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9",
+  "s": "0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64",
+  "chainId": "0x01",
+  "accessList": [
+    {
+      "address": "0x0000000000000000000000000000000000000101",
+      "storageKeys": [
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "0x00000000000000000000000000000000000000000000000000000000000060a7"
+      ]
+    }
+  ],
+  "type": "0x01"
+}
+
+const tx = AccessListEIP2930Transaction.fromTxData(txData, { common })
+```
+
+The now called "legacy" transactions are still supported and can be used as before by using the `Transaction` class. If the type of a tx is only known at runtime there is a new `TransactionFactory` class introduced for your convenience. This factory class decides on the tx type based on the input data and uses the corresponding tx type class for instantiation.
+
+For more guidance on how to use the new tx types and the tx factory have a look at the [README](./README.md) of this library which has perceived an extensive update along with this release.
+
+#### EIP-2718/EIP-2930 Changes
+
+- Base implementation of both EIPs, PR [#1048](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1048)
+- Tx Renaming / Improve backwards-compatibility, PR [#1138](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1138)
+- Improvements and additional tests, PR [#1141](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1141)
+- Further improvements and small fixes, PR [#1144](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1144)
 
 ## 3.0.2 - 2021-02-16
 

@@ -131,7 +131,10 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
-   * Use the static factory methods to assist in creating a Transaction object from varying data types.
+   *
+   * It is not recommended to use this constructor directly. Instead use
+   * the static factory methods to assist in creating a Transaction object from
+   * varying data types.
    */
   public constructor(txData: AccessListEIP2930TxData, opts: TxOptions = {}) {
     const { chainId, accessList } = txData
