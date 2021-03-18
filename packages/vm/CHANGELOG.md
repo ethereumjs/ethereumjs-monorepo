@@ -6,15 +6,78 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## UNRELEASED
+## 5.2.0 - 2021-03-18
 
-- Fixes for [EIP2929](https://eips.ethereum.org/EIPS/eip-2929) (Gas cost increases for state access opcodes), PR [#1124](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1124)
-- Integration of [EIP2718](https://eips.ethereum.org/EIPS/eip-2718) (Typed Transactions) and [EIP2930](https://eips.ethereum.org/EIPS/eip-2930) (Access List Transaction), PR [#1048](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1048). VM now has support for access list transactions.
+### Berlin HF Support
+
+This release is the first VM release with official `berlin` HF support. All `EthereumJS` dependencies are updated with `berlin` enabling versions and support for all EIPs which finally made it into `berlin` has been added, namely:
+
+- [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565): ModExp gas cost
+- [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718): Typed transactions
+- [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929): Gas cost increases for state access opcodes
+- [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930): Optional Access Lists Typed Transactions
+
+Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `VM` instance with a `berlin` HF activated:
+
+```typescript
+import VM from '@ethereumjs/vm'
+import Common from '@ethereumjs/common'
+const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+const vm = new VM({ common })
+```
+
+There is a relatively broad set of changes since the last VM version `v5.1.0` introducing support for a first set of to-be-expected `berlin` EIPs, here is a summary:
+
+#### Added Typed Transaction Support (EIP-2718 / EIP-2930)
+
+The VM is now prepared to work with Typed Transactions ([EIP2718](https://eips.ethereum.org/EIPS/eip-2718)) which have been introduced along the `@ethereumjs/tx` `v3.1.0` release. It now therefore gets possible to pass typed txs to `VM.runTx()` respectively a block containing typed txs to `VM.runBlock()`, see PR [#1048](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1048) and PR [#1138](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1138).
+
+There is a first concrete tx type 1 including optional access lists added along the `berlin` HF ([EIP2930](https://eips.ethereum.org/EIPS/eip-2930)). Access lists are now properly detected by the VM and gas costs calculated accordingly.
+
+#### Fixed EIP-2929 Implementation
+
+Our implementation of `EIP-2929` (gas cost increases for state access opcodes) was falling short in the form that warm storage slots / addresses were only tracked per internal message, not on the entire transaction as implied by the EIP. This needed a relatively intense rework along PR [#1124](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1124). We are now confident in the implementation and official tests are passing.
+
+Along with this rework a new `StateManager` interface `EIP2929StateManager` has been introduced which inherits from `StateManager` and adds the following methods:
+
+```typescript
+export interface EIP2929StateManager extends StateManager {
+  addWarmedAddress(address: Buffer): void
+  isWarmedAddress(address: Buffer): boolean
+  addWarmedStorage(address: Buffer, slot: Buffer): void
+  isWarmedStorage(address: Buffer, slot: Buffer): boolean
+  clearWarmedAccounts(): void
+}
+```
+
+The `StateManager` base interface and the inherited `EIP2929StateManager` interface will be merged again on the next breaking release.
+
+#### Removed EIP-2315 from Berlin
+
+`EIP-2315` has been removed from the list of EIPs included in `berlin`. This is ensured by using a `Common` dependency version `v2.2.0`+ containing the final list of `Berlin` EIPs and also needed some changes in the VM code, see PR [#1142](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1142).
+
+#### EthereumJS Libraries - Typed Transactions Readiness
+
+If you are using this library in conjunction with other EthereumJS libraries make sure to minimally have the following library versions installed for typed transaction support:
+
+- `@ethereumjs/common` `v2.2.0`
+- `@ethereumjs/tx` `v3.1.0`
+- `@ethereumjs/block` `v3.2.0`
+- `@ethereumjs/blockchain` `v5.2.0`
+- `@ethereumjs/vm` `v5.2.0`
+
+### Other Features
+
+- `{ stateRoot, gasUsed, logsBloom, receiptRoot }` have been added to `RunBlockResult` and will be emitted with `afterBlock`, PR [#853](https://github.com/ethereumjs/ethereumjs-vm/pull/853)
+- Added `vm:eei:gas` EEI gas debug looger, PR [#1124](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1124)
+
+### Other Fixes
+
 - Fixes VM Node 10 support being broken due to the usage of `globalThis` for browser detection, PR [#1151](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1151)
+- Fixed `ECRECOVER` precompile to work correctly on networks with very large chain IDs, PR [#1139](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1139)
 
 **CI and Test Improvements**
 
-- `{ stateRoot, gasUsed, logsBloom, receiptRoot }` have been added to `RunBlockResult` and will be emitted with `afterBlock`, PR [#853](https://github.com/ethereumjs/ethereumjs-vm/pull/853)
 - Benchmark improvements and fixes, PR [#853](https://github.com/ethereumjs/ethereumjs-vm/pull/853)
 
 ### 5.1.0 - 2021-02-22

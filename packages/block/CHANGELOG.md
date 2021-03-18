@@ -12,6 +12,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 This release gets the `Block` library ready for the `berlin` HF by adding support for [EIP2718](https://eips.ethereum.org/EIPS/eip-2718) Typed Transactions. Transaction objects are now created with the new `TransactionFactory` introduced with the `@ethereumjs/tx` `v3.1.0` release which chooses the correct tx type for the data. The initial tx release supports the old legacy transactions and the newly added [EIP2930](https://eips.ethereum.org/EIPS/eip-2930) Access List Transaction Type, see PR [#1048](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1048).
 
+Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `Block` instance with a `berlin` HF activated:
+
+```typescript
+import { Block } from 'ethereumjs-block'
+import Common from '@ethereumjs/common'
+const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+const block = Block.fromBlockData({}, { common })
+```
+
 #### EthereumJS Libraries - Typed Transactions Readiness
 
 If you are using this library in conjunction with other EthereumJS libraries make sure to minimally have the following library versions installed for typed transaction support:

@@ -46,6 +46,8 @@ const txData = {
 const tx = AccessListEIP2930Transaction.fromTxData(txData, { common })
 ```
 
+Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `Transaction` instance with a `berlin` HF activated.
+
 The now called "legacy" transactions are still supported and can be used as before by using the `Transaction` class. If the type of a tx is only known at runtime there is a new `TransactionFactory` class introduced for your convenience. This factory class decides on the tx type based on the input data and uses the corresponding tx type class for instantiation.
 
 For more guidance on how to use the new tx types and the tx factory have a look at the [README](./README.md) of this library which has perceived an extensive update along with this release.

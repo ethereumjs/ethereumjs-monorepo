@@ -22,6 +22,7 @@ const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
 - Added final list of `berlin` EIPs (`EIP-2565`, `EIP-2929`, `EIP-2718`, `EIP-2930`), PR [#1124](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1124) and PR [#1048](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1048)
 - Corrected base gas costs for `EIP-2929` related opcodes, PR [#1124](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1124)
 - New EIP configuration files for `EIP-2718` (typed txs) and `EIP-2930` (optional access lists), PR [#1048](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1048)
+- Added `berlin` hardfork block numbers for `mainnet`, `ropsten`, `rinkeby` and `goerli`, PR [#1142](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1142)
 
 ### BN Support for high Chain IDs and Block Numbers
 

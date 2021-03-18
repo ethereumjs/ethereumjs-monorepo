@@ -12,6 +12,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 This release comes with full `berlin` HF support by setting the `Block`, `Tx` and `Common` dependencies to versions which ensure a working set of `berlin`-enabled library versions. In particular this allows for running a blockchain with blocks containing typed transactions.
 
+Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `Blockchain` instance with a `berlin` HF activated:
+
+```typescript
+import Blockchain from '@ethereumjs/blockchain'
+import Common from '@ethereumjs/common'
+const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+const blockchain = await Blockchain.create({ common })
+```
+
 #### EthereumJS Libraries - Typed Transactions Readiness
 
 If you are using this library in conjunction with other EthereumJS libraries make sure to minimally have the following library versions installed for typed transaction support:
