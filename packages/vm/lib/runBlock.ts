@@ -5,12 +5,13 @@ import { Account, Address, BN } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import VM from './index'
 import Bloom from './bloom'
-import { RunTxResult } from './runTx'
 import { StateManager } from './state'
 
 import * as DAOConfig from './config/dao_fork_accounts_config.json'
 import { Log } from './evm/types'
 import { short } from './evm/opcodes'
+import type { TypedTransaction } from '@ethereumjs/tx'
+import type { RunTxResult } from './runTx'
 
 const debug = createDebugLogger('vm:block')
 
@@ -31,10 +32,9 @@ export interface RunBlockOpts {
    */
   root?: Buffer
   /**
-   * Whether to generate the stateRoot. If `true` `runBlock` will check the
-   * `stateRoot` of the block against the current Trie, check the `receiptsTrie`,
-   * the `gasUsed` and the `logsBloom` after running. If any does not match,
-   * `runBlock` throws.
+   * Whether to generate the stateRoot and other related fields.
+   * If `true`, `runBlock` will set the fields `stateRoot`, `receiptsTrie`, `gasUsed`, and `bloom` (logs bloom) after running the block.
+   * If `false`, `runBlock` throws if any fields do not match.
    * Defaults to `false`.
    */
   generate?: boolean
@@ -139,7 +139,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   const state = this.stateManager
   const { root } = opts
   let { block } = opts
-  const generateStateRoot = !!opts.generate
+  const generateFields = !!opts.generate
 
   /**
    * The `beforeBlock` event.
@@ -155,7 +155,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   }
   debug('-'.repeat(100))
   debug(
-    `Running blog hash=${block
+    `Running block hash=${block
       .hash()
       .toString(
         'hex'
@@ -206,11 +206,15 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   // Given the generate option, either set resulting header
   // values to the current block, or validate the resulting
   // header values against the current block.
-  if (generateStateRoot) {
+  if (generateFields) {
     const bloom = result.bloom.bitvector
+    const gasUsed = result.gasUsed
+    const receiptTrie = result.receiptRoot
+    const transactionsTrie = await _genTxTrie(block)
+    const generatedFields = { stateRoot, bloom, gasUsed, receiptTrie, transactionsTrie }
     block = Block.fromBlockData({
       ...block,
-      header: { ...block.header, stateRoot, bloom },
+      header: { ...block.header, ...generatedFields },
     })
   } else {
     if (result.receiptRoot && !result.receiptRoot.equals(block.header.receiptTrie)) {
@@ -263,7 +267,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
    */
   await this._emit('afterBlock', afterBlockEvent)
   debug(
-    `Running blog finished hash=${block
+    `Running block finished hash=${block
       .hash()
       .toString(
         'hex'
@@ -344,49 +348,12 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     // Combine blooms via bitwise OR
     bloom.or(txRes.bloom)
 
-    const abstractTxReceipt: TxReceipt = {
-      gasUsed: gasUsed.toArrayLike(Buffer),
-      bitvector: txRes.bloom.bitvector,
-      logs: txRes.execResult.logs || [],
-    }
-    let txReceipt
-    let encodedReceipt
-    let receiptLog = `Generate tx receipt transactionType=${
-      'transactionType' in tx ? tx.transactionType : 'NaN'
-    } gasUsed=${gasUsed} bitvector=${short(abstractTxReceipt.bitvector)} (${
-      abstractTxReceipt.bitvector.length
-    } bytes) logs=${abstractTxReceipt.logs.length}`
-    if (!('transactionType' in tx) || tx.transactionType === 0) {
-      if (this._common.gteHardfork('byzantium')) {
-        txReceipt = {
-          status: txRes.execResult.exceptionError ? 0 : 1, // Receipts have a 0 as status on error
-          ...abstractTxReceipt,
-        } as PostByzantiumTxReceipt
-        const statusInfo = txRes.execResult.exceptionError ? 'error' : 'ok'
-        receiptLog += ` status=${txReceipt.status} (${statusInfo}) (>= Byzantium)`
-      } else {
-        const stateRoot = await this.stateManager.getStateRoot(true)
-        txReceipt = {
-          stateRoot: stateRoot,
-          ...abstractTxReceipt,
-        } as PreByzantiumTxReceipt
-        receiptLog += ` stateRoot=${txReceipt.stateRoot.toString('hex')} (< Byzantium)`
-      }
-      encodedReceipt = encode(Object.values(txReceipt))
-    } else if ('transactionType' in tx && tx.transactionType === 1) {
-      txReceipt = {
-        status: txRes.execResult.exceptionError ? 0 : 1,
-        ...abstractTxReceipt,
-      } as EIP2930Receipt
-
-      encodedReceipt = Buffer.concat([Buffer.from('01', 'hex'), encode(Object.values(txReceipt))])
-    } else {
-      throw new Error(
-        `Unsupported transaction type ${'transactionType' in tx ? tx.transactionType : 'NaN'}`
-      )
-    }
+    const { txReceipt, encodedReceipt, receiptLog } = await generateTxReceipt.bind(this)(
+      tx,
+      txRes,
+      gasUsed
+    )
     debug(receiptLog)
-
     receipts.push(txReceipt)
 
     // Add receipt to trie to later calculate receipt root
@@ -432,7 +399,7 @@ function calculateOmmerReward(ommerBlockNumber: BN, blockNumber: BN, minerReward
   return reward
 }
 
-function calculateMinerReward(minerReward: BN, ommersNum: number): BN {
+export function calculateMinerReward(minerReward: BN, ommersNum: number): BN {
   // calculate nibling reward
   const niblingReward = minerReward.divn(32)
   const totalNiblingReward = niblingReward.muln(ommersNum)
@@ -440,11 +407,78 @@ function calculateMinerReward(minerReward: BN, ommersNum: number): BN {
   return reward
 }
 
-async function rewardAccount(state: StateManager, address: Address, reward: BN): Promise<Account> {
+export async function rewardAccount(
+  state: StateManager,
+  address: Address,
+  reward: BN
+): Promise<Account> {
   const account = await state.getAccount(address)
   account.balance.iadd(reward)
   await state.putAccount(address, account)
   return account
+}
+
+/**
+ * Generates the tx receipt and returns { txReceipt, encodedReceipt, receiptLog }
+ */
+export async function generateTxReceipt(
+  this: VM,
+  tx: TypedTransaction,
+  txRes: RunTxResult,
+  blockGasUsed: BN
+) {
+  const abstractTxReceipt: TxReceipt = {
+    gasUsed: blockGasUsed.toArrayLike(Buffer),
+    bitvector: txRes.bloom.bitvector,
+    logs: txRes.execResult.logs || [],
+  }
+
+  let txReceipt
+  let encodedReceipt
+
+  let receiptLog = `Generate tx receipt transactionType=${
+    'transactionType' in tx ? tx.transactionType : 'NaN'
+  } gasUsed=${blockGasUsed.toString()} bitvector=${short(abstractTxReceipt.bitvector)} (${
+    abstractTxReceipt.bitvector.length
+  } bytes) logs=${abstractTxReceipt.logs.length}`
+
+  if (!('transactionType' in tx) || tx.transactionType === 0) {
+    // Legacy transaction
+    if (this._common.gteHardfork('byzantium')) {
+      // Post-Byzantium
+      txReceipt = {
+        status: txRes.execResult.exceptionError ? 0 : 1, // Receipts have a 0 as status on error
+        ...abstractTxReceipt,
+      } as PostByzantiumTxReceipt
+      const statusInfo = txRes.execResult.exceptionError ? 'error' : 'ok'
+      receiptLog += ` status=${txReceipt.status} (${statusInfo}) (>= Byzantium)`
+    } else {
+      // Pre-Byzantium
+      const stateRoot = await this.stateManager.getStateRoot(true)
+      txReceipt = {
+        stateRoot: stateRoot,
+        ...abstractTxReceipt,
+      } as PreByzantiumTxReceipt
+      receiptLog += ` stateRoot=${txReceipt.stateRoot.toString('hex')} (< Byzantium)`
+    }
+    encodedReceipt = encode(Object.values(txReceipt))
+  } else if ('transactionType' in tx && tx.transactionType === 1) {
+    // EIP2930 Transaction
+    txReceipt = {
+      status: txRes.execResult.exceptionError ? 0 : 1,
+      ...abstractTxReceipt,
+    } as EIP2930Receipt
+    encodedReceipt = Buffer.concat([Buffer.from('01', 'hex'), encode(Object.values(txReceipt))])
+  } else {
+    throw new Error(
+      `Unsupported transaction type ${'transactionType' in tx ? tx.transactionType : 'NaN'}`
+    )
+  }
+  return {
+    txReceipt,
+    encodedReceipt,
+    receiptLog,
+  }
 }
 
 // apply the DAO fork changes to the VM
@@ -467,4 +501,12 @@ async function _applyDAOHardfork(state: StateManager) {
 
   // finally, put the Refund Account
   await state.putAccount(DAORefundContractAddress, DAORefundAccount)
+}
+
+async function _genTxTrie(block: Block) {
+  const trie = new Trie()
+  for (const [i, tx] of block.transactions.entries()) {
+    await trie.put(encode(i), tx.serialize())
+  }
+  return trie.root
 }
