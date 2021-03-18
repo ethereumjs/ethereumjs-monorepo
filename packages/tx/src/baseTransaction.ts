@@ -34,7 +34,6 @@ export abstract class BaseTransaction<TransactionObject> {
 
   public readonly nonce: BN
   public readonly gasLimit: BN
-  public readonly gasPrice: BN
   public readonly to?: Address
   public readonly value: BN
   public readonly data: Buffer
@@ -44,6 +43,7 @@ export abstract class BaseTransaction<TransactionObject> {
   public readonly r?: BN
   public readonly s?: BN
 
+<<<<<<< HEAD
   constructor(txData: TxData | AccessListEIP2930TxData, txOptions: TxOptions = {}) {
     const { nonce, gasLimit, gasPrice, to, value, data, v, r, s } = txData
 
@@ -53,6 +53,16 @@ export abstract class BaseTransaction<TransactionObject> {
     } else {
       this._type = 0
     }
+=======
+  constructor(txData: TxData, txOptions: TxOptions = {}) {
+    const { nonce, gasLimit, to, value, data, v, r, s } = txData
+
+    this.nonce = new BN(toBuffer(nonce))
+    this.gasLimit = new BN(toBuffer(gasLimit))
+    this.to = to ? new Address(toBuffer(to)) : undefined
+    this.value = new BN(toBuffer(value))
+    this.data = toBuffer(data)
+>>>>>>> tx: remove gasPrice from baseTransaction
 
     const toB = toBuffer(to === '' ? '0x' : to)
     const vB = toBuffer(v === '' ? '0x' : v)
@@ -72,7 +82,6 @@ export abstract class BaseTransaction<TransactionObject> {
 
     this._validateCannotExceedMaxInteger({
       nonce: this.nonce,
-      gasPrice: this.gasPrice,
       gasLimit: this.gasLimit,
       value: this.value,
     })

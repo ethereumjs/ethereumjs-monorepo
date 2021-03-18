@@ -22,6 +22,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   public readonly chainId: BN
   public readonly accessList: AccessListBuffer
   public readonly AccessListJSON: AccessList
+  public readonly gasPrice: BN
 
   /**
    * EIP-2930 alias for `r`
@@ -126,7 +127,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * varying data types.
    */
   public constructor(txData: AccessListEIP2930TxData, opts: TxOptions = {}) {
-    const { chainId, accessList } = txData
+    const { chainId, accessList, gasPrice } = txData
 
     super({ ...txData, type: 1 }, opts)
 
@@ -143,6 +144,9 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     AccessLists.verifyAccessList(this.accessList)
 
     this.chainId = chainId ? new BN(toBuffer(chainId)) : this.common.chainIdBN()
+    this.gasPrice = new BN(toBuffer(gasPrice))
+
+    this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
 
     if (!this.chainId.eq(this.common.chainIdBN())) {
       throw new Error('The chain ID does not match the chain ID of Common')
