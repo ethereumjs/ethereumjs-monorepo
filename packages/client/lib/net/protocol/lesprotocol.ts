@@ -174,10 +174,10 @@ export class LesProtocol extends Protocol {
     }
 
     return {
-      networkId: this.chain.networkId.toNumber(),
+      networkId: this.chain.networkId.toArrayLike(Buffer),
       headTd: this.chain.headers.td.toArrayLike(Buffer),
       headHash: this.chain.headers.latest?.hash(),
-      headNum: this.chain.headers.latest?.number,
+      headNum: this.chain.headers.latest?.number.toArrayLike(Buffer),
       genesisHash: this.chain.genesis.hash,
       ...serveOptions,
     }
