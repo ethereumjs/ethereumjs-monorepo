@@ -28,7 +28,7 @@
 
 *Inherited from [RunTxResult](_runtx_.runtxresult.md).[amountSpent](_runtx_.runtxresult.md#amountspent)*
 
-*Defined in [runTx.ts:54](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L54)*
+*Defined in [runTx.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L56)*
 
 The amount of ether used by this transaction
 
@@ -40,7 +40,7 @@ ___
 
 *Inherited from [RunTxResult](_runtx_.runtxresult.md).[bloom](_runtx_.runtxresult.md#bloom)*
 
-*Defined in [runTx.ts:50](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L50)*
+*Defined in [runTx.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L52)*
 
 Bloom filter resulted from transaction
 
@@ -52,7 +52,7 @@ ___
 
 *Inherited from [RunTxResult](_runtx_.runtxresult.md).[createdAddress](_runtx_.runtxresult.md#optional-createdaddress)*
 
-*Defined in [evm/evm.ts:36](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/evm.ts#L36)*
+*Defined in [evm/evm.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/evm/evm.ts#L36)*
 
 Address of created account durint transaction, if any
 
@@ -64,7 +64,7 @@ ___
 
 *Inherited from [RunTxResult](_runtx_.runtxresult.md).[execResult](_runtx_.runtxresult.md#execresult)*
 
-*Defined in [evm/evm.ts:40](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/evm.ts#L40)*
+*Defined in [evm/evm.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/evm/evm.ts#L40)*
 
 Contains the results from running the code, if any, as described in [runCode](../classes/_index_.vm.md#runcode)
 
@@ -76,7 +76,7 @@ ___
 
 *Inherited from [RunTxResult](_runtx_.runtxresult.md).[gasRefund](_runtx_.runtxresult.md#optional-gasrefund)*
 
-*Defined in [runTx.ts:58](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L58)*
+*Defined in [runTx.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L60)*
 
 The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
 
@@ -88,7 +88,7 @@ ___
 
 *Inherited from [RunTxResult](_runtx_.runtxresult.md).[gasUsed](_runtx_.runtxresult.md#gasused)*
 
-*Defined in [evm/evm.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/evm.ts#L32)*
+*Defined in [evm/evm.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/evm/evm.ts#L32)*
 
 Amount of gas used by the transaction
 
@@ -96,8 +96,8 @@ ___
 
 ###  transaction
 
-• **transaction**: *Transaction*
+• **transaction**: *TypedTransaction*
 
-*Defined in [runTx.ts:65](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L65)*
+*Defined in [runTx.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L67)*
 
 The transaction which just got finished

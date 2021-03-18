@@ -1,24 +1,21 @@
-[@ethereumjs/vm](../README.md) › ["runBlock"](../modules/_runblock_.md) › [PreByzantiumTxReceipt](_runblock_.prebyzantiumtxreceipt.md)
+[@ethereumjs/vm](../README.md) › ["runBlock"](../modules/_runblock_.md) › [EIP2930Receipt](_runblock_.eip2930receipt.md)
 
-# Interface: PreByzantiumTxReceipt
-
-Pre-Byzantium receipt type with a field
-for the intermediary state root
+# Interface: EIP2930Receipt
 
 ## Hierarchy
 
-* TxReceipt
+  ↳ [PostByzantiumTxReceipt](_runblock_.postbyzantiumtxreceipt.md)
 
-  ↳ **PreByzantiumTxReceipt**
+  ↳ **EIP2930Receipt**
 
 ## Index
 
 ### Properties
 
-* [bitvector](_runblock_.prebyzantiumtxreceipt.md#bitvector)
-* [gasUsed](_runblock_.prebyzantiumtxreceipt.md#gasused)
-* [logs](_runblock_.prebyzantiumtxreceipt.md#logs)
-* [stateRoot](_runblock_.prebyzantiumtxreceipt.md#stateroot)
+* [bitvector](_runblock_.eip2930receipt.md#bitvector)
+* [gasUsed](_runblock_.eip2930receipt.md#gasused)
+* [logs](_runblock_.eip2930receipt.md#logs)
+* [status](_runblock_.eip2930receipt.md#status)
 
 ## Properties
 
@@ -58,10 +55,12 @@ Logs emitted
 
 ___
 
-###  stateRoot
+###  status
 
-• **stateRoot**: *Buffer*
+• **status**: *0 | 1*
 
-*Defined in [runBlock.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L113)*
+*Inherited from [PostByzantiumTxReceipt](_runblock_.postbyzantiumtxreceipt.md).[status](_runblock_.postbyzantiumtxreceipt.md#status)*
 
-Intermediary state root
+*Defined in [runBlock.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L124)*
+
+Status of transaction, `1` if successful, `0` if an exception occured
