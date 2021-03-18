@@ -43,10 +43,10 @@ export class Admin {
     // TODO version not present in reference..
     // const ethVersion = Math.max.apply(Math, this._ethProtocol.versions)
     const latestHeader = await this._chain.getLatestHeader()
-    const difficulty = latestHeader.difficulty
+    const difficulty = latestHeader.difficulty.toString()
     const genesis = bufferToHex(this._chain.genesis.hash)
     const head = bufferToHex(latestHeader.mixHash)
-    const network = this._chain.networkId.toNumber()
+    const network = this._chain.networkId.toString()
 
     const nodeInfo = {
       name: clientName,

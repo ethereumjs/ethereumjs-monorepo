@@ -65,10 +65,10 @@ tape('[LesProtocol]', (t) => {
     })
     let status = p.encodeStatus()
     t.ok(
-      status.networkId === 1 &&
+      status.networkId.toString('hex') === '01' &&
         status.headTd.toString('hex') === '64' &&
         status.headHash === '0xaa' &&
-        status.headNum.toNumber() === 100 &&
+        status.headNum.toString('hex') === '64' &&
         status.genesisHash === '0xbb' &&
         status.serveHeaders === 1 &&
         status.serveChainSince === 0 &&

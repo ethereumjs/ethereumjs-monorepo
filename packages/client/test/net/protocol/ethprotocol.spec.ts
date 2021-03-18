@@ -50,7 +50,7 @@ tape('[EthProtocol]', (t) => {
     t.deepEquals(
       p.encodeStatus(),
       {
-        networkId: 1,
+        networkId: Buffer.from('01', 'hex'),
         td: Buffer.from('64', 'hex'),
         bestHash: '0xaa',
         genesisHash: '0xbb',
