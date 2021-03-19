@@ -77,7 +77,7 @@ const txData = {
 const tx = AccessListEIP2930Transaction.fromTxData(txData, { common })
 ```
 
-A mechanism to generate access lists from tx data based on a certain network state in not part of this library.
+A mechanism to generate access lists from tx data based on a certain network state is not part of this library.
 
 ### Legacy Transactions
 
@@ -128,7 +128,7 @@ const tx = TransactionFactory.fromTxData(txData, { common })
 
 The correct tx type class for instantiation will then be chosen on runtime based on the data provided as an input.
 
-`TransactionFactory` support the following static constructor methods:
+`TransactionFactory` supports the following static constructor methods:
 
 - `public static fromTxData(txData: TxData | AccessListEIP2930TxData, txOptions: TxOptions = {}): TypedTransaction`
 - `public static fromSerializedData(data: Buffer, txOptions: TxOptions = {}): TypedTransaction`
