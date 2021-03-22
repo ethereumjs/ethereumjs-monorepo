@@ -46,12 +46,6 @@ export interface SealBlockOpts {
   mixHash?: Buffer
 
   /**
-   * For PoW, the difficulty.
-   * Overrides the value passed in the constructor.
-   */
-  difficulty?: BN
-
-  /**
    * For PoA, the private key for the clique signer.
    * Overrides the value passed in the constructor.
    * If not provided, the block will not be sealed.
@@ -199,7 +193,7 @@ export class BlockBuilder {
    *  - Commits the checkpoint on the StateManager
    *  - Sets the tip of the VM's blockchain to this block
    * Optionally seals the block with params:
-   *  - PoW: nonce, mixHash, and difficulty validated with the block number by ethash
+   *  - PoW: nonce and mixHash validated with the block number by ethash
    *  - PoA: seals the block with the private key of the clique signer if provided
    */
   async build(sealOpts?: SealBlockOpts) {
@@ -230,7 +224,6 @@ export class BlockBuilder {
     if (consensusType === 'pow') {
       headerData.nonce = sealOpts?.nonce ?? headerData.nonce
       headerData.mixHash = sealOpts?.mixHash ?? headerData.mixHash
-      headerData.difficulty = sealOpts?.difficulty ?? headerData.difficulty
     } else if (consensusType === 'poa') {
       blockOpts.cliqueSigner = sealOpts?.cliqueSigner ?? blockOpts.cliqueSigner
     } else {
