@@ -136,7 +136,7 @@ export class BlockBuilder {
   }
 
   /**
-   * Rewards the miner.
+   * Adds the block miner reward to the coinbase account.
    */
   private async rewardMiner() {
     const minerReward = new BN(this.vm._common.param('pow', 'minerReward'))
@@ -169,9 +169,13 @@ export class BlockBuilder {
       throw new Error('tx has a higher gas limit than the remaining gas in the block')
     }
 
-    const result = await this.vm.runTx({ tx })
+    const block = Block.fromBlockData({ header: this.headerData, transactions: this.transactions })
+
+    const result = await this.vm.runTx({ tx, block })
+
     this.transactions.push(tx)
     this.transactionResults.push(result)
+
     return result
   }
 

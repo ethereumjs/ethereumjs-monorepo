@@ -17,6 +17,7 @@ tape('BlockBuilder', async (t) => {
 
     const blockBuilder = await vm.buildBlock({
       parentBlock: genesisBlock,
+      headerData: { coinbase: '0x96dc73c8b5969608c77375f085949744b5177660' },
       blockOpts: { calcDifficultyFromHeader: genesisBlock.header, freeze: false },
     })
 
