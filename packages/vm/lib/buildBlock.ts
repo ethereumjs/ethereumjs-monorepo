@@ -80,10 +80,10 @@ export class BlockBuilder {
    */
   checkStatus() {
     if (this.built) {
-      throw new Error('Block has already been built, please use a new BlockBuilder')
+      throw new Error('Block has already been built')
     }
     if (this.reverted) {
-      throw new Error('State has already been reverted, please use a new BlockBuilder')
+      throw new Error('State has already been reverted')
     }
   }
 
