@@ -215,7 +215,7 @@ export class BlockBuilder {
     const receiptTrie = await this.receiptTrie()
     const bloom = this.bloom()
     const gasUsed = this.gasUsed()
-    const timestamp = this.headerData.timestamp ?? Date.now()
+    const timestamp = this.headerData.timestamp ?? Date.now() / 1000
 
     const headerData = {
       ...this.headerData,
