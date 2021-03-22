@@ -26,7 +26,7 @@ Options for instantiating a [VM](../classes/_index_.vm.md).
 
 • **activatePrecompiles**? : *undefined | false | true*
 
-*Defined in [index.ts:84](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L84)*
+*Defined in [index.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L85)*
 
 If true, create entries in the state tree for the precompiled contracts, saving some gas the
 first time each of them is called.
@@ -45,7 +45,7 @@ ___
 
 • **allowUnlimitedContractSize**? : *undefined | false | true*
 
-*Defined in [index.ts:91](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L91)*
+*Defined in [index.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L92)*
 
 Allows unlimited contract sizes while debugging. By setting this to `true`, the check for
 contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed.
@@ -58,9 +58,9 @@ ___
 
 • **blockchain**? : *Blockchain*
 
-*Defined in [index.ts:71](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L71)*
+*Defined in [index.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L72)*
 
-A [blockchain](https://github.com/ethereumjs/ethereumjs-vm/packages/blockchain) object for storing/retrieving blocks
+A [blockchain](https://github.com/ethereumjs/ethereumjs-monorepo/packages/blockchain) object for storing/retrieving blocks
 
 ___
 
@@ -68,9 +68,9 @@ ___
 
 • **common**? : *Common*
 
-*Defined in [index.ts:58](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L58)*
+*Defined in [index.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L59)*
 
-Use a [common](https://github.com/ethereumjs/ethereumjs-vm/packages/common) instance
+Use a [common](https://github.com/ethereumjs/ethereumjs-monorepo/packages/common) instance
 if you want to change the chain setup.
 
 ### Possible Values
@@ -81,8 +81,9 @@ if you want to change the chain setup.
 
 ### Supported EIPs
 
+- [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - VM simple subroutines
 - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) (`experimental`) - BLS12-381 precompiles
-- [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) (`experimental`) - Gas cost increases for state access opcodes
+- [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - Gas cost increases for state access opcodes
 
 *Annotations:*
 
@@ -102,7 +103,7 @@ ___
 
 • **hardforkByBlockNumber**? : *undefined | false | true*
 
-*Defined in [index.ts:98](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L98)*
+*Defined in [index.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L99)*
 
 Select hardfork based upon block number. This automatically switches to the right hard fork based upon the block number.
 
@@ -114,9 +115,9 @@ ___
 
 • **state**? : *any*
 
-*Defined in [index.ts:67](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L67)*
+*Defined in [index.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L68)*
 
-An [merkle-patricia-tree](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/trie) instance for the state tree (ignored if stateManager is passed)
+An [merkle-patricia-tree](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie) instance for the state tree (ignored if stateManager is passed)
 
 **`deprecated`** 
 
@@ -126,6 +127,6 @@ ___
 
 • **stateManager**? : *[StateManager](_state_index_.statemanager.md)*
 
-*Defined in [index.ts:62](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L62)*
+*Defined in [index.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L63)*
 
 A [StateManager](_state_index_.statemanager.md) instance to use as the state store (Beta API)

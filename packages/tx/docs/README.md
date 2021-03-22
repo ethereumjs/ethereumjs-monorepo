@@ -6,6 +6,9 @@
 
 ### Modules
 
+* ["baseTransaction"](modules/_basetransaction_.md)
+* ["eip2930Transaction"](modules/_eip2930transaction_.md)
 * ["index"](modules/_index_.md)
-* ["transaction"](modules/_transaction_.md)
+* ["legacyTransaction"](modules/_legacytransaction_.md)
+* ["transactionFactory"](modules/_transactionfactory_.md)
 * ["types"](modules/_types_.md)

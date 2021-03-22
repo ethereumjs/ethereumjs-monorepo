@@ -24,7 +24,7 @@ Options for the `runTx` method.
 
 • **block**? : *Block*
 
-*Defined in [runTx.ts:22](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L22)*
+*Defined in [runTx.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L24)*
 
 The `@ethereumjs/block` the `tx` belongs to. If omitted a default blank block will be used.
 
@@ -34,7 +34,7 @@ ___
 
 • **skipBalance**? : *undefined | false | true*
 
-*Defined in [runTx.ts:34](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L34)*
+*Defined in [runTx.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L36)*
 
 If true, skips the balance check
 
@@ -44,7 +44,7 @@ ___
 
 • **skipBlockGasLimitValidation**? : *undefined | false | true*
 
-*Defined in [runTx.ts:40](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L40)*
+*Defined in [runTx.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L42)*
 
 If true, skips the validation of the tx's gas limit
 agains the block's gas limit.
@@ -55,7 +55,7 @@ ___
 
 • **skipNonce**? : *undefined | false | true*
 
-*Defined in [runTx.ts:30](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L30)*
+*Defined in [runTx.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L32)*
 
 If true, skips the nonce check
 
@@ -63,8 +63,8 @@ ___
 
 ###  tx
 
-• **tx**: *Transaction*
+• **tx**: *TypedTransaction*
 
-*Defined in [runTx.ts:26](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L26)*
+*Defined in [runTx.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L28)*
 
 An `@ethereumjs/tx` to run

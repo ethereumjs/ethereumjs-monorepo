@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [7.0.9] - 2021-03-04
 
-This release adds support for very high `chainId` numbers exceeding `MAX_SAFE_INTEGER` (an example is the chain ID `34180983699157880` used for the ephemeral Yolov3 testnet preparing for the `berlin` hardfork, but high chain IDs might be used for things like private test networks and the like as well).
+This release adds support for very high `chainId` numbers exceeding `MAX_SAFE_INTEGER` (an example is the chain ID `34180983699157880` used for the ephemeral Yolov3 testnet preparing for the `berlin` hardfork, but high chain IDs might be used for things like private test networks and the like as well), see PR [#290](https://github.com/ethereumjs/ethereumjs-util/pull/290).
 
 Function signatures for methods in `address` and `signature` are therefore expanded to allow for a `BNLike` input type (`BN | PrefixedHexString | number | Buffer`) for chain ID related parameters.
 
@@ -27,6 +27,8 @@ All function signatures are still taking in a `number` input for backwards-compa
   - -> `toRpcSig(v: BNLike, r: Buffer, s: Buffer, chainId?: BNLike): string`
 - `signature`: `isValidSignature(v: number, r: Buffer, s: Buffer, homesteadOrLater: boolean = true, chainId?: number)`
   - -> `isValidSignature(v: BNLike, r: Buffer, s: Buffer, homesteadOrLater: boolean = true, chainId?: BNLike)`
+
+Along there is a new `toType()` helper function which can be used to easily convert to a `BNLike` output type.
 
 [7.0.9]: https://github.com/ethereumjs/ethereumjs-util/compare/v7.0.8...v7.0.9
 

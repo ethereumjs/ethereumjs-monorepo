@@ -17,7 +17,7 @@
 
 ▸ **assertIsArray**(`input`: number[]): *void*
 
-*Defined in [helpers.ts:29](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/helpers.ts#L29)*
+*Defined in [helpers.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/helpers.ts#L29)*
 
 Throws if input is not an array
 
@@ -35,7 +35,7 @@ ___
 
 ▸ **assertIsBuffer**(`input`: Buffer): *void*
 
-*Defined in [helpers.ts:18](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/helpers.ts#L18)*
+*Defined in [helpers.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/helpers.ts#L18)*
 
 Throws if input is not a buffer
 
@@ -53,7 +53,7 @@ ___
 
 ▸ **assertIsHexString**(`input`: string): *void*
 
-*Defined in [helpers.ts:7](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/helpers.ts#L7)*
+*Defined in [helpers.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/helpers.ts#L7)*
 
 Throws if a string is not hex prefixed
 
@@ -71,7 +71,7 @@ ___
 
 ▸ **assertIsString**(`input`: string): *void*
 
-*Defined in [helpers.ts:40](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/helpers.ts#L40)*
+*Defined in [helpers.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/helpers.ts#L40)*
 
 Throws if input is not a string
 

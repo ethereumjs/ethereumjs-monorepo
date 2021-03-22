@@ -25,7 +25,7 @@
 
 ▸ **keccak**(`a`: Buffer, `bits`: number): *Buffer*
 
-*Defined in [hash.ts:13](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L13)*
+*Defined in [hash.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L12)*
 
 Creates Keccak hash of a Buffer input
 
@@ -44,7 +44,7 @@ ___
 
 ▸ **keccak256**(`a`: Buffer): *Buffer*
 
-*Defined in [hash.ts:38](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L38)*
+*Defined in [hash.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L37)*
 
 Creates Keccak-256 hash of the input, alias for keccak(a, 256).
 
@@ -62,7 +62,7 @@ ___
 
 ▸ **keccakFromArray**(`a`: number[], `bits`: number): *Buffer‹›*
 
-*Defined in [hash.ts:68](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L68)*
+*Defined in [hash.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L67)*
 
 Creates Keccak hash of a number array input
 
@@ -81,7 +81,7 @@ ___
 
 ▸ **keccakFromHexString**(`a`: string, `bits`: number): *Buffer‹›*
 
-*Defined in [hash.ts:58](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L58)*
+*Defined in [hash.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L57)*
 
 Creates Keccak hash of an 0x-prefixed string input
 
@@ -100,7 +100,7 @@ ___
 
 ▸ **keccakFromString**(`a`: string, `bits`: number): *Buffer‹›*
 
-*Defined in [hash.ts:47](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L47)*
+*Defined in [hash.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L46)*
 
 Creates Keccak hash of a utf-8 string input
 
@@ -119,7 +119,7 @@ ___
 
 ▸ **ripemd160**(`a`: Buffer, `padded`: boolean): *Buffer*
 
-*Defined in [hash.ts:116](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L116)*
+*Defined in [hash.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L128)*
 
 Creates RIPEMD160 hash of a Buffer input.
 
@@ -138,7 +138,7 @@ ___
 
 ▸ **ripemd160FromArray**(`a`: number[], `padded`: boolean): *Buffer*
 
-*Defined in [hash.ts:136](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L136)*
+*Defined in [hash.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L148)*
 
 Creates RIPEMD160 hash of a number[] input.
 
@@ -157,7 +157,7 @@ ___
 
 ▸ **ripemd160FromString**(`a`: string, `padded`: boolean): *Buffer*
 
-*Defined in [hash.ts:126](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L126)*
+*Defined in [hash.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L138)*
 
 Creates RIPEMD160 hash of a string input.
 
@@ -176,7 +176,7 @@ ___
 
 ▸ **rlphash**(`a`: rlp.Input): *Buffer*
 
-*Defined in [hash.ts:162](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L162)*
+*Defined in [hash.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L157)*
 
 Creates SHA-3 hash of the RLP encoded version of the input.
 
@@ -194,7 +194,7 @@ ___
 
 ▸ **sha256**(`a`: Buffer): *Buffer*
 
-*Defined in [hash.ts:77](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L77)*
+*Defined in [hash.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L85)*
 
 Creates SHA256 hash of a Buffer input.
 
@@ -212,7 +212,7 @@ ___
 
 ▸ **sha256FromArray**(`a`: number[]): *Buffer*
 
-*Defined in [hash.ts:95](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L95)*
+*Defined in [hash.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L103)*
 
 Creates SHA256 hash of a number[] input.
 
@@ -230,7 +230,7 @@ ___
 
 ▸ **sha256FromString**(`a`: string): *Buffer*
 
-*Defined in [hash.ts:86](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L86)*
+*Defined in [hash.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/hash.ts#L94)*
 
 Creates SHA256 hash of a string input.
 

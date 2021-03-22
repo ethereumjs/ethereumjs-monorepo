@@ -21,6 +21,7 @@ state trie.
 
 ### Properties
 
+* [_accessedStorage](_state_statemanager_.defaultstatemanager.md#_accessedstorage)
 * [_cache](_state_statemanager_.defaultstatemanager.md#_cache)
 * [_checkpointCount](_state_statemanager_.defaultstatemanager.md#_checkpointcount)
 * [_common](_state_statemanager_.defaultstatemanager.md#_common)
@@ -38,10 +39,13 @@ state trie.
 * [_modifyContractStorage](_state_statemanager_.defaultstatemanager.md#private-_modifycontractstorage)
 * [accountExists](_state_statemanager_.defaultstatemanager.md#accountexists)
 * [accountIsEmpty](_state_statemanager_.defaultstatemanager.md#accountisempty)
+* [addWarmedAddress](_state_statemanager_.defaultstatemanager.md#addwarmedaddress)
+* [addWarmedStorage](_state_statemanager_.defaultstatemanager.md#addwarmedstorage)
 * [checkpoint](_state_statemanager_.defaultstatemanager.md#checkpoint)
 * [cleanupTouchedAccounts](_state_statemanager_.defaultstatemanager.md#cleanuptouchedaccounts)
 * [clearContractStorage](_state_statemanager_.defaultstatemanager.md#clearcontractstorage)
 * [clearOriginalStorageCache](_state_statemanager_.defaultstatemanager.md#clearoriginalstoragecache)
+* [clearWarmedAccounts](_state_statemanager_.defaultstatemanager.md#clearwarmedaccounts)
 * [commit](_state_statemanager_.defaultstatemanager.md#commit)
 * [copy](_state_statemanager_.defaultstatemanager.md#copy)
 * [deleteAccount](_state_statemanager_.defaultstatemanager.md#deleteaccount)
@@ -54,6 +58,8 @@ state trie.
 * [getOriginalContractStorage](_state_statemanager_.defaultstatemanager.md#getoriginalcontractstorage)
 * [getStateRoot](_state_statemanager_.defaultstatemanager.md#getstateroot)
 * [hasGenesisState](_state_statemanager_.defaultstatemanager.md#hasgenesisstate)
+* [isWarmedAddress](_state_statemanager_.defaultstatemanager.md#iswarmedaddress)
+* [isWarmedStorage](_state_statemanager_.defaultstatemanager.md#iswarmedstorage)
 * [putAccount](_state_statemanager_.defaultstatemanager.md#putaccount)
 * [putContractCode](_state_statemanager_.defaultstatemanager.md#putcontractcode)
 * [putContractStorage](_state_statemanager_.defaultstatemanager.md#putcontractstorage)
@@ -67,7 +73,7 @@ state trie.
 
 \+ **new DefaultStateManager**(`opts`: [DefaultStateManagerOpts](../interfaces/_state_statemanager_.defaultstatemanageropts.md)): *[DefaultStateManager](_state_statemanager_.defaultstatemanager.md)*
 
-*Defined in [state/stateManager.ts:51](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L51)*
+*Defined in [state/stateManager.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L61)*
 
 Instantiate the StateManager interface.
 
@@ -81,11 +87,19 @@ Name | Type | Default |
 
 ## Properties
 
+###  _accessedStorage
+
+• **_accessedStorage**: *Map‹string, Set‹string››[]*
+
+*Defined in [state/stateManager.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L61)*
+
+___
+
 ###  _cache
 
 • **_cache**: *Cache*
 
-*Defined in [state/stateManager.ts:47](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L47)*
+*Defined in [state/stateManager.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L47)*
 
 ___
 
@@ -93,7 +107,7 @@ ___
 
 • **_checkpointCount**: *number*
 
-*Defined in [state/stateManager.ts:50](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L50)*
+*Defined in [state/stateManager.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L50)*
 
 ___
 
@@ -101,7 +115,7 @@ ___
 
 • **_common**: *Common*
 
-*Defined in [state/stateManager.ts:44](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L44)*
+*Defined in [state/stateManager.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L44)*
 
 ___
 
@@ -109,7 +123,7 @@ ___
 
 • **_originalStorageCache**: *Map‹AddressHex, Map‹AddressHex, Buffer››*
 
-*Defined in [state/stateManager.ts:51](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L51)*
+*Defined in [state/stateManager.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L51)*
 
 ___
 
@@ -117,7 +131,7 @@ ___
 
 • **_storageTries**: *object*
 
-*Defined in [state/stateManager.ts:46](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L46)*
+*Defined in [state/stateManager.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L46)*
 
 #### Type declaration:
 
@@ -129,7 +143,7 @@ ___
 
 • **_touched**: *Set‹AddressHex›*
 
-*Defined in [state/stateManager.ts:48](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L48)*
+*Defined in [state/stateManager.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L48)*
 
 ___
 
@@ -137,7 +151,7 @@ ___
 
 • **_touchedStack**: *Set‹AddressHex›[]*
 
-*Defined in [state/stateManager.ts:49](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L49)*
+*Defined in [state/stateManager.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L49)*
 
 ___
 
@@ -145,7 +159,7 @@ ___
 
 • **_trie**: *Trie*
 
-*Defined in [state/stateManager.ts:45](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L45)*
+*Defined in [state/stateManager.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L45)*
 
 ## Methods
 
@@ -153,7 +167,7 @@ ___
 
 ▸ **_clearOriginalStorageCache**(): *void*
 
-*Defined in [state/stateManager.ts:252](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L252)*
+*Defined in [state/stateManager.ts:263](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L263)*
 
 Clears the original storage cache. Refer to [getOriginalContractStorage](_state_statemanager_.defaultstatemanager.md#getoriginalcontractstorage)
 for more explanation.
@@ -166,7 +180,7 @@ ___
 
 ▸ **_getStorageTrie**(`address`: Address): *Promise‹Trie›*
 
-*Defined in [state/stateManager.ts:184](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L184)*
+*Defined in [state/stateManager.ts:195](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L195)*
 
 Gets the storage trie for an account from the storage
 cache or does a lookup.
@@ -185,7 +199,7 @@ ___
 
 ▸ **_lookupStorageTrie**(`address`: Address): *Promise‹Trie›*
 
-*Defined in [state/stateManager.ts:170](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L170)*
+*Defined in [state/stateManager.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L181)*
 
 Creates a storage trie from the primary storage trie
 for an account and saves this in the storage cache.
@@ -204,7 +218,7 @@ ___
 
 ▸ **_modifyContractStorage**(`address`: Address, `modifyTrie`: function): *Promise‹void›*
 
-*Defined in [state/stateManager.ts:270](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L270)*
+*Defined in [state/stateManager.ts:281](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L281)*
 
 Modifies the storage trie of an account.
 
@@ -237,7 +251,7 @@ ___
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:534](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L534)*
+*Defined in [state/stateManager.ts:567](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L567)*
 
 Checks if the `account` corresponding to `address`
 exists
@@ -258,7 +272,7 @@ ___
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:524](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L524)*
+*Defined in [state/stateManager.ts:557](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L557)*
 
 Checks if the `account` corresponding to `address`
 is empty or non-existent as defined in
@@ -274,13 +288,50 @@ Name | Type | Description |
 
 ___
 
+###  addWarmedAddress
+
+▸ **addWarmedAddress**(`address`: Buffer): *void*
+
+*Defined in [state/stateManager.ts:600](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L600)*
+
+Add a warm address in the current context
+
+**Parameters:**
+
+Name | Type | Description |
+------ | ------ | ------ |
+`address` | Buffer | The address (as a Buffer) to check  |
+
+**Returns:** *void*
+
+___
+
+###  addWarmedStorage
+
+▸ **addWarmedStorage**(`address`: Buffer, `slot`: Buffer): *void*
+
+*Defined in [state/stateManager.ts:633](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L633)*
+
+Mark the storage slot in the address as warm in the current context
+
+**Parameters:**
+
+Name | Type | Description |
+------ | ------ | ------ |
+`address` | Buffer | The address (as a Buffer) to check |
+`slot` | Buffer | The slot (as a Buffer) to check  |
+
+**Returns:** *void*
+
+___
+
 ###  checkpoint
 
 ▸ **checkpoint**(): *Promise‹void›*
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:343](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L343)*
+*Defined in [state/stateManager.ts:354](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L354)*
 
 Checkpoints the current state of the StateManager instance.
 State changes that follow can then be committed by calling
@@ -296,7 +347,7 @@ ___
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:549](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L549)*
+*Defined in [state/stateManager.ts:654](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L654)*
 
 Removes accounts form the state trie that have been touched,
 as defined in EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
@@ -311,7 +362,7 @@ ___
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:331](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L331)*
+*Defined in [state/stateManager.ts:342](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L342)*
 
 Clears all storage entries for the account corresponding to `address`.
 
@@ -331,10 +382,22 @@ ___
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:260](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L260)*
+*Defined in [state/stateManager.ts:271](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L271)*
 
 Clears the original storage cache. Refer to [getOriginalContractStorage](_state_statemanager_.defaultstatemanager.md#getoriginalcontractstorage)
 for more explanation. Alias of the internal _clearOriginalStorageCache
+
+**Returns:** *void*
+
+___
+
+###  clearWarmedAccounts
+
+▸ **clearWarmedAccounts**(): *void*
+
+*Defined in [state/stateManager.ts:646](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L646)*
+
+Clear the warm accounts and storage. To be called after a transaction finished.
 
 **Returns:** *void*
 
@@ -346,7 +409,7 @@ ___
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:354](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L354)*
+*Defined in [state/stateManager.ts:366](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L366)*
 
 Commits the current change-set to the instance since the
 last call to checkpoint.
@@ -361,7 +424,7 @@ ___
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:77](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L77)*
+*Defined in [state/stateManager.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L88)*
 
 Copies the current instance of the `StateManager`
 at the last fully committed point, i.e. as if all current
@@ -377,7 +440,7 @@ ___
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:112](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L112)*
+*Defined in [state/stateManager.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L123)*
 
 Deletes an account from state under the provided `address`. The account will also be removed from the state trie.
 
@@ -397,7 +460,7 @@ ___
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:452](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L452)*
+*Defined in [state/stateManager.ts:485](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L485)*
 
 Dumps the RLP-encoded storage values for an `account` specified by `address`.
 
@@ -421,7 +484,7 @@ ___
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:488](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L488)*
+*Defined in [state/stateManager.ts:521](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L521)*
 
 Generates a canonical genesis state on the instance based on the
 configured chain parameters. Will error if there are uncommitted
@@ -437,7 +500,7 @@ ___
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:503](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L503)*
+*Defined in [state/stateManager.ts:536](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L536)*
 
 Initializes the provided genesis state into the state trie
 
@@ -457,7 +520,7 @@ ___
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:88](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L88)*
+*Defined in [state/stateManager.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L99)*
 
 Gets the account associated with `address`. Returns an empty account if the account does not exist.
 
@@ -477,7 +540,7 @@ ___
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:156](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L156)*
+*Defined in [state/stateManager.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L167)*
 
 Gets the code corresponding to the provided `address`.
 
@@ -500,7 +563,7 @@ ___
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:204](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L204)*
+*Defined in [state/stateManager.ts:215](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L215)*
 
 Gets the storage value associated with the provided `address` and `key`. This method returns
 the shortest representation of the stored value.
@@ -526,7 +589,7 @@ ___
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:223](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L223)*
+*Defined in [state/stateManager.ts:234](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L234)*
 
 Caches the storage value associated with the provided `address` and `key`
 on first invocation, and returns the cached (original) value from then
@@ -548,7 +611,7 @@ ___
 
 ▸ **getStateRoot**(`force`: boolean): *Promise‹Buffer›*
 
-*Defined in [state/stateManager.ts:405](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L405)*
+*Defined in [state/stateManager.ts:438](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L438)*
 
 Gets the state-root of the Merkle-Patricia trie representation
 of the state of this StateManager. Will error if there are uncommitted
@@ -572,7 +635,7 @@ ___
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:478](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L478)*
+*Defined in [state/stateManager.ts:511](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L511)*
 
 Checks whether the current instance has the canonical genesis state
 for the configured chain parameters.
@@ -584,13 +647,50 @@ canonical genesis state for the configured chain parameters.
 
 ___
 
+###  isWarmedAddress
+
+▸ **isWarmedAddress**(`address`: Buffer): *boolean*
+
+*Defined in [state/stateManager.ts:586](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L586)*
+
+Returns true if the address is warm in the current context
+
+**Parameters:**
+
+Name | Type | Description |
+------ | ------ | ------ |
+`address` | Buffer | The address (as a Buffer) to check  |
+
+**Returns:** *boolean*
+
+___
+
+###  isWarmedStorage
+
+▸ **isWarmedStorage**(`address`: Buffer, `slot`: Buffer): *boolean*
+
+*Defined in [state/stateManager.ts:614](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L614)*
+
+Returns true if the slot of the address is warm
+
+**Parameters:**
+
+Name | Type | Description |
+------ | ------ | ------ |
+`address` | Buffer | The address (as a Buffer) to check |
+`slot` | Buffer | The slot (as a Buffer) to check  |
+
+**Returns:** *boolean*
+
+___
+
 ###  putAccount
 
 ▸ **putAccount**(`address`: Address, `account`: Account): *Promise‹void›*
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:98](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L98)*
+*Defined in [state/stateManager.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L109)*
 
 Saves an account into state under the provided `address`.
 
@@ -611,7 +711,7 @@ ___
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:135](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L135)*
+*Defined in [state/stateManager.ts:146](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L146)*
 
 Adds `value` to the state trie as code, and sets `codeHash` on the account
 corresponding to `address` to reference this.
@@ -633,7 +733,7 @@ ___
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:301](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L301)*
+*Defined in [state/stateManager.ts:312](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L312)*
 
 Adds value to the state trie for the `account`
 corresponding to `address` at the provided `key`.
@@ -656,7 +756,7 @@ ___
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:372](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L372)*
+*Defined in [state/stateManager.ts:404](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L404)*
 
 Reverts the current change-set to the instance since the
 last call to checkpoint.
@@ -671,7 +771,7 @@ ___
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:421](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L421)*
+*Defined in [state/stateManager.ts:454](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L454)*
 
 Sets the state of the instance to that represented
 by the provided `stateRoot`. Will error if there are uncommitted
@@ -694,7 +794,7 @@ ___
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:125](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L125)*
+*Defined in [state/stateManager.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L136)*
 
 Marks an account as touched, according to the definition
 in [EIP-158](https://eips.ethereum.org/EIPS/eip-158).

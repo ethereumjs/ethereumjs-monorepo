@@ -18,7 +18,7 @@
 
 ▸ **getBlock**(`hash`: Buffer): *Promise‹[Block](../classes/_block_.block.md)›*
 
-*Defined in [types.ts:140](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L140)*
+*Defined in [types.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L143)*
 
 **Parameters:**
 
