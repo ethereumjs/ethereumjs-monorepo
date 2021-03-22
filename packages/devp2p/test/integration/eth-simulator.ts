@@ -2,6 +2,7 @@ import test from 'tape'
 import * as devp2p from '../../src'
 import * as util from './util'
 import Common from '@ethereumjs/common'
+import { ETH } from '../../src'
 
 const GENESIS_TD = 17179869184
 const GENESIS_HASH = Buffer.from(
@@ -83,16 +84,34 @@ function sendWithProtocolVersion(t: test.Test, version: number, cap?: Object) {
   util.twoPeerMsgExchange(t, opts, cap)
 }
 
-test('ETH: should use latest protocol version on default', async (t) => {
-  sendWithProtocolVersion(t, 64)
-})
+function sendNotAllowed(
+  t: test.Test,
+  version: number,
+  cap: Object,
+  expectedCode: ETH.MESSAGE_CODES
+) {
+  const opts: any = {}
+  opts.status0 = Object.assign({}, status)
+  opts.status1 = Object.assign({}, status)
+  opts.onOnceStatus0 = function (rlpxs: any, eth: any) {
+    try {
+      eth.sendMessage(expectedCode, [])
+    } catch (err) {
+      const msg = `Error: Code ${expectedCode} not allowed with version ${version}`
+      t.equal(err.toString(), msg, `should emit error: ${msg}`)
+      util.destroyRLPXs(rlpxs)
+      t.end()
+    }
+  }
+  util.twoPeerMsgExchange(t, opts, cap)
+}
 
-test('ETH: should work with allowed eth64', async (t) => {
-  sendWithProtocolVersion(t, 64)
+test('ETH: should use latest protocol version on default', async (t) => {
+  sendWithProtocolVersion(t, 65)
 })
 
 test('ETH -> Eth64 -> sendStatus(): should throw on non-matching latest block provided', async (t) => {
-  const cap = [devp2p.ETH.eth64]
+  const cap = [devp2p.ETH.eth65]
   const common = new Common({ chain: 'mainnet', hardfork: 'byzantium' })
   const status0: any = Object.assign({}, status)
   status0['latestBlock'] = 100000 // lower than Byzantium fork block 4370000
@@ -106,6 +125,15 @@ test('ETH -> Eth64 -> sendStatus(): should throw on non-matching latest block pr
     util.destroyRLPXs(rlpxs)
     t.end()
   })
+})
+
+test('ETH: should work with allowed eth64', async (t) => {
+  const cap = [devp2p.ETH.eth64]
+  sendWithProtocolVersion(t, 64, cap)
+})
+
+test('ETH: send not-allowed eth64', async (t) => {
+  sendNotAllowed(t, 64, [devp2p.ETH.eth64], ETH.MESSAGE_CODES.POOLED_TRANSACTIONS)
 })
 
 test('ETH -> Eth64 -> ForkId validation 1a)', async (t) => {
@@ -144,21 +172,7 @@ test('ETH: work with allowed eth62', async (t) => {
 })
 
 test('ETH: send not-allowed eth62', async (t) => {
-  const cap = [devp2p.ETH.eth62]
-  const opts: any = {}
-  opts.status0 = Object.assign({}, status)
-  opts.status1 = Object.assign({}, status)
-  opts.onOnceStatus0 = function (rlpxs: any, eth: any) {
-    try {
-      eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_NODE_DATA, [])
-    } catch (err) {
-      const msg = 'Error: Code 13 not allowed with version 62'
-      t.equal(err.toString(), msg, `should emit error: ${msg}`)
-      util.destroyRLPXs(rlpxs)
-      t.end()
-    }
-  }
-  util.twoPeerMsgExchange(t, opts, cap)
+  sendNotAllowed(t, 62, [devp2p.ETH.eth62], ETH.MESSAGE_CODES.GET_NODE_DATA)
 })
 
 test('ETH: send unknown message code', async (t) => {
