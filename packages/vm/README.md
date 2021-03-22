@@ -22,7 +22,7 @@ import { BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 
-const common = new Common({ chain: 'mainnet' })
+const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
 const vm = new VM({ common })
 
 const STOP = '00'
@@ -68,6 +68,8 @@ For documentation on `VM` instantiation, exposed API and emitted `events` see ge
 ## StateManager
 
 Documentation on the `StateManager` can be found [here](./docs/classes/_state_statemanager_.defaultstatemanager.md). If you want to provide your own `StateManager` you can implement the dedicated [interface](./docs/interfaces/_state_interface_.statemanager.md) to ensure that your implementation conforms with the current API.
+
+Note: along the `EIP-2929` (Gas cost increases for state access opcodes) implementation released in `v5.2.0` a new `EIP2929StateManager` interface has been introduced inheriting from the base `StateManager` interface. The methods introduced there will be merged into the base state manager on the next breaking release.
 
 # BROWSER
 
@@ -121,7 +123,7 @@ The VM currently supports the following hardfork rules:
 - `petersburg`
 - `istanbul` (`v4.1.1`+)
 - `muirGlacier` (only `mainnet` and `ropsten`) (`v4.1.3`+)
-- `berlin` (`DRAFT`, only `EIP-2315`)
+- `berlin` (`v5.2.0`+)
 
 Default: `istanbul` (taken from `Common.DEFAULT_HARDFORK`)
 
@@ -132,7 +134,7 @@ along the `Common` instance:
 import Common from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 
-const common = new Common({ chain: 'mainnet', hardfork: 'byzantium' })
+const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
 const vm = new VM({ common })
 ```
 
@@ -151,8 +153,12 @@ const vm = new VM({ common })
 
 Currently supported EIPs:
 
+- [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315): Simple subroutines
 - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537): BLS precompiles
-- [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929): gas cost increases for state access opcodes
+- [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565): ModExp gas cost (`berlin` EIP)
+- [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718): Typed transactions (`berlin` EIP)
+- [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929): Gas cost increases for state access opcodes (`berlin` EIP)
+- [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930): Optional Access Lists Typed Transactions (`berlin` EIP)
 
 ## Tracing Events
 

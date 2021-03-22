@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/common",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Resources common to all Ethereum implementations",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

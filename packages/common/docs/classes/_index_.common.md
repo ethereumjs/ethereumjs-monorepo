@@ -37,10 +37,12 @@ Common class to access chain and hardfork parameters
 * [addListener](_index_.common.md#addlistener)
 * [bootstrapNodes](_index_.common.md#bootstrapnodes)
 * [chainId](_index_.common.md#chainid)
+* [chainIdBN](_index_.common.md#chainidbn)
 * [chainName](_index_.common.md#chainname)
 * [consensusAlgorithm](_index_.common.md#consensusalgorithm)
 * [consensusConfig](_index_.common.md#consensusconfig)
 * [consensusType](_index_.common.md#consensustype)
+* [copy](_index_.common.md#copy)
 * [dnsNetworks](_index_.common.md#dnsnetworks)
 * [eips](_index_.common.md#eips)
 * [emit](_index_.common.md#emit)
@@ -52,17 +54,21 @@ Common class to access chain and hardfork parameters
 * [gteHardfork](_index_.common.md#gtehardfork)
 * [hardfork](_index_.common.md#hardfork)
 * [hardforkBlock](_index_.common.md#hardforkblock)
+* [hardforkBlockBN](_index_.common.md#hardforkblockbn)
 * [hardforkForForkHash](_index_.common.md#hardforkforforkhash)
 * [hardforkGteHardfork](_index_.common.md#hardforkgtehardfork)
 * [hardforkIsActiveOnBlock](_index_.common.md#hardforkisactiveonblock)
 * [hardforkIsActiveOnChain](_index_.common.md#hardforkisactiveonchain)
 * [hardforks](_index_.common.md#hardforks)
+* [isActivatedEIP](_index_.common.md#isactivatedeip)
 * [isHardforkBlock](_index_.common.md#ishardforkblock)
 * [isNextHardforkBlock](_index_.common.md#isnexthardforkblock)
 * [listenerCount](_index_.common.md#listenercount)
 * [listeners](_index_.common.md#listeners)
 * [networkId](_index_.common.md#networkid)
+* [networkIdBN](_index_.common.md#networkidbn)
 * [nextHardforkBlock](_index_.common.md#nexthardforkblock)
+* [nextHardforkBlockBN](_index_.common.md#nexthardforkblockbn)
 * [off](_index_.common.md#off)
 * [on](_index_.common.md#on)
 * [once](_index_.common.md#once)
@@ -98,7 +104,7 @@ Common class to access chain and hardfork parameters
 
 *Overrides void*
 
-*Defined in [packages/common/src/index.ts:113](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L113)*
+*Defined in [packages/common/src/index.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L116)*
 
 **`constructor`** 
 
@@ -116,7 +122,7 @@ Name | Type |
 
 • **DEFAULT_HARDFORK**: *string*
 
-*Defined in [packages/common/src/index.ts:61](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L61)*
+*Defined in [packages/common/src/index.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L62)*
 
 ___
 
@@ -134,7 +140,7 @@ Defined in node_modules/@types/node/events.d.ts:20
 
 ▸ **_calcForkHash**(`hardfork`: string): *string*
 
-*Defined in [packages/common/src/index.ts:554](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L554)*
+*Defined in [packages/common/src/index.ts:613](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L613)*
 
 Internal helper function to calculate a fork hash
 
@@ -154,7 +160,7 @@ ___
 
 ▸ **_chooseHardfork**(`hardfork?`: string | null, `onlySupported`: boolean): *string*
 
-*Defined in [packages/common/src/index.ts:224](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L224)*
+*Defined in [packages/common/src/index.ts:228](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L228)*
 
 Internal helper function to choose between hardfork set and hardfork provided as param
 
@@ -175,7 +181,7 @@ ___
 
 ▸ **_getHardfork**(`hardfork`: string): *any*
 
-*Defined in [packages/common/src/index.ts:238](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L238)*
+*Defined in [packages/common/src/index.ts:242](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L242)*
 
 Internal helper function, returns the params for the given hardfork for the chain set
 
@@ -195,7 +201,7 @@ ___
 
 ▸ **_isSupportedHardfork**(`hardfork`: string | null): *boolean*
 
-*Defined in [packages/common/src/index.ts:251](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L251)*
+*Defined in [packages/common/src/index.ts:255](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L255)*
 
 Internal helper function to check if a hardfork is set to be supported by the library
 
@@ -213,18 +219,18 @@ ___
 
 ###  activeHardfork
 
-▸ **activeHardfork**(`blockNumber?`: number | null, `opts?`: hardforkOptions): *string*
+▸ **activeHardfork**(`blockNumber?`: BNLike | null, `opts`: hardforkOptions): *string*
 
-*Defined in [packages/common/src/index.ts:489](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L489)*
+*Defined in [packages/common/src/index.ts:524](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L524)*
 
 Returns the latest active hardfork name for chain or block or throws if unavailable
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`blockNumber?` | number &#124; null | up to block if provided, otherwise for the whole chain |
-`opts?` | hardforkOptions | Hardfork options (onlyActive unused) |
+Name | Type | Default | Description |
+------ | ------ | ------ | ------ |
+`blockNumber?` | BNLike &#124; null | - | up to block if provided, otherwise for the whole chain |
+`opts` | hardforkOptions | {} | Hardfork options (onlyActive unused) |
 
 **Returns:** *string*
 
@@ -234,18 +240,18 @@ ___
 
 ###  activeHardforks
 
-▸ **activeHardforks**(`blockNumber?`: number | null, `opts?`: hardforkOptions): *Array‹any›*
+▸ **activeHardforks**(`blockNumber?`: BNLike | null, `opts`: hardforkOptions): *Array‹any›*
 
-*Defined in [packages/common/src/index.ts:469](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L469)*
+*Defined in [packages/common/src/index.ts:505](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L505)*
 
 Returns the active hardfork switches for the current chain
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`blockNumber?` | number &#124; null | up to block if provided, otherwise for the whole chain |
-`opts?` | hardforkOptions | Hardfork options (onlyActive unused) |
+Name | Type | Default | Description |
+------ | ------ | ------ | ------ |
+`blockNumber?` | BNLike &#124; null | - | up to block if provided, otherwise for the whole chain |
+`opts` | hardforkOptions | {} | Hardfork options (onlyActive unused) |
 
 **Returns:** *Array‹any›*
 
@@ -255,9 +261,9 @@ ___
 
 ###  activeOnBlock
 
-▸ **activeOnBlock**(`blockNumber`: number, `opts?`: hardforkOptions): *boolean*
+▸ **activeOnBlock**(`blockNumber`: BNLike, `opts?`: hardforkOptions): *boolean*
 
-*Defined in [packages/common/src/index.ts:399](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L399)*
+*Defined in [packages/common/src/index.ts:437](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L437)*
 
 Alias to hardforkIsActiveOnBlock when hardfork is set
 
@@ -265,7 +271,7 @@ Alias to hardforkIsActiveOnBlock when hardfork is set
 
 Name | Type | Description |
 ------ | ------ | ------ |
-`blockNumber` | number | - |
+`blockNumber` | BNLike | - |
 `opts?` | hardforkOptions | Hardfork options (onlyActive unused) |
 
 **Returns:** *boolean*
@@ -304,7 +310,7 @@ ___
 
 ▸ **bootstrapNodes**(): *any*
 
-*Defined in [packages/common/src/index.ts:629](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L629)*
+*Defined in [packages/common/src/index.ts:688](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L688)*
 
 Returns bootstrap nodes for the current chain
 
@@ -318,11 +324,27 @@ ___
 
 ▸ **chainId**(): *number*
 
-*Defined in [packages/common/src/index.ts:653](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L653)*
+*Defined in [packages/common/src/index.ts:713](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L713)*
 
 Returns the Id of current chain
 
+**`deprecated`** Please use chainIdBN() for large number support
+
 **Returns:** *number*
+
+chain Id
+
+___
+
+###  chainIdBN
+
+▸ **chainIdBN**(): *BN*
+
+*Defined in [packages/common/src/index.ts:721](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L721)*
+
+Returns the Id of current chain
+
+**Returns:** *BN*
 
 chain Id
 
@@ -332,7 +354,7 @@ ___
 
 ▸ **chainName**(): *string*
 
-*Defined in [packages/common/src/index.ts:661](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L661)*
+*Defined in [packages/common/src/index.ts:729](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L729)*
 
 Returns the name of current chain
 
@@ -346,7 +368,7 @@ ___
 
 ▸ **consensusAlgorithm**(): *string*
 
-*Defined in [packages/common/src/index.ts:695](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L695)*
+*Defined in [packages/common/src/index.ts:772](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L772)*
 
 Returns the concrete consensus implementation
 algorithm or protocol for the network
@@ -361,7 +383,7 @@ ___
 
 ▸ **consensusConfig**(): *any*
 
-*Defined in [packages/common/src/index.ts:710](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L710)*
+*Defined in [packages/common/src/index.ts:787](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L787)*
 
 Returns a dictionary with consensus configuration
 parameters based on the consensus algorithm
@@ -381,7 +403,7 @@ ___
 
 ▸ **consensusType**(): *string*
 
-*Defined in [packages/common/src/index.ts:685](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L685)*
+*Defined in [packages/common/src/index.ts:762](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L762)*
 
 Returns the consensus type of the network
 Possible values: "pow"|"poa"
@@ -390,11 +412,23 @@ Possible values: "pow"|"poa"
 
 ___
 
+###  copy
+
+▸ **copy**(): *[Common](_index_.common.md)*
+
+*Defined in [packages/common/src/index.ts:794](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L794)*
+
+Returns a deep copy of this common instance.
+
+**Returns:** *[Common](_index_.common.md)*
+
+___
+
 ###  dnsNetworks
 
 ▸ **dnsNetworks**(): *any*
 
-*Defined in [packages/common/src/index.ts:637](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L637)*
+*Defined in [packages/common/src/index.ts:696](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L696)*
 
 Returns DNS networks for the current chain
 
@@ -408,7 +442,7 @@ ___
 
 ▸ **eips**(): *number[]*
 
-*Defined in [packages/common/src/index.ts:677](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L677)*
+*Defined in [packages/common/src/index.ts:754](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L754)*
 
 Returns the active EIPs
 
@@ -453,7 +487,7 @@ ___
 
 ▸ **forkHash**(`hardfork?`: undefined | string): *any*
 
-*Defined in [packages/common/src/index.ts:584](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L584)*
+*Defined in [packages/common/src/index.ts:643](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L643)*
 
 Returns an eth/64 compliant fork hash (EIP-2124)
 
@@ -471,7 +505,7 @@ ___
 
 ▸ **genesis**(): *any*
 
-*Defined in [packages/common/src/index.ts:613](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L613)*
+*Defined in [packages/common/src/index.ts:672](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L672)*
 
 Returns the Genesis parameters of current chain
 
@@ -483,9 +517,9 @@ ___
 
 ###  getHardforkByBlockNumber
 
-▸ **getHardforkByBlockNumber**(`blockNumber`: number): *string*
+▸ **getHardforkByBlockNumber**(`blockNumber`: BNLike): *string*
 
-*Defined in [packages/common/src/index.ts:191](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L191)*
+*Defined in [packages/common/src/index.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L194)*
 
 Returns the hardfork based on the block number provided
 
@@ -493,7 +527,7 @@ Returns the hardfork based on the block number provided
 
 Name | Type |
 ------ | ------ |
-`blockNumber` | number |
+`blockNumber` | BNLike |
 
 **Returns:** *string*
 
@@ -517,7 +551,7 @@ ___
 
 ▸ **gteHardfork**(`hardfork`: string, `opts?`: hardforkOptions): *boolean*
 
-*Defined in [packages/common/src/index.ts:443](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L443)*
+*Defined in [packages/common/src/index.ts:480](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L480)*
 
 Alias to hardforkGteHardfork when hardfork is set
 
@@ -538,7 +572,7 @@ ___
 
 ▸ **hardfork**(): *string*
 
-*Defined in [packages/common/src/index.ts:645](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L645)*
+*Defined in [packages/common/src/index.ts:704](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L704)*
 
 Returns the hardfork set
 
@@ -552,9 +586,11 @@ ___
 
 ▸ **hardforkBlock**(`hardfork?`: undefined | string): *number*
 
-*Defined in [packages/common/src/index.ts:504](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L504)*
+*Defined in [packages/common/src/index.ts:539](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L539)*
 
 Returns the hardfork change block for hardfork provided or set
+
+**`deprecated`** Please use hardforkBlockBN() for large number support
 
 **Parameters:**
 
@@ -568,11 +604,31 @@ Block number
 
 ___
 
+###  hardforkBlockBN
+
+▸ **hardforkBlockBN**(`hardfork?`: undefined | string): *BN*
+
+*Defined in [packages/common/src/index.ts:548](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L548)*
+
+Returns the hardfork change block for hardfork provided or set
+
+**Parameters:**
+
+Name | Type | Description |
+------ | ------ | ------ |
+`hardfork?` | undefined &#124; string | Hardfork name, optional if HF set |
+
+**Returns:** *BN*
+
+Block number
+
+___
+
 ###  hardforkForForkHash
 
 ▸ **hardforkForForkHash**(`forkHash`: string): *any | null*
 
-*Defined in [packages/common/src/index.ts:602](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L602)*
+*Defined in [packages/common/src/index.ts:661](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L661)*
 
 **Parameters:**
 
@@ -588,19 +644,19 @@ ___
 
 ###  hardforkGteHardfork
 
-▸ **hardforkGteHardfork**(`hardfork1`: string | null, `hardfork2`: string, `opts?`: hardforkOptions): *boolean*
+▸ **hardforkGteHardfork**(`hardfork1`: string | null, `hardfork2`: string, `opts`: hardforkOptions): *boolean*
 
-*Defined in [packages/common/src/index.ts:410](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L410)*
+*Defined in [packages/common/src/index.ts:448](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L448)*
 
 Sequence based check if given or set HF1 is greater than or equal HF2
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`hardfork1` | string &#124; null | Hardfork name or null (if set) |
-`hardfork2` | string | Hardfork name |
-`opts?` | hardforkOptions | Hardfork options |
+Name | Type | Default | Description |
+------ | ------ | ------ | ------ |
+`hardfork1` | string &#124; null | - | Hardfork name or null (if set) |
+`hardfork2` | string | - | Hardfork name |
+`opts` | hardforkOptions | {} | Hardfork options |
 
 **Returns:** *boolean*
 
@@ -610,19 +666,19 @@ ___
 
 ###  hardforkIsActiveOnBlock
 
-▸ **hardforkIsActiveOnBlock**(`hardfork`: string | null, `blockNumber`: number, `opts?`: hardforkOptions): *boolean*
+▸ **hardforkIsActiveOnBlock**(`hardfork`: string | null, `blockNumber`: BNLike, `opts`: hardforkOptions): *boolean*
 
-*Defined in [packages/common/src/index.ts:380](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L380)*
+*Defined in [packages/common/src/index.ts:416](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L416)*
 
 Checks if set or provided hardfork is active on block number
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`hardfork` | string &#124; null | Hardfork name or null (for HF set) |
-`blockNumber` | number | - |
-`opts?` | hardforkOptions | Hardfork options (onlyActive unused) |
+Name | Type | Default | Description |
+------ | ------ | ------ | ------ |
+`hardfork` | string &#124; null | - | Hardfork name or null (for HF set) |
+`blockNumber` | BNLike | - | - |
+`opts` | hardforkOptions | {} | Hardfork options (onlyActive unused) |
 
 **Returns:** *boolean*
 
@@ -632,18 +688,18 @@ ___
 
 ###  hardforkIsActiveOnChain
 
-▸ **hardforkIsActiveOnChain**(`hardfork?`: string | null, `opts?`: hardforkOptions): *boolean*
+▸ **hardforkIsActiveOnChain**(`hardfork?`: string | null, `opts`: hardforkOptions): *boolean*
 
-*Defined in [packages/common/src/index.ts:453](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L453)*
+*Defined in [packages/common/src/index.ts:490](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L490)*
 
 Checks if given or set hardfork is active on the chain
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`hardfork?` | string &#124; null | Hardfork name, optional if HF set |
-`opts?` | hardforkOptions | Hardfork options (onlyActive unused) |
+Name | Type | Default | Description |
+------ | ------ | ------ | ------ |
+`hardfork?` | string &#124; null | - | Hardfork name, optional if HF set |
+`opts` | hardforkOptions | {} | Hardfork options (onlyActive unused) |
 
 **Returns:** *boolean*
 
@@ -655,7 +711,7 @@ ___
 
 ▸ **hardforks**(): *any*
 
-*Defined in [packages/common/src/index.ts:621](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L621)*
+*Defined in [packages/common/src/index.ts:680](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L680)*
 
 Returns the hardforks for current chain
 
@@ -665,11 +721,34 @@ Array with arrays of hardforks
 
 ___
 
+###  isActivatedEIP
+
+▸ **isActivatedEIP**(`eip`: number): *boolean*
+
+*Defined in [packages/common/src/index.ts:394](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L394)*
+
+Checks if an EIP is activated by either being included in the EIPs
+manually passed in with the `eips` constructor option or in a
+hardfork currently being active
+
+Note: this method only works for EIPs being supported
+by the `eips` constructor option
+
+**Parameters:**
+
+Name | Type | Description |
+------ | ------ | ------ |
+`eip` | number |   |
+
+**Returns:** *boolean*
+
+___
+
 ###  isHardforkBlock
 
-▸ **isHardforkBlock**(`blockNumber`: number, `hardfork?`: undefined | string): *boolean*
+▸ **isHardforkBlock**(`blockNumber`: BNLike, `hardfork?`: undefined | string): *boolean*
 
-*Defined in [packages/common/src/index.ts:515](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L515)*
+*Defined in [packages/common/src/index.ts:559](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L559)*
 
 True if block number provided is the hardfork (given or set) change block
 
@@ -677,7 +756,7 @@ True if block number provided is the hardfork (given or set) change block
 
 Name | Type | Description |
 ------ | ------ | ------ |
-`blockNumber` | number | Number of the block to check |
+`blockNumber` | BNLike | Number of the block to check |
 `hardfork?` | undefined &#124; string | Hardfork name, optional if HF set |
 
 **Returns:** *boolean*
@@ -688,9 +767,9 @@ ___
 
 ###  isNextHardforkBlock
 
-▸ **isNextHardforkBlock**(`blockNumber`: number, `hardfork?`: undefined | string): *boolean*
+▸ **isNextHardforkBlock**(`blockNumber`: BNLike, `hardfork?`: undefined | string): *boolean*
 
-*Defined in [packages/common/src/index.ts:544](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L544)*
+*Defined in [packages/common/src/index.ts:601](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L601)*
 
 True if block number provided is the hardfork change block following the hardfork given or set
 
@@ -698,7 +777,7 @@ True if block number provided is the hardfork change block following the hardfor
 
 Name | Type | Description |
 ------ | ------ | ------ |
-`blockNumber` | number | Number of the block to check |
+`blockNumber` | BNLike | Number of the block to check |
 `hardfork?` | undefined &#124; string | Hardfork name, optional if HF set |
 
 **Returns:** *boolean*
@@ -747,11 +826,27 @@ ___
 
 ▸ **networkId**(): *number*
 
-*Defined in [packages/common/src/index.ts:669](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L669)*
+*Defined in [packages/common/src/index.ts:738](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L738)*
 
 Returns the Id of current network
 
+**`deprecated`** Please use networkIdBN() for large number support
+
 **Returns:** *number*
+
+network Id
+
+___
+
+###  networkIdBN
+
+▸ **networkIdBN**(): *BN*
+
+*Defined in [packages/common/src/index.ts:746](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L746)*
+
+Returns the Id of current network
+
+**Returns:** *BN*
 
 network Id
 
@@ -761,7 +856,29 @@ ___
 
 ▸ **nextHardforkBlock**(`hardfork?`: undefined | string): *number | null*
 
-*Defined in [packages/common/src/index.ts:525](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L525)*
+*Defined in [packages/common/src/index.ts:571](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L571)*
+
+Returns the change block for the next hardfork after the hardfork provided or set
+
+**`deprecated`** Please use nextHardforkBlockBN() for large number support
+
+**Parameters:**
+
+Name | Type | Description |
+------ | ------ | ------ |
+`hardfork?` | undefined &#124; string | Hardfork name, optional if HF set |
+
+**Returns:** *number | null*
+
+Block number or null if not available
+
+___
+
+###  nextHardforkBlockBN
+
+▸ **nextHardforkBlockBN**(`hardfork?`: undefined | string): *BN | null*
+
+*Defined in [packages/common/src/index.ts:581](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L581)*
 
 Returns the change block for the next hardfork after the hardfork provided or set
 
@@ -771,7 +888,7 @@ Name | Type | Description |
 ------ | ------ | ------ |
 `hardfork?` | undefined &#124; string | Hardfork name, optional if HF set |
 
-**Returns:** *number | null*
+**Returns:** *BN | null*
 
 Block number or null if not available
 
@@ -859,7 +976,7 @@ ___
 
 ▸ **param**(`topic`: string, `name`: string): *any*
 
-*Defined in [packages/common/src/index.ts:292](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L292)*
+*Defined in [packages/common/src/index.ts:304](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L304)*
 
 Returns a parameter for the current chain setup
 
@@ -882,9 +999,9 @@ ___
 
 ###  paramByBlock
 
-▸ **paramByBlock**(`topic`: string, `name`: string, `blockNumber`: number): *any*
+▸ **paramByBlock**(`topic`: string, `name`: string, `blockNumber`: BNLike): *any*
 
-*Defined in [packages/common/src/index.ts:367](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L367)*
+*Defined in [packages/common/src/index.ts:379](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L379)*
 
 Returns a parameter for the hardfork active on block number
 
@@ -894,7 +1011,7 @@ Name | Type | Description |
 ------ | ------ | ------ |
 `topic` | string | Parameter topic |
 `name` | string | Parameter name |
-`blockNumber` | number | Block number  |
+`blockNumber` | BNLike | Block number  |
 
 **Returns:** *any*
 
@@ -904,7 +1021,7 @@ ___
 
 ▸ **paramByEIP**(`topic`: string, `name`: string, `eip`: number): *any*
 
-*Defined in [packages/common/src/index.ts:345](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L345)*
+*Defined in [packages/common/src/index.ts:357](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L357)*
 
 Returns a parameter corresponding to an EIP
 
@@ -926,7 +1043,7 @@ ___
 
 ▸ **paramByHardfork**(`topic`: string, `name`: string, `hardfork`: string): *any*
 
-*Defined in [packages/common/src/index.ts:312](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L312)*
+*Defined in [packages/common/src/index.ts:324](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L324)*
 
 Returns the parameter corresponding to a hardfork
 
@@ -1060,9 +1177,9 @@ ___
 
 ###  setChain
 
-▸ **setChain**(`chain`: string | number | object): *any*
+▸ **setChain**(`chain`: string | number | BN | object): *any*
 
-*Defined in [packages/common/src/index.ts:141](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L141)*
+*Defined in [packages/common/src/index.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L144)*
 
 Sets the chain
 
@@ -1070,7 +1187,7 @@ Sets the chain
 
 Name | Type | Description |
 ------ | ------ | ------ |
-`chain` | string &#124; number &#124; object | String ('mainnet') or Number (1) chain     representation. Or, a Dictionary of chain parameters for a private network. |
+`chain` | string &#124; number &#124; BN &#124; object | String ('mainnet') or Number (1) chain     representation. Or, a Dictionary of chain parameters for a private network. |
 
 **Returns:** *any*
 
@@ -1082,7 +1199,7 @@ ___
 
 ▸ **setEIPs**(`eips`: number[]): *void*
 
-*Defined in [packages/common/src/index.ts:266](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L266)*
+*Defined in [packages/common/src/index.ts:270](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L270)*
 
 Sets the active EIPs
 
@@ -1100,7 +1217,7 @@ ___
 
 ▸ **setHardfork**(`hardfork`: string): *void*
 
-*Defined in [packages/common/src/index.ts:167](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L167)*
+*Defined in [packages/common/src/index.ts:170](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L170)*
 
 Sets the hardfork to get params for
 
@@ -1116,9 +1233,9 @@ ___
 
 ###  setHardforkByBlockNumber
 
-▸ **setHardforkByBlockNumber**(`blockNumber`: number): *string*
+▸ **setHardforkByBlockNumber**(`blockNumber`: BNLike): *string*
 
-*Defined in [packages/common/src/index.ts:213](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L213)*
+*Defined in [packages/common/src/index.ts:216](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L216)*
 
 Sets a new hardfork based on the block number provided
 
@@ -1126,7 +1243,7 @@ Sets a new hardfork based on the block number provided
 
 Name | Type |
 ------ | ------ |
-`blockNumber` | number |
+`blockNumber` | BNLike |
 
 **Returns:** *string*
 
@@ -1156,7 +1273,7 @@ ___
 
 ▸ **forCustomChain**(`baseChain`: string | number, `customChainParams`: Partial‹[Chain](../interfaces/_types_.chain.md)›, `hardfork?`: undefined | string, `supportedHardforks?`: Array‹string›): *[Common](_index_.common.md)*
 
-*Defined in [packages/common/src/index.ts:79](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L79)*
+*Defined in [packages/common/src/index.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L80)*
 
 Creates a Common object for a custom chain, based on a standard one. It uses all the [Chain](../interfaces/_types_.chain.md)
 params from [[baseChain]] except the ones overridden in [[customChainParams]].

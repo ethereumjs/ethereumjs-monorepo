@@ -43,7 +43,7 @@ This class is an AsyncEventEmitter, please consult the README to learn how to us
 
 \+ **new VM**(`opts`: [VMOpts](../interfaces/_index_.vmopts.md)): *[VM](_index_.vm.md)*
 
-*Defined in [index.ts:147](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L147)*
+*Defined in [index.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L148)*
 
 Instantiates a new [VM](_index_.vm.md) Object.
 
@@ -61,7 +61,7 @@ Name | Type | Default | Description |
 
 • **_common**: *Common*
 
-*Defined in [index.ts:117](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L117)*
+*Defined in [index.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L118)*
 
 ___
 
@@ -69,7 +69,7 @@ ___
 
 • **blockchain**: *Blockchain*
 
-*Defined in [index.ts:115](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L115)*
+*Defined in [index.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L116)*
 
 The blockchain the VM operates on
 
@@ -79,7 +79,7 @@ ___
 
 • **stateManager**: *[StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [index.ts:111](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L111)*
+*Defined in [index.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L112)*
 
 The StateManager used by the VM
 
@@ -89,7 +89,7 @@ The StateManager used by the VM
 
 ▸ **copy**(): *[VM](_index_.vm.md)*
 
-*Defined in [index.ts:343](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L343)*
+*Defined in [index.ts:344](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L344)*
 
 Returns a copy of the [VM](_index_.vm.md) instance.
 
@@ -101,7 +101,7 @@ ___
 
 ▸ **getActiveOpcodes**(): *OpcodeList*
 
-*Defined in [index.ts:336](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L336)*
+*Defined in [index.ts:337](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L337)*
 
 Returns a list with the currently activated opcodes
 available for VM execution
@@ -114,7 +114,7 @@ ___
 
 ▸ **init**(): *Promise‹void›*
 
-*Defined in [index.ts:232](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L232)*
+*Defined in [index.ts:233](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L233)*
 
 **Returns:** *Promise‹void›*
 
@@ -124,7 +124,7 @@ ___
 
 ▸ **runBlock**(`opts`: [RunBlockOpts](../interfaces/_runblock_.runblockopts.md)): *Promise‹[RunBlockResult](../interfaces/_runblock_.runblockresult.md)›*
 
-*Defined in [index.ts:289](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L289)*
+*Defined in [index.ts:290](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L290)*
 
 Processes the `block` running all of the transactions it contains and updating the miner's account
 
@@ -146,7 +146,7 @@ ___
 
 ▸ **runBlockchain**(`blockchain?`: Blockchain, `maxBlocks?`: undefined | number): *Promise‹void | number›*
 
-*Defined in [index.ts:274](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L274)*
+*Defined in [index.ts:275](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L275)*
 
 Processes blocks and adds them to the blockchain.
 
@@ -156,7 +156,7 @@ This method modifies the state.
 
 Name | Type | Description |
 ------ | ------ | ------ |
-`blockchain?` | Blockchain | An [@ethereumjs/blockchain](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/blockchain) object to process  |
+`blockchain?` | Blockchain | An [@ethereumjs/blockchain](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/blockchain) object to process  |
 `maxBlocks?` | undefined &#124; number | - |
 
 **Returns:** *Promise‹void | number›*
@@ -167,7 +167,7 @@ ___
 
 ▸ **runCall**(`opts`: [RunCallOpts](../interfaces/_runcall_.runcallopts.md)): *Promise‹EVMResult›*
 
-*Defined in [index.ts:315](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L315)*
+*Defined in [index.ts:316](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L316)*
 
 runs a call (or create) operation.
 
@@ -187,7 +187,7 @@ ___
 
 ▸ **runCode**(`opts`: [RunCodeOpts](../interfaces/_runcode_.runcodeopts.md)): *Promise‹ExecResult›*
 
-*Defined in [index.ts:327](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L327)*
+*Defined in [index.ts:328](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L328)*
 
 Runs EVM code.
 
@@ -207,7 +207,7 @@ ___
 
 ▸ **runTx**(`opts`: [RunTxOpts](../interfaces/_runtx_.runtxopts.md)): *Promise‹[RunTxResult](../interfaces/_runtx_.runtxresult.md)›*
 
-*Defined in [index.ts:303](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L303)*
+*Defined in [index.ts:304](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L304)*
 
 Process a transaction. Run the vm. Transfers eth. Checks balances.
 
@@ -229,7 +229,7 @@ ___
 
 ▸ **create**(`opts`: [VMOpts](../interfaces/_index_.vmopts.md)): *Promise‹[VM](_index_.vm.md)›*
 
-*Defined in [index.ts:143](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L143)*
+*Defined in [index.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L144)*
 
 VM async constructor. Creates engine instance and initializes it.
 

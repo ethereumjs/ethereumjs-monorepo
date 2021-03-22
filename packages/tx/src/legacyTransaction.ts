@@ -88,10 +88,10 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
-   * Use the static factory methods to assist in creating a Transaction object from varying data types.
    *
-   * @note Transaction objects implement EIP155 by default. To disable it, pass in an `@ethereumjs/common`
-   * object set before EIP155 activation (i.e. before Spurious Dragon).
+   * It is not recommended to use this constructor directly. Instead use
+   * the static factory methods to assist in creating a Transaction object from
+   * varying data types.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
     super(txData, opts)

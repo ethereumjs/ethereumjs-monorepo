@@ -12,6 +12,8 @@ An object with all of the transaction's values represented as strings.
 
 ### Properties
 
+* [accessList](_types_.jsontx.md#optional-accesslist)
+* [chainId](_types_.jsontx.md#optional-chainid)
 * [data](_types_.jsontx.md#optional-data)
 * [gasLimit](_types_.jsontx.md#optional-gaslimit)
 * [gasPrice](_types_.jsontx.md#optional-gasprice)
@@ -19,16 +21,33 @@ An object with all of the transaction's values represented as strings.
 * [r](_types_.jsontx.md#optional-r)
 * [s](_types_.jsontx.md#optional-s)
 * [to](_types_.jsontx.md#optional-to)
+* [type](_types_.jsontx.md#optional-type)
 * [v](_types_.jsontx.md#optional-v)
 * [value](_types_.jsontx.md#optional-value)
 
 ## Properties
 
+### `Optional` accessList
+
+• **accessList**? : *JsonAccessListItem[]*
+
+*Defined in [types.ts:170](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L170)*
+
+___
+
+### `Optional` chainId
+
+• **chainId**? : *undefined | string*
+
+*Defined in [types.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L169)*
+
+___
+
 ### `Optional` data
 
 • **data**? : *undefined | string*
 
-*Defined in [types.ts:87](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L87)*
+*Defined in [types.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L164)*
 
 ___
 
@@ -36,7 +55,7 @@ ___
 
 • **gasLimit**? : *undefined | string*
 
-*Defined in [types.ts:85](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L85)*
+*Defined in [types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L162)*
 
 ___
 
@@ -44,7 +63,7 @@ ___
 
 • **gasPrice**? : *undefined | string*
 
-*Defined in [types.ts:84](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L84)*
+*Defined in [types.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L161)*
 
 ___
 
@@ -52,7 +71,7 @@ ___
 
 • **nonce**? : *undefined | string*
 
-*Defined in [types.ts:83](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L83)*
+*Defined in [types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L160)*
 
 ___
 
@@ -60,7 +79,7 @@ ___
 
 • **r**? : *undefined | string*
 
-*Defined in [types.ts:89](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L89)*
+*Defined in [types.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L166)*
 
 ___
 
@@ -68,7 +87,7 @@ ___
 
 • **s**? : *undefined | string*
 
-*Defined in [types.ts:90](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L90)*
+*Defined in [types.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L167)*
 
 ___
 
@@ -76,7 +95,15 @@ ___
 
 • **to**? : *undefined | string*
 
-*Defined in [types.ts:86](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L86)*
+*Defined in [types.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L163)*
+
+___
+
+### `Optional` type
+
+• **type**? : *undefined | string*
+
+*Defined in [types.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L171)*
 
 ___
 
@@ -84,7 +111,7 @@ ___
 
 • **v**? : *undefined | string*
 
-*Defined in [types.ts:88](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L88)*
+*Defined in [types.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L165)*
 
 ___
 
@@ -92,4 +119,4 @@ ___
 
 • **value**? : *undefined | string*
 
-*Defined in [types.ts:91](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L91)*
+*Defined in [types.ts:168](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L168)*

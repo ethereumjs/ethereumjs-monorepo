@@ -17,7 +17,75 @@ Note: this `README` reflects the state of the library from `v3.0.0` onwards. See
 
 # USAGE
 
-- [Example](./examples/transactions.ts)
+## Introduction
+
+To instantiate a tx it is not recommended to use the constructor directly. Instead each tx type comes with the following set of static constructor methods which helps on instantiation depending on the input data format:
+
+- `public static fromTxData(txData: TxData, opts: TxOptions = {})`: instantiate from a data dictionary
+- `public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {})`: instantiate from a serialized tx
+- `public static fromValuesArray(values: Buffer[], opts: TxOptions = {})`: instantiate from a values array
+
+See one of the code examples on the tx types below on how to use.
+
+All types of transaction objects are frozen with `Object.freeze()` which gives you enhanced security and consistency properties when working with the instantiated object. This behavior can be modified using the `freeze` option in the constructor if needed.
+
+## Transaction Types
+
+This library supports the following transaction types ([EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)):
+
+- `AccessListEIP2930Transaction` ([EIP-2930](https://eips.ethereum.org/EIPS/eip-2930), optional access lists)
+- `Transaction`, the Ethereum standard tx up to `berlin`, now referred to as legacy txs with the introduction of tx types
+
+Please note that for now you have to manually set the `hardfork` in `Common` to `berlin` to allow for typed tx instantiation, since the current `Common` release series v2 (tx type support introduced with `v2.2.0`) still defaults to `istanbul` for backwards-compatibility reasons.
+
+#### Access List Transactions (EIP-2930)
+
+- Class: `AccessListEIP2930Transaction`
+- Activation: `berlin`
+
+This is the recommended tx type starting with the activation of the `berlin` HF, see the following code snipped for an example on how to instantiate:
+
+```typescript
+import Common from '@ethereumjs/common'
+import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
+
+const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+
+const txData = {
+  "data": "0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+  "gasLimit": "0x02625a00",
+  "gasPrice": "0x01",
+  "nonce": "0x00",
+  "to": "0xcccccccccccccccccccccccccccccccccccccccc",
+  "value": "0x0186a0",
+  "v": "0x01",
+  "r": "0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9",
+  "s": "0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64",
+  "chainId": "0x01",
+  "accessList": [
+    {
+      "address": "0x0000000000000000000000000000000000000101",
+      "storageKeys": [
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "0x00000000000000000000000000000000000000000000000000000000000060a7"
+      ]
+    }
+  ],
+  "type": "0x01"
+}
+
+const tx = AccessListEIP2930Transaction.fromTxData(txData, { common })
+```
+
+A mechanism to generate access lists from tx data based on a certain network state is not part of this library.
+
+### Legacy Transactions
+
+- Class: `Transaction`
+- Activation: `chainstart` (with modifications along the road, see HF section below)
+
+Legacy transaction are still valid transaction within Ethereum `mainnet` but will likely be deprecated at some point.
+See this [example script](./examples/transactions.ts) or the following code example on how to use.
 
 ```typescript
 import { Transaction } from '@ethereumjs/tx'
@@ -44,7 +112,27 @@ const signedTx = tx.sign(privateKey)
 const serializedTx = signedTx.serialize()
 ```
 
-Properties of a `Transaction` object are frozen with `Object.freeze()` which gives you enhanced security and consistency properties when working with the instantiated object. This behavior can be modified using the `freeze` option in the constructor if needed.
+### Transaction Factory
+
+If you only know on runtime which tx type will be used within your code or if you want to keep your code transparent to tx types, this library comes with a `TransactionFactory` for your convenience which can be used as follows:
+
+```typescript
+import Common from '@ethereumjs/common'
+import { TransactionFactory } from '@ethereumjs/tx'
+
+const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+
+const txData = {} // Use data from the different tx type examples
+const tx = TransactionFactory.fromTxData(txData, { common })
+```
+
+The correct tx type class for instantiation will then be chosen on runtime based on the data provided as an input.
+
+`TransactionFactory` supports the following static constructor methods:
+
+- `public static fromTxData(txData: TxData | AccessListEIP2930TxData, txOptions: TxOptions = {}): TypedTransaction`
+- `public static fromSerializedData(data: Buffer, txOptions: TxOptions = {}): TypedTransaction`
+- `public static fromBlockBodyData(data: Buffer | Buffer[], txOptions: TxOptions = {})`
 
 ## Fake Transaction
 
@@ -72,21 +160,19 @@ _getFakeTransaction(txParams: TxParams): Transaction {
 
 ## Chain and Hardfork Support
 
-The `Transaction` constructor receives a parameter of an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common) object that lets you specify the chain and hardfork to be used. By default, `mainnet` and `istanbul` will be used.
+The `Transaction` constructor receives a parameter of an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common) object that lets you specify the chain and hardfork to be used. The chain defaults to `mainnet`. 
 
-### MuirGlacier Support
 
-The `MuirGlacier` hardfork is supported by the library since the `v2.1.2` release.
+Current default HF (determined by `Common`): `istanbul`
 
-### Istanbul Support
+### Supported Hardforks
 
-Support for reduced non-zero call data gas prices from the `Istanbul` hardfork
-([EIP-2028](https://eips.ethereum.org/EIPS/eip-2028)) has been added to the library
-along with the `v2.1.1` release.
-
-## EIP-155 support
-
-`EIP-155` replay protection is activated since the `spuriousDragon` hardfork. To disable it, set the hardfork to one earlier than `spuriousDragon`.
+Hardfork | Introduced | Description
+--- | --- | ---
+`berlin` | `v3.1.0` | `EIP-2718` Typed Transactions, Optional Access Lists Tx Type `EIP-2930`
+`muirGlacier` | `v2.1.2` | -
+`istanbul` | `v2.1.1` | Support for reduced non-zero call data gas prices ([EIP-2028](https://eips.ethereum.org/EIPS/eip-2028))
+`spuriousDragon` | `v2.0.0` | `EIP-155` replay protection (disable by setting HF pre-`spuriousDragon`)
 
 # API
 

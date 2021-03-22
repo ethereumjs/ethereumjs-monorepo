@@ -22,7 +22,7 @@ A block's data.
 
 • **header**? : *[HeaderData](_types_.headerdata.md)*
 
-*Defined in [types.ts:95](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L95)*
+*Defined in [types.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L95)*
 
 Header data for the block
 
@@ -32,7 +32,7 @@ ___
 
 • **transactions**? : *Array‹TxData›*
 
-*Defined in [types.ts:96](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L96)*
+*Defined in [types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L96)*
 
 ___
 
@@ -40,4 +40,4 @@ ___
 
 • **uncleHeaders**? : *Array‹[HeaderData](_index_.headerdata.md)›*
 
-*Defined in [types.ts:97](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L97)*
+*Defined in [types.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L97)*

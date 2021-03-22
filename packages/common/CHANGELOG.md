@@ -6,6 +6,56 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.2.0 - 2021-03-18
+
+### Berlin HF Support
+
+This `Common` release comes with full support for the `berlin` hardfork. Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `Common` instance with a `berlin` HF activated:
+
+```typescript
+import Common from '@ethereumjs/common'
+const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+```
+
+**Berlin HF Changes**
+
+- Added final list of `berlin` EIPs (`EIP-2565`, `EIP-2929`, `EIP-2718`, `EIP-2930`), PR [#1124](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1124) and PR [#1048](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1048)
+- Corrected base gas costs for `EIP-2929` related opcodes, PR [#1124](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1124)
+- New EIP configuration files for `EIP-2718` (typed txs) and `EIP-2930` (optional access lists), PR [#1048](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1048)
+- Added `berlin` hardfork block numbers for `mainnet`, `ropsten`, `rinkeby` and `goerli`, PR [#1142](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1142)
+
+### BN Support for high Chain IDs and Block Numbers
+
+The library has been updated to support very high chain IDs and block numbers exceeding the `Number.MAX_SAFE_INTEGER` limit (9007199254740991).
+
+Methods with a respective input parameter now allow for a `BNLike` input (`number` (as before), `Buffer`, (Hex)`String` or `BN`). The following function signatures have been updated:
+
+- `chain` constructor parameter now additionally allowing `BN`
+- `setChain(chain: string | number | object)` -> `setChain(chain: string | number | BN | object)`
+- `getHardforkByBlockNumber(blockNumber: BNLike): string`
+- `setHardforkByBlockNumber(blockNumber: BNLike): string`
+- `paramByBlock(topic: string, name: string, blockNumber: BNLike): any`
+- `hardforkIsActiveOnBlock(hardfork: string | null, blockNumber: BNLike, opts?: hardforkOptions): boolean`
+- `activeOnBlock(blockNumber: BNLike, opts?: hardforkOptions): boolean`
+- `activeHardforks(blockNumber?: BNLike | null, opts: hardforkOptions = {}): Array<any>`
+- `activeHardfork(blockNumber?: BNLike | null, opts: hardforkOptions = {}): string`
+- `isHardforkBlock(blockNumber: BNLike, hardfork?: string): boolean`
+- `isNextHardforkBlock(blockNumber: BNLike, hardfork?: string): boolean`
+
+For methods with a respective `number` return value corresponding [METHOD_NAME]BN methods have been added:
+
+- `hardforkBlockBN(hardfork?: string): BN`
+- `nextHardforkBlockBN(hardfork?: string): BN | null`
+- `chainIdBN(): BN`
+- `networkIdBN(): BN`
+
+Note that in the next major release these methods will be unified again by switching to use the original version names for the new BN-output functions.
+
+### Other Changes
+
+- Added chain config and genesis file for `yolov3` testnet, PR [#1129](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1129)
+- New `Common.copy()` function to easily receive a deep copy of a `Common` instance, PR [#1144](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1144)
+
 ## 2.1.0 - 2021-02-22
 
 ### Clique/PoA Support

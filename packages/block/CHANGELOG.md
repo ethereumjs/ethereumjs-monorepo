@@ -6,9 +6,35 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## UNRELEASED
+## 3.2.0 - 2021-03-18
 
-- Integration of [EIP2718](https://eips.ethereum.org/EIPS/eip-2718) (Typed Transactions) and [EIP2930](https://eips.ethereum.org/EIPS/eip-2930) (Access List Transaction), PR [#1048](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1048). It is now possible to create blocks with access list transactions.
+### Berlin HF Support
+
+This release gets the `Block` library ready for the `berlin` HF by adding support for [EIP2718](https://eips.ethereum.org/EIPS/eip-2718) Typed Transactions. Transaction objects are now created with the new `TransactionFactory` introduced with the `@ethereumjs/tx` `v3.1.0` release which chooses the correct tx type for the data. The initial tx release supports the old legacy transactions and the newly added [EIP2930](https://eips.ethereum.org/EIPS/eip-2930) Access List Transaction Type, see PR [#1048](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1048).
+
+Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `Block` instance with a `berlin` HF activated:
+
+```typescript
+import { Block } from 'ethereumjs-block'
+import Common from '@ethereumjs/common'
+const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+const block = Block.fromBlockData({}, { common })
+```
+
+#### EthereumJS Libraries - Typed Transactions Readiness
+
+If you are using this library in conjunction with other EthereumJS libraries make sure to minimally have the following library versions installed for typed transaction support:
+
+- `@ethereumjs/common` `v2.2.0`
+- `@ethereumjs/tx` `v3.1.0`
+- `@ethereumjs/block` `v3.2.0`
+- `@ethereumjs/blockchain` `v5.2.0`
+- `@ethereumjs/vm` `v5.2.0`
+
+### Other Changes
+
+- Added support for very large chain IDs when using Block `cliqueSigner()` address recovery, PR [#1139](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1139)
+- Fixed a TS compilation failure on install relating to `ethereumjs-util` `v7.0.9`, PR [#1136](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1136)
 
 ## 3.1.0 - 2021-02-22
 
