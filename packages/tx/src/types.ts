@@ -1,7 +1,7 @@
 import { BN, AddressLike, BNLike, BufferLike } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { default as Transaction } from './legacyTransaction'
-import { default as AccessListEIP2930Transaction } from './eip2930Transaction'
+import { default as AccessListEIP2930Transaction } from './accessListEIP2930Transaction'
 
 /**
  * The options for initializing a Transaction.

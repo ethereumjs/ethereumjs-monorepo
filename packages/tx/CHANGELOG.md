@@ -6,7 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.1.1 - 2021-03-23
+
+This release fixes a bug in the `v3.1.0` Berlin HF `@ethereumjs/tx` release where the import path for a `AccessListEIP2930Transaction` was broken on some systems, see PR [#62](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1162).
+
+The `v3.1.0` release has been deprecated in favor of this new version.
+
 ## 3.1.0 - 2021-03-18
+
+**DEPRECATED**: Release is deprecated in favor of 3.1.1 which fixes an import-path bug.
 
 ### Berlin HF Support
 
