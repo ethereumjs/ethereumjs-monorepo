@@ -44,13 +44,6 @@ export interface SealBlockOpts {
    * Overrides the value passed in the constructor.
    */
   mixHash?: Buffer
-
-  /**
-   * For PoA, the private key for the clique signer.
-   * Overrides the value passed in the constructor.
-   * If not provided, the block will not be sealed.
-   */
-  cliqueSigner?: Buffer
 }
 
 export class BlockBuilder {
@@ -169,7 +162,8 @@ export class BlockBuilder {
       throw new Error('tx has a higher gas limit than the remaining gas in the block')
     }
 
-    const block = Block.fromBlockData({ header: this.headerData, transactions: this.transactions })
+    const blockData = { header: this.headerData, transactions: this.transactions }
+    const block = Block.fromBlockData(blockData, this.blockOpts)
 
     const result = await this.vm.runTx({ tx, block })
 
@@ -193,19 +187,23 @@ export class BlockBuilder {
   /**
    * This method returns the finalized block.
    * It also:
-   *  - Assigns the reward for miner
+   *  - Assigns the reward for miner (PoW)
    *  - Commits the checkpoint on the StateManager
    *  - Sets the tip of the VM's blockchain to this block
-   * Optionally seals the block with params:
-   *  - PoW: nonce and mixHash validated with the block number by ethash
-   *  - PoA: seals the block with the private key of the clique signer if provided
+   * For PoW, optionally seals the block with params `nonce` and `mixHash`,
+   * which is validated along with the block number and difficulty by ethash.
+   * For PoA, please pass `blockOption.cliqueSigner` into the buildBlock constructor,
+   * as the signer will be awarded the txs amount spent on gas as they are added.
    */
   async build(sealOpts?: SealBlockOpts) {
     this.checkStatus()
     const blockOpts = this.blockOpts
     const consensusType = this.vm._common.consensusType()
 
-    await this.rewardMiner()
+    if (consensusType === 'pow') {
+      await this.rewardMiner()
+    }
+
     await this.vm.stateManager.commit()
 
     const stateRoot = await this.vm.stateManager.getStateRoot(false)
@@ -213,7 +211,7 @@ export class BlockBuilder {
     const receiptTrie = await this.receiptTrie()
     const bloom = this.bloom()
     const gasUsed = this.gasUsed()
-    const timestamp = this.headerData.timestamp ?? Date.now() / 1000
+    const timestamp = this.headerData.timestamp ?? Math.round(Date.now() / 1000)
 
     const headerData = {
       ...this.headerData,
@@ -228,10 +226,6 @@ export class BlockBuilder {
     if (consensusType === 'pow') {
       headerData.nonce = sealOpts?.nonce ?? headerData.nonce
       headerData.mixHash = sealOpts?.mixHash ?? headerData.mixHash
-    } else if (consensusType === 'poa') {
-      blockOpts.cliqueSigner = sealOpts?.cliqueSigner ?? blockOpts.cliqueSigner
-    } else {
-      throw new Error(`Unsupported consensus type: ${consensusType}`)
     }
 
     const blockData = { header: headerData, transactions: this.transactions }
