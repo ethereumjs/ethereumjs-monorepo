@@ -6,11 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.1.1 - 2021-03-23
+
+This release fixes a bug in the `v3.1.0` Berlin HF `@ethereumjs/tx` release where the import path for `eip2930Transaction` was broken on operating systems with case sensitive filename resolution.
+
+The `v3.1.0` release has been deprecated in favor of this new version.
+
 ## 3.1.0 - 2021-03-18
+
+**DEPRECATED**: Release is deprecated in favor of 3.1.1 which fixes an import-path bug.
 
 ### Berlin HF Support
 
-This release comes with full support for the `berlin` hardfork by updating the library to support typed transactions ([EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)). The first supported transaction type is the `AccessListEIP2930Transaction` ([EIP-2930](https://eips.ethereum.org/EIPS/eip-2930)) which adds optional access lists to the mix and is activated along with the `berlin` hardfork. 
+This release comes with full support for the `berlin` hardfork by updating the library to support typed transactions ([EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)). The first supported transaction type is the `AccessListEIP2930Transaction` ([EIP-2930](https://eips.ethereum.org/EIPS/eip-2930)) which adds optional access lists to the mix and is activated along with the `berlin` hardfork.
 
 `EIP-2930` transactions can be instantiated with:
 
@@ -264,8 +272,8 @@ see PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863).
 
 ### Dual ES5 and ES2017 Builds
 
-We significantly updated our internal tool and CI setup along the work on 
-PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint` 
+We significantly updated our internal tool and CI setup along the work on
+PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint`
 for code linting and formatting and the introduction of a new build setup.
 
 Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce
