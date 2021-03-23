@@ -9,7 +9,7 @@ Typed transaction with optional access lists
 
 ## Hierarchy
 
-* [BaseTransaction](_basetransaction_.basetransaction.md)‹[AccessListEIP2930Transaction](_eip2930transaction_.accesslisteip2930transaction.md)›
+* [BaseTransaction](_basetransaction_.basetransaction.md)‹[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)›
 
   ↳ **AccessListEIP2930Transaction**
 
@@ -74,7 +74,7 @@ Typed transaction with optional access lists
 
 *Overrides [BaseTransaction](_basetransaction_.basetransaction.md).[constructor](_basetransaction_.basetransaction.md#constructor)*
 
-*Defined in [eip2930Transaction.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L130)*
+*Defined in [accessListEIP2930Transaction.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L130)*
 
 This constructor takes the values, validates them, assigns them and freezes the object.
 
@@ -97,7 +97,7 @@ Name | Type | Default |
 
 • **AccessListJSON**: *[AccessList](../modules/_index_.md#accesslist)*
 
-*Defined in [eip2930Transaction.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L35)*
+*Defined in [accessListEIP2930Transaction.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L35)*
 
 ___
 
@@ -105,7 +105,7 @@ ___
 
 • **accessList**: *[AccessListBuffer](../modules/_index_.md#accesslistbuffer)*
 
-*Defined in [eip2930Transaction.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L34)*
+*Defined in [accessListEIP2930Transaction.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L34)*
 
 ___
 
@@ -113,7 +113,7 @@ ___
 
 • **chainId**: *BN*
 
-*Defined in [eip2930Transaction.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L33)*
+*Defined in [accessListEIP2930Transaction.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L33)*
 
 ___
 
@@ -121,7 +121,7 @@ ___
 
 • **common**: *Common*
 
-*Inherited from [BaseTransaction](_basetransaction_.basetransaction.md).[common](_basetransaction_.basetransaction.md#common)*
+*Inherited from [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md).[common](_accesslisteip2930transaction_.accesslisteip2930transaction.md#common)*
 
 *Defined in [baseTransaction.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L27)*
 
@@ -131,7 +131,7 @@ ___
 
 • **data**: *Buffer*
 
-*Inherited from [BaseTransaction](_basetransaction_.basetransaction.md).[data](_basetransaction_.basetransaction.md#data)*
+*Inherited from [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md).[data](_accesslisteip2930transaction_.accesslisteip2930transaction.md#data)*
 
 *Defined in [baseTransaction.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L26)*
 
@@ -141,7 +141,7 @@ ___
 
 • **gasLimit**: *BN*
 
-*Inherited from [BaseTransaction](_basetransaction_.basetransaction.md).[gasLimit](_basetransaction_.basetransaction.md#gaslimit)*
+*Inherited from [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md).[gasLimit](_accesslisteip2930transaction_.accesslisteip2930transaction.md#gaslimit)*
 
 *Defined in [baseTransaction.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L22)*
 
@@ -151,7 +151,7 @@ ___
 
 • **gasPrice**: *BN*
 
-*Inherited from [BaseTransaction](_basetransaction_.basetransaction.md).[gasPrice](_basetransaction_.basetransaction.md#gasprice)*
+*Inherited from [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md).[gasPrice](_accesslisteip2930transaction_.accesslisteip2930transaction.md#gasprice)*
 
 *Defined in [baseTransaction.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L23)*
 
@@ -161,7 +161,7 @@ ___
 
 • **nonce**: *BN*
 
-*Inherited from [BaseTransaction](_basetransaction_.basetransaction.md).[nonce](_basetransaction_.basetransaction.md#nonce)*
+*Inherited from [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md).[nonce](_accesslisteip2930transaction_.accesslisteip2930transaction.md#nonce)*
 
 *Defined in [baseTransaction.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L21)*
 
@@ -171,7 +171,7 @@ ___
 
 • **r**? : *BN*
 
-*Inherited from [BaseTransaction](_basetransaction_.basetransaction.md).[r](_basetransaction_.basetransaction.md#optional-r)*
+*Inherited from [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md).[r](_accesslisteip2930transaction_.accesslisteip2930transaction.md#optional-r)*
 
 *Defined in [baseTransaction.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L30)*
 
@@ -181,7 +181,7 @@ ___
 
 • **s**? : *BN*
 
-*Inherited from [BaseTransaction](_basetransaction_.basetransaction.md).[s](_basetransaction_.basetransaction.md#optional-s)*
+*Inherited from [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md).[s](_accesslisteip2930transaction_.accesslisteip2930transaction.md#optional-s)*
 
 *Defined in [baseTransaction.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L31)*
 
@@ -191,7 +191,7 @@ ___
 
 • **to**? : *Address*
 
-*Inherited from [BaseTransaction](_basetransaction_.basetransaction.md).[to](_basetransaction_.basetransaction.md#optional-to)*
+*Inherited from [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md).[to](_accesslisteip2930transaction_.accesslisteip2930transaction.md#optional-to)*
 
 *Defined in [baseTransaction.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L24)*
 
@@ -201,7 +201,7 @@ ___
 
 • **v**? : *BN*
 
-*Inherited from [BaseTransaction](_basetransaction_.basetransaction.md).[v](_basetransaction_.basetransaction.md#optional-v)*
+*Inherited from [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md).[v](_accesslisteip2930transaction_.accesslisteip2930transaction.md#optional-v)*
 
 *Defined in [baseTransaction.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L29)*
 
@@ -211,7 +211,7 @@ ___
 
 • **value**: *BN*
 
-*Inherited from [BaseTransaction](_basetransaction_.basetransaction.md).[value](_basetransaction_.basetransaction.md#value)*
+*Inherited from [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md).[value](_accesslisteip2930transaction_.accesslisteip2930transaction.md#value)*
 
 *Defined in [baseTransaction.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L25)*
 
@@ -221,7 +221,7 @@ ___
 
 • **get senderR**(): *undefined | BN‹›*
 
-*Defined in [eip2930Transaction.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L47)*
+*Defined in [accessListEIP2930Transaction.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L47)*
 
 **Returns:** *undefined | BN‹›*
 
@@ -231,7 +231,7 @@ ___
 
 • **get senderS**(): *undefined | BN‹›*
 
-*Defined in [eip2930Transaction.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L42)*
+*Defined in [accessListEIP2930Transaction.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L42)*
 
 **Returns:** *undefined | BN‹›*
 
@@ -241,7 +241,7 @@ ___
 
 • **get transactionType**(): *number*
 
-*Defined in [eip2930Transaction.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L37)*
+*Defined in [accessListEIP2930Transaction.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L37)*
 
 **Returns:** *number*
 
@@ -251,7 +251,7 @@ ___
 
 • **get yParity**(): *undefined | BN‹›*
 
-*Defined in [eip2930Transaction.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L52)*
+*Defined in [accessListEIP2930Transaction.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L52)*
 
 **Returns:** *undefined | BN‹›*
 
@@ -259,9 +259,9 @@ ___
 
 ###  _processSignature
 
-▸ **_processSignature**(`v`: number, `r`: Buffer, `s`: Buffer): *[AccessListEIP2930Transaction](_eip2930transaction_.accesslisteip2930transaction.md)‹›*
+▸ **_processSignature**(`v`: number, `r`: Buffer, `s`: Buffer): *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)‹›*
 
-*Defined in [eip2930Transaction.ts:338](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L338)*
+*Defined in [accessListEIP2930Transaction.ts:338](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L338)*
 
 **Parameters:**
 
@@ -271,7 +271,7 @@ Name | Type |
 `r` | Buffer |
 `s` | Buffer |
 
-**Returns:** *[AccessListEIP2930Transaction](_eip2930transaction_.accesslisteip2930transaction.md)‹›*
+**Returns:** *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)‹›*
 
 ___
 
@@ -279,7 +279,7 @@ ___
 
 ▸ **getBaseFee**(): *BN*
 
-*Inherited from [BaseTransaction](_basetransaction_.basetransaction.md).[getBaseFee](_basetransaction_.basetransaction.md#getbasefee)*
+*Inherited from [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md).[getBaseFee](_accesslisteip2930transaction_.accesslisteip2930transaction.md#getbasefee)*
 
 *Defined in [baseTransaction.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L85)*
 
@@ -295,7 +295,7 @@ ___
 
 *Overrides [BaseTransaction](_basetransaction_.basetransaction.md).[getDataFee](_basetransaction_.basetransaction.md#getdatafee)*
 
-*Defined in [eip2930Transaction.ts:231](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L231)*
+*Defined in [accessListEIP2930Transaction.ts:231](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L231)*
 
 The amount of gas paid for the data in this tx
 
@@ -309,7 +309,7 @@ ___
 
 *Overrides [BaseTransaction](_basetransaction_.basetransaction.md).[getMessageToSign](_basetransaction_.basetransaction.md#abstract-getmessagetosign)*
 
-*Defined in [eip2930Transaction.ts:280](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L280)*
+*Defined in [accessListEIP2930Transaction.ts:280](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L280)*
 
 Computes a sha3-256 hash of the serialized unsigned tx, which is used to sign the transaction.
 
@@ -323,7 +323,7 @@ ___
 
 *Overrides [BaseTransaction](_basetransaction_.basetransaction.md).[getMessageToVerifySignature](_basetransaction_.basetransaction.md#abstract-getmessagetoverifysignature)*
 
-*Defined in [eip2930Transaction.ts:299](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L299)*
+*Defined in [accessListEIP2930Transaction.ts:299](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L299)*
 
 Computes a sha3-256 hash which can be used to verify the signature
 
@@ -335,7 +335,7 @@ ___
 
 ▸ **getSenderAddress**(): *Address*
 
-*Inherited from [BaseTransaction](_basetransaction_.basetransaction.md).[getSenderAddress](_basetransaction_.basetransaction.md#getsenderaddress)*
+*Inherited from [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md).[getSenderAddress](_accesslisteip2930transaction_.accesslisteip2930transaction.md#getsenderaddress)*
 
 *Defined in [baseTransaction.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L161)*
 
@@ -351,7 +351,7 @@ ___
 
 *Overrides [BaseTransaction](_basetransaction_.basetransaction.md).[getSenderPublicKey](_basetransaction_.basetransaction.md#abstract-getsenderpublickey)*
 
-*Defined in [eip2930Transaction.ts:306](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L306)*
+*Defined in [accessListEIP2930Transaction.ts:306](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L306)*
 
 Returns the public key of the sender
 
@@ -363,7 +363,7 @@ ___
 
 ▸ **getUpfrontCost**(): *BN*
 
-*Inherited from [BaseTransaction](_basetransaction_.basetransaction.md).[getUpfrontCost](_basetransaction_.basetransaction.md#getupfrontcost)*
+*Inherited from [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md).[getUpfrontCost](_accesslisteip2930transaction_.accesslisteip2930transaction.md#getupfrontcost)*
 
 *Defined in [baseTransaction.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L110)*
 
@@ -379,7 +379,7 @@ ___
 
 *Overrides [BaseTransaction](_basetransaction_.basetransaction.md).[hash](_basetransaction_.basetransaction.md#abstract-hash)*
 
-*Defined in [eip2930Transaction.ts:288](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L288)*
+*Defined in [accessListEIP2930Transaction.ts:288](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L288)*
 
 Computes a sha3-256 hash of the serialized tx
 
@@ -391,7 +391,7 @@ ___
 
 ▸ **isSigned**(): *boolean*
 
-*Inherited from [BaseTransaction](_basetransaction_.basetransaction.md).[isSigned](_basetransaction_.basetransaction.md#issigned)*
+*Inherited from [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md).[isSigned](_accesslisteip2930transaction_.accesslisteip2930transaction.md#issigned)*
 
 *Defined in [baseTransaction.ts:140](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L140)*
 
@@ -405,7 +405,7 @@ ___
 
 *Overrides [BaseTransaction](_basetransaction_.basetransaction.md).[raw](_basetransaction_.basetransaction.md#abstract-raw)*
 
-*Defined in [eip2930Transaction.ts:253](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L253)*
+*Defined in [accessListEIP2930Transaction.ts:253](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L253)*
 
 Returns a Buffer Array of the raw Buffers of this transaction, in order.
 
@@ -421,7 +421,7 @@ ___
 
 *Overrides [BaseTransaction](_basetransaction_.basetransaction.md).[serialize](_basetransaction_.basetransaction.md#abstract-serialize)*
 
-*Defined in [eip2930Transaction.ts:272](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L272)*
+*Defined in [accessListEIP2930Transaction.ts:272](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L272)*
 
 Returns the serialized encoding of the transaction.
 
@@ -431,9 +431,9 @@ ___
 
 ###  sign
 
-▸ **sign**(`privateKey`: Buffer): *[AccessListEIP2930Transaction](_eip2930transaction_.accesslisteip2930transaction.md)*
+▸ **sign**(`privateKey`: Buffer): *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)*
 
-*Inherited from [BaseTransaction](_basetransaction_.basetransaction.md).[sign](_basetransaction_.basetransaction.md#sign)*
+*Inherited from [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md).[sign](_accesslisteip2930transaction_.accesslisteip2930transaction.md#sign)*
 
 *Defined in [baseTransaction.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L173)*
 
@@ -445,7 +445,7 @@ Name | Type |
 ------ | ------ |
 `privateKey` | Buffer |
 
-**Returns:** *[AccessListEIP2930Transaction](_eip2930transaction_.accesslisteip2930transaction.md)*
+**Returns:** *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)*
 
 ___
 
@@ -453,7 +453,7 @@ ___
 
 ▸ **toCreationAddress**(): *boolean*
 
-*Inherited from [BaseTransaction](_basetransaction_.basetransaction.md).[toCreationAddress](_basetransaction_.basetransaction.md#tocreationaddress)*
+*Inherited from [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md).[toCreationAddress](_accesslisteip2930transaction_.accesslisteip2930transaction.md#tocreationaddress)*
 
 *Defined in [baseTransaction.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L117)*
 
@@ -469,7 +469,7 @@ ___
 
 *Overrides [BaseTransaction](_basetransaction_.basetransaction.md).[toJSON](_basetransaction_.basetransaction.md#abstract-tojson)*
 
-*Defined in [eip2930Transaction.ts:364](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L364)*
+*Defined in [accessListEIP2930Transaction.ts:364](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L364)*
 
 Returns an object with the JSON representation of the transaction
 
@@ -481,7 +481,7 @@ ___
 
 ▸ **validate**(): *boolean*
 
-*Inherited from [BaseTransaction](_basetransaction_.basetransaction.md).[validate](_basetransaction_.basetransaction.md#validate)*
+*Inherited from [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md).[validate](_accesslisteip2930transaction_.accesslisteip2930transaction.md#validate)*
 
 *Defined in [baseTransaction.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L65)*
 
@@ -492,7 +492,7 @@ Checks if the transaction has the minimum amount of gas required
 
 ▸ **validate**(`stringError`: false): *boolean*
 
-*Inherited from [BaseTransaction](_basetransaction_.basetransaction.md).[validate](_basetransaction_.basetransaction.md#validate)*
+*Inherited from [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md).[validate](_accesslisteip2930transaction_.accesslisteip2930transaction.md#validate)*
 
 *Defined in [baseTransaction.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L66)*
 
@@ -506,7 +506,7 @@ Name | Type |
 
 ▸ **validate**(`stringError`: true): *string[]*
 
-*Inherited from [BaseTransaction](_basetransaction_.basetransaction.md).[validate](_basetransaction_.basetransaction.md#validate)*
+*Inherited from [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md).[validate](_accesslisteip2930transaction_.accesslisteip2930transaction.md#validate)*
 
 *Defined in [baseTransaction.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L67)*
 
@@ -524,7 +524,7 @@ ___
 
 ▸ **verifySignature**(): *boolean*
 
-*Inherited from [BaseTransaction](_basetransaction_.basetransaction.md).[verifySignature](_basetransaction_.basetransaction.md#verifysignature)*
+*Inherited from [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md).[verifySignature](_accesslisteip2930transaction_.accesslisteip2930transaction.md#verifysignature)*
 
 *Defined in [baseTransaction.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L148)*
 
@@ -536,9 +536,9 @@ ___
 
 ### `Static` fromRlpSerializedTx
 
-▸ **fromRlpSerializedTx**(`serialized`: Buffer, `opts`: [TxOptions](../interfaces/_index_.txoptions.md)): *[AccessListEIP2930Transaction](_eip2930transaction_.accesslisteip2930transaction.md)‹›*
+▸ **fromRlpSerializedTx**(`serialized`: Buffer, `opts`: [TxOptions](../interfaces/_index_.txoptions.md)): *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)‹›*
 
-*Defined in [eip2930Transaction.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L93)*
+*Defined in [accessListEIP2930Transaction.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L93)*
 
 Instantiate a transaction from the serialized tx.
 (alias of `fromSerializedTx()`)
@@ -555,15 +555,15 @@ Name | Type | Default |
 `serialized` | Buffer | - |
 `opts` | [TxOptions](../interfaces/_index_.txoptions.md) | {} |
 
-**Returns:** *[AccessListEIP2930Transaction](_eip2930transaction_.accesslisteip2930transaction.md)‹›*
+**Returns:** *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)‹›*
 
 ___
 
 ### `Static` fromSerializedTx
 
-▸ **fromSerializedTx**(`serialized`: Buffer, `opts`: [TxOptions](../interfaces/_index_.txoptions.md)): *[AccessListEIP2930Transaction](_eip2930transaction_.accesslisteip2930transaction.md)‹›*
+▸ **fromSerializedTx**(`serialized`: Buffer, `opts`: [TxOptions](../interfaces/_index_.txoptions.md)): *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)‹›*
 
-*Defined in [eip2930Transaction.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L68)*
+*Defined in [accessListEIP2930Transaction.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L68)*
 
 Instantiate a transaction from the serialized tx.
 
@@ -576,15 +576,15 @@ Name | Type | Default |
 `serialized` | Buffer | - |
 `opts` | [TxOptions](../interfaces/_index_.txoptions.md) | {} |
 
-**Returns:** *[AccessListEIP2930Transaction](_eip2930transaction_.accesslisteip2930transaction.md)‹›*
+**Returns:** *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)‹›*
 
 ___
 
 ### `Static` fromTxData
 
-▸ **fromTxData**(`txData`: [AccessListEIP2930TxData](../interfaces/_index_.accesslisteip2930txdata.md), `opts`: [TxOptions](../interfaces/_index_.txoptions.md)): *[AccessListEIP2930Transaction](_eip2930transaction_.accesslisteip2930transaction.md)‹›*
+▸ **fromTxData**(`txData`: [AccessListEIP2930TxData](../interfaces/_index_.accesslisteip2930txdata.md), `opts`: [TxOptions](../interfaces/_index_.txoptions.md)): *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)‹›*
 
-*Defined in [eip2930Transaction.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L59)*
+*Defined in [accessListEIP2930Transaction.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L59)*
 
 Instantiate a transaction from a data dictionary
 
@@ -595,15 +595,15 @@ Name | Type | Default |
 `txData` | [AccessListEIP2930TxData](../interfaces/_index_.accesslisteip2930txdata.md) | - |
 `opts` | [TxOptions](../interfaces/_index_.txoptions.md) | {} |
 
-**Returns:** *[AccessListEIP2930Transaction](_eip2930transaction_.accesslisteip2930transaction.md)‹›*
+**Returns:** *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)‹›*
 
 ___
 
 ### `Static` fromValuesArray
 
-▸ **fromValuesArray**(`values`: [AccessListEIP2930ValuesArray](../modules/_index_.md#accesslisteip2930valuesarray), `opts`: [TxOptions](../interfaces/_index_.txoptions.md)): *[AccessListEIP2930Transaction](_eip2930transaction_.accesslisteip2930transaction.md)‹›*
+▸ **fromValuesArray**(`values`: [AccessListEIP2930ValuesArray](../modules/_index_.md#accesslisteip2930valuesarray), `opts`: [TxOptions](../interfaces/_index_.txoptions.md)): *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)‹›*
 
-*Defined in [eip2930Transaction.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L103)*
+*Defined in [accessListEIP2930Transaction.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L103)*
 
 Create a transaction from a values array.
 
@@ -617,4 +617,4 @@ Name | Type | Default |
 `values` | [AccessListEIP2930ValuesArray](../modules/_index_.md#accesslisteip2930valuesarray) | - |
 `opts` | [TxOptions](../interfaces/_index_.txoptions.md) | {} |
 
-**Returns:** *[AccessListEIP2930Transaction](_eip2930transaction_.accesslisteip2930transaction.md)‹›*
+**Returns:** *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)‹›*

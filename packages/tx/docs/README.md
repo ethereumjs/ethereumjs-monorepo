@@ -6,8 +6,8 @@
 
 ### Modules
 
+* ["accessListEIP2930Transaction"](modules/_accesslisteip2930transaction_.md)
 * ["baseTransaction"](modules/_basetransaction_.md)
-* ["eip2930Transaction"](modules/_eip2930transaction_.md)
 * ["index"](modules/_index_.md)
 * ["legacyTransaction"](modules/_legacytransaction_.md)
 * ["transactionFactory"](modules/_transactionfactory_.md)

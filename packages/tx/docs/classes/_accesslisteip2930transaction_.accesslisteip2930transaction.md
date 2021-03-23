@@ -1,70 +1,80 @@
-[@ethereumjs/tx](../README.md) › ["legacyTransaction"](../modules/_legacytransaction_.md) › [Transaction](_legacytransaction_.transaction.md)
+[@ethereumjs/tx](../README.md) › ["accessListEIP2930Transaction"](../modules/_accesslisteip2930transaction_.md) › [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)
 
-# Class: Transaction
+# Class: AccessListEIP2930Transaction
 
-An Ethereum non-typed (legacy) transaction
+Typed transaction with optional access lists
+
+- TransactionType: 1
+- EIP: [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930)
 
 ## Hierarchy
 
-* [BaseTransaction](_basetransaction_.basetransaction.md)‹[Transaction](_index_.transaction.md)›
+* [BaseTransaction](_basetransaction_.basetransaction.md)‹[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)›
 
-  ↳ **Transaction**
+  ↳ **AccessListEIP2930Transaction**
 
 ## Index
 
 ### Constructors
 
-* [constructor](_legacytransaction_.transaction.md#constructor)
+* [constructor](_accesslisteip2930transaction_.accesslisteip2930transaction.md#constructor)
 
 ### Properties
 
-* [common](_legacytransaction_.transaction.md#common)
-* [data](_legacytransaction_.transaction.md#data)
-* [gasLimit](_legacytransaction_.transaction.md#gaslimit)
-* [gasPrice](_legacytransaction_.transaction.md#gasprice)
-* [nonce](_legacytransaction_.transaction.md#nonce)
-* [r](_legacytransaction_.transaction.md#optional-r)
-* [s](_legacytransaction_.transaction.md#optional-s)
-* [to](_legacytransaction_.transaction.md#optional-to)
-* [v](_legacytransaction_.transaction.md#optional-v)
-* [value](_legacytransaction_.transaction.md#value)
+* [AccessListJSON](_accesslisteip2930transaction_.accesslisteip2930transaction.md#accesslistjson)
+* [accessList](_accesslisteip2930transaction_.accesslisteip2930transaction.md#accesslist)
+* [chainId](_accesslisteip2930transaction_.accesslisteip2930transaction.md#chainid)
+* [common](_accesslisteip2930transaction_.accesslisteip2930transaction.md#common)
+* [data](_accesslisteip2930transaction_.accesslisteip2930transaction.md#data)
+* [gasLimit](_accesslisteip2930transaction_.accesslisteip2930transaction.md#gaslimit)
+* [gasPrice](_accesslisteip2930transaction_.accesslisteip2930transaction.md#gasprice)
+* [nonce](_accesslisteip2930transaction_.accesslisteip2930transaction.md#nonce)
+* [r](_accesslisteip2930transaction_.accesslisteip2930transaction.md#optional-r)
+* [s](_accesslisteip2930transaction_.accesslisteip2930transaction.md#optional-s)
+* [to](_accesslisteip2930transaction_.accesslisteip2930transaction.md#optional-to)
+* [v](_accesslisteip2930transaction_.accesslisteip2930transaction.md#optional-v)
+* [value](_accesslisteip2930transaction_.accesslisteip2930transaction.md#value)
 
 ### Accessors
 
-* [transactionType](_legacytransaction_.transaction.md#transactiontype)
+* [senderR](_accesslisteip2930transaction_.accesslisteip2930transaction.md#senderr)
+* [senderS](_accesslisteip2930transaction_.accesslisteip2930transaction.md#senders)
+* [transactionType](_accesslisteip2930transaction_.accesslisteip2930transaction.md#transactiontype)
+* [yParity](_accesslisteip2930transaction_.accesslisteip2930transaction.md#yparity)
 
 ### Methods
 
-* [getBaseFee](_legacytransaction_.transaction.md#getbasefee)
-* [getDataFee](_legacytransaction_.transaction.md#getdatafee)
-* [getMessageToSign](_legacytransaction_.transaction.md#getmessagetosign)
-* [getMessageToVerifySignature](_legacytransaction_.transaction.md#getmessagetoverifysignature)
-* [getSenderAddress](_legacytransaction_.transaction.md#getsenderaddress)
-* [getSenderPublicKey](_legacytransaction_.transaction.md#getsenderpublickey)
-* [getUpfrontCost](_legacytransaction_.transaction.md#getupfrontcost)
-* [hash](_legacytransaction_.transaction.md#hash)
-* [isSigned](_legacytransaction_.transaction.md#issigned)
-* [raw](_legacytransaction_.transaction.md#raw)
-* [serialize](_legacytransaction_.transaction.md#serialize)
-* [sign](_legacytransaction_.transaction.md#sign)
-* [toCreationAddress](_legacytransaction_.transaction.md#tocreationaddress)
-* [toJSON](_legacytransaction_.transaction.md#tojson)
-* [validate](_legacytransaction_.transaction.md#validate)
-* [verifySignature](_legacytransaction_.transaction.md#verifysignature)
-* [fromRlpSerializedTx](_legacytransaction_.transaction.md#static-fromrlpserializedtx)
-* [fromSerializedTx](_legacytransaction_.transaction.md#static-fromserializedtx)
-* [fromTxData](_legacytransaction_.transaction.md#static-fromtxdata)
-* [fromValuesArray](_legacytransaction_.transaction.md#static-fromvaluesarray)
+* [_processSignature](_accesslisteip2930transaction_.accesslisteip2930transaction.md#_processsignature)
+* [getBaseFee](_accesslisteip2930transaction_.accesslisteip2930transaction.md#getbasefee)
+* [getDataFee](_accesslisteip2930transaction_.accesslisteip2930transaction.md#getdatafee)
+* [getMessageToSign](_accesslisteip2930transaction_.accesslisteip2930transaction.md#getmessagetosign)
+* [getMessageToVerifySignature](_accesslisteip2930transaction_.accesslisteip2930transaction.md#getmessagetoverifysignature)
+* [getSenderAddress](_accesslisteip2930transaction_.accesslisteip2930transaction.md#getsenderaddress)
+* [getSenderPublicKey](_accesslisteip2930transaction_.accesslisteip2930transaction.md#getsenderpublickey)
+* [getUpfrontCost](_accesslisteip2930transaction_.accesslisteip2930transaction.md#getupfrontcost)
+* [hash](_accesslisteip2930transaction_.accesslisteip2930transaction.md#hash)
+* [isSigned](_accesslisteip2930transaction_.accesslisteip2930transaction.md#issigned)
+* [raw](_accesslisteip2930transaction_.accesslisteip2930transaction.md#raw)
+* [serialize](_accesslisteip2930transaction_.accesslisteip2930transaction.md#serialize)
+* [sign](_accesslisteip2930transaction_.accesslisteip2930transaction.md#sign)
+* [toCreationAddress](_accesslisteip2930transaction_.accesslisteip2930transaction.md#tocreationaddress)
+* [toJSON](_accesslisteip2930transaction_.accesslisteip2930transaction.md#tojson)
+* [validate](_accesslisteip2930transaction_.accesslisteip2930transaction.md#validate)
+* [verifySignature](_accesslisteip2930transaction_.accesslisteip2930transaction.md#verifysignature)
+* [fromRlpSerializedTx](_accesslisteip2930transaction_.accesslisteip2930transaction.md#static-fromrlpserializedtx)
+* [fromSerializedTx](_accesslisteip2930transaction_.accesslisteip2930transaction.md#static-fromserializedtx)
+* [fromTxData](_accesslisteip2930transaction_.accesslisteip2930transaction.md#static-fromtxdata)
+* [fromValuesArray](_accesslisteip2930transaction_.accesslisteip2930transaction.md#static-fromvaluesarray)
 
 ## Constructors
 
 ###  constructor
 
-\+ **new Transaction**(`txData`: [TxData](../modules/_index_.md#txdata), `opts`: [TxOptions](../interfaces/_index_.txoptions.md)): *[Transaction](_legacytransaction_.transaction.md)*
+\+ **new AccessListEIP2930Transaction**(`txData`: [AccessListEIP2930TxData](../interfaces/_index_.accesslisteip2930txdata.md), `opts`: [TxOptions](../interfaces/_index_.txoptions.md)): *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)*
 
 *Overrides [BaseTransaction](_basetransaction_.basetransaction.md).[constructor](_basetransaction_.basetransaction.md#constructor)*
 
-*Defined in [legacyTransaction.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L87)*
+*Defined in [accessListEIP2930Transaction.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L130)*
 
 This constructor takes the values, validates them, assigns them and freezes the object.
 
@@ -76,12 +86,36 @@ varying data types.
 
 Name | Type | Default |
 ------ | ------ | ------ |
-`txData` | [TxData](../modules/_index_.md#txdata) | - |
+`txData` | [AccessListEIP2930TxData](../interfaces/_index_.accesslisteip2930txdata.md) | - |
 `opts` | [TxOptions](../interfaces/_index_.txoptions.md) | {} |
 
-**Returns:** *[Transaction](_legacytransaction_.transaction.md)*
+**Returns:** *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)*
 
 ## Properties
+
+###  AccessListJSON
+
+• **AccessListJSON**: *[AccessList](../modules/_index_.md#accesslist)*
+
+*Defined in [accessListEIP2930Transaction.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L35)*
+
+___
+
+###  accessList
+
+• **accessList**: *[AccessListBuffer](../modules/_index_.md#accesslistbuffer)*
+
+*Defined in [accessListEIP2930Transaction.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L34)*
+
+___
+
+###  chainId
+
+• **chainId**: *BN*
+
+*Defined in [accessListEIP2930Transaction.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L33)*
+
+___
 
 ###  common
 
@@ -183,15 +217,63 @@ ___
 
 ## Accessors
 
+###  senderR
+
+• **get senderR**(): *undefined | BN‹›*
+
+*Defined in [accessListEIP2930Transaction.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L47)*
+
+**Returns:** *undefined | BN‹›*
+
+___
+
+###  senderS
+
+• **get senderS**(): *undefined | BN‹›*
+
+*Defined in [accessListEIP2930Transaction.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L42)*
+
+**Returns:** *undefined | BN‹›*
+
+___
+
 ###  transactionType
 
 • **get transactionType**(): *number*
 
-*Defined in [legacyTransaction.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L19)*
+*Defined in [accessListEIP2930Transaction.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L37)*
 
 **Returns:** *number*
 
+___
+
+###  yParity
+
+• **get yParity**(): *undefined | BN‹›*
+
+*Defined in [accessListEIP2930Transaction.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L52)*
+
+**Returns:** *undefined | BN‹›*
+
 ## Methods
+
+###  _processSignature
+
+▸ **_processSignature**(`v`: number, `r`: Buffer, `s`: Buffer): *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)‹›*
+
+*Defined in [accessListEIP2930Transaction.ts:338](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L338)*
+
+**Parameters:**
+
+Name | Type |
+------ | ------ |
+`v` | number |
+`r` | Buffer |
+`s` | Buffer |
+
+**Returns:** *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)‹›*
+
+___
 
 ###  getBaseFee
 
@@ -211,9 +293,9 @@ ___
 
 ▸ **getDataFee**(): *BN*
 
-*Inherited from [BaseTransaction](_basetransaction_.basetransaction.md).[getDataFee](_basetransaction_.basetransaction.md#getdatafee)*
+*Overrides [BaseTransaction](_basetransaction_.basetransaction.md).[getDataFee](_basetransaction_.basetransaction.md#getdatafee)*
 
-*Defined in [baseTransaction.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L96)*
+*Defined in [accessListEIP2930Transaction.ts:231](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L231)*
 
 The amount of gas paid for the data in this tx
 
@@ -227,7 +309,7 @@ ___
 
 *Overrides [BaseTransaction](_basetransaction_.basetransaction.md).[getMessageToSign](_basetransaction_.basetransaction.md#abstract-getmessagetosign)*
 
-*Defined in [legacyTransaction.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L159)*
+*Defined in [accessListEIP2930Transaction.ts:280](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L280)*
 
 Computes a sha3-256 hash of the serialized unsigned tx, which is used to sign the transaction.
 
@@ -237,15 +319,15 @@ ___
 
 ###  getMessageToVerifySignature
 
-▸ **getMessageToVerifySignature**(): *Buffer‹›*
+▸ **getMessageToVerifySignature**(): *Buffer*
 
 *Overrides [BaseTransaction](_basetransaction_.basetransaction.md).[getMessageToVerifySignature](_basetransaction_.basetransaction.md#abstract-getmessagetoverifysignature)*
 
-*Defined in [legacyTransaction.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L173)*
+*Defined in [accessListEIP2930Transaction.ts:299](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L299)*
 
 Computes a sha3-256 hash which can be used to verify the signature
 
-**Returns:** *Buffer‹›*
+**Returns:** *Buffer*
 
 ___
 
@@ -269,7 +351,7 @@ ___
 
 *Overrides [BaseTransaction](_basetransaction_.basetransaction.md).[getSenderPublicKey](_basetransaction_.basetransaction.md#abstract-getsenderpublickey)*
 
-*Defined in [legacyTransaction.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L181)*
+*Defined in [accessListEIP2930Transaction.ts:306](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L306)*
 
 Returns the public key of the sender
 
@@ -297,7 +379,7 @@ ___
 
 *Overrides [BaseTransaction](_basetransaction_.basetransaction.md).[hash](_basetransaction_.basetransaction.md#abstract-hash)*
 
-*Defined in [legacyTransaction.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L166)*
+*Defined in [accessListEIP2930Transaction.ts:288](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L288)*
 
 Computes a sha3-256 hash of the serialized tx
 
@@ -319,15 +401,17 @@ ___
 
 ###  raw
 
-▸ **raw**(): *Buffer[]*
+▸ **raw**(): *[AccessListEIP2930ValuesArray](../modules/_index_.md#accesslisteip2930valuesarray)*
 
 *Overrides [BaseTransaction](_basetransaction_.basetransaction.md).[raw](_basetransaction_.basetransaction.md#abstract-raw)*
 
-*Defined in [legacyTransaction.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L112)*
+*Defined in [accessListEIP2930Transaction.ts:253](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L253)*
 
 Returns a Buffer Array of the raw Buffers of this transaction, in order.
 
-**Returns:** *Buffer[]*
+Use `serialize()` to add to block data for `Block.fromValuesArray()`.
+
+**Returns:** *[AccessListEIP2930ValuesArray](../modules/_index_.md#accesslisteip2930valuesarray)*
 
 ___
 
@@ -337,9 +421,9 @@ ___
 
 *Overrides [BaseTransaction](_basetransaction_.basetransaction.md).[serialize](_basetransaction_.basetransaction.md#abstract-serialize)*
 
-*Defined in [legacyTransaction.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L129)*
+*Defined in [accessListEIP2930Transaction.ts:272](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L272)*
 
-Returns the rlp encoding of the transaction.
+Returns the serialized encoding of the transaction.
 
 **Returns:** *Buffer*
 
@@ -347,7 +431,7 @@ ___
 
 ###  sign
 
-▸ **sign**(`privateKey`: Buffer): *[Transaction](_index_.transaction.md)*
+▸ **sign**(`privateKey`: Buffer): *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)*
 
 *Inherited from [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md).[sign](_accesslisteip2930transaction_.accesslisteip2930transaction.md#sign)*
 
@@ -361,7 +445,7 @@ Name | Type |
 ------ | ------ |
 `privateKey` | Buffer |
 
-**Returns:** *[Transaction](_index_.transaction.md)*
+**Returns:** *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)*
 
 ___
 
@@ -385,7 +469,7 @@ ___
 
 *Overrides [BaseTransaction](_basetransaction_.basetransaction.md).[toJSON](_basetransaction_.basetransaction.md#abstract-tojson)*
 
-*Defined in [legacyTransaction.ts:241](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L241)*
+*Defined in [accessListEIP2930Transaction.ts:364](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L364)*
 
 Returns an object with the JSON representation of the transaction
 
@@ -452,12 +536,14 @@ ___
 
 ### `Static` fromRlpSerializedTx
 
-▸ **fromRlpSerializedTx**(`serialized`: Buffer, `opts`: [TxOptions](../interfaces/_index_.txoptions.md)): *[Transaction](_index_.transaction.md)‹›*
+▸ **fromRlpSerializedTx**(`serialized`: Buffer, `opts`: [TxOptions](../interfaces/_index_.txoptions.md)): *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)‹›*
 
-*Defined in [legacyTransaction.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L50)*
+*Defined in [accessListEIP2930Transaction.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L93)*
 
 Instantiate a transaction from the serialized tx.
 (alias of `fromSerializedTx()`)
+
+Note: This means that the Buffer should start with 0x01.
 
 **`deprecated`** this constructor alias is deprecated and will be removed
 in favor of the `fromSerializedTx()` constructor
@@ -469,17 +555,19 @@ Name | Type | Default |
 `serialized` | Buffer | - |
 `opts` | [TxOptions](../interfaces/_index_.txoptions.md) | {} |
 
-**Returns:** *[Transaction](_index_.transaction.md)‹›*
+**Returns:** *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)‹›*
 
 ___
 
 ### `Static` fromSerializedTx
 
-▸ **fromSerializedTx**(`serialized`: Buffer, `opts`: [TxOptions](../interfaces/_index_.txoptions.md)): *[Transaction](_index_.transaction.md)‹›*
+▸ **fromSerializedTx**(`serialized`: Buffer, `opts`: [TxOptions](../interfaces/_index_.txoptions.md)): *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)‹›*
 
-*Defined in [legacyTransaction.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L33)*
+*Defined in [accessListEIP2930Transaction.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L68)*
 
 Instantiate a transaction from the serialized tx.
+
+Note: this means that the Buffer should start with 0x01.
 
 **Parameters:**
 
@@ -488,15 +576,15 @@ Name | Type | Default |
 `serialized` | Buffer | - |
 `opts` | [TxOptions](../interfaces/_index_.txoptions.md) | {} |
 
-**Returns:** *[Transaction](_index_.transaction.md)‹›*
+**Returns:** *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)‹›*
 
 ___
 
 ### `Static` fromTxData
 
-▸ **fromTxData**(`txData`: [TxData](../modules/_index_.md#txdata), `opts`: [TxOptions](../interfaces/_index_.txoptions.md)): *[Transaction](_index_.transaction.md)‹›*
+▸ **fromTxData**(`txData`: [AccessListEIP2930TxData](../interfaces/_index_.accesslisteip2930txdata.md), `opts`: [TxOptions](../interfaces/_index_.txoptions.md)): *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)‹›*
 
-*Defined in [legacyTransaction.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L26)*
+*Defined in [accessListEIP2930Transaction.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L59)*
 
 Instantiate a transaction from a data dictionary
 
@@ -504,29 +592,29 @@ Instantiate a transaction from a data dictionary
 
 Name | Type | Default |
 ------ | ------ | ------ |
-`txData` | [TxData](../modules/_index_.md#txdata) | - |
+`txData` | [AccessListEIP2930TxData](../interfaces/_index_.accesslisteip2930txdata.md) | - |
 `opts` | [TxOptions](../interfaces/_index_.txoptions.md) | {} |
 
-**Returns:** *[Transaction](_index_.transaction.md)‹›*
+**Returns:** *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)‹›*
 
 ___
 
 ### `Static` fromValuesArray
 
-▸ **fromValuesArray**(`values`: Buffer[], `opts`: [TxOptions](../interfaces/_index_.txoptions.md)): *[Transaction](_index_.transaction.md)‹›*
+▸ **fromValuesArray**(`values`: [AccessListEIP2930ValuesArray](../modules/_index_.md#accesslisteip2930valuesarray), `opts`: [TxOptions](../interfaces/_index_.txoptions.md)): *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)‹›*
 
-*Defined in [legacyTransaction.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L60)*
+*Defined in [accessListEIP2930Transaction.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/accessListEIP2930Transaction.ts#L103)*
 
 Create a transaction from a values array.
 
 The format is:
-nonce, gasPrice, gasLimit, to, value, data, v, r, s
+chainId, nonce, gasPrice, gasLimit, to, value, data, access_list, yParity (v), senderR (r), senderS (s)
 
 **Parameters:**
 
 Name | Type | Default |
 ------ | ------ | ------ |
-`values` | Buffer[] | - |
+`values` | [AccessListEIP2930ValuesArray](../modules/_index_.md#accesslisteip2930valuesarray) | - |
 `opts` | [TxOptions](../interfaces/_index_.txoptions.md) | {} |
 
-**Returns:** *[Transaction](_index_.transaction.md)‹›*
+**Returns:** *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)‹›*

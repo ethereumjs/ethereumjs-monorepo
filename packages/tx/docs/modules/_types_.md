@@ -109,7 +109,7 @@ ___
 
 ###  TypedTransaction
 
-Ƭ **TypedTransaction**: *[Transaction](../classes/_index_.transaction.md) | [AccessListEIP2930Transaction](../classes/_eip2930transaction_.accesslisteip2930transaction.md)*
+Ƭ **TypedTransaction**: *[Transaction](../classes/_index_.transaction.md) | [AccessListEIP2930Transaction](../classes/_accesslisteip2930transaction_.accesslisteip2930transaction.md)*
 
 *Defined in [types.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L67)*
 

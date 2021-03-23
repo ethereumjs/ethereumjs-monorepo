@@ -19,7 +19,7 @@
 
 ### `Static` fromBlockBodyData
 
-▸ **fromBlockBodyData**(`data`: Buffer | Buffer[], `txOptions`: [TxOptions](../interfaces/_index_.txoptions.md)): *[AccessListEIP2930Transaction](_eip2930transaction_.accesslisteip2930transaction.md)‹› | [Transaction](_index_.transaction.md)‹›*
+▸ **fromBlockBodyData**(`data`: Buffer | Buffer[], `txOptions`: [TxOptions](../interfaces/_index_.txoptions.md)): *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)‹› | [Transaction](_index_.transaction.md)‹›*
 
 *Defined in [transactionFactory.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L80)*
 
@@ -35,7 +35,7 @@ Name | Type | Default | Description |
 `data` | Buffer &#124; Buffer[] | - | A Buffer or Buffer[] |
 `txOptions` | [TxOptions](../interfaces/_index_.txoptions.md) | {} | The transaction options  |
 
-**Returns:** *[AccessListEIP2930Transaction](_eip2930transaction_.accesslisteip2930transaction.md)‹› | [Transaction](_index_.transaction.md)‹›*
+**Returns:** *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)‹› | [Transaction](_index_.transaction.md)‹›*
 
 ___
 
@@ -79,7 +79,7 @@ ___
 
 ### `Static` getTransactionClass
 
-▸ **getTransactionClass**(`transactionID`: number, `common?`: Common): *[AccessListEIP2930Transaction](_eip2930transaction_.accesslisteip2930transaction.md) | [Transaction](_index_.transaction.md)*
+▸ **getTransactionClass**(`transactionID`: number, `common?`: Common): *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md) | [Transaction](_index_.transaction.md)*
 
 *Defined in [transactionFactory.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L98)*
 
@@ -93,4 +93,4 @@ Name | Type | Default | Description |
 `transactionID` | number | 0 | - |
 `common?` | Common | - |   |
 
-**Returns:** *[AccessListEIP2930Transaction](_eip2930transaction_.accesslisteip2930transaction.md) | [Transaction](_index_.transaction.md)*
+**Returns:** *[AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md) | [Transaction](_index_.transaction.md)*

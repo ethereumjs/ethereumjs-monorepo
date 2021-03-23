@@ -16,7 +16,7 @@ It is therefore not recommended to use directly.
 
 * **BaseTransaction**
 
-  ↳ [AccessListEIP2930Transaction](_eip2930transaction_.accesslisteip2930transaction.md)
+  ↳ [AccessListEIP2930Transaction](_accesslisteip2930transaction_.accesslisteip2930transaction.md)
 
   ↳ [Transaction](_index_.transaction.md)
 
