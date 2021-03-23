@@ -55,6 +55,7 @@ export class ETH extends EventEmitter {
   static eth62 = { name: 'eth', version: 62, length: 8, constructor: ETH }
   static eth63 = { name: 'eth', version: 63, length: 17, constructor: ETH }
   static eth64 = { name: 'eth', version: 64, length: 29, constructor: ETH }
+  static eth65 = { name: 'eth', version: 65, length: 29, constructor: ETH }
 
   _handleMessage(code: ETH.MESSAGE_CODES, data: any) {
     const payload = rlp.decode(data) as unknown
@@ -92,6 +93,12 @@ export class ETH extends EventEmitter {
       case ETH.MESSAGE_CODES.GET_RECEIPTS:
       case ETH.MESSAGE_CODES.RECEIPTS:
         if (this._version >= ETH.eth63.version) break
+        return
+
+      case ETH.MESSAGE_CODES.NEW_POOLED_TRANSACTION_HASHES:
+      case ETH.MESSAGE_CODES.GET_POOLED_TRANSACTIONS:
+      case ETH.MESSAGE_CODES.POOLED_TRANSACTIONS:
+        if (this._version >= ETH.eth65.version) break
         return
 
       default:
@@ -251,6 +258,12 @@ export class ETH extends EventEmitter {
         if (this._version >= ETH.eth63.version) break
         throw new Error(`Code ${code} not allowed with version ${this._version}`)
 
+      case ETH.MESSAGE_CODES.NEW_POOLED_TRANSACTION_HASHES:
+      case ETH.MESSAGE_CODES.GET_POOLED_TRANSACTIONS:
+      case ETH.MESSAGE_CODES.POOLED_TRANSACTIONS:
+        if (this._version >= ETH.eth65.version) break
+        throw new Error(`Code ${code} not allowed with version ${this._version}`)
+
       default:
         throw new Error(`Unknown code ${code}`)
     }
@@ -289,5 +302,10 @@ export namespace ETH {
     NODE_DATA = 0x0e,
     GET_RECEIPTS = 0x0f,
     RECEIPTS = 0x10,
+
+    // eth65
+    NEW_POOLED_TRANSACTION_HASHES = 0x08,
+    GET_POOLED_TRANSACTIONS = 0x09,
+    POOLED_TRANSACTIONS = 0x0a,
   }
 }

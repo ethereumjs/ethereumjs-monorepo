@@ -106,7 +106,7 @@ export class EthProtocol extends Protocol {
    * @type {number[]}
    */
   get versions(): number[] {
-    return [64, 63]
+    return [65, 64, 63]
   }
 
   /**

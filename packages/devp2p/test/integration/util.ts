@@ -65,7 +65,7 @@ export function getTestRLPXs(
 ) {
   const rlpxs = []
   if (!capabilities) {
-    capabilities = [ETH.eth64, ETH.eth63, ETH.eth62]
+    capabilities = [ETH.eth65, ETH.eth64, ETH.eth63, ETH.eth62]
   }
   if (!common) {
     common = new Common({ chain: 'mainnet' })
