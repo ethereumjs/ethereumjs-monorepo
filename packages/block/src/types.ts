@@ -83,6 +83,7 @@ export interface HeaderData {
   extraData?: BufferLike
   mixHash?: BufferLike
   nonce?: BufferLike
+  baseFeePerGas?: BNLike
 }
 
 /**

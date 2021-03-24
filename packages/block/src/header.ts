@@ -43,6 +43,7 @@ export class BlockHeader {
   public readonly extraData: Buffer
   public readonly mixHash: Buffer
   public readonly nonce: Buffer
+  public readonly baseFeePerGas?: BN
 
   public readonly _common: Common
   public _errorPostfix = ''
@@ -53,7 +54,8 @@ export class BlockHeader {
    * @param headerData
    * @param opts
    */
-  public static fromHeaderData(headerData: HeaderData = {}, opts?: BlockOptions) {
+  public static fromHeaderData(headerData: HeaderData = {}, opts: BlockOptions = {}) {
+    opts.common = BlockHeader.getCommon(opts)
     const {
       parentHash,
       uncleHash,
@@ -70,6 +72,7 @@ export class BlockHeader {
       extraData,
       mixHash,
       nonce,
+      baseFeePerGas,
     } = headerData
 
     return new BlockHeader(
@@ -88,6 +91,7 @@ export class BlockHeader {
       extraData ? toBuffer(extraData) : Buffer.from([]),
       mixHash ? toBuffer(mixHash) : zeros(32),
       nonce ? toBuffer(nonce) : zeros(8),
+      opts.common.isActivatedEIP(1559) ? new BN(toBuffer(baseFeePerGas)) : undefined,
       opts
     )
   }
@@ -98,7 +102,7 @@ export class BlockHeader {
    * @param headerData
    * @param opts
    */
-  public static fromRLPSerializedHeader(serialized: Buffer, opts?: BlockOptions) {
+  public static fromRLPSerializedHeader(serialized: Buffer, opts: BlockOptions) {
     const values = rlp.decode(serialized)
 
     if (!Array.isArray(values)) {
@@ -114,8 +118,9 @@ export class BlockHeader {
    * @param headerData
    * @param opts
    */
-  public static fromValuesArray(values: BlockHeaderBuffer, opts?: BlockOptions) {
-    if (values.length > 15) {
+  public static fromValuesArray(values: BlockHeaderBuffer, opts: BlockOptions = {}) {
+    opts.common = BlockHeader.getCommon(opts)
+    if (values.length > 15 || (opts.common.isActivatedEIP(1559) && values.length > 16)) {
       throw new Error('invalid header. More values than expected were received')
     }
 
@@ -135,6 +140,7 @@ export class BlockHeader {
       extraData,
       mixHash,
       nonce,
+      baseFeePerGas,
     ] = values
 
     return new BlockHeader(
@@ -153,6 +159,7 @@ export class BlockHeader {
       toBuffer(extraData),
       toBuffer(mixHash),
       toBuffer(nonce),
+      opts.common.isActivatedEIP(1559) ? new BN(toBuffer(baseFeePerGas)) : undefined,
       opts
     )
   }
@@ -160,9 +167,23 @@ export class BlockHeader {
   /**
    * Alias for Header.fromHeaderData() with initWithGenesisHeader set to true.
    */
-  public static genesis(headerData: HeaderData = {}, opts?: BlockOptions) {
+  public static genesis(headerData: HeaderData = {}, opts: BlockOptions) {
     opts = { ...opts, initWithGenesisHeader: true }
     return BlockHeader.fromHeaderData(headerData, opts)
+  }
+
+  public static getCommon(opts: BlockOptions = {}): Common {
+    if (opts.common) {
+      return Object.assign(Object.create(Object.getPrototypeOf(opts.common)), opts.common)
+    } else {
+      const chain = 'mainnet' // default
+      if (opts.initWithGenesisHeader) {
+        return new Common({ chain, hardfork: 'chainstart' })
+      } else {
+        // This initializes on the Common default hardfork
+        return new Common({ chain })
+      }
+    }
   }
 
   /**
@@ -187,22 +208,10 @@ export class BlockHeader {
     extraData: Buffer,
     mixHash: Buffer,
     nonce: Buffer,
+    baseFeePerGas?: BN,
     options: BlockOptions = {}
   ) {
-    if (options.common) {
-      this._common = Object.assign(
-        Object.create(Object.getPrototypeOf(options.common)),
-        options.common
-      )
-    } else {
-      const chain = 'mainnet' // default
-      if (options.initWithGenesisHeader) {
-        this._common = new Common({ chain, hardfork: 'chainstart' })
-      } else {
-        // This initializes on the Common default hardfork
-        this._common = new Common({ chain })
-      }
-    }
+    this._common = BlockHeader.getCommon(options)
 
     if (options.hardforkByBlockNumber) {
       this._common.setHardforkByBlockNumber(number.toNumber())
@@ -245,6 +254,7 @@ export class BlockHeader {
     this.extraData = extraData
     this.mixHash = mixHash
     this.nonce = nonce
+    this.baseFeePerGas = baseFeePerGas
 
     this._validateHeaderFields()
     this._checkDAOExtraData()
@@ -552,7 +562,7 @@ export class BlockHeader {
    * Returns a Buffer Array of the raw Buffers in this header, in order.
    */
   raw(): BlockHeaderBuffer {
-    return [
+    const rawItems = [
       this.parentHash,
       this.uncleHash,
       this.coinbase.buf,
@@ -569,6 +579,12 @@ export class BlockHeader {
       this.mixHash,
       this.nonce,
     ]
+
+    if (this._common.isActivatedEIP(1559)) {
+      rawItems.push(unpadBuffer(toBuffer(this.baseFeePerGas)))
+    }
+
+    return rawItems
   }
 
   /**
