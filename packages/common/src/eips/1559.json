@@ -5,7 +5,20 @@
     "url": "https://eips.ethereum.org/EIPS/eip-1559",
     "status": "Review",
     "minimumHardfork": "london",
-    "gasConfig": {},
+    "gasConfig": {
+      "baseFeeMaxChangeDenominator": {
+        "v": 10,
+        "d": "Maximum base fee change denominator"
+      },
+      "elasticityMultiplier": {
+        "v": 2,
+        "d": "Maximum block gas target elasticity"
+      },
+      "initialBaseFee": {
+        "v": 1000000000,
+        "d": "Initial base fee on first EIP1559 block"
+      }
+    },
     "gasPrices": {},
     "vm": {},
     "pow": {}
