@@ -68,6 +68,12 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
       delay = c.param('pow', 'difficultyBombDelay')
       st.equal(delay, 9500000)
     }
+  })
+
+  t.test('getEIPActivationBlockNumber()', function (st) {
+    const common = new Common({ chain: 'mainnet' })
+    const activationBlock = common.getEIPActivationBlockNumber(2930)
+    st.ok(activationBlock!.eqn(12244000))
     st.end()
   })
 })
