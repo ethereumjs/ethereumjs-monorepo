@@ -167,6 +167,14 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   }
 
   /**
+   * The up front amount that an account must have for this transaction to be valid
+   */
+  getUpfrontCost(): BN {
+    // TODO: depends upon block
+    return new BN(0) //return this.gasLimit.mul(this.gasPrice).add(this.value)
+  }
+
+  /**
    * Returns a Buffer Array of the raw Buffers of this transaction, in order.
    *
    * Use `serialize()` to add to block data for `Block.fromValuesArray()`.

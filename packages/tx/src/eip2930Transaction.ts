@@ -178,6 +178,13 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   }
 
   /**
+   * The up front amount that an account must have for this transaction to be valid
+   */
+  getUpfrontCost(): BN {
+    return this.gasLimit.mul(this.gasPrice).add(this.value)
+  }
+
+  /**
    * Returns a Buffer Array of the raw Buffers of this transaction, in order.
    *
    * Use `serialize()` to add to block data for `Block.fromValuesArray()`.

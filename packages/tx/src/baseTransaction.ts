@@ -152,9 +152,7 @@ export abstract class BaseTransaction<TransactionObject> {
   /**
    * The up front amount that an account must have for this transaction to be valid
    */
-  getUpfrontCost(): BN {
-    return this.gasLimit.mul(this.gasPrice).add(this.value)
-  }
+  abstract getUpfrontCost(): BN
 
   /**
    * If the tx's `to` is to the creation address
