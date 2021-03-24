@@ -546,7 +546,7 @@ export class BlockHeader {
       }
     }
 
-    if (!this.validateGasLimit(parentHeader)) {
+    if (!this._common.isActivatedEIP(1559) && !this.validateGasLimit(parentHeader)) {
       throw new Error('invalid gas limit')
     }
 
@@ -554,6 +554,69 @@ export class BlockHeader {
       const dif = height.sub(parentHeader.number)
       if (!(dif.ltn(8) && dif.gtn(1))) {
         throw new Error('uncle block has a parent that is too old or too young')
+      }
+    }
+
+    if (this._common.isActivatedEIP(1559)) {
+      if (!this.baseFeePerGas) {
+        throw new Error('EIP1559 block has no base fee field')
+      }
+      let parentBaseFee = parentHeader.baseFeePerGas
+      if (this._common.getEIPActivationBlockNumber(1559)!.eq(this.number)) {
+        const initialBaseFee = new BN(this._common.param('gasConfig', 'initialBaseFee'))
+        parentBaseFee = initialBaseFee
+        if (!this.baseFeePerGas.eq(initialBaseFee)) {
+          throw new Error('Initial EIP1559 block does not have initial base fee')
+        }
+      }
+
+      const parentGasUsed = parentHeader.gasUsed
+      const parentGasTarget = parentHeader.gasLimit
+
+      const elasticity = new BN(this._common.param('gasConfig', 'elasticityMultiplier'))
+
+      // check if the block used too much gas
+      if (this.gasUsed.gt(this.gasLimit.mul(elasticity))) {
+        throw new Error('Invalid block: too much gas used')
+      }
+
+      // check if the block changed the gas target too much
+      if (!this.gasLimit.lte(parentGasTarget.add(parentGasTarget.divn(1024)))) {
+        throw new Error('Invalid block: gas target increased too much')
+      }
+
+      if (!this.gasLimit.gte(parentGasTarget.sub(parentGasTarget.divn(1024)))) {
+        throw new Error('Invalid block: gas target decreased too much')
+      }
+
+      // check if the base fee is correct
+      let expectedBaseFee: BN
+      if (parentGasTarget.eq(parentGasUsed)) {
+        expectedBaseFee = parentBaseFee!
+      } else if (parentGasTarget.gt(parentGasUsed)) {
+        const gasUsedDelta = parentGasUsed.sub(parentGasTarget)
+        const baseFeeMaxChangeDenominator = new BN(
+          this._common.param('gasConfig', 'baseFeeMaxChangeDenominator')
+        )
+        const calculatedDelta = parentBaseFee!
+          .mul(gasUsedDelta)
+          .div(parentGasTarget)
+          .div(baseFeeMaxChangeDenominator)
+        expectedBaseFee = BN.max(calculatedDelta, new BN(1)).add(parentBaseFee!)
+      } else {
+        const gasUsedDelta = parentGasUsed.sub(parentGasTarget)
+        const baseFeeMaxChangeDenominator = new BN(
+          this._common.param('gasConfig', 'baseFeeMaxChangeDenominator')
+        )
+        const calculatedDelta = parentBaseFee!
+          .mul(gasUsedDelta)
+          .div(parentGasTarget)
+          .div(baseFeeMaxChangeDenominator)
+        expectedBaseFee = BN.max(parentBaseFee!.sub(calculatedDelta), new BN(0))
+      }
+
+      if (!this.baseFeePerGas!.eq(expectedBaseFee)) {
+        throw new Error('Invalid block: base fee not correct')
       }
     }
   }
