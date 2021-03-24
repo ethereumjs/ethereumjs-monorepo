@@ -57,11 +57,12 @@ tape('BlockBuilder', async (t) => {
     const tx = Transaction.fromTxData({ gasLimit }, { common })
     try {
       await blockBuilder.addTransaction(tx)
+      st.fail('should throw error')
     } catch (error) {
       if (error.message.includes('tx has a higher gas limit than the remaining gas in the block')) {
-        st.pass('error thrown')
+        st.pass('correct error thrown')
       } else {
-        st.fail('should throw')
+        st.fail('wrong error thrown')
       }
     }
     st.end()
