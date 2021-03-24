@@ -167,6 +167,13 @@ export default class Transaction extends BaseTransaction<Transaction> {
   }
 
   /**
+   * The up front amount that an account must have for this transaction to be valid
+   */
+  getUpfrontCost(): BN {
+    return this.gasLimit.mul(this.gasPrice).add(this.value)
+  }
+
+  /**
    * Computes a sha3-256 hash of the serialized tx
    */
   hash(): Buffer {
