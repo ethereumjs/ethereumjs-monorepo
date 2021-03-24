@@ -220,6 +220,12 @@ export default class Common extends EventEmitter {
     return hardfork
   }
 
+  /**
+   * Returns the block number on which an EIP is activated
+   * If the EIP is never activated, `undefined` is returned
+   * @param eip the eip number
+   * @returns The block number on which the EIP was activated
+   */
   getEIPActivationBlockNumber(eip: number): BN | undefined {
     for (const hardfork of this._chainParams.hardforks) {
       for (const hfChanges of HARDFORK_CHANGES) {
