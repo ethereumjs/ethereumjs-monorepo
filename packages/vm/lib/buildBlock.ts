@@ -71,7 +71,7 @@ export class BlockBuilder {
   /**
    * Throws if the block has already been built or reverted.
    */
-  checkStatus() {
+  private checkStatus() {
     if (this.built) {
       throw new Error('Block has already been built')
     }
