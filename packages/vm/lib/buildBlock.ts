@@ -47,6 +47,11 @@ export interface SealBlockOpts {
 }
 
 export class BlockBuilder {
+  /**
+   * The cumulative gas used by the transactions added to the block.
+   */
+  gasUsed = new BN(0)
+
   private readonly vm: VM
   private blockOpts: BlockOptions
   private headerData: HeaderData
@@ -78,16 +83,6 @@ export class BlockBuilder {
     if (this.reverted) {
       throw new Error('State has already been reverted')
     }
-  }
-
-  /**
-   * Returns the cumulative gas used by the transactions added to the block.
-   */
-  gasUsed(): BN {
-    return this.transactionResults.reduce(
-      (accumulator: BN, result: RunTxResult) => accumulator.iadd(result.gasUsed),
-      new BN(0)
-    )
   }
 
   /**
@@ -157,7 +152,7 @@ export class BlockBuilder {
     // According to the Yellow Paper, a transaction's gas limit
     // cannot be greater than the remaining gas in the block
     const blockGasLimit = new BN(toBuffer(this.headerData.gasLimit))
-    const blockGasRemaining = blockGasLimit.sub(this.gasUsed())
+    const blockGasRemaining = blockGasLimit.sub(this.gasUsed)
     if (tx.gasLimit.gt(blockGasRemaining)) {
       throw new Error('tx has a higher gas limit than the remaining gas in the block')
     }
@@ -169,6 +164,7 @@ export class BlockBuilder {
 
     this.transactions.push(tx)
     this.transactionResults.push(result)
+    this.gasUsed.iadd(result.gasUsed)
 
     return result
   }
@@ -210,7 +206,7 @@ export class BlockBuilder {
     const transactionsTrie = await this.transactionsTrie()
     const receiptTrie = await this.receiptTrie()
     const bloom = this.bloom()
-    const gasUsed = this.gasUsed()
+    const gasUsed = this.gasUsed
     const timestamp = this.headerData.timestamp ?? Math.round(Date.now() / 1000)
 
     const headerData = {
