@@ -590,35 +590,41 @@ export class BlockHeader {
       }
 
       // check if the base fee is correct
-      let expectedBaseFee: BN
-      if (parentGasTarget.eq(parentGasUsed)) {
-        expectedBaseFee = parentBaseFee!
-      } else if (parentGasTarget.gt(parentGasUsed)) {
-        const gasUsedDelta = parentGasUsed.sub(parentGasTarget)
-        const baseFeeMaxChangeDenominator = new BN(
-          this._common.param('gasConfig', 'baseFeeMaxChangeDenominator')
-        )
-        const calculatedDelta = parentBaseFee!
-          .mul(gasUsedDelta)
-          .div(parentGasTarget)
-          .div(baseFeeMaxChangeDenominator)
-        expectedBaseFee = BN.max(calculatedDelta, new BN(1)).add(parentBaseFee!)
-      } else {
-        const gasUsedDelta = parentGasUsed.sub(parentGasTarget)
-        const baseFeeMaxChangeDenominator = new BN(
-          this._common.param('gasConfig', 'baseFeeMaxChangeDenominator')
-        )
-        const calculatedDelta = parentBaseFee!
-          .mul(gasUsedDelta)
-          .div(parentGasTarget)
-          .div(baseFeeMaxChangeDenominator)
-        expectedBaseFee = BN.max(parentBaseFee!.sub(calculatedDelta), new BN(0))
-      }
+      const expectedBaseFee = this.getBaseFee(parentBaseFee!, parentGasUsed, parentGasTarget)
 
       if (!this.baseFeePerGas!.eq(expectedBaseFee)) {
         throw new Error('Invalid block: base fee not correct')
       }
     }
+  }
+
+  public getBaseFee(parentBaseFee: BN, parentGasUsed: BN, parentGasTarget: BN): BN {
+    let expectedBaseFee: BN
+
+    if (parentGasTarget.eq(parentGasUsed)) {
+      expectedBaseFee = parentBaseFee!
+    } else if (parentGasUsed.gt(parentGasTarget)) {
+      const gasUsedDelta = parentGasUsed.sub(parentGasTarget)
+      const baseFeeMaxChangeDenominator = new BN(
+        this._common.param('gasConfig', 'baseFeeMaxChangeDenominator')
+      )
+      const calculatedDelta = parentBaseFee!
+        .mul(gasUsedDelta)
+        .div(parentGasTarget)
+        .div(baseFeeMaxChangeDenominator)
+      expectedBaseFee = BN.max(calculatedDelta, new BN(1)).add(parentBaseFee!)
+    } else {
+      const gasUsedDelta = parentGasTarget.sub(parentGasUsed)
+      const baseFeeMaxChangeDenominator = new BN(
+        this._common.param('gasConfig', 'baseFeeMaxChangeDenominator')
+      )
+      const calculatedDelta = parentBaseFee!
+        .mul(gasUsedDelta)
+        .div(parentGasTarget)
+        .div(baseFeeMaxChangeDenominator)
+      expectedBaseFee = BN.max(parentBaseFee!.sub(calculatedDelta), new BN(0))
+    }
+    return expectedBaseFee
   }
 
   /**
