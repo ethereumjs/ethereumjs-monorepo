@@ -562,7 +562,8 @@ export class BlockHeader {
         throw new Error('EIP1559 block has no base fee field')
       }
       let parentBaseFee = parentHeader.baseFeePerGas
-      if (this._common.getEIPActivationBlockNumber(1559)!.eq(this.number)) {
+      const isInitialEIP1559Block = this._common.getEIPActivationBlockNumber(1559)!.eq(this.number)
+      if (isInitialEIP1559Block) {
         const initialBaseFee = new BN(this._common.param('gasConfig', 'initialBaseFee'))
         parentBaseFee = initialBaseFee
         if (!this.baseFeePerGas.eq(initialBaseFee)) {
@@ -589,11 +590,13 @@ export class BlockHeader {
         throw new Error('Invalid block: gas target decreased too much')
       }
 
-      // check if the base fee is correct
-      const expectedBaseFee = this.getBaseFee(parentBaseFee!, parentGasUsed, parentGasTarget)
+      if (!isInitialEIP1559Block) {
+        // check if the base fee is correct
+        const expectedBaseFee = this.getBaseFee(parentBaseFee!, parentGasUsed, parentGasTarget)
 
-      if (!this.baseFeePerGas!.eq(expectedBaseFee)) {
-        throw new Error('Invalid block: base fee not correct')
+        if (!this.baseFeePerGas!.eq(expectedBaseFee)) {
+          throw new Error('Invalid block: base fee not correct')
+        }
       }
     }
   }
