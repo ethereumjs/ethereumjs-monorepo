@@ -4,37 +4,14 @@ import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import VM from '../../lib'
-import { DefaultStateManager } from '../../lib/state'
-import runTx from '../../lib/runTx'
 import { createAccount } from './utils'
 
-function setup(vm?: any) {
-  if (!vm) {
-    const stateManager = new DefaultStateManager({})
-    const common = new Common({ chain: 'mainnet' })
-    vm = {
-      _common: common,
-      stateManager,
-      emit: (e: any, val: any, cb: Function) => {
-        cb()
-      },
-      _emit: () => new Promise((resolve) => resolve()),
-    }
-  }
-
-  return {
-    vm,
-    runTx: runTx.bind(vm),
-    putAccount: vm.stateManager.putAccount.bind(vm.stateManager),
-  }
-}
-
 tape('runTx', (t) => {
-  const suite = setup()
+  const vm = new VM()
 
   t.test('should fail to run without signature', async (st) => {
     const tx = getTransaction(false)
-    shouldFail(st, suite.runTx({ tx }), (e: Error) =>
+    shouldFail(st, vm.runTx({ tx }), (e: Error) =>
       st.ok(e.message.includes('not signed'), 'should fail with appropriate error')
     )
     st.end()
@@ -42,7 +19,7 @@ tape('runTx', (t) => {
 
   t.test('should fail without sufficient funds', async (st) => {
     const tx = getTransaction(true)
-    shouldFail(st, suite.runTx({ tx }), (e: Error) => {
+    shouldFail(st, vm.runTx({ tx }), (e: Error) => {
       st.ok(e.message.toLowerCase().includes('enough funds'), 'error should include "enough funds"')
     })
     st.end()
@@ -51,15 +28,14 @@ tape('runTx', (t) => {
 
 tape('should run simple tx without errors', async (t) => {
   const vm = new VM()
-  const suite = setup(vm)
-
   const tx = getTransaction(true)
+
   const caller = tx.getSenderAddress()
   const acc = createAccount()
 
-  await suite.putAccount(caller, acc)
+  await vm.stateManager.putAccount(caller, acc)
 
-  const res = await suite.runTx({ tx })
+  const res = await vm.runTx({ tx })
   t.true(res.gasUsed.gt(new BN(0)), 'should have used some gas')
 
   t.end()
@@ -67,18 +43,16 @@ tape('should run simple tx without errors', async (t) => {
 
 tape('should fail when account balance overflows (call)', async (t) => {
   const vm = new VM()
-  const suite = setup(vm)
-
   const tx = getTransaction(true, '0x01')
 
   const caller = tx.getSenderAddress()
   const from = createAccount()
-  await suite.putAccount(caller, from)
+  await vm.stateManager.putAccount(caller, from)
 
   const to = createAccount(new BN(0), MAX_INTEGER)
-  await suite.putAccount(tx.to, to)
+  await vm.stateManager.putAccount(tx.to!, to)
 
-  const res = await suite.runTx({ tx })
+  const res = await vm.runTx({ tx })
 
   t.equal(res.execResult!.exceptionError!.error, 'value overflow')
   t.equal((<any>vm.stateManager)._checkpointCount, 0)
@@ -87,21 +61,19 @@ tape('should fail when account balance overflows (call)', async (t) => {
 
 tape('should fail when account balance overflows (create)', async (t) => {
   const vm = new VM()
-  const suite = setup(vm)
-
   const tx = getTransaction(true, '0x01', true)
 
   const caller = tx.getSenderAddress()
   const from = createAccount()
-  await suite.putAccount(caller, from)
+  await vm.stateManager.putAccount(caller, from)
 
   const contractAddress = new Address(
     Buffer.from('61de9dc6f6cff1df2809480882cfd3c2364b28f7', 'hex')
   )
   const to = createAccount(new BN(0), MAX_INTEGER)
-  await suite.putAccount(contractAddress, to)
+  await vm.stateManager.putAccount(contractAddress, to)
 
-  const res = await suite.runTx({ tx })
+  const res = await vm.runTx({ tx })
 
   t.equal(res.execResult!.exceptionError!.error, 'value overflow')
   t.equal((<any>vm.stateManager)._checkpointCount, 0)
@@ -185,7 +157,6 @@ tape('should be possible to disable the block gas limit validation', async (t) =
   })
 
   t.equals(result.execResult.exceptionError, undefined)
-
   t.end()
 })
 
