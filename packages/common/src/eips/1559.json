@@ -7,7 +7,7 @@
     "minimumHardfork": "london",
     "gasConfig": {
       "baseFeeMaxChangeDenominator": {
-        "v": 10,
+        "v": 8,
         "d": "Maximum base fee change denominator"
       },
       "elasticityMultiplier": {
