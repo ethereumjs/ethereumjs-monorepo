@@ -19,74 +19,139 @@ const TRANSACTION_TYPES = [
 const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
 common.setMaxListeners(100)
 
-tape('runTx() -> successful API usage', async (t) => {
-  t.test('simple run (unmodified options)', async (t) => {
+tape('runTx() -> successful API parameter usage', async (t) => {
+  async function simpleRun(vm: VM, msg: string) {
     for (const txType of TRANSACTION_TYPES) {
-      const vm = new VM({ common })
       const tx = getTransaction(vm._common, txType.type, true)
 
       const caller = tx.getSenderAddress()
       const acc = createAccount()
-
       await vm.stateManager.putAccount(caller, acc)
 
       const res = await vm.runTx({ tx })
-      t.true(res.gasUsed.gt(new BN(0)), `should run ${txType.name} without errors`)
+      t.true(res.gasUsed.gt(new BN(0)), `${msg} (${txType.name})`)
     }
+  }
+
+  t.test('simple run (unmodified options)', async (t) => {
+    let common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+    let vm = new VM({ common })
+    await simpleRun(vm, 'mainnet (PoW), berlin HF, default SM - should run without errors')
+
+    common = new Common({ chain: 'rinkeby', hardfork: 'berlin' })
+    vm = new VM({ common })
+    await simpleRun(vm, 'rinkeby (PoA), berlin HF, default SM - should run without errors')
+
     t.end()
   })
 
-  t.test('disabled block gas limit validation (skipBlockGasLimitValidation: true)', async (t) => {
-    for (const txType of TRANSACTION_TYPES) {
-      const vm = new VM({ common })
+  t.test('Legacy Transaction with HF set to pre-Berlin', async (t) => {
+    const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+    const vm = new VM({ common })
 
-      const privateKey = Buffer.from(
-        'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-        'hex'
-      )
-      const address = Address.fromPrivateKey(privateKey)
-      const initialBalance = new BN(10).pow(new BN(18))
+    const tx = getTransaction(vm._common, 0, true)
 
-      const account = await vm.stateManager.getAccount(address)
-      await vm.stateManager.putAccount(
-        address,
-        Account.fromAccountData({ ...account, balance: initialBalance })
-      )
+    const caller = tx.getSenderAddress()
+    const acc = createAccount()
+    await vm.stateManager.putAccount(caller, acc)
 
-      const transferCost = 21000
-      const unsignedTx = Transaction.fromTxData({
-        to: address,
-        gasLimit: transferCost,
-        gasPrice: 1,
-        nonce: 0,
-      })
-      const tx = unsignedTx.sign(privateKey)
+    const res = await vm.runTx({ tx })
+    t.true(
+      res.gasUsed.gt(new BN(0)),
+      `mainnet (PoW), istanbul HF, default SM - should run without errors (${TRANSACTION_TYPES[0].name})`
+    )
 
-      const block = Block.fromBlockData({
-        header: { gasLimit: transferCost - 1 },
-      })
-
-      const result = await vm.runTx({
-        tx,
-        block,
-        skipBlockGasLimitValidation: true,
-      })
-
-      t.equals(
-        result.execResult.exceptionError,
-        undefined,
-        `should run ${txType.name} without errors`
-      )
-    }
     t.end()
   })
+
+  t.test(
+    'custom block (block option), disabled block gas limit validation (skipBlockGasLimitValidation: true)',
+    async (t) => {
+      for (const txType of TRANSACTION_TYPES) {
+        const vm = new VM({ common })
+
+        const privateKey = Buffer.from(
+          'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
+          'hex'
+        )
+        const address = Address.fromPrivateKey(privateKey)
+        const initialBalance = new BN(10).pow(new BN(18))
+
+        const account = await vm.stateManager.getAccount(address)
+        await vm.stateManager.putAccount(
+          address,
+          Account.fromAccountData({ ...account, balance: initialBalance })
+        )
+
+        const transferCost = 21000
+        const unsignedTx = Transaction.fromTxData({
+          to: address,
+          gasLimit: transferCost,
+          gasPrice: 1,
+          nonce: 0,
+        })
+        const tx = unsignedTx.sign(privateKey)
+
+        const coinbase = Buffer.from('00000000000000000000000000000000000000ff', 'hex')
+        const block = Block.fromBlockData({
+          header: {
+            gasLimit: transferCost - 1,
+            coinbase,
+          },
+        })
+
+        const result = await vm.runTx({
+          tx,
+          block,
+          skipBlockGasLimitValidation: true,
+        })
+
+        const coinbaseAccount = await vm.stateManager.getAccount(new Address(coinbase))
+        t.equals(
+          coinbaseAccount.balance.toNumber(),
+          21000,
+          `should use custom block (${txType.name})`
+        )
+
+        t.equals(
+          result.execResult.exceptionError,
+          undefined,
+          `should run ${txType.name} without errors`
+        )
+      }
+      t.end()
+    }
+  )
 })
 
-tape('runTx() -> API usage/data errors', (t) => {
+tape('runTx() -> API parameter usage/data errors', (t) => {
+  t.test('Typed Transaction with HF set to pre-Berlin', async (t) => {
+    const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+    const vm = new VM({ common })
+
+    const tx = getTransaction(new Common({ chain: 'mainnet', hardfork: 'berlin' }), 1, true)
+
+    const caller = tx.getSenderAddress()
+    const acc = createAccount()
+    await vm.stateManager.putAccount(caller, acc)
+
+    try {
+      await vm.runTx({ tx })
+    } catch (e) {
+      console.log(e)
+      t.ok(
+        e.message.includes('(EIP-2718) not activated'),
+        `should fail for ${TRANSACTION_TYPES[1].name}`
+      )
+    }
+
+    t.end()
+  })
+
   t.test('run without signature', async (t) => {
     for (const txType of TRANSACTION_TYPES) {
       const vm = new VM({ common })
-      const tx = getTransaction(vm._common, 0, false)
+      const tx = getTransaction(vm._common, txType.type, false)
       try {
         await vm.runTx({ tx })
       } catch (e) {
@@ -99,7 +164,7 @@ tape('runTx() -> API usage/data errors', (t) => {
   t.test('run with insufficient funds', async (t) => {
     for (const txType of TRANSACTION_TYPES) {
       const vm = new VM({ common })
-      const tx = getTransaction(vm._common, 0, true)
+      const tx = getTransaction(vm._common, txType.type, true)
       try {
         await vm.runTx({ tx })
       } catch (e) {
@@ -133,15 +198,18 @@ tape('runTx() -> runtime behavior', async (t) => {
         Buffer.from('00'.repeat(32), 'hex'),
         Buffer.from('00'.repeat(31) + '01', 'hex')
       )
-      const tx = Transaction.fromTxData(
-        {
-          nonce: '0x00',
-          gasPrice: 1,
-          gasLimit: 100000,
-          to: address,
-        },
-        { common }
-      ).sign(privateKey)
+      const txParams: any = {
+        nonce: '0x00',
+        gasPrice: 1,
+        gasLimit: 100000,
+        to: address,
+      }
+      if (txType.type === 1) {
+        txParams['chainId'] = common.chainIdBN()
+        txParams['accessList'] = []
+        txParams['type'] = txType
+      }
+      const tx = Transaction.fromTxData(txParams, { common }).sign(privateKey)
 
       await vm.stateManager.putAccount(tx.getSenderAddress(), createAccount())
 
@@ -161,7 +229,7 @@ tape('runTx() -> runtime errors', async (t) => {
   t.test('account balance overflows (call)', async (t) => {
     for (const txType of TRANSACTION_TYPES) {
       const vm = new VM({ common })
-      const tx = getTransaction(vm._common, 0, true, '0x01')
+      const tx = getTransaction(vm._common, txType.type, true, '0x01')
 
       const caller = tx.getSenderAddress()
       const from = createAccount()
@@ -189,7 +257,7 @@ tape('runTx() -> runtime errors', async (t) => {
   t.test('account balance overflows (create)', async (t) => {
     for (const txType of TRANSACTION_TYPES) {
       const vm = new VM({ common })
-      const tx = getTransaction(vm._common, 0, true, '0x01', true)
+      const tx = getTransaction(vm._common, txType.type, true, '0x01', true)
 
       const caller = tx.getSenderAddress()
       const from = createAccount()
@@ -218,24 +286,34 @@ tape('runTx() -> runtime errors', async (t) => {
   })
 })
 
-// The following test tries to verify that running a tx
-// would work, even when stateManager is not using a cache.
-// It fails at the moment, and has been therefore commented.
-// Please refer to https://github.com/ethereumjs/ethereumjs-monorepo/issues/353
-/* tape('should behave the same when not using cache', async (t) => {
-  const suite = setup()
+// TODO: complete on result values and add more usage scenario test cases
+tape('runTx() -> API return values', async (t) => {
+  t.test('simple run,common return values', async (t) => {
+    for (const txType of TRANSACTION_TYPES) {
+      const vm = new VM({ common })
+      const tx = getTransaction(vm._common, txType.type, true)
 
-  const tx = getTransaction(true)
-  const acc = createAccount()
-  const caller = tx.getSenderAddress()
-  await suite.putAccount(caller, acc)
-  await suite.cacheFlush()
-  suite.vm.stateManager.cache.clear()
+      const caller = tx.getSenderAddress()
+      const acc = createAccount()
+      await vm.stateManager.putAccount(caller, acc)
 
-  shouldFail(t,
-    suite.runTx({ tx }),
-    (e) => t.equal(e.message, 'test', 'error should be equal to what the mock runCall returns')
-  )
-
-  t.end()
-}) */
+      const res = await vm.runTx({ tx })
+      t.true(res.execResult.gasUsed.eqn(0), `execution result -> gasUsed -> 0 (${txType.name})`)
+      t.equal(
+        res.execResult.exceptionError,
+        undefined,
+        `execution result -> exception error -> undefined (${txType.name})`
+      )
+      t.deepEqual(
+        res.execResult.returnValue,
+        Buffer.from([]),
+        `execution result -> return value -> empty Buffer (${txType.name})`
+      )
+      t.true(
+        res.execResult.gasRefund!.eqn(0),
+        `execution result -> gasRefund -> 0 (${txType.name})`
+      )
+    }
+    t.end()
+  })
+})
