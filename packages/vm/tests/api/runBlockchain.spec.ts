@@ -5,7 +5,7 @@ import Common from '@ethereumjs/common'
 import Blockchain from '@ethereumjs/blockchain'
 import { setupVM } from './utils'
 import { setupPreConditions } from '../util'
-import * as testData from './testdata.json'
+import * as testData from './testdata/blockchain.json'
 import { DefaultStateManager } from '../../lib/state'
 
 const level = require('level-mem')

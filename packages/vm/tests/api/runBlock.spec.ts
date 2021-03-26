@@ -8,7 +8,7 @@ import { setupPreConditions, getDAOCommon } from '../util'
 import { setupVM, createAccount } from './utils'
 import VM from '../../lib/index'
 
-const testData = require('./testdata.json')
+const testData = require('./testdata/blockchain.json')
 const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
 
 tape('runBlock', async (t) => {
