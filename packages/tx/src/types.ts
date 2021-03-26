@@ -2,6 +2,7 @@ import { BN, AddressLike, BNLike, BufferLike, PrefixedHexString } from 'ethereum
 import Common from '@ethereumjs/common'
 import { default as Transaction } from './legacyTransaction'
 import { default as AccessListEIP2930Transaction } from './eip2930Transaction'
+import { FeeMarketEIP1559Transaction } from '.'
 
 /**
  * The options for initializing a Transaction.
@@ -64,7 +65,10 @@ export function isAccessList(input: AccessListBuffer | AccessList): input is Acc
   return !isAccessListBuffer(input) // This is exactly the same method, except the output is negated.
 }
 
-export type TypedTransaction = Transaction | AccessListEIP2930Transaction
+export type TypedTransaction =
+  | Transaction
+  | AccessListEIP2930Transaction
+  | FeeMarketEIP1559Transaction
 
 export type TxData = {
   /**
@@ -143,6 +147,10 @@ export interface FeeMarketEIP1559TxData extends AccessListEIP2930TxData {
    * The maximum total fee
    */
   maxFeePerGas?: BNLike
+  /**
+   * The transaction type
+   */
+  type?: BNLike
 }
 
 /**

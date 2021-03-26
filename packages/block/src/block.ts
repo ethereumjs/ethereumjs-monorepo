@@ -3,7 +3,14 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { BN, rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { TransactionFactory, TypedTransaction, TxOptions } from '@ethereumjs/tx'
+import {
+  TransactionFactory,
+  TypedTransaction,
+  TxOptions,
+  Transaction,
+  FeeMarketEIP1559Transaction,
+  AccessListEIP2930Transaction,
+} from '@ethereumjs/tx'
 import { BlockHeader } from './header'
 import { BlockData, BlockOptions, JsonBlock, BlockBuffer, Blockchain } from './types'
 
@@ -223,9 +230,15 @@ export class Block {
   validateTransactions(stringError: true): string[]
   validateTransactions(stringError = false) {
     const errors: string[] = []
-
+    const self = this
     this.transactions.forEach(function (tx, i) {
       const errs = <string[]>tx.validate(true)
+      if (self._common.isActivatedEIP(1559)) {
+        const gas = self.getEIP1559Fees(tx)
+        if (gas.maxFeePerGas < self.header.baseFeePerGas!) {
+          errs.push('tx unable to pay base fee')
+        }
+      }
       if (errs.length > 0) {
         errors.push(`errors at tx ${i}: ${errs.join(', ')}`)
       }
@@ -458,6 +471,26 @@ export class Block {
         return undefined
       } else {
         throw error
+      }
+    }
+  }
+
+  // EIP1559-related helpers
+  private getEIP1559Fees(transaction: TypedTransaction) {
+    if ('transactionType' in transaction && transaction.transactionType === 1) {
+      return {
+        maxInclusionFeePerGas: (<AccessListEIP2930Transaction>transaction).gasPrice,
+        maxFeePerGas: (<AccessListEIP2930Transaction>transaction).gasPrice,
+      }
+    } else if ('transactionType' in transaction && transaction.transactionType === 2) {
+      return {
+        maxInclusionFeePerGas: (<FeeMarketEIP1559Transaction>transaction).maxInclusionFeePerGas,
+        maxFeePerGas: (<FeeMarketEIP1559Transaction>transaction).maxFeePerGas,
+      }
+    } else {
+      return {
+        maxInclusionFeePerGas: (<Transaction>transaction).gasPrice,
+        maxFeePerGas: (<Transaction>transaction).gasPrice,
       }
     }
   }
