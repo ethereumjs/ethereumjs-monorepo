@@ -30,7 +30,7 @@ import { Buffer } from 'buffer'
  * opcodes.spec.ts (getActiveOpcodes())
  */
 
-tape('VM with default blockchain', (t) => {
+tape('VM -> basic instantiation / boolean switches', (t) => {
   t.test('should instantiate without params', (st) => {
     const vm = new VM()
     st.ok(vm.stateManager)
@@ -63,24 +63,13 @@ tape('VM with default blockchain', (t) => {
     )
     st.end()
   })
+})
 
-  t.test('should work with trie (state) provided', async (st) => {
-    const trie = new Trie()
-    const vm = new VM({ state: trie, activatePrecompiles: true })
-    await vm.init()
-    st.notDeepEqual(
-      (vm.stateManager as DefaultStateManager)._trie.root,
-      KECCAK256_RLP,
-      'it has different root'
-    )
-    st.end()
-  })
-
+tape('VM -> common (chain, HFs, EIPs)', (t) => {
   t.test('should accept a common object as option', async (st) => {
     const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
 
-    const vm = new VM({ common })
-    await vm.init()
+    const vm = await VM.create({ common })
     st.equal(vm._common, common)
 
     st.end()
@@ -114,9 +103,30 @@ tape('VM with default blockchain', (t) => {
     })
     st.end()
   })
+
+  t.test('should accept a custom chain config', async (st) => {
+    const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
+    const common = Common.forCustomChain('mainnet', customChainParams, 'byzantium')
+
+    const vm = await VM.create({ common })
+    st.equal(vm._common, common)
+    st.end()
+  })
 })
 
-tape('VM with blockchain', (t) => {
+tape('VM -> state (deprecated), blockchain', (t) => {
+  t.test('should work with trie (state) provided', async (st) => {
+    const trie = new Trie()
+    const vm = new VM({ state: trie, activatePrecompiles: true })
+    await vm.init()
+    st.notDeepEqual(
+      (vm.stateManager as DefaultStateManager)._trie.root,
+      KECCAK256_RLP,
+      'it has different root'
+    )
+    st.end()
+  })
+
   t.test('should instantiate', async (st) => {
     const vm = setupVM()
     await vm.init()
