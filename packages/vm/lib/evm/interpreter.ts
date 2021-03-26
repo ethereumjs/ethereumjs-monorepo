@@ -111,11 +111,14 @@ export default class Interpreter {
       try {
         await this.runStep()
       } catch (e) {
+        // re-throw on non-VM errors
+        if (!('errorType' in e && e.errorType === 'VmError')) {
+          throw e
+        }
         // STOP is not an exception
         if (e.error !== ERROR.STOP) {
           err = e
         }
-        // TODO: Throw on non-VmError exceptions
         break
       }
     }
