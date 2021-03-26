@@ -168,10 +168,12 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
 
   /**
    * The up front amount that an account must have for this transaction to be valid
+   * @param baseFee The base fee of the block
    */
-  getUpfrontCost(): BN {
-    // TODO: depends upon block
-    return new BN(0) //return this.gasLimit.mul(this.gasPrice).add(this.value)
+  getUpfrontCost(baseFee?: BN): BN {
+    const inclusionFeePerGas = BN.min(this.maxInclusionFeePerGas, this.maxFeePerGas.sub(baseFee!))
+    const gasPrice = inclusionFeePerGas.add(baseFee!)
+    return this.gasLimit.mul(gasPrice).add(this.value)
   }
 
   /**
@@ -304,6 +306,13 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       value: bnToHex(this.value),
       data: '0x' + this.data.toString('hex'),
       accessList: accessListJSON,
+    }
+  }
+
+  getEIP1559Data() {
+    return {
+      maxInclusionFeePerGas: this.maxInclusionFeePerGas,
+      maxFeePerGas: this.maxFeePerGas,
     }
   }
 }

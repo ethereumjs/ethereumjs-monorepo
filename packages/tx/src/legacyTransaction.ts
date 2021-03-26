@@ -168,9 +168,16 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
   /**
    * The up front amount that an account must have for this transaction to be valid
+   * @param baseFee If present, return the upfront cost if the transaction is in an EIP1559 block
    */
-  getUpfrontCost(): BN {
-    return this.gasLimit.mul(this.gasPrice).add(this.value)
+  getUpfrontCost(baseFee?: BN): BN {
+    if (baseFee) {
+      const inclusionFeePerGas = BN.min(this.gasPrice, this.gasPrice.sub(baseFee!))
+      const gasPrice = inclusionFeePerGas.add(baseFee!)
+      return this.gasLimit.mul(gasPrice).add(this.value)
+    } else {
+      return this.gasLimit.mul(this.gasPrice).add(this.value)
+    }
   }
 
   /**
@@ -263,6 +270,13 @@ export default class Transaction extends BaseTransaction<Transaction> {
       v: this.v !== undefined ? bnToHex(this.v) : undefined,
       r: this.r !== undefined ? bnToHex(this.r) : undefined,
       s: this.s !== undefined ? bnToHex(this.s) : undefined,
+    }
+  }
+
+  getEIP1559Data() {
+    return {
+      maxInclusionFeePerGas: this.gasPrice,
+      maxFeePerGas: this.gasPrice,
     }
   }
 
