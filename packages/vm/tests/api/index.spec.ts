@@ -6,6 +6,8 @@ import { DefaultStateManager } from '../../lib/state'
 import VM from '../../lib'
 import { isRunningInKarma } from '../util'
 import { setupVM } from './utils'
+import testnet from './testdata/testnet.json'
+import testnet2 from './testdata/testnet2.json'
 
 // explicitly import util and buffer,
 // needed for karma-typescript bundling
@@ -104,14 +106,29 @@ tape('VM -> common (chain, HFs, EIPs)', (t) => {
     st.end()
   })
 
-  t.test('should accept a custom chain config', async (st) => {
-    const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
-    const common = Common.forCustomChain('mainnet', customChainParams, 'byzantium')
+  t.test(
+    'should accept a custom chain config (Common.forCustomChain() static constructor)',
+    async (st) => {
+      const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
+      const common = Common.forCustomChain('mainnet', customChainParams, 'byzantium')
 
-    const vm = await VM.create({ common })
-    st.equal(vm._common, common)
-    st.end()
-  })
+      const vm = await VM.create({ common })
+      st.equal(vm._common, common)
+      st.end()
+    }
+  )
+
+  t.test(
+    'should accept a custom chain config (Common customChains constructor option)',
+    async (st) => {
+      const customChains = [testnet, testnet2]
+      const common = new Common({ chain: 'testnet2', hardfork: 'berlin', customChains })
+
+      const vm = await VM.create({ common })
+      st.equal(vm._common, common)
+      st.end()
+    }
+  )
 })
 
 tape('VM -> state (deprecated), blockchain', (t) => {
