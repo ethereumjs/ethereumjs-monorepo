@@ -41,6 +41,7 @@ export interface VMOpts {
    *
    * ### Supported EIPs
    *
+   * - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - Fee Market
    * - [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - VM simple subroutines
    * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) (`experimental`) - BLS12-381 precompiles
    * - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - Gas cost increases for state access opcodes
@@ -165,7 +166,7 @@ export default class VM extends AsyncEventEmitter {
 
     if (opts.common) {
       //EIPs
-      const supportedEIPs = [2315, 2537, 2565, 2718, 2929, 2930, 3529, 3541]
+      const supportedEIPs = [1559, 2315, 2537, 2565, 2718, 2929, 2930, 3529, 3541]
       for (const eip of opts.common.eips()) {
         if (!supportedEIPs.includes(eip)) {
           throw new Error(`${eip} is not supported by the VM`)

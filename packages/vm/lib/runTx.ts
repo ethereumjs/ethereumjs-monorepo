@@ -251,7 +251,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (this._common.isActivatedEIP(1559)) {
     const baseFee = block.header.baseFeePerGas
     const EIP1559Data = tx.getEIP1559Data()
-    inclusionFeePerGas = BN.min(EIP1559Data.maxInclusionFeePerGas, this.maxFeePerGas.sub(baseFee!))
+    inclusionFeePerGas = BN.min(
+      EIP1559Data.maxInclusionFeePerGas,
+      EIP1559Data.maxFeePerGas.sub(baseFee!)
+    )
     gasPrice = inclusionFeePerGas.add(baseFee!)
   } else {
     // Have to cast it as legacy transaction: EIP1559 transaction does not have gas price
