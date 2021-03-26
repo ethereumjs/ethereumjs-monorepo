@@ -12,7 +12,8 @@
   ],
   "scripts": {
     "build": "ethereumjs-config-ts-build",
-    "prepublishOnly": "npm run test && npm run build",
+    "prepublishOnly": "npm run clean && npm run build && npm run test",
+    "clean": "rm -Rf ./dist && rm -Rf ./dist.browser",
     "coverage": "ethereumjs-config-coverage",
     "docs:build": "npx typedoc --options typedoc.js",
     "lint": "ethereumjs-config-lint",

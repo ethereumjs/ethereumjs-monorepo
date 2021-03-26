@@ -12,7 +12,8 @@
   "scripts": {
     "build": "ethereumjs-config-ts-build",
     "tsc": "ethereumjs-config-tsc",
-    "prepublishOnly": "npm run build && npm run test",
+    "prepublishOnly": "npm run clean && npm run build && npm run test",
+    "clean": "rm -Rf ./dist && rm -Rf ./dist.browser",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
     "coverage": "ethereumjs-config-coverage",

@@ -16,7 +16,8 @@
     "build": "npm run build:node && npm run build:browser",
     "build:node": "tsc -p ./tsconfig.prod.json",
     "build:browser": "tsc -p ./tsconfig.browser.json && npm run bundle && rm -rf dist.browser",
-    "prepublishOnly": "npm run build && npm run test",
+    "prepublishOnly": "npm run clean && npm run build && npm run test",
+    "clean": "rm -Rf ./dist && rm -Rf ./dist.browser",
     "bundle": "webpack",
     "client:start": "ts-node bin/cli.ts",
     "client:start:dev1": "npm run client:start -- --discDns=false --discV4=false --bootnodes",
@@ -54,7 +55,7 @@
   "homepage": "https://github.com/ethereumjs/ethereumjs-client#readme",
   "dependencies": {
     "@ethereumjs/block": "^3.2.0",
-    "@ethereumjs/blockchain": "^5.2.0",
+    "@ethereumjs/blockchain": "^5.2.1",
     "@ethereumjs/common": "^2.2.0",
     "@ethereumjs/devp2p": "^3.0.3",
     "@ethereumjs/tx": "^3.1.0",

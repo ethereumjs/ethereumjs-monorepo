@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/blockchain",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "description": "A module to store and interact with blocks",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,7 +10,8 @@
   ],
   "browser": "dist.browser/index.js",
   "scripts": {
-    "prepublishOnly": "npm run build && npm run test",
+    "prepublishOnly": "npm run clean && npm run build && npm run test",
+    "clean": "rm -Rf ./dist && rm -Rf ./dist.browser",
     "build": "ethereumjs-config-ts-build",
     "coverage": "ethereumjs-config-coverage",
     "docs:build": "typedoc --options typedoc.js",
