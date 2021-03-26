@@ -38,6 +38,22 @@
     {
       "name": "byzantium",
       "block": 4
+    },
+    {
+      "name": "constantinople",
+      "block": 5
+    },
+    {
+      "name": "petersburg",
+      "block": 6
+    },
+    {
+      "name": "istanbul",
+      "block": 7
+    },
+    {
+      "name": "berlin",
+      "block": 8
     }
   ],
   "bootstrapNodes": [

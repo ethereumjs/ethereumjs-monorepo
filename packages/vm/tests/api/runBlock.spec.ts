@@ -4,17 +4,16 @@ import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { Transaction } from '@ethereumjs/tx'
 import { PostByzantiumTxReceipt, PreByzantiumTxReceipt } from '../../lib/runBlock'
-import { setupPreConditions, getDAOCommon } from '../util'
 import { setupVM, createAccount } from './utils'
+import testnet from './testdata/testnet.json'
+import { setupPreConditions, getDAOCommon } from '../util'
 import VM from '../../lib/index'
 
 const testData = require('./testdata/blockchain.json')
 const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
 
 tape('runBlock() -> successful API parameter usage', async (t) => {
-  t.test('simple run (unmodified options)', async (t) => {
-    const vm = setupVM()
-
+  async function simpleRun(vm: VM) {
     const genesisRlp = testData.genesisRLP
     const genesis = Block.fromRLPSerializedBlock(genesisRlp)
 
@@ -42,7 +41,30 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       '5208',
       'actual gas used should equal blockHeader gasUsed'
     )
+  }
 
+  t.test('PoW block, unmodified options', async (t) => {
+    const vm = setupVM()
+    await simpleRun(vm)
+    t.end()
+  })
+
+  t.test(
+    'PoW block, Common custom chain (Common.forCustomChain() static constructor)',
+    async (t) => {
+      const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
+      const common = Common.forCustomChain('mainnet', customChainParams, 'berlin')
+      const vm = setupVM({ common })
+      await simpleRun(vm)
+      t.end()
+    }
+  )
+
+  t.test('PoW block, Common custom chain (Common customChains constructor option)', async (t) => {
+    const customChains = [testnet]
+    const common = new Common({ chain: 'testnet', hardfork: 'berlin', customChains })
+    const vm = setupVM({ common })
+    await simpleRun(vm)
     t.end()
   })
 
