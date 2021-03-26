@@ -1,9 +1,12 @@
 import tape from 'tape'
-import { BN } from 'ethereumjs-util'
+import { BN, toBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import Blockchain from '@ethereumjs/blockchain'
 import { setupVM } from './utils'
+import { setupPreConditions } from '../util'
+import * as testData from './testdata.json'
+import { DefaultStateManager } from '../../lib/state'
 
 const level = require('level-mem')
 
@@ -50,6 +53,63 @@ tape('runBlockchain', (t) => {
     } catch (e) {
       st.end(e)
     }
+  })
+
+  // TODO: test has been moved over from index.spec.ts, check for redundancy
+  t.test('should run blockchain with mocked runBlock', async (st) => {
+    const common = new Common({ chain: 'ropsten' })
+    const genesisRlp = Buffer.from(testData.genesisRLP.slice(2), 'hex')
+    const genesisBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
+
+    const blockRlp = Buffer.from(testData.blocks[0].rlp.slice(2), 'hex')
+    const block = Block.fromRLPSerializedBlock(blockRlp, { common })
+
+    const vm = setupVM({ common, genesisBlock })
+    await vm.init()
+
+    st.equal(vm.blockchain.meta.genesis?.toString('hex'), testData.genesisBlockHeader.hash.slice(2))
+
+    await vm.blockchain.putBlock(block)
+    const head = await vm.blockchain.getHead()
+    st.equal(head.hash().toString('hex'), testData.blocks[0].blockHeader.hash.slice(2))
+
+    await setupPreConditions((vm.stateManager as DefaultStateManager)._trie, testData)
+
+    vm.runBlock = async () => new Promise((resolve, reject) => reject(new Error('test')))
+
+    try {
+      await vm.runBlockchain()
+      st.fail("it hasn't returned any errors")
+    } catch (e) {
+      st.equal(e.message, 'test', "it has correctly propagated runBlock's error")
+      st.end()
+    }
+  })
+
+  // TODO: test has been moved over from index.spec.ts, check for redundancy
+  t.test('should run blockchain with blocks', async (st) => {
+    const common = new Common({ chain: 'ropsten' })
+
+    const genesisRlp = toBuffer(testData.genesisRLP)
+    const genesisBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
+
+    const blockRlp = toBuffer(testData.blocks[0].rlp)
+    const block = Block.fromRLPSerializedBlock(blockRlp, { common })
+
+    const vm = setupVM({ common, genesisBlock })
+    await vm.init()
+
+    st.equal(vm.blockchain.meta.genesis?.toString('hex'), testData.genesisBlockHeader.hash.slice(2))
+
+    await vm.blockchain.putBlock(block)
+    const head = await vm.blockchain.getHead()
+    st.equal(head.hash().toString('hex'), testData.blocks[0].blockHeader.hash.slice(2))
+
+    await setupPreConditions((vm.stateManager as DefaultStateManager)._trie, testData)
+
+    await vm.runBlockchain()
+
+    st.end()
   })
 
   t.test('should run with valid and invalid blocks', async (st) => {

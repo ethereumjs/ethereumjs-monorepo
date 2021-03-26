@@ -1,19 +1,34 @@
 import tape from 'tape'
-import { KECCAK256_RLP, toBuffer } from 'ethereumjs-util'
+import { KECCAK256_RLP } from 'ethereumjs-util'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import { DefaultStateManager } from '../../lib/state'
 import VM from '../../lib'
-import { setupPreConditions, isRunningInKarma } from '../util'
+import { isRunningInKarma } from '../util'
 import { setupVM } from './utils'
-import * as testData from './testdata.json'
 
 // explicitly import util and buffer,
 // needed for karma-typescript bundling
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 import * as util from 'util'
+// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 import { Buffer } from 'buffer'
+
+/**
+ * Tests for the main constructor API and
+ * exposed functionality by lib/index.js
+ *
+ * The following re-exported VM methods are tested within
+ * their own files:
+ *
+ * runBlockchain.spec.ts
+ * runBlock.spec.ts
+ * runTx.spec.ts
+ * runCall.spec.ts
+ * runCode.spec.ts
+ *
+ * opcodes.spec.ts (getActiveOpcodes())
+ */
 
 tape('VM with default blockchain', (t) => {
   t.test('should instantiate without params', (st) => {
@@ -110,67 +125,6 @@ tape('VM with blockchain', (t) => {
       KECCAK256_RLP,
       'it has default trie'
     )
-    st.end()
-  })
-
-  t.test('should run blockchain without blocks', async (st) => {
-    const vm = setupVM()
-    await vm.runBlockchain()
-    st.end()
-  })
-
-  t.test('should run blockchain with mocked runBlock', async (st) => {
-    const common = new Common({ chain: 'ropsten' })
-    const genesisRlp = Buffer.from(testData.genesisRLP.slice(2), 'hex')
-    const genesisBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
-
-    const blockRlp = Buffer.from(testData.blocks[0].rlp.slice(2), 'hex')
-    const block = Block.fromRLPSerializedBlock(blockRlp, { common })
-
-    const vm = setupVM({ common, genesisBlock })
-    await vm.init()
-
-    st.equal(vm.blockchain.meta.genesis?.toString('hex'), testData.genesisBlockHeader.hash.slice(2))
-
-    await vm.blockchain.putBlock(block)
-    const head = await vm.blockchain.getHead()
-    st.equal(head.hash().toString('hex'), testData.blocks[0].blockHeader.hash.slice(2))
-
-    await setupPreConditions((vm.stateManager as DefaultStateManager)._trie, testData)
-
-    vm.runBlock = async () => new Promise((resolve, reject) => reject(new Error('test')))
-
-    try {
-      await vm.runBlockchain()
-      st.fail("it hasn't returned any errors")
-    } catch (e) {
-      st.equal(e.message, 'test', "it has correctly propagated runBlock's error")
-      st.end()
-    }
-  })
-
-  t.test('should run blockchain with blocks', async (st) => {
-    const common = new Common({ chain: 'ropsten' })
-
-    const genesisRlp = toBuffer(testData.genesisRLP)
-    const genesisBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
-
-    const blockRlp = toBuffer(testData.blocks[0].rlp)
-    const block = Block.fromRLPSerializedBlock(blockRlp, { common })
-
-    const vm = setupVM({ common, genesisBlock })
-    await vm.init()
-
-    st.equal(vm.blockchain.meta.genesis?.toString('hex'), testData.genesisBlockHeader.hash.slice(2))
-
-    await vm.blockchain.putBlock(block)
-    const head = await vm.blockchain.getHead()
-    st.equal(head.hash().toString('hex'), testData.blocks[0].blockHeader.hash.slice(2))
-
-    await setupPreConditions((vm.stateManager as DefaultStateManager)._trie, testData)
-
-    await vm.runBlockchain()
-
     st.end()
   })
 
