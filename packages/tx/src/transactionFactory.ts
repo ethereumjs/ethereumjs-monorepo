@@ -3,6 +3,7 @@ import Common from '@ethereumjs/common'
 import { default as Transaction } from './legacyTransaction'
 import { default as AccessListEIP2930Transaction } from './eip2930Transaction'
 import { TxOptions, TypedTransaction, TxData, AccessListEIP2930TxData } from './types'
+import { FeeMarketEIP1559Transaction, FeeMarketEIP1559TxData } from '.'
 
 const DEFAULT_COMMON = new Common({ chain: 'mainnet' })
 
@@ -17,7 +18,7 @@ export default class TransactionFactory {
    * @param txOptions - Options to pass on to the constructor of the transaction
    */
   public static fromTxData(
-    txData: TxData | AccessListEIP2930TxData,
+    txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData,
     txOptions: TxOptions = {}
   ): TypedTransaction {
     const common = txOptions.common ?? DEFAULT_COMMON
@@ -112,6 +113,8 @@ export default class TransactionFactory {
     switch (transactionID) {
       case 1:
         return AccessListEIP2930Transaction
+      case 2:
+        return FeeMarketEIP1559Transaction
       default:
         throw new Error(`TypedTransaction with ID ${transactionID} unknown`)
     }

@@ -4,6 +4,7 @@ import { BlockHeader } from '../src/header'
 import { BN } from 'ethereumjs-util'
 import { Mockchain } from './mockchain'
 import { Block } from '../src/block'
+import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 
 // Test data from Besu (retrieved via Discord)
 // Older version at https://github.com/abdelhamidbakhta/besu/blob/bf54b6c0b40d3015fc85ff9b078fbc26592d80c0/ethereum/core/src/test/resources/org/hyperledger/besu/ethereum/core/fees/basefee-test.json
@@ -239,6 +240,49 @@ tape('EIP1559 tests', function (t) {
     st.pass('correctly validated block')
     await header2.validate(blockchain)
     st.pass('correctly validated block')
+    st.end()
+  })
+
+  t.test('Block should throw if transaction is unable to pay base fee', async (st) => {
+    const transaction = FeeMarketEIP1559Transaction.fromTxData(
+      {
+        maxFeePerGas: new BN(0),
+        maxInclusionFeePerGas: new BN(0),
+      },
+      { common }
+    ).sign(Buffer.from('46'.repeat(32), 'hex'))
+    const block = Block.fromBlockData(
+      {
+        header: {
+          number: new BN(1),
+          parentHash: genesis.hash(),
+          timestamp: new BN(1),
+          baseFeePerGas: new BN(common.param('gasConfig', 'initialBaseFee')),
+        },
+        transactions: [
+          {
+            maxFeePerGas: new BN(0),
+            maxInclusionFeePerGas: new BN(0),
+            type: 2,
+            v: transaction.v,
+            r: transaction.r,
+            s: transaction.s,
+            gasLimit: 53000,
+          },
+        ],
+      },
+      {
+        common,
+        calcDifficultyFromHeader: genesis.header,
+      }
+    )
+    try {
+      await block.validate(blockchain)
+      st.fail('should throw')
+    } catch (e) {
+      st.ok(e.message.includes('unable to pay base fee'), 'threw with right error')
+    }
+
     st.end()
   })
 })
