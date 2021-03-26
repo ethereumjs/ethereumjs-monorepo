@@ -278,6 +278,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
         nonce: this.nonce,
         maxInclusionFeePerGas: this.maxInclusionFeePerGas,
         maxFeePerGas: this.maxFeePerGas,
+        gasLimit: this.gasLimit,
         to: this.to,
         value: this.value,
         data: this.data,
@@ -306,6 +307,9 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       value: bnToHex(this.value),
       data: '0x' + this.data.toString('hex'),
       accessList: accessListJSON,
+      v: this.v !== undefined ? bnToHex(this.v) : undefined,
+      r: this.r !== undefined ? bnToHex(this.r) : undefined,
+      s: this.s !== undefined ? bnToHex(this.s) : undefined,
     }
   }
 
