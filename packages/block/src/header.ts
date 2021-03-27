@@ -102,7 +102,7 @@ export class BlockHeader {
    * @param headerData
    * @param opts
    */
-  public static fromRLPSerializedHeader(serialized: Buffer, opts: BlockOptions) {
+  public static fromRLPSerializedHeader(serialized: Buffer, opts: BlockOptions = {}) {
     const values = rlp.decode(serialized)
 
     if (!Array.isArray(values)) {
