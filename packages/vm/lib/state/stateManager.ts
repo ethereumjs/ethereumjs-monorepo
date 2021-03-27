@@ -9,6 +9,7 @@ import {
   keccak256,
   KECCAK256_NULL,
   unpadBuffer,
+  PrefixedHexString
 } from 'ethereumjs-util'
 import { encode, decode } from 'rlp'
 import Common from '@ethereumjs/common'
@@ -21,6 +22,22 @@ import { short } from '../evm/opcodes'
 const debug = createDebugLogger('vm:state')
 
 type AddressHex = string
+
+
+type StorageProof = {
+  key: PrefixedHexString,
+  proof: PrefixedHexString[],
+  value: PrefixedHexString
+}
+
+type Proof = {
+  balance: PrefixedHexString,
+  codeHash: PrefixedHexString,
+  nonce: PrefixedHexString,
+  storageHash: PrefixedHexString,
+  accountProof: PrefixedHexString[],
+  storageProof: StorageProof[]
+}
 
 /**
  * Options for constructing a [[StateManager]].
@@ -426,6 +443,10 @@ export default class DefaultStateManager implements StateManager {
       await this._cache.flush()
       this._clearOriginalStorageCache()
     }
+  }
+
+  async getProof(address: Address, storageSlots: Buffer[] = []): Promise<Proof> {
+    this._trie.walkTrie()
   }
 
   /**
