@@ -328,6 +328,9 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       value: bnToHex(this.value),
       data: '0x' + this.data.toString('hex'),
       accessList: accessListJSON,
+      v: this.v !== undefined ? bnToHex(this.v) : undefined,
+      r: this.r !== undefined ? bnToHex(this.r) : undefined,
+      s: this.s !== undefined ? bnToHex(this.s) : undefined,
     }
   }
 

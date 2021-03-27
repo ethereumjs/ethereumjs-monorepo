@@ -2,13 +2,18 @@ import tape from 'tape'
 import { Address, BN, privateToAddress } from 'ethereumjs-util'
 import VM from '../../../lib'
 import Common from '@ethereumjs/common'
-import { FeeMarketEIP1559Transaction, TypedTransaction } from '@ethereumjs/tx'
+import {
+  AccessListEIP2930Transaction,
+  FeeMarketEIP1559Transaction,
+  Transaction,
+  TypedTransaction,
+} from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
 
 const GWEI = new BN('1000000000')
 
 const common = new Common({
-  eips: [1559, 2718],
+  eips: [1559, 2718, 2930],
   chain: 'mainnet',
   hardfork: 'berlin',
 })
@@ -45,7 +50,7 @@ function makeBlock(baseFee: BN, transaction: TypedTransaction, txType: number) {
 }
 
 tape('EIP1559 tests', (t) => {
-  t.test('should jump into a subroutine, back out and stop', async (st) => {
+  t.test('test EIP1559 with all transaction types', async (st) => {
     const tx = new FeeMarketEIP1559Transaction(
       {
         maxFeePerGas: GWEI.muln(5),
@@ -74,16 +79,76 @@ tape('EIP1559 tests', (t) => {
     // It is also willing to tip the miner 2 GWEI (at most)
     // Thus, miner should get 21000*2 GWei, and the 21000*1 GWei is burned
 
-    const expectedCost = GWEI.muln(21000).muln(3)
-    const expectedMinerBalance = GWEI.muln(21000).muln(2)
-    const expectedAccountBalance = balance.sub(expectedCost)
+    let expectedCost = GWEI.muln(21000).muln(3)
+    let expectedMinerBalance = GWEI.muln(21000).muln(2)
+    let expectedAccountBalance = balance.sub(expectedCost)
 
-    const miner = await vm.stateManager.getAccount(coinbase)
+    let miner = await vm.stateManager.getAccount(coinbase)
 
     st.ok(miner.balance.eq(expectedMinerBalance), 'miner balance correct')
     account = await vm.stateManager.getAccount(sender)
     st.ok(account.balance.eq(expectedAccountBalance), 'account balance correct')
     st.ok(results.amountSpent.eq(expectedCost), 'reported cost correct')
+
+    const tx2 = new AccessListEIP2930Transaction(
+      {
+        gasLimit: 21000,
+        gasPrice: GWEI.muln(5),
+        to: Address.zero(),
+      },
+      { common }
+    )
+    const block2 = makeBlock(GWEI, tx2, 1)
+    account = await vm.stateManager.getAccount(sender)
+    account.balance = balance
+    await vm.stateManager.putAccount(sender, account)
+    miner.balance = new BN(0)
+    await vm.stateManager.putAccount(coinbase, miner)
+    const results2 = await vm.runTx({
+      tx: block2.transactions[0],
+      block: block2,
+    })
+
+    expectedCost = GWEI.muln(21000).muln(5)
+    expectedMinerBalance = GWEI.muln(21000).muln(4)
+    expectedAccountBalance = balance.sub(expectedCost)
+
+    miner = await vm.stateManager.getAccount(coinbase)
+
+    st.ok(miner.balance.eq(expectedMinerBalance), 'miner balance correct')
+    account = await vm.stateManager.getAccount(sender)
+    st.ok(account.balance.eq(expectedAccountBalance), 'account balance correct')
+    st.ok(results2.amountSpent.eq(expectedCost), 'reported cost correct')
+
+    const tx3 = new Transaction(
+      {
+        gasLimit: 21000,
+        gasPrice: GWEI.muln(5),
+        to: Address.zero(),
+      },
+      { common }
+    )
+    const block3 = makeBlock(GWEI, tx3, 0)
+    account = await vm.stateManager.getAccount(sender)
+    account.balance = balance
+    await vm.stateManager.putAccount(sender, account)
+    miner.balance = new BN(0)
+    await vm.stateManager.putAccount(coinbase, miner)
+    const results3 = await vm.runTx({
+      tx: block3.transactions[0],
+      block: block3,
+    })
+
+    expectedCost = GWEI.muln(21000).muln(5)
+    expectedMinerBalance = GWEI.muln(21000).muln(4)
+    expectedAccountBalance = balance.sub(expectedCost)
+
+    miner = await vm.stateManager.getAccount(coinbase)
+
+    st.ok(miner.balance.eq(expectedMinerBalance), 'miner balance correct')
+    account = await vm.stateManager.getAccount(sender)
+    st.ok(account.balance.eq(expectedAccountBalance), 'account balance correct')
+    st.ok(results3.amountSpent.eq(expectedCost), 'reported cost correct')
 
     st.end()
   })
