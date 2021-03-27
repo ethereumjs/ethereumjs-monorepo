@@ -39,5 +39,5 @@ export interface EIP2929StateManager extends StateManager {
   isWarmedAddress(address: Buffer): boolean
   addWarmedStorage(address: Buffer, slot: Buffer): void
   isWarmedStorage(address: Buffer, slot: Buffer): boolean
-  clearWarmedAccounts(): void
+  clearWarmedAccounts(reportAccessList?: boolean): any
 }

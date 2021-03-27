@@ -17,6 +17,7 @@ import { StateManager, StorageDump } from './interface'
 import Cache from './cache'
 import { ripemdPrecompileAddress } from '../evm/precompiles'
 import { short } from '../evm/opcodes'
+import { AccessList, AccessListItem } from '@ethereumjs/tx'
 
 const debug = createDebugLogger('vm:state')
 
@@ -642,9 +643,42 @@ export default class DefaultStateManager implements StateManager {
 
   /**
    * Clear the warm accounts and storage. To be called after a transaction finished.
+   * @param boolean - If true, returns an EIP-2930 access list generated
    */
-  clearWarmedAccounts(): void {
+  clearWarmedAccounts(reportAccessList?: boolean): any {
+    let accessList: AccessList | undefined
+
+    if (reportAccessList) {
+      // Fold accessedStorage array into one Map
+      const folded = new Map()
+      for (let i = this._accessedStorage.length - 1; i >= 0; i--) {
+        const currentMap = this._accessedStorage[i]
+        currentMap.forEach((slots, address) => {
+          if (!folded.has(address)) {
+            const emptyStorage = new Set()
+            folded.set(address, emptyStorage)
+          } else {
+            folded.get(address).set(slots)
+          }
+        })
+      }
+
+      // Transfer folded map to final structure
+      accessList = []
+      folded.forEach((slots, addressStr) => {
+        const address = Address.fromString(`0x${addressStr}`)
+        if (!address.isPrecompileOrSystemAddress()) {
+          const storageSlots = Array.from(slots).map((s) => `0x${s}`)
+          const accessListItem: AccessListItem = {
+            address: addressStr,
+            storageKeys: storageSlots,
+          }
+          accessList!.push(accessListItem)
+        }
+      })
+    }
     this._accessedStorage = [new Map()]
+    return accessList
   }
 
   /**
