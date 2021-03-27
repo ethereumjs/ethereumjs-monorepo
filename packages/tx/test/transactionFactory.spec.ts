@@ -74,7 +74,7 @@ tape('[TransactionFactory]: Basic functions', function (t) {
 
   t.test('should throw when getting an invalid transaction type', function (st) {
     st.throws(() => {
-      TransactionFactory.getTransactionClass(2, EIP2930Common)
+      TransactionFactory.getTransactionClass(3, EIP2930Common)
     })
 
     st.end()
