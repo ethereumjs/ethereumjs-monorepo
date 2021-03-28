@@ -1,13 +1,39 @@
-import { BN } from 'ethereumjs-util'
+import { BN, rlp } from 'ethereumjs-util'
 import { Peer } from '../net/peer/peer'
 import { short } from '../util'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import { BlockFetcher } from './fetcher'
 import { Block } from '@ethereumjs/block'
 import { VMExecution } from './execution/vmexecution'
+import { SecureTrie } from 'merkle-patricia-tree'
+import { keccak256 } from '@ethereumjs/devp2p'
+const level = require('level')
+
+const ENCODING_OPTS = { keyEncoding: 'binary', valueEncoding: 'binary' }
 
 // Minimum number of blocks to stay behind tip of chain to avoid syncing reorged blocks
 const PIVOT_BLOCKS = 30
+
+export class BeamSyncDB extends level {
+  constructor(...args: any) {
+    console.log('beam sync db')
+    super(...args)
+  }
+
+  testfn() {
+    console.log('hey')
+  }
+
+  async get(node: Buffer) {
+    console.log('GET', node.toString('hex'))
+    try {
+      return await super.get(node)
+    } catch (e) {
+      console.log('threw.')
+      throw e
+    }
+  }
+}
 
 /**
  * Implements an ethereum full sync synchronizer
@@ -19,15 +45,70 @@ export class BeamSynchronizer extends Synchronizer {
   public hardfork: string = ''
   public execution: VMExecution
 
+  private syncPeer?: Peer
+
   constructor(options: SynchronizerOptions) {
     super(options)
     this.blockFetcher = null
+
+    const db = new BeamSyncDB(options.config.getStateDataDirectory('beamsync'))
+    // TODO: figure out why BeamSyncDB does not correctly overrie get
+    const oldGet = db.get
+    const synchronizer = this
+    db.get = async function (node: Buffer) {
+      console.log('get', node.toString('hex'))
+      try {
+        const result = await oldGet.apply(this, [node])
+        console.log('is in db', result.toString('hex'))
+        try {
+          const decoded = rlp.decode(result)
+          console.log('decoded')
+          console.log(decoded)
+        } catch (e) {
+          console.log('rlp error')
+          console.log(e)
+        }
+        return result
+      } catch (e) {
+        if (e.notFound) {
+          console.log('getting node data!', node.toString('hex'))
+          // eslint-disable-next-line no-async-promise-executor
+          const result = await new Promise(async (resolve, reject) => {
+            for (let i = 0; i < 50; i++) {
+              const result = await synchronizer.syncPeer!.eth?.getNodeData([node])
+              console.log('got result!')
+              if (result) {
+                // ensure we got the correct node
+                console.log(result.length)
+                for (const reportedNode of result) {
+                  console.log('checking...', reportedNode.toString('hex'))
+                  if (keccak256(reportedNode).equals(node)) {
+                    console.log('found node!')
+                    await db.put(node as Buffer, reportedNode as Buffer, ENCODING_OPTS)
+                    resolve(reportedNode)
+                    return
+                  }
+                }
+              }
+            }
+            reject('Tried to get node more than 50 times')
+          })
+          return result
+        } else {
+          throw e
+        }
+      }
+    }
+    const trie = new SecureTrie(db)
 
     this.execution = new VMExecution({
       config: options.config,
       stateDB: options.stateDB,
       chain: options.chain,
+      trie,
     })
+
+    //console.log((<any>this.execution.vm.stateManager)._trie.db)
 
     const self = this
     this.execution.on('error', async (error: Error) => {
@@ -103,6 +184,7 @@ export class BeamSynchronizer extends Synchronizer {
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
     if (!peer) return false
+    this.syncPeer = peer
     const latest = await this.latest(peer)
     if (!latest) return false
     const height = new BN(latest.number)
@@ -148,9 +230,11 @@ export class BeamSynchronizer extends Synchronizer {
               root = blocks[1].header.stateRoot
               block = blocks[0]
             }
+            console.log('state root', root.toString('hex'))
             await this.execution.vm.runBlock({
               block,
               root,
+              skipBlockValidation: true, // this calls into blockchain; skip for now, otherwise we have to fetch the entire chain first
             })
           }
         }

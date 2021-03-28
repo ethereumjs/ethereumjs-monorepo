@@ -2,6 +2,7 @@ import { Config } from '../../config'
 import { Chain } from '../../blockchain'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
+import { SecureTrie } from 'merkle-patricia-tree'
 
 export interface ExecutionOptions {
   /* Config */
@@ -12,6 +13,9 @@ export interface ExecutionOptions {
 
   /** Chain */
   chain: Chain
+
+  /** Optional custom Trie */
+  trie?: SecureTrie
 }
 
 export abstract class Execution {

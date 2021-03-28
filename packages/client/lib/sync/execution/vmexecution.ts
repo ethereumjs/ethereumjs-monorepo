@@ -23,7 +23,7 @@ export class VMExecution extends Execution {
     super(options)
 
     if (!this.config.vm) {
-      const trie = new Trie(this.stateDB)
+      const trie = options.trie ?? new Trie(this.stateDB)
 
       const stateManager = new DefaultStateManager({
         common: this.config.execCommon,
