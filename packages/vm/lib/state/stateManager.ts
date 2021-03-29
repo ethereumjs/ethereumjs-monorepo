@@ -372,7 +372,7 @@ export default class DefaultStateManager implements StateManager {
     storageList: Map<string, Set<string>>[],
     storageMap: Map<string, Set<string>>
   ) {
-    const mapTarget = storageList[this._accessedStorage.length - 1]
+    const mapTarget = storageList[storageList.length - 1]
 
     if (mapTarget) {
       // Note: storageMap is always defined here per definition (TypeScript cannot infer this)
@@ -678,8 +678,8 @@ export default class DefaultStateManager implements StateManager {
    * Note: there is an edge case on accessList generation where an
    * internal call might revert without an accessList but pass if the
    * accessList is used for a tx run (so the subsequent behavior might change).
-   * This edge case is not covered by this implementation. 
-   * 
+   * This edge case is not covered by this implementation.
+   *
    * @returns - an [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/packages/tx) `AccessList`
    */
   generateAccessList(): AccessList {
