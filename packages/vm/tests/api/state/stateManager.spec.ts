@@ -530,6 +530,44 @@ tape('StateManager - generateAccessList', (tester) => {
     t.end()
   })
 
+  it('one frame, unsorted slots', async (t) => {
+    const { addA, addS, gen } = getStateManagerAliases()
+    addA(a(1))
+    addS(a(1), s(2))
+    addS(a(1), s(1))
+    const json = [
+      {
+        address: 'ff00000000000000000000000000000000000001',
+        storageKeys: [
+          '0x0000000000000000000000000000000000000000000000000000000000000001',
+          '0x0000000000000000000000000000000000000000000000000000000000000002',
+        ],
+      },
+    ]
+    t.deepEqual(gen(), json)
+    t.end()
+  })
+
+  it('one frame, unsorted addresses', async (t) => {
+    const { addA, addS, gen } = getStateManagerAliases()
+    addA(a(2))
+    addS(a(2), s(1))
+    addA(a(1))
+    addS(a(1), s(1))
+    const json = [
+      {
+        address: 'ff00000000000000000000000000000000000001',
+        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
+      },
+      {
+        address: 'ff00000000000000000000000000000000000002',
+        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
+      },
+    ]
+    t.deepEqual(gen(), json)
+    t.end()
+  })
+
   it('one frame, more complex', async (t) => {
     const { addA, addS, gen } = getStateManagerAliases()
     addA(a(1))

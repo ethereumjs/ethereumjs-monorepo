@@ -693,14 +693,16 @@ export default class DefaultStateManager implements StateManager {
         this._accessedStorageMerge(mergedStorage, storageMap)
       }
     }
-    const folded = mergedStorage[0]
+    const folded = new Map([...mergedStorage[0].entries()].sort())
 
     // Transfer folded map to final structure
     const accessList: AccessList = []
     folded.forEach((slots, addressStr) => {
       const address = Address.fromString(`0x${addressStr}`)
       if (!address.isPrecompileOrSystemAddress()) {
-        const storageSlots = Array.from(slots).map((s) => `0x${s}`)
+        const storageSlots = Array.from(slots)
+          .map((s) => `0x${s}`)
+          .sort()
         const accessListItem: AccessListItem = {
           address: addressStr,
           storageKeys: storageSlots,
