@@ -189,4 +189,58 @@ tape('BlockBuilder', async (t) => {
     )
     st.end()
   })
+
+  t.test('should throw if block already built or reverted', async (st) => {
+    const common = new Common({ chain: 'mainnet' })
+    const genesisBlock = Block.genesis({ header: { gasLimit: 50000 } }, { common })
+    const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
+    const vm = await VM.create({ common, blockchain })
+    await vm.stateManager.generateCanonicalGenesis()
+
+    let blockBuilder = await vm.buildBlock({
+      parentBlock: genesisBlock,
+      blockOpts: { calcDifficultyFromHeader: genesisBlock.header },
+    })
+
+    const tx = Transaction.fromTxData(
+      { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
+      { common, freeze: false }
+    )
+    // set `from` to a genesis address with existing balance
+    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    tx.getSenderAddress = () => {
+      return address
+    }
+
+    await blockBuilder.addTransaction(tx)
+    await blockBuilder.build()
+
+    try {
+      await blockBuilder.revert()
+      st.fail('should throw error')
+    } catch (error) {
+      if (error.message.includes('Block has already been built')) {
+        st.pass('correct error thrown')
+      } else {
+        st.fail('wrong error thrown')
+      }
+    }
+
+    blockBuilder = await vm.buildBlock({ parentBlock: genesisBlock })
+    await blockBuilder.addTransaction(tx)
+    await blockBuilder.revert()
+
+    try {
+      await blockBuilder.revert()
+      st.fail('should throw error')
+    } catch (error) {
+      if (error.message.includes('State has already been reverted')) {
+        st.pass('correct error thrown')
+      } else {
+        st.fail('wrong error thrown')
+      }
+    }
+
+    st.end()
+  })
 })
