@@ -1,4 +1,4 @@
-import { BN } from 'ethereumjs-util'
+import { BN, generateAddress, toBuffer } from 'ethereumjs-util'
 import { Peer } from '../net/peer/peer'
 import { short } from '../util'
 import { Synchronizer, SynchronizerOptions } from './sync'
@@ -8,6 +8,7 @@ import { VMExecution } from './execution/vmexecution'
 import { SecureTrie } from 'merkle-patricia-tree'
 import { keccak256 } from '@ethereumjs/devp2p'
 import { AfterTxEvent } from '@ethereumjs/vm/dist/runTx'
+import { TypedTransaction } from '@ethereumjs/tx'
 const level = require('level')
 
 const ENCODING_OPTS = { keyEncoding: 'binary', valueEncoding: 'binary' }
@@ -261,6 +262,36 @@ export class BeamSynchronizer extends Synchronizer {
             console.log('number', block.header.number.toString())
             console.log('txs', block.transactions.length)
             console.log('gas used', block.header.gasUsed.toString())
+
+            /**
+             * Get accounts/targets in parallel
+             */
+
+            const accounts = new Set()
+
+            accounts.add(block.header.coinbase.buf.toString('hex'))
+
+            block.transactions.forEach((tx: TypedTransaction) => {
+              const sender = tx.getSenderAddress()
+
+              accounts.add(sender.buf.toString('hex'))
+
+              if (tx.to) {
+                accounts.add(tx.to.buf.toString('hex'))
+              } else {
+                const to = generateAddress(sender.buf, toBuffer(tx.nonce))
+                accounts.add(to.toString('hex'))
+              }
+            })
+
+            /*
+            accounts.forEach((addressString: any) => {
+              const address = new Address(Buffer.from(addressString, 'hex'))
+              // this will call into the database, if some nodes are not found then these will be requested from the peer
+              // Tried this, nodes will disconnect because we are spamming them (have to batch these requests somehow)
+              //this.execution.vm.stateManager.getAccount(address)
+            }) */
+
             const time = Date.now() / 1000
             const result = await this.execution.vm.runBlock({
               block,
