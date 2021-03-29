@@ -645,39 +645,48 @@ export default class DefaultStateManager implements StateManager {
    * Clear the warm accounts and storage. To be called after a transaction finished.
    * @param boolean - If true, returns an EIP-2930 access list generated
    */
-  clearWarmedAccounts(reportAccessList?: boolean): any {
-    let accessList: AccessList | undefined
+  clearWarmedAccounts(): void {
+    this._accessedStorage = [new Map()]
+  }
 
-    if (reportAccessList) {
-      // Fold accessedStorage array into one Map
-      const folded = new Map()
-      for (let i = this._accessedStorage.length - 1; i >= 0; i--) {
-        const currentMap = this._accessedStorage[i]
-        currentMap.forEach((slots, address) => {
-          if (!folded.has(address)) {
-            const emptyStorage = new Set()
-            folded.set(address, emptyStorage)
-          } else {
-            folded.get(address).set(slots)
-          }
-        })
-      }
-
-      // Transfer folded map to final structure
-      accessList = []
-      folded.forEach((slots, addressStr) => {
-        const address = Address.fromString(`0x${addressStr}`)
-        if (!address.isPrecompileOrSystemAddress()) {
-          const storageSlots = Array.from(slots).map((s) => `0x${s}`)
-          const accessListItem: AccessListItem = {
-            address: addressStr,
-            storageKeys: storageSlots,
-          }
-          accessList!.push(accessListItem)
+  /**
+   * Generates an EIP-2930 access list
+   *
+   * Note that this method is not yet part of the `StateManager` interface.
+   * If not implemented, `runTx()` is not allowed to be used with the
+   * `reportAccessList` option and will instead throw.
+   *
+   * @returns - an [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/packages/tx) `AccessList`
+   */
+  generateAccessList(): AccessList {
+    // Fold accessedStorage array into one Map
+    const folded = new Map()
+    for (let i = this._accessedStorage.length - 1; i >= 0; i--) {
+      const currentMap = this._accessedStorage[i]
+      currentMap.forEach((slots, address) => {
+        if (!folded.has(address)) {
+          const emptyStorage = new Set()
+          folded.set(address, emptyStorage)
+        } else {
+          folded.get(address).set(slots)
         }
       })
     }
-    this._accessedStorage = [new Map()]
+
+    // Transfer folded map to final structure
+    const accessList: AccessList = []
+    folded.forEach((slots, addressStr) => {
+      const address = Address.fromString(`0x${addressStr}`)
+      if (!address.isPrecompileOrSystemAddress()) {
+        const storageSlots = Array.from(slots).map((s) => `0x${s}`)
+        const accessListItem: AccessListItem = {
+          address: addressStr,
+          storageKeys: storageSlots,
+        }
+        accessList!.push(accessListItem)
+      }
+    })
+
     return accessList
   }
 

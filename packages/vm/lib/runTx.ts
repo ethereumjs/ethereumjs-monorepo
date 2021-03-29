@@ -52,6 +52,9 @@ export interface RunTxOpts {
    *
    * Option works with all tx types. EIP-2929 needs to
    * be activated (included in `berlin` HF).
+   *
+   * Note: if this option is used with a custom `StateManager` implementation
+   * the `generateAccessList()` method must be implemented.
    */
   reportAccessList?: boolean
 }
@@ -124,7 +127,14 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
     this._common.isActivatedEIP(2929)
   ) {
     if (!this._common.isActivatedEIP(2930)) {
+      await state.revert()
       throw new Error('Cannot run transaction: EIP 2930 is not activated.')
+    }
+    if (opts.reportAccessList && !('generateAccessList' in state)) {
+      await state.revert()
+      throw new Error(
+        'StateManager needs to implement generateAccessList() when running with reportAccessList option'
+      )
     }
 
     const castedTx = <AccessListEIP2930Transaction>opts.tx
@@ -143,8 +153,8 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
     await state.commit()
     debug(`tx checkpoint committed`)
     if (this._common.isActivatedEIP(2929) && opts.reportAccessList) {
-      result.accessList = state.clearWarmedAccounts(true)
-      console.log(result)
+      // @ts-ignore method is not yet part of the interface for backwards-compatibility reasons
+      result.accessList = state.generateAccessList()
     }
     return result
   } catch (e) {
