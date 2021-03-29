@@ -1,4 +1,4 @@
-import { BN, rlp } from 'ethereumjs-util'
+import { BN } from 'ethereumjs-util'
 import { Peer } from '../net/peer/peer'
 import { short } from '../util'
 import { Synchronizer, SynchronizerOptions } from './sync'
@@ -51,39 +51,31 @@ export class BeamSynchronizer extends Synchronizer {
     super(options)
     this.blockFetcher = null
 
-    const db = new BeamSyncDB(options.config.getStateDataDirectory('beamsync'))
+    const db = new level(options.config.getStateDataDirectory('beamsync'))
     // TODO: figure out why BeamSyncDB does not correctly overrie get
     const oldGet = db.get
     const synchronizer = this
     db.get = async function (node: Buffer) {
-      console.log('get', node.toString('hex'))
+      //console.log('get', node.toString('hex'))
       try {
-        const result = await oldGet.apply(this, [node])
-        console.log('is in db', result.toString('hex'))
-        try {
-          const decoded = rlp.decode(result)
-          console.log('decoded')
-          console.log(decoded)
-        } catch (e) {
-          console.log('rlp error')
-          console.log(e)
-        }
+        const result = await oldGet.apply(this, [node, ENCODING_OPTS])
+        //console.log('is in db', result.toString('hex'))
         return result
       } catch (e) {
         if (e.notFound) {
-          console.log('getting node data!', node.toString('hex'))
+          //console.log('getting node data!', node.toString('hex'))
           // eslint-disable-next-line no-async-promise-executor
           const result = await new Promise(async (resolve, reject) => {
             for (let i = 0; i < 50; i++) {
               const result = await synchronizer.syncPeer!.eth?.getNodeData([node])
-              console.log('got result!')
+              //console.log('got result!')
               if (result) {
                 // ensure we got the correct node
-                console.log(result.length)
+                //console.log(result.length)
                 for (const reportedNode of result) {
-                  console.log('checking...', reportedNode.toString('hex'))
+                  //console.log('checking...', reportedNode.toString('hex'))
                   if (keccak256(reportedNode).equals(node)) {
-                    console.log('found node!')
+                    //console.log('found node!')
                     await db.put(node as Buffer, reportedNode as Buffer, ENCODING_OPTS)
                     resolve(reportedNode)
                     return
@@ -91,6 +83,7 @@ export class BeamSynchronizer extends Synchronizer {
                 }
               }
             }
+            // TODO: use PeerPool to try another peer.
             reject('Tried to get node more than 50 times')
           })
           return result
@@ -106,6 +99,10 @@ export class BeamSynchronizer extends Synchronizer {
       stateDB: options.stateDB,
       chain: options.chain,
       trie,
+    })
+
+    this.execution.vm.on('afterTx', () => {
+      console.log('ran tx')
     })
 
     //console.log((<any>this.execution.vm.stateManager)._trie.db)
@@ -231,6 +228,7 @@ export class BeamSynchronizer extends Synchronizer {
               block = blocks[0]
             }
             console.log('state root', root.toString('hex'))
+            console.log('txs', block.transactions.length)
             await this.execution.vm.runBlock({
               block,
               root,
