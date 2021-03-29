@@ -7,12 +7,13 @@ import { Block } from '@ethereumjs/block'
 import { VMExecution } from './execution/vmexecution'
 import { SecureTrie } from 'merkle-patricia-tree'
 import { keccak256 } from '@ethereumjs/devp2p'
+import { AfterTxEvent } from '@ethereumjs/vm/dist/runTx'
 const level = require('level')
 
 const ENCODING_OPTS = { keyEncoding: 'binary', valueEncoding: 'binary' }
 
 // Minimum number of blocks to stay behind tip of chain to avoid syncing reorged blocks
-const PIVOT_BLOCKS = 30
+const PIVOT_BLOCKS = 20
 
 export class BeamSyncDB extends level {
   constructor(...args: any) {
@@ -55,15 +56,21 @@ export class BeamSynchronizer extends Synchronizer {
     // TODO: figure out why BeamSyncDB does not correctly overrie get
     const oldGet = db.get
     const synchronizer = this
+    let hits = 0
+    let misses = 0
+    let getNodeTime = 0
     db.get = async function (node: Buffer) {
       //console.log('get', node.toString('hex'))
       try {
         const result = await oldGet.apply(this, [node, ENCODING_OPTS])
+        hits++
         //console.log('is in db', result.toString('hex'))
         return result
       } catch (e) {
         if (e.notFound) {
+          misses++
           //console.log('getting node data!', node.toString('hex'))
+          const time = Date.now() / 1000
           // eslint-disable-next-line no-async-promise-executor
           const result = await new Promise(async (resolve, reject) => {
             for (let i = 0; i < 50; i++) {
@@ -77,6 +84,7 @@ export class BeamSynchronizer extends Synchronizer {
                   if (keccak256(reportedNode).equals(node)) {
                     //console.log('found node!')
                     await db.put(node as Buffer, reportedNode as Buffer, ENCODING_OPTS)
+                    getNodeTime += Date.now() / 1000 - time
                     resolve(reportedNode)
                     return
                   }
@@ -101,10 +109,31 @@ export class BeamSynchronizer extends Synchronizer {
       trie,
     })
 
-    this.execution.vm.on('afterTx', () => {
-      console.log('ran tx')
+    let txs = 0
+    const runTime = Date.now() / 1000
+    let gas = 0
+
+    this.execution.vm.on('afterTx', (result: AfterTxEvent) => {
+      gas += result.gasUsed.toNumber()
+      txs++
+      console.log(
+        'ran tx',
+        txs,
+        this.execution.vm._common.hardfork(),
+        'hits',
+        hits,
+        'misses',
+        misses,
+        'getNodeTime',
+        getNodeTime,
+        'runTime',
+        Date.now() / 1000 - runTime,
+        'total gas',
+        gas
+      )
     })
 
+    console.log(this.execution.vm._common.hardfork())
     //console.log((<any>this.execution.vm.stateManager)._trie.db)
 
     const self = this
@@ -227,13 +256,25 @@ export class BeamSynchronizer extends Synchronizer {
               root = blocks[1].header.stateRoot
               block = blocks[0]
             }
-            console.log('state root', root.toString('hex'))
+            console.log('previous state root', root.toString('hex'))
+            console.log('hash', block.hash().toString('hex'))
+            console.log('number', block.header.number.toString())
             console.log('txs', block.transactions.length)
-            await this.execution.vm.runBlock({
+            console.log('gas used', block.header.gasUsed.toString())
+            const time = Date.now() / 1000
+            const result = await this.execution.vm.runBlock({
               block,
               root,
               skipBlockValidation: true, // this calls into blockchain; skip for now, otherwise we have to fetch the entire chain first
             })
+            console.log('execution took', Date.now() / 1000 - time)
+            console.log(
+              'state root',
+              (await this.execution.vm.stateManager.getStateRoot(true)).toString('hex')
+            )
+            console.log('gas used', result.gasUsed.toString())
+            console.log('logsbloom', result.logsBloom.toString('hex'))
+            console.log('receipt trie', result.receiptRoot.toString('hex'))
           }
         }
       }

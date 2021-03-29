@@ -34,6 +34,7 @@ export class VMExecution extends Execution {
         common: this.config.execCommon,
         blockchain: this.chain.blockchain,
         stateManager,
+        hardforkByBlockNumber: true,
       })
     } else {
       this.vm = this.config.vm
