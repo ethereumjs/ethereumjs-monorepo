@@ -3,7 +3,12 @@ import { Address, BN, rlp, KECCAK256_RLP } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { Transaction } from '@ethereumjs/tx'
-import { RunBlockOpts, AfterBlockEvent } from '../../lib/runBlock'
+import {
+  PreByzantiumTxReceipt,
+  PostByzantiumTxReceipt,
+  RunBlockOpts,
+  AfterBlockEvent,
+} from '../../lib/runBlock'
 import { setupPreConditions, getDAOCommon } from '../util'
 import { setupVM, createAccount } from './utils'
 import testnet from './testdata/testnet.json'
@@ -308,7 +313,6 @@ tape('should correctly reflect generated fields', async (t) => {
   t.end()
 })
 
-/*
 async function runWithHf(hardfork: string) {
   const vm = setupVM({ common: new Common({ chain: 'mainnet', hardfork }) })
 
@@ -346,4 +350,3 @@ tape('runBlock() -> API return values', async (t) => {
     t.end()
   })
 })
-*/
