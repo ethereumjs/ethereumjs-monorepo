@@ -35,7 +35,7 @@ export interface RunCodeOpts {
   origin?: Address
   message?: Message
   /**
-   * The address that ran this code. Defaults to the zero address.
+   * The address that ran this code (`msg.sender`). Defaults to the zero address.
    */
   caller?: Address
   /**
@@ -58,7 +58,7 @@ export interface RunCodeOpts {
   isStatic?: boolean
   selfdestruct?: { [k: string]: boolean }
   /**
-   * The address of the account that is executing this code. Defaults to the zero address.
+   * The address of the account that is executing this code (`address(this)`). Defaults to the zero address.
    */
   address?: Address
   /**
