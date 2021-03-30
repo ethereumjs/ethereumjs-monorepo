@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [7.0.10] - 2021-03-30
+## [7.0.10] - 2021-03-31
 
 - Added `Address.isPrecompileOrSystemAddress()` method which returns `true` if address is in the address range defined by [EIP-1352](https://eips.ethereum.org/EIPS/eip-1352), PR [#1170](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1170)
 - Return `false` (instead of throwing) for non-hex-string values in account module `isValidAddress`, `isValidChecksumAddress`, `isZeroAddress` methods (it now gets enough to just handle the `false` case on function usage), PR [#1173](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1173)

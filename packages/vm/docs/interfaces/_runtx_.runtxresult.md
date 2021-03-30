@@ -16,6 +16,7 @@ Execution result of a transaction
 
 ### Properties
 
+* [accessList](_runtx_.runtxresult.md#optional-accesslist)
 * [amountSpent](_runtx_.runtxresult.md#amountspent)
 * [bloom](_runtx_.runtxresult.md#bloom)
 * [createdAddress](_runtx_.runtxresult.md#optional-createdaddress)
@@ -25,11 +26,21 @@ Execution result of a transaction
 
 ## Properties
 
+### `Optional` accessList
+
+• **accessList**? : *AccessList*
+
+*Defined in [runTx.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L82)*
+
+EIP-2930 access list generated for the tx (see `reportAccessList` option)
+
+___
+
 ###  amountSpent
 
 • **amountSpent**: *BN*
 
-*Defined in [runTx.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L56)*
+*Defined in [runTx.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L73)*
 
 The amount of ether used by this transaction
 
@@ -39,7 +50,7 @@ ___
 
 • **bloom**: *Bloom*
 
-*Defined in [runTx.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L52)*
+*Defined in [runTx.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L69)*
 
 Bloom filter resulted from transaction
 
@@ -73,7 +84,7 @@ ___
 
 • **gasRefund**? : *BN*
 
-*Defined in [runTx.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L60)*
+*Defined in [runTx.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L77)*
 
 The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
 
