@@ -1050,6 +1050,27 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
+   * Gets a block header by its hash or block number
+   * @param headerId - The header's hash or number.
+   */
+  async getHeader(headerId: Buffer | number | BN): Promise<BlockHeader> {
+    await this.initPromise
+    let number
+    let hash
+    if (Buffer.isBuffer(headerId)) {
+      hash = headerId
+      number = await this.dbManager.hashToNumber(hash)
+    } else if (BN.isBN(headerId)) {
+      number = headerId
+      hash = await this.dbManager.numberToHash(number)
+    } else {
+      number = new BN(headerId)
+      hash = await this.dbManager.numberToHash(number)
+    }
+    return await this.dbManager.getHeader(hash, number)
+  }
+
+  /**
    * @hidden
    */
   private async _getBlock(blockId: Buffer | number | BN) {
