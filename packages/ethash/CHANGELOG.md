@@ -22,7 +22,7 @@ npm i @ethereumjs/ethash
 
 ### Library Promisification
 
-The `Ethash` library has been promisified and callbacks have been removed along PR [#833](https://github.com/ethereumjs/ethereumjs-vm/pull/833) and preceeding PR [#779](https://github.com/ethereumjs/ethereumjs-vm/pull/779).
+The `Ethash` library has been promisified and callbacks have been removed along PR [#833](https://github.com/ethereumjs/ethereumjs-monorepo/pull/833) and preceeding PR [#779](https://github.com/ethereumjs/ethereumjs-monorepo/pull/779).
 
 Old API:
 
@@ -39,24 +39,24 @@ const result = await ethash.verifyPOW(validBlock)
 console.log(result) // => true
 ```
 
-See `Ethash` [README](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/ethash#usage) for a complete example.
+See `Ethash` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/ethash#usage) for a complete example.
 
-[1.0.0]: https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fethash%401.0.0
+[1.0.0]: https://github.com/ethereumjs/ethereumjs-monorepo/releases/tag/%40ethereumjs%2Fethash%401.0.0
 
 ### Dual ES5 and ES2017 Builds
 
-We significantly updated our internal tool and CI setup along the work on PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint` for code linting and formatting and the introduction of a new build setup.
+We significantly updated our internal tool and CI setup along the work on PR [#913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/913) with an update to `ESLint` from `TSLint` for code linting and formatting and the introduction of a new build setup.
 
-Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-vm/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
 
 ### Other Changes
 
-- Updated Block dependency to `@ethereumjs/block` `v3.0.0`, PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
-- Removed `async` dependency, PR [#779](https://github.com/ethereumjs/ethereumjs-vm/pull/779)
+- Updated Block dependency to `@ethereumjs/block` `v3.0.0`, PR [#883](https://github.com/ethereumjs/ethereumjs-monorepo/pull/883)
+- Removed `async` dependency, PR [#779](https://github.com/ethereumjs/ethereumjs-monorepo/pull/779)
 
 ## 1.0.0-rc.1 - 2020-11-19
 
-This is the first release candidate towards a final library release, see [beta.1](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fethash%401.0.0-beta.1) release notes for an overview on the full changes since the last publicly released version.
+This is the first release candidate towards a final library release, see [beta.1](https://github.com/ethereumjs/ethereumjs-monorepo/releases/tag/%40ethereumjs%2Fethash%401.0.0-beta.1) release notes for an overview on the full changes since the last publicly released version.
 
 No changes since `beta.1` release.
 
@@ -78,8 +78,8 @@ npm i @ethereumjs/ethash
 ### Library Promisification
 
 The `Ethash` library has been promisified and callbacks have been removed along
-PR [#833](https://github.com/ethereumjs/ethereumjs-vm/pull/833) and preceeding PR
-[#779](https://github.com/ethereumjs/ethereumjs-vm/pull/779).
+PR [#833](https://github.com/ethereumjs/ethereumjs-monorepo/pull/833) and preceeding PR
+[#779](https://github.com/ethereumjs/ethereumjs-monorepo/pull/779).
 
 Old API:
 
@@ -96,28 +96,28 @@ const result = await ethash.verifyPOW(validBlock)
 console.log(result) // => true
 ```
 
-See `Ethash` [README](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/ethash#usage)
+See `Ethash` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/ethash#usage)
 for a complete example.
 
-[1.0.0]: https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fethash%401.0.0
+[1.0.0]: https://github.com/ethereumjs/ethereumjs-monorepo/releases/tag/%40ethereumjs%2Fethash%401.0.0
 
 ### Dual ES5 and ES2017 Builds
 
 We significantly updated our internal tool and CI setup along the work on 
-PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint` 
+PR [#913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/913) with an update to `ESLint` from `TSLint` 
 for code linting and formatting and the introduction of a new build setup.
 
 Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce
 a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see
-PR [#921](https://github.com/ethereumjs/ethereumjs-vm/pull/921). This will result
+PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result
 in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
 
 ### Other Changes
 
 - Updated Block dependency to `@ethereumjs/block` `v3.0.0`,
-  PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
+  PR [#883](https://github.com/ethereumjs/ethereumjs-monorepo/pull/883)
 - Removed `async` dependency,
-  PR [#779](https://github.com/ethereumjs/ethereumjs-vm/pull/779)
+  PR [#779](https://github.com/ethereumjs/ethereumjs-monorepo/pull/779)
 
 ## [0.0.8] - 2020-05-27
 

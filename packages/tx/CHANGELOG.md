@@ -104,11 +104,11 @@ npm i @ethereumjs/tx
 
 ### Major Refactoring - Breaking Changes
 
-This release is a major refactoring of the transaction library to simplify and strengthen its code base. Refactoring work has been done along PR [#812](https://github.com/ethereumjs/ethereumjs-vm/pull/812) and PR [#887](https://github.com/ethereumjs/ethereumjs-vm/pull/887).
+This release is a major refactoring of the transaction library to simplify and strengthen its code base. Refactoring work has been done along PR [#812](https://github.com/ethereumjs/ethereumjs-monorepo/pull/812) and PR [#887](https://github.com/ethereumjs/ethereumjs-monorepo/pull/887).
 
 #### New Constructor Params
 
-The constructor has been reworked and new static factory methods `fromTxData`, `fromRlpSerializedTx`, and `fromValuesArray` have been added for a more `TypeScript` friendly and less error-prone way to initialize a `Transaction` object. The direct usage of the main constructor (now just being an alias to `Tx.fromTxData()`, see PR [#944](https://github.com/ethereumjs/ethereumjs-vm/pull/944)) is now discouraged and the static factory methods should be used.
+The constructor has been reworked and new static factory methods `fromTxData`, `fromRlpSerializedTx`, and `fromValuesArray` have been added for a more `TypeScript` friendly and less error-prone way to initialize a `Transaction` object. The direct usage of the main constructor (now just being an alias to `Tx.fromTxData()`, see PR [#944](https://github.com/ethereumjs/ethereumjs-monorepo/pull/944)) is now discouraged and the static factory methods should be used.
 
 **Breaking:** Note that you **need** to adopt your `Transaction` initialization code since the constructor API has changed!
 
@@ -139,7 +139,7 @@ Learn more about the full API in the [docs](./docs/README.md).
 
 The returned transaction is now frozen and immutable. To work with a maliable transaction, copy it with `const fakeTx = Object.create(tx)`. For security reasons it is highly recommended to stay in a freezed `Transaction` context on usage.
 
-If you need `Transaction` mutability - e.g. because you want to subclass `Transaction` and modifiy its behavior - there is a `freeze` option to prevent the `Object.freeze()` call on initialization, see PR [#941](https://github.com/ethereumjs/ethereumjs-vm/pull/941).
+If you need `Transaction` mutability - e.g. because you want to subclass `Transaction` and modifiy its behavior - there is a `freeze` option to prevent the `Object.freeze()` call on initialization, see PR [#941](https://github.com/ethereumjs/ethereumjs-monorepo/pull/941).
 
 #### from
 
@@ -155,36 +155,36 @@ The `FakeTransaction` class was removed since its functionality can now be imple
 
 ### New Default Hardfork
 
-**Breaking:** The default HF on the library has been updated from `petersburg` to `istanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-vm/pull/906).
+**Breaking:** The default HF on the library has been updated from `petersburg` to `istanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-monorepo/pull/906).
 
-The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`, see PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863).
+The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`, see PR [#863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/863).
 
 ### Dual ES5 and ES2017 Builds
 
-We significantly updated our internal tool and CI setup along the work on PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint` for code linting and formatting and the introduction of a new build setup.
+We significantly updated our internal tool and CI setup along the work on PR [#913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/913) with an update to `ESLint` from `TSLint` for code linting and formatting and the introduction of a new build setup.
 
-Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-vm/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
 
 ### Other Changes
 
 **Changes and Refactoring**
 
-- Updated `ethereumjs-util` to v7, PR [#748](https://github.com/ethereumjs/ethereumjs-vm/pull/748)
-- Replaced `new Buffer()` (deprecated) statements with `Buffer.from()`, PR [#721](https://github.com/ethereumjs/ethereumjs-vm/pull/721)
-- Dropped `ethereumjs-testing` dev dependency, PR [#953](https://github.com/ethereumjs/ethereumjs-vm/pull/953)
+- Updated `ethereumjs-util` to v7, PR [#748](https://github.com/ethereumjs/ethereumjs-monorepo/pull/748)
+- Replaced `new Buffer()` (deprecated) statements with `Buffer.from()`, PR [#721](https://github.com/ethereumjs/ethereumjs-monorepo/pull/721)
+- Dropped `ethereumjs-testing` dev dependency, PR [#953](https://github.com/ethereumjs/ethereumjs-monorepo/pull/953)
 
 ## 3.0.0-rc.1 - 2020-11-19
 
-This is the first release candidate towards a final library release, see [beta.2](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Ftx%403.0.0-beta.2) and especially [beta.1](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Ftx%403.0.0-beta.1) release notes for an overview on the full changes since the last publicly released version.
+This is the first release candidate towards a final library release, see [beta.2](https://github.com/ethereumjs/ethereumjs-monorepo/releases/tag/%40ethereumjs%2Ftx%403.0.0-beta.2) and especially [beta.1](https://github.com/ethereumjs/ethereumjs-monorepo/releases/tag/%40ethereumjs%2Ftx%403.0.0-beta.1) release notes for an overview on the full changes since the last publicly released version.
 
-- Dropped `ethereumjs-testing` dev dependency, PR [#953](https://github.com/ethereumjs/ethereumjs-vm/pull/953)
+- Dropped `ethereumjs-testing` dev dependency, PR [#953](https://github.com/ethereumjs/ethereumjs-monorepo/pull/953)
 
 ## 3.0.0-beta.2 - 2020-11-12
 
-This is the second beta release towards a final library release, see [beta.1 release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Ftx%403.0.0-beta.1) for an overview on the full changes since the last publicly released version.
+This is the second beta release towards a final library release, see [beta.1 release notes](https://github.com/ethereumjs/ethereumjs-monorepo/releases/tag/%40ethereumjs%2Ftx%403.0.0-beta.1) for an overview on the full changes since the last publicly released version.
 
-- Added `freeze` option to allow for transaction freeze deactivation (e.g. to allow for subclassing tx and adding additional parameters), see PR [#941](https://github.com/ethereumjs/ethereumjs-vm/pull/941)
-- **Breaking:** Reworked constructor to take in data as a `TxData` typed dictionary instead of single values, the `Tx.fromTxData()` factory method becomes an alias for the constructor with this change, see PR [#944](https://github.com/ethereumjs/ethereumjs-vm/pull/944)
+- Added `freeze` option to allow for transaction freeze deactivation (e.g. to allow for subclassing tx and adding additional parameters), see PR [#941](https://github.com/ethereumjs/ethereumjs-monorepo/pull/941)
+- **Breaking:** Reworked constructor to take in data as a `TxData` typed dictionary instead of single values, the `Tx.fromTxData()` factory method becomes an alias for the constructor with this change, see PR [#944](https://github.com/ethereumjs/ethereumjs-monorepo/pull/944)
 
 ## 3.0.0-beta.1 - 2020-10-22
 
@@ -202,7 +202,7 @@ npm i @ethereumjs/tx
 
 ### Major Refactoring - Breaking Changes
 
-This release is a major refactoring of the transaction library to simplify and strengthen its code base. Refactoring work has been done along PR [#812](https://github.com/ethereumjs/ethereumjs-vm/pull/812) and PR [#887](https://github.com/ethereumjs/ethereumjs-vm/pull/887).
+This release is a major refactoring of the transaction library to simplify and strengthen its code base. Refactoring work has been done along PR [#812](https://github.com/ethereumjs/ethereumjs-monorepo/pull/812) and PR [#887](https://github.com/ethereumjs/ethereumjs-monorepo/pull/887).
 
 #### New Constructor Params
 
@@ -266,19 +266,19 @@ The `FakeTransaction` class was removed since its functionality can now be imple
 
 ### New Default Hardfork
 
-**Breaking:** The default HF on the library has been updated from `petersburg` to `istanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-vm/pull/906).
+**Breaking:** The default HF on the library has been updated from `petersburg` to `istanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-monorepo/pull/906).
 The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`,
-see PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863).
+see PR [#863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/863).
 
 ### Dual ES5 and ES2017 Builds
 
 We significantly updated our internal tool and CI setup along the work on
-PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint`
+PR [#913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/913) with an update to `ESLint` from `TSLint`
 for code linting and formatting and the introduction of a new build setup.
 
 Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce
 a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see
-PR [#921](https://github.com/ethereumjs/ethereumjs-vm/pull/921). This will result
+PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result
 in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
 
 ### Other Changes
@@ -286,16 +286,16 @@ in performance benefits for Node.js consumers, see [here](https://github.com/eth
 **Changes and Refactoring**
 
 - Updated `ethereumjs-util` to v7,
-  PR [#748](https://github.com/ethereumjs/ethereumjs-vm/pull/748)
+  PR [#748](https://github.com/ethereumjs/ethereumjs-monorepo/pull/748)
 - Replaced `new Buffer()` (deprecated) statements with `Buffer.from()`,
-  PR [#721](https://github.com/ethereumjs/ethereumjs-vm/pull/721)
+  PR [#721](https://github.com/ethereumjs/ethereumjs-monorepo/pull/721)
 
 ## [2.1.2] - 2019-12-19
 
 - Added support for the `MuirGlacier` HF by updating the `ethereumjs-common` dependency
   to [v1.5.0](https://github.com/ethereumjs/ethereumjs-common/releases/tag/v1.5.0)
 
-[2.1.2]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%402.1.1...%40ethereumjs%2Ftx%402.1.2
+[2.1.2]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%402.1.1...%40ethereumjs%2Ftx%402.1.2
 
 ## [2.1.1] - 2019-08-30
 
@@ -303,7 +303,7 @@ in performance benefits for Node.js consumers, see [here](https://github.com/eth
   ([EIP-2028](https://eips.ethereum.org/EIPS/eip-2028)),
   PR [#171](https://github.com/ethereumjs/ethereumjs-tx/pull/171)
 
-[2.1.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%402.1.0...%40ethereumjs%2Ftx%402.1.1
+[2.1.1]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%402.1.0...%40ethereumjs%2Ftx%402.1.1
 
 ## [2.1.0] - 2019-06-28
 
@@ -326,7 +326,7 @@ List of changes:
 - Added more documentation and examples on how to create transactions for public testnets and
   custom networks.
 
-[2.1.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%402.0.0...%40ethereumjs%2Ftx%402.1.0
+[2.1.0]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%402.0.0...%40ethereumjs%2Ftx%402.1.0
 
 ## [2.0.0] - 2019-06-03
 
@@ -388,27 +388,27 @@ or changed on runtime are handled:
 For activating non-`EIP-155` behavior instantiate the transaction with a
 pre-`Spurious Dragon` hardfork option.
 
-[2.0.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.3.7...%40ethereumjs%2Ftx%402.0.0
+[2.0.0]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%401.3.7...%40ethereumjs%2Ftx%402.0.0
 
 ## [1.3.7] - 2018-07-25
 
 - Fix bug causing `FakeTransaction.from` to not retrieve sender address from tx signature, see PR [#118](https://github.com/ethereumjs/ethereumjs-tx/pull/118)
 
-[1.3.7]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.3.6...%40ethereumjs%2Ftx%401.3.7
+[1.3.7]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%401.3.6...%40ethereumjs%2Ftx%401.3.7
 
 ## [1.3.6] - 2018-07-02
 
 - Fixes issue [#108](https://github.com/ethereumjs/ethereumjs-tx/issues/108) with the `FakeTransaction.hash()` function by reverting the introduced signature handling changes in Fake transaction hash creation from PR [#94](https://github.com/ethereumjs/ethereumjs-tx/pull/94) introduced in `v1.3.5`. The signature is now again only created and added to the hash when `from` address is set and `from` is not defaulting to the zero adress any more, see PR [#110](https://github.com/ethereumjs/ethereumjs-tx/pull/110)
 - Added additional tests to cover issue described above
 
-[1.3.6]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.3.5...%40ethereumjs%2Ftx%401.3.6
+[1.3.6]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%401.3.5...%40ethereumjs%2Ftx%401.3.6
 
 ## [1.3.5] - 2018-06-22
 
 - Include signature by default in `FakeTransaction.hash`, PR [#97](https://github.com/ethereumjs/ethereumjs-tx/pull/97)
 - Fix `FakeTransaction` signature failure bug, PR [#94](https://github.com/ethereumjs/ethereumjs-tx/pull/94)
 
-[1.3.5]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.3.4...%40ethereumjs%2Ftx%401.3.5
+[1.3.5]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%401.3.4...%40ethereumjs%2Ftx%401.3.5
 
 ## [1.3.4] - 2018-03-06
 
@@ -416,7 +416,7 @@ pre-`Spurious Dragon` hardfork option.
 - Switched from deprecated `es2015` to `env` babel preset, PR [#86](https://github.com/ethereumjs/ethereumjs-tx/pull/86)
 - Dropped Node 4 support
 
-[1.3.4]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.3.3...%40ethereumjs%2Ftx%401.3.4
+[1.3.4]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%401.3.3...%40ethereumjs%2Ftx%401.3.4
 
 ## [1.3.3] - 2017-07-12
 
@@ -424,13 +424,13 @@ pre-`Spurious Dragon` hardfork option.
 - Dropped `browserify` transform from `package.json`
 - (combined v1.3.3 and v1.3.2 release notes)
 
-[1.3.3]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.3.1...%40ethereumjs%2Ftx%401.3.3
+[1.3.3]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%401.3.1...%40ethereumjs%2Ftx%401.3.3
 
 ## [1.3.1] - 2017-05-13
 
 - Added `ES5` build
 
-[1.3.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.3.0...%40ethereumjs%2Ftx%401.3.1
+[1.3.1]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%401.3.0...%40ethereumjs%2Ftx%401.3.1
 
 ## [1.3.0] - 2017-04-24
 
@@ -439,14 +439,14 @@ pre-`Spurious Dragon` hardfork option.
 - Improved documentation
 - (combined v1.3.0, v1.2.5 and v1.2.4 release notes)
 
-[1.3.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.2.3...%40ethereumjs%2Ftx%401.3.0
+[1.3.0]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%401.2.3...%40ethereumjs%2Ftx%401.3.0
 
 ## [1.2.3] - 2017-01-30
 
 - `EIP155` hash implementation
 - README example and doc fixes
 
-[1.2.3]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.2.2...%40ethereumjs%2Ftx%401.2.3
+[1.2.3]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%401.2.2...%40ethereumjs%2Ftx%401.2.3
 
 ## [1.2.2] - 2016-12-15
 
@@ -454,7 +454,7 @@ pre-`Spurious Dragon` hardfork option.
 - Test improvements
 - (combined v1.2.2 and v1.2.1 release notes)
 
-[1.2.2]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.2.0...%40ethereumjs%2Ftx%401.2.2
+[1.2.2]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%401.2.0...%40ethereumjs%2Ftx%401.2.2
 
 ## [1.2.0] - 2016-12-14
 
@@ -463,14 +463,14 @@ pre-`Spurious Dragon` hardfork option.
 - Node 4/5 compatibility
 - `ES6` standards
 
-[1.2.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.1.4...%40ethereumjs%2Ftx%401.2.0
+[1.2.0]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%401.1.4...%40ethereumjs%2Ftx%401.2.0
 
 ## Older releases:
 
-- [1.1.4](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.1.3...%40ethereumjs%2Ftx%401.1.4) - 2016-11-17
-- [1.1.3](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.1.2...%40ethereumjs%2Ftx%401.1.3) - 2016-11-10
-- [1.1.2](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.1.1...%40ethereumjs%2Ftx%401.1.2) - 2016-07-17
-- [1.1.1](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.1.0...%40ethereumjs%2Ftx%401.1.1) - 2016-03-05
-- [1.1.0](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.0.1...%40ethereumjs%2Ftx%401.1.0) - 2016-03-03
-- [1.0.1](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.0.0...%40ethereumjs%2Ftx%401.0.1) - 2016-03-03
-- [1.0.0](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%400.7.3...%40ethereumjs%2Ftx%401.0.0) - 2016-02-11
+- [1.1.4](https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%401.1.3...%40ethereumjs%2Ftx%401.1.4) - 2016-11-17
+- [1.1.3](https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%401.1.2...%40ethereumjs%2Ftx%401.1.3) - 2016-11-10
+- [1.1.2](https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%401.1.1...%40ethereumjs%2Ftx%401.1.2) - 2016-07-17
+- [1.1.1](https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%401.1.0...%40ethereumjs%2Ftx%401.1.1) - 2016-03-05
+- [1.1.0](https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%401.0.1...%40ethereumjs%2Ftx%401.1.0) - 2016-03-03
+- [1.0.1](https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%401.0.0...%40ethereumjs%2Ftx%401.0.1) - 2016-03-03
+- [1.0.0](https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%400.7.3...%40ethereumjs%2Ftx%401.0.0) - 2016-02-11
