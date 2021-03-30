@@ -148,6 +148,24 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
     t.end()
   })
 
+  t.test('simple run (reportAccessList option)', async (t) => {
+    const vm = new VM({ common })
+
+    const tx = getTransaction(vm._common, 0, true)
+
+    const caller = tx.getSenderAddress()
+    const acc = createAccount()
+    await vm.stateManager.putAccount(caller, acc)
+
+    const res = await vm.runTx({ tx, reportAccessList: true })
+    t.true(
+      res.gasUsed.gt(new BN(0)),
+      `mainnet (PoW), istanbul HF, default SM - should run without errors (${TRANSACTION_TYPES[0].name})`
+    )
+    t.true(res.accessList)
+    t.end()
+  })
+
   t.test('run without signature', async (t) => {
     for (const txType of TRANSACTION_TYPES) {
       const vm = new VM({ common })

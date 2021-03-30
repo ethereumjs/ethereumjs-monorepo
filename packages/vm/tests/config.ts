@@ -322,7 +322,7 @@ export function getCommon(network: string) {
 const expectedTestsFull: any = {
   BlockchainTests: {
     Chainstart: 4385,
-    Homestead: 7004,
+    Homestead: 7001,
     Dao: 0,
     TangerineWhistle: 4255,
     SpuriousDragon: 4305,

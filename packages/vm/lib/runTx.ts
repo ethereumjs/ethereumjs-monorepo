@@ -1,7 +1,12 @@
 import { debug as createDebugLogger } from 'debug'
-import { Address, BN } from 'ethereumjs-util'
+import { Address, BN, toBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
-import { AccessListItem, AccessListEIP2930Transaction, TypedTransaction } from '@ethereumjs/tx'
+import {
+  AccessListItem,
+  AccessListEIP2930Transaction,
+  TypedTransaction,
+  AccessList,
+} from '@ethereumjs/tx'
 import VM from './index'
 import Bloom from './bloom'
 import { default as EVM, EVMResult } from './evm/evm'
@@ -40,6 +45,18 @@ export interface RunTxOpts {
    * agains the block's gas limit.
    */
   skipBlockGasLimitValidation?: boolean
+
+  /**
+   * If true, adds a generated EIP-2930 access list
+   * to the `RunTxResult` returned.
+   *
+   * Option works with all tx types. EIP-2929 needs to
+   * be activated (included in `berlin` HF).
+   *
+   * Note: if this option is used with a custom `StateManager` implementation
+   * the `generateAccessList()` method must be implemented.
+   */
+  reportAccessList?: boolean
 }
 
 /**
@@ -58,6 +75,11 @@ export interface RunTxResult extends EVMResult {
    * The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
    */
   gasRefund?: BN
+
+  /**
+   * EIP-2930 access list generated for the tx (see `reportAccessList` option)
+   */
+  accessList?: AccessList
 }
 
 export interface AfterTxEvent extends RunTxResult {
@@ -105,16 +127,23 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
     this._common.isActivatedEIP(2929)
   ) {
     if (!this._common.isActivatedEIP(2930)) {
+      await state.revert()
       throw new Error('Cannot run transaction: EIP 2930 is not activated.')
+    }
+    if (opts.reportAccessList && !('generateAccessList' in state)) {
+      await state.revert()
+      throw new Error(
+        'StateManager needs to implement generateAccessList() when running with reportAccessList option'
+      )
     }
 
     const castedTx = <AccessListEIP2930Transaction>opts.tx
 
     castedTx.AccessListJSON.forEach((accessListItem: AccessListItem) => {
-      const address = Buffer.from(accessListItem.address.slice(2), 'hex')
+      const address = toBuffer(accessListItem.address)
       state.addWarmedAddress(address)
       accessListItem.storageKeys.forEach((storageKey: string) => {
-        state.addWarmedStorage(address, Buffer.from(storageKey.slice(2), 'hex'))
+        state.addWarmedStorage(address, toBuffer(storageKey))
       })
     })
   }
@@ -123,6 +152,10 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
     const result = await _runTx.bind(this)(opts)
     await state.commit()
     debug(`tx checkpoint committed`)
+    if (this._common.isActivatedEIP(2929) && opts.reportAccessList) {
+      // @ts-ignore method is not yet part of the interface for backwards-compatibility reasons
+      result.accessList = state.generateAccessList()
+    }
     return result
   } catch (e) {
     await state.revert()
