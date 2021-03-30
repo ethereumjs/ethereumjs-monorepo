@@ -70,8 +70,13 @@ export interface BlockchainOptions {
   common?: Common
 
   /**
-   * Database to store blocks and metadata. Should be an abstract-leveldown
-   * compliant store.
+   * Database to store blocks and metadata.
+   * Should be an `abstract-leveldown` compliant store
+   * wrapped with `encoding-down`.
+   * For example:
+   *   `levelup(encode(leveldown('./db1')))`
+   * or use the `level` convenience package:
+   *   `level('./db1')`
    */
   db?: LevelUp
 
