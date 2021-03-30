@@ -3,6 +3,7 @@ import { PeerPool } from '../net/peerpool'
 import { Peer } from '../net/peer/peer'
 import { Protocol } from '../net/protocol'
 import { Event } from '../types'
+import { TxPool } from './txpool'
 
 export interface ServiceOptions {
   /* Config */
@@ -18,6 +19,7 @@ export class Service {
   public opened: boolean
   public running: boolean
   public pool: PeerPool
+  public txPool: TxPool
 
   /**
    * Create new service and associated peer pool
@@ -43,6 +45,10 @@ export class Service {
           )
         }
       }
+    })
+
+    this.txPool = new TxPool({
+      config: this.config,
     })
 
     this.opened = false
@@ -88,6 +94,7 @@ export class Service {
       this.config.logger.debug(`Peer removed: ${peer}`)
     )
     await this.pool.open()
+    await this.txPool.open()
 
     this.opened = true
   }
@@ -99,6 +106,7 @@ export class Service {
   async close() {
     if (this.running) {
       await this.pool.close()
+      await this.txPool.close()
     }
     this.opened = false
   }
