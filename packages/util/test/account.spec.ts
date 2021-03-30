@@ -633,10 +633,8 @@ tape('Utility Functions', function (t) {
         st.end()
       })
 
-      st.test('input format', function (st) {
-        st.throws(() => {
-          isValidChecksumAddress('2f015c60e0be116b1f0cd534704db9c92118fb6a')
-        }, 'Should throw when the address is not hex-prefixed')
+      st.test('Should return false if input is not hex-prefixed', function (st) {
+        st.notOk(isValidChecksumAddress('2f015c60e0be116b1f0cd534704db9c92118fb6a'))
         st.end()
       })
 
@@ -653,28 +651,9 @@ tape('Utility Functions', function (t) {
     st.test('should return false', function (st) {
       st.notOk(isValidAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6'))
       st.notOk(isValidAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6aa'))
-      st.end()
-    })
-    st.test('should throw when input is not hex prefixed', function (st) {
-      st.throws(function () {
-        isValidAddress('2f015c60e0be116b1f0cd534704db9c92118fb6a')
-      })
-      st.throws(function () {
-        isValidAddress('x2f015c60e0be116b1f0cd534704db9c92118fb6a')
-      })
-      st.throws(function () {
-        isValidAddress('0X52908400098527886E0F7030069857D2E4169EE7')
-      })
-      st.end()
-    })
-    st.test('error message should have correct format', function (st) {
-      const input = '2f015c60e0be116b1f0cd534704db9c92118fb6a'
-      try {
-        isValidAddress('2f015c60e0be116b1f0cd534704db9c92118fb6a')
-      } catch (err) {
-        st.ok(err.message.includes('only supports 0x-prefixed hex strings'))
-        st.ok(err.message.includes(input))
-      }
+      st.notOk(isValidAddress('2f015c60e0be116b1f0cd534704db9c92118fb6a'))
+      st.notOk(isValidAddress('x2f015c60e0be116b1f0cd534704db9c92118fb6a'))
+      st.notOk(isValidAddress('0X52908400098527886E0F7030069857D2E4169EE7'))
       st.end()
     })
   })
