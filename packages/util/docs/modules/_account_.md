@@ -38,7 +38,7 @@
 
 • **publicToAddress**: *pubToAddress* = pubToAddress
 
-*Defined in [account.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L258)*
+*Defined in [account.ts:263](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L263)*
 
 ## Functions
 
@@ -46,7 +46,7 @@
 
 ▸ **generateAddress**(`from`: Buffer, `nonce`: Buffer): *Buffer*
 
-*Defined in [account.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L180)*
+*Defined in [account.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L185)*
 
 Generates an address of a newly created contract.
 
@@ -65,7 +65,7 @@ ___
 
 ▸ **generateAddress2**(`from`: Buffer, `salt`: Buffer, `initCode`: Buffer): *Buffer*
 
-*Defined in [account.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L201)*
+*Defined in [account.ts:206](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L206)*
 
 Generates an address for a contract created using CREATE2.
 
@@ -85,7 +85,7 @@ ___
 
 ▸ **importPublic**(`publicKey`: Buffer): *Buffer*
 
-*Defined in [account.ts:281](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L281)*
+*Defined in [account.ts:286](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L286)*
 
 Converts a public key to the Ethereum format.
 
@@ -121,7 +121,7 @@ ___
 
 ▸ **isValidChecksumAddress**(`hexAddress`: string, `eip1191ChainId?`: [BNLike](_types_.md#bnlike)): *boolean*
 
-*Defined in [account.ts:168](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L168)*
+*Defined in [account.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L173)*
 
 Checks if the address is a valid checksummed address.
 
@@ -142,7 +142,7 @@ ___
 
 ▸ **isValidPrivate**(`privateKey`: Buffer): *boolean*
 
-*Defined in [account.ts:219](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L219)*
+*Defined in [account.ts:224](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L224)*
 
 Checks if the private key satisfies the rules of the curve secp256k1.
 
@@ -160,7 +160,7 @@ ___
 
 ▸ **isValidPublic**(`publicKey`: Buffer, `sanitize`: boolean): *boolean*
 
-*Defined in [account.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L229)*
+*Defined in [account.ts:234](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L234)*
 
 Checks if the public key satisfies the rules of the curve secp256k1
 and the requirements of Ethereum.
@@ -180,7 +180,7 @@ ___
 
 ▸ **isZeroAddress**(`hexAddress`: string): *boolean*
 
-*Defined in [account.ts:301](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L301)*
+*Defined in [account.ts:306](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L306)*
 
 Checks if a given address is the zero address.
 
@@ -198,7 +198,7 @@ ___
 
 ▸ **privateToAddress**(`privateKey`: Buffer): *Buffer*
 
-*Defined in [account.ts:274](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L274)*
+*Defined in [account.ts:279](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L279)*
 
 Returns the ethereum address of a given private key.
 
@@ -216,7 +216,7 @@ ___
 
 ▸ **privateToPublic**(`privateKey`: Buffer): *Buffer*
 
-*Defined in [account.ts:264](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L264)*
+*Defined in [account.ts:269](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L269)*
 
 Returns the ethereum public key of a given private key.
 
@@ -234,7 +234,7 @@ ___
 
 ▸ **pubToAddress**(`pubKey`: Buffer, `sanitize`: boolean): *Buffer*
 
-*Defined in [account.ts:249](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L249)*
+*Defined in [account.ts:254](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L254)*
 
 Returns the ethereum address of a given public key.
 Accepts "Ethereum public keys" and SEC1 encoded keys.
@@ -254,7 +254,7 @@ ___
 
 ▸ **toChecksumAddress**(`hexAddress`: string, `eip1191ChainId?`: [BNLike](_types_.md#bnlike)): *string*
 
-*Defined in [account.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L139)*
+*Defined in [account.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L144)*
 
 Returns a checksummed address.
 
@@ -280,7 +280,7 @@ ___
 
 ▸ **zeroAddress**(): *string*
 
-*Defined in [account.ts:292](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L292)*
+*Defined in [account.ts:297](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L297)*
 
 Returns the zero address.
 

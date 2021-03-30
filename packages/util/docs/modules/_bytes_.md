@@ -38,7 +38,7 @@
 
 ▸ **addHexPrefix**(`str`: string): *string*
 
-*Defined in [bytes.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L204)*
+*Defined in [bytes.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L205)*
 
 Adds "0x" to a given `String` if it does not already start with "0x".
 
@@ -56,7 +56,7 @@ ___
 
 ▸ **baToJSON**(`ba`: any): *any*
 
-*Defined in [bytes.ts:217](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L217)*
+*Defined in [bytes.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L218)*
 
 Converts a `Buffer` or `Array` to JSON.
 
@@ -76,7 +76,7 @@ ___
 
 ▸ **bufferToHex**(`buf`: Buffer): *string*
 
-*Defined in [bytes.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L180)*
+*Defined in [bytes.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L181)*
 
 Converts a `Buffer` into a `0x`-prefixed hex `String`.
 
@@ -94,7 +94,7 @@ ___
 
 ▸ **bufferToInt**(`buf`: Buffer): *number*
 
-*Defined in [bytes.ts:172](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L172)*
+*Defined in [bytes.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L173)*
 
 Converts a `Buffer` to a `Number`.
 
@@ -112,7 +112,7 @@ ___
 
 ▸ **fromSigned**(`num`: Buffer): *BN*
 
-*Defined in [bytes.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L189)*
+*Defined in [bytes.ts:190](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L190)*
 
 Interprets a `Buffer` as a signed integer and returns a `BN`. Assumes 256-bit numbers.
 
@@ -174,10 +174,11 @@ ___
 
 ▸ **toBuffer**(`v`: [ToBufferInputTypes](_bytes_.md#tobufferinputtypes)): *Buffer*
 
-*Defined in [bytes.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L125)*
+*Defined in [bytes.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L126)*
 
 Attempts to turn a value into a `Buffer`.
-Inputs supported: `Buffer`, `String`, `Number`, null/undefined, `BN` and other objects with a `toArray()` or `toBuffer()` method.
+Inputs supported: `Buffer`, `String` (hex-prefixed), `Number`, null/undefined, `BN` and other objects
+with a `toArray()` or `toBuffer()` method.
 
 **Parameters:**
 
@@ -193,7 +194,7 @@ ___
 
 ▸ **toUnsigned**(`num`: BN): *Buffer*
 
-*Defined in [bytes.ts:197](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L197)*
+*Defined in [bytes.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L198)*
 
 Converts a `BN` to an unsigned integer and returns it as a `Buffer`. Assumes 256-bit numbers.
 
