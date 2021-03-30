@@ -129,7 +129,7 @@ import myCustomChain from './[PATH]/myCustomChain.json'
 const common = new Common({ chain: myCustomChain })
 ```
 
-If you just want to change some certain parameters on a chain configuration it can also be conveniened to use 
+If you just want to change certain parameters on a chain configuration it can also be convenient to use
 the `Common.forCustomChain()` method. With this method you can base your custom chain configuration with
 a standard one (so using all the values from `baseChain` as the default values) and then just provide the
 parameters you want to override:
