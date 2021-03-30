@@ -212,10 +212,11 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
     const receiptTrie = result.receiptRoot
     const transactionsTrie = await _genTxTrie(block)
     const generatedFields = { stateRoot, bloom, gasUsed, receiptTrie, transactionsTrie }
-    block = Block.fromBlockData({
+    const blockData = {
       ...block,
       header: { ...block.header, ...generatedFields },
-    })
+    }
+    block = Block.fromBlockData(blockData, { common: this._common })
   } else {
     if (result.receiptRoot && !result.receiptRoot.equals(block.header.receiptTrie)) {
       debug(
