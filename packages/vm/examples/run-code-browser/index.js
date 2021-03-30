@@ -11,7 +11,7 @@ const BN = require('bn.js')
 const VM = require('../../dist').default
 
 // Create a new VM instance
-// To explicity set the chain or hardfork use [Common](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/common#usage)
+// To explicity set the chain or hardfork use [Common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common#usage)
 const vm = new VM()
 
 const STOP = '00'
