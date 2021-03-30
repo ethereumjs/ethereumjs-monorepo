@@ -97,7 +97,7 @@ It is also possible to only run the tests from the skip lists:
 
 ### CI Test Integration
 
-Tests and checks are run in CI using [Github Actions](https://github.com/ethereumjs/ethereumjs-vm/actions). The configuration can be found in `.github/workflows`.
+Tests and checks are run in CI using [Github Actions](https://github.com/ethereumjs/ethereumjs-monorepo/actions). The configuration can be found in `.github/workflows`.
 
 ### Debugging
 
