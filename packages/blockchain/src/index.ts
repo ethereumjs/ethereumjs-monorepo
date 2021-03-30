@@ -48,6 +48,11 @@ export interface BlockchainInterface {
   getBlock(blockId: Buffer | number | BN): Promise<Block | null>
 
   /**
+   * Returns a header by its hash or number.
+   */
+  getHeader(headerId: Buffer | number | BN): Promise<BlockHeader>
+
+  /**
    * Iterates through blocks starting at the specified iterator head and calls
    * the onBlock function on each block.
    *

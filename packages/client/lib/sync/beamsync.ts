@@ -110,6 +110,32 @@ export class BeamSynchronizer extends Synchronizer {
       trie,
     })
 
+    const oldGetHeader = this.execution.vm.blockchain.getHeader
+
+    this.execution.vm.blockchain.getHeader = async function (blockId: Buffer | number | BN) {
+      try {
+        return await oldGetHeader.apply(this, [blockId])
+      } catch (e) {
+        if (e.notFound) {
+          let block
+          if (typeof blockId === 'number') {
+            block = new BN(blockId)
+          } else {
+            block = blockId
+          }
+          for (let i = 0; i < 50; i++) {
+            await synchronizer.syncPeer?.eth?.getBlockHeaders({
+              block,
+              max: 1,
+            })
+          }
+          throw 'Tried to get header more than 50 times'
+        } else {
+          throw e
+        }
+      }
+    }
+
     let txs = 0
     const runTime = Date.now() / 1000
     let gas = 0
