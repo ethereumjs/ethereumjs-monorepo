@@ -16,7 +16,7 @@
     "clean": "rm -Rf ./dist && rm -Rf ./dist.browser",
     "build": "ethereumjs-config-ts-build",
     "coverage": "ethereumjs-config-coverage",
-    "docs:build": "typedoc",
+    "docs:build": "typedoc --options typedoc.json",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
     "tsc": "ethereumjs-config-tsc",
@@ -71,8 +71,8 @@
     "prettier": "^2.0.5",
     "tape": "^4.10.1",
     "ts-node": "^8.8.2",
-    "typedoc": "next",
-    "typedoc-plugin-markdown": "^2.2.17",
+    "typedoc": "^0.20.34",
+    "typedoc-plugin-markdown": "^3.6.0",
     "typescript": "^3.9.3"
   },
   "contributors": [

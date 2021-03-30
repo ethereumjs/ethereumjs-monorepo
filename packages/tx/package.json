@@ -60,10 +60,9 @@
     "tape": "^4.10.1",
     "ts-node": "^8.8.2",
     "tslint": "^5.16.0",
-    "typedoc": "next",
-    "typedoc-plugin-markdown": "^2.2.17",
-    "typescript": "^3.9.3",
-    "typestrict": "^1.0.2"
+    "typedoc": "^0.20.34",
+    "typedoc-plugin-markdown": "^3.6.0",
+    "typescript": "^3.9.3"
   },
   "repository": {
     "type": "git",
