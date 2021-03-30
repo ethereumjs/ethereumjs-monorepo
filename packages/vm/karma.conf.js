@@ -20,10 +20,7 @@ module.exports = function (config) {
     },
 
     karmaTypescriptConfig: {
-      compilerOptions: {
-        resolveJsonModule: true,
-        esModuleInterop: true,
-      },
+      tsconfig: './tsconfig.json',
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
       },

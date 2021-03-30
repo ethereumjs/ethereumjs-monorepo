@@ -17,6 +17,7 @@ import { StateManager, StorageDump } from './interface'
 import Cache from './cache'
 import { ripemdPrecompileAddress } from '../evm/precompiles'
 import { short } from '../evm/opcodes'
+import { AccessList, AccessListItem } from '@ethereumjs/tx'
 
 const debug = createDebugLogger('vm:state')
 
@@ -60,6 +61,10 @@ export default class DefaultStateManager implements StateManager {
   // In case of a revert, discard any warm slots.
   _accessedStorage: Map<string, Set<string>>[]
 
+  // Backup structure for address/storage tracker frames on reverts
+  // to also include on access list generation
+  _accessedStorageReverted: Map<string, Set<string>>[]
+
   /**
    * Instantiate the StateManager interface.
    */
@@ -78,6 +83,7 @@ export default class DefaultStateManager implements StateManager {
     this._checkpointCount = 0
     this._originalStorageCache = new Map()
     this._accessedStorage = [new Map()]
+    this._accessedStorageReverted = [new Map()]
   }
 
   /**
@@ -360,22 +366,13 @@ export default class DefaultStateManager implements StateManager {
   }
 
   /**
-   * Commits the current change-set to the instance since the
-   * last call to checkpoint.
+   * Merges a storage map into the last item of the accessed storage stack
    */
-  async commit(): Promise<void> {
-    // setup trie checkpointing
-    await this._trie.commit()
-    // setup cache checkpointing
-    this._cache.commit()
-    this._touchedStack.pop()
-    this._checkpointCount--
-
-    // Copy the contents of the map of the current level to a map higher.
-
-    const storageMap = this._accessedStorage.pop()
-    // mapTarget is current level, since the pop operation is above
-    const mapTarget = this._accessedStorage[this._accessedStorage.length - 1]
+  private _accessedStorageMerge(
+    storageList: Map<string, Set<string>>[],
+    storageMap: Map<string, Set<string>>
+  ) {
+    const mapTarget = storageList[storageList.length - 1]
 
     if (mapTarget) {
       // Note: storageMap is always defined here per definition (TypeScript cannot infer this)
@@ -389,6 +386,25 @@ export default class DefaultStateManager implements StateManager {
           storageSet!.add(value)
         })
       })
+    }
+  }
+
+  /**
+   * Commits the current change-set to the instance since the
+   * last call to checkpoint.
+   */
+  async commit(): Promise<void> {
+    // setup trie checkpointing
+    await this._trie.commit()
+    // setup cache checkpointing
+    this._cache.commit()
+    this._touchedStack.pop()
+    this._checkpointCount--
+
+    // Copy the contents of the map of the current level to a map higher.
+    const storageMap = this._accessedStorage.pop()
+    if (storageMap) {
+      this._accessedStorageMerge(this._accessedStorage, storageMap)
     }
 
     if (this._checkpointCount === 0) {
@@ -407,7 +423,10 @@ export default class DefaultStateManager implements StateManager {
     // setup cache checkpointing
     this._cache.revert()
     this._storageTries = {}
-    this._accessedStorage.pop()
+    const lastItem = this._accessedStorage.pop()
+    if (lastItem) {
+      this._accessedStorageReverted.push(lastItem)
+    }
     const touched = this._touchedStack.pop()
     if (!touched) {
       throw new Error('Reverting to invalid state checkpoint failed')
@@ -642,9 +661,57 @@ export default class DefaultStateManager implements StateManager {
 
   /**
    * Clear the warm accounts and storage. To be called after a transaction finished.
+   * @param boolean - If true, returns an EIP-2930 access list generated
    */
   clearWarmedAccounts(): void {
     this._accessedStorage = [new Map()]
+    this._accessedStorageReverted = [new Map()]
+  }
+
+  /**
+   * Generates an EIP-2930 access list
+   *
+   * Note: this method is not yet part of the `StateManager` interface.
+   * If not implemented, `runTx()` is not allowed to be used with the
+   * `reportAccessList` option and will instead throw.
+   *
+   * Note: there is an edge case on accessList generation where an
+   * internal call might revert without an accessList but pass if the
+   * accessList is used for a tx run (so the subsequent behavior might change).
+   * This edge case is not covered by this implementation.
+   *
+   * @returns - an [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/packages/tx) `AccessList`
+   */
+  generateAccessList(): AccessList {
+    // Merge with the reverted storage list
+    const mergedStorage = [...this._accessedStorage, ...this._accessedStorageReverted]
+
+    // Fold merged storage array into one Map
+    while (mergedStorage.length >= 2) {
+      const storageMap = mergedStorage.pop()
+      if (storageMap) {
+        this._accessedStorageMerge(mergedStorage, storageMap)
+      }
+    }
+    const folded = new Map([...mergedStorage[0].entries()].sort())
+
+    // Transfer folded map to final structure
+    const accessList: AccessList = []
+    folded.forEach((slots, addressStr) => {
+      const address = Address.fromString(`0x${addressStr}`)
+      if (!address.isPrecompileOrSystemAddress()) {
+        const storageSlots = Array.from(slots)
+          .map((s) => `0x${s}`)
+          .sort()
+        const accessListItem: AccessListItem = {
+          address: addressStr,
+          storageKeys: storageSlots,
+        }
+        accessList!.push(accessListItem)
+      }
+    })
+
+    return accessList
   }
 
   /**
