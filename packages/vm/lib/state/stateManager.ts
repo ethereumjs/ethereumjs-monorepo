@@ -680,9 +680,15 @@ export default class DefaultStateManager implements StateManager {
    * accessList is used for a tx run (so the subsequent behavior might change).
    * This edge case is not covered by this implementation.
    *
+   * @param addressesRemoved - List of addresses to be removed from the final list
+   * @param addressesOnlyStorage - List of addresses only to be added in case of present storage slots
+   *
    * @returns - an [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/packages/tx) `AccessList`
    */
-  generateAccessList(): AccessList {
+  generateAccessList(
+    addressesRemoved: Address[] = [],
+    addressesOnlyStorage: Address[] = []
+  ): AccessList {
     // Merge with the reverted storage list
     const mergedStorage = [...this._accessedStorage, ...this._accessedStorageReverted]
 
@@ -699,7 +705,12 @@ export default class DefaultStateManager implements StateManager {
     const accessList: AccessList = []
     folded.forEach((slots, addressStr) => {
       const address = Address.fromString(`0x${addressStr}`)
-      if (!address.isPrecompileOrSystemAddress()) {
+      const check1 = address.isPrecompileOrSystemAddress()
+      const check2 = addressesRemoved.find((a) => a.equals(address))
+      const check3 =
+        addressesOnlyStorage.find((a) => a.equals(address)) !== undefined && slots.size === 0
+
+      if (!check1 && !check2 && !check3) {
         const storageSlots = Array.from(slots)
           .map((s) => `0x${s}`)
           .sort()

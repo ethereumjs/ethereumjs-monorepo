@@ -576,7 +576,7 @@ tape('StateManager - generateAccessList', (tester) => {
     addA(a(3))
     addS(a(3), s(1))
     addS(a(3), s(2))
-    const json = [
+    let json = [
       {
         address: '0xff00000000000000000000000000000000000001',
         storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
@@ -594,6 +594,58 @@ tape('StateManager - generateAccessList', (tester) => {
       },
     ]
     t.deepEqual(gen(), json)
+
+    json = [
+      {
+        address: '0xff00000000000000000000000000000000000002',
+        storageKeys: [],
+      },
+      {
+        address: '0xff00000000000000000000000000000000000003',
+        storageKeys: [
+          '0x0000000000000000000000000000000000000000000000000000000000000001',
+          '0x0000000000000000000000000000000000000000000000000000000000000002',
+        ],
+      },
+    ]
+    const aRemoved = new Address(a(1))
+    t.deepEqual(gen([aRemoved]), json, 'address removed')
+
+    json = [
+      {
+        address: '0xff00000000000000000000000000000000000001',
+        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
+      },
+      {
+        address: '0xff00000000000000000000000000000000000002',
+        storageKeys: [],
+      },
+      {
+        address: '0xff00000000000000000000000000000000000003',
+        storageKeys: [
+          '0x0000000000000000000000000000000000000000000000000000000000000001',
+          '0x0000000000000000000000000000000000000000000000000000000000000002',
+        ],
+      },
+    ]
+    const aOnlyStorageKept = new Address(a(3))
+    t.deepEqual(gen([], [aOnlyStorageKept]), json, 'addressesOnlyStorage, kept')
+
+    json = [
+      {
+        address: '0xff00000000000000000000000000000000000001',
+        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
+      },
+      {
+        address: '0xff00000000000000000000000000000000000003',
+        storageKeys: [
+          '0x0000000000000000000000000000000000000000000000000000000000000001',
+          '0x0000000000000000000000000000000000000000000000000000000000000002',
+        ],
+      },
+    ]
+    const aOnlyStorageRemoved = new Address(a(2))
+    t.deepEqual(gen([], [aOnlyStorageRemoved]), json, 'addressesOnlyStorage, removed')
     t.end()
   })
 
