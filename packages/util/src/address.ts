@@ -90,6 +90,18 @@ export class Address {
   }
 
   /**
+   * True if address is in the address range defined
+   * by EIP-1352
+   */
+  isPrecompileOrSystemAddress(): boolean {
+    const addressBN = new BN(this.buf)
+    const rangeMin = new BN(0)
+    const rangeMax = new BN('ffff', 'hex')
+
+    return addressBN.gte(rangeMin) && addressBN.lte(rangeMax)
+  }
+
+  /**
    * Returns hex encoding of address.
    */
   toString(): string {

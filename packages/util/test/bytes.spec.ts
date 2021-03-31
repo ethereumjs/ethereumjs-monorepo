@@ -47,10 +47,8 @@ tape('is zero address', function (t) {
     st.end()
   })
 
-  t.test('should throw when address is not hex-prefixed', function (st) {
-    st.throws(function () {
-      isZeroAddress('0000000000000000000000000000000000000000')
-    })
+  t.test('should return false when address is not hex-prefixed', function (st) {
+    st.equal(isZeroAddress('0000000000000000000000000000000000000000'), false)
     st.end()
   })
 })

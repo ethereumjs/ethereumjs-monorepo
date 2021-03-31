@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [7.1.0] - TBD
+
+- Return false (instead of throwing) for non-hex-string values in account `isValidAddress`, `isValidChecksumAddress`, `isZeroAddress` methods, PR [#1173](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1173)
+
 ## [7.0.9] - 2021-03-04
 
 This release adds support for very high `chainId` numbers exceeding `MAX_SAFE_INTEGER` (an example is the chain ID `34180983699157880` used for the ephemeral Yolov3 testnet preparing for the `berlin` hardfork, but high chain IDs might be used for things like private test networks and the like as well), see PR [#290](https://github.com/ethereumjs/ethereumjs-util/pull/290).
@@ -401,7 +405,7 @@ see PR [#170](https://github.com/ethereumjs/ethereumjs-util/pull/170).
 ## [6.0.0] - 2018-10-08
 
 - Support for `EIP-155` replay protection by adding an optional `chainId` parameter
-  to `ecsign()`, `ecrecover()`, `toRpcSig()` and `isValidSignature()`, if present the  
+  to `ecsign()`, `ecrecover()`, `toRpcSig()` and `isValidSignature()`, if present the
   new signature format relying on the `chainId` is used, see PR [#143](https://github.com/ethereumjs/ethereumjs-util/pull/143)
 - New `generateAddress2()` for `CREATE2` opcode (`EIP-1014`) address creation
   (Constantinople HF), see PR [#146](https://github.com/ethereumjs/ethereumjs-util/pull/146)

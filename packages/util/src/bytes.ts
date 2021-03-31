@@ -119,7 +119,8 @@ export type ToBufferInputTypes =
 
 /**
  * Attempts to turn a value into a `Buffer`.
- * Inputs supported: `Buffer`, `String`, `Number`, null/undefined, `BN` and other objects with a `toArray()` or `toBuffer()` method.
+ * Inputs supported: `Buffer`, `String` (hex-prefixed), `Number`, null/undefined, `BN` and other objects
+ * with a `toArray()` or `toBuffer()` method.
  * @param v the value
  */
 export const toBuffer = function (v: ToBufferInputTypes): Buffer {

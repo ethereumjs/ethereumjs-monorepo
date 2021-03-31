@@ -23,6 +23,9 @@ import {
   N_DIV_2,
 } from './types'
 
+const emptyAccessList: AccessList = []
+const emptyBuffer = Buffer.from([])
+
 /**
  * Typed transaction with optional access lists
  *
@@ -109,8 +112,6 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
     const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = values
 
-    const emptyBuffer = Buffer.from([])
-
     return new AccessListEIP2930Transaction(
       {
         chainId: new BN(chainId),
@@ -120,7 +121,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
         to: to && to.length > 0 ? new Address(to) : undefined,
         value: new BN(value),
         data: data ?? emptyBuffer,
-        accessList: accessList ?? emptyBuffer,
+        accessList: accessList ?? emptyAccessList,
         v: v !== undefined ? new BN(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
         r: r !== undefined && !r.equals(emptyBuffer) ? new BN(r) : undefined,
         s: s !== undefined && !s.equals(emptyBuffer) ? new BN(s) : undefined,
@@ -137,6 +138,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * varying data types.
    */
   public constructor(txData: AccessListEIP2930TxData, opts: TxOptions = {}) {
+    // Have to split up the const/let part to make eslint happy
     const { chainId, accessList } = txData
 
     super(txData, opts)

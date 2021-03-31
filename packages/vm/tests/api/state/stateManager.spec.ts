@@ -493,3 +493,269 @@ tape('StateManager - Contract storage', (tester) => {
     t.end()
   })
 })
+
+tape('StateManager - generateAccessList', (tester) => {
+  const it = tester.test
+
+  // Only use 0..9
+  function a(n: number) {
+    return Buffer.from(`ff${'00'.repeat(18)}0${n}`, 'hex')
+  }
+
+  // Only use 0..9
+  function s(n: number) {
+    return Buffer.from(`${'00'.repeat(31)}0${n}`, 'hex')
+  }
+
+  function getStateManagerAliases() {
+    const stateManager = new DefaultStateManager()
+    const addA = stateManager.addWarmedAddress.bind(stateManager)
+    const addS = stateManager.addWarmedStorage.bind(stateManager)
+    const gen = stateManager.generateAccessList.bind(stateManager)
+    const sm = stateManager
+    return { addA, addS, gen, sm }
+  }
+
+  it('one frame, simple', async (t) => {
+    const { addA, addS, gen } = getStateManagerAliases()
+    addA(a(1))
+    addS(a(1), s(1))
+    const json = [
+      {
+        address: 'ff00000000000000000000000000000000000001',
+        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
+      },
+    ]
+    t.deepEqual(gen(), json)
+    t.end()
+  })
+
+  it('one frame, unsorted slots', async (t) => {
+    const { addA, addS, gen } = getStateManagerAliases()
+    addA(a(1))
+    addS(a(1), s(2))
+    addS(a(1), s(1))
+    const json = [
+      {
+        address: 'ff00000000000000000000000000000000000001',
+        storageKeys: [
+          '0x0000000000000000000000000000000000000000000000000000000000000001',
+          '0x0000000000000000000000000000000000000000000000000000000000000002',
+        ],
+      },
+    ]
+    t.deepEqual(gen(), json)
+    t.end()
+  })
+
+  it('one frame, unsorted addresses', async (t) => {
+    const { addA, addS, gen } = getStateManagerAliases()
+    addA(a(2))
+    addS(a(2), s(1))
+    addA(a(1))
+    addS(a(1), s(1))
+    const json = [
+      {
+        address: 'ff00000000000000000000000000000000000001',
+        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
+      },
+      {
+        address: 'ff00000000000000000000000000000000000002',
+        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
+      },
+    ]
+    t.deepEqual(gen(), json)
+    t.end()
+  })
+
+  it('one frame, more complex', async (t) => {
+    const { addA, addS, gen } = getStateManagerAliases()
+    addA(a(1))
+    addS(a(1), s(1))
+    addA(a(2))
+    addA(a(3))
+    addS(a(3), s(1))
+    addS(a(3), s(2))
+    const json = [
+      {
+        address: 'ff00000000000000000000000000000000000001',
+        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
+      },
+      {
+        address: 'ff00000000000000000000000000000000000002',
+        storageKeys: [],
+      },
+      {
+        address: 'ff00000000000000000000000000000000000003',
+        storageKeys: [
+          '0x0000000000000000000000000000000000000000000000000000000000000001',
+          '0x0000000000000000000000000000000000000000000000000000000000000002',
+        ],
+      },
+    ]
+    t.deepEqual(gen(), json)
+    t.end()
+  })
+
+  it('two frames, simple', async (t) => {
+    const { addA, addS, gen, sm } = getStateManagerAliases()
+    addA(a(1))
+    addS(a(1), s(1))
+    await sm.checkpoint()
+    addA(a(2))
+    addA(a(3))
+    addS(a(3), s(1))
+    addS(a(3), s(2))
+    const json = [
+      {
+        address: 'ff00000000000000000000000000000000000001',
+        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
+      },
+      {
+        address: 'ff00000000000000000000000000000000000002',
+        storageKeys: [],
+      },
+      {
+        address: 'ff00000000000000000000000000000000000003',
+        storageKeys: [
+          '0x0000000000000000000000000000000000000000000000000000000000000001',
+          '0x0000000000000000000000000000000000000000000000000000000000000002',
+        ],
+      },
+    ]
+    t.deepEqual(gen(), json)
+    t.end()
+  })
+
+  it('two frames, same address with different storage slots', async (t) => {
+    const { addA, addS, gen, sm } = getStateManagerAliases()
+    addA(a(1))
+    addS(a(1), s(1))
+    await sm.checkpoint()
+    addA(a(1))
+    addS(a(1), s(2))
+    const json = [
+      {
+        address: 'ff00000000000000000000000000000000000001',
+        storageKeys: [
+          '0x0000000000000000000000000000000000000000000000000000000000000001',
+          '0x0000000000000000000000000000000000000000000000000000000000000002',
+        ],
+      },
+    ]
+    t.deepEqual(gen(), json)
+    t.end()
+  })
+
+  it('two frames, same address with same storage slots', async (t) => {
+    const { addA, addS, gen, sm } = getStateManagerAliases()
+    addA(a(1))
+    addS(a(1), s(1))
+    await sm.checkpoint()
+    addA(a(1))
+    addS(a(1), s(1))
+    const json = [
+      {
+        address: 'ff00000000000000000000000000000000000001',
+        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
+      },
+    ]
+    t.deepEqual(gen(), json)
+    t.end()
+  })
+
+  it('three frames, no accesses on level two', async (t) => {
+    const { addA, addS, gen, sm } = getStateManagerAliases()
+    addA(a(1))
+    addS(a(1), s(1))
+    await sm.checkpoint()
+    await sm.checkpoint()
+    addA(a(2))
+    addS(a(2), s(2))
+    const json = [
+      {
+        address: 'ff00000000000000000000000000000000000001',
+        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
+      },
+      {
+        address: 'ff00000000000000000000000000000000000002',
+        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000002'],
+      },
+    ]
+    t.deepEqual(gen(), json)
+    t.end()
+  })
+
+  it('one frame, one revert frame', async (t) => {
+    const { addA, addS, gen, sm } = getStateManagerAliases()
+    await sm.checkpoint()
+    addA(a(1))
+    addS(a(1), s(1))
+    await sm.revert()
+    addA(a(2))
+    addS(a(2), s(2))
+    const json = [
+      {
+        address: 'ff00000000000000000000000000000000000001',
+        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
+      },
+      {
+        address: 'ff00000000000000000000000000000000000002',
+        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000002'],
+      },
+    ]
+    t.deepEqual(gen(), json)
+    t.end()
+  })
+
+  it('one frame, one revert frame, same address, different slots', async (t) => {
+    const { addA, addS, gen, sm } = getStateManagerAliases()
+    await sm.checkpoint()
+    addA(a(1))
+    addS(a(1), s(1))
+    await sm.revert()
+    addA(a(1))
+    addS(a(1), s(2))
+    const json = [
+      {
+        address: 'ff00000000000000000000000000000000000001',
+        storageKeys: [
+          '0x0000000000000000000000000000000000000000000000000000000000000001',
+          '0x0000000000000000000000000000000000000000000000000000000000000002',
+        ],
+      },
+    ]
+    t.deepEqual(gen(), json)
+    t.end()
+  })
+
+  it('one frame, two revert frames', async (t) => {
+    const { addA, addS, gen, sm } = getStateManagerAliases()
+    await sm.checkpoint()
+    await sm.checkpoint()
+    addA(a(1))
+    addS(a(1), s(1))
+    await sm.revert()
+    addA(a(2))
+    addS(a(2), s(1))
+    await sm.revert()
+    addA(a(3))
+    addS(a(3), s(1))
+    const json = [
+      {
+        address: 'ff00000000000000000000000000000000000001',
+        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
+      },
+      {
+        address: 'ff00000000000000000000000000000000000002',
+        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
+      },
+      {
+        address: 'ff00000000000000000000000000000000000003',
+        storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000001'],
+      },
+    ]
+    t.deepEqual(gen(), json)
+    t.end()
+  })
+})
