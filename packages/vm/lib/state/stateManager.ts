@@ -704,7 +704,7 @@ export default class DefaultStateManager implements StateManager {
           .map((s) => `0x${s}`)
           .sort()
         const accessListItem: AccessListItem = {
-          address: addressStr,
+          address: `0x${addressStr}`,
           storageKeys: storageSlots,
         }
         accessList!.push(accessListItem)
