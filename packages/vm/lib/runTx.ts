@@ -110,6 +110,11 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
 
   // Have to cast as `EIP2929StateManager` to access clearWarmedAccounts
   const state: EIP2929StateManager = <EIP2929StateManager>this.stateManager
+  if (opts.reportAccessList && !('generateAccessList' in state)) {
+    throw new Error(
+      'reportAccessList needs a StateManager implementing the generateAccessList() method'
+    )
+  }
 
   // Ensure we start with a clear warmed accounts Map
   if (this._common.isActivatedEIP(2929)) {
@@ -158,8 +163,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
       const removed = [tx.getSenderAddress()]
       // Only include to address on present storage slot accesses
       const onlyStorage = tx.to ? [tx.to] : []
-      // @ts-ignore method is not yet part of the interface for backwards-compatibility reasons
-      result.accessList = state.generateAccessList(removed, onlyStorage)
+      result.accessList = state.generateAccessList!(removed, onlyStorage)
     }
     return result
   } catch (e) {
