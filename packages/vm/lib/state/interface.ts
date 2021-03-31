@@ -1,4 +1,5 @@
 import { Account, Address } from 'ethereumjs-util'
+import { AccessList } from '@ethereumjs/tx'
 
 /**
  * Storage values of an account
@@ -40,4 +41,5 @@ export interface EIP2929StateManager extends StateManager {
   addWarmedStorage(address: Buffer, slot: Buffer): void
   isWarmedStorage(address: Buffer, slot: Buffer): boolean
   clearWarmedAccounts(): void
+  generateAccessList?(addressesRemoved: Address[], addressesOnlyStorage: Address[]): AccessList
 }

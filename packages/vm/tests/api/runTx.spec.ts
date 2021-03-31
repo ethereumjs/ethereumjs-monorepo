@@ -162,7 +162,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
       res.gasUsed.gt(new BN(0)),
       `mainnet (PoW), istanbul HF, default SM - should run without errors (${TRANSACTION_TYPES[0].name})`
     )
-    t.true(res.accessList)
+    t.deepEqual(res.accessList, [])
     t.end()
   })
 
