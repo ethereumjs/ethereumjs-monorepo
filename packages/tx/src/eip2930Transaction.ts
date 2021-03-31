@@ -120,7 +120,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
         gasLimit: new BN(gasLimit),
         to: to && to.length > 0 ? new Address(to) : undefined,
         value: new BN(value),
-        data: data ?? emptyAccessList,
+        data: data ?? emptyBuffer,
         accessList: accessList ?? emptyAccessList,
         v: v !== undefined ? new BN(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
         r: r !== undefined && !r.equals(emptyBuffer) ? new BN(r) : undefined,
@@ -139,10 +139,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    */
   public constructor(txData: AccessListEIP2930TxData, opts: TxOptions = {}) {
     // Have to split up the const/let part to make eslint happy
-    const { chainId } = txData
-    let { accessList } = txData
-
-    accessList = accessList ?? emptyAccessList
+    const { chainId, accessList } = txData
 
     super(txData, opts)
 
