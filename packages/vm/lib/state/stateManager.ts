@@ -15,7 +15,7 @@ import Common from '@ethereumjs/common'
 import { genesisStateByName } from '@ethereumjs/common/dist/genesisStates'
 import { StateManager, StorageDump } from './interface'
 import Cache from './cache'
-import { ripemdPrecompileAddress } from '../evm/precompiles'
+import { getActivePrecompiles, ripemdPrecompileAddress } from '../evm/precompiles'
 import { short } from '../evm/opcodes'
 import { AccessList, AccessListItem } from '@ethereumjs/tx'
 
@@ -705,7 +705,7 @@ export default class DefaultStateManager implements StateManager {
     const accessList: AccessList = []
     folded.forEach((slots, addressStr) => {
       const address = Address.fromString(`0x${addressStr}`)
-      const check1 = address.isPrecompileOrSystemAddress()
+      const check1 = getActivePrecompiles(this._common).find((a) => a.equals(address))
       const check2 = addressesRemoved.find((a) => a.equals(address))
       const check3 =
         addressesOnlyStorage.find((a) => a.equals(address)) !== undefined && slots.size === 0
