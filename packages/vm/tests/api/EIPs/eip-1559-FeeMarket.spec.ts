@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, privateToAddress } from 'ethereumjs-util'
+import { Address, BN, privateToAddress, setLengthLeft } from 'ethereumjs-util'
 import VM from '../../../lib'
 import Common from '@ethereumjs/common'
 import {
@@ -30,6 +30,12 @@ const coinbase = new Address(Buffer.from('11'.repeat(20), 'hex'))
 const pkey = Buffer.from('20'.repeat(32), 'hex')
 const sender = new Address(privateToAddress(pkey))
 
+/**
+ * Creates an EIP1559 block
+ * @param baseFee - base fee of the block
+ * @param transaction - the transaction in the block
+ * @param txType - the txtype to use
+ */
 function makeBlock(baseFee: BN, transaction: TypedTransaction, txType: number) {
   const signed = transaction.sign(pkey)
   const json = <any>signed.toJSON()
@@ -150,6 +156,49 @@ tape('EIP1559 tests', (t) => {
     st.ok(account.balance.eq(expectedAccountBalance), 'account balance correct')
     st.ok(results3.amountSpent.eq(expectedCost), 'reported cost correct')
 
+    st.end()
+  })
+
+  t.test('gasPrice uses the effective gas price', async (st) => {
+    const contractAddress = new Address(Buffer.from('20'.repeat(20), 'hex'))
+    const tx = new FeeMarketEIP1559Transaction(
+      {
+        maxFeePerGas: GWEI.muln(5),
+        maxInclusionFeePerGas: GWEI.muln(2),
+        to: contractAddress,
+        gasLimit: 210000,
+      },
+      {
+        common,
+      }
+    )
+    const block = makeBlock(GWEI, tx, 2)
+    const vm = new VM({ common })
+    const account = await vm.stateManager.getAccount(sender)
+    const balance = GWEI.muln(210000).muln(10)
+    account.balance = balance
+    await vm.stateManager.putAccount(sender, account)
+
+    /**
+     * GASPRICE
+     * PUSH 0
+     * MSTORE
+     * PUSH 20
+     * PUSH 0
+     * RETURN
+     */
+
+    // (This code returns the reported GASPRICE)
+    const code = Buffer.from('3A60005260206000F3', 'hex')
+    await vm.stateManager.putContractCode(contractAddress, code)
+
+    const result = await vm.runTx({ tx: block.transactions[0], block })
+    const returnValue = result.execResult.returnValue
+
+    const expectedCost = GWEI.muln(3)
+    const expectedReturn = setLengthLeft(expectedCost.toBuffer(), 32)
+
+    st.ok(returnValue.equals(expectedReturn))
     st.end()
   })
 })
