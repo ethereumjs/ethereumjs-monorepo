@@ -12,6 +12,7 @@ import {
   PrefixedHexString,
   bnToHex,
   bufferToHex,
+  rlp,
 } from 'ethereumjs-util'
 import { encode, decode } from 'rlp'
 import Common from '@ethereumjs/common'
@@ -501,6 +502,43 @@ export default class DefaultStateManager implements StateManager {
       storageProof,
     }
     return returnValue
+  }
+
+  /**
+   * Verify a proof. Throws if proof is invalid, otherwise returns true
+   * @param proof - The Proof to prove
+   */
+  async verifyProof(proof: Proof): Promise<boolean> {
+    const rootHash = rlp.decode(toBuffer(proof.accountProof[0]))
+    const key = keccak256(toBuffer(proof.accountProof[proof.accountProof.length - 1]))
+    const accountProof = proof.accountProof.map((rlpString: PrefixedHexString) =>
+      toBuffer(rlpString)
+    )
+
+    // This returns the account if the trie is OK, verify that it matches the reported account
+    await Trie.verifyProof(rootHash, key, accountProof)
+
+    const storageRoot = toBuffer(proof.storageHash)
+
+    /* TODO verify that value matches the account */
+    await Promise.all(
+      proof.storageProof.map(async (stProof: StorageProof) => {
+        const storageProof = stProof.proof.map((value: PrefixedHexString) => toBuffer(value))
+        const storageValue = toBuffer(stProof.value)
+        const storageKey = toBuffer(stProof.key)
+
+        // TODO figure out in what case verifyProof returns null (empty trie?)
+        const reportedValue = <Buffer>await Trie.verifyProof(storageRoot, storageKey, storageProof)
+
+        if (!reportedValue.equals(storageValue)) {
+          throw 'Reported trie value does not match storage'
+        }
+      })
+    ).catch((e) => {
+      throw e
+    })
+
+    return true
   }
 
   /**
