@@ -6,6 +6,7 @@
 
 ### Modules
 
+* ["buildBlock"](modules/_buildblock_.md)
 * ["exceptions"](modules/_exceptions_.md)
 * ["index"](modules/_index_.md)
 * ["runBlock"](modules/_runblock_.md)

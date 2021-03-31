@@ -357,7 +357,7 @@ ___
 
 *Implementation of [StateManager](../interfaces/_state_index_.statemanager.md)*
 
-*Defined in [state/stateManager.ts:721](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L721)*
+*Defined in [state/stateManager.ts:732](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L732)*
 
 Removes accounts form the state trie that have been touched,
 as defined in EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
@@ -490,9 +490,9 @@ ___
 
 ###  generateAccessList
 
-▸ **generateAccessList**(): *AccessList*
+▸ **generateAccessList**(`addressesRemoved`: Address[], `addressesOnlyStorage`: Address[]): *AccessList*
 
-*Defined in [state/stateManager.ts:685](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L685)*
+*Defined in [state/stateManager.ts:688](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L688)*
 
 Generates an EIP-2930 access list
 
@@ -504,6 +504,13 @@ Note: there is an edge case on accessList generation where an
 internal call might revert without an accessList but pass if the
 accessList is used for a tx run (so the subsequent behavior might change).
 This edge case is not covered by this implementation.
+
+**Parameters:**
+
+Name | Type | Default | Description |
+------ | ------ | ------ | ------ |
+`addressesRemoved` | Address[] | [] | List of addresses to be removed from the final list |
+`addressesOnlyStorage` | Address[] | [] | List of addresses only to be added in case of present storage slots  |
 
 **Returns:** *AccessList*
 

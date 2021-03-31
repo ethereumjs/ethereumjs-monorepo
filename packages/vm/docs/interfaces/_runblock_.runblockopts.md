@@ -25,7 +25,7 @@ Options for running a block.
 
 • **block**: *Block*
 
-*Defined in [runBlock.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L28)*
+*Defined in [runBlock.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L29)*
 
 The @ethereumjs/block to process
 
@@ -37,10 +37,9 @@ ___
 
 *Defined in [runBlock.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L40)*
 
-Whether to generate the stateRoot. If `true` `runBlock` will check the
-`stateRoot` of the block against the current Trie, check the `receiptsTrie`,
-the `gasUsed` and the `logsBloom` after running. If any does not match,
-`runBlock` throws.
+Whether to generate the stateRoot and other related fields.
+If `true`, `runBlock` will set the fields `stateRoot`, `receiptsTrie`, `gasUsed`, and `bloom` (logs bloom) after running the block.
+If `false`, `runBlock` throws if any fields do not match.
 Defaults to `false`.
 
 ___
@@ -49,7 +48,7 @@ ___
 
 • **root**? : *Buffer*
 
-*Defined in [runBlock.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L32)*
+*Defined in [runBlock.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L33)*
 
 Root of the state trie
 
