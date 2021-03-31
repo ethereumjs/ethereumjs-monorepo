@@ -7,6 +7,7 @@ import { default as runCode, RunCodeOpts } from './runCode'
 import { default as runCall, RunCallOpts } from './runCall'
 import { default as runTx, RunTxOpts, RunTxResult } from './runTx'
 import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
+import { default as buildBlock, BuildBlockOpts, BlockBuilder } from './buildBlock'
 import { EVMResult, ExecResult } from './evm/evm'
 import { OpcodeList, getOpcodesForHF } from './evm/opcodes'
 import { precompiles } from './evm/precompiles'
@@ -328,6 +329,25 @@ export default class VM extends AsyncEventEmitter {
   async runCode(opts: RunCodeOpts): Promise<ExecResult> {
     await this.init()
     return runCode.bind(this)(opts)
+  }
+
+  /**
+   * Build a block on top of the current state
+   * by adding one transaction at a time.
+   *
+   * Creates a checkpoint on the StateManager and modifies the state
+   * as transactions are run. The checkpoint is committed on `build()`
+   * or discarded with `revert()`.
+   *
+   * @param {BuildBlockOpts} opts
+   * @returns An instance of [[BlockBuilder]] with methods:
+   * - `addTransaction(tx): RunTxResult`
+   * - `build(sealOpts): Block`
+   * - `revert()`
+   */
+  async buildBlock(opts: BuildBlockOpts): Promise<BlockBuilder> {
+    await this.init()
+    return buildBlock.bind(this)(opts)
   }
 
   /**

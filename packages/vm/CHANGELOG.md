@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [UNRELEASED]
+
+## New Block Builder
+
+This release includes a new Block Builder API for creating new blocks on top of the current state by adding transactions one at a time.
+
+It can be used like the following:
+
+```typescript
+const blockBuilder = await vm.buildBlock({ parentBlock, blockData, blockOpts })
+const txResult = await blockBuilder.addTransaction(tx)
+// reset the state with `blockBuilder.revert()`
+const block = await blockBuilder.build()
+```
+
+When the block is built it becomes fully executed in the vm and its blockchain.
+
 ## 5.2.0 - 2021-03-18
 
 ### Berlin HF Support
