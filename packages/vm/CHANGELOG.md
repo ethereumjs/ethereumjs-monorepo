@@ -34,6 +34,8 @@ When the block is built it becomes fully executed in the vm and its blockchain.
 ### Other Changes
 
 - Fixed `VM.runBlock()` with `generate: true` by setting the header fields for `gasUsed`, `logsBloom`, `receiptTrie`, and `transactionsTrie`, PR [#1158](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1158)
+- Fixed a bug in `VM.runTx()` with `reportAccessList=true`returning addresses without a `0x` prefix, PR [#1183](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1183)
+- Do not include the tx sender address in the access list in `VM.runTx()` with `reportAccessList=true`, only include the `to` address if storage slots have been touched, PR [#1183](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1183)
 
 ## 5.2.0 - 2021-03-18
 
