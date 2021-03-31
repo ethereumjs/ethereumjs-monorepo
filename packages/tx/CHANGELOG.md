@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.1.2 - 2021-03-31
+
+- Fixed default value for empty access lists in the `AccessListEIP2930Transaction.fromValuesArray()` static constructor method, PR [#1179](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1179)
+
 ## 3.1.1 - 2021-03-23
 
 This release fixes a bug in the `v3.1.0` Berlin HF `@ethereumjs/tx` release where the import path for `eip2930Transaction` was broken on operating systems with case sensitive filename resolution.
