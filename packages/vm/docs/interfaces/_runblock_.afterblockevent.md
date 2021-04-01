@@ -68,7 +68,7 @@ ___
 
 ###  receipts
 
-• **receipts**: *([PreByzantiumTxReceipt](_runblock_.prebyzantiumtxreceipt.md) | [PostByzantiumTxReceipt](_runblock_.postbyzantiumtxreceipt.md) | [EIP2930Receipt](_runblock_.eip2930receipt.md))[]*
+• **receipts**: *([PostByzantiumTxReceipt](_runblock_.postbyzantiumtxreceipt.md) | [PreByzantiumTxReceipt](_runblock_.prebyzantiumtxreceipt.md) | [EIP2930Receipt](_runblock_.eip2930receipt.md))[]*
 
 *Inherited from [RunBlockResult](_runblock_.runblockresult.md).[receipts](_runblock_.runblockresult.md#receipts)*
 

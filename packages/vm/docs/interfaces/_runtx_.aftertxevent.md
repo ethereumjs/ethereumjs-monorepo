@@ -12,6 +12,7 @@
 
 ### Properties
 
+* [accessList](_runtx_.aftertxevent.md#optional-accesslist)
 * [amountSpent](_runtx_.aftertxevent.md#amountspent)
 * [bloom](_runtx_.aftertxevent.md#bloom)
 * [createdAddress](_runtx_.aftertxevent.md#optional-createdaddress)
@@ -22,13 +23,25 @@
 
 ## Properties
 
+### `Optional` accessList
+
+• **accessList**? : *AccessList*
+
+*Inherited from [RunTxResult](_runtx_.runtxresult.md).[accessList](_runtx_.runtxresult.md#optional-accesslist)*
+
+*Defined in [runTx.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L82)*
+
+EIP-2930 access list generated for the tx (see `reportAccessList` option)
+
+___
+
 ###  amountSpent
 
 • **amountSpent**: *BN*
 
 *Inherited from [RunTxResult](_runtx_.runtxresult.md).[amountSpent](_runtx_.runtxresult.md#amountspent)*
 
-*Defined in [runTx.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L56)*
+*Defined in [runTx.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L73)*
 
 The amount of ether used by this transaction
 
@@ -40,7 +53,7 @@ ___
 
 *Inherited from [RunTxResult](_runtx_.runtxresult.md).[bloom](_runtx_.runtxresult.md#bloom)*
 
-*Defined in [runTx.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L52)*
+*Defined in [runTx.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L69)*
 
 Bloom filter resulted from transaction
 
@@ -76,7 +89,7 @@ ___
 
 *Inherited from [RunTxResult](_runtx_.runtxresult.md).[gasRefund](_runtx_.runtxresult.md#optional-gasrefund)*
 
-*Defined in [runTx.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L60)*
+*Defined in [runTx.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L77)*
 
 The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
 
@@ -98,6 +111,6 @@ ___
 
 • **transaction**: *TypedTransaction*
 
-*Defined in [runTx.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L67)*
+*Defined in [runTx.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L89)*
 
 The transaction which just got finished
