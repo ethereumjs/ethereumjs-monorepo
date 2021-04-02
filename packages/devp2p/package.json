@@ -26,10 +26,10 @@
     "Holger Drewes <holger.drewes@gmail.com>"
   ],
   "files": [
-    "dist/**/*.js",
-    "dist/**/*.d.ts",
-    "dist/**/*.map"
+    "dist",
+    "dist.browser"
   ],
+  "browser": "dist.browser/index.js",
   "main": "dist/index.js",
   "repository": {
     "type": "git",
