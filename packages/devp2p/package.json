@@ -33,7 +33,7 @@
   "main": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ethereumjs/ethereumjs-monorepo.git"
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
   },
   "engines": {
     "node": ">=10.0"

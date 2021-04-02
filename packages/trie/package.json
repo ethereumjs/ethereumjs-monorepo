@@ -30,11 +30,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ethereumjs/ethereumjs-monorepo.git"
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
   },
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+trie%22"
   },
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie#readme",
   "keywords": [
     "merkle",
     "radix",

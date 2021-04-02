@@ -34,7 +34,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ethereumjs/ethereumjs-client.git"
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
   },
   "keywords": [
     "ethereum",
@@ -50,9 +50,9 @@
   "author": "Vinay Pulim (v@pulim.com)",
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-client/issues"
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+client%22"
   },
-  "homepage": "https://github.com/ethereumjs/ethereumjs-client#readme",
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client#readme",
   "dependencies": {
     "@ethereumjs/block": "^3.2.0",
     "@ethereumjs/blockchain": "^5.2.1",
