@@ -1,13 +1,20 @@
 {
   "name": "@ethereumjs/ethash",
   "version": "1.0.0",
-  "description": "An ethash implementation in JS.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "description": "An ethash implementation in JavaScript",
+  "license": "MPL-2.0",
+  "author": "mjbecze <mjbecze@gmail.com>",
+  "keywords": [
+    "ethash",
+    "ethereum",
+    "POW"
+  ],
   "files": [
     "dist",
     "dist.browser"
   ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "browser": "dist.browser/index.js",
   "scripts": {
     "build": "ethereumjs-config-ts-build",
@@ -19,21 +26,6 @@
     "coverage": "ethereumjs-config-coverage",
     "test": "tape -r ts-node/register test/*.spec.ts"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
-  },
-  "keywords": [
-    "ethash",
-    "ethereum",
-    "POW"
-  ],
-  "author": "mjbecze <mjbecze@gmail.com>",
-  "license": "MPL-2.0",
-  "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+ethash%22"
-  },
-  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/ethash#readme",
   "dependencies": {
     "@types/levelup": "^4.3.0",
     "buffer-xor": "^2.0.1",
@@ -57,5 +49,13 @@
     "ts-node": "^8.8.2",
     "tslint": "^5.16.0",
     "typescript": "^3.9.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+  },
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/ethash#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+ethash%22"
   }
 }

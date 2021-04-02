@@ -2,16 +2,28 @@
   "name": "@ethereumjs/client",
   "version": "0.0.6",
   "description": "EthereumJS client implementation",
+  "license": "MPL-2.0",
+  "author": "Vinay Pulim (v@pulim.com)",
+  "keywords": [
+    "ethereum",
+    "ethereumjs",
+    "client",
+    "blockchain",
+    "light sync",
+    "full sync"
+  ],
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "files": [
+    "dist"
+  ],
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
   "browser": "dist/bundle.js",
   "bin": {
     "ethereumjs": "dist/bin/cli.js"
   },
-  "files": [
-    "bin",
-    "dist"
-  ],
   "scripts": {
     "build": "npm run build:node && npm run build:browser",
     "build:node": "tsc -p ./tsconfig.prod.json",
@@ -32,27 +44,6 @@
     "test:integration": "npm run tape -- 'test/integration/**/*.spec.ts'",
     "test:browser": "karma start karma.conf.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
-  },
-  "keywords": [
-    "ethereum",
-    "ethereumjs",
-    "client",
-    "blockchain",
-    "light sync",
-    "full sync"
-  ],
-  "engines": {
-    "node": ">=8.0.0"
-  },
-  "author": "Vinay Pulim (v@pulim.com)",
-  "license": "MPL-2.0",
-  "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+client%22"
-  },
-  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client#readme",
   "dependencies": {
     "@ethereumjs/block": "^3.2.0",
     "@ethereumjs/blockchain": "^5.2.1",
@@ -118,5 +109,13 @@
     "typescript": "^3.9.3",
     "webpack": "^4.43.0",
     "webpack-cli": "^3.3.11"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+  },
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+client%22"
   }
 }

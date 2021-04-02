@@ -22,9 +22,9 @@
     "dist",
     "dist.browser"
   ],
-  "browser": "dist.browser/index.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "browser": "dist.browser/index.js",
   "scripts": {
     "build": "ethereumjs-config-ts-build",
     "prepublishOnly": "npm run clean && npm run build && npm run test",
@@ -86,12 +86,6 @@
     "typedoc-plugin-markdown": "^2.2.17",
     "typescript": "^3.9.3"
   },
-  "contributors": [
-    "Alex Beregszaszi <alex@rtfs.hu>",
-    "Kirill Fomichev <fanatid@ya.ru> (https://github.com/fanatid)",
-    "Martin Becze <mb@ethdev.com>",
-    "Holger Drewes <holger.drewes@gmail.com>"
-  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
@@ -99,5 +93,11 @@
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/devp2p#readme",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+devp2p%22"
-  }
+  },
+  "contributors": [
+    "Alex Beregszaszi <alex@rtfs.hu>",
+    "Kirill Fomichev <fanatid@ya.ru> (https://github.com/fanatid)",
+    "Martin Becze <mb@ethdev.com>",
+    "Holger Drewes <holger.drewes@gmail.com>"
+  ]
 }

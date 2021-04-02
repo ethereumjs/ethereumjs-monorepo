@@ -2,12 +2,18 @@
   "name": "@ethereumjs/tx",
   "version": "3.1.2",
   "description": "A simple module for creating, manipulating and signing Ethereum transactions",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "license": "MPL-2.0",
+  "author": "mjbecze <mb@ethdev.com>",
+  "keywords": [
+    "ethereum",
+    "transactions"
+  ],
   "files": [
     "dist",
     "dist.browser"
   ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "browser": "dist.browser/index.js",
   "scripts": {
     "build": "ethereumjs-config-ts-build",
@@ -25,12 +31,6 @@
     "test:browser:build": "tsc && cp -r ./test/json test-build/test",
     "test:browser": "npm run test:browser:build && karma start karma.conf.js"
   },
-  "keywords": [
-    "ethereum",
-    "transactions"
-  ],
-  "author": "mjbecze <mb@ethdev.com>",
-  "license": "MPL-2.0",
   "dependencies": {
     "@ethereumjs/common": "^2.2.0",
     "ethereumjs-util": "^7.0.10"
@@ -65,14 +65,6 @@
     "typescript": "^3.9.3",
     "typestrict": "^1.0.2"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+tx%22"
-  },
-  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#readme",
   "contributors": [
     {
       "name": "Alex Beregszaszi",
@@ -83,5 +75,13 @@
       "deletions": 42613,
       "hireable": true
     }
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+  },
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+tx%22"
+  }
 }

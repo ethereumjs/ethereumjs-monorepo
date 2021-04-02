@@ -2,8 +2,12 @@
   "name": "ethereumjs-util",
   "version": "7.0.10",
   "description": "A collection of utility functions for Ethereum",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "license": "MPL-2.0",
+  "author": "mjbecze <mjbecze@gmail.com>",
+  "keywords": [
+    "ethereum",
+    "utilties"
+  ],
   "engines": {
     "node": ">=10.0.0"
   },
@@ -11,6 +15,8 @@
     "dist",
     "dist.browser"
   ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "browser": "dist.browser/index.js",
   "scripts": {
     "build": "ethereumjs-config-ts-build",
@@ -25,10 +31,6 @@
     "test:node": "tape -r ts-node/register test/*.spec.ts",
     "tsc": "ethereumjs-config-tsc"
   },
-  "keywords": [
-    "ethereum",
-    "utilties"
-  ],
   "dependencies": {
     "@types/bn.js": "^5.1.0",
     "bn.js": "^5.1.2",
@@ -61,16 +63,14 @@
     "typedoc-plugin-markdown": "^2.2.17",
     "typescript": "^3.9.3"
   },
-  "author": "mjbecze <mjbecze@gmail.com>",
-  "license": "MPL-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
   },
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util#readme",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+util%22"
   },
-  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util#readme",
   "contributors": [
     {
       "name": "Tim Coulter",

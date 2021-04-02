@@ -2,12 +2,17 @@
   "name": "@ethereumjs/blockchain",
   "version": "5.2.1",
   "description": "A module to store and interact with blocks",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "license": "MPL-2.0",
+  "keywords": [
+    "ethereum",
+    "blockchain"
+  ],
   "files": [
     "dist",
     "dist.browser"
   ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "browser": "dist.browser/index.js",
   "scripts": {
     "prepublishOnly": "npm run clean && npm run build && npm run test",
@@ -22,20 +27,7 @@
     "lint:fix": "ethereumjs-config-lint-fix",
     "test": "tape -r ts-node/register ./test/*.spec.ts"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
-  },
-  "keywords": [
-    "ethereum",
-    "blockchain"
-  ],
   "author": "mjbecze <mjbecze@gmail.com>",
-  "license": "MPL-2.0",
-  "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+blockchain%22"
-  },
-  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/blockchain#readme",
   "dependencies": {
     "@ethereumjs/block": "^3.2.0",
     "@ethereumjs/common": "^2.2.0",
@@ -68,5 +60,13 @@
     "typedoc-plugin-markdown": "^2.2.17",
     "typescript": "^3.9.3",
     "typestrict": "^1.0.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+  },
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/blockchain#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+blockchain%22"
   }
 }
