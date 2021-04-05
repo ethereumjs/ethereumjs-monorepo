@@ -3,12 +3,8 @@ import { Address, BN, rlp, KECCAK256_RLP } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { Transaction } from '@ethereumjs/tx'
-import {
-  PreByzantiumTxReceipt,
-  PostByzantiumTxReceipt,
-  RunBlockOpts,
-  AfterBlockEvent,
-} from '../../lib/runBlock'
+import { RunBlockOpts, AfterBlockEvent } from '../../lib/runBlock'
+import type { PreByzantiumTxReceipt, PostByzantiumTxReceipt } from '../../lib/types'
 import { setupPreConditions, getDAOCommon } from '../util'
 import { setupVM, createAccount } from './utils'
 import testnet from './testdata/testnet.json'

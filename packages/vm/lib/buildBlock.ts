@@ -4,9 +4,9 @@ import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { TypedTransaction } from '@ethereumjs/tx'
 import { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import VM from '.'
-import { RunTxResult } from './runTx'
 import Bloom from './bloom'
-import { generateTxReceipt, calculateMinerReward, rewardAccount } from './runBlock'
+import { RunTxResult } from './runTx'
+import { calculateMinerReward, rewardAccount, encodeReceipt } from './runBlock'
 
 /**
  * Options for building a block.
@@ -117,7 +117,7 @@ export class BlockBuilder {
     for (const [i, txResult] of this.transactionResults.entries()) {
       const tx = this.transactions[i]
       gasUsed.iadd(txResult.gasUsed)
-      const { encodedReceipt } = await generateTxReceipt.bind(this.vm)(tx, txResult, gasUsed)
+      const encodedReceipt = encodeReceipt(tx, txResult.receipt)
       await receiptTrie.put(encode(i), encodedReceipt)
     }
     return receiptTrie.root
@@ -157,7 +157,11 @@ export class BlockBuilder {
       throw new Error('tx has a higher gas limit than the remaining gas in the block')
     }
 
-    const blockData = { header: this.headerData, transactions: this.transactions }
+    const header = {
+      ...this.headerData,
+      gasUsed: this.gasUsed,
+    }
+    const blockData = { header, transactions: this.transactions }
     const block = Block.fromBlockData(blockData, this.blockOpts)
 
     const result = await this.vm.runTx({ tx, block })
