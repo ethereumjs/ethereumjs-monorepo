@@ -204,7 +204,9 @@ export class BlockBuilder {
       await this.rewardMiner()
     }
 
-    await this.vm.stateManager.commit()
+    if (this.checkpointed) {
+      await this.vm.stateManager.commit()
+    }
 
     const stateRoot = await this.vm.stateManager.getStateRoot(false)
     const transactionsTrie = await this.transactionsTrie()
