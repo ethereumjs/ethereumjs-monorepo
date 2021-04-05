@@ -1,6 +1,6 @@
 import { AddressLike, BNLike, BufferLike } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { TxData, JsonTx } from '@ethereumjs/tx'
+import { AccessListEIP2930TxData, TxData, JsonTx } from '@ethereumjs/tx'
 import { Block } from './block'
 import { BlockHeader } from './header'
 
@@ -93,7 +93,7 @@ export interface BlockData {
    * Header data for the block
    */
   header?: HeaderData
-  transactions?: Array<TxData>
+  transactions?: Array<TxData | AccessListEIP2930TxData>
   uncleHeaders?: Array<HeaderData>
 }
 
