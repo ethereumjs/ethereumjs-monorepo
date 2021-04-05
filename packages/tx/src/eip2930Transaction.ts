@@ -38,6 +38,11 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   get transactionType(): number {
     return 1
   }
+  
+  // Alias for transactionType
+  get type() {
+    return this.transactionType
+  }
 
   // EIP-2930 alias for `s`
   get senderS() {
