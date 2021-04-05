@@ -292,7 +292,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     const { skipBalance, skipNonce } = opts
 
     // Construct a block with the current gasUsed for accurate tx receipt generation
-    const blockWithGasUsed = Block.fromBlockData({ ...block, header: { ...block.header, gasUsed } })
+    const blockWithGasUsed = Block.fromBlockData({ ...block, header: { ...block.header, gasUsed } }, { common: this._common })
 
     const txRes = await this.runTx({
       tx,
