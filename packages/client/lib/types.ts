@@ -1,25 +1,38 @@
+import { EventEmitter } from 'events'
 import multiaddr from 'multiaddr'
 import type Connection from '../../../node_modules/libp2p-interfaces/dist/src/connection/connection'
 import type { MuxedStream } from '../../../node_modules/libp2p-interfaces/dist/src/stream-muxer/types'
 
+/**
+ * Types for the central event bus, emitted
+ * by different components of the client
+ */
 export enum Events {
-  EXECUTION_ERROR = 'execution:error'
-
+  EXECUTION_ERROR = 'execution:error',
 }
-export type Event = Events
+export declare interface EventBus {
+  emit(event: Events.EXECUTION_ERROR, args: (error: Error) => void): boolean
 
-export type EVENT_EXECUTION_ERROR = [
-  error: Error,
-]
+  on(event: Events.EXECUTION_ERROR, listener: (error: Error) => void): this
+}
+export class EventBus extends EventEmitter {}
 
+/**
+ * Like types
+ */
 export type Key = Buffer
 export type KeyLike = string | Key
 
 export type MultiaddrLike = string | string[] | multiaddr | multiaddr[]
 
+/**
+ * DNS
+ */
 export type DnsNetwork = string
 
-/* Libp2p aliases for convenience */
+/**
+ * Libp2p aliases for convenience
+ */
 export type Libp2pConnection = Connection
 export type Libp2pMuxedStream = MuxedStream
 

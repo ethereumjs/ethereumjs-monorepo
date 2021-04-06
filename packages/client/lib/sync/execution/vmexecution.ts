@@ -5,7 +5,7 @@ import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Block } from '@ethereumjs/block'
 import { debugCodeReplayBlock } from '../../util/debug'
-import { Events, EVENT_EXECUTION_ERROR } from '../../types'
+import { Events } from '../../types'
 
 export class VMExecution extends Execution {
   public vm: VM
@@ -163,8 +163,7 @@ export class VMExecution extends Execution {
             if (this.config.debugCode) {
               await debugCodeReplayBlock(this, block)
             }
-            const eArgs: EVENT_EXECUTION_ERROR = [ error ]
-            this.config.events.emit(Events.EXECUTION_ERROR, ...eArgs)
+            this.config.events.emit(Events.EXECUTION_ERROR, error)
             errorBlock = block
           }
         },
