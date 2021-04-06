@@ -37,7 +37,7 @@
   "dependencies": {
     "@types/levelup": "^4.3.0",
     "buffer-xor": "^2.0.1",
-    "ethereumjs-util": "^7.0.9",
+    "ethereumjs-util": "^7.0.10",
     "miller-rabin": "^4.0.0"
   },
   "devDependencies": {

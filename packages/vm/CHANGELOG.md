@@ -6,11 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [UNRELEASED]
+## 5.3.0 - 2021-03-31
 
-## New Block Builder
+### EIP-2930 Tx Access List Generation
 
-This release includes a new Block Builder API for creating new blocks on top of the current state by adding transactions one at a time.
+This release adds the ability to generate access lists from tx runs with `VM.runTx()`, see PR [#1170](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1170). There is a new option `reportAccessList` which can be used on all tx types to generate an access list as defined by [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) which is then returned along the `VM.runTx()` result adhering to the `@ethereumjs/tx` `AccessList` TypeScript type definition.
+
+Note that this functionality needs the new `StateManager.generateAccessList()` function which is not yet part of the `StateManager` interface for compatibility reasons. If you implement an own `StateManager` make sure that this function is present (e.g. by inheriting your `StateManager` from the `DefaultStateManager` implementation).
+
+Another note: there is an edge case on accessList generation where an internal call might revert without an accessList but pass if the accessList is used for a tx run (so the subsequent behavior might change). This edge case is not covered by this implementation.
+
+### New Block Builder
+
+There is a new Block Builder API for creating new blocks on top of the current state by adding transactions one at a time, see PR [#1158](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1158).
 
 It can be used like the following:
 
@@ -22,6 +30,12 @@ const block = await blockBuilder.build()
 ```
 
 When the block is built it becomes fully executed in the vm and its blockchain.
+
+### Other Changes
+
+- Fixed `VM.runBlock()` with `generate: true` by setting the header fields for `gasUsed`, `logsBloom`, `receiptTrie`, and `transactionsTrie`, PR [#1158](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1158)
+- Fixed a bug in `VM.runTx()` with `reportAccessList=true`returning addresses without a `0x` prefix, PR [#1183](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1183)
+- Do not include the tx sender address in the access list in `VM.runTx()` with `reportAccessList=true`, only include the `to` address if storage slots have been touched, PR [#1183](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1183)
 
 ## 5.2.0 - 2021-03-18
 

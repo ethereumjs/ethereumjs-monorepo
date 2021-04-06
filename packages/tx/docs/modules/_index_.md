@@ -79,9 +79,9 @@ ___
 
 #### Type declaration:
 
-* **address**: *string*
+* **address**: *PrefixedHexString*
 
-* **storageKeys**: *string[]*
+* **storageKeys**: *PrefixedHexString[]*
 
 ___
 

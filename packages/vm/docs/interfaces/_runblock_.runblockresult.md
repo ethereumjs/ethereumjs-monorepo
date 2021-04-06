@@ -55,7 +55,7 @@ ___
 
 ###  receipts
 
-• **receipts**: *([PreByzantiumTxReceipt](_runblock_.prebyzantiumtxreceipt.md) | [PostByzantiumTxReceipt](_runblock_.postbyzantiumtxreceipt.md) | [EIP2930Receipt](_runblock_.eip2930receipt.md))[]*
+• **receipts**: *([PostByzantiumTxReceipt](_runblock_.postbyzantiumtxreceipt.md) | [PreByzantiumTxReceipt](_runblock_.prebyzantiumtxreceipt.md) | [EIP2930Receipt](_runblock_.eip2930receipt.md))[]*
 
 *Defined in [runBlock.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L64)*
 

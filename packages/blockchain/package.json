@@ -41,7 +41,7 @@
     "@ethereumjs/common": "^2.2.0",
     "@ethereumjs/ethash": "^1.0.0",
     "debug": "^2.2.0",
-    "ethereumjs-util": "^7.0.9",
+    "ethereumjs-util": "^7.0.10",
     "level-mem": "^5.0.1",
     "lru-cache": "^5.1.1",
     "rlp": "^2.2.4",

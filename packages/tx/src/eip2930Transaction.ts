@@ -138,7 +138,6 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * varying data types.
    */
   public constructor(txData: AccessListEIP2930TxData, opts: TxOptions = {}) {
-    // Have to split up the const/let part to make eslint happy
     const { chainId, accessList } = txData
 
     super(txData, opts)
