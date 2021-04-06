@@ -5,6 +5,7 @@ import { Synchronizer, SynchronizerOptions } from './sync'
 import { BlockFetcher } from './fetcher'
 import { Block } from '@ethereumjs/block'
 import { VMExecution } from './execution/vmexecution'
+import { Events, EVENT_EXECUTION_ERROR } from '../types'
 
 /**
  * Implements an ethereum full sync synchronizer
@@ -26,7 +27,7 @@ export class FullSynchronizer extends Synchronizer {
     })
 
     const self = this
-    this.execution.on('error', async (error: Error) => {
+    this.config.events.on(Events.EXECUTION_ERROR, async (...[error]: EVENT_EXECUTION_ERROR) => {
       self.emit('error', error)
       await self.stop()
     })

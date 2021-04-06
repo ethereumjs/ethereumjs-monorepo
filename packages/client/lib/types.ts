@@ -2,6 +2,16 @@ import multiaddr from 'multiaddr'
 import type Connection from '../../../node_modules/libp2p-interfaces/dist/src/connection/connection'
 import type { MuxedStream } from '../../../node_modules/libp2p-interfaces/dist/src/stream-muxer/types'
 
+export enum Events {
+  EXECUTION_ERROR = 'execution:error'
+
+}
+export type Event = Events
+
+export type EVENT_EXECUTION_ERROR = [
+  error: Error,
+]
+
 export type Key = Buffer
 export type KeyLike = string | Key
 

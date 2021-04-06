@@ -6,6 +6,7 @@ import { getLogger, Logger } from './logging'
 import { Libp2pServer, RlpxServer } from './net/server'
 import { parseTransports } from './util'
 import type { LevelUp } from 'levelup'
+import EventEmitter from 'events'
 const level = require('level')
 
 export interface ConfigOptions {
@@ -170,6 +171,12 @@ export interface ConfigOptions {
 }
 
 export class Config {
+  /**
+   * Central event bus for events emitted by the different
+   * components of the client
+   */
+   public readonly events: EventEmitter
+
   public static readonly CHAIN_DEFAULT = 'mainnet'
   public static readonly SYNCMODE_DEFAULT = 'full'
   public static readonly LIGHTSERV_DEFAULT = false
@@ -212,6 +219,8 @@ export class Config {
   public readonly servers: (RlpxServer | Libp2pServer)[] = []
 
   constructor(options: ConfigOptions = {}) {
+    this.events = new EventEmitter()
+
     this.syncmode = options.syncmode ?? Config.SYNCMODE_DEFAULT
     this.vm = options.vm
     this.lightserv = options.lightserv ?? Config.LIGHTSERV_DEFAULT
