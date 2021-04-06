@@ -12,6 +12,13 @@ import type { RunTxResult } from './runTx'
 import type { TxReceipt } from './types'
 import * as DAOConfig from './config/dao_fork_accounts_config.json'
 
+// For backwards compatibility from v5.3.0,
+// TxReceipts are exported. These exports are
+// deprecated and may be removed soon, please
+// update your imports to the new types file.
+import { PreByzantiumTxReceipt, PostByzantiumTxReceipt, EIP2930Receipt } from './types'
+export { PreByzantiumTxReceipt, PostByzantiumTxReceipt, EIP2930Receipt }
+
 const debug = createDebugLogger('vm:block')
 
 /* DAO account list */
@@ -389,6 +396,70 @@ export function encodeReceipt(tx: TypedTransaction, receipt: TxReceipt) {
 
   const type = intToBuffer(tx.transactionType)
   return Buffer.concat([type, encoded])
+}
+
+/**
+ * Generates the tx receipt and returns { txReceipt, encodedReceipt, receiptLog }
+ * @deprecated Please use the new `generateTxReceipt` located in runTx.
+ */
+export async function generateTxReceipt(
+  this: VM,
+  tx: TypedTransaction,
+  txRes: RunTxResult,
+  blockGasUsed: BN
+) {
+  const abstractTxReceipt = {
+    gasUsed: blockGasUsed.toArrayLike(Buffer),
+    bitvector: txRes.bloom.bitvector,
+    logs: txRes.execResult.logs || [],
+  }
+
+  let txReceipt
+  let encodedReceipt
+
+  let receiptLog = `Generate tx receipt transactionType=${
+    'transactionType' in tx ? tx.transactionType : 'NaN'
+  } gasUsed=${blockGasUsed.toString()} bitvector=${short(abstractTxReceipt.bitvector)} (${
+    abstractTxReceipt.bitvector.length
+  } bytes) logs=${abstractTxReceipt.logs.length}`
+
+  if (!('transactionType' in tx) || tx.transactionType === 0) {
+    // Legacy transaction
+    if (this._common.gteHardfork('byzantium')) {
+      // Post-Byzantium
+      txReceipt = {
+        status: txRes.execResult.exceptionError ? 0 : 1, // Receipts have a 0 as status on error
+        ...abstractTxReceipt,
+      } as PostByzantiumTxReceipt
+      const statusInfo = txRes.execResult.exceptionError ? 'error' : 'ok'
+      receiptLog += ` status=${txReceipt.status} (${statusInfo}) (>= Byzantium)`
+    } else {
+      // Pre-Byzantium
+      const stateRoot = await this.stateManager.getStateRoot(true)
+      txReceipt = {
+        stateRoot: stateRoot,
+        ...abstractTxReceipt,
+      } as PreByzantiumTxReceipt
+      receiptLog += ` stateRoot=${txReceipt.stateRoot.toString('hex')} (< Byzantium)`
+    }
+    encodedReceipt = encode(Object.values(txReceipt))
+  } else if ('transactionType' in tx && tx.transactionType === 1) {
+    // EIP2930 Transaction
+    txReceipt = {
+      status: txRes.execResult.exceptionError ? 0 : 1,
+      ...abstractTxReceipt,
+    } as EIP2930Receipt
+    encodedReceipt = Buffer.concat([Buffer.from('01', 'hex'), encode(Object.values(txReceipt))])
+  } else {
+    throw new Error(
+      `Unsupported transaction type ${'transactionType' in tx ? tx.transactionType : 'NaN'}`
+    )
+  }
+  return {
+    txReceipt,
+    encodedReceipt,
+    receiptLog,
+  }
 }
 
 // apply the DAO fork changes to the VM
