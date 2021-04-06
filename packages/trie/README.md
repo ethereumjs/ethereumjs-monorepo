@@ -175,9 +175,9 @@ If you want to join for work or do improvements on the libraries have a look at 
 [discord-link]: https://discord.gg/TNwARpR
 [trie-npm-badge]: https://img.shields.io/npm/v/merkle-patricia-tree.svg
 [trie-npm-link]: https://www.npmjs.com/package/merkle-patricia-tree
-[trie-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20trie?label=issues
-[trie-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+trie"
-[trie-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Trie%20Test/badge.svg
-[trie-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22Trie+Test%22
+[trie-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20trie?label=issues
+[trie-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+trie"
+[trie-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/Trie%20Test/badge.svg
+[trie-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22Trie+Test%22
 [trie-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=trie
 [trie-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie

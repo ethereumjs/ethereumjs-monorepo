@@ -61,7 +61,7 @@ Returns a promise that resolves to a boolean.
 
 **Parameters**
 
-- `block` - the [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/block) to verify
+- `block` - the [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) to verify
 
 ### `ethash.mkcache(cacheSize, seed)`
 
@@ -101,9 +101,9 @@ An `Object` containing:
 [discord-link]: https://discord.gg/TNwARpR
 [ethash-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/ethash.svg
 [ethash-npm-link]: https://www.npmjs.org/package/@ethereumjs/ethash
-[ethash-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20ethash?label=issues
-[ethash-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+ethash"
-[ethash-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Ethash/badge.svg
-[ethash-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22Ethash%22
+[ethash-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20ethash?label=issues
+[ethash-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+ethash"
+[ethash-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/Ethash/badge.svg
+[ethash-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22Ethash%22
 [ethash-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=ethash
 [ethash-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/ethash
