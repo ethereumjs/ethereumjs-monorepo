@@ -402,7 +402,7 @@ export class Block {
     // Helper variable: set hash to `true` if uncle hash is included in any canonical block
     const includedUncles: { [key: string]: boolean } = {}
 
-    // Due to the header validation check above, we know that `getBlocks` it between 1 and 8 inclusive.
+    // Due to the header validation check above, we know that `getBlocks` is between 1 and 8 inclusive.
     const getBlocks = this.header.number.clone().sub(lowestUncleNumber).addn(1).toNumber()
 
     // See Geth: https://github.com/ethereum/go-ethereum/blob/b63bffe8202d46ea10ac8c4f441c582642193ac8/consensus/ethash/consensus.go#L207

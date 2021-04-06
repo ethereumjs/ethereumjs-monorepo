@@ -1,7 +1,7 @@
 import * as devp2p from '../src/index'
 import { LES, Peer } from '../src/index'
 import Common from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
+import { TypedTransaction } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import ms from 'ms'
 import chalk from 'chalk'
@@ -198,7 +198,7 @@ function onNewBlock(block: Block, peer: Peer) {
   )
 }
 
-function isValidTx(tx: Transaction) {
+function isValidTx(tx: TypedTransaction) {
   return tx.validate()
 }
 

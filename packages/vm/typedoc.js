@@ -1,6 +1,5 @@
 module.exports = {
-  inputFiles: ['lib/*.ts'],
-  mode: 'library',
+  entryPoints: ['lib'],
   out: 'docs',
   plugin: 'typedoc-plugin-markdown',
   readme: 'none',
@@ -11,7 +10,6 @@ module.exports = {
     'lib/evm/**',
     'lib/state/cache.ts',
   ],
-  excludeNotExported: true,
   excludePrivate: true,
   excludeProtected: true,
 }

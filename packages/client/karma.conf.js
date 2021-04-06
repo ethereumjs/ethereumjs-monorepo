@@ -13,6 +13,9 @@ module.exports = function (config) {
     karmaTypescriptConfig: {
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
+        transforms: [
+          require('karma-typescript-es6-transform')()
+        ]
       },
       tsconfig: './tsconfig.karma.json',
     },

@@ -30,7 +30,7 @@ mkdir -p $CACHE_PATH $A_PATH $B_PATH
 A_FULL_PATH=`realpath $A_PATH`
 B_FULL_PATH=`realpath $B_PATH`
 
-# Downloads latest published pacakge from npm. Stores tarball file name in variable TGZ
+# Downloads latest published package from npm. Stores tarball file name in variable TGZ
 TGZ=`npm pack $PACKAGE_NAME`
 
 # unpacks to $CACHE_PATH

@@ -105,7 +105,7 @@ The library now also comes with a **type declaration file** distributed along wi
 
 ### Major Refactoring - Breaking Changes
 
-This release is a major refactoring of the block library to simplify and strengthen its code base. Refactoring work has been done along PR [#72](https://github.com/ethereumjs/ethereumjs-block/pull/72) (Promises) and PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883) (refactoring of API and internal code structure).
+This release is a major refactoring of the block library to simplify and strengthen its code base. Refactoring work has been done along PR [#72](https://github.com/ethereumjs/ethereumjs-block/pull/72) (Promises) and PR [#883](https://github.com/ethereumjs/ethereumjs-monorepo/pull/883) (refactoring of API and internal code structure).
 
 #### New Constructor Params
 
@@ -165,7 +165,7 @@ Learn more about the full API in the [docs](./docs/README.md).
 
 The returned block is now frozen and immutable. To work with a maliable block, copy it with `const fakeBlock = Object.create(block)`.
 
-If you need `Block` mutability - e.g. because you want to subclass `Block` and modifiy its behavior - there is a `freeze` option to prevent the `Object.freeze()` call on initialization, see PR [#941](https://github.com/ethereumjs/ethereumjs-vm/pull/941).
+If you need `Block` mutability - e.g. because you want to subclass `Block` and modifiy its behavior - there is a `freeze` option to prevent the `Object.freeze()` call on initialization, see PR [#941](https://github.com/ethereumjs/ethereumjs-monorepo/pull/941).
 
 #### Promise-based API
 
@@ -204,41 +204,41 @@ try {
 
 On the `Block` library new corresponding methods have been added which both operate on a block instance and expect a `parentBlock` as an input parameter.
 
-**Breaking:** Note that `canonicalDifficulty()` and `validateDifficulty()` in block and header now throw on non-PoW chains, see PR [#937](https://github.com/ethereumjs/ethereumjs-vm/pull/937).
+**Breaking:** Note that `canonicalDifficulty()` and `validateDifficulty()` in block and header now throw on non-PoW chains, see PR [#937](https://github.com/ethereumjs/ethereumjs-monorepo/pull/937).
 
-**Breaking:** Non-blockchain dependent validation checks have been extracted from `validate()` to its own `Block.validateData()` function. For the `validate()` method in block and header `blockchain` is now a mandatory parameter, see PR [#942](https://github.com/ethereumjs/ethereumjs-vm/pull/942)
+**Breaking:** Non-blockchain dependent validation checks have been extracted from `validate()` to its own `Block.validateData()` function. For the `validate()` method in block and header `blockchain` is now a mandatory parameter, see PR [#942](https://github.com/ethereumjs/ethereumjs-monorepo/pull/942)
 
 ### New Default Hardfork
 
-**Breaking:** The default HF on the library has been updated from `petersburg` to `istanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-vm/pull/906).
+**Breaking:** The default HF on the library has been updated from `petersburg` to `istanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-monorepo/pull/906).
 
-The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`, see PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863).
+The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`, see PR [#863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/863).
 
 ### Dual ES5 and ES2017 Builds
 
-We significantly updated our internal tool and CI setup along the work on PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint` for code linting and formatting and the introduction of a new build setup.
+We significantly updated our internal tool and CI setup along the work on PR [#913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/913) with an update to `ESLint` from `TSLint` for code linting and formatting and the introduction of a new build setup.
 
-Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-vm/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
 
 ### Other Changes
 
 **Features**
 
-- Added `Block.genesis()` and `BlockHeader.genesis()` aliases to create a genesis block or header, PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
-- Added `DAO` hardfork support (check for `extraData` attribute if `DAO` HF is active), PR [#843](https://github.com/ethereumjs/ethereumjs-vm/pull/843)
-- Added the `calcDifficultyFromHeader` constructor option. If this `BlockHeader` is supplied, then the `difficulty` of the constructed `BlockHeader` will be set to the canonical difficulty (also if `difficulty` is set as parameter in the constructor). See [#929](https://github.com/ethereumjs/ethereumjs-vm/pull/929)
-- Added full uncle validation, which verifies if the uncles' `parentHash` points to the canonical chain, is not yet included and also is an uncle and not a canonical block. See PR [#935](https://github.com/ethereumjs/ethereumjs-vm/pull/935)
-- Additional consistency and validation checks in `Block.validateUncles()` for included uncle headers, PR [#935](https://github.com/ethereumjs/ethereumjs-vm/pull/935)
+- Added `Block.genesis()` and `BlockHeader.genesis()` aliases to create a genesis block or header, PR [#883](https://github.com/ethereumjs/ethereumjs-monorepo/pull/883)
+- Added `DAO` hardfork support (check for `extraData` attribute if `DAO` HF is active), PR [#843](https://github.com/ethereumjs/ethereumjs-monorepo/pull/843)
+- Added the `calcDifficultyFromHeader` constructor option. If this `BlockHeader` is supplied, then the `difficulty` of the constructed `BlockHeader` will be set to the canonical difficulty (also if `difficulty` is set as parameter in the constructor). See [#929](https://github.com/ethereumjs/ethereumjs-monorepo/pull/929)
+- Added full uncle validation, which verifies if the uncles' `parentHash` points to the canonical chain, is not yet included and also is an uncle and not a canonical block. See PR [#935](https://github.com/ethereumjs/ethereumjs-monorepo/pull/935)
+- Additional consistency and validation checks in `Block.validateUncles()` for included uncle headers, PR [#935](https://github.com/ethereumjs/ethereumjs-monorepo/pull/935)
 
 **Changes and Refactoring**
 
 - Added Node `10`, `12` support, dropped Node `7` support, PR [#72](https://github.com/ethereumjs/ethereumjs-block/pull/72)
-- Passing in a blockchain is now optional on `Block.validate()`, PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
-- **Breaking**: `Block.validateTransactions(stringError: true)` now returns a `string[]`, PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
-- **Breaking**: Decoupling of the `Block.serialize()` and `Block.raw()` methods, `Block.serialize()` now always returns the RLP-encoded block (signature change!), `Block.raw()` always returns the pure `Buffer` array, PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
-- **Breaking**: `Block.toJSON()` now always returns the labeled `JSON` representation, removal of the `labeled` function parameter, PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
-- Updated `merkle-patricia-tree` dependency to `v4`, PR [#787](https://github.com/ethereumjs/ethereumjs-vm/pull/787)
-- Updated `ethereumjs-util` dependency to `v7`, PR [#748](https://github.com/ethereumjs/ethereumjs-vm/pull/748)
+- Passing in a blockchain is now optional on `Block.validate()`, PR [#883](https://github.com/ethereumjs/ethereumjs-monorepo/pull/883)
+- **Breaking**: `Block.validateTransactions(stringError: true)` now returns a `string[]`, PR [#883](https://github.com/ethereumjs/ethereumjs-monorepo/pull/883)
+- **Breaking**: Decoupling of the `Block.serialize()` and `Block.raw()` methods, `Block.serialize()` now always returns the RLP-encoded block (signature change!), `Block.raw()` always returns the pure `Buffer` array, PR [#883](https://github.com/ethereumjs/ethereumjs-monorepo/pull/883)
+- **Breaking**: `Block.toJSON()` now always returns the labeled `JSON` representation, removal of the `labeled` function parameter, PR [#883](https://github.com/ethereumjs/ethereumjs-monorepo/pull/883)
+- Updated `merkle-patricia-tree` dependency to `v4`, PR [#787](https://github.com/ethereumjs/ethereumjs-monorepo/pull/787)
+- Updated `ethereumjs-util` dependency to `v7`, PR [#748](https://github.com/ethereumjs/ethereumjs-monorepo/pull/748)
 - Removal of the `async` dependency, PR [#72](https://github.com/ethereumjs/ethereumjs-block/pull/72)
 
 **CI and Testing**
@@ -250,23 +250,23 @@ Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `pac
 **Bug Fixes**
 
 - Signature fix for pre-homestead blocks, PR [#67](https://github.com/ethereumjs/ethereumjs-block/issues/67)
-- Fixed bug where block options have not been passed on to the main constructor from the static factory methods, see PR [#941](https://github.com/ethereumjs/ethereumjs-vm/pull/941)
+- Fixed bug where block options have not been passed on to the main constructor from the static factory methods, see PR [#941](https://github.com/ethereumjs/ethereumjs-monorepo/pull/941)
 
 ## 3.0.0-rc.1 - 2020-11-19
 
-This is the first release candidate towards a final library release, see [beta.2](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fblock%403.0.0-beta.2) and especially [beta.1](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fblock%403.0.0-beta.1) release notes for an overview on the full changes since the last publicly released version.
+This is the first release candidate towards a final library release, see [beta.2](https://github.com/ethereumjs/ethereumjs-monorepo/releases/tag/%40ethereumjs%2Fblock%403.0.0-beta.2) and especially [beta.1](https://github.com/ethereumjs/ethereumjs-monorepo/releases/tag/%40ethereumjs%2Fblock%403.0.0-beta.1) release notes for an overview on the full changes since the last publicly released version.
 
-- Additional consistency and validation checks in `Block.validateUncles()` for included uncle headers, PR [#935](https://github.com/ethereumjs/ethereumjs-vm/pull/935)
+- Additional consistency and validation checks in `Block.validateUncles()` for included uncle headers, PR [#935](https://github.com/ethereumjs/ethereumjs-monorepo/pull/935)
 
 ## 3.0.0-beta.2 - 2020-11-12
 
-This is the second beta release towards a final library release, see [beta.1 release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Ftx%403.0.0-beta.1) for an overview on the full changes since the last publicly released version.
+This is the second beta release towards a final library release, see [beta.1 release notes](https://github.com/ethereumjs/ethereumjs-monorepo/releases/tag/%40ethereumjs%2Ftx%403.0.0-beta.1) for an overview on the full changes since the last publicly released version.
 
-- Added `freeze` option to allow for block freeze deactivation (e.g. to allow for subclassing block and adding additional parameters), see PR [#941](https://github.com/ethereumjs/ethereumjs-vm/pull/941)
-- **Breaking:** Difficulty-depending methods `canonicalDifficulty()` and `validateDifficulty()` in block and header now throw on non-PoW chains, see PR [#937](https://github.com/ethereumjs/ethereumjs-vm/pull/937)
-- **Breaking:** Non-blockchain dependent validation checks have been extracted from `validate()` to its own `Block.validateData()` function. For the `validate()` method in block and header `blockchain` is now a mandatory parameter, see PR [#942](https://github.com/ethereumjs/ethereumjs-vm/pull/942)
-- Fixed bug where block options have not been passed on to the main constructor from the static factory methods, see PR [#941](https://github.com/ethereumjs/ethereumjs-vm/pull/941)
-- Added full uncle validation, which verifies if the uncles' `parentHash` points to the canonical chain, is not yet included and also is an uncle and not a canonical block. See PR [#935](https://github.com/ethereumjs/ethereumjs-vm/pull/935).
+- Added `freeze` option to allow for block freeze deactivation (e.g. to allow for subclassing block and adding additional parameters), see PR [#941](https://github.com/ethereumjs/ethereumjs-monorepo/pull/941)
+- **Breaking:** Difficulty-depending methods `canonicalDifficulty()` and `validateDifficulty()` in block and header now throw on non-PoW chains, see PR [#937](https://github.com/ethereumjs/ethereumjs-monorepo/pull/937)
+- **Breaking:** Non-blockchain dependent validation checks have been extracted from `validate()` to its own `Block.validateData()` function. For the `validate()` method in block and header `blockchain` is now a mandatory parameter, see PR [#942](https://github.com/ethereumjs/ethereumjs-monorepo/pull/942)
+- Fixed bug where block options have not been passed on to the main constructor from the static factory methods, see PR [#941](https://github.com/ethereumjs/ethereumjs-monorepo/pull/941)
+- Added full uncle validation, which verifies if the uncles' `parentHash` points to the canonical chain, is not yet included and also is an uncle and not a canonical block. See PR [#935](https://github.com/ethereumjs/ethereumjs-monorepo/pull/935).
 
 ## 3.0.0-beta.1 - 2020-10-22
 
@@ -308,7 +308,7 @@ along with the package published.
 
 This release is a major refactoring of the block library to simplify and strengthen its code base.
 Refactoring work has been done along PR [#72](https://github.com/ethereumjs/ethereumjs-block/pull/72)
-(Promises) and PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883) (refactoring of API
+(Promises) and PR [#883](https://github.com/ethereumjs/ethereumjs-monorepo/pull/883) (refactoring of API
 and internal code structure).
 
 #### New Constructor Params
@@ -417,19 +417,19 @@ as an input parameter.
 
 ### New Default Hardfork
 
-**Breaking:** The default HF on the library has been updated from `petersburg` to `istanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-vm/pull/906).
+**Breaking:** The default HF on the library has been updated from `petersburg` to `istanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-monorepo/pull/906).
 The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`,
-see PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863).
+see PR [#863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/863).
 
 ### Dual ES5 and ES2017 Builds
 
 We significantly updated our internal tool and CI setup along the work on
-PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint`
+PR [#913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/913) with an update to `ESLint` from `TSLint`
 for code linting and formatting and the introduction of a new build setup.
 
 Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce
 a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see
-PR [#921](https://github.com/ethereumjs/ethereumjs-vm/pull/921). This will result
+PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result
 in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
 
 ### Other Changes
@@ -438,30 +438,30 @@ in performance benefits for Node.js consumers, see [here](https://github.com/eth
 
 - Added `Block.genesis()` and `BlockHeader.genesis()` aliases to create
   a genesis block or header,
-  PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
+  PR [#883](https://github.com/ethereumjs/ethereumjs-monorepo/pull/883)
 - Added `DAO` hardfork support (check for `extraData` attribute if `DAO` HF is active),
-  PR [#843](https://github.com/ethereumjs/ethereumjs-vm/pull/843)
-- Added the `calcDifficultyFromHeader` constructor option. If this `BlockHeader` is supplied, then the `difficulty` of the constructed `BlockHeader` will be set to the canonical difficulty (also if `difficulty` is set as parameter in the constructor). See [#929](https://github.com/ethereumjs/ethereumjs-vm/pull/929)
+  PR [#843](https://github.com/ethereumjs/ethereumjs-monorepo/pull/843)
+- Added the `calcDifficultyFromHeader` constructor option. If this `BlockHeader` is supplied, then the `difficulty` of the constructed `BlockHeader` will be set to the canonical difficulty (also if `difficulty` is set as parameter in the constructor). See [#929](https://github.com/ethereumjs/ethereumjs-monorepo/pull/929)
 
 **Changes and Refactoring**
 
 - Added Node `10`, `12` support, dropped Node `7` support,
   PR [#72](https://github.com/ethereumjs/ethereumjs-block/pull/72)
 - Passing in a blockchain is now optional on `Block.validate()`,
-  PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
+  PR [#883](https://github.com/ethereumjs/ethereumjs-monorepo/pull/883)
 - **Breaking**: `Block.validateTransactions(stringError: true)` now returns a `string[]`,
-  PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
+  PR [#883](https://github.com/ethereumjs/ethereumjs-monorepo/pull/883)
 - **Breaking**: Decoupling of the `Block.serialize()` and `Block.raw()` methods,
   `Block.serialize()` now always returns the RLP-encoded block (signature change!),
   `Block.raw()` always returns the pure `Buffer` array,
-  PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
+  PR [#883](https://github.com/ethereumjs/ethereumjs-monorepo/pull/883)
 - **Breaking**: `Block.toJSON()` now always returns the labeled `JSON` representation,
   removal of the `labeled` function parameter,
-  PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
+  PR [#883](https://github.com/ethereumjs/ethereumjs-monorepo/pull/883)
 - Updated `merkle-patricia-tree` dependency to `v4`,
-  PR [#787](https://github.com/ethereumjs/ethereumjs-vm/pull/787)
+  PR [#787](https://github.com/ethereumjs/ethereumjs-monorepo/pull/787)
 - Updated `ethereumjs-util` dependency to `v7`,
-  PR [#748](https://github.com/ethereumjs/ethereumjs-vm/pull/748)
+  PR [#748](https://github.com/ethereumjs/ethereumjs-monorepo/pull/748)
 - Removal of the `async` dependency,
   PR [#72](https://github.com/ethereumjs/ethereumjs-block/pull/72)
 
@@ -489,7 +489,7 @@ master since the `v2.2.0` release and only backports the difficulty formula
 adjustments to support MuirGlacier without having to go through migration to
 the `v3.0.0` which contains breaking changes.
 
-[2.2.2]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%402.2.1...%40ethereumjs%2Fblock%402.2.2
+[2.2.2]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Fblock%402.2.1...%40ethereumjs%2Fblock%402.2.2
 
 ## [2.2.1] - 2019-11-14
 
@@ -501,7 +501,7 @@ master since the `v2.2.0` release and only backports the most recent
 `ethereumjs-tx` version to allow users to support Istanbul without having
 to go through migration to the `v3.0.0` which contains breaking changes.
 
-[2.2.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%402.2.0...%40ethereumjs%2Fblock%402.2.1
+[2.2.1]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Fblock%402.2.0...%40ethereumjs%2Fblock%402.2.1
 
 ## [2.2.0] - 2019-02-06
 
@@ -521,7 +521,7 @@ PR [#64](https://github.com/ethereumjs/ethereumjs-block/pull/64)
 - Remove `ethereumjs-testing` dependency (much smaller dev dependencies),
   PR [#61](https://github.com/ethereumjs/ethereumjs-block/pull/61)
 
-[2.2.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%402.1.0...%40ethereumjs%2Fblock%402.2.0
+[2.2.0]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Fblock%402.1.0...%40ethereumjs%2Fblock%402.2.0
 
 ## [2.1.0] - 2018-10-19
 
@@ -529,13 +529,13 @@ PR [#64](https://github.com/ethereumjs/ethereumjs-block/pull/64)
 - Updated test data, added Constantinople tests, PR [#56](https://github.com/ethereumjs/ethereumjs-block/pull/56), [#57](https://github.com/ethereumjs/ethereumjs-block/pull/57)
 - Added `timestamp` field to `setGenesisParams()`, PR [#52](https://github.com/ethereumjs/ethereumjs-block/pull/52)
 
-[2.1.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%402.0.1...%40ethereumjs%2Fblock%402.1.0
+[2.1.0]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Fblock%402.0.1...%40ethereumjs%2Fblock%402.1.0
 
 ## [2.0.1] - 2018-08-08
 
 - Fixes `BlockHeader.prototype.validate()` bug, see PR [#49](https://github.com/ethereumjs/ethereumjs-block/pull/49)
 
-[2.0.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%402.0.0...%40ethereumjs%2Fblock%402.0.1
+[2.0.1]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Fblock%402.0.0...%40ethereumjs%2Fblock%402.0.1
 
 ## [2.0.0] - 2018-06-25
 
@@ -549,7 +549,7 @@ Changes in detail:
 - New initialization parameters `opts.chain` (default: `mainnet`) and `opts.hardfork`
   (default: `null`, block number-based behaviour), PR [#44](https://github.com/ethereumjs/ethereumjs-block/pull/44)
 - Alternatively a `Common` class object can be provided directly with the `opts.common` parameter,
-  see [API](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/docs/index.md) docs
+  see [API](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/index.md) docs
 - Correct block validation for all know hardforks, PR
   [#47](https://github.com/ethereumjs/ethereumjs-block/pull/47), if no hardfork is set validation logic
   is determined by block number in combination with the `chain` set
@@ -557,7 +557,7 @@ Changes in detail:
 - Extensive test additions to cover the newly introduced capabilities and changes
 - Fix default value for `nonce` (empty buffer -> `<Buffer 00 00 00 00 00 00 00 00>`), PR [#42](https://github.com/ethereumjs/ethereumjs-block/pull/42)
 
-[2.0.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%401.7.1...%40ethereumjs%2Fblock%402.0.0
+[2.0.0]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Fblock%401.7.1...%40ethereumjs%2Fblock%402.0.0
 
 ## [1.7.1] - 2018-02-15
 
@@ -565,7 +565,7 @@ Changes in detail:
   library, PR [#40](https://github.com/ethereumjs/ethereumjs-block/pull/40)
 - Updated `ethereumjs/common` dependency, PR [#38](https://github.com/ethereumjs/ethereumjs-block/pull/38)
 
-[1.7.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%401.7.0...%40ethereumjs%2Fblock%401.7.1
+[1.7.1]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Fblock%401.7.0...%40ethereumjs%2Fblock%401.7.1
 
 ## [1.7.0] - 2017-10-11
 
@@ -574,24 +574,24 @@ Changes in detail:
 - Difficulty bomb delay (EIP 649)
 - Removed `isHomestead`, `isHomesteadReprice` from API methods
 
-[1.7.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%401.6.0...%40ethereumjs%2Fblock%401.7.0
+[1.7.0]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Fblock%401.6.0...%40ethereumjs%2Fblock%401.7.0
 
 ## [1.6.0] - 2017-07-12
 
 - Breakout header-from-rpc as separate module
 
-[1.6.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%401.5.1...%40ethereumjs%2Fblock%401.6.0
+[1.6.0]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Fblock%401.5.1...%40ethereumjs%2Fblock%401.6.0
 
 ## [1.5.1] - 2017-06-04
 
 - Dev dependency updates
 - BN for gas limit
 
-[1.5.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%401.5.0...%40ethereumjs%2Fblock%401.5.1
+[1.5.1]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Fblock%401.5.0...%40ethereumjs%2Fblock%401.5.1
 
 ## Older releases:
 
-- [1.5.0](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%401.4.0...%40ethereumjs%2Fblock%401.5.0) - 2017-01-31
-- [1.4.0](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%401.3.1...%40ethereumjs%2Fblock%401.4.0) - 2016-12-15
-- [1.3.1](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%401.3.0...%40ethereumjs%2Fblock%401.3.1) - 2016-10-14
-- [1.3.0](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%401.2.2...%40ethereumjs%2Fblock%401.3.0) - 2017-10-11
+- [1.5.0](https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Fblock%401.4.0...%40ethereumjs%2Fblock%401.5.0) - 2017-01-31
+- [1.4.0](https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Fblock%401.3.1...%40ethereumjs%2Fblock%401.4.0) - 2016-12-15
+- [1.3.1](https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Fblock%401.3.0...%40ethereumjs%2Fblock%401.3.1) - 2016-10-14
+- [1.3.0](https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Fblock%401.2.2...%40ethereumjs%2Fblock%401.3.0) - 2017-10-11

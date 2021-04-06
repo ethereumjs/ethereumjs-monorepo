@@ -141,7 +141,7 @@ Connect to a peer, organize the communication, see [./src/rlpx/](./src/rlpx/)
 
 ### Usage
 
-Instantiate an [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/common)
+Instantiate an [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common)
 instance with the network you want to connect to:
 
 ```typescript
@@ -177,7 +177,7 @@ Creates new RLPx object
 - `options.capabilities` - Upper layer protocol capabilities, e.g. `[devp2p.ETH.eth63, devp2p.ETH.eth62]`.
 - `options.listenPort` - The listening port for the server or `null` for default.
 - `options.dpt` - `DPT` object for the peers to connect to (default: `null`, no `DPT` peer management).
-- `options.common` - An instance of [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/common).
+- `options.common` - An instance of [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common).
 
 #### `rlpx.connect(peer)` (`async`)
 
@@ -418,9 +418,9 @@ MIT
 [discord-link]: https://discord.gg/TNwARpR
 [devp2p-npm-badge]: https://img.shields.io/npm/v/ethereumjs-devp2p.svg
 [devp2p-npm-link]: https://www.npmjs.org/package/ethereumjs-devp2p
-[devp2p-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20devp2p?label=issues
-[devp2p-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+devp2p"
-[devp2p-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Devp2p%20Test/badge.svg
-[devp2p-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22Devp2p+Test%22
+[devp2p-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20devp2p?label=issues
+[devp2p-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+devp2p"
+[devp2p-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/Devp2p%20Test/badge.svg
+[devp2p-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22Devp2p+Test%22
 [devp2p-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=devp2p
 [devp2p-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/devp2p
