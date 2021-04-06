@@ -2,6 +2,7 @@
   "name": "@ethereumjs/devp2p",
   "version": "3.0.3",
   "description": "A JavaScript implementation of ÐΞVp2p",
+  "license": "MIT",
   "keywords": [
     "ethereum",
     "p2p",
@@ -14,30 +15,16 @@
     "les",
     "les2"
   ],
-  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/devp2p#readme",
-  "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+devp2p%22"
-  },
-  "license": "MIT",
-  "contributors": [
-    "Alex Beregszaszi <alex@rtfs.hu>",
-    "Kirill Fomichev <fanatid@ya.ru> (https://github.com/fanatid)",
-    "Martin Becze <mb@ethdev.com>",
-    "Holger Drewes <holger.drewes@gmail.com>"
-  ],
-  "files": [
-    "dist/**/*.js",
-    "dist/**/*.d.ts",
-    "dist/**/*.map"
-  ],
-  "main": "dist/index.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ethereumjs/ethereumjs-monorepo.git"
-  },
   "engines": {
     "node": ">=10.0"
   },
+  "files": [
+    "dist",
+    "dist.browser"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "browser": "dist.browser/index.js",
   "scripts": {
     "build": "ethereumjs-config-ts-build",
     "prepublishOnly": "npm run clean && npm run build && npm run test",
@@ -98,5 +85,19 @@
     "typedoc": "^0.20.34",
     "typedoc-plugin-markdown": "^3.6.0",
     "typescript": "^3.9.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+  },
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/devp2p#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+devp2p%22"
+  },
+  "contributors": [
+    "Alex Beregszaszi <alex@rtfs.hu>",
+    "Kirill Fomichev <fanatid@ya.ru> (https://github.com/fanatid)",
+    "Martin Becze <mb@ethdev.com>",
+    "Holger Drewes <holger.drewes@gmail.com>"
+  ]
 }

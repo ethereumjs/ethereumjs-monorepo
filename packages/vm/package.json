@@ -2,12 +2,18 @@
   "name": "@ethereumjs/vm",
   "version": "5.3.0",
   "description": "An Ethereum VM implementation",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "license": "MPL-2.0",
+  "author": "mjbecze <mjbecze@gmail.com>",
+  "keywords": [
+    "ethereum",
+    "VM"
+  ],
   "files": [
     "dist",
     "dist.browser"
   ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "browser": "dist.browser/index.js",
   "scripts": {
     "build": "ethereumjs-config-ts-build",
@@ -36,14 +42,6 @@
     "formatTest": "node ./scripts/formatTest",
     "tsc": "ethereumjs-config-tsc"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ethereumjs/ethereumjs-monorepo.git"
-  },
-  "keywords": [
-    "ethereum",
-    "VM"
-  ],
   "dependencies": {
     "@ethereumjs/block": "^3.2.0",
     "@ethereumjs/blockchain": "^5.2.1",
@@ -94,13 +92,15 @@
     "typedoc-plugin-markdown": "^3.6.0",
     "typescript": "^3.9.3"
   },
-  "author": "mjbecze <mjbecze@gmail.com>",
   "contributors": [
     "Alex Beregszaszi <alex@rtfs.hu>"
   ],
-  "license": "MPL-2.0",
-  "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
   },
-  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo"
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+vm%22"
+  }
 }

@@ -2,12 +2,20 @@
   "name": "merkle-patricia-tree",
   "version": "4.1.0",
   "description": "This is an implementation of the modified merkle patricia tree as specified in Ethereum's yellow paper.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "license": "MPL-2.0",
+  "author": "mjbecze <mjbecze@gmail.com>",
+  "keywords": [
+    "merkle",
+    "radix",
+    "trie",
+    "ethereum"
+  ],
   "files": [
     "dist",
     "dist.browser"
   ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "browser": "dist.browser/index.js",
   "scripts": {
     "benchmarks": "node -r ts-node/register --max-old-space-size=8024 benchmarks",
@@ -24,24 +32,6 @@
     "test:browser": "karma start karma.conf.js",
     "test:node": "tape -r ts-node/register test/*.ts"
   },
-  "author": {
-    "name": "mjbecze",
-    "email": "mjbecze@gmail.com"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ethereumjs/ethereumjs-monorepo.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+trie%22"
-  },
-  "keywords": [
-    "merkle",
-    "radix",
-    "trie",
-    "ethereum"
-  ],
-  "license": "MPL-2.0",
   "dependencies": {
     "@types/levelup": "^4.3.0",
     "ethereumjs-util": "^7.0.10",
@@ -74,6 +64,14 @@
     "typedoc": "^0.20.34",
     "typedoc-plugin-markdown": "^3.6.0",
     "typescript": "^3.9.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+  },
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+trie%22"
   },
   "contributors": [
     "Aaron Kumavis <http://aaron.kumavis.me/> (https://github.com/kumavis)"
