@@ -7,13 +7,16 @@ import type { MuxedStream } from '../../../node_modules/libp2p-interfaces/dist/s
  * Types for the central event bus, emitted
  * by different components of the client
  */
-export enum Events {
+export enum Event {
   EXECUTION_ERROR = 'execution:error',
 }
+export interface EventParams {
+  [Event.EXECUTION_ERROR]: (error: Error) => void
+}
 export declare interface EventBus {
-  emit(event: Events.EXECUTION_ERROR, args: (error: Error) => void): boolean
+  emit(event: Event.EXECUTION_ERROR, args: EventParams[Event.EXECUTION_ERROR]): boolean
 
-  on(event: Events.EXECUTION_ERROR, listener: (error: Error) => void): this
+  on(event: Event.EXECUTION_ERROR, listener: EventParams[Event.EXECUTION_ERROR]): this
 }
 export class EventBus extends EventEmitter {}
 
