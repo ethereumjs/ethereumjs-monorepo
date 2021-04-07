@@ -163,7 +163,7 @@ export class VMExecution extends Execution {
             if (this.config.debugCode) {
               await debugCodeReplayBlock(this, block)
             }
-            this.config.events.emit(Event.EXECUTION_ERROR, error)
+            this.config.events.emit(Event.SYNC_EXECUTION_VM_ERROR, error)
             errorBlock = block
           }
         },

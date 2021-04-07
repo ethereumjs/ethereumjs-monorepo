@@ -8,15 +8,15 @@ import type { MuxedStream } from '../../../node_modules/libp2p-interfaces/dist/s
  * by different components of the client
  */
 export enum Event {
-  EXECUTION_ERROR = 'execution:error',
+  SYNC_EXECUTION_VM_ERROR = 'sync:execution:vm:error',
 }
 export interface EventParams {
-  [Event.EXECUTION_ERROR]: (error: Error) => void
+  [Event.SYNC_EXECUTION_VM_ERROR]: (error: Error) => void
 }
 export declare interface EventBus {
-  emit(event: Event.EXECUTION_ERROR, args: EventParams[Event.EXECUTION_ERROR]): boolean
+  emit(event: Event.SYNC_EXECUTION_VM_ERROR, args: EventParams[Event.SYNC_EXECUTION_VM_ERROR]): boolean
 
-  on(event: Event.EXECUTION_ERROR, listener: EventParams[Event.EXECUTION_ERROR]): this
+  on(event: Event.SYNC_EXECUTION_VM_ERROR, listener: EventParams[Event.SYNC_EXECUTION_VM_ERROR]): this
 }
 export class EventBus extends EventEmitter {}
 

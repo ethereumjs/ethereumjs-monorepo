@@ -27,7 +27,7 @@ export class FullSynchronizer extends Synchronizer {
     })
 
     const self = this
-    this.config.events.on(Event.EXECUTION_ERROR, async (error) => {
+    this.config.events.on(Event.SYNC_EXECUTION_VM_ERROR, async (error) => {
       self.emit('error', error)
       await self.stop()
     })
