@@ -1,3 +1,4 @@
+import { Block, BlockHeader } from '@ethereumjs/block'
 import { EventEmitter } from 'events'
 import multiaddr from 'multiaddr'
 import type Connection from '../../../node_modules/libp2p-interfaces/dist/src/connection/connection'
@@ -9,14 +10,24 @@ import type { MuxedStream } from '../../../node_modules/libp2p-interfaces/dist/s
  */
 export enum Event {
   SYNC_EXECUTION_VM_ERROR = 'sync:execution:vm:error',
+  SYNC_FETCHER_FETCHED = 'sync:fetcher:fetched',
 }
 export interface EventParams {
   [Event.SYNC_EXECUTION_VM_ERROR]: (error: Error) => void
+  [Event.SYNC_FETCHER_FETCHED]: (result: Block[] | BlockHeader[]) => void
 }
 export declare interface EventBus {
-  emit(event: Event.SYNC_EXECUTION_VM_ERROR, args: EventParams[Event.SYNC_EXECUTION_VM_ERROR]): boolean
+  emit(
+    event: Event.SYNC_EXECUTION_VM_ERROR,
+    args: EventParams[Event.SYNC_EXECUTION_VM_ERROR]
+  ): boolean
+  emit(event: Event.SYNC_FETCHER_FETCHED, args: EventParams[Event.SYNC_FETCHER_FETCHED]): boolean
 
-  on(event: Event.SYNC_EXECUTION_VM_ERROR, listener: EventParams[Event.SYNC_EXECUTION_VM_ERROR]): this
+  on(
+    event: Event.SYNC_EXECUTION_VM_ERROR,
+    listener: EventParams[Event.SYNC_EXECUTION_VM_ERROR]
+  ): this
+  on(event: Event.SYNC_FETCHER_FETCHED, listener: EventParams[Event.SYNC_FETCHER_FETCHED]): this
 }
 export class EventBus extends EventEmitter {}
 

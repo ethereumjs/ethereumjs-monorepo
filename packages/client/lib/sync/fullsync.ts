@@ -119,19 +119,18 @@ export class FullSynchronizer extends Synchronizer {
       first,
       count,
     })
-    this.blockFetcher
-      .on('error', (error: Error) => {
-        this.emit('error', error)
-      })
-      .on('fetched', (blocks: Block[]) => {
-        const first = new BN(blocks[0].header.number)
-        const hash = short(blocks[0].hash())
-        this.config.logger.info(
-          `Imported blocks count=${blocks.length} number=${first.toString(
-            10
-          )} hash=${hash} hardfork=${this.config.chainCommon.hardfork()} peers=${this.pool.size}`
-        )
-      })
+    this.blockFetcher.on('error', (error: Error) => {
+      this.emit('error', error)
+    })
+    this.config.events.on(Event.SYNC_FETCHER_FETCHED, (blocks: Block[]) => {
+      const first = new BN(blocks[0].header.number)
+      const hash = short(blocks[0].hash())
+      this.config.logger.info(
+        `Imported blocks count=${blocks.length} number=${first.toString(
+          10
+        )} hash=${hash} hardfork=${this.hardfork} peers=${this.pool.size}`
+      )
+    })
     await this.blockFetcher.fetch()
     // TODO: Should this be deleted?
     // @ts-ignore: error: The operand of a 'delete' operator must be optional

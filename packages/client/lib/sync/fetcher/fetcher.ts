@@ -4,7 +4,7 @@ const Heap = require('qheap')
 import { PeerPool } from '../../net/peerpool'
 import { Config } from '../../config'
 
-import { QHeap } from '../../types'
+import { Event, QHeap } from '../../types'
 import { Job } from './types'
 import { Peer } from '../../net/peer'
 
@@ -264,7 +264,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       try {
         await this.store(result)
         this.finished++
-        this.emit('fetched', result)
+        this.config.events.emit(Event.SYNC_FETCHER_FETCHED, result as any)
         cb()
       } catch (error) {
         cb(error)
