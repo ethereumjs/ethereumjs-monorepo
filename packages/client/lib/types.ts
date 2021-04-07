@@ -16,20 +16,13 @@ export interface EventParams {
   [Event.SYNC_EXECUTION_VM_ERROR]: (error: Error) => void
   [Event.SYNC_FETCHER_FETCHED]: (result: Block[] | BlockHeader[]) => void
 }
-export declare interface EventBus {
-  emit(
-    event: Event.SYNC_EXECUTION_VM_ERROR,
-    args: EventParams[Event.SYNC_EXECUTION_VM_ERROR]
-  ): boolean
-  emit(event: Event.SYNC_FETCHER_FETCHED, args: EventParams[Event.SYNC_FETCHER_FETCHED]): boolean
-
-  on(
-    event: Event.SYNC_EXECUTION_VM_ERROR,
-    listener: EventParams[Event.SYNC_EXECUTION_VM_ERROR]
-  ): this
-  on(event: Event.SYNC_FETCHER_FETCHED, listener: EventParams[Event.SYNC_FETCHER_FETCHED]): this
+export declare interface EventBus<T extends Event> {
+  emit(event: T, args: EventParams[T]): boolean
+  on(event: T, listener: EventParams[T]): this
 }
-export class EventBus extends EventEmitter {}
+export class EventBus<T extends Event> extends EventEmitter {}
+export type EventBusType = EventBus<Event.SYNC_EXECUTION_VM_ERROR> &
+  EventBus<Event.SYNC_FETCHER_FETCHED>
 
 /**
  * Like types

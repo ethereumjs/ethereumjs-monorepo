@@ -122,7 +122,10 @@ export class FullSynchronizer extends Synchronizer {
     this.blockFetcher.on('error', (error: Error) => {
       this.emit('error', error)
     })
-    this.config.events.on(Event.SYNC_FETCHER_FETCHED, (blocks: Block[]) => {
+    this.config.events.on(Event.SYNC_FETCHER_FETCHED, (blocks) => {
+      // cast as Block[], since it can also return BlockHeader[]
+      blocks = blocks as Block[]
+
       const first = new BN(blocks[0].header.number)
       const hash = short(blocks[0].hash())
       this.config.logger.info(
