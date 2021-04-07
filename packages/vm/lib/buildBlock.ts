@@ -204,11 +204,7 @@ export class BlockBuilder {
       await this.rewardMiner()
     }
 
-    if (this.checkpointed) {
-      await this.vm.stateManager.commit()
-    }
-
-    const stateRoot = await this.vm.stateManager.getStateRoot(false)
+    const stateRoot = await this.vm.stateManager.getStateRoot(true)
     const transactionsTrie = await this.transactionsTrie()
     const receiptTrie = await this.receiptTrie()
     const bloom = this.bloom()
@@ -233,7 +229,13 @@ export class BlockBuilder {
     const blockData = { header: headerData, transactions: this.transactions }
     const block = Block.fromBlockData(blockData, blockOpts)
     await this.vm.blockchain.putBlock(block)
+
     this.built = true
+    if (this.checkpointed) {
+      await this.vm.stateManager.commit()
+      this.checkpointed = false
+    }
+
     return block
   }
 }
