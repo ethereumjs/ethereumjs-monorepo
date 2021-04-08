@@ -10,6 +10,11 @@ import { Block, BlockData } from '@ethereumjs/block'
 
 tape('[Types]', function (t) {
   t.test('should ensure that the actual objects can be safely used as their data types', (st) => {
+    // Dev note:
+    // This test was written by @alcuadrado after discovering
+    // issues in creating an object from its own data. It will
+    // ensure that the classes can be initialized from their own data. 
+
     type RequiredExceptOptionals<TypeT, OptionalFieldsT extends keyof TypeT> = Required<
       Omit<TypeT, OptionalFieldsT>
     > &
