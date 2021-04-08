@@ -2,7 +2,7 @@ import tape from 'tape'
 import { Account, Address, BN, MAX_INTEGER } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
+import { Transaction, TransactionFactory } from '@ethereumjs/tx'
 import VM from '../../lib'
 import { createAccount, getTransaction } from './utils'
 
@@ -196,7 +196,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
 tape('runTx() -> runtime behavior', async (t) => {
   t.test('storage cache', async (t) => {
     for (const txType of TRANSACTION_TYPES) {
-      const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+      const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
       const vm = new VM({ common })
       const privateKey = Buffer.from(
         'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
@@ -225,9 +225,9 @@ tape('runTx() -> runtime behavior', async (t) => {
       if (txType.type === 1) {
         txParams['chainId'] = common.chainIdBN()
         txParams['accessList'] = []
-        txParams['type'] = txType
+        txParams['type'] = txType.type
       }
-      const tx = Transaction.fromTxData(txParams, { common }).sign(privateKey)
+      const tx = TransactionFactory.fromTxData(txParams, { common }).sign(privateKey)
 
       await vm.stateManager.putAccount(tx.getSenderAddress(), createAccount())
 
