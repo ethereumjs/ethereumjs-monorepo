@@ -35,30 +35,6 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   public readonly accessList: AccessListBuffer
   public readonly AccessListJSON: AccessList
 
-  get transactionType(): number {
-    return 1
-  }
-
-  // Alias for transactionType
-  get type() {
-    return this.transactionType
-  }
-
-  // EIP-2930 alias for `s`
-  get senderS() {
-    return this.s
-  }
-
-  // EIP-2930 alias for `r`
-  get senderR() {
-    return this.r
-  }
-
-  // EIP-2930 alias for `v`
-  get yParity() {
-    return this.v
-  }
-
   /**
    * Instantiate a transaction from a data dictionary
    */
@@ -143,7 +119,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   public constructor(txData: AccessListEIP2930TxData, opts: TxOptions = {}) {
     const { chainId, accessList } = txData
 
-    super(txData, opts)
+    super({ ...txData, type: 1 }, opts)
 
     // EIP-2718 check is done in Common
     if (!this.common.isActivatedEIP(2930)) {

@@ -15,10 +15,6 @@ import { BaseTransaction } from './baseTransaction'
  * An Ethereum non-typed (legacy) transaction
  */
 export default class Transaction extends BaseTransaction<Transaction> {
-  get transactionType(): number {
-    return 0
-  }
-
   /**
    * Instantiate a transaction from a data dictionary
    */
