@@ -78,8 +78,8 @@ export default class Transaction extends BaseTransaction<Transaction> {
         value,
         data: data ?? emptyBuffer,
         v: v !== undefined && !v.equals(emptyBuffer) ? new BN(v) : undefined,
-        r: r !== undefined && !r.equals(emptyBuffer) ? new BN(r) : undefined,
-        s: s !== undefined && !s.equals(emptyBuffer) ? new BN(s) : undefined,
+        r,
+        s,
       },
       opts
     )
