@@ -33,6 +33,7 @@ export abstract class BaseTransaction<TransactionObject> {
   constructor(txData: TxData, txOptions: TxOptions = {}) {
     const { nonce, gasLimit, gasPrice, to, value, data, v, r, s } = txData
     const toB = toBuffer(to)
+    const vB = toBuffer(v)
     const rB = toBuffer(r)
     const sB = toBuffer(s)
 
@@ -43,7 +44,7 @@ export abstract class BaseTransaction<TransactionObject> {
     this.value = new BN(toBuffer(value))
     this.data = toBuffer(data)
 
-    this.v = v ? new BN(toBuffer(v)) : undefined
+    this.v = vB.length > 0 ? new BN(vB) : undefined
     this.r = rB.length > 0 ? new BN(rB) : undefined
     this.s = sB.length > 0 ? new BN(sB) : undefined
 
