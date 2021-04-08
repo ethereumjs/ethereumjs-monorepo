@@ -32,17 +32,21 @@ export abstract class BaseTransaction<TransactionObject> {
 
   constructor(txData: TxData, txOptions: TxOptions = {}) {
     const { nonce, gasLimit, gasPrice, to, value, data, v, r, s } = txData
+    const toB = toBuffer(to === '' ? '0x' : to)
+    const vB = toBuffer(v === '' ? '0x' : v)
+    const rB = toBuffer(r === '' ? '0x' : r)
+    const sB = toBuffer(s === '' ? '0x' : s)
 
-    this.nonce = new BN(toBuffer(nonce))
-    this.gasPrice = new BN(toBuffer(gasPrice))
-    this.gasLimit = new BN(toBuffer(gasLimit))
-    this.to = to ? new Address(toBuffer(to)) : undefined
-    this.value = new BN(toBuffer(value))
-    this.data = toBuffer(data)
+    this.nonce = new BN(toBuffer(nonce === '' ? '0x' : nonce))
+    this.gasPrice = new BN(toBuffer(gasPrice === '' ? '0x' : gasPrice))
+    this.gasLimit = new BN(toBuffer(gasLimit === '' ? '0x' : gasLimit))
+    this.to = toB.length > 0 ? new Address(toB) : undefined
+    this.value = new BN(toBuffer(value === '' ? '0x' : value))
+    this.data = toBuffer(data === '' ? '0x' : data)
 
-    this.v = v ? new BN(toBuffer(v)) : undefined
-    this.r = r ? new BN(toBuffer(r)) : undefined
-    this.s = s ? new BN(toBuffer(s)) : undefined
+    this.v = vB.length > 0 ? new BN(vB) : undefined
+    this.r = rB.length > 0 ? new BN(rB) : undefined
+    this.s = sB.length > 0 ? new BN(sB) : undefined
 
     this._validateCannotExceedMaxInteger({
       nonce: this.nonce,

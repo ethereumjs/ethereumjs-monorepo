@@ -1,5 +1,4 @@
 import {
-  Address,
   BN,
   bnToHex,
   bnToRlp,
@@ -68,19 +67,17 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
     const [nonce, gasPrice, gasLimit, to, value, data, v, r, s] = values
 
-    const emptyBuffer = Buffer.from([])
-
     return new Transaction(
       {
-        nonce: new BN(nonce),
-        gasPrice: new BN(gasPrice),
-        gasLimit: new BN(gasLimit),
-        to: to && to.length > 0 ? new Address(to) : undefined,
-        value: new BN(value),
-        data: data ?? emptyBuffer,
-        v: v !== undefined && !v.equals(emptyBuffer) ? new BN(v) : undefined,
-        r: r !== undefined && !r.equals(emptyBuffer) ? new BN(r) : undefined,
-        s: s !== undefined && !s.equals(emptyBuffer) ? new BN(s) : undefined,
+        nonce,
+        gasPrice,
+        gasLimit,
+        to,
+        value,
+        data,
+        v,
+        r,
+        s,
       },
       opts
     )

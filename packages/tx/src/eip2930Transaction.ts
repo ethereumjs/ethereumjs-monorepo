@@ -1,5 +1,4 @@
 import {
-  Address,
   BN,
   bnToHex,
   bnToRlp,
@@ -24,7 +23,6 @@ import {
 } from './types'
 
 const emptyAccessList: AccessList = []
-const emptyBuffer = Buffer.from([])
 
 /**
  * Typed transaction with optional access lists
@@ -115,16 +113,16 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     return new AccessListEIP2930Transaction(
       {
         chainId: new BN(chainId),
-        nonce: new BN(nonce),
-        gasPrice: new BN(gasPrice),
-        gasLimit: new BN(gasLimit),
-        to: to && to.length > 0 ? new Address(to) : undefined,
-        value: new BN(value),
-        data: data ?? emptyBuffer,
+        nonce,
+        gasPrice,
+        gasLimit,
+        to,
+        value,
+        data,
         accessList: accessList ?? emptyAccessList,
         v: v !== undefined ? new BN(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
-        r: r !== undefined && !r.equals(emptyBuffer) ? new BN(r) : undefined,
-        s: s !== undefined && !s.equals(emptyBuffer) ? new BN(s) : undefined,
+        r,
+        s,
       },
       opts
     )
