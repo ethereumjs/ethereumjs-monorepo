@@ -1,5 +1,4 @@
 import {
-  Address,
   BN,
   bnToHex,
   bnToRlp,
@@ -75,7 +74,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
         nonce,
         gasPrice,
         gasLimit,
-        to: to && to.length > 0 ? new Address(to) : undefined,
+        to,
         value,
         data: data ?? emptyBuffer,
         v: v !== undefined && !v.equals(emptyBuffer) ? new BN(v) : undefined,

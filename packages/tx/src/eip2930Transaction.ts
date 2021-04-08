@@ -1,5 +1,4 @@
 import {
-  Address,
   BN,
   bnToHex,
   bnToRlp,
@@ -118,7 +117,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
         nonce,
         gasPrice,
         gasLimit,
-        to: to && to.length > 0 ? new Address(to) : undefined,
+        to,
         value,
         data: data ?? emptyBuffer,
         accessList: accessList ?? emptyAccessList,

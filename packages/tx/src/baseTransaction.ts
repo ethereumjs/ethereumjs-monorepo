@@ -32,11 +32,12 @@ export abstract class BaseTransaction<TransactionObject> {
 
   constructor(txData: TxData, txOptions: TxOptions = {}) {
     const { nonce, gasLimit, gasPrice, to, value, data, v, r, s } = txData
+    const toB = toBuffer(to)
 
     this.nonce = new BN(toBuffer(nonce))
     this.gasPrice = new BN(toBuffer(gasPrice))
     this.gasLimit = new BN(toBuffer(gasLimit))
-    this.to = to ? new Address(toBuffer(to)) : undefined
+    this.to = toB.length > 0 ? new Address(toBuffer(to)) : undefined
     this.value = new BN(toBuffer(value))
     this.data = toBuffer(data)
 
