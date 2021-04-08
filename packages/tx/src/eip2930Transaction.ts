@@ -115,11 +115,11 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     return new AccessListEIP2930Transaction(
       {
         chainId: new BN(chainId),
-        nonce: new BN(nonce),
-        gasPrice: new BN(gasPrice),
-        gasLimit: new BN(gasLimit),
+        nonce,
+        gasPrice,
+        gasLimit,
         to: to && to.length > 0 ? new Address(to) : undefined,
-        value: new BN(value),
+        value,
         data: data ?? emptyBuffer,
         accessList: accessList ?? emptyAccessList,
         v: v !== undefined ? new BN(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)

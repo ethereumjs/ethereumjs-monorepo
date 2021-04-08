@@ -72,11 +72,11 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
     return new Transaction(
       {
-        nonce: new BN(nonce),
-        gasPrice: new BN(gasPrice),
-        gasLimit: new BN(gasLimit),
+        nonce,
+        gasPrice,
+        gasLimit,
         to: to && to.length > 0 ? new Address(to) : undefined,
-        value: new BN(value),
+        value,
         data: data ?? emptyBuffer,
         v: v !== undefined && !v.equals(emptyBuffer) ? new BN(v) : undefined,
         r: r !== undefined && !r.equals(emptyBuffer) ? new BN(r) : undefined,
