@@ -23,7 +23,6 @@ import {
 } from './types'
 
 const emptyAccessList: AccessList = []
-const emptyBuffer = Buffer.from([])
 
 /**
  * Typed transaction with optional access lists
@@ -119,7 +118,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
         gasLimit,
         to,
         value,
-        data: data ?? emptyBuffer,
+        data,
         accessList: accessList ?? emptyAccessList,
         v: v !== undefined ? new BN(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
         r,

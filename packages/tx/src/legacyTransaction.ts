@@ -67,8 +67,6 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
     const [nonce, gasPrice, gasLimit, to, value, data, v, r, s] = values
 
-    const emptyBuffer = Buffer.from([])
-
     return new Transaction(
       {
         nonce,
@@ -76,7 +74,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
         gasLimit,
         to,
         value,
-        data: data ?? emptyBuffer,
+        data,
         v,
         r,
         s,
