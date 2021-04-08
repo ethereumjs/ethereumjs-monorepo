@@ -371,7 +371,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Generate the tx receipt
   const blockGasUsed = block.header.gasUsed.add(results.gasUsed)
-  results.receipt = await generateTxReceipt.bind(this)(tx, results, blockGasUsed, debug)
+  results.receipt = await generateTxReceipt.bind(this)(tx, results, blockGasUsed)
 
   /**
    * The `afterTx` event
@@ -421,8 +421,7 @@ export async function generateTxReceipt(
   this: VM,
   tx: TypedTransaction,
   txResult: RunTxResult,
-  blockGasUsed: BN,
-  debug?: Function
+  blockGasUsed: BN
 ): Promise<TxReceipt> {
   const baseReceipt: BaseTxReceipt = {
     gasUsed: blockGasUsed.toArrayLike(Buffer),
@@ -468,9 +467,6 @@ export async function generateTxReceipt(
     )
   }
 
-  if (debug) {
-    debug(log)
-  }
-
+  debug(log)
   return receipt
 }
