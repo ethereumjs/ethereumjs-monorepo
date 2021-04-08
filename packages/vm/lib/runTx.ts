@@ -414,8 +414,6 @@ function txLogsBloom(logs?: any[]): Bloom {
  * @param tx The transaction
  * @param txResult The tx result
  * @param blockGasUsed The amount of gas used in the block up until this tx
- * @param debug If provided, the debug log message will be run as the first
- * parameter of this function, i.e. debug(log)
  */
 export async function generateTxReceipt(
   this: VM,

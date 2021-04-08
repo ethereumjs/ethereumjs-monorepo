@@ -47,7 +47,7 @@ export abstract class BaseTransaction<TransactionObject> {
     } else {
       this._type = 0
     }
-    
+
     const toB = toBuffer(to === '' ? '0x' : to)
     const vB = toBuffer(v === '' ? '0x' : v)
     const rB = toBuffer(r === '' ? '0x' : r)

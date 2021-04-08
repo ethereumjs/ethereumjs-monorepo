@@ -13,7 +13,7 @@ tape('[Types]', function (t) {
     // Dev note:
     // This test was written by @alcuadrado after discovering
     // issues in creating an object from its own data. It will
-    // ensure that the classes can be initialized from their own data. 
+    // ensure that the classes can be initialized from their own data.
 
     type RequiredExceptOptionals<TypeT, OptionalFieldsT extends keyof TypeT> = Required<
       Omit<TypeT, OptionalFieldsT>
