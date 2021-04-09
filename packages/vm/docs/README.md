@@ -1,19 +1,20 @@
-[@ethereumjs/vm](README.md)
+@ethereumjs/vm
 
 # @ethereumjs/vm
 
-## Index
+## Table of contents
 
 ### Modules
 
-* ["buildBlock"](modules/_buildblock_.md)
-* ["exceptions"](modules/_exceptions_.md)
-* ["index"](modules/_index_.md)
-* ["runBlock"](modules/_runblock_.md)
-* ["runBlockchain"](modules/_runblockchain_.md)
-* ["runCall"](modules/_runcall_.md)
-* ["runCode"](modules/_runcode_.md)
-* ["runTx"](modules/_runtx_.md)
-* ["state/index"](modules/_state_index_.md)
-* ["state/interface"](modules/_state_interface_.md)
-* ["state/stateManager"](modules/_state_statemanager_.md)
+- [buildBlock](modules/buildblock.md)
+- [exceptions](modules/exceptions.md)
+- [index](modules/index.md)
+- [runBlock](modules/runblock.md)
+- [runBlockchain](modules/runblockchain.md)
+- [runCall](modules/runcall.md)
+- [runCode](modules/runcode.md)
+- [runTx](modules/runtx.md)
+- [state](modules/state.md)
+- [state/interface](modules/state_interface.md)
+- [state/stateManager](modules/state_statemanager.md)
+- [types](modules/types.md)
