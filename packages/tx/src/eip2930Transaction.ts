@@ -36,6 +36,27 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   public readonly AccessListJSON: AccessList
 
   /**
+   * EIP-2930 alias for `r`
+   */
+  get senderR() {
+    return this.r
+  }
+
+  /**
+   * EIP-2930 alias for `s`
+   */
+  get senderS() {
+    return this.s
+  }
+
+  /**
+   * EIP-2930 alias for `v`
+   */
+  get yParity() {
+    return this.v
+  }
+
+  /**
    * Instantiate a transaction from a data dictionary
    */
   public static fromTxData(txData: AccessListEIP2930TxData, opts: TxOptions = {}) {
