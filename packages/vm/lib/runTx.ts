@@ -15,6 +15,13 @@ import Message from './evm/message'
 import TxContext from './evm/txContext'
 import { getActivePrecompiles } from './evm/precompiles'
 import { EIP2929StateManager } from './state/interface'
+import type {
+  TxReceipt,
+  BaseTxReceipt,
+  PreByzantiumTxReceipt,
+  PostByzantiumTxReceipt,
+  EIP2930Receipt,
+} from './types'
 
 const debug = createDebugLogger('vm:tx')
 const debugGas = createDebugLogger('vm:tx:gas')
@@ -24,7 +31,11 @@ const debugGas = createDebugLogger('vm:tx:gas')
  */
 export interface RunTxOpts {
   /**
-   * The `@ethereumjs/block` the `tx` belongs to. If omitted a default blank block will be used.
+   * The `@ethereumjs/block` the `tx` belongs to.
+   * If omitted, a default blank block will be used.
+   * To obtain an accurate `TxReceipt`, please pass a block
+   * with the header field `gasUsed` set to the value
+   * prior to this tx being run.
    */
   block?: Block
   /**
@@ -67,10 +78,17 @@ export interface RunTxResult extends EVMResult {
    * Bloom filter resulted from transaction
    */
   bloom: Bloom
+
   /**
    * The amount of ether used by this transaction
    */
   amountSpent: BN
+
+  /**
+   * The tx receipt
+   */
+  receipt: TxReceipt
+
   /**
    * The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
    */
@@ -285,9 +303,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Generate the bloom for the tx
   results.bloom = txLogsBloom(results.execResult.logs)
   debug(`Generated tx bloom with logs=${results.execResult.logs?.length}`)
+
   // Caculate the total gas used
   results.gasUsed.iadd(basefee)
   debugGas(`tx add baseFee ${basefee} to gasUsed (-> ${results.gasUsed})`)
+
   // Process any gas refund
   // TODO: determine why the gasRefund from execResult is not used here directly
   let gasRefund = evm._refund
@@ -349,6 +369,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   await state.cleanupTouchedAccounts()
   state.clearOriginalStorageCache()
 
+  // Generate the tx receipt
+  const blockGasUsed = block.header.gasUsed.add(results.gasUsed)
+  results.receipt = await generateTxReceipt.bind(this)(tx, results, blockGasUsed)
+
   /**
    * The `afterTx` event
    *
@@ -382,4 +406,65 @@ function txLogsBloom(logs?: any[]): Bloom {
     }
   }
   return bloom
+}
+
+/**
+ * Returns the tx receipt.
+ * @param this The vm instance
+ * @param tx The transaction
+ * @param txResult The tx result
+ * @param blockGasUsed The amount of gas used in the block up until this tx
+ */
+export async function generateTxReceipt(
+  this: VM,
+  tx: TypedTransaction,
+  txResult: RunTxResult,
+  blockGasUsed: BN
+): Promise<TxReceipt> {
+  const baseReceipt: BaseTxReceipt = {
+    gasUsed: blockGasUsed.toArrayLike(Buffer),
+    bitvector: txResult.bloom.bitvector,
+    logs: txResult.execResult.logs ?? [],
+  }
+
+  let receipt
+  let log = `Generate tx receipt transactionType=${
+    'transactionType' in tx ? tx.transactionType : 'NaN'
+  } gasUsed=${blockGasUsed.toString()} bitvector=${short(baseReceipt.bitvector)} (${
+    baseReceipt.bitvector.length
+  } bytes) logs=${baseReceipt.logs.length}`
+
+  if (!('transactionType' in tx) || tx.transactionType === 0) {
+    // Legacy transaction
+    if (this._common.gteHardfork('byzantium')) {
+      // Post-Byzantium
+      receipt = {
+        status: txResult.execResult.exceptionError ? 0 : 1, // Receipts have a 0 as status on error
+        ...baseReceipt,
+      } as PostByzantiumTxReceipt
+      const statusInfo = txResult.execResult.exceptionError ? 'error' : 'ok'
+      log += ` status=${receipt.status} (${statusInfo}) (>= Byzantium)`
+    } else {
+      // Pre-Byzantium
+      const stateRoot = await this.stateManager.getStateRoot(true)
+      receipt = {
+        stateRoot: stateRoot,
+        ...baseReceipt,
+      } as PreByzantiumTxReceipt
+      log += ` stateRoot=${receipt.stateRoot.toString('hex')} (< Byzantium)`
+    }
+  } else if ('transactionType' in tx && tx.transactionType === 1) {
+    // EIP2930 Transaction
+    receipt = {
+      status: txResult.execResult.exceptionError ? 0 : 1,
+      ...baseReceipt,
+    } as EIP2930Receipt
+  } else {
+    throw new Error(
+      `Unsupported transaction type ${'transactionType' in tx ? tx.transactionType : 'NaN'}`
+    )
+  }
+
+  debug(log)
+  return receipt
 }

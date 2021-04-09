@@ -2,13 +2,9 @@ import tape from 'tape'
 import { Address, BN, rlp, KECCAK256_RLP } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
-import { Transaction } from '@ethereumjs/tx'
-import {
-  PreByzantiumTxReceipt,
-  PostByzantiumTxReceipt,
-  RunBlockOpts,
-  AfterBlockEvent,
-} from '../../lib/runBlock'
+import { AccessListEIP2930Transaction, Transaction, TypedTransaction } from '@ethereumjs/tx'
+import { RunBlockOpts, AfterBlockEvent } from '../../lib/runBlock'
+import type { PreByzantiumTxReceipt, PostByzantiumTxReceipt } from '../../lib/types'
 import { setupPreConditions, getDAOCommon } from '../util'
 import { setupVM, createAccount } from './utils'
 import testnet from './testdata/testnet.json'
@@ -347,6 +343,73 @@ tape('runBlock() -> API return values', async (t) => {
       'should return correct pre-Byzantium receipt format'
     )
 
+    t.end()
+  })
+})
+
+tape('runBlock() -> tx types', async (t) => {
+  async function simpleRun(vm: VM, transactions: TypedTransaction[]) {
+    const common = vm._common
+
+    const blockRlp = testData.blocks[0].rlp
+    const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
+
+    //@ts-ignore overwrite transactions
+    block.transactions = transactions
+
+    //@ts-ignore
+    await setupPreConditions(vm.stateManager._trie, testData)
+
+    const res = await vm.runBlock({
+      block,
+      skipBlockValidation: true,
+      generate: true,
+    })
+
+    t.ok(
+      res.gasUsed.eq(
+        res.receipts
+          .map((r) => r.gasUsed)
+          .reduce((prevValue: BN, currValue: Buffer) => prevValue.add(new BN(currValue)), new BN(0))
+      ),
+      "gas used should equal transaction's total gasUsed"
+    )
+  }
+
+  t.test('legacy tx', async (t) => {
+    const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+    const vm = setupVM({ common })
+    await vm.stateManager.generateCanonicalGenesis()
+
+    const tx = Transaction.fromTxData({ gasLimit: 53000, value: 1 }, { common, freeze: false })
+
+    // set `from` to a genesis address with existing balance
+    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    tx.getSenderAddress = () => {
+      return address
+    }
+
+    await simpleRun(vm, [tx])
+    t.end()
+  })
+
+  t.test('access list tx', async (t) => {
+    const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+    const vm = setupVM({ common })
+    await vm.stateManager.generateCanonicalGenesis()
+
+    const tx = AccessListEIP2930Transaction.fromTxData(
+      { gasLimit: 53000, value: 1, v: 1, r: 1, s: 1 },
+      { common, freeze: false }
+    )
+
+    // set `from` to a genesis address with existing balance
+    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    tx.getSenderAddress = () => {
+      return address
+    }
+
+    await simpleRun(vm, [tx])
     t.end()
   })
 })

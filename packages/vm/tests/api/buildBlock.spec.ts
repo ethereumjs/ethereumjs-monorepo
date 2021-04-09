@@ -243,4 +243,27 @@ tape('BlockBuilder', async (t) => {
 
     st.end()
   })
+
+  t.test('should build a block without any txs', async (st) => {
+    const common = new Common({ chain: 'mainnet' })
+    const genesisBlock = Block.genesis({ header: { gasLimit: 50000 } }, { common })
+    const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
+    const vm = await VM.create({ common, blockchain })
+    const vmCopy = vm.copy()
+
+    const blockBuilder = await vm.buildBlock({
+      parentBlock: genesisBlock,
+      blockOpts: { calcDifficultyFromHeader: genesisBlock.header, freeze: false },
+    })
+
+    const block = await blockBuilder.build()
+
+    // block should successfully execute with VM.runBlock and have same outputs
+    const result = await vmCopy.runBlock({ block })
+    st.ok(result.gasUsed.eq(block.header.gasUsed))
+    st.ok(result.receiptRoot.equals(block.header.receiptTrie))
+    st.ok(result.stateRoot.equals(block.header.stateRoot))
+    st.ok(result.logsBloom.equals(block.header.bloom))
+    st.end()
+  })
 })

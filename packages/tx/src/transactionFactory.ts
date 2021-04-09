@@ -1,4 +1,4 @@
-import { BN } from 'ethereumjs-util'
+import { BN, toBuffer } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { default as Transaction } from './legacyTransaction'
 import { default as AccessListEIP2930Transaction } from './eip2930Transaction'
@@ -25,7 +25,7 @@ export default class TransactionFactory {
       // Assume legacy transaction
       return Transaction.fromTxData(<TxData>txData, txOptions)
     } else {
-      const txType = new BN(txData.type).toNumber()
+      const txType = new BN(toBuffer(txData.type)).toNumber()
       return TransactionFactory.getTransactionClass(txType, common).fromTxData(
         <AccessListEIP2930TxData>txData,
         txOptions

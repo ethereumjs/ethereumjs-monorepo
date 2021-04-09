@@ -8,7 +8,13 @@ import {
   ecsign,
   publicToAddress,
 } from 'ethereumjs-util'
-import { TxData, TxOptions, JsonTx, AccessListEIP2930ValuesArray } from './types'
+import {
+  TxData,
+  TxOptions,
+  JsonTx,
+  AccessListEIP2930ValuesArray,
+  AccessListEIP2930TxData,
+} from './types'
 
 /**
  * This base class will likely be subject to further
@@ -18,6 +24,8 @@ import { TxData, TxOptions, JsonTx, AccessListEIP2930ValuesArray } from './types
  * It is therefore not recommended to use directly.
  */
 export abstract class BaseTransaction<TransactionObject> {
+  private readonly _type: number
+
   public readonly nonce: BN
   public readonly gasLimit: BN
   public readonly gasPrice: BN
@@ -30,8 +38,16 @@ export abstract class BaseTransaction<TransactionObject> {
   public readonly r?: BN
   public readonly s?: BN
 
-  constructor(txData: TxData, txOptions: TxOptions = {}) {
+  constructor(txData: TxData | AccessListEIP2930TxData, txOptions: TxOptions = {}) {
     const { nonce, gasLimit, gasPrice, to, value, data, v, r, s } = txData
+
+    const type = (txData as AccessListEIP2930TxData).type
+    if (type !== undefined) {
+      this._type = new BN(toBuffer(type)).toNumber()
+    } else {
+      this._type = 0
+    }
+
     const toB = toBuffer(to === '' ? '0x' : to)
     const vB = toBuffer(v === '' ? '0x' : v)
     const rB = toBuffer(r === '' ? '0x' : r)
@@ -59,9 +75,40 @@ export abstract class BaseTransaction<TransactionObject> {
   }
 
   /**
-   * Checks if the transaction has the minimum amount of gas required
-   * (DataFee + TxFee + Creation Fee).
+   * Returns the transaction type
    */
+  get transactionType(): number {
+    return this._type
+  }
+
+  /**
+   * Alias for `transactionType`
+   */
+  get type() {
+    return this.transactionType
+  }
+
+  /**
+   * EIP-2930 alias for `r`
+   */
+  get senderR() {
+    return this.r
+  }
+
+  /**
+   * EIP-2930 alias for `s`
+   */
+  get senderS() {
+    return this.s
+  }
+
+  /**
+   * EIP-2930 alias for `v`
+   */
+  get yParity() {
+    return this.v
+  }
+
   /**
    * Checks if the transaction has the minimum amount of gas required
    * (DataFee + TxFee + Creation Fee).

@@ -1,17 +1,23 @@
 import { debug as createDebugLogger } from 'debug'
 import { encode } from 'rlp'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { Account, Address, BN } from 'ethereumjs-util'
+import { Account, Address, BN, intToBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import VM from './index'
 import Bloom from './bloom'
 import { StateManager } from './state'
-
-import * as DAOConfig from './config/dao_fork_accounts_config.json'
-import { Log } from './evm/types'
 import { short } from './evm/opcodes'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { RunTxResult } from './runTx'
+import type { TxReceipt } from './types'
+import * as DAOConfig from './config/dao_fork_accounts_config.json'
+
+// For backwards compatibility from v5.3.0,
+// TxReceipts are exported. These exports are
+// deprecated and may be removed soon, please
+// update your imports to the new types file.
+import { PreByzantiumTxReceipt, PostByzantiumTxReceipt, EIP2930Receipt } from './types'
+export { PreByzantiumTxReceipt, PostByzantiumTxReceipt, EIP2930Receipt }
 
 const debug = createDebugLogger('vm:block')
 
@@ -61,7 +67,7 @@ export interface RunBlockResult {
   /**
    * Receipts generated for transactions in the block
    */
-  receipts: (PreByzantiumTxReceipt | PostByzantiumTxReceipt | EIP2930Receipt)[]
+  receipts: TxReceipt[]
   /**
    * Results of executing the transactions in the block
    */
@@ -83,49 +89,6 @@ export interface RunBlockResult {
    */
   receiptRoot: Buffer
 }
-
-/**
- * Abstract interface with common transaction receipt fields
- */
-interface TxReceipt {
-  /**
-   * Gas used
-   */
-  gasUsed: Buffer
-  /**
-   * Bloom bitvector
-   */
-  bitvector: Buffer
-  /**
-   * Logs emitted
-   */
-  logs: Log[]
-}
-
-/**
- * Pre-Byzantium receipt type with a field
- * for the intermediary state root
- */
-export interface PreByzantiumTxReceipt extends TxReceipt {
-  /**
-   * Intermediary state root
-   */
-  stateRoot: Buffer
-}
-
-/**
- * Receipt type for Byzantium and beyond replacing the intermediary
- * state root field with a status code field (EIP-658)
- */
-export interface PostByzantiumTxReceipt extends TxReceipt {
-  /**
-   * Status of transaction, `1` if successful, `0` if an exception occured
-   */
-  status: 0 | 1
-}
-
-// EIP290Receipt, which has the same fields as PostByzantiumTxReceipt
-export interface EIP2930Receipt extends PostByzantiumTxReceipt {}
 
 export interface AfterBlockEvent extends RunBlockResult {
   // The block which just finished processing
@@ -334,9 +297,16 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
 
     // Run the tx through the VM
     const { skipBalance, skipNonce } = opts
+
+    // Construct a block with the current gasUsed for accurate tx receipt generation
+    const blockWithGasUsed = Block.fromBlockData(
+      { ...block, header: { ...block.header, gasUsed } },
+      { common: this._common }
+    )
+
     const txRes = await this.runTx({
       tx,
-      block,
+      block: blockWithGasUsed,
       skipBalance,
       skipNonce,
     })
@@ -346,18 +316,13 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     // Add to total block gas usage
     gasUsed = gasUsed.add(txRes.gasUsed)
     debug(`Add tx gas used (${txRes.gasUsed}) to total block gas usage (-> ${gasUsed})`)
+
     // Combine blooms via bitwise OR
     bloom.or(txRes.bloom)
 
-    const { txReceipt, encodedReceipt, receiptLog } = await generateTxReceipt.bind(this)(
-      tx,
-      txRes,
-      gasUsed
-    )
-    debug(receiptLog)
-    receipts.push(txReceipt)
-
     // Add receipt to trie to later calculate receipt root
+    receipts.push(txRes.receipt)
+    const encodedReceipt = encodeReceipt(tx, txRes.receipt)
     await receiptTrie.put(encode(txIdx), encodedReceipt)
   }
 
@@ -420,7 +385,22 @@ export async function rewardAccount(
 }
 
 /**
+ * Returns the encoded tx receipt.
+ */
+export function encodeReceipt(tx: TypedTransaction, receipt: TxReceipt) {
+  const encoded = encode(Object.values(receipt))
+
+  if (!('transactionType' in tx) || tx.transactionType === 0) {
+    return encoded
+  }
+
+  const type = intToBuffer(tx.transactionType)
+  return Buffer.concat([type, encoded])
+}
+
+/**
  * Generates the tx receipt and returns { txReceipt, encodedReceipt, receiptLog }
+ * @deprecated Please use the new `generateTxReceipt` located in runTx.
  */
 export async function generateTxReceipt(
   this: VM,
@@ -428,7 +408,7 @@ export async function generateTxReceipt(
   txRes: RunTxResult,
   blockGasUsed: BN
 ) {
-  const abstractTxReceipt: TxReceipt = {
+  const abstractTxReceipt = {
     gasUsed: blockGasUsed.toArrayLike(Buffer),
     bitvector: txRes.bloom.bitvector,
     logs: txRes.execResult.logs || [],
