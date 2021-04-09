@@ -1,27 +1,23 @@
-[@ethereumjs/tx](../README.md) › ["types"](../modules/_types_.md) › [TxOptions](_types_.txoptions.md)
+[@ethereumjs/tx](../README.md) / [types](../modules/types.md) / TxOptions
 
 # Interface: TxOptions
 
+[types](../modules/types.md).TxOptions
+
 The options for initializing a Transaction.
 
-## Hierarchy
-
-* **TxOptions**
-
-## Index
+## Table of contents
 
 ### Properties
 
-* [common](_types_.txoptions.md#optional-common)
-* [freeze](_types_.txoptions.md#optional-freeze)
+- [common](types.txoptions.md#common)
+- [freeze](types.txoptions.md#freeze)
 
 ## Properties
 
-### `Optional` common
+### common
 
-• **common**? : *Common*
-
-*Defined in [types.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L20)*
+• `Optional` **common**: *default*
 
 A Common object defining the chain and hardfork for the transaction.
 
@@ -32,13 +28,13 @@ Default: `Common` object set to `mainnet` and the default hardfork as defined in
 
 Current default hardfork: `istanbul`
 
+Defined in: [types.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L20)
+
 ___
 
-### `Optional` freeze
+### freeze
 
-• **freeze**? : *undefined | false | true*
-
-*Defined in [types.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L31)*
+• `Optional` **freeze**: *boolean*
 
 A transaction object by default gets frozen along initialization. This gives you
 strong additional security guarantees on the consistency of the tx parameters.
@@ -48,3 +44,5 @@ add aditional properties - it is strongly encouraged that you do the freeze your
 within your code instead.
 
 Default: true
+
+Defined in: [types.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L31)
