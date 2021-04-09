@@ -62,8 +62,10 @@ import { SecureTrie as Trie } from 'merkle-patricia-tree'
 const db = level('YOUR_PATH_TO_THE_GETH_CHAIN_DB')
 // Set stateRoot to block #222
 const stateRoot = '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'
+// Convert the state root to a Buffer (strip the 0x prefix)
+const stateRootBuffer = Buffer.from(stateRoot.slice(2), 'hex')
 // Initialize trie
-const trie = new Trie(db, stateRoot)
+const trie = new Trie(db, stateRootBuffer)
 
 trie
   .createReadStream()
