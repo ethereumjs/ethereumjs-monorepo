@@ -486,7 +486,7 @@ export default class DefaultStateManager implements StateManager {
   }
 
   /**
-   * Verify a proof. Throws if proof is invalid, otherwise returns true
+   * Verify an EIP-1186 proof. Throws if proof is invalid, otherwise returns true
    * @param proof - The Proof to prove
    */
   async verifyProof(proof: Proof): Promise<boolean> {
