@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.3.1 - 2021-04-09
+
+**Features**
+
+- Added `receipt` to `RunTxResult`, moved the tx receipt generation logic from `VM.runBlock()` to `VM.runTx()` (`generateTxReceipt()` and receipt exports in `runBlock` are now marked as *deprecated*), PR [#1185](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1185)
+
+**Bug Fixes**
+
+- Fixed BlockBuilder (see `v5.3.0` release) to allow building a block with zero txs, PR [#1185](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1185)
+- BlockBuilder: Moves the `stateManager.commit` to after putting the block in blockchain in case it throws on validating, PR [#1185](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1185)
+
+**Testing**
+
+- Added test cases for legacy and access list transactions to `VM.runBlock()` tests, PR [#1185](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1185)
+- Added type safety test (thanks to @alcuadrado from Hardhat for this code magic piece ❤️), PR [#1185](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1185)
+
 ## 5.3.0 - 2021-03-31
 
 ### EIP-2930 Tx Access List Generation
