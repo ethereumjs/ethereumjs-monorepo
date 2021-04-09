@@ -57,7 +57,7 @@ ___
 
 This will contain the data of the message or the init of a contract.
 
-Inherited from: void
+Inherited from: TxData.data
 
 Defined in: [types.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L98)
 
@@ -69,7 +69,7 @@ ___
 
 The transaction's gas limit.
 
-Inherited from: void
+Inherited from: TxData.gasLimit
 
 Defined in: [types.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L83)
 
@@ -81,7 +81,7 @@ ___
 
 The transaction's gas price.
 
-Inherited from: void
+Inherited from: TxData.gasPrice
 
 Defined in: [types.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L78)
 
@@ -93,7 +93,7 @@ ___
 
 The transaction's nonce.
 
-Inherited from: void
+Inherited from: TxData.nonce
 
 Defined in: [types.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L73)
 
@@ -105,7 +105,7 @@ ___
 
 EC signature parameter.
 
-Inherited from: void
+Inherited from: TxData.r
 
 Defined in: [types.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L108)
 
@@ -117,7 +117,7 @@ ___
 
 EC signature parameter.
 
-Inherited from: void
+Inherited from: TxData.s
 
 Defined in: [types.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L113)
 
@@ -129,7 +129,7 @@ ___
 
 The transaction's the address is sent to.
 
-Inherited from: void
+Inherited from: TxData.to
 
 Defined in: [types.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L88)
 
@@ -151,7 +151,7 @@ ___
 
 EC recovery ID.
 
-Inherited from: void
+Inherited from: TxData.v
 
 Defined in: [types.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L103)
 
@@ -163,6 +163,6 @@ ___
 
 The amount of Ether sent.
 
-Inherited from: void
+Inherited from: TxData.value
 
 Defined in: [types.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L93)
