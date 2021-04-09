@@ -115,9 +115,9 @@ See the API docs for detailed documentation. Note that these methods will throw 
 
 # TESTING
 
-Tests in the `tests` directory are partly outdated and testing is primarily done by running the `BlockchainTests` from within the [ethereumjs-vm](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/vm#synopsis) package.
+Tests in the `tests` directory are partly outdated and testing is primarily done by running the `BlockchainTests` from within the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package.
 
-To avoid bloating this repository with [ethereum/tests](https://github.com/ethereum/tests) JSON files, we usually copy specific JSON files and wrap them with some metadata (source, date, commit hash). There's a helper to aid in that process and can be found at [wrap-ethereum-test.sh](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/scripts/wrap-ethereum-test.sh).
+To avoid bloating this repository with [ethereum/tests](https://github.com/ethereum/tests) JSON files, we usually copy specific JSON files and wrap them with some metadata (source, date, commit hash). There's a helper to aid in that process and can be found at [wrap-ethereum-test.sh](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/scripts/wrap-ethereum-test.sh).
 
 # EthereumJS
 
@@ -133,9 +133,9 @@ If you want to join for work or do improvements on the libraries have a look at 
 [discord-link]: https://discord.gg/TNwARpR
 [block-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/block.svg
 [block-npm-link]: https://www.npmjs.com/package/@ethereumjs/block
-[block-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20block?label=issues
-[block-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+block"
-[block-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Block%20Test/badge.svg
-[block-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22Block+Test%22
+[block-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20block?label=issues
+[block-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+block"
+[block-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/Block%20Test/badge.svg
+[block-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22Block+Test%22
 [block-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=block
 [block-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/block

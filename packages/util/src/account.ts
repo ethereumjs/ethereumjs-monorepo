@@ -11,7 +11,7 @@ import { stripHexPrefix } from 'ethjs-util'
 import { KECCAK256_RLP, KECCAK256_NULL } from './constants'
 import { zeros, bufferToHex, toBuffer } from './bytes'
 import { keccak, keccak256, keccakFromString, rlphash } from './hash'
-import { assertIsHexString, assertIsBuffer } from './helpers'
+import { assertIsString, assertIsHexString, assertIsBuffer } from './helpers'
 import { BNLike, BufferLike, bnToRlp, toType, TypeOutput } from './types'
 
 export interface AccountData {
@@ -122,7 +122,12 @@ export class Account {
  * Checks if the address is a valid. Accepts checksummed addresses too.
  */
 export const isValidAddress = function (hexAddress: string): boolean {
-  assertIsHexString(hexAddress)
+  try {
+    assertIsString(hexAddress)
+  } catch (e) {
+    return false
+  }
+
   return /^0x[0-9a-fA-F]{40}$/.test(hexAddress)
 }
 
@@ -299,7 +304,12 @@ export const zeroAddress = function (): string {
  * Checks if a given address is the zero address.
  */
 export const isZeroAddress = function (hexAddress: string): boolean {
-  assertIsHexString(hexAddress)
+  try {
+    assertIsString(hexAddress)
+  } catch (e) {
+    return false
+  }
+
   const zeroAddr = zeroAddress()
   return zeroAddr === hexAddress
 }

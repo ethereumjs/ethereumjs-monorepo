@@ -19,6 +19,7 @@
 ### Methods
 
 * [equals](_address_.address.md#equals)
+* [isPrecompileOrSystemAddress](_address_.address.md#isprecompileorsystemaddress)
 * [isZero](_address_.address.md#iszero)
 * [toBuffer](_address_.address.md#tobuffer)
 * [toString](_address_.address.md#tostring)
@@ -73,6 +74,19 @@ Name | Type |
 
 ___
 
+###  isPrecompileOrSystemAddress
+
+▸ **isPrecompileOrSystemAddress**(): *boolean*
+
+*Defined in [address.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L96)*
+
+True if address is in the address range defined
+by EIP-1352
+
+**Returns:** *boolean*
+
+___
+
 ###  isZero
 
 ▸ **isZero**(): *boolean*
@@ -89,7 +103,7 @@ ___
 
 ▸ **toBuffer**(): *Buffer*
 
-*Defined in [address.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L102)*
+*Defined in [address.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L114)*
 
 Returns Buffer representation of address.
 
@@ -101,7 +115,7 @@ ___
 
 ▸ **toString**(): *string*
 
-*Defined in [address.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L95)*
+*Defined in [address.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L107)*
 
 Returns hex encoding of address.
 

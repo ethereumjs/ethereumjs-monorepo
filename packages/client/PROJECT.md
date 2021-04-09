@@ -20,7 +20,7 @@ context.
 
 There are some uncertainties around the intended development stage of the **full client**
 regarding performance and questions how to deal with the lack of 
-(historical) fork-rule support of the underlying [VM](https://github.com/ethereumjs/ethereumjs-vm)
+(historical) fork-rule support of the underlying [VM](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm)
 implementation. Full client support shall therefor be brought to an *EXPERIMENTAL* stage
 where it is possible to sync the main chain up to a post-Byzantium state and then process
 transactions and store the results. This will already be valuable for experimentation and

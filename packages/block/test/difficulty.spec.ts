@@ -122,7 +122,7 @@ tape('[Header]: difficulty tests', (t) => {
   t.end()
 
   // Temporarily run local test selection
-  // also: implicit testing through ethereumjs-vm tests
+  // also: implicit testing through @ethereumjs/vm tests
   // (no Byzantium difficulty tests available yet)
   /*
   let args = {}

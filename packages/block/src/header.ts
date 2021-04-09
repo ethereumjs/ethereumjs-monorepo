@@ -258,6 +258,13 @@ export class BlockHeader {
 
     // If cliqueSigner is provided, seal block with provided privateKey.
     if (options.cliqueSigner) {
+      // Ensure extraData is at least length CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
+      const minExtraDataLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
+      if (this.extraData.length < minExtraDataLength) {
+        const remainingLength = minExtraDataLength - this.extraData.length
+        this.extraData = Buffer.concat([this.extraData, Buffer.alloc(remainingLength)])
+      }
+
       this.extraData = this.cliqueSealBlock(options.cliqueSigner)
     }
 
@@ -643,16 +650,11 @@ export class BlockHeader {
    */
   private cliqueSealBlock(privateKey: Buffer) {
     this._requireClique('cliqueSealBlock')
+
     const signature = ecsign(this.cliqueSigHash(), privateKey)
     const signatureB = Buffer.concat([signature.r, signature.s, intToBuffer(signature.v - 27)])
 
-    let extraDataWithoutSeal = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
-    // ensure extraDataWithoutSeal is at least 32 bytes (CLIQUE_EXTRA_VANITY)
-    if (extraDataWithoutSeal.length < CLIQUE_EXTRA_VANITY) {
-      const remainingLength = Buffer.alloc(CLIQUE_EXTRA_VANITY - extraDataWithoutSeal.length)
-      extraDataWithoutSeal = Buffer.concat([extraDataWithoutSeal, remainingLength])
-    }
-
+    const extraDataWithoutSeal = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
     const extraData = Buffer.concat([extraDataWithoutSeal, signatureB])
     return extraData
   }

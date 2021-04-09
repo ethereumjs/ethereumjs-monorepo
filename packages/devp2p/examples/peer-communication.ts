@@ -5,7 +5,7 @@ import ms from 'ms'
 import chalk from 'chalk'
 import * as rlp from 'rlp'
 import Common from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
+import { TypedTransaction, TransactionFactory } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import * as devp2p from '../src/index'
 import { ETH, Peer } from '../src/index'
@@ -135,7 +135,7 @@ rlpx.on('peer:added', (peer) => {
         if (!forkVerified) break
 
         for (const item of payload) {
-          const tx = Transaction.fromValuesArray(item)
+          const tx = TransactionFactory.fromBlockBodyData(item)
           if (isValidTx(tx)) onNewTx(tx, peer)
         }
 
@@ -325,7 +325,7 @@ dpt.addPeer({ address: '127.0.0.1', udpPort: 30303, tcpPort: 30303 })
 */
 
 const txCache = new LRUCache({ max: 1000 })
-function onNewTx(tx: Transaction, peer: Peer) {
+function onNewTx(tx: TypedTransaction, peer: Peer) {
   const txHashHex = tx.hash().toString('hex')
   if (txCache.has(txHashHex)) return
 
@@ -350,7 +350,7 @@ function onNewBlock(block: Block, peer: Peer) {
   for (const tx of block.transactions) onNewTx(tx, peer)
 }
 
-function isValidTx(tx: Transaction) {
+function isValidTx(tx: TypedTransaction) {
   return tx.validate()
 }
 

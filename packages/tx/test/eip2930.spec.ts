@@ -318,4 +318,14 @@ tape('[AccessListEIP2930Transaction]', function (t) {
 
     t.end()
   })
+
+  t.test('should create and sign transactions without passing access list value', (st) => {
+    const tx = AccessListEIP2930Transaction.fromTxData({}, { common })
+    const signed = tx.sign(pKey)
+
+    st.deepEqual(tx.accessList, [])
+    st.deepEqual(signed.accessList, [])
+
+    st.end()
+  })
 })

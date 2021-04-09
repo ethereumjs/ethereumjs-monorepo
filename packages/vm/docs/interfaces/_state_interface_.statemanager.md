@@ -41,7 +41,7 @@
 
 ▸ **accountExists**(`address`: Address): *Promise‹boolean›*
 
-*Defined in [state/interface.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L32)*
+*Defined in [state/interface.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L33)*
 
 **Parameters:**
 
@@ -57,7 +57,7 @@ ___
 
 ▸ **accountIsEmpty**(`address`: Address): *Promise‹boolean›*
 
-*Defined in [state/interface.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L31)*
+*Defined in [state/interface.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L32)*
 
 **Parameters:**
 
@@ -73,7 +73,7 @@ ___
 
 ▸ **checkpoint**(): *Promise‹void›*
 
-*Defined in [state/interface.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L22)*
+*Defined in [state/interface.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L23)*
 
 **Returns:** *Promise‹void›*
 
@@ -83,7 +83,7 @@ ___
 
 ▸ **cleanupTouchedAccounts**(): *Promise‹void›*
 
-*Defined in [state/interface.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L33)*
+*Defined in [state/interface.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L34)*
 
 **Returns:** *Promise‹void›*
 
@@ -93,7 +93,7 @@ ___
 
 ▸ **clearContractStorage**(`address`: Address): *Promise‹void›*
 
-*Defined in [state/interface.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L21)*
+*Defined in [state/interface.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L22)*
 
 **Parameters:**
 
@@ -109,7 +109,7 @@ ___
 
 ▸ **clearOriginalStorageCache**(): *void*
 
-*Defined in [state/interface.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L34)*
+*Defined in [state/interface.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L35)*
 
 **Returns:** *void*
 
@@ -119,7 +119,7 @@ ___
 
 ▸ **commit**(): *Promise‹void›*
 
-*Defined in [state/interface.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L23)*
+*Defined in [state/interface.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L24)*
 
 **Returns:** *Promise‹void›*
 
@@ -129,7 +129,7 @@ ___
 
 ▸ **copy**(): *[StateManager](_state_index_.statemanager.md)*
 
-*Defined in [state/interface.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L11)*
+*Defined in [state/interface.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L12)*
 
 **Returns:** *[StateManager](_state_index_.statemanager.md)*
 
@@ -139,7 +139,7 @@ ___
 
 ▸ **deleteAccount**(`address`: Address): *Promise‹void›*
 
-*Defined in [state/interface.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L14)*
+*Defined in [state/interface.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L15)*
 
 **Parameters:**
 
@@ -155,7 +155,7 @@ ___
 
 ▸ **dumpStorage**(`address`: Address): *Promise‹[StorageDump](_state_interface_.storagedump.md)›*
 
-*Defined in [state/interface.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L27)*
+*Defined in [state/interface.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L28)*
 
 **Parameters:**
 
@@ -171,7 +171,7 @@ ___
 
 ▸ **generateCanonicalGenesis**(): *Promise‹void›*
 
-*Defined in [state/interface.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L29)*
+*Defined in [state/interface.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L30)*
 
 **Returns:** *Promise‹void›*
 
@@ -181,7 +181,7 @@ ___
 
 ▸ **generateGenesis**(`initState`: any): *Promise‹void›*
 
-*Defined in [state/interface.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L30)*
+*Defined in [state/interface.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L31)*
 
 **Parameters:**
 
@@ -197,7 +197,7 @@ ___
 
 ▸ **getAccount**(`address`: Address): *Promise‹Account›*
 
-*Defined in [state/interface.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L12)*
+*Defined in [state/interface.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L13)*
 
 **Parameters:**
 
@@ -213,7 +213,7 @@ ___
 
 ▸ **getContractCode**(`address`: Address): *Promise‹Buffer›*
 
-*Defined in [state/interface.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L17)*
+*Defined in [state/interface.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L18)*
 
 **Parameters:**
 
@@ -229,7 +229,7 @@ ___
 
 ▸ **getContractStorage**(`address`: Address, `key`: Buffer): *Promise‹Buffer›*
 
-*Defined in [state/interface.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L18)*
+*Defined in [state/interface.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L19)*
 
 **Parameters:**
 
@@ -246,7 +246,7 @@ ___
 
 ▸ **getOriginalContractStorage**(`address`: Address, `key`: Buffer): *Promise‹Buffer›*
 
-*Defined in [state/interface.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L19)*
+*Defined in [state/interface.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L20)*
 
 **Parameters:**
 
@@ -263,7 +263,7 @@ ___
 
 ▸ **getStateRoot**(`force?`: undefined | false | true): *Promise‹Buffer›*
 
-*Defined in [state/interface.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L25)*
+*Defined in [state/interface.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L26)*
 
 **Parameters:**
 
@@ -279,7 +279,7 @@ ___
 
 ▸ **hasGenesisState**(): *Promise‹boolean›*
 
-*Defined in [state/interface.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L28)*
+*Defined in [state/interface.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L29)*
 
 **Returns:** *Promise‹boolean›*
 
@@ -289,7 +289,7 @@ ___
 
 ▸ **putAccount**(`address`: Address, `account`: Account): *Promise‹void›*
 
-*Defined in [state/interface.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L13)*
+*Defined in [state/interface.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L14)*
 
 **Parameters:**
 
@@ -306,7 +306,7 @@ ___
 
 ▸ **putContractCode**(`address`: Address, `value`: Buffer): *Promise‹void›*
 
-*Defined in [state/interface.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L16)*
+*Defined in [state/interface.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L17)*
 
 **Parameters:**
 
@@ -323,7 +323,7 @@ ___
 
 ▸ **putContractStorage**(`address`: Address, `key`: Buffer, `value`: Buffer): *Promise‹void›*
 
-*Defined in [state/interface.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L20)*
+*Defined in [state/interface.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L21)*
 
 **Parameters:**
 
@@ -341,7 +341,7 @@ ___
 
 ▸ **revert**(): *Promise‹void›*
 
-*Defined in [state/interface.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L24)*
+*Defined in [state/interface.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L25)*
 
 **Returns:** *Promise‹void›*
 
@@ -351,7 +351,7 @@ ___
 
 ▸ **setStateRoot**(`stateRoot`: Buffer): *Promise‹void›*
 
-*Defined in [state/interface.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L26)*
+*Defined in [state/interface.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L27)*
 
 **Parameters:**
 
@@ -367,7 +367,7 @@ ___
 
 ▸ **touchAccount**(`address`: Address): *void*
 
-*Defined in [state/interface.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L15)*
+*Defined in [state/interface.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L16)*
 
 **Parameters:**
 

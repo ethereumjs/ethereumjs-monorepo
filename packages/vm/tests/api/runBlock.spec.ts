@@ -1,12 +1,17 @@
 import tape from 'tape'
-import { Address, BN, rlp } from 'ethereumjs-util'
+import { Address, BN, rlp, KECCAK256_RLP } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { Transaction } from '@ethereumjs/tx'
-import { PostByzantiumTxReceipt, PreByzantiumTxReceipt } from '../../lib/runBlock'
+import {
+  PreByzantiumTxReceipt,
+  PostByzantiumTxReceipt,
+  RunBlockOpts,
+  AfterBlockEvent,
+} from '../../lib/runBlock'
+import { setupPreConditions, getDAOCommon } from '../util'
 import { setupVM, createAccount } from './utils'
 import testnet from './testdata/testnet.json'
-import { setupPreConditions, getDAOCommon } from '../util'
 import VM from '../../lib/index'
 
 const testData = require('./testdata/blockchain.json')
@@ -260,6 +265,52 @@ tape('runBlock() -> runtime behavior', async (t) => {
 
     t.end()
   })
+})
+
+async function runBlockAndGetAfterBlockEvent(
+  vm: VM,
+  runBlockOpts: RunBlockOpts
+): Promise<AfterBlockEvent> {
+  let results: AfterBlockEvent
+  function handler(event: AfterBlockEvent) {
+    results = event
+  }
+
+  try {
+    vm.once('afterBlock', handler)
+    await vm.runBlock(runBlockOpts)
+  } finally {
+    // We need this in case `runBlock` throws before emitting the event.
+    // Otherwise we'd be leaking the listener until the next call to runBlock.
+    vm.removeListener('afterBlock', handler)
+  }
+
+  return results!
+}
+
+tape('should correctly reflect generated fields', async (t) => {
+  const vm = new VM()
+
+  // We create a block with a receiptTrie and transactionsTrie
+  // filled with 0s and no txs. Once we run it we should
+  // get a receipt trie root of for the empty receipts set,
+  // which is a well known constant.
+  const buffer32Zeros = Buffer.alloc(32, 0)
+  const block = Block.fromBlockData({
+    header: { receiptTrie: buffer32Zeros, transactionsTrie: buffer32Zeros, gasUsed: new BN(1) },
+  })
+
+  const results = await runBlockAndGetAfterBlockEvent(vm, {
+    block,
+    generate: true,
+    skipBlockValidation: true,
+  })
+
+  t.ok(results.block.header.receiptTrie.equals(KECCAK256_RLP))
+  t.ok(results.block.header.transactionsTrie.equals(KECCAK256_RLP))
+  t.ok(results.block.header.gasUsed.eqn(0))
+
+  t.end()
 })
 
 async function runWithHf(hardfork: string) {

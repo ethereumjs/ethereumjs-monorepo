@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [UNRELEASED]
 
-- `libp2p` modules upgraded to latest, PR [#1027](https://github.com/ethereumjs/ethereumjs-vm/pull/1027)
+- `libp2p` modules upgraded to latest, PR [#1027](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1027)
 
 ## [0.0.6] - 2020-06-19
 

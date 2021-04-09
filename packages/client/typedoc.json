@@ -1,5 +1,5 @@
 {
-  "inputFiles": ["lib"],
+  "entryPoints": ["lib"],
   "out": "docs",
   "plugin": "typedoc-plugin-markdown",
   "readme": "none",
@@ -19,7 +19,6 @@
     "lib/sync/fetcher/index.ts",
     "lib/util/index.ts"
   ],
-  "excludeNotExported": true,
   "excludeExternals": true,
   "excludePrivate": true,
   "excludeProtected": true

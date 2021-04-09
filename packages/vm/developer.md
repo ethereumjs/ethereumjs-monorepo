@@ -97,7 +97,13 @@ It is also possible to only run the tests from the skip lists:
 
 ### CI Test Integration
 
-Tests and checks are run in CI using [Github Actions](https://github.com/ethereumjs/ethereumjs-vm/actions). The configuration can be found in `.github/workflows`.
+Tests and checks are run in CI using [Github Actions](https://github.com/ethereumjs/ethereumjs-monorepo/actions). The configuration can be found in `.github/workflows`.
+
+#### On-demand testing for VM State and Blockchain
+
+On an ordinary PR, `vm-state-extended` and `vm-blockchain-extended` will be skipped
+unless the special label `type: test all hardforks` is applied.
+If the label is removed, the extended tests will not run anymore.
 
 ### Debugging
 

@@ -1,4 +1,4 @@
-import { Account, BN, toBuffer, pubToAddress, bufferToHex } from 'ethereumjs-util'
+import { Address, Account, BN, toBuffer, pubToAddress } from 'ethereumjs-util'
 import { Transaction, TxData } from '@ethereumjs/tx'
 import VM from '../..'
 
@@ -9,12 +9,11 @@ async function main() {
   // used to sign transactions and generate addresses
   const keyPair = require('./key-pair')
   const privateKey = toBuffer(keyPair.secretKey)
-
   const publicKeyBuf = toBuffer(keyPair.publicKey)
-  const address = pubToAddress(publicKeyBuf, true)
+  const address = new Address(pubToAddress(publicKeyBuf, true))
 
   console.log('---------------------')
-  console.log('Sender address: ', bufferToHex(address))
+  console.log('Sender address: ', address.toString())
 
   // Create a new account
   const acctData = {
@@ -61,7 +60,7 @@ async function runTx(vm: VM, txData: TxData, privateKey: Buffer) {
   const createdAddress = results.createdAddress
 
   if (createdAddress) {
-    console.log('address created: 0x' + createdAddress.toString('hex'))
+    console.log('address created: ' + createdAddress.toString())
     return createdAddress
   }
 }

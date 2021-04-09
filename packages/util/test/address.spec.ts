@@ -75,6 +75,14 @@ tape('Address', (t) => {
     st.end()
   })
 
+  t.test('should provide correct precompile check', (st) => {
+    const precompile = Address.fromString('0x0000000000000000000000000000000000000009')
+    st.true(precompile.isPrecompileOrSystemAddress(), 'should detect precompile address')
+    const nonPrecompile = Address.fromString('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39')
+    st.false(nonPrecompile.isPrecompileOrSystemAddress(), 'should detect non-precompile address')
+    st.end()
+  })
+
   t.test('should generate address for CREATE2', (st) => {
     for (const testdata of eip1014Testdata) {
       const { address, salt, initCode, result } = testdata

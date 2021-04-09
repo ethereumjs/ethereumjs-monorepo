@@ -1,6 +1,5 @@
 module.exports = {
-  inputFiles: ['src/*.ts', 'src/genesisStates/*.ts'],
-  mode: 'library',
+  entryPoints: ['src'],
   out: 'docs',
   plugin: [
     'typedoc-plugin-markdown',
@@ -13,7 +12,6 @@ module.exports = {
     'src/eips/**',
     'src/hardforks/**'
   ],
-  excludeNotExported: true,
   excludePrivate: true,
   excludeProtected: true,
 }
