@@ -90,6 +90,7 @@ export abstract class BaseTransaction<TransactionObject> {
 
   /**
    * EIP-2930 alias for `r`
+   * @deprecated use `r` instead
    */
   get senderR() {
     return this.r
@@ -97,6 +98,7 @@ export abstract class BaseTransaction<TransactionObject> {
 
   /**
    * EIP-2930 alias for `s`
+   * @deprecated use `s` instead
    */
   get senderS() {
     return this.s
@@ -104,6 +106,7 @@ export abstract class BaseTransaction<TransactionObject> {
 
   /**
    * EIP-2930 alias for `v`
+   * @deprecated use `v` instead
    */
   get yParity() {
     return this.v
