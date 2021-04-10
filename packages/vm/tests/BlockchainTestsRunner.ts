@@ -73,6 +73,130 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     common,
   })
 
+  let gasLeft = new BN(-1)
+  let gasUsed = new BN(0)
+  let target = new BN(1e6)
+  let time = Date.now() / 1000
+  let optime: number
+
+  let tab: any = {}
+  let lastop: any
+
+  /*
+533 DIV
+534 SWAP2
+535 POP
+536 DUP5
+537 DUP3
+538 ADD
+539 SWAP2
+540 POP
+541 PUSH1
+543 DUP2
+544 ADD
+545 SWAP1
+546 POP
+547 PUSH2
+550 JUMP
+515 JUMPDEST
+516 DUP4
+517 DUP2
+518 LT
+519 ISZERO
+520 PUSH2
+523 JUMPI
+524 DUP6
+525 DUP3
+526 DUP2
+527 PUSH2
+530 JUMPI
+532 JUMPDEST
+
+DIV 1
+SWAP2 2
+POP 3
+DUP5 1
+DUP3 2
+ADD 2
+PUSH1 1
+DUP2 3
+SWAP1 1 
+PUSH2 3
+JUMP 1
+JUMPDEST 2
+DUP4 1
+LT 1
+ISZERO 1
+JUMPI 2
+DUP6 1
+
+  */
+  
+  let lut: any = {
+    DIV: 1,
+    SWAP2: 2,
+    POP: 3,
+    DUP5: 1,
+    DUP3: 2,
+    ADD: 2, 
+    PUSH1: 1,
+    DUP2: 3,
+    SWAP1: 1,
+    PUSH2: 3,
+    JUMP: 1,
+    JUMPDEST: 2,
+    DUP4: 1,
+    LT: 1,
+    ISZERO: 1,
+    JUMPI: 2,
+    DUP6: 1,
+  }
+
+  let ops = 0;
+  let ss = 0
+
+  vm.on('step', (e: any) => {
+//    console.log(e.pc, e.opcode.name)
+
+    if (optime) {
+      let time = Date.now()/1000 - optime
+      if (!tab[lastop]) {
+        tab[lastop] = [0,0]
+      }
+      tab[lastop][0] += time 
+      tab[lastop][1]++
+      optime = Date.now()/1000
+      lastop = e.opcode.name
+      ops++
+      ss += e.stack.length
+    }
+
+    if (optime === undefined && e.pc == 532) {
+      optime = Date.now()/1000
+      lastop = e.opcode.name
+    }
+
+    if (gasLeft.eqn(-1)) {
+      gasLeft = e.gasLeft;
+    } else {
+      gasUsed.iadd(gasLeft.sub(e.gasLeft))
+      gasLeft = e.gasLeft;
+      if (gasUsed.gt(target)) {
+        console.log("---------------------------------------------------------")
+        console.log(target.divn(1e6).toString(), Date.now()/1000 - time, "avg stack len", ss/ops)
+        time = Date.now()/1000
+        target.iaddn(1e6);
+        ops = 0;
+        ss = 0;
+        for (let index in tab) {
+          let avg = tab[index][0] / tab[index][1]
+          console.log(index, avg, tab[index][0], tab[index][1])
+          tab[index] = [0,0]
+        }
+      }
+    }
+  })
+
   // Need to await the init promise: in some tests, we do not run the iterator (which awaits the initPromise)
   // If the initPromise does not finish, the `rawHead` of `blockchain.meta()` is still `undefined`.
   await blockchain.initPromise

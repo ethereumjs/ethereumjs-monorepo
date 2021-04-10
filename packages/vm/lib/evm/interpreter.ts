@@ -1,4 +1,4 @@
-import { debug as createDebugLogger } from 'debug'
+
 import { Account, Address, BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { StateManager } from '../state/index'
@@ -192,10 +192,10 @@ export default class Interpreter {
     }
 
     // Create opTrace for debug functionality
-    let hexStack = []
-    hexStack = eventObj.stack.map((item: any) => {
+    let hexStack: any = []
+    /*hexStack = eventObj.stack.map((item: any) => {
       return '0x' + new BN(item).toString(16, 0)
-    })
+    })*/
 
     const name = eventObj.opcode.name
     const opTrace = {
@@ -207,10 +207,7 @@ export default class Interpreter {
       depth: eventObj.depth,
     }
 
-    if (!(name in this.opDebuggers)) {
-      this.opDebuggers[name] = createDebugLogger(`vm:ops:${name}`)
-    }
-    this.opDebuggers[name](JSON.stringify(opTrace))
+
 
     /**
      * The `step` event for trace output

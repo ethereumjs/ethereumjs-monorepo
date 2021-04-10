@@ -1,4 +1,3 @@
-import { debug as createDebugLogger } from 'debug'
 import { Account, Address, BN } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
@@ -9,7 +8,6 @@ import Message from './message'
 import EVM, { EVMResult } from './evm'
 import { Log } from './types'
 
-const debugGas = createDebugLogger('vm:eei:gas')
 
 function trap(err: ERROR) {
   throw new VmError(err)
@@ -92,7 +90,7 @@ export default class EEI {
    */
   useGas(amount: BN, context?: string): void {
     this._gasLeft.isub(amount)
-    debugGas(`${context ? context + ': ' : ''}used ${amount} gas (-> ${this._gasLeft})`)
+
     if (this._gasLeft.ltn(0)) {
       this._gasLeft = new BN(0)
       trap(ERROR.OUT_OF_GAS)
@@ -105,7 +103,7 @@ export default class EEI {
    * @param context - Usage context for debugging
    */
   refundGas(amount: BN, context?: string): void {
-    debugGas(`${context ? context + ': ' : ''}refund ${amount} gas (-> ${this._evm._refund})`)
+
     this._evm._refund.iadd(amount)
   }
 
@@ -115,7 +113,7 @@ export default class EEI {
    * @param context - Usage context for debugging
    */
   subRefund(amount: BN, context?: string): void {
-    debugGas(`${context ? context + ': ' : ''}sub gas refund ${amount} (-> ${this._evm._refund})`)
+
     this._evm._refund.isub(amount)
     if (this._evm._refund.ltn(0)) {
       this._evm._refund = new BN(0)
