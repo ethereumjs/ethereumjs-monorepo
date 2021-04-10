@@ -1,14 +1,14 @@
-[@ethereumjs/tx](README.md)
+@ethereumjs/tx
 
 # @ethereumjs/tx
 
-## Index
+## Table of contents
 
 ### Modules
 
-* ["baseTransaction"](modules/_basetransaction_.md)
-* ["eip2930Transaction"](modules/_eip2930transaction_.md)
-* ["index"](modules/_index_.md)
-* ["legacyTransaction"](modules/_legacytransaction_.md)
-* ["transactionFactory"](modules/_transactionfactory_.md)
-* ["types"](modules/_types_.md)
+- [baseTransaction](modules/basetransaction.md)
+- [eip2930Transaction](modules/eip2930transaction.md)
+- [index](modules/index.md)
+- [legacyTransaction](modules/legacytransaction.md)
+- [transactionFactory](modules/transactionfactory.md)
+- [types](modules/types.md)
