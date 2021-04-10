@@ -14,7 +14,17 @@ module.exports = function (config) {
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
         transforms: [
-          require('karma-typescript-es6-transform')()
+          function (context, callback) {
+            // you may ask why on earth do we need this...,
+            // so this is to make sure `cjs` extensions are treated as actual scripts and not text files
+            // https://github.com/monounity/karma-typescript/blob/master/packages/karma-typescript/src/bundler/bundle-item.ts#L18 does not have cjs extension listed, so our file is not treated as script, and eventually require-ing it leads to a typeerror, since we get a string instead
+            // luckily it's an OR with rhs being `this.transformedScript` expression, so all we need to do is to set it to true (which we do below)
+            if (context.module.includes('web-encoding')) {
+              // needed to set a flag transformedScript on BundledItem described above, https://github.com/monounity/karma-typescript/blob/master/packages/karma-typescript/src/bundler/transformer.ts#L94
+              return callback(0, { dirty: true, transformedScript: true });
+            }
+            return callback(0, false);
+          },
         ]
       },
       tsconfig: './tsconfig.karma.json',

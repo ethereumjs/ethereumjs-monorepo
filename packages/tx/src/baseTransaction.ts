@@ -89,27 +89,6 @@ export abstract class BaseTransaction<TransactionObject> {
   }
 
   /**
-   * EIP-2930 alias for `r`
-   */
-  get senderR() {
-    return this.r
-  }
-
-  /**
-   * EIP-2930 alias for `s`
-   */
-  get senderS() {
-    return this.s
-  }
-
-  /**
-   * EIP-2930 alias for `v`
-   */
-  get yParity() {
-    return this.v
-  }
-
-  /**
    * Checks if the transaction has the minimum amount of gas required
    * (DataFee + TxFee + Creation Fee).
    */

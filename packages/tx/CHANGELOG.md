@@ -6,11 +6,27 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.1.3 - 2021-04-09
+
+This release fixes a critical EIP-2930 tx constructor bug which slipped through our tests and where a tx is not initialized correctly when a `v` value of `0` is passed (which is a common case for EIP-2930 txs). This makes the typed txs unusable on prior versions and an update from a version `v3.1.0` or higher is necessary for working typed tx support. Releases `v3.1.0`, `v3.1.1` and `v3.1.2` are marked as deprecated.
+
+**Change Summary**
+
+- Fixed `AccessListEIP2930Transaction` constructor bug with `v=0`, PR [#1190](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1190)
+- Added alias `type` for `transactionType` so it can be interpreted correctly for an `AccessListEIP2930Transaction` instantiation when passed to `fromTxData()`, PR [#1185](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1185)
+- `TransactionFactory.fromTxData()`: fixed a bug where instantiation was breaking when `type` was passed in as a 0x-prefixed hex string, PR [#1185](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1185)
+- `AccessListEIP2930Transaction`: added a test that initializes correctly from its own data (adds coverage for `type` property alias), PR [#1185](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1185)
+- EIP-2930 aliases for `senderS`, `senderR`, `yParity` are now marked as *deprecated*, use `v`, `r`, `s` instead
+
 ## 3.1.2 - 2021-03-31
+
+**DEPRECATED**: Release is deprecated in favor of 3.1.3 which fixes a critical EIP-2930 tx constructor bug.
 
 - Fixed default value for empty access lists in the `AccessListEIP2930Transaction.fromValuesArray()` static constructor method, PR [#1179](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1179)
 
 ## 3.1.1 - 2021-03-23
+
+**DEPRECATED**: Release is deprecated in favor of 3.1.3 which fixes a critical EIP-2930 tx constructor bug.
 
 This release fixes a bug in the `v3.1.0` Berlin HF `@ethereumjs/tx` release where the import path for `eip2930Transaction` was broken on operating systems with case sensitive filename resolution.
 
