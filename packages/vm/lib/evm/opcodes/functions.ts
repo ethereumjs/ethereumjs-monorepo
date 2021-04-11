@@ -469,15 +469,18 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [memOffset, dataOffset, dataLength] = runState.stack.popN(3)
 
       subMemUsage(runState, memOffset, dataLength)
-      runState.eei.useGas(
-        new BN(runState._common.param('gasPrices', 'copy')).imul(divCeil(dataLength, new BN(32)))
-      )
 
-      const data = getDataSlice(runState.eei.getCallData(), dataOffset, dataLength)
-      const memOffsetNum = memOffset.toNumber()
-      const dataLengthNum = dataLength.toNumber()
-      runState.memory.extend(memOffsetNum, dataLengthNum)
-      runState.memory.write(memOffsetNum, dataLengthNum, data)
+      if (!dataLength.eqn(0)) {
+        runState.eei.useGas(
+          new BN(runState._common.param('gasPrices', 'copy')).imul(divCeil(dataLength, new BN(32)))
+        )
+
+        const data = getDataSlice(runState.eei.getCallData(), dataOffset, dataLength)
+        const memOffsetNum = memOffset.toNumber()
+        const dataLengthNum = dataLength.toNumber()
+        runState.memory.extend(memOffsetNum, dataLengthNum)
+        runState.memory.write(memOffsetNum, dataLengthNum, data)
+      }
     },
   ],
   // 0x38: CODESIZE
@@ -493,16 +496,18 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState: RunState) {
       const [memOffset, codeOffset, length] = runState.stack.popN(3)
 
-      subMemUsage(runState, memOffset, length)
-      runState.eei.useGas(
-        new BN(runState._common.param('gasPrices', 'copy')).imul(divCeil(length, new BN(32)))
-      )
+      if (!length.eqn(0)) {
+        subMemUsage(runState, memOffset, length)
+        runState.eei.useGas(
+          new BN(runState._common.param('gasPrices', 'copy')).imul(divCeil(length, new BN(32)))
+        )
 
-      const data = getDataSlice(runState.eei.getCode(), codeOffset, length)
-      const memOffsetNum = memOffset.toNumber()
-      const lengthNum = length.toNumber()
-      runState.memory.extend(memOffsetNum, lengthNum)
-      runState.memory.write(memOffsetNum, lengthNum, data)
+        const data = getDataSlice(runState.eei.getCode(), codeOffset, length)
+        const memOffsetNum = memOffset.toNumber()
+        const lengthNum = length.toNumber()
+        runState.memory.extend(memOffsetNum, lengthNum)
+        runState.memory.write(memOffsetNum, lengthNum, data)
+      }
     },
   ],
   // 0x3b: EXTCODESIZE
@@ -526,18 +531,21 @@ export const handlers: Map<number, OpHandler> = new Map([
       subMemUsage(runState, memOffset, length)
       const address = new Address(addressToBuffer(addressBN))
       accessAddressEIP2929(runState, address)
-      // copy fee
-      runState.eei.useGas(
-        new BN(runState._common.param('gasPrices', 'copy')).imul(divCeil(length, new BN(32)))
-      )
 
-      const code = await runState.eei.getExternalCode(addressBN)
+      if (!length.eqn(0)) {
+        // copy fee
+        runState.eei.useGas(
+          new BN(runState._common.param('gasPrices', 'copy')).imul(divCeil(length, new BN(32)))
+        )
 
-      const data = getDataSlice(code, codeOffset, length)
-      const memOffsetNum = memOffset.toNumber()
-      const lengthNum = length.toNumber()
-      runState.memory.extend(memOffsetNum, lengthNum)
-      runState.memory.write(memOffsetNum, lengthNum, data)
+        const code = await runState.eei.getExternalCode(addressBN)
+
+        const data = getDataSlice(code, codeOffset, length)
+        const memOffsetNum = memOffset.toNumber()
+        const lengthNum = length.toNumber()
+        runState.memory.extend(memOffsetNum, lengthNum)
+        runState.memory.write(memOffsetNum, lengthNum, data)
+      }
     },
   ],
   // 0x3f: EXTCODEHASH
@@ -579,16 +587,19 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(ERROR.OUT_OF_GAS)
       }
 
-      subMemUsage(runState, memOffset, length)
-      runState.eei.useGas(
-        new BN(runState._common.param('gasPrices', 'copy')).mul(divCeil(length, new BN(32)))
-      )
+      if (!length.eqn(0)) {
+        subMemUsage(runState, memOffset, length)
 
-      const data = getDataSlice(runState.eei.getReturnData(), returnDataOffset, length)
-      const memOffsetNum = memOffset.toNumber()
-      const lengthNum = length.toNumber()
-      runState.memory.extend(memOffsetNum, lengthNum)
-      runState.memory.write(memOffsetNum, lengthNum, data)
+        runState.eei.useGas(
+          new BN(runState._common.param('gasPrices', 'copy')).mul(divCeil(length, new BN(32)))
+        )
+
+        const data = getDataSlice(runState.eei.getReturnData(), returnDataOffset, length)
+        const memOffsetNum = memOffset.toNumber()
+        const lengthNum = length.toNumber()
+        runState.memory.extend(memOffsetNum, lengthNum)
+        runState.memory.write(memOffsetNum, lengthNum, data)
+      }
     },
   ],
   // 0x3a: GASPRICE
