@@ -1,4 +1,3 @@
-import { debug as createDebugLogger } from 'debug'
 import { Account, Address, BN } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
@@ -8,8 +7,6 @@ import { VmError, ERROR } from '../exceptions'
 import Message from './message'
 import EVM, { EVMResult } from './evm'
 import { Log } from './types'
-
-const debugGas = createDebugLogger('vm:eei:gas')
 
 function trap(err: ERROR) {
   throw new VmError(err)
@@ -87,12 +84,12 @@ export default class EEI {
   /**
    * Subtracts an amount from the gas counter.
    * @param amount - Amount of gas to consume
-   * @param context - Usage context for debugging
+   * @param _context - Deprecated: this param doesn't do anything now.
    * @throws if out of gas
    */
-  useGas(amount: BN, context?: string): void {
+  // eslint-disable-next-line no-unused-vars
+  useGas(amount: BN, _context?: string): void {
     this._gasLeft.isub(amount)
-    debugGas(`${context ? context + ': ' : ''}used ${amount} gas (-> ${this._gasLeft})`)
     if (this._gasLeft.ltn(0)) {
       this._gasLeft = new BN(0)
       trap(ERROR.OUT_OF_GAS)
@@ -102,20 +99,20 @@ export default class EEI {
   /**
    * Adds a positive amount to the gas counter.
    * @param amount - Amount of gas refunded
-   * @param context - Usage context for debugging
+   * @param _context - Deprecated: this param doesn't do anything now.
    */
-  refundGas(amount: BN, context?: string): void {
-    debugGas(`${context ? context + ': ' : ''}refund ${amount} gas (-> ${this._evm._refund})`)
+  // eslint-disable-next-line no-unused-vars
+  refundGas(amount: BN, _context?: string): void {
     this._evm._refund.iadd(amount)
   }
 
   /**
    * Reduces amount of gas to be refunded by a positive value.
    * @param amount - Amount to subtract from gas refunds
-   * @param context - Usage context for debugging
+   * @param _context - Deprecated: this param doesn't do anything now.
    */
-  subRefund(amount: BN, context?: string): void {
-    debugGas(`${context ? context + ': ' : ''}sub gas refund ${amount} (-> ${this._evm._refund})`)
+  // eslint-disable-next-line no-unused-vars
+  subRefund(amount: BN, _context?: string): void {
     this._evm._refund.isub(amount)
     if (this._evm._refund.ltn(0)) {
       this._evm._refund = new BN(0)
@@ -508,7 +505,7 @@ export default class EEI {
     }
 
     // this should always be safe
-    this.useGas(results.gasUsed, 'CALL, STATICCALL, DELEGATECALL, CALLCODE')
+    this.useGas(results.gasUsed)
 
     // Set return value
     if (
@@ -565,7 +562,7 @@ export default class EEI {
     }
 
     // this should always be safe
-    this.useGas(results.gasUsed, 'CREATE')
+    this.useGas(results.gasUsed)
 
     // Set return buffer in case revert happened
     if (
