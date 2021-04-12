@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.3.2 - 2021-04-12
+
+This is a hot-fix performance release, removing the `debug` functionality from PR [#1080](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1080) and follow-up PRs. While highly useful for debugging, this feature side-introduced a siginficant reduction in VM performance which went along unnoticed. For now we will remove since upstream dependencies are awaiting a new release before the `Belin` HF happening. We will try to re-introduce in a performance friendly manner in some subsequent release (we cannot promise on that though).
+
+See PR [#1198](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1198).
+
 ## 5.3.1 - 2021-04-09
 
 **Features**
