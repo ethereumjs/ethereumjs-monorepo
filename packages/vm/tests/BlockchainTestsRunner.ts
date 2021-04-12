@@ -49,7 +49,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     t.ok(genesisBlock.serialize().equals(rlp), 'correct genesis RLP')
   }
 
-  const blockchain = new Blockchain({
+  const blockchain = await Blockchain.create({
     db: blockchainDB,
     common,
     validateBlocks: true,
@@ -68,15 +68,11 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     VM = require('../src').default
   }
 
-  const vm = new VM({
+  const vm = await VM.create({
     state,
     blockchain,
     common,
   })
-
-  // Need to await the init promise: in some tests, we do not run the iterator (which awaits the initPromise)
-  // If the initPromise does not finish, the `rawHead` of `blockchain.meta()` is still `undefined`.
-  await blockchain.initPromise
 
   // set up pre-state
   await setupPreConditions(vm.stateManager._trie, testData)

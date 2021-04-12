@@ -11,7 +11,7 @@ const level = require('level-mem')
 
 tape('blockchain test', (t) => {
   t.test('should not crash on getting head of a blockchain without a genesis', async (st) => {
-    const blockchain = new Blockchain({
+    const blockchain = await Blockchain.create({
       validateBlocks: true,
       validateConsensus: false,
     })
@@ -21,7 +21,7 @@ tape('blockchain test', (t) => {
 
   t.test('should initialize correctly', async (st) => {
     const common = new Common({ chain: Chain.Ropsten })
-    let blockchain = new Blockchain({ common })
+    const blockchain = await Blockchain.create({ common })
 
     const head = await blockchain.getHead()
     const iteratorHead = await blockchain.getIteratorHead()
@@ -62,31 +62,30 @@ tape('blockchain test', (t) => {
 
   t.test('should only initialize with supported consensus validation options', (st) => {
     let common = new Common({ chain: Chain.Mainnet })
-    st.doesNotThrow(() => {
-      new Blockchain({ common, validateConsensus: true })
+    st.doesNotThrow(async () => {
+      await Blockchain.create({ common, validateConsensus: true })
     })
-    st.doesNotThrow(() => {
-      new Blockchain({ common, validateBlocks: true })
+    st.doesNotThrow(async () => {
+      await Blockchain.create({ common, validateBlocks: true })
     })
 
     common = new Common({ chain: Chain.Goerli })
-    st.doesNotThrow(() => {
-      new Blockchain({ common, validateConsensus: true })
+    st.doesNotThrow(async () => {
+      await Blockchain.create({ common, validateConsensus: true })
     })
-    st.doesNotThrow(() => {
-      new Blockchain({ common, validateBlocks: true })
+    st.doesNotThrow(async () => {
+      await Blockchain.create({ common, validateBlocks: true })
     })
     st.end()
   })
 
   t.test('should add a genesis block without errors', async (st) => {
     const genesisBlock = Block.genesis()
-    const blockchain = new Blockchain({
+    const blockchain = await Blockchain.create({
       validateBlocks: true,
       validateConsensus: false,
       genesisBlock,
     })
-    await blockchain.initPromise
     st.ok(
       genesisBlock.hash().equals(blockchain.meta.genesis!),
       'genesis block hash should be correct'
@@ -109,7 +108,7 @@ tape('blockchain test', (t) => {
   })
 
   t.test('should initialize with a genesis block', async (st) => {
-    const blockchain = new Blockchain({
+    const blockchain = await Blockchain.create({
       validateBlocks: true,
       validateConsensus: false,
     })
@@ -126,7 +125,7 @@ tape('blockchain test', (t) => {
     const genesisBlock = Block.genesis({ header: { gasLimit } }, { common })
     blocks.push(genesisBlock)
 
-    const blockchain = new Blockchain({
+    const blockchain = await Blockchain.create({
       validateBlocks: true,
       validateConsensus: false,
       genesisBlock,
@@ -171,7 +170,7 @@ tape('blockchain test', (t) => {
     const genesisBlock = Block.genesis({ header: { gasLimit } })
     blocks.push(genesisBlock)
 
-    const blockchain = new Blockchain({
+    const blockchain = await Blockchain.create({
       validateBlocks: true,
       validateConsensus: false,
       genesisBlock,
@@ -204,7 +203,7 @@ tape('blockchain test', (t) => {
     const gasLimit = 8000000
     const genesisBlock = Block.genesis({ header: { gasLimit } })
 
-    const blockchain = new Blockchain({
+    const blockchain = await Blockchain.create({
       validateBlocks: true,
       validateConsensus: false,
       genesisBlock,
@@ -498,7 +497,7 @@ tape('blockchain test', (t) => {
   })
 
   t.test('should not call iterator function in an empty blockchain', async (st) => {
-    const blockchain = new Blockchain({
+    const blockchain = await Blockchain.create({
       validateBlocks: true,
       validateConsensus: false,
     })
@@ -610,7 +609,7 @@ tape('blockchain test', (t) => {
 
   t.test('should put one block at a time', async (st) => {
     const blocks = generateBlocks(15)
-    const blockchain = new Blockchain({
+    const blockchain = await Blockchain.create({
       validateBlocks: true,
       validateConsensus: false,
       genesisBlock: blocks[0],
@@ -625,7 +624,7 @@ tape('blockchain test', (t) => {
     const blocks: Block[] = []
     const genesisBlock = Block.genesis({ header: { gasLimit: 8000000 } })
     blocks.push(...generateBlocks(15, [genesisBlock]))
-    const blockchain = new Blockchain({
+    const blockchain = await Blockchain.create({
       validateBlocks: true,
       validateConsensus: false,
       genesisBlock,
@@ -636,7 +635,7 @@ tape('blockchain test', (t) => {
 
   t.test('should get heads', async (st) => {
     const [db, genesis] = await createTestDB()
-    const blockchain = new Blockchain({ db: db })
+    const blockchain = await Blockchain.create({ db: db })
     const head = await blockchain.getHead()
     if (genesis) {
       st.ok(head.hash().equals(genesis.hash()), 'should get head')
@@ -653,7 +652,7 @@ tape('blockchain test', (t) => {
 
   t.test('should validate', async (st) => {
     const genesisBlock = Block.genesis({ header: { gasLimit: 8000000 } })
-    const blockchain = new Blockchain({
+    const blockchain = await Blockchain.create({
       validateBlocks: true,
       validateConsensus: false,
       genesisBlock,
@@ -674,7 +673,7 @@ tape('blockchain test', (t) => {
     const genesisBlock = Block.fromRLPSerializedBlock(genesisRlp, {
       initWithGenesisHeader: true,
     })
-    const blockchain = new Blockchain({
+    const blockchain = await Blockchain.create({
       validateBlocks: true,
       validateConsensus: false,
       genesisBlock,
@@ -691,7 +690,7 @@ tape('blockchain test', (t) => {
     if (!genesis) {
       return st.fail('genesis not defined!')
     }
-    const blockchain = new Blockchain({ db })
+    const blockchain = await Blockchain.create({ db })
 
     const number = await blockchain.dbManager.hashToNumber(genesis?.hash())
     st.ok(number.isZero(), 'should perform _hashToNumber correctly')
@@ -710,7 +709,7 @@ tape('blockchain test', (t) => {
     const gasLimit = 8000000
 
     const genesisBlock = Block.genesis({ header: { gasLimit } })
-    let blockchain = new Blockchain({
+    let blockchain = await Blockchain.create({
       db,
       validateBlocks: true,
       validateConsensus: false,
@@ -728,7 +727,7 @@ tape('blockchain test', (t) => {
     })
     await blockchain.putHeader(header)
 
-    blockchain = new Blockchain({
+    blockchain = await Blockchain.create({
       db,
       validateBlocks: true,
       validateConsensus: false,
@@ -749,7 +748,7 @@ tape('blockchain test', (t) => {
     const opts: BlockOptions = { common }
 
     const genesisBlock = Block.genesis({ header: { gasLimit } }, opts)
-    const blockchain = new Blockchain({
+    const blockchain = await Blockchain.create({
       validateBlocks: true,
       validateConsensus: false,
       genesisBlock,
@@ -833,7 +832,7 @@ tape('blockchain test', (t) => {
       }),
     ]
 
-    const blockchain = new Blockchain({
+    const blockchain = await Blockchain.create({
       common,
       validateBlocks: true,
       validateConsensus: false,
@@ -864,7 +863,7 @@ tape('initialization tests', (t) => {
       hardfork: Hardfork.Chainstart,
     })
     const genesisHash = Block.genesis({}, { common }).hash()
-    const blockchain = new Blockchain({ common })
+    const blockchain = await Blockchain.create({ common })
 
     st.ok(
       (await blockchain.getHead()).hash().equals(genesisHash),
@@ -873,7 +872,7 @@ tape('initialization tests', (t) => {
 
     const db = blockchain.db
 
-    const newBlockchain = new Blockchain({ db, common })
+    const newBlockchain = await Blockchain.create({ db, common })
 
     st.ok(
       (await newBlockchain.getHead()).hash().equals(genesisHash),
@@ -889,7 +888,7 @@ tape('initialization tests', (t) => {
       },
     })
     const hash = genesisBlock.hash()
-    const blockchain = new Blockchain({ genesisBlock })
+    const blockchain = await Blockchain.create({ genesisBlock })
     const db = blockchain.db
 
     st.ok(
@@ -897,7 +896,7 @@ tape('initialization tests', (t) => {
       'blockchain should put custom genesis block'
     )
 
-    const newBlockchain = new Blockchain({ db, genesisBlock })
+    const newBlockchain = await Blockchain.create({ db, genesisBlock })
     st.ok(
       (await newBlockchain.getHead()).hash().equals(hash),
       'head hash should be read from the provided db'
@@ -912,7 +911,7 @@ tape('initialization tests', (t) => {
       },
     })
     const hash = genesisBlock.hash()
-    const blockchain = new Blockchain({ genesisBlock })
+    const blockchain = await Blockchain.create({ genesisBlock })
     const db = blockchain.db
 
     const otherGenesisBlock = Block.genesis({
