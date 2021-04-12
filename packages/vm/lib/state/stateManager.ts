@@ -1,5 +1,4 @@
 const Set = require('core-js-pure/es/set')
-import { debug as createDebugLogger } from 'debug'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import {
   Account,
@@ -16,10 +15,7 @@ import { genesisStateByName } from '@ethereumjs/common/dist/genesisStates'
 import { StateManager, StorageDump } from './interface'
 import Cache from './cache'
 import { getActivePrecompiles, ripemdPrecompileAddress } from '../evm/precompiles'
-import { short } from '../evm/opcodes'
 import { AccessList, AccessListItem } from '@ethereumjs/tx'
-
-const debug = createDebugLogger('vm:state')
 
 type AddressHex = string
 
@@ -113,11 +109,6 @@ export default class DefaultStateManager implements StateManager {
    * @param account - The account to store
    */
   async putAccount(address: Address, account: Account): Promise<void> {
-    debug(
-      `Save account address=${address} nonce=${account.nonce} balance=${account.balance} contract=${
-        account.isContract() ? 'yes' : 'no'
-      } empty=${account.isEmpty() ? 'yes' : 'no'}`
-    )
     this._cache.put(address, account)
     this.touchAccount(address)
   }
@@ -127,7 +118,6 @@ export default class DefaultStateManager implements StateManager {
    * @param address - Address of the account which should be deleted
    */
   async deleteAccount(address: Address) {
-    debug(`Delete account ${address}`)
     this._cache.del(address)
     this.touchAccount(address)
   }
@@ -159,7 +149,6 @@ export default class DefaultStateManager implements StateManager {
     await this._trie.db.put(codeHash, value)
 
     const account = await this.getAccount(address)
-    debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
     account.codeHash = codeHash
     await this.putAccount(address, account)
   }
@@ -330,11 +319,9 @@ export default class DefaultStateManager implements StateManager {
       if (value && value.length) {
         // format input
         const encodedValue = encode(value)
-        debug(`Update contract storage for account ${address} to ${short(value)}`)
         await storageTrie.put(key, encodedValue)
       } else {
         // deleting a value
-        debug(`Delete contract storage for account`)
         await storageTrie.del(key)
       }
       done()
@@ -557,7 +544,6 @@ export default class DefaultStateManager implements StateManager {
       throw new Error('Cannot create genesis state with uncommitted checkpoints')
     }
 
-    debug(`Save genesis state into the state trie`)
     const addresses = Object.keys(initState)
     for (const address of addresses) {
       const balance = new BN(toBuffer(initState[address]))
@@ -737,7 +723,6 @@ export default class DefaultStateManager implements StateManager {
         const empty = await this.accountIsEmpty(address)
         if (empty) {
           this._cache.del(address)
-          debug(`Cleanup touched account address=${address.toString()} (>= SpuriousDragon)`)
         }
       }
     }

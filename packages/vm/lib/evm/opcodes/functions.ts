@@ -181,7 +181,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
       const gasPrice = runState._common.param('gasPrices', 'expByte')
       const amount = new BN(byteLength).muln(gasPrice)
-      runState.eei.useGas(amount, 'EXP opcode')
+      runState.eei.useGas(amount)
 
       if (base.isZero()) {
         runState.stack.push(new BN(0))
@@ -389,8 +389,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
       // copy fee
       runState.eei.useGas(
-        new BN(runState._common.param('gasPrices', 'sha3Word')).imul(divCeil(length, new BN(32))),
-        'SHA3 opcode'
+        new BN(runState._common.param('gasPrices', 'sha3Word')).imul(divCeil(length, new BN(32)))
       )
       const r = new BN(keccak256(data))
       runState.stack.push(r)
@@ -471,8 +470,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       subMemUsage(runState, memOffset, dataLength)
       runState.eei.useGas(
-        new BN(runState._common.param('gasPrices', 'copy')).imul(divCeil(dataLength, new BN(32))),
-        'CALLDATACOPY opcode'
+        new BN(runState._common.param('gasPrices', 'copy')).imul(divCeil(dataLength, new BN(32)))
       )
 
       const data = getDataSlice(runState.eei.getCallData(), dataOffset, dataLength)
@@ -497,8 +495,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       subMemUsage(runState, memOffset, length)
       runState.eei.useGas(
-        new BN(runState._common.param('gasPrices', 'copy')).imul(divCeil(length, new BN(32))),
-        'CODECOPY opcode'
+        new BN(runState._common.param('gasPrices', 'copy')).imul(divCeil(length, new BN(32)))
       )
 
       const data = getDataSlice(runState.eei.getCode(), codeOffset, length)
@@ -531,8 +528,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       accessAddressEIP2929(runState, address)
       // copy fee
       runState.eei.useGas(
-        new BN(runState._common.param('gasPrices', 'copy')).imul(divCeil(length, new BN(32))),
-        'EXTCODECOPY opcode'
+        new BN(runState._common.param('gasPrices', 'copy')).imul(divCeil(length, new BN(32)))
       )
 
       const code = await runState.eei.getExternalCode(addressBN)
@@ -585,8 +581,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       subMemUsage(runState, memOffset, length)
       runState.eei.useGas(
-        new BN(runState._common.param('gasPrices', 'copy')).mul(divCeil(length, new BN(32))),
-        'RETURNDATACOPY opcode'
+        new BN(runState._common.param('gasPrices', 'copy')).mul(divCeil(length, new BN(32)))
       )
 
       const data = getDataSlice(runState.eei.getReturnData(), returnDataOffset, length)
@@ -921,8 +916,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.eei.useGas(
         new BN(runState._common.param('gasPrices', 'logTopic'))
           .imuln(topicsCount)
-          .iadd(memLength.muln(runState._common.param('gasPrices', 'logData'))),
-        'LOG opcode'
+          .iadd(memLength.muln(runState._common.param('gasPrices', 'logData')))
       )
 
       runState.eei.log(mem, topicsCount, topicsBuf)
@@ -970,8 +964,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       // Deduct gas costs for hashing
       runState.eei.useGas(
-        new BN(runState._common.param('gasPrices', 'sha3Word')).imul(divCeil(length, new BN(32))),
-        'CREATE2 opcode'
+        new BN(runState._common.param('gasPrices', 'sha3Word')).imul(divCeil(length, new BN(32)))
       )
       let gasLimit = new BN(runState.eei.getGasLeft())
       gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft(), runState) // CREATE2 is only available after TangerineWhistle (Constantinople introduced this opcode)
@@ -1013,10 +1006,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       accessAddressEIP2929(runState, toAddress)
 
       if (!value.isZero()) {
-        runState.eei.useGas(
-          new BN(runState._common.param('gasPrices', 'callValueTransfer')),
-          'CALL opcode -> callValueTransfer'
-        )
+        runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callValueTransfer')))
       }
 
       let data = Buffer.alloc(0)
@@ -1028,18 +1018,12 @@ export const handlers: Map<number, OpHandler> = new Map([
         // We are at or after Spurious Dragon
         // Call new account gas: account is DEAD and we transfer nonzero value
         if ((await runState.eei.isAccountEmpty(toAddress)) && !value.isZero()) {
-          runState.eei.useGas(
-            new BN(runState._common.param('gasPrices', 'callNewAccount')),
-            'CALL opcode -> callNewAccount (>= SpuriousDragon)'
-          )
+          runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callNewAccount')))
         }
       } else if (!(await runState.eei.accountExists(toAddress))) {
         // We are before Spurious Dragon and the account does not exist.
         // Call new account gas: account does not exist (it is not in the state trie, not even as an "empty" account)
-        runState.eei.useGas(
-          new BN(runState._common.param('gasPrices', 'callNewAccount')),
-          'CALL opcode -> callNewAccount (< SpuriousDragon)'
-        )
+        runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callNewAccount')))
       }
 
       const gasLimit = maxCallGas(currentGasLimit, runState.eei.getGasLeft(), runState)
@@ -1080,10 +1064,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       accessAddressEIP2929(runState, toAddress)
 
       if (!value.isZero()) {
-        runState.eei.useGas(
-          new BN(runState._common.param('gasPrices', 'callValueTransfer')),
-          'CALLCODE opcode -> callValueTransfer'
-        )
+        runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callValueTransfer')))
       }
       const gasLimit = maxCallGas(currentGasLimit, runState.eei.getGasLeft(), runState)
       // note that TangerineWhistle or later this cannot happen (it could have ran out of gas prior to getting here though)
@@ -1230,10 +1211,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         }
       }
       if (deductGas) {
-        runState.eei.useGas(
-          new BN(runState._common.param('gasPrices', 'callNewAccount')),
-          ' opcode'
-        )
+        runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callNewAccount')))
       }
 
       accessAddressEIP2929(runState, selfdestructToAddress, true, true)
