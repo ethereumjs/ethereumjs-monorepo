@@ -31,8 +31,8 @@ import { Buffer } from 'buffer' // eslint-disable-line @typescript-eslint/no-unu
  */
 
 tape('VM -> basic instantiation / boolean switches', (t) => {
-  t.test('should instantiate without params', (st) => {
-    const vm = new VM()
+  t.test('should instantiate without params', async (st) => {
+    const vm = await VM.create()
     st.ok(vm.stateManager)
     st.deepEqual(
       (vm.stateManager as DefaultStateManager)._trie.root,
@@ -44,8 +44,7 @@ tape('VM -> basic instantiation / boolean switches', (t) => {
   })
 
   t.test('should be able to activate precompiles', async (st) => {
-    const vm = new VM({ activatePrecompiles: true })
-    await vm.init()
+    const vm = await VM.create({ activatePrecompiles: true })
     st.notDeepEqual(
       (vm.stateManager as DefaultStateManager)._trie.root,
       KECCAK256_RLP,
@@ -77,13 +76,12 @@ tape('VM -> common (chain, HFs, EIPs)', (t) => {
 
   t.test('should only accept valid chain and fork', async (st) => {
     let common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
-    let vm = new VM({ common })
-    await vm.init()
+    let vm = await VM.create({ common })
     st.equal((vm.stateManager as DefaultStateManager)._common.param('gasPrices', 'ecAdd'), 500)
 
     try {
       common = new Common({ chain: 'mainchain', hardfork: Hardfork.Homestead })
-      vm = new VM({ common })
+      vm = await VM.create({ common })
       st.fail('should have failed for invalid chain')
     } catch (e) {
       st.ok(e.message.includes('not supported'))
@@ -98,8 +96,8 @@ tape('VM -> common (chain, HFs, EIPs)', (t) => {
       return st.end()
     }
     const common = new Common({ chain: Chain.Mainnet, eips: [2537] })
-    st.doesNotThrow(() => {
-      new VM({ common })
+    st.doesNotThrow(async () => {
+      await VM.create({ common })
     })
     st.end()
   })
@@ -132,8 +130,7 @@ tape('VM -> common (chain, HFs, EIPs)', (t) => {
 tape('VM -> state (deprecated), blockchain', (t) => {
   t.test('should work with trie (state) provided', async (st) => {
     const trie = new Trie()
-    const vm = new VM({ state: trie, activatePrecompiles: true })
-    await vm.init()
+    const vm = await VM.create({ state: trie, activatePrecompiles: true })
     st.notDeepEqual(
       (vm.stateManager as DefaultStateManager)._trie.root,
       KECCAK256_RLP,
@@ -143,8 +140,7 @@ tape('VM -> state (deprecated), blockchain', (t) => {
   })
 
   t.test('should instantiate', async (st) => {
-    const vm = setupVM()
-    await vm.init()
+    const vm = await setupVM()
     st.deepEqual(
       (vm.stateManager as DefaultStateManager)._trie.root,
       KECCAK256_RLP,
@@ -154,10 +150,8 @@ tape('VM -> state (deprecated), blockchain', (t) => {
   })
 
   t.test('should pass the correct Common object when copying the VM', async (st) => {
-    const vm = setupVM({
-      common: new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium }),
-    })
-    await vm.init()
+    const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
+    const vm = await setupVM({ common })
 
     st.equal(vm._common.chainName(), 'ropsten')
     st.equal(vm._common.hardfork(), 'byzantium')

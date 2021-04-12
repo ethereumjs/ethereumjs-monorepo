@@ -62,7 +62,7 @@ export function createClient(clientOpts: any = {}) {
     },
   }
   if (clientOpts.includeVM) {
-    synchronizer = { ...synchronizer, execution: { vm: new VM({ blockchain, common }) } }
+    synchronizer = { ...synchronizer, execution: { vm: new (VM as any)({ blockchain, common }) } }
   }
 
   let peers = [1, 2, 3]

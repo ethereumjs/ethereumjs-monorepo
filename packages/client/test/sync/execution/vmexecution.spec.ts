@@ -11,7 +11,7 @@ import Common, { Chain as ChainEnum, Hardfork } from '@ethereumjs/common'
 
 tape('[VMExecution]', async (t) => {
   t.test('Initialization', async (t) => {
-    const vm = new VM()
+    const vm = await VM.create()
     const config = new Config({ vm, loglevel: 'error', transports: [] })
     const chain = new Chain({ config })
     const exec = new VMExecution({
@@ -36,7 +36,7 @@ tape('[VMExecution]', async (t) => {
   }
 
   t.test('Block execution / Hardforks PoW (mainnet)', async (t) => {
-    let blockchain = new Blockchain({
+    let blockchain = await Blockchain.create({
       validateBlocks: true,
       validateConsensus: false,
     })
@@ -65,7 +65,7 @@ tape('[VMExecution]', async (t) => {
 
   t.test('Block execution / Hardforks PoA (goerli)', async (t) => {
     const common = new Common({ chain: ChainEnum.Goerli, hardfork: Hardfork.Chainstart })
-    let blockchain = new Blockchain({
+    let blockchain = await Blockchain.create({
       validateBlocks: true,
       validateConsensus: false,
       common,

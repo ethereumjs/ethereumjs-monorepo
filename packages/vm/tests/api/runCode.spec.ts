@@ -19,8 +19,8 @@ const testCases = [
   { code: [STOP], resultPC: 1 },
 ]
 
-tape('VM.runCode: initial program counter', (t) => {
-  const vm = new VM()
+tape('VM.runcode: initial program counter', async (t) => {
+  const vm = await VM.create()
 
   testCases.forEach((testData, i) => {
     t.test('should start the execution at the specified pc or 0 #' + i.toString(), async (st) => {
@@ -54,7 +54,7 @@ tape('VM.runCode: initial program counter', (t) => {
 
 tape('VM.runCode: interpreter', (t) => {
   t.test('should return a VmError as an exceptionError on the result', async (st) => {
-    const vm = new VM()
+    const vm = await VM.create()
 
     const INVALID_opcode = 'fe'
     const runCodeArgs = {
@@ -78,7 +78,7 @@ tape('VM.runCode: interpreter', (t) => {
     stateManager.putContractStorage = (..._args) => {
       throw new Error('Test')
     }
-    const vm = new VM({ stateManager })
+    const vm = await VM.create({ stateManager })
 
     const SSTORE = '55'
     const runCodeArgs = {
