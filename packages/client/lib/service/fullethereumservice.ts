@@ -2,6 +2,7 @@ import { EthereumService, EthereumServiceOptions } from './ethereumservice'
 import { FullSynchronizer } from '../sync/fullsync'
 import { EthProtocol } from '../net/protocol/ethprotocol'
 import { LesProtocol } from '../net/protocol/lesprotocol'
+import { WitProtocol } from '../net/protocol/witprotocol'
 import { Peer } from '../net/peer/peer'
 import { Protocol } from '../net/protocol'
 
@@ -60,6 +61,14 @@ export class FullEthereumService extends EthereumService {
         })
       )
     }
+    if (this.config.wit) {
+      protocols.push(
+        new WitProtocol({
+          config: this.config,
+          chain: this.chain,
+        })
+      )
+    }
     return protocols
   }
 
@@ -72,8 +81,12 @@ export class FullEthereumService extends EthereumService {
   async handle(message: any, protocol: string, peer: Peer): Promise<any> {
     if (protocol === 'eth') {
       return this.handleEth(message, peer)
-    } else {
+    } else if (protocol === 'les') {
       return this.handleLes(message, peer)
+    } else if (protocol === 'wit') {
+      return this.handleWit(message, peer)
+    } else {
+      throw new Error(`Unknown protocol: ${protocol}`)
     }
   }
 
@@ -113,6 +126,19 @@ export class FullEthereumService extends EthereumService {
         const headers: any = await this.chain.getHeaders(block, max, skip, reverse)
         peer.les!.send('BlockHeaders', { reqId, bv, headers })
       }
+    }
+  }
+
+  /**
+   * Handles incoming WIT message from connected peer
+   * @param  {Object}  message message object
+   * @param  peer peer
+   */
+  async handleWit(message: any, peer: Peer): Promise<void> {
+    if (message.name === 'GetBlockWitnessHashes' && this.config.wit) {
+      const { reqId, blockHash } = message.data
+      const witnessHashes = await this.chain.getWitnessHashes(blockHash)
+      peer.wit!.send('BlockWitnessHashes', { reqId, witnessHashes })
     }
   }
 }

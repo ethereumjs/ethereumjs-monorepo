@@ -17,7 +17,12 @@ tape('[Integration:FullEthereumService]', async (t) => {
       validateConsensus: false,
     })
     const chain = new MockChain({ config, blockchain })
-    const serviceConfig = new Config({ loglevel, servers: [server as any], lightserv: true })
+    const serviceConfig = new Config({
+      loglevel,
+      servers: [server as any],
+      lightserv: true,
+      wit: true,
+    })
     const service = new FullEthereumService({
       config: serviceConfig,
       chain,
@@ -57,6 +62,23 @@ tape('[Integration:FullEthereumService]', async (t) => {
       headers[1].hash().toString('hex'),
       'a321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069',
       'handled GetBlockHeaders'
+    )
+    await destroy(server, service)
+    t.end()
+  })
+
+  t.test('should handle WIT requests', async (t) => {
+    const [server, service] = await setup()
+    const peer = await server.accept('peer0')
+    const blockHash = Buffer.from(
+      'a321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069',
+      'hex'
+    )
+    const { witnessHashes } = await peer.wit!.getBlockWitnessHashes({ blockHash })
+    t.deepEquals(
+      witnessHashes.map((h) => h.toString('hex')),
+      ['a321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069'],
+      'handled GetBlockWitnessHashes'
     )
     await destroy(server, service)
     t.end()
