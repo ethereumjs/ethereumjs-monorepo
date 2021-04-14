@@ -1049,6 +1049,13 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
+   * Gets the trie node hashes for given block hash
+   */
+  public async getWitnessHashes(blockHash: Buffer): Promise<Buffer[]> {
+    return this.dbManager.getWitnessHashes(blockHash)
+  }
+
+  /**
    * Looks up many blocks relative to blockId Note: due to `GetBlockHeaders
    * (0x03)` (ETH wire protocol) we have to support skip/reverse as well.
    * @param blockId - The block's hash or number

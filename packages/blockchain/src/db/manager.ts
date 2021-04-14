@@ -10,6 +10,7 @@ import {
 import Common from '@ethereumjs/common'
 import Cache from './cache'
 import { DatabaseKey, DBOp, DBTarget, DBOpData } from './operation'
+import { headerKey, bodyKey } from './constants'
 
 import type { LevelUp } from 'levelup'
 import { CliqueLatestSignerStates, CliqueLatestVotes, CliqueLatestBlockSigners } from '../clique'
@@ -194,6 +195,18 @@ export class DBManager {
   async getTotalDifficulty(blockHash: Buffer, blockNumber: BN): Promise<BN> {
     const td = await this.get(DBTarget.TotalDifficulty, { blockHash, blockNumber })
     return new BN(rlp.decode(td))
+  }
+
+  /**
+   * Gets the trie node hashes for given block hash.
+   */
+  async getWitnessHashes(blockHash: Buffer): Promise<Buffer[]> {
+    const blockNumber = await this.hashToNumber(blockHash)
+    const witnessHashes = []
+    // TODO derive the actual list of trie node hashes
+    witnessHashes.push(headerKey(blockNumber, blockHash))
+    witnessHashes.push(bodyKey(blockNumber, blockHash))
+    return witnessHashes
   }
 
   /**
