@@ -14,6 +14,7 @@ export type Checkpoint = {
  */
 export class CheckpointDB extends DB {
   public checkpoints: Checkpoint[]
+  public checkpointsA: any[] = []
 
   /**
    * Initialize a DB instance. If `leveldb` is not provided, DB
@@ -39,6 +40,7 @@ export class CheckpointDB extends DB {
    */
   checkpoint(root: Buffer) {
     this.checkpoints.push({ keyValueMap: new Map<string, Buffer>(), root })
+    this.checkpointsA.push(new Array())
   }
 
   /**
@@ -49,20 +51,23 @@ export class CheckpointDB extends DB {
     if (!this.isCheckpoint) {
       // This was the final checkpoint, we should now commit and flush everything to disk
       const batchOp: BatchDBOp[] = []
-      keyValueMap.forEach(function (value, key) {
-        if (value === null) {
-          batchOp.push({
-            type: 'del',
-            key: Buffer.from(key, 'binary'),
-          })
-        } else {
-          batchOp.push({
-            type: 'put',
-            key: Buffer.from(key, 'binary'),
-            value,
-          })
+      for (let index = this.checkpointsA.length - 1; index >= 0; index--) {
+        const cp = this.checkpointsA[index]
+        for (const opDict of cp) {
+          if (opDict.val === null) {
+            batchOp.push({
+              type: 'del',
+              key: Buffer.from(opDict.key, 'binary'),
+            })
+          } else {
+            batchOp.push({
+              type: 'put',
+              key: Buffer.from(opDict.key, 'binary'),
+              value: opDict.val,
+            })
+          }
         }
-      })
+      }
       await this.batch(batchOp)
     } else {
       // dump everything into the current (higher level) cache
@@ -98,6 +103,10 @@ export class CheckpointDB extends DB {
     if (this.isCheckpoint) {
       // Since we are a checkpoint, put this value in cache, so future `get` calls will not look the key up again from disk.
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), value)
+      this.checkpointsA[this.checkpointsA.length - 1].push({
+        key: key.toString('binary'),
+        val: value,
+      })
     }
 
     return value
@@ -112,6 +121,7 @@ export class CheckpointDB extends DB {
     if (this.isCheckpoint) {
       // put value in cache
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), val)
+      this.checkpointsA[this.checkpointsA.length - 1].push({ key: key.toString('binary'), val })
     } else {
       await super.put(key, val)
     }
@@ -125,6 +135,10 @@ export class CheckpointDB extends DB {
     if (this.isCheckpoint) {
       // delete the value in the current cache
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), null)
+      this.checkpointsA[this.checkpointsA.length - 1].push({
+        key: key.toString('binary'),
+        val: null,
+      })
     } else {
       // delete the value on disk
       await this._leveldb.del(key, ENCODING_OPTS)
