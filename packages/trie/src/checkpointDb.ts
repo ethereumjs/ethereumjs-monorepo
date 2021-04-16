@@ -1,5 +1,5 @@
 import { LevelUp } from 'levelup'
-import { DB, BatchDBOp, ENCODING_OPTS } from './db'
+import { DB, BatchDBOp } from './db'
 
 export type Checkpoint = {
   // We cannot use a Buffer => Buffer map directly. If you create two Buffers with the same internal value,
@@ -51,10 +51,10 @@ export class CheckpointDB extends DB {
       const batchOp: BatchDBOp[] = []
       keyValueMap.forEach(function (value, key) {
         if (value === null) {
-          batchOp.push({
+          /*batchOp.push({
             type: 'del',
             key: Buffer.from(key, 'binary'),
-          })
+          })*/
         } else {
           batchOp.push({
             type: 'put',
@@ -127,7 +127,7 @@ export class CheckpointDB extends DB {
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), null)
     } else {
       // delete the value on disk
-      await this._leveldb.del(key, ENCODING_OPTS)
+      //await this._leveldb.del(key, ENCODING_OPTS)
     }
   }
 

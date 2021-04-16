@@ -567,10 +567,10 @@ export class Trie {
       const hashRoot = keccak(rlpNode)
 
       if (remove && this.isCheckpoint) {
-        opStack.push({
+        /*opStack.push({
           type: 'del',
           key: hashRoot,
-        })
+        })*/
       } else {
         opStack.push({
           type: 'put',
