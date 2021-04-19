@@ -120,7 +120,7 @@ tape('VM events', (t) => {
     const vm = new VM()
 
     let emitted: any
-    vm.on('beforeMessage', (val: any) => {
+    vm.on('afterMessage', (val: any) => {
       emitted = val
     })
 
@@ -146,9 +146,9 @@ tape('VM events', (t) => {
       lastEmitted = val
     })
 
-    // This a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to
+    // This is a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to
     // the stack, stores that in memory, and then returns the first byte from memory.
-    // This deploys a contract which a single byte of code, 0x41.
+    // This deploys a contract which has a single byte of code, 0x41.
     const tx = Transaction.fromTxData({
       gasPrice: 40000,
       gasLimit: 90000,
@@ -170,9 +170,9 @@ tape('VM events', (t) => {
       emitted = val
     })
 
-    // This a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to
+    // This is a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to
     // the stack, stores that in memory, and then returns the first byte from memory.
-    // This deploys a contract which a single byte of code, 0x41.
+    // This deploys a contract which has a single byte of code, 0x41.
     const tx = Transaction.fromTxData({
       gasPrice: 40000,
       gasLimit: 90000,
