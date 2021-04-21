@@ -276,11 +276,18 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   }
 
   /**
-   * Computes a sha3-256 hash of the serialized unsigned tx, which is used to sign the transaction.
+   * Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
+   *
+   * @param hashMessage - Return hashed message if set to true
    */
-  getMessageToSign() {
+  getMessageToSign(hashMessage = true) {
     const base = this.raw().slice(0, 8)
-    return keccak256(Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base as any)]))
+    const message = Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base as any)])
+    if (hashMessage) {
+      return keccak256(message)
+    } else {
+      return message
+    }
   }
 
   /**

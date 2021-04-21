@@ -143,14 +143,21 @@ export default class Transaction extends BaseTransaction<Transaction> {
       values.push(unpadBuffer(toBuffer(0)))
     }
 
-    return rlphash(values)
+    return values
   }
 
   /**
-   * Computes a sha3-256 hash of the serialized unsigned tx, which is used to sign the transaction.
+   * Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
+   *
+   * @param hashMessage - Return hashed message if set to true
    */
-  getMessageToSign() {
-    return this._getMessageToSign(this._unsignedTxImplementsEIP155())
+  getMessageToSign(hashMessage = true) {
+    const message = this._getMessageToSign(this._unsignedTxImplementsEIP155())
+    if (hashMessage) {
+      return rlphash(message)
+    } else {
+      return message
+    }
   }
 
   /**
@@ -165,7 +172,8 @@ export default class Transaction extends BaseTransaction<Transaction> {
    */
   getMessageToVerifySignature() {
     const withEIP155 = this._signedTxImplementsEIP155()
-    return this._getMessageToSign(withEIP155)
+    const message = this._getMessageToSign(withEIP155)
+    return rlphash(message)
   }
 
   /**
