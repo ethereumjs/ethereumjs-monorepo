@@ -464,16 +464,11 @@ export default class DefaultStateManager implements StateManager {
 
     await this._cache.flush()
 
-    if (stateRoot === this._trie.EMPTY_TRIE_ROOT) {
-      this._trie.root = stateRoot
-      this._cache.clear()
-      this._storageTries = {}
-      return
-    }
-
-    const hasRoot = await this._trie.checkRoot(stateRoot)
-    if (!hasRoot) {
-      throw new Error('State trie does not contain state root')
+    if (!stateRoot.equals(this._trie.EMPTY_TRIE_ROOT)) {
+      const hasRoot = await this._trie.checkRoot(stateRoot)
+      if (!hasRoot) {
+        throw new Error('State trie does not contain state root')
+      }
     }
 
     this._trie.root = stateRoot

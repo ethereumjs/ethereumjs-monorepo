@@ -6,6 +6,7 @@ import {
   toBuffer,
   keccak256,
   KECCAK256_RLP,
+  KECCAK256_RLP_S,
   unpadBuffer,
   zeros,
 } from 'ethereumjs-util'
@@ -25,6 +26,27 @@ tape('StateManager', (t) => {
     st.equal(stateManager._common.hardfork(), 'petersburg', 'it has default hardfork')
     const res = await stateManager.getStateRoot()
     st.deepEqual(res, KECCAK256_RLP, 'it has default root')
+    st.end()
+  })
+
+  t.test('should set the state root to empty', async (st) => {
+    const stateManager = new DefaultStateManager()
+    st.ok(stateManager._trie.root.equals(KECCAK256_RLP), 'it has default root')
+
+    // commit some data to the trie
+    const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+    const account = createAccount(new BN(0), new BN(1000))
+    await stateManager.checkpoint()
+    await stateManager.putAccount(address, account)
+    await stateManager.commit()
+    st.ok(!stateManager._trie.root.equals(KECCAK256_RLP), 'it has a new root')
+
+    // set state root to empty trie root
+    const emptyTrieRoot = Buffer.from(KECCAK256_RLP_S, 'hex')
+    await stateManager.setStateRoot(emptyTrieRoot)
+
+    const res = await stateManager.getStateRoot()
+    st.ok(res.equals(KECCAK256_RLP), 'it has default root')
     st.end()
   })
 
