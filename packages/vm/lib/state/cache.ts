@@ -109,14 +109,14 @@ export default class Cache {
     const it = this._cache.begin
     let next = true
     while (next) {
-      if (it.value && it.value.modified) {
+      if (it.value && it.value.modified && !it.value.deleted) {
         it.value.modified = false
         const accountRlp = it.value.val
         const keyBuf = Buffer.from(it.key, 'hex')
         await this._trie.put(keyBuf, accountRlp)
         next = it.hasNext
         it.next()
-      } else if (it.value && it.value.deleted) {
+      } else if (it.value && it.value.modified && it.value.deleted) {
         it.value.modified = false
         it.value.deleted = true
         it.value.val = new Account().serialize()
@@ -165,9 +165,17 @@ export default class Cache {
    * @param key - Address
    */
   del(key: Address): void {
-    this._update(key, new Account(), false, true)
+    this._update(key, new Account(), true, true)
   }
 
+  /**
+   * Generic cache update helper function
+   *
+   * @param key
+   * @param value
+   * @param modified - Has the value been modfied or is it coming unchanged from the trie (also used for deleted accounts)
+   * @param deleted - Delete operation on an account
+   */
   _update(key: Address, value: Account, modified: boolean, deleted: boolean): void {
     const keyHex = key.buf.toString('hex')
     const it = this._cache.find(keyHex)
