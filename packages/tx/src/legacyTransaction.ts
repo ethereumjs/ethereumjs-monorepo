@@ -149,8 +149,10 @@ export default class Transaction extends BaseTransaction<Transaction> {
   /**
    * Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
    *
-   * @param hashMessage - Return hashed message if set to true
+   * @param hashMessage - Return hashed message if set to true (default: true)
    */
+  getMessageToSign(hashMessage: false): Buffer[]
+  getMessageToSign(hashMessage?: true): Buffer
   getMessageToSign(hashMessage = true) {
     const message = this._getMessageToSign(this._unsignedTxImplementsEIP155())
     if (hashMessage) {

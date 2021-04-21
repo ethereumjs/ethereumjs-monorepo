@@ -278,9 +278,11 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   /**
    * Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
    *
-   * @param hashMessage - Return hashed message if set to true
+   * @param hashMessage - Return hashed message if set to true (default: true)
    */
-  getMessageToSign(hashMessage = true) {
+  getMessageToSign(hashMessage: false): Buffer[]
+  getMessageToSign(hashMessage?: true): Buffer
+  getMessageToSign(hashMessage = true): Buffer | Buffer[] {
     const base = this.raw().slice(0, 8)
     const message = Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base as any)])
     if (hashMessage) {

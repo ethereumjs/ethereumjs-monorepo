@@ -154,7 +154,7 @@ tape('[Transaction]', function (t) {
       tx.getMessageToSign(),
       Buffer.from('61e1ec33764304dddb55348e7883d4437426f44ab3ef65e6da1e025734c03ff0', 'hex')
     )
-    st.equal((<Buffer>tx.getMessageToSign(false)).length, 6)
+    st.equal(tx.getMessageToSign(false).length, 6)
     st.deepEqual(
       tx.hash(),
       Buffer.from('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa', 'hex')
