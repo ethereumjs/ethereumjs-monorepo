@@ -306,7 +306,7 @@ tape('runTx() -> runtime errors', async (t) => {
 
 // TODO: complete on result values and add more usage scenario test cases
 tape('runTx() -> API return values', async (t) => {
-  t.test('simple run,common return values', async (t) => {
+  t.test('simple run, common return values', async (t) => {
     for (const txType of TRANSACTION_TYPES) {
       const vm = new VM({ common })
       const tx = getTransaction(vm._common, txType.type, true)
@@ -330,6 +330,51 @@ tape('runTx() -> API return values', async (t) => {
       t.true(
         res.execResult.gasRefund!.eqn(0),
         `execution result -> gasRefund -> 0 (${txType.name})`
+      )
+    }
+    t.end()
+  })
+
+  t.test('simple run, runTx default return values', async (t) => {
+    for (const txType of TRANSACTION_TYPES) {
+      const vm = new VM({ common })
+      const tx = getTransaction(vm._common, txType.type, true)
+
+      const caller = tx.getSenderAddress()
+      const acc = createAccount()
+      await vm.stateManager.putAccount(caller, acc)
+
+      const res = await vm.runTx({ tx })
+
+      t.deepEqual(
+        res.gasUsed,
+        tx.getBaseFee(),
+        `runTx result -> gasUsed -> tx.getBaseFee() (${txType.name})`
+      )
+      t.deepEqual(
+        res.amountSpent,
+        res.gasUsed.mul(tx.gasPrice),
+        `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`
+      )
+      t.deepEqual(
+        res.bloom.bitvector,
+        Buffer.from('00'.repeat(256), 'hex'),
+        `runTx result -> bloom.bitvector -> should be empty (${txType.name})`
+      )
+      t.deepEqual(
+        res.receipt.gasUsed,
+        res.gasUsed.toArrayLike(Buffer),
+        `runTx result -> receipt.gasUsed -> result.gasUsed as Buffer (${txType.name})`
+      )
+      t.deepEqual(
+        res.receipt.bitvector,
+        res.bloom.bitvector,
+        `runTx result -> receipt.bitvector -> result.bloom.bitvector (${txType.name})`
+      )
+      t.deepEqual(
+        res.receipt.logs,
+        [],
+        `runTx result -> receipt.logs -> empty array (${txType.name})`
       )
     }
     t.end()
