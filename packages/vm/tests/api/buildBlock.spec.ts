@@ -1,10 +1,18 @@
 import tape from 'tape'
-import { Account, Address } from 'ethereumjs-util'
+import { Account, Address, BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import VM from '../../lib'
 import { Block } from '@ethereumjs/block'
 import { Transaction } from '@ethereumjs/tx'
 import Blockchain from '@ethereumjs/blockchain'
+import VM from '../../lib'
+import { createAccount } from './utils'
+
+const addBalance = async (vm: VM, address: Address, balance = new BN(100000000)) => {
+  const account = createAccount(new BN(0), balance)
+  await vm.stateManager.checkpoint()
+  await vm.stateManager.putAccount(address, account)
+  await vm.stateManager.commit()
+}
 
 tape('BlockBuilder', async (t) => {
   t.test('should build a valid block', async (st) => {
@@ -12,7 +20,10 @@ tape('BlockBuilder', async (t) => {
     const genesisBlock = Block.genesis({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
-    await vm.stateManager.generateCanonicalGenesis()
+
+    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    await addBalance(vm, address)
+
     const vmCopy = vm.copy()
 
     const blockBuilder = await vm.buildBlock({
@@ -26,8 +37,6 @@ tape('BlockBuilder', async (t) => {
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false }
     )
-    // set `from` to a genesis address with existing balance
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     tx.getSenderAddress = () => {
       return address
     }
@@ -73,7 +82,9 @@ tape('BlockBuilder', async (t) => {
     const genesisBlock = Block.genesis({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
-    await vm.stateManager.generateCanonicalGenesis()
+
+    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    await addBalance(vm, address)
 
     const root0 = await vm.stateManager.getStateRoot()
 
@@ -84,8 +95,6 @@ tape('BlockBuilder', async (t) => {
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false }
     )
-    // set `from` to a genesis address with existing balance
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     tx.getSenderAddress = () => {
       return address
     }
@@ -107,7 +116,9 @@ tape('BlockBuilder', async (t) => {
     const genesisBlock = Block.genesis({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
-    await vm.stateManager.generateCanonicalGenesis()
+
+    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    await addBalance(vm, address)
 
     const blockBuilder = await vm.buildBlock({
       parentBlock: genesisBlock,
@@ -119,8 +130,6 @@ tape('BlockBuilder', async (t) => {
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false }
     )
-    // set `from` to a genesis address with existing balance
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     tx.getSenderAddress = () => {
       return address
     }
@@ -195,7 +204,9 @@ tape('BlockBuilder', async (t) => {
     const genesisBlock = Block.genesis({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
-    await vm.stateManager.generateCanonicalGenesis()
+
+    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    await addBalance(vm, address)
 
     let blockBuilder = await vm.buildBlock({
       parentBlock: genesisBlock,
@@ -206,8 +217,6 @@ tape('BlockBuilder', async (t) => {
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false }
     )
-    // set `from` to a genesis address with existing balance
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     tx.getSenderAddress = () => {
       return address
     }
