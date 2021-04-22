@@ -159,9 +159,12 @@ export abstract class BaseTransaction<TransactionObject> {
   abstract serialize(): Buffer
 
   /**
-   * Computes a sha3-256 hash of the serialized unsigned tx, which is used to sign the transaction.
+   * Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
+   *
+   * @param hashMessage - Return hashed message if set to true (default: true)
    */
-  abstract getMessageToSign(): Buffer
+  abstract getMessageToSign(hashMessage: false): Buffer[]
+  abstract getMessageToSign(hashMessage?: true): Buffer
 
   abstract hash(): Buffer
 
@@ -204,7 +207,7 @@ export abstract class BaseTransaction<TransactionObject> {
     if (privateKey.length !== 32) {
       throw new Error('Private key must be 32 bytes in length.')
     }
-    const msgHash = this.getMessageToSign()
+    const msgHash = this.getMessageToSign(true)
     const { v, r, s } = ecsign(msgHash, privateKey)
     return this._processSignature(v, r, s)
   }
