@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/devp2p",
-  "version": "3.0.3",
+  "version": "4.0.0",
   "description": "A JavaScript implementation of ÐΞVp2p",
   "license": "MIT",
   "keywords": [
@@ -10,8 +10,8 @@
     "dpt",
     "rlpx",
     "eth",
-    "eth62",
-    "eth63",
+    "eth64",
+    "eth65",
     "les",
     "les2"
   ],

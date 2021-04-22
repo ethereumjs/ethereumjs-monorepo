@@ -8,9 +8,9 @@
 
 This library bundles different components for lower-level peer-to-peer connection and message exchange:
 
-- Distributed Peer Table (DPT) / Node Discovery
+- Distributed Peer Table (DPT) / v4 Node Discovery / DNS Discovery
 - RLPx Transport Protocol
-- Ethereum Wire Protocol (ETH)
+- Ethereum Wire Protocol (ETH/65)
 - Light Ethereum Subprotocol (LES/2)
 
 The library is based on [ethereumjs/node-devp2p](https://github.com/ethereumjs/node-devp2p) as well
@@ -97,10 +97,15 @@ and a `BanList` for keeping a list of bad peers. `Server` implements the node di
 Creates new DPT object
 
 - `privateKey` - Key for message encoding/signing.
-- `options.refreshInterval` - Interval in ms for refreshing (calling `findNeighbours`) the peer list (default: `60s`).
-- `options.createSocket` - A datagram (dgram) `createSocket` function, passed to `Server` (default: `dgram.createSocket.bind(null, 'udp4')`).
 - `options.timeout` - Timeout in ms for server `ping`, passed to `Server` (default: `10s`).
 - `options.endpoint` - Endpoint information to send with the server `ping`, passed to `Server` (default: `{ address: '0.0.0.0', udpPort: null, tcpPort: null }`).
+- `options.createSocket` - A datagram (dgram) `createSocket` function, passed to `Server` (default: `dgram.createSocket.bind(null, 'udp4')`).
+- `options.refreshInterval` - Interval in ms for refreshing (calling `findNeighbours`) the peer list (default: `60s`).
+- `options.shouldFindNeighbours` - Toggles whether or not peers should be queried with 'findNeighbours' to discover more peers (default: `true`)
+- `options.shouldGetDnsPeers` - Toggles whether or not peers should be discovered by querying EIP-1459 DNS lists (default: `false`)
+- `options.dnsRefreshQuantity` - Max number of candidate peers to retrieve from DNS records when attempting to discover new nodes (default: `25`)
+- `options.dnsNetworks` - EIP-1459 ENR tree urls to query for peer discovery (default: network dependent)
+- `options.dnsAddr` - DNS server to query DNS TXT records from for peer discovery
 
 #### `dpt.bootstrap(peer)` (`async`)
 
@@ -154,7 +159,7 @@ Create your `RLPx` object, e.g.:
 const rlpx = new devp2p.RLPx(PRIVATE_KEY, {
   dpt,
   maxPeers: 25,
-  capabilities: [devp2p.ETH.eth63, devp2p.ETH.eth62],
+  capabilities: [devp2p.ETH.eth65, devp2p.ETH.eth64],
   common,
 })
 ```
@@ -238,13 +243,13 @@ See the `peer-communication.ts` example for a more detailed use case.
 #### `ETH` (extends `EventEmitter`)
 
 Handles the different message types like `NEW_BLOCK_HASHES` or `GET_NODE_DATA` (see `MESSAGE_CODES`) for
-a complete list. Currently protocol versions `PV62` and `PV63` are supported.
+a complete list.
 
 ##### `new ETH(privateKey, options)`
 
 Normally not instantiated directly but created as a `SubProtocol` in the `Peer` object.
 
-- `version` - The protocol version for communicating, e.g. `63`.
+- `version` - The protocol version for communicating, e.g. `65`.
 - `peer` - `Peer` object to communicate with.
 - `send` - Wrapped `peer.sendMessage()` function where the communication is routed to.
 

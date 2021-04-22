@@ -6,6 +6,58 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.0.0 - 2021-04-22
+
+**Attention!** This new version is part of a series of EthereumJS releases all moving to a new scoped package name format. In this case the library is renamed as follows:
+
+- `ethereumjs-devp2p` -> `@ethereumjs/devp2p`
+
+Please update your library references accordingly or install with:
+
+```shell
+npm i @ethereumjs/devp2p
+```
+
+This is the first-production ready release of this library. During our work on the [EthereumJS Client](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client) we were finally able to battle-test this library in a real-world environment (so: towards `mainnet`, the main official testnets like `goerli` or `rinkeby` as well as ephemeral testnets like `yolov3`). We fixed a myriad of partly critical bugs along the way (which are extremely hard to reproduce just in a test environment) and can now fully recommend to use this library for `ETH` protocol integrations up to version `ETH/65` in a production setup. Note that the `LES` support in the library is still outdated (but working), an update is planned (let us know if you have demand).
+
+### ETH/64 and ETH/65 Support
+
+The `ETH` protocol support has been updated to now also support versions `64` and `65`. Biggest protocol update here is `ETH/64` introduced with PR [#82](https://github.com/ethereumjs/ethereumjs-devp2p/pull/82) which adds support for selecting peers by fork ID (see associated [EIP-2124](https://eips.ethereum.org/EIPS/eip-2124)). This allows for a much more differentiated chain selection and avoids connecting to peers which are on a different chain but having a shared chain history with the same blocks and the same block hashes.
+
+`ETH/65` implemented in PR [#1159](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1159) adds three new message types `NewPooledTransactionHashes (0x08)`, `GetPooledTransactions (0x09)` and `PooledTransactions (0x0a)` for a more efficient exchange on txs from the tx pool ([EIP-2464](https://eips.ethereum.org/EIPS/eip-2464)).
+
+### DNS Discovery Support
+
+Node discovery via DNS has been added to quickly acquire testnet (or mainnet) peers from the DNS ENR tree per [EIP-1459](https://eips.ethereum.org/EIPS/eip-1459), see PRs [#1070](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1070), [#1097](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1097) and [#1149](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1149). This allows for easier peer discovery especially on the testnets. Peer search is randomized as being recommended in the EIP and the implementation avoids to download the entire DNS tree at once. 
+
+DNS discovery can be activated in the `DPT` module with the `shouldGetDnsPeers` option, in addition there is a new `shouldFindNeighbours` option allowing to deactivate the classical v4 discovery process. Both discovery methods can be used in conjunction though. DNS Peer discovery can be customized/configured with additional constructor options `dnsRefreshQuantity`, `dnsNetworks` and `dnsAddress`. See [API section](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/devp2p#api) in the README for a description.
+
+### Other Features / Changes
+
+- Updated `goerli` bootnodes, PR [#1031](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1031)
+- `maxPeers`, `dpt`, and `listenPort` are now optional in `RLPxOptions`, PR [#1019](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1019)
+- New `DPTOptions` interface, `DPT` type improvements, PR [#1029](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1029)
+- Improved `RLPx` disconnect reason debug output, PR [#1031](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1031)
+- `LES`: unifiy `ETH` and `LES` `sendMessage()` signature by somewhat change payload semantics and pass in `reqId` along, PR [#1087](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1087)
+- `RLPx`: limit connection refill debug logging to a restarted interval log message to not bloat logging too much, PR [#1087](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1087)
+
+### Connection Reliability / Bug Fixes
+
+- Subdivided interval calls to refill `RLPx` peer connections to improve networking distribution and connection reliability, PR [#1036](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1036)
+- Fixed an error in `DPT` not properly banning old peers and replacing with a new peer on `KBucket` ping, PR [#1036](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1036)
+- Connection reliability: distribute network traffic on `DPT` additions of new neighbour peers, PR [#1036](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1036)
+- Fixed a critical peer data processing bug, PR [#1064](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1064)
+- Added socket destroyed checks on peer message sending to safeguard against stream-was-destroyed error, PR [#1075](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1075)
+- `DPT`: fixed undefined array access in ETH._getStatusString() on malformed ETH/64 status msgs, PR [#1029](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1029)
+
+### Maintenance / Testing / CI
+
+- Added dedicated browser build published to `dist.browser` to `package.json`, PR [#1184](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1184)
+- Updated `rlp-encoding` dependency to the EthereumJS `rlp` library, PR [#94](https://github.com/ethereumjs/ethereumjs-devp2p/pull/94)
+- `RLPx` type improvements, PR [#1036](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1036)
+- Switched to `Codecov`, PR [#92](https://github.com/ethereumjs/ethereumjs-devp2p/pull/92)
+- Upgraded dev deps (config 2.0, monorepo betas, typedoc), PR [#93](https://github.com/ethereumjs/ethereumjs-devp2p/pull/93)
+
 ## [3.0.3] - 2020-09-29
 
 - Moved `TypeScript` type packages for `lru-cache` and `bl` from `devDependencies` to
