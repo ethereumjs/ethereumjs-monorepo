@@ -1,10 +1,6 @@
 import { AddressLike, BNLike, BufferLike } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-<<<<<<< HEAD
-import { AccessListEIP2930TxData, TxData, JsonTx } from '@ethereumjs/tx'
-=======
 import { TxData, JsonTx, AccessListEIP2930TxData, FeeMarketEIP1559TxData } from '@ethereumjs/tx'
->>>>>>> tx: add factory support for EIP1559
 import { Block } from './block'
 import { BlockHeader } from './header'
 
@@ -98,11 +94,7 @@ export interface BlockData {
    * Header data for the block
    */
   header?: HeaderData
-<<<<<<< HEAD
-  transactions?: Array<TxData | AccessListEIP2930TxData>
-=======
   transactions?: Array<TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData>
->>>>>>> tx: add factory support for EIP1559
   uncleHeaders?: Array<HeaderData>
 }
 

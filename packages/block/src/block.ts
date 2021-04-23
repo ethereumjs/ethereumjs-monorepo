@@ -3,14 +3,7 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { BN, rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import {
-  TransactionFactory,
-  TypedTransaction,
-  TxOptions,
-  Transaction,
-  FeeMarketEIP1559Transaction,
-  AccessListEIP2930Transaction,
-} from '@ethereumjs/tx'
+import { TransactionFactory, TypedTransaction, TxOptions } from '@ethereumjs/tx'
 import { BlockHeader } from './header'
 import { BlockData, BlockOptions, JsonBlock, BlockBuffer, Blockchain } from './types'
 
