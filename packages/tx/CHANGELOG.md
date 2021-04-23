@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.1.4 - 2021-04-22
+
+- Added a new boolean `hashMessage` parameter (defaulting to `true`) to `getMessageToSign()` to allow for returning the raw unsigned `EIP-155` tx and not only the hash, PR [#1188](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1188)
+
 ## 3.1.3 - 2021-04-09
 
 This release fixes a critical EIP-2930 tx constructor bug which slipped through our tests and where a tx is not initialized correctly when a `v` value of `0` is passed (which is a common case for EIP-2930 txs). This makes the typed txs unusable on prior versions and an update from a version `v3.1.0` or higher is necessary for working typed tx support. Releases `v3.1.0`, `v3.1.1` and `v3.1.2` are marked as deprecated.

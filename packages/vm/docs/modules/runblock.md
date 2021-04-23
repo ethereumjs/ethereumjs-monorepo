@@ -56,7 +56,7 @@ Name | Type |
 
 **Returns:** BN
 
-Defined in: [runBlock.ts:368](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L368)
+Defined in: [runBlock.ts:315](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L315)
 
 ___
 
@@ -75,7 +75,7 @@ Name | Type |
 
 **Returns:** *Buffer*
 
-Defined in: [runBlock.ts:390](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L390)
+Defined in: [runBlock.ts:337](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L337)
 
 ___
 
@@ -97,7 +97,7 @@ Name | Type |
 
 **Returns:** *Promise*<{ `encodedReceipt`: *Buffer* ; `receiptLog`: *string* ; `txReceipt`: [*PreByzantiumTxReceipt*](../interfaces/types.prebyzantiumtxreceipt.md) \| [*PostByzantiumTxReceipt*](../interfaces/types.postbyzantiumtxreceipt.md)  }\>
 
-Defined in: [runBlock.ts:405](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L405)
+Defined in: [runBlock.ts:352](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L352)
 
 ___
 
@@ -115,4 +115,4 @@ Name | Type |
 
 **Returns:** *Promise*<Account\>
 
-Defined in: [runBlock.ts:376](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L376)
+Defined in: [runBlock.ts:323](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L323)
