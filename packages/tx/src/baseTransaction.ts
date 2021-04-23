@@ -13,8 +13,9 @@ import {
   TxOptions,
   JsonTx,
   AccessListEIP2930ValuesArray,
-<<<<<<< HEAD
   AccessListEIP2930TxData,
+  FeeMarketEIP1559ValuesArray,
+  FeeMarketEIP1559TxData,
 } from './types'
 
 /**
@@ -24,11 +25,6 @@ import {
  *
  * It is therefore not recommended to use directly.
  */
-=======
-  FeeMarketEIP1559ValuesArray,
-} from './types'
-
->>>>>>> tx: implement EIP1559 transaction base body
 export abstract class BaseTransaction<TransactionObject> {
   private readonly _type: number
 
@@ -43,9 +39,8 @@ export abstract class BaseTransaction<TransactionObject> {
   public readonly r?: BN
   public readonly s?: BN
 
-<<<<<<< HEAD
-  constructor(txData: TxData | AccessListEIP2930TxData, txOptions: TxOptions = {}) {
-    const { nonce, gasLimit, gasPrice, to, value, data, v, r, s } = txData
+  constructor(txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData, txOptions: TxOptions = {}) {
+    const { nonce, gasLimit, to, value, data, v, r, s } = txData
 
     const type = (txData as AccessListEIP2930TxData).type
     if (type !== undefined) {
@@ -53,16 +48,12 @@ export abstract class BaseTransaction<TransactionObject> {
     } else {
       this._type = 0
     }
-=======
-  constructor(txData: TxData, txOptions: TxOptions = {}) {
-    const { nonce, gasLimit, to, value, data, v, r, s } = txData
 
     this.nonce = new BN(toBuffer(nonce))
     this.gasLimit = new BN(toBuffer(gasLimit))
     this.to = to ? new Address(toBuffer(to)) : undefined
     this.value = new BN(toBuffer(value))
     this.data = toBuffer(data)
->>>>>>> tx: remove gasPrice from baseTransaction
 
     const toB = toBuffer(to === '' ? '0x' : to)
     const vB = toBuffer(v === '' ? '0x' : v)
@@ -70,7 +61,6 @@ export abstract class BaseTransaction<TransactionObject> {
     const sB = toBuffer(s === '' ? '0x' : s)
 
     this.nonce = new BN(toBuffer(nonce === '' ? '0x' : nonce))
-    this.gasPrice = new BN(toBuffer(gasPrice === '' ? '0x' : gasPrice))
     this.gasLimit = new BN(toBuffer(gasLimit === '' ? '0x' : gasLimit))
     this.to = toB.length > 0 ? new Address(toB) : undefined
     this.value = new BN(toBuffer(value === '' ? '0x' : value))
