@@ -1,4 +1,4 @@
-import { Account, BN } from 'ethereumjs-util'
+import { Account, Address, BN } from 'ethereumjs-util'
 import Blockchain from '@ethereumjs/blockchain'
 import VM from '../../lib/index'
 import { VMOpts } from '../../lib'
@@ -10,6 +10,13 @@ const level = require('level-mem')
 
 export function createAccount(nonce: BN = new BN(0), balance: BN = new BN(0xfff384)) {
   return new Account(nonce, balance)
+}
+
+export async function setBalance(vm: VM, address: Address, balance = new BN(100000000)) {
+  const account = createAccount(new BN(0), balance)
+  await vm.stateManager.checkpoint()
+  await vm.stateManager.putAccount(address, account)
+  await vm.stateManager.commit()
 }
 
 export function setupVM(opts: VMOpts & { genesisBlock?: Block } = {}) {
