@@ -144,7 +144,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     AccessLists.verifyAccessList(this.accessList)
 
     this.chainId = chainId ? new BN(toBuffer(chainId)) : this.common.chainIdBN()
-    this.gasPrice = new BN(toBuffer(gasPrice))
+    this.gasPrice = new BN(toBuffer(gasPrice === '' ? '0x' : gasPrice))
 
     this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
 

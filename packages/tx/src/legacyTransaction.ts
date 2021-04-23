@@ -91,7 +91,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
   public constructor(txData: TxData, opts: TxOptions = {}) {
     super(txData, opts)
 
-    this.gasPrice = new BN(toBuffer(txData.gasPrice))
+    this.gasPrice = new BN(toBuffer(txData.gasPrice === '' ? '0x' : txData.gasPrice))
 
     this._validateCannotExceedMaxInteger({ r: this.r, s: this.s, gasPrice: this.gasPrice })
 
