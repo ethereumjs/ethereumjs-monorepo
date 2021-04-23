@@ -1,18 +1,11 @@
 import tape from 'tape'
-import { Account, Address, BN } from 'ethereumjs-util'
+import { Account, Address } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { Transaction } from '@ethereumjs/tx'
 import Blockchain from '@ethereumjs/blockchain'
 import VM from '../../lib'
-import { createAccount } from './utils'
-
-const addBalance = async (vm: VM, address: Address, balance = new BN(100000000)) => {
-  const account = createAccount(new BN(0), balance)
-  await vm.stateManager.checkpoint()
-  await vm.stateManager.putAccount(address, account)
-  await vm.stateManager.commit()
-}
+import { setBalance } from './utils'
 
 tape('BlockBuilder', async (t) => {
   t.test('should build a valid block', async (st) => {
@@ -22,7 +15,7 @@ tape('BlockBuilder', async (t) => {
     const vm = await VM.create({ common, blockchain })
 
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
-    await addBalance(vm, address)
+    await setBalance(vm, address)
 
     const vmCopy = vm.copy()
 
@@ -84,7 +77,7 @@ tape('BlockBuilder', async (t) => {
     const vm = await VM.create({ common, blockchain })
 
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
-    await addBalance(vm, address)
+    await setBalance(vm, address)
 
     const root0 = await vm.stateManager.getStateRoot()
 
@@ -118,7 +111,7 @@ tape('BlockBuilder', async (t) => {
     const vm = await VM.create({ common, blockchain })
 
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
-    await addBalance(vm, address)
+    await setBalance(vm, address)
 
     const blockBuilder = await vm.buildBlock({
       parentBlock: genesisBlock,
@@ -206,7 +199,7 @@ tape('BlockBuilder', async (t) => {
     const vm = await VM.create({ common, blockchain })
 
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
-    await addBalance(vm, address)
+    await setBalance(vm, address)
 
     let blockBuilder = await vm.buildBlock({
       parentBlock: genesisBlock,
