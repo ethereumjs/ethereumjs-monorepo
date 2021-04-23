@@ -12,6 +12,9 @@ import {
 
 import { AccessLists } from './util'
 
+const TRANSACTION_TYPE = 1
+const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(TRANSACTION_TYPE, '0'))
+
 /**
  * Typed transaction with optional access lists
  *
@@ -23,6 +26,10 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   public readonly accessList: AccessListBuffer
   public readonly AccessListJSON: AccessList
   public readonly gasPrice: BN
+
+  get transactionType(): number {
+    return TRANSACTION_TYPE
+  }
 
   /**
    * EIP-2930 alias for `r`
@@ -58,9 +65,9 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * Note: this means that the Buffer should start with 0x01.
    */
   public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
-    if (serialized[0] !== 1) {
+    if (serialized[0] !== TRANSACTION_TYPE) {
       throw new Error(
-        `Invalid serialized tx input: not an EIP-2930 transaction (wrong tx type, expected: 1, received: ${serialized[0]}`
+        `Invalid serialized tx input: not an EIP-2930 transaction (wrong tx type, expected: ${TRANSACTION_TYPE}, received: ${serialized[0]}`
       )
     }
 
@@ -131,7 +138,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   public constructor(txData: AccessListEIP2930TxData, opts: TxOptions = {}) {
     const { chainId, accessList, gasPrice } = txData
 
-    super({ ...txData, type: 1 }, opts)
+    super({ ...txData, type: TRANSACTION_TYPE }, opts)
 
     // EIP-2718 check is done in Common
     if (!this.common.isActivatedEIP(2930)) {
@@ -219,7 +226,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    */
   serialize(): Buffer {
     const base = this.raw()
-    return Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base as any)])
+    return Buffer.concat([TRANSACTION_TYPE_BUFFER, rlp.encode(base as any)])
   }
 
   /**
@@ -231,7 +238,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   getMessageToSign(hashMessage?: true): Buffer
   getMessageToSign(hashMessage = true): Buffer | Buffer[] {
     const base = this.raw().slice(0, 8)
-    const message = Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base as any)])
+    const message = Buffer.concat([TRANSACTION_TYPE_BUFFER, rlp.encode(base as any)])
     if (hashMessage) {
       return keccak256(message)
     } else {

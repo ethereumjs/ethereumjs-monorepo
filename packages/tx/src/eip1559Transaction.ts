@@ -12,7 +12,7 @@ import {
 import { AccessLists } from './util'
 
 const TRANSACTION_TYPE = 2
-const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(2, '0'))
+const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(TRANSACTION_TYPE, '0'))
 
 export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP1559Transaction> {
   public readonly chainId: BN
@@ -23,6 +23,27 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
 
   get transactionType(): number {
     return TRANSACTION_TYPE
+  }
+
+  /**
+   * EIP-2930 alias for `r`
+   */
+   get senderR() {
+    return this.r
+  }
+
+  /**
+   * EIP-2930 alias for `s`
+   */
+  get senderS() {
+    return this.s
+  }
+
+  /**
+   * EIP-2930 alias for `v`
+   */
+  get yParity() {
+    return this.v
   }
 
   public static fromTxData(txData: FeeMarketEIP1559TxData, opts: TxOptions = {}) {
@@ -72,7 +93,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   public static fromValuesArray(values: FeeMarketEIP1559ValuesArray, opts: TxOptions = {}) {
     if (values.length !== 9 && values.length !== 12) {
       throw new Error(
-        'Invalid EIP-2930 transaction. Only expecting 9 values (for unsigned tx) or 12 values (for signed tx).'
+        'Invalid EIP-1559 transaction. Only expecting 9 values (for unsigned tx) or 12 values (for signed tx).'
       )
     }
 
@@ -115,7 +136,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   public constructor(txData: FeeMarketEIP1559TxData, opts: TxOptions = {}) {
     const { chainId, accessList, maxFeePerGas, maxInclusionFeePerGas } = txData
 
-    super(txData, opts)
+    super({ ...txData, type: TRANSACTION_TYPE }, opts)
 
     if (!this.common.isActivatedEIP(1559)) {
       throw new Error('EIP-1559 not enabled on Common')
