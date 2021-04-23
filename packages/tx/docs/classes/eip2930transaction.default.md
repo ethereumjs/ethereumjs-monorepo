@@ -83,10 +83,10 @@ varying data types.
 
 #### Parameters:
 
-Name | Type | Default value |
-:------ | :------ | :------ |
-`txData` | [*AccessListEIP2930TxData*](../interfaces/types.accesslisteip2930txdata.md) | - |
-`opts` | [*TxOptions*](../interfaces/types.txoptions.md) | {} |
+Name | Type |
+:------ | :------ |
+`txData` | [*AccessListEIP2930TxData*](../interfaces/types.accesslisteip2930txdata.md) |
+`opts` | [*TxOptions*](../interfaces/types.txoptions.md) |
 
 **Returns:** [*default*](eip2930transaction.default.md)
 
@@ -294,9 +294,9 @@ Name | Type |
 
 **Returns:** [*default*](eip2930transaction.default.md)
 
-Overrides: BaseTransaction._processSignature
+Overrides: void
 
-Defined in: [eip2930Transaction.ts:339](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L339)
+Defined in: [eip2930Transaction.ts:348](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L348)
 
 ___
 
@@ -330,15 +330,35 @@ ___
 
 ### getMessageToSign
 
-▸ **getMessageToSign**(): *Buffer*
+▸ **getMessageToSign**(`hashMessage`: *false*): *Buffer*[]
 
-Computes a sha3-256 hash of the serialized unsigned tx, which is used to sign the transaction.
+Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
+
+#### Parameters:
+
+Name | Type | Description |
+:------ | :------ | :------ |
+`hashMessage` | *false* | Return hashed message if set to true (default: true)    |
+
+**Returns:** *Buffer*[]
+
+Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
+
+Defined in: [eip2930Transaction.ts:283](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L283)
+
+▸ **getMessageToSign**(`hashMessage?`: *true*): *Buffer*
+
+#### Parameters:
+
+Name | Type |
+:------ | :------ |
+`hashMessage?` | *true* |
 
 **Returns:** *Buffer*
 
 Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
 
-Defined in: [eip2930Transaction.ts:281](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L281)
+Defined in: [eip2930Transaction.ts:284](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L284)
 
 ___
 
@@ -352,7 +372,7 @@ Computes a sha3-256 hash which can be used to verify the signature
 
 Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
 
-Defined in: [eip2930Transaction.ts:300](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L300)
+Defined in: [eip2930Transaction.ts:309](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L309)
 
 ___
 
@@ -366,7 +386,7 @@ Returns the sender's address
 
 Inherited from: [BaseTransaction](basetransaction.basetransaction-1.md)
 
-Defined in: [baseTransaction.ts:191](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L191)
+Defined in: [baseTransaction.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L194)
 
 ___
 
@@ -380,7 +400,7 @@ Returns the public key of the sender
 
 Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
 
-Defined in: [eip2930Transaction.ts:307](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L307)
+Defined in: [eip2930Transaction.ts:316](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L316)
 
 ___
 
@@ -408,7 +428,7 @@ Computes a sha3-256 hash of the serialized tx
 
 Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
 
-Defined in: [eip2930Transaction.ts:289](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L289)
+Defined in: [eip2930Transaction.ts:298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L298)
 
 ___
 
@@ -420,7 +440,7 @@ ___
 
 Inherited from: [BaseTransaction](basetransaction.basetransaction-1.md)
 
-Defined in: [baseTransaction.ts:170](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L170)
+Defined in: [baseTransaction.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L173)
 
 ___
 
@@ -470,7 +490,7 @@ Name | Type |
 
 Inherited from: [BaseTransaction](basetransaction.basetransaction-1.md)
 
-Defined in: [baseTransaction.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L203)
+Defined in: [baseTransaction.ts:206](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L206)
 
 ___
 
@@ -498,7 +518,7 @@ Returns an object with the JSON representation of the transaction
 
 Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
 
-Defined in: [eip2930Transaction.ts:365](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L365)
+Defined in: [eip2930Transaction.ts:374](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L374)
 
 ___
 
@@ -555,7 +575,7 @@ Determines if the signature is valid
 
 Inherited from: [BaseTransaction](basetransaction.basetransaction-1.md)
 
-Defined in: [baseTransaction.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L178)
+Defined in: [baseTransaction.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L181)
 
 ___
 
@@ -573,10 +593,10 @@ in favor of the `fromSerializedTx()` constructor
 
 #### Parameters:
 
-Name | Type | Default value |
-:------ | :------ | :------ |
-`serialized` | *Buffer* | - |
-`opts` | [*TxOptions*](../interfaces/types.txoptions.md) | {} |
+Name | Type |
+:------ | :------ |
+`serialized` | *Buffer* |
+`opts` | [*TxOptions*](../interfaces/types.txoptions.md) |
 
 **Returns:** [*default*](eip2930transaction.default.md)
 
@@ -594,10 +614,10 @@ Note: this means that the Buffer should start with 0x01.
 
 #### Parameters:
 
-Name | Type | Default value |
-:------ | :------ | :------ |
-`serialized` | *Buffer* | - |
-`opts` | [*TxOptions*](../interfaces/types.txoptions.md) | {} |
+Name | Type |
+:------ | :------ |
+`serialized` | *Buffer* |
+`opts` | [*TxOptions*](../interfaces/types.txoptions.md) |
 
 **Returns:** [*default*](eip2930transaction.default.md)
 
@@ -613,10 +633,10 @@ Instantiate a transaction from a data dictionary
 
 #### Parameters:
 
-Name | Type | Default value |
-:------ | :------ | :------ |
-`txData` | [*AccessListEIP2930TxData*](../interfaces/types.accesslisteip2930txdata.md) | - |
-`opts` | [*TxOptions*](../interfaces/types.txoptions.md) | {} |
+Name | Type |
+:------ | :------ |
+`txData` | [*AccessListEIP2930TxData*](../interfaces/types.accesslisteip2930txdata.md) |
+`opts` | [*TxOptions*](../interfaces/types.txoptions.md) |
 
 **Returns:** [*default*](eip2930transaction.default.md)
 
@@ -635,10 +655,10 @@ chainId, nonce, gasPrice, gasLimit, to, value, data, access_list, yParity (v), s
 
 #### Parameters:
 
-Name | Type | Default value |
-:------ | :------ | :------ |
-`values` | [*AccessListEIP2930ValuesArray*](../modules/types.md#accesslisteip2930valuesarray) | - |
-`opts` | [*TxOptions*](../interfaces/types.txoptions.md) | {} |
+Name | Type |
+:------ | :------ |
+`values` | [*AccessListEIP2930ValuesArray*](../modules/types.md#accesslisteip2930valuesarray) |
+`opts` | [*TxOptions*](../interfaces/types.txoptions.md) |
 
 **Returns:** [*default*](eip2930transaction.default.md)
 
