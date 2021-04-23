@@ -13,7 +13,7 @@ import {
 import { AccessLists } from './util'
 
 const TRANSACTION_TYPE = 1
-const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(TRANSACTION_TYPE, '0'))
+const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')
 
 /**
  * Typed transaction with optional access lists
@@ -65,9 +65,11 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * Note: this means that the Buffer should start with 0x01.
    */
   public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
-    if (serialized[0] !== TRANSACTION_TYPE) {
+    if (!serialized.slice(0, 1).equals(TRANSACTION_TYPE_BUFFER)) {
       throw new Error(
-        `Invalid serialized tx input: not an EIP-2930 transaction (wrong tx type, expected: ${TRANSACTION_TYPE}, received: ${serialized[0]}`
+        `Invalid serialized tx input: not an EIP-2930 transaction (wrong tx type, expected: ${TRANSACTION_TYPE}, received: ${serialized
+          .slice(0, 1)
+          .toString('hex')}`
       )
     }
 

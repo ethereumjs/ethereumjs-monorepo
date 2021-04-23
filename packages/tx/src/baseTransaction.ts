@@ -52,12 +52,6 @@ export abstract class BaseTransaction<TransactionObject> {
       this._type = 0
     }
 
-    this.nonce = new BN(toBuffer(nonce))
-    this.gasLimit = new BN(toBuffer(gasLimit))
-    this.to = to ? new Address(toBuffer(to)) : undefined
-    this.value = new BN(toBuffer(value))
-    this.data = toBuffer(data)
-
     const toB = toBuffer(to === '' ? '0x' : to)
     const vB = toBuffer(v === '' ? '0x' : v)
     const rB = toBuffer(r === '' ? '0x' : r)

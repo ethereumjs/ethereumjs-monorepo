@@ -12,7 +12,7 @@ import {
 import { AccessLists } from './util'
 
 const TRANSACTION_TYPE = 2
-const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(TRANSACTION_TYPE, '0'))
+const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')
 
 export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP1559Transaction> {
   public readonly chainId: BN
@@ -28,7 +28,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   /**
    * EIP-2930 alias for `r`
    */
-   get senderR() {
+  get senderR() {
     return this.r
   }
 
@@ -56,9 +56,11 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    * Note: this means that the Buffer should start with 0x01.
    */
   public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
-    if (serialized[0] !== TRANSACTION_TYPE) {
+    if (!serialized.slice(0, 1).equals(TRANSACTION_TYPE_BUFFER)) {
       throw new Error(
-        `Invalid serialized tx input: not an EIP-1559 transaction (wrong tx type, expected: ${TRANSACTION_TYPE}, received: ${serialized[0]}`
+        `Invalid serialized tx input: not an EIP-1559 transaction (wrong tx type, expected: ${TRANSACTION_TYPE}, received: ${serialized
+          .slice(0, 1)
+          .toString('hex')}`
       )
     }
 
