@@ -207,11 +207,20 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   }
 
   /**
-   * Computes a sha3-256 hash of the serialized unsigned tx, which is used to sign the transaction.
+   * Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
+   *
+   * @param hashMessage - Return hashed message if set to true (default: true)
    */
-  getMessageToSign() {
+  getMessageToSign(hashMessage: false): Buffer[]
+  getMessageToSign(hashMessage?: true): Buffer
+  getMessageToSign(hashMessage = true): Buffer | Buffer[] {
     const base = this.raw().slice(0, 9)
-    return keccak256(Buffer.concat([TRANSACTION_TYPE_BUFFER, rlp.encode(base as any)]))
+    const message = Buffer.concat([TRANSACTION_TYPE_BUFFER, rlp.encode(base as any)])
+    if (hashMessage) {
+      return keccak256(message)
+    } else {
+      return message
+    }
   }
 
   /**
