@@ -120,11 +120,6 @@ export class RlpxServer extends Server {
     this.initDpt()
     this.initRlpx()
     this.started = true
-    // Boostrapping is technically not needed for a server start
-    // (this is a repeated process) and setting `started` to `true`
-    // before allows other services to resolve earlier and makes
-    // the sync pick-up more reliable
-    await this.bootstrap()
 
     return true
   }
