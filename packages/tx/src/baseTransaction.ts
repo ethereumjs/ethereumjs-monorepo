@@ -39,7 +39,10 @@ export abstract class BaseTransaction<TransactionObject> {
   public readonly r?: BN
   public readonly s?: BN
 
-  constructor(txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData, txOptions: TxOptions = {}) {
+  constructor(
+    txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData,
+    txOptions: TxOptions = {}
+  ) {
     const { nonce, gasLimit, to, value, data, v, r, s } = txData
 
     const type = (txData as AccessListEIP2930TxData).type
