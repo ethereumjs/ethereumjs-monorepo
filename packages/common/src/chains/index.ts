@@ -5,6 +5,7 @@ import rinkeby from './rinkeby.json'
 import kovan from './kovan.json'
 import goerli from './goerli.json'
 import yolov3 from './yolov3.json'
+import aleut from './aleut.json'
 
 /**
  * @hidden
@@ -17,6 +18,7 @@ export function _getInitializedChains(customChains?: Chain[]) {
     '42': 'kovan',
     '5': 'goerli',
     '34180983699157880': 'yolov3',
+    '7822': 'aleut',
   }
   const chains: any = {
     mainnet,
@@ -25,6 +27,7 @@ export function _getInitializedChains(customChains?: Chain[]) {
     kovan,
     goerli,
     yolov3,
+    aleut,
   }
   if (customChains) {
     for (const chain of customChains) {
