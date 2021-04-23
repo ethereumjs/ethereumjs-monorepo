@@ -1,4 +1,4 @@
-import { Address, BN, bnToHex, bnToRlp, ecrecover, keccak256, rlp, toBuffer } from 'ethereumjs-util'
+import { BN, bnToHex, bnToRlp, ecrecover, keccak256, rlp, toBuffer } from 'ethereumjs-util'
 import { BaseTransaction } from './baseTransaction'
 import {
   AccessList,
@@ -91,22 +91,22 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       s,
     ] = values
 
-    const emptyBuffer = Buffer.from([])
+    const emptyAccessList: AccessList = []
 
     return new FeeMarketEIP1559Transaction(
       {
         chainId: new BN(chainId),
-        nonce: new BN(nonce),
-        maxInclusionFeePerGas: new BN(maxInclusionFeePerGas),
-        maxFeePerGas: new BN(maxFeePerGas),
-        gasLimit: new BN(gasLimit),
-        to: to && to.length > 0 ? new Address(to) : undefined,
-        value: new BN(value),
-        data: data ?? emptyBuffer,
-        accessList: accessList ?? emptyBuffer,
+        nonce,
+        maxInclusionFeePerGas,
+        maxFeePerGas,
+        gasLimit,
+        to,
+        value,
+        data,
+        accessList: accessList ?? emptyAccessList,
         v: v !== undefined ? new BN(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
-        r: r !== undefined && !r.equals(emptyBuffer) ? new BN(r) : undefined,
-        s: s !== undefined && !s.equals(emptyBuffer) ? new BN(s) : undefined,
+        r,
+        s,
       },
       opts
     )
@@ -129,8 +129,10 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     AccessLists.verifyAccessList(this.accessList)
 
     this.chainId = chainId ? new BN(toBuffer(chainId)) : new BN(this.common.chainId())
-    this.maxFeePerGas = new BN(toBuffer(maxFeePerGas))
-    this.maxInclusionFeePerGas = new BN(toBuffer(maxInclusionFeePerGas))
+    this.maxFeePerGas = new BN(toBuffer(maxFeePerGas === '' ? '0x' : maxFeePerGas))
+    this.maxInclusionFeePerGas = new BN(
+      toBuffer(maxInclusionFeePerGas === '' ? '0x' : maxInclusionFeePerGas)
+    )
 
     this._validateCannotExceedMaxInteger({
       maxFeePerGas: this.maxFeePerGas,

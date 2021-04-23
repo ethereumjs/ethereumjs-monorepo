@@ -101,6 +101,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
     const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = values
 
+    const emptyAccessList: AccessList = []
+
     return new AccessListEIP2930Transaction(
       {
         chainId: new BN(chainId),
