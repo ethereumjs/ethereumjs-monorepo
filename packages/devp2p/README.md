@@ -57,6 +57,13 @@ Run an example with:
 DEBUG=devp2p:* node -r ts-node/register ./examples/peer-communication.ts
 ```
 
+## Docs
+
+For a complete API reference see the generated [documentation](./docs).
+
+Additionally you can find a description of the main entrypoints for using
+the different modules in the following sections.
+
 ## Distributed Peer Table (DPT) / Node Discovery
 
 Maintain/manage a list of peers, see [./src/dpt/](./src/dpt/), also
@@ -390,10 +397,6 @@ Add peer: 52.3.158.184:30303 Geth/v1.7.3-unstable-479aa61f/linux-amd64/go1.9 (et
   devp2p:rlpx 52.169.42.101:30303 disconnect, reason: 16 +1ms
 Remove peer: 52.169.42.101:30303 (peer disconnect, reason code: 16) (total: 1)
 ```
-
-## Docs
-
-For a complete API reference see the generated [documentation](./docs).
 
 ## Developer
 
