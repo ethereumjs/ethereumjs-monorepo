@@ -26,10 +26,10 @@ This method returns the right transaction.
 
 #### Parameters:
 
-Name | Type | Default value | Description |
-:------ | :------ | :------ | :------ |
-`data` | *Buffer* \| *Buffer*[] | - | A Buffer or Buffer[]   |
-`txOptions` | [*TxOptions*](../interfaces/types.txoptions.md) | {} | The transaction options    |
+Name | Type | Description |
+:------ | :------ | :------ |
+`data` | *Buffer* \| *Buffer*[] | A Buffer or Buffer[]   |
+`txOptions` | [*TxOptions*](../interfaces/types.txoptions.md) | The transaction options    |
 
 **Returns:** [*TypedTransaction*](../modules/types.md#typedtransaction)
 
@@ -45,10 +45,10 @@ This method tries to decode serialized data.
 
 #### Parameters:
 
-Name | Type | Default value | Description |
-:------ | :------ | :------ | :------ |
-`data` | *Buffer* | - | The data Buffer   |
-`txOptions` | [*TxOptions*](../interfaces/types.txoptions.md) | {} | The transaction options    |
+Name | Type | Description |
+:------ | :------ | :------ |
+`data` | *Buffer* | The data Buffer   |
+`txOptions` | [*TxOptions*](../interfaces/types.txoptions.md) | The transaction options    |
 
 **Returns:** [*TypedTransaction*](../modules/types.md#typedtransaction)
 
@@ -64,10 +64,10 @@ Create a transaction from a `txData` object
 
 #### Parameters:
 
-Name | Type | Default value | Description |
-:------ | :------ | :------ | :------ |
-`txData` | [*TxData*](../modules/types.md#txdata) \| [*AccessListEIP2930TxData*](../interfaces/types.accesslisteip2930txdata.md) | - | The transaction data. The `type` field will determine which transaction type is returned (if undefined, creates a legacy transaction)   |
-`txOptions` | [*TxOptions*](../interfaces/types.txoptions.md) | {} | Options to pass on to the constructor of the transaction    |
+Name | Type | Description |
+:------ | :------ | :------ |
+`txData` | [*TxData*](../modules/types.md#txdata) \| [*AccessListEIP2930TxData*](../interfaces/types.accesslisteip2930txdata.md) | The transaction data. The `type` field will determine which transaction type is returned (if undefined, creates a legacy transaction)   |
+`txOptions` | [*TxOptions*](../interfaces/types.txoptions.md) | Options to pass on to the constructor of the transaction    |
 
 **Returns:** [*TypedTransaction*](../modules/types.md#typedtransaction)
 
