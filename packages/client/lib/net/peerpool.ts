@@ -71,7 +71,7 @@ export class PeerPool extends EventEmitter {
     })
     this.opened = true
     // eslint-disable-next-line @typescript-eslint/await-thenable
-    this._statusCheckInterval = setInterval(await this._statusCheck.bind(this), 20000)
+    this._statusCheckInterval = setInterval(await this._statusCheck.bind(this), 5000)
   }
 
   /**
@@ -205,9 +205,10 @@ export class PeerPool extends EventEmitter {
   async _statusCheck() {
     if (this.size === 0) {
       this.noPeerPeriods += 1
-      if (this.noPeerPeriods >= 3) {
+      if (this.noPeerPeriods >= 1) {
         const promises = this.config.servers.map(async (server) => {
-          if (server instanceof RlpxServer && server.discovery) {
+          if (server instanceof RlpxServer /*&& server.discovery*/) {
+            // Hotfix to connect to Aleut
             this.config.logger.info('Restarting RLPx server: bootstrap')
             await server.stop()
             await server.start()
@@ -218,7 +219,7 @@ export class PeerPool extends EventEmitter {
       } else {
         let tablesize: number | undefined = 0
         this.config.servers.forEach((server) => {
-          if (server instanceof RlpxServer && server.discovery) {
+          if (server instanceof RlpxServer /* && server.discovery*/) {
             tablesize = server.dpt?.getPeers().length
             this.config.logger.info(`Looking for suited peers: peertablesize=${tablesize}`)
           }

@@ -35,7 +35,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     super(options)
 
     this.chain = options.chain
-    this.maxPerRequest = options.maxPerRequest ?? 50
+    this.maxPerRequest = options.maxPerRequest ?? 1
     this.first = options.first
     this.count = options.count
   }
