@@ -53,6 +53,9 @@ export default class TransactionFactory {
         case 1:
           EIP = 2930
           break
+        case 2:
+          EIP = 1559
+          break
         default:
           throw new Error(`TypedTransaction with ID ${data[0]} unknown`)
       }
@@ -63,7 +66,12 @@ export default class TransactionFactory {
         )
       }
 
-      return AccessListEIP2930Transaction.fromSerializedTx(data, txOptions)
+      if (EIP === 1559) {
+        return FeeMarketEIP1559Transaction.fromSerializedTx(data, txOptions)
+      } else {
+        // EIP == 2930
+        return AccessListEIP2930Transaction.fromSerializedTx(data, txOptions)
+      }
     } else {
       return Transaction.fromSerializedTx(data, txOptions)
     }
