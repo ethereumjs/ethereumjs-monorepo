@@ -20,6 +20,7 @@ import type {
   PreByzantiumTxReceipt,
   PostByzantiumTxReceipt,
   EIP2930Receipt,
+  EIP1559Receipt,
 } from './types'
 
 /**
@@ -431,6 +432,12 @@ export async function generateTxReceipt(
       status: txResult.execResult.exceptionError ? 0 : 1,
       ...baseReceipt,
     } as EIP2930Receipt
+  } else if ('transactionType' in tx && tx.transactionType === 2) {
+    // EIP2930 Transaction
+    receipt = {
+      status: txResult.execResult.exceptionError ? 0 : 1,
+      ...baseReceipt,
+    } as EIP1559Receipt
   } else {
     throw new Error(
       `Unsupported transaction type ${'transactionType' in tx ? tx.transactionType : 'NaN'}`

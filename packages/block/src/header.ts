@@ -167,7 +167,7 @@ export class BlockHeader {
   /**
    * Alias for Header.fromHeaderData() with initWithGenesisHeader set to true.
    */
-  public static genesis(headerData: HeaderData = {}, opts: BlockOptions) {
+  public static genesis(headerData: HeaderData = {}, opts?: BlockOptions) {
     opts = { ...opts, initWithGenesisHeader: true }
     return BlockHeader.fromHeaderData(headerData, opts)
   }
