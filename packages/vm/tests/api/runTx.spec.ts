@@ -353,7 +353,7 @@ tape('runTx() -> API return values', async (t) => {
       )
       t.deepEqual(
         res.amountSpent,
-        res.gasUsed.mul(tx.gasPrice),
+        res.gasUsed.mul((<Transaction>tx).gasPrice), // can cast this, since Fee Market transactions are not included
         `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`
       )
       t.deepEqual(
