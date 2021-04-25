@@ -23,6 +23,7 @@ import {
 } from './clique'
 
 const DEFAULT_GAS_LIMIT = new BN(Buffer.from('ffffffffffffff', 'hex'))
+const ZERO_BN = new BN(0)
 
 /**
  * An object that represents the block header.
@@ -119,11 +120,6 @@ export class BlockHeader {
    * @param opts
    */
   public static fromValuesArray(values: BlockHeaderBuffer, opts: BlockOptions = {}) {
-    opts.common = BlockHeader.getCommon(opts)
-    if (values.length > 15 || (opts.common.isActivatedEIP(1559) && values.length > 16)) {
-      throw new Error('invalid header. More values than expected were received')
-    }
-
     const [
       parentHash,
       uncleHash,
@@ -143,6 +139,16 @@ export class BlockHeader {
       baseFeePerGas,
     ] = values
 
+    const numberBN = new BN(toBuffer(number))
+
+    opts.common = BlockHeader.getCommon(opts, numberBN)
+
+    const maxValues = opts.common.isActivatedEIP(1559) ? 16 : 15
+
+    if (values.length > maxValues) {
+      throw new Error('invalid header. More values than expected were received')
+    }
+
     return new BlockHeader(
       toBuffer(parentHash),
       toBuffer(uncleHash),
@@ -152,7 +158,7 @@ export class BlockHeader {
       toBuffer(receiptTrie),
       toBuffer(bloom),
       new BN(toBuffer(difficulty)),
-      new BN(toBuffer(number)),
+      numberBN,
       new BN(toBuffer(gasLimit)),
       new BN(toBuffer(gasUsed)),
       new BN(toBuffer(timestamp)),
@@ -172,18 +178,23 @@ export class BlockHeader {
     return BlockHeader.fromHeaderData(headerData, opts)
   }
 
-  public static getCommon(opts: BlockOptions = {}): Common {
+  public static getCommon(opts: BlockOptions = {}, blockNumber: BN = ZERO_BN): Common {
+    let common
     if (opts.common) {
-      return Object.assign(Object.create(Object.getPrototypeOf(opts.common)), opts.common)
+      common = Object.assign(Object.create(Object.getPrototypeOf(opts.common)), opts.common)
     } else {
       const chain = 'mainnet' // default
       if (opts.initWithGenesisHeader) {
-        return new Common({ chain, hardfork: 'chainstart' })
+        common = new Common({ chain, hardfork: 'chainstart' })
       } else {
         // This initializes on the Common default hardfork
-        return new Common({ chain })
+        common = new Common({ chain })
       }
     }
+    if (opts.hardforkByBlockNumber) {
+      common.setHardforkByBlockNumber(blockNumber.toNumber())
+    }
+    return common
   }
 
   /**
@@ -211,7 +222,7 @@ export class BlockHeader {
     baseFeePerGas?: BN,
     options: BlockOptions = {}
   ) {
-    this._common = BlockHeader.getCommon(options)
+    this._common = BlockHeader.getCommon(options, number)
 
     if (options.hardforkByBlockNumber) {
       this._common.setHardforkByBlockNumber(number.toNumber())
