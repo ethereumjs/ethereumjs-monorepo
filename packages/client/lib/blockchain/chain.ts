@@ -110,7 +110,7 @@ export class Chain extends EventEmitter {
         db: options.chainDB,
         common: this.config.chainCommon,
         validateBlocks: true,
-        validateConsensus: false,
+        validateConsensus: true,
       })
 
     this.chainDB = this.blockchain.db
