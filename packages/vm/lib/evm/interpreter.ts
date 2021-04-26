@@ -131,7 +131,7 @@ export default class Interpreter {
 
   /**
    * Executes the opcode to which the program counter is pointing,
-   * reducing it's base gas cost, and increments the program counter.
+   * reducing its base gas cost, and increments the program counter.
    */
   async runStep(): Promise<void> {
     const opInfo = this.lookupOpInfo(this._runState.opCode)
