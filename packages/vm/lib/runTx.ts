@@ -65,6 +65,14 @@ export interface RunTxOpts {
    * the `generateAccessList()` method must be implemented.
    */
   reportAccessList?: boolean
+
+  /**
+   * Optional clique Address: if the consensus algorithm is on clique,
+   * and this parameter is provided, use this as the beneficiary of transaction fees
+   * If it is not provided and the consensus algorithm is clique, instead
+   * get it from the block using `cliqueSigner()`
+   */
+  cliqueBeneficiary?: Address
 }
 
 /**
@@ -318,10 +326,14 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   } else {
     // Backwards-compatibilty check
     // TODO: can be removed along VM v5 release
-    if ('cliqueSigner' in block.header) {
-      miner = block.header.cliqueSigner()
+    if (opts.cliqueBeneficiary) {
+      miner = opts.cliqueBeneficiary
     } else {
-      miner = Address.zero()
+      if ('cliqueSigner' in block.header) {
+        miner = block.header.cliqueSigner()
+      } else {
+        miner = Address.zero()
+      }
     }
   }
   const minerAccount = await state.getAccount(miner)
