@@ -494,17 +494,18 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x39,
     function (runState: RunState) {
-      const [memOffset, codeOffset, length] = runState.stack.popN(3)
+      const [memOffset, codeOffset, dataLength] = runState.stack.popN(3)
 
-      if (!length.eqn(0)) {
-        subMemUsage(runState, memOffset, length)
+      subMemUsage(runState, memOffset, dataLength)
+
+      if (!dataLength.eqn(0)) {
         runState.eei.useGas(
-          new BN(runState._common.param('gasPrices', 'copy')).imul(divCeil(length, new BN(32)))
+          new BN(runState._common.param('gasPrices', 'copy')).imul(divCeil(dataLength, new BN(32)))
         )
 
-        const data = getDataSlice(runState.eei.getCode(), codeOffset, length)
+        const data = getDataSlice(runState.eei.getCode(), codeOffset, dataLength)
         const memOffsetNum = memOffset.toNumber()
-        const lengthNum = length.toNumber()
+        const lengthNum = dataLength.toNumber()
         runState.memory.extend(memOffsetNum, lengthNum)
         runState.memory.write(memOffsetNum, lengthNum, data)
       }
@@ -525,24 +526,24 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x3c,
     async function (runState: RunState) {
-      const [addressBN, memOffset, codeOffset, length] = runState.stack.popN(4)
+      const [addressBN, memOffset, codeOffset, dataLength] = runState.stack.popN(4)
 
       // FIXME: for some reason this must come before subGas
-      subMemUsage(runState, memOffset, length)
+      subMemUsage(runState, memOffset, dataLength)
       const address = new Address(addressToBuffer(addressBN))
       accessAddressEIP2929(runState, address)
 
-      if (!length.eqn(0)) {
+      if (!dataLength.eqn(0)) {
         // copy fee
         runState.eei.useGas(
-          new BN(runState._common.param('gasPrices', 'copy')).imul(divCeil(length, new BN(32)))
+          new BN(runState._common.param('gasPrices', 'copy')).imul(divCeil(dataLength, new BN(32)))
         )
 
         const code = await runState.eei.getExternalCode(addressBN)
 
-        const data = getDataSlice(code, codeOffset, length)
+        const data = getDataSlice(code, codeOffset, dataLength)
         const memOffsetNum = memOffset.toNumber()
-        const lengthNum = length.toNumber()
+        const lengthNum = dataLength.toNumber()
         runState.memory.extend(memOffsetNum, lengthNum)
         runState.memory.write(memOffsetNum, lengthNum, data)
       }
@@ -581,22 +582,22 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x3e,
     function (runState: RunState) {
-      const [memOffset, returnDataOffset, length] = runState.stack.popN(3)
+      const [memOffset, returnDataOffset, dataLength] = runState.stack.popN(3)
 
-      if (returnDataOffset.add(length).gt(runState.eei.getReturnDataSize())) {
+      if (returnDataOffset.add(dataLength).gt(runState.eei.getReturnDataSize())) {
         trap(ERROR.OUT_OF_GAS)
       }
 
-      if (!length.eqn(0)) {
-        subMemUsage(runState, memOffset, length)
+      subMemUsage(runState, memOffset, dataLength)
 
+      if (!dataLength.eqn(0)) {
         runState.eei.useGas(
-          new BN(runState._common.param('gasPrices', 'copy')).mul(divCeil(length, new BN(32)))
+          new BN(runState._common.param('gasPrices', 'copy')).mul(divCeil(dataLength, new BN(32)))
         )
 
-        const data = getDataSlice(runState.eei.getReturnData(), returnDataOffset, length)
+        const data = getDataSlice(runState.eei.getReturnData(), returnDataOffset, dataLength)
         const memOffsetNum = memOffset.toNumber()
-        const lengthNum = length.toNumber()
+        const lengthNum = dataLength.toNumber()
         runState.memory.extend(memOffsetNum, lengthNum)
         runState.memory.write(memOffsetNum, lengthNum, data)
       }
