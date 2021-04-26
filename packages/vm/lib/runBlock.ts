@@ -236,6 +236,11 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   const receipts = []
   const txResults = []
 
+  let cliqueBeneficiary
+  if (this._common.consensusType() === 'poa' && 'cliqueSigner' in block.header) {
+    cliqueBeneficiary = block.header.cliqueSigner()
+  }
+
   /*
    * Process transactions
    */
@@ -261,6 +266,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
       block: blockWithGasUsed,
       skipBalance,
       skipNonce,
+      cliqueBeneficiary,
     })
     txResults.push(txRes)
 
