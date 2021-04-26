@@ -1,0 +1,104 @@
+{
+  "name": "aleut",
+  "chainId": 7822,
+  "networkId": 7822,
+  "defaultHardfork": "berlin",
+  "consensus": {
+    "type": "poa",
+    "algorithm": "clique",
+    "clique": {
+      "period": 15,
+      "epoch": 30000
+    }
+  },
+  "comment": "The Aleut testnet chain",
+  "url": "https://github.com/ethereum/eth1.0-specs/blob/master/network-upgrades/client-integration-testnets/aleut.md",
+  "genesis": {
+    "hash": "0x10796525313298922a66fafbb2a7f4f426fcf97143ac32d30285b2fdfed105e6",
+    "gasLimit": "0x1312D00",
+    "difficulty": "0x400",
+    "nonce": "0x0000000000000000",
+    "extraData": "0x000000000000000000000000000000000000000000000000000000000000000036267c845cc42b57ccb869d655e5d5fb620cc69a0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "stateRoot": "0x27b9b7a34b752e7557c07b81b60a4ed787c2eca1a93ea8cd911740f36a2d6c85"
+  },
+  "hardforks": [
+    {
+      "name": "chainstart",
+      "block": 0,
+      "forkHash": "0x27a21307"
+    },
+    {
+      "name": "homestead",
+      "block": 0,
+      "forkHash": "0x27a21307"
+    },
+    {
+      "name": "dao",
+      "block": null,
+      "forkHash": "0x27a21307"
+    },
+    {
+      "name": "tangerineWhistle",
+      "block": 0,
+      "forkHash": "0x27a21307"
+    },
+    {
+      "name": "spuriousDragon",
+      "block": 0,
+      "forkHash": "0x27a21307"
+    },
+    {
+      "name": "byzantium",
+      "block": 0,
+      "forkHash": "0x27a21307"
+    },
+    {
+      "name": "constantinople",
+      "block": 0,
+      "forkHash": "0x27a21307"
+    },
+    {
+      "name": "petersburg",
+      "block": 0,
+      "forkHash": "0x27a21307"
+    },
+    {
+      "name": "istanbul",
+      "block": 0,
+      "forkHash": "0x27a21307"
+    },
+    {
+      "name": "berlin",
+      "block": 0,
+      "forkHash": "0x27a21307"
+    },
+    {
+      "name": "london",
+      "block": 10,
+      "forkHash": "0xfe31facc"
+    }
+  ],
+  "bootstrapNodes": [
+    {
+      "ip": "3.12.166.199",
+      "port": 30303,
+      "id": "0c72e2b7873e4342d725b5990c17adb2b159aad2ff5853de7e4910b25522a1f9e78f9cd802a8a3225b8fae4e994e522b50d6bd5a163eb3a7b49a0a73ca9a1c7e",
+      "location": "",
+      "comment": "Aleut bootnode 1"
+    },
+    {
+      "ip": "164.90.171.157",
+      "port": 31559,
+      "id": "aec88fd902744bf67705c098bf532b01017ccc3a156395508e2d9c4e7c22699ecccae1e7316614f8a2d4c5698a9be3fe6151ee25b9ed4aa052f88e112c65387a",
+      "location": "",
+      "comment": "Aleut bootnode 2"
+    },
+    {
+      "ip": "144.91.103.6",
+      "port": 30308,
+      "id": "d4937b184f79b21845c290902e3667b9e8e96af3cf7b4917e85c7d3aa12d6ed22720d3c3f6ef7d6f93311f5c4ddc0c1e2a166ea4a765220212e49dfd54eec456",
+      "location": "",
+      "comment": "Aleut bootnode 3"
+    }
+  ]
+}

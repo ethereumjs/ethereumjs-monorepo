@@ -32,4 +32,4 @@ Name | Type | Description |
 
 **Returns:** *Promise*<[*TxReceipt*](types.md#txreceipt)\>
 
-Defined in: [runTx.ts:418](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L418)
+Defined in: [runTx.ts:377](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L377)

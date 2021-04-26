@@ -9,6 +9,7 @@ import { setupPreConditions, getDAOCommon } from '../util'
 import { setupVM, createAccount } from './utils'
 import testnet from './testdata/testnet.json'
 import VM from '../../lib/index'
+import { setBalance } from './utils'
 
 const testData = require('./testdata/blockchain.json')
 const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
@@ -379,12 +380,12 @@ tape('runBlock() -> tx types', async (t) => {
   t.test('legacy tx', async (t) => {
     const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
     const vm = setupVM({ common })
-    await vm.stateManager.generateCanonicalGenesis()
+
+    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    await setBalance(vm, address)
 
     const tx = Transaction.fromTxData({ gasLimit: 53000, value: 1 }, { common, freeze: false })
 
-    // set `from` to a genesis address with existing balance
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     tx.getSenderAddress = () => {
       return address
     }
@@ -396,15 +397,15 @@ tape('runBlock() -> tx types', async (t) => {
   t.test('access list tx', async (t) => {
     const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
     const vm = setupVM({ common })
-    await vm.stateManager.generateCanonicalGenesis()
+
+    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    await setBalance(vm, address)
 
     const tx = AccessListEIP2930Transaction.fromTxData(
       { gasLimit: 53000, value: 1, v: 1, r: 1, s: 1 },
       { common, freeze: false }
     )
 
-    // set `from` to a genesis address with existing balance
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     tx.getSenderAddress = () => {
       return address
     }
