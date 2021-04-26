@@ -101,6 +101,7 @@ tape('[RlpxServer]', async (t) => {
     server.dpt = td.object<typeof server['dpt']>()
     td.when(server.dpt!.getDnsPeers()).thenResolve([dnsPeerInfo])
     await server.start()
+    await server.bootstrap()
     td.verify(server.dpt!.bootstrap(dnsPeerInfo))
     await server.stop()
     t.end()
@@ -184,14 +185,16 @@ tape('[RlpxServer]', async (t) => {
     ;(server.dpt as any).emit('error', 'err0')
   })
 
-  t.test('should init rlpx', (t) => {
+  t.test('should init rlpx', async (t) => {
     t.plan(4)
     const config = new Config({ loglevel: 'error', transports: [] })
     const server = new RlpxServer({ config })
     const rlpxPeer = new RlpxPeer()
     td.when(rlpxPeer.getId()).thenReturn(Buffer.from([1]))
     td.when(RlpxPeer.prototype.accept(rlpxPeer, td.matchers.isA(RlpxServer))).thenResolve()
-    server.initRlpx()
+    server.initRlpx().catch((error) => {
+      throw error
+    })
     td.verify(RlpxPeer.capabilities(Array.from((server as any).protocols)))
     td.verify(server.rlpx!.listen(server.config.port, '0.0.0.0'))
     server.on('connected', (peer: any) => t.ok(peer instanceof RlpxPeer, 'connected'))
@@ -208,14 +211,16 @@ tape('[RlpxServer]', async (t) => {
     server.rlpx!.emit('listening')
   })
 
-  t.test('should handles errors from id-less peers', (t) => {
+  t.test('should handles errors from id-less peers', async (t) => {
     t.plan(1)
     const config = new Config({ loglevel: 'error', transports: [] })
     const server = new RlpxServer({ config })
     const rlpxPeer = new RlpxPeer()
     td.when(rlpxPeer.getId()).thenReturn(Buffer.from('test'))
     td.when(RlpxPeer.prototype.accept(rlpxPeer, td.matchers.isA(RlpxServer))).thenResolve()
-    server.initRlpx()
+    server.initRlpx().catch((error) => {
+      throw error
+    })
     server.on('error', (err: any) => t.equals(err.message, 'err0', 'got error'))
     server.rlpx!.emit('peer:error', rlpxPeer, new Error('err0'))
   })

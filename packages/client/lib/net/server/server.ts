@@ -82,11 +82,8 @@ export class Server extends EventEmitter {
   }
 
   /**
-   * Server bootstrap, on Libp2p this is currently done implicitly along the
-   * server start which might have negative implications for initial server
-   * connections due to concurrency reasons.
-   *
-   * TODO: extract Libp2p bootstrap from server.start()
+   * Server bootstrap.
+   * In Libp2p this is done during server start.
    */
   async bootstrap(): Promise<void> {}
 
