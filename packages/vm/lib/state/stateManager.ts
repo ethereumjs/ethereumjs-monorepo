@@ -438,13 +438,9 @@ export default class DefaultStateManager implements StateManager {
    * Gets the state-root of the Merkle-Patricia trie representation
    * of the state of this StateManager. Will error if there are uncommitted
    * checkpoints on the instance.
-   * @param force - If set to `true`, force a cache flush even if there are uncommited checkpoints (this is set to `true` pre-Byzantium in order to get intermediate state roots for the receipts)
    * @returns {Promise<Buffer>} - Returns the state-root of the `StateManager`
    */
-  async getStateRoot(force: boolean = false): Promise<Buffer> {
-    if (!force && this._checkpointCount !== 0) {
-      throw new Error('Cannot get state root with uncommitted checkpoints')
-    }
+  async getStateRoot(): Promise<Buffer> {
     await this._cache.flush()
     const stateRoot = this._trie.root
     return stateRoot
