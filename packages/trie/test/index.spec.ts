@@ -289,3 +289,44 @@ tape('it should create the genesis state root from ethereum', function (tester) 
     t.end()
   })
 })
+
+tape('setting back state root (deleteFromDB)', async (t) => {
+  const k1 = Buffer.from('1')
+  const v1 = Buffer.from('value1')
+  const k2 = Buffer.from('2')
+  const v2 = Buffer.from('value2')
+
+  const rootAfterK1 = Buffer.from(
+    'd7ad4d901f5ecbf1940c67129b2bc24e46dadb3d4f806f6e9b927fdbddc567c7',
+    'hex'
+  )
+
+  const trieSetups = [
+    {
+      trie: new BaseTrie(undefined, undefined, false),
+      expected: v1,
+      msg: 'should return v1 when setting back the state root when deleteFromDB=false',
+    },
+    {
+      trie: new BaseTrie(undefined, undefined, true),
+      expected: null,
+      msg: 'should return null when setting back the state root when deleteFromDB=true',
+    },
+  ]
+
+  for (const s of trieSetups) {
+    await s.trie.put(k1, v1)
+    await s.trie.put(k2, v2)
+    await s.trie.del(k1)
+    t.equal(
+      await s.trie.get(k1),
+      null,
+      'should return null on latest state root independently from deleteFromDB setting'
+    )
+
+    s.trie.root = rootAfterK1
+    t.deepEqual(await s.trie.get(k1), s.expected, s.msg)
+  }
+
+  t.end()
+})
