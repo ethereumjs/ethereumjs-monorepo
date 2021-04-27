@@ -181,7 +181,7 @@ export class BlockHeader {
   public static getCommon(opts: BlockOptions = {}, blockNumber: BN = ZERO_BN): Common {
     let common
     if (opts.common) {
-      common = Object.assign(Object.create(Object.getPrototypeOf(opts.common)), opts.common)
+      common = opts.common.copy()
     } else {
       const chain = 'mainnet' // default
       if (opts.initWithGenesisHeader) {
@@ -192,7 +192,7 @@ export class BlockHeader {
       }
     }
     if (opts.hardforkByBlockNumber) {
-      common.setHardforkByBlockNumber(blockNumber.toNumber())
+      common.setHardforkByBlockNumber(blockNumber)
     }
     return common
   }
