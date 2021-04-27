@@ -217,6 +217,35 @@ tape('[AccessListEIP2930Transaction]', function (t) {
     st.end()
   })
 
+  t.test('unsigned tx -> getMessageToSign()', function (t) {
+    const unsignedTx = AccessListEIP2930Transaction.fromTxData(
+      {
+        data: Buffer.from('010200', 'hex'),
+        to: validAddress,
+        accessList: [[validAddress, [validSlot]]],
+        chainId,
+      },
+      { common }
+    )
+    const expectedHash = Buffer.from(
+      '78528e2724aa359c58c13e43a7c467eb721ce8d410c2a12ee62943a3aaefb60b',
+      'hex'
+    )
+    t.deepEqual(unsignedTx.getMessageToSign(true), expectedHash), 'correct hashed version'
+
+    const expectedSerialization = Buffer.from(
+      '01f858018080809401010101010101010101010101010101010101018083010200f838f7940101010101010101010101010101010101010101e1a00101010101010101010101010101010101010101010101010101010101010101',
+      'hex'
+    )
+    t.deepEqual(
+      unsignedTx.getMessageToSign(false),
+      expectedSerialization,
+      'correct serialized unhashed version'
+    )
+
+    t.end()
+  })
+
   t.test('should sign a transaction', function (t) {
     const tx = AccessListEIP2930Transaction.fromTxData(
       {

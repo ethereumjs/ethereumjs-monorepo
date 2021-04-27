@@ -1,6 +1,7 @@
 import tape from 'tape'
 import { BN } from 'ethereumjs-util'
 import VM from '../../lib'
+import { DefaultStateManager } from '../../lib/state'
 
 const STOP = '00'
 const JUMP = '56'
@@ -18,7 +19,7 @@ const testCases = [
   { code: [STOP], resultPC: 1 },
 ]
 
-tape('VM.runcode: initial program counter', (t) => {
+tape('VM.runCode: initial program counter', (t) => {
   const vm = new VM()
 
   testCases.forEach((testData, i) => {
@@ -48,5 +49,49 @@ tape('VM.runcode: initial program counter', (t) => {
       st.assert(!err)
       st.end()
     })
+  })
+})
+
+tape('VM.runCode: interpreter', (t) => {
+  t.test('should return a VmError as an exceptionError on the result', async (st) => {
+    const vm = new VM()
+
+    const INVALID_opcode = 'fe'
+    const runCodeArgs = {
+      code: Buffer.from(INVALID_opcode, 'hex'),
+      gasLimit: new BN(0xffff),
+    }
+
+    let result: any
+    try {
+      result = await vm.runCode(runCodeArgs)
+    } catch (e) {
+      st.fail('should not throw error')
+    }
+    st.equal(result!.exceptionError!.errorType, 'VmError')
+    st.ok(result!.exceptionError!.error.includes('invalid opcode'))
+    st.end()
+  })
+
+  t.test('should throw on non-VmError', async (st) => {
+    const stateManager = new DefaultStateManager()
+    stateManager.putContractStorage = (..._args) => {
+      throw new Error('Test')
+    }
+    const vm = new VM({ stateManager })
+
+    const SSTORE = '55'
+    const runCodeArgs = {
+      code: Buffer.from([PUSH1, '01', PUSH1, '05', SSTORE].join(''), 'hex'),
+      gasLimit: new BN(0xffff),
+    }
+
+    try {
+      await vm.runCode(runCodeArgs)
+      st.fail('should throw error')
+    } catch (e) {
+      st.ok(e.toString().includes('Test'), 'error thrown')
+    }
+    st.end()
   })
 })

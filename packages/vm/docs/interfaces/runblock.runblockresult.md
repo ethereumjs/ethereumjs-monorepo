@@ -31,7 +31,7 @@ Result of [runBlock](../classes/index.default.md#runblock)
 
 The gas used after executing the block
 
-Defined in: [runBlock.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L82)
+Defined in: [runBlock.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L79)
 
 ___
 
@@ -41,7 +41,7 @@ ___
 
 The bloom filter of the LOGs (events) after executing the block
 
-Defined in: [runBlock.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L86)
+Defined in: [runBlock.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L83)
 
 ___
 
@@ -51,7 +51,7 @@ ___
 
 The receipt root after executing the block
 
-Defined in: [runBlock.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L90)
+Defined in: [runBlock.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L87)
 
 ___
 
@@ -61,7 +61,7 @@ ___
 
 Receipts generated for transactions in the block
 
-Defined in: [runBlock.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L70)
+Defined in: [runBlock.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L67)
 
 ___
 
@@ -71,7 +71,7 @@ ___
 
 Results of executing the transactions in the block
 
-Defined in: [runBlock.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L74)
+Defined in: [runBlock.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L71)
 
 ___
 
@@ -81,4 +81,4 @@ ___
 
 The stateRoot after executing the block
 
-Defined in: [runBlock.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L78)
+Defined in: [runBlock.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L75)

@@ -1,6 +1,6 @@
 {
   "extends": "@ethereumjs/config-coverage",
   "include": [
-    "lib/*.ts"
+    "lib/**/*.ts"
   ]
 }
