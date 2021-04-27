@@ -224,7 +224,7 @@ export class Block {
   validateTransactions(stringError = false) {
     const errors: string[] = []
     const self = this
-    this.transactions.forEach(function (tx, i) {
+    this.transactions.forEach((tx, i) => {
       const errs = <string[]>tx.validate(true)
       if (self._common.isActivatedEIP(1559)) {
         const gas = tx.getEIP1559Data()
