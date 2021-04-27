@@ -118,13 +118,8 @@ export class RlpxServer extends Server {
     }
     await super.start()
     this.initDpt()
-    this.initRlpx()
+    await this.initRlpx()
     this.started = true
-    // Boostrapping is technically not needed for a server start
-    // (this is a repeated process) and setting `started` to `true`
-    // before allows other services to resolve earlier and makes
-    // the sync pick-up more reliable
-    await this.bootstrap()
 
     return true
   }
@@ -236,70 +231,73 @@ export class RlpxServer extends Server {
    * Initializes RLPx instance for peer management
    * @private
    */
-  initRlpx() {
-    this.rlpx = new Devp2pRLPx(this.key, {
-      dpt: this.dpt!,
-      maxPeers: this.config.maxPeers,
-      capabilities: RlpxPeer.capabilities(Array.from(this.protocols)),
-      remoteClientIdFilter: this.clientFilter,
-      listenPort: this.config.port,
-      common: this.config.chainCommon,
-    })
-
-    this.rlpx.on('peer:added', async (rlpxPeer: Devp2pRLPxPeer) => {
-      const peer = new RlpxPeer({
-        config: this.config,
-        id: rlpxPeer.getId()!.toString('hex'),
-        host: rlpxPeer._socket.remoteAddress!,
-        port: rlpxPeer._socket.remotePort!,
-        protocols: Array.from(this.protocols),
-        // @ts-ignore: Property 'server' does not exist on type 'Socket'.
-        // TODO: check this error
-        inbound: !!rlpxPeer._socket.server,
+  async initRlpx() {
+    return new Promise<void>((resolve) => {
+      this.rlpx = new Devp2pRLPx(this.key, {
+        dpt: this.dpt!,
+        maxPeers: this.config.maxPeers,
+        capabilities: RlpxPeer.capabilities(Array.from(this.protocols)),
+        remoteClientIdFilter: this.clientFilter,
+        listenPort: this.config.port,
+        common: this.config.chainCommon,
       })
-      try {
-        await peer.accept(rlpxPeer, this)
-        this.peers.set(peer.id, peer)
-        this.config.logger.debug(`Peer connected: ${peer}`)
-        this.emit('connected', peer)
-      } catch (error) {
-        this.error(error)
-      }
-    })
 
-    this.rlpx.on('peer:removed', (rlpxPeer: Devp2pRLPxPeer, reason: any) => {
-      const id = (rlpxPeer.getId() as Buffer).toString('hex')
-      const peer = this.peers.get(id)
-      if (peer) {
-        this.peers.delete(peer.id)
-        this.config.logger.debug(
-          `Peer disconnected (${rlpxPeer.getDisconnectPrefix(reason)}): ${peer}`
-        )
-        this.emit('disconnected', peer)
-      }
-    })
-
-    this.rlpx.on('peer:error', (rlpxPeer: any, error: Error) => {
-      const peerId = rlpxPeer && rlpxPeer.getId()
-      if (!peerId) {
-        return this.error(error)
-      }
-      const id = peerId.toString('hex')
-      const peer = this.peers.get(id)
-      this.error(error, peer)
-    })
-
-    this.rlpx.on('error', (e: Error) => this.error(e))
-
-    this.rlpx.on('listening', () => {
-      this.emit('listening', {
-        transport: this.name,
-        url: this.getRlpxInfo().enode,
+      this.rlpx.on('peer:added', async (rlpxPeer: Devp2pRLPxPeer) => {
+        const peer = new RlpxPeer({
+          config: this.config,
+          id: rlpxPeer.getId()!.toString('hex'),
+          host: rlpxPeer._socket.remoteAddress!,
+          port: rlpxPeer._socket.remotePort!,
+          protocols: Array.from(this.protocols),
+          // @ts-ignore: Property 'server' does not exist on type 'Socket'.
+          // TODO: check this error
+          inbound: !!rlpxPeer._socket.server,
+        })
+        try {
+          await peer.accept(rlpxPeer, this)
+          this.peers.set(peer.id, peer)
+          this.config.logger.debug(`Peer connected: ${peer}`)
+          this.emit('connected', peer)
+        } catch (error) {
+          this.error(error)
+        }
       })
-    })
 
-    if (this.config.port) {
-      this.rlpx.listen(this.config.port, '0.0.0.0')
-    }
+      this.rlpx.on('peer:removed', (rlpxPeer: Devp2pRLPxPeer, reason: any) => {
+        const id = (rlpxPeer.getId() as Buffer).toString('hex')
+        const peer = this.peers.get(id)
+        if (peer) {
+          this.peers.delete(peer.id)
+          this.config.logger.debug(
+            `Peer disconnected (${rlpxPeer.getDisconnectPrefix(reason)}): ${peer}`
+          )
+          this.emit('disconnected', peer)
+        }
+      })
+
+      this.rlpx.on('peer:error', (rlpxPeer: any, error: Error) => {
+        const peerId = rlpxPeer && rlpxPeer.getId()
+        if (!peerId) {
+          return this.error(error)
+        }
+        const id = peerId.toString('hex')
+        const peer = this.peers.get(id)
+        this.error(error, peer)
+      })
+
+      this.rlpx.on('error', (e: Error) => this.error(e))
+
+      this.rlpx.on('listening', () => {
+        this.emit('listening', {
+          transport: this.name,
+          url: this.getRlpxInfo().enode,
+        })
+        resolve()
+      })
+
+      if (this.config.port) {
+        this.rlpx.listen(this.config.port, '0.0.0.0')
+      }
+    })
   }
 }

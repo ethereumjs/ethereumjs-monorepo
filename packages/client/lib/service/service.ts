@@ -109,7 +109,6 @@ export class Service extends events.EventEmitter {
     if (this.running) {
       return false
     }
-    await Promise.all(this.config.servers.map((s) => s.start()))
     this.running = true
     this.config.logger.info(`Started ${this.name} service.`)
   }

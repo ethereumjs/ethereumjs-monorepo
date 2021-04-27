@@ -25,13 +25,16 @@ tape('[EthereumClient]', async (t) => {
     open() {}
     start() {}
     stop() {}
+    bootstrap() {}
   }
   Server.prototype.open = td.func<any>()
   Server.prototype.start = td.func<any>()
   Server.prototype.stop = td.func<any>()
+  Server.prototype.bootstrap = td.func<any>()
   td.replace('../lib/net/server/server', { Server })
   td.when(Server.prototype.start()).thenResolve()
   td.when(Server.prototype.stop()).thenResolve()
+  td.when(Server.prototype.bootstrap()).thenResolve()
 
   const { default: EthereumClient } = await import('../lib/client')
 
