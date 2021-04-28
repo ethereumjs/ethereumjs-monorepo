@@ -12,7 +12,7 @@ const ETHER = GWEI.mul(GWEI)
 const common = new Common({
   eips: [1559, 2718, 2930, 3198],
   chain: 'mainnet',
-  hardfork: 'berlin',
+  hardfork: 'london',
 })
 
 // Small hack to hack in the activation block number

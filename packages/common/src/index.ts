@@ -488,7 +488,7 @@ export default class Common extends EventEmitter {
       if (hf['name'] === hardfork2) posHf2 = index
       index += 1
     }
-    return posHf1 >= posHf2
+    return posHf1 >= posHf2 && posHf2 !== -1
   }
 
   /**
