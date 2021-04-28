@@ -13,7 +13,7 @@ const eip1559BaseFee = require('./testdata/eip1559baseFee.json')
 const common = new Common({
   eips: [1559],
   chain: 'mainnet',
-  hardfork: 'berlin',
+  hardfork: 'london',
 })
 
 const blockchain = new Mockchain()
