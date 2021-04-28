@@ -228,7 +228,7 @@ export class Block {
       const errs = <string[]>tx.validate(true)
       if (self._common.isActivatedEIP(1559)) {
         const gas = tx.getEIP1559Data()
-        if (gas.maxFeePerGas < self.header.baseFeePerGas!) {
+        if (gas.maxFeePerGas.lt(self.header.baseFeePerGas!)) {
           errs.push('tx unable to pay base fee')
         }
       }
