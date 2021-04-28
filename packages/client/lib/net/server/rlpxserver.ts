@@ -117,7 +117,7 @@ export class RlpxServer extends Server {
       return false
     }
     await super.start()
-    this.initDpt()
+    await this.initDpt()
     await this.initRlpx()
     this.started = true
 
@@ -205,26 +205,32 @@ export class RlpxServer extends Server {
    * Initializes DPT for peer discovery
    * @private
    */
-  initDpt() {
-    this.dpt = new Devp2pDPT(this.key, {
-      refreshInterval: this.refreshInterval,
-      endpoint: {
-        address: '0.0.0.0',
-        udpPort: null,
-        tcpPort: null,
-      },
-      shouldFindNeighbours: this.config.discV4,
-      shouldGetDnsPeers: this.config.discDns,
-      dnsRefreshQuantity: this.config.maxPeers,
-      dnsNetworks: this.dnsNetworks,
-      dnsAddr: this.config.dnsAddr,
+  async initDpt() {
+    return new Promise<void>((resolve) => {
+      this.dpt = new Devp2pDPT(this.key, {
+        refreshInterval: this.refreshInterval,
+        endpoint: {
+          address: '0.0.0.0',
+          udpPort: null,
+          tcpPort: null,
+        },
+        shouldFindNeighbours: this.config.discV4,
+        shouldGetDnsPeers: this.config.discDns,
+        dnsRefreshQuantity: this.config.maxPeers,
+        dnsNetworks: this.dnsNetworks,
+        dnsAddr: this.config.dnsAddr,
+      })
+
+      this.dpt.on('error', (e: Error) => this.error(e))
+
+      this.dpt.on('listening', () => {
+        resolve()
+      })
+
+      if (this.config.port) {
+        this.dpt.bind(this.config.port, '0.0.0.0')
+      }
     })
-
-    this.dpt.on('error', (e: Error) => this.error(e))
-
-    if (this.config.port) {
-      this.dpt.bind(this.config.port, '0.0.0.0')
-    }
   }
 
   /**

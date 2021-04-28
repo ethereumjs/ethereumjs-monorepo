@@ -179,7 +179,9 @@ tape('[RlpxServer]', async (t) => {
     t.plan(1)
     const config = new Config({ loglevel: 'error', transports: [] })
     const server = new RlpxServer({ config })
-    server.initDpt()
+    server.initDpt().catch((error) => {
+      throw error
+    })
     td.verify((server.dpt as any).bind(server.config.port, '0.0.0.0'))
     server.on('error', (err: any) => t.equals(err, 'err0', 'got error'))
     ;(server.dpt as any).emit('error', 'err0')
