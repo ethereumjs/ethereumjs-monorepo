@@ -677,6 +677,13 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.stack.push(runState.eei.getSelfBalance())
     },
   ],
+  // 0x48: BASEFEE
+  [
+    0x48,
+    function (runState: RunState) {
+      runState.stack.push(runState.eei.getBlockBaseFee())
+    },
+  ],
   // 0x50 range - 'storage' and execution
   // 0x50: POP
   [
