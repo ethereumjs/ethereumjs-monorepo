@@ -137,7 +137,38 @@ export class FullEthereumService extends EthereumService {
   async handleWit(message: any, peer: Peer): Promise<void> {
     if (message.name === 'GetBlockWitnessHashes' && this.config.wit) {
       const { reqId, blockHash } = message.data
-      const witnessHashes = await this.chain.getWitnessHashes(blockHash)
+
+      const block = await this.chain.getBlock(blockHash)
+      const parentBlock = await this.chain.getBlock(block.header.parentHash)
+
+      const witnessHashes: string[] = []
+
+      // wit/0 spec notes:
+      // * Nodes must always respond to the query.
+      // * If the node does not have the requested block, it must return an empty reply.
+
+      // TODO getBlock should return Promise<Block | null>
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (block && parentBlock) {
+        // copy the vm as to not cause any changes during runBlock
+        const vm = this.synchronizer.execution.vm.copy()
+
+        const trie = (vm.stateManager as any)._trie
+        const getFunc = trie.db.get.bind(trie.db)
+        trie.db.get = async (key: Buffer) => {
+          if (!witnessHashes.includes(key.toString('hex'))) {
+            witnessHashes.push(key.toString('hex'))
+          }
+          return getFunc(key)
+        }
+
+        try {
+          await vm.runBlock({ block, root: parentBlock.header.stateRoot })
+        } catch (error) {
+          // if this fails, return witnessHashes as empty
+        }
+      }
+
       peer.wit!.send('BlockWitnessHashes', { reqId, witnessHashes })
     }
   }

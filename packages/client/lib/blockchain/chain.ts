@@ -253,7 +253,7 @@ export class Chain extends EventEmitter {
 
   /**
    * Gets a block by its hash or number
-   * @param  {Buffer|BN}        block
+   * @param {Buffer|BN} block
    * @return {Promise<Block>}
    */
   async getBlock(block: Buffer | BN): Promise<Block> {
@@ -290,9 +290,9 @@ export class Chain extends EventEmitter {
    */
   async getHeaders(
     block: Buffer | BN,
-    max: number,
-    skip: number,
-    reverse: boolean
+    max: number = 1,
+    skip: number = 0,
+    reverse: boolean = false
   ): Promise<BlockHeader[]> {
     const blocks = await this.getBlocks(block, max, skip, reverse)
     return blocks.map((b) => b.header)
@@ -345,13 +345,5 @@ export class Chain extends EventEmitter {
   async getTd(hash: Buffer, num: BN): Promise<BN> {
     await this.open()
     return this.blockchain.getTotalDifficulty(hash, num)
-  }
-
-  /**
-   * Gets the trie node hashes for given block hash
-   */
-  async getWitnessHashes(blockHash: Buffer): Promise<Buffer[]> {
-    await this.open()
-    return this.blockchain.getWitnessHashes(blockHash)
   }
 }

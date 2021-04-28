@@ -8,7 +8,9 @@ import { destroy } from './util'
 import Blockchain from '@ethereumjs/blockchain'
 
 tape('[Integration:FullEthereumService]', async (t) => {
-  async function setup(): Promise<[MockServer, FullEthereumService]> {
+  async function setup(
+    generateCanonicalGenesis = false
+  ): Promise<[MockServer, FullEthereumService]> {
     const loglevel = 'error'
     const config = new Config({ loglevel })
     const server = new MockServer({ config })
@@ -16,7 +18,7 @@ tape('[Integration:FullEthereumService]', async (t) => {
       validateBlocks: false,
       validateConsensus: false,
     })
-    const chain = new MockChain({ config, blockchain })
+    const chain = new MockChain({ config, blockchain, generateCanonicalGenesis })
     const serviceConfig = new Config({
       loglevel,
       servers: [server as any],
@@ -30,8 +32,8 @@ tape('[Integration:FullEthereumService]', async (t) => {
     // Set syncing to false to skip VM execution
     service.synchronizer.execution.syncing = false
     await service.open()
-    await server.start()
     await service.start()
+    await server.start()
     return [server, service]
   }
 
@@ -58,26 +60,30 @@ tape('[Integration:FullEthereumService]', async (t) => {
     const [server, service] = await setup()
     const peer = await server.accept('peer0')
     const { headers } = await peer.les!.getBlockHeaders({ block: new BN(1), max: 2 })
-    t.equals(
-      headers[1].hash().toString('hex'),
-      'a321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069',
-      'handled GetBlockHeaders'
-    )
+    const hash = (await service.chain.getHeaders(new BN(2)))[0].hash()
+    t.ok(headers[1].hash().equals(hash), 'handled GetBlockHeaders')
     await destroy(server, service)
     t.end()
   })
 
   t.test('should handle WIT requests', async (t) => {
-    const [server, service] = await setup()
+    const [server, service] = await setup(true)
     const peer = await server.accept('peer0')
-    const blockHash = Buffer.from(
-      'a321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069',
-      'hex'
-    )
+    const block = await service.chain.getLatestBlock()
+    const blockHash = block.hash()
+
+    await service.synchronizer.execution.vm.runBlockchain(service.chain.blockchain)
+
     const { witnessHashes } = await peer.wit!.getBlockWitnessHashes({ blockHash })
     t.deepEquals(
       witnessHashes.map((h) => h.toString('hex')),
-      ['a321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069'],
+      [
+        '6508a7d1a818321a98468c6732f9aa9a9d8ab8913e8da14a88531aea9295d038',
+        '3d7ad07382f97b001fa8df56fed096817301a4bf159ffc136dbb81c901caa19b',
+        'd3d6b34f0ec4cf8a3946f227680a84b51acf89f6bdc27c8ed2ad5c97bd36d882',
+        'f423a3db9ba265411def2490ea23b8cafc48551683165658802beb275f688499',
+        'f3f0feb659a3ab021795541081f3dfa800d1ef91ba6c1af098455c5212710b30',
+      ],
       'handled GetBlockWitnessHashes'
     )
     await destroy(server, service)
