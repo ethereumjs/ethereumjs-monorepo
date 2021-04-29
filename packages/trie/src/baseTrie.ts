@@ -123,7 +123,8 @@ export class Trie {
   }
 
   /**
-   * Stores a given `value` at the given `key`.
+   * Stores a given `value` at the given `key` or do a delete if `value` is empty
+   * (delete operations are only executed on DB with `deleteFromDB` set to `true`)
    * @param key
    * @param value
    * @returns A Promise that resolves once value is stored.
@@ -149,7 +150,8 @@ export class Trie {
   }
 
   /**
-   * Deletes a value given a `key`.
+   * Deletes a value given a `key` from the trie
+   * (delete operations are only executed on DB with `deleteFromDB` set to `true`)
    * @param key
    * @returns A Promise that resolves once value is deleted.
    */
@@ -567,6 +569,10 @@ export class Trie {
   ): Buffer | (EmbeddedNode | null)[] {
     const rlpNode = node.serialize()
 
+    // TODO: analyze why this length check is here, 2021-04-29
+    // If removed various tests fail. However this prevents certain delete operations
+    // when deleteFromDB is activated
+    // Related test: `index.spec.ts`, "setting back state root (deleteFromDB)"
     if (rlpNode.length >= 32 || topLevel) {
       // Do not use TrieNode.hash() here otherwise serialize()
       // is applied twice (performance)

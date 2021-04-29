@@ -292,12 +292,14 @@ tape('it should create the genesis state root from ethereum', function (tester) 
 
 tape('setting back state root (deleteFromDB)', async (t) => {
   const k1 = Buffer.from('1')
-  const v1 = Buffer.from('value1')
+  // Testing with longer value due to `rlpNode.length >= 32` check in `_formatNode()`
+  // see TODO note over there
+  const v1 = Buffer.from('this-is-some-longer-value-to-test-the-delete-operation-value1')
   const k2 = Buffer.from('2')
-  const v2 = Buffer.from('value2')
+  const v2 = Buffer.from('this-is-some-longer-value-to-test-the-delete-operation-value2')
 
   const rootAfterK1 = Buffer.from(
-    'd7ad4d901f5ecbf1940c67129b2bc24e46dadb3d4f806f6e9b927fdbddc567c7',
+    '809e75931f394603657e113eb7244794f35b8d326cff99407111d600722e9425',
     'hex'
   )
 
