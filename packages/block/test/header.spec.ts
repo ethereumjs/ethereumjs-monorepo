@@ -374,7 +374,6 @@ tape('[Block]: Header functions', function (t) {
     'should throw on fromValuesBuffer() call with values array with length > 15',
     function (st) {
       const badHeader = function (): void {
-        const zero = Buffer.alloc(0)
         const headerArray = Array(16).fill(Buffer.alloc(0))
 
         // mock header data (if set to zeros(0) header throws)
