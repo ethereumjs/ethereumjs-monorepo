@@ -4,6 +4,7 @@ import Common from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src'
 import { Mockchain } from './mockchain'
+import { PoaMockchain } from './poaMockchain'
 const testData = require('./testdata/testdata.json')
 const blocksMainnet = require('./testdata/blocks_mainnet.json')
 const blocksGoerli = require('./testdata/blocks_goerli.json')
@@ -285,7 +286,7 @@ tape('[Block]: Header functions', function (t) {
     header = BlockHeader.fromHeaderData(headerData, { common })
     try {
       header.validateCliqueDifficulty(blockchain)
-      st.fail('should throw')
+      st.fail(testCase)
     } catch (error) {
       if (error.message.includes('difficulty for clique block must be INTURN (2) or NOTURN (1)')) {
         st.pass('error thrown on invalid clique difficulty')
@@ -294,6 +295,34 @@ tape('[Block]: Header functions', function (t) {
       }
     }
 
+    testCase = 'validateCliqueDifficulty() should return true with NOTURN difficulty and one signer'
+    headerData.difficulty = new BN(2)
+    const poaBlockchain = new PoaMockchain()
+    const cliqueSigner = Buffer.from(
+      '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
+      'hex'
+    )
+    const poaBlock = Block.fromRLPSerializedBlock(testData.genesisRLP, { common, cliqueSigner })
+    await poaBlockchain.putBlock(poaBlock)
+
+    header = BlockHeader.fromHeaderData(headerData, { common, cliqueSigner })
+    try {
+      const res = header.validateCliqueDifficulty(poaBlockchain)
+      st.equal(res, true, testCase)
+    } catch (error) {
+      st.fail(testCase)
+    }
+
+    testCase =
+      'validateCliqueDifficulty() should return false with INTURN difficulty and one signer'
+    headerData.difficulty = new BN(1)
+    header = BlockHeader.fromHeaderData(headerData, { common, cliqueSigner })
+    try {
+      const res = header.validateCliqueDifficulty(poaBlockchain)
+      st.equal(res, false, testCase)
+    } catch (error) {
+      st.fail(testCase)
+    }
     st.end()
   })
 
