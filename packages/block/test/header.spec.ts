@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from 'ethereumjs-util'
+import { Address, BN, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY, rlp } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src'
@@ -280,6 +280,20 @@ tape('[Block]: Header functions', function (t) {
     }
     headerData.mixHash = Buffer.alloc(32)
 
+    testCase = 'show throw on invalid clique difficulty'
+    headerData.difficulty = new BN(3)
+    header = BlockHeader.fromHeaderData(headerData, { common })
+    try {
+      await header.validateCliqueDifficulty(blockchain);
+      st.fail('should throw')
+    } catch (error) {
+      if (error.message.includes('difficulty for clique block must be INTURN (2) or NOTURN (1)')) {
+        st.pass('error thrown on invalid clique difficulty')
+      } else {
+        st.fail('should throw with appropriate error')
+      }
+    }
+
     st.end()
   })
 
@@ -343,5 +357,36 @@ tape('[Block]: Header functions', function (t) {
       'correct PoA clique hash (goerli block 1)'
     )
     st.end()
+  })
+
+  t.test('should throw on fromRLPSerializedHeader() with header as rlp encoded string', function (st) {
+    const badHeader = function (): void {
+      let header = BlockHeader.fromRLPSerializedHeader(rlp.encode('a'))
+    }
+    st.throws(() => badHeader(), 'Invalid serialized header input. Must be array')
+    st.end();
+  })
+
+  t.test('should throw on fromValuesBuffer() call with values array with length > 15', function (st) {
+    const badHeader = function (): void {
+      const zero = Buffer.alloc(0)
+      const headerArray = []
+      for (let item = 0; item < 16; item++) {
+        headerArray.push(zero)
+      }
+  
+      // mock header data (if set to zeros(0) header throws)
+      headerArray[0] = zeros(32) //parentHash
+      headerArray[2] = zeros(20) //coinbase
+      headerArray[3] = zeros(32) //stateRoot
+      headerArray[4] = zeros(32) //transactionsTrie
+      headerArray[5] = zeros(32) //receiptTrie
+      headerArray[13] = zeros(32) // mixHash
+      headerArray[14] = zeros(8) // nonce
+      headerArray[15] = zeros(4) // bad data
+      const header = BlockHeader.fromValuesArray(headerArray);
+    }
+    st.throws(() => badHeader(), 'invalid header. More values than expected were received');
+    st.end();
   })
 })
