@@ -176,7 +176,6 @@ export class Protocol extends EventEmitter {
       peer: peer,
       sender: sender,
     })
-    await bound.handshake(sender)
     //@ts-ignore TODO: evaluate this line
     peer[this.name] = bound
     return bound

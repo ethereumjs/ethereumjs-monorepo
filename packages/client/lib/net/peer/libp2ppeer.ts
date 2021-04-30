@@ -29,7 +29,7 @@ export interface Libp2pPeerOptions extends Omit<PeerOptions, 'address' | 'transp
  *
  * new Libp2pPeer({ id, multiaddrs, protocols })
  *   .on('error', (err) => console.log('Error: ', err))
- *   .on('connected', () => console.log('Connected'))
+ *   .on('bound', () => console.log('Bound'))
  *   .on('disconnected', (reason) => console.log('Disconnected: ', reason))
  *   .connect()
  */
@@ -67,7 +67,7 @@ export class Libp2pPeer extends Peer {
       await node.dial(ma)
       await this.bindProtocols(node, ma)
     }
-    this.emit('connected')
+    this.emit('bound')
   }
 
   /**
@@ -110,6 +110,5 @@ export class Libp2pPeer extends Peer {
       })
     )
     this.server = server
-    this.connected = true
   }
 }

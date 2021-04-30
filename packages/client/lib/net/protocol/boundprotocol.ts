@@ -27,7 +27,7 @@ export class BoundProtocol extends EventEmitter {
   public name: string
   private protocol: Protocol
   private peer: Peer
-  private sender: Sender
+  public sender: Sender
   private versions: number[]
   private timeout: number
   private _status: any

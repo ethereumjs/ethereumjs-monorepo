@@ -42,7 +42,7 @@ export interface RlpxPeerOptions extends Omit<PeerOptions, 'address' | 'transpor
  *
  * new RlpxPeer({ id, host, port, protocols })
  *   .on('error', (err) => console.log('Error:', err))
- *   .on('connected', () => console.log('Connected'))
+ *   .on('bound', () => console.log('Bound'))
  *   .on('disconnected', (reason) => console.log('Disconnected:', reason))
  *   .connect()
  */
@@ -117,7 +117,7 @@ export class RlpxPeer extends Peer {
     this.rlpx.once('peer:added', async (rlpxPeer: Devp2pRlpxPeer) => {
       try {
         await this.bindProtocols(rlpxPeer)
-        this.emit('connected')
+        this.emit('bound')
       } catch (error) {
         this.emit('error', error)
       }
@@ -167,6 +167,5 @@ export class RlpxPeer extends Peer {
         }
       })
     )
-    this.connected = true
   }
 }

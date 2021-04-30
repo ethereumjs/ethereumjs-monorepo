@@ -62,8 +62,8 @@ export class PeerPool extends EventEmitter {
       return false
     }
     this.config.servers.map((s) => {
-      s.on('connected', (peer: Peer) => {
-        this.connected(peer)
+      s.on('bound', (peer: Peer) => {
+        this.bound(peer)
       })
       s.on('disconnected', (peer: Peer) => {
         this.disconnected(peer)
@@ -127,7 +127,7 @@ export class PeerPool extends EventEmitter {
    * @private
    * @param  {Peer} peer
    */
-  connected(peer: Peer) {
+  bound(peer: Peer) {
     if (this.size >= this.config.maxPeers) return
     peer.on('message', (message: any, protocol: string) => {
       if (this.pool.get(peer.id)) {
@@ -141,7 +141,17 @@ export class PeerPool extends EventEmitter {
         this.ban(peer)
       }
     })
-    this.add(peer)
+    peer.bound.forEach(async (bound) => {
+      try {
+        if (!this.pool.get(peer.id)) {
+          this.add(peer)
+        }
+        await bound.handshake(bound.sender)
+      } catch(error) {
+        this.ban(peer)
+        peer.emit('error', error)
+      }
+    })
   }
 
   /**
@@ -179,6 +189,7 @@ export class PeerPool extends EventEmitter {
   add(peer?: Peer) {
     if (peer && peer.id && !this.pool.get(peer.id)) {
       this.pool.set(peer.id, peer)
+      //console.log(`Peer ${peer.id} added to peerpool.`)
       this.emit('added', peer)
     }
   }
