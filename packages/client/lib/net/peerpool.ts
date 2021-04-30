@@ -147,7 +147,7 @@ export class PeerPool extends EventEmitter {
           this.add(peer)
         }
         await bound.handshake(bound.sender)
-      } catch(error) {
+      } catch (error) {
         this.ban(peer)
         peer.emit('error', error)
       }
