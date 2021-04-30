@@ -46,6 +46,7 @@ export class Peer extends events.EventEmitter {
   protected transport: string
   protected protocols: Protocol[]
   private _idle: boolean
+  public pooled: boolean = false
 
   // Dynamically bound protocol properties
   public eth: (BoundProtocol & EthProtocolMethods) | undefined
@@ -126,6 +127,15 @@ export class Peer extends events.EventEmitter {
    */
   understands(protocolName: string): boolean {
     return !!this.bound.get(protocolName)
+  }
+
+  /**
+   * Handle unhandled messages along handshake
+   */
+  handleMessageQueue() {
+    this.bound.forEach(async (bound) => {
+      bound.handleMessageQueue()
+    })
   }
 
   toString(withFullId = false): string {
