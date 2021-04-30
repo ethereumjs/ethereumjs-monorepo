@@ -142,6 +142,7 @@ export class PeerPool extends EventEmitter {
       }
     })
     this.add(peer)
+    peer.handleMessageQueue()
   }
 
   /**
@@ -179,6 +180,7 @@ export class PeerPool extends EventEmitter {
   add(peer?: Peer) {
     if (peer && peer.id && !this.pool.get(peer.id)) {
       this.pool.set(peer.id, peer)
+      peer.pooled = true
       this.emit('added', peer)
     }
   }
@@ -191,6 +193,7 @@ export class PeerPool extends EventEmitter {
   remove(peer?: Peer) {
     if (peer && peer.id) {
       if (this.pool.delete(peer.id)) {
+        peer.pooled = false
         this.emit('removed', peer)
       }
     }
