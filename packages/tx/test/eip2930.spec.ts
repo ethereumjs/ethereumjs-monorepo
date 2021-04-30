@@ -1,10 +1,15 @@
 import Common from '@ethereumjs/common'
 import { Address, BN, bufferToHex, privateToAddress } from 'ethereumjs-util'
 import tape from 'tape'
-import { AccessList, AccessListEIP2930Transaction } from '../src'
+import { AccessList, AccessListEIP2930Transaction, AccessListBufferItem } from '../src'
 
 const pKey = Buffer.from('4646464646464646464646464646464646464646464646464646464646464646', 'hex')
 const address = privateToAddress(pKey)
+
+const N_DIV_2_PLUS_1 = new BN(
+  '7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a1',
+  16
+)
 
 const common = new Common({
   eips: [2718, 2929, 2930],
@@ -30,6 +35,21 @@ tape('[AccessListEIP2930Transaction]', function (t) {
     t.throws(() => {
       AccessListEIP2930Transaction.fromTxData({}, { common: nonEIP2930Common })
     }, 'should throw on a pre-Berlin Harfork (EIP-2930 not activated)')
+
+    t.throws(() => {
+      AccessListEIP2930Transaction.fromSerializedTx(Buffer.from([2]), {})
+    }, 'should throw with tx type different than 1 for EIP2930 TX')
+
+    t.throws(() => {
+      const buffer = Buffer.from([])
+      const address = Buffer.from([])
+      const storageKeys = [Buffer.from([]), Buffer.from([])]
+      const aclBuf: AccessListBufferItem = [address, storageKeys]
+      AccessListEIP2930Transaction.fromValuesArray(
+        [buffer, buffer, buffer, buffer, buffer, buffer, buffer, [aclBuf], buffer],
+        {}
+      )
+    }, 'should throw with values array with length different than 8 or 11')
 
     t.throws(() => {
       AccessListEIP2930Transaction.fromTxData(
@@ -359,6 +379,33 @@ tape('[AccessListEIP2930Transaction]', function (t) {
 
     st.deepEqual(tx.accessList, [])
     st.deepEqual(signed.accessList, [])
+
+    st.end()
+  })
+
+  t.test('should throw calling hash with unsigned tx', (st) => {
+    const tx = AccessListEIP2930Transaction.fromTxData({}, { common })
+
+    t.throws(() => {
+      tx.hash()
+    })
+
+    t.throws(() => {
+      tx.getSenderPublicKey()
+    })
+
+    st.end()
+  })
+
+  t.test('should throw with invalid s value', (st) => {
+    t.throws(() => {
+      const tx = AccessListEIP2930Transaction.fromTxData(
+        { s: N_DIV_2_PLUS_1, r: 1, v: 1 },
+        { common }
+      )
+      const signed = tx.sign(pKey)
+      signed.getSenderPublicKey()
+    })
 
     st.end()
   })
