@@ -108,3 +108,18 @@ tape(`${method}: call with valid arguments (retrieve pos1)`, async (t) => {
   }
   baseRequest(t, server, req, 200, expectRes)
 })
+
+tape(`${method}: call with unsupported block argument`, async (t) => {
+  const { server, createdAddress } = await setup()
+
+  const req = params(method, [createdAddress!.toString(), '0x0', 'pending'])
+  const expectRes = (res: any) => {
+    const msg = 'should return error if block argument is not "latest"'
+    if (res.body.result.message === 'Currently only "latest" block supported') {
+      t.pass(msg)
+    } else {
+      throw new Error(msg)
+    }
+  }
+  baseRequest(t, server, req, 200, expectRes)
+})
