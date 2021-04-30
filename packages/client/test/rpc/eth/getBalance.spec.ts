@@ -3,7 +3,7 @@ import { Address, BN, toBuffer } from 'ethereumjs-util'
 import Blockchain from '@ethereumjs/blockchain'
 import { Transaction } from '@ethereumjs/tx'
 import { FullSynchronizer } from '../../../lib/sync'
-import { startRPC, createManager, createClient, params, baseRequest, baseSetup } from '../helpers'
+import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
 
 const method = 'eth_getBalance'
 
