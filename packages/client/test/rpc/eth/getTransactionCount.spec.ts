@@ -73,10 +73,7 @@ tape(`${method}: call with unsupported block argument`, async (t) => {
   // genesis address with balance
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
-  const req = params(
-    method,
-    [address.toString(), 'pending']
-  )
+  const req = params(method, [address.toString(), 'pending'])
   const expectRes = (res: any) => {
     const msg = 'should return error if block argument is not "latest"'
     if (res.body.result.message === 'Currently only "latest" block supported') {

@@ -93,10 +93,7 @@ tape(`${method}: call with unsupported block argument`, async (t) => {
     gasLimit: `0x${new BN(53000).toString(16)}`,
   }
 
-  const req = params(
-    method,
-    [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'pending']
-  )
+  const req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'pending'])
   const expectRes = (res: any) => {
     const msg = 'should return error if block argument is not "latest"'
     if (res.body.result.message === 'Currently only "latest" block supported') {
