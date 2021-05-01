@@ -23,6 +23,7 @@ export default class MockPeer extends Peer {
     super({ ...options, transport: 'mock', address: options.location })
     this.location = options.location
     this.connected = false
+    this.pooled = true
   }
 
   async connect() {
