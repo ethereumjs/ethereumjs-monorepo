@@ -43,6 +43,7 @@ tape('[PeerPool]', async (t) => {
     const config = new Config({ loglevel: 'error', transports: [] })
     const pool = new PeerPool({ config })
     ;(peer as any).id = 'abc'
+    ;(peer as any).handleMessageQueue = td.func()
     ;(pool as any).ban = td.func()
     pool.connected(peer)
     pool.on('message', (msg: any, proto: any, p: any) => {
