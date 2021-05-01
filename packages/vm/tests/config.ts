@@ -75,6 +75,8 @@ export const SKIP_SLOW = [
   'loop-exp',
   'loop-mul',
   'manyFunctions100',
+  'loopMul',
+  'loopExp',
 ]
 
 /**

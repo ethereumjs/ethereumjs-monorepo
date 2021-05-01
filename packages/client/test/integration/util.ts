@@ -49,6 +49,7 @@ export async function setup(
     service.synchronizer.execution.syncing = false
   }
   await service.start()
+  await server.start()
 
   return [server, service]
 }

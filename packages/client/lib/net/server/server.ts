@@ -82,6 +82,12 @@ export class Server extends EventEmitter {
   }
 
   /**
+   * Server bootstrap.
+   * In Libp2p this is done during server start.
+   */
+  async bootstrap(): Promise<void> {}
+
+  /**
    * Stop server. Returns a promise that resolves once server has been stopped.
    */
   async stop(): Promise<boolean> {

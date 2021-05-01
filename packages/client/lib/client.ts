@@ -106,8 +106,9 @@ export default class EthereumClient extends events.EventEmitter {
     if (this.started) {
       return false
     }
-    await Promise.all(this.config.servers.map((s) => s.start()))
     await Promise.all(this.services.map((s) => s.start()))
+    await Promise.all(this.config.servers.map((s) => s.start()))
+    await Promise.all(this.config.servers.map((s) => s.bootstrap()))
     this.started = true
   }
 

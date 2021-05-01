@@ -87,7 +87,6 @@ export default class EEI {
    * @param _context - Deprecated: this param doesn't do anything now.
    * @throws if out of gas
    */
-  // eslint-disable-next-line no-unused-vars
   useGas(amount: BN, _context?: string): void {
     this._gasLeft.isub(amount)
     if (this._gasLeft.ltn(0)) {
@@ -101,7 +100,6 @@ export default class EEI {
    * @param amount - Amount of gas refunded
    * @param _context - Deprecated: this param doesn't do anything now.
    */
-  // eslint-disable-next-line no-unused-vars
   refundGas(amount: BN, _context?: string): void {
     this._evm._refund.iadd(amount)
   }
@@ -111,7 +109,6 @@ export default class EEI {
    * @param amount - Amount to subtract from gas refunds
    * @param _context - Deprecated: this param doesn't do anything now.
    */
-  // eslint-disable-next-line no-unused-vars
   subRefund(amount: BN, _context?: string): void {
     this._evm._refund.isub(amount)
     if (this._evm._refund.ltn(0)) {

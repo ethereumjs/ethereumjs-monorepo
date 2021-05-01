@@ -6,6 +6,7 @@ module.exports = {
     '@typescript-eslint/no-unnecessary-condition': 'off',
     'no-invalid-this': 'off',
     'no-restricted-syntax': 'off',
+    'no-unused-vars': ["error", { "argsIgnorePattern": "^_" }]
   },
   overrides: [
     {

@@ -32,6 +32,7 @@ export class BoundProtocol extends EventEmitter {
   private timeout: number
   private _status: any
   private resolvers: Map<string | number, any>
+  private messageQueue: Message[] = []
 
   /**
    * Create bound protocol
@@ -53,7 +54,11 @@ export class BoundProtocol extends EventEmitter {
     this.resolvers = new Map()
     this.sender.on('message', (message: any) => {
       try {
-        this.handle(message)
+        if (this.peer.pooled) {
+          this.handle(message)
+        } else {
+          this.messageQueue.push(message)
+        }
       } catch (error) {
         this.emit('error', error)
       }
@@ -109,6 +114,15 @@ export class BoundProtocol extends EventEmitter {
       } else {
         this.emit('message', { name: message.name, data: data })
       }
+    }
+  }
+
+  /**
+   * Handle unhandled messages along handshake
+   */
+  handleMessageQueue() {
+    for (const message of this.messageQueue) {
+      this.handle(message)
     }
   }
 

@@ -72,7 +72,6 @@ tape('[LightEthereumService]', async (t) => {
     t.notOk(await service.start(), 'already started')
     await service.stop()
     td.verify(service.synchronizer.stop())
-    td.verify(server.start())
     t.notOk(await service.stop(), 'already stopped')
     t.end()
   })
