@@ -92,6 +92,14 @@ export function COOGResult(gasUsedCreateCode: BN): ExecResult {
   }
 }
 
+export function EIP3541ViolationResult(gasLimit: BN): ExecResult {
+  return {
+    returnValue: Buffer.alloc(0),
+    gasUsed: gasLimit,
+    exceptionError: new VmError(ERROR.EIP3541_VIOLATION),
+  }
+}
+
 export function VmErrorResult(error: VmError, gasUsed: BN): ExecResult {
   return {
     returnValue: Buffer.alloc(0),
@@ -309,13 +317,21 @@ export default class EVM {
     ) {
       allowedCodeSize = false
     }
+
     // If enough gas and allowed code size
     let CodestoreOOG = false
     if (
       totalGas.lte(message.gasLimit) &&
       (this._vm._allowUnlimitedContractSize || allowedCodeSize)
     ) {
-      result.gasUsed = totalGas
+      if (
+        this._vm._common.isActivatedEIP(3541) &&
+        result.returnValue.slice(0, 1).equals(Buffer.from('EF', 'hex'))
+      ) {
+        result = { ...result, ...OOGResult(message.gasLimit) }
+      } else {
+        result.gasUsed = totalGas
+      }
     } else {
       if (this._vm._common.gteHardfork('homestead')) {
         result = { ...result, ...OOGResult(message.gasLimit) }
