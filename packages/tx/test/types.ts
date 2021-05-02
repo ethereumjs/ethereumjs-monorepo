@@ -38,6 +38,7 @@ export type TxsJsonEntry = {
   type: string
   cost: number
   raw: string[]
+  data: TxData
 }
 
 export type ForksData = {
