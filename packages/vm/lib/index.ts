@@ -165,7 +165,7 @@ export default class VM extends AsyncEventEmitter {
 
     if (opts.common) {
       //EIPs
-      const supportedEIPs = [2315, 2537, 2565, 2718, 2929, 2930]
+      const supportedEIPs = [2315, 2537, 2565, 2718, 2929, 2930, 3529]
       for (const eip of opts.common.eips()) {
         if (!supportedEIPs.includes(eip)) {
           throw new Error(`${eip} is not supported by the VM`)
