@@ -47,6 +47,14 @@ export class Peer extends events.EventEmitter {
   protected protocols: Protocol[]
   private _idle: boolean
 
+  /*
+    If the peer is in the PeerPool.
+    If true, messages are handled immediately.
+    If false, adds incoming messages to handleMessageQueue,
+    which are handled after the peer is added to the pool.
+  */
+  public pooled: boolean = false
+
   // Dynamically bound protocol properties
   public eth: (BoundProtocol & EthProtocolMethods) | undefined
   public les: (BoundProtocol & LesProtocolMethods) | undefined
@@ -126,6 +134,15 @@ export class Peer extends events.EventEmitter {
    */
   understands(protocolName: string): boolean {
     return !!this.bound.get(protocolName)
+  }
+
+  /**
+   * Handle unhandled messages along handshake
+   */
+  handleMessageQueue() {
+    this.bound.forEach(async (bound) => {
+      bound.handleMessageQueue()
+    })
   }
 
   toString(withFullId = false): string {

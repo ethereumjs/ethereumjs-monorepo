@@ -99,7 +99,7 @@ async function runTests() {
     return Object.assign(
       {},
       ...Object.entries(args)
-        .filter(([k, v]) => v && (v as any).length !== 0) // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
+        .filter(([_k, v]) => v && (v as any).length !== 0)
         .map(([k, v]) => ({
           [k]: typeof v !== 'string' && (v as any).length ? (v as any).length : v,
         }))

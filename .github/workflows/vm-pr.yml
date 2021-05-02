@@ -93,6 +93,8 @@ jobs:
       matrix:
         fork: [
           'Berlin',
+          'MuirGlacier',
+          'Istanbul',
           'Petersburg',
           'Constantinople',
           'Byzantium',
