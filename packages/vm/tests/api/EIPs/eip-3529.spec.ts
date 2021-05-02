@@ -4,8 +4,10 @@ import VM from '../../../lib'
 import Common from '@ethereumjs/common'
 import { InterpreterStep } from '../../../lib/evm/interpreter'
 import { EIP2929StateManager } from '../../../lib/state/interface'
+import { Transaction } from '@ethereumjs/tx'
 
 const address = new Address(Buffer.from('11'.repeat(20), 'hex'))
+const pkey = Buffer.from('20'.repeat(32), 'hex')
 
 const testCases = [
   {
@@ -109,8 +111,7 @@ const testCases = [
 tape('EIP-3529 tests', (t) => {
   const common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [3529] })
 
-  // EIP test case 1
-  t.test('should jump into a subroutine, back out and stop', async (st) => {
+  t.test('should verify EIP test cases', async (st) => {
     const vm = new VM({ common })
 
     let gasRefund: BN
@@ -154,6 +155,74 @@ tape('EIP-3529 tests', (t) => {
       vm.stateManager.clearOriginalStorageCache()
     }
 
+    st.end()
+  })
+
+  t.test('should not refund selfdestructs', async (st) => {
+    const vm = new VM({ common })
+
+    const tx = Transaction.fromTxData({
+      data: '0x6000ff',
+      gasLimit: 100000,
+    }).sign(pkey)
+
+    const result = await vm.runTx({
+      tx,
+    })
+
+    st.ok(result.execResult.exceptionError === undefined, 'transaction executed succesfully')
+    st.ok(BN.isBN(result.execResult.gasRefund), 'gas refund is defined')
+    st.ok(result.execResult.gasRefund?.isZero(), 'gas refund is zero')
+    st.end()
+  })
+
+  t.test('refunds are capped at 1/5 of the tx gas used', async (st) => {
+    const vm = new VM({ common })
+
+    let startGas: any
+    let finalGas: any
+
+    vm.on('step', (step: InterpreterStep) => {
+      if (startGas === undefined) {
+        startGas = step.gasLeft.clone()
+      }
+      if (step.opcode.name === 'STOP') {
+        finalGas = step.gasLeft.clone()
+      }
+    })
+
+    const address = new Address(Buffer.from('20'.repeat(20), 'hex'))
+
+    const value = Buffer.from('01'.repeat(32), 'hex')
+
+    let code = ''
+
+    for (let i = 0; i < 100; i++) {
+      const key = Buffer.from(i.toString().padStart(64, '0'), 'hex')
+      await vm.stateManager.putContractStorage(address, key, value)
+      ;(<EIP2929StateManager>vm.stateManager).addWarmedStorage(address.toBuffer(), key)
+      const hex = i.toString(16).padStart(2, '0')
+      // push 0 push <hex> sstore
+      code += '600060' + hex + '55'
+    }
+
+    code += '00'
+
+    await vm.stateManager.putContractCode(address, Buffer.from(code, 'hex'))
+
+    const tx = Transaction.fromTxData({
+      to: address,
+      gasLimit: 10000000,
+    }).sign(pkey)
+
+    const result = await vm.runTx({ tx })
+
+    const actualGasUsed = startGas.sub(finalGas)
+    const maxRefund = actualGasUsed.divn(5)
+    const minGasUsed = actualGasUsed.sub(maxRefund)
+    const gasUsed = result.execResult.gasUsed
+
+    st.ok(gasUsed.gte(minGasUsed))
     st.end()
   })
 })
