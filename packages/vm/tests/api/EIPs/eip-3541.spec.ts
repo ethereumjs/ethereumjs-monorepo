@@ -2,10 +2,12 @@ import tape from 'tape'
 import VM from '../../../lib'
 import Common from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
+import { InterpreterStep } from '../../../lib/evm/interpreter'
+import { Address } from 'ethereumjs-util'
 
 const pkey = Buffer.from('20'.repeat(32), 'hex')
 
-tape('Berlin: EIP 2315 tests', (t) => {
+tape('EIP 3541 tests', (t) => {
   const common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [3541] })
   const commonNoEIP3541 = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [] })
 
@@ -57,6 +59,86 @@ tape('Berlin: EIP 2315 tests', (t) => {
 
     st.ok(code.length > 0, 'did deposit code')
 
+    st.end()
+  })
+
+  t.test('should not deploy contracts starting with 0xEF using CREATE', async (st) => {
+    // put 0xEF contract
+    const tx = Transaction.fromTxData({
+      data:
+        '0x7F60EF60005360016000F300000000000000000000000000000000000000000000600052602060006000F000',
+      gasLimit: 1000000,
+    }).sign(pkey)
+
+    const vm = new VM({ common })
+    let address: Address
+
+    vm.on('step', (step: InterpreterStep) => {
+      if (step.depth === 1) {
+        address = step.address
+      }
+    })
+
+    await vm.runTx({ tx })
+
+    let code = await vm.stateManager.getContractCode(address!)
+
+    st.ok(code.length === 0, 'did not deposit code')
+
+    // put 0xFF contract
+    const tx1 = Transaction.fromTxData({
+      data:
+        '0x7F60FF60005360016000F300000000000000000000000000000000000000000000600052602060006000F000',
+      gasLimit: 1000000,
+      nonce: 1,
+    }).sign(pkey)
+
+    console.log('tx1')
+
+    await vm.runTx({ tx: tx1 })
+
+    code = await vm.stateManager.getContractCode(address!)
+
+    st.ok(code.length > 0, 'did deposit code')
+    st.end()
+  })
+
+  t.test('should not deploy contracts starting with 0xEF using CREATE2', async (st) => {
+    // put 0xEF contract
+    const tx = Transaction.fromTxData({
+      data:
+        '0x7F60EF60005360016000F3000000000000000000000000000000000000000000006000526000602060006000F500',
+      gasLimit: 1000000,
+    }).sign(pkey)
+
+    const vm = new VM({ common })
+    let address: Address
+
+    vm.on('step', (step: InterpreterStep) => {
+      if (step.depth === 1) {
+        address = step.address
+      }
+    })
+
+    await vm.runTx({ tx })
+
+    let code = await vm.stateManager.getContractCode(address!)
+
+    st.ok(code.length === 0, 'did not deposit code')
+
+    // put 0xFF contract
+    const tx1 = Transaction.fromTxData({
+      data:
+        '0x7F60FF60005360016000F3000000000000000000000000000000000000000000006000526000602060006000F500',
+      gasLimit: 1000000,
+      nonce: 1,
+    }).sign(pkey)
+
+    await vm.runTx({ tx: tx1 })
+
+    code = await vm.stateManager.getContractCode(address!)
+
+    st.ok(code.length > 0, 'did deposit code')
     st.end()
   })
 })
