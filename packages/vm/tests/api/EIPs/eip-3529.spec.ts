@@ -177,6 +177,11 @@ tape('EIP-3529 tests', (t) => {
   })
 
   t.test('refunds are capped at 1/5 of the tx gas used', async (st) => {
+    /**
+     * This test initializes a contract with slots 0-99 initialized to a nonzero value
+     * Then, it resets all these 100 slots back to 0. This is to check if the
+     * max gas refund is respected.
+     */
     const vm = new VM({ common })
 
     let startGas: any
@@ -198,9 +203,8 @@ tape('EIP-3529 tests', (t) => {
     let code = ''
 
     for (let i = 0; i < 100; i++) {
-      const key = Buffer.from(i.toString().padStart(64, '0'), 'hex')
+      const key = Buffer.from(i.toString(16).padStart(64, '0'), 'hex')
       await vm.stateManager.putContractStorage(address, key, value)
-      ;(<EIP2929StateManager>vm.stateManager).addWarmedStorage(address.toBuffer(), key)
       const hex = i.toString(16).padStart(2, '0')
       // push 0 push <hex> sstore
       code += '600060' + hex + '55'
@@ -217,12 +221,13 @@ tape('EIP-3529 tests', (t) => {
 
     const result = await vm.runTx({ tx })
 
-    const actualGasUsed = startGas.sub(finalGas)
+    const actualGasUsed = startGas.sub(finalGas).addn(21000)
     const maxRefund = actualGasUsed.divn(5)
     const minGasUsed = actualGasUsed.sub(maxRefund)
     const gasUsed = result.execResult.gasUsed
 
-    st.ok(gasUsed.gte(minGasUsed))
+    st.ok(result.execResult.gasRefund?.gt(maxRefund), 'refund is larger than the max refund')
+    st.ok(gasUsed.gte(minGasUsed), 'gas used respects the max refund quotient')
     st.end()
   })
 })
