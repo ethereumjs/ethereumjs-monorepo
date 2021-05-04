@@ -1,9 +1,10 @@
 import tape from 'tape'
-import { Address, BN, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from 'ethereumjs-util'
+import { Address, BN, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY, rlp } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src'
 import { Mockchain } from './mockchain'
+import { PoaMockchain } from './poaMockchain'
 const testData = require('./testdata/testdata.json')
 const blocksMainnet = require('./testdata/blocks_mainnet.json')
 const blocksGoerli = require('./testdata/blocks_goerli.json')
@@ -280,6 +281,48 @@ tape('[Block]: Header functions', function (t) {
     }
     headerData.mixHash = Buffer.alloc(32)
 
+    testCase = 'should throw on invalid clique difficulty'
+    headerData.difficulty = new BN(3)
+    header = BlockHeader.fromHeaderData(headerData, { common })
+    try {
+      header.validateCliqueDifficulty(blockchain)
+      st.fail(testCase)
+    } catch (error) {
+      if (error.message.includes('difficulty for clique block must be INTURN (2) or NOTURN (1)')) {
+        st.pass('error thrown on invalid clique difficulty')
+      } else {
+        st.fail('should throw with appropriate error')
+      }
+    }
+
+    testCase = 'validateCliqueDifficulty() should return true with NOTURN difficulty and one signer'
+    headerData.difficulty = new BN(2)
+    const poaBlockchain = new PoaMockchain()
+    const cliqueSigner = Buffer.from(
+      '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
+      'hex'
+    )
+    const poaBlock = Block.fromRLPSerializedBlock(testData.genesisRLP, { common, cliqueSigner })
+    await poaBlockchain.putBlock(poaBlock)
+
+    header = BlockHeader.fromHeaderData(headerData, { common, cliqueSigner })
+    try {
+      const res = header.validateCliqueDifficulty(poaBlockchain)
+      st.equal(res, true, testCase)
+    } catch (error) {
+      st.fail(testCase)
+    }
+
+    testCase =
+      'validateCliqueDifficulty() should return false with INTURN difficulty and one signer'
+    headerData.difficulty = new BN(1)
+    header = BlockHeader.fromHeaderData(headerData, { common, cliqueSigner })
+    try {
+      const res = header.validateCliqueDifficulty(poaBlockchain)
+      st.equal(res, false, testCase)
+    } catch (error) {
+      st.fail(testCase)
+    }
     st.end()
   })
 
@@ -344,4 +387,37 @@ tape('[Block]: Header functions', function (t) {
     )
     st.end()
   })
+
+  t.test(
+    'should throw on fromRLPSerializedHeader() with header as rlp encoded string',
+    function (st) {
+      const badHeader = function (): void {
+        BlockHeader.fromRLPSerializedHeader(rlp.encode('a'))
+      }
+      st.throws(() => badHeader(), 'invalid serialized header input. Must be array')
+      st.end()
+    }
+  )
+
+  t.test(
+    'should throw on fromValuesBuffer() call with values array with length > 15',
+    function (st) {
+      const badHeader = function (): void {
+        const headerArray = Array(16).fill(Buffer.alloc(0))
+
+        // mock header data (if set to zeros(0) header throws)
+        headerArray[0] = zeros(32) //parentHash
+        headerArray[2] = zeros(20) //coinbase
+        headerArray[3] = zeros(32) //stateRoot
+        headerArray[4] = zeros(32) //transactionsTrie
+        headerArray[5] = zeros(32) //receiptTrie
+        headerArray[13] = zeros(32) // mixHash
+        headerArray[14] = zeros(8) // nonce
+        headerArray[15] = zeros(4) // bad data
+        BlockHeader.fromValuesArray(headerArray)
+      }
+      st.throws(() => badHeader(), 'invalid header. More values than expected were received')
+      st.end()
+    }
+  )
 })
