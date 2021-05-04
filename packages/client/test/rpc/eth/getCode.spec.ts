@@ -75,3 +75,25 @@ tape(`${method}: ensure returns correct code`, async (t) => {
   }
   baseRequest(t, server, req, 200, expectRes)
 })
+
+tape(`${method}: call with unsupported block argument`, async (t) => {
+  const blockchain = await Blockchain.create()
+
+  const client = createClient({ blockchain, includeVM: true })
+  const manager = createManager(client)
+  const server = startRPC(manager.getMethods())
+
+  // genesis address with balance
+  const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+
+  const req = params(method, [address.toString(), 'pending'])
+  const expectRes = (res: any) => {
+    const msg = 'should return error if block argument is not "latest"'
+    if (res.body.result.message === 'Currently only "latest" block supported') {
+      t.pass(msg)
+    } else {
+      throw new Error(msg)
+    }
+  }
+  baseRequest(t, server, req, 200, expectRes)
+})
