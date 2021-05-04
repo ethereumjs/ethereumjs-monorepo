@@ -31,7 +31,14 @@ export class LightEthereumService extends EthereumService {
    * Returns all protocols required by this service
    */
   get protocols(): LesProtocol[] {
-    return [new LesProtocol({ config: this.config, chain: this.chain, timeout: this.timeout })]
+    return [
+      new LesProtocol({
+        config: this.config,
+        chain: this.chain,
+        flow: this.flow,
+        timeout: this.timeout,
+      }),
+    ]
   }
 
   /**
