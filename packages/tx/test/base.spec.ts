@@ -3,7 +3,7 @@ import Common from '@ethereumjs/common'
 import { Transaction, AccessListEIP2930Transaction } from '../src'
 import { TxsJsonEntry } from './types'
 import { BaseTransaction } from '../src/baseTransaction'
-import { privateToPublic } from 'ethereumjs-util'
+import { privateToPublic, BN, toBuffer } from 'ethereumjs-util'
 
 tape('[BaseTransaction]', function (t) {
   // EIP-2930 is not enabled in Common by default (2021-03-06)
@@ -11,7 +11,7 @@ tape('[BaseTransaction]', function (t) {
 
   const legacyFixtures: TxsJsonEntry[] = require('./json/txs.json')
   const legacyTxs: BaseTransaction<Transaction>[] = []
-  legacyFixtures.slice(0, 4).forEach(function (tx: any) {
+  legacyFixtures.slice(0, 4).forEach(function (tx: TxsJsonEntry) {
     legacyTxs.push(Transaction.fromTxData(tx.data, { common }))
   })
 
@@ -162,6 +162,11 @@ tape('[BaseTransaction]', function (t) {
         if (privateKey) {
           st.ok(tx.sign(Buffer.from(privateKey, 'hex')), `${txType.name}: should sign tx`)
         }
+
+        st.throws(
+          () => tx.sign(Buffer.from('invalid')),
+          `${txType.name}: should fail with invalid PK`
+        )
       })
     }
     st.end()
@@ -212,6 +217,32 @@ tape('[BaseTransaction]', function (t) {
         }
       })
     }
+    st.end()
+  })
+
+  t.test('initialization with defaults', function (st) {
+    const bufferZero = toBuffer('0x')
+    const tx = Transaction.fromTxData({
+      nonce: '',
+      gasLimit: '',
+      gasPrice: '',
+      to: '',
+      value: '',
+      data: '',
+      v: '',
+      r: '',
+      s: '',
+    })
+    st.equal(tx.v, undefined)
+    st.equal(tx.r, undefined)
+    st.equal(tx.s, undefined)
+    st.isEquivalent(tx.to, undefined)
+    st.isEquivalent(tx.value, new BN(bufferZero))
+    st.isEquivalent(tx.data, bufferZero)
+    st.isEquivalent(tx.gasPrice, new BN(bufferZero))
+    st.isEquivalent(tx.gasLimit, new BN(bufferZero))
+    st.isEquivalent(tx.nonce, new BN(bufferZero))
+
     st.end()
   })
 })

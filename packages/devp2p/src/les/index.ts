@@ -124,7 +124,7 @@ export class LES extends EventEmitter {
     if (status['serveHeaders']) sStr += `, serveHeaders active`
     if (status['serveChainSince']) sStr += `, ServeCS: ${buffer2int(status['serveChainSince'])}`
     if (status['serveStateSince']) sStr += `, ServeSS: ${buffer2int(status['serveStateSince'])}`
-    if (status['txRelax']) sStr += `, txRelay active`
+    if (status['txRelay']) sStr += `, txRelay active`
     if (status['flowControl/BL']) sStr += `, flowControl/BL set`
     if (status['flowControl/MRR']) sStr += `, flowControl/MRR set`
     if (status['flowControl/MRC']) sStr += `, flowControl/MRC set`
@@ -221,7 +221,7 @@ export namespace LES {
     serveHeaders: Buffer
     serveChainSince: Buffer
     serveStateSince: Buffer
-    txRelax: Buffer
+    txRelay: Buffer
     'flowControl/BL': Buffer
     'flowControl/MRR': Buffer
     'flowControl/MRC': Buffer
