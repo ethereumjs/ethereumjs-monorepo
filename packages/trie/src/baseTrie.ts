@@ -569,10 +569,17 @@ export class Trie {
   ): Buffer | (EmbeddedNode | null)[] {
     const rlpNode = node.serialize()
 
-    // TODO: analyze why this length check is here, 2021-04-29
-    // If removed various tests fail. However this prevents certain delete operations
-    // when deleteFromDB is activated
-    // Related test: `index.spec.ts`, "setting back state root (deleteFromDB)"
+    /**
+     * TODO: analyze why this length check is here, 2021-04-29
+     *
+     * Hint from https://eth.wiki/fundamentals/patricia-tree:
+     * "When one node is referenced inside another node, what is included is H(rlp.encode(x)),
+     * where H(x) = sha3(x) if len(x) >= 32 else x and rlp.encode is the RLP encoding function."
+     *
+     * If removed various tests fail. However this prevents certain delete operations
+     * when deleteFromDB is activated.
+     * Related test: `index.spec.ts`, "setting back state root (deleteFromDB)"
+     */
     if (rlpNode.length >= 32 || topLevel) {
       // Do not use TrieNode.hash() here otherwise serialize()
       // is applied twice (performance)
