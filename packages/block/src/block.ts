@@ -3,7 +3,13 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { BN, rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { TransactionFactory, TypedTransaction, TxOptions } from '@ethereumjs/tx'
+import {
+  TransactionFactory,
+  TypedTransaction,
+  TxOptions,
+  FeeMarketEIP1559Transaction,
+  Transaction,
+} from '@ethereumjs/tx'
 import { BlockHeader } from './header'
 import { BlockData, BlockOptions, JsonBlock, BlockBuffer, Blockchain } from './types'
 
@@ -227,9 +233,14 @@ export class Block {
     this.transactions.forEach((tx, i) => {
       const errs = <string[]>tx.validate(true)
       if (self._common.isActivatedEIP(1559)) {
-        const gas = tx.getEIP1559Data()
-        if (gas.maxFeePerGas.lt(self.header.baseFeePerGas!)) {
-          errs.push('tx unable to pay base fee')
+        if (tx.transactionType === 2) {
+          if ((<FeeMarketEIP1559Transaction>tx).maxFeePerGas.lt(self.header.baseFeePerGas!)) {
+            errs.push('tx unable to pay base fee (EIP-1559 tx)')
+          }
+        } else {
+          if ((<Transaction>tx).gasPrice.lt(self.header.baseFeePerGas!)) {
+            errs.push('tx unable to pay base fee (non EIP-1559 tx)')
+          }
         }
       }
       if (errs.length > 0) {

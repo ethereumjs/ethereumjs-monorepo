@@ -6,6 +6,7 @@ import {
   TypedTransaction,
   AccessList,
   Transaction,
+  FeeMarketEIP1559Transaction,
 } from '@ethereumjs/tx'
 import VM from './index'
 import Bloom from './bloom'
@@ -158,6 +159,10 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
         'StateManager needs to implement generateAccessList() when running with reportAccessList option'
       )
     }
+    if (opts.tx.transactionType === 2 && !this._common.isActivatedEIP(1559)) {
+      await state.revert()
+      throw new Error('Cannot run transaction: EIP 1559 is not activated.')
+    }
 
     const castedTx = <AccessListEIP2930Transaction>opts.tx
 
@@ -253,17 +258,21 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   let gasPrice
   let inclusionFeePerGas
-  if (this._common.isActivatedEIP(1559)) {
+  // EIP-1559 tx
+  if (tx.transactionType === 2) {
     const baseFee = block.header.baseFeePerGas
-    const EIP1559Data = tx.getEIP1559Data()
     inclusionFeePerGas = BN.min(
-      EIP1559Data.maxInclusionFeePerGas,
-      EIP1559Data.maxFeePerGas.sub(baseFee!)
+      (<FeeMarketEIP1559Transaction>tx).maxInclusionFeePerGas,
+      (<FeeMarketEIP1559Transaction>tx).maxFeePerGas.sub(baseFee!)
     )
     gasPrice = inclusionFeePerGas.add(baseFee!)
   } else {
     // Have to cast it as legacy transaction: EIP1559 transaction does not have gas price
     gasPrice = (<Transaction>tx).gasPrice
+    if (this._common.isActivatedEIP(1559)) {
+      const baseFee = block.header.baseFeePerGas
+      inclusionFeePerGas = (<Transaction>tx).gasPrice.sub(baseFee!)
+    }
   }
 
   // Update from account's nonce and balance

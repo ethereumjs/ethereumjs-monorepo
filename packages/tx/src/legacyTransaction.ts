@@ -275,13 +275,6 @@ export default class Transaction extends BaseTransaction<Transaction> {
     }
   }
 
-  getEIP1559Data() {
-    return {
-      maxInclusionFeePerGas: this.gasPrice,
-      maxFeePerGas: this.gasPrice,
-    }
-  }
-
   /**
    * Validates tx's `v` value
    */
