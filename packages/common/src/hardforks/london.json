@@ -1,6 +1,6 @@
 {
   "name": "london",
-  "comment": "HF targeted for ??? following the Berlin fork",
+  "comment": "HF targeted for July 2021 following the Berlin fork",
   "url": "https://github.com/ethereum/eth1.0-specs/blob/master/network-upgrades/mainnet-upgrades/london.md",
   "status": "Draft",
   "eips": [ 1559, 3198 ]

@@ -4,7 +4,8 @@
     "comment": "Fee market change for ETH 1.0 chain",
     "url": "https://eips.ethereum.org/EIPS/eip-1559",
     "status": "Review",
-    "minimumHardfork": "london",
+    "minimumHardfork": "berlin",
+    "requiredEIPs": [2930],
     "gasConfig": {
       "baseFeeMaxChangeDenominator": {
         "v": 8,
