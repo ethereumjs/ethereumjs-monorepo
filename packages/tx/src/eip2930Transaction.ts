@@ -27,10 +27,6 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   public readonly AccessListJSON: AccessList
   public readonly gasPrice: BN
 
-  get transactionType(): number {
-    return TRANSACTION_TYPE
-  }
-
   /**
    * EIP-2930 alias for `r`
    */
