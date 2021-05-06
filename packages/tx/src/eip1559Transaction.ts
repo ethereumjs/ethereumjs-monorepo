@@ -346,11 +346,4 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       s: this.s !== undefined ? bnToHex(this.s) : undefined,
     }
   }
-
-  getEIP1559Data() {
-    return {
-      maxInclusionFeePerGas: this.maxInclusionFeePerGas,
-      maxFeePerGas: this.maxFeePerGas,
-    }
-  }
 }

@@ -340,11 +340,4 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       s: this.s !== undefined ? bnToHex(this.s) : undefined,
     }
   }
-
-  getEIP1559Data() {
-    return {
-      maxInclusionFeePerGas: this.gasPrice,
-      maxFeePerGas: this.gasPrice,
-    }
-  }
 }
