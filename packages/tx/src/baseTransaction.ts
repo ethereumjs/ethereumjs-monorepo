@@ -43,14 +43,8 @@ export abstract class BaseTransaction<TransactionObject> {
     txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData,
     txOptions: TxOptions = {}
   ) {
-    const { nonce, gasLimit, to, value, data, v, r, s } = txData
-
-    const type = (txData as AccessListEIP2930TxData).type
-    if (type !== undefined) {
-      this._type = new BN(toBuffer(type)).toNumber()
-    } else {
-      this._type = 0
-    }
+    const { nonce, gasLimit, to, value, data, v, r, s, type } = txData
+    this._type = new BN(toBuffer(type)).toNumber()
 
     const toB = toBuffer(to === '' ? '0x' : to)
     const vB = toBuffer(v === '' ? '0x' : v)

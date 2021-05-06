@@ -11,6 +11,8 @@ import {
 import { TxOptions, TxData, JsonTx, N_DIV_2 } from './types'
 import { BaseTransaction } from './baseTransaction'
 
+const TRANSACTION_TYPE = 0
+
 /**
  * An Ethereum non-typed (legacy) transaction
  */
@@ -89,7 +91,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * varying data types.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
-    super(txData, opts)
+    super({ ...txData, type: TRANSACTION_TYPE }, opts)
 
     this.gasPrice = new BN(toBuffer(txData.gasPrice === '' ? '0x' : txData.gasPrice))
 
