@@ -147,11 +147,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
   await state.checkpoint()
 
   // Is it an Access List transaction?
-  if (
-    'transactionType' in opts.tx &&
-    opts.tx.transactionType === 1 &&
-    this._common.isActivatedEIP(2929)
-  ) {
+  if (opts.tx.transactionType !== 0 && this._common.isActivatedEIP(2929)) {
     if (!this._common.isActivatedEIP(2930)) {
       await state.revert()
       throw new Error('Cannot run transaction: EIP 2930 is not activated.')
@@ -445,7 +441,7 @@ export async function generateTxReceipt(
       ...baseReceipt,
     } as EIP2930Receipt
   } else if ('transactionType' in tx && tx.transactionType === 2) {
-    // EIP2930 Transaction
+    // EIP1559 Transaction
     receipt = {
       status: txResult.execResult.exceptionError ? 0 : 1,
       ...baseReceipt,
