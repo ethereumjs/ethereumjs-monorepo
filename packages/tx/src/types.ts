@@ -115,6 +115,12 @@ export type TxData = {
    * EC signature parameter.
    */
   s?: BNLike
+
+  /**
+   * The transaction type
+   */
+
+  type?: BNLike
 }
 
 /**
@@ -130,12 +136,6 @@ export interface AccessListEIP2930TxData extends TxData {
    * The access list which contains the addresses/storage slots which the transaction wishes to access
    */
   accessList?: AccessListBuffer | AccessList
-
-  /**
-   * The transaction type
-   */
-
-  type?: BNLike
 }
 
 export interface FeeMarketEIP1559TxData extends AccessListEIP2930TxData {
