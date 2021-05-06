@@ -2,7 +2,7 @@ import { BN, AddressLike, BNLike, BufferLike, PrefixedHexString } from 'ethereum
 import Common from '@ethereumjs/common'
 import { default as Transaction } from './legacyTransaction'
 import { default as AccessListEIP2930Transaction } from './eip2930Transaction'
-import { FeeMarketEIP1559Transaction } from '.'
+import { default as FeeMarketEIP1559Transaction } from './eip1559Transaction'
 
 /**
  * The options for initializing a Transaction.
@@ -147,10 +147,6 @@ export interface FeeMarketEIP1559TxData extends AccessListEIP2930TxData {
    * The maximum total fee
    */
   maxFeePerGas?: BNLike
-  /**
-   * The transaction type
-   */
-  type?: BNLike
 }
 
 /**
