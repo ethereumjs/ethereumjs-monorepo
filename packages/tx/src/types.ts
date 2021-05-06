@@ -140,6 +140,10 @@ export interface AccessListEIP2930TxData extends TxData {
 
 export interface FeeMarketEIP1559TxData extends AccessListEIP2930TxData {
   /**
+   * The transaction's gas price.
+   */
+  gasPrice?: never
+  /**
    * The maximum inclusion fee per gas (this fee is given to the miner)
    */
   maxInclusionFeePerGas?: BNLike

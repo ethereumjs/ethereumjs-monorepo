@@ -21,16 +21,23 @@ export default class TransactionFactory {
     txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData,
     txOptions: TxOptions = {}
   ): TypedTransaction {
-    const common = txOptions.common ?? DEFAULT_COMMON
     if (!('type' in txData) || txData.type === undefined) {
       // Assume legacy transaction
       return Transaction.fromTxData(<TxData>txData, txOptions)
     } else {
       const txType = new BN(toBuffer(txData.type)).toNumber()
-      return TransactionFactory.getTransactionClass(txType, common).fromTxData(
-        <AccessListEIP2930TxData>txData,
-        txOptions
-      )
+      if (txType === 0) {
+        return Transaction.fromTxData(<TxData>txData, txOptions)
+      } else if (txType === 1) {
+        return AccessListEIP2930Transaction.fromTxData(<AccessListEIP2930TxData>txData, txOptions)
+      } else if (txType === 2) {
+        return FeeMarketEIP1559Transaction.fromTxData(
+          <FeeMarketEIP1559Transaction>txData,
+          txOptions
+        )
+      } else {
+        throw new Error(`Tx instantiation with type ${txType} not supported`)
+      }
     }
   }
 
@@ -100,7 +107,7 @@ export default class TransactionFactory {
   /**
    * This helper method allows one to retrieve the class which matches the transactionID
    * If transactionID is undefined, returns the legacy transaction class.
-   *
+   * @deprecated - This method is deprecated and will be removed on the next major release
    * @param transactionID
    * @param common
    */
