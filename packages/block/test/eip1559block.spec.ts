@@ -39,9 +39,14 @@ tape('EIP1559 tests', function (t) {
     for (let index = 0; index < eip1559BaseFee.length; index++) {
       const item = eip1559BaseFee[index]
       const result = header.getBaseFee(
-        new BN(item.parentBaseFee),
-        new BN(item.parentGasUsed),
-        new BN(item.parentTargetGasUsed)
+        BlockHeader.fromHeaderData(
+          {
+            baseFeePerGas: new BN(item.parentBaseFee),
+            gasUsed: new BN(item.parentGasUsed),
+            gasLimit: new BN(item.parentTargetGasUsed),
+          },
+          { common }
+        )
       )
       const expected = new BN(item.expectedBaseFee)
       st.ok(expected.eq(result), 'base fee correct')
@@ -72,7 +77,7 @@ tape('EIP1559 tests', function (t) {
     st.end()
   })
 
-  t.test('Header should throw when base fee is not defined', async function (st) {
+  t.test('Header should throw if base fee is not defined', async function (st) {
     const header = BlockHeader.fromHeaderData(
       {
         number: new BN(1),

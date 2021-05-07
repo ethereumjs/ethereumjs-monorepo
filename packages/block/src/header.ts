@@ -578,18 +578,13 @@ export class BlockHeader {
       if (!this.baseFeePerGas) {
         throw new Error('EIP1559 block has no base fee field')
       }
-      let parentBaseFee = parentHeader.baseFeePerGas
       const isInitialEIP1559Block = this._common.getEIPActivationBlockNumber(1559)!.eq(this.number)
       if (isInitialEIP1559Block) {
         const initialBaseFee = new BN(this._common.param('gasConfig', 'initialBaseFee'))
-        parentBaseFee = initialBaseFee
-        if (!this.baseFeePerGas.eq(initialBaseFee)) {
+        if (!this.baseFeePerGas!.eq(initialBaseFee)) {
           throw new Error('Initial EIP1559 block does not have initial base fee')
         }
       }
-
-      const parentGasUsed = parentHeader.gasUsed
-      const parentGasTarget = parentHeader.gasLimit
 
       const elasticity = new BN(this._common.param('gasConfig', 'elasticityMultiplier'))
 
@@ -600,7 +595,7 @@ export class BlockHeader {
 
       if (!isInitialEIP1559Block) {
         // check if the base fee is correct
-        const expectedBaseFee = this.getBaseFee(parentBaseFee!, parentGasUsed, parentGasTarget)
+        const expectedBaseFee = this.getBaseFee(parentHeader)
 
         if (!this.baseFeePerGas!.eq(expectedBaseFee)) {
           throw new Error('Invalid block: base fee not correct')
@@ -609,31 +604,39 @@ export class BlockHeader {
     }
   }
 
-  public getBaseFee(parentBaseFee: BN, parentGasUsed: BN, parentGasTarget: BN): BN {
+  /**
+   * Returns the base fee for a block
+   * @param parentHeader - The parent block header
+   */
+  public getBaseFee(parentHeader: BlockHeader): BN {
+    if (!this._common.isActivatedEIP(1559)) {
+      throw new Error('getBaseFee() can only be called with EIP-1559 being activated')
+    }
     let expectedBaseFee: BN
+    const parentGasTarget = parentHeader.gasLimit
 
-    if (parentGasTarget.eq(parentGasUsed)) {
-      expectedBaseFee = parentBaseFee!
-    } else if (parentGasUsed.gt(parentGasTarget)) {
-      const gasUsedDelta = parentGasUsed.sub(parentGasTarget)
+    if (parentGasTarget.eq(parentHeader.gasUsed)) {
+      expectedBaseFee = parentHeader.baseFeePerGas!
+    } else if (parentHeader.gasUsed.gt(parentGasTarget)) {
+      const gasUsedDelta = parentHeader.gasUsed.sub(parentGasTarget)
       const baseFeeMaxChangeDenominator = new BN(
         this._common.param('gasConfig', 'baseFeeMaxChangeDenominator')
       )
-      const calculatedDelta = parentBaseFee!
-        .mul(gasUsedDelta)
+      const calculatedDelta = parentHeader
+        .baseFeePerGas!.mul(gasUsedDelta)
         .div(parentGasTarget)
         .div(baseFeeMaxChangeDenominator)
-      expectedBaseFee = BN.max(calculatedDelta, new BN(1)).add(parentBaseFee!)
+      expectedBaseFee = BN.max(calculatedDelta, new BN(1)).add(parentHeader.baseFeePerGas!)
     } else {
-      const gasUsedDelta = parentGasTarget.sub(parentGasUsed)
+      const gasUsedDelta = parentGasTarget.sub(parentHeader.gasUsed)
       const baseFeeMaxChangeDenominator = new BN(
         this._common.param('gasConfig', 'baseFeeMaxChangeDenominator')
       )
-      const calculatedDelta = parentBaseFee!
-        .mul(gasUsedDelta)
+      const calculatedDelta = parentHeader
+        .baseFeePerGas!.mul(gasUsedDelta)
         .div(parentGasTarget)
         .div(baseFeeMaxChangeDenominator)
-      expectedBaseFee = BN.max(parentBaseFee!.sub(calculatedDelta), new BN(0))
+      expectedBaseFee = BN.max(parentHeader.baseFeePerGas!.sub(calculatedDelta), new BN(0))
     }
     return expectedBaseFee
   }
