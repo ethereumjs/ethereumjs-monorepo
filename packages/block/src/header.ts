@@ -23,7 +23,6 @@ import {
 } from './clique'
 
 const DEFAULT_GAS_LIMIT = new BN(Buffer.from('ffffffffffffff', 'hex'))
-const ZERO_BN = new BN(0)
 
 /**
  * An object that represents the block header.
@@ -56,7 +55,6 @@ export class BlockHeader {
    * @param opts
    */
   public static fromHeaderData(headerData: HeaderData = {}, opts: BlockOptions = {}) {
-    opts.common = BlockHeader.getCommon(opts)
     const {
       parentHash,
       uncleHash,
@@ -92,7 +90,7 @@ export class BlockHeader {
       extraData ? toBuffer(extraData) : Buffer.from([]),
       mixHash ? toBuffer(mixHash) : zeros(32),
       nonce ? toBuffer(nonce) : zeros(8),
-      opts.common.isActivatedEIP(1559) ? new BN(toBuffer(baseFeePerGas)) : undefined,
+      baseFeePerGas !== undefined ? new BN(toBuffer(baseFeePerGas)) : undefined,
       opts
     )
   }
@@ -139,14 +137,11 @@ export class BlockHeader {
       baseFeePerGas,
     ] = values
 
-    const numberBN = new BN(toBuffer(number))
-
-    opts.common = BlockHeader.getCommon(opts, numberBN)
-
-    const maxValues = opts.common.isActivatedEIP(1559) ? 16 : 15
-
-    if (values.length > maxValues) {
+    if (values.length > 16) {
       throw new Error('invalid header. More values than expected were received')
+    }
+    if (values.length < 15) {
+      throw new Error('invalid header. Less values than expected were received')
     }
 
     return new BlockHeader(
@@ -158,14 +153,14 @@ export class BlockHeader {
       toBuffer(receiptTrie),
       toBuffer(bloom),
       new BN(toBuffer(difficulty)),
-      numberBN,
+      new BN(toBuffer(number)),
       new BN(toBuffer(gasLimit)),
       new BN(toBuffer(gasUsed)),
       new BN(toBuffer(timestamp)),
       toBuffer(extraData),
       toBuffer(mixHash),
       toBuffer(nonce),
-      opts.common.isActivatedEIP(1559) ? new BN(toBuffer(baseFeePerGas)) : undefined,
+      baseFeePerGas !== undefined ? new BN(toBuffer(baseFeePerGas)) : undefined,
       opts
     )
   }
@@ -176,25 +171,6 @@ export class BlockHeader {
   public static genesis(headerData: HeaderData = {}, opts?: BlockOptions) {
     opts = { ...opts, initWithGenesisHeader: true }
     return BlockHeader.fromHeaderData(headerData, opts)
-  }
-
-  public static getCommon(opts: BlockOptions = {}, blockNumber: BN = ZERO_BN): Common {
-    let common
-    if (opts.common) {
-      common = opts.common.copy()
-    } else {
-      const chain = 'mainnet' // default
-      if (opts.initWithGenesisHeader) {
-        common = new Common({ chain, hardfork: 'chainstart' })
-      } else {
-        // This initializes on the Common default hardfork
-        common = new Common({ chain })
-      }
-    }
-    if (opts.hardforkByBlockNumber) {
-      common.setHardforkByBlockNumber(blockNumber)
-    }
-    return common
   }
 
   /**
@@ -222,10 +198,29 @@ export class BlockHeader {
     baseFeePerGas?: BN,
     options: BlockOptions = {}
   ) {
-    this._common = BlockHeader.getCommon(options, number)
+    if (options.common) {
+      this._common = Object.assign(
+        Object.create(Object.getPrototypeOf(options.common)),
+        options.common
+      )
+    } else {
+      const chain = 'mainnet' // default
+      if (options.initWithGenesisHeader) {
+        this._common = new Common({ chain, hardfork: 'chainstart' })
+      } else {
+        // This initializes on the Common default hardfork
+        this._common = new Common({ chain })
+      }
+    }
 
     if (options.hardforkByBlockNumber) {
       this._common.setHardforkByBlockNumber(number.toNumber())
+    }
+
+    if (this._common.isActivatedEIP(1559) && baseFeePerGas === undefined) {
+      this.baseFeePerGas = new BN(1)
+    } else {
+      this.baseFeePerGas = undefined
     }
 
     if (options.initWithGenesisHeader) {
