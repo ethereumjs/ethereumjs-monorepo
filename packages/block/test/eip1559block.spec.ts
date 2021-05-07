@@ -179,7 +179,7 @@ tape('EIP1559 tests', function (t) {
       await header.validate(blockchain)
       st.fail('should throw')
     } catch (e) {
-      st.ok(e.message.includes('increased'), 'threw with right error')
+      st.ok(e.message.includes('invalid gas limit'), 'threw with right error')
     }
     st.end()
   })
@@ -203,7 +203,7 @@ tape('EIP1559 tests', function (t) {
       await header.validate(blockchain)
       st.fail('should throw')
     } catch (e) {
-      st.ok(e.message.includes('decreased'), 'threw with right error')
+      st.ok(e.message.includes('invalid gas limit'), 'threw with right error')
     }
     st.end()
   })
