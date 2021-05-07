@@ -446,21 +446,32 @@ export class BlockHeader {
    * @param parentBlockHeader - the header from the parent `Block` of this header
    */
   validateGasLimit(parentBlockHeader: BlockHeader): boolean {
-    const parentGasLimit = parentBlockHeader.gasLimit
-    const gasLimit = this.gasLimit
-    const hardfork = this._getHardfork()
+    // Pre EIP-1559 gaslimit check
+    if (!this._common.isActivatedEIP(1559)) {
+      const parentGasLimit = parentBlockHeader.gasLimit
+      const gasLimit = this.gasLimit
+      const hardfork = this._getHardfork()
 
-    const a = parentGasLimit.div(
-      new BN(this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork))
-    )
-    const maxGasLimit = parentGasLimit.add(a)
-    const minGasLimit = parentGasLimit.sub(a)
+      const a = parentGasLimit.div(
+        new BN(this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork))
+      )
+      const maxGasLimit = parentGasLimit.add(a)
+      const minGasLimit = parentGasLimit.sub(a)
 
-    return (
-      gasLimit.lt(maxGasLimit) &&
-      gasLimit.gt(minGasLimit) &&
-      gasLimit.gte(this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork))
-    )
+      return (
+        gasLimit.lt(maxGasLimit) &&
+        gasLimit.gt(minGasLimit) &&
+        gasLimit.gte(this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork))
+      )
+      // EIP-1559 gasTarget check
+    } else {
+      const parentGasTarget = parentBlockHeader.gasLimit
+      // check if the block changed the gas target too much
+      return (
+        this.gasLimit.lte(parentGasTarget.add(parentGasTarget.divn(1024))) &&
+        this.gasLimit.gte(parentGasTarget.sub(parentGasTarget.divn(1024)))
+      )
+    }
   }
 
   /**
@@ -552,7 +563,7 @@ export class BlockHeader {
       }
     }
 
-    if (!this._common.isActivatedEIP(1559) && !this.validateGasLimit(parentHeader)) {
+    if (!this.validateGasLimit(parentHeader)) {
       throw new Error('invalid gas limit')
     }
 
@@ -585,15 +596,6 @@ export class BlockHeader {
       // check if the block used too much gas
       if (this.gasUsed.gt(this.gasLimit.mul(elasticity))) {
         throw new Error('Invalid block: too much gas used')
-      }
-
-      // check if the block changed the gas target too much
-      if (!this.gasLimit.lte(parentGasTarget.add(parentGasTarget.divn(1024)))) {
-        throw new Error('Invalid block: gas target increased too much')
-      }
-
-      if (!this.gasLimit.gte(parentGasTarget.sub(parentGasTarget.divn(1024)))) {
-        throw new Error('Invalid block: gas target decreased too much')
       }
 
       if (!isInitialEIP1559Block) {
