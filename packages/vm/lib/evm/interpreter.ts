@@ -34,6 +34,7 @@ export interface InterpreterResult {
 
 export interface InterpreterStep {
   gasLeft: BN
+  gasRefund: BN
   stateManager: StateManager
   stack: BN[]
   returnStack: BN[]
@@ -174,6 +175,7 @@ export default class Interpreter {
     const eventObj: InterpreterStep = {
       pc: this._runState.programCounter,
       gasLeft: this._eei.getGasLeft(),
+      gasRefund: this._eei._evm._refund,
       opcode: {
         name: opcode.fullName,
         fee: opcode.fee,
