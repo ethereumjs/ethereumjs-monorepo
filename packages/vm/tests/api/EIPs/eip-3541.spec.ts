@@ -11,7 +11,7 @@ tape('EIP 3541 tests', (t) => {
   const common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [3541] })
   const commonNoEIP3541 = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [] })
 
-  t.test('should not deposit 0xEF code if 3541 is active', async (st) => {
+  t.test('deposit 0xEF code if 3541 is active', async (st) => {
     // put 0xEF contract
     const tx = Transaction.fromTxData({
       data: '0x7FEF0000000000000000000000000000000000000000000000000000000000000060005260206000F3',
@@ -62,7 +62,7 @@ tape('EIP 3541 tests', (t) => {
     st.end()
   })
 
-  t.test('should not deploy contracts starting with 0xEF using CREATE', async (st) => {
+  t.test('deploy contracts starting with 0xEF using CREATE', async (st) => {
     // put 0xEF contract
     const tx = Transaction.fromTxData({
       data:
@@ -103,7 +103,7 @@ tape('EIP 3541 tests', (t) => {
     st.end()
   })
 
-  t.test('should not deploy contracts starting with 0xEF using CREATE2', async (st) => {
+  t.test('deploy contracts starting with 0xEF using CREATE2', async (st) => {
     // put 0xEF contract
     const tx = Transaction.fromTxData({
       data:

@@ -16,7 +16,7 @@ export enum ERROR {
   INVALID_BEGINSUB = 'invalid BEGINSUB',
   INVALID_RETURNSUB = 'invalid RETURNSUB',
   INVALID_JUMPSUB = 'invalid JUMPSUB',
-  EIP3541_VIOLATION = 'eip3541 violation: cannot put contracts starting with 0xEF bytecode',
+  INVALID_BYTECODE_RESULT = 'invalid bytecode deployed',
 
   // BLS errors
   BLS_12_381_INVALID_INPUT_LENGTH = 'invalid input length',

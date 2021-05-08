@@ -92,11 +92,11 @@ export function COOGResult(gasUsedCreateCode: BN): ExecResult {
   }
 }
 
-export function EIP3541ViolationResult(gasLimit: BN): ExecResult {
+export function INVALID_BYTECODE_RESULT(gasLimit: BN): ExecResult {
   return {
     returnValue: Buffer.alloc(0),
     gasUsed: gasLimit,
-    exceptionError: new VmError(ERROR.EIP3541_VIOLATION),
+    exceptionError: new VmError(ERROR.INVALID_BYTECODE_RESULT),
   }
 }
 
@@ -328,7 +328,7 @@ export default class EVM {
         this._vm._common.isActivatedEIP(3541) &&
         result.returnValue.slice(0, 1).equals(Buffer.from('EF', 'hex'))
       ) {
-        result = { ...result, ...OOGResult(message.gasLimit) }
+        result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
       } else {
         result.gasUsed = totalGas
       }
