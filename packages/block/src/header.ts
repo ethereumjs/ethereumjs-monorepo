@@ -586,10 +586,8 @@ export class BlockHeader {
         }
       }
 
-      const elasticity = new BN(this._common.param('gasConfig', 'elasticityMultiplier'))
-
       // check if the block used too much gas
-      if (this.gasUsed.gt(this.gasLimit.mul(elasticity))) {
+      if (this.gasUsed.gt(this.gasLimit)) {
         throw new Error('Invalid block: too much gas used')
       }
 
@@ -612,7 +610,8 @@ export class BlockHeader {
       throw new Error('calcNextBaseFee() can only be called with EIP-1559 being activated')
     }
     let nextBaseFee: BN
-    const parentGasTarget = this.gasLimit
+    const elasticity = new BN(this._common.param('gasConfig', 'elasticityMultiplier'))
+    const parentGasTarget = this.gasLimit.div(elasticity)
 
     if (parentGasTarget.eq(this.gasUsed)) {
       nextBaseFee = this.baseFeePerGas!
