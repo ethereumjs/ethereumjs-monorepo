@@ -406,15 +406,6 @@ export class Eth {
   }
 
   /**
-   * Returns the current coinbase (i.e. the address that miner rewards are sent to)
-   * @param params An empty array
-   */
-  async coinBase() {
-    const header = await this._chain.getLatestHeader()
-    return header.coinbase.toString()
-  }
-
-  /**
    * Returns the number of uncles in a block from a block matching the given block number
    * @param params An array of one parameter:
    *   1: hexidecimal representation of a block number
