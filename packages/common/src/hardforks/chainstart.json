@@ -11,6 +11,10 @@
     "gasLimitBoundDivisor": {
       "v": 1024,
       "d": "The bound divisor of the gas limit, used in update calculations"
+    },
+    "maxRefundQuotient": {
+      "v": 2,
+      "d": "Maximum refund quotient; max tx refund is min(tx.gasUsed/maxRefundQuotient, tx.gasRefund)"
     }
   },
   "gasPrices": {
