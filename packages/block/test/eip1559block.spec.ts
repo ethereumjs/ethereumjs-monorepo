@@ -40,7 +40,7 @@ tape('EIP1559 tests', function (t) {
         {
           baseFeePerGas: new BN(item.parentBaseFee),
           gasUsed: new BN(item.parentGasUsed),
-          gasLimit: new BN(item.parentTargetGasUsed),
+          gasLimit: new BN(item.parentTargetGasUsed).muln(2),
         },
         { common }
       ).calcNextBaseFee()
@@ -147,7 +147,7 @@ tape('EIP1559 tests', function (t) {
         number: new BN(1),
         parentHash: genesis.hash(),
         timestamp: new BN(1),
-        gasUsed: genesis.header.gasLimit.muln(common.param('gasConfig', 'elasticityMultiplier')),
+        gasUsed: genesis.header.gasLimit,
         baseFeePerGas: new BN(common.param('gasConfig', 'initialBaseFee')),
       },
       {
