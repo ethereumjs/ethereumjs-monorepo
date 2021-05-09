@@ -66,7 +66,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   }
 
   const state = new Trie()
-  const hardfork = options.forkConfigVM
+  const hardfork = 'berlin'
 
   const eips: number[] = []
 
