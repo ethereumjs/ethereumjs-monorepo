@@ -574,6 +574,11 @@ export class BlockHeader {
       }
     }
 
+    // check if the block used too much gas
+    if (this.gasUsed.gt(this.gasLimit)) {
+      throw new Error('Invalid block: too much gas used')
+    }
+
     if (this._common.isActivatedEIP(1559)) {
       if (!this.baseFeePerGas) {
         throw new Error('EIP1559 block has no base fee field')
@@ -584,14 +589,7 @@ export class BlockHeader {
         if (!this.baseFeePerGas!.eq(initialBaseFee)) {
           throw new Error('Initial EIP1559 block does not have initial base fee')
         }
-      }
-
-      // check if the block used too much gas
-      if (this.gasUsed.gt(this.gasLimit)) {
-        throw new Error('Invalid block: too much gas used')
-      }
-
-      if (!isInitialEIP1559Block) {
+      } else {
         // check if the base fee is correct
         const expectedBaseFee = parentHeader.calcNextBaseFee()
 
