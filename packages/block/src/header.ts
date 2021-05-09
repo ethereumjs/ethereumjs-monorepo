@@ -90,8 +90,8 @@ export class BlockHeader {
       extraData ? toBuffer(extraData) : Buffer.from([]),
       mixHash ? toBuffer(mixHash) : zeros(32),
       nonce ? toBuffer(nonce) : zeros(8),
+      opts,
       baseFeePerGas !== undefined ? new BN(toBuffer(baseFeePerGas)) : undefined,
-      opts
     )
   }
 
@@ -160,8 +160,8 @@ export class BlockHeader {
       toBuffer(extraData),
       toBuffer(mixHash),
       toBuffer(nonce),
+      opts,
       baseFeePerGas !== undefined ? new BN(toBuffer(baseFeePerGas)) : undefined,
-      opts
     )
   }
 
@@ -175,9 +175,10 @@ export class BlockHeader {
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
-   * Use the public static factory methods to assist in creating a Header object from
-   * varying data types.
-   * For a default empty header, use `BlockHeader.fromHeaderData()`.
+   * 
+   * @deprecated - Use the public static factory methods to assist in creating a Header object from
+   * varying data types. For a default empty header, use `BlockHeader.fromHeaderData()`.
+   * 
    */
   constructor(
     parentHash: Buffer,
@@ -195,8 +196,8 @@ export class BlockHeader {
     extraData: Buffer,
     mixHash: Buffer,
     nonce: Buffer,
+    options: BlockOptions = {},
     baseFeePerGas?: BN,
-    options: BlockOptions = {}
   ) {
     if (options.common) {
       this._common = Object.assign(
