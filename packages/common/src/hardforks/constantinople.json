@@ -59,6 +59,10 @@
     "minerReward": {
       "v": "2000000000000000000",
       "d": "The amount a miner gets rewarded for mining a block"
+    },
+    "difficultyBombDelay": {
+      "v": 5000000,
+      "d": "the amount of blocks to delay the difficulty bomb with"
     }
   }
 }
