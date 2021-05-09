@@ -44,7 +44,13 @@ export interface VMOpts {
    * - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - Fee Market
    * - [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - VM simple subroutines
    * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) (`experimental`) - BLS12-381 precompiles
+   * - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp Gas Cost
+   * - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Typed Transactions
    * - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - Gas cost increases for state access opcodes
+   * - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Access List Transaction Type
+   * - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - BASEFEE opcode
+   * - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
+   * - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
    *
    * *Annotations:*
    *
