@@ -65,6 +65,8 @@ export abstract class BaseTransaction<TransactionObject> {
       nonce: this.nonce,
       gasLimit: this.gasLimit,
       value: this.value,
+      r: this.r,
+      s: this.s,
     })
 
     this.common = txOptions.common?.copy() ?? new Common({ chain: 'mainnet' })
