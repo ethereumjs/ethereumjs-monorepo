@@ -242,10 +242,9 @@ export function getTestDirs(network: string, testType: string) {
  * @returns {Common} the Common which should be used
  */
 export function getCommon(network: string) {
-  if (network === 'berlin+3541') {
+  if (network.toLowerCase() === 'berlin+3541') {
     return new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [3541] })
   }
-
 
   const networkLowercase = network.toLowerCase()
   if (normalHardforks.map((str) => str.toLowerCase()).includes(networkLowercase)) {

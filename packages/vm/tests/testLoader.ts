@@ -118,11 +118,12 @@ exports.getTestsFromArgs = function (testType: string, onFile: Function, args: a
   if (new RegExp(`BlockchainTests`).test(testType)) {
     let forkFilter: any
     if (args.forkConfig === 'Berlin+3541') {
+      // eslint-disable-next-line
       forkFilter = new RegExp(`$Berlin\+3541$`)
     } else {
       forkFilter = new RegExp(`${args.forkConfig}$`)
     }
-    
+
     skipFn = (name: string, test: any) => {
       return forkFilter.test(test.network) === false || skipTest(name, args.skipTests)
     }
@@ -130,11 +131,12 @@ exports.getTestsFromArgs = function (testType: string, onFile: Function, args: a
   if (new RegExp(`GeneralStateTests`).test(testType)) {
     let forkFilter: any
     if (args.forkConfig === 'Berlin+3541') {
+      // eslint-disable-next-line
       forkFilter = new RegExp(`$Berlin\+3541$`)
     } else {
       forkFilter = new RegExp(`${args.forkConfig}$`)
     }
-    
+
     skipFn = (name: string, test: any) => {
       return (
         Object.keys(test['post'])

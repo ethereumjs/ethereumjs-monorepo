@@ -66,11 +66,14 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   }
 
   const state = new Trie()
-  const hardfork = 'berlin'
+  const hardfork = options.forkConfigVM
 
-  const eips: number[] = []
-
-  const common = new Common({ chain: 'mainnet', hardfork, eips })
+  let common
+  if (hardfork.toLowerCase() === 'berlin+3541') {
+    common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [3541] })
+  } else {
+    common = new Common({ chain: 'mainnet', hardfork })
+  }
 
   const vm = new VM({ state, common })
 
