@@ -153,7 +153,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     this.chainId = chainId ? new BN(toBuffer(chainId)) : this.common.chainIdBN()
     this.gasPrice = new BN(toBuffer(gasPrice === '' ? '0x' : gasPrice))
 
-    this._validateCannotExceedMaxInteger({ r: this.r, s: this.s, gasPrice: this.gasPrice })
+    this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
 
     if (!this.chainId.eq(this.common.chainIdBN())) {
       throw new Error('The chain ID does not match the chain ID of Common')
