@@ -91,7 +91,7 @@ export class BlockHeader {
       mixHash ? toBuffer(mixHash) : zeros(32),
       nonce ? toBuffer(nonce) : zeros(8),
       opts,
-      baseFeePerGas !== undefined ? new BN(toBuffer(baseFeePerGas)) : undefined,
+      baseFeePerGas !== undefined ? new BN(toBuffer(baseFeePerGas)) : undefined
     )
   }
 
@@ -161,7 +161,7 @@ export class BlockHeader {
       toBuffer(mixHash),
       toBuffer(nonce),
       opts,
-      baseFeePerGas !== undefined ? new BN(toBuffer(baseFeePerGas)) : undefined,
+      baseFeePerGas !== undefined ? new BN(toBuffer(baseFeePerGas)) : undefined
     )
   }
 
@@ -175,10 +175,10 @@ export class BlockHeader {
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
-   * 
+   *
    * @deprecated - Use the public static factory methods to assist in creating a Header object from
    * varying data types. For a default empty header, use `BlockHeader.fromHeaderData()`.
-   * 
+   *
    */
   constructor(
     parentHash: Buffer,
@@ -197,7 +197,7 @@ export class BlockHeader {
     mixHash: Buffer,
     nonce: Buffer,
     options: BlockOptions = {},
-    baseFeePerGas?: BN,
+    baseFeePerGas?: BN
   ) {
     if (options.common) {
       this._common = Object.assign(
@@ -497,6 +497,8 @@ export class BlockHeader {
       return
     }
     const hardfork = this._getHardfork()
+    // Consensus type dependent checks
+    // PoW/Ethash
     if (this._common.consensusAlgorithm() !== 'clique') {
       if (
         this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)
@@ -504,6 +506,7 @@ export class BlockHeader {
         const msg = 'invalid amount of extra data'
         throw this._error(msg)
       }
+      // PoA/Clique
     } else {
       const minLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
       if (!this.cliqueIsEpochTransition()) {
@@ -810,7 +813,7 @@ export class BlockHeader {
    * Returns the block header in JSON format.
    */
   toJSON(): JsonHeader {
-    return {
+    const jsonDict: JsonHeader = {
       parentHash: '0x' + this.parentHash.toString('hex'),
       uncleHash: '0x' + this.uncleHash.toString('hex'),
       coinbase: this.coinbase.toString(),
@@ -827,6 +830,11 @@ export class BlockHeader {
       mixHash: '0x' + this.mixHash.toString('hex'),
       nonce: '0x' + this.nonce.toString('hex'),
     }
+    if (this._common.isActivatedEIP(1559)) {
+      jsonDict['baseFee'] = '0x' + this.baseFeePerGas!.toString('hex')
+    }
+
+    return jsonDict
   }
 
   /**
