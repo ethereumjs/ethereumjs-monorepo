@@ -138,6 +138,7 @@ export interface JsonHeader {
   extraData?: string
   mixHash?: string
   nonce?: string
+  baseFee?: string
 }
 
 export interface Blockchain {
