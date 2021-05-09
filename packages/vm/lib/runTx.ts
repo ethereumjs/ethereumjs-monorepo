@@ -1,12 +1,12 @@
 import { Address, BN, toBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import {
+  AccessList,
   AccessListItem,
   AccessListEIP2930Transaction,
-  TypedTransaction,
-  AccessList,
-  Transaction,
   FeeMarketEIP1559Transaction,
+  Transaction,
+  TypedTransaction,
 } from '@ethereumjs/tx'
 import VM from './index'
 import Bloom from './bloom'
@@ -147,8 +147,9 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
 
   await state.checkpoint()
 
-  // Is it an Access List transaction?
-  if (opts.tx.transactionType !== 0 && this._common.isActivatedEIP(2929)) {
+  // Typed transaction specific setup tasks
+  if (opts.tx.transactionType !== 0 && this._common.isActivatedEIP(2718)) {
+    // Is it an Access List transaction?
     if (!this._common.isActivatedEIP(2930)) {
       await state.revert()
       throw new Error('Cannot run transaction: EIP 2930 is not activated.')
