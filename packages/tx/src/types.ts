@@ -65,11 +65,20 @@ export function isAccessList(input: AccessListBuffer | AccessList): input is Acc
   return !isAccessListBuffer(input) // This is exactly the same method, except the output is negated.
 }
 
+/**
+ * Encompassing type for all transaction types.
+ *
+ * Note that this also includes legacy txs which are
+ * referenced as `Transaction` for compatibility reasons.
+ */
 export type TypedTransaction =
   | Transaction
   | AccessListEIP2930Transaction
   | FeeMarketEIP1559Transaction
 
+/**
+ * Legacy Transaction Data
+ */
 export type TxData = {
   /**
    * The transaction's nonce.
@@ -124,7 +133,7 @@ export type TxData = {
 }
 
 /**
- * An object with an optional field with each of the transaction's values.
+ * Access list EIP2930 tx data.
  */
 export interface AccessListEIP2930TxData extends TxData {
   /**
@@ -138,6 +147,9 @@ export interface AccessListEIP2930TxData extends TxData {
   accessList?: AccessListBuffer | AccessList
 }
 
+/**
+ * Fee marked EIP1559 tx data.
+ */
 export interface FeeMarketEIP1559TxData extends AccessListEIP2930TxData {
   /**
    * The transaction's gas price.
@@ -156,6 +168,11 @@ export interface FeeMarketEIP1559TxData extends AccessListEIP2930TxData {
 /**
  * Buffer values array for EIP2930 transaction
  */
+export type TxValuesArray = Buffer[]
+
+/**
+ * Buffer values array for EIP2930 transaction
+ */
 export type AccessListEIP2930ValuesArray = [
   Buffer,
   Buffer,
@@ -170,6 +187,9 @@ export type AccessListEIP2930ValuesArray = [
   Buffer?
 ]
 
+/**
+ * Buffer values array for EIP1559 transaction
+ */
 export type FeeMarketEIP1559ValuesArray = [
   Buffer,
   Buffer,
@@ -188,7 +208,12 @@ export type FeeMarketEIP1559ValuesArray = [
 type JsonAccessListItem = { address: string; storageKeys: string[] }
 
 /**
- * An object with all of the transaction's values represented as strings.
+ * Generic interface for all tx types with a
+ * JSON representation of a transaction.
+ *
+ * Note that all values are marked as optional
+ * and not all the values are present on all tx types
+ * (an EIP1559 tx e.g. lacks a `gasPrice`).
  */
 export interface JsonTx {
   nonce?: string

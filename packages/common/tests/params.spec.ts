@@ -116,4 +116,16 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
     st.equal(c.paramByEIP('gasPrices', 'Bls12381G1AddGas', 2537), 600, msg)
     st.end()
   })
+
+  t.test('returns the right block delay for EIP3554', function (st) {
+    for (const fork of ['muirGlacier', 'berlin']) {
+      const c = new Common({ chain: 'mainnet', hardfork: fork })
+      let delay = c.param('pow', 'difficultyBombDelay')
+      st.equal(delay, 9000000)
+      c.setEIPs([3554])
+      delay = c.param('pow', 'difficultyBombDelay')
+      st.equal(delay, 9500000)
+    }
+    st.end()
+  })
 })
