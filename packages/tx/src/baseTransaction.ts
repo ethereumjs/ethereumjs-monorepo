@@ -16,6 +16,7 @@ import {
   AccessListEIP2930TxData,
   FeeMarketEIP1559ValuesArray,
   FeeMarketEIP1559TxData,
+  TxValuesArray,
 } from './types'
 
 /**
@@ -147,7 +148,7 @@ export abstract class BaseTransaction<TransactionObject> {
   /**
    * Returns a Buffer Array of the raw Buffers of this transaction, in order.
    */
-  abstract raw(): Buffer[] | AccessListEIP2930ValuesArray | FeeMarketEIP1559ValuesArray
+  abstract raw(): TxValuesArray | AccessListEIP2930ValuesArray | FeeMarketEIP1559ValuesArray
 
   /**
    * Returns the encoding of the transaction.

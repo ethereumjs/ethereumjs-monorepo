@@ -8,7 +8,7 @@ import {
   toBuffer,
   unpadBuffer,
 } from 'ethereumjs-util'
-import { TxOptions, TxData, JsonTx, N_DIV_2 } from './types'
+import { TxOptions, TxData, JsonTx, N_DIV_2, TxValuesArray } from './types'
 import { BaseTransaction } from './baseTransaction'
 
 const TRANSACTION_TYPE = 0
@@ -56,7 +56,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * The format is:
    * nonce, gasPrice, gasLimit, to, value, data, v, r, s
    */
-  public static fromValuesArray(values: Buffer[], opts: TxOptions = {}) {
+  public static fromValuesArray(values: TxValuesArray, opts: TxOptions = {}) {
     // If length is not 6, it has length 9. If v/r/s are empty Buffers, it is still an unsigned transaction
     // This happens if you get the RLP data from `raw()`
     if (values.length !== 6 && values.length !== 9) {
@@ -108,7 +108,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
   /**
    * Returns a Buffer Array of the raw Buffers of this transaction, in order.
    */
-  raw(): Buffer[] {
+  raw(): TxValuesArray {
     return [
       bnToRlp(this.nonce),
       bnToRlp(this.gasPrice),
