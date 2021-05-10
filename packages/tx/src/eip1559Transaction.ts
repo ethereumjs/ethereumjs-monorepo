@@ -21,10 +21,6 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   public readonly maxInclusionFeePerGas: BN
   public readonly maxFeePerGas: BN
 
-  get transactionType(): number {
-    return TRANSACTION_TYPE
-  }
-
   /**
    * EIP-2930 alias for `r`
    */
@@ -114,8 +110,6 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       s,
     ] = values
 
-    const emptyAccessList: AccessList = []
-
     return new FeeMarketEIP1559Transaction(
       {
         chainId: new BN(chainId),
@@ -126,7 +120,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
         to,
         value,
         data,
-        accessList: accessList ?? emptyAccessList,
+        accessList: accessList ?? [],
         v: v !== undefined ? new BN(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
         r,
         s,
@@ -135,6 +129,13 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     )
   }
 
+  /**
+   * This constructor takes the values, validates them, assigns them and freezes the object.
+   *
+   * It is not recommended to use this constructor directly. Instead use
+   * the static factory methods to assist in creating a Transaction object from
+   * varying data types.
+   */
   public constructor(txData: FeeMarketEIP1559TxData, opts: TxOptions = {}) {
     const { chainId, accessList, maxFeePerGas, maxInclusionFeePerGas } = txData
 
@@ -193,7 +194,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
 
   /**
    * The up front amount that an account must have for this transaction to be valid
-   * @param baseFee The base fee of the block
+   * @param baseFee The base fee of the block (will be set to 0 if not provided)
    */
   getUpfrontCost(baseFee?: BN): BN {
     if (!baseFee) {

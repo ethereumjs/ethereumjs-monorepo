@@ -1,9 +1,13 @@
 import { BN, toBuffer } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { default as Transaction } from './legacyTransaction'
-import { default as AccessListEIP2930Transaction } from './eip2930Transaction'
-import { TxOptions, TypedTransaction, TxData, AccessListEIP2930TxData } from './types'
-import { FeeMarketEIP1559Transaction, FeeMarketEIP1559TxData } from '.'
+import {
+  TxOptions,
+  TypedTransaction,
+  TxData,
+  AccessListEIP2930TxData,
+  FeeMarketEIP1559TxData,
+} from './types'
+import { Transaction, AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '.'
 
 const DEFAULT_COMMON = new Common({ chain: 'mainnet' })
 
@@ -76,7 +80,7 @@ export default class TransactionFactory {
       if (EIP === 1559) {
         return FeeMarketEIP1559Transaction.fromSerializedTx(data, txOptions)
       } else {
-        // EIP == 2930
+        // EIP === 2930
         return AccessListEIP2930Transaction.fromSerializedTx(data, txOptions)
       }
     } else {
