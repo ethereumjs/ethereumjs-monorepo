@@ -196,6 +196,9 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    * @param baseFee The base fee of the block
    */
   getUpfrontCost(baseFee?: BN): BN {
+    if (!baseFee) {
+      baseFee = new BN(0)
+    }
     const inclusionFeePerGas = BN.min(this.maxInclusionFeePerGas, this.maxFeePerGas.sub(baseFee!))
     const gasPrice = inclusionFeePerGas.add(baseFee!)
     return this.gasLimit.mul(gasPrice).add(this.value)
