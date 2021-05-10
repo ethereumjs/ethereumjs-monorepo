@@ -344,21 +344,9 @@ export class BlockHeader {
       dif = parentDif.add(offset.mul(a))
     }
 
-    if (this._common.hardforkGteHardfork(hardfork, 'muirGlacier')) {
-      // Istanbul/Berlin difficulty bomb delay (EIP2384)
-      num.isubn(9000000)
-      if (num.ltn(0)) {
-        num = new BN(0)
-      }
-    } else if (this._common.hardforkGteHardfork(hardfork, 'constantinople')) {
-      // Constantinople difficulty bomb delay (EIP1234)
-      num.isubn(5000000)
-      if (num.ltn(0)) {
-        num = new BN(0)
-      }
-    } else if (this._common.hardforkGteHardfork(hardfork, 'byzantium')) {
-      // Byzantium difficulty bomb delay (EIP649)
-      num.isubn(3000000)
+    if (this._common.hardforkGteHardfork(hardfork, 'byzantium')) {
+      // Get delay as parameter from common
+      num.isubn(this._common.param('pow', 'difficultyBombDelay'))
       if (num.ltn(0)) {
         num = new BN(0)
       }
