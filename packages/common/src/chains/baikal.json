@@ -11,10 +11,10 @@
       "epoch": 30000
     }
   },
-  "comment": "The Aleut testnet chain",
+  "comment": "The Baikal testnet chain",
   "url": "https://github.com/ethereum/eth1.0-specs/blob/master/network-upgrades/client-integration-testnets/aleut.md",
   "genesis": {
-    "hash": "0x10796525313298922a66fafbb2a7f4f426fcf97143ac32d30285b2fdfed105e6",
+    "hash": "0xa0bc5d43c72a990cedeb59d305702602b34c3ee8585e77d03c7a4fa64d79636e",
     "gasLimit": 4700000,
     "difficulty": "0x1",
     "nonce": "0x0000000000000000",
@@ -26,56 +26,57 @@
     {
       "name": "chainstart",
       "block": 0,
-      "forkHash": "0x27a21307"
+      "forkHash": "0x49f2f6b6"
     },
     {
       "name": "homestead",
       "block": 0,
-      "forkHash": "0x27a21307"
+      "forkHash": "0x49f2f6b6"
     },
     {
       "name": "dao",
       "block": null,
-      "forkHash": "0x27a21307"
+      "forkHash": "0x49f2f6b6"
     },
     {
       "name": "tangerineWhistle",
       "block": 0,
-      "forkHash": "0x27a21307"
+      "forkHash": "0x49f2f6b6"
     },
     {
       "name": "spuriousDragon",
       "block": 0,
-      "forkHash": "0x27a21307"
+      "forkHash": "0x49f2f6b6"
     },
     {
       "name": "byzantium",
       "block": 0,
-      "forkHash": "0x27a21307"
+      "forkHash": "0x49f2f6b6"
     },
     {
       "name": "constantinople",
       "block": 0,
-      "forkHash": "0x27a21307"
+      "forkHash": "0x49f2f6b6"
     },
     {
       "name": "petersburg",
       "block": 0,
-      "forkHash": "0x27a21307"
+      "forkHash": "0x49f2f6b6"
     },
     {
       "name": "istanbul",
       "block": 0,
-      "forkHash": "0x27a21307"
+      "forkHash": "0x49f2f6b6"
     },
     {
       "name": "berlin",
       "block": 0,
-      "forkHash": "0x27a21307"
+      "forkHash": "0x49f2f6b6"
     },
     {
       "name": "london",
-      "block": 500
+      "block": 500,
+      "forkHash": "0xdc678ac4"
     }
   ],
   "bootstrapNodes": [
