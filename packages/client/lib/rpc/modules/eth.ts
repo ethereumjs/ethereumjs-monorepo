@@ -404,4 +404,25 @@ export class Eth {
   protocolVersion(_params = []) {
     return `0x${this.ethVersion.toString(16)}`
   }
+
+  /**
+   * Returns the number of uncles in a block from a block matching the given block number
+   * @param params An array of one parameter:
+   *   1: hexidecimal representation of a block number
+   */
+  async getUncleCountByBlockNumber(params: [string]) {
+    const [blockNumber] = params
+    const blockNumberBN = new BN(stripHexPrefix(blockNumber), 16)
+    const latest = (await this._chain.getLatestHeader()).number
+
+    if (latest < blockNumberBN) {
+      return {
+        code: INVALID_PARAMS,
+        message: `specified block greater than current height`,
+      }
+    }
+
+    const block = await this._chain.getBlock(blockNumberBN)
+    return block.uncleHeaders.length
+  }
 }
