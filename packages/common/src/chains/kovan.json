@@ -23,27 +23,27 @@
     {
       "name": "chainstart",
       "block": 0,
-      "forkHash": "0x10ffe56"
+      "forkHash": "0x010ffe56"
     },
     {
       "name": "homestead",
       "block": 0,
-      "forkHash": "0x10ffe56"
+      "forkHash": "0x010ffe56"
     },
     {
       "name": "dao",
       "block": null,
-      "forkHash": "0x10ffe56"
+      "forkHash": "0x010ffe56"
     },
     {
       "name": "tangerineWhistle",
       "block": 0,
-      "forkHash": "0x10ffe56"
+      "forkHash": "0x010ffe56"
     },
     {
       "name": "spuriousDragon",
       "block": 0,
-      "forkHash": "0x10ffe56"
+      "forkHash": "0x010ffe56"
     },
     {
       "name": "byzantium",
