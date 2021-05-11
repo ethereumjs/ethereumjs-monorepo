@@ -58,11 +58,4 @@ tape('[Common/EIPs]: Initialization / Chain params', function (t: tape.Test) {
 
     st.end()
   })
-
-  t.test('getEIPActivationBlockNumber()', function (st) {
-    const common = new Common({ chain: 'mainnet' })
-    const activationBlock = common.getEIPActivationBlockNumber(2930)
-    st.ok(activationBlock!.eqn(12244000))
-    st.end()
-  })
 })

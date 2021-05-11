@@ -591,7 +591,7 @@ export class BlockHeader {
       if (!this.baseFeePerGas) {
         throw new Error('EIP1559 block has no base fee field')
       }
-      const isInitialEIP1559Block = this._common.getEIPActivationBlockNumber(1559)!.eq(this.number)
+      const isInitialEIP1559Block = this.number.eq(this._common.hardforkBlockBN('london'))
       if (isInitialEIP1559Block) {
         const initialBaseFee = new BN(this._common.param('gasConfig', 'initialBaseFee'))
         if (!this.baseFeePerGas!.eq(initialBaseFee)) {

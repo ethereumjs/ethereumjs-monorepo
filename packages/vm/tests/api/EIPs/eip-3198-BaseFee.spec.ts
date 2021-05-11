@@ -17,13 +17,14 @@ const common = new Common({
 
 // Small hack to hack in the activation block number
 // (Otherwise there would be need for a custom chain only for testing purposes)
-common.getEIPActivationBlockNumber = function (eip: number) {
-  if (eip == 1559) {
+common.hardforkBlockBN = function (hardfork: string | undefined) {
+  if (hardfork === 'london') {
     return new BN(1)
+  } else if (hardfork === 'dao') {
+    // Avoid DAO HF side-effects
+    return new BN(99)
   }
-  if (eip == 3198) {
-    return new BN(1)
-  }
+  return new BN(0)
 }
 
 const coinbase = new Address(Buffer.from('11'.repeat(20), 'hex'))

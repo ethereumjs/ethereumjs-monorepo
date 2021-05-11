@@ -221,26 +221,6 @@ export default class Common extends EventEmitter {
   }
 
   /**
-   * Returns the block number on which an EIP is activated
-   * If the EIP is never activated, `undefined` is returned
-   * @param eip the eip number
-   * @returns The block number on which the EIP was activated
-   */
-  getEIPActivationBlockNumber(eip: number): BN | undefined {
-    for (const hardfork of this._chainParams.hardforks) {
-      for (const hfChanges of HARDFORK_CHANGES) {
-        const hf = hfChanges[1]
-        if (hf['name'] === hardfork.name && 'eips' in hf) {
-          if (hf['eips'].includes(eip)) {
-            const fork = this._getHardfork(hardfork.name)
-            return new BN(fork.block)
-          }
-        }
-      }
-    }
-  }
-
-  /**
    * Internal helper function to choose between hardfork set and hardfork provided as param
    * @param hardfork Hardfork given to function as a parameter
    * @returns Hardfork chosen to be used
