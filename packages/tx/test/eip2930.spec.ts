@@ -1,7 +1,12 @@
 import Common from '@ethereumjs/common'
 import { Address, BN, bufferToHex, privateToAddress } from 'ethereumjs-util'
 import tape from 'tape'
-import { AccessList, AccessListEIP2930Transaction, AccessListBufferItem } from '../src'
+import {
+  AccessList,
+  AccessListEIP2930Transaction,
+  AccessListBufferItem,
+  FeeMarketEIP1559Transaction,
+} from '../src'
 
 const pKey = Buffer.from('4646464646464646464646464646464646464646464646464646464646464646', 'hex')
 const address = privateToAddress(pKey)
@@ -12,158 +17,226 @@ const N_DIV_2_PLUS_1 = new BN(
 )
 
 const common = new Common({
-  eips: [2718, 2929, 2930],
   chain: 'mainnet',
-  hardfork: 'berlin',
+  hardfork: 'london',
 })
+
+const txTypes = [
+  {
+    class: AccessListEIP2930Transaction,
+    name: 'AccessListEIP2930Transaction',
+  },
+  {
+    class: FeeMarketEIP1559Transaction,
+    name: 'FeeMarketEIP1559Transaction',
+  },
+]
 
 const validAddress = Buffer.from('01'.repeat(20), 'hex')
 const validSlot = Buffer.from('01'.repeat(32), 'hex')
 
 const chainId = new BN(1)
 
-tape('[AccessListEIP2930Transaction]', function (t) {
-  t.test('Initialization / Getter', function (t) {
+tape(
+  '[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-2930 Compatibility',
+  function (t) {
+    t.test('Initialization / Getter', function (t) {
+      for (const txType of txTypes) {
+        const tx = txType.class.fromTxData({}, { common })
+        t.ok(tx, 'should initialize correctly')
+
+        const nonEIP2930Common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+        t.throws(() => {
+          txType.class.fromTxData({}, { common: nonEIP2930Common })
+        }, 'should throw on a pre-Berlin Harfork (EIP-2930 not activated)')
+
+        t.throws(() => {
+          txType.class.fromSerializedTx(Buffer.from([99]), {})
+        }, 'should throw with tx type different than 1 for EIP2930 TX')
+
+        t.throws(() => {
+          txType.class.fromTxData(
+            {
+              chainId: chainId.addn(1),
+            },
+            { common }
+          )
+        }, 'should reject transactions with wrong chain ID')
+
+        t.throws(() => {
+          txType.class.fromTxData(
+            {
+              v: 2,
+            },
+            { common }
+          )
+        }, 'should reject transactions with invalid yParity (v) values')
+      }
+      t.end()
+    })
+
+    t.test('should allow json-typed access lists', function (st) {
+      for (const txType of txTypes) {
+        const access: AccessList = [
+          {
+            address: bufferToHex(validAddress),
+            storageKeys: [bufferToHex(validSlot)],
+          },
+        ]
+        const txn = txType.class.fromTxData(
+          {
+            accessList: access,
+            chainId: 1,
+          },
+          { common }
+        )
+
+        // Check if everything is converted
+
+        const BufferArray = txn.accessList
+        const JSON = txn.AccessListJSON
+
+        st.ok(BufferArray[0][0].equals(validAddress))
+        st.ok(BufferArray[0][1][0].equals(validSlot))
+
+        st.deepEqual(JSON, access)
+
+        // also verify that we can always get the json access list, even if we don't provide one.
+
+        const txnRaw = txType.class.fromTxData(
+          {
+            accessList: BufferArray,
+            chainId: 1,
+          },
+          { common }
+        )
+
+        const JSONRaw = txnRaw.AccessListJSON
+
+        st.deepEqual(JSONRaw, access)
+      }
+      st.end()
+    })
+
+    t.test('should throw on invalid access list data', function (st) {
+      for (const txType of txTypes) {
+        let accessList: any[] = [
+          [
+            Buffer.from('01'.repeat(21), 'hex'), // Address of 21 bytes instead of 20
+            [],
+          ],
+        ]
+
+        st.throws(() => {
+          txType.class.fromTxData({ chainId, accessList }, { common })
+        })
+
+        accessList = [
+          [
+            validAddress,
+            [
+              Buffer.from('01'.repeat(31), 'hex'), // Slot of 31 bytes instead of 32
+            ],
+          ],
+        ]
+
+        st.throws(() => {
+          txType.class.fromTxData({ chainId, accessList }, { common })
+        })
+
+        accessList = [[]] // Address does not exist
+
+        st.throws(() => {
+          txType.class.fromTxData({ chainId, accessList }, { common })
+        })
+
+        accessList = [[validAddress]] // Slots does not exist
+
+        st.throws(() => {
+          txType.class.fromTxData({ chainId, accessList }, { common })
+        })
+
+        accessList = [[validAddress, validSlot]] // Slots is not an array
+
+        st.throws(() => {
+          txType.class.fromTxData({ chainId, accessList }, { common })
+        })
+
+        accessList = [[validAddress, [], []]] // 3 items where 2 are expected
+
+        st.throws(() => {
+          txType.class.fromTxData({ chainId, accessList }, { common })
+        })
+      }
+      st.end()
+    })
+
+    t.test('sign()', function (t) {
+      for (const txType of txTypes) {
+        let tx = txType.class.fromTxData(
+          {
+            data: Buffer.from('010200', 'hex'),
+            to: validAddress,
+            accessList: [[validAddress, [validSlot]]],
+            chainId,
+          },
+          { common }
+        )
+        let signed = tx.sign(pKey)
+        const signedAddress = signed.getSenderAddress()
+        t.ok(signedAddress.buf.equals(address), 'should sign a transaction')
+        signed.verifySignature() // If this throws, test will not end.
+
+        tx = txType.class.fromTxData({}, { common })
+        signed = tx.sign(pKey)
+        t.deepEqual(
+          tx.accessList,
+          [],
+          'should create and sign transactions without passing access list value'
+        )
+        t.deepEqual(signed.accessList, [])
+
+        tx = txType.class.fromTxData({}, { common })
+
+        t.throws(() => {
+          tx.hash()
+        }, 'should throw calling hash with unsigned tx')
+
+        t.throws(() => {
+          tx.getSenderPublicKey()
+        })
+
+        t.throws(() => {
+          const tx = txType.class.fromTxData({ s: N_DIV_2_PLUS_1, r: 1, v: 1 }, { common })
+          const signed = tx.sign(pKey)
+          signed.getSenderPublicKey()
+        }, 'should throw with invalid s value')
+      }
+      t.end()
+    })
+  }
+)
+
+tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
+  t.test('Initialization', (st) => {
     const tx = AccessListEIP2930Transaction.fromTxData({}, { common })
-    t.ok(tx, 'should initialize correctly')
     t.ok(
       AccessListEIP2930Transaction.fromTxData(tx, { common }),
       'should initialize correctly from its own data'
     )
-
-    const nonEIP2930Common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
-    t.throws(() => {
-      AccessListEIP2930Transaction.fromTxData({}, { common: nonEIP2930Common })
-    }, 'should throw on a pre-Berlin Harfork (EIP-2930 not activated)')
-
-    t.throws(() => {
-      AccessListEIP2930Transaction.fromSerializedTx(Buffer.from([2]), {})
-    }, 'should throw with tx type different than 1 for EIP2930 TX')
-
-    t.throws(() => {
-      const buffer = Buffer.from([])
-      const address = Buffer.from([])
-      const storageKeys = [Buffer.from([]), Buffer.from([])]
-      const aclBuf: AccessListBufferItem = [address, storageKeys]
-      AccessListEIP2930Transaction.fromValuesArray(
-        [buffer, buffer, buffer, buffer, buffer, buffer, buffer, [aclBuf], buffer],
-        {}
-      )
-    }, 'should throw with values array with length different than 8 or 11')
-
-    t.throws(() => {
-      AccessListEIP2930Transaction.fromTxData(
-        {
-          chainId: chainId.addn(1),
-        },
-        { common }
-      )
-    }, 'should reject transactions with wrong chain ID')
-
-    t.throws(() => {
-      AccessListEIP2930Transaction.fromTxData(
-        {
-          v: 2,
-        },
-        { common }
-      )
-    }, 'should reject transactions with invalid yParity (v) values')
-    t.end()
-  })
-
-  t.test('should allow json-typed access lists', function (st) {
-    const access: AccessList = [
-      {
-        address: bufferToHex(validAddress),
-        storageKeys: [bufferToHex(validSlot)],
-      },
-    ]
-    const txn = AccessListEIP2930Transaction.fromTxData(
-      {
-        accessList: access,
-        chainId: 1,
-      },
-      { common }
-    )
-
-    // Check if everything is converted
-
-    const BufferArray = txn.accessList
-    const JSON = txn.AccessListJSON
-
-    st.ok(BufferArray[0][0].equals(validAddress))
-    st.ok(BufferArray[0][1][0].equals(validSlot))
-
-    st.deepEqual(JSON, access)
-
-    // also verify that we can always get the json access list, even if we don't provide one.
-
-    const txnRaw = AccessListEIP2930Transaction.fromTxData(
-      {
-        accessList: BufferArray,
-        chainId: 1,
-      },
-      { common }
-    )
-
-    const JSONRaw = txnRaw.AccessListJSON
-
-    st.deepEqual(JSONRaw, access)
-
     st.end()
   })
 
-  t.test('should throw on invalid access list data', function (st) {
-    let accessList: any[] = [
-      [
-        Buffer.from('01'.repeat(21), 'hex'), // Address of 21 bytes instead of 20
-        [],
-      ],
-    ]
-
-    st.throws(() => {
-      AccessListEIP2930Transaction.fromTxData({ chainId, accessList }, { common })
-    })
-
-    accessList = [
-      [
-        validAddress,
-        [
-          Buffer.from('01'.repeat(31), 'hex'), // Slot of 31 bytes instead of 32
-        ],
-      ],
-    ]
-
-    st.throws(() => {
-      AccessListEIP2930Transaction.fromTxData({ chainId, accessList }, { common })
-    })
-
-    accessList = [[]] // Address does not exist
-
-    st.throws(() => {
-      AccessListEIP2930Transaction.fromTxData({ chainId, accessList }, { common })
-    })
-
-    accessList = [[validAddress]] // Slots does not exist
-
-    st.throws(() => {
-      AccessListEIP2930Transaction.fromTxData({ chainId, accessList }, { common })
-    })
-
-    accessList = [[validAddress, validSlot]] // Slots is not an array
-
-    st.throws(() => {
-      AccessListEIP2930Transaction.fromTxData({ chainId, accessList }, { common })
-    })
-
-    accessList = [[validAddress, [], []]] // 3 items where 2 are expected
-
-    st.throws(() => {
-      AccessListEIP2930Transaction.fromTxData({ chainId, accessList }, { common })
-    })
-
-    st.end()
-  })
+  t.throws(() => {
+    const buffer = Buffer.from([])
+    const address = Buffer.from([])
+    const storageKeys = [Buffer.from([]), Buffer.from([])]
+    const aclBuf: AccessListBufferItem = [address, storageKeys]
+    AccessListEIP2930Transaction.fromValuesArray(
+      [buffer, buffer, buffer, buffer, buffer, buffer, buffer, [aclBuf], buffer],
+      {}
+    )
+  }, 'should throw with values array with length different than 8 or 11')
 
   t.test('should return right upfront cost', (st) => {
     let tx = AccessListEIP2930Transaction.fromTxData(
@@ -266,26 +339,6 @@ tape('[AccessListEIP2930Transaction]', function (t) {
     t.end()
   })
 
-  t.test('should sign a transaction', function (t) {
-    const tx = AccessListEIP2930Transaction.fromTxData(
-      {
-        data: Buffer.from('010200', 'hex'),
-        to: validAddress,
-        accessList: [[validAddress, [validSlot]]],
-        chainId,
-      },
-      { common }
-    )
-    const signed = tx.sign(pKey)
-    const signedAddress = signed.getSenderAddress()
-
-    t.ok(signedAddress.buf.equals(address))
-
-    signed.verifySignature() // If this throws, test will not end.
-
-    t.end()
-  })
-
   // Data from
   // https://github.com/INFURA/go-ethlibs/blob/75b2a52a39d353ed8206cffaf68d09bd1b154aae/eth/transaction_signing_test.go#L87
 
@@ -374,42 +427,5 @@ tape('[AccessListEIP2930Transaction]', function (t) {
     t.deepEqual(signed.toJSON(), expectedJSON)
 
     t.end()
-  })
-
-  t.test('should create and sign transactions without passing access list value', (st) => {
-    const tx = AccessListEIP2930Transaction.fromTxData({}, { common })
-    const signed = tx.sign(pKey)
-
-    st.deepEqual(tx.accessList, [])
-    st.deepEqual(signed.accessList, [])
-
-    st.end()
-  })
-
-  t.test('should throw calling hash with unsigned tx', (st) => {
-    const tx = AccessListEIP2930Transaction.fromTxData({}, { common })
-
-    t.throws(() => {
-      tx.hash()
-    })
-
-    t.throws(() => {
-      tx.getSenderPublicKey()
-    })
-
-    st.end()
-  })
-
-  t.test('should throw with invalid s value', (st) => {
-    t.throws(() => {
-      const tx = AccessListEIP2930Transaction.fromTxData(
-        { s: N_DIV_2_PLUS_1, r: 1, v: 1 },
-        { common }
-      )
-      const signed = tx.sign(pKey)
-      signed.getSenderPublicKey()
-    })
-
-    st.end()
   })
 })
