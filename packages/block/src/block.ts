@@ -229,16 +229,17 @@ export class Block {
   validateTransactions(stringError: true): string[]
   validateTransactions(stringError = false) {
     const errors: string[] = []
-    const self = this
     this.transactions.forEach((tx, i) => {
       const errs = <string[]>tx.validate(true)
-      if (self._common.isActivatedEIP(1559)) {
+      if (this._common.isActivatedEIP(1559)) {
         if (tx.transactionType === 2) {
-          if ((<FeeMarketEIP1559Transaction>tx).maxFeePerGas.lt(self.header.baseFeePerGas!)) {
+          tx = tx as FeeMarketEIP1559Transaction
+          if (tx.maxFeePerGas.lt(this.header.baseFeePerGas!)) {
             errs.push('tx unable to pay base fee (EIP-1559 tx)')
           }
         } else {
-          if ((<Transaction>tx).gasPrice.lt(self.header.baseFeePerGas!)) {
+          tx = tx as Transaction
+          if (tx.gasPrice.lt(this.header.baseFeePerGas!)) {
             errs.push('tx unable to pay base fee (non EIP-1559 tx)')
           }
         }

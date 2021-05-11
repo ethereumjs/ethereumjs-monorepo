@@ -218,10 +218,14 @@ export class BlockHeader {
       this._common.setHardforkByBlockNumber(number.toNumber())
     }
 
-    if (this._common.isActivatedEIP(1559) && baseFeePerGas === undefined) {
-      this.baseFeePerGas = new BN(1)
+    if (this._common.isActivatedEIP(1559)) {
+      if (baseFeePerGas === undefined) {
+        this.baseFeePerGas = new BN(1)
+      }
     } else {
-      this.baseFeePerGas = undefined
+      if (baseFeePerGas) {
+        throw new Error('A base fee for a block can only be set with EIP1559 being activated')
+      }
     }
 
     if (options.initWithGenesisHeader) {
@@ -498,16 +502,16 @@ export class BlockHeader {
     }
     const hardfork = this._getHardfork()
     // Consensus type dependent checks
-    // PoW/Ethash
     if (this._common.consensusAlgorithm() !== 'clique') {
+      // PoW/Ethash
       if (
         this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)
       ) {
         const msg = 'invalid amount of extra data'
         throw this._error(msg)
       }
-      // PoA/Clique
     } else {
+      // PoA/Clique
       const minLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
       if (!this.cliqueIsEpochTransition()) {
         // ExtraData length on epoch transition
@@ -609,7 +613,7 @@ export class BlockHeader {
    */
   public calcNextBaseFee(): BN {
     if (!this._common.isActivatedEIP(1559)) {
-      throw new Error('calcNextBaseFee() can only be called with EIP-1559 being activated')
+      throw new Error('calcNextBaseFee() can only be called with EIP1559 being activated')
     }
     let nextBaseFee: BN
     const elasticity = new BN(this._common.param('gasConfig', 'elasticityMultiplier'))

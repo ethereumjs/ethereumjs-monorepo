@@ -166,12 +166,12 @@ export interface FeeMarketEIP1559TxData extends AccessListEIP2930TxData {
 }
 
 /**
- * Buffer values array for EIP2930 transaction
+ * Buffer values array for a legacy transaction
  */
 export type TxValuesArray = Buffer[]
 
 /**
- * Buffer values array for EIP2930 transaction
+ * Buffer values array for an EIP2930 transaction
  */
 export type AccessListEIP2930ValuesArray = [
   Buffer,
@@ -188,7 +188,7 @@ export type AccessListEIP2930ValuesArray = [
 ]
 
 /**
- * Buffer values array for EIP1559 transaction
+ * Buffer values array for an EIP1559 transaction
  */
 export type FeeMarketEIP1559ValuesArray = [
   Buffer,
