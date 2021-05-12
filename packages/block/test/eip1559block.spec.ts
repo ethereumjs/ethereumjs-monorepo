@@ -119,6 +119,31 @@ tape('EIP1559 tests', function (t) {
     st.end()
   })
 
+  t.test(
+    'Initialization should throw when initializing with EIP1559 not being activated',
+    async function (st) {
+      try {
+        const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+        BlockHeader.fromHeaderData(
+          {
+            number: new BN(1),
+            parentHash: genesis.hash(),
+            timestamp: new BN(1),
+            baseFeePerGas: new BN(5),
+          },
+          {
+            common,
+          }
+        )
+      } catch (e) {
+        const expectedError = 'A base fee for a block can only be set with EIP1559 being activated'
+        st.ok(e.message.includes(expectedError))
+      }
+
+      st.end()
+    }
+  )
+
   t.test('Header should throw when elasticity is exceeded', async function (st) {
     const header = BlockHeader.fromHeaderData(
       {

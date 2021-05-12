@@ -1,6 +1,5 @@
 import Common from '@ethereumjs/common'
 import { BN, rlp } from 'ethereumjs-util'
-import { stderr } from 'process'
 import tape from 'tape'
 import { FeeMarketEIP1559Transaction } from '../src'
 
