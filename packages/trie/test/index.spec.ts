@@ -292,8 +292,11 @@ tape('it should create the genesis state root from ethereum', function (tester) 
 
 tape('setting back state root (deleteFromDB)', async (t) => {
   const k1 = Buffer.from('1')
-  // Testing with longer value due to `rlpNode.length >= 32` check in `_formatNode()`
-  // see TODO note over there
+  /* Testing with longer value due to `rlpNode.length >= 32` check in `_formatNode()`
+   * Reasoning from https://eth.wiki/fundamentals/patricia-tree:
+   * "When one node is referenced inside another node, what is included is `H(rlp.encode(x))`,
+   * where `H(x) = sha3(x) if len(x) >= 32 else x`"
+   */
   const v1 = Buffer.from('this-is-some-longer-value-to-test-the-delete-operation-value1')
   const k2 = Buffer.from('2')
   const v2 = Buffer.from('this-is-some-longer-value-to-test-the-delete-operation-value2')
