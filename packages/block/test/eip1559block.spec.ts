@@ -16,7 +16,8 @@ const common = new Common({
   hardfork: 'london',
 })
 
-const blockchain = new Mockchain()
+const blockchain1 = new Mockchain()
+const blockchain2 = new Mockchain()
 
 const genesis = Block.fromBlockData({})
 
@@ -34,7 +35,8 @@ common.hardforkBlockBN = function (hardfork: string | undefined) {
 
 tape('EIP1559 tests', function (t) {
   t.test('Initialize test suite', async function (st) {
-    await blockchain.putBlock(genesis)
+    await blockchain1.putBlock(genesis)
+    await blockchain2.putBlock(genesis)
     st.end()
   })
   t.test('Header Data', function (st) {
@@ -69,7 +71,7 @@ tape('EIP1559 tests', function (t) {
     )
 
     try {
-      await header.validate(blockchain)
+      await header.validate(blockchain1)
       st.fail('should throw')
     } catch (e) {
       st.ok(e.message.includes('base fee'), 'threw with right error')
@@ -91,7 +93,7 @@ tape('EIP1559 tests', function (t) {
     )
 
     try {
-      await header.validate(blockchain)
+      await header.validate(blockchain1)
       st.fail('should throw')
     } catch (e) {
       st.ok(e.message.includes('base fee'), 'threw with right error')
@@ -99,21 +101,24 @@ tape('EIP1559 tests', function (t) {
     st.end()
   })
 
-  t.test('Valid initial EIP1559 header should be valid', async function (st) {
-    const header = BlockHeader.fromHeaderData(
-      {
+  const block1 = Block.fromBlockData(
+    {
+      header: {
         number: new BN(1),
         parentHash: genesis.hash(),
         timestamp: new BN(1),
         baseFeePerGas: new BN(common.param('gasConfig', 'initialBaseFee')),
       },
-      {
-        calcDifficultyFromHeader: genesis.header,
-        common,
-      }
-    )
+    },
+    {
+      calcDifficultyFromHeader: genesis.header,
+      common,
+    }
+  )
 
-    await header.validate(blockchain)
+  t.test('Valid initial EIP1559 header should be valid', async function (st) {
+    await block1.header.validate(blockchain1)
+    await blockchain2.putBlock(block1)
     st.pass('correctly validated header')
 
     st.end()
@@ -162,7 +167,7 @@ tape('EIP1559 tests', function (t) {
     )
 
     try {
-      await header.validate(blockchain)
+      await header.validate(blockchain1)
       st.fail('should throw')
     } catch (e) {
       st.ok(e.message.includes('too much gas used'), 'threw with right error')
@@ -185,7 +190,7 @@ tape('EIP1559 tests', function (t) {
       }
     )
 
-    await header.validate(blockchain)
+    await header.validate(blockchain1)
     st.pass('correctly validated header')
     st.end()
   })
@@ -206,7 +211,7 @@ tape('EIP1559 tests', function (t) {
     )
 
     try {
-      await header.validate(blockchain)
+      await header.validate(blockchain1)
       st.fail('should throw')
     } catch (e) {
       st.ok(e.message.includes('invalid gas limit'), 'threw with right error')
@@ -230,7 +235,7 @@ tape('EIP1559 tests', function (t) {
     )
 
     try {
-      await header.validate(blockchain)
+      await header.validate(blockchain1)
       st.fail('should throw')
     } catch (e) {
       st.ok(e.message.includes('invalid gas limit'), 'threw with right error')
@@ -266,9 +271,31 @@ tape('EIP1559 tests', function (t) {
       }
     )
 
-    await header.validate(blockchain)
+    await header.validate(blockchain1)
     st.pass('correctly validated block')
-    await header2.validate(blockchain)
+    await header2.validate(blockchain1)
+    st.pass('correctly validated block')
+    st.end()
+  })
+
+  t.test('should correctly validate subsequent EIP-1559 blocks', async function (st) {
+    const block = Block.fromBlockData(
+      {
+        header: {
+          number: new BN(2),
+          parentHash: block1.hash(),
+          timestamp: new BN(2),
+          gasLimit: genesis.header.gasLimit.sub(genesis.header.gasLimit.divn(1024)),
+          baseFeePerGas: Buffer.from('342770c0', 'hex'),
+        },
+      },
+      {
+        calcDifficultyFromHeader: block1.header,
+        common,
+      }
+    )
+    // blockchain2 has block 1 added at this moment (see test above)
+    await block.header.validate(blockchain2)
     st.pass('correctly validated block')
     st.end()
   })
@@ -307,7 +334,7 @@ tape('EIP1559 tests', function (t) {
       }
     )
     try {
-      await block.validate(blockchain)
+      await block.validate(blockchain1)
       st.fail('should throw')
     } catch (e) {
       st.ok(e.message.includes('unable to pay base fee'), 'threw with right error')
