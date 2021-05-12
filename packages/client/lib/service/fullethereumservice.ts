@@ -141,7 +141,7 @@ export class FullEthereumService extends EthereumService {
       const block = await this.chain.getBlock(blockHash)
       const parentBlock = await this.chain.getBlock(block.header.parentHash)
 
-      const witnessHashes: string[] = []
+      let witnessHashes: string[] = []
 
       // wit/0 spec notes:
       // * Nodes must always respond to the query.
@@ -153,19 +153,13 @@ export class FullEthereumService extends EthereumService {
         // copy the vm as to not cause any changes during runBlock
         const vm = this.synchronizer.execution.vm.copy()
 
-        const trie = (vm.stateManager as any)._trie
-        const getFunc = trie.db.get.bind(trie.db)
-        trie.db.get = async (key: Buffer) => {
-          if (!witnessHashes.includes(key.toString('hex'))) {
-            witnessHashes.push(key.toString('hex'))
-          }
-          return getFunc(key)
-        }
-
         try {
-          await vm.runBlock({ block, root: parentBlock.header.stateRoot })
+         const result = await vm.runBlock({ block, root: parentBlock.header.stateRoot, reportWitness: true })
+         if (result.witnessHashes) {
+          witnessHashes = result.witnessHashes
+         }
         } catch (error) {
-          // if this fails, return witnessHashes as empty
+          // if this fails, follow spec by returning witnessHashes as empty
         }
       }
 
