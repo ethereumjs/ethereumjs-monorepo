@@ -157,53 +157,69 @@ tape('simple save and retrieve', function (tester) {
 
 tape('testing deletion cases', function (tester) {
   const it = tester.test
-  const trie = new CheckpointTrie()
+  const trieSetupWithoutDBDelete = {
+    trie: new CheckpointTrie(),
+    msg: 'without DB delete',
+  }
+  const trieSetupWithDBDelete = {
+    trie: new CheckpointTrie(undefined, undefined, true),
+    msg: 'with DB delete',
+  }
+  const trieSetups = [trieSetupWithoutDBDelete, trieSetupWithDBDelete]
 
   it('should delete from a branch->branch-branch', async function (t) {
-    await trie.put(Buffer.from([11, 11, 11]), Buffer.from('first'))
-    await trie.put(Buffer.from([12, 22, 22]), Buffer.from('create the first branch'))
-    await trie.put(Buffer.from([12, 34, 44]), Buffer.from('create the last branch'))
+    for (const trieSetup of trieSetups) {
+      await trieSetup.trie.put(Buffer.from([11, 11, 11]), Buffer.from('first'))
+      await trieSetup.trie.put(Buffer.from([12, 22, 22]), Buffer.from('create the first branch'))
+      await trieSetup.trie.put(Buffer.from([12, 34, 44]), Buffer.from('create the last branch'))
 
-    await trie.del(Buffer.from([12, 22, 22]))
-    const val = await trie.get(Buffer.from([12, 22, 22]))
-    t.equal(null, val)
+      await trieSetup.trie.del(Buffer.from([12, 22, 22]))
+      const val = await trieSetup.trie.get(Buffer.from([12, 22, 22]))
+      t.equal(null, val, trieSetup.msg)
+    }
     t.end()
   })
 
   it('should delete from a branch->branch-extension', async function (t) {
-    await trie.put(Buffer.from([11, 11, 11]), Buffer.from('first'))
-    await trie.put(Buffer.from([12, 22, 22]), Buffer.from('create the first branch'))
-    await trie.put(Buffer.from([12, 33, 33]), Buffer.from('create the middle branch'))
-    await trie.put(Buffer.from([12, 34, 44]), Buffer.from('create the last branch'))
+    for (const trieSetup of trieSetups) {
+      await trieSetup.trie.put(Buffer.from([11, 11, 11]), Buffer.from('first'))
+      await trieSetup.trie.put(Buffer.from([12, 22, 22]), Buffer.from('create the first branch'))
+      await trieSetup.trie.put(Buffer.from([12, 33, 33]), Buffer.from('create the middle branch'))
+      await trieSetup.trie.put(Buffer.from([12, 34, 44]), Buffer.from('create the last branch'))
 
-    await trie.del(Buffer.from([12, 22, 22]))
-    const val = await trie.get(Buffer.from([12, 22, 22]))
-    t.equal(null, val)
+      await trieSetup.trie.del(Buffer.from([12, 22, 22]))
+      const val = await trieSetup.trie.get(Buffer.from([12, 22, 22]))
+      t.equal(null, val, trieSetup.msg)
+    }
     t.end()
   })
 
   it('should delete from a extension->branch-extension', async function (t) {
-    await trie.put(Buffer.from([11, 11, 11]), Buffer.from('first'))
-    await trie.put(Buffer.from([12, 22, 22]), Buffer.from('create the first branch'))
-    await trie.put(Buffer.from([12, 33, 33]), Buffer.from('create the middle branch'))
-    await trie.put(Buffer.from([12, 34, 44]), Buffer.from('create the last branch'))
+    for (const trieSetup of trieSetups) {
+      await trieSetup.trie.put(Buffer.from([11, 11, 11]), Buffer.from('first'))
+      await trieSetup.trie.put(Buffer.from([12, 22, 22]), Buffer.from('create the first branch'))
+      await trieSetup.trie.put(Buffer.from([12, 33, 33]), Buffer.from('create the middle branch'))
+      await trieSetup.trie.put(Buffer.from([12, 34, 44]), Buffer.from('create the last branch'))
 
-    // delete the middle branch
-    await trie.del(Buffer.from([11, 11, 11]))
-    const val = await trie.get(Buffer.from([11, 11, 11]))
-    t.equal(null, val)
+      // delete the middle branch
+      await trieSetup.trie.del(Buffer.from([11, 11, 11]))
+      const val = await trieSetup.trie.get(Buffer.from([11, 11, 11]))
+      t.equal(null, val, trieSetup.msg)
+    }
     t.end()
   })
 
   it('should delete from a extension->branch-branch', async function (t) {
-    await trie.put(Buffer.from([11, 11, 11]), Buffer.from('first'))
-    await trie.put(Buffer.from([12, 22, 22]), Buffer.from('create the first branch'))
-    await trie.put(Buffer.from([12, 33, 33]), Buffer.from('create the middle branch'))
-    await trie.put(Buffer.from([12, 34, 44]), Buffer.from('create the last branch'))
-    // delete the middle branch
-    await trie.del(Buffer.from([11, 11, 11]))
-    const val = await trie.get(Buffer.from([11, 11, 11]))
-    t.equal(null, val)
+    for (const trieSetup of trieSetups) {
+      await trieSetup.trie.put(Buffer.from([11, 11, 11]), Buffer.from('first'))
+      await trieSetup.trie.put(Buffer.from([12, 22, 22]), Buffer.from('create the first branch'))
+      await trieSetup.trie.put(Buffer.from([12, 33, 33]), Buffer.from('create the middle branch'))
+      await trieSetup.trie.put(Buffer.from([12, 34, 44]), Buffer.from('create the last branch'))
+      // delete the middle branch
+      await trieSetup.trie.del(Buffer.from([11, 11, 11]))
+      const val = await trieSetup.trie.get(Buffer.from([11, 11, 11]))
+      t.equal(null, val, trieSetup.msg)
+    }
     t.end()
   })
 })
@@ -272,4 +288,50 @@ tape('it should create the genesis state root from ethereum', function (tester) 
     t.equal(trie4.root.toString('hex'), genesisStateRoot)
     t.end()
   })
+})
+
+tape('setting back state root (deleteFromDB)', async (t) => {
+  const k1 = Buffer.from('1')
+  /* Testing with longer value due to `rlpNode.length >= 32` check in `_formatNode()`
+   * Reasoning from https://eth.wiki/fundamentals/patricia-tree:
+   * "When one node is referenced inside another node, what is included is `H(rlp.encode(x))`,
+   * where `H(x) = sha3(x) if len(x) >= 32 else x`"
+   */
+  const v1 = Buffer.from('this-is-some-longer-value-to-test-the-delete-operation-value1')
+  const k2 = Buffer.from('2')
+  const v2 = Buffer.from('this-is-some-longer-value-to-test-the-delete-operation-value2')
+
+  const rootAfterK1 = Buffer.from(
+    '809e75931f394603657e113eb7244794f35b8d326cff99407111d600722e9425',
+    'hex'
+  )
+
+  const trieSetups = [
+    {
+      trie: new BaseTrie(undefined, undefined, false),
+      expected: v1,
+      msg: 'should return v1 when setting back the state root when deleteFromDB=false',
+    },
+    {
+      trie: new BaseTrie(undefined, undefined, true),
+      expected: null,
+      msg: 'should return null when setting back the state root when deleteFromDB=true',
+    },
+  ]
+
+  for (const s of trieSetups) {
+    await s.trie.put(k1, v1)
+    await s.trie.put(k2, v2)
+    await s.trie.del(k1)
+    t.equal(
+      await s.trie.get(k1),
+      null,
+      'should return null on latest state root independently from deleteFromDB setting'
+    )
+
+    s.trie.root = rootAfterK1
+    t.deepEqual(await s.trie.get(k1), s.expected, s.msg)
+  }
+
+  t.end()
 })

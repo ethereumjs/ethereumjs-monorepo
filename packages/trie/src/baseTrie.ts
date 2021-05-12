@@ -39,24 +39,30 @@ export type FoundNodeFunction = (
  * The API for the base and the secure interface are about the same.
  */
 export class Trie {
-  /** The backend DB */
-  db: DB
   /** The root for an empty trie */
   EMPTY_TRIE_ROOT: Buffer
-  private _root: Buffer
   protected lock: Semaphore
+
+  /** The backend DB */
+  db: DB
+  private _root: Buffer
+  private _deleteFromDB: boolean
 
   /**
    * test
    * @param db - A [levelup](https://github.com/Level/levelup) instance. By default (if the db is `null` or
    * left undefined) creates an in-memory [memdown](https://github.com/Level/memdown) instance.
    * @param root - A `Buffer` for the root of a previously stored trie
+   * @param deleteFromDB - Delete nodes from DB on delete operations (disallows switching to an older state root) (default: `false`)
    */
-  constructor(db?: LevelUp | null, root?: Buffer) {
+  constructor(db?: LevelUp | null, root?: Buffer, deleteFromDB: boolean = false) {
     this.EMPTY_TRIE_ROOT = KECCAK256_RLP
     this.lock = new Semaphore(1)
+
     this.db = db ? new DB(db) : new DB()
     this._root = this.EMPTY_TRIE_ROOT
+    this._deleteFromDB = deleteFromDB
+
     if (root) {
       this.setRoot(root)
     }
@@ -117,7 +123,8 @@ export class Trie {
   }
 
   /**
-   * Stores a given `value` at the given `key`.
+   * Stores a given `value` at the given `key` or do a delete if `value` is empty
+   * (delete operations are only executed on DB with `deleteFromDB` set to `true`)
    * @param key
    * @param value
    * @returns A Promise that resolves once value is stored.
@@ -143,7 +150,8 @@ export class Trie {
   }
 
   /**
-   * Deletes a value given a `key`.
+   * Deletes a value given a `key` from the trie
+   * (delete operations are only executed on DB with `deleteFromDB` set to `true`)
    * @param key
    * @returns A Promise that resolves once value is deleted.
    */
@@ -382,7 +390,7 @@ export class Trie {
   }
 
   /**
-   * Deletes a node from the database.
+   * Deletes a node from the trie.
    * @private
    */
   async _deleteNode(k: Buffer, stack: TrieNode[]): Promise<void> {
@@ -566,11 +574,13 @@ export class Trie {
       // is applied twice (performance)
       const hashRoot = keccak(rlpNode)
 
-      if (remove && this.isCheckpoint) {
-        opStack.push({
-          type: 'del',
-          key: hashRoot,
-        })
+      if (remove) {
+        if (this._deleteFromDB) {
+          opStack.push({
+            type: 'del',
+            key: hashRoot,
+          })
+        }
       } else {
         opStack.push({
           type: 'put',
@@ -586,7 +596,8 @@ export class Trie {
   }
 
   /**
-   * The given hash of operations (key additions or deletions) are executed on the DB
+   * The given hash of operations (key additions or deletions) are executed on the trie
+   * (delete operations are only executed on DB with `deleteFromDB` set to `true`)
    * @example
    * const ops = [
    *    { type: 'del', key: Buffer.from('father') }
