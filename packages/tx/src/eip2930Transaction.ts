@@ -274,16 +274,12 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     }
 
     const { yParity, r, s } = this
-    if (yParity === undefined || !r || !s) {
-      throw new Error('Missing values to derive sender public key from signed tx')
-    }
-
     try {
       return ecrecover(
         msgHash,
-        yParity.addn(27), // Recover the 27 which was stripped from ecsign
-        bnToRlp(r),
-        bnToRlp(s)
+        yParity!.addn(27), // Recover the 27 which was stripped from ecsign
+        bnToRlp(r!),
+        bnToRlp(s!)
       )
     } catch (e) {
       throw new Error('Invalid Signature')

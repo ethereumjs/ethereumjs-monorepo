@@ -169,7 +169,19 @@ export abstract class BaseTransaction<TransactionObject> {
 
   public isSigned(): boolean {
     const { v, r, s } = this
-    return !!v && !!r && !!s
+    if (this.type === 0) {
+      if (!v || !r || !s) {
+        return false
+      } else {
+        return true
+      }
+    } else {
+      if (v === undefined || !r || !s) {
+        return false
+      } else {
+        return true
+      }
+    }
   }
 
   /**

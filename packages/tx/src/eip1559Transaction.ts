@@ -289,16 +289,12 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     }
 
     const { v, r, s } = this
-    if (v === undefined || !r || !s) {
-      throw new Error('Missing values to derive sender public key from signed tx')
-    }
-
     try {
       return ecrecover(
         msgHash,
-        v.addn(27), // Recover the 27 which was stripped from ecsign
-        bnToRlp(r),
-        bnToRlp(s)
+        v!.addn(27), // Recover the 27 which was stripped from ecsign
+        bnToRlp(r!),
+        bnToRlp(s!)
       )
     } catch (e) {
       throw new Error('Invalid Signature')

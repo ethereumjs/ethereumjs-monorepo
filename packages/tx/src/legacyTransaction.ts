@@ -205,16 +205,12 @@ export default class Transaction extends BaseTransaction<Transaction> {
     }
 
     const { v, r, s } = this
-    if (!v || !r || !s) {
-      throw new Error('Missing values to derive sender public key from signed tx')
-    }
-
     try {
       return ecrecover(
         msgHash,
-        v,
-        bnToRlp(r),
-        bnToRlp(s),
+        v!,
+        bnToRlp(r!),
+        bnToRlp(s!),
         this._signedTxImplementsEIP155() ? this.common.chainIdBN() : undefined
       )
     } catch (e) {
