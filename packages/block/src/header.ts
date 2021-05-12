@@ -220,7 +220,7 @@ export class BlockHeader {
 
     if (this._common.isActivatedEIP(1559)) {
       if (baseFeePerGas === undefined) {
-        this.baseFeePerGas = new BN(1)
+        baseFeePerGas = new BN(7)
       }
     } else {
       if (baseFeePerGas) {

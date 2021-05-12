@@ -2,7 +2,7 @@ import tape from 'tape'
 import { Account, Address, BN, MAX_INTEGER } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
-import { Transaction, TransactionFactory } from '@ethereumjs/tx'
+import { Transaction, TransactionFactory, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import VM from '../../lib'
 import { createAccount, getTransaction } from './utils'
 
@@ -15,8 +15,12 @@ const TRANSACTION_TYPES = [
     type: 1,
     name: 'EIP2930 tx',
   },
+  {
+    type: 2,
+    name: 'EIP1559 tx',
+  },
 ]
-const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+const common = new Common({ chain: 'mainnet', hardfork: 'london' })
 common.setMaxListeners(100)
 
 tape('runTx() -> successful API parameter usage', async (t) => {
@@ -84,21 +88,31 @@ tape('runTx() -> successful API parameter usage', async (t) => {
         )
 
         const transferCost = 21000
-        const unsignedTx = Transaction.fromTxData({
-          to: address,
-          gasLimit: transferCost,
-          gasPrice: 1,
-          nonce: 0,
-        })
+        const unsignedTx = TransactionFactory.fromTxData(
+          {
+            to: address,
+            gasLimit: transferCost,
+            gasPrice: 100,
+            nonce: 0,
+            type: txType.type,
+            maxInclusionFeePerGas: 50,
+            maxFeePerGas: 50,
+          },
+          { common }
+        )
         const tx = unsignedTx.sign(privateKey)
 
         const coinbase = Buffer.from('00000000000000000000000000000000000000ff', 'hex')
-        const block = Block.fromBlockData({
-          header: {
-            gasLimit: transferCost - 1,
-            coinbase,
+        const block = Block.fromBlockData(
+          {
+            header: {
+              gasLimit: transferCost - 1,
+              coinbase,
+              baseFeePerGas: 7,
+            },
           },
-        })
+          { common }
+        )
 
         const result = await vm.runTx({
           tx,
@@ -107,9 +121,19 @@ tape('runTx() -> successful API parameter usage', async (t) => {
         })
 
         const coinbaseAccount = await vm.stateManager.getAccount(new Address(coinbase))
-        t.equals(
-          coinbaseAccount.balance.toNumber(),
-          21000,
+
+        // calculate expected coinbase balance
+        const baseFee = block.header.baseFeePerGas!
+        const inclusionFeePerGas =
+          tx instanceof FeeMarketEIP1559Transaction
+            ? BN.min(tx.maxInclusionFeePerGas, tx.maxFeePerGas.sub(baseFee))
+            : tx.gasPrice.sub(baseFee)
+        const expectedCoinbaseBalance = common.isActivatedEIP(1559)
+          ? result.gasUsed.mul(inclusionFeePerGas)
+          : result.amountSpent
+
+        t.ok(
+          coinbaseAccount.balance.eq(expectedCoinbaseBalance),
           `should use custom block (${txType.name})`
         )
 

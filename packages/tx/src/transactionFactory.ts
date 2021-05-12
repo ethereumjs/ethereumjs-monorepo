@@ -36,7 +36,7 @@ export default class TransactionFactory {
         return AccessListEIP2930Transaction.fromTxData(<AccessListEIP2930TxData>txData, txOptions)
       } else if (txType === 2) {
         return FeeMarketEIP1559Transaction.fromTxData(
-          <FeeMarketEIP1559Transaction>txData,
+          <FeeMarketEIP1559TxData>txData,
           txOptions
         )
       } else {

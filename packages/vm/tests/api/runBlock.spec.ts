@@ -2,7 +2,12 @@ import tape from 'tape'
 import { Address, BN, rlp, KECCAK256_RLP } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
-import { AccessListEIP2930Transaction, Transaction, TypedTransaction } from '@ethereumjs/tx'
+import {
+  AccessListEIP2930Transaction,
+  Transaction,
+  TypedTransaction,
+  FeeMarketEIP1559Transaction,
+} from '@ethereumjs/tx'
 import { RunBlockOpts, AfterBlockEvent } from '../../lib/runBlock'
 import type { PreByzantiumTxReceipt, PostByzantiumTxReceipt } from '../../lib/types'
 import { setupPreConditions, getDAOCommon } from '../util'
@@ -358,6 +363,11 @@ tape('runBlock() -> tx types', async (t) => {
     //@ts-ignore overwrite transactions
     block.transactions = transactions
 
+    if (transactions.some((t) => t.type === 2)) {
+      // @ts-ignore overwrite read-only property
+      block.header.baseFeePerGas = new BN(7)
+    }
+
     //@ts-ignore
     await setupPreConditions(vm.stateManager._trie, testData)
 
@@ -403,6 +413,26 @@ tape('runBlock() -> tx types', async (t) => {
 
     const tx = AccessListEIP2930Transaction.fromTxData(
       { gasLimit: 53000, value: 1, v: 1, r: 1, s: 1 },
+      { common, freeze: false }
+    )
+
+    tx.getSenderAddress = () => {
+      return address
+    }
+
+    await simpleRun(vm, [tx])
+    t.end()
+  })
+
+  t.test('fee market tx', async (t) => {
+    const common = new Common({ chain: 'mainnet', hardfork: 'london' })
+    const vm = setupVM({ common })
+
+    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    await setBalance(vm, address)
+
+    const tx = FeeMarketEIP1559Transaction.fromTxData(
+      { maxFeePerGas: 1, maxInclusionFeePerGas: 4, gasLimit: 100000, value: 6 },
       { common, freeze: false }
     )
 
