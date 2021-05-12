@@ -186,16 +186,9 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
   /**
    * The up front amount that an account must have for this transaction to be valid
-   * @param baseFee If present, return the upfront cost if the transaction is in an EIP1559 block
    */
-  getUpfrontCost(baseFee?: BN): BN {
-    if (baseFee) {
-      const inclusionFeePerGas = BN.min(this.gasPrice, this.gasPrice.sub(baseFee!))
-      const gasPrice = inclusionFeePerGas.add(baseFee!)
-      return this.gasLimit.mul(gasPrice).add(this.value)
-    } else {
-      return this.gasLimit.mul(this.gasPrice).add(this.value)
-    }
+  getUpfrontCost(): BN {
+    return this.gasLimit.mul(this.gasPrice).add(this.value)
   }
 
   /**

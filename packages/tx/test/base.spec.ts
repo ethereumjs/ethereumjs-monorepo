@@ -32,6 +32,7 @@ tape('[BaseTransaction]', function (t) {
     {
       class: Transaction,
       name: 'Transaction',
+      type: 0,
       values: Array(6).fill(zero),
       txs: legacyTxs,
       fixtures: legacyFixtures,
@@ -39,6 +40,7 @@ tape('[BaseTransaction]', function (t) {
     {
       class: AccessListEIP2930Transaction,
       name: 'AccessListEIP2930Transaction',
+      type: 1,
       values: [Buffer.from([1])].concat(Array(7).fill(zero)),
       txs: eip2930Txs,
       fixtures: eip2930Fixtures,
@@ -46,6 +48,7 @@ tape('[BaseTransaction]', function (t) {
     {
       class: FeeMarketEIP1559Transaction,
       name: 'FeeMarketEIP1559Transaction',
+      type: 2,
       values: [Buffer.from([1])].concat(Array(8).fill(zero)),
       txs: eip1559Txs,
       fixtures: eip1559Fixtures,
@@ -93,7 +96,20 @@ tape('[BaseTransaction]', function (t) {
       const rlpData = tx.serialize()
 
       tx = txType.class.fromSerializedTx(rlpData, { common })
+      st.equal(
+        tx.type,
+        txType.type,
+        `${txType.name}: fromSerializedTx() -> should initialize correctly`
+      )
+
       st.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
+
+      tx = txType.class.fromRlpSerializedTx(rlpData, { common })
+      st.equal(
+        tx.type,
+        txType.type,
+        `${txType.name}: fromRlpSerializedTx() (deprecated) -> should initialize correctly`
+      )
 
       tx = txType.class.fromSerializedTx(rlpData, { common, freeze: false })
       st.ok(
