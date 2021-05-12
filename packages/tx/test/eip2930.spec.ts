@@ -36,7 +36,6 @@ const txTypes = [
 
 const validAddress = Buffer.from('01'.repeat(20), 'hex')
 const validSlot = Buffer.from('01'.repeat(32), 'hex')
-
 const chainId = new BN(1)
 
 tape(
