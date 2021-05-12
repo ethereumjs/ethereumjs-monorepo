@@ -1,5 +1,6 @@
 import Common from '@ethereumjs/common'
 import { BN, rlp } from 'ethereumjs-util'
+import { stderr } from 'process'
 import tape from 'tape'
 import { FeeMarketEIP1559Transaction } from '../src'
 
@@ -92,5 +93,30 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
     )
 
     t.end()
+  })
+
+  t.test('toJSON()', function (st) {
+    const data = testdata[0]
+    const pkey = Buffer.from(data.privateKey.slice(2), 'hex')
+    const txn = FeeMarketEIP1559Transaction.fromTxData(data, { common })
+    const signed = txn.sign(pkey)
+
+    const json = signed.toJSON()
+    const expectedJSON = {
+      chainId: '0x1e8e',
+      nonce: '0x333',
+      maxInclusionFeePerGas: '0x1284d',
+      maxFeePerGas: '0x1d97c',
+      gasLimit: '0x8ae0',
+      to: '0x000000000000000000000000000000000000aaaa',
+      value: '0x2933bc9',
+      data: '0x',
+      accessList: [],
+      v: '0x0',
+      r: '0xd067f2167008c59219652f91cbf8788dbca5f771f6e91e2b7657e85b78b472e0',
+      s: '0x1d305af9fe81fdba43f0dfcd400ed24dcace0a7e30d4e85701dcaaf484cd079e',
+    }
+    st.deepEqual(json, expectedJSON, 'Should return expected JSON dict')
+    st.end()
   })
 })
