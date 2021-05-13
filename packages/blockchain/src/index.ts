@@ -943,11 +943,7 @@ export default class Blockchain implements BlockchainInterface {
       dbOps = dbOps.concat(DBSetBlockOrHeader(block))
 
       // if total difficulty is higher than current, add it to canonical chain
-      if (
-        block.isGenesis() ||
-        (this._common.consensusType() === 'pow' && td.gt(currentTd.header)) ||
-        this._common.consensusType() === 'poa'
-      ) {
+      if (block.isGenesis() || td.gt(currentTd.header)) {
         this._headHeaderHash = blockHash
         if (item instanceof Block) {
           this._headBlockHash = blockHash
