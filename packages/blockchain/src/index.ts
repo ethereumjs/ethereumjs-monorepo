@@ -983,7 +983,7 @@ export default class Blockchain implements BlockchainInterface {
       if (this._common.consensusAlgorithm() === 'clique' && ancientHeaderNumber) {
         await this._cliqueDeleteSnapshots(ancientHeaderNumber.addn(1))
         for (
-          const number = ancientHeaderNumber.clone();
+          const number = ancientHeaderNumber.addn(1);
           number.lte(header.number);
           number.iaddn(1)
         ) {
