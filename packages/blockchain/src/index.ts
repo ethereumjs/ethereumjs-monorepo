@@ -942,8 +942,13 @@ export default class Blockchain implements BlockchainInterface {
       // save header/block to the database
       dbOps = dbOps.concat(DBSetBlockOrHeader(block))
 
+      let ancientHeaderNumber: undefined | BN
       // if total difficulty is higher than current, add it to canonical chain
       if (block.isGenesis() || td.gt(currentTd.header)) {
+        if (this._common.consensusAlgorithm() === 'clique') {
+          ancientHeaderNumber = (await this._findAncient(header)).number
+        }
+
         this._headHeaderHash = blockHash
         if (item instanceof Block) {
           this._headBlockHash = blockHash
@@ -952,14 +957,6 @@ export default class Blockchain implements BlockchainInterface {
         // TODO SET THIS IN CONSTRUCTOR
         if (block.isGenesis()) {
           this._genesis = blockHash
-        }
-
-        // Clique: update signer votes and state
-        if (this._common.consensusAlgorithm() === 'clique') {
-          if (!header.cliqueIsEpochTransition()) {
-            await this.cliqueUpdateVotes(header)
-          }
-          await this.cliqueUpdateLatestBlockSigners(header)
         }
 
         // delete higher number assignments and overwrite stale canonical chain
@@ -981,6 +978,19 @@ export default class Blockchain implements BlockchainInterface {
 
       const ops = dbOps.concat(this._saveHeadOps())
       await this.dbManager.batch(ops)
+
+      // Clique: update signer votes and state
+      if (this._common.consensusAlgorithm() === 'clique' && ancientHeaderNumber) {
+        await this._cliqueDeleteSnapshots(ancientHeaderNumber.addn(1))
+        for (
+          const number = ancientHeaderNumber.clone();
+          number.lte(header.number);
+          number.iaddn(1)
+        ) {
+          const canonicalHeader = await this._getCanonicalHeader(number)
+          await this._cliqueBuildSnapshots(canonicalHeader)
+        }
+      }
     })
   }
 
@@ -1283,6 +1293,68 @@ export default class Blockchain implements BlockchainInterface {
   /* Methods regarding re-org operations */
 
   /**
+   * Find the common ancestor of the new block and the old block.
+   * @param newHeader - the new block header
+   */
+  private async _findAncient(newHeader: BlockHeader) {
+    if (!this._headHeaderHash) {
+      throw new Error('No head header set')
+    }
+
+    let { header } = await this._getBlock(this._headHeaderHash)
+    if (header.number.gt(newHeader.number)) {
+      header = await this._getCanonicalHeader(newHeader.number)
+    } else {
+      while (!header.number.eq(newHeader.number) && newHeader.number.gtn(0)) {
+        newHeader = await this._getHeader(newHeader.parentHash, newHeader.number.subn(1))
+      }
+    }
+    if (!header.number.eq(newHeader.number)) {
+      throw new Error('Failed to find ancient header')
+    }
+    while (!header.hash().equals(newHeader.hash()) && header.number.gtn(0)) {
+      header = await this._getCanonicalHeader(header.number.subn(1))
+      newHeader = await this._getHeader(newHeader.parentHash, newHeader.number.subn(1))
+    }
+    if (!header.hash().equals(newHeader.hash())) {
+      throw new Error('Failed to find ancient header')
+    }
+    return header
+  }
+
+  /**
+   * Build clique snapshots.
+   * @param header - the new block header
+   */
+  private async _cliqueBuildSnapshots(header: BlockHeader) {
+    if (!header.cliqueIsEpochTransition()) {
+      await this.cliqueUpdateVotes(header)
+    }
+    await this.cliqueUpdateLatestBlockSigners(header)
+  }
+
+  /**
+   * Remove clique snapshots with blockNumber higher than input.
+   * @param blockNumber - the block number from which we start deleting
+   */
+  private async _cliqueDeleteSnapshots(blockNumber: BN) {
+    // remove blockNumber from clique snapshots
+    // (latest signer states, latest votes, latest block signers)
+    this._cliqueLatestSignerStates = this._cliqueLatestSignerStates.filter((s) =>
+      s[0].lte(blockNumber)
+    )
+    await this.cliqueUpdateSignerStates()
+
+    this._cliqueLatestVotes = this._cliqueLatestVotes.filter((v) => v[0].lte(blockNumber))
+    await this.cliqueUpdateVotes()
+
+    this._cliqueLatestBlockSigners = this._cliqueLatestBlockSigners.filter((s) =>
+      s[0].lte(blockNumber)
+    )
+    await this.cliqueUpdateLatestBlockSigners()
+  }
+
+  /**
    * Pushes DB operations to delete canonical number assignments for specified
    * block number and above This only deletes `NumberToHash` references, and not
    * the blocks themselves. Note: this does not write to the DB but only pushes
@@ -1318,23 +1390,6 @@ export default class Blockchain implements BlockchainInterface {
       // reset stale headBlock to current canonical
       if (this._headBlockHash?.equals(hash)) {
         this._headBlockHash = headHash
-      }
-
-      if (this._common.consensusAlgorithm() === 'clique') {
-        // remove blockNumber from clique snapshots
-        // (latest signer states, latest votes, latest block signers)
-        this._cliqueLatestSignerStates = this._cliqueLatestSignerStates.filter(
-          (s) => !s[0].eq(blockNumber)
-        )
-        await this.cliqueUpdateSignerStates()
-
-        this._cliqueLatestVotes = this._cliqueLatestVotes.filter((v) => !v[0].eq(blockNumber))
-        await this.cliqueUpdateVotes()
-
-        this._cliqueLatestBlockSigners = this._cliqueLatestBlockSigners.filter(
-          (s) => !s[0].eq(blockNumber)
-        )
-        await this.cliqueUpdateLatestBlockSigners()
       }
 
       blockNumber.iaddn(1)
