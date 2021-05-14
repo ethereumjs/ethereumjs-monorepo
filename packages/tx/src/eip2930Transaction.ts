@@ -280,9 +280,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    *
    * @param hashMessage - Return hashed message if set to true (default: true)
    */
-  getMessageToSign(hashMessage: false): Buffer[]
-  getMessageToSign(hashMessage?: true): Buffer
-  getMessageToSign(hashMessage = true): Buffer | Buffer[] {
+  getMessageToSign(hashMessage = true): Buffer {
     const base = this.raw().slice(0, 8)
     const message = Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base as any)])
     if (hashMessage) {
