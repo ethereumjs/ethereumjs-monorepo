@@ -451,32 +451,28 @@ export class BlockHeader {
    * @param parentBlockHeader - the header from the parent `Block` of this header
    */
   validateGasLimit(parentBlockHeader: BlockHeader): boolean {
-    // Pre EIP-1559 gaslimit check
-    if (!this._common.isActivatedEIP(1559)) {
-      const parentGasLimit = parentBlockHeader.gasLimit
-      const gasLimit = this.gasLimit
-      const hardfork = this._getHardfork()
-
-      const a = parentGasLimit.div(
-        new BN(this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork))
-      )
-      const maxGasLimit = parentGasLimit.add(a)
-      const minGasLimit = parentGasLimit.sub(a)
-
-      return (
-        gasLimit.lt(maxGasLimit) &&
-        gasLimit.gt(minGasLimit) &&
-        gasLimit.gte(this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork))
-      )
-      // EIP-1559 gasTarget check
-    } else {
-      const parentGasTarget = parentBlockHeader.gasLimit
-      // check if the block changed the gas target too much
-      return (
-        this.gasLimit.lte(parentGasTarget.add(parentGasTarget.divn(1024))) &&
-        this.gasLimit.gte(parentGasTarget.sub(parentGasTarget.divn(1024)))
-      )
+    let parentGasLimit = parentBlockHeader.gasLimit
+    // EIP-1559: assume double the parent gas limit on fork block
+    // to adopt to the new gas target centered logic
+    if (this.number.eq(this._common.hardforkBlockBN('london'))) {
+      const elasticity = new BN(this._common.param('gasConfig', 'elasticityMultiplier'))
+      parentGasLimit = parentGasLimit.mul(elasticity)
     }
+    const gasLimit = this.gasLimit
+    const hardfork = this._getHardfork()
+
+    const a = parentGasLimit.div(
+      new BN(this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork))
+    )
+    const maxGasLimit = parentGasLimit.add(a)
+    const minGasLimit = parentGasLimit.sub(a)
+
+    const result =
+      gasLimit.lt(maxGasLimit) &&
+      gasLimit.gt(minGasLimit) &&
+      gasLimit.gte(this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork))
+
+    return result
   }
 
   /**

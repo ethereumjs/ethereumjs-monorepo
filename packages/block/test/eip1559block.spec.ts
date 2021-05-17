@@ -39,29 +39,36 @@ tape('EIP1559 tests', function (t) {
     await blockchain2.putBlock(genesis)
     st.end()
   })
-  t.test('Header Data', function (st) {
-    for (let index = 0; index < eip1559BaseFee.length; index++) {
-      const item = eip1559BaseFee[index]
-      const result = BlockHeader.fromHeaderData(
+
+  t.test('Header -> Initialization', async function (st) {
+    try {
+      const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+      BlockHeader.fromHeaderData(
         {
-          baseFeePerGas: new BN(item.parentBaseFee),
-          gasUsed: new BN(item.parentGasUsed),
-          gasLimit: new BN(item.parentTargetGasUsed).muln(2),
+          number: new BN(1),
+          parentHash: genesis.hash(),
+          timestamp: new BN(1),
+          gasLimit: genesis.header.gasLimit.muln(2), // Special case on EIP-1559 transition block
+          baseFeePerGas: new BN(5),
         },
-        { common }
-      ).calcNextBaseFee()
-      const expected = new BN(item.expectedBaseFee)
-      st.ok(expected.eq(result), 'base fee correct')
+        {
+          common,
+        }
+      )
+    } catch (e) {
+      const expectedError = 'A base fee for a block can only be set with EIP1559 being activated'
+      st.ok(e.message.includes(expectedError), 'should throw with EIP1559 not being activated')
     }
+
     st.end()
   })
 
-  t.test('Header should throw on wrong initial base fee', async function (st) {
+  t.test('Header-> validate()', async function (st) {
     const header = BlockHeader.fromHeaderData(
       {
-        baseFeePerGas: new BN(1000),
         number: new BN(1),
         parentHash: genesis.hash(),
+        gasLimit: genesis.header.gasLimit.muln(2), // Special case on EIP-1559 transition block
         timestamp: new BN(1),
       },
       {
@@ -74,29 +81,7 @@ tape('EIP1559 tests', function (t) {
       await header.validate(blockchain1)
       st.fail('should throw')
     } catch (e) {
-      st.ok(e.message.includes('base fee'), 'threw with right error')
-    }
-    st.end()
-  })
-
-  t.test('Header should throw if base fee is not defined', async function (st) {
-    const header = BlockHeader.fromHeaderData(
-      {
-        number: new BN(1),
-        parentHash: genesis.hash(),
-        timestamp: new BN(1),
-      },
-      {
-        calcDifficultyFromHeader: genesis.header,
-        common,
-      }
-    )
-
-    try {
-      await header.validate(blockchain1)
-      st.fail('should throw')
-    } catch (e) {
-      st.ok(e.message.includes('base fee'), 'threw with right error')
+      st.ok(e.message.includes('base fee'), 'should throw if base fee is not defined')
     }
     st.end()
   })
@@ -106,6 +91,7 @@ tape('EIP1559 tests', function (t) {
       header: {
         number: new BN(1),
         parentHash: genesis.hash(),
+        gasLimit: genesis.header.gasLimit.muln(2), // Special case on EIP-1559 transition block
         timestamp: new BN(1),
         baseFeePerGas: new BN(common.param('gasConfig', 'initialBaseFee')),
       },
@@ -116,45 +102,67 @@ tape('EIP1559 tests', function (t) {
     }
   )
 
-  t.test('Valid initial EIP1559 header should be valid', async function (st) {
+  t.test('Header -> validate() -> success case', async function (st) {
     await block1.header.validate(blockchain1)
     await blockchain2.putBlock(block1)
-    st.pass('correctly validated header')
+    st.pass('Valid initial EIP1559 header should be valid')
 
     st.end()
   })
 
-  t.test(
-    'Initialization should throw when initializing with EIP1559 not being activated',
-    async function (st) {
-      try {
-        const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
-        BlockHeader.fromHeaderData(
-          {
-            number: new BN(1),
-            parentHash: genesis.hash(),
-            timestamp: new BN(1),
-            baseFeePerGas: new BN(5),
-          },
-          {
-            common,
-          }
-        )
-      } catch (e) {
-        const expectedError = 'A base fee for a block can only be set with EIP1559 being activated'
-        st.ok(e.message.includes(expectedError))
+  t.test('Header -> validate()', async function (st) {
+    const header = BlockHeader.fromHeaderData(
+      {
+        baseFeePerGas: new BN(1000),
+        number: new BN(1),
+        parentHash: genesis.hash(),
+        gasLimit: genesis.header.gasLimit.muln(2), // Special case on EIP-1559 transition block
+        timestamp: new BN(1),
+      },
+      {
+        calcDifficultyFromHeader: genesis.header,
+        common,
       }
+    )
 
-      st.end()
+    try {
+      await header.validate(blockchain1)
+      st.fail('should throw')
+    } catch (e) {
+      st.ok(e.message.includes('base fee'), 'should throw on wrong initial base fee')
     }
-  )
+    st.end()
+  })
 
-  t.test('Header should throw when elasticity is exceeded', async function (st) {
+  t.test('Header -> validate() -> success cases', async function (st) {
+    const block = Block.fromBlockData(
+      {
+        header: {
+          number: new BN(2),
+          parentHash: block1.hash(),
+          timestamp: new BN(2),
+          gasLimit: genesis.header.gasLimit.muln(2), // Special case on EIP-1559 transition block
+          baseFeePerGas: Buffer.from('342770c0', 'hex'),
+        },
+      },
+      {
+        calcDifficultyFromHeader: block1.header,
+        common,
+      }
+    )
+    // blockchain2 has block 1 added at this moment (see test above)
+    await block.header.validate(blockchain2)
+    st.pass('should correctly validate subsequent EIP-1559 blocks')
+    st.end()
+  })
+
+  t.test('Header -> validate() -> gas usage', async function (st) {
     const header = BlockHeader.fromHeaderData(
       {
         number: new BN(1),
         parentHash: genesis.hash(),
         timestamp: new BN(1),
+        gasLimit: genesis.header.gasLimit.muln(2), // Special case on EIP-1559 transition block
         gasUsed: genesis.header.gasLimit
           .muln(common.param('gasConfig', 'elasticityMultiplier'))
           .addn(1),
@@ -170,18 +178,19 @@ tape('EIP1559 tests', function (t) {
       await header.validate(blockchain1)
       st.fail('should throw')
     } catch (e) {
-      st.ok(e.message.includes('too much gas used'), 'threw with right error')
+      st.ok(e.message.includes('too much gas used'), 'should throw when elasticity is exceeded')
     }
     st.end()
   })
 
-  t.test('Header should not throw on when elasticity is exactly matched', async function (st) {
+  t.test('Header -> validate() -> gas usage', async function (st) {
     const header = BlockHeader.fromHeaderData(
       {
         number: new BN(1),
         parentHash: genesis.hash(),
         timestamp: new BN(1),
-        gasUsed: genesis.header.gasLimit,
+        gasLimit: genesis.header.gasLimit.muln(2), // Special case on EIP-1559 transition block
+        gasUsed: genesis.header.gasLimit.muln(2),
         baseFeePerGas: new BN(common.param('gasConfig', 'initialBaseFee')),
       },
       {
@@ -191,17 +200,18 @@ tape('EIP1559 tests', function (t) {
     )
 
     await header.validate(blockchain1)
-    st.pass('correctly validated header')
+    st.pass('should not throw when elasticity is exactly matched')
     st.end()
   })
 
-  t.test('Header should throw if gas limit is increased too much', async function (st) {
-    const header = BlockHeader.fromHeaderData(
+  t.test('Header -> validate() -> gasLimit -> success cases', async function (st) {
+    let parentGasLimit = genesis.header.gasLimit.muln(2)
+    let header = BlockHeader.fromHeaderData(
       {
         number: new BN(1),
         parentHash: genesis.hash(),
         timestamp: new BN(1),
-        gasLimit: genesis.header.gasLimit.add(genesis.header.gasLimit.divn(1024)).addn(1),
+        gasLimit: parentGasLimit.add(parentGasLimit.divn(1024)).subn(1),
         baseFeePerGas: new BN(common.param('gasConfig', 'initialBaseFee')),
       },
       {
@@ -209,98 +219,163 @@ tape('EIP1559 tests', function (t) {
         common,
       }
     )
-
-    try {
-      await header.validate(blockchain1)
-      st.fail('should throw')
-    } catch (e) {
-      st.ok(e.message.includes('invalid gas limit'), 'threw with right error')
-    }
-    st.end()
-  })
-
-  t.test('Header should throw if gas limit is decreased too much', async function (st) {
-    const header = BlockHeader.fromHeaderData(
-      {
-        number: new BN(1),
-        parentHash: genesis.hash(),
-        timestamp: new BN(1),
-        gasLimit: genesis.header.gasLimit.sub(genesis.header.gasLimit.divn(1024)).subn(1),
-        baseFeePerGas: new BN(common.param('gasConfig', 'initialBaseFee')),
-      },
-      {
-        calcDifficultyFromHeader: genesis.header,
-        common,
-      }
-    )
-
-    try {
-      await header.validate(blockchain1)
-      st.fail('should throw')
-    } catch (e) {
-      st.ok(e.message.includes('invalid gas limit'), 'threw with right error')
-    }
-    st.end()
-  })
-
-  t.test('Header should not throw if gas limit is between bounds', async function (st) {
-    const header = BlockHeader.fromHeaderData(
-      {
-        number: new BN(1),
-        parentHash: genesis.hash(),
-        timestamp: new BN(1),
-        gasLimit: genesis.header.gasLimit.sub(genesis.header.gasLimit.divn(1024)),
-        baseFeePerGas: new BN(common.param('gasConfig', 'initialBaseFee')),
-      },
-      {
-        calcDifficultyFromHeader: genesis.header,
-        common,
-      }
-    )
-    const header2 = BlockHeader.fromHeaderData(
-      {
-        number: new BN(1),
-        parentHash: genesis.hash(),
-        timestamp: new BN(1),
-        gasLimit: genesis.header.gasLimit.add(genesis.header.gasLimit.divn(1024)),
-        baseFeePerGas: new BN(common.param('gasConfig', 'initialBaseFee')),
-      },
-      {
-        calcDifficultyFromHeader: genesis.header,
-        common,
-      }
-    )
-
     await header.validate(blockchain1)
-    st.pass('correctly validated block')
-    await header2.validate(blockchain1)
-    st.pass('correctly validated block')
-    st.end()
-  })
+    st.pass('should not throw if gas limit is between bounds (HF transition block)')
 
-  t.test('should correctly validate subsequent EIP-1559 blocks', async function (st) {
-    const block = Block.fromBlockData(
+    header = BlockHeader.fromHeaderData(
       {
-        header: {
-          number: new BN(2),
-          parentHash: block1.hash(),
-          timestamp: new BN(2),
-          gasLimit: genesis.header.gasLimit.sub(genesis.header.gasLimit.divn(1024)),
-          baseFeePerGas: Buffer.from('342770c0', 'hex'),
-        },
+        number: new BN(1),
+        parentHash: genesis.hash(),
+        timestamp: new BN(1),
+        gasLimit: parentGasLimit.sub(parentGasLimit.divn(1024)).addn(1),
+        baseFeePerGas: new BN(common.param('gasConfig', 'initialBaseFee')),
+      },
+      {
+        calcDifficultyFromHeader: genesis.header,
+        common,
+      }
+    )
+    await header.validate(blockchain1)
+    st.pass('should not throw if gas limit is between bounds (HF transition block)')
+
+    parentGasLimit = block1.header.gasLimit
+    header = BlockHeader.fromHeaderData(
+      {
+        number: new BN(2),
+        parentHash: block1.hash(),
+        timestamp: new BN(2),
+        gasLimit: parentGasLimit.add(parentGasLimit.divn(1024)).subn(1),
+        baseFeePerGas: Buffer.from('342770c0', 'hex'),
       },
       {
         calcDifficultyFromHeader: block1.header,
         common,
       }
     )
-    // blockchain2 has block 1 added at this moment (see test above)
-    await block.header.validate(blockchain2)
-    st.pass('correctly validated block')
+    await header.validate(blockchain2)
+    st.pass('should not throw if gas limit is between bounds (post-HF transition block)')
+
+    header = BlockHeader.fromHeaderData(
+      {
+        number: new BN(2),
+        parentHash: block1.hash(),
+        timestamp: new BN(2),
+        gasLimit: parentGasLimit.sub(parentGasLimit.divn(1024)).addn(1),
+        baseFeePerGas: Buffer.from('342770c0', 'hex'),
+      },
+      {
+        calcDifficultyFromHeader: block1.header,
+        common,
+      }
+    )
+    await header.validate(blockchain2)
+    st.pass('should not throw if gas limit is between bounds (post-HF transition block)')
     st.end()
   })
 
-  t.test('Block should throw if transaction is unable to pay base fee', async (st) => {
+  t.test('Header -> validate() -> gasLimit -> error cases', async function (st) {
+    let parentGasLimit = genesis.header.gasLimit.muln(2)
+    let header = BlockHeader.fromHeaderData(
+      {
+        number: new BN(1),
+        parentHash: genesis.hash(),
+        timestamp: new BN(1),
+        gasLimit: parentGasLimit.add(parentGasLimit.divn(1024)),
+        baseFeePerGas: new BN(common.param('gasConfig', 'initialBaseFee')),
+      },
+      {
+        calcDifficultyFromHeader: genesis.header,
+        common,
+      }
+    )
+    try {
+      await header.validate(blockchain1)
+      st.fail('should throw')
+    } catch (e) {
+      st.ok(
+        e.message.includes('invalid gas limit'),
+        'should throw if gas limit is increased too much (HF transition block)'
+      )
+    }
+
+    parentGasLimit = block1.header.gasLimit
+    header = BlockHeader.fromHeaderData(
+      {
+        number: new BN(2),
+        parentHash: block1.hash(),
+        timestamp: new BN(2),
+        gasLimit: parentGasLimit.add(parentGasLimit.divn(1024)),
+        baseFeePerGas: Buffer.from('342770c0', 'hex'),
+      },
+      {
+        calcDifficultyFromHeader: block1.header,
+        common,
+      }
+    )
+    try {
+      await header.validate(blockchain2)
+      st.fail('should throw')
+    } catch (e) {
+      st.ok(
+        e.message.includes('invalid gas limit'),
+        'should throw if gas limit is increased too much (post-HF transition block)'
+      )
+    }
+    st.end()
+  })
+
+  t.test('Header -> validate() -> gasLimit -> error cases', async function (st) {
+    let parentGasLimit = genesis.header.gasLimit.muln(2)
+    let header = BlockHeader.fromHeaderData(
+      {
+        number: new BN(1),
+        parentHash: genesis.hash(),
+        timestamp: new BN(1),
+        gasLimit: parentGasLimit.sub(parentGasLimit.divn(1024)),
+        baseFeePerGas: new BN(common.param('gasConfig', 'initialBaseFee')),
+      },
+      {
+        calcDifficultyFromHeader: genesis.header,
+        common,
+      }
+    )
+    try {
+      await header.validate(blockchain1)
+      st.fail('should throw')
+    } catch (e) {
+      st.ok(
+        e.message.includes('invalid gas limit'),
+        'should throw if gas limit is decreased too much (HF transition block)'
+      )
+    }
+
+    parentGasLimit = block1.header.gasLimit
+    header = BlockHeader.fromHeaderData(
+      {
+        number: new BN(2),
+        parentHash: block1.hash(),
+        timestamp: new BN(2),
+        gasLimit: parentGasLimit.sub(parentGasLimit.divn(1024)),
+        baseFeePerGas: Buffer.from('342770c0', 'hex'),
+      },
+      {
+        calcDifficultyFromHeader: block1.header,
+        common,
+      }
+    )
+    try {
+      await header.validate(blockchain2)
+      st.fail('should throw')
+    } catch (e) {
+      st.ok(
+        e.message.includes('invalid gas limit'),
+        'should throw if gas limit is decreased too much (post-HF transition block)'
+      )
+    }
+    st.end()
+  })
+
+  t.test('Header -> validate() -> tx', async (st) => {
     const transaction = FeeMarketEIP1559Transaction.fromTxData(
       {
         maxFeePerGas: new BN(0),
@@ -313,6 +388,7 @@ tape('EIP1559 tests', function (t) {
         header: {
           number: new BN(1),
           parentHash: genesis.hash(),
+          gasLimit: genesis.header.gasLimit.muln(2), // Special case on EIP-1559 transition block
           timestamp: new BN(1),
           baseFeePerGas: new BN(common.param('gasConfig', 'initialBaseFee')),
         },
@@ -337,9 +413,29 @@ tape('EIP1559 tests', function (t) {
       await block.validate(blockchain1)
       st.fail('should throw')
     } catch (e) {
-      st.ok(e.message.includes('unable to pay base fee'), 'threw with right error')
+      st.ok(
+        e.message.includes('unable to pay base fee'),
+        'should throw if transaction is unable to pay base fee'
+      )
     }
 
+    st.end()
+  })
+
+  t.test('Header -> calcNextBaseFee()', function (st) {
+    for (let index = 0; index < eip1559BaseFee.length; index++) {
+      const item = eip1559BaseFee[index]
+      const result = BlockHeader.fromHeaderData(
+        {
+          baseFeePerGas: new BN(item.parentBaseFee),
+          gasUsed: new BN(item.parentGasUsed),
+          gasLimit: new BN(item.parentTargetGasUsed).muln(2),
+        },
+        { common }
+      ).calcNextBaseFee()
+      const expected = new BN(item.expectedBaseFee)
+      st.ok(expected.eq(result), 'base fee correct')
+    }
     st.end()
   })
 })
