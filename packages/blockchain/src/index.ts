@@ -383,6 +383,8 @@ export default class Blockchain implements BlockchainInterface {
       }
       this._headBlockHash = genesisHash
     }
+    const latestHeader = await this._getHeader(this._headHeaderHash)
+    this._common.setHardforkByBlockNumber(latestHeader.number)
   }
 
   /**
@@ -952,6 +954,7 @@ export default class Blockchain implements BlockchainInterface {
         if (item instanceof Block) {
           this._headBlockHash = blockHash
         }
+        this._common.setHardforkByBlockNumber(blockNumber)
 
         // TODO SET THIS IN CONSTRUCTOR
         if (block.isGenesis()) {
