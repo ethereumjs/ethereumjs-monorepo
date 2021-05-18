@@ -1,4 +1,4 @@
-import { Transaction } from '@ethereumjs/tx'
+import { Transaction, TransactionFactory } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -10,7 +10,7 @@ import {
 } from 'ethereumjs-util'
 import { decode } from 'rlp'
 import { middleware, validators } from '../validation'
-import { INVALID_PARAMS } from '../error-code'
+import { INVALID_PARAMS, PARSE_ERROR } from '../error-code'
 import { RpcTx } from '../types'
 import type { Chain } from '../../blockchain'
 import type { EthereumClient } from '../..'
@@ -23,6 +23,7 @@ import type VM from '@ethereumjs/vm'
  * @memberof module:rpc/modules
  */
 export class Eth {
+  private client: EthereumClient
   private _chain: Chain
   private _vm: VM | undefined
   public ethVersion: number
@@ -32,6 +33,7 @@ export class Eth {
    * @param client Client to which the module binds
    */
   constructor(client: EthereumClient) {
+    this.client = client
     const service = client.services.find((s) => s.name === 'eth') as EthereumService
     this._chain = service.chain
     this._vm = (service.synchronizer as any)?.execution?.vm
@@ -87,6 +89,8 @@ export class Eth {
       [validators.address],
       [validators.blockOption],
     ])
+
+    this.sendRawTransaction = middleware(this.sendRawTransaction.bind(this), 1, [[validators.hex]])
 
     this.protocolVersion = middleware(this.protocolVersion.bind(this), 0, [])
   }
@@ -424,5 +428,35 @@ export class Eth {
 
     const block = await this._chain.getBlock(blockNumberBN)
     return block.uncleHeaders.length
+  }
+
+  /**
+   * Creates new message call transaction or a contract creation for signed transactions.
+   * @param params An array of one parameter:
+   *   1. the signed transaction data
+   * @returns a 32-byte tx hash or the zero hash if the tx is not yet available.
+   */
+  async sendRawTransaction(params: [string]) {
+    const [serializedTx] = params
+
+    try {
+      const common = this.client.config.chainCommon.copy()
+      // TODO: generalize with a new Common.latestSupportedHardfork() method or similar
+      // Alternative: common.setHardfork('lastest')
+      common.setHardfork('london')
+      const tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), { common })
+      if (!tx.isSigned()) {
+        return {
+          code: INVALID_PARAMS,
+          message: `tx needs to be signed`,
+        }
+      }
+      return `0x${tx.hash().toString('hex')}`
+    } catch (e) {
+      return {
+        code: PARSE_ERROR,
+        message: `serialized tx data could not be parsed (${e.message})`,
+      }
+    }
   }
 }
