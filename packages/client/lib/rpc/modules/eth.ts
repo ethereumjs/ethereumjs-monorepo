@@ -10,7 +10,7 @@ import {
 } from 'ethereumjs-util'
 import { decode } from 'rlp'
 import { middleware, validators } from '../validation'
-import { INVALID_PARAMS, PARSE_ERROR } from '../error-code'
+import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
 import { RpcTx } from '../types'
 import type { Chain } from '../../blockchain'
 import type { EthereumClient } from '../..'
@@ -24,6 +24,7 @@ import type VM from '@ethereumjs/vm'
  */
 export class Eth {
   private client: EthereumClient
+  private service: EthereumService
   private _chain: Chain
   private _vm: VM | undefined
   public ethVersion: number
@@ -34,11 +35,11 @@ export class Eth {
    */
   constructor(client: EthereumClient) {
     this.client = client
-    const service = client.services.find((s) => s.name === 'eth') as EthereumService
-    this._chain = service.chain
-    this._vm = (service.synchronizer as any)?.execution?.vm
+    this.service = client.services.find((s) => s.name === 'eth') as EthereumService
+    this._chain = this.service.chain
+    this._vm = (this.service.synchronizer as any)?.execution?.vm
 
-    const ethProtocol = service.protocols.find((p) => p.name === 'eth') as EthProtocol
+    const ethProtocol = this.service.protocols.find((p) => p.name === 'eth') as EthProtocol
     this.ethVersion = Math.max(...ethProtocol.versions)
 
     this.blockNumber = middleware(this.blockNumber.bind(this), 0)
@@ -451,6 +452,22 @@ export class Eth {
           message: `tx needs to be signed`,
         }
       }
+      const peers = this.service.pool.peers
+      if (peers.length === 0) {
+        return {
+          code: INTERNAL_ERROR,
+          message: `no peer connection available`,
+        }
+      }
+
+      for (const peer of peers.slice(0, 5)) {
+        if (tx.type === 0) {
+          peer.eth!.send('Transactions', [tx.raw()])
+        } else {
+          peer.eth!.send('Transactions', [tx.serialize()])
+        }
+      }
+
       return `0x${tx.hash().toString('hex')}`
     } catch (e) {
       return {
