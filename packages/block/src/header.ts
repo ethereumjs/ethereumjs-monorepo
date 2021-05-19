@@ -200,10 +200,7 @@ export class BlockHeader {
     baseFeePerGas?: BN
   ) {
     if (options.common) {
-      this._common = Object.assign(
-        Object.create(Object.getPrototypeOf(options.common)),
-        options.common
-      )
+      this._common = options.common.copy()
     } else {
       const chain = 'mainnet' // default
       if (options.initWithGenesisHeader) {

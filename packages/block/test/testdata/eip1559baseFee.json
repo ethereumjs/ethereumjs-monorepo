@@ -292,5 +292,11 @@
     "parentGasUsed":10000000,
     "parentTargetGasUsed":9000000,
     "expectedBaseFee":3
+  },
+  {
+    "parentBaseFee":7,
+    "parentGasUsed":10000000,
+    "parentTargetGasUsed":5000000,
+    "expectedBaseFee":8
   }
 ]

@@ -135,27 +135,54 @@ tape('[Block]: block functions', function (t) {
   async function testTransactionValidation(st: tape.Test, block: Block) {
     st.ok(block.validateTransactions())
     st.ok(await block.validateTransactionsTrie())
-    st.end()
   }
 
   t.test('should test transaction validation', async function (st) {
     const blockRlp = testData.blocks[0].rlp
-    const block = Block.fromRLPSerializedBlock(blockRlp)
-    st.plan(2)
+    const block = Block.fromRLPSerializedBlock(blockRlp, { freeze: false })
     await testTransactionValidation(st, block)
+    ;(block.header as any).transactionsTrie = Buffer.alloc(32)
+    try {
+      await block.validateData()
+      st.fail('should throw')
+    } catch (error) {
+      st.equal(error.message, 'invalid transaction trie')
+    }
+    st.end()
   })
 
   t.test('should test transaction validation with empty transaction list', async function (st) {
     const block = Block.fromBlockData({})
-    st.plan(2)
     await testTransactionValidation(st, block)
+    st.end()
+  })
+
+  t.test('should test transaction validation with legacy tx in london', async function (st) {
+    const common = new Common({ chain: 'goerli', hardfork: 'london' })
+    const blockRlp = testData.blocks[0].rlp
+    const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
+    await testTransactionValidation(st, block)
+    ;(block.transactions[0] as any).gasPrice = new BN(0)
+    const result = block.validateTransactions(true)
+    st.ok(
+      result[0].includes('tx unable to pay base fee (non EIP-1559 tx)'),
+      'should throw when legacy tx is unable to pay base fee'
+    )
+    st.end()
   })
 
   const testData2 = require('./testdata/testdata2.json')
-  t.test('should test uncles hash validation', function (st) {
+  t.test('should test uncles hash validation', async function (st) {
     const blockRlp = testData2.blocks[2].rlp
-    const block = Block.fromRLPSerializedBlock(blockRlp)
+    const block = Block.fromRLPSerializedBlock(blockRlp, { freeze: false })
     st.equal(block.validateUnclesHash(), true)
+    ;(block.header as any).uncleHash = Buffer.alloc(32)
+    try {
+      await block.validateData()
+      st.fail('should throw')
+    } catch (error) {
+      st.equal(error.message, 'invalid uncle hash')
+    }
     st.end()
   })
 
@@ -474,6 +501,23 @@ tape('[Block]: block functions', function (t) {
       ropstenStateRoot,
       'genesis stateRoot match'
     )
+    st.end()
+  })
+
+  t.test('should error on invalid params', function (st) {
+    st.throws(() => {
+      Block.fromRLPSerializedBlock('1' as any)
+    }, 'input must be array')
+    st.throws(() => {
+      Block.fromValuesArray([1, 2, 3, 4] as any)
+    }, 'input length must be 3 or less')
+    st.end()
+  })
+
+  t.test('should return the same block data from raw()', function (st) {
+    const block = Block.fromRLPSerializedBlock(testData2.blocks[2].rlp)
+    const blockFromRaw = Block.fromValuesArray(block.raw())
+    st.ok(block.hash().equals(blockFromRaw.hash()))
     st.end()
   })
 
