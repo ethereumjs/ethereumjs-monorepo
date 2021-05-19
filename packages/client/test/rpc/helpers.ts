@@ -58,6 +58,7 @@ export function createClient(clientOpts: any = {}) {
   }
 
   const client: any = {
+    config,
     services: [
       {
         name: 'eth',

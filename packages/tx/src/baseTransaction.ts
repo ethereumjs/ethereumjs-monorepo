@@ -14,6 +14,9 @@ import {
   JsonTx,
   AccessListEIP2930ValuesArray,
   AccessListEIP2930TxData,
+  FeeMarketEIP1559ValuesArray,
+  FeeMarketEIP1559TxData,
+  TxValuesArray,
 } from './types'
 
 /**
@@ -28,7 +31,6 @@ export abstract class BaseTransaction<TransactionObject> {
 
   public readonly nonce: BN
   public readonly gasLimit: BN
-  public readonly gasPrice: BN
   public readonly to?: Address
   public readonly value: BN
   public readonly data: Buffer
@@ -38,15 +40,12 @@ export abstract class BaseTransaction<TransactionObject> {
   public readonly r?: BN
   public readonly s?: BN
 
-  constructor(txData: TxData | AccessListEIP2930TxData, txOptions: TxOptions = {}) {
-    const { nonce, gasLimit, gasPrice, to, value, data, v, r, s } = txData
-
-    const type = (txData as AccessListEIP2930TxData).type
-    if (type !== undefined) {
-      this._type = new BN(toBuffer(type)).toNumber()
-    } else {
-      this._type = 0
-    }
+  constructor(
+    txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData,
+    txOptions: TxOptions = {}
+  ) {
+    const { nonce, gasLimit, to, value, data, v, r, s, type } = txData
+    this._type = new BN(toBuffer(type)).toNumber()
 
     const toB = toBuffer(to === '' ? '0x' : to)
     const vB = toBuffer(v === '' ? '0x' : v)
@@ -54,7 +53,6 @@ export abstract class BaseTransaction<TransactionObject> {
     const sB = toBuffer(s === '' ? '0x' : s)
 
     this.nonce = new BN(toBuffer(nonce === '' ? '0x' : nonce))
-    this.gasPrice = new BN(toBuffer(gasPrice === '' ? '0x' : gasPrice))
     this.gasLimit = new BN(toBuffer(gasLimit === '' ? '0x' : gasLimit))
     this.to = toB.length > 0 ? new Address(toB) : undefined
     this.value = new BN(toBuffer(value === '' ? '0x' : value))
@@ -66,9 +64,10 @@ export abstract class BaseTransaction<TransactionObject> {
 
     this._validateCannotExceedMaxInteger({
       nonce: this.nonce,
-      gasPrice: this.gasPrice,
       gasLimit: this.gasLimit,
       value: this.value,
+      r: this.r,
+      s: this.s,
     })
 
     this.common = txOptions.common?.copy() ?? new Common({ chain: 'mainnet' })
@@ -137,9 +136,7 @@ export abstract class BaseTransaction<TransactionObject> {
   /**
    * The up front amount that an account must have for this transaction to be valid
    */
-  getUpfrontCost(): BN {
-    return this.gasLimit.mul(this.gasPrice).add(this.value)
-  }
+  abstract getUpfrontCost(): BN
 
   /**
    * If the tx's `to` is to the creation address
@@ -151,7 +148,7 @@ export abstract class BaseTransaction<TransactionObject> {
   /**
    * Returns a Buffer Array of the raw Buffers of this transaction, in order.
    */
-  abstract raw(): Buffer[] | AccessListEIP2930ValuesArray
+  abstract raw(): TxValuesArray | AccessListEIP2930ValuesArray | FeeMarketEIP1559ValuesArray
 
   /**
    * Returns the encoding of the transaction.
@@ -172,7 +169,19 @@ export abstract class BaseTransaction<TransactionObject> {
 
   public isSigned(): boolean {
     const { v, r, s } = this
-    return !!v && !!r && !!s
+    if (this.type === 0) {
+      if (!v || !r || !s) {
+        return false
+      } else {
+        return true
+      }
+    } else {
+      if (v === undefined || !r || !s) {
+        return false
+      } else {
+        return true
+      }
+    }
   }
 
   /**

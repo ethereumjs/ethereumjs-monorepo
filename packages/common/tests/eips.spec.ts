@@ -1,7 +1,7 @@
 import tape from 'tape'
 import Common from '../src/'
 
-tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
+tape('[Common/EIPs]: Initialization / Chain params', function (t: tape.Test) {
   t.test('Correct initialization', function (st: tape.Test) {
     let eips = [2537, 2929]
     const c = new Common({ chain: 'mainnet', eips })
@@ -56,18 +56,6 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
     st.equal(c.isActivatedEIP(2315), false, 'berlin, eips: [] -> true (EIP-2315)')
     st.equal(c.isActivatedEIP(2537), false, 'berlin, eips: [] -> false (EIP-2537)')
 
-    st.end()
-  })
-
-  t.test('returns the right block delay for EIP3554', function (st) {
-    for (const fork of ['muirGlacier', 'berlin']) {
-      const c = new Common({ chain: 'mainnet', hardfork: fork })
-      let delay = c.param('pow', 'difficultyBombDelay')
-      st.equal(delay, 9000000)
-      c.setEIPs([3554])
-      delay = c.param('pow', 'difficultyBombDelay')
-      st.equal(delay, 9500000)
-    }
     st.end()
   })
 })

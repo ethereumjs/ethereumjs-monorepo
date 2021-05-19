@@ -107,8 +107,7 @@ tape('EIP 2929: gas cost tests', (t) => {
   // cheaper second time they are accessed. Lastly, it checks the BALANCE of origin and this.
   t.test('should charge for warm address loads correctly', async (st) => {
     const test = {
-      code:
-        '60013f5060023b506003315060f13f5060f23b5060f3315060f23f5060f33b5060f1315032315030315000',
+      code: '60013f5060023b506003315060f13f5060f23b5060f3315060f23f5060f33b5060f1315032315030315000',
       totalGasUsed: 8653,
       steps: [
         { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },

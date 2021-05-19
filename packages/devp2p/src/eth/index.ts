@@ -217,7 +217,10 @@ export class ETH extends EventEmitter {
         this._latestBlock = latestBlock
       }
       const forkHashB = Buffer.from(this._forkHash.substr(2), 'hex')
-      const nextForkB = this._nextForkBlock.toArrayLike(Buffer)
+      const nextForkB = this._nextForkBlock.eqn(0)
+        ? Buffer.from('', 'hex')
+        : this._nextForkBlock.toArrayLike(Buffer)
+
       this._status.push([forkHashB, nextForkB])
     }
 

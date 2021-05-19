@@ -3,7 +3,13 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { BN, rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { TransactionFactory, TypedTransaction, TxOptions } from '@ethereumjs/tx'
+import {
+  TransactionFactory,
+  TypedTransaction,
+  TxOptions,
+  FeeMarketEIP1559Transaction,
+  Transaction,
+} from '@ethereumjs/tx'
 import { BlockHeader } from './header'
 import { BlockData, BlockOptions, JsonBlock, BlockBuffer, Blockchain } from './types'
 
@@ -63,7 +69,7 @@ export class Block {
    * @param opts
    */
   public static fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions) {
-    const values = (rlp.decode(serialized) as any) as BlockBuffer
+    const values = rlp.decode(serialized) as any as BlockBuffer
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized block input. Must be array')
@@ -223,9 +229,21 @@ export class Block {
   validateTransactions(stringError: true): string[]
   validateTransactions(stringError = false) {
     const errors: string[] = []
-
-    this.transactions.forEach(function (tx, i) {
+    this.transactions.forEach((tx, i) => {
       const errs = <string[]>tx.validate(true)
+      if (this._common.isActivatedEIP(1559)) {
+        if (tx.transactionType === 2) {
+          tx = tx as FeeMarketEIP1559Transaction
+          if (tx.maxFeePerGas.lt(this.header.baseFeePerGas!)) {
+            errs.push('tx unable to pay base fee (EIP-1559 tx)')
+          }
+        } else {
+          tx = tx as Transaction
+          if (tx.gasPrice.lt(this.header.baseFeePerGas!)) {
+            errs.push('tx unable to pay base fee (non EIP-1559 tx)')
+          }
+        }
+      }
       if (errs.length > 0) {
         errors.push(`errors at tx ${i}: ${errs.join(', ')}`)
       }

@@ -1,10 +1,12 @@
 import { Address, BN, toBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import {
+  AccessList,
   AccessListItem,
   AccessListEIP2930Transaction,
+  FeeMarketEIP1559Transaction,
+  Transaction,
   TypedTransaction,
-  AccessList,
 } from '@ethereumjs/tx'
 import VM from './index'
 import Bloom from './bloom'
@@ -19,6 +21,7 @@ import type {
   PreByzantiumTxReceipt,
   PostByzantiumTxReceipt,
   EIP2930Receipt,
+  EIP1559Receipt,
 } from './types'
 
 /**
@@ -63,6 +66,14 @@ export interface RunTxOpts {
    * the `generateAccessList()` method must be implemented.
    */
   reportAccessList?: boolean
+
+  /**
+   * Optional clique Address: if the consensus algorithm is on clique,
+   * and this parameter is provided, use this as the beneficiary of transaction fees
+   * If it is not provided and the consensus algorithm is clique, instead
+   * get it from the block using `cliqueSigner()`
+   */
+  cliqueBeneficiary?: Address
 }
 
 /**
@@ -136,12 +147,9 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
 
   await state.checkpoint()
 
-  // Is it an Access List transaction?
-  if (
-    'transactionType' in opts.tx &&
-    opts.tx.transactionType === 1 &&
-    this._common.isActivatedEIP(2929)
-  ) {
+  // Typed transaction specific setup tasks
+  if (opts.tx.transactionType !== 0 && this._common.isActivatedEIP(2718)) {
+    // Is it an Access List transaction?
     if (!this._common.isActivatedEIP(2930)) {
       await state.revert()
       throw new Error('Cannot run transaction: EIP 2930 is not activated.')
@@ -151,6 +159,10 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
       throw new Error(
         'StateManager needs to implement generateAccessList() when running with reportAccessList option'
       )
+    }
+    if (opts.tx.transactionType === 2 && !this._common.isActivatedEIP(1559)) {
+      await state.revert()
+      throw new Error('Cannot run transaction: EIP 1559 is not activated.')
     }
 
     const castedTx = <AccessListEIP2930Transaction>opts.tx
@@ -231,7 +243,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const { nonce, balance } = fromAccount
 
   if (!opts.skipBalance) {
-    const cost = tx.getUpfrontCost()
+    const cost = tx.getUpfrontCost(block.header.baseFeePerGas)
     if (balance.lt(cost)) {
       throw new Error(
         `sender doesn't have enough funds to send tx. The upfront cost is: ${cost} and the sender's account only has: ${balance}`
@@ -245,16 +257,35 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
   }
 
+  let gasPrice
+  let inclusionFeePerGas
+  // EIP-1559 tx
+  if (tx.transactionType === 2) {
+    const baseFee = block.header.baseFeePerGas
+    inclusionFeePerGas = BN.min(
+      (<FeeMarketEIP1559Transaction>tx).maxPriorityFeePerGas,
+      (<FeeMarketEIP1559Transaction>tx).maxFeePerGas.sub(baseFee!)
+    )
+    gasPrice = inclusionFeePerGas.add(baseFee!)
+  } else {
+    // Have to cast it as legacy transaction: EIP1559 transaction does not have gas price
+    gasPrice = (<Transaction>tx).gasPrice
+    if (this._common.isActivatedEIP(1559)) {
+      const baseFee = block.header.baseFeePerGas
+      inclusionFeePerGas = (<Transaction>tx).gasPrice.sub(baseFee!)
+    }
+  }
+
   // Update from account's nonce and balance
   fromAccount.nonce.iaddn(1)
-  const txCost = tx.gasLimit.mul(tx.gasPrice)
+  const txCost = tx.gasLimit.mul(gasPrice)
   fromAccount.balance.isub(txCost)
   await state.putAccount(caller, fromAccount)
 
   /*
    * Execute message
    */
-  const txContext = new TxContext(tx.gasPrice, caller)
+  const txContext = new TxContext(gasPrice, caller)
   const { value, data, to } = tx
   const message = new Message({
     caller,
@@ -285,11 +316,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     gasRefund = BN.min(gasRefund, maxRefund)
     results.gasUsed.isub(gasRefund)
   }
-  results.amountSpent = results.gasUsed.mul(tx.gasPrice)
+  results.amountSpent = results.gasUsed.mul(gasPrice)
 
   // Update sender's balance
   fromAccount = await state.getAccount(caller)
-  const actualTxCost = results.gasUsed.mul(tx.gasPrice)
+  const actualTxCost = results.gasUsed.mul(gasPrice)
   const txCostDiff = txCost.sub(actualTxCost)
   fromAccount.balance.iadd(txCostDiff)
   await state.putAccount(caller, fromAccount)
@@ -301,15 +332,24 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   } else {
     // Backwards-compatibilty check
     // TODO: can be removed along VM v5 release
-    if ('cliqueSigner' in block.header) {
-      miner = block.header.cliqueSigner()
+    if (opts.cliqueBeneficiary) {
+      miner = opts.cliqueBeneficiary
     } else {
-      miner = Address.zero()
+      if ('cliqueSigner' in block.header) {
+        miner = block.header.cliqueSigner()
+      } else {
+        miner = Address.zero()
+      }
     }
   }
   const minerAccount = await state.getAccount(miner)
   // add the amount spent on gas to the miner's account
-  minerAccount.balance.iadd(results.amountSpent)
+
+  if (this._common.isActivatedEIP(1559)) {
+    minerAccount.balance.iadd(results.gasUsed.mul(<BN>inclusionFeePerGas))
+  } else {
+    minerAccount.balance.iadd(results.amountSpent)
+  }
 
   // Put the miner account into the state. If the balance of the miner account remains zero, note that
   // the state.putAccount function puts this into the "touched" accounts. This will thus be removed when
@@ -410,6 +450,12 @@ export async function generateTxReceipt(
       status: txResult.execResult.exceptionError ? 0 : 1,
       ...baseReceipt,
     } as EIP2930Receipt
+  } else if ('transactionType' in tx && tx.transactionType === 2) {
+    // EIP1559 Transaction
+    receipt = {
+      status: txResult.execResult.exceptionError ? 0 : 1,
+      ...baseReceipt,
+    } as EIP1559Receipt
   } else {
     throw new Error(
       `Unsupported transaction type ${'transactionType' in tx ? tx.transactionType : 'NaN'}`
