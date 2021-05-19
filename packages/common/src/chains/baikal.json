@@ -1,0 +1,105 @@
+{
+  "name": "baikal",
+  "chainId": 1642,
+  "networkId": 1642,
+  "defaultHardfork": "berlin",
+  "consensus": {
+    "type": "poa",
+    "algorithm": "clique",
+    "clique": {
+      "period": 30,
+      "epoch": 30000
+    }
+  },
+  "comment": "The Baikal testnet chain",
+  "url": "https://github.com/ethereum/eth1.0-specs/blob/master/network-upgrades/client-integration-testnets/aleut.md",
+  "genesis": {
+    "hash": "0xa0bc5d43c72a990cedeb59d305702602b34c3ee8585e77d03c7a4fa64d79636e",
+    "gasLimit": 4700000,
+    "difficulty": "0x1",
+    "nonce": "0x0000000000000000",
+    "extraData": "0x00000000000000000000000000000000000000000000000000000000000000005211cea3870c7ba7c6c44b185e62eecdb864cd8c560228ce57d31efbf64c200b2c200aacec78cf17a7148e784fe95a7a750335f8b9572ee28d72e7650000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "stateRoot": "0xfa3e335dacfd621cb458904e987011b9f818f76cf257c21caebaa29bdac3b57f",
+    "timestamp": 1620232831
+  },
+  "hardforks": [
+    {
+      "name": "chainstart",
+      "block": 0,
+      "forkHash": "0x49f2f6b6"
+    },
+    {
+      "name": "homestead",
+      "block": 0,
+      "forkHash": "0x49f2f6b6"
+    },
+    {
+      "name": "dao",
+      "block": null,
+      "forkHash": "0x49f2f6b6"
+    },
+    {
+      "name": "tangerineWhistle",
+      "block": 0,
+      "forkHash": "0x49f2f6b6"
+    },
+    {
+      "name": "spuriousDragon",
+      "block": 0,
+      "forkHash": "0x49f2f6b6"
+    },
+    {
+      "name": "byzantium",
+      "block": 0,
+      "forkHash": "0x49f2f6b6"
+    },
+    {
+      "name": "constantinople",
+      "block": 0,
+      "forkHash": "0x49f2f6b6"
+    },
+    {
+      "name": "petersburg",
+      "block": 0,
+      "forkHash": "0x49f2f6b6"
+    },
+    {
+      "name": "istanbul",
+      "block": 0,
+      "forkHash": "0x49f2f6b6"
+    },
+    {
+      "name": "berlin",
+      "block": 0,
+      "forkHash": "0x49f2f6b6"
+    },
+    {
+      "name": "london",
+      "block": 500,
+      "forkHash": "0xdc678ac4"
+    }
+  ],
+  "bootstrapNodes": [
+    {
+      "ip": "3.9.20.133",
+      "port": 30303,
+      "id": "9e1096aa59862a6f164994cb5cb16f5124d6c992cdbf4535ff7dea43ea1512afe5448dca9df1b7ab0726129603f1a3336b631e4d7a1a44c94daddd03241587f9",
+      "location": "",
+      "comment": "Baikal bootnode 1"
+    },
+    {
+      "ip": "144.91.103.6",
+      "port": 30308,
+      "id": "8e6788508278e514268307f27528ffabd6c86e755b0abd5ef170502b6444b35231dd0c7183e902c6a566c650104fdcfa58c6de28b54533f3dc243af444a60f51",
+      "location": "",
+      "comment": "Baikal Geth bootnode (Quilt)"
+    },
+    {
+      "ip": "217.182.200.86",
+      "port": 30303,
+      "id": "14bed0619ef778342cb1ed18702004cb29f4324b7d411fc3d20adc8fe2d15c7bb30c663bd8767eaa32eaadcebc227a24e21c006028e12b9c38b25ea5e3147316",
+      "location": "",
+      "comment": "Baikal bootnode 3"
+    }
+  ]
+}

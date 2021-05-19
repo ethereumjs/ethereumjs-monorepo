@@ -43,6 +43,10 @@ export class EthProtocol extends Protocol {
       decode: (hashes: any[]) => hashes.map((hn) => [hn[0], new BN(hn[1])]),
     },
     {
+      name: 'Transactions',
+      code: 0x02,
+    },
+    {
       name: 'GetBlockHeaders',
       code: 0x03,
       response: 0x04,

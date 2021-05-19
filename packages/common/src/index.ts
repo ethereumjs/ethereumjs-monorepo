@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import { buf as crc32Buffer } from 'crc-32'
-import { BN, BNLike, toType, TypeOutput } from 'ethereumjs-util'
+import { BN, BNLike, toType, TypeOutput, intToBuffer } from 'ethereumjs-util'
 import { _getInitializedChains } from './chains'
 import { hardforks as HARDFORK_CHANGES } from './hardforks'
 import { EIPs } from './eips'
@@ -468,7 +468,7 @@ export default class Common extends EventEmitter {
       if (hf['name'] === hardfork2) posHf2 = index
       index += 1
     }
-    return posHf1 >= posHf2
+    return posHf1 >= posHf2 && posHf2 !== -1
   }
 
   /**
@@ -632,7 +632,7 @@ export default class Common extends EventEmitter {
 
     // CRC32 delivers result as signed (negative) 32-bit integer,
     // convert to hex string
-    const forkhash = new Number(crc32Buffer(inputBuffer) >>> 0).toString(16)
+    const forkhash = intToBuffer(crc32Buffer(inputBuffer) >>> 0).toString('hex')
     return `0x${forkhash}`
   }
 

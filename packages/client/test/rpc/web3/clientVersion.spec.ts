@@ -23,12 +23,8 @@ tape(`${method}: call`, (t) => {
       t.pass(msg)
     }
 
-    const [
-      actualClientTitle,
-      actualPackageVersion,
-      actualPlatform,
-      actualNodeVersion,
-    ] = result.split('/')
+    const [actualClientTitle, actualPackageVersion, actualPlatform, actualNodeVersion] =
+      result.split('/')
 
     msg = 'client title should be correct'
     if (actualClientTitle !== expectedClientTitle) {

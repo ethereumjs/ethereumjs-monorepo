@@ -8,6 +8,7 @@ if (argv.b) {
   require('./legacy.spec')
 } else if (argv.e) {
   require('./eip2930.spec')
+  require('./eip1559.spec')
 } else if (argv.t) {
   require('./transactionRunner')
 } else if (argv.f) {
@@ -17,11 +18,13 @@ if (argv.b) {
   require('./base.spec')
   require('./legacy.spec')
   require('./eip2930.spec')
+  require('./eip1559.spec')
   require('./transactionFactory.spec')
 } else {
   require('./transactionRunner')
   require('./base.spec')
   require('./legacy.spec')
   require('./eip2930.spec')
+  require('./eip1559.spec')
   require('./transactionFactory.spec')
 }

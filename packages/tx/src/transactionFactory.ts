@@ -1,8 +1,13 @@
 import { BN, toBuffer } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { default as Transaction } from './legacyTransaction'
-import { default as AccessListEIP2930Transaction } from './eip2930Transaction'
-import { TxOptions, TypedTransaction, TxData, AccessListEIP2930TxData } from './types'
+import {
+  TxOptions,
+  TypedTransaction,
+  TxData,
+  AccessListEIP2930TxData,
+  FeeMarketEIP1559TxData,
+} from './types'
+import { Transaction, AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '.'
 
 const DEFAULT_COMMON = new Common({ chain: 'mainnet' })
 
@@ -17,19 +22,23 @@ export default class TransactionFactory {
    * @param txOptions - Options to pass on to the constructor of the transaction
    */
   public static fromTxData(
-    txData: TxData | AccessListEIP2930TxData,
+    txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData,
     txOptions: TxOptions = {}
   ): TypedTransaction {
-    const common = txOptions.common ?? DEFAULT_COMMON
     if (!('type' in txData) || txData.type === undefined) {
       // Assume legacy transaction
       return Transaction.fromTxData(<TxData>txData, txOptions)
     } else {
       const txType = new BN(toBuffer(txData.type)).toNumber()
-      return TransactionFactory.getTransactionClass(txType, common).fromTxData(
-        <AccessListEIP2930TxData>txData,
-        txOptions
-      )
+      if (txType === 0) {
+        return Transaction.fromTxData(<TxData>txData, txOptions)
+      } else if (txType === 1) {
+        return AccessListEIP2930Transaction.fromTxData(<AccessListEIP2930TxData>txData, txOptions)
+      } else if (txType === 2) {
+        return FeeMarketEIP1559Transaction.fromTxData(<FeeMarketEIP1559TxData>txData, txOptions)
+      } else {
+        throw new Error(`Tx instantiation with type ${txType} not supported`)
+      }
     }
   }
 
@@ -52,6 +61,9 @@ export default class TransactionFactory {
         case 1:
           EIP = 2930
           break
+        case 2:
+          EIP = 1559
+          break
         default:
           throw new Error(`TypedTransaction with ID ${data[0]} unknown`)
       }
@@ -62,7 +74,12 @@ export default class TransactionFactory {
         )
       }
 
-      return AccessListEIP2930Transaction.fromSerializedTx(data, txOptions)
+      if (EIP === 1559) {
+        return FeeMarketEIP1559Transaction.fromSerializedTx(data, txOptions)
+      } else {
+        // EIP === 2930
+        return AccessListEIP2930Transaction.fromSerializedTx(data, txOptions)
+      }
     } else {
       return Transaction.fromSerializedTx(data, txOptions)
     }
@@ -91,7 +108,7 @@ export default class TransactionFactory {
   /**
    * This helper method allows one to retrieve the class which matches the transactionID
    * If transactionID is undefined, returns the legacy transaction class.
-   *
+   * @deprecated - This method is deprecated and will be removed on the next major release
    * @param transactionID
    * @param common
    */
@@ -112,6 +129,8 @@ export default class TransactionFactory {
     switch (transactionID) {
       case 1:
         return AccessListEIP2930Transaction
+      case 2:
+        return FeeMarketEIP1559Transaction
       default:
         throw new Error(`TypedTransaction with ID ${transactionID} unknown`)
     }

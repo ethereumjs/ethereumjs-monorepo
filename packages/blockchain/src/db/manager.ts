@@ -176,7 +176,7 @@ export class DBManager {
    */
   async getBody(blockHash: Buffer, blockNumber: BN): Promise<BlockBodyBuffer> {
     const body = await this.get(DBTarget.Body, { blockHash, blockNumber })
-    return (rlp.decode(body) as any) as BlockBodyBuffer
+    return rlp.decode(body) as any as BlockBodyBuffer
   }
 
   /**

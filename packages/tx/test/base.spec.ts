@@ -1,13 +1,13 @@
 import tape from 'tape'
 import Common from '@ethereumjs/common'
-import { Transaction, AccessListEIP2930Transaction } from '../src'
+import { Transaction, AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '../src'
 import { TxsJsonEntry } from './types'
 import { BaseTransaction } from '../src/baseTransaction'
 import { privateToPublic, BN, toBuffer } from 'ethereumjs-util'
 
 tape('[BaseTransaction]', function (t) {
   // EIP-2930 is not enabled in Common by default (2021-03-06)
-  const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+  const common = new Common({ chain: 'mainnet', hardfork: 'london' })
 
   const legacyFixtures: TxsJsonEntry[] = require('./json/txs.json')
   const legacyTxs: BaseTransaction<Transaction>[] = []
@@ -21,11 +21,18 @@ tape('[BaseTransaction]', function (t) {
     eip2930Txs.push(AccessListEIP2930Transaction.fromTxData(tx.data, { common }))
   })
 
+  const eip1559Fixtures = require('./json/eip1559txs.json')
+  const eip1559Txs: BaseTransaction<FeeMarketEIP1559Transaction>[] = []
+  eip1559Fixtures.forEach(function (tx: any) {
+    eip1559Txs.push(FeeMarketEIP1559Transaction.fromTxData(tx.data, { common }))
+  })
+
   const zero = Buffer.alloc(0)
   const txTypes = [
     {
       class: Transaction,
       name: 'Transaction',
+      type: 0,
       values: Array(6).fill(zero),
       txs: legacyTxs,
       fixtures: legacyFixtures,
@@ -33,9 +40,18 @@ tape('[BaseTransaction]', function (t) {
     {
       class: AccessListEIP2930Transaction,
       name: 'AccessListEIP2930Transaction',
+      type: 1,
       values: [Buffer.from([1])].concat(Array(7).fill(zero)),
       txs: eip2930Txs,
       fixtures: eip2930Fixtures,
+    },
+    {
+      class: FeeMarketEIP1559Transaction,
+      name: 'FeeMarketEIP1559Transaction',
+      type: 2,
+      values: [Buffer.from([1])].concat(Array(8).fill(zero)),
+      txs: eip1559Txs,
+      fixtures: eip1559Fixtures,
     },
   ]
 
@@ -44,27 +60,26 @@ tape('[BaseTransaction]', function (t) {
       let tx = txType.class.fromTxData({}, { common })
       st.equal(
         tx.common.hardfork(),
-        'berlin',
-        `${txType.name}: should initialize with correct default HF`
+        'london',
+        `${txType.name}: should initialize with correct HF provided`
       )
       st.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
 
       const initCommon = new Common({
         chain: 'mainnet',
-        hardfork: 'istanbul',
-        eips: [2718, 2929, 2930],
+        hardfork: 'london',
       })
       tx = txType.class.fromTxData({}, { common: initCommon })
       st.equal(
         tx.common.hardfork(),
-        'istanbul',
+        'london',
         `${txType.name}: should initialize with correct HF provided`
       )
 
       initCommon.setHardfork('byzantium')
       st.equal(
         tx.common.hardfork(),
-        'istanbul',
+        'london',
         `${txType.name}: should stay on correct HF if outer common HF changes`
       )
 
@@ -81,7 +96,20 @@ tape('[BaseTransaction]', function (t) {
       const rlpData = tx.serialize()
 
       tx = txType.class.fromSerializedTx(rlpData, { common })
+      st.equal(
+        tx.type,
+        txType.type,
+        `${txType.name}: fromSerializedTx() -> should initialize correctly`
+      )
+
       st.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
+
+      tx = txType.class.fromRlpSerializedTx(rlpData, { common })
+      st.equal(
+        tx.type,
+        txType.type,
+        `${txType.name}: fromRlpSerializedTx() (deprecated) -> should initialize correctly`
+      )
 
       tx = txType.class.fromSerializedTx(rlpData, { common, freeze: false })
       st.ok(

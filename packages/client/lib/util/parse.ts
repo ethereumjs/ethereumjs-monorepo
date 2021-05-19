@@ -120,17 +120,8 @@ async function parseGethHeader(json: any) {
 }
 
 async function parseGethParams(json: any) {
-  const {
-    name,
-    config,
-    timestamp,
-    gasLimit,
-    difficulty,
-    nonce,
-    extraData,
-    mixHash,
-    coinbase,
-  } = json
+  const { name, config, timestamp, gasLimit, difficulty, nonce, extraData, mixHash, coinbase } =
+    json
   const { chainId } = config
   const header = await parseGethHeader(json)
   const { stateRoot } = header
