@@ -69,7 +69,7 @@ export class Block {
    * @param opts
    */
   public static fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions) {
-    const values = (rlp.decode(serialized) as any) as BlockBuffer
+    const values = rlp.decode(serialized) as any as BlockBuffer
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized block input. Must be array')

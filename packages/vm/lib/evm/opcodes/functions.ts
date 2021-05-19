@@ -723,7 +723,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       // NOTE: we're using a 'trick' here to get the least significant byte
       // NOTE: force cast necessary because `BN.andln` returns number but
       // the types are wrong
-      const buf = Buffer.from([(byte.andln(0xff) as unknown) as number])
+      const buf = Buffer.from([byte.andln(0xff) as unknown as number])
       subMemUsage(runState, offset, new BN(1))
       const offsetNum = offset.toNumber()
       runState.memory.extend(offsetNum, 1)
@@ -1006,15 +1006,8 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xf1,
     async function (runState: RunState) {
-      const [
-        currentGasLimit,
-        toAddr,
-        value,
-        inOffset,
-        inLength,
-        outOffset,
-        outLength,
-      ] = runState.stack.popN(7)
+      const [currentGasLimit, toAddr, value, inOffset, inLength, outOffset, outLength] =
+        runState.stack.popN(7)
       const toAddress = new Address(addressToBuffer(toAddr))
 
       if (runState.eei.isStatic() && !value.isZero()) {
@@ -1067,15 +1060,8 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xf2,
     async function (runState: RunState) {
-      const [
-        currentGasLimit,
-        toAddr,
-        value,
-        inOffset,
-        inLength,
-        outOffset,
-        outLength,
-      ] = runState.stack.popN(7)
+      const [currentGasLimit, toAddr, value, inOffset, inLength, outOffset, outLength] =
+        runState.stack.popN(7)
       const toAddress = new Address(addressToBuffer(toAddr))
 
       subMemUsage(runState, inOffset, inLength)
@@ -1112,14 +1098,8 @@ export const handlers: Map<number, OpHandler> = new Map([
     0xf4,
     async function (runState: RunState) {
       const value = runState.eei.getCallValue()
-      const [
-        currentGasLimit,
-        toAddr,
-        inOffset,
-        inLength,
-        outOffset,
-        outLength,
-      ] = runState.stack.popN(6)
+      const [currentGasLimit, toAddr, inOffset, inLength, outOffset, outLength] =
+        runState.stack.popN(6)
       const toAddress = new Address(addressToBuffer(toAddr))
 
       subMemUsage(runState, inOffset, inLength)
@@ -1147,14 +1127,8 @@ export const handlers: Map<number, OpHandler> = new Map([
     0xfa,
     async function (runState: RunState) {
       const value = new BN(0)
-      const [
-        currentGasLimit,
-        toAddr,
-        inOffset,
-        inLength,
-        outOffset,
-        outLength,
-      ] = runState.stack.popN(6)
+      const [currentGasLimit, toAddr, inOffset, inLength, outOffset, outLength] =
+        runState.stack.popN(6)
       const toAddress = new Address(addressToBuffer(toAddr))
 
       subMemUsage(runState, inOffset, inLength)

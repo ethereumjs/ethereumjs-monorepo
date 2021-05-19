@@ -263,7 +263,8 @@ tape('Utility Functions', function (t) {
     )
     st.ok(isValidPublic(pubKey), 'should work otherwise')
 
-    pubKey = '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d' as any
+    pubKey =
+      '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d' as any
     try {
       isValidPublic((<unknown>pubKey) as Buffer)
     } catch (err) {
@@ -341,7 +342,8 @@ tape('Utility Functions', function (t) {
       publicToAddress(pubKey)
     }, "shouldn't produce an address given an invalid public key")
 
-    pubKey = '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d' as any
+    pubKey =
+      '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d' as any
     st.throws(function () {
       publicToAddress(pubKey)
     }, 'should throw if input is not a buffer')

@@ -55,7 +55,7 @@ export class ENR {
 
     // ENRs are RLP encoded and written to DNS TXT entries as base64 url-safe strings
     const base64BufferEnr = base64url.toBuffer(enr.slice(this.RECORD_PREFIX.length))
-    const decoded = (rlp.decode(base64BufferEnr) as unknown) as Buffer[]
+    const decoded = rlp.decode(base64BufferEnr) as unknown as Buffer[]
     const [signature, seq, ...kvs] = decoded
 
     // Convert ENR key/value pairs to object

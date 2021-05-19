@@ -35,10 +35,7 @@ export default class TransactionFactory {
       } else if (txType === 1) {
         return AccessListEIP2930Transaction.fromTxData(<AccessListEIP2930TxData>txData, txOptions)
       } else if (txType === 2) {
-        return FeeMarketEIP1559Transaction.fromTxData(
-          <FeeMarketEIP1559TxData>txData,
-          txOptions
-        )
+        return FeeMarketEIP1559Transaction.fromTxData(<FeeMarketEIP1559TxData>txData, txOptions)
       } else {
         throw new Error(`Tx instantiation with type ${txType} not supported`)
       }

@@ -1221,45 +1221,43 @@ export default class Blockchain implements BlockchainInterface {
    * @hidden
    */
   private async _iterator(name: string, onBlock: OnBlock, maxBlocks?: number): Promise<number> {
-    return await this.initAndLock<number>(
-      async (): Promise<number> => {
-        const headHash = this._heads[name] || this._genesis
-        let lastBlock: Block | undefined
+    return await this.initAndLock<number>(async (): Promise<number> => {
+      const headHash = this._heads[name] || this._genesis
+      let lastBlock: Block | undefined
 
-        if (!headHash) {
-          return 0
-        }
+      if (!headHash) {
+        return 0
+      }
 
-        if (maxBlocks && maxBlocks < 0) {
-          throw 'If maxBlocks is provided, it has to be a non-negative number'
-        }
+      if (maxBlocks && maxBlocks < 0) {
+        throw 'If maxBlocks is provided, it has to be a non-negative number'
+      }
 
-        const headBlockNumber = await this.dbManager.hashToNumber(headHash)
-        const nextBlockNumber = headBlockNumber.addn(1)
-        let blocksRanCounter = 0
+      const headBlockNumber = await this.dbManager.hashToNumber(headHash)
+      const nextBlockNumber = headBlockNumber.addn(1)
+      let blocksRanCounter = 0
 
-        while (maxBlocks !== blocksRanCounter) {
-          try {
-            const nextBlock = await this._getBlock(nextBlockNumber)
-            this._heads[name] = nextBlock.hash()
-            const reorg = lastBlock ? lastBlock.hash().equals(nextBlock.header.parentHash) : false
-            lastBlock = nextBlock
-            await onBlock(nextBlock, reorg)
-            nextBlockNumber.iaddn(1)
-            blocksRanCounter++
-          } catch (error) {
-            if (error.type === 'NotFoundError') {
-              break
-            } else {
-              throw error
-            }
+      while (maxBlocks !== blocksRanCounter) {
+        try {
+          const nextBlock = await this._getBlock(nextBlockNumber)
+          this._heads[name] = nextBlock.hash()
+          const reorg = lastBlock ? lastBlock.hash().equals(nextBlock.header.parentHash) : false
+          lastBlock = nextBlock
+          await onBlock(nextBlock, reorg)
+          nextBlockNumber.iaddn(1)
+          blocksRanCounter++
+        } catch (error) {
+          if (error.type === 'NotFoundError') {
+            break
+          } else {
+            throw error
           }
         }
-
-        await this._saveHeads()
-        return blocksRanCounter
       }
-    )
+
+      await this._saveHeads()
+      return blocksRanCounter
+    })
   }
 
   /**
