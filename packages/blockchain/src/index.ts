@@ -230,6 +230,10 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * Creates new Blockchain object
    *
+   * @deprecated - The direct usage of this constructor is discouraged since
+   * non-finalized async initialization might lead to side effects. Please
+   * use the async `Blockchain.create()` constructor instead (same API).
+   *
    * @param opts - An object with the options that this constructor takes. See
    * [[BlockchainOptions]].
    */
