@@ -103,14 +103,19 @@ export class Chain extends EventEmitter {
     super()
 
     this.config = options.config
+    let validateConsensus = false
+    if (this.config.chainCommon.consensusAlgorithm() === 'clique') {
+      validateConsensus = true
+    }
 
     this.blockchain =
       options.blockchain ??
       new Blockchain({
         db: options.chainDB,
         common: this.config.chainCommon,
+        hardforkByHeadBlockNumber: true,
         validateBlocks: true,
-        validateConsensus: true,
+        validateConsensus,
       })
 
     this.chainDB = this.blockchain.db

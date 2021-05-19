@@ -70,6 +70,13 @@ export interface BlockchainOptions {
   common?: Common
 
   /**
+   * Set the HF to the fork determined by the head block and update on head updates
+   *
+   * Default: `false` (HF is set to whatever default HF is set by the Common instance)
+   */
+  hardforkByHeadBlockNumber?: boolean
+
+  /**
    * Database to store blocks and metadata.
    * Should be an `abstract-leveldown` compliant store
    * wrapped with `encoding-down`.
@@ -133,6 +140,7 @@ export default class Blockchain implements BlockchainInterface {
   private _lock: Semaphore
 
   private _common: Common
+  private _hardforkByHeadBlockNumber: boolean
   private readonly _validateConsensus: boolean
   private readonly _validateBlocks: boolean
 
@@ -243,6 +251,7 @@ export default class Blockchain implements BlockchainInterface {
       })
     }
 
+    this._hardforkByHeadBlockNumber = opts.hardforkByHeadBlockNumber ?? false
     this._validateConsensus = opts.validateConsensus ?? true
     this._validateBlocks = opts.validateBlocks ?? true
 
@@ -383,8 +392,10 @@ export default class Blockchain implements BlockchainInterface {
       }
       this._headBlockHash = genesisHash
     }
-    const latestHeader = await this._getHeader(this._headHeaderHash)
-    this._common.setHardforkByBlockNumber(latestHeader.number)
+    if (this._hardforkByHeadBlockNumber) {
+      const latestHeader = await this._getHeader(this._headHeaderHash)
+      this._common.setHardforkByBlockNumber(latestHeader.number)
+    }
   }
 
   /**
@@ -954,7 +965,9 @@ export default class Blockchain implements BlockchainInterface {
         if (item instanceof Block) {
           this._headBlockHash = blockHash
         }
-        this._common.setHardforkByBlockNumber(blockNumber)
+        if (this._hardforkByHeadBlockNumber) {
+          this._common.setHardforkByBlockNumber(blockNumber)
+        }
 
         // TODO SET THIS IN CONSTRUCTOR
         if (block.isGenesis()) {
