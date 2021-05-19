@@ -28,7 +28,7 @@
     "data": {
       "data": "0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
       "gasLimit": "0x02625a00",
-      "maxInclusionFeePerGas": "0x01",
+      "maxPriorityFeePerGas": "0x01",
       "maxFeePerGas": "0x01",
       "nonce": "0x00",
       "to": "0xcccccccccccccccccccccccccccccccccccccccc",

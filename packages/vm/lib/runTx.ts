@@ -263,7 +263,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (tx.transactionType === 2) {
     const baseFee = block.header.baseFeePerGas
     inclusionFeePerGas = BN.min(
-      (<FeeMarketEIP1559Transaction>tx).maxInclusionFeePerGas,
+      (<FeeMarketEIP1559Transaction>tx).maxPriorityFeePerGas,
       (<FeeMarketEIP1559Transaction>tx).maxFeePerGas.sub(baseFee!)
     )
     gasPrice = inclusionFeePerGas.add(baseFee!)

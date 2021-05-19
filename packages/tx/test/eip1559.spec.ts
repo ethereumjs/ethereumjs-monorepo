@@ -19,7 +19,7 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
     const tx = FeeMarketEIP1559Transaction.fromTxData(
       {
         maxFeePerGas: 10,
-        maxInclusionFeePerGas: 8,
+        maxPriorityFeePerGas: 8,
         gasLimit: 100,
         value: 6,
       },
@@ -104,7 +104,7 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
     const expectedJSON = {
       chainId: '0x1e8e',
       nonce: '0x333',
-      maxInclusionFeePerGas: '0x1284d',
+      maxPriorityFeePerGas: '0x1284d',
       maxFeePerGas: '0x1d97c',
       gasLimit: '0x8ae0',
       to: '0x000000000000000000000000000000000000aaaa',

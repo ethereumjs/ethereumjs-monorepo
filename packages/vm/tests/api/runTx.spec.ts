@@ -95,7 +95,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
             gasPrice: 100,
             nonce: 0,
             type: txType.type,
-            maxInclusionFeePerGas: 50,
+            maxPriorityFeePerGas: 50,
             maxFeePerGas: 50,
           },
           { common }
@@ -126,7 +126,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
         const baseFee = block.header.baseFeePerGas!
         const inclusionFeePerGas =
           tx instanceof FeeMarketEIP1559Transaction
-            ? BN.min(tx.maxInclusionFeePerGas, tx.maxFeePerGas.sub(baseFee))
+            ? BN.min(tx.maxPriorityFeePerGas, tx.maxFeePerGas.sub(baseFee))
             : tx.gasPrice.sub(baseFee)
         const expectedCoinbaseBalance = common.isActivatedEIP(1559)
           ? result.gasUsed.mul(inclusionFeePerGas)

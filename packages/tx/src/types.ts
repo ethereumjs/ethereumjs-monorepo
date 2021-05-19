@@ -158,7 +158,7 @@ export interface FeeMarketEIP1559TxData extends AccessListEIP2930TxData {
   /**
    * The maximum inclusion fee per gas (this fee is given to the miner)
    */
-  maxInclusionFeePerGas?: BNLike
+  maxPriorityFeePerGas?: BNLike
   /**
    * The maximum total fee
    */
@@ -228,7 +228,7 @@ export interface JsonTx {
   chainId?: string
   accessList?: JsonAccessListItem[]
   type?: string
-  maxInclusionFeePerGas?: string
+  maxPriorityFeePerGas?: string
   maxFeePerGas?: string
 }
 

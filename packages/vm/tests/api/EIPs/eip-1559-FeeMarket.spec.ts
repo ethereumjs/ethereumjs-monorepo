@@ -64,7 +64,7 @@ tape('EIP1559 tests', (t) => {
     const tx = new FeeMarketEIP1559Transaction(
       {
         maxFeePerGas: GWEI.muln(5),
-        maxInclusionFeePerGas: GWEI.muln(2),
+        maxPriorityFeePerGas: GWEI.muln(2),
         to: Address.zero(),
         gasLimit: 21000,
       },
@@ -168,7 +168,7 @@ tape('EIP1559 tests', (t) => {
     const tx = new FeeMarketEIP1559Transaction(
       {
         maxFeePerGas: GWEI.muln(5),
-        maxInclusionFeePerGas: GWEI.muln(2),
+        maxPriorityFeePerGas: GWEI.muln(2),
         to: contractAddress,
         gasLimit: 210000,
       },

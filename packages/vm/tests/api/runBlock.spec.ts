@@ -432,7 +432,7 @@ tape('runBlock() -> tx types', async (t) => {
     await setBalance(vm, address)
 
     const tx = FeeMarketEIP1559Transaction.fromTxData(
-      { maxFeePerGas: 1, maxInclusionFeePerGas: 4, gasLimit: 100000, value: 6 },
+      { maxFeePerGas: 1, maxPriorityFeePerGas: 4, gasLimit: 100000, value: 6 },
       { common, freeze: false }
     )
 

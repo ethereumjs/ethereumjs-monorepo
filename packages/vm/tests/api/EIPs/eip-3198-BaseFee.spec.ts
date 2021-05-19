@@ -63,7 +63,7 @@ tape('EIP3198 tests', (t) => {
     const tx = new FeeMarketEIP1559Transaction(
       {
         maxFeePerGas: GWEI.muln(5),
-        maxInclusionFeePerGas: GWEI.muln(2),
+        maxPriorityFeePerGas: GWEI.muln(2),
         to: undefined, // Create contract
         gasLimit: 210000,
         data: '0x4800',

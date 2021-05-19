@@ -379,7 +379,7 @@ tape('EIP1559 tests', function (t) {
     const transaction = FeeMarketEIP1559Transaction.fromTxData(
       {
         maxFeePerGas: new BN(0),
-        maxInclusionFeePerGas: new BN(0),
+        maxPriorityFeePerGas: new BN(0),
       },
       { common }
     ).sign(Buffer.from('46'.repeat(32), 'hex'))
@@ -395,7 +395,7 @@ tape('EIP1559 tests', function (t) {
         transactions: [
           {
             maxFeePerGas: new BN(0),
-            maxInclusionFeePerGas: new BN(0),
+            maxPriorityFeePerGas: new BN(0),
             type: 2,
             v: transaction.v,
             r: transaction.r,

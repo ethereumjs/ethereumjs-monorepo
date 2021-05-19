@@ -18,7 +18,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   public readonly chainId: BN
   public readonly accessList: AccessListBuffer
   public readonly AccessListJSON: AccessList
-  public readonly maxInclusionFeePerGas: BN
+  public readonly maxPriorityFeePerGas: BN
   public readonly maxFeePerGas: BN
 
   /**
@@ -86,7 +86,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    * Create a transaction from a values array.
    *
    * The format is:
-   * chainId, nonce, maxInclusionFeePerGas, maxFeePerGas, gasLimit, to, value, data, accessList, signatureYParity, signatureR, signatureS
+   * chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data, accessList, signatureYParity, signatureR, signatureS
    */
   public static fromValuesArray(values: FeeMarketEIP1559ValuesArray, opts: TxOptions = {}) {
     if (values.length !== 9 && values.length !== 12) {
@@ -98,7 +98,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     const [
       chainId,
       nonce,
-      maxInclusionFeePerGas,
+      maxPriorityFeePerGas,
       maxFeePerGas,
       gasLimit,
       to,
@@ -114,7 +114,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       {
         chainId: new BN(chainId),
         nonce,
-        maxInclusionFeePerGas,
+        maxPriorityFeePerGas,
         maxFeePerGas,
         gasLimit,
         to,
@@ -137,7 +137,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    * varying data types.
    */
   public constructor(txData: FeeMarketEIP1559TxData, opts: TxOptions = {}) {
-    const { chainId, accessList, maxFeePerGas, maxInclusionFeePerGas } = txData
+    const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
 
     super({ ...txData, type: TRANSACTION_TYPE }, opts)
 
@@ -154,13 +154,13 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
 
     this.chainId = chainId ? new BN(toBuffer(chainId)) : new BN(this.common.chainId())
     this.maxFeePerGas = new BN(toBuffer(maxFeePerGas === '' ? '0x' : maxFeePerGas))
-    this.maxInclusionFeePerGas = new BN(
-      toBuffer(maxInclusionFeePerGas === '' ? '0x' : maxInclusionFeePerGas)
+    this.maxPriorityFeePerGas = new BN(
+      toBuffer(maxPriorityFeePerGas === '' ? '0x' : maxPriorityFeePerGas)
     )
 
     this._validateCannotExceedMaxInteger({
       maxFeePerGas: this.maxFeePerGas,
-      maxInclusionFeePerGas: this.maxInclusionFeePerGas,
+      maxPriorityFeePerGas: this.maxPriorityFeePerGas,
     })
 
     if (!this.chainId.eq(new BN(this.common.chainId().toString()))) {
@@ -200,7 +200,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     if (!baseFee) {
       baseFee = new BN(0)
     }
-    const inclusionFeePerGas = BN.min(this.maxInclusionFeePerGas, this.maxFeePerGas.sub(baseFee!))
+    const inclusionFeePerGas = BN.min(this.maxPriorityFeePerGas, this.maxFeePerGas.sub(baseFee!))
     const gasPrice = inclusionFeePerGas.add(baseFee!)
     return this.gasLimit.mul(gasPrice).add(this.value)
   }
@@ -214,7 +214,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     return [
       bnToRlp(this.chainId),
       bnToRlp(this.nonce),
-      bnToRlp(this.maxInclusionFeePerGas),
+      bnToRlp(this.maxPriorityFeePerGas),
       bnToRlp(this.maxFeePerGas),
       bnToRlp(this.gasLimit),
       this.to !== undefined ? this.to.buf : Buffer.from([]),
@@ -310,7 +310,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       {
         chainId: this.chainId,
         nonce: this.nonce,
-        maxInclusionFeePerGas: this.maxInclusionFeePerGas,
+        maxPriorityFeePerGas: this.maxPriorityFeePerGas,
         maxFeePerGas: this.maxFeePerGas,
         gasLimit: this.gasLimit,
         to: this.to,
@@ -334,7 +334,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     return {
       chainId: bnToHex(this.chainId),
       nonce: bnToHex(this.nonce),
-      maxInclusionFeePerGas: bnToHex(this.maxInclusionFeePerGas),
+      maxPriorityFeePerGas: bnToHex(this.maxPriorityFeePerGas),
       maxFeePerGas: bnToHex(this.maxFeePerGas),
       gasLimit: bnToHex(this.gasLimit),
       to: this.to !== undefined ? this.to.toString() : undefined,
