@@ -462,9 +462,9 @@ export class Eth {
 
       for (const peer of peers.slice(0, 5)) {
         if (tx.type === 0) {
-          peer.eth!.send('Transactions', [tx.raw()])
+          peer.eth?.send('Transactions', [tx.raw()])
         } else {
-          peer.eth!.send('Transactions', [tx.serialize()])
+          peer.eth?.send('Transactions', [tx.serialize()])
         }
       }
 
