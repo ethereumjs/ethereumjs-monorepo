@@ -20,12 +20,21 @@ const testData = require('./testdata/blockchain.json')
 const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
 
 tape('runBlock() -> successful API parameter usage', async (t) => {
-  async function simpleRun(vm: VM) {
+  async function simpleRun(vm: VM, opts: any = {}) {
+    const common = opts.common
+
     const genesisRlp = testData.genesisRLP
-    const genesis = Block.fromRLPSerializedBlock(genesisRlp)
+    const genesis = Block.fromRLPSerializedBlock(genesisRlp, { common })
 
     const blockRlp = testData.blocks[0].rlp
-    const block = Block.fromRLPSerializedBlock(blockRlp)
+    const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
+
+    if (opts.cliqueBeneficiary) {
+      // eslint-disable-next-line no-extra-semi
+      ;(block.header as any).cliqueSigner = () => {
+        return opts.cliqueBeneficiary
+      }
+    }
 
     //@ts-ignore
     await setupPreConditions(vm.stateManager._trie, testData)
@@ -36,11 +45,17 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       'genesis state root should match calculated state root'
     )
 
+    let generate = false
+    if (opts.generate) {
+      generate = true
+    }
+
     const res = await vm.runBlock({
       block,
       // @ts-ignore
       root: vm.stateManager._trie.root,
       skipBlockValidation: true,
+      generate,
     })
 
     t.equal(
@@ -72,6 +87,16 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     const common = new Common({ chain: 'testnet', hardfork: 'berlin', customChains })
     const vm = setupVM({ common })
     await simpleRun(vm)
+    t.end()
+  })
+
+  t.test("PoA block, should use block header's cliqueSigner", async (t) => {
+    const common = new Common({ chain: 'goerli', hardfork: 'berlin' })
+    const vm = setupVM({ common })
+    const cliqueBeneficiary = Address.fromString('0x70732c08fb6dbb06a64bf619c816c22aed12267a')
+    await simpleRun(vm, { common, cliqueBeneficiary, generate: true })
+    const account = await vm.stateManager.getAccount(cliqueBeneficiary)
+    t.ok(account.balance.gtn(0), 'beneficiary balance should be updated')
     t.end()
   })
 
