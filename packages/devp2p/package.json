@@ -39,7 +39,7 @@
     "test": "tape -r ts-node/register ./test/index.ts"
   },
   "dependencies": {
-    "@ethereumjs/common": "^2.2.0",
+    "@ethereumjs/common": "^2.3.0",
     "@types/bl": "^2.1.0",
     "@types/k-bucket": "^5.0.0",
     "@types/lru-cache": "^5.1.0",

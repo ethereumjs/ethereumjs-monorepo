@@ -32,7 +32,7 @@
     "test:browser": "npm run test:browser:build && karma start karma.conf.js"
   },
   "dependencies": {
-    "@ethereumjs/common": "^2.2.0",
+    "@ethereumjs/common": "^2.3.0",
     "ethereumjs-util": "^7.0.10"
   },
   "devDependencies": {

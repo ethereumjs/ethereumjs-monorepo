@@ -6,6 +6,45 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.3.0 - 2021-05-26
+
+### London HF Support
+
+This `Common` release comes with full support for the `london` hardfork. Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `Common` instance with a `london` HF activated:
+
+```typescript
+import Common from '@ethereumjs/common'
+const common = new Common({ chain: 'mainnet', hardfork: 'london' })
+```
+
+### London HF Changes
+
+Common now supports settings for the following additional EIPs:
+
+- [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559): Fee market change for ETH 1.0 chain, PR [#1148](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1148)
+- [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529): Reduction in refunds, PR [#1239](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1239)
+- [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541): Reject new contracts starting with the 0xEF byte, PR [#1240](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1240)
+- [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554): Difficulty Bomb Delay to December 2021 (only PoW networks), PR [#1245](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1245)
+
+All new EIPs have their dedicated EIP configuration file and can also be activated spearately with the `eips` parameter (and the so-created `common` instance can then e.g. be used within the VM):
+
+```typescript
+import Common from '@ethereumjs/common'
+const common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [ 3529 ] })
+```
+
+### Bug Fixes
+
+- Fixed a bug for `Common.hardforkGteHardfork()` and `Common.gteHardfork()` now evaluating to `true` if the HF provided as the `gteHardfork` part is not known by the chain, PR [#1148](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1148)
+- Fixed `mainnet` berlin fork hash `0xeb440f6` -> `0x0eb440f6`, PR [#1148](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1148)
+- Fixed fork hash calculation in `Common._calcForkHash()` for fork hashes with a leading zero, PR [#1148](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1148)
+
+### Other Changes
+
+- Added `london` HF option, PR [#1148](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1148)
+- Added `baikal` test network (preparatory `london` network), PR [#1249](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1249)
+- Added `aleut` test network (preparatory `london` network, retired), PR [#1221](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1221)
+
 ## 2.2.0 - 2021-03-18
 
 ### Berlin HF Support
