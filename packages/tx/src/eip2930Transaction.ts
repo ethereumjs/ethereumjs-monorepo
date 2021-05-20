@@ -263,8 +263,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
     const msgHash = this.getMessageToVerifySignature()
 
-    // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
-    // TODO: verify if this is the case for EIP-2930
+    // EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
+    // Reasoning: https://ethereum.stackexchange.com/a/55728
     if (this.common.gteHardfork('homestead') && this.s?.gt(N_DIV_2)) {
       throw new Error(
         'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'

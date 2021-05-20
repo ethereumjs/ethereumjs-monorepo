@@ -136,6 +136,10 @@ tape('[TransactionFactory]: Basic functions', function (t) {
     st.throws(() => {
       TransactionFactory.fromTxData({ type: 1 })
     })
+
+    st.throws(() => {
+      TransactionFactory.fromTxData({ type: 999 })
+    })
     st.end()
   })
 
