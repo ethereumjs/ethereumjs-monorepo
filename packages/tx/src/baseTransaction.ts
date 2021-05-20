@@ -160,7 +160,7 @@ export abstract class BaseTransaction<TransactionObject> {
    *
    * @param hashMessage - Return hashed message if set to true (default: true)
    */
-  abstract getMessageToSign(hashMessage: false): Buffer[]
+  abstract getMessageToSign(hashMessage: false): Buffer | Buffer[]
   abstract getMessageToSign(hashMessage?: true): Buffer
 
   abstract hash(): Buffer
