@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 3.2.0 - 2021-05-26
 
-### Berlin HF Support
+### London HF Support
 
 This `Tx` release comes with full support for the `london` hardfork. There is a new [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction type `FeeMarketEIP1559Transaction` (type `2`) added together with the new data types `FeeMarketEIP1559TxData` (for instantiation with the `fromTxData()` static constructor method) and `FeeMarketEIP1559ValuesArray` (for instantiation with `fromValuesArray()`), see PR [#1148](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1148) for the main implementation work.
 

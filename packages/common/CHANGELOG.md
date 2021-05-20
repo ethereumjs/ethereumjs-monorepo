@@ -22,6 +22,7 @@ const common = new Common({ chain: 'mainnet', hardfork: 'london' })
 Common now supports settings for the following additional EIPs:
 
 - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559): Fee market change for ETH 1.0 chain, PR [#1148](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1148)
+- [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198): BASEFEE opcode, PR [#1148](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1148)
 - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529): Reduction in refunds, PR [#1239](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1239)
 - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541): Reject new contracts starting with the 0xEF byte, PR [#1240](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1240)
 - [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554): Difficulty Bomb Delay to December 2021 (only PoW networks), PR [#1245](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1245)

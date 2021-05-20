@@ -6,6 +6,69 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.4.0 - 2021-05-26
+
+### London HF Support
+
+This `VM` release comes with full support for the `london` hardfork. Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `VM` with the `london` HF activated:
+
+```typescript
+import VM from '@ethereumjs/vm'
+import Common from '@ethereumjs/common'
+const common = new Common({ chain: 'mainnet', hardfork: 'london' })
+const vm = new VM({ common })
+```
+
+Support for the following EIPs has been added:
+
+- [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559): Fee market change for ETH 1.0 chain, PR [#1148](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1148)
+- [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198): BASEFEE opcode, PR [#1148](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1148)
+- [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529): Reduction in refunds, PR [#1239](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1239)
+- [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541): Reject new contracts starting with the 0xEF byte, PR [#1240](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1240)
+
+It is also possible to run these EIPs in isolation by instantiating a `berlin` common and activate selected EIPs with the `eips` option:
+
+```typescript
+const common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [ 3529 ] })
+```
+
+#### EIP-1559: Gas Fee Market
+
+The VM can now run `EIP-1559` compatible blocks (introduced with the `@ethereumjs/block` `v3.3.0` release) with `VM.runBlocks()` as well as `EIP-1559` txs with type `2` (introduced along the `@ethereumjs/tx` `v3.2.0` release), which can now be passed to `VM.runTx()` as the tx to be executed. Block and tx validation is happening accordingly and the gas calculation takes the new gas fee market parameters from the block (`baseFeePerGas`) and the tx(s) (`maxFeePerGas` and `maxPriorityFeePerGas` instead of a `gasPrice`) into account.
+
+#### EIP-3198: BASEFEE Opcode
+
+There is a new opcode `BASEFEE` added to the VM, see PR [#1148](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1148). This opcode is active starting with `london` and returns the base fee of the current executed upon block.
+
+#### EIP-3529: Reduction in Refunds
+
+`EIP-3529` removes gas refunds for `SELFDESTRUCT`, and reduces gas refunds for `SSTORE`, an implementation has been done in PR [#1239](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1239). 
+
+#### EIP-3541: Reject new Contracts with the 0xEF Byte
+
+There is a new EVM Object Format (EOF) in preparation which will allow to validate contracts at deploy time. This EIP is a preparation for the introduction of this format and disallows contracts which start with the `0xEF` byte. Contracts created in the VM via create transaction, `CREATE` or `CREATE2` starting with this byte are now rejected when the EIP is activated and an `INVALID_BYTECODE_RESULT` is returned as an EVM error with the result, see PR [#1240](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1240). 
+
+### StateManager: Preserve State History
+
+This VM release bumps the `merkle-patricia-tree` dependeny to `v4.2.0`, which is used as a datastore for the default `StateManager` implementation. The new MPT version switches to a default behavior to not delete any trie nodes on checkpoint commits, which has implications on the `StateManager.commit()` function which internally calls the MPT commit. This allows to go back to older trie states by setting a new (old) state root with `StateManager.setStateRoot()`. The trie state is now guaranteed to still be consistent and complete, which has not been the case before and lead to erraneous behaviour in certain usage scenarios (e.g. reported by HardHat).
+
+See PR [#1262](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1262)
+
+### Error Handling: Correct Non-VM Error Propagation
+
+In former versions of the VM non-VM errors happing inside the VM have been (unintentionally) shielded by a `try / catch` clause in the VM `Interpreter` class. This lead to existing bugs being hidden and channeled through as VM errors, which made it extremely difficult to trace such bugs down to the root cause. These kind of errors are now properly propagated and therefore lead to a break of the VM control flow. Please note that this might lead to your code breaking *if* you have got an error in your implementation (this should be a good this though since now this bug can finally be fixed 😀 ).
+
+See PR [#1168](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1168)
+
+### Bug Fixes
+
+- StateManager: fixed buffer comparison in `setStateRoot()`, PR [#1212](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1212)
+
+### Other Changes
+
+- New `blockGasUsed` option for `VM.runTx()` allowing to provide the block gas used up until the tx to be executed to obtain an accurate tx receipt, PR [#1264](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1264)
+- `StateManager.getStateRoot()` is not throwing any more on uncommitted checkpoints, PR [#1216](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1216)
+
 ## 5.3.2 - 2021-04-12
 
 This is a hot-fix performance release, removing the `debug` functionality from PR [#1080](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1080) and follow-up PRs. While highly useful for debugging, this feature side-introduced a siginficant reduction in VM performance which went along unnoticed. For now we will remove since upstream dependencies are awaiting a new release before the `Belin` HF happening. We will try to re-introduce in a performance friendly manner in some subsequent release (we cannot promise on that though).
