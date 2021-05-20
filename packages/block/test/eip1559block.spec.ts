@@ -59,11 +59,10 @@ tape('EIP1559 tests', function (t) {
       const expectedError = 'A base fee for a block can only be set with EIP1559 being activated'
       st.ok(e.message.includes(expectedError), 'should throw with EIP1559 not being activated')
     }
-
     st.end()
   })
 
-  t.test('Header-> validate()', async function (st) {
+  t.test('Header -> validate()', async function (st) {
     const header = BlockHeader.fromHeaderData(
       {
         number: new BN(1),
@@ -74,6 +73,7 @@ tape('EIP1559 tests', function (t) {
       {
         calcDifficultyFromHeader: genesis.header,
         common,
+        freeze: false,
       }
     )
 
@@ -81,8 +81,50 @@ tape('EIP1559 tests', function (t) {
       await header.validate(blockchain1)
       st.fail('should throw')
     } catch (e) {
-      st.ok(e.message.includes('base fee'), 'should throw if base fee is not defined')
+      const expectedError = 'Initial EIP1559 block does not have initial base fee'
+      st.ok(
+        e.message.includes(expectedError),
+        'should throw if base fee is not set to initial value'
+      )
     }
+
+    try {
+      // eslint-disable-next-line no-extra-semi
+      ;(header as any).baseFeePerGas = undefined
+      await header.validate(blockchain1)
+    } catch (e) {
+      const expectedError = 'EIP1559 block has no base fee field'
+      st.ok(
+        e.message.includes(expectedError),
+        'should throw with no base fee field when EIP1559 is activated'
+      )
+    }
+
+    // eslint-disable-next-line no-extra-semi
+    ;(header as any).baseFeePerGas = new BN(7) // reset for next test
+    const block = Block.fromBlockData({ header }, { common })
+    try {
+      const blockchain = Object.create(blockchain1)
+      await blockchain.putBlock(block)
+      const header = BlockHeader.fromHeaderData(
+        {
+          number: new BN(2),
+          parentHash: block.hash(),
+          gasLimit: block.header.gasLimit,
+          timestamp: new BN(10),
+          baseFeePerGas: new BN(1000),
+        },
+        {
+          calcDifficultyFromHeader: block.header,
+          common,
+        }
+      )
+      await header.validate(blockchain)
+    } catch (e) {
+      const expectedError = 'Invalid block: base fee not correct'
+      st.ok(e.message.includes(expectedError), 'should throw when base fee is not correct')
+    }
+
     st.end()
   })
 
@@ -436,6 +478,23 @@ tape('EIP1559 tests', function (t) {
       const expected = new BN(item.expectedBaseFee)
       st.ok(expected.eq(result), 'base fee correct')
     }
+    st.end()
+  })
+
+  t.test('Header -> toJSON()', function (st) {
+    const header = BlockHeader.fromHeaderData(
+      {
+        number: new BN(1),
+        parentHash: genesis.hash(),
+        timestamp: new BN(1),
+        gasLimit: genesis.header.gasLimit,
+        baseFeePerGas: new BN(5),
+      },
+      {
+        common,
+      }
+    )
+    st.equal(header.toJSON().baseFee, '0x5')
     st.end()
   })
 })
