@@ -1,9 +1,14 @@
-[@ethereumjs/blockchain](README.md)
+@ethereumjs/blockchain
 
 # @ethereumjs/blockchain
 
-## Index
+## Table of contents
 
-### Modules
+### Classes
 
-* ["index"](modules/_index_.md)
+- [default](classes/default.md)
+
+### Interfaces
+
+- [BlockchainInterface](interfaces/blockchaininterface.md)
+- [BlockchainOptions](interfaces/blockchainoptions.md)
