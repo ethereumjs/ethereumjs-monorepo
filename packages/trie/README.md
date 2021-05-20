@@ -20,7 +20,7 @@ The only backing store supported is LevelDB through the `levelup` module.
 
 There are 3 variants of the tree implemented in this library, namely: `BaseTrie`, `CheckpointTrie` and `SecureTrie`. `CheckpointTrie` adds checkpointing functionality to the `BaseTrie` with the methods `checkpoint`, `commit` and `revert`. `SecureTrie` extends `CheckpointTrie` and is the most suitable variant for Ethereum applications. It stores values under the `keccak256` hash of their keys.
 
-By default trie nodes are not deleted from the underlying DB to not corrupt older trie states. If you are only interested in the latest state of a trie you can swithch to a delete behavior (e.g. if you want to safe disk space) by using the `deleteFromDB` constructor option (all since `v4.2.0`, see related release notes for details).
+By default trie nodes are not deleted from the underlying DB to not corrupt older trie states (as of v4.2.0`). If you are only interested in the latest state of a trie you can switch to a delete behavior (e.g. if you want to save disk space) by using the `deleteFromDB` constructor option (see related release notes in the changelog for more details).
 
 ## Initialization and Basic Usage
 
