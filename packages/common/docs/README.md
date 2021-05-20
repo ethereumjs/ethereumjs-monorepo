@@ -1,11 +1,11 @@
-[@ethereumjs/common](README.md)
+@ethereumjs/common
 
 # @ethereumjs/common
 
-## Index
+## Table of contents
 
 ### Modules
 
-* ["genesisStates/index"](modules/_genesisstates_index_.md)
-* ["index"](modules/_index_.md)
-* ["types"](modules/_types_.md)
+- [genesisStates](modules/genesisstates.md)
+- [index](modules/index.md)
+- [types](modules/types.md)
