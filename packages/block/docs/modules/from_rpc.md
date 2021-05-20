@@ -16,13 +16,13 @@
 
 Creates a new block object from Ethereum JSON RPC.
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`blockParams` | *any* | Ethereum JSON RPC of block (eth_getBlockByNumber)   |
-`uncles` | *any*[] | Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)   |
-`options?` | [*BlockOptions*](../interfaces/types.blockoptions.md) | - |
+| Name | Type | Default value | Description |
+| :------ | :------ | :------ | :------ |
+| `blockParams` | *any* | - | Ethereum JSON RPC of block (eth_getBlockByNumber) |
+| `uncles` | *any*[] | [] | Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex) |
+| `options?` | [*BlockOptions*](../interfaces/types.blockoptions.md) | - | - |
 
 **Returns:** [*Block*](../classes/block.block-1.md)
 

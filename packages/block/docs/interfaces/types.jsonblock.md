@@ -22,7 +22,7 @@ An object with the block's data represented as strings.
 
 Header data for the block
 
-Defined in: [types.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L116)
+Defined in: [types.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L117)
 
 ___
 
@@ -30,7 +30,7 @@ ___
 
 • `Optional` **transactions**: JsonTx[]
 
-Defined in: [types.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L117)
+Defined in: [types.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L118)
 
 ___
 
@@ -38,4 +38,4 @@ ___
 
 • `Optional` **uncleHeaders**: [*JsonHeader*](types.jsonheader.md)[]
 
-Defined in: [types.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L118)
+Defined in: [types.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L119)

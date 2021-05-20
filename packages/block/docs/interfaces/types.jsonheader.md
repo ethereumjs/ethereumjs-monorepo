@@ -10,6 +10,7 @@ An object with the block header's data represented as strings.
 
 ### Properties
 
+- [baseFee](types.jsonheader.md#basefee)
 - [bloom](types.jsonheader.md#bloom)
 - [coinbase](types.jsonheader.md#coinbase)
 - [difficulty](types.jsonheader.md#difficulty)
@@ -28,11 +29,19 @@ An object with the block header's data represented as strings.
 
 ## Properties
 
+### baseFee
+
+• `Optional` **baseFee**: *string*
+
+Defined in: [types.ts:141](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L141)
+
+___
+
 ### bloom
 
 • `Optional` **bloom**: *string*
 
-Defined in: [types.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L131)
+Defined in: [types.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L132)
 
 ___
 
@@ -40,7 +49,7 @@ ___
 
 • `Optional` **coinbase**: *string*
 
-Defined in: [types.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L127)
+Defined in: [types.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L128)
 
 ___
 
@@ -48,7 +57,7 @@ ___
 
 • `Optional` **difficulty**: *string*
 
-Defined in: [types.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L132)
+Defined in: [types.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L133)
 
 ___
 
@@ -56,7 +65,7 @@ ___
 
 • `Optional` **extraData**: *string*
 
-Defined in: [types.ts:137](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L137)
+Defined in: [types.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L138)
 
 ___
 
@@ -64,7 +73,7 @@ ___
 
 • `Optional` **gasLimit**: *string*
 
-Defined in: [types.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L134)
+Defined in: [types.ts:135](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L135)
 
 ___
 
@@ -72,7 +81,7 @@ ___
 
 • `Optional` **gasUsed**: *string*
 
-Defined in: [types.ts:135](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L135)
+Defined in: [types.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L136)
 
 ___
 
@@ -80,7 +89,7 @@ ___
 
 • `Optional` **mixHash**: *string*
 
-Defined in: [types.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L138)
+Defined in: [types.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L139)
 
 ___
 
@@ -88,7 +97,7 @@ ___
 
 • `Optional` **nonce**: *string*
 
-Defined in: [types.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L139)
+Defined in: [types.ts:140](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L140)
 
 ___
 
@@ -96,7 +105,7 @@ ___
 
 • `Optional` **number**: *string*
 
-Defined in: [types.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L133)
+Defined in: [types.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L134)
 
 ___
 
@@ -104,7 +113,7 @@ ___
 
 • `Optional` **parentHash**: *string*
 
-Defined in: [types.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L125)
+Defined in: [types.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L126)
 
 ___
 
@@ -112,7 +121,7 @@ ___
 
 • `Optional` **receiptTrie**: *string*
 
-Defined in: [types.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L130)
+Defined in: [types.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L131)
 
 ___
 
@@ -120,7 +129,7 @@ ___
 
 • `Optional` **stateRoot**: *string*
 
-Defined in: [types.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L128)
+Defined in: [types.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L129)
 
 ___
 
@@ -128,7 +137,7 @@ ___
 
 • `Optional` **timestamp**: *string*
 
-Defined in: [types.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L136)
+Defined in: [types.ts:137](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L137)
 
 ___
 
@@ -136,7 +145,7 @@ ___
 
 • `Optional` **transactionsTrie**: *string*
 
-Defined in: [types.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L129)
+Defined in: [types.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L130)
 
 ___
 
@@ -144,4 +153,4 @@ ___
 
 • `Optional` **uncleHash**: *string*
 
-Defined in: [types.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L126)
+Defined in: [types.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L127)

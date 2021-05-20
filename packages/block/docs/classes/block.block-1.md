@@ -51,18 +51,18 @@ An object that represents the block.
 This constructor takes the values, validates them, assigns them and freezes the object.
 Use the static factory methods to assist in creating a Block object from varying data types and options.
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`header?` | [*BlockHeader*](header.blockheader.md) |
-`transactions` | TypedTransaction[] |
-`uncleHeaders` | [*BlockHeader*](header.blockheader.md)[] |
-`opts` | [*BlockOptions*](../interfaces/types.blockoptions.md) |
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `header?` | [*BlockHeader*](header.blockheader.md) | - |
+| `transactions` | TypedTransaction[] | [] |
+| `uncleHeaders` | [*BlockHeader*](header.blockheader.md)[] | [] |
+| `opts` | [*BlockOptions*](../interfaces/types.blockoptions.md) | {} |
 
 **Returns:** [*Block*](block.block-1.md)
 
-Defined in: [block.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L125)
+Defined in: [block.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L131)
 
 ## Properties
 
@@ -70,7 +70,7 @@ Defined in: [block.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 • `Readonly` **\_common**: *default*
 
-Defined in: [block.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L18)
+Defined in: [block.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L24)
 
 ___
 
@@ -78,15 +78,15 @@ ___
 
 • `Readonly` **header**: [*BlockHeader*](header.blockheader.md)
 
-Defined in: [block.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L14)
+Defined in: [block.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L20)
 
 ___
 
 ### transactions
 
-• `Readonly` **transactions**: TypedTransaction[]
+• `Readonly` **transactions**: TypedTransaction[]= []
 
-Defined in: [block.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L15)
+Defined in: [block.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L21)
 
 ___
 
@@ -94,15 +94,15 @@ ___
 
 • `Readonly` **txTrie**: *Trie*
 
-Defined in: [block.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L17)
+Defined in: [block.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L23)
 
 ___
 
 ### uncleHeaders
 
-• `Readonly` **uncleHeaders**: [*BlockHeader*](header.blockheader.md)[]
+• `Readonly` **uncleHeaders**: [*BlockHeader*](header.blockheader.md)[]= []
 
-Defined in: [block.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L16)
+Defined in: [block.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L22)
 
 ## Methods
 
@@ -112,15 +112,15 @@ Defined in: [block.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 Returns the canonical difficulty for this block.
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`parentBlock` | [*Block*](block.block-1.md) | the parent of this `Block`    |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `parentBlock` | [*Block*](block.block-1.md) | the parent of this `Block` |
 
 **Returns:** *BN*
 
-Defined in: [block.ts:327](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L327)
+Defined in: [block.ts:345](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L345)
 
 ___
 
@@ -132,7 +132,7 @@ Generates transaction trie for validation.
 
 **Returns:** *Promise*<void\>
 
-Defined in: [block.ts:188](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L188)
+Defined in: [block.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L194)
 
 ___
 
@@ -144,7 +144,7 @@ Produces a hash the RLP of the block.
 
 **Returns:** *Buffer*
 
-Defined in: [block.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L167)
+Defined in: [block.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L173)
 
 ___
 
@@ -156,7 +156,7 @@ Determines if this block is the genesis block.
 
 **Returns:** *boolean*
 
-Defined in: [block.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L174)
+Defined in: [block.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L180)
 
 ___
 
@@ -168,7 +168,7 @@ Returns a Buffer Array of the raw Buffers of this block, in order.
 
 **Returns:** [*BlockBuffer*](../modules/types.md#blockbuffer)
 
-Defined in: [block.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L154)
+Defined in: [block.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L160)
 
 ___
 
@@ -180,7 +180,7 @@ Returns the rlp encoding of the block.
 
 **Returns:** *Buffer*
 
-Defined in: [block.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L181)
+Defined in: [block.ts:187](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L187)
 
 ___
 
@@ -192,7 +192,7 @@ Returns the block in JSON format.
 
 **Returns:** [*JsonBlock*](../interfaces/types.jsonblock.md)
 
-Defined in: [block.ts:353](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L353)
+Defined in: [block.ts:371](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L371)
 
 ___
 
@@ -209,15 +209,15 @@ Performs the following consistency checks on the block:
 
 Throws if invalid.
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`blockchain` | [*Blockchain*](../interfaces/types.blockchain.md) | validate against a @ethereumjs/blockchain    |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `blockchain` | [*Blockchain*](../interfaces/types.blockchain.md) | validate against a @ethereumjs/blockchain |
 
 **Returns:** *Promise*<void\>
 
-Defined in: [block.ts:249](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L249)
+Defined in: [block.ts:267](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L267)
 
 ___
 
@@ -234,7 +234,7 @@ It checks:
 
 **Returns:** *Promise*<void\>
 
-Defined in: [block.ts:262](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L262)
+Defined in: [block.ts:280](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L280)
 
 ___
 
@@ -244,15 +244,15 @@ ___
 
 Checks that the block's `difficulty` matches the canonical difficulty.
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`parentBlock` | [*Block*](block.block-1.md) | the parent of this `Block`    |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `parentBlock` | [*Block*](block.block-1.md) | the parent of this `Block` |
 
 **Returns:** *boolean*
 
-Defined in: [block.ts:336](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L336)
+Defined in: [block.ts:354](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L354)
 
 ___
 
@@ -263,15 +263,15 @@ ___
 Validates if the block gasLimit remains in the
 boundaries set by the protocol.
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`parentBlock` | [*Block*](block.block-1.md) | the parent of this `Block`    |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `parentBlock` | [*Block*](block.block-1.md) | the parent of this `Block` |
 
 **Returns:** *boolean*
 
-Defined in: [block.ts:346](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L346)
+Defined in: [block.ts:364](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L364)
 
 ___
 
@@ -283,31 +283,31 @@ Validates transaction signatures and minimum gas requirements.
 
 **Returns:** *boolean*
 
-Defined in: [block.ts:221](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L221)
+Defined in: [block.ts:227](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L227)
 
-▸ **validateTransactions**(`stringError`: *false*): *boolean*
+▸ **validateTransactions**(`stringError`: ``false``): *boolean*
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`stringError` | *false* |
+| Name | Type |
+| :------ | :------ |
+| `stringError` | ``false`` |
 
 **Returns:** *boolean*
 
-Defined in: [block.ts:222](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L222)
+Defined in: [block.ts:228](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L228)
 
-▸ **validateTransactions**(`stringError`: *true*): *string*[]
+▸ **validateTransactions**(`stringError`: ``true``): *string*[]
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`stringError` | *true* |
+| Name | Type |
+| :------ | :------ |
+| `stringError` | ``true`` |
 
 **Returns:** *string*[]
 
-Defined in: [block.ts:223](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L223)
+Defined in: [block.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L229)
 
 ___
 
@@ -320,7 +320,7 @@ and do a check on the root hash.
 
 **Returns:** *Promise*<boolean\>
 
-Defined in: [block.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L202)
+Defined in: [block.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L208)
 
 ___
 
@@ -341,15 +341,15 @@ Uncle Header is not already included as uncle in another block.
 Header has at most 2 uncles.
 Header does not count an uncle twice.
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`blockchain` | [*Blockchain*](../interfaces/types.blockchain.md) | additionally validate against an @ethereumjs/blockchain instance    |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `blockchain` | [*Blockchain*](../interfaces/types.blockchain.md) | additionally validate against an @ethereumjs/blockchain instance |
 
 **Returns:** *Promise*<void\>
 
-Defined in: [block.ts:303](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L303)
+Defined in: [block.ts:321](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L321)
 
 ___
 
@@ -361,80 +361,80 @@ Validates the uncle's hash.
 
 **Returns:** *boolean*
 
-Defined in: [block.ts:282](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L282)
+Defined in: [block.ts:300](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L300)
 
 ___
 
 ### fromBlockData
 
-▸ `Static`**fromBlockData**(`blockData?`: [*BlockData*](../interfaces/types.blockdata.md), `opts?`: [*BlockOptions*](../interfaces/types.blockoptions.md)): [*Block*](block.block-1.md)
+▸ `Static` **fromBlockData**(`blockData?`: [*BlockData*](../interfaces/types.blockdata.md), `opts?`: [*BlockOptions*](../interfaces/types.blockoptions.md)): [*Block*](block.block-1.md)
 
 Static constructor to create a block from a block data dictionary
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`blockData` | [*BlockData*](../interfaces/types.blockdata.md) |
-`opts?` | [*BlockOptions*](../interfaces/types.blockoptions.md) |
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `blockData` | [*BlockData*](../interfaces/types.blockdata.md) | {} |
+| `opts?` | [*BlockOptions*](../interfaces/types.blockoptions.md) | - |
 
 **Returns:** [*Block*](block.block-1.md)
 
-Defined in: [block.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L26)
+Defined in: [block.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L32)
 
 ___
 
 ### fromRLPSerializedBlock
 
-▸ `Static`**fromRLPSerializedBlock**(`serialized`: *Buffer*, `opts?`: [*BlockOptions*](../interfaces/types.blockoptions.md)): [*Block*](block.block-1.md)
+▸ `Static` **fromRLPSerializedBlock**(`serialized`: *Buffer*, `opts?`: [*BlockOptions*](../interfaces/types.blockoptions.md)): [*Block*](block.block-1.md)
 
 Static constructor to create a block from a RLP-serialized block
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`serialized` | *Buffer* |
-`opts?` | [*BlockOptions*](../interfaces/types.blockoptions.md) |
+| Name | Type |
+| :------ | :------ |
+| `serialized` | *Buffer* |
+| `opts?` | [*BlockOptions*](../interfaces/types.blockoptions.md) |
 
 **Returns:** [*Block*](block.block-1.md)
 
-Defined in: [block.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L65)
+Defined in: [block.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L71)
 
 ___
 
 ### fromValuesArray
 
-▸ `Static`**fromValuesArray**(`values`: [*BlockBuffer*](../modules/types.md#blockbuffer), `opts?`: [*BlockOptions*](../interfaces/types.blockoptions.md)): [*Block*](block.block-1.md)
+▸ `Static` **fromValuesArray**(`values`: [*BlockBuffer*](../modules/types.md#blockbuffer), `opts?`: [*BlockOptions*](../interfaces/types.blockoptions.md)): [*Block*](block.block-1.md)
 
 Static constructor to create a block from an array of Buffer values
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`values` | [*BlockBuffer*](../modules/types.md#blockbuffer) |
-`opts?` | [*BlockOptions*](../interfaces/types.blockoptions.md) |
+| Name | Type |
+| :------ | :------ |
+| `values` | [*BlockBuffer*](../modules/types.md#blockbuffer) |
+| `opts?` | [*BlockOptions*](../interfaces/types.blockoptions.md) |
 
 **Returns:** [*Block*](block.block-1.md)
 
-Defined in: [block.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L81)
+Defined in: [block.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L87)
 
 ___
 
 ### genesis
 
-▸ `Static`**genesis**(`blockData?`: [*BlockData*](../interfaces/types.blockdata.md), `opts?`: [*BlockOptions*](../interfaces/types.blockoptions.md)): [*Block*](block.block-1.md)
+▸ `Static` **genesis**(`blockData?`: [*BlockData*](../interfaces/types.blockdata.md), `opts?`: [*BlockOptions*](../interfaces/types.blockoptions.md)): [*Block*](block.block-1.md)
 
 Alias for Block.fromBlockData() with initWithGenesisHeader set to true.
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`blockData` | [*BlockData*](../interfaces/types.blockdata.md) |
-`opts?` | [*BlockOptions*](../interfaces/types.blockoptions.md) |
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `blockData` | [*BlockData*](../interfaces/types.blockdata.md) | {} |
+| `opts?` | [*BlockOptions*](../interfaces/types.blockoptions.md) | - |
 
 **Returns:** [*Block*](block.block-1.md)
 
-Defined in: [block.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L122)
+Defined in: [block.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L128)
