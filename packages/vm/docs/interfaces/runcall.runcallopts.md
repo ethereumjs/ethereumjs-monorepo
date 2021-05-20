@@ -122,7 +122,7 @@ ___
 
 • `Optional` **selfdestruct**: *object*
 
-#### Type declaration:
+#### Type declaration
 
 Defined in: [runCall.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runCall.ts#L28)
 

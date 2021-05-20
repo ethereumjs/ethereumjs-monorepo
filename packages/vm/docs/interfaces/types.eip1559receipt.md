@@ -1,23 +1,23 @@
-[@ethereumjs/vm](../README.md) / [types](../modules/types.md) / EIP2930Receipt
+[@ethereumjs/vm](../README.md) / [types](../modules/types.md) / EIP1559Receipt
 
-# Interface: EIP2930Receipt
+# Interface: EIP1559Receipt
 
-[types](../modules/types.md).EIP2930Receipt
+[types](../modules/types.md).EIP1559Receipt
 
 ## Hierarchy
 
 - [*PostByzantiumTxReceipt*](types.postbyzantiumtxreceipt.md)
 
-  ↳ **EIP2930Receipt**
+  ↳ **EIP1559Receipt**
 
 ## Table of contents
 
 ### Properties
 
-- [bitvector](types.eip2930receipt.md#bitvector)
-- [gasUsed](types.eip2930receipt.md#gasused)
-- [logs](types.eip2930receipt.md#logs)
-- [status](types.eip2930receipt.md#status)
+- [bitvector](types.eip1559receipt.md#bitvector)
+- [gasUsed](types.eip1559receipt.md#gasused)
+- [logs](types.eip1559receipt.md#logs)
+- [status](types.eip1559receipt.md#status)
 
 ## Properties
 
