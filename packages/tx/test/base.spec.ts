@@ -1,6 +1,11 @@
 import tape from 'tape'
 import Common from '@ethereumjs/common'
-import { Transaction, AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '../src'
+import {
+  Transaction,
+  AccessListEIP2930Transaction,
+  FeeMarketEIP1559Transaction,
+  N_DIV_2,
+} from '../src'
 import { TxsJsonEntry } from './types'
 import { BaseTransaction } from '../src/baseTransaction'
 import { privateToPublic, BN, toBuffer } from 'ethereumjs-util'
@@ -234,6 +239,28 @@ tape('[BaseTransaction]', function (t) {
     }
     st.end()
   })
+
+  t.test(
+    'getSenderPublicKey() -> should throw if s-value is greater than secp256k1n/2',
+    function (st) {
+      // EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
+      // Reasoning: https://ethereum.stackexchange.com/a/55728
+      for (const txType of txTypes) {
+        txType.txs.forEach(function (tx: any, i: number) {
+          const { privateKey } = txType.fixtures[i]
+          if (privateKey) {
+            let signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
+            signedTx = JSON.parse(JSON.stringify(signedTx)) // deep clone
+            ;(signedTx as any).s = N_DIV_2.addn(1)
+            st.throws(() => {
+              signedTx.getSenderPublicKey()
+            }, 'should throw when s-value is greater than secp256k1n/2')
+          }
+        })
+      }
+      st.end()
+    }
+  )
 
   t.test('verifySignature()', function (st) {
     for (const txType of txTypes) {
