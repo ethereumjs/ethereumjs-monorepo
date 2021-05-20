@@ -17,6 +17,8 @@ Note: this `README` reflects the state of the library from `v3.0.0` onwards. See
 
 # USAGE
 
+## Introduction
+
 There are three static factories to instantiate a `Block`:
 
 - `Block.fromBlockData(blockData: BlockData = {}, opts?: BlockOptions)`
@@ -53,15 +55,31 @@ try {
 }
 ```
 
-# API
+## EIP-1559 Blocks
 
-[Documentation](./docs/README.md)
+This library supports the creation of [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) compatible blocks starting with `v3.3.0`.
 
-# CONSENSUS TYPES
+To instantiate an EIP-1559 block the hardfork parameter on the `Common` instance needs to be explicitly set to `london` (default is still `istanbul`):
+
+```typescript
+import { Block } from 'ethereumjs-block'
+import Common from '@ethereumjs/common'
+const common = new Common({ chain: 'mainnet', hardfork: 'london' })
+const block = Block.fromBlockData({
+  header: {
+    //...,
+    baseFeePerGas: new BN(10),
+  }
+}, { common })
+```
+
+EIP-1559 blocks have an extra `baseFeePerGas` field (default: `new BN(7)`) and can encompass `FeeMarketEIP1559Transaction` txs (type `2`) (supported by `@ethereumjs/tx` `v3.2.0` or higher) as well as  `Transaction` legacy txs (internal type `0`) and `AccessListEIP2930Transaction` txs (type `1`).
+
+## Consensus Types
 
 The block library supports the creation as well as format and consensus validation of PoW `ethash` and PoA `clique` blocks.
 
-## Ethash/PoW
+### Ethash/PoW
 
 An Ethash/PoW block can be instantiated as follows:
 
@@ -78,7 +96,7 @@ To validate that the difficulty of the block matches the canonical difficulty us
 
 To calculate the difficulty when creating the block pass in the block option `calcDifficultyFromHeader` with the preceding (parent) `BlockHeader`.
 
-## Clique/PoA (since v3.1.0)
+### Clique/PoA (since v3.1.0)
 
 A clique block can be instantiated as follows:
 
@@ -112,6 +130,10 @@ Additionally there are the following utility methods for Clique/PoA related func
 - `BlockHeader.cliqueSigner(): Address`
 
 See the API docs for detailed documentation. Note that these methods will throw if called in a non-Clique/PoA context.
+
+# API
+
+[Documentation](./docs/README.md)
 
 # TESTING
 
