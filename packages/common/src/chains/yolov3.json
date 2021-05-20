@@ -77,6 +77,11 @@
           "name": "berlin",
           "block": 0,
           "forkHash": "0xa308affe"
+        }, 
+        {
+          "name": "london",
+          "block": null, 
+          "forkHash": null
         }
       ],
       "bootstrapNodes": [

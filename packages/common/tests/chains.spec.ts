@@ -1,7 +1,7 @@
 import tape from 'tape'
 import Common from '../src/'
 
-tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
+tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
   t.test('Should initialize with chain provided', function (st: tape.Test) {
     let c = new Common({ chain: 'mainnet' })
     st.equal(c.chainName(), 'mainnet', 'should initialize with chain name')

@@ -1,115 +1,170 @@
 import Common from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
 import tape from 'tape'
-import { AccessListEIP2930Transaction, TransactionFactory, Transaction } from '../src'
+import {
+  AccessListEIP2930Transaction,
+  TransactionFactory,
+  Transaction,
+  FeeMarketEIP1559Transaction,
+} from '../src'
 
-const EIP2930Common = new Common({
-  eips: [2718, 2929, 2930],
+const common = new Common({
   chain: 'mainnet',
-  hardfork: 'berlin',
+  hardfork: 'london',
 })
 
 const pKey = Buffer.from('4646464646464646464646464646464646464646464646464646464646464646', 'hex')
 
-const simpleUnsignedAccessListEIP2930Transaction = AccessListEIP2930Transaction.fromTxData(
+const unsignedTx = Transaction.fromTxData({})
+const signedTx = unsignedTx.sign(pKey)
+
+const unsignedEIP2930Tx = AccessListEIP2930Transaction.fromTxData(
   { chainId: new BN(1) },
-  { common: EIP2930Common }
+  { common }
 )
+const signedEIP2930Tx = unsignedEIP2930Tx.sign(pKey)
 
-const simpleUnsignedTransaction = Transaction.fromTxData({})
+const unsignedEIP1559Tx = FeeMarketEIP1559Transaction.fromTxData({ chainId: new BN(1) }, { common })
+const signedEIP1559Tx = unsignedEIP1559Tx.sign(pKey)
 
-const simpleSignedAccessListEIP2930Transaction = simpleUnsignedAccessListEIP2930Transaction.sign(
-  pKey
-)
-const simpleSignedTransaction = simpleUnsignedTransaction.sign(pKey)
+const txTypes = [
+  {
+    class: Transaction,
+    name: 'Transaction',
+    unsigned: unsignedTx,
+    signed: signedTx,
+    eip2718: false,
+    type: 0,
+  },
+  {
+    class: AccessListEIP2930Transaction,
+    name: 'AccessListEIP2930Transaction',
+    unsigned: unsignedEIP2930Tx,
+    signed: signedEIP2930Tx,
+    eip2718: true,
+    type: 1,
+  },
+  {
+    class: FeeMarketEIP1559Transaction,
+    name: 'FeeMarketEIP1559Transaction',
+    unsigned: unsignedEIP1559Tx,
+    signed: signedEIP1559Tx,
+    eip2718: true,
+    type: 2,
+  },
+]
 
 tape('[TransactionFactory]: Basic functions', function (t) {
-  t.test('should return the right type', function (st) {
-    const serialized = simpleUnsignedAccessListEIP2930Transaction.serialize()
-    const factoryTx = TransactionFactory.fromSerializedData(serialized, { common: EIP2930Common })
-    st.equals(factoryTx.constructor.name, AccessListEIP2930Transaction.name)
-
-    const legacyTx = Transaction.fromTxData({})
-    const serializedLegacyTx = legacyTx.serialize()
-    const factoryLegacyTx = TransactionFactory.fromSerializedData(serializedLegacyTx, {})
-    st.equals(factoryLegacyTx.constructor.name, Transaction.name)
-
+  t.test('fromSerializedData() -> success cases', function (st) {
+    for (const txType of txTypes) {
+      const serialized = txType.unsigned.serialize()
+      const factoryTx = TransactionFactory.fromSerializedData(serialized, { common })
+      st.equals(
+        factoryTx.constructor.name,
+        txType.class.name,
+        `should return the right type (${txType.name})`
+      )
+    }
     st.end()
   })
 
-  t.test(
-    'should throw when trying to create EIP-2718 typed transactions when not allowed in Common',
-    function (st) {
-      st.throws(() => {
-        TransactionFactory.fromSerializedData(
-          simpleUnsignedAccessListEIP2930Transaction.serialize(),
-          {}
+  t.test('fromSerializedData() -> error cases', function (st) {
+    for (const txType of txTypes) {
+      if (txType.eip2718) {
+        st.throws(() => {
+          TransactionFactory.fromSerializedData(txType.unsigned.serialize(), {})
+        }, `should throw when trying to create typed tx when not allowed in Common (${txType.name})`)
+
+        st.throws(() => {
+          const serialized = txType.unsigned.serialize()
+          serialized[0] = 99 // edit the transaction type
+          TransactionFactory.fromSerializedData(serialized, { common })
+        }, `should throw when trying to create typed tx with wrong type (${txType.name})`)
+      }
+    }
+    st.end()
+  })
+
+  t.test('fromBlockBodyData() -> success cases', function (st) {
+    for (const txType of txTypes) {
+      let rawTx
+      if (txType.eip2718) {
+        rawTx = txType.signed.serialize() as Buffer
+      } else {
+        rawTx = txType.signed.raw() as Buffer[]
+      }
+      const tx = TransactionFactory.fromBlockBodyData(rawTx, { common })
+      st.equals(tx.constructor.name, txType.name, `should return the right type (${txType.name})`)
+      if (txType.eip2718) {
+        st.deepEqual(
+          tx.serialize(),
+          rawTx,
+          `round-trip serialization should match (${txType.name})`
         )
-      })
-      st.end()
+      } else {
+        st.deepEqual(tx.raw(), rawTx, `round-trip raw() creation should match (${txType.name})`)
+      }
     }
-  )
-
-  t.test(
-    'should throw when trying to create EIP-2718 typed transactions when not allowed in Common',
-    function (st) {
-      st.throws(() => {
-        const serialized = simpleUnsignedAccessListEIP2930Transaction.serialize()
-        serialized[0] = 2 // edit the transaction type
-        TransactionFactory.fromSerializedData(serialized, { common: EIP2930Common })
-      })
-      st.end()
-    }
-  )
-
-  t.test('should give me the right classes in getTransactionClass', function (st) {
-    const legacyTx = TransactionFactory.getTransactionClass()
-    st.equals(legacyTx!.name, Transaction.name)
-
-    const eip2930Tx = TransactionFactory.getTransactionClass(1, EIP2930Common)
-    st.equals(eip2930Tx!.name, AccessListEIP2930Transaction.name)
-
     st.end()
   })
 
-  t.test('should throw when getting an invalid transaction type', function (st) {
-    st.throws(() => {
-      TransactionFactory.getTransactionClass(2, EIP2930Common)
-    })
-
-    st.end()
-  })
-
-  t.test('should throw when getting typed transactions without EIP-2718 activated', function (st) {
-    st.throws(() => {
-      TransactionFactory.getTransactionClass(1)
-    })
-    st.end()
-  })
-
-  t.test('should decode raw block body data', function (st) {
-    const rawLegacy = simpleSignedTransaction.raw()
-    const rawEIP2930 = simpleSignedAccessListEIP2930Transaction.serialize()
-
-    const legacyTx = TransactionFactory.fromBlockBodyData(rawLegacy)
-    const eip2930Tx = TransactionFactory.fromBlockBodyData(rawEIP2930, { common: EIP2930Common })
-
-    st.equals(legacyTx.constructor.name, Transaction.name)
-    st.equals(eip2930Tx.constructor.name, AccessListEIP2930Transaction.name)
-    st.end()
-  })
-
-  t.test('should create the right transaction types from tx data', function (st) {
-    const legacyTx = TransactionFactory.fromTxData({ type: 0 })
-    const legacyTx2 = TransactionFactory.fromTxData({})
-    const eip2930Tx = TransactionFactory.fromTxData({ type: 1 }, { common: EIP2930Common })
+  t.test('fromTxData() -> success cases', function (st) {
     st.throws(() => {
       TransactionFactory.fromTxData({ type: 1 })
     })
 
-    st.equals(legacyTx.constructor.name, Transaction.name)
-    st.equals(legacyTx2.constructor.name, Transaction.name)
-    st.equals(eip2930Tx.constructor.name, AccessListEIP2930Transaction.name)
+    for (const txType of txTypes) {
+      const tx = TransactionFactory.fromTxData({ type: txType.type }, { common })
+      st.equals(
+        tx.constructor.name,
+        txType.class.name,
+        `should return the right type (${txType.name})`
+      )
+      if (!txType.eip2718) {
+        const tx = TransactionFactory.fromTxData({})
+        st.equals(
+          tx.constructor.name,
+          txType.class.name,
+          `should return the right type (${txType.name})`
+        )
+      }
+    }
+    st.end()
+  })
+
+  t.test('fromTxData() -> error cases', function (st) {
+    st.throws(() => {
+      TransactionFactory.fromTxData({ type: 1 })
+    })
+
+    st.throws(() => {
+      TransactionFactory.fromTxData({ type: 999 })
+    })
+    st.end()
+  })
+
+  t.test('getTransactionClass() -> success cases', function (st) {
+    const legacyTx = TransactionFactory.getTransactionClass()
+    st.equals(legacyTx!.name, Transaction.name)
+
+    for (const txType of txTypes) {
+      if (!txType.eip2718) {
+        const tx = TransactionFactory.getTransactionClass(txType.type, common)
+        st.equals(tx.name, txType.class.name)
+      }
+    }
+    st.end()
+  })
+
+  t.test('getTransactionClass() -> error cases', function (st) {
+    st.throws(() => {
+      TransactionFactory.getTransactionClass(3, common)
+    }, 'should throw when getting an invalid transaction type')
+
+    st.throws(() => {
+      TransactionFactory.getTransactionClass(1)
+    }, 'should throw when getting typed transactions without EIP-2718 activated')
+
     st.end()
   })
 })

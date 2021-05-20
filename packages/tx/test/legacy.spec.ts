@@ -402,7 +402,7 @@ tape('[Transaction]', function (t) {
     tx = Transaction.fromSerializedTx(rawSigned)
     st.ok(tx.isSigned())
 
-    const signedValues = (rlp.decode(rawSigned) as any) as Buffer[]
+    const signedValues = rlp.decode(rawSigned) as any as Buffer[]
     tx = Transaction.fromValuesArray(signedValues)
     st.ok(tx.isSigned())
     tx = Transaction.fromValuesArray(signedValues.slice(0, 6))

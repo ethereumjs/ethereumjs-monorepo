@@ -65,8 +65,7 @@ tape('EIP 3541 tests', (t) => {
   t.test('deploy contracts starting with 0xEF using CREATE', async (st) => {
     // put 0xEF contract
     const tx = Transaction.fromTxData({
-      data:
-        '0x7F60EF60005360016000F300000000000000000000000000000000000000000000600052602060006000F000',
+      data: '0x7F60EF60005360016000F300000000000000000000000000000000000000000000600052602060006000F000',
       gasLimit: 1000000,
     }).sign(pkey)
 
@@ -87,8 +86,7 @@ tape('EIP 3541 tests', (t) => {
 
     // put 0xFF contract
     const tx1 = Transaction.fromTxData({
-      data:
-        '0x7F60FF60005360016000F300000000000000000000000000000000000000000000600052602060006000F000',
+      data: '0x7F60FF60005360016000F300000000000000000000000000000000000000000000600052602060006000F000',
       gasLimit: 1000000,
       nonce: 1,
     }).sign(pkey)
@@ -106,8 +104,7 @@ tape('EIP 3541 tests', (t) => {
   t.test('deploy contracts starting with 0xEF using CREATE2', async (st) => {
     // put 0xEF contract
     const tx = Transaction.fromTxData({
-      data:
-        '0x7F60EF60005360016000F3000000000000000000000000000000000000000000006000526000602060006000F500',
+      data: '0x7F60EF60005360016000F3000000000000000000000000000000000000000000006000526000602060006000F500',
       gasLimit: 1000000,
     }).sign(pkey)
 
@@ -128,8 +125,7 @@ tape('EIP 3541 tests', (t) => {
 
     // put 0xFF contract
     const tx1 = Transaction.fromTxData({
-      data:
-        '0x7F60FF60005360016000F3000000000000000000000000000000000000000000006000526000602060006000F500',
+      data: '0x7F60FF60005360016000F3000000000000000000000000000000000000000000006000526000602060006000F500',
       gasLimit: 1000000,
       nonce: 1,
     }).sign(pkey)
