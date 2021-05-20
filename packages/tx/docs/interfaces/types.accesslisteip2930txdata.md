@@ -4,13 +4,15 @@
 
 [types](../modules/types.md).AccessListEIP2930TxData
 
-An object with an optional field with each of the transaction's values.
+Access list EIP2930 tx data.
 
 ## Hierarchy
 
-* [*TxData*](../modules/types.md#txdata)
+- [*TxData*](../modules/types.md#txdata)
 
   ↳ **AccessListEIP2930TxData**
+
+  ↳↳ [*FeeMarketEIP1559TxData*](types.feemarketeip1559txdata.md)
 
 ## Table of contents
 
@@ -37,7 +39,7 @@ An object with an optional field with each of the transaction's values.
 
 The access list which contains the addresses/storage slots which the transaction wishes to access
 
-Defined in: [types.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L128)
+Defined in: [types.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L147)
 
 ___
 
@@ -47,7 +49,7 @@ ___
 
 The transaction's chain ID
 
-Defined in: [types.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L123)
+Defined in: [types.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L142)
 
 ___
 
@@ -57,9 +59,9 @@ ___
 
 This will contain the data of the message or the init of a contract.
 
-Inherited from: void
+Inherited from: TxData.data
 
-Defined in: [types.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L98)
+Defined in: [types.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L111)
 
 ___
 
@@ -69,9 +71,9 @@ ___
 
 The transaction's gas limit.
 
-Inherited from: void
+Inherited from: TxData.gasLimit
 
-Defined in: [types.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L83)
+Defined in: [types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L96)
 
 ___
 
@@ -81,9 +83,9 @@ ___
 
 The transaction's gas price.
 
-Inherited from: void
+Inherited from: TxData.gasPrice
 
-Defined in: [types.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L78)
+Defined in: [types.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L91)
 
 ___
 
@@ -93,9 +95,9 @@ ___
 
 The transaction's nonce.
 
-Inherited from: void
+Inherited from: TxData.nonce
 
-Defined in: [types.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L73)
+Defined in: [types.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L86)
 
 ___
 
@@ -105,9 +107,9 @@ ___
 
 EC signature parameter.
 
-Inherited from: void
+Inherited from: TxData.r
 
-Defined in: [types.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L108)
+Defined in: [types.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L121)
 
 ___
 
@@ -117,9 +119,9 @@ ___
 
 EC signature parameter.
 
-Inherited from: void
+Inherited from: TxData.s
 
-Defined in: [types.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L113)
+Defined in: [types.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L126)
 
 ___
 
@@ -129,9 +131,9 @@ ___
 
 The transaction's the address is sent to.
 
-Inherited from: void
+Inherited from: TxData.to
 
-Defined in: [types.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L88)
+Defined in: [types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L101)
 
 ___
 
@@ -141,7 +143,9 @@ ___
 
 The transaction type
 
-Defined in: [types.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L134)
+Inherited from: TxData.type
+
+Defined in: [types.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L132)
 
 ___
 
@@ -151,9 +155,9 @@ ___
 
 EC recovery ID.
 
-Inherited from: void
+Inherited from: TxData.v
 
-Defined in: [types.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L103)
+Defined in: [types.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L116)
 
 ___
 
@@ -163,6 +167,6 @@ ___
 
 The amount of Ether sent.
 
-Inherited from: void
+Inherited from: TxData.value
 
-Defined in: [types.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L93)
+Defined in: [types.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L106)

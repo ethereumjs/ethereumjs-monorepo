@@ -1,17 +1,12 @@
-[@ethereumjs/tx](../README.md) / [eip2930Transaction](../modules/eip2930transaction.md) / default
+[@ethereumjs/tx](../README.md) / [eip1559Transaction](../modules/eip1559transaction.md) / default
 
 # Class: default
 
-[eip2930Transaction](../modules/eip2930transaction.md).default
-
-Typed transaction with optional access lists
-
-- TransactionType: 1
-- EIP: [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930)
+[eip1559Transaction](../modules/eip1559transaction.md).default
 
 ## Hierarchy
 
-- [*BaseTransaction*](basetransaction.basetransaction-1.md)<[*default*](eip2930transaction.default.md)\>
+- [*BaseTransaction*](basetransaction.basetransaction-1.md)<[*default*](eip1559transaction.default.md)\>
 
   ↳ **default**
 
@@ -19,61 +14,62 @@ Typed transaction with optional access lists
 
 ### Constructors
 
-- [constructor](eip2930transaction.default.md#constructor)
+- [constructor](eip1559transaction.default.md#constructor)
 
 ### Properties
 
-- [AccessListJSON](eip2930transaction.default.md#accesslistjson)
-- [accessList](eip2930transaction.default.md#accesslist)
-- [chainId](eip2930transaction.default.md#chainid)
-- [common](eip2930transaction.default.md#common)
-- [data](eip2930transaction.default.md#data)
-- [gasLimit](eip2930transaction.default.md#gaslimit)
-- [gasPrice](eip2930transaction.default.md#gasprice)
-- [nonce](eip2930transaction.default.md#nonce)
-- [r](eip2930transaction.default.md#r)
-- [s](eip2930transaction.default.md#s)
-- [to](eip2930transaction.default.md#to)
-- [v](eip2930transaction.default.md#v)
-- [value](eip2930transaction.default.md#value)
+- [AccessListJSON](eip1559transaction.default.md#accesslistjson)
+- [accessList](eip1559transaction.default.md#accesslist)
+- [chainId](eip1559transaction.default.md#chainid)
+- [common](eip1559transaction.default.md#common)
+- [data](eip1559transaction.default.md#data)
+- [gasLimit](eip1559transaction.default.md#gaslimit)
+- [maxFeePerGas](eip1559transaction.default.md#maxfeepergas)
+- [maxPriorityFeePerGas](eip1559transaction.default.md#maxpriorityfeepergas)
+- [nonce](eip1559transaction.default.md#nonce)
+- [r](eip1559transaction.default.md#r)
+- [s](eip1559transaction.default.md#s)
+- [to](eip1559transaction.default.md#to)
+- [v](eip1559transaction.default.md#v)
+- [value](eip1559transaction.default.md#value)
 
 ### Accessors
 
-- [senderR](eip2930transaction.default.md#senderr)
-- [senderS](eip2930transaction.default.md#senders)
-- [transactionType](eip2930transaction.default.md#transactiontype)
-- [type](eip2930transaction.default.md#type)
-- [yParity](eip2930transaction.default.md#yparity)
+- [senderR](eip1559transaction.default.md#senderr)
+- [senderS](eip1559transaction.default.md#senders)
+- [transactionType](eip1559transaction.default.md#transactiontype)
+- [type](eip1559transaction.default.md#type)
+- [yParity](eip1559transaction.default.md#yparity)
 
 ### Methods
 
-- [\_processSignature](eip2930transaction.default.md#_processsignature)
-- [getBaseFee](eip2930transaction.default.md#getbasefee)
-- [getDataFee](eip2930transaction.default.md#getdatafee)
-- [getMessageToSign](eip2930transaction.default.md#getmessagetosign)
-- [getMessageToVerifySignature](eip2930transaction.default.md#getmessagetoverifysignature)
-- [getSenderAddress](eip2930transaction.default.md#getsenderaddress)
-- [getSenderPublicKey](eip2930transaction.default.md#getsenderpublickey)
-- [getUpfrontCost](eip2930transaction.default.md#getupfrontcost)
-- [hash](eip2930transaction.default.md#hash)
-- [isSigned](eip2930transaction.default.md#issigned)
-- [raw](eip2930transaction.default.md#raw)
-- [serialize](eip2930transaction.default.md#serialize)
-- [sign](eip2930transaction.default.md#sign)
-- [toCreationAddress](eip2930transaction.default.md#tocreationaddress)
-- [toJSON](eip2930transaction.default.md#tojson)
-- [validate](eip2930transaction.default.md#validate)
-- [verifySignature](eip2930transaction.default.md#verifysignature)
-- [fromRlpSerializedTx](eip2930transaction.default.md#fromrlpserializedtx)
-- [fromSerializedTx](eip2930transaction.default.md#fromserializedtx)
-- [fromTxData](eip2930transaction.default.md#fromtxdata)
-- [fromValuesArray](eip2930transaction.default.md#fromvaluesarray)
+- [\_processSignature](eip1559transaction.default.md#_processsignature)
+- [getBaseFee](eip1559transaction.default.md#getbasefee)
+- [getDataFee](eip1559transaction.default.md#getdatafee)
+- [getMessageToSign](eip1559transaction.default.md#getmessagetosign)
+- [getMessageToVerifySignature](eip1559transaction.default.md#getmessagetoverifysignature)
+- [getSenderAddress](eip1559transaction.default.md#getsenderaddress)
+- [getSenderPublicKey](eip1559transaction.default.md#getsenderpublickey)
+- [getUpfrontCost](eip1559transaction.default.md#getupfrontcost)
+- [hash](eip1559transaction.default.md#hash)
+- [isSigned](eip1559transaction.default.md#issigned)
+- [raw](eip1559transaction.default.md#raw)
+- [serialize](eip1559transaction.default.md#serialize)
+- [sign](eip1559transaction.default.md#sign)
+- [toCreationAddress](eip1559transaction.default.md#tocreationaddress)
+- [toJSON](eip1559transaction.default.md#tojson)
+- [validate](eip1559transaction.default.md#validate)
+- [verifySignature](eip1559transaction.default.md#verifysignature)
+- [fromRlpSerializedTx](eip1559transaction.default.md#fromrlpserializedtx)
+- [fromSerializedTx](eip1559transaction.default.md#fromserializedtx)
+- [fromTxData](eip1559transaction.default.md#fromtxdata)
+- [fromValuesArray](eip1559transaction.default.md#fromvaluesarray)
 
 ## Constructors
 
 ### constructor
 
-\+ **new default**(`txData`: [*AccessListEIP2930TxData*](../interfaces/types.accesslisteip2930txdata.md), `opts?`: [*TxOptions*](../interfaces/types.txoptions.md)): [*default*](eip2930transaction.default.md)
+\+ **new default**(`txData`: [*FeeMarketEIP1559TxData*](../interfaces/types.feemarketeip1559txdata.md), `opts?`: [*TxOptions*](../interfaces/types.txoptions.md)): [*default*](eip1559transaction.default.md)
 
 This constructor takes the values, validates them, assigns them and freezes the object.
 
@@ -85,14 +81,14 @@ varying data types.
 
 | Name | Type | Default value |
 | :------ | :------ | :------ |
-| `txData` | [*AccessListEIP2930TxData*](../interfaces/types.accesslisteip2930txdata.md) | - |
+| `txData` | [*FeeMarketEIP1559TxData*](../interfaces/types.feemarketeip1559txdata.md) | - |
 | `opts` | [*TxOptions*](../interfaces/types.txoptions.md) | {} |
 
-**Returns:** [*default*](eip2930transaction.default.md)
+**Returns:** [*default*](eip1559transaction.default.md)
 
 Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
 
-Defined in: [eip2930Transaction.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L127)
+Defined in: [eip1559Transaction.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L130)
 
 ## Properties
 
@@ -100,7 +96,7 @@ Defined in: [eip2930Transaction.ts:127](https://github.com/ethereumjs/ethereumjs
 
 • `Readonly` **AccessListJSON**: [*AccessList*](../modules/types.md#accesslist)
 
-Defined in: [eip2930Transaction.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L27)
+Defined in: [eip1559Transaction.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L20)
 
 ___
 
@@ -108,7 +104,7 @@ ___
 
 • `Readonly` **accessList**: [*AccessListBuffer*](../modules/types.md#accesslistbuffer)
 
-Defined in: [eip2930Transaction.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L26)
+Defined in: [eip1559Transaction.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L19)
 
 ___
 
@@ -116,7 +112,7 @@ ___
 
 • `Readonly` **chainId**: *BN*
 
-Defined in: [eip2930Transaction.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L25)
+Defined in: [eip1559Transaction.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L18)
 
 ___
 
@@ -150,11 +146,19 @@ Defined in: [baseTransaction.ts:33](https://github.com/ethereumjs/ethereumjs-mon
 
 ___
 
-### gasPrice
+### maxFeePerGas
 
-• `Readonly` **gasPrice**: *BN*
+• `Readonly` **maxFeePerGas**: *BN*
 
-Defined in: [eip2930Transaction.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L28)
+Defined in: [eip1559Transaction.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L22)
+
+___
+
+### maxPriorityFeePerGas
+
+• `Readonly` **maxPriorityFeePerGas**: *BN*
+
+Defined in: [eip1559Transaction.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L21)
 
 ___
 
@@ -226,7 +230,7 @@ EIP-2930 alias for `r`
 
 **Returns:** *undefined* \| *BN*
 
-Defined in: [eip2930Transaction.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L33)
+Defined in: [eip1559Transaction.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L27)
 
 ___
 
@@ -238,7 +242,7 @@ EIP-2930 alias for `s`
 
 **Returns:** *undefined* \| *BN*
 
-Defined in: [eip2930Transaction.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L40)
+Defined in: [eip1559Transaction.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L34)
 
 ___
 
@@ -274,13 +278,13 @@ EIP-2930 alias for `v`
 
 **Returns:** *undefined* \| *BN*
 
-Defined in: [eip2930Transaction.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L47)
+Defined in: [eip1559Transaction.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L41)
 
 ## Methods
 
 ### \_processSignature
 
-▸ **_processSignature**(`v`: *number*, `r`: *Buffer*, `s`: *Buffer*): [*default*](eip2930transaction.default.md)
+▸ **_processSignature**(`v`: *number*, `r`: *Buffer*, `s`: *Buffer*): [*default*](eip1559transaction.default.md)
 
 #### Parameters
 
@@ -290,11 +294,11 @@ Defined in: [eip2930Transaction.ts:47](https://github.com/ethereumjs/ethereumjs-
 | `r` | *Buffer* |
 | `s` | *Buffer* |
 
-**Returns:** [*default*](eip2930transaction.default.md)
+**Returns:** [*default*](eip1559transaction.default.md)
 
 Overrides: BaseTransaction.\_processSignature
 
-Defined in: [eip2930Transaction.ts:287](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L287)
+Defined in: [eip1559Transaction.ts:304](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L304)
 
 ___
 
@@ -322,27 +326,41 @@ The amount of gas paid for the data in this tx
 
 Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
 
-Defined in: [eip2930Transaction.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L181)
+Defined in: [eip1559Transaction.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L189)
 
 ___
 
 ### getMessageToSign
 
-▸ **getMessageToSign**(`hashMessage?`: *boolean*): *Buffer*
+▸ **getMessageToSign**(`hashMessage`: ``false``): *Buffer*[]
 
 Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
 
 #### Parameters
 
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `hashMessage` | *boolean* | true | Return hashed message if set to true (default: true) |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `hashMessage` | ``false`` | Return hashed message if set to true (default: true) |
+
+**Returns:** *Buffer*[]
+
+Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
+
+Defined in: [eip1559Transaction.ts:243](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L243)
+
+▸ **getMessageToSign**(`hashMessage?`: ``true``): *Buffer*
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `hashMessage?` | ``true`` |
 
 **Returns:** *Buffer*
 
 Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
 
-Defined in: [eip2930Transaction.ts:228](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L228)
+Defined in: [eip1559Transaction.ts:244](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L244)
 
 ___
 
@@ -356,7 +374,7 @@ Computes a sha3-256 hash which can be used to verify the signature
 
 Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
 
-Defined in: [eip2930Transaction.ts:252](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L252)
+Defined in: [eip1559Transaction.ts:269](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L269)
 
 ___
 
@@ -384,21 +402,27 @@ Returns the public key of the sender
 
 Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
 
-Defined in: [eip2930Transaction.ts:259](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L259)
+Defined in: [eip1559Transaction.ts:276](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L276)
 
 ___
 
 ### getUpfrontCost
 
-▸ **getUpfrontCost**(): *BN*
+▸ **getUpfrontCost**(`baseFee?`: *BN*): *BN*
 
 The up front amount that an account must have for this transaction to be valid
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `baseFee?` | *BN* | The base fee of the block (will be set to 0 if not provided) |
 
 **Returns:** *BN*
 
 Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
 
-Defined in: [eip2930Transaction.ts:190](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L190)
+Defined in: [eip1559Transaction.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L199)
 
 ___
 
@@ -412,7 +436,7 @@ Computes a sha3-256 hash of the serialized tx
 
 Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
 
-Defined in: [eip2930Transaction.ts:241](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L241)
+Defined in: [eip1559Transaction.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L258)
 
 ___
 
@@ -430,17 +454,17 @@ ___
 
 ### raw
 
-▸ **raw**(): [*AccessListEIP2930ValuesArray*](../modules/types.md#accesslisteip2930valuesarray)
+▸ **raw**(): [*FeeMarketEIP1559ValuesArray*](../modules/types.md#feemarketeip1559valuesarray)
 
 Returns a Buffer Array of the raw Buffers of this transaction, in order.
 
 Use `serialize()` to add to block data for `Block.fromValuesArray()`.
 
-**Returns:** [*AccessListEIP2930ValuesArray*](../modules/types.md#accesslisteip2930valuesarray)
+**Returns:** [*FeeMarketEIP1559ValuesArray*](../modules/types.md#feemarketeip1559valuesarray)
 
 Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
 
-Defined in: [eip2930Transaction.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L199)
+Defined in: [eip1559Transaction.ts:213](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L213)
 
 ___
 
@@ -454,13 +478,13 @@ Returns the serialized encoding of the transaction.
 
 Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
 
-Defined in: [eip2930Transaction.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L218)
+Defined in: [eip1559Transaction.ts:233](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L233)
 
 ___
 
 ### sign
 
-▸ **sign**(`privateKey`: *Buffer*): [*default*](eip2930transaction.default.md)
+▸ **sign**(`privateKey`: *Buffer*): [*default*](eip1559transaction.default.md)
 
 Signs a tx and returns a new signed tx object
 
@@ -470,7 +494,7 @@ Signs a tx and returns a new signed tx object
 | :------ | :------ |
 | `privateKey` | *Buffer* |
 
-**Returns:** [*default*](eip2930transaction.default.md)
+**Returns:** [*default*](eip1559transaction.default.md)
 
 Inherited from: [BaseTransaction](basetransaction.basetransaction-1.md)
 
@@ -502,7 +526,7 @@ Returns an object with the JSON representation of the transaction
 
 Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
 
-Defined in: [eip2930Transaction.ts:313](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L313)
+Defined in: [eip1559Transaction.ts:331](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L331)
 
 ___
 
@@ -565,7 +589,7 @@ ___
 
 ### fromRlpSerializedTx
 
-▸ `Static` **fromRlpSerializedTx**(`serialized`: *Buffer*, `opts?`: [*TxOptions*](../interfaces/types.txoptions.md)): [*default*](eip2930transaction.default.md)
+▸ `Static` **fromRlpSerializedTx**(`serialized`: *Buffer*, `opts?`: [*TxOptions*](../interfaces/types.txoptions.md)): [*default*](eip1559transaction.default.md)
 
 Instantiate a transaction from the serialized tx.
 (alias of `fromSerializedTx()`)
@@ -582,15 +606,15 @@ in favor of the `fromSerializedTx()` constructor
 | `serialized` | *Buffer* | - |
 | `opts` | [*TxOptions*](../interfaces/types.txoptions.md) | {} |
 
-**Returns:** [*default*](eip2930transaction.default.md)
+**Returns:** [*default*](eip1559transaction.default.md)
 
-Defined in: [eip2930Transaction.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L90)
+Defined in: [eip1559Transaction.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L81)
 
 ___
 
 ### fromSerializedTx
 
-▸ `Static` **fromSerializedTx**(`serialized`: *Buffer*, `opts?`: [*TxOptions*](../interfaces/types.txoptions.md)): [*default*](eip2930transaction.default.md)
+▸ `Static` **fromSerializedTx**(`serialized`: *Buffer*, `opts?`: [*TxOptions*](../interfaces/types.txoptions.md)): [*default*](eip1559transaction.default.md)
 
 Instantiate a transaction from the serialized tx.
 
@@ -603,47 +627,45 @@ Note: this means that the Buffer should start with 0x01.
 | `serialized` | *Buffer* | - |
 | `opts` | [*TxOptions*](../interfaces/types.txoptions.md) | {} |
 
-**Returns:** [*default*](eip2930transaction.default.md)
+**Returns:** [*default*](eip1559transaction.default.md)
 
-Defined in: [eip2930Transaction.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L63)
+Defined in: [eip1559Transaction.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L54)
 
 ___
 
 ### fromTxData
 
-▸ `Static` **fromTxData**(`txData`: [*AccessListEIP2930TxData*](../interfaces/types.accesslisteip2930txdata.md), `opts?`: [*TxOptions*](../interfaces/types.txoptions.md)): [*default*](eip2930transaction.default.md)
-
-Instantiate a transaction from a data dictionary
+▸ `Static` **fromTxData**(`txData`: [*FeeMarketEIP1559TxData*](../interfaces/types.feemarketeip1559txdata.md), `opts?`: [*TxOptions*](../interfaces/types.txoptions.md)): [*default*](eip1559transaction.default.md)
 
 #### Parameters
 
 | Name | Type | Default value |
 | :------ | :------ | :------ |
-| `txData` | [*AccessListEIP2930TxData*](../interfaces/types.accesslisteip2930txdata.md) | - |
+| `txData` | [*FeeMarketEIP1559TxData*](../interfaces/types.feemarketeip1559txdata.md) | - |
 | `opts` | [*TxOptions*](../interfaces/types.txoptions.md) | {} |
 
-**Returns:** [*default*](eip2930transaction.default.md)
+**Returns:** [*default*](eip1559transaction.default.md)
 
-Defined in: [eip2930Transaction.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L54)
+Defined in: [eip1559Transaction.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L45)
 
 ___
 
 ### fromValuesArray
 
-▸ `Static` **fromValuesArray**(`values`: [*AccessListEIP2930ValuesArray*](../modules/types.md#accesslisteip2930valuesarray), `opts?`: [*TxOptions*](../interfaces/types.txoptions.md)): [*default*](eip2930transaction.default.md)
+▸ `Static` **fromValuesArray**(`values`: [*FeeMarketEIP1559ValuesArray*](../modules/types.md#feemarketeip1559valuesarray), `opts?`: [*TxOptions*](../interfaces/types.txoptions.md)): [*default*](eip1559transaction.default.md)
 
 Create a transaction from a values array.
 
 The format is:
-chainId, nonce, gasPrice, gasLimit, to, value, data, access_list, yParity (v), senderR (r), senderS (s)
+chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data, accessList, signatureYParity, signatureR, signatureS
 
 #### Parameters
 
 | Name | Type | Default value |
 | :------ | :------ | :------ |
-| `values` | [*AccessListEIP2930ValuesArray*](../modules/types.md#accesslisteip2930valuesarray) | - |
+| `values` | [*FeeMarketEIP1559ValuesArray*](../modules/types.md#feemarketeip1559valuesarray) | - |
 | `opts` | [*TxOptions*](../interfaces/types.txoptions.md) | {} |
 
-**Returns:** [*default*](eip2930transaction.default.md)
+**Returns:** [*default*](eip1559transaction.default.md)
 
-Defined in: [eip2930Transaction.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L100)
+Defined in: [eip1559Transaction.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L91)
