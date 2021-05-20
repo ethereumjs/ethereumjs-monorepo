@@ -34,7 +34,7 @@
   "dependencies": {
     "@ethereumjs/common": "^2.3.0",
     "merkle-patricia-tree": "^4.2.0",
-    "@ethereumjs/tx": "^3.1.4",
+    "@ethereumjs/tx": "^3.2.0",
     "ethereumjs-util": "^7.0.10"
   },
   "devDependencies": {

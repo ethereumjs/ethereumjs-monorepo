@@ -6,6 +6,51 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.2.0 - 2021-05-26
+
+### Berlin HF Support
+
+This `Tx` release comes with full support for the `london` hardfork. There is a new [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction type `FeeMarketEIP1559Transaction` (type `2`) added together with the new data types `FeeMarketEIP1559TxData` (for instantiation with the `fromTxData()` static constructor method) and `FeeMarketEIP1559ValuesArray` (for instantiation with `fromValuesArray()`), see PR [#1148](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1148) for the main implementation work.
+
+An `EIP-1559` tx inherits the access list feature from the `AccessListEIP2930Transaction` (type `1`) but comes with its own gas fee market mechanism. There is no `gasPrice` field in favor of two new gas related properties `maxFeePerGas` - which represents the total gas fee the tx sender is willing to pay for the tx (including the priority fee) - and the `maxPriorityFeePerGas` property - which represents the fee the sender is willing to give as some tip to the miner to prioritize a tx.
+
+An `EIP-1559` tx can be instantiated with:
+
+```typescript
+import Common from '@ethereumjs/common'
+import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+
+const common = new Common({ chain: 'mainnet', hardfork: 'london' })
+
+const txData = {
+  "data": "0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+  "gasLimit": "0x02625a00",
+  "maxPriorityFeePerGas": "0x01",
+  "maxFeePerGas": "0xff",
+  "nonce": "0x00",
+  "to": "0xcccccccccccccccccccccccccccccccccccccccc",
+  "value": "0x0186a0",
+  "v": "0x01",
+  "r": "0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9",
+  "s": "0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64",
+  "chainId": "0x01",
+  "accessList": [],
+  "type": "0x02"
+}
+
+const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
+```
+
+Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `Tx` instance with a `london` HF activated.
+
+### Bug Fixes
+
+- Fixed `getMessageToSign()` return type for typed txs, PR [#1255](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1255)
+
+### Other Changes
+
+- Deprecated `TransactionFactory.getTransactionClass()` method, PR [#1148](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1148)
+
 ## 3.1.4 - 2021-04-22
 
 - Added a new boolean `hashMessage` parameter (defaulting to `true`) to `getMessageToSign()` to allow for returning the raw unsigned `EIP-155` tx and not only the hash, PR [#1188](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1188)
