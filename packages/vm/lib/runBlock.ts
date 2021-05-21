@@ -236,11 +236,6 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   const receipts = []
   const txResults = []
 
-  let cliqueBeneficiary
-  if (this._common.consensusType() === 'poa' && 'cliqueSigner' in block.header) {
-    cliqueBeneficiary = block.header.cliqueSigner()
-  }
-
   /*
    * Process transactions
    */
@@ -264,18 +259,12 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     // Run the tx through the VM
     const { skipBalance, skipNonce } = opts
 
-    // Construct a block with the current gasUsed for accurate tx receipt generation
-    const blockWithGasUsed = Block.fromBlockData(
-      { ...block, header: { ...block.header, gasUsed } },
-      { common: this._common }
-    )
-
     const txRes = await this.runTx({
       tx,
-      block: blockWithGasUsed,
+      block,
       skipBalance,
       skipNonce,
-      cliqueBeneficiary,
+      blockGasUsed: gasUsed,
     })
     txResults.push(txRes)
 
