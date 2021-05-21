@@ -1,4 +1,4 @@
-export const list = ['Eth', 'Web3', 'Net', 'Admin']
+export const list = ['Eth', 'Consensus', 'Web3', 'Net', 'Admin']
 
 export * from './eth'
 export * from './consensus'
