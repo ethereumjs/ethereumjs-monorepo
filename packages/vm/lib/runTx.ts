@@ -360,8 +360,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   state.clearOriginalStorageCache()
 
   // Generate the tx receipt
-  const blockGasUsed = (opts.blockGasUsed ?? block.header.gasUsed).add(results.gasUsed)
-  results.receipt = await generateTxReceipt.bind(this)(tx, results, blockGasUsed)
+  const cumulativeGasUsed = (opts.blockGasUsed ?? block.header.gasUsed).add(results.gasUsed)
+  results.receipt = await generateTxReceipt.bind(this)(tx, results, cumulativeGasUsed)
 
   /**
    * The `afterTx` event
@@ -402,16 +402,16 @@ function txLogsBloom(logs?: any[]): Bloom {
  * @param this The vm instance
  * @param tx The transaction
  * @param txResult The tx result
- * @param blockGasUsed The amount of gas used in the block up until this tx
+ * @param cumulativeGasUsed The gas used in the block including this tx
  */
 export async function generateTxReceipt(
   this: VM,
   tx: TypedTransaction,
   txResult: RunTxResult,
-  blockGasUsed: BN
+  cumulativeGasUsed: BN
 ): Promise<TxReceipt> {
   const baseReceipt: BaseTxReceipt = {
-    gasUsed: blockGasUsed.toArrayLike(Buffer),
+    gasUsed: cumulativeGasUsed.toArrayLike(Buffer),
     bitvector: txResult.bloom.bitvector,
     logs: txResult.execResult.logs ?? [],
   }

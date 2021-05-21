@@ -311,7 +311,6 @@ tape('runBlock() -> runtime behavior', async (t) => {
 
     await vm.runBlock({ block, skipNonce: true, skipBlockValidation: true, generate: true })
     const account = await vm.stateManager.getAccount(signer.address)
-
     t.ok(account.balance.eqn(42000), 'beneficiary balance should equal the cost of the txs')
     t.end()
   })
