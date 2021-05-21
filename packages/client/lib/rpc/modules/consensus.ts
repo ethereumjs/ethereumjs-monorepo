@@ -26,9 +26,7 @@ export class Consensus {
     const ethProtocol = service.protocols.find((p) => p.name === 'eth') as EthProtocol
     this.ethVersion = Math.max(...ethProtocol.versions)
 
-    this.consensus_setHead = middleware(this.consensus_setHead.bind(this), 1, [
-      validators.blockHash,
-    ])
+    this.setHead = middleware(this.setHead.bind(this), 1, [validators.blockHash])
   }
 
   /**
@@ -36,7 +34,7 @@ export class Consensus {
    * Returns: An object with one property: success: Boolean - set to true if head has been changed successfully, otherwise false.
    * @param params An array of one parameter: A block hash
    */
-  async consensus_setHead(params: [string]) {
+  async setHead(params: [string]) {
     const [blockHash] = params
     console.log('setHead: ', blockHash)
     //  TODO: Not yet implemented
