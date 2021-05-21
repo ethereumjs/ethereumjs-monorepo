@@ -1,17 +1,4 @@
-import { Transaction } from '@ethereumjs/tx'
-import {
-  Account,
-  Address,
-  BN,
-  bufferToHex,
-  toBuffer,
-  stripHexPrefix,
-  setLengthLeft,
-} from 'ethereumjs-util'
-import { decode } from 'rlp'
 import { middleware, validators } from '../validation'
-import { INVALID_PARAMS } from '../error-code'
-import { RpcTx } from '../types'
 import type { Chain } from '../../blockchain'
 import type { EthereumClient } from '../..'
 import type { EthereumService } from '../../service'
@@ -38,5 +25,20 @@ export class Consensus {
 
     const ethProtocol = service.protocols.find((p) => p.name === 'eth') as EthProtocol
     this.ethVersion = Math.max(...ethProtocol.versions)
+
+    this.consensus_setHead = middleware(this.consensus_setHead.bind(this), 1, [
+      validators.blockHash,
+    ])
+  }
+
+  /**
+   * Sets the head of the chain to the block specified by the blockHash parameter.
+   * Returns: An object with one property: success: Boolean - set to true if head has been changed successfully, otherwise false.
+   * @param params An array of one parameter: A block hash
+   */
+  async consensus_setHead(params: [string]) {
+    const [blockHash] = params
+    console.log('setHead: ', blockHash)
+    //  TODO: Not yet implemented
   }
 }
