@@ -152,7 +152,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     // Verify the access list format.
     AccessLists.verifyAccessList(this.accessList)
 
-    this.chainId = chainId ? new BN(toBuffer(chainId)) : new BN(this.common.chainId())
+    this.chainId = chainId ? new BN(toBuffer(chainId)) : this.common.chainIdBN()
     this.maxFeePerGas = new BN(toBuffer(maxFeePerGas === '' ? '0x' : maxFeePerGas))
     this.maxPriorityFeePerGas = new BN(
       toBuffer(maxPriorityFeePerGas === '' ? '0x' : maxPriorityFeePerGas)
@@ -163,7 +163,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
     })
 
-    if (!this.chainId.eq(new BN(this.common.chainId().toString()))) {
+    if (!this.chainId.eq(this.common.chainIdBN())) {
       throw new Error('The chain ID does not match the chain ID of Common')
     }
 

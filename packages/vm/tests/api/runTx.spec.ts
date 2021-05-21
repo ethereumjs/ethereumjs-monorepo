@@ -49,6 +49,25 @@ tape('runTx() -> successful API parameter usage', async (t) => {
     t.end()
   })
 
+  t.test('should use passed in blockGasUsed to generate tx receipt', async (t) => {
+    const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+    const vm = new VM({ common })
+
+    const tx = getTransaction(vm._common, 0, true)
+
+    const caller = tx.getSenderAddress()
+    const acc = createAccount()
+    await vm.stateManager.putAccount(caller, acc)
+
+    const blockGasUsed = new BN(1000)
+    const res = await vm.runTx({ tx, blockGasUsed })
+    t.ok(
+      new BN(res.receipt.gasUsed).eq(blockGasUsed.add(res.gasUsed)),
+      'receipt.gasUsed should equal block gas used + tx gas used'
+    )
+    t.end()
+  })
+
   t.test('Legacy Transaction with HF set to pre-Berlin', async (t) => {
     const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
     const vm = new VM({ common })
