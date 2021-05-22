@@ -21,7 +21,7 @@ tape('blockchain test', (t) => {
 
   t.test('should initialize correctly', async (st) => {
     const common = new Common({ chain: 'ropsten' })
-    const blockchain = new Blockchain({ common })
+    let blockchain = new Blockchain({ common })
 
     const head = await blockchain.getHead()
     const iteratorHead = await blockchain.getIteratorHead()
@@ -35,6 +35,13 @@ tape('blockchain test', (t) => {
       iteratorHead.hash().toString('hex'),
       common.genesis().hash.slice(2),
       'correct genesis hash (getIteratorHead())'
+    )
+
+    blockchain = await Blockchain.create({ common, hardforkByHeadBlockNumber: true })
+    st.equals(
+      common.hardfork(),
+      'tangerineWhistle',
+      'correct HF setting with hardforkByHeadBlockNumber option'
     )
     st.end()
   })
@@ -111,17 +118,20 @@ tape('blockchain test', (t) => {
     st.end()
   })
 
-  t.test('should add 10 blocks, one at a time', async (st) => {
+  t.test('should add 12 blocks, one at a time', async (st) => {
     const blocks: Block[] = []
     const gasLimit = 8000000
+    const common = new Common({ chain: 'ropsten' })
 
-    const genesisBlock = Block.genesis({ header: { gasLimit } })
+    const genesisBlock = Block.genesis({ header: { gasLimit } }, { common })
     blocks.push(genesisBlock)
 
     const blockchain = new Blockchain({
       validateBlocks: true,
       validateConsensus: false,
       genesisBlock,
+      common,
+      hardforkByHeadBlockNumber: true,
     })
 
     const addNextBlock = async (number: number) => {
@@ -134,15 +144,19 @@ tape('blockchain test', (t) => {
           gasLimit,
         },
       }
-      const block = Block.fromBlockData(blockData, { calcDifficultyFromHeader: lastBlock.header })
+      const block = Block.fromBlockData(blockData, {
+        calcDifficultyFromHeader: lastBlock.header,
+        common,
+      })
       await blockchain.putBlock(block)
       blocks.push(block)
 
-      if (blocks.length < 10) {
+      if (blocks.length < 12) {
         await addNextBlock(number + 1)
       } else {
-        const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 10, 0, false)
-        st.equal(getBlocks.length, 10)
+        const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 12, 0, false)
+        st.equal(getBlocks.length, 12)
+        st.equal(common.hardfork(), 'spuriousDragon', 'correct HF updates along block additions')
         st.end()
       }
     }

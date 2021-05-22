@@ -43,6 +43,7 @@ export class BlockHeader {
   public readonly extraData: Buffer
   public readonly mixHash: Buffer
   public readonly nonce: Buffer
+  public readonly baseFeePerGas?: BN
 
   public readonly _common: Common
   public _errorPostfix = ''
@@ -53,7 +54,7 @@ export class BlockHeader {
    * @param headerData
    * @param opts
    */
-  public static fromHeaderData(headerData: HeaderData = {}, opts?: BlockOptions) {
+  public static fromHeaderData(headerData: HeaderData = {}, opts: BlockOptions = {}) {
     const {
       parentHash,
       uncleHash,
@@ -70,6 +71,7 @@ export class BlockHeader {
       extraData,
       mixHash,
       nonce,
+      baseFeePerGas,
     } = headerData
 
     return new BlockHeader(
@@ -88,7 +90,8 @@ export class BlockHeader {
       extraData ? toBuffer(extraData) : Buffer.from([]),
       mixHash ? toBuffer(mixHash) : zeros(32),
       nonce ? toBuffer(nonce) : zeros(8),
-      opts
+      opts,
+      baseFeePerGas !== undefined ? new BN(toBuffer(baseFeePerGas)) : undefined
     )
   }
 
@@ -98,7 +101,7 @@ export class BlockHeader {
    * @param headerData
    * @param opts
    */
-  public static fromRLPSerializedHeader(serialized: Buffer, opts?: BlockOptions) {
+  public static fromRLPSerializedHeader(serialized: Buffer, opts: BlockOptions = {}) {
     const values = rlp.decode(serialized)
 
     if (!Array.isArray(values)) {
@@ -114,11 +117,7 @@ export class BlockHeader {
    * @param headerData
    * @param opts
    */
-  public static fromValuesArray(values: BlockHeaderBuffer, opts?: BlockOptions) {
-    if (values.length > 15) {
-      throw new Error('invalid header. More values than expected were received')
-    }
-
+  public static fromValuesArray(values: BlockHeaderBuffer, opts: BlockOptions = {}) {
     const [
       parentHash,
       uncleHash,
@@ -135,7 +134,15 @@ export class BlockHeader {
       extraData,
       mixHash,
       nonce,
+      baseFeePerGas,
     ] = values
+
+    if (values.length > 16) {
+      throw new Error('invalid header. More values than expected were received')
+    }
+    if (values.length < 15) {
+      throw new Error('invalid header. Less values than expected were received')
+    }
 
     return new BlockHeader(
       toBuffer(parentHash),
@@ -153,7 +160,8 @@ export class BlockHeader {
       toBuffer(extraData),
       toBuffer(mixHash),
       toBuffer(nonce),
-      opts
+      opts,
+      baseFeePerGas !== undefined ? new BN(toBuffer(baseFeePerGas)) : undefined
     )
   }
 
@@ -167,9 +175,10 @@ export class BlockHeader {
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
-   * Use the public static factory methods to assist in creating a Header object from
-   * varying data types.
-   * For a default empty header, use `BlockHeader.fromHeaderData()`.
+   *
+   * @deprecated - Use the public static factory methods to assist in creating a Header object from
+   * varying data types. For a default empty header, use `BlockHeader.fromHeaderData()`.
+   *
    */
   constructor(
     parentHash: Buffer,
@@ -187,13 +196,11 @@ export class BlockHeader {
     extraData: Buffer,
     mixHash: Buffer,
     nonce: Buffer,
-    options: BlockOptions = {}
+    options: BlockOptions = {},
+    baseFeePerGas?: BN
   ) {
     if (options.common) {
-      this._common = Object.assign(
-        Object.create(Object.getPrototypeOf(options.common)),
-        options.common
-      )
+      this._common = options.common.copy()
     } else {
       const chain = 'mainnet' // default
       if (options.initWithGenesisHeader) {
@@ -206,6 +213,16 @@ export class BlockHeader {
 
     if (options.hardforkByBlockNumber) {
       this._common.setHardforkByBlockNumber(number.toNumber())
+    }
+
+    if (this._common.isActivatedEIP(1559)) {
+      if (baseFeePerGas === undefined) {
+        baseFeePerGas = new BN(7)
+      }
+    } else {
+      if (baseFeePerGas) {
+        throw new Error('A base fee for a block can only be set with EIP1559 being activated')
+      }
     }
 
     if (options.initWithGenesisHeader) {
@@ -245,6 +262,7 @@ export class BlockHeader {
     this.extraData = extraData
     this.mixHash = mixHash
     this.nonce = nonce
+    this.baseFeePerGas = baseFeePerGas
 
     this._validateHeaderFields()
     this._checkDAOExtraData()
@@ -430,7 +448,13 @@ export class BlockHeader {
    * @param parentBlockHeader - the header from the parent `Block` of this header
    */
   validateGasLimit(parentBlockHeader: BlockHeader): boolean {
-    const parentGasLimit = parentBlockHeader.gasLimit
+    let parentGasLimit = parentBlockHeader.gasLimit
+    // EIP-1559: assume double the parent gas limit on fork block
+    // to adopt to the new gas target centered logic
+    if (this.number.eq(this._common.hardforkBlockBN('london'))) {
+      const elasticity = new BN(this._common.param('gasConfig', 'elasticityMultiplier'))
+      parentGasLimit = parentGasLimit.mul(elasticity)
+    }
     const gasLimit = this.gasLimit
     const hardfork = this._getHardfork()
 
@@ -440,11 +464,12 @@ export class BlockHeader {
     const maxGasLimit = parentGasLimit.add(a)
     const minGasLimit = parentGasLimit.sub(a)
 
-    return (
+    const result =
       gasLimit.lt(maxGasLimit) &&
       gasLimit.gt(minGasLimit) &&
       gasLimit.gte(this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork))
-    )
+
+    return result
   }
 
   /**
@@ -469,7 +494,9 @@ export class BlockHeader {
       return
     }
     const hardfork = this._getHardfork()
+    // Consensus type dependent checks
     if (this._common.consensusAlgorithm() !== 'clique') {
+      // PoW/Ethash
       if (
         this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)
       ) {
@@ -477,6 +504,7 @@ export class BlockHeader {
         throw this._error(msg)
       }
     } else {
+      // PoA/Clique
       const minLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
       if (!this.cliqueIsEpochTransition()) {
         // ExtraData length on epoch transition
@@ -546,13 +574,73 @@ export class BlockHeader {
         throw new Error('uncle block has a parent that is too old or too young')
       }
     }
+
+    // check if the block used too much gas
+    if (this.gasUsed.gt(this.gasLimit)) {
+      throw new Error('Invalid block: too much gas used')
+    }
+
+    if (this._common.isActivatedEIP(1559)) {
+      if (!this.baseFeePerGas) {
+        throw new Error('EIP1559 block has no base fee field')
+      }
+      const isInitialEIP1559Block = this.number.eq(this._common.hardforkBlockBN('london'))
+      if (isInitialEIP1559Block) {
+        const initialBaseFee = new BN(this._common.param('gasConfig', 'initialBaseFee'))
+        if (!this.baseFeePerGas!.eq(initialBaseFee)) {
+          throw new Error('Initial EIP1559 block does not have initial base fee')
+        }
+      } else {
+        // check if the base fee is correct
+        const expectedBaseFee = parentHeader.calcNextBaseFee()
+
+        if (!this.baseFeePerGas!.eq(expectedBaseFee)) {
+          throw new Error('Invalid block: base fee not correct')
+        }
+      }
+    }
+  }
+
+  /**
+   * Calculates the base fee for a potential next block
+   */
+  public calcNextBaseFee(): BN {
+    if (!this._common.isActivatedEIP(1559)) {
+      throw new Error('calcNextBaseFee() can only be called with EIP1559 being activated')
+    }
+    let nextBaseFee: BN
+    const elasticity = new BN(this._common.param('gasConfig', 'elasticityMultiplier'))
+    const parentGasTarget = this.gasLimit.div(elasticity)
+
+    if (parentGasTarget.eq(this.gasUsed)) {
+      nextBaseFee = this.baseFeePerGas!
+    } else if (this.gasUsed.gt(parentGasTarget)) {
+      const gasUsedDelta = this.gasUsed.sub(parentGasTarget)
+      const baseFeeMaxChangeDenominator = new BN(
+        this._common.param('gasConfig', 'baseFeeMaxChangeDenominator')
+      )
+      const calculatedDelta = this.baseFeePerGas!.mul(gasUsedDelta)
+        .div(parentGasTarget)
+        .div(baseFeeMaxChangeDenominator)
+      nextBaseFee = BN.max(calculatedDelta, new BN(1)).add(this.baseFeePerGas!)
+    } else {
+      const gasUsedDelta = parentGasTarget.sub(this.gasUsed)
+      const baseFeeMaxChangeDenominator = new BN(
+        this._common.param('gasConfig', 'baseFeeMaxChangeDenominator')
+      )
+      const calculatedDelta = this.baseFeePerGas!.mul(gasUsedDelta)
+        .div(parentGasTarget)
+        .div(baseFeeMaxChangeDenominator)
+      nextBaseFee = BN.max(this.baseFeePerGas!.sub(calculatedDelta), new BN(0))
+    }
+    return nextBaseFee
   }
 
   /**
    * Returns a Buffer Array of the raw Buffers in this header, in order.
    */
   raw(): BlockHeaderBuffer {
-    return [
+    const rawItems = [
       this.parentHash,
       this.uncleHash,
       this.coinbase.buf,
@@ -569,6 +657,12 @@ export class BlockHeader {
       this.mixHash,
       this.nonce,
     ]
+
+    if (this._common.isActivatedEIP(1559)) {
+      rawItems.push(unpadBuffer(toBuffer(this.baseFeePerGas)))
+    }
+
+    return rawItems
   }
 
   /**
@@ -716,7 +810,7 @@ export class BlockHeader {
    * Returns the block header in JSON format.
    */
   toJSON(): JsonHeader {
-    return {
+    const jsonDict: JsonHeader = {
       parentHash: '0x' + this.parentHash.toString('hex'),
       uncleHash: '0x' + this.uncleHash.toString('hex'),
       coinbase: this.coinbase.toString(),
@@ -733,6 +827,11 @@ export class BlockHeader {
       mixHash: '0x' + this.mixHash.toString('hex'),
       nonce: '0x' + this.nonce.toString('hex'),
     }
+    if (this._common.isActivatedEIP(1559)) {
+      jsonDict['baseFee'] = '0x' + this.baseFeePerGas!.toString('hex')
+    }
+
+    return jsonDict
   }
 
   /**

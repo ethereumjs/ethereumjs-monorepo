@@ -242,7 +242,16 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   for (let txIdx = 0; txIdx < block.transactions.length; txIdx++) {
     const tx = block.transactions[txIdx]
 
-    const gasLimitIsHigherThanBlock = block.header.gasLimit.lt(tx.gasLimit.add(gasUsed))
+    let maxGasLimit
+    if (this._common.isActivatedEIP(1559)) {
+      maxGasLimit = block.header.gasLimit.muln(
+        this._common.param('gasConfig', 'elasticityMultiplier')
+      )
+    } else {
+      maxGasLimit = block.header.gasLimit
+    }
+
+    const gasLimitIsHigherThanBlock = maxGasLimit.lt(tx.gasLimit.add(gasUsed))
     if (gasLimitIsHigherThanBlock) {
       throw new Error('tx has a higher gas limit than the block')
     }
@@ -250,17 +259,12 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     // Run the tx through the VM
     const { skipBalance, skipNonce } = opts
 
-    // Construct a block with the current gasUsed for accurate tx receipt generation
-    const blockWithGasUsed = Block.fromBlockData(
-      { ...block, header: { ...block.header, gasUsed } },
-      { common: this._common }
-    )
-
     const txRes = await this.runTx({
       tx,
-      block: blockWithGasUsed,
+      block,
       skipBalance,
       skipNonce,
+      blockGasUsed: gasUsed,
     })
     txResults.push(txRes)
 

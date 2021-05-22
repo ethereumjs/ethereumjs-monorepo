@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.2.0 - 2021-05-20
+
+### Changed Delete Behavior: NO Default Node Deletes
+
+This release changes the behavior on trie node deletes after doing a `commit()` on a checkpoint trie (`CheckpointTrie`). This was the scenario where trie nodes were deleted from the database in older versions of the library. After a long discussion we decided to switch to a more conservative approach and keep the trie nodes in the DB in all scenarios. This now allows for setting back the state root to an older root (e.g. with the `StateManager` included in the `VM`) and still be sure to operate on a consistent and complete trie. This had been reported as a problem in some usage scenarios by third-party users of the library.
+
+So the default behavior on the trie is now: there are no node deletions happening in all type of setups and usage scenarios, so for a `BaseTrie`, `CheckpointTrie` or `SecureTrie` and working checkpointed or non-checkpointed. 
+
+While this change is not directly breaking, it might nevertheless have side effects depending on your usage scenario. If you use a somewhat larger trie and do a lot of change operations, this will significantly increase the disk space used. We have nevertheless decided to make this a non-breaking release since we don't expect this to be the usual way the trie library is used. Instead the former behavior appeared more as some sort of "bug" when reported by developers integrating the library.
+
+If you want to switch back to a trie where nodes are deleted (so for non-checkpointed tries directly along a trie operation or for checkpointed tries along a `commit()`) there is a new parameter `deleteFromDB` introduced which can be used to switch to a delete behavior on instantiation (the default is `false` here).
+
+See: PR [#1219](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1219)
+
 ## 4.1.0 - 2021-02-16
 
 This release comes with a reworked checkpointing mechanism (PR [#1030](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1030) and subsequently PR [#1035](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1035)). Instead of copying over the whole DB on checkpoints the operations in between checkpoints are now recorded in memory and either applied in batch on a `Trie.checkpoint()` call or discarded along a `Trie.revert()`. This more fine-grained operational mode leads to a substantial performance gain (up to 50x) when working with larger tries.

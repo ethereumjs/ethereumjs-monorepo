@@ -2,6 +2,7 @@ import { BN, AddressLike, BNLike, BufferLike, PrefixedHexString } from 'ethereum
 import Common from '@ethereumjs/common'
 import { default as Transaction } from './legacyTransaction'
 import { default as AccessListEIP2930Transaction } from './eip2930Transaction'
+import { default as FeeMarketEIP1559Transaction } from './eip1559Transaction'
 
 /**
  * The options for initializing a Transaction.
@@ -64,8 +65,20 @@ export function isAccessList(input: AccessListBuffer | AccessList): input is Acc
   return !isAccessListBuffer(input) // This is exactly the same method, except the output is negated.
 }
 
-export type TypedTransaction = Transaction | AccessListEIP2930Transaction
+/**
+ * Encompassing type for all transaction types.
+ *
+ * Note that this also includes legacy txs which are
+ * referenced as `Transaction` for compatibility reasons.
+ */
+export type TypedTransaction =
+  | Transaction
+  | AccessListEIP2930Transaction
+  | FeeMarketEIP1559Transaction
 
+/**
+ * Legacy Transaction Data
+ */
 export type TxData = {
   /**
    * The transaction's nonce.
@@ -111,10 +124,16 @@ export type TxData = {
    * EC signature parameter.
    */
   s?: BNLike
+
+  /**
+   * The transaction type
+   */
+
+  type?: BNLike
 }
 
 /**
- * An object with an optional field with each of the transaction's values.
+ * Access list EIP2930 tx data.
  */
 export interface AccessListEIP2930TxData extends TxData {
   /**
@@ -126,18 +145,53 @@ export interface AccessListEIP2930TxData extends TxData {
    * The access list which contains the addresses/storage slots which the transaction wishes to access
    */
   accessList?: AccessListBuffer | AccessList
-
-  /**
-   * The transaction type
-   */
-
-  type?: BNLike
 }
 
 /**
- * Buffer values array for EIP2930 transaction
+ * Fee marked EIP1559 tx data.
+ */
+export interface FeeMarketEIP1559TxData extends AccessListEIP2930TxData {
+  /**
+   * The transaction's gas price.
+   */
+  gasPrice?: never
+  /**
+   * The maximum inclusion fee per gas (this fee is given to the miner)
+   */
+  maxPriorityFeePerGas?: BNLike
+  /**
+   * The maximum total fee
+   */
+  maxFeePerGas?: BNLike
+}
+
+/**
+ * Buffer values array for a legacy transaction
+ */
+export type TxValuesArray = Buffer[]
+
+/**
+ * Buffer values array for an EIP2930 transaction
  */
 export type AccessListEIP2930ValuesArray = [
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+  AccessListBuffer,
+  Buffer?,
+  Buffer?,
+  Buffer?
+]
+
+/**
+ * Buffer values array for an EIP1559 transaction
+ */
+export type FeeMarketEIP1559ValuesArray = [
+  Buffer,
   Buffer,
   Buffer,
   Buffer,
@@ -154,7 +208,12 @@ export type AccessListEIP2930ValuesArray = [
 type JsonAccessListItem = { address: string; storageKeys: string[] }
 
 /**
- * An object with all of the transaction's values represented as strings.
+ * Generic interface for all tx types with a
+ * JSON representation of a transaction.
+ *
+ * Note that all values are marked as optional
+ * and not all the values are present on all tx types
+ * (an EIP1559 tx e.g. lacks a `gasPrice`).
  */
 export interface JsonTx {
   nonce?: string
@@ -169,6 +228,8 @@ export interface JsonTx {
   chainId?: string
   accessList?: JsonAccessListItem[]
   type?: string
+  maxPriorityFeePerGas?: string
+  maxFeePerGas?: string
 }
 
 /**

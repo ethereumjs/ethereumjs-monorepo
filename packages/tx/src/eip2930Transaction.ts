@@ -1,28 +1,19 @@
-import {
-  BN,
-  bnToHex,
-  bnToRlp,
-  bufferToHex,
-  ecrecover,
-  keccak256,
-  rlp,
-  setLengthLeft,
-  toBuffer,
-} from 'ethereumjs-util'
+import { BN, bnToHex, bnToRlp, ecrecover, keccak256, rlp, toBuffer } from 'ethereumjs-util'
 import { BaseTransaction } from './baseTransaction'
 import {
   AccessList,
   AccessListBuffer,
   AccessListEIP2930TxData,
   AccessListEIP2930ValuesArray,
-  AccessListItem,
-  isAccessList,
   JsonTx,
   TxOptions,
   N_DIV_2,
 } from './types'
 
-const emptyAccessList: AccessList = []
+import { AccessLists } from './util'
+
+const TRANSACTION_TYPE = 1
+const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')
 
 /**
  * Typed transaction with optional access lists
@@ -34,6 +25,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   public readonly chainId: BN
   public readonly accessList: AccessListBuffer
   public readonly AccessListJSON: AccessList
+  public readonly gasPrice: BN
 
   /**
    * EIP-2930 alias for `r`
@@ -69,9 +61,11 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * Note: this means that the Buffer should start with 0x01.
    */
   public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
-    if (serialized[0] !== 1) {
+    if (!serialized.slice(0, 1).equals(TRANSACTION_TYPE_BUFFER)) {
       throw new Error(
-        `Invalid serialized tx input: not an EIP-2930 transaction (wrong tx type, expected: 1, received: ${serialized[0]}`
+        `Invalid serialized tx input: not an EIP-2930 transaction (wrong tx type, expected: ${TRANSACTION_TYPE}, received: ${serialized
+          .slice(0, 1)
+          .toString('hex')}`
       )
     }
 
@@ -112,6 +106,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
     const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = values
 
+    const emptyAccessList: AccessList = []
+
     return new AccessListEIP2930Transaction(
       {
         chainId: new BN(chainId),
@@ -138,53 +134,26 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * varying data types.
    */
   public constructor(txData: AccessListEIP2930TxData, opts: TxOptions = {}) {
-    const { chainId, accessList } = txData
+    const { chainId, accessList, gasPrice } = txData
 
-    super({ ...txData, type: 1 }, opts)
+    super({ ...txData, type: TRANSACTION_TYPE }, opts)
 
     // EIP-2718 check is done in Common
     if (!this.common.isActivatedEIP(2930)) {
       throw new Error('EIP-2930 not enabled on Common')
     }
 
-    // check the type of AccessList. If it's a JSON-type, we have to convert it to a Buffer.
-    let usedAccessList
-    if (accessList && isAccessList(accessList)) {
-      this.AccessListJSON = accessList
-      const newAccessList: AccessListBuffer = []
-
-      for (let i = 0; i < accessList.length; i++) {
-        const item: AccessListItem = accessList[i]
-        const addressBuffer = toBuffer(item.address)
-        const storageItems: Buffer[] = []
-        for (let index = 0; index < item.storageKeys.length; index++) {
-          storageItems.push(toBuffer(item.storageKeys[index]))
-        }
-        newAccessList.push([addressBuffer, storageItems])
-      }
-      usedAccessList = newAccessList
-    } else {
-      usedAccessList = accessList ?? []
-      // build the JSON
-      const json: AccessList = []
-      for (let i = 0; i < usedAccessList.length; i++) {
-        const data = usedAccessList[i]
-        const address = bufferToHex(data[0])
-        const storageKeys: string[] = []
-        for (let item = 0; item < data[1].length; item++) {
-          storageKeys.push(bufferToHex(data[1][item]))
-        }
-        const jsonItem: AccessListItem = {
-          address,
-          storageKeys,
-        }
-        json.push(jsonItem)
-      }
-      this.AccessListJSON = json
-    }
+    // Populate the access list fields
+    const accessListData = AccessLists.getAccessListData(accessList ?? [])
+    this.accessList = accessListData.accessList
+    this.AccessListJSON = accessListData.AccessListJSON
+    // Verify the access list format.
+    AccessLists.verifyAccessList(this.accessList)
 
     this.chainId = chainId ? new BN(toBuffer(chainId)) : this.common.chainIdBN()
-    this.accessList = usedAccessList
+    this.gasPrice = new BN(toBuffer(gasPrice === '' ? '0x' : gasPrice))
+
+    this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
 
     if (!this.chainId.eq(this.common.chainIdBN())) {
       throw new Error('The chain ID does not match the chain ID of Common')
@@ -200,26 +169,6 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       )
     }
 
-    // Verify the access list format.
-    for (let key = 0; key < this.accessList.length; key++) {
-      const accessListItem = this.accessList[key]
-      const address = <Buffer>accessListItem[0]
-      const storageSlots = <Buffer[]>accessListItem[1]
-      if ((<any>accessListItem)[2] !== undefined) {
-        throw new Error(
-          'Access list item cannot have 3 elements. It can only have an address, and an array of storage slots.'
-        )
-      }
-      if (address.length != 20) {
-        throw new Error('Invalid EIP-2930 transaction: address length should be 20 bytes')
-      }
-      for (let storageSlot = 0; storageSlot < storageSlots.length; storageSlot++) {
-        if (storageSlots[storageSlot].length != 32) {
-          throw new Error('Invalid EIP-2930 transaction: storage slot length should be 32 bytes')
-        }
-      }
-    }
-
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -231,19 +180,15 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    */
   getDataFee(): BN {
     const cost = super.getDataFee()
-    const accessListStorageKeyCost = this.common.param('gasPrices', 'accessListStorageKeyCost')
-    const accessListAddressCost = this.common.param('gasPrices', 'accessListAddressCost')
-
-    let slots = 0
-    for (let index = 0; index < this.accessList.length; index++) {
-      const item = this.accessList[index]
-      const storageSlots = item[1]
-      slots += storageSlots.length
-    }
-
-    const addresses = this.accessList.length
-    cost.iaddn(addresses * accessListAddressCost + slots * accessListStorageKeyCost)
+    cost.iaddn(AccessLists.getDataFeeEIP2930(this.accessList, this.common))
     return cost
+  }
+
+  /**
+   * The up front amount that an account must have for this transaction to be valid
+   */
+  getUpfrontCost(): BN {
+    return this.gasLimit.mul(this.gasPrice).add(this.value)
   }
 
   /**
@@ -272,7 +217,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    */
   serialize(): Buffer {
     const base = this.raw()
-    return Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base as any)])
+    return Buffer.concat([TRANSACTION_TYPE_BUFFER, rlp.encode(base as any)])
   }
 
   /**
@@ -280,11 +225,9 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    *
    * @param hashMessage - Return hashed message if set to true (default: true)
    */
-  getMessageToSign(hashMessage: false): Buffer[]
-  getMessageToSign(hashMessage?: true): Buffer
-  getMessageToSign(hashMessage = true): Buffer | Buffer[] {
+  getMessageToSign(hashMessage = true): Buffer {
     const base = this.raw().slice(0, 8)
-    const message = Buffer.concat([Buffer.from('01', 'hex'), rlp.encode(base as any)])
+    const message = Buffer.concat([TRANSACTION_TYPE_BUFFER, rlp.encode(base as any)])
     if (hashMessage) {
       return keccak256(message)
     } else {
@@ -320,8 +263,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
     const msgHash = this.getMessageToVerifySignature()
 
-    // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
-    // TODO: verify if this is the case for EIP-2930
+    // EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
+    // Reasoning: https://ethereum.stackexchange.com/a/55728
     if (this.common.gteHardfork('homestead') && this.s?.gt(N_DIV_2)) {
       throw new Error(
         'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
@@ -329,16 +272,12 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     }
 
     const { yParity, r, s } = this
-    if (yParity === undefined || !r || !s) {
-      throw new Error('Missing values to derive sender public key from signed tx')
-    }
-
     try {
       return ecrecover(
         msgHash,
-        yParity.addn(27), // Recover the 27 which was stripped from ecsign
-        bnToRlp(r),
-        bnToRlp(s)
+        yParity!.addn(27), // Recover the 27 which was stripped from ecsign
+        bnToRlp(r!),
+        bnToRlp(s!)
       )
     } catch (e) {
       throw new Error('Invalid Signature')
@@ -372,21 +311,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * Returns an object with the JSON representation of the transaction
    */
   toJSON(): JsonTx {
-    const accessListJSON = []
-
-    for (let index = 0; index < this.accessList.length; index++) {
-      const item: any = this.accessList[index]
-      const JSONItem: any = {
-        address: '0x' + setLengthLeft(<Buffer>item[0], 20).toString('hex'),
-        storageKeys: [],
-      }
-      const storageSlots: Buffer[] = item[1]
-      for (let slot = 0; slot < storageSlots.length; slot++) {
-        const storageSlot = storageSlots[slot]
-        JSONItem.storageKeys.push('0x' + setLengthLeft(storageSlot, 32).toString('hex'))
-      }
-      accessListJSON.push(JSONItem)
-    }
+    const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
 
     return {
       chainId: bnToHex(this.chainId),
@@ -397,6 +322,9 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       value: bnToHex(this.value),
       data: '0x' + this.data.toString('hex'),
       accessList: accessListJSON,
+      v: this.v !== undefined ? bnToHex(this.v) : undefined,
+      r: this.r !== undefined ? bnToHex(this.r) : undefined,
+      s: this.s !== undefined ? bnToHex(this.s) : undefined,
     }
   }
 }

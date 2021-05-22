@@ -38,7 +38,7 @@ tape('[Block]: Header functions', function (t) {
     st.end()
   })
 
-  t.test('should test header initialization', function (st) {
+  t.test('Initialization -> fromHeaderData()', function (st) {
     const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
     let header = BlockHeader.genesis(undefined, { common })
     st.ok(header.hash().toString('hex'), 'genesis block should initialize')
@@ -61,6 +61,11 @@ tape('[Block]: Header functions', function (t) {
 
     header = BlockHeader.fromHeaderData({}, { freeze: false })
     st.ok(!Object.isFrozen(header), 'block should not be frozen when freeze deactivated in options')
+    st.end()
+  })
+
+  t.test('Initialization -> fromRLPSerializedHeader()', function (st) {
+    let header = BlockHeader.fromHeaderData({}, { freeze: false })
 
     const rlpHeader = header.serialize()
     header = BlockHeader.fromRLPSerializedHeader(rlpHeader)
@@ -69,6 +74,20 @@ tape('[Block]: Header functions', function (t) {
     header = BlockHeader.fromRLPSerializedHeader(rlpHeader, { freeze: false })
     st.ok(!Object.isFrozen(header), 'block should not be frozen when freeze deactivated in options')
 
+    st.end()
+  })
+
+  t.test('Initialization -> fromRLPSerializedHeader() -> error cases', function (st) {
+    try {
+      BlockHeader.fromRLPSerializedHeader(rlp.encode('a'))
+    } catch (e) {
+      const expectedError = 'Invalid serialized header input. Must be array'
+      st.ok(e.message.includes(expectedError), 'should throw with header as rlp encoded string')
+    }
+    st.end()
+  })
+
+  t.test('Initialization -> fromValuesArray()', function (st) {
     const zero = Buffer.alloc(0)
     const headerArray = []
     for (let item = 0; item < 15; item++) {
@@ -84,16 +103,43 @@ tape('[Block]: Header functions', function (t) {
     headerArray[13] = zeros(32) // mixHash
     headerArray[14] = zeros(8) // nonce
 
-    header = BlockHeader.fromValuesArray(headerArray)
+    let header = BlockHeader.fromValuesArray(headerArray)
     st.ok(Object.isFrozen(header), 'block should be frozen by default')
 
     header = BlockHeader.fromValuesArray(headerArray, { freeze: false })
     st.ok(!Object.isFrozen(header), 'block should not be frozen when freeze deactivated in options')
-
     st.end()
   })
 
-  t.test('should test header initialization -> clique', function (st) {
+  t.test('Initialization -> fromValuesArray() -> error cases', function (st) {
+    const headerArray = Array(17).fill(Buffer.alloc(0))
+
+    // mock header data (if set to zeros(0) header throws)
+    headerArray[0] = zeros(32) //parentHash
+    headerArray[2] = zeros(20) //coinbase
+    headerArray[3] = zeros(32) //stateRoot
+    headerArray[4] = zeros(32) //transactionsTrie
+    headerArray[5] = zeros(32) //receiptTrie
+    headerArray[13] = zeros(32) // mixHash
+    headerArray[14] = zeros(8) // nonce
+    headerArray[15] = zeros(4) // bad data
+    try {
+      BlockHeader.fromValuesArray(headerArray)
+    } catch (e) {
+      const expectedError = 'invalid header. More values than expected were received'
+      st.ok(e.message.includes(expectedError), 'should throw on more values than expected')
+    }
+
+    try {
+      BlockHeader.fromValuesArray(headerArray.slice(0, 5))
+    } catch (e) {
+      const expectedError = 'invalid header. Less values than expected were received'
+      st.ok(e.message.includes(expectedError), 'should throw on less values than expected')
+    }
+    st.end()
+  })
+
+  t.test('Initialization -> Clique Blocks', function (st) {
     const common = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
     let header = BlockHeader.genesis(undefined, { common })
     st.ok(header.hash().toString('hex'), 'genesis block should initialize')
@@ -387,37 +433,4 @@ tape('[Block]: Header functions', function (t) {
     )
     st.end()
   })
-
-  t.test(
-    'should throw on fromRLPSerializedHeader() with header as rlp encoded string',
-    function (st) {
-      const badHeader = function (): void {
-        BlockHeader.fromRLPSerializedHeader(rlp.encode('a'))
-      }
-      st.throws(() => badHeader(), 'invalid serialized header input. Must be array')
-      st.end()
-    }
-  )
-
-  t.test(
-    'should throw on fromValuesBuffer() call with values array with length > 15',
-    function (st) {
-      const badHeader = function (): void {
-        const headerArray = Array(16).fill(Buffer.alloc(0))
-
-        // mock header data (if set to zeros(0) header throws)
-        headerArray[0] = zeros(32) //parentHash
-        headerArray[2] = zeros(20) //coinbase
-        headerArray[3] = zeros(32) //stateRoot
-        headerArray[4] = zeros(32) //transactionsTrie
-        headerArray[5] = zeros(32) //receiptTrie
-        headerArray[13] = zeros(32) // mixHash
-        headerArray[14] = zeros(8) // nonce
-        headerArray[15] = zeros(4) // bad data
-        BlockHeader.fromValuesArray(headerArray)
-      }
-      st.throws(() => badHeader(), 'invalid header. More values than expected were received')
-      st.end()
-    }
-  )
 })
