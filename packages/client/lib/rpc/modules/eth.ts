@@ -60,7 +60,7 @@ export class Eth {
     ])
 
     this.getBlockByNumber = middleware(this.getBlockByNumber.bind(this), 2, [
-      [validators.hex],
+      [validators.blockOption],
       [validators.bool],
     ])
 
@@ -258,7 +258,7 @@ export class Eth {
   /**
    * Returns information about a block by block number.
    * @param params An array of two parameters:
-   *   1. integer of a block number
+   *   1. integer of a block number, or the string "latest", "earliest" or "pending"
    *   2. boolean - if true returns the full transaction objects, if false only the hashes of the transactions.
    */
   async getBlockByNumber(params: [string, boolean]) {
