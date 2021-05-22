@@ -1,12 +1,12 @@
-[merkle-patricia-tree](README.md)
+merkle-patricia-tree
 
 # merkle-patricia-tree
 
-## Index
+## Table of contents
 
-### Modules
+### Classes
 
-* ["baseTrie"](modules/_basetrie_.md)
-* ["checkpointTrie"](modules/_checkpointtrie_.md)
-* ["secure"](modules/_secure_.md)
-* ["util/walkController"](modules/_util_walkcontroller_.md)
+- [BaseTrie](classes/basetrie.md)
+- [CheckpointTrie](classes/checkpointtrie.md)
+- [SecureTrie](classes/securetrie.md)
+- [WalkController](classes/walkcontroller.md)

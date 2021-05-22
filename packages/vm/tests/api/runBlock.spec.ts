@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, rlp, KECCAK256_RLP } from 'ethereumjs-util'
+import { Address, BN, rlp, KECCAK256_RLP, Account } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import {
@@ -20,21 +20,12 @@ const testData = require('./testdata/blockchain.json')
 const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
 
 tape('runBlock() -> successful API parameter usage', async (t) => {
-  async function simpleRun(vm: VM, opts: any = {}) {
-    const common = opts.common
-
+  async function simpleRun(vm: VM) {
     const genesisRlp = testData.genesisRLP
-    const genesis = Block.fromRLPSerializedBlock(genesisRlp, { common })
+    const genesis = Block.fromRLPSerializedBlock(genesisRlp)
 
     const blockRlp = testData.blocks[0].rlp
-    const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
-
-    if (opts.cliqueBeneficiary) {
-      // eslint-disable-next-line no-extra-semi
-      ;(block.header as any).cliqueSigner = () => {
-        return opts.cliqueBeneficiary
-      }
-    }
+    const block = Block.fromRLPSerializedBlock(blockRlp)
 
     //@ts-ignore
     await setupPreConditions(vm.stateManager._trie, testData)
@@ -45,17 +36,11 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       'genesis state root should match calculated state root'
     )
 
-    let generate = false
-    if (opts.generate) {
-      generate = true
-    }
-
     const res = await vm.runBlock({
       block,
       // @ts-ignore
       root: vm.stateManager._trie.root,
       skipBlockValidation: true,
-      generate,
     })
 
     t.equal(
@@ -87,16 +72,6 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     const common = new Common({ chain: 'testnet', hardfork: 'berlin', customChains })
     const vm = setupVM({ common })
     await simpleRun(vm)
-    t.end()
-  })
-
-  t.test("PoA block, should use block header's cliqueSigner", async (t) => {
-    const common = new Common({ chain: 'goerli', hardfork: 'berlin' })
-    const vm = setupVM({ common })
-    const cliqueBeneficiary = Address.fromString('0x70732c08fb6dbb06a64bf619c816c22aed12267a')
-    await simpleRun(vm, { common, cliqueBeneficiary, generate: true })
-    const account = await vm.stateManager.getAccount(cliqueBeneficiary)
-    t.ok(account.balance.gtn(0), 'beneficiary balance should be updated')
     t.end()
   })
 
@@ -290,6 +265,53 @@ tape('runBlock() -> runtime behavior', async (t) => {
       'should transfer balance from DAO children to the Refund DAO account in the DAO fork'
     t.ok(DAORefundAccount.balance.eq(new BN(Buffer.from('7777', 'hex'))), msg)
 
+    t.end()
+  })
+
+  t.test('should allocate to correct clique beneficiary', async (t) => {
+    const common = new Common({ chain: 'goerli' })
+    const vm = setupVM({ common })
+
+    const signer = {
+      address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
+      privateKey: Buffer.from(
+        '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
+        'hex'
+      ),
+      publicKey: Buffer.from(
+        '40b2ebdf4b53206d2d3d3d59e7e2f13b1ea68305aec71d5d24cefe7f24ecae886d241f9267f04702d7f693655eb7b4aa23f30dcd0c3c5f2b970aad7c8a828195',
+        'hex'
+      ),
+    }
+
+    const otherUser = {
+      address: new Address(Buffer.from('6f62d8382bf2587361db73ceca28be91b2acb6df', 'hex')),
+      privateKey: Buffer.from(
+        '2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6',
+        'hex'
+      ),
+      publicKey: Buffer.from(
+        'ca0a55f6e81cb897aee6a1c390aa83435c41048faa0564b226cfc9f3df48b73e846377fb0fd606df073addc7bd851f22547afbbdd5c3b028c91399df802083a2',
+        'hex'
+      ),
+    }
+
+    // add balance to otherUser to send two txs to zero address
+    await vm.stateManager.putAccount(otherUser.address, new Account(new BN(0), new BN(42000)))
+    const tx = Transaction.fromTxData(
+      { to: Address.zero(), gasLimit: 21000, gasPrice: 1 },
+      { common }
+    ).sign(otherUser.privateKey)
+
+    // create block with the signer and txs
+    const block = Block.genesis(
+      { transactions: [tx, tx] },
+      { common, cliqueSigner: signer.privateKey }
+    )
+
+    await vm.runBlock({ block, skipNonce: true, skipBlockValidation: true, generate: true })
+    const account = await vm.stateManager.getAccount(signer.address)
+    t.ok(account.balance.eqn(42000), 'beneficiary balance should equal the cost of the txs')
     t.end()
   })
 })
