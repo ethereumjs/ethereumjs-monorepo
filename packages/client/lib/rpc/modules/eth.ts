@@ -17,6 +17,7 @@ import type { EthereumClient } from '../..'
 import type { EthereumService } from '../../service'
 import type { EthProtocol } from '../../net/protocol'
 import type VM from '@ethereumjs/vm'
+import { Block } from '@ethereumjs/block'
 
 /**
  * eth_* RPC module
@@ -87,7 +88,7 @@ export class Eth {
     ])
 
     this.getTransactionCount = middleware(this.getTransactionCount.bind(this), 2, [
-      [validators.address],
+      [validators.address.bind],
       [validators.blockOption],
     ])
 
@@ -256,23 +257,6 @@ export class Eth {
   }
 
   /**
-   * Returns information about a block by block number.
-   * @param params An array of two parameters:
-   *   1. integer of a block number, or the string "latest", "earliest" or "pending"
-   *   2. boolean - if true returns the full transaction objects, if false only the hashes of the transactions.
-   */
-  async getBlockByNumber(params: [string, boolean]) {
-    const [blockNumber, includeTransactions] = params
-    const blockNumberBN = new BN(stripHexPrefix(blockNumber), 16)
-    const block = await this._chain.getBlock(blockNumberBN)
-    const json = block.toJSON()
-    if (!includeTransactions) {
-      json.transactions = block.transactions.map((tx) => bufferToHex(tx.hash())) as any
-    }
-    return json
-  }
-
-  /**
    * Returns information about a block by hash.
    * @param params An array of two parameters:
    *   1. a block hash
@@ -282,6 +266,36 @@ export class Eth {
     const [blockHash, includeTransactions] = params
 
     const block = await this._chain.getBlock(toBuffer(blockHash))
+    const json = block.toJSON()
+    if (!includeTransactions) {
+      json.transactions = block.transactions.map((tx) => bufferToHex(tx.hash())) as any
+    }
+    return json
+  }
+
+  /**
+   * Returns information about a block by block number.
+   * @param params An array of two parameters:
+   *   1. integer of a block number, or the string "latest", "earliest" or "pending"
+   *   2. boolean - if true returns the full transaction objects, if false only the hashes of the transactions.
+   */
+  async getBlockByNumber(params: [string, boolean]) {
+    const [blockOpt, includeTransactions] = params
+    let block: Block
+    if (blockOpt === 'latest') {
+      block = await this._chain.getLatestBlock()
+    } else if (blockOpt === 'pending') {
+      return {
+        code: INVALID_PARAMS,
+        message: `"pending" is not yet supported`,
+      }
+    } else if (blockOpt === 'earliest') {
+      block = await this._chain.getBlock(new BN(0))
+    } else {
+      const blockNumberBN = new BN(stripHexPrefix(blockOpt), 16)
+      block = await this._chain.getBlock(blockNumberBN)
+    }
+
     const json = block.toJSON()
     if (!includeTransactions) {
       json.transactions = block.transactions.map((tx) => bufferToHex(tx.hash())) as any
@@ -423,7 +437,7 @@ export class Eth {
     if (latest < blockNumberBN) {
       return {
         code: INVALID_PARAMS,
-        message: `specified block greater than current height`,
+        message: `Specified block greater than current height`,
       }
     }
 
