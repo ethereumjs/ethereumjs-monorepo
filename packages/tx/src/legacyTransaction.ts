@@ -8,13 +8,17 @@ import {
   toBuffer,
   unpadBuffer,
 } from 'ethereumjs-util'
-import { TxOptions, TxData, JsonTx, N_DIV_2 } from './types'
+import { TxOptions, TxData, JsonTx, N_DIV_2, TxValuesArray } from './types'
 import { BaseTransaction } from './baseTransaction'
+
+const TRANSACTION_TYPE = 0
 
 /**
  * An Ethereum non-typed (legacy) transaction
  */
 export default class Transaction extends BaseTransaction<Transaction> {
+  public readonly gasPrice: BN
+
   /**
    * Instantiate a transaction from a data dictionary
    */
@@ -52,7 +56,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * The format is:
    * nonce, gasPrice, gasLimit, to, value, data, v, r, s
    */
-  public static fromValuesArray(values: Buffer[], opts: TxOptions = {}) {
+  public static fromValuesArray(values: TxValuesArray, opts: TxOptions = {}) {
     // If length is not 6, it has length 9. If v/r/s are empty Buffers, it is still an unsigned transaction
     // This happens if you get the RLP data from `raw()`
     if (values.length !== 6 && values.length !== 9) {
@@ -87,9 +91,11 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * varying data types.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
-    super(txData, opts)
+    super({ ...txData, type: TRANSACTION_TYPE }, opts)
 
-    this._validateCannotExceedMaxInteger({ r: this.r, s: this.s })
+    this.gasPrice = new BN(toBuffer(txData.gasPrice === '' ? '0x' : txData.gasPrice))
+
+    this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
 
     this._validateTxV(this.v)
 
@@ -102,7 +108,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
   /**
    * Returns a Buffer Array of the raw Buffers of this transaction, in order.
    */
-  raw(): Buffer[] {
+  raw(): TxValuesArray {
     return [
       bnToRlp(this.nonce),
       bnToRlp(this.gasPrice),
@@ -163,6 +169,13 @@ export default class Transaction extends BaseTransaction<Transaction> {
   }
 
   /**
+   * The up front amount that an account must have for this transaction to be valid
+   */
+  getUpfrontCost(): BN {
+    return this.gasLimit.mul(this.gasPrice).add(this.value)
+  }
+
+  /**
    * Computes a sha3-256 hash of the serialized tx
    */
   hash(): Buffer {
@@ -184,7 +197,8 @@ export default class Transaction extends BaseTransaction<Transaction> {
   getSenderPublicKey(): Buffer {
     const msgHash = this.getMessageToVerifySignature()
 
-    // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
+    // EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
+    // Reasoning: https://ethereum.stackexchange.com/a/55728
     if (this.common.gteHardfork('homestead') && this.s?.gt(N_DIV_2)) {
       throw new Error(
         'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
@@ -192,16 +206,12 @@ export default class Transaction extends BaseTransaction<Transaction> {
     }
 
     const { v, r, s } = this
-    if (!v || !r || !s) {
-      throw new Error('Missing values to derive sender public key from signed tx')
-    }
-
     try {
       return ecrecover(
         msgHash,
-        v,
-        bnToRlp(r),
-        bnToRlp(s),
+        v!,
+        bnToRlp(r!),
+        bnToRlp(s!),
         this._signedTxImplementsEIP155() ? this.common.chainIdBN() : undefined
       )
     } catch (e) {

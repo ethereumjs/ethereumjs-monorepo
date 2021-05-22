@@ -87,13 +87,6 @@
       "comment": "Aleut bootnode 1"
     },
     {
-      "ip": "164.90.171.157",
-      "port": 31559,
-      "id": "aec88fd902744bf67705c098bf532b01017ccc3a156395508e2d9c4e7c22699ecccae1e7316614f8a2d4c5698a9be3fe6151ee25b9ed4aa052f88e112c65387a",
-      "location": "",
-      "comment": "Aleut bootnode 2"
-    },
-    {
       "ip": "144.91.103.6",
       "port": 30308,
       "id": "d4937b184f79b21845c290902e3667b9e8e96af3cf7b4917e85c7d3aa12d6ed22720d3c3f6ef7d6f93311f5c4ddc0c1e2a166ea4a765220212e49dfd54eec456",

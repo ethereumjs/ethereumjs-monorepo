@@ -2,7 +2,12 @@ import tape from 'tape'
 import { Address, BN, rlp, KECCAK256_RLP } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
-import { AccessListEIP2930Transaction, Transaction, TypedTransaction } from '@ethereumjs/tx'
+import {
+  AccessListEIP2930Transaction,
+  Transaction,
+  TypedTransaction,
+  FeeMarketEIP1559Transaction,
+} from '@ethereumjs/tx'
 import { RunBlockOpts, AfterBlockEvent } from '../../lib/runBlock'
 import type { PreByzantiumTxReceipt, PostByzantiumTxReceipt } from '../../lib/types'
 import { setupPreConditions, getDAOCommon } from '../util'
@@ -15,12 +20,21 @@ const testData = require('./testdata/blockchain.json')
 const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
 
 tape('runBlock() -> successful API parameter usage', async (t) => {
-  async function simpleRun(vm: VM) {
+  async function simpleRun(vm: VM, opts: any = {}) {
+    const common = opts.common
+
     const genesisRlp = testData.genesisRLP
-    const genesis = Block.fromRLPSerializedBlock(genesisRlp)
+    const genesis = Block.fromRLPSerializedBlock(genesisRlp, { common })
 
     const blockRlp = testData.blocks[0].rlp
-    const block = Block.fromRLPSerializedBlock(blockRlp)
+    const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
+
+    if (opts.cliqueBeneficiary) {
+      // eslint-disable-next-line no-extra-semi
+      ;(block.header as any).cliqueSigner = () => {
+        return opts.cliqueBeneficiary
+      }
+    }
 
     //@ts-ignore
     await setupPreConditions(vm.stateManager._trie, testData)
@@ -31,11 +45,17 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       'genesis state root should match calculated state root'
     )
 
+    let generate = false
+    if (opts.generate) {
+      generate = true
+    }
+
     const res = await vm.runBlock({
       block,
       // @ts-ignore
       root: vm.stateManager._trie.root,
       skipBlockValidation: true,
+      generate,
     })
 
     t.equal(
@@ -67,6 +87,16 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     const common = new Common({ chain: 'testnet', hardfork: 'berlin', customChains })
     const vm = setupVM({ common })
     await simpleRun(vm)
+    t.end()
+  })
+
+  t.test("PoA block, should use block header's cliqueSigner", async (t) => {
+    const common = new Common({ chain: 'goerli', hardfork: 'berlin' })
+    const vm = setupVM({ common })
+    const cliqueBeneficiary = Address.fromString('0x70732c08fb6dbb06a64bf619c816c22aed12267a')
+    await simpleRun(vm, { common, cliqueBeneficiary, generate: true })
+    const account = await vm.stateManager.getAccount(cliqueBeneficiary)
+    t.ok(account.balance.gtn(0), 'beneficiary balance should be updated')
     t.end()
   })
 
@@ -358,6 +388,11 @@ tape('runBlock() -> tx types', async (t) => {
     //@ts-ignore overwrite transactions
     block.transactions = transactions
 
+    if (transactions.some((t) => t.type === 2)) {
+      // @ts-ignore overwrite read-only property
+      block.header.baseFeePerGas = new BN(7)
+    }
+
     //@ts-ignore
     await setupPreConditions(vm.stateManager._trie, testData)
 
@@ -403,6 +438,26 @@ tape('runBlock() -> tx types', async (t) => {
 
     const tx = AccessListEIP2930Transaction.fromTxData(
       { gasLimit: 53000, value: 1, v: 1, r: 1, s: 1 },
+      { common, freeze: false }
+    )
+
+    tx.getSenderAddress = () => {
+      return address
+    }
+
+    await simpleRun(vm, [tx])
+    t.end()
+  })
+
+  t.test('fee market tx', async (t) => {
+    const common = new Common({ chain: 'mainnet', hardfork: 'london' })
+    const vm = setupVM({ common })
+
+    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    await setBalance(vm, address)
+
+    const tx = FeeMarketEIP1559Transaction.fromTxData(
+      { maxFeePerGas: 1, maxPriorityFeePerGas: 4, gasLimit: 100000, value: 6 },
       { common, freeze: false }
     )
 

@@ -308,6 +308,18 @@ export default class EEI {
   }
 
   /**
+   * Returns the Base Fee of the block as proposed in [EIP-3198](https;//eips.etheruem.org/EIPS/eip-3198)
+   */
+  getBlockBaseFee(): BN {
+    const baseFee = this._env.block.header.baseFeePerGas
+    if (baseFee === undefined) {
+      // Sanity check
+      throw new Error('Block has no Base Fee')
+    }
+    return baseFee
+  }
+
+  /**
    * Returns Gets the hash of one of the 256 most recent complete blocks.
    * @param num - Number of block
    */

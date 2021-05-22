@@ -38,7 +38,7 @@ tape('SecureTrie', function (t) {
 
     it.test('empty values', async function (t) {
       for (const row of jsonTests.emptyValues.in) {
-        const val = row[1] ? Buffer.from(row[1]) : ((null as unknown) as Buffer)
+        const val = row[1] ? Buffer.from(row[1]) : (null as unknown as Buffer)
         await trie.put(Buffer.from(row[0]), val)
       }
       t.equal('0x' + trie.root.toString('hex'), jsonTests.emptyValues.root)
@@ -48,7 +48,7 @@ tape('SecureTrie', function (t) {
     it.test('branchingTests', async function (t) {
       trie = new SecureTrie()
       for (const row of jsonTests.branchingTests.in) {
-        const val = row[1] ? Buffer.from(row[1]) : ((null as unknown) as Buffer)
+        const val = row[1] ? Buffer.from(row[1]) : (null as unknown as Buffer)
         await trie.put(Buffer.from(row[0]), val)
       }
       t.equal('0x' + trie.root.toString('hex'), jsonTests.branchingTests.root)

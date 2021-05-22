@@ -4,7 +4,10 @@ module.exports = {
   plugin: 'typedoc-plugin-markdown',
   readme: 'none',
   gitRevision: 'master',
-  exclude: 'test/**/*.ts',
+  exclude: [
+    'src/util.ts',
+    'test/**/*.ts',
+  ],
   excludePrivate: true,
   excludeProtected: true,
 }

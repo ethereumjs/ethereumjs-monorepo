@@ -37,10 +37,8 @@ tape('[Types]', function (t) {
     st.ok(legacyTx, 'legacy tx')
 
     // Access List tx
-    const accessListTx: RequiredExceptOptionals<
-      AccessListEIP2930TxData,
-      OptionalTxFields
-    > = AccessListEIP2930Transaction.fromTxData({}, { common })
+    const accessListTx: RequiredExceptOptionals<AccessListEIP2930TxData, OptionalTxFields> =
+      AccessListEIP2930Transaction.fromTxData({}, { common })
     st.ok(accessListTx, 'accessList tx')
 
     st.end()

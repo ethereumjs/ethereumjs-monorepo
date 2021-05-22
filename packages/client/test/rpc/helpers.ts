@@ -57,12 +57,18 @@ export function createClient(clientOpts: any = {}) {
     synchronizer = { execution: { vm: new VM({ blockchain, common }) } }
   }
 
+  let peers = [1, 2, 3]
+  if (clientOpts.noPeers === true) {
+    peers = []
+  }
+
   const client: any = {
+    config,
     services: [
       {
         name: 'eth',
         chain: clientConfig.blockchain,
-        pool: { peers: [1, 2, 3] },
+        pool: { peers },
         protocols: [
           {
             name: 'eth',
