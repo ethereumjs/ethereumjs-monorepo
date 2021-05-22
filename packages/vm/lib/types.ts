@@ -7,7 +7,7 @@ export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt | EIP2930
  */
 export interface BaseTxReceipt {
   /**
-   * Gas used
+   * Cumulative gas used in the block including this tx
    */
   gasUsed: Buffer
   /**

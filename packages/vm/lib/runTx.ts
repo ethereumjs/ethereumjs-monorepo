@@ -31,9 +31,6 @@ export interface RunTxOpts {
   /**
    * The `@ethereumjs/block` the `tx` belongs to.
    * If omitted, a default blank block will be used.
-   * To obtain an accurate `TxReceipt`, please pass a block
-   * with the header field `gasUsed` set to the value
-   * prior to this tx being run.
    */
   block?: Block
   /**
@@ -68,12 +65,9 @@ export interface RunTxOpts {
   reportAccessList?: boolean
 
   /**
-   * Optional clique Address: if the consensus algorithm is on clique,
-   * and this parameter is provided, use this as the beneficiary of transaction fees
-   * If it is not provided and the consensus algorithm is clique, instead
-   * get it from the block using `cliqueSigner()`
+   * To obtain an accurate tx receipt input the block gas used up until this tx.
    */
-  cliqueBeneficiary?: Address
+  blockGasUsed?: BN
 }
 
 /**
@@ -331,15 +325,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     miner = block.header.coinbase
   } else {
     // Backwards-compatibilty check
-    // TODO: can be removed along VM v5 release
-    if (opts.cliqueBeneficiary) {
-      miner = opts.cliqueBeneficiary
+    // TODO: can be removed along VM v6 release
+    if ('cliqueSigner' in block.header) {
+      miner = block.header.cliqueSigner()
     } else {
-      if ('cliqueSigner' in block.header) {
-        miner = block.header.cliqueSigner()
-      } else {
-        miner = Address.zero()
-      }
+      miner = Address.zero()
     }
   }
   const minerAccount = await state.getAccount(miner)
@@ -370,8 +360,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   state.clearOriginalStorageCache()
 
   // Generate the tx receipt
-  const blockGasUsed = block.header.gasUsed.add(results.gasUsed)
-  results.receipt = await generateTxReceipt.bind(this)(tx, results, blockGasUsed)
+  const cumulativeGasUsed = (opts.blockGasUsed ?? block.header.gasUsed).add(results.gasUsed)
+  results.receipt = await generateTxReceipt.bind(this)(tx, results, cumulativeGasUsed)
 
   /**
    * The `afterTx` event
@@ -412,16 +402,16 @@ function txLogsBloom(logs?: any[]): Bloom {
  * @param this The vm instance
  * @param tx The transaction
  * @param txResult The tx result
- * @param blockGasUsed The amount of gas used in the block up until this tx
+ * @param cumulativeGasUsed The gas used in the block including this tx
  */
 export async function generateTxReceipt(
   this: VM,
   tx: TypedTransaction,
   txResult: RunTxResult,
-  blockGasUsed: BN
+  cumulativeGasUsed: BN
 ): Promise<TxReceipt> {
   const baseReceipt: BaseTxReceipt = {
-    gasUsed: blockGasUsed.toArrayLike(Buffer),
+    gasUsed: cumulativeGasUsed.toArrayLike(Buffer),
     bitvector: txResult.bloom.bitvector,
     logs: txResult.execResult.logs ?? [],
   }
