@@ -88,7 +88,7 @@ export class Eth {
     ])
 
     this.getTransactionCount = middleware(this.getTransactionCount.bind(this), 2, [
-      [validators.address.bind],
+      [validators.address],
       [validators.blockOption],
     ])
 
@@ -437,7 +437,7 @@ export class Eth {
     if (latest < blockNumberBN) {
       return {
         code: INVALID_PARAMS,
-        message: `Specified block greater than current height`,
+        message: `specified block greater than current height`,
       }
     }
 
