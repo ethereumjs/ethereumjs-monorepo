@@ -272,13 +272,16 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
     currentDifficulty,
     currentNumber,
   } = data
-  const headerData = {
+  let headerData: any = {
     number: currentNumber,
     coinbase: currentCoinbase,
     parentHash: previousHash,
     difficulty: currentDifficulty,
     gasLimit: currentGasLimit,
     timestamp: currentTimestamp,
+  }
+  if ('currentBaseFee' in data) {
+    headerData['baseFeePerGas'] = data['currentBaseFee']
   }
   return BlockHeader.fromHeaderData(headerData, opts)
 }
