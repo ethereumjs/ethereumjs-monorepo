@@ -162,6 +162,7 @@ const normalHardforks = [
   'istanbul',
   'muirGlacier',
   'berlin',
+  'london',
 ]
 
 const transitionNetworks: any = {
