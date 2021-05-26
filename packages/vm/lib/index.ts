@@ -147,6 +147,9 @@ export default class VM extends AsyncEventEmitter {
   /**
    * VM is run in DEBUG mode (default: false)
    * Taken from DEBUG environment variable
+   *
+   * Safeguards on debug() calls are added for
+   * performance reasons to avoid string literal evaluation
    * @hidden
    */
   protected readonly DEBUG: boolean = false
