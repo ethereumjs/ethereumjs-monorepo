@@ -227,7 +227,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   const caller = tx.getSenderAddress()
   if (this.DEBUG) {
-    debug(`New tx run hash=${opts.tx.hash().toString('hex')} sender=${caller.toString()}`)
+    debug(
+      `New tx run hash=${
+        opts.tx.isSigned() ? opts.tx.hash().toString('hex') : 'unsigned'
+      } sender=${caller.toString()}`
+    )
   }
 
   if (this._common.isActivatedEIP(2929)) {
@@ -338,9 +342,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const evm = new EVM(this, txContext, block)
   if (this.DEBUG) {
     debug(
-      `Running tx=0x${tx
-        .hash()
-        .toString('hex')} with caller=${caller.toString()} gasLimit=${gasLimit} to=${
+      `Running tx=0x${
+        tx.isSigned() ? tx.hash().toString('hex') : 'unsigned'
+      } with caller=${caller.toString()} gasLimit=${gasLimit} to=${
         to ? to.toString() : ''
       } value=${value} data=0x${short(data)}`
     )
@@ -465,7 +469,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const event: AfterTxEvent = { transaction: tx, ...results }
   await this._emit('afterTx', event)
   if (this.DEBUG) {
-    debug(`tx run finished hash=${opts.tx.hash().toString('hex')} sender=${caller.toString()}`)
+    debug(
+      `tx run finished hash=${
+        opts.tx.isSigned() ? opts.tx.hash().toString('hex') : 'unsigned'
+      } sender=${caller.toString()}`
+    )
   }
 
   return results
