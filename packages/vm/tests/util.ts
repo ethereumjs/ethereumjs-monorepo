@@ -8,7 +8,7 @@ import {
   setLengthLeft,
   toBuffer,
 } from 'ethereumjs-util'
-import { AccessListEIP2930Transaction, Transaction, TxOptions } from '@ethereumjs/tx'
+import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction, Transaction, TxOptions } from '@ethereumjs/tx'
 import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 
@@ -100,7 +100,9 @@ const format = (exports.format = function (
  */
 export function makeTx(txData: any, opts?: TxOptions) {
   let tx
-  if (txData.accessLists) {
+  if (txData.maxFeePerGas) {
+    tx = FeeMarketEIP1559Transaction.fromTxData(txData, opts)
+  } else if (txData.accessLists) {
     tx = AccessListEIP2930Transaction.fromTxData(txData, opts)
   } else {
     tx = Transaction.fromTxData(txData, opts)
