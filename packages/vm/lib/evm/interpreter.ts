@@ -1,3 +1,4 @@
+import { debug as createDebugLogger } from 'debug'
 import { Account, Address, BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { StateManager } from '../state/index'
@@ -65,6 +66,9 @@ export default class Interpreter {
   _state: StateManager
   _runState: RunState
   _eei: EEI
+
+  // Opcode debuggers (e.g. { 'push': [debug Object], 'sstore': [debug Object], ...})
+  private opDebuggers: any = {}
 
   constructor(vm: any, eei: EEI) {
     this._vm = vm // TODO: remove when not needed
@@ -142,7 +146,7 @@ export default class Interpreter {
     }
 
     // Reduce opcode's base fee
-    this._eei.useGas(new BN(opInfo.fee))
+    this._eei.useGas(new BN(opInfo.fee), `${opInfo.name} (base fee)`)
     // Advance program counter
     this._runState.programCounter++
 
@@ -190,6 +194,30 @@ export default class Interpreter {
       memory: this._runState.memory._store, // Return underlying array for backwards-compatibility
       memoryWordCount: this._runState.memoryWordCount,
       codeAddress: this._eei._env.codeAddress,
+    }
+
+    if (this._vm.DEBUG) {
+      // Create opTrace for debug functionality
+      let hexStack = []
+      hexStack = eventObj.stack.map((item: any) => {
+        return '0x' + new BN(item).toString(16, 0)
+      })
+
+      const name = eventObj.opcode.name
+
+      const opTrace = {
+        pc: eventObj.pc,
+        op: name,
+        gas: '0x' + eventObj.gasLeft.toString('hex'),
+        gasCost: '0x' + eventObj.opcode.fee.toString(16),
+        stack: hexStack,
+        depth: eventObj.depth,
+      }
+
+      if (!(name in this.opDebuggers)) {
+        this.opDebuggers[name] = createDebugLogger(`vm:ops:${name}`)
+      }
+      this.opDebuggers[name](JSON.stringify(opTrace))
     }
 
     /**
