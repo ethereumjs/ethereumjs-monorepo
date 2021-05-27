@@ -26,12 +26,12 @@
 
 \+ **new BlockBuilder**(`vm`: [*default*](index.default.md), `opts`: [*BuildBlockOpts*](../interfaces/buildblock.buildblockopts.md)): [*BlockBuilder*](buildblock.blockbuilder.md)
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`vm` | [*default*](index.default.md) |
-`opts` | [*BuildBlockOpts*](../interfaces/buildblock.buildblockopts.md) |
+| Name | Type |
+| :------ | :------ |
+| `vm` | [*default*](index.default.md) |
+| `opts` | [*BuildBlockOpts*](../interfaces/buildblock.buildblockopts.md) |
 
 **Returns:** [*BlockBuilder*](buildblock.blockbuilder.md)
 
@@ -58,11 +58,11 @@ Please note that this modifies the state of the VM.
 Throws if the transaction's gasLimit is greater than
 the remaining gas in the block.
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`tx` | TypedTransaction |
+| Name | Type |
+| :------ | :------ |
+| `tx` | TypedTransaction |
 
 **Returns:** *Promise*<[*RunTxResult*](../interfaces/runtx.runtxresult.md)\>
 
@@ -84,11 +84,11 @@ which is validated along with the block number and difficulty by ethash.
 For PoA, please pass `blockOption.cliqueSigner` into the buildBlock constructor,
 as the signer will be awarded the txs amount spent on gas as they are added.
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`sealOpts?` | [*SealBlockOpts*](../interfaces/buildblock.sealblockopts.md) |
+| Name | Type |
+| :------ | :------ |
+| `sealOpts?` | [*SealBlockOpts*](../interfaces/buildblock.sealblockopts.md) |
 
 **Returns:** *Promise*<Block\>
 

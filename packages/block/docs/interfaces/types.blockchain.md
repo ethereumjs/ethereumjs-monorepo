@@ -16,12 +16,12 @@
 
 ▸ **getBlock**(`hash`: *Buffer*): *Promise*<[*Block*](../classes/block.block-1.md)\>
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`hash` | *Buffer* |
+| Name | Type |
+| :------ | :------ |
+| `hash` | *Buffer* |
 
 **Returns:** *Promise*<[*Block*](../classes/block.block-1.md)\>
 
-Defined in: [types.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L143)
+Defined in: [types.ts:145](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L145)

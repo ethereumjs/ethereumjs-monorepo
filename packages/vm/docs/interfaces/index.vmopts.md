@@ -35,7 +35,7 @@ the very first call, which is intended for testing networks.
 
 Default: `false`
 
-Defined in: [index.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L86)
+Defined in: [index.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L93)
 
 ___
 
@@ -48,7 +48,7 @@ contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed.
 
 Default: `false` [ONLY set to `true` during debugging]
 
-Defined in: [index.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L93)
+Defined in: [index.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L100)
 
 ___
 
@@ -58,7 +58,7 @@ ___
 
 A [blockchain](https://github.com/ethereumjs/ethereumjs-monorepo/packages/blockchain) object for storing/retrieving blocks
 
-Defined in: [index.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L73)
+Defined in: [index.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L80)
 
 ___
 
@@ -77,9 +77,16 @@ if you want to change the chain setup.
 
 ### Supported EIPs
 
+- [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - Fee Market
 - [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - VM simple subroutines
 - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) (`experimental`) - BLS12-381 precompiles
+- [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp Gas Cost
+- [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Typed Transactions
 - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - Gas cost increases for state access opcodes
+- [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Access List Transaction Type
+- [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - BASEFEE opcode
+- [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
+- [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
 
 *Annotations:*
 
@@ -93,7 +100,7 @@ Default setup if no `Common` instance is provided:
 - `hardfork`: `istanbul`
 - `eips`: `[]`
 
-Defined in: [index.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L60)
+Defined in: [index.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L67)
 
 ___
 
@@ -105,7 +112,7 @@ Select hardfork based upon block number. This automatically switches to the righ
 
 Default: `false`
 
-Defined in: [index.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L100)
+Defined in: [index.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L107)
 
 ___
 
@@ -115,9 +122,9 @@ ___
 
 An [merkle-patricia-tree](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie) instance for the state tree (ignored if stateManager is passed)
 
-**`deprecated`** 
+**`deprecated`**
 
-Defined in: [index.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L69)
+Defined in: [index.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L76)
 
 ___
 
@@ -127,4 +134,4 @@ ___
 
 A [StateManager](state_interface.statemanager.md) instance to use as the state store (Beta API)
 
-Defined in: [index.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L64)
+Defined in: [index.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L71)

@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/common",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Resources common to all Ethereum implementations",
   "license": "MIT",
   "keywords": [

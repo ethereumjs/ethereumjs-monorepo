@@ -6,13 +6,13 @@
 
 ## Hierarchy
 
-* **StateManager**
+- **StateManager**
 
   ↳ [*EIP2929StateManager*](state_interface.eip2929statemanager.md)
 
 ## Implemented by
 
-* [*default*](../classes/state_statemanager.default.md)
+- [*default*](../classes/state_statemanager.default.md)
 
 ## Table of contents
 
@@ -49,11 +49,11 @@
 
 ▸ **accountExists**(`address`: *Address*): *Promise*<boolean\>
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`address` | *Address* |
+| Name | Type |
+| :------ | :------ |
+| `address` | *Address* |
 
 **Returns:** *Promise*<boolean\>
 
@@ -65,11 +65,11 @@ ___
 
 ▸ **accountIsEmpty**(`address`: *Address*): *Promise*<boolean\>
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`address` | *Address* |
+| Name | Type |
+| :------ | :------ |
+| `address` | *Address* |
 
 **Returns:** *Promise*<boolean\>
 
@@ -101,11 +101,11 @@ ___
 
 ▸ **clearContractStorage**(`address`: *Address*): *Promise*<void\>
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`address` | *Address* |
+| Name | Type |
+| :------ | :------ |
+| `address` | *Address* |
 
 **Returns:** *Promise*<void\>
 
@@ -147,11 +147,11 @@ ___
 
 ▸ **deleteAccount**(`address`: *Address*): *Promise*<void\>
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`address` | *Address* |
+| Name | Type |
+| :------ | :------ |
+| `address` | *Address* |
 
 **Returns:** *Promise*<void\>
 
@@ -163,11 +163,11 @@ ___
 
 ▸ **dumpStorage**(`address`: *Address*): *Promise*<[*StorageDump*](state_interface.storagedump.md)\>
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`address` | *Address* |
+| Name | Type |
+| :------ | :------ |
+| `address` | *Address* |
 
 **Returns:** *Promise*<[*StorageDump*](state_interface.storagedump.md)\>
 
@@ -189,11 +189,11 @@ ___
 
 ▸ **generateGenesis**(`initState`: *any*): *Promise*<void\>
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`initState` | *any* |
+| Name | Type |
+| :------ | :------ |
+| `initState` | *any* |
 
 **Returns:** *Promise*<void\>
 
@@ -205,11 +205,11 @@ ___
 
 ▸ **getAccount**(`address`: *Address*): *Promise*<Account\>
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`address` | *Address* |
+| Name | Type |
+| :------ | :------ |
+| `address` | *Address* |
 
 **Returns:** *Promise*<Account\>
 
@@ -221,11 +221,11 @@ ___
 
 ▸ **getContractCode**(`address`: *Address*): *Promise*<Buffer\>
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`address` | *Address* |
+| Name | Type |
+| :------ | :------ |
+| `address` | *Address* |
 
 **Returns:** *Promise*<Buffer\>
 
@@ -237,12 +237,12 @@ ___
 
 ▸ **getContractStorage**(`address`: *Address*, `key`: *Buffer*): *Promise*<Buffer\>
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`address` | *Address* |
-`key` | *Buffer* |
+| Name | Type |
+| :------ | :------ |
+| `address` | *Address* |
+| `key` | *Buffer* |
 
 **Returns:** *Promise*<Buffer\>
 
@@ -254,12 +254,12 @@ ___
 
 ▸ **getOriginalContractStorage**(`address`: *Address*, `key`: *Buffer*): *Promise*<Buffer\>
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`address` | *Address* |
-`key` | *Buffer* |
+| Name | Type |
+| :------ | :------ |
+| `address` | *Address* |
+| `key` | *Buffer* |
 
 **Returns:** *Promise*<Buffer\>
 
@@ -271,11 +271,11 @@ ___
 
 ▸ **getStateRoot**(`force?`: *boolean*): *Promise*<Buffer\>
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`force?` | *boolean* |
+| Name | Type |
+| :------ | :------ |
+| `force?` | *boolean* |
 
 **Returns:** *Promise*<Buffer\>
 
@@ -297,12 +297,12 @@ ___
 
 ▸ **putAccount**(`address`: *Address*, `account`: *Account*): *Promise*<void\>
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`address` | *Address* |
-`account` | *Account* |
+| Name | Type |
+| :------ | :------ |
+| `address` | *Address* |
+| `account` | *Account* |
 
 **Returns:** *Promise*<void\>
 
@@ -314,12 +314,12 @@ ___
 
 ▸ **putContractCode**(`address`: *Address*, `value`: *Buffer*): *Promise*<void\>
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`address` | *Address* |
-`value` | *Buffer* |
+| Name | Type |
+| :------ | :------ |
+| `address` | *Address* |
+| `value` | *Buffer* |
 
 **Returns:** *Promise*<void\>
 
@@ -331,13 +331,13 @@ ___
 
 ▸ **putContractStorage**(`address`: *Address*, `key`: *Buffer*, `value`: *Buffer*): *Promise*<void\>
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`address` | *Address* |
-`key` | *Buffer* |
-`value` | *Buffer* |
+| Name | Type |
+| :------ | :------ |
+| `address` | *Address* |
+| `key` | *Buffer* |
+| `value` | *Buffer* |
 
 **Returns:** *Promise*<void\>
 
@@ -359,11 +359,11 @@ ___
 
 ▸ **setStateRoot**(`stateRoot`: *Buffer*): *Promise*<void\>
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`stateRoot` | *Buffer* |
+| Name | Type |
+| :------ | :------ |
+| `stateRoot` | *Buffer* |
 
 **Returns:** *Promise*<void\>
 
@@ -375,11 +375,11 @@ ___
 
 ▸ **touchAccount**(`address`: *Address*): *void*
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`address` | *Address* |
+| Name | Type |
+| :------ | :------ |
+| `address` | *Address* |
 
 **Returns:** *void*
 

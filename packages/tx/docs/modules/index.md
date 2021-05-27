@@ -13,12 +13,16 @@
 - [AccessListEIP2930TxData](index.md#accesslisteip2930txdata)
 - [AccessListEIP2930ValuesArray](index.md#accesslisteip2930valuesarray)
 - [AccessListItem](index.md#accesslistitem)
+- [FeeMarketEIP1559Transaction](index.md#feemarketeip1559transaction)
+- [FeeMarketEIP1559TxData](index.md#feemarketeip1559txdata)
+- [FeeMarketEIP1559ValuesArray](index.md#feemarketeip1559valuesarray)
 - [JsonTx](index.md#jsontx)
 - [N\_DIV\_2](index.md#n_div_2)
 - [Transaction](index.md#transaction)
 - [TransactionFactory](index.md#transactionfactory)
 - [TxData](index.md#txdata)
 - [TxOptions](index.md#txoptions)
+- [TxValuesArray](index.md#txvaluesarray)
 - [TypedTransaction](index.md#typedtransaction)
 - [isAccessList](index.md#isaccesslist)
 - [isAccessListBuffer](index.md#isaccesslistbuffer)
@@ -67,6 +71,24 @@ Re-exports: [AccessListItem](types.md#accesslistitem)
 
 ___
 
+### FeeMarketEIP1559Transaction
+
+Renames and exports: [default](../classes/eip1559transaction.default.md)
+
+___
+
+### FeeMarketEIP1559TxData
+
+Re-exports: [FeeMarketEIP1559TxData](../interfaces/types.feemarketeip1559txdata.md)
+
+___
+
+### FeeMarketEIP1559ValuesArray
+
+Re-exports: [FeeMarketEIP1559ValuesArray](types.md#feemarketeip1559valuesarray)
+
+___
+
 ### JsonTx
 
 Re-exports: [JsonTx](../interfaces/types.jsontx.md)
@@ -100,6 +122,12 @@ ___
 ### TxOptions
 
 Re-exports: [TxOptions](../interfaces/types.txoptions.md)
+
+___
+
+### TxValuesArray
+
+Re-exports: [TxValuesArray](types.md#txvaluesarray)
 
 ___
 

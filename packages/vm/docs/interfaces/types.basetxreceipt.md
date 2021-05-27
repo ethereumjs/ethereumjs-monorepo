@@ -8,7 +8,7 @@ Abstract interface with common transaction receipt fields
 
 ## Hierarchy
 
-* **BaseTxReceipt**
+- **BaseTxReceipt**
 
   ↳ [*PreByzantiumTxReceipt*](types.prebyzantiumtxreceipt.md)
 

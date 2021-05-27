@@ -8,7 +8,7 @@ Result of [runBlock](../classes/index.default.md#runblock)
 
 ## Hierarchy
 
-* **RunBlockResult**
+- **RunBlockResult**
 
   ↳ [*AfterBlockEvent*](runblock.afterblockevent.md)
 
