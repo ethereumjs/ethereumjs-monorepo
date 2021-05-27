@@ -17,6 +17,13 @@ export const SKIP_BROKEN = [
   'blockChainFrontierWithLargerTDvsHomesteadBlockchain2_FrontierToHomesteadAt5',
   'blockChainFrontierWithLargerTDvsHomesteadBlockchain_FrontierToHomesteadAt5',
   'HomesteadOverrideFrontier_FrontierToHomesteadAt5',
+
+  // Outdated spec for some blocks in badBlocks,gasLimit20m,gasLimit40m
+  // https://github.com/ethereum/tests/pull/837#issuecomment-849201825
+  // (temporary until fixed 2021-05-26)
+  'badBlocks',
+  'gasLimit20m',
+  'gasLimit40m',
 ]
 
 /**
