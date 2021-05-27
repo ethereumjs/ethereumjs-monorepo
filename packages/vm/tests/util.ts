@@ -8,7 +8,12 @@ import {
   setLengthLeft,
   toBuffer,
 } from 'ethereumjs-util'
-import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction, Transaction, TxOptions } from '@ethereumjs/tx'
+import {
+  AccessListEIP2930Transaction,
+  FeeMarketEIP1559Transaction,
+  Transaction,
+  TxOptions,
+} from '@ethereumjs/tx'
 import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 
@@ -274,7 +279,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
     currentDifficulty,
     currentNumber,
   } = data
-  let headerData: any = {
+  const headerData: any = {
     number: currentNumber,
     coinbase: currentCoinbase,
     parentHash: previousHash,
@@ -282,7 +287,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
     gasLimit: currentGasLimit,
     timestamp: currentTimestamp,
   }
-  if ('currentBaseFee' in data) {
+  if ('currentBaseFee' in data) {
     headerData['baseFeePerGas'] = data['currentBaseFee']
   }
   return BlockHeader.fromHeaderData(headerData, opts)
