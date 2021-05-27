@@ -24,6 +24,19 @@ export const SKIP_BROKEN = [
   'badBlocks',
   'gasLimit20m',
   'gasLimit40m',
+
+  // Issue with base fee field present on Berlin blocks
+  // https://discord.com/channels/420394352083337236/423101253011111937/847161623357816872
+  // (temporary until fixed 2021-05-26)
+  'CREATE2_EOF1',
+  'CREATE2_FirstByte_loop',
+  'CREATE_EOF1',
+  'CREATE_FirstByte_loop',
+  'refundFF',
+  'refundMax',
+  'refundSSTORE',
+  'CreateTransactionEOF1',
+  'Opcodes_TransactionInit',
 ]
 
 /**
