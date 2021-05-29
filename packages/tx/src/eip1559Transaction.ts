@@ -158,10 +158,19 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       toBuffer(maxPriorityFeePerGas === '' ? '0x' : maxPriorityFeePerGas)
     )
 
-    this._validateCannotExceedMaxInteger({
-      maxFeePerGas: this.maxFeePerGas,
-      maxPriorityFeePerGas: this.maxPriorityFeePerGas,
-    })
+    this._validateCannotExceedMaxInteger(
+      {
+        maxFeePerGas: this.maxFeePerGas,
+        maxPriorityFeePerGas: this.maxPriorityFeePerGas,
+      },
+      256
+    )
+
+    if (this.maxFeePerGas.lt(this.maxPriorityFeePerGas)) {
+      throw new Error(
+        'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)'
+      )
+    }
 
     if (!this.chainId.eq(this.common.chainIdBN())) {
       throw new Error('The chain ID does not match the chain ID of Common')
@@ -196,12 +205,9 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    * The up front amount that an account must have for this transaction to be valid
    * @param baseFee The base fee of the block (will be set to 0 if not provided)
    */
-  getUpfrontCost(baseFee?: BN): BN {
-    if (!baseFee) {
-      baseFee = new BN(0)
-    }
-    const inclusionFeePerGas = BN.min(this.maxPriorityFeePerGas, this.maxFeePerGas.sub(baseFee!))
-    const gasPrice = inclusionFeePerGas.add(baseFee!)
+  getUpfrontCost(baseFee: BN = new BN(0)): BN {
+    const inclusionFeePerGas = BN.min(this.maxPriorityFeePerGas, this.maxFeePerGas.sub(baseFee))
+    const gasPrice = inclusionFeePerGas.add(baseFee)
     return this.gasLimit.mul(gasPrice).add(this.value)
   }
 
