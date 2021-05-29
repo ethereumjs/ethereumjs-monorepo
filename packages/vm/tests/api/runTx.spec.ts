@@ -420,8 +420,8 @@ tape('runTx() -> API return values', async (t) => {
       )
       if (tx instanceof FeeMarketEIP1559Transaction) {
         const baseFee = new BN(7)
-        const inclusionFeePerGas = BN.min(tx.maxPriorityFeePerGas, tx.maxFeePerGas.sub(baseFee!))
-        const gasPrice = inclusionFeePerGas.add(baseFee!)
+        const inclusionFeePerGas = BN.min(tx.maxPriorityFeePerGas, tx.maxFeePerGas.sub(baseFee))
+        const gasPrice = inclusionFeePerGas.add(baseFee)
         t.deepEqual(
           res.amountSpent,
           res.gasUsed.mul(gasPrice),
