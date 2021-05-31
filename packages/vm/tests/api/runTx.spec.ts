@@ -230,8 +230,6 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
       const tx = getTransaction(vm._common, txType.type, true)
       try {
         await vm.runTx({ tx })
-        // TODO uncomment:
-        // t.fail('should throw error')
       } catch (e) {
         t.ok(e.message.toLowerCase().includes('enough funds'), `should fail for ${txType.name}`)
       }
