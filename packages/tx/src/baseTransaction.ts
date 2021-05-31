@@ -4,6 +4,7 @@ import {
   BN,
   toBuffer,
   MAX_INTEGER,
+  TWO_POW256,
   unpadBuffer,
   ecsign,
   publicToAddress,
@@ -229,10 +230,18 @@ export abstract class BaseTransaction<TransactionObject> {
   // Accept the v,r,s values from the `sign` method, and convert this into a TransactionObject
   protected abstract _processSignature(v: number, r: Buffer, s: Buffer): TransactionObject
 
-  protected _validateCannotExceedMaxInteger(values: { [key: string]: BN | undefined }) {
+  protected _validateCannotExceedMaxInteger(values: { [key: string]: BN | undefined }, bits = 53) {
     for (const [key, value] of Object.entries(values)) {
-      if (value?.gt(MAX_INTEGER)) {
-        throw new Error(`${key} cannot exceed MAX_INTEGER, given ${value}`)
+      if (bits === 53) {
+        if (value?.gt(MAX_INTEGER)) {
+          throw new Error(`${key} cannot exceed MAX_INTEGER, given ${value}`)
+        }
+      } else if (bits === 256) {
+        if (value?.gte(TWO_POW256)) {
+          throw new Error(`${key} must be less than 2^256, given ${value}`)
+        }
+      } else {
+        throw new Error('unimplemented bits value')
       }
     }
   }

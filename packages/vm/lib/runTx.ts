@@ -243,6 +243,17 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
         `sender doesn't have enough funds to send tx. The upfront cost is: ${cost} and the sender's account only has: ${balance}`
       )
     }
+    if (tx instanceof FeeMarketEIP1559Transaction) {
+      // EIP-1559 spec:
+      // The signer must be able to afford the transaction
+      // `assert balance >= gas_limit * max_fee_per_gas`
+      const cost = tx.gasLimit.mul(tx.maxFeePerGas)
+      if (balance.lt(cost)) {
+        throw new Error(
+          `sender doesn't have enough funds to send tx. The max cost is: ${cost} and the sender's account only has: ${balance}`
+        )
+      }
+    }
   } else if (!opts.skipNonce) {
     if (!nonce.eq(tx.nonce)) {
       throw new Error(
@@ -254,19 +265,16 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   let gasPrice
   let inclusionFeePerGas
   // EIP-1559 tx
-  if (tx.transactionType === 2) {
-    const baseFee = block.header.baseFeePerGas
-    inclusionFeePerGas = BN.min(
-      (<FeeMarketEIP1559Transaction>tx).maxPriorityFeePerGas,
-      (<FeeMarketEIP1559Transaction>tx).maxFeePerGas.sub(baseFee!)
-    )
-    gasPrice = inclusionFeePerGas.add(baseFee!)
+  if (tx instanceof FeeMarketEIP1559Transaction) {
+    const baseFee = block.header.baseFeePerGas!
+    inclusionFeePerGas = BN.min(tx.maxPriorityFeePerGas, tx.maxFeePerGas.sub(baseFee))
+    gasPrice = inclusionFeePerGas.add(baseFee)
   } else {
-    // Have to cast it as legacy transaction: EIP1559 transaction does not have gas price
+    // Have to cast as legacy tx since EIP1559 tx does not have gas price
     gasPrice = (<Transaction>tx).gasPrice
     if (this._common.isActivatedEIP(1559)) {
-      const baseFee = block.header.baseFeePerGas
-      inclusionFeePerGas = (<Transaction>tx).gasPrice.sub(baseFee!)
+      const baseFee = block.header.baseFeePerGas!
+      inclusionFeePerGas = (<Transaction>tx).gasPrice.sub(baseFee)
     }
   }
 

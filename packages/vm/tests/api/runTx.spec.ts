@@ -38,13 +38,13 @@ tape('runTx() -> successful API parameter usage', async (t) => {
   }
 
   t.test('simple run (unmodified options)', async (t) => {
-    let common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+    let common = new Common({ chain: 'mainnet', hardfork: 'london' })
     let vm = new VM({ common })
-    await simpleRun(vm, 'mainnet (PoW), berlin HF, default SM - should run without errors')
+    await simpleRun(vm, 'mainnet (PoW), london HF, default SM - should run without errors')
 
-    common = new Common({ chain: 'rinkeby', hardfork: 'berlin' })
+    common = new Common({ chain: 'rinkeby', hardfork: 'london' })
     vm = new VM({ common })
-    await simpleRun(vm, 'rinkeby (PoA), berlin HF, default SM - should run without errors')
+    await simpleRun(vm, 'rinkeby (PoA), london HF, default SM - should run without errors')
 
     t.end()
   })
@@ -180,8 +180,9 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
 
     try {
       await vm.runTx({ tx })
+      // TODO uncomment:
+      // t.fail('should throw error')
     } catch (e) {
-      console.log(e)
       t.ok(
         e.message.includes('(EIP-2718) not activated'),
         `should fail for ${TRANSACTION_TYPES[1].name}`
@@ -215,6 +216,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
       const tx = getTransaction(vm._common, txType.type, false)
       try {
         await vm.runTx({ tx })
+        t.fail('should throw error')
       } catch (e) {
         t.ok(e.message.includes('not signed'), `should fail for ${txType.name}`)
       }
@@ -232,6 +234,26 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
         t.ok(e.message.toLowerCase().includes('enough funds'), `should fail for ${txType.name}`)
       }
     }
+
+    // EIP-1559
+    // Fail if signer.balance < gas_limit * max_fee_per_gas
+    const vm = new VM({ common })
+    let tx = getTransaction(vm._common, 2, true) as FeeMarketEIP1559Transaction
+    const address = tx.getSenderAddress()
+    tx = Object.create(tx)
+    const maxCost = tx.gasLimit.mul(tx.maxFeePerGas)
+    await vm.stateManager.putAccount(address, createAccount(new BN(0), maxCost.subn(1)))
+    try {
+      await vm.runTx({ tx })
+      t.fail('should throw error')
+    } catch (e) {
+      t.ok(e.message.toLowerCase().includes('max cost'), `should fail if max cost exceeds balance`)
+    }
+    // set sufficient balance
+    await vm.stateManager.putAccount(address, createAccount(new BN(0), maxCost))
+    const res = await vm.runTx({ tx })
+    t.ok(res, 'should pass if balance is sufficient')
+
     t.end()
   })
 })
@@ -394,11 +416,23 @@ tape('runTx() -> API return values', async (t) => {
         tx.getBaseFee(),
         `runTx result -> gasUsed -> tx.getBaseFee() (${txType.name})`
       )
-      t.deepEqual(
-        res.amountSpent,
-        res.gasUsed.mul((<Transaction>tx).gasPrice), // can cast this, since Fee Market transactions are not included
-        `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`
-      )
+      if (tx instanceof FeeMarketEIP1559Transaction) {
+        const baseFee = new BN(7)
+        const inclusionFeePerGas = BN.min(tx.maxPriorityFeePerGas, tx.maxFeePerGas.sub(baseFee))
+        const gasPrice = inclusionFeePerGas.add(baseFee)
+        t.deepEqual(
+          res.amountSpent,
+          res.gasUsed.mul(gasPrice),
+          `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`
+        )
+      } else {
+        t.deepEqual(
+          res.amountSpent,
+          res.gasUsed.mul((<Transaction>tx).gasPrice),
+          `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`
+        )
+      }
+
       t.deepEqual(
         res.bloom.bitvector,
         Buffer.from('00'.repeat(256), 'hex'),
