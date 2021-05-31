@@ -40,7 +40,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
 
   // create and add genesis block
   const header = formatBlockHeader(testData.genesisBlockHeader)
-  const blockData: any = { header }
+  const blockData = { header }
   // Hotfix due to different naming in tests
   if (`baseFee` in blockData.header) {
     blockData['header']['baseFeePerGas'] = blockData['header'].baseFee
