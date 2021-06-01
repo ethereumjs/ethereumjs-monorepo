@@ -232,6 +232,19 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
   gasLimit.isub(basefee)
 
+  if (this._common.isActivatedEIP(1559)) {
+    // EIP-1559 spec:
+    // Ensure that the user was willing to at least pay the base fee
+    // assert transaction.max_fee_per_gas >= block.base_fee_per_gas
+    const maxFeePerGas = 'maxFeePerGas' in tx ? tx.maxFeePerGas : tx.gasPrice
+    const baseFeePerGas = block.header.baseFeePerGas!
+    if (maxFeePerGas.lt(baseFeePerGas)) {
+      throw new Error(
+        `Transaction's maxFeePerGas (${maxFeePerGas}) is less than the block's baseFeePerGas (${baseFeePerGas})`
+      )
+    }
+  }
+
   // Check from account's balance and nonce
   let fromAccount = await state.getAccount(caller)
   const { nonce, balance } = fromAccount
