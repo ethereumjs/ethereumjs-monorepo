@@ -289,8 +289,6 @@ tape('BlockBuilder', async (t) => {
       blockOpts: { calcDifficultyFromHeader: genesisBlock.header, freeze: false },
     })
 
-    /* Uncomment these tests when PR #1276 is merged:
-
     // Set up underpriced txs to test error response
     const tx1 = Transaction.fromTxData(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
@@ -318,7 +316,6 @@ tape('BlockBuilder', async (t) => {
         )
       }
     }
-    */
 
     // Set up correctly priced txs
     const tx3 = Transaction.fromTxData(
