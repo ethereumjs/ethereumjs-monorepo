@@ -4,6 +4,7 @@ import Blockchain from '@ethereumjs/blockchain'
 import { BN, toBuffer } from 'ethereumjs-util'
 import type { LevelUp } from 'levelup'
 import { Config } from '../config'
+import { Event } from '../types'
 
 /**
  * The options that the Blockchain constructor can receive.
@@ -230,7 +231,7 @@ export class Chain extends EventEmitter {
 
     this._headers = headers
     this._blocks = blocks
-    this.emit('updated')
+    this.config.events.emit(Event.CHAIN_UPDATED)
   }
 
   /**

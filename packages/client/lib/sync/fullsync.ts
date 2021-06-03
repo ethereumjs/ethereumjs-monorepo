@@ -26,17 +26,14 @@ export class FullSynchronizer extends Synchronizer {
       chain: options.chain,
     })
 
-    const self = this
     this.config.events.on(Event.SYNC_EXECUTION_VM_ERROR, async (error) => {
-      self.emit('error', error)
-      await self.stop()
+      this.emit('error', error)
+      await this.stop()
     })
 
-    this.chain.on('updated', async function () {
-      // for some reason, if we use .on('updated', this.runBlocks)
-      // it runs in the context of the Chain and not in the FullSync context..?
-      if (self.running) {
-        await self.execution.run()
+    this.chain.on('updated', async () => {
+      if (this.running) {
+        await this.execution.run()
       }
     })
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -123,15 +120,12 @@ export class FullSynchronizer extends Synchronizer {
       this.emit('error', error)
     })
     this.config.events.on(Event.SYNC_FETCHER_FETCHED, (blocks) => {
-      // cast as Block[], since it can also return BlockHeader[]
-      blocks = blocks as Block[]
-
-      const first = new BN(blocks[0].header.number)
+      const first = new BN((blocks[0] as Block).header.number)
       const hash = short(blocks[0].hash())
       this.config.logger.info(
         `Imported blocks count=${blocks.length} number=${first.toString(
           10
-        )} hash=${hash} hardfork=${this.hardfork} peers=${this.pool.size}`
+        )} hash=${hash} hardfork=${this.config.chainCommon.hardfork()} peers=${this.pool.size}`
       )
     })
     await this.blockFetcher.fetch()
