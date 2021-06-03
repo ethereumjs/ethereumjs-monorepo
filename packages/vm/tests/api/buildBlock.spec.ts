@@ -2,7 +2,7 @@ import tape from 'tape'
 import { Account, Address } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
-import { Transaction } from '@ethereumjs/tx'
+import { Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import Blockchain from '@ethereumjs/blockchain'
 import VM from '../../lib'
 import { setBalance } from './utils'
@@ -261,6 +261,97 @@ tape('BlockBuilder', async (t) => {
     const block = await blockBuilder.build()
 
     // block should successfully execute with VM.runBlock and have same outputs
+    const result = await vmCopy.runBlock({ block })
+    st.ok(result.gasUsed.eq(block.header.gasUsed))
+    st.ok(result.receiptRoot.equals(block.header.receiptTrie))
+    st.ok(result.stateRoot.equals(block.header.stateRoot))
+    st.ok(result.logsBloom.equals(block.header.bloom))
+    st.end()
+  })
+
+  t.test('should build a 1559 block with legacy and 1559 txs', async (st) => {
+    const common = new Common({ chain: 'mainnet', hardfork: 'london', eips: [1559] })
+    const genesisBlock = Block.genesis(
+      { header: { gasLimit: 50000, baseFeePerGas: 100 } },
+      { common }
+    )
+    const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
+    const vm = await VM.create({ common, blockchain })
+
+    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    await setBalance(vm, address)
+
+    const vmCopy = vm.copy()
+
+    const blockBuilder = await vm.buildBlock({
+      parentBlock: genesisBlock,
+      headerData: { coinbase: '0x96dc73c8b5969608c77375f085949744b5177660' },
+      blockOpts: { calcDifficultyFromHeader: genesisBlock.header, freeze: false },
+    })
+
+    // Set up underpriced txs to test error response
+    const tx1 = Transaction.fromTxData(
+      { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
+      { common, freeze: false }
+    )
+    tx1.getSenderAddress = () => {
+      return address
+    }
+    const tx2 = FeeMarketEIP1559Transaction.fromTxData(
+      { to: Address.zero(), value: 1000, gasLimit: 21000, maxFeePerGas: 10 },
+      { common, freeze: false }
+    )
+    tx2.getSenderAddress = () => {
+      return address
+    }
+
+    for (const tx of [tx1, tx2]) {
+      try {
+        await blockBuilder.addTransaction(tx)
+        st.fail('should throw error')
+      } catch (error) {
+        st.ok(
+          error.message.includes("is less than the block's baseFeePerGas"),
+          'should fail with appropriate error'
+        )
+      }
+    }
+
+    // Set up correctly priced txs
+    const tx3 = Transaction.fromTxData(
+      { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 101 },
+      { common, freeze: false }
+    )
+    tx3.getSenderAddress = () => {
+      return address
+    }
+    const tx4 = FeeMarketEIP1559Transaction.fromTxData(
+      { to: Address.zero(), value: 1000, gasLimit: 21000, maxFeePerGas: 101 },
+      { common, freeze: false }
+    )
+    tx4.getSenderAddress = () => {
+      return address
+    }
+
+    for (const tx of [tx3, tx4]) {
+      await blockBuilder.addTransaction(tx)
+      st.ok('should pass')
+    }
+
+    const block = await blockBuilder.build()
+
+    st.ok(
+      block.header.baseFeePerGas!.eq(genesisBlock.header.calcNextBaseFee()),
+      "baseFeePerGas should equal parentHeader's calcNextBaseFee"
+    )
+
+    // block should successfully execute with VM.runBlock and have same outputs
+    block.transactions[0].getSenderAddress = () => {
+      return address
+    }
+    block.transactions[1].getSenderAddress = () => {
+      return address
+    }
     const result = await vmCopy.runBlock({ block })
     st.ok(result.gasUsed.eq(block.header.gasUsed))
     st.ok(result.receiptRoot.equals(block.header.receiptTrie))
