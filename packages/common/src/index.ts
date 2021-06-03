@@ -95,6 +95,17 @@ export default class Common extends EventEmitter {
     })
   }
 
+  /**
+   * Static method to determine if a chainId is supported as a standard chain
+   * 
+   * @param chainId BN id (`1`) of a standard chain
+   * @returns boolean
+   */
+  static isSupportedChainId(chainId: BN): boolean {
+    const initializedChains: any = _getInitializedChains()
+    return Boolean(initializedChains['names'][chainId.toString()])
+  }
+
   private static _getChainParams(chain: string | number | BN, customChains?: Chain[]): Chain {
     const initializedChains: any = _getInitializedChains(customChains)
     if (typeof chain === 'number' || BN.isBN(chain)) {
