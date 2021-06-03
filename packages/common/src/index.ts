@@ -97,7 +97,6 @@ export default class Common extends EventEmitter {
 
   /**
    * Static method to determine if a chainId is supported as a standard chain
-   * 
    * @param chainId BN id (`1`) of a standard chain
    * @returns boolean
    */
