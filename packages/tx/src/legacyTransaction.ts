@@ -107,9 +107,9 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
   /**
    * Returns a Buffer Array of the raw Buffers of this transaction, in order.
-   * 
+   *
    * For an unsigned legacy tx this method returns the the empty Buffer values
-   * for the signature parameters `v`, `r` and `s`. For an EIP-155 compliant 
+   * for the signature parameters `v`, `r` and `s`. For an EIP-155 compliant
    * representation have a look at the `getMessageToSign()` method.
    */
   raw(): TxValuesArray {
@@ -127,10 +127,13 @@ export default class Transaction extends BaseTransaction<Transaction> {
   }
 
   /**
-   * Returns the rlp encoding of the transaction.
-   * 
+   * Returns the serialized encoding of the legacy transaction.
+   *
+   * Format:
+   * `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
+   *
    * For an unsigned legacy tx this method uses the empty Buffer values
-   * for the signature parameters `v`, `r` and `s` for encoding. For an 
+   * for the signature parameters `v`, `r` and `s` for encoding. For an
    * EIP-155 compliant representation use the `getMessageToSign()` method.
    */
   serialize(): Buffer {
