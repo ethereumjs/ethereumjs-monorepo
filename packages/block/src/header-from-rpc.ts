@@ -1,3 +1,4 @@
+import { numberToHex } from 'ethereumjs-util'
 import { BlockHeader } from './header'
 import { BlockOptions } from './types'
 
@@ -36,7 +37,7 @@ export default function blockHeaderFromRpc(blockParams: any, options?: BlockOpti
       transactionsTrie: transactionsRoot,
       receiptTrie: receiptRoot || receiptsRoot,
       bloom: logsBloom,
-      difficulty,
+      difficulty: numberToHex(difficulty),
       number,
       gasLimit,
       gasUsed,
