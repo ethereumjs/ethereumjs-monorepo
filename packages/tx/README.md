@@ -125,6 +125,7 @@ Legacy transaction are still valid transaction within Ethereum `mainnet` but wil
 See this [example script](./examples/transactions.ts) or the following code example on how to use.
 
 ```typescript
+import Common from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 
 const txParams = {
