@@ -58,7 +58,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   /**
    * Instantiate a transaction from the serialized tx.
    *
-   * Note: this means that the Buffer should start with 0x01.
+   * Format: `0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
+   * signatureYParity (v), signatureR (r), signatureS (s)])`
    */
   public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     if (!serialized.slice(0, 1).equals(TRANSACTION_TYPE_BUFFER)) {
@@ -94,8 +95,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   /**
    * Create a transaction from a values array.
    *
-   * The format is:
-   * chainId, nonce, gasPrice, gasLimit, to, value, data, access_list, yParity (v), senderR (r), senderS (s)
+   * Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
+   * signatureYParity (v), signatureR (r), signatureS (s)]`
    */
   public static fromValuesArray(values: AccessListEIP2930ValuesArray, opts: TxOptions = {}) {
     if (values.length !== 8 && values.length !== 11) {
@@ -192,7 +193,10 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   }
 
   /**
-   * Returns a Buffer Array of the raw Buffers of this transaction, in order.
+   * Returns a Buffer Array of the raw Buffers of the EIP-2930 transaction, in order.
+   *
+   * Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
+   * signatureYParity (v), signatureR (r), signatureS (s)]`
    *
    * Use `serialize()` to add to block data for `Block.fromValuesArray()`.
    */
@@ -215,8 +219,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   /**
    * Returns the serialized encoding of the EIP-2930 transaction.
    *
-   * Format:
-   * `0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
+   * Format: `0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
    * signatureYParity (v), signatureR (r), signatureS (s)])`
    *
    * Note that in contrast to the legacy tx serialization format this in not

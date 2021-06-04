@@ -28,6 +28,8 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
   /**
    * Instantiate a transaction from the serialized tx.
+   *
+   * Format: `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
    */
   public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     const values = rlp.decode(serialized)
@@ -53,8 +55,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
   /**
    * Create a transaction from a values array.
    *
-   * The format is:
-   * nonce, gasPrice, gasLimit, to, value, data, v, r, s
+   * Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
    */
   public static fromValuesArray(values: TxValuesArray, opts: TxOptions = {}) {
     // If length is not 6, it has length 9. If v/r/s are empty Buffers, it is still an unsigned transaction
@@ -106,7 +107,9 @@ export default class Transaction extends BaseTransaction<Transaction> {
   }
 
   /**
-   * Returns a Buffer Array of the raw Buffers of this transaction, in order.
+   * Returns a Buffer Array of the raw Buffers of the legacy transaction, in order.
+   *
+   * Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
    *
    * For an unsigned legacy tx this method returns the the empty Buffer values
    * for the signature parameters `v`, `r` and `s`. For an EIP-155 compliant
@@ -129,8 +132,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
   /**
    * Returns the serialized encoding of the legacy transaction.
    *
-   * Format:
-   * `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
+   * Format: `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
    *
    * For an unsigned legacy tx this method uses the empty Buffer values
    * for the signature parameters `v`, `r` and `s` for encoding. For an

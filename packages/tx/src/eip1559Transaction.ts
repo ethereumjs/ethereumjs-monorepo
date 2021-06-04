@@ -49,7 +49,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   /**
    * Instantiate a transaction from the serialized tx.
    *
-   * Note: this means that the Buffer should start with 0x01.
+   * Format: `0x02 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
+   * accessList, signatureYParity, signatureR, signatureS])`
    */
   public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     if (!serialized.slice(0, 1).equals(TRANSACTION_TYPE_BUFFER)) {
@@ -85,8 +86,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   /**
    * Create a transaction from a values array.
    *
-   * The format is:
-   * chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data, accessList, signatureYParity, signatureR, signatureS
+   * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
+   * accessList, signatureYParity, signatureR, signatureS]`
    */
   public static fromValuesArray(values: FeeMarketEIP1559ValuesArray, opts: TxOptions = {}) {
     if (values.length !== 9 && values.length !== 12) {
@@ -212,7 +213,10 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   }
 
   /**
-   * Returns a Buffer Array of the raw Buffers of this transaction, in order.
+   * Returns a Buffer Array of the raw Buffers of the EIP-1559 transaction, in order.
+   *
+   * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
+   * accessList, signatureYParity, signatureR, signatureS]`
    *
    * Use `serialize()` to add to block data for `Block.fromValuesArray()`.
    */
@@ -236,8 +240,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   /**
    * Returns the serialized encoding of the EIP-1559 transaction.
    *
-   * Format:
-   * `0x02 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
+   * Format: `0x02 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
    * accessList, signatureYParity, signatureR, signatureS])`
    *
    * Note that in contrast to the legacy tx serialization format this in not
