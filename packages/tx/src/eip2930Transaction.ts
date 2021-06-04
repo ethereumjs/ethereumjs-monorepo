@@ -29,6 +29,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
   /**
    * EIP-2930 alias for `r`
+   *
+   * @deprecated use `r` instead
    */
   get senderR() {
     return this.r
@@ -36,6 +38,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
   /**
    * EIP-2930 alias for `s`
+   *
+   * @deprecated use `s` instead
    */
   get senderS() {
     return this.s
@@ -43,6 +47,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
   /**
    * EIP-2930 alias for `v`
+   *
+   * @deprecated use `v` instead
    */
   get yParity() {
     return this.v
@@ -50,10 +56,10 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
   /**
    * Instantiate a transaction from a data dictionary.
-   * 
+   *
    * Format: { chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
    * v, r, s }
-   * 
+   *
    * Notes:
    * - `chainId` will be set automatically if not provided
    * - All parameters are optional and have some basic default values

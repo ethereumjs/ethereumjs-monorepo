@@ -14,6 +14,12 @@ import { AccessLists } from './util'
 const TRANSACTION_TYPE = 2
 const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')
 
+/**
+ * Typed transaction with a new gas fee market mechanism
+ *
+ * - TransactionType: 2
+ * - EIP: [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)
+ */
 export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP1559Transaction> {
   public readonly chainId: BN
   public readonly accessList: AccessListBuffer
@@ -23,6 +29,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
 
   /**
    * EIP-2930 alias for `r`
+   *
+   * @deprecated use `r` instead
    */
   get senderR() {
     return this.r
@@ -30,6 +38,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
 
   /**
    * EIP-2930 alias for `s`
+   *
+   * @deprecated use `s` instead
    */
   get senderS() {
     return this.s
@@ -37,6 +47,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
 
   /**
    * EIP-2930 alias for `v`
+   *
+   * @deprecated use `v` instead
    */
   get yParity() {
     return this.v
@@ -44,10 +56,10 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
 
   /**
    * Instantiate a transaction from a data dictionary.
-   * 
+   *
    * Format: { chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
    * accessList, v, r, s }
-   * 
+   *
    * Notes:
    * - `chainId` will be set automatically if not provided
    * - All parameters are optional and have some basic default values
