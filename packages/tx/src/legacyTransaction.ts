@@ -259,7 +259,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
   }
 
   /**
-   * Returns an object with the JSON representation of the transaction
+   * Returns an object with the JSON representation of the transaction.
    */
   toJSON(): JsonTx {
     return {

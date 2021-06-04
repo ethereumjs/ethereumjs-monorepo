@@ -75,17 +75,21 @@ export abstract class BaseTransaction<TransactionObject> {
   }
 
   /**
-   * Returns the transaction type
+   * Alias for `type`
+   *
+   * @deprecated Use `type` instead
    */
   get transactionType(): number {
-    return this._type
+    return this.type
   }
 
   /**
-   * Alias for `transactionType`
+   * Returns the transaction type.
+   *
+   * Note: legacy txs will return tx type `0`.
    */
   get type() {
-    return this.transactionType
+    return this._type
   }
 
   /**
