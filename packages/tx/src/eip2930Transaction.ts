@@ -244,7 +244,10 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   }
 
   /**
-   * Computes a sha3-256 hash of the serialized tx
+   * Computes a sha3-256 hash of the serialized tx.
+   *
+   * This method can only be used for signed txs (it throws otherwise).
+   * Use `getMessageToSign()` to get a tx hash for the purpose of signing.
    */
   public hash(): Buffer {
     if (!this.isSigned()) {

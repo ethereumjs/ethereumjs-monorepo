@@ -186,7 +186,10 @@ export default class Transaction extends BaseTransaction<Transaction> {
   }
 
   /**
-   * Computes a sha3-256 hash of the serialized tx
+   * Computes a sha3-256 hash of the serialized tx.
+   *
+   * This method can only be used for signed txs (it throws otherwise).
+   * Use `getMessageToSign()` to get a tx hash for the purpose of signing.
    */
   hash(): Buffer {
     return rlphash(this.raw())
