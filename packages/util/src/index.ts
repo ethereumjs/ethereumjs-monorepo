@@ -45,6 +45,11 @@ export * from './externals'
 export * from './types'
 
 /**
+ * Helper functions
+ */
+export * from './helpers'
+
+/**
  * Export ethjs-util methods
  */
 export * from 'ethjs-util'
