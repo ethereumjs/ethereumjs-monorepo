@@ -242,7 +242,15 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   }
 
   /**
-   * Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
+   * Returns the serialized unsigned tx (hashed or raw), which can be used
+   * to sign the transaction (e.g. for sending to a hardware wallet).
+   *
+   * Note: in contrast to the legacy tx the raw message format is already
+   * serialized and doesn't need to be RLP encoded any more.
+   *
+   * ```javascript
+   * const serializedMessage = tx.getMessageToSign(false) // use this for the HW wallet input
+   * ```
    *
    * @param hashMessage - Return hashed message if set to true (default: true)
    */

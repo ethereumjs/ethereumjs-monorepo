@@ -156,11 +156,10 @@ export abstract class BaseTransaction<TransactionObject> {
    */
   abstract serialize(): Buffer
 
-  /**
-   * Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
-   *
-   * @param hashMessage - Return hashed message if set to true (default: true)
-   */
+  // Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
+  //
+  // Note: do not use code docs here since VS Studio is then not able to detect the
+  // comments from the inherited methods
   abstract getMessageToSign(hashMessage: false): Buffer | Buffer[]
   abstract getMessageToSign(hashMessage?: true): Buffer
 

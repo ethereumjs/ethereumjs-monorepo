@@ -153,7 +153,17 @@ export default class Transaction extends BaseTransaction<Transaction> {
   }
 
   /**
-   * Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
+   * Returns the serialized unsigned tx (hashed or raw), which can be used
+   * to sign the transaction (e.g. for sending to a hardware wallet).
+   *
+   * Note: the raw message message format for the legacy tx is not RLP encoded
+   * and you might need to do yourself with:
+   *
+   * ```javascript
+   * import { rlp } from 'ethereumjs-util'
+   * const message = tx.getMessageToSign(false)
+   * const serializedMessage = rlp.encode(message) // use this for the HW wallet input
+   * ```
    *
    * @param hashMessage - Return hashed message if set to true (default: true)
    */
