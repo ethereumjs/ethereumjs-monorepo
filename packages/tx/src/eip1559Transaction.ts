@@ -42,6 +42,16 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     return this.v
   }
 
+  /**
+   * Instantiate a transaction from a data dictionary.
+   * 
+   * Format: { chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
+   * accessList, v, r, s }
+   * 
+   * Notes:
+   * - `chainId` will be set automatically if not provided
+   * - All parameters are optional and have some basic default values
+   */
   public static fromTxData(txData: FeeMarketEIP1559TxData, opts: TxOptions = {}) {
     return new FeeMarketEIP1559Transaction(txData, opts)
   }

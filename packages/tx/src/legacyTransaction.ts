@@ -20,7 +20,12 @@ export default class Transaction extends BaseTransaction<Transaction> {
   public readonly gasPrice: BN
 
   /**
-   * Instantiate a transaction from a data dictionary
+   * Instantiate a transaction from a data dictionary.
+   * 
+   * Format: { nonce, gasPrice, gasLimit, to, value, data, v, r, s }
+   * 
+   * Notes:
+   * - All parameters are optional and have some basic default values
    */
   public static fromTxData(txData: TxData, opts: TxOptions = {}) {
     return new Transaction(txData, opts)

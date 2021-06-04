@@ -49,7 +49,14 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   }
 
   /**
-   * Instantiate a transaction from a data dictionary
+   * Instantiate a transaction from a data dictionary.
+   * 
+   * Format: { chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
+   * v, r, s }
+   * 
+   * Notes:
+   * - `chainId` will be set automatically if not provided
+   * - All parameters are optional and have some basic default values
    */
   public static fromTxData(txData: AccessListEIP2930TxData, opts: TxOptions = {}) {
     return new AccessListEIP2930Transaction(txData, opts)
