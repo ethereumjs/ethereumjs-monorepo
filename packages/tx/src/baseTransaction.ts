@@ -214,7 +214,13 @@ export abstract class BaseTransaction<TransactionObject> {
   abstract getSenderPublicKey(): Buffer
 
   /**
-   * Signs a tx and returns a new signed tx object
+   * Signs a transaction.
+   *
+   * Note that the signed tx is returned as a new object,
+   * use as follows:
+   * ```javascript
+   * const signedTx = tx.sign(privateKey)
+   * ```
    */
   sign(privateKey: Buffer): TransactionObject {
     if (privateKey.length !== 32) {
