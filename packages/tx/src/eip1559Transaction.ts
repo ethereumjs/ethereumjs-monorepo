@@ -265,7 +265,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    * Format: `0x02 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
    * accessList, signatureYParity, signatureR, signatureS])`
    *
-   * Note that in contrast to the legacy tx serialization format this in not
+   * Note that in contrast to the legacy tx serialization format this is not
    * valid RLP any more due to the raw tx type preceeding and concatenated to
    * the RLP encoding of the values.
    */

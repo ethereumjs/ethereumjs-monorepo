@@ -235,7 +235,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * Format: `0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
    * signatureYParity (v), signatureR (r), signatureS (s)])`
    *
-   * Note that in contrast to the legacy tx serialization format this in not
+   * Note that in contrast to the legacy tx serialization format this is not
    * valid RLP any more due to the raw tx type preceeding and concatenated to
    * the RLP encoding of the values.
    */
