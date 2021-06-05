@@ -21,15 +21,15 @@
 
 \+ **new VmError**(`error`: [*ERROR*](../enums/exceptions.error.md)): [*VmError*](exceptions.vmerror.md)
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`error` | [*ERROR*](../enums/exceptions.error.md) |
+| Name | Type |
+| :------ | :------ |
+| `error` | [*ERROR*](../enums/exceptions.error.md) |
 
 **Returns:** [*VmError*](exceptions.vmerror.md)
 
-Defined in: [exceptions.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L29)
+Defined in: [exceptions.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L30)
 
 ## Properties
 
@@ -37,7 +37,7 @@ Defined in: [exceptions.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo
 
 • **error**: [*ERROR*](../enums/exceptions.error.md)
 
-Defined in: [exceptions.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L28)
+Defined in: [exceptions.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L29)
 
 ___
 
@@ -45,4 +45,4 @@ ___
 
 • **errorType**: *string*
 
-Defined in: [exceptions.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L29)
+Defined in: [exceptions.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L30)

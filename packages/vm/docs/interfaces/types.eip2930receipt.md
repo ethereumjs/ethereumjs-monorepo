@@ -6,7 +6,7 @@
 
 ## Hierarchy
 
-* [*PostByzantiumTxReceipt*](types.postbyzantiumtxreceipt.md)
+- [*PostByzantiumTxReceipt*](types.postbyzantiumtxreceipt.md)
 
   ↳ **EIP2930Receipt**
 
@@ -59,7 +59,7 @@ ___
 
 ### status
 
-• **status**: *0* \| *1*
+• **status**: ``0`` \| ``1``
 
 Status of transaction, `1` if successful, `0` if an exception occured
 

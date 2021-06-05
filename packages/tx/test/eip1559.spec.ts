@@ -1,5 +1,5 @@
 import Common from '@ethereumjs/common'
-import { BN, rlp } from 'ethereumjs-util'
+import { BN, rlp, TWO_POW256 } from 'ethereumjs-util'
 import tape from 'tape'
 import { FeeMarketEIP1559Transaction } from '../src'
 
@@ -116,6 +116,43 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
       s: '0x1d305af9fe81fdba43f0dfcd400ed24dcace0a7e30d4e85701dcaaf484cd079e',
     }
     st.deepEqual(json, expectedJSON, 'Should return expected JSON dict')
+    st.end()
+  })
+
+  t.test('Fee validation', function (st) {
+    st.doesNotThrow(() => {
+      FeeMarketEIP1559Transaction.fromTxData(
+        {
+          maxFeePerGas: TWO_POW256.subn(1),
+          maxPriorityFeePerGas: 100,
+          gasLimit: 100,
+          value: 6,
+        },
+        { common }
+      )
+    }, 'fee can be 2^256 - 1')
+    st.throws(() => {
+      FeeMarketEIP1559Transaction.fromTxData(
+        {
+          maxFeePerGas: TWO_POW256,
+          maxPriorityFeePerGas: 100,
+          gasLimit: 100,
+          value: 6,
+        },
+        { common }
+      )
+    }, 'fee must be less than 2^256')
+    st.throws(() => {
+      FeeMarketEIP1559Transaction.fromTxData(
+        {
+          maxFeePerGas: 1,
+          maxPriorityFeePerGas: 2,
+          gasLimit: 100,
+          value: 6,
+        },
+        { common }
+      )
+    }, 'total fee must be the larger of the two')
     st.end()
   })
 })

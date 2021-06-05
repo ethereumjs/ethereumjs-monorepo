@@ -232,6 +232,19 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
   gasLimit.isub(basefee)
 
+  if (this._common.isActivatedEIP(1559)) {
+    // EIP-1559 spec:
+    // Ensure that the user was willing to at least pay the base fee
+    // assert transaction.max_fee_per_gas >= block.base_fee_per_gas
+    const maxFeePerGas = 'maxFeePerGas' in tx ? tx.maxFeePerGas : tx.gasPrice
+    const baseFeePerGas = block.header.baseFeePerGas!
+    if (maxFeePerGas.lt(baseFeePerGas)) {
+      throw new Error(
+        `Transaction's maxFeePerGas (${maxFeePerGas}) is less than the block's baseFeePerGas (${baseFeePerGas})`
+      )
+    }
+  }
+
   // Check from account's balance and nonce
   let fromAccount = await state.getAccount(caller)
   const { nonce, balance } = fromAccount
@@ -242,6 +255,17 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       throw new Error(
         `sender doesn't have enough funds to send tx. The upfront cost is: ${cost} and the sender's account only has: ${balance}`
       )
+    }
+    if (tx instanceof FeeMarketEIP1559Transaction) {
+      // EIP-1559 spec:
+      // The signer must be able to afford the transaction
+      // `assert balance >= gas_limit * max_fee_per_gas`
+      const cost = tx.gasLimit.mul(tx.maxFeePerGas)
+      if (balance.lt(cost)) {
+        throw new Error(
+          `sender doesn't have enough funds to send tx. The max cost is: ${cost} and the sender's account only has: ${balance}`
+        )
+      }
     }
   } else if (!opts.skipNonce) {
     if (!nonce.eq(tx.nonce)) {
@@ -254,19 +278,16 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   let gasPrice
   let inclusionFeePerGas
   // EIP-1559 tx
-  if (tx.transactionType === 2) {
-    const baseFee = block.header.baseFeePerGas
-    inclusionFeePerGas = BN.min(
-      (<FeeMarketEIP1559Transaction>tx).maxPriorityFeePerGas,
-      (<FeeMarketEIP1559Transaction>tx).maxFeePerGas.sub(baseFee!)
-    )
-    gasPrice = inclusionFeePerGas.add(baseFee!)
+  if (tx instanceof FeeMarketEIP1559Transaction) {
+    const baseFee = block.header.baseFeePerGas!
+    inclusionFeePerGas = BN.min(tx.maxPriorityFeePerGas, tx.maxFeePerGas.sub(baseFee))
+    gasPrice = inclusionFeePerGas.add(baseFee)
   } else {
-    // Have to cast it as legacy transaction: EIP1559 transaction does not have gas price
+    // Have to cast as legacy tx since EIP1559 tx does not have gas price
     gasPrice = (<Transaction>tx).gasPrice
     if (this._common.isActivatedEIP(1559)) {
-      const baseFee = block.header.baseFeePerGas
-      inclusionFeePerGas = (<Transaction>tx).gasPrice.sub(baseFee!)
+      const baseFee = block.header.baseFeePerGas!
+      inclusionFeePerGas = (<Transaction>tx).gasPrice.sub(baseFee)
     }
   }
 

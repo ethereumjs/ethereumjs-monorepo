@@ -9,7 +9,7 @@ for the intermediary state root
 
 ## Hierarchy
 
-* [*BaseTxReceipt*](types.basetxreceipt.md)
+- [*BaseTxReceipt*](types.basetxreceipt.md)
 
   ↳ **PreByzantiumTxReceipt**
 

@@ -4,6 +4,7 @@ import {
   BN,
   toBuffer,
   MAX_INTEGER,
+  TWO_POW256,
   unpadBuffer,
   ecsign,
   publicToAddress,
@@ -74,17 +75,21 @@ export abstract class BaseTransaction<TransactionObject> {
   }
 
   /**
-   * Returns the transaction type
+   * Alias for `type`
+   *
+   * @deprecated Use `type` instead
    */
   get transactionType(): number {
-    return this._type
+    return this.type
   }
 
   /**
-   * Alias for `transactionType`
+   * Returns the transaction type.
+   *
+   * Note: legacy txs will return tx type `0`.
    */
   get type() {
-    return this.transactionType
+    return this._type
   }
 
   /**
@@ -155,11 +160,10 @@ export abstract class BaseTransaction<TransactionObject> {
    */
   abstract serialize(): Buffer
 
-  /**
-   * Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
-   *
-   * @param hashMessage - Return hashed message if set to true (default: true)
-   */
+  // Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
+  //
+  // Note: do not use code docs here since VS Studio is then not able to detect the
+  // comments from the inherited methods
   abstract getMessageToSign(hashMessage: false): Buffer | Buffer[]
   abstract getMessageToSign(hashMessage?: true): Buffer
 
@@ -210,7 +214,13 @@ export abstract class BaseTransaction<TransactionObject> {
   abstract getSenderPublicKey(): Buffer
 
   /**
-   * Signs a tx and returns a new signed tx object
+   * Signs a transaction.
+   *
+   * Note that the signed tx is returned as a new object,
+   * use as follows:
+   * ```javascript
+   * const signedTx = tx.sign(privateKey)
+   * ```
    */
   sign(privateKey: Buffer): TransactionObject {
     if (privateKey.length !== 32) {
@@ -229,10 +239,18 @@ export abstract class BaseTransaction<TransactionObject> {
   // Accept the v,r,s values from the `sign` method, and convert this into a TransactionObject
   protected abstract _processSignature(v: number, r: Buffer, s: Buffer): TransactionObject
 
-  protected _validateCannotExceedMaxInteger(values: { [key: string]: BN | undefined }) {
+  protected _validateCannotExceedMaxInteger(values: { [key: string]: BN | undefined }, bits = 53) {
     for (const [key, value] of Object.entries(values)) {
-      if (value?.gt(MAX_INTEGER)) {
-        throw new Error(`${key} cannot exceed MAX_INTEGER, given ${value}`)
+      if (bits === 53) {
+        if (value?.gt(MAX_INTEGER)) {
+          throw new Error(`${key} cannot exceed MAX_INTEGER, given ${value}`)
+        }
+      } else if (bits === 256) {
+        if (value?.gte(TWO_POW256)) {
+          throw new Error(`${key} must be less than 2^256, given ${value}`)
+        }
+      } else {
+        throw new Error('unimplemented bits value')
       }
     }
   }

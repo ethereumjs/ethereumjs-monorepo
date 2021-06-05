@@ -6,6 +6,38 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.3.0 - 2021-05-26
+
+### London HF Support
+
+This `Block` release comes with full support for the `london` hardfork. Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `Common` instance with a `london` HF activated:
+
+```typescript
+import { Block } from 'ethereumjs-block'
+import Common from '@ethereumjs/common'
+const common = new Common({ chain: 'mainnet', hardfork: 'london' })
+const block = Block.fromBlockData({
+  header: {
+    //...,
+    baseFeePerGas: new BN(10),
+  }
+}, { common })
+```
+
+#### EIP-1559: Fee market change for ETH 1.0 chain
+
+This library now supports block structure and related logic coming with the new fee market mechanism introduced by [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), see PR [#1148](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1148).
+
+Blocks now have an extra `baseFeePerGas` field which can be passed in on instantiation with a `london` (or `EIP-1559`) enabled `common` (otherwise `baseFeePerGas` will default to `new BN(7)`, which is the minimum possible `baseFeePerGas` value).
+
+A block can now also encompass `FeeMarketEIP1559Transaction` txs (type `2`) which are supported by `@ethereumjs/tx` `v3.2.0` or higher. `Transaction` legacy txs (internal type `0`) and `AccessListEIP2930Transaction` txs (type `1`) are still valid.
+
+On block (header) validation with `BlockHeader.validate()` there is a new validity check if the base fee of a block matches the expected calculated base fee derived from the gas used in the parent block and taking the former virtual gas target (gas limit // ELASTICITY_MULTIPLIER (2)) into account.
+
+#### EIP-3554: Difficulty Bomb Delay to December 2021
+
+Support for the `london` difficulty bomb ([EIP-3554](https://eips.ethereum.org/EIPS/eip-3554)) delay has been added along PR [#1245](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1245). A `london`-activated block is now doing difficulty calculation and validation with the updated EIP parameters (only PoW chains).
+
 ## 3.2.1 - 2021-04-09
 
 - Fixed `BlockData` interface `transactions` typing for EIP-2930 typed txs, PR [#1185](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1185)

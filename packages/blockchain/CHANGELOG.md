@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.3.0 - 2021-05-26
+
+### London HF Support
+
+This release comes with full `london` HF support by setting the `Block`, `Tx` and `Common` dependencies to versions which ensure a working set of `london`-enabled library versions. In particular this allows for running a blockchain with EIP-1559 blocks and transactions.
+
+Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `Blockchain` instance with a `london` HF activated:
+
+```typescript
+import Blockchain from '@ethereumjs/blockchain'
+import Common from '@ethereumjs/common'
+const common = new Common({ chain: 'mainnet', hardfork: 'london' })
+const blockchain = await Blockchain.create({ common })
+```
+
+### Other Changes
+
+- New `hardforkByHeadBlockNumber` option to set the HF to the fork determined by the head block and update on head updates (default: `false`), PR [#1148](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1148)
+
 ## 5.2.1 - 2021-03-26
 
 - Fixed a bug leading `Blockchain` to fail instantiating with a `common` **custom chain** setup when no `genesisBlock` was provided, PR [#1167](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1167)

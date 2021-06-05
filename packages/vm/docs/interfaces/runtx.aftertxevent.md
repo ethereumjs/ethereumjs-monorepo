@@ -6,7 +6,7 @@
 
 ## Hierarchy
 
-* [*RunTxResult*](runtx.runtxresult.md)
+- [*RunTxResult*](runtx.runtxresult.md)
 
   ↳ **AfterTxEvent**
 
@@ -34,7 +34,7 @@ EIP-2930 access list generated for the tx (see `reportAccessList` option)
 
 Inherited from: [RunTxResult](runtx.runtxresult.md).[accessList](runtx.runtxresult.md#accesslist)
 
-Defined in: [runTx.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L95)
+Defined in: [runTx.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L106)
 
 ___
 
@@ -46,7 +46,7 @@ The amount of ether used by this transaction
 
 Inherited from: [RunTxResult](runtx.runtxresult.md).[amountSpent](runtx.runtxresult.md#amountspent)
 
-Defined in: [runTx.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L80)
+Defined in: [runTx.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L91)
 
 ___
 
@@ -58,7 +58,7 @@ Bloom filter resulted from transaction
 
 Inherited from: [RunTxResult](runtx.runtxresult.md).[bloom](runtx.runtxresult.md#bloom)
 
-Defined in: [runTx.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L75)
+Defined in: [runTx.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L86)
 
 ___
 
@@ -94,7 +94,7 @@ The amount of gas as that was refunded during the transaction (i.e. `gasUsed = t
 
 Inherited from: [RunTxResult](runtx.runtxresult.md).[gasRefund](runtx.runtxresult.md#gasrefund)
 
-Defined in: [runTx.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L90)
+Defined in: [runTx.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L101)
 
 ___
 
@@ -118,7 +118,7 @@ The tx receipt
 
 Inherited from: [RunTxResult](runtx.runtxresult.md).[receipt](runtx.runtxresult.md#receipt)
 
-Defined in: [runTx.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L85)
+Defined in: [runTx.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L96)
 
 ___
 
@@ -128,4 +128,4 @@ ___
 
 The transaction which just got finished
 
-Defined in: [runTx.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L102)
+Defined in: [runTx.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L113)

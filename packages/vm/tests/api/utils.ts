@@ -60,6 +60,11 @@ export function getTransaction(
     value,
     data,
   }
+
+  if (txType > 0) {
+    txParams['type'] = txType
+  }
+
   if (txType === 1) {
     txParams['chainId'] = common.chainIdBN()
     txParams['accessList'] = [
@@ -71,7 +76,10 @@ export function getTransaction(
         ],
       },
     ]
-    txParams['type'] = txType
+  } else if (txType === 2) {
+    txParams['gasPrice'] = undefined
+    txParams['maxFeePerGas'] = new BN(100)
+    txParams['maxPriorityFeePerGas'] = new BN(10)
   }
 
   const tx = TransactionFactory.fromTxData(txParams, { common })
