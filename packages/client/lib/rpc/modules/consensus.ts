@@ -23,10 +23,10 @@ export class Consensus {
     this._vm = (service.synchronizer as any)?.execution?.vm
 
     // TODO: validation for assembleBlock and newBlock methods, see https://github.com/ethereum/rayonism/blob/master/specs/merge.md#consensus-json-rpc
-    this.assembleBlock = middleware(this.assembleBlock.bind(this), 1)
-    this.finaliseBlock = middleware(this.finaliseBlock.bind(this), 1, [validators.blockHash])
+    this.assembleBlock = middleware(this.assembleBlock.bind(this), 2, [[validators.blockHash]])
+    this.finaliseBlock = middleware(this.finaliseBlock.bind(this), 1, [[validators.blockHash]])
     this.newBlock = middleware(this.newBlock.bind(this), 1)
-    this.setHead = middleware(this.setHead.bind(this), 1, [validators.blockHash])
+    this.setHead = middleware(this.setHead.bind(this), 1, [[validators.blockHash]])
   }
 
   /**
