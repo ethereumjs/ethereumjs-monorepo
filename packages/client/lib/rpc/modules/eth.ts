@@ -427,7 +427,7 @@ export class Eth {
   /**
    * Returns the number of uncles in a block from a block matching the given block number
    * @param params An array of one parameter:
-   *   1: hexidecimal representation of a block number
+   *   1: hexadecimal representation of a block number
    */
   async getUncleCountByBlockNumber(params: [string]) {
     const [blockNumber] = params
