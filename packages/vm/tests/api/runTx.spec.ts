@@ -256,6 +256,26 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
 
     t.end()
   })
+
+  t.test("run with maxBaseFee less than block's baseFee", async (t) => {
+    // EIP-1559
+    // Fail if transaction.maxFeePerGas < block.baseFeePerGas
+    for (const txType of TRANSACTION_TYPES) {
+      const vm = new VM({ common })
+      const tx = getTransaction(vm._common, txType.type, true)
+      const block = Block.fromBlockData({ header: { baseFeePerGas: 100000 } }, { common })
+      try {
+        await vm.runTx({ tx, block })
+        t.fail('should fail')
+      } catch (e) {
+        t.ok(
+          e.message.includes("is less than the block's baseFeePerGas"),
+          'should fail with appropriate error'
+        )
+      }
+    }
+    t.end()
+  })
 })
 
 tape('runTx() -> runtime behavior', async (t) => {

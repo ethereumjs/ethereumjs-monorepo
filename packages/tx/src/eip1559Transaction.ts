@@ -14,6 +14,12 @@ import { AccessLists } from './util'
 const TRANSACTION_TYPE = 2
 const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')
 
+/**
+ * Typed transaction with a new gas fee market mechanism
+ *
+ * - TransactionType: 2
+ * - EIP: [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)
+ */
 export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP1559Transaction> {
   public readonly chainId: BN
   public readonly accessList: AccessListBuffer
@@ -23,6 +29,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
 
   /**
    * EIP-2930 alias for `r`
+   *
+   * @deprecated use `r` instead
    */
   get senderR() {
     return this.r
@@ -30,6 +38,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
 
   /**
    * EIP-2930 alias for `s`
+   *
+   * @deprecated use `s` instead
    */
   get senderS() {
     return this.s
@@ -37,11 +47,23 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
 
   /**
    * EIP-2930 alias for `v`
+   *
+   * @deprecated use `v` instead
    */
   get yParity() {
     return this.v
   }
 
+  /**
+   * Instantiate a transaction from a data dictionary.
+   *
+   * Format: { chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
+   * accessList, v, r, s }
+   *
+   * Notes:
+   * - `chainId` will be set automatically if not provided
+   * - All parameters are optional and have some basic default values
+   */
   public static fromTxData(txData: FeeMarketEIP1559TxData, opts: TxOptions = {}) {
     return new FeeMarketEIP1559Transaction(txData, opts)
   }
@@ -49,7 +71,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   /**
    * Instantiate a transaction from the serialized tx.
    *
-   * Note: this means that the Buffer should start with 0x01.
+   * Format: `0x02 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
+   * accessList, signatureYParity, signatureR, signatureS])`
    */
   public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     if (!serialized.slice(0, 1).equals(TRANSACTION_TYPE_BUFFER)) {
@@ -85,8 +108,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   /**
    * Create a transaction from a values array.
    *
-   * The format is:
-   * chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data, accessList, signatureYParity, signatureR, signatureS
+   * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
+   * accessList, signatureYParity, signatureR, signatureS]`
    */
   public static fromValuesArray(values: FeeMarketEIP1559ValuesArray, opts: TxOptions = {}) {
     if (values.length !== 9 && values.length !== 12) {
@@ -212,7 +235,10 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   }
 
   /**
-   * Returns a Buffer Array of the raw Buffers of this transaction, in order.
+   * Returns a Buffer Array of the raw Buffers of the EIP-1559 transaction, in order.
+   *
+   * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
+   * accessList, signatureYParity, signatureR, signatureS]`
    *
    * Use `serialize()` to add to block data for `Block.fromValuesArray()`.
    */
@@ -234,7 +260,14 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   }
 
   /**
-   * Returns the serialized encoding of the transaction.
+   * Returns the serialized encoding of the EIP-1559 transaction.
+   *
+   * Format: `0x02 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
+   * accessList, signatureYParity, signatureR, signatureS])`
+   *
+   * Note that in contrast to the legacy tx serialization format this is not
+   * valid RLP any more due to the raw tx type preceeding and concatenated to
+   * the RLP encoding of the values.
    */
   serialize(): Buffer {
     const base = this.raw()
@@ -242,7 +275,15 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   }
 
   /**
-   * Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
+   * Returns the serialized unsigned tx (hashed or raw), which can be used
+   * to sign the transaction (e.g. for sending to a hardware wallet).
+   *
+   * Note: in contrast to the legacy tx the raw message format is already
+   * serialized and doesn't need to be RLP encoded any more.
+   *
+   * ```javascript
+   * const serializedMessage = tx.getMessageToSign(false) // use this for the HW wallet input
+   * ```
    *
    * @param hashMessage - Return hashed message if set to true (default: true)
    */
@@ -259,7 +300,10 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   }
 
   /**
-   * Computes a sha3-256 hash of the serialized tx
+   * Computes a sha3-256 hash of the serialized tx.
+   *
+   * This method can only be used for signed txs (it throws otherwise).
+   * Use `getMessageToSign()` to get a tx hash for the purpose of signing.
    */
   public hash(): Buffer {
     if (!this.isSigned()) {
