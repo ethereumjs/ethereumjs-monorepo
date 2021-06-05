@@ -6,7 +6,7 @@
 
 ## Hierarchy
 
-* [*RunBlockResult*](runblock.runblockresult.md)
+- [*RunBlockResult*](runblock.runblockresult.md)
 
   ↳ **AfterBlockEvent**
 

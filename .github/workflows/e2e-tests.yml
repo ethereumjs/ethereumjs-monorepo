@@ -1,34 +1,34 @@
-name: E2E
-on:
-  push:
-    branches:
-      - master
-    tags:
-      - '*'
-  pull_request:
-    types: [opened, reopened, synchronize]
+# name: E2E
+# on:
+#   push:
+#     branches:
+#       - master
+#     tags:
+#       - '*'
+#   pull_request:
+#     types: [opened, reopened, synchronize]
 
-env:
-  cwd: ${{github.workspace}}
+# env:
+#   cwd: ${{github.workspace}}
 
-jobs:
-  virtual-npm-publish:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [15]
-    # steps:
-    #   - name: Use Node.js ${{ matrix.node-version }}
-    #     uses: actions/setup-node@v1
-    #     with:
-    #       node-version: ${{ matrix.node-version }}
-    #   - uses: actions/checkout@v2
-    #     with:
-    #       submodules: recursive
+# jobs:
+#   virtual-npm-publish:
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         node-version: [15]
+#     steps:
+#       - name: Use Node.js ${{ matrix.node-version }}
+#         uses: actions/setup-node@v1
+#         with:
+#           node-version: ${{ matrix.node-version }}
+#       - uses: actions/checkout@v2
+#         with:
+#           submodules: recursive
 
-      # Installs all dependencies, bootstrapping everything.
-      # - run: npm install
+#       Installs all dependencies, bootstrapping everything.
+#       - run: npm install
 
-      # # Publishes all packages to a virtual npm registry after giving each a minor version bump
-      # - name: Publish to virtual registry
-      #   run: npm run e2e:publish
+#       # Publishes all packages to a virtual npm registry after giving each a minor version bump
+#       - name: Publish to virtual registry
+#         run: npm run e2e:publish

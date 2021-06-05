@@ -16,6 +16,7 @@
 - [CREATE\_COLLISION](exceptions.error.md#create_collision)
 - [INTERNAL\_ERROR](exceptions.error.md#internal_error)
 - [INVALID\_BEGINSUB](exceptions.error.md#invalid_beginsub)
+- [INVALID\_BYTECODE\_RESULT](exceptions.error.md#invalid_bytecode_result)
 - [INVALID\_JUMP](exceptions.error.md#invalid_jump)
 - [INVALID\_JUMPSUB](exceptions.error.md#invalid_jumpsub)
 - [INVALID\_OPCODE](exceptions.error.md#invalid_opcode)
@@ -36,7 +37,7 @@
 
 • **BLS\_12\_381\_FP\_NOT\_IN\_FIELD**: = "fp point not in field"
 
-Defined in: [exceptions.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L24)
+Defined in: [exceptions.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L25)
 
 ___
 
@@ -44,7 +45,7 @@ ___
 
 • **BLS\_12\_381\_INPUT\_EMPTY**: = "input is empty"
 
-Defined in: [exceptions.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L23)
+Defined in: [exceptions.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L24)
 
 ___
 
@@ -52,7 +53,7 @@ ___
 
 • **BLS\_12\_381\_INVALID\_INPUT\_LENGTH**: = "invalid input length"
 
-Defined in: [exceptions.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L21)
+Defined in: [exceptions.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L22)
 
 ___
 
@@ -60,7 +61,7 @@ ___
 
 • **BLS\_12\_381\_POINT\_NOT\_ON\_CURVE**: = "point not on curve"
 
-Defined in: [exceptions.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L22)
+Defined in: [exceptions.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L23)
 
 ___
 
@@ -93,6 +94,14 @@ ___
 • **INVALID\_BEGINSUB**: = "invalid BEGINSUB"
 
 Defined in: [exceptions.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L16)
+
+___
+
+### INVALID\_BYTECODE\_RESULT
+
+• **INVALID\_BYTECODE\_RESULT**: = "invalid bytecode deployed"
+
+Defined in: [exceptions.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L19)
 
 ___
 
