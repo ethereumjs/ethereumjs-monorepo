@@ -75,17 +75,21 @@ export abstract class BaseTransaction<TransactionObject> {
   }
 
   /**
-   * Returns the transaction type
+   * Alias for `type`
+   *
+   * @deprecated Use `type` instead
    */
   get transactionType(): number {
-    return this._type
+    return this.type
   }
 
   /**
-   * Alias for `transactionType`
+   * Returns the transaction type.
+   *
+   * Note: legacy txs will return tx type `0`.
    */
   get type() {
-    return this.transactionType
+    return this._type
   }
 
   /**
@@ -156,11 +160,10 @@ export abstract class BaseTransaction<TransactionObject> {
    */
   abstract serialize(): Buffer
 
-  /**
-   * Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
-   *
-   * @param hashMessage - Return hashed message if set to true (default: true)
-   */
+  // Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
+  //
+  // Note: do not use code docs here since VS Studio is then not able to detect the
+  // comments from the inherited methods
   abstract getMessageToSign(hashMessage: false): Buffer | Buffer[]
   abstract getMessageToSign(hashMessage?: true): Buffer
 
@@ -211,7 +214,13 @@ export abstract class BaseTransaction<TransactionObject> {
   abstract getSenderPublicKey(): Buffer
 
   /**
-   * Signs a tx and returns a new signed tx object
+   * Signs a transaction.
+   *
+   * Note that the signed tx is returned as a new object,
+   * use as follows:
+   * ```javascript
+   * const signedTx = tx.sign(privateKey)
+   * ```
    */
   sign(privateKey: Buffer): TransactionObject {
     if (privateKey.length !== 32) {
