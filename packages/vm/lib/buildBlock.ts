@@ -71,6 +71,10 @@ export class BlockBuilder {
       number: opts.headerData?.number ?? opts.parentBlock.header.number.addn(1),
       gasLimit: opts.headerData?.gasLimit ?? opts.parentBlock.header.gasLimit,
     }
+
+    if (this.vm._common.isActivatedEIP(1559)) {
+      this.headerData.baseFeePerGas = opts.parentBlock.header.calcNextBaseFee()
+    }
   }
 
   /**

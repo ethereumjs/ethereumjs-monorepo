@@ -23,11 +23,11 @@
 
 ▸ **default**(`opts`: [*BuildBlockOpts*](../interfaces/buildblock.buildblockopts.md)): *Promise*<[*BlockBuilder*](../classes/buildblock.blockbuilder.md)\>
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`opts` | [*BuildBlockOpts*](../interfaces/buildblock.buildblockopts.md) |
+| Name | Type |
+| :------ | :------ |
+| `opts` | [*BuildBlockOpts*](../interfaces/buildblock.buildblockopts.md) |
 
 **Returns:** *Promise*<[*BlockBuilder*](../classes/buildblock.blockbuilder.md)\>
 

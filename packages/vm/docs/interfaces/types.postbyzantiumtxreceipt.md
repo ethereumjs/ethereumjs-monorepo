@@ -9,11 +9,13 @@ state root field with a status code field (EIP-658)
 
 ## Hierarchy
 
-* [*BaseTxReceipt*](types.basetxreceipt.md)
+- [*BaseTxReceipt*](types.basetxreceipt.md)
 
   ↳ **PostByzantiumTxReceipt**
 
   ↳↳ [*EIP2930Receipt*](types.eip2930receipt.md)
+
+  ↳↳ [*EIP1559Receipt*](types.eip1559receipt.md)
 
 ## Table of contents
 
@@ -64,7 +66,7 @@ ___
 
 ### status
 
-• **status**: *0* \| *1*
+• **status**: ``0`` \| ``1``
 
 Status of transaction, `1` if successful, `0` if an exception occured
 

@@ -96,6 +96,8 @@ Supported chains:
 - `kovan`
 - `goerli`
 - `yolov3`
+- `aleut`
+- `baikal`
 - Private/custom chain parameters
 
 The following chain-specific parameters are provided:
@@ -183,10 +185,11 @@ library supported:
 - `istanbul` (`DEFAULT_HARDFORK` (`v2.0.0` release series))
 - `muirGlacier`
 - `berlin` (since `v2.2.0`)
+- `london` (since `v2.3.0`)
 
 ### Future Hardforks
 
-The `london` hardfork targeted for summer 2021 is currently not yet supported by this library.
+The next upcoming HF `shanghai` is currently not yet supported by this library.
 
 ### Parameter Access
 
@@ -216,12 +219,16 @@ const c = new Common({ chain: 'mainnet', eips: [2537] })
 
 The following EIPs are currently supported:
 
+- [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559): Fee market change for ETH 1.0 chain
 - [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315): Simple subroutines for the EVM
 - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537): BLS precompiles
 - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565): ModExp gas cost
 - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2565): Transaction Types
 - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929): gas cost increases for state access opcodes
 - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930): Optional accesss list tx type
+- [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529): Reduction in refunds
+- [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541): Reject new contracts starting with the 0xEF byte
+- [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554): Difficulty Bomb Delay to December 2021 (only PoW networks)
 
 ## Bootstrap Nodes
 
