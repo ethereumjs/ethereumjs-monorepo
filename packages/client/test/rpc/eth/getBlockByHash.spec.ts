@@ -55,7 +55,7 @@ tape(`${method}: call with invalid hex string as block hash`, (t) => {
   baseRequest(t, server, req, 200, expectRes)
 })
 
-tape('call eth_getBlockByHash without second parameter', (t) => {
+tape(`${method}: call without second parameter`, (t) => {
   const server = baseSetup()
 
   const req = params(method, ['0x0'])
@@ -63,7 +63,7 @@ tape('call eth_getBlockByHash without second parameter', (t) => {
   baseRequest(t, server, req, 200, expectRes)
 })
 
-tape('call eth_getBlockByHash with invalid second parameter', (t) => {
+tape(`${method}: call with invalid second parameter`, (t) => {
   const server = baseSetup()
 
   const req = params(method, ['0x0', 'INVALID PARAMETER'])
