@@ -2,7 +2,6 @@ import { middleware, validators } from '../validation'
 import type { Chain } from '../../blockchain'
 import type { EthereumClient } from '../..'
 import type { EthereumService } from '../../service'
-import type { EthProtocol } from '../../net/protocol'
 import type VM from '@ethereumjs/vm'
 
 /**
@@ -50,10 +49,8 @@ export class Consensus {
    */
   async assembleBlock(params: [string, number]) {
     const [parentHash, timestamp] = params
-    console.log('Not implemented yet')
-    console.log('Parent hash', parentHash)
-    console.log('Timestamp', timestamp)
-    return null
+
+    return `Not implemented yet. Parent hash: ${parentHash}. Timestamp: ${timestamp}`
   }
   /**
    * Notifies the execution engine that the block identified by blockHash has been finalised by consensus-layer.
@@ -62,9 +59,7 @@ export class Consensus {
    */
   async finaliseBlock(params: [string]) {
     const [blockHash] = params
-    console.log('Block hash', blockHash)
-    console.log('Not implemented yet')
-    return null
+    return `Not implemented yet. Block hash: ${blockHash}`
   }
 
   /**
@@ -84,11 +79,9 @@ export class Consensus {
    *       * transactions - Array of encoded transactions, each transaction is a byte list, representing TransactionType || TransactionPayload or LegacyTransaction as defined in EIP 2718
    * @returns An object with one property: valid: Boolean - set to true if block is valid, otherwise false.
    */
-  async newBlock(params: [string]) {
+  async newBlock(params: [any]) {
     const [block] = params
-    console.log('Not implemented yet')
-    console.log('block', block)
-    return null
+    return `Not implemented yet. Block: ${block.blockHash}`
   }
   /**
    * Sets the head of the chain to the block specified by the blockHash parameter.
@@ -97,8 +90,6 @@ export class Consensus {
    */
   async setHead(params: [string]) {
     const [blockHash] = params
-    console.log('Block hash', blockHash)
-    console.log('Not implemented yet')
-    return null
+    return `Not implemented yet. Block hash: ${blockHash}`
   }
 }
