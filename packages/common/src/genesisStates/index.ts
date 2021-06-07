@@ -10,6 +10,7 @@ const genesisStates: genesisStatesType = {
     '34180983699157880': 'yolov3',
     '7822': 'aleut',
     '1642': 'baikal',
+    '123': 'calaveras',
   },
   mainnet: require('./mainnet.json'),
   ropsten: require('./ropsten.json'),
@@ -19,6 +20,7 @@ const genesisStates: genesisStatesType = {
   yolov3: require('./yolov3.json'),
   aleut: require('./aleut.json'),
   baikal: require('./baikal.json'),
+  calaveras: require('./calaveras.json'),
 }
 
 /**
