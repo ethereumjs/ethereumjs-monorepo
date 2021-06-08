@@ -26,57 +26,57 @@
       {
         "name": "chainstart",
         "block": 0,
-        "forkHash": "0x49f2f6b6"
+        "forkHash": "0xe34c4aff"
       },
       {
         "name": "homestead",
         "block": 0,
-        "forkHash": "0x49f2f6b6"
+        "forkHash": "0xe34c4aff"
       },
       {
         "name": "dao",
         "block": null,
-        "forkHash": "0x49f2f6b6"
+        "forkHash": "0xe34c4aff"
       },
       {
         "name": "tangerineWhistle",
         "block": 0,
-        "forkHash": "0x49f2f6b6"
+        "forkHash": "0xe34c4aff"
       },
       {
         "name": "spuriousDragon",
         "block": 0,
-        "forkHash": "0x49f2f6b6"
+        "forkHash": "0xe34c4aff"
       },
       {
         "name": "byzantium",
         "block": 0,
-        "forkHash": "0x49f2f6b6"
+        "forkHash": "0xe34c4aff"
       },
       {
         "name": "constantinople",
         "block": 0,
-        "forkHash": "0x49f2f6b6"
+        "forkHash": "0xe34c4aff"
       },
       {
         "name": "petersburg",
         "block": 0,
-        "forkHash": "0x49f2f6b6"
+        "forkHash": "0xe34c4aff"
       },
       {
         "name": "istanbul",
         "block": 0,
-        "forkHash": "0x49f2f6b6"
+        "forkHash": "0xe34c4aff"
       },
       {
         "name": "berlin",
         "block": 0,
-        "forkHash": "0x49f2f6b6"
+        "forkHash": "0xe34c4aff"
       },
       {
         "name": "london",
         "block": 500,
-        "forkHash": "0xdc678ac4"
+        "forkHash": "0x173783e4"
       }
     ],
     "bootstrapNodes": [
