@@ -1,10 +1,11 @@
 import { EventEmitter } from 'events'
+import { LevelUp } from 'levelup'
 import { PeerPool } from '../net/peerpool'
 import { Peer } from '../net/peer/peer'
 import { FlowControl } from '../net/protocol'
 import { Config } from '../config'
 import { Chain } from '../blockchain'
-import { LevelUp } from 'levelup'
+import { Event } from '../types'
 
 export interface SynchronizerOptions {
   /* Config */
@@ -100,7 +101,9 @@ export abstract class Synchronizer extends EventEmitter {
     }, this.interval * 30)
     while (this.running) {
       try {
-        if (await this.sync()) this.emit('synchronized')
+        if (await this.sync()) {
+          this.config.events.emit(Event.SYNC_SYNCHRONIZED)
+        }
       } catch (error) {
         this.emit('error', error)
       }

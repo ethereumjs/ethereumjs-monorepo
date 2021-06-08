@@ -3,6 +3,7 @@ import tape from 'tape-catch'
 import td from 'testdouble'
 import { Config } from '../lib/config'
 import { PeerPool } from '../lib/net/peerpool'
+import { Event } from '../lib/types'
 
 tape('[EthereumClient]', async (t) => {
   const config = new Config({ transports: [], loglevel: 'error' })
@@ -55,12 +56,12 @@ tape('[EthereumClient]', async (t) => {
       if (err === 'err1') t.pass('got err1')
     })
     client.on('listening', (details: string) => t.equals(details, 'details0', 'got listening'))
-    client.on('synchronized', () => t.ok('got synchronized'))
+    config.events.on(Event.SYNC_SYNCHRONIZED, () => t.ok('got synchronized'))
     await client.open()
     servers[0].emit('error', 'err0')
     servers[0].emit('listening', 'details0')
     client.services[0].emit('error', 'err1')
-    client.services[0].emit('synchronized')
+    config.events.emit(Event.SYNC_SYNCHRONIZED)
     t.ok(client.opened, 'opened')
     t.equals(await client.open(), false, 'already opened')
   })

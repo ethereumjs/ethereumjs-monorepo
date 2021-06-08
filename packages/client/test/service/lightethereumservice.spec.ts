@@ -2,6 +2,7 @@ import { EventEmitter } from 'events'
 import tape from 'tape-catch'
 import td from 'testdouble'
 import { Config } from '../../lib/config'
+import { Event } from '../../lib/types'
 
 tape('[LightEthereumService]', async (t) => {
   class PeerPool extends EventEmitter {
@@ -52,9 +53,9 @@ tape('[LightEthereumService]', async (t) => {
     td.verify(service.chain.open())
     td.verify(service.synchronizer.open())
     td.verify(server.addProtocols(td.matchers.anything()))
-    service.on('synchronized', () => t.pass('synchronized'))
+    config.events.on(Event.SYNC_SYNCHRONIZED, () => t.pass('synchronized'))
     service.once('error', (err: string) => t.equals(err, 'error0', 'got error 1'))
-    service.synchronizer.emit('synchronized')
+    config.events.emit(Event.SYNC_SYNCHRONIZED)
     service.synchronizer.emit('error', 'error0')
     service.once('error', (err: string) => t.equals(err, 'error1', 'got error 2'))
     service.pool.emit('banned', 'peer0')

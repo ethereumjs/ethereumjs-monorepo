@@ -39,6 +39,7 @@ export * from '../lib/sync/lightsync'
 // Utilities
 export * from '../lib/util'
 import { Config } from '../lib/config'
+import { Event } from '../lib/types'
 
 // Logging
 export * from './logging'
@@ -68,7 +69,7 @@ export async function run(args: any) {
   client.on('listening', (details: any) => {
     logger.info(`Listener up transport=${details.transport} url=${details.url}`)
   })
-  client.on('synchronized', () => {
+  client.config.events.on(Event.SYNC_SYNCHRONIZED, () => {
     logger.info('Synchronized')
   })
   await client.open()

@@ -90,9 +90,6 @@ export default class EthereumClient extends events.EventEmitter {
       s.on('error', (error: Error) => {
         this.emit('error', error)
       })
-      s.on('synchronized', () => {
-        this.emit('synchronized')
-      })
     })
     await Promise.all(this.services.map((s) => s.open()))
     this.opened = true

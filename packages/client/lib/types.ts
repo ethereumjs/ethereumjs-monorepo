@@ -6,17 +6,19 @@ import type { MuxedStream } from '../../../node_modules/libp2p-interfaces/dist/s
 
 /**
  * Types for the central event bus, emitted
- * by different components of the client
+ * by different components of the client.
  */
 export enum Event {
   CHAIN_UPDATED = 'blockchain:chain:updated',
   SYNC_EXECUTION_VM_ERROR = 'sync:execution:vm:error',
   SYNC_FETCHER_FETCHED = 'sync:fetcher:fetched',
+  SYNC_SYNCHRONIZED = 'sync:synchronized',
 }
 export interface EventParams {
   [Event.CHAIN_UPDATED]: []
   [Event.SYNC_EXECUTION_VM_ERROR]: [Error]
   [Event.SYNC_FETCHER_FETCHED]: [Block[] | BlockHeader[]]
+  [Event.SYNC_SYNCHRONIZED]: []
 }
 export declare interface EventBus<T extends Event> {
   emit(event: T, ...args: EventParams[T]): boolean
@@ -25,7 +27,8 @@ export declare interface EventBus<T extends Event> {
 export class EventBus<T extends Event> extends EventEmitter {}
 export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
   EventBus<Event.SYNC_EXECUTION_VM_ERROR> &
-  EventBus<Event.SYNC_FETCHER_FETCHED>
+  EventBus<Event.SYNC_FETCHER_FETCHED> &
+  EventBus<Event.SYNC_SYNCHRONIZED>
 
 /**
  * Like types

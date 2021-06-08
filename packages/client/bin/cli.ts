@@ -7,6 +7,7 @@ import EthereumClient from '../lib/client'
 import { Config } from '../lib/config'
 import { Logger } from '../lib/logging'
 import { RPCManager } from '../lib/rpc'
+import { Event } from '../lib/types'
 const os = require('os')
 const path = require('path')
 const fs = require('fs-extra')
@@ -145,7 +146,7 @@ async function runNode(config: Config) {
   client.on('listening', (details: any) => {
     config.logger.info(`Listener up transport=${details.transport} url=${details.url}`)
   })
-  client.on('synchronized', () => {
+  config.events.on(Event.SYNC_SYNCHRONIZED, () => {
     config.logger.info('Synchronized')
   })
   config.logger.info(`Connecting to network: ${config.chainCommon.chainName()}`)
