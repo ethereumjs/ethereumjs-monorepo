@@ -149,7 +149,7 @@ tape('[TransactionFactory]: Basic functions', function (t) {
 
     for (const txType of txTypes) {
       if (!txType.eip2718) {
-        const tx = TransactionFactory.getTransactionClass(txType.type, common)
+        const tx = TransactionFactory.getTransactionClass(txType.type)
         st.equals(tx.name, txType.class.name)
       }
     }
@@ -158,12 +158,8 @@ tape('[TransactionFactory]: Basic functions', function (t) {
 
   t.test('getTransactionClass() -> error cases', function (st) {
     st.throws(() => {
-      TransactionFactory.getTransactionClass(3, common)
+      TransactionFactory.getTransactionClass(3)
     }, 'should throw when getting an invalid transaction type')
-
-    st.throws(() => {
-      TransactionFactory.getTransactionClass(1)
-    }, 'should throw when getting typed transactions without EIP-2718 activated')
 
     st.end()
   })
