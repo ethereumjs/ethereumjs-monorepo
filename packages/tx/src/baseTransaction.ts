@@ -11,7 +11,6 @@ import {
 } from 'ethereumjs-util'
 import {
   TxData,
-  TxOptions,
   JsonTx,
   AccessListEIP2930ValuesArray,
   AccessListEIP2930TxData,
@@ -19,21 +18,6 @@ import {
   FeeMarketEIP1559TxData,
   TxValuesArray,
 } from './types'
-
-/**
- * The default HF for transactions deviates from the Common
- * default HF. This is to ease the instantiation of txs
- * with newly introduced tx types which are activated on
- * some newer HF (this e.g. prevents using the default
- * (and therefore: no) Common on instantiation).
- *
- * Developer note: please only bump the HF here if there
- * are no behavioral changes within tx types (including
- * legacy txs) along HFs, otherwise this can lead to
- * undefined behavior in conjuction with using other
- * libraries being instantiated with a deviating default HF
- */
-const DEFAULT_HARDFORK = 'london'
 
 /**
  * This base class will likely be subject to further
@@ -50,16 +34,31 @@ export abstract class BaseTransaction<TransactionObject> {
   public readonly to?: Address
   public readonly value: BN
   public readonly data: Buffer
-  public readonly common: Common
 
   public readonly v?: BN
   public readonly r?: BN
   public readonly s?: BN
 
-  constructor(
-    txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData,
-    txOptions: TxOptions = {}
-  ) {
+  public readonly common?: Common
+
+  /**
+   * The default HF for transactions deviates from the Common
+   * default HF. This is to ease the instantiation of txs
+   * with newly introduced tx types which are activated on
+   * some newer HF (this e.g. prevents using the default
+   * (and therefore: no) Common on instantiation).
+   *
+   * Developer note: please only bump the HF here if there
+   * are no behavioral changes within tx types (including
+   * legacy txs) along HFs, otherwise this can lead to
+   * undefined behavior in conjuction with using other
+   * libraries being instantiated with a deviating default HF
+   *
+   * @hidden
+   */
+  protected DEFAULT_HARDFORK = 'london'
+
+  constructor(txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData) {
     const { nonce, gasLimit, to, value, data, v, r, s, type } = txData
     this._type = new BN(toBuffer(type)).toNumber()
 
@@ -85,9 +84,6 @@ export abstract class BaseTransaction<TransactionObject> {
       r: this.r,
       s: this.s,
     })
-
-    this.common =
-      txOptions.common?.copy() ?? new Common({ chain: 'mainnet', hardfork: DEFAULT_HARDFORK })
   }
 
   /**
@@ -133,9 +129,9 @@ export abstract class BaseTransaction<TransactionObject> {
    * The minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
    */
   getBaseFee(): BN {
-    const fee = this.getDataFee().addn(this.common.param('gasPrices', 'tx'))
-    if (this.common.gteHardfork('homestead') && this.toCreationAddress()) {
-      fee.iaddn(this.common.param('gasPrices', 'txCreation'))
+    const fee = this.getDataFee().addn(this.common!.param('gasPrices', 'tx'))
+    if (this.common!.gteHardfork('homestead') && this.toCreationAddress()) {
+      fee.iaddn(this.common!.param('gasPrices', 'txCreation'))
     }
     return fee
   }
@@ -144,8 +140,8 @@ export abstract class BaseTransaction<TransactionObject> {
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): BN {
-    const txDataZero = this.common.param('gasPrices', 'txDataZero')
-    const txDataNonZero = this.common.param('gasPrices', 'txDataNonZero')
+    const txDataZero = this.common!.param('gasPrices', 'txDataZero')
+    const txDataNonZero = this.common!.param('gasPrices', 'txDataNonZero')
 
     let cost = 0
     for (let i = 0; i < this.data.length; i++) {

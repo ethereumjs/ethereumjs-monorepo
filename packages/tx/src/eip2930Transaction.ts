@@ -1,3 +1,4 @@
+import Common from '@ethereumjs/common'
 import { BN, bnToHex, bnToRlp, ecrecover, keccak256, rlp, toBuffer } from 'ethereumjs-util'
 import { BaseTransaction } from './baseTransaction'
 import {
@@ -26,6 +27,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   public readonly accessList: AccessListBuffer
   public readonly AccessListJSON: AccessList
   public readonly gasPrice: BN
+
+  public readonly common: Common
 
   /**
    * EIP-2930 alias for `r`
@@ -150,7 +153,9 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   public constructor(txData: AccessListEIP2930TxData, opts: TxOptions = {}) {
     const { chainId, accessList, gasPrice } = txData
 
-    super({ ...txData, type: TRANSACTION_TYPE }, opts)
+    super({ ...txData, type: TRANSACTION_TYPE })
+    this.common =
+      opts.common?.copy() ?? new Common({ chain: 'mainnet', hardfork: this.DEFAULT_HARDFORK })
 
     // EIP-2718 check is done in Common
     if (!this.common.isActivatedEIP(2930)) {

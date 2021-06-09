@@ -1,3 +1,4 @@
+import Common from '@ethereumjs/common'
 import { BN, bnToHex, bnToRlp, ecrecover, keccak256, rlp, toBuffer } from 'ethereumjs-util'
 import { BaseTransaction } from './baseTransaction'
 import {
@@ -26,6 +27,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   public readonly AccessListJSON: AccessList
   public readonly maxPriorityFeePerGas: BN
   public readonly maxFeePerGas: BN
+
+  public readonly common: Common
 
   /**
    * EIP-2930 alias for `r`
@@ -162,7 +165,9 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   public constructor(txData: FeeMarketEIP1559TxData, opts: TxOptions = {}) {
     const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
 
-    super({ ...txData, type: TRANSACTION_TYPE }, opts)
+    super({ ...txData, type: TRANSACTION_TYPE })
+    this.common =
+      opts.common?.copy() ?? new Common({ chain: 'mainnet', hardfork: this.DEFAULT_HARDFORK })
 
     if (!this.common.isActivatedEIP(1559)) {
       throw new Error('EIP-1559 not enabled on Common')

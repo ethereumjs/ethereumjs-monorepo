@@ -10,6 +10,7 @@ import {
 } from 'ethereumjs-util'
 import { TxOptions, TxData, JsonTx, N_DIV_2, TxValuesArray } from './types'
 import { BaseTransaction } from './baseTransaction'
+import Common from '@ethereumjs/common'
 
 const TRANSACTION_TYPE = 0
 
@@ -18,6 +19,8 @@ const TRANSACTION_TYPE = 0
  */
 export default class Transaction extends BaseTransaction<Transaction> {
   public readonly gasPrice: BN
+
+  public readonly common: Common
 
   /**
    * Instantiate a transaction from a data dictionary.
@@ -97,7 +100,9 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * varying data types.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
-    super({ ...txData, type: TRANSACTION_TYPE }, opts)
+    super({ ...txData, type: TRANSACTION_TYPE })
+    this.common =
+      opts.common?.copy() ?? new Common({ chain: 'mainnet', hardfork: this.DEFAULT_HARDFORK })
 
     this.gasPrice = new BN(toBuffer(txData.gasPrice === '' ? '0x' : txData.gasPrice))
 
