@@ -21,6 +21,21 @@ import {
 } from './types'
 
 /**
+ * The default HF for transactions deviates from the Common
+ * default HF. This is to ease the instantiation of txs
+ * with newly introduced tx types which are activated on
+ * some newer HF (this e.g. prevents using the default
+ * (and therefore: no) Common on instantiation).
+ *
+ * Developer note: please only bump the HF here if there
+ * are no behavioral changes within tx types (including
+ * legacy txs) along HFs, otherwise this can lead to
+ * undefined behavior in conjuction with using other
+ * libraries being instantiated with a deviating default HF
+ */
+const DEFAULT_HARDFORK = 'london'
+
+/**
  * This base class will likely be subject to further
  * refactoring along the introduction of additional tx types
  * on the Ethereum network.
@@ -71,7 +86,8 @@ export abstract class BaseTransaction<TransactionObject> {
       s: this.s,
     })
 
-    this.common = txOptions.common?.copy() ?? new Common({ chain: 'mainnet' })
+    this.common =
+      txOptions.common?.copy() ?? new Common({ chain: 'mainnet', hardfork: DEFAULT_HARDFORK })
   }
 
   /**
