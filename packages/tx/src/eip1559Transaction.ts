@@ -166,8 +166,9 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
 
     super({ ...txData, type: TRANSACTION_TYPE })
-    this.common =
-      opts.common?.copy() ?? new Common({ chain: 'mainnet', hardfork: this.DEFAULT_HARDFORK })
+
+    this.common = this._getCommon(opts.common, chainId)
+    this.chainId = this.common.chainIdBN()
 
     if (!this.common.isActivatedEIP(1559)) {
       throw new Error('EIP-1559 not enabled on Common')
@@ -180,7 +181,6 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     // Verify the access list format.
     AccessLists.verifyAccessList(this.accessList)
 
-    this.chainId = chainId ? new BN(toBuffer(chainId)) : this.common.chainIdBN()
     this.maxFeePerGas = new BN(toBuffer(maxFeePerGas === '' ? '0x' : maxFeePerGas))
     this.maxPriorityFeePerGas = new BN(
       toBuffer(maxPriorityFeePerGas === '' ? '0x' : maxPriorityFeePerGas)
@@ -198,10 +198,6 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       throw new Error(
         'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)'
       )
-    }
-
-    if (!this.chainId.eq(this.common.chainIdBN())) {
-      throw new Error('The chain ID does not match the chain ID of Common')
     }
 
     if (this.v && !this.v.eqn(0) && !this.v.eqn(1)) {

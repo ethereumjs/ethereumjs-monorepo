@@ -154,8 +154,9 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     const { chainId, accessList, gasPrice } = txData
 
     super({ ...txData, type: TRANSACTION_TYPE })
-    this.common =
-      opts.common?.copy() ?? new Common({ chain: 'mainnet', hardfork: this.DEFAULT_HARDFORK })
+
+    this.common = this._getCommon(opts.common, chainId)
+    this.chainId = this.common.chainIdBN()
 
     // EIP-2718 check is done in Common
     if (!this.common.isActivatedEIP(2930)) {
@@ -169,14 +170,9 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     // Verify the access list format.
     AccessLists.verifyAccessList(this.accessList)
 
-    this.chainId = chainId ? new BN(toBuffer(chainId)) : this.common.chainIdBN()
     this.gasPrice = new BN(toBuffer(gasPrice === '' ? '0x' : gasPrice))
 
     this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
-
-    if (!this.chainId.eq(this.common.chainIdBN())) {
-      throw new Error('The chain ID does not match the chain ID of Common')
-    }
 
     if (this.v && !this.v.eqn(0) && !this.v.eqn(1)) {
       throw new Error('The y-parity of the transaction should either be 0 or 1')

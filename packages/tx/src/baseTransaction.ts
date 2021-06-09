@@ -8,6 +8,7 @@ import {
   unpadBuffer,
   ecsign,
   publicToAddress,
+  BNLike,
 } from 'ethereumjs-util'
 import {
   TxData,
@@ -40,6 +41,16 @@ export abstract class BaseTransaction<TransactionObject> {
   public readonly s?: BN
 
   public readonly common?: Common
+
+  /**
+   * The default chain the tx falls back to if no Common
+   * is provided and if the chain can't be derived from
+   * a passed in chainId (only EIP-2718 typed txs) or
+   * EIP-155 signature (legacy txs).
+   *
+   * @hidden
+   */
+  protected DEFAULT_CHAIN = 'mainnet'
 
   /**
    * The default HF for transactions deviates from the Common
@@ -250,6 +261,53 @@ export abstract class BaseTransaction<TransactionObject> {
 
   // Accept the v,r,s values from the `sign` method, and convert this into a TransactionObject
   protected abstract _processSignature(v: number, r: Buffer, s: Buffer): TransactionObject
+
+  /**
+   * Does chain ID checks on common and returns a common
+   * to be used on instantiation
+   * @hidden
+   *
+   * @param common - Common instance from tx options
+   * @param chainId - Chain ID from tx options (typed txs) or signature (legacy tx)
+   */
+  protected _getCommon(common?: Common, chainId?: BNLike) {
+    // Chain ID provided
+    if (chainId) {
+      const chainIdBN = new BN(toBuffer(chainId))
+      if (common) {
+        if (!common.chainIdBN().eq(chainIdBN)) {
+          throw new Error('The chain ID does not match the chain ID of Common')
+        }
+        // Common provided, chain ID does match
+        // -> Return provided Common
+        return common.copy()
+      } else {
+        if (Common.isSupportedChainId(chainIdBN)) {
+          // No Common, chain ID supported by Common
+          // -> Instantiate Common with chain ID
+          return new Common({ chain: chainIdBN, hardfork: this.DEFAULT_HARDFORK })
+        } else {
+          // No Common, chain ID not supported by Common
+          // -> Instantiate custom Common derived from DEFAULT_CHAIN
+          return Common.forCustomChain(
+            this.DEFAULT_CHAIN,
+            {
+              name: 'custom-chain',
+              networkId: chainIdBN,
+              chainId: chainIdBN,
+            },
+            this.DEFAULT_HARDFORK
+          )
+        }
+      }
+    } else {
+      // No chain ID provided
+      // -> return Common provided or create new default Common
+      return (
+        common?.copy() ?? new Common({ chain: this.DEFAULT_CHAIN, hardfork: this.DEFAULT_HARDFORK })
+      )
+    }
+  }
 
   protected _validateCannotExceedMaxInteger(values: { [key: string]: BN | undefined }, bits = 53) {
     for (const [key, value] of Object.entries(values)) {
