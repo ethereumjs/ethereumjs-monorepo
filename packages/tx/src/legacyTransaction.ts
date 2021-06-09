@@ -101,14 +101,12 @@ export default class Transaction extends BaseTransaction<Transaction> {
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
     super({ ...txData, type: TRANSACTION_TYPE })
-    this.common =
-      opts.common?.copy() ?? new Common({ chain: 'mainnet', hardfork: this.DEFAULT_HARDFORK })
+
+    this.common = this._validateTxV(this.v, opts.common)
 
     this.gasPrice = new BN(toBuffer(txData.gasPrice === '' ? '0x' : txData.gasPrice))
 
     this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
-
-    this._validateTxV(this.v)
 
     const freeze = opts?.freeze ?? true
     if (freeze) {
@@ -304,30 +302,40 @@ export default class Transaction extends BaseTransaction<Transaction> {
   /**
    * Validates tx's `v` value
    */
-  private _validateTxV(v: BN | undefined): void {
-    if (v === undefined || v.eqn(0)) {
-      return
+  private _validateTxV(v?: BN, common?: Common): Common {
+    let chainIdBN
+    // No unsigned tx and EIP-155 activated and chain ID included
+    if (
+      v !== undefined &&
+      !v.eqn(0) &&
+      (!common || common.gteHardfork('spuriousDragon')) &&
+      !v.eqn(27) &&
+      !v.eqn(28)
+    ) {
+      if (common) {
+        const chainIdDoubled = common.chainIdBN().muln(2)
+        const isValidEIP155V = v.eq(chainIdDoubled.addn(35)) || v.eq(chainIdDoubled.addn(36))
+
+        if (!isValidEIP155V) {
+          throw new Error(
+            `Incompatible EIP155-based V ${v.toString()} and chain id ${common
+              .chainIdBN()
+              .toString()}. See the Common parameter of the Transaction constructor to set the chain id.`
+          )
+        }
+      } else {
+        // Derive the original chain ID
+        let numSub
+        if (v.subn(35).isEven()) {
+          numSub = 35
+        } else {
+          numSub = 36
+        }
+        // Use derived chain ID to create a proper Common
+        chainIdBN = v.subn(numSub).divn(2)
+      }
     }
-
-    if (!this.common.gteHardfork('spuriousDragon')) {
-      return
-    }
-
-    if (v.eqn(27) || v.eqn(28)) {
-      return
-    }
-
-    const chainIdDoubled = this.common.chainIdBN().muln(2)
-
-    const isValidEIP155V = v.eq(chainIdDoubled.addn(35)) || v.eq(chainIdDoubled.addn(36))
-
-    if (!isValidEIP155V) {
-      throw new Error(
-        `Incompatible EIP155-based V ${v.toString()} and chain id ${this.common
-          .chainIdBN()
-          .toString()}. See the Common parameter of the Transaction constructor to set the chain id.`
-      )
-    }
+    return this._getCommon(common, chainIdBN)
   }
 
   private _signedTxImplementsEIP155() {
