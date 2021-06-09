@@ -31,6 +31,15 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   public readonly common: Common
 
   /**
+   * The default HF is the default HF from Common if the tx type
+   * is active on that HF or the first greater HF where the tx
+   * is active
+   *
+   * @hidden
+   */
+  protected DEFAULT_HARDFORK = 'london'
+
+  /**
    * EIP-2930 alias for `r`
    *
    * @deprecated use `r` instead
@@ -163,9 +172,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    * varying data types.
    */
   public constructor(txData: FeeMarketEIP1559TxData, opts: TxOptions = {}) {
-    const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
-
     super({ ...txData, type: TRANSACTION_TYPE })
+    const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
 
     this.common = this._getCommon(opts.common, chainId)
     this.chainId = this.common.chainIdBN()
