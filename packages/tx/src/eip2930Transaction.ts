@@ -1,3 +1,4 @@
+import Common from '@ethereumjs/common'
 import { BN, bnToHex, bnToRlp, ecrecover, keccak256, rlp, toBuffer } from 'ethereumjs-util'
 import { BaseTransaction } from './baseTransaction'
 import {
@@ -26,6 +27,16 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   public readonly accessList: AccessListBuffer
   public readonly AccessListJSON: AccessList
   public readonly gasPrice: BN
+
+  public readonly common: Common
+
+  /**
+   * The default HF if the tx type is active on that HF
+   * or the first greater HF where the tx is active.
+   *
+   * @hidden
+   */
+  protected DEFAULT_HARDFORK = 'berlin'
 
   /**
    * EIP-2930 alias for `r`
@@ -148,9 +159,11 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * varying data types.
    */
   public constructor(txData: AccessListEIP2930TxData, opts: TxOptions = {}) {
+    super({ ...txData, type: TRANSACTION_TYPE })
     const { chainId, accessList, gasPrice } = txData
 
-    super({ ...txData, type: TRANSACTION_TYPE }, opts)
+    this.common = this._getCommon(opts.common, chainId)
+    this.chainId = this.common.chainIdBN()
 
     // EIP-2718 check is done in Common
     if (!this.common.isActivatedEIP(2930)) {
@@ -164,14 +177,9 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     // Verify the access list format.
     AccessLists.verifyAccessList(this.accessList)
 
-    this.chainId = chainId ? new BN(toBuffer(chainId)) : this.common.chainIdBN()
     this.gasPrice = new BN(toBuffer(gasPrice === '' ? '0x' : gasPrice))
 
     this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
-
-    if (!this.chainId.eq(this.common.chainIdBN())) {
-      throw new Error('The chain ID does not match the chain ID of Common')
-    }
 
     if (this.v && !this.v.eqn(0) && !this.v.eqn(1)) {
       throw new Error('The y-parity of the transaction should either be 0 or 1')
