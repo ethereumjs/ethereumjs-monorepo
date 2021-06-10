@@ -40,7 +40,7 @@ export abstract class BaseTransaction<TransactionObject> {
   public readonly r?: BN
   public readonly s?: BN
 
-  public readonly common?: Common
+  public readonly common!: Common
 
   /**
    * The default chain the tx falls back to if no Common
@@ -131,9 +131,9 @@ export abstract class BaseTransaction<TransactionObject> {
    * The minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
    */
   getBaseFee(): BN {
-    const fee = this.getDataFee().addn(this.common!.param('gasPrices', 'tx'))
-    if (this.common!.gteHardfork('homestead') && this.toCreationAddress()) {
-      fee.iaddn(this.common!.param('gasPrices', 'txCreation'))
+    const fee = this.getDataFee().addn(this.common.param('gasPrices', 'tx'))
+    if (this.common.gteHardfork('homestead') && this.toCreationAddress()) {
+      fee.iaddn(this.common.param('gasPrices', 'txCreation'))
     }
     return fee
   }
@@ -142,8 +142,8 @@ export abstract class BaseTransaction<TransactionObject> {
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): BN {
-    const txDataZero = this.common!.param('gasPrices', 'txDataZero')
-    const txDataNonZero = this.common!.param('gasPrices', 'txDataNonZero')
+    const txDataZero = this.common.param('gasPrices', 'txDataZero')
+    const txDataNonZero = this.common.param('gasPrices', 'txDataNonZero')
 
     let cost = 0
     for (let i = 0; i < this.data.length; i++) {
