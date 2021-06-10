@@ -659,7 +659,7 @@ export class BlockHeader {
     ]
 
     if (this._common.isActivatedEIP(1559)) {
-      rawItems.push(bnToUnpaddedBuffer(this.baseFeePerGas))
+      rawItems.push(bnToUnpaddedBuffer(this.baseFeePerGas!))
     }
 
     return rawItems
