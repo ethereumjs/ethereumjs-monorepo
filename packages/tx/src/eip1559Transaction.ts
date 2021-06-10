@@ -31,9 +31,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   public readonly common: Common
 
   /**
-   * The default HF is the default HF from Common if the tx type
-   * is active on that HF or the first greater HF where the tx
-   * is active
+   * The default HF if the tx type is active on that HF
+   * or the first greater HF where the tx is active.
    *
    * @hidden
    */

@@ -53,9 +53,8 @@ export abstract class BaseTransaction<TransactionObject> {
   protected DEFAULT_CHAIN = 'mainnet'
 
   /**
-   * The default HF is the default HF from Common if the tx type
-   * is active on that HF or the first greater HF where the tx
-   * is active
+   * The default HF if the tx type is active on that HF
+   * or the first greater HF where the tx is active.
    *
    * @hidden
    */
