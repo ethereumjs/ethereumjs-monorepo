@@ -55,13 +55,21 @@ export function bnToHex(value: BN): PrefixedHexString {
 }
 
 /**
- * Convert value from BN to RLP (unpadded buffer)
+ * Convert value from BN to an unpadded Buffer
+ * (useful for RLP transport)
  * @param value value to convert
  */
-export function bnToRlp(value: BN): Buffer {
+export function bnToUnpaddedBuffer(value: BN): Buffer {
   // Using `bn.toArrayLike(Buffer)` instead of `bn.toBuffer()`
   // for compatibility with browserify and similar tools
   return unpadBuffer(value.toArrayLike(Buffer))
+}
+
+/**
+ * Deprecated alias for bnToUnpaddedBuffer()
+ */
+export function bnToRlp(value: BN): Buffer {
+  return bnToUnpaddedBuffer(value)
 }
 
 /**

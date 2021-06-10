@@ -3,6 +3,7 @@ import {
   Address,
   BN,
   bnToHex,
+  bnToUnpaddedBuffer,
   ecrecover,
   ecsign,
   intToBuffer,
@@ -11,7 +12,6 @@ import {
   rlp,
   rlphash,
   toBuffer,
-  unpadBuffer,
   zeros,
 } from 'ethereumjs-util'
 import { HeaderData, JsonHeader, BlockHeaderBuffer, Blockchain, BlockOptions } from './types'
@@ -648,18 +648,18 @@ export class BlockHeader {
       this.transactionsTrie,
       this.receiptTrie,
       this.bloom,
-      unpadBuffer(toBuffer(this.difficulty)), // we unpadBuffer, because toBuffer(new BN(0)) == <Buffer 00>
-      unpadBuffer(toBuffer(this.number)),
-      unpadBuffer(toBuffer(this.gasLimit)),
-      unpadBuffer(toBuffer(this.gasUsed)),
-      unpadBuffer(toBuffer(this.timestamp)),
+      bnToUnpaddedBuffer(this.difficulty),
+      bnToUnpaddedBuffer(this.number),
+      bnToUnpaddedBuffer(this.gasLimit),
+      bnToUnpaddedBuffer(this.gasUsed),
+      bnToUnpaddedBuffer(this.timestamp),
       this.extraData,
       this.mixHash,
       this.nonce,
     ]
 
     if (this._common.isActivatedEIP(1559)) {
-      rawItems.push(unpadBuffer(toBuffer(this.baseFeePerGas)))
+      rawItems.push(bnToUnpaddedBuffer(this.baseFeePerGas))
     }
 
     return rawItems

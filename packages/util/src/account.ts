@@ -12,7 +12,7 @@ import { KECCAK256_RLP, KECCAK256_NULL } from './constants'
 import { zeros, bufferToHex, toBuffer } from './bytes'
 import { keccak, keccak256, keccakFromString, rlphash } from './hash'
 import { assertIsString, assertIsHexString, assertIsBuffer } from './helpers'
-import { BNLike, BufferLike, bnToRlp, toType, TypeOutput } from './types'
+import { BNLike, BufferLike, bnToUnpaddedBuffer, toType, TypeOutput } from './types'
 
 export interface AccountData {
   nonce?: BNLike
@@ -91,7 +91,12 @@ export class Account {
    * Returns a Buffer Array of the raw Buffers for the account, in order.
    */
   raw(): Buffer[] {
-    return [bnToRlp(this.nonce), bnToRlp(this.balance), this.stateRoot, this.codeHash]
+    return [
+      bnToUnpaddedBuffer(this.nonce),
+      bnToUnpaddedBuffer(this.balance),
+      this.stateRoot,
+      this.codeHash,
+    ]
   }
 
   /**

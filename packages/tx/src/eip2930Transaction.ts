@@ -1,4 +1,12 @@
-import { BN, bnToHex, bnToRlp, ecrecover, keccak256, rlp, toBuffer } from 'ethereumjs-util'
+import {
+  BN,
+  bnToHex,
+  bnToUnpaddedBuffer,
+  ecrecover,
+  keccak256,
+  rlp,
+  toBuffer,
+} from 'ethereumjs-util'
 import { BaseTransaction } from './baseTransaction'
 import {
   AccessList,
@@ -215,17 +223,17 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    */
   raw(): AccessListEIP2930ValuesArray {
     return [
-      bnToRlp(this.chainId),
-      bnToRlp(this.nonce),
-      bnToRlp(this.gasPrice),
-      bnToRlp(this.gasLimit),
+      bnToUnpaddedBuffer(this.chainId),
+      bnToUnpaddedBuffer(this.nonce),
+      bnToUnpaddedBuffer(this.gasPrice),
+      bnToUnpaddedBuffer(this.gasLimit),
       this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bnToRlp(this.value),
+      bnToUnpaddedBuffer(this.value),
       this.data,
       this.accessList,
-      this.v !== undefined ? bnToRlp(this.v) : Buffer.from([]),
-      this.r !== undefined ? bnToRlp(this.r) : Buffer.from([]),
-      this.s !== undefined ? bnToRlp(this.s) : Buffer.from([]),
+      this.v !== undefined ? bnToUnpaddedBuffer(this.v) : Buffer.from([]),
+      this.r !== undefined ? bnToUnpaddedBuffer(this.r) : Buffer.from([]),
+      this.s !== undefined ? bnToUnpaddedBuffer(this.s) : Buffer.from([]),
     ]
   }
 
@@ -311,8 +319,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       return ecrecover(
         msgHash,
         yParity!.addn(27), // Recover the 27 which was stripped from ecsign
-        bnToRlp(r!),
-        bnToRlp(s!)
+        bnToUnpaddedBuffer(r!),
+        bnToUnpaddedBuffer(s!)
       )
     } catch (e) {
       throw new Error('Invalid Signature')
