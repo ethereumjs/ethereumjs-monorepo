@@ -6,6 +6,75 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.2.1 - 2021-06-11
+
+This release comes with significant library usability improvements by allowing a tx instantiation more independently from the `Common` library. This was reported and requested by Web3.js (thanks to @gregthegreek for giving some guidance on the discussion) and others, since they needed the possibility of a tx instantiation in unknown contexts where the chain or HF state is somewhat unclear.
+
+So we've decided to do the following tweaks to the libray:
+
+### New Rules for Internal Default HF Setting
+
+Up to `v3.2.0` it was simply necessary/mandatory to pass in a `Common` instance for typed tx instantiation (otherwise the instantiation process would have thrown an error). For compatibility reasons the tx library was still on `istanbul` as the default HF and both `EIP-2930` (access lists) and `EIP-1559` (fee market) txs needed a higher (`berlin` respectively `london`) HF setting. After some reflection we have therefore decided to adopt our tx library tx type default HF setting and go with the following expanded rule:
+
+"The default HF is the default HF from `Common` if the tx type is active on that HF. Otherwise it is set to the first greater HF where the tx is active."
+
+This has been done in PR [#1292](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1292). This should be safe to do since there just are no txs of the specific type before this new default HF (`EIP-2930`: `istanbul` -> `berlin`, `EIP-1559`: `istanbul` -> `london`).
+
+### More Intelligent Default Chain Instantiation
+
+We tried to get more intelligent on the instation with a default chain if no `Common` is provided. On older versions of the library `mainnet` was the default fallback here. For typed tx the chain ID is also provided as a data parameter along instantiation. This chain ID parameter is now taken for the internal `Common` and therefore the internal chain setting. Same for signed EIP-155 respecting legacy txs, there the chain ID is now extracted from the `v` parameter provided and the internal `Common` initialized accordingly. For unsigned or non-EIP-1559 legacy txs the chain for `Common` still defaults back to `mainnet`.
+
+Both these changes with the new default HF rules and the more intelligent chain ID instantiation now allows for an e.g. `EIP-155` tx instantiation without a Common (and generally for a safer non-Common tx instantiation) like this:
+
+
+```typescript
+import Common from '@ethereumjs/common'
+import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+
+const txData = {
+  "data": "0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+  "gasLimit": "0x02625a00",
+  "maxPriorityFeePerGas": "0x01",
+  "maxFeePerGas": "0xff",
+  "nonce": "0x00",
+  "to": "0xcccccccccccccccccccccccccccccccccccccccc",
+  "value": "0x0186a0",
+  "v": "0x01",
+  "r": "0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9",
+  "s": "0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64",
+  "chainId": "0x01",
+  "accessList": [],
+  "type": "0x02"
+}
+
+const tx = FeeMarketEIP1559Transaction.fromTxData(txData)
+```
+
+Note that depending on your usage context it might still be a good idea to instantiate with `Common` since you then have a deterministic state setup, explicitly know what rule set your tx is operating on and are safe towards eventual future behavioral changes (e.g. on a default HF update along a major version tx library bump).
+
+### Signing Txs with a Hardware Wallet
+
+This is just a note on documentation. There has been some confusion around how to use the tx library for signing of a tx with a HW wallet device (e.g. a Ledger) - see Issue [#1228](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1228) - especially around the usage of `tx.getMessageToSign()`. This is now better documented in the code. Dropping here the associated code on how to do for awareness, for some more context have a look into the associated issue:
+
+```typescript
+import { rlp } from 'ethereumjs-util'
+import Common from '@ethereumjs/common'
+import { Transaction } from '@ethereumjs/tx'
+
+const common = new Common({ chain: 'goerli', hardfork: 'berlin'})
+const tx = Transaction.fromTxData({}, { common })
+
+const message = tx.getMessageToSign(false)
+const serializedMessage = rlp.encode(message) // use this for the ledger input
+```
+
+### Other Changes
+
+- EIP-1559 Validation (spec update): The `maxFeePerGas` and `maxPriorityFeePerGas` parameters are now limited in size to not exceed 256-bit to prevent chain spamming, PR [#1272](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1272)
+- Code docs have been improved substantially, PR [#1283](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1283)
+- Deprecation of `tx.transactionType`, use `tx.type` instead, PR [#1283](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1283)
+- Deprecation of `tx.yParity`, `tx.senderR` and `tx.senderS`, use `v`, `r` and `s` instead, PR [#1283](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1283)
+
 ## 3.2.0 - 2021-05-26
 
 ### London HF Support
