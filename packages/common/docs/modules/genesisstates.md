@@ -27,7 +27,7 @@ Returns the genesis state by network ID
 
 Dictionary with genesis accounts
 
-Defined in: [packages/common/src/genesisStates/index.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/genesisStates/index.ts#L29)
+Defined in: [packages/common/src/genesisStates/index.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/genesisStates/index.ts#L31)
 
 ___
 
@@ -47,4 +47,4 @@ Returns the genesis state by network name
 
 Dictionary with genesis accounts
 
-Defined in: [packages/common/src/genesisStates/index.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/genesisStates/index.ts#L38)
+Defined in: [packages/common/src/genesisStates/index.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/genesisStates/index.ts#L40)
