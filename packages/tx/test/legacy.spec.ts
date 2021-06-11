@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { Buffer } from 'buffer'
-import { BN, rlp, toBuffer, bufferToHex, unpadBuffer } from 'ethereumjs-util'
+import { BN, rlp, toBuffer, bufferToHex, intToBuffer, unpadBuffer } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Transaction, TxData } from '../src'
 import { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
@@ -16,6 +16,35 @@ tape('[Transaction]', function (t) {
     st.ok(
       Transaction.fromTxData({}, { common: nonEIP2930Common }),
       'should initialize on a pre-Berlin Harfork (EIP-2930 not activated)'
+    )
+
+    const txData = txFixtures[3].raw.map(toBuffer)
+    txData[6] = intToBuffer(45) // v with 0-parity and chain ID 5
+    let tx = Transaction.fromValuesArray(txData)
+    st.ok(
+      tx.common.chainIdBN().eqn(5),
+      'should initialize Common with chain ID (supported) derived from v value (v with 0-parity)'
+    )
+
+    txData[6] = intToBuffer(46) // v with 1-parity and chain ID 5
+    tx = Transaction.fromValuesArray(txData)
+    st.ok(
+      tx.common.chainIdBN().eqn(5),
+      'should initialize Common with chain ID (supported) derived from v value (v with 1-parity)'
+    )
+
+    txData[6] = intToBuffer(2033) // v with 0-parity and chain ID 999
+    tx = Transaction.fromValuesArray(txData)
+    st.ok(
+      tx.common.chainIdBN().eqn(999),
+      'should initialize Common with chain ID (unsupported) derived from v value (v with 0-parity)'
+    )
+
+    txData[6] = intToBuffer(2034) // v with 1-parity and chain ID 999
+    tx = Transaction.fromValuesArray(txData)
+    st.ok(
+      tx.common.chainIdBN().eqn(999),
+      'should initialize Common with chain ID (unsupported) derived from v value (v with 1-parity)'
     )
     st.end()
   })
@@ -49,13 +78,14 @@ tape('[Transaction]', function (t) {
   t.test(
     'Initialization -> throws when creating a a transaction with incompatible chainid and v value',
     function (st) {
-      const common = new Common({ chain: 42, hardfork: 'petersburg' })
+      let common = new Common({ chain: 42, hardfork: 'petersburg' })
       let tx = Transaction.fromTxData({}, { common })
       st.ok(tx.common.chainIdBN().eqn(42))
       const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
       tx = tx.sign(privKey)
       const serialized = tx.serialize()
-      st.throws(() => Transaction.fromSerializedTx(serialized))
+      common = new Common({ chain: 'mainnet', hardfork: 'petersburg' })
+      st.throws(() => Transaction.fromSerializedTx(serialized, { common }))
       st.end()
     }
   )
