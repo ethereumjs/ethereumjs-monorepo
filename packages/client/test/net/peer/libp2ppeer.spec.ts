@@ -3,6 +3,7 @@ import td from 'testdouble'
 import multiaddr from 'multiaddr'
 import { Config } from '../../../lib/config'
 import { Protocol } from '../../../lib/net/protocol'
+import { Event } from '../../../lib/types'
 
 tape('[Libp2pPeer]', async (t) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -31,7 +32,7 @@ tape('[Libp2pPeer]', async (t) => {
   t.test('should connect to peer', async (t) => {
     const config = new Config({ loglevel: 'error' })
     const peer = new Libp2pPeer({ config })
-    peer.on('connected', () => {
+    config.events.on(Event.PEER_CONNECTED, () => {
       t.pass('connected')
       t.end()
     })
