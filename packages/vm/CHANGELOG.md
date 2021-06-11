@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.4.1 - 2021-06-11
+
+This release comes with some additional `EIP-1559` checks and functionality:
+
+- Additional 1559 check in `VM.runTx()` that the tx sender balance must be >= gas_limit * max_fee_per_gas, PR [#1272](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1272)
+- Additional 1559 check in `VM.runTx()` to ensure that the user was willing to at least pay the base fee (`transaction.max_fee_per_gas >= block.base_fee_per_gas`), PR [#1276](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1276)
+- 1559 support for the BlockBuilder (`VM.buildBlock()`) by setting the new block's `baseFeePerGas` to `parentBlock.header.calcNextBaseFee()`, PR [#1280](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1280)
+
 ## 5.4.0 - 2021-05-26
 
 ### London HF Support

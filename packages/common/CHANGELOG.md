@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.3.1 - 2021-06-11
+
+Small feature release.
+
+- Added static helper method `Common.isSupportedChainId()`to check if a chain is natively supported by the Common version installed, PR [#1281](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1281)
+- Added support for the `calaveras` ephemeral developer test network (preparing for the `london` HF), PR [#1286](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1286)
+
 ## 2.3.0 - 2021-05-26
 
 ### London HF Support
