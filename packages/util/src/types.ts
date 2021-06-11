@@ -67,6 +67,7 @@ export function bnToUnpaddedBuffer(value: BN): Buffer {
 
 /**
  * Deprecated alias for bnToUnpaddedBuffer()
+ * @deprecated
  */
 export function bnToRlp(value: BN): Buffer {
   return bnToUnpaddedBuffer(value)
