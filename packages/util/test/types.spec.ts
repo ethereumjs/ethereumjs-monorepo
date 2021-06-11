@@ -7,6 +7,7 @@ import {
   bufferToHex,
   intToHex,
   bnToHex,
+  bnToUnpaddedBuffer,
   toBuffer,
 } from '../src'
 
@@ -120,5 +121,13 @@ tape('toType', function (t) {
       }, /^Error: A string must be provided with a 0x-prefix, given: 1$/)
       st.end()
     })
+  })
+})
+
+tape('bnToUnpaddedBuffer', function (t) {
+  t.test('should equal unpadded buffer value', function (st) {
+    st.ok(bnToUnpaddedBuffer(new BN(0)).equals(Buffer.from([])))
+    st.ok(bnToUnpaddedBuffer(new BN(100)).equals(Buffer.from('64', 'hex')))
+    st.end()
   })
 })

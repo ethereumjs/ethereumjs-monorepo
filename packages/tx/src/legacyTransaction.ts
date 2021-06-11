@@ -1,7 +1,7 @@
 import {
   BN,
   bnToHex,
-  bnToRlp,
+  bnToUnpaddedBuffer,
   ecrecover,
   rlp,
   rlphash,
@@ -125,15 +125,15 @@ export default class Transaction extends BaseTransaction<Transaction> {
    */
   raw(): TxValuesArray {
     return [
-      bnToRlp(this.nonce),
-      bnToRlp(this.gasPrice),
-      bnToRlp(this.gasLimit),
+      bnToUnpaddedBuffer(this.nonce),
+      bnToUnpaddedBuffer(this.gasPrice),
+      bnToUnpaddedBuffer(this.gasLimit),
       this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bnToRlp(this.value),
+      bnToUnpaddedBuffer(this.value),
       this.data,
-      this.v !== undefined ? bnToRlp(this.v) : Buffer.from([]),
-      this.r !== undefined ? bnToRlp(this.r) : Buffer.from([]),
-      this.s !== undefined ? bnToRlp(this.s) : Buffer.from([]),
+      this.v !== undefined ? bnToUnpaddedBuffer(this.v) : Buffer.from([]),
+      this.r !== undefined ? bnToUnpaddedBuffer(this.r) : Buffer.from([]),
+      this.s !== undefined ? bnToUnpaddedBuffer(this.s) : Buffer.from([]),
     ]
   }
 
@@ -156,11 +156,11 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
   private _getMessageToSign(withEIP155: boolean) {
     const values = [
-      bnToRlp(this.nonce),
-      bnToRlp(this.gasPrice),
-      bnToRlp(this.gasLimit),
+      bnToUnpaddedBuffer(this.nonce),
+      bnToUnpaddedBuffer(this.gasPrice),
+      bnToUnpaddedBuffer(this.gasLimit),
       this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bnToRlp(this.value),
+      bnToUnpaddedBuffer(this.value),
       this.data,
     ]
 
@@ -244,8 +244,8 @@ export default class Transaction extends BaseTransaction<Transaction> {
       return ecrecover(
         msgHash,
         v!,
-        bnToRlp(r!),
-        bnToRlp(s!),
+        bnToUnpaddedBuffer(r!),
+        bnToUnpaddedBuffer(s!),
         this._signedTxImplementsEIP155() ? this.common.chainIdBN() : undefined
       )
     } catch (e) {
