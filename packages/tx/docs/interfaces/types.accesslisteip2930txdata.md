@@ -55,7 +55,7 @@ ___
 
 ### data
 
-• `Optional` **data**: *string* \| *number* \| *BN* \| *Buffer* \| *Uint8Array* \| *number*[] \| TransformableToBuffer
+• `Optional` **data**: *string* \| *number* \| *BN* \| *Buffer* \| *number*[] \| *Uint8Array* \| TransformableToBuffer
 
 This will contain the data of the message or the init of a contract.
 
