@@ -22,7 +22,7 @@ This has been done in PR [#1292](https://github.com/ethereumjs/ethereumjs-monore
 
 ### More Intelligent Default Chain Instantiation
 
-We tried to get more intelligent on the instation with a default chain if no `Common` is provided. On older versions of the library `mainnet` was the default fallback here. For typed tx the chain ID is also provided as a data parameter along instantiation. This chain ID parameter is now taken for the internal `Common` and therefore the internal chain setting. Same for signed EIP-155 respecting legacy txs, there the chain ID is now extracted from the `v` parameter provided and the internal `Common` initialized accordingly. For unsigned or non-EIP-1559 legacy txs the chain for `Common` still defaults back to `mainnet`.
+We tried to get more intelligent on the instantiation with a default chain if no `Common` is provided. On older versions of the library `mainnet` was the default fallback here. For typed txs the chain ID is also provided as a data parameter along instantiation. This chain ID parameter is now used for the internal `Common` and therefore the internal chain setting. Same for signed EIP-155 respecting legacy txs, there the chain ID is now extracted from the `v` parameter provided and initialized with the internal `Common` accordingly. For unsigned or non-EIP-1559 legacy txs the chain for `Common` still defaults back to `mainnet`.
 
 Both these changes with the new default HF rules and the more intelligent chain ID instantiation now allows for an e.g. `EIP-155` tx instantiation without a Common (and generally for a safer non-Common tx instantiation) like this:
 
@@ -50,7 +50,7 @@ const txData = {
 const tx = FeeMarketEIP1559Transaction.fromTxData(txData)
 ```
 
-Note that depending on your usage context it might still be a good idea to instantiate with `Common` since you then have a deterministic state setup, explicitly know what rule set your tx is operating on and are safe towards eventual future behavioral changes (e.g. on a default HF update along a major version tx library bump).
+Note that depending on your usage context it might still be a good idea to instantiate with `Common` since you then have a deterministic state setup, explicitly know what rule set your tx is operating on, and are safe towards eventual future behavioral changes (e.g. on a default HF update along a major version tx library bump).
 
 ### Signing Txs with a Hardware Wallet
 
