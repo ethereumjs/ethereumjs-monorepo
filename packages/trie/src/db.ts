@@ -27,7 +27,7 @@ export class DB {
    * @param leveldb - An abstract-leveldown compliant store
    */
   constructor(leveldb?: LevelUp) {
-    this._leveldb = leveldb || level()
+    this._leveldb = leveldb ?? level()
   }
 
   /**

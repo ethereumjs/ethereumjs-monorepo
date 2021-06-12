@@ -71,7 +71,7 @@ export default class DefaultStateManager implements StateManager {
     }
     this._common = common
 
-    this._trie = opts.trie || new Trie()
+    this._trie = opts.trie ?? new Trie()
     this._storageTries = {}
     this._cache = new Cache(this._trie)
     this._touched = new Set()
@@ -165,7 +165,7 @@ export default class DefaultStateManager implements StateManager {
       return Buffer.alloc(0)
     }
     const code = await this._trie.db.get(account.codeHash)
-    return code || Buffer.alloc(0)
+    return code ?? Buffer.alloc(0)
   }
 
   /**

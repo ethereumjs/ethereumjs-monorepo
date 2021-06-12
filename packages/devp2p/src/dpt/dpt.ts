@@ -160,7 +160,7 @@ export class DPT extends EventEmitter {
         .catch((_err: Error) => {
           this.banlist.add(peer, ms('5m'))
           this._kbucket.remove(peer)
-          err = err || _err
+          err = err ?? _err
         })
         .then(() => {
           if (++count < oldPeers.length) return

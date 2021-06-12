@@ -36,7 +36,7 @@ export class Block {
 
     // parse transactions
     const transactions = []
-    for (const txData of txsData || []) {
+    for (const txData of txsData ?? []) {
       const tx = TransactionFactory.fromTxData(txData, {
         ...opts,
         // Use header common in case of hardforkByBlockNumber being activated
@@ -47,7 +47,7 @@ export class Block {
 
     // parse uncle headers
     const uncleHeaders = []
-    for (const uhData of uhsData || []) {
+    for (const uhData of uhsData ?? []) {
       const uh = BlockHeader.fromHeaderData(uhData, {
         ...opts,
         // Use header common in case of hardforkByBlockNumber being activated
@@ -140,7 +140,7 @@ export class Block {
     uncleHeaders: BlockHeader[] = [],
     opts: BlockOptions = {}
   ) {
-    this.header = header || BlockHeader.fromHeaderData({}, opts)
+    this.header = header ?? BlockHeader.fromHeaderData({}, opts)
     this.transactions = transactions
     this.uncleHeaders = uncleHeaders
     this._common = this.header._common

@@ -212,16 +212,16 @@ export default class VM extends AsyncEventEmitter {
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
     } else {
-      const trie = opts.state || new Trie()
+      const trie = opts.state ?? new Trie()
       this.stateManager = new DefaultStateManager({
         trie,
         common: this._common,
       })
     }
 
-    this.blockchain = opts.blockchain || new Blockchain({ common: this._common })
+    this.blockchain = opts.blockchain ?? new Blockchain({ common: this._common })
 
-    this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize || false
+    this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize ?? false
 
     this._hardforkByBlockNumber = opts.hardforkByBlockNumber ?? false
 
