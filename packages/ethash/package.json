@@ -35,7 +35,6 @@
   "devDependencies": {
     "@ethereumjs/block": "^3.3.0",
     "@types/tape": "^4.13.0",
-    "@typescript-eslint/eslint-plugin": "^4.1.1",
     "eslint": "^6.8.0",
     "level-mem": "^5.0.1",
     "nyc": "^14.0.0",

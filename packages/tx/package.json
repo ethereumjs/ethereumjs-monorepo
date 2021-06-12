@@ -39,7 +39,6 @@
     "@types/minimist": "^1.2.0",
     "@types/node": "^11.13.4",
     "@types/tape": "^4.13.0",
-    "@typescript-eslint/eslint-plugin": "^4.1.1",
     "browserify": "^16.5.1",
     "eslint": "^6.8.0",
     "karma": "^6.3.2",
@@ -54,7 +53,6 @@
     "tape": "^4.10.1",
     "ts-node": "^8.8.2",
     "typedoc": "^0.20.34",
-    "typedoc-plugin-markdown": "^3.6.0",
     "typescript": "^3.9.3"
   },
   "contributors": [
