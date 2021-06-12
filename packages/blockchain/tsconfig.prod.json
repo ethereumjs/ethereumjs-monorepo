@@ -1,5 +1,5 @@
 {
-  "extends": "@ethereumjs/config-typescript/tsconfig.prod.json",
+  "extends": "../../config/tsconfig.prod.json",
   "compilerOptions": {
     "outDir": "./dist",
     "types": ["node"],

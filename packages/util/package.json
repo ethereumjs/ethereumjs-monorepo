@@ -19,17 +19,17 @@
   "types": "dist/index.d.ts",
   "browser": "dist.browser/index.js",
   "scripts": {
-    "build": "ethereumjs-config-ts-build",
+    "build": "../../config/cli/ts-build.sh",
     "prepublishOnly": "npm run clean && npm run build && npm run test",
     "clean": "rm -Rf ./dist && rm -Rf ./dist.browser",
-    "coverage": "ethereumjs-config-coverage",
+    "coverage": "../../config/cli/coverage.sh",
     "docs:build": "npx typedoc --options typedoc.js",
-    "lint": "ethereumjs-config-lint",
-    "lint:fix": "ethereumjs-config-lint-fix",
+    "lint": "../../config/cli/lint.sh",
+    "lint:fix": "../../config/cli/lint-fix.sh",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
     "test:node": "tape -r ts-node/register test/*.spec.ts",
-    "tsc": "ethereumjs-config-tsc"
+    "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
     "@types/bn.js": "^5.1.0",
@@ -48,8 +48,6 @@
     "@types/secp256k1": "^4.0.1",
     "@types/tape": "^4.13.0",
     "eslint": "^6.8.0",
-    "eslint-config-prettier": "^6.11.0",
-    "eslint-plugin-implicit-dependencies": "^1.0.4",
     "karma": "^6.3.2",
     "karma-chrome-launcher": "^3.1.0",
     "karma-firefox-launcher": "^2.1.0",

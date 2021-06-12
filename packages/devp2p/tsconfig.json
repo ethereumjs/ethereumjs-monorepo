@@ -1,5 +1,5 @@
 {
-  "extends": "@ethereumjs/config-typescript",
+  "extends": "../../config/tsconfig.json",
   "include": ["src/**/*.ts", "test/**/*.ts", "examples/**/*.ts"],
   "compilerOptions": {
     "baseUrl": ".",

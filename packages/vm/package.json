@@ -16,7 +16,7 @@
   "types": "dist/index.d.ts",
   "browser": "dist.browser/index.js",
   "scripts": {
-    "build": "ethereumjs-config-ts-build",
+    "build": "../../config/cli/ts-build.sh",
     "build:benchmarks": "npm run build && tsc -p tsconfig.benchmarks.json",
     "benchmarks": "node --max-old-space-size=4096 ./benchmarks/run.js benchmarks mainnetBlocks:10",
     "profiling": "0x ./benchmarks/run.js profiling",
@@ -37,12 +37,12 @@
     "test:API": "npm run tape -- './tests/api/**/*.spec.ts'",
     "test:API:browser": "karma start karma.conf.js",
     "test": "echo \"[INFO] Generic test cmd not used. See package.json for more specific test run cmds.\"",
-    "lint": "ethereumjs-config-lint",
-    "lint:fix": "ethereumjs-config-lint-fix",
+    "lint": "../../config/cli/lint.sh",
+    "lint:fix": "../../config/cli/lint-fix.sh",
     "format": "ethereumjs-config-format",
     "format:fix": "ethereumjs-config-format-fix",
     "formatTest": "node ./scripts/formatTest",
-    "tsc": "ethereumjs-config-tsc"
+    "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
     "@ethereumjs/block": "^3.3.0",
@@ -60,9 +60,6 @@
     "util.promisify": "^1.0.1"
   },
   "devDependencies": {
-    "@ethereumjs/config-coverage": "^2.0.0",
-    "@ethereumjs/config-typescript": "^2.0.0",
-    "@ethereumjs/eslint-config-defaults": "^2.0.0",
     "@types/benchmark": "^1.0.33",
     "@types/core-js": "^2.5.0",
     "@types/lru-cache": "^5.1.0",
@@ -71,8 +68,6 @@
     "@typescript-eslint/eslint-plugin": "^4.1.1",
     "benchmark": "^2.1.4",
     "eslint": "^6.8.0",
-    "eslint-config-prettier": "^6.11.0",
-    "eslint-plugin-implicit-dependencies": "^1.0.4",
     "karma": "^6.3.2",
     "karma-chrome-launcher": "^3.1.0",
     "karma-firefox-launcher": "^2.1.0",
