@@ -1,4 +1,13 @@
-import { BN, bnToHex, bnToRlp, ecrecover, keccak256, rlp, toBuffer } from 'ethereumjs-util'
+import {
+  BN,
+  bnToHex,
+  bnToUnpaddedBuffer,
+  ecrecover,
+  keccak256,
+  rlp,
+  toBuffer,
+} from 'ethereumjs-util'
+import Common from '@ethereumjs/common'
 import { BaseTransaction } from './baseTransaction'
 import {
   AccessList,
@@ -26,6 +35,16 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   public readonly accessList: AccessListBuffer
   public readonly AccessListJSON: AccessList
   public readonly gasPrice: BN
+
+  public readonly common: Common
+
+  /**
+   * The default HF if the tx type is active on that HF
+   * or the first greater HF where the tx is active.
+   *
+   * @hidden
+   */
+  protected DEFAULT_HARDFORK = 'berlin'
 
   /**
    * EIP-2930 alias for `r`
@@ -148,9 +167,11 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * varying data types.
    */
   public constructor(txData: AccessListEIP2930TxData, opts: TxOptions = {}) {
+    super({ ...txData, type: TRANSACTION_TYPE })
     const { chainId, accessList, gasPrice } = txData
 
-    super({ ...txData, type: TRANSACTION_TYPE }, opts)
+    this.common = this._getCommon(opts.common, chainId)
+    this.chainId = this.common.chainIdBN()
 
     // EIP-2718 check is done in Common
     if (!this.common.isActivatedEIP(2930)) {
@@ -164,14 +185,9 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     // Verify the access list format.
     AccessLists.verifyAccessList(this.accessList)
 
-    this.chainId = chainId ? new BN(toBuffer(chainId)) : this.common.chainIdBN()
     this.gasPrice = new BN(toBuffer(gasPrice === '' ? '0x' : gasPrice))
 
     this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
-
-    if (!this.chainId.eq(this.common.chainIdBN())) {
-      throw new Error('The chain ID does not match the chain ID of Common')
-    }
 
     if (this.v && !this.v.eqn(0) && !this.v.eqn(1)) {
       throw new Error('The y-parity of the transaction should either be 0 or 1')
@@ -215,17 +231,17 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    */
   raw(): AccessListEIP2930ValuesArray {
     return [
-      bnToRlp(this.chainId),
-      bnToRlp(this.nonce),
-      bnToRlp(this.gasPrice),
-      bnToRlp(this.gasLimit),
+      bnToUnpaddedBuffer(this.chainId),
+      bnToUnpaddedBuffer(this.nonce),
+      bnToUnpaddedBuffer(this.gasPrice),
+      bnToUnpaddedBuffer(this.gasLimit),
       this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bnToRlp(this.value),
+      bnToUnpaddedBuffer(this.value),
       this.data,
       this.accessList,
-      this.v !== undefined ? bnToRlp(this.v) : Buffer.from([]),
-      this.r !== undefined ? bnToRlp(this.r) : Buffer.from([]),
-      this.s !== undefined ? bnToRlp(this.s) : Buffer.from([]),
+      this.v !== undefined ? bnToUnpaddedBuffer(this.v) : Buffer.from([]),
+      this.r !== undefined ? bnToUnpaddedBuffer(this.r) : Buffer.from([]),
+      this.s !== undefined ? bnToUnpaddedBuffer(this.s) : Buffer.from([]),
     ]
   }
 
@@ -311,8 +327,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       return ecrecover(
         msgHash,
         yParity!.addn(27), // Recover the 27 which was stripped from ecsign
-        bnToRlp(r!),
-        bnToRlp(s!)
+        bnToUnpaddedBuffer(r!),
+        bnToUnpaddedBuffer(s!)
       )
     } catch (e) {
       throw new Error('Invalid Signature')

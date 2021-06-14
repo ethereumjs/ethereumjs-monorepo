@@ -1,5 +1,6 @@
 import tape from 'tape'
 import Common from '../src/'
+import { BN } from 'ethereumjs-util'
 
 tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
   t.test('Should initialize with chain provided', function (st: tape.Test) {
@@ -140,6 +141,18 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
     hash = '0xbf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a'
     st.equal(c.genesis().hash, hash, 'goerli')
 
+    st.end()
+  })
+})
+
+tape('[Common]: isSupportedChainId static method', function (t: tape.Test) {
+  t.test('Should return true for supported chainId', function (st: tape.Test) {
+    st.equal(Common.isSupportedChainId(new BN(1)), true, 'returns true')
+    st.end()
+  })
+
+  t.test('Should return false for unsupported chainId', function (st: tape.Test) {
+    st.equal(Common.isSupportedChainId(new BN(0)), false, 'returns false')
     st.end()
   })
 })

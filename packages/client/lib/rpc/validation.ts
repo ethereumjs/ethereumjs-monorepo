@@ -107,6 +107,13 @@ export const validators = {
         }
       }
 
+      if (params[index].substr(0, 2) !== '0x') {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: hex string without 0x prefix`,
+        }
+      }
+
       const blockHash = params[index].substring(2)
 
       if (!/^[0-9a-fA-F]+$/.test(blockHash) || blockHash.length !== 64) {

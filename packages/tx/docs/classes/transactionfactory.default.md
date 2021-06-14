@@ -33,7 +33,7 @@ This method returns the right transaction.
 
 **Returns:** [*TypedTransaction*](../modules/types.md#typedtransaction)
 
-Defined in: [transactionFactory.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L97)
+Defined in: [transactionFactory.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L83)
 
 ___
 
@@ -52,7 +52,7 @@ This method tries to decode serialized data.
 
 **Returns:** [*TypedTransaction*](../modules/types.md#typedtransaction)
 
-Defined in: [transactionFactory.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L51)
+Defined in: [transactionFactory.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L49)
 
 ___
 
@@ -71,7 +71,7 @@ Create a transaction from a `txData` object
 
 **Returns:** [*TypedTransaction*](../modules/types.md#typedtransaction)
 
-Defined in: [transactionFactory.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L24)
+Defined in: [transactionFactory.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L22)
 
 ___
 
@@ -86,11 +86,11 @@ If transactionID is undefined, returns the legacy transaction class.
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `transactionID` | *number* | 0 |
-| `common?` | *default* | - |
+| Name | Type | Default value | Description |
+| :------ | :------ | :------ | :------ |
+| `transactionID` | *number* | 0 |  |
+| `common?` | *default* | - | This option is not used |
 
 **Returns:** *typeof* [*default*](eip1559transaction.default.md) \| *typeof* [*default*](eip2930transaction.default.md) \| *typeof* [*default*](legacytransaction.default.md)
 
-Defined in: [transactionFactory.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L115)
+Defined in: [transactionFactory.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L102)

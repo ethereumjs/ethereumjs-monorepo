@@ -37,7 +37,7 @@ This library supports the following transaction types ([EIP-2718](https://eips.e
 - `AccessListEIP2930Transaction` ([EIP-2930](https://eips.ethereum.org/EIPS/eip-2930), optional access lists)
 - `Transaction`, the Ethereum standard tx up to `berlin`, now referred to as legacy txs with the introduction of tx types
 
-Please note that for now you have to manually set the `hardfork` in `Common` to `berlin` to allow for typed tx instantiation, since the current `Common` release series v2 (tx type support introduced with `v2.2.0`) still defaults to `istanbul` for backwards-compatibility reasons.
+Please note that up to `v3.2.0` you mandatorily had to use a `Common` instance for typed tx instantiation and set the `hardfork` in `Common` to minimally `berlin` (`EIP-2930`) respectively `london` (`EIP-1559`) to allow for typed tx instantiation, since the current `Common` release series v2 (tx type support introduced with `v2.2.0`) still defaults to `istanbul` for backwards-compatibility reasons (also see tx default HF section below).
 
 #### Gas Fee Market Transactions (EIP-1559)
 
@@ -198,10 +198,11 @@ _getFakeTransaction(txParams: TxParams): Transaction {
 
 ## Chain and Hardfork Support
 
-The `Transaction` constructor receives a parameter of an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common) object that lets you specify the chain and hardfork to be used. The chain defaults to `mainnet`. 
+The `Transaction` constructor receives a parameter of an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common) object that lets you specify the chain and hardfork to be used. If there is no `Common` provided the chain ID provided as a paramter on typed tx or the chain ID derived from the `v` value on signed EIP-155 conforming legacy txs will be taken (introduced in `v3.2.1`). In other cases the chain defaults to `mainnet`.
 
+Base default HF (determined by `Common`): `istanbul`
 
-Current default HF (determined by `Common`): `istanbul`
+Starting with `v3.2.1` the tx library now deviates from the default HF for typed tx using the following rule: "The default HF is the default HF from `Common` if the tx type is active on that HF. Otherwise it is set to the first greater HF where the tx is active."
 
 ### Supported Hardforks
 

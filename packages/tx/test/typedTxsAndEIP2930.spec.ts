@@ -43,8 +43,24 @@ tape(
   function (t) {
     t.test('Initialization / Getter -> fromTxData()', function (t) {
       for (const txType of txTypes) {
-        const tx = txType.class.fromTxData({}, { common })
+        let tx = txType.class.fromTxData({}, { common })
         t.ok(tx, `should initialize correctly (${txType.name})`)
+
+        tx = txType.class.fromTxData({
+          chainId: 5,
+        })
+        t.ok(
+          tx.common.chainIdBN().eqn(5),
+          'should initialize Common with chain ID provided (supported chain ID)'
+        )
+
+        tx = txType.class.fromTxData({
+          chainId: 99999,
+        })
+        t.ok(
+          tx.common.chainIdBN().eqn(99999),
+          'should initialize Common with chain ID provided (unsupported chain ID)'
+        )
 
         const nonEIP2930Common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
         t.throws(() => {
