@@ -280,14 +280,16 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
     currentNumber,
     currentBaseFee,
   } = data
-  const headerData = {
+  let headerData: any = {
     number: currentNumber,
     coinbase: currentCoinbase,
     parentHash: previousHash,
     difficulty: currentDifficulty,
     gasLimit: currentGasLimit,
     timestamp: currentTimestamp,
-    baseFeePerGas: currentBaseFee,
+  }
+  if (opts?.common && opts.common.gteHardfork('london')) {
+    headerData['baseFeePerGas'] = currentBaseFee
   }
   return BlockHeader.fromHeaderData(headerData, opts)
 }
