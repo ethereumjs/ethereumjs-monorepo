@@ -362,7 +362,7 @@ export async function generateTxReceipt(
   const abstractTxReceipt = {
     gasUsed: blockGasUsed.toArrayLike(Buffer),
     bitvector: txRes.bloom.bitvector,
-    logs: txRes.execResult.logs || [],
+    logs: txRes.execResult.logs ?? [],
   }
 
   let txReceipt

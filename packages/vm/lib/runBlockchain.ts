@@ -13,7 +13,7 @@ export default async function runBlockchain(
   let headBlock: Block
   let parentState: Buffer
 
-  blockchain = blockchain || this.blockchain
+  blockchain = blockchain ?? this.blockchain
 
   return await blockchain.iterator(
     'vm',

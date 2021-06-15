@@ -90,7 +90,7 @@ export default class Interpreter {
 
   async run(code: Buffer, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
     this._runState.code = code
-    this._runState.programCounter = opts.pc || this._runState.programCounter
+    this._runState.programCounter = opts.pc ?? this._runState.programCounter
 
     const valid = this._getValidJumpDests(code)
     this._runState.validJumps = valid.jumps
@@ -167,7 +167,7 @@ export default class Interpreter {
    */
   lookupOpInfo(op: number): Opcode {
     // if not found, return 0xfe: INVALID
-    return this._vm._opcodes.get(op) || this._vm._opcodes.get(0xfe)
+    return this._vm._opcodes.get(op) ?? this._vm._opcodes.get(0xfe)
   }
 
   async _runStepHook(): Promise<void> {

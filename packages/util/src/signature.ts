@@ -20,6 +20,7 @@ export interface ECDSASignatureBuffer {
 /**
  * Returns the ECDSA signature of a message hash.
  */
+/* eslint-disable no-redeclare */
 export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: number): ECDSASignature
 export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: BNLike): ECDSASignatureBuffer
 export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: any): any {

@@ -30,6 +30,7 @@ export class PeerPool extends EventEmitter {
   private pool: Map<string, Peer>
   private noPeerPeriods: number
   private opened: boolean
+  // eslint-disable-next-line no-undef
   private _statusCheckInterval: NodeJS.Timeout | null
 
   /**
@@ -81,6 +82,7 @@ export class PeerPool extends EventEmitter {
   async close() {
     this.pool.clear()
     this.opened = false
+    // eslint-disable-next-line no-undef
     clearInterval(this._statusCheckInterval as NodeJS.Timeout)
   }
 
