@@ -6,13 +6,13 @@ import { FeeMarketEIP1559Transaction } from '../src'
 const testdata = require('./json/eip1559.json') // Source: Besu
 
 const common = new Common({
-  chain: 'aleut',
+  chain: 'rinkeby',
   hardfork: 'london',
 })
 
 const validAddress = Buffer.from('01'.repeat(20), 'hex')
 const validSlot = Buffer.from('01'.repeat(32), 'hex')
-const chainId = new BN(7822)
+const chainId = new BN(4)
 
 tape('[FeeMarketEIP1559Transaction]', function (t) {
   t.test('getUpfrontCost()', function (st) {
@@ -58,7 +58,7 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
     const txn = FeeMarketEIP1559Transaction.fromTxData(data, { common })
     const signed = txn.sign(pkey)
     const expectedHash = Buffer.from(
-      'a3bf78ff247cad934aa5fb13e05f11e59c93511523ff8a622e59c3a34700e5c8',
+      '2e564c87eb4b40e7f469b2eec5aa5d18b0b46a24e8bf0919439cfb0e8fcae446',
       'hex'
     )
     st.ok(signed.hash().equals(expectedHash), 'Should provide the correct hash')
@@ -76,13 +76,13 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
       { common }
     )
     const expectedHash = Buffer.from(
-      '09c32c94e6058d1768f176a1bb9be877cd7289c86c505bc28b7503c67e07c97f',
+      'fa81814f7dd57bad435657a05eabdba2815f41e3f15ddd6139027e7db56b0dea',
       'hex'
     )
     t.deepEqual(unsignedTx.getMessageToSign(true), expectedHash), 'correct hashed version'
 
     const expectedSerialization = Buffer.from(
-      '02f85b821e8e808080809401010101010101010101010101010101010101018083010200f838f7940101010101010101010101010101010101010101e1a00101010101010101010101010101010101010101010101010101010101010101',
+      '02f85904808080809401010101010101010101010101010101010101018083010200f838f7940101010101010101010101010101010101010101e1a00101010101010101010101010101010101010101010101010101010101010101',
       'hex'
     )
     t.deepEqual(
@@ -102,7 +102,7 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
 
     const json = signed.toJSON()
     const expectedJSON = {
-      chainId: '0x1e8e',
+      chainId: '0x4',
       nonce: '0x333',
       maxPriorityFeePerGas: '0x1284d',
       maxFeePerGas: '0x1d97c',
@@ -112,8 +112,8 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
       data: '0x',
       accessList: [],
       v: '0x0',
-      r: '0xd067f2167008c59219652f91cbf8788dbca5f771f6e91e2b7657e85b78b472e0',
-      s: '0x1d305af9fe81fdba43f0dfcd400ed24dcace0a7e30d4e85701dcaaf484cd079e',
+      r: '0xf924cb68412c8f1cfd74d9b581c71eeaf94fff6abdde3e5b02ca6b2931dcf47',
+      s: '0x7dd1c50027c3e31f8b565e25ce68a5072110f61fce5eee81b195dd51273c2f83',
     }
     st.deepEqual(json, expectedJSON, 'Should return expected JSON dict')
     st.end()
