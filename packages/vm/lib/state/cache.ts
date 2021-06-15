@@ -31,7 +31,7 @@ export default class Cache {
    */
   get(key: Address): Account {
     const account = this.lookup(key)
-    return account || new Account()
+    return account ?? new Account()
   }
 
   /**

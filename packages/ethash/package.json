@@ -17,13 +17,13 @@
   "types": "dist/index.d.ts",
   "browser": "dist.browser/index.js",
   "scripts": {
-    "build": "ethereumjs-config-ts-build",
-    "tsc": "ethereumjs-config-tsc",
+    "build": "../../config/cli/ts-build.sh",
+    "tsc": "../../config/cli/ts-compile.sh",
     "prepublishOnly": "npm run clean && npm run build && npm run test",
     "clean": "rm -Rf ./dist && rm -Rf ./dist.browser",
-    "lint": "ethereumjs-config-lint",
-    "lint:fix": "ethereumjs-config-lint-fix",
-    "coverage": "ethereumjs-config-coverage",
+    "lint": "../../config/cli/lint.sh",
+    "lint:fix": "../../config/cli/lint-fix.sh",
+    "coverage": "../../config/cli/coverage.sh",
     "test": "tape -r ts-node/register test/*.spec.ts"
   },
   "dependencies": {
@@ -34,14 +34,8 @@
   },
   "devDependencies": {
     "@ethereumjs/block": "^3.3.0",
-    "@ethereumjs/config-coverage": "^2.0.0",
-    "@ethereumjs/config-typescript": "^2.0.0",
-    "@ethereumjs/eslint-config-defaults": "^2.0.0",
     "@types/tape": "^4.13.0",
-    "@typescript-eslint/eslint-plugin": "^4.1.1",
     "eslint": "^6.8.0",
-    "eslint-config-prettier": "^6.11.0",
-    "eslint-plugin-implicit-dependencies": "^1.0.4",
     "level-mem": "^5.0.1",
     "nyc": "^14.0.0",
     "prettier": "^2.0.5",

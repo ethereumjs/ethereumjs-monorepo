@@ -1,10 +1,7 @@
-{
-  "entryPoints": ["lib"],
-  "out": "docs",
-  "plugin": "typedoc-plugin-markdown",
-  "readme": "none",
-  "gitRevision": "master",
-  "exclude": [
+module.exports = {
+  extends: '../../config/typedoc.js',
+  entryPoints: ["lib"],
+  exclude: [
     "bin/cli.ts",
     "lib/blockchain/index.ts",
     "lib/index.ts",
@@ -19,7 +16,4 @@
     "lib/sync/fetcher/index.ts",
     "lib/util/index.ts"
   ],
-  "excludeExternals": true,
-  "excludePrivate": true,
-  "excludeProtected": true
 }

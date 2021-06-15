@@ -1,1 +1,1 @@
-module.exports = require("@ethereumjs/eslint-config-defaults/prettier.config")
+module.exports = require("../../config/prettier.config")
