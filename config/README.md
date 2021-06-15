@@ -1,0 +1,149 @@
+# EthereumJS Shared Config
+
+This folder (`./config`) contains shared configuration logic for common modules: eslint, prettier, nyc (coverage), tsconfig, typedoc.
+
+The cli scripts (`./config/cli`) are used in the child packages' `package.json` to ease repetitive script use.
+
+## Dependencies
+
+Shared config `devDependencies` across all packages can go in the root `package.json`. However, if a package needs access to the dependency's `bin` (e.g. `eslint` or `nyc`) then it must be defined in the child packages' `package.json`.
+
+## Linting
+
+Common linting configuration utilizing:
+
+- [ESLint](https://eslint.org/)
+- [TypeScript ESLint](https://github.com/typescript-eslint/typescript-eslint)
+- [TypeStrict](https://github.com/krzkaczor/TypeStrict)
+- [Prettier](https://prettier.io/docs/en/integrating-with-linters.html)
+
+Exposed CLI commands:
+
+- `./config/cli/lint.sh`
+- `./config/cli/lint-fix.sh`
+
+### Usage
+
+Add `.eslintrc.js`:
+
+```js
+module.exports = {
+  extends: '../../config/eslint.js',
+}
+```
+
+In this file you can add rule adjustments or overrides for the specific package.
+
+Add `prettier.config.js`:
+
+```js
+module.exports = require('../../config/prettier.config')
+```
+
+Use CLI commands above in your `package.json`:
+
+```json
+  "scripts": {
+    "lint": "../../conifg/cli/lint.sh",
+    "lint:fix": "../../config/cli/lint-fix.sh",
+  }
+```
+
+### Getting the most out of linting
+
+This lint package is used as git pre-push hook on with the help of [Husky](https://www.npmjs.com/package/husky).
+
+## Coverage
+
+Tool: [nyc](https://istanbul.js.org/)
+
+Exposed CLI command:
+
+- `./config/cli/coverage.sh`
+
+### Usage
+
+Add `.nycrc`:
+
+```json
+{
+  "extends": "../../config/nyc.json"
+}
+```
+
+Use scipt above in `package.json`:
+
+```json
+  "scripts": {
+    "coverage": "../../config/cli/coverage.sh"
+  }
+```
+
+## TypeScript
+
+Tool: [TypeScript](https://www.typescriptlang.org/)
+
+Exposed CLI commands:
+
+- `./config/cli/ts-build.sh`
+- `./config/cli/ts-compile.sh`
+
+### Usage
+
+The three files below compose the functionality built into `ts-build.sh` and `ts-compile.sh`. Note that the browser build is optional, and in the case it's not present in the package, browser builds will be ignored.
+
+Add `tsconfig.json`:
+
+```json
+{
+  "extends": "../../config/tsconfig.json",
+  "include": ["src/**/*.ts", "test/**/*.ts"]
+}
+```
+
+Add `tsconfig.prod.json`:
+
+```json
+{
+  "extends": "../../config/tsconfig.prod.json",
+  "include": ["src/**/*.ts"],
+  "compilerOptions": {
+    "outDir": "./dist"
+  }
+}
+```
+
+Add `tsconfig.browser.json`:
+
+```json
+{
+  "extends": "../../config/tsconfig.browser.json",
+  "include": ["src/**/*.ts"],
+  "compilerOptions": {
+    "outDir": "./dist.browser"
+  }
+}
+```
+
+Note: the `outDir` property is mandatory to generate assets to a directory.
+
+Use CLI commands above in your `package.json`:
+
+```json
+  "scripts": {
+    "tsc":   "../../config/cli/ts-compile.sh",
+    "build": "../../config/cli/ts-build.sh"
+  }
+```
+
+The default production target is ES2017. To support shipping the ES5 target for browsers, add to your `package.json`:
+
+```json
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "browser": "dist.browser/index.js",
+  "files": [
+    "dist",
+    "dist.browser"
+  ]
+```
