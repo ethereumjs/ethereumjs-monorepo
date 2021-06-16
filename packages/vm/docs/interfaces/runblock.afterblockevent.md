@@ -28,7 +28,7 @@
 
 • **block**: *Block*
 
-Defined in: [runBlock.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L92)
+Defined in: [runBlock.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L92)
 
 ___
 
@@ -40,7 +40,7 @@ The gas used after executing the block
 
 Inherited from: [RunBlockResult](runblock.runblockresult.md).[gasUsed](runblock.runblockresult.md#gasused)
 
-Defined in: [runBlock.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L79)
+Defined in: [runBlock.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L79)
 
 ___
 
@@ -52,7 +52,7 @@ The bloom filter of the LOGs (events) after executing the block
 
 Inherited from: [RunBlockResult](runblock.runblockresult.md).[logsBloom](runblock.runblockresult.md#logsbloom)
 
-Defined in: [runBlock.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L83)
+Defined in: [runBlock.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L83)
 
 ___
 
@@ -64,7 +64,7 @@ The receipt root after executing the block
 
 Inherited from: [RunBlockResult](runblock.runblockresult.md).[receiptRoot](runblock.runblockresult.md#receiptroot)
 
-Defined in: [runBlock.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L87)
+Defined in: [runBlock.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L87)
 
 ___
 
@@ -76,7 +76,7 @@ Receipts generated for transactions in the block
 
 Inherited from: [RunBlockResult](runblock.runblockresult.md).[receipts](runblock.runblockresult.md#receipts)
 
-Defined in: [runBlock.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L67)
+Defined in: [runBlock.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L67)
 
 ___
 
@@ -88,7 +88,7 @@ Results of executing the transactions in the block
 
 Inherited from: [RunBlockResult](runblock.runblockresult.md).[results](runblock.runblockresult.md#results)
 
-Defined in: [runBlock.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L71)
+Defined in: [runBlock.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L71)
 
 ___
 
@@ -100,4 +100,4 @@ The stateRoot after executing the block
 
 Inherited from: [RunBlockResult](runblock.runblockresult.md).[stateRoot](runblock.runblockresult.md#stateroot)
 
-Defined in: [runBlock.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L75)
+Defined in: [runBlock.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L75)

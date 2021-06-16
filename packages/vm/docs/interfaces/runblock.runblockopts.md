@@ -25,7 +25,7 @@ Options for running a block.
 
 The @ethereumjs/block to process
 
-Defined in: [runBlock.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L32)
+Defined in: [runBlock.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L32)
 
 ___
 
@@ -38,7 +38,7 @@ If `true`, `runBlock` will set the fields `stateRoot`, `receiptsTrie`, `gasUsed`
 If `false`, `runBlock` throws if any fields do not match.
 Defaults to `false`.
 
-Defined in: [runBlock.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L43)
+Defined in: [runBlock.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L43)
 
 ___
 
@@ -48,7 +48,7 @@ ___
 
 Root of the state trie
 
-Defined in: [runBlock.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L36)
+Defined in: [runBlock.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L36)
 
 ___
 
@@ -58,7 +58,7 @@ ___
 
 If true, skips the balance check
 
-Defined in: [runBlock.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L57)
+Defined in: [runBlock.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L57)
 
 ___
 
@@ -70,7 +70,7 @@ If true, will skip "Block validation":
 Block validation validates the header (with respect to the blockchain),
 the transactions, the transaction trie and the uncle hash.
 
-Defined in: [runBlock.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L49)
+Defined in: [runBlock.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L49)
 
 ___
 
@@ -80,4 +80,4 @@ ___
 
 If true, skips the nonce check
 
-Defined in: [runBlock.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L53)
+Defined in: [runBlock.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L53)
