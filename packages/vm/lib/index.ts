@@ -145,6 +145,16 @@ export default class VM extends AsyncEventEmitter {
   public readonly _mcl: any //
 
   /**
+   * VM is run in DEBUG mode (default: false)
+   * Taken from DEBUG environment variable
+   *
+   * Safeguards on debug() calls are added for
+   * performance reasons to avoid string literal evaluation
+   * @hidden
+   */
+  protected readonly DEBUG: boolean = false
+
+  /**
    * VM async constructor. Creates engine instance and initializes it.
    *
    * @param opts VM engine constructor options
@@ -231,6 +241,11 @@ export default class VM extends AsyncEventEmitter {
       } else {
         this._mcl = mcl
       }
+    }
+
+    // Safeguard if "process" is not available (browser)
+    if (process !== undefined && process.env.DEBUG) {
+      this.DEBUG = true
     }
 
     // We cache this promisified function as it's called from the main execution loop, and
