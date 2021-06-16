@@ -1,7 +1,8 @@
 import { bufferToHex } from 'ethereumjs-util'
 import tape from 'tape'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
+import { startRPC, createManager, createClient, params, baseRequest, baseSetup } from '../helpers'
+import { mockBlockchain } from '../mockBlockchain'
 import { checkError } from '../util'
 
 function createBlockchain() {
@@ -82,7 +83,7 @@ tape(`${method}: call with earliest param`, (t) => {
 })
 
 tape(`${method}: call with latest param`, (t) => {
-  const manager = createManager(createClient({ blockchain: createBlockchain() }))
+  const manager = createManager(createClient({ blockchain: mockBlockchain() }))
   const server = startRPC(manager.getMethods())
 
   const req = params(method, ['latest', false])
