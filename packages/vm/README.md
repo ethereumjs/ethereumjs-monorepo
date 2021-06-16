@@ -213,8 +213,6 @@ event handlers.
 
 If you want to understand your VM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CL with `DEBUG=[Logger Selection] node [Your Script to Run].js` and produce output like the following:
 
-Note: this functionality has been temporarily removed along `v5.3.2` due to an unexpected reduction in VM performance. We will try to re-introduce in a performance friendly way.
-
 ![EthereumJS VM Debug Logger](./debug.png?raw=true)
 
 The following loggers are currently available:

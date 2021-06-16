@@ -76,59 +76,73 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
 
   await setupPreConditions(vm.stateManager._trie, testData)
 
-  const tx = makeTx(testData.transaction, { common })
-
-  if (!tx.validate()) {
-    throw new Error('Transaction is invalid')
-  }
-
-  const block = makeBlockFromEnv(testData.env, { common })
-
-  if (options.jsontrace) {
-    vm.on('step', function (e: InterpreterStep) {
-      let hexStack = []
-      hexStack = e.stack.map((item: any) => {
-        return '0x' + new BN(item).toString(16, 0)
-      })
-
-      const opTrace = {
-        pc: e.pc,
-        op: e.opcode.name,
-        gas: '0x' + e.gasLeft.toString('hex'),
-        gasCost: '0x' + e.opcode.fee.toString(16),
-        stack: hexStack,
-        depth: e.depth,
-        opName: e.opcode.name,
-      }
-
-      t.comment(JSON.stringify(opTrace))
-    })
-    vm.on('afterTx', async () => {
-      const stateRoot = {
-        stateRoot: vm.stateManager._trie.root.toString('hex'),
-      }
-      t.comment(JSON.stringify(stateRoot))
-    })
-  }
+  let execInfo = ''
+  let tx
 
   try {
-    await vm.runTx({ tx, block })
+    tx = makeTx(testData.transaction, { common })
   } catch (e) {
-    // If tx is invalid and coinbase is empty, the test harness
-    // expects the coinbase account to be deleted from state.
-    // Without this ecmul_0-3_5616_28000_96 would fail.
-    const account = await vm.stateManager.getAccount(block.header.coinbase)
-    if (account.balance.isZero()) {
-      await vm.stateManager.putAccount(block.header.coinbase, new Account())
-      await vm.stateManager.cleanupTouchedAccounts()
-      await vm.stateManager._cache.flush()
+    execInfo = 'tx instantiation exception'
+  }
+
+  if (tx) {
+    if (tx.validate()) {
+      const block = makeBlockFromEnv(testData.env, { common })
+
+      if (options.jsontrace) {
+        vm.on('step', function (e: InterpreterStep) {
+          let hexStack = []
+          hexStack = e.stack.map((item: any) => {
+            return '0x' + new BN(item).toString(16, 0)
+          })
+
+          const opTrace = {
+            pc: e.pc,
+            op: e.opcode.name,
+            gas: '0x' + e.gasLeft.toString('hex'),
+            gasCost: '0x' + e.opcode.fee.toString(16),
+            stack: hexStack,
+            depth: e.depth,
+            opName: e.opcode.name,
+          }
+
+          t.comment(JSON.stringify(opTrace))
+        })
+        vm.on('afterTx', async () => {
+          const stateRoot = {
+            stateRoot: vm.stateManager._trie.root.toString('hex'),
+          }
+          t.comment(JSON.stringify(stateRoot))
+        })
+      }
+
+      try {
+        await vm.runTx({ tx, block })
+        execInfo = 'successful tx run'
+      } catch (e) {
+        // If tx is invalid and coinbase is empty, the test harness
+        // expects the coinbase account to be deleted from state.
+        // Without this ecmul_0-3_5616_28000_96 would fail.
+        const account = await vm.stateManager.getAccount(block.header.coinbase)
+        if (account.balance.isZero()) {
+          await vm.stateManager.putAccount(block.header.coinbase, new Account())
+          await vm.stateManager.cleanupTouchedAccounts()
+          await vm.stateManager._cache.flush()
+        }
+        execInfo = 'tx runtime error'
+      }
+    } else {
+      execInfo = 'tx validation failed'
     }
   }
 
   const stateManagerStateRoot = vm.stateManager._trie.root
   const testDataPostStateRoot = toBuffer(testData.postStateRoot)
 
-  t.ok(stateManagerStateRoot.equals(testDataPostStateRoot), 'the state roots should match')
+  t.ok(
+    stateManagerStateRoot.equals(testDataPostStateRoot),
+    `the state roots should match (${execInfo})`
+  )
 }
 
 export default async function runStateTest(options: any, testData: any, t: tape.Test) {

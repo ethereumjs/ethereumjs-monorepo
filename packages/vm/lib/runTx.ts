@@ -1,3 +1,4 @@
+import { debug as createDebugLogger } from 'debug'
 import { Address, BN, toBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import {
@@ -11,6 +12,7 @@ import {
 import VM from './index'
 import Bloom from './bloom'
 import { default as EVM, EVMResult } from './evm/evm'
+import { short } from './evm/opcodes/util'
 import Message from './evm/message'
 import TxContext from './evm/txContext'
 import { getActivePrecompiles } from './evm/precompiles'
@@ -23,6 +25,9 @@ import type {
   EIP2930Receipt,
   EIP1559Receipt,
 } from './types'
+
+const debug = createDebugLogger('vm:tx')
+const debugGas = createDebugLogger('vm:tx:gas')
 
 /**
  * Options for the `runTx` method.
@@ -140,6 +145,10 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
   }
 
   await state.checkpoint()
+  if (this.DEBUG) {
+    debug('-'.repeat(100))
+    debug(`tx checkpoint`)
+  }
 
   // Typed transaction specific setup tasks
   if (opts.tx.transactionType !== 0 && this._common.isActivatedEIP(2718)) {
@@ -173,6 +182,9 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
   try {
     const result = await _runTx.bind(this)(opts)
     await state.commit()
+    if (this.DEBUG) {
+      debug(`tx checkpoint committed`)
+    }
     if (this._common.isActivatedEIP(2929) && opts.reportAccessList) {
       const { tx } = opts
       // Do not include sender address in access list
@@ -184,6 +196,9 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
     return result
   } catch (e) {
     await state.revert()
+    if (this.DEBUG) {
+      debug(`tx checkpoint reverted`)
+    }
     throw e
   } finally {
     if (this._common.isActivatedEIP(2929)) {
@@ -211,6 +226,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   await this._emit('beforeTx', tx)
 
   const caller = tx.getSenderAddress()
+  if (this.DEBUG) {
+    debug(
+      `New tx run hash=${
+        opts.tx.isSigned() ? opts.tx.hash().toString('hex') : 'unsigned'
+      } sender=${caller.toString()}`
+    )
+  }
 
   if (this._common.isActivatedEIP(2929)) {
     // Add origin and precompiles to warm addresses
@@ -231,6 +253,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     throw new Error('base fee exceeds gas limit')
   }
   gasLimit.isub(basefee)
+  if (this.DEBUG) {
+    debugGas(`Subtracting base fee (${basefee}) from gasLimit (-> ${gasLimit})`)
+  }
 
   if (this._common.isActivatedEIP(1559)) {
     // EIP-1559 spec:
@@ -296,6 +321,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const txCost = tx.gasLimit.mul(gasPrice)
   fromAccount.balance.isub(txCost)
   await state.putAccount(caller, fromAccount)
+  if (this.DEBUG) {
+    debug(
+      `Update fromAccount (caller) nonce (-> ${fromAccount.nonce}) and balance(-> ${fromAccount.balance})`
+    )
+  }
 
   /*
    * Execute message
@@ -310,17 +340,44 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     data,
   })
   const evm = new EVM(this, txContext, block)
+  if (this.DEBUG) {
+    debug(
+      `Running tx=0x${
+        tx.isSigned() ? tx.hash().toString('hex') : 'unsigned'
+      } with caller=${caller.toString()} gasLimit=${gasLimit} to=${
+        to ? to.toString() : ''
+      } value=${value} data=0x${short(data)}`
+    )
+  }
 
   const results = (await evm.executeMessage(message)) as RunTxResult
+  if (this.DEBUG) {
+    debug('-'.repeat(100))
+    debug(
+      `Received tx results gasUsed=${results.gasUsed} execResult: [ gasUsed=${
+        results.gasUsed
+      } exceptionError=${
+        results.execResult.exceptionError ? results.execResult.exceptionError.error : ''
+      } returnValue=${short(results.execResult.returnValue)} gasRefund=${
+        results.execResult.gasRefund
+      } ]`
+    )
+  }
 
   /*
    * Parse results
    */
   // Generate the bloom for the tx
   results.bloom = txLogsBloom(results.execResult.logs)
+  if (this.DEBUG) {
+    debug(`Generated tx bloom with logs=${results.execResult.logs?.length}`)
+  }
 
   // Caculate the total gas used
   results.gasUsed.iadd(basefee)
+  if (this.DEBUG) {
+    debugGas(`tx add baseFee ${basefee} to gasUsed (-> ${results.gasUsed})`)
+  }
 
   // Process any gas refund
   // TODO: determine why the gasRefund from execResult is not used here directly
@@ -330,6 +387,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const maxRefund = results.gasUsed.divn(maxRefundQuotient)
     gasRefund = BN.min(gasRefund, maxRefund)
     results.gasUsed.isub(gasRefund)
+    if (this.DEBUG) {
+      debug(`Subtract tx gasRefund (${gasRefund}) from gasUsed (-> ${results.gasUsed})`)
+    }
+  } else {
+    if (this.DEBUG) {
+      debug(`No tx gasRefund`)
+    }
   }
   results.amountSpent = results.gasUsed.mul(gasPrice)
 
@@ -339,6 +403,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const txCostDiff = txCost.sub(actualTxCost)
   fromAccount.balance.iadd(txCostDiff)
   await state.putAccount(caller, fromAccount)
+  if (this.DEBUG) {
+    debug(
+      `Refunded txCostDiff (${txCostDiff}) to fromAccount (caller) balance (-> ${fromAccount.balance})`
+    )
+  }
 
   // Update miner's balance
   let miner
@@ -366,6 +435,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // the state.putAccount function puts this into the "touched" accounts. This will thus be removed when
   // we clean the touched accounts below in case we are in a fork >= SpuriousDragon
   await state.putAccount(miner, minerAccount)
+  if (this.DEBUG) {
+    debug(`tx update miner account (${miner.toString()}) balance (-> ${minerAccount.balance})`)
+  }
 
   /*
    * Cleanup accounts
@@ -375,6 +447,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     for (const k of keys) {
       const address = new Address(Buffer.from(k, 'hex'))
       await state.deleteAccount(address)
+      if (this.DEBUG) {
+        debug(`tx selfdestruct on address=${address.toString()}`)
+      }
     }
   }
   await state.cleanupTouchedAccounts()
@@ -393,6 +468,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    */
   const event: AfterTxEvent = { transaction: tx, ...results }
   await this._emit('afterTx', event)
+  if (this.DEBUG) {
+    debug(
+      `tx run finished hash=${
+        opts.tx.isSigned() ? opts.tx.hash().toString('hex') : 'unsigned'
+      } sender=${caller.toString()}`
+    )
+  }
 
   return results
 }
@@ -438,6 +520,15 @@ export async function generateTxReceipt(
   }
 
   let receipt
+  if (this.DEBUG) {
+    debug(
+      `Generate tx receipt transactionType=${
+        'transactionType' in tx ? tx.transactionType : 'NaN'
+      } gasUsed=${cumulativeGasUsed.toString()} bitvector=${short(baseReceipt.bitvector)} (${
+        baseReceipt.bitvector.length
+      } bytes) logs=${baseReceipt.logs.length}`
+    )
+  }
 
   if (!('transactionType' in tx) || tx.transactionType === 0) {
     // Legacy transaction
