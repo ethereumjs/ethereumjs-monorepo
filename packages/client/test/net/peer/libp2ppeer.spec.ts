@@ -32,8 +32,8 @@ tape('[Libp2pPeer]', async (t) => {
   t.test('should connect to peer', async (t) => {
     const config = new Config({ loglevel: 'error' })
     const peer = new Libp2pPeer({ config })
-    config.events.on(Event.PEER_CONNECTED, () => {
-      t.pass('connected')
+    config.events.on(Event.PEER_CONNECTED, (peer) => {
+      t.equals(peer.address, '/ip4/0.0.0.0/tcp/0', 'connected')
       t.end()
     })
     await peer.connect()

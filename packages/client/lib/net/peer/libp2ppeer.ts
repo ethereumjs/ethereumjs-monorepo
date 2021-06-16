@@ -67,7 +67,7 @@ export class Libp2pPeer extends Peer {
       await node.dial(ma)
       await this.bindProtocols(node, ma)
     }
-    this.config.events.emit(Event.PEER_CONNECTED)
+    this.config.events.emit(Event.PEER_CONNECTED, this)
   }
 
   /**

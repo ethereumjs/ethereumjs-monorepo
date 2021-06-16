@@ -3,6 +3,7 @@ import type multiaddr from 'multiaddr'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type Connection from '../../../node_modules/libp2p-interfaces/dist/src/connection/connection'
 import type { MuxedStream } from '../../../node_modules/libp2p-interfaces/dist/src/stream-muxer/types'
+import { Libp2pPeer, RlpxPeer } from './net/peer'
 
 /**
  * Types for the central event bus, emitted
@@ -20,7 +21,7 @@ export interface EventParams {
   [Event.SYNC_EXECUTION_VM_ERROR]: [Error]
   [Event.SYNC_FETCHER_FETCHED]: [Block[] | BlockHeader[]]
   [Event.SYNC_SYNCHRONIZED]: []
-  [Event.PEER_CONNECTED]: []
+  [Event.PEER_CONNECTED]: [Libp2pPeer | RlpxPeer]
 }
 export declare interface EventBus<T extends Event> {
   emit(event: T, ...args: EventParams[T]): boolean

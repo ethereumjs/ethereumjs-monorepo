@@ -1,7 +1,7 @@
 import PeerId from 'peer-id'
 import crypto from 'libp2p-crypto'
 import multiaddr from 'multiaddr'
-import { Libp2pConnection as Connection } from '../../types'
+import { Event, Libp2pConnection as Connection } from '../../types'
 import { Libp2pNode } from '../peer/libp2pnode'
 import { Libp2pPeer } from '../peer'
 import { Server, ServerOptions } from './server'
@@ -89,6 +89,7 @@ export class Libp2pServer extends Server {
       const [peerId, multiaddr] = this.getPeerInfo(connection)
       const peer = this.createPeer(peerId, [multiaddr])
       this.config.logger.debug(`Peer connected: ${peer}`)
+      this.config.events.emit(Event.PEER_CONNECTED, peer)
     })
     this.node.connectionManager.on('peer:disconnect', (_connection: Connection) => {
       // TODO: do anything here on disconnect?
