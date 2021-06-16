@@ -1,10 +1,10 @@
 import tape from 'tape'
 import { Address, BN, privateToAddress } from 'ethereumjs-util'
-import VM from '../../../lib'
+import VM from '../../../src'
 import Common from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TypedTransaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
-import { InterpreterStep } from '../../../lib/evm/interpreter'
+import { InterpreterStep } from '../../../src/evm/interpreter'
 
 const GWEI = new BN('1000000000')
 const ETHER = GWEI.mul(GWEI)

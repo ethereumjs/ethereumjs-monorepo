@@ -1,6 +1,6 @@
 import tape from 'tape'
 import Common from '@ethereumjs/common'
-import VM from '../../lib'
+import VM from '../../src'
 
 tape('VM -> getActiveOpcodes()', (t) => {
   const CHAINID = 0x46 //istanbul opcode

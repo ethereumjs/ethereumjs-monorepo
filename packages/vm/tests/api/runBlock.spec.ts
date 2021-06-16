@@ -8,12 +8,12 @@ import {
   TypedTransaction,
   FeeMarketEIP1559Transaction,
 } from '@ethereumjs/tx'
-import { RunBlockOpts, AfterBlockEvent } from '../../lib/runBlock'
-import type { PreByzantiumTxReceipt, PostByzantiumTxReceipt } from '../../lib/types'
+import { RunBlockOpts, AfterBlockEvent } from '../../src/runBlock'
+import type { PreByzantiumTxReceipt, PostByzantiumTxReceipt } from '../../src/types'
 import { setupPreConditions, getDAOCommon } from '../util'
 import { setupVM, createAccount } from './utils'
 import testnet from './testdata/testnet.json'
-import VM from '../../lib/index'
+import VM from '../../src/index'
 import { setBalance } from './utils'
 
 const testData = require('./testdata/blockchain.json')
@@ -90,7 +90,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     ).balance.toString('hex')
 
     t.equals(
-      '0x' + uncleReward,
+      `0x${uncleReward}`,
       testData.postState['0xb94f5374fce5ed0000000097c15331677e6ebf0b'].balance,
       'calculated balance should equal postState balance'
     )
