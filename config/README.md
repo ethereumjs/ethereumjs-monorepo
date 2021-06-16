@@ -44,7 +44,7 @@ Use CLI commands above in your `package.json`:
 
 ```json
   "scripts": {
-    "lint": "../../conifg/cli/lint.sh",
+    "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
   }
 ```
