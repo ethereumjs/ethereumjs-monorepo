@@ -1,7 +1,7 @@
 import { bufferToHex } from 'ethereumjs-util'
 import tape from 'tape'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import { startRPC, createManager, createClient, params, baseRequest, baseSetup } from '../helpers'
+import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
 import { mockBlockchain } from '../mockBlockchain'
 import { checkError } from '../util'
 
