@@ -59,8 +59,8 @@ const endpoint = {
   encode: function (obj: PeerInfo): Buffer[] {
     return [
       address.encode(obj.address!),
-      port.encode(obj.udpPort || null),
-      port.encode(obj.tcpPort || null),
+      port.encode(obj.udpPort ?? null),
+      port.encode(obj.tcpPort ?? null),
     ]
   },
   decode: function (payload: Buffer[]): PeerInfo {

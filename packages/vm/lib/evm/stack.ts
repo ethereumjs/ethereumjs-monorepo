@@ -10,7 +10,7 @@ export default class Stack {
 
   constructor(maxHeight?: number) {
     this._store = []
-    this._maxHeight = maxHeight || 1024
+    this._maxHeight = maxHeight ?? 1024
   }
 
   get length() {

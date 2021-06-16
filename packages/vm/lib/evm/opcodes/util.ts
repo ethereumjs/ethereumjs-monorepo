@@ -222,7 +222,7 @@ export function subMemUsage(runState: RunState, offset: BN, length: BN) {
   const cost = words.mul(fee).add(words.mul(words).div(quadCoeff))
 
   if (cost.gt(runState.highestMemCost)) {
-    runState.eei.useGas(cost.sub(runState.highestMemCost))
+    runState.eei.useGas(cost.sub(runState.highestMemCost), 'subMemUsage')
     runState.highestMemCost = cost
   }
 
@@ -259,11 +259,20 @@ export function writeCallOutput(runState: RunState, outOffset: BN, outLength: BN
 export function updateSstoreGas(runState: RunState, found: any, value: Buffer, keyBuf: Buffer) {
   const sstoreResetCost = runState._common.param('gasPrices', 'sstoreReset')
   if ((value.length === 0 && !found.length) || (value.length !== 0 && found.length)) {
-    runState.eei.useGas(new BN(adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset')))
+    runState.eei.useGas(
+      new BN(adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset')),
+      'updateSstoreGas'
+    )
   } else if (value.length === 0 && found.length) {
-    runState.eei.useGas(new BN(adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset')))
-    runState.eei.refundGas(new BN(runState._common.param('gasPrices', 'sstoreRefund')))
+    runState.eei.useGas(
+      new BN(adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset')),
+      'updateSstoreGas'
+    )
+    runState.eei.refundGas(
+      new BN(runState._common.param('gasPrices', 'sstoreRefund')),
+      'updateSstoreGas'
+    )
   } else if (value.length !== 0 && !found.length) {
-    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'sstoreSet')))
+    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'sstoreSet')), 'updateSstoreGas')
   }
 }

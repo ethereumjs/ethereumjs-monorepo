@@ -1,3 +1,4 @@
+import { debug as createDebugLogger } from 'debug'
 import { encode } from 'rlp'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Account, Address, BN, intToBuffer } from 'ethereumjs-util'
@@ -17,6 +18,8 @@ import * as DAOConfig from './config/dao_fork_accounts_config.json'
 // update your imports to the new types file.
 import { PreByzantiumTxReceipt, PostByzantiumTxReceipt, EIP2930Receipt } from './types'
 export { PreByzantiumTxReceipt, PostByzantiumTxReceipt, EIP2930Receipt }
+
+const debug = createDebugLogger('vm:block')
 
 /* DAO account list */
 const DAOAccountList = DAOConfig.DAOAccounts
@@ -113,9 +116,22 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   if (this._hardforkByBlockNumber) {
     this._common.setHardforkByBlockNumber(block.header.number.toNumber())
   }
+  if (this.DEBUG) {
+    debug('-'.repeat(100))
+    debug(
+      `Running block hash=${block
+        .hash()
+        .toString(
+          'hex'
+        )} number=${block.header.number.toNumber()} hardfork=${this._common.hardfork()}`
+    )
+  }
 
   // Set state root if provided
   if (root) {
+    if (this.DEBUG) {
+      debug(`Set provided state root ${root.toString('hex')}`)
+    }
     await state.setStateRoot(root)
   }
 
@@ -124,22 +140,43 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
     this._common.hardforkIsActiveOnChain('dao') &&
     block.header.number.eq(this._common.hardforkBlockBN('dao'))
   ) {
+    if (this.DEBUG) {
+      debug(`Apply DAO hardfork`)
+    }
     await _applyDAOHardfork(state)
   }
 
   // Checkpoint state
   await state.checkpoint()
+  if (this.DEBUG) {
+    debug(`block checkpoint`)
+  }
 
   let result
   try {
     result = await applyBlock.bind(this)(block, opts)
+    if (this.DEBUG) {
+      debug(
+        `Received block results gasUsed=${result.gasUsed} bloom=${short(result.bloom.bitvector)} (${
+          result.bloom.bitvector.length
+        } bytes) receiptRoot=${result.receiptRoot.toString('hex')} receipts=${
+          result.receipts.length
+        } txResults=${result.results.length}`
+      )
+    }
   } catch (err) {
     await state.revert()
+    if (this.DEBUG) {
+      debug(`block checkpoint reverted`)
+    }
     throw err
   }
 
   // Persist state
   await state.commit()
+  if (this.DEBUG) {
+    debug(`block checkpoint committed`)
+  }
 
   const stateRoot = await state.getStateRoot(false)
 
@@ -159,15 +196,39 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
     block = Block.fromBlockData(blockData, { common: this._common })
   } else {
     if (result.receiptRoot && !result.receiptRoot.equals(block.header.receiptTrie)) {
+      if (this.DEBUG) {
+        debug(
+          `Invalid receiptTrie received=${result.receiptRoot.toString(
+            'hex'
+          )} expected=${block.header.receiptTrie.toString('hex')}`
+        )
+      }
       throw new Error('invalid receiptTrie')
     }
     if (!result.bloom.bitvector.equals(block.header.bloom)) {
+      if (this.DEBUG) {
+        debug(
+          `Invalid bloom received=${result.bloom.bitvector.toString(
+            'hex'
+          )} expected=${block.header.bloom.toString('hex')}`
+        )
+      }
       throw new Error('invalid bloom')
     }
     if (!result.gasUsed.eq(block.header.gasUsed)) {
+      if (this.DEBUG) {
+        debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
+      }
       throw new Error('invalid gasUsed')
     }
     if (!stateRoot.equals(block.header.stateRoot)) {
+      if (this.DEBUG) {
+        debug(
+          `Invalid stateRoot received=${stateRoot.toString(
+            'hex'
+          )} expected=${block.header.stateRoot.toString('hex')}`
+        )
+      }
       throw new Error('invalid block stateRoot')
     }
   }
@@ -191,6 +252,15 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
    * @property {AfterBlockEvent} result emits the results of processing a block
    */
   await this._emit('afterBlock', afterBlockEvent)
+  if (this.DEBUG) {
+    debug(
+      `Running block finished hash=${block
+        .hash()
+        .toString(
+          'hex'
+        )} number=${block.header.number.toNumber()} hardfork=${this._common.hardfork()}`
+    )
+  }
 
   return results
 }
@@ -209,10 +279,16 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
     if (block.header.gasLimit.gte(new BN('8000000000000000', 16))) {
       throw new Error('Invalid block with gas limit greater than (2^63 - 1)')
     } else {
+      if (this.DEBUG) {
+        debug(`Validate block`)
+      }
       await block.validate(this.blockchain)
     }
   }
   // Apply transactions
+  if (this.DEBUG) {
+    debug(`Apply transactions`)
+  }
   const blockResults = await applyTransactions.bind(this)(block, opts)
   // Pay ommers and miners
   if (this._common.consensusType() === 'pow') {
@@ -267,9 +343,15 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
       blockGasUsed: gasUsed,
     })
     txResults.push(txRes)
+    if (this.DEBUG) {
+      debug('-'.repeat(100))
+    }
 
     // Add to total block gas usage
     gasUsed = gasUsed.add(txRes.gasUsed)
+    if (this.DEBUG) {
+      debug(`Add tx gas used (${txRes.gasUsed}) to total block gas usage (-> ${gasUsed})`)
+    }
 
     // Combine blooms via bitwise OR
     bloom.or(txRes.bloom)
@@ -294,17 +376,26 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
  * the updated balances of their accounts to state.
  */
 async function assignBlockRewards(this: VM, block: Block): Promise<void> {
+  if (this.DEBUG) {
+    debug(`Assign block rewards`)
+  }
   const state = this.stateManager
   const minerReward = new BN(this._common.param('pow', 'minerReward'))
   const ommers = block.uncleHeaders
   // Reward ommers
   for (const ommer of ommers) {
     const reward = calculateOmmerReward(ommer.number, block.header.number, minerReward)
-    await rewardAccount(state, ommer.coinbase, reward)
+    const account = await rewardAccount(state, ommer.coinbase, reward)
+    if (this.DEBUG) {
+      debug(`Add uncle reward ${reward} to account ${ommer.coinbase} (-> ${account.balance})`)
+    }
   }
   // Reward miner
   const reward = calculateMinerReward(minerReward, ommers.length)
-  await rewardAccount(state, block.header.coinbase, reward)
+  const account = await rewardAccount(state, block.header.coinbase, reward)
+  if (this.DEBUG) {
+    debug(`Add miner reward ${reward} to account ${block.header.coinbase} (-> ${account.balance})`)
+  }
 }
 
 function calculateOmmerReward(ommerBlockNumber: BN, blockNumber: BN, minerReward: BN): BN {
@@ -362,7 +453,7 @@ export async function generateTxReceipt(
   const abstractTxReceipt = {
     gasUsed: blockGasUsed.toArrayLike(Buffer),
     bitvector: txRes.bloom.bitvector,
-    logs: txRes.execResult.logs || [],
+    logs: txRes.execResult.logs ?? [],
   }
 
   let txReceipt

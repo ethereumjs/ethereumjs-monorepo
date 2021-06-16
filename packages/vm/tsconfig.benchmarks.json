@@ -1,5 +1,5 @@
 {
-  "extends": "@ethereumjs/config-typescript",
+  "extends": "../../config/tsconfig.json",
   "compilerOptions": {
     "target": "ES6",
     "lib": ["dom"],

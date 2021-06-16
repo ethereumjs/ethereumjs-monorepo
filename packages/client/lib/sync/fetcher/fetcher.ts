@@ -358,6 +358,6 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   }
 
   async wait(delay?: number) {
-    await new Promise((resolve) => setTimeout(resolve, delay || this.interval))
+    await new Promise((resolve) => setTimeout(resolve, delay ?? this.interval))
   }
 }

@@ -145,6 +145,16 @@ export default class VM extends AsyncEventEmitter {
   public readonly _mcl: any //
 
   /**
+   * VM is run in DEBUG mode (default: false)
+   * Taken from DEBUG environment variable
+   *
+   * Safeguards on debug() calls are added for
+   * performance reasons to avoid string literal evaluation
+   * @hidden
+   */
+  protected readonly DEBUG: boolean = false
+
+  /**
    * VM async constructor. Creates engine instance and initializes it.
    *
    * @param opts VM engine constructor options
@@ -212,16 +222,16 @@ export default class VM extends AsyncEventEmitter {
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
     } else {
-      const trie = opts.state || new Trie()
+      const trie = opts.state ?? new Trie()
       this.stateManager = new DefaultStateManager({
         trie,
         common: this._common,
       })
     }
 
-    this.blockchain = opts.blockchain || new Blockchain({ common: this._common })
+    this.blockchain = opts.blockchain ?? new Blockchain({ common: this._common })
 
-    this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize || false
+    this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize ?? false
 
     this._hardforkByBlockNumber = opts.hardforkByBlockNumber ?? false
 
@@ -231,6 +241,11 @@ export default class VM extends AsyncEventEmitter {
       } else {
         this._mcl = mcl
       }
+    }
+
+    // Safeguard if "process" is not available (browser)
+    if (process !== undefined && process.env.DEBUG) {
+      this.DEBUG = true
     }
 
     // We cache this promisified function as it's called from the main execution loop, and

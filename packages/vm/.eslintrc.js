@@ -1,5 +1,5 @@
 module.exports = {
-  extends: '@ethereumjs/eslint-config-defaults',
+  extends: '../../config/eslint.js',
   ignorePatterns: ['scripts', 'benchmarks', 'examples', 'karma.conf.js'],
   rules: {
     '@typescript-eslint/no-use-before-define': 'off',
