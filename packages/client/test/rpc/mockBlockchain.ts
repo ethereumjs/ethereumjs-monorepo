@@ -24,6 +24,9 @@ export function mockBlockchain(options: any = {}) {
     getBlock: async (_data: any) => {
       return block
     },
+    getLatestBlock: async () => {
+      return block
+    },
     getLatestHeader: () => {
       return Block.fromBlockData().header
     },
