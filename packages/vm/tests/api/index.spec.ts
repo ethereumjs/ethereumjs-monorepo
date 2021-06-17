@@ -18,7 +18,7 @@ import { Buffer } from 'buffer'
 
 /**
  * Tests for the main constructor API and
- * exposed functionality by lib/index.js
+ * exposed functionality by src/index.js
  *
  * The following re-exported VM methods are tested within
  * their own files:
