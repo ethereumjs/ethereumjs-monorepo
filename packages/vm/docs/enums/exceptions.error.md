@@ -37,7 +37,7 @@
 
 • **BLS\_12\_381\_FP\_NOT\_IN\_FIELD**: = "fp point not in field"
 
-Defined in: [exceptions.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L25)
+Defined in: [exceptions.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L25)
 
 ___
 
@@ -45,7 +45,7 @@ ___
 
 • **BLS\_12\_381\_INPUT\_EMPTY**: = "input is empty"
 
-Defined in: [exceptions.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L24)
+Defined in: [exceptions.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L24)
 
 ___
 
@@ -53,7 +53,7 @@ ___
 
 • **BLS\_12\_381\_INVALID\_INPUT\_LENGTH**: = "invalid input length"
 
-Defined in: [exceptions.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L22)
+Defined in: [exceptions.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L22)
 
 ___
 
@@ -61,7 +61,7 @@ ___
 
 • **BLS\_12\_381\_POINT\_NOT\_ON\_CURVE**: = "point not on curve"
 
-Defined in: [exceptions.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L23)
+Defined in: [exceptions.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L23)
 
 ___
 
@@ -69,7 +69,7 @@ ___
 
 • **CODESTORE\_OUT\_OF\_GAS**: = "code store out of gas"
 
-Defined in: [exceptions.ts:3](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L3)
+Defined in: [exceptions.ts:3](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L3)
 
 ___
 
@@ -77,7 +77,7 @@ ___
 
 • **CREATE\_COLLISION**: = "create collision"
 
-Defined in: [exceptions.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L12)
+Defined in: [exceptions.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L12)
 
 ___
 
@@ -85,7 +85,7 @@ ___
 
 • **INTERNAL\_ERROR**: = "internal error"
 
-Defined in: [exceptions.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L11)
+Defined in: [exceptions.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L11)
 
 ___
 
@@ -93,7 +93,7 @@ ___
 
 • **INVALID\_BEGINSUB**: = "invalid BEGINSUB"
 
-Defined in: [exceptions.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L16)
+Defined in: [exceptions.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L16)
 
 ___
 
@@ -101,7 +101,7 @@ ___
 
 • **INVALID\_BYTECODE\_RESULT**: = "invalid bytecode deployed"
 
-Defined in: [exceptions.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L19)
+Defined in: [exceptions.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L19)
 
 ___
 
@@ -109,7 +109,7 @@ ___
 
 • **INVALID\_JUMP**: = "invalid JUMP"
 
-Defined in: [exceptions.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L6)
+Defined in: [exceptions.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L6)
 
 ___
 
@@ -117,7 +117,7 @@ ___
 
 • **INVALID\_JUMPSUB**: = "invalid JUMPSUB"
 
-Defined in: [exceptions.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L18)
+Defined in: [exceptions.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L18)
 
 ___
 
@@ -125,7 +125,7 @@ ___
 
 • **INVALID\_OPCODE**: = "invalid opcode"
 
-Defined in: [exceptions.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L7)
+Defined in: [exceptions.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L7)
 
 ___
 
@@ -133,7 +133,7 @@ ___
 
 • **INVALID\_RETURNSUB**: = "invalid RETURNSUB"
 
-Defined in: [exceptions.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L17)
+Defined in: [exceptions.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L17)
 
 ___
 
@@ -141,7 +141,7 @@ ___
 
 • **OUT\_OF\_GAS**: = "out of gas"
 
-Defined in: [exceptions.ts:2](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L2)
+Defined in: [exceptions.ts:2](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L2)
 
 ___
 
@@ -149,7 +149,7 @@ ___
 
 • **OUT\_OF\_RANGE**: = "value out of range"
 
-Defined in: [exceptions.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L8)
+Defined in: [exceptions.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L8)
 
 ___
 
@@ -157,7 +157,7 @@ ___
 
 • **REFUND\_EXHAUSTED**: = "refund exhausted"
 
-Defined in: [exceptions.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L14)
+Defined in: [exceptions.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L14)
 
 ___
 
@@ -165,7 +165,7 @@ ___
 
 • **REVERT**: = "revert"
 
-Defined in: [exceptions.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L9)
+Defined in: [exceptions.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L9)
 
 ___
 
@@ -173,7 +173,7 @@ ___
 
 • **STACK\_OVERFLOW**: = "stack overflow"
 
-Defined in: [exceptions.ts:5](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L5)
+Defined in: [exceptions.ts:5](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L5)
 
 ___
 
@@ -181,7 +181,7 @@ ___
 
 • **STACK\_UNDERFLOW**: = "stack underflow"
 
-Defined in: [exceptions.ts:4](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L4)
+Defined in: [exceptions.ts:4](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L4)
 
 ___
 
@@ -189,7 +189,7 @@ ___
 
 • **STATIC\_STATE\_CHANGE**: = "static state change"
 
-Defined in: [exceptions.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L10)
+Defined in: [exceptions.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L10)
 
 ___
 
@@ -197,7 +197,7 @@ ___
 
 • **STOP**: = "stop"
 
-Defined in: [exceptions.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L13)
+Defined in: [exceptions.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L13)
 
 ___
 
@@ -205,4 +205,4 @@ ___
 
 • **VALUE\_OVERFLOW**: = "value overflow"
 
-Defined in: [exceptions.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/exceptions.ts#L15)
+Defined in: [exceptions.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L15)

@@ -57,7 +57,7 @@
 
 **Returns:** *Promise*<boolean\>
 
-Defined in: [state/interface.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L33)
+Defined in: [state/interface.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L33)
 
 ___
 
@@ -73,7 +73,7 @@ ___
 
 **Returns:** *Promise*<boolean\>
 
-Defined in: [state/interface.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L32)
+Defined in: [state/interface.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L32)
 
 ___
 
@@ -83,7 +83,7 @@ ___
 
 **Returns:** *Promise*<void\>
 
-Defined in: [state/interface.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L23)
+Defined in: [state/interface.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L23)
 
 ___
 
@@ -93,7 +93,7 @@ ___
 
 **Returns:** *Promise*<void\>
 
-Defined in: [state/interface.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L34)
+Defined in: [state/interface.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L34)
 
 ___
 
@@ -109,7 +109,7 @@ ___
 
 **Returns:** *Promise*<void\>
 
-Defined in: [state/interface.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L22)
+Defined in: [state/interface.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L22)
 
 ___
 
@@ -119,7 +119,7 @@ ___
 
 **Returns:** *void*
 
-Defined in: [state/interface.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L35)
+Defined in: [state/interface.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L35)
 
 ___
 
@@ -129,7 +129,7 @@ ___
 
 **Returns:** *Promise*<void\>
 
-Defined in: [state/interface.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L24)
+Defined in: [state/interface.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L24)
 
 ___
 
@@ -139,7 +139,7 @@ ___
 
 **Returns:** [*StateManager*](state_interface.statemanager.md)
 
-Defined in: [state/interface.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L12)
+Defined in: [state/interface.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L12)
 
 ___
 
@@ -155,7 +155,7 @@ ___
 
 **Returns:** *Promise*<void\>
 
-Defined in: [state/interface.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L15)
+Defined in: [state/interface.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L15)
 
 ___
 
@@ -171,7 +171,7 @@ ___
 
 **Returns:** *Promise*<[*StorageDump*](state_interface.storagedump.md)\>
 
-Defined in: [state/interface.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L28)
+Defined in: [state/interface.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L28)
 
 ___
 
@@ -181,7 +181,7 @@ ___
 
 **Returns:** *Promise*<void\>
 
-Defined in: [state/interface.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L30)
+Defined in: [state/interface.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L30)
 
 ___
 
@@ -197,7 +197,7 @@ ___
 
 **Returns:** *Promise*<void\>
 
-Defined in: [state/interface.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L31)
+Defined in: [state/interface.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L31)
 
 ___
 
@@ -213,7 +213,7 @@ ___
 
 **Returns:** *Promise*<Account\>
 
-Defined in: [state/interface.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L13)
+Defined in: [state/interface.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L13)
 
 ___
 
@@ -229,7 +229,7 @@ ___
 
 **Returns:** *Promise*<Buffer\>
 
-Defined in: [state/interface.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L18)
+Defined in: [state/interface.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L18)
 
 ___
 
@@ -246,7 +246,7 @@ ___
 
 **Returns:** *Promise*<Buffer\>
 
-Defined in: [state/interface.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L19)
+Defined in: [state/interface.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L19)
 
 ___
 
@@ -263,7 +263,7 @@ ___
 
 **Returns:** *Promise*<Buffer\>
 
-Defined in: [state/interface.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L20)
+Defined in: [state/interface.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L20)
 
 ___
 
@@ -279,7 +279,7 @@ ___
 
 **Returns:** *Promise*<Buffer\>
 
-Defined in: [state/interface.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L26)
+Defined in: [state/interface.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L26)
 
 ___
 
@@ -289,7 +289,7 @@ ___
 
 **Returns:** *Promise*<boolean\>
 
-Defined in: [state/interface.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L29)
+Defined in: [state/interface.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L29)
 
 ___
 
@@ -306,7 +306,7 @@ ___
 
 **Returns:** *Promise*<void\>
 
-Defined in: [state/interface.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L14)
+Defined in: [state/interface.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L14)
 
 ___
 
@@ -323,7 +323,7 @@ ___
 
 **Returns:** *Promise*<void\>
 
-Defined in: [state/interface.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L17)
+Defined in: [state/interface.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L17)
 
 ___
 
@@ -341,7 +341,7 @@ ___
 
 **Returns:** *Promise*<void\>
 
-Defined in: [state/interface.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L21)
+Defined in: [state/interface.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L21)
 
 ___
 
@@ -351,7 +351,7 @@ ___
 
 **Returns:** *Promise*<void\>
 
-Defined in: [state/interface.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L25)
+Defined in: [state/interface.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L25)
 
 ___
 
@@ -367,7 +367,7 @@ ___
 
 **Returns:** *Promise*<void\>
 
-Defined in: [state/interface.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L27)
+Defined in: [state/interface.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L27)
 
 ___
 
@@ -383,4 +383,4 @@ ___
 
 **Returns:** *void*
 
-Defined in: [state/interface.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/interface.ts#L16)
+Defined in: [state/interface.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L16)

@@ -12,7 +12,8 @@
   ],
   "files": [
     "dist",
-    "dist.browser"
+    "dist.browser",
+    "src"
   ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

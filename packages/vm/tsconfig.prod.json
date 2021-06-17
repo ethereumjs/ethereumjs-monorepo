@@ -5,5 +5,5 @@
     "lib": ["dom"],
     "resolveJsonModule": true
   },
-  "include": ["lib/**/*.ts"]
+  "include": ["src/**/*.ts"]
 }

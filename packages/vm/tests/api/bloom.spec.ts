@@ -1,6 +1,6 @@
 import tape from 'tape'
 
-import Bloom from '../../lib/bloom'
+import Bloom from '../../src/bloom'
 import * as utils from 'ethereumjs-util'
 
 const byteSize = 256

@@ -3,7 +3,7 @@ import { Account, Address, BN, MAX_INTEGER } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import { Transaction, TransactionFactory, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import VM from '../../lib'
+import VM from '../../src'
 import { createAccount, getTransaction } from './utils'
 
 const TRANSACTION_TYPES = [

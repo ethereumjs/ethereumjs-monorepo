@@ -58,7 +58,7 @@ Instantiates a new [[VM]] Object.
 
 Overrides: AsyncEventEmitter.constructor
 
-Defined in: [index.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L156)
+Defined in: [index.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L156)
 
 ## Properties
 
@@ -66,7 +66,7 @@ Defined in: [index.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 • `Readonly` **\_common**: *default*
 
-Defined in: [index.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L126)
+Defined in: [index.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L126)
 
 ___
 
@@ -76,7 +76,7 @@ ___
 
 The blockchain the VM operates on
 
-Defined in: [index.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L124)
+Defined in: [index.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L124)
 
 ___
 
@@ -86,7 +86,7 @@ ___
 
 The StateManager used by the VM
 
-Defined in: [index.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L120)
+Defined in: [index.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L120)
 
 ## Methods
 
@@ -114,7 +114,7 @@ An instance of [BlockBuilder](buildblock.blockbuilder.md) with methods:
 - `build(sealOpts): Block`
 - `revert()`
 
-Defined in: [index.ts:355](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L355)
+Defined in: [index.ts:355](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L355)
 
 ___
 
@@ -126,7 +126,7 @@ Returns a copy of the [[VM]] instance.
 
 **Returns:** [*default*](index.default.md)
 
-Defined in: [index.ts:371](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L371)
+Defined in: [index.ts:371](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L371)
 
 ___
 
@@ -139,7 +139,7 @@ available for VM execution
 
 **Returns:** OpcodeList
 
-Defined in: [index.ts:364](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L364)
+Defined in: [index.ts:364](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L364)
 
 ___
 
@@ -149,7 +149,7 @@ ___
 
 **Returns:** *Promise*<void\>
 
-Defined in: [index.ts:241](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L241)
+Defined in: [index.ts:241](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L241)
 
 ___
 
@@ -171,7 +171,7 @@ invalid. If an error is thrown from an event handler, the state may or may not b
 
 **Returns:** *Promise*<[*RunBlockResult*](../interfaces/runblock.runblockresult.md)\>
 
-Defined in: [index.ts:298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L298)
+Defined in: [index.ts:298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L298)
 
 ___
 
@@ -192,7 +192,7 @@ This method modifies the state.
 
 **Returns:** *Promise*<number \| void\>
 
-Defined in: [index.ts:283](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L283)
+Defined in: [index.ts:283](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L283)
 
 ___
 
@@ -212,7 +212,7 @@ This method modifies the state.
 
 **Returns:** *Promise*<EVMResult\>
 
-Defined in: [index.ts:324](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L324)
+Defined in: [index.ts:324](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L324)
 
 ___
 
@@ -232,7 +232,7 @@ This method modifies the state.
 
 **Returns:** *Promise*<ExecResult\>
 
-Defined in: [index.ts:336](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L336)
+Defined in: [index.ts:336](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L336)
 
 ___
 
@@ -254,7 +254,7 @@ reverted.
 
 **Returns:** *Promise*<[*RunTxResult*](../interfaces/runtx.runtxresult.md)\>
 
-Defined in: [index.ts:312](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L312)
+Defined in: [index.ts:312](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L312)
 
 ___
 
@@ -272,4 +272,4 @@ VM async constructor. Creates engine instance and initializes it.
 
 **Returns:** *Promise*<[*default*](index.default.md)\>
 
-Defined in: [index.ts:152](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L152)
+Defined in: [index.ts:152](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L152)

@@ -1,6 +1,6 @@
 {
   "extends": "../../config/tsconfig.browser.json",
-  "include": ["lib/**/*.ts"],
+  "include": ["src/**/*.ts"],
   "compilerOptions": {
     "outDir": "./dist.browser",
     "resolveJsonModule": true
