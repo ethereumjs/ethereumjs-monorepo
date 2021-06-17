@@ -1,9 +1,9 @@
 import tape from 'tape'
 import { BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import VM from '../../../lib'
-import { default as blake2f, F } from '../../../lib/evm/precompiles/09-blake2f'
-import { ERROR } from '../../../lib/exceptions'
+import VM from '../../../src'
+import { default as blake2f, F } from '../../../src/evm/precompiles/09-blake2f'
+import { ERROR } from '../../../src/exceptions'
 
 // Test cases from:
 // https://github.com/keep-network/go-ethereum/blob/1bccafe5ef54ba849e414ce7c90f7b7130634a9a/core/vm/contracts_test.go

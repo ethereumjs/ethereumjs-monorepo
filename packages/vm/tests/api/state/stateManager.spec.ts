@@ -11,7 +11,7 @@ import {
   zeros,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { DefaultStateManager } from '../../../lib/state'
+import { DefaultStateManager } from '../../../src/state'
 import { createAccount } from '../utils'
 import { isRunningInKarma } from '../../util'
 const testLoader = require('../../testLoader')

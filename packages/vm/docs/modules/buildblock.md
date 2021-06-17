@@ -31,4 +31,4 @@
 
 **Returns:** *Promise*<[*BlockBuilder*](../classes/buildblock.blockbuilder.md)\>
 
-Defined in: [buildBlock.ts:243](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/buildBlock.ts#L243)
+Defined in: [buildBlock.ts:243](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L243)

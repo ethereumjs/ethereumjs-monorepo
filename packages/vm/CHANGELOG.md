@@ -919,7 +919,7 @@ This release switches to a new class based and promisified structure for
 working down VM calls and running through code loops, and encapsulates this
 logic to be bound to the specific `EVM` (so the classical Ethereum Virtual Machine)
 implementation in the
-[evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/lib/evm) module,
+[evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/src/evm) module,
 opening the way for a future parallel `eWASM` additional implementation.
 
 This new logic is mainly handled by the two new classes `EVM` (old: `Interpreter`)

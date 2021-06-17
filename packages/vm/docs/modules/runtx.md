@@ -32,4 +32,4 @@ Returns the tx receipt.
 
 **Returns:** *Promise*<[*TxReceipt*](types.md#txreceipt)\>
 
-Defined in: [runTx.ts:417](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L417)
+Defined in: [runTx.ts:417](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L417)

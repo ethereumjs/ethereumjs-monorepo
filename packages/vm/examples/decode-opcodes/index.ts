@@ -1,5 +1,5 @@
 import Common from '@ethereumjs/common'
-import { getOpcodesForHF } from '../../lib/evm/opcodes'
+import { getOpcodesForHF } from '../../src/evm/opcodes'
 
 const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
 const opcodes = getOpcodesForHF(common)

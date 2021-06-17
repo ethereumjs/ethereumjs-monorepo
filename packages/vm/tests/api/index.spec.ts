@@ -2,8 +2,8 @@ import tape from 'tape'
 import { KECCAK256_RLP } from 'ethereumjs-util'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import Common from '@ethereumjs/common'
-import { DefaultStateManager } from '../../lib/state'
-import VM from '../../lib'
+import { DefaultStateManager } from '../../src/state'
+import VM from '../../src'
 import { isRunningInKarma } from '../util'
 import { setupVM } from './utils'
 import testnet from './testdata/testnet.json'
@@ -18,7 +18,7 @@ import { Buffer } from 'buffer'
 
 /**
  * Tests for the main constructor API and
- * exposed functionality by lib/index.js
+ * exposed functionality by src/index.js
  *
  * The following re-exported VM methods are tested within
  * their own files:
