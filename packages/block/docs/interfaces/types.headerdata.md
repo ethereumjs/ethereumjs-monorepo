@@ -10,6 +10,7 @@ A block header's data.
 
 ### Properties
 
+- [baseFeePerGas](types.headerdata.md#basefeepergas)
 - [bloom](types.headerdata.md#bloom)
 - [coinbase](types.headerdata.md#coinbase)
 - [difficulty](types.headerdata.md#difficulty)
@@ -27,6 +28,14 @@ A block header's data.
 - [uncleHash](types.headerdata.md#unclehash)
 
 ## Properties
+
+### baseFeePerGas
+
+• `Optional` **baseFeePerGas**: *string* \| *number* \| *Buffer* \| *BN*
+
+Defined in: [types.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L86)
+
+___
 
 ### bloom
 

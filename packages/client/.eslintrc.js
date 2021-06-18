@@ -1,5 +1,5 @@
 module.exports = {
-  extends: "@ethereumjs/eslint-config-defaults",
+  extends: "../../config/eslint.js",
   parserOptions: {
     project: ['./tsconfig.json', './tsconfig.browser.json', './tsconfig.eslint.json']
   },
@@ -19,4 +19,5 @@ module.exports = {
       },
     },
   ],
+  ignorePatterns: ['webpack.config.js']
 }

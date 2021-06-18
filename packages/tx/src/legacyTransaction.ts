@@ -1,7 +1,7 @@
 import {
   BN,
   bnToHex,
-  bnToRlp,
+  bnToUnpaddedBuffer,
   ecrecover,
   rlp,
   rlphash,
@@ -10,6 +10,7 @@ import {
 } from 'ethereumjs-util'
 import { TxOptions, TxData, JsonTx, N_DIV_2, TxValuesArray } from './types'
 import { BaseTransaction } from './baseTransaction'
+import Common from '@ethereumjs/common'
 
 const TRANSACTION_TYPE = 0
 
@@ -19,8 +20,15 @@ const TRANSACTION_TYPE = 0
 export default class Transaction extends BaseTransaction<Transaction> {
   public readonly gasPrice: BN
 
+  public readonly common: Common
+
   /**
-   * Instantiate a transaction from a data dictionary
+   * Instantiate a transaction from a data dictionary.
+   *
+   * Format: { nonce, gasPrice, gasLimit, to, value, data, v, r, s }
+   *
+   * Notes:
+   * - All parameters are optional and have some basic default values
    */
   public static fromTxData(txData: TxData, opts: TxOptions = {}) {
     return new Transaction(txData, opts)
@@ -28,6 +36,8 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
   /**
    * Instantiate a transaction from the serialized tx.
+   *
+   * Format: `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
    */
   public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     const values = rlp.decode(serialized)
@@ -53,8 +63,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
   /**
    * Create a transaction from a values array.
    *
-   * The format is:
-   * nonce, gasPrice, gasLimit, to, value, data, v, r, s
+   * Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
    */
   public static fromValuesArray(values: TxValuesArray, opts: TxOptions = {}) {
     // If length is not 6, it has length 9. If v/r/s are empty Buffers, it is still an unsigned transaction
@@ -91,13 +100,13 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * varying data types.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
-    super({ ...txData, type: TRANSACTION_TYPE }, opts)
+    super({ ...txData, type: TRANSACTION_TYPE })
+
+    this.common = this._validateTxV(this.v, opts.common)
 
     this.gasPrice = new BN(toBuffer(txData.gasPrice === '' ? '0x' : txData.gasPrice))
 
     this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
-
-    this._validateTxV(this.v)
 
     const freeze = opts?.freeze ?? true
     if (freeze) {
@@ -106,24 +115,36 @@ export default class Transaction extends BaseTransaction<Transaction> {
   }
 
   /**
-   * Returns a Buffer Array of the raw Buffers of this transaction, in order.
+   * Returns a Buffer Array of the raw Buffers of the legacy transaction, in order.
+   *
+   * Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
+   *
+   * For an unsigned legacy tx this method returns the the empty Buffer values
+   * for the signature parameters `v`, `r` and `s`. For an EIP-155 compliant
+   * representation have a look at the `getMessageToSign()` method.
    */
   raw(): TxValuesArray {
     return [
-      bnToRlp(this.nonce),
-      bnToRlp(this.gasPrice),
-      bnToRlp(this.gasLimit),
+      bnToUnpaddedBuffer(this.nonce),
+      bnToUnpaddedBuffer(this.gasPrice),
+      bnToUnpaddedBuffer(this.gasLimit),
       this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bnToRlp(this.value),
+      bnToUnpaddedBuffer(this.value),
       this.data,
-      this.v !== undefined ? bnToRlp(this.v) : Buffer.from([]),
-      this.r !== undefined ? bnToRlp(this.r) : Buffer.from([]),
-      this.s !== undefined ? bnToRlp(this.s) : Buffer.from([]),
+      this.v !== undefined ? bnToUnpaddedBuffer(this.v) : Buffer.from([]),
+      this.r !== undefined ? bnToUnpaddedBuffer(this.r) : Buffer.from([]),
+      this.s !== undefined ? bnToUnpaddedBuffer(this.s) : Buffer.from([]),
     ]
   }
 
   /**
-   * Returns the rlp encoding of the transaction.
+   * Returns the serialized encoding of the legacy transaction.
+   *
+   * Format: `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
+   *
+   * For an unsigned legacy tx this method uses the empty Buffer values
+   * for the signature parameters `v`, `r` and `s` for encoding. For an
+   * EIP-155 compliant representation use the `getMessageToSign()` method.
    */
   serialize(): Buffer {
     return rlp.encode(this.raw())
@@ -135,11 +156,11 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
   private _getMessageToSign(withEIP155: boolean) {
     const values = [
-      bnToRlp(this.nonce),
-      bnToRlp(this.gasPrice),
-      bnToRlp(this.gasLimit),
+      bnToUnpaddedBuffer(this.nonce),
+      bnToUnpaddedBuffer(this.gasPrice),
+      bnToUnpaddedBuffer(this.gasLimit),
       this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bnToRlp(this.value),
+      bnToUnpaddedBuffer(this.value),
       this.data,
     ]
 
@@ -153,7 +174,17 @@ export default class Transaction extends BaseTransaction<Transaction> {
   }
 
   /**
-   * Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
+   * Returns the serialized unsigned tx (hashed or raw), which can be used
+   * to sign the transaction (e.g. for sending to a hardware wallet).
+   *
+   * Note: the raw message message format for the legacy tx is not RLP encoded
+   * and you might need to do yourself with:
+   *
+   * ```javascript
+   * import { rlp } from 'ethereumjs-util'
+   * const message = tx.getMessageToSign(false)
+   * const serializedMessage = rlp.encode(message) // use this for the HW wallet input
+   * ```
    *
    * @param hashMessage - Return hashed message if set to true (default: true)
    */
@@ -176,7 +207,10 @@ export default class Transaction extends BaseTransaction<Transaction> {
   }
 
   /**
-   * Computes a sha3-256 hash of the serialized tx
+   * Computes a sha3-256 hash of the serialized tx.
+   *
+   * This method can only be used for signed txs (it throws otherwise).
+   * Use `getMessageToSign()` to get a tx hash for the purpose of signing.
    */
   hash(): Buffer {
     return rlphash(this.raw())
@@ -210,8 +244,8 @@ export default class Transaction extends BaseTransaction<Transaction> {
       return ecrecover(
         msgHash,
         v!,
-        bnToRlp(r!),
-        bnToRlp(s!),
+        bnToUnpaddedBuffer(r!),
+        bnToUnpaddedBuffer(s!),
         this._signedTxImplementsEIP155() ? this.common.chainIdBN() : undefined
       )
     } catch (e) {
@@ -249,7 +283,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
   }
 
   /**
-   * Returns an object with the JSON representation of the transaction
+   * Returns an object with the JSON representation of the transaction.
    */
   toJSON(): JsonTx {
     return {
@@ -268,30 +302,40 @@ export default class Transaction extends BaseTransaction<Transaction> {
   /**
    * Validates tx's `v` value
    */
-  private _validateTxV(v: BN | undefined): void {
-    if (v === undefined || v.eqn(0)) {
-      return
+  private _validateTxV(v?: BN, common?: Common): Common {
+    let chainIdBN
+    // No unsigned tx and EIP-155 activated and chain ID included
+    if (
+      v !== undefined &&
+      !v.eqn(0) &&
+      (!common || common.gteHardfork('spuriousDragon')) &&
+      !v.eqn(27) &&
+      !v.eqn(28)
+    ) {
+      if (common) {
+        const chainIdDoubled = common.chainIdBN().muln(2)
+        const isValidEIP155V = v.eq(chainIdDoubled.addn(35)) || v.eq(chainIdDoubled.addn(36))
+
+        if (!isValidEIP155V) {
+          throw new Error(
+            `Incompatible EIP155-based V ${v.toString()} and chain id ${common
+              .chainIdBN()
+              .toString()}. See the Common parameter of the Transaction constructor to set the chain id.`
+          )
+        }
+      } else {
+        // Derive the original chain ID
+        let numSub
+        if (v.subn(35).isEven()) {
+          numSub = 35
+        } else {
+          numSub = 36
+        }
+        // Use derived chain ID to create a proper Common
+        chainIdBN = v.subn(numSub).divn(2)
+      }
     }
-
-    if (!this.common.gteHardfork('spuriousDragon')) {
-      return
-    }
-
-    if (v.eqn(27) || v.eqn(28)) {
-      return
-    }
-
-    const chainIdDoubled = this.common.chainIdBN().muln(2)
-
-    const isValidEIP155V = v.eq(chainIdDoubled.addn(35)) || v.eq(chainIdDoubled.addn(36))
-
-    if (!isValidEIP155V) {
-      throw new Error(
-        `Incompatible EIP155-based V ${v.toString()} and chain id ${this.common
-          .chainIdBN()
-          .toString()}. See the Common parameter of the Transaction constructor to set the chain id.`
-      )
-    }
+    return this._getCommon(common, chainIdBN)
   }
 
   private _signedTxImplementsEIP155() {

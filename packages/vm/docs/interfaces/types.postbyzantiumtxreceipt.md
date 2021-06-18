@@ -9,11 +9,13 @@ state root field with a status code field (EIP-658)
 
 ## Hierarchy
 
-* [*BaseTxReceipt*](types.basetxreceipt.md)
+- [*BaseTxReceipt*](types.basetxreceipt.md)
 
   ↳ **PostByzantiumTxReceipt**
 
   ↳↳ [*EIP2930Receipt*](types.eip2930receipt.md)
+
+  ↳↳ [*EIP1559Receipt*](types.eip1559receipt.md)
 
 ## Table of contents
 
@@ -34,7 +36,7 @@ Bloom bitvector
 
 Inherited from: [BaseTxReceipt](types.basetxreceipt.md).[bitvector](types.basetxreceipt.md#bitvector)
 
-Defined in: [types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/types.ts#L16)
+Defined in: [types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L16)
 
 ___
 
@@ -46,7 +48,7 @@ Gas used
 
 Inherited from: [BaseTxReceipt](types.basetxreceipt.md).[gasUsed](types.basetxreceipt.md#gasused)
 
-Defined in: [types.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/types.ts#L12)
+Defined in: [types.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L12)
 
 ___
 
@@ -58,14 +60,14 @@ Logs emitted
 
 Inherited from: [BaseTxReceipt](types.basetxreceipt.md).[logs](types.basetxreceipt.md#logs)
 
-Defined in: [types.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/types.ts#L20)
+Defined in: [types.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L20)
 
 ___
 
 ### status
 
-• **status**: *0* \| *1*
+• **status**: ``0`` \| ``1``
 
 Status of transaction, `1` if successful, `0` if an exception occured
 
-Defined in: [types.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/types.ts#L42)
+Defined in: [types.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L42)

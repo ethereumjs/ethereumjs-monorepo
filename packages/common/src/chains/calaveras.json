@@ -1,0 +1,99 @@
+{
+    "name": "calaveras",
+    "chainId": 123,
+    "networkId": 123,
+    "defaultHardfork": "berlin",
+    "consensus": {
+      "type": "poa",
+      "algorithm": "clique",
+      "clique": {
+        "period": 30,
+        "epoch": 30000
+      }
+    },
+    "comment": "The Calaveras testnet chain",
+    "url": "https://github.com/ethereum/eth1.0-specs/blob/master/network-upgrades/client-integration-testnets/calaveras.md",
+    "genesis": {
+      "hash": "0xeb9233d066c275efcdfed8037f4fc082770176aefdbcb7691c71da412a5670f2",
+      "gasLimit": "0x47b760",
+      "difficulty": "0x1",
+      "nonce": "0x0000000000000000",
+      "extraData": "0x00000000000000000000000000000000000000000000000000000000000000005211cea3870c7ba7c6c44b185e62eecdb864cd8c560228ce57d31efbf64c200b2c200aacec78cf17a7148e784fe95a7a750335f8b9572ee28d72e7650000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "stateRoot": "0x664c93de37eb4a72953ea42b8c046cdb64c9f0b0bca5505ade8d970d49ebdb8c",
+      "timestamp": "0x60b3877f"
+    },
+    "hardforks": [
+      {
+        "name": "chainstart",
+        "block": 0,
+        "forkHash": "0xe34c4aff"
+      },
+      {
+        "name": "homestead",
+        "block": 0,
+        "forkHash": "0xe34c4aff"
+      },
+      {
+        "name": "dao",
+        "block": null,
+        "forkHash": "0xe34c4aff"
+      },
+      {
+        "name": "tangerineWhistle",
+        "block": 0,
+        "forkHash": "0xe34c4aff"
+      },
+      {
+        "name": "spuriousDragon",
+        "block": 0,
+        "forkHash": "0xe34c4aff"
+      },
+      {
+        "name": "byzantium",
+        "block": 0,
+        "forkHash": "0xe34c4aff"
+      },
+      {
+        "name": "constantinople",
+        "block": 0,
+        "forkHash": "0xe34c4aff"
+      },
+      {
+        "name": "petersburg",
+        "block": 0,
+        "forkHash": "0xe34c4aff"
+      },
+      {
+        "name": "istanbul",
+        "block": 0,
+        "forkHash": "0xe34c4aff"
+      },
+      {
+        "name": "berlin",
+        "block": 0,
+        "forkHash": "0xe34c4aff"
+      },
+      {
+        "name": "london",
+        "block": 500,
+        "forkHash": "0x173783e4"
+      }
+    ],
+    "bootstrapNodes": [
+      {
+        "ip": "3.21.156.138",
+        "port": 30303,
+        "id": "39eb08bbfad87481553c471a63ff2a4b4885fffa4ff50f1cf46744d9ad6e2f764ede146fe4df563fa9ccda1a46b9b1a88fb08135e1bf1d71b320912499da773d",
+        "location": "",
+        "comment": "Calaveras bootnode 1"
+      },
+      {
+        "ip": "3.9.20.133",
+        "port": 30303,
+        "id": "9e1096aa59862a6f164994cb5cb16f5124d6c992cdbf4535ff7dea43ea1512afe5448dca9df1b7ab0726129603f1a3336b631e4d7a1a44c94daddd03241587f9",
+        "location": "",
+        "comment": "Calaveras bootnode 2"
+      }
+    ]
+  }
+  

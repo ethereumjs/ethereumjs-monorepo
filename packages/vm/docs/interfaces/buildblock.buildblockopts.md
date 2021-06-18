@@ -22,7 +22,7 @@ Options for building a block.
 
 The block options to use.
 
-Defined in: [buildBlock.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/buildBlock.ts#L29)
+Defined in: [buildBlock.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L29)
 
 ___
 
@@ -33,7 +33,7 @@ ___
 The block header data to use.
 Defaults used for any values not provided.
 
-Defined in: [buildBlock.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/buildBlock.ts#L24)
+Defined in: [buildBlock.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L24)
 
 ___
 
@@ -43,4 +43,4 @@ ___
 
 The parent block
 
-Defined in: [buildBlock.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/buildBlock.ts#L18)
+Defined in: [buildBlock.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L18)

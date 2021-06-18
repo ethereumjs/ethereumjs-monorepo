@@ -1,7 +1,7 @@
 import { Account, Address, BN } from 'ethereumjs-util'
 import Blockchain from '@ethereumjs/blockchain'
-import VM from '../../lib/index'
-import { VMOpts } from '../../lib'
+import VM from '../../src/index'
+import { VMOpts } from '../../src'
 import { Block } from '@ethereumjs/block'
 import { TransactionFactory } from '@ethereumjs/tx'
 import Common from '@ethereumjs/common'
@@ -60,6 +60,11 @@ export function getTransaction(
     value,
     data,
   }
+
+  if (txType > 0) {
+    txParams['type'] = txType
+  }
+
   if (txType === 1) {
     txParams['chainId'] = common.chainIdBN()
     txParams['accessList'] = [
@@ -71,7 +76,10 @@ export function getTransaction(
         ],
       },
     ]
-    txParams['type'] = txType
+  } else if (txType === 2) {
+    txParams['gasPrice'] = undefined
+    txParams['maxFeePerGas'] = new BN(100)
+    txParams['maxPriorityFeePerGas'] = new BN(10)
   }
 
   const tx = TransactionFactory.fromTxData(txParams, { common })

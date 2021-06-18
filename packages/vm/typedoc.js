@@ -1,15 +1,9 @@
 module.exports = {
-  entryPoints: ['lib'],
-  out: 'docs',
-  plugin: 'typedoc-plugin-markdown',
-  readme: 'none',
-  gitRevision: 'master',
+  extends: '../../config/typedoc.js',
   exclude: [
     'tests/**/*.ts',
-    'lib/bloom/*.ts',
-    'lib/evm/**',
-    'lib/state/cache.ts',
+    'src/bloom/*.ts',
+    'src/evm/**',
+    'src/state/cache.ts',
   ],
-  excludePrivate: true,
-  excludeProtected: true,
 }

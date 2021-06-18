@@ -17,6 +17,8 @@ Note: this `README` reflects the state of the library from `v5.0.0` onwards. See
 
 # USAGE
 
+## Introduction
+
 The following is an example to iterate through an existing Geth DB (needs `level` to be installed separately).
 
 This module performs write operations. Making a backup of your data before trying it is recommended. Otherwise, you can end up with a compromised DB state.
@@ -41,6 +43,10 @@ blockchain.iterator('i', (block) => {
 ```
 
 **WARNING**: Since `@ethereumjs/blockchain` is also doing write operations on the DB for safety reasons only run this on a copy of your database, otherwise this might lead to a compromised DB state.
+
+## EIP-1559 Support
+
+This library supports the handling of `EIP-1559` blocks and transactions starting with the `v5.3.0` release.
 
 # API
 

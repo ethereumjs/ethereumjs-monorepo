@@ -7,6 +7,7 @@
 ### Interfaces
 
 - [AccessListEIP2930TxData](../interfaces/types.accesslisteip2930txdata.md)
+- [FeeMarketEIP1559TxData](../interfaces/types.feemarketeip1559txdata.md)
 - [JsonTx](../interfaces/types.jsontx.md)
 - [TxOptions](../interfaces/types.txoptions.md)
 
@@ -17,7 +18,9 @@
 - [AccessListBufferItem](types.md#accesslistbufferitem)
 - [AccessListEIP2930ValuesArray](types.md#accesslisteip2930valuesarray)
 - [AccessListItem](types.md#accesslistitem)
+- [FeeMarketEIP1559ValuesArray](types.md#feemarketeip1559valuesarray)
 - [TxData](types.md#txdata)
+- [TxValuesArray](types.md#txvaluesarray)
 - [TypedTransaction](types.md#typedtransaction)
 
 ### Variables
@@ -35,7 +38,7 @@
 
 Ƭ **AccessList**: [*AccessListItem*](types.md#accesslistitem)[]
 
-Defined in: [types.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L48)
+Defined in: [types.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L49)
 
 ___
 
@@ -43,7 +46,7 @@ ___
 
 Ƭ **AccessListBuffer**: [*AccessListBufferItem*](types.md#accesslistbufferitem)[]
 
-Defined in: [types.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L47)
+Defined in: [types.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L48)
 
 ___
 
@@ -51,7 +54,7 @@ ___
 
 Ƭ **AccessListBufferItem**: [Buffer, Buffer[]]
 
-Defined in: [types.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L46)
+Defined in: [types.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L47)
 
 ___
 
@@ -59,9 +62,9 @@ ___
 
 Ƭ **AccessListEIP2930ValuesArray**: [Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, [*AccessListBuffer*](types.md#accesslistbuffer), Buffer?, Buffer?, Buffer?]
 
-Buffer values array for EIP2930 transaction
+Buffer values array for an EIP2930 transaction
 
-Defined in: [types.ts:140](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L140)
+Defined in: [types.ts:176](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L176)
 
 ___
 
@@ -69,14 +72,24 @@ ___
 
 Ƭ **AccessListItem**: *object*
 
-#### Type declaration:
+#### Type declaration
 
-Name | Type |
-:------ | :------ |
-`address` | PrefixedHexString |
-`storageKeys` | PrefixedHexString[] |
+| Name | Type |
+| :------ | :------ |
+| `address` | PrefixedHexString |
+| `storageKeys` | PrefixedHexString[] |
 
-Defined in: [types.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L38)
+Defined in: [types.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L39)
+
+___
+
+### FeeMarketEIP1559ValuesArray
+
+Ƭ **FeeMarketEIP1559ValuesArray**: [Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, [*AccessListBuffer*](types.md#accesslistbuffer), Buffer?, Buffer?, Buffer?]
+
+Buffer values array for an EIP1559 transaction
+
+Defined in: [types.ts:193](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L193)
 
 ___
 
@@ -84,29 +97,47 @@ ___
 
 Ƭ **TxData**: *object*
 
-#### Type declaration:
+Legacy Transaction Data
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`data`? | BufferLike | This will contain the data of the message or the init of a contract.   |
-`gasLimit`? | BNLike | The transaction's gas limit.   |
-`gasPrice`? | BNLike | The transaction's gas price.   |
-`nonce`? | BNLike | The transaction's nonce.   |
-`r`? | BNLike | EC signature parameter.   |
-`s`? | BNLike | EC signature parameter.   |
-`to`? | AddressLike | The transaction's the address is sent to.   |
-`v`? | BNLike | EC recovery ID.   |
-`value`? | BNLike | The amount of Ether sent.   |
+#### Type declaration
 
-Defined in: [types.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L69)
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `data?` | BufferLike | This will contain the data of the message or the init of a contract. |
+| `gasLimit?` | BNLike | The transaction's gas limit. |
+| `gasPrice?` | BNLike | The transaction's gas price. |
+| `nonce?` | BNLike | The transaction's nonce. |
+| `r?` | BNLike | EC signature parameter. |
+| `s?` | BNLike | EC signature parameter. |
+| `to?` | AddressLike | The transaction's the address is sent to. |
+| `type?` | BNLike | The transaction type |
+| `v?` | BNLike | EC recovery ID. |
+| `value?` | BNLike | The amount of Ether sent. |
+
+Defined in: [types.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L82)
+
+___
+
+### TxValuesArray
+
+Ƭ **TxValuesArray**: Buffer[]
+
+Buffer values array for a legacy transaction
+
+Defined in: [types.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L171)
 
 ___
 
 ### TypedTransaction
 
-Ƭ **TypedTransaction**: [*default*](../classes/legacytransaction.default.md) \| [*default*](../classes/eip2930transaction.default.md)
+Ƭ **TypedTransaction**: [*default*](../classes/legacytransaction.default.md) \| [*default*](../classes/eip2930transaction.default.md) \| [*default*](../classes/eip1559transaction.default.md)
 
-Defined in: [types.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L67)
+Encompassing type for all transaction types.
+
+Note that this also includes legacy txs which are
+referenced as `Transaction` for compatibility reasons.
+
+Defined in: [types.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L74)
 
 ## Variables
 
@@ -116,7 +147,7 @@ Defined in: [types.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 A const defining secp256k1n/2
 
-Defined in: [types.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L177)
+Defined in: [types.ts:238](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L238)
 
 ## Functions
 
@@ -124,15 +155,15 @@ Defined in: [types.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ▸ **isAccessList**(`input`: [*AccessListBuffer*](types.md#accesslistbuffer) \| [*AccessList*](types.md#accesslist)): input is AccessList
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`input` | [*AccessListBuffer*](types.md#accesslistbuffer) \| [*AccessList*](types.md#accesslist) |
+| Name | Type |
+| :------ | :------ |
+| `input` | [*AccessListBuffer*](types.md#accesslistbuffer) \| [*AccessList*](types.md#accesslist) |
 
 **Returns:** input is AccessList
 
-Defined in: [types.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L63)
+Defined in: [types.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L64)
 
 ___
 
@@ -140,12 +171,12 @@ ___
 
 ▸ **isAccessListBuffer**(`input`: [*AccessListBuffer*](types.md#accesslistbuffer) \| [*AccessList*](types.md#accesslist)): input is AccessListBuffer
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`input` | [*AccessListBuffer*](types.md#accesslistbuffer) \| [*AccessList*](types.md#accesslist) |
+| Name | Type |
+| :------ | :------ |
+| `input` | [*AccessListBuffer*](types.md#accesslistbuffer) \| [*AccessList*](types.md#accesslist) |
 
 **Returns:** input is AccessListBuffer
 
-Defined in: [types.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L50)
+Defined in: [types.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L51)

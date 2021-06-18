@@ -1,7 +1,7 @@
 {
-  "extends": "@ethereumjs/config-typescript",
+  "extends": "../../config/tsconfig.json",
   "compilerOptions": {
     "resolveJsonModule": true
   },
-  "include": ["lib/**/*.ts", "tests/**/*.ts"]
+  "include": ["src/**/*.ts", "tests/**/*.ts"]
 }

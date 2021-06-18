@@ -1,9 +1,9 @@
 import tape from 'tape'
 import { Address, BN } from 'ethereumjs-util'
-import VM from '../../../lib'
+import VM from '../../../src'
 import Common from '@ethereumjs/common'
-import { InterpreterStep } from '../../../lib/evm/interpreter'
-import { EIP2929StateManager } from '../../../lib/state/interface'
+import { InterpreterStep } from '../../../src/evm/interpreter'
+import { EIP2929StateManager } from '../../../src/state/interface'
 import { Transaction } from '@ethereumjs/tx'
 
 const address = new Address(Buffer.from('11'.repeat(20), 'hex'))

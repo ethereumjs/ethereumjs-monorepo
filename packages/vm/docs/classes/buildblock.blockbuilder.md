@@ -26,16 +26,16 @@
 
 \+ **new BlockBuilder**(`vm`: [*default*](index.default.md), `opts`: [*BuildBlockOpts*](../interfaces/buildblock.buildblockopts.md)): [*BlockBuilder*](buildblock.blockbuilder.md)
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`vm` | [*default*](index.default.md) |
-`opts` | [*BuildBlockOpts*](../interfaces/buildblock.buildblockopts.md) |
+| Name | Type |
+| :------ | :------ |
+| `vm` | [*default*](index.default.md) |
+| `opts` | [*BuildBlockOpts*](../interfaces/buildblock.buildblockopts.md) |
 
 **Returns:** [*BlockBuilder*](buildblock.blockbuilder.md)
 
-Defined in: [buildBlock.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/buildBlock.ts#L62)
+Defined in: [buildBlock.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L62)
 
 ## Properties
 
@@ -45,7 +45,7 @@ Defined in: [buildBlock.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo
 
 The cumulative gas used by the transactions added to the block.
 
-Defined in: [buildBlock.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/buildBlock.ts#L53)
+Defined in: [buildBlock.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L53)
 
 ## Methods
 
@@ -58,15 +58,15 @@ Please note that this modifies the state of the VM.
 Throws if the transaction's gasLimit is greater than
 the remaining gas in the block.
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`tx` | TypedTransaction |
+| Name | Type |
+| :------ | :------ |
+| `tx` | TypedTransaction |
 
 **Returns:** *Promise*<[*RunTxResult*](../interfaces/runtx.runtxresult.md)\>
 
-Defined in: [buildBlock.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/buildBlock.ts#L144)
+Defined in: [buildBlock.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L144)
 
 ___
 
@@ -84,15 +84,15 @@ which is validated along with the block number and difficulty by ethash.
 For PoA, please pass `blockOption.cliqueSigner` into the buildBlock constructor,
 as the signer will be awarded the txs amount spent on gas as they are added.
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`sealOpts?` | [*SealBlockOpts*](../interfaces/buildblock.sealblockopts.md) |
+| Name | Type |
+| :------ | :------ |
+| `sealOpts?` | [*SealBlockOpts*](../interfaces/buildblock.sealblockopts.md) |
 
 **Returns:** *Promise*<Block\>
 
-Defined in: [buildBlock.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/buildBlock.ts#L198)
+Defined in: [buildBlock.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L198)
 
 ___
 
@@ -104,4 +104,4 @@ Reverts the checkpoint on the StateManager to reset the state from any transacti
 
 **Returns:** *Promise*<void\>
 
-Defined in: [buildBlock.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/buildBlock.ts#L179)
+Defined in: [buildBlock.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L179)

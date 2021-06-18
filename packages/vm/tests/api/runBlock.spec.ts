@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, rlp, KECCAK256_RLP } from 'ethereumjs-util'
+import { Address, BN, rlp, KECCAK256_RLP, Account } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import {
@@ -8,33 +8,24 @@ import {
   TypedTransaction,
   FeeMarketEIP1559Transaction,
 } from '@ethereumjs/tx'
-import { RunBlockOpts, AfterBlockEvent } from '../../lib/runBlock'
-import type { PreByzantiumTxReceipt, PostByzantiumTxReceipt } from '../../lib/types'
+import { RunBlockOpts, AfterBlockEvent } from '../../src/runBlock'
+import type { PreByzantiumTxReceipt, PostByzantiumTxReceipt } from '../../src/types'
 import { setupPreConditions, getDAOCommon } from '../util'
 import { setupVM, createAccount } from './utils'
 import testnet from './testdata/testnet.json'
-import VM from '../../lib/index'
+import VM from '../../src/index'
 import { setBalance } from './utils'
 
 const testData = require('./testdata/blockchain.json')
 const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
 
 tape('runBlock() -> successful API parameter usage', async (t) => {
-  async function simpleRun(vm: VM, opts: any = {}) {
-    const common = opts.common
-
+  async function simpleRun(vm: VM) {
     const genesisRlp = testData.genesisRLP
-    const genesis = Block.fromRLPSerializedBlock(genesisRlp, { common })
+    const genesis = Block.fromRLPSerializedBlock(genesisRlp)
 
     const blockRlp = testData.blocks[0].rlp
-    const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
-
-    if (opts.cliqueBeneficiary) {
-      // eslint-disable-next-line no-extra-semi
-      ;(block.header as any).cliqueSigner = () => {
-        return opts.cliqueBeneficiary
-      }
-    }
+    const block = Block.fromRLPSerializedBlock(blockRlp)
 
     //@ts-ignore
     await setupPreConditions(vm.stateManager._trie, testData)
@@ -45,17 +36,11 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       'genesis state root should match calculated state root'
     )
 
-    let generate = false
-    if (opts.generate) {
-      generate = true
-    }
-
     const res = await vm.runBlock({
       block,
       // @ts-ignore
       root: vm.stateManager._trie.root,
       skipBlockValidation: true,
-      generate,
     })
 
     t.equal(
@@ -65,9 +50,61 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     )
   }
 
+  async function uncleRun(vm: VM) {
+    const testData = require('./testdata/uncleData.json')
+
+    //@ts-ignore
+    await setupPreConditions(vm.stateManager._trie, testData)
+
+    const block1Rlp = testData.blocks[0].rlp
+    const block1 = Block.fromRLPSerializedBlock(block1Rlp)
+    await vm.runBlock({
+      block: block1,
+      // @ts-ignore
+      root: vm.stateManager._trie.root,
+      skipBlockValidation: true,
+    })
+
+    const block2Rlp = testData.blocks[1].rlp
+    const block2 = Block.fromRLPSerializedBlock(block2Rlp)
+    await vm.runBlock({
+      block: block2,
+      // @ts-ignore
+      root: vm.stateManager._trie.root,
+      skipBlockValidation: true,
+    })
+
+    const block3Rlp = testData.blocks[2].rlp
+    const block3 = Block.fromRLPSerializedBlock(block3Rlp)
+    await vm.runBlock({
+      block: block3,
+      // @ts-ignore
+      root: vm.stateManager._trie.root,
+      skipBlockValidation: true,
+    })
+
+    const uncleReward = (
+      await vm.stateManager.getAccount(
+        Address.fromString('0xb94f5374fce5ed0000000097c15331677e6ebf0b')
+      )
+    ).balance.toString('hex')
+
+    t.equals(
+      `0x${uncleReward}`,
+      testData.postState['0xb94f5374fce5ed0000000097c15331677e6ebf0b'].balance,
+      'calculated balance should equal postState balance'
+    )
+  }
+
   t.test('PoW block, unmodified options', async (t) => {
     const vm = setupVM()
     await simpleRun(vm)
+    t.end()
+  })
+
+  t.test('Uncle blocks, compute uncle rewards', async (t) => {
+    const vm = setupVM()
+    await uncleRun(vm)
     t.end()
   })
 
@@ -87,16 +124,6 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     const common = new Common({ chain: 'testnet', hardfork: 'berlin', customChains })
     const vm = setupVM({ common })
     await simpleRun(vm)
-    t.end()
-  })
-
-  t.test("PoA block, should use block header's cliqueSigner", async (t) => {
-    const common = new Common({ chain: 'goerli', hardfork: 'berlin' })
-    const vm = setupVM({ common })
-    const cliqueBeneficiary = Address.fromString('0x70732c08fb6dbb06a64bf619c816c22aed12267a')
-    await simpleRun(vm, { common, cliqueBeneficiary, generate: true })
-    const account = await vm.stateManager.getAccount(cliqueBeneficiary)
-    t.ok(account.balance.gtn(0), 'beneficiary balance should be updated')
     t.end()
   })
 
@@ -292,6 +319,53 @@ tape('runBlock() -> runtime behavior', async (t) => {
 
     t.end()
   })
+
+  t.test('should allocate to correct clique beneficiary', async (t) => {
+    const common = new Common({ chain: 'goerli' })
+    const vm = setupVM({ common })
+
+    const signer = {
+      address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
+      privateKey: Buffer.from(
+        '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
+        'hex'
+      ),
+      publicKey: Buffer.from(
+        '40b2ebdf4b53206d2d3d3d59e7e2f13b1ea68305aec71d5d24cefe7f24ecae886d241f9267f04702d7f693655eb7b4aa23f30dcd0c3c5f2b970aad7c8a828195',
+        'hex'
+      ),
+    }
+
+    const otherUser = {
+      address: new Address(Buffer.from('6f62d8382bf2587361db73ceca28be91b2acb6df', 'hex')),
+      privateKey: Buffer.from(
+        '2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6',
+        'hex'
+      ),
+      publicKey: Buffer.from(
+        'ca0a55f6e81cb897aee6a1c390aa83435c41048faa0564b226cfc9f3df48b73e846377fb0fd606df073addc7bd851f22547afbbdd5c3b028c91399df802083a2',
+        'hex'
+      ),
+    }
+
+    // add balance to otherUser to send two txs to zero address
+    await vm.stateManager.putAccount(otherUser.address, new Account(new BN(0), new BN(42000)))
+    const tx = Transaction.fromTxData(
+      { to: Address.zero(), gasLimit: 21000, gasPrice: 1 },
+      { common }
+    ).sign(otherUser.privateKey)
+
+    // create block with the signer and txs
+    const block = Block.genesis(
+      { transactions: [tx, tx] },
+      { common, cliqueSigner: signer.privateKey }
+    )
+
+    await vm.runBlock({ block, skipNonce: true, skipBlockValidation: true, generate: true })
+    const account = await vm.stateManager.getAccount(signer.address)
+    t.ok(account.balance.eqn(42000), 'beneficiary balance should equal the cost of the txs')
+    t.end()
+  })
 })
 
 async function runBlockAndGetAfterBlockEvent(
@@ -457,7 +531,7 @@ tape('runBlock() -> tx types', async (t) => {
     await setBalance(vm, address)
 
     const tx = FeeMarketEIP1559Transaction.fromTxData(
-      { maxFeePerGas: 1, maxPriorityFeePerGas: 4, gasLimit: 100000, value: 6 },
+      { maxFeePerGas: 10, maxPriorityFeePerGas: 4, gasLimit: 100000, value: 6 },
       { common, freeze: false }
     )
 

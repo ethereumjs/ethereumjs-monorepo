@@ -9,7 +9,7 @@ state trie.
 
 ## Implements
 
-* [*StateManager*](../interfaces/state_interface.statemanager.md)
+- [*StateManager*](../interfaces/state_interface.statemanager.md)
 
 ## Table of contents
 
@@ -72,15 +72,15 @@ state trie.
 
 Instantiate the StateManager interface.
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`opts` | [*DefaultStateManagerOpts*](../interfaces/state_statemanager.defaultstatemanageropts.md) |
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `opts` | [*DefaultStateManagerOpts*](../interfaces/state_statemanager.defaultstatemanageropts.md) | {} |
 
 **Returns:** [*default*](state_statemanager.default.md)
 
-Defined in: [state/stateManager.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L62)
+Defined in: [state/stateManager.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L62)
 
 ## Properties
 
@@ -88,7 +88,7 @@ Defined in: [state/stateManager.ts:62](https://github.com/ethereumjs/ethereumjs-
 
 • **\_accessedStorage**: *Map*<string, Set<string\>\>[]
 
-Defined in: [state/stateManager.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L58)
+Defined in: [state/stateManager.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L58)
 
 ___
 
@@ -96,7 +96,7 @@ ___
 
 • **\_accessedStorageReverted**: *Map*<string, Set<string\>\>[]
 
-Defined in: [state/stateManager.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L62)
+Defined in: [state/stateManager.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L62)
 
 ___
 
@@ -104,7 +104,7 @@ ___
 
 • **\_cache**: *default*
 
-Defined in: [state/stateManager.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L44)
+Defined in: [state/stateManager.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L44)
 
 ___
 
@@ -112,7 +112,7 @@ ___
 
 • **\_checkpointCount**: *number*
 
-Defined in: [state/stateManager.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L47)
+Defined in: [state/stateManager.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L47)
 
 ___
 
@@ -120,7 +120,7 @@ ___
 
 • **\_common**: *default*
 
-Defined in: [state/stateManager.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L41)
+Defined in: [state/stateManager.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L41)
 
 ___
 
@@ -128,7 +128,7 @@ ___
 
 • **\_originalStorageCache**: *Map*<string, Map<string, Buffer\>\>
 
-Defined in: [state/stateManager.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L48)
+Defined in: [state/stateManager.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L48)
 
 ___
 
@@ -136,9 +136,9 @@ ___
 
 • **\_storageTries**: *object*
 
-#### Type declaration:
+#### Type declaration
 
-Defined in: [state/stateManager.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L43)
+Defined in: [state/stateManager.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L43)
 
 ___
 
@@ -146,7 +146,7 @@ ___
 
 • **\_touched**: *Set*<string\>
 
-Defined in: [state/stateManager.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L45)
+Defined in: [state/stateManager.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L45)
 
 ___
 
@@ -154,7 +154,7 @@ ___
 
 • **\_touchedStack**: *Set*<string\>[]
 
-Defined in: [state/stateManager.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L46)
+Defined in: [state/stateManager.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L46)
 
 ___
 
@@ -162,7 +162,7 @@ ___
 
 • **\_trie**: *SecureTrie*
 
-Defined in: [state/stateManager.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L42)
+Defined in: [state/stateManager.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L42)
 
 ## Methods
 
@@ -175,7 +175,7 @@ for more explanation.
 
 **Returns:** *void*
 
-Defined in: [state/stateManager.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L258)
+Defined in: [state/stateManager.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L258)
 
 ___
 
@@ -186,17 +186,17 @@ ___
 Checks if the `account` corresponding to `address`
 exists
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`address` | *Address* | Address of the `account` to check    |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `address` | *Address* | Address of the `account` to check |
 
 **Returns:** *Promise*<boolean\>
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:567](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L567)
+Defined in: [state/stateManager.ts:563](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L563)
 
 ___
 
@@ -208,17 +208,17 @@ Checks if the `account` corresponding to `address`
 is empty or non-existent as defined in
 EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`address` | *Address* | Address to check    |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `address` | *Address* | Address to check |
 
 **Returns:** *Promise*<boolean\>
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:557](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L557)
+Defined in: [state/stateManager.ts:553](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L553)
 
 ___
 
@@ -228,15 +228,15 @@ ___
 
 Add a warm address in the current context
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`address` | *Buffer* | The address (as a Buffer) to check    |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `address` | *Buffer* | The address (as a Buffer) to check |
 
 **Returns:** *void*
 
-Defined in: [state/stateManager.ts:600](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L600)
+Defined in: [state/stateManager.ts:596](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L596)
 
 ___
 
@@ -246,16 +246,16 @@ ___
 
 Mark the storage slot in the address as warm in the current context
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`address` | *Buffer* | The address (as a Buffer) to check   |
-`slot` | *Buffer* | The slot (as a Buffer) to check    |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `address` | *Buffer* | The address (as a Buffer) to check |
+| `slot` | *Buffer* | The slot (as a Buffer) to check |
 
 **Returns:** *void*
 
-Defined in: [state/stateManager.ts:633](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L633)
+Defined in: [state/stateManager.ts:629](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L629)
 
 ___
 
@@ -271,7 +271,7 @@ State changes that follow can then be committed by calling
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:347](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L347)
+Defined in: [state/stateManager.ts:347](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L347)
 
 ___
 
@@ -286,7 +286,7 @@ as defined in EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:713](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L713)
+Defined in: [state/stateManager.ts:709](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L709)
 
 ___
 
@@ -296,17 +296,17 @@ ___
 
 Clears all storage entries for the account corresponding to `address`.
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`address` | *Address* | Address to clear the storage of    |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `address` | *Address* | Address to clear the storage of |
 
 **Returns:** *Promise*<void\>
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:335](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L335)
+Defined in: [state/stateManager.ts:335](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L335)
 
 ___
 
@@ -321,7 +321,7 @@ for more explanation. Alias of the internal _clearOriginalStorageCache
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:266](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L266)
+Defined in: [state/stateManager.ts:266](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L266)
 
 ___
 
@@ -333,7 +333,7 @@ Clear the warm accounts and storage. To be called after a transaction finished.
 
 **Returns:** *void*
 
-Defined in: [state/stateManager.ts:647](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L647)
+Defined in: [state/stateManager.ts:643](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L643)
 
 ___
 
@@ -348,7 +348,7 @@ last call to checkpoint.
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:383](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L383)
+Defined in: [state/stateManager.ts:383](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L383)
 
 ___
 
@@ -364,7 +364,7 @@ checkpoints were reverted.
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L90)
+Defined in: [state/stateManager.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L90)
 
 ___
 
@@ -374,17 +374,17 @@ ___
 
 Deletes an account from state under the provided `address`. The account will also be removed from the state trie.
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`address` | *Address* | Address of the account which should be deleted    |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `address` | *Address* | Address of the account which should be deleted |
 
 **Returns:** *Promise*<void\>
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L120)
+Defined in: [state/stateManager.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L120)
 
 ___
 
@@ -394,11 +394,11 @@ ___
 
 Dumps the RLP-encoded storage values for an `account` specified by `address`.
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`address` | *Address* | The address of the `account` to return storage for   |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `address` | *Address* | The address of the `account` to return storage for |
 
 **Returns:** *Promise*<[*StorageDump*](../interfaces/state_interface.storagedump.md)\>
 
@@ -408,7 +408,7 @@ Both are represented as hex strings without the `0x` prefix.
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:486](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L486)
+Defined in: [state/stateManager.ts:482](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L482)
 
 ___
 
@@ -427,18 +427,18 @@ internal call might revert without an accessList but pass if the
 accessList is used for a tx run (so the subsequent behavior might change).
 This edge case is not covered by this implementation.
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`addressesRemoved` | *Address*[] | List of addresses to be removed from the final list   |
-`addressesOnlyStorage` | *Address*[] | List of addresses only to be added in case of present storage slots    |
+| Name | Type | Default value | Description |
+| :------ | :------ | :------ | :------ |
+| `addressesRemoved` | *Address*[] | [] | List of addresses to be removed from the final list |
+| `addressesOnlyStorage` | *Address*[] | [] | List of addresses only to be added in case of present storage slots |
 
 **Returns:** AccessList
 
 - an [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/packages/tx) `AccessList`
 
-Defined in: [state/stateManager.ts:669](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L669)
+Defined in: [state/stateManager.ts:665](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L665)
 
 ___
 
@@ -454,7 +454,7 @@ checkpoints on the instance.
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:522](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L522)
+Defined in: [state/stateManager.ts:518](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L518)
 
 ___
 
@@ -464,17 +464,17 @@ ___
 
 Initializes the provided genesis state into the state trie
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`initState` | *any* | Object (address -> balance)    |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `initState` | *any* | Object (address -> balance) |
 
 **Returns:** *Promise*<void\>
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:537](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L537)
+Defined in: [state/stateManager.ts:533](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L533)
 
 ___
 
@@ -484,17 +484,17 @@ ___
 
 Gets the account associated with `address`. Returns an empty account if the account does not exist.
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`address` | *Address* | Address of the `account` to get    |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `address` | *Address* | Address of the `account` to get |
 
 **Returns:** *Promise*<Account\>
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L101)
+Defined in: [state/stateManager.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L101)
 
 ___
 
@@ -504,11 +504,11 @@ ___
 
 Gets the code corresponding to the provided `address`.
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`address` | *Address* | Address to get the `code` for   |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `address` | *Address* | Address to get the `code` for |
 
 **Returns:** *Promise*<Buffer\>
 
@@ -517,7 +517,7 @@ Returns an empty `Buffer` if the account has no associated code.
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L162)
+Defined in: [state/stateManager.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L162)
 
 ___
 
@@ -528,12 +528,12 @@ ___
 Gets the storage value associated with the provided `address` and `key`. This method returns
 the shortest representation of the stored value.
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`address` | *Address* | Address of the account to get the storage for   |
-`key` | *Buffer* | Key in the account's storage to get the value for. Must be 32 bytes long.   |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `address` | *Address* | Address of the account to get the storage for |
+| `key` | *Buffer* | Key in the account's storage to get the value for. Must be 32 bytes long. |
 
 **Returns:** *Promise*<Buffer\>
 
@@ -543,7 +543,7 @@ If this does not exist an empty `Buffer` is returned.
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:210](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L210)
+Defined in: [state/stateManager.ts:210](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L210)
 
 ___
 
@@ -556,34 +556,28 @@ on first invocation, and returns the cached (original) value from then
 onwards. This is used to get the original value of a storage slot for
 computing gas costs according to EIP-1283.
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`address` | *Address* | Address of the account to get the storage for   |
-`key` | *Buffer* | Key in the account's storage to get the value for. Must be 32 bytes long.    |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `address` | *Address* | Address of the account to get the storage for |
+| `key` | *Buffer* | Key in the account's storage to get the value for. Must be 32 bytes long. |
 
 **Returns:** *Promise*<Buffer\>
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L229)
+Defined in: [state/stateManager.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L229)
 
 ___
 
 ### getStateRoot
 
-▸ **getStateRoot**(`force?`: *boolean*): *Promise*<Buffer\>
+▸ **getStateRoot**(): *Promise*<Buffer\>
 
 Gets the state-root of the Merkle-Patricia trie representation
 of the state of this StateManager. Will error if there are uncommitted
 checkpoints on the instance.
-
-#### Parameters:
-
-Name | Type | Default value | Description |
-:------ | :------ | :------ | :------ |
-`force` | *boolean* | false | If set to `true`, force a cache flush even if there are uncommited checkpoints (this is set to `true` pre-Byzantium in order to get intermediate state roots for the receipts)   |
 
 **Returns:** *Promise*<Buffer\>
 
@@ -591,7 +585,7 @@ Name | Type | Default value | Description |
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:444](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L444)
+Defined in: [state/stateManager.ts:443](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L443)
 
 ___
 
@@ -609,7 +603,7 @@ canonical genesis state for the configured chain parameters.
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:512](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L512)
+Defined in: [state/stateManager.ts:508](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L508)
 
 ___
 
@@ -619,15 +613,15 @@ ___
 
 Returns true if the address is warm in the current context
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`address` | *Buffer* | The address (as a Buffer) to check    |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `address` | *Buffer* | The address (as a Buffer) to check |
 
 **Returns:** *boolean*
 
-Defined in: [state/stateManager.ts:586](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L586)
+Defined in: [state/stateManager.ts:582](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L582)
 
 ___
 
@@ -637,16 +631,16 @@ ___
 
 Returns true if the slot of the address is warm
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`address` | *Buffer* | The address (as a Buffer) to check   |
-`slot` | *Buffer* | The slot (as a Buffer) to check    |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `address` | *Buffer* | The address (as a Buffer) to check |
+| `slot` | *Buffer* | The slot (as a Buffer) to check |
 
 **Returns:** *boolean*
 
-Defined in: [state/stateManager.ts:614](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L614)
+Defined in: [state/stateManager.ts:610](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L610)
 
 ___
 
@@ -656,18 +650,18 @@ ___
 
 Saves an account into state under the provided `address`.
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`address` | *Address* | Address under which to store `account`   |
-`account` | *Account* | The account to store    |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `address` | *Address* | Address under which to store `account` |
+| `account` | *Account* | The account to store |
 
 **Returns:** *Promise*<void\>
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L111)
+Defined in: [state/stateManager.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L111)
 
 ___
 
@@ -678,18 +672,18 @@ ___
 Adds `value` to the state trie as code, and sets `codeHash` on the account
 corresponding to `address` to reference this.
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`address` | *Address* | Address of the `account` to add the `code` for   |
-`value` | *Buffer* | The value of the `code`    |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `address` | *Address* | Address of the `account` to add the `code` for |
+| `value` | *Buffer* | The value of the `code` |
 
 **Returns:** *Promise*<void\>
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L142)
+Defined in: [state/stateManager.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L142)
 
 ___
 
@@ -700,19 +694,19 @@ ___
 Adds value to the state trie for the `account`
 corresponding to `address` at the provided `key`.
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`address` | *Address* | Address to set a storage value for   |
-`key` | *Buffer* | Key to set the value at. Must be 32 bytes long.   |
-`value` | *Buffer* | Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped. If it is a empty or filled with zeros, deletes the value.    |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `address` | *Address* | Address to set a storage value for |
+| `key` | *Buffer* | Key to set the value at. Must be 32 bytes long. |
+| `value` | *Buffer* | Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped. If it is a empty or filled with zeros, deletes the value. |
 
 **Returns:** *Promise*<void\>
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:307](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L307)
+Defined in: [state/stateManager.ts:307](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L307)
 
 ___
 
@@ -727,7 +721,7 @@ last call to checkpoint.
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:407](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L407)
+Defined in: [state/stateManager.ts:407](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L407)
 
 ___
 
@@ -740,17 +734,17 @@ by the provided `stateRoot`. Will error if there are uncommitted
 checkpoints on the instance or if the state root does not exist in
 the state trie.
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`stateRoot` | *Buffer* | The state-root to reset the instance to    |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `stateRoot` | *Buffer* | The state-root to reset the instance to |
 
 **Returns:** *Promise*<void\>
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:460](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L460)
+Defined in: [state/stateManager.ts:456](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L456)
 
 ___
 
@@ -764,14 +758,14 @@ This happens when the account is triggered for a state-changing
 event. Touched accounts that are empty will be cleared
 at the end of the tx.
 
-#### Parameters:
+#### Parameters
 
-Name | Type |
-:------ | :------ |
-`address` | *Address* |
+| Name | Type |
+| :------ | :------ |
+| `address` | *Address* |
 
 **Returns:** *void*
 
 Implementation of: [StateManager](../interfaces/state_interface.statemanager.md)
 
-Defined in: [state/stateManager.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/state/stateManager.ts#L132)
+Defined in: [state/stateManager.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L132)

@@ -124,6 +124,7 @@ The VM currently supports the following hardfork rules:
 - `istanbul` (`v4.1.1`+)
 - `muirGlacier` (only `mainnet` and `ropsten`) (`v4.1.3`+)
 - `berlin` (`v5.2.0`+)
+- `london` (`v5.4.0`+)
 
 Default: `istanbul` (taken from `Common.DEFAULT_HARDFORK`)
 
@@ -153,12 +154,16 @@ const vm = new VM({ common })
 
 Currently supported EIPs:
 
+- [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - Fee Market (`london` EIP)
 - [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315): Simple subroutines
 - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537): BLS precompiles
 - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565): ModExp gas cost (`berlin` EIP)
 - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718): Typed transactions (`berlin` EIP)
 - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929): Gas cost increases for state access opcodes (`berlin` EIP)
 - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930): Optional Access Lists Typed Transactions (`berlin` EIP)
+- [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - BASEFEE opcode (`london` EIP)
+- [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds (`london` EIP)
+- [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte (`london` EIP)
 
 ## Tracing Events
 
@@ -207,8 +212,6 @@ event handlers.
 # Understanding the VM
 
 If you want to understand your VM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CL with `DEBUG=[Logger Selection] node [Your Script to Run].js` and produce output like the following:
-
-Note: this functionality has been temporarily removed along `v5.3.2` due to an unexpected reduction in VM performance. We will try to re-introduce in a performance friendly way.
 
 ![EthereumJS VM Debug Logger](./debug.png?raw=true)
 

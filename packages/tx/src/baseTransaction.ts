@@ -4,13 +4,14 @@ import {
   BN,
   toBuffer,
   MAX_INTEGER,
+  TWO_POW256,
   unpadBuffer,
   ecsign,
   publicToAddress,
+  BNLike,
 } from 'ethereumjs-util'
 import {
   TxData,
-  TxOptions,
   JsonTx,
   AccessListEIP2930ValuesArray,
   AccessListEIP2930TxData,
@@ -34,16 +35,32 @@ export abstract class BaseTransaction<TransactionObject> {
   public readonly to?: Address
   public readonly value: BN
   public readonly data: Buffer
-  public readonly common: Common
 
   public readonly v?: BN
   public readonly r?: BN
   public readonly s?: BN
 
-  constructor(
-    txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData,
-    txOptions: TxOptions = {}
-  ) {
+  public readonly common!: Common
+
+  /**
+   * The default chain the tx falls back to if no Common
+   * is provided and if the chain can't be derived from
+   * a passed in chainId (only EIP-2718 typed txs) or
+   * EIP-155 signature (legacy txs).
+   *
+   * @hidden
+   */
+  protected DEFAULT_CHAIN = 'mainnet'
+
+  /**
+   * The default HF if the tx type is active on that HF
+   * or the first greater HF where the tx is active.
+   *
+   * @hidden
+   */
+  protected DEFAULT_HARDFORK = 'istanbul'
+
+  constructor(txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData) {
     const { nonce, gasLimit, to, value, data, v, r, s, type } = txData
     this._type = new BN(toBuffer(type)).toNumber()
 
@@ -69,22 +86,24 @@ export abstract class BaseTransaction<TransactionObject> {
       r: this.r,
       s: this.s,
     })
-
-    this.common = txOptions.common?.copy() ?? new Common({ chain: 'mainnet' })
   }
 
   /**
-   * Returns the transaction type
+   * Alias for `type`
+   *
+   * @deprecated Use `type` instead
    */
   get transactionType(): number {
-    return this._type
+    return this.type
   }
 
   /**
-   * Alias for `transactionType`
+   * Returns the transaction type.
+   *
+   * Note: legacy txs will return tx type `0`.
    */
   get type() {
-    return this.transactionType
+    return this._type
   }
 
   /**
@@ -155,11 +174,10 @@ export abstract class BaseTransaction<TransactionObject> {
    */
   abstract serialize(): Buffer
 
-  /**
-   * Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
-   *
-   * @param hashMessage - Return hashed message if set to true (default: true)
-   */
+  // Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
+  //
+  // Note: do not use code docs here since VS Studio is then not able to detect the
+  // comments from the inherited methods
   abstract getMessageToSign(hashMessage: false): Buffer | Buffer[]
   abstract getMessageToSign(hashMessage?: true): Buffer
 
@@ -210,7 +228,13 @@ export abstract class BaseTransaction<TransactionObject> {
   abstract getSenderPublicKey(): Buffer
 
   /**
-   * Signs a tx and returns a new signed tx object
+   * Signs a transaction.
+   *
+   * Note that the signed tx is returned as a new object,
+   * use as follows:
+   * ```javascript
+   * const signedTx = tx.sign(privateKey)
+   * ```
    */
   sign(privateKey: Buffer): TransactionObject {
     if (privateKey.length !== 32) {
@@ -229,10 +253,65 @@ export abstract class BaseTransaction<TransactionObject> {
   // Accept the v,r,s values from the `sign` method, and convert this into a TransactionObject
   protected abstract _processSignature(v: number, r: Buffer, s: Buffer): TransactionObject
 
-  protected _validateCannotExceedMaxInteger(values: { [key: string]: BN | undefined }) {
+  /**
+   * Does chain ID checks on common and returns a common
+   * to be used on instantiation
+   * @hidden
+   *
+   * @param common - Common instance from tx options
+   * @param chainId - Chain ID from tx options (typed txs) or signature (legacy tx)
+   */
+  protected _getCommon(common?: Common, chainId?: BNLike) {
+    // Chain ID provided
+    if (chainId) {
+      const chainIdBN = new BN(toBuffer(chainId))
+      if (common) {
+        if (!common.chainIdBN().eq(chainIdBN)) {
+          throw new Error('The chain ID does not match the chain ID of Common')
+        }
+        // Common provided, chain ID does match
+        // -> Return provided Common
+        return common.copy()
+      } else {
+        if (Common.isSupportedChainId(chainIdBN)) {
+          // No Common, chain ID supported by Common
+          // -> Instantiate Common with chain ID
+          return new Common({ chain: chainIdBN, hardfork: this.DEFAULT_HARDFORK })
+        } else {
+          // No Common, chain ID not supported by Common
+          // -> Instantiate custom Common derived from DEFAULT_CHAIN
+          return Common.forCustomChain(
+            this.DEFAULT_CHAIN,
+            {
+              name: 'custom-chain',
+              networkId: chainIdBN,
+              chainId: chainIdBN,
+            },
+            this.DEFAULT_HARDFORK
+          )
+        }
+      }
+    } else {
+      // No chain ID provided
+      // -> return Common provided or create new default Common
+      return (
+        common?.copy() ?? new Common({ chain: this.DEFAULT_CHAIN, hardfork: this.DEFAULT_HARDFORK })
+      )
+    }
+  }
+
+  protected _validateCannotExceedMaxInteger(values: { [key: string]: BN | undefined }, bits = 53) {
     for (const [key, value] of Object.entries(values)) {
-      if (value?.gt(MAX_INTEGER)) {
-        throw new Error(`${key} cannot exceed MAX_INTEGER, given ${value}`)
+      if (bits === 53) {
+        if (value?.gt(MAX_INTEGER)) {
+          throw new Error(`${key} cannot exceed MAX_INTEGER, given ${value}`)
+        }
+      } else if (bits === 256) {
+        if (value?.gte(TWO_POW256)) {
+          throw new Error(`${key} must be less than 2^256, given ${value}`)
+        }
+      } else {
+        throw new Error('unimplemented bits value')
       }
     }
   }

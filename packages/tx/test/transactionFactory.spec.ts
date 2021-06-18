@@ -71,8 +71,11 @@ tape('[TransactionFactory]: Basic functions', function (t) {
   t.test('fromSerializedData() -> error cases', function (st) {
     for (const txType of txTypes) {
       if (txType.eip2718) {
+        const unsupportedCommon = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
         st.throws(() => {
-          TransactionFactory.fromSerializedData(txType.unsigned.serialize(), {})
+          TransactionFactory.fromSerializedData(txType.unsigned.serialize(), {
+            common: unsupportedCommon,
+          })
         }, `should throw when trying to create typed tx when not allowed in Common (${txType.name})`)
 
         st.throws(() => {
@@ -109,10 +112,6 @@ tape('[TransactionFactory]: Basic functions', function (t) {
   })
 
   t.test('fromTxData() -> success cases', function (st) {
-    st.throws(() => {
-      TransactionFactory.fromTxData({ type: 1 })
-    })
-
     for (const txType of txTypes) {
       const tx = TransactionFactory.fromTxData({ type: txType.type }, { common })
       st.equals(
@@ -133,8 +132,9 @@ tape('[TransactionFactory]: Basic functions', function (t) {
   })
 
   t.test('fromTxData() -> error cases', function (st) {
+    const unsupportedCommon = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
     st.throws(() => {
-      TransactionFactory.fromTxData({ type: 1 })
+      TransactionFactory.fromTxData({ type: 1 }, { common: unsupportedCommon })
     })
 
     st.throws(() => {
@@ -149,7 +149,7 @@ tape('[TransactionFactory]: Basic functions', function (t) {
 
     for (const txType of txTypes) {
       if (!txType.eip2718) {
-        const tx = TransactionFactory.getTransactionClass(txType.type, common)
+        const tx = TransactionFactory.getTransactionClass(txType.type)
         st.equals(tx.name, txType.class.name)
       }
     }
@@ -158,12 +158,8 @@ tape('[TransactionFactory]: Basic functions', function (t) {
 
   t.test('getTransactionClass() -> error cases', function (st) {
     st.throws(() => {
-      TransactionFactory.getTransactionClass(3, common)
+      TransactionFactory.getTransactionClass(3)
     }, 'should throw when getting an invalid transaction type')
-
-    st.throws(() => {
-      TransactionFactory.getTransactionClass(1)
-    }, 'should throw when getting typed transactions without EIP-2718 activated')
 
     st.end()
   })

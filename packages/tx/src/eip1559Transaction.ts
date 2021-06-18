@@ -1,4 +1,13 @@
-import { BN, bnToHex, bnToRlp, ecrecover, keccak256, rlp, toBuffer } from 'ethereumjs-util'
+import {
+  BN,
+  bnToHex,
+  bnToUnpaddedBuffer,
+  ecrecover,
+  keccak256,
+  rlp,
+  toBuffer,
+} from 'ethereumjs-util'
+import Common from '@ethereumjs/common'
 import { BaseTransaction } from './baseTransaction'
 import {
   AccessList,
@@ -14,6 +23,12 @@ import { AccessLists } from './util'
 const TRANSACTION_TYPE = 2
 const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')
 
+/**
+ * Typed transaction with a new gas fee market mechanism
+ *
+ * - TransactionType: 2
+ * - EIP: [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)
+ */
 export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP1559Transaction> {
   public readonly chainId: BN
   public readonly accessList: AccessListBuffer
@@ -21,8 +36,20 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   public readonly maxPriorityFeePerGas: BN
   public readonly maxFeePerGas: BN
 
+  public readonly common: Common
+
+  /**
+   * The default HF if the tx type is active on that HF
+   * or the first greater HF where the tx is active.
+   *
+   * @hidden
+   */
+  protected DEFAULT_HARDFORK = 'london'
+
   /**
    * EIP-2930 alias for `r`
+   *
+   * @deprecated use `r` instead
    */
   get senderR() {
     return this.r
@@ -30,6 +57,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
 
   /**
    * EIP-2930 alias for `s`
+   *
+   * @deprecated use `s` instead
    */
   get senderS() {
     return this.s
@@ -37,11 +66,23 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
 
   /**
    * EIP-2930 alias for `v`
+   *
+   * @deprecated use `v` instead
    */
   get yParity() {
     return this.v
   }
 
+  /**
+   * Instantiate a transaction from a data dictionary.
+   *
+   * Format: { chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
+   * accessList, v, r, s }
+   *
+   * Notes:
+   * - `chainId` will be set automatically if not provided
+   * - All parameters are optional and have some basic default values
+   */
   public static fromTxData(txData: FeeMarketEIP1559TxData, opts: TxOptions = {}) {
     return new FeeMarketEIP1559Transaction(txData, opts)
   }
@@ -49,7 +90,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   /**
    * Instantiate a transaction from the serialized tx.
    *
-   * Note: this means that the Buffer should start with 0x01.
+   * Format: `0x02 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
+   * accessList, signatureYParity, signatureR, signatureS])`
    */
   public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     if (!serialized.slice(0, 1).equals(TRANSACTION_TYPE_BUFFER)) {
@@ -85,8 +127,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   /**
    * Create a transaction from a values array.
    *
-   * The format is:
-   * chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data, accessList, signatureYParity, signatureR, signatureS
+   * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
+   * accessList, signatureYParity, signatureR, signatureS]`
    */
   public static fromValuesArray(values: FeeMarketEIP1559ValuesArray, opts: TxOptions = {}) {
     if (values.length !== 9 && values.length !== 12) {
@@ -137,9 +179,11 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    * varying data types.
    */
   public constructor(txData: FeeMarketEIP1559TxData, opts: TxOptions = {}) {
+    super({ ...txData, type: TRANSACTION_TYPE })
     const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
 
-    super({ ...txData, type: TRANSACTION_TYPE }, opts)
+    this.common = this._getCommon(opts.common, chainId)
+    this.chainId = this.common.chainIdBN()
 
     if (!this.common.isActivatedEIP(1559)) {
       throw new Error('EIP-1559 not enabled on Common')
@@ -152,19 +196,23 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     // Verify the access list format.
     AccessLists.verifyAccessList(this.accessList)
 
-    this.chainId = chainId ? new BN(toBuffer(chainId)) : new BN(this.common.chainId())
     this.maxFeePerGas = new BN(toBuffer(maxFeePerGas === '' ? '0x' : maxFeePerGas))
     this.maxPriorityFeePerGas = new BN(
       toBuffer(maxPriorityFeePerGas === '' ? '0x' : maxPriorityFeePerGas)
     )
 
-    this._validateCannotExceedMaxInteger({
-      maxFeePerGas: this.maxFeePerGas,
-      maxPriorityFeePerGas: this.maxPriorityFeePerGas,
-    })
+    this._validateCannotExceedMaxInteger(
+      {
+        maxFeePerGas: this.maxFeePerGas,
+        maxPriorityFeePerGas: this.maxPriorityFeePerGas,
+      },
+      256
+    )
 
-    if (!this.chainId.eq(new BN(this.common.chainId().toString()))) {
-      throw new Error('The chain ID does not match the chain ID of Common')
+    if (this.maxFeePerGas.lt(this.maxPriorityFeePerGas)) {
+      throw new Error(
+        'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)'
+      )
     }
 
     if (this.v && !this.v.eqn(0) && !this.v.eqn(1)) {
@@ -196,39 +244,46 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    * The up front amount that an account must have for this transaction to be valid
    * @param baseFee The base fee of the block (will be set to 0 if not provided)
    */
-  getUpfrontCost(baseFee?: BN): BN {
-    if (!baseFee) {
-      baseFee = new BN(0)
-    }
-    const inclusionFeePerGas = BN.min(this.maxPriorityFeePerGas, this.maxFeePerGas.sub(baseFee!))
-    const gasPrice = inclusionFeePerGas.add(baseFee!)
+  getUpfrontCost(baseFee: BN = new BN(0)): BN {
+    const inclusionFeePerGas = BN.min(this.maxPriorityFeePerGas, this.maxFeePerGas.sub(baseFee))
+    const gasPrice = inclusionFeePerGas.add(baseFee)
     return this.gasLimit.mul(gasPrice).add(this.value)
   }
 
   /**
-   * Returns a Buffer Array of the raw Buffers of this transaction, in order.
+   * Returns a Buffer Array of the raw Buffers of the EIP-1559 transaction, in order.
+   *
+   * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
+   * accessList, signatureYParity, signatureR, signatureS]`
    *
    * Use `serialize()` to add to block data for `Block.fromValuesArray()`.
    */
   raw(): FeeMarketEIP1559ValuesArray {
     return [
-      bnToRlp(this.chainId),
-      bnToRlp(this.nonce),
-      bnToRlp(this.maxPriorityFeePerGas),
-      bnToRlp(this.maxFeePerGas),
-      bnToRlp(this.gasLimit),
+      bnToUnpaddedBuffer(this.chainId),
+      bnToUnpaddedBuffer(this.nonce),
+      bnToUnpaddedBuffer(this.maxPriorityFeePerGas),
+      bnToUnpaddedBuffer(this.maxFeePerGas),
+      bnToUnpaddedBuffer(this.gasLimit),
       this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bnToRlp(this.value),
+      bnToUnpaddedBuffer(this.value),
       this.data,
       this.accessList,
-      this.v !== undefined ? bnToRlp(this.v) : Buffer.from([]),
-      this.r !== undefined ? bnToRlp(this.r) : Buffer.from([]),
-      this.s !== undefined ? bnToRlp(this.s) : Buffer.from([]),
+      this.v !== undefined ? bnToUnpaddedBuffer(this.v) : Buffer.from([]),
+      this.r !== undefined ? bnToUnpaddedBuffer(this.r) : Buffer.from([]),
+      this.s !== undefined ? bnToUnpaddedBuffer(this.s) : Buffer.from([]),
     ]
   }
 
   /**
-   * Returns the serialized encoding of the transaction.
+   * Returns the serialized encoding of the EIP-1559 transaction.
+   *
+   * Format: `0x02 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
+   * accessList, signatureYParity, signatureR, signatureS])`
+   *
+   * Note that in contrast to the legacy tx serialization format this is not
+   * valid RLP any more due to the raw tx type preceeding and concatenated to
+   * the RLP encoding of the values.
    */
   serialize(): Buffer {
     const base = this.raw()
@@ -236,7 +291,15 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   }
 
   /**
-   * Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
+   * Returns the serialized unsigned tx (hashed or raw), which can be used
+   * to sign the transaction (e.g. for sending to a hardware wallet).
+   *
+   * Note: in contrast to the legacy tx the raw message format is already
+   * serialized and doesn't need to be RLP encoded any more.
+   *
+   * ```javascript
+   * const serializedMessage = tx.getMessageToSign(false) // use this for the HW wallet input
+   * ```
    *
    * @param hashMessage - Return hashed message if set to true (default: true)
    */
@@ -253,7 +316,10 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   }
 
   /**
-   * Computes a sha3-256 hash of the serialized tx
+   * Computes a sha3-256 hash of the serialized tx.
+   *
+   * This method can only be used for signed txs (it throws otherwise).
+   * Use `getMessageToSign()` to get a tx hash for the purpose of signing.
    */
   public hash(): Buffer {
     if (!this.isSigned()) {
@@ -293,8 +359,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       return ecrecover(
         msgHash,
         v!.addn(27), // Recover the 27 which was stripped from ecsign
-        bnToRlp(r!),
-        bnToRlp(s!)
+        bnToUnpaddedBuffer(r!),
+        bnToUnpaddedBuffer(s!)
       )
     } catch (e) {
       throw new Error('Invalid Signature')

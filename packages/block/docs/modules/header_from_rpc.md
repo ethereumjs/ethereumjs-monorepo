@@ -16,12 +16,12 @@
 
 Creates a new block header object from Ethereum JSON RPC.
 
-#### Parameters:
+#### Parameters
 
-Name | Type | Description |
-:------ | :------ | :------ |
-`blockParams` | *any* | Ethereum JSON RPC of block (eth_getBlockByNumber)   |
-`options?` | [*BlockOptions*](../interfaces/types.blockoptions.md) | - |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `blockParams` | *any* | Ethereum JSON RPC of block (eth_getBlockByNumber) |
+| `options?` | [*BlockOptions*](../interfaces/types.blockoptions.md) | - |
 
 **Returns:** [*BlockHeader*](../classes/header.blockheader.md)
 
