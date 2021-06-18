@@ -88,6 +88,7 @@
     "karma-firefox-launcher": "^2.1.0",
     "karma-tap": "^4.2.0",
     "karma-typescript": "^5.5.1",
+    "node-fetch": "^2.6.1",
     "nyc": "^14.0.0",
     "pino": "^5.8.0",
     "pino-pretty": "^2.2.2",
@@ -103,6 +104,9 @@
     "typescript": "^3.9.3",
     "webpack": "^4.43.0",
     "webpack-cli": "^3.3.11"
+  },
+  "devDependenciesComments": {
+    "node-fetch": "Hotfix for client browser build error in older Node versions (12/14), #1305, 2021-06-18"
   },
   "repository": {
     "type": "git",
