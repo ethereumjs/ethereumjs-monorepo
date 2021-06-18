@@ -252,6 +252,22 @@ tape('Clique: Initialization', (t) => {
     st.end()
   })
 
+  t.test("should set the inturn signer's block as canonical block", async (st) => {
+    const { blocks, blockchain } = await initWithSigners([A, B])
+    // when the block number is 1, the inturn signer should be B
+    const inturnBlock = await addNextBlock(blockchain, blocks, B)
+    blocks.pop()
+    // noturn block
+    await addNextBlock(blockchain, blocks, A)
+    const block = await blockchain.getBlock(1)
+    if (inturnBlock.hash().equals(block.hash())) {
+      st.pass('correct canonical block')
+    } else {
+      st.fail('invalid canonical block')
+    }
+    st.end()
+  })
+
   // Test Cases: https://eips.ethereum.org/EIPS/eip-225
   t.test('Clique Voting: Single signer, no votes cast', async (st) => {
     const { blocks, blockchain } = await initWithSigners([A])
