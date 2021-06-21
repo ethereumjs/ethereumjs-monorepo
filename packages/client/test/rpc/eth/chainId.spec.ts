@@ -25,7 +25,7 @@ tape(`${method}: returns 1 for Mainnet`, (t) => {
 
   const req = params(method, [])
   const expectRes = (res: any) => {
-    let msg = 'should return chainId 1'
+    const msg = 'should return chainId 1'
     t.equal(res.body.result, '0x1', msg)
   }
   baseRequest(t, server, req, 200, expectRes)
@@ -39,7 +39,7 @@ tape(`${method}: returns 3 for Ropsten`, (t) => {
 
   const req = params(method, [])
   const expectRes = (res: any) => {
-    let msg = 'should return chainId 3'
+    const msg = 'should return chainId 3'
     t.equal(res.body.result, '0x3', msg)
   }
   baseRequest(t, server, req, 200, expectRes)
@@ -53,7 +53,7 @@ tape(`${method}: returns 42 for Kovan`, (t) => {
 
   const req = params(method, [])
   const expectRes = (res: any) => {
-    let msg = 'should return chainId 42'
+    const msg = 'should return chainId 42'
     const chainId = new BN(42).toString(16)
     t.equal(res.body.result, `0x${chainId}`, msg)
   }
