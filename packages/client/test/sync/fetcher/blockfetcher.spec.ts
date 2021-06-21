@@ -21,7 +21,7 @@ tape('[BlockFetcher]', async (t) => {
   const { BlockFetcher } = await import('../../../lib/sync/fetcher/blockfetcher')
 
   t.test('should start/stop', async (t) => {
-    const config = new Config({ loglevel: 'error', transports: [] })
+    const config = new Config({ maxPerRequest: 5, loglevel: 'error', transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
     const fetcher = new BlockFetcher({
@@ -30,7 +30,6 @@ tape('[BlockFetcher]', async (t) => {
       chain,
       first: new BN(1),
       count: new BN(10),
-      maxPerRequest: 5,
       timeout: 5,
     })
     fetcher.next = () => false
