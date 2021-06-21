@@ -50,6 +50,8 @@ export class Eth {
       [validators.blockOption],
     ])
 
+    this.chainId = middleware(this.chainId.bind(this), 0, [])
+
     this.estimateGas = middleware(this.estimateGas.bind(this), 2, [
       [validators.transaction()],
       [validators.blockOption],
@@ -95,6 +97,8 @@ export class Eth {
     this.sendRawTransaction = middleware(this.sendRawTransaction.bind(this), 1, [[validators.hex]])
 
     this.protocolVersion = middleware(this.protocolVersion.bind(this), 0, [])
+
+    this.syncing = middleware(this.syncing.bind(this), 0, [])
   }
 
   /**
@@ -159,6 +163,16 @@ export class Eth {
 
     const { execResult } = await vm.runTx({ tx })
     return bufferToHex(execResult.returnValue)
+  }
+
+  /**
+   * Returns the currently configured chain id, a value used in replay-protected transaction signing as introduced by EIP-155.
+   * @param _params An empty array
+   * @returns The chain ID
+   */
+  async chainId(_params = []) {
+    const chainId = this._chain.config.chainCommon.chainIdBN()
+    return `0x${chainId.toString(16)}`
   }
 
   /**
@@ -489,5 +503,13 @@ export class Eth {
         message: `serialized tx data could not be parsed (${e.message})`,
       }
     }
+  }
+  /**
+   * Returns an object with data about the sync status or false.
+   * @param params An empty array
+   * @returns
+   */
+  syncing(_params = []) {
+    return false
   }
 }
