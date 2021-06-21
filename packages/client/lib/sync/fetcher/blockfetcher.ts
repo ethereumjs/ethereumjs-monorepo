@@ -52,8 +52,26 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (result && result.length === job.task.count) {
       return result
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    } else if (result && result.length > 0 && result.length < job.task.count) {
+      // Adopt the start block/header number from the remaining jobs
+      // if the number of the results provided is lower than the expected count
+      const lengthDiff = job.task.count - result.length
+      const adoptedJobs = []
+      while (this.in.length > 0) {
+        const job = this.in.remove()
+        if (job) {
+          job.task.first = job.task.first.subn(lengthDiff)
+          adoptedJobs.push(job)
+        }
+      }
+      for (const job of adoptedJobs) {
+        this.in.insert(job)
+      }
+      return result
+    } else {
+      return
     }
-    return
   }
 
   /**
