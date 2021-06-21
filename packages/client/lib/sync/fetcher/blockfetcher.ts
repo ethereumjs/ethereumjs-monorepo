@@ -18,25 +18,6 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
   }
 
   /**
-   * Generate list of tasks to fetch
-   * @return {Object[]} tasks
-   */
-  tasks(): JobTask[] {
-    const { first, count } = this
-    const max = this.config.maxPerRequest
-    const tasks: JobTask[] = []
-    while (count.gten(max)) {
-      tasks.push({ first: first.clone(), count: max })
-      first.iaddn(max)
-      count.isubn(max)
-    }
-    if (count.gtn(0)) {
-      tasks.push({ first: first.clone(), count: count.toNumber() })
-    }
-    return tasks
-  }
-
-  /**
    * Requests blocks associated with this job
    * @param job
    */
