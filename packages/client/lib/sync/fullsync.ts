@@ -125,10 +125,15 @@ export class FullSynchronizer extends Synchronizer {
       .on('fetched', (blocks: Block[]) => {
         const first = new BN(blocks[0].header.number)
         const hash = short(blocks[0].hash())
+        const baseFeeAdd = this.config.chainCommon.gteHardfork('london')
+          ? `basefee=${blocks[0].header.baseFeePerGas} `
+          : ''
         this.config.logger.info(
           `Imported blocks count=${blocks.length} number=${first.toString(
             10
-          )} hash=${hash} hardfork=${this.config.chainCommon.hardfork()} peers=${this.pool.size}`
+          )} hash=${hash} ${baseFeeAdd}hardfork=${this.config.chainCommon.hardfork()} peers=${
+            this.pool.size
+          }`
         )
       })
     await this.blockFetcher.fetch()

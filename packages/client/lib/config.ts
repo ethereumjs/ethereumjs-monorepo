@@ -121,7 +121,7 @@ export interface ConfigOptions {
 
   /**
    * Max items per block or header request
-   * 
+   *
    * Default: `50``
    */
   maxPerRequest?: number
