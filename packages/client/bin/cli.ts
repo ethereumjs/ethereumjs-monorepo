@@ -77,6 +77,11 @@ const args = require('yargs')
       choices: ['error', 'warn', 'info', 'debug'],
       default: Config.LOGLEVEL_DEFAULT,
     },
+    maxPerRequest: {
+      describe: 'Max items per block or header request',
+      number: true,
+      default: Config.MAXPERREQUEST_DEFAULT,
+    },
     minPeers: {
       describe: 'Peers needed before syncing',
       number: true,
@@ -197,6 +202,7 @@ async function run() {
     rpcport: args.rpcport,
     rpcaddr: args.rpcaddr,
     loglevel: args.loglevel,
+    maxPerRequest: args.maxPerRequest,
     minPeers: args.minPeers,
     maxPeers: args.maxPeers,
     dnsAddr: args.dnsAddr,

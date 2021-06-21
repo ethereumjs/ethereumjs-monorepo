@@ -23,7 +23,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
    */
   tasks(): JobTask[] {
     const { first, count } = this
-    const max = this.maxPerRequest
+    const max = this.config.maxPerRequest
     const tasks: JobTask[] = []
     while (count.gten(max)) {
       tasks.push({ first: first.clone(), count: max })

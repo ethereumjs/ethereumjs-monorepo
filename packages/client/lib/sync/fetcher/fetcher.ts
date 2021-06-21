@@ -24,9 +24,6 @@ export interface FetcherOptions {
   /* Max write queue size (default: 16) */
   maxQueue?: number
 
-  /* Max items per request (default: 50) */
-  maxPerRequest?: number
-
   /* Retry interval in ms (default: 1000) */
   interval?: number
 }
@@ -48,7 +45,6 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   protected interval: number
   protected banTime: number
   protected maxQueue: number
-  protected maxPerRequest: number
   protected in: QHeap<Job<JobTask, JobResult, StorageItem>>
   protected out: QHeap<Job<JobTask, JobResult, StorageItem>>
   protected total: number
@@ -74,7 +70,6 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     this.interval = options.interval ?? 1000
     this.banTime = options.banTime ?? 60000
     this.maxQueue = options.maxQueue ?? 16
-    this.maxPerRequest = options.maxPerRequest ?? 50
 
     this.in = new Heap({
       comparBefore: (
