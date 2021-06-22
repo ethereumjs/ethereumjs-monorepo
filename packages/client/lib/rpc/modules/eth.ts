@@ -168,7 +168,7 @@ export class Eth {
   /**
    * Returns the currently configured chain id, a value used in replay-protected transaction signing as introduced by EIP-155.
    * @param _params An empty array
-   * @returns The chain ID
+   * @returns The chain ID.
    */
   async chainId(_params = []) {
     const chainId = this._chain.config.chainCommon.chainIdBN()
@@ -507,9 +507,22 @@ export class Eth {
   /**
    * Returns an object with data about the sync status or false.
    * @param params An empty array
-   * @returns
+   * @returns  An object with sync status data or false (when not syncing)
+   *   * startingBlock - The block at which the import started (will only be reset, after the sync reached his head)
+   *   * currentBlock - The current block, same as eth_blockNumber
+   *   * highestBlock - The estimated highest block
    */
   syncing(_params = []) {
-    return false
+    console.log(this.client.synchronized)
+    if (this.client.synchronized) {
+      return false
+    }
+
+    // TODO
+    // const startingBlock
+    // const currentBlock
+    // const highestBlock
+
+    return { startingBlock: '0x0', currentBlock: '0x0', highestBlock: '0x0' }
   }
 }
