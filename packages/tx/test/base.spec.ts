@@ -41,6 +41,8 @@ tape('[BaseTransaction]', function (t) {
       values: Array(6).fill(zero),
       txs: legacyTxs,
       fixtures: legacyFixtures,
+      supportedEIPs: [],
+      notSupportedEIPs: [1559, 2930],
     },
     {
       class: AccessListEIP2930Transaction,
@@ -49,6 +51,8 @@ tape('[BaseTransaction]', function (t) {
       values: [Buffer.from([1])].concat(Array(7).fill(zero)),
       txs: eip2930Txs,
       fixtures: eip2930Fixtures,
+      supportedEIPs: [2930],
+      notSupportedEIPs: [1559],
     },
     {
       class: FeeMarketEIP1559Transaction,
@@ -57,6 +61,8 @@ tape('[BaseTransaction]', function (t) {
       values: [Buffer.from([1])].concat(Array(8).fill(zero)),
       txs: eip1559Txs,
       fixtures: eip1559Fixtures,
+      supportedEIPs: [1559, 2930],
+      notSupportedEIPs: [],
     },
   ]
 
@@ -145,6 +151,27 @@ tape('[BaseTransaction]', function (t) {
           txType.class.fromSerializedTx(tx.serialize(), { common }),
           `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`
         )
+      })
+    }
+    st.end()
+  })
+
+  t.test('supportsEIP()', function (st) {
+    for (const txType of txTypes) {
+      txType.txs.forEach(function (tx: any) {
+        for (const supportedEIP of txType.supportedEIPs) {
+          st.ok(tx.supportsEIP(supportedEIP), `${txType.name}: should recognize all supported EIPs`)
+        }
+        for (const notSupportedEIP of txType.notSupportedEIPs) {
+          st.notOk(
+            tx.supportsEIP(notSupportedEIP),
+            `${txType.name}: should reject unsupported existing EIPs`
+          )
+          st.notOk(
+            tx.supportsEIP(9999999),
+            `${txType.name}: should reject unsupported non-existing EIPs`
+          )
+        }
       })
     }
     st.end()

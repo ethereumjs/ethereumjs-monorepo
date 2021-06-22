@@ -43,6 +43,13 @@ export abstract class BaseTransaction<TransactionObject> {
   public readonly common!: Common
 
   /**
+   * List of tx type defining EIPs,
+   * e.g. 1559 (fee market) and 2930 (access lists)
+   * for FeeMarketEIP1559Transaction objects
+   */
+  protected supportedEIPs: number[] = []
+
+  /**
    * The default chain the tx falls back to if no Common
    * is provided and if the chain can't be derived from
    * a passed in chainId (only EIP-2718 typed txs) or
@@ -104,6 +111,24 @@ export abstract class BaseTransaction<TransactionObject> {
    */
   get type() {
     return this._type
+  }
+
+  /**
+   * Checks if a tx supports a tx type defining EIP,
+   * e.g. 1559 (fee market) and 2930 (access lists)
+   * for FeeMarketEIP1559Transaction objects.
+   *
+   * This can be useful for feature checks if the
+   * tx type is unknown (e.g. when instantiated with
+   * the tx factory).
+   *
+   * EIPs supported by this method:
+   *
+   * - [1559](https://eips.ethereum.org/EIPS/eip-1559) Fee Market EIP
+   * - [2930](https://eips.ethereum.org/EIPS/eip-2930) Access Lists EIP
+   */
+  supportsEIP(eip: number) {
+    return this.supportedEIPs.includes(eip)
   }
 
   /**
