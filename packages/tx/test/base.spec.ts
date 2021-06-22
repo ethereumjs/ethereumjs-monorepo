@@ -167,10 +167,9 @@ tape('[BaseTransaction]', function (t) {
             tx.supportsEIP(notSupportedEIP),
             `${txType.name}: should reject unsupported existing EIPs`
           )
-          st.notOk(
-            tx.supportsEIP(9999999),
-            `${txType.name}: should reject unsupported non-existing EIPs`
-          )
+          st.throws(() => {
+            tx.supportsEIP(9999999)
+          }, `${txType.name}: should throw on unsupported non-existing (not allowed) EIPs`)
         }
       })
     }

@@ -133,6 +133,10 @@ export abstract class BaseTransaction<TransactionObject> {
    * - [2930](https://eips.ethereum.org/EIPS/eip-2930) Access Lists EIP
    */
   supportsEIP(eip: number) {
+    const allowedInputs = [1559, 2718, 2930]
+    if (!allowedInputs.includes(eip)) {
+      throw new Error(`Method not allowed to be called with EIP ${eip}`)
+    }
     return this.supportedEIPs.includes(eip)
   }
 
