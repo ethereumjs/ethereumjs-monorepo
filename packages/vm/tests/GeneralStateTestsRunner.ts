@@ -3,7 +3,7 @@ import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Account, BN, toBuffer } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { setupPreConditions, makeTx, makeBlockFromEnv } from './util'
-import { InterpreterStep } from '../lib/evm/interpreter'
+import { InterpreterStep } from '../src/evm/interpreter'
 
 function parseTestCases(
   forkConfigTestSuite: string,
@@ -62,7 +62,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   if (options.dist) {
     VM = require('../dist').default
   } else {
-    VM = require('../lib').default
+    VM = require('../src').default
   }
 
   const state = new Trie()

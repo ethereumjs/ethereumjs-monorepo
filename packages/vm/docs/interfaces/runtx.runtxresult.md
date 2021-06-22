@@ -35,7 +35,7 @@ Execution result of a transaction
 
 EIP-2930 access list generated for the tx (see `reportAccessList` option)
 
-Defined in: [runTx.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L106)
+Defined in: [runTx.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L106)
 
 ___
 
@@ -45,7 +45,7 @@ ___
 
 The amount of ether used by this transaction
 
-Defined in: [runTx.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L91)
+Defined in: [runTx.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L91)
 
 ___
 
@@ -55,7 +55,7 @@ ___
 
 Bloom filter resulted from transaction
 
-Defined in: [runTx.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L86)
+Defined in: [runTx.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L86)
 
 ___
 
@@ -67,7 +67,7 @@ Address of created account durint transaction, if any
 
 Inherited from: EVMResult.createdAddress
 
-Defined in: [evm/evm.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/evm/evm.ts#L31)
+Defined in: [evm/evm.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/evm/evm.ts#L31)
 
 ___
 
@@ -79,7 +79,7 @@ Contains the results from running the code, if any, as described in [runCode](..
 
 Inherited from: EVMResult.execResult
 
-Defined in: [evm/evm.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/evm/evm.ts#L35)
+Defined in: [evm/evm.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/evm/evm.ts#L35)
 
 ___
 
@@ -89,7 +89,7 @@ ___
 
 The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
 
-Defined in: [runTx.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L101)
+Defined in: [runTx.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L101)
 
 ___
 
@@ -101,7 +101,7 @@ Amount of gas used by the transaction
 
 Inherited from: EVMResult.gasUsed
 
-Defined in: [evm/evm.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/evm/evm.ts#L27)
+Defined in: [evm/evm.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/evm/evm.ts#L27)
 
 ___
 
@@ -111,4 +111,4 @@ ___
 
 The tx receipt
 
-Defined in: [runTx.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runTx.ts#L96)
+Defined in: [runTx.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L96)

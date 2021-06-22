@@ -64,7 +64,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   if (options.dist) {
     VM = require('../dist').default
   } else {
-    VM = require('../lib').default
+    VM = require('../src').default
   }
 
   const vm = new VM({

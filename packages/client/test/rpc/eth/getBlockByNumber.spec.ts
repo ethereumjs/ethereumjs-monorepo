@@ -22,6 +22,7 @@ function createBlockchain() {
   }
   return {
     getBlock: () => block,
+    getLatestBlock: () => block,
   }
 }
 
@@ -33,8 +34,8 @@ tape(`${method}: call with valid arguments`, (t) => {
 
   const req = params(method, ['0x1', true])
   const expectRes = (res: any) => {
-    const msg = 'should return the correct number'
-    if (res.body.result.number !== 1) {
+    const msg = 'should return a valid block with a number prop'
+    if (typeof res.body.result.number !== 'number') {
       throw new Error(msg)
     } else {
       t.pass(msg)
@@ -49,8 +50,8 @@ tape(`${method}: call with false for second argument`, (t) => {
 
   const req = params(method, ['0x1', false])
   const expectRes = (res: any) => {
-    let msg = 'should return the correct number'
-    if (res.body.result.number !== 1) {
+    let msg = 'should return a valid block with a number prop'
+    if (typeof res.body.result.number !== 'number') {
       throw new Error(msg)
     } else {
       t.pass(msg)
@@ -65,6 +66,64 @@ tape(`${method}: call with false for second argument`, (t) => {
   baseRequest(t, server, req, 200, expectRes)
 })
 
+tape(`${method}: call with earliest param`, (t) => {
+  const manager = createManager(createClient({ blockchain: createBlockchain() }))
+  const server = startRPC(manager.getMethods())
+
+  const req = params(method, ['earliest', false])
+  const expectRes = (res: any) => {
+    const msg = 'should return the genesis block number'
+    if (typeof res.body.result.number !== 'number') {
+      throw new Error(msg)
+    } else {
+      t.pass(msg)
+    }
+  }
+  baseRequest(t, server, req, 200, expectRes)
+})
+
+tape(`${method}: call with latest param`, (t) => {
+  const manager = createManager(createClient({ blockchain: createBlockchain() }))
+  const server = startRPC(manager.getMethods())
+
+  const req = params(method, ['latest', false])
+  const expectRes = (res: any) => {
+    const msg = 'should return a block number'
+    if (typeof res.body.result.number !== 'number') {
+      throw new Error(msg)
+    } else {
+      t.pass(msg)
+    }
+  }
+  baseRequest(t, server, req, 200, expectRes)
+})
+
+tape(`${method}: call with unimplemented pending param`, (t) => {
+  const manager = createManager(createClient({ blockchain: createBlockchain() }))
+  const server = startRPC(manager.getMethods())
+
+  const req = params(method, ['pending', true])
+
+  const expectRes = (res: any) => {
+    const msg = 'should return error if block argument is "pending"'
+    if (res.body.result.message === '"pending" is not yet supported') {
+      t.pass(msg)
+    } else {
+      throw new Error(msg)
+    }
+  }
+  baseRequest(t, server, req, 200, expectRes)
+})
+
+tape(`${method}: call with non-string block number`, (t) => {
+  const manager = createManager(createClient({ blockchain: createBlockchain() }))
+  const server = startRPC(manager.getMethods())
+
+  const req = params(method, [10, true])
+  const expectRes = checkError(t, INVALID_PARAMS, 'invalid argument 0: argument must be a string')
+  baseRequest(t, server, req, 200, expectRes)
+})
+
 tape(`${method}: call with invalid block number`, (t) => {
   const manager = createManager(createClient({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
@@ -73,8 +132,9 @@ tape(`${method}: call with invalid block number`, (t) => {
   const expectRes = checkError(
     t,
     INVALID_PARAMS,
-    'invalid argument 0: hex string without 0x prefix'
+    'invalid argument 0: block option must be a valid 0x-prefixed block hash or hex integer, or "latest", "earliest" or "pending"'
   )
+
   baseRequest(t, server, req, 200, expectRes)
 })
 

@@ -1,8 +1,8 @@
 import tape from 'tape'
-import VM from '../../../lib'
+import VM from '../../../src'
 import Common from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { InterpreterStep } from '../../../lib/evm/interpreter'
+import { InterpreterStep } from '../../../src/evm/interpreter'
 import { Address } from 'ethereumjs-util'
 
 const pkey = Buffer.from('20'.repeat(32), 'hex')

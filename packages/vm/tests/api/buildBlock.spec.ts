@@ -4,7 +4,7 @@ import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import Blockchain from '@ethereumjs/blockchain'
-import VM from '../../lib'
+import VM from '../../src'
 import { setBalance } from './utils'
 
 tape('BlockBuilder', async (t) => {

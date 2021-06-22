@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { Address, BN, privateToAddress, setLengthLeft } from 'ethereumjs-util'
-import VM from '../../../lib'
+import VM from '../../../src'
 import Common from '@ethereumjs/common'
 import {
   AccessListEIP2930Transaction,

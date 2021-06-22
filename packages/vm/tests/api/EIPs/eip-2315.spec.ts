@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { BN } from 'ethereumjs-util'
-import VM from '../../../lib'
+import VM from '../../../src'
 import Common from '@ethereumjs/common'
 
 tape('Berlin: EIP 2315 tests', (t) => {

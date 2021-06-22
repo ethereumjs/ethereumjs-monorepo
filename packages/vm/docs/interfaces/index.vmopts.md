@@ -35,7 +35,7 @@ the very first call, which is intended for testing networks.
 
 Default: `false`
 
-Defined in: [index.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L93)
+Defined in: [index.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L93)
 
 ___
 
@@ -48,7 +48,7 @@ contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed.
 
 Default: `false` [ONLY set to `true` during debugging]
 
-Defined in: [index.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L100)
+Defined in: [index.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L100)
 
 ___
 
@@ -58,7 +58,7 @@ ___
 
 A [blockchain](https://github.com/ethereumjs/ethereumjs-monorepo/packages/blockchain) object for storing/retrieving blocks
 
-Defined in: [index.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L80)
+Defined in: [index.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L80)
 
 ___
 
@@ -100,7 +100,7 @@ Default setup if no `Common` instance is provided:
 - `hardfork`: `istanbul`
 - `eips`: `[]`
 
-Defined in: [index.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L67)
+Defined in: [index.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L67)
 
 ___
 
@@ -112,7 +112,7 @@ Select hardfork based upon block number. This automatically switches to the righ
 
 Default: `false`
 
-Defined in: [index.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L107)
+Defined in: [index.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L107)
 
 ___
 
@@ -124,7 +124,7 @@ An [merkle-patricia-tree](https://github.com/ethereumjs/ethereumjs-monorepo/tree
 
 **`deprecated`**
 
-Defined in: [index.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L76)
+Defined in: [index.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L76)
 
 ___
 
@@ -134,4 +134,4 @@ ___
 
 A [StateManager](state_interface.statemanager.md) instance to use as the state store (Beta API)
 
-Defined in: [index.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/index.ts#L71)
+Defined in: [index.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L71)

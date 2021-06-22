@@ -104,7 +104,7 @@ tape('reorg tests', (t) => {
         'hex'
       ) // from goerli block 1
       const { gasLimit } = genesisBlock.header
-      const base = { extraData, gasLimit }
+      const base = { extraData, gasLimit, difficulty: 1 }
 
       const nonce = CLIQUE_NONCE_AUTH
       const beneficiary1 = new Address(Buffer.alloc(20).fill(1))
@@ -153,6 +153,17 @@ tape('reorg tests', (t) => {
             number: 2,
             parentHash: block1_high.hash(),
             timestamp: block1_high.header.timestamp.addn(15),
+          },
+        },
+        { common }
+      )
+      const block3_high = Block.fromBlockData(
+        {
+          header: {
+            ...base,
+            number: 3,
+            parentHash: block2_high.hash(),
+            timestamp: block2_high.header.timestamp.addn(15),
             nonce,
             coinbase: beneficiary2,
           },
@@ -163,7 +174,7 @@ tape('reorg tests', (t) => {
       await blockchain.putBlocks([block1_low, block2_low])
       const head_low = await blockchain.getHead()
 
-      await blockchain.putBlocks([block1_high, block2_high])
+      await blockchain.putBlocks([block1_high, block2_high, block3_high])
       const head_high = await blockchain.getHead()
 
       t.ok(
@@ -171,7 +182,7 @@ tape('reorg tests', (t) => {
         'head on the low chain should equal the low block'
       )
       t.ok(
-        head_high.hash().equals(block2_high.hash()),
+        head_high.hash().equals(block3_high.hash()),
         'head on the high chain should equal the high block'
       )
 
@@ -206,18 +217,18 @@ tape('reorg tests', (t) => {
       signerStates = (blockchain as any)._cliqueLatestSignerStates
       t.ok(
         !!signerStates.find(
-          (s: any) => s[0].eqn(2) && s[1].find((a: Address) => a.equals(beneficiary2))
+          (s: any) => s[0].eqn(3) && s[1].find((a: Address) => a.equals(beneficiary2))
         ),
         'should find reorged signer state'
       )
 
       signerVotes = (blockchain as any)._cliqueLatestVotes
-      t.ok(signerVotes.length == 0, 'votes should be empty')
+      t.ok(signerVotes.length === 0, 'votes should be empty')
 
       blockSigners = (blockchain as any)._cliqueLatestBlockSigners
       t.ok(
         !!blockSigners.find(
-          (s: any) => s[0].eqn(2) && s[1].equals(block2_high.header.cliqueSigner())
+          (s: any) => s[0].eqn(3) && s[1].equals(block3_high.header.cliqueSigner())
         ),
         'should find reorged block signer'
       )

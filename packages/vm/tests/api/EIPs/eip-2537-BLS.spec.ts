@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { Address, BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import VM from '../../../lib'
+import VM from '../../../src'
 import { isRunningInKarma } from '../../util'
 
 const precompileAddressStart = 0x0a

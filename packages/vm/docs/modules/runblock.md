@@ -56,7 +56,7 @@ Re-exports: [PreByzantiumTxReceipt](../interfaces/types.prebyzantiumtxreceipt.md
 
 **Returns:** BN
 
-Defined in: [runBlock.ts:330](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L330)
+Defined in: [runBlock.ts:330](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L330)
 
 ___
 
@@ -75,7 +75,7 @@ Returns the encoded tx receipt.
 
 **Returns:** *Buffer*
 
-Defined in: [runBlock.ts:352](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L352)
+Defined in: [runBlock.ts:352](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L352)
 
 ___
 
@@ -97,7 +97,7 @@ Generates the tx receipt and returns { txReceipt, encodedReceipt, receiptLog }
 
 **Returns:** *Promise*<{ `encodedReceipt`: *Buffer* ; `receiptLog`: *string* ; `txReceipt`: [*PreByzantiumTxReceipt*](../interfaces/types.prebyzantiumtxreceipt.md) \| [*PostByzantiumTxReceipt*](../interfaces/types.postbyzantiumtxreceipt.md)  }\>
 
-Defined in: [runBlock.ts:367](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L367)
+Defined in: [runBlock.ts:367](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L367)
 
 ___
 
@@ -115,4 +115,4 @@ ___
 
 **Returns:** *Promise*<Account\>
 
-Defined in: [runBlock.ts:338](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/runBlock.ts#L338)
+Defined in: [runBlock.ts:338](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L338)

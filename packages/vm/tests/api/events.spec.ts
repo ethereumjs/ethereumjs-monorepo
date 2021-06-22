@@ -2,7 +2,7 @@ import tape from 'tape'
 import { toBuffer, bufferToHex } from 'ethereumjs-util'
 import { Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
-import VM from '../../lib/index'
+import VM from '../../src/index'
 
 tape('VM events', (t) => {
   const privKey = toBuffer('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07')
