@@ -122,9 +122,14 @@ export abstract class BaseTransaction<TransactionObject> {
    * tx type is unknown (e.g. when instantiated with
    * the tx factory).
    *
+   * Note that the tx type EIP 2718 is also included here,
+   * so you can also use this method to query if a tx
+   * is a typed tx or not.
+   *
    * EIPs supported by this method:
    *
    * - [1559](https://eips.ethereum.org/EIPS/eip-1559) Fee Market EIP
+   * - [2718](https://eips.ethereum.org/EIPS/eip-2718) Transaction Type EIP
    * - [2930](https://eips.ethereum.org/EIPS/eip-2930) Access Lists EIP
    */
   supportsEIP(eip: number) {

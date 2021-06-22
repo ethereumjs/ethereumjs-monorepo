@@ -42,7 +42,7 @@ tape('[BaseTransaction]', function (t) {
       txs: legacyTxs,
       fixtures: legacyFixtures,
       supportedEIPs: [],
-      notSupportedEIPs: [1559, 2930],
+      notSupportedEIPs: [1559, 2718, 2930],
     },
     {
       class: AccessListEIP2930Transaction,
@@ -51,7 +51,7 @@ tape('[BaseTransaction]', function (t) {
       values: [Buffer.from([1])].concat(Array(7).fill(zero)),
       txs: eip2930Txs,
       fixtures: eip2930Fixtures,
-      supportedEIPs: [2930],
+      supportedEIPs: [2718, 2930],
       notSupportedEIPs: [1559],
     },
     {
@@ -61,7 +61,7 @@ tape('[BaseTransaction]', function (t) {
       values: [Buffer.from([1])].concat(Array(8).fill(zero)),
       txs: eip1559Txs,
       fixtures: eip1559Fixtures,
-      supportedEIPs: [1559, 2930],
+      supportedEIPs: [1559, 2718, 2930],
       notSupportedEIPs: [],
     },
   ]
