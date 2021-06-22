@@ -87,10 +87,13 @@ export class LightSynchronizer extends Synchronizer {
       .on('fetched', (headers: BlockHeader[]) => {
         const first = new BN(headers[0].number)
         const hash = short(headers[0].hash())
+        const baseFeeAdd = this.config.chainCommon.gteHardfork('london')
+          ? `basefee=${headers[0].baseFeePerGas} `
+          : ''
         this.config.logger.info(
           `Imported headers count=${headers.length} number=${first.toString(
             10
-          )} hash=${hash} peers=${this.pool.size}`
+          )} hash=${hash} ${baseFeeAdd}peers=${this.pool.size}`
         )
       })
     await this.headerFetcher.fetch()

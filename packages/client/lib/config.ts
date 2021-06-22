@@ -120,6 +120,13 @@ export interface ConfigOptions {
   logger?: Logger
 
   /**
+   * Max items per block or header request
+   *
+   * Default: `50``
+   */
+  maxPerRequest?: number
+
+  /**
    * Number of peers needed before syncing
    *
    * Default: `2`
@@ -180,6 +187,7 @@ export class Config {
   public static readonly RPCPORT_DEFAULT = 8545
   public static readonly RPCADDR_DEFAULT = 'localhost'
   public static readonly LOGLEVEL_DEFAULT = 'info'
+  public static readonly MAXPERREQUEST_DEFAULT = 50
   public static readonly MINPEERS_DEFAULT = 1
   public static readonly MAXPEERS_DEFAULT = 25
   public static readonly DNSADDR_DEFAULT = '8.8.8.8'
@@ -199,6 +207,7 @@ export class Config {
   public readonly rpcport: number
   public readonly rpcaddr: string
   public readonly loglevel: string
+  public readonly maxPerRequest: number
   public readonly minPeers: number
   public readonly maxPeers: number
   public readonly dnsAddr: string
@@ -225,6 +234,7 @@ export class Config {
     this.rpcport = options.rpcport ?? Config.RPCPORT_DEFAULT
     this.rpcaddr = options.rpcaddr ?? Config.RPCADDR_DEFAULT
     this.loglevel = options.loglevel ?? Config.LOGLEVEL_DEFAULT
+    this.maxPerRequest = options.maxPerRequest ?? Config.MAXPERREQUEST_DEFAULT
     this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
     this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT
     this.dnsAddr = options.dnsAddr ?? Config.DNSADDR_DEFAULT
