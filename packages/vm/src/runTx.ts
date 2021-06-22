@@ -22,8 +22,6 @@ import type {
   BaseTxReceipt,
   PreByzantiumTxReceipt,
   PostByzantiumTxReceipt,
-  EIP2930Receipt,
-  EIP1559Receipt,
 } from './types'
 
 const debug = createDebugLogger('vm:tx')
@@ -151,7 +149,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
   }
 
   // Typed transaction specific setup tasks
-  if (opts.tx.transactionType !== 0 && this._common.isActivatedEIP(2718)) {
+  if (opts.tx.supportsEIP(2718) && this._common.isActivatedEIP(2718)) {
     // Is it an Access List transaction?
     if (!this._common.isActivatedEIP(2930)) {
       await state.revert()
@@ -163,7 +161,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
         'StateManager needs to implement generateAccessList() when running with reportAccessList option'
       )
     }
-    if (opts.tx.transactionType === 2 && !this._common.isActivatedEIP(1559)) {
+    if (opts.tx.supportsEIP(1559) && !this._common.isActivatedEIP(1559)) {
       await state.revert()
       throw new Error('Cannot run transaction: EIP 1559 is not activated.')
     }
@@ -523,14 +521,14 @@ export async function generateTxReceipt(
   if (this.DEBUG) {
     debug(
       `Generate tx receipt transactionType=${
-        'transactionType' in tx ? tx.transactionType : 'NaN'
+        tx.type
       } gasUsed=${cumulativeGasUsed.toString()} bitvector=${short(baseReceipt.bitvector)} (${
         baseReceipt.bitvector.length
       } bytes) logs=${baseReceipt.logs.length}`
     )
   }
 
-  if (!('transactionType' in tx) || tx.transactionType === 0) {
+  if (!tx.supportsEIP(2718)) {
     // Legacy transaction
     if (this._common.gteHardfork('byzantium')) {
       // Post-Byzantium
@@ -546,22 +544,12 @@ export async function generateTxReceipt(
         ...baseReceipt,
       } as PreByzantiumTxReceipt
     }
-  } else if ('transactionType' in tx && tx.transactionType === 1) {
-    // EIP2930 Transaction
-    receipt = {
-      status: txResult.execResult.exceptionError ? 0 : 1,
-      ...baseReceipt,
-    } as EIP2930Receipt
-  } else if ('transactionType' in tx && tx.transactionType === 2) {
-    // EIP1559 Transaction
-    receipt = {
-      status: txResult.execResult.exceptionError ? 0 : 1,
-      ...baseReceipt,
-    } as EIP1559Receipt
   } else {
-    throw new Error(
-      `Unsupported transaction type ${'transactionType' in tx ? tx.transactionType : 'NaN'}`
-    )
+    // Typed EIP-2718 Transaction
+    receipt = {
+      status: txResult.execResult.exceptionError ? 0 : 1,
+      ...baseReceipt,
+    } as PostByzantiumTxReceipt
   }
 
   return receipt
