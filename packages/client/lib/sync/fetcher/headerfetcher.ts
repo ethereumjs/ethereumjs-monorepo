@@ -54,12 +54,10 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
    */
   process(job: Job<JobTask, BlockHeaderResult, BlockHeader>, result: BlockHeaderResult) {
     this.flow.handleReply(job.peer!, result.bv.toNumber())
-    const headers = result.headers
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (headers && headers.length === job.task.count) {
+    const { headers } = result
+    if (headers.length === job.task.count) {
       return headers
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    } else if (headers && headers.length > 0 && headers.length < job.task.count) {
+    } else if (headers.length > 0 && headers.length < job.task.count) {
       // Adopt the start block/header number from the remaining jobs
       // if the number of the results provided is lower than the expected count
       const lengthDiff = job.task.count - headers.length
@@ -75,9 +73,8 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
         this.in.insert(job)
       }
       return headers
-    } else {
-      return
     }
+    return
   }
 
   /**

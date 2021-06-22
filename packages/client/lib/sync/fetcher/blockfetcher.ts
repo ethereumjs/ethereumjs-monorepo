@@ -49,11 +49,9 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
    * @return {*} results of processing job or undefined if job not finished
    */
   process(job: Job<JobTask, Block[], Block>, result: Block[]) {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (result && result.length === job.task.count) {
+    if (result.length === job.task.count) {
       return result
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    } else if (result && result.length > 0 && result.length < job.task.count) {
+    } else if (result.length > 0 && result.length < job.task.count) {
       // Adopt the start block/header number from the remaining jobs
       // if the number of the results provided is lower than the expected count
       const lengthDiff = job.task.count - result.length
@@ -69,9 +67,8 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
         this.in.insert(job)
       }
       return result
-    } else {
-      return
     }
+    return
   }
 
   /**
