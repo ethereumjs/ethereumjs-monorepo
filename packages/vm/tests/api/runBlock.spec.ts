@@ -462,7 +462,7 @@ tape('runBlock() -> tx types', async (t) => {
     //@ts-ignore overwrite transactions
     block.transactions = transactions
 
-    if (transactions.some((t) => t.type === 2)) {
+    if (transactions.some((t) => t.supportsEIP(1559))) {
       // @ts-ignore overwrite read-only property
       block.header.baseFeePerGas = new BN(7)
     }

@@ -490,7 +490,7 @@ export async function generateTxReceipt(
     txReceipt = {
       status: txRes.execResult.exceptionError ? 0 : 1,
       ...abstractTxReceipt,
-    } as EIP2930Receipt
+    } as PostByzantiumTxReceipt
     encodedReceipt = Buffer.concat([intToBuffer(tx.type), encode(Object.values(txReceipt))])
   }
   return {
