@@ -1,6 +1,7 @@
 import { TransactionFactory, TypedTransaction, TxData } from '@ethereumjs/tx'
 import { toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { Block, BlockOptions } from './index'
+import { numberToHex } from './helpers'
 
 import blockHeaderFromRpc from './header-from-rpc'
 
@@ -9,6 +10,10 @@ function normalizeTxParams(_txParams: any) {
 
   txParams.gasLimit = txParams.gasLimit === undefined ? txParams.gas : txParams.gasLimit
   txParams.data = txParams.data === undefined ? txParams.input : txParams.data
+
+  // check and convert gasPrice and value params
+  txParams.gasPrice = numberToHex(txParams.gasPrice)
+  txParams.value = numberToHex(txParams.value)
 
   // strict byte length checking
   txParams.to = txParams.to ? setLengthLeft(toBuffer(txParams.to), 20) : null
