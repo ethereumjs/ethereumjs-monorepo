@@ -47,6 +47,7 @@ tape('[BaseTransaction]', function (t) {
         Capabilities.EIP1559FeeMarket,
         Capabilities.EIP2718TypedTransaction,
         Capabilities.EIP2930AccessLists,
+        9999,
       ],
     },
     {
@@ -57,7 +58,7 @@ tape('[BaseTransaction]', function (t) {
       txs: eip2930Txs,
       fixtures: eip2930Fixtures,
       activeCapabilities: [Capabilities.EIP2718TypedTransaction, Capabilities.EIP2930AccessLists],
-      notActiveCapabilities: [Capabilities.EIP1559FeeMarket],
+      notActiveCapabilities: [Capabilities.EIP1559FeeMarket, 9999],
     },
     {
       class: FeeMarketEIP1559Transaction,
@@ -71,7 +72,7 @@ tape('[BaseTransaction]', function (t) {
         Capabilities.EIP2718TypedTransaction,
         Capabilities.EIP2930AccessLists,
       ],
-      notActiveCapabilities: [],
+      notActiveCapabilities: [9999],
     },
   ]
 
@@ -177,11 +178,8 @@ tape('[BaseTransaction]', function (t) {
         for (const notActiveCapability of txType.notActiveCapabilities) {
           st.notOk(
             tx.supports(notActiveCapability),
-            `${txType.name}: should reject non-active existing capabilities`
+            `${txType.name}: should reject non-active existing and not existing capabilities`
           )
-          st.throws(() => {
-            tx.supports(9999999)
-          }, `${txType.name}: should throw on non-active and non-existing (not allowed) capabilities`)
         }
       })
     }
