@@ -9,6 +9,7 @@ import {
   TxOptions,
   FeeMarketEIP1559Transaction,
   Transaction,
+  Capabilities,
 } from '@ethereumjs/tx'
 import { BlockHeader } from './header'
 import { BlockData, BlockOptions, JsonBlock, BlockBuffer, Blockchain } from './types'
@@ -160,7 +161,9 @@ export class Block {
   raw(): BlockBuffer {
     return [
       this.header.raw(),
-      this.transactions.map((tx) => (tx.supportsEIP(2718) ? tx.serialize() : tx.raw())) as Buffer[],
+      this.transactions.map((tx) =>
+        tx.supports(Capabilities.EIP2718TypedTransaction) ? tx.serialize() : tx.raw()
+      ) as Buffer[],
       this.uncleHeaders.map((uh) => uh.raw()),
     ]
   }
@@ -230,7 +233,7 @@ export class Block {
     this.transactions.forEach((tx, i) => {
       const errs = <string[]>tx.validate(true)
       if (this._common.isActivatedEIP(1559)) {
-        if (tx.supportsEIP(1559)) {
+        if (tx.supports(Capabilities.EIP1559FeeMarket)) {
           tx = tx as FeeMarketEIP1559Transaction
           if (tx.maxFeePerGas.lt(this.header.baseFeePerGas!)) {
             errs.push('tx unable to pay base fee (EIP-1559 tx)')

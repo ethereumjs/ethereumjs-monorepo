@@ -5,6 +5,30 @@ import { default as AccessListEIP2930Transaction } from './eip2930Transaction'
 import { default as FeeMarketEIP1559Transaction } from './eip1559Transaction'
 
 /**
+ * Can be used in conjunction with the `supports()` function
+ * to query on tx capabilities
+ */
+export enum Capabilities {
+  /**
+   * Active EIP-1559 gas fee market mechansim
+   * See: [1559](https://eips.ethereum.org/EIPS/eip-1559) Fee Market EIP
+   */
+  EIP1559FeeMarket = 1559,
+
+  /**
+   * Tx is a typed transaction as defined in EIP-2718
+   * See: [2718](https://eips.ethereum.org/EIPS/eip-2718) Transaction Type EIP
+   */
+  EIP2718TypedTransaction = 2718,
+
+  /**
+   * Tx supports access list generation as defined in EIP-2930
+   * See: [2930](https://eips.ethereum.org/EIPS/eip-2930) Access Lists EIP
+   */
+  EIP2930AccessLists = 2930,
+}
+
+/**
  * The options for initializing a Transaction.
  */
 export interface TxOptions {

@@ -5,6 +5,7 @@ import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
   N_DIV_2,
+  Capabilities,
 } from '../src'
 import { TxsJsonEntry } from './types'
 import { BaseTransaction } from '../src/baseTransaction'
@@ -41,8 +42,12 @@ tape('[BaseTransaction]', function (t) {
       values: Array(6).fill(zero),
       txs: legacyTxs,
       fixtures: legacyFixtures,
-      supportedEIPs: [],
-      notSupportedEIPs: [1559, 2718, 2930],
+      activeCapabilities: [],
+      notActiveCapabilities: [
+        Capabilities.EIP1559FeeMarket,
+        Capabilities.EIP2718TypedTransaction,
+        Capabilities.EIP2930AccessLists,
+      ],
     },
     {
       class: AccessListEIP2930Transaction,
@@ -51,8 +56,8 @@ tape('[BaseTransaction]', function (t) {
       values: [Buffer.from([1])].concat(Array(7).fill(zero)),
       txs: eip2930Txs,
       fixtures: eip2930Fixtures,
-      supportedEIPs: [2718, 2930],
-      notSupportedEIPs: [1559],
+      activeCapabilities: [Capabilities.EIP2718TypedTransaction, Capabilities.EIP2930AccessLists],
+      notActiveCapabilities: [Capabilities.EIP1559FeeMarket],
     },
     {
       class: FeeMarketEIP1559Transaction,
@@ -61,8 +66,12 @@ tape('[BaseTransaction]', function (t) {
       values: [Buffer.from([1])].concat(Array(8).fill(zero)),
       txs: eip1559Txs,
       fixtures: eip1559Fixtures,
-      supportedEIPs: [1559, 2718, 2930],
-      notSupportedEIPs: [],
+      activeCapabilities: [
+        Capabilities.EIP1559FeeMarket,
+        Capabilities.EIP2718TypedTransaction,
+        Capabilities.EIP2930AccessLists,
+      ],
+      notActiveCapabilities: [],
     },
   ]
 
@@ -156,20 +165,23 @@ tape('[BaseTransaction]', function (t) {
     st.end()
   })
 
-  t.test('supportsEIP()', function (st) {
+  t.test('supports()', function (st) {
     for (const txType of txTypes) {
       txType.txs.forEach(function (tx: any) {
-        for (const supportedEIP of txType.supportedEIPs) {
-          st.ok(tx.supportsEIP(supportedEIP), `${txType.name}: should recognize all supported EIPs`)
+        for (const activeCapability of txType.activeCapabilities) {
+          st.ok(
+            tx.supports(activeCapability),
+            `${txType.name}: should recognize all supported capabilities`
+          )
         }
-        for (const notSupportedEIP of txType.notSupportedEIPs) {
+        for (const notActiveCapability of txType.notActiveCapabilities) {
           st.notOk(
-            tx.supportsEIP(notSupportedEIP),
-            `${txType.name}: should reject unsupported existing EIPs`
+            tx.supports(notActiveCapability),
+            `${txType.name}: should reject non-active existing capabilities`
           )
           st.throws(() => {
-            tx.supportsEIP(9999999)
-          }, `${txType.name}: should throw on unsupported non-existing (not allowed) EIPs`)
+            tx.supports(9999999)
+          }, `${txType.name}: should throw on non-active and non-existing (not allowed) capabilities`)
         }
       })
     }

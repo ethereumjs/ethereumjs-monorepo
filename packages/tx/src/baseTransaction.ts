@@ -18,6 +18,7 @@ import {
   FeeMarketEIP1559ValuesArray,
   FeeMarketEIP1559TxData,
   TxValuesArray,
+  Capabilities,
 } from './types'
 
 /**
@@ -47,7 +48,7 @@ export abstract class BaseTransaction<TransactionObject> {
    * e.g. 1559 (fee market) and 2930 (access lists)
    * for FeeMarketEIP1559Transaction objects
    */
-  protected supportedEIPs: number[] = []
+  protected activeCapabilities: number[] = []
 
   /**
    * The default chain the tx falls back to if no Common
@@ -114,30 +115,27 @@ export abstract class BaseTransaction<TransactionObject> {
   }
 
   /**
-   * Checks if a tx supports a tx type defining EIP,
-   * e.g. 1559 (fee market) and 2930 (access lists)
-   * for FeeMarketEIP1559Transaction objects.
+   * Checks if a tx type defining capability is active
+   * on a tx, for example the EIP-1559 fee market mechanism
+   * or the EIP-2930 access list feature.
    *
-   * This can be useful for feature checks if the
+   * Note that this is different from the tx type itself,
+   * so EIP-2930 access lists can very well be active
+   * on an EIP-1559 tx for example.
+   *
+   * This method can be useful for feature checks if the
    * tx type is unknown (e.g. when instantiated with
    * the tx factory).
    *
-   * Note that the tx type EIP 2718 is also included here,
-   * so you can also use this method to query if a tx
-   * is a typed tx or not.
-   *
-   * EIPs supported by this method:
-   *
-   * - [1559](https://eips.ethereum.org/EIPS/eip-1559) Fee Market EIP
-   * - [2718](https://eips.ethereum.org/EIPS/eip-2718) Transaction Type EIP
-   * - [2930](https://eips.ethereum.org/EIPS/eip-2930) Access Lists EIP
+   * See `Capabilites` in the `types` module for a reference
+   * on all supported capabilities.
    */
-  supportsEIP(eip: number) {
+  supports(capability: Capabilities) {
     const allowedInputs = [1559, 2718, 2930]
-    if (!allowedInputs.includes(eip)) {
-      throw new Error(`Method not allowed to be called with EIP ${eip}`)
+    if (!allowedInputs.includes(capability)) {
+      throw new Error(`Method not allowed to be called with input ${capability}`)
     }
-    return this.supportedEIPs.includes(eip)
+    return this.activeCapabilities.includes(capability)
   }
 
   /**
