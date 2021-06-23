@@ -131,7 +131,7 @@ export abstract class BaseTransaction<TransactionObject> {
    * on all supported capabilities.
    */
   supports(capability: Capabilities) {
-    const allowedInputs = [1559, 2718, 2930]
+    const allowedInputs = [155, 1559, 2718, 2930]
     if (!allowedInputs.includes(capability)) {
       throw new Error(`Method not allowed to be called with input ${capability}`)
     }

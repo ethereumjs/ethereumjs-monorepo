@@ -10,7 +10,13 @@ import { default as FeeMarketEIP1559Transaction } from './eip1559Transaction'
  */
 export enum Capabilities {
   /**
-   * Active EIP-1559 gas fee market mechansim
+   * Tx supports EIP-155 replay protection
+   * See: [155](https://eips.ethereum.org/EIPS/eip-155) Replay Attack Protection EIP
+   */
+  EIP155ReplayProtection = 155,
+
+  /**
+   * Tx supports EIP-1559 gas fee market mechansim
    * See: [1559](https://eips.ethereum.org/EIPS/eip-1559) Fee Market EIP
    */
   EIP1559FeeMarket = 1559,
