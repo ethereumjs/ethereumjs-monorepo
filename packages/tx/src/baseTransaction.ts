@@ -272,9 +272,34 @@ export abstract class BaseTransaction<TransactionObject> {
     if (privateKey.length !== 32) {
       throw new Error('Private key must be 32 bytes in length.')
     }
+
+    // Hack for the constellation that we have got a legacy tx after spuriousDragon with a non-EIP155 conforming signature
+    // and want to recreate a signature (where EIP155 should be applied)
+    // Leaving this hack lets the legacy.spec.ts -> sign(), verifySignature() test fail
+    // 2021-06-23
+    let hackApplied = false
+    if (
+      this.type === 0 &&
+      this.common.gteHardfork('spuriousDragon') &&
+      !this.supports(Capabilities.EIP155ReplayProtection)
+    ) {
+      this.activeCapabilities.push(Capabilities.EIP155ReplayProtection)
+      hackApplied = true
+    }
+
     const msgHash = this.getMessageToSign(true)
     const { v, r, s } = ecsign(msgHash, privateKey)
-    return this._processSignature(v, r, s)
+    const tx = this._processSignature(v, r, s)
+
+    // Hack part 2
+    if (hackApplied) {
+      const index = this.activeCapabilities.indexOf(Capabilities.EIP155ReplayProtection)
+      if (index > -1) {
+        this.activeCapabilities.splice(index, 1)
+      }
+    }
+
+    return tx
   }
 
   /**

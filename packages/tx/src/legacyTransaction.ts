@@ -119,9 +119,9 @@ export default class Transaction extends BaseTransaction<Transaction> {
         // hash nine elements, with v replaced by CHAIN_ID, r = 0 and s = 0.
         const v = this.v!
         const chainIdDoubled = this.common.chainIdBN().muln(2)
-  
+
         // v and chain ID meet EIP-155 conditions
-        if(v.eq(chainIdDoubled.addn(35)) || v.eq(chainIdDoubled.addn(36))) {
+        if (v.eq(chainIdDoubled.addn(35)) || v.eq(chainIdDoubled.addn(36))) {
           this.activeCapabilities.push(Capabilities.EIP155ReplayProtection)
         }
       }
