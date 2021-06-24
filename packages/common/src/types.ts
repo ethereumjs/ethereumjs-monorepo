@@ -67,3 +67,27 @@ export interface BootstrapNode {
   location: string
   comment: string
 }
+
+export enum Chains {
+  Mainnet = 1,
+  Ropsten = 3,
+  Rinkeby = 4,
+  Kovan = 42,
+  Goerli = 5,
+  Calaveras = 123,
+}
+
+export enum Hardforks {
+  Chainstart = 'chainstart',
+  Homestead = 'homestead',
+  Dao = 'dao',
+  TangerineWhistle = 'tangerineWhistle',
+  SpuriousDragon = 'spuriousDragon',
+  Byzantium = 'byzantium',
+  Constantinople = 'constantinople',
+  Petersburg = 'petersburg',
+  Istanbul = 'istanbul',
+  MuirGlacier = 'muirGlacier',
+  Berlin = 'berlin',
+  London = 'london',
+}
