@@ -94,26 +94,58 @@ export const toRpcSig = function (v: BNLike, r: Buffer, s: Buffer, chainId?: BNL
 }
 
 /**
+ * Convert signature parameters into the format of Compact Signature Representation (EIP-2098).
+ * @returns Signature
+ */
+export const toCompactSig = function (v: BNLike, r: Buffer, s: Buffer, chainId?: BNLike): string {
+  const recovery = calculateSigRecovery(v, chainId)
+  if (!isValidSigRecovery(recovery)) {
+    throw new Error('Invalid signature v value')
+  }
+
+  const vn = toType(v, TypeOutput.Number)
+  let ss = s
+  if ((vn > 28 && vn % 2 === 1) || vn === 1 || vn === 28) {
+    ss = Buffer.from(s)
+    ss[0] |= 0x80
+  }
+
+  return bufferToHex(Buffer.concat([setLengthLeft(r, 32), setLengthLeft(ss, 32)]))
+}
+
+/**
  * Convert signature format of the `eth_sign` RPC method to signature parameters
  * NOTE: all because of a bug in geth: https://github.com/ethereum/go-ethereum/issues/2053
  */
 export const fromRpcSig = function (sig: string): ECDSASignature {
   const buf: Buffer = toBuffer(sig)
 
-  if (buf.length < 65) {
+  let r: Buffer
+  let s: Buffer
+  let v: number
+  if (buf.length >= 65) {
+    r = buf.slice(0, 32)
+    s = buf.slice(32, 64)
+    v = bufferToInt(buf.slice(64))
+  } else if (buf.length === 64) {
+    // Compact Signature Representation (https://eips.ethereum.org/EIPS/eip-2098)
+    r = buf.slice(0, 32)
+    s = buf.slice(32, 64)
+    v = bufferToInt(buf.slice(32, 33)) >> 7
+    s[0] &= 0x7f
+  } else {
     throw new Error('Invalid signature length')
   }
 
-  let v = bufferToInt(buf.slice(64))
   // support both versions of `eth_sign` responses
   if (v < 27) {
     v += 27
   }
 
   return {
-    v: v,
-    r: buf.slice(0, 32),
-    s: buf.slice(32, 64),
+    v,
+    r,
+    s,
   }
 }
 

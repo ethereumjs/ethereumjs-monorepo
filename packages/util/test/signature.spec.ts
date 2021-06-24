@@ -8,6 +8,7 @@ import {
   isValidSignature,
   fromRpcSig,
   toRpcSig,
+  toCompactSig,
   intToBuffer,
 } from '../src'
 
@@ -377,6 +378,30 @@ tape('message sig', function (t) {
     st.equal(toRpcSig(27, r, s), sig)
     st.deepEqual(fromRpcSig(sig), {
       v: 27,
+      r,
+      s,
+    })
+    st.end()
+  })
+
+  t.test('should support compact signature representation (EIP-2098)', function (st) {
+    const sig =
+      '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
+    st.equal(toCompactSig(27, r, s), sig)
+    st.deepEqual(fromRpcSig(sig), {
+      v: 27,
+      r,
+      s,
+    })
+    st.end()
+  })
+
+  t.test('should support compact signature representation 2 (EIP-2098)', function (st) {
+    const sig =
+      '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9929ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
+    st.equal(toCompactSig(28, r, s), sig)
+    st.deepEqual(fromRpcSig(sig), {
+      v: 28,
       r,
       s,
     })
