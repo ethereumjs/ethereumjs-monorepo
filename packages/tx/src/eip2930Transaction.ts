@@ -177,6 +177,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     if (!this.common.isActivatedEIP(2930)) {
       throw new Error('EIP-2930 not enabled on Common')
     }
+    this.activeCapabilities = this.activeCapabilities.concat([2718, 2930])
 
     // Populate the access list fields
     const accessListData = AccessLists.getAccessListData(accessList ?? [])

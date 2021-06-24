@@ -8,7 +8,7 @@ import {
   toBuffer,
   unpadBuffer,
 } from 'ethereumjs-util'
-import { TxOptions, TxData, JsonTx, N_DIV_2, TxValuesArray } from './types'
+import { TxOptions, TxData, JsonTx, N_DIV_2, TxValuesArray, Capabilities } from './types'
 import { BaseTransaction } from './baseTransaction'
 import Common from '@ethereumjs/common'
 
@@ -108,6 +108,25 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
     this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
 
+    if (this.common.gteHardfork('spuriousDragon')) {
+      if (!this.isSigned()) {
+        this.activeCapabilities.push(Capabilities.EIP155ReplayProtection)
+      } else {
+        // EIP155 spec:
+        // If block.number >= 2,675,000 and v = CHAIN_ID * 2 + 35 or v = CHAIN_ID * 2 + 36
+        // then when computing the hash of a transaction for purposes of signing or recovering
+        // instead of hashing only the first six elements (i.e. nonce, gasprice, startgas, to, value, data)
+        // hash nine elements, with v replaced by CHAIN_ID, r = 0 and s = 0.
+        const v = this.v!
+        const chainIdDoubled = this.common.chainIdBN().muln(2)
+
+        // v and chain ID meet EIP-155 conditions
+        if (v.eq(chainIdDoubled.addn(35)) || v.eq(chainIdDoubled.addn(36))) {
+          this.activeCapabilities.push(Capabilities.EIP155ReplayProtection)
+        }
+      }
+    }
+
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -150,11 +169,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
     return rlp.encode(this.raw())
   }
 
-  private _unsignedTxImplementsEIP155() {
-    return this.common.gteHardfork('spuriousDragon')
-  }
-
-  private _getMessageToSign(withEIP155: boolean) {
+  private _getMessageToSign() {
     const values = [
       bnToUnpaddedBuffer(this.nonce),
       bnToUnpaddedBuffer(this.gasPrice),
@@ -164,7 +179,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
       this.data,
     ]
 
-    if (withEIP155) {
+    if (this.supports(Capabilities.EIP155ReplayProtection)) {
       values.push(toBuffer(this.common.chainIdBN()))
       values.push(unpadBuffer(toBuffer(0)))
       values.push(unpadBuffer(toBuffer(0)))
@@ -191,7 +206,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
   getMessageToSign(hashMessage: false): Buffer[]
   getMessageToSign(hashMessage?: true): Buffer
   getMessageToSign(hashMessage = true) {
-    const message = this._getMessageToSign(this._unsignedTxImplementsEIP155())
+    const message = this._getMessageToSign()
     if (hashMessage) {
       return rlphash(message)
     } else {
@@ -220,8 +235,10 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * Computes a sha3-256 hash which can be used to verify the signature
    */
   getMessageToVerifySignature() {
-    const withEIP155 = this._signedTxImplementsEIP155()
-    const message = this._getMessageToSign(withEIP155)
+    if (!this.isSigned()) {
+      throw Error('This transaction is not signed')
+    }
+    const message = this._getMessageToSign()
     return rlphash(message)
   }
 
@@ -246,7 +263,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
         v!,
         bnToUnpaddedBuffer(r!),
         bnToUnpaddedBuffer(s!),
-        this._signedTxImplementsEIP155() ? this.common.chainIdBN() : undefined
+        this.supports(Capabilities.EIP155ReplayProtection) ? this.common.chainIdBN() : undefined
       )
     } catch (e) {
       throw new Error('Invalid Signature')
@@ -258,7 +275,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
    */
   protected _processSignature(v: number, r: Buffer, s: Buffer) {
     const vBN = new BN(v)
-    if (this._unsignedTxImplementsEIP155()) {
+    if (this.supports(Capabilities.EIP155ReplayProtection)) {
       vBN.iadd(this.common.chainIdBN().muln(2).addn(8))
     }
 
@@ -338,11 +355,20 @@ export default class Transaction extends BaseTransaction<Transaction> {
     return this._getCommon(common, chainIdBN)
   }
 
+  /**
+   * @deprecated if you have called this internal method please use `tx.supports(Capabilities.EIP155ReplayProtection)` instead
+   */
+  private _unsignedTxImplementsEIP155() {
+    return this.common.gteHardfork('spuriousDragon')
+  }
+
+  /**
+   * @deprecated if you have called this internal method please use `tx.supports(Capabilities.EIP155ReplayProtection)` instead
+   */
   private _signedTxImplementsEIP155() {
     if (!this.isSigned()) {
       throw Error('This transaction is not signed')
     }
-
     const onEIP155BlockOrLater = this.common.gteHardfork('spuriousDragon')
 
     // EIP155 spec:

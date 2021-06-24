@@ -5,6 +5,7 @@ import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
   N_DIV_2,
+  Capabilities,
 } from '../src'
 import { TxsJsonEntry } from './types'
 import { BaseTransaction } from '../src/baseTransaction'
@@ -41,6 +42,13 @@ tape('[BaseTransaction]', function (t) {
       values: Array(6).fill(zero),
       txs: legacyTxs,
       fixtures: legacyFixtures,
+      activeCapabilities: [],
+      notActiveCapabilities: [
+        Capabilities.EIP1559FeeMarket,
+        Capabilities.EIP2718TypedTransaction,
+        Capabilities.EIP2930AccessLists,
+        9999,
+      ],
     },
     {
       class: AccessListEIP2930Transaction,
@@ -49,6 +57,8 @@ tape('[BaseTransaction]', function (t) {
       values: [Buffer.from([1])].concat(Array(7).fill(zero)),
       txs: eip2930Txs,
       fixtures: eip2930Fixtures,
+      activeCapabilities: [Capabilities.EIP2718TypedTransaction, Capabilities.EIP2930AccessLists],
+      notActiveCapabilities: [Capabilities.EIP1559FeeMarket, 9999],
     },
     {
       class: FeeMarketEIP1559Transaction,
@@ -57,6 +67,12 @@ tape('[BaseTransaction]', function (t) {
       values: [Buffer.from([1])].concat(Array(8).fill(zero)),
       txs: eip1559Txs,
       fixtures: eip1559Fixtures,
+      activeCapabilities: [
+        Capabilities.EIP1559FeeMarket,
+        Capabilities.EIP2718TypedTransaction,
+        Capabilities.EIP2930AccessLists,
+      ],
+      notActiveCapabilities: [9999],
     },
   ]
 
@@ -145,6 +161,26 @@ tape('[BaseTransaction]', function (t) {
           txType.class.fromSerializedTx(tx.serialize(), { common }),
           `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`
         )
+      })
+    }
+    st.end()
+  })
+
+  t.test('supports()', function (st) {
+    for (const txType of txTypes) {
+      txType.txs.forEach(function (tx: any) {
+        for (const activeCapability of txType.activeCapabilities) {
+          st.ok(
+            tx.supports(activeCapability),
+            `${txType.name}: should recognize all supported capabilities`
+          )
+        }
+        for (const notActiveCapability of txType.notActiveCapabilities) {
+          st.notOk(
+            tx.supports(notActiveCapability),
+            `${txType.name}: should reject non-active existing and not existing capabilities`
+          )
+        }
       })
     }
     st.end()

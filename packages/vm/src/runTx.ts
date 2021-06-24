@@ -8,6 +8,7 @@ import {
   FeeMarketEIP1559Transaction,
   Transaction,
   TypedTransaction,
+  Capabilities,
 } from '@ethereumjs/tx'
 import VM from './index'
 import Bloom from './bloom'
@@ -22,8 +23,6 @@ import type {
   BaseTxReceipt,
   PreByzantiumTxReceipt,
   PostByzantiumTxReceipt,
-  EIP2930Receipt,
-  EIP1559Receipt,
 } from './types'
 
 const debug = createDebugLogger('vm:tx')
@@ -151,7 +150,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
   }
 
   // Typed transaction specific setup tasks
-  if (opts.tx.transactionType !== 0 && this._common.isActivatedEIP(2718)) {
+  if (opts.tx.supports(Capabilities.EIP2718TypedTransaction) && this._common.isActivatedEIP(2718)) {
     // Is it an Access List transaction?
     if (!this._common.isActivatedEIP(2930)) {
       await state.revert()
@@ -163,7 +162,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
         'StateManager needs to implement generateAccessList() when running with reportAccessList option'
       )
     }
-    if (opts.tx.transactionType === 2 && !this._common.isActivatedEIP(1559)) {
+    if (opts.tx.supports(Capabilities.EIP1559FeeMarket) && !this._common.isActivatedEIP(1559)) {
       await state.revert()
       throw new Error('Cannot run transaction: EIP 1559 is not activated.')
     }
@@ -281,11 +280,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
         `sender doesn't have enough funds to send tx. The upfront cost is: ${cost} and the sender's account only has: ${balance}`
       )
     }
-    if (tx instanceof FeeMarketEIP1559Transaction) {
+    if (tx.supports(Capabilities.EIP1559FeeMarket)) {
       // EIP-1559 spec:
       // The signer must be able to afford the transaction
       // `assert balance >= gas_limit * max_fee_per_gas`
-      const cost = tx.gasLimit.mul(tx.maxFeePerGas)
+      const cost = tx.gasLimit.mul((tx as FeeMarketEIP1559Transaction).maxFeePerGas)
       if (balance.lt(cost)) {
         throw new Error(
           `sender doesn't have enough funds to send tx. The max cost is: ${cost} and the sender's account only has: ${balance}`
@@ -303,9 +302,12 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   let gasPrice
   let inclusionFeePerGas
   // EIP-1559 tx
-  if (tx instanceof FeeMarketEIP1559Transaction) {
+  if (tx.supports(Capabilities.EIP1559FeeMarket)) {
     const baseFee = block.header.baseFeePerGas!
-    inclusionFeePerGas = BN.min(tx.maxPriorityFeePerGas, tx.maxFeePerGas.sub(baseFee))
+    inclusionFeePerGas = BN.min(
+      (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas,
+      (tx as FeeMarketEIP1559Transaction).maxFeePerGas.sub(baseFee)
+    )
     gasPrice = inclusionFeePerGas.add(baseFee)
   } else {
     // Have to cast as legacy tx since EIP1559 tx does not have gas price
@@ -523,14 +525,14 @@ export async function generateTxReceipt(
   if (this.DEBUG) {
     debug(
       `Generate tx receipt transactionType=${
-        'transactionType' in tx ? tx.transactionType : 'NaN'
+        tx.type
       } gasUsed=${cumulativeGasUsed.toString()} bitvector=${short(baseReceipt.bitvector)} (${
         baseReceipt.bitvector.length
       } bytes) logs=${baseReceipt.logs.length}`
     )
   }
 
-  if (!('transactionType' in tx) || tx.transactionType === 0) {
+  if (!tx.supports(Capabilities.EIP2718TypedTransaction)) {
     // Legacy transaction
     if (this._common.gteHardfork('byzantium')) {
       // Post-Byzantium
@@ -546,22 +548,12 @@ export async function generateTxReceipt(
         ...baseReceipt,
       } as PreByzantiumTxReceipt
     }
-  } else if ('transactionType' in tx && tx.transactionType === 1) {
-    // EIP2930 Transaction
-    receipt = {
-      status: txResult.execResult.exceptionError ? 0 : 1,
-      ...baseReceipt,
-    } as EIP2930Receipt
-  } else if ('transactionType' in tx && tx.transactionType === 2) {
-    // EIP1559 Transaction
-    receipt = {
-      status: txResult.execResult.exceptionError ? 0 : 1,
-      ...baseReceipt,
-    } as EIP1559Receipt
   } else {
-    throw new Error(
-      `Unsupported transaction type ${'transactionType' in tx ? tx.transactionType : 'NaN'}`
-    )
+    // Typed EIP-2718 Transaction
+    receipt = {
+      status: txResult.execResult.exceptionError ? 0 : 1,
+      ...baseReceipt,
+    } as PostByzantiumTxReceipt
   }
 
   return receipt
