@@ -51,10 +51,10 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
   /**
    * Instantiate a transaction from the serialized tx.
-   * (alias of `fromSerializedTx()`)
+   * (alias of {@link Transaction.fromSerializedTx})
    *
    * @deprecated this constructor alias is deprecated and will be removed
-   * in favor of the `fromSerializedTx()` constructor
+   * in favor of the {@link Transaction.fromSerializedTx} constructor
    */
   public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     return Transaction.fromSerializedTx(serialized, opts)
@@ -140,7 +140,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
    *
    * For an unsigned legacy tx this method returns the the empty Buffer values
    * for the signature parameters `v`, `r` and `s`. For an EIP-155 compliant
-   * representation have a look at the `getMessageToSign()` method.
+   * representation have a look at {@link Transaction.getMessageToSign}.
    */
   raw(): TxValuesArray {
     return [
@@ -163,7 +163,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
    *
    * For an unsigned legacy tx this method uses the empty Buffer values
    * for the signature parameters `v`, `r` and `s` for encoding. For an
-   * EIP-155 compliant representation use the `getMessageToSign()` method.
+   * EIP-155 compliant representation use {@link Transaction.getMessageToSign}.
    */
   serialize(): Buffer {
     return rlp.encode(this.raw())
@@ -225,7 +225,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * Computes a sha3-256 hash of the serialized tx.
    *
    * This method can only be used for signed txs (it throws otherwise).
-   * Use `getMessageToSign()` to get a tx hash for the purpose of signing.
+   * Use {@link Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   hash(): Buffer {
     return rlphash(this.raw())

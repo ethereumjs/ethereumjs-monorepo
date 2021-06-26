@@ -124,7 +124,7 @@ export class Block {
   }
 
   /**
-   * Alias for Block.fromBlockData() with initWithGenesisHeader set to true.
+   * Alias for {@link Block.fromBlockData} with {@link BlockOptions.initWithGenesisHeader} set to true.
    */
   public static genesis(blockData: BlockData = {}, opts?: BlockOptions) {
     opts = { ...opts, initWithGenesisHeader: true }

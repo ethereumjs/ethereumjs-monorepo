@@ -62,7 +62,7 @@ export interface BlockchainInterface {
  */
 export interface BlockchainOptions {
   /**
-   * Specify the chain and hardfork by passing a Common instance.
+   * Specify the chain and hardfork by passing a {@link Common} instance.
    *
    * If not provided this defaults to chain `mainnet` and hardfork `chainstart`
    *
@@ -72,7 +72,7 @@ export interface BlockchainOptions {
   /**
    * Set the HF to the fork determined by the head block and update on head updates
    *
-   * Default: `false` (HF is set to whatever default HF is set by the Common instance)
+   * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
    */
   hardforkByHeadBlockNumber?: boolean
 
@@ -132,7 +132,7 @@ export default class Blockchain implements BlockchainInterface {
   private _headBlockHash?: Buffer // the hash of the current head block
   private _headHeaderHash?: Buffer // the hash of the current head header
   // A Map which stores the head of each key (for instance the "vm" key) which is
-  // updated along an `iterator()` method run and can be used to (re)run
+  // updated along a {@link Blockchain.iterator} method run and can be used to (re)run
   // non-verified blocks (for instance in the VM).
   private _heads: { [key: string]: Buffer }
 
@@ -185,7 +185,7 @@ export default class Blockchain implements BlockchainInterface {
   private _cliqueLatestVotes: CliqueLatestVotes = []
 
   /**
-   * List of signers for the last consecutive `this.cliqueSignerLimit()` blocks.
+   * List of signers for the last consecutive {@link Blockchain.cliqueSignerLimit} blocks.
    * Kept as a snapshot for quickly checking for "recently signed" error.
    * Format: [ [BLOCK_NUMBER, SIGNER_ADDRESS], ...]
    *
@@ -197,7 +197,7 @@ export default class Blockchain implements BlockchainInterface {
    * Safe creation of a new Blockchain object awaiting the initialization function,
    * encouraged method to use when creating a blockchain object.
    *
-   * @param opts Constructor options, see [[BlockchainOptions]]
+   * @param opts Constructor options, see {@link BlockchainOptions}
    */
 
   public static async create(opts: BlockchainOptions = {}) {
@@ -210,10 +210,10 @@ export default class Blockchain implements BlockchainInterface {
 
   /**
    * Creates a blockchain from a list of block objects,
-   * objects must be readable by the `Block.fromBlockData()` method
+   * objects must be readable by {@link Block.fromBlockData}
    *
    * @param blockData List of block objects
-   * @param opts Constructor options, see [[BlockchainOptions]]
+   * @param opts Constructor options, see {@link BlockchainOptions}
    */
   public static async fromBlocksData(blocksData: BlockData[], opts: BlockchainOptions = {}) {
     const blockchain = await Blockchain.create(opts)
@@ -232,10 +232,10 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @deprecated - The direct usage of this constructor is discouraged since
    * non-finalized async initialization might lead to side effects. Please
-   * use the async `Blockchain.create()` constructor instead (same API).
+   * use the async {@link Blockchain.create} constructor instead (same API).
    *
    * @param opts - An object with the options that this constructor takes. See
-   * [[BlockchainOptions]].
+   * {@link BlockchainOptions}.
    */
   constructor(opts: BlockchainOptions = {}) {
     // Throw on chain or hardfork options removed in latest major release to
@@ -439,7 +439,7 @@ export default class Blockchain implements BlockchainInterface {
 
   /**
    * Checks if signer was recently signed.
-   * Returns true if signed too recently: more than once per `this.cliqueSignerLimit()` consecutive blocks.
+   * Returns true if signed too recently: more than once per {@link Blockchain.cliqueSignerLimit} consecutive blocks.
    * @param header BlockHeader
    * @hidden
    */
@@ -667,7 +667,7 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * Update snapshot of latest clique block signers.
    * Used for checking for 'recently signed' error.
-   * Length trimmed to `this.cliqueSignerLimit()`.
+   * Length trimmed to {@link Blockchain.cliqueSignerLimit}.
    * @param header BlockHeader
    * @hidden
    */
@@ -725,11 +725,10 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * Returns the specified iterator head.
    *
-   * This function replaces the old `getHead()` method. Note that
+   * This function replaces the old {@link Blockchain.getHead} method. Note that
    * the function deviates from the old behavior and returns the
    * genesis hash instead of the current head block if an iterator
-   * has not been run. This matches the behavior of the `iterator()`
-   * method.
+   * has not been run. This matches the behavior of {@link Blockchain.iterator}.
    *
    * @param name - Optional name of the iterator head (default: 'vm')
    */
@@ -751,10 +750,11 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @param name - Optional name of the iterator head (default: 'vm')
    *
-   * @deprecated use `getIteratorHead()` instead. Note that `getIteratorHead()`
-   * doesn't return the `headHeader` but the genesis hash as an initial
-   * iterator head value (now matching the behavior of the `iterator()`
-   * method on a first run)
+   * @deprecated use {@link Blockchain.getIteratorHead} instead.
+   * Note that {@link Blockchain.getIteratorHead} doesn't return
+   * the `headHeader` but the genesis hash as an initial iterator
+   * head value (now matching the behavior of {@link Blockchain.iterator}
+   * on a first run)
    */
   async getHead(name = 'vm'): Promise<Block> {
     return await this.initAndLock<Block>(async () => {
@@ -1229,7 +1229,7 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * Iterates through blocks starting at the specified iterator head and calls
    * the onBlock function on each block. The current location of an iterator
-   * head can be retrieved using the `getHead()` method.
+   * head can be retrieved using {@link Blockchain.getIteratorHead}.
    *
    * @param name - Name of the state root head
    * @param onBlock - Function called on each block with params (block, reorg)
@@ -1299,7 +1299,7 @@ export default class Blockchain implements BlockchainInterface {
    * @param tag - The tag to save the headHash to
    * @param headHash - The head hash to save
    *
-   * @deprecated use `setIteratorHead()` instead
+   * @deprecated use {@link Blockchain.setIteratorHead()} instead
    */
   async setHead(tag: string, headHash: Buffer) {
     await this.initAndLock<void>(async () => {

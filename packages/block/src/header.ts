@@ -166,7 +166,7 @@ export class BlockHeader {
   }
 
   /**
-   * Alias for Header.fromHeaderData() with initWithGenesisHeader set to true.
+   * Alias for {@link BlockHeader.fromHeaderData} with {@link BlockOptions.initWithGenesisHeader} set to true.
    */
   public static genesis(headerData: HeaderData = {}, opts?: BlockOptions) {
     opts = { ...opts, initWithGenesisHeader: true }
@@ -177,7 +177,7 @@ export class BlockHeader {
    * This constructor takes the values, validates them, assigns them and freezes the object.
    *
    * @deprecated - Use the public static factory methods to assist in creating a Header object from
-   * varying data types. For a default empty header, use `BlockHeader.fromHeaderData()`.
+   * varying data types. For a default empty header, use {@link BlockHeader.fromHeaderData}.
    *
    */
   constructor(
@@ -747,7 +747,7 @@ export class BlockHeader {
    *
    * This function throws if not called on an epoch
    * transition block and should therefore be used
-   * in conjunction with `cliqueIsEpochTransition()`
+   * in conjunction with {@link BlockHeader.cliqueIsEpochTransition}
    */
   cliqueEpochTransitionSigners(): Address[] {
     this._requireClique('cliqueEpochTransitionSigners')

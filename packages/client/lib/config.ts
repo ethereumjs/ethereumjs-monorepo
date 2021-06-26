@@ -10,8 +10,8 @@ const level = require('level')
 
 export interface ConfigOptions {
   /**
-   * Specify the chain by providing a common instance,
-   * common instance will not be modified by client
+   * Specify the chain by providing a {@link Common} instance,
+   * the common instance will not be modified by client
    *
    * Default: 'mainnet' Common
    */
@@ -45,7 +45,7 @@ export interface ConfigOptions {
 
   /**
    * Private key for the client.
-   * Use return value of `await Config.getClientKey(datadir, common)`
+   * Use return value of {@link Config.getClientKey}.
    * If left blank, a random key will be generated and used.
    */
   key?: Buffer

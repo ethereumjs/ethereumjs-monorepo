@@ -113,12 +113,12 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
   /**
    * Instantiate a transaction from the serialized tx.
-   * (alias of `fromSerializedTx()`)
+   * (alias of {@link AccessListEIP2930Transaction.fromSerializedTx})
    *
    * Note: This means that the Buffer should start with 0x01.
    *
    * @deprecated this constructor alias is deprecated and will be removed
-   * in favor of the `fromSerializedTx()` constructor
+   * in favor of the {@link AccessListEIP2930Transaction.fromSerializedTx} constructor
    */
   public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     return AccessListEIP2930Transaction.fromSerializedTx(serialized, opts)
@@ -228,7 +228,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
    * signatureYParity (v), signatureR (r), signatureS (s)]`
    *
-   * Use `serialize()` to add to block data for `Block.fromValuesArray()`.
+   * Use {@link AccessListEIP2930Transaction.serialize} to add to block data for {@link Block.fromValuesArray}.
    */
   raw(): AccessListEIP2930ValuesArray {
     return [
@@ -288,7 +288,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * Computes a sha3-256 hash of the serialized tx.
    *
    * This method can only be used for signed txs (it throws otherwise).
-   * Use `getMessageToSign()` to get a tx hash for the purpose of signing.
+   * Use {@link AccessListEIP2930Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   public hash(): Buffer {
     if (!this.isSigned()) {

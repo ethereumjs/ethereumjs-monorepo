@@ -234,7 +234,7 @@ export default class Interpreter {
      * @property {Number} depth the current number of calls deep the contract is
      * @property {Buffer} memory the memory of the VM as a `buffer`
      * @property {BN} memoryWordCount current size of memory in words
-     * @property {StateManager} stateManager a [[StateManager]] instance
+     * @property {StateManager} stateManager a {@link StateManager} instance
      * @property {Address} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
      */
     return this._vm._emit('step', eventObj)

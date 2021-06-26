@@ -113,12 +113,12 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
 
   /**
    * Instantiate a transaction from the serialized tx.
-   * (alias of `fromSerializedTx()`)
+   * (alias of {@link FeeMarketEIP1559Transaction.fromSerializedTx})
    *
    * Note: This means that the Buffer should start with 0x01.
    *
    * @deprecated this constructor alias is deprecated and will be removed
-   * in favor of the `fromSerializedTx()` constructor
+   * in favor of the {@link FeeMarketEIP1559Transaction.fromSerializedTx} constructor
    */
   public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     return FeeMarketEIP1559Transaction.fromSerializedTx(serialized, opts)
@@ -257,7 +257,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
    * accessList, signatureYParity, signatureR, signatureS]`
    *
-   * Use `serialize()` to add to block data for `Block.fromValuesArray()`.
+   * Use {@link FeeMarketEIP1559Transaction.serialize} to add to block data for {@link Block.fromValuesArray}.
    */
   raw(): FeeMarketEIP1559ValuesArray {
     return [
@@ -320,7 +320,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    * Computes a sha3-256 hash of the serialized tx.
    *
    * This method can only be used for signed txs (it throws otherwise).
-   * Use `getMessageToSign()` to get a tx hash for the purpose of signing.
+   * Use {@link FeeMarketEIP1559Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   public hash(): Buffer {
     if (!this.isSigned()) {
