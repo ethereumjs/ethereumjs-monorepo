@@ -42,7 +42,16 @@ export interface PostByzantiumTxReceipt extends BaseTxReceipt {
   status: 0 | 1
 }
 
-// EIP2930Receipt, which has the same fields as PostByzantiumTxReceipt
+/**
+ * EIP2930Receipt, which has the same fields as PostByzantiumTxReceipt
+ *
+ * @deprecated Please use PostByzantiumTxReceipt instead
+ */
 export interface EIP2930Receipt extends PostByzantiumTxReceipt {}
-// EIP1559Receipt, which has the same fields as PostByzantiumTxReceipt
+
+/**
+ * EIP1559Receipt, which has the same fields as PostByzantiumTxReceipt
+ *
+ * @deprecated Please use PostByzantiumTxReceipt instead
+ */
 export interface EIP1559Receipt extends PostByzantiumTxReceipt {}
