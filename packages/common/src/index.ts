@@ -497,7 +497,10 @@ export default class Common extends EventEmitter {
    * @param opts Hardfork options (onlyActive unused)
    * @returns True if hardfork is active on the chain
    */
-  hardforkIsActiveOnChain(hardfork?: string | Hardforks | null, opts: hardforkOptions = {}): boolean {
+  hardforkIsActiveOnChain(
+    hardfork?: string | Hardforks | null,
+    opts: hardforkOptions = {}
+  ): boolean {
     const onlySupported = opts.onlySupported ?? false
     hardfork = this._chooseHardfork(hardfork, onlySupported)
     for (const hf of this.hardforks()) {
