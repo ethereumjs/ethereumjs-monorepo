@@ -188,6 +188,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     if (!this.common.isActivatedEIP(1559)) {
       throw new Error('EIP-1559 not enabled on Common')
     }
+    this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930])
 
     // Populate the access list fields
     const accessListData = AccessLists.getAccessListData(accessList ?? [])
