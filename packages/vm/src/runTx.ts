@@ -63,8 +63,8 @@ export interface RunTxOpts {
    * Option works with all tx types. EIP-2929 needs to
    * be activated (included in `berlin` HF).
    *
-   * Note: if this option is used with a custom `StateManager` implementation
-   * the `generateAccessList()` method must be implemented.
+   * Note: if this option is used with a custom {@link StateManager} implementation
+   * {@link StateManager.generateAccessList} must be implemented.
    */
   reportAccessList?: boolean
 

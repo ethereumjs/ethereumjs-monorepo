@@ -6,18 +6,18 @@ import { BlockHeader } from './header'
 
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified
- * using a Common object, or `chain` and `hardfork`. Defaults to mainnet without specifying a
+ * using a {@link Common} object, or `chain` and `hardfork`. Defaults to mainnet without specifying a
  * hardfork.
  */
 export interface BlockOptions {
   /**
-   * A Common object defining the chain and the hardfork a block/block header belongs to.
+   * A {@link Common} object defining the chain and the hardfork a block/block header belongs to.
    *
    * Object will be internally copied so that tx behavior don't incidentally
    * change on future HF changes.
    *
-   * Default: `Common` object set to `mainnet` and the HF currently defined as the default
-   * hardfork in the `Common` class.
+   * Default: {@link Common} object set to `mainnet` and the HF currently defined as the default
+   * hardfork in the {@link Common} class.
    *
    * Current default hardfork: `istanbul`
    */
@@ -25,7 +25,7 @@ export interface BlockOptions {
   /**
    * Determine the HF by the block number
    *
-   * Default: `false` (HF is set to whatever default HF is set by the Common instance)
+   * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
    */
   hardforkByBlockNumber?: boolean
   /**
@@ -33,7 +33,7 @@ export interface BlockOptions {
    *
    * If set to `true` all other header data is ignored.
    *
-   * If a Common instance is passed the instance need to be set to `chainstart` as a HF,
+   * If a {@link Common} instance is passed the instance need to be set to `chainstart` as a HF,
    * otherwise usage of this option will throw
    *
    * Default: `false`
@@ -41,7 +41,7 @@ export interface BlockOptions {
   initWithGenesisHeader?: boolean
 
   /**
-   * If a preceding `BlockHeader` (usually the parent header) is given the preceding
+   * If a preceding {@link BlockHeader} (usually the parent header) is given the preceding
    * header will be used to calculate the difficulty for this block and the calculated
    * difficulty takes precedence over a provided static `difficulty` value.
    */

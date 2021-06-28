@@ -5,7 +5,7 @@ import { default as AccessListEIP2930Transaction } from './eip2930Transaction'
 import { default as FeeMarketEIP1559Transaction } from './eip1559Transaction'
 
 /**
- * Can be used in conjunction with the `supports()` function
+ * Can be used in conjunction with {@link Transaction.supports}
  * to query on tx capabilities
  */
 export enum Capabilities {
@@ -35,16 +35,16 @@ export enum Capabilities {
 }
 
 /**
- * The options for initializing a Transaction.
+ * The options for initializing a {@link Transaction}.
  */
 export interface TxOptions {
   /**
-   * A Common object defining the chain and hardfork for the transaction.
+   * A {@link Common} object defining the chain and hardfork for the transaction.
    *
    * Object will be internally copied so that tx behavior don't incidentally
    * change on future HF changes.
    *
-   * Default: `Common` object set to `mainnet` and the default hardfork as defined in the `Common` class.
+   * Default: {@link Common} object set to `mainnet` and the default hardfork as defined in the {@link Common} class.
    *
    * Current default hardfork: `istanbul`
    */
@@ -99,7 +99,7 @@ export function isAccessList(input: AccessListBuffer | AccessList): input is Acc
  * Encompassing type for all transaction types.
  *
  * Note that this also includes legacy txs which are
- * referenced as `Transaction` for compatibility reasons.
+ * referenced as {@link Transaction} for compatibility reasons.
  */
 export type TypedTransaction =
   | Transaction
@@ -107,7 +107,7 @@ export type TypedTransaction =
   | FeeMarketEIP1559Transaction
 
 /**
- * Legacy Transaction Data
+ * Legacy {@link Transaction} Data
  */
 export type TxData = {
   /**
@@ -163,7 +163,7 @@ export type TxData = {
 }
 
 /**
- * Access list EIP2930 tx data.
+ * {@link AccessListEIP2930Transaction} data.
  */
 export interface AccessListEIP2930TxData extends TxData {
   /**
@@ -178,7 +178,7 @@ export interface AccessListEIP2930TxData extends TxData {
 }
 
 /**
- * Fee marked EIP1559 tx data.
+ * {@link FeeMarketEIP1559Transaction} data.
  */
 export interface FeeMarketEIP1559TxData extends AccessListEIP2930TxData {
   /**
@@ -196,12 +196,12 @@ export interface FeeMarketEIP1559TxData extends AccessListEIP2930TxData {
 }
 
 /**
- * Buffer values array for a legacy transaction
+ * Buffer values array for a legacy {@link Transaction}
  */
 export type TxValuesArray = Buffer[]
 
 /**
- * Buffer values array for an EIP2930 transaction
+ * Buffer values array for an {@link AccessListEIP2930Transaction}
  */
 export type AccessListEIP2930ValuesArray = [
   Buffer,
@@ -218,7 +218,7 @@ export type AccessListEIP2930ValuesArray = [
 ]
 
 /**
- * Buffer values array for an EIP1559 transaction
+ * Buffer values array for a {@link FeeMarketEIP1559Transaction}
  */
 export type FeeMarketEIP1559ValuesArray = [
   Buffer,

@@ -26,11 +26,11 @@ if (!isBrowser()) {
 }
 
 /**
- * Options for instantiating a [[VM]].
+ * Options for instantiating a {@link VM}.
  */
 export interface VMOpts {
   /**
-   * Use a [common](https://github.com/ethereumjs/ethereumjs-monorepo/packages/common) instance
+   * Use a {@link Common} instance
    * if you want to change the chain setup.
    *
    * ### Possible Values
@@ -66,16 +66,16 @@ export interface VMOpts {
    */
   common?: Common
   /**
-   * A [[StateManager]] instance to use as the state store (Beta API)
+   * A {@link StateManager} instance to use as the state store (Beta API)
    */
   stateManager?: StateManager
   /**
-   * An [merkle-patricia-tree](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie) instance for the state tree (ignored if stateManager is passed)
+   * A {@link SecureTrie} instance for the state tree (ignored if stateManager is passed)
    * @deprecated
    */
   state?: any // TODO
   /**
-   * A [blockchain](https://github.com/ethereumjs/ethereumjs-monorepo/packages/blockchain) object for storing/retrieving blocks
+   * A {@link Blockchain} object for storing/retrieving blocks
    */
   blockchain?: Blockchain
   /**
@@ -166,7 +166,7 @@ export default class VM extends AsyncEventEmitter {
   }
 
   /**
-   * Instantiates a new [[VM]] Object.
+   * Instantiates a new {@link VM} Object.
    * @param opts
    */
   constructor(opts: VMOpts = {}) {
@@ -293,7 +293,7 @@ export default class VM extends AsyncEventEmitter {
    *
    * This method modifies the state.
    *
-   * @param blockchain -  An [@ethereumjs/blockchain](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/blockchain) object to process
+   * @param blockchain -  A {@link Blockchain} object to process
    */
   async runBlockchain(blockchain?: Blockchain, maxBlocks?: number): Promise<void | number> {
     await this.init()
@@ -358,14 +358,14 @@ export default class VM extends AsyncEventEmitter {
    * by adding one transaction at a time.
    *
    * Creates a checkpoint on the StateManager and modifies the state
-   * as transactions are run. The checkpoint is committed on `build()`
-   * or discarded with `revert()`.
+   * as transactions are run. The checkpoint is committed on {@link BlockBuilder.build}
+   * or discarded with {@link BlockBuilder.revert}.
    *
    * @param {BuildBlockOpts} opts
-   * @returns An instance of [[BlockBuilder]] with methods:
-   * - `addTransaction(tx): RunTxResult`
-   * - `build(sealOpts): Block`
-   * - `revert()`
+   * @returns An instance of {@link BlockBuilder} with methods:
+   * - {@link BlockBuilder.addTransaction}
+   * - {@link BlockBuilder.build}
+   * - {@link BlockBuilder.revert}
    */
   async buildBlock(opts: BuildBlockOpts): Promise<BlockBuilder> {
     await this.init()
@@ -381,7 +381,7 @@ export default class VM extends AsyncEventEmitter {
   }
 
   /**
-   * Returns a copy of the [[VM]] instance.
+   * Returns a copy of the {@link VM} instance.
    */
   copy(): VM {
     return new VM({
