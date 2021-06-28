@@ -27,6 +27,13 @@ export enum CustomChains {
    * - [Documentation](https://developer.offchainlabs.com/docs/public_testnet)
    */
   ArbitrumRinkebyTestnet = 'arbitrum-rinkeby-testnet',
+
+  /**
+   * xDai EVM sidechain with a native stable token
+   *
+   * - [Documentation](https://www.xdaichain.com/)
+   */
+  xDaiChain = 'x-dai-chain',
 }
 
 interface BaseOpts {
@@ -171,6 +178,13 @@ export default class Common extends EventEmitter {
           name: CustomChains.ArbitrumRinkebyTestnet,
           chainId: 421611,
           networkId: 421611,
+        })
+      }
+      if (chainParamsOrName === CustomChains.xDaiChain) {
+        return Common.custom({
+          name: CustomChains.xDaiChain,
+          chainId: 100,
+          networkId: 100,
         })
       }
 
