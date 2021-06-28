@@ -74,16 +74,30 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     st.equal(common.chainName(), 'custom-chain', 'should set default custom chain name')
 
     common = Common.custom(CustomChains.PolygonMumbai)
-    st.equal(
-      common.chainName(),
-      CustomChains.PolygonMumbai,
-      'supported chain -> should initialize with enum name'
-    )
     st.deepEqual(
       common.networkIdBN(),
       new BN(80001),
       'supported chain -> should initialize with correct chain ID'
     )
+    for (const customChain of Object.values(CustomChains)) {
+      common = Common.custom(customChain)
+      st.equal(
+        common.chainName(),
+        customChain,
+        `supported chain -> should initialize with enum name (${customChain})`
+      )
+    }
+
+    try {
+      //@ts-ignore TypeScript complains, nevertheless do the test for JS behavior
+      Common.custom('this-chain-is-not-supported')
+      st.fail('test should fail')
+    } catch (e) {
+      st.ok(
+        e.message.includes('not supported'),
+        'supported chain -> should throw if chain name is not supported'
+      )
+    }
 
     st.end()
   })

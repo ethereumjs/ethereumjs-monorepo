@@ -110,7 +110,7 @@ export default class Common extends EventEmitter {
   private _customChains: Chain[]
 
   /**
-   * Creates a Common object for a custom chain, based on a standard one. It uses all the 
+   * Creates a Common object for a custom chain, based on a standard one. It uses all the
    * params from  except the ones overridden in .
    * Constructor for creating a custom chain based on a standard one.
    *
