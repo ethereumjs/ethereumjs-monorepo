@@ -24,15 +24,15 @@ const debug = createDebugLogger('vm:state')
 type AddressHex = string
 
 /**
- * Options for constructing a [[StateManager]].
+ * Options for constructing a {@link StateManager}.
  */
 export interface DefaultStateManagerOpts {
   /**
-   * Parameters of the chain ([`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common))
+   * Parameters of the chain {@link Common}
    */
   common?: Common
   /**
-   * An [`merkle-patricia-tree`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie) instance
+   * A {@link SecureTrie} instance
    */
   trie?: Trie
 }
@@ -284,7 +284,7 @@ export default class DefaultStateManager implements StateManager {
   }
 
   /**
-   * Clears the original storage cache. Refer to [[getOriginalContractStorage]]
+   * Clears the original storage cache. Refer to {@link StateManager.getOriginalContractStorage}
    * for more explanation.
    */
   _clearOriginalStorageCache(): void {
@@ -292,8 +292,8 @@ export default class DefaultStateManager implements StateManager {
   }
 
   /**
-   * Clears the original storage cache. Refer to [[getOriginalContractStorage]]
-   * for more explanation. Alias of the internal _clearOriginalStorageCache
+   * Clears the original storage cache. Refer to {@link StateManager.getOriginalContractStorage}
+   * for more explanation. Alias of the internal {@link StateManager._clearOriginalStorageCache}
    */
   clearOriginalStorageCache(): void {
     this._clearOriginalStorageCache()
@@ -689,8 +689,8 @@ export default class DefaultStateManager implements StateManager {
   /**
    * Generates an EIP-2930 access list
    *
-   * Note: this method is not yet part of the `StateManager` interface.
-   * If not implemented, `runTx()` is not allowed to be used with the
+   * Note: this method is not yet part of the {@link StateManager} interface.
+   * If not implemented, {@link VM.runTx} is not allowed to be used with the
    * `reportAccessList` option and will instead throw.
    *
    * Note: there is an edge case on accessList generation where an

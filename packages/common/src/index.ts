@@ -7,7 +7,7 @@ import { EIPs } from './eips'
 import { Chain } from './types'
 
 /**
- * Options for instantiating a [[Common]] instance.
+ * Options for instantiating a {@link Common} instance.
  */
 export interface CommonOpts {
   /**
@@ -68,8 +68,8 @@ export default class Common extends EventEmitter {
   private _customChains: Chain[]
 
   /**
-   * Creates a Common object for a custom chain, based on a standard one. It uses all the [[Chain]]
-   * params from [[baseChain]] except the ones overridden in [[customChainParams]].
+   * Creates a Common object for a custom chain, based on a standard one. It uses all the {@link Chain}
+   * params from {@link baseChain} except the ones overridden in {@link customChainParams}.
    *
    * @param baseChain The name (`mainnet`) or id (`1`) of a standard chain used to base the custom
    * chain params on.
@@ -799,7 +799,7 @@ export default class Common extends EventEmitter {
   }
 
   /**
-   * Returns a deep copy of this common instance.
+   * Returns a deep copy of this {@link Common} instance.
    */
   copy(): Common {
     return Object.assign(Object.create(Object.getPrototypeOf(this)), this)

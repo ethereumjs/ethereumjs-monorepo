@@ -19,7 +19,7 @@ import Message from './evm/message'
 import { default as EVM, ExecResult } from './evm/evm'
 
 /**
- * Options for the [[runCode]] method.
+ * Options for the {@link runCode} method.
  */
 export interface RunCodeOpts {
   /**

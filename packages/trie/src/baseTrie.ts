@@ -80,7 +80,7 @@ export class Trie {
 
   /**
    * This method is deprecated.
-   * Please use `Trie.root(value)` instead.
+   * Please use {@link Trie.root} instead.
    *
    * @param value
    * @deprecated
@@ -650,7 +650,7 @@ export class Trie {
   }
 
   /**
-   * prove has been renamed to [[Trie.createProof]].
+   * prove has been renamed to {@link Trie.createProof}.
    * @deprecated
    * @param trie
    * @param key
@@ -660,7 +660,7 @@ export class Trie {
   }
 
   /**
-   * Creates a proof from a trie and key that can be verified using [[Trie.verifyProof]].
+   * Creates a proof from a trie and key that can be verified using {@link Trie.verifyProof}.
    * @param trie
    * @param key
    */

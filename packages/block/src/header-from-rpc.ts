@@ -1,5 +1,6 @@
 import { BlockHeader } from './header'
 import { BlockOptions } from './types'
+import { numberToHex } from './helpers'
 
 /**
  * Creates a new block header object from Ethereum JSON RPC.
@@ -36,7 +37,7 @@ export default function blockHeaderFromRpc(blockParams: any, options?: BlockOpti
       transactionsTrie: transactionsRoot,
       receiptTrie: receiptRoot || receiptsRoot,
       bloom: logsBloom,
-      difficulty,
+      difficulty: numberToHex(difficulty),
       number,
       gasLimit,
       gasUsed,
