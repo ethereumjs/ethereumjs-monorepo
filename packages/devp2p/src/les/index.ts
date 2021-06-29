@@ -32,6 +32,8 @@ export class LES extends EventEmitter {
   }
 
   static les2 = { name: 'les', version: 2, length: 21, constructor: LES }
+  static les3 = { name: 'les', version: 3, length: 23, constructor: LES }
+  static les4 = { name: 'les', version: 4, length: 23, constructor: LES }
 
   _handleMessage(code: LES.MESSAGE_CODES, data: any) {
     const payload = rlp.decode(data)
@@ -83,6 +85,11 @@ export class LES extends EventEmitter {
         if (this._version >= LES.les2.version) break
         return
 
+      case LES.MESSAGE_CODES.STOP_MSG:
+      case LES.MESSAGE_CODES.RESUME_MSG:
+        if (this._version >= LES.les3.version) break
+        return
+
       default:
         return
     }
@@ -128,6 +135,12 @@ export class LES extends EventEmitter {
     if (status['flowControl/BL']) sStr += `, flowControl/BL set`
     if (status['flowControl/MRR']) sStr += `, flowControl/MRR set`
     if (status['flowControl/MRC']) sStr += `, flowControl/MRC set`
+    if (status['forkID'])
+      sStr += `, forkID: [crc32: ${status['forkID'][0].toString('hex')}, nextFork: ${buffer2int(
+        status['forkID'][1]
+      )}]`
+    if (status['recentTxLookup'])
+      sStr += `, recentTxLookup: ${buffer2int(status['recentTxLookup'])}`
     sStr += `]`
     return sStr
   }
@@ -136,9 +149,8 @@ export class LES extends EventEmitter {
     if (this._status !== null) return
 
     if (!status.announceType) {
-      status['announceType'] = DEFAULT_ANNOUNCE_TYPE
+      status['announceType'] = int2buffer(DEFAULT_ANNOUNCE_TYPE)
     }
-    status['announceType'] = int2buffer(status['announceType'] as number)
     status['protocolVersion'] = int2buffer(this._version)
     status['networkId'] = this._peer._common.chainIdBN().toArrayLike(Buffer)
 
@@ -198,6 +210,11 @@ export class LES extends EventEmitter {
         if (this._version >= LES.les2.version) break
         throw new Error(`Code ${code} not allowed with version ${this._version}`)
 
+      case LES.MESSAGE_CODES.STOP_MSG:
+      case LES.MESSAGE_CODES.RESUME_MSG:
+        if (this._version >= LES.les3.version) break
+        throw new Error(`Code ${code} not allowed with version ${this._version}`)
+
       default:
         throw new Error(`Unknown code ${code}`)
     }
@@ -212,8 +229,9 @@ export class LES extends EventEmitter {
 
 export namespace LES {
   export interface Status {
-    [key: string]: Buffer | number
+    [key: string]: any
     protocolVersion: Buffer
+    networkId: Buffer
     headTd: Buffer
     headHash: Buffer
     headNum: Buffer
@@ -225,7 +243,9 @@ export namespace LES {
     'flowControl/BL': Buffer
     'flowControl/MRR': Buffer
     'flowControl/MRC': Buffer
-    announceType: Buffer | number
+    announceType: Buffer
+    forkID: [Buffer, Buffer]
+    recentTxLookup: Buffer
   }
 
   export enum MESSAGE_CODES {
@@ -254,5 +274,9 @@ export namespace LES {
     SEND_TX_V2 = 0x13,
     GET_TX_STATUS = 0x14,
     TX_STATUS = 0x15,
+
+    // LES/3
+    STOP_MSG = 0x16,
+    RESUME_MSG = 0x17,
   }
 }
