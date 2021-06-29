@@ -67,6 +67,9 @@ export default class Common extends EventEmitter {
   private _eips: number[] = []
   private _customChains: Chain[]
 
+  public static Chains = Chains
+  public static Hardforks = Hardforks
+
   /**
    * Creates a Common object for a custom chain, based on a standard one. It uses all the [[Chain]]
    * params from [[baseChain]] except the ones overridden in [[customChainParams]].
