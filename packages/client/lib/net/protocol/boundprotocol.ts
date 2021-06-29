@@ -184,7 +184,7 @@ export class BoundProtocol extends EventEmitter {
       ;(this as any)[camel] = async (args: any[]) =>
         this.request(name, args).catch((error: Error) => {
           this.emit('error', error)
-          return []
+          return undefined
         })
     }
   }

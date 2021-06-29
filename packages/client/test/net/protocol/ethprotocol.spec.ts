@@ -38,7 +38,7 @@ tape('[EthProtocol]', (t) => {
       get: () => {
         return {
           td: new BN(100),
-          latest: { hash: () => '0xaa' },
+          latest: { hash: () => '0xaa', header: { number: new BN(10) } },
         }
       },
     })
@@ -54,6 +54,7 @@ tape('[EthProtocol]', (t) => {
         td: Buffer.from('64', 'hex'),
         bestHash: '0xaa',
         genesisHash: '0xbb',
+        latestBlock: Buffer.from('0A', 'hex'),
       },
       'encode status'
     )

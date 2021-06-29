@@ -128,7 +128,7 @@ export class LesProtocol extends Protocol {
    * @type {number[]}
    */
   get versions(): number[] {
-    return [2, 1]
+    return [4, 3, 2]
   }
 
   /**
@@ -163,7 +163,7 @@ export class LesProtocol extends Protocol {
         serveHeaders: 1,
         serveChainSince: 0,
         serveStateSince: 0,
-        txRelay: 1,
+        // txRelay: 1, TODO: uncomment with client tx pool functionality
         'flowControl/BL': new BN(this.flow.bl).toArrayLike(Buffer),
         'flowControl/MRR': new BN(this.flow.mrr).toArrayLike(Buffer),
         'flowControl/MRC': Object.entries(this.flow.mrc).map(([name, { base, req }]) => {
@@ -173,12 +173,21 @@ export class LesProtocol extends Protocol {
       }
     }
 
+    const forkHash = this.config.chainCommon.forkHash(this.config.chainCommon.hardfork())
+    const nextFork = this.config.chainCommon.nextHardforkBlockBN(this.config.chainCommon.hardfork())
+    const forkID = [
+      Buffer.from(forkHash.slice(2), 'hex'),
+      nextFork ? nextFork.toArrayLike(Buffer) : Buffer.from([]),
+    ]
+
     return {
       networkId: this.chain.networkId.toArrayLike(Buffer),
       headTd: this.chain.headers.td.toArrayLike(Buffer),
       headHash: this.chain.headers.latest?.hash(),
       headNum: this.chain.headers.latest?.number.toArrayLike(Buffer),
       genesisHash: this.chain.genesis.hash,
+      forkID,
+      recentTxLookup: new BN(1).toArrayLike(Buffer),
       ...serveOptions,
     }
   }
@@ -207,6 +216,8 @@ export class LesProtocol extends Protocol {
       headHash: status.headHash,
       headNum: new BN(status.headNum),
       genesisHash: status.genesisHash,
+      forkID: status.forkID,
+      recentTxLookup: status.recentTxLookup,
       serveHeaders: this.isServer,
       serveChainSince: status.serveChainSince ?? 0,
       serveStateSince: status.serveStateSince ?? 0,
