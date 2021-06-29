@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+# 5.3.1 - 2021-06-25
+
+### PoA Reorg Fix
+
+This release includes a fix for blockchain's reorg logic when handling PoA chains. PR [#1253](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1253) fixes this to choose the fork with the larger total difficulty and rebuilds the internal clique snapshots accordingly.
+
 ## 5.3.0 - 2021-05-26
 
 ### London HF Support

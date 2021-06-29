@@ -6,15 +6,37 @@ import { hardforks as HARDFORK_CHANGES } from './hardforks'
 import { EIPs } from './eips'
 import { Chain, Chains, Hardforks } from './types'
 
-/**
- * Options for instantiating a [[Common]] instance.
- */
-export interface CommonOpts {
+export enum CustomChains {
   /**
-   * Chain name ('mainnet') or id (1), either from a chain directly supported
-   * or a custom chain passed in via `customChains`
+   * Polygon (Matic) Mainnet
+   *
+   * - [Documentation](https://docs.matic.network/docs/develop/network-details/network)
    */
-  chain: string | number | Chains | BN | object
+  PolygonMainnet = 'polygon-mainnet',
+
+  /**
+   * Polygon (Matic) Mumbai Testnet
+   *
+   * - [Documentation](https://docs.matic.network/docs/develop/network-details/network)
+   */
+  PolygonMumbai = 'polygon-mumbai',
+
+  /**
+   * Arbitrum Rinkeby Testnet
+   *
+   * - [Documentation](https://developer.offchainlabs.com/docs/public_testnet)
+   */
+  ArbitrumRinkebyTestnet = 'arbitrum-rinkeby-testnet',
+
+  /**
+   * xDai EVM sidechain with a native stable token
+   *
+   * - [Documentation](https://www.xdaichain.com/)
+   */
+  xDaiChain = 'x-dai-chain',
+}
+
+interface BaseOpts {
   /**
    * String identifier ('byzantium') for hardfork
    *
@@ -34,11 +56,22 @@ export interface CommonOpts {
    * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles
    */
   eips?: number[]
+}
+
+/**
+ * Options for instantiating a {@link Common} instance.
+ */
+export interface CommonOpts extends BaseOpts {
+  /**
+   * Chain name ('mainnet') or id (1), either from a chain directly supported
+   * or a custom chain passed in via {@link CommonOpts.customChains}
+   */
+  chain: string | number | Chains | BN | object
   /**
    * Initialize (in addition to the supported chains) with the selected
    * custom chains
    *
-   * Usage (directly with the respective chain intialization via the `chain` option):
+   * Usage (directly with the respective chain intialization via the {@link CommonOpts.chain} option):
    *
    * ```javascript
    * import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
@@ -46,6 +79,17 @@ export interface CommonOpts {
    * ```
    */
   customChains?: Chain[]
+}
+
+/**
+ * Options to be used with the {@link Common.custom} static constructor.
+ */
+export interface CustomCommonOpts extends BaseOpts {
+  /**
+   * The name (`mainnet`) or id (`1`) of a standard chain used to base the custom
+   * chain params on.
+   */
+  baseChain?: string | number | BN
 }
 
 interface hardforkOptions {
@@ -56,7 +100,12 @@ interface hardforkOptions {
 }
 
 /**
- * Common class to access chain and hardfork parameters
+ * Common class to access chain and hardfork parameters and to provide
+ * a unified and shared view on the network and hardfork state.
+ *
+ * Use the {@link Common.custom} static constructor for creating simple
+ * custom chain {@link Common} objects (more complete custom chain setups
+ * can be created via the main constructor and the {@link CommonOpts.customChains} parameter).
  */
 export default class Common extends EventEmitter {
   readonly DEFAULT_HARDFORK: string
@@ -71,8 +120,84 @@ export default class Common extends EventEmitter {
   public static Hardforks = Hardforks
 
   /**
-   * Creates a Common object for a custom chain, based on a standard one. It uses all the [[Chain]]
-   * params from [[baseChain]] except the ones overridden in [[customChainParams]].
+   * Creates a {@link Common} object for a custom chain, based on a standard one.
+   *
+   * It uses all the {@link Chain} parameters from the {@link baseChain} option except the ones overridden
+   * in a provided {@link chainParamsOrName} dictionary. Some usage example:
+   *
+   * ```javascript
+   * Common.custom({chainId: 123})
+   * ```
+   *
+   * There are also selected supported custom chains which can be initialized by using one of the
+   * {@link CustomChains} for {@link chainParamsOrName}, e.g.:
+   *
+   * ```javascript
+   * Common.custom(CustomChains.MaticMumbai)
+   * ```
+   *
+   * Note that these supported custom chains only provide some base parameters (usually the chain and
+   * network ID and a name) and can only be used for selected use cases (e.g. sending a tx with
+   * the `@ethereumjs/tx` library to a Layer-2 chain).
+   *
+   * @param chainParamsOrName Custom parameter dict (`name` will default to `custom-chain`) or string with name of a supported custom chain
+   * @param opts Custom chain options to set the {@link CustomCommonOpts.baseChain}, selected {@link CustomCommonOpts.hardfork} and others
+   */
+  static custom(
+    chainParamsOrName: Partial<Chain> | CustomChains,
+    opts: CustomCommonOpts = {}
+  ): Common {
+    const baseChain = opts.baseChain ?? 'mainnet'
+    const standardChainParams = { ...Common._getChainParams(baseChain) }
+    standardChainParams['name'] = 'custom-chain'
+
+    if (typeof chainParamsOrName !== 'string') {
+      return new Common({
+        chain: {
+          ...standardChainParams,
+          ...chainParamsOrName,
+        },
+        ...opts,
+      })
+    } else {
+      if (chainParamsOrName === CustomChains.PolygonMainnet) {
+        return Common.custom({
+          name: CustomChains.PolygonMainnet,
+          chainId: 137,
+          networkId: 137,
+        })
+      }
+      if (chainParamsOrName === CustomChains.PolygonMumbai) {
+        return Common.custom({
+          name: CustomChains.PolygonMumbai,
+          chainId: 80001,
+          networkId: 80001,
+        })
+      }
+      if (chainParamsOrName === CustomChains.ArbitrumRinkebyTestnet) {
+        return Common.custom({
+          name: CustomChains.ArbitrumRinkebyTestnet,
+          chainId: 421611,
+          networkId: 421611,
+        })
+      }
+      if (chainParamsOrName === CustomChains.xDaiChain) {
+        return Common.custom({
+          name: CustomChains.xDaiChain,
+          chainId: 100,
+          networkId: 100,
+        })
+      }
+
+      throw new Error(`Custom chain ${chainParamsOrName} not supported`)
+    }
+  }
+
+  /**
+   * Creates a {@link Common} object for a custom chain, based on a standard one. It uses all the `Chain`
+   * params from {@link baseChain} except the ones overridden in {@link customChainParams}.
+   *
+   * @deprecated Use {@link Common.custom} instead
    *
    * @param baseChain The name (`mainnet`) or id (`1`) of a standard chain used to base the custom
    * chain params on.
@@ -99,7 +224,7 @@ export default class Common extends EventEmitter {
   }
 
   /**
-   * Static method to determine if a chainId is supported as a standard chain
+   * Static method to determine if a {@link chainId} is supported as a standard chain
    * @param chainId BN id (`1`) of a standard chain
    * @returns boolean
    */
@@ -397,11 +522,11 @@ export default class Common extends EventEmitter {
 
   /**
    * Checks if an EIP is activated by either being included in the EIPs
-   * manually passed in with the `eips` constructor option or in a
+   * manually passed in with the {@link CommonOpts.eips} or in a
    * hardfork currently being active
    *
    * Note: this method only works for EIPs being supported
-   * by the `eips` constructor option
+   * by the {@link CommonOpts.eips} constructor option
    * @param eip
    */
   isActivatedEIP(eip: number): boolean {
@@ -805,7 +930,7 @@ export default class Common extends EventEmitter {
   }
 
   /**
-   * Returns a deep copy of this common instance.
+   * Returns a deep copy of this {@link Common} instance.
    */
   copy(): Common {
     return Object.assign(Object.create(Object.getPrototypeOf(this)), this)

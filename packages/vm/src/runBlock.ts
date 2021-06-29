@@ -61,7 +61,7 @@ export interface RunBlockOpts {
 }
 
 /**
- * Result of [[runBlock]]
+ * Result of {@link runBlock}
  */
 export interface RunBlockResult {
   /**

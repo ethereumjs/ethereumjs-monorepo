@@ -97,7 +97,7 @@ export abstract class BaseTransaction<TransactionObject> {
   }
 
   /**
-   * Alias for `type`
+   * Alias for {@link BaseTransaction.type}
    *
    * @deprecated Use `type` instead
    */
@@ -311,7 +311,7 @@ export abstract class BaseTransaction<TransactionObject> {
    * to be used on instantiation
    * @hidden
    *
-   * @param common - Common instance from tx options
+   * @param common - {@link Common} instance from tx options
    * @param chainId - Chain ID from tx options (typed txs) or signature (legacy tx)
    */
   protected _getCommon(common?: Common, chainId?: BNLike) {

@@ -24,7 +24,7 @@ const debug = createDebugLogger('vm:evm')
 const debugGas = createDebugLogger('vm:evm:gas')
 
 /**
- * Result of executing a message via the [[EVM]].
+ * Result of executing a message via the {@link EVM}.
  */
 export interface EVMResult {
   /**
@@ -36,13 +36,13 @@ export interface EVMResult {
    */
   createdAddress?: Address
   /**
-   * Contains the results from running the code, if any, as described in [[runCode]]
+   * Contains the results from running the code, if any, as described in {@link runCode}
    */
   execResult: ExecResult
 }
 
 /**
- * Result of executing a call via the [[EVM]].
+ * Result of executing a call via the {@link EVM}.
  */
 export interface ExecResult {
   runState?: RunState
@@ -454,7 +454,7 @@ export default class EVM {
 
   /**
    * Starts the actual bytecode processing for a CALL or CREATE, providing
-   * it with the [[EEI]].
+   * it with the {@link EEI}.
    */
   async runInterpreter(message: Message, opts: InterpreterOpts = {}): Promise<ExecResult> {
     const env = {
