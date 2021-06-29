@@ -1,6 +1,13 @@
-# EthereumJS Shared Config
+# EthereumJS - Monorepo and Shared Config
 
-This folder (`./config`) contains shared configuration logic for common modules: eslint, prettier, nyc (coverage), tsconfig, typedoc.
+This folder contains documentation on monorepo setup and configuration as well as shared
+configuration settings and scripts for common modules (like a shared `tsconfig.json` TypeScript
+configuration file or a shared `cli/coverage.sh` script e.g.).
+
+- [Linting](#linting)
+- [Coverage](#coverage)
+- [TypeScript](#typescript)
+- [Documentation](#documentation)
 
 The cli scripts (`./config/cli`) are used in the child packages' `package.json` to ease repetitive script use.
 
@@ -146,4 +153,15 @@ The default production target is ES2017. To support shipping the ES5 target for 
     "dist",
     "dist.browser"
   ]
+```
+
+## Documentation
+
+Add `typedoc.js` to a package that extends the generic TypeDoc configuration:
+
+```js
+module.exports = {
+  extends: '../../config/typedoc.js',
+  // Additional directives
+}
 ```
