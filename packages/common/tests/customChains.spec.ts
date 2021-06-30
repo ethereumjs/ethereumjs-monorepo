@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { BN } from '../../util/dist'
-import Common, { CustomChains } from '../src/'
+import Common, { CustomChain } from '../src/'
 import testnet from './data/testnet.json'
 import testnet2 from './data/testnet2.json'
 import testnet3 from './data/testnet3.json'
@@ -73,13 +73,13 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     st.deepEqual(common.networkIdBN(), new BN(1), 'should default to mainnet base chain')
     st.equal(common.chainName(), 'custom-chain', 'should set default custom chain name')
 
-    common = Common.custom(CustomChains.PolygonMumbai)
+    common = Common.custom(CustomChain.PolygonMumbai)
     st.deepEqual(
       common.networkIdBN(),
       new BN(80001),
       'supported chain -> should initialize with correct chain ID'
     )
-    for (const customChain of Object.values(CustomChains)) {
+    for (const customChain of Object.values(CustomChain)) {
       common = Common.custom(customChain)
       st.equal(
         common.chainName(),
