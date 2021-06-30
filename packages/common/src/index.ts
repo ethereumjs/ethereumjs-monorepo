@@ -254,7 +254,10 @@ export default class Common extends EventEmitter {
     return Boolean(initializedChains['names'][chainId.toString()])
   }
 
-  private static _getChainParams(chain: string | number | Chain | BN, customChains?: IChain[]): IChain {
+  private static _getChainParams(
+    chain: string | number | Chain | BN,
+    customChains?: IChain[]
+  ): IChain {
     const initializedChains: any = _getInitializedChains(customChains)
     if (typeof chain === 'number' || BN.isBN(chain)) {
       chain = chain.toString()

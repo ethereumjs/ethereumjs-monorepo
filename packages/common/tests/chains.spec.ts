@@ -49,12 +49,15 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
     st.end()
   })
 
-  t.test('Should initialize with chain and hardfork provided by Chain and Hardfork enums', function (st: tape.Test) {
-    const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
-    st.equal(c.hardfork(), 'byzantium', 'should return correct hardfork name')
+  t.test(
+    'Should initialize with chain and hardfork provided by Chain and Hardfork enums',
+    function (st: tape.Test) {
+      const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+      st.equal(c.hardfork(), 'byzantium', 'should return correct hardfork name')
 
-    st.end()
-  })
+      st.end()
+    }
+  )
 
   t.test('Should initialize with supportedHardforks provided', function (st: tape.Test) {
     const c = new Common({
