@@ -13,7 +13,7 @@
 
 ### genesisStateById
 
-▸ **genesisStateById**(`id`: *number*): *any*
+▸ **genesisStateById**(`id`): `any`
 
 Returns the genesis state by network ID
 
@@ -21,19 +21,23 @@ Returns the genesis state by network ID
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `id` | *number* | ID of the network (e.g. 1) |
+| `id` | `number` | ID of the network (e.g. 1) |
 
-**Returns:** *any*
+#### Returns
+
+`any`
 
 Dictionary with genesis accounts
 
-Defined in: [packages/common/src/genesisStates/index.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/genesisStates/index.ts#L31)
+#### Defined in
+
+[packages/common/src/genesisStates/index.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/genesisStates/index.ts#L25)
 
 ___
 
 ### genesisStateByName
 
-▸ **genesisStateByName**(`name`: *string*): *any*
+▸ **genesisStateByName**(`name`): `any`
 
 Returns the genesis state by network name
 
@@ -41,10 +45,14 @@ Returns the genesis state by network name
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `name` | *string* | Name of the network (e.g. 'mainnet') |
+| `name` | `string` | Name of the network (e.g. 'mainnet') |
 
-**Returns:** *any*
+#### Returns
+
+`any`
 
 Dictionary with genesis accounts
 
-Defined in: [packages/common/src/genesisStates/index.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/genesisStates/index.ts#L40)
+#### Defined in
+
+[packages/common/src/genesisStates/index.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/genesisStates/index.ts#L34)
