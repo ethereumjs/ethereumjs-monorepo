@@ -737,7 +737,7 @@ export default class Common extends EventEmitter {
    * Returns the change block for the next hardfork after the hardfork provided or set
    * @param hardfork Hardfork name, optional if HF set
    * @returns Block number or null if not available
-   * @deprecated Please use nextHardforkBlockBN() for large number support
+   * @deprecated Please use {@link Common.nextHardforkBlockBN} for large number support
    */
   nextHardforkBlock(hardfork?: string | Hardfork): number | null {
     const block = this.nextHardforkBlockBN(hardfork)
@@ -882,7 +882,7 @@ export default class Common extends EventEmitter {
   /**
    * Returns the Id of current chain
    * @returns chain Id
-   * @deprecated Please use chainIdBN() for large number support
+   * @deprecated Please use {@link Common.chainIdBN} for large number support
    */
   chainId(): number {
     return toType(this.chainIdBN(), TypeOutput.Number)
@@ -907,7 +907,7 @@ export default class Common extends EventEmitter {
   /**
    * Returns the Id of current network
    * @returns network Id
-   * @deprecated Please use networkIdBN() for large number support
+   * @deprecated Please use {@link Common.networkIdBN} for large number support
    */
   networkId(): number {
     return toType(this.networkIdBN(), TypeOutput.Number)
