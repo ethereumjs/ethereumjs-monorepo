@@ -244,6 +244,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     msg = 'should return null for unscheduled hardfork'
     st.equal(c.hardforkBlock(Hardfork.London), null, msg)
     st.equal(c.hardforkBlockBN(Hardfork.London), null, msg)
+    st.equal(c.nextHardforkBlockBN(Hardfork.London), null, msg)
     // developer note: when London mainnet harfork block is set,
     // can update this test to next hardfork `Hardfork.Shanghai`
 
