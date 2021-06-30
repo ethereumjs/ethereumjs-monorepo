@@ -4,11 +4,11 @@
 
 [types](../modules/types.md).FeeMarketEIP1559TxData
 
-Fee marked EIP1559 tx data.
+[FeeMarketEIP1559Transaction](../modules/index.md#feemarketeip1559transaction) data.
 
 ## Hierarchy
 
-- [*AccessListEIP2930TxData*](types.accesslisteip2930txdata.md)
+- [AccessListEIP2930TxData](types.accesslisteip2930txdata.md)
 
   ↳ **FeeMarketEIP1559TxData**
 
@@ -35,162 +35,214 @@ Fee marked EIP1559 tx data.
 
 ### accessList
 
-• `Optional` **accessList**: [*AccessListBuffer*](../modules/types.md#accesslistbuffer) \| [*AccessList*](../modules/types.md#accesslist)
+• `Optional` **accessList**: [AccessListBuffer](../modules/types.md#accesslistbuffer) \| [AccessList](../modules/types.md#accesslist)
 
 The access list which contains the addresses/storage slots which the transaction wishes to access
 
-Inherited from: [AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[accessList](types.accesslisteip2930txdata.md#accesslist)
+#### Inherited from
 
-Defined in: [types.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L147)
+[AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[accessList](types.accesslisteip2930txdata.md#accesslist)
+
+#### Defined in
+
+[types.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L177)
 
 ___
 
 ### chainId
 
-• `Optional` **chainId**: *string* \| *number* \| *BN* \| *Buffer*
+• `Optional` **chainId**: `string` \| `number` \| `BN` \| `Buffer`
 
 The transaction's chain ID
 
-Inherited from: [AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[chainId](types.accesslisteip2930txdata.md#chainid)
+#### Inherited from
 
-Defined in: [types.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L142)
+[AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[chainId](types.accesslisteip2930txdata.md#chainid)
+
+#### Defined in
+
+[types.ts:172](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L172)
 
 ___
 
 ### data
 
-• `Optional` **data**: *string* \| *number* \| *BN* \| *Buffer* \| *number*[] \| *Uint8Array* \| TransformableToBuffer
+• `Optional` **data**: `string` \| `number` \| `BN` \| `Buffer` \| `number`[] \| `Uint8Array` \| `TransformableToBuffer`
 
 This will contain the data of the message or the init of a contract.
 
-Inherited from: [AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[data](types.accesslisteip2930txdata.md#data)
+#### Inherited from
 
-Defined in: [types.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L111)
+[AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[data](types.accesslisteip2930txdata.md#data)
+
+#### Defined in
+
+[types.ts:141](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L141)
 
 ___
 
 ### gasLimit
 
-• `Optional` **gasLimit**: *string* \| *number* \| *BN* \| *Buffer*
+• `Optional` **gasLimit**: `string` \| `number` \| `BN` \| `Buffer`
 
 The transaction's gas limit.
 
-Inherited from: [AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[gasLimit](types.accesslisteip2930txdata.md#gaslimit)
+#### Inherited from
 
-Defined in: [types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L96)
+[AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[gasLimit](types.accesslisteip2930txdata.md#gaslimit)
+
+#### Defined in
+
+[types.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L126)
 
 ___
 
 ### gasPrice
 
-• `Optional` **gasPrice**: *undefined*
+• `Optional` **gasPrice**: `undefined`
 
 The transaction's gas price.
 
-Overrides: [AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[gasPrice](types.accesslisteip2930txdata.md#gasprice)
+#### Overrides
 
-Defined in: [types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L157)
+[AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[gasPrice](types.accesslisteip2930txdata.md#gasprice)
+
+#### Defined in
+
+[types.ts:187](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L187)
 
 ___
 
 ### maxFeePerGas
 
-• `Optional` **maxFeePerGas**: *string* \| *number* \| *BN* \| *Buffer*
+• `Optional` **maxFeePerGas**: `string` \| `number` \| `BN` \| `Buffer`
 
 The maximum total fee
 
-Defined in: [types.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L165)
+#### Defined in
+
+[types.ts:195](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L195)
 
 ___
 
 ### maxPriorityFeePerGas
 
-• `Optional` **maxPriorityFeePerGas**: *string* \| *number* \| *BN* \| *Buffer*
+• `Optional` **maxPriorityFeePerGas**: `string` \| `number` \| `BN` \| `Buffer`
 
 The maximum inclusion fee per gas (this fee is given to the miner)
 
-Defined in: [types.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L161)
+#### Defined in
+
+[types.ts:191](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L191)
 
 ___
 
 ### nonce
 
-• `Optional` **nonce**: *string* \| *number* \| *BN* \| *Buffer*
+• `Optional` **nonce**: `string` \| `number` \| `BN` \| `Buffer`
 
 The transaction's nonce.
 
-Inherited from: [AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[nonce](types.accesslisteip2930txdata.md#nonce)
+#### Inherited from
 
-Defined in: [types.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L86)
+[AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[nonce](types.accesslisteip2930txdata.md#nonce)
+
+#### Defined in
+
+[types.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L116)
 
 ___
 
 ### r
 
-• `Optional` **r**: *string* \| *number* \| *BN* \| *Buffer*
+• `Optional` **r**: `string` \| `number` \| `BN` \| `Buffer`
 
 EC signature parameter.
 
-Inherited from: [AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[r](types.accesslisteip2930txdata.md#r)
+#### Inherited from
 
-Defined in: [types.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L121)
+[AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[r](types.accesslisteip2930txdata.md#r)
+
+#### Defined in
+
+[types.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L151)
 
 ___
 
 ### s
 
-• `Optional` **s**: *string* \| *number* \| *BN* \| *Buffer*
+• `Optional` **s**: `string` \| `number` \| `BN` \| `Buffer`
 
 EC signature parameter.
 
-Inherited from: [AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[s](types.accesslisteip2930txdata.md#s)
+#### Inherited from
 
-Defined in: [types.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L126)
+[AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[s](types.accesslisteip2930txdata.md#s)
+
+#### Defined in
+
+[types.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L156)
 
 ___
 
 ### to
 
-• `Optional` **to**: *string* \| *Address* \| *Buffer*
+• `Optional` **to**: `string` \| `Address` \| `Buffer`
 
 The transaction's the address is sent to.
 
-Inherited from: [AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[to](types.accesslisteip2930txdata.md#to)
+#### Inherited from
 
-Defined in: [types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L101)
+[AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[to](types.accesslisteip2930txdata.md#to)
+
+#### Defined in
+
+[types.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L131)
 
 ___
 
 ### type
 
-• `Optional` **type**: *string* \| *number* \| *BN* \| *Buffer*
+• `Optional` **type**: `string` \| `number` \| `BN` \| `Buffer`
 
 The transaction type
 
-Inherited from: [AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[type](types.accesslisteip2930txdata.md#type)
+#### Inherited from
 
-Defined in: [types.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L132)
+[AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[type](types.accesslisteip2930txdata.md#type)
+
+#### Defined in
+
+[types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L162)
 
 ___
 
 ### v
 
-• `Optional` **v**: *string* \| *number* \| *BN* \| *Buffer*
+• `Optional` **v**: `string` \| `number` \| `BN` \| `Buffer`
 
 EC recovery ID.
 
-Inherited from: [AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[v](types.accesslisteip2930txdata.md#v)
+#### Inherited from
 
-Defined in: [types.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L116)
+[AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[v](types.accesslisteip2930txdata.md#v)
+
+#### Defined in
+
+[types.ts:146](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L146)
 
 ___
 
 ### value
 
-• `Optional` **value**: *string* \| *number* \| *BN* \| *Buffer*
+• `Optional` **value**: `string` \| `number` \| `BN` \| `Buffer`
 
 The amount of Ether sent.
 
-Inherited from: [AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[value](types.accesslisteip2930txdata.md#value)
+#### Inherited from
 
-Defined in: [types.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L106)
+[AccessListEIP2930TxData](types.accesslisteip2930txdata.md).[value](types.accesslisteip2930txdata.md#value)
+
+#### Defined in
+
+[types.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L136)
