@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "crc-32": "^1.2.0",
-    "ethereumjs-util": "^7.0.10"
+    "ethereumjs-util": "^7.1.0"
   },
   "devDependencies": {
     "@types/node": "^11.13.4",

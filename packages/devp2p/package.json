@@ -47,7 +47,7 @@
     "base64url": "^3.0.1",
     "bl": "^1.1.2",
     "debug": "^2.2.0",
-    "ethereumjs-util": "^7.0.10",
+    "ethereumjs-util": "^7.1.0",
     "hi-base32": "^0.5.0",
     "inherits": "^2.0.1",
     "ip": "^1.1.3",
