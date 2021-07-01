@@ -6,11 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+
+# 5.4.0 - 2021-07-02
+
+TODO
+
 # 5.3.1 - 2021-06-25
 
 ### PoA Reorg Fix
 
 This release includes a fix for blockchain's reorg logic when handling PoA chains. PR [#1253](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1253) fixes this to choose the fork with the larger total difficulty and rebuilds the internal clique snapshots accordingly.
+
+### Included Source Files
+
+Source files from the `src` folder are now included in the distribution build, see PR [#1301](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1301). This allows for a better debugging experience in debug tools like Chrome DevTools by having working source map references to the original sources available for inspection.
 
 ## 5.3.0 - 2021-05-26
 
