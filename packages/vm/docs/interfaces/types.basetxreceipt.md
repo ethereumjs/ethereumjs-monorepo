@@ -10,9 +10,9 @@ Abstract interface with common transaction receipt fields
 
 - **BaseTxReceipt**
 
-  ↳ [*PreByzantiumTxReceipt*](types.prebyzantiumtxreceipt.md)
+  ↳ [PreByzantiumTxReceipt](types.prebyzantiumtxreceipt.md)
 
-  ↳ [*PostByzantiumTxReceipt*](types.postbyzantiumtxreceipt.md)
+  ↳ [PostByzantiumTxReceipt](types.postbyzantiumtxreceipt.md)
 
 ## Table of contents
 
@@ -26,28 +26,34 @@ Abstract interface with common transaction receipt fields
 
 ### bitvector
 
-• **bitvector**: *Buffer*
+• **bitvector**: `Buffer`
 
 Bloom bitvector
 
-Defined in: [types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L16)
+#### Defined in
+
+[types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L16)
 
 ___
 
 ### gasUsed
 
-• **gasUsed**: *Buffer*
+• **gasUsed**: `Buffer`
 
-Gas used
+Cumulative gas used in the block including this tx
 
-Defined in: [types.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L12)
+#### Defined in
+
+[types.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L12)
 
 ___
 
 ### logs
 
-• **logs**: Log[]
+• **logs**: `Log`[]
 
 Logs emitted
 
-Defined in: [types.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L20)
+#### Defined in
+
+[types.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L20)

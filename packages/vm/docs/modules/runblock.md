@@ -45,24 +45,28 @@ Re-exports: [PreByzantiumTxReceipt](../interfaces/types.prebyzantiumtxreceipt.md
 
 ### calculateMinerReward
 
-▸ **calculateMinerReward**(`minerReward`: BN, `ommersNum`: *number*): BN
+▸ **calculateMinerReward**(`minerReward`, `ommersNum`): `BN`
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `minerReward` | BN |
-| `ommersNum` | *number* |
+| `minerReward` | `BN` |
+| `ommersNum` | `number` |
 
-**Returns:** BN
+#### Returns
 
-Defined in: [runBlock.ts:330](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L330)
+`BN`
+
+#### Defined in
+
+[runBlock.ts:410](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L410)
 
 ___
 
 ### encodeReceipt
 
-▸ **encodeReceipt**(`tx`: TypedTransaction, `receipt`: [*TxReceipt*](types.md#txreceipt)): *Buffer*
+▸ **encodeReceipt**(`tx`, `receipt`): `Buffer`
 
 Returns the encoded tx receipt.
 
@@ -70,18 +74,22 @@ Returns the encoded tx receipt.
 
 | Name | Type |
 | :------ | :------ |
-| `tx` | TypedTransaction |
-| `receipt` | [*TxReceipt*](types.md#txreceipt) |
+| `tx` | `TypedTransaction` |
+| `receipt` | [TxReceipt](types.md#txreceipt) |
 
-**Returns:** *Buffer*
+#### Returns
 
-Defined in: [runBlock.ts:352](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L352)
+`Buffer`
+
+#### Defined in
+
+[runBlock.ts:432](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L432)
 
 ___
 
 ### generateTxReceipt
 
-▸ **generateTxReceipt**(`tx`: TypedTransaction, `txRes`: [*RunTxResult*](../interfaces/runtx.runtxresult.md), `blockGasUsed`: BN): *Promise*<{ `encodedReceipt`: *Buffer* ; `receiptLog`: *string* ; `txReceipt`: [*PreByzantiumTxReceipt*](../interfaces/types.prebyzantiumtxreceipt.md) \| [*PostByzantiumTxReceipt*](../interfaces/types.postbyzantiumtxreceipt.md)  }\>
+▸ **generateTxReceipt**(`tx`, `txRes`, `blockGasUsed`): `Promise`<`Object`\>
 
 Generates the tx receipt and returns { txReceipt, encodedReceipt, receiptLog }
 
@@ -91,28 +99,36 @@ Generates the tx receipt and returns { txReceipt, encodedReceipt, receiptLog }
 
 | Name | Type |
 | :------ | :------ |
-| `tx` | TypedTransaction |
-| `txRes` | [*RunTxResult*](../interfaces/runtx.runtxresult.md) |
-| `blockGasUsed` | BN |
+| `tx` | `TypedTransaction` |
+| `txRes` | [RunTxResult](../interfaces/runtx.runtxresult.md) |
+| `blockGasUsed` | `BN` |
 
-**Returns:** *Promise*<{ `encodedReceipt`: *Buffer* ; `receiptLog`: *string* ; `txReceipt`: [*PreByzantiumTxReceipt*](../interfaces/types.prebyzantiumtxreceipt.md) \| [*PostByzantiumTxReceipt*](../interfaces/types.postbyzantiumtxreceipt.md)  }\>
+#### Returns
 
-Defined in: [runBlock.ts:367](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L367)
+`Promise`<`Object`\>
+
+#### Defined in
+
+[runBlock.ts:447](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L447)
 
 ___
 
 ### rewardAccount
 
-▸ **rewardAccount**(`state`: [*StateManager*](../interfaces/state_interface.statemanager.md), `address`: Address, `reward`: BN): *Promise*<Account\>
+▸ **rewardAccount**(`state`, `address`, `reward`): `Promise`<Account\>
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `state` | [*StateManager*](../interfaces/state_interface.statemanager.md) |
-| `address` | Address |
-| `reward` | BN |
+| `state` | [StateManager](../interfaces/state_interface.statemanager.md) |
+| `address` | `Address` |
+| `reward` | `BN` |
 
-**Returns:** *Promise*<Account\>
+#### Returns
 
-Defined in: [runBlock.ts:338](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L338)
+`Promise`<Account\>
+
+#### Defined in
+
+[runBlock.ts:418](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L418)
