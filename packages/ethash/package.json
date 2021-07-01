@@ -34,7 +34,7 @@
     "miller-rabin": "^4.0.0"
   },
   "devDependencies": {
-    "@ethereumjs/block": "^3.3.0",
+    "@ethereumjs/block": "^3.4.0",
     "@types/tape": "^4.13.0",
     "eslint": "^6.8.0",
     "level-mem": "^5.0.1",

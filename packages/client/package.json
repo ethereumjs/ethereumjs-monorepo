@@ -45,7 +45,7 @@
     "test:browser": "karma start karma.conf.js"
   },
   "dependencies": {
-    "@ethereumjs/block": "^3.3.0",
+    "@ethereumjs/block": "^3.4.0",
     "@ethereumjs/blockchain": "^5.3.1",
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/devp2p": "^4.0.0",
