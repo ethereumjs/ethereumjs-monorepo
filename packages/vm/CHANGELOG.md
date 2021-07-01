@@ -6,9 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## UNRELEASED
+## 5.5.0 - 2021-07-02
 
-- BlockBuilder: allow customizable baseFeePerGas, PR [#1326](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1326)
+### Included Source Files
+
+Source files from the `src` folder are now included in the distribution build, see PR [#1301](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1301). This allows for a better debugging experience in debug tools like Chrome DevTools by having working source map references to the original sources available for inspection.
+
+### Other Changes & Fixes
+
+- `BlockBuilder`: allow customizable `baseFeePerGas`, PR [#1326](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1326)
+- Improved browser compatibility by replacing `instanceof` calls on tx objects with functionality checks, PR [#1315](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1315)
 
 ## 5.4.1 - 2021-06-11
 
