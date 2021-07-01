@@ -26,6 +26,7 @@ export default function blockHeaderFromRpc(blockParams: any, options?: BlockOpti
     extraData,
     mixHash,
     nonce,
+    baseFeePerGas
   } = blockParams
 
   const blockHeader = BlockHeader.fromHeaderData(
@@ -45,6 +46,7 @@ export default function blockHeaderFromRpc(blockParams: any, options?: BlockOpti
       extraData,
       mixHash,
       nonce,
+      baseFeePerGas
     },
     options
   )
