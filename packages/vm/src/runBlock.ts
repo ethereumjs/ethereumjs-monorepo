@@ -7,7 +7,7 @@ import VM from './index'
 import Bloom from './bloom'
 import { StateManager } from './state'
 import { short } from './evm/opcodes'
-import type { TypedTransaction } from '@ethereumjs/tx'
+import { Capabilities, TypedTransaction } from '@ethereumjs/tx'
 import type { RunTxResult } from './runTx'
 import type { TxReceipt } from './types'
 import * as DAOConfig from './config/dao_fork_accounts_config.json'
@@ -61,7 +61,7 @@ export interface RunBlockOpts {
 }
 
 /**
- * Result of [[runBlock]]
+ * Result of {@link runBlock}
  */
 export interface RunBlockResult {
   /**
@@ -432,11 +432,11 @@ export async function rewardAccount(
 export function encodeReceipt(tx: TypedTransaction, receipt: TxReceipt) {
   const encoded = encode(Object.values(receipt))
 
-  if (!('transactionType' in tx) || tx.transactionType === 0) {
+  if (!tx.supports(Capabilities.EIP2718TypedTransaction)) {
     return encoded
   }
 
-  const type = intToBuffer(tx.transactionType)
+  const type = intToBuffer(tx.type)
   return Buffer.concat([type, encoded])
 }
 
@@ -460,12 +460,12 @@ export async function generateTxReceipt(
   let encodedReceipt
 
   let receiptLog = `Generate tx receipt transactionType=${
-    'transactionType' in tx ? tx.transactionType : 'NaN'
+    tx.type
   } gasUsed=${blockGasUsed.toString()} bitvector=${short(abstractTxReceipt.bitvector)} (${
     abstractTxReceipt.bitvector.length
   } bytes) logs=${abstractTxReceipt.logs.length}`
 
-  if (!('transactionType' in tx) || tx.transactionType === 0) {
+  if (!tx.supports(999)) {
     // Legacy transaction
     if (this._common.gteHardfork('byzantium')) {
       // Post-Byzantium
@@ -485,17 +485,13 @@ export async function generateTxReceipt(
       receiptLog += ` stateRoot=${txReceipt.stateRoot.toString('hex')} (< Byzantium)`
     }
     encodedReceipt = encode(Object.values(txReceipt))
-  } else if ('transactionType' in tx && tx.transactionType === 1) {
+  } else {
     // EIP2930 Transaction
     txReceipt = {
       status: txRes.execResult.exceptionError ? 0 : 1,
       ...abstractTxReceipt,
-    } as EIP2930Receipt
-    encodedReceipt = Buffer.concat([Buffer.from('01', 'hex'), encode(Object.values(txReceipt))])
-  } else {
-    throw new Error(
-      `Unsupported transaction type ${'transactionType' in tx ? tx.transactionType : 'NaN'}`
-    )
+    } as PostByzantiumTxReceipt
+    encodedReceipt = Buffer.concat([intToBuffer(tx.type), encode(Object.values(txReceipt))])
   }
   return {
     txReceipt,

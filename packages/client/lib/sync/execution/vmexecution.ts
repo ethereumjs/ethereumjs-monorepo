@@ -182,8 +182,11 @@ export class VMExecution extends Execution {
         const firstHash = short(startHeadBlock.hash())
         const lastNumber = endHeadBlock.header.number.toNumber()
         const lastHash = short(endHeadBlock.hash())
+        const baseFeeAdd = this.config.execCommon.gteHardfork('london')
+          ? `basefee=${endHeadBlock.header.baseFeePerGas} `
+          : ''
         this.config.logger.info(
-          `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} with txs=${txCounter}`
+          `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} with txs=${txCounter}`
         )
       } else {
         this.config.logger.warn(

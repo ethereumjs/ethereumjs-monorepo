@@ -1,5 +1,6 @@
 import tape from 'tape'
-import Common from '../src/'
+import { BN } from '../../util/dist'
+import Common, { CustomChain } from '../src/'
 import testnet from './data/testnet.json'
 import testnet2 from './data/testnet2.json'
 import testnet3 from './data/testnet3.json'
@@ -43,7 +44,65 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     }
   )
 
-  t.test('forCustomChain()', function (st: tape.Test) {
+  t.test('custom() -> base functionality', function (st: tape.Test) {
+    const mainnetCommon = new Common({ chain: 'mainnet' })
+
+    const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
+    const customChainCommon = Common.custom(customChainParams, { hardfork: 'byzantium' })
+
+    // From custom chain params
+    st.equal(customChainCommon.chainName(), customChainParams.name)
+    st.equal(customChainCommon.chainId(), customChainParams.chainId)
+    st.ok(customChainCommon.chainIdBN().eqn(customChainParams.chainId))
+    st.equal(customChainCommon.networkId(), customChainParams.networkId)
+    st.ok(customChainCommon.networkIdBN().eqn(customChainParams.networkId))
+
+    // Fallback params from mainnet
+    st.equal(customChainCommon.genesis(), mainnetCommon.genesis())
+    st.equal(customChainCommon.bootstrapNodes(), mainnetCommon.bootstrapNodes())
+    st.equal(customChainCommon.hardforks(), mainnetCommon.hardforks())
+
+    // Set only to this Common
+    st.equal(customChainCommon.hardfork(), 'byzantium')
+
+    st.end()
+  })
+
+  t.test('custom() -> behavior', function (st: tape.Test) {
+    let common = Common.custom({ chainId: 123 })
+    st.deepEqual(common.networkIdBN(), new BN(1), 'should default to mainnet base chain')
+    st.equal(common.chainName(), 'custom-chain', 'should set default custom chain name')
+
+    common = Common.custom(CustomChain.PolygonMumbai)
+    st.deepEqual(
+      common.networkIdBN(),
+      new BN(80001),
+      'supported chain -> should initialize with correct chain ID'
+    )
+    for (const customChain of Object.values(CustomChain)) {
+      common = Common.custom(customChain)
+      st.equal(
+        common.chainName(),
+        customChain,
+        `supported chain -> should initialize with enum name (${customChain})`
+      )
+    }
+
+    try {
+      //@ts-ignore TypeScript complains, nevertheless do the test for JS behavior
+      Common.custom('this-chain-is-not-supported')
+      st.fail('test should fail')
+    } catch (e) {
+      st.ok(
+        e.message.includes('not supported'),
+        'supported chain -> should throw if chain name is not supported'
+      )
+    }
+
+    st.end()
+  })
+
+  t.test('forCustomChain() (deprecated) -> base functionality', function (st: tape.Test) {
     const mainnetCommon = new Common({ chain: 'mainnet' })
 
     const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
@@ -68,13 +127,17 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
   })
 
   t.test('customChains parameter: initialization exception', (st) => {
-    st.throws(
-      function () {
-        new Common({ chain: testnet, customChains: [testnet] })
-      },
-      /Chain must be a string or number when initialized with customChains passed in/,
-      'should throw an exception on wrong initialization'
-    ) // eslint-disable-line no-new
+    try {
+      new Common({ chain: testnet, customChains: [testnet] })
+      st.fail('should throw')
+    } catch (e) {
+      st.ok(
+        e.message.includes(
+          'Chain must be a string, number, or BN when initialized with customChains passed in'
+        ),
+        'should throw an exception on wrong initialization'
+      )
+    }
 
     st.end()
   })
