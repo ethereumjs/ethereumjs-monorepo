@@ -33,13 +33,15 @@ tape('[Integration:FullEthereumService]', async (t) => {
   t.test('should handle ETH requests', async (t) => {
     const [server, service] = await setup()
     const peer = await server.accept('peer0')
-    const headers = await peer.eth!.getBlockHeaders({ block: new BN(1), max: 2 })
+    const [reqId1, headers] = await peer.eth!.getBlockHeaders({ block: new BN(1), max: 2 })
     const hash = Buffer.from(
       'a321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069',
       'hex'
     )
+    t.ok(reqId1.eqn(1), 'handled GetBlockHeaders')
     t.ok(headers![1].hash().equals(hash), 'handled GetBlockHeaders')
-    const bodies = await peer.eth!.getBlockBodies([hash])
+    const [reqId2, bodies] = await peer.eth!.getBlockBodies({ hashes: [hash] })
+    t.ok(reqId2.eqn(2), 'handled GetBlockBodies')
     t.deepEquals(bodies, [[[], []]], 'handled GetBlockBodies')
     peer.eth!.send('NewBlockHashes', [[hash, new BN(2)]])
     t.pass('handled NewBlockHashes')

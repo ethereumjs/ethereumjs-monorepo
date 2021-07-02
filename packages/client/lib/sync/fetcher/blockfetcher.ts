@@ -24,13 +24,13 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
   async request(job: Job<JobTask, Block[], Block>): Promise<Block[]> {
     const { task, peer } = job
     const { first, count } = task
-    const headers = await (peer!.eth as EthProtocolMethods).getBlockHeaders({
-      block: first,
-      max: count,
-    })
-    const bodies: BlockBodyBuffer[] = <BlockBodyBuffer[]>(
-      await peer!.eth!.getBlockBodies(headers.map((h) => h.hash()))
-    )
+    const headers = (
+      await (peer!.eth as EthProtocolMethods).getBlockHeaders({
+        block: first,
+        max: count,
+      })
+    )[1]
+    const bodies = (await peer!.eth!.getBlockBodies({ hashes: headers.map((h) => h.hash()) }))[1]
     const blocks: Block[] = bodies.map(([txsData, unclesData]: BlockBodyBuffer, i: number) => {
       const opts = {
         common: this.config.chainCommon,

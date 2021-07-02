@@ -91,12 +91,12 @@ export class LesProtocol extends Protocol {
       decode: ([reqId, bv, headers]: any) => ({
         reqId: new BN(reqId),
         bv: new BN(bv),
-        headers: headers.map((h: BlockHeaderBuffer) => {
-          return BlockHeader.fromValuesArray(h, {
+        headers: headers.map((h: BlockHeaderBuffer) =>
+          BlockHeader.fromValuesArray(h, {
             hardforkByBlockNumber: true,
             common: this.config.chainCommon, // eslint-disable-line no-invalid-this
           })
-        }),
+        ),
       }),
     },
   ]

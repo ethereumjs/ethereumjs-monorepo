@@ -85,11 +85,11 @@ export class FullSynchronizer extends Synchronizer {
    * @return {Promise} Resolves with header
    */
   async latest(peer: Peer) {
-    const headers = await peer.eth?.getBlockHeaders({
+    const result = await peer.eth?.getBlockHeaders({
       block: peer.eth!.status.bestHash,
       max: 1,
     })
-    return headers?.[0]
+    return result ? result[1][0] : undefined
   }
 
   /**
