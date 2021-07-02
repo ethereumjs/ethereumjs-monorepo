@@ -5,7 +5,7 @@ import { Job } from './types'
 import { BlockFetcherBase, JobTask, BlockFetcherOptions } from './blockfetcherbase'
 
 /**
- * Implements an eth/62 based block fetcher
+ * Implements an eth/66 based block fetcher
  * @memberof module:sync/fetcher
  */
 export class BlockFetcher extends BlockFetcherBase<Block[], Block> {

@@ -41,7 +41,7 @@ export interface EthProtocolMethods {
 const id = new BN(0)
 
 /**
- * Implements eth/62 and eth/63 protocols
+ * Implements eth/66 protocol
  * @memberof module:net/protocol
  */
 export class EthProtocol extends Protocol {
