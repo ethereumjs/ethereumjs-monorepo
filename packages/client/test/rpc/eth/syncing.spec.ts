@@ -2,10 +2,9 @@ import tape from 'tape-catch'
 import td from 'testdouble'
 import { Config } from '../../../lib/config'
 import { PeerPool } from '../../../lib/net/peerpool'
-import { params, baseRequest, baseSetup, createClient, createManager, startRPC } from '../helpers'
+import { params, baseRequest, createClient, createManager, startRPC } from '../helpers'
 import { EventEmitter } from 'events'
 import Blockchain from '@ethereumjs/blockchain'
-import { FullSynchronizer } from '../../../lib/sync'
 import { LightEthereumService } from '../../../lib/service'
 
 const method = 'eth_syncing'
@@ -50,26 +49,11 @@ tape(`${method} should return false when chain is synced`, async (t) => {
     const client = createClient({ blockchain })
     const manager = createManager(client)
     const server = startRPC(manager.getMethods())
-    
-    client.
 
     const service = client.services.find((s) => s.name === 'eth') as LightEthereumService
 
     console.log('Synchronized? ', client.synchronized)
     service.synchronizer.emit('synchronized')
-
-    // const servers = [new Server()] as any
-    // const config = new Config({ servers })
-    // const client = new EthereumClient({ config })
-    // client.on('listening', (details: string) => t.equals(details, 'details0', 'got listening'))
-    // client.on('synchronized', () => t.ok('got synchronized'))
-    // await client.open()
-    // servers[0].emit('error', 'err0')
-    // servers[0].emit('listening', 'details0')
-    // client.services[0].emit('error', 'err1')
-    // client.services[0].emit('synchronized')
-    // t.ok(client.opened, 'opened')
-    // t.equals(await client.open(), false, 'already opened')
 
     const req = params(method, [])
     console.log(req)
@@ -81,16 +65,14 @@ tape(`${method} should return false when chain is synced`, async (t) => {
   })
 })
 
-// tape(`${method}: returns object with sync status when chain is not synced`, (t) => {
-//   const manager = createManager(
-//     createClient({ opened: true, commonChain: new Common({ chain: 'ropsten' }) })
-//   )
-//   const server = startRPC(manager.getMethods())
+tape(`${method}: returns object with sync status when chain is not synced`, (t) => {
+  const manager = createManager(createClient())
+  const server = startRPC(manager.getMethods())
 
-//   const req = params(method, [])
-//   const expectRes = (res: any) => {
-//     const msg = 'should return chainId 3'
-//     t.equal(res.body.result, '0x3', msg)
-//   }
-//   baseRequest(t, server, req, 200, expectRes)
-// })
+  const req = params(method, [])
+  const expectRes = (res: any) => {
+    const msg = 'should result object with sync status'
+    t.equal(res.body.result, 'TODO', msg)
+  }
+  baseRequest(t, server, req, 200, expectRes)
+})
