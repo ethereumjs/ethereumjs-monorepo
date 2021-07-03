@@ -14,7 +14,7 @@ import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
 import { RpcTx } from '../types'
 import type { Chain } from '../../blockchain'
 import type { EthereumClient } from '../..'
-import type { EthereumService } from '../../service'
+import { EthereumService } from '../../service'
 import type { EthProtocol } from '../../net/protocol'
 import type VM from '@ethereumjs/vm'
 import { Block } from '@ethereumjs/block'
@@ -517,9 +517,28 @@ export class Eth {
       return false
     }
 
-    const currentHeader = await this._chain.getLatestHeader()
-    const currentBlock = `0x${currentHeader.number.toString(16)}`
+    const currentBlockHeader = await this._chain.getLatestHeader()
+    const currentBlock = `0x${currentBlockHeader.number.toString(16)}`
 
-    return { startingBlock: '0x0', currentBlock, highestBlock: '0x0' }
+    const synchronizer = this.client.services[0].synchronizer
+    const startingBlock = `0x${synchronizer.startingBlock.toString(16)}`
+    const bestPeer = synchronizer.best()
+    if (!bestPeer) {
+      return {
+        code: INTERNAL_ERROR,
+        message: `no peer available for synchronization`,
+      }
+    }
+
+    const highestBlockHeader = await synchronizer.latest(bestPeer)
+    if (!highestBlockHeader) {
+      return {
+        code: INTERNAL_ERROR,
+        message: `highest block header unavailable`,
+      }
+    }
+    const highestBlock = `0x${highestBlockHeader.number.toString(16)}`
+
+    return { startingBlock, currentBlock, highestBlock }
   }
 }

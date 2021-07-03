@@ -177,6 +177,7 @@ export class FullSynchronizer extends Synchronizer {
     const number = this.chain.blocks.height.toNumber()
     const td = this.chain.blocks.td.toString(10)
     const hash = this.chain.blocks.latest!.hash()
+    this.startingBlock = number
     this.config.chainCommon.setHardforkByBlockNumber(number)
     this.config.logger.info(
       `Latest local block: number=${number} td=${td} hash=${short(
