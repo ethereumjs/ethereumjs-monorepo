@@ -41,7 +41,7 @@ tape(`${method} should return false when chain is synced`, async (t) => {
   td.when(Server.prototype.stop()).thenResolve()
   td.when(Server.prototype.bootstrap()).thenResolve()
 
-  const { default: EthereumClient } = await import('../../../lib/client')
+  // const { default: EthereumClient } = await import('../../../lib/client')
 
   t.test('should initialize correctly', async (t) => {
     const blockchain = await Blockchain.create()
@@ -52,11 +52,11 @@ tape(`${method} should return false when chain is synced`, async (t) => {
 
     const service = client.services.find((s) => s.name === 'eth') as LightEthereumService
 
-    console.log('Synchronized? ', client.synchronized)
+    // console.log('Synchronized? ', client.synchronized)
     service.synchronizer.emit('synchronized')
 
     const req = params(method, [])
-    console.log(req)
+    // console.log(req)
     const expectRes = (res: any) => {
       const msg = 'should return false'
       t.equal(res.body.result, false, msg)
