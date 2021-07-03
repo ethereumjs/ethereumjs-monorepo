@@ -508,21 +508,18 @@ export class Eth {
    * Returns an object with data about the sync status or false.
    * @param params An empty array
    * @returns  An object with sync status data or false (when not syncing)
-   *   * startingBlock - The block at which the import started (will only be reset, after the sync reached his head)
+   *   * startingBlock - The block at which the import started (will only be reset after the sync reached his head)
    *   * currentBlock - The current block, same as eth_blockNumber
    *   * highestBlock - The estimated highest block
    */
-  syncing(_params = []) {
-    console.log(this.client.synchronized)
+  async syncing(_params = []) {
     if (this.client.synchronized) {
       return false
     }
 
-    // TODO
-    // const startingBlock
-    // const currentBlock
-    // const highestBlock
+    const currentHeader = await this._chain.getLatestHeader()
+    const currentBlock = `0x${currentHeader.number.toString(16)}`
 
-    return { startingBlock: '0x0', currentBlock: '0x0', highestBlock: '0x0' }
+    return { startingBlock: '0x0', currentBlock, highestBlock: '0x0' }
   }
 }
