@@ -39,7 +39,6 @@ tape(`${method}: should return no peer available error`, async (t) => {
 
   const manager = createManager(client)
   const rpcServer = startRPC(manager.getMethods())
-  const synchronizer = client.services[0].synchronizer
 
   client.open = td.func<typeof client['open']>()
   td.when(client.open()).thenResolve(false)
