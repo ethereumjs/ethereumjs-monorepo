@@ -125,5 +125,10 @@ tape(`${method}: should return syncing status object when unsynced`, async (t) =
   baseRequest(t, rpcServer, req, 200, expectRes)
 })
 
+tape('should reset td', (t) => {
+  td.reset()
+  t.end()
+})
+
 // Forces closing of the client, otherwise the test hangs on
 tape.onFinish(() => process.exit(0))
