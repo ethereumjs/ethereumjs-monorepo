@@ -35,7 +35,7 @@ You can import the `Wallet` class like this
 Node.js / ES5:
 
 ```js
-const { Wallet } = require('ethereumjs-wallet')
+const { Wallet } = require('ethereumjs-wallet').default
 ```
 
 ESM / TypeScript:
