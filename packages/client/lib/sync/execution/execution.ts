@@ -1,7 +1,8 @@
 import { EventEmitter } from 'events'
 import { Config } from '../../config'
-import { LevelUp } from 'levelup'
 import { Chain } from '../../blockchain'
+// eslint-disable-next-line implicit-dependencies/no-implicit
+import type { LevelUp } from 'levelup'
 
 export interface ExecutionOptions {
   /* Config */

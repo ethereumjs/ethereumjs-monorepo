@@ -1,5 +1,4 @@
 import Semaphore from 'semaphore-async-await'
-import { LevelUp } from 'levelup'
 import { keccak, KECCAK256_RLP } from 'ethereumjs-util'
 import { DB, BatchDBOp, PutBatch } from './db'
 import { TrieReadStream as ReadStream } from './readStream'
@@ -16,6 +15,8 @@ import {
   EmbeddedNode,
   Nibbles,
 } from './trieNode'
+// eslint-disable-next-line implicit-dependencies/no-implicit
+import type { LevelUp } from 'levelup'
 const assert = require('assert')
 
 export type Proof = Buffer[]

@@ -1,8 +1,9 @@
 import events from 'events'
-import { LevelUp } from 'levelup'
 import { MultiaddrLike } from './types'
 import { Config } from './config'
 import { FullEthereumService, LightEthereumService } from './service'
+// eslint-disable-next-line implicit-dependencies/no-implicit
+import type { LevelUp } from 'levelup'
 
 export interface EthereumClientOptions {
   /* Client configuration */
