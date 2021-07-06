@@ -1,4 +1,5 @@
 import PeerId from 'peer-id'
+// eslint-disable-next-line implicit-dependencies/no-implicit
 import crypto from 'libp2p-crypto'
 import multiaddr from 'multiaddr'
 import { Libp2pConnection as Connection } from '../../types'

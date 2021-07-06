@@ -4,7 +4,8 @@ import { Peer } from '../net/peer/peer'
 import { FlowControl } from '../net/protocol'
 import { Config } from '../config'
 import { Chain } from '../blockchain'
-import { LevelUp } from 'levelup'
+// eslint-disable-next-line implicit-dependencies/no-implicit
+import type { LevelUp } from 'levelup'
 
 export interface SynchronizerOptions {
   /* Config */
