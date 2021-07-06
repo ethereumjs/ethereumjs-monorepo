@@ -20,7 +20,7 @@ type GetBlockWitnessHashesOpts = {
 export interface WitProtocolMethods {
   getBlockWitnessHashes: (
     opts: GetBlockWitnessHashesOpts
-  ) => Promise<{ reqId: BN; witnessHashes: Buffer[] }>
+  ) => Promise<[ BN, Buffer[] ]>
 }
 
 const id = new BN(0)
@@ -41,10 +41,10 @@ export class WitProtocol extends Protocol {
         (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
         blockHash,
       ],
-      decode: ([reqId, blockHash]: any) => ({
-        reqId: new BN(reqId),
+      decode: ([reqId, blockHash]: any) => ([
+        new BN(reqId),
         blockHash,
-      }),
+      ]),
     },
     {
       name: 'BlockWitnessHashes',

@@ -74,8 +74,8 @@ tape('[Integration:FullEthereumService]', async (t) => {
 
     await service.synchronizer.execution.vm.runBlockchain(service.chain.blockchain)
 
-    const result = await peer.wit!.getBlockWitnessHashes({ blockHash })
-    t.ok(result.witnessHashes.length > 0, 'handled GetBlockWitnessHashes')
+    const [_, witnessHashes] = await peer.wit!.getBlockWitnessHashes({ blockHash })
+    t.ok(witnessHashes.length > 0, 'handled GetBlockWitnessHashes')
     await destroy(server, service)
     t.end()
   })

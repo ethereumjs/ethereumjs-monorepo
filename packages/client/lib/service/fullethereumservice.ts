@@ -131,8 +131,8 @@ export class FullEthereumService extends EthereumService {
 
   /**
    * Handles incoming WIT message from connected peer
-   * @param  {Object}  message message object
-   * @param  peer peer
+   * @param message message object
+   * @param peer peer
    */
   async handleWit(message: any, peer: Peer): Promise<void> {
     if (message.name === 'GetBlockWitnessHashes' && this.config.wit) {
