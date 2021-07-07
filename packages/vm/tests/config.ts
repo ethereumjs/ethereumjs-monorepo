@@ -11,6 +11,7 @@ export const DEFAULT_FORK_CONFIG = 'Istanbul'
 export const SKIP_BROKEN = [
   'ForkStressTest', // Only BlockchainTest, temporary till fixed (2020-05-23)
   'ChainAtoChainB', // Only BlockchainTest, temporary, along expectException fixes (2020-05-23)
+  'undefinedOpcodeFirstByte', // https://github.com/ethereumjs/ethereumjs-monorepo/issues/1271 (2021-05-26)
 
   // In these tests, we have access to two forked chains. Their total difficulty is equal. There are errors in the second chain, but we have no reason to execute this chain if the TD remains equal.
   'blockChainFrontierWithLargerTDvsHomesteadBlockchain2_FrontierToHomesteadAt5',
@@ -161,6 +162,7 @@ const normalHardforks = [
   'istanbul',
   'muirGlacier',
   'berlin',
+  'london',
 ]
 
 const transitionNetworks: any = {
@@ -341,17 +343,17 @@ const expectedTestsFull: any = {
     HomesteadToEIP150At5: 3,
   },
   GeneralStateTests: {
-    Chainstart: 1024,
-    Homestead: 1975,
+    Chainstart: 896,
+    Homestead: 1847,
     Dao: 0,
-    TangerineWhistle: 1097,
-    SpuriousDragon: 1222,
-    Byzantium: 4754,
-    Constantinople: 10530,
-    Petersburg: 10525,
+    TangerineWhistle: 969,
+    SpuriousDragon: 1094,
+    Byzantium: 4626,
+    Constantinople: 10402,
+    Petersburg: 10397,
     Istanbul: 10715,
     MuirGlacier: 10715,
-    Berlin: 1414,
+    Berlin: 13156,
     ByzantiumToConstantinopleFixAt5: 0,
     EIP158ToByzantiumAt5: 0,
     FrontierToHomesteadAt5: 0,

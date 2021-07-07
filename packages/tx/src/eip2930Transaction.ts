@@ -1,4 +1,13 @@
-import { BN, bnToHex, bnToRlp, ecrecover, keccak256, rlp, toBuffer } from 'ethereumjs-util'
+import {
+  BN,
+  bnToHex,
+  bnToUnpaddedBuffer,
+  ecrecover,
+  keccak256,
+  rlp,
+  toBuffer,
+} from 'ethereumjs-util'
+import Common from '@ethereumjs/common'
 import { BaseTransaction } from './baseTransaction'
 import {
   AccessList,
@@ -27,8 +36,20 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   public readonly AccessListJSON: AccessList
   public readonly gasPrice: BN
 
+  public readonly common: Common
+
+  /**
+   * The default HF if the tx type is active on that HF
+   * or the first greater HF where the tx is active.
+   *
+   * @hidden
+   */
+  protected DEFAULT_HARDFORK = 'berlin'
+
   /**
    * EIP-2930 alias for `r`
+   *
+   * @deprecated use `r` instead
    */
   get senderR() {
     return this.r
@@ -36,6 +57,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
   /**
    * EIP-2930 alias for `s`
+   *
+   * @deprecated use `s` instead
    */
   get senderS() {
     return this.s
@@ -43,13 +66,22 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
   /**
    * EIP-2930 alias for `v`
+   *
+   * @deprecated use `v` instead
    */
   get yParity() {
     return this.v
   }
 
   /**
-   * Instantiate a transaction from a data dictionary
+   * Instantiate a transaction from a data dictionary.
+   *
+   * Format: { chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
+   * v, r, s }
+   *
+   * Notes:
+   * - `chainId` will be set automatically if not provided
+   * - All parameters are optional and have some basic default values
    */
   public static fromTxData(txData: AccessListEIP2930TxData, opts: TxOptions = {}) {
     return new AccessListEIP2930Transaction(txData, opts)
@@ -58,7 +90,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   /**
    * Instantiate a transaction from the serialized tx.
    *
-   * Note: this means that the Buffer should start with 0x01.
+   * Format: `0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
+   * signatureYParity (v), signatureR (r), signatureS (s)])`
    */
   public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     if (!serialized.slice(0, 1).equals(TRANSACTION_TYPE_BUFFER)) {
@@ -80,12 +113,12 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
   /**
    * Instantiate a transaction from the serialized tx.
-   * (alias of `fromSerializedTx()`)
+   * (alias of {@link AccessListEIP2930Transaction.fromSerializedTx})
    *
    * Note: This means that the Buffer should start with 0x01.
    *
    * @deprecated this constructor alias is deprecated and will be removed
-   * in favor of the `fromSerializedTx()` constructor
+   * in favor of the {@link AccessListEIP2930Transaction.fromSerializedTx} constructor
    */
   public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
     return AccessListEIP2930Transaction.fromSerializedTx(serialized, opts)
@@ -94,8 +127,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   /**
    * Create a transaction from a values array.
    *
-   * The format is:
-   * chainId, nonce, gasPrice, gasLimit, to, value, data, access_list, yParity (v), senderR (r), senderS (s)
+   * Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
+   * signatureYParity (v), signatureR (r), signatureS (s)]`
    */
   public static fromValuesArray(values: AccessListEIP2930ValuesArray, opts: TxOptions = {}) {
     if (values.length !== 8 && values.length !== 11) {
@@ -134,14 +167,17 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * varying data types.
    */
   public constructor(txData: AccessListEIP2930TxData, opts: TxOptions = {}) {
+    super({ ...txData, type: TRANSACTION_TYPE })
     const { chainId, accessList, gasPrice } = txData
 
-    super({ ...txData, type: TRANSACTION_TYPE }, opts)
+    this.common = this._getCommon(opts.common, chainId)
+    this.chainId = this.common.chainIdBN()
 
     // EIP-2718 check is done in Common
     if (!this.common.isActivatedEIP(2930)) {
       throw new Error('EIP-2930 not enabled on Common')
     }
+    this.activeCapabilities = this.activeCapabilities.concat([2718, 2930])
 
     // Populate the access list fields
     const accessListData = AccessLists.getAccessListData(accessList ?? [])
@@ -150,14 +186,9 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     // Verify the access list format.
     AccessLists.verifyAccessList(this.accessList)
 
-    this.chainId = chainId ? new BN(toBuffer(chainId)) : this.common.chainIdBN()
     this.gasPrice = new BN(toBuffer(gasPrice === '' ? '0x' : gasPrice))
 
     this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
-
-    if (!this.chainId.eq(this.common.chainIdBN())) {
-      throw new Error('The chain ID does not match the chain ID of Common')
-    }
 
     if (this.v && !this.v.eqn(0) && !this.v.eqn(1)) {
       throw new Error('The y-parity of the transaction should either be 0 or 1')
@@ -192,28 +223,38 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   }
 
   /**
-   * Returns a Buffer Array of the raw Buffers of this transaction, in order.
+   * Returns a Buffer Array of the raw Buffers of the EIP-2930 transaction, in order.
    *
-   * Use `serialize()` to add to block data for `Block.fromValuesArray()`.
+   * Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
+   * signatureYParity (v), signatureR (r), signatureS (s)]`
+   *
+   * Use {@link AccessListEIP2930Transaction.serialize} to add to block data for {@link Block.fromValuesArray}.
    */
   raw(): AccessListEIP2930ValuesArray {
     return [
-      bnToRlp(this.chainId),
-      bnToRlp(this.nonce),
-      bnToRlp(this.gasPrice),
-      bnToRlp(this.gasLimit),
+      bnToUnpaddedBuffer(this.chainId),
+      bnToUnpaddedBuffer(this.nonce),
+      bnToUnpaddedBuffer(this.gasPrice),
+      bnToUnpaddedBuffer(this.gasLimit),
       this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bnToRlp(this.value),
+      bnToUnpaddedBuffer(this.value),
       this.data,
       this.accessList,
-      this.v !== undefined ? bnToRlp(this.v) : Buffer.from([]),
-      this.r !== undefined ? bnToRlp(this.r) : Buffer.from([]),
-      this.s !== undefined ? bnToRlp(this.s) : Buffer.from([]),
+      this.v !== undefined ? bnToUnpaddedBuffer(this.v) : Buffer.from([]),
+      this.r !== undefined ? bnToUnpaddedBuffer(this.r) : Buffer.from([]),
+      this.s !== undefined ? bnToUnpaddedBuffer(this.s) : Buffer.from([]),
     ]
   }
 
   /**
-   * Returns the serialized encoding of the transaction.
+   * Returns the serialized encoding of the EIP-2930 transaction.
+   *
+   * Format: `0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
+   * signatureYParity (v), signatureR (r), signatureS (s)])`
+   *
+   * Note that in contrast to the legacy tx serialization format this is not
+   * valid RLP any more due to the raw tx type preceeding and concatenated to
+   * the RLP encoding of the values.
    */
   serialize(): Buffer {
     const base = this.raw()
@@ -221,7 +262,15 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   }
 
   /**
-   * Returns the serialized unsigned tx (hashed or raw), which is used to sign the transaction.
+   * Returns the serialized unsigned tx (hashed or raw), which can be used
+   * to sign the transaction (e.g. for sending to a hardware wallet).
+   *
+   * Note: in contrast to the legacy tx the raw message format is already
+   * serialized and doesn't need to be RLP encoded any more.
+   *
+   * ```javascript
+   * const serializedMessage = tx.getMessageToSign(false) // use this for the HW wallet input
+   * ```
    *
    * @param hashMessage - Return hashed message if set to true (default: true)
    */
@@ -236,7 +285,10 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   }
 
   /**
-   * Computes a sha3-256 hash of the serialized tx
+   * Computes a sha3-256 hash of the serialized tx.
+   *
+   * This method can only be used for signed txs (it throws otherwise).
+   * Use {@link AccessListEIP2930Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   public hash(): Buffer {
     if (!this.isSigned()) {
@@ -276,8 +328,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       return ecrecover(
         msgHash,
         yParity!.addn(27), // Recover the 27 which was stripped from ecsign
-        bnToRlp(r!),
-        bnToRlp(s!)
+        bnToUnpaddedBuffer(r!),
+        bnToUnpaddedBuffer(s!)
       )
     } catch (e) {
       throw new Error('Invalid Signature')

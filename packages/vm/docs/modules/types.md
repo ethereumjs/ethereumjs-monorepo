@@ -22,4 +22,4 @@
 
 Ƭ **TxReceipt**: [*PreByzantiumTxReceipt*](../interfaces/types.prebyzantiumtxreceipt.md) \| [*PostByzantiumTxReceipt*](../interfaces/types.postbyzantiumtxreceipt.md) \| [*EIP2930Receipt*](../interfaces/types.eip2930receipt.md)
 
-Defined in: [types.ts:3](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/lib/types.ts#L3)
+Defined in: [types.ts:3](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L3)

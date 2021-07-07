@@ -1,5 +1,4 @@
 import { BN, toBuffer } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
 import {
   TxOptions,
   TypedTransaction,
@@ -8,8 +7,7 @@ import {
   FeeMarketEIP1559TxData,
 } from './types'
 import { Transaction, AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '.'
-
-const DEFAULT_COMMON = new Common({ chain: 'mainnet' })
+import Common from '@ethereumjs/common'
 
 export default class TransactionFactory {
   // It is not possible to instantiate a TransactionFactory object.
@@ -49,12 +47,7 @@ export default class TransactionFactory {
    * @param txOptions - The transaction options
    */
   public static fromSerializedData(data: Buffer, txOptions: TxOptions = {}): TypedTransaction {
-    const common = txOptions.common ?? DEFAULT_COMMON
     if (data[0] <= 0x7f) {
-      // It is an EIP-2718 Typed Transaction
-      if (!common.isActivatedEIP(2718)) {
-        throw new Error('Common support for TypedTransactions (EIP-2718) not activated')
-      }
       // Determine the type.
       let EIP: number
       switch (data[0]) {
@@ -67,13 +60,6 @@ export default class TransactionFactory {
         default:
           throw new Error(`TypedTransaction with ID ${data[0]} unknown`)
       }
-
-      if (!common.isActivatedEIP(EIP)) {
-        throw new Error(
-          `Cannot create TypedTransaction with ID ${data[0]}: EIP ${EIP} not activated`
-        )
-      }
-
       if (EIP === 1559) {
         return FeeMarketEIP1559Transaction.fromSerializedTx(data, txOptions)
       } else {
@@ -110,16 +96,10 @@ export default class TransactionFactory {
    * If transactionID is undefined, returns the legacy transaction class.
    * @deprecated - This method is deprecated and will be removed on the next major release
    * @param transactionID
-   * @param common
+   * @param common - This option is not used
    */
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   public static getTransactionClass(transactionID: number = 0, common?: Common) {
-    const usedCommon = common ?? DEFAULT_COMMON
-    if (transactionID !== 0) {
-      if (!usedCommon.isActivatedEIP(2718)) {
-        throw new Error('Common support for TypedTransactions (EIP-2718) not activated')
-      }
-    }
-
     const legacyTxn = transactionID == 0 || (transactionID >= 0x80 && transactionID <= 0xff)
 
     if (legacyTxn) {

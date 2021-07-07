@@ -54,6 +54,7 @@ jobs:
     strategy:
       matrix:
         fork: [
+          'London',
           'Berlin',
           'Istanbul',
           'MuirGlacier'
@@ -92,6 +93,7 @@ jobs:
     strategy:
       matrix:
         fork: [
+          'London',
           'Berlin',
           'MuirGlacier',
           'Istanbul',
@@ -142,7 +144,9 @@ jobs:
           '--fork=Istanbul --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
           '--fork=Istanbul --excludeDir=stTimeConsuming --expected-test-amount=19817',
           '--fork=Berlin --dir=GeneralStateTests/stTimeConsuming',
-          '--fork=Berlin --excludeDir=stTimeConsuming'
+          '--fork=Berlin --excludeDir=stTimeConsuming',
+          '--fork=London --dir=GeneralStateTests/stTimeConsuming',
+          '--fork=London --excludeDir=stTimeConsuming'
         ]
       fail-fast: false
     steps:
@@ -183,11 +187,11 @@ jobs:
         args: [
           '--fork=Berlin --expected-test-amount=33',
           '--fork=Constantinople --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
-          '--fork=Constantinople --excludeDir=stTimeConsuming --expected-test-amount=17193',
+          '--fork=Constantinople --excludeDir=stTimeConsuming --expected-test-amount=16836',
           '--fork=Petersburg --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
-          '--fork=Petersburg --excludeDir=stTimeConsuming --expected-test-amount=17174',
-          '--fork=Homestead --expected-test-amount=6997',
-          '--fork=Chainstart --expected-test-amount=4385'
+          '--fork=Petersburg --excludeDir=stTimeConsuming --expected-test-amount=16821',
+          '--fork=Homestead --expected-test-amount=6623',
+          '--fork=Chainstart --expected-test-amount=4044'
         ]
       fail-fast: false
     steps:

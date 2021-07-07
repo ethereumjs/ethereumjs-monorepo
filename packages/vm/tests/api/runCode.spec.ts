@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { BN } from 'ethereumjs-util'
-import VM from '../../lib'
-import { DefaultStateManager } from '../../lib/state'
+import VM from '../../src'
+import { DefaultStateManager } from '../../src/state'
 
 const STOP = '00'
 const JUMP = '56'

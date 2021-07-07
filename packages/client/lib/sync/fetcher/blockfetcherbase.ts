@@ -35,7 +35,6 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     super(options)
 
     this.chain = options.chain
-    this.maxPerRequest = options.maxPerRequest ?? 50
     this.first = options.first
     this.count = options.count
   }
@@ -46,7 +45,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
    */
   tasks(): JobTask[] {
     const { first, count } = this
-    const max = this.maxPerRequest
+    const max = this.config.maxPerRequest
     const tasks: JobTask[] = []
     while (count.gten(max)) {
       tasks.push({ first: first.clone(), count: max })

@@ -24,5 +24,10 @@ tape('Verify POW for valid and invalid blocks', async function (t) {
   const invalidBlockResult = await e.verifyPOW(invalidBlock)
   t.ok(!invalidBlockResult, 'should be invalid')
 
+  const testData = require('./block_tests_data.json')
+  const blockRlp = testData.blocks[0].rlp
+  const block = Block.fromRLPSerializedBlock(blockRlp)
+  const uncleBlockResult = await e.verifyPOW(block)
+  t.ok(uncleBlockResult, 'should be valid')
   t.end()
 })

@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { Account, Address } from 'ethereumjs-util'
-import EEI from '../../../lib/evm/eei'
-import StateManager from '../../../lib/state/stateManager'
+import EEI from '../../../src/evm/eei'
+import StateManager from '../../../src/state/stateManager'
 
 const ZeroAddress = Address.zero()
 

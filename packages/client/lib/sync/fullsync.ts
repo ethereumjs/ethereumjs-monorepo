@@ -119,15 +119,20 @@ export class FullSynchronizer extends Synchronizer {
     this.blockFetcher.on('error', (error: Error) => {
       this.emit('error', error)
     })
-    this.config.events.on(Event.SYNC_FETCHER_FETCHED, (blocks) => {
-      const first = new BN((blocks[0] as Block).header.number)
-      const hash = short(blocks[0].hash())
-      this.config.logger.info(
-        `Imported blocks count=${blocks.length} number=${first.toString(
-          10
-        )} hash=${hash} hardfork=${this.config.chainCommon.hardfork()} peers=${this.pool.size}`
-      )
-    })
+    this.config.events.on(Event.SYNC_FETCHER_FETCHED, (blocks: Block[]) => {
+        const first = new BN(blocks[0].header.number)
+        const hash = short(blocks[0].hash())
+        const baseFeeAdd = this.config.chainCommon.gteHardfork('london')
+          ? `basefee=${blocks[0].header.baseFeePerGas} `
+          : ''
+        this.config.logger.info(
+          `Imported blocks count=${blocks.length} number=${first.toString(
+            10
+          )} hash=${hash} ${baseFeeAdd}hardfork=${this.config.chainCommon.hardfork()} peers=${
+            this.pool.size
+          }`
+        )
+      })
     await this.blockFetcher.fetch()
     // TODO: Should this be deleted?
     // @ts-ignore: error: The operand of a 'delete' operator must be optional
@@ -169,6 +174,7 @@ export class FullSynchronizer extends Synchronizer {
     const number = this.chain.blocks.height.toNumber()
     const td = this.chain.blocks.td.toString(10)
     const hash = this.chain.blocks.latest!.hash()
+    this.startingBlock = number
     this.config.chainCommon.setHardforkByBlockNumber(number)
     this.config.logger.info(
       `Latest local block: number=${number} td=${td} hash=${short(

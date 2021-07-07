@@ -7,13 +7,14 @@ import {
   Transaction,
   TypedTransaction,
   FeeMarketEIP1559Transaction,
+  Capabilities,
 } from '@ethereumjs/tx'
-import { RunBlockOpts, AfterBlockEvent } from '../../lib/runBlock'
-import type { PreByzantiumTxReceipt, PostByzantiumTxReceipt } from '../../lib/types'
+import { RunBlockOpts, AfterBlockEvent } from '../../src/runBlock'
+import type { PreByzantiumTxReceipt, PostByzantiumTxReceipt } from '../../src/types'
 import { setupPreConditions, getDAOCommon } from '../util'
 import { setupVM, createAccount } from './utils'
 import testnet from './testdata/testnet.json'
-import VM from '../../lib/index'
+import VM from '../../src/index'
 import { setBalance } from './utils'
 
 const testData = require('./testdata/blockchain.json')
@@ -50,9 +51,61 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     )
   }
 
+  async function uncleRun(vm: VM) {
+    const testData = require('./testdata/uncleData.json')
+
+    //@ts-ignore
+    await setupPreConditions(vm.stateManager._trie, testData)
+
+    const block1Rlp = testData.blocks[0].rlp
+    const block1 = Block.fromRLPSerializedBlock(block1Rlp)
+    await vm.runBlock({
+      block: block1,
+      // @ts-ignore
+      root: vm.stateManager._trie.root,
+      skipBlockValidation: true,
+    })
+
+    const block2Rlp = testData.blocks[1].rlp
+    const block2 = Block.fromRLPSerializedBlock(block2Rlp)
+    await vm.runBlock({
+      block: block2,
+      // @ts-ignore
+      root: vm.stateManager._trie.root,
+      skipBlockValidation: true,
+    })
+
+    const block3Rlp = testData.blocks[2].rlp
+    const block3 = Block.fromRLPSerializedBlock(block3Rlp)
+    await vm.runBlock({
+      block: block3,
+      // @ts-ignore
+      root: vm.stateManager._trie.root,
+      skipBlockValidation: true,
+    })
+
+    const uncleReward = (
+      await vm.stateManager.getAccount(
+        Address.fromString('0xb94f5374fce5ed0000000097c15331677e6ebf0b')
+      )
+    ).balance.toString('hex')
+
+    t.equals(
+      `0x${uncleReward}`,
+      testData.postState['0xb94f5374fce5ed0000000097c15331677e6ebf0b'].balance,
+      'calculated balance should equal postState balance'
+    )
+  }
+
   t.test('PoW block, unmodified options', async (t) => {
     const vm = setupVM()
     await simpleRun(vm)
+    t.end()
+  })
+
+  t.test('Uncle blocks, compute uncle rewards', async (t) => {
+    const vm = setupVM()
+    await uncleRun(vm)
     t.end()
   })
 
@@ -410,7 +463,7 @@ tape('runBlock() -> tx types', async (t) => {
     //@ts-ignore overwrite transactions
     block.transactions = transactions
 
-    if (transactions.some((t) => t.type === 2)) {
+    if (transactions.some((t) => t.supports(Capabilities.EIP1559FeeMarket))) {
       // @ts-ignore overwrite read-only property
       block.header.baseFeePerGas = new BN(7)
     }

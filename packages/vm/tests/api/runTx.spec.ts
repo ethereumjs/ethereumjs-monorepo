@@ -3,7 +3,7 @@ import { Account, Address, BN, MAX_INTEGER } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import { Transaction, TransactionFactory, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import VM from '../../lib'
+import VM from '../../src'
 import { createAccount, getTransaction } from './utils'
 
 const TRANSACTION_TYPES = [
@@ -254,6 +254,26 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
     const res = await vm.runTx({ tx })
     t.ok(res, 'should pass if balance is sufficient')
 
+    t.end()
+  })
+
+  t.test("run with maxBaseFee less than block's baseFee", async (t) => {
+    // EIP-1559
+    // Fail if transaction.maxFeePerGas < block.baseFeePerGas
+    for (const txType of TRANSACTION_TYPES) {
+      const vm = new VM({ common })
+      const tx = getTransaction(vm._common, txType.type, true)
+      const block = Block.fromBlockData({ header: { baseFeePerGas: 100000 } }, { common })
+      try {
+        await vm.runTx({ tx, block })
+        t.fail('should fail')
+      } catch (e) {
+        t.ok(
+          e.message.includes("is less than the block's baseFeePerGas"),
+          'should fail with appropriate error'
+        )
+      }
+    }
     t.end()
   })
 })

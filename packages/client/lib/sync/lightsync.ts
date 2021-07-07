@@ -56,6 +56,18 @@ export class LightSynchronizer extends Synchronizer {
   }
 
   /**
+   * Get latest header of peer
+   * @return {Promise} Resolves with header
+   */
+  async latest(peer: Peer) {
+    const headers = await peer.eth?.getBlockHeaders({
+      block: peer.eth!.status.bestHash,
+      max: 1,
+    })
+    return headers?.[0]
+  }
+
+  /**
    * Sync all headers and state from peer starting from current height.
    * @param  peer remote peer to sync with
    * @return Resolves when sync completed
@@ -87,10 +99,13 @@ export class LightSynchronizer extends Synchronizer {
       .on('fetched', (headers: BlockHeader[]) => {
         const first = new BN(headers[0].number)
         const hash = short(headers[0].hash())
+        const baseFeeAdd = this.config.chainCommon.gteHardfork('london')
+          ? `basefee=${headers[0].baseFeePerGas} `
+          : ''
         this.config.logger.info(
           `Imported headers count=${headers.length} number=${first.toString(
             10
-          )} hash=${hash} peers=${this.pool.size}`
+          )} hash=${hash} ${baseFeeAdd}peers=${this.pool.size}`
         )
       })
     await this.headerFetcher.fetch()
@@ -115,9 +130,10 @@ export class LightSynchronizer extends Synchronizer {
   async open(): Promise<void> {
     await this.chain.open()
     await this.pool.open()
-    const number = this.chain.headers.height.toString(10)
+    const number = this.chain.headers.height.toNumber()
     const td = this.chain.headers.td.toString(10)
     const hash = this.chain.blocks.latest!.hash()
+    this.startingBlock = number
     this.config.logger.info(`Latest local header: number=${number} td=${td} hash=${short(hash)}`)
   }
 

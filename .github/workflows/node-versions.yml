@@ -52,17 +52,27 @@ jobs:
         run: npm run test
         working-directory: packages/blockchain
 
+      # Client and Devp2p temporarily disabled for Node < 15 due to browser build
+      # error along node-versions CI run "TextDecoder is not defined" triggered in
+      # older Noder versions (Node 12/14)
+      # https://github.com/ethereumjs/ethereumjs-monorepo/pull/1305
+      # 2021-06-18
+      #
+      # TODO: give this another test run in times and reactivate (note that this
+      # might also be an issue which gets fixed downstream at some point in time)
       - name: Test Client
         run: npm run test
         working-directory: packages/client
-
-      - name: Test Common
-        run: npm run test
-        working-directory: packages/common
+        if: ${{ matrix.node >= 15 }}
       
       - name: Test Devp2p
         run: npm run test
         working-directory: packages/devp2p
+        if: ${{ matrix.node >= 15 }}
+
+      - name: Test Common
+        run: npm run test
+        working-directory: packages/common
 
       - name: Test Ethash
         run: npm run test

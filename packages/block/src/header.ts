@@ -3,6 +3,7 @@ import {
   Address,
   BN,
   bnToHex,
+  bnToUnpaddedBuffer,
   ecrecover,
   ecsign,
   intToBuffer,
@@ -11,7 +12,6 @@ import {
   rlp,
   rlphash,
   toBuffer,
-  unpadBuffer,
   zeros,
 } from 'ethereumjs-util'
 import { HeaderData, JsonHeader, BlockHeaderBuffer, Blockchain, BlockOptions } from './types'
@@ -166,7 +166,7 @@ export class BlockHeader {
   }
 
   /**
-   * Alias for Header.fromHeaderData() with initWithGenesisHeader set to true.
+   * Alias for {@link BlockHeader.fromHeaderData} with {@link BlockOptions.initWithGenesisHeader} set to true.
    */
   public static genesis(headerData: HeaderData = {}, opts?: BlockOptions) {
     opts = { ...opts, initWithGenesisHeader: true }
@@ -177,7 +177,7 @@ export class BlockHeader {
    * This constructor takes the values, validates them, assigns them and freezes the object.
    *
    * @deprecated - Use the public static factory methods to assist in creating a Header object from
-   * varying data types. For a default empty header, use `BlockHeader.fromHeaderData()`.
+   * varying data types. For a default empty header, use {@link BlockHeader.fromHeaderData}.
    *
    */
   constructor(
@@ -301,6 +301,7 @@ export class BlockHeader {
    */
   _validateHeaderFields() {
     const { parentHash, stateRoot, transactionsTrie, receiptTrie, mixHash, nonce } = this
+
     if (parentHash.length !== 32) {
       throw new Error(`parentHash must be 32 bytes, received ${parentHash.length} bytes`)
     }
@@ -320,7 +321,14 @@ export class BlockHeader {
     }
 
     if (nonce.length !== 8) {
-      throw new Error(`nonce must be 8 bytes, received ${nonce.length} bytes`)
+      // Hack to check for Kovan due to non-standard nonce length (65 bytes)
+      if (this._common.networkIdBN().eqn(42)) {
+        if (nonce.length !== 65) {
+          throw new Error(`nonce must be 65 bytes on kovan, received ${nonce.length} bytes`)
+        }
+      } else {
+        throw new Error(`nonce must be 8 bytes, received ${nonce.length} bytes`)
+      }
     }
   }
 
@@ -648,18 +656,18 @@ export class BlockHeader {
       this.transactionsTrie,
       this.receiptTrie,
       this.bloom,
-      unpadBuffer(toBuffer(this.difficulty)), // we unpadBuffer, because toBuffer(new BN(0)) == <Buffer 00>
-      unpadBuffer(toBuffer(this.number)),
-      unpadBuffer(toBuffer(this.gasLimit)),
-      unpadBuffer(toBuffer(this.gasUsed)),
-      unpadBuffer(toBuffer(this.timestamp)),
+      bnToUnpaddedBuffer(this.difficulty),
+      bnToUnpaddedBuffer(this.number),
+      bnToUnpaddedBuffer(this.gasLimit),
+      bnToUnpaddedBuffer(this.gasUsed),
+      bnToUnpaddedBuffer(this.timestamp),
       this.extraData,
       this.mixHash,
       this.nonce,
     ]
 
     if (this._common.isActivatedEIP(1559)) {
-      rawItems.push(unpadBuffer(toBuffer(this.baseFeePerGas)))
+      rawItems.push(bnToUnpaddedBuffer(this.baseFeePerGas!))
     }
 
     return rawItems
@@ -747,7 +755,7 @@ export class BlockHeader {
    *
    * This function throws if not called on an epoch
    * transition block and should therefore be used
-   * in conjunction with `cliqueIsEpochTransition()`
+   * in conjunction with {@link BlockHeader.cliqueIsEpochTransition}
    */
   cliqueEpochTransitionSigners(): Address[] {
     this._requireClique('cliqueEpochTransitionSigners')

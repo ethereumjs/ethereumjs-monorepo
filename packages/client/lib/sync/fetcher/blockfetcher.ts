@@ -18,25 +18,6 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
   }
 
   /**
-   * Generate list of tasks to fetch
-   * @return {Object[]} tasks
-   */
-  tasks(): JobTask[] {
-    const { first, count } = this
-    const max = this.maxPerRequest
-    const tasks: JobTask[] = []
-    while (count.gten(max)) {
-      tasks.push({ first: first.clone(), count: max })
-      first.iaddn(max)
-      count.isubn(max)
-    }
-    if (count.gtn(0)) {
-      tasks.push({ first: first.clone(), count: count.toNumber() })
-    }
-    return tasks
-  }
-
-  /**
    * Requests blocks associated with this job
    * @param job
    */
@@ -68,8 +49,23 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
    * @return {*} results of processing job or undefined if job not finished
    */
   process(job: Job<JobTask, Block[], Block>, result: Block[]) {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (result && result.length === job.task.count) {
+    if (result.length === job.task.count) {
+      return result
+    } else if (result.length > 0 && result.length < job.task.count) {
+      // Adopt the start block/header number from the remaining jobs
+      // if the number of the results provided is lower than the expected count
+      const lengthDiff = job.task.count - result.length
+      const adoptedJobs = []
+      while (this.in.length > 0) {
+        const job = this.in.remove()
+        if (job) {
+          job.task.first = job.task.first.subn(lengthDiff)
+          adoptedJobs.push(job)
+        }
+      }
+      for (const job of adoptedJobs) {
+        this.in.insert(job)
+      }
       return result
     }
     return

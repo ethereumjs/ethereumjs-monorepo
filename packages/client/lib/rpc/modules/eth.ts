@@ -14,9 +14,10 @@ import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
 import { RpcTx } from '../types'
 import type { Chain } from '../../blockchain'
 import type { EthereumClient } from '../..'
-import type { EthereumService } from '../../service'
+import { EthereumService } from '../../service'
 import type { EthProtocol } from '../../net/protocol'
 import type VM from '@ethereumjs/vm'
+import { Block } from '@ethereumjs/block'
 
 /**
  * eth_* RPC module
@@ -49,6 +50,8 @@ export class Eth {
       [validators.blockOption],
     ])
 
+    this.chainId = middleware(this.chainId.bind(this), 0, [])
+
     this.estimateGas = middleware(this.estimateGas.bind(this), 2, [
       [validators.transaction()],
       [validators.blockOption],
@@ -60,7 +63,7 @@ export class Eth {
     ])
 
     this.getBlockByNumber = middleware(this.getBlockByNumber.bind(this), 2, [
-      [validators.hex],
+      [validators.blockOption],
       [validators.bool],
     ])
 
@@ -94,6 +97,8 @@ export class Eth {
     this.sendRawTransaction = middleware(this.sendRawTransaction.bind(this), 1, [[validators.hex]])
 
     this.protocolVersion = middleware(this.protocolVersion.bind(this), 0, [])
+
+    this.syncing = middleware(this.syncing.bind(this), 0, [])
   }
 
   /**
@@ -158,6 +163,16 @@ export class Eth {
 
     const { execResult } = await vm.runTx({ tx })
     return bufferToHex(execResult.returnValue)
+  }
+
+  /**
+   * Returns the currently configured chain id, a value used in replay-protected transaction signing as introduced by EIP-155.
+   * @param _params An empty array
+   * @returns The chain ID.
+   */
+  async chainId(_params = []) {
+    const chainId = this._chain.config.chainCommon.chainIdBN()
+    return `0x${chainId.toString(16)}`
   }
 
   /**
@@ -256,23 +271,6 @@ export class Eth {
   }
 
   /**
-   * Returns information about a block by block number.
-   * @param params An array of two parameters:
-   *   1. integer of a block number
-   *   2. boolean - if true returns the full transaction objects, if false only the hashes of the transactions.
-   */
-  async getBlockByNumber(params: [string, boolean]) {
-    const [blockNumber, includeTransactions] = params
-    const blockNumberBN = new BN(stripHexPrefix(blockNumber), 16)
-    const block = await this._chain.getBlock(blockNumberBN)
-    const json = block.toJSON()
-    if (!includeTransactions) {
-      json.transactions = block.transactions.map((tx) => bufferToHex(tx.hash())) as any
-    }
-    return json
-  }
-
-  /**
    * Returns information about a block by hash.
    * @param params An array of two parameters:
    *   1. a block hash
@@ -282,6 +280,36 @@ export class Eth {
     const [blockHash, includeTransactions] = params
 
     const block = await this._chain.getBlock(toBuffer(blockHash))
+    const json = block.toJSON()
+    if (!includeTransactions) {
+      json.transactions = block.transactions.map((tx) => bufferToHex(tx.hash())) as any
+    }
+    return json
+  }
+
+  /**
+   * Returns information about a block by block number.
+   * @param params An array of two parameters:
+   *   1. integer of a block number, or the string "latest", "earliest" or "pending"
+   *   2. boolean - if true returns the full transaction objects, if false only the hashes of the transactions.
+   */
+  async getBlockByNumber(params: [string, boolean]) {
+    const [blockOpt, includeTransactions] = params
+    let block: Block
+    if (blockOpt === 'latest') {
+      block = await this._chain.getLatestBlock()
+    } else if (blockOpt === 'pending') {
+      return {
+        code: INVALID_PARAMS,
+        message: `"pending" is not yet supported`,
+      }
+    } else if (blockOpt === 'earliest') {
+      block = await this._chain.getBlock(new BN(0))
+    } else {
+      const blockNumberBN = new BN(stripHexPrefix(blockOpt), 16)
+      block = await this._chain.getBlock(blockNumberBN)
+    }
+
     const json = block.toJSON()
     if (!includeTransactions) {
       json.transactions = block.transactions.map((tx) => bufferToHex(tx.hash())) as any
@@ -413,7 +441,7 @@ export class Eth {
   /**
    * Returns the number of uncles in a block from a block matching the given block number
    * @param params An array of one parameter:
-   *   1: hexidecimal representation of a block number
+   *   1: hexadecimal representation of a block number
    */
   async getUncleCountByBlockNumber(params: [string]) {
     const [blockNumber] = params
@@ -475,5 +503,42 @@ export class Eth {
         message: `serialized tx data could not be parsed (${e.message})`,
       }
     }
+  }
+  /**
+   * Returns an object with data about the sync status or false.
+   * @param params An empty array
+   * @returns  An object with sync status data or false (when not syncing)
+   *   * startingBlock - The block at which the import started (will only be reset after the sync reached his head)
+   *   * currentBlock - The current block, same as eth_blockNumber
+   *   * highestBlock - The estimated highest block
+   */
+  async syncing(_params = []) {
+    if (this.client.synchronized) {
+      return false
+    }
+
+    const currentBlockHeader = await this._chain.getLatestHeader()
+    const currentBlock = `0x${currentBlockHeader.number.toString(16)}`
+
+    const synchronizer = this.client.services[0].synchronizer
+    const startingBlock = `0x${synchronizer.startingBlock.toString(16)}`
+    const bestPeer = synchronizer.best()
+    if (!bestPeer) {
+      return {
+        code: INTERNAL_ERROR,
+        message: `no peer available for synchronization`,
+      }
+    }
+
+    const highestBlockHeader = await synchronizer.latest(bestPeer)
+    if (!highestBlockHeader) {
+      return {
+        code: INTERNAL_ERROR,
+        message: `highest block header unavailable`,
+      }
+    }
+    const highestBlock = `0x${highestBlockHeader.number.toString(16)}`
+
+    return { startingBlock, currentBlock, highestBlock }
   }
 }

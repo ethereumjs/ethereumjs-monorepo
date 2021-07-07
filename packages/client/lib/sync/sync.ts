@@ -40,6 +40,7 @@ export abstract class Synchronizer extends EventEmitter {
   protected interval: number
   public running: boolean
   protected forceSync: boolean
+  public startingBlock: number
 
   /**
    * Create new node
@@ -56,6 +57,7 @@ export abstract class Synchronizer extends EventEmitter {
     this.interval = options.interval ?? 1000
     this.running = false
     this.forceSync = false
+    this.startingBlock = 0
 
     this.pool.on('added', (peer: Peer) => {
       if (this.syncable(peer)) {

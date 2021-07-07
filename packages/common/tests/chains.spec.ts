@@ -1,5 +1,6 @@
 import tape from 'tape'
-import Common from '../src/'
+import Common, { Chain, Hardfork } from '../src/'
+import { BN } from 'ethereumjs-util'
 
 tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
   t.test('Should initialize with chain provided', function (st: tape.Test) {
@@ -23,12 +24,40 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
     st.end()
   })
 
+  t.test('Should initialize with chain provided by Chain enum', function (st: tape.Test) {
+    const c = new Common({ chain: Chain.Mainnet })
+    st.equal(c.chainName(), 'mainnet', 'should initialize with chain name')
+    st.equal(c.chainId(), 1, 'should return correct chain Id')
+    st.ok(c.chainIdBN().eqn(1), 'should return correct chain Id')
+    st.equal(c.networkId(), 1, 'should return correct network Id')
+    st.ok(c.networkIdBN().eqn(1), 'should return correct network Id')
+    st.equal(c.hardfork(), 'istanbul', 'should set hardfork to current default hardfork')
+    st.equal(
+      c.hardfork(),
+      c.DEFAULT_HARDFORK,
+      'should set hardfork to hardfork set as DEFAULT_HARDFORK'
+    )
+    st.equal(c._isSupportedHardfork('constantinople'), true, 'should not restrict supported HFs')
+
+    st.end()
+  })
+
   t.test('Should initialize with chain and hardfork provided', function (st: tape.Test) {
     const c = new Common({ chain: 'mainnet', hardfork: 'byzantium' })
     st.equal(c.hardfork(), 'byzantium', 'should return correct hardfork name')
 
     st.end()
   })
+
+  t.test(
+    'Should initialize with chain and hardfork provided by Chain and Hardfork enums',
+    function (st: tape.Test) {
+      const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+      st.equal(c.hardfork(), 'byzantium', 'should return correct hardfork name')
+
+      st.end()
+    }
+  )
 
   t.test('Should initialize with supportedHardforks provided', function (st: tape.Test) {
     const c = new Common({
@@ -140,6 +169,18 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
     hash = '0xbf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a'
     st.equal(c.genesis().hash, hash, 'goerli')
 
+    st.end()
+  })
+})
+
+tape('[Common]: isSupportedChainId static method', function (t: tape.Test) {
+  t.test('Should return true for supported chainId', function (st: tape.Test) {
+    st.equal(Common.isSupportedChainId(new BN(1)), true, 'returns true')
+    st.end()
+  })
+
+  t.test('Should return false for unsupported chainId', function (st: tape.Test) {
+    st.equal(Common.isSupportedChainId(new BN(0)), false, 'returns false')
     st.end()
   })
 })

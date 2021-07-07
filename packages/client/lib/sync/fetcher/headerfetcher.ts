@@ -35,7 +35,7 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
    */
   async request(job: Job<JobTask, BlockHeaderResult, BlockHeader>) {
     const { task, peer } = job
-    if (this.flow.maxRequestCount(peer!, 'GetBlockHeaders') < this.maxPerRequest) {
+    if (this.flow.maxRequestCount(peer!, 'GetBlockHeaders') < this.config.maxPerRequest) {
       // we reached our request limit. try with a different peer.
       return
     }
@@ -54,9 +54,25 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
    */
   process(job: Job<JobTask, BlockHeaderResult, BlockHeader>, result: BlockHeaderResult) {
     this.flow.handleReply(job.peer!, result.bv.toNumber())
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (result.headers && result.headers.length === job.task.count) {
-      return result.headers
+    const { headers } = result
+    if (headers.length === job.task.count) {
+      return headers
+    } else if (headers.length > 0 && headers.length < job.task.count) {
+      // Adopt the start block/header number from the remaining jobs
+      // if the number of the results provided is lower than the expected count
+      const lengthDiff = job.task.count - headers.length
+      const adoptedJobs = []
+      while (this.in.length > 0) {
+        const job = this.in.remove()
+        if (job) {
+          job.task.first = job.task.first.subn(lengthDiff)
+          adoptedJobs.push(job)
+        }
+      }
+      for (const job of adoptedJobs) {
+        this.in.insert(job)
+      }
+      return headers
     }
     return
   }

@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { Account, Address, BN } from 'ethereumjs-util'
-import VM from '../../../lib'
+import VM from '../../../src'
 import Common from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 

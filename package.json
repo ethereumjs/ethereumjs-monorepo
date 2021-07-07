@@ -2,9 +2,17 @@
   "name": "root",
   "private": true,
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.27.0",
+    "@typescript-eslint/parser": "^4.27.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-config-typestrict": "^1.0.0",
+    "eslint-plugin-implicit-dependencies": "^1.0.4",
+    "eslint-plugin-prettier": "^3.1.3",
+    "eslint-plugin-sonarjs": "^0.5.0",
     "husky": "^4.2.5",
     "lerna": "^3.20.2",
     "npm-auth-to-token": "1.0.0",
+    "typedoc-plugin-markdown": "^3.6.0",
     "verdaccio": "4.4.4"
   },
   "husky": {

@@ -52,7 +52,7 @@ export class SecureTrie extends CheckpointTrie {
   }
 
   /**
-   * prove has been renamed to [[SecureTrie.createProof]].
+   * prove has been renamed to {@link SecureTrie.createProof}.
    * @deprecated
    * @param trie
    * @param key
@@ -62,7 +62,7 @@ export class SecureTrie extends CheckpointTrie {
   }
 
   /**
-   * Creates a proof that can be verified using [[SecureTrie.verifyProof]].
+   * Creates a proof that can be verified using {@link SecureTrie.verifyProof}.
    * @param trie
    * @param key
    */

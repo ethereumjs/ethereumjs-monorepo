@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## UNRELEASED
+
+- BlockBuilder: allow customizable baseFeePerGas, PR [#1326](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1326)
+
+## 5.4.1 - 2021-06-11
+
+This release comes with some additional `EIP-1559` checks and functionality:
+
+- Additional 1559 check in `VM.runTx()` that the tx sender balance must be >= gas_limit * max_fee_per_gas, PR [#1272](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1272)
+- Additional 1559 check in `VM.runTx()` to ensure that the user was willing to at least pay the base fee (`transaction.max_fee_per_gas >= block.base_fee_per_gas`), PR [#1276](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1276)
+- 1559 support for the BlockBuilder (`VM.buildBlock()`) by setting the new block's `baseFeePerGas` to `parentBlock.header.calcNextBaseFee()`, PR [#1280](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1280)
+
 ## 5.4.0 - 2021-05-26
 
 ### London HF Support
@@ -911,7 +923,7 @@ This release switches to a new class based and promisified structure for
 working down VM calls and running through code loops, and encapsulates this
 logic to be bound to the specific `EVM` (so the classical Ethereum Virtual Machine)
 implementation in the
-[evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/lib/evm) module,
+[evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/src/evm) module,
 opening the way for a future parallel `eWASM` additional implementation.
 
 This new logic is mainly handled by the two new classes `EVM` (old: `Interpreter`)

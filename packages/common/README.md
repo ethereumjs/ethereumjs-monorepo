@@ -95,9 +95,7 @@ Supported chains:
 - `rinkeby`
 - `kovan`
 - `goerli`
-- `yolov3`
-- `aleut`
-- `baikal`
+- `calaveras`
 - Private/custom chain parameters
 
 The following chain-specific parameters are provided:

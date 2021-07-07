@@ -1,5 +1,5 @@
 {
-  "extends": "@ethereumjs/config-typescript/tsconfig.json",
+  "extends": "../../config/tsconfig.json",
   "include": ["bin", "lib", "test"],
   "compilerOptions": {
   }
