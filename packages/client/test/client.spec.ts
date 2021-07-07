@@ -73,7 +73,7 @@ tape('[EthereumClient]', async (t) => {
 
     t.equals(client.synchronized, false, 'not synchronized yet')
     await client.open()
-    client.services[0].emit('synchronized')
+    config.events.emit(Event.SYNC_SYNCHRONIZED)
     t.equals(client.synchronized, true, 'synchronized')
     t.end()
   })

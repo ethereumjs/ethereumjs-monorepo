@@ -3,7 +3,7 @@ import { LevelUp } from 'levelup'
 import { MultiaddrLike } from './types'
 import { Config } from './config'
 import { FullEthereumService, LightEthereumService } from './service'
-
+import { Event } from './types'
 export interface EthereumClientOptions {
   /* Client configuration */
   config: Config
@@ -95,6 +95,7 @@ export default class EthereumClient extends events.EventEmitter {
     })
     await Promise.all(this.services.map((s) => s.open()))
     this.opened = true
+    this.config.events.on(Event.SYNC_SYNCHRONIZED, () => this.synchronized = true)
   }
 
   /**
