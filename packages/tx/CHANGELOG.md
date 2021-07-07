@@ -6,11 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 3.3.0 - 2021-07-02
+## 3.3.0 - 2021-07-08
+
+### Finalized London HF Support
+
+This release integrates a `Common` library version which provides the `london` HF blocks for all networks including `mainnet` and is therefore the first release with finalized London HF support.
 
 ### Improved L2 Tx Support
 
-This tx release bumps the `Common` library dependency version to `v2.4.0` and is therefore assured to works with the reworked `Common.custom()` method which can be used for an easier instantiation of common custom chain instances for sending txs to a custom (L2) network.
+This tx release bumps the `Common` library dependency version to `v2.4.0` and is therefore assured to work with the reworked `Common.custom()` method which can be used for an easier instantiation of common custom chain instances for sending txs to a custom (L2) network.
 
 `Common.custom()` comes with support for predefined custom chains (Arbitrum testnet, Polygon testnet & mainnet, xDai chain), see e.g. the following code example:
 
@@ -150,9 +154,9 @@ const serializedMessage = rlp.encode(message) // use this for the ledger input
 
 ## 3.2.0 - 2021-05-26
 
-### London HF Support
+### Functional London HF Support (no finalized HF blocks yet)
 
-This `Tx` release comes with full support for the `london` hardfork. There is a new [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction type `FeeMarketEIP1559Transaction` (type `2`) added together with the new data types `FeeMarketEIP1559TxData` (for instantiation with the `fromTxData()` static constructor method) and `FeeMarketEIP1559ValuesArray` (for instantiation with `fromValuesArray()`), see PR [#1148](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1148) for the main implementation work.
+This `Tx` release comes with full functional support for the `london` hardfork (all EIPs are finalized and integrated and `london` HF can be activated, there are no final block numbers for the HF integrated though yet). There is a new [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction type `FeeMarketEIP1559Transaction` (type `2`) added together with the new data types `FeeMarketEIP1559TxData` (for instantiation with the `fromTxData()` static constructor method) and `FeeMarketEIP1559ValuesArray` (for instantiation with `fromValuesArray()`), see PR [#1148](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1148) for the main implementation work.
 
 An `EIP-1559` tx inherits the access list feature from the `AccessListEIP2930Transaction` (type `1`) but comes with its own gas fee market mechanism. There is no `gasPrice` field in favor of two new gas related properties `maxFeePerGas` - which represents the total gas fee the tx sender is willing to pay for the tx (including the priority fee) - and the `maxPriorityFeePerGas` property - which represents the fee the sender is willing to give as some tip to the miner to prioritize a tx.
 

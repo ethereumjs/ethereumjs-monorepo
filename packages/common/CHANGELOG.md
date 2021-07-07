@@ -6,7 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.4.0 - 2021-07-02
+## 2.4.0 - 2021-07-08
+
+### Finalized London HF Support
+
+This release integrates the `london` HF blocks for all networks including `mainnet` and is therefore the first release with finalized London HF support.
 
 ### Reworked Custom Chain Instantation / Supported Custom Chains (Polygon / Arbitrum / xDaiChain)
 
@@ -52,9 +56,9 @@ Small feature release.
 
 ## 2.3.0 - 2021-05-26
 
-### London HF Support
+### Functional London HF Support (no finalized HF blocks yet)
 
-This `Common` release comes with full support for the `london` hardfork. Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `Common` instance with a `london` HF activated:
+This `Common` release comes with full functional support for the `london` hardfork (all EIPs are finalized and integrated and `london` HF can be activated, there are no final block numbers for the HF integrated though yet). Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `Common` instance with a `london` HF activated:
 
 ```typescript
 import Common from '@ethereumjs/common'

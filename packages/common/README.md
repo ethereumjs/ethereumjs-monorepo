@@ -183,7 +183,7 @@ library supported:
 - `istanbul` (`DEFAULT_HARDFORK` (`v2.0.0` release series))
 - `muirGlacier`
 - `berlin` (since `v2.2.0`)
-- `london` (since `v2.3.0`)
+- `london` (since `v2.4.0`)
 
 ### Future Hardforks
 
