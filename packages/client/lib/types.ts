@@ -4,7 +4,7 @@ import type { Block, BlockHeader } from '@ethereumjs/block'
 import type Connection from '../../../node_modules/libp2p-interfaces/dist/src/connection/connection'
 import type { MuxedStream } from '../../../node_modules/libp2p-interfaces/dist/src/stream-muxer/types'
 import { Libp2pPeer, RlpxPeer } from './net/peer'
-
+import { Peer as Devp2pRlpxPeer } from '@ethereumjs/devp2p'
 /**
  * Types for the central event bus, emitted
  * by different components of the client.
@@ -21,7 +21,7 @@ export interface EventParams {
   [Event.SYNC_EXECUTION_VM_ERROR]: [Error]
   [Event.SYNC_FETCHER_FETCHED]: [Block[] | BlockHeader[]]
   [Event.SYNC_SYNCHRONIZED]: []
-  [Event.PEER_CONNECTED]: [Libp2pPeer | RlpxPeer]
+  [Event.PEER_CONNECTED]: [Libp2pPeer | RlpxPeer | Devp2pRlpxPeer]
 }
 export declare interface EventBus<T extends Event> {
   emit(event: T, ...args: EventParams[T]): boolean

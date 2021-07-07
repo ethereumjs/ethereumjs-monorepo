@@ -9,7 +9,7 @@ import {
 import { Protocol, RlpxSender } from '../protocol'
 import { Peer, PeerOptions } from './peer'
 import { RlpxServer } from '../server'
-
+import { Event } from '../../types'
 const devp2pCapabilities: any = {
   eth63: Devp2pETH.eth63,
   eth64: Devp2pETH.eth64,
@@ -118,6 +118,7 @@ export class RlpxPeer extends Peer {
       try {
         await this.bindProtocols(rlpxPeer)
         this.emit('connected')
+        this.config.events.emit(Event.PEER_CONNECTED, rlpxPeer)
       } catch (error) {
         this.emit('error', error)
       }

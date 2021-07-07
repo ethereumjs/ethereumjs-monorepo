@@ -26,7 +26,7 @@ export class FullSynchronizer extends Synchronizer {
       chain: options.chain,
     })
 
-    this.config.events.on(Event.SYNC_EXECUTION_VM_ERROR, async (error) => {
+    this.config.events.on(Event.SYNC_EXECUTION_VM_ERROR, async (error: Error) => {
       this.emit('error', error)
       await this.stop()
     })
@@ -120,19 +120,19 @@ export class FullSynchronizer extends Synchronizer {
       this.emit('error', error)
     })
     this.config.events.on(Event.SYNC_FETCHER_FETCHED, (blocks: any) => {
-        const first = new BN((blocks[0] as Block).header.number)
-        const hash = short((blocks[0] as Block).hash())
-        const baseFeeAdd = this.config.chainCommon.gteHardfork('london')
-          ? `basefee=${(blocks[0] as Block).header.baseFeePerGas} `
-          : ''
-        this.config.logger.info(
-          `Imported blocks count=${(blocks as Block[]).length} number=${first.toString(
-            10
-          )} hash=${hash} ${baseFeeAdd}hardfork=${this.config.chainCommon.hardfork()} peers=${
-            this.pool.size
-          }`
-        )
-      })
+      const first = new BN((blocks[0] as Block).header.number)
+      const hash = short((blocks[0] as Block).hash())
+      const baseFeeAdd = this.config.chainCommon.gteHardfork('london')
+        ? `basefee=${(blocks[0] as Block).header.baseFeePerGas} `
+        : ''
+      this.config.logger.info(
+        `Imported blocks count=${(blocks as Block[]).length} number=${first.toString(
+          10
+        )} hash=${hash} ${baseFeeAdd}hardfork=${this.config.chainCommon.hardfork()} peers=${
+          this.pool.size
+        }`
+      )
+    })
     await this.blockFetcher.fetch()
     // TODO: Should this be deleted?
     // @ts-ignore: error: The operand of a 'delete' operator must be optional
