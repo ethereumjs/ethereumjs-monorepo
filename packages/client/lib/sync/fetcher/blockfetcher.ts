@@ -30,6 +30,10 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
         max: count,
       })
     )[1]
+    if (!headers) {
+      this.config.logger.error(`peer ${peer?.id} returned no headers for block ${first}`)
+      return []
+    }
     const bodies = (await peer!.eth!.getBlockBodies({ hashes: headers.map((h) => h.hash()) }))[1]
     const blocks: Block[] = bodies.map(([txsData, unclesData]: BlockBodyBuffer, i: number) => {
       const opts = {
