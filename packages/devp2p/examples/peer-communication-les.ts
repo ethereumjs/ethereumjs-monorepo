@@ -59,7 +59,7 @@ dpt.on('error', (err) => console.error(chalk.red(`DPT error: ${err}`)))
 const rlpx = new devp2p.RLPx(PRIVATE_KEY, {
   dpt,
   maxPeers: 25,
-  capabilities: [devp2p.LES.les2],
+  capabilities: [devp2p.LES.les4],
   common,
   remoteClientIdFilter: REMOTE_CLIENTID_FILTER,
 })
@@ -83,11 +83,14 @@ rlpx.on('peer:added', (peer) => {
     headHash: GENESIS_HASH,
     headNum: Buffer.from([]),
     genesisHash: GENESIS_HASH,
+    announceType: devp2p.int2buffer(0),
+    recentTxLookup: devp2p.int2buffer(1),
+    forkID: [Buffer.from('3b8e0691', 'hex'), devp2p.int2buffer(1)],
   })
 
   les.once('status', (status: LES.Status) => {
-    const msg = [devp2p.buffer2int(status['headNum']), 1, 0, 1]
-    les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_HEADERS, 1, msg)
+    const msg = [0, [devp2p.buffer2int(status['headNum']), 1, 0, 1]]
+    les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_HEADERS, msg)
   })
 
   les.on('message', async (code: LES.MESSAGE_CODES, payload: any) => {
@@ -102,7 +105,7 @@ rlpx.on('peer:added', (peer) => {
         const header = BlockHeader.fromValuesArray(payload[2][0], {})
 
         setTimeout(() => {
-          les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_BODIES, 2, [header.hash()])
+          les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_BODIES, [1, [header.hash()]])
           requests.bodies.push(header)
         }, ms('0.1s'))
         break
@@ -119,7 +122,7 @@ rlpx.on('peer:added', (peer) => {
         const header2 = requests.bodies.shift()
         const txs = payload[2][0][0]
         const uncleHeaders = payload[2][0][1]
-        const block = Block.fromValuesArray([header2.raw(), txs, uncleHeaders])
+        const block = Block.fromValuesArray([header2.raw(), txs, uncleHeaders], { common })
         const isValid = await isValidBlock(block)
         let isValidPayload = false
         if (isValid) {
@@ -180,7 +183,8 @@ dpt.addPeer({ address: '127.0.0.1', udpPort: 30303, tcpPort: 30303 })
     return rlpx.connect({
       id: peer.id,
       address: peer.address,
-      port: peer.tcpPort
+      tcpPort: peer.tcpPort,
+      udpPort: peer.tcpPort
     })
   })
   .catch((err) => console.log(`error on connection to local node: ${err.stack || err}`)) */
