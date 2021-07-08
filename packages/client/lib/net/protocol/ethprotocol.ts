@@ -10,6 +10,8 @@ interface EthProtocolOptions extends ProtocolOptions {
 }
 
 type GetBlockHeadersOpts = {
+  /* Request id (default: next internal id) */
+  reqId?: BN
   /* The block's number or hash */
   block: BN | Buffer
   /* Max number of blocks to return */
@@ -19,17 +21,27 @@ type GetBlockHeadersOpts = {
   /* Fetch blocks in reverse (default: false) */
   reverse?: boolean
 }
+
+type GetBlockBodiesOpts = {
+  /* Request id (default: next internal id) */
+  reqId?: BN
+  /* The block hashes */
+  hashes: Buffer[]
+}
+
 /*
  * Messages with responses that are added as
  * methods in camelCase to BoundProtocol.
  */
 export interface EthProtocolMethods {
-  getBlockHeaders: (opts: GetBlockHeadersOpts) => Promise<BlockHeader[]>
-  getBlockBodies: (hashes: Buffer[]) => Promise<BlockBodyBuffer[]>
+  getBlockHeaders: (opts: GetBlockHeadersOpts) => Promise<[BN, BlockHeader[]]>
+  getBlockBodies: (opts: GetBlockBodiesOpts) => Promise<[BN, BlockBodyBuffer[]]>
 }
 
+const id = new BN(0)
+
 /**
- * Implements eth/62 and eth/63 protocols
+ * Implements eth/66 protocol
  * @memberof module:net/protocol
  */
 export class EthProtocol extends Protocol {
@@ -50,13 +62,12 @@ export class EthProtocol extends Protocol {
       name: 'GetBlockHeaders',
       code: 0x03,
       response: 0x04,
-      encode: ({ block, max, skip = 0, reverse = false }: GetBlockHeadersOpts) => [
-        BN.isBN(block) ? block.toArrayLike(Buffer) : block,
-        max,
-        skip,
-        !reverse ? 0 : 1,
+      encode: ({ reqId, block, max, skip = 0, reverse = false }: GetBlockHeadersOpts) => [
+        (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
+        [BN.isBN(block) ? block.toArrayLike(Buffer) : block, max, skip, !reverse ? 0 : 1],
       ],
-      decode: ([block, max, skip, reverse]: any) => ({
+      decode: ([reqId, [block, max, skip, reverse]]: any) => ({
+        reqId: new BN(reqId),
         block: block.length === 32 ? block : new BN(block),
         max: bufferToInt(max),
         skip: bufferToInt(skip),
@@ -66,24 +77,41 @@ export class EthProtocol extends Protocol {
     {
       name: 'BlockHeaders',
       code: 0x04,
-      encode: (headers: BlockHeader[]) => headers.map((h) => h.raw()),
-      decode: (headers: BlockHeaderBuffer[]) => {
-        return headers.map((h) =>
+      encode: ({ reqId, headers }: { reqId: BN; headers: BlockHeader[] }) => [
+        reqId.toNumber(),
+        headers.map((h) => h.raw()),
+      ],
+      decode: ([reqId, headers]: [Buffer, BlockHeaderBuffer[]]) => [
+        new BN(reqId),
+        headers.map((h) =>
           BlockHeader.fromValuesArray(h, {
             hardforkByBlockNumber: true,
             common: this.config.chainCommon, // eslint-disable-line no-invalid-this
           })
-        )
-      },
+        ),
+      ],
     },
     {
       name: 'GetBlockBodies',
       code: 0x05,
       response: 0x06,
+      encode: ({ reqId, hashes }: GetBlockBodiesOpts) => [
+        (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
+        hashes,
+      ],
+      decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
+        reqId: new BN(reqId),
+        hashes,
+      }),
     },
     {
       name: 'BlockBodies',
       code: 0x06,
+      encode: ({ reqId, bodies }: { reqId: BN; bodies: BlockBodyBuffer[] }) => [
+        reqId.toNumber(),
+        bodies,
+      ],
+      decode: ([reqId, bodies]: [Buffer, BlockBodyBuffer[]]) => [new BN(reqId), bodies],
     },
   ]
 
@@ -110,7 +138,7 @@ export class EthProtocol extends Protocol {
    * @type {number[]}
    */
   get versions(): number[] {
-    return [65, 64, 63]
+    return [66]
   }
 
   /**

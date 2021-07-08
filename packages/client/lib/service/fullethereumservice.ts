@@ -84,14 +84,14 @@ export class FullEthereumService extends EthereumService {
    */
   async handleEth(message: any, peer: Peer): Promise<void> {
     if (message.name === 'GetBlockHeaders') {
-      const { block, max, skip, reverse } = message.data
+      const { reqId, block, max, skip, reverse } = message.data
       const headers: any = await this.chain.getHeaders(block, max, skip, reverse)
-      peer.eth!.send('BlockHeaders', headers)
+      peer.eth!.send('BlockHeaders', { reqId, headers })
     } else if (message.name === 'GetBlockBodies') {
-      const hashes = message.data
+      const { reqId, hashes } = message.data
       const blocks = await Promise.all(hashes.map((hash: any) => this.chain.getBlock(hash)))
       const bodies: any = blocks.map((block: any) => block.raw().slice(1))
-      peer.eth!.send('BlockBodies', bodies)
+      peer.eth!.send('BlockBodies', { reqId, bodies })
     } else if (message.name === 'NewBlockHashes') {
       await this.synchronizer.announced(message.data, peer)
     }

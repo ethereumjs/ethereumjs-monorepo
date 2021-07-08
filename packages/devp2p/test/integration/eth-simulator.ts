@@ -71,7 +71,7 @@ function sendWithProtocolVersion(t: test.Test, version: number, cap?: Object) {
   opts.status1 = Object.assign({}, status)
   opts.onOnceStatus0 = function (rlpxs: any, eth: any) {
     t.equal(eth.getVersion(), version, `should use eth${version} as protocol version`)
-    eth.sendMessage(devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES, [437000, 1, 0, 0])
+    eth.sendMessage(devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES, [0, [437000, 1, 0, 0]])
     t.pass('should send NEW_BLOCK_HASHES message')
   }
   opts.onOnMsg1 = function (rlpxs: any, eth: any, code: any) {
@@ -107,7 +107,7 @@ function sendNotAllowed(
 }
 
 test('ETH: should use latest protocol version on default', async (t) => {
-  sendWithProtocolVersion(t, 65)
+  sendWithProtocolVersion(t, 66)
 })
 
 test('ETH -> Eth64 -> sendStatus(): should throw on non-matching latest block provided', async (t) => {
