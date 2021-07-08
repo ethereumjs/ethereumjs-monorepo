@@ -6,7 +6,7 @@
 
 ## Indexable
 
-▪ [key: *string*]: *any*
+▪ [key: `string`]: `any`
 
 ## Table of contents
 
@@ -18,8 +18,12 @@
 
 ### names
 
-• **names**: *object*
+• **names**: `Object`
 
-#### Type declaration
+#### Index signature
 
-Defined in: [packages/common/src/types.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L11)
+▪ [key: `string`]: `string`
+
+#### Defined in
+
+[packages/common/src/types.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L11)

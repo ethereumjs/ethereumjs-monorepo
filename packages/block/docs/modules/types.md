@@ -25,40 +25,50 @@
 
 ### BlockBodyBuffer
 
-Ƭ **BlockBodyBuffer**: [[*TransactionsBuffer*](types.md#transactionsbuffer), [*UncleHeadersBuffer*](types.md#uncleheadersbuffer)]
+Ƭ **BlockBodyBuffer**: [[TransactionsBuffer](types.md#transactionsbuffer), [UncleHeadersBuffer](types.md#uncleheadersbuffer)]
 
-Defined in: [types.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L103)
+#### Defined in
+
+[types.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L103)
 
 ___
 
 ### BlockBuffer
 
-Ƭ **BlockBuffer**: [[*BlockHeaderBuffer*](types.md#blockheaderbuffer), [*TransactionsBuffer*](types.md#transactionsbuffer), [*UncleHeadersBuffer*](types.md#uncleheadersbuffer)]
+Ƭ **BlockBuffer**: [[BlockHeaderBuffer](types.md#blockheaderbuffer), [TransactionsBuffer](types.md#transactionsbuffer), [UncleHeadersBuffer](types.md#uncleheadersbuffer)]
 
-Defined in: [types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L101)
+#### Defined in
+
+[types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L101)
 
 ___
 
 ### BlockHeaderBuffer
 
-Ƭ **BlockHeaderBuffer**: Buffer[]
+Ƭ **BlockHeaderBuffer**: `Buffer`[]
 
-Defined in: [types.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L102)
+#### Defined in
+
+[types.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L102)
 
 ___
 
 ### TransactionsBuffer
 
-Ƭ **TransactionsBuffer**: Buffer[][] \| Buffer[]
+Ƭ **TransactionsBuffer**: `Buffer`[][] \| `Buffer`[]
 
 TransactionsBuffer can be an array of serialized txs for Typed Transactions or an array of Buffer Arrays for legacy transactions.
 
-Defined in: [types.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L107)
+#### Defined in
+
+[types.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L107)
 
 ___
 
 ### UncleHeadersBuffer
 
-Ƭ **UncleHeadersBuffer**: Buffer[][]
+Ƭ **UncleHeadersBuffer**: `Buffer`[][]
 
-Defined in: [types.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L108)
+#### Defined in
+
+[types.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L108)

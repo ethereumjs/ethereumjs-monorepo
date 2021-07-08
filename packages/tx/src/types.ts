@@ -8,7 +8,7 @@ import { default as FeeMarketEIP1559Transaction } from './eip1559Transaction'
  * Can be used in conjunction with {@link Transaction.supports}
  * to query on tx capabilities
  */
-export enum Capabilities {
+export enum Capability {
   /**
    * Tx supports EIP-155 replay protection
    * See: [155](https://eips.ethereum.org/EIPS/eip-155) Replay Attack Protection EIP

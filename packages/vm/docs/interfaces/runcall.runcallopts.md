@@ -30,122 +30,154 @@ Options for running a call (or create) operation
 
 ### block
 
-• `Optional` **block**: *Block*
+• `Optional` **block**: `Block`
 
-Defined in: [runCall.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L12)
+#### Defined in
+
+[runCall.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L12)
 
 ___
 
 ### caller
 
-• `Optional` **caller**: *Address*
+• `Optional` **caller**: `Address`
 
-Defined in: [runCall.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L15)
+#### Defined in
+
+[runCall.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L15)
 
 ___
 
 ### code
 
-• `Optional` **code**: *Buffer*
+• `Optional` **code**: `Buffer`
 
 This is for CALLCODE where the code to load is different than the code from the `opts.to` address.
 
-Defined in: [runCall.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L23)
+#### Defined in
+
+[runCall.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L23)
 
 ___
 
 ### compiled
 
-• `Optional` **compiled**: *boolean*
+• `Optional` **compiled**: `boolean`
 
-Defined in: [runCall.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L25)
+#### Defined in
+
+[runCall.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L25)
 
 ___
 
 ### data
 
-• `Optional` **data**: *Buffer*
+• `Optional` **data**: `Buffer`
 
-Defined in: [runCall.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L19)
+#### Defined in
+
+[runCall.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L19)
 
 ___
 
 ### delegatecall
 
-• `Optional` **delegatecall**: *boolean*
+• `Optional` **delegatecall**: `boolean`
 
-Defined in: [runCall.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L29)
+#### Defined in
+
+[runCall.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L29)
 
 ___
 
 ### depth
 
-• `Optional` **depth**: *number*
+• `Optional` **depth**: `number`
 
-Defined in: [runCall.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L24)
+#### Defined in
+
+[runCall.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L24)
 
 ___
 
 ### gasLimit
 
-• `Optional` **gasLimit**: *BN*
+• `Optional` **gasLimit**: `BN`
 
-Defined in: [runCall.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L16)
+#### Defined in
+
+[runCall.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L16)
 
 ___
 
 ### gasPrice
 
-• `Optional` **gasPrice**: *BN*
+• `Optional` **gasPrice**: `BN`
 
-Defined in: [runCall.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L13)
+#### Defined in
+
+[runCall.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L13)
 
 ___
 
 ### origin
 
-• `Optional` **origin**: *Address*
+• `Optional` **origin**: `Address`
 
-Defined in: [runCall.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L14)
+#### Defined in
+
+[runCall.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L14)
 
 ___
 
 ### salt
 
-• `Optional` **salt**: *Buffer*
+• `Optional` **salt**: `Buffer`
 
-Defined in: [runCall.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L27)
+#### Defined in
+
+[runCall.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L27)
 
 ___
 
 ### selfdestruct
 
-• `Optional` **selfdestruct**: *object*
+• `Optional` **selfdestruct**: `Object`
 
-#### Type declaration
+#### Index signature
 
-Defined in: [runCall.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L28)
+▪ [k: `string`]: `boolean`
+
+#### Defined in
+
+[runCall.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L28)
 
 ___
 
 ### static
 
-• `Optional` **static**: *boolean*
+• `Optional` **static**: `boolean`
 
-Defined in: [runCall.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L26)
+#### Defined in
+
+[runCall.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L26)
 
 ___
 
 ### to
 
-• `Optional` **to**: *Address*
+• `Optional` **to**: `Address`
 
-Defined in: [runCall.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L17)
+#### Defined in
+
+[runCall.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L17)
 
 ___
 
 ### value
 
-• `Optional` **value**: *BN*
+• `Optional` **value**: `BN`
 
-Defined in: [runCall.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L18)
+#### Defined in
+
+[runCall.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runCall.ts#L18)

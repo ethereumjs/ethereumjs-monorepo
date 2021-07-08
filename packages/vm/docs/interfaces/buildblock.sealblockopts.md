@@ -17,20 +17,24 @@ Options for sealing a block.
 
 ### mixHash
 
-• `Optional` **mixHash**: *Buffer*
+• `Optional` **mixHash**: `Buffer`
 
 For PoW, the mixHash.
 Overrides the value passed in the constructor.
 
-Defined in: [buildBlock.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L46)
+#### Defined in
+
+[buildBlock.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L46)
 
 ___
 
 ### nonce
 
-• `Optional` **nonce**: *Buffer*
+• `Optional` **nonce**: `Buffer`
 
 For PoW, the nonce.
 Overrides the value passed in the constructor.
 
-Defined in: [buildBlock.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L40)
+#### Defined in
+
+[buildBlock.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L40)

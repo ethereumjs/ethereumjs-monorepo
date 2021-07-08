@@ -18,7 +18,7 @@ import {
   FeeMarketEIP1559ValuesArray,
   FeeMarketEIP1559TxData,
   TxValuesArray,
-  Capabilities,
+  Capability,
 } from './types'
 
 /**
@@ -130,7 +130,7 @@ export abstract class BaseTransaction<TransactionObject> {
    * See `Capabilites` in the `types` module for a reference
    * on all supported capabilities.
    */
-  supports(capability: Capabilities) {
+  supports(capability: Capability) {
     return this.activeCapabilities.includes(capability)
   }
 
@@ -277,9 +277,9 @@ export abstract class BaseTransaction<TransactionObject> {
     if (
       this.type === 0 &&
       this.common.gteHardfork('spuriousDragon') &&
-      !this.supports(Capabilities.EIP155ReplayProtection)
+      !this.supports(Capability.EIP155ReplayProtection)
     ) {
-      this.activeCapabilities.push(Capabilities.EIP155ReplayProtection)
+      this.activeCapabilities.push(Capability.EIP155ReplayProtection)
       hackApplied = true
     }
 
@@ -289,7 +289,7 @@ export abstract class BaseTransaction<TransactionObject> {
 
     // Hack part 2
     if (hackApplied) {
-      const index = this.activeCapabilities.indexOf(Capabilities.EIP155ReplayProtection)
+      const index = this.activeCapabilities.indexOf(Capability.EIP155ReplayProtection)
       if (index > -1) {
         this.activeCapabilities.splice(index, 1)
       }

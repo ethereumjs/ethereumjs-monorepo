@@ -31,126 +31,158 @@ A block header's data.
 
 ### baseFeePerGas
 
-• `Optional` **baseFeePerGas**: *string* \| *number* \| *Buffer* \| *BN*
+• `Optional` **baseFeePerGas**: `string` \| `number` \| `Buffer` \| `BN`
 
-Defined in: [types.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L86)
+#### Defined in
+
+[types.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L86)
 
 ___
 
 ### bloom
 
-• `Optional` **bloom**: *string* \| *number* \| *Buffer* \| *Uint8Array* \| *number*[] \| *BN* \| TransformableToBuffer
+• `Optional` **bloom**: `string` \| `number` \| `Buffer` \| `Uint8Array` \| `number`[] \| `BN` \| `TransformableToBuffer`
 
-Defined in: [types.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L77)
+#### Defined in
+
+[types.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L77)
 
 ___
 
 ### coinbase
 
-• `Optional` **coinbase**: *string* \| *Buffer* \| *Address*
+• `Optional` **coinbase**: `string` \| `Buffer` \| `Address`
 
-Defined in: [types.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L73)
+#### Defined in
+
+[types.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L73)
 
 ___
 
 ### difficulty
 
-• `Optional` **difficulty**: *string* \| *number* \| *Buffer* \| *BN*
+• `Optional` **difficulty**: `string` \| `number` \| `Buffer` \| `BN`
 
-Defined in: [types.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L78)
+#### Defined in
+
+[types.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L78)
 
 ___
 
 ### extraData
 
-• `Optional` **extraData**: *string* \| *number* \| *Buffer* \| *Uint8Array* \| *number*[] \| *BN* \| TransformableToBuffer
+• `Optional` **extraData**: `string` \| `number` \| `Buffer` \| `Uint8Array` \| `number`[] \| `BN` \| `TransformableToBuffer`
 
-Defined in: [types.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L83)
+#### Defined in
+
+[types.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L83)
 
 ___
 
 ### gasLimit
 
-• `Optional` **gasLimit**: *string* \| *number* \| *Buffer* \| *BN*
+• `Optional` **gasLimit**: `string` \| `number` \| `Buffer` \| `BN`
 
-Defined in: [types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L80)
+#### Defined in
+
+[types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L80)
 
 ___
 
 ### gasUsed
 
-• `Optional` **gasUsed**: *string* \| *number* \| *Buffer* \| *BN*
+• `Optional` **gasUsed**: `string` \| `number` \| `Buffer` \| `BN`
 
-Defined in: [types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L81)
+#### Defined in
+
+[types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L81)
 
 ___
 
 ### mixHash
 
-• `Optional` **mixHash**: *string* \| *number* \| *Buffer* \| *Uint8Array* \| *number*[] \| *BN* \| TransformableToBuffer
+• `Optional` **mixHash**: `string` \| `number` \| `Buffer` \| `Uint8Array` \| `number`[] \| `BN` \| `TransformableToBuffer`
 
-Defined in: [types.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L84)
+#### Defined in
+
+[types.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L84)
 
 ___
 
 ### nonce
 
-• `Optional` **nonce**: *string* \| *number* \| *Buffer* \| *Uint8Array* \| *number*[] \| *BN* \| TransformableToBuffer
+• `Optional` **nonce**: `string` \| `number` \| `Buffer` \| `Uint8Array` \| `number`[] \| `BN` \| `TransformableToBuffer`
 
-Defined in: [types.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L85)
+#### Defined in
+
+[types.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L85)
 
 ___
 
 ### number
 
-• `Optional` **number**: *string* \| *number* \| *Buffer* \| *BN*
+• `Optional` **number**: `string` \| `number` \| `Buffer` \| `BN`
 
-Defined in: [types.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L79)
+#### Defined in
+
+[types.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L79)
 
 ___
 
 ### parentHash
 
-• `Optional` **parentHash**: *string* \| *number* \| *Buffer* \| *Uint8Array* \| *number*[] \| *BN* \| TransformableToBuffer
+• `Optional` **parentHash**: `string` \| `number` \| `Buffer` \| `Uint8Array` \| `number`[] \| `BN` \| `TransformableToBuffer`
 
-Defined in: [types.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L71)
+#### Defined in
+
+[types.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L71)
 
 ___
 
 ### receiptTrie
 
-• `Optional` **receiptTrie**: *string* \| *number* \| *Buffer* \| *Uint8Array* \| *number*[] \| *BN* \| TransformableToBuffer
+• `Optional` **receiptTrie**: `string` \| `number` \| `Buffer` \| `Uint8Array` \| `number`[] \| `BN` \| `TransformableToBuffer`
 
-Defined in: [types.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L76)
+#### Defined in
+
+[types.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L76)
 
 ___
 
 ### stateRoot
 
-• `Optional` **stateRoot**: *string* \| *number* \| *Buffer* \| *Uint8Array* \| *number*[] \| *BN* \| TransformableToBuffer
+• `Optional` **stateRoot**: `string` \| `number` \| `Buffer` \| `Uint8Array` \| `number`[] \| `BN` \| `TransformableToBuffer`
 
-Defined in: [types.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L74)
+#### Defined in
+
+[types.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L74)
 
 ___
 
 ### timestamp
 
-• `Optional` **timestamp**: *string* \| *number* \| *Buffer* \| *BN*
+• `Optional` **timestamp**: `string` \| `number` \| `Buffer` \| `BN`
 
-Defined in: [types.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L82)
+#### Defined in
+
+[types.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L82)
 
 ___
 
 ### transactionsTrie
 
-• `Optional` **transactionsTrie**: *string* \| *number* \| *Buffer* \| *Uint8Array* \| *number*[] \| *BN* \| TransformableToBuffer
+• `Optional` **transactionsTrie**: `string` \| `number` \| `Buffer` \| `Uint8Array` \| `number`[] \| `BN` \| `TransformableToBuffer`
 
-Defined in: [types.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L75)
+#### Defined in
+
+[types.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L75)
 
 ___
 
 ### uncleHash
 
-• `Optional` **uncleHash**: *string* \| *number* \| *Buffer* \| *Uint8Array* \| *number*[] \| *BN* \| TransformableToBuffer
+• `Optional` **uncleHash**: `string` \| `number` \| `Buffer` \| `Uint8Array` \| `number`[] \| `BN` \| `TransformableToBuffer`
 
-Defined in: [types.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L72)
+#### Defined in
+
+[types.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L72)

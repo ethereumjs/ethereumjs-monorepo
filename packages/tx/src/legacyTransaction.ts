@@ -8,7 +8,7 @@ import {
   toBuffer,
   unpadBuffer,
 } from 'ethereumjs-util'
-import { TxOptions, TxData, JsonTx, N_DIV_2, TxValuesArray, Capabilities } from './types'
+import { TxOptions, TxData, JsonTx, N_DIV_2, TxValuesArray, Capability } from './types'
 import { BaseTransaction } from './baseTransaction'
 import Common from '@ethereumjs/common'
 
@@ -110,7 +110,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
     if (this.common.gteHardfork('spuriousDragon')) {
       if (!this.isSigned()) {
-        this.activeCapabilities.push(Capabilities.EIP155ReplayProtection)
+        this.activeCapabilities.push(Capability.EIP155ReplayProtection)
       } else {
         // EIP155 spec:
         // If block.number >= 2,675,000 and v = CHAIN_ID * 2 + 35 or v = CHAIN_ID * 2 + 36
@@ -122,7 +122,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
         // v and chain ID meet EIP-155 conditions
         if (v.eq(chainIdDoubled.addn(35)) || v.eq(chainIdDoubled.addn(36))) {
-          this.activeCapabilities.push(Capabilities.EIP155ReplayProtection)
+          this.activeCapabilities.push(Capability.EIP155ReplayProtection)
         }
       }
     }
@@ -179,7 +179,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
       this.data,
     ]
 
-    if (this.supports(Capabilities.EIP155ReplayProtection)) {
+    if (this.supports(Capability.EIP155ReplayProtection)) {
       values.push(toBuffer(this.common.chainIdBN()))
       values.push(unpadBuffer(toBuffer(0)))
       values.push(unpadBuffer(toBuffer(0)))
@@ -263,7 +263,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
         v!,
         bnToUnpaddedBuffer(r!),
         bnToUnpaddedBuffer(s!),
-        this.supports(Capabilities.EIP155ReplayProtection) ? this.common.chainIdBN() : undefined
+        this.supports(Capability.EIP155ReplayProtection) ? this.common.chainIdBN() : undefined
       )
     } catch (e) {
       throw new Error('Invalid Signature')
@@ -275,7 +275,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
    */
   protected _processSignature(v: number, r: Buffer, s: Buffer) {
     const vBN = new BN(v)
-    if (this.supports(Capabilities.EIP155ReplayProtection)) {
+    if (this.supports(Capability.EIP155ReplayProtection)) {
       vBN.iadd(this.common.chainIdBN().muln(2).addn(8))
     }
 

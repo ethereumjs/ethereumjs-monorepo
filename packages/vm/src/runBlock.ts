@@ -7,7 +7,7 @@ import VM from './index'
 import Bloom from './bloom'
 import { StateManager } from './state'
 import { short } from './evm/opcodes'
-import { Capabilities, TypedTransaction } from '@ethereumjs/tx'
+import { Capability, TypedTransaction } from '@ethereumjs/tx'
 import type { RunTxResult } from './runTx'
 import type { TxReceipt } from './types'
 import * as DAOConfig from './config/dao_fork_accounts_config.json'
@@ -432,7 +432,7 @@ export async function rewardAccount(
 export function encodeReceipt(tx: TypedTransaction, receipt: TxReceipt) {
   const encoded = encode(Object.values(receipt))
 
-  if (!tx.supports(Capabilities.EIP2718TypedTransaction)) {
+  if (!tx.supports(Capability.EIP2718TypedTransaction)) {
     return encoded
   }
 

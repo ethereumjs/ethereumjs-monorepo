@@ -6,17 +6,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+
+# 5.4.0 - 2021-07-08
+
+### Finalized London HF Support
+
+This release integrates a `Common` library version which provides the `london` HF blocks for all networks including `mainnet` and is therefore the first release with finalized London HF support.
+
 # 5.3.1 - 2021-06-25
 
 ### PoA Reorg Fix
 
 This release includes a fix for blockchain's reorg logic when handling PoA chains. PR [#1253](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1253) fixes this to choose the fork with the larger total difficulty and rebuilds the internal clique snapshots accordingly.
 
+### Included Source Files
+
+Source files from the `src` folder are now included in the distribution build, see PR [#1301](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1301). This allows for a better debugging experience in debug tools like Chrome DevTools by having working source map references to the original sources available for inspection.
+
 ## 5.3.0 - 2021-05-26
 
-### London HF Support
+### Functional London HF Support (no finalized HF blocks yet)
 
-This release comes with full `london` HF support by setting the `Block`, `Tx` and `Common` dependencies to versions which ensure a working set of `london`-enabled library versions. In particular this allows for running a blockchain with EIP-1559 blocks and transactions.
+This release comes with full functional `london` HF support (all EIPs are finalized and integrated and `london` HF can be activated, there are no final block numbers for the HF integrated though yet) by setting the `Block`, `Tx` and `Common` dependencies to versions which ensure a working set of `london`-enabled library versions. In particular this allows for running a blockchain with EIP-1559 blocks and transactions.
 
 Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `Blockchain` instance with a `london` HF activated:
 
