@@ -29,7 +29,7 @@ tape('[RlpxPeer]', async (t) => {
   t.test('should compute capabilities', (t) => {
     const protocols: any = [
       { name: 'eth', versions: [66] },
-      { name: 'les', versions: [2] },
+      { name: 'les', versions: [4] },
     ]
     const caps = RlpxPeer.capabilities(protocols).map(({ name, version, length }) => ({
       name,
@@ -40,7 +40,7 @@ tape('[RlpxPeer]', async (t) => {
       caps,
       [
         { name: 'eth', version: 66, length: 29 },
-        { name: 'les', version: 2, length: 21 },
+        { name: 'les', version: 4, length: 23 },
       ],
       'correct capabilities'
     )
@@ -49,7 +49,7 @@ tape('[RlpxPeer]', async (t) => {
 
   t.test('should connect to peer', async (t) => {
     const config = new Config({ transports: [], loglevel: 'error' })
-    const proto0 = { name: 'les', versions: [2] } as any
+    const proto0 = { name: 'les', versions: [4] } as any
     const peer = new RlpxPeer({
       config,
       id: 'abcdef0123',
