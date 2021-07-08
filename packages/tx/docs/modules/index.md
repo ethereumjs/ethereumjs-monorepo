@@ -13,6 +13,7 @@
 - [AccessListEIP2930TxData](index.md#accesslisteip2930txdata)
 - [AccessListEIP2930ValuesArray](index.md#accesslisteip2930valuesarray)
 - [AccessListItem](index.md#accesslistitem)
+- [Capabilities](index.md#capabilities)
 - [FeeMarketEIP1559Transaction](index.md#feemarketeip1559transaction)
 - [FeeMarketEIP1559TxData](index.md#feemarketeip1559txdata)
 - [FeeMarketEIP1559ValuesArray](index.md#feemarketeip1559valuesarray)
@@ -68,6 +69,12 @@ ___
 ### AccessListItem
 
 Re-exports: [AccessListItem](types.md#accesslistitem)
+
+___
+
+### Capabilities
+
+Re-exports: [Capabilities](../enums/types.capabilities.md)
 
 ___
 

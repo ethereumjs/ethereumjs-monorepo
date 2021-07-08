@@ -11,7 +11,7 @@ Options for the `runTx` method.
 ### Properties
 
 - [block](runtx.runtxopts.md#block)
-- [cliqueBeneficiary](runtx.runtxopts.md#cliquebeneficiary)
+- [blockGasUsed](runtx.runtxopts.md#blockgasused)
 - [reportAccessList](runtx.runtxopts.md#reportaccesslist)
 - [skipBalance](runtx.runtxopts.md#skipbalance)
 - [skipBlockGasLimitValidation](runtx.runtxopts.md#skipblockgaslimitvalidation)
@@ -22,34 +22,32 @@ Options for the `runTx` method.
 
 ### block
 
-• `Optional` **block**: *Block*
+• `Optional` **block**: `Block`
 
 The `@ethereumjs/block` the `tx` belongs to.
 If omitted, a default blank block will be used.
-To obtain an accurate `TxReceipt`, please pass a block
-with the header field `gasUsed` set to the value
-prior to this tx being run.
 
-Defined in: [runTx.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L38)
+#### Defined in
+
+[runTx.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L39)
 
 ___
 
-### cliqueBeneficiary
+### blockGasUsed
 
-• `Optional` **cliqueBeneficiary**: *Address*
+• `Optional` **blockGasUsed**: `BN`
 
-Optional clique Address: if the consensus algorithm is on clique,
-and this parameter is provided, use this as the beneficiary of transaction fees
-If it is not provided and the consensus algorithm is clique, instead
-get it from the block using `cliqueSigner()`
+To obtain an accurate tx receipt input the block gas used up until this tx.
 
-Defined in: [runTx.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L76)
+#### Defined in
+
+[runTx.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L74)
 
 ___
 
 ### reportAccessList
 
-• `Optional` **reportAccessList**: *boolean*
+• `Optional` **reportAccessList**: `boolean`
 
 If true, adds a generated EIP-2930 access list
 to the `RunTxResult` returned.
@@ -57,48 +55,58 @@ to the `RunTxResult` returned.
 Option works with all tx types. EIP-2929 needs to
 be activated (included in `berlin` HF).
 
-Note: if this option is used with a custom `StateManager` implementation
-the `generateAccessList()` method must be implemented.
+Note: if this option is used with a custom [StateManager](state_interface.statemanager.md) implementation
+{@link StateManager.generateAccessList} must be implemented.
 
-Defined in: [runTx.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L68)
+#### Defined in
+
+[runTx.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L69)
 
 ___
 
 ### skipBalance
 
-• `Optional` **skipBalance**: *boolean*
+• `Optional` **skipBalance**: `boolean`
 
 If true, skips the balance check
 
-Defined in: [runTx.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L50)
+#### Defined in
+
+[runTx.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L51)
 
 ___
 
 ### skipBlockGasLimitValidation
 
-• `Optional` **skipBlockGasLimitValidation**: *boolean*
+• `Optional` **skipBlockGasLimitValidation**: `boolean`
 
 If true, skips the validation of the tx's gas limit
 agains the block's gas limit.
 
-Defined in: [runTx.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L56)
+#### Defined in
+
+[runTx.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L57)
 
 ___
 
 ### skipNonce
 
-• `Optional` **skipNonce**: *boolean*
+• `Optional` **skipNonce**: `boolean`
 
 If true, skips the nonce check
 
-Defined in: [runTx.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L46)
+#### Defined in
+
+[runTx.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L47)
 
 ___
 
 ### tx
 
-• **tx**: TypedTransaction
+• **tx**: `TypedTransaction`
 
 An `@ethereumjs/tx` to run
 
-Defined in: [runTx.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L42)
+#### Defined in
+
+[runTx.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L43)

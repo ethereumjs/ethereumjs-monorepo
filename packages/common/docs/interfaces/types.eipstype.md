@@ -6,4 +6,4 @@
 
 ## Indexable
 
-▪ [key: *number*]: *any*
+▪ [key: `number`]: `any`

@@ -4,15 +4,15 @@
 
 [types](../modules/types.md).AccessListEIP2930TxData
 
-Access list EIP2930 tx data.
+[AccessListEIP2930Transaction](../modules/index.md#accesslisteip2930transaction) data.
 
 ## Hierarchy
 
-- [*TxData*](../modules/types.md#txdata)
+- [TxData](../modules/types.md#txdata)
 
   ↳ **AccessListEIP2930TxData**
 
-  ↳↳ [*FeeMarketEIP1559TxData*](types.feemarketeip1559txdata.md)
+  ↳↳ [FeeMarketEIP1559TxData](types.feemarketeip1559txdata.md)
 
 ## Table of contents
 
@@ -35,138 +35,182 @@ Access list EIP2930 tx data.
 
 ### accessList
 
-• `Optional` **accessList**: [*AccessListBuffer*](../modules/types.md#accesslistbuffer) \| [*AccessList*](../modules/types.md#accesslist)
+• `Optional` **accessList**: [AccessListBuffer](../modules/types.md#accesslistbuffer) \| [AccessList](../modules/types.md#accesslist)
 
 The access list which contains the addresses/storage slots which the transaction wishes to access
 
-Defined in: [types.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L147)
+#### Defined in
+
+[types.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L177)
 
 ___
 
 ### chainId
 
-• `Optional` **chainId**: *string* \| *number* \| *BN* \| *Buffer*
+• `Optional` **chainId**: `string` \| `number` \| `BN` \| `Buffer`
 
 The transaction's chain ID
 
-Defined in: [types.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L142)
+#### Defined in
+
+[types.ts:172](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L172)
 
 ___
 
 ### data
 
-• `Optional` **data**: *string* \| *number* \| *BN* \| *Buffer* \| *number*[] \| *Uint8Array* \| TransformableToBuffer
+• `Optional` **data**: `string` \| `number` \| `BN` \| `Buffer` \| `number`[] \| `Uint8Array` \| `TransformableToBuffer`
 
 This will contain the data of the message or the init of a contract.
 
-Inherited from: TxData.data
+#### Inherited from
 
-Defined in: [types.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L111)
+TxData.data
+
+#### Defined in
+
+[types.ts:141](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L141)
 
 ___
 
 ### gasLimit
 
-• `Optional` **gasLimit**: *string* \| *number* \| *BN* \| *Buffer*
+• `Optional` **gasLimit**: `string` \| `number` \| `BN` \| `Buffer`
 
 The transaction's gas limit.
 
-Inherited from: TxData.gasLimit
+#### Inherited from
 
-Defined in: [types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L96)
+TxData.gasLimit
+
+#### Defined in
+
+[types.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L126)
 
 ___
 
 ### gasPrice
 
-• `Optional` **gasPrice**: *string* \| *number* \| *BN* \| *Buffer*
+• `Optional` **gasPrice**: `string` \| `number` \| `BN` \| `Buffer`
 
 The transaction's gas price.
 
-Inherited from: TxData.gasPrice
+#### Inherited from
 
-Defined in: [types.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L91)
+TxData.gasPrice
+
+#### Defined in
+
+[types.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L121)
 
 ___
 
 ### nonce
 
-• `Optional` **nonce**: *string* \| *number* \| *BN* \| *Buffer*
+• `Optional` **nonce**: `string` \| `number` \| `BN` \| `Buffer`
 
 The transaction's nonce.
 
-Inherited from: TxData.nonce
+#### Inherited from
 
-Defined in: [types.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L86)
+TxData.nonce
+
+#### Defined in
+
+[types.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L116)
 
 ___
 
 ### r
 
-• `Optional` **r**: *string* \| *number* \| *BN* \| *Buffer*
+• `Optional` **r**: `string` \| `number` \| `BN` \| `Buffer`
 
 EC signature parameter.
 
-Inherited from: TxData.r
+#### Inherited from
 
-Defined in: [types.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L121)
+TxData.r
+
+#### Defined in
+
+[types.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L151)
 
 ___
 
 ### s
 
-• `Optional` **s**: *string* \| *number* \| *BN* \| *Buffer*
+• `Optional` **s**: `string` \| `number` \| `BN` \| `Buffer`
 
 EC signature parameter.
 
-Inherited from: TxData.s
+#### Inherited from
 
-Defined in: [types.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L126)
+TxData.s
+
+#### Defined in
+
+[types.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L156)
 
 ___
 
 ### to
 
-• `Optional` **to**: *string* \| *Address* \| *Buffer*
+• `Optional` **to**: `string` \| `Address` \| `Buffer`
 
 The transaction's the address is sent to.
 
-Inherited from: TxData.to
+#### Inherited from
 
-Defined in: [types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L101)
+TxData.to
+
+#### Defined in
+
+[types.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L131)
 
 ___
 
 ### type
 
-• `Optional` **type**: *string* \| *number* \| *BN* \| *Buffer*
+• `Optional` **type**: `string` \| `number` \| `BN` \| `Buffer`
 
 The transaction type
 
-Inherited from: TxData.type
+#### Inherited from
 
-Defined in: [types.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L132)
+TxData.type
+
+#### Defined in
+
+[types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L162)
 
 ___
 
 ### v
 
-• `Optional` **v**: *string* \| *number* \| *BN* \| *Buffer*
+• `Optional` **v**: `string` \| `number` \| `BN` \| `Buffer`
 
 EC recovery ID.
 
-Inherited from: TxData.v
+#### Inherited from
 
-Defined in: [types.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L116)
+TxData.v
+
+#### Defined in
+
+[types.ts:146](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L146)
 
 ___
 
 ### value
 
-• `Optional` **value**: *string* \| *number* \| *BN* \| *Buffer*
+• `Optional` **value**: `string` \| `number` \| `BN` \| `Buffer`
 
 The amount of Ether sent.
 
-Inherited from: TxData.value
+#### Inherited from
 
-Defined in: [types.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L106)
+TxData.value
+
+#### Defined in
+
+[types.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L136)

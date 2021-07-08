@@ -16,22 +16,28 @@
 
 ### block
 
-• **block**: ``null`` \| *number*
+• **block**: ``null`` \| `number`
 
-Defined in: [packages/common/src/types.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L57)
+#### Defined in
+
+[packages/common/src/types.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L57)
 
 ___
 
 ### forkHash
 
-• `Optional` **forkHash**: ``null`` \| *string*
+• `Optional` **forkHash**: ``null`` \| `string`
 
-Defined in: [packages/common/src/types.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L58)
+#### Defined in
+
+[packages/common/src/types.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L58)
 
 ___
 
 ### name
 
-• **name**: *string*
+• **name**: `string`
 
-Defined in: [packages/common/src/types.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L56)
+#### Defined in
+
+[packages/common/src/types.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L56)

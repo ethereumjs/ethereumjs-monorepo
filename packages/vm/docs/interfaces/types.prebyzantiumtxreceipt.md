@@ -9,7 +9,7 @@ for the intermediary state root
 
 ## Hierarchy
 
-- [*BaseTxReceipt*](types.basetxreceipt.md)
+- [BaseTxReceipt](types.basetxreceipt.md)
 
   ↳ **PreByzantiumTxReceipt**
 
@@ -26,44 +26,58 @@ for the intermediary state root
 
 ### bitvector
 
-• **bitvector**: *Buffer*
+• **bitvector**: `Buffer`
 
 Bloom bitvector
 
-Inherited from: [BaseTxReceipt](types.basetxreceipt.md).[bitvector](types.basetxreceipt.md#bitvector)
+#### Inherited from
 
-Defined in: [types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L16)
+[BaseTxReceipt](types.basetxreceipt.md).[bitvector](types.basetxreceipt.md#bitvector)
+
+#### Defined in
+
+[types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L16)
 
 ___
 
 ### gasUsed
 
-• **gasUsed**: *Buffer*
+• **gasUsed**: `Buffer`
 
-Gas used
+Cumulative gas used in the block including this tx
 
-Inherited from: [BaseTxReceipt](types.basetxreceipt.md).[gasUsed](types.basetxreceipt.md#gasused)
+#### Inherited from
 
-Defined in: [types.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L12)
+[BaseTxReceipt](types.basetxreceipt.md).[gasUsed](types.basetxreceipt.md#gasused)
+
+#### Defined in
+
+[types.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L12)
 
 ___
 
 ### logs
 
-• **logs**: Log[]
+• **logs**: `Log`[]
 
 Logs emitted
 
-Inherited from: [BaseTxReceipt](types.basetxreceipt.md).[logs](types.basetxreceipt.md#logs)
+#### Inherited from
 
-Defined in: [types.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L20)
+[BaseTxReceipt](types.basetxreceipt.md).[logs](types.basetxreceipt.md#logs)
+
+#### Defined in
+
+[types.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L20)
 
 ___
 
 ### stateRoot
 
-• **stateRoot**: *Buffer*
+• **stateRoot**: `Buffer`
 
 Intermediary state root
 
-Defined in: [types.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L31)
+#### Defined in
+
+[types.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L31)

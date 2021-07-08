@@ -4,7 +4,7 @@
 
 [types](../modules/types.md).TxOptions
 
-The options for initializing a Transaction.
+The options for initializing a [Transaction](../modules/index.md#transaction).
 
 ## Table of contents
 
@@ -17,24 +17,26 @@ The options for initializing a Transaction.
 
 ### common
 
-• `Optional` **common**: *default*
+• `Optional` **common**: `default`
 
-A Common object defining the chain and hardfork for the transaction.
+A {@link Common} object defining the chain and hardfork for the transaction.
 
 Object will be internally copied so that tx behavior don't incidentally
 change on future HF changes.
 
-Default: `Common` object set to `mainnet` and the default hardfork as defined in the `Common` class.
+Default: {@link Common} object set to `mainnet` and the default hardfork as defined in the {@link Common} class.
 
 Current default hardfork: `istanbul`
 
-Defined in: [types.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L21)
+#### Defined in
+
+[types.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L51)
 
 ___
 
 ### freeze
 
-• `Optional` **freeze**: *boolean*
+• `Optional` **freeze**: `boolean`
 
 A transaction object by default gets frozen along initialization. This gives you
 strong additional security guarantees on the consistency of the tx parameters.
@@ -45,4 +47,6 @@ within your code instead.
 
 Default: true
 
-Defined in: [types.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L32)
+#### Defined in
+
+[types.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L62)

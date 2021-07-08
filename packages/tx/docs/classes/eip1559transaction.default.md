@@ -11,7 +11,7 @@ Typed transaction with a new gas fee market mechanism
 
 ## Hierarchy
 
-- [*BaseTransaction*](basetransaction.basetransaction-1.md)<[*default*](eip1559transaction.default.md)\>
+- [BaseTransaction](basetransaction.basetransaction-1.md)<[default](eip1559transaction.default.md)\>
 
   ↳ **default**
 
@@ -61,6 +61,7 @@ Typed transaction with a new gas fee market mechanism
 - [raw](eip1559transaction.default.md#raw)
 - [serialize](eip1559transaction.default.md#serialize)
 - [sign](eip1559transaction.default.md#sign)
+- [supports](eip1559transaction.default.md#supports)
 - [toCreationAddress](eip1559transaction.default.md#tocreationaddress)
 - [toJSON](eip1559transaction.default.md#tojson)
 - [validate](eip1559transaction.default.md#validate)
@@ -74,7 +75,7 @@ Typed transaction with a new gas fee market mechanism
 
 ### constructor
 
-\+ **new default**(`txData`: [*FeeMarketEIP1559TxData*](../interfaces/types.feemarketeip1559txdata.md), `opts?`: [*TxOptions*](../interfaces/types.txoptions.md)): [*default*](eip1559transaction.default.md)
+• **new default**(`txData`, `opts?`)
 
 This constructor takes the values, validates them, assigns them and freezes the object.
 
@@ -84,270 +85,356 @@ varying data types.
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `txData` | [*FeeMarketEIP1559TxData*](../interfaces/types.feemarketeip1559txdata.md) | - |
-| `opts` | [*TxOptions*](../interfaces/types.txoptions.md) | {} |
+| Name | Type |
+| :------ | :------ |
+| `txData` | [FeeMarketEIP1559TxData](../interfaces/types.feemarketeip1559txdata.md) |
+| `opts` | [TxOptions](../interfaces/types.txoptions.md) |
 
-**Returns:** [*default*](eip1559transaction.default.md)
+#### Overrides
 
-Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
+[BaseTransaction](basetransaction.basetransaction-1.md).[constructor](basetransaction.basetransaction-1.md#constructor)
 
-Defined in: [eip1559Transaction.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L164)
+#### Defined in
+
+[eip1559Transaction.ts:172](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L172)
 
 ## Properties
 
 ### AccessListJSON
 
-• `Readonly` **AccessListJSON**: [*AccessList*](../modules/types.md#accesslist)
+• `Readonly` **AccessListJSON**: [AccessList](../modules/types.md#accesslist)
 
-Defined in: [eip1559Transaction.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L27)
+#### Defined in
+
+[eip1559Transaction.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L35)
 
 ___
 
 ### accessList
 
-• `Readonly` **accessList**: [*AccessListBuffer*](../modules/types.md#accesslistbuffer)
+• `Readonly` **accessList**: [AccessListBuffer](../modules/types.md#accesslistbuffer)
 
-Defined in: [eip1559Transaction.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L26)
+#### Defined in
+
+[eip1559Transaction.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L34)
 
 ___
 
 ### chainId
 
-• `Readonly` **chainId**: *BN*
+• `Readonly` **chainId**: `BN`
 
-Defined in: [eip1559Transaction.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L25)
+#### Defined in
+
+[eip1559Transaction.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L33)
 
 ___
 
 ### common
 
-• `Readonly` **common**: *default*
+• `Readonly` **common**: `default`
 
-Overrides: [BaseTransaction](basetransaction.basetransaction-1.md).[common](basetransaction.basetransaction-1.md#common)
+#### Overrides
 
-Defined in: [eip1559Transaction.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L31)
+[BaseTransaction](basetransaction.basetransaction-1.md).[common](basetransaction.basetransaction-1.md#common)
+
+#### Defined in
+
+[eip1559Transaction.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L39)
 
 ___
 
 ### data
 
-• `Readonly` **data**: *Buffer*
+• `Readonly` **data**: `Buffer`
 
-Inherited from: [BaseTransaction](basetransaction.basetransaction-1.md).[data](basetransaction.basetransaction-1.md#data)
+#### Inherited from
 
-Defined in: [baseTransaction.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L37)
+[BaseTransaction](basetransaction.basetransaction-1.md).[data](basetransaction.basetransaction-1.md#data)
+
+#### Defined in
+
+[baseTransaction.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L38)
 
 ___
 
 ### gasLimit
 
-• `Readonly` **gasLimit**: *BN*
+• `Readonly` **gasLimit**: `BN`
 
-Inherited from: [BaseTransaction](basetransaction.basetransaction-1.md).[gasLimit](basetransaction.basetransaction-1.md#gaslimit)
+#### Inherited from
 
-Defined in: [baseTransaction.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L34)
+[BaseTransaction](basetransaction.basetransaction-1.md).[gasLimit](basetransaction.basetransaction-1.md#gaslimit)
+
+#### Defined in
+
+[baseTransaction.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L35)
 
 ___
 
 ### maxFeePerGas
 
-• `Readonly` **maxFeePerGas**: *BN*
+• `Readonly` **maxFeePerGas**: `BN`
 
-Defined in: [eip1559Transaction.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L29)
+#### Defined in
+
+[eip1559Transaction.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L37)
 
 ___
 
 ### maxPriorityFeePerGas
 
-• `Readonly` **maxPriorityFeePerGas**: *BN*
+• `Readonly` **maxPriorityFeePerGas**: `BN`
 
-Defined in: [eip1559Transaction.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L28)
+#### Defined in
+
+[eip1559Transaction.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L36)
 
 ___
 
 ### nonce
 
-• `Readonly` **nonce**: *BN*
+• `Readonly` **nonce**: `BN`
 
-Inherited from: [BaseTransaction](basetransaction.basetransaction-1.md).[nonce](basetransaction.basetransaction-1.md#nonce)
+#### Inherited from
 
-Defined in: [baseTransaction.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L33)
+[BaseTransaction](basetransaction.basetransaction-1.md).[nonce](basetransaction.basetransaction-1.md#nonce)
+
+#### Defined in
+
+[baseTransaction.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L34)
 
 ___
 
 ### r
 
-• `Optional` `Readonly` **r**: *BN*
+• `Optional` `Readonly` **r**: `BN`
 
-Inherited from: [BaseTransaction](basetransaction.basetransaction-1.md).[r](basetransaction.basetransaction-1.md#r)
+#### Inherited from
 
-Defined in: [baseTransaction.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L40)
+[BaseTransaction](basetransaction.basetransaction-1.md).[r](basetransaction.basetransaction-1.md#r)
+
+#### Defined in
+
+[baseTransaction.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L41)
 
 ___
 
 ### s
 
-• `Optional` `Readonly` **s**: *BN*
+• `Optional` `Readonly` **s**: `BN`
 
-Inherited from: [BaseTransaction](basetransaction.basetransaction-1.md).[s](basetransaction.basetransaction-1.md#s)
+#### Inherited from
 
-Defined in: [baseTransaction.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L41)
+[BaseTransaction](basetransaction.basetransaction-1.md).[s](basetransaction.basetransaction-1.md#s)
+
+#### Defined in
+
+[baseTransaction.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L42)
 
 ___
 
 ### to
 
-• `Optional` `Readonly` **to**: *Address*
+• `Optional` `Readonly` **to**: `Address`
 
-Inherited from: [BaseTransaction](basetransaction.basetransaction-1.md).[to](basetransaction.basetransaction-1.md#to)
+#### Inherited from
 
-Defined in: [baseTransaction.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L35)
+[BaseTransaction](basetransaction.basetransaction-1.md).[to](basetransaction.basetransaction-1.md#to)
+
+#### Defined in
+
+[baseTransaction.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L36)
 
 ___
 
 ### v
 
-• `Optional` `Readonly` **v**: *BN*
+• `Optional` `Readonly` **v**: `BN`
 
-Inherited from: [BaseTransaction](basetransaction.basetransaction-1.md).[v](basetransaction.basetransaction-1.md#v)
+#### Inherited from
 
-Defined in: [baseTransaction.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L39)
+[BaseTransaction](basetransaction.basetransaction-1.md).[v](basetransaction.basetransaction-1.md#v)
+
+#### Defined in
+
+[baseTransaction.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L40)
 
 ___
 
 ### value
 
-• `Readonly` **value**: *BN*
+• `Readonly` **value**: `BN`
 
-Inherited from: [BaseTransaction](basetransaction.basetransaction-1.md).[value](basetransaction.basetransaction-1.md#value)
+#### Inherited from
 
-Defined in: [baseTransaction.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L36)
+[BaseTransaction](basetransaction.basetransaction-1.md).[value](basetransaction.basetransaction-1.md#value)
+
+#### Defined in
+
+[baseTransaction.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L37)
 
 ## Accessors
 
 ### senderR
 
-• get **senderR**(): *undefined* \| *BN*
+• `get` **senderR**(): `undefined` \| `BN`
 
 EIP-2930 alias for `r`
 
 **`deprecated`** use `r` instead
 
-**Returns:** *undefined* \| *BN*
+#### Returns
 
-Defined in: [eip1559Transaction.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L46)
+`undefined` \| `BN`
+
+#### Defined in
+
+[eip1559Transaction.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L54)
 
 ___
 
 ### senderS
 
-• get **senderS**(): *undefined* \| *BN*
+• `get` **senderS**(): `undefined` \| `BN`
 
 EIP-2930 alias for `s`
 
 **`deprecated`** use `s` instead
 
-**Returns:** *undefined* \| *BN*
+#### Returns
 
-Defined in: [eip1559Transaction.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L55)
+`undefined` \| `BN`
+
+#### Defined in
+
+[eip1559Transaction.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L63)
 
 ___
 
 ### transactionType
 
-• get **transactionType**(): *number*
+• `get` **transactionType**(): `number`
 
-Alias for `type`
+Alias for [BaseTransaction.type](basetransaction.basetransaction-1.md#type)
 
 **`deprecated`** Use `type` instead
 
-**Returns:** *number*
+#### Returns
 
-Defined in: [baseTransaction.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L96)
+`number`
+
+#### Defined in
+
+[baseTransaction.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L104)
 
 ___
 
 ### type
 
-• get **type**(): *number*
+• `get` **type**(): `number`
 
 Returns the transaction type.
 
 Note: legacy txs will return tx type `0`.
 
-**Returns:** *number*
+#### Returns
 
-Defined in: [baseTransaction.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L105)
+`number`
+
+#### Defined in
+
+[baseTransaction.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L113)
 
 ___
 
 ### yParity
 
-• get **yParity**(): *undefined* \| *BN*
+• `get` **yParity**(): `undefined` \| `BN`
 
 EIP-2930 alias for `v`
 
 **`deprecated`** use `v` instead
 
-**Returns:** *undefined* \| *BN*
+#### Returns
 
-Defined in: [eip1559Transaction.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L64)
+`undefined` \| `BN`
+
+#### Defined in
+
+[eip1559Transaction.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L72)
 
 ## Methods
 
 ### \_processSignature
 
-▸ **_processSignature**(`v`: *number*, `r`: *Buffer*, `s`: *Buffer*): [*default*](eip1559transaction.default.md)
+▸ **_processSignature**(`v`, `r`, `s`): [default](eip1559transaction.default.md)
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `v` | *number* |
-| `r` | *Buffer* |
-| `s` | *Buffer* |
+| `v` | `number` |
+| `r` | `Buffer` |
+| `s` | `Buffer` |
 
-**Returns:** [*default*](eip1559transaction.default.md)
+#### Returns
 
-Overrides: BaseTransaction.\_processSignature
+[default](eip1559transaction.default.md)
 
-Defined in: [eip1559Transaction.ts:362](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L362)
+#### Overrides
+
+BaseTransaction.\_processSignature
+
+#### Defined in
+
+[eip1559Transaction.ts:371](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L371)
 
 ___
 
 ### getBaseFee
 
-▸ **getBaseFee**(): *BN*
+▸ **getBaseFee**(): `BN`
 
 The minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
 
-**Returns:** *BN*
+#### Returns
 
-Inherited from: [BaseTransaction](basetransaction.basetransaction-1.md)
+`BN`
 
-Defined in: [baseTransaction.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L133)
+#### Inherited from
+
+[BaseTransaction](basetransaction.basetransaction-1.md).[getBaseFee](basetransaction.basetransaction-1.md#getbasefee)
+
+#### Defined in
+
+[baseTransaction.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L161)
 
 ___
 
 ### getDataFee
 
-▸ **getDataFee**(): *BN*
+▸ **getDataFee**(): `BN`
 
 The amount of gas paid for the data in this tx
 
-**Returns:** *BN*
+#### Returns
 
-Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
+`BN`
 
-Defined in: [eip1559Transaction.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L229)
+#### Overrides
+
+[BaseTransaction](basetransaction.basetransaction-1.md).[getDataFee](basetransaction.basetransaction-1.md#getdatafee)
+
+#### Defined in
+
+[eip1559Transaction.ts:238](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L238)
 
 ___
 
 ### getMessageToSign
 
-▸ **getMessageToSign**(`hashMessage`: ``false``): *Buffer*[]
+▸ **getMessageToSign**(`hashMessage`): `Buffer`[]
 
 Returns the serialized unsigned tx (hashed or raw), which can be used
 to sign the transaction (e.g. for sending to a hardware wallet).
@@ -365,13 +452,19 @@ const serializedMessage = tx.getMessageToSign(false) // use this for the HW wall
 | :------ | :------ | :------ |
 | `hashMessage` | ``false`` | Return hashed message if set to true (default: true) |
 
-**Returns:** *Buffer*[]
+#### Returns
 
-Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
+`Buffer`[]
 
-Defined in: [eip1559Transaction.ts:298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L298)
+#### Overrides
 
-▸ **getMessageToSign**(`hashMessage?`: ``true``): *Buffer*
+[BaseTransaction](basetransaction.basetransaction-1.md).[getMessageToSign](basetransaction.basetransaction-1.md#getmessagetosign)
+
+#### Defined in
+
+[eip1559Transaction.ts:307](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L307)
+
+▸ **getMessageToSign**(`hashMessage?`): `Buffer`
 
 #### Parameters
 
@@ -379,59 +472,83 @@ Defined in: [eip1559Transaction.ts:298](https://github.com/ethereumjs/ethereumjs
 | :------ | :------ |
 | `hashMessage?` | ``true`` |
 
-**Returns:** *Buffer*
+#### Returns
 
-Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
+`Buffer`
 
-Defined in: [eip1559Transaction.ts:299](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L299)
+#### Overrides
+
+[BaseTransaction](basetransaction.basetransaction-1.md).[getMessageToSign](basetransaction.basetransaction-1.md#getmessagetosign)
+
+#### Defined in
+
+[eip1559Transaction.ts:308](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L308)
 
 ___
 
 ### getMessageToVerifySignature
 
-▸ **getMessageToVerifySignature**(): *Buffer*
+▸ **getMessageToVerifySignature**(): `Buffer`
 
 Computes a sha3-256 hash which can be used to verify the signature
 
-**Returns:** *Buffer*
+#### Returns
 
-Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
+`Buffer`
 
-Defined in: [eip1559Transaction.ts:327](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L327)
+#### Overrides
+
+[BaseTransaction](basetransaction.basetransaction-1.md).[getMessageToVerifySignature](basetransaction.basetransaction-1.md#getmessagetoverifysignature)
+
+#### Defined in
+
+[eip1559Transaction.ts:336](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L336)
 
 ___
 
 ### getSenderAddress
 
-▸ **getSenderAddress**(): *Address*
+▸ **getSenderAddress**(): `Address`
 
 Returns the sender's address
 
-**Returns:** *Address*
+#### Returns
 
-Inherited from: [BaseTransaction](basetransaction.basetransaction-1.md)
+`Address`
 
-Defined in: [baseTransaction.ts:221](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L221)
+#### Inherited from
+
+[BaseTransaction](basetransaction.basetransaction-1.md).[getSenderAddress](basetransaction.basetransaction-1.md#getsenderaddress)
+
+#### Defined in
+
+[baseTransaction.ts:249](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L249)
 
 ___
 
 ### getSenderPublicKey
 
-▸ **getSenderPublicKey**(): *Buffer*
+▸ **getSenderPublicKey**(): `Buffer`
 
 Returns the public key of the sender
 
-**Returns:** *Buffer*
+#### Returns
 
-Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
+`Buffer`
 
-Defined in: [eip1559Transaction.ts:334](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L334)
+#### Overrides
+
+[BaseTransaction](basetransaction.basetransaction-1.md).[getSenderPublicKey](basetransaction.basetransaction-1.md#getsenderpublickey)
+
+#### Defined in
+
+[eip1559Transaction.ts:343](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L343)
 
 ___
 
 ### getUpfrontCost
 
-▸ **getUpfrontCost**(`baseFee?`: *BN*): *BN*
+▸ **getUpfrontCost**(`baseFee?`): `BN`
 
 The up front amount that an account must have for this transaction to be valid
 
@@ -439,67 +556,91 @@ The up front amount that an account must have for this transaction to be valid
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `baseFee` | *BN* | The base fee of the block (will be set to 0 if not provided) |
+| `baseFee` | `BN` | The base fee of the block (will be set to 0 if not provided) |
 
-**Returns:** *BN*
+#### Returns
 
-Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
+`BN`
 
-Defined in: [eip1559Transaction.ts:239](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L239)
+#### Overrides
+
+[BaseTransaction](basetransaction.basetransaction-1.md).[getUpfrontCost](basetransaction.basetransaction-1.md#getupfrontcost)
+
+#### Defined in
+
+[eip1559Transaction.ts:248](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L248)
 
 ___
 
 ### hash
 
-▸ **hash**(): *Buffer*
+▸ **hash**(): `Buffer`
 
 Computes a sha3-256 hash of the serialized tx.
 
 This method can only be used for signed txs (it throws otherwise).
-Use `getMessageToSign()` to get a tx hash for the purpose of signing.
+Use {@link FeeMarketEIP1559Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
 
-**Returns:** *Buffer*
+#### Returns
 
-Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
+`Buffer`
 
-Defined in: [eip1559Transaction.ts:316](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L316)
+#### Overrides
+
+[BaseTransaction](basetransaction.basetransaction-1.md).[hash](basetransaction.basetransaction-1.md#hash)
+
+#### Defined in
+
+[eip1559Transaction.ts:325](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L325)
 
 ___
 
 ### isSigned
 
-▸ **isSigned**(): *boolean*
+▸ **isSigned**(): `boolean`
 
-**Returns:** *boolean*
+#### Returns
 
-Inherited from: [BaseTransaction](basetransaction.basetransaction-1.md)
+`boolean`
 
-Defined in: [baseTransaction.ts:188](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L188)
+#### Inherited from
+
+[BaseTransaction](basetransaction.basetransaction-1.md).[isSigned](basetransaction.basetransaction-1.md#issigned)
+
+#### Defined in
+
+[baseTransaction.ts:216](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L216)
 
 ___
 
 ### raw
 
-▸ **raw**(): [*FeeMarketEIP1559ValuesArray*](../modules/types.md#feemarketeip1559valuesarray)
+▸ **raw**(): [FeeMarketEIP1559ValuesArray](../modules/types.md#feemarketeip1559valuesarray)
 
 Returns a Buffer Array of the raw Buffers of the EIP-1559 transaction, in order.
 
 Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
 accessList, signatureYParity, signatureR, signatureS]`
 
-Use `serialize()` to add to block data for `Block.fromValuesArray()`.
+Use {@link FeeMarketEIP1559Transaction.serialize} to add to block data for {@link Block.fromValuesArray}.
 
-**Returns:** [*FeeMarketEIP1559ValuesArray*](../modules/types.md#feemarketeip1559valuesarray)
+#### Returns
 
-Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
+[FeeMarketEIP1559ValuesArray](../modules/types.md#feemarketeip1559valuesarray)
 
-Defined in: [eip1559Transaction.ts:253](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L253)
+#### Overrides
+
+[BaseTransaction](basetransaction.basetransaction-1.md).[raw](basetransaction.basetransaction-1.md#raw)
+
+#### Defined in
+
+[eip1559Transaction.ts:262](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L262)
 
 ___
 
 ### serialize
 
-▸ **serialize**(): *Buffer*
+▸ **serialize**(): `Buffer`
 
 Returns the serialized encoding of the EIP-1559 transaction.
 
@@ -510,17 +651,23 @@ Note that in contrast to the legacy tx serialization format this is not
 valid RLP any more due to the raw tx type preceeding and concatenated to
 the RLP encoding of the values.
 
-**Returns:** *Buffer*
+#### Returns
 
-Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
+`Buffer`
 
-Defined in: [eip1559Transaction.ts:280](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L280)
+#### Overrides
+
+[BaseTransaction](basetransaction.basetransaction-1.md).[serialize](basetransaction.basetransaction-1.md#serialize)
+
+#### Defined in
+
+[eip1559Transaction.ts:289](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L289)
 
 ___
 
 ### sign
 
-▸ **sign**(`privateKey`: *Buffer*): [*default*](eip1559transaction.default.md)
+▸ **sign**(`privateKey`): [default](eip1559transaction.default.md)
 
 Signs a transaction.
 
@@ -534,58 +681,121 @@ const signedTx = tx.sign(privateKey)
 
 | Name | Type |
 | :------ | :------ |
-| `privateKey` | *Buffer* |
+| `privateKey` | `Buffer` |
 
-**Returns:** [*default*](eip1559transaction.default.md)
+#### Returns
 
-Inherited from: [BaseTransaction](basetransaction.basetransaction-1.md)
+[default](eip1559transaction.default.md)
 
-Defined in: [baseTransaction.ts:239](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L239)
+#### Inherited from
+
+[BaseTransaction](basetransaction.basetransaction-1.md).[sign](basetransaction.basetransaction-1.md#sign)
+
+#### Defined in
+
+[baseTransaction.ts:267](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L267)
+
+___
+
+### supports
+
+▸ **supports**(`capability`): `boolean`
+
+Checks if a tx type defining capability is active
+on a tx, for example the EIP-1559 fee market mechanism
+or the EIP-2930 access list feature.
+
+Note that this is different from the tx type itself,
+so EIP-2930 access lists can very well be active
+on an EIP-1559 tx for example.
+
+This method can be useful for feature checks if the
+tx type is unknown (e.g. when instantiated with
+the tx factory).
+
+See `Capabilites` in the `types` module for a reference
+on all supported capabilities.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `capability` | [Capabilities](../enums/types.capabilities.md) |
+
+#### Returns
+
+`boolean`
+
+#### Inherited from
+
+[BaseTransaction](basetransaction.basetransaction-1.md).[supports](basetransaction.basetransaction-1.md#supports)
+
+#### Defined in
+
+[baseTransaction.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L133)
 
 ___
 
 ### toCreationAddress
 
-▸ **toCreationAddress**(): *boolean*
+▸ **toCreationAddress**(): `boolean`
 
 If the tx's `to` is to the creation address
 
-**Returns:** *boolean*
+#### Returns
 
-Inherited from: [BaseTransaction](basetransaction.basetransaction-1.md)
+`boolean`
 
-Defined in: [baseTransaction.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L163)
+#### Inherited from
+
+[BaseTransaction](basetransaction.basetransaction-1.md).[toCreationAddress](basetransaction.basetransaction-1.md#tocreationaddress)
+
+#### Defined in
+
+[baseTransaction.ts:191](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L191)
 
 ___
 
 ### toJSON
 
-▸ **toJSON**(): [*JsonTx*](../interfaces/types.jsontx.md)
+▸ **toJSON**(): [JsonTx](../interfaces/types.jsontx.md)
 
 Returns an object with the JSON representation of the transaction
 
-**Returns:** [*JsonTx*](../interfaces/types.jsontx.md)
+#### Returns
 
-Overrides: [BaseTransaction](basetransaction.basetransaction-1.md)
+[JsonTx](../interfaces/types.jsontx.md)
 
-Defined in: [eip1559Transaction.ts:389](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L389)
+#### Overrides
+
+[BaseTransaction](basetransaction.basetransaction-1.md).[toJSON](basetransaction.basetransaction-1.md#tojson)
+
+#### Defined in
+
+[eip1559Transaction.ts:398](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L398)
 
 ___
 
 ### validate
 
-▸ **validate**(): *boolean*
+▸ **validate**(): `boolean`
 
 Checks if the transaction has the minimum amount of gas required
 (DataFee + TxFee + Creation Fee).
 
-**Returns:** *boolean*
+#### Returns
 
-Inherited from: [BaseTransaction](basetransaction.basetransaction-1.md)
+`boolean`
 
-Defined in: [baseTransaction.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L113)
+#### Inherited from
 
-▸ **validate**(`stringError`: ``false``): *boolean*
+[BaseTransaction](basetransaction.basetransaction-1.md).[validate](basetransaction.basetransaction-1.md#validate)
+
+#### Defined in
+
+[baseTransaction.ts:141](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L141)
+
+▸ **validate**(`stringError`): `boolean`
 
 #### Parameters
 
@@ -593,13 +803,19 @@ Defined in: [baseTransaction.ts:113](https://github.com/ethereumjs/ethereumjs-mo
 | :------ | :------ |
 | `stringError` | ``false`` |
 
-**Returns:** *boolean*
+#### Returns
 
-Inherited from: [BaseTransaction](basetransaction.basetransaction-1.md)
+`boolean`
 
-Defined in: [baseTransaction.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L114)
+#### Inherited from
 
-▸ **validate**(`stringError`: ``true``): *string*[]
+[BaseTransaction](basetransaction.basetransaction-1.md).[validate](basetransaction.basetransaction-1.md#validate)
+
+#### Defined in
+
+[baseTransaction.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L142)
+
+▸ **validate**(`stringError`): `string`[]
 
 #### Parameters
 
@@ -607,56 +823,72 @@ Defined in: [baseTransaction.ts:114](https://github.com/ethereumjs/ethereumjs-mo
 | :------ | :------ |
 | `stringError` | ``true`` |
 
-**Returns:** *string*[]
+#### Returns
 
-Inherited from: [BaseTransaction](basetransaction.basetransaction-1.md)
+`string`[]
 
-Defined in: [baseTransaction.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L115)
+#### Inherited from
+
+[BaseTransaction](basetransaction.basetransaction-1.md).[validate](basetransaction.basetransaction-1.md#validate)
+
+#### Defined in
+
+[baseTransaction.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L143)
 
 ___
 
 ### verifySignature
 
-▸ **verifySignature**(): *boolean*
+▸ **verifySignature**(): `boolean`
 
 Determines if the signature is valid
 
-**Returns:** *boolean*
+#### Returns
 
-Inherited from: [BaseTransaction](basetransaction.basetransaction-1.md)
+`boolean`
 
-Defined in: [baseTransaction.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L208)
+#### Inherited from
+
+[BaseTransaction](basetransaction.basetransaction-1.md).[verifySignature](basetransaction.basetransaction-1.md#verifysignature)
+
+#### Defined in
+
+[baseTransaction.ts:236](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L236)
 
 ___
 
 ### fromRlpSerializedTx
 
-▸ `Static` **fromRlpSerializedTx**(`serialized`: *Buffer*, `opts?`: [*TxOptions*](../interfaces/types.txoptions.md)): [*default*](eip1559transaction.default.md)
+▸ `Static` **fromRlpSerializedTx**(`serialized`, `opts?`): [default](eip1559transaction.default.md)
 
 Instantiate a transaction from the serialized tx.
-(alias of `fromSerializedTx()`)
+(alias of {@link FeeMarketEIP1559Transaction.fromSerializedTx})
 
 Note: This means that the Buffer should start with 0x01.
 
 **`deprecated`** this constructor alias is deprecated and will be removed
-in favor of the `fromSerializedTx()` constructor
+in favor of the {@link FeeMarketEIP1559Transaction.fromSerializedTx} constructor
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `serialized` | *Buffer* | - |
-| `opts` | [*TxOptions*](../interfaces/types.txoptions.md) | {} |
+| Name | Type |
+| :------ | :------ |
+| `serialized` | `Buffer` |
+| `opts` | [TxOptions](../interfaces/types.txoptions.md) |
 
-**Returns:** [*default*](eip1559transaction.default.md)
+#### Returns
 
-Defined in: [eip1559Transaction.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L115)
+[default](eip1559transaction.default.md)
+
+#### Defined in
+
+[eip1559Transaction.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L123)
 
 ___
 
 ### fromSerializedTx
 
-▸ `Static` **fromSerializedTx**(`serialized`: *Buffer*, `opts?`: [*TxOptions*](../interfaces/types.txoptions.md)): [*default*](eip1559transaction.default.md)
+▸ `Static` **fromSerializedTx**(`serialized`, `opts?`): [default](eip1559transaction.default.md)
 
 Instantiate a transaction from the serialized tx.
 
@@ -665,20 +897,24 @@ accessList, signatureYParity, signatureR, signatureS])`
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `serialized` | *Buffer* | - |
-| `opts` | [*TxOptions*](../interfaces/types.txoptions.md) | {} |
+| Name | Type |
+| :------ | :------ |
+| `serialized` | `Buffer` |
+| `opts` | [TxOptions](../interfaces/types.txoptions.md) |
 
-**Returns:** [*default*](eip1559transaction.default.md)
+#### Returns
 
-Defined in: [eip1559Transaction.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L88)
+[default](eip1559transaction.default.md)
+
+#### Defined in
+
+[eip1559Transaction.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L96)
 
 ___
 
 ### fromTxData
 
-▸ `Static` **fromTxData**(`txData`: [*FeeMarketEIP1559TxData*](../interfaces/types.feemarketeip1559txdata.md), `opts?`: [*TxOptions*](../interfaces/types.txoptions.md)): [*default*](eip1559transaction.default.md)
+▸ `Static` **fromTxData**(`txData`, `opts?`): [default](eip1559transaction.default.md)
 
 Instantiate a transaction from a data dictionary.
 
@@ -691,20 +927,24 @@ Notes:
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `txData` | [*FeeMarketEIP1559TxData*](../interfaces/types.feemarketeip1559txdata.md) | - |
-| `opts` | [*TxOptions*](../interfaces/types.txoptions.md) | {} |
+| Name | Type |
+| :------ | :------ |
+| `txData` | [FeeMarketEIP1559TxData](../interfaces/types.feemarketeip1559txdata.md) |
+| `opts` | [TxOptions](../interfaces/types.txoptions.md) |
 
-**Returns:** [*default*](eip1559transaction.default.md)
+#### Returns
 
-Defined in: [eip1559Transaction.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L78)
+[default](eip1559transaction.default.md)
+
+#### Defined in
+
+[eip1559Transaction.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L86)
 
 ___
 
 ### fromValuesArray
 
-▸ `Static` **fromValuesArray**(`values`: [*FeeMarketEIP1559ValuesArray*](../modules/types.md#feemarketeip1559valuesarray), `opts?`: [*TxOptions*](../interfaces/types.txoptions.md)): [*default*](eip1559transaction.default.md)
+▸ `Static` **fromValuesArray**(`values`, `opts?`): [default](eip1559transaction.default.md)
 
 Create a transaction from a values array.
 
@@ -713,11 +953,15 @@ accessList, signatureYParity, signatureR, signatureS]`
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `values` | [*FeeMarketEIP1559ValuesArray*](../modules/types.md#feemarketeip1559valuesarray) | - |
-| `opts` | [*TxOptions*](../interfaces/types.txoptions.md) | {} |
+| Name | Type |
+| :------ | :------ |
+| `values` | [FeeMarketEIP1559ValuesArray](../modules/types.md#feemarketeip1559valuesarray) |
+| `opts` | [TxOptions](../interfaces/types.txoptions.md) |
 
-**Returns:** [*default*](eip1559transaction.default.md)
+#### Returns
 
-Defined in: [eip1559Transaction.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L125)
+[default](eip1559transaction.default.md)
+
+#### Defined in
+
+[eip1559Transaction.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L133)
