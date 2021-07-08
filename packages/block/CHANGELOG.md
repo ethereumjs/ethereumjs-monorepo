@@ -19,6 +19,7 @@ Source files from the `src` folder are now included in the distribution build, s
 ### Other Changes
 
 - Fixed RPC value handling for `difficulty`, `gasPrice` and `value` in `blockFromRpc()` when value is provided as a number (thanks @Ghorbanian for the contribution), PR [#1316](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1316)
+- Added `baseFeePerGas` to `blockHeaderFromRpc()` (thanks @mfornet for the contribution), PR [#1330](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1330)
 
 ## 3.3.0 - 2021-05-26
 
