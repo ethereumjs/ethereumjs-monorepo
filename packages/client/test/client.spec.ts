@@ -61,8 +61,21 @@ tape('[EthereumClient]', async (t) => {
     servers[0].emit('listening', 'details0')
     client.services[0].emit('error', 'err1')
     client.services[0].emit('synchronized')
+
     t.ok(client.opened, 'opened')
     t.equals(await client.open(), false, 'already opened')
+  })
+
+  t.test('should set synchronized to true once synchronized is emitted', async (t) => {
+    const servers = [new Server()] as any
+    const config = new Config({ servers })
+    const client = new EthereumClient({ config })
+
+    t.equals(client.synchronized, false, 'not synchronized yet')
+    await client.open()
+    client.services[0].emit('synchronized')
+    t.equals(client.synchronized, true, 'synchronized')
+    t.end()
   })
 
   t.test('should start/stop', async (t) => {

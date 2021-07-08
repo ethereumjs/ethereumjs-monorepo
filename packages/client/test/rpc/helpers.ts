@@ -52,9 +52,17 @@ export function createClient(clientOpts: any = {}) {
     }),
   ]
 
-  let synchronizer
+  let synchronizer: any = {
+    startingBlock: 0,
+    best: () => {
+      return undefined
+    },
+    latest: () => {
+      return undefined
+    },
+  }
   if (clientOpts.includeVM) {
-    synchronizer = { execution: { vm: new VM({ blockchain, common }) } }
+    synchronizer = { ...synchronizer, execution: { vm: new VM({ blockchain, common }) } }
   }
 
   let peers = [1, 2, 3]
@@ -63,6 +71,7 @@ export function createClient(clientOpts: any = {}) {
   }
 
   const client: any = {
+    synchronized: false,
     config,
     services: [
       {
