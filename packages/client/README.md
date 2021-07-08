@@ -32,32 +32,50 @@ For the `ethereumjs` CLI command to work run:
 npm link
 ```
 
-Note: for development purposes you can invoke the client with `npm run client:start`
+Note: for development purposes, you can invoke the client with `npm run client:start` from the `client` root directory (e.g. `packages/client` if working on a local copy of the monorepo)
 
 ### Running the Client
 
-#### CLI
-
-You can run the current state of the client with:
+You can get up the client up and running with default settings with:
 
 ```shell
 ethereumjs --network=mainnet [--loglevel=debug]
 ```
+### CLI reference [WORK-IN-PROGRESS] 
 
-For development you might want to connect to `rinkeby` as the network with the currently
-most reliable connection:
+#### `--network`
+You can connect to specific networks by name using the `--network` parameter as below: (`rinkeby` is used here)
 
 ```shell
 ethereumjs --network rinkeby
 ```
+
+The client currently supports the below networks:
+- mainnet
+- rinkeby
+- ropsten
+- goerli
+- calaveras
+- kovan -- Note: kovan support is limited and chain syncing may not work due to the kovan consensus mechanism not being implemented
+
+
+#### `--help`
 
 The help can be shown with:
 
 ```shell
 ethereumjs --help
 ```
+### `--loglevel`
 
-If you want to have verbose logging output for the p2p communication you can use...
+The client's logging verbosity level can be set with `--loglevel`.  Available levels are
+`error`, `warn`, `info`, `debug`
+
+```shell
+ethereumjs --loglevel=debug
+```
+
+If you want to have verbose logging output across the stack you can use...
 
 ```shell
 DEBUG=*,-babel [CLIENT_START_COMMAND]
