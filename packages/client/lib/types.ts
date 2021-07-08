@@ -5,6 +5,7 @@ import type Connection from '../../../node_modules/libp2p-interfaces/dist/src/co
 import type { MuxedStream } from '../../../node_modules/libp2p-interfaces/dist/src/stream-muxer/types'
 import { Libp2pPeer, RlpxPeer } from './net/peer'
 import { Peer as Devp2pRlpxPeer } from '@ethereumjs/devp2p'
+import MockPeer from '../test/integration/mocks/mockpeer'
 /**
  * Types for the central event bus, emitted
  * by different components of the client.
@@ -15,6 +16,7 @@ export enum Event {
   SYNC_FETCHER_FETCHED = 'sync:fetcher:fetched',
   SYNC_SYNCHRONIZED = 'sync:synchronized',
   PEER_CONNECTED = 'peer:connected',
+  PEER_DISCONNECTED = 'peer:disconnected'
 }
 export interface EventParams {
   [Event.CHAIN_UPDATED]: []
@@ -22,6 +24,7 @@ export interface EventParams {
   [Event.SYNC_FETCHER_FETCHED]: [Block[] | BlockHeader[]]
   [Event.SYNC_SYNCHRONIZED]: []
   [Event.PEER_CONNECTED]: [Libp2pPeer | RlpxPeer | Devp2pRlpxPeer]
+  [Event.PEER_DISCONNECTED]: [Libp2pPeer | RlpxPeer | Devp2pRlpxPeer | MockPeer]
 }
 export declare interface EventBus<T extends Event> {
   emit(event: T, ...args: EventParams[T]): boolean
@@ -32,7 +35,8 @@ export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
   EventBus<Event.SYNC_EXECUTION_VM_ERROR> &
   EventBus<Event.SYNC_FETCHER_FETCHED> &
   EventBus<Event.SYNC_SYNCHRONIZED> &
-  EventBus<Event.PEER_CONNECTED>
+  EventBus<Event.PEER_CONNECTED> &
+  EventBus<Event.PEER_DISCONNECTED>
 
 /**
  * Like types

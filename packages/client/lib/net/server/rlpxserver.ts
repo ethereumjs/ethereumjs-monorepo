@@ -279,6 +279,7 @@ export class RlpxServer extends Server {
           this.config.logger.debug(
             `Peer disconnected (${rlpxPeer.getDisconnectPrefix(reason)}): ${peer}`
           )
+          this.config.events.emit(Event.PEER_DISCONNECTED, peer)
           this.emit('disconnected', peer)
         }
       })
