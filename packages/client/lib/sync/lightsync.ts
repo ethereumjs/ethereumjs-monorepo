@@ -60,11 +60,11 @@ export class LightSynchronizer extends Synchronizer {
    * @return {Promise} Resolves with header
    */
   async latest(peer: Peer) {
-    const headers = await peer.eth?.getBlockHeaders({
-      block: peer.eth!.status.bestHash,
+    const result = await peer.les?.getBlockHeaders({
+      block: peer.les!.status.headHash,
       max: 1,
     })
-    return headers?.[0]
+    return result?.headers[0]
   }
 
   /**
