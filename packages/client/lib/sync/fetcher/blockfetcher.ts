@@ -24,17 +24,33 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
   async request(job: Job<JobTask, Block[], Block>): Promise<Block[]> {
     const { task, peer } = job
     const { first, count } = task
-    const headers = (
-      await (peer!.eth as EthProtocolMethods).getBlockHeaders({
-        block: first,
-        max: count,
-      })
-    )[1]
-    if (!headers) {
-      this.config.logger.error(`peer ${peer?.id} returned no headers for block ${first}`)
+    const headersResult = await (peer!.eth as EthProtocolMethods).getBlockHeaders({
+      block: first,
+      max: count,
+    })
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!headersResult) {
+      // Catch occasional null responses from peers who do not return block headers from peer.eth request
+      this.config.logger.warn(
+        `peer ${peer?.id} returned no headers for blocks ${first}-${first.addn(count)} from ${
+          peer?.address
+        }`
+      )
       return []
     }
-    const bodies = (await peer!.eth!.getBlockBodies({ hashes: headers.map((h) => h.hash()) }))[1]
+    const headers = headersResult[1]
+    const bodiesResult = await peer!.eth!.getBlockBodies({ hashes: headers.map((h) => h.hash()) })
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!bodiesResult) {
+      // Catch occasional null responses from peers who do not return block bodies from peer.eth request
+      this.config.logger.warn(
+        `peer ${peer?.id} returned no bodies for blocks ${first}-${first.addn(count)} from ${
+          peer?.address
+        }`
+      )
+      return []
+    }
+    const bodies = bodiesResult[1]
     const blocks: Block[] = bodies.map(([txsData, unclesData]: BlockBodyBuffer, i: number) => {
       const opts = {
         common: this.config.chainCommon,
