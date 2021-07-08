@@ -18,29 +18,35 @@ Options for building a block.
 
 ### blockOpts
 
-• `Optional` **blockOpts**: BlockOptions
+• `Optional` **blockOpts**: `BlockOptions`
 
 The block options to use.
 
-Defined in: [buildBlock.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L29)
+#### Defined in
+
+[buildBlock.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L29)
 
 ___
 
 ### headerData
 
-• `Optional` **headerData**: HeaderData
+• `Optional` **headerData**: `HeaderData`
 
 The block header data to use.
 Defaults used for any values not provided.
 
-Defined in: [buildBlock.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L24)
+#### Defined in
+
+[buildBlock.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L24)
 
 ___
 
 ### parentBlock
 
-• **parentBlock**: *Block*
+• **parentBlock**: `Block`
 
 The parent block
 
-Defined in: [buildBlock.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L18)
+#### Defined in
+
+[buildBlock.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L18)

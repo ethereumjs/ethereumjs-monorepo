@@ -11,7 +11,7 @@ interface FullEthereumServiceOptions extends EthereumServiceOptions {
 }
 
 /**
- * Ethereum service
+ * Full Ethereum service
  * @memberof module:service
  */
 export class FullEthereumService extends EthereumService {

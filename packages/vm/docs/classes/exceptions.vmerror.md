@@ -19,30 +19,34 @@
 
 ### constructor
 
-\+ **new VmError**(`error`: [*ERROR*](../enums/exceptions.error.md)): [*VmError*](exceptions.vmerror.md)
+• **new VmError**(`error`)
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `error` | [*ERROR*](../enums/exceptions.error.md) |
+| `error` | [ERROR](../enums/exceptions.error.md) |
 
-**Returns:** [*VmError*](exceptions.vmerror.md)
+#### Defined in
 
-Defined in: [exceptions.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L30)
+[exceptions.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L30)
 
 ## Properties
 
 ### error
 
-• **error**: [*ERROR*](../enums/exceptions.error.md)
+• **error**: [ERROR](../enums/exceptions.error.md)
 
-Defined in: [exceptions.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L29)
+#### Defined in
+
+[exceptions.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L29)
 
 ___
 
 ### errorType
 
-• **errorType**: *string*
+• **errorType**: `string`
 
-Defined in: [exceptions.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L30)
+#### Defined in
+
+[exceptions.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L30)

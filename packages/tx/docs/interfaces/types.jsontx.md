@@ -34,110 +34,138 @@ and not all the values are present on all tx types
 
 ### accessList
 
-• `Optional` **accessList**: JsonAccessListItem[]
+• `Optional` **accessList**: `JsonAccessListItem`[]
 
-Defined in: [types.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L229)
+#### Defined in
+
+[types.ts:259](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L259)
 
 ___
 
 ### chainId
 
-• `Optional` **chainId**: *string*
+• `Optional` **chainId**: `string`
 
-Defined in: [types.ts:228](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L228)
+#### Defined in
+
+[types.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L258)
 
 ___
 
 ### data
 
-• `Optional` **data**: *string*
+• `Optional` **data**: `string`
 
-Defined in: [types.ts:223](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L223)
+#### Defined in
+
+[types.ts:253](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L253)
 
 ___
 
 ### gasLimit
 
-• `Optional` **gasLimit**: *string*
+• `Optional` **gasLimit**: `string`
 
-Defined in: [types.ts:221](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L221)
+#### Defined in
+
+[types.ts:251](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L251)
 
 ___
 
 ### gasPrice
 
-• `Optional` **gasPrice**: *string*
+• `Optional` **gasPrice**: `string`
 
-Defined in: [types.ts:220](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L220)
+#### Defined in
+
+[types.ts:250](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L250)
 
 ___
 
 ### maxFeePerGas
 
-• `Optional` **maxFeePerGas**: *string*
+• `Optional` **maxFeePerGas**: `string`
 
-Defined in: [types.ts:232](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L232)
+#### Defined in
+
+[types.ts:262](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L262)
 
 ___
 
 ### maxPriorityFeePerGas
 
-• `Optional` **maxPriorityFeePerGas**: *string*
+• `Optional` **maxPriorityFeePerGas**: `string`
 
-Defined in: [types.ts:231](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L231)
+#### Defined in
+
+[types.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L261)
 
 ___
 
 ### nonce
 
-• `Optional` **nonce**: *string*
+• `Optional` **nonce**: `string`
 
-Defined in: [types.ts:219](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L219)
+#### Defined in
+
+[types.ts:249](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L249)
 
 ___
 
 ### r
 
-• `Optional` **r**: *string*
+• `Optional` **r**: `string`
 
-Defined in: [types.ts:225](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L225)
+#### Defined in
+
+[types.ts:255](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L255)
 
 ___
 
 ### s
 
-• `Optional` **s**: *string*
+• `Optional` **s**: `string`
 
-Defined in: [types.ts:226](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L226)
+#### Defined in
+
+[types.ts:256](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L256)
 
 ___
 
 ### to
 
-• `Optional` **to**: *string*
+• `Optional` **to**: `string`
 
-Defined in: [types.ts:222](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L222)
+#### Defined in
+
+[types.ts:252](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L252)
 
 ___
 
 ### type
 
-• `Optional` **type**: *string*
+• `Optional` **type**: `string`
 
-Defined in: [types.ts:230](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L230)
+#### Defined in
+
+[types.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L260)
 
 ___
 
 ### v
 
-• `Optional` **v**: *string*
+• `Optional` **v**: `string`
 
-Defined in: [types.ts:224](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L224)
+#### Defined in
+
+[types.ts:254](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L254)
 
 ___
 
 ### value
 
-• `Optional` **value**: *string*
+• `Optional` **value**: `string`
 
-Defined in: [types.ts:227](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L227)
+#### Defined in
+
+[types.ts:257](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L257)

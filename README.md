@@ -41,7 +41,7 @@ and open a new PR with the changes. Be sure to update both the diagram and the e
 
 ## Getting Started
 
-See our [monorepo](config/monorepo.md) documentation to get started on setting up the respository and installing dependencies. The [config](config/) folder gives an overview on shared configuration and scripts between packages.
+See our [monorepo](config/monorepo.md) documentation to get started on setting up the repository and installing dependencies. The [config](config/) folder gives an overview on shared configuration and scripts between packages.
 
 # EthereumJS
 

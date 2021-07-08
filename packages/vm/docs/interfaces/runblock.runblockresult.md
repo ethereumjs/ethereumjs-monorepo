@@ -10,7 +10,7 @@ Result of [runBlock](../classes/index.default.md#runblock)
 
 - **RunBlockResult**
 
-  ↳ [*AfterBlockEvent*](runblock.afterblockevent.md)
+  ↳ [AfterBlockEvent](runblock.afterblockevent.md)
 
 ## Table of contents
 
@@ -27,58 +27,70 @@ Result of [runBlock](../classes/index.default.md#runblock)
 
 ### gasUsed
 
-• **gasUsed**: *BN*
+• **gasUsed**: `BN`
 
 The gas used after executing the block
 
-Defined in: [runBlock.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L79)
+#### Defined in
+
+[runBlock.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L82)
 
 ___
 
 ### logsBloom
 
-• **logsBloom**: *Buffer*
+• **logsBloom**: `Buffer`
 
 The bloom filter of the LOGs (events) after executing the block
 
-Defined in: [runBlock.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L83)
+#### Defined in
+
+[runBlock.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L86)
 
 ___
 
 ### receiptRoot
 
-• **receiptRoot**: *Buffer*
+• **receiptRoot**: `Buffer`
 
 The receipt root after executing the block
 
-Defined in: [runBlock.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L87)
+#### Defined in
+
+[runBlock.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L90)
 
 ___
 
 ### receipts
 
-• **receipts**: [*TxReceipt*](../modules/types.md#txreceipt)[]
+• **receipts**: [TxReceipt](../modules/types.md#txreceipt)[]
 
 Receipts generated for transactions in the block
 
-Defined in: [runBlock.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L67)
+#### Defined in
+
+[runBlock.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L70)
 
 ___
 
 ### results
 
-• **results**: [*RunTxResult*](runtx.runtxresult.md)[]
+• **results**: [RunTxResult](runtx.runtxresult.md)[]
 
 Results of executing the transactions in the block
 
-Defined in: [runBlock.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L71)
+#### Defined in
+
+[runBlock.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L74)
 
 ___
 
 ### stateRoot
 
-• **stateRoot**: *Buffer*
+• **stateRoot**: `Buffer`
 
 The stateRoot after executing the block
 
-Defined in: [runBlock.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L75)
+#### Defined in
+
+[runBlock.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L78)

@@ -17,18 +17,22 @@ Options for constructing a [StateManager](state_interface.statemanager.md).
 
 ### common
 
-• `Optional` **common**: *default*
+• `Optional` **common**: `default`
 
-Parameters of the chain ([`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common))
+Parameters of the chain {@link Common}
 
-Defined in: [state/stateManager.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L29)
+#### Defined in
+
+[state/stateManager.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L33)
 
 ___
 
 ### trie
 
-• `Optional` **trie**: *SecureTrie*
+• `Optional` **trie**: `SecureTrie`
 
-An [`merkle-patricia-tree`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie) instance
+A {@link SecureTrie} instance
 
-Defined in: [state/stateManager.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L33)
+#### Defined in
+
+[state/stateManager.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L37)

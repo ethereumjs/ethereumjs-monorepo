@@ -21,63 +21,75 @@ Options for running a block.
 
 ### block
 
-• **block**: *Block*
+• **block**: `Block`
 
 The @ethereumjs/block to process
 
-Defined in: [runBlock.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L32)
+#### Defined in
+
+[runBlock.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L35)
 
 ___
 
 ### generate
 
-• `Optional` **generate**: *boolean*
+• `Optional` **generate**: `boolean`
 
 Whether to generate the stateRoot and other related fields.
 If `true`, `runBlock` will set the fields `stateRoot`, `receiptsTrie`, `gasUsed`, and `bloom` (logs bloom) after running the block.
 If `false`, `runBlock` throws if any fields do not match.
 Defaults to `false`.
 
-Defined in: [runBlock.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L43)
+#### Defined in
+
+[runBlock.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L46)
 
 ___
 
 ### root
 
-• `Optional` **root**: *Buffer*
+• `Optional` **root**: `Buffer`
 
 Root of the state trie
 
-Defined in: [runBlock.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L36)
+#### Defined in
+
+[runBlock.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L39)
 
 ___
 
 ### skipBalance
 
-• `Optional` **skipBalance**: *boolean*
+• `Optional` **skipBalance**: `boolean`
 
 If true, skips the balance check
 
-Defined in: [runBlock.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L57)
+#### Defined in
+
+[runBlock.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L60)
 
 ___
 
 ### skipBlockValidation
 
-• `Optional` **skipBlockValidation**: *boolean*
+• `Optional` **skipBlockValidation**: `boolean`
 
 If true, will skip "Block validation":
 Block validation validates the header (with respect to the blockchain),
 the transactions, the transaction trie and the uncle hash.
 
-Defined in: [runBlock.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L49)
+#### Defined in
+
+[runBlock.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L52)
 
 ___
 
 ### skipNonce
 
-• `Optional` **skipNonce**: *boolean*
+• `Optional` **skipNonce**: `boolean`
 
 If true, skips the nonce check
 
-Defined in: [runBlock.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L53)
+#### Defined in
+
+[runBlock.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L56)

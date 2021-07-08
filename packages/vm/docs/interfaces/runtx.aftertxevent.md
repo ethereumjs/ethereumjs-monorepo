@@ -6,7 +6,7 @@
 
 ## Hierarchy
 
-- [*RunTxResult*](runtx.runtxresult.md)
+- [RunTxResult](runtx.runtxresult.md)
 
   ↳ **AfterTxEvent**
 
@@ -28,104 +28,138 @@
 
 ### accessList
 
-• `Optional` **accessList**: AccessList
+• `Optional` **accessList**: `AccessList`
 
 EIP-2930 access list generated for the tx (see `reportAccessList` option)
 
-Inherited from: [RunTxResult](runtx.runtxresult.md).[accessList](runtx.runtxresult.md#accesslist)
+#### Inherited from
 
-Defined in: [runTx.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L106)
+[RunTxResult](runtx.runtxresult.md).[accessList](runtx.runtxresult.md#accesslist)
+
+#### Defined in
+
+[runTx.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L104)
 
 ___
 
 ### amountSpent
 
-• **amountSpent**: *BN*
+• **amountSpent**: `BN`
 
 The amount of ether used by this transaction
 
-Inherited from: [RunTxResult](runtx.runtxresult.md).[amountSpent](runtx.runtxresult.md#amountspent)
+#### Inherited from
 
-Defined in: [runTx.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L91)
+[RunTxResult](runtx.runtxresult.md).[amountSpent](runtx.runtxresult.md#amountspent)
+
+#### Defined in
+
+[runTx.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L89)
 
 ___
 
 ### bloom
 
-• **bloom**: *default*
+• **bloom**: `default`
 
 Bloom filter resulted from transaction
 
-Inherited from: [RunTxResult](runtx.runtxresult.md).[bloom](runtx.runtxresult.md#bloom)
+#### Inherited from
 
-Defined in: [runTx.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L86)
+[RunTxResult](runtx.runtxresult.md).[bloom](runtx.runtxresult.md#bloom)
+
+#### Defined in
+
+[runTx.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L84)
 
 ___
 
 ### createdAddress
 
-• `Optional` **createdAddress**: *Address*
+• `Optional` **createdAddress**: `Address`
 
 Address of created account durint transaction, if any
 
-Inherited from: [RunTxResult](runtx.runtxresult.md).[createdAddress](runtx.runtxresult.md#createdaddress)
+#### Inherited from
 
-Defined in: [evm/evm.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/evm/evm.ts#L31)
+[RunTxResult](runtx.runtxresult.md).[createdAddress](runtx.runtxresult.md#createdaddress)
+
+#### Defined in
+
+[evm/evm.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/evm/evm.ts#L37)
 
 ___
 
 ### execResult
 
-• **execResult**: ExecResult
+• **execResult**: `ExecResult`
 
 Contains the results from running the code, if any, as described in [runCode](../classes/index.default.md#runcode)
 
-Inherited from: [RunTxResult](runtx.runtxresult.md).[execResult](runtx.runtxresult.md#execresult)
+#### Inherited from
 
-Defined in: [evm/evm.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/evm/evm.ts#L35)
+[RunTxResult](runtx.runtxresult.md).[execResult](runtx.runtxresult.md#execresult)
+
+#### Defined in
+
+[evm/evm.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/evm/evm.ts#L41)
 
 ___
 
 ### gasRefund
 
-• `Optional` **gasRefund**: *BN*
+• `Optional` **gasRefund**: `BN`
 
 The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
 
-Inherited from: [RunTxResult](runtx.runtxresult.md).[gasRefund](runtx.runtxresult.md#gasrefund)
+#### Inherited from
 
-Defined in: [runTx.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L101)
+[RunTxResult](runtx.runtxresult.md).[gasRefund](runtx.runtxresult.md#gasrefund)
+
+#### Defined in
+
+[runTx.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L99)
 
 ___
 
 ### gasUsed
 
-• **gasUsed**: *BN*
+• **gasUsed**: `BN`
 
 Amount of gas used by the transaction
 
-Inherited from: [RunTxResult](runtx.runtxresult.md).[gasUsed](runtx.runtxresult.md#gasused)
+#### Inherited from
 
-Defined in: [evm/evm.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/evm/evm.ts#L27)
+[RunTxResult](runtx.runtxresult.md).[gasUsed](runtx.runtxresult.md#gasused)
+
+#### Defined in
+
+[evm/evm.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/evm/evm.ts#L33)
 
 ___
 
 ### receipt
 
-• **receipt**: [*TxReceipt*](../modules/types.md#txreceipt)
+• **receipt**: [TxReceipt](../modules/types.md#txreceipt)
 
 The tx receipt
 
-Inherited from: [RunTxResult](runtx.runtxresult.md).[receipt](runtx.runtxresult.md#receipt)
+#### Inherited from
 
-Defined in: [runTx.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L96)
+[RunTxResult](runtx.runtxresult.md).[receipt](runtx.runtxresult.md#receipt)
+
+#### Defined in
+
+[runTx.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L94)
 
 ___
 
 ### transaction
 
-• **transaction**: TypedTransaction
+• **transaction**: `TypedTransaction`
 
 The transaction which just got finished
 
-Defined in: [runTx.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L113)
+#### Defined in
+
+[runTx.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L111)

@@ -7,7 +7,7 @@ import {
   Transaction,
   TypedTransaction,
   FeeMarketEIP1559Transaction,
-  Capabilities,
+  Capability,
 } from '@ethereumjs/tx'
 import { RunBlockOpts, AfterBlockEvent } from '../../src/runBlock'
 import type { PreByzantiumTxReceipt, PostByzantiumTxReceipt } from '../../src/types'
@@ -463,7 +463,7 @@ tape('runBlock() -> tx types', async (t) => {
     //@ts-ignore overwrite transactions
     block.transactions = transactions
 
-    if (transactions.some((t) => t.supports(Capabilities.EIP1559FeeMarket))) {
+    if (transactions.some((t) => t.supports(Capability.EIP1559FeeMarket))) {
       // @ts-ignore overwrite read-only property
       block.header.baseFeePerGas = new BN(7)
     }

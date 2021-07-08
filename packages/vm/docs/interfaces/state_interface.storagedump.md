@@ -8,6 +8,6 @@ Storage values of an account
 
 ## Indexable
 
-▪ [key: *string*]: *string*
+▪ [key: `string`]: `string`
 
 Storage values of an account

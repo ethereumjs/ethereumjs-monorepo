@@ -35,7 +35,8 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.equal(c.getHardforkByBlockNumber(1400000), 'homestead', msg)
     st.equal(c.getHardforkByBlockNumber(9200000), 'muirGlacier', msg)
     st.equal(c.getHardforkByBlockNumber(12244000), 'berlin', msg)
-    st.equal(c.getHardforkByBlockNumber(999999999999), 'berlin', msg)
+    st.equal(c.getHardforkByBlockNumber(12965000), 'london', msg)
+    st.equal(c.getHardforkByBlockNumber(999999999999), 'london', msg)
 
     msg = 'should set HF correctly'
 
@@ -44,7 +45,8 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.equal(c.setHardforkByBlockNumber(1150000), 'homestead', msg)
     st.equal(c.setHardforkByBlockNumber(1400000), 'homestead', msg)
     st.equal(c.setHardforkByBlockNumber(12244000), 'berlin', msg)
-    st.equal(c.setHardforkByBlockNumber(999999999999), 'berlin', msg)
+    st.equal(c.setHardforkByBlockNumber(12965000), 'london', msg)
+    st.equal(c.setHardforkByBlockNumber(999999999999), 'london', msg)
 
     c = new Common({ chain: 'ropsten' })
     st.equal(c.setHardforkByBlockNumber(0), 'tangerineWhistle', msg)
@@ -108,8 +110,8 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     msg = 'should return correct next HF (rinkeby: byzantium -> constantinople)'
     st.equal(c.nextHardforkBlock('byzantium'), 3660663, msg)
 
-    msg = 'should return null if next HF is not available (rinkeby: berlin -> london)'
-    st.equal(c.nextHardforkBlock('berlin'), null, msg)
+    msg = 'should return null if next HF is not available (rinkeby: london -> shanghai)'
+    st.equal(c.nextHardforkBlock('london'), null, msg)
 
     msg =
       'should work correctly along the need to skip several forks (ropsten: chainstart -> (homestead) -> (dao) -> (tangerineWhistle) -> spuriousDragon)'
@@ -143,8 +145,8 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
 
   t.test('activeHardforks()', function (st: tape.Test) {
     let c = new Common({ chain: 'ropsten' })
-    let msg = 'should return 10 active hardforks for Ropsten'
-    st.equal(c.activeHardforks().length, 10, msg)
+    let msg = 'should return correct number of active hardforks for Ropsten'
+    st.equal(c.activeHardforks().length, 11, msg)
 
     msg = 'should return the correct HF data for Ropsten'
     st.equal(c.activeHardforks()[3]['name'], 'spuriousDragon', msg)
@@ -170,24 +172,24 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.equal(c.activeHardforks(null, { onlySupported: true }).length, 2, msg)
 
     c = new Common({ chain: 'mainnet' })
-    msg = 'should return 11 active HFs for mainnet'
-    st.equal(c.activeHardforks().length, 11, msg)
+    msg = 'should return correct number of active HFs for mainnet'
+    st.equal(c.activeHardforks().length, 12, msg)
 
     c = new Common({ chain: 'rinkeby' })
-    msg = 'should return 9 active HFs for rinkeby'
-    st.equal(c.activeHardforks().length, 9, msg)
+    msg = 'should return correct number of active HFs for rinkeby'
+    st.equal(c.activeHardforks().length, 10, msg)
 
     c = new Common({ chain: 'goerli' })
-    msg = 'should return 9 active HFs for goerli'
-    st.equal(c.activeHardforks().length, 9, msg)
+    msg = 'should return correct number of active HFs for goerli'
+    st.equal(c.activeHardforks().length, 10, msg)
 
     st.end()
   })
 
   t.test('activeHardfork()', function (st: tape.Test) {
     let c = new Common({ chain: 'ropsten' })
-    let msg = 'should return berlin as latest active HF for Ropsten'
-    st.equal(c.activeHardfork(), 'berlin', msg)
+    let msg = 'should return correct latest active HF for Ropsten'
+    st.equal(c.activeHardfork(), 'london', msg)
 
     msg = 'should return spuriousDragon as latest active HF for Ropsten for block 10'
     st.equal(c.activeHardfork(10), 'spuriousDragon', msg)
@@ -200,8 +202,8 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.equal(c.activeHardfork(null, { onlySupported: true }), 'spuriousDragon', msg)
 
     c = new Common({ chain: 'rinkeby' })
-    msg = 'should return berlin as latest active HF for Rinkeby'
-    st.equal(c.activeHardfork(), 'berlin', msg)
+    msg = 'should return correct latest active HF for Rinkeby'
+    st.equal(c.activeHardfork(), 'london', msg)
 
     st.end()
   })

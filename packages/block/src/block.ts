@@ -9,7 +9,7 @@ import {
   TxOptions,
   FeeMarketEIP1559Transaction,
   Transaction,
-  Capabilities,
+  Capability,
 } from '@ethereumjs/tx'
 import { BlockHeader } from './header'
 import { BlockData, BlockOptions, JsonBlock, BlockBuffer, Blockchain } from './types'
@@ -162,7 +162,7 @@ export class Block {
     return [
       this.header.raw(),
       this.transactions.map((tx) =>
-        tx.supports(Capabilities.EIP2718TypedTransaction) ? tx.serialize() : tx.raw()
+        tx.supports(Capability.EIP2718TypedTransaction) ? tx.serialize() : tx.raw()
       ) as Buffer[],
       this.uncleHeaders.map((uh) => uh.raw()),
     ]
@@ -233,7 +233,7 @@ export class Block {
     this.transactions.forEach((tx, i) => {
       const errs = <string[]>tx.validate(true)
       if (this._common.isActivatedEIP(1559)) {
-        if (tx.supports(Capabilities.EIP1559FeeMarket)) {
+        if (tx.supports(Capability.EIP1559FeeMarket)) {
           tx = tx as FeeMarketEIP1559Transaction
           if (tx.maxFeePerGas.lt(this.header.baseFeePerGas!)) {
             errs.push('tx unable to pay base fee (EIP-1559 tx)')
@@ -263,12 +263,13 @@ export class Block {
    *
    * Throws if invalid.
    *
-   * @param blockchain - validate against a @ethereumjs/blockchain
+   * @param blockchain - validate against an @ethereumjs/blockchain
+   * @param onlyHeader - if should only validate the header (skips validating txTrie and unclesHash) (default: false)
    */
-  async validate(blockchain: Blockchain): Promise<void> {
+  async validate(blockchain: Blockchain, onlyHeader: boolean = false): Promise<void> {
     await this.header.validate(blockchain)
     await this.validateUncles(blockchain)
-    await this.validateData()
+    await this.validateData(onlyHeader)
   }
   /**
    * Validates the block data, throwing if invalid.
@@ -277,21 +278,24 @@ export class Block {
    * - All transactions are valid
    * - The transactions trie is valid
    * - The uncle hash is valid
+   * @param onlyHeader if only passed the header, skip validating txTrie and unclesHash (default: false)
    */
-  async validateData(): Promise<void> {
+  async validateData(onlyHeader: boolean = false): Promise<void> {
     const txErrors = this.validateTransactions(true)
     if (txErrors.length > 0) {
       const msg = `invalid transactions: ${txErrors.join(' ')}`
       throw this.header._error(msg)
     }
 
-    const validateTxTrie = await this.validateTransactionsTrie()
-    if (!validateTxTrie) {
-      throw new Error('invalid transaction trie')
-    }
+    if (!onlyHeader) {
+      const validateTxTrie = await this.validateTransactionsTrie()
+      if (!validateTxTrie) {
+        throw new Error('invalid transaction trie')
+      }
 
-    if (!this.validateUnclesHash()) {
-      throw new Error('invalid uncle hash')
+      if (!this.validateUnclesHash()) {
+        throw new Error('invalid uncle hash')
+      }
     }
   }
 

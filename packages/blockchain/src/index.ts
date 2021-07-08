@@ -877,9 +877,9 @@ export default class Blockchain implements BlockchainInterface {
             })
           : item
       const isGenesis = block.isGenesis()
+      const isHeader = item instanceof BlockHeader
 
       // we cannot overwrite the Genesis block after initializing the Blockchain
-
       if (isGenesis) {
         throw new Error('Cannot put a genesis block: create a new Blockchain')
       }
@@ -897,7 +897,7 @@ export default class Blockchain implements BlockchainInterface {
 
       if (this._validateBlocks && !isGenesis) {
         // this calls into `getBlock`, which is why we cannot lock yet
-        await block.validate(this)
+        await block.validate(this, isHeader)
       }
 
       if (this._validateConsensus) {
