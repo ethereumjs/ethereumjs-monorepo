@@ -61,7 +61,7 @@ export interface RunBlockOpts {
   /**
    * If true, returns the witness hashes for the block. (default: false)
    */
-   reportWitness?: boolean
+  reportWitness?: boolean
 }
 
 /**
@@ -161,7 +161,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
     debug(`block checkpoint`)
   }
 
-  let witnessHashes: string[] = []
+  const witnessHashes: string[] = []
   if (reportWitness) {
     const trie = (this.stateManager as any)._trie
     const getFunc = trie.db.get.bind(trie.db)

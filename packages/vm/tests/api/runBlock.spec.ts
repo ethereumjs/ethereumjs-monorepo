@@ -455,7 +455,7 @@ tape('runBlock() -> API return values', async (t) => {
 tape('runBlock() -> reportWitness', async (t) => {
   t.test('should return the witness hashes', async (t) => {
     const vm = setupVM()
-    
+
     const genesisRlp = testData.genesisRLP
     const genesis = Block.fromRLPSerializedBlock(genesisRlp)
 
@@ -465,12 +465,18 @@ tape('runBlock() -> reportWitness', async (t) => {
     //@ts-ignore
     await setupPreConditions(vm.stateManager._trie, testData)
 
+    t.ok(
+      //@ts-ignore
+      vm.stateManager._trie.root.equals(genesis.header.stateRoot),
+      'genesis state root should match calculated state root'
+    )
+
     const res = await vm.runBlock({
       block,
       // @ts-ignore
       root: vm.stateManager._trie.root,
       skipBlockValidation: true,
-      reportWitness: true
+      reportWitness: true,
     })
 
     t.ok(res.witnessHashes!.length > 0, 'should return witness hashes')

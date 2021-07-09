@@ -18,9 +18,7 @@ type GetBlockWitnessHashesOpts = {
  * methods in camelCase to BoundProtocol.
  */
 export interface WitProtocolMethods {
-  getBlockWitnessHashes: (
-    opts: GetBlockWitnessHashesOpts
-  ) => Promise<[ BN, Buffer[] ]>
+  getBlockWitnessHashes: (opts: GetBlockWitnessHashesOpts) => Promise<[BN, Buffer[]]>
 }
 
 const id = new BN(0)
@@ -41,10 +39,7 @@ export class WitProtocol extends Protocol {
         (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
         blockHash,
       ],
-      decode: ([reqId, blockHash]: any) => ([
-        new BN(reqId),
-        blockHash,
-      ]),
+      decode: ([reqId, blockHash]: any) => [new BN(reqId), blockHash],
     },
     {
       name: 'BlockWitnessHashes',

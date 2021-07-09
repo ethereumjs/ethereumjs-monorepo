@@ -154,10 +154,14 @@ export class FullEthereumService extends EthereumService {
         const vm = this.synchronizer.execution.vm.copy()
 
         try {
-         const result = await vm.runBlock({ block, root: parentBlock.header.stateRoot, reportWitness: true })
-         if (result.witnessHashes) {
-          witnessHashes = result.witnessHashes
-         }
+          const result = await vm.runBlock({
+            block,
+            root: parentBlock.header.stateRoot,
+            reportWitness: true,
+          })
+          if (result.witnessHashes) {
+            witnessHashes = result.witnessHashes
+          }
         } catch (error) {
           // if this fails, follow spec by returning witnessHashes as empty
         }
