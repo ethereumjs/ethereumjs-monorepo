@@ -2,7 +2,6 @@ import { EventEmitter } from 'events'
 import tape from 'tape-catch'
 import td from 'testdouble'
 import { Config } from '../../../lib/config'
-import { RlpxPeer } from '../../../lib/net/peer'
 import { RlpxSender } from '../../../lib/net/protocol/rlpxsender'
 import { Event } from '../../../lib/types'
 
@@ -79,8 +78,12 @@ tape('[RlpxPeer]', async (t) => {
     td.when(rlpxPeer.getDisconnectPrefix('reason')).thenReturn('reason')
     await peer.connect()
     peer.on('error', (err: Error) => t.equals(err.message, 'err0', 'got err0'))
-    config.events.on(Event.PEER_CONNECTED, (peer: any) =>t.equals(peer.id, 'zyx321', 'got connected'))
-    config.events.on(Event.PEER_DISCONNECTED, (peer: any) => t.equals(peer.getDisconnectPrefix('reason'), 'reason', 'got disconnected'))
+    config.events.on(Event.PEER_CONNECTED, (peer: any) =>
+      t.equals(peer.id, 'zyx321', 'got connected')
+    )
+    config.events.on(Event.PEER_DISCONNECTED, (peer: any) =>
+      t.equals(peer.getDisconnectPrefix('reason'), 'reason', 'got disconnected')
+    )
     peer.rlpx!.emit('peer:error', rlpxPeer, new Error('err0'))
     peer.rlpx!.emit('peer:added', rlpxPeer)
     peer.rlpx!.emit('peer:removed', rlpxPeer, 'reason')

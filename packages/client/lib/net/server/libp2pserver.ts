@@ -70,7 +70,6 @@ export class Libp2pServer extends Server {
           const peer = this.peers.get(peerId.toB58String())
           if (peer) {
             await peer.accept(p, stream, this)
-      //      this.emit('connected', peer)
             this.config.events.emit(Event.PEER_CONNECTED, peer)
           }
         })
@@ -84,7 +83,6 @@ export class Libp2pServer extends Server {
       const peer = this.createPeer(peerId)
       await peer.bindProtocols(this.node as Libp2pNode, peerId, this)
       this.config.logger.debug(`Peer discovered: ${peer}`)
-     // this.emit('connected', peer)
       this.config.events.emit(Event.PEER_CONNECTED, peer)
     })
     this.node.connectionManager.on('peer:connect', (connection: Connection) => {

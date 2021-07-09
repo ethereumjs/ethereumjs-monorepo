@@ -16,7 +16,7 @@ export enum Event {
   SYNC_FETCHER_FETCHED = 'sync:fetcher:fetched',
   SYNC_SYNCHRONIZED = 'sync:synchronized',
   PEER_CONNECTED = 'peer:connected',
-  PEER_DISCONNECTED = 'peer:disconnected'
+  PEER_DISCONNECTED = 'peer:disconnected',
 }
 export interface EventParams {
   [Event.CHAIN_UPDATED]: []
@@ -30,6 +30,9 @@ export declare interface EventBus<T extends Event> {
   emit(event: T, ...args: EventParams[T]): boolean
   on(event: T, listener: (...args: EventParams[T]) => void): this
 }
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// eslint-disable-next-line no-redeclare
 export class EventBus<T extends Event> extends EventEmitter {}
 export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
   EventBus<Event.SYNC_EXECUTION_VM_ERROR> &
@@ -37,6 +40,7 @@ export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
   EventBus<Event.SYNC_SYNCHRONIZED> &
   EventBus<Event.PEER_CONNECTED> &
   EventBus<Event.PEER_DISCONNECTED>
+/* eslint-enable @typescript-eslint/no-unused-vars */
 
 /**
  * Like types
