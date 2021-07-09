@@ -3,6 +3,7 @@ import tape from 'tape-catch'
 import td from 'testdouble'
 import multiaddr from 'multiaddr'
 import { Config } from '../../../lib/config'
+import { Event } from '../../../lib/types'
 
 tape('[Libp2pServer]', async (t) => {
   const Libp2pPeer = td.replace('../../../lib/net/peer/libp2ppeer')
@@ -126,7 +127,7 @@ tape('[Libp2pServer]', async (t) => {
     server.on('listening', (info: any) =>
       t.deepEquals(info, { transport: 'libp2p', url: 'ma0/p2p/id' }, 'listening')
     )
-    server.once('connected', (p: any) => t.equals(p, peer, 'peer connected'))
+    server.config.events.once(Event.PEER_CONNECTED, (p: any) => t.equals(p, peer, 'peer connected'))
     server.on('error', (err: Error) => t.equals(err.message, 'err0', 'got err0'))
     t.notOk(server.ban('peer'), 'unbannable')
     t.notOk(await server.stop(), 'not started')
@@ -142,7 +143,7 @@ tape('[Libp2pServer]', async (t) => {
     t.equals(node.constructor.name, 'Libp2pNode', 'libp2p node created')
     node.emit('peer:discovery', peerId)
     td.when(peer2.bindProtocols(node, 'id2', server)).thenResolve(null)
-    server.once('connected', () => t.ok('peer2 connected'))
+    server.config.events.once(Event.PEER_CONNECTED, () => t.ok('peer2 connected'))
     node.emit('peer:discovery', peerId2)
     td.when(server.getPeerInfo('conn3' as any)).thenReturn([peerId3, 'ma1' as any])
     node.connectionManager.emit('peer:connect', 'conn3')

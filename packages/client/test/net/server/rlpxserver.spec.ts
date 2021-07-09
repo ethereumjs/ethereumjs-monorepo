@@ -3,6 +3,7 @@ import tape from 'tape-catch'
 import td from 'testdouble'
 import multiaddr from 'multiaddr'
 import { Config } from '../../../lib/config'
+import { Event } from '../../../lib/types'
 
 tape('[RlpxServer]', async (t) => {
   class RlpxPeer extends EventEmitter {
@@ -199,8 +200,8 @@ tape('[RlpxServer]', async (t) => {
     })
     td.verify(RlpxPeer.capabilities(Array.from((server as any).protocols)))
     td.verify(server.rlpx!.listen(server.config.port, '0.0.0.0'))
-    server.on('connected', (peer: any) => t.ok(peer instanceof RlpxPeer, 'connected'))
-    server.on('disconnected', (peer: any) => t.equals(peer.id, '01', 'disconnected'))
+    server.config.events.on(Event.PEER_CONNECTED, (peer: any) => t.ok(peer instanceof RlpxPeer, 'connected'))
+    server.config.events.on(Event.PEER_DISCONNECTED, (peer: any) => t.equals(peer.id, '01', 'disconnected'))
     server.on('error', (err: Error) => t.equals(err.message, 'err0', 'got error'))
     server.on('listening', (info: any) =>
       t.deepEquals(info, { transport: 'rlpx', url: 'enode://ff@[::]:30303' }, 'listening')
