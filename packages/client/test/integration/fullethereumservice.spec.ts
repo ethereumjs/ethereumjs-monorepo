@@ -8,17 +8,15 @@ import { destroy } from './util'
 import Blockchain from '@ethereumjs/blockchain'
 
 tape('[Integration:FullEthereumService]', async (t) => {
-  async function setup(
-    generateCanonicalGenesis = false
-  ): Promise<[MockServer, FullEthereumService]> {
+  async function setup(): Promise<[MockServer, FullEthereumService]> {
     const loglevel = 'error'
-    const config = new Config({ loglevel })
+    const config = new Config({ loglevel, wit: true })
     const server = new MockServer({ config })
     const blockchain = new Blockchain({
       validateBlocks: false,
       validateConsensus: false,
     })
-    const chain = new MockChain({ config, blockchain, generateCanonicalGenesis })
+    const chain = new MockChain({ config, blockchain })
     const serviceConfig = new Config({
       loglevel,
       servers: [server as any],
@@ -42,7 +40,7 @@ tape('[Integration:FullEthereumService]', async (t) => {
     const peer = await server.accept('peer0')
     const [reqId1, headers] = await peer.eth!.getBlockHeaders({ block: new BN(1), max: 2 })
     const hash = Buffer.from(
-      'a321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069',
+      '3221fd8d5bee00edfd88887805a8cfc5d95f0106e922e235ef0e4b6ce3ae8dc9',
       'hex'
     )
     t.ok(reqId1.eqn(1), 'handled GetBlockHeaders')
@@ -60,23 +58,28 @@ tape('[Integration:FullEthereumService]', async (t) => {
     const [server, service] = await setup()
     const peer = await server.accept('peer0')
     const { headers } = await peer.les!.getBlockHeaders({ block: new BN(1), max: 2 })
-    const hash = (await service.chain.getHeaders(new BN(2)))[0].hash()
-    t.ok(headers[1].hash().equals(hash), 'handled GetBlockHeaders')
+    t.equals(
+      headers[1].hash().toString('hex'),
+      '3221fd8d5bee00edfd88887805a8cfc5d95f0106e922e235ef0e4b6ce3ae8dc9',
+      'handled GetBlockHeaders'
+    )
     await destroy(server, service)
     t.end()
   })
 
   t.test('should handle WIT requests', async (t) => {
-    const [server, service] = await setup(true)
+    const [server, service] = await setup()
+
+    await service.synchronizer.execution.vm.runBlockchain(service.chain.blockchain)
+
     const peer = await server.accept('peer0')
     const block = await service.chain.getLatestBlock()
     const blockHash = block.hash()
 
-    await service.synchronizer.execution.vm.runBlockchain(service.chain.blockchain)
-
     const [reqId, witnessHashes] = await peer.wit!.getBlockWitnessHashes({ blockHash })
+
     t.ok(witnessHashes.length > 0, 'handled GetBlockWitnessHashes')
-    t.equal(reqId, 1)
+    t.ok(reqId.eqn(1))
     await destroy(server, service)
     t.end()
   })

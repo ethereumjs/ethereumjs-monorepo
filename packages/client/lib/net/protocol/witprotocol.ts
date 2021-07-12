@@ -39,16 +39,13 @@ export class WitProtocol extends Protocol {
         (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
         blockHash,
       ],
-      decode: ([reqId, blockHash]: any) => [new BN(reqId), blockHash],
+      decode: ([reqId, blockHash]: any) => ({ reqId: new BN(reqId), blockHash }),
     },
     {
       name: 'BlockWitnessHashes',
       code: 0x02,
       encode: ({ reqId, witnessHashes }: any) => [new BN(reqId).toArrayLike(Buffer), witnessHashes],
-      decode: ([reqId, witnessHashes]: any) => ({
-        reqId: new BN(reqId),
-        witnessHashes,
-      }),
+      decode: ([reqId, witnessHashes]: any) => [new BN(reqId), witnessHashes],
     },
   ]
 

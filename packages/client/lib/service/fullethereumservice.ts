@@ -137,7 +137,6 @@ export class FullEthereumService extends EthereumService {
   async handleWit(message: any, peer: Peer): Promise<void> {
     if (message.name === 'GetBlockWitnessHashes' && this.config.wit) {
       const { reqId, blockHash } = message.data
-
       const block = await this.chain.getBlock(blockHash)
       const parentBlock = await this.chain.getBlock(block.header.parentHash)
 
