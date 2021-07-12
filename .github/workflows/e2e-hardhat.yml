@@ -37,7 +37,7 @@ jobs:
           cd packages/hardhat-core
           yarn remove @ethereumjs/vm 
           yarn add @ethereumjs/vm@e2e
-          cd ../packages/e2e
+          cd ../e2e
           yarn test --verbose
         env:
           URL_MAINNET: ${{ secrets.URL_MAINNET }}
