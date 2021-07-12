@@ -32,6 +32,7 @@ jobs:
     strategy:
       matrix: 
         node: ${{ fromJson(needs.get-node-versions.outputs.matrix) }}
+      fail-fast: false
     steps:
       - uses: actions/setup-node@v1
         with:
