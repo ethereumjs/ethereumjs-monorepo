@@ -27,16 +27,17 @@ jobs:
       - name: Publish to virtual registry
         run: npm run e2e:publish
 
-      # This project is simple / does not require resolutions injection
-      - name: E2E Target - NoahZinsmeister/as-you-permit
+      # This project is not simple / does not require resolutions injection
+      - name: E2E Target - nomiclabs/hardhat
         run: |
           git clone https://github.com/nomiclabs/hardhat.git
           cd hardhat
           yarn
           rm -rf dist
-          yarn remove @ethereumjs/vm
+          cd packages/hardhat-core
+          yarn remove @ethereumjs/vm 
           yarn add @ethereumjs/vm@e2e
-          cd packages/e2e
+          cd ../packages/e2e
           yarn test --verbose
         env:
           URL_MAINNET: ${{ secrets.URL_MAINNET }}
