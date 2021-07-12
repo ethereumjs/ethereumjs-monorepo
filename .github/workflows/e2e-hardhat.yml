@@ -1,0 +1,42 @@
+name: E2E Hardhat Tests
+on:
+  push:
+    branches: [ hardhart-e2e ]
+env:
+  cwd: ${{github.workspace}}
+
+jobs:
+  virtual-npm-publish:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [15]
+    steps:
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      # Installs all dependencies, bootstrapping everything.
+      - run: npm install
+
+      # Publishes all packages to a virtual npm registry after giving each a minor version bump
+      - name: Publish to virtual registry
+        run: npm run e2e:publish
+
+      # This project is simple / does not require resolutions injection
+      - name: E2E Target - NoahZinsmeister/as-you-permit
+        run: |
+          git clone https://github.com/nomiclabs/hardhat.git
+          cd hardhat
+          yarn
+          rm -rf dist
+          yarn remove @ethereumjs/vm
+          yarn add @ethereumjs/vm@e2e
+          cd packages/e2e
+          yarn test --verbose
+        env:
+          URL_MAINNET: ${{ secrets.URL_MAINNET }}
