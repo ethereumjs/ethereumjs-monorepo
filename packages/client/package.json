@@ -40,8 +40,9 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "tape": "tape -r ts-node/register",
     "test": "npm run test:unit && npm run test:integration && npm run test:browser",
-    "test:unit": "npm run tape -- 'test/!(integration)/**/*.spec.ts' 'test/*.spec.ts'",
+    "test:unit": "npm run tape -- 'test/!(integration|cli)/**/*.spec.ts' 'test/*.spec.ts'",
     "test:integration": "npm run tape -- 'test/integration/**/*.spec.ts'",
+    "test:cli": "npm run tape -- 'test/cli/*.spec.ts'",
     "test:browser": "karma start karma.conf.js"
   },
   "dependencies": {
