@@ -354,9 +354,9 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     msg = 'should provide correct forkHash for HF provided'
     st.equal(c.forkHash('spuriousDragon'), '0x3edd5b10', msg)
 
-    c = new Common({ chain: 'ropsten' })
+    c = new Common({ chain: 'kovan' })
     const f = () => {
-      c.forkHash('dao')
+      c.forkHash('london')
     }
     msg = 'should throw when called on non-applied or future HF'
     st.throws(f, /No fork hash calculation possible/, msg)

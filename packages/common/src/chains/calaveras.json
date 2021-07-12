@@ -34,11 +34,6 @@
         "forkHash": "0xe34c4aff"
       },
       {
-        "name": "dao",
-        "block": null,
-        "forkHash": "0xe34c4aff"
-      },
-      {
         "name": "tangerineWhistle",
         "block": 0,
         "forkHash": "0xe34c4aff"

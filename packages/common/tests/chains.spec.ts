@@ -111,7 +111,7 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
     c = new Common({ chain: 'rinkeby' })
     hash = '0x6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177'
     st.equal(c.genesis().hash, hash, 'should return correct genesis hash')
-    st.equal(c.hardforks()[3]['block'], 2, 'should return correct hardfork data')
+    st.equal(c.hardforks()[3]['block'], 3, 'should return correct hardfork data')
     st.equal(typeof c.bootstrapNodes()[0].port, 'number', 'should return a port as number')
     st.equal(c.consensusType(), 'poa', 'should return correct consensus type')
     st.equal(c.consensusAlgorithm(), 'clique', 'should return correct consensus algorithm')
