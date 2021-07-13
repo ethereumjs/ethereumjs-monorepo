@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { BN, rlp, zeros } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block, BlockBuffer } from '../src'
 import blockFromRpc from '../src/from-rpc'
 import { Mockchain } from './mockchain'
@@ -9,7 +9,7 @@ import * as testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json
 
 tape('[Block]: block functions', function (t) {
   t.test('should test block initialization', function (st) {
-    const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
+    const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
     const genesis = Block.genesis({}, { common })
     st.ok(genesis.hash().toString('hex'), 'block should initialize')
 

@@ -5,7 +5,7 @@ import { Job } from './types'
 import { BlockFetcherBase, JobTask, BlockFetcherOptions } from './blockfetcherbase'
 
 /**
- * Implements an eth/62 based block fetcher
+ * Implements an eth/66 based block fetcher
  * @memberof module:sync/fetcher
  */
 export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
@@ -24,13 +24,33 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
   async request(job: Job<JobTask, Block[], Block>): Promise<Block[]> {
     const { task, peer } = job
     const { first, count } = task
-    const headers = await (peer!.eth as EthProtocolMethods).getBlockHeaders({
+    const headersResult = await (peer!.eth as EthProtocolMethods).getBlockHeaders({
       block: first,
       max: count,
     })
-    const bodies: BlockBodyBuffer[] = <BlockBodyBuffer[]>(
-      await peer!.eth!.getBlockBodies(headers.map((h) => h.hash()))
-    )
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!headersResult) {
+      // Catch occasional null responses from peers who do not return block headers from peer.eth request
+      this.config.logger.warn(
+        `peer ${peer?.id} returned no headers for blocks ${first}-${first.addn(count)} from ${
+          peer?.address
+        }`
+      )
+      return []
+    }
+    const headers = headersResult[1]
+    const bodiesResult = await peer!.eth!.getBlockBodies({ hashes: headers.map((h) => h.hash()) })
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!bodiesResult) {
+      // Catch occasional null responses from peers who do not return block bodies from peer.eth request
+      this.config.logger.warn(
+        `peer ${peer?.id} returned no bodies for blocks ${first}-${first.addn(count)} from ${
+          peer?.address
+        }`
+      )
+      return []
+    }
+    const bodies = bodiesResult[1]
     const blocks: Block[] = bodies.map(([txsData, unclesData]: BlockBodyBuffer, i: number) => {
       const opts = {
         common: this.config.chainCommon,

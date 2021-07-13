@@ -54,10 +54,10 @@ tape('[FullSynchronizer]', async (t) => {
     const chain = new Chain({ config })
     const sync = new FullSynchronizer({ config, pool, chain })
     const peer = { eth: { getBlockHeaders: td.func(), status: { bestHash: 'hash' } } }
-    const headers = [{ number: 5 }]
-    td.when(peer.eth.getBlockHeaders({ block: 'hash', max: 1 })).thenResolve(headers)
+    const headers = [{ number: new BN(5) }]
+    td.when(peer.eth.getBlockHeaders({ block: 'hash', max: 1 })).thenResolve([new BN(1), headers])
     const latest = await sync.latest(peer as any)
-    t.equals(new BN(latest!.number).toNumber(), 5, 'got height')
+    t.ok(latest!.number.eqn(5), 'got height')
     await sync.stop()
     t.end()
   })

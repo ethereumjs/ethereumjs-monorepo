@@ -6,6 +6,7 @@ import { getLogger, Logger } from './logging'
 import { Libp2pServer, RlpxServer } from './net/server'
 import { parseTransports } from './util'
 import { EventBus, EventBusType } from './types'
+// eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
 const level = require('level')
 

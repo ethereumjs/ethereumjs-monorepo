@@ -11,10 +11,10 @@ import { Peer, PeerOptions } from './peer'
 import { RlpxServer } from '../server'
 import { Event } from '../../types'
 const devp2pCapabilities: any = {
-  eth63: Devp2pETH.eth63,
-  eth64: Devp2pETH.eth64,
-  eth65: Devp2pETH.eth65,
+  eth66: Devp2pETH.eth66,
   les2: Devp2pLES.les2,
+  les3: Devp2pLES.les3,
+  les4: Devp2pLES.les4,
 }
 
 export interface RlpxPeerOptions extends Omit<PeerOptions, 'address' | 'transport'> {

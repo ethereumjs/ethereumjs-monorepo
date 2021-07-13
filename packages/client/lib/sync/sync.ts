@@ -6,6 +6,8 @@ import { FlowControl } from '../net/protocol'
 import { Config } from '../config'
 import { Chain } from '../blockchain'
 import { Event } from '../types'
+// eslint-disable-next-line implicit-dependencies/no-implicit
+import type { LevelUp } from 'levelup'
 
 export interface SynchronizerOptions {
   /* Config */

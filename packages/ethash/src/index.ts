@@ -9,6 +9,7 @@ import {
   getFullSize,
   getSeed,
 } from './util'
+// eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 const xor = require('buffer-xor')

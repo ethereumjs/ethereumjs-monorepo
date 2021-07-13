@@ -18,7 +18,7 @@
 
 ### generateTxReceipt
 
-▸ **generateTxReceipt**(`tx`: TypedTransaction, `txResult`: [*RunTxResult*](../interfaces/runtx.runtxresult.md), `blockGasUsed`: BN): *Promise*<[*TxReceipt*](types.md#txreceipt)\>
+▸ **generateTxReceipt**(`tx`, `txResult`, `cumulativeGasUsed`): `Promise`<[TxReceipt](types.md#txreceipt)\>
 
 Returns the tx receipt.
 
@@ -26,10 +26,14 @@ Returns the tx receipt.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `tx` | TypedTransaction | The transaction |
-| `txResult` | [*RunTxResult*](../interfaces/runtx.runtxresult.md) | The tx result |
-| `blockGasUsed` | BN | The amount of gas used in the block up until this tx |
+| `tx` | `TypedTransaction` | The transaction |
+| `txResult` | [RunTxResult](../interfaces/runtx.runtxresult.md) | The tx result |
+| `cumulativeGasUsed` | `BN` | The gas used in the block including this tx |
 
-**Returns:** *Promise*<[*TxReceipt*](types.md#txreceipt)\>
+#### Returns
 
-Defined in: [runTx.ts:417](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L417)
+`Promise`<[TxReceipt](types.md#txreceipt)\>
+
+#### Defined in
+
+[runTx.ts:512](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L512)

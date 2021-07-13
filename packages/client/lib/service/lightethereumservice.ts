@@ -4,15 +4,15 @@ import { LightSynchronizer } from '../sync/lightsync'
 import { LesProtocol } from '../net/protocol/lesprotocol'
 
 /**
- * Ethereum service
+ * Light Ethereum service
  * @memberof module:service
  */
 export class LightEthereumService extends EthereumService {
   public synchronizer: LightSynchronizer
 
   /**
-   * Create new ETH service
-   * @param {Object}   options constructor parameters
+   * Create new LES service
+   * @param options
    */
   constructor(options: EthereumServiceOptions) {
     super(options)
@@ -35,7 +35,6 @@ export class LightEthereumService extends EthereumService {
       new LesProtocol({
         config: this.config,
         chain: this.chain,
-        flow: this.flow,
         timeout: this.timeout,
       }),
     ]

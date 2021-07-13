@@ -4,9 +4,13 @@
 
 [types](../modules/types.md).EIP1559Receipt
 
+EIP1559Receipt, which has the same fields as PostByzantiumTxReceipt
+
+**`deprecated`** Please use PostByzantiumTxReceipt instead
+
 ## Hierarchy
 
-- [*PostByzantiumTxReceipt*](types.postbyzantiumtxreceipt.md)
+- [PostByzantiumTxReceipt](types.postbyzantiumtxreceipt.md)
 
   ↳ **EIP1559Receipt**
 
@@ -23,37 +27,49 @@
 
 ### bitvector
 
-• **bitvector**: *Buffer*
+• **bitvector**: `Buffer`
 
 Bloom bitvector
 
-Inherited from: [PostByzantiumTxReceipt](types.postbyzantiumtxreceipt.md).[bitvector](types.postbyzantiumtxreceipt.md#bitvector)
+#### Inherited from
 
-Defined in: [types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L16)
+[PostByzantiumTxReceipt](types.postbyzantiumtxreceipt.md).[bitvector](types.postbyzantiumtxreceipt.md#bitvector)
+
+#### Defined in
+
+[types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L16)
 
 ___
 
 ### gasUsed
 
-• **gasUsed**: *Buffer*
+• **gasUsed**: `Buffer`
 
-Gas used
+Cumulative gas used in the block including this tx
 
-Inherited from: [PostByzantiumTxReceipt](types.postbyzantiumtxreceipt.md).[gasUsed](types.postbyzantiumtxreceipt.md#gasused)
+#### Inherited from
 
-Defined in: [types.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L12)
+[PostByzantiumTxReceipt](types.postbyzantiumtxreceipt.md).[gasUsed](types.postbyzantiumtxreceipt.md#gasused)
+
+#### Defined in
+
+[types.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L12)
 
 ___
 
 ### logs
 
-• **logs**: Log[]
+• **logs**: `Log`[]
 
 Logs emitted
 
-Inherited from: [PostByzantiumTxReceipt](types.postbyzantiumtxreceipt.md).[logs](types.postbyzantiumtxreceipt.md#logs)
+#### Inherited from
 
-Defined in: [types.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L20)
+[PostByzantiumTxReceipt](types.postbyzantiumtxreceipt.md).[logs](types.postbyzantiumtxreceipt.md#logs)
+
+#### Defined in
+
+[types.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L20)
 
 ___
 
@@ -63,6 +79,10 @@ ___
 
 Status of transaction, `1` if successful, `0` if an exception occured
 
-Inherited from: [PostByzantiumTxReceipt](types.postbyzantiumtxreceipt.md).[status](types.postbyzantiumtxreceipt.md#status)
+#### Inherited from
 
-Defined in: [types.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L42)
+[PostByzantiumTxReceipt](types.postbyzantiumtxreceipt.md).[status](types.postbyzantiumtxreceipt.md#status)
+
+#### Defined in
+
+[types.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L42)

@@ -6,6 +6,83 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.3.0 - 2021-07-08
+
+### Finalized London HF Support
+
+This release integrates a `Common` library version which provides the `london` HF blocks for all networks including `mainnet` and is therefore the first release with finalized London HF support.
+
+### Improved L2 Tx Support
+
+This tx release bumps the `Common` library dependency version to `v2.4.0` and is therefore assured to work with the reworked `Common.custom()` method which can be used for an easier instantiation of common custom chain instances for sending txs to a custom (L2) network.
+
+`Common.custom()` comes with support for predefined custom chains (Arbitrum testnet, Polygon testnet & mainnet, xDai chain), see e.g. the following code example:
+
+```typescript
+import { Transaction } from '@ethereumjs/tx'
+import Common from '@ethereumjs/common'
+
+const from = 'PUBLIC_KEY'
+const PRIV_KEY = process.argv[2]
+const to = 'DESTINATION_ETHEREUM_ADDRESS'
+
+const common = Common.custom(CustomChain.xDaiChain)
+
+const txData = {
+  from,
+  nonce: 0,
+  gasPrice: 1000000000,
+  gasLimit: 21000,
+  to,
+  value: 1,
+}
+
+const tx = Transaction.fromTxData(txData, { common })
+const signedTx = tx.sign(Buffer.from(PRIV_KEY, 'hex'))
+```
+
+For a non-predefined custom chain it is also possible to just provide a chain ID as well as other parameters to `Common`:
+
+```typescript
+const common = Common.custom({ chainId: 1234 })
+```
+
+See the tx [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx) for some more detailed documentation on the new improved L2 support for the tx library.
+
+### New supports(capability) Method
+
+There is a new `tx.supports(capability)` method which can be used for a cleaner and more future-proof switch on txs based on the supported (EIP) capabilities. This is useful if you don't know about your tx type in advance, e.g. since txs are taken from a generic source (a tx pool, user input,...) and instantiated with the provided tx factory.
+
+While it sometimes might make sense to do a switch by `tx.type` it is often more fitting a use case (and also more future proof) to do a switch by a desired tx capability. Does the tx support an EIP-1559 style gas fee market mechanism? Does the tx support access lists?
+
+Such a switch can now be done with the method above
+
+```typescript
+import { Transaction, Capability } from '@ethereumjs/tx'
+
+// 1. Instantiate tx
+
+// 2. Switch by capability
+if (tx.supports(Capability.EIP2930AccessLists)) {
+  // Do something which only makes sense for txs with support for access lists
+}
+```
+
+The following capabilities are currently supported:
+
+```typescript
+enum Capabilitiy {
+  EIP155ReplayProtection: 155, // Only for legacy txs
+  EIP1559FeeMarket: 1559,
+  EIP2718TypedTransaction: 2718, // Use for a typed-tx-or-not switch
+  EIP2930AccessLists: 2930
+}
+```
+
+### Included Source Files
+
+Source files from the `src` folder are now included in the distribution build, see PR [#1301](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1301). This allows for a better debugging experience in debug tools like Chrome DevTools by having working source map references to the original sources available for inspection.
+
 ## 3.2.1 - 2021-06-11
 
 This release comes with significant library usability improvements by allowing a tx instantiation more independently from the `Common` library. This was reported and requested by Web3.js (thanks to @gregthegreek for giving some guidance on the discussion) and others, since they needed the possibility of a tx instantiation in unknown contexts where the chain or HF state is somewhat unclear.
@@ -77,9 +154,9 @@ const serializedMessage = rlp.encode(message) // use this for the ledger input
 
 ## 3.2.0 - 2021-05-26
 
-### London HF Support
+### Functional London HF Support (no finalized HF blocks yet)
 
-This `Tx` release comes with full support for the `london` hardfork. There is a new [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction type `FeeMarketEIP1559Transaction` (type `2`) added together with the new data types `FeeMarketEIP1559TxData` (for instantiation with the `fromTxData()` static constructor method) and `FeeMarketEIP1559ValuesArray` (for instantiation with `fromValuesArray()`), see PR [#1148](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1148) for the main implementation work.
+This `Tx` release comes with full functional support for the `london` hardfork (all EIPs are finalized and integrated and `london` HF can be activated, there are no final block numbers for the HF integrated though yet). There is a new [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) transaction type `FeeMarketEIP1559Transaction` (type `2`) added together with the new data types `FeeMarketEIP1559TxData` (for instantiation with the `fromTxData()` static constructor method) and `FeeMarketEIP1559ValuesArray` (for instantiation with `fromValuesArray()`), see PR [#1148](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1148) for the main implementation work.
 
 An `EIP-1559` tx inherits the access list feature from the `AccessListEIP2930Transaction` (type `1`) but comes with its own gas fee market mechanism. There is no `gasPrice` field in favor of two new gas related properties `maxFeePerGas` - which represents the total gas fee the tx sender is willing to pay for the tx (including the priority fee) - and the `maxPriorityFeePerGas` property - which represents the fee the sender is willing to give as some tip to the miner to prioritize a tx.
 

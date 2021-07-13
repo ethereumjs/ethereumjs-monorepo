@@ -5,7 +5,7 @@ import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
   N_DIV_2,
-  Capabilities,
+  Capability,
 } from '../src'
 import { TxsJsonEntry } from './types'
 import { BaseTransaction } from '../src/baseTransaction'
@@ -44,9 +44,9 @@ tape('[BaseTransaction]', function (t) {
       fixtures: legacyFixtures,
       activeCapabilities: [],
       notActiveCapabilities: [
-        Capabilities.EIP1559FeeMarket,
-        Capabilities.EIP2718TypedTransaction,
-        Capabilities.EIP2930AccessLists,
+        Capability.EIP1559FeeMarket,
+        Capability.EIP2718TypedTransaction,
+        Capability.EIP2930AccessLists,
         9999,
       ],
     },
@@ -57,8 +57,8 @@ tape('[BaseTransaction]', function (t) {
       values: [Buffer.from([1])].concat(Array(7).fill(zero)),
       txs: eip2930Txs,
       fixtures: eip2930Fixtures,
-      activeCapabilities: [Capabilities.EIP2718TypedTransaction, Capabilities.EIP2930AccessLists],
-      notActiveCapabilities: [Capabilities.EIP1559FeeMarket, 9999],
+      activeCapabilities: [Capability.EIP2718TypedTransaction, Capability.EIP2930AccessLists],
+      notActiveCapabilities: [Capability.EIP1559FeeMarket, 9999],
     },
     {
       class: FeeMarketEIP1559Transaction,
@@ -68,9 +68,9 @@ tape('[BaseTransaction]', function (t) {
       txs: eip1559Txs,
       fixtures: eip1559Fixtures,
       activeCapabilities: [
-        Capabilities.EIP1559FeeMarket,
-        Capabilities.EIP2718TypedTransaction,
-        Capabilities.EIP2930AccessLists,
+        Capability.EIP1559FeeMarket,
+        Capability.EIP2718TypedTransaction,
+        Capability.EIP2930AccessLists,
       ],
       notActiveCapabilities: [9999],
     },

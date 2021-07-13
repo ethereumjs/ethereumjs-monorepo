@@ -31,11 +31,6 @@
       "forkHash": "0x30c7ddbc"
     },
     {
-      "name": "dao",
-      "block": null,
-      "forkHash": null
-    },
-    {
       "name": "tangerineWhistle",
       "block": 0,
       "forkHash": "0x30c7ddbc"
@@ -77,8 +72,8 @@
     }, 
     {
       "name": "london",
-      "block": null, 
-      "forkHash": null
+      "block": 10499401, 
+      "forkHash": "0x7119b6b3"
     }
   ],
   "bootstrapNodes": [

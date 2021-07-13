@@ -6,11 +6,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.4.0 - 2021-07-08
+
+### Finalized London HF Support
+
+This release integrates a `Common` library version which provides the `london` HF blocks for all networks including `mainnet` and is therefore the first release with finalized London HF support.
+
+### Included Source Files
+
+Source files from the `src` folder are now included in the distribution build, see PR [#1301](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1301). This allows for a better debugging experience in debug tools like Chrome DevTools by having working source map references to the original sources available for inspection.
+
+### Other Changes
+
+- Fixed RPC value handling for `difficulty`, `gasPrice` and `value` in `blockFromRpc()` when value is provided as a number (thanks @Ghorbanian for the contribution), PR [#1316](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1316)
+- Added `baseFeePerGas` to `blockHeaderFromRpc()` (thanks @mfornet for the contribution), PR [#1330](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1330)
+
 ## 3.3.0 - 2021-05-26
 
-### London HF Support
+### Functional London HF Support (no finalized HF blocks yet)
 
-This `Block` release comes with full support for the `london` hardfork. Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `Common` instance with a `london` HF activated:
+This `Block` release comes with full functional support for the `london` hardfork (all EIPs are finalized and integrated and `london` HF can be activated, there are no final block numbers for the HF integrated though yet). Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `Common` instance with a `london` HF activated:
 
 ```typescript
 import { Block } from 'ethereumjs-block'

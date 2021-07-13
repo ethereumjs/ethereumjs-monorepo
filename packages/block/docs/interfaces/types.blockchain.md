@@ -14,14 +14,18 @@
 
 ### getBlock
 
-▸ **getBlock**(`hash`: *Buffer*): *Promise*<[*Block*](../classes/block.block-1.md)\>
+▸ **getBlock**(`hash`): `Promise`<[Block](../classes/block.block-1.md)\>
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `hash` | *Buffer* |
+| `hash` | `Buffer` |
 
-**Returns:** *Promise*<[*Block*](../classes/block.block-1.md)\>
+#### Returns
 
-Defined in: [types.ts:145](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L145)
+`Promise`<[Block](../classes/block.block-1.md)\>
+
+#### Defined in
+
+[types.ts:145](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L145)
