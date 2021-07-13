@@ -2,8 +2,9 @@ import { EventEmitter } from 'events'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import { BN, toBuffer } from 'ethereumjs-util'
-import type { LevelUp } from 'levelup'
 import { Config } from '../config'
+// eslint-disable-next-line implicit-dependencies/no-implicit
+import type { LevelUp } from 'levelup'
 
 /**
  * The options that the Blockchain constructor can receive.

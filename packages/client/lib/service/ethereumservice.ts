@@ -1,8 +1,9 @@
-import { LevelUp } from 'levelup'
 import { FlowControl } from '../net/protocol/flowcontrol'
 import { Chain } from '../blockchain'
 import { Service, ServiceOptions } from './service'
 import { Synchronizer } from '../sync'
+// eslint-disable-next-line implicit-dependencies/no-implicit
+import type { LevelUp } from 'levelup'
 
 export interface EthereumServiceOptions extends ServiceOptions {
   /* Blockchain */

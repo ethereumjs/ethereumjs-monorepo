@@ -8,12 +8,12 @@ import {
   BlockBodyBuffer,
 } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
+import { CliqueLatestSignerStates, CliqueLatestVotes, CliqueLatestBlockSigners } from '../clique'
 import Cache from './cache'
 import { DatabaseKey, DBOp, DBTarget, DBOpData } from './operation'
 
+// eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
-import { CliqueLatestSignerStates, CliqueLatestVotes, CliqueLatestBlockSigners } from '../clique'
-
 const level = require('level-mem')
 
 /**

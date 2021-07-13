@@ -1,5 +1,6 @@
-import { LevelUp } from 'levelup'
 import { DB, BatchDBOp, ENCODING_OPTS } from './db'
+// eslint-disable-next-line implicit-dependencies/no-implicit
+import type { LevelUp } from 'levelup'
 
 export type Checkpoint = {
   // We cannot use a Buffer => Buffer map directly. If you create two Buffers with the same internal value,
