@@ -5,6 +5,10 @@ on:
 env:
   cwd: ${{github.workspace}}
 
+concurrency:
+  group: ${{github.workflow}}
+  cancel-in-progress: true
+
 jobs:
   virtual-npm-publish:
     runs-on: ubuntu-latest
@@ -27,17 +31,17 @@ jobs:
       - name: Publish to virtual registry
         run: npm run e2e:publish
 
-      # This project is not simple / does not require resolutions injection
-      - name: E2E Target - nomiclabs/hardhat
+      - name: Generate e2e resolutions
+        run: |
+          npm run e2e:resolutions
+
+      # Clones repo and injects fake dependencies
+      - name: Build hardhat repo with new EthereumJS dependencies
         run: |
           git clone https://github.com/nomiclabs/hardhat.git
+          node scripts/inject-e2e-dependencies-resolution.js
           cd hardhat
           yarn
-          rm -rf dist
-        #  cd packages/hardhat-core
-        #   yarn remove @ethereumjs/vm 
-        #  yarn add @ethereumjs/vm@e2e/*
           cd packages/e2e
-          yarn test --verbose
-        env:
-          URL_MAINNET: ${{ secrets.URL_MAINNET }}
+          yarn test
+          
