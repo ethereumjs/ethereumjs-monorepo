@@ -67,10 +67,10 @@ export async function run(args: any) {
   logger.info(`Connecting to network: ${common.chainName()}`)
   client.on('error', (err: any) => logger.error(err))
   client.on('listening', (details: any) => {
-    logger.info(`Listener up transport=${details.transport} url=${details.url}`)
+    client.config.logger.info(`Listener up transport=${details.transport} url=${details.url}`)
   })
-  client.config.events.on(Event.SYNC_SYNCHRONIZED, () => {
-    logger.info('Synchronized')
+  client.config.events.on(Event.SYNC_SYNCHRONIZED, (height) => {
+    client.config.logger.info(`Synchronized blockchain at height ${height.toNumber}`)
   })
   await client.open()
   logger.info('Synchronizing blockchain...')

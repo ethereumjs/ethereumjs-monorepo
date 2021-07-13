@@ -6,6 +6,7 @@ import type { MuxedStream } from '../../../node_modules/libp2p-interfaces/dist/s
 import { Libp2pPeer, Peer, RlpxPeer } from './net/peer'
 import { Peer as Devp2pRlpxPeer } from '@ethereumjs/devp2p'
 import MockPeer from '../test/integration/mocks/mockpeer'
+import { BN } from '../../util/dist'
 /**
  * Types for the central event bus, emitted
  * by different components of the client.
@@ -22,7 +23,7 @@ export interface EventParams {
   [Event.CHAIN_UPDATED]: []
   [Event.SYNC_EXECUTION_VM_ERROR]: [Error]
   [Event.SYNC_FETCHER_FETCHED]: [Block[] | BlockHeader[]]
-  [Event.SYNC_SYNCHRONIZED]: []
+  [Event.SYNC_SYNCHRONIZED]: [ BN ]
   [Event.PEER_CONNECTED]: [Libp2pPeer | RlpxPeer | Devp2pRlpxPeer | MockPeer | Peer]
   [Event.PEER_DISCONNECTED]: [Libp2pPeer | RlpxPeer | Devp2pRlpxPeer | MockPeer | Peer]
 }

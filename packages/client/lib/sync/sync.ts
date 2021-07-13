@@ -1,5 +1,4 @@
 import { EventEmitter } from 'events'
-import { LevelUp } from 'levelup'
 import { PeerPool } from '../net/peerpool'
 import { Peer } from '../net/peer/peer'
 import { FlowControl } from '../net/protocol'
@@ -106,7 +105,7 @@ export abstract class Synchronizer extends EventEmitter {
     while (this.running) {
       try {
         if (await this.sync()) {
-          this.config.events.emit(Event.SYNC_SYNCHRONIZED)
+          this.config.events.emit(Event.SYNC_SYNCHRONIZED, this.chain.blocks.height)
         }
       } catch (error) {
         this.emit('error', error)

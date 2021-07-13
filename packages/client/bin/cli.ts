@@ -151,8 +151,8 @@ async function runNode(config: Config) {
   client.on('listening', (details: any) => {
     config.logger.info(`Listener up transport=${details.transport} url=${details.url}`)
   })
-  config.events.on(Event.SYNC_SYNCHRONIZED, () => {
-    config.logger.info('Synchronized')
+  config.events.on(Event.SYNC_SYNCHRONIZED,  (height) => {
+    client.config.logger.info(`Synchronized blockchain at height ${height.toNumber}`)
   })
   config.logger.info(`Connecting to network: ${config.chainCommon.chainName()}`)
   await client.open()

@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events'
 import tape from 'tape-catch'
 import td from 'testdouble'
+import { BN } from '../../util/dist'
 import { Config } from '../lib/config'
 import { PeerPool } from '../lib/net/peerpool'
 import { Event } from '../lib/types'
@@ -61,7 +62,7 @@ tape('[EthereumClient]', async (t) => {
     servers[0].emit('error', 'err0')
     servers[0].emit('listening', 'details0')
     client.services[0].emit('error', 'err1')
-    config.events.emit(Event.SYNC_SYNCHRONIZED)
+    config.events.emit(Event.SYNC_SYNCHRONIZED, new BN(0))
     t.ok(client.opened, 'opened')
     t.equals(await client.open(), false, 'already opened')
   })
@@ -73,7 +74,7 @@ tape('[EthereumClient]', async (t) => {
 
     t.equals(client.synchronized, false, 'not synchronized yet')
     await client.open()
-    config.events.emit(Event.SYNC_SYNCHRONIZED)
+    config.events.emit(Event.SYNC_SYNCHRONIZED, new BN(0))
     t.equals(client.synchronized, true, 'synchronized')
     t.end()
   })

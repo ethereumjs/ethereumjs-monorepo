@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events'
 import tape from 'tape-catch'
 import td from 'testdouble'
+import { BN } from '../../../util/dist'
 import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
 
@@ -62,7 +63,7 @@ tape('[FullEthereumService]', async (t) => {
     td.verify(server.addProtocols(td.matchers.anything()))
     config.events.on(Event.SYNC_SYNCHRONIZED, () => t.pass('synchronized'))
     service.once('error', (err: string) => t.equals(err, 'error0', 'got error 1'))
-    config.events.emit(Event.SYNC_SYNCHRONIZED)
+    config.events.emit(Event.SYNC_SYNCHRONIZED, new BN(0))
     service.synchronizer.emit('error', 'error0')
     service.once('error', (err: string) => t.equals(err, 'error1', 'got error 2'))
     service.pool.emit('banned', 'peer0')
