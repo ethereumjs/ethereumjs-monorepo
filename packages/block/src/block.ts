@@ -49,6 +49,7 @@ export class Block {
     // parse uncle headers
     const uncleHeaders = []
     for (const uhData of uhsData ?? []) {
+      header._common.setHardforkByBlockNumber(uhData.number!)
       const uh = BlockHeader.fromHeaderData(uhData, {
         ...opts,
         // Use header common in case of hardforkByBlockNumber being activated
@@ -58,6 +59,7 @@ export class Block {
         calcDifficultyFromHeader: undefined,
       })
       uncleHeaders.push(uh)
+      header._common.setHardforkByBlockNumber(header.number)
     }
 
     return new Block(header, transactions, uncleHeaders, opts)
@@ -70,7 +72,7 @@ export class Block {
    * @param opts
    */
   public static fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions) {
-    const values = rlp.decode(serialized) as any as BlockBuffer
+    const values = (rlp.decode(serialized) as any) as BlockBuffer
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized block input. Must be array')
@@ -109,6 +111,7 @@ export class Block {
     // parse uncle headers
     const uncleHeaders = []
     for (const uncleHeaderData of uhsData || []) {
+      header._common.setHardforkByBlockNumber(new BN(uncleHeaderData[8]))
       uncleHeaders.push(
         BlockHeader.fromValuesArray(uncleHeaderData, {
           ...opts,
@@ -118,6 +121,7 @@ export class Block {
           calcDifficultyFromHeader: undefined,
         })
       )
+      header._common.setHardforkByBlockNumber(new BN(headerData[8]))
     }
 
     return new Block(header, transactions, uncleHeaders, opts)
