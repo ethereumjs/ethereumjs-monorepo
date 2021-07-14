@@ -147,8 +147,8 @@ async function runNode(config: Config) {
     chainDB: level(chainDataDir),
     stateDB: level(stateDataDir),
   })
-  client.on('error', (err: any) => config.logger.error(err))
-  client.on('listening', (details: any) => {
+  client.config.events.on(Event.CLIENT_ERROR, (err: any) => config.logger.error(err))
+  client.config.events.on(Event.CLIENT_LISTENING, (details: any) => {
     config.logger.info(`Listener up transport=${details.transport} url=${details.url}`)
   })
   config.events.on(Event.SYNC_SYNCHRONIZED, (height) => {

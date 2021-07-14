@@ -2,6 +2,7 @@ import tape from 'tape'
 import { Config } from '../../lib/config'
 import EthereumClient from '../../lib/client'
 import MockServer from './mocks/mockserver'
+import { Event } from '../../lib/types'
 
 tape('[Integration:EthereumClient]', (t) => {
   const serverConfig = new Config({ loglevel: 'error' })
@@ -11,8 +12,8 @@ tape('[Integration:EthereumClient]', (t) => {
 
   t.test('should start/stop', async (t) => {
     t.plan(4)
-    node.on('error', (err: any) => t.equal(err, 'err0', 'got error'))
-    node.on('listening', (details: any) => {
+    node.config.events.on(Event.CLIENT_ERROR, (err: any) => t.equal(err, 'err0', 'got error'))
+    node.config.events.on(Event.CLIENT_LISTENING, (details: any) => {
       t.deepEqual(details, { transport: 'mock', url: 'mock://127.0.0.1' }, 'server listening')
     })
     await node.open()

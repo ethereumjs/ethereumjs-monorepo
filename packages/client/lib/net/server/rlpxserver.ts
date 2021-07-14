@@ -260,7 +260,6 @@ export class RlpxServer extends Server {
           await peer.accept(rlpxPeer, this)
           this.peers.set(peer.id, peer)
           this.config.logger.debug(`Peer connected: ${peer}`)
-          this.emit('connected', peer)
           this.config.events.emit(Event.PEER_CONNECTED, rlpxPeer)
         } catch (error) {
           this.error(error)
@@ -276,7 +275,6 @@ export class RlpxServer extends Server {
             `Peer disconnected (${rlpxPeer.getDisconnectPrefix(reason)}): ${peer}`
           )
           this.config.events.emit(Event.PEER_DISCONNECTED, peer)
-          this.emit('disconnected', peer)
         }
       })
 
