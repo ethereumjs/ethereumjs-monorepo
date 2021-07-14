@@ -58,7 +58,7 @@ export default class MockServer extends Server {
     const peer = new MockPeer({ id, location, protocols: Array.from(this.protocols), ...opts })
     await peer.connect()
     this.peers[id] = peer
-    this.config.events.emit(Event.PEER_CONNECTED, peer)
+    this.config.events.emit(Event.POOL_PEER_ADDED, peer)
     return peer
   }
 

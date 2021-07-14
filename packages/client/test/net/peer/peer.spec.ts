@@ -33,14 +33,13 @@ tape('[Peer]', (t) => {
     td.when(protocol.bind(peer, sender)).thenResolve(bound)
     await peer.bindProtocol(protocol, sender)
     t.equals(peer.bound.get('bound0'), bound, 'protocol bound')
-    peer.on('message', (msg: string, name: string) => {
-      t.ok(msg === 'msg0' && name === 'proto0', 'on message')
+    config.events.on(Event.PROTOCOL_MESSAGE, (msg: string, name: string, msgPeer: Peer) => {
+      t.ok(msg === 'msg0' && name === 'proto0' && msgPeer === peer,'on message')
     })
-    //@ts-ignore
     config.events.on(Event.PEER_ERROR, (err: Error, name: string) => {
       if (err.message === 'err0' && name === 'proto0') t.pass('on error')
     })
-    bound.emit('message', 'msg0')
+    config.events.emit(Event.PROTOCOL_MESSAGE, 'msg0', 'proto0', peer)
     config.events.emit(Event.PEER_ERROR, new Error('err0'), 'proto0')
   })
 

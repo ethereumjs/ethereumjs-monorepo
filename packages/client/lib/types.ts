@@ -28,6 +28,7 @@ export enum Event {
   POOL_PEER_REMOVED = 'pool:peer:removed',
   POOL_PEER_BANNED = 'pool:peer:banned',
   PROTOCOL_ERROR = 'protocol:error',
+  PROTOCOL_MESSAGE = 'protocol:message',
 }
 export interface EventParams {
   [Event.CHAIN_UPDATED]: []
@@ -46,6 +47,7 @@ export interface EventParams {
   [Event.POOL_PEER_REMOVED]: [Peer]
   [Event.POOL_PEER_BANNED]: [Peer]
   [Event.PROTOCOL_ERROR]: [Error]
+  [Event.PROTOCOL_MESSAGE]: [any, string, Peer]
 }
 
 export declare interface EventBus<T extends Event> {
@@ -71,7 +73,8 @@ export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
   EventBus<Event.POOL_PEER_ADDED> &
   EventBus<Event.POOL_PEER_REMOVED> &
   EventBus<Event.POOL_PEER_BANNED> &
-  EventBus<Event.PROTOCOL_ERROR>
+  EventBus<Event.PROTOCOL_ERROR> &
+  EventBus<Event.PROTOCOL_MESSAGE>
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
 /**

@@ -11,7 +11,7 @@ tape('[Integration:EthereumClient]', (t) => {
   const node = new EthereumClient({ config })
 
   t.test('should start/stop', async (t) => {
-    t.plan(4)
+    t.plan(3)
     node.config.events.on(Event.CLIENT_ERROR, (err: any) => t.equal(err, 'err0', 'got error'))
     node.config.events.on(Event.CLIENT_LISTENING, (details: any) => {
       t.deepEqual(details, { transport: 'mock', url: 'mock://127.0.0.1' }, 'server listening')

@@ -36,7 +36,7 @@ export class Service extends events.EventEmitter {
       config: this.config,
     })
 
-    this.pool.on('message', async (message: any, protocol: string, peer: Peer) => {
+    this.config.events.on(Event.PROTOCOL_MESSAGE, async (message: any, protocol: string, peer: Peer) => {
       if (this.running) {
         try {
           await this.handle(message, protocol, peer)

@@ -64,7 +64,7 @@ export class BoundProtocol extends EventEmitter {
         this.config.events.emit(Event.PROTOCOL_ERROR, error)
       }
     })
-    this.sender.on('error', (error: Error) => this.emit('error', error))
+    this.sender.on('error', (error: Error) => this.config.events.emit(Event.PROTOCOL_ERROR, error))
     this.addMethods()
   }
 
@@ -113,7 +113,12 @@ export class BoundProtocol extends EventEmitter {
       if (error) {
         this.config.events.emit(Event.PROTOCOL_ERROR, error)
       } else {
-        this.emit('message', { name: message.name, data: data })
+        this.config.events.emit(
+          Event.PROTOCOL_MESSAGE,
+          { name: message.name, data: data },
+          this.protocol.name,
+          this.peer
+        )
       }
     }
   }

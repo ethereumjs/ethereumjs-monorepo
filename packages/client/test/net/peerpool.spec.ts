@@ -39,7 +39,7 @@ tape('[PeerPool]', async (t) => {
   })
 
   t.test('should connect/disconnect peer', (t) => {
-    t.plan(4)
+    t.plan(3)
     const peer = new EventEmitter() as any
     const config = new Config({ loglevel: 'error', transports: [] })
     const pool = new PeerPool({ config })
@@ -47,13 +47,10 @@ tape('[PeerPool]', async (t) => {
     ;(peer as any).handleMessageQueue = td.func()
     ;(pool as any).ban = td.func()
     pool.connected(peer)
-    pool.on('message', (msg: any, proto: any, p: any) => {
+    pool.config.events.on(Event.PROTOCOL_MESSAGE, (msg: any, proto: any, p: any) => {
       t.ok(msg === 'msg0' && proto === 'proto0' && p === peer, 'got message')
     })
-    pool.on('message:proto0', (msg: any, p: any) => {
-      t.ok(msg === 'msg0' && p === peer, 'got message:protocol')
-    })
-    peer.emit('message', 'msg0', 'proto0')
+    config.events.emit(Event.PROTOCOL_MESSAGE, 'msg0', 'proto0', peer)
     config.events.emit(Event.PEER_ERROR, new Error('err0'), 'proto0')
     process.nextTick(() => {
       td.verify(pool.ban(peer))

@@ -60,7 +60,7 @@ export abstract class Synchronizer extends EventEmitter {
     this.forceSync = false
     this.startingBlock = 0
 
-    this.pool.on('added', (peer: Peer) => {
+    this.config.events.on(Event.POOL_PEER_ADDED, (peer: Peer) => {
       if (this.syncable(peer)) {
         this.config.logger.debug(`Found ${this.type} peer: ${peer}`)
       }
