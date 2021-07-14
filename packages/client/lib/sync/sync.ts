@@ -108,7 +108,7 @@ export abstract class Synchronizer extends EventEmitter {
           this.config.events.emit(Event.SYNC_SYNCHRONIZED, this.chain.blocks.height)
         }
       } catch (error) {
-        this.emit('error', error)
+        this.config.events.emit(Event.SYNC_ERROR, error)
       }
       await new Promise((resolve) => setTimeout(resolve, this.interval))
     }

@@ -246,7 +246,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   error(error: Error, job?: Job<JobTask, JobResult, StorageItem>) {
     if (this.running) {
-      this.emit('error', error, job && job.task, job && job.peer)
+      this.config.events.emit(Event.SYNC_FETCHER_ERROR, error, job && job.task, job && job.peer)
     }
   }
 

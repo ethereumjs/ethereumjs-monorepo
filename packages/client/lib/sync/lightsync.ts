@@ -93,9 +93,9 @@ export class LightSynchronizer extends Synchronizer {
       count,
     })
     this.headerFetcher
-      .on('error', (error: Error) => {
-        this.emit('error', error)
-      })
+      /* .on('error', (error: Error) => {
+        this.config.events.emit(Event.SYNC_FETCHER_ERROR, error)
+      })*/
       .on('fetched', (headers: BlockHeader[]) => {
         const first = new BN(headers[0].number)
         const hash = short(headers[0].hash())

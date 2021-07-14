@@ -16,6 +16,8 @@ export enum Event {
   SYNC_EXECUTION_VM_ERROR = 'sync:execution:vm:error',
   SYNC_FETCHER_FETCHED = 'sync:fetcher:fetched',
   SYNC_SYNCHRONIZED = 'sync:synchronized',
+  SYNC_ERROR = 'sync:error',
+  SYNC_FETCHER_ERROR = 'sync:fetcher:error',
   PEER_CONNECTED = 'peer:connected',
   PEER_DISCONNECTED = 'peer:disconnected',
   PEER_ERROR = 'peer:error',
@@ -28,6 +30,8 @@ export interface EventParams {
   [Event.SYNC_EXECUTION_VM_ERROR]: [Error]
   [Event.SYNC_FETCHER_FETCHED]: [Block[] | BlockHeader[]]
   [Event.SYNC_SYNCHRONIZED]: [BN]
+  [Event.SYNC_ERROR]: [Error]
+  [Event.SYNC_FETCHER_ERROR]: [Error, any, any]
   [Event.PEER_CONNECTED]: [Libp2pPeer | RlpxPeer | Devp2pRlpxPeer | MockPeer | Peer]
   [Event.PEER_DISCONNECTED]: [Libp2pPeer | RlpxPeer | Devp2pRlpxPeer | MockPeer | Peer]
   [Event.PEER_ERROR]: [Error, string]
@@ -47,12 +51,14 @@ export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
   EventBus<Event.SYNC_EXECUTION_VM_ERROR> &
   EventBus<Event.SYNC_FETCHER_FETCHED> &
   EventBus<Event.SYNC_SYNCHRONIZED> &
+  EventBus<Event.SYNC_FETCHER_ERROR> &
   EventBus<Event.PEER_CONNECTED> &
   EventBus<Event.PEER_DISCONNECTED> &
   EventBus<Event.PEER_ERROR> &
   EventBus<Event.CLIENT_ERROR> &
   EventBus<Event.CLIENT_LISTENING> &
-  EventBus<Event.SERVER_LISTENING>
+  EventBus<Event.SERVER_LISTENING> &
+  EventBus<Event.SYNC_ERROR>
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
 /**
