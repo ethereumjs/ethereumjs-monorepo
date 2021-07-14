@@ -51,13 +51,13 @@ export class Block {
     for (const uhData of uhsData ?? []) {
       const cachedFork = header._common.hardfork()
       const uh = BlockHeader.fromHeaderData(uhData, {
-        ...opts,
+        hardforkByBlockNumber: true,
+        ...opts, // This potentially overwrites hardforkByBlocknumber
         // Use header common in case of hardforkByBlockNumber being activated
         common: header._common,
         // Disable this option here (all other options carried over), since this overwrites
         // the provided Difficulty to an incorrect value
         calcDifficultyFromHeader: undefined,
-        hardforkByBlockNumber: true,
       })
       uncleHeaders.push(uh)
       header._common.setHardfork(cachedFork)
@@ -115,12 +115,12 @@ export class Block {
       const cachedFork = header._common.hardfork()
       uncleHeaders.push(
         BlockHeader.fromValuesArray(uncleHeaderData, {
-          ...opts,
+          hardforkByBlockNumber: true,
+          ...opts, // This potentially overwrites hardforkByBlocknumber
           // Use header common in case of hardforkByBlockNumber being activated
           common: header._common,
           // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
           calcDifficultyFromHeader: undefined,
-          hardforkByBlockNumber: true,
         })
       )
       header._common.setHardfork(cachedFork)
