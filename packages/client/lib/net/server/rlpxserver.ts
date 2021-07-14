@@ -260,7 +260,7 @@ export class RlpxServer extends Server {
           await peer.accept(rlpxPeer, this)
           this.peers.set(peer.id, peer)
           this.config.logger.debug(`Peer connected: ${peer}`)
-          this.config.events.emit(Event.PEER_CONNECTED, rlpxPeer)
+          this.config.events.emit(Event.PEER_CONNECTED, peer)
         } catch (error) {
           this.error(error)
         }

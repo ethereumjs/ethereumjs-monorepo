@@ -152,7 +152,7 @@ async function runNode(config: Config) {
     config.logger.info(`Listener up transport=${details.transport} url=${details.url}`)
   })
   config.events.on(Event.SYNC_SYNCHRONIZED, (height) => {
-    client.config.logger.info(`Synchronized blockchain at height ${height.toNumber}`)
+    client.config.logger.info(`Synchronized blockchain at height ${height.toNumber()}`)
   })
   config.logger.info(`Connecting to network: ${config.chainCommon.chainName()}`)
   await client.open()
@@ -213,7 +213,7 @@ async function run() {
     discV4: args.discV4,
   })
   logger = config.logger
-
+  config.events.setMaxListeners(50)
   // TODO: see todo below wrt resolving chain param parsing
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const chainParams = args.params ? await parseParams(args.params) : args.network
