@@ -67,11 +67,13 @@ tape('[Integration:LightSync]', async (t) => {
     await localServer.discover('remotePeer1', '127.0.0.2')
     await localServer.discover('remotePeer2', '127.0.0.3')
     localService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
-      t.equals(localService.chain.headers.height.toNumber(), 10, 'synced with best peer')
-      await destroy(localServer, localService)
-      await destroy(remoteServer1, remoteService1)
-      await destroy(remoteServer2, remoteService2)
-      t.end()
+      if (localService.chain.headers.height.toNumber() === 10) {
+        t.pass('synced with best peer')
+        await destroy(localServer, localService)
+        await destroy(remoteServer1, remoteService1)
+        await destroy(remoteServer2, remoteService2)
+        t.end()
+      }
     })
     await localService.synchronizer.start()
   })
