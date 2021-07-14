@@ -63,7 +63,8 @@ export class PeerPool extends EventEmitter {
     if (this.opened) {
       return false
     }
-    this.config.servers.map((s) => {
+    // TODO: Do we still need this map now that we have the centralized event bus?
+    this.config.servers.map(() => {
       this.config.events.on(Event.PEER_CONNECTED, (peer: any) => {
         this.connected(peer)
       })
@@ -133,7 +134,7 @@ export class PeerPool extends EventEmitter {
    */
   connected(peer: Peer) {
     if (this.size >= this.config.maxPeers) return
-  /*  peer.on('message', (message: any, protocol: string) => {
+    /*  peer.on('message', (message: any, protocol: string) => {
       console.log(message)
       if (this.pool.get(peer.id)) {
         this.emit('message', message, protocol, peer)

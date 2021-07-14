@@ -34,7 +34,7 @@ tape('[Peer]', (t) => {
     await peer.bindProtocol(protocol, sender)
     t.equals(peer.bound.get('bound0'), bound, 'protocol bound')
     config.events.on(Event.PROTOCOL_MESSAGE, (msg: string, name: string, msgPeer: Peer) => {
-      t.ok(msg === 'msg0' && name === 'proto0' && msgPeer === peer,'on message')
+      t.ok(msg === 'msg0' && name === 'proto0' && msgPeer === peer, 'on message')
     })
     config.events.on(Event.PEER_ERROR, (err: Error, name: string) => {
       if (err.message === 'err0' && name === 'proto0') t.pass('on error')
