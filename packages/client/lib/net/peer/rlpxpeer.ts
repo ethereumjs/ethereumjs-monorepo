@@ -112,14 +112,14 @@ export class RlpxPeer extends Peer {
       tcpPort: this.port,
     })
     this.rlpx.on('peer:error', (rlpxPeer: Devp2pRlpxPeer, error: Error) => {
-      this.emit('error', error)
+      this.config.events.emit(Event.PEER_ERROR, error, '')
     })
     this.rlpx.once('peer:added', async (rlpxPeer: Devp2pRlpxPeer) => {
       try {
         await this.bindProtocols(rlpxPeer)
         this.config.events.emit(Event.PEER_CONNECTED, rlpxPeer)
       } catch (error) {
-        this.emit('error', error)
+        this.config.events.emit(Event.PEER_ERROR, error, '')
       }
     })
     this.rlpx.once('peer:removed', (rlpxPeer: Devp2pRlpxPeer, reason: any) => {
@@ -130,10 +130,10 @@ export class RlpxPeer extends Peer {
         reason = rlpxPeer.getDisconnectPrefix(reason)
         this.rlpxPeer = null
         this.connected = false
-        this.emit('disconnected', reason as string)
+        // this.config.logger.emit('disconnected', reason as string)
         this.config.events.emit(Event.PEER_DISCONNECTED, rlpxPeer)
       } catch (error) {
-        this.emit('error', error)
+        this.config.events.emit(Event.PEER_ERROR, error, '')
       }
     })
   }

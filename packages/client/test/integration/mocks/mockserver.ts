@@ -82,13 +82,13 @@ export default class MockServer extends Server {
     })
     await peer.bindProtocols(stream)
     this.peers[id] = peer
-    this.emit('connected', peer)
+    this.config.events.emit(Event.PEER_CONNECTED, peer)
   }
 
   disconnect(id: string) {
     const peer = this.peers[id]
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (peer) this.emit('disconnected', peer)
+    if (peer)  this.config.events.emit(Event.PEER_DISCONNECTED, peer)
   }
 
   async wait(delay?: number) {

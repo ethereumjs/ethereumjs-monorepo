@@ -65,12 +65,12 @@ export async function run(args: any) {
   const { logger, chainCommon: common } = client.config
   logger.info('Initializing Ethereumjs client...')
   logger.info(`Connecting to network: ${common.chainName()}`)
-  client.on('error', (err: any) => logger.error(err))
+  client.config.events.on(Event.CLIENT_ERROR, (err: any) => logger.error(err))
   client.on('listening', (details: any) => {
-    client.config.logger.info(`Listener up transport=${details.transport} url=${details.url}`)
+    logger.info(`Listener up transport=${details.transport} url=${details.url}`)
   })
   client.config.events.on(Event.SYNC_SYNCHRONIZED, (height) => {
-    client.config.logger.info(`Synchronized blockchain at height ${height.toNumber}`)
+    logger.info(`Synchronized blockchain at height ${height.toNumber}`)
   })
   await client.open()
   logger.info('Synchronizing blockchain...')

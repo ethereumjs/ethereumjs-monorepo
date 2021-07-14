@@ -3,6 +3,7 @@ import tape from 'tape-catch'
 import td from 'testdouble'
 import { Peer } from '../../../lib/net/peer'
 import { Config } from '../../../lib/config'
+import { Event } from '../../../lib/types'
 
 tape('[Peer]', (t) => {
   const config = new Config({ transports: [], loglevel: 'error' })
@@ -35,11 +36,12 @@ tape('[Peer]', (t) => {
     peer.on('message', (msg: string, name: string) => {
       t.ok(msg === 'msg0' && name === 'proto0', 'on message')
     })
-    peer.on('error', (err: Error, name: string) => {
-      t.ok(err.message === 'err0' && name === 'proto0', 'on error')
+    //@ts-ignore
+    config.events.on(Event.PEER_ERROR, (err: Error, name: string) => {
+      if (err.message === 'err0' && name === 'proto0') t.pass('on error')
     })
     bound.emit('message', 'msg0')
-    bound.emit('error', new Error('err0'))
+    config.events.emit(Event.PEER_ERROR, new Error('err0'), 'proto0')
   })
 
   t.test('should understand protocols', (t) => {

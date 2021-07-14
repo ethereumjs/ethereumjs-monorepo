@@ -84,7 +84,7 @@ export default class EthereumClient extends events.EventEmitter {
     }
     this.config.servers.map((s) => {
       s.on('error', (error: Error) => {
-        this.emit('error', error)
+        this.config.events.emit(Event.CLIENT_ERROR, error)
       })
       s.on('listening', (details: any) => {
         this.emit('listening', details)
@@ -92,7 +92,7 @@ export default class EthereumClient extends events.EventEmitter {
     })
     this.services.map((s) => {
       s.on('error', (error: Error) => {
-        this.emit('error', error)
+        this.config.events.emit(Event.CLIENT_ERROR, error)
       })
     })
     await Promise.all(this.services.map((s) => s.open()))

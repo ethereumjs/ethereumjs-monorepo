@@ -18,6 +18,8 @@ export enum Event {
   SYNC_SYNCHRONIZED = 'sync:synchronized',
   PEER_CONNECTED = 'peer:connected',
   PEER_DISCONNECTED = 'peer:disconnected',
+  PEER_ERROR = 'peer:error',
+  CLIENT_ERROR = 'client:error'
 }
 export interface EventParams {
   [Event.CHAIN_UPDATED]: []
@@ -26,6 +28,8 @@ export interface EventParams {
   [Event.SYNC_SYNCHRONIZED]: [ BN ]
   [Event.PEER_CONNECTED]: [Libp2pPeer | RlpxPeer | Devp2pRlpxPeer | MockPeer | Peer]
   [Event.PEER_DISCONNECTED]: [Libp2pPeer | RlpxPeer | Devp2pRlpxPeer | MockPeer | Peer]
+  [Event.PEER_ERROR]: [ Error, string ]
+  [Event.CLIENT_ERROR]: [ Error ]
 }
 export declare interface EventBus<T extends Event> {
   emit(event: T, ...args: EventParams[T]): boolean
@@ -40,7 +44,9 @@ export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
   EventBus<Event.SYNC_FETCHER_FETCHED> &
   EventBus<Event.SYNC_SYNCHRONIZED> &
   EventBus<Event.PEER_CONNECTED> &
-  EventBus<Event.PEER_DISCONNECTED>
+  EventBus<Event.PEER_DISCONNECTED> &
+  EventBus<Event.PEER_ERROR> &
+  EventBus<Event.CLIENT_ERROR>
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
 /**

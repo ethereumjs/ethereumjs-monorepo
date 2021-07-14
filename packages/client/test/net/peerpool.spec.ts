@@ -3,6 +3,7 @@ import td from 'testdouble'
 import { EventEmitter } from 'events'
 import { Config } from '../../lib/config'
 import { RlpxServer } from '../../lib/net/server'
+import { Event } from '../../lib/types'
 
 tape('[PeerPool]', async (t) => {
   const Peer = td.replace('../../lib/net/peer/peer', function (this: any, id: string) {
@@ -53,7 +54,7 @@ tape('[PeerPool]', async (t) => {
       t.ok(msg === 'msg0' && p === peer, 'got message:protocol')
     })
     peer.emit('message', 'msg0', 'proto0')
-    peer.emit('error', 'err0', 'proto0')
+    config.events.emit(Event.PEER_ERROR, new Error('err0'), 'proto0')
     process.nextTick(() => {
       td.verify(pool.ban(peer))
       t.pass('got error')

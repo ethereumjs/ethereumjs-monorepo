@@ -75,12 +75,16 @@ tape('[RlpxPeer]', async (t) => {
     peer.rlpxPeer = rlpxPeer
     td.when(peer.bindProtocols(rlpxPeer)).thenResolve()
     td.when(rlpxPeer.getDisconnectPrefix('reason')).thenReturn('reason')
-    await peer.connect()
-    peer.on('error', (err: Error) => t.equals(err.message, 'err0', 'got err0'))
-    config.events.on(Event.PEER_CONNECTED, (peer: any) =>
+    await peer.connect() 
+    //@ts-ignore
+    config.events.on(Event.PEER_ERROR, (error: Error, _: string) => {
+      if (error.message === 'err0') t.pass('got err0');
+    })
+
+    peer.config.events.on(Event.PEER_CONNECTED, (peer: any) =>
       t.equals(peer.id, 'zyx321', 'got connected')
     )
-    config.events.on(Event.PEER_DISCONNECTED, (peer: any) =>
+    peer.config.events.on(Event.PEER_DISCONNECTED, (peer: any) =>
       t.equals(peer.getDisconnectPrefix('reason'), 'reason', 'got disconnected')
     )
     peer.rlpx!.emit('peer:error', rlpxPeer, new Error('err0'))
@@ -92,7 +96,8 @@ tape('[RlpxPeer]', async (t) => {
     await peer.connect()
     td.when(peer.bindProtocols(rlpxPeer)).thenReject(new Error('err1'))
     td.when(rlpxPeer.getDisconnectPrefix('reason')).thenThrow(new Error('err2'))
-    peer.on('error', (err: Error) => {
+    //@ts-ignore
+    peer.config.events.on(Event.PEER_ERROR, (err: Error, _: string) => {
       if (err.message === 'err1') t.pass('got err1')
       if (err.message === 'err2') t.pass('got err2')
     })

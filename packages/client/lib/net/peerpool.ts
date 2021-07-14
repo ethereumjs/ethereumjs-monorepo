@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events'
 import { Config } from '../config'
+import { Event } from '../types'
 import { Peer } from './peer/peer'
 import { RlpxServer } from './server'
 
@@ -137,7 +138,7 @@ export class PeerPool extends EventEmitter {
         this.emit(`message:${protocol}`, message, peer)
       }
     })
-    peer.on('error', (error: Error) => {
+    this.config.events.on(Event.PEER_ERROR, (error: Error) => {
       if (this.pool.get(peer.id)) {
         this.config.logger.warn(`Peer error: ${error} ${peer}`)
         this.ban(peer)

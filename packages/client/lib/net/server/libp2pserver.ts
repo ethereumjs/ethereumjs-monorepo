@@ -153,7 +153,7 @@ export class Libp2pServer extends Server {
    * @emits  error
    */
   error(error: Error) {
-    this.emit('error', error)
+    this.config.events.emit(Event.PEER_ERROR, error, '')
   }
 
   async getPeerId() {

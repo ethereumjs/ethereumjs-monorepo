@@ -8,6 +8,7 @@ import {
 } from '../protocol'
 import { Server } from '../server'
 import { Config } from '../../config'
+import { Event } from '../../types'
 
 export interface PeerOptions {
   /* Config */
@@ -123,7 +124,7 @@ export class Peer extends events.EventEmitter {
       this.emit('message', message, protocol.name)
     })
     bound.on('error', (error: Error) => {
-      this.emit('error', error, protocol.name)
+      this.config.events.emit(Event.PEER_ERROR, error, protocol.name)
     })
     this.bound.set(bound.name, bound)
   }

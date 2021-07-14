@@ -127,8 +127,8 @@ tape('[Libp2pServer]', async (t) => {
     server.on('listening', (info: any) =>
       t.deepEquals(info, { transport: 'libp2p', url: 'ma0/p2p/id' }, 'listening')
     )
-    server.config.events.once(Event.PEER_CONNECTED, (p: any) => t.equals(p, peer, 'peer connected'))
-    server.on('error', (err: Error) => t.equals(err.message, 'err0', 'got err0'))
+    config.events.once(Event.PEER_CONNECTED, (p: any) => t.equals(p, peer, 'peer connected'))
+    config.events.on(Event.PEER_ERROR, (err: Error) => t.equals(err.message, 'err0', 'got err0'))
     t.notOk(server.ban('peer'), 'unbannable')
     t.notOk(await server.stop(), 'not started')
     await server.start()
