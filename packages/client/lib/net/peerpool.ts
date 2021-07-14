@@ -170,7 +170,7 @@ export class PeerPool extends EventEmitter {
     }
     peer.server.ban(peer.id, maxAge)
     this.remove(peer)
-    this.emit('banned', peer)
+    this.config.events.emit(Event.POOL_PEER_BANNED, peer)
   }
 
   /**
@@ -184,7 +184,7 @@ export class PeerPool extends EventEmitter {
     if (peer && peer.id && !this.pool.get(peer.id)) {
       this.pool.set(peer.id, peer)
       peer.pooled = true
-      this.emit('added', peer)
+      this.config.events.emit(Event.POOL_PEER_ADDED, peer)
     }
   }
 
@@ -197,7 +197,7 @@ export class PeerPool extends EventEmitter {
     if (peer && peer.id) {
       if (this.pool.delete(peer.id)) {
         peer.pooled = false
-        this.emit('removed', peer)
+        this.config.events.emit(Event.POOL_PEER_REMOVED, peer)
       }
     }
   }

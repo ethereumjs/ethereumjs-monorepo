@@ -64,7 +64,6 @@ export class EthereumService extends Service {
       return false
     }
     await super.open()
-    //this.config.event.on('error', (error: Error) => this.emit('error', error))
     await this.chain.open()
     await this.synchronizer.open()
   }

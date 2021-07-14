@@ -93,8 +93,12 @@ tape('[PeerPool]', async (t) => {
     const pool = new PeerPool({ config })
     peers.forEach((p: any) => pool.add(p))
     peers.forEach((p: any) => pool.ban(p, 1000))
-    pool.on('banned', (peer: any) => t.equals(peer, peers[1], 'banned peer'))
-    pool.on('removed', (peer: any) => t.equals(peer, peers[1], 'removed peer'))
+    pool.config.events.on(Event.POOL_PEER_BANNED, (peer: any) =>
+      t.equals(peer, peers[1], 'banned peer')
+    )
+    pool.config.events.on(Event.POOL_PEER_REMOVED, (peer: any) =>
+      t.equals(peer, peers[1], 'removed peer')
+    )
     t.equals(pool.peers[0], peers[0], 'outbound peer not banned')
     t.end()
   })

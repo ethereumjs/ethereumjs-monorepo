@@ -24,6 +24,9 @@ export enum Event {
   CLIENT_ERROR = 'client:error',
   CLIENT_LISTENING = 'client:listening',
   SERVER_LISTENING = 'server:listening',
+  POOL_PEER_ADDED = 'pool:peer:added',
+  POOL_PEER_REMOVED = 'pool:peer:removed',
+  POOL_PEER_BANNED = 'pool:peer:banned',
 }
 export interface EventParams {
   [Event.CHAIN_UPDATED]: []
@@ -38,7 +41,11 @@ export interface EventParams {
   [Event.CLIENT_ERROR]: [Error]
   [Event.CLIENT_LISTENING]: [any]
   [Event.SERVER_LISTENING]: [any]
+  [Event.POOL_PEER_ADDED]: [Peer]
+  [Event.POOL_PEER_REMOVED]: [Peer]
+  [Event.POOL_PEER_BANNED]: [Peer]
 }
+
 export declare interface EventBus<T extends Event> {
   emit(event: T, ...args: EventParams[T]): boolean
   on(event: T, listener: (...args: EventParams[T]) => void): this
@@ -58,7 +65,10 @@ export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
   EventBus<Event.CLIENT_ERROR> &
   EventBus<Event.CLIENT_LISTENING> &
   EventBus<Event.SERVER_LISTENING> &
-  EventBus<Event.SYNC_ERROR>
+  EventBus<Event.SYNC_ERROR> &
+  EventBus<Event.POOL_PEER_ADDED> &
+  EventBus<Event.POOL_PEER_REMOVED> &
+  EventBus<Event.POOL_PEER_BANNED>
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
 /**
