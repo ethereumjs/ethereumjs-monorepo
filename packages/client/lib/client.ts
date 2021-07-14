@@ -86,7 +86,7 @@ export default class EthereumClient extends events.EventEmitter {
       s.on('error', (error: Error) => {
         this.config.events.emit(Event.CLIENT_ERROR, error)
       })
-      s.config.events.on(Event.SERVER_LISTENING, (details: any) => {
+      s.on(Event.SERVER_LISTENING, (details: any) => {
         this.config.events.emit(Event.CLIENT_LISTENING, details)
       })
     })
