@@ -122,7 +122,7 @@ export class RlpxPeer extends Peer {
         this.config.events.emit(Event.PEER_ERROR, error, '')
       }
     })
-    this.rlpx.once('peer:removed', (rlpxPeer: Devp2pRlpxPeer, reason: any) => {
+    this.rlpx.once('peer:removed', (rlpxPeer: Devp2pRlpxPeer) => {
       try {
         if (rlpxPeer !== this.rlpxPeer) {
           return

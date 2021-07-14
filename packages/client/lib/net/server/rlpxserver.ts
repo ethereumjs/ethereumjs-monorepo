@@ -291,7 +291,7 @@ export class RlpxServer extends Server {
       this.rlpx.on('error', (e: Error) => this.error(e))
 
       this.rlpx.on('listening', () => {
-        this.emit('listening', {
+        this.config.events.emit(Event.SERVER_LISTENING, {
           transport: this.name,
           url: this.getRlpxInfo().enode,
         })

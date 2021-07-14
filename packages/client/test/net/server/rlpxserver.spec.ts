@@ -211,7 +211,7 @@ tape('[RlpxServer]', async (t) => {
     config.events.on(Event.PEER_ERROR, (err: Error, _: string) =>
       t.equals(err.message, 'err0', 'got error')
     )
-    server.on('listening', (info: any) =>
+    config.events.on(Event.SERVER_LISTENING, (info: any) =>
       t.deepEquals(info, { transport: 'rlpx', url: 'enode://ff@[::]:30303' }, 'listening')
     )
     server.rlpx!.emit('peer:added', rlpxPeer)

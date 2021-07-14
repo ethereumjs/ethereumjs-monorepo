@@ -31,11 +31,9 @@ export default class MockServer extends Server {
     await this.wait(1)
 
     this.server = createServer(this.location) as any
-    this.server!.on('listening', () => {
-      this.emit('listening', {
-        transport: this.name,
-        url: `mock://${this.location}`,
-      })
+    this.config.events.emit(Event.SERVER_LISTENING, {
+      transport: this.name,
+      url: `mock://${this.location}`,
     })
 
     this.server!.on('connection', async ({ id, stream }) => {
