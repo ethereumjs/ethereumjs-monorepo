@@ -30,7 +30,7 @@ export class FullSynchronizer extends Synchronizer {
       await this.stop()
     })
 
-    this.chain.on('updated', async () => {
+    this.config.events.on(Event.CHAIN_UPDATED, async () => {
       if (this.running) {
         await this.execution.run()
       }
