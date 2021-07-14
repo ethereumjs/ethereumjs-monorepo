@@ -21,16 +21,22 @@ tape('[PeerPool]', async (t) => {
   })
 
   t.test('should open/close', async (t) => {
-    t.plan(3);
+    t.plan(3)
     const server = new EventEmitter()
     const config = new Config({ servers: [server as RlpxServer] })
     const pool = new PeerPool({ config })
-    const peer = new MockPeer({id:'peer', location: 'abc', config: config, address: '0.0.0.0', transport:'udp'})
+    const peer = new MockPeer({
+      id: 'peer',
+      location: 'abc',
+      config: config,
+      address: '0.0.0.0',
+      transport: 'udp',
+    })
     await pool.open()
     config.events.on(Event.PEER_CONNECTED, (peer: any) => {
       if (pool.contains(peer.id)) t.pass('peer connected')
     })
-    config.events.on(Event.POOL_PEER_REMOVED, (peer: any) => {
+    config.events.on(Event.POOL_PEER_REMOVED, () => {
       if (!pool.contains('peer')) t.pass('peer disconnected')
     })
     pool.add(peer)
