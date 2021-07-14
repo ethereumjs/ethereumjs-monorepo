@@ -75,10 +75,10 @@ tape('[RlpxPeer]', async (t) => {
     peer.rlpxPeer = rlpxPeer
     td.when(peer.bindProtocols(rlpxPeer)).thenResolve()
     td.when(rlpxPeer.getDisconnectPrefix('reason')).thenReturn('reason')
-    await peer.connect() 
+    await peer.connect()
     //@ts-ignore
     config.events.on(Event.PEER_ERROR, (error: Error, _: string) => {
-      if (error.message === 'err0') t.pass('got err0');
+      if (error.message === 'err0') t.pass('got err0')
     })
 
     peer.config.events.on(Event.PEER_CONNECTED, (peer: any) =>

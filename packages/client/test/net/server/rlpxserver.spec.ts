@@ -75,7 +75,9 @@ tape('[RlpxServer]', async (t) => {
     td.when(
       (server.dpt! as any).bootstrap({ address: '10.0.0.2', udpPort: '1234', tcpPort: '1234' })
     ).thenReject(new Error('err0'))
-    server.config.events.on(Event.PEER_ERROR, (err: Error) => t.equals(err.message, 'err0', 'got error'))
+    server.config.events.on(Event.PEER_ERROR, (err: Error) =>
+      t.equals(err.message, 'err0', 'got error')
+    )
     await server.start()
     td.verify(server.initDpt())
     td.verify(server.initRlpx())
@@ -184,9 +186,8 @@ tape('[RlpxServer]', async (t) => {
       throw error
     })
     td.verify((server.dpt as any).bind(server.config.port, '0.0.0.0'))
-    config.events.on(Event.PEER_ERROR, (err: any) => t.equals(err.message, 'err0', 'got error'));
-
-    (server.dpt as any).emit('error', new Error('err0'))
+    config.events.on(Event.PEER_ERROR, (err: any) => t.equals(err.message, 'err0', 'got error'))
+    ;(server.dpt as any).emit('error', new Error('err0'))
   })
 
   t.test('should init rlpx', async (t) => {
@@ -207,7 +208,9 @@ tape('[RlpxServer]', async (t) => {
     config.events.on(Event.PEER_DISCONNECTED, (peer: any) =>
       t.equals(peer.id, '01', 'disconnected')
     )
-    config.events.on(Event.PEER_ERROR, (err: Error, _: string) => t.equals(err.message, 'err0', 'got error'))
+    config.events.on(Event.PEER_ERROR, (err: Error, _: string) =>
+      t.equals(err.message, 'err0', 'got error')
+    )
     server.on('listening', (info: any) =>
       t.deepEquals(info, { transport: 'rlpx', url: 'enode://ff@[::]:30303' }, 'listening')
     )

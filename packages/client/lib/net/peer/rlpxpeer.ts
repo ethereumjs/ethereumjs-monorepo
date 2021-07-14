@@ -127,10 +127,8 @@ export class RlpxPeer extends Peer {
         if (rlpxPeer !== this.rlpxPeer) {
           return
         }
-        reason = rlpxPeer.getDisconnectPrefix(reason)
         this.rlpxPeer = null
         this.connected = false
-        // this.config.logger.emit('disconnected', reason as string)
         this.config.events.emit(Event.PEER_DISCONNECTED, rlpxPeer)
       } catch (error) {
         this.config.events.emit(Event.PEER_ERROR, error, '')

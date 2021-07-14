@@ -19,17 +19,17 @@ export enum Event {
   PEER_CONNECTED = 'peer:connected',
   PEER_DISCONNECTED = 'peer:disconnected',
   PEER_ERROR = 'peer:error',
-  CLIENT_ERROR = 'client:error'
+  CLIENT_ERROR = 'client:error',
 }
 export interface EventParams {
   [Event.CHAIN_UPDATED]: []
   [Event.SYNC_EXECUTION_VM_ERROR]: [Error]
   [Event.SYNC_FETCHER_FETCHED]: [Block[] | BlockHeader[]]
-  [Event.SYNC_SYNCHRONIZED]: [ BN ]
+  [Event.SYNC_SYNCHRONIZED]: [BN]
   [Event.PEER_CONNECTED]: [Libp2pPeer | RlpxPeer | Devp2pRlpxPeer | MockPeer | Peer]
   [Event.PEER_DISCONNECTED]: [Libp2pPeer | RlpxPeer | Devp2pRlpxPeer | MockPeer | Peer]
-  [Event.PEER_ERROR]: [ Error, string ]
-  [Event.CLIENT_ERROR]: [ Error ]
+  [Event.PEER_ERROR]: [Error, string]
+  [Event.CLIENT_ERROR]: [Error]
 }
 export declare interface EventBus<T extends Event> {
   emit(event: T, ...args: EventParams[T]): boolean
