@@ -191,11 +191,11 @@ export class RlpxServer extends Server {
    * @param  {Peer} peer
    * @emits  error
    */
-  error(error: Error, peer?: RlpxPeer) {
+  error(error: Error) {
     if (ignoredErrors.test(error.message)) {
       return
     }
-    this.config.events.emit(Event.PEER_ERROR, error, peer?.id ?? '')
+    this.config.events.emit(Event.SERVER_ERROR, error, this)
   }
 
   /**

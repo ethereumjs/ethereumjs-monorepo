@@ -36,11 +36,11 @@ tape('[Peer]', (t) => {
     config.events.on(Event.PROTOCOL_MESSAGE, (msg: string, name: string, msgPeer: Peer) => {
       t.ok(msg === 'msg0' && name === 'proto0' && msgPeer === peer, 'on message')
     })
-    config.events.on(Event.PEER_ERROR, (err: Error, name: string) => {
-      if (err.message === 'err0' && name === 'proto0') t.pass('on error')
+    config.events.on(Event.PEER_ERROR, (err) => {
+      if (err.message === 'err0') t.pass('on error')
     })
     config.events.emit(Event.PROTOCOL_MESSAGE, 'msg0', 'proto0', peer)
-    config.events.emit(Event.PEER_ERROR, new Error('err0'), 'proto0')
+    config.events.emit(Event.PEER_ERROR, new Error('err0'), peer)
   })
 
   t.test('should understand protocols', (t) => {

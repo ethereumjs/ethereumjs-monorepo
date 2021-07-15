@@ -69,35 +69,32 @@ tape('[RlpxPeer]', async (t) => {
   t.test('should handle peer events', async (t) => {
     t.plan(5)
     const config = new Config({ transports: [], loglevel: 'error' })
-    let peer = new RlpxPeer({ config, id: 'abcdef0123', host: '10.0.0.1', port: 1234 })
+    const peer = new RlpxPeer({ config, id: 'abcdef0123', host: '10.0.0.1', port: 1234 })
     const rlpxPeer = { id: 'zyx321', getDisconnectPrefix: td.func() } as any
     peer.bindProtocols = td.func<typeof peer['bindProtocols']>()
     peer.rlpxPeer = rlpxPeer
     td.when(peer.bindProtocols(rlpxPeer)).thenResolve()
     td.when(rlpxPeer.getDisconnectPrefix('reason')).thenReturn('reason')
     await peer.connect()
-    //@ts-ignore
-    config.events.on(Event.PEER_ERROR, (error: Error, _: string) => {
+    config.events.on(Event.PEER_ERROR, (error) => {
       if (error.message === 'err0') t.pass('got err0')
     })
 
-    peer.config.events.on(Event.PEER_CONNECTED, (peer: any) =>
-      t.equals(peer.id, 'zyx321', 'got connected')
+    peer.config.events.on(Event.PEER_CONNECTED, (peer) =>
+      t.equals(peer.id, 'abcdef0123', 'got connected')
     )
-    peer.config.events.on(Event.PEER_DISCONNECTED, (peer: any) =>
-      t.equals(peer.getDisconnectPrefix('reason'), 'reason', 'got disconnected')
+    peer.config.events.on(Event.PEER_DISCONNECTED, (rlpxPeer) =>
+      t.equals(rlpxPeer.pooled, false, 'got disconnected')
     )
     peer.rlpx!.emit('peer:error', rlpxPeer, new Error('err0'))
     peer.rlpx!.emit('peer:added', rlpxPeer)
     peer.rlpx!.emit('peer:removed', rlpxPeer, 'reason')
-    peer = new RlpxPeer({ config, id: 'abcdef0123', host: '10.0.0.1', port: 1234 })
     peer.bindProtocols = td.func<typeof peer['bindProtocols']>()
     peer.rlpxPeer = rlpxPeer
     await peer.connect()
     td.when(peer.bindProtocols(rlpxPeer)).thenReject(new Error('err1'))
     td.when(rlpxPeer.getDisconnectPrefix('reason')).thenThrow(new Error('err2'))
-    //@ts-ignore
-    peer.config.events.on(Event.PEER_ERROR, (err: Error, _: string) => {
+    peer.config.events.on(Event.PEER_ERROR, (err) => {
       if (err.message === 'err1') t.pass('got err1')
       if (err.message === 'err2') t.pass('got err2')
     })

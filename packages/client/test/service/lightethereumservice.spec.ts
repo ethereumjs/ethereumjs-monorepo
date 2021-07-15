@@ -60,10 +60,10 @@ tape('[LightEthereumService]', async (t) => {
     })
     service.config.events.emit(Event.SYNC_SYNCHRONIZED, new BN(0))
     service.config.events.emit(Event.SYNC_ERROR, new Error('error0'))
-    service.config.events.on(Event.PEER_ERROR, (err: Error) => {
+    service.config.events.on(Event.SERVER_ERROR, (err: Error) => {
       if (err.message === 'error1') t.pass('got error 2')
     })
-    service.config.events.emit(Event.PEER_ERROR, new Error('error1'), '')
+    service.config.events.emit(Event.SERVER_ERROR, new Error('error1'), server)
     await service.stop()
   })
 

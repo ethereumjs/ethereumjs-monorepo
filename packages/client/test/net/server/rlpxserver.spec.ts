@@ -130,7 +130,7 @@ tape('[RlpxServer]', async (t) => {
     td.when(
       (server.dpt! as any).bootstrap({ address: '10.0.0.2', udpPort: '1234', tcpPort: '1234' })
     ).thenReject(new Error('err0'))
-    config.events.on(Event.PEER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
+    config.events.on(Event.SERVER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
     await server.start()
     const nodeInfo = server.getRlpxInfo()
     t.deepEqual(
@@ -154,7 +154,7 @@ tape('[RlpxServer]', async (t) => {
     const config = new Config({ loglevel: 'error', transports: [] })
     const server = new RlpxServer({ config })
     const peer = new RlpxPeer()
-    server.config.events.on(Event.PEER_ERROR, (err: Error) => {
+    server.config.events.on(Event.SERVER_ERROR, (err: Error) => {
       count = count + 1
       if (err.message === 'err0') t.pass('got server error - err0')
       if (err.message === 'err1') t.pass('got peer error - err1')
@@ -186,7 +186,7 @@ tape('[RlpxServer]', async (t) => {
       throw error
     })
     td.verify((server.dpt as any).bind(server.config.port, '0.0.0.0'))
-    config.events.on(Event.PEER_ERROR, (err: any) => t.equals(err.message, 'err0', 'got error'))
+    config.events.on(Event.SERVER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
     ;(server.dpt as any).emit('error', new Error('err0'))
   })
 
@@ -208,9 +208,7 @@ tape('[RlpxServer]', async (t) => {
     config.events.on(Event.PEER_DISCONNECTED, (peer: any) =>
       t.equals(peer.id, '01', 'disconnected')
     )
-    config.events.on(Event.PEER_ERROR, (err: Error, _: string) =>
-      t.equals(err.message, 'err0', 'got error')
-    )
+    config.events.on(Event.SERVER_ERROR, (err: Error) => t.equals(err.message, 'err0', 'got error'))
     config.events.on(Event.SERVER_LISTENING, (info: any) =>
       t.deepEquals(info, { transport: 'rlpx', url: 'enode://ff@[::]:30303' }, 'listening')
     )
@@ -232,7 +230,7 @@ tape('[RlpxServer]', async (t) => {
     server.initRlpx().catch((error) => {
       throw error
     })
-    config.events.on(Event.PEER_ERROR, (err: any) => t.equals(err.message, 'err0', 'got error'))
+    config.events.on(Event.SERVER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
     server.rlpx!.emit('peer:error', rlpxPeer, new Error('err0'))
   })
 

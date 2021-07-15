@@ -59,7 +59,7 @@ tape('[PeerPool]', async (t) => {
       t.ok(msg === 'msg0' && proto === 'proto0' && p === peer, 'got message')
     })
     config.events.emit(Event.PROTOCOL_MESSAGE, 'msg0', 'proto0', peer)
-    pool.config.events.emit(Event.PEER_ERROR, new Error('err0'), 'proto0')
+    pool.config.events.emit(Event.PEER_ERROR, new Error('err0'), peer)
     pool.disconnected(peer)
     t.notOk((pool as any).pool.get('abc'), 'peer removed')
   })

@@ -61,10 +61,12 @@ export class BoundProtocol extends EventEmitter {
           this.messageQueue.push(message)
         }
       } catch (error) {
-        this.config.events.emit(Event.PROTOCOL_ERROR, error)
+        this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
       }
     })
-    this.sender.on('error', (error: Error) => this.config.events.emit(Event.PROTOCOL_ERROR, error))
+    this.sender.on('error', (error: Error) =>
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+    )
     this.addMethods()
   }
 
@@ -111,7 +113,7 @@ export class BoundProtocol extends EventEmitter {
       }
     } else {
       if (error) {
-        this.config.events.emit(Event.PROTOCOL_ERROR, error)
+        this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
       } else {
         this.config.events.emit(
           Event.PROTOCOL_MESSAGE,
@@ -189,7 +191,7 @@ export class BoundProtocol extends EventEmitter {
       const camel = name[0].toLowerCase() + name.slice(1)
       ;(this as any)[camel] = async (args: any[]) =>
         this.request(name, args).catch((error: Error) => {
-          this.config.events.emit(Event.PROTOCOL_ERROR, error)
+          this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
           return undefined
         })
     }

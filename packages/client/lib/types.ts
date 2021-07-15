@@ -4,9 +4,9 @@ import type { Block, BlockHeader } from '@ethereumjs/block'
 import type Connection from '../../../node_modules/libp2p-interfaces/dist/src/connection/connection'
 import type { MuxedStream } from '../../../node_modules/libp2p-interfaces/dist/src/stream-muxer/types'
 import { Libp2pPeer, Peer, RlpxPeer } from './net/peer'
-import { Peer as Devp2pRlpxPeer } from '@ethereumjs/devp2p'
 import MockPeer from '../test/integration/mocks/mockpeer'
 import { BN } from '../../util/dist'
+import { Server } from './net/server'
 /**
  * Types for the central event bus, emitted
  * by different components of the client.
@@ -24,6 +24,7 @@ export enum Event {
   CLIENT_ERROR = 'client:error',
   CLIENT_LISTENING = 'client:listening',
   SERVER_LISTENING = 'server:listening',
+  SERVER_ERROR = 'server:error',
   POOL_PEER_ADDED = 'pool:peer:added',
   POOL_PEER_REMOVED = 'pool:peer:removed',
   POOL_PEER_BANNED = 'pool:peer:banned',
@@ -39,14 +40,15 @@ export interface EventParams {
   [Event.SYNC_FETCHER_ERROR]: [Error, any, any]
   [Event.PEER_CONNECTED]: [Libp2pPeer | RlpxPeer | MockPeer | Peer]
   [Event.PEER_DISCONNECTED]: [Libp2pPeer | RlpxPeer | MockPeer | Peer]
-  [Event.PEER_ERROR]: [Error, string]
+  [Event.PEER_ERROR]: [Error, Peer]
   [Event.CLIENT_ERROR]: [Error]
   [Event.CLIENT_LISTENING]: [any]
   [Event.SERVER_LISTENING]: [any]
+  [Event.SERVER_ERROR]: [Error, Server]
   [Event.POOL_PEER_ADDED]: [Peer]
   [Event.POOL_PEER_REMOVED]: [Peer]
   [Event.POOL_PEER_BANNED]: [Peer]
-  [Event.PROTOCOL_ERROR]: [Error]
+  [Event.PROTOCOL_ERROR]: [Error, Peer]
   [Event.PROTOCOL_MESSAGE]: [any, string, Peer]
 }
 
@@ -69,6 +71,7 @@ export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
   EventBus<Event.CLIENT_ERROR> &
   EventBus<Event.CLIENT_LISTENING> &
   EventBus<Event.SERVER_LISTENING> &
+  EventBus<Event.SERVER_ERROR> &
   EventBus<Event.SYNC_ERROR> &
   EventBus<Event.POOL_PEER_ADDED> &
   EventBus<Event.POOL_PEER_REMOVED> &

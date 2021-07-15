@@ -132,7 +132,7 @@ export class PeerPool extends EventEmitter {
    */
   connected(peer: Peer) {
     if (this.size >= this.config.maxPeers) return
-    this.config.events.on(Event.PEER_ERROR, (error: Error) => {
+    this.config.events.on(Event.PEER_ERROR, (error, peer) => {
       if (this.pool.get(peer.id)) {
         this.config.logger.warn(`Peer error: ${error} ${peer}`)
         this.ban(peer)
