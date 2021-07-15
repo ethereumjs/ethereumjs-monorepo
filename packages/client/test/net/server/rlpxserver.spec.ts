@@ -153,7 +153,6 @@ tape('[RlpxServer]', async (t) => {
     let count = 0
     const config = new Config({ loglevel: 'error', transports: [] })
     const server = new RlpxServer({ config })
-    const peer = new RlpxPeer()
     server.config.events.on(Event.SERVER_ERROR, (err: Error) => {
       count = count + 1
       if (err.message === 'err0') t.pass('got server error - err0')
@@ -164,7 +163,7 @@ tape('[RlpxServer]', async (t) => {
     setTimeout(() => {
       t.equals(count, 2, 'ignored error')
     }, 100)
-    server.error(new Error('err1'), peer as any)
+    server.error(new Error('err1'))
   })
 
   t.test('should ban peer', (t) => {

@@ -283,9 +283,7 @@ export class RlpxServer extends Server {
         if (!peerId) {
           return this.error(error)
         }
-        const id = peerId.toString('hex')
-        const peer = this.peers.get(id)
-        this.error(error, peer)
+        this.error(error)
       })
 
       this.rlpx.on('error', (e: Error) => this.error(e))

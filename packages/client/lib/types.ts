@@ -3,8 +3,7 @@ import type multiaddr from 'multiaddr'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type Connection from '../../../node_modules/libp2p-interfaces/dist/src/connection/connection'
 import type { MuxedStream } from '../../../node_modules/libp2p-interfaces/dist/src/stream-muxer/types'
-import { Libp2pPeer, Peer, RlpxPeer } from './net/peer'
-import MockPeer from '../test/integration/mocks/mockpeer'
+import { Peer } from './net/peer'
 import { BN } from '../../util/dist'
 import { Server } from './net/server'
 /**
@@ -33,23 +32,23 @@ export enum Event {
 }
 export interface EventParams {
   [Event.CHAIN_UPDATED]: []
-  [Event.SYNC_EXECUTION_VM_ERROR]: [Error]
-  [Event.SYNC_FETCHER_FETCHED]: [Block[] | BlockHeader[]]
-  [Event.SYNC_SYNCHRONIZED]: [BN]
-  [Event.SYNC_ERROR]: [Error]
-  [Event.SYNC_FETCHER_ERROR]: [Error, any, any]
-  [Event.PEER_CONNECTED]: [Libp2pPeer | RlpxPeer | MockPeer | Peer]
-  [Event.PEER_DISCONNECTED]: [Libp2pPeer | RlpxPeer | MockPeer | Peer]
-  [Event.PEER_ERROR]: [Error, Peer]
-  [Event.CLIENT_ERROR]: [Error]
-  [Event.CLIENT_LISTENING]: [any]
-  [Event.SERVER_LISTENING]: [any]
-  [Event.SERVER_ERROR]: [Error, Server]
-  [Event.POOL_PEER_ADDED]: [Peer]
-  [Event.POOL_PEER_REMOVED]: [Peer]
-  [Event.POOL_PEER_BANNED]: [Peer]
-  [Event.PROTOCOL_ERROR]: [Error, Peer]
-  [Event.PROTOCOL_MESSAGE]: [any, string, Peer]
+  [Event.SYNC_EXECUTION_VM_ERROR]: [Error] // [vmError]
+  [Event.SYNC_FETCHER_FETCHED]: [Block[] | BlockHeader[]] // [blocksFetched[ } blockHeadersFetched[]]
+  [Event.SYNC_SYNCHRONIZED]: [BN] // [headBlockNum]
+  [Event.SYNC_ERROR]: [Error] // [syncError]
+  [Event.SYNC_FETCHER_ERROR]: [Error, any, any] // [ fetchError
+  [Event.PEER_CONNECTED]: [Peer] // [connectedPeer]
+  [Event.PEER_DISCONNECTED]: [Peer] // [disconnectedPeer]
+  [Event.PEER_ERROR]: [Error, Peer] // [error, peerCausingError]
+  [Event.CLIENT_ERROR]: [Error] // [clientError]
+  [Event.CLIENT_LISTENING]: [any] // [transportAndAddressDetails]
+  [Event.SERVER_LISTENING]: [any] // [transportAndAddressDetails]
+  [Event.SERVER_ERROR]: [Error, Server] // [serverError, serverCausingError]
+  [Event.POOL_PEER_ADDED]: [Peer] // [addedPeer]
+  [Event.POOL_PEER_REMOVED]: [Peer] // [removedPeer]
+  [Event.POOL_PEER_BANNED]: [Peer] // [bannedPeer]
+  [Event.PROTOCOL_ERROR]: [Error, Peer] // [boundProtocolError, peerCausingError]
+  [Event.PROTOCOL_MESSAGE]: [any, string, Peer] // [ messageDetails, protocolName, peerSendingMessage]
 }
 
 export declare interface EventBus<T extends Event> {
