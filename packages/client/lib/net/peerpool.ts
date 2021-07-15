@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events'
 import { Config } from '../config'
 import { Event } from '../types'
-import { Peer } from './peer/peer'
+import { Peer } from './peer'
 import { RlpxServer } from './server'
 
 export interface PeerPoolOptions {
@@ -63,16 +63,14 @@ export class PeerPool extends EventEmitter {
     if (this.opened) {
       return false
     }
-    // TODO: Do we still need this map now that we have the centralized event bus?
-    this.config.servers.map(() => {
-      this.config.events.on(Event.PEER_CONNECTED, (peer: any) => {
-        this.connected(peer)
-      })
-
-      this.config.events.on(Event.PEER_DISCONNECTED, (peer: any) => {
-        this.disconnected(peer)
-      })
+    this.config.events.on(Event.PEER_CONNECTED, (peer) => {
+      this.connected(peer)
     })
+
+    this.config.events.on(Event.PEER_DISCONNECTED, (peer) => {
+      this.disconnected(peer)
+    })
+
     this.opened = true
     // eslint-disable-next-line @typescript-eslint/await-thenable
     this._statusCheckInterval = setInterval(await this._statusCheck.bind(this), 20000)
