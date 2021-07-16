@@ -49,7 +49,7 @@
     "@ethereumjs/block": "^3.4.0",
     "@ethereumjs/blockchain": "^5.4.0",
     "@ethereumjs/common": "^2.4.0",
-    "@ethereumjs/devp2p": "^4.0.0",
+    "@ethereumjs/devp2p": "^4.1.0",
     "@ethereumjs/tx": "^3.3.0",
     "@ethereumjs/vm": "^5.5.0",
     "merkle-patricia-tree": "^4.2.0",

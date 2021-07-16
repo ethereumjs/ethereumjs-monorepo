@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.1.0 - 2021-07-15
+
+### Finalized London HF Support
+
+This release integrates a `Common` library version which provides the `london` HF blocks for all networks including `mainnet` and is therefore the first release with finalized London HF support. For the `devp2p` library this particularly means that the fork hashes for the `london` HF will be correct when using eth/64 or higher.
+
+### Support for eth/66 and les/4
+
+PR [#1331](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1331) added support for eth/66 and [#1324](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1324) for les/4. Be sure to check out the updated peer communication [examples](./examples).
+
+### Included Source Files
+
+Source files from the `src` folder are now included in the distribution build, see PR [#1301](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1301). This allows for a better debugging experience in debug tools like Chrome DevTools by having working source map references to the original sources available for inspection.
+
+### Bug Fixes
+
+- Fixed zero Buffer forkhash bug in case no future fork known, PR #1148 commit [`afd00a8`](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1148/commits/afd00a8bfee1b524352a0f6c79f3bcfe43debe4c)
+
 ## 4.0.0 - 2021-04-22
 
 **Attention!** This new version is part of a series of EthereumJS releases all moving to a new scoped package name format. In this case the library is renamed as follows:

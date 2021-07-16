@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/devp2p",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "A JavaScript implementation of ÐΞVp2p",
   "license": "MIT",
   "keywords": [
