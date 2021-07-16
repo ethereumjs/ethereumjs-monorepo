@@ -31,10 +31,10 @@ export enum Event {
 export interface EventParams {
   [Event.CHAIN_UPDATED]: []
   [Event.SYNC_EXECUTION_VM_ERROR]: [Error] // [vmError]
-  [Event.SYNC_FETCHER_FETCHED]: [Block[] | BlockHeader[]] // [blocksFetched[ } blockHeadersFetched[]]
+  [Event.SYNC_FETCHER_FETCHED]: [Block[] | BlockHeader[]] // [blocksOrHeadersFetched]
   [Event.SYNC_SYNCHRONIZED]: [BN] // [headBlockNum]
   [Event.SYNC_ERROR]: [Error] // [syncError]
-  [Event.SYNC_FETCHER_ERROR]: [Error, any, any] // [ fetchError
+  [Event.SYNC_FETCHER_ERROR]: [Error, any, any] // [fetchError, task, peer]
   [Event.PEER_CONNECTED]: [Peer] // [connectedPeer]
   [Event.PEER_DISCONNECTED]: [Peer] // [disconnectedPeer]
   [Event.PEER_ERROR]: [Error, Peer] // [error, peerCausingError]
