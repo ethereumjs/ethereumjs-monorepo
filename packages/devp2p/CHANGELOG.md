@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 4.1.0 - 2021-07-15
 
+### Finalized London HF Support
+
+This release integrates a `Common` library version which provides the `london` HF blocks for all networks including `mainnet` and is therefore the first release with finalized London HF support. For the `devp2p` library this particularly means that the fork hashes for the `london` HF will be correct when using eth/64 or higher.
+
 ### Support for eth/66 and les/4
 
 PR [#1331](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1331) added support for eth/66 and [#1324](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1324) for les/4. Be sure to check out the updated peer communication [examples](./examples).
