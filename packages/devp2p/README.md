@@ -1,4 +1,4 @@
-# ethereumjs-devp2p
+# @ethereumjs/devp2p
 
 [![NPM Status][devp2p-npm-badge]][devp2p-npm-link]
 [![GitHub Issues][devp2p-issues-badge]][devp2p-issues-link]
