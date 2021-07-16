@@ -48,23 +48,12 @@ tape('[EthereumClient]', async (t) => {
   })
 
   t.test('should open', async (t) => {
-    t.plan(6)
+    t.plan(2)
     const servers = [new Server()] as any
     const config = new Config({ servers })
     const client = new EthereumClient({ config })
-    client.config.events.on(Event.CLIENT_ERROR, (err: Error) => {
-      if (err.message === 'err0') t.pass('got err0')
-      if (err.message === 'err1') t.pass('got err1')
-    })
-    client.config.events.on(Event.CLIENT_LISTENING, (details: string) =>
-      t.equals(details, 'details0', 'got listening')
-    )
-    client.config.events.on(Event.SYNC_SYNCHRONIZED, () => t.ok('got synchronized'))
+
     await client.open()
-    client.config.events.emit(Event.CLIENT_ERROR, new Error('err0'))
-    client.config.events.emit(Event.CLIENT_LISTENING, 'details0')
-    client.config.events.emit(Event.CLIENT_ERROR, new Error('err1'))
-    client.config.events.emit(Event.SYNC_SYNCHRONIZED, new BN(0))
     t.ok(client.opened, 'opened')
     t.equals(await client.open(), false, 'already opened')
   })

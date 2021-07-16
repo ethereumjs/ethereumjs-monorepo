@@ -84,16 +84,12 @@ export default class EthereumClient extends events.EventEmitter {
     }
 
     this.config.events.on(Event.SERVER_ERROR, (error: Error) => {
-      this.config.events.emit(Event.CLIENT_ERROR, error)
+      this.config.logger.warn(`Server error: ${error.name} - ${error.message}`)
     })
+
     this.config.events.on(Event.SERVER_LISTENING, (details: any) => {
-      this.config.events.emit(Event.CLIENT_LISTENING, details)
+      this.config.logger.info(`Server listening: ${details.transport} - ${details.url}`)
     })
-
-    this.config.events.on(Event.SERVER_ERROR, (error: Error) => {
-      this.config.events.emit(Event.CLIENT_ERROR, error)
-    })
-
     await Promise.all(this.services.map((s) => s.open()))
     this.opened = true
     this.config.events.on(Event.SYNC_SYNCHRONIZED, () => (this.synchronized = true))

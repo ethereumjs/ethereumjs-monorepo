@@ -20,8 +20,6 @@ export enum Event {
   PEER_CONNECTED = 'peer:connected',
   PEER_DISCONNECTED = 'peer:disconnected',
   PEER_ERROR = 'peer:error',
-  CLIENT_ERROR = 'client:error',
-  CLIENT_LISTENING = 'client:listening',
   SERVER_LISTENING = 'server:listening',
   SERVER_ERROR = 'server:error',
   POOL_PEER_ADDED = 'pool:peer:added',
@@ -40,9 +38,7 @@ export interface EventParams {
   [Event.PEER_CONNECTED]: [Peer] // [connectedPeer]
   [Event.PEER_DISCONNECTED]: [Peer] // [disconnectedPeer]
   [Event.PEER_ERROR]: [Error, Peer] // [error, peerCausingError]
-  [Event.CLIENT_ERROR]: [Error] // [clientError]
-  [Event.CLIENT_LISTENING]: [any] // [transportAndAddressDetails]
-  [Event.SERVER_LISTENING]: [any] // [transportAndAddressDetails]
+  [Event.SERVER_LISTENING]: [any] // [{ transport : string, url: string} ] - Typescript 3.X doesn't allow named tuples
   [Event.SERVER_ERROR]: [Error, Server] // [serverError, serverCausingError]
   [Event.POOL_PEER_ADDED]: [Peer] // [addedPeer]
   [Event.POOL_PEER_REMOVED]: [Peer] // [removedPeer]
@@ -67,8 +63,6 @@ export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
   EventBus<Event.PEER_CONNECTED> &
   EventBus<Event.PEER_DISCONNECTED> &
   EventBus<Event.PEER_ERROR> &
-  EventBus<Event.CLIENT_ERROR> &
-  EventBus<Event.CLIENT_LISTENING> &
   EventBus<Event.SERVER_LISTENING> &
   EventBus<Event.SERVER_ERROR> &
   EventBus<Event.SYNC_ERROR> &
