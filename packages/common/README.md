@@ -21,7 +21,7 @@ All parameters can be accessed through the `Common` class which can be required 
 main package and instantiated either with just the `chain` (e.g. 'mainnet') or the `chain`
 together with a specific `hardfork` provided.
 
-If no hardfork is provided the common is initialized with the default hardfork.
+If no hardfork is provided, the common is initialized with the default hardfork.
 
 Current `DEFAULT_HARDFORK`: `istanbul`
 
@@ -60,6 +60,18 @@ const c = new Common({
 This will e.g. throw an error when a param is requested for an unsupported hardfork and
 like this prevents unpredicted behaviour.
 
+For an improved developer experience, there are `Chain` and `Hardfork` enums available:
+
+```typescript
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+
+// Chain provided by Chain enum
+const c = new Common({ chain: Chain.Mainnet })
+
+// Chain provided by Chain enum, hardfork provided by Hardfork enum
+const c = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
+```
+
 # API
 
 See the API documentation for a full list of functions for accessing specific chain and
@@ -88,14 +100,22 @@ The `chain` can be set in the constructor like this:
 const c = new Common({ chain: 'ropsten' })
 ```
 
+Or optionally with the `Chain` enum:
+
+```typescript
+import Common, { Chain } from '@ethereumjs/common'
+
+const c = new Common({ chain: Chain.Ropsten })
+```
+
 Supported chains:
 
-- `mainnet`
-- `ropsten`
-- `rinkeby`
-- `kovan`
-- `goerli`
-- `calaveras`
+- `mainnet` (`Chain.Mainnet`)
+- `ropsten` (`Chain.Ropsten`)
+- `rinkeby` (`Chain.Rinkeby`)
+- `kovan` (`Chain.Kovan`)
+- `goerli` (`Chain.Goerli`)
+- `calaveras` (`Chain.Calaveras`)
 - Private/custom chain parameters
 
 The following chain-specific parameters are provided:
@@ -167,23 +187,34 @@ The `hardfork` can be set in constructor like this:
 const c = new Common({ chain: 'ropsten', hardfork: 'byzantium' })
 ```
 
+Or optionally with the `Hardfork` enum:
+
+```typescript
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+
+const c = new Common({
+  chain: Chain.Ropsten,
+  hardfork: Hardfork.Byzantium,
+})
+```
+
 ### Active Hardforks
 
 There are currently parameter changes by the following past and future hardfork by the
 library supported:
 
-- `chainstart`
-- `homestead`
-- `dao`
-- `tangerineWhistle`
-- `spuriousDragon`
-- `byzantium`
-- `constantinople`
-- `petersburg` (aka `constantinopleFix`, apply together with `constantinople`)
-- `istanbul` (`DEFAULT_HARDFORK` (`v2.0.0` release series))
-- `muirGlacier`
-- `berlin` (since `v2.2.0`)
-- `london` (since `v2.4.0`)
+- `chainstart` (`Hardfork.Chainstart`)
+- `homestead` (`Hardfork.Homestead`)
+- `dao` (`Hardfork.Dao`)
+- `tangerineWhistle` (`Hardfork.TangerineWhistle`)
+- `spuriousDragon` (`Hardfork.SpuriousDragon`)
+- `byzantium` (`Hardfork.Byzantium`)
+- `constantinople` (`Hardfork.Constantinople`)
+- `petersburg` (`Hardfork.Petersburg`) (aka `constantinopleFix`, apply together with `constantinople`)
+- `istanbul` (`Hardfork.Instanbul`) (`DEFAULT_HARDFORK` (`v2.0.0` release series))
+- `muirGlacier` (`Hardfork.MuirGlacier`)
+- `berlin` (`Hardfork.Berlin`) (since `v2.2.0`)
+- `london` (`Hardfork.London`) (since `v2.4.0`)
 
 ### Future Hardforks
 
@@ -212,7 +243,7 @@ Starting with the `v2.0.0` release of the library, EIPs are now native citizens 
 and can be activated like this:
 
 ```typescript
-const c = new Common({ chain: 'mainnet', eips: [2537] })
+const c = new Common({ chain: Chain.Mainnet, eips: [2537] })
 ```
 
 The following EIPs are currently supported:
