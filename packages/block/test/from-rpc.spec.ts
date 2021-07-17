@@ -1,5 +1,5 @@
 import tape from 'tape'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import blockFromRpc from '../src/from-rpc'
 import blockHeaderFromRpc from '../src/header-from-rpc'
@@ -79,7 +79,7 @@ tape('[fromRPC]:', function (t) {
   )
 
   t.test('should create a block from london hardfork', function (st) {
-    const common = new Common({ chain: 'goerli', hardfork: 'london' })
+    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.London })
     const block = blockFromRpc(testDataFromRpcGoerliLondon, [], { common })
     st.equal(
       `0x${block.header.baseFeePerGas?.toString(16)}`,

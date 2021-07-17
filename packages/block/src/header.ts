@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import {
   Address,
   BN,
@@ -202,9 +202,9 @@ export class BlockHeader {
     if (options.common) {
       this._common = options.common.copy()
     } else {
-      const chain = 'mainnet' // default
+      const chain = Chain.Mainnet // default
       if (options.initWithGenesisHeader) {
-        this._common = new Common({ chain, hardfork: 'chainstart' })
+        this._common = new Common({ chain, hardfork: Hardfork.Chainstart })
       } else {
         // This initializes on the Common default hardfork
         this._common = new Common({ chain })
