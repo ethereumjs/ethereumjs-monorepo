@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events'
 import multiaddr from 'multiaddr'
 import { Config } from '../../config'
 import { MultiaddrLike, KeyLike, DnsNetwork } from '../../types'
@@ -26,7 +25,7 @@ export interface ServerOptions {
  * Base class for transport specific server implementations.
  * @memberof module:net/server
  */
-export class Server extends EventEmitter {
+export class Server {
   public config: Config
   public key: Buffer
   public bootnodes: multiaddr[] = []
@@ -42,8 +41,6 @@ export class Server extends EventEmitter {
    * @param {ServerOptions}
    */
   constructor(options: ServerOptions) {
-    super()
-
     this.config = options.config
     this.key = options.key ? parseKey(options.key) : this.config.key
     this.bootnodes = options.bootnodes ? parseMultiaddrs(options.bootnodes) : []
