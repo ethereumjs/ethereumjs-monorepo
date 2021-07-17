@@ -1,9 +1,10 @@
+import { BN } from 'ethereumjs-util'
+import { BlockHeader } from '@ethereumjs/block'
 import { Peer } from '../net/peer/peer'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import { HeaderFetcher } from './fetcher/headerfetcher'
-import { BN } from 'ethereumjs-util'
 import { short } from '../util'
-import { BlockHeader } from '@ethereumjs/block'
+import { Event } from '../types'
 
 /**
  * Implements an ethereum light sync synchronizer
@@ -92,22 +93,19 @@ export class LightSynchronizer extends Synchronizer {
       first,
       count,
     })
-    this.headerFetcher
-      .on('error', (error: Error) => {
-        this.emit('error', error)
-      })
-      .on('fetched', (headers: BlockHeader[]) => {
-        const first = new BN(headers[0].number)
-        const hash = short(headers[0].hash())
-        const baseFeeAdd = this.config.chainCommon.gteHardfork('london')
-          ? `basefee=${headers[0].baseFeePerGas} `
-          : ''
-        this.config.logger.info(
-          `Imported headers count=${headers.length} number=${first.toString(
-            10
-          )} hash=${hash} ${baseFeeAdd}peers=${this.pool.size}`
-        )
-      })
+    this.config.events.on(Event.SYNC_FETCHER_FETCHED, (headers) => {
+      headers = headers as BlockHeader[]
+      const first = new BN(headers[0].number)
+      const hash = short(headers[0].hash())
+      const baseFeeAdd = this.config.chainCommon.gteHardfork('london')
+        ? `basefee=${headers[0].baseFeePerGas} `
+        : ''
+      this.config.logger.info(
+        `Imported headers count=${headers.length} number=${first.toString(
+          10
+        )} hash=${hash} ${baseFeeAdd}peers=${this.pool.size}`
+      )
+    })
     await this.headerFetcher.fetch()
     // TODO: Should this be deleted?
     // @ts-ignore: error: The operand of a 'delete' operator must be optional
