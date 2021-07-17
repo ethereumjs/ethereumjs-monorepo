@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Address, BN } from 'ethereumjs-util'
 import tape from 'tape'
 import Blockchain from '../src'
@@ -7,7 +7,7 @@ import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP } from '../src/clique'
 
 tape('Clique: Initialization', (t) => {
   t.test('should initialize a clique blockchain', async (st) => {
-    const common = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
+    const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
     const blockchain = new Blockchain({ common })
 
     const head = await blockchain.getHead()
@@ -21,7 +21,7 @@ tape('Clique: Initialization', (t) => {
     st.end()
   })
 
-  const COMMON = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
+  const COMMON = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
   const EXTRA_DATA = Buffer.alloc(97)
   const GAS_LIMIT = 8000000
 

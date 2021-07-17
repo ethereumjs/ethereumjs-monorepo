@@ -1,6 +1,6 @@
 import { BN, rlp } from 'ethereumjs-util'
 import { Block, BlockHeader } from '@ethereumjs/block'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import Blockchain from '../src'
 const level = require('level-mem')
 
@@ -8,7 +8,7 @@ export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[])
   const blocks = existingBlocks ? existingBlocks : []
 
   const gasLimit = 8000000
-  const common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
   const opts = { common }
 
   if (blocks.length === 0) {
@@ -70,7 +70,7 @@ export const generateConsecutiveBlock = (
   if (difficultyChangeFactor > 1) {
     difficultyChangeFactor = 1
   }
-  const common = new Common({ chain: 'mainnet', hardfork: 'muirGlacier' })
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
   const tmpHeader = BlockHeader.fromHeaderData({
     number: parentBlock.header.number.addn(1),
     timestamp: parentBlock.header.timestamp.addn(10 + -difficultyChangeFactor * 9),

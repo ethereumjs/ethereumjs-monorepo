@@ -1,5 +1,5 @@
 import { BN } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
 import tape from 'tape'
 import Blockchain from '../src'
@@ -20,7 +20,7 @@ tape('blockchain test', (t) => {
   })
 
   t.test('should initialize correctly', async (st) => {
-    const common = new Common({ chain: 'ropsten' })
+    const common = new Common({ chain: Chain.Ropsten })
     let blockchain = new Blockchain({ common })
 
     const head = await blockchain.getHead()
@@ -47,7 +47,7 @@ tape('blockchain test', (t) => {
   })
 
   t.test('should initialize correctly with Blockchain.fromBlocksData()', async (st) => {
-    const common = new Common({ chain: 'mainnet' })
+    const common = new Common({ chain: Chain.Mainnet })
     const blockchain = await Blockchain.fromBlocksData(blocksData, {
       validateBlocks: true,
       validateConsensus: false,
@@ -61,7 +61,7 @@ tape('blockchain test', (t) => {
   })
 
   t.test('should only initialize with supported consensus validation options', (st) => {
-    let common = new Common({ chain: 'mainnet' })
+    let common = new Common({ chain: Chain.Mainnet })
     st.doesNotThrow(() => {
       new Blockchain({ common, validateConsensus: true })
     })
@@ -69,7 +69,7 @@ tape('blockchain test', (t) => {
       new Blockchain({ common, validateBlocks: true })
     })
 
-    common = new Common({ chain: 'goerli' })
+    common = new Common({ chain: Chain.Goerli })
     st.doesNotThrow(() => {
       new Blockchain({ common, validateConsensus: true })
     })
@@ -121,7 +121,7 @@ tape('blockchain test', (t) => {
   t.test('should add 12 blocks, one at a time', async (st) => {
     const blocks: Block[] = []
     const gasLimit = 8000000
-    const common = new Common({ chain: 'ropsten' })
+    const common = new Common({ chain: Chain.Ropsten })
 
     const genesisBlock = Block.genesis({ header: { gasLimit } }, { common })
     blocks.push(genesisBlock)
@@ -532,7 +532,7 @@ tape('blockchain test', (t) => {
 
     await blockchain.putBlocks(blocks.slice(1))
 
-    const common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const headerData = {
       number: 15,
       parentHash: blocks[14].hash(),
@@ -557,7 +557,7 @@ tape('blockchain test', (t) => {
     const { blockchain, blocks, error } = await generateBlockchain(15)
     st.error(error, 'no error')
 
-    const common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const headerData = {
       number: 15,
       parentHash: blocks[14].hash(),
@@ -745,7 +745,7 @@ tape('blockchain test', (t) => {
 
   t.test('should get latest', async (st) => {
     const gasLimit = 8000000
-    const common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const opts: BlockOptions = { common }
 
     const genesisBlock = Block.genesis({ header: { gasLimit } }, opts)
@@ -805,7 +805,7 @@ tape('blockchain test', (t) => {
   })
 
   t.test('mismatched chains', async (st) => {
-    const common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const gasLimit = 8000000
 
     const genesisBlock = Block.genesis({ header: { gasLimit } }, { common })
@@ -828,7 +828,7 @@ tape('blockchain test', (t) => {
       genesisBlock,
       Block.fromBlockData(blockData1, { common, calcDifficultyFromHeader: genesisBlock.header }),
       Block.fromBlockData(blockData2, {
-        common: new Common({ chain: 'ropsten', hardfork: 'chainstart' }),
+        common: new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart }),
         calcDifficultyFromHeader: genesisBlock.header,
       }),
     ]
@@ -860,8 +860,8 @@ tape('blockchain test', (t) => {
 tape('initialization tests', (t) => {
   t.test('should read genesis from database', async (st) => {
     const common = new Common({
-      chain: 'ropsten',
-      hardfork: 'chainstart',
+      chain: Chain.Ropsten,
+      hardfork: Hardfork.Chainstart,
     })
     const genesisHash = Block.genesis({}, { common }).hash()
     const blockchain = new Blockchain({ common })
