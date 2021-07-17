@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { BN } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common, { Chain } from '@ethereumjs/common'
 import { baseSetup, params, baseRequest, createClient, createManager, startRPC } from '../helpers'
 
 const method = 'eth_chainId'
@@ -33,7 +33,7 @@ tape(`${method}: returns 1 for Mainnet`, (t) => {
 
 tape(`${method}: returns 3 for Ropsten`, (t) => {
   const manager = createManager(
-    createClient({ opened: true, commonChain: new Common({ chain: 'ropsten' }) })
+    createClient({ opened: true, commonChain: new Common({ chain: Chain.Ropsten }) })
   )
   const server = startRPC(manager.getMethods())
 
@@ -47,7 +47,7 @@ tape(`${method}: returns 3 for Ropsten`, (t) => {
 
 tape(`${method}: returns 42 for Kovan`, (t) => {
   const manager = createManager(
-    createClient({ opened: true, commonChain: new Common({ chain: 'kovan' }) })
+    createClient({ opened: true, commonChain: new Common({ chain: Chain.Kovan }) })
   )
   const server = startRPC(manager.getMethods())
 
