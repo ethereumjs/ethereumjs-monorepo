@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events'
 import { Config } from '../../config'
 import { Chain } from '../../blockchain'
 // eslint-disable-next-line implicit-dependencies/no-implicit
@@ -15,7 +14,7 @@ export interface ExecutionOptions {
   chain: Chain
 }
 
-export abstract class Execution extends EventEmitter {
+export abstract class Execution {
   public config: Config
 
   protected stateDB?: LevelUp
@@ -28,8 +27,6 @@ export abstract class Execution extends EventEmitter {
    * @memberof module:sync/execution
    */
   constructor(options: ExecutionOptions) {
-    super()
-
     this.config = options.config
     this.chain = options.chain
     this.stateDB = options.stateDB

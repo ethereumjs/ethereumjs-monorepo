@@ -2,7 +2,7 @@ import PeerId from 'peer-id'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import crypto from 'libp2p-crypto'
 import multiaddr from 'multiaddr'
-import { Libp2pConnection as Connection } from '../../types'
+import { Event, Libp2pConnection as Connection } from '../../types'
 import { Libp2pNode } from '../peer/libp2pnode'
 import { Libp2pPeer } from '../peer'
 import { Server, ServerOptions } from './server'
@@ -14,9 +14,6 @@ export interface Libp2pServerOptions extends ServerOptions {
 
 /**
  * Libp2p server
- * @emits connected
- * @emits disconnected
- * @emits error
  * @memberof module:net/server
  */
 export class Libp2pServer extends Server {
@@ -71,7 +68,7 @@ export class Libp2pServer extends Server {
           const peer = this.peers.get(peerId.toB58String())
           if (peer) {
             await peer.accept(p, stream, this)
-            this.emit('connected', peer)
+            this.config.events.emit(Event.PEER_CONNECTED, peer)
           }
         })
       })
@@ -84,12 +81,13 @@ export class Libp2pServer extends Server {
       const peer = this.createPeer(peerId)
       await peer.bindProtocols(this.node as Libp2pNode, peerId, this)
       this.config.logger.debug(`Peer discovered: ${peer}`)
-      this.emit('connected', peer)
+      this.config.events.emit(Event.PEER_CONNECTED, peer)
     })
     this.node.connectionManager.on('peer:connect', (connection: Connection) => {
       const [peerId, multiaddr] = this.getPeerInfo(connection)
       const peer = this.createPeer(peerId, [multiaddr])
       this.config.logger.debug(`Peer connected: ${peer}`)
+      this.config.events.emit(Event.PEER_CONNECTED, peer)
     })
     this.node.connectionManager.on('peer:disconnect', (_connection: Connection) => {
       // TODO: do anything here on disconnect?
@@ -97,7 +95,7 @@ export class Libp2pServer extends Server {
     this.node.on('error', (error: Error) => this.error(error))
     await this.node.start()
     this.node.addressManager.getListenAddrs().map(async (ma) => {
-      this.emit('listening', {
+      this.config.events.emit(Event.SERVER_LISTENING, {
         transport: this.name,
         url: `${ma.toString()}/p2p/${peerId.toB58String()}`,
       })
@@ -149,10 +147,10 @@ export class Libp2pServer extends Server {
    * Handles errors from server and peers
    * @private
    * @param  error
-   * @emits  error
+   * @emits  Event.SERVER_ERROR
    */
   error(error: Error) {
-    this.emit('error', error)
+    this.config.events.emit(Event.SERVER_ERROR, error, this)
   }
 
   async getPeerId() {
