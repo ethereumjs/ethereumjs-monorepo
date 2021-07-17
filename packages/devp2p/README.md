@@ -157,7 +157,7 @@ Instantiate an [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-mon
 instance with the network you want to connect to:
 
 ```typescript
-const common = new Common({ chain: 'mainnet' })
+const common = new Common({ chain: Chain.Mainnet })
 ```
 
 Create your `RLPx` object, e.g.:

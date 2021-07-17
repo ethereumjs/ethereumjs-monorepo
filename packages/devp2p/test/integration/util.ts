@@ -1,6 +1,6 @@
 import { Test } from 'tape'
 import { DPT, ETH, RLPx, genPrivateKey } from '../../src'
-import Common from '@ethereumjs/common'
+import Common, { Chain } from '@ethereumjs/common'
 import testdata from '../testdata.json'
 
 export const localhost = '127.0.0.1'
@@ -68,7 +68,7 @@ export function getTestRLPXs(
     capabilities = [ETH.eth66, ETH.eth65, ETH.eth64, ETH.eth63, ETH.eth62]
   }
   if (!common) {
-    common = new Common({ chain: 'mainnet' })
+    common = new Common({ chain: Chain.Mainnet })
   }
   const dpts = getTestDPTs(numRLPXs)
 
