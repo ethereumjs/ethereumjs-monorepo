@@ -115,14 +115,15 @@ export class FullSynchronizer extends Synchronizer {
       first,
       count,
     })
-    this.config.events.on(Event.SYNC_FETCHER_FETCHED, (blocks: any) => {
-      const first = new BN((blocks[0] as Block).header.number)
-      const hash = short((blocks[0] as Block).hash())
+    this.config.events.on(Event.SYNC_FETCHER_FETCHED, (blocks) => {
+      blocks = blocks as Block[]
+      const first = new BN(blocks[0].header.number)
+      const hash = short(blocks[0].hash())
       const baseFeeAdd = this.config.chainCommon.gteHardfork('london')
-        ? `basefee=${(blocks[0] as Block).header.baseFeePerGas} `
+        ? `basefee=${blocks[0].header.baseFeePerGas} `
         : ''
       this.config.logger.info(
-        `Imported blocks count=${(blocks as Block[]).length} number=${first.toString(
+        `Imported blocks count=${blocks.length} number=${first.toString(
           10
         )} hash=${hash} ${baseFeeAdd}hardfork=${this.config.chainCommon.hardfork()} peers=${
           this.pool.size

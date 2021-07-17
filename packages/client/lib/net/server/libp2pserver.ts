@@ -14,9 +14,6 @@ export interface Libp2pServerOptions extends ServerOptions {
 
 /**
  * Libp2p server
- * @emits connected
- * @emits disconnected
- * @emits error
  * @memberof module:net/server
  */
 export class Libp2pServer extends Server {
@@ -150,7 +147,7 @@ export class Libp2pServer extends Server {
    * Handles errors from server and peers
    * @private
    * @param  error
-   * @emits  error
+   * @emits  Event.SERVER_ERROR
    */
   error(error: Error) {
     this.config.events.emit(Event.SERVER_ERROR, error, this)

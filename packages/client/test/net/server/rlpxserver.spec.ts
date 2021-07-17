@@ -75,9 +75,7 @@ tape('[RlpxServer]', async (t) => {
     td.when(
       (server.dpt! as any).bootstrap({ address: '10.0.0.2', udpPort: '1234', tcpPort: '1234' })
     ).thenReject(new Error('err0'))
-    server.config.events.on(Event.PEER_ERROR, (err: Error) =>
-      t.equals(err.message, 'err0', 'got error')
-    )
+    server.config.events.on(Event.PEER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
     await server.start()
     td.verify(server.initDpt())
     td.verify(server.initRlpx())
@@ -153,7 +151,7 @@ tape('[RlpxServer]', async (t) => {
     let count = 0
     const config = new Config({ loglevel: 'error', transports: [] })
     const server = new RlpxServer({ config })
-    server.config.events.on(Event.SERVER_ERROR, (err: Error) => {
+    server.config.events.on(Event.SERVER_ERROR, (err) => {
       count = count + 1
       if (err.message === 'err0') t.pass('got server error - err0')
       if (err.message === 'err1') t.pass('got peer error - err1')
@@ -201,14 +199,10 @@ tape('[RlpxServer]', async (t) => {
     })
     td.verify(RlpxPeer.capabilities(Array.from((server as any).protocols)))
     td.verify(server.rlpx!.listen(server.config.port, '0.0.0.0'))
-    config.events.on(Event.PEER_CONNECTED, (peer: any) =>
-      t.ok(peer instanceof RlpxPeer, 'connected')
-    )
-    config.events.on(Event.PEER_DISCONNECTED, (peer: any) =>
-      t.equals(peer.id, '01', 'disconnected')
-    )
-    config.events.on(Event.SERVER_ERROR, (err: Error) => t.equals(err.message, 'err0', 'got error'))
-    config.events.on(Event.SERVER_LISTENING, (info: any) =>
+    config.events.on(Event.PEER_CONNECTED, (peer) => t.ok(peer instanceof RlpxPeer, 'connected'))
+    config.events.on(Event.PEER_DISCONNECTED, (peer) => t.equals(peer.id, '01', 'disconnected'))
+    config.events.on(Event.SERVER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
+    config.events.on(Event.SERVER_LISTENING, (info) =>
       t.deepEquals(info, { transport: 'rlpx', url: 'enode://ff@[::]:30303' }, 'listening')
     )
     server.rlpx!.emit('peer:added', rlpxPeer)

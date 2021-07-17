@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events'
 import { PeerPool } from '../net/peerpool'
 import { Peer } from '../net/peer/peer'
 import { FlowControl } from '../net/protocol'
@@ -32,7 +31,7 @@ export interface SynchronizerOptions {
  * Base class for blockchain synchronizers
  * @memberof module:sync
  */
-export abstract class Synchronizer extends EventEmitter {
+export abstract class Synchronizer {
   public config: Config
 
   protected pool: PeerPool
@@ -48,8 +47,6 @@ export abstract class Synchronizer extends EventEmitter {
    * @param {SynchronizerOptions}
    */
   constructor(options: SynchronizerOptions) {
-    super()
-
     this.config = options.config
 
     this.pool = options.pool
@@ -60,7 +57,7 @@ export abstract class Synchronizer extends EventEmitter {
     this.forceSync = false
     this.startingBlock = 0
 
-    this.config.events.on(Event.POOL_PEER_ADDED, (peer: Peer) => {
+    this.config.events.on(Event.POOL_PEER_ADDED, (peer) => {
       if (this.syncable(peer)) {
         this.config.logger.debug(`Found ${this.type} peer: ${peer}`)
       }

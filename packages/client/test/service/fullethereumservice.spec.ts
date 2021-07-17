@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events'
 import tape from 'tape-catch'
 import td from 'testdouble'
-import { BN } from '../../../util/dist'
+import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
 
@@ -61,12 +61,12 @@ tape('[FullEthereumService]', async (t) => {
     td.verify(service.synchronizer.open())
     td.verify(server.addProtocols(td.matchers.anything()))
     service.config.events.on(Event.SYNC_SYNCHRONIZED, () => t.pass('synchronized'))
-    service.config.events.on(Event.SYNC_ERROR, (err: Error) => {
+    service.config.events.on(Event.SYNC_ERROR, (err) => {
       if (err.message === 'error0') t.pass('got error 1')
     })
     service.config.events.emit(Event.SYNC_SYNCHRONIZED, new BN(0))
     service.config.events.emit(Event.SYNC_ERROR, new Error('error0'))
-    service.config.events.on(Event.SERVER_ERROR, (err: Error) => {
+    service.config.events.on(Event.SERVER_ERROR, (err) => {
       if (err.message === 'error1') t.pass('got error 2')
     })
     service.config.events.emit(Event.SERVER_ERROR, new Error('error1'), server)

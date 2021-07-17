@@ -1,14 +1,13 @@
-import { EventEmitter } from 'events'
 import tape from 'tape-catch'
 import td from 'testdouble'
-import { BN } from '../../util/dist'
+import { BN } from 'ethereumjs-util'
 import { Config } from '../lib/config'
 import { PeerPool } from '../lib/net/peerpool'
 import { Event } from '../lib/types'
 
 tape('[EthereumClient]', async (t) => {
   const config = new Config({ transports: [], loglevel: 'error' })
-  class FullEthereumService extends EventEmitter {
+  class FullEthereumService {
     open() {}
     start() {}
     stop() {}
@@ -23,7 +22,7 @@ tape('[EthereumClient]', async (t) => {
   td.when(FullEthereumService.prototype.start()).thenResolve()
   td.when(FullEthereumService.prototype.stop()).thenResolve()
 
-  class Server extends EventEmitter {
+  class Server {
     open() {}
     start() {}
     stop() {}

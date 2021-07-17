@@ -1,9 +1,10 @@
+import { BN } from 'ethereumjs-util'
+import { BlockHeader } from '@ethereumjs/block'
 import { Peer } from '../net/peer/peer'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import { HeaderFetcher } from './fetcher/headerfetcher'
-import { BN } from 'ethereumjs-util'
 import { short } from '../util'
-import { BlockHeader } from '@ethereumjs/block'
+import { Event } from '../types'
 
 /**
  * Implements an ethereum light sync synchronizer
@@ -92,7 +93,8 @@ export class LightSynchronizer extends Synchronizer {
       first,
       count,
     })
-    this.headerFetcher.on('fetched', (headers: BlockHeader[]) => {
+    this.config.events.on(Event.SYNC_FETCHER_FETCHED, (headers) => {
+      headers = headers as BlockHeader[]
       const first = new BN(headers[0].number)
       const hash = short(headers[0].hash())
       const baseFeeAdd = this.config.chainCommon.gteHardfork('london')

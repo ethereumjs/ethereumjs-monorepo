@@ -39,9 +39,6 @@ const ignoredErrors = new RegExp(
 
 /**
  * DevP2P/RLPx server
- * @emits connected
- * @emits disconnected
- * @emits error
  * @memberof module:net/server
  */
 export class RlpxServer extends Server {
@@ -189,7 +186,7 @@ export class RlpxServer extends Server {
    * @private
    * @param  error
    * @param  {Peer} peer
-   * @emits  error
+   * @emits  Event.SERVER_ERROR
    */
   error(error: Error) {
     if (ignoredErrors.test(error.message)) {
@@ -291,7 +288,7 @@ export class RlpxServer extends Server {
       this.rlpx.on('listening', () => {
         this.config.events.emit(Event.SERVER_LISTENING, {
           transport: this.name,
-          url: this.getRlpxInfo().enode,
+          url: this.getRlpxInfo().enode ?? '',
         })
         resolve()
       })

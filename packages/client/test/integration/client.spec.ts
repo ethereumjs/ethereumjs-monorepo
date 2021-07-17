@@ -8,9 +8,9 @@ tape('[Integration:EthereumClient]', (t) => {
   const serverConfig = new Config({ loglevel: 'error' })
   const servers = [new MockServer({ config: serverConfig }) as any]
   const config = new Config({ servers, syncmode: 'full', lightserv: false, loglevel: 'error' })
-  
+
   //@ts-ignore -- attach server to centralized event bus
-  config.servers[0].config.events = config.events;
+  config.servers[0].config.events = config.events
   const node = new EthereumClient({ config })
 
   t.test('should start/stop', async (t) => {

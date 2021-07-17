@@ -22,7 +22,7 @@ tape('[PeerPool]', async (t) => {
 
   t.test('should open/close', async (t) => {
     t.plan(3)
-    const server = new EventEmitter()
+    const server = {}
     const config = new Config({ servers: [server as RlpxServer] })
     const pool = new PeerPool({ config })
     const peer = new MockPeer({
@@ -33,7 +33,7 @@ tape('[PeerPool]', async (t) => {
       transport: 'udp',
     })
     await pool.open()
-    config.events.on(Event.PEER_CONNECTED, (peer: any) => {
+    config.events.on(Event.PEER_CONNECTED, (peer) => {
       if (pool.contains(peer.id)) t.pass('peer connected')
     })
     config.events.on(Event.POOL_PEER_REMOVED, () => {
@@ -94,10 +94,8 @@ tape('[PeerPool]', async (t) => {
     const pool = new PeerPool({ config })
     peers.forEach((p: any) => pool.add(p))
     peers.forEach((p: any) => pool.ban(p, 1000))
-    pool.config.events.on(Event.POOL_PEER_BANNED, (peer: any) =>
-      t.equals(peer, peers[1], 'banned peer')
-    )
-    pool.config.events.on(Event.POOL_PEER_REMOVED, (peer: any) =>
+    pool.config.events.on(Event.POOL_PEER_BANNED, (peer) => t.equals(peer, peers[1], 'banned peer'))
+    pool.config.events.on(Event.POOL_PEER_REMOVED, (peer) =>
       t.equals(peer, peers[1], 'removed peer')
     )
     t.equals(pool.peers[0], peers[0], 'outbound peer not banned')

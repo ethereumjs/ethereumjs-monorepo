@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events'
 import tape from 'tape-catch'
 import td from 'testdouble'
-import { BN } from '../../../util/dist'
+import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
 

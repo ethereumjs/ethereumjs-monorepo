@@ -124,10 +124,10 @@ tape('[Libp2pServer]', async (t) => {
     td.when(peer.accept(protos[0], 'conn0', server)).thenResolve(null)
     ;(server as any).peers.set('id', peer)
     server.addProtocols(protos)
-    config.events.on(Event.SERVER_LISTENING, (info: any) =>
+    config.events.on(Event.SERVER_LISTENING, (info) =>
       t.deepEquals(info, { transport: 'libp2p', url: 'ma0/p2p/id' }, 'listening')
     )
-    config.events.once(Event.PEER_CONNECTED, (p: any) => t.equals(p, peer, 'peer connected'))
+    config.events.once(Event.PEER_CONNECTED, (p) => t.equals(p, peer, 'peer connected'))
     config.events.on(Event.SERVER_ERROR, (err) => t.equals(err.message, 'err0', 'got err0'))
     t.notOk(server.ban('peer'), 'unbannable')
     t.notOk(await server.stop(), 'not started')

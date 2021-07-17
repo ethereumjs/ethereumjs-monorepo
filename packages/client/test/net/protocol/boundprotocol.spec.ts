@@ -4,6 +4,7 @@ import td from 'testdouble'
 import { Sender } from '../../../lib/net/protocol/sender'
 import { BoundProtocol } from '../../../lib/net/protocol'
 import { Config } from '../../../lib/config'
+import { Event } from '../../../lib/types'
 
 tape('[BoundProtocol]', (t) => {
   const peer = td.object('Peer') as any
@@ -76,12 +77,12 @@ tape('[BoundProtocol]', (t) => {
       peer,
       sender,
     })
-    bound.once('error', (err: any) => {
+    bound.config.events.once(Event.PROTOCOL_ERROR, (err) => {
       t.ok(/error0/.test(err.message), 'decode error')
     })
     td.when(protocol.decode(testMessage, '1')).thenThrow(new Error('error0'))
     bound.handle({ name: 'TestMessage', code: 0x01, payload: '1' })
-    bound.once('message', (message: any) => {
+    bound.config.events.once(Event.PROTOCOL_MESSAGE, (message) => {
       t.deepEquals(message, { name: 'TestMessage', data: 2 }, 'correct message')
     })
     td.when(protocol.decode(testMessage, '2')).thenReturn(2)

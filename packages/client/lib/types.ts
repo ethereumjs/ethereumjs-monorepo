@@ -1,11 +1,12 @@
 import { EventEmitter } from 'events'
 import type multiaddr from 'multiaddr'
+import { BN } from 'ethereumjs-util'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type Connection from '../../../node_modules/libp2p-interfaces/dist/src/connection/connection'
 import type { MuxedStream } from '../../../node_modules/libp2p-interfaces/dist/src/stream-muxer/types'
 import { Peer } from './net/peer'
-import { BN } from '../../util/dist'
 import { Server } from './net/server'
+
 /**
  * Types for the central event bus, emitted
  * by different components of the client.
@@ -32,13 +33,13 @@ export interface EventParams {
   [Event.CHAIN_UPDATED]: []
   [Event.SYNC_EXECUTION_VM_ERROR]: [Error] // [vmError]
   [Event.SYNC_FETCHER_FETCHED]: [Block[] | BlockHeader[]] // [blocksOrHeadersFetched]
-  [Event.SYNC_SYNCHRONIZED]: [BN] // [headBlockNum]
+  [Event.SYNC_SYNCHRONIZED]: [BN] // [height]
   [Event.SYNC_ERROR]: [Error] // [syncError]
   [Event.SYNC_FETCHER_ERROR]: [Error, any, any] // [fetchError, task, peer]
   [Event.PEER_CONNECTED]: [Peer] // [connectedPeer]
   [Event.PEER_DISCONNECTED]: [Peer] // [disconnectedPeer]
   [Event.PEER_ERROR]: [Error, Peer] // [error, peerCausingError]
-  [Event.SERVER_LISTENING]: [any] // [{ transport : string, url: string} ] - Typescript 3.X doesn't allow named tuples
+  [Event.SERVER_LISTENING]: [{ transport: string; url: string }]
   [Event.SERVER_ERROR]: [Error, Server] // [serverError, serverCausingError]
   [Event.POOL_PEER_ADDED]: [Peer] // [addedPeer]
   [Event.POOL_PEER_REMOVED]: [Peer] // [removedPeer]
@@ -52,8 +53,7 @@ export declare interface EventBus<T extends Event> {
   on(event: T, listener: (...args: EventParams[T]) => void): this
 }
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-// eslint-disable-next-line no-redeclare
+// eslint-disable-next-line no-redeclare, @typescript-eslint/no-unused-vars
 export class EventBus<T extends Event> extends EventEmitter {}
 export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
   EventBus<Event.SYNC_EXECUTION_VM_ERROR> &
@@ -71,7 +71,6 @@ export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
   EventBus<Event.POOL_PEER_BANNED> &
   EventBus<Event.PROTOCOL_ERROR> &
   EventBus<Event.PROTOCOL_MESSAGE>
-/* eslint-enable @typescript-eslint/no-unused-vars */
 
 /**
  * Like types

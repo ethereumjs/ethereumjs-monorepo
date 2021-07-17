@@ -40,9 +40,7 @@ tape('[Fetcher]', (t) => {
     const job = { peer: {}, state: 'active' }
     ;(fetcher as any).running = true
     fetcher.next = td.func<FetcherTest['next']>()
-    config.events.on(Event.SYNC_FETCHER_ERROR, (err: Error) =>
-      t.equals(err.message, 'err0', 'got error')
-    )
+    config.events.on(Event.SYNC_FETCHER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
     fetcher.failure(job as Job<any, any, any>, new Error('err0'))
     t.equals((fetcher as any).in.size(), 1, 'enqueued job')
   })

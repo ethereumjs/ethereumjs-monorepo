@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events'
 import { Config } from '../config'
 import { Event } from '../types'
 import { Peer } from './peer'
@@ -16,16 +15,8 @@ export interface PeerPoolOptions {
 /**
  * Pool of connected peers
  * @memberof module:net
- * @emits connected
- * @emits disconnected
- * @emits banned
- * @emits added
- * @emits removed
- * @emits message
- * @emits message:{protocol}
- * @emits error
  */
-export class PeerPool extends EventEmitter {
+export class PeerPool {
   public config: Config
 
   private pool: Map<string, Peer>
@@ -39,8 +30,6 @@ export class PeerPool extends EventEmitter {
    * @param {Object}   options constructor parameters
    */
   constructor(options: PeerPoolOptions) {
-    super()
-
     this.config = options.config
 
     this.pool = new Map<string, Peer>()
@@ -155,7 +144,7 @@ export class PeerPool extends EventEmitter {
    * Ban peer from being added to the pool for a period of time
    * @param  {Peer} peer
    * @param  maxAge ban period in milliseconds
-   * @emits  banned
+   * @emits  Event.POOL_PEER_BANNED
    */
   ban(peer: Peer, maxAge: number = 60000) {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -170,9 +159,7 @@ export class PeerPool extends EventEmitter {
   /**
    * Add peer to pool
    * @param  {Peer} peer
-   * @emits added
-   * @emits message
-   * @emits message:{protocol}
+   * @emits Event.POOL_PEER_ADDED
    */
   add(peer?: Peer) {
     if (peer && peer.id && !this.pool.get(peer.id)) {
@@ -185,7 +172,7 @@ export class PeerPool extends EventEmitter {
   /**
    * Remove peer from pool
    * @param  {Peer} peer
-   * @emits removed
+   * @emits  Event.POOL_PEER_REMOVED
    */
   remove(peer?: Peer) {
     if (peer && peer.id) {

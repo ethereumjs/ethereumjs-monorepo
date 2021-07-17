@@ -1,6 +1,6 @@
 import tape from 'tape'
-import Common from '../../../../common/dist'
-import { BN } from '../../../../util/dist'
+import { BN } from 'ethereumjs-util'
+import Common from '@ethereumjs/common'
 import { baseSetup, params, baseRequest, createClient, createManager, startRPC } from '../helpers'
 
 const method = 'eth_chainId'

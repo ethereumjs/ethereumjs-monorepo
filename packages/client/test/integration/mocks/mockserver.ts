@@ -35,8 +35,7 @@ export default class MockServer extends Server {
       transport: this.name,
       url: `mock://${this.location}`,
     })
-
-    this.server!.on('connection', async ({ id, stream }) => {
+    ;(this.server as any).on('connection', async ({ id, stream }: { id: string; stream: any }) => {
       await this.connect(id, stream)
     })
     return true
