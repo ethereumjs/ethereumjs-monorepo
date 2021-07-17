@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events'
 import { Config } from '../../config'
 import { Peer } from '../peer/peer'
 import { BoundProtocol } from './boundprotocol'
@@ -38,7 +37,7 @@ export type Message = {
  * Base class for all wire protocols
  * @memberof module:net/protocol
  */
-export class Protocol extends EventEmitter {
+export class Protocol {
   public config: Config
   public timeout: number
   public opened: boolean
@@ -48,8 +47,6 @@ export class Protocol extends EventEmitter {
    * @param {ProtocolOptions}
    */
   constructor(options: ProtocolOptions) {
-    super()
-
     this.config = options.config
     this.timeout = options.timeout ?? 8000
 
