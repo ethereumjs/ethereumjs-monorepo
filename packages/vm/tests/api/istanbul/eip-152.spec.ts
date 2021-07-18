@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { BN } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import { default as blake2f, F } from '../../../src/evm/precompiles/09-blake2f'
 import { ERROR } from '../../../src/exceptions'
@@ -79,7 +79,7 @@ tape('Istanbul: EIP-152', (t) => {
       return st.end()
     }
 
-    const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const vm = new VM({ common })
 
     for (const testCase of failingTestCases) {

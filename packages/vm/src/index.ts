@@ -1,7 +1,7 @@
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Account, Address } from 'ethereumjs-util'
 import Blockchain from '@ethereumjs/blockchain'
-import Common from '@ethereumjs/common'
+import Common, { Chain } from '@ethereumjs/common'
 import { StateManager, DefaultStateManager } from './state/index'
 import { default as runCode, RunCodeOpts } from './runCode'
 import { default as runCall, RunCallOpts } from './runCall'
@@ -191,7 +191,7 @@ export default class VM extends AsyncEventEmitter {
 
       this._common = opts.common
     } else {
-      const DEFAULT_CHAIN = 'mainnet'
+      const DEFAULT_CHAIN = Chain.Mainnet
       const supportedHardforks = [
         'chainstart',
         'homestead',

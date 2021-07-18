@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { Account, Address, BN } from 'ethereumjs-util'
 import VM from '../../../src'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 
 // Test cases source: https://gist.github.com/holiman/174548cad102096858583c6fbbb0649a
@@ -12,7 +12,7 @@ tape('EIP 2929: gas cost tests', (t) => {
     'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
     'hex'
   )
-  const common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [2929] })
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
 
   const runTest = async function (test: any, st: tape.Test) {
     let i = 0
@@ -74,7 +74,7 @@ tape('EIP 2929: gas cost tests', (t) => {
       Buffer.from('00000000000000000000000000000000000000ff', 'hex')
     )
 
-    const common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [2929] })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
     const vm = new VM({ common })
 
     await vm.stateManager.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code

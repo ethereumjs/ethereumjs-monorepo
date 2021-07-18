@@ -1,13 +1,13 @@
 import tape from 'tape'
 import { BN } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import { ERROR } from '../../../src/exceptions'
 
 const testCases = [
-  { chain: 'mainnet', hardfork: 'istanbul', chainId: new BN(1) },
-  { chain: 'mainnet', hardfork: 'constantinople', err: ERROR.INVALID_OPCODE },
-  { chain: 'ropsten', hardfork: 'istanbul', chainId: new BN(3) },
+  { chain: Chain.Mainnet, hardfork: Hardfork.Istanbul, chainId: new BN(1) },
+  { chain: Chain.Mainnet, hardfork: Hardfork.Constantinople, err: ERROR.INVALID_OPCODE },
+  { chain: Chain.Ropsten, hardfork: Hardfork.Istanbul, chainId: new BN(3) },
 ]
 
 // CHAINID PUSH8 0x00 MSTORE8 PUSH8 0x01 PUSH8 0x00 RETURN
