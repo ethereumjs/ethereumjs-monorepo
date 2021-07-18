@@ -68,10 +68,10 @@ Please note that up to `v3.2.0` you mandatorily had to use a `Common` instance f
 This is the recommended tx type starting with the activation of the `london` HF, see the following code snipped for an example on how to instantiate:
 
 ```typescript
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 
-const common = new Common({ chain: 'mainnet', hardfork: 'london' })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
 const txData = {
   "data": "0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
@@ -101,10 +101,10 @@ const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
 This transaction type has been introduced along the `berlin` HF. See the following code snipped for an example on how to instantiate:
 
 ```typescript
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
 
-const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 
 const txData = {
   "data": "0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
@@ -145,7 +145,7 @@ Legacy transaction are still valid transaction within Ethereum `mainnet` but wil
 See this [example script](./examples/transactions.ts) or the following code example on how to use.
 
 ```typescript
-import Common from '@ethereumjs/common'
+import Common, { Chain } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 
 const txParams = {
@@ -157,7 +157,7 @@ const txParams = {
   data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
 }
 
-const common = new Common({ chain: 'mainnet' })
+const common = new Common({ chain: Chain.Mainnet })
 const tx = Transaction.fromTxData(txParams, { common })
 
 const privateKey = Buffer.from(
@@ -175,10 +175,10 @@ const serializedTx = signedTx.serialize()
 If you only know on runtime which tx type will be used within your code or if you want to keep your code transparent to tx types, this library comes with a `TransactionFactory` for your convenience which can be used as follows:
 
 ```typescript
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
 
-const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 
 const txData = {} // Use data from the different tx type examples
 const tx = TransactionFactory.fromTxData(txData, { common })

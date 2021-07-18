@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { BN, rlp, TWO_POW256 } from 'ethereumjs-util'
 import tape from 'tape'
 import { FeeMarketEIP1559Transaction } from '../src'
@@ -6,8 +6,8 @@ import { FeeMarketEIP1559Transaction } from '../src'
 const testdata = require('./json/eip1559.json') // Source: Besu
 
 const common = new Common({
-  chain: 'rinkeby',
-  hardfork: 'london',
+  chain: Chain.Rinkeby,
+  hardfork: Hardfork.London,
 })
 
 const validAddress = Buffer.from('01'.repeat(20), 'hex')
