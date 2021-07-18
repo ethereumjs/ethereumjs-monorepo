@@ -49,7 +49,6 @@ export class Block {
     // parse uncle headers
     const uncleHeaders = []
     for (const uhData of uhsData ?? []) {
-      const cachedFork = header._common.hardfork()
       const uh = BlockHeader.fromHeaderData(uhData, {
         hardforkByBlockNumber: true,
         ...opts, // This potentially overwrites hardforkByBlocknumber
@@ -60,7 +59,6 @@ export class Block {
         calcDifficultyFromHeader: undefined,
       })
       uncleHeaders.push(uh)
-      header._common.setHardfork(cachedFork)
     }
 
     return new Block(header, transactions, uncleHeaders, opts)
@@ -112,7 +110,6 @@ export class Block {
     // parse uncle headers
     const uncleHeaders = []
     for (const uncleHeaderData of uhsData || []) {
-      const cachedFork = header._common.hardfork()
       uncleHeaders.push(
         BlockHeader.fromValuesArray(uncleHeaderData, {
           hardforkByBlockNumber: true,
@@ -123,7 +120,6 @@ export class Block {
           calcDifficultyFromHeader: undefined,
         })
       )
-      header._common.setHardfork(cachedFork)
     }
 
     return new Block(header, transactions, uncleHeaders, opts)
