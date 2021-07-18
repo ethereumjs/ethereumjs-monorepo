@@ -156,7 +156,9 @@ tape('VM -> state (deprecated), blockchain', (t) => {
   })
 
   t.test('should pass the correct Common object when copying the VM', async (st) => {
-    const vm = setupVM({ common: new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium }) })
+    const vm = setupVM({
+      common: new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium }),
+    })
     await vm.init()
 
     st.equal(vm._common.chainName(), 'ropsten')

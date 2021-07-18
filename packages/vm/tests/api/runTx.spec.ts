@@ -172,7 +172,11 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const vm = new VM({ common })
 
-    const tx = getTransaction(new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin }), 1, true)
+    const tx = getTransaction(
+      new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin }),
+      1,
+      true
+    )
 
     const caller = tx.getSenderAddress()
     const acc = createAccount()

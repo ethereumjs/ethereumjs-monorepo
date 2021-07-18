@@ -85,7 +85,9 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
     Buffer.from('00000000000000000000000000000000000000ff', 'hex')
   ) // contract address
   // setup the vm
-  const vmByzantium = new VM({ common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium }) })
+  const vmByzantium = new VM({
+    common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium }),
+  })
   const vmConstantinople = new VM({
     common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople }),
   })
