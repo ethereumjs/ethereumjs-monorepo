@@ -6,6 +6,7 @@ import Memory from './memory'
 import Stack from './stack'
 import EEI from './eei'
 import { Opcode, handlers as opHandlers, OpHandler, AsyncOpHandler } from './opcodes'
+import { dynamicGasHandlers } from './opcodes/gas'
 
 export interface InterpreterOpts {
   pc?: number
@@ -107,7 +108,6 @@ export default class Interpreter {
     while (this._runState.programCounter < this._runState.code.length) {
       const opCode = this._runState.code[this._runState.programCounter]
       this._runState.opCode = opCode
-      await this._runStepHook()
 
       try {
         await this.runStep()
@@ -136,6 +136,17 @@ export default class Interpreter {
    */
   async runStep(): Promise<void> {
     const opInfo = this.lookupOpInfo(this._runState.opCode)
+
+    const gas = new BN(opInfo.fee)
+
+    if (opInfo.dynamicGas) {
+      const dynamicGasHandler = dynamicGasHandlers.get(this._runState.opCode)!
+      gas.iadd(dynamicGasHandler(this._runState))
+    }
+
+    // TODO: figure out if we should try/catch this (in case step event throws)
+    await this._runStepHook(gas)
+
     // Check for invalid opcode
     if (opInfo.name === 'INVALID') {
       throw new VmError(ERROR.INVALID_OPCODE)
@@ -170,7 +181,7 @@ export default class Interpreter {
     return this._vm._opcodes.get(op) ?? this._vm._opcodes.get(0xfe)
   }
 
-  async _runStepHook(): Promise<void> {
+  async _runStepHook(fee: BN): Promise<void> {
     const opcode = this.lookupOpInfo(this._runState.opCode)
     const eventObj: InterpreterStep = {
       pc: this._runState.programCounter,
@@ -178,7 +189,7 @@ export default class Interpreter {
       gasRefund: this._eei._evm._refund,
       opcode: {
         name: opcode.fullName,
-        fee: opcode.fee,
+        fee: fee.toNumber(),
         isAsync: opcode.isAsync,
       },
       stack: this._runState.stack._store,

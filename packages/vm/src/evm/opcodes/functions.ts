@@ -36,6 +36,10 @@ export interface AsyncOpHandler {
   (runState: RunState, common: Common): Promise<void>
 }
 
+export interface DynamicGasHandler {
+  (runState: RunState): BN
+}
+
 export type OpHandler = SyncOpHandler | AsyncOpHandler
 
 // the opcode functions
