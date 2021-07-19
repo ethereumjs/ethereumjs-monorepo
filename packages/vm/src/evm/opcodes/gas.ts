@@ -104,7 +104,11 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
     /* RETURNDATACOPY */
     0x3e,
     async function (runState: RunState, common: Common): Promise<BN> {
-      const [memOffset /*returnDataOffset*/, , dataLength] = runState.stack.peek(3)
+      const [memOffset, returnDataOffset, dataLength] = runState.stack.peek(3)
+
+      if (returnDataOffset.add(dataLength).gt(runState.eei.getReturnDataSize())) {
+        trap(ERROR.OUT_OF_GAS)
+      }
 
       const gas = subMemUsage(runState, memOffset, dataLength, common)
 
@@ -161,6 +165,9 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
     /* SSTORE */
     0x55,
     async function (runState: RunState, common: Common): Promise<BN> {
+      if (runState.eei.isStatic()) {
+        trap(ERROR.STATIC_STATE_CHANGE)
+      }
       const [key, val] = runState.stack.peek(2)
 
       const keyBuf = key.toArrayLike(Buffer, 'be', 32)
@@ -207,9 +214,17 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
     /* LOG */
     0xa0,
     async function (runState: RunState, common: Common): Promise<BN> {
+      if (runState.eei.isStatic()) {
+        trap(ERROR.STATIC_STATE_CHANGE)
+      }
+
       const [memOffset, memLength] = runState.stack.peek(2)
 
       const topicsCount = runState.opCode - 0xa0
+
+      if (topicsCount < 0 || topicsCount > 4) {
+        trap(ERROR.OUT_OF_RANGE)
+      }
 
       const gas = subMemUsage(runState, memOffset, memLength, common)
       gas.iadd(
@@ -224,6 +239,9 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
     /* CREATE */
     0xf0,
     async function (runState: RunState, common: Common): Promise<BN> {
+      if (runState.eei.isStatic()) {
+        trap(ERROR.STATIC_STATE_CHANGE)
+      }
       const [, /*value*/ offset, length] = runState.stack.peek(3)
 
       const gas = accessAddressEIP2929(runState, runState.eei.getAddress(), common, false)
@@ -365,6 +383,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
     /* CREATE2 */
     0xf5,
     async function (runState: RunState, common: Common): Promise<BN> {
+      if (runState.eei.isStatic()) {
+        trap(ERROR.STATIC_STATE_CHANGE)
+      }
+
       const [, /*value*/ offset, length /*salt*/] = runState.stack.peek(4)
 
       const gas = subMemUsage(runState, offset, length, common)
@@ -412,10 +434,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
     /* SELFDESTRUCT */
     0xff,
     async function (runState: RunState, common: Common): Promise<BN> {
-      const selfdestructToAddressBN = runState.stack.peek()[0]
       if (runState.eei.isStatic()) {
         trap(ERROR.STATIC_STATE_CHANGE)
       }
+      const selfdestructToAddressBN = runState.stack.peek()[0]
 
       const selfdestructToAddress = new Address(addressToBuffer(selfdestructToAddressBN))
       let deductGas = false

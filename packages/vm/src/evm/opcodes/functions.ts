@@ -545,10 +545,6 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const [memOffset, returnDataOffset, dataLength] = runState.stack.popN(3)
 
-      if (returnDataOffset.add(dataLength).gt(runState.eei.getReturnDataSize())) {
-        trap(ERROR.OUT_OF_GAS)
-      }
-
       if (!dataLength.eqn(0)) {
         const data = getDataSlice(runState.eei.getReturnData(), returnDataOffset, dataLength)
         const memOffsetNum = memOffset.toNumber()
@@ -697,10 +693,6 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x55,
     async function (runState) {
-      if (runState.eei.isStatic()) {
-        trap(ERROR.STATIC_STATE_CHANGE)
-      }
-
       const [key, val] = runState.stack.popN(2)
 
       const keyBuf = key.toArrayLike(Buffer, 'be', 32)
@@ -847,16 +839,9 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xa0,
     function (runState) {
-      if (runState.eei.isStatic()) {
-        trap(ERROR.STATIC_STATE_CHANGE)
-      }
-
       const [memOffset, memLength] = runState.stack.popN(2)
 
       const topicsCount = runState.opCode - 0xa0
-      if (topicsCount < 0 || topicsCount > 4) {
-        trap(ERROR.OUT_OF_RANGE)
-      }
 
       const topics = runState.stack.popN(topicsCount)
       const topicsBuf = topics.map(function (a: BN) {
@@ -877,10 +862,6 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xf0,
     async function (runState) {
-      if (runState.eei.isStatic()) {
-        trap(ERROR.STATIC_STATE_CHANGE)
-      }
-
       const [value, offset, length] = runState.stack.popN(3)
 
       const gasLimit = runState.messageGasLimit!
