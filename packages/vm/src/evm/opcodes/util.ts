@@ -236,27 +236,20 @@ export function writeCallOutput(runState: RunState, outOffset: BN, outLength: BN
  */
 export function updateSstoreGas(
   runState: RunState,
-  currentStorage: Buffer,
+  found: any,
   value: Buffer,
   keyBuf: Buffer,
   common: Common
-) {
+): BN {
   const sstoreResetCost = common.param('gasPrices', 'sstoreReset')
-  if (
-    (value.length === 0 && !currentStorage.length) ||
-    (value.length !== 0 && currentStorage.length)
-  ) {
-    runState.eei.useGas(
-      new BN(adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset', common)),
-      'updateSstoreGas'
-    )
-  } else if (value.length === 0 && currentStorage.length) {
-    runState.eei.useGas(
-      new BN(adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset', common)),
-      'updateSstoreGas'
-    )
+  if ((value.length === 0 && !found.length) || (value.length !== 0 && found.length)) {
+    return adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset', common)
+  } else if (value.length === 0 && found.length) {
+    const gas = adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset', common)
     runState.eei.refundGas(new BN(common.param('gasPrices', 'sstoreRefund')), 'updateSstoreGas')
-  } else if (value.length !== 0 && !currentStorage.length) {
-    runState.eei.useGas(new BN(common.param('gasPrices', 'sstoreSet')), 'updateSstoreGas')
+    return gas
+  } else if (value.length !== 0 && !found.length) {
+    return new BN(common.param('gasPrices', 'sstoreSet'))
   }
+  return new BN(0)
 }

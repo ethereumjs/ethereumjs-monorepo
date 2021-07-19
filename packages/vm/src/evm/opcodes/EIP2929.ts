@@ -49,7 +49,12 @@ export function accessAddressEIP2929(
  * @param {Buffer} key (to storage slot)
  * @param {Common} common
  */
-export function accessStorageEIP2929(runState: RunState, key: Buffer, isSstore: boolean, common: Common): BN {
+export function accessStorageEIP2929(
+  runState: RunState,
+  key: Buffer,
+  isSstore: boolean,
+  common: Common
+): BN {
   if (!common.isActivatedEIP(2929)) return new BN(0)
 
   const address = runState.eei.getAddress().buf
@@ -81,7 +86,7 @@ export function adjustSstoreGasEIP2929(
   runState: RunState,
   key: Buffer,
   defaultCost: number,
-  costName: string, 
+  costName: string,
   common: Common
 ): BN {
   if (!common.isActivatedEIP(2929)) return new BN(defaultCost)
@@ -99,9 +104,7 @@ export function adjustSstoreGasEIP2929(
       case 'initRefund':
         return new BN(common.param('gasPrices', 'sstoreInitGasEIP2200')).isubn(warmRead)
       case 'cleanRefund':
-        return new BN(common.param('gasPrices', 'sstoreReset'))
-          .isubn(coldSload)
-          .isubn(warmRead)
+        return new BN(common.param('gasPrices', 'sstoreReset')).isubn(coldSload).isubn(warmRead)
     }
   }
 

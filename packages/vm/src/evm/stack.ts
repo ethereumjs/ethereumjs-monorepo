@@ -62,8 +62,8 @@ export default class Stack {
   peek(num: number = 1): BN[] {
     const peekArray: BN[] = []
 
-    for (let peek = 0; peek < num; peek++) {
-      const index = this._store.length - 1
+    for (let peek = 1; peek <= num; peek++) {
+      const index = this._store.length - peek
       if (index < 0) {
         throw new VmError(ERROR.STACK_UNDERFLOW)
       }
