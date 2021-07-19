@@ -139,6 +139,8 @@ export default class Interpreter {
     const opInfo = this.lookupOpInfo(this._runState.opCode)
 
     const gas = new BN(opInfo.fee)
+    // clone the gas limit; call opcodes can add stipend, which makes it seem like the gas left increases
+    const gasLimitClone = this._eei.getGasLeft()
 
     if (opInfo.dynamicGas) {
       const dynamicGasHandler = dynamicGasHandlers.get(this._runState.opCode)!
@@ -148,7 +150,7 @@ export default class Interpreter {
     }
 
     // TODO: figure out if we should try/catch this (in case step event throws)
-    await this._runStepHook(gas)
+    await this._runStepHook(gas, gasLimitClone)
 
     // Check for invalid opcode
     if (opInfo.name === 'INVALID') {
@@ -184,11 +186,11 @@ export default class Interpreter {
     return this._vm._opcodes.get(op) ?? this._vm._opcodes.get(0xfe)
   }
 
-  async _runStepHook(fee: BN): Promise<void> {
+  async _runStepHook(fee: BN, gasLeft: BN): Promise<void> {
     const opcode = this.lookupOpInfo(this._runState.opCode)
     const eventObj: InterpreterStep = {
       pc: this._runState.programCounter,
-      gasLeft: this._eei.getGasLeft(),
+      gasLeft,
       gasRefund: this._eei._evm._refund,
       opcode: {
         name: opcode.fullName,
