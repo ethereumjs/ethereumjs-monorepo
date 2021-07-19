@@ -42,6 +42,7 @@ jobs:
           node scripts/inject-e2e-dependencies-resolution.js
           cd hardhat
           yarn
+          yarn build
           cd packages/hardhat-core
-          npx mocha --recursive \"test/internal/hardhat-network/provider/TxPool.ts\"
+          yarn run test:except-tracing
           
