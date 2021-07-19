@@ -142,7 +142,9 @@ export default class Interpreter {
 
     if (opInfo.dynamicGas) {
       const dynamicGasHandler = dynamicGasHandlers.get(this._runState.opCode)!
-      gas.iadd(await dynamicGasHandler(this._runState, this._vm._common))
+      // This function updates the gas BN by using `i*` methods
+      // It needs the base fee, for correct gas limit calculation for the CALL opcodes
+      await dynamicGasHandler(this._runState, gas, this._vm._common)
     }
 
     // TODO: figure out if we should try/catch this (in case step event throws)
