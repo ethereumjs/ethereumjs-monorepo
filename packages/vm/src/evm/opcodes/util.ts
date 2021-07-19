@@ -198,8 +198,9 @@ export function subMemUsage(runState: RunState, offset: BN, length: BN, common: 
   const cost = words.mul(fee).add(words.mul(words).div(quadCoeff))
 
   if (cost.gt(runState.highestMemCost)) {
-    cost.isub(runState.highestMemCost)
-    runState.highestMemCost = cost
+    const currentHighestMemCost = runState.highestMemCost
+    runState.highestMemCost = cost.clone()
+    cost.isub(currentHighestMemCost)
   }
 
   runState.memoryWordCount = newMemoryWordCount
