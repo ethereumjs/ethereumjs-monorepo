@@ -1,8 +1,8 @@
-import { EventEmitter } from 'events'
 import { Message, Protocol } from '../protocol/protocol'
 import { Peer } from '../peer/peer'
 import { Sender } from './sender'
 import { Config } from '../../config'
+import { Event } from '../../types'
 
 export interface BoundProtocolOptions {
   /* Config */
@@ -22,7 +22,7 @@ export interface BoundProtocolOptions {
  * Binds a protocol implementation to the specified peer
  * @memberof module:net/protocol
  */
-export class BoundProtocol extends EventEmitter {
+export class BoundProtocol {
   public config: Config
   public name: string
   private protocol: Protocol
@@ -40,8 +40,6 @@ export class BoundProtocol extends EventEmitter {
    */
 
   constructor(options: BoundProtocolOptions) {
-    super()
-
     this.config = options.config
 
     this.protocol = options.protocol
@@ -60,10 +58,12 @@ export class BoundProtocol extends EventEmitter {
           this.messageQueue.push(message)
         }
       } catch (error) {
-        this.emit('error', error)
+        this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
       }
     })
-    this.sender.on('error', (error: Error) => this.emit('error', error))
+    this.sender.on('error', (error: Error) =>
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+    )
     this.addMethods()
   }
 
@@ -83,7 +83,8 @@ export class BoundProtocol extends EventEmitter {
    * Handle incoming message
    * @private
    * @param  {Object} message message object
-   * @emits  message
+   * @emits  Event.PROTOCOL_MESSAGE
+   * @emits  Event.PROTOCOL_ERROR
    */
   handle(incoming: Message) {
     const messages = this.protocol.messages
@@ -110,9 +111,14 @@ export class BoundProtocol extends EventEmitter {
       }
     } else {
       if (error) {
-        this.emit('error', error)
+        this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
       } else {
-        this.emit('message', { name: message.name, data: data })
+        this.config.events.emit(
+          Event.PROTOCOL_MESSAGE,
+          { name: message.name, data: data },
+          this.protocol.name,
+          this.peer
+        )
       }
     }
   }
@@ -183,7 +189,7 @@ export class BoundProtocol extends EventEmitter {
       const camel = name[0].toLowerCase() + name.slice(1)
       ;(this as any)[camel] = async (args: any[]) =>
         this.request(name, args).catch((error: Error) => {
-          this.emit('error', error)
+          this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
           return undefined
         })
     }

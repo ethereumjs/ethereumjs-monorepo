@@ -1,8 +1,8 @@
-import * as events from 'events'
 import { Config } from '../config'
 import { PeerPool } from '../net/peerpool'
 import { Peer } from '../net/peer/peer'
 import { Protocol } from '../net/protocol'
+import { Event } from '../types'
 
 export interface ServiceOptions {
   /* Config */
@@ -13,7 +13,7 @@ export interface ServiceOptions {
  * Base class for all services
  * @memberof module:service
  */
-export class Service extends events.EventEmitter {
+export class Service {
   public config: Config
   public opened: boolean
   public running: boolean
@@ -24,8 +24,6 @@ export class Service extends events.EventEmitter {
    * @param {ServiceOptions}
    */
   constructor(options: ServiceOptions) {
-    super()
-
     this.config = options.config
 
     this.opened = false
@@ -35,7 +33,7 @@ export class Service extends events.EventEmitter {
       config: this.config,
     })
 
-    this.pool.on('message', async (message: any, protocol: string, peer: Peer) => {
+    this.config.events.on(Event.PROTOCOL_MESSAGE, async (message, protocol, peer) => {
       if (this.running) {
         try {
           await this.handle(message, protocol, peer)
@@ -80,10 +78,15 @@ export class Service extends events.EventEmitter {
     const protocols = this.protocols
     this.config.servers.map((s) => s.addProtocols(protocols))
 
-    this.pool.on('banned', (peer: Peer) => this.config.logger.debug(`Peer banned: ${peer}`))
-    this.pool.on('error', (error: Error) => this.emit('error', error))
-    this.pool.on('added', (peer: Peer) => this.config.logger.debug(`Peer added: ${peer}`))
-    this.pool.on('removed', (peer: Peer) => this.config.logger.debug(`Peer removed: ${peer}`))
+    this.config.events.on(Event.POOL_PEER_BANNED, (peer) =>
+      this.config.logger.debug(`Peer banned: ${peer}`)
+    )
+    this.config.events.on(Event.POOL_PEER_ADDED, (peer) =>
+      this.config.logger.debug(`Peer added: ${peer}`)
+    )
+    this.config.events.on(Event.POOL_PEER_REMOVED, (peer) =>
+      this.config.logger.debug(`Peer removed: ${peer}`)
+    )
     await this.pool.open()
 
     this.opened = true
@@ -95,7 +98,6 @@ export class Service extends events.EventEmitter {
    */
   async close() {
     if (this.running) {
-      this.pool.removeAllListeners()
       await this.pool.close()
     }
     this.opened = false
