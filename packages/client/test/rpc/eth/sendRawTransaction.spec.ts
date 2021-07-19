@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { toBuffer } from 'ethereumjs-util'
 import { baseSetup, params, baseRequest, createClient, createManager, startRPC } from '../helpers'
 
@@ -51,7 +51,7 @@ tape(`${method}: call with unsigned tx`, (t) => {
   // Mainnet EIP-1559 tx
   const txData =
     '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
-  const common = new Common({ chain: 'mainnet', hardfork: 'london' })
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
   const tx = FeeMarketEIP1559Transaction.fromSerializedTx(toBuffer(txData), {
     common,
     freeze: false,

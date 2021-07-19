@@ -1,13 +1,13 @@
 import tape from 'tape'
 import { Address, BN } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import { ERROR } from '../../../src/exceptions'
 import { createAccount } from '../utils'
 
 const testCases = [
-  { chain: 'mainnet', hardfork: 'istanbul', selfbalance: '0xf1' },
-  { chain: 'mainnet', hardfork: 'constantinople', err: ERROR.INVALID_OPCODE },
+  { chain: Chain.Mainnet, hardfork: Hardfork.Istanbul, selfbalance: '0xf1' },
+  { chain: Chain.Mainnet, hardfork: Hardfork.Constantinople, err: ERROR.INVALID_OPCODE },
 ]
 
 // SELFBALANCE PUSH8 0x00 MSTORE8 PUSH8 0x01 PUSH8 0x00 RETURN

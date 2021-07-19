@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import Common, { Chain } from '@ethereumjs/common'
 
 // Blockchain
 export * from '../lib/blockchain/chain'
@@ -48,7 +48,7 @@ import { getLogger } from './logging'
 export async function createClient(args: any) {
   const logger = getLogger({ loglevel: args.loglevel ?? 'info' })
   const datadir = args.datadir ?? Config.DATADIR_DEFAULT
-  const common = new Common({ chain: args.network ?? 'mainnet' })
+  const common = new Common({ chain: args.network ?? Chain.Mainnet })
   const key = await Config.getClientKey(datadir, common)
   const config = new Config({
     common,

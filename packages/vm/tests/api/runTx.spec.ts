@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { Account, Address, BN, MAX_INTEGER } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction, TransactionFactory, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import VM from '../../src'
 import { createAccount, getTransaction } from './utils'
@@ -20,7 +20,7 @@ const TRANSACTION_TYPES = [
     name: 'EIP1559 tx',
   },
 ]
-const common = new Common({ chain: 'mainnet', hardfork: 'london' })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 common.setMaxListeners(100)
 
 tape('runTx() -> successful API parameter usage', async (t) => {
@@ -38,11 +38,11 @@ tape('runTx() -> successful API parameter usage', async (t) => {
   }
 
   t.test('simple run (unmodified options)', async (t) => {
-    let common = new Common({ chain: 'mainnet', hardfork: 'london' })
+    let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     let vm = new VM({ common })
     await simpleRun(vm, 'mainnet (PoW), london HF, default SM - should run without errors')
 
-    common = new Common({ chain: 'rinkeby', hardfork: 'london' })
+    common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London })
     vm = new VM({ common })
     await simpleRun(vm, 'rinkeby (PoA), london HF, default SM - should run without errors')
 
@@ -50,7 +50,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
   })
 
   t.test('should use passed in blockGasUsed to generate tx receipt', async (t) => {
-    const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const vm = new VM({ common })
 
     const tx = getTransaction(vm._common, 0, true)
@@ -69,7 +69,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
   })
 
   t.test('Legacy Transaction with HF set to pre-Berlin', async (t) => {
-    const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const vm = new VM({ common })
 
     const tx = getTransaction(vm._common, 0, true)
@@ -169,10 +169,14 @@ tape('runTx() -> successful API parameter usage', async (t) => {
 
 tape('runTx() -> API parameter usage/data errors', (t) => {
   t.test('Typed Transaction with HF set to pre-Berlin', async (t) => {
-    const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const vm = new VM({ common })
 
-    const tx = getTransaction(new Common({ chain: 'mainnet', hardfork: 'berlin' }), 1, true)
+    const tx = getTransaction(
+      new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin }),
+      1,
+      true
+    )
 
     const caller = tx.getSenderAddress()
     const acc = createAccount()
@@ -281,7 +285,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
 tape('runTx() -> runtime behavior', async (t) => {
   t.test('storage cache', async (t) => {
     for (const txType of TRANSACTION_TYPES) {
-      const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
       const vm = new VM({ common })
       const privateKey = Buffer.from(
         'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',

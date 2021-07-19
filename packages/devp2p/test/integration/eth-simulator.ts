@@ -1,7 +1,7 @@
 import test from 'tape'
 import * as devp2p from '../../src'
 import * as util from './util'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { ETH } from '../../src'
 
 const GENESIS_TD = 17179869184
@@ -44,8 +44,8 @@ test('ETH: send status message (NetworkId mismatch)', async (t) => {
     t.end()
   }
 
-  const c1 = new Common({ chain: 'mainnet' })
-  const c2 = new Common({ chain: 'ropsten' })
+  const c1 = new Common({ chain: Chain.Mainnet })
+  const c2 = new Common({ chain: Chain.Ropsten })
   util.twoPeerMsgExchange(t, opts, capabilities, [c1, c2])
 })
 
@@ -112,7 +112,7 @@ test('ETH: should use latest protocol version on default', async (t) => {
 
 test('ETH -> Eth64 -> sendStatus(): should throw on non-matching latest block provided', async (t) => {
   const cap = [devp2p.ETH.eth65]
-  const common = new Common({ chain: 'mainnet', hardfork: 'byzantium' })
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
   const status0: any = Object.assign({}, status)
   status0['latestBlock'] = 100000 // lower than Byzantium fork block 4370000
 
@@ -139,7 +139,7 @@ test('ETH: send not-allowed eth64', async (t) => {
 test('ETH -> Eth64 -> ForkId validation 1a)', async (t) => {
   const opts: any = {}
   const cap = [devp2p.ETH.eth64]
-  const common = new Common({ chain: 'mainnet', hardfork: 'byzantium' })
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
   const status0: any = Object.assign({}, status)
   // Take a latest block > next mainnet fork block (constantinople)
   // to trigger validation condition

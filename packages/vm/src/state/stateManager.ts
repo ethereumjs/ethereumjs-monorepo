@@ -11,7 +11,7 @@ import {
   unpadBuffer,
 } from 'ethereumjs-util'
 import { encode, decode } from 'rlp'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { genesisStateByName } from '@ethereumjs/common/dist/genesisStates'
 import { StateManager, StorageDump } from './interface'
 import Cache from './cache'
@@ -81,7 +81,7 @@ export default class DefaultStateManager implements StateManager {
   constructor(opts: DefaultStateManagerOpts = {}) {
     let common = opts.common
     if (!common) {
-      common = new Common({ chain: 'mainnet', hardfork: 'petersburg' })
+      common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     }
     this._common = common
 

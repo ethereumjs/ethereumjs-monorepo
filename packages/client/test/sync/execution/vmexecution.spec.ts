@@ -7,7 +7,7 @@ import { VMExecution } from '../../../lib/sync/execution/vmexecution'
 import blocksDataMainnet from './../../testdata/blocks_mainnet.json'
 import blocksDataGoerli from './../../testdata/blocks_goerli.json'
 import testnet from './../../testdata/testnet.json'
-import Common from '@ethereumjs/common'
+import Common, { Chain as ChainEnum, Hardfork } from '@ethereumjs/common'
 
 tape('[VMExecution]', async (t) => {
   t.test('Initialization', async (t) => {
@@ -64,7 +64,7 @@ tape('[VMExecution]', async (t) => {
   })
 
   t.test('Block execution / Hardforks PoA (goerli)', async (t) => {
-    const common = new Common({ chain: 'goerli', hardfork: 'chainstart' })
+    const common = new Common({ chain: ChainEnum.Goerli, hardfork: Hardfork.Chainstart })
     let blockchain = new Blockchain({
       validateBlocks: true,
       validateConsensus: false,

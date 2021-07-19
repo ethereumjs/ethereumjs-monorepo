@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Address, BN, bufferToHex, privateToAddress } from 'ethereumjs-util'
 import tape from 'tape'
 import {
@@ -17,8 +17,8 @@ const N_DIV_2_PLUS_1 = new BN(
 )
 
 const common = new Common({
-  chain: 'mainnet',
-  hardfork: 'london',
+  chain: Chain.Mainnet,
+  hardfork: Hardfork.London,
 })
 
 const txTypes = [
@@ -62,7 +62,7 @@ tape(
           'should initialize Common with chain ID provided (unsupported chain ID)'
         )
 
-        const nonEIP2930Common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+        const nonEIP2930Common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
         t.throws(() => {
           txType.class.fromTxData({}, { common: nonEIP2930Common })
         }, `should throw on a pre-Berlin Harfork (EIP-2930 not activated) (${txType.name})`)

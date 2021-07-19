@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { BN, toBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import Blockchain from '@ethereumjs/blockchain'
 import { setupVM } from './utils'
 import { setupPreConditions } from '../util'
@@ -14,7 +14,7 @@ Error.stackTraceLimit = 100
 
 tape('runBlockchain', (t) => {
   const blockchainDB = level()
-  const common = new Common({ chain: 'goerli', hardfork: 'chainstart' })
+  const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
 
   t.test('should run without a blockchain parameter', async (st) => {
     const vm = setupVM({ common })
@@ -57,7 +57,7 @@ tape('runBlockchain', (t) => {
 
   // TODO: test has been moved over from index.spec.ts, check for redundancy
   t.test('should run blockchain with mocked runBlock', async (st) => {
-    const common = new Common({ chain: 'ropsten' })
+    const common = new Common({ chain: Chain.Ropsten })
     const genesisRlp = Buffer.from(testData.genesisRLP.slice(2), 'hex')
     const genesisBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
 
@@ -88,7 +88,7 @@ tape('runBlockchain', (t) => {
 
   // TODO: test has been moved over from index.spec.ts, check for redundancy
   t.test('should run blockchain with blocks', async (st) => {
-    const common = new Common({ chain: 'ropsten' })
+    const common = new Common({ chain: Chain.Ropsten })
 
     const genesisRlp = toBuffer(testData.genesisRLP)
     const genesisBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
@@ -115,7 +115,7 @@ tape('runBlockchain', (t) => {
   t.test('should run with valid and invalid blocks', async (st) => {
     const blockchainDB = level()
 
-    const common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const genesisBlock = Block.genesis(undefined, { common })
     const blockchain = new Blockchain({
       db: blockchainDB,

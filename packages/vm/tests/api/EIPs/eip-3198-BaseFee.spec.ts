@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { Address, BN, privateToAddress } from 'ethereumjs-util'
 import VM from '../../../src'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TypedTransaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
 import { InterpreterStep } from '../../../src/evm/interpreter'
@@ -11,8 +11,8 @@ const ETHER = GWEI.mul(GWEI)
 
 const common = new Common({
   eips: [1559, 2718, 2930, 3198],
-  chain: 'mainnet',
-  hardfork: 'london',
+  chain: Chain.Mainnet,
+  hardfork: Hardfork.London,
 })
 
 // Small hack to hack in the activation block number

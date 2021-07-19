@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { Address, BN, rlp, KECCAK256_RLP, Account } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import {
   AccessListEIP2930Transaction,
@@ -18,7 +18,7 @@ import VM from '../../src/index'
 import { setBalance } from './utils'
 
 const testData = require('./testdata/blockchain.json')
-const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 
 tape('runBlock() -> successful API parameter usage', async (t) => {
   async function simpleRun(vm: VM) {
@@ -122,7 +122,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
 
   t.test('PoW block, Common custom chain (Common customChains constructor option)', async (t) => {
     const customChains = [testnet]
-    const common = new Common({ chain: 'testnet', hardfork: 'berlin', customChains })
+    const common = new Common({ chain: 'testnet', hardfork: Hardfork.Berlin, customChains })
     const vm = setupVM({ common })
     await simpleRun(vm)
     t.end()
@@ -130,14 +130,14 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
 
   t.test('hardforkByBlockNumber option', async (t) => {
     const common1 = new Common({
-      chain: 'mainnet',
-      hardfork: 'muirGlacier',
+      chain: Chain.Mainnet,
+      hardfork: Hardfork.MuirGlacier,
     })
 
     // Have to use an unique common, otherwise the HF will be set to muirGlacier and then will not change back to chainstart.
     const common2 = new Common({
-      chain: 'mainnet',
-      hardfork: 'chainstart',
+      chain: Chain.Mainnet,
+      hardfork: Hardfork.Chainstart,
     })
 
     const privateKey = Buffer.from(
@@ -322,7 +322,7 @@ tape('runBlock() -> runtime behavior', async (t) => {
   })
 
   t.test('should allocate to correct clique beneficiary', async (t) => {
-    const common = new Common({ chain: 'goerli' })
+    const common = new Common({ chain: Chain.Goerli })
     const vm = setupVM({ common })
 
     const signer = {
@@ -416,7 +416,7 @@ tape('should correctly reflect generated fields', async (t) => {
 })
 
 async function runWithHf(hardfork: string) {
-  const vm = setupVM({ common: new Common({ chain: 'mainnet', hardfork }) })
+  const vm = setupVM({ common: new Common({ chain: Chain.Mainnet, hardfork }) })
 
   const blockRlp = testData.blocks[0].rlp
   const block = Block.fromRLPSerializedBlock(blockRlp)
@@ -488,7 +488,7 @@ tape('runBlock() -> tx types', async (t) => {
   }
 
   t.test('legacy tx', async (t) => {
-    const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
     const vm = setupVM({ common })
 
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
@@ -505,7 +505,7 @@ tape('runBlock() -> tx types', async (t) => {
   })
 
   t.test('access list tx', async (t) => {
-    const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
     const vm = setupVM({ common })
 
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
@@ -525,7 +525,7 @@ tape('runBlock() -> tx types', async (t) => {
   })
 
   t.test('fee market tx', async (t) => {
-    const common = new Common({ chain: 'mainnet', hardfork: 'london' })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const vm = setupVM({ common })
 
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')

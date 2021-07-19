@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { KECCAK256_RLP } from 'ethereumjs-util'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '../../src/state'
 import VM from '../../src'
 import { isRunningInKarma } from '../util'
@@ -69,7 +69,7 @@ tape('VM -> basic instantiation / boolean switches', (t) => {
 
 tape('VM -> common (chain, HFs, EIPs)', (t) => {
   t.test('should accept a common object as option', async (st) => {
-    const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 
     const vm = await VM.create({ common })
     st.equal(vm._common, common)
@@ -78,13 +78,13 @@ tape('VM -> common (chain, HFs, EIPs)', (t) => {
   })
 
   t.test('should only accept valid chain and fork', async (st) => {
-    let common = new Common({ chain: 'ropsten', hardfork: 'byzantium' })
+    let common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
     let vm = new VM({ common })
     await vm.init()
     st.equal((vm.stateManager as DefaultStateManager)._common.param('gasPrices', 'ecAdd'), 500)
 
     try {
-      common = new Common({ chain: 'mainchain', hardfork: 'homestead' })
+      common = new Common({ chain: 'mainchain', hardfork: Hardfork.Homestead })
       vm = new VM({ common })
       st.fail('should have failed for invalid chain')
     } catch (e) {
@@ -99,7 +99,7 @@ tape('VM -> common (chain, HFs, EIPs)', (t) => {
       st.skip('BLS does not work in karma')
       return st.end()
     }
-    const common = new Common({ chain: 'mainnet', eips: [2537] })
+    const common = new Common({ chain: Chain.Mainnet, eips: [2537] })
     st.doesNotThrow(() => {
       new VM({ common })
     })
@@ -122,7 +122,7 @@ tape('VM -> common (chain, HFs, EIPs)', (t) => {
     'should accept a custom chain config (Common customChains constructor option)',
     async (st) => {
       const customChains = [testnet, testnet2]
-      const common = new Common({ chain: 'testnet2', hardfork: 'berlin', customChains })
+      const common = new Common({ chain: 'testnet2', hardfork: Hardfork.Berlin, customChains })
 
       const vm = await VM.create({ common })
       st.equal(vm._common, common)
@@ -156,7 +156,9 @@ tape('VM -> state (deprecated), blockchain', (t) => {
   })
 
   t.test('should pass the correct Common object when copying the VM', async (st) => {
-    const vm = setupVM({ common: new Common({ chain: 'ropsten', hardfork: 'byzantium' }) })
+    const vm = setupVM({
+      common: new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium }),
+    })
     await vm.init()
 
     st.equal(vm._common.chainName(), 'ropsten')

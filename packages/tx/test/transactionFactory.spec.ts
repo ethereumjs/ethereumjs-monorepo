@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
 import tape from 'tape'
 import {
@@ -9,8 +9,8 @@ import {
 } from '../src'
 
 const common = new Common({
-  chain: 'mainnet',
-  hardfork: 'london',
+  chain: Chain.Mainnet,
+  hardfork: Hardfork.London,
 })
 
 const pKey = Buffer.from('4646464646464646464646464646464646464646464646464646464646464646', 'hex')
@@ -71,7 +71,7 @@ tape('[TransactionFactory]: Basic functions', function (t) {
   t.test('fromSerializedData() -> error cases', function (st) {
     for (const txType of txTypes) {
       if (txType.eip2718) {
-        const unsupportedCommon = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+        const unsupportedCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
         st.throws(() => {
           TransactionFactory.fromSerializedData(txType.unsigned.serialize(), {
             common: unsupportedCommon,
@@ -132,7 +132,7 @@ tape('[TransactionFactory]: Basic functions', function (t) {
   })
 
   t.test('fromTxData() -> error cases', function (st) {
-    const unsupportedCommon = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+    const unsupportedCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     st.throws(() => {
       TransactionFactory.fromTxData({ type: 1 }, { common: unsupportedCommon })
     })

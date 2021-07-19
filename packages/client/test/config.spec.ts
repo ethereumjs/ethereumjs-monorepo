@@ -1,6 +1,6 @@
 import tape from 'tape-catch'
 import { Config } from '../lib/config'
-import Common from '@ethereumjs/common'
+import Common, { Chain } from '@ethereumjs/common'
 
 tape('[Config]', (t) => {
   t.test('Initialization with default parameters', (t) => {
@@ -28,7 +28,7 @@ tape('[Config]', (t) => {
   })
 
   t.test('peer discovery default mainnet setting', (t) => {
-    const common = new Common({ chain: 'mainnet' })
+    const common = new Common({ chain: Chain.Mainnet })
     const config = new Config({ common })
     t.equal(config.discDns, false, 'disables DNS peer discovery for mainnet')
     t.equal(config.discV4, true, 'enables DNS peer discovery for mainnet')
@@ -38,7 +38,7 @@ tape('[Config]', (t) => {
   t.test('peer discovery default testnet settings', (t) => {
     let config
 
-    for (const chain of ['rinkeby', 'goerli', 'ropsten']) {
+    for (const chain of [Chain.Rinkeby, Chain.Goerli, Chain.Ropsten]) {
       const common = new Common({ chain })
       config = new Config({ common })
       t.equal(config.discDns, true, `enables DNS peer discovery for ${chain}`)
@@ -50,12 +50,12 @@ tape('[Config]', (t) => {
   t.test('--discDns=true/false', (t) => {
     let common, config, chain
 
-    chain = 'mainnet'
+    chain = Chain.Mainnet
     common = new Common({ chain })
     config = new Config({ common, discDns: true })
     t.equal(config.discDns, true, `default discDns setting can be overridden to true`)
 
-    chain = 'rinkeby'
+    chain = Chain.Rinkeby
     common = new Common({ chain })
     config = new Config({ common, discDns: false })
     t.equal(config.discDns, false, `default discDns setting can be overridden to false`)
@@ -65,12 +65,12 @@ tape('[Config]', (t) => {
   t.test('--discV4=true/false', (t) => {
     let common, config, chain
 
-    chain = 'mainnet'
+    chain = Chain.Mainnet
     common = new Common({ chain })
     config = new Config({ common, discV4: false })
     t.equal(config.discDns, false, `default discV4 setting can be overridden to false`)
 
-    chain = 'rinkeby'
+    chain = Chain.Rinkeby
     common = new Common({ chain })
     config = new Config({ common, discV4: true })
     t.equal(config.discDns, true, `default discV4 setting can be overridden to true`)

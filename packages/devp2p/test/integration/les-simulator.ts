@@ -1,5 +1,5 @@
 import test from 'tape'
-import Common from '@ethereumjs/common'
+import Common, { Chain } from '@ethereumjs/common'
 import * as devp2p from '../../src'
 import * as util from './util'
 
@@ -58,8 +58,8 @@ test('LES: send status message (NetworkId mismatch)', async (t) => {
     t.end()
   }
 
-  const c1 = new Common({ chain: 'mainnet' })
-  const c2 = new Common({ chain: 'ropsten' })
+  const c1 = new Common({ chain: Chain.Mainnet })
+  const c2 = new Common({ chain: Chain.Ropsten })
   util.twoPeerMsgExchange(t, opts, capabilities, [c1, c2])
 })
 

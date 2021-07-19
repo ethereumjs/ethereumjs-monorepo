@@ -1,6 +1,6 @@
 import * as devp2p from '../src/index'
 import { LES, Peer } from '../src/index'
-import Common from '@ethereumjs/common'
+import Common, { Chain } from '@ethereumjs/common'
 import { TypedTransaction } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import ms from 'ms'
@@ -16,7 +16,7 @@ const GENESIS_HASH = Buffer.from(
   'hex'
 )
 
-const common = new Common({ chain: 'rinkeby' })
+const common = new Common({ chain: Chain.Rinkeby })
 const bootstrapNodes = common.bootstrapNodes()
 const BOOTNODES = bootstrapNodes.map((node: any) => {
   return {

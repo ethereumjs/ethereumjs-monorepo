@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { BN } from '../../util/dist'
-import Common, { CustomChain } from '../src/'
+import Common, { Chain, CustomChain, Hardfork } from '../src/'
 import testnet from './data/testnet.json'
 import testnet2 from './data/testnet2.json'
 import testnet3 from './data/testnet3.json'
@@ -9,7 +9,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
   t.test(
     'chain -> object: should provide correct access to private network chain parameters',
     function (st: tape.Test) {
-      const c = new Common({ chain: testnet, hardfork: 'byzantium' })
+      const c = new Common({ chain: testnet, hardfork: Hardfork.Byzantium })
       st.equal(c.chainName(), 'testnet', 'should initialize with chain name')
       st.equal(c.chainId(), 12345, 'should return correct chain Id')
       st.ok(c.chainIdBN().eqn(12345), 'should return correct chain Id')
@@ -45,10 +45,10 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
   )
 
   t.test('custom() -> base functionality', function (st: tape.Test) {
-    const mainnetCommon = new Common({ chain: 'mainnet' })
+    const mainnetCommon = new Common({ chain: Chain.Mainnet })
 
     const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
-    const customChainCommon = Common.custom(customChainParams, { hardfork: 'byzantium' })
+    const customChainCommon = Common.custom(customChainParams, { hardfork: Hardfork.Byzantium })
 
     // From custom chain params
     st.equal(customChainCommon.chainName(), customChainParams.name)
@@ -103,10 +103,14 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
   })
 
   t.test('forCustomChain() (deprecated) -> base functionality', function (st: tape.Test) {
-    const mainnetCommon = new Common({ chain: 'mainnet' })
+    const mainnetCommon = new Common({ chain: Chain.Mainnet })
 
     const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
-    const customChainCommon = Common.forCustomChain('mainnet', customChainParams, 'byzantium')
+    const customChainCommon = Common.forCustomChain(
+      'mainnet',
+      customChainParams,
+      Hardfork.Byzantium
+    )
 
     // From custom chain params
     st.equal(customChainCommon.chainName(), customChainParams.name)
@@ -143,7 +147,11 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
   })
 
   t.test('customChains parameter: initialization', (st) => {
-    let c = new Common({ chain: 'mainnet', hardfork: 'byzantium', customChains: [testnet] })
+    let c = new Common({
+      chain: Chain.Mainnet,
+      hardfork: Hardfork.Byzantium,
+      customChains: [testnet],
+    })
     st.equal(c.chainName(), 'mainnet', 'customChains, chain set to supported chain')
     st.equal(c.hardforkBlock(), 4370000, 'customChains, chain set to supported chain')
 
@@ -151,12 +159,12 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     st.equal(c.chainName(), 'testnet', 'customChains, chain switched to custom chain')
     st.equal(c.hardforkBlock(), 4, 'customChains, chain switched to custom chain')
 
-    c = new Common({ chain: 'testnet', hardfork: 'byzantium', customChains: [testnet] })
+    c = new Common({ chain: 'testnet', hardfork: Hardfork.Byzantium, customChains: [testnet] })
     st.equal(c.chainName(), 'testnet', 'customChains, chain initialized with custom chain')
     st.equal(c.hardforkBlock(), 4, 'customChains, chain initialized with custom chain')
 
     const customChains = [testnet, testnet2, testnet3]
-    c = new Common({ chain: 'testnet2', hardfork: 'istanbul', customChains })
+    c = new Common({ chain: 'testnet2', hardfork: Hardfork.Istanbul, customChains })
     st.equal(c.chainName(), 'testnet2', 'customChains, chain initialized with custom chain')
     st.equal(c.hardforkBlock(), 10, 'customChains, chain initialized with custom chain')
 

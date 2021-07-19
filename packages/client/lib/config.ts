@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import Common, { Hardfork } from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 import { genPrivateKey } from '@ethereumjs/devp2p'
 import Multiaddr from 'multiaddr'
@@ -252,7 +252,7 @@ export class Config {
 
     // TODO: map chainParams (and lib/util.parseParams) to new Common format
     const common =
-      options.common ?? new Common({ chain: Config.CHAIN_DEFAULT, hardfork: 'chainstart' })
+      options.common ?? new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.Chainstart })
     this.chainCommon = common.copy()
     this.execCommon = common.copy()
 

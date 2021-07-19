@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { BN, toBuffer, bufferToInt } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common, { Chain } from '@ethereumjs/common'
 import { Block } from '../src'
 
 function isHexPrefixed(str: string) {
@@ -42,7 +42,7 @@ tape('[Header]: difficulty tests', (t) => {
     /* eslint-disable-next-line no-restricted-syntax */
     for (const testName in testData) {
       const test = testData[testName]
-      const common = new Common({ chain: 'mainnet', hardfork: hardfork })
+      const common = new Common({ chain: Chain.Mainnet, hardfork: hardfork })
       const parentBlock = Block.fromBlockData(
         {
           header: {

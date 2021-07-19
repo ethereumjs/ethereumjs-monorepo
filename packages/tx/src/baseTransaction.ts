@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import {
   Address,
   BN,
@@ -58,7 +58,7 @@ export abstract class BaseTransaction<TransactionObject> {
    *
    * @hidden
    */
-  protected DEFAULT_CHAIN = 'mainnet'
+  protected DEFAULT_CHAIN = Chain.Mainnet
 
   /**
    * The default HF if the tx type is active on that HF
@@ -66,7 +66,7 @@ export abstract class BaseTransaction<TransactionObject> {
    *
    * @hidden
    */
-  protected DEFAULT_HARDFORK = 'istanbul'
+  protected DEFAULT_HARDFORK: string | Hardfork = Hardfork.Istanbul
 
   constructor(txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData) {
     const { nonce, gasLimit, to, value, data, v, r, s, type } = txData

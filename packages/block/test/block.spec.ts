@@ -63,7 +63,7 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should initialize with null parameters without throwing', function (st) {
     st.doesNotThrow(function () {
-      const common = new Common({ chain: 'ropsten' })
+      const common = new Common({ chain: Chain.Ropsten })
       const opts = { common }
       Block.fromBlockData({}, opts)
       st.end()
@@ -72,7 +72,7 @@ tape('[Block]: block functions', function (t) {
   t.test(
     'should throw when trying to initialize with uncle headers on a PoA network',
     function (st) {
-      const common = new Common({ chain: 'rinkeby' })
+      const common = new Common({ chain: Chain.Rinkeby })
       const uncleBlock = Block.fromBlockData(
         { header: { extraData: Buffer.alloc(117) } },
         { common }
@@ -100,7 +100,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test block validation on poa chain', async function (st) {
-    const common = new Common({ chain: 'goerli', hardfork: 'chainstart' })
+    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
     const blockchain = new Mockchain()
     const block = blockFromRpc(testDataFromRpcGoerli, [], { common })
 
@@ -158,7 +158,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test transaction validation with legacy tx in london', async function (st) {
-    const common = new Common({ chain: 'goerli', hardfork: 'london' })
+    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.London })
     const blockRlp = testData.blocks[0].rlp
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     await testTransactionValidation(st, block)
@@ -469,7 +469,7 @@ tape('[Block]: block functions', function (t) {
       const blockchain = new Mockchain()
 
       const common = new Common({ chain: Chain.Mainnet })
-      common.setHardfork('berlin')
+      common.setHardfork(Hardfork.Berlin)
 
       const mainnetForkBlock = common.hardforkBlockBN('london')
       const rootBlock = Block.fromBlockData({
@@ -491,7 +491,7 @@ tape('[Block]: block functions', function (t) {
         common
       )
       await blockchain.putBlock(preForkBlock)
-      common.setHardfork('london')
+      common.setHardfork(Hardfork.London)
       const forkBlock = createBlock(preForkBlock, 'forkBlock', [], common)
       await blockchain.putBlock(forkBlock)
       const uncleFork = createBlock(forkBlock, 'uncleFork', [], common)
@@ -565,7 +565,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test isGenesis (ropsten)', function (st) {
-    const common = new Common({ chain: 'ropsten' })
+    const common = new Common({ chain: Chain.Ropsten })
     const block = Block.fromBlockData({ header: { number: 1 } }, { common })
     st.notEqual(block.isGenesis(), true)
     const genesisBlock = Block.fromBlockData({ header: { number: 0 } }, { common })
@@ -587,7 +587,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test genesis hashes (ropsten)', function (st) {
-    const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
+    const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
     const genesis = Block.genesis({}, { common })
     st.strictEqual(
       genesis.hash().toString('hex'),
@@ -598,7 +598,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test genesis hashes (rinkeby)', function (st) {
-    const common = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
+    const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
     const genesis = Block.genesis({}, { common })
     st.strictEqual(
       genesis.hash().toString('hex'),
@@ -609,7 +609,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test genesis parameters (ropsten)', function (st) {
-    const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
+    const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
     const genesis = Block.genesis({}, { common })
     const ropstenStateRoot = '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
     st.strictEqual(
@@ -648,7 +648,7 @@ tape('[Block]: block functions', function (t) {
     // Set block number from test block to mainnet DAO fork block 1920000
     blockData[0][8] = Buffer.from('1D4C00', 'hex')
 
-    const common = new Common({ chain: 'mainnet', hardfork: 'dao' })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Dao })
     st.throws(
       function () {
         Block.fromValuesArray(blockData, { common })
@@ -669,7 +669,7 @@ tape('[Block]: block functions', function (t) {
   t.test(
     'should set canonical difficulty if I provide a calcDifficultyFromHeader header',
     function (st) {
-      const common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
       const genesis = Block.genesis({}, { common })
 
       const nextBlockHeaderData = {

@@ -10,7 +10,7 @@ import {
   unpadBuffer,
   zeros,
 } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '../../../src/state'
 import { createAccount } from '../utils'
 import { isRunningInKarma } from '../../util'
@@ -194,7 +194,7 @@ tape('StateManager', (t) => {
       st.skip('skip slow test when running in karma')
       return st.end()
     }
-    const common = new Common({ chain: 'mainnet', hardfork: 'petersburg' })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     const expectedStateRoot = Buffer.from(common.genesis().stateRoot.slice(2), 'hex')
     const stateManager = new StateManager({ common: common })
 
@@ -209,10 +209,10 @@ tape('StateManager', (t) => {
   })
 
   t.test('should generate the genesis state root correctly for all other chains', async (st) => {
-    const chains = ['ropsten', 'rinkeby', 'kovan', 'goerli']
+    const chains = [Chain.Ropsten, Chain.Rinkeby, Chain.Kovan, Chain.Goerli]
 
     for (const chain of chains) {
-      const common = new Common({ chain: chain, hardfork: 'petersburg' })
+      const common = new Common({ chain: chain, hardfork: Hardfork.Petersburg })
       const expectedStateRoot = Buffer.from(common.genesis().stateRoot.slice(2), 'hex')
       const stateManager = new DefaultStateManager({ common: common })
 
@@ -247,7 +247,7 @@ tape('StateManager', (t) => {
 
   t.test('should pass Common object when copying the state manager', (st) => {
     const stateManager = new DefaultStateManager({
-      common: new Common({ chain: 'goerli', hardfork: 'byzantium' }),
+      common: new Common({ chain: Chain.Goerli, hardfork: Hardfork.Byzantium }),
     })
 
     st.equal(stateManager._common.chainName(), 'goerli')

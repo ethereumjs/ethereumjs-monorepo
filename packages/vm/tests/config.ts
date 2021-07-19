@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import Common, { Chain } from '@ethereumjs/common'
 
 /**
  * Default hardfork rules to run tests against
@@ -259,7 +259,7 @@ export function getCommon(network: string) {
     const hfName = normalHardforks.reduce((previousValue, currentValue) =>
       currentValue.toLowerCase() == networkLowercase ? currentValue : previousValue
     )
-    const mainnetCommon = new Common({ chain: 'mainnet', hardfork: hfName })
+    const mainnetCommon = new Common({ chain: Chain.Mainnet, hardfork: hfName })
     const hardforks = mainnetCommon.hardforks()
     const testHardforks = []
     for (const hf of hardforks) {
@@ -298,7 +298,7 @@ export function getCommon(network: string) {
       throw new Error('network not supported: ' + network)
     }
     const mainnetCommon = new Common({
-      chain: 'mainnet',
+      chain: Chain.Mainnet,
       hardfork: transitionForks.finalSupportedFork,
     })
     const hardforks = mainnetCommon.hardforks()

@@ -1,5 +1,5 @@
 import tape from 'tape'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import {
   Transaction,
   AccessListEIP2930Transaction,
@@ -13,7 +13,7 @@ import { privateToPublic, BN, toBuffer } from 'ethereumjs-util'
 
 tape('[BaseTransaction]', function (t) {
   // EIP-2930 is not enabled in Common by default (2021-03-06)
-  const common = new Common({ chain: 'mainnet', hardfork: 'london' })
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
   const legacyFixtures: TxsJsonEntry[] = require('./json/txs.json')
   const legacyTxs: BaseTransaction<Transaction>[] = []
@@ -87,8 +87,8 @@ tape('[BaseTransaction]', function (t) {
       st.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
 
       const initCommon = new Common({
-        chain: 'mainnet',
-        hardfork: 'london',
+        chain: Chain.Mainnet,
+        hardfork: Hardfork.London,
       })
       tx = txType.class.fromTxData({}, { common: initCommon })
       st.equal(
@@ -97,7 +97,7 @@ tape('[BaseTransaction]', function (t) {
         `${txType.name}: should initialize with correct HF provided`
       )
 
-      initCommon.setHardfork('byzantium')
+      initCommon.setHardfork(Hardfork.Byzantium)
       st.equal(
         tx.common.hardfork(),
         'london',

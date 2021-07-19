@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { Address, BN } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 
 // See https://github.com/holiman/go-ethereum/blob/2c99023b68c573ba24a5b01db13e000bd9b82417/core/vm/testdata/precompiles/modexp_eip2565.json
@@ -8,7 +8,7 @@ const testData = require('../testdata/eip-2565.json')
 
 tape('EIP-2565 ModExp gas cost tests', (t) => {
   t.test('Test return data, gas cost and execution status against testdata', async (st) => {
-    const common = new Common({ chain: 'mainnet', hardfork: 'byzantium', eips: [2565] })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium, eips: [2565] })
     const vm = new VM({ common: common })
 
     for (const test of testData) {

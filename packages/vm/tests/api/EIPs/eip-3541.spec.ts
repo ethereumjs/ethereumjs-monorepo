@@ -1,6 +1,6 @@
 import tape from 'tape'
 import VM from '../../../src'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { InterpreterStep } from '../../../src/evm/interpreter'
 import { Address } from 'ethereumjs-util'
@@ -8,8 +8,8 @@ import { Address } from 'ethereumjs-util'
 const pkey = Buffer.from('20'.repeat(32), 'hex')
 
 tape('EIP 3541 tests', (t) => {
-  const common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [3541] })
-  const commonNoEIP3541 = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [] })
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [3541] })
+  const commonNoEIP3541 = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [] })
 
   t.test('deposit 0xEF code if 3541 is active', async (st) => {
     // put 0xEF contract

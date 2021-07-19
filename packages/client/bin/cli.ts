@@ -1,7 +1,7 @@
 #!/usr/bin/env client
 
 import { Server as RPCServer } from 'jayson/promise'
-import Common from '@ethereumjs/common'
+import Common, { Hardfork } from '@ethereumjs/common'
 import { parseParams, parseMultiaddrs } from '../lib/util'
 import EthereumClient from '../lib/client'
 import { Config } from '../lib/config'
@@ -184,7 +184,7 @@ async function run() {
     chain = args.network
   }
 
-  const common = new Common({ chain, hardfork: 'chainstart' })
+  const common = new Common({ chain, hardfork: Hardfork.Chainstart })
   const datadir = args.datadir ?? Config.DATADIR_DEFAULT
   const configDirectory = `${datadir}/${common.chainName()}/config`
   fs.ensureDirSync(configDirectory)

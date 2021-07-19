@@ -3,7 +3,7 @@ import Semaphore from 'semaphore-async-await'
 import { Address, BN, rlp } from 'ethereumjs-util'
 import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { DBManager } from './db/manager'
 import { DBOp, DBSetBlockOrHeader, DBSetTD, DBSetHashToNumber, DBSaveLookups } from './db/helpers'
 import { DBTarget } from './db/operation'
@@ -248,8 +248,8 @@ export default class Blockchain implements BlockchainInterface {
     if (opts.common) {
       this._common = opts.common
     } else {
-      const DEFAULT_CHAIN = 'mainnet'
-      const DEFAULT_HARDFORK = 'chainstart'
+      const DEFAULT_CHAIN = Chain.Mainnet
+      const DEFAULT_HARDFORK = Hardfork.Chainstart
       this._common = new Common({
         chain: DEFAULT_CHAIN,
         hardfork: DEFAULT_HARDFORK,
@@ -324,7 +324,7 @@ export default class Blockchain implements BlockchainInterface {
 
     if (!genesisBlock) {
       const common = this._common.copy()
-      common.setHardfork('chainstart')
+      common.setHardfork(Hardfork.Chainstart)
       genesisBlock = Block.genesis({}, { common })
     }
 

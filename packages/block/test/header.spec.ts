@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { Address, BN, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY, rlp } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src'
 import { Mockchain } from './mockchain'
@@ -39,12 +39,12 @@ tape('[Block]: Header functions', function (t) {
   })
 
   t.test('Initialization -> fromHeaderData()', function (st) {
-    const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
+    const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
     let header = BlockHeader.genesis(undefined, { common })
     st.ok(header.hash().toString('hex'), 'genesis block should initialize')
     st.equal(header._common.hardfork(), 'chainstart', 'should initialize with correct HF provided')
 
-    common.setHardfork('byzantium')
+    common.setHardfork(Hardfork.Byzantium)
     st.equal(
       header._common.hardfork(),
       'chainstart',
@@ -140,7 +140,7 @@ tape('[Block]: Header functions', function (t) {
   })
 
   t.test('Initialization -> Clique Blocks', function (st) {
-    const common = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
+    const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
     let header = BlockHeader.genesis(undefined, { common })
     st.ok(header.hash().toString('hex'), 'genesis block should initialize')
 
@@ -153,7 +153,7 @@ tape('[Block]: Header functions', function (t) {
   t.test('should validate extraData', async function (st) {
     // PoW
     let blockchain = new Mockchain()
-    let common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
+    let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     let genesis = Block.genesis({}, { common })
     await blockchain.putBlock(genesis)
 
@@ -199,7 +199,7 @@ tape('[Block]: Header functions', function (t) {
 
     // PoA
     blockchain = new Mockchain()
-    common = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
+    common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
     genesis = Block.genesis({}, { common })
     await blockchain.putBlock(genesis)
 
@@ -264,7 +264,7 @@ tape('[Block]: Header functions', function (t) {
   t.test('header validation -> poa checks', async function (st) {
     const headerData = testData.blocks[0].blockHeader
 
-    const common = new Common({ chain: 'goerli' })
+    const common = new Common({ chain: Chain.Goerli })
     const blockchain = new Mockchain()
 
     const block = Block.fromRLPSerializedBlock(testData.genesisRLP, { common })
@@ -408,7 +408,7 @@ tape('[Block]: Header functions', function (t) {
   })
 
   t.test('should test genesis parameters (ropsten)', function (st) {
-    const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
+    const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
     const genesis = BlockHeader.genesis({}, { common })
     const ropstenStateRoot = '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
     st.strictEqual(genesis.stateRoot.toString('hex'), ropstenStateRoot, 'genesis stateRoot match')
@@ -416,7 +416,7 @@ tape('[Block]: Header functions', function (t) {
   })
 
   t.test('should test hash() function', function (st) {
-    let common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
+    let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     let header = BlockHeader.fromHeaderData(blocksMainnet[0]['header'], { common })
     st.equal(
       header.hash().toString('hex'),
@@ -424,7 +424,7 @@ tape('[Block]: Header functions', function (t) {
       'correct PoW hash (mainnet block 1)'
     )
 
-    common = new Common({ chain: 'goerli', hardfork: 'chainstart' })
+    common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
     header = BlockHeader.fromHeaderData(blocksGoerli[0]['header'], { common })
     st.equal(
       header.hash().toString('hex'),

@@ -63,8 +63,8 @@ To instantiate an EIP-1559 block the hardfork parameter on the `Common` instance
 
 ```typescript
 import { Block } from 'ethereumjs-block'
-import Common from '@ethereumjs/common'
-const common = new Common({ chain: 'mainnet', hardfork: 'london' })
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 const block = Block.fromBlockData({
   header: {
     //...,
@@ -85,8 +85,8 @@ An Ethash/PoW block can be instantiated as follows:
 
 ```typescript
 import { Block } from '@ethereumjs/block'
-import Common from '@ethereumjs/common'
-const common = new Common({ chain: 'mainnet' })
+import Common, { Chain } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet })
 console.log(common.consensusType()) // 'pow'
 console.log(common.consensusAlgorithm()) // 'ethash'
 const block = Block.fromBlockData({}, { common })
@@ -102,8 +102,8 @@ A clique block can be instantiated as follows:
 
 ```typescript
 import { Block } from '@ethereumjs/block'
-import Common from '@ethereumjs/common'
-const common = new Common({ chain: 'goerli' })
+import Common, { Chain } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Goerli })
 console.log(common.consensusType()) // 'poa'
 console.log(common.consensusAlgorithm()) // 'clique'
 const block = Block.fromBlockData({}, { common })

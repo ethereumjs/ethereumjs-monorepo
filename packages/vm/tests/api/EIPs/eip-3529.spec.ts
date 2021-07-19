@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { Address, BN } from 'ethereumjs-util'
 import VM from '../../../src'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { InterpreterStep } from '../../../src/evm/interpreter'
 import { EIP2929StateManager } from '../../../src/state/interface'
 import { Transaction } from '@ethereumjs/tx'
@@ -109,7 +109,7 @@ const testCases = [
 ]
 
 tape('EIP-3529 tests', (t) => {
-  const common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [3529] })
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [3529] })
 
   t.test('should verify EIP test cases', async (st) => {
     const vm = new VM({ common })
