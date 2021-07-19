@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { Server as RPCServer, HttpServer } from 'jayson/promise'
 import VM from '@ethereumjs/vm'
-import Common from '@ethereumjs/common'
+import Common, { Chain as ChainEnum } from '@ethereumjs/common'
 import { RPCManager as Manager } from '../../lib/rpc'
 import { getLogger } from '../../lib/logging'
 import { Config } from '../../lib/config'
@@ -31,7 +31,7 @@ export function createManager(client: EthereumClient) {
 }
 
 export function createClient(clientOpts: any = {}) {
-  const common = clientOpts.commonChain ?? new Common({ chain: 'mainnet' })
+  const common = clientOpts.commonChain ?? new Common({ chain: ChainEnum.Mainnet })
   const config = new Config({ transports: [], common })
   const blockchain = clientOpts.blockchain ?? ((<any>mockBlockchain()) as Blockchain)
 
