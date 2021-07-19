@@ -42,6 +42,6 @@ jobs:
           node scripts/inject-e2e-dependencies-resolution.js
           cd hardhat
           yarn
-          cd packages/e2e
-          yarn test
+          cd packages/hardhat-core
+          yarn test:except-tracing
           

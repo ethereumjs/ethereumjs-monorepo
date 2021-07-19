@@ -3,11 +3,11 @@
  */
 
   const fs = require("fs");
-  const packages = fs.readdirSync('hardhat/packages');
+  //const packages = fs.readdirSync('hardhat/packages');
   
   let packageJson;
   let resolutions = require(`${process.cwd()}/resolutions.json`);
-
+/*
   for (package of packages){
     try {
       packageJson = require(`${process.cwd()}/hardhat/packages/${package}/package.json`);
@@ -16,7 +16,8 @@
     } catch(e){
       console.log(e)
     }
-  }
+  }*/
   packageJson = require(`${process.cwd()}/hardhat/package.json`);
   const newPackageJson = {...packageJson, resolutions: {...resolutions}}
+  newPackageJson.resolutions["@types/bn.js"]= "4.11.6"
   fs.writeFileSync(`${process.cwd()}/hardhat/package.json`, JSON.stringify(newPackageJson, null, 2));
