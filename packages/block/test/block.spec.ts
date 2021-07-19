@@ -469,7 +469,7 @@ tape('[Block]: block functions', function (t) {
       const blockchain = new Mockchain()
 
       const common = new Common({ chain: Chain.Mainnet })
-      common.setHardfork('berlin')
+      common.setHardfork(Hardfork.Berlin)
 
       const mainnetForkBlock = common.hardforkBlockBN('london')
       const rootBlock = Block.fromBlockData({
@@ -491,7 +491,7 @@ tape('[Block]: block functions', function (t) {
         common
       )
       await blockchain.putBlock(preForkBlock)
-      common.setHardfork('london')
+      common.setHardfork(Hardfork.London)
       const forkBlock = createBlock(preForkBlock, 'forkBlock', [], common)
       await blockchain.putBlock(forkBlock)
       const uncleFork = createBlock(forkBlock, 'uncleFork', [], common)

@@ -61,14 +61,14 @@ tape('VM -> getActiveOpcodes()', (t) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const vm = new VM({ common })
 
-    common.setHardfork('byzantium')
+    common.setHardfork(Hardfork.Byzantium)
     st.equal(
       vm.getActiveOpcodes().get(CHAINID),
       undefined,
       'opcode not exposed after HF change (-> < istanbul)'
     )
 
-    common.setHardfork('istanbul')
+    common.setHardfork(Hardfork.Istanbul)
     st.equal(
       vm.getActiveOpcodes().get(CHAINID)!.name,
       'CHAINID',

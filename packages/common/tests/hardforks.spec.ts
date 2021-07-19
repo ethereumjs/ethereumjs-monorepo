@@ -60,7 +60,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
       st.equal(hardfork, 'byzantium', 'should send correct hardforkChanged event')
       st.end()
     })
-    c.setHardfork('byzantium')
+    c.setHardfork(Hardfork.Byzantium)
   })
 
   t.test('hardforkBlock()', function (st: tape.Test) {

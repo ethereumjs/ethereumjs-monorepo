@@ -8,11 +8,11 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
     st.equal(c.paramByHardfork('gasPrices', 'ecAdd', 'byzantium'), 500, msg)
 
     msg = 'Should return correct value for HF set in class'
-    c.setHardfork('byzantium')
+    c.setHardfork(Hardfork.Byzantium)
     st.equal(c.param('gasPrices', 'ecAdd'), 500, msg)
-    c.setHardfork('istanbul')
+    c.setHardfork(Hardfork.Istanbul)
     st.equal(c.param('gasPrices', 'ecAdd'), 150, msg)
-    c.setHardfork('muirGlacier')
+    c.setHardfork(Hardfork.MuirGlacier)
     st.equal(c.param('gasPrices', 'ecAdd'), 150, msg)
 
     msg = 'Should return null for non-existing value'
@@ -40,7 +40,7 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
     let msg = 'Should throw when called with non-existing topic'
     st.throws(f, /Topic gasPrizes not defined$/, msg)
 
-    c.setHardfork('byzantium')
+    c.setHardfork(Hardfork.Byzantium)
     st.equal(c.param('gasPrices', 'ecAdd'), 500, 'Should return correct value for HF set in class')
 
     c = new Common({

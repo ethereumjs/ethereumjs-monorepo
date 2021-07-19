@@ -97,7 +97,7 @@ tape('[BaseTransaction]', function (t) {
         `${txType.name}: should initialize with correct HF provided`
       )
 
-      initCommon.setHardfork('byzantium')
+      initCommon.setHardfork(Hardfork.Byzantium)
       st.equal(
         tx.common.hardfork(),
         'london',

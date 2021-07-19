@@ -1,3 +1,4 @@
+import { Hardfork } from '@ethereumjs/common'
 import { Transaction, TransactionFactory } from '@ethereumjs/tx'
 import {
   Account,
@@ -471,8 +472,8 @@ export class Eth {
     try {
       const common = this.client.config.chainCommon.copy()
       // TODO: generalize with a new Common.latestSupportedHardfork() method or similar
-      // Alternative: common.setHardfork('lastest')
-      common.setHardfork('london')
+      // Alternative: common.setHardfork('latest')
+      common.setHardfork(Hardfork.London)
       const tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), { common })
       if (!tx.isSigned()) {
         return {

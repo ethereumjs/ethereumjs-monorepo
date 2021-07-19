@@ -44,7 +44,7 @@ tape('[Block]: Header functions', function (t) {
     st.ok(header.hash().toString('hex'), 'genesis block should initialize')
     st.equal(header._common.hardfork(), 'chainstart', 'should initialize with correct HF provided')
 
-    common.setHardfork('byzantium')
+    common.setHardfork(Hardfork.Byzantium)
     st.equal(
       header._common.hardfork(),
       'chainstart',

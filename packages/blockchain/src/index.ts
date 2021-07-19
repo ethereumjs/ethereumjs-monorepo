@@ -324,7 +324,7 @@ export default class Blockchain implements BlockchainInterface {
 
     if (!genesisBlock) {
       const common = this._common.copy()
-      common.setHardfork('chainstart')
+      common.setHardfork(Hardfork.Chainstart)
       genesisBlock = Block.genesis({}, { common })
     }
 
