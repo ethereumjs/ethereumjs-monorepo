@@ -41,6 +41,7 @@ jobs:
           git clone https://github.com/nomiclabs/hardhat.git
           node scripts/inject-e2e-dependencies-resolution.js
           cd hardhat
+          rm yarn.lock
           yarn
           yarn build
           cd packages/hardhat-core
