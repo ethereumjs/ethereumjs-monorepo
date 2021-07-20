@@ -45,7 +45,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 **Dependencies, CI and Docs**
 
-- Upgrade `libp2p` modules to latest, PR [#1027](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1027)
+- Upgrade `libp2p` modules to js-libp2p v0.30.7 and associated modules, PR [#1027](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1027)
 - Add basic cli test, PR [#1165](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1165)
 - Update client diagram [#1005](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1005)
 - Fix Fetcher.ts failure on Node v14, PR [#1022](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1022)
