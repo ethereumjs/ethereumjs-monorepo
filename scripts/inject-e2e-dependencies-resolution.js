@@ -6,8 +6,8 @@
   
   let packageJson;
   let resolutions = require(`${process.cwd()}/resolutions.json`);
-
   packageJson = require(`${process.cwd()}/hardhat/package.json`);
   const newPackageJson = {...packageJson, resolutions: {...resolutions}}
-  newPackageJson.resolutions["@types/bn.js"]= "4.11.6" // Adds specific module that Hardhat can't find by default
+  newPackageJson.resolutions["@types/bn.js"]= "5.1.0" // Adds specific module that Hardhat can't find by default
+  newPackageJson.resolutions["eth-sig-util"]= "2.5.2"
   fs.writeFileSync(`${process.cwd()}/hardhat/package.json`, JSON.stringify(newPackageJson, null, 2));
