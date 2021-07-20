@@ -139,12 +139,13 @@ export default class Interpreter {
     const opInfo = this.lookupOpInfo(this._runState.opCode)
 
     const gas = new BN(opInfo.fee)
-    // clone the gas limit; call opcodes can add stipend, which makes it seem like the gas left increases
+    // clone the gas limit; call opcodes can add stipend,
+    // which makes it seem like the gas left increases
     const gasLimitClone = this._eei.getGasLeft()
 
     if (opInfo.dynamicGas) {
       const dynamicGasHandler = dynamicGasHandlers.get(this._runState.opCode)!
-      // This function updates the gas BN by using `i*` methods
+      // This function updates the gas BN in-place using `i*` methods
       // It needs the base fee, for correct gas limit calculation for the CALL opcodes
       await dynamicGasHandler(this._runState, gas, this._vm._common)
     }

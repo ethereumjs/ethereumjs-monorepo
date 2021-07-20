@@ -1,5 +1,5 @@
 import { BN, MAX_INTEGER } from 'ethereumjs-util'
-const { ERROR, VmError } = require('../exceptions')
+import { ERROR, VmError } from '../exceptions'
 
 /**
  * Implementation of the stack used in evm.
@@ -59,6 +59,11 @@ export default class Stack {
     return this._store.splice(-1 * num).reverse()
   }
 
+  /**
+   * Return items from the stack
+   * @param num Number of items to return
+   * @throws {@link ERROR.STACK_UNDERFLOW}
+   */
   peek(num: number = 1): BN[] {
     const peekArray: BN[] = []
 

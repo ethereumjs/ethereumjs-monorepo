@@ -242,7 +242,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
       if (runState.eei.isStatic()) {
         trap(ERROR.STATIC_STATE_CHANGE)
       }
-      const [, /*value*/ offset, length] = runState.stack.peek(3)
+      const [_value, offset, length] = runState.stack.peek(3)
 
       gas.iadd(accessAddressEIP2929(runState, runState.eei.getAddress(), common, false))
 
@@ -291,7 +291,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
         runState,
         common
       )
-      // note that TangerineWhistle or later this cannot happen (it could have ran out of gas prior to getting here though)
+      // note that TangerineWhistle or later this cannot happen
+      // (it could have ran out of gas prior to getting here though)
       if (gasLimit.gt(runState.eei.getGasLeft().isub(gas))) {
         trap(ERROR.OUT_OF_GAS)
       }
@@ -330,7 +331,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
         runState,
         common
       )
-      // note that TangerineWhistle or later this cannot happen (it could have ran out of gas prior to getting here though)
+      // note that TangerineWhistle or later this cannot happen
+      // (it could have ran out of gas prior to getting here though)
       if (gasLimit.gt(runState.eei.getGasLeft().isub(gas))) {
         trap(ERROR.OUT_OF_GAS)
       }
@@ -371,7 +373,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
         runState,
         common
       )
-      // note that TangerineWhistle or later this cannot happen (it could have ran out of gas prior to getting here though)
+      // note that TangerineWhistle or later this cannot happen
+      // (it could have ran out of gas prior to getting here though)
       if (gasLimit.gt(runState.eei.getGasLeft().isub(gas))) {
         trap(ERROR.OUT_OF_GAS)
       }
@@ -387,7 +390,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
         trap(ERROR.STATIC_STATE_CHANGE)
       }
 
-      const [, /*value*/ offset, length /*salt*/] = runState.stack.peek(4)
+      const [_value, offset, length, _salt] = runState.stack.peek(4)
 
       gas.iadd(subMemUsage(runState, offset, length, common))
       gas.iadd(accessAddressEIP2929(runState, runState.eei.getAddress(), common, false))
