@@ -11,15 +11,11 @@ set -o errexit
 
 # Should only run in Github Actions CI
 if [ -z "$GITHUB_SHA" ]; then
-
   echo "==================================================================================="
   echo "This script publishes ethereumjs-monorepo to an npm proxy registry. Only run in CI."
   echo "==================================================================================="
-
   exit 1
-
 fi
-
 
 # Launch npm proxy registry
 verdaccio --config verdaccio.yml &

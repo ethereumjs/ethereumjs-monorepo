@@ -33,7 +33,7 @@ lerna exec "npm unpublish \$LERNA_PACKAGE_NAME --registry http://localhost:4873 
 
 ## E2E testing in CI
 
-Verdaccio is also set up in the `e2e_tests` CI workflow and provides a way to install @ethereumjs
+Verdaccio is also set up in the [`e2e-tests`](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1134/files) CI workflow and provides a way to install @ethereumjs
 packages at an arbitrary commit in an external real-world project and run their unit
 tests with it. This testing strategy is borrowed from ethereum/solidity which checks latest Solidity
 against OpenZeppelin and others to keep abreast of how local changes might affect critical projects

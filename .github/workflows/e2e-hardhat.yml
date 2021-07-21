@@ -1,16 +1,18 @@
 name: E2E Hardhat Tests
 on:
   push:
-    branches: [ hardhart-e2e ]
+    branches:
+      - master
+    tags:
+      - '*'
+  pull_request:
+    types: [opened, reopened, synchronize]
+    
 env:
   cwd: ${{github.workspace}}
 
-concurrency:
-  group: ${{github.workflow}}
-  cancel-in-progress: true
-
 jobs:
-  virtual-npm-publish:
+  e2e-hardhat:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -32,18 +34,11 @@ jobs:
         run: npm run e2e:publish
 
       - name: Generate e2e resolutions
-        run: |
-          npm run e2e:resolutions
+        run: npm run e2e:resolutions
 
-      # Clones repo and injects fake dependencies
-      - name: Build hardhat repo with new EthereumJS dependencies
-        run: |
-          git clone https://github.com/nomiclabs/hardhat.git
-          node scripts/inject-e2e-dependencies-resolution.js
-          cd hardhat
-          rm yarn.lock
-          yarn
-          yarn build
-          cd packages/hardhat-core
-          yarn run test:except-tracing
+      # Clones repo and injects proxied dependencies
+      - name: Build hardhat and test with new EthereumJS dependencies
+        run: bash ./scripts/e2e-hardhat.sh
+        env:
+          INFURA_URL: ${{ secrets.URL_MAINNET }}
           
