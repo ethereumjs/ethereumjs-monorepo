@@ -261,6 +261,43 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
     t.end()
   })
 
+  t.test('run with insufficient eip1559 funds', async (t) => {
+    const vm = new VM({ common })
+    const tx = getTransaction(common, 2, true, '0x', false)
+    const address = tx.getSenderAddress()
+    const account = await vm.stateManager.getAccount(address)
+    account.balance = new BN(9000000) // This is the maxFeePerGas multiplied with the gasLimit of 90000
+    await vm.stateManager.putAccount(address, account)
+    await vm.runTx({ tx })
+    account.balance = new BN(9000000)
+    await vm.stateManager.putAccount(address, account)
+    const tx2 = getTransaction(common, 2, true, '0x64', false) // Send 100 wei; now balance < maxFeePerGas*gasLimit + callvalue
+    try {
+      await vm.runTx({ tx: tx2 })
+      t.fail('cannot reach this')
+    } catch (e) {
+      t.pass('succesfully threw on insufficient balance for transaction')
+    }
+    t.end()
+  })
+
+  t.test('should throw on wrong nonces', async (t) => {
+    const vm = new VM({ common })
+    const tx = getTransaction(common, 2, true, '0x', false)
+    const address = tx.getSenderAddress()
+    const account = await vm.stateManager.getAccount(address)
+    account.balance = new BN(9000000) // This is the maxFeePerGas multiplied with the gasLimit of 90000
+    account.nonce = new BN(1)
+    await vm.stateManager.putAccount(address, account)
+    try {
+      await vm.runTx({ tx })
+      t.fail('cannot reach this')
+    } catch (e) {
+      t.pass('succesfully threw on wrong nonces')
+    }
+    t.end()
+  })
+
   t.test("run with maxBaseFee less than block's baseFee", async (t) => {
     // EIP-1559
     // Fail if transaction.maxFeePerGas < block.baseFeePerGas
