@@ -49,7 +49,6 @@ tape('EIP 3541 tests', (t) => {
     const tx2 = Transaction.fromTxData({
       data: '0x7FEF0000000000000000000000000000000000000000000000000000000000000060005260206000F3',
       gasLimit: 1000000,
-      nonce: 2,
     }).sign(pkey)
 
     result = await vm.runTx({ tx: tx2 })
