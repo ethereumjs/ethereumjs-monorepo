@@ -38,7 +38,9 @@ jobs:
 
       # Clones repo and injects proxied dependencies
       - name: Build hardhat and test with new EthereumJS dependencies
-        run: bash ./scripts/e2e-hardhat.sh
         env:
+          FORCE_COLOR: 3
           INFURA_URL: ${{ secrets.URL_MAINNET }}
+        run: bash ./scripts/e2e-hardhat.sh
+
           
