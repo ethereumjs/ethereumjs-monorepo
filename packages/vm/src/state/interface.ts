@@ -8,7 +8,7 @@ export interface StorageDump {
   [key: string]: string
 }
 
-export type AccountFields = Pick<Account, 'nonce' | 'balance' | 'stateRoot' | 'codeHash'>
+export type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'stateRoot' | 'codeHash'>>
 
 export interface StateManager {
   copy(): StateManager

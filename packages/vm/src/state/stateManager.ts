@@ -166,16 +166,12 @@ export default class DefaultStateManager implements StateManager {
   /**
    * Gets the account associated with `address`, modifies the given account
    * fields, then saves the account into state. Account fields can include
-   * `nonce`, `balance`, `stateRoot`, and `codeHash`. Throws if account
-   * does not exist.
+   * `nonce`, `balance`, `stateRoot`, and `codeHash`.
    * @param address - Address of the account to modify
    * @param accountFields - Object containing account fields and values to modify
    */
    async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
     const account = await this.getAccount(address)
-    if (!account) {
-      throw new Error('Account does not exist for provided address')
-    }
     account.nonce = accountFields.nonce ?? account.nonce
     account.balance = accountFields.balance ?? account.balance
     account.stateRoot = accountFields.stateRoot ?? account.stateRoot

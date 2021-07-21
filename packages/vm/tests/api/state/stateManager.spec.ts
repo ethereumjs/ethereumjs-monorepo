@@ -168,6 +168,29 @@ tape('StateManager', (t) => {
       st.end()
     }
   )
+
+  t.test('should modify account fields correctly', async (st) => {
+    const stateManager = new DefaultStateManager()
+    const account = createAccount()
+    const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+
+    await stateManager.putAccount(address, account)
+
+    await stateManager.modifyAccountFields(address, { balance: new BN(1234) })
+
+    const res1 = await stateManager.getAccount(address)
+
+    st.equal(res1.balance.toString('hex'), '4d2')
+
+    await stateManager.modifyAccountFields(address, { nonce: new BN(1) })
+
+    const res2 = await stateManager.getAccount(address)
+
+    st.equal(res2.nonce.toNumber(), 1)
+    
+    st.end()
+  })
+
   t.test(
     'should generate the genesis state root correctly for mainnet from ethereum/tests data',
     async (st) => {
