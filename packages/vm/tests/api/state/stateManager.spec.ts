@@ -187,7 +187,7 @@ tape('StateManager', (t) => {
     const res2 = await stateManager.getAccount(address)
 
     st.equal(res2.nonce.toNumber(), 1)
-    
+
     st.end()
   })
 

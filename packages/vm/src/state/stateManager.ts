@@ -170,7 +170,7 @@ export default class DefaultStateManager implements StateManager {
    * @param address - Address of the account to modify
    * @param accountFields - Object containing account fields and values to modify
    */
-   async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
+  async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
     const account = await this.getAccount(address)
     account.nonce = accountFields.nonce ?? account.nonce
     account.balance = accountFields.balance ?? account.balance
