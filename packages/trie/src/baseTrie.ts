@@ -687,7 +687,11 @@ export class Trie {
     } catch (e) {
       throw new Error('Invalid proof nodes given')
     }
-    return proofTrie.get(key)
+    const proofKeyValue = await proofTrie.get(key)
+    if (!proofKeyValue) {
+      throw new Error("Key does not exist in given proof trie")
+    }
+    return proofKeyValue
   }
 
   /**

@@ -29,6 +29,7 @@
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "tsc": "../../config/cli/ts-compile.sh",
+    "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
     "test:node": "tape -r ts-node/register test/*.ts"
