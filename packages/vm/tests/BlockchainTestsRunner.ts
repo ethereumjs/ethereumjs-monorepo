@@ -5,6 +5,7 @@ import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import { setupPreConditions, verifyPostConditions } from './util'
 import Common from '@ethereumjs/common'
+import { TransactionFactory } from '../../tx/dist'
 
 const level = require('level')
 const levelMem = require('level-mem')
@@ -116,6 +117,28 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     try {
       // Update common HF
       common.setHardforkByBlockNumber(currentBlock.toNumber())
+
+      if (raw.transactionSequence) {
+        for (const txData of raw.transactionSequence) {
+          const txRLP = Buffer.from(txData.rawBytes.slice(2), 'hex')
+          const tx = TransactionFactory.fromSerializedData(txRLP)
+          const shouldFail = txData.valid == 'false'
+          try {
+            await vm.runTx({
+              tx,
+            })
+            if (shouldFail) {
+              t.fail('tx should fail, but did not fail')
+            }
+          } catch (e) {
+            if (!shouldFail) {
+              t.fail('tx should not fail, but failed')
+            } else {
+              t.pass('tx succesfully failed')
+            }
+          }
+        }
+      }
 
       const blockRlp = Buffer.from(raw.rlp.slice(2), 'hex')
       const block = Block.fromRLPSerializedBlock(blockRlp, { common })
