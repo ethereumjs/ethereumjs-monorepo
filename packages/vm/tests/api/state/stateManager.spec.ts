@@ -173,7 +173,6 @@ tape('StateManager', (t) => {
     const stateManager = new DefaultStateManager()
     const account = createAccount()
     const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
-
     await stateManager.putAccount(address, account)
 
     await stateManager.modifyAccountFields(address, { balance: new BN(1234) })
@@ -187,6 +186,28 @@ tape('StateManager', (t) => {
     const res2 = await stateManager.getAccount(address)
 
     st.equal(res2.nonce.toNumber(), 1)
+
+    await stateManager.modifyAccountFields(address, {
+      codeHash: Buffer.from(
+        'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b',
+        'hex'
+      ),
+      stateRoot: Buffer.from(
+        'cafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7',
+        'hex'
+      ),
+    })
+
+    const res3 = await stateManager.getAccount(address)
+
+    st.equal(
+      res3.codeHash.toString('hex'),
+      'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b'
+    )
+    st.equal(
+      res3.stateRoot.toString('hex'),
+      'cafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7'
+    )
 
     st.end()
   })
@@ -208,6 +229,28 @@ tape('StateManager', (t) => {
       const res2 = await stateManager.getAccount(address)
 
       st.equal(res2.nonce.toNumber(), 1)
+
+      await stateManager.modifyAccountFields(address, {
+        codeHash: Buffer.from(
+          'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b',
+          'hex'
+        ),
+        stateRoot: Buffer.from(
+          'cafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7',
+          'hex'
+        ),
+      })
+
+      const res3 = await stateManager.getAccount(address)
+
+      st.equal(
+        res3.codeHash.toString('hex'),
+        'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b'
+      )
+      st.equal(
+        res3.stateRoot.toString('hex'),
+        'cafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7'
+      )
 
       st.end()
     }
