@@ -126,10 +126,10 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
           blockOpts: { calcDifficultyFromHeader: parentBlock.header, freeze: false },
         })
         for (const txData of raw.transactionSequence) {
-          const txRLP = Buffer.from(txData.rawBytes.slice(2), 'hex')
-          const tx = TransactionFactory.fromSerializedData(txRLP)
           const shouldFail = txData.valid == 'false'
           try {
+            const txRLP = Buffer.from(txData.rawBytes.slice(2), 'hex')
+            const tx = TransactionFactory.fromSerializedData(txRLP)
             await blockBuilder.addTransaction(tx)
             if (shouldFail) {
               t.fail('tx should fail, but did not fail')
@@ -142,7 +142,12 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
             }
           }
         }
-        await vm.stateManager.revert()
+        // Have to try/catch this revert, in some cases trie is not checkpointed and we should thus not revert changes
+        try {
+          await vm.stateManager.revert()
+          // eslint-disable-next-line no-empty
+        } finally {
+        }
       }
 
       const blockRlp = Buffer.from(raw.rlp.slice(2), 'hex')
