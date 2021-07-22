@@ -5,7 +5,7 @@ import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import { setupPreConditions, verifyPostConditions } from './util'
 import Common from '@ethereumjs/common'
-import { TransactionFactory } from '../../tx/dist'
+import { TransactionFactory } from '@ethereumjs/tx'
 
 const level = require('level')
 const levelMem = require('level-mem')
