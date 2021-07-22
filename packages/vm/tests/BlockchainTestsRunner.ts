@@ -1,10 +1,11 @@
 import * as tape from 'tape'
 import { addHexPrefix, BN, toBuffer, rlp } from 'ethereumjs-util'
-import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
-import { setupPreConditions, verifyPostConditions } from './util'
 import Common from '@ethereumjs/common'
+import { TransactionFactory } from '@ethereumjs/tx'
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
+import { setupPreConditions, verifyPostConditions } from './util'
 
 const level = require('level')
 const levelMem = require('level-mem')
@@ -116,6 +117,34 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     try {
       // Update common HF
       common.setHardforkByBlockNumber(currentBlock.toNumber())
+
+      // transactionSequence is provided when txs are expected to be rejected.
+      // To run this field we try to import them on the current state.
+      if (raw.transactionSequence) {
+        const parentBlock = await vm.blockchain.getIteratorHead()
+        const blockBuilder = await vm.buildBlock({
+          parentBlock,
+          blockOpts: { calcDifficultyFromHeader: parentBlock.header },
+        })
+        for (const txData of raw.transactionSequence) {
+          const shouldFail = txData.valid == 'false'
+          try {
+            const txRLP = Buffer.from(txData.rawBytes.slice(2), 'hex')
+            const tx = TransactionFactory.fromSerializedData(txRLP)
+            await blockBuilder.addTransaction(tx)
+            if (shouldFail) {
+              t.fail('tx should fail, but did not fail')
+            }
+          } catch (e) {
+            if (!shouldFail) {
+              t.fail('tx should not fail, but failed')
+            } else {
+              t.pass('tx succesfully failed')
+            }
+          }
+        }
+        await blockBuilder.revert() // will only revert if checkpointed
+      }
 
       const blockRlp = Buffer.from(raw.rlp.slice(2), 'hex')
       const block = Block.fromRLPSerializedBlock(blockRlp, { common })
