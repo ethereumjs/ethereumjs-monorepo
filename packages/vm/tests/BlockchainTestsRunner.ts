@@ -118,6 +118,8 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
       // Update common HF
       common.setHardforkByBlockNumber(currentBlock.toNumber())
 
+      // transactionSequence is provided when txs are expected to be rejected.
+      // To run this field we try to import them on the current state.
       if (raw.transactionSequence) {
         const parentBlock = await vm.blockchain.getIteratorHead()
         const blockBuilder = await vm.buildBlock({
