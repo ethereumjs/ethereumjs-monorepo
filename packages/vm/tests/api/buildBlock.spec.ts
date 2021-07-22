@@ -229,7 +229,16 @@ tape('BlockBuilder', async (t) => {
     }
 
     blockBuilder = await vm.buildBlock({ parentBlock: genesisBlock })
-    await blockBuilder.addTransaction(tx)
+
+    const tx2 = Transaction.fromTxData(
+      { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1, nonce: 1 },
+      { common, freeze: false }
+    )
+    tx2.getSenderAddress = () => {
+      return address
+    }
+
+    await blockBuilder.addTransaction(tx2)
     await blockBuilder.revert()
 
     try {
@@ -326,7 +335,7 @@ tape('BlockBuilder', async (t) => {
       return address
     }
     const tx4 = FeeMarketEIP1559Transaction.fromTxData(
-      { to: Address.zero(), value: 1000, gasLimit: 21000, maxFeePerGas: 101 },
+      { to: Address.zero(), value: 1000, gasLimit: 21000, maxFeePerGas: 101, nonce: 1 },
       { common, freeze: false }
     )
     tx4.getSenderAddress = () => {

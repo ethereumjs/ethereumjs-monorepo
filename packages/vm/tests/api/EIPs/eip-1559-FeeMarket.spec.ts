@@ -117,6 +117,7 @@ tape('EIP1559 tests', (t) => {
     const results2 = await vm.runTx({
       tx: block2.transactions[0],
       block: block2,
+      skipNonce: true,
     })
 
     expectedCost = GWEI.muln(21000).muln(5)
@@ -147,6 +148,7 @@ tape('EIP1559 tests', (t) => {
     const results3 = await vm.runTx({
       tx: block3.transactions[0],
       block: block3,
+      skipNonce: true,
     })
 
     expectedCost = GWEI.muln(21000).muln(5)
