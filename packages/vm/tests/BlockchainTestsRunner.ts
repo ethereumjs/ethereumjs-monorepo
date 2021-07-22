@@ -143,12 +143,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
             }
           }
         }
-        // Have to try/catch this revert, in some cases trie is not checkpointed and we should thus not revert changes
-        try {
-          await vm.stateManager.revert()
-          // eslint-disable-next-line no-empty
-        } finally {
-        }
+        await blockBuilder.revert() // will only revert if checkpointed
       }
 
       const blockRlp = Buffer.from(raw.rlp.slice(2), 'hex')
