@@ -1,11 +1,11 @@
 import * as tape from 'tape'
 import { addHexPrefix, BN, toBuffer, rlp } from 'ethereumjs-util'
-import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
-import { setupPreConditions, verifyPostConditions } from './util'
 import Common from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
+import { setupPreConditions, verifyPostConditions } from './util'
 
 const level = require('level')
 const levelMem = require('level-mem')
