@@ -122,8 +122,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
         const parentBlock = await vm.blockchain.getIteratorHead()
         const blockBuilder = await vm.buildBlock({
           parentBlock,
-          headerData: { coinbase: '0x96dc73c8b5969608c77375f085949744b5177660' },
-          blockOpts: { calcDifficultyFromHeader: parentBlock.header, freeze: false },
+          blockOpts: { calcDifficultyFromHeader: parentBlock.header },
         })
         for (const txData of raw.transactionSequence) {
           const shouldFail = txData.valid == 'false'
