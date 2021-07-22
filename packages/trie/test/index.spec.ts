@@ -342,19 +342,19 @@ tape('should throw an error when a proof is invalid', async (t) => {
   await trie.put(Buffer.from('aa'), Buffer.from('value2'))
   await trie.put(Buffer.from('aaa'), Buffer.from('value3'))
 
-  const proof = await BaseTrie.createProof(trie, Buffer.from("a"))
+  const proof = await BaseTrie.createProof(trie, Buffer.from('a'))
 
   // Normal verification
-  const key = await BaseTrie.verifyProof(trie.root, Buffer.from('a'), proof)
+  await BaseTrie.verifyProof(trie.root, Buffer.from('a'), proof)
 
   // Corrupting the proof
   proof[0].reverse()
 
   try {
     // @throws — If proof is found to be invalid.
-    const key2 = await BaseTrie.verifyProof(trie.root, Buffer.from('a'), proof)
-    t.fail('should have thrown an error, but didn\'t')
-  } catch (err) { 
+    await BaseTrie.verifyProof(trie.root, Buffer.from('a'), proof)
+    t.fail("should have thrown an error, but didn't")
+  } catch (err) {
     t.pass('should throw error on invalid proof')
   }
 
