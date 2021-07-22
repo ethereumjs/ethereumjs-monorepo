@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [UNRELEASED]
+
+**New Features**
+
+**Bug Fixes**
+
+- Fix EIP1559 bug to include tx value in balance check, fix nonce check, PR [#1372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1372)
+- Update `ethereum/tests` to v9.0.3 and fix for uncles at hardfork transition, PR [#1347](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1347)
+
+**Maintenance**
+
+- Update internal `common` usage to new Chain & Hardfork enums, PR [#1363](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1363)
+
+**Dependencies, CI and Docs**
+
+- Add hardhat e2e test integration, PR [#1348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1348)
+
 ## 5.5.0 - 2021-07-08
 
 ### Finalized London HF Support
