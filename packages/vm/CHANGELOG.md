@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 **Maintenance**
 
 - Update internal `common` usage to new Chain & Hardfork enums, PR [#1363](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1363)
+- Add tests for wrong transactions, PR [#1374](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1374)
 
 **Dependencies, CI and Docs**
 
