@@ -1111,7 +1111,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(ERROR.OUT_OF_GAS)
       }
       if (!value.isZero()) {
-        const callStipend = common.param('gasPrices', 'callStipend')
+        const callStipend = new BN(common.param('gasPrices', 'callStipend'))
         runState.eei.addStipend(callStipend)
         gasLimit.iadd(callStipend)
       }
