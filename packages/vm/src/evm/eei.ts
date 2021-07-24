@@ -90,7 +90,6 @@ export default class EEI {
    * @param context - Usage context for debugging
    * @throws if out of gas
    */
-  // eslint-disable-next-line no-unused-vars
   useGas(amount: BN, context?: string): void {
     this._gasLeft.isub(amount)
     if (this._evm._vm.DEBUG) {
@@ -107,7 +106,6 @@ export default class EEI {
    * @param amount - Amount of gas refunded
    * @param context - Usage context for debugging
    */
-  // eslint-disable-next-line no-unused-vars
   refundGas(amount: BN, context?: string): void {
     if (this._evm._vm.DEBUG) {
       debugGas(`${context ? context + ': ' : ''}refund ${amount} gas (-> ${this._evm._refund})`)
@@ -120,7 +118,6 @@ export default class EEI {
    * @param amount - Amount to subtract from gas refunds
    * @param context - Usage context for debugging
    */
-  // eslint-disable-next-line no-unused-vars
   subRefund(amount: BN, context?: string): void {
     if (this._evm._vm.DEBUG) {
       debugGas(`${context ? context + ': ' : ''}sub gas refund ${amount} (-> ${this._evm._refund})`)
