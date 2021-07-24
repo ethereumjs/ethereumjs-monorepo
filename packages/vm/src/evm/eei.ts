@@ -130,6 +130,17 @@ export default class EEI {
   }
 
   /**
+   * Increments the internal gasLeft counter. Used for adding callStipend.
+   * @param amount - Amount to add
+   */
+  addStipend(amount: BN): void {
+    if (this._evm._vm.DEBUG) {
+      debugGas(`add stipend ${amount} (-> ${this._gasLeft})`)
+    }
+    this._gasLeft.iadd(amount)
+  }
+
+  /**
    * Returns address of currently executing account.
    */
   getAddress(): Address {

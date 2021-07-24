@@ -1061,9 +1061,9 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
 
       if (!value.isZero()) {
-        // TODO: Don't use private attr directly
-        runState.eei._gasLeft.iaddn(runState._common.param('gasPrices', 'callStipend'))
-        gasLimit.iaddn(runState._common.param('gasPrices', 'callStipend'))
+        const callStipend = new BN(common.param('gasPrices', 'callStipend'))
+        runState.eei.addStipend(callStipend)
+        gasLimit.iadd(callStipend)
       }
 
       const ret = await runState.eei.call(gasLimit, toAddress, value, data)
@@ -1096,9 +1096,9 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(ERROR.OUT_OF_GAS)
       }
       if (!value.isZero()) {
-        // TODO: Don't use private attr directly
-        runState.eei._gasLeft.iaddn(runState._common.param('gasPrices', 'callStipend'))
-        gasLimit.iaddn(runState._common.param('gasPrices', 'callStipend'))
+        const callStipend = common.param('gasPrices', 'callStipend')
+        runState.eei.addStipend(callStipend)
+        gasLimit.iadd(callStipend)
       }
 
       let data = Buffer.alloc(0)
