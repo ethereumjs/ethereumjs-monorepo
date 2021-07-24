@@ -363,9 +363,14 @@ export default class EEI {
   /**
    * Loads a 256-bit value to memory from persistent storage.
    * @param key - Storage key
+   * @param original - If true, return the original storage value (default: false)
    */
-  async storageLoad(key: Buffer): Promise<Buffer> {
-    return this._state.getContractStorage(this._env.address, key)
+  async storageLoad(key: Buffer, original = false): Promise<Buffer> {
+    if (original) {
+      return this._state.getOriginalContractStorage(this._env.address, key)
+    } else {
+      return this._state.getContractStorage(this._env.address, key)
+    }
   }
 
   /**
