@@ -158,7 +158,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
       await vm.runBlockchain()
       const headBlock = await vm.blockchain.getHead()
 
-      // if the test fails, then block.header is the prej because
+      // if the test fails, then block.header is the prev because
       // vm.runBlock has a check that prevents the actual postState from being
       // imported if it is not equal to the expected postState. it is useful
       // for debugging to skip this, so that verifyPostConditions will compare
