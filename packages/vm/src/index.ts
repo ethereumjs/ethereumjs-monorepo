@@ -71,9 +71,9 @@ export interface VMOpts {
   stateManager?: StateManager
   /**
    * A {@link SecureTrie} instance for the state tree (ignored if stateManager is passed)
-   * @deprecated
+   * @deprecated - will be removed in next major version release
    */
-  state?: any // TODO
+  state?: Trie
   /**
    * A {@link Blockchain} object for storing/retrieving blocks
    */

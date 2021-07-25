@@ -383,8 +383,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Process any gas refund
-  // TODO: determine why the gasRefund from execResult is not used here directly
-  let gasRefund = evm._refund
+  let gasRefund = results.execResult.gasRefund ?? new BN(0)
   const maxRefundQuotient = this._common.param('gasConfig', 'maxRefundQuotient')
   if (!gasRefund.isZero()) {
     const maxRefund = results.gasUsed.divn(maxRefundQuotient)
