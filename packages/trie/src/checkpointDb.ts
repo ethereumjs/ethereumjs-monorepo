@@ -141,7 +141,6 @@ export class CheckpointDB extends DB {
       for (const op of opStack) {
         if (op.type === 'put') {
           await this.put(op.key, op.value)
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         } else if (op.type === 'del') {
           await this.del(op.key)
         }

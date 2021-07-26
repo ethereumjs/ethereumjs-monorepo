@@ -73,7 +73,6 @@ export class Trie {
    * Sets the current root of the `trie`
    */
   set root(value: Buffer) {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!value) {
       value = this.EMPTY_TRIE_ROOT
     }
@@ -137,7 +136,6 @@ export class Trie {
    */
   async put(key: Buffer, value: Buffer): Promise<void> {
     // If value is empty, delete
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!value || value.toString() === '') {
       return await this.del(key)
     }
@@ -408,10 +406,8 @@ export class Trie {
       stack: TrieNode[]
     ) => {
       // branchNode is the node ON the branch node not THE branch node
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!parentNode || parentNode instanceof BranchNode) {
         // branch->?
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (parentNode) {
           stack.push(parentNode)
         }
@@ -618,12 +614,10 @@ export class Trie {
   async batch(ops: BatchDBOp[]): Promise<void> {
     for (const op of ops) {
       if (op.type === 'put') {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!op.value) {
           throw new Error('Invalid batch db operation')
         }
         await this.put(op.key, op.value)
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       } else if (op.type === 'del') {
         await this.del(op.key)
       }
