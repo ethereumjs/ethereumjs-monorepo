@@ -4,9 +4,6 @@ module.exports = {
     project: ['./tsconfig.json', './tsconfig.browser.json', './tsconfig.eslint.json']
   },
   rules: {
-    // Many methods have been sketched in as stubs & their params trigger this.
-    // Duplicates the (more tolerant) @typescript-eslint/no-unused-vars
-    'no-unused-vars': 'off'
   },
   overrides: [
     {
