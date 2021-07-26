@@ -106,7 +106,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
    * @return {Peer}
    */
   // TODO: find out what _job is supposed to be doing here...
-  peer(): Peer {
-    return this.pool.idle((p: any) => p.eth)
+  peer(): Peer | undefined {
+    return this.pool.idle((p: Peer) => 'eth' in p)
   }
 }

@@ -108,10 +108,13 @@ export class PeerPool {
    * @param [filterFn] filter function to apply before finding idle peers
    * @return {Peer}
    */
-  idle(filterFn = (_peer: Peer) => true): Peer {
+  idle(filterFn = (_peer: Peer) => true): Peer | undefined {
     const idle = this.peers.filter((p) => p.idle && filterFn(p))
-    const index = Math.floor(Math.random() * idle.length)
-    return idle[index]
+    if (idle.length > 0) {
+      const index = Math.floor(Math.random() * idle.length)
+      return idle[index]
+    }
+    return
   }
 
   /**
