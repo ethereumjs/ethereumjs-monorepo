@@ -70,11 +70,13 @@ export class Trie {
   }
 
   /** Sets the current root of the `trie` */
-  set root(value: Buffer | undefined) {
-    if (value) {
+  set root(value: Buffer) {
+    try {
       assert(value.length === 32, 'Invalid root length. Roots are 32 bytes')
       this._root = value
-    } else this._root = this.EMPTY_TRIE_ROOT
+    } catch {
+      this._root = this.EMPTY_TRIE_ROOT
+    }
   }
 
   /** Gets the current root of the `trie` */
@@ -89,7 +91,7 @@ export class Trie {
    * @param value
    * @deprecated
    */
-  setRoot(value?: Buffer) {
+  setRoot(value: Buffer) {
     this.root = value
   }
 
