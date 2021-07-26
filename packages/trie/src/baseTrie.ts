@@ -70,13 +70,11 @@ export class Trie {
   }
 
   /** Sets the current root of the `trie` */
-  set root(value: Buffer) {
-    /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
-    if (!value) {
-      value = this.EMPTY_TRIE_ROOT
-    }
-    assert(value.length === 32, 'Invalid root length. Roots are 32 bytes')
-    this._root = value
+  set root(value: Buffer | undefined) {
+    if (value) {
+      assert(value.length === 32, 'Invalid root length. Roots are 32 bytes')
+      this._root = value
+    } else this._root = this.EMPTY_TRIE_ROOT
   }
 
   /** Gets the current root of the `trie` */
@@ -92,11 +90,7 @@ export class Trie {
    * @deprecated
    */
   setRoot(value?: Buffer) {
-    if (!value) {
-      value = this.EMPTY_TRIE_ROOT
-    }
-    assert(value.length === 32, 'Invalid root length. Roots are 32 bytes')
-    this._root = value
+    this.root = value
   }
 
   /**
