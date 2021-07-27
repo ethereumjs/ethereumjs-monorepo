@@ -72,7 +72,7 @@ tape('EIP-2930 Optional Access Lists tests', (t) => {
     st.equal(gasUsed, 100, 'charge warm sload gas')
 
     trace = []
-    await vm.runTx({ tx: txnWithoutAccessList })
+    await vm.runTx({ tx: txnWithoutAccessList, skipNonce: true })
     st.ok(trace[1][0] == 'SLOAD')
     gasUsed = trace[1][1].sub(trace[2][1]).toNumber()
     st.equal(gasUsed, 2100, 'charge cold sload gas')

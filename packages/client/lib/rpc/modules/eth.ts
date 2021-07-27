@@ -162,7 +162,7 @@ export class Eth {
       return from
     }
 
-    const { execResult } = await vm.runTx({ tx })
+    const { execResult } = await vm.runTx({ tx, skipNonce: true })
     return bufferToHex(execResult.returnValue)
   }
 

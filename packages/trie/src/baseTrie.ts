@@ -65,16 +65,25 @@ export class Trie {
     this._deleteFromDB = deleteFromDB
 
     if (root) {
-      this.setRoot(root)
+      this.root = root
     }
   }
 
-  /** Sets the current root of the `trie` */
+  /**
+   * Sets the current root of the `trie`
+   */
   set root(value: Buffer) {
-    this.setRoot(value)
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!value) {
+      value = this.EMPTY_TRIE_ROOT
+    }
+    assert(value.length === 32, 'Invalid root length. Roots are 32 bytes')
+    this._root = value
   }
 
-  /** Gets the current root of the `trie` */
+  /**
+   * Gets the current root of the `trie`
+   */
   get root(): Buffer {
     return this._root
   }
@@ -87,11 +96,7 @@ export class Trie {
    * @deprecated
    */
   setRoot(value?: Buffer) {
-    if (!value) {
-      value = this.EMPTY_TRIE_ROOT
-    }
-    assert(value.length === 32, 'Invalid root length. Roots are 32 bytes')
-    this._root = value
+    this.root = value ?? this.EMPTY_TRIE_ROOT
   }
 
   /**
