@@ -303,7 +303,6 @@ export function getOpcodesForHF(common: Common): OpcodeList {
     }
   }
 
-  /* eslint-disable-next-line no-restricted-syntax */
   for (const key in opcodeBuilder) {
     const baseFee = common.param('gasPrices', opcodeBuilder[key].name.toLowerCase())
     // explicitly verify that we have defined a base fee

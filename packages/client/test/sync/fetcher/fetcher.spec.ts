@@ -6,16 +6,13 @@ import { Job } from '../../../lib/sync/fetcher/types'
 import { Event } from '../../../lib/types'
 
 class FetcherTest extends Fetcher<any, any, any> {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  process(_job: any, res: any) {
+  process(_job: any, _res: any) {
     return undefined // have to return undefined, otherwise the function return signature is void.
   }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async request(_job: any, peer: any) {
+  async request(_job: any, _peer: any) {
     return
   }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async store(store: any) {}
+  async store(_store: any) {}
 }
 
 tape('[Fetcher]', (t) => {

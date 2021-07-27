@@ -28,7 +28,6 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       block: first,
       max: count,
     })
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!headersResult) {
       // Catch occasional null responses from peers who do not return block headers from peer.eth request
       this.config.logger.warn(
@@ -40,7 +39,6 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
     }
     const headers = headersResult[1]
     const bodiesResult = await peer!.eth!.getBlockBodies({ hashes: headers.map((h) => h.hash()) })
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!bodiesResult) {
       // Catch occasional null responses from peers who do not return block bodies from peer.eth request
       this.config.logger.warn(

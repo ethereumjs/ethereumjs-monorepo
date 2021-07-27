@@ -222,7 +222,6 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       return false
     }
     const peer = this.peer()
-
     if (peer) {
       peer.idle = false
       this.in.remove()
