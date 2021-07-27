@@ -194,12 +194,10 @@ export default class DefaultStateManager implements StateManager {
 
     await this._trie.db.put(codeHash, value)
 
-    const account = await this.getAccount(address)
     if (this.DEBUG) {
       debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
     }
-    account.codeHash = codeHash
-    await this.putAccount(address, account)
+    await this.modifyAccountFields(address, { codeHash })
   }
 
   /**
