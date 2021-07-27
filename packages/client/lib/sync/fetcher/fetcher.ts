@@ -323,12 +323,9 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   }
 
   /**
-   * Returns a peer that can process the given job
-   * @param  job job
-   * @return {Peer}
+   * Returns an idle peer that can process a next job.
    */
-  // TODO: what is job supposed to be?
-  peer(_job?: Job<JobTask, JobResult, StorageItem>) {
+  peer() {
     return this.pool.idle()
   }
 
