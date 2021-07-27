@@ -99,12 +99,9 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
   }
 
   /**
-   * Returns a peer that can process the given job
-   * @param  job job
-   * @return {Peer}
+   * Returns an idle peer that can process a next job.
    */
-  // TODO: find out what _job is supposed to be doing here...
-  peer(): Peer {
-    return this.pool.idle((p: any) => p.eth)
+  peer(): Peer | undefined {
+    return this.pool.idle((peer) => 'eth' in peer)
   }
 }
