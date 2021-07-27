@@ -87,12 +87,9 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
   }
 
   /**
-   * Returns a peer that can process the given job
-   * @param  job job
-   * @return {Peer}
+   * Returns an idle peer that can process a next job.
    */
-  // TODO: what is job supposed to be?
-  peer(_job: Job<JobTask, BlockHeaderResult, BlockHeader>): Peer {
-    return this.pool.idle((p: any) => p.les && p.les.status.serveHeaders)
+  peer(): Peer | undefined {
+    return this.pool.idle((peer) => peer.les && peer.les.status.serveHeaders)
   }
 }
