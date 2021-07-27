@@ -147,7 +147,6 @@ export class Peer extends events.EventEmitter {
       protocols: Array.from(this.bound.keys()),
       inbound: this.inbound,
     }
-    /* eslint-disable @typescript-eslint/no-unnecessary-condition */
     return Object.entries(properties)
       .filter(([, value]) => value !== undefined && value !== null && value.toString() !== '')
       .map((keyValue) => keyValue.join('='))

@@ -37,7 +37,6 @@ export function parseMultiaddrs(input: MultiaddrLike): multiaddr[] {
       // parse as ip:port
       const match = s.match(/^(\d+\.\d+\.\d+\.\d+):([0-9]+)$/)
       if (match) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const [_, ip, port] = match
         return multiaddr(`/ip4/${ip}/tcp/${port}`)
       }
