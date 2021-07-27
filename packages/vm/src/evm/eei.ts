@@ -423,9 +423,9 @@ export default class EEI {
     await this._state.putAccount(toAddress, toAccount)
 
     // Subtract from contract balance
-    const account = await this._state.getAccount(this._env.address)
-    account.balance = new BN(0)
-    await this._state.putAccount(this._env.address, account)
+    await this._state.modifyAccountFields(this._env.address, {
+      balance: new BN(0),
+    })
 
     trap(ERROR.STOP)
   }
