@@ -23,8 +23,6 @@ interface ServerDetails {
 }
 export const servers: ServerDetails = {}
 
-/* eslint-disable @typescript-eslint/no-unnecessary-condition */
-
 export function createServer(location: string) {
   if (servers[location]) {
     throw new Error(`Already running a server at ${location}`)

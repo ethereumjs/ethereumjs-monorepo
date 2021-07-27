@@ -77,7 +77,6 @@ export class VMExecution extends Execution {
     while (
       (numExecuted === undefined || numExecuted === this.NUM_BLOCKS_PER_ITERATION) &&
       !startHeadBlock.hash().equals(canonicalHead.hash()) &&
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       this.syncing
     ) {
       headBlock = undefined
@@ -171,7 +170,6 @@ export class VMExecution extends Execution {
       )
       numExecuted = (await this.vmPromise) as number
 
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (errorBlock) {
         await this.chain.blockchain.setIteratorHead('vm', (errorBlock as Block).header.parentHash)
         return 0

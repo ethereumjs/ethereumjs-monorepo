@@ -147,7 +147,6 @@ export class PeerPool {
    * @emits  Event.POOL_PEER_BANNED
    */
   ban(peer: Peer, maxAge: number = 60000) {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!peer.server) {
       return
     }

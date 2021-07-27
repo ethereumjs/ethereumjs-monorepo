@@ -84,7 +84,6 @@ export default class MockServer extends Server {
 
   disconnect(id: string) {
     const peer = this.peers[id]
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (peer) this.config.events.emit(Event.PEER_DISCONNECTED, peer)
   }
 

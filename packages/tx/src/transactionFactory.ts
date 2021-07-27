@@ -96,10 +96,9 @@ export default class TransactionFactory {
    * If transactionID is undefined, returns the legacy transaction class.
    * @deprecated - This method is deprecated and will be removed on the next major release
    * @param transactionID
-   * @param common - This option is not used
+   * @param _common - This option is not used
    */
-  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-  public static getTransactionClass(transactionID: number = 0, common?: Common) {
+  public static getTransactionClass(transactionID: number = 0, _common?: Common) {
     const legacyTxn = transactionID == 0 || (transactionID >= 0x80 && transactionID <= 0xff)
 
     if (legacyTxn) {

@@ -33,7 +33,6 @@ export class SecureTrie extends CheckpointTrie {
    * @param value
    */
   async put(key: Buffer, val: Buffer): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!val || val.toString() === '') {
       await this.del(key)
     } else {
