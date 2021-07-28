@@ -41,8 +41,30 @@ tape('simple merkle proofs generation and verification', function (tester) {
     // to fail our proof we can request a proof for one key
     proof = await CheckpointTrie.createProof(trie, Buffer.from('another'))
     // and use that proof on another key
-    const result = await CheckpointTrie.verifyProof(trie.root, Buffer.from('key1aa'), proof)
-    t.equal(result, null)
+    try {
+      await CheckpointTrie.verifyProof(trie.root, Buffer.from('key1aa'), proof)
+      t.fail('should have thrown an error')
+    } catch (err) {
+      if (err.message.includes('Path not found')) {
+        t.pass('threw correct error on invalid proof')
+      } else {
+        t.fail('did not throw correct error')
+      }
+    }
+
+    // we can also corrupt a valid proof
+    proof = await CheckpointTrie.createProof(trie, Buffer.from('key2bb'))
+    proof[0].reverse()
+    try {
+      await CheckpointTrie.verifyProof(trie.root, Buffer.from('key2bb'), proof)
+      t.fail('should have thrown an error')
+    } catch (err) {
+      if (err.message.includes('Path not found')) {
+        t.pass('threw correct error on invalid proof')
+      } else {
+        t.fail('did not throw correct error')
+      }
+    }
     t.end()
   })
 

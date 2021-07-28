@@ -116,10 +116,11 @@ export class Trie {
   /**
    * Gets a value given a `key`
    * @param key - the key to search for
+   * @param throwWhenNotFound - if true, throw if part of the key is not found. Used for verifying proofs. (default: false)
    * @returns A Promise that resolves to `Buffer` if a value was found or `null` if no value was found.
    */
-  async get(key: Buffer): Promise<Buffer | null> {
-    const { node, remaining } = await this.findPath(key)
+  async get(key: Buffer, throwWhenNotFound = false): Promise<Buffer | null> {
+    const { node, remaining } = await this.findPath(key, throwWhenNotFound)
     let value = null
     if (node && remaining.length === 0) {
       value = node.value
@@ -172,16 +173,21 @@ export class Trie {
    * Tries to find a path to the node for the given key.
    * It returns a `stack` of nodes to the closest node.
    * @param key - the search key
+   * @param throwWhenNotFound - if true, throw if part of the key is not found. Used for verifying proofs. (default: false)
    */
-  async findPath(key: Buffer): Promise<Path> {
+  async findPath(key: Buffer, throwWhenNotFound = false): Promise<Path> {
     // eslint-disable-next-line no-async-promise-executor
-    return new Promise(async (resolve) => {
+    return new Promise(async (resolve, reject) => {
       const stack: TrieNode[] = []
       const targetKey = bufferToNibbles(key)
 
       const onFound: FoundNodeFunction = async (nodeRef, node, keyProgress, walkController) => {
         if (node === null) {
-          return
+          if (throwWhenNotFound) {
+            return reject(new Error('Path not found'))
+          } else {
+            return
+          }
         }
         const keyRemainder = targetKey.slice(matchingNibbleLength(keyProgress, targetKey))
         stack.push(node)
@@ -687,11 +693,7 @@ export class Trie {
     } catch (e) {
       throw new Error('Invalid proof nodes given')
     }
-    const proofKeyValue = await proofTrie.get(key)
-    if (!proofKeyValue) {
-      throw new Error("Key does not exist in given proof trie")
-    }
-    return proofKeyValue
+    return await proofTrie.get(key, true)
   }
 
   /**
