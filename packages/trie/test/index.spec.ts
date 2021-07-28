@@ -335,28 +335,3 @@ tape('setting back state root (deleteFromDB)', async (t) => {
 
   t.end()
 })
-
-tape('should throw an error when a proof is invalid', async (t) => {
-  const trie = new BaseTrie()
-  await trie.put(Buffer.from('a'), Buffer.from('value1'))
-  await trie.put(Buffer.from('aa'), Buffer.from('value2'))
-  await trie.put(Buffer.from('aaa'), Buffer.from('value3'))
-
-  const proof = await BaseTrie.createProof(trie, Buffer.from('a'))
-
-  // Normal verification
-  await BaseTrie.verifyProof(trie.root, Buffer.from('a'), proof)
-
-  // Corrupting the proof
-  proof[0].reverse()
-
-  try {
-    // @throws — If proof is found to be invalid.
-    await BaseTrie.verifyProof(trie.root, Buffer.from('a'), proof)
-    t.fail("should have thrown an error, but didn't")
-  } catch (err) {
-    t.pass('should throw error on invalid proof')
-  }
-
-  t.end()
-})
