@@ -65,6 +65,25 @@ tape('simple merkle proofs generation and verification', function (tester) {
         t.fail('did not throw correct error')
       }
     }
+
+    // test an invalid exclusion proof by creating
+    // a valid exclusion proof then making it non-null
+    myKey = Buffer.from('anyrandomkey')
+    proof = await CheckpointTrie.createProof(trie, myKey)
+    val = await CheckpointTrie.verifyProof(trie.root, myKey, proof)
+    t.equal(val, null, 'Expected value to be null')
+    // now make the key non-null so the exclusion proof becomes invalid
+    await trie.put(myKey, Buffer.from('thisisavalue'))
+    try {
+      await CheckpointTrie.verifyProof(trie.root, myKey, proof)
+      t.fail('should have thrown an error')
+    } catch (err) {
+      if (err.message.includes('Path not found')) {
+        t.pass('threw correct error on invalid proof')
+      } else {
+        t.fail('did not throw correct error')
+      }
+    }
     t.end()
   })
 
