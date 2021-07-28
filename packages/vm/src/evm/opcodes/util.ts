@@ -2,7 +2,6 @@ import Common from '@ethereumjs/common'
 import { BN, keccak256, setLengthRight, setLengthLeft } from 'ethereumjs-util'
 import { ERROR, VmError } from './../../exceptions'
 import { RunState } from './../interpreter'
-import { adjustSstoreGasEIP2929 } from './EIP2929'
 
 const MASK_160 = new BN(1).shln(160).subn(1)
 
@@ -235,21 +234,18 @@ export function writeCallOutput(runState: RunState, outOffset: BN, outLength: BN
  * @param {Buffer}   value
  * @param {Buffer}   keyBuf
  */
-export function updateSstoreGas(
-  runState: RunState,
-  found: any,
-  value: Buffer,
-  keyBuf: Buffer,
-  common: Common
-): BN {
+export function updateSstoreGas(runState: RunState, currentStorage: Buffer, value: Buffer, common: Common): BN {
   const sstoreResetCost = common.param('gasPrices', 'sstoreReset')
-  if ((value.length === 0 && !found.length) || (value.length !== 0 && found.length)) {
-    return adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset', common)
-  } else if (value.length === 0 && found.length) {
-    const gas = adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset', common)
-    runState.eei.refundGas(new BN(common.param('gasPrices', 'sstoreRefund')), 'updateSstoreGas')
+  if ((value.length === 0 && !currentStorage.length) || (value.length !== 0 && currentStorage.length)) {
+    return sstoreResetCost
+  } else if (value.length === 0 && currentStorage.length) {
+    const gas = sstoreResetCost
+    runState.eei.refundGas(
+      new BN(common.param('gasPrices', 'sstoreRefund')),
+      'updateSstoreGas'
+    )
     return gas
-  } else if (value.length !== 0 && !found.length) {
+  } else if (value.length !== 0 && !currentStorage.length) {
     return new BN(common.param('gasPrices', 'sstoreSet'))
   }
   return new BN(0)
