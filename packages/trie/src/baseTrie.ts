@@ -116,11 +116,11 @@ export class Trie {
   /**
    * Gets a value given a `key`
    * @param key - the key to search for
-   * @param checkProofValidity - if true, throw if part of the key is not found. Used for verifying proofs. (default: false)
+   * @param throwIfNotFound - if true, throw if any part of the key path is not found. Used for verifying proofs. (default: false)
    * @returns A Promise that resolves to `Buffer` if a value was found or `null` if no value was found.
    */
-  async get(key: Buffer, checkProofValidity = false): Promise<Buffer | null> {
-    const { node, remaining } = await this.findPath(key, checkProofValidity)
+  async get(key: Buffer, throwIfNotFound = false): Promise<Buffer | null> {
+    const { node, remaining } = await this.findPath(key, throwIfNotFound)
     let value = null
     if (node && remaining.length === 0) {
       value = node.value
@@ -173,9 +173,9 @@ export class Trie {
    * Tries to find a path to the node for the given key.
    * It returns a `stack` of nodes to the closest node.
    * @param key - the search key
-   * @param throwWhenNotFound - if true, throw if part of the key is not found. Used for verifying proofs. (default: false)
+   * @param throwIfNotFound - if true, throw if any part of the key path is not found. Used for verifying proofs. (default: false)
    */
-  async findPath(key: Buffer, checkKeyValidity = false): Promise<Path> {
+  async findPath(key: Buffer, throwIfNotFound = false): Promise<Path> {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       const stack: TrieNode[] = []
@@ -183,7 +183,7 @@ export class Trie {
 
       const onFound: FoundNodeFunction = async (nodeRef, node, keyProgress, walkController) => {
         if (node === null) {
-          if (checkKeyValidity) {
+          if (throwIfNotFound) {
             return reject(new Error('Path not found'))
           } else {
             return
@@ -684,7 +684,7 @@ export class Trie {
    * @param key
    * @param proof
    * @throws If proof is found to be invalid.
-   * @returns The value from the key or null if provided proof shows key is null in trie constructed from provided roothash}.
+   * @returns The value from the key, or null if valid proof of non-existence.
    */
   static async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
     let proofTrie = new Trie(null, rootHash)
