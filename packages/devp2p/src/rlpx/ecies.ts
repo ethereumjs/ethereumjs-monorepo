@@ -324,7 +324,6 @@ export class ECIES {
   }
 
   parseAckEIP8(data: Buffer): void {
-    // eslint-disable-line
     const size = buffer2int(data.slice(0, 2)) + 2
     assertEq(data.length, size, 'message length different from specified size (EIP8)', debug)
     this.parseAckPlain(data.slice(2), data.slice(0, 2))

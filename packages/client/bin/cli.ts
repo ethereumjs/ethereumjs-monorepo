@@ -184,6 +184,11 @@ async function run() {
     chain = args.network
   }
 
+  // TODO: map chainParams (and lib/util.parseParams) to new Common format
+  // and pass into common constructor below
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const chainParams = args.params ? await parseParams(args.params) : args.network
+
   const common = new Common({ chain, hardfork: Hardfork.Chainstart })
   const datadir = args.datadir ?? Config.DATADIR_DEFAULT
   const configDirectory = `${datadir}/${common.chainName()}/config`
@@ -214,9 +219,6 @@ async function run() {
   })
   logger = config.logger
   config.events.setMaxListeners(50)
-  // TODO: see todo below wrt resolving chain param parsing
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const chainParams = args.params ? await parseParams(args.params) : args.network
 
   const client = await runNode(config)
   const server = config.rpc ? runRpcServer(client, config) : null

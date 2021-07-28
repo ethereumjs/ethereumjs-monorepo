@@ -14,13 +14,11 @@ const errorMessage =
 
 export default class dns {
   public static promises = {
-    // eslint-disable-next-line no-unused-vars
     resolve: async function (_url: string, _recordType: string): Promise<any[]> {
       throw new Error(errorMessage)
     },
   }
 
-  // eslint-disable-next-line no-unused-vars
   static setServers(_servers: string[]): void {
     throw new Error(errorMessage)
   }

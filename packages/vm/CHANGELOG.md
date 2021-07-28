@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 **New Features**
 
+- StateManager: Added `modifyAccountFields` method to simplify the `getAccount` -> modify fields -> `putAccount` pattern, PR [#1369](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1369)
+
 **Bug Fixes**
 
 - Fix EIP1559 bug to include tx value in balance check, fix nonce check, PR [#1372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1372)
@@ -19,6 +21,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 - Update internal `common` usage to new Chain & Hardfork enums, PR [#1363](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1363)
 - Add tests for wrong transactions, PR [#1374](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1374)
+- Fix several internal todos, PR [#1375](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1375)
 
 **Dependencies, CI and Docs**
 

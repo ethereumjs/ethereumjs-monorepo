@@ -7,8 +7,7 @@ import { Event } from '../../../lib/types'
 import { Libp2pPeer } from '../../../lib/net/peer'
 
 tape('[Libp2pPeer]', async (t) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const PeerId = td.replace('peer-id')
+  const _PeerId = td.replace('peer-id')
 
   const Libp2pNode = td.constructor(['start', 'stop', 'dial', 'dialProtocol'] as any)
   td.replace('../../../lib/net/peer/libp2pnode', { Libp2pNode })

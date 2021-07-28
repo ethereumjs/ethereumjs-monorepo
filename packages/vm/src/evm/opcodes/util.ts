@@ -1,4 +1,5 @@
-import { Address, BN, keccak256, setLengthRight, setLengthLeft } from 'ethereumjs-util'
+import Common from '@ethereumjs/common'
+import { BN, keccak256, setLengthRight, setLengthLeft } from 'ethereumjs-util'
 import { ERROR, VmError } from './../../exceptions'
 import { RunState } from './../interpreter'
 import { adjustSstoreGasEIP2929 } from './EIP2929'
@@ -82,32 +83,6 @@ export function short(buffer: Buffer): string {
 }
 
 /**
- * Calls relevant stateManager.getContractStorage method based on hardfork
- *
- * @param {RunState} runState [description]
- * @param {Buffer}   address  [description]
- * @param {Buffer}   key      [description]
- * @return {Promise<Buffer>}
- */
-export async function getContractStorage(
-  runState: RunState,
-  address: Address,
-  key: Buffer
-): Promise<any> {
-  const current = setLengthLeftStorage(await runState.stateManager.getContractStorage(address, key))
-  if (
-    runState._common.hardfork() === 'constantinople' ||
-    runState._common.gteHardfork('istanbul')
-  ) {
-    const original = setLengthLeftStorage(
-      await runState.stateManager.getOriginalContractStorage(address, key)
-    )
-    return { current, original }
-  } else {
-    return current
-  }
-}
-
 /**
  * Returns an overflow-safe slice of an array. It right-pads
  * the data with zeros to `length`.
@@ -189,9 +164,10 @@ export function jumpSubIsValid(runState: RunState, dest: number): boolean {
  * @param {BN} gasLimit - requested gas Limit
  * @param {BN} gasLeft - current gas left
  * @param {RunState} runState - the current runState
+ * @param {Common} common - the common
  */
-export function maxCallGas(gasLimit: BN, gasLeft: BN, runState: RunState): BN {
-  const isTangerineWhistleOrLater = runState._common.gteHardfork('tangerineWhistle')
+export function maxCallGas(gasLimit: BN, gasLeft: BN, runState: RunState, common: Common): BN {
+  const isTangerineWhistleOrLater = common.gteHardfork('tangerineWhistle')
   if (isTangerineWhistleOrLater) {
     const gasAllowed = gasLeft.sub(gasLeft.divn(64))
     return gasLimit.gt(gasAllowed) ? gasAllowed : gasLimit
@@ -208,7 +184,7 @@ export function maxCallGas(gasLimit: BN, gasLeft: BN, runState: RunState): BN {
  * @param {BN} offset
  * @param {BN} length
  */
-export function subMemUsage(runState: RunState, offset: BN, length: BN) {
+export function subMemUsage(runState: RunState, offset: BN, length: BN, common: Common) {
   // YP (225): access with zero length will not extend the memory
   if (length.isZero()) return
 
@@ -216,8 +192,8 @@ export function subMemUsage(runState: RunState, offset: BN, length: BN) {
   if (newMemoryWordCount.lte(runState.memoryWordCount)) return
 
   const words = newMemoryWordCount
-  const fee = new BN(runState._common.param('gasPrices', 'memory'))
-  const quadCoeff = new BN(runState._common.param('gasPrices', 'quadCoeffDiv'))
+  const fee = new BN(common.param('gasPrices', 'memory'))
+  const quadCoeff = new BN(common.param('gasPrices', 'quadCoeffDiv'))
   // words * 3 + words ^2 / 512
   const cost = words.mul(fee).add(words.mul(words).div(quadCoeff))
 
@@ -252,27 +228,33 @@ export function writeCallOutput(runState: RunState, outOffset: BN, outLength: BN
 
 /** The first rule set of SSTORE rules, which are the rules pre-Constantinople and in Petersburg
  * @param {RunState} runState
- * @param {any}      found
+ * @param {Buffer}   currentStorage
  * @param {Buffer}   value
  * @param {Buffer}   keyBuf
  */
-export function updateSstoreGas(runState: RunState, found: any, value: Buffer, keyBuf: Buffer) {
-  const sstoreResetCost = runState._common.param('gasPrices', 'sstoreReset')
-  if ((value.length === 0 && !found.length) || (value.length !== 0 && found.length)) {
+export function updateSstoreGas(
+  runState: RunState,
+  currentStorage: Buffer,
+  value: Buffer,
+  keyBuf: Buffer,
+  common: Common
+) {
+  const sstoreResetCost = common.param('gasPrices', 'sstoreReset')
+  if (
+    (value.length === 0 && !currentStorage.length) ||
+    (value.length !== 0 && currentStorage.length)
+  ) {
     runState.eei.useGas(
-      new BN(adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset')),
+      new BN(adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset', common)),
       'updateSstoreGas'
     )
-  } else if (value.length === 0 && found.length) {
+  } else if (value.length === 0 && currentStorage.length) {
     runState.eei.useGas(
-      new BN(adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset')),
+      new BN(adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset', common)),
       'updateSstoreGas'
     )
-    runState.eei.refundGas(
-      new BN(runState._common.param('gasPrices', 'sstoreRefund')),
-      'updateSstoreGas'
-    )
-  } else if (value.length !== 0 && !found.length) {
-    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'sstoreSet')), 'updateSstoreGas')
+    runState.eei.refundGas(new BN(common.param('gasPrices', 'sstoreRefund')), 'updateSstoreGas')
+  } else if (value.length !== 0 && !currentStorage.length) {
+    runState.eei.useGas(new BN(common.param('gasPrices', 'sstoreSet')), 'updateSstoreGas')
   }
 }

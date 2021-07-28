@@ -11,10 +11,8 @@ import testnet2 from './testdata/testnet2.json'
 
 // explicitly import util and buffer,
 // needed for karma-typescript bundling
-// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-import * as util from 'util'
-// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-import { Buffer } from 'buffer'
+import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
+import { Buffer } from 'buffer' // eslint-disable-line @typescript-eslint/no-unused-vars
 
 /**
  * Tests for the main constructor API and
