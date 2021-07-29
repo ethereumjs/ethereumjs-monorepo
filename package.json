@@ -54,6 +54,6 @@
     "e2e:publish": "./scripts/e2e-publish.sh",
     "e2e:resolutions": "node ./scripts/e2e-resolutions.js",
     "e2e:inject": "node ./scripts/e2e-inject-resolutions.js",
-    "clean": "rm -rf node_modules packages/*/node_modules packages/*/test-build packages/*/dist packages/*/dist.browser packages/*/package-lock.json"
+    "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist packages/*/dist.browser packages/*/package-lock.json"
   }
 }

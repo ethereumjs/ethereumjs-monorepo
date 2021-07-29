@@ -7,6 +7,10 @@ import { Mockchain } from './mockchain'
 import { createBlock } from './util'
 import * as testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
 
+// explicitly import util, needed for karma-typescript bundling
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import util from 'util'
+
 tape('[Block]: block functions', function (t) {
   t.test('should test block initialization', function (st) {
     const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
