@@ -166,6 +166,7 @@ export default class Common extends EventEmitter {
    * @param opts Custom chain options to set the {@link CustomCommonOpts.baseChain}, selected {@link CustomCommonOpts.hardfork} and others
    */
   static custom(
+    // eslint-disable-next-line no-undef
     chainParamsOrName: Partial<IChain> | CustomChain,
     opts: CustomCommonOpts = {}
   ): Common {
@@ -229,6 +230,7 @@ export default class Common extends EventEmitter {
    */
   static forCustomChain(
     baseChain: string | number | Chain,
+    // eslint-disable-next-line no-undef
     customChainParams: Partial<IChain>,
     hardfork?: string | Hardfork,
     supportedHardforks?: Array<string | Hardfork>
