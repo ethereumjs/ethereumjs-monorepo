@@ -219,7 +219,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
         // We have to do this after the Istanbul (EIP2200) checks.
         // Otherwise, we might run out of gas, due to "sentry check" of 2300 gas,
         // if we deduct extra gas first.
-        gas.iadd(accessStorageEIP2929(runState, keyBuf, false, common))
+        gas.iadd(accessStorageEIP2929(runState, keyBuf, true, common))
       }
     },
   ],
