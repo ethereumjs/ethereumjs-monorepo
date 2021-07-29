@@ -29,8 +29,7 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "test": "npm run test:node && npm run test:browser",
     "test:node": "tape -r ts-node/register ./test/index.ts",
-    "test:browser:build": "tsc && cp -r ./test/json test-build/test",
-    "test:browser": "npm run test:browser:build && karma start karma.conf.js"
+    "test:browser": "karma start karma.conf.js"
   },
   "dependencies": {
     "@ethereumjs/common": "^2.4.0",
@@ -40,13 +39,12 @@
     "@types/minimist": "^1.2.0",
     "@types/node": "^11.13.4",
     "@types/tape": "^4.13.0",
-    "browserify": "^16.5.1",
     "eslint": "^6.8.0",
     "karma": "^6.3.2",
-    "karma-browserify": "^8.0.0",
     "karma-chrome-launcher": "^3.1.0",
     "karma-firefox-launcher": "^2.1.0",
     "karma-tap": "^4.2.0",
+    "karma-typescript": "^5.5.1",
     "minimist": "^1.2.0",
     "node-dir": "^0.1.16",
     "nyc": "^14.0.0",
