@@ -26,7 +26,10 @@
     "tsc": "../../config/cli/ts-compile.sh",
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
-    "test": "tape -r ts-node/register ./test/*.spec.ts"
+    "test": "npm run test:node && npm run test:browser",
+    "test:node": "tape -r ts-node/register ./test/*.spec.ts",
+    "test:browser:build": "tsc && cp -r ./test/testdata test-build/test",
+    "test:browser": "npm run test:browser:build && karma start karma.conf.js"
   },
   "author": "mjbecze <mjbecze@gmail.com>",
   "dependencies": {
@@ -46,6 +49,11 @@
     "@types/node": "^11.13.4",
     "@types/tape": "^4.13.0",
     "eslint": "^6.8.0",
+    "karma": "^6.3.2",
+    "karma-browserify": "^8.0.0",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-firefox-launcher": "^2.1.0",
+    "karma-tap": "^4.2.0",
     "nyc": "^14.0.0",
     "prettier": "^2.0.5",
     "tape": "^4.10.1",
