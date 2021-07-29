@@ -1,10 +1,16 @@
 module.exports = function(config) {
   config.set({
     browserNoActivityTimeout: 60000,
-    frameworks: ['browserify', 'tap'],
-    files: ['./test-build/tests/**/*.js'],
+    frameworks: ['karma-typescript', 'tap'],
+    files: ['./tests/**/*.ts', './src/**/*.ts'],
     preprocessors: {
-      './test-build/**/*.js': ['browserify'],
+      '**/*.ts': ['karma-typescript'],
+    },
+    karmaTypescriptConfig: {
+      tsconfig: './tsconfig.json',
+      bundlerOptions: {
+        entrypoints: /\.spec\.ts$/,
+      },
     },
     concurrency: 1,
     reporters: ['dots'],

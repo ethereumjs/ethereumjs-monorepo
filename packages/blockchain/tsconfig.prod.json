@@ -2,7 +2,6 @@
   "extends": "../../config/tsconfig.prod.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "lib": ["dom"],
     "types": ["node"],
     "typeRoots": ["node_modules/@types"]
   },

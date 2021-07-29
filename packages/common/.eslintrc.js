@@ -1,6 +1,6 @@
 module.exports = {
   extends: "../../config/eslint.js",
-  ignorePatterns: ["scripts", "test-build"],
+  ignorePatterns: ["scripts"],
   rules: {
   }
 }
