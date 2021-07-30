@@ -700,7 +700,7 @@ export default class Common extends EventEmitter {
   /**
    * Returns the hardfork change block for hardfork provided or set
    * @param hardfork Hardfork name, optional if HF set
-   * @returns Block number or null
+   * @returns Block number or null if unscheduled
    * @deprecated Please use {@link Common.hardforkBlockBN} for large number support
    */
   hardforkBlock(hardfork?: string | Hardfork): number | null {
@@ -711,7 +711,7 @@ export default class Common extends EventEmitter {
   /**
    * Returns the hardfork change block for hardfork provided or set
    * @param hardfork Hardfork name, optional if HF set
-   * @returns Block number or null
+   * @returns Block number or null if unscheduled
    */
   hardforkBlockBN(hardfork?: string | Hardfork): BN | null {
     hardfork = this._chooseHardfork(hardfork, false)
