@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { BN } from '../../util/dist'
+import { BN } from 'ethereumjs-util'
 import Common, { Chain, CustomChain, Hardfork } from '../src/'
 import testnet from './data/testnet.json'
 import testnet2 from './data/testnet2.json'

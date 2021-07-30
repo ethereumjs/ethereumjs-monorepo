@@ -1,6 +1,6 @@
 module.exports = {
   extends: '../../config/eslint.js',
-  ignorePatterns: ['examples', 'karma.conf.js', 'test-build'],
+  ignorePatterns: ['examples', 'karma.conf.js'],
   rules: {
   },
 }
