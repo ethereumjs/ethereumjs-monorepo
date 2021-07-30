@@ -2,6 +2,7 @@ import tape from 'tape'
 import { Address, BN, keccak256, padToEven } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../src'
+import { ERROR } from '../../src/exceptions'
 
 // Non-protected Create2Address generator. Does not check if buffers have the right padding.
 function create2address(sourceAddress: Address, codeHash: Buffer, salt: Buffer): Address {
@@ -217,9 +218,193 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
   }
 
   const result = await vm.runCall(runCallArgs)
-  console.log(result.gasUsed, result.execResult.gasRefund)
-  t.equal(result.gasUsed.toNumber(), 5812, 'gas used incorrect')
-  t.equal(result.execResult.gasRefund!.toNumber(), 4200, 'gas refund incorrect')
+
+  t.equal(result.gasUsed.toNumber(), 5812, 'gas used correct')
+  t.equal(result.execResult.gasRefund!.toNumber(), 4200, 'gas refund correct')
+
+  t.end()
+})
+
+tape('ensure correct gas for pre-constantinople sstore', async (t) => {
+  // setup the accounts for this test
+  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
+  const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
+  // setup the vm
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+  const vm = new VM({ common: common })
+  // push 1 push 0 sstore stop
+  const code = '600160015500'
+
+  await vm.stateManager.putContractCode(address, Buffer.from(code, 'hex'))
+
+  // setup the call arguments
+  const runCallArgs = {
+    caller: caller, // call address
+    to: address,
+    gasLimit: new BN(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
+  }
+
+  const result = await vm.runCall(runCallArgs)
+
+  t.equal(result.gasUsed.toNumber(), 20006, 'gas used correct')
+  t.equal(result.execResult.gasRefund!.toNumber(), 0, 'gas refund correct')
+
+  t.end()
+})
+
+tape('ensure correct gas for calling non-existent accounts in homestead', async (t) => {
+  // setup the accounts for this test
+  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
+  const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
+  // setup the vm
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
+  const vm = new VM({ common: common })
+  // code to call 0x00..00dd, which does not exist
+  const code = '6000600060006000600060DD61FFFF5A03F100'
+
+  await vm.stateManager.putContractCode(address, Buffer.from(code, 'hex'))
+
+  // setup the call arguments
+  const runCallArgs = {
+    caller: caller, // call address
+    to: address,
+    gasLimit: new BN(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
+  }
+
+  const result = await vm.runCall(runCallArgs)
+
+  // 7x push + gas + sub + call + callNewAccount
+  // 7*3 + 2 + 3 + 40 + 25000 = 25066
+  t.equal(result.gasUsed.toNumber(), 25066, 'gas used correct')
+  t.equal(result.execResult.gasRefund!.toNumber(), 0, 'gas refund correct')
+
+  t.end()
+})
+
+tape(
+  'ensure callcode goes OOG if the gas argument is more than the gas left in the homestead fork',
+  async (t) => {
+    // setup the accounts for this test
+    const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
+    const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
+    // setup the vm
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
+    const vm = new VM({ common: common })
+    // code to call back into the calling account (0x00..00EE),
+    // but using too much memory
+    const code = '61FFFF60FF60006000600060EE6000F200'
+
+    await vm.stateManager.putContractCode(address, Buffer.from(code, 'hex'))
+
+    // setup the call arguments
+    const runCallArgs = {
+      caller: caller, // call address
+      to: address,
+      gasLimit: new BN(200),
+    }
+
+    const result = await vm.runCall(runCallArgs)
+
+    t.ok(runCallArgs.gasLimit.eq(result.gasUsed), 'gas used correct')
+    t.equal(result.execResult.gasRefund!.toNumber(), 0, 'gas refund correct')
+    t.ok(result.execResult.exceptionError!.error == ERROR.OUT_OF_GAS, 'call went out of gas')
+
+    t.end()
+  }
+)
+
+tape('ensure selfdestruct pays for creating new accounts', async (t) => {
+  // setup the accounts for this test
+  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
+  const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
+  // setup the vm
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.TangerineWhistle })
+  const vm = new VM({ common: common })
+  // code to call 0x00..00fe, with the GAS opcode used as gas
+  // this cannot be paid, since we also have to pay for CALL (40 gas)
+  // this should thus go OOG
+  const code = '60FEFF'
+
+  await vm.stateManager.putContractCode(address, Buffer.from(code, 'hex'))
+
+  // setup the call arguments
+  const runCallArgs = {
+    caller: caller, // call address
+    to: address,
+    gasLimit: new BN(0xffffffffff),
+  }
+
+  const result = await vm.runCall(runCallArgs)
+  // gas: 5000 (selfdestruct) + 25000 (call new account)  + push (1) = 30003
+  t.equal(result.gasUsed.toNumber(), 30003, 'gas used correct')
+  // selfdestruct refund
+  t.equal(result.execResult.gasRefund!.toNumber(), 24000, 'gas refund correct')
+
+  t.end()
+})
+
+tape('ensure that sstores pay for the right gas costs pre-byzantium', async (t) => {
+  // setup the accounts for this test
+  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
+  const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
+  // setup the vm
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+  const vm = new VM({ common: common })
+  // code to call 0x00..00fe, with the GAS opcode used as gas
+  // this cannot be paid, since we also have to pay for CALL (40 gas)
+  // this should thus go OOG
+  const code = '3460005500'
+
+  await vm.stateManager.putContractCode(address, Buffer.from(code, 'hex'))
+
+  const account = await vm.stateManager.getAccount(caller)
+  account.balance = new BN(100)
+  await vm.stateManager.putAccount(caller, account)
+
+  /*
+    Situation:
+    Storage slot changes from 0 -> 0 (reset cost, 5000)
+    Changes 0 -> 1 (set cost, 20000)
+    Changes 1 -> 2 ("reset" cost, 5000)
+    Changes 2 -> 0 ("reset" cost, 5000 + 15000 refund)
+  */
+
+  const data = [
+    {
+      value: 0,
+      gas: 5005,
+      refund: 0,
+    },
+    {
+      value: 1,
+      gas: 20005,
+      refund: 0,
+    },
+    {
+      value: 2,
+      gas: 5005,
+      refund: 0,
+    },
+    {
+      value: 0,
+      gas: 5005,
+      refund: 15000,
+    },
+  ]
+
+  for (const callData of data) {
+    // setup the call arguments
+    const runCallArgs = {
+      caller: caller, // call address
+      to: address,
+      gasLimit: new BN(0xffffffffff),
+      value: new BN(callData.value),
+    }
+
+    const result = await vm.runCall(runCallArgs)
+    t.equal(result.gasUsed.toNumber(), callData.gas, 'gas used correct')
+    t.equal(result.execResult.gasRefund?.toNumber(), callData.refund, 'gas refund correct')
+  }
 
   t.end()
 })

@@ -355,9 +355,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
       if (gasLimit.gt(runState.eei.getGasLeft().isub(gas))) {
         trap(ERROR.OUT_OF_GAS)
       }
-      if (gas.gt(runState.eei.getGasLeft())) {
-        trap(ERROR.OUT_OF_GAS)
-      }
       if (!value.isZero()) {
         // TODO: Don't use private attr directly
         runState.eei._gasLeft.iaddn(common.param('gasPrices', 'callStipend'))
@@ -482,6 +479,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
             deductGas = true
           }
         }
+        // TODO: this looks incorrect, tangerine whistle does not change this behavior.
+        // TODO also update comment below
       } else if (common.gteHardfork('tangerineWhistle')) {
         // Pre EIP-150 (Tangerine Whistle) gas semantics
         const exists = await runState.stateManager.accountExists(selfdestructToAddress)

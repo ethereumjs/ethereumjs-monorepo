@@ -250,8 +250,7 @@ export function updateSstoreGas(
     const gas = new BN(common.param('gasPrices', 'sstoreReset'))
     runState.eei.refundGas(new BN(common.param('gasPrices', 'sstoreRefund')), 'updateSstoreGas')
     return gas
-  } else if (value.length !== 0 && !currentStorage.length) {
+  } /*(value.length !== 0 && !currentStorage.length)*/ else {
     return new BN(common.param('gasPrices', 'sstoreSet'))
   }
-  return new BN(0)
 }
