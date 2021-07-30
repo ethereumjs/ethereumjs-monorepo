@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { BN } from '../../util/dist'
+import { BN } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '../src'
 
 tape('[Common]: Hardfork logic', function (t: tape.Test) {
@@ -15,6 +15,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
       'petersburg',
       'istanbul',
       'berlin',
+      'london',
     ]
     let c
 
@@ -244,9 +245,9 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.ok(c.hardforkBlockBN(Hardfork.Berlin)!.eq(new BN(12244000)), msg)
 
     msg = 'should return null for unscheduled hardfork'
-    st.equal(c.hardforkBlock(Hardfork.London), null, msg)
-    st.equal(c.hardforkBlockBN(Hardfork.London), null, msg)
-    st.equal(c.nextHardforkBlockBN(Hardfork.London), null, msg)
+    st.equal(c.hardforkBlock(Hardfork.Shanghai), null, msg)
+    st.equal(c.hardforkBlockBN(Hardfork.Shanghai), null, msg)
+    st.equal(c.nextHardforkBlockBN(Hardfork.Shanghai), null, msg)
     // developer note: when London mainnet harfork block is set,
     // can update this test to next hardfork `Hardfork.Shanghai`
 

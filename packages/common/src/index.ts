@@ -58,6 +58,7 @@ export enum Hardfork {
   MuirGlacier = 'muirGlacier',
   Berlin = 'berlin',
   London = 'london',
+  Shanghai = 'shanghai',
 }
 
 interface BaseOpts {

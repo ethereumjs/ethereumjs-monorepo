@@ -72,6 +72,11 @@
         "name": "london",
         "block": 500,
         "forkHash": "0x173783e4"
+      },
+      {
+        "name": "shanghai",
+        "block": null,
+        "forkash": null
       }
     ],
     "bootstrapNodes": [
