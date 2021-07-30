@@ -102,8 +102,16 @@ export class Trie {
    * Checks if a given root exists.
    */
   async checkRoot(root: Buffer): Promise<boolean> {
-    const value = await this._lookupNode(root)
-    return !!value
+    try {
+      const value = await this._lookupNode(root)
+      return !!value
+    } catch (error) {
+      if (error.message == 'Missing node in DB') {
+        return false
+      } else {
+        throw error
+      }
+    }
   }
 
   /**
