@@ -40,16 +40,12 @@ tape('simple merkle proofs generation and verification', function (tester) {
 
     // to fail our proof we can request a proof for one key
     proof = await CheckpointTrie.createProof(trie, Buffer.from('another'))
-    // and use that proof on another key
+    // and try to use that proof on another key
     try {
       await CheckpointTrie.verifyProof(trie.root, Buffer.from('key1aa'), proof)
-      t.fail('should have thrown an error')
-    } catch (err) {
-      if (err.message.includes('Path not found')) {
-        t.pass('threw correct error on invalid proof')
-      } else {
-        t.fail('did not throw correct error')
-      }
+      t.fail('expected error: Missing node in DB')
+    } catch (e) {
+      t.equal(e.message, 'Missing node in DB')
     }
 
     // we can also corrupt a valid proof
@@ -57,13 +53,9 @@ tape('simple merkle proofs generation and verification', function (tester) {
     proof[0].reverse()
     try {
       await CheckpointTrie.verifyProof(trie.root, Buffer.from('key2bb'), proof)
-      t.fail('should have thrown an error')
-    } catch (err) {
-      if (err.message.includes('Path not found')) {
-        t.pass('threw correct error on invalid proof')
-      } else {
-        t.fail('did not throw correct error')
-      }
+      t.fail('expected error: Missing node in DB')
+    } catch (e) {
+      t.equal(e.message, 'Missing node in DB')
     }
 
     // test an invalid exclusion proof by creating
@@ -76,14 +68,11 @@ tape('simple merkle proofs generation and verification', function (tester) {
     await trie.put(myKey, Buffer.from('thisisavalue'))
     try {
       await CheckpointTrie.verifyProof(trie.root, myKey, proof)
-      t.fail('should have thrown an error')
-    } catch (err) {
-      if (err.message.includes('Path not found')) {
-        t.pass('threw correct error on invalid proof')
-      } else {
-        t.fail('did not throw correct error')
-      }
+      t.fail('expected error: Missing node in DB')
+    } catch (e) {
+      t.equal(e.message, 'Missing node in DB')
     }
+
     t.end()
   })
 
