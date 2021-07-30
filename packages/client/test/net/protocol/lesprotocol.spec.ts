@@ -70,10 +70,13 @@ tape('[LesProtocol]', (t) => {
         status.headHash === '0xaa' &&
         status.headNum.toString('hex') === '64' &&
         status.genesisHash === '0xbb' &&
+        status.forkID[0].toString('hex') === 'fc64ec04' &&
+        status.forkID[1].toString('hex') === '118c30' &&
+        status.recentTxLookup.toString('hex') === '01' &&
         status.serveHeaders === 1 &&
         status.serveChainSince === 0 &&
         status.serveStateSince === 0 &&
-        status.txRelay === 1 &&
+        //status.txRelay === 1 && TODO: uncomment with client tx pool functionality
         status['flowControl/BL'].toString('hex') === '03e8' &&
         status['flowControl/MRR'].toString('hex') === '0a' &&
         status['flowControl/MRC'][0].toString() === '2,10,10',
@@ -87,10 +90,13 @@ tape('[LesProtocol]', (t) => {
         status.headHash === '0xaa' &&
         status.headNum.toNumber() === 100 &&
         status.genesisHash === '0xbb' &&
+        status.forkID[0].toString('hex') === 'fc64ec04' &&
+        status.forkID[1].toString('hex') === '118c30' &&
+        status.recentTxLookup.toString('hex') === '01' &&
         status.serveHeaders === true &&
         status.serveChainSince === 0 &&
         status.serveStateSince === 0 &&
-        status.txRelay === true &&
+        //status.txRelay === true && TODO: uncomment with client tx pool functionality
         status.bl === 1000 &&
         status.mrr === 10 &&
         status.mrc['2'].base === 10 &&

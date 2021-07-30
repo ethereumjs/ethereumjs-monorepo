@@ -1,5 +1,4 @@
 import Semaphore from 'semaphore-async-await'
-import { LevelUp } from 'levelup'
 import { keccak, KECCAK256_RLP } from 'ethereumjs-util'
 import { DB, BatchDBOp, PutBatch } from './db'
 import { TrieReadStream as ReadStream } from './readStream'
@@ -16,6 +15,8 @@ import {
   EmbeddedNode,
   Nibbles,
 } from './trieNode'
+// eslint-disable-next-line implicit-dependencies/no-implicit
+import type { LevelUp } from 'levelup'
 const assert = require('assert')
 
 export type Proof = Buffer[]
@@ -64,16 +65,24 @@ export class Trie {
     this._deleteFromDB = deleteFromDB
 
     if (root) {
-      this.setRoot(root)
+      this.root = root
     }
   }
 
-  /** Sets the current root of the `trie` */
+  /**
+   * Sets the current root of the `trie`
+   */
   set root(value: Buffer) {
-    this.setRoot(value)
+    if (!value) {
+      value = this.EMPTY_TRIE_ROOT
+    }
+    assert(value.length === 32, 'Invalid root length. Roots are 32 bytes')
+    this._root = value
   }
 
-  /** Gets the current root of the `trie` */
+  /**
+   * Gets the current root of the `trie`
+   */
   get root(): Buffer {
     return this._root
   }
@@ -86,11 +95,7 @@ export class Trie {
    * @deprecated
    */
   setRoot(value?: Buffer) {
-    if (!value) {
-      value = this.EMPTY_TRIE_ROOT
-    }
-    assert(value.length === 32, 'Invalid root length. Roots are 32 bytes')
-    this._root = value
+    this.root = value ?? this.EMPTY_TRIE_ROOT
   }
 
   /**
@@ -131,7 +136,6 @@ export class Trie {
    */
   async put(key: Buffer, value: Buffer): Promise<void> {
     // If value is empty, delete
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!value || value.toString() === '') {
       return await this.del(key)
     }
@@ -402,10 +406,8 @@ export class Trie {
       stack: TrieNode[]
     ) => {
       // branchNode is the node ON the branch node not THE branch node
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!parentNode || parentNode instanceof BranchNode) {
         // branch->?
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (parentNode) {
           stack.push(parentNode)
         }
@@ -612,12 +614,10 @@ export class Trie {
   async batch(ops: BatchDBOp[]): Promise<void> {
     for (const op of ops) {
       if (op.type === 'put') {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!op.value) {
           throw new Error('Invalid batch db operation')
         }
         await this.put(op.key, op.value)
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       } else if (op.type === 'del') {
         await this.del(op.key)
       }

@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/common",
-  "version": "2.3.1",
+  "version": "2.4.0",
   "description": "Resources common to all Ethereum implementations",
   "license": "MIT",
   "keywords": [
@@ -30,17 +30,24 @@
     "tsc": "ethereumjs-config-ts-compile",
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
-    "test": "tape -r ts-node/register ./tests/*.spec.ts",
+    "test": "npm run test:node && npm run test:browser",
+    "test:node": "tape -r ts-node/register ./tests/*.spec.ts",
+    "test:browser": "karma start karma.conf.js",
     "docs:build": "typedoc --options typedoc.js"
   },
   "dependencies": {
     "crc-32": "^1.2.0",
-    "ethereumjs-util": "^7.0.10"
+    "ethereumjs-util": "^7.1.0"
   },
   "devDependencies": {
     "@types/node": "^11.13.4",
     "@types/tape": "^4.13.0",
     "eslint": "^6.8.0",
+    "karma": "^6.3.2",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-firefox-launcher": "^2.1.0",
+    "karma-tap": "^4.2.0",
+    "karma-typescript": "^5.5.1",
     "nyc": "^14.0.0",
     "prettier": "^2.0.5",
     "tape": "^4.10.1",

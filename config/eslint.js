@@ -5,7 +5,7 @@ module.exports = {
     es6: true,
     node: true,
   },
-  ignorePatterns: ['node_modules/', 'dist/', 'dist.browser/', 'coverage/', 'prettier.config.js', 'typedoc.js', 'test-build/', 'karma.conf.js'],
+  ignorePatterns: ['node_modules/', 'dist/', 'dist.browser/', 'coverage/', 'prettier.config.js', 'typedoc.js', 'karma.conf.js'],
   extends: ['typestrict', 'eslint:recommended'],
   rules: {
     'no-console': 'warn',
@@ -29,6 +29,10 @@ module.exports = {
           }
       }
     ],
+    'no-unused-vars': 'off',
+    '@typescript-eslint/no-unused-vars': ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+    '@typescript-eslint/no-unnecessary-condition': 'off',
+    'no-dupe-class-members': 'off',
     'prettier/prettier': 'error',
   },
   parserOptions: {

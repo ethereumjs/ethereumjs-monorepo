@@ -3,18 +3,16 @@ import td from 'testdouble'
 import { Config } from '../../../lib/config'
 import { Fetcher } from '../../../lib/sync/fetcher/fetcher'
 import { Job } from '../../../lib/sync/fetcher/types'
+import { Event } from '../../../lib/types'
 
 class FetcherTest extends Fetcher<any, any, any> {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  process(_job: any, res: any) {
+  process(_job: any, _res: any) {
     return undefined // have to return undefined, otherwise the function return signature is void.
   }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async request(_job: any, peer: any) {
+  async request(_job: any, _peer: any) {
     return
   }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async store(store: any) {}
+  async store(_store: any) {}
 }
 
 tape('[Fetcher]', (t) => {
@@ -39,7 +37,7 @@ tape('[Fetcher]', (t) => {
     const job = { peer: {}, state: 'active' }
     ;(fetcher as any).running = true
     fetcher.next = td.func<FetcherTest['next']>()
-    fetcher.on('error', (err: Error) => t.equals(err.message, 'err0', 'got error'))
+    config.events.on(Event.SYNC_FETCHER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
     fetcher.failure(job as Job<any, any, any>, new Error('err0'))
     t.equals((fetcher as any).in.size(), 1, 'enqueued job')
   })

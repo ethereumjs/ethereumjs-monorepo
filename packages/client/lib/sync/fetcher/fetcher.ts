@@ -4,7 +4,7 @@ const Heap = require('qheap')
 import { PeerPool } from '../../net/peerpool'
 import { Config } from '../../config'
 
-import { QHeap } from '../../types'
+import { Event, QHeap } from '../../types'
 import { Job } from './types'
 import { Peer } from '../../net/peer'
 
@@ -222,7 +222,6 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       return false
     }
     const peer = this.peer()
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (peer) {
       peer.idle = false
       this.in.remove()
@@ -246,7 +245,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   error(error: Error, job?: Job<JobTask, JobResult, StorageItem>) {
     if (this.running) {
-      this.emit('error', error, job && job.task, job && job.peer)
+      this.config.events.emit(Event.SYNC_FETCHER_ERROR, error, job && job.task, job && job.peer)
     }
   }
 
@@ -259,7 +258,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       try {
         await this.store(result)
         this.finished++
-        this.emit('fetched', result)
+        this.config.events.emit(Event.SYNC_FETCHER_FETCHED, result as any)
         cb()
       } catch (error) {
         cb(error)
@@ -324,12 +323,9 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   }
 
   /**
-   * Returns a peer that can process the given job
-   * @param  job job
-   * @return {Peer}
+   * Returns an idle peer that can process a next job.
    */
-  // TODO: what is job supposed to be?
-  peer(_job?: Job<JobTask, JobResult, StorageItem>) {
+  peer() {
     return this.pool.idle()
   }
 

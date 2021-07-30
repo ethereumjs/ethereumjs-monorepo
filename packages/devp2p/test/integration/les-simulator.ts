@@ -1,5 +1,5 @@
 import test from 'tape'
-import Common from '@ethereumjs/common'
+import Common, { Chain } from '@ethereumjs/common'
 import * as devp2p from '../../src'
 import * as util from './util'
 
@@ -9,7 +9,7 @@ const GENESIS_HASH = Buffer.from(
   'hex'
 )
 
-const capabilities = [devp2p.LES.les2]
+const capabilities = [devp2p.LES.les4]
 
 const status = {
   headTd: devp2p.int2buffer(GENESIS_TD), // total difficulty in genesis block
@@ -58,8 +58,8 @@ test('LES: send status message (NetworkId mismatch)', async (t) => {
     t.end()
   }
 
-  const c1 = new Common({ chain: 'mainnet' })
-  const c2 = new Common({ chain: 'ropsten' })
+  const c1 = new Common({ chain: Chain.Mainnet })
+  const c2 = new Common({ chain: Chain.Ropsten })
   util.twoPeerMsgExchange(t, opts, capabilities, [c1, c2])
 })
 
@@ -84,7 +84,7 @@ test('LES: send valid message', async (t) => {
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
   opts.onOnceStatus0 = function (rlpxs: any, les: any) {
-    t.equal(les.getVersion(), 2, 'should use les2 as protocol version')
+    t.equal(les.getVersion(), 4, 'should use les4 as protocol version')
     les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_HEADERS, [1, [437000, 1, 0, 0]])
     t.pass('should send GET_BLOCK_HEADERS message')
   }

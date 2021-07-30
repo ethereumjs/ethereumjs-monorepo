@@ -20,54 +20,68 @@
 
 ### chainId
 
-• `Optional` **chainId**: *number*
+• `Optional` **chainId**: `number`
 
-Defined in: [packages/common/src/types.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L65)
+#### Defined in
+
+[packages/common/src/types.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L65)
 
 ___
 
 ### comment
 
-• **comment**: *string*
+• **comment**: `string`
 
-Defined in: [packages/common/src/types.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L68)
+#### Defined in
+
+[packages/common/src/types.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L68)
 
 ___
 
 ### id
 
-• **id**: *string*
+• **id**: `string`
 
-Defined in: [packages/common/src/types.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L66)
+#### Defined in
+
+[packages/common/src/types.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L66)
 
 ___
 
 ### ip
 
-• **ip**: *string*
+• **ip**: `string`
 
-Defined in: [packages/common/src/types.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L62)
+#### Defined in
+
+[packages/common/src/types.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L62)
 
 ___
 
 ### location
 
-• **location**: *string*
+• **location**: `string`
 
-Defined in: [packages/common/src/types.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L67)
+#### Defined in
+
+[packages/common/src/types.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L67)
 
 ___
 
 ### network
 
-• `Optional` **network**: *string*
+• `Optional` **network**: `string`
 
-Defined in: [packages/common/src/types.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L64)
+#### Defined in
+
+[packages/common/src/types.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L64)
 
 ___
 
 ### port
 
-• **port**: *string* \| *number*
+• **port**: `string` \| `number`
 
-Defined in: [packages/common/src/types.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L63)
+#### Defined in
+
+[packages/common/src/types.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L63)

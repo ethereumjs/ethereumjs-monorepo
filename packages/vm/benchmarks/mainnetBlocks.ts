@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs'
 import Benchmark = require('benchmark')
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import blockFromRPC from '@ethereumjs/block/dist/from-rpc'
 import VM from '../dist'
@@ -26,7 +26,7 @@ export async function mainnetBlocks(suite?: Benchmark.Suite, numSamples?: number
   console.log(`Number of blocks to sample: ${numSamples}`)
   data = data.slice(0, numSamples)
 
-  const common = new Common({ chain: 'mainnet', hardfork: 'muirGlacier' })
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
 
   for (const blockData of data) {
     const block = blockFromRPC(blockData.block, [], { common })

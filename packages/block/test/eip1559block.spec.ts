@@ -1,5 +1,5 @@
 import tape from 'tape'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { BN } from 'ethereumjs-util'
 import { Mockchain } from './mockchain'
@@ -12,8 +12,8 @@ const eip1559BaseFee = require('./testdata/eip1559baseFee.json')
 
 const common = new Common({
   eips: [1559],
-  chain: 'mainnet',
-  hardfork: 'london',
+  chain: Chain.Mainnet,
+  hardfork: Hardfork.London,
 })
 
 const blockchain1 = new Mockchain()
@@ -42,7 +42,7 @@ tape('EIP1559 tests', function (t) {
 
   t.test('Header -> Initialization', async function (st) {
     try {
-      const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
       BlockHeader.fromHeaderData(
         {
           number: new BN(1),

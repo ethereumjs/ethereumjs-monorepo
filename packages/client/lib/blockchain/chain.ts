@@ -1,9 +1,10 @@
-import { EventEmitter } from 'events'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import { BN, toBuffer } from 'ethereumjs-util'
-import type { LevelUp } from 'levelup'
 import { Config } from '../config'
+import { Event } from '../types'
+// eslint-disable-next-line implicit-dependencies/no-implicit
+import type { LevelUp } from 'levelup'
 
 /**
  * The options that the Blockchain constructor can receive.
@@ -76,7 +77,7 @@ export interface GenesisBlockParams {
  * Blockchain
  * @memberof module:blockchain
  */
-export class Chain extends EventEmitter {
+export class Chain {
   public config: Config
 
   public chainDB: LevelUp
@@ -100,8 +101,6 @@ export class Chain extends EventEmitter {
    * @param {ChainOptions} options
    */
   constructor(options: ChainOptions) {
-    super()
-
     this.config = options.config
     let validateConsensus = false
     if (this.config.chainCommon.consensusAlgorithm() === 'clique') {
@@ -230,7 +229,7 @@ export class Chain extends EventEmitter {
 
     this._headers = headers
     this._blocks = blocks
-    this.emit('updated')
+    this.config.events.emit(Event.CHAIN_UPDATED)
   }
 
   /**

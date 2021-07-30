@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import Common, { Chain } from '@ethereumjs/common'
 
 // Blockchain
 export * from '../lib/blockchain/chain'
@@ -39,6 +39,7 @@ export * from '../lib/sync/lightsync'
 // Utilities
 export * from '../lib/util'
 import { Config } from '../lib/config'
+import { Event } from '../lib/types'
 
 // Logging
 export * from './logging'
@@ -47,7 +48,7 @@ import { getLogger } from './logging'
 export async function createClient(args: any) {
   const logger = getLogger({ loglevel: args.loglevel ?? 'info' })
   const datadir = args.datadir ?? Config.DATADIR_DEFAULT
-  const common = new Common({ chain: args.network ?? 'mainnet' })
+  const common = new Common({ chain: args.network ?? Chain.Mainnet })
   const key = await Config.getClientKey(datadir, common)
   const config = new Config({
     common,
@@ -64,12 +65,12 @@ export async function run(args: any) {
   const { logger, chainCommon: common } = client.config
   logger.info('Initializing Ethereumjs client...')
   logger.info(`Connecting to network: ${common.chainName()}`)
-  client.on('error', (err: any) => logger.error(err))
-  client.on('listening', (details: any) => {
+  client.config.events.on(Event.SERVER_ERROR, (err) => logger.error(err))
+  client.config.events.on(Event.SERVER_LISTENING, (details) => {
     logger.info(`Listener up transport=${details.transport} url=${details.url}`)
   })
-  client.on('synchronized', () => {
-    logger.info('Synchronized')
+  client.config.events.on(Event.SYNC_SYNCHRONIZED, (height) => {
+    logger.info(`Synchronized blockchain at height ${height.toNumber}`)
   })
   await client.open()
   logger.info('Synchronizing blockchain...')

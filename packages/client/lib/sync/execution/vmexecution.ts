@@ -5,6 +5,7 @@ import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Block } from '@ethereumjs/block'
 import { debugCodeReplayBlock } from '../../util/debug'
+import { Event } from '../../types'
 
 export class VMExecution extends Execution {
   public vm: VM
@@ -76,7 +77,6 @@ export class VMExecution extends Execution {
     while (
       (numExecuted === undefined || numExecuted === this.NUM_BLOCKS_PER_ITERATION) &&
       !startHeadBlock.hash().equals(canonicalHead.hash()) &&
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       this.syncing
     ) {
       headBlock = undefined
@@ -162,7 +162,7 @@ export class VMExecution extends Execution {
             if (this.config.debugCode) {
               await debugCodeReplayBlock(this, block)
             }
-            this.emit('error', error)
+            this.config.events.emit(Event.SYNC_EXECUTION_VM_ERROR, error)
             errorBlock = block
           }
         },
@@ -170,7 +170,6 @@ export class VMExecution extends Execution {
       )
       numExecuted = (await this.vmPromise) as number
 
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (errorBlock) {
         await this.chain.blockchain.setIteratorHead('vm', (errorBlock as Block).header.parentHash)
         return 0

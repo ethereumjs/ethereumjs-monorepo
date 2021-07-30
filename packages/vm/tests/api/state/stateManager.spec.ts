@@ -10,7 +10,7 @@ import {
   unpadBuffer,
   zeros,
 } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '../../../src/state'
 import { createAccount } from '../utils'
 import { isRunningInKarma } from '../../util'
@@ -168,6 +168,93 @@ tape('StateManager', (t) => {
       st.end()
     }
   )
+
+  t.test('should modify account fields correctly', async (st) => {
+    const stateManager = new DefaultStateManager()
+    const account = createAccount()
+    const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+    await stateManager.putAccount(address, account)
+
+    await stateManager.modifyAccountFields(address, { balance: new BN(1234) })
+
+    const res1 = await stateManager.getAccount(address)
+
+    st.equal(res1.balance.toString('hex'), '4d2')
+
+    await stateManager.modifyAccountFields(address, { nonce: new BN(1) })
+
+    const res2 = await stateManager.getAccount(address)
+
+    st.equal(res2.nonce.toNumber(), 1)
+
+    await stateManager.modifyAccountFields(address, {
+      codeHash: Buffer.from(
+        'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b',
+        'hex'
+      ),
+      stateRoot: Buffer.from(
+        'cafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7',
+        'hex'
+      ),
+    })
+
+    const res3 = await stateManager.getAccount(address)
+
+    st.equal(
+      res3.codeHash.toString('hex'),
+      'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b'
+    )
+    st.equal(
+      res3.stateRoot.toString('hex'),
+      'cafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7'
+    )
+
+    st.end()
+  })
+
+  t.test(
+    'should modify account fields correctly on previously non-existent account',
+    async (st) => {
+      const stateManager = new DefaultStateManager()
+      const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+
+      await stateManager.modifyAccountFields(address, { balance: new BN(1234) })
+
+      const res1 = await stateManager.getAccount(address)
+
+      st.equal(res1.balance.toString('hex'), '4d2')
+
+      await stateManager.modifyAccountFields(address, { nonce: new BN(1) })
+
+      const res2 = await stateManager.getAccount(address)
+
+      st.equal(res2.nonce.toNumber(), 1)
+
+      await stateManager.modifyAccountFields(address, {
+        codeHash: Buffer.from(
+          'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b',
+          'hex'
+        ),
+        stateRoot: Buffer.from(
+          'cafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7',
+          'hex'
+        ),
+      })
+
+      const res3 = await stateManager.getAccount(address)
+
+      st.equal(
+        res3.codeHash.toString('hex'),
+        'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b'
+      )
+      st.equal(
+        res3.stateRoot.toString('hex'),
+        'cafd881ab193703b83816c49ff6c2bf6ba6f464a1be560c42106128c8dbc35e7'
+      )
+
+      st.end()
+    }
+  )
   t.test(
     'should generate the genesis state root correctly for mainnet from ethereum/tests data',
     async (st) => {
@@ -194,7 +281,7 @@ tape('StateManager', (t) => {
       st.skip('skip slow test when running in karma')
       return st.end()
     }
-    const common = new Common({ chain: 'mainnet', hardfork: 'petersburg' })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     const expectedStateRoot = Buffer.from(common.genesis().stateRoot.slice(2), 'hex')
     const stateManager = new StateManager({ common: common })
 
@@ -209,10 +296,10 @@ tape('StateManager', (t) => {
   })
 
   t.test('should generate the genesis state root correctly for all other chains', async (st) => {
-    const chains = ['ropsten', 'rinkeby', 'kovan', 'goerli']
+    const chains = [Chain.Ropsten, Chain.Rinkeby, Chain.Kovan, Chain.Goerli]
 
     for (const chain of chains) {
-      const common = new Common({ chain: chain, hardfork: 'petersburg' })
+      const common = new Common({ chain: chain, hardfork: Hardfork.Petersburg })
       const expectedStateRoot = Buffer.from(common.genesis().stateRoot.slice(2), 'hex')
       const stateManager = new DefaultStateManager({ common: common })
 
@@ -247,7 +334,7 @@ tape('StateManager', (t) => {
 
   t.test('should pass Common object when copying the state manager', (st) => {
     const stateManager = new DefaultStateManager({
-      common: new Common({ chain: 'goerli', hardfork: 'byzantium' }),
+      common: new Common({ chain: Chain.Goerli, hardfork: Hardfork.Byzantium }),
     })
 
     st.equal(stateManager._common.chainName(), 'goerli')

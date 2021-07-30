@@ -1,18 +1,18 @@
 import tape from 'tape'
-import Common from '../src/'
+import Common, { Chain, Hardfork } from '../src/'
 
 tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: tape.Test) {
   t.test('Basic usage', function (st: tape.Test) {
-    const c = new Common({ chain: 'mainnet', eips: [2537] })
+    const c = new Common({ chain: Chain.Mainnet, eips: [2537] })
     let msg = 'Should return correct value when HF directly provided'
     st.equal(c.paramByHardfork('gasPrices', 'ecAdd', 'byzantium'), 500, msg)
 
     msg = 'Should return correct value for HF set in class'
-    c.setHardfork('byzantium')
+    c.setHardfork(Hardfork.Byzantium)
     st.equal(c.param('gasPrices', 'ecAdd'), 500, msg)
-    c.setHardfork('istanbul')
+    c.setHardfork(Hardfork.Istanbul)
     st.equal(c.param('gasPrices', 'ecAdd'), 150, msg)
-    c.setHardfork('muirGlacier')
+    c.setHardfork(Hardfork.MuirGlacier)
     st.equal(c.param('gasPrices', 'ecAdd'), 150, msg)
 
     msg = 'Should return null for non-existing value'
@@ -32,7 +32,7 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
   })
 
   t.test('Error cases for param(), paramByHardfork()', function (st: tape.Test) {
-    let c = new Common({ chain: 'mainnet' })
+    let c = new Common({ chain: Chain.Mainnet })
 
     let f = function () {
       c.paramByHardfork('gasPrizes', 'ecAdd', 'byzantium')
@@ -40,13 +40,13 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
     let msg = 'Should throw when called with non-existing topic'
     st.throws(f, /Topic gasPrizes not defined$/, msg)
 
-    c.setHardfork('byzantium')
+    c.setHardfork(Hardfork.Byzantium)
     st.equal(c.param('gasPrices', 'ecAdd'), 500, 'Should return correct value for HF set in class')
 
     c = new Common({
-      chain: 'mainnet',
-      hardfork: 'byzantium',
-      supportedHardforks: ['byzantium', 'constantinople'],
+      chain: Chain.Mainnet,
+      hardfork: Hardfork.Byzantium,
+      supportedHardforks: [Hardfork.Byzantium, Hardfork.Constantinople],
     })
     f = function () {
       c.paramByHardfork('gasPrices', 'expByte', 'spuriousDragon')
@@ -64,7 +64,7 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
   })
 
   t.test('Parameter updates', function (st: tape.Test) {
-    const c = new Common({ chain: 'mainnet' })
+    const c = new Common({ chain: Chain.Mainnet })
 
     let msg = 'Should return correct value for chain start'
     st.equal(c.paramByHardfork('pow', 'minerReward', 'chainstart'), '5000000000000000000', msg)
@@ -82,7 +82,7 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
   })
 
   t.test('Access by block number, paramByBlock()', function (st: tape.Test) {
-    const c = new Common({ chain: 'mainnet', hardfork: 'byzantium' })
+    const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
     let msg = 'Should correctly translate block numbers into HF states (updated value)'
     st.equal(c.paramByBlock('pow', 'minerReward', 4370000), '3000000000000000000', msg)
 
@@ -94,7 +94,7 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
   })
 
   t.test('EIP param access, paramByEIP()', function (st: tape.Test) {
-    const c = new Common({ chain: 'mainnet' })
+    const c = new Common({ chain: Chain.Mainnet })
 
     let msg = 'Should return null for non-existing value'
     st.equal(c.paramByEIP('gasPrices', 'notexistingvalue', 2537), null, msg)
@@ -118,8 +118,8 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
   })
 
   t.test('returns the right block delay for EIP3554', function (st) {
-    for (const fork of ['muirGlacier', 'berlin']) {
-      const c = new Common({ chain: 'mainnet', hardfork: fork })
+    for (const fork of [Hardfork.MuirGlacier, Hardfork.Berlin]) {
+      const c = new Common({ chain: Chain.Mainnet, hardfork: fork })
       let delay = c.param('pow', 'difficultyBombDelay')
       st.equal(delay, 9000000)
       c.setEIPs([3554])

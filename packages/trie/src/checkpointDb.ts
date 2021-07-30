@@ -1,5 +1,6 @@
-import { LevelUp } from 'levelup'
 import { DB, BatchDBOp, ENCODING_OPTS } from './db'
+// eslint-disable-next-line implicit-dependencies/no-implicit
+import type { LevelUp } from 'levelup'
 
 export type Checkpoint = {
   // We cannot use a Buffer => Buffer map directly. If you create two Buffers with the same internal value,
@@ -140,7 +141,6 @@ export class CheckpointDB extends DB {
       for (const op of opStack) {
         if (op.type === 'put') {
           await this.put(op.key, op.value)
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         } else if (op.type === 'del') {
           await this.del(op.key)
         }

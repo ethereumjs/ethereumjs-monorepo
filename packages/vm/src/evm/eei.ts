@@ -90,7 +90,6 @@ export default class EEI {
    * @param context - Usage context for debugging
    * @throws if out of gas
    */
-  // eslint-disable-next-line no-unused-vars
   useGas(amount: BN, context?: string): void {
     this._gasLeft.isub(amount)
     if (this._evm._vm.DEBUG) {
@@ -107,7 +106,6 @@ export default class EEI {
    * @param amount - Amount of gas refunded
    * @param context - Usage context for debugging
    */
-  // eslint-disable-next-line no-unused-vars
   refundGas(amount: BN, context?: string): void {
     if (this._evm._vm.DEBUG) {
       debugGas(`${context ? context + ': ' : ''}refund ${amount} gas (-> ${this._evm._refund})`)
@@ -120,7 +118,6 @@ export default class EEI {
    * @param amount - Amount to subtract from gas refunds
    * @param context - Usage context for debugging
    */
-  // eslint-disable-next-line no-unused-vars
   subRefund(amount: BN, context?: string): void {
     if (this._evm._vm.DEBUG) {
       debugGas(`${context ? context + ': ' : ''}sub gas refund ${amount} (-> ${this._evm._refund})`)
@@ -130,6 +127,17 @@ export default class EEI {
       this._evm._refund = new BN(0)
       trap(ERROR.REFUND_EXHAUSTED)
     }
+  }
+
+  /**
+   * Increments the internal gasLeft counter. Used for adding callStipend.
+   * @param amount - Amount to add
+   */
+  addStipend(amount: BN): void {
+    if (this._evm._vm.DEBUG) {
+      debugGas(`add stipend ${amount} (-> ${this._gasLeft})`)
+    }
+    this._gasLeft.iadd(amount)
   }
 
   /**
@@ -355,9 +363,14 @@ export default class EEI {
   /**
    * Loads a 256-bit value to memory from persistent storage.
    * @param key - Storage key
+   * @param original - If true, return the original storage value (default: false)
    */
-  async storageLoad(key: Buffer): Promise<Buffer> {
-    return this._state.getContractStorage(this._env.address, key)
+  async storageLoad(key: Buffer, original = false): Promise<Buffer> {
+    if (original) {
+      return this._state.getOriginalContractStorage(this._env.address, key)
+    } else {
+      return this._state.getContractStorage(this._env.address, key)
+    }
   }
 
   /**
@@ -410,9 +423,9 @@ export default class EEI {
     await this._state.putAccount(toAddress, toAccount)
 
     // Subtract from contract balance
-    const account = await this._state.getAccount(this._env.address)
-    account.balance = new BN(0)
-    await this._state.putAccount(this._env.address, account)
+    await this._state.modifyAccountFields(this._env.address, {
+      balance: new BN(0),
+    })
 
     trap(ERROR.STOP)
   }

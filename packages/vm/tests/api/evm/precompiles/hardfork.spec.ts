@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { Address, BN } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../../src'
 import { getPrecompile } from '../../../../src/evm/precompiles'
 
@@ -11,7 +11,7 @@ tape('Precompiles: hardfork availability', (t) => {
     )
 
     // ECPAIR was introduced in Byzantium; check if available from Byzantium.
-    const commonByzantium = new Common({ chain: 'mainnet', hardfork: 'byzantium' })
+    const commonByzantium = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
 
     let ECPAIRING = getPrecompile(ECPAIR_Address, commonByzantium)
 
@@ -32,7 +32,7 @@ tape('Precompiles: hardfork availability', (t) => {
     st.assert(result.gasUsed.toNumber() == 100000) // check that we are using gas (if address would contain no code we use 0 gas)
 
     // Check if ECPAIR is available in future hard forks.
-    const commonPetersburg = new Common({ chain: 'mainnet', hardfork: 'petersburg' })
+    const commonPetersburg = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     ECPAIRING = getPrecompile(ECPAIR_Address, commonPetersburg)
 
     if (!ECPAIRING) {
@@ -52,7 +52,7 @@ tape('Precompiles: hardfork availability', (t) => {
     st.assert(result.gasUsed.toNumber() == 100000)
 
     // Check if ECPAIR is not available in Homestead.
-    const commonHomestead = new Common({ chain: 'mainnet', hardfork: 'homestead' })
+    const commonHomestead = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
     ECPAIRING = getPrecompile(ECPAIR_Address, commonHomestead)
 
     if (ECPAIRING != undefined) {

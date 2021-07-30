@@ -21,14 +21,18 @@
 
 ### default
 
-▸ **default**(`opts`: [*BuildBlockOpts*](../interfaces/buildblock.buildblockopts.md)): *Promise*<[*BlockBuilder*](../classes/buildblock.blockbuilder.md)\>
+▸ **default**(`opts`): `Promise`<[BlockBuilder](../classes/buildblock.blockbuilder.md)\>
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `opts` | [*BuildBlockOpts*](../interfaces/buildblock.buildblockopts.md) |
+| `opts` | [BuildBlockOpts](../interfaces/buildblock.buildblockopts.md) |
 
-**Returns:** *Promise*<[*BlockBuilder*](../classes/buildblock.blockbuilder.md)\>
+#### Returns
 
-Defined in: [buildBlock.ts:243](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L243)
+`Promise`<[BlockBuilder](../classes/buildblock.blockbuilder.md)\>
+
+#### Defined in
+
+[buildBlock.ts:247](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L247)

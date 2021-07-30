@@ -63,212 +63,256 @@ An object that represents the block header.
 
 ### constructor
 
-\+ **new BlockHeader**(`parentHash`: *Buffer*, `uncleHash`: *Buffer*, `coinbase`: *Address*, `stateRoot`: *Buffer*, `transactionsTrie`: *Buffer*, `receiptTrie`: *Buffer*, `bloom`: *Buffer*, `difficulty`: *BN*, `number`: *BN*, `gasLimit`: *BN*, `gasUsed`: *BN*, `timestamp`: *BN*, `extraData`: *Buffer*, `mixHash`: *Buffer*, `nonce`: *Buffer*, `options?`: [*BlockOptions*](../interfaces/types.blockoptions.md), `baseFeePerGas?`: *BN*): [*BlockHeader*](header.blockheader.md)
+• **new BlockHeader**(`parentHash`, `uncleHash`, `coinbase`, `stateRoot`, `transactionsTrie`, `receiptTrie`, `bloom`, `difficulty`, `number`, `gasLimit`, `gasUsed`, `timestamp`, `extraData`, `mixHash`, `nonce`, `options?`, `baseFeePerGas?`)
 
 This constructor takes the values, validates them, assigns them and freezes the object.
 
 **`deprecated`** - Use the public static factory methods to assist in creating a Header object from
-varying data types. For a default empty header, use `BlockHeader.fromHeaderData()`.
+varying data types. For a default empty header, use [BlockHeader.fromHeaderData](header.blockheader.md#fromheaderdata).
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `parentHash` | *Buffer* | - |
-| `uncleHash` | *Buffer* | - |
-| `coinbase` | *Address* | - |
-| `stateRoot` | *Buffer* | - |
-| `transactionsTrie` | *Buffer* | - |
-| `receiptTrie` | *Buffer* | - |
-| `bloom` | *Buffer* | - |
-| `difficulty` | *BN* | - |
-| `number` | *BN* | - |
-| `gasLimit` | *BN* | - |
-| `gasUsed` | *BN* | - |
-| `timestamp` | *BN* | - |
-| `extraData` | *Buffer* | - |
-| `mixHash` | *Buffer* | - |
-| `nonce` | *Buffer* | - |
-| `options` | [*BlockOptions*](../interfaces/types.blockoptions.md) | {} |
-| `baseFeePerGas?` | *BN* | - |
+| Name | Type |
+| :------ | :------ |
+| `parentHash` | `Buffer` |
+| `uncleHash` | `Buffer` |
+| `coinbase` | `Address` |
+| `stateRoot` | `Buffer` |
+| `transactionsTrie` | `Buffer` |
+| `receiptTrie` | `Buffer` |
+| `bloom` | `Buffer` |
+| `difficulty` | `BN` |
+| `number` | `BN` |
+| `gasLimit` | `BN` |
+| `gasUsed` | `BN` |
+| `timestamp` | `BN` |
+| `extraData` | `Buffer` |
+| `mixHash` | `Buffer` |
+| `nonce` | `Buffer` |
+| `options` | [BlockOptions](../interfaces/types.blockoptions.md) |
+| `baseFeePerGas?` | `BN` |
 
-**Returns:** [*BlockHeader*](header.blockheader.md)
+#### Defined in
 
-Defined in: [header.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L174)
+[header.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L174)
 
 ## Properties
 
 ### \_common
 
-• `Readonly` **\_common**: *default*
+• `Readonly` **\_common**: `default`
 
-Defined in: [header.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L48)
+#### Defined in
+
+[header.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L48)
 
 ___
 
 ### \_errorPostfix
 
-• **\_errorPostfix**: *string*= ''
+• **\_errorPostfix**: `string` = ''
 
-Defined in: [header.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L49)
+#### Defined in
+
+[header.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L49)
 
 ___
 
 ### baseFeePerGas
 
-• `Optional` `Readonly` **baseFeePerGas**: *BN*
+• `Optional` `Readonly` **baseFeePerGas**: `BN`
 
-Defined in: [header.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L46)
+#### Defined in
+
+[header.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L46)
 
 ___
 
 ### bloom
 
-• `Readonly` **bloom**: *Buffer*
+• `Readonly` **bloom**: `Buffer`
 
-Defined in: [header.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L37)
+#### Defined in
+
+[header.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L37)
 
 ___
 
 ### coinbase
 
-• `Readonly` **coinbase**: *Address*
+• `Readonly` **coinbase**: `Address`
 
-Defined in: [header.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L33)
+#### Defined in
+
+[header.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L33)
 
 ___
 
 ### difficulty
 
-• `Readonly` **difficulty**: *BN*
+• `Readonly` **difficulty**: `BN`
 
-Defined in: [header.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L38)
+#### Defined in
+
+[header.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L38)
 
 ___
 
 ### extraData
 
-• `Readonly` **extraData**: *Buffer*
+• `Readonly` **extraData**: `Buffer`
 
-Defined in: [header.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L43)
+#### Defined in
+
+[header.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L43)
 
 ___
 
 ### gasLimit
 
-• `Readonly` **gasLimit**: *BN*
+• `Readonly` **gasLimit**: `BN`
 
-Defined in: [header.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L40)
+#### Defined in
+
+[header.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L40)
 
 ___
 
 ### gasUsed
 
-• `Readonly` **gasUsed**: *BN*
+• `Readonly` **gasUsed**: `BN`
 
-Defined in: [header.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L41)
+#### Defined in
+
+[header.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L41)
 
 ___
 
 ### mixHash
 
-• `Readonly` **mixHash**: *Buffer*
+• `Readonly` **mixHash**: `Buffer`
 
-Defined in: [header.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L44)
+#### Defined in
+
+[header.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L44)
 
 ___
 
 ### nonce
 
-• `Readonly` **nonce**: *Buffer*
+• `Readonly` **nonce**: `Buffer`
 
-Defined in: [header.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L45)
+#### Defined in
+
+[header.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L45)
 
 ___
 
 ### number
 
-• `Readonly` **number**: *BN*
+• `Readonly` **number**: `BN`
 
-Defined in: [header.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L39)
+#### Defined in
+
+[header.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L39)
 
 ___
 
 ### parentHash
 
-• `Readonly` **parentHash**: *Buffer*
+• `Readonly` **parentHash**: `Buffer`
 
-Defined in: [header.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L31)
+#### Defined in
+
+[header.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L31)
 
 ___
 
 ### receiptTrie
 
-• `Readonly` **receiptTrie**: *Buffer*
+• `Readonly` **receiptTrie**: `Buffer`
 
-Defined in: [header.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L36)
+#### Defined in
+
+[header.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L36)
 
 ___
 
 ### stateRoot
 
-• `Readonly` **stateRoot**: *Buffer*
+• `Readonly` **stateRoot**: `Buffer`
 
-Defined in: [header.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L34)
+#### Defined in
+
+[header.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L34)
 
 ___
 
 ### timestamp
 
-• `Readonly` **timestamp**: *BN*
+• `Readonly` **timestamp**: `BN`
 
-Defined in: [header.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L42)
+#### Defined in
+
+[header.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L42)
 
 ___
 
 ### transactionsTrie
 
-• `Readonly` **transactionsTrie**: *Buffer*
+• `Readonly` **transactionsTrie**: `Buffer`
 
-Defined in: [header.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L35)
+#### Defined in
+
+[header.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L35)
 
 ___
 
 ### uncleHash
 
-• `Readonly` **uncleHash**: *Buffer*
+• `Readonly` **uncleHash**: `Buffer`
 
-Defined in: [header.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L32)
+#### Defined in
+
+[header.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L32)
 
 ## Methods
 
 ### \_validateHeaderFields
 
-▸ **_validateHeaderFields**(): *void*
+▸ **_validateHeaderFields**(): `void`
 
 Validates correct buffer lengths, throws if invalid.
 
-**Returns:** *void*
+#### Returns
 
-Defined in: [header.ts:302](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L302)
+`void`
+
+#### Defined in
+
+[header.ts:302](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L302)
 
 ___
 
 ### calcNextBaseFee
 
-▸ **calcNextBaseFee**(): *BN*
+▸ **calcNextBaseFee**(): `BN`
 
 Calculates the base fee for a potential next block
 
-**Returns:** *BN*
+#### Returns
 
-Defined in: [header.ts:607](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L607)
+`BN`
+
+#### Defined in
+
+[header.ts:607](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L607)
 
 ___
 
 ### canonicalDifficulty
 
-▸ **canonicalDifficulty**(`parentBlockHeader`: [*BlockHeader*](header.blockheader.md)): *BN*
+▸ **canonicalDifficulty**(`parentBlockHeader`): `BN`
 
 Returns the canonical difficulty for this block.
 
@@ -276,97 +320,125 @@ Returns the canonical difficulty for this block.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `parentBlockHeader` | [*BlockHeader*](header.blockheader.md) | the header from the parent `Block` of this header |
+| `parentBlockHeader` | [BlockHeader](header.blockheader.md) | the header from the parent `Block` of this header |
 
-**Returns:** *BN*
+#### Returns
 
-Defined in: [header.ts:332](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L332)
+`BN`
+
+#### Defined in
+
+[header.ts:332](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L332)
 
 ___
 
 ### cliqueEpochTransitionSigners
 
-▸ **cliqueEpochTransitionSigners**(): *Address*[]
+▸ **cliqueEpochTransitionSigners**(): `Address`[]
 
 Returns a list of signers
 (only clique PoA, throws otherwise)
 
 This function throws if not called on an epoch
 transition block and should therefore be used
-in conjunction with `cliqueIsEpochTransition()`
+in conjunction with [BlockHeader.cliqueIsEpochTransition](header.blockheader.md#cliqueisepochtransition)
 
-**Returns:** *Address*[]
+#### Returns
 
-Defined in: [header.ts:752](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L752)
+`Address`[]
+
+#### Defined in
+
+[header.ts:752](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L752)
 
 ___
 
 ### cliqueExtraSeal
 
-▸ **cliqueExtraSeal**(): *Buffer*
+▸ **cliqueExtraSeal**(): `Buffer`
 
 Returns extra seal data
 (only clique PoA, throws otherwise)
 
-**Returns:** *Buffer*
+#### Returns
 
-Defined in: [header.ts:723](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L723)
+`Buffer`
+
+#### Defined in
+
+[header.ts:723](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L723)
 
 ___
 
 ### cliqueExtraVanity
 
-▸ **cliqueExtraVanity**(): *Buffer*
+▸ **cliqueExtraVanity**(): `Buffer`
 
 Returns extra vanity data
 (only clique PoA, throws otherwise)
 
-**Returns:** *Buffer*
+#### Returns
 
-Defined in: [header.ts:714](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L714)
+`Buffer`
+
+#### Defined in
+
+[header.ts:714](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L714)
 
 ___
 
 ### cliqueIsEpochTransition
 
-▸ **cliqueIsEpochTransition**(): *boolean*
+▸ **cliqueIsEpochTransition**(): `boolean`
 
 Checks if the block header is an epoch transition
 header (only clique PoA, throws otherwise)
 
-**Returns:** *boolean*
+#### Returns
 
-Defined in: [header.ts:702](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L702)
+`boolean`
+
+#### Defined in
+
+[header.ts:702](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L702)
 
 ___
 
 ### cliqueSigHash
 
-▸ **cliqueSigHash**(): *Buffer*
+▸ **cliqueSigHash**(): `Buffer`
 
 PoA clique signature hash without the seal.
 
-**Returns:** *Buffer*
+#### Returns
 
-Defined in: [header.ts:691](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L691)
+`Buffer`
+
+#### Defined in
+
+[header.ts:691](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L691)
 
 ___
 
 ### cliqueSigner
 
-▸ **cliqueSigner**(): *Address*
+▸ **cliqueSigner**(): `Address`
 
 Returns the signer address
 
-**Returns:** *Address*
+#### Returns
 
-Defined in: [header.ts:788](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L788)
+`Address`
+
+#### Defined in
+
+[header.ts:788](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L788)
 
 ___
 
 ### cliqueVerifySignature
 
-▸ **cliqueVerifySignature**(`signerList`: *Address*[]): *boolean*
+▸ **cliqueVerifySignature**(`signerList`): `boolean`
 
 Verifies the signature of the block (last 65 bytes of extraData field)
 (only clique PoA, throws otherwise)
@@ -377,77 +449,101 @@ Verifies the signature of the block (last 65 bytes of extraData field)
 
 | Name | Type |
 | :------ | :------ |
-| `signerList` | *Address*[] |
+| `signerList` | `Address`[] |
 
-**Returns:** *boolean*
+#### Returns
 
-Defined in: [header.ts:776](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L776)
+`boolean`
+
+#### Defined in
+
+[header.ts:776](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L776)
 
 ___
 
 ### hash
 
-▸ **hash**(): *Buffer*
+▸ **hash**(): `Buffer`
 
 Returns the hash of the block header.
 
-**Returns:** *Buffer*
+#### Returns
 
-Defined in: [header.ts:671](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L671)
+`Buffer`
+
+#### Defined in
+
+[header.ts:671](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L671)
 
 ___
 
 ### isGenesis
 
-▸ **isGenesis**(): *boolean*
+▸ **isGenesis**(): `boolean`
 
 Checks if the block header is a genesis header.
 
-**Returns:** *boolean*
+#### Returns
 
-Defined in: [header.ts:678](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L678)
+`boolean`
+
+#### Defined in
+
+[header.ts:678](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L678)
 
 ___
 
 ### raw
 
-▸ **raw**(): [*BlockHeaderBuffer*](../modules/types.md#blockheaderbuffer)
+▸ **raw**(): [BlockHeaderBuffer](../modules/types.md#blockheaderbuffer)
 
 Returns a Buffer Array of the raw Buffers in this header, in order.
 
-**Returns:** [*BlockHeaderBuffer*](../modules/types.md#blockheaderbuffer)
+#### Returns
 
-Defined in: [header.ts:642](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L642)
+[BlockHeaderBuffer](../modules/types.md#blockheaderbuffer)
+
+#### Defined in
+
+[header.ts:642](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L642)
 
 ___
 
 ### serialize
 
-▸ **serialize**(): *Buffer*
+▸ **serialize**(): `Buffer`
 
 Returns the rlp encoding of the block header.
 
-**Returns:** *Buffer*
+#### Returns
 
-Defined in: [header.ts:805](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L805)
+`Buffer`
+
+#### Defined in
+
+[header.ts:805](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L805)
 
 ___
 
 ### toJSON
 
-▸ **toJSON**(): [*JsonHeader*](../interfaces/types.jsonheader.md)
+▸ **toJSON**(): [JsonHeader](../interfaces/types.jsonheader.md)
 
 Returns the block header in JSON format.
 
-**Returns:** [*JsonHeader*](../interfaces/types.jsonheader.md)
+#### Returns
 
-Defined in: [header.ts:812](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L812)
+[JsonHeader](../interfaces/types.jsonheader.md)
+
+#### Defined in
+
+[header.ts:812](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L812)
 
 ___
 
 ### validate
 
-▸ **validate**(`blockchain`: [*Blockchain*](../interfaces/types.blockchain.md), `height?`: *BN*): *Promise*<void\>
+▸ **validate**(`blockchain`, `height?`): `Promise`<void\>
 
 Validates the block header, throwing if invalid. It is being validated against the reported `parentHash`.
 It verifies the current block against the `parentHash`:
@@ -467,18 +563,22 @@ It verifies the current block against the `parentHash`:
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `blockchain` | [*Blockchain*](../interfaces/types.blockchain.md) | validate against an @ethereumjs/blockchain |
-| `height?` | *BN* | If this is an uncle header, this is the height of the block that is including it |
+| `blockchain` | [Blockchain](../interfaces/types.blockchain.md) | validate against an @ethereumjs/blockchain |
+| `height?` | `BN` | If this is an uncle header, this is the height of the block that is including it |
 
-**Returns:** *Promise*<void\>
+#### Returns
 
-Defined in: [header.ts:492](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L492)
+`Promise`<void\>
+
+#### Defined in
+
+[header.ts:492](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L492)
 
 ___
 
 ### validateCliqueDifficulty
 
-▸ **validateCliqueDifficulty**(`blockchain`: [*Blockchain*](../interfaces/types.blockchain.md)): *boolean*
+▸ **validateCliqueDifficulty**(`blockchain`): `boolean`
 
 For poa, validates `difficulty` is correctly identified as INTURN or NOTURN.
 Returns false if invalid.
@@ -487,17 +587,21 @@ Returns false if invalid.
 
 | Name | Type |
 | :------ | :------ |
-| `blockchain` | [*Blockchain*](../interfaces/types.blockchain.md) |
+| `blockchain` | [Blockchain](../interfaces/types.blockchain.md) |
 
-**Returns:** *boolean*
+#### Returns
 
-Defined in: [header.ts:416](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L416)
+`boolean`
+
+#### Defined in
+
+[header.ts:416](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L416)
 
 ___
 
 ### validateDifficulty
 
-▸ **validateDifficulty**(`parentBlockHeader`: [*BlockHeader*](header.blockheader.md)): *boolean*
+▸ **validateDifficulty**(`parentBlockHeader`): `boolean`
 
 Checks that the block's `difficulty` matches the canonical difficulty.
 
@@ -505,17 +609,21 @@ Checks that the block's `difficulty` matches the canonical difficulty.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `parentBlockHeader` | [*BlockHeader*](header.blockheader.md) | the header from the parent `Block` of this header |
+| `parentBlockHeader` | [BlockHeader](header.blockheader.md) | the header from the parent `Block` of this header |
 
-**Returns:** *boolean*
+#### Returns
 
-Defined in: [header.ts:408](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L408)
+`boolean`
+
+#### Defined in
+
+[header.ts:408](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L408)
 
 ___
 
 ### validateGasLimit
 
-▸ **validateGasLimit**(`parentBlockHeader`: [*BlockHeader*](header.blockheader.md)): *boolean*
+▸ **validateGasLimit**(`parentBlockHeader`): `boolean`
 
 Validates if the block gasLimit remains in the
 boundaries set by the protocol.
@@ -524,84 +632,104 @@ boundaries set by the protocol.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `parentBlockHeader` | [*BlockHeader*](header.blockheader.md) | the header from the parent `Block` of this header |
+| `parentBlockHeader` | [BlockHeader](header.blockheader.md) | the header from the parent `Block` of this header |
 
-**Returns:** *boolean*
+#### Returns
 
-Defined in: [header.ts:450](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L450)
+`boolean`
+
+#### Defined in
+
+[header.ts:450](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L450)
 
 ___
 
 ### fromHeaderData
 
-▸ `Static` **fromHeaderData**(`headerData?`: [*HeaderData*](../interfaces/types.headerdata.md), `opts?`: [*BlockOptions*](../interfaces/types.blockoptions.md)): [*BlockHeader*](header.blockheader.md)
+▸ `Static` **fromHeaderData**(`headerData?`, `opts?`): [BlockHeader](header.blockheader.md)
 
 Static constructor to create a block header from a header data dictionary
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `headerData` | [*HeaderData*](../interfaces/types.headerdata.md) | {} |
-| `opts` | [*BlockOptions*](../interfaces/types.blockoptions.md) | {} |
+| Name | Type |
+| :------ | :------ |
+| `headerData` | [HeaderData](../interfaces/types.headerdata.md) |
+| `opts` | [BlockOptions](../interfaces/types.blockoptions.md) |
 
-**Returns:** [*BlockHeader*](header.blockheader.md)
+#### Returns
 
-Defined in: [header.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L57)
+[BlockHeader](header.blockheader.md)
+
+#### Defined in
+
+[header.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L57)
 
 ___
 
 ### fromRLPSerializedHeader
 
-▸ `Static` **fromRLPSerializedHeader**(`serialized`: *Buffer*, `opts?`: [*BlockOptions*](../interfaces/types.blockoptions.md)): [*BlockHeader*](header.blockheader.md)
+▸ `Static` **fromRLPSerializedHeader**(`serialized`, `opts?`): [BlockHeader](header.blockheader.md)
 
 Static constructor to create a block header from a RLP-serialized header
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `serialized` | *Buffer* | - |
-| `opts` | [*BlockOptions*](../interfaces/types.blockoptions.md) | {} |
+| Name | Type |
+| :------ | :------ |
+| `serialized` | `Buffer` |
+| `opts` | [BlockOptions](../interfaces/types.blockoptions.md) |
 
-**Returns:** [*BlockHeader*](header.blockheader.md)
+#### Returns
 
-Defined in: [header.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L104)
+[BlockHeader](header.blockheader.md)
+
+#### Defined in
+
+[header.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L104)
 
 ___
 
 ### fromValuesArray
 
-▸ `Static` **fromValuesArray**(`values`: [*BlockHeaderBuffer*](../modules/types.md#blockheaderbuffer), `opts?`: [*BlockOptions*](../interfaces/types.blockoptions.md)): [*BlockHeader*](header.blockheader.md)
+▸ `Static` **fromValuesArray**(`values`, `opts?`): [BlockHeader](header.blockheader.md)
 
 Static constructor to create a block header from an array of Buffer values
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `values` | [*BlockHeaderBuffer*](../modules/types.md#blockheaderbuffer) | - |
-| `opts` | [*BlockOptions*](../interfaces/types.blockoptions.md) | {} |
+| Name | Type |
+| :------ | :------ |
+| `values` | [BlockHeaderBuffer](../modules/types.md#blockheaderbuffer) |
+| `opts` | [BlockOptions](../interfaces/types.blockoptions.md) |
 
-**Returns:** [*BlockHeader*](header.blockheader.md)
+#### Returns
 
-Defined in: [header.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L120)
+[BlockHeader](header.blockheader.md)
+
+#### Defined in
+
+[header.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L120)
 
 ___
 
 ### genesis
 
-▸ `Static` **genesis**(`headerData?`: [*HeaderData*](../interfaces/types.headerdata.md), `opts?`: [*BlockOptions*](../interfaces/types.blockoptions.md)): [*BlockHeader*](header.blockheader.md)
+▸ `Static` **genesis**(`headerData?`, `opts?`): [BlockHeader](header.blockheader.md)
 
-Alias for Header.fromHeaderData() with initWithGenesisHeader set to true.
+Alias for [BlockHeader.fromHeaderData](header.blockheader.md#fromheaderdata) with [BlockOptions.initWithGenesisHeader](../interfaces/types.blockoptions.md#initwithgenesisheader) set to true.
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `headerData` | [*HeaderData*](../interfaces/types.headerdata.md) | {} |
-| `opts?` | [*BlockOptions*](../interfaces/types.blockoptions.md) | - |
+| Name | Type |
+| :------ | :------ |
+| `headerData` | [HeaderData](../interfaces/types.headerdata.md) |
+| `opts?` | [BlockOptions](../interfaces/types.blockoptions.md) |
 
-**Returns:** [*BlockHeader*](header.blockheader.md)
+#### Returns
 
-Defined in: [header.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L171)
+[BlockHeader](header.blockheader.md)
+
+#### Defined in
+
+[header.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L171)

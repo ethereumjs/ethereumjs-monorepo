@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { Address, BN, bufferToHex } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import { isRunningInKarma } from '../../util'
 import { getPrecompile } from '../../../src/evm/precompiles'
@@ -20,7 +20,7 @@ tape('EIP-2537 BLS tests', (t) => {
       st.skip('BLS does not work in karma')
       return st.end()
     }
-    const common = new Common({ chain: 'mainnet', hardfork: 'muirGlacier' })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
     const vm = new VM({ common: common })
 
     for (const address of precompiles) {
@@ -51,7 +51,7 @@ tape('EIP-2537 BLS tests', (t) => {
       st.skip('BLS does not work in karma')
       return st.end()
     }
-    const common = new Common({ chain: 'mainnet', hardfork: 'byzantium', eips: [2537] })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium, eips: [2537] })
     const vm = new VM({ common: common })
 
     for (const address of precompiles) {
@@ -89,7 +89,7 @@ tape('EIP-2537 BLS tests', (t) => {
       st.skip('BLS does not work in karma')
       return st.end()
     }
-    const common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [2537] })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2537] })
     const vm = new VM({ common: common })
     const address = new Address(Buffer.from('000000000000000000000000000000000000000f', 'hex'))
     const BLS12G2MultiExp = getPrecompile(address, common)

@@ -23,8 +23,6 @@ interface ServerDetails {
 }
 export const servers: ServerDetails = {}
 
-/* eslint-disable @typescript-eslint/no-unnecessary-condition */
-
 export function createServer(location: string) {
   if (servers[location]) {
     throw new Error(`Already running a server at ${location}`)
@@ -33,6 +31,7 @@ export function createServer(location: string) {
     server: new EventEmitter(),
     streams: {},
   }
+  // TODO: Convert to central event bus `Event.SERVER_LISTENING` if needed
   setTimeout(() => servers[location].server.emit('listening'), 10)
   return servers[location].server
 }

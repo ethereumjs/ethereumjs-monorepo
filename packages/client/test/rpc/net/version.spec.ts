@@ -1,5 +1,5 @@
 import tape from 'tape'
-import Common from '@ethereumjs/common'
+import Common, { Chain } from '@ethereumjs/common'
 import { startRPC, createManager, createClient, baseSetup, params, baseRequest } from '../helpers'
 
 const method = 'net_version'
@@ -29,7 +29,7 @@ function compareResult(t: any, result: any, chainId: any) {
 
 tape(`${method}: call on ropsten`, (t) => {
   const manager = createManager(
-    createClient({ opened: true, commonChain: new Common({ chain: 'ropsten' }) })
+    createClient({ opened: true, commonChain: new Common({ chain: Chain.Ropsten }) })
   )
   const server = startRPC(manager.getMethods())
 
@@ -54,7 +54,7 @@ tape(`${method}: call on mainnet`, (t) => {
 
 tape(`${method}: call on rinkeby`, (t) => {
   const manager = createManager(
-    createClient({ opened: true, commonChain: new Common({ chain: 'rinkeby' }) })
+    createClient({ opened: true, commonChain: new Common({ chain: Chain.Rinkeby }) })
   )
   const server = startRPC(manager.getMethods())
 
@@ -68,7 +68,7 @@ tape(`${method}: call on rinkeby`, (t) => {
 
 tape(`${method}: call on kovan`, (t) => {
   const manager = createManager(
-    createClient({ opened: true, commonChain: new Common({ chain: 'kovan' }) })
+    createClient({ opened: true, commonChain: new Common({ chain: Chain.Kovan }) })
   )
   const server = startRPC(manager.getMethods())
 
@@ -82,7 +82,7 @@ tape(`${method}: call on kovan`, (t) => {
 
 tape(`${method}: call on goerli`, (t) => {
   const manager = createManager(
-    createClient({ opened: true, commonChain: new Common({ chain: 'goerli' }) })
+    createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) })
   )
   const server = startRPC(manager.getMethods())
 

@@ -6,7 +6,42 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## UNRELEASED
+## [UNRELEASED]
+
+**New Features**
+
+- StateManager: Added `modifyAccountFields` method to simplify the `getAccount` -> modify fields -> `putAccount` pattern, PR [#1369](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1369)
+
+**Bug Fixes**
+
+- Fix EIP1559 bug to include tx value in balance check, fix nonce check, PR [#1372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1372)
+- Update `ethereum/tests` to v9.0.3 and fix for uncles at hardfork transition, PR [#1347](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1347)
+
+**Maintenance**
+
+- Update internal `common` usage to new Chain & Hardfork enums, PR [#1363](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1363)
+- Add tests for wrong transactions, PR [#1374](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1374)
+- Fix several internal todos, PR [#1375](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1375)
+
+**Dependencies, CI and Docs**
+
+- Add hardhat e2e test integration, PR [#1348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1348)
+
+## 5.5.0 - 2021-07-08
+
+### Finalized London HF Support
+
+This release integrates a `Common` library version which provides the `london` HF blocks for all networks including `mainnet` and is therefore the first release with finalized London HF support.
+
+### Included Source Files
+
+Source files from the `src` folder are now included in the distribution build, see PR [#1301](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1301). This allows for a better debugging experience in debug tools like Chrome DevTools by having working source map references to the original sources available for inspection.
+
+### Other Changes & Fixes
+
+- Improved browser compatibility by replacing `instanceof` calls on tx objects with functionality checks, PR [#1315](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1315)
+
+## 5.4.2 - 2021-07-06
 
 - BlockBuilder: allow customizable baseFeePerGas, PR [#1326](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1326)
 
@@ -20,9 +55,9 @@ This release comes with some additional `EIP-1559` checks and functionality:
 
 ## 5.4.0 - 2021-05-26
 
-### London HF Support
+### Functional London HF Support (no finalized HF blocks yet)
 
-This `VM` release comes with full support for the `london` hardfork. Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `VM` with the `london` HF activated:
+This `VM` release comes with full functional support for the `london` hardfork (all EIPs are finalized and integrated and `london` HF can be activated, there are no final block numbers for the HF integrated though yet). Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `VM` with the `london` HF activated:
 
 ```typescript
 import VM from '@ethereumjs/vm'

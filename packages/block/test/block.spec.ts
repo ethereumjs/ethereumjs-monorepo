@@ -1,15 +1,19 @@
 import tape from 'tape'
-import { BN, rlp, zeros } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
-import { Block, BlockBuffer } from '../src'
+import { BN, keccak256, rlp, zeros } from 'ethereumjs-util'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import { Block, BlockBuffer, BlockHeader } from '../src'
 import blockFromRpc from '../src/from-rpc'
 import { Mockchain } from './mockchain'
 import { createBlock } from './util'
 import * as testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
 
+// explicitly import util, needed for karma-typescript bundling
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import util from 'util'
+
 tape('[Block]: block functions', function (t) {
   t.test('should test block initialization', function (st) {
-    const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
+    const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
     const genesis = Block.genesis({}, { common })
     st.ok(genesis.hash().toString('hex'), 'block should initialize')
 
@@ -63,7 +67,7 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should initialize with null parameters without throwing', function (st) {
     st.doesNotThrow(function () {
-      const common = new Common({ chain: 'ropsten' })
+      const common = new Common({ chain: Chain.Ropsten })
       const opts = { common }
       Block.fromBlockData({}, opts)
       st.end()
@@ -72,7 +76,7 @@ tape('[Block]: block functions', function (t) {
   t.test(
     'should throw when trying to initialize with uncle headers on a PoA network',
     function (st) {
-      const common = new Common({ chain: 'rinkeby' })
+      const common = new Common({ chain: Chain.Rinkeby })
       const uncleBlock = Block.fromBlockData(
         { header: { extraData: Buffer.alloc(117) } },
         { common }
@@ -100,7 +104,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test block validation on poa chain', async function (st) {
-    const common = new Common({ chain: 'goerli', hardfork: 'chainstart' })
+    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
     const blockchain = new Mockchain()
     const block = blockFromRpc(testDataFromRpcGoerli, [], { common })
 
@@ -158,7 +162,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test transaction validation with legacy tx in london', async function (st) {
-    const common = new Common({ chain: 'goerli', hardfork: 'london' })
+    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.London })
     const blockRlp = testData.blocks[0].rlp
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     await testTransactionValidation(st, block)
@@ -440,6 +444,122 @@ tape('[Block]: block functions', function (t) {
     st.end()
   })
 
+  t.test(
+    'should select the right hardfork for uncles at a hardfork transition',
+    async function (st) {
+      /**
+       * This test creates a chain around mainnet fork blocks:
+       *      berlin         london
+       *                |     |-> u <---|
+       * @ -> @ -> @ ---|---> @ -> @ -> @
+       * |-> u <---|               | -> @
+       *    ^----------------------------
+       * @ = block
+       * u = uncle block
+       *
+       * There are 3 pre-fork blocks, with 1 pre-fork uncle
+       * There are 3 blocks after the fork, with 1 uncle after the fork
+       *
+       * The following situations are tested:
+       * Pre-fork block can have legacy uncles
+       * London block has london uncles
+       * London block has legacy uncles
+       * London block has legacy uncles, where hardforkByBlockNumber set to false (this should throw)
+       *    In this situation, the london block creates a london uncle, but this london uncle should be
+       *    a berlin block, and therefore has no base fee. But, since common is still london, base fee
+       *    is expected
+       * It is tested that common does not change
+       */
+      const blockchain = new Mockchain()
+
+      const common = new Common({ chain: Chain.Mainnet })
+      common.setHardfork(Hardfork.Berlin)
+
+      const mainnetForkBlock = common.hardforkBlockBN('london')
+      const rootBlock = Block.fromBlockData({
+        header: {
+          number: mainnetForkBlock.subn(3),
+          gasLimit: new BN(5000),
+        },
+      })
+
+      await blockchain.putBlock(rootBlock)
+
+      const unclePreFork = createBlock(rootBlock, 'unclePreFork', [], common)
+      const canonicalBlock = createBlock(rootBlock, 'canonicalBlock', [], common)
+      await blockchain.putBlock(canonicalBlock)
+      const preForkBlock = createBlock(
+        canonicalBlock,
+        'preForkBlock',
+        [unclePreFork.header],
+        common
+      )
+      await blockchain.putBlock(preForkBlock)
+      common.setHardfork(Hardfork.London)
+      const forkBlock = createBlock(preForkBlock, 'forkBlock', [], common)
+      await blockchain.putBlock(forkBlock)
+      const uncleFork = createBlock(forkBlock, 'uncleFork', [], common)
+      const canonicalBlock2 = createBlock(forkBlock, 'canonicalBlock2', [], common)
+      const forkBlock2 = createBlock(canonicalBlock2, 'forkBlock2', [uncleFork.header], common)
+      await blockchain.putBlock(canonicalBlock2)
+      await blockchain.putBlock(forkBlock)
+      await preForkBlock.validate(blockchain)
+
+      st.ok(common.hardfork() === 'london', 'validation did not change common hardfork')
+      await forkBlock2.validate(blockchain)
+
+      st.ok(common.hardfork() === 'london', 'validation did not change common hardfork')
+
+      const forkBlock2HeaderData = forkBlock2.header.toJSON()
+      const uncleHeaderData = unclePreFork.header.toJSON()
+
+      uncleHeaderData.extraData = '0xffff'
+      const uncleHeader = BlockHeader.fromHeaderData(uncleHeaderData)
+
+      forkBlock2HeaderData.uncleHash =
+        '0x' + keccak256(rlp.encode([uncleHeader.raw()])).toString('hex')
+
+      const forkBlock_ValidCommon = Block.fromBlockData(
+        {
+          header: forkBlock2HeaderData,
+          uncleHeaders: [uncleHeaderData],
+        },
+        {
+          common,
+        }
+      )
+
+      await forkBlock_ValidCommon.validate(blockchain)
+
+      st.pass('succesfully validated a pre-london uncle on a london block')
+      st.ok(common.hardfork() === 'london', 'validation did not change common hardfork')
+
+      const forkBlock_InvalidCommon = Block.fromBlockData(
+        {
+          header: forkBlock2HeaderData,
+          uncleHeaders: [uncleHeaderData],
+        },
+        {
+          common,
+          hardforkByBlockNumber: false,
+        }
+      )
+
+      try {
+        await forkBlock_InvalidCommon.validate(blockchain)
+        st.fail('cannot reach this')
+      } catch (e) {
+        st.ok(
+          e.message.includes('with EIP1559 being activated'),
+          'explicitly set hardforkByBlockNumber to false, pre-london block interpreted as london block and succesfully failed'
+        )
+      }
+
+      st.ok(common.hardfork() === 'london', 'validation did not change common hardfork')
+      st.end()
+    }
+  )
+
   t.test('should test isGenesis (mainnet default)', function (st) {
     const block = Block.fromBlockData({ header: { number: 1 } })
     st.notEqual(block.isGenesis(), true)
@@ -449,7 +569,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test isGenesis (ropsten)', function (st) {
-    const common = new Common({ chain: 'ropsten' })
+    const common = new Common({ chain: Chain.Ropsten })
     const block = Block.fromBlockData({ header: { number: 1 } }, { common })
     st.notEqual(block.isGenesis(), true)
     const genesisBlock = Block.fromBlockData({ header: { number: 0 } }, { common })
@@ -471,7 +591,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test genesis hashes (ropsten)', function (st) {
-    const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
+    const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
     const genesis = Block.genesis({}, { common })
     st.strictEqual(
       genesis.hash().toString('hex'),
@@ -482,7 +602,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test genesis hashes (rinkeby)', function (st) {
-    const common = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
+    const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
     const genesis = Block.genesis({}, { common })
     st.strictEqual(
       genesis.hash().toString('hex'),
@@ -493,7 +613,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test genesis parameters (ropsten)', function (st) {
-    const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
+    const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
     const genesis = Block.genesis({}, { common })
     const ropstenStateRoot = '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
     st.strictEqual(
@@ -532,7 +652,7 @@ tape('[Block]: block functions', function (t) {
     // Set block number from test block to mainnet DAO fork block 1920000
     blockData[0][8] = Buffer.from('1D4C00', 'hex')
 
-    const common = new Common({ chain: 'mainnet', hardfork: 'dao' })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Dao })
     st.throws(
       function () {
         Block.fromValuesArray(blockData, { common })
@@ -553,7 +673,7 @@ tape('[Block]: block functions', function (t) {
   t.test(
     'should set canonical difficulty if I provide a calcDifficultyFromHeader header',
     function (st) {
-      const common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
       const genesis = Block.genesis({}, { common })
 
       const nextBlockHeaderData = {

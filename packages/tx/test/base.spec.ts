@@ -1,11 +1,11 @@
 import tape from 'tape'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import {
   Transaction,
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
   N_DIV_2,
-  Capabilities,
+  Capability,
 } from '../src'
 import { TxsJsonEntry } from './types'
 import { BaseTransaction } from '../src/baseTransaction'
@@ -13,7 +13,7 @@ import { privateToPublic, BN, toBuffer } from 'ethereumjs-util'
 
 tape('[BaseTransaction]', function (t) {
   // EIP-2930 is not enabled in Common by default (2021-03-06)
-  const common = new Common({ chain: 'mainnet', hardfork: 'london' })
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
   const legacyFixtures: TxsJsonEntry[] = require('./json/txs.json')
   const legacyTxs: BaseTransaction<Transaction>[] = []
@@ -44,9 +44,9 @@ tape('[BaseTransaction]', function (t) {
       fixtures: legacyFixtures,
       activeCapabilities: [],
       notActiveCapabilities: [
-        Capabilities.EIP1559FeeMarket,
-        Capabilities.EIP2718TypedTransaction,
-        Capabilities.EIP2930AccessLists,
+        Capability.EIP1559FeeMarket,
+        Capability.EIP2718TypedTransaction,
+        Capability.EIP2930AccessLists,
         9999,
       ],
     },
@@ -57,8 +57,8 @@ tape('[BaseTransaction]', function (t) {
       values: [Buffer.from([1])].concat(Array(7).fill(zero)),
       txs: eip2930Txs,
       fixtures: eip2930Fixtures,
-      activeCapabilities: [Capabilities.EIP2718TypedTransaction, Capabilities.EIP2930AccessLists],
-      notActiveCapabilities: [Capabilities.EIP1559FeeMarket, 9999],
+      activeCapabilities: [Capability.EIP2718TypedTransaction, Capability.EIP2930AccessLists],
+      notActiveCapabilities: [Capability.EIP1559FeeMarket, 9999],
     },
     {
       class: FeeMarketEIP1559Transaction,
@@ -68,9 +68,9 @@ tape('[BaseTransaction]', function (t) {
       txs: eip1559Txs,
       fixtures: eip1559Fixtures,
       activeCapabilities: [
-        Capabilities.EIP1559FeeMarket,
-        Capabilities.EIP2718TypedTransaction,
-        Capabilities.EIP2930AccessLists,
+        Capability.EIP1559FeeMarket,
+        Capability.EIP2718TypedTransaction,
+        Capability.EIP2930AccessLists,
       ],
       notActiveCapabilities: [9999],
     },
@@ -87,8 +87,8 @@ tape('[BaseTransaction]', function (t) {
       st.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
 
       const initCommon = new Common({
-        chain: 'mainnet',
-        hardfork: 'london',
+        chain: Chain.Mainnet,
+        hardfork: Hardfork.London,
       })
       tx = txType.class.fromTxData({}, { common: initCommon })
       st.equal(
@@ -97,7 +97,7 @@ tape('[BaseTransaction]', function (t) {
         `${txType.name}: should initialize with correct HF provided`
       )
 
-      initCommon.setHardfork('byzantium')
+      initCommon.setHardfork(Hardfork.Byzantium)
       st.equal(
         tx.common.hardfork(),
         'london',

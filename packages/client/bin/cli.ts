@@ -1,12 +1,13 @@
 #!/usr/bin/env client
 
 import { Server as RPCServer } from 'jayson/promise'
-import Common from '@ethereumjs/common'
+import Common, { Hardfork } from '@ethereumjs/common'
 import { parseParams, parseMultiaddrs } from '../lib/util'
 import EthereumClient from '../lib/client'
 import { Config } from '../lib/config'
 import { Logger } from '../lib/logging'
 import { RPCManager } from '../lib/rpc'
+import { Event } from '../lib/types'
 const os = require('os')
 const path = require('path')
 const fs = require('fs-extra')
@@ -146,12 +147,12 @@ async function runNode(config: Config) {
     chainDB: level(chainDataDir),
     stateDB: level(stateDataDir),
   })
-  client.on('error', (err: any) => config.logger.error(err))
-  client.on('listening', (details: any) => {
+  client.config.events.on(Event.SERVER_ERROR, (err) => config.logger.error(err))
+  client.config.events.on(Event.SERVER_LISTENING, (details) => {
     config.logger.info(`Listener up transport=${details.transport} url=${details.url}`)
   })
-  client.on('synchronized', () => {
-    config.logger.info('Synchronized')
+  config.events.on(Event.SYNC_SYNCHRONIZED, (height) => {
+    client.config.logger.info(`Synchronized blockchain at height ${height.toNumber()}`)
   })
   config.logger.info(`Connecting to network: ${config.chainCommon.chainName()}`)
   await client.open()
@@ -183,7 +184,12 @@ async function run() {
     chain = args.network
   }
 
-  const common = new Common({ chain, hardfork: 'chainstart' })
+  // TODO: map chainParams (and lib/util.parseParams) to new Common format
+  // and pass into common constructor below
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const chainParams = args.params ? await parseParams(args.params) : args.network
+
+  const common = new Common({ chain, hardfork: Hardfork.Chainstart })
   const datadir = args.datadir ?? Config.DATADIR_DEFAULT
   const configDirectory = `${datadir}/${common.chainName()}/config`
   fs.ensureDirSync(configDirectory)
@@ -212,10 +218,7 @@ async function run() {
     discV4: args.discV4,
   })
   logger = config.logger
-
-  // TODO: see todo below wrt resolving chain param parsing
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const chainParams = args.params ? await parseParams(args.params) : args.network
+  config.events.setMaxListeners(50)
 
   const client = await runNode(config)
   const server = config.rpc ? runRpcServer(client, config) : null

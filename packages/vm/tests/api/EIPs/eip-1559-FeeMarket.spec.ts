@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { Address, BN, privateToAddress, setLengthLeft } from 'ethereumjs-util'
 import VM from '../../../src'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
@@ -14,8 +14,8 @@ const GWEI = new BN('1000000000')
 
 const common = new Common({
   eips: [1559, 2718, 2930],
-  chain: 'mainnet',
-  hardfork: 'london',
+  chain: Chain.Mainnet,
+  hardfork: Hardfork.London,
 })
 
 // Small hack to hack in the activation block number
@@ -74,10 +74,8 @@ tape('EIP1559 tests', (t) => {
     )
     const block = makeBlock(GWEI, tx, 2)
     const vm = new VM({ common })
-    let account = await vm.stateManager.getAccount(sender)
     const balance = GWEI.muln(21000).muln(10)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
+    await vm.stateManager.modifyAccountFields(sender, { balance })
     const results = await vm.runTx({
       tx: block.transactions[0],
       block,
@@ -96,7 +94,7 @@ tape('EIP1559 tests', (t) => {
     let miner = await vm.stateManager.getAccount(coinbase)
 
     st.ok(miner.balance.eq(expectedMinerBalance), 'miner balance correct')
-    account = await vm.stateManager.getAccount(sender)
+    let account = await vm.stateManager.getAccount(sender)
     st.ok(account.balance.eq(expectedAccountBalance), 'account balance correct')
     st.ok(results.amountSpent.eq(expectedCost), 'reported cost correct')
 
@@ -109,14 +107,12 @@ tape('EIP1559 tests', (t) => {
       { common }
     )
     const block2 = makeBlock(GWEI, tx2, 1)
-    account = await vm.stateManager.getAccount(sender)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
-    miner.balance = new BN(0)
-    await vm.stateManager.putAccount(coinbase, miner)
+    await vm.stateManager.modifyAccountFields(sender, { balance })
+    await vm.stateManager.modifyAccountFields(coinbase, { balance: new BN(0) })
     const results2 = await vm.runTx({
       tx: block2.transactions[0],
       block: block2,
+      skipNonce: true,
     })
 
     expectedCost = GWEI.muln(21000).muln(5)
@@ -139,14 +135,12 @@ tape('EIP1559 tests', (t) => {
       { common }
     )
     const block3 = makeBlock(GWEI, tx3, 0)
-    account = await vm.stateManager.getAccount(sender)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
-    miner.balance = new BN(0)
-    await vm.stateManager.putAccount(coinbase, miner)
+    await vm.stateManager.modifyAccountFields(sender, { balance })
+    await vm.stateManager.modifyAccountFields(coinbase, { balance: new BN(0) })
     const results3 = await vm.runTx({
       tx: block3.transactions[0],
       block: block3,
+      skipNonce: true,
     })
 
     expectedCost = GWEI.muln(21000).muln(5)
@@ -178,10 +172,8 @@ tape('EIP1559 tests', (t) => {
     )
     const block = makeBlock(GWEI, tx, 2)
     const vm = new VM({ common })
-    const account = await vm.stateManager.getAccount(sender)
     const balance = GWEI.muln(210000).muln(10)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
+    await vm.stateManager.modifyAccountFields(sender, { balance })
 
     /**
      * GASPRICE

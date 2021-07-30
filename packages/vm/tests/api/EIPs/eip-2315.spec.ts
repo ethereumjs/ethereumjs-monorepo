@@ -1,10 +1,10 @@
 import tape from 'tape'
 import { BN } from 'ethereumjs-util'
 import VM from '../../../src'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 tape('Berlin: EIP 2315 tests', (t) => {
-  const common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [2315] })
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2315] })
 
   const runTest = async function (test: any, st: tape.Test) {
     let i = 0

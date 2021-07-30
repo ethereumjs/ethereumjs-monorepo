@@ -19,10 +19,10 @@ Note: this `README` reflects the state of the library from `v5.0.0` onwards. See
 
 ```typescript
 import { BN } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 
-const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 const vm = new VM({ common })
 
 const STOP = '00'
@@ -97,9 +97,9 @@ The following is a simple example for a block run on `Goerli`:
 
 ```typescript
 import VM from '@ethereumjs/vm'
-import Common from '@ethereumjs/common'
+import Common, { Chain } from '@ethereumjs/common'
 
-const common = new Common({ chain: 'goerli' })
+const common = new Common({ chain: Chain.Goerli })
 const hardforkByBlockNumber = true
 const vm = new VM({ common, hardforkByBlockNumber })
 
@@ -132,10 +132,10 @@ A specific hardfork VM ruleset can be activated by passing in the hardfork
 along the `Common` instance:
 
 ```typescript
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 
-const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 const vm = new VM({ common })
 ```
 
@@ -145,10 +145,10 @@ It is possible to individually activate EIP support in the VM by instantiate the
 with the respective EIPs, e.g.:
 
 ```typescript
-import Common from '@ethereumjs/common'
+import Common, { Chain } from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 
-const common = new Common({ chain: 'mainnet', eips: [2537] })
+const common = new Common({ chain: Chain.Mainnet, eips: [2537] })
 const vm = new VM({ common })
 ```
 
@@ -314,7 +314,7 @@ If you want to join for work or do improvements on the libraries have a look at 
 [vm-npm-link]: https://www.npmjs.com/package/@ethereumjs/vm
 [vm-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20vm?label=issues
 [vm-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+vm"
-[vm-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/VM%20Test/badge.svg
-[vm-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22VM+Test%22
+[vm-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/VM/badge.svg
+[vm-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22VM%22
 [vm-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=vm
 [vm-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm

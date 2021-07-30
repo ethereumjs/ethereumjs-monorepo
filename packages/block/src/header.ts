@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import {
   Address,
   BN,
@@ -202,9 +202,9 @@ export class BlockHeader {
     if (options.common) {
       this._common = options.common.copy()
     } else {
-      const chain = 'mainnet' // default
+      const chain = Chain.Mainnet // default
       if (options.initWithGenesisHeader) {
-        this._common = new Common({ chain, hardfork: 'chainstart' })
+        this._common = new Common({ chain, hardfork: Hardfork.Chainstart })
       } else {
         // This initializes on the Common default hardfork
         this._common = new Common({ chain })
@@ -301,6 +301,7 @@ export class BlockHeader {
    */
   _validateHeaderFields() {
     const { parentHash, stateRoot, transactionsTrie, receiptTrie, mixHash, nonce } = this
+
     if (parentHash.length !== 32) {
       throw new Error(`parentHash must be 32 bytes, received ${parentHash.length} bytes`)
     }
@@ -320,7 +321,14 @@ export class BlockHeader {
     }
 
     if (nonce.length !== 8) {
-      throw new Error(`nonce must be 8 bytes, received ${nonce.length} bytes`)
+      // Hack to check for Kovan due to non-standard nonce length (65 bytes)
+      if (this._common.networkIdBN().eqn(42)) {
+        if (nonce.length !== 65) {
+          throw new Error(`nonce must be 65 bytes on kovan, received ${nonce.length} bytes`)
+        }
+      } else {
+        throw new Error(`nonce must be 8 bytes, received ${nonce.length} bytes`)
+      }
     }
   }
 

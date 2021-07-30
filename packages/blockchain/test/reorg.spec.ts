@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { Address, BN } from 'ethereumjs-util'
 import tape from 'tape'
@@ -18,7 +18,7 @@ tape('reorg tests', (t) => {
   t.test(
     'should correctly reorg the chain if the total difficulty is higher on a lower block number than the current head block',
     async (st) => {
-      const common = new Common({ chain: 'mainnet', hardfork: 'muirGlacier' })
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
       const blockchain = new Blockchain({
         validateBlocks: true,
         validateConsensus: false,
@@ -90,7 +90,7 @@ tape('reorg tests', (t) => {
   t.test(
     'should correctly reorg a poa chain and remove blocks from clique snapshots',
     async (st) => {
-      const common = new Common({ chain: 'goerli', hardfork: 'chainstart' })
+      const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
       const genesisBlock = Block.genesis({}, { common })
       const blockchain = new Blockchain({
         validateBlocks: false,

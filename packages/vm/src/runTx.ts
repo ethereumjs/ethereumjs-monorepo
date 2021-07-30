@@ -8,7 +8,7 @@ import {
   FeeMarketEIP1559Transaction,
   Transaction,
   TypedTransaction,
-  Capabilities,
+  Capability,
 } from '@ethereumjs/tx'
 import VM from './index'
 import Bloom from './bloom'
@@ -150,7 +150,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
   }
 
   // Typed transaction specific setup tasks
-  if (opts.tx.supports(Capabilities.EIP2718TypedTransaction) && this._common.isActivatedEIP(2718)) {
+  if (opts.tx.supports(Capability.EIP2718TypedTransaction) && this._common.isActivatedEIP(2718)) {
     // Is it an Access List transaction?
     if (!this._common.isActivatedEIP(2930)) {
       await state.revert()
@@ -162,7 +162,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
         'StateManager needs to implement generateAccessList() when running with reportAccessList option'
       )
     }
-    if (opts.tx.supports(Capabilities.EIP1559FeeMarket) && !this._common.isActivatedEIP(1559)) {
+    if (opts.tx.supports(Capability.EIP1559FeeMarket) && !this._common.isActivatedEIP(1559)) {
       await state.revert()
       throw new Error('Cannot run transaction: EIP 1559 is not activated.')
     }
@@ -280,18 +280,19 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
         `sender doesn't have enough funds to send tx. The upfront cost is: ${cost} and the sender's account only has: ${balance}`
       )
     }
-    if (tx.supports(Capabilities.EIP1559FeeMarket)) {
+    if (tx.supports(Capability.EIP1559FeeMarket)) {
       // EIP-1559 spec:
       // The signer must be able to afford the transaction
       // `assert balance >= gas_limit * max_fee_per_gas`
-      const cost = tx.gasLimit.mul((tx as FeeMarketEIP1559Transaction).maxFeePerGas)
+      const cost = tx.gasLimit.mul((tx as FeeMarketEIP1559Transaction).maxFeePerGas).add(tx.value)
       if (balance.lt(cost)) {
         throw new Error(
           `sender doesn't have enough funds to send tx. The max cost is: ${cost} and the sender's account only has: ${balance}`
         )
       }
     }
-  } else if (!opts.skipNonce) {
+  }
+  if (!opts.skipNonce) {
     if (!nonce.eq(tx.nonce)) {
       throw new Error(
         `the tx doesn't have the correct nonce. account has nonce of: ${nonce} tx has nonce of: ${tx.nonce}`
@@ -302,7 +303,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   let gasPrice
   let inclusionFeePerGas
   // EIP-1559 tx
-  if (tx.supports(Capabilities.EIP1559FeeMarket)) {
+  if (tx.supports(Capability.EIP1559FeeMarket)) {
     const baseFee = block.header.baseFeePerGas!
     inclusionFeePerGas = BN.min(
       (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas,
@@ -382,8 +383,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Process any gas refund
-  // TODO: determine why the gasRefund from execResult is not used here directly
-  let gasRefund = evm._refund
+  let gasRefund = results.execResult.gasRefund ?? new BN(0)
   const maxRefundQuotient = this._common.param('gasConfig', 'maxRefundQuotient')
   if (!gasRefund.isZero()) {
     const maxRefund = results.gasUsed.divn(maxRefundQuotient)
@@ -532,7 +532,7 @@ export async function generateTxReceipt(
     )
   }
 
-  if (!tx.supports(Capabilities.EIP2718TypedTransaction)) {
+  if (!tx.supports(Capability.EIP2718TypedTransaction)) {
     // Legacy transaction
     if (this._common.gteHardfork('byzantium')) {
       // Post-Byzantium

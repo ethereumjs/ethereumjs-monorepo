@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { Address, BN } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import { ERROR } from '../../../src/exceptions'
 import { createAccount } from '../utils'
@@ -40,7 +40,7 @@ tape('Istanbul: EIP-2200', async (t) => {
     const addr = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
     const key = new BN(0).toArrayLike(Buffer, 'be', 32)
     for (const testCase of testCases) {
-      const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
       const vm = new VM({ common })
 
       const account = createAccount(new BN(0), new BN(0))

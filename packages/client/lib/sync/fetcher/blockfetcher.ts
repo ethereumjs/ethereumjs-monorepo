@@ -5,7 +5,7 @@ import { Job } from './types'
 import { BlockFetcherBase, JobTask, BlockFetcherOptions } from './blockfetcherbase'
 
 /**
- * Implements an eth/62 based block fetcher
+ * Implements an eth/66 based block fetcher
  * @memberof module:sync/fetcher
  */
 export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
@@ -24,13 +24,31 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
   async request(job: Job<JobTask, Block[], Block>): Promise<Block[]> {
     const { task, peer } = job
     const { first, count } = task
-    const headers = await (peer!.eth as EthProtocolMethods).getBlockHeaders({
+    const headersResult = await (peer!.eth as EthProtocolMethods).getBlockHeaders({
       block: first,
       max: count,
     })
-    const bodies: BlockBodyBuffer[] = <BlockBodyBuffer[]>(
-      await peer!.eth!.getBlockBodies(headers.map((h) => h.hash()))
-    )
+    if (!headersResult) {
+      // Catch occasional null responses from peers who do not return block headers from peer.eth request
+      this.config.logger.warn(
+        `peer ${peer?.id} returned no headers for blocks ${first}-${first.addn(count)} from ${
+          peer?.address
+        }`
+      )
+      return []
+    }
+    const headers = headersResult[1]
+    const bodiesResult = await peer!.eth!.getBlockBodies({ hashes: headers.map((h) => h.hash()) })
+    if (!bodiesResult) {
+      // Catch occasional null responses from peers who do not return block bodies from peer.eth request
+      this.config.logger.warn(
+        `peer ${peer?.id} returned no bodies for blocks ${first}-${first.addn(count)} from ${
+          peer?.address
+        }`
+      )
+      return []
+    }
+    const bodies = bodiesResult[1]
     const blocks: Block[] = bodies.map(([txsData, unclesData]: BlockBodyBuffer, i: number) => {
       const opts = {
         common: this.config.chainCommon,
@@ -81,12 +99,9 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
   }
 
   /**
-   * Returns a peer that can process the given job
-   * @param  job job
-   * @return {Peer}
+   * Returns an idle peer that can process a next job.
    */
-  // TODO: find out what _job is supposed to be doing here...
-  peer(): Peer {
-    return this.pool.idle((p: any) => p.eth)
+  peer(): Peer | undefined {
+    return this.pool.idle((peer) => 'eth' in peer)
   }
 }

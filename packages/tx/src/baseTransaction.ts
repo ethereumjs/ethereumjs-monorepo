@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import {
   Address,
   BN,
@@ -18,7 +18,7 @@ import {
   FeeMarketEIP1559ValuesArray,
   FeeMarketEIP1559TxData,
   TxValuesArray,
-  Capabilities,
+  Capability,
 } from './types'
 
 /**
@@ -58,7 +58,7 @@ export abstract class BaseTransaction<TransactionObject> {
    *
    * @hidden
    */
-  protected DEFAULT_CHAIN = 'mainnet'
+  protected DEFAULT_CHAIN = Chain.Mainnet
 
   /**
    * The default HF if the tx type is active on that HF
@@ -66,7 +66,7 @@ export abstract class BaseTransaction<TransactionObject> {
    *
    * @hidden
    */
-  protected DEFAULT_HARDFORK = 'istanbul'
+  protected DEFAULT_HARDFORK: string | Hardfork = Hardfork.Istanbul
 
   constructor(txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData) {
     const { nonce, gasLimit, to, value, data, v, r, s, type } = txData
@@ -130,7 +130,7 @@ export abstract class BaseTransaction<TransactionObject> {
    * See `Capabilites` in the `types` module for a reference
    * on all supported capabilities.
    */
-  supports(capability: Capabilities) {
+  supports(capability: Capability) {
     return this.activeCapabilities.includes(capability)
   }
 
@@ -277,9 +277,9 @@ export abstract class BaseTransaction<TransactionObject> {
     if (
       this.type === 0 &&
       this.common.gteHardfork('spuriousDragon') &&
-      !this.supports(Capabilities.EIP155ReplayProtection)
+      !this.supports(Capability.EIP155ReplayProtection)
     ) {
-      this.activeCapabilities.push(Capabilities.EIP155ReplayProtection)
+      this.activeCapabilities.push(Capability.EIP155ReplayProtection)
       hackApplied = true
     }
 
@@ -289,7 +289,7 @@ export abstract class BaseTransaction<TransactionObject> {
 
     // Hack part 2
     if (hackApplied) {
-      const index = this.activeCapabilities.indexOf(Capabilities.EIP155ReplayProtection)
+      const index = this.activeCapabilities.indexOf(Capability.EIP155ReplayProtection)
       if (index > -1) {
         this.activeCapabilities.splice(index, 1)
       }

@@ -62,9 +62,9 @@ export enum Hardfork {
 
 interface BaseOpts {
   /**
-   * String identifier ('byzantium') for hardfork
+   * String identifier ('byzantium') for hardfork or {@link Hardfork} enum.
    *
-   * Default: `istanbul`
+   * Default: Hardfork.Istanbul
    */
   hardfork?: string | Hardfork
   /**
@@ -87,8 +87,9 @@ interface BaseOpts {
  */
 export interface CommonOpts extends BaseOpts {
   /**
-   * Chain name ('mainnet') or id (1), either from a chain directly supported
-   * or a custom chain passed in via {@link CommonOpts.customChains}
+   * Chain name ('mainnet'), id (1), or {@link Chain} enum,
+   * either from a chain directly supported or a custom chain
+   * passed in via {@link CommonOpts.customChains}.
    */
   chain: string | number | Chain | BN | object
   /**
@@ -110,8 +111,8 @@ export interface CommonOpts extends BaseOpts {
  */
 export interface CustomCommonOpts extends BaseOpts {
   /**
-   * The name (`mainnet`) or id (`1`) of a standard chain used to base the custom
-   * chain params on.
+   * The name (`mainnet`), id (`1`), or {@link Chain} enum of
+   * a standard chain used to base the custom chain params on.
    */
   baseChain?: string | number | Chain | BN
 }
@@ -327,7 +328,7 @@ export default class Common extends EventEmitter {
 
   /**
    * Sets the hardfork to get params for
-   * @param hardfork String identifier (e.g. 'byzantium')
+   * @param hardfork String identifier (e.g. 'byzantium') or {@link Hardfork} enum
    */
   setHardfork(hardfork: string | Hardfork): void {
     if (!this._isSupportedHardfork(hardfork)) {

@@ -6,7 +6,29 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [7.0.10] - 2021-03-31
+## 7.1.0 - 2021-07-08
+
+### Distribution Changes
+
+#### Dual ES5 and ES2017 Builds
+
+We significantly updated our internal tool and CI setup along the work on PR [#913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/913) with an update to `ESLint` from `TSLint` for code linting and formatting and the introduction of a new build setup.
+
+Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+
+#### Included Source Files
+
+Source files from the `src` folder are now included in the distribution build, see PR [#1301](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1301). This allows for a better debugging experience in debug tools like Chrome DevTools by having working source map references to the original sources available for inspection.
+
+### EIP-2098 Support (Compact 64-byte Signatures)
+
+The `signature` module comes with a new helper function `toCompactSig(v: BNLike, r: Buffer, s: Buffer, chainId?: BNLike): string` which allows to convert signature parameters into the format of Compact Signature Representation as defined in [EIP-2098](https://eips.ethereum.org/EIPS/eip-2098).
+
+### Other Changes
+
+- Renamed `bnToRlp()`helper function to `bnToUnpaddedBuffer()`, PR [#1293](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1293)
+
+## 7.0.10 - 2021-03-31
 
 - Added `Address.isPrecompileOrSystemAddress()` method which returns `true` if address is in the address range defined by [EIP-1352](https://eips.ethereum.org/EIPS/eip-1352), PR [#1170](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1170)
 - Return `false` (instead of throwing) for non-hex-string values in account module `isValidAddress`, `isValidChecksumAddress`, `isZeroAddress` methods (it now gets enough to just handle the `false` case on function usage), PR [#1173](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1173)

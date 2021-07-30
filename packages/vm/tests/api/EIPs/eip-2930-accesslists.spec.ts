@@ -1,13 +1,13 @@
 import tape from 'tape'
 import { Account, Address, BN, bufferToHex } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
 
 const common = new Common({
   eips: [2718, 2929, 2930],
-  chain: 'mainnet',
-  hardfork: 'berlin',
+  chain: Chain.Mainnet,
+  hardfork: Hardfork.Berlin,
 })
 
 const validAddress = Buffer.from('00000000000000000000000000000000000000ff', 'hex')
@@ -72,7 +72,7 @@ tape('EIP-2930 Optional Access Lists tests', (t) => {
     st.equal(gasUsed, 100, 'charge warm sload gas')
 
     trace = []
-    await vm.runTx({ tx: txnWithoutAccessList })
+    await vm.runTx({ tx: txnWithoutAccessList, skipNonce: true })
     st.ok(trace[1][0] == 'SLOAD')
     gasUsed = trace[1][1].sub(trace[2][1]).toNumber()
     st.equal(gasUsed, 2100, 'charge cold sload gas')

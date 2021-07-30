@@ -1,7 +1,7 @@
 import * as tape from 'tape'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Account, BN, toBuffer } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common, { Chain } from '@ethereumjs/common'
 import { setupPreConditions, makeTx, makeBlockFromEnv } from './util'
 import { InterpreterStep } from '../src/evm/interpreter'
 
@@ -70,7 +70,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
 
   const eips: number[] = []
 
-  const common = new Common({ chain: 'mainnet', hardfork, eips })
+  const common = new Common({ chain: Chain.Mainnet, hardfork, eips })
 
   const vm = new VM({ state, common })
 

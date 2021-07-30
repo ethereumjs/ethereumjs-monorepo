@@ -119,12 +119,6 @@ export class Peer extends events.EventEmitter {
    */
   async bindProtocol(protocol: Protocol, sender: Sender): Promise<void> {
     const bound = await protocol.bind(this, sender)
-    bound.on('message', (message: any) => {
-      this.emit('message', message, protocol.name)
-    })
-    bound.on('error', (error: Error) => {
-      this.emit('error', error, protocol.name)
-    })
     this.bound.set(bound.name, bound)
   }
 
@@ -153,7 +147,6 @@ export class Peer extends events.EventEmitter {
       protocols: Array.from(this.bound.keys()),
       inbound: this.inbound,
     }
-    /* eslint-disable @typescript-eslint/no-unnecessary-condition */
     return Object.entries(properties)
       .filter(([, value]) => value !== undefined && value !== null && value.toString() !== '')
       .map((keyValue) => keyValue.join('='))

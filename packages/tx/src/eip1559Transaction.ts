@@ -304,9 +304,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    *
    * @param hashMessage - Return hashed message if set to true (default: true)
    */
-  getMessageToSign(hashMessage: false): Buffer[]
-  getMessageToSign(hashMessage?: true): Buffer
-  getMessageToSign(hashMessage = true): Buffer | Buffer[] {
+  getMessageToSign(hashMessage = true): Buffer {
     const base = this.raw().slice(0, 9)
     const message = Buffer.concat([TRANSACTION_TYPE_BUFFER, rlp.encode(base as any)])
     if (hashMessage) {

@@ -24,34 +24,36 @@
 
 ### constructor
 
-\+ **new BlockBuilder**(`vm`: [*default*](index.default.md), `opts`: [*BuildBlockOpts*](../interfaces/buildblock.buildblockopts.md)): [*BlockBuilder*](buildblock.blockbuilder.md)
+• **new BlockBuilder**(`vm`, `opts`)
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `vm` | [*default*](index.default.md) |
-| `opts` | [*BuildBlockOpts*](../interfaces/buildblock.buildblockopts.md) |
+| `vm` | [default](index.default.md) |
+| `opts` | [BuildBlockOpts](../interfaces/buildblock.buildblockopts.md) |
 
-**Returns:** [*BlockBuilder*](buildblock.blockbuilder.md)
+#### Defined in
 
-Defined in: [buildBlock.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L62)
+[buildBlock.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L62)
 
 ## Properties
 
 ### gasUsed
 
-• **gasUsed**: *BN*
+• **gasUsed**: `BN`
 
 The cumulative gas used by the transactions added to the block.
 
-Defined in: [buildBlock.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L53)
+#### Defined in
+
+[buildBlock.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L53)
 
 ## Methods
 
 ### addTransaction
 
-▸ **addTransaction**(`tx`: TypedTransaction): *Promise*<[*RunTxResult*](../interfaces/runtx.runtxresult.md)\>
+▸ **addTransaction**(`tx`): `Promise`<[RunTxResult](../interfaces/runtx.runtxresult.md)\>
 
 Run and add a transaction to the block being built.
 Please note that this modifies the state of the VM.
@@ -62,17 +64,21 @@ the remaining gas in the block.
 
 | Name | Type |
 | :------ | :------ |
-| `tx` | TypedTransaction |
+| `tx` | `TypedTransaction` |
 
-**Returns:** *Promise*<[*RunTxResult*](../interfaces/runtx.runtxresult.md)\>
+#### Returns
 
-Defined in: [buildBlock.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L144)
+`Promise`<[RunTxResult](../interfaces/runtx.runtxresult.md)\>
+
+#### Defined in
+
+[buildBlock.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L148)
 
 ___
 
 ### build
 
-▸ **build**(`sealOpts?`: [*SealBlockOpts*](../interfaces/buildblock.sealblockopts.md)): *Promise*<Block\>
+▸ **build**(`sealOpts?`): `Promise`<Block\>
 
 This method returns the finalized block.
 It also:
@@ -88,20 +94,28 @@ as the signer will be awarded the txs amount spent on gas as they are added.
 
 | Name | Type |
 | :------ | :------ |
-| `sealOpts?` | [*SealBlockOpts*](../interfaces/buildblock.sealblockopts.md) |
+| `sealOpts?` | [SealBlockOpts](../interfaces/buildblock.sealblockopts.md) |
 
-**Returns:** *Promise*<Block\>
+#### Returns
 
-Defined in: [buildBlock.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L198)
+`Promise`<Block\>
+
+#### Defined in
+
+[buildBlock.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L202)
 
 ___
 
 ### revert
 
-▸ **revert**(): *Promise*<void\>
+▸ **revert**(): `Promise`<void\>
 
 Reverts the checkpoint on the StateManager to reset the state from any transactions that have been run.
 
-**Returns:** *Promise*<void\>
+#### Returns
 
-Defined in: [buildBlock.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L179)
+`Promise`<void\>
+
+#### Defined in
+
+[buildBlock.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L183)
