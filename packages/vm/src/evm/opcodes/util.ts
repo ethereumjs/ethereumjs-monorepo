@@ -241,16 +241,23 @@ export function updateSstoreGas(
   common: Common
 ): BN {
   if (
-    (value.length === 0 && !currentStorage.length) ||
-    (value.length !== 0 && currentStorage.length)
+    (value.length === 0 && currentStorage.length === 0) ||
+    (value.length > 0 && currentStorage.length > 0)
   ) {
     const gas = new BN(common.param('gasPrices', 'sstoreReset'))
     return gas
-  } else if (value.length === 0 && currentStorage.length) {
+  } else if (value.length === 0 && currentStorage.length > 0) {
     const gas = new BN(common.param('gasPrices', 'sstoreReset'))
     runState.eei.refundGas(new BN(common.param('gasPrices', 'sstoreRefund')), 'updateSstoreGas')
     return gas
-  } /*(value.length !== 0 && !currentStorage.length)*/ else {
+  } else {
+    /*
+      The situations checked above are:
+      -> Value/Slot are both 0
+      -> Value/Slot are both nonzero
+      -> Value is zero, but slot is nonzero
+      Thus, the remaining case is where value is nonzero, but slot is zero, which is this clause
+    */
     return new BN(common.param('gasPrices', 'sstoreSet'))
   }
 }

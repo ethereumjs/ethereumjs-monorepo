@@ -479,10 +479,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
             deductGas = true
           }
         }
-        // TODO: this looks incorrect, tangerine whistle does not change this behavior.
-        // TODO also update comment below
       } else if (common.gteHardfork('tangerineWhistle')) {
-        // Pre EIP-150 (Tangerine Whistle) gas semantics
+        // EIP-150 (Tangerine Whistle) gas semantics
         const exists = await runState.stateManager.accountExists(selfdestructToAddress)
         if (!exists) {
           deductGas = true
