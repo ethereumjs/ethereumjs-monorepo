@@ -141,7 +141,7 @@ export default class Interpreter {
 
     if (opInfo.dynamicGas) {
       const dynamicGasHandler = dynamicGasHandlers.get(this._runState.opCode)!
-      gas.iadd(dynamicGasHandler(this._runState))
+      gas.iadd(dynamicGasHandler(this._runState, this._vm._common))
     }
 
     // TODO: figure out if we should try/catch this (in case step event throws)

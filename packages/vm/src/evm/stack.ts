@@ -59,6 +59,19 @@ export default class Stack {
     return this._store.splice(-1 * num).reverse()
   }
 
+  peek(num: number = 1): BN[] {
+    const peekArray: BN[] = []
+
+    for (let peek = 0; peek < num; peek++) {
+      const index = this._store.length - 1
+      if (index < 0) {
+        throw new VmError(ERROR.STACK_UNDERFLOW)
+      }
+      peekArray.push(this._store[index])
+    }
+    return peekArray
+  }
+
   /**
    * Swap top of stack with an item in the stack.
    * @param position - Index of item from top of the stack (0-indexed)

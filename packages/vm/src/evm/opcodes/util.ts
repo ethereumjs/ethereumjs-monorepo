@@ -186,10 +186,10 @@ export function maxCallGas(gasLimit: BN, gasLeft: BN, runState: RunState, common
  */
 export function subMemUsage(runState: RunState, offset: BN, length: BN, common: Common) {
   // YP (225): access with zero length will not extend the memory
-  if (length.isZero()) return
+  if (length.isZero()) return new BN(0)
 
   const newMemoryWordCount = divCeil(offset.add(length), new BN(32))
-  if (newMemoryWordCount.lte(runState.memoryWordCount)) return
+  if (newMemoryWordCount.lte(runState.memoryWordCount)) return new BN(0)
 
   const words = newMemoryWordCount
   const fee = new BN(common.param('gasPrices', 'memory'))
@@ -198,11 +198,13 @@ export function subMemUsage(runState: RunState, offset: BN, length: BN, common: 
   const cost = words.mul(fee).add(words.mul(words).div(quadCoeff))
 
   if (cost.gt(runState.highestMemCost)) {
-    runState.eei.useGas(cost.sub(runState.highestMemCost), 'subMemUsage')
+    cost.isub(runState.highestMemCost)
     runState.highestMemCost = cost
   }
 
   runState.memoryWordCount = newMemoryWordCount
+
+  return cost
 }
 
 /**
