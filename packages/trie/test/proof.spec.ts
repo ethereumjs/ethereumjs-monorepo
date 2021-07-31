@@ -43,9 +43,9 @@ tape('simple merkle proofs generation and verification', function (tester) {
     // and try to use that proof on another key
     try {
       await CheckpointTrie.verifyProof(trie.root, Buffer.from('key1aa'), proof)
-      t.fail('expected error: Missing node in DB')
+      t.fail('expected error: Invalid proof provided')
     } catch (e) {
-      t.equal(e.message, 'Missing node in DB')
+      t.equal(e.message, 'Invalid proof provided')
     }
 
     // we can also corrupt a valid proof
@@ -53,9 +53,9 @@ tape('simple merkle proofs generation and verification', function (tester) {
     proof[0].reverse()
     try {
       await CheckpointTrie.verifyProof(trie.root, Buffer.from('key2bb'), proof)
-      t.fail('expected error: Missing node in DB')
+      t.fail('expected error: Invalid proof provided')
     } catch (e) {
-      t.equal(e.message, 'Missing node in DB')
+      t.equal(e.message, 'Invalid proof provided')
     }
 
     // test an invalid exclusion proof by creating
@@ -68,9 +68,9 @@ tape('simple merkle proofs generation and verification', function (tester) {
     await trie.put(myKey, Buffer.from('thisisavalue'))
     try {
       await CheckpointTrie.verifyProof(trie.root, myKey, proof)
-      t.fail('expected error: Missing node in DB')
+      t.fail('expected error: Invalid proof provided')
     } catch (e) {
-      t.equal(e.message, 'Missing node in DB')
+      t.equal(e.message, 'Invalid proof provided')
     }
 
     t.end()

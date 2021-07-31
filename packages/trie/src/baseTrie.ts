@@ -706,7 +706,13 @@ export class Trie {
     } catch (e) {
       throw new Error('Invalid proof nodes given')
     }
-    return await proofTrie.get(key, true)
+    try {
+      const value = await proofTrie.get(key, true)
+      return value
+    } catch (err) {
+      if (err.message === 'Missing node in DB') throw new Error('Invalid proof provided')
+      else throw err
+    }
   }
 
   /**
