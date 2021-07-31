@@ -20,7 +20,7 @@ The only backing store supported is LevelDB through the `levelup` module.
 
 There are 3 variants of the tree implemented in this library, namely: `BaseTrie`, `CheckpointTrie` and `SecureTrie`. `CheckpointTrie` adds checkpointing functionality to the `BaseTrie` with the methods `checkpoint`, `commit` and `revert`. `SecureTrie` extends `CheckpointTrie` and is the most suitable variant for Ethereum applications. It stores values under the `keccak256` hash of their keys.
 
-By default trie nodes are not deleted from the underlying DB to not corrupt older trie states (as of `v4.2.0`). If you are only interested in the latest state of a trie you can switch to a delete behavior (e.g. if you want to save disk space) by using the `deleteFromDB` constructor option (see related release notes in the changelog for more details).
+By default, trie nodes are not deleted from the underlying DB to not corrupt older trie states (as of `v4.2.0`). If you are only interested in the latest state of a trie, you can switch to a delete behavior (e.g. if you want to save disk space) by using the `deleteFromDB` constructor option (see related release notes in the changelog for more details).
 
 ## Initialization and Basic Usage
 
@@ -42,6 +42,12 @@ test()
 
 ## Merkle Proofs
 
+The `createProof` and `verifyProof` functions allow you to verify that a certain value does or does not exist within a Merkle-Patricia trie with a given root.
+
+### Proof of existence
+
+The below code demonstrates how to construct and then verify a proof that proves that the key `test` that corresponds to the value `one` does exist in the given trie, so a proof of existence.
+
 ```typescript
 const trie = new Trie()
 
@@ -50,6 +56,50 @@ async function test() {
   const proof = await Trie.createProof(trie, Buffer.from('test'))
   const value = await Trie.verifyProof(trie.root, Buffer.from('test'), proof)
   console.log(value.toString()) // 'one'
+}
+
+test()
+```
+
+### Proof of non-existence
+
+The below code demonstrates how to construct and then verify a proof that proves that the key `test3` does not exist in the given trie, so a proof of non-existence in that the key requested is shown to not exist in the trie.
+
+```typescript
+const trie = new Trie()
+
+async function test() {
+  await trie.put(Buffer.from('test'), Buffer.from('one'))
+  await trie.put(Buffer.from('test2'), Buffer.from('two'))
+  const proof = await Trie.createProof(trie, Buffer.from('test3'))
+  const value = await Trie.verifyProof(trie.root, Buffer.from('test3'), proof)
+  console.log(value.toString()) // null
+}
+
+test()
+```
+
+### Invalid proofs
+
+Note, if `verifyProof` detects an invalid proof, it throws an error.  While contrived, the below example demonstrates the error condition that would result if a prover tampers with the data in a merkle proof.
+
+```typescript
+const trie = new Trie()
+
+async function test() {
+  await trie.put(Buffer.from('test'), Buffer.from('one'))
+  await trie.put(Buffer.from('test2'), Buffer.from('two'))
+  const proof = await Trie.createProof(trie, Buffer.from('test2'))
+  proof[1].reverse()
+  try {
+    const value = await Trie.verifyProof(trie.root, Buffer.from('test2'), proof)
+    console.log(value.toString()) // results in error
+  }
+  catch (err) {
+    console.log(err) // Missing node in DB
+  }
+  
+  
 }
 
 test()
