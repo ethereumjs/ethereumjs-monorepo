@@ -263,7 +263,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
       gas.iadd(subMemUsage(runState, offset, length, common))
 
       let gasLimit = new BN(runState.eei.getGasLeft().isub(gas))
-      gasLimit = maxCallGas(gasLimit, gasLimit.clone(), runState, common)
+      gasLimit = maxCallGas(gasLimit.clone(), gasLimit.clone(), runState, common)
 
       runState.messageGasLimit = gasLimit
     },
@@ -345,7 +345,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
         gas.iadd(new BN(common.param('gasPrices', 'callValueTransfer')))
       }
       const gasLimit = maxCallGas(
-        currentGasLimit,
+        currentGasLimit.clone(),
         runState.eei.getGasLeft().isub(gas),
         runState,
         common
@@ -388,7 +388,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
       }
 
       const gasLimit = maxCallGas(
-        currentGasLimit,
+        currentGasLimit.clone(),
         runState.eei.getGasLeft().isub(gas),
         runState,
         common
@@ -420,7 +420,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
 
       gas.iadd(new BN(common.param('gasPrices', 'sha3Word')).imul(divCeil(length, new BN(32))))
       let gasLimit = new BN(runState.eei.getGasLeft().isub(gas))
-      gasLimit = maxCallGas(gasLimit, gasLimit.clone(), runState, common) // CREATE2 is only available after TangerineWhistle (Constantinople introduced this opcode)
+      gasLimit = maxCallGas(gasLimit.clone(), gasLimit.clone(), runState, common) // CREATE2 is only available after TangerineWhistle (Constantinople introduced this opcode)
       runState.messageGasLimit = gasLimit
     },
   ],
@@ -440,7 +440,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
       }
 
       const gasLimit = maxCallGas(
-        currentGasLimit,
+        currentGasLimit.clone(),
         runState.eei.getGasLeft().isub(gas),
         runState,
         common
