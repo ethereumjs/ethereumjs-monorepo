@@ -10,6 +10,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 **New Features**
 
+**Bug Fixes and Maintenance**
+
+**Dependencies, CI and Docs**
+
+## 5.5.1 - 2021-08-02
+
+**New Features**
+
 - StateManager: Added `modifyAccountFields` method to simplify the `getAccount` -> modify fields -> `putAccount` pattern, PR [#1369](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1369)
 
 **Bug Fixes**
