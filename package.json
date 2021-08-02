@@ -12,7 +12,7 @@
     "husky": "^4.2.5",
     "lerna": "^3.20.2",
     "npm-auth-to-token": "1.0.0",
-    "typedoc-plugin-markdown": "^3.6.0",
+    "typedoc-plugin-markdown": "^3.10.4",
     "verdaccio": "4.4.4"
   },
   "husky": {
