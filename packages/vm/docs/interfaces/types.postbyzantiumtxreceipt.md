@@ -1,4 +1,4 @@
-[@ethereumjs/vm](../README.md) / [types](../modules/types.md) / PostByzantiumTxReceipt
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / [types](../modules/types.md) / PostByzantiumTxReceipt
 
 # Interface: PostByzantiumTxReceipt
 
@@ -9,22 +9,22 @@ state root field with a status code field (EIP-658)
 
 ## Hierarchy
 
-- [BaseTxReceipt](types.basetxreceipt.md)
+- [`BaseTxReceipt`](types.BaseTxReceipt.md)
 
-  ↳ **PostByzantiumTxReceipt**
+  ↳ **`PostByzantiumTxReceipt`**
 
-  ↳↳ [EIP2930Receipt](types.eip2930receipt.md)
+  ↳↳ [`EIP2930Receipt`](types.EIP2930Receipt.md)
 
-  ↳↳ [EIP1559Receipt](types.eip1559receipt.md)
+  ↳↳ [`EIP1559Receipt`](types.EIP1559Receipt.md)
 
 ## Table of contents
 
 ### Properties
 
-- [bitvector](types.postbyzantiumtxreceipt.md#bitvector)
-- [gasUsed](types.postbyzantiumtxreceipt.md#gasused)
-- [logs](types.postbyzantiumtxreceipt.md#logs)
-- [status](types.postbyzantiumtxreceipt.md#status)
+- [bitvector](types.PostByzantiumTxReceipt.md#bitvector)
+- [gasUsed](types.PostByzantiumTxReceipt.md#gasused)
+- [logs](types.PostByzantiumTxReceipt.md#logs)
+- [status](types.PostByzantiumTxReceipt.md#status)
 
 ## Properties
 
@@ -36,7 +36,7 @@ Bloom bitvector
 
 #### Inherited from
 
-[BaseTxReceipt](types.basetxreceipt.md).[bitvector](types.basetxreceipt.md#bitvector)
+[BaseTxReceipt](types.BaseTxReceipt.md).[bitvector](types.BaseTxReceipt.md#bitvector)
 
 #### Defined in
 
@@ -52,7 +52,7 @@ Cumulative gas used in the block including this tx
 
 #### Inherited from
 
-[BaseTxReceipt](types.basetxreceipt.md).[gasUsed](types.basetxreceipt.md#gasused)
+[BaseTxReceipt](types.BaseTxReceipt.md).[gasUsed](types.BaseTxReceipt.md#gasused)
 
 #### Defined in
 
@@ -68,7 +68,7 @@ Logs emitted
 
 #### Inherited from
 
-[BaseTxReceipt](types.basetxreceipt.md).[logs](types.basetxreceipt.md#logs)
+[BaseTxReceipt](types.BaseTxReceipt.md).[logs](types.BaseTxReceipt.md#logs)
 
 #### Defined in
 

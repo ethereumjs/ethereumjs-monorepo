@@ -1,17 +1,17 @@
-[@ethereumjs/vm](../README.md) / [state/stateManager](../modules/state_statemanager.md) / DefaultStateManagerOpts
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / [state/stateManager](../modules/state_stateManager.md) / DefaultStateManagerOpts
 
 # Interface: DefaultStateManagerOpts
 
-[state/stateManager](../modules/state_statemanager.md).DefaultStateManagerOpts
+[state/stateManager](../modules/state_stateManager.md).DefaultStateManagerOpts
 
-Options for constructing a [StateManager](state_interface.statemanager.md).
+Options for constructing a [StateManager](state_interface.StateManager.md).
 
 ## Table of contents
 
 ### Properties
 
-- [common](state_statemanager.defaultstatemanageropts.md#common)
-- [trie](state_statemanager.defaultstatemanageropts.md#trie)
+- [common](state_stateManager.DefaultStateManagerOpts.md#common)
+- [trie](state_stateManager.DefaultStateManagerOpts.md#trie)
 
 ## Properties
 

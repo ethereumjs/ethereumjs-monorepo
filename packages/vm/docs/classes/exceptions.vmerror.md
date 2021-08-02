@@ -1,4 +1,4 @@
-[@ethereumjs/vm](../README.md) / [exceptions](../modules/exceptions.md) / VmError
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / [exceptions](../modules/exceptions.md) / VmError
 
 # Class: VmError
 
@@ -8,12 +8,12 @@
 
 ### Constructors
 
-- [constructor](exceptions.vmerror.md#constructor)
+- [constructor](exceptions.VmError.md#constructor)
 
 ### Properties
 
-- [error](exceptions.vmerror.md#error)
-- [errorType](exceptions.vmerror.md#errortype)
+- [error](exceptions.VmError.md#error)
+- [errorType](exceptions.VmError.md#errortype)
 
 ## Constructors
 
@@ -25,17 +25,17 @@
 
 | Name | Type |
 | :------ | :------ |
-| `error` | [ERROR](../enums/exceptions.error.md) |
+| `error` | [`ERROR`](../enums/exceptions.ERROR.md) |
 
 #### Defined in
 
-[exceptions.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L30)
+[exceptions.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/exceptions.ts#L32)
 
 ## Properties
 
 ### error
 
-• **error**: [ERROR](../enums/exceptions.error.md)
+• **error**: [`ERROR`](../enums/exceptions.ERROR.md)
 
 #### Defined in
 

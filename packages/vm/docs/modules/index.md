@@ -1,4 +1,4 @@
-[@ethereumjs/vm](../README.md) / index
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / index
 
 # Module: index
 
@@ -10,4 +10,4 @@
 
 ### Interfaces
 
-- [VMOpts](../interfaces/index.vmopts.md)
+- [VMOpts](../interfaces/index.VMOpts.md)

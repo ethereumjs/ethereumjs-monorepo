@@ -1,4 +1,4 @@
-[@ethereumjs/vm](../README.md) / buildBlock
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / buildBlock
 
 # Module: buildBlock
 
@@ -6,32 +6,32 @@
 
 ### Classes
 
-- [BlockBuilder](../classes/buildblock.blockbuilder.md)
+- [BlockBuilder](../classes/buildBlock.BlockBuilder.md)
 
 ### Interfaces
 
-- [BuildBlockOpts](../interfaces/buildblock.buildblockopts.md)
-- [SealBlockOpts](../interfaces/buildblock.sealblockopts.md)
+- [BuildBlockOpts](../interfaces/buildBlock.BuildBlockOpts.md)
+- [SealBlockOpts](../interfaces/buildBlock.SealBlockOpts.md)
 
 ### Functions
 
-- [default](buildblock.md#default)
+- [default](buildBlock.md#default)
 
 ## Functions
 
 ### default
 
-▸ **default**(`opts`): `Promise`<[BlockBuilder](../classes/buildblock.blockbuilder.md)\>
+▸ **default**(`opts`): `Promise`<[`BlockBuilder`](../classes/buildBlock.BlockBuilder.md)\>
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `opts` | [BuildBlockOpts](../interfaces/buildblock.buildblockopts.md) |
+| `opts` | [`BuildBlockOpts`](../interfaces/buildBlock.BuildBlockOpts.md) |
 
 #### Returns
 
-`Promise`<[BlockBuilder](../classes/buildblock.blockbuilder.md)\>
+`Promise`<[`BlockBuilder`](../classes/buildBlock.BlockBuilder.md)\>
 
 #### Defined in
 

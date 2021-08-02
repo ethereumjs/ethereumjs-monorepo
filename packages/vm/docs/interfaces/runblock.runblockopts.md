@@ -1,8 +1,8 @@
-[@ethereumjs/vm](../README.md) / [runBlock](../modules/runblock.md) / RunBlockOpts
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / [runBlock](../modules/runBlock.md) / RunBlockOpts
 
 # Interface: RunBlockOpts
 
-[runBlock](../modules/runblock.md).RunBlockOpts
+[runBlock](../modules/runBlock.md).RunBlockOpts
 
 Options for running a block.
 
@@ -10,12 +10,12 @@ Options for running a block.
 
 ### Properties
 
-- [block](runblock.runblockopts.md#block)
-- [generate](runblock.runblockopts.md#generate)
-- [root](runblock.runblockopts.md#root)
-- [skipBalance](runblock.runblockopts.md#skipbalance)
-- [skipBlockValidation](runblock.runblockopts.md#skipblockvalidation)
-- [skipNonce](runblock.runblockopts.md#skipnonce)
+- [block](runBlock.RunBlockOpts.md#block)
+- [generate](runBlock.RunBlockOpts.md#generate)
+- [root](runBlock.RunBlockOpts.md#root)
+- [skipBalance](runBlock.RunBlockOpts.md#skipbalance)
+- [skipBlockValidation](runBlock.RunBlockOpts.md#skipblockvalidation)
+- [skipNonce](runBlock.RunBlockOpts.md#skipnonce)
 
 ## Properties
 
