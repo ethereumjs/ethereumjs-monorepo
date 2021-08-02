@@ -94,12 +94,9 @@ async function test() {
   try {
     const value = await Trie.verifyProof(trie.root, Buffer.from('test2'), proof)
     console.log(value.toString()) // results in error
-  }
-  catch (err) {
+  } catch (err) {
     console.log(err) // Missing node in DB
   }
-  
-  
 }
 
 test()

@@ -710,8 +710,11 @@ export class Trie {
       const value = await proofTrie.get(key, true)
       return value
     } catch (err) {
-      if (err.message === 'Missing node in DB') throw new Error('Invalid proof provided')
-      else throw err
+      if (err.message == 'Missing node in DB') {
+        throw new Error('Invalid proof provided')
+      } else {
+        throw err
+      }
     }
   }
 
