@@ -1,4 +1,4 @@
-[@ethereumjs/vm](../README.md) / runTx
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / runTx
 
 # Module: runTx
 
@@ -6,19 +6,19 @@
 
 ### Interfaces
 
-- [AfterTxEvent](../interfaces/runtx.aftertxevent.md)
-- [RunTxOpts](../interfaces/runtx.runtxopts.md)
-- [RunTxResult](../interfaces/runtx.runtxresult.md)
+- [AfterTxEvent](../interfaces/runTx.AfterTxEvent.md)
+- [RunTxOpts](../interfaces/runTx.RunTxOpts.md)
+- [RunTxResult](../interfaces/runTx.RunTxResult.md)
 
 ### Functions
 
-- [generateTxReceipt](runtx.md#generatetxreceipt)
+- [generateTxReceipt](runTx.md#generatetxreceipt)
 
 ## Functions
 
 ### generateTxReceipt
 
-▸ **generateTxReceipt**(`tx`, `txResult`, `cumulativeGasUsed`): `Promise`<[TxReceipt](types.md#txreceipt)\>
+▸ **generateTxReceipt**(`tx`, `txResult`, `cumulativeGasUsed`): `Promise`<[`TxReceipt`](types.md#txreceipt)\>
 
 Returns the tx receipt.
 
@@ -27,12 +27,12 @@ Returns the tx receipt.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `tx` | `TypedTransaction` | The transaction |
-| `txResult` | [RunTxResult](../interfaces/runtx.runtxresult.md) | The tx result |
+| `txResult` | [`RunTxResult`](../interfaces/runTx.RunTxResult.md) | The tx result |
 | `cumulativeGasUsed` | `BN` | The gas used in the block including this tx |
 
 #### Returns
 
-`Promise`<[TxReceipt](types.md#txreceipt)\>
+`Promise`<[`TxReceipt`](types.md#txreceipt)\>
 
 #### Defined in
 

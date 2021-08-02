@@ -1,4 +1,4 @@
-[@ethereumjs/vm](../README.md) / [state/interface](../modules/state_interface.md) / StorageDump
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / [state/interface](../modules/state_interface.md) / StorageDump
 
 # Interface: StorageDump
 
@@ -9,5 +9,3 @@ Storage values of an account
 ## Indexable
 
 ▪ [key: `string`]: `string`
-
-Storage values of an account

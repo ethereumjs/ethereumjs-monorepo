@@ -1,4 +1,4 @@
-[@ethereumjs/vm](../README.md) / [types](../modules/types.md) / PreByzantiumTxReceipt
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / [types](../modules/types.md) / PreByzantiumTxReceipt
 
 # Interface: PreByzantiumTxReceipt
 
@@ -9,18 +9,18 @@ for the intermediary state root
 
 ## Hierarchy
 
-- [BaseTxReceipt](types.basetxreceipt.md)
+- [`BaseTxReceipt`](types.BaseTxReceipt.md)
 
-  ↳ **PreByzantiumTxReceipt**
+  ↳ **`PreByzantiumTxReceipt`**
 
 ## Table of contents
 
 ### Properties
 
-- [bitvector](types.prebyzantiumtxreceipt.md#bitvector)
-- [gasUsed](types.prebyzantiumtxreceipt.md#gasused)
-- [logs](types.prebyzantiumtxreceipt.md#logs)
-- [stateRoot](types.prebyzantiumtxreceipt.md#stateroot)
+- [bitvector](types.PreByzantiumTxReceipt.md#bitvector)
+- [gasUsed](types.PreByzantiumTxReceipt.md#gasused)
+- [logs](types.PreByzantiumTxReceipt.md#logs)
+- [stateRoot](types.PreByzantiumTxReceipt.md#stateroot)
 
 ## Properties
 
@@ -32,7 +32,7 @@ Bloom bitvector
 
 #### Inherited from
 
-[BaseTxReceipt](types.basetxreceipt.md).[bitvector](types.basetxreceipt.md#bitvector)
+[BaseTxReceipt](types.BaseTxReceipt.md).[bitvector](types.BaseTxReceipt.md#bitvector)
 
 #### Defined in
 
@@ -48,7 +48,7 @@ Cumulative gas used in the block including this tx
 
 #### Inherited from
 
-[BaseTxReceipt](types.basetxreceipt.md).[gasUsed](types.basetxreceipt.md#gasused)
+[BaseTxReceipt](types.BaseTxReceipt.md).[gasUsed](types.BaseTxReceipt.md#gasused)
 
 #### Defined in
 
@@ -64,7 +64,7 @@ Logs emitted
 
 #### Inherited from
 
-[BaseTxReceipt](types.basetxreceipt.md).[logs](types.basetxreceipt.md#logs)
+[BaseTxReceipt](types.BaseTxReceipt.md).[logs](types.BaseTxReceipt.md#logs)
 
 #### Defined in
 

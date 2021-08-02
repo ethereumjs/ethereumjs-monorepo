@@ -1,8 +1,8 @@
-[@ethereumjs/vm](../README.md) / [buildBlock](../modules/buildblock.md) / SealBlockOpts
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / [buildBlock](../modules/buildBlock.md) / SealBlockOpts
 
 # Interface: SealBlockOpts
 
-[buildBlock](../modules/buildblock.md).SealBlockOpts
+[buildBlock](../modules/buildBlock.md).SealBlockOpts
 
 Options for sealing a block.
 
@@ -10,8 +10,8 @@ Options for sealing a block.
 
 ### Properties
 
-- [mixHash](buildblock.sealblockopts.md#mixhash)
-- [nonce](buildblock.sealblockopts.md#nonce)
+- [mixHash](buildBlock.SealBlockOpts.md#mixhash)
+- [nonce](buildBlock.SealBlockOpts.md#nonce)
 
 ## Properties
 

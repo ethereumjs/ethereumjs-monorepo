@@ -1,4 +1,4 @@
-[@ethereumjs/vm](../README.md) / runCall
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / runCall
 
 # Module: runCall
 
@@ -6,4 +6,4 @@
 
 ### Interfaces
 
-- [RunCallOpts](../interfaces/runcall.runcallopts.md)
+- [RunCallOpts](../interfaces/runCall.RunCallOpts.md)

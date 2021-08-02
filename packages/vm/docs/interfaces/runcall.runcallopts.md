@@ -1,8 +1,8 @@
-[@ethereumjs/vm](../README.md) / [runCall](../modules/runcall.md) / RunCallOpts
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / [runCall](../modules/runCall.md) / RunCallOpts
 
 # Interface: RunCallOpts
 
-[runCall](../modules/runcall.md).RunCallOpts
+[runCall](../modules/runCall.md).RunCallOpts
 
 Options for running a call (or create) operation
 
@@ -10,21 +10,21 @@ Options for running a call (or create) operation
 
 ### Properties
 
-- [block](runcall.runcallopts.md#block)
-- [caller](runcall.runcallopts.md#caller)
-- [code](runcall.runcallopts.md#code)
-- [compiled](runcall.runcallopts.md#compiled)
-- [data](runcall.runcallopts.md#data)
-- [delegatecall](runcall.runcallopts.md#delegatecall)
-- [depth](runcall.runcallopts.md#depth)
-- [gasLimit](runcall.runcallopts.md#gaslimit)
-- [gasPrice](runcall.runcallopts.md#gasprice)
-- [origin](runcall.runcallopts.md#origin)
-- [salt](runcall.runcallopts.md#salt)
-- [selfdestruct](runcall.runcallopts.md#selfdestruct)
-- [static](runcall.runcallopts.md#static)
-- [to](runcall.runcallopts.md#to)
-- [value](runcall.runcallopts.md#value)
+- [block](runCall.RunCallOpts.md#block)
+- [caller](runCall.RunCallOpts.md#caller)
+- [code](runCall.RunCallOpts.md#code)
+- [compiled](runCall.RunCallOpts.md#compiled)
+- [data](runCall.RunCallOpts.md#data)
+- [delegatecall](runCall.RunCallOpts.md#delegatecall)
+- [depth](runCall.RunCallOpts.md#depth)
+- [gasLimit](runCall.RunCallOpts.md#gaslimit)
+- [gasPrice](runCall.RunCallOpts.md#gasprice)
+- [origin](runCall.RunCallOpts.md#origin)
+- [salt](runCall.RunCallOpts.md#salt)
+- [selfdestruct](runCall.RunCallOpts.md#selfdestruct)
+- [static](runCall.RunCallOpts.md#static)
+- [to](runCall.RunCallOpts.md#to)
+- [value](runCall.RunCallOpts.md#value)
 
 ## Properties
 
