@@ -1,4 +1,4 @@
-[@ethereumjs/vm](../README.md) / exceptions
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / exceptions
 
 # Module: exceptions
 
@@ -6,8 +6,8 @@
 
 ### Enumerations
 
-- [ERROR](../enums/exceptions.error.md)
+- [ERROR](../enums/exceptions.ERROR.md)
 
 ### Classes
 
-- [VmError](../classes/exceptions.vmerror.md)
+- [VmError](../classes/exceptions.VmError.md)

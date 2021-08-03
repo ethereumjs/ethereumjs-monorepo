@@ -51,7 +51,7 @@
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/devp2p": "^4.1.0",
     "@ethereumjs/tx": "^3.3.0",
-    "@ethereumjs/vm": "^5.5.0",
+    "@ethereumjs/vm": "^5.5.1",
     "merkle-patricia-tree": "^4.2.0",
     "chalk": "^2.4.2",
     "ethereumjs-util": "^7.1.0",
@@ -101,7 +101,7 @@
     "testdouble-timers": "^0.1.1",
     "ts-loader": "^7.0.5",
     "ts-node": "^8.8.2",
-    "typedoc": "^0.20.34",
+    "typedoc": "^0.21.5",
     "typescript": "^3.9.3",
     "webpack": "^4.43.0",
     "webpack-cli": "^3.3.11"

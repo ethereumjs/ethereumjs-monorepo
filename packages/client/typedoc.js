@@ -1,6 +1,7 @@
 module.exports = {
   extends: '../../config/typedoc.js',
   entryPoints: ["lib"],
+  out: 'docs',
   exclude: [
     "bin/cli.ts",
     "lib/blockchain/index.ts",

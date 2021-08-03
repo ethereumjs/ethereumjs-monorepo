@@ -1,4 +1,4 @@
-[@ethereumjs/vm](../README.md) / [state/interface](../modules/state_interface.md) / StateManager
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / [state/interface](../modules/state_interface.md) / StateManager
 
 # Interface: StateManager
 
@@ -6,48 +6,49 @@
 
 ## Hierarchy
 
-- **StateManager**
+- **`StateManager`**
 
-  ↳ [EIP2929StateManager](state_interface.eip2929statemanager.md)
+  ↳ [`EIP2929StateManager`](state_interface.EIP2929StateManager.md)
 
 ## Implemented by
 
-- [default](../classes/state_statemanager.default.md)
+- [`default`](../classes/state_stateManager.default.md)
 
 ## Table of contents
 
 ### Methods
 
-- [accountExists](state_interface.statemanager.md#accountexists)
-- [accountIsEmpty](state_interface.statemanager.md#accountisempty)
-- [checkpoint](state_interface.statemanager.md#checkpoint)
-- [cleanupTouchedAccounts](state_interface.statemanager.md#cleanuptouchedaccounts)
-- [clearContractStorage](state_interface.statemanager.md#clearcontractstorage)
-- [clearOriginalStorageCache](state_interface.statemanager.md#clearoriginalstoragecache)
-- [commit](state_interface.statemanager.md#commit)
-- [copy](state_interface.statemanager.md#copy)
-- [deleteAccount](state_interface.statemanager.md#deleteaccount)
-- [dumpStorage](state_interface.statemanager.md#dumpstorage)
-- [generateCanonicalGenesis](state_interface.statemanager.md#generatecanonicalgenesis)
-- [generateGenesis](state_interface.statemanager.md#generategenesis)
-- [getAccount](state_interface.statemanager.md#getaccount)
-- [getContractCode](state_interface.statemanager.md#getcontractcode)
-- [getContractStorage](state_interface.statemanager.md#getcontractstorage)
-- [getOriginalContractStorage](state_interface.statemanager.md#getoriginalcontractstorage)
-- [getStateRoot](state_interface.statemanager.md#getstateroot)
-- [hasGenesisState](state_interface.statemanager.md#hasgenesisstate)
-- [putAccount](state_interface.statemanager.md#putaccount)
-- [putContractCode](state_interface.statemanager.md#putcontractcode)
-- [putContractStorage](state_interface.statemanager.md#putcontractstorage)
-- [revert](state_interface.statemanager.md#revert)
-- [setStateRoot](state_interface.statemanager.md#setstateroot)
-- [touchAccount](state_interface.statemanager.md#touchaccount)
+- [accountExists](state_interface.StateManager.md#accountexists)
+- [accountIsEmpty](state_interface.StateManager.md#accountisempty)
+- [checkpoint](state_interface.StateManager.md#checkpoint)
+- [cleanupTouchedAccounts](state_interface.StateManager.md#cleanuptouchedaccounts)
+- [clearContractStorage](state_interface.StateManager.md#clearcontractstorage)
+- [clearOriginalStorageCache](state_interface.StateManager.md#clearoriginalstoragecache)
+- [commit](state_interface.StateManager.md#commit)
+- [copy](state_interface.StateManager.md#copy)
+- [deleteAccount](state_interface.StateManager.md#deleteaccount)
+- [dumpStorage](state_interface.StateManager.md#dumpstorage)
+- [generateCanonicalGenesis](state_interface.StateManager.md#generatecanonicalgenesis)
+- [generateGenesis](state_interface.StateManager.md#generategenesis)
+- [getAccount](state_interface.StateManager.md#getaccount)
+- [getContractCode](state_interface.StateManager.md#getcontractcode)
+- [getContractStorage](state_interface.StateManager.md#getcontractstorage)
+- [getOriginalContractStorage](state_interface.StateManager.md#getoriginalcontractstorage)
+- [getStateRoot](state_interface.StateManager.md#getstateroot)
+- [hasGenesisState](state_interface.StateManager.md#hasgenesisstate)
+- [modifyAccountFields](state_interface.StateManager.md#modifyaccountfields)
+- [putAccount](state_interface.StateManager.md#putaccount)
+- [putContractCode](state_interface.StateManager.md#putcontractcode)
+- [putContractStorage](state_interface.StateManager.md#putcontractstorage)
+- [revert](state_interface.StateManager.md#revert)
+- [setStateRoot](state_interface.StateManager.md#setstateroot)
+- [touchAccount](state_interface.StateManager.md#touchaccount)
 
 ## Methods
 
 ### accountExists
 
-▸ **accountExists**(`address`): `Promise`<boolean\>
+▸ **accountExists**(`address`): `Promise`<`boolean`\>
 
 #### Parameters
 
@@ -57,17 +58,17 @@
 
 #### Returns
 
-`Promise`<boolean\>
+`Promise`<`boolean`\>
 
 #### Defined in
 
-[state/interface.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L33)
+[state/interface.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L36)
 
 ___
 
 ### accountIsEmpty
 
-▸ **accountIsEmpty**(`address`): `Promise`<boolean\>
+▸ **accountIsEmpty**(`address`): `Promise`<`boolean`\>
 
 #### Parameters
 
@@ -77,45 +78,45 @@ ___
 
 #### Returns
 
-`Promise`<boolean\>
+`Promise`<`boolean`\>
 
 #### Defined in
 
-[state/interface.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L32)
+[state/interface.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L35)
 
 ___
 
 ### checkpoint
 
-▸ **checkpoint**(): `Promise`<void\>
+▸ **checkpoint**(): `Promise`<`void`\>
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
-[state/interface.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L23)
+[state/interface.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L26)
 
 ___
 
 ### cleanupTouchedAccounts
 
-▸ **cleanupTouchedAccounts**(): `Promise`<void\>
+▸ **cleanupTouchedAccounts**(): `Promise`<`void`\>
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
-[state/interface.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L34)
+[state/interface.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L37)
 
 ___
 
 ### clearContractStorage
 
-▸ **clearContractStorage**(`address`): `Promise`<void\>
+▸ **clearContractStorage**(`address`): `Promise`<`void`\>
 
 #### Parameters
 
@@ -125,11 +126,11 @@ ___
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
-[state/interface.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L22)
+[state/interface.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L25)
 
 ___
 
@@ -143,41 +144,41 @@ ___
 
 #### Defined in
 
-[state/interface.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L35)
+[state/interface.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L38)
 
 ___
 
 ### commit
 
-▸ **commit**(): `Promise`<void\>
+▸ **commit**(): `Promise`<`void`\>
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
-[state/interface.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L24)
+[state/interface.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L27)
 
 ___
 
 ### copy
 
-▸ **copy**(): [StateManager](state_interface.statemanager.md)
+▸ **copy**(): [`StateManager`](state_interface.StateManager.md)
 
 #### Returns
 
-[StateManager](state_interface.statemanager.md)
+[`StateManager`](state_interface.StateManager.md)
 
 #### Defined in
 
-[state/interface.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L12)
+[state/interface.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L14)
 
 ___
 
 ### deleteAccount
 
-▸ **deleteAccount**(`address`): `Promise`<void\>
+▸ **deleteAccount**(`address`): `Promise`<`void`\>
 
 #### Parameters
 
@@ -187,17 +188,17 @@ ___
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
-[state/interface.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L15)
+[state/interface.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L17)
 
 ___
 
 ### dumpStorage
 
-▸ **dumpStorage**(`address`): `Promise`<[StorageDump](state_interface.storagedump.md)\>
+▸ **dumpStorage**(`address`): `Promise`<[`StorageDump`](state_interface.StorageDump.md)\>
 
 #### Parameters
 
@@ -207,31 +208,31 @@ ___
 
 #### Returns
 
-`Promise`<[StorageDump](state_interface.storagedump.md)\>
+`Promise`<[`StorageDump`](state_interface.StorageDump.md)\>
 
 #### Defined in
 
-[state/interface.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L28)
+[state/interface.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L31)
 
 ___
 
 ### generateCanonicalGenesis
 
-▸ **generateCanonicalGenesis**(): `Promise`<void\>
+▸ **generateCanonicalGenesis**(): `Promise`<`void`\>
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
-[state/interface.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L30)
+[state/interface.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L33)
 
 ___
 
 ### generateGenesis
 
-▸ **generateGenesis**(`initState`): `Promise`<void\>
+▸ **generateGenesis**(`initState`): `Promise`<`void`\>
 
 #### Parameters
 
@@ -241,17 +242,17 @@ ___
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
-[state/interface.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L31)
+[state/interface.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L34)
 
 ___
 
 ### getAccount
 
-▸ **getAccount**(`address`): `Promise`<Account\>
+▸ **getAccount**(`address`): `Promise`<`Account`\>
 
 #### Parameters
 
@@ -261,17 +262,17 @@ ___
 
 #### Returns
 
-`Promise`<Account\>
+`Promise`<`Account`\>
 
 #### Defined in
 
-[state/interface.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L13)
+[state/interface.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L15)
 
 ___
 
 ### getContractCode
 
-▸ **getContractCode**(`address`): `Promise`<Buffer\>
+▸ **getContractCode**(`address`): `Promise`<`Buffer`\>
 
 #### Parameters
 
@@ -281,17 +282,17 @@ ___
 
 #### Returns
 
-`Promise`<Buffer\>
+`Promise`<`Buffer`\>
 
 #### Defined in
 
-[state/interface.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L18)
+[state/interface.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L21)
 
 ___
 
 ### getContractStorage
 
-▸ **getContractStorage**(`address`, `key`): `Promise`<Buffer\>
+▸ **getContractStorage**(`address`, `key`): `Promise`<`Buffer`\>
 
 #### Parameters
 
@@ -302,17 +303,17 @@ ___
 
 #### Returns
 
-`Promise`<Buffer\>
+`Promise`<`Buffer`\>
 
 #### Defined in
 
-[state/interface.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L19)
+[state/interface.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L22)
 
 ___
 
 ### getOriginalContractStorage
 
-▸ **getOriginalContractStorage**(`address`, `key`): `Promise`<Buffer\>
+▸ **getOriginalContractStorage**(`address`, `key`): `Promise`<`Buffer`\>
 
 #### Parameters
 
@@ -323,17 +324,17 @@ ___
 
 #### Returns
 
-`Promise`<Buffer\>
+`Promise`<`Buffer`\>
 
 #### Defined in
 
-[state/interface.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L20)
+[state/interface.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L23)
 
 ___
 
 ### getStateRoot
 
-▸ **getStateRoot**(`force?`): `Promise`<Buffer\>
+▸ **getStateRoot**(`force?`): `Promise`<`Buffer`\>
 
 #### Parameters
 
@@ -343,21 +344,7 @@ ___
 
 #### Returns
 
-`Promise`<Buffer\>
-
-#### Defined in
-
-[state/interface.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L26)
-
-___
-
-### hasGenesisState
-
-▸ **hasGenesisState**(): `Promise`<boolean\>
-
-#### Returns
-
-`Promise`<boolean\>
+`Promise`<`Buffer`\>
 
 #### Defined in
 
@@ -365,9 +352,44 @@ ___
 
 ___
 
+### hasGenesisState
+
+▸ **hasGenesisState**(): `Promise`<`boolean`\>
+
+#### Returns
+
+`Promise`<`boolean`\>
+
+#### Defined in
+
+[state/interface.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L32)
+
+___
+
+### modifyAccountFields
+
+▸ **modifyAccountFields**(`address`, `accountFields`): `Promise`<`void`\>
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `address` | `Address` |
+| `accountFields` | `Partial`<`Pick`<`Account`, ``"nonce"`` \| ``"balance"`` \| ``"stateRoot"`` \| ``"codeHash"``\>\> |
+
+#### Returns
+
+`Promise`<`void`\>
+
+#### Defined in
+
+[state/interface.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L19)
+
+___
+
 ### putAccount
 
-▸ **putAccount**(`address`, `account`): `Promise`<void\>
+▸ **putAccount**(`address`, `account`): `Promise`<`void`\>
 
 #### Parameters
 
@@ -378,17 +400,17 @@ ___
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
-[state/interface.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L14)
+[state/interface.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L16)
 
 ___
 
 ### putContractCode
 
-▸ **putContractCode**(`address`, `value`): `Promise`<void\>
+▸ **putContractCode**(`address`, `value`): `Promise`<`void`\>
 
 #### Parameters
 
@@ -399,17 +421,17 @@ ___
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
-[state/interface.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L17)
+[state/interface.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L20)
 
 ___
 
 ### putContractStorage
 
-▸ **putContractStorage**(`address`, `key`, `value`): `Promise`<void\>
+▸ **putContractStorage**(`address`, `key`, `value`): `Promise`<`void`\>
 
 #### Parameters
 
@@ -421,31 +443,31 @@ ___
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
-[state/interface.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L21)
+[state/interface.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L24)
 
 ___
 
 ### revert
 
-▸ **revert**(): `Promise`<void\>
+▸ **revert**(): `Promise`<`void`\>
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
-[state/interface.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L25)
+[state/interface.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L28)
 
 ___
 
 ### setStateRoot
 
-▸ **setStateRoot**(`stateRoot`): `Promise`<void\>
+▸ **setStateRoot**(`stateRoot`): `Promise`<`void`\>
 
 #### Parameters
 
@@ -455,11 +477,11 @@ ___
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
-[state/interface.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L27)
+[state/interface.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L30)
 
 ___
 
@@ -479,4 +501,4 @@ ___
 
 #### Defined in
 
-[state/interface.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L16)
+[state/interface.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L18)

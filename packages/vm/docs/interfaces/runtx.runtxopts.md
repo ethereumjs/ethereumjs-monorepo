@@ -1,8 +1,8 @@
-[@ethereumjs/vm](../README.md) / [runTx](../modules/runtx.md) / RunTxOpts
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / [runTx](../modules/runTx.md) / RunTxOpts
 
 # Interface: RunTxOpts
 
-[runTx](../modules/runtx.md).RunTxOpts
+[runTx](../modules/runTx.md).RunTxOpts
 
 Options for the `runTx` method.
 
@@ -10,13 +10,13 @@ Options for the `runTx` method.
 
 ### Properties
 
-- [block](runtx.runtxopts.md#block)
-- [blockGasUsed](runtx.runtxopts.md#blockgasused)
-- [reportAccessList](runtx.runtxopts.md#reportaccesslist)
-- [skipBalance](runtx.runtxopts.md#skipbalance)
-- [skipBlockGasLimitValidation](runtx.runtxopts.md#skipblockgaslimitvalidation)
-- [skipNonce](runtx.runtxopts.md#skipnonce)
-- [tx](runtx.runtxopts.md#tx)
+- [block](runTx.RunTxOpts.md#block)
+- [blockGasUsed](runTx.RunTxOpts.md#blockgasused)
+- [reportAccessList](runTx.RunTxOpts.md#reportaccesslist)
+- [skipBalance](runTx.RunTxOpts.md#skipbalance)
+- [skipBlockGasLimitValidation](runTx.RunTxOpts.md#skipblockgaslimitvalidation)
+- [skipNonce](runTx.RunTxOpts.md#skipnonce)
+- [tx](runTx.RunTxOpts.md#tx)
 
 ## Properties
 
@@ -55,7 +55,7 @@ to the `RunTxResult` returned.
 Option works with all tx types. EIP-2929 needs to
 be activated (included in `berlin` HF).
 
-Note: if this option is used with a custom [StateManager](state_interface.statemanager.md) implementation
+Note: if this option is used with a custom [StateManager](state_interface.StateManager.md) implementation
 {@link StateManager.generateAccessList} must be implemented.
 
 #### Defined in

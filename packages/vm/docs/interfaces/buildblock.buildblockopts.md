@@ -1,8 +1,8 @@
-[@ethereumjs/vm](../README.md) / [buildBlock](../modules/buildblock.md) / BuildBlockOpts
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / [buildBlock](../modules/buildBlock.md) / BuildBlockOpts
 
 # Interface: BuildBlockOpts
 
-[buildBlock](../modules/buildblock.md).BuildBlockOpts
+[buildBlock](../modules/buildBlock.md).BuildBlockOpts
 
 Options for building a block.
 
@@ -10,9 +10,9 @@ Options for building a block.
 
 ### Properties
 
-- [blockOpts](buildblock.buildblockopts.md#blockopts)
-- [headerData](buildblock.buildblockopts.md#headerdata)
-- [parentBlock](buildblock.buildblockopts.md#parentblock)
+- [blockOpts](buildBlock.BuildBlockOpts.md#blockopts)
+- [headerData](buildBlock.BuildBlockOpts.md#headerdata)
+- [parentBlock](buildBlock.BuildBlockOpts.md#parentblock)
 
 ## Properties
 

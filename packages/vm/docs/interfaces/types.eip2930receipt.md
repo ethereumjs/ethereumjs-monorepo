@@ -1,4 +1,4 @@
-[@ethereumjs/vm](../README.md) / [types](../modules/types.md) / EIP2930Receipt
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / [types](../modules/types.md) / EIP2930Receipt
 
 # Interface: EIP2930Receipt
 
@@ -10,18 +10,18 @@ EIP2930Receipt, which has the same fields as PostByzantiumTxReceipt
 
 ## Hierarchy
 
-- [PostByzantiumTxReceipt](types.postbyzantiumtxreceipt.md)
+- [`PostByzantiumTxReceipt`](types.PostByzantiumTxReceipt.md)
 
-  ↳ **EIP2930Receipt**
+  ↳ **`EIP2930Receipt`**
 
 ## Table of contents
 
 ### Properties
 
-- [bitvector](types.eip2930receipt.md#bitvector)
-- [gasUsed](types.eip2930receipt.md#gasused)
-- [logs](types.eip2930receipt.md#logs)
-- [status](types.eip2930receipt.md#status)
+- [bitvector](types.EIP2930Receipt.md#bitvector)
+- [gasUsed](types.EIP2930Receipt.md#gasused)
+- [logs](types.EIP2930Receipt.md#logs)
+- [status](types.EIP2930Receipt.md#status)
 
 ## Properties
 
@@ -33,7 +33,7 @@ Bloom bitvector
 
 #### Inherited from
 
-[PostByzantiumTxReceipt](types.postbyzantiumtxreceipt.md).[bitvector](types.postbyzantiumtxreceipt.md#bitvector)
+[PostByzantiumTxReceipt](types.PostByzantiumTxReceipt.md).[bitvector](types.PostByzantiumTxReceipt.md#bitvector)
 
 #### Defined in
 
@@ -49,7 +49,7 @@ Cumulative gas used in the block including this tx
 
 #### Inherited from
 
-[PostByzantiumTxReceipt](types.postbyzantiumtxreceipt.md).[gasUsed](types.postbyzantiumtxreceipt.md#gasused)
+[PostByzantiumTxReceipt](types.PostByzantiumTxReceipt.md).[gasUsed](types.PostByzantiumTxReceipt.md#gasused)
 
 #### Defined in
 
@@ -65,7 +65,7 @@ Logs emitted
 
 #### Inherited from
 
-[PostByzantiumTxReceipt](types.postbyzantiumtxreceipt.md).[logs](types.postbyzantiumtxreceipt.md#logs)
+[PostByzantiumTxReceipt](types.PostByzantiumTxReceipt.md).[logs](types.PostByzantiumTxReceipt.md#logs)
 
 #### Defined in
 
@@ -81,7 +81,7 @@ Status of transaction, `1` if successful, `0` if an exception occured
 
 #### Inherited from
 
-[PostByzantiumTxReceipt](types.postbyzantiumtxreceipt.md).[status](types.postbyzantiumtxreceipt.md#status)
+[PostByzantiumTxReceipt](types.PostByzantiumTxReceipt.md).[status](types.PostByzantiumTxReceipt.md#status)
 
 #### Defined in
 

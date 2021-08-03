@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 **Dependencies, CI and Docs**
 
+- Clarify documentation for `gasPrice` under `FeeMarketEIP1559TxData` interface, PR [#1387](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1387)
+
 ## 3.3.0 - 2021-07-08
 
 ### Finalized London HF Support
