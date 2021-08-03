@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/vm",
-  "version": "5.5.1",
+  "version": "5.5.2",
   "description": "An Ethereum VM implementation",
   "license": "MPL-2.0",
   "author": "mjbecze <mjbecze@gmail.com>",
