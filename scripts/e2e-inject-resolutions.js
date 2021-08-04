@@ -1,6 +1,5 @@
 /*
-  This script injects the `resolutions.json` file created by
-  the e2e-resolutions.js script into hardhat-core's `package.json`.
+  This script sets hardhat-core's ethereumjs dependencies to the versions created from the e2e-resolutions.js script.
  */
 
 const fs = require('fs')
@@ -10,9 +9,30 @@ const resolutions = require(`${process.cwd()}/resolutions.json`)
 const corePackageJsonLocation = `${process.cwd()}/hardhat/packages/hardhat-core/package.json`
 const corePackageJson = require(corePackageJsonLocation)
 
-const newCorePackageJson = { ...corePackageJson, resolutions }
+const newCorePackageJson = {
+  ...corePackageJson,
+  dependencies: {
+    ...corePackageJson.dependencies,
+    ...resolutions
+  }
+}
 
-newCorePackageJson.resolutions['@types/bn.js'] = '5.1.0' // adds specific module that hardhat can't find by default
-newCorePackageJson.resolutions['eth-sig-util'] = '3.0.1' // resolves provider eth_signTypedData_v4 error
+fs.writeFileSync(
+  corePackageJsonLocation,
+  JSON.stringify(newCorePackageJson, null, 2)
+)
 
-fs.writeFileSync(corePackageJsonLocation, JSON.stringify(newCorePackageJson, null, 2))
+/*
+  workaround: yarn is picking up @types/node 16.x
+  that the ci is running on, so use resolutions to pin
+  the hardhat version so types don't mismatch on build
+*/
+const rootPackageJsonLocation = `${process.cwd()}/hardhat/package.json`
+const rootPackageJson = require(rootPackageJsonLocation)
+
+const newRootPackageJson = { ...rootPackageJson, resolutions: { '@types/node': '^10.17.24' } }
+
+fs.writeFileSync(
+  rootPackageJsonLocation,
+  JSON.stringify(newRootPackageJson, null, 2)
+)
