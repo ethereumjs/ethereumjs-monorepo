@@ -42,6 +42,7 @@ export interface DefaultStateManagerOpts {
  * state trie.
  */
 export default class DefaultStateManager implements StateManager {
+  someNewlyAddedBreakingMethod() {}
   _common: Common
   _trie: Trie
   _storageTries: { [key: string]: Trie }
