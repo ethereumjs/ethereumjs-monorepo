@@ -182,7 +182,8 @@ export interface AccessListEIP2930TxData extends TxData {
  */
 export interface FeeMarketEIP1559TxData extends AccessListEIP2930TxData {
   /**
-   * The transaction's gas price.
+   * The transaction's gas price, inherited from {@link Transaction}.  This property is not used for EIP1559
+   * transactions and should always be undefined for this specific transaction type.
    */
   gasPrice?: never
   /**

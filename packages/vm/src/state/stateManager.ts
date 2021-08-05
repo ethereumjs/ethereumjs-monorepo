@@ -13,7 +13,7 @@ import {
 import { encode, decode } from 'rlp'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { genesisStateByName } from '@ethereumjs/common/dist/genesisStates'
-import { AccountFields, StateManager, StorageDump } from './interface'
+import { StateManager, StorageDump } from './interface'
 import Cache from './cache'
 import { getActivePrecompiles, ripemdPrecompileAddress } from '../evm/precompiles'
 import { short } from '../evm/opcodes'
@@ -157,26 +157,9 @@ export default class DefaultStateManager implements StateManager {
    * This happens when the account is triggered for a state-changing
    * event. Touched accounts that are empty will be cleared
    * at the end of the tx.
-   * @param address - Address of the account to touch
    */
   touchAccount(address: Address): void {
     this._touched.add(address.buf.toString('hex'))
-  }
-
-  /**
-   * Gets the account associated with `address`, modifies the given account
-   * fields, then saves the account into state. Account fields can include
-   * `nonce`, `balance`, `stateRoot`, and `codeHash`.
-   * @param address - Address of the account to modify
-   * @param accountFields - Object containing account fields and values to modify
-   */
-  async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
-    const account = await this.getAccount(address)
-    account.nonce = accountFields.nonce ?? account.nonce
-    account.balance = accountFields.balance ?? account.balance
-    account.stateRoot = accountFields.stateRoot ?? account.stateRoot
-    account.codeHash = accountFields.codeHash ?? account.codeHash
-    await this.putAccount(address, account)
   }
 
   /**
@@ -194,10 +177,12 @@ export default class DefaultStateManager implements StateManager {
 
     await this._trie.db.put(codeHash, value)
 
+    const account = await this.getAccount(address)
     if (this.DEBUG) {
       debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
     }
-    await this.modifyAccountFields(address, { codeHash })
+    account.codeHash = codeHash
+    await this.putAccount(address, account)
   }
 
   /**

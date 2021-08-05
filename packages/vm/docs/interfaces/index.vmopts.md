@@ -1,4 +1,4 @@
-[@ethereumjs/vm](../README.md) / [index](../modules/index.md) / VMOpts
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / [index](../modules/index.md) / VMOpts
 
 # Interface: VMOpts
 
@@ -10,13 +10,13 @@ Options for instantiating a {@link VM}.
 
 ### Properties
 
-- [activatePrecompiles](index.vmopts.md#activateprecompiles)
-- [allowUnlimitedContractSize](index.vmopts.md#allowunlimitedcontractsize)
-- [blockchain](index.vmopts.md#blockchain)
-- [common](index.vmopts.md#common)
-- [hardforkByBlockNumber](index.vmopts.md#hardforkbyblocknumber)
-- [state](index.vmopts.md#state)
-- [stateManager](index.vmopts.md#statemanager)
+- [activatePrecompiles](index.VMOpts.md#activateprecompiles)
+- [allowUnlimitedContractSize](index.VMOpts.md#allowunlimitedcontractsize)
+- [blockchain](index.VMOpts.md#blockchain)
+- [common](index.VMOpts.md#common)
+- [hardforkByBlockNumber](index.VMOpts.md#hardforkbyblocknumber)
+- [state](index.VMOpts.md#state)
+- [stateManager](index.VMOpts.md#statemanager)
 
 ## Properties
 
@@ -128,11 +128,11 @@ ___
 
 ### state
 
-• `Optional` **state**: `any`
+• `Optional` **state**: `SecureTrie`
 
 A {@link SecureTrie} instance for the state tree (ignored if stateManager is passed)
 
-**`deprecated`**
+**`deprecated`** - will be removed in next major version release
 
 #### Defined in
 
@@ -142,9 +142,9 @@ ___
 
 ### stateManager
 
-• `Optional` **stateManager**: [StateManager](state_interface.statemanager.md)
+• `Optional` **stateManager**: [`StateManager`](state_interface.StateManager.md)
 
-A [StateManager](state_interface.statemanager.md) instance to use as the state store (Beta API)
+A [StateManager](state_interface.StateManager.md) instance to use as the state store (Beta API)
 
 #### Defined in
 

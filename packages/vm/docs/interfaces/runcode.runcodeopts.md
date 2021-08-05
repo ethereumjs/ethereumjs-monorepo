@@ -1,8 +1,8 @@
-[@ethereumjs/vm](../README.md) / [runCode](../modules/runcode.md) / RunCodeOpts
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / [runCode](../modules/runCode.md) / RunCodeOpts
 
 # Interface: RunCodeOpts
 
-[runCode](../modules/runcode.md).RunCodeOpts
+[runCode](../modules/runCode.md).RunCodeOpts
 
 Options for the [runCode](../classes/index.default.md#runcode) method.
 
@@ -10,22 +10,22 @@ Options for the [runCode](../classes/index.default.md#runcode) method.
 
 ### Properties
 
-- [address](runcode.runcodeopts.md#address)
-- [block](runcode.runcodeopts.md#block)
-- [caller](runcode.runcodeopts.md#caller)
-- [code](runcode.runcodeopts.md#code)
-- [data](runcode.runcodeopts.md#data)
-- [depth](runcode.runcodeopts.md#depth)
-- [evm](runcode.runcodeopts.md#evm)
-- [gasLimit](runcode.runcodeopts.md#gaslimit)
-- [gasPrice](runcode.runcodeopts.md#gasprice)
-- [isStatic](runcode.runcodeopts.md#isstatic)
-- [message](runcode.runcodeopts.md#message)
-- [origin](runcode.runcodeopts.md#origin)
-- [pc](runcode.runcodeopts.md#pc)
-- [selfdestruct](runcode.runcodeopts.md#selfdestruct)
-- [txContext](runcode.runcodeopts.md#txcontext)
-- [value](runcode.runcodeopts.md#value)
+- [address](runCode.RunCodeOpts.md#address)
+- [block](runCode.RunCodeOpts.md#block)
+- [caller](runCode.RunCodeOpts.md#caller)
+- [code](runCode.RunCodeOpts.md#code)
+- [data](runCode.RunCodeOpts.md#data)
+- [depth](runCode.RunCodeOpts.md#depth)
+- [evm](runCode.RunCodeOpts.md#evm)
+- [gasLimit](runCode.RunCodeOpts.md#gaslimit)
+- [gasPrice](runCode.RunCodeOpts.md#gasprice)
+- [isStatic](runCode.RunCodeOpts.md#isstatic)
+- [message](runCode.RunCodeOpts.md#message)
+- [origin](runCode.RunCodeOpts.md#origin)
+- [pc](runCode.RunCodeOpts.md#pc)
+- [selfdestruct](runCode.RunCodeOpts.md#selfdestruct)
+- [txContext](runCode.RunCodeOpts.md#txcontext)
+- [value](runCode.RunCodeOpts.md#value)
 
 ## Properties
 

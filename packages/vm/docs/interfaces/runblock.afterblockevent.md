@@ -1,26 +1,26 @@
-[@ethereumjs/vm](../README.md) / [runBlock](../modules/runblock.md) / AfterBlockEvent
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / [runBlock](../modules/runBlock.md) / AfterBlockEvent
 
 # Interface: AfterBlockEvent
 
-[runBlock](../modules/runblock.md).AfterBlockEvent
+[runBlock](../modules/runBlock.md).AfterBlockEvent
 
 ## Hierarchy
 
-- [RunBlockResult](runblock.runblockresult.md)
+- [`RunBlockResult`](runBlock.RunBlockResult.md)
 
-  ↳ **AfterBlockEvent**
+  ↳ **`AfterBlockEvent`**
 
 ## Table of contents
 
 ### Properties
 
-- [block](runblock.afterblockevent.md#block)
-- [gasUsed](runblock.afterblockevent.md#gasused)
-- [logsBloom](runblock.afterblockevent.md#logsbloom)
-- [receiptRoot](runblock.afterblockevent.md#receiptroot)
-- [receipts](runblock.afterblockevent.md#receipts)
-- [results](runblock.afterblockevent.md#results)
-- [stateRoot](runblock.afterblockevent.md#stateroot)
+- [block](runBlock.AfterBlockEvent.md#block)
+- [gasUsed](runBlock.AfterBlockEvent.md#gasused)
+- [logsBloom](runBlock.AfterBlockEvent.md#logsbloom)
+- [receiptRoot](runBlock.AfterBlockEvent.md#receiptroot)
+- [receipts](runBlock.AfterBlockEvent.md#receipts)
+- [results](runBlock.AfterBlockEvent.md#results)
+- [stateRoot](runBlock.AfterBlockEvent.md#stateroot)
 
 ## Properties
 
@@ -42,7 +42,7 @@ The gas used after executing the block
 
 #### Inherited from
 
-[RunBlockResult](runblock.runblockresult.md).[gasUsed](runblock.runblockresult.md#gasused)
+[RunBlockResult](runBlock.RunBlockResult.md).[gasUsed](runBlock.RunBlockResult.md#gasused)
 
 #### Defined in
 
@@ -58,7 +58,7 @@ The bloom filter of the LOGs (events) after executing the block
 
 #### Inherited from
 
-[RunBlockResult](runblock.runblockresult.md).[logsBloom](runblock.runblockresult.md#logsbloom)
+[RunBlockResult](runBlock.RunBlockResult.md).[logsBloom](runBlock.RunBlockResult.md#logsbloom)
 
 #### Defined in
 
@@ -74,7 +74,7 @@ The receipt root after executing the block
 
 #### Inherited from
 
-[RunBlockResult](runblock.runblockresult.md).[receiptRoot](runblock.runblockresult.md#receiptroot)
+[RunBlockResult](runBlock.RunBlockResult.md).[receiptRoot](runBlock.RunBlockResult.md#receiptroot)
 
 #### Defined in
 
@@ -84,13 +84,13 @@ ___
 
 ### receipts
 
-• **receipts**: [TxReceipt](../modules/types.md#txreceipt)[]
+• **receipts**: [`TxReceipt`](../modules/types.md#txreceipt)[]
 
 Receipts generated for transactions in the block
 
 #### Inherited from
 
-[RunBlockResult](runblock.runblockresult.md).[receipts](runblock.runblockresult.md#receipts)
+[RunBlockResult](runBlock.RunBlockResult.md).[receipts](runBlock.RunBlockResult.md#receipts)
 
 #### Defined in
 
@@ -100,13 +100,13 @@ ___
 
 ### results
 
-• **results**: [RunTxResult](runtx.runtxresult.md)[]
+• **results**: [`RunTxResult`](runTx.RunTxResult.md)[]
 
 Results of executing the transactions in the block
 
 #### Inherited from
 
-[RunBlockResult](runblock.runblockresult.md).[results](runblock.runblockresult.md#results)
+[RunBlockResult](runBlock.RunBlockResult.md).[results](runBlock.RunBlockResult.md#results)
 
 #### Defined in
 
@@ -122,7 +122,7 @@ The stateRoot after executing the block
 
 #### Inherited from
 
-[RunBlockResult](runblock.runblockresult.md).[stateRoot](runblock.runblockresult.md#stateroot)
+[RunBlockResult](runBlock.RunBlockResult.md).[stateRoot](runBlock.RunBlockResult.md#stateroot)
 
 #### Defined in
 

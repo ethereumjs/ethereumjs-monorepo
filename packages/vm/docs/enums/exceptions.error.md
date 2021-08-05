@@ -1,4 +1,4 @@
-[@ethereumjs/vm](../README.md) / [exceptions](../modules/exceptions.md) / ERROR
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / [exceptions](../modules/exceptions.md) / ERROR
 
 # Enumeration: ERROR
 
@@ -8,34 +8,34 @@
 
 ### Enumeration members
 
-- [BLS\_12\_381\_FP\_NOT\_IN\_FIELD](exceptions.error.md#bls_12_381_fp_not_in_field)
-- [BLS\_12\_381\_INPUT\_EMPTY](exceptions.error.md#bls_12_381_input_empty)
-- [BLS\_12\_381\_INVALID\_INPUT\_LENGTH](exceptions.error.md#bls_12_381_invalid_input_length)
-- [BLS\_12\_381\_POINT\_NOT\_ON\_CURVE](exceptions.error.md#bls_12_381_point_not_on_curve)
-- [CODESTORE\_OUT\_OF\_GAS](exceptions.error.md#codestore_out_of_gas)
-- [CREATE\_COLLISION](exceptions.error.md#create_collision)
-- [INTERNAL\_ERROR](exceptions.error.md#internal_error)
-- [INVALID\_BEGINSUB](exceptions.error.md#invalid_beginsub)
-- [INVALID\_BYTECODE\_RESULT](exceptions.error.md#invalid_bytecode_result)
-- [INVALID\_JUMP](exceptions.error.md#invalid_jump)
-- [INVALID\_JUMPSUB](exceptions.error.md#invalid_jumpsub)
-- [INVALID\_OPCODE](exceptions.error.md#invalid_opcode)
-- [INVALID\_RETURNSUB](exceptions.error.md#invalid_returnsub)
-- [OUT\_OF\_GAS](exceptions.error.md#out_of_gas)
-- [OUT\_OF\_RANGE](exceptions.error.md#out_of_range)
-- [REFUND\_EXHAUSTED](exceptions.error.md#refund_exhausted)
-- [REVERT](exceptions.error.md#revert)
-- [STACK\_OVERFLOW](exceptions.error.md#stack_overflow)
-- [STACK\_UNDERFLOW](exceptions.error.md#stack_underflow)
-- [STATIC\_STATE\_CHANGE](exceptions.error.md#static_state_change)
-- [STOP](exceptions.error.md#stop)
-- [VALUE\_OVERFLOW](exceptions.error.md#value_overflow)
+- [BLS\_12\_381\_FP\_NOT\_IN\_FIELD](exceptions.ERROR.md#bls_12_381_fp_not_in_field)
+- [BLS\_12\_381\_INPUT\_EMPTY](exceptions.ERROR.md#bls_12_381_input_empty)
+- [BLS\_12\_381\_INVALID\_INPUT\_LENGTH](exceptions.ERROR.md#bls_12_381_invalid_input_length)
+- [BLS\_12\_381\_POINT\_NOT\_ON\_CURVE](exceptions.ERROR.md#bls_12_381_point_not_on_curve)
+- [CODESTORE\_OUT\_OF\_GAS](exceptions.ERROR.md#codestore_out_of_gas)
+- [CREATE\_COLLISION](exceptions.ERROR.md#create_collision)
+- [INTERNAL\_ERROR](exceptions.ERROR.md#internal_error)
+- [INVALID\_BEGINSUB](exceptions.ERROR.md#invalid_beginsub)
+- [INVALID\_BYTECODE\_RESULT](exceptions.ERROR.md#invalid_bytecode_result)
+- [INVALID\_JUMP](exceptions.ERROR.md#invalid_jump)
+- [INVALID\_JUMPSUB](exceptions.ERROR.md#invalid_jumpsub)
+- [INVALID\_OPCODE](exceptions.ERROR.md#invalid_opcode)
+- [INVALID\_RETURNSUB](exceptions.ERROR.md#invalid_returnsub)
+- [OUT\_OF\_GAS](exceptions.ERROR.md#out_of_gas)
+- [OUT\_OF\_RANGE](exceptions.ERROR.md#out_of_range)
+- [REFUND\_EXHAUSTED](exceptions.ERROR.md#refund_exhausted)
+- [REVERT](exceptions.ERROR.md#revert)
+- [STACK\_OVERFLOW](exceptions.ERROR.md#stack_overflow)
+- [STACK\_UNDERFLOW](exceptions.ERROR.md#stack_underflow)
+- [STATIC\_STATE\_CHANGE](exceptions.ERROR.md#static_state_change)
+- [STOP](exceptions.ERROR.md#stop)
+- [VALUE\_OVERFLOW](exceptions.ERROR.md#value_overflow)
 
 ## Enumeration members
 
 ### BLS\_12\_381\_FP\_NOT\_IN\_FIELD
 
-• **BLS\_12\_381\_FP\_NOT\_IN\_FIELD** = "fp point not in field"
+• **BLS\_12\_381\_FP\_NOT\_IN\_FIELD** = `"fp point not in field"`
 
 #### Defined in
 
@@ -45,7 +45,7 @@ ___
 
 ### BLS\_12\_381\_INPUT\_EMPTY
 
-• **BLS\_12\_381\_INPUT\_EMPTY** = "input is empty"
+• **BLS\_12\_381\_INPUT\_EMPTY** = `"input is empty"`
 
 #### Defined in
 
@@ -55,7 +55,7 @@ ___
 
 ### BLS\_12\_381\_INVALID\_INPUT\_LENGTH
 
-• **BLS\_12\_381\_INVALID\_INPUT\_LENGTH** = "invalid input length"
+• **BLS\_12\_381\_INVALID\_INPUT\_LENGTH** = `"invalid input length"`
 
 #### Defined in
 
@@ -65,7 +65,7 @@ ___
 
 ### BLS\_12\_381\_POINT\_NOT\_ON\_CURVE
 
-• **BLS\_12\_381\_POINT\_NOT\_ON\_CURVE** = "point not on curve"
+• **BLS\_12\_381\_POINT\_NOT\_ON\_CURVE** = `"point not on curve"`
 
 #### Defined in
 
@@ -75,7 +75,7 @@ ___
 
 ### CODESTORE\_OUT\_OF\_GAS
 
-• **CODESTORE\_OUT\_OF\_GAS** = "code store out of gas"
+• **CODESTORE\_OUT\_OF\_GAS** = `"code store out of gas"`
 
 #### Defined in
 
@@ -85,7 +85,7 @@ ___
 
 ### CREATE\_COLLISION
 
-• **CREATE\_COLLISION** = "create collision"
+• **CREATE\_COLLISION** = `"create collision"`
 
 #### Defined in
 
@@ -95,7 +95,7 @@ ___
 
 ### INTERNAL\_ERROR
 
-• **INTERNAL\_ERROR** = "internal error"
+• **INTERNAL\_ERROR** = `"internal error"`
 
 #### Defined in
 
@@ -105,7 +105,7 @@ ___
 
 ### INVALID\_BEGINSUB
 
-• **INVALID\_BEGINSUB** = "invalid BEGINSUB"
+• **INVALID\_BEGINSUB** = `"invalid BEGINSUB"`
 
 #### Defined in
 
@@ -115,7 +115,7 @@ ___
 
 ### INVALID\_BYTECODE\_RESULT
 
-• **INVALID\_BYTECODE\_RESULT** = "invalid bytecode deployed"
+• **INVALID\_BYTECODE\_RESULT** = `"invalid bytecode deployed"`
 
 #### Defined in
 
@@ -125,7 +125,7 @@ ___
 
 ### INVALID\_JUMP
 
-• **INVALID\_JUMP** = "invalid JUMP"
+• **INVALID\_JUMP** = `"invalid JUMP"`
 
 #### Defined in
 
@@ -135,7 +135,7 @@ ___
 
 ### INVALID\_JUMPSUB
 
-• **INVALID\_JUMPSUB** = "invalid JUMPSUB"
+• **INVALID\_JUMPSUB** = `"invalid JUMPSUB"`
 
 #### Defined in
 
@@ -145,7 +145,7 @@ ___
 
 ### INVALID\_OPCODE
 
-• **INVALID\_OPCODE** = "invalid opcode"
+• **INVALID\_OPCODE** = `"invalid opcode"`
 
 #### Defined in
 
@@ -155,7 +155,7 @@ ___
 
 ### INVALID\_RETURNSUB
 
-• **INVALID\_RETURNSUB** = "invalid RETURNSUB"
+• **INVALID\_RETURNSUB** = `"invalid RETURNSUB"`
 
 #### Defined in
 
@@ -165,7 +165,7 @@ ___
 
 ### OUT\_OF\_GAS
 
-• **OUT\_OF\_GAS** = "out of gas"
+• **OUT\_OF\_GAS** = `"out of gas"`
 
 #### Defined in
 
@@ -175,7 +175,7 @@ ___
 
 ### OUT\_OF\_RANGE
 
-• **OUT\_OF\_RANGE** = "value out of range"
+• **OUT\_OF\_RANGE** = `"value out of range"`
 
 #### Defined in
 
@@ -185,7 +185,7 @@ ___
 
 ### REFUND\_EXHAUSTED
 
-• **REFUND\_EXHAUSTED** = "refund exhausted"
+• **REFUND\_EXHAUSTED** = `"refund exhausted"`
 
 #### Defined in
 
@@ -195,7 +195,7 @@ ___
 
 ### REVERT
 
-• **REVERT** = "revert"
+• **REVERT** = `"revert"`
 
 #### Defined in
 
@@ -205,7 +205,7 @@ ___
 
 ### STACK\_OVERFLOW
 
-• **STACK\_OVERFLOW** = "stack overflow"
+• **STACK\_OVERFLOW** = `"stack overflow"`
 
 #### Defined in
 
@@ -215,7 +215,7 @@ ___
 
 ### STACK\_UNDERFLOW
 
-• **STACK\_UNDERFLOW** = "stack underflow"
+• **STACK\_UNDERFLOW** = `"stack underflow"`
 
 #### Defined in
 
@@ -225,7 +225,7 @@ ___
 
 ### STATIC\_STATE\_CHANGE
 
-• **STATIC\_STATE\_CHANGE** = "static state change"
+• **STATIC\_STATE\_CHANGE** = `"static state change"`
 
 #### Defined in
 
@@ -235,7 +235,7 @@ ___
 
 ### STOP
 
-• **STOP** = "stop"
+• **STOP** = `"stop"`
 
 #### Defined in
 
@@ -245,7 +245,7 @@ ___
 
 ### VALUE\_OVERFLOW
 
-• **VALUE\_OVERFLOW** = "value overflow"
+• **VALUE\_OVERFLOW** = `"value overflow"`
 
 #### Defined in
 

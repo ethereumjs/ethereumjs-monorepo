@@ -1,28 +1,25 @@
-[@ethereumjs/vm](../README.md) / [runTx](../modules/runtx.md) / AfterTxEvent
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / [runTx](../modules/runTx.md) / AfterTxEvent
 
 # Interface: AfterTxEvent
 
-[runTx](../modules/runtx.md).AfterTxEvent
+[runTx](../modules/runTx.md).AfterTxEvent
 
 ## Hierarchy
 
-- [RunTxResult](runtx.runtxresult.md)
+- [`RunTxResult`](runTx.RunTxResult.md)
 
-  ↳ **AfterTxEvent**
+  ↳ **`AfterTxEvent`**
 
 ## Table of contents
 
 ### Properties
 
-- [accessList](runtx.aftertxevent.md#accesslist)
-- [amountSpent](runtx.aftertxevent.md#amountspent)
-- [bloom](runtx.aftertxevent.md#bloom)
-- [createdAddress](runtx.aftertxevent.md#createdaddress)
-- [execResult](runtx.aftertxevent.md#execresult)
-- [gasRefund](runtx.aftertxevent.md#gasrefund)
-- [gasUsed](runtx.aftertxevent.md#gasused)
-- [receipt](runtx.aftertxevent.md#receipt)
-- [transaction](runtx.aftertxevent.md#transaction)
+- [accessList](runTx.AfterTxEvent.md#accesslist)
+- [amountSpent](runTx.AfterTxEvent.md#amountspent)
+- [bloom](runTx.AfterTxEvent.md#bloom)
+- [gasRefund](runTx.AfterTxEvent.md#gasrefund)
+- [receipt](runTx.AfterTxEvent.md#receipt)
+- [transaction](runTx.AfterTxEvent.md#transaction)
 
 ## Properties
 
@@ -34,7 +31,7 @@ EIP-2930 access list generated for the tx (see `reportAccessList` option)
 
 #### Inherited from
 
-[RunTxResult](runtx.runtxresult.md).[accessList](runtx.runtxresult.md#accesslist)
+[RunTxResult](runTx.RunTxResult.md).[accessList](runTx.RunTxResult.md#accesslist)
 
 #### Defined in
 
@@ -50,7 +47,7 @@ The amount of ether used by this transaction
 
 #### Inherited from
 
-[RunTxResult](runtx.runtxresult.md).[amountSpent](runtx.runtxresult.md#amountspent)
+[RunTxResult](runTx.RunTxResult.md).[amountSpent](runTx.RunTxResult.md#amountspent)
 
 #### Defined in
 
@@ -66,43 +63,11 @@ Bloom filter resulted from transaction
 
 #### Inherited from
 
-[RunTxResult](runtx.runtxresult.md).[bloom](runtx.runtxresult.md#bloom)
+[RunTxResult](runTx.RunTxResult.md).[bloom](runTx.RunTxResult.md#bloom)
 
 #### Defined in
 
 [runTx.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runTx.ts#L84)
-
-___
-
-### createdAddress
-
-• `Optional` **createdAddress**: `Address`
-
-Address of created account durint transaction, if any
-
-#### Inherited from
-
-[RunTxResult](runtx.runtxresult.md).[createdAddress](runtx.runtxresult.md#createdaddress)
-
-#### Defined in
-
-[evm/evm.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/evm/evm.ts#L37)
-
-___
-
-### execResult
-
-• **execResult**: `ExecResult`
-
-Contains the results from running the code, if any, as described in [runCode](../classes/index.default.md#runcode)
-
-#### Inherited from
-
-[RunTxResult](runtx.runtxresult.md).[execResult](runtx.runtxresult.md#execresult)
-
-#### Defined in
-
-[evm/evm.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/evm/evm.ts#L41)
 
 ___
 
@@ -114,7 +79,7 @@ The amount of gas as that was refunded during the transaction (i.e. `gasUsed = t
 
 #### Inherited from
 
-[RunTxResult](runtx.runtxresult.md).[gasRefund](runtx.runtxresult.md#gasrefund)
+[RunTxResult](runTx.RunTxResult.md).[gasRefund](runTx.RunTxResult.md#gasrefund)
 
 #### Defined in
 
@@ -122,31 +87,15 @@ The amount of gas as that was refunded during the transaction (i.e. `gasUsed = t
 
 ___
 
-### gasUsed
-
-• **gasUsed**: `BN`
-
-Amount of gas used by the transaction
-
-#### Inherited from
-
-[RunTxResult](runtx.runtxresult.md).[gasUsed](runtx.runtxresult.md#gasused)
-
-#### Defined in
-
-[evm/evm.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/evm/evm.ts#L33)
-
-___
-
 ### receipt
 
-• **receipt**: [TxReceipt](../modules/types.md#txreceipt)
+• **receipt**: [`TxReceipt`](../modules/types.md#txreceipt)
 
 The tx receipt
 
 #### Inherited from
 
-[RunTxResult](runtx.runtxresult.md).[receipt](runtx.runtxresult.md#receipt)
+[RunTxResult](runTx.RunTxResult.md).[receipt](runTx.RunTxResult.md#receipt)
 
 #### Defined in
 

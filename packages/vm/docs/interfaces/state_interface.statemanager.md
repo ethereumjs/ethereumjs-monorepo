@@ -1,4 +1,4 @@
-[@ethereumjs/vm](../README.md) / [state/interface](../modules/state_interface.md) / StateManager
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / [state/interface](../modules/state_interface.md) / StateManager
 
 # Interface: StateManager
 
@@ -6,48 +6,48 @@
 
 ## Hierarchy
 
-- **StateManager**
+- **`StateManager`**
 
-  ↳ [EIP2929StateManager](state_interface.eip2929statemanager.md)
+  ↳ [`EIP2929StateManager`](state_interface.EIP2929StateManager.md)
 
 ## Implemented by
 
-- [default](../classes/state_statemanager.default.md)
+- [`default`](../classes/state_stateManager.default.md)
 
 ## Table of contents
 
 ### Methods
 
-- [accountExists](state_interface.statemanager.md#accountexists)
-- [accountIsEmpty](state_interface.statemanager.md#accountisempty)
-- [checkpoint](state_interface.statemanager.md#checkpoint)
-- [cleanupTouchedAccounts](state_interface.statemanager.md#cleanuptouchedaccounts)
-- [clearContractStorage](state_interface.statemanager.md#clearcontractstorage)
-- [clearOriginalStorageCache](state_interface.statemanager.md#clearoriginalstoragecache)
-- [commit](state_interface.statemanager.md#commit)
-- [copy](state_interface.statemanager.md#copy)
-- [deleteAccount](state_interface.statemanager.md#deleteaccount)
-- [dumpStorage](state_interface.statemanager.md#dumpstorage)
-- [generateCanonicalGenesis](state_interface.statemanager.md#generatecanonicalgenesis)
-- [generateGenesis](state_interface.statemanager.md#generategenesis)
-- [getAccount](state_interface.statemanager.md#getaccount)
-- [getContractCode](state_interface.statemanager.md#getcontractcode)
-- [getContractStorage](state_interface.statemanager.md#getcontractstorage)
-- [getOriginalContractStorage](state_interface.statemanager.md#getoriginalcontractstorage)
-- [getStateRoot](state_interface.statemanager.md#getstateroot)
-- [hasGenesisState](state_interface.statemanager.md#hasgenesisstate)
-- [putAccount](state_interface.statemanager.md#putaccount)
-- [putContractCode](state_interface.statemanager.md#putcontractcode)
-- [putContractStorage](state_interface.statemanager.md#putcontractstorage)
-- [revert](state_interface.statemanager.md#revert)
-- [setStateRoot](state_interface.statemanager.md#setstateroot)
-- [touchAccount](state_interface.statemanager.md#touchaccount)
+- [accountExists](state_interface.StateManager.md#accountexists)
+- [accountIsEmpty](state_interface.StateManager.md#accountisempty)
+- [checkpoint](state_interface.StateManager.md#checkpoint)
+- [cleanupTouchedAccounts](state_interface.StateManager.md#cleanuptouchedaccounts)
+- [clearContractStorage](state_interface.StateManager.md#clearcontractstorage)
+- [clearOriginalStorageCache](state_interface.StateManager.md#clearoriginalstoragecache)
+- [commit](state_interface.StateManager.md#commit)
+- [copy](state_interface.StateManager.md#copy)
+- [deleteAccount](state_interface.StateManager.md#deleteaccount)
+- [dumpStorage](state_interface.StateManager.md#dumpstorage)
+- [generateCanonicalGenesis](state_interface.StateManager.md#generatecanonicalgenesis)
+- [generateGenesis](state_interface.StateManager.md#generategenesis)
+- [getAccount](state_interface.StateManager.md#getaccount)
+- [getContractCode](state_interface.StateManager.md#getcontractcode)
+- [getContractStorage](state_interface.StateManager.md#getcontractstorage)
+- [getOriginalContractStorage](state_interface.StateManager.md#getoriginalcontractstorage)
+- [getStateRoot](state_interface.StateManager.md#getstateroot)
+- [hasGenesisState](state_interface.StateManager.md#hasgenesisstate)
+- [putAccount](state_interface.StateManager.md#putaccount)
+- [putContractCode](state_interface.StateManager.md#putcontractcode)
+- [putContractStorage](state_interface.StateManager.md#putcontractstorage)
+- [revert](state_interface.StateManager.md#revert)
+- [setStateRoot](state_interface.StateManager.md#setstateroot)
+- [touchAccount](state_interface.StateManager.md#touchaccount)
 
 ## Methods
 
 ### accountExists
 
-▸ **accountExists**(`address`): `Promise`<boolean\>
+▸ **accountExists**(`address`): `Promise`<`boolean`\>
 
 #### Parameters
 
@@ -57,7 +57,7 @@
 
 #### Returns
 
-`Promise`<boolean\>
+`Promise`<`boolean`\>
 
 #### Defined in
 
@@ -67,7 +67,7 @@ ___
 
 ### accountIsEmpty
 
-▸ **accountIsEmpty**(`address`): `Promise`<boolean\>
+▸ **accountIsEmpty**(`address`): `Promise`<`boolean`\>
 
 #### Parameters
 
@@ -77,7 +77,7 @@ ___
 
 #### Returns
 
-`Promise`<boolean\>
+`Promise`<`boolean`\>
 
 #### Defined in
 
@@ -87,11 +87,11 @@ ___
 
 ### checkpoint
 
-▸ **checkpoint**(): `Promise`<void\>
+▸ **checkpoint**(): `Promise`<`void`\>
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
@@ -101,11 +101,11 @@ ___
 
 ### cleanupTouchedAccounts
 
-▸ **cleanupTouchedAccounts**(): `Promise`<void\>
+▸ **cleanupTouchedAccounts**(): `Promise`<`void`\>
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
@@ -115,7 +115,7 @@ ___
 
 ### clearContractStorage
 
-▸ **clearContractStorage**(`address`): `Promise`<void\>
+▸ **clearContractStorage**(`address`): `Promise`<`void`\>
 
 #### Parameters
 
@@ -125,7 +125,7 @@ ___
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
@@ -149,11 +149,11 @@ ___
 
 ### commit
 
-▸ **commit**(): `Promise`<void\>
+▸ **commit**(): `Promise`<`void`\>
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
@@ -163,11 +163,11 @@ ___
 
 ### copy
 
-▸ **copy**(): [StateManager](state_interface.statemanager.md)
+▸ **copy**(): [`StateManager`](state_interface.StateManager.md)
 
 #### Returns
 
-[StateManager](state_interface.statemanager.md)
+[`StateManager`](state_interface.StateManager.md)
 
 #### Defined in
 
@@ -177,7 +177,7 @@ ___
 
 ### deleteAccount
 
-▸ **deleteAccount**(`address`): `Promise`<void\>
+▸ **deleteAccount**(`address`): `Promise`<`void`\>
 
 #### Parameters
 
@@ -187,7 +187,7 @@ ___
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
@@ -197,7 +197,7 @@ ___
 
 ### dumpStorage
 
-▸ **dumpStorage**(`address`): `Promise`<[StorageDump](state_interface.storagedump.md)\>
+▸ **dumpStorage**(`address`): `Promise`<[`StorageDump`](state_interface.StorageDump.md)\>
 
 #### Parameters
 
@@ -207,7 +207,7 @@ ___
 
 #### Returns
 
-`Promise`<[StorageDump](state_interface.storagedump.md)\>
+`Promise`<[`StorageDump`](state_interface.StorageDump.md)\>
 
 #### Defined in
 
@@ -217,11 +217,11 @@ ___
 
 ### generateCanonicalGenesis
 
-▸ **generateCanonicalGenesis**(): `Promise`<void\>
+▸ **generateCanonicalGenesis**(): `Promise`<`void`\>
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
@@ -231,7 +231,7 @@ ___
 
 ### generateGenesis
 
-▸ **generateGenesis**(`initState`): `Promise`<void\>
+▸ **generateGenesis**(`initState`): `Promise`<`void`\>
 
 #### Parameters
 
@@ -241,7 +241,7 @@ ___
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
@@ -251,7 +251,7 @@ ___
 
 ### getAccount
 
-▸ **getAccount**(`address`): `Promise`<Account\>
+▸ **getAccount**(`address`): `Promise`<`Account`\>
 
 #### Parameters
 
@@ -261,7 +261,7 @@ ___
 
 #### Returns
 
-`Promise`<Account\>
+`Promise`<`Account`\>
 
 #### Defined in
 
@@ -271,7 +271,7 @@ ___
 
 ### getContractCode
 
-▸ **getContractCode**(`address`): `Promise`<Buffer\>
+▸ **getContractCode**(`address`): `Promise`<`Buffer`\>
 
 #### Parameters
 
@@ -281,7 +281,7 @@ ___
 
 #### Returns
 
-`Promise`<Buffer\>
+`Promise`<`Buffer`\>
 
 #### Defined in
 
@@ -291,7 +291,7 @@ ___
 
 ### getContractStorage
 
-▸ **getContractStorage**(`address`, `key`): `Promise`<Buffer\>
+▸ **getContractStorage**(`address`, `key`): `Promise`<`Buffer`\>
 
 #### Parameters
 
@@ -302,7 +302,7 @@ ___
 
 #### Returns
 
-`Promise`<Buffer\>
+`Promise`<`Buffer`\>
 
 #### Defined in
 
@@ -312,7 +312,7 @@ ___
 
 ### getOriginalContractStorage
 
-▸ **getOriginalContractStorage**(`address`, `key`): `Promise`<Buffer\>
+▸ **getOriginalContractStorage**(`address`, `key`): `Promise`<`Buffer`\>
 
 #### Parameters
 
@@ -323,7 +323,7 @@ ___
 
 #### Returns
 
-`Promise`<Buffer\>
+`Promise`<`Buffer`\>
 
 #### Defined in
 
@@ -333,7 +333,7 @@ ___
 
 ### getStateRoot
 
-▸ **getStateRoot**(`force?`): `Promise`<Buffer\>
+▸ **getStateRoot**(`force?`): `Promise`<`Buffer`\>
 
 #### Parameters
 
@@ -343,7 +343,7 @@ ___
 
 #### Returns
 
-`Promise`<Buffer\>
+`Promise`<`Buffer`\>
 
 #### Defined in
 
@@ -353,11 +353,11 @@ ___
 
 ### hasGenesisState
 
-▸ **hasGenesisState**(): `Promise`<boolean\>
+▸ **hasGenesisState**(): `Promise`<`boolean`\>
 
 #### Returns
 
-`Promise`<boolean\>
+`Promise`<`boolean`\>
 
 #### Defined in
 
@@ -367,7 +367,7 @@ ___
 
 ### putAccount
 
-▸ **putAccount**(`address`, `account`): `Promise`<void\>
+▸ **putAccount**(`address`, `account`): `Promise`<`void`\>
 
 #### Parameters
 
@@ -378,7 +378,7 @@ ___
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
@@ -388,7 +388,7 @@ ___
 
 ### putContractCode
 
-▸ **putContractCode**(`address`, `value`): `Promise`<void\>
+▸ **putContractCode**(`address`, `value`): `Promise`<`void`\>
 
 #### Parameters
 
@@ -399,7 +399,7 @@ ___
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
@@ -409,7 +409,7 @@ ___
 
 ### putContractStorage
 
-▸ **putContractStorage**(`address`, `key`, `value`): `Promise`<void\>
+▸ **putContractStorage**(`address`, `key`, `value`): `Promise`<`void`\>
 
 #### Parameters
 
@@ -421,7 +421,7 @@ ___
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
@@ -431,11 +431,11 @@ ___
 
 ### revert
 
-▸ **revert**(): `Promise`<void\>
+▸ **revert**(): `Promise`<`void`\>
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
@@ -445,7 +445,7 @@ ___
 
 ### setStateRoot
 
-▸ **setStateRoot**(`stateRoot`): `Promise`<void\>
+▸ **setStateRoot**(`stateRoot`): `Promise`<`void`\>
 
 #### Parameters
 
@@ -455,7 +455,7 @@ ___
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 

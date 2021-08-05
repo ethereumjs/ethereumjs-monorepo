@@ -1,4 +1,4 @@
-[@ethereumjs/vm](../README.md) / [types](../modules/types.md) / BaseTxReceipt
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / [types](../modules/types.md) / BaseTxReceipt
 
 # Interface: BaseTxReceipt
 
@@ -8,19 +8,19 @@ Abstract interface with common transaction receipt fields
 
 ## Hierarchy
 
-- **BaseTxReceipt**
+- **`BaseTxReceipt`**
 
-  ↳ [PreByzantiumTxReceipt](types.prebyzantiumtxreceipt.md)
+  ↳ [`PreByzantiumTxReceipt`](types.PreByzantiumTxReceipt.md)
 
-  ↳ [PostByzantiumTxReceipt](types.postbyzantiumtxreceipt.md)
+  ↳ [`PostByzantiumTxReceipt`](types.PostByzantiumTxReceipt.md)
 
 ## Table of contents
 
 ### Properties
 
-- [bitvector](types.basetxreceipt.md#bitvector)
-- [gasUsed](types.basetxreceipt.md#gasused)
-- [logs](types.basetxreceipt.md#logs)
+- [bitvector](types.BaseTxReceipt.md#bitvector)
+- [gasUsed](types.BaseTxReceipt.md#gasused)
+- [logs](types.BaseTxReceipt.md#logs)
 
 ## Properties
 

@@ -1,4 +1,4 @@
-[@ethereumjs/vm](../README.md) / state/stateManager
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / state/stateManager
 
 # Module: state/stateManager
 
@@ -6,8 +6,8 @@
 
 ### Classes
 
-- [default](../classes/state_statemanager.default.md)
+- [default](../classes/state_stateManager.default.md)
 
 ### Interfaces
 
-- [DefaultStateManagerOpts](../interfaces/state_statemanager.defaultstatemanageropts.md)
+- [DefaultStateManagerOpts](../interfaces/state_stateManager.DefaultStateManagerOpts.md)

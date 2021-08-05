@@ -1,4 +1,4 @@
-[@ethereumjs/vm](../README.md) / [index](../modules/index.md) / default
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / [index](../modules/index.md) / default
 
 # Class: default
 
@@ -13,7 +13,7 @@ This class is an AsyncEventEmitter, please consult the README to learn how to us
 
 - `AsyncEventEmitter`
 
-  ↳ **default**
+  ↳ **`default`**
 
 ## Table of contents
 
@@ -52,7 +52,7 @@ Instantiates a new {@link VM} Object.
 
 | Name | Type |
 | :------ | :------ |
-| `opts` | [VMOpts](../interfaces/index.vmopts.md) |
+| `opts` | [`VMOpts`](../interfaces/index.VMOpts.md) |
 
 #### Overrides
 
@@ -60,7 +60,7 @@ AsyncEventEmitter.constructor
 
 #### Defined in
 
-[index.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L166)
+[index.ts:172](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/index.ts#L172)
 
 ## Properties
 
@@ -88,7 +88,7 @@ ___
 
 ### stateManager
 
-• `Readonly` **stateManager**: [StateManager](../interfaces/state_interface.statemanager.md)
+• `Readonly` **stateManager**: [`StateManager`](../interfaces/state_interface.StateManager.md)
 
 The StateManager used by the VM
 
@@ -100,29 +100,29 @@ The StateManager used by the VM
 
 ### buildBlock
 
-▸ **buildBlock**(`opts`): `Promise`<[BlockBuilder](buildblock.blockbuilder.md)\>
+▸ **buildBlock**(`opts`): `Promise`<[`BlockBuilder`](buildBlock.BlockBuilder.md)\>
 
 Build a block on top of the current state
 by adding one transaction at a time.
 
 Creates a checkpoint on the StateManager and modifies the state
-as transactions are run. The checkpoint is committed on [BlockBuilder.build](buildblock.blockbuilder.md#build)
-or discarded with [BlockBuilder.revert](buildblock.blockbuilder.md#revert).
+as transactions are run. The checkpoint is committed on [BlockBuilder.build](buildBlock.BlockBuilder.md#build)
+or discarded with [BlockBuilder.revert](buildBlock.BlockBuilder.md#revert).
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `opts` | [BuildBlockOpts](../interfaces/buildblock.buildblockopts.md) |
+| `opts` | [`BuildBlockOpts`](../interfaces/buildBlock.BuildBlockOpts.md) |
 
 #### Returns
 
-`Promise`<[BlockBuilder](buildblock.blockbuilder.md)\>
+`Promise`<[`BlockBuilder`](buildBlock.BlockBuilder.md)\>
 
-An instance of [BlockBuilder](buildblock.blockbuilder.md) with methods:
-- [BlockBuilder.addTransaction](buildblock.blockbuilder.md#addtransaction)
-- [BlockBuilder.build](buildblock.blockbuilder.md#build)
-- [BlockBuilder.revert](buildblock.blockbuilder.md#revert)
+An instance of [BlockBuilder](buildBlock.BlockBuilder.md) with methods:
+- [BlockBuilder.addTransaction](buildBlock.BlockBuilder.md#addtransaction)
+- [BlockBuilder.build](buildBlock.BlockBuilder.md#build)
+- [BlockBuilder.revert](buildBlock.BlockBuilder.md#revert)
 
 #### Defined in
 
@@ -132,13 +132,13 @@ ___
 
 ### copy
 
-▸ **copy**(): [default](index.default.md)
+▸ **copy**(): [`default`](index.default.md)
 
 Returns a copy of the {@link VM} instance.
 
 #### Returns
 
-[default](index.default.md)
+[`default`](index.default.md)
 
 #### Defined in
 
@@ -165,11 +165,11 @@ ___
 
 ### init
 
-▸ **init**(): `Promise`<void\>
+▸ **init**(): `Promise`<`void`\>
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Defined in
 
@@ -179,7 +179,7 @@ ___
 
 ### runBlock
 
-▸ **runBlock**(`opts`): `Promise`<[RunBlockResult](../interfaces/runblock.runblockresult.md)\>
+▸ **runBlock**(`opts`): `Promise`<[`RunBlockResult`](../interfaces/runBlock.RunBlockResult.md)\>
 
 Processes the `block` running all of the transactions it contains and updating the miner's account
 
@@ -191,11 +191,11 @@ invalid. If an error is thrown from an event handler, the state may or may not b
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `opts` | [RunBlockOpts](../interfaces/runblock.runblockopts.md) | Default values for options:  - `generate`: false |
+| `opts` | [`RunBlockOpts`](../interfaces/runBlock.RunBlockOpts.md) | Default values for options:  - `generate`: false |
 
 #### Returns
 
-`Promise`<[RunBlockResult](../interfaces/runblock.runblockresult.md)\>
+`Promise`<[`RunBlockResult`](../interfaces/runBlock.RunBlockResult.md)\>
 
 #### Defined in
 
@@ -205,7 +205,7 @@ ___
 
 ### runBlockchain
 
-▸ **runBlockchain**(`blockchain?`, `maxBlocks?`): `Promise`<number \| void\>
+▸ **runBlockchain**(`blockchain?`, `maxBlocks?`): `Promise`<`number` \| `void`\>
 
 Processes blocks and adds them to the blockchain.
 
@@ -220,7 +220,7 @@ This method modifies the state.
 
 #### Returns
 
-`Promise`<number \| void\>
+`Promise`<`number` \| `void`\>
 
 #### Defined in
 
@@ -230,7 +230,7 @@ ___
 
 ### runCall
 
-▸ **runCall**(`opts`): `Promise`<EVMResult\>
+▸ **runCall**(`opts`): `Promise`<`EVMResult`\>
 
 runs a call (or create) operation.
 
@@ -240,11 +240,11 @@ This method modifies the state.
 
 | Name | Type |
 | :------ | :------ |
-| `opts` | [RunCallOpts](../interfaces/runcall.runcallopts.md) |
+| `opts` | [`RunCallOpts`](../interfaces/runCall.RunCallOpts.md) |
 
 #### Returns
 
-`Promise`<EVMResult\>
+`Promise`<`EVMResult`\>
 
 #### Defined in
 
@@ -254,7 +254,7 @@ ___
 
 ### runCode
 
-▸ **runCode**(`opts`): `Promise`<ExecResult\>
+▸ **runCode**(`opts`): `Promise`<`ExecResult`\>
 
 Runs EVM code.
 
@@ -264,11 +264,11 @@ This method modifies the state.
 
 | Name | Type |
 | :------ | :------ |
-| `opts` | [RunCodeOpts](../interfaces/runcode.runcodeopts.md) |
+| `opts` | [`RunCodeOpts`](../interfaces/runCode.RunCodeOpts.md) |
 
 #### Returns
 
-`Promise`<ExecResult\>
+`Promise`<`ExecResult`\>
 
 #### Defined in
 
@@ -278,7 +278,7 @@ ___
 
 ### runTx
 
-▸ **runTx**(`opts`): `Promise`<[RunTxResult](../interfaces/runtx.runtxresult.md)\>
+▸ **runTx**(`opts`): `Promise`<[`RunTxResult`](../interfaces/runTx.RunTxResult.md)\>
 
 Process a transaction. Run the vm. Transfers eth. Checks balances.
 
@@ -290,11 +290,11 @@ reverted.
 
 | Name | Type |
 | :------ | :------ |
-| `opts` | [RunTxOpts](../interfaces/runtx.runtxopts.md) |
+| `opts` | [`RunTxOpts`](../interfaces/runTx.RunTxOpts.md) |
 
 #### Returns
 
-`Promise`<[RunTxResult](../interfaces/runtx.runtxresult.md)\>
+`Promise`<[`RunTxResult`](../interfaces/runTx.RunTxResult.md)\>
 
 #### Defined in
 
@@ -304,7 +304,7 @@ ___
 
 ### create
 
-▸ `Static` **create**(`opts?`): `Promise`<[default](index.default.md)\>
+▸ `Static` **create**(`opts?`): `Promise`<[`default`](index.default.md)\>
 
 VM async constructor. Creates engine instance and initializes it.
 
@@ -312,11 +312,11 @@ VM async constructor. Creates engine instance and initializes it.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `opts` | [VMOpts](../interfaces/index.vmopts.md) | VM engine constructor options |
+| `opts` | [`VMOpts`](../interfaces/index.VMOpts.md) | VM engine constructor options |
 
 #### Returns
 
-`Promise`<[default](index.default.md)\>
+`Promise`<[`default`](index.default.md)\>
 
 #### Defined in
 

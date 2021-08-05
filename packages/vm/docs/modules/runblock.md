@@ -1,4 +1,4 @@
-[@ethereumjs/vm](../README.md) / runBlock
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / runBlock
 
 # Module: runBlock
 
@@ -6,40 +6,40 @@
 
 ### References
 
-- [EIP2930Receipt](runblock.md#eip2930receipt)
-- [PostByzantiumTxReceipt](runblock.md#postbyzantiumtxreceipt)
-- [PreByzantiumTxReceipt](runblock.md#prebyzantiumtxreceipt)
+- [EIP2930Receipt](runBlock.md#eip2930receipt)
+- [PostByzantiumTxReceipt](runBlock.md#postbyzantiumtxreceipt)
+- [PreByzantiumTxReceipt](runBlock.md#prebyzantiumtxreceipt)
 
 ### Interfaces
 
-- [AfterBlockEvent](../interfaces/runblock.afterblockevent.md)
-- [RunBlockOpts](../interfaces/runblock.runblockopts.md)
-- [RunBlockResult](../interfaces/runblock.runblockresult.md)
+- [AfterBlockEvent](../interfaces/runBlock.AfterBlockEvent.md)
+- [RunBlockOpts](../interfaces/runBlock.RunBlockOpts.md)
+- [RunBlockResult](../interfaces/runBlock.RunBlockResult.md)
 
 ### Functions
 
-- [calculateMinerReward](runblock.md#calculateminerreward)
-- [encodeReceipt](runblock.md#encodereceipt)
-- [generateTxReceipt](runblock.md#generatetxreceipt)
-- [rewardAccount](runblock.md#rewardaccount)
+- [calculateMinerReward](runBlock.md#calculateminerreward)
+- [encodeReceipt](runBlock.md#encodereceipt)
+- [generateTxReceipt](runBlock.md#generatetxreceipt)
+- [rewardAccount](runBlock.md#rewardaccount)
 
 ## References
 
 ### EIP2930Receipt
 
-Re-exports: [EIP2930Receipt](../interfaces/types.eip2930receipt.md)
+Re-exports: [EIP2930Receipt](../interfaces/types.EIP2930Receipt.md)
 
 ___
 
 ### PostByzantiumTxReceipt
 
-Re-exports: [PostByzantiumTxReceipt](../interfaces/types.postbyzantiumtxreceipt.md)
+Re-exports: [PostByzantiumTxReceipt](../interfaces/types.PostByzantiumTxReceipt.md)
 
 ___
 
 ### PreByzantiumTxReceipt
 
-Re-exports: [PreByzantiumTxReceipt](../interfaces/types.prebyzantiumtxreceipt.md)
+Re-exports: [PreByzantiumTxReceipt](../interfaces/types.PreByzantiumTxReceipt.md)
 
 ## Functions
 
@@ -75,7 +75,7 @@ Returns the encoded tx receipt.
 | Name | Type |
 | :------ | :------ |
 | `tx` | `TypedTransaction` |
-| `receipt` | [TxReceipt](types.md#txreceipt) |
+| `receipt` | [`TxReceipt`](types.md#txreceipt) |
 
 #### Returns
 
@@ -100,7 +100,7 @@ Generates the tx receipt and returns { txReceipt, encodedReceipt, receiptLog }
 | Name | Type |
 | :------ | :------ |
 | `tx` | `TypedTransaction` |
-| `txRes` | [RunTxResult](../interfaces/runtx.runtxresult.md) |
+| `txRes` | [`RunTxResult`](../interfaces/runTx.RunTxResult.md) |
 | `blockGasUsed` | `BN` |
 
 #### Returns
@@ -115,19 +115,19 @@ ___
 
 ### rewardAccount
 
-▸ **rewardAccount**(`state`, `address`, `reward`): `Promise`<Account\>
+▸ **rewardAccount**(`state`, `address`, `reward`): `Promise`<`Account`\>
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `state` | [StateManager](../interfaces/state_interface.statemanager.md) |
+| `state` | [`StateManager`](../interfaces/state_interface.StateManager.md) |
 | `address` | `Address` |
 | `reward` | `BN` |
 
 #### Returns
 
-`Promise`<Account\>
+`Promise`<`Account`\>
 
 #### Defined in
 

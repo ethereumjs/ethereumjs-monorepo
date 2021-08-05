@@ -1,27 +1,27 @@
-[@ethereumjs/vm](../README.md) / [runBlock](../modules/runblock.md) / RunBlockResult
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / [runBlock](../modules/runBlock.md) / RunBlockResult
 
 # Interface: RunBlockResult
 
-[runBlock](../modules/runblock.md).RunBlockResult
+[runBlock](../modules/runBlock.md).RunBlockResult
 
 Result of [runBlock](../classes/index.default.md#runblock)
 
 ## Hierarchy
 
-- **RunBlockResult**
+- **`RunBlockResult`**
 
-  ↳ [AfterBlockEvent](runblock.afterblockevent.md)
+  ↳ [`AfterBlockEvent`](runBlock.AfterBlockEvent.md)
 
 ## Table of contents
 
 ### Properties
 
-- [gasUsed](runblock.runblockresult.md#gasused)
-- [logsBloom](runblock.runblockresult.md#logsbloom)
-- [receiptRoot](runblock.runblockresult.md#receiptroot)
-- [receipts](runblock.runblockresult.md#receipts)
-- [results](runblock.runblockresult.md#results)
-- [stateRoot](runblock.runblockresult.md#stateroot)
+- [gasUsed](runBlock.RunBlockResult.md#gasused)
+- [logsBloom](runBlock.RunBlockResult.md#logsbloom)
+- [receiptRoot](runBlock.RunBlockResult.md#receiptroot)
+- [receipts](runBlock.RunBlockResult.md#receipts)
+- [results](runBlock.RunBlockResult.md#results)
+- [stateRoot](runBlock.RunBlockResult.md#stateroot)
 
 ## Properties
 
@@ -63,7 +63,7 @@ ___
 
 ### receipts
 
-• **receipts**: [TxReceipt](../modules/types.md#txreceipt)[]
+• **receipts**: [`TxReceipt`](../modules/types.md#txreceipt)[]
 
 Receipts generated for transactions in the block
 
@@ -75,7 +75,7 @@ ___
 
 ### results
 
-• **results**: [RunTxResult](runtx.runtxresult.md)[]
+• **results**: [`RunTxResult`](runTx.RunTxResult.md)[]
 
 Results of executing the transactions in the block
 

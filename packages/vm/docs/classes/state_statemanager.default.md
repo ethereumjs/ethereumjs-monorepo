@@ -1,68 +1,68 @@
-[@ethereumjs/vm](../README.md) / [state/stateManager](../modules/state_statemanager.md) / default
+[@ethereumjs/vm](../README.md) / [Exports](../modules.md) / [state/stateManager](../modules/state_stateManager.md) / default
 
 # Class: default
 
-[state/stateManager](../modules/state_statemanager.md).default
+[state/stateManager](../modules/state_stateManager.md).default
 
 Interface for getting and setting data from an underlying
 state trie.
 
 ## Implements
 
-- [StateManager](../interfaces/state_interface.statemanager.md)
+- [`StateManager`](../interfaces/state_interface.StateManager.md)
 
 ## Table of contents
 
 ### Constructors
 
-- [constructor](state_statemanager.default.md#constructor)
+- [constructor](state_stateManager.default.md#constructor)
 
 ### Properties
 
-- [\_accessedStorage](state_statemanager.default.md#_accessedstorage)
-- [\_accessedStorageReverted](state_statemanager.default.md#_accessedstoragereverted)
-- [\_cache](state_statemanager.default.md#_cache)
-- [\_checkpointCount](state_statemanager.default.md#_checkpointcount)
-- [\_common](state_statemanager.default.md#_common)
-- [\_originalStorageCache](state_statemanager.default.md#_originalstoragecache)
-- [\_storageTries](state_statemanager.default.md#_storagetries)
-- [\_touched](state_statemanager.default.md#_touched)
-- [\_touchedStack](state_statemanager.default.md#_touchedstack)
-- [\_trie](state_statemanager.default.md#_trie)
+- [\_accessedStorage](state_stateManager.default.md#_accessedstorage)
+- [\_accessedStorageReverted](state_stateManager.default.md#_accessedstoragereverted)
+- [\_cache](state_stateManager.default.md#_cache)
+- [\_checkpointCount](state_stateManager.default.md#_checkpointcount)
+- [\_common](state_stateManager.default.md#_common)
+- [\_originalStorageCache](state_stateManager.default.md#_originalstoragecache)
+- [\_storageTries](state_stateManager.default.md#_storagetries)
+- [\_touched](state_stateManager.default.md#_touched)
+- [\_touchedStack](state_stateManager.default.md#_touchedstack)
+- [\_trie](state_stateManager.default.md#_trie)
 
 ### Methods
 
-- [\_clearOriginalStorageCache](state_statemanager.default.md#_clearoriginalstoragecache)
-- [accountExists](state_statemanager.default.md#accountexists)
-- [accountIsEmpty](state_statemanager.default.md#accountisempty)
-- [addWarmedAddress](state_statemanager.default.md#addwarmedaddress)
-- [addWarmedStorage](state_statemanager.default.md#addwarmedstorage)
-- [checkpoint](state_statemanager.default.md#checkpoint)
-- [cleanupTouchedAccounts](state_statemanager.default.md#cleanuptouchedaccounts)
-- [clearContractStorage](state_statemanager.default.md#clearcontractstorage)
-- [clearOriginalStorageCache](state_statemanager.default.md#clearoriginalstoragecache)
-- [clearWarmedAccounts](state_statemanager.default.md#clearwarmedaccounts)
-- [commit](state_statemanager.default.md#commit)
-- [copy](state_statemanager.default.md#copy)
-- [deleteAccount](state_statemanager.default.md#deleteaccount)
-- [dumpStorage](state_statemanager.default.md#dumpstorage)
-- [generateAccessList](state_statemanager.default.md#generateaccesslist)
-- [generateCanonicalGenesis](state_statemanager.default.md#generatecanonicalgenesis)
-- [generateGenesis](state_statemanager.default.md#generategenesis)
-- [getAccount](state_statemanager.default.md#getaccount)
-- [getContractCode](state_statemanager.default.md#getcontractcode)
-- [getContractStorage](state_statemanager.default.md#getcontractstorage)
-- [getOriginalContractStorage](state_statemanager.default.md#getoriginalcontractstorage)
-- [getStateRoot](state_statemanager.default.md#getstateroot)
-- [hasGenesisState](state_statemanager.default.md#hasgenesisstate)
-- [isWarmedAddress](state_statemanager.default.md#iswarmedaddress)
-- [isWarmedStorage](state_statemanager.default.md#iswarmedstorage)
-- [putAccount](state_statemanager.default.md#putaccount)
-- [putContractCode](state_statemanager.default.md#putcontractcode)
-- [putContractStorage](state_statemanager.default.md#putcontractstorage)
-- [revert](state_statemanager.default.md#revert)
-- [setStateRoot](state_statemanager.default.md#setstateroot)
-- [touchAccount](state_statemanager.default.md#touchaccount)
+- [\_clearOriginalStorageCache](state_stateManager.default.md#_clearoriginalstoragecache)
+- [accountExists](state_stateManager.default.md#accountexists)
+- [accountIsEmpty](state_stateManager.default.md#accountisempty)
+- [addWarmedAddress](state_stateManager.default.md#addwarmedaddress)
+- [addWarmedStorage](state_stateManager.default.md#addwarmedstorage)
+- [checkpoint](state_stateManager.default.md#checkpoint)
+- [cleanupTouchedAccounts](state_stateManager.default.md#cleanuptouchedaccounts)
+- [clearContractStorage](state_stateManager.default.md#clearcontractstorage)
+- [clearOriginalStorageCache](state_stateManager.default.md#clearoriginalstoragecache)
+- [clearWarmedAccounts](state_stateManager.default.md#clearwarmedaccounts)
+- [commit](state_stateManager.default.md#commit)
+- [copy](state_stateManager.default.md#copy)
+- [deleteAccount](state_stateManager.default.md#deleteaccount)
+- [dumpStorage](state_stateManager.default.md#dumpstorage)
+- [generateAccessList](state_stateManager.default.md#generateaccesslist)
+- [generateCanonicalGenesis](state_stateManager.default.md#generatecanonicalgenesis)
+- [generateGenesis](state_stateManager.default.md#generategenesis)
+- [getAccount](state_stateManager.default.md#getaccount)
+- [getContractCode](state_stateManager.default.md#getcontractcode)
+- [getContractStorage](state_stateManager.default.md#getcontractstorage)
+- [getOriginalContractStorage](state_stateManager.default.md#getoriginalcontractstorage)
+- [getStateRoot](state_stateManager.default.md#getstateroot)
+- [hasGenesisState](state_stateManager.default.md#hasgenesisstate)
+- [isWarmedAddress](state_stateManager.default.md#iswarmedaddress)
+- [isWarmedStorage](state_stateManager.default.md#iswarmedstorage)
+- [putAccount](state_stateManager.default.md#putaccount)
+- [putContractCode](state_stateManager.default.md#putcontractcode)
+- [putContractStorage](state_stateManager.default.md#putcontractstorage)
+- [revert](state_stateManager.default.md#revert)
+- [setStateRoot](state_stateManager.default.md#setstateroot)
+- [touchAccount](state_stateManager.default.md#touchaccount)
 
 ## Constructors
 
@@ -76,17 +76,17 @@ Instantiate the StateManager interface.
 
 | Name | Type |
 | :------ | :------ |
-| `opts` | [DefaultStateManagerOpts](../interfaces/state_statemanager.defaultstatemanageropts.md) |
+| `opts` | [`DefaultStateManagerOpts`](../interfaces/state_stateManager.DefaultStateManagerOpts.md) |
 
 #### Defined in
 
-[state/stateManager.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L76)
+[state/stateManager.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L81)
 
 ## Properties
 
 ### \_accessedStorage
 
-• **\_accessedStorage**: `Map`<string, Set<string\>\>[]
+• **\_accessedStorage**: `Map`<`string`, `Set`<`string`\>\>[]
 
 #### Defined in
 
@@ -96,7 +96,7 @@ ___
 
 ### \_accessedStorageReverted
 
-• **\_accessedStorageReverted**: `Map`<string, Set<string\>\>[]
+• **\_accessedStorageReverted**: `Map`<`string`, `Set`<`string`\>\>[]
 
 #### Defined in
 
@@ -136,7 +136,7 @@ ___
 
 ### \_originalStorageCache
 
-• **\_originalStorageCache**: `Map`<string, Map<string, Buffer\>\>
+• **\_originalStorageCache**: `Map`<`string`, `Map`<`string`, `Buffer`\>\>
 
 #### Defined in
 
@@ -160,7 +160,7 @@ ___
 
 ### \_touched
 
-• **\_touched**: `Set`<string\>
+• **\_touched**: `Set`<`string`\>
 
 #### Defined in
 
@@ -170,7 +170,7 @@ ___
 
 ### \_touchedStack
 
-• **\_touchedStack**: `Set`<string\>[]
+• **\_touchedStack**: `Set`<`string`\>[]
 
 #### Defined in
 
@@ -192,7 +192,7 @@ ___
 
 ▸ **_clearOriginalStorageCache**(): `void`
 
-Clears the original storage cache. Refer to [StateManager.getOriginalContractStorage](../interfaces/state_interface.statemanager.md#getoriginalcontractstorage)
+Clears the original storage cache. Refer to [StateManager.getOriginalContractStorage](../interfaces/state_interface.StateManager.md#getoriginalcontractstorage)
 for more explanation.
 
 #### Returns
@@ -207,7 +207,7 @@ ___
 
 ### accountExists
 
-▸ **accountExists**(`address`): `Promise`<boolean\>
+▸ **accountExists**(`address`): `Promise`<`boolean`\>
 
 Checks if the `account` corresponding to `address`
 exists
@@ -220,11 +220,11 @@ exists
 
 #### Returns
 
-`Promise`<boolean\>
+`Promise`<`boolean`\>
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[accountExists](../interfaces/state_interface.statemanager.md#accountexists)
+[StateManager](../interfaces/state_interface.StateManager.md).[accountExists](../interfaces/state_interface.StateManager.md#accountexists)
 
 #### Defined in
 
@@ -234,7 +234,7 @@ ___
 
 ### accountIsEmpty
 
-▸ **accountIsEmpty**(`address`): `Promise`<boolean\>
+▸ **accountIsEmpty**(`address`): `Promise`<`boolean`\>
 
 Checks if the `account` corresponding to `address`
 is empty or non-existent as defined in
@@ -248,11 +248,11 @@ EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
 
 #### Returns
 
-`Promise`<boolean\>
+`Promise`<`boolean`\>
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[accountIsEmpty](../interfaces/state_interface.statemanager.md#accountisempty)
+[StateManager](../interfaces/state_interface.StateManager.md).[accountIsEmpty](../interfaces/state_interface.StateManager.md#accountisempty)
 
 #### Defined in
 
@@ -307,7 +307,7 @@ ___
 
 ### checkpoint
 
-▸ **checkpoint**(): `Promise`<void\>
+▸ **checkpoint**(): `Promise`<`void`\>
 
 Checkpoints the current state of the StateManager instance.
 State changes that follow can then be committed by calling
@@ -315,11 +315,11 @@ State changes that follow can then be committed by calling
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[checkpoint](../interfaces/state_interface.statemanager.md#checkpoint)
+[StateManager](../interfaces/state_interface.StateManager.md).[checkpoint](../interfaces/state_interface.StateManager.md#checkpoint)
 
 #### Defined in
 
@@ -329,18 +329,18 @@ ___
 
 ### cleanupTouchedAccounts
 
-▸ **cleanupTouchedAccounts**(): `Promise`<void\>
+▸ **cleanupTouchedAccounts**(): `Promise`<`void`\>
 
 Removes accounts form the state trie that have been touched,
 as defined in EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[cleanupTouchedAccounts](../interfaces/state_interface.statemanager.md#cleanuptouchedaccounts)
+[StateManager](../interfaces/state_interface.StateManager.md).[cleanupTouchedAccounts](../interfaces/state_interface.StateManager.md#cleanuptouchedaccounts)
 
 #### Defined in
 
@@ -350,7 +350,7 @@ ___
 
 ### clearContractStorage
 
-▸ **clearContractStorage**(`address`): `Promise`<void\>
+▸ **clearContractStorage**(`address`): `Promise`<`void`\>
 
 Clears all storage entries for the account corresponding to `address`.
 
@@ -362,11 +362,11 @@ Clears all storage entries for the account corresponding to `address`.
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[clearContractStorage](../interfaces/state_interface.statemanager.md#clearcontractstorage)
+[StateManager](../interfaces/state_interface.StateManager.md).[clearContractStorage](../interfaces/state_interface.StateManager.md#clearcontractstorage)
 
 #### Defined in
 
@@ -378,7 +378,7 @@ ___
 
 ▸ **clearOriginalStorageCache**(): `void`
 
-Clears the original storage cache. Refer to [StateManager.getOriginalContractStorage](../interfaces/state_interface.statemanager.md#getoriginalcontractstorage)
+Clears the original storage cache. Refer to [StateManager.getOriginalContractStorage](../interfaces/state_interface.StateManager.md#getoriginalcontractstorage)
 for more explanation. Alias of the internal {@link StateManager._clearOriginalStorageCache}
 
 #### Returns
@@ -387,7 +387,7 @@ for more explanation. Alias of the internal {@link StateManager._clearOriginalSt
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[clearOriginalStorageCache](../interfaces/state_interface.statemanager.md#clearoriginalstoragecache)
+[StateManager](../interfaces/state_interface.StateManager.md).[clearOriginalStorageCache](../interfaces/state_interface.StateManager.md#clearoriginalstoragecache)
 
 #### Defined in
 
@@ -413,18 +413,18 @@ ___
 
 ### commit
 
-▸ **commit**(): `Promise`<void\>
+▸ **commit**(): `Promise`<`void`\>
 
 Commits the current change-set to the instance since the
 last call to checkpoint.
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[commit](../interfaces/state_interface.statemanager.md#commit)
+[StateManager](../interfaces/state_interface.StateManager.md).[commit](../interfaces/state_interface.StateManager.md#commit)
 
 #### Defined in
 
@@ -434,7 +434,7 @@ ___
 
 ### copy
 
-▸ **copy**(): [StateManager](../interfaces/state_interface.statemanager.md)
+▸ **copy**(): [`StateManager`](../interfaces/state_interface.StateManager.md)
 
 Copies the current instance of the `StateManager`
 at the last fully committed point, i.e. as if all current
@@ -442,11 +442,11 @@ checkpoints were reverted.
 
 #### Returns
 
-[StateManager](../interfaces/state_interface.statemanager.md)
+[`StateManager`](../interfaces/state_interface.StateManager.md)
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[copy](../interfaces/state_interface.statemanager.md#copy)
+[StateManager](../interfaces/state_interface.StateManager.md).[copy](../interfaces/state_interface.StateManager.md#copy)
 
 #### Defined in
 
@@ -456,7 +456,7 @@ ___
 
 ### deleteAccount
 
-▸ **deleteAccount**(`address`): `Promise`<void\>
+▸ **deleteAccount**(`address`): `Promise`<`void`\>
 
 Deletes an account from state under the provided `address`. The account will also be removed from the state trie.
 
@@ -468,11 +468,11 @@ Deletes an account from state under the provided `address`. The account will als
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[deleteAccount](../interfaces/state_interface.statemanager.md#deleteaccount)
+[StateManager](../interfaces/state_interface.StateManager.md).[deleteAccount](../interfaces/state_interface.StateManager.md#deleteaccount)
 
 #### Defined in
 
@@ -482,7 +482,7 @@ ___
 
 ### dumpStorage
 
-▸ **dumpStorage**(`address`): `Promise`<[StorageDump](../interfaces/state_interface.storagedump.md)\>
+▸ **dumpStorage**(`address`): `Promise`<[`StorageDump`](../interfaces/state_interface.StorageDump.md)\>
 
 Dumps the RLP-encoded storage values for an `account` specified by `address`.
 
@@ -494,7 +494,7 @@ Dumps the RLP-encoded storage values for an `account` specified by `address`.
 
 #### Returns
 
-`Promise`<[StorageDump](../interfaces/state_interface.storagedump.md)\>
+`Promise`<[`StorageDump`](../interfaces/state_interface.StorageDump.md)\>
 
 - The state of the account as an `Object` map.
 Keys are are the storage keys, values are the storage values as strings.
@@ -502,7 +502,7 @@ Both are represented as hex strings without the `0x` prefix.
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[dumpStorage](../interfaces/state_interface.statemanager.md#dumpstorage)
+[StateManager](../interfaces/state_interface.StateManager.md).[dumpStorage](../interfaces/state_interface.StateManager.md#dumpstorage)
 
 #### Defined in
 
@@ -516,7 +516,7 @@ ___
 
 Generates an EIP-2930 access list
 
-Note: this method is not yet part of the [StateManager](../interfaces/state_interface.statemanager.md) interface.
+Note: this method is not yet part of the [StateManager](../interfaces/state_interface.StateManager.md) interface.
 If not implemented, {@link VM.runTx} is not allowed to be used with the
 `reportAccessList` option and will instead throw.
 
@@ -529,8 +529,8 @@ This edge case is not covered by this implementation.
 
 | Name | Type | Default value | Description |
 | :------ | :------ | :------ | :------ |
-| `addressesRemoved` | `Address`[] | [] | List of addresses to be removed from the final list |
-| `addressesOnlyStorage` | `Address`[] | [] | List of addresses only to be added in case of present storage slots |
+| `addressesRemoved` | `Address`[] | `[]` | List of addresses to be removed from the final list |
+| `addressesOnlyStorage` | `Address`[] | `[]` | List of addresses only to be added in case of present storage slots |
 
 #### Returns
 
@@ -546,7 +546,7 @@ ___
 
 ### generateCanonicalGenesis
 
-▸ **generateCanonicalGenesis**(): `Promise`<void\>
+▸ **generateCanonicalGenesis**(): `Promise`<`void`\>
 
 Generates a canonical genesis state on the instance based on the
 configured chain parameters. Will error if there are uncommitted
@@ -554,11 +554,11 @@ checkpoints on the instance.
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[generateCanonicalGenesis](../interfaces/state_interface.statemanager.md#generatecanonicalgenesis)
+[StateManager](../interfaces/state_interface.StateManager.md).[generateCanonicalGenesis](../interfaces/state_interface.StateManager.md#generatecanonicalgenesis)
 
 #### Defined in
 
@@ -568,7 +568,7 @@ ___
 
 ### generateGenesis
 
-▸ **generateGenesis**(`initState`): `Promise`<void\>
+▸ **generateGenesis**(`initState`): `Promise`<`void`\>
 
 Initializes the provided genesis state into the state trie
 
@@ -580,11 +580,11 @@ Initializes the provided genesis state into the state trie
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[generateGenesis](../interfaces/state_interface.statemanager.md#generategenesis)
+[StateManager](../interfaces/state_interface.StateManager.md).[generateGenesis](../interfaces/state_interface.StateManager.md#generategenesis)
 
 #### Defined in
 
@@ -594,7 +594,7 @@ ___
 
 ### getAccount
 
-▸ **getAccount**(`address`): `Promise`<Account\>
+▸ **getAccount**(`address`): `Promise`<`Account`\>
 
 Gets the account associated with `address`. Returns an empty account if the account does not exist.
 
@@ -606,11 +606,11 @@ Gets the account associated with `address`. Returns an empty account if the acco
 
 #### Returns
 
-`Promise`<Account\>
+`Promise`<`Account`\>
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[getAccount](../interfaces/state_interface.statemanager.md#getaccount)
+[StateManager](../interfaces/state_interface.StateManager.md).[getAccount](../interfaces/state_interface.StateManager.md#getaccount)
 
 #### Defined in
 
@@ -620,7 +620,7 @@ ___
 
 ### getContractCode
 
-▸ **getContractCode**(`address`): `Promise`<Buffer\>
+▸ **getContractCode**(`address`): `Promise`<`Buffer`\>
 
 Gets the code corresponding to the provided `address`.
 
@@ -632,14 +632,14 @@ Gets the code corresponding to the provided `address`.
 
 #### Returns
 
-`Promise`<Buffer\>
+`Promise`<`Buffer`\>
 
 -  Resolves with the code corresponding to the provided address.
 Returns an empty `Buffer` if the account has no associated code.
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[getContractCode](../interfaces/state_interface.statemanager.md#getcontractcode)
+[StateManager](../interfaces/state_interface.StateManager.md).[getContractCode](../interfaces/state_interface.StateManager.md#getcontractcode)
 
 #### Defined in
 
@@ -649,7 +649,7 @@ ___
 
 ### getContractStorage
 
-▸ **getContractStorage**(`address`, `key`): `Promise`<Buffer\>
+▸ **getContractStorage**(`address`, `key`): `Promise`<`Buffer`\>
 
 Gets the storage value associated with the provided `address` and `key`. This method returns
 the shortest representation of the stored value.
@@ -663,7 +663,7 @@ the shortest representation of the stored value.
 
 #### Returns
 
-`Promise`<Buffer\>
+`Promise`<`Buffer`\>
 
 - The storage value for the account
 corresponding to the provided address at the provided key.
@@ -671,7 +671,7 @@ If this does not exist an empty `Buffer` is returned.
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[getContractStorage](../interfaces/state_interface.statemanager.md#getcontractstorage)
+[StateManager](../interfaces/state_interface.StateManager.md).[getContractStorage](../interfaces/state_interface.StateManager.md#getcontractstorage)
 
 #### Defined in
 
@@ -681,7 +681,7 @@ ___
 
 ### getOriginalContractStorage
 
-▸ **getOriginalContractStorage**(`address`, `key`): `Promise`<Buffer\>
+▸ **getOriginalContractStorage**(`address`, `key`): `Promise`<`Buffer`\>
 
 Caches the storage value associated with the provided `address` and `key`
 on first invocation, and returns the cached (original) value from then
@@ -697,11 +697,11 @@ computing gas costs according to EIP-1283.
 
 #### Returns
 
-`Promise`<Buffer\>
+`Promise`<`Buffer`\>
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[getOriginalContractStorage](../interfaces/state_interface.statemanager.md#getoriginalcontractstorage)
+[StateManager](../interfaces/state_interface.StateManager.md).[getOriginalContractStorage](../interfaces/state_interface.StateManager.md#getoriginalcontractstorage)
 
 #### Defined in
 
@@ -711,7 +711,7 @@ ___
 
 ### getStateRoot
 
-▸ **getStateRoot**(): `Promise`<Buffer\>
+▸ **getStateRoot**(): `Promise`<`Buffer`\>
 
 Gets the state-root of the Merkle-Patricia trie representation
 of the state of this StateManager. Will error if there are uncommitted
@@ -719,13 +719,13 @@ checkpoints on the instance.
 
 #### Returns
 
-`Promise`<Buffer\>
+`Promise`<`Buffer`\>
 
 - Returns the state-root of the `StateManager`
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[getStateRoot](../interfaces/state_interface.statemanager.md#getstateroot)
+[StateManager](../interfaces/state_interface.StateManager.md).[getStateRoot](../interfaces/state_interface.StateManager.md#getstateroot)
 
 #### Defined in
 
@@ -735,21 +735,21 @@ ___
 
 ### hasGenesisState
 
-▸ **hasGenesisState**(): `Promise`<boolean\>
+▸ **hasGenesisState**(): `Promise`<`boolean`\>
 
 Checks whether the current instance has the canonical genesis state
 for the configured chain parameters.
 
 #### Returns
 
-`Promise`<boolean\>
+`Promise`<`boolean`\>
 
 - Whether the storage trie contains the
 canonical genesis state for the configured chain parameters.
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[hasGenesisState](../interfaces/state_interface.statemanager.md#hasgenesisstate)
+[StateManager](../interfaces/state_interface.StateManager.md).[hasGenesisState](../interfaces/state_interface.StateManager.md#hasgenesisstate)
 
 #### Defined in
 
@@ -804,7 +804,7 @@ ___
 
 ### putAccount
 
-▸ **putAccount**(`address`, `account`): `Promise`<void\>
+▸ **putAccount**(`address`, `account`): `Promise`<`void`\>
 
 Saves an account into state under the provided `address`.
 
@@ -817,11 +817,11 @@ Saves an account into state under the provided `address`.
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[putAccount](../interfaces/state_interface.statemanager.md#putaccount)
+[StateManager](../interfaces/state_interface.StateManager.md).[putAccount](../interfaces/state_interface.StateManager.md#putaccount)
 
 #### Defined in
 
@@ -831,7 +831,7 @@ ___
 
 ### putContractCode
 
-▸ **putContractCode**(`address`, `value`): `Promise`<void\>
+▸ **putContractCode**(`address`, `value`): `Promise`<`void`\>
 
 Adds `value` to the state trie as code, and sets `codeHash` on the account
 corresponding to `address` to reference this.
@@ -845,11 +845,11 @@ corresponding to `address` to reference this.
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[putContractCode](../interfaces/state_interface.statemanager.md#putcontractcode)
+[StateManager](../interfaces/state_interface.StateManager.md).[putContractCode](../interfaces/state_interface.StateManager.md#putcontractcode)
 
 #### Defined in
 
@@ -859,7 +859,7 @@ ___
 
 ### putContractStorage
 
-▸ **putContractStorage**(`address`, `key`, `value`): `Promise`<void\>
+▸ **putContractStorage**(`address`, `key`, `value`): `Promise`<`void`\>
 
 Adds value to the state trie for the `account`
 corresponding to `address` at the provided `key`.
@@ -874,11 +874,11 @@ corresponding to `address` at the provided `key`.
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[putContractStorage](../interfaces/state_interface.statemanager.md#putcontractstorage)
+[StateManager](../interfaces/state_interface.StateManager.md).[putContractStorage](../interfaces/state_interface.StateManager.md#putcontractstorage)
 
 #### Defined in
 
@@ -888,18 +888,18 @@ ___
 
 ### revert
 
-▸ **revert**(): `Promise`<void\>
+▸ **revert**(): `Promise`<`void`\>
 
 Reverts the current change-set to the instance since the
 last call to checkpoint.
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[revert](../interfaces/state_interface.statemanager.md#revert)
+[StateManager](../interfaces/state_interface.StateManager.md).[revert](../interfaces/state_interface.StateManager.md#revert)
 
 #### Defined in
 
@@ -909,7 +909,7 @@ ___
 
 ### setStateRoot
 
-▸ **setStateRoot**(`stateRoot`): `Promise`<void\>
+▸ **setStateRoot**(`stateRoot`): `Promise`<`void`\>
 
 Sets the state of the instance to that represented
 by the provided `stateRoot`. Will error if there are uncommitted
@@ -924,11 +924,11 @@ the state trie.
 
 #### Returns
 
-`Promise`<void\>
+`Promise`<`void`\>
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[setStateRoot](../interfaces/state_interface.statemanager.md#setstateroot)
+[StateManager](../interfaces/state_interface.StateManager.md).[setStateRoot](../interfaces/state_interface.StateManager.md#setstateroot)
 
 #### Defined in
 
@@ -958,7 +958,7 @@ at the end of the tx.
 
 #### Implementation of
 
-[StateManager](../interfaces/state_interface.statemanager.md).[touchAccount](../interfaces/state_interface.statemanager.md#touchaccount)
+[StateManager](../interfaces/state_interface.StateManager.md).[touchAccount](../interfaces/state_interface.StateManager.md#touchaccount)
 
 #### Defined in
 
