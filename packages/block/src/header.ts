@@ -13,6 +13,7 @@ import {
   rlphash,
   toBuffer,
   zeros,
+  keccak256,
 } from 'ethereumjs-util'
 import { HeaderData, JsonHeader, BlockHeaderBuffer, Blockchain, BlockOptions } from './types'
 import {
@@ -211,6 +212,7 @@ export class BlockHeader {
       }
     }
 
+    //NOTE: The Merge fork block number won't be known prior to the actual fork (since it's decided by total difficulty)
     if (options.hardforkByBlockNumber) {
       this._common.setHardforkByBlockNumber(number.toNumber())
     }
@@ -225,6 +227,14 @@ export class BlockHeader {
       }
     }
 
+    if (this._common.isActivatedEIP(3675)) {
+      uncleHash = keccak256(rlp.encode([]))
+      difficulty = new BN(0)
+      extraData = rlp.encode("b''")
+      mixHash = zeros(32)
+      nonce = zeros(8)
+    }
+
     if (options.initWithGenesisHeader) {
       number = new BN(0)
       if (gasLimit.eq(DEFAULT_GAS_LIMIT)) {
@@ -233,13 +243,13 @@ export class BlockHeader {
       if (timestamp.isZero()) {
         timestamp = new BN(toBuffer(this._common.genesis().timestamp))
       }
-      if (difficulty.isZero()) {
+      if (difficulty.isZero() && this._common.isActivatedEIP(3675)) {
         difficulty = new BN(toBuffer(this._common.genesis().difficulty))
       }
-      if (extraData.length === 0) {
+      if (extraData.length === 0 && this._common.isActivatedEIP(3675)) {
         extraData = toBuffer(this._common.genesis().extraData)
       }
-      if (nonce.equals(zeros(8))) {
+      if (nonce.equals(zeros(8)) && this._common.isActivatedEIP(3675)) {
         nonce = toBuffer(this._common.genesis().nonce)
       }
       if (stateRoot.equals(zeros(32))) {
