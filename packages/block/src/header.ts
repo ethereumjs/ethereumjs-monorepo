@@ -228,9 +228,9 @@ export class BlockHeader {
     }
 
     if (this._common.isActivatedEIP(3675)) {
-      uncleHash = keccak256(rlp.encode([]))
+      uncleHash = KECCAK256_RLP_ARRAY
       difficulty = new BN(0)
-      extraData = rlp.encode("b''")
+      extraData = Buffer.from('80', 'hex')
       mixHash = zeros(32)
       nonce = zeros(8)
     }

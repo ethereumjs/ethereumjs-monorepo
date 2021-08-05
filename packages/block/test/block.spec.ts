@@ -738,4 +738,8 @@ tape('[Block]: block functions', function (t) {
       st.end()
     }
   )
+
+  /*t.test('should set constant block fields if on the merge hardfork', function (st) {
+    //TODO
+  })*/
 })
