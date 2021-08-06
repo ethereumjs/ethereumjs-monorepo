@@ -211,7 +211,6 @@ export class BlockHeader {
       }
     }
 
-    // NOTE: The Merge fork block number won't be known prior to the actual fork, since it's determined by total difficulty
     if (options.hardforkByBlockNumber) {
       this._common.setHardforkByBlockNumber(number.toNumber())
     }
@@ -266,13 +265,13 @@ export class BlockHeader {
       if (timestamp.isZero()) {
         timestamp = new BN(toBuffer(this._common.genesis().timestamp))
       }
-      if (difficulty.isZero() && !this._common.isActivatedEIP(3675)) {
+      if (difficulty.isZero()) {
         difficulty = new BN(toBuffer(this._common.genesis().difficulty))
       }
-      if (extraData.length === 0 && !this._common.isActivatedEIP(3675)) {
+      if (extraData.length === 0) {
         extraData = toBuffer(this._common.genesis().extraData)
       }
-      if (nonce.equals(zeros(8)) && !this._common.isActivatedEIP(3675)) {
+      if (nonce.equals(zeros(8))) {
         nonce = toBuffer(this._common.genesis().nonce)
       }
       if (stateRoot.equals(zeros(32))) {

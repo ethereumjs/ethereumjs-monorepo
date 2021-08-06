@@ -14,12 +14,8 @@ function createBlock(
   uncles?: BlockHeader[],
   common?: Common
 ): Block {
+  uncles = uncles ?? []
   common = common ?? new Common({ chain: Chain.Mainnet })
-  if (common.isActivatedEIP(3675)) {
-    uncles = []
-  } else {
-    uncles = uncles ?? []
-  }
 
   if (extraData.length > 32) {
     throw new Error('extra data graffiti must be 32 bytes or less')
