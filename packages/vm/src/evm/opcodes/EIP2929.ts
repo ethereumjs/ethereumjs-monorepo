@@ -22,12 +22,12 @@ export function accessAddressEIP2929(
 ): BN {
   if (!common.isActivatedEIP(2929)) return new BN(0)
 
+  const stateManager = runState.stateManager as EIP2929StateManager
   const addressStr = address.buf
 
   // Cold
-  if (!(<EIP2929StateManager>runState.stateManager).isWarmedAddress(addressStr)) {
-    // eslint-disable-next-line prettier/prettier
-    (<EIP2929StateManager>runState.stateManager).addWarmedAddress(addressStr)
+  if (!stateManager.isWarmedAddress(addressStr)) {
+    stateManager.addWarmedAddress(addressStr)
 
     // CREATE, CREATE2 opcodes have the address warmed for free.
     // selfdestruct beneficiary address reads are charged an *additional* cold access
@@ -57,14 +57,13 @@ export function accessStorageEIP2929(
 ): BN {
   if (!common.isActivatedEIP(2929)) return new BN(0)
 
+  const stateManager = runState.stateManager as EIP2929StateManager
   const address = runState.eei.getAddress().buf
-
-  const slotIsCold = !(<EIP2929StateManager>runState.stateManager).isWarmedStorage(address, key)
+  const slotIsCold = !stateManager.isWarmedStorage(address, key)
 
   // Cold (SLOAD and SSTORE)
   if (slotIsCold) {
-    // eslint-disable-next-line prettier/prettier
-    (<EIP2929StateManager>runState.stateManager).addWarmedStorage(address, key)
+    stateManager.addWarmedStorage(address, key)
     return new BN(common.param('gasPrices', 'coldsload'))
   } else if (!isSstore) {
     return new BN(common.param('gasPrices', 'warmstorageread'))
@@ -77,34 +76,35 @@ export function accessStorageEIP2929(
  * location is already warm
  * @param  {RunState} runState
  * @param  {Buffer}   key          storage slot
- * @param  {number}   defaultCost  SSTORE_RESET_GAS / SLOAD
+ * @param  {BN}       defaultCost  SSTORE_RESET_GAS / SLOAD
  * @param  {string}   costName     parameter name ('noop')
  * @param  {Common}   common
- * @return {number}                adjusted cost
+ * @return {BN}                    adjusted cost
  */
 export function adjustSstoreGasEIP2929(
   runState: RunState,
   key: Buffer,
-  defaultCost: number,
+  defaultCost: BN,
   costName: string,
   common: Common
 ): BN {
-  if (!common.isActivatedEIP(2929)) return new BN(defaultCost)
+  if (!common.isActivatedEIP(2929)) return defaultCost
 
+  const stateManager = runState.stateManager as EIP2929StateManager
   const address = runState.eei.getAddress().buf
-  const warmRead = common.param('gasPrices', 'warmstorageread')
-  const coldSload = common.param('gasPrices', 'coldsload')
+  const warmRead = new BN(common.param('gasPrices', 'warmstorageread'))
+  const coldSload = new BN(common.param('gasPrices', 'coldsload'))
 
-  if ((<EIP2929StateManager>runState.stateManager).isWarmedStorage(address, key)) {
+  if (stateManager.isWarmedStorage(address, key)) {
     switch (costName) {
       case 'noop':
-        return new BN(warmRead)
+        return warmRead
       case 'initRefund':
-        return new BN(common.param('gasPrices', 'sstoreInitGasEIP2200')).isubn(warmRead)
+        return new BN(common.param('gasPrices', 'sstoreInitGasEIP2200')).sub(warmRead)
       case 'cleanRefund':
-        return new BN(common.param('gasPrices', 'sstoreReset')).isubn(coldSload).isubn(warmRead)
+        return new BN(common.param('gasPrices', 'sstoreReset')).sub(coldSload).sub(warmRead)
     }
   }
 
-  return new BN(defaultCost)
+  return defaultCost
 }
