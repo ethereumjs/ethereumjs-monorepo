@@ -1,4 +1,4 @@
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain } from '@ethereumjs/common'
 import { BN, rlp, keccak256 } from 'ethereumjs-util'
 import { Block, BlockHeader } from '../src'
 

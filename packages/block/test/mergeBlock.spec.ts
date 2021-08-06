@@ -2,7 +2,6 @@ import tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { Address, BN, KECCAK256_RLP, KECCAK256_RLP_ARRAY, zeros } from 'ethereumjs-util'
-import { Mockchain } from './mockchain'
 import { Block } from '../src/block'
 
 const common = new Common({
