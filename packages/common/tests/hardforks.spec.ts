@@ -397,4 +397,34 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
 
     st.end()
   })
+
+  t.test('HF consensus updates', function (st: tape.Test) {
+    let c = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Byzantium })
+    st.equal(c.consensusType(), 'poa', 'should provide the correct initial chain consensus type')
+    st.equal(
+      c.consensusAlgorithm(),
+      'clique',
+      'should provide the correct initial chain consensus algorithm'
+    )
+    st.equal(
+      c.consensusConfig()['period'],
+      15,
+      'should provide the correct initial chain consensus configuration'
+    )
+
+    c = new Common({ chain: Chain.Goerli, hardfork: Hardfork.TheMerge })
+    st.equal(c.consensusType(), 'pos', 'should provide the correct updated chain consensus type')
+    st.equal(
+      c.consensusAlgorithm(),
+      'casper',
+      'should provide the correct updated chain consensus algorithm'
+    )
+    st.deepEqual(
+      c.consensusConfig(),
+      {},
+      'should provide the correct updated chain consensus configuration'
+    )
+
+    st.end()
+  })
 })

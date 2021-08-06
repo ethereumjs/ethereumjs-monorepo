@@ -934,19 +934,48 @@ export default class Common extends EventEmitter {
 
   /**
    * Returns the consensus type of the network
-   * Possible values: "pow"|"poa"
+   * Possible values: "pow"|"poa"|"pos"
+   *
+   * Note: This value can update along a hardfork.
    */
   consensusType(): string {
+    const hardfork = this.hardfork()
+
+    let value
+    for (const hfChanges of HARDFORK_CHANGES) {
+      if (hfChanges[1].hasOwnProperty('consensus')) { // eslint-disable-line
+        value = hfChanges[1]['consensus']['type']
+      }
+      if (hfChanges[0] === hardfork) break
+    }
+    if (value) {
+      return value
+    }
     return (<any>this._chainParams)['consensus']['type']
   }
 
   /**
    * Returns the concrete consensus implementation
    * algorithm or protocol for the network
-   * e.g. "ethash" for "pow" consensus type or
-   * "clique" for "poa" consensus type
+   * e.g. "ethash" for "pow" consensus type,
+   * "clique" for "poa" consensus type or
+   * "casper" for "pos" consensus type.
+   *
+   * Note: This value can update along a hardfork.
    */
   consensusAlgorithm(): string {
+    const hardfork = this.hardfork()
+
+    let value
+    for (const hfChanges of HARDFORK_CHANGES) {
+      if (hfChanges[1].hasOwnProperty('consensus')) { // eslint-disable-line
+        value = hfChanges[1]['consensus']['algorithm']
+      }
+      if (hfChanges[0] === hardfork) break
+    }
+    if (value) {
+      return value
+    }
     return (<any>this._chainParams)['consensus']['algorithm']
   }
 
@@ -960,8 +989,24 @@ export default class Common extends EventEmitter {
    * ethash: -
    * clique: period, epoch
    * aura: -
+   * casper: -
+   *
+   * Note: This value can update along a hardfork.
    */
   consensusConfig(): any {
+    const hardfork = this.hardfork()
+
+    let value
+    for (const hfChanges of HARDFORK_CHANGES) {
+      if (hfChanges[1].hasOwnProperty('consensus')) { // eslint-disable-line
+        // The config parameter is named after the respective consensus algorithm
+        value = hfChanges[1]['consensus'][hfChanges[1]['consensus']['algorithm']]
+      }
+      if (hfChanges[0] === hardfork) break
+    }
+    if (value) {
+      return value
+    }
     return (<any>this._chainParams)['consensus'][this.consensusAlgorithm()]
   }
 
