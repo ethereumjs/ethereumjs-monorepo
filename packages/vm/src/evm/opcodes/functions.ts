@@ -907,7 +907,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xf1,
     async function (runState: RunState) {
-      const [, /*currentGasLimit*/ toAddr, value, inOffset, inLength, outOffset, outLength] =
+      const [_currentGasLimit, toAddr, value, inOffset, inLength, outOffset, outLength] =
         runState.stack.popN(7)
       const toAddress = new Address(addressToBuffer(toAddr))
 
@@ -929,7 +929,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xf2,
     async function (runState: RunState) {
-      const [, /*currentGasLimit*/ toAddr, value, inOffset, inLength, outOffset, outLength] =
+      const [_currentGasLimit, toAddr, value, inOffset, inLength, outOffset, outLength] =
         runState.stack.popN(7)
       const toAddress = new Address(addressToBuffer(toAddr))
 
@@ -952,7 +952,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0xf4,
     async function (runState) {
       const value = runState.eei.getCallValue()
-      const [, /*currentGasLimit*/ toAddr, inOffset, inLength, outOffset, outLength] =
+      const [_currentGasLimit, toAddr, inOffset, inLength, outOffset, outLength] =
         runState.stack.popN(6)
       const toAddress = new Address(addressToBuffer(toAddr))
 
@@ -975,7 +975,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0xfa,
     async function (runState) {
       const value = new BN(0)
-      const [, /*currentGasLimit*/ toAddr, inOffset, inLength, outOffset, outLength] =
+      const [_currentGasLimit, toAddr, inOffset, inLength, outOffset, outLength] =
         runState.stack.popN(6)
       const toAddress = new Address(addressToBuffer(toAddr))
 

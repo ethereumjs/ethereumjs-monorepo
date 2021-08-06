@@ -35,7 +35,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
   [
     /* SHA3 */
     0x20,
-    async function (runState: RunState, gas: BN, common: Common): Promise<void> {
+    async function (runState, gas, common): Promise<void> {
       const [offset, length] = runState.stack.peek(2)
       gas.iadd(subMemUsage(runState, offset, length, common))
       gas.iadd(new BN(common.param('gasPrices', 'sha3Word')).imul(divCeil(length, new BN(32))))
@@ -55,8 +55,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
   [
     /* CALLDATACOPY */
     0x37,
-    async function (runState: RunState, gas: BN, common: Common): Promise<void> {
-      const [memOffset /*dataOffset*/, , dataLength] = runState.stack.peek(3)
+    async function (runState, gas, common): Promise<void> {
+      const [memOffset, _dataOffset, dataLength] = runState.stack.peek(3)
 
       gas.iadd(subMemUsage(runState, memOffset, dataLength, common))
       if (!dataLength.eqn(0)) {
@@ -67,8 +67,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
   [
     /* CODECOPY */
     0x39,
-    async function (runState: RunState, gas: BN, common: Common): Promise<void> {
-      const [memOffset /*codeOffset*/, , dataLength] = runState.stack.peek(3)
+    async function (runState, gas, common): Promise<void> {
+      const [memOffset, _codeOffset, dataLength] = runState.stack.peek(3)
 
       gas.iadd(subMemUsage(runState, memOffset, dataLength, common))
       if (!dataLength.eqn(0)) {
@@ -79,7 +79,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
   [
     /* EXTCODESIZE */
     0x3b,
-    async function (runState: RunState, gas: BN, common): Promise<void> {
+    async function (runState, gas, common): Promise<void> {
       if (common.isActivatedEIP(2929)) {
         const addressBN = runState.stack.peek()[0]
         const address = new Address(addressToBuffer(addressBN))
@@ -90,7 +90,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
   [
     /* EXTCODECOPY */
     0x3c,
-    async function (runState: RunState, gas: BN, common: Common): Promise<void> {
+    async function (runState, gas, common): Promise<void> {
       const [addressBN, memOffset /*codeOffset*/, , dataLength] = runState.stack.peek(4)
 
       gas.iadd(subMemUsage(runState, memOffset, dataLength, common))
@@ -108,7 +108,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
   [
     /* RETURNDATACOPY */
     0x3e,
-    async function (runState: RunState, gas: BN, common: Common): Promise<void> {
+    async function (runState, gas, common): Promise<void> {
       const [memOffset, returnDataOffset, dataLength] = runState.stack.peek(3)
 
       if (returnDataOffset.add(dataLength).gt(runState.eei.getReturnDataSize())) {
@@ -136,7 +136,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
   [
     /* MLOAD */
     0x51,
-    async function (runState: RunState, gas: BN, common: Common): Promise<void> {
+    async function (runState, gas, common): Promise<void> {
       const pos = runState.stack.peek()[0]
       gas.iadd(subMemUsage(runState, pos, new BN(32), common))
     },
@@ -144,7 +144,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
   [
     /* MSTORE */
     0x52,
-    async function (runState: RunState, gas: BN, common: Common): Promise<void> {
+    async function (runState, gas, common): Promise<void> {
       const offset = runState.stack.peek()[0]
       gas.iadd(subMemUsage(runState, offset, new BN(32), common))
     },
@@ -152,7 +152,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
   [
     /* MSTORE8 */
     0x53,
-    async function (runState: RunState, gas: BN, common: Common): Promise<void> {
+    async function (runState, gas, common): Promise<void> {
       const offset = runState.stack.peek()[0]
       gas.iadd(subMemUsage(runState, offset, new BN(1), common))
     },
@@ -160,7 +160,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
   [
     /* SLOAD */
     0x54,
-    async function (runState: RunState, gas: BN, common: Common): Promise<void> {
+    async function (runState, gas, common): Promise<void> {
       const key = runState.stack.peek()[0]
       const keyBuf = key.toArrayLike(Buffer, 'be', 32)
 
@@ -172,7 +172,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
   [
     /* SSTORE */
     0x55,
-    async function (runState: RunState, gas: BN, common: Common): Promise<void> {
+    async function (runState, gas, common): Promise<void> {
       if (runState.eei.isStatic()) {
         trap(ERROR.STATIC_STATE_CHANGE)
       }
@@ -226,7 +226,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
   [
     /* LOG */
     0xa0,
-    async function (runState: RunState, gas: BN, common: Common): Promise<void> {
+    async function (runState, gas, common): Promise<void> {
       if (runState.eei.isStatic()) {
         trap(ERROR.STATIC_STATE_CHANGE)
       }
@@ -250,7 +250,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
   [
     /* CREATE */
     0xf0,
-    async function (runState: RunState, gas: BN, common: Common): Promise<void> {
+    async function (runState, gas, common): Promise<void> {
       if (runState.eei.isStatic()) {
         trap(ERROR.STATIC_STATE_CHANGE)
       }
@@ -271,7 +271,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
   [
     /* CALL */
     0xf1,
-    async function (runState: RunState, gas: BN, common: Common): Promise<void> {
+    async function (runState, gas, common): Promise<void> {
       const [currentGasLimit, toAddr, value, inOffset, inLength, outOffset, outLength] =
         runState.stack.peek(7)
       const toAddress = new Address(addressToBuffer(toAddr))
@@ -329,7 +329,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
   [
     /* CALLCODE */
     0xf2,
-    async function (runState: RunState, gas: BN, common: Common): Promise<void> {
+    async function (runState, gas, common): Promise<void> {
       const [currentGasLimit, toAddr, value, inOffset, inLength, outOffset, outLength] =
         runState.stack.peek(7)
 
@@ -367,7 +367,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
   [
     /* RETURN */
     0xf3,
-    async function (runState: RunState, gas: BN, common: Common): Promise<void> {
+    async function (runState, gas, common): Promise<void> {
       const [offset, length] = runState.stack.peek(2)
       gas.iadd(subMemUsage(runState, offset, length, common))
     },
@@ -375,7 +375,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
   [
     /* DELEGATECALL */
     0xf4,
-    async function (runState: RunState, gas: BN, common: Common): Promise<void> {
+    async function (runState, gas, common): Promise<void> {
       const [currentGasLimit, toAddr, inOffset, inLength, outOffset, outLength] =
         runState.stack.peek(6)
 
@@ -405,7 +405,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
   [
     /* CREATE2 */
     0xf5,
-    async function (runState: RunState, gas: BN, common: Common): Promise<void> {
+    async function (runState, gas, common): Promise<void> {
       if (runState.eei.isStatic()) {
         trap(ERROR.STATIC_STATE_CHANGE)
       }
@@ -427,7 +427,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
   [
     /* STATICCALL */
     0xfa,
-    async function (runState: RunState, gas: BN, common: Common): Promise<void> {
+    async function (runState, gas, common): Promise<void> {
       const [currentGasLimit, toAddr, inOffset, inLength, outOffset, outLength] =
         runState.stack.peek(6)
 
@@ -452,7 +452,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
   [
     /* REVERT */
     0xfd,
-    async function (runState: RunState, gas: BN, common: Common): Promise<void> {
+    async function (runState, gas, common): Promise<void> {
       const [offset, length] = runState.stack.peek(2)
       gas.iadd(subMemUsage(runState, offset, length, common))
     },
@@ -460,7 +460,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
   [
     /* SELFDESTRUCT */
     0xff,
-    async function (runState: RunState, gas: BN, common: Common): Promise<void> {
+    async function (runState, gas, common): Promise<void> {
       if (runState.eei.isStatic()) {
         trap(ERROR.STATIC_STATE_CHANGE)
       }
