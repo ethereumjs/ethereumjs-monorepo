@@ -1,5 +1,6 @@
 import tape from 'tape'
-import Common, { Chain, Hardfork } from '../src/'
+import { BN } from 'ethereumjs-util'
+import Common, { Chain, Hardfork } from '../src'
 
 tape('[Common]: Hardfork logic', function (t: tape.Test) {
   t.test('Hardfork access', function (st: tape.Test) {
@@ -14,6 +15,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
       'petersburg',
       'istanbul',
       'berlin',
+      'london',
     ]
     let c
 
@@ -231,6 +233,23 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
 
     msg = 'Ropsten, byzantium (set), 1699999 -> false'
     st.equal(c.hardforkIsActiveOnBlock(null, 1699999), false, msg)
+
+    st.end()
+  })
+
+  t.test('hardforkBlock() / hardforkBlockBN()', function (st: tape.Test) {
+    const c = new Common({ chain: Chain.Mainnet })
+
+    let msg = 'should return correct value'
+    st.equal(c.hardforkBlock(Hardfork.Berlin), 12244000, msg)
+    st.ok(c.hardforkBlockBN(Hardfork.Berlin)!.eq(new BN(12244000)), msg)
+
+    msg = 'should return null for unscheduled hardfork'
+    // developer note: when Shanghai is set,
+    // update this test to next unscheduled hardfork.
+    st.equal(c.hardforkBlock(Hardfork.Shanghai), null, msg)
+    st.equal(c.hardforkBlockBN(Hardfork.Shanghai), null, msg)
+    st.equal(c.nextHardforkBlockBN(Hardfork.Shanghai), null, msg)
 
     st.end()
   })
