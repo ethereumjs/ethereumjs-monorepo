@@ -4,8 +4,8 @@ This folder contains documentation on monorepo setup and configuration as well a
 configuration settings and scripts for common modules (like a shared `tsconfig.json` TypeScript
 configuration file or `cli/coverage.sh` script).
 
-- [Monorepo](./monorepo.md) (separate docs)
-- [E2E Testing](./testing.md) (separate docs)
+- [Monorepo](./MONOREPO.md) (separate docs)
+- [E2E Testing](./E2E_TESTING.md) (separate docs)
 - [Linting](#linting)
 - [Coverage](#coverage)
 - [TypeScript](#typescript)

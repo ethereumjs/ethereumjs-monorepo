@@ -27,28 +27,39 @@ echo "Installing updated ethereumjs components via virtual registry"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
 npm run e2e:inject
-cd hardhat/packages/hardhat-core
 
+cd hardhat
+rm yarn.lock
+cd packages/hardhat-core
 yarn config set registry http://localhost:4873
 yarn --ignore-engines
 
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-echo "Debugging output                            "
+echo "Debugging output - yarn list ethereumjs deps"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
 yarn list --pattern "@ethereumjs/block|@ethereumjs/blockchain|@ethereumjs/common|@ethereumjs/tx|@ethereumjs/vm|ethereumjs-util|merkle-patricia-tree"
+
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+echo "Debugging output - root package.json        "
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+
+cat ../../package.json
+
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+echo "Debugging output - hardhat-core package.json"
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+
 cat ./package.json
 
-# Build
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo "Building hardhat                            "
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
 yarn build
 
-# Test
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-echo "Running hardhat tests.                      "
+echo "Running hardhat tests                       "
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
 yarn run test:except-tracing

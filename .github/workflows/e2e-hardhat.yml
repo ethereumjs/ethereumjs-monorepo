@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [15]
+        node-version: [16]
     steps:
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
@@ -55,10 +55,9 @@ jobs:
 
       # Clone hardhat repo, inject proxied dependencies, and run tests
       - name: Build hardhat and test with new EthereumJS dependencies
+        run: bash ./scripts/e2e-hardhat.sh
         env:
           FORCE_COLOR: 3
-          INFURA_URL: ${{ secrets.URL_MAINNET }}
-        run: bash ./scripts/e2e-hardhat.sh
 
       - name: Remove hardhat directory to clean working state (for saving dependency cache)
         run: rm -rf hardhat
