@@ -27,8 +27,8 @@ function validateMergeHeader(st: tape.Test, header: BlockHeader) {
   st.ok(header.nonce.equals(zeros(8)), 'nonce')
 }
 
-tape('The Merge tests', function (t) {
-  t.test('should construct default blocks with post-merge constants fields', function (st) {
+tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
+  t.test('should construct default blocks with post-merge PoS constants fields', function (st) {
     const header = BlockHeader.fromHeaderData({}, { common })
     validateMergeHeader(st, header)
 
@@ -38,7 +38,7 @@ tape('The Merge tests', function (t) {
     st.end()
   })
 
-  t.test('should throw if non merge-conforming constants are provided', function (st) {
+  t.test('should throw if non merge-conforming PoS constants are provided', function (st) {
     // Building a header with random values for constants
     try {
       const headerData = {
