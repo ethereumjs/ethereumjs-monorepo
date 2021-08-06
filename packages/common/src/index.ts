@@ -58,6 +58,7 @@ export enum Hardfork {
   MuirGlacier = 'muirGlacier',
   Berlin = 'berlin',
   London = 'london',
+  Shanghai = 'shanghai',
 }
 
 interface BaseOpts {
@@ -699,21 +700,26 @@ export default class Common extends EventEmitter {
   /**
    * Returns the hardfork change block for hardfork provided or set
    * @param hardfork Hardfork name, optional if HF set
-   * @returns Block number
-   * @deprecated Please use hardforkBlockBN() for large number support
+   * @returns Block number or null if unscheduled
+   * @deprecated Please use {@link Common.hardforkBlockBN} for large number support
    */
-  hardforkBlock(hardfork?: string | Hardfork): number {
-    return toType(this.hardforkBlockBN(hardfork), TypeOutput.Number)
+  hardforkBlock(hardfork?: string | Hardfork): number | null {
+    const block = this.hardforkBlockBN(hardfork)
+    return block ? toType(block, TypeOutput.Number) : null
   }
 
   /**
    * Returns the hardfork change block for hardfork provided or set
    * @param hardfork Hardfork name, optional if HF set
-   * @returns Block number
+   * @returns Block number or null if unscheduled
    */
-  hardforkBlockBN(hardfork?: string | Hardfork): BN {
+  hardforkBlockBN(hardfork?: string | Hardfork): BN | null {
     hardfork = this._chooseHardfork(hardfork, false)
-    return new BN(this._getHardfork(hardfork)['block'])
+    const block = this._getHardfork(hardfork)['block']
+    if (block === undefined || block === null) {
+      return null
+    }
+    return new BN(block)
   }
 
   /**
@@ -725,14 +731,15 @@ export default class Common extends EventEmitter {
   isHardforkBlock(blockNumber: BNLike, hardfork?: string | Hardfork): boolean {
     blockNumber = toType(blockNumber, TypeOutput.BN)
     hardfork = this._chooseHardfork(hardfork, false)
-    return this.hardforkBlockBN(hardfork).eq(blockNumber)
+    const block = this.hardforkBlockBN(hardfork)
+    return block ? block.eq(blockNumber) : false
   }
 
   /**
    * Returns the change block for the next hardfork after the hardfork provided or set
    * @param hardfork Hardfork name, optional if HF set
    * @returns Block number or null if not available
-   * @deprecated Please use nextHardforkBlockBN() for large number support
+   * @deprecated Please use {@link Common.nextHardforkBlockBN} for large number support
    */
   nextHardforkBlock(hardfork?: string | Hardfork): number | null {
     const block = this.nextHardforkBlockBN(hardfork)
@@ -747,6 +754,9 @@ export default class Common extends EventEmitter {
   nextHardforkBlockBN(hardfork?: string | Hardfork): BN | null {
     hardfork = this._chooseHardfork(hardfork, false)
     const hfBlock = this.hardforkBlockBN(hardfork)
+    if (hfBlock === null) {
+      return null
+    }
     // Next fork block number or null if none available
     // Logic: if accumulator is still null and on the first occurence of
     // a block greater than the current hfBlock set the accumulator,
@@ -874,7 +884,7 @@ export default class Common extends EventEmitter {
   /**
    * Returns the Id of current chain
    * @returns chain Id
-   * @deprecated Please use chainIdBN() for large number support
+   * @deprecated Please use {@link Common.chainIdBN} for large number support
    */
   chainId(): number {
     return toType(this.chainIdBN(), TypeOutput.Number)
@@ -899,7 +909,7 @@ export default class Common extends EventEmitter {
   /**
    * Returns the Id of current network
    * @returns network Id
-   * @deprecated Please use networkIdBN() for large number support
+   * @deprecated Please use {@link Common.networkIdBN} for large number support
    */
   networkId(): number {
     return toType(this.networkIdBN(), TypeOutput.Number)
