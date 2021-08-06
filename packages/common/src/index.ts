@@ -59,6 +59,7 @@ export enum Hardfork {
   Berlin = 'berlin',
   London = 'london',
   Shanghai = 'shanghai',
+  TheMerge = 'theMerge',
 }
 
 interface BaseOpts {

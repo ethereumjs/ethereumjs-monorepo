@@ -77,6 +77,11 @@
       "name": "shanghai",
       "block": null,
       "forkash": null
+    },
+    {
+      "name": "theMerge",
+      "block": null,
+      "forkash": null
     }
   ],
   "bootstrapNodes": [
