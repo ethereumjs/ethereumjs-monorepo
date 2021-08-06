@@ -5,27 +5,26 @@ import { Address, BN, KECCAK256_RLP, KECCAK256_RLP_ARRAY, zeros } from 'ethereum
 import { Block } from '../src/block'
 
 const common = new Common({
-  eips: [3675],
   chain: Chain.Mainnet,
-  hardfork: Hardfork.London,
+  hardfork: Hardfork.TheMerge,
 })
 
 function validateMergeHeader(st: tape.Test, header: BlockHeader) {
-  st.ok(header.parentHash.equals(zeros(32)))
-  st.ok(header.uncleHash.equals(KECCAK256_RLP_ARRAY))
-  st.ok(header.coinbase.equals(Address.zero()))
-  st.ok(header.stateRoot.equals(zeros(32)))
-  st.ok(header.transactionsTrie.equals(KECCAK256_RLP))
-  st.ok(header.receiptTrie.equals(KECCAK256_RLP))
-  st.ok(header.bloom.equals(zeros(256)))
-  st.ok(header.difficulty.isZero())
-  st.ok(header.number.isZero())
-  st.ok(header.gasLimit.eq(new BN(Buffer.from('ffffffffffffff', 'hex'))))
-  st.ok(header.gasUsed.isZero())
-  st.ok(header.timestamp.isZero())
-  st.ok(header.extraData.equals(Buffer.from('80', 'hex')))
-  st.ok(header.mixHash.equals(zeros(32)))
-  st.ok(header.nonce.equals(zeros(8)))
+  st.ok(header.parentHash.equals(zeros(32)), 'parentHash')
+  st.ok(header.uncleHash.equals(KECCAK256_RLP_ARRAY), 'uncleHash')
+  st.ok(header.coinbase.equals(Address.zero()), 'coinbase')
+  st.ok(header.stateRoot.equals(zeros(32)), 'stateRoot')
+  st.ok(header.transactionsTrie.equals(KECCAK256_RLP), 'transactionsTrie')
+  st.ok(header.receiptTrie.equals(KECCAK256_RLP), 'receiptTrie')
+  st.ok(header.bloom.equals(zeros(256)), 'bloom')
+  st.ok(header.difficulty.isZero(), 'difficulty')
+  st.ok(header.number.isZero(), 'number')
+  st.ok(header.gasLimit.eq(new BN(Buffer.from('ffffffffffffff', 'hex'))), 'gasLimit')
+  st.ok(header.gasUsed.isZero(), 'gasUsed')
+  st.ok(header.timestamp.isZero(), 'timestamp')
+  st.ok(header.extraData.equals(Buffer.from([])), 'extraData')
+  st.ok(header.mixHash.equals(zeros(32)), 'mixHash')
+  st.ok(header.nonce.equals(zeros(8)), 'nonce')
 }
 
 tape('The Merge tests', function (t) {
@@ -39,21 +38,57 @@ tape('The Merge tests', function (t) {
     st.end()
   })
 
-  t.test('should override custom blocks fields with post-merge constants', function (st) {
+  t.test('should throw if non merge-conforming constants are provided', function (st) {
     // Building a header with random values for constants
-    const header = BlockHeader.fromHeaderData(
-      {
+    try {
+      const headerData = {
         uncleHash: Buffer.from('123abc', 'hex'),
-        difficulty: new BN(123456),
-        extraData: Buffer.from('123abc', 'hex'),
-        mixHash: Buffer.from('123abc', 'hex'),
-        nonce: Buffer.from('123abc', 'hex'),
-      },
-      {
-        common,
       }
-    )
-    validateMergeHeader(st, header)
+      BlockHeader.fromHeaderData(headerData, { common })
+      st.fail('should throw')
+    } catch (e) {
+      st.pass('should throw on wrong uncleHash')
+    }
+
+    try {
+      const headerData = {
+        difficulty: new BN(123456),
+      }
+      BlockHeader.fromHeaderData(headerData, { common })
+      st.fail('should throw')
+    } catch (e) {
+      st.pass('should throw on wrong difficulty')
+    }
+
+    try {
+      const headerData = {
+        extraData: Buffer.from('123abc', 'hex'),
+      }
+      BlockHeader.fromHeaderData(headerData, { common })
+      st.fail('should throw')
+    } catch (e) {
+      st.pass('should throw on wrong extraData')
+    }
+
+    try {
+      const headerData = {
+        mixHash: Buffer.from('123abc', 'hex'),
+      }
+      BlockHeader.fromHeaderData(headerData, { common })
+      st.fail('should throw')
+    } catch (e) {
+      st.pass('should throw on wrong mixHash')
+    }
+
+    try {
+      const headerData = {
+        nonce: Buffer.from('123abc', 'hex'),
+      }
+      BlockHeader.fromHeaderData(headerData, { common })
+      st.fail('should throw')
+    } catch (e) {
+      st.pass('should throw on wrong nonce')
+    }
 
     st.end()
   })

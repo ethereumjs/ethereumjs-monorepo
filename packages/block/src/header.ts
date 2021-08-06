@@ -226,13 +226,36 @@ export class BlockHeader {
       }
     }
 
-    // Set these values as constants after the Merge
-    if (this._common.isActivatedEIP(3675)) {
-      uncleHash = KECCAK256_RLP_ARRAY
-      difficulty = new BN(0)
-      extraData = Buffer.from('80', 'hex')
-      mixHash = zeros(32)
-      nonce = zeros(8)
+    // Check for constant values for PoS blocks
+    if (this._common.consensusType() === 'pos') {
+      let error = false
+      let errorMsg = ''
+
+      if (!uncleHash.equals(KECCAK256_RLP_ARRAY)) {
+        errorMsg += `, uncleHash: ${uncleHash.toString(
+          'hex'
+        )} (expected: ${KECCAK256_RLP_ARRAY.toString('hex')})`
+        error = true
+      }
+      if (!difficulty.eq(new BN(0))) {
+        errorMsg += `, difficulty: ${difficulty} (expected: 0)`
+        error = true
+      }
+      if (!extraData.equals(Buffer.from([]))) {
+        errorMsg += `, extraData: ${extraData.toString('hex')} (expected: '')`
+        error = true
+      }
+      if (!mixHash.equals(zeros(32))) {
+        errorMsg += `, mixHash: ${mixHash.toString('hex')} (expected: ${zeros(32).toString('hex')})`
+        error = true
+      }
+      if (!nonce.equals(zeros(8))) {
+        errorMsg += `, nonce: ${nonce.toString('hex')} (expected: ${zeros(8).toString('hex')})`
+        error = true
+      }
+      if (error) {
+        throw new Error('Invalid PoS block' + errorMsg)
+      }
     }
 
     if (options.initWithGenesisHeader) {
