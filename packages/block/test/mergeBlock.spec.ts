@@ -95,7 +95,7 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
 
   t.test('test that a PoS block with uncles cannot be produced', function (st) {
     try {
-      new Block(undefined, undefined, [BlockHeader.fromHeaderData()], { common })
+      new Block(undefined, undefined, [BlockHeader.fromHeaderData(undefined, { common })], { common })
       st.fail('should have thrown')
     } catch (e) {
       st.pass('should throw')
