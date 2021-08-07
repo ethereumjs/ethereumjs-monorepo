@@ -145,8 +145,13 @@ export class Block {
     this.transactions = transactions
     this.uncleHeaders = uncleHeaders
     this._common = this.header._common
-    if (this._common.consensusType() === 'poa' && uncleHeaders.length > 0) {
-      throw new Error('Block initialization with uncleHeaders on a PoA network is not allowed')
+    if (uncleHeaders.length > 0) {
+      if (this._common.consensusType() === 'poa') {
+        throw new Error('Block initialization with uncleHeaders on a PoA network is not allowed')
+      }
+      if (this._common.consensusType() === 'pos') {
+        throw new Error('Block initialization with uncleHeaders on a PoS network is not allowed')
+      }
     }
 
     const freeze = opts?.freeze ?? true

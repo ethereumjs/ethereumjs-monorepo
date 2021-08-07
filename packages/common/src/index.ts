@@ -59,6 +59,7 @@ export enum Hardfork {
   Berlin = 'berlin',
   London = 'london',
   Shanghai = 'shanghai',
+  TheMerge = 'theMerge',
 }
 
 interface BaseOpts {
@@ -491,7 +492,7 @@ export default class Common extends EventEmitter {
     let value = null
     for (const hfChanges of HARDFORK_CHANGES) {
       // EIP-referencing HF file (e.g. berlin.json)
-      if (hfChanges[1].hasOwnProperty('eips')) { // eslint-disable-line
+      if ('eips' in hfChanges[1]) {
         const hfEIPs = hfChanges[1]['eips']
         for (const eip of hfEIPs) {
           const valueEIP = this.paramByEIP(topic, name, eip)
@@ -933,19 +934,48 @@ export default class Common extends EventEmitter {
 
   /**
    * Returns the consensus type of the network
-   * Possible values: "pow"|"poa"
+   * Possible values: "pow"|"poa"|"pos"
+   *
+   * Note: This value can update along a hardfork.
    */
   consensusType(): string {
+    const hardfork = this.hardfork()
+
+    let value
+    for (const hfChanges of HARDFORK_CHANGES) {
+      if ('consensus' in hfChanges[1]) {
+        value = hfChanges[1]['consensus']['type']
+      }
+      if (hfChanges[0] === hardfork) break
+    }
+    if (value) {
+      return value
+    }
     return (<any>this._chainParams)['consensus']['type']
   }
 
   /**
    * Returns the concrete consensus implementation
    * algorithm or protocol for the network
-   * e.g. "ethash" for "pow" consensus type or
-   * "clique" for "poa" consensus type
+   * e.g. "ethash" for "pow" consensus type,
+   * "clique" for "poa" consensus type or
+   * "casper" for "pos" consensus type.
+   *
+   * Note: This value can update along a hardfork.
    */
   consensusAlgorithm(): string {
+    const hardfork = this.hardfork()
+
+    let value
+    for (const hfChanges of HARDFORK_CHANGES) {
+      if ('consensus' in hfChanges[1]) {
+        value = hfChanges[1]['consensus']['algorithm']
+      }
+      if (hfChanges[0] === hardfork) break
+    }
+    if (value) {
+      return value
+    }
     return (<any>this._chainParams)['consensus']['algorithm']
   }
 
@@ -959,8 +989,24 @@ export default class Common extends EventEmitter {
    * ethash: -
    * clique: period, epoch
    * aura: -
+   * casper: -
+   *
+   * Note: This value can update along a hardfork.
    */
   consensusConfig(): any {
+    const hardfork = this.hardfork()
+
+    let value
+    for (const hfChanges of HARDFORK_CHANGES) {
+      if ('consensus' in hfChanges[1]) {
+        // The config parameter is named after the respective consensus algorithm
+        value = hfChanges[1]['consensus'][hfChanges[1]['consensus']['algorithm']]
+      }
+      if (hfChanges[0] === hardfork) break
+    }
+    if (value) {
+      return value
+    }
     return (<any>this._chainParams)['consensus'][this.consensusAlgorithm()]
   }
 

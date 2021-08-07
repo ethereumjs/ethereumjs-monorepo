@@ -120,7 +120,7 @@ tape('VM -> common (chain, HFs, EIPs)', (t) => {
     'should accept a custom chain config (Common customChains constructor option)',
     async (st) => {
       const customChains = [testnet, testnet2]
-      const common = new Common({ chain: 'testnet2', hardfork: Hardfork.Berlin, customChains })
+      const common = new Common({ chain: 'testnet', hardfork: Hardfork.Berlin, customChains })
 
       const vm = await VM.create({ common })
       st.equal(vm._common, common)

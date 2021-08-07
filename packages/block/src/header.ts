@@ -300,7 +300,17 @@ export class BlockHeader {
    * Validates correct buffer lengths, throws if invalid.
    */
   _validateHeaderFields() {
-    const { parentHash, stateRoot, transactionsTrie, receiptTrie, mixHash, nonce } = this
+    const {
+      parentHash,
+      uncleHash,
+      stateRoot,
+      transactionsTrie,
+      receiptTrie,
+      difficulty,
+      extraData,
+      mixHash,
+      nonce,
+    } = this
 
     if (parentHash.length !== 32) {
       throw new Error(`parentHash must be 32 bytes, received ${parentHash.length} bytes`)
@@ -328,6 +338,38 @@ export class BlockHeader {
         }
       } else {
         throw new Error(`nonce must be 8 bytes, received ${nonce.length} bytes`)
+      }
+    }
+
+    // Check for constant values for PoS blocks
+    if (this._common.consensusType() === 'pos') {
+      let error = false
+      let errorMsg = ''
+
+      if (!uncleHash.equals(KECCAK256_RLP_ARRAY)) {
+        errorMsg += `, uncleHash: ${uncleHash.toString(
+          'hex'
+        )} (expected: ${KECCAK256_RLP_ARRAY.toString('hex')})`
+        error = true
+      }
+      if (!difficulty.eq(new BN(0))) {
+        errorMsg += `, difficulty: ${difficulty} (expected: 0)`
+        error = true
+      }
+      if (!extraData.equals(Buffer.from([]))) {
+        errorMsg += `, extraData: ${extraData.toString('hex')} (expected: '')`
+        error = true
+      }
+      if (!mixHash.equals(zeros(32))) {
+        errorMsg += `, mixHash: ${mixHash.toString('hex')} (expected: ${zeros(32).toString('hex')})`
+        error = true
+      }
+      if (!nonce.equals(zeros(8))) {
+        errorMsg += `, nonce: ${nonce.toString('hex')} (expected: ${zeros(8).toString('hex')})`
+        error = true
+      }
+      if (error) {
+        throw new Error('Invalid PoS block' + errorMsg)
       }
     }
   }
@@ -504,7 +546,7 @@ export class BlockHeader {
     }
     const hardfork = this._getHardfork()
     // Consensus type dependent checks
-    if (this._common.consensusAlgorithm() !== 'clique') {
+    if (this._common.consensusAlgorithm() === 'ethash') {
       // PoW/Ethash
       if (
         this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)
@@ -512,7 +554,8 @@ export class BlockHeader {
         const msg = 'invalid amount of extra data'
         throw this._error(msg)
       }
-    } else {
+    }
+    if (this._common.consensusAlgorithm() === 'clique') {
       // PoA/Clique
       const minLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
       if (!this.cliqueIsEpochTransition()) {
