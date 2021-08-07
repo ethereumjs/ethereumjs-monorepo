@@ -72,7 +72,7 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
 
     try {
       const headerData = {
-        mixHash: Buffer.from('123abc', 'hex'),
+        mixHash: Buffer.alloc(32).fill(1),
       }
       BlockHeader.fromHeaderData(headerData, { common })
       st.fail('should throw')
@@ -82,7 +82,7 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
 
     try {
       const headerData = {
-        nonce: Buffer.from('123abc', 'hex'),
+        nonce: Buffer.alloc(8).fill(1),
       }
       BlockHeader.fromHeaderData(headerData, { common })
       st.fail('should throw')
@@ -95,7 +95,9 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
 
   t.test('test that a PoS block with uncles cannot be produced', function (st) {
     try {
-      new Block(undefined, undefined, [BlockHeader.fromHeaderData(undefined, { common })], { common })
+      new Block(undefined, undefined, [BlockHeader.fromHeaderData(undefined, { common })], {
+        common,
+      })
       st.fail('should have thrown')
     } catch (e) {
       st.pass('should throw')

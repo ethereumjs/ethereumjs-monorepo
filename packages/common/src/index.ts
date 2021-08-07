@@ -968,7 +968,7 @@ export default class Common extends EventEmitter {
 
     let value
     for (const hfChanges of HARDFORK_CHANGES) {
-      if (hfChanges[1].hasOwnProperty('consensus')) { // eslint-disable-line
+      if ('consensus' in hfChanges[1]) { // eslint-disable-line
         value = hfChanges[1]['consensus']['algorithm']
       }
       if (hfChanges[0] === hardfork) break
@@ -998,7 +998,7 @@ export default class Common extends EventEmitter {
 
     let value
     for (const hfChanges of HARDFORK_CHANGES) {
-      if (hfChanges[1].hasOwnProperty('consensus')) { // eslint-disable-line
+      if ('consensus' in hfChanges[1]) { // eslint-disable-line
         // The config parameter is named after the respective consensus algorithm
         value = hfChanges[1]['consensus'][hfChanges[1]['consensus']['algorithm']]
       }
