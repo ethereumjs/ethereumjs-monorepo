@@ -492,7 +492,7 @@ export default class Common extends EventEmitter {
     let value = null
     for (const hfChanges of HARDFORK_CHANGES) {
       // EIP-referencing HF file (e.g. berlin.json)
-      if (hfChanges[1].hasOwnProperty('eips')) { // eslint-disable-line
+      if ('eips' in hfChanges[1]) {
         const hfEIPs = hfChanges[1]['eips']
         for (const eip of hfEIPs) {
           const valueEIP = this.paramByEIP(topic, name, eip)
@@ -943,7 +943,7 @@ export default class Common extends EventEmitter {
 
     let value
     for (const hfChanges of HARDFORK_CHANGES) {
-      if (hfChanges[1].hasOwnProperty('consensus')) { // eslint-disable-line
+      if ('consensus' in hfChanges[1]) {
         value = hfChanges[1]['consensus']['type']
       }
       if (hfChanges[0] === hardfork) break
@@ -968,7 +968,7 @@ export default class Common extends EventEmitter {
 
     let value
     for (const hfChanges of HARDFORK_CHANGES) {
-      if ('consensus' in hfChanges[1]) { // eslint-disable-line
+      if ('consensus' in hfChanges[1]) {
         value = hfChanges[1]['consensus']['algorithm']
       }
       if (hfChanges[0] === hardfork) break
@@ -998,7 +998,7 @@ export default class Common extends EventEmitter {
 
     let value
     for (const hfChanges of HARDFORK_CHANGES) {
-      if ('consensus' in hfChanges[1]) { // eslint-disable-line
+      if ('consensus' in hfChanges[1]) {
         // The config parameter is named after the respective consensus algorithm
         value = hfChanges[1]['consensus'][hfChanges[1]['consensus']['algorithm']]
       }
