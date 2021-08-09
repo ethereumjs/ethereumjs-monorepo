@@ -1,6 +1,12 @@
 {
   "name": "root",
   "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "npm": ">=7"
+  },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.27.0",
     "@typescript-eslint/parser": "^4.27.0",
@@ -10,50 +16,20 @@
     "eslint-plugin-prettier": "^3.1.3",
     "eslint-plugin-sonarjs": "^0.5.0",
     "husky": "^4.2.5",
-    "lerna": "^3.20.2",
     "npm-auth-to-token": "1.0.0",
     "typedoc-plugin-markdown": "^3.10.4",
     "verdaccio": "4.4.4"
   },
   "husky": {
     "hooks": {
-      "pre-push": "npm run lint"
+      "pre-push": "npm run lint --workspaces"
     }
   },
   "scripts": {
-    "postinstall": "npm run bootstrap",
-    "bootstrap": "lerna bootstrap --ignore-scripts --include-dependencies --no-ci --hoist && npm run temporaryClientFixes && npm run build",
-    "temporaryClientFixes": "cd node_modules/bcrypto && test -d 'build' && echo 'Exists' || npm i",
-    "bootstrap:block": "npm run bootstrap -- --scope @ethereumjs/block",
-    "bootstrap:blockchain": "npm run bootstrap -- --scope @ethereumjs/blockchain",
-    "bootstrap:client": "npm run bootstrap -- --scope @ethereumjs/client",
-    "bootstrap:common": "npm run bootstrap -- --scope @ethereumjs/common",
-    "bootstrap:devp2p": "npm run bootstrap -- --scope @ethereumjs/devp2p",
-    "bootstrap:ethash": "npm run bootstrap -- --scope @ethereumjs/ethash",
-    "bootstrap:trie": "npm run bootstrap -- --scope merkle-patricia-tree",
-    "bootstrap:tx": "npm run bootstrap -- --scope @ethereumjs/tx",
-    "bootstrap:util": "npm run bootstrap -- --scope ethereumjs-util",
-    "bootstrap:vm": "npm run bootstrap -- --scope @ethereumjs/vm",
-    "build": "lerna run build --stream",
-    "build:tree": "lerna run build --stream --include-dependencies",
-    "build:block": "npm run build:tree -- --scope @ethereumjs/block",
-    "build:blockchain": "npm run build:tree -- --scope @ethereumjs/blockchain",
-    "build:client": "npm run build:tree -- --scope @ethereumjs/client",
-    "build:common": "npm run build:tree -- --scope @ethereumjs/common",
-    "build:devp2p": "npm run build:tree -- --scope @ethereumjs/devp2p",
-    "build:ethash": "npm run build:tree -- --scope @ethereumjs/ethash",
-    "build:trie": "npm run build:tree -- --scope merkle-patricia-tree",
-    "build:tx": "npm run build:tree -- --scope @ethereumjs/tx",
-    "build:util": "npm run build:tree -- --scope ethereumjs-util",
-    "build:vm": "npm run build:tree -- --scope @ethereumjs/vm",
-    "lint": "lerna run lint --stream --parallel -- --mode compact",
-    "lint:fix": "lerna run lint:fix --stream --parallel",
-    "test": "lerna exec npm run test --parallel",
-    "coverage": "lerna run coverage --stream",
-    "docs:build": "lerna run docs:build --ignore @ethereumjs/ethash",
+    "postinstall": "npm run build --workspaces",
     "e2e:publish": "./scripts/e2e-publish.sh",
     "e2e:resolutions": "node ./scripts/e2e-resolutions.js",
     "e2e:inject": "node ./scripts/e2e-inject-resolutions.js",
-    "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist packages/*/dist.browser packages/*/package-lock.json"
+    "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist packages/*/dist.browser packages/*/coverage packages/*/package-lock.json"
   }
 }

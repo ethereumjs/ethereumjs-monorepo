@@ -6,9 +6,10 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "typeRoots": ["node_modules/@types"],
-    "declaration": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "downlevelIteration": true
-  }
+    "composite": true,
+  },
+  "references": [
+    { "path": "../common/tsconfig.prod.json" },
+    { "path": "../util/tsconfig.prod.json" }
+  ],
 }

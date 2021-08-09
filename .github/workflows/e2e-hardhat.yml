@@ -36,11 +36,14 @@ jobs:
           path: |
             **/node_modules
 
+      - name: Use npm v7 for workspaces support 
+        run: npm i -g npm@7
+
       # Build if cache is restored
-      - run: npm run build
+      - run: npm run build --workspaces
         if: steps.cache.outputs.cache-hit == 'true'
 
-      # Otherwise, run install (which also runs bootstrap and build)
+      # Otherwise, run install (which also runs build)
       - run: npm install
         if: steps.cache.outputs.cache-hit != 'true'
 

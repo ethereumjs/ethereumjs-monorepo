@@ -25,7 +25,8 @@
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "coverage": "../../config/cli/coverage.sh",
-    "test": "tape -r ts-node/register test/*.spec.ts"
+    "test": "tape -r ts-node/register test/*.spec.ts",
+    "docs:build": "echo 'Package has no generated docs'"
   },
   "dependencies": {
     "@types/levelup": "^4.3.0",

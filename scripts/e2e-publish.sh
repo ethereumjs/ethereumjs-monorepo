@@ -33,28 +33,20 @@ npm-auth-to-token \
   -u test \
   -p test \
   -e test@test.com \
-  -r http://localhost:4873 \
+  -r http://localhost:4873
 
-# Rewrite lerna.json to auto-publish independently versioned packages
-echo '{ "packages": [ "packages/*" ], "version": "independent" }' > lerna.json
-
-# Lerna version
-lerna version minor \
-  --force-publish=* \
+# npm version
+npm version minor \
+  --workspaces \
   --no-git-tag-version \
-  --no-push \
-  --yes
+  --force
 
 # Set identity prior to publishing
 git config user.email "someone@example.com"
 git config user.name "someone"
 
-# Commit changes because lerna checks git before
-git commit -a -m 'E2E testing'
-
-# Lerna publish to e2e tag
-lerna publish from-package \
+# Publish to e2e tag
+npm publish \
   --dist-tag e2e \
   --registry http://localhost:4873 \
-  --ignore-scripts \
-  --yes
+  --workspaces

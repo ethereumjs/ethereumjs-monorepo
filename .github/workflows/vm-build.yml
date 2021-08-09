@@ -31,14 +31,18 @@ jobs:
           key: VM-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
           path: '**/node_modules'
 
-      # Installs root dependencies, ignoring Bootstrap All script.
-      # Bootstraps the current package only
-      - run: npm install --ignore-scripts && npm run bootstrap:vm
+      # Installs root dependencies,
+      # ignoring postinstall script to build all packages.
+      - run: npm install --ignore-scripts
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
 
       # Builds current package and the ones it depends from.
-      - run: npm run build:vm
+      - run: npm run build --workspace=@ethereumjs/vm
+        working-directory: ${{github.workspace}}
+
+      - name: Build deps used in tests (for karma)
+        run: npm run build --workspace=@ethereumjs/tx
         working-directory: ${{github.workspace}}
 
       - run: npm run coverage
@@ -69,14 +73,14 @@ jobs:
           key: VM-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
           path: '**/node_modules'
 
-      # Installs root dependencies, ignoring Bootstrap All script.
-      # Bootstraps the current package only
-      - run: npm install --ignore-scripts && npm run bootstrap:vm
+      # Installs root dependencies,
+      # ignoring postinstall script to build all packages.
+      - run: npm install --ignore-scripts
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
 
       # Builds current package and the ones it depends from.
-      - run: npm run build:vm
+      - run: npm run build --workspace=@ethereumjs/vm
         working-directory: ${{github.workspace}}
 
       - run: npm run test:state:selectedForks
@@ -98,14 +102,14 @@ jobs:
           key: VM-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
           path: '**/node_modules'
 
-      # Installs root dependencies, ignoring Bootstrap All script.
-      # Bootstraps the current package only
-      - run: npm install --ignore-scripts && npm run bootstrap:vm
+      # Installs root dependencies,
+      # ignoring postinstall script to build all packages.
+      - run: npm install --ignore-scripts
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
 
       # Builds current package and the ones it depends from.
-      - run: npm run build:vm
+      - run: npm run build --workspace=@ethereumjs/vm
         working-directory: ${{github.workspace}}
 
       - run: npm run test:blockchain
@@ -127,14 +131,17 @@ jobs:
           key: VM-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
           path: '**/node_modules'
 
-      # Installs root dependencies, ignoring Bootstrap All script.
-      # Bootstraps the current package only
-      - run: npm install --ignore-scripts && npm run bootstrap:vm
+      - name: Update to npm v7 for workspaces support 
+        run: npm i -g npm@7
+
+      # Installs root dependencies,
+      # ignoring postinstall script to build all packages.
+      - run: npm install --ignore-scripts
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
 
       # Builds current package and the ones it depends from.
-      - run: npm run build:vm
+      - run: npm run build --workspace=@ethereumjs/vm
         working-directory: ${{github.workspace}}
 
       - run: npm run build:benchmarks

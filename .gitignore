@@ -1,7 +1,6 @@
 # Vim swap files
 *.swp
 .idea
-*.lerna_backup
 .tmp
 
 # Created by https://www.toptal.com/developers/gitignore/api/node
@@ -14,7 +13,6 @@ logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-lerna-debug.log*
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json

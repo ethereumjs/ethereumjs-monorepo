@@ -21,6 +21,9 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Update to npm v7 for workspaces support 
+        run: npm i -g npm@7
+
       # This is specific to Nightly test 1/2.
       # The job needs to run with a fresh combination of lockfiles, to warm up the cache.
       # So in this step, we remove the lockfiles
@@ -48,6 +51,9 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Update to npm v7 for workspaces support 
+        run: npm i -g npm@7
+
       # This is specific to Nightly test 1/2.
       # The job needs to run with a fresh combination of lockfiles, to warm up the cache.
       # So in this step, we remove the lockfiles
@@ -73,6 +79,9 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
+
+      - name: Update to npm v7 for workspaces support 
+        run: npm i -g npm@7
 
       # This is specific to Nightly test 1/2.
       # The job needs to run with a fresh combination of lockfiles, to warm up the cache.
@@ -110,6 +119,9 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
+
+      - name: Update to npm v7 for workspaces support 
+        run: npm i -g npm@7
       
       # This is specific to Nightly test 1/2.
       # The job needs to run with a fresh combination of lockfiles, to warm up the cache.

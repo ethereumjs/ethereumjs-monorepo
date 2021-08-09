@@ -159,7 +159,7 @@ async function runTests() {
 
       const dirs = config.getTestDirs(FORK_CONFIG_VM, name)
       for (const dir of dirs) {
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
           testLoader
             .getTestsFromArgs(
               dir,

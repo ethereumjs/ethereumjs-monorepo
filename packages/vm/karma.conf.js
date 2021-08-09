@@ -8,7 +8,12 @@ module.exports = function (config) {
     frameworks: ['karma-typescript', 'tap'],
 
     // list of files / patterns to load in the browser
-    files: ['./tests/**/*.ts', './src/**/*.ts'],
+    files: [
+      './src/**/*.ts',
+      './tests/api/**/*.ts',
+      './tests/util.ts',
+      './tests/testLoader.ts',
+    ],
 
     // list of files / patterns to exclude
     exclude: [],
