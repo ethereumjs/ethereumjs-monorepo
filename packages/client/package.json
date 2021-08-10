@@ -25,8 +25,7 @@
     "ethereumjs": "dist/bin/cli.js"
   },
   "scripts": {
-    "workaround-build-bcrypto": "cd ../../node_modules/bcrypto && test -d 'build' && echo 'bcrypto build directory exists' || npm i",
-    "build": "npm run workaround-build-bcrypto && npm run build:node && npm run build:browser",
+    "build": "npm run build:node && npm run build:browser",
     "build:node": "tsc --build ./tsconfig.prod.json",
     "build:browser": "tsc -p ./tsconfig.browser.json && npm run bundle && rm -rf dist.browser",
     "prepublishOnly": "npm run clean && npm run build && npm run test",

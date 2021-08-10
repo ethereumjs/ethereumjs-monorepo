@@ -31,18 +31,14 @@ jobs:
       - name: Update to npm v7 for workspaces support 
         run: npm i -g npm@7
 
-      # Installs root dependencies,
-      # ignoring postinstall script to build all packages.
-      - run: npm install --ignore-scripts
+      # Installs dependencies and builds all packages (if cache hit failed)
+      - run: npm install
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
 
-      # Builds current package and the ones it depends from.
-      - run: npm run build --workspace=@ethereumjs/vm
-        working-directory: ${{github.workspace}}
-
-      - name: Build deps used in tests (for karma)
-        run: npm run build --workspace=@ethereumjs/tx
+      # Builds fresh packages (if cache hit succeeded)
+      - run: npm run build --workspaces
+        if: steps.cache.outputs.cache-hit == 'true'
         working-directory: ${{github.workspace}}
 
       - run: npm run coverage
@@ -85,14 +81,14 @@ jobs:
       - name: Update to npm v7 for workspaces support 
         run: npm i -g npm@7
 
-      # Installs root dependencies,
-      # ignoring postinstall script to build all packages.
-      - run: npm install --ignore-scripts
+      # Installs dependencies and builds all packages (if cache hit failed)
+      - run: npm install
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
 
-      # Builds current package and the ones it depends from.
-      - run: npm run build --workspace=@ethereumjs/vm
+      # Builds fresh packages (if cache hit succeeded)
+      - run: npm run build --workspaces
+        if: steps.cache.outputs.cache-hit == 'true'
         working-directory: ${{github.workspace}}
 
       - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
@@ -133,14 +129,14 @@ jobs:
       - name: Update to npm v7 for workspaces support 
         run: npm i -g npm@7
 
-      # Installs root dependencies,
-      # ignoring postinstall script to build all packages.
-      - run: npm install --ignore-scripts
+      # Installs dependencies and builds all packages (if cache hit failed)
+      - run: npm install
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
 
-      # Builds current package and the ones it depends from.
-      - run: npm run build --workspace=@ethereumjs/vm
+      # Builds fresh packages (if cache hit succeeded)
+      - run: npm run build --workspaces
+        if: steps.cache.outputs.cache-hit == 'true'
         working-directory: ${{github.workspace}}
 
       - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
@@ -179,14 +175,14 @@ jobs:
       - name: Update to npm v7 for workspaces support 
         run: npm i -g npm@7
 
-      # Installs root dependencies,
-      # ignoring postinstall script to build all packages.
-      - run: npm install --ignore-scripts
+      # Installs dependencies and builds all packages (if cache hit failed)
+      - run: npm install
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
 
-      # Builds current package and the ones it depends from.
-      - run: npm run build --workspace=@ethereumjs/vm
+      # Builds fresh packages (if cache hit succeeded)
+      - run: npm run build --workspaces
+        if: steps.cache.outputs.cache-hit == 'true'
         working-directory: ${{github.workspace}}
 
       - run: npm run test:blockchain -- ${{ matrix.args }}
@@ -228,14 +224,14 @@ jobs:
       - name: Update to npm v7 for workspaces support 
         run: npm i -g npm@7
 
-      # Installs root dependencies,
-      # ignoring postinstall script to build all packages.
-      - run: npm install --ignore-scripts
+      # Installs dependencies and builds all packages (if cache hit failed)
+      - run: npm install
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
 
-      # Builds current package and the ones it depends from.
-      - run: npm run build --workspace=@ethereumjs/vm
+      # Builds fresh packages (if cache hit succeeded)
+      - run: npm run build --workspaces
+        if: steps.cache.outputs.cache-hit == 'true'
         working-directory: ${{github.workspace}}
 
       - run: npm run test:blockchain -- ${{ matrix.args }}
@@ -260,14 +256,14 @@ jobs:
       - name: Update to npm v7 for workspaces support 
         run: npm i -g npm@7
 
-      # Installs root dependencies,
-      # ignoring postinstall script to build all packages.
-      - run: npm install --ignore-scripts
+      # Installs dependencies and builds all packages (if cache hit failed)
+      - run: npm install
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
 
-      # Builds current package and the ones it depends from.
-      - run: npm run build --workspace=@ethereumjs/vm
+      # Builds fresh packages (if cache hit succeeded)
+      - run: npm run build --workspaces
+        if: steps.cache.outputs.cache-hit == 'false'
         working-directory: ${{github.workspace}}
 
       - run: npm run build:benchmarks
