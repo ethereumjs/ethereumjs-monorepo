@@ -938,7 +938,7 @@ export default class Common extends EventEmitter {
    *
    * Note: This value can update along a hardfork.
    */
-  consensusType(): string {
+  consensusType(): 'pow' | 'poa' | 'pos' {
     const hardfork = this.hardfork()
 
     let value
