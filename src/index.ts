@@ -33,7 +33,7 @@ export function encode(input: Input): Buffer {
  * @param base The base to parse the integer into
  */
 function safeParseInt(v: string, base: number): number {
-  if (v.slice(0, 2) === '00') {
+  if (v[0] === '0' && v[1] === '0') {
     throw new Error('invalid RLP: extra zeros')
   }
 
