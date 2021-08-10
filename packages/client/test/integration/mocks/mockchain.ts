@@ -23,11 +23,13 @@ export default class MockChain extends Chain {
 
   async build() {
     const blocks: Block[] = []
+    const mergeBlockNumber = this.config.chainCommon.hardforkBlockBN('theMerge')?.toNumber();
+    
     for (let number = 0; number < this.height; number++) {
       const block = Block.fromBlockData({
         header: {
           number: number + 1,
-          difficulty: 1,
+          difficulty: mergeBlockNumber ? 0 : 1,
           parentHash: number ? blocks[number - 1].hash() : (this.genesis as any).hash,
         },
       })
