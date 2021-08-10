@@ -58,7 +58,8 @@
     "multiaddr": "^8.1.2",
     "rlp": "^2.2.4",
     "scanf": "^1.1.2",
-    "secp256k1": "^4.0.2"
+    "secp256k1": "^4.0.2",
+    "snappyjs": "^0.6.1"
   },
   "devDependencies": {
     "@ethereumjs/block": "^3.4.0",
