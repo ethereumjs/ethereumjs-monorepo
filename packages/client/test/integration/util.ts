@@ -23,7 +23,7 @@ export async function setup(
   const config = new Config({ loglevel, syncmode, lightserv, common })
 
   const server = new MockServer({ config, location })
-  const blockchain = new Blockchain({
+  const blockchain = await Blockchain.create({
     validateBlocks: false,
     validateConsensus: false,
   })
