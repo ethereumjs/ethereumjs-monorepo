@@ -35,6 +35,11 @@ export default class MockChain extends Chain {
       })
       blocks.push(block)
     }
-    await this.putBlocks(blocks)
+    try {
+      await this.putBlocks(blocks)
+    }
+    catch (err) {
+      console.log(err);
+    }
   }
 }
