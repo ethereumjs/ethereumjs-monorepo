@@ -82,6 +82,9 @@ jobs:
           key: Client-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
           path: '**/node_modules'
 
+      - name: Use npm v7 for workspaces support 
+        run: npm i -g npm@7
+        
       # Installs dependencies and builds all packages (if cache hit failed)
       - run: npm install
         if: steps.cache.outputs.cache-hit != 'true'
