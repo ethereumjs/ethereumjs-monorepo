@@ -1,9 +1,16 @@
 {
   "extends": "../../config/tsconfig.prod.json",
   "compilerOptions": {
+    "rootDir": "./src",
     "outDir": "./dist",
     "types": ["node"],
-    "typeRoots": ["node_modules/@types"]
+    "typeRoots": ["node_modules/@types"],
+    "composite": true,
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts"],
+  "references": [
+    { "path": "../common/tsconfig.prod.json" },
+    { "path": "../ethash/tsconfig.prod.json" },
+    { "path": "../util/tsconfig.prod.json" }
+  ],
 }

@@ -122,7 +122,7 @@ export function makeTx(txData: any, opts?: TxOptions) {
 }
 
 export async function verifyPostConditions(state: any, testData: any, t: tape.Test) {
-  return new Promise((resolve) => {
+  return new Promise<void>((resolve) => {
     const hashedAccounts: any = {}
     const keyMap: any = {}
 
@@ -178,7 +178,7 @@ export function verifyAccountPostConditions(
   acctData: any,
   t: tape.Test
 ) {
-  return new Promise((resolve) => {
+  return new Promise<void>((resolve) => {
     t.comment('Account: ' + address)
     t.ok(format(account.balance, true).equals(format(acctData.balance, true)), 'correct balance')
     t.ok(format(account.nonce, true).equals(format(acctData.nonce, true)), 'correct nonce')

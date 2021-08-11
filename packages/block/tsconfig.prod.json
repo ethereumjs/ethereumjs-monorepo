@@ -1,8 +1,15 @@
 {
   "extends": "../../config/tsconfig.prod.json",
   "compilerOptions": {
+    "rootDir": "./src",
     "outDir": "./dist",
     "lib": ["dom"],
+    "composite": true
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts"],
+  "references": [
+    { "path": "../trie/tsconfig.prod.json" },
+    { "path": "../tx/tsconfig.prod.json" },
+    { "path": "../util/tsconfig.prod.json" }
+  ],
 }
