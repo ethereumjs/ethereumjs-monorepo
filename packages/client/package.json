@@ -25,6 +25,8 @@
     "ethereumjs": "dist/bin/cli.js"
   },
   "scripts": {
+    "preinstall": "npm run binWorkaround",
+    "binWorkaround": "test -f dist/bin/cli.js || echo 'install fails if bin script does not exist (https://github.com/npm/cli/issues/2632), creating placeholder file at \"dist/bin/cli.js\"' && mkdir -p 'dist/bin' && touch dist/bin/cli.js",
     "build": "npm run build:node && npm run build:browser",
     "build:node": "tsc --build ./tsconfig.prod.json",
     "build:browser": "tsc -p ./tsconfig.browser.json && npm run bundle && rm -rf dist.browser",
