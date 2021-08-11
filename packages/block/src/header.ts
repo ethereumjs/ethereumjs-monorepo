@@ -1,4 +1,4 @@
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
 import {
   Address,
   BN,
@@ -342,7 +342,7 @@ export class BlockHeader {
     }
 
     // Check for constant values for PoS blocks
-    if (this._common.consensusType() === 'pos') {
+    if (this._common.consensusType() === ConsensusType.ProofOfStake) {
       let error = false
       let errorMsg = ''
 
@@ -380,10 +380,10 @@ export class BlockHeader {
    * @param parentBlockHeader - the header from the parent `Block` of this header
    */
   canonicalDifficulty(parentBlockHeader: BlockHeader): BN {
-    if (this._common.consensusType() !== 'pow') {
+    if (this._common.consensusType() !== ConsensusType.ProofOfWork) {
       throw new Error('difficulty calculation is only supported on PoW chains')
     }
-    if (this._common.consensusAlgorithm() !== 'ethash') {
+    if (this._common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
       throw new Error('difficulty calculation currently only supports the ethash algorithm')
     }
     const hardfork = this._getHardfork()
@@ -546,7 +546,7 @@ export class BlockHeader {
     }
     const hardfork = this._getHardfork()
     // Consensus type dependent checks
-    if (this._common.consensusAlgorithm() === 'ethash') {
+    if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Ethash) {
       // PoW/Ethash
       if (
         this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)
@@ -555,7 +555,7 @@ export class BlockHeader {
         throw this._error(msg)
       }
     }
-    if (this._common.consensusAlgorithm() === 'clique') {
+    if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       // PoA/Clique
       const minLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
       if (!this.cliqueIsEpochTransition()) {
@@ -602,7 +602,7 @@ export class BlockHeader {
       throw new Error('invalid timestamp')
     }
 
-    if (this._common.consensusAlgorithm() === 'clique') {
+    if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       const period = this._common.consensusConfig().period
       // Timestamp diff between blocks is lower than PERIOD (clique)
       if (parentHeader.timestamp.addn(period).gt(this.timestamp)) {
@@ -733,7 +733,7 @@ export class BlockHeader {
   }
 
   private _requireClique(name: string) {
-    if (this._common.consensusAlgorithm() !== 'clique') {
+    if (this._common.consensusAlgorithm() !== ConsensusAlgorithm.Clique) {
       throw new Error(`BlockHeader.${name}() call only supported for clique PoA networks`)
     }
   }

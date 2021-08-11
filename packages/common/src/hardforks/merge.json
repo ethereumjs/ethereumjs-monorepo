@@ -1,5 +1,5 @@
 {
-  "name": "theMerge",
+  "name": "merge",
   "comment": "Hardfork to upgrade the consensus mechanism to Proof-of-Stake",
   "url": "https://github.com/ethereum/pm/issues/361",
   "status": "pre-Draft",

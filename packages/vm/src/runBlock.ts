@@ -3,6 +3,7 @@ import { encode } from 'rlp'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Account, Address, BN, intToBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
+import { ConsensusType } from '@ethereumjs/common'
 import VM from './index'
 import Bloom from './bloom'
 import { StateManager } from './state'
@@ -291,7 +292,7 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   }
   const blockResults = await applyTransactions.bind(this)(block, opts)
   // Pay ommers and miners
-  if (this._common.consensusType() === 'pow') {
+  if (this._common.consensusType() === ConsensusType.ProofOfWork) {
     await assignBlockRewards.bind(this)(block)
   }
   return blockResults

@@ -1,8 +1,9 @@
 import { Address, BN, toBuffer } from 'ethereumjs-util'
 import { encode } from 'rlp'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { TypedTransaction } from '@ethereumjs/tx'
 import { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
+import { ConsensusType } from '@ethereumjs/common'
+import { TypedTransaction } from '@ethereumjs/tx'
 import VM from '.'
 import Bloom from './bloom'
 import { RunTxResult } from './runTx'
@@ -204,7 +205,7 @@ export class BlockBuilder {
     const blockOpts = this.blockOpts
     const consensusType = this.vm._common.consensusType()
 
-    if (consensusType === 'pow') {
+    if (consensusType === ConsensusType.ProofOfWork) {
       await this.rewardMiner()
     }
 
@@ -225,7 +226,7 @@ export class BlockBuilder {
       timestamp,
     }
 
-    if (consensusType === 'pow') {
+    if (consensusType === ConsensusType.ProofOfWork) {
       headerData.nonce = sealOpts?.nonce ?? headerData.nonce
       headerData.mixHash = sealOpts?.mixHash ?? headerData.mixHash
     }

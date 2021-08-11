@@ -1,6 +1,7 @@
 import { debug as createDebugLogger } from 'debug'
 import { Address, BN, toBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
+import { ConsensusType } from '@ethereumjs/common'
 import {
   AccessList,
   AccessListItem,
@@ -413,7 +414,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Update miner's balance
   let miner
-  if (this._common.consensusType() === 'pow') {
+  if (this._common.consensusType() === ConsensusType.ProofOfWork) {
     miner = block.header.coinbase
   } else {
     // Backwards-compatibilty check

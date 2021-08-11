@@ -6,7 +6,7 @@ import { Block } from '../src/block'
 
 const common = new Common({
   chain: Chain.Mainnet,
-  hardfork: Hardfork.TheMerge,
+  hardfork: Hardfork.Merge,
 })
 
 function validateMergeHeader(st: tape.Test, header: BlockHeader) {

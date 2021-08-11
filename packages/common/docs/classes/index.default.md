@@ -460,7 +460,7 @@ ___
 ▸ **consensusType**(): `string`
 
 Returns the consensus type of the network
-Possible values: "pow"|"poa"
+Possible values: "pow"|"poa"|"pos"
 
 #### Returns
 
