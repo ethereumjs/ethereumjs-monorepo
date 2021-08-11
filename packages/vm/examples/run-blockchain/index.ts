@@ -1,7 +1,7 @@
 import { Account, Address, toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
-import Common from '@ethereumjs/common'
+import Common, { ConsensusType } from '@ethereumjs/common'
 import VM from '../../'
 
 const testData = require('./test-data')
@@ -9,7 +9,7 @@ const level = require('level')
 
 async function main() {
   const common = new Common({ chain: testData.network.toLowerCase() })
-  const validatePow = common.consensusType() === 'pow'
+  const validatePow = common.consensusType() === ConsensusType.ProofOfWork
   const validateBlocks = true
 
   const blockchain = await Blockchain.create({

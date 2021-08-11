@@ -59,7 +59,19 @@ export enum Hardfork {
   Berlin = 'berlin',
   London = 'london',
   Shanghai = 'shanghai',
-  TheMerge = 'theMerge',
+  Merge = 'merge',
+}
+
+export enum ConsensusType {
+  ProofOfStake = 'pos',
+  ProofOfWork = 'pow',
+  ProofOfAuthority = 'poa',
+}
+
+export enum ConsensusAlgorithm {
+  Ethash = 'ethash',
+  Clique = 'clique',
+  Casper = 'casper'
 }
 
 interface BaseOpts {
@@ -878,7 +890,7 @@ export default class Common extends EventEmitter {
    * Returns the hardfork set
    * @returns Hardfork name
    */
-  hardfork(): string {
+  hardfork(): string | Hardfork {
     return this._hardfork
   }
 
@@ -938,7 +950,7 @@ export default class Common extends EventEmitter {
    *
    * Note: This value can update along a hardfork.
    */
-  consensusType(): 'pow' | 'poa' | 'pos' {
+  consensusType(): string | ConsensusType {
     const hardfork = this.hardfork()
 
     let value
@@ -963,7 +975,7 @@ export default class Common extends EventEmitter {
    *
    * Note: This value can update along a hardfork.
    */
-  consensusAlgorithm(): string {
+   consensusAlgorithm(): string | ConsensusAlgorithm{
     const hardfork = this.hardfork()
 
     let value

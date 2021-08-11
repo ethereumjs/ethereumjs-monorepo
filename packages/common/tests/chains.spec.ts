@@ -1,5 +1,5 @@
 import tape from 'tape'
-import Common, { Chain, Hardfork } from '../src/'
+import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src/'
 import { BN } from 'ethereumjs-util'
 
 tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
@@ -104,8 +104,8 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
     st.equal(c.genesis().hash, hash, 'should return correct genesis hash')
     st.equal(c.hardforks()[3]['block'], 2463000, 'should return correct hardfork data')
     st.equal(typeof c.bootstrapNodes()[0].port, 'number', 'should return a port as number')
-    st.equal(c.consensusType(), 'pow', 'should return correct consensus type')
-    st.equal(c.consensusAlgorithm(), 'ethash', 'should return correct consensus algorithm')
+    st.equal(c.consensusType(), ConsensusType.ProofOfWork, 'should return correct consensus type')
+    st.equal(c.consensusAlgorithm(), ConsensusAlgorithm.Ethash, 'should return correct consensus algorithm')
     st.deepEqual(c.consensusConfig(), {}, 'should return empty dictionary for consensus config')
 
     c = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
@@ -113,8 +113,9 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
     st.equal(c.genesis().hash, hash, 'should return correct genesis hash')
     st.equal(c.hardforks()[3]['block'], 3, 'should return correct hardfork data')
     st.equal(typeof c.bootstrapNodes()[0].port, 'number', 'should return a port as number')
-    st.equal(c.consensusType(), 'poa', 'should return correct consensus type')
-    st.equal(c.consensusAlgorithm(), 'clique', 'should return correct consensus algorithm')
+    st.equal(c.consensusType(), ConsensusType.ProofOfAuthority
+    , 'should return correct consensus type')
+    st.equal(c.consensusAlgorithm(), ConsensusAlgorithm.Clique, 'should return correct consensus algorithm')
     st.equal(c.consensusConfig().epoch, 30000, 'should return correct consensus config parameters')
     st.end()
   })

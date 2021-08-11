@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { BN } from 'ethereumjs-util'
-import Common, { Chain, Hardfork } from '../src'
+import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src'
 
 tape('[Common]: Hardfork logic', function (t: tape.Test) {
   t.test('Hardfork access', function (st: tape.Test) {
@@ -17,7 +17,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
       'berlin',
       'london',
       'shanghai',
-      'theMerge',
+      'merge',
     ]
     let c
 
@@ -400,10 +400,10 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
 
   t.test('HF consensus updates', function (st: tape.Test) {
     let c = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Byzantium })
-    st.equal(c.consensusType(), 'poa', 'should provide the correct initial chain consensus type')
+    st.equal(c.consensusType(), ConsensusType.ProofOfAuthority, 'should provide the correct initial chain consensus type')
     st.equal(
       c.consensusAlgorithm(),
-      'clique',
+      ConsensusAlgorithm.Clique,
       'should provide the correct initial chain consensus algorithm'
     )
     st.equal(
@@ -412,11 +412,11 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
       'should provide the correct initial chain consensus configuration'
     )
 
-    c = new Common({ chain: Chain.Goerli, hardfork: Hardfork.TheMerge })
-    st.equal(c.consensusType(), 'pos', 'should provide the correct updated chain consensus type')
+    c = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Merge })
+    st.equal(c.consensusType(), ConsensusType.ProofOfStake, 'should provide the correct updated chain consensus type')
     st.equal(
       c.consensusAlgorithm(),
-      'casper',
+      ConsensusAlgorithm.Casper,
       'should provide the correct updated chain consensus algorithm'
     )
     st.deepEqual(

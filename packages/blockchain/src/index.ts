@@ -3,7 +3,7 @@ import Semaphore from 'semaphore-async-await'
 import { Address, BN, rlp } from 'ethereumjs-util'
 import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
 import { DBManager } from './db/manager'
 import { DBOp, DBSetBlockOrHeader, DBSetTD, DBSetHashToNumber, DBSaveLookups } from './db/helpers'
 import { DBTarget } from './db/operation'
@@ -264,15 +264,15 @@ export default class Blockchain implements BlockchainInterface {
     this.dbManager = new DBManager(this.db, this._common)
 
     if (this._validateConsensus) {
-      if (this._common.consensusType() === 'pow') {
-        if (this._common.consensusAlgorithm() !== 'ethash') {
+      if (this._common.consensusType() === ConsensusType.ProofOfWork) {
+        if (this._common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
           throw new Error('consensus validation only supported for pow ethash algorithm')
         } else {
           this._ethash = new Ethash(this.db)
         }
       }
-      if (this._common.consensusType() === 'poa') {
-        if (this._common.consensusAlgorithm() !== 'clique') {
+      if (this._common.consensusType() === ConsensusType.ProofOfAuthority) {
+        if (this._common.consensusAlgorithm() !== ConsensusAlgorithm.Clique) {
           throw new Error(
             'consensus (signature) validation only supported for poa clique algorithm'
           )
@@ -348,13 +348,13 @@ export default class Blockchain implements BlockchainInterface {
 
       await this.dbManager.batch(dbOps)
 
-      if (this._common.consensusAlgorithm() === 'clique') {
+      if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
         await this.cliqueSaveGenesisSigners(genesisBlock)
       }
     }
 
     // Clique: read current signer states, signer votes, and block signers
-    if (this._common.consensusAlgorithm() === 'clique') {
+    if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       this._cliqueLatestSignerStates = await this.dbManager.getCliqueLatestSignerStates()
       this._cliqueLatestVotes = await this.dbManager.getCliqueLatestVotes()
       this._cliqueLatestBlockSigners = await this.dbManager.getCliqueLatestBlockSigners()
@@ -433,7 +433,7 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   private _requireClique() {
-    if (this._common.consensusAlgorithm() !== 'clique') {
+    if (this._common.consensusAlgorithm() !== ConsensusAlgorithm.Clique) {
       throw new Error('Function call only supported for clique PoA networks')
     }
   }
@@ -902,14 +902,14 @@ export default class Blockchain implements BlockchainInterface {
       }
 
       if (this._validateConsensus) {
-        if (this._common.consensusAlgorithm() === 'ethash') {
+        if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Ethash) {
           const valid = await this._ethash!.verifyPOW(block)
           if (!valid) {
             throw new Error('invalid POW')
           }
         }
 
-        if (this._common.consensusAlgorithm() === 'clique') {
+        if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
           const valid = header.cliqueVerifySignature(this.cliqueActiveSigners())
           if (!valid) {
             throw new Error('invalid PoA block signature (clique)')
@@ -921,7 +921,7 @@ export default class Blockchain implements BlockchainInterface {
         }
       }
 
-      if (this._common.consensusAlgorithm() === 'clique') {
+      if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
         // validate checkpoint signers towards active signers on epoch transition blocks
         if (header.cliqueIsEpochTransition()) {
           // note: keep votes on epoch transition blocks in case of reorgs.
@@ -963,7 +963,7 @@ export default class Blockchain implements BlockchainInterface {
       let ancientHeaderNumber: undefined | BN
       // if total difficulty is higher than current, add it to canonical chain
       if (block.isGenesis() || td.gt(currentTd.header)) {
-        if (this._common.consensusAlgorithm() === 'clique') {
+        if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
           ancientHeaderNumber = (await this._findAncient(header)).number
         }
 
@@ -1001,7 +1001,7 @@ export default class Blockchain implements BlockchainInterface {
       await this.dbManager.batch(ops)
 
       // Clique: update signer votes and state
-      if (this._common.consensusAlgorithm() === 'clique' && ancientHeaderNumber) {
+      if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique && ancientHeaderNumber) {
         await this._cliqueDeleteSnapshots(ancientHeaderNumber.addn(1))
         for (
           const number = ancientHeaderNumber.addn(1);

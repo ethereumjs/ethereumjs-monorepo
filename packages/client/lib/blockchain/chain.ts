@@ -5,6 +5,7 @@ import { Config } from '../config'
 import { Event } from '../types'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
+import { ConsensusAlgorithm } from '../../../common/dist'
 
 /**
  * The options that the Blockchain constructor can receive.
@@ -103,7 +104,7 @@ export class Chain {
   constructor(options: ChainOptions) {
     this.config = options.config
     let validateConsensus = false
-    if (this.config.chainCommon.consensusAlgorithm() === 'clique') {
+    if (this.config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       validateConsensus = true
     }
 

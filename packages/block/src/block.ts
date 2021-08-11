@@ -1,6 +1,6 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { BN, rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
+import Common, { ConsensusType } from '@ethereumjs/common'
 import {
   TransactionFactory,
   TypedTransaction,
@@ -146,10 +146,10 @@ export class Block {
     this.uncleHeaders = uncleHeaders
     this._common = this.header._common
     if (uncleHeaders.length > 0) {
-      if (this._common.consensusType() === 'poa') {
+      if (this._common.consensusType() === ConsensusType.ProofOfAuthority) {
         throw new Error('Block initialization with uncleHeaders on a PoA network is not allowed')
       }
-      if (this._common.consensusType() === 'pos') {
+      if (this._common.consensusType() === ConsensusType.ProofOfStake) {
         throw new Error('Block initialization with uncleHeaders on a PoS network is not allowed')
       }
     }
