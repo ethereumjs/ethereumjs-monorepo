@@ -2,7 +2,7 @@ import { debug as createDebugLogger } from 'debug'
 import { Account, Address, BN } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
-import Common from '@ethereumjs/common'
+import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
 import { StateManager } from '../state/index'
 import { VmError, ERROR } from '../exceptions'
 import Message from './message'
@@ -287,7 +287,7 @@ export default class EEI {
    */
   getBlockCoinbase(): BN {
     let coinbase: Address
-    if (this._common.consensusAlgorithm() === 'clique') {
+    if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       // Backwards-compatibilty check
       // TODO: can be removed along VM v5 release
       if ('cliqueSigner' in this._env.block.header) {

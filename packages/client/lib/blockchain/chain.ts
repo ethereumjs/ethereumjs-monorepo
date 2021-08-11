@@ -1,5 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
+import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { BN, toBuffer } from 'ethereumjs-util'
 import { Config } from '../config'
 import { Event } from '../types'
@@ -103,7 +104,7 @@ export class Chain {
   constructor(options: ChainOptions) {
     this.config = options.config
     let validateConsensus = false
-    if (this.config.chainCommon.consensusAlgorithm() === 'clique') {
+    if (this.config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       validateConsensus = true
     }
 
