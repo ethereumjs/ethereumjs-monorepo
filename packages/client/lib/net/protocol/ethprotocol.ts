@@ -29,6 +29,13 @@ type GetBlockBodiesOpts = {
   hashes: Buffer[]
 }
 
+type GetPooledTransactionsOpts = {
+  /* Request id (default: next internal id) */
+  reqId?: BN
+  /* The tx hashes */
+  hashes: Buffer[]
+}
+
 /*
  * Messages with responses that are added as
  * methods in camelCase to BoundProtocol.
@@ -36,7 +43,7 @@ type GetBlockBodiesOpts = {
 export interface EthProtocolMethods {
   getBlockHeaders: (opts: GetBlockHeadersOpts) => Promise<[BN, BlockHeader[]]>
   getBlockBodies: (opts: GetBlockBodiesOpts) => Promise<[BN, BlockBodyBuffer[]]>
-  getPooledTransactions: (hashes: Buffer[]) => Promise<any[]>
+  getPooledTransactions: (opts: GetPooledTransactionsOpts) => Promise<[BN, any[]]>
 }
 
 const id = new BN(0)
@@ -122,10 +129,15 @@ export class EthProtocol extends Protocol {
       name: 'GetPooledTransactions',
       code: 0x09,
       response: 0x0a,
+      encode: ({ reqId, hashes }: GetPooledTransactionsOpts) => [
+        (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
+        hashes,
+      ],
     },
     {
       name: 'PooledTransactions',
       code: 0x0a,
+      decode: ([reqId, txs]: [Buffer, any[]]) => [new BN(reqId), txs],
     },
   ]
 
