@@ -42,8 +42,10 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Use npm v7 for workspaces support 
+        run: npm i -g npm@7
+
       - run: npm install
-      - run: npm run build
 
       - name: Test Block
         run: npm run test

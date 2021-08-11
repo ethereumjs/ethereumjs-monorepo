@@ -14,7 +14,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 **Dependencies, CI and Docs**
 
-## 5.5.1 - 2021-08-02
+## 5.5.2 - 2021-08-03
+
+Bug fix release to reverse StateManager interface breaking change. The method `modifyAccountFields` will be re-added in v6 release ([#1024](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1024))
+
+## 5.5.1 - 2021-08-02 - deprecated
 
 **New Features**
 

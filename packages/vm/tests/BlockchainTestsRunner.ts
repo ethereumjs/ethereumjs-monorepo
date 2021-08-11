@@ -2,7 +2,7 @@ import * as tape from 'tape'
 import { addHexPrefix, BN, toBuffer, rlp } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
-import Common from '@ethereumjs/common'
+import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { setupPreConditions, verifyPostConditions } from './util'
@@ -33,7 +33,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   // Only run with block validation when sealEngine present in test file
   // and being set to Ethash PoW validation
   if (testData.sealEngine && testData.sealEngine === 'Ethash') {
-    if (common.consensusAlgorithm() !== 'ethash') {
+    if (common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
       t.skip('SealEngine setting is not matching chain consensus type, skip test.')
     }
     validatePow = true

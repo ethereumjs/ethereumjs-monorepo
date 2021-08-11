@@ -74,8 +74,10 @@ tape('EIP1559 tests', (t) => {
     )
     const block = makeBlock(GWEI, tx, 2)
     const vm = new VM({ common })
+    let account = await vm.stateManager.getAccount(sender)
     const balance = GWEI.muln(21000).muln(10)
-    await vm.stateManager.modifyAccountFields(sender, { balance })
+    account.balance = balance
+    await vm.stateManager.putAccount(sender, account)
     const results = await vm.runTx({
       tx: block.transactions[0],
       block,
@@ -94,7 +96,7 @@ tape('EIP1559 tests', (t) => {
     let miner = await vm.stateManager.getAccount(coinbase)
 
     st.ok(miner.balance.eq(expectedMinerBalance), 'miner balance correct')
-    let account = await vm.stateManager.getAccount(sender)
+    account = await vm.stateManager.getAccount(sender)
     st.ok(account.balance.eq(expectedAccountBalance), 'account balance correct')
     st.ok(results.amountSpent.eq(expectedCost), 'reported cost correct')
 
@@ -107,8 +109,11 @@ tape('EIP1559 tests', (t) => {
       { common }
     )
     const block2 = makeBlock(GWEI, tx2, 1)
-    await vm.stateManager.modifyAccountFields(sender, { balance })
-    await vm.stateManager.modifyAccountFields(coinbase, { balance: new BN(0) })
+    account = await vm.stateManager.getAccount(sender)
+    account.balance = balance
+    await vm.stateManager.putAccount(sender, account)
+    miner.balance = new BN(0)
+    await vm.stateManager.putAccount(coinbase, miner)
     const results2 = await vm.runTx({
       tx: block2.transactions[0],
       block: block2,
@@ -135,8 +140,11 @@ tape('EIP1559 tests', (t) => {
       { common }
     )
     const block3 = makeBlock(GWEI, tx3, 0)
-    await vm.stateManager.modifyAccountFields(sender, { balance })
-    await vm.stateManager.modifyAccountFields(coinbase, { balance: new BN(0) })
+    account = await vm.stateManager.getAccount(sender)
+    account.balance = balance
+    await vm.stateManager.putAccount(sender, account)
+    miner.balance = new BN(0)
+    await vm.stateManager.putAccount(coinbase, miner)
     const results3 = await vm.runTx({
       tx: block3.transactions[0],
       block: block3,
@@ -172,8 +180,10 @@ tape('EIP1559 tests', (t) => {
     )
     const block = makeBlock(GWEI, tx, 2)
     const vm = new VM({ common })
+    const account = await vm.stateManager.getAccount(sender)
     const balance = GWEI.muln(210000).muln(10)
-    await vm.stateManager.modifyAccountFields(sender, { balance })
+    account.balance = balance
+    await vm.stateManager.putAccount(sender, account)
 
     /**
      * GASPRICE

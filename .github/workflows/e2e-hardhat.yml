@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [15]
+        node-version: [16]
     steps:
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
@@ -32,15 +32,18 @@ jobs:
         uses: actions/cache@v2
         id: cache
         with:
-          key: E2e-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          key: cache-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
           path: |
             **/node_modules
 
+      - name: Use npm v7 for workspaces support 
+        run: npm i -g npm@7
+
       # Build if cache is restored
-      - run: npm run build
+      - run: npm run build --workspaces
         if: steps.cache.outputs.cache-hit == 'true'
 
-      # Otherwise, run install (which also runs bootstrap and build)
+      # Otherwise, run install (which also runs build)
       - run: npm install
         if: steps.cache.outputs.cache-hit != 'true'
 
@@ -55,10 +58,9 @@ jobs:
 
       # Clone hardhat repo, inject proxied dependencies, and run tests
       - name: Build hardhat and test with new EthereumJS dependencies
+        run: bash ./scripts/e2e-hardhat.sh
         env:
           FORCE_COLOR: 3
-          INFURA_URL: ${{ secrets.URL_MAINNET }}
-        run: bash ./scripts/e2e-hardhat.sh
 
       - name: Remove hardhat directory to clean working state (for saving dependency cache)
         run: rm -rf hardhat

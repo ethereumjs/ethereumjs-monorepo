@@ -3,6 +3,7 @@ import { encode } from 'rlp'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Account, Address, BN, intToBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
+import { ConsensusType } from '@ethereumjs/common'
 import VM from './index'
 import Bloom from './bloom'
 import { StateManager } from './state'
@@ -138,7 +139,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   // check for DAO support and if we should apply the DAO fork
   if (
     this._common.hardforkIsActiveOnChain('dao') &&
-    block.header.number.eq(this._common.hardforkBlockBN('dao'))
+    block.header.number.eq(this._common.hardforkBlockBN('dao')!)
   ) {
     if (this.DEBUG) {
       debug(`Apply DAO hardfork`)
@@ -291,7 +292,7 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   }
   const blockResults = await applyTransactions.bind(this)(block, opts)
   // Pay ommers and miners
-  if (this._common.consensusType() === 'pow') {
+  if (this._common.consensusType() === ConsensusType.ProofOfWork) {
     await assignBlockRewards.bind(this)(block)
   }
   return blockResults

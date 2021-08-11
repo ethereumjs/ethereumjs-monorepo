@@ -57,7 +57,6 @@ state trie.
 - [hasGenesisState](state_stateManager.default.md#hasgenesisstate)
 - [isWarmedAddress](state_stateManager.default.md#iswarmedaddress)
 - [isWarmedStorage](state_stateManager.default.md#iswarmedstorage)
-- [modifyAccountFields](state_stateManager.default.md#modifyaccountfields)
 - [putAccount](state_stateManager.default.md#putaccount)
 - [putContractCode](state_stateManager.default.md#putcontractcode)
 - [putContractStorage](state_stateManager.default.md#putcontractstorage)
@@ -202,7 +201,7 @@ for more explanation.
 
 #### Defined in
 
-[state/stateManager.ts:305](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L305)
+[state/stateManager.ts:290](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L290)
 
 ___
 
@@ -229,7 +228,7 @@ exists
 
 #### Defined in
 
-[state/stateManager.ts:619](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L619)
+[state/stateManager.ts:604](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L604)
 
 ___
 
@@ -257,7 +256,7 @@ EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
 
 #### Defined in
 
-[state/stateManager.ts:609](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L609)
+[state/stateManager.ts:594](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L594)
 
 ___
 
@@ -279,7 +278,7 @@ Add a warm address in the current context
 
 #### Defined in
 
-[state/stateManager.ts:652](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L652)
+[state/stateManager.ts:637](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L637)
 
 ___
 
@@ -302,7 +301,7 @@ Mark the storage slot in the address as warm in the current context
 
 #### Defined in
 
-[state/stateManager.ts:685](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L685)
+[state/stateManager.ts:670](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L670)
 
 ___
 
@@ -324,7 +323,7 @@ State changes that follow can then be committed by calling
 
 #### Defined in
 
-[state/stateManager.ts:400](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L400)
+[state/stateManager.ts:385](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L385)
 
 ___
 
@@ -345,7 +344,7 @@ as defined in EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
 
 #### Defined in
 
-[state/stateManager.ts:765](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L765)
+[state/stateManager.ts:750](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L750)
 
 ___
 
@@ -371,7 +370,7 @@ Clears all storage entries for the account corresponding to `address`.
 
 #### Defined in
 
-[state/stateManager.ts:388](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L388)
+[state/stateManager.ts:373](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L373)
 
 ___
 
@@ -392,7 +391,7 @@ for more explanation. Alias of the internal {@link StateManager._clearOriginalSt
 
 #### Defined in
 
-[state/stateManager.ts:313](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L313)
+[state/stateManager.ts:298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L298)
 
 ___
 
@@ -408,7 +407,7 @@ Clear the warm accounts and storage. To be called after a transaction finished.
 
 #### Defined in
 
-[state/stateManager.ts:699](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L699)
+[state/stateManager.ts:684](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L684)
 
 ___
 
@@ -429,7 +428,7 @@ last call to checkpoint.
 
 #### Defined in
 
-[state/stateManager.ts:436](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L436)
+[state/stateManager.ts:421](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L421)
 
 ___
 
@@ -507,7 +506,7 @@ Both are represented as hex strings without the `0x` prefix.
 
 #### Defined in
 
-[state/stateManager.ts:535](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L535)
+[state/stateManager.ts:520](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L520)
 
 ___
 
@@ -541,7 +540,7 @@ This edge case is not covered by this implementation.
 
 #### Defined in
 
-[state/stateManager.ts:721](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L721)
+[state/stateManager.ts:706](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L706)
 
 ___
 
@@ -563,7 +562,7 @@ checkpoints on the instance.
 
 #### Defined in
 
-[state/stateManager.ts:571](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L571)
+[state/stateManager.ts:556](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L556)
 
 ___
 
@@ -589,7 +588,7 @@ Initializes the provided genesis state into the state trie
 
 #### Defined in
 
-[state/stateManager.ts:586](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L586)
+[state/stateManager.ts:571](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L571)
 
 ___
 
@@ -644,7 +643,7 @@ Returns an empty `Buffer` if the account has no associated code.
 
 #### Defined in
 
-[state/stateManager.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L209)
+[state/stateManager.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L194)
 
 ___
 
@@ -676,7 +675,7 @@ If this does not exist an empty `Buffer` is returned.
 
 #### Defined in
 
-[state/stateManager.ts:257](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L257)
+[state/stateManager.ts:242](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L242)
 
 ___
 
@@ -706,7 +705,7 @@ computing gas costs according to EIP-1283.
 
 #### Defined in
 
-[state/stateManager.ts:276](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L276)
+[state/stateManager.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L261)
 
 ___
 
@@ -730,7 +729,7 @@ checkpoints on the instance.
 
 #### Defined in
 
-[state/stateManager.ts:496](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L496)
+[state/stateManager.ts:481](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L481)
 
 ___
 
@@ -754,7 +753,7 @@ canonical genesis state for the configured chain parameters.
 
 #### Defined in
 
-[state/stateManager.ts:561](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L561)
+[state/stateManager.ts:546](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L546)
 
 ___
 
@@ -776,7 +775,7 @@ Returns true if the address is warm in the current context
 
 #### Defined in
 
-[state/stateManager.ts:638](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L638)
+[state/stateManager.ts:623](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L623)
 
 ___
 
@@ -799,36 +798,7 @@ Returns true if the slot of the address is warm
 
 #### Defined in
 
-[state/stateManager.ts:666](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L666)
-
-___
-
-### modifyAccountFields
-
-▸ **modifyAccountFields**(`address`, `accountFields`): `Promise`<`void`\>
-
-Gets the account associated with `address`, modifies the given account
-fields, then saves the account into state. Account fields can include
-`nonce`, `balance`, `stateRoot`, and `codeHash`.
-
-#### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `address` | `Address` | Address of the account to modify |
-| `accountFields` | `Partial`<`Pick`<`Account`, ``"nonce"`` \| ``"balance"`` \| ``"stateRoot"`` \| ``"codeHash"``\>\> | Object containing account fields and values to modify |
-
-#### Returns
-
-`Promise`<`void`\>
-
-#### Implementation of
-
-[StateManager](../interfaces/state_interface.StateManager.md).[modifyAccountFields](../interfaces/state_interface.StateManager.md#modifyaccountfields)
-
-#### Defined in
-
-[state/stateManager.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L173)
+[state/stateManager.ts:651](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L651)
 
 ___
 
@@ -883,7 +853,7 @@ corresponding to `address` to reference this.
 
 #### Defined in
 
-[state/stateManager.ts:188](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L188)
+[state/stateManager.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L171)
 
 ___
 
@@ -912,7 +882,7 @@ corresponding to `address` at the provided `key`.
 
 #### Defined in
 
-[state/stateManager.ts:354](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L354)
+[state/stateManager.ts:339](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L339)
 
 ___
 
@@ -933,7 +903,7 @@ last call to checkpoint.
 
 #### Defined in
 
-[state/stateManager.ts:460](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L460)
+[state/stateManager.ts:445](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L445)
 
 ___
 
@@ -962,7 +932,7 @@ the state trie.
 
 #### Defined in
 
-[state/stateManager.ts:509](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L509)
+[state/stateManager.ts:494](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L494)
 
 ___
 
@@ -978,9 +948,9 @@ at the end of the tx.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `address` | `Address` | Address of the account to touch |
+| Name | Type |
+| :------ | :------ |
+| `address` | `Address` |
 
 #### Returns
 
@@ -992,4 +962,4 @@ at the end of the tx.
 
 #### Defined in
 
-[state/stateManager.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L162)
+[state/stateManager.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/stateManager.ts#L161)

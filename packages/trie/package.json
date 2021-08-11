@@ -46,6 +46,7 @@
   "devDependencies": {
     "0x": "^4.9.1",
     "@types/benchmark": "^1.0.33",
+    "@types/node": "^11.13.4",
     "@types/tape": "^4.13.0",
     "benchmark": "^2.1.4",
     "eslint": "^6.8.0",

@@ -58,6 +58,20 @@ export enum Hardfork {
   MuirGlacier = 'muirGlacier',
   Berlin = 'berlin',
   London = 'london',
+  Shanghai = 'shanghai',
+  Merge = 'merge',
+}
+
+export enum ConsensusType {
+  ProofOfStake = 'pos',
+  ProofOfWork = 'pow',
+  ProofOfAuthority = 'poa',
+}
+
+export enum ConsensusAlgorithm {
+  Ethash = 'ethash',
+  Clique = 'clique',
+  Casper = 'casper',
 }
 
 interface BaseOpts {
@@ -490,7 +504,7 @@ export default class Common extends EventEmitter {
     let value = null
     for (const hfChanges of HARDFORK_CHANGES) {
       // EIP-referencing HF file (e.g. berlin.json)
-      if (hfChanges[1].hasOwnProperty('eips')) { // eslint-disable-line
+      if ('eips' in hfChanges[1]) {
         const hfEIPs = hfChanges[1]['eips']
         for (const eip of hfEIPs) {
           const valueEIP = this.paramByEIP(topic, name, eip)
@@ -699,21 +713,26 @@ export default class Common extends EventEmitter {
   /**
    * Returns the hardfork change block for hardfork provided or set
    * @param hardfork Hardfork name, optional if HF set
-   * @returns Block number
-   * @deprecated Please use hardforkBlockBN() for large number support
+   * @returns Block number or null if unscheduled
+   * @deprecated Please use {@link Common.hardforkBlockBN} for large number support
    */
-  hardforkBlock(hardfork?: string | Hardfork): number {
-    return toType(this.hardforkBlockBN(hardfork), TypeOutput.Number)
+  hardforkBlock(hardfork?: string | Hardfork): number | null {
+    const block = this.hardforkBlockBN(hardfork)
+    return block ? toType(block, TypeOutput.Number) : null
   }
 
   /**
    * Returns the hardfork change block for hardfork provided or set
    * @param hardfork Hardfork name, optional if HF set
-   * @returns Block number
+   * @returns Block number or null if unscheduled
    */
-  hardforkBlockBN(hardfork?: string | Hardfork): BN {
+  hardforkBlockBN(hardfork?: string | Hardfork): BN | null {
     hardfork = this._chooseHardfork(hardfork, false)
-    return new BN(this._getHardfork(hardfork)['block'])
+    const block = this._getHardfork(hardfork)['block']
+    if (block === undefined || block === null) {
+      return null
+    }
+    return new BN(block)
   }
 
   /**
@@ -725,14 +744,15 @@ export default class Common extends EventEmitter {
   isHardforkBlock(blockNumber: BNLike, hardfork?: string | Hardfork): boolean {
     blockNumber = toType(blockNumber, TypeOutput.BN)
     hardfork = this._chooseHardfork(hardfork, false)
-    return this.hardforkBlockBN(hardfork).eq(blockNumber)
+    const block = this.hardforkBlockBN(hardfork)
+    return block ? block.eq(blockNumber) : false
   }
 
   /**
    * Returns the change block for the next hardfork after the hardfork provided or set
    * @param hardfork Hardfork name, optional if HF set
    * @returns Block number or null if not available
-   * @deprecated Please use nextHardforkBlockBN() for large number support
+   * @deprecated Please use {@link Common.nextHardforkBlockBN} for large number support
    */
   nextHardforkBlock(hardfork?: string | Hardfork): number | null {
     const block = this.nextHardforkBlockBN(hardfork)
@@ -747,6 +767,9 @@ export default class Common extends EventEmitter {
   nextHardforkBlockBN(hardfork?: string | Hardfork): BN | null {
     hardfork = this._chooseHardfork(hardfork, false)
     const hfBlock = this.hardforkBlockBN(hardfork)
+    if (hfBlock === null) {
+      return null
+    }
     // Next fork block number or null if none available
     // Logic: if accumulator is still null and on the first occurence of
     // a block greater than the current hfBlock set the accumulator,
@@ -867,14 +890,14 @@ export default class Common extends EventEmitter {
    * Returns the hardfork set
    * @returns Hardfork name
    */
-  hardfork(): string {
+  hardfork(): string | Hardfork {
     return this._hardfork
   }
 
   /**
    * Returns the Id of current chain
    * @returns chain Id
-   * @deprecated Please use chainIdBN() for large number support
+   * @deprecated Please use {@link Common.chainIdBN} for large number support
    */
   chainId(): number {
     return toType(this.chainIdBN(), TypeOutput.Number)
@@ -899,7 +922,7 @@ export default class Common extends EventEmitter {
   /**
    * Returns the Id of current network
    * @returns network Id
-   * @deprecated Please use networkIdBN() for large number support
+   * @deprecated Please use {@link Common.networkIdBN} for large number support
    */
   networkId(): number {
     return toType(this.networkIdBN(), TypeOutput.Number)
@@ -923,19 +946,48 @@ export default class Common extends EventEmitter {
 
   /**
    * Returns the consensus type of the network
-   * Possible values: "pow"|"poa"
+   * Possible values: "pow"|"poa"|"pos"
+   *
+   * Note: This value can update along a hardfork.
    */
-  consensusType(): string {
+  consensusType(): string | ConsensusType {
+    const hardfork = this.hardfork()
+
+    let value
+    for (const hfChanges of HARDFORK_CHANGES) {
+      if ('consensus' in hfChanges[1]) {
+        value = hfChanges[1]['consensus']['type']
+      }
+      if (hfChanges[0] === hardfork) break
+    }
+    if (value) {
+      return value
+    }
     return (<any>this._chainParams)['consensus']['type']
   }
 
   /**
    * Returns the concrete consensus implementation
    * algorithm or protocol for the network
-   * e.g. "ethash" for "pow" consensus type or
-   * "clique" for "poa" consensus type
+   * e.g. "ethash" for "pow" consensus type,
+   * "clique" for "poa" consensus type or
+   * "casper" for "pos" consensus type.
+   *
+   * Note: This value can update along a hardfork.
    */
-  consensusAlgorithm(): string {
+  consensusAlgorithm(): string | ConsensusAlgorithm {
+    const hardfork = this.hardfork()
+
+    let value
+    for (const hfChanges of HARDFORK_CHANGES) {
+      if ('consensus' in hfChanges[1]) {
+        value = hfChanges[1]['consensus']['algorithm']
+      }
+      if (hfChanges[0] === hardfork) break
+    }
+    if (value) {
+      return value
+    }
     return (<any>this._chainParams)['consensus']['algorithm']
   }
 
@@ -949,8 +1001,24 @@ export default class Common extends EventEmitter {
    * ethash: -
    * clique: period, epoch
    * aura: -
+   * casper: -
+   *
+   * Note: This value can update along a hardfork.
    */
   consensusConfig(): any {
+    const hardfork = this.hardfork()
+
+    let value
+    for (const hfChanges of HARDFORK_CHANGES) {
+      if ('consensus' in hfChanges[1]) {
+        // The config parameter is named after the respective consensus algorithm
+        value = hfChanges[1]['consensus'][hfChanges[1]['consensus']['algorithm']]
+      }
+      if (hfChanges[0] === hardfork) break
+    }
+    if (value) {
+      return value
+    }
     return (<any>this._chainParams)['consensus'][this.consensusAlgorithm()]
   }
 

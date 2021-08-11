@@ -34,10 +34,10 @@ dim() {
 blue "[Node build] "
 echo "Using tsconfig.prod.json"
 
-echo "> tsc -p ./tsconfig.prod.json"
+echo "> tsc --build ./tsconfig.prod.json"
 printf "${BLUE}[Node build] Working... "
 
-tsc -p ./tsconfig.prod.json
+tsc --build ./tsconfig.prod.json
 green "DONE"
 
 echo "\n";

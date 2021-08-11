@@ -17,19 +17,24 @@ But there's a cleaner way to manage your dependencies using Verdaccio.
 Verdaccio is an npm registry and proxy that can be of great help to test packages locally. Check out their [Getting Started guide](https://github.com/verdaccio/verdaccio#get-started).
 
 ### Installs, hoists dependencies and builds packages
-npm install
+
+`npm install`
 
 ### Publish monorepo packages to Verdaccio
-lerna exec "npm publish --registry http://localhost:4873 --ignore-scripts"
+
+`npm publish --registry http://localhost:4873 --workspaces`
 
 ### Unpublish all monorepo packages from Verdaccio
-lerna exec "npm unpublish \$LERNA_PACKAGE_NAME --registry http://localhost:4873 --force"
+
+`npm unpublish PACKAGE_NAME --registry http://localhost:4873 --force --workspace=PACKAGE_NAME`
 
 ### Setup @ethereumjs scope to local Verdaccio server
-  npm config set @ethereumjs:registry http://localhost:4873
+
+`npm config set @ethereumjs:registry http://localhost:4873`
 
 ### Teardown @ethereumjs scope to local Verdaccio server
-  npm config delete @ethereumjs:registry
+
+`npm config delete @ethereumjs:registry`
 
 ## E2E testing in CI
 

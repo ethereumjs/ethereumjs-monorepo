@@ -1,4 +1,4 @@
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
 import {
   Address,
   BN,
@@ -300,7 +300,17 @@ export class BlockHeader {
    * Validates correct buffer lengths, throws if invalid.
    */
   _validateHeaderFields() {
-    const { parentHash, stateRoot, transactionsTrie, receiptTrie, mixHash, nonce } = this
+    const {
+      parentHash,
+      uncleHash,
+      stateRoot,
+      transactionsTrie,
+      receiptTrie,
+      difficulty,
+      extraData,
+      mixHash,
+      nonce,
+    } = this
 
     if (parentHash.length !== 32) {
       throw new Error(`parentHash must be 32 bytes, received ${parentHash.length} bytes`)
@@ -330,6 +340,38 @@ export class BlockHeader {
         throw new Error(`nonce must be 8 bytes, received ${nonce.length} bytes`)
       }
     }
+
+    // Check for constant values for PoS blocks
+    if (this._common.consensusType() === ConsensusType.ProofOfStake) {
+      let error = false
+      let errorMsg = ''
+
+      if (!uncleHash.equals(KECCAK256_RLP_ARRAY)) {
+        errorMsg += `, uncleHash: ${uncleHash.toString(
+          'hex'
+        )} (expected: ${KECCAK256_RLP_ARRAY.toString('hex')})`
+        error = true
+      }
+      if (!difficulty.eq(new BN(0))) {
+        errorMsg += `, difficulty: ${difficulty} (expected: 0)`
+        error = true
+      }
+      if (!extraData.equals(Buffer.from([]))) {
+        errorMsg += `, extraData: ${extraData.toString('hex')} (expected: '')`
+        error = true
+      }
+      if (!mixHash.equals(zeros(32))) {
+        errorMsg += `, mixHash: ${mixHash.toString('hex')} (expected: ${zeros(32).toString('hex')})`
+        error = true
+      }
+      if (!nonce.equals(zeros(8))) {
+        errorMsg += `, nonce: ${nonce.toString('hex')} (expected: ${zeros(8).toString('hex')})`
+        error = true
+      }
+      if (error) {
+        throw new Error('Invalid PoS block' + errorMsg)
+      }
+    }
   }
 
   /**
@@ -338,10 +380,10 @@ export class BlockHeader {
    * @param parentBlockHeader - the header from the parent `Block` of this header
    */
   canonicalDifficulty(parentBlockHeader: BlockHeader): BN {
-    if (this._common.consensusType() !== 'pow') {
+    if (this._common.consensusType() !== ConsensusType.ProofOfWork) {
       throw new Error('difficulty calculation is only supported on PoW chains')
     }
-    if (this._common.consensusAlgorithm() !== 'ethash') {
+    if (this._common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
       throw new Error('difficulty calculation currently only supports the ethash algorithm')
     }
     const hardfork = this._getHardfork()
@@ -459,7 +501,8 @@ export class BlockHeader {
     let parentGasLimit = parentBlockHeader.gasLimit
     // EIP-1559: assume double the parent gas limit on fork block
     // to adopt to the new gas target centered logic
-    if (this.number.eq(this._common.hardforkBlockBN('london'))) {
+    const londonHardforkBlock = this._common.hardforkBlockBN('london')
+    if (londonHardforkBlock && this.number.eq(londonHardforkBlock)) {
       const elasticity = new BN(this._common.param('gasConfig', 'elasticityMultiplier'))
       parentGasLimit = parentGasLimit.mul(elasticity)
     }
@@ -503,7 +546,7 @@ export class BlockHeader {
     }
     const hardfork = this._getHardfork()
     // Consensus type dependent checks
-    if (this._common.consensusAlgorithm() !== 'clique') {
+    if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Ethash) {
       // PoW/Ethash
       if (
         this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)
@@ -511,7 +554,8 @@ export class BlockHeader {
         const msg = 'invalid amount of extra data'
         throw this._error(msg)
       }
-    } else {
+    }
+    if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       // PoA/Clique
       const minLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
       if (!this.cliqueIsEpochTransition()) {
@@ -558,7 +602,7 @@ export class BlockHeader {
       throw new Error('invalid timestamp')
     }
 
-    if (this._common.consensusAlgorithm() === 'clique') {
+    if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       const period = this._common.consensusConfig().period
       // Timestamp diff between blocks is lower than PERIOD (clique)
       if (parentHeader.timestamp.addn(period).gt(this.timestamp)) {
@@ -592,7 +636,8 @@ export class BlockHeader {
       if (!this.baseFeePerGas) {
         throw new Error('EIP1559 block has no base fee field')
       }
-      const isInitialEIP1559Block = this.number.eq(this._common.hardforkBlockBN('london'))
+      const block = this._common.hardforkBlockBN('london')
+      const isInitialEIP1559Block = block && this.number.eq(block)
       if (isInitialEIP1559Block) {
         const initialBaseFee = new BN(this._common.param('gasConfig', 'initialBaseFee'))
         if (!this.baseFeePerGas!.eq(initialBaseFee)) {
@@ -688,7 +733,7 @@ export class BlockHeader {
   }
 
   private _requireClique(name: string) {
-    if (this._common.consensusAlgorithm() !== 'clique') {
+    if (this._common.consensusAlgorithm() !== ConsensusAlgorithm.Clique) {
       throw new Error(`BlockHeader.${name}() call only supported for clique PoA networks`)
     }
   }
@@ -885,7 +930,7 @@ export class BlockHeader {
     if (this._common.hardforkIsActiveOnChain('dao')) {
       // verify the extraData field.
       const blockNumber = this.number
-      const DAOActivationBlock = this._common.hardforkBlockBN('dao')
+      const DAOActivationBlock = this._common.hardforkBlockBN('dao')!
       if (blockNumber.gte(DAOActivationBlock)) {
         const drift = blockNumber.sub(DAOActivationBlock)
         if (drift.lte(DAO_ForceExtraDataRange)) {

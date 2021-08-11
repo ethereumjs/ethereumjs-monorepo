@@ -1,5 +1,6 @@
 import tape from 'tape'
-import Common, { Chain, Hardfork } from '../src/'
+import { BN } from 'ethereumjs-util'
+import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src'
 
 tape('[Common]: Hardfork logic', function (t: tape.Test) {
   t.test('Hardfork access', function (st: tape.Test) {
@@ -14,6 +15,9 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
       'petersburg',
       'istanbul',
       'berlin',
+      'london',
+      'shanghai',
+      'merge',
     ]
     let c
 
@@ -235,6 +239,23 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.end()
   })
 
+  t.test('hardforkBlock() / hardforkBlockBN()', function (st: tape.Test) {
+    const c = new Common({ chain: Chain.Mainnet })
+
+    let msg = 'should return correct value'
+    st.equal(c.hardforkBlock(Hardfork.Berlin), 12244000, msg)
+    st.ok(c.hardforkBlockBN(Hardfork.Berlin)!.eq(new BN(12244000)), msg)
+
+    msg = 'should return null for unscheduled hardfork'
+    // developer note: when Shanghai is set,
+    // update this test to next unscheduled hardfork.
+    st.equal(c.hardforkBlock(Hardfork.Shanghai), null, msg)
+    st.equal(c.hardforkBlockBN(Hardfork.Shanghai), null, msg)
+    st.equal(c.nextHardforkBlockBN(Hardfork.Shanghai), null, msg)
+
+    st.end()
+  })
+
   t.test('hardforkGteHardfork()', function (st: tape.Test) {
     let c = new Common({ chain: Chain.Ropsten })
     let msg = 'Ropsten, constantinople >= byzantium (provided) -> true'
@@ -373,6 +394,44 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
 
     msg = 'should return null for a forkHash not matching any HF'
     st.equal(c.hardforkForForkHash('0x12345'), null, msg)
+
+    st.end()
+  })
+
+  t.test('HF consensus updates', function (st: tape.Test) {
+    let c = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Byzantium })
+    st.equal(
+      c.consensusType(),
+      ConsensusType.ProofOfAuthority,
+      'should provide the correct initial chain consensus type'
+    )
+    st.equal(
+      c.consensusAlgorithm(),
+      ConsensusAlgorithm.Clique,
+      'should provide the correct initial chain consensus algorithm'
+    )
+    st.equal(
+      c.consensusConfig()['period'],
+      15,
+      'should provide the correct initial chain consensus configuration'
+    )
+
+    c = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Merge })
+    st.equal(
+      c.consensusType(),
+      ConsensusType.ProofOfStake,
+      'should provide the correct updated chain consensus type'
+    )
+    st.equal(
+      c.consensusAlgorithm(),
+      ConsensusAlgorithm.Casper,
+      'should provide the correct updated chain consensus algorithm'
+    )
+    st.deepEqual(
+      c.consensusConfig(),
+      {},
+      'should provide the correct updated chain consensus configuration'
+    )
 
     st.end()
   })

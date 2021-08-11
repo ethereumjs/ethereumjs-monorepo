@@ -38,7 +38,6 @@
 - [hasGenesisState](state_interface.EIP2929StateManager.md#hasgenesisstate)
 - [isWarmedAddress](state_interface.EIP2929StateManager.md#iswarmedaddress)
 - [isWarmedStorage](state_interface.EIP2929StateManager.md#iswarmedstorage)
-- [modifyAccountFields](state_interface.EIP2929StateManager.md#modifyaccountfields)
 - [putAccount](state_interface.EIP2929StateManager.md#putaccount)
 - [putContractCode](state_interface.EIP2929StateManager.md#putcontractcode)
 - [putContractStorage](state_interface.EIP2929StateManager.md#putcontractstorage)
@@ -68,7 +67,7 @@
 
 #### Defined in
 
-[state/interface.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L36)
+[state/interface.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L33)
 
 ___
 
@@ -92,7 +91,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L35)
+[state/interface.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L32)
 
 ___
 
@@ -112,7 +111,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L42)
+[state/interface.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L39)
 
 ___
 
@@ -133,7 +132,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L44)
+[state/interface.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L41)
 
 ___
 
@@ -151,7 +150,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L26)
+[state/interface.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L23)
 
 ___
 
@@ -169,7 +168,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L37)
+[state/interface.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L34)
 
 ___
 
@@ -193,7 +192,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L25)
+[state/interface.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L22)
 
 ___
 
@@ -211,7 +210,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L38)
+[state/interface.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L35)
 
 ___
 
@@ -225,7 +224,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L46)
+[state/interface.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L43)
 
 ___
 
@@ -243,7 +242,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L27)
+[state/interface.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L24)
 
 ___
 
@@ -261,7 +260,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L14)
+[state/interface.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L12)
 
 ___
 
@@ -285,7 +284,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L17)
+[state/interface.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L15)
 
 ___
 
@@ -309,7 +308,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L31)
+[state/interface.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L28)
 
 ___
 
@@ -330,7 +329,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L47)
+[state/interface.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L44)
 
 ___
 
@@ -348,7 +347,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L33)
+[state/interface.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L30)
 
 ___
 
@@ -372,7 +371,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L34)
+[state/interface.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L31)
 
 ___
 
@@ -396,7 +395,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L15)
+[state/interface.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L13)
 
 ___
 
@@ -420,7 +419,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L21)
+[state/interface.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L18)
 
 ___
 
@@ -445,7 +444,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L22)
+[state/interface.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L19)
 
 ___
 
@@ -470,7 +469,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L23)
+[state/interface.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L20)
 
 ___
 
@@ -494,7 +493,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L29)
+[state/interface.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L26)
 
 ___
 
@@ -512,7 +511,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L32)
+[state/interface.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L29)
 
 ___
 
@@ -532,7 +531,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L43)
+[state/interface.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L40)
 
 ___
 
@@ -553,32 +552,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L45)
-
-___
-
-### modifyAccountFields
-
-▸ **modifyAccountFields**(`address`, `accountFields`): `Promise`<`void`\>
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `address` | `Address` |
-| `accountFields` | `Partial`<`Pick`<`Account`, ``"nonce"`` \| ``"balance"`` \| ``"stateRoot"`` \| ``"codeHash"``\>\> |
-
-#### Returns
-
-`Promise`<`void`\>
-
-#### Inherited from
-
-[StateManager](state_interface.StateManager.md).[modifyAccountFields](state_interface.StateManager.md#modifyaccountfields)
-
-#### Defined in
-
-[state/interface.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L19)
+[state/interface.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L42)
 
 ___
 
@@ -603,7 +577,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L16)
+[state/interface.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L14)
 
 ___
 
@@ -628,7 +602,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L20)
+[state/interface.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L17)
 
 ___
 
@@ -654,7 +628,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L24)
+[state/interface.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L21)
 
 ___
 
@@ -672,7 +646,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L28)
+[state/interface.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L25)
 
 ___
 
@@ -696,7 +670,7 @@ ___
 
 #### Defined in
 
-[state/interface.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L30)
+[state/interface.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L27)
 
 ___
 
@@ -720,4 +694,4 @@ ___
 
 #### Defined in
 
-[state/interface.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L18)
+[state/interface.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/state/interface.ts#L16)

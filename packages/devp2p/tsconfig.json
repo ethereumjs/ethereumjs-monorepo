@@ -4,9 +4,5 @@
   "compilerOptions": {
     "baseUrl": ".",
     "typeRoots": ["node_modules/@types"],
-    "declaration": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "downlevelIteration": true
-  }
+  },
 }
