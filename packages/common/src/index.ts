@@ -71,7 +71,7 @@ export enum ConsensusType {
 export enum ConsensusAlgorithm {
   Ethash = 'ethash',
   Clique = 'clique',
-  Casper = 'casper'
+  Casper = 'casper',
 }
 
 interface BaseOpts {
@@ -975,7 +975,7 @@ export default class Common extends EventEmitter {
    *
    * Note: This value can update along a hardfork.
    */
-   consensusAlgorithm(): string | ConsensusAlgorithm{
+  consensusAlgorithm(): string | ConsensusAlgorithm {
     const hardfork = this.hardfork()
 
     let value
