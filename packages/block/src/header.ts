@@ -342,7 +342,7 @@ export class BlockHeader {
     }
 
     // Check for constant values for PoS blocks
-    if (this._common.consensusType() === ConsensusType.ProofOfStake) {
+    if (this._common.consensusType() === ConsensusType.ProofOfStake && this.number >= this._common.hardforks().filter((hf: any) => hf.name === 'merge').block) {
       let error = false
       let errorMsg = ''
 

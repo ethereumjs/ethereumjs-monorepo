@@ -778,7 +778,7 @@ export default class Blockchain implements BlockchainInterface {
       if (!this._headHeaderHash) {
         throw new Error('No head header set')
       }
-
+      console.log('getting latest header hash', this._headHeaderHash.toString('hex'))
       const block = await this._getBlock(this._headHeaderHash)
       return block.header
     })
@@ -810,8 +810,11 @@ export default class Blockchain implements BlockchainInterface {
   async putBlocks(blocks: Block[]) {
     await this.initPromise
     for (let i = 0; i < blocks.length; i++) {
+      console.log('putting block ', blocks[i].header.number.toNumber(), blocks[i]._common.consensusType())
       await this.putBlock(blocks[i])
     }
+
+    console.log('finished putting blocks')
   }
 
   /**
@@ -880,6 +883,7 @@ export default class Blockchain implements BlockchainInterface {
       const isGenesis = block.isGenesis()
       const isHeader = item instanceof BlockHeader
 
+      console.log('got new block ready', block.header.number.toNumber(), block.header.hash().toString('hex'))
       // we cannot overwrite the Genesis block after initializing the Blockchain
       if (isGenesis) {
         throw new Error('Cannot put a genesis block: create a new Blockchain')
@@ -939,30 +943,48 @@ export default class Blockchain implements BlockchainInterface {
         }
       }
 
+      if (block._common.consensusType() === ConsensusType.ProofOfStake) {
+        if (block._common.hardfork() !== 'merge') {
+          throw new Error('cannot insert PoS block when merge hardfork not set')
+        }
+        // TODO: Check if POS block is descendant of valid block
+      }
+      console.log('finished validity checks for block', block.header.number.toString())
       // set total difficulty in the current context scope
-      if (this._headHeaderHash) {
-        currentTd.header = await this.getTotalDifficulty(this._headHeaderHash)
-      }
-      if (this._headBlockHash) {
-        currentTd.block = await this.getTotalDifficulty(this._headBlockHash)
+      if (block._common.consensusType() !== ConsensusType.ProofOfStake) {
+        if (this._headHeaderHash) {
+          currentTd.header = await this.getTotalDifficulty(this._headHeaderHash)
+        }
+        if (this._headBlockHash) {
+          currentTd.block = await this.getTotalDifficulty(this._headBlockHash)
+        }
       }
 
-      // calculate the total difficulty of the new block
-      let parentTd = new BN(0)
-      if (!block.isGenesis()) {
-        parentTd = await this.getTotalDifficulty(header.parentHash, blockNumber.subn(1))
+      console.log('finished getting current total difficulty if applicable', currentTd.header.toNumber())
+      if (block._common.consensusType() !== ConsensusType.ProofOfStake) {
+        // calculate the total difficulty of the new block
+        let parentTd = new BN(0)
+        if (!block.isGenesis()) {
+          parentTd = await this.getTotalDifficulty(header.parentHash, blockNumber.subn(1))
+        }
+        td.iadd(parentTd)
+        console.log('difficulty of new block', block.header.difficulty.toNumber())
+        console.log('total difficulty of new block ', td.toNumber())
+        // save total difficulty to the database
+        dbOps = dbOps.concat(DBSetTD(td, blockNumber, blockHash))
       }
-      td.iadd(parentTd)
-
-      // save total difficulty to the database
-      dbOps = dbOps.concat(DBSetTD(td, blockNumber, blockHash))
 
       // save header/block to the database
       dbOps = dbOps.concat(DBSetBlockOrHeader(block))
 
       let ancientHeaderNumber: undefined | BN
       // if total difficulty is higher than current, add it to canonical chain
-      if (block.isGenesis() || td.gt(currentTd.header)) {
+      if (
+        block.isGenesis() ||
+        (block._common.consensusType() !== ConsensusType.ProofOfStake && td.gt(currentTd.header)) ||
+        block._common.consensusType() === ConsensusType.ProofOfStake
+      ) {
+        console.log('adding to canonical chain', block.header.number.toNumber(), block.hash().toString('hex'))
         if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
           ancientHeaderNumber = (await this._findAncient(header)).number
         }

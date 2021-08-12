@@ -1,4 +1,5 @@
 import { Block } from '@ethereumjs/block'
+import { BN } from '../../../../util/dist'
 import { Chain, ChainOptions } from '../../../lib/blockchain'
 
 interface MockChainOptions extends ChainOptions {
