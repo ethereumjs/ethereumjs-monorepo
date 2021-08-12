@@ -427,11 +427,6 @@ export class Peer extends EventEmitter {
    * @param msg
    */
   _handleMessage(code: PREFIXES, msg: Buffer) {
-    // Use snappy uncompression if peer supports DevP2P >=v5
-    if ((this._hello?.protocolVersion ?? 0) >= 5) {
-      msg = snappy.uncompress(msg)
-    }
-
     const payload = rlp.decode(msg)
 
     switch (code) {
