@@ -427,12 +427,12 @@ export class Peer extends EventEmitter {
    * @param msg
    */
   _handleMessage(code: PREFIXES, msg: Buffer) {
-    let payload: Buffer
-    if (!(code in PREFIXES) && (this._hello?.protocolVersion ?? 0) >= 5) {
-      payload = rlp.decode(snappy.uncompress(msg))
-    } else {
-      payload = rlp.decode(msg)
+    // Use snappy uncompression if peer supports DevP2P >=v5
+    if ((this._hello?.protocolVersion ?? 0) >= 5) {
+      msg = snappy.uncompress(msg)
     }
+
+    const payload = rlp.decode(msg)
 
     switch (code) {
       case PREFIXES.HELLO:
@@ -506,12 +506,13 @@ export class Peer extends EventEmitter {
     )
 
     try {
-      let payload: Buffer
+      let payload = body.slice(1)
+
+      // Use snappy uncompression if peer supports DevP2P >=v5
       if ((this._hello?.protocolVersion ?? 0) >= 5) {
-        payload = snappy.uncompress(body.slice(1))
-      } else {
-        payload = body.slice(1)
+        payload = snappy.uncompress(payload)
       }
+
       obj.protocol._handleMessage(msgCode, payload)
     } catch (err) {
       this.disconnect(DISCONNECT_REASONS.SUBPROTOCOL_ERROR)
