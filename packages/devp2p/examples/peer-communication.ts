@@ -12,7 +12,7 @@ import { ETH, Peer } from '../src/index'
 
 const PRIVATE_KEY = randomBytes(32)
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 const bootstrapNodes = common.bootstrapNodes()
 const BOOTNODES = bootstrapNodes.map((node: any) => {
   return {
