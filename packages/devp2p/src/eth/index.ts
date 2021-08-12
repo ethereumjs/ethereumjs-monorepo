@@ -7,7 +7,6 @@ import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '..
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 
 import { debug as createDebugLogger } from 'debug'
-///@ts-ignore
 import snappy from 'snappyjs'
 
 const debug = createDebugLogger('devp2p:eth')

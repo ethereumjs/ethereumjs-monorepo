@@ -4,7 +4,6 @@ import ms from 'ms'
 import { debug as createDebugLogger } from 'debug'
 import { int2buffer, buffer2int, assertEq, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
-//@ts-ignore
 import snappy from 'snappyjs'
 const debug = createDebugLogger('devp2p:les')
 const verbose = createDebugLogger('verbose').enabled

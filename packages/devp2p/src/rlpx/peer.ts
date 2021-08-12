@@ -9,7 +9,6 @@ import { ECIES } from './ecies'
 import { ETH, LES } from '../'
 import { int2buffer, buffer2int, formatLogData } from '../util'
 import { Socket } from 'net'
-//@ts-ignore
 import snappy from 'snappyjs'
 
 const debug = createDebugLogger('devp2p:rlpx:peer')
