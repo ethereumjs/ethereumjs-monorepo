@@ -118,7 +118,7 @@ export class TxPool extends EventEmitter {
           let add: TxPoolObject[] = []
           if (inPool) {
             // Replace pooled txs with the same nonce
-            add = inPool.filter((poolObj) => poolObj.tx.nonce !== tx.nonce)
+            add = inPool.filter((poolObj) => !poolObj.tx.nonce.eq(tx.nonce))
           }
           add.push({ tx, added: Date.now() })
 
