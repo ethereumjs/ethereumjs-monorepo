@@ -1,11 +1,11 @@
-/// <reference types="../../types/snappyjs" />
 import { EventEmitter } from 'events'
 import * as rlp from 'rlp'
 import ms from 'ms'
+import snappy from 'snappyjs'
 import { debug as createDebugLogger } from 'debug'
 import { int2buffer, buffer2int, assertEq, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
-import snappy from 'snappyjs'
+
 const debug = createDebugLogger('devp2p:les')
 const verbose = createDebugLogger('verbose').enabled
 
@@ -168,13 +168,13 @@ export class LES extends EventEmitter {
       } (les${this._version}): ${this._getStatusString(this._status)}`
     )
 
-    let payload: Buffer
-    // Use snappy compression if peer support DevP2P >=v5
-    if (this._peer._hello?.protocolVersion && this._peer._hello?.protocolVersion >= 5) {
-      payload = snappy.compress(rlp.encode(statusList))
-    } else {
-      payload = rlp.encode(statusList)
+    let payload = rlp.encode(statusList)
+
+    // Use snappy compression if peer supports DevP2P >=v5
+    if ((this._peer._hello?.protocolVersion ?? 0) >= 5) {
+      payload = snappy.compress(payload)
     }
+
     this._send(LES.MESSAGE_CODES.STATUS, payload)
     this._handleStatus()
   }
@@ -228,11 +228,11 @@ export class LES extends EventEmitter {
         throw new Error(`Unknown code ${code}`)
     }
 
-    // Use snappy compression if peer support DevP2P >=v5
-    if (this._peer._hello?.protocolVersion && this._peer._hello?.protocolVersion >= 5) {
-      payload = snappy.compress(rlp.encode(payload))
-    } else {
-      payload = rlp.encode(payload)
+    payload = rlp.encode(payload)
+
+    // Use snappy compression if peer supports DevP2P >=v5
+    if ((this._peer._hello?.protocolVersion ?? 0) >= 5) {
+      payload = snappy.compress(payload)
     }
     this._send(code, rlp.encode(payload))
   }

@@ -4,6 +4,6 @@
   "compilerOptions": {
     "outDir": "./dist.browser",
     "types": ["node"],
-    "typeRoots": ["node_modules/@types","src/types/snappyjs"]
+    "typeRoots": ["node_modules/@types", "src/types"]
   }
 }

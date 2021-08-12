@@ -3,6 +3,6 @@
   "include": ["src/**/*.ts", "test/**/*.ts", "examples/**/*.ts"],
   "compilerOptions": {
     "baseUrl": ".",
-    "typeRoots": ["node_modules/@types", "src/types/snappyjs"],
+    "typeRoots": ["node_modules/@types", "src/types"],
   },
 }

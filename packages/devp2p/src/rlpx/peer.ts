@@ -1,16 +1,15 @@
-/// <reference types="../../types/snappyjs" />
+import { Socket } from 'net'
 import { EventEmitter } from 'events'
 import * as rlp from 'rlp'
 import * as util from '../util'
 import BufferList = require('bl')
 import ms from 'ms'
+import snappy from 'snappyjs'
 import { debug as createDebugLogger } from 'debug'
 import Common from '@ethereumjs/common'
 import { ECIES } from './ecies'
 import { ETH, LES } from '../'
 import { int2buffer, buffer2int, formatLogData } from '../util'
-import { Socket } from 'net'
-import snappy from 'snappyjs'
 
 const debug = createDebugLogger('devp2p:rlpx:peer')
 const verbose = createDebugLogger('verbose').enabled
@@ -429,7 +428,7 @@ export class Peer extends EventEmitter {
    */
   _handleMessage(code: PREFIXES, msg: Buffer) {
     let payload: Buffer
-    if (!(code in PREFIXES) && this._hello?.protocolVersion && this._hello.protocolVersion >= 5) {
+    if (!(code in PREFIXES) && (this._hello?.protocolVersion ?? 0) >= 5) {
       payload = rlp.decode(snappy.uncompress(msg))
     } else {
       payload = rlp.decode(msg)
@@ -508,7 +507,7 @@ export class Peer extends EventEmitter {
 
     try {
       let payload: Buffer
-      if (this._hello?.protocolVersion && this._hello.protocolVersion >= 5) {
+      if ((this._hello?.protocolVersion ?? 0) >= 5) {
         payload = snappy.uncompress(body.slice(1))
       } else {
         payload = body.slice(1)
