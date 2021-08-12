@@ -1,3 +1,4 @@
+/// <reference types="../../types/snappyjs" />
 import assert from 'assert'
 import { EventEmitter } from 'events'
 import * as rlp from 'rlp'

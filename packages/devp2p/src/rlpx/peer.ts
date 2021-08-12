@@ -1,3 +1,4 @@
+/// <reference types="../../types/snappyjs" />
 import { EventEmitter } from 'events'
 import * as rlp from 'rlp'
 import * as util from '../util'
