@@ -427,13 +427,13 @@ export class Peer extends EventEmitter {
    * @param msg
    */
   _handleMessage(code: PREFIXES, msg: Buffer) {
-    let payload: Buffer;
+    let payload: Buffer
     if (!(code in PREFIXES) && this._hello?.protocolVersion && this._hello.protocolVersion >= 5) {
       payload = rlp.decode(snappy.uncompress(msg))
     } else {
       payload = rlp.decode(msg)
     }
-    
+
     switch (code) {
       case PREFIXES.HELLO:
         this._handleHello(payload)
@@ -506,11 +506,11 @@ export class Peer extends EventEmitter {
     )
 
     try {
-      let payload: Buffer;
+      let payload: Buffer
       if (this._hello?.protocolVersion && this._hello.protocolVersion >= 5) {
         payload = snappy.uncompress(body.slice(1))
       } else {
-        payload = body.slice(1);
+        payload = body.slice(1)
       }
       obj.protocol._handleMessage(msgCode, payload)
     } catch (err) {

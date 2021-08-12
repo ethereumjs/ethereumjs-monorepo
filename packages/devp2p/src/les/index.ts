@@ -167,13 +167,13 @@ export class LES extends EventEmitter {
       } (les${this._version}): ${this._getStatusString(this._status)}`
     )
 
-    let payload: Buffer;
+    let payload: Buffer
     // Use snappy compression if peer support DevP2P >=v5
     if (this._peer._hello?.protocolVersion && this._peer._hello?.protocolVersion >= 5) {
-      payload = snappy.compress(rlp.encode(statusList));
+      payload = snappy.compress(rlp.encode(statusList))
     } else {
       payload = rlp.encode(statusList)
-    }    
+    }
     this._send(LES.MESSAGE_CODES.STATUS, payload)
     this._handleStatus()
   }
@@ -229,10 +229,10 @@ export class LES extends EventEmitter {
 
     // Use snappy compression if peer support DevP2P >=v5
     if (this._peer._hello?.protocolVersion && this._peer._hello?.protocolVersion >= 5) {
-      payload = snappy.compress(rlp.encode(payload));
+      payload = snappy.compress(rlp.encode(payload))
     } else {
       payload = rlp.encode(payload)
-    }   
+    }
     this._send(code, rlp.encode(payload))
   }
 

@@ -232,12 +232,12 @@ export class ETH extends EventEmitter {
         this._peer._socket.remotePort
       } (eth${this._version}): ${this._getStatusString(this._status)}`
     )
-    
-    let payload = rlp.encode(this._status as any);
-    
+
+    let payload = rlp.encode(this._status as any)
+
     // Use snappy compression if peer support DevP2P >=v5
     if (this._peer._hello?.protocolVersion && this._peer._hello?.protocolVersion >= 5) {
-      payload = snappy.compress(payload);
+      payload = snappy.compress(payload)
     }
     this._send(ETH.MESSAGE_CODES.STATUS, payload)
     this._handleStatus()
@@ -283,7 +283,7 @@ export class ETH extends EventEmitter {
 
     // Use snappy compression if peer support DevP2P >=v5
     if (this._peer._hello?.protocolVersion && this._peer._hello?.protocolVersion >= 5) {
-      payload = snappy.compress(rlp.encode(payload));
+      payload = snappy.compress(rlp.encode(payload))
     } else {
       payload = rlp.encode(payload)
     }
