@@ -1,6 +1,6 @@
 import * as devp2p from '../src/index'
 import { LES, Peer } from '../src/index'
-import Common, { Chain } from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { TypedTransaction } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import ms from 'ms'
@@ -16,7 +16,7 @@ const GENESIS_HASH = Buffer.from(
   'hex'
 )
 
-const common = new Common({ chain: Chain.Rinkeby })
+const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London })
 const bootstrapNodes = common.bootstrapNodes()
 const BOOTNODES = bootstrapNodes.map((node: any) => {
   return {
@@ -102,7 +102,7 @@ rlpx.on('peer:added', (peer) => {
           )
           break
         }
-        const header = BlockHeader.fromValuesArray(payload[2][0], {})
+        const header = BlockHeader.fromValuesArray(payload[2][0], { common })
 
         setTimeout(() => {
           les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_BODIES, [1, [header.hash()]])
