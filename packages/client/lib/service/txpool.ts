@@ -30,6 +30,9 @@ export class TxPool extends EventEmitter {
 
   private opened: boolean
 
+  // eslint-disable-next-line no-undef
+  private _logInterval: NodeJS.Timeout | null
+
   /**
    * List of pending tx hashes to avoid double requests
    */
@@ -51,6 +54,7 @@ export class TxPool extends EventEmitter {
     super()
 
     this.config = options.config
+    this._logInterval = null
 
     this.pool = new Map<string, TxPoolObject[]>()
     this.opened = false
@@ -71,7 +75,7 @@ export class TxPool extends EventEmitter {
     }
     this.opened = true
 
-    setInterval(this._logPoolStats.bind(this), LOG_STATISTICS_INTERVAL)
+    this._logInterval = setInterval(this._logPoolStats.bind(this), LOG_STATISTICS_INTERVAL)
     return true
   }
 
@@ -125,19 +129,21 @@ export class TxPool extends EventEmitter {
     }
   }
 
+  /**
+   * Close pool
+   */
+  async close() {
+    this.pool.clear()
+    this.opened = false
+    // eslint-disable-next-line no-undef
+    clearInterval(this._logInterval as NodeJS.Timeout)
+  }
+
   _logPoolStats() {
     let count = 0
     this.pool.forEach((poolObjects) => {
       count += poolObjects.length
     })
     this.config.logger.info(`TxPool Statistics transactions=${count} senders=${this.pool.size}`)
-  }
-
-  /**
-   * Close pool
-   */
-  async close() {
-    //this.pool.clear()
-    this.opened = false
   }
 }
