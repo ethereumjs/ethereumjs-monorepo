@@ -17,18 +17,20 @@ export async function setup(
   options: SetupOptions = {}
 ): Promise<[MockServer, FullEthereumService | LightEthereumService]> {
   const { location, height, interval, syncmode, common } = options
-
+  console.log('starting setup for ', location)
   const loglevel = 'error'
   const lightserv = syncmode === 'full'
   const config = new Config({ loglevel, syncmode, lightserv, common })
 
+  console.log('setting up mockserver')
   const server = new MockServer({ config, location })
   const blockchain = await Blockchain.create({
     validateBlocks: false,
     validateConsensus: false,
   })
+  console.log('setting up blockchain')
   const chain = new MockChain({ config, blockchain, height })
-
+  console.log('finished setting up mockchain')
   const servers = [server] as any
   const serviceConfig = new Config({
     loglevel,
