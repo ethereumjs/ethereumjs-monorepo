@@ -234,7 +234,8 @@ export class LES extends EventEmitter {
     if ((this._peer._hello?.protocolVersion ?? 0) >= 5) {
       payload = snappy.compress(payload)
     }
-    this._send(code, rlp.encode(payload))
+
+    this._send(code, payload)
   }
 
   getMsgPrefix(msgCode: LES.MESSAGE_CODES) {
