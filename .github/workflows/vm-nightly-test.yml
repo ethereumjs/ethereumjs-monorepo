@@ -14,28 +14,25 @@ jobs:
   test-vm-api:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
       - uses: actions/checkout@v2
         with:
           submodules: recursive
 
-      - name: Update to npm v7 for workspaces support 
+      - name: Use Node.js 12
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12
+          cache: 'npm'
+
+      - name: Use npm v7 for workspaces support 
         run: npm i -g npm@7
 
-      # This is specific to Nightly test 1/2.
-      # The job needs to run with a fresh combination of lockfiles, to warm up the cache.
-      # So in this step, we remove the lockfiles
-      - run: rm package-lock.json packages/*/package-lock.json
+      # The job is meant to run with a fresh lock file
+      # to detect any possible issues with new dep versions.
+      - run: rm package-lock.json
         working-directory: ${{github.workspace}}
 
-      # This is specific to Nightly test 2/2.
-      # Here, we generate new lockfiles
-      - run: npm install
-        working-directory: ${{github.workspace}}
-
-      - run: npm run build
+      - run: npm i
         working-directory: ${{github.workspace}}
 
       - run: npm run test:API
@@ -44,28 +41,25 @@ jobs:
   test-vm-state:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
       - uses: actions/checkout@v2
         with:
           submodules: recursive
 
-      - name: Update to npm v7 for workspaces support 
+      - name: Use Node.js 12
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12
+          cache: 'npm'
+
+      - name: Use npm v7 for workspaces support 
         run: npm i -g npm@7
 
-      # This is specific to Nightly test 1/2.
-      # The job needs to run with a fresh combination of lockfiles, to warm up the cache.
-      # So in this step, we remove the lockfiles
-      - run: rm package-lock.json packages/*/package-lock.json
+      # The job is meant to run with a fresh lock file
+      # to detect any possible issues with new dep versions.
+      - run: rm package-lock.json
         working-directory: ${{github.workspace}}
 
-      # This is specific to Nightly test 2/2.
-      # Here, we generate new lockfiles
-      - run: npm install
-        working-directory: ${{github.workspace}}
-
-      - run: npm run build
+      - run: npm i
         working-directory: ${{github.workspace}}
 
       - run: npm run test:state:allForks
@@ -73,38 +67,25 @@ jobs:
   test-vm-blockchain:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
       - uses: actions/checkout@v2
         with:
           submodules: recursive
 
-      - name: Update to npm v7 for workspaces support 
+      - name: Use Node.js 12
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12
+          cache: 'npm'
+
+      - name: Use npm v7 for workspaces support 
         run: npm i -g npm@7
 
-      # This is specific to Nightly test 1/2.
-      # The job needs to run with a fresh combination of lockfiles, to warm up the cache.
-      # So in this step, we remove the lockfiles
-      - run: rm package-lock.json packages/*/package-lock.json
+      # The job is meant to run with a fresh lock file
+      # to detect any possible issues with new dep versions.
+      - run: rm package-lock.json
         working-directory: ${{github.workspace}}
 
-      # This is specific to Nightly test 2/2.
-      # Here, we generate new lockfiles
-      - run: npm install
-        working-directory: ${{github.workspace}}
-
-      # This is specific to Nightly test 3/2.
-      # In the case lockfiles a.re not so fresh, use information from cache
-      - name: Dependency cache.
-      # We need this to save cache afterwards, so other jobs can benefit from it.
-        uses: actions/cache@v2
-        id: cache
-        with:
-          key: cache-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
-          path: '**/node_modules'
-
-      - run: npm run build
+      - run: npm i
         working-directory: ${{github.workspace}}
 
       - run: npm run test:blockchain:allForks
@@ -113,28 +94,25 @@ jobs:
   test-vm-slow:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
       - uses: actions/checkout@v2
         with:
           submodules: recursive
 
-      - name: Update to npm v7 for workspaces support 
+      - name: Use Node.js 12
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12
+          cache: 'npm'
+
+      - name: Use npm v7 for workspaces support 
         run: npm i -g npm@7
-      
-      # This is specific to Nightly test 1/2.
-      # The job needs to run with a fresh combination of lockfiles, to warm up the cache.
-      # So in this step, we remove the lockfiles
-      - run: rm package-lock.json packages/*/package-lock.json
+
+      # The job is meant to run with a fresh lock file
+      # to detect any possible issues with new dep versions.
+      - run: rm package-lock.json
         working-directory: ${{github.workspace}}
 
-      # This is specific to Nightly test 2/2.
-      # Here, we generate new lockfiles
-      - run: npm install
-        working-directory: ${{github.workspace}}
-
-      - run: npm run build
+      - run: npm i
         working-directory: ${{github.workspace}}
       
       - run: npm run test:state:slow
