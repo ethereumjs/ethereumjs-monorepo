@@ -1138,16 +1138,9 @@ export default class Blockchain implements BlockchainInterface {
    * @hidden
    */
   private async _iterator(name: string, onBlock: OnBlock, maxBlocks?: number): Promise<number> {
-<<<<<<< HEAD
-    return await this.initAndLock<number>(async (): Promise<number> => {
+    return await this.runWithLock<number>(async (): Promise<number> => {
       const headHash = this._heads[name] || this._genesis
       let lastBlock: Block | undefined
-=======
-    return await this.runWithLock<number>(
-      async (): Promise<number> => {
-        const headHash = this._heads[name] || this._genesis
-        let lastBlock: Block | undefined
->>>>>>> b7e4f411 (blockchain:)
 
       if (!headHash) {
         return 0

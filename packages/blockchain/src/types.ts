@@ -1,6 +1,7 @@
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { BN } from 'ethereumjs-util'
+// eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
 
 export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
@@ -40,7 +41,7 @@ export interface BlockchainInterface {
 /**
  * These are the options that the Blockchain constructor can receive.
  */
- export interface BlockchainOptions {
+export interface BlockchainOptions {
   /**
    * Specify the chain and hardfork by passing a {@link Common} instance.
    *

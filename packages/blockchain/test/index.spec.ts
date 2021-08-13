@@ -21,7 +21,7 @@ tape('blockchain test', (t) => {
 
   t.test('should initialize correctly', async (st) => {
     const common = new Common({ chain: Chain.Ropsten })
-    const blockchain = await Blockchain.create({ common })
+    let blockchain = await Blockchain.create({ common })
 
     const head = await blockchain.getHead()
     const iteratorHead = await blockchain.getIteratorHead()
