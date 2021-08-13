@@ -270,6 +270,7 @@ export class Chain {
       return
     }
     await this.open()
+    
     blocks = blocks.map((b: Block) =>
       Block.fromValuesArray(b.raw(), {
         common: this.config.chainCommon,

@@ -57,11 +57,14 @@ export async function setup(
       lightserv: true,
     })
   }
+  console.log('opening service')
   await service.open()
   if ('execution' in service.synchronizer) {
     service.synchronizer.execution.syncing = false
   }
+  console.log('starting service')
   await service.start()
+  console.log('starting server')
   await server.start()
 
   return [server, service]
