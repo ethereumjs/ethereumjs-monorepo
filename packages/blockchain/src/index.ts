@@ -137,7 +137,7 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Creates new Blockchain object. This constructor is private, please use [[Blockchain.create]] for safe async creation.
+   * Creates new Blockchain object.
    *
    * @deprecated - The direct usage of this constructor is discouraged since
    * non-finalized async initialization might lead to side effects. Please
@@ -146,7 +146,7 @@ export default class Blockchain implements BlockchainInterface {
    * @param opts - An object with the options that this constructor takes. See
    * {@link BlockchainOptions}.
    */
-  private constructor(opts: BlockchainOptions = {}) {
+  constructor(opts: BlockchainOptions = {}) {
     // Throw on chain or hardfork options removed in latest major release to
     // prevent implicit chain setup on a wrong chain
     if ('chain' in opts || 'hardfork' in opts) {
@@ -210,7 +210,7 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * This method is called in [[Blockchain.create]] and either sets up the DB or reads
+   * This method is called in {@link Blockchain.create} and either sets up the DB or reads
    * values from the DB and makes these available to the consumers of
    * Blockchain.
    *

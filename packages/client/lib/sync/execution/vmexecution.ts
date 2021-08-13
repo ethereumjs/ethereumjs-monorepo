@@ -30,7 +30,7 @@ export class VMExecution extends Execution {
         trie,
       })
 
-      this.vm = new (VM as any)({
+      this.vm = new VM({
         common: this.config.execCommon,
         blockchain: this.chain.blockchain,
         stateManager,

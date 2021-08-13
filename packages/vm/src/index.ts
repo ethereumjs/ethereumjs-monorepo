@@ -164,14 +164,14 @@ export default class VM extends AsyncEventEmitter {
   }
 
   /**
-<<<<<<< HEAD:packages/vm/src/index.ts
    * Instantiates a new {@link VM} Object.
-=======
-   * Instantiates a new [[VM]] Object. This constructor is private, please use [[VM.create]] for safe async creation.
->>>>>>> 902add96 (vm:):packages/vm/lib/index.ts
+   *
+   * @deprecated - The direct usage of this constructor is discouraged since
+   * non-finalized async initialization might lead to side effects. Please
+   * use the async {@link VM.create} constructor instead (same API).
    * @param opts
    */
-  private constructor(opts: VMOpts = {}) {
+  constructor(opts: VMOpts = {}) {
     super()
 
     this._opts = opts
