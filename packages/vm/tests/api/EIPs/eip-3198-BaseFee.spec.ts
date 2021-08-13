@@ -73,7 +73,7 @@ tape('EIP3198 tests', (t) => {
       }
     )
     const block = makeBlock(fee, tx, 2)
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
     const account = await vm.stateManager.getAccount(sender)
     account.balance = ETHER
     await vm.stateManager.putAccount(sender, account)
