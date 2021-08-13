@@ -33,10 +33,13 @@
     "test:browser": "karma start karma.conf.js"
   },
   "dependencies": {
+    "merkle-patricia-tree": "^4.2.0"
+  },
+  "peerDependencies": {
     "@ethereumjs/common": "^2.4.0",
-    "merkle-patricia-tree": "^4.2.0",
     "@ethereumjs/tx": "^3.3.0",
-    "ethereumjs-util": "^7.1.0"
+    "ethereumjs-util": "^7.1.0",
+    "bn.js": "^5.1.2"
   },
   "devDependencies": {
     "@types/lru-cache": "^5.1.0",

@@ -29,13 +29,15 @@
     "docs:build": "echo 'Package has no generated docs'"
   },
   "dependencies": {
-    "@types/levelup": "^4.3.0",
     "buffer-xor": "^2.0.1",
-    "ethereumjs-util": "^7.1.0",
     "miller-rabin": "^4.0.0"
   },
-  "devDependencies": {
+  "peerDependencies": {
     "@ethereumjs/block": "^3.4.0",
+    "ethereumjs-util": "^7.1.0",
+    "@types/levelup": "^4.3.3"
+  },
+  "devDependencies": {
     "@types/tape": "^4.13.0",
     "eslint": "^6.8.0",
     "level-mem": "^5.0.1",

@@ -32,15 +32,20 @@
   },
   "author": "mjbecze <mjbecze@gmail.com>",
   "dependencies": {
-    "@ethereumjs/block": "^3.4.0",
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/ethash": "^1.0.0",
     "debug": "^2.2.0",
-    "ethereumjs-util": "^7.1.0",
     "level-mem": "^5.0.1",
     "lru-cache": "^5.1.1",
     "rlp": "^2.2.4",
     "semaphore-async-await": "^1.5.1"
+  },
+  "peerDependencies": {
+    "@ethereumjs/block": "^3.4.0",
+    "ethereumjs-util": "^7.1.0",
+    "bn.js": "^5.1.2",
+    "level": "^6.0.0",
+    "@types/levelup": "^4.3.3"
   },
   "devDependencies": {
     "@types/async": "^2.4.1",

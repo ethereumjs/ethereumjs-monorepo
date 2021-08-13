@@ -32,8 +32,11 @@
     "test:browser": "karma start karma.conf.js"
   },
   "dependencies": {
+  },
+  "peerDependencies": {
     "@ethereumjs/common": "^2.4.0",
-    "ethereumjs-util": "^7.1.0"
+    "ethereumjs-util": "^7.1.0",
+    "bn.js": "^5.1.2"
   },
   "devDependencies": {
     "@types/minimist": "^1.2.0",
