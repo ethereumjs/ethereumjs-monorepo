@@ -3,18 +3,20 @@ import { Peer } from '../net/peer/peer'
 import { short } from '../util'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import { BlockFetcher } from './fetcher'
-import { Block } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import { VMExecution } from './execution/vmexecution'
 import { SecureTrie } from 'merkle-patricia-tree'
 import { keccak256 } from '@ethereumjs/devp2p'
 import { AfterTxEvent } from '@ethereumjs/vm/dist/runTx'
 import { TypedTransaction } from '@ethereumjs/tx'
+import { Event } from '../types'
+import { ERROR } from '../../../vm/dist/exceptions'
 const level = require('level')
 
 const ENCODING_OPTS = { keyEncoding: 'binary', valueEncoding: 'binary' }
 
 // Minimum number of blocks to stay behind tip of chain to avoid syncing reorged blocks
-const PIVOT_BLOCKS = 20
+const PIVOT_BLOCKS = 15
 
 export class BeamSyncDB extends level {
   constructor(...args: any) {
@@ -61,40 +63,41 @@ export class BeamSynchronizer extends Synchronizer {
     let misses = 0
     let getNodeTime = 0
     db.get = async function (node: Buffer) {
-      //console.log('get', node.toString('hex'))
       try {
         const result = await oldGet.apply(this, [node, ENCODING_OPTS])
         hits++
-        //console.log('is in db', result.toString('hex'))
         return result
       } catch (e) {
         if (e.notFound) {
           misses++
-          //console.log('getting node data!', node.toString('hex'))
           const time = Date.now() / 1000
           // eslint-disable-next-line no-async-promise-executor
           const result = await new Promise(async (resolve, reject) => {
-            for (let i = 0; i < 50; i++) {
-              const result = await synchronizer.syncPeer!.eth?.getNodeData([node])
-              //console.log('got result!')
-              if (result) {
-                // ensure we got the correct node
-                //console.log(result.length)
-                for (const reportedNode of result) {
-                  //console.log('checking...', reportedNode.toString('hex'))
-                  if (keccak256(reportedNode).equals(node)) {
-                    //console.log('found node!')
-                    await db.put(node as Buffer, reportedNode as Buffer, ENCODING_OPTS)
-                    getNodeTime += Date.now() / 1000 - time
-                    resolve(reportedNode)
-                    return
+            try {
+              for (let i = 0; i < 50; i++) {
+                const result = await synchronizer.syncPeer!.eth?.getNodeData({ hashes: [node] })
+                if (result) {
+                  // ensure we got the correct node
+                  const nodes = result[1]
+                  for (const reportedNode of nodes) {
+                    if (keccak256(reportedNode).equals(node)) {
+                      await db.put(node as Buffer, reportedNode as Buffer, ENCODING_OPTS)
+                      getNodeTime += Date.now() / 1000 - time
+                      resolve(reportedNode)
+                      return
+                    }
                   }
+                } else {
+                  console.log('node did not return any data')
                 }
               }
+            } catch (e) {
+              console.log(e)
             }
             // TODO: use PeerPool to try another peer.
             reject('Tried to get node more than 50 times')
           })
+
           return result
         } else {
           throw e
@@ -164,15 +167,17 @@ export class BeamSynchronizer extends Synchronizer {
     //console.log((<any>this.execution.vm.stateManager)._trie.db)
 
     const self = this
-    this.execution.on('error', async (error: Error) => {
-      self.emit('error', error)
+    this.config.events.on(Event.SYNC_EXECUTION_VM_ERROR, async (error: Error) => {
+      self.config.events.emit(Event.SYNC_ERROR, error)
       await self.stop()
     })
 
-    this.chain.on('updated', async function () {
+    this.config.events.on(Event.CHAIN_UPDATED, async function () {
       // for some reason, if we use .on('updated', this.runBlocks)
       // it runs in the context of the Chain and not in the FullSync context..?
+      console.log('are we running?', self.running)
       if (self.running) {
+        console.log('run exec')
         await self.execution.run()
       }
     })
@@ -227,7 +232,7 @@ export class BeamSynchronizer extends Synchronizer {
       block: peer.eth!.status.bestHash,
       max: 1,
     })
-    return headers?.[0]
+    return headers?.[1][0]
   }
 
   /**
@@ -240,7 +245,7 @@ export class BeamSynchronizer extends Synchronizer {
     this.syncPeer = peer
     const latest = await this.latest(peer)
     if (!latest) return false
-    const height = new BN(latest.number)
+    const height = new BN((<BlockHeader>latest).number)
     const first = latest.number.subn(PIVOT_BLOCKS)
     const count = height.sub(first).addn(1)
     if (count.lten(0)) return false
@@ -293,24 +298,25 @@ export class BeamSynchronizer extends Synchronizer {
              * Get accounts/targets in parallel
              */
 
-            const accounts = new Set()
+            try {
+              const accounts = new Set()
 
-            accounts.add(block.header.coinbase.buf.toString('hex'))
+              accounts.add(block.header.coinbase.buf.toString('hex'))
 
-            block.transactions.forEach((tx: TypedTransaction) => {
-              const sender = tx.getSenderAddress()
+              block.transactions.forEach((tx: TypedTransaction) => {
+                const sender = tx.getSenderAddress()
 
-              accounts.add(sender.buf.toString('hex'))
+                accounts.add(sender.buf.toString('hex'))
 
-              if (tx.to) {
-                accounts.add(tx.to.buf.toString('hex'))
-              } else {
-                const to = generateAddress(sender.buf, toBuffer(tx.nonce))
-                accounts.add(to.toString('hex'))
-              }
-            })
+                if (tx.to) {
+                  accounts.add(tx.to.buf.toString('hex'))
+                } else {
+                  const to = generateAddress(sender.buf, toBuffer(tx.nonce))
+                  accounts.add(to.toString('hex'))
+                }
+              })
 
-            /*
+              /*
             accounts.forEach((addressString: any) => {
               const address = new Address(Buffer.from(addressString, 'hex'))
               // this will call into the database, if some nodes are not found then these will be requested from the peer
@@ -318,28 +324,31 @@ export class BeamSynchronizer extends Synchronizer {
               //this.execution.vm.stateManager.getAccount(address)
             }) */
 
-            const time = Date.now() / 1000
-            const result = await this.execution.vm.runBlock({
-              block,
-              root,
-              skipBlockValidation: true, // this calls into blockchain; skip for now, otherwise we have to fetch the entire chain first
-            })
-            console.log('execution took', Date.now() / 1000 - time)
-            console.log(
-              'state root',
-              (await this.execution.vm.stateManager.getStateRoot(true)).toString('hex')
-            )
-            console.log('gas used', result.gasUsed.toString())
-            console.log('logsbloom', result.logsBloom.toString('hex'))
-            console.log('receipt trie', result.receiptRoot.toString('hex'))
+              const time = Date.now() / 1000
+              const result = await this.execution.vm.runBlock({
+                block,
+                root,
+                skipBlockValidation: true, // this calls into blockchain; skip for now, otherwise we have to fetch the entire chain first
+              })
+              console.log('execution took', Date.now() / 1000 - time)
+              console.log(
+                'state root',
+                (await this.execution.vm.stateManager.getStateRoot(true)).toString('hex')
+              )
+              console.log('gas used', result.gasUsed.toString())
+              console.log('logsbloom', result.logsBloom.toString('hex'))
+              console.log('receipt trie', result.receiptRoot.toString('hex'))
+            } catch (e) {
+              console.log(e)
+            }
           }
         }
       }
     }
 
     this.blockFetcher
-      .on('error', (error: Error) => {
-        this.emit('error', error)
+      .on(Event.PROTOCOL_ERROR, (error: Error) => {
+        this.config.events.emit(Event.SYNC_ERROR, error)
       })
       .on('fetched', (/*blocks: Block[]*/) => {})
     await this.blockFetcher.fetch()

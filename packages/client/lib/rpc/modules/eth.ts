@@ -17,8 +17,8 @@ import type { EthereumClient } from '../..'
 import { EthereumService } from '../../service'
 import type { EthProtocol } from '../../net/protocol'
 import type VM from '@ethereumjs/vm'
-import { Block } from '@ethereumjs/block'
 import { FullSynchronizer } from '../../sync'
+import { Block, BlockHeader } from '@ethereumjs/block'
 
 /**
  * eth_* RPC module
@@ -545,7 +545,7 @@ export class Eth {
         message: `highest block header unavailable`,
       }
     }
-    const highestBlock = `0x${highestBlockHeader.number.toString(16)}`
+    const highestBlock = `0x${(<BlockHeader>highestBlockHeader).number.toString(16)}`
 
     return { startingBlock, currentBlock, highestBlock }
   }
