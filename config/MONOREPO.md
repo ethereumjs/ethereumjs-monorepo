@@ -27,7 +27,7 @@ Above is the quickest way to set you up. Going down the road, there are two sets
 
 #### `npm install` (alias: `npm i`)
 
-Adds dependencies listed in the root package.
+Installs all dependencies (root and packages).
 
 #### `npm run build --workspaces`
 
