@@ -63,7 +63,7 @@ test()
 
 ### Proof of non-existence
 
-The below code demonstrates how to construct and then verify a proof that proves that the key `test3` does not exist in the given trie, so a proof of non-existence in that the key requested is shown to not exist in the trie.
+The below code demonstrates how to construct and then verify a proof that proves that the key `test3` does not exist in the given trie, so a proof of non-existence.
 
 ```typescript
 const trie = new Trie()

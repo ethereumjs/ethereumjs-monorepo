@@ -104,7 +104,7 @@ export class Trie {
   async checkRoot(root: Buffer): Promise<boolean> {
     try {
       const value = await this._lookupNode(root)
-      return !!value
+      return value !== null
     } catch (error) {
       if (error.message == 'Missing node in DB') {
         return false
