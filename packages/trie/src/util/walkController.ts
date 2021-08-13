@@ -46,7 +46,7 @@ export class WalkController {
 
   private async startWalk(root: Buffer): Promise<void> {
     // eslint-disable-next-line no-async-promise-executor
-    await new Promise(async (resolve, reject) => {
+    return await new Promise(async (resolve, reject) => {
       this.resolve = resolve
       this.reject = reject
       let node
