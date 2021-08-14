@@ -9,10 +9,10 @@ import { getPreState, getBlockchain, verifyResult } from './util'
 const BLOCK_FIXTURE = 'benchmarks/fixture/blocks-prestate.json'
 
 const runBlock = async (vm: VM, block: Block, receipts: any) => {
-  await vm.copy().runBlock({
+  await (await vm.copy()).runBlock({
     block,
     generate: true,
-    skipBlockValidation: true,
+    skipBlockValidation: true
   })
   verifyResult(block, receipts)
 }

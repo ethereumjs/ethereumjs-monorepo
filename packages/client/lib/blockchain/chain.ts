@@ -110,7 +110,7 @@ export class Chain {
 
     this.blockchain =
       options.blockchain ??
-      new (Blockchain as any)({
+      new Blockchain({
         db: options.chainDB,
         common: this.config.chainCommon,
         hardforkByHeadBlockNumber: true,

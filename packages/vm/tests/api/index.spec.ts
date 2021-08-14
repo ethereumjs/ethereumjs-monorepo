@@ -156,7 +156,7 @@ tape('VM -> state (deprecated), blockchain', (t) => {
     st.equal(vm._common.chainName(), 'ropsten')
     st.equal(vm._common.hardfork(), 'byzantium')
 
-    const copiedVM = vm.copy()
+    const copiedVM = await vm.copy()
     st.equal(copiedVM._common.chainName(), 'ropsten')
     st.equal(copiedVM._common.hardfork(), 'byzantium')
 

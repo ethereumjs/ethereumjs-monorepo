@@ -231,7 +231,7 @@ export default class VM extends AsyncEventEmitter {
       })
     }
 
-    this.blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this._common })
+    this.blockchain = opts.blockchain ?? new Blockchain({ common: this._common })
 
     this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize ?? false
 
@@ -382,8 +382,8 @@ export default class VM extends AsyncEventEmitter {
   /**
    * Returns a copy of the {@link VM} instance.
    */
-  copy(): VM {
-    return new VM({
+  async copy(): Promise<VM> {
+    return VM.create({
       stateManager: this.stateManager.copy(),
       blockchain: this.blockchain,
       common: this._common,

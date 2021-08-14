@@ -282,7 +282,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
   })
 
   t.test('should throw on wrong nonces', async (t) => {
-    const vm = await VM.creaet({ common })
+    const vm = await VM.create({ common })
     const tx = getTransaction(common, 2, true, '0x', false)
     const address = tx.getSenderAddress()
     const account = await vm.stateManager.getAccount(address)

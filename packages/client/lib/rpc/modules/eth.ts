@@ -134,7 +134,7 @@ export class Eth {
 
     // use a copy of the vm in case new blocks are executed,
     // and to not make any underlying changes during the call
-    const vm = this._vm.copy()
+    const vm = await this._vm.copy()
 
     if (blockOpt !== 'latest') {
       const latest = await vm.blockchain.getLatestHeader()
@@ -201,7 +201,7 @@ export class Eth {
     }
 
     // use a copy of the vm in case new blocks are executed
-    const vm = this._vm.copy()
+    const vm = await this._vm.copy()
 
     if (blockOpt !== 'latest') {
       const latest = await vm.blockchain.getLatestHeader()
@@ -253,7 +253,7 @@ export class Eth {
     }
 
     // use a copy of the vm in case new blocks are sync'd
-    const vm = this._vm.copy()
+    const vm = await this._vm.copy()
 
     if (blockOpt !== 'latest') {
       const latest = await vm.blockchain.getLatestHeader()
@@ -344,7 +344,7 @@ export class Eth {
     }
 
     // use a copy of the vm in case new blocks are sync'd
-    const vm = this._vm.copy()
+    const vm = await this._vm.copy()
 
     if (blockOpt !== 'latest') {
       const latest = await vm.blockchain.getLatestHeader()
@@ -378,7 +378,7 @@ export class Eth {
     }
 
     // use a copy of the vm in case new blocks are executed
-    const vm = this._vm.copy()
+    const vm = await this._vm.copy()
 
     if (blockOpt !== 'latest') {
       const latest = await vm.blockchain.getLatestHeader()
@@ -413,7 +413,7 @@ export class Eth {
     }
 
     // use a copy of the vm in case new blocks are executed
-    const vm = this._vm.copy()
+    const vm = await this._vm.copy()
 
     if (blockOpt !== 'latest') {
       const latest = await vm.blockchain.getLatestHeader()

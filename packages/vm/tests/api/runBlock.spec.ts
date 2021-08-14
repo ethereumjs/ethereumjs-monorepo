@@ -104,7 +104,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
   })
 
   t.test('Uncle blocks, compute uncle rewards', async (t) => {
-    const vm = setupVM()
+    const vm = await setupVM()
     await uncleRun(vm)
     t.end()
   })
@@ -323,7 +323,7 @@ tape('runBlock() -> runtime behavior', async (t) => {
 
   t.test('should allocate to correct clique beneficiary', async (t) => {
     const common = new Common({ chain: Chain.Goerli })
-    const vm = setupVM({ common })
+    const vm = await setupVM({ common })
 
     const signer = {
       address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
@@ -527,7 +527,7 @@ tape('runBlock() -> tx types', async (t) => {
 
   t.test('fee market tx', async (t) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const vm = setupVM({ common })
+    const vm = await setupVM({ common })
 
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
