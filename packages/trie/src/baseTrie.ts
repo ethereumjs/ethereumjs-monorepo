@@ -291,6 +291,7 @@ export class Trie {
     if (value) {
       foundNode = decodeNode(value)
     } else {
+      // Dev note: this error message text is used for error checking in `checkRoot`, `verifyProof`, and `findPath`
       throw new Error('Missing node in DB')
     }
     return foundNode
