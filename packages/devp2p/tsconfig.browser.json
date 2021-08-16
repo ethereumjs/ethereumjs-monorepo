@@ -4,6 +4,6 @@
   "compilerOptions": {
     "outDir": "./dist.browser",
     "types": ["node"],
-    "typeRoots": ["node_modules/@types", "src/types"]
+    "typeRoots": ["node_modules/@types"]
   }
 }
