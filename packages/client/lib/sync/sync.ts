@@ -70,6 +70,21 @@ export abstract class Synchronizer {
         this.config.logger.debug(`Found ${this.type} peer: ${peer}`)
       }
     })
+
+    this.config.events.on(Event.CHAIN_UPDATED, async () => {
+      if (this.syncTargetHeight && this.chain.blocks.height.gte(this.syncTargetHeight)) {
+        if (!this.config.synchronized) {
+          const hash = this.chain.blocks.latest?.hash()
+          this.config.logger.info(
+            `Chain synchronized height=${this.chain.blocks.height} number=${short(hash!)}`
+          )
+        }
+        this.config.synchronized = true
+
+        // TODO: analyze if this event is still needed
+        this.config.events.emit(Event.SYNC_SYNCHRONIZED, this.chain.blocks.height)
+      }
+    })
   }
 
   abstract sync(): Promise<boolean>
@@ -109,9 +124,7 @@ export abstract class Synchronizer {
     }, this.interval * 30)
     while (this.running) {
       try {
-        if (await this.sync()) {
-          this.config.events.emit(Event.SYNC_SYNCHRONIZED, this.chain.blocks.height)
-        }
+        await this.sync()
       } catch (error) {
         this.config.events.emit(Event.SYNC_ERROR, error)
       }

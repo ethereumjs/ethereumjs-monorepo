@@ -514,7 +514,7 @@ export class Eth {
    *   * highestBlock - The estimated highest block
    */
   async syncing(_params = []) {
-    if (this.client.synchronized) {
+    if (this.client.config.synchronized) {
       return false
     }
 

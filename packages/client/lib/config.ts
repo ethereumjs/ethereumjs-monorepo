@@ -223,6 +223,8 @@ export class Config {
   public readonly discDns: boolean
   public readonly discV4: boolean
 
+  public synchronized: boolean
+
   public readonly chainCommon: Common
   public readonly execCommon: Common
 
@@ -249,6 +251,8 @@ export class Config {
     this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT
     this.dnsAddr = options.dnsAddr ?? Config.DNSADDR_DEFAULT
     this.debugCode = options.debugCode ?? Config.DEBUGCODE_DEFAULT
+
+    this.synchronized = false
 
     // TODO: map chainParams (and lib/util.parseParams) to new Common format
     const common =

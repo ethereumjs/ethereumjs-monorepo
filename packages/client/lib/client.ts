@@ -46,7 +46,6 @@ export default class EthereumClient extends events.EventEmitter {
 
   public opened: boolean
   public started: boolean
-  public synchronized: boolean
 
   /**
    * Create new node
@@ -71,7 +70,6 @@ export default class EthereumClient extends events.EventEmitter {
     ]
     this.opened = false
     this.started = false
-    this.synchronized = false
   }
 
   /**
@@ -92,7 +90,6 @@ export default class EthereumClient extends events.EventEmitter {
     })
     await Promise.all(this.services.map((s) => s.open()))
     this.opened = true
-    this.config.events.on(Event.SYNC_SYNCHRONIZED, () => (this.synchronized = true))
   }
 
   /**
