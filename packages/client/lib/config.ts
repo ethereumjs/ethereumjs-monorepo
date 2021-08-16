@@ -224,6 +224,7 @@ export class Config {
   public readonly discV4: boolean
 
   public synchronized: boolean
+  public lastSyncDate: number
 
   public readonly chainCommon: Common
   public readonly execCommon: Common
@@ -253,6 +254,7 @@ export class Config {
     this.debugCode = options.debugCode ?? Config.DEBUGCODE_DEFAULT
 
     this.synchronized = false
+    this.lastSyncDate = 0
 
     // TODO: map chainParams (and lib/util.parseParams) to new Common format
     const common =

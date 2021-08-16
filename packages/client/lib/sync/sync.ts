@@ -49,6 +49,12 @@ export abstract class Synchronizer {
   // Best known sync block height
   public syncTargetHeight?: BN
 
+  // eslint-disable-next-line no-undef
+  private _syncedStatusCheckInterval: NodeJS.Timeout | null
+
+  // Time (in seconds) after which the synced state is reset
+  private SYNCED_STATE_REMOVAL_PERIOD = 60
+
   /**
    * Create new node
    * @param {SynchronizerOptions}
@@ -80,11 +86,18 @@ export abstract class Synchronizer {
           )
         }
         this.config.synchronized = true
+        this.config.lastSyncDate = Date.now()
 
         // TODO: analyze if this event is still needed
         this.config.events.emit(Event.SYNC_SYNCHRONIZED, this.chain.blocks.height)
       }
     })
+
+    // eslint-disable-next-line @typescript-eslint/await-thenable
+    this._syncedStatusCheckInterval = setInterval(
+      this._syncedStatusCheck.bind(this),
+      this.SYNCED_STATE_REMOVAL_PERIOD
+    )
   }
 
   abstract sync(): Promise<boolean>
@@ -219,5 +232,19 @@ export abstract class Synchronizer {
     this.running = false
     this.config.logger.info('Stopped synchronization.')
     return true
+  }
+
+  /**
+   * Reset synced status after a certain time with no
+   * chain updates
+   */
+  _syncedStatusCheck() {
+    if (this.config.synchronized) {
+      const diff = Date.now() - this.config.lastSyncDate
+      if (diff >= this.SYNCED_STATE_REMOVAL_PERIOD) {
+        this.config.synchronized = false
+        this.config.logger.info(`Sync status reset (no chain updates for ${diff} seconds).`)
+      }
+    }
   }
 }
