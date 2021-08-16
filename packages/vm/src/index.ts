@@ -171,7 +171,7 @@ export default class VM extends AsyncEventEmitter {
    * use the async {@link VM.create} constructor instead (same API).
    * @param opts
    */
-  constructor(opts: VMOpts = {}) {
+  protected constructor(opts: VMOpts = {}) {
     super()
 
     this._opts = opts
