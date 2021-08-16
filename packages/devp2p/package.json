@@ -38,7 +38,7 @@
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "tape": "tape -r ts-node/register",
-    "test": "tape -r ts-node/register ./test/index.ts"
+    "test": "npm run tape -- ./test/index.ts"
   },
   "dependencies": {
     "@ethereumjs/common": "^2.4.0",
