@@ -98,60 +98,7 @@ export class FullSynchronizer extends Synchronizer {
     // eslint-disable-next-line no-async-promise-executor
     return await new Promise(async () => {
       if (!peer) return false
-      peer!.on('message', (message: any) => {
-        if (message.name === 'NewBlockHashes') {
-          let min: BN = new BN(-1)
-          const data: any[] = message.data
-          const blockNumberList: string[] = []
-          data.forEach((value: any) => {
-            const blockNumber: BN = value[1]
-            blockNumberList.push(blockNumber.toString())
-            if (min.eqn(-1) || blockNumber.lt(min)) {
-              min = blockNumber
-            }
-          })
-          if (min.eqn(-1)) {
-            return
-          }
-          const numBlocks = blockNumberList.length
 
-          // check if we can request the blocks in bulk
-          let bulkRequest = true
-          const minCopy = min.clone()
-          for (let num = 1; num < numBlocks; num++) {
-            min.iaddn(1)
-            if (!blockNumberList.includes(min.toString())) {
-              bulkRequest = false
-              break
-            }
-          }
-
-          if (bulkRequest) {
-            // FIXME
-            // eslint-disable-next-line @typescript-eslint/no-use-before-define
-            blockFetcher.enqueueTask(
-              {
-                first: minCopy,
-                count: numBlocks,
-              },
-              true
-            )
-          } else {
-            data.forEach((value: any) => {
-              const blockNumber: BN = value[1]
-              // FIXME
-              // eslint-disable-next-line @typescript-eslint/no-use-before-define
-              blockFetcher.enqueueTask(
-                {
-                  first: blockNumber,
-                  count: 1,
-                },
-                true
-              )
-            })
-          }
-        }
-      })
       const latest = await this.latest(peer)
       if (!latest) return false
       const height = new BN(latest.number)
@@ -173,6 +120,7 @@ export class FullSynchronizer extends Synchronizer {
         destroyWhenDone: false,
       })
       const blockFetcher = <BlockFetcher>this.blockFetcher
+      this.addNewBlockHandlers(peer, blockFetcher)
 
       this.config.events.on(Event.SYNC_FETCHER_FETCHED, (blocks) => {
         blocks = blocks as Block[]

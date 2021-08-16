@@ -1,3 +1,4 @@
+import { BN } from 'ethereumjs-util'
 import { PeerPool } from '../net/peerpool'
 import { Peer } from '../net/peer/peer'
 import { FlowControl } from '../net/protocol'
@@ -6,6 +7,7 @@ import { Chain } from '../blockchain'
 import { Event } from '../types'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
+import { BlockFetcher, HeaderFetcher } from './fetcher'
 
 export interface SynchronizerOptions {
   /* Config */
@@ -111,6 +113,63 @@ export abstract class Synchronizer {
     }
     this.running = false
     clearTimeout(timeout)
+  }
+
+  addNewBlockHandlers(peer: Peer, fetcher: BlockFetcher | HeaderFetcher) {
+    peer.on('message', (message: any) => {
+      if (message.name === 'NewBlockHashes') {
+        let min: BN = new BN(-1)
+        const data: any[] = message.data
+        const blockNumberList: string[] = []
+        data.forEach((value: any) => {
+          const blockNumber: BN = value[1]
+          blockNumberList.push(blockNumber.toString())
+          if (min.eqn(-1) || blockNumber.lt(min)) {
+            min = blockNumber
+          }
+        })
+        if (min.eqn(-1)) {
+          return
+        }
+        const numBlocks = blockNumberList.length
+
+        // check if we can request the blocks in bulk
+        let bulkRequest = true
+        const minCopy = min.clone()
+        for (let num = 1; num < numBlocks; num++) {
+          min.iaddn(1)
+          if (!blockNumberList.includes(min.toString())) {
+            bulkRequest = false
+            break
+          }
+        }
+
+        if (bulkRequest) {
+          // FIXME
+          // eslint-disable-next-line @typescript-eslint/no-use-before-define
+          fetcher.enqueueTask(
+            {
+              first: minCopy,
+              count: numBlocks,
+            },
+            true
+          )
+        } else {
+          data.forEach((value: any) => {
+            const blockNumber: BN = value[1]
+            // FIXME
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define
+            fetcher.enqueueTask(
+              {
+                first: blockNumber,
+                count: 1,
+              },
+              true
+            )
+          })
+        }
+      }
+    })
   }
 
   /**
