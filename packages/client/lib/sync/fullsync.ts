@@ -12,13 +12,10 @@ import { Event } from '../types'
  * @memberof module:sync
  */
 export class FullSynchronizer extends Synchronizer {
-  private blockFetcher: BlockFetcher | null
-
   public execution: VMExecution
 
   constructor(options: SynchronizerOptions) {
     super(options)
-    this.blockFetcher = null
 
     this.execution = new VMExecution({
       config: options.config,
@@ -110,7 +107,7 @@ export class FullSynchronizer extends Synchronizer {
         `Syncing with peer: ${peer.toString(true)} height=${height.toString(10)}`
       )
 
-      this.blockFetcher = new BlockFetcher({
+      this.fetcher = new BlockFetcher({
         config: this.config,
         pool: this.pool,
         chain: this.chain,
@@ -119,8 +116,6 @@ export class FullSynchronizer extends Synchronizer {
         count,
         destroyWhenDone: false,
       })
-      const blockFetcher = <BlockFetcher>this.blockFetcher
-      this.addNewBlockHandlers(peer, blockFetcher)
 
       this.config.events.on(Event.SYNC_FETCHER_FETCHED, (blocks) => {
         blocks = blocks as Block[]
@@ -138,7 +133,7 @@ export class FullSynchronizer extends Synchronizer {
         )
       })
 
-      await this.blockFetcher.fetch()
+      await this.fetcher.fetch()
     })
   }
 
@@ -153,20 +148,6 @@ export class FullSynchronizer extends Synchronizer {
       peer = this.best()
     }
     return this.syncWithPeer(peer)
-  }
-
-  /**
-   * Chain was updated
-   * @param  {Object[]} announcements new block hash announcements
-   * @param  {Peer}     peer peer
-   * @return {Promise}
-   */
-  async announced(announcements: any[], _peer: Peer) {
-    if (announcements.length) {
-      const [hash, height] = announcements[announcements.length - 1]
-      this.config.logger.debug(`New height: number=${height.toString(10)} hash=${short(hash)}`)
-      // TO DO: download new blocks
-    }
   }
 
   /**
@@ -201,11 +182,11 @@ export class FullSynchronizer extends Synchronizer {
       return false
     }
 
-    if (this.blockFetcher) {
-      this.blockFetcher.destroy()
+    if (this.fetcher) {
+      this.fetcher.destroy()
       // TODO: Should this be deleted?
       // @ts-ignore: error: The operand of a 'delete' operator must be optional
-      delete this.blockFetcher
+      delete this.fetcher
     }
     await super.stop()
 

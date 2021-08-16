@@ -8,6 +8,7 @@ import { Event } from '../types'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
 import { BlockFetcher, HeaderFetcher } from './fetcher'
+import { short } from '../util'
 
 export interface SynchronizerOptions {
   /* Config */
@@ -38,11 +39,15 @@ export abstract class Synchronizer {
 
   protected pool: PeerPool
   protected chain: Chain
+  protected fetcher: BlockFetcher | HeaderFetcher | null
   protected flow: FlowControl
   protected interval: number
   public running: boolean
   protected forceSync: boolean
   public startingBlock: number
+
+  // Best known sync block height
+  public syncTargetHeight?: BN
 
   /**
    * Create new node
@@ -53,6 +58,7 @@ export abstract class Synchronizer {
 
     this.pool = options.pool
     this.chain = options.chain
+    this.fetcher = null
     this.flow = options.flow ?? new FlowControl()
     this.interval = options.interval ?? 1000
     this.running = false
@@ -115,61 +121,78 @@ export abstract class Synchronizer {
     clearTimeout(timeout)
   }
 
-  addNewBlockHandlers(peer: Peer, fetcher: BlockFetcher | HeaderFetcher) {
-    peer.on('message', (message: any) => {
-      if (message.name === 'NewBlockHashes') {
-        let min: BN = new BN(-1)
-        const data: any[] = message.data
-        const blockNumberList: string[] = []
+  /**
+   * Chain was updated, new block hashes received
+   * @param  {Object[]} data new block hash announcements
+   * @param  {Peer}     peer peer
+   * @return {Promise}
+   */
+  handleNewBlockHashes(data: any[]) {
+    if (data.length) {
+      let min: BN = new BN(-1)
+      let newSyncHeight
+      const blockNumberList: string[] = []
+      data.forEach((value: any) => {
+        const blockNumber: BN = value[1]
+        blockNumberList.push(blockNumber.toString())
+        if (min.eqn(-1) || blockNumber.lt(min)) {
+          min = blockNumber
+        }
+
+        // Check if new sync target height can be set
+        if (!this.syncTargetHeight || blockNumber.gt(this.syncTargetHeight)) {
+          newSyncHeight = blockNumber
+        }
+      })
+      if (min.eqn(-1)) {
+        return
+      }
+      if (newSyncHeight) {
+        this.syncTargetHeight = newSyncHeight
+        const [hash, height] = data[data.length - 1]
+        this.config.logger.info(
+          `New sync target height number=${height.toString(10)} hash=${short(hash)}`
+        )
+      }
+
+      const numBlocks = blockNumberList.length
+
+      // check if we can request the blocks in bulk
+      let bulkRequest = true
+      const minCopy = min.clone()
+      for (let num = 1; num < numBlocks; num++) {
+        min.iaddn(1)
+        if (!blockNumberList.includes(min.toString())) {
+          bulkRequest = false
+          break
+        }
+      }
+
+      if (bulkRequest) {
+        // FIXME
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        this.fetcher!.enqueueTask(
+          {
+            first: minCopy,
+            count: numBlocks,
+          },
+          true
+        )
+      } else {
         data.forEach((value: any) => {
           const blockNumber: BN = value[1]
-          blockNumberList.push(blockNumber.toString())
-          if (min.eqn(-1) || blockNumber.lt(min)) {
-            min = blockNumber
-          }
-        })
-        if (min.eqn(-1)) {
-          return
-        }
-        const numBlocks = blockNumberList.length
-
-        // check if we can request the blocks in bulk
-        let bulkRequest = true
-        const minCopy = min.clone()
-        for (let num = 1; num < numBlocks; num++) {
-          min.iaddn(1)
-          if (!blockNumberList.includes(min.toString())) {
-            bulkRequest = false
-            break
-          }
-        }
-
-        if (bulkRequest) {
           // FIXME
           // eslint-disable-next-line @typescript-eslint/no-use-before-define
-          fetcher.enqueueTask(
+          this.fetcher!.enqueueTask(
             {
-              first: minCopy,
-              count: numBlocks,
+              first: blockNumber,
+              count: 1,
             },
             true
           )
-        } else {
-          data.forEach((value: any) => {
-            const blockNumber: BN = value[1]
-            // FIXME
-            // eslint-disable-next-line @typescript-eslint/no-use-before-define
-            fetcher.enqueueTask(
-              {
-                first: blockNumber,
-                count: 1,
-              },
-              true
-            )
-          })
-        }
+        })
       }
-    })
+    }
   }
 
   /**

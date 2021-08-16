@@ -11,11 +11,8 @@ import { Event } from '../types'
  * @memberof module:sync
  */
 export class LightSynchronizer extends Synchronizer {
-  private headerFetcher: HeaderFetcher | null
-
   constructor(options: SynchronizerOptions) {
     super(options)
-    this.headerFetcher = null
   }
 
   /**
@@ -89,7 +86,7 @@ export class LightSynchronizer extends Synchronizer {
         `Syncing with peer: ${peer.toString(true)} height=${height.toString(10)}`
       )
 
-      this.headerFetcher = new HeaderFetcher({
+      this.fetcher = new HeaderFetcher({
         config: this.config,
         pool: this.pool,
         chain: this.chain,
@@ -99,8 +96,6 @@ export class LightSynchronizer extends Synchronizer {
         count,
         destroyWhenDone: false,
       })
-      const headerFetcher = <HeaderFetcher>this.headerFetcher
-      this.addNewBlockHandlers(peer, headerFetcher)
 
       this.config.events.on(Event.SYNC_FETCHER_FETCHED, (headers) => {
         headers = headers as BlockHeader[]
@@ -115,7 +110,7 @@ export class LightSynchronizer extends Synchronizer {
           )} hash=${hash} ${baseFeeAdd}peers=${this.pool.size}`
         )
       })
-      await this.headerFetcher.fetch()
+      await this.fetcher.fetch()
     })
   }
 
@@ -149,11 +144,11 @@ export class LightSynchronizer extends Synchronizer {
     if (!this.running) {
       return false
     }
-    if (this.headerFetcher) {
-      this.headerFetcher.destroy()
+    if (this.fetcher) {
+      this.fetcher.destroy()
       // TODO: Should this be deleted?
       // @ts-ignore: error: The operand of a 'delete' operator must be optional
-      delete this.headerFetcher
+      delete this.fetcher
     }
     await super.stop()
     return true

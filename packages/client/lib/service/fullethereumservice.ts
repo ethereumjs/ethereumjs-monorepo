@@ -93,7 +93,7 @@ export class FullEthereumService extends EthereumService {
       const bodies: any = blocks.map((block: any) => block.raw().slice(1))
       peer.eth!.send('BlockBodies', { reqId, bodies })
     } else if (message.name === 'NewBlockHashes') {
-      await this.synchronizer.announced(message.data, peer)
+      this.synchronizer.handleNewBlockHashes(message.data)
     }
   }
 
