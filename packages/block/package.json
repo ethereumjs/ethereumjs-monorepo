@@ -29,7 +29,7 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",
-    "test:node": "tape -r ts-node/register test/*.spec.ts",
+    "test:node": "npm run tape -- test/*.spec.ts",
     "test:browser": "karma start karma.conf.js"
   },
   "dependencies": {

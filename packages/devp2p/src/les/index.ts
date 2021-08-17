@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events'
 import * as rlp from 'rlp'
 import ms from 'ms'
+import snappy from 'snappyjs'
 import { debug as createDebugLogger } from 'debug'
 import { int2buffer, buffer2int, assertEq, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
@@ -166,7 +167,15 @@ export class LES extends EventEmitter {
         this._peer._socket.remotePort
       } (les${this._version}): ${this._getStatusString(this._status)}`
     )
-    this._send(LES.MESSAGE_CODES.STATUS, rlp.encode(statusList))
+
+    let payload = rlp.encode(statusList)
+
+    // Use snappy compression if peer supports DevP2P >=v5
+    if (this._peer._hello?.protocolVersion && this._peer._hello?.protocolVersion >= 5) {
+      payload = snappy.compress(payload)
+    }
+
+    this._send(LES.MESSAGE_CODES.STATUS, payload)
     this._handleStatus()
   }
 
@@ -219,7 +228,14 @@ export class LES extends EventEmitter {
         throw new Error(`Unknown code ${code}`)
     }
 
-    this._send(code, rlp.encode(payload))
+    payload = rlp.encode(payload)
+
+    // Use snappy compression if peer supports DevP2P >=v5
+    if (this._peer._hello?.protocolVersion && this._peer._hello?.protocolVersion >= 5) {
+      payload = snappy.compress(payload)
+    }
+
+    this._send(code, payload)
   }
 
   getMsgPrefix(msgCode: LES.MESSAGE_CODES) {

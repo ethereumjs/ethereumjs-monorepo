@@ -2,11 +2,12 @@ import assert from 'assert'
 import { EventEmitter } from 'events'
 import * as rlp from 'rlp'
 import ms from 'ms'
+import snappy from 'snappyjs'
+import { debug as createDebugLogger } from 'debug'
 import { BN } from 'ethereumjs-util'
 import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 
-import { debug as createDebugLogger } from 'debug'
 const debug = createDebugLogger('devp2p:eth')
 const verbose = createDebugLogger('verbose').enabled
 
@@ -230,7 +231,15 @@ export class ETH extends EventEmitter {
         this._peer._socket.remotePort
       } (eth${this._version}): ${this._getStatusString(this._status)}`
     )
-    this._send(ETH.MESSAGE_CODES.STATUS, rlp.encode(this._status as any))
+
+    let payload = rlp.encode(this._status as any)
+
+    // Use snappy compression if peer supports DevP2P >=v5
+    if (this._peer._hello?.protocolVersion && this._peer._hello?.protocolVersion >= 5) {
+      payload = snappy.compress(payload)
+    }
+
+    this._send(ETH.MESSAGE_CODES.STATUS, payload)
     this._handleStatus()
   }
 
@@ -272,7 +281,14 @@ export class ETH extends EventEmitter {
         throw new Error(`Unknown code ${code}`)
     }
 
-    this._send(code, rlp.encode(payload))
+    payload = rlp.encode(payload)
+
+    // Use snappy compression if peer supports DevP2P >=v5
+    if (this._peer._hello?.protocolVersion && this._peer._hello?.protocolVersion >= 5) {
+      payload = snappy.compress(payload)
+    }
+
+    this._send(code, payload)
   }
 
   getMsgPrefix(msgCode: ETH.MESSAGE_CODES): string {
