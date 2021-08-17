@@ -504,7 +504,7 @@ export class Peer extends EventEmitter {
       let payload = body.slice(1)
 
       // Use snappy uncompression if peer supports DevP2P >=v5
-      if ((this._hello?.protocolVersion ?? 0) >= 5) {
+      if (this._hello?.protocolVersion && this._hello?.protocolVersion >= 5) {
         payload = snappy.uncompress(payload)
       }
 

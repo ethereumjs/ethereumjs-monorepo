@@ -171,7 +171,7 @@ export class LES extends EventEmitter {
     let payload = rlp.encode(statusList)
 
     // Use snappy compression if peer supports DevP2P >=v5
-    if ((this._peer._hello?.protocolVersion ?? 0) >= 5) {
+    if (this._peer._hello?.protocolVersion && this._peer._hello?.protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }
 
@@ -231,7 +231,7 @@ export class LES extends EventEmitter {
     payload = rlp.encode(payload)
 
     // Use snappy compression if peer supports DevP2P >=v5
-    if ((this._peer._hello?.protocolVersion ?? 0) >= 5) {
+    if (this._peer._hello?.protocolVersion && this._peer._hello?.protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }
 
