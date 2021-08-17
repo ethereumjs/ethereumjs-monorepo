@@ -42,6 +42,7 @@ tape('[FullSynchronizer]', async (t) => {
       chain,
     })
     ;(sync as any).pool.open = td.func<PeerPool['open']>()
+    ;(sync as any).pool.peers = []
     td.when((sync as any).pool.open()).thenResolve(null)
     await sync.open()
     t.pass('opened')
