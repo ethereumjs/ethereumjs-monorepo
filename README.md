@@ -41,7 +41,7 @@ const { Wallet } = require('ethereumjs-wallet').default
 ESM / TypeScript:
 
 ```js
-import { Wallet } from 'ethereumjs-wallet'
+import Wallet from 'ethereumjs-wallet'
 ```
 
 ## Thirdparty API
