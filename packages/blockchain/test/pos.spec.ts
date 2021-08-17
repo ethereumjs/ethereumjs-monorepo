@@ -10,9 +10,9 @@ const buildChain = async (blockchain: Blockchain, common: Common, height: number
   const londonBlockNumber = common.hardforkBlockBN('london')!.toNumber()
   const mergeBlockNumber = common.hardforkBlockBN('merge')!.toNumber()
   const genesis = Block.genesis({}, { common })
-  const londonCommon = new Common({ chain: testnet, eips: [2930, 1559], hardfork: Hardfork.London })
-  const initialBaseFee = new BN(londonCommon.param('gasConfig', 'initialBaseFee'))
-  blocks.push(genesis)
+//  const londonCommon = new Common({ chain: testnet, eips: [2930, 1559], hardfork: Hardfork.London })
+ // const initialBaseFee = new BN(londonCommon.param('gasConfig', 'initialBaseFee'))
+//  blocks.push(genesis)
 
   // ADD blocks up to London fork
 // let chainHeight = height > londonBlockNumber ? londonBlockNumber : height
@@ -31,7 +31,7 @@ const buildChain = async (blockchain: Blockchain, common: Common, height: number
         common,
       }
     )
-    blocks.push(block)
+//    blocks.push(block)
     await blockchain.putBlock(block)
   }
 /*
