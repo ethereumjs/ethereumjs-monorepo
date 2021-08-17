@@ -11,6 +11,9 @@ class SynchronizerTest extends Synchronizer {
   async sync() {
     return false
   }
+  best() {
+    return undefined
+  }
 }
 
 tape('[Synchronizer]', async (t) => {
