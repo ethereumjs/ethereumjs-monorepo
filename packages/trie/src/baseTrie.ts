@@ -102,8 +102,16 @@ export class Trie {
    * Checks if a given root exists.
    */
   async checkRoot(root: Buffer): Promise<boolean> {
-    const value = await this._lookupNode(root)
-    return !!value
+    try {
+      const value = await this._lookupNode(root)
+      return value !== null
+    } catch (error) {
+      if (error.message == 'Missing node in DB') {
+        return false
+      } else {
+        throw error
+      }
+    }
   }
 
   /**
@@ -116,10 +124,11 @@ export class Trie {
   /**
    * Gets a value given a `key`
    * @param key - the key to search for
+   * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
    * @returns A Promise that resolves to `Buffer` if a value was found or `null` if no value was found.
    */
-  async get(key: Buffer): Promise<Buffer | null> {
-    const { node, remaining } = await this.findPath(key)
+  async get(key: Buffer, throwIfMissing = false): Promise<Buffer | null> {
+    const { node, remaining } = await this.findPath(key, throwIfMissing)
     let value = null
     if (node && remaining.length === 0) {
       value = node.value
@@ -172,16 +181,17 @@ export class Trie {
    * Tries to find a path to the node for the given key.
    * It returns a `stack` of nodes to the closest node.
    * @param key - the search key
+   * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
    */
-  async findPath(key: Buffer): Promise<Path> {
+  async findPath(key: Buffer, throwIfMissing = false): Promise<Path> {
     // eslint-disable-next-line no-async-promise-executor
-    return new Promise(async (resolve) => {
+    return new Promise(async (resolve, reject) => {
       const stack: TrieNode[] = []
       const targetKey = bufferToNibbles(key)
 
       const onFound: FoundNodeFunction = async (nodeRef, node, keyProgress, walkController) => {
         if (node === null) {
-          return
+          return reject(new Error('Path not found'))
         }
         const keyRemainder = targetKey.slice(matchingNibbleLength(keyProgress, targetKey))
         stack.push(node)
@@ -223,7 +233,15 @@ export class Trie {
       }
 
       // walk trie and process nodes
-      await this.walkTrie(this.root, onFound)
+      try {
+        await this.walkTrie(this.root, onFound)
+      } catch (error) {
+        if (error.message == 'Missing node in DB' && !throwIfMissing) {
+          // pass
+        } else {
+          reject(error)
+        }
+      }
 
       // Resolve if _walkTrie finishes without finding any nodes
       resolve({ node: null, remaining: [], stack })
@@ -270,9 +288,11 @@ export class Trie {
     let value = null
     let foundNode = null
     value = await this.db.get(node as Buffer)
-
     if (value) {
       foundNode = decodeNode(value)
+    } else {
+      // Dev note: this error message text is used for error checking in `checkRoot`, `verifyProof`, and `findPath`
+      throw new Error('Missing node in DB')
     }
     return foundNode
   }
@@ -678,7 +698,7 @@ export class Trie {
    * @param key
    * @param proof
    * @throws If proof is found to be invalid.
-   * @returns The value from the key.
+   * @returns The value from the key, or null if valid proof of non-existence.
    */
   static async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
     let proofTrie = new Trie(null, rootHash)
@@ -687,7 +707,16 @@ export class Trie {
     } catch (e) {
       throw new Error('Invalid proof nodes given')
     }
-    return proofTrie.get(key)
+    try {
+      const value = await proofTrie.get(key, true)
+      return value
+    } catch (err) {
+      if (err.message == 'Missing node in DB') {
+        throw new Error('Invalid proof provided')
+      } else {
+        throw err
+      }
+    }
   }
 
   /**

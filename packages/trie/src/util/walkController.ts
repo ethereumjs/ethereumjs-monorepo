@@ -11,6 +11,7 @@ export class WalkController {
   readonly taskExecutor: PrioritizedTaskExecutor
   readonly trie: BaseTrie
   private resolve: Function
+  private reject: Function
 
   /**
    * Creates a new WalkController
@@ -23,6 +24,7 @@ export class WalkController {
     this.taskExecutor = new PrioritizedTaskExecutor(poolSize)
     this.trie = trie
     this.resolve = () => {}
+    this.reject = () => {}
   }
 
   /**
@@ -44,9 +46,15 @@ export class WalkController {
 
   private async startWalk(root: Buffer): Promise<void> {
     // eslint-disable-next-line no-async-promise-executor
-    return await new Promise(async (resolve) => {
+    return await new Promise(async (resolve, reject) => {
       this.resolve = resolve
-      const node = await this.trie._lookupNode(root)
+      this.reject = reject
+      let node
+      try {
+        node = await this.trie._lookupNode(root)
+      } catch (error) {
+        return this.reject(error)
+      }
       this.processNode(root, node, [])
     })
   }
@@ -88,7 +96,12 @@ export class WalkController {
     this.taskExecutor.executeOrQueue(
       priority ?? key.length,
       async (taskFinishedCallback: Function) => {
-        const childNode = await this.trie._lookupNode(nodeRef)
+        let childNode
+        try {
+          childNode = await this.trie._lookupNode(nodeRef)
+        } catch (error) {
+          return this.reject(error)
+        }
         taskFinishedCallback() // this marks the current task as finished. If there are any tasks left in the queue, this will immediately execute the first task.
         this.processNode(nodeRef as Buffer, childNode as TrieNode, key)
       }

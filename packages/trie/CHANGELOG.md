@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 **Bug Fixes**
 
+- Better error checking for invalid proofs, PR [#1373](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1373)
+
 **Maintenance**
 
 - Remove use of deprecated setRoot, PR [#1376](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1376)

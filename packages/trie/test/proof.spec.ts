@@ -40,9 +40,39 @@ tape('simple merkle proofs generation and verification', function (tester) {
 
     // to fail our proof we can request a proof for one key
     proof = await CheckpointTrie.createProof(trie, Buffer.from('another'))
-    // and use that proof on another key
-    const result = await CheckpointTrie.verifyProof(trie.root, Buffer.from('key1aa'), proof)
-    t.equal(result, null)
+    // and try to use that proof on another key
+    try {
+      await CheckpointTrie.verifyProof(trie.root, Buffer.from('key1aa'), proof)
+      t.fail('expected error: Invalid proof provided')
+    } catch (e) {
+      t.equal(e.message, 'Invalid proof provided')
+    }
+
+    // we can also corrupt a valid proof
+    proof = await CheckpointTrie.createProof(trie, Buffer.from('key2bb'))
+    proof[0].reverse()
+    try {
+      await CheckpointTrie.verifyProof(trie.root, Buffer.from('key2bb'), proof)
+      t.fail('expected error: Invalid proof provided')
+    } catch (e) {
+      t.equal(e.message, 'Invalid proof provided')
+    }
+
+    // test an invalid exclusion proof by creating
+    // a valid exclusion proof then making it non-null
+    myKey = Buffer.from('anyrandomkey')
+    proof = await CheckpointTrie.createProof(trie, myKey)
+    val = await CheckpointTrie.verifyProof(trie.root, myKey, proof)
+    t.equal(val, null, 'Expected value to be null')
+    // now make the key non-null so the exclusion proof becomes invalid
+    await trie.put(myKey, Buffer.from('thisisavalue'))
+    try {
+      await CheckpointTrie.verifyProof(trie.root, myKey, proof)
+      t.fail('expected error: Invalid proof provided')
+    } catch (e) {
+      t.equal(e.message, 'Invalid proof provided')
+    }
+
     t.end()
   })
 
