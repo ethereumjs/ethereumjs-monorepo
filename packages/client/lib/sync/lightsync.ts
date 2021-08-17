@@ -72,15 +72,15 @@ export class LightSynchronizer extends Synchronizer {
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
     // eslint-disable-next-line no-async-promise-executor
-    return await new Promise(async () => {
-      if (!peer) return false
+    return await new Promise(async (resolve, reject) => {
+      if (!peer) return resolve(false)
 
       const latest = await this.latest(peer)
-      if (!latest) return false
+      if (!latest) return resolve(false)
       const height = new BN(peer.les!.status.headNum)
       const first = this.chain.headers.height.addn(1)
       const count = height.sub(first).addn(1)
-      if (count.lten(0)) return false
+      if (count.lten(0)) return resolve(false)
 
       this.config.logger.debug(
         `Syncing with peer: ${peer.toString(true)} height=${height.toString(10)}`
@@ -110,7 +110,16 @@ export class LightSynchronizer extends Synchronizer {
           )} hash=${hash} ${baseFeeAdd}peers=${this.pool.size}`
         )
       })
-      await this.fetcher.fetch()
+
+      this.config.events.on(Event.SYNC_SYNCHRONIZED, () => {
+        resolve(true)
+      })
+
+      try {
+        await this.fetcher.fetch()
+      } catch (error) {
+        reject(error)
+      }
     })
   }
 

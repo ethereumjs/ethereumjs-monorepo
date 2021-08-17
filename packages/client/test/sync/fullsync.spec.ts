@@ -4,6 +4,7 @@ import td from 'testdouble'
 import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
+import { Event } from '../../lib/types'
 
 tape('[FullSynchronizer]', async (t) => {
   class PeerPool extends EventEmitter {
@@ -114,6 +115,9 @@ tape('[FullSynchronizer]', async (t) => {
     ;(sync as any).chain = {
       blocks: { height: new BN(0) },
     }
+    setTimeout(() => {
+      config.events.emit(Event.SYNC_SYNCHRONIZED, new BN(0))
+    }, 100)
     t.ok(await sync.sync(), 'local height < remote height')
     await sync.stop()
 
