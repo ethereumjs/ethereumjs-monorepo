@@ -811,7 +811,6 @@ export default class Blockchain implements BlockchainInterface {
     for (let i = 0; i < blocks.length; i++) {
       await this.putBlock(blocks[i])
     }
-
   }
 
   /**
@@ -978,7 +977,6 @@ export default class Blockchain implements BlockchainInterface {
         (block._common.consensusType() !== ConsensusType.ProofOfStake && td.gt(currentTd.header)) ||
         block._common.consensusType() === ConsensusType.ProofOfStake
       ) {
-
         if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
           ancientHeaderNumber = (await this._findAncient(header)).number
         }
