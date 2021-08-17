@@ -6,19 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [UNRELEASED]
-
-**New Features**
+## 4.2.1 - 2021-08-17
 
 **Bug Fixes**
 
-- Better error checking for invalid proofs, PR [#1373](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1373)
+- Better error checking for invalid proofs with a differentiation on proofs of non-existence (`Trie.verifyProof()` returns `null`) and invalid proofs where `Trie.verifyProof()` will throw, see [README section](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie#merkle-proofs) for further details, PR [#1373](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1373)
 
 **Maintenance**
 
 - Remove use of deprecated setRoot, PR [#1376](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1376)
-
-**Dependencies, CI and Docs**
 
 ## 4.2.0 - 2021-05-20
 
