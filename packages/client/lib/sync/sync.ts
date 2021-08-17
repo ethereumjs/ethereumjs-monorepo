@@ -149,75 +149,70 @@ export abstract class Synchronizer {
 
   /**
    * Chain was updated, new block hashes received
-   * @param  {Object[]} data new block hash announcements
-   * @param  {Peer}     peer peer
-   * @return {Promise}
+   * @param {[blockhash, number][]} data new block hash announcements
    */
-  handleNewBlockHashes(data: any[]) {
-    if (data.length) {
-      let min: BN = new BN(-1)
-      let newSyncHeight
-      const blockNumberList: string[] = []
-      data.forEach((value: any) => {
-        const blockNumber: BN = value[1]
-        blockNumberList.push(blockNumber.toString())
-        if (min.eqn(-1) || blockNumber.lt(min)) {
-          min = blockNumber
-        }
-
-        // Check if new sync target height can be set
-        if (!this.syncTargetHeight || blockNumber.gt(this.syncTargetHeight)) {
-          newSyncHeight = blockNumber
-        }
-      })
-      if (min.eqn(-1)) {
-        return
-      }
-      if (newSyncHeight) {
-        this.syncTargetHeight = newSyncHeight
-        const [hash, height] = data[data.length - 1]
-        this.config.logger.info(
-          `New sync target height number=${height.toString(10)} hash=${short(hash)}`
-        )
+  handleNewBlockHashes(data: [Buffer, BN][]) {
+    if (!data.length) {
+      return
+    }
+    let min = new BN(-1)
+    let newSyncHeight
+    const blockNumberList: string[] = []
+    data.forEach((value) => {
+      const blockNumber = value[1]
+      blockNumberList.push(blockNumber.toString())
+      if (min.eqn(-1) || blockNumber.lt(min)) {
+        min = blockNumber
       }
 
-      const numBlocks = blockNumberList.length
-
-      // check if we can request the blocks in bulk
-      let bulkRequest = true
-      const minCopy = min.clone()
-      for (let num = 1; num < numBlocks; num++) {
-        min.iaddn(1)
-        if (!blockNumberList.includes(min.toString())) {
-          bulkRequest = false
-          break
-        }
+      // Check if new sync target height can be set
+      if (!this.syncTargetHeight || blockNumber.gt(this.syncTargetHeight)) {
+        newSyncHeight = blockNumber
       }
+    })
+    if (min.eqn(-1)) {
+      return
+    }
+    if (newSyncHeight) {
+      this.syncTargetHeight = newSyncHeight
+      const [hash, height] = data[data.length - 1]
+      this.config.logger.info(
+        `New sync target height number=${height.toString(10)} hash=${short(hash)}`
+      )
+    }
 
-      if (bulkRequest) {
-        // FIXME
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    const numBlocks = blockNumberList.length
+
+    // check if we can request the blocks in bulk
+    let bulkRequest = true
+    const minCopy = min.clone()
+    for (let num = 1; num < numBlocks; num++) {
+      min.iaddn(1)
+      if (!blockNumberList.includes(min.toString())) {
+        bulkRequest = false
+        break
+      }
+    }
+
+    if (bulkRequest) {
+      this.fetcher!.enqueueTask(
+        {
+          first: minCopy,
+          count: numBlocks,
+        },
+        true
+      )
+    } else {
+      data.forEach((value) => {
+        const blockNumber = value[1]
         this.fetcher!.enqueueTask(
           {
-            first: minCopy,
-            count: numBlocks,
+            first: blockNumber,
+            count: 1,
           },
           true
         )
-      } else {
-        data.forEach((value: any) => {
-          const blockNumber: BN = value[1]
-          // FIXME
-          // eslint-disable-next-line @typescript-eslint/no-use-before-define
-          this.fetcher!.enqueueTask(
-            {
-              first: blockNumber,
-              count: 1,
-            },
-            true
-          )
-        })
-      }
+      })
     }
   }
 
