@@ -20,15 +20,14 @@ export async function setup(
   const lightserv = syncmode === 'full'
   const config = new Config({ loglevel, syncmode, lightserv })
 
-  console.log('setting up mockserver')
   const server = new MockServer({ config, location })
   const blockchain = new Blockchain({
     validateBlocks: false,
     validateConsensus: false,
   })
-  console.log('setting up blockchain')
+
   const chain = new MockChain({ config, blockchain, height })
-  console.log('finished setting up mockchain')
+
   const servers = [server] as any
   const serviceConfig = new Config({ loglevel, syncmode, servers, lightserv, minPeers: 1 })
   //@ts-ignore -- attach server eventbus to ethereums service eventbus (to simulate centralized client eventbus))
