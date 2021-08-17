@@ -37,7 +37,8 @@
     "tsc": "../../config/cli/ts-compile.sh",
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
-    "test": "tape -r ts-node/register ./test/index.ts"
+    "tape": "tape -r ts-node/register",
+    "test": "npm run tape -- ./test/index.ts"
   },
   "dependencies": {
     "@ethereumjs/common": "^2.4.0",
@@ -58,7 +59,8 @@
     "multiaddr": "^8.1.2",
     "rlp": "^2.2.4",
     "scanf": "^1.1.2",
-    "secp256k1": "^4.0.2"
+    "secp256k1": "^4.0.2",
+    "snappyjs": "^0.6.1"
   },
   "devDependencies": {
     "@ethereumjs/block": "^3.4.0",

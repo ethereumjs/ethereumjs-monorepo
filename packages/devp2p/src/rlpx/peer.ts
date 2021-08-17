@@ -1,19 +1,20 @@
+import { Socket } from 'net'
 import { EventEmitter } from 'events'
 import * as rlp from 'rlp'
 import * as util from '../util'
 import BufferList = require('bl')
 import ms from 'ms'
+import snappy from 'snappyjs'
 import { debug as createDebugLogger } from 'debug'
 import Common from '@ethereumjs/common'
 import { ECIES } from './ecies'
 import { ETH, LES } from '../'
 import { int2buffer, buffer2int, formatLogData } from '../util'
-import { Socket } from 'net'
 
 const debug = createDebugLogger('devp2p:rlpx:peer')
 const verbose = createDebugLogger('verbose').enabled
 
-export const BASE_PROTOCOL_VERSION = 4
+export const BASE_PROTOCOL_VERSION = 5
 export const BASE_PROTOCOL_LENGTH = 16
 
 export const PING_INTERVAL = ms('15s')
@@ -427,6 +428,7 @@ export class Peer extends EventEmitter {
    */
   _handleMessage(code: PREFIXES, msg: Buffer) {
     const payload = rlp.decode(msg)
+
     switch (code) {
       case PREFIXES.HELLO:
         this._handleHello(payload)
@@ -499,7 +501,14 @@ export class Peer extends EventEmitter {
     )
 
     try {
-      obj.protocol._handleMessage(msgCode, body.slice(1))
+      let payload = body.slice(1)
+
+      // Use snappy uncompression if peer supports DevP2P >=v5
+      if (this._hello?.protocolVersion && this._hello?.protocolVersion >= 5) {
+        payload = snappy.uncompress(payload)
+      }
+
+      obj.protocol._handleMessage(msgCode, payload)
     } catch (err) {
       this.disconnect(DISCONNECT_REASONS.SUBPROTOCOL_ERROR)
       debug(`Error on peer subprotocol message handling: ${err}`)

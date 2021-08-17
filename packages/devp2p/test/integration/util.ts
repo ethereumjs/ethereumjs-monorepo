@@ -161,3 +161,48 @@ export function destroyRLPXs(rlpxs: any) {
     rlpx.destroy()
   }
 }
+
+export function twoPeerMsgExchange2(
+  t: Test,
+  opts: any,
+  capabilities?: any,
+  common?: Object | Common
+) {
+  const rlpxs = initTwoPeerRLPXSetup(null, capabilities, common)
+  rlpxs[0].on('peer:added', function (peer: any) {
+    const protocol = peer.getProtocols()[0]
+    const v4Hello = {
+      protocolVersion: 4,
+      clientId: 'fakePeer',
+      capabilities: [ETH.eth66],
+      port: 30303,
+      id: Buffer.alloc(12),
+    }
+    // Set peer's devp2p protocol version to 4
+    protocol._peer._hello = v4Hello
+    protocol.sendStatus(opts.status0)
+    peer.on('error', (err: Error) => {
+      t.fail(`Unexpected peer 0 error: ${err}`)
+    })
+  })
+
+  rlpxs[1].on('peer:added', function (peer: any) {
+    const protocol = peer.getProtocols()[0]
+    protocol.once('message', async (code: any, _payload: any) => {
+      switch (code) {
+        case ETH.MESSAGE_CODES.STATUS:
+          t.fail('should not have been able to process status message')
+          break
+      }
+    })
+    peer.once('error', (err: any) => {
+      t.equal(
+        err.message,
+        'Invalid Snappy bitstream',
+        'unable to process snappy compressed message'
+      )
+      t.end()
+      destroyRLPXs(rlpxs)
+    })
+  })
+}

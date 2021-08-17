@@ -208,3 +208,9 @@ test('ETH: invalid status send', async (t) => {
   }
   util.twoPeerMsgExchange(t, opts, capabilities)
 })
+
+test('RLPX: verify that snappy compression is not used with an RLPX peer that only supports devp2p 4', (t) => {
+  const opts: any = {}
+  opts.status0 = Object.assign({}, status)
+  util.twoPeerMsgExchange2(t, opts, capabilities)
+})
