@@ -62,10 +62,10 @@ tape('[EthereumClient]', async (t) => {
     const config = new Config({ servers })
     const client = new EthereumClient({ config })
 
-    t.equals(client.synchronized, false, 'not synchronized yet')
+    t.equals(client.config.synchronized, false, 'not synchronized yet')
     await client.open()
     config.events.emit(Event.SYNC_SYNCHRONIZED, new BN(0))
-    t.equals(client.synchronized, true, 'synchronized')
+    t.equals(client.config.synchronized, true, 'synchronized')
     t.end()
   })
 
