@@ -938,17 +938,15 @@ export default class Blockchain implements BlockchainInterface {
         }
       }
 
-      // set total difficulty in the current context scope
       if (block._common.consensusType() !== ConsensusType.ProofOfStake) {
+        // set total difficulty in the current context scope
         if (this._headHeaderHash) {
           currentTd.header = await this.getTotalDifficulty(this._headHeaderHash)
         }
         if (this._headBlockHash) {
           currentTd.block = await this.getTotalDifficulty(this._headBlockHash)
         }
-      }
 
-      if (block._common.consensusType() !== ConsensusType.ProofOfStake) {
         // calculate the total difficulty of the new block
         let parentTd = new BN(0)
         if (!block.isGenesis()) {
