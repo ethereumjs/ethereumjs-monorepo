@@ -1,7 +1,7 @@
+import tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import Common, { Hardfork } from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
-import tape from 'tape'
 import Blockchain from '../src'
 import testnet from './testdata/testnet.json'
 
@@ -12,7 +12,7 @@ const buildChain = async (blockchain: Blockchain, common: Common, height: number
   blocks.push(genesis)
 
   for (let number = 1; number <= height; number++) {
-    let baseFeePerGas: BN = new BN(0)
+    let baseFeePerGas = new BN(0)
     if (number === londonBlockNumber) {
       baseFeePerGas = new BN(1000000000)
     } else if (number > londonBlockNumber) {
