@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import Common, { ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import Common, { Hardfork } from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
 import tape from 'tape'
 import Blockchain from '../src'
@@ -36,7 +36,7 @@ const buildChain = async (blockchain: Blockchain, common: Common, height: number
   }
 }
 
-tape('Proof of Stake - assembling a blockchain', async (t) => {
+tape('Proof of Stake - inserting blocks into blockchain', async (t) => {
   const common = new Common({ chain: testnet, hardfork: Hardfork.Chainstart })
   const blockchain = await Blockchain.create({
     validateBlocks: true,
@@ -55,6 +55,21 @@ tape('Proof of Stake - assembling a blockchain', async (t) => {
 
   const latestHeader = await blockchain.getLatestHeader()
   t.equals(latestHeader.number.toNumber(), 15, 'blockchain is at correct height')
-  t.equals(latestHeader._common.consensusAlgorithm(), ConsensusAlgorithm.Casper, 'consensus algorithm is casper')
-  t.end()
+
+  const powBlock = Block.fromBlockData({
+    header: {
+      number: 16,
+      difficulty: new BN(1),
+      parentHash: latestHeader.hash(),
+      timestamp: latestHeader.timestamp.addn(1),
+      gasLimit: new BN(10000),
+    },
+  })
+  try {
+    await blockchain.putBlock(powBlock)
+    t.fail('should throw when inserting PoW block')
+  } catch (err) {
+    t.equals(err.message, 'invalid difficulty', 'should throw with invalid difficulty message')
+    t.end()
+  }
 })
