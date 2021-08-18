@@ -1,9 +1,10 @@
 import tape from 'tape'
 import { BN } from 'ethereumjs-util'
-import Common, { Chain, CustomChain, Hardfork } from '../src/'
+import Common, { Chain, ConsensusType, CustomChain, Hardfork } from '../src/'
 import testnet from './data/testnet.json'
 import testnet2 from './data/testnet2.json'
 import testnet3 from './data/testnet3.json'
+import { Chain as IChain, GenesisState } from '../src/types'
 
 tape('[Common]: Custom chains', function (t: tape.Test) {
   t.test(
@@ -167,6 +168,29 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     c = new Common({ chain: 'testnet2', hardfork: Hardfork.Istanbul, customChains })
     st.equal(c.chainName(), 'testnet2', 'customChains, chain initialized with custom chain')
     st.equal(c.hardforkBlock(), 10, 'customChains, chain initialized with custom chain')
+
+    c.setChain('testnet')
+    st.equal(c.chainName(), 'testnet', 'customChains, should allow to switch custom chain')
+    st.equal(
+      c.consensusType(),
+      ConsensusType.ProofOfWork,
+      'customChains, should allow to switch custom chain'
+    )
+
+    const genesisState = {
+      '0x0000000000000000000000000000000000000000': '0x1',
+    }
+    const customChainsWithGenesis: [IChain, GenesisState][] = [[testnet, genesisState]]
+    c = new Common({
+      chain: 'testnet',
+      hardfork: Hardfork.Istanbul,
+      customChains: customChainsWithGenesis,
+    })
+    st.deepEqual(
+      c.genesisState(),
+      genesisState,
+      'customChains, should allow to initialize with genesis state'
+    )
 
     st.end()
   })
