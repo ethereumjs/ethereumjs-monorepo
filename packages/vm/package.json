@@ -22,7 +22,7 @@
     "benchmarks": "node --max-old-space-size=4096 ./benchmarks/run.js benchmarks mainnetBlocks:10",
     "profiling": "0x ./benchmarks/run.js profiling",
     "prepublishOnly": "npm run clean && npm run build && npm run test:buildIntegrity",
-    "clean": "rm -Rf ./dist && rm -Rf ./dist.browser",
+    "clean": "../../config/cli/clean-package.sh",
     "coverage": "nyc npm run coverage:test && nyc report --reporter=lcov",
     "coverage:test": "npm run tape -- './tests/api/**/*.spec.ts' && npm run tester -- --state",
     "docs:build": "typedoc --options typedoc.js",

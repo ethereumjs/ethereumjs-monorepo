@@ -22,7 +22,7 @@
     "benchmarks": "node -r ts-node/register --max-old-space-size=8024 benchmarks",
     "profiling": "tsc --target ES5 benchmarks/random.ts && 0x benchmarks/random.js",
     "prepublishOnly": "npm run clean && npm run build && npm run test",
-    "clean": "rm -Rf ./dist && rm -Rf ./dist.browser",
+    "clean": "../../config/cli/clean-package.sh",
     "build": "../../config/cli/ts-build.sh",
     "coverage": "../../config/cli/coverage.sh",
     "docs:build": "typedoc --options typedoc.js",
