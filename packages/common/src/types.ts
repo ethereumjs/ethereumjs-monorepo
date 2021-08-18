@@ -38,6 +38,10 @@ export interface Chain {
   }
 }
 
+export interface GenesisState {
+  [key: string]: string
+}
+
 export interface eipsType {
   [key: number]: any
 }

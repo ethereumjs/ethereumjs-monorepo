@@ -4,7 +4,7 @@ import { BN, BNLike, toType, TypeOutput, intToBuffer } from 'ethereumjs-util'
 import { _getInitializedChains } from './chains'
 import { hardforks as HARDFORK_CHANGES } from './hardforks'
 import { EIPs } from './eips'
-import { Chain as IChain } from './types'
+import { Chain as IChain, GenesisState } from './types'
 
 export enum CustomChain {
   /**
@@ -112,12 +112,22 @@ export interface CommonOpts extends BaseOpts {
    *
    * Usage (directly with the respective chain intialization via the {@link CommonOpts.chain} option):
    *
+   * Pattern 1 (without genesis state):
+   *
    * ```javascript
    * import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
    * const common = new Common({ chain: 'myCustomChain1', customChains: [ myCustomChain1 ]})
    * ```
+   *
+   * Pattern 2 (with genesis state, see {@link CommonOpts.genesisState} for format):
+   *
+   * ```javascript
+   * import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
+   * import chain1GenesisState from '[PATH_TO_GENESIS_STATES]/chain1GenesisState.json'
+   * const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, chain1GenesisState ] ]})
+   * ```
    */
-  customChains?: IChain[]
+  customChains?: IChain[] | [IChain, GenesisState][]
 }
 
 /**
@@ -153,7 +163,7 @@ export default class Common extends EventEmitter {
   private _hardfork: string | Hardfork
   private _supportedHardforks: Array<string | Hardfork> = []
   private _eips: number[] = []
-  private _customChains: IChain[]
+  private _customChains: IChain[] | [IChain, GenesisState][]
 
   /**
    * Creates a {@link Common} object for a custom chain, based on a standard one.
@@ -320,7 +330,18 @@ export default class Common extends EventEmitter {
    */
   setChain(chain: string | number | Chain | BN | object): any {
     if (typeof chain === 'number' || typeof chain === 'string' || BN.isBN(chain)) {
-      this._chainParams = Common._getChainParams(chain, this._customChains)
+      // Filter out genesis states if passed in to customChains
+      let plainCustomChains: IChain[]
+      if (
+        this._customChains &&
+        this._customChains.length > 0 &&
+        Array.isArray(this._customChains[0])
+      ) {
+        plainCustomChains = (this._customChains as [IChain, GenesisState][]).map((e) => e[0])
+      } else {
+        plainCustomChains = this._customChains as IChain[]
+      }
+      this._chainParams = Common._getChainParams(chain, plainCustomChains)
     } else if (typeof chain === 'object') {
       if (this._customChains.length > 0) {
         throw new Error(
@@ -855,11 +876,53 @@ export default class Common extends EventEmitter {
   }
 
   /**
-   * Returns the Genesis parameters of current chain
+   * Returns the Genesis parameters of the current chain
    * @returns Genesis dictionary
    */
   genesis(): any {
     return (<any>this._chainParams)['genesis']
+  }
+
+  /**
+   * Returns the Genesis state of the current chain,
+   * both account addresses and values are provided
+   * as hex-prefixed strings
+   *
+   * @returns {Array} Genesis state
+   */
+  genesisState(): GenesisState {
+    // Use require statements here in favor of import statements
+    // to load json files on demand
+    // (high memory usage by large mainnet.json genesis state file)
+    switch (this.chainName()) {
+      case 'mainnet':
+        return require('./genesisStates/mainnet.json')
+      case 'ropsten':
+        return require('./genesisStates/ropsten.json')
+      case 'rinkeby':
+        return require('./genesisStates/rinkeby.json')
+      case 'kovan':
+        return require('./genesisStates/kovan.json')
+      case 'goerli':
+        return require('./genesisStates/goerli.json')
+      case 'calaveras':
+        return require('./genesisStates/calaveras.json')
+    }
+
+    // Custom chains with genesis state provided
+    if (
+      this._customChains &&
+      this._customChains.length > 0 &&
+      Array.isArray(this._customChains[0])
+    ) {
+      for (const chainArrayWithGenesis of this._customChains) {
+        if ((chainArrayWithGenesis as [IChain, GenesisState])[0].name === this.chainName()) {
+          return (chainArrayWithGenesis as [IChain, GenesisState])[1]
+        }
+      }
+    }
+
+    return {}
   }
 
   /**
