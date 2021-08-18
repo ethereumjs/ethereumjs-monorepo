@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import Common, { Hardfork } from '@ethereumjs/common'
+import Common, { ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
 import tape from 'tape'
 import Blockchain from '../src'
@@ -55,38 +55,6 @@ tape('Proof of Stake - assembling a blockchain', async (t) => {
 
   const latestHeader = await blockchain.getLatestHeader()
   t.equals(latestHeader.number.toNumber(), 15, 'blockchain is at correct height')
+  t.equals(latestHeader._common.consensusAlgorithm(), ConsensusAlgorithm.Casper, 'consensus algorithm is casper')
   t.end()
-  /*
-  const shortBlockChain = await Blockchain.create({
-    validateBlocks: true,
-    validateConsensus: false,
-    common,
-    hardforkByHeadBlockNumber: true,
-  })
-
-  await buildChain(shortBlockChain, common, 6)
-
-  const latestShortHeader = await shortBlockChain.getLatestHeader()
-  common.setHardforkByBlockNumber(11)
-  const posBlock = Block.fromBlockData(
-    {
-      header: {
-        number: latestShortHeader.number.toNumber() + 1,
-        difficulty: 0,
-        parentHash: (await shortBlockChain.getLatestHeader()).hash(),
-        timestamp: latestShortHeader.timestamp.addn(1),
-   //     baseFeePerGas: latestShortHeader.calcNextBaseFee(),
-        gasLimit: new BN(5000),
-      },
-    },
-    {
-      common: common,
-    }
-  )
-  try {
-    await shortBlockChain.putBlock(posBlock)
-  }
-  catch (err) {
-    console.log(err)
-  }*/
 })

@@ -938,13 +938,6 @@ export default class Blockchain implements BlockchainInterface {
         }
       }
 
-      if (block._common.consensusType() === ConsensusType.ProofOfStake) {
-        if (block._common.hardfork() !== 'merge') {
-          throw new Error('cannot insert PoS block when merge hardfork not set')
-        }
-        // TODO: Check if POS block is descendant of valid block
-      }
-
       // set total difficulty in the current context scope
       if (block._common.consensusType() !== ConsensusType.ProofOfStake) {
         if (this._headHeaderHash) {
