@@ -215,6 +215,11 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
       value = '0x1'
       st.equal(c.genesisState()[address], value, 'ropsten')
 
+      c.setChain('calaveras')
+      address = '0x0000000000000000000000000000000000000000'
+      value = '0x1'
+      st.equal(c.genesisState()[address], value, 'calaveras')
+
       st.end()
     }
   )

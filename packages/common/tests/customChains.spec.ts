@@ -163,6 +163,11 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     c = new Common({ chain: 'testnet', hardfork: Hardfork.Byzantium, customChains: [testnet] })
     st.equal(c.chainName(), 'testnet', 'customChains, chain initialized with custom chain')
     st.equal(c.hardforkBlock(), 4, 'customChains, chain initialized with custom chain')
+    st.deepEqual(
+      c.genesisState(),
+      {},
+      'customChains, should fall back to empty genesis state if none provided'
+    )
 
     const customChains = [testnet, testnet2, testnet3]
     c = new Common({ chain: 'testnet2', hardfork: Hardfork.Istanbul, customChains })

@@ -906,7 +906,7 @@ export default class Common extends EventEmitter {
       case 'goerli':
         return require('./genesisStates/goerli.json')
       case 'calaveras':
-        require('./genesisStates/calaveras.json')
+        return require('./genesisStates/calaveras.json')
     }
 
     // Custom chains with genesis state provided
