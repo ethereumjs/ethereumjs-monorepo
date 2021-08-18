@@ -9,16 +9,12 @@ const buildChain = async (blockchain: Blockchain, common: Common, height: number
   const blocks: Block[] = []
   const londonBlockNumber = common.hardforkBlockBN('london')!.toNumber()
   const genesis = Block.genesis({}, { common })
-
-  const initialBaseFee = new BN(common.param('gasConfig', 'initialBaseFee'))
   blocks.push(genesis)
 
-  for (let number = 1; number < height; number++) {
-    console.log(number)
-    let baseFeePerGas: BN = new BN(0);
+  for (let number = 1; number <= height; number++) {
+    let baseFeePerGas: BN = new BN(0)
     if (number === londonBlockNumber) baseFeePerGas = new BN(1000000000)
     else if (number > londonBlockNumber) baseFeePerGas = blocks[number - 1].header.calcNextBaseFee()
-    console.log(baseFeePerGas, initialBaseFee)
     const block = Block.fromBlockData(
       {
         header: {
@@ -26,13 +22,13 @@ const buildChain = async (blockchain: Blockchain, common: Common, height: number
           parentHash: blocks[number - 1].hash(),
           timestamp: blocks[number - 1].header.timestamp.addn(1),
           gasLimit: number >= londonBlockNumber ? new BN(10000) : new BN(5000),
-          baseFeePerGas: number >= londonBlockNumber ? baseFeePerGas : undefined
+          baseFeePerGas: number >= londonBlockNumber ? baseFeePerGas : undefined,
         },
       },
       {
         calcDifficultyFromHeader: blocks[number - 1].header,
         common,
-        hardforkByBlockNumber: true
+        hardforkByBlockNumber: true,
       }
     )
     blocks.push(block)
@@ -60,7 +56,7 @@ tape('Proof of Stake - assembling a blockchain', async (t) => {
   const latestHeader = await blockchain.getLatestHeader()
   t.equals(latestHeader.number.toNumber(), 15, 'blockchain is at correct height')
   t.end()
-/*
+  /*
   const shortBlockChain = await Blockchain.create({
     validateBlocks: true,
     validateConsensus: false,
