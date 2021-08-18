@@ -21,6 +21,8 @@ const genesisStates: genesisStatesType = {
  * Returns the genesis state by network ID
  * @param id ID of the network (e.g. 1)
  * @returns Dictionary with genesis accounts
+ *
+ * @deprecated use {@link Common.genesisState} instead
  */
 export function genesisStateById(id: number): any {
   return genesisStates[genesisStates['names'][id]]
@@ -30,6 +32,8 @@ export function genesisStateById(id: number): any {
  * Returns the genesis state by network name
  * @param name Name of the network (e.g. 'mainnet')
  * @returns Dictionary with genesis accounts
+ *
+ * @deprecated use {@link Common.genesisState} instead
  */
 export function genesisStateByName(name: string): any {
   return genesisStates[name]
