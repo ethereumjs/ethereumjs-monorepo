@@ -16,7 +16,7 @@ const buildChain = async (blockchain: Blockchain, common: Common, height: number
   for (let number = 1; number < height; number++) {
     console.log(number)
     let baseFeePerGas: BN = new BN(0);
-    if (number === londonBlockNumber) baseFeePerGas = new BN(10000)
+    if (number === londonBlockNumber) baseFeePerGas = new BN(1000000000)
     else if (number > londonBlockNumber) baseFeePerGas = blocks[number - 1].header.calcNextBaseFee()
     console.log(baseFeePerGas, initialBaseFee)
     const block = Block.fromBlockData(
