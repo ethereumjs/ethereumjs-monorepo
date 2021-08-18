@@ -1,7 +1,9 @@
 import tape from 'tape'
 import { genesisStateById, genesisStateByName } from '../src/genesisStates/'
 
-tape('[genesisStates]: Genesis state access', function (t: tape.Test) {
+// This testfile is deprecated and can be removed along with the removal of the
+// two genesis functions called in the tests
+tape('[genesisStates]: Genesis state access [DEPRECATED]', function (t: tape.Test) {
   t.test('Should be able to access by ID and name', function (st: tape.Test) {
     let genesisState = genesisStateById(5)
     st.equal(

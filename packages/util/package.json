@@ -22,7 +22,7 @@
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "prepublishOnly": "npm run clean && npm run build && npm run test",
-    "clean": "rm -Rf ./dist && rm -Rf ./dist.browser",
+    "clean": "../../config/cli/clean-package.sh",
     "coverage": "../../config/cli/coverage.sh",
     "docs:build": "npx typedoc --options typedoc.js",
     "lint": "../../config/cli/lint.sh",

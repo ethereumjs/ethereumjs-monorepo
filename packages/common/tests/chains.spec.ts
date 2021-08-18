@@ -164,25 +164,65 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
     st.end()
   })
 
-  t.test('Should be able to access data for all chains provided', function (st: tape.Test) {
-    const c = new Common({ chain: 'mainnet' })
-    let hash = '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
-    st.equal(c.genesis().hash, hash, 'mainnet')
-    c.setChain('ropsten')
-    hash = '0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d'
-    st.equal(c.genesis().hash, hash, 'ropsten')
-    c.setChain('rinkeby')
-    hash = '0x6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177'
-    st.equal(c.genesis().hash, hash, 'rinkeby')
-    c.setChain('kovan')
-    hash = '0xa3c565fc15c7478862d50ccd6561e3c06b24cc509bf388941c25ea985ce32cb9'
-    st.equal(c.genesis().hash, hash, 'kovan')
-    c.setChain('goerli')
-    hash = '0xbf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a'
-    st.equal(c.genesis().hash, hash, 'goerli')
+  t.test(
+    'genesis() -> should be able to access data for all chains provided',
+    function (st: tape.Test) {
+      const c = new Common({ chain: 'mainnet' })
+      let hash = '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
+      st.equal(c.genesis().hash, hash, 'mainnet')
+      c.setChain('ropsten')
+      hash = '0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d'
+      st.equal(c.genesis().hash, hash, 'ropsten')
+      c.setChain('rinkeby')
+      hash = '0x6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177'
+      st.equal(c.genesis().hash, hash, 'rinkeby')
+      c.setChain('kovan')
+      hash = '0xa3c565fc15c7478862d50ccd6561e3c06b24cc509bf388941c25ea985ce32cb9'
+      st.equal(c.genesis().hash, hash, 'kovan')
+      c.setChain('goerli')
+      hash = '0xbf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a'
+      st.equal(c.genesis().hash, hash, 'goerli')
 
-    st.end()
-  })
+      st.end()
+    }
+  )
+
+  t.test(
+    'genesisState() -> should be able to access data for all chains provided',
+    function (st: tape.Test) {
+      const c = new Common({ chain: 'mainnet' })
+      let address = '0x000d836201318ec6899a67540690382780743280'
+      let value = '0xad78ebc5ac6200000'
+      st.equal(c.genesisState()[address], value, 'mainnet')
+
+      c.setChain('goerli')
+      address = '0x0000000000000000000000000000000000000000'
+      value = '0x1'
+      st.equal(c.genesisState()[address], value, 'goerli')
+
+      c.setChain('kovan')
+      address = '0x0000000000000000000000000000000000000001'
+      value = '0x1'
+      st.equal(c.genesisState()[address], value, 'kovan')
+
+      c.setChain('rinkeby')
+      address = '0x0000000000000000000000000000000000000000'
+      value = '0x1'
+      st.equal(c.genesisState()[address], value, 'rinkeby')
+
+      c.setChain('ropsten')
+      address = '0x0000000000000000000000000000000000000000'
+      value = '0x1'
+      st.equal(c.genesisState()[address], value, 'ropsten')
+
+      c.setChain('calaveras')
+      address = '0x0000000000000000000000000000000000000000'
+      value = '0x1'
+      st.equal(c.genesisState()[address], value, 'calaveras')
+
+      st.end()
+    }
+  )
 })
 
 tape('[Common]: isSupportedChainId static method', function (t: tape.Test) {

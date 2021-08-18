@@ -12,7 +12,6 @@ import {
 } from 'ethereumjs-util'
 import { encode, decode } from 'rlp'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { genesisStateByName } from '@ethereumjs/common/dist/genesisStates'
 import { StateManager, StorageDump } from './interface'
 import Cache from './cache'
 import { getActivePrecompiles, ripemdPrecompileAddress } from '../evm/precompiles'
@@ -560,7 +559,7 @@ export default class DefaultStateManager implements StateManager {
 
     const genesis = await this.hasGenesisState()
     if (!genesis) {
-      await this.generateGenesis(genesisStateByName(this._common.chainName()))
+      await this.generateGenesis(this._common.genesisState())
     }
   }
 
