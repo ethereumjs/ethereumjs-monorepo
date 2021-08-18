@@ -21,7 +21,7 @@
     "build": "../../config/cli/ts-build.sh",
     "tsc": "../../config/cli/ts-compile.sh",
     "prepublishOnly": "npm run clean && npm run build && npm run test",
-    "clean": "rm -Rf ./dist && rm -Rf ./dist.browser",
+    "clean": "../../config/cli/clean-package.sh",
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "coverage": "../../config/cli/coverage.sh",
