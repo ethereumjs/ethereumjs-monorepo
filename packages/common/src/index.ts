@@ -4,7 +4,7 @@ import { BN, BNLike, toType, TypeOutput, intToBuffer } from 'ethereumjs-util'
 import { _getInitializedChains } from './chains'
 import { hardforks as HARDFORK_CHANGES } from './hardforks'
 import { EIPs } from './eips'
-import { Chain as IChain } from './types'
+import { Chain as IChain, GenesisState } from './types'
 
 export enum CustomChain {
   /**
@@ -855,11 +855,39 @@ export default class Common extends EventEmitter {
   }
 
   /**
-   * Returns the Genesis parameters of current chain
+   * Returns the Genesis parameters of the current chain
    * @returns Genesis dictionary
    */
   genesis(): any {
     return (<any>this._chainParams)['genesis']
+  }
+
+  /**
+   * Returns the Genesis state of the current chain,
+   * both account addresses and values are provided
+   * as hex-prefixed strings
+   *
+   * @returns {Array} Genesis state
+   */
+  genesisState(): GenesisState {
+    // Use require statements here in favor of import statements
+    // to load json files on demand
+    // (high memory usage by large mainnet.json genesis state file)
+    switch (this.chainName()) {
+      case 'mainnet':
+        return require('./genesisStates/mainnet.json')
+      case 'ropsten':
+        return require('./genesisStates/ropsten.json')
+      case 'rinkeby':
+        return require('./genesisStates/rinkeby.json')
+      case 'kovan':
+        return require('./genesisStates/kovan.json')
+      case 'goerli':
+        return require('./genesisStates/goerli.json')
+      case 'calaveras':
+        require('./genesisStates/calaveras.json')
+    }
+    return {}
   }
 
   /**
