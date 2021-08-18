@@ -25,6 +25,7 @@ export async function setup(
     validateBlocks: false,
     validateConsensus: false,
   })
+
   const chain = new MockChain({ config, blockchain, height })
 
   const servers = [server] as any

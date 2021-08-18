@@ -44,6 +44,9 @@ export interface BlockOptions {
    * If a preceding {@link BlockHeader} (usually the parent header) is given the preceding
    * header will be used to calculate the difficulty for this block and the calculated
    * difficulty takes precedence over a provided static `difficulty` value.
+   *
+   * Note that this option has no effect on networks other than PoW/Ethash networks
+   * (respectively also deactivates on the Merge HF switching to PoS/Casper).
    */
   calcDifficultyFromHeader?: BlockHeader
   /**

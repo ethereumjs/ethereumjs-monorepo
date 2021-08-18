@@ -270,7 +270,10 @@ export class BlockHeader {
     // Now we have set all the values of this Header, we possibly have set a dummy
     // `difficulty` value (defaults to 0). If we have a `calcDifficultyFromHeader`
     // block option parameter, we instead set difficulty to this value.
-    if (options.calcDifficultyFromHeader) {
+    if (
+      options.calcDifficultyFromHeader &&
+      this._common.consensusAlgorithm() === ConsensusAlgorithm.Ethash
+    ) {
       this.difficulty = this.canonicalDifficulty(options.calcDifficultyFromHeader)
     }
 
