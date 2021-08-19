@@ -312,7 +312,7 @@ export default class Common extends EventEmitter {
     const genesisState: GenesisState = {}
     if (genesisParams.alloc) {
       Object.keys(genesisParams.alloc).forEach((address: string) => {
-        genesisState[address] = genesisParams.alloc[address].balance
+        genesisState['0x' + address] = genesisParams.alloc[address].balance
       })
     }
     if (!genesisParams.name) {
