@@ -76,16 +76,7 @@ export abstract class Synchronizer {
     })
 
     this.config.events.on(Event.CHAIN_UPDATED, async () => {
-      let targetHeight = this.syncTargetHeight
-      if (!targetHeight) {
-        const best = this.best()
-        if (best?.eth) {
-          targetHeight = new BN(best.eth.status.latestBlock)
-        } else if (best?.les) {
-          targetHeight = new BN(best.les.status.headNum)
-        }
-      }
-      if (targetHeight && this.chain.headers.height.gte(targetHeight)) {
+      if (this.syncTargetHeight && this.chain.headers.height.gte(this.syncTargetHeight)) {
         if (!this.config.synchronized) {
           const hash = this.chain.headers.latest?.hash()
           this.config.logger.info(

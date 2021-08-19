@@ -98,7 +98,15 @@ export class FullSynchronizer extends Synchronizer {
 
       const latest = await this.latest(peer)
       if (!latest) return resolve(false)
+
       const height = latest.number
+      if (!this.syncTargetHeight) {
+        this.syncTargetHeight = height
+        this.config.logger.info(
+          `New sync target height number=${height.toString(10)} hash=${short(latest.hash())}`
+        )
+      }
+
       const first = this.chain.blocks.height.addn(1)
       const count = height.sub(first).addn(1)
       if (count.lten(0)) return resolve(false)

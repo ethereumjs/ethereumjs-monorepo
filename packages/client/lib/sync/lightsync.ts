@@ -77,7 +77,15 @@ export class LightSynchronizer extends Synchronizer {
 
       const latest = await this.latest(peer)
       if (!latest) return resolve(false)
+
       const height = new BN(peer.les!.status.headNum)
+      if (!this.syncTargetHeight) {
+        this.syncTargetHeight = height
+        this.config.logger.info(
+          `New sync target height number=${height.toString(10)} hash=${short(latest.hash())}`
+        )
+      }
+
       const first = this.chain.headers.height.addn(1)
       const count = height.sub(first).addn(1)
       if (count.lten(0)) return resolve(false)
