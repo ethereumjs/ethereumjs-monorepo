@@ -154,19 +154,6 @@ export class FullSynchronizer extends Synchronizer {
   }
 
   /**
-   * Fetch all blocks from current height up to highest found amongst peers
-   * @return Resolves with true if sync successful
-   */
-  async sync(): Promise<boolean> {
-    let peer = this.best()
-    while (!peer) {
-      await new Promise((resolve) => setTimeout(resolve, 5000))
-      peer = this.best()
-    }
-    return this.syncWithPeer(peer)
-  }
-
-  /**
    * Open synchronizer. Must be called before sync() is called
    */
   async open(): Promise<void> {

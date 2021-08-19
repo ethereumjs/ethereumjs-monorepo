@@ -93,7 +93,21 @@ export abstract class Synchronizer {
   }
 
   abstract best(): Peer | undefined
-  abstract sync(): Promise<boolean>
+
+  abstract syncWithPeer(peer?: Peer): Promise<boolean>
+
+  /**
+   * Fetch all blocks from current height up to highest found amongst peers
+   * @return Resolves with true if sync successful
+   */
+  async sync(): Promise<boolean> {
+    let peer = this.best()
+    while (!peer) {
+      await new Promise((resolve) => setTimeout(resolve, 5000))
+      peer = this.best()
+    }
+    return this.syncWithPeer(peer)
+  }
 
   /**
    * Returns synchronizer type

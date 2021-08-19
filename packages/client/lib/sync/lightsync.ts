@@ -132,15 +132,6 @@ export class LightSynchronizer extends Synchronizer {
   }
 
   /**
-   * Fetch all headers from current height up to highest found amongst peers
-   * @return Resolves with true if sync successful
-   */
-  async sync(): Promise<boolean> {
-    const peer = this.best()
-    return this.syncWithPeer(peer)
-  }
-
-  /**
    * Open synchronizer. Must be called before sync() is called
    */
   async open(): Promise<void> {
