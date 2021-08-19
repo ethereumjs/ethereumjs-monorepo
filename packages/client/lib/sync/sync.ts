@@ -85,18 +85,18 @@ export abstract class Synchronizer {
           targetHeight = new BN(best.les.status.headNum)
         }
       }
-      if (targetHeight && this.chain.blocks.height.gte(targetHeight)) {
+      if (targetHeight && this.chain.headers.height.gte(targetHeight)) {
         if (!this.config.synchronized) {
-          const hash = this.chain.blocks.latest?.hash()
+          const hash = this.chain.headers.latest?.hash()
           this.config.logger.info(
-            `Chain synchronized height=${this.chain.blocks.height} number=${short(hash!)}`
+            `Chain synchronized height=${this.chain.headers.height} number=${short(hash!)}`
           )
         }
         this.config.synchronized = true
         this.config.lastSyncDate = Date.now()
 
         // TODO: analyze if this event is still needed
-        this.config.events.emit(Event.SYNC_SYNCHRONIZED, this.chain.blocks.height)
+        this.config.events.emit(Event.SYNC_SYNCHRONIZED, this.chain.headers.height)
       }
     })
   }
