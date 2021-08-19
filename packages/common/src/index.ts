@@ -5,7 +5,7 @@ import { _getInitializedChains } from './chains'
 import { hardforks as HARDFORK_CHANGES } from './hardforks'
 import { EIPs } from './eips'
 import { Chain as IChain, GenesisState } from './types'
-
+import { parseParams } from './util/parse'
 export enum CustomChain {
   /**
    * Polygon (Matic) Mainnet
@@ -303,6 +303,25 @@ export default class Common extends EventEmitter {
   }
 
   /**
+   *
+   * @param genesisParams The JSON object representation of a Geth genesis file (e.g. created by puppeth)
+   * @returns Promise<Common>
+   */
+  public static async fromGethGenesis(genesisParams: any): Promise<Common> {
+    const gethParams = await parseParams(genesisParams)
+    const genesisState: GenesisState = {}
+    if (genesisParams.alloc) {
+      Object.keys(genesisParams.alloc).forEach((address: string) => {
+        genesisState[address] = genesisParams.alloc[address].balance
+      })
+    }
+    if (!genesisParams.name) {
+      gethParams.name = 'customChain'
+    }
+    return new Common({ chain: gethParams.name, customChains: [[gethParams, genesisState]] })
+  }
+  /**
+   *
    * @constructor
    */
   constructor(opts: CommonOpts) {
