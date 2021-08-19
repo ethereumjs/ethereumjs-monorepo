@@ -38,8 +38,9 @@
   },
   "dependencies": {
     "crc-32": "^1.2.0",
-    "ethereumjs-util": "^7.1.0"
-  },
+    "ethereumjs-util": "^7.1.0",
+    "@ethereumjs/block": "^3.4.0",
+    "merkle-patricia-tree": "^4.2.1"  },
   "devDependencies": {
     "@types/node": "^11.13.4",
     "@types/tape": "^4.13.0",
