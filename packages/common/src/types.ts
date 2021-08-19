@@ -47,13 +47,13 @@ export interface eipsType {
 }
 
 export interface GenesisBlock {
-  hash: string
+  hash?: string
   timestamp: string | null
   gasLimit: number
   difficulty: number
   nonce: string
   extraData: string
-  stateRoot: string
+  stateRoot?: string
 }
 
 export interface Hardfork {
