@@ -55,7 +55,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   protected finished: number // number of tasks which are both processed and also finished writing
   protected running: boolean
   protected reading: boolean
-  private destroyOnFinish: boolean // Destroy the fetcher once we are finished processing each task.
+  private destroyWhenDone: boolean // Destroy the fetcher once we are finished processing each task.
 
   private _readableState?: {
     // This property is inherited from Readable. We only need `length`.
@@ -93,7 +93,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     this.finished = 0
     this.running = false
     this.reading = false
-    this.destroyOnFinish = options.destroyWhenDone ?? true
+    this.destroyWhenDone = options.destroyWhenDone ?? true
   }
 
   /**
@@ -340,7 +340,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       }
     }
     this.running = false
-    if (this.destroyOnFinish) {
+    if (this.destroyWhenDone) {
       this.destroy()
     }
   }
