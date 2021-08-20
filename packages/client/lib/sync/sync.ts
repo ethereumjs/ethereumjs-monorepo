@@ -113,10 +113,11 @@ export abstract class Synchronizer {
     let peer = this.best()
     let numAttempts = 1
     while (!peer) {
-      if (numAttempts === 2) {
+    // TODO: only activate along fixing test failures
+      /*if (numAttempts === 2) {
         this.syncTargetHeight = this.chain.headers.height
         this.updateSynchronizedState()
-      }
+      }*/
       await new Promise((resolve) => setTimeout(resolve, 5000))
       peer = this.best()
       numAttempts += 1
