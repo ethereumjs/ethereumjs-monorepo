@@ -4,6 +4,7 @@ import td from 'testdouble'
 import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
+import { Event } from '../../lib/types'
 
 tape('[LightSynchronizer]', async (t) => {
   class PeerPool extends EventEmitter {
@@ -71,11 +72,19 @@ tape('[LightSynchronizer]', async (t) => {
       chain,
     })
     sync.best = td.func<typeof sync['best']>()
+    sync.latest = td.func<typeof sync['latest']>()
     td.when(sync.best()).thenReturn({ les: { status: { headNum: new BN(2) } } } as any)
+    td.when(sync.latest(td.matchers.anything())).thenResolve({
+      number: new BN(2),
+      hash: () => Buffer.from([]),
+    })
     td.when(HeaderFetcher.prototype.fetch(), { delay: 20 }).thenResolve(undefined)
     ;(sync as any).chain = { headers: { height: new BN(3) } }
     t.notOk(await sync.sync(), 'local height > remote height')
     ;(sync as any).chain = { headers: { height: new BN(0) } }
+    setTimeout(() => {
+      config.events.emit(Event.SYNC_SYNCHRONIZED, new BN(0))
+    }, 100)
     t.ok(await sync.sync(), 'local height < remote height')
     td.when(HeaderFetcher.prototype.fetch()).thenReject(new Error('err0'))
     try {

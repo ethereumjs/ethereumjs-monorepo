@@ -1,9 +1,7 @@
 import tape from 'tape-catch'
 import td from 'testdouble'
-import { BN } from 'ethereumjs-util'
 import { Config } from '../lib/config'
 import { PeerPool } from '../lib/net/peerpool'
-import { Event } from '../lib/types'
 
 tape('[EthereumClient]', async (t) => {
   const config = new Config({ transports: [], loglevel: 'error' })
@@ -55,18 +53,6 @@ tape('[EthereumClient]', async (t) => {
     await client.open()
     t.ok(client.opened, 'opened')
     t.equals(await client.open(), false, 'already opened')
-  })
-
-  t.test('should set synchronized to true once synchronized is emitted', async (t) => {
-    const servers = [new Server()] as any
-    const config = new Config({ servers })
-    const client = new EthereumClient({ config })
-
-    t.equals(client.synchronized, false, 'not synchronized yet')
-    await client.open()
-    config.events.emit(Event.SYNC_SYNCHRONIZED, new BN(0))
-    t.equals(client.synchronized, true, 'synchronized')
-    t.end()
   })
 
   t.test('should start/stop', async (t) => {

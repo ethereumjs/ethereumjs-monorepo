@@ -12,13 +12,10 @@ import { Event } from '../types'
  * @memberof module:sync
  */
 export class FullSynchronizer extends Synchronizer {
-  private blockFetcher: BlockFetcher | null
-
   public execution: VMExecution
 
   constructor(options: SynchronizerOptions) {
     super(options)
-    this.blockFetcher = null
 
     this.execution = new VMExecution({
       config: options.config,
@@ -95,69 +92,65 @@ export class FullSynchronizer extends Synchronizer {
    * @return Resolves when sync completed
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
-    if (!peer) return false
-    const latest = await this.latest(peer)
-    if (!latest) return false
-    const height = new BN(latest.number)
-    const first = this.chain.blocks.height.addn(1)
-    const count = height.sub(first).addn(1)
-    if (count.lten(0)) return false
+    // eslint-disable-next-line no-async-promise-executor
+    return await new Promise(async (resolve, reject) => {
+      if (!peer) return resolve(false)
 
-    this.config.logger.debug(
-      `Syncing with peer: ${peer.toString(true)} height=${height.toString(10)}`
-    )
+      const latest = await this.latest(peer)
+      if (!latest) return resolve(false)
 
-    this.blockFetcher = new BlockFetcher({
-      config: this.config,
-      pool: this.pool,
-      chain: this.chain,
-      interval: this.interval,
-      first,
-      count,
-    })
-    this.config.events.on(Event.SYNC_FETCHER_FETCHED, (blocks) => {
-      blocks = blocks as Block[]
-      const first = new BN(blocks[0].header.number)
-      const hash = short(blocks[0].hash())
-      const baseFeeAdd = this.config.chainCommon.gteHardfork('london')
-        ? `basefee=${blocks[0].header.baseFeePerGas} `
-        : ''
-      this.config.logger.info(
-        `Imported blocks count=${blocks.length} number=${first.toString(
-          10
-        )} hash=${hash} ${baseFeeAdd}hardfork=${this.config.chainCommon.hardfork()} peers=${
-          this.pool.size
-        }`
+      const height = latest.number
+      if (!this.syncTargetHeight) {
+        this.syncTargetHeight = height
+        this.config.logger.info(
+          `New sync target height number=${height.toString(10)} hash=${short(latest.hash())}`
+        )
+      }
+
+      const first = this.chain.blocks.height.addn(1)
+      const count = height.sub(first).addn(1)
+      if (count.lten(0)) return resolve(false)
+
+      this.config.logger.debug(
+        `Syncing with peer: ${peer.toString(true)} height=${height.toString(10)}`
       )
+
+      this.fetcher = new BlockFetcher({
+        config: this.config,
+        pool: this.pool,
+        chain: this.chain,
+        interval: this.interval,
+        first,
+        count,
+        destroyWhenDone: false,
+      })
+
+      this.config.events.on(Event.SYNC_FETCHER_FETCHED, (blocks) => {
+        blocks = blocks as Block[]
+        const first = new BN(blocks[0].header.number)
+        const hash = short(blocks[0].hash())
+        const baseFeeAdd = this.config.chainCommon.gteHardfork('london')
+          ? `basefee=${blocks[0].header.baseFeePerGas} `
+          : ''
+        this.config.logger.info(
+          `Imported blocks count=${blocks.length} number=${first.toString(
+            10
+          )} hash=${hash} ${baseFeeAdd}hardfork=${this.config.chainCommon.hardfork()} peers=${
+            this.pool.size
+          }`
+        )
+      })
+
+      this.config.events.on(Event.SYNC_SYNCHRONIZED, () => {
+        resolve(true)
+      })
+
+      try {
+        await this.fetcher.fetch()
+      } catch (error) {
+        reject(error)
+      }
     })
-    await this.blockFetcher.fetch()
-    // TODO: Should this be deleted?
-    // @ts-ignore: error: The operand of a 'delete' operator must be optional
-    delete this.blockFetcher
-    return true
-  }
-
-  /**
-   * Fetch all blocks from current height up to highest found amongst peers
-   * @return Resolves with true if sync successful
-   */
-  async sync(): Promise<boolean> {
-    const peer = this.best()
-    return this.syncWithPeer(peer)
-  }
-
-  /**
-   * Chain was updated
-   * @param  {Object[]} announcements new block hash announcements
-   * @param  {Peer}     peer peer
-   * @return {Promise}
-   */
-  async announced(announcements: any[], _peer: Peer) {
-    if (announcements.length) {
-      const [hash, height] = announcements[announcements.length - 1]
-      this.config.logger.debug(`New height: number=${height.toString(10)} hash=${short(hash)}`)
-      // TO DO: download new blocks
-    }
   }
 
   /**
@@ -192,11 +185,11 @@ export class FullSynchronizer extends Synchronizer {
       return false
     }
 
-    if (this.blockFetcher) {
-      this.blockFetcher.destroy()
+    if (this.fetcher) {
+      this.fetcher.destroy()
       // TODO: Should this be deleted?
       // @ts-ignore: error: The operand of a 'delete' operator must be optional
-      delete this.blockFetcher
+      delete this.fetcher
     }
     await super.stop()
 

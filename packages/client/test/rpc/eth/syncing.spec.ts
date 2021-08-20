@@ -10,9 +10,9 @@ tape(`${method}: should return false when the client is synchronized`, async (t)
   const manager = createManager(client)
   const server = startRPC(manager.getMethods())
 
-  t.equals(client.synchronized, false, 'not synchronized yet')
-  client.synchronized = true
-  t.equals(client.synchronized, true, 'synchronized')
+  t.equals(client.config.synchronized, false, 'not synchronized yet')
+  client.config.synchronized = true
+  t.equals(client.config.synchronized, true, 'synchronized')
 
   const req = params(method, [])
   const expectRes = (res: any) => {
@@ -31,7 +31,7 @@ tape(`${method}: should return no peer available error`, async (t) => {
   const manager = createManager(client)
   const rpcServer = startRPC(manager.getMethods())
 
-  t.equals(client.synchronized, false, 'not synchronized yet')
+  t.equals(client.config.synchronized, false, 'not synchronized yet')
 
   const req = params(method, [])
   const expectRes = (res: any) => {
@@ -55,7 +55,7 @@ tape(`${method}: should return highest block header unavailable error`, async (t
   synchronizer.best = td.func<typeof synchronizer['best']>()
   td.when(synchronizer.best()).thenReturn('peer')
 
-  t.equals(client.synchronized, false, 'not synchronized yet')
+  t.equals(client.config.synchronized, false, 'not synchronized yet')
 
   const req = params(method, [])
   const expectRes = (res: any) => {
@@ -81,7 +81,7 @@ tape(`${method}: should return syncing status object when unsynced`, async (t) =
   td.when(synchronizer.best()).thenReturn('peer')
   td.when(synchronizer.latest('peer' as any)).thenResolve({ number: new BN(2) })
 
-  t.equals(client.synchronized, false, 'not synchronized yet')
+  t.equals(client.config.synchronized, false, 'not synchronized yet')
 
   const req = params(method, [])
   const expectRes = (res: any) => {

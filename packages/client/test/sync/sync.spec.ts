@@ -1,14 +1,22 @@
 import { EventEmitter } from 'events'
 import tape from 'tape-catch'
 import td from 'testdouble'
+import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
 import { Synchronizer } from '../../lib/sync/sync'
 import { Event } from '../../lib/types'
 
 class SynchronizerTest extends Synchronizer {
+  async syncWithPeer() {
+    return true
+  }
+
   async sync() {
     return false
+  }
+  best() {
+    return undefined
   }
 }
 
@@ -34,6 +42,16 @@ tape('[Synchronizer]', async (t) => {
       t.notOk((sync as any).running, 'stopped')
       t.end()
     })
+    sync.syncTargetHeight = new BN(1)
+    setTimeout(() => {
+      // eslint-disable-next-line no-extra-semi
+      ;(sync as any).chain._headers = {
+        latest: { hash: () => Buffer.from([]) },
+        td: new BN(0),
+        height: new BN(1),
+      }
+      config.events.emit(Event.CHAIN_UPDATED)
+    }, 100)
     await sync.start()
   })
 

@@ -22,8 +22,8 @@ export class PeerPool {
   private pool: Map<string, Peer>
   private noPeerPeriods: number
   private opened: boolean
-  // eslint-disable-next-line no-undef
-  private _statusCheckInterval: NodeJS.Timeout | null
+  /* global NodeJS */
+  private _statusCheckInterval: NodeJS.Timeout | undefined
 
   /**
    * Create new peer pool
@@ -35,7 +35,6 @@ export class PeerPool {
     this.pool = new Map<string, Peer>()
     this.noPeerPeriods = 0
     this.opened = false
-    this._statusCheckInterval = null
 
     this.init()
   }
@@ -72,7 +71,6 @@ export class PeerPool {
   async close() {
     this.pool.clear()
     this.opened = false
-    // eslint-disable-next-line no-undef
     clearInterval(this._statusCheckInterval as NodeJS.Timeout)
   }
 

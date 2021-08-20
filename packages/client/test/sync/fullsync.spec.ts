@@ -4,6 +4,7 @@ import td from 'testdouble'
 import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
+import { Event } from '../../lib/types'
 
 tape('[FullSynchronizer]', async (t) => {
   class PeerPool extends EventEmitter {
@@ -41,6 +42,7 @@ tape('[FullSynchronizer]', async (t) => {
       chain,
     })
     ;(sync as any).pool.open = td.func<PeerPool['open']>()
+    ;(sync as any).pool.peers = []
     td.when((sync as any).pool.open()).thenResolve(null)
     await sync.open()
     t.pass('opened')
@@ -106,7 +108,10 @@ tape('[FullSynchronizer]', async (t) => {
     sync.best = td.func<typeof sync['best']>()
     sync.latest = td.func<typeof sync['latest']>()
     td.when(sync.best()).thenReturn('peer')
-    td.when(sync.latest('peer' as any)).thenResolve({ number: new BN(2) })
+    td.when(sync.latest('peer' as any)).thenResolve({
+      number: new BN(2),
+      hash: () => Buffer.from([]),
+    })
     td.when((BlockFetcher.prototype as any).fetch(), { delay: 20 }).thenResolve(undefined)
     ;(sync as any).chain = { blocks: { height: new BN(3) } }
     t.notOk(await sync.sync(), 'local height > remote height')
@@ -114,6 +119,9 @@ tape('[FullSynchronizer]', async (t) => {
     ;(sync as any).chain = {
       blocks: { height: new BN(0) },
     }
+    setTimeout(() => {
+      config.events.emit(Event.SYNC_SYNCHRONIZED, new BN(0))
+    }, 100)
     t.ok(await sync.sync(), 'local height < remote height')
     await sync.stop()
 

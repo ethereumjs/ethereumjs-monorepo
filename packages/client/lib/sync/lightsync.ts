@@ -11,11 +11,8 @@ import { Event } from '../types'
  * @memberof module:sync
  */
 export class LightSynchronizer extends Synchronizer {
-  private headerFetcher: HeaderFetcher | null
-
   constructor(options: SynchronizerOptions) {
     super(options)
-    this.headerFetcher = null
   }
 
   /**
@@ -74,52 +71,64 @@ export class LightSynchronizer extends Synchronizer {
    * @return Resolves when sync completed
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
-    if (!peer) return false
-    const height = new BN(peer.les!.status.headNum)
-    const first = this.chain.headers.height.addn(1)
-    const count = height.sub(first).addn(1)
-    if (count.lten(0)) return false
+    // eslint-disable-next-line no-async-promise-executor
+    return await new Promise(async (resolve, reject) => {
+      if (!peer) return resolve(false)
 
-    this.config.logger.debug(
-      `Syncing with peer: ${peer.toString(true)} height=${height.toString(10)}`
-    )
+      const latest = await this.latest(peer)
+      if (!latest) return resolve(false)
 
-    this.headerFetcher = new HeaderFetcher({
-      config: this.config,
-      pool: this.pool,
-      chain: this.chain,
-      flow: this.flow,
-      interval: this.interval,
-      first,
-      count,
-    })
-    this.config.events.on(Event.SYNC_FETCHER_FETCHED, (headers) => {
-      headers = headers as BlockHeader[]
-      const first = new BN(headers[0].number)
-      const hash = short(headers[0].hash())
-      const baseFeeAdd = this.config.chainCommon.gteHardfork('london')
-        ? `basefee=${headers[0].baseFeePerGas} `
-        : ''
-      this.config.logger.info(
-        `Imported headers count=${headers.length} number=${first.toString(
-          10
-        )} hash=${hash} ${baseFeeAdd}peers=${this.pool.size}`
+      const height = new BN(peer.les!.status.headNum)
+      if (!this.syncTargetHeight) {
+        this.syncTargetHeight = height
+        this.config.logger.info(
+          `New sync target height number=${height.toString(10)} hash=${short(latest.hash())}`
+        )
+      }
+
+      const first = this.chain.headers.height.addn(1)
+      const count = height.sub(first).addn(1)
+      if (count.lten(0)) return resolve(false)
+
+      this.config.logger.debug(
+        `Syncing with peer: ${peer.toString(true)} height=${height.toString(10)}`
       )
-    })
-    await this.headerFetcher.fetch()
-    // TODO: Should this be deleted?
-    // @ts-ignore: error: The operand of a 'delete' operator must be optional
-    delete this.headerFetcher
-    return true
-  }
 
-  /**
-   * Fetch all headers from current height up to highest found amongst peers
-   * @return Resolves with true if sync successful
-   */
-  async sync(): Promise<boolean> {
-    const peer = this.best()
-    return this.syncWithPeer(peer)
+      this.fetcher = new HeaderFetcher({
+        config: this.config,
+        pool: this.pool,
+        chain: this.chain,
+        flow: this.flow,
+        interval: this.interval,
+        first,
+        count,
+        destroyWhenDone: false,
+      })
+
+      this.config.events.on(Event.SYNC_FETCHER_FETCHED, (headers) => {
+        headers = headers as BlockHeader[]
+        const first = new BN(headers[0].number)
+        const hash = short(headers[0].hash())
+        const baseFeeAdd = this.config.chainCommon.gteHardfork('london')
+          ? `basefee=${headers[0].baseFeePerGas} `
+          : ''
+        this.config.logger.info(
+          `Imported headers count=${headers.length} number=${first.toString(
+            10
+          )} hash=${hash} ${baseFeeAdd}peers=${this.pool.size}`
+        )
+      })
+
+      this.config.events.on(Event.SYNC_SYNCHRONIZED, () => {
+        resolve(true)
+      })
+
+      try {
+        await this.fetcher.fetch()
+      } catch (error) {
+        reject(error)
+      }
+    })
   }
 
   /**
@@ -143,11 +152,11 @@ export class LightSynchronizer extends Synchronizer {
     if (!this.running) {
       return false
     }
-    if (this.headerFetcher) {
-      this.headerFetcher.destroy()
+    if (this.fetcher) {
+      this.fetcher.destroy()
       // TODO: Should this be deleted?
       // @ts-ignore: error: The operand of a 'delete' operator must be optional
-      delete this.headerFetcher
+      delete this.fetcher
     }
     await super.stop()
     return true
