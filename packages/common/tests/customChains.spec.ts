@@ -4,7 +4,8 @@ import Common, { Chain, ConsensusType, CustomChain, Hardfork } from '../src/'
 import testnet from './data/testnet.json'
 import testnet2 from './data/testnet2.json'
 import testnet3 from './data/testnet3.json'
-import gethGenesis from './data/ejs.json'
+import genesis from './data/genesis.json'
+import genesisState from './data/genesisState.json'
 
 import { Chain as IChain, GenesisState } from '../src/types'
 
@@ -203,8 +204,8 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
   })
 
   t.test('create custom chain from geth genesis file', async (st) => {
-    const common = await Common.fromGethGenesis(gethGenesis)
-    st.equals(common.chainName(), 'customChain', 'chain name matches')
+    const common = Common.fromCustomGenesis(genesis as any, genesisState)
+    st.equals(common.chainName(), 44526, 'chain name matches')
     st.equals(
       common.genesisState()['0x0000000000000000000000000000000000000000'],
       '0x1',
@@ -212,13 +213,13 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     )
 
     try {
-      await Common.fromGethGenesis({})
+      Common.fromCustomGenesis({} as any)
     } catch {
       st.pass('should throw with no parameters')
     }
 
     try {
-      await Common.fromGethGenesis({ chainName: 'my fake chain', alloc: 'my fake Ether' })
+      Common.fromCustomGenesis({ chainName: 'my fake chain', alloc: 'my fake Ether' } as any)
     } catch {
       st.pass('should throw with invalid parameters')
     }
