@@ -150,7 +150,6 @@ export default class Interpreter {
       await dynamicGasHandler(this._runState, gas, this._vm._common)
     }
 
-    // TODO: figure out if we should try/catch this (in case step event throws)
     await this._runStepHook(gas, gasLimitClone)
 
     // Check for invalid opcode
@@ -195,7 +194,7 @@ export default class Interpreter {
       gasRefund: this._eei._evm._refund,
       opcode: {
         name: opcode.fullName,
-        fee: fee,
+        fee,
         isAsync: opcode.isAsync,
       },
       stack: this._runState.stack._store,
