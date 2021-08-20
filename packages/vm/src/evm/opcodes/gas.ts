@@ -7,7 +7,7 @@ import {
   trap,
   updateSstoreGas,
 } from '.'
-import { Address, BN } from '../../../../util/dist'
+import { Address, BN } from 'ethereumjs-util'
 import { ERROR } from '../../exceptions'
 import { RunState } from '../interpreter'
 import Common from '@ethereumjs/common'

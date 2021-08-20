@@ -33,15 +33,16 @@ jobs:
       - run: npm i
         working-directory: ${{github.workspace}}
 
-      - run: npm run lint
-      - run: npm run coverage:API
-
+      - run: npm run coverage
+      
       - uses: codecov/codecov-action@v1
         with:
           file: ${{ env.cwd }}/coverage/lcov.info
           flags: vm
 
+      - run: npm run test:API
       - run: npm run test:API:browser
+      - run: npm run lint
   
   test-vm-state:
     runs-on: ubuntu-latest
@@ -62,12 +63,7 @@ jobs:
       - run: npm i
         working-directory: ${{github.workspace}}
 
-      - run: npm run coverage -- npm run test:state:selectedForks
-
-      - uses: codecov/codecov-action@v1
-        with:
-          file: ${{ env.cwd }}/coverage/lcov.info
-          flags: vm
+      - run: npm run test:state:selectedForks
 
   test-vm-blockchain:
     runs-on: ubuntu-latest
@@ -88,12 +84,7 @@ jobs:
       - run: npm i
         working-directory: ${{github.workspace}}
 
-      - run: npm run coverage -- npm run test:blockchain
-
-      - uses: codecov/codecov-action@v1
-        with:
-          file: ${{ env.cwd }}/coverage/lcov.info
-          flags: vm
+      - run: npm run test:blockchain
 
   vm-benchmarks:
     runs-on: ubuntu-latest
