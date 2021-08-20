@@ -32,9 +32,13 @@ tape('[Integration:FullSync]', async (t) => {
   })
 
   t.test('should sync with best peer', async (t) => {
-    const [remoteServer1, remoteService1] = await setup({ location: '127.0.0.2', height: 9 })
+    const [remoteServer1, remoteService1] = await setup({ location: '127.0.0.2', height: 7 })
     const [remoteServer2, remoteService2] = await setup({ location: '127.0.0.3', height: 10 })
-    const [localServer, localService] = await setup({ location: '127.0.0.1', height: 0 })
+    const [localServer, localService] = await setup({
+      location: '127.0.0.1',
+      height: 0,
+      minPeers: 2,
+    })
     await localService.synchronizer.stop()
     await localServer.discover('remotePeer1', '127.0.0.2')
     await localServer.discover('remotePeer2', '127.0.0.3')

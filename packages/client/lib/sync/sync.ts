@@ -110,7 +110,7 @@ export abstract class Synchronizer {
    * @return Resolves with true if sync successful
    */
   async sync(): Promise<boolean> {
-    let peer = this.best()
+    const peer = this.best()
     // TODO: only activate along fixing test failures
     /*let numAttempts = 1
     while (!peer) {

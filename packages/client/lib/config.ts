@@ -131,7 +131,7 @@ export interface ConfigOptions {
   /**
    * Number of peers needed before syncing
    *
-   * Default: `2`
+   * Default: `1`
    */
   minPeers?: number
 
