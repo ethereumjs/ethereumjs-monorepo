@@ -45,7 +45,7 @@ tape('[Synchronizer]', async (t) => {
     sync.syncTargetHeight = new BN(1)
     setTimeout(() => {
       // eslint-disable-next-line no-extra-semi
-      ;(sync as any).chain._blocks = {
+      ;(sync as any).chain._headers = {
         latest: { hash: () => Buffer.from([]) },
         td: new BN(0),
         height: new BN(1),
