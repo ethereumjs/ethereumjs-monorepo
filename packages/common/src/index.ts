@@ -310,7 +310,7 @@ export default class Common extends EventEmitter {
    * These can be read in from a JSON file and passed to the constructor or the entire dictionary passed in directly.
    * There is a helper script `scripts/gethGenesisConverter.ts` that takes the genesis file [layout]9https://geth.ethereum.org/docs/interface/private-network)
    * specified for `geth` usage or `puppeth` and converts it into two files, `genesis.json` and `genesisState.json`
-   * that are pre-configured to be used with this constructor.  Note, `gethGenesisConverter` requires installation of 
+   * that are pre-configured to be used with this constructor.  Note, `gethGenesisConverter` requires installation of
    * `@ethereumjs/block` and `merkle-patricia-trie` packages.
    *
    * Creating custom genesis/genesisState objects from Geth
