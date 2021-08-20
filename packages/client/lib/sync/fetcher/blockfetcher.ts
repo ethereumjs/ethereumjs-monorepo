@@ -30,7 +30,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
     })
     if (!headersResult) {
       // Catch occasional null responses from peers who do not return block headers from peer.eth request
-      this.config.logger.warn(
+      this.config.logger.debug(
         `peer ${peer?.id} returned no headers for blocks ${first}-${first.addn(count)} from ${
           peer?.address
         }`
@@ -41,7 +41,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
     const bodiesResult = await peer!.eth!.getBlockBodies({ hashes: headers.map((h) => h.hash()) })
     if (!bodiesResult) {
       // Catch occasional null responses from peers who do not return block bodies from peer.eth request
-      this.config.logger.warn(
+      this.config.logger.debug(
         `peer ${peer?.id} returned no bodies for blocks ${first}-${first.addn(count)} from ${
           peer?.address
         }`
