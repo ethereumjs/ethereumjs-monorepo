@@ -151,18 +151,20 @@ async function parseGethParams(json: any) {
       stateRoot: '0x' + stateRoot.toString('hex'),
     },
     bootstrapNodes: [],
-    consensus: config.ethash ? {
-      type: 'pow',
-      algorithm: 'ethash',
-      ethash: {},
-    } : {
-      type: 'poa',
-      algorithm: 'clique',
-      clique: {
-        period: config.clique.period,
-        epoch: config.clique.epoch
-      }
-    },
+    consensus: config.ethash
+      ? {
+          type: 'pow',
+          algorithm: 'ethash',
+          ethash: {},
+        }
+      : {
+          type: 'poa',
+          algorithm: 'clique',
+          clique: {
+            period: config.clique.period,
+            epoch: config.clique.epoch,
+          },
+        },
   }
   const hardforks = [
     'chainstart',

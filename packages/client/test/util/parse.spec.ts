@@ -61,8 +61,6 @@ tape('[Util/Parse]', (t) => {
     const json = require('./rinkeby.json')
     const params = await parseParams(json, 'rinkeby')
     const expected = require('./params.json')
-    expected.genesis.hash = Buffer.from(expected.genesis.hash)
-    expected.genesis.stateRoot = Buffer.from(expected.genesis.stateRoot)
     t.deepEquals(params, expected, 'parsed params correctly')
     t.end()
   })
@@ -71,7 +69,7 @@ tape('[Util/Parse]', (t) => {
     const json = require('./lisinski.json')
     const params = await parseParams(json, 'lisinsky')
     const expected = 'e7fd8db206dcaf066b7c97b8a42a0abc18653613560748557ab44868652a78b6'
-    t.equals(params.genesis.hash.toString('hex'), expected, 'parsed contracts correctly')
+    t.equals(params.genesis.hash.slice(2), expected, 'parsed contracts correctly')
     t.end()
   })
 })

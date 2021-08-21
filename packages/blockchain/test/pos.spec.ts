@@ -36,6 +36,9 @@ const buildChain = async (blockchain: Blockchain, common: Common, height: number
     )
     blocks.push(block)
     await blockchain.putBlock(block)
+    if (number > 10) {
+ //     console.log(await blockchain.getTotalDifficulty(block.hash()))
+    }
   }
 }
 
