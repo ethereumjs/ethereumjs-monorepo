@@ -304,41 +304,6 @@ export default class Common extends EventEmitter {
 
   /**
    *
-   * Creates a {@link Common} object for a custom chain, based off a complete {@link common.Chain} dictionary
-   * and optional {@link common.GenesisState}.
-   *
-   * These can be read in from a JSON file and passed to the constructor or the entire dictionary passed in directly.
-   * There is a helper script `scripts/gethGenesisConverter.ts` that takes the genesis file [layout]9https://geth.ethereum.org/docs/interface/private-network)
-   * specified for `geth` usage or `puppeth` and converts it into two files, `genesis.json` and `genesisState.json`
-   * that are pre-configured to be used with this constructor.  Note, `gethGenesisConverter` requires installation of
-   * `@ethereumjs/block` and `merkle-patricia-trie` packages.
-   *
-   * Creating custom genesis/genesisState objects from Geth
-   *
-   * ```bash
-   * geth dumpgenesis > genesis.json
-   * npx ts-node gethGenesisConverter.ts genesis.json
-   * ```
-   *
-   * Using with `Common.fromCustomGenesis`
-   *
-   * ```javascript
-   * import genesis from 'genesis.json'
-   * import genesisState from 'genesisState.json'
-   * import Common from '@ethereumjs/common'
-   *
-   * const common = Common.fromCustomGenesis(genesis, genesisState)
-   * ```
-   *
-   * @param genesisParams Chain options conforming to {@link Chain}
-   * @param genesisState Genesis state conforming to {@link common.GenesisState}
-   * @returns Promise<Common>
-   */
-  public static fromCustomGenesis(genesisParams: IChain, genesisState?: any): Common {
-    return new Common({ chain: genesisParams.name, customChains: [[genesisParams, genesisState]] })
-  }
-  /**
-   *
    * @constructor
    */
   constructor(opts: CommonOpts) {

@@ -2,7 +2,7 @@
 
 import { Server as RPCServer } from 'jayson/promise'
 import Common, { Hardfork } from '@ethereumjs/common'
-import { parseParams, parseMultiaddrs } from '../lib/util'
+import { parseParams, parseMultiaddrs, parseGenesisState } from '../lib/util'
 import EthereumClient from '../lib/client'
 import { Config } from '../lib/config'
 import { Logger } from '../lib/logging'
@@ -119,6 +119,10 @@ const args = require('yargs')
       describe: 'Use v4 ("findneighbour" node requests) for peer discovery',
       boolean: true,
     },
+    gethGenesis: {
+      describe: 'Import a geth genesis file for running a custom network',
+      string: true,
+    },
   })
   .locale('en_EN').argv
 
@@ -184,12 +188,31 @@ async function run() {
     chain = args.network
   }
 
-  // TODO: map chainParams (and lib/util.parseParams) to new Common format
-  // and pass into common constructor below
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const chainParams = args.params ? await parseParams(args.params) : args.network
+  // configure common based on args given
+  let common: Common = {} as Common
+  // Use custom chain parameters file if specified
+  if (args.params) {
+    try {
+      const params = JSON.parse(fs.readFileSync(args.params, 'utf-8'))
+      common = new Common({ chain: params })
+    } catch (err) {
+      throw new Error('invalid chain parameters')
+    }
+    // Use geth genesis parameters file if specified
+  } else if (args.gethGenesis) {
+    const genesisFile = JSON.parse(fs.readFileSync(args.gethGenesis, 'utf-8'))
+    const genesisParams = await parseParams(genesisFile, 'custom-chain')
+    const genesisState = genesisFile.alloc ? await parseGenesisState(genesisFile) : {}
+    common = new Common({
+      chain: genesisParams.name,
+      customChains: [[genesisParams, genesisState]],
+    })
+  }
+  // Use default common configuration if no custom parameters specified
+  else {
+    common = new Common({ chain: chain, hardfork: Hardfork.Chainstart })
+  }
 
-  const common = new Common({ chain, hardfork: Hardfork.Chainstart })
   const datadir = args.datadir ?? Config.DATADIR_DEFAULT
   const configDirectory = `${datadir}/${common.chainName()}/config`
   fs.ensureDirSync(configDirectory)
