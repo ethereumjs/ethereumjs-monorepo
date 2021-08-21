@@ -88,7 +88,13 @@ async function parseStorage(storage: any) {
   }
   return trie
 }
-
+/**
+ * Derives storage trie of genesis block bases on genesis allocations
+ * @param alloc - Object containing genesis allocations from geth genesis block
+ * 
+ * @returns genesis block storage trie 
+ */
+// 
 async function parseGethState(alloc: any) {
   const trie = new Trie()
   for (const [key, value] of Object.entries(alloc)) {
@@ -128,6 +134,11 @@ async function parseGethHeader(json: any) {
   return BlockHeader.fromHeaderData(headerData) // TODO: Pass in common?
 }
 
+/**
+ * Converts Geth genesis parameters to an EthereumJS compatible `CommonOpts` object
+ * @param json object representing the Geth genesis file
+ * @returns genesis parameters in a `CommonOpts` compliant object
+ */
 async function parseGethParams(json: any) {
   const { name, config, timestamp, gasLimit, difficulty, nonce, extraData, mixHash, coinbase } =
     json
@@ -199,6 +210,12 @@ async function parseGethParams(json: any) {
   }))
   return params
 }
+/**
+ * Transforms Geth formatted nonce (i.e. hex string) to 8 byte hex prefixed string used internally
+ * 
+ * @param nonce as a string parsed from the Geth genesis file
+ * @returns nonce as a hex-prefixed 8 byte string
+ */
 
 function formatNonce(nonce: string): string {
   let formattedNonce = '0x0000000000000000'
@@ -214,6 +231,13 @@ function formatNonce(nonce: string): string {
   return formattedNonce
 }
 
+/**
+ * Parses a genesis.json exported from Geth into parameters for Common instance
+ * @param json representing the Geth genesis file
+ * @param name optional chain name
+ * @returns 
+ */
+
 export async function parseParams(json: any, name?: string) {
   try {
     if (json.config && json.difficulty && json.gasLimit && json.alloc) {
@@ -228,6 +252,12 @@ export async function parseParams(json: any, name?: string) {
   }
 }
 
+/**
+ * Parses the geth genesis state into a `Common.GenesisState`
+ * @param json representing the `alloc` key in a Geth genesis file
+ * @returns a `GenesisState` compatible object
+ */
+// 
 export async function parseGenesisState(json: any) {
   const genesisState: GenesisState = {}
   if (json.alloc) {
@@ -237,6 +267,7 @@ export async function parseGenesisState(json: any) {
   }
   return genesisState
 }
+
 export function parseKey(input: string | Buffer) {
   if (Buffer.isBuffer(input)) {
     return input
