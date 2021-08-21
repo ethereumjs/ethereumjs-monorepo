@@ -91,10 +91,10 @@ async function parseStorage(storage: any) {
 /**
  * Derives storage trie of genesis block bases on genesis allocations
  * @param alloc - Object containing genesis allocations from geth genesis block
- * 
- * @returns genesis block storage trie 
+ *
+ * @returns genesis block storage trie
  */
-// 
+//
 async function parseGethState(alloc: any) {
   const trie = new Trie()
   for (const [key, value] of Object.entries(alloc)) {
@@ -212,7 +212,7 @@ async function parseGethParams(json: any) {
 }
 /**
  * Transforms Geth formatted nonce (i.e. hex string) to 8 byte hex prefixed string used internally
- * 
+ *
  * @param nonce as a string parsed from the Geth genesis file
  * @returns nonce as a hex-prefixed 8 byte string
  */
@@ -235,7 +235,7 @@ function formatNonce(nonce: string): string {
  * Parses a genesis.json exported from Geth into parameters for Common instance
  * @param json representing the Geth genesis file
  * @param name optional chain name
- * @returns 
+ * @returns
  */
 
 export async function parseParams(json: any, name?: string) {
@@ -257,7 +257,7 @@ export async function parseParams(json: any, name?: string) {
  * @param json representing the `alloc` key in a Geth genesis file
  * @returns a `GenesisState` compatible object
  */
-// 
+//
 export async function parseGenesisState(json: any) {
   const genesisState: GenesisState = {}
   if (json.alloc) {
