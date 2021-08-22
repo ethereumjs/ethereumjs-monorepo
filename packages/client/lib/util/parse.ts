@@ -262,7 +262,8 @@ export async function parseGenesisState(json: any) {
   const genesisState: GenesisState = {}
   if (json.alloc) {
     Object.keys(json.alloc).forEach((address: string) => {
-      genesisState['0x' + address] = json.alloc[address].balance
+      const genesisAddress = isHexPrefixed(address) ? address : '0x' + address
+      genesisState[genesisAddress] = json.alloc[address].balance
     })
   }
   return genesisState
