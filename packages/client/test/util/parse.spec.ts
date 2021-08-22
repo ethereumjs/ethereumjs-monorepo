@@ -79,4 +79,12 @@ tape('[Util/Parse]', (t) => {
     )
     t.end()
   })
+
+  t.test('should format nonce correctly from geth params file', async (t) => {
+    const json = require('./gethnonce.json')
+    const params = await parseParams(json, 'testnet')
+    const expected = '0x0000000000000042'
+    t.equals(params.genesis.nonce, expected, 'formatted nonce correctly')
+    t.end()
+  })
 })
