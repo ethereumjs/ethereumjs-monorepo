@@ -72,10 +72,29 @@ export class BeamSynchronizer extends Synchronizer {
           misses++
           const time = Date.now() / 1000
           // eslint-disable-next-line no-async-promise-executor
+          let peer: Peer
+          let getNewPeer = async () => {
+            let newPeer
+            while (true) {
+              newPeer = await synchronizer.best()
+              if (newPeer && newPeer.eth) {
+                break
+              }
+              await new Promise(r => setTimeout(r, 1000));
+            }
+            peer = newPeer
+            synchronizer.syncPeer = peer
+          }
+          if (synchronizer.syncPeer && synchronizer.syncPeer.eth) {
+            peer = synchronizer.syncPeer
+          } else {
+            await getNewPeer()
+          }
           const result = await new Promise(async (resolve, reject) => {
             try {
               for (let i = 0; i < 50; i++) {
-                const result = await synchronizer.syncPeer!.eth?.getNodeData({ hashes: [node] })
+                console.log(node.toString('hex'))
+                const result = await peer.eth?.getNodeData({ hashes: [node] })
                 if (result) {
                   // ensure we got the correct node
                   const nodes = result[1]
@@ -89,6 +108,11 @@ export class BeamSynchronizer extends Synchronizer {
                   }
                 } else {
                   console.log('node did not return any data')
+                  synchronizer.pool.ban(peer)
+                  console.log("banned peer")
+                  await getNewPeer()
+                  console.log("got new peer")
+                  console.log(peer.address)
                 }
               }
             } catch (e) {
