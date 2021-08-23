@@ -51,7 +51,6 @@ tape('[LightEthereumService]', async (t) => {
     const config = new Config({ servers: [server], loglevel: 'error' })
     const service = new LightEthereumService({ config })
     await service.open()
-    td.verify(service.chain.open())
     td.verify(service.synchronizer.open())
     td.verify(server.addProtocols(td.matchers.anything()))
     service.config.events.on(Event.SYNC_SYNCHRONIZED, () => t.pass('synchronized'))
@@ -64,7 +63,7 @@ tape('[LightEthereumService]', async (t) => {
       if (err.message === 'error1') t.pass('got error 2')
     })
     service.config.events.emit(Event.SERVER_ERROR, new Error('error1'), server)
-    await service.stop()
+    await service.close()
   })
 
   t.test('should start/stop', async (t) => {

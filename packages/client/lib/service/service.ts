@@ -104,7 +104,7 @@ export class Service {
    * @return {Promise}
    */
   async close() {
-    if (this.running) {
+    if (this.opened) {
       await this.pool.close()
       await this.txPool.close()
     }
