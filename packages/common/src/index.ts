@@ -303,6 +303,7 @@ export default class Common extends EventEmitter {
   }
 
   /**
+   *
    * @constructor
    */
   constructor(opts: CommonOpts) {

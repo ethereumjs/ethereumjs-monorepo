@@ -4,6 +4,7 @@ import Common, { Chain, ConsensusType, CustomChain, Hardfork } from '../src/'
 import testnet from './data/testnet.json'
 import testnet2 from './data/testnet2.json'
 import testnet3 from './data/testnet3.json'
+
 import { Chain as IChain, GenesisState } from '../src/types'
 
 tape('[Common]: Custom chains', function (t: tape.Test) {

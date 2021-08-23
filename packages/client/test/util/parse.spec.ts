@@ -1,6 +1,6 @@
 import tape from 'tape-catch'
 import multiaddr from 'multiaddr'
-import { parseMultiaddrs, parseTransports, parseParams } from '../../lib/util'
+import { parseMultiaddrs, parseTransports, parseParams, parseGenesisState } from '../../lib/util'
 
 tape('[Util/Parse]', (t) => {
   t.test('should parse multiaddrs', (t) => {
@@ -61,8 +61,6 @@ tape('[Util/Parse]', (t) => {
     const json = require('./rinkeby.json')
     const params = await parseParams(json, 'rinkeby')
     const expected = require('./params.json')
-    expected.genesis.hash = Buffer.from(expected.genesis.hash)
-    expected.genesis.stateRoot = Buffer.from(expected.genesis.stateRoot)
     t.deepEquals(params, expected, 'parsed params correctly')
     t.end()
   })
@@ -71,7 +69,22 @@ tape('[Util/Parse]', (t) => {
     const json = require('./lisinski.json')
     const params = await parseParams(json, 'lisinsky')
     const expected = 'e7fd8db206dcaf066b7c97b8a42a0abc18653613560748557ab44868652a78b6'
-    t.equals(params.genesis.hash.toString('hex'), expected, 'parsed contracts correctly')
+    t.equals(params.genesis.hash.slice(2), expected, 'parsed contracts correctly')
+
+    const genesisState = await parseGenesisState(json)
+    t.equals(
+      genesisState['0x385a157f6cc00d980420e50cb2083054cea32e90'],
+      '0x033b2e3c9fd0803ce8000000',
+      'genesis state correctly produced'
+    )
+    t.end()
+  })
+
+  t.test('should format nonce correctly from geth params file', async (t) => {
+    const json = require('./gethnonce.json')
+    const params = await parseParams(json, 'testnet')
+    const expected = '0x0000000000000042'
+    t.equals(params.genesis.nonce, expected, 'formatted nonce correctly')
     t.end()
   })
 })
