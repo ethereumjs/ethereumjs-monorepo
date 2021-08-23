@@ -8,7 +8,6 @@ import { Event } from '../types'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
 import { BlockFetcher, HeaderFetcher } from './fetcher'
-import { TxPool } from './txpool'
 import { short } from '../util'
 
 export interface SynchronizerOptions {
@@ -48,8 +47,6 @@ export abstract class Synchronizer {
   protected forceSync: boolean
   public startingBlock: number
 
-  public txPool: TxPool
-
   // Best known sync block height
   public syncTargetHeight?: BN
   // Time (in seconds) after which the synced state is reset
@@ -83,10 +80,6 @@ export abstract class Synchronizer {
     this.config.events.on(Event.CHAIN_UPDATED, async () => {
       this.updateSynchronizedState()
     })
-
-    this.txPool = new TxPool({
-      config: this.config,
-    })
   }
 
   /**
@@ -101,7 +94,6 @@ export abstract class Synchronizer {
    * @return {Promise}
    */
   async open() {
-    this.txPool.open()
     this.opened = true
   }
 
@@ -156,18 +148,6 @@ export abstract class Synchronizer {
     if (!this.syncTargetHeight) {
       return
     }
-    // We are close enough to the head of the chain
-    // that the tx pool can be started
-    if (
-      this.chain.headers.height.gte(
-        this.syncTargetHeight.subn(this.txPool.BLOCKS_BEFORE_TARGET_HEIGHT_ACTIVATION)
-      ) &&
-      !this.txPool.running
-    ) {
-      this.txPool.start()
-    }
-
-    // Check synchronization state
     if (this.chain.headers.height.gte(this.syncTargetHeight)) {
       if (!this.config.synchronized) {
         const hash = this.chain.headers.latest?.hash()
@@ -279,7 +259,6 @@ export abstract class Synchronizer {
     if (!this.running) {
       return false
     }
-    this.txPool.stop()
     clearInterval(this._syncedStatusCheckInterval as NodeJS.Timeout)
     await new Promise((resolve) => setTimeout(resolve, this.interval))
     this.running = false
@@ -292,9 +271,6 @@ export abstract class Synchronizer {
    * @return {Promise}
    */
   async close() {
-    if (this.opened) {
-      this.txPool.close()
-    }
     this.opened = false
   }
 

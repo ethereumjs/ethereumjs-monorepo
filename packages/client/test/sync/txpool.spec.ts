@@ -66,7 +66,7 @@ tape('[TxPool]', async (t) => {
     pool.open()
     pool.start()
     t.ok((pool as any).opened, 'pool opened')
-    t.equals(await pool.open(), false, 'already opened')
+    t.equals(pool.open(), false, 'already opened')
     pool.stop()
     pool.close()
     t.notOk((pool as any).opened, 'closed')
