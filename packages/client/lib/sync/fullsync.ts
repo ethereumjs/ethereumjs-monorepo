@@ -188,6 +188,7 @@ export class FullSynchronizer extends Synchronizer {
             this.pool.size
           }`
         )
+        //this.txPool.newBlocks(blocks)
       })
 
       this.config.events.on(Event.SYNC_SYNCHRONIZED, () => {

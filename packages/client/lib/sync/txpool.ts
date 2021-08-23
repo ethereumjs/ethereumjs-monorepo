@@ -3,6 +3,7 @@ import { Config } from '../config'
 import { Peer } from '../net/peer'
 import { EthProtocolMethods } from '../net/protocol'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
+import { Block } from '../../../block/dist'
 
 export interface TxPoolOptions {
   /* Config */
@@ -11,6 +12,7 @@ export interface TxPoolOptions {
 
 export type TxPoolObject = {
   tx: TypedTransaction
+  hash: string
   added: number
 }
 
@@ -148,12 +150,44 @@ export class TxPool extends EventEmitter {
             // Replace pooled txs with the same nonce
             add = inPool.filter((poolObj) => !poolObj.tx.nonce.eq(tx.nonce))
           }
-          add.push({ tx, added: Date.now() })
+          const hash = tx.hash().toString('hex')
+          add.push({ tx, added: Date.now(), hash })
 
           this.pool.set(tx.getSenderAddress().toString(), add)
-          this.handled.push(tx.hash().toString('hex'))
+          this.handled.push(hash)
         }
       }
+    }
+  }
+
+  /**
+   * Sync txs in the pool with txs from latest blocks
+   */
+  newBlocks(blocks: Block[]) {
+    if (!this.running) {
+      return
+    }
+    for (const block of blocks) {
+      const includedTxs: string[] = []
+      for (const tx of block.transactions) {
+        const hash = tx.hash().toString('hex')
+        // If tx hasn't been handled by the pool continue
+        // (performance optimization)
+        if (!this.handled.includes(hash)) {
+          continue
+        }
+        includedTxs.push(hash)
+      }
+      // TODO
+      // Go through tx pool and removed txs
+      // which are already included in the chain
+      // (question: I am wondering if the tx pool data structure
+      // really is the best choice but )
+      /*this.pool.forEach((poolObjects, address) => {
+        for (const poolObject of poolObjects) {
+          if (includedTxs.includes(poolObject.hash))
+        }
+      })*/
     }
   }
 
