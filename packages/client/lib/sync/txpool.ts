@@ -26,8 +26,9 @@ export class TxPool extends EventEmitter {
   public config: Config
 
   private opened: boolean
+  public running: boolean
 
-  // eslint-disable-next-line no-undef
+  /* global NodeJS */
   private _logInterval: NodeJS.Timeout | null
 
   /**
@@ -47,7 +48,20 @@ export class TxPool extends EventEmitter {
 
   public pool: Map<string, TxPoolObject[]>
 
+  /**
+   * Activate before chain head is reached to start
+   * tx pool preparation (sorting out included txs)
+   */
+  public BLOCKS_BEFORE_TARGET_HEIGHT_ACTIVATION = 20
+
+  /**
+   * Max number of txs to request
+   */
   private TX_RETRIEVAL_LIMIT = 256
+
+  /**
+   * Log pool statistics on the given interval
+   */
   private LOG_STATISTICS_INTERVAL = 10000 // ms
 
   /**
@@ -62,6 +76,7 @@ export class TxPool extends EventEmitter {
 
     this.pool = new Map<string, TxPoolObject[]>()
     this.opened = false
+    this.running = false
   }
 
   /**
@@ -73,7 +88,19 @@ export class TxPool extends EventEmitter {
     }
     this.opened = true
 
+    return true
+  }
+
+  /**
+   * Start tx processing
+   */
+  start(): boolean {
+    if (this.running) {
+      return false
+    }
     this._logInterval = setInterval(this._logPoolStats.bind(this), this.LOG_STATISTICS_INTERVAL)
+    this.running = true
+    this.config.logger.info('Tx pool started.')
     return true
   }
 
@@ -83,6 +110,9 @@ export class TxPool extends EventEmitter {
    * @param  peer peer
    */
   async announcedTxHashes(txHashes: Buffer[], peer: Peer) {
+    if (!this.running) {
+      return
+    }
     if (txHashes.length) {
       //this.config.logger.info(`Tx pool: received new pooled tx hashes number=${txHashes.length}`)
 
@@ -128,13 +158,25 @@ export class TxPool extends EventEmitter {
   }
 
   /**
+   * Stop pool execution
+   */
+  async stop(): Promise<boolean> {
+    if (!this.running) {
+      return false
+    }
+    clearInterval(this._logInterval as NodeJS.Timeout)
+
+    this.running = false
+    this.config.logger.info('Tx pool stopped.')
+    return true
+  }
+
+  /**
    * Close pool
    */
   async close() {
     this.pool.clear()
     this.opened = false
-    // eslint-disable-next-line no-undef
-    clearInterval(this._logInterval as NodeJS.Timeout)
   }
 
   _logPoolStats() {

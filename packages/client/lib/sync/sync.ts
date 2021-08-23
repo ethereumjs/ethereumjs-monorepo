@@ -153,7 +153,22 @@ export abstract class Synchronizer {
    * @emits Event.SYNC_SYNCHRONIZED
    */
   updateSynchronizedState() {
-    if (this.syncTargetHeight && this.chain.headers.height.gte(this.syncTargetHeight)) {
+    if (!this.syncTargetHeight) {
+      return
+    }
+    // We are close enough to the head of the chain
+    // that the tx pool can be started
+    if (
+      this.chain.headers.height.gte(
+        this.syncTargetHeight.subn(this.txPool.BLOCKS_BEFORE_TARGET_HEIGHT_ACTIVATION)
+      ) &&
+      !this.txPool.running
+    ) {
+      this.txPool.start()
+    }
+
+    // Check synchronization state
+    if (this.chain.headers.height.gte(this.syncTargetHeight)) {
       if (!this.config.synchronized) {
         const hash = this.chain.headers.latest?.hash()
         this.config.logger.info(
@@ -264,7 +279,7 @@ export abstract class Synchronizer {
     if (!this.running) {
       return false
     }
-
+    await this.txPool.stop()
     clearInterval(this._syncedStatusCheckInterval as NodeJS.Timeout)
     await new Promise((resolve) => setTimeout(resolve, this.interval))
     this.running = false
