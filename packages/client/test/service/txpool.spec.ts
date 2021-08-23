@@ -4,7 +4,7 @@ import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Config } from '../../lib/config'
 
 tape('[TxPool]', async (t) => {
-  const { TxPool } = await import('../../lib/service/txpool')
+  const { TxPool } = await import('../../lib/sync/txpool')
   const config = new Config({ transports: [], loglevel: 'error' })
 
   const A = {

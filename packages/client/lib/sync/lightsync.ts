@@ -135,6 +135,7 @@ export class LightSynchronizer extends Synchronizer {
    * Open synchronizer. Must be called before sync() is called
    */
   async open(): Promise<void> {
+    await super.open()
     await this.chain.open()
     await this.pool.open()
     const number = this.chain.headers.height.toNumber()

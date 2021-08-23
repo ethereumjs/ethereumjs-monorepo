@@ -157,6 +157,7 @@ export class FullSynchronizer extends Synchronizer {
    * Open synchronizer. Must be called before sync() is called
    */
   async open(): Promise<void> {
+    await super.open()
     await this.chain.open()
     await this.execution.open()
     await this.pool.open()

@@ -48,7 +48,7 @@ export class TxPool extends EventEmitter {
   public pool: Map<string, TxPoolObject[]>
 
   private TX_RETRIEVAL_LIMIT = 256
-  private LOG_STATISTICS_INTERVAL = 3000 // ms
+  private LOG_STATISTICS_INTERVAL = 10000 // ms
 
   /**
    * Create new tx pool
@@ -61,12 +61,6 @@ export class TxPool extends EventEmitter {
     this._logInterval = null
 
     this.pool = new Map<string, TxPoolObject[]>()
-    this.opened = false
-
-    this.init()
-  }
-
-  init() {
     this.opened = false
   }
 

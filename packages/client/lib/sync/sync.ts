@@ -8,6 +8,7 @@ import { Event } from '../types'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
 import { BlockFetcher, HeaderFetcher } from './fetcher'
+import { TxPool } from './txpool'
 import { short } from '../util'
 
 export interface SynchronizerOptions {
@@ -46,6 +47,8 @@ export abstract class Synchronizer {
   protected forceSync: boolean
   public startingBlock: number
 
+  public txPool: TxPool
+
   // Best known sync block height
   public syncTargetHeight?: BN
   // Time (in seconds) after which the synced state is reset
@@ -77,6 +80,10 @@ export abstract class Synchronizer {
 
     this.config.events.on(Event.CHAIN_UPDATED, async () => {
       this.updateSynchronizedState()
+    })
+
+    this.txPool = new TxPool({
+      config: this.config,
     })
   }
 
@@ -136,7 +143,9 @@ export abstract class Synchronizer {
    * Open synchronizer. Must be called before sync() is called
    * @return {Promise}
    */
-  async open() {}
+  async open() {
+    await this.txPool.open()
+  }
 
   /**
    * Returns true if peer can be used for syncing
@@ -252,6 +261,8 @@ export abstract class Synchronizer {
     if (!this.running) {
       return false
     }
+    await this.txPool.close()
+
     clearInterval(this._syncedStatusCheckInterval as NodeJS.Timeout)
     await new Promise((resolve) => setTimeout(resolve, this.interval))
     this.running = false
