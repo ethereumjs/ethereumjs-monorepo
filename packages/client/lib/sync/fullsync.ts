@@ -45,6 +45,27 @@ export class FullSynchronizer extends Synchronizer {
   }
 
   /**
+   * Open synchronizer. Must be called before sync() is called
+   */
+  async open(): Promise<void> {
+    await super.open()
+    await this.chain.open()
+    await this.execution.open()
+    await this.pool.open()
+    this.execution.syncing = true
+    const number = this.chain.blocks.height.toNumber()
+    const td = this.chain.blocks.td.toString(10)
+    const hash = this.chain.blocks.latest!.hash()
+    this.startingBlock = number
+    this.config.chainCommon.setHardforkByBlockNumber(number)
+    this.config.logger.info(
+      `Latest local block: number=${number} td=${td} hash=${short(
+        hash
+      )} hardfork=${this.config.chainCommon.hardfork()}`
+    )
+  }
+
+  /**
    * Returns true if peer can be used for syncing
    * @return {boolean}
    */
@@ -151,27 +172,6 @@ export class FullSynchronizer extends Synchronizer {
         reject(error)
       }
     })
-  }
-
-  /**
-   * Open synchronizer. Must be called before sync() is called
-   */
-  async open(): Promise<void> {
-    await super.open()
-    await this.chain.open()
-    await this.execution.open()
-    await this.pool.open()
-    this.execution.syncing = true
-    const number = this.chain.blocks.height.toNumber()
-    const td = this.chain.blocks.td.toString(10)
-    const hash = this.chain.blocks.latest!.hash()
-    this.startingBlock = number
-    this.config.chainCommon.setHardforkByBlockNumber(number)
-    this.config.logger.info(
-      `Latest local block: number=${number} td=${td} hash=${short(
-        hash
-      )} hardfork=${this.config.chainCommon.hardfork()}`
-    )
   }
 
   /**

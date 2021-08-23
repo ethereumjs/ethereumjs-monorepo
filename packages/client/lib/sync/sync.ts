@@ -89,51 +89,6 @@ export abstract class Synchronizer {
     })
   }
 
-  abstract best(): Peer | undefined
-
-  abstract syncWithPeer(peer?: Peer): Promise<boolean>
-
-  /**
-   * Checks if the synchronized state of the chain has changed
-   *
-   * @emits Event.SYNC_SYNCHRONIZED
-   */
-  updateSynchronizedState() {
-    if (this.syncTargetHeight && this.chain.headers.height.gte(this.syncTargetHeight)) {
-      if (!this.config.synchronized) {
-        const hash = this.chain.headers.latest?.hash()
-        this.config.logger.info(
-          `Chain synchronized height=${this.chain.headers.height} number=${short(hash!)}`
-        )
-      }
-      this.config.synchronized = true
-      this.config.lastSyncDate = Date.now()
-
-      // TODO: analyze if this event is still needed
-      this.config.events.emit(Event.SYNC_SYNCHRONIZED, this.chain.headers.height)
-    }
-  }
-
-  /**
-   * Fetch all blocks from current height up to highest found amongst peers
-   * @return Resolves with true if sync successful
-   */
-  async sync(): Promise<boolean> {
-    const peer = this.best()
-    // TODO: only activate along fixing test failures
-    /*let numAttempts = 1
-    while (!peer) {
-      if (numAttempts === 2) {
-        this.syncTargetHeight = this.chain.headers.height
-        this.updateSynchronizedState()
-      }
-      await new Promise((resolve) => setTimeout(resolve, 5000))
-      peer = this.best()
-      numAttempts += 1
-    }*/
-    return this.syncWithPeer(peer)
-  }
-
   /**
    * Returns synchronizer type
    */
@@ -186,6 +141,51 @@ export abstract class Synchronizer {
     }
     this.running = false
     clearTimeout(timeout)
+  }
+
+  abstract best(): Peer | undefined
+
+  abstract syncWithPeer(peer?: Peer): Promise<boolean>
+
+  /**
+   * Checks if the synchronized state of the chain has changed
+   *
+   * @emits Event.SYNC_SYNCHRONIZED
+   */
+  updateSynchronizedState() {
+    if (this.syncTargetHeight && this.chain.headers.height.gte(this.syncTargetHeight)) {
+      if (!this.config.synchronized) {
+        const hash = this.chain.headers.latest?.hash()
+        this.config.logger.info(
+          `Chain synchronized height=${this.chain.headers.height} number=${short(hash!)}`
+        )
+      }
+      this.config.synchronized = true
+      this.config.lastSyncDate = Date.now()
+
+      // TODO: analyze if this event is still needed
+      this.config.events.emit(Event.SYNC_SYNCHRONIZED, this.chain.headers.height)
+    }
+  }
+
+  /**
+   * Fetch all blocks from current height up to highest found amongst peers
+   * @return Resolves with true if sync successful
+   */
+  async sync(): Promise<boolean> {
+    const peer = this.best()
+    // TODO: only activate along fixing test failures
+    /*let numAttempts = 1
+    while (!peer) {
+      if (numAttempts === 2) {
+        this.syncTargetHeight = this.chain.headers.height
+        this.updateSynchronizedState()
+      }
+      await new Promise((resolve) => setTimeout(resolve, 5000))
+      peer = this.best()
+      numAttempts += 1
+    }*/
+    return this.syncWithPeer(peer)
   }
 
   /**
