@@ -47,6 +47,14 @@ tape('[TxPool]', async (t) => {
     const pool = new TxPool({ config })
     t.equal(pool.pool.size, 0, 'pool empty')
     t.notOk((pool as any).opened, 'pool not opened yet')
+    pool.open()
+    t.ok((pool as any).opened, 'pool opened')
+    pool.start()
+    t.ok((pool as any).running, 'pool running')
+    pool.stop()
+    t.notOk((pool as any).running, 'pool not running anymore')
+    pool.close()
+    t.notOk((pool as any).opened, 'pool not opened anymore')
     t.end()
   })
 
@@ -55,10 +63,12 @@ tape('[TxPool]', async (t) => {
     const config = new Config({ transports: [], loglevel: 'error' })
     const pool = new TxPool({ config })
 
-    await pool.open()
+    pool.open()
+    pool.start()
     t.ok((pool as any).opened, 'pool opened')
     t.equals(await pool.open(), false, 'already opened')
-    await pool.close()
+    pool.stop()
+    pool.close()
     t.notOk((pool as any).opened, 'closed')
     t.end()
   })
@@ -66,7 +76,8 @@ tape('[TxPool]', async (t) => {
   t.test('announcedTxHashes() -> add single tx', async (t) => {
     const pool = new TxPool({ config })
 
-    await pool.open()
+    pool.open()
+    pool.start()
     const peer = {
       eth: {
         getPooledTransactions: () => {
@@ -83,7 +94,8 @@ tape('[TxPool]', async (t) => {
     await pool.announcedTxHashes([txA01.hash()], peer as any)
     t.equal(pool.pool.size, 0, 'should not add a once handled tx')
 
-    await pool.close()
+    pool.stop()
+    pool.close()
 
     t.end()
   })
@@ -92,7 +104,8 @@ tape('[TxPool]', async (t) => {
     const pool = new TxPool({ config })
     const TX_RETRIEVAL_LIMIT: number = (pool as any).TX_RETRIEVAL_LIMIT
 
-    await pool.open()
+    pool.open()
+    pool.start()
     const peer = {
       eth: {
         getPooledTransactions: (res: any) => {
@@ -108,7 +121,8 @@ tape('[TxPool]', async (t) => {
     }
 
     await pool.announcedTxHashes(hashes, peer as any)
-    await pool.close()
+    pool.stop()
+    pool.close()
 
     t.end()
   })
@@ -116,7 +130,8 @@ tape('[TxPool]', async (t) => {
   t.test('announcedTxHashes() -> add two txs (different sender)', async (t) => {
     const pool = new TxPool({ config })
 
-    await pool.open()
+    pool.open()
+    pool.start()
     const peer = {
       eth: {
         getPooledTransactions: () => {
@@ -126,7 +141,8 @@ tape('[TxPool]', async (t) => {
     }
     await pool.announcedTxHashes([txA01.hash(), txB01.hash()], peer as any)
     t.equal(pool.pool.size, 2, 'pool size 2')
-    await pool.close()
+    pool.stop()
+    pool.close()
 
     t.end()
   })
@@ -135,7 +151,8 @@ tape('[TxPool]', async (t) => {
     const config = new Config({ transports: [], loglevel: 'error' })
     const pool = new TxPool({ config })
 
-    await pool.open()
+    pool.open()
+    pool.start()
     const peer = {
       eth: {
         getPooledTransactions: () => {
@@ -150,7 +167,8 @@ tape('[TxPool]', async (t) => {
     t.equal(poolContent?.length, 1, 'only one pool entry')
     t.equal((poolContent as any).length, 1, 'only one tx')
     t.deepEqual((poolContent as any)[0].tx.hash(), txA02.hash(), 'only later-added tx')
-    await pool.close()
+    pool.stop()
+    pool.close()
 
     t.end()
   })

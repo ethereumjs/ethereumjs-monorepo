@@ -101,7 +101,7 @@ export abstract class Synchronizer {
    * @return {Promise}
    */
   async open() {
-    await this.txPool.open()
+    this.txPool.open()
     this.opened = true
   }
 
@@ -279,7 +279,7 @@ export abstract class Synchronizer {
     if (!this.running) {
       return false
     }
-    await this.txPool.stop()
+    this.txPool.stop()
     clearInterval(this._syncedStatusCheckInterval as NodeJS.Timeout)
     await new Promise((resolve) => setTimeout(resolve, this.interval))
     this.running = false
@@ -293,7 +293,7 @@ export abstract class Synchronizer {
    */
   async close() {
     if (this.opened) {
-      await this.txPool.close()
+      this.txPool.close()
     }
     this.opened = false
   }

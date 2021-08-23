@@ -82,7 +82,7 @@ export class TxPool extends EventEmitter {
   /**
    * Open pool
    */
-  async open(): Promise<boolean> {
+  open(): boolean {
     if (this.opened) {
       return false
     }
@@ -160,7 +160,7 @@ export class TxPool extends EventEmitter {
   /**
    * Stop pool execution
    */
-  async stop(): Promise<boolean> {
+  stop(): boolean {
     if (!this.running) {
       return false
     }
@@ -174,7 +174,7 @@ export class TxPool extends EventEmitter {
   /**
    * Close pool
    */
-  async close() {
+  close() {
     this.pool.clear()
     this.opened = false
   }
