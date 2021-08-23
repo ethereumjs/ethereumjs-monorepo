@@ -92,4 +92,15 @@ export class EthereumService extends Service {
     await this.synchronizer.stop()
     await super.stop()
   }
+
+  /**
+   * Close service.
+   * @return {Promise}
+   */
+  async close() {
+    if (this.opened) {
+      await this.synchronizer.close()
+    }
+    await super.close()
+  }
 }

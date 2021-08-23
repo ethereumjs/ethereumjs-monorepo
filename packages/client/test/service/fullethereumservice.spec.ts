@@ -24,10 +24,12 @@ tape('[FullEthereumService]', async (t) => {
     start() {}
     stop() {}
     open() {}
+    close() {}
   }
   FullSynchronizer.prototype.start = td.func<any>()
   FullSynchronizer.prototype.stop = td.func<any>()
   FullSynchronizer.prototype.open = td.func<any>()
+  FullSynchronizer.prototype.close = td.func<any>()
   td.replace('../../lib/sync/fullsync', { FullSynchronizer })
 
   const { FullEthereumService } = await import('../../lib/service/fullethereumservice')

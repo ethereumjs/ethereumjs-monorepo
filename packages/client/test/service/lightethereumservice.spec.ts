@@ -22,10 +22,12 @@ tape('[LightEthereumService]', async (t) => {
     start() {}
     stop() {}
     open() {}
+    close() {}
   }
   LightSynchronizer.prototype.start = td.func<any>()
   LightSynchronizer.prototype.stop = td.func<any>()
   LightSynchronizer.prototype.open = td.func<any>()
+  LightSynchronizer.prototype.close = td.func<any>()
   td.replace('../../lib/sync/lightsync', { LightSynchronizer })
 
   const { LightEthereumService } = await import('../../lib/service/lightethereumservice')

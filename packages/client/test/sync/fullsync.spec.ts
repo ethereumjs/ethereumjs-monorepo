@@ -46,7 +46,7 @@ tape('[FullSynchronizer]', async (t) => {
     td.when((sync as any).pool.open()).thenResolve(null)
     await sync.open()
     t.pass('opened')
-    await sync.stop()
+    await sync.close()
     t.end()
   })
 
@@ -60,7 +60,7 @@ tape('[FullSynchronizer]', async (t) => {
     td.when(peer.eth.getBlockHeaders({ block: 'hash', max: 1 })).thenResolve([new BN(1), headers])
     const latest = await sync.latest(peer as any)
     t.ok(latest!.number.eqn(5), 'got height')
-    await sync.stop()
+    await sync.close()
     t.end()
   })
 
@@ -90,7 +90,7 @@ tape('[FullSynchronizer]', async (t) => {
       Promise.resolve(peer.eth.status.td)
     )
     t.equals(sync.best(), peers[1], 'found best')
-    await sync.stop()
+    await sync.close()
     t.end()
   })
 
@@ -131,6 +131,7 @@ tape('[FullSynchronizer]', async (t) => {
     } catch (err) {
       t.equals(err.message, 'err0', 'got error')
       await sync.stop()
+      await sync.close()
     }
   })
 

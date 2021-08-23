@@ -43,6 +43,7 @@ export abstract class Synchronizer {
   protected fetcher: BlockFetcher | HeaderFetcher | null
   protected flow: FlowControl
   protected interval: number
+  public opened: boolean
   public running: boolean
   protected forceSync: boolean
   public startingBlock: number
@@ -68,6 +69,7 @@ export abstract class Synchronizer {
     this.fetcher = null
     this.flow = options.flow ?? new FlowControl()
     this.interval = options.interval ?? 1000
+    this.opened = false
     this.running = false
     this.forceSync = false
     this.startingBlock = 0
@@ -145,6 +147,7 @@ export abstract class Synchronizer {
    */
   async open() {
     await this.txPool.open()
+    this.opened = true
   }
 
   /**
@@ -261,13 +264,23 @@ export abstract class Synchronizer {
     if (!this.running) {
       return false
     }
-    await this.txPool.close()
 
     clearInterval(this._syncedStatusCheckInterval as NodeJS.Timeout)
     await new Promise((resolve) => setTimeout(resolve, this.interval))
     this.running = false
     this.config.logger.info('Stopped synchronization.')
     return true
+  }
+
+  /**
+   * Close synchronizer.
+   * @return {Promise}
+   */
+  async close() {
+    if (this.opened) {
+      await this.txPool.close()
+    }
+    this.opened = false
   }
 
   /**
