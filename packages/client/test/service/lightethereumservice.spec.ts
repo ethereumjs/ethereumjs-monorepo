@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events'
 import tape from 'tape-catch'
 import td from 'testdouble'
 import { BN } from 'ethereumjs-util'
@@ -6,7 +5,7 @@ import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
 
 tape('[LightEthereumService]', async (t) => {
-  class PeerPool extends EventEmitter {
+  class PeerPool {
     open() {}
     close() {}
   }
@@ -18,7 +17,7 @@ tape('[LightEthereumService]', async (t) => {
   td.replace('../../lib/blockchain', { Chain })
   const LesProtocol = td.constructor([] as any)
   td.replace('../../lib/net/protocol/lesprotocol', { LesProtocol })
-  class LightSynchronizer extends EventEmitter {
+  class LightSynchronizer {
     start() {}
     stop() {}
     open() {}
