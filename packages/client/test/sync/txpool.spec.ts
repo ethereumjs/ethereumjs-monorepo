@@ -1,10 +1,12 @@
 import tape from 'tape-catch'
 import Common from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { Block } from '@ethereumjs/block'
 import { TxPool } from '../../lib/sync/txpool'
 import { Config } from '../../lib/config'
 
 tape('[TxPool]', async (t) => {
+  const common = new Common({ chain: 'mainnet', hardfork: 'london' })
   const config = new Config({ transports: [], loglevel: 'error' })
 
   const A = {
@@ -24,7 +26,6 @@ tape('[TxPool]', async (t) => {
   }
 
   const createTx = (from = A, to = B, nonce = 0, value = 1) => {
-    const common = new Common({ chain: 'mainnet', hardfork: 'london' })
     const txData = {
       nonce,
       maxFeePerGas: 1000000000,
@@ -40,7 +41,8 @@ tape('[TxPool]', async (t) => {
 
   const txA01 = createTx() // A -> B, nonce: 0, value: 1
   const txA02 = createTx(A, B, 0, 2) // A -> B, nonce: 0, value: 2 (different hash)
-  const txB01 = createTx(B, A)
+  const txB01 = createTx(B, A) // B -> A, nonce: 0
+  const txB02 = createTx(B, A, 1, 5) // B -> A, nonce: 1
 
   t.test('should initialize correctly', (t) => {
     const config = new Config({ transports: [], loglevel: 'error' })
@@ -78,25 +80,24 @@ tape('[TxPool]', async (t) => {
 
     pool.open()
     pool.start()
-    const peer = {
+    const peer: any = {
       eth: {
         getPooledTransactions: () => {
           return [null, [txA01.serialize()]]
         },
       },
     }
-    await pool.announcedTxHashes([txA01.hash()], peer as any)
+    await pool.announcedTxHashes([txA01.hash()], peer)
     t.equal(pool.pool.size, 1, 'pool size 1')
     t.equal((pool as any).pending.length, 0, 'cleared pending txs')
     t.equal((pool as any).handled.length, 1, 'added to handled txs')
 
     pool.pool.clear()
-    await pool.announcedTxHashes([txA01.hash()], peer as any)
+    await pool.announcedTxHashes([txA01.hash()], peer)
     t.equal(pool.pool.size, 0, 'should not add a once handled tx')
 
     pool.stop()
     pool.close()
-
     t.end()
   })
 
@@ -123,7 +124,6 @@ tape('[TxPool]', async (t) => {
     await pool.announcedTxHashes(hashes, peer as any)
     pool.stop()
     pool.close()
-
     t.end()
   })
 
@@ -132,18 +132,17 @@ tape('[TxPool]', async (t) => {
 
     pool.open()
     pool.start()
-    const peer = {
+    const peer: any = {
       eth: {
         getPooledTransactions: () => {
           return [null, [txA01.serialize(), txB01.serialize()]]
         },
       },
     }
-    await pool.announcedTxHashes([txA01.hash(), txB01.hash()], peer as any)
+    await pool.announcedTxHashes([txA01.hash(), txB01.hash()], peer)
     t.equal(pool.pool.size, 2, 'pool size 2')
     pool.stop()
     pool.close()
-
     t.end()
   })
 
@@ -153,23 +152,83 @@ tape('[TxPool]', async (t) => {
 
     pool.open()
     pool.start()
-    const peer = {
+    const peer: any = {
       eth: {
         getPooledTransactions: () => {
           return [null, [txA01.serialize(), txA02.serialize()]]
         },
       },
     }
-    await pool.announcedTxHashes([txA01.hash(), txA02.hash()], peer as any)
+    await pool.announcedTxHashes([txA01.hash(), txA02.hash()], peer)
     t.equal(pool.pool.size, 1, 'pool size 1')
-    //pool.pool.forEach((value, key) => { console.log(value); console.log(key) })
-    const poolContent = pool.pool.get(`0x${A.address.toString('hex')}`)
-    t.equal(poolContent?.length, 1, 'only one pool entry')
-    t.equal((poolContent as any).length, 1, 'only one tx')
-    t.deepEqual((poolContent as any)[0].tx.hash(), txA02.hash(), 'only later-added tx')
+    const address = `0x${A.address.toString('hex')}`
+    const poolContent = pool.pool.get(address)!
+    t.equal(poolContent.length, 1, 'only one tx')
+    t.deepEqual(poolContent[0].tx.hash(), txA02.hash(), 'only later-added tx')
     pool.stop()
     pool.close()
+    t.end()
+  })
 
+  t.test('newBlocks() -> should remove included txs', async (t) => {
+    const config = new Config({ transports: [], loglevel: 'error' })
+    const pool = new TxPool({ config })
+
+    pool.open()
+    pool.start()
+    let peer: any = {
+      eth: {
+        getPooledTransactions: () => {
+          return [null, [txA01.serialize()]]
+        },
+      },
+    }
+    await pool.announcedTxHashes([txA01.hash()], peer)
+    t.equal(pool.pool.size, 1, 'pool size 1')
+
+    // Craft block with tx not in pool
+    let block = Block.fromBlockData({ transactions: [txA02] }, { common })
+    pool.newBlocks([block])
+    t.equal(pool.pool.size, 1, 'pool size 1')
+
+    // Craft block with tx in pool
+    block = Block.fromBlockData({ transactions: [txA01] }, { common })
+    pool.newBlocks([block])
+    t.equal(pool.pool.size, 0, 'pool should be empty')
+
+    peer = {
+      eth: {
+        getPooledTransactions: () => {
+          return [null, [txB01.serialize(), txB02.serialize()]]
+        },
+      },
+    }
+    await pool.announcedTxHashes([txB01.hash(), txB02.hash()], peer)
+    t.equal(pool.pool.size, 1, 'pool size 1')
+    const address = `0x${B.address.toString('hex')}`
+    let poolContent = pool.pool.get(address)!
+    t.equal(poolContent.length, 2, 'two txs')
+
+    // Craft block with tx not in pool
+    block = Block.fromBlockData({ transactions: [txA02] }, { common })
+    pool.newBlocks([block])
+    t.equal(pool.pool.size, 1, 'pool size 1')
+    poolContent = pool.pool.get(address)!
+    t.equal(poolContent.length, 2, 'two txs')
+
+    // Craft block with tx in pool
+    block = Block.fromBlockData({ transactions: [txB01] }, { common })
+    pool.newBlocks([block])
+    poolContent = pool.pool.get(address)!
+    t.equal(poolContent.length, 1, 'only one tx')
+
+    // Craft block with tx in pool
+    block = Block.fromBlockData({ transactions: [txB02] }, { common })
+    pool.newBlocks([block])
+    t.equal(pool.pool.size, 0, 'pool size 0')
+
+    pool.stop()
+    pool.close()
     t.end()
   })
 })

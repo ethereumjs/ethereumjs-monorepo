@@ -1,8 +1,8 @@
+import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
 import { Config } from '../config'
 import { Peer } from '../net/peer'
 import { EthProtocolMethods } from '../net/protocol'
-import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
-import { Block } from '../../../block/dist'
+import type { Block } from '@ethereumjs/block'
 
 export interface TxPoolOptions {
   /* Config */
@@ -178,16 +178,22 @@ export class TxPool {
         }
         includedTxs.push(hash)
       }
-      // TODO
-      // Go through tx pool and removed txs
-      // which are already included in the chain
-      // (question: I am wondering if the tx pool data structure
-      // really is the best choice but )
-      /*this.pool.forEach((poolObjects, address) => {
+      this.pool.forEach((poolObjects, address) => {
         for (const poolObject of poolObjects) {
-          if (includedTxs.includes(poolObject.hash))
+          if (includedTxs.includes(poolObject.hash)) {
+            if (poolObjects.length === 1) {
+              // This was the only tx from this address, can delete entry
+              this.pool.delete(address)
+            } else {
+              // There are more txs from this address, just remove the included hashes
+              this.pool.set(
+                address,
+                poolObjects.filter((obj) => !includedTxs.includes(obj.hash))
+              )
+            }
+          }
         }
-      })*/
+      })
     }
   }
 
