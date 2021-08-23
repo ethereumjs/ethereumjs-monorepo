@@ -120,17 +120,13 @@ export class FullSynchronizer extends Synchronizer {
    * Checks if tx pool should be started
    */
   checkTxPoolState() {
-    if (!this.syncTargetHeight) {
+    if (!this.syncTargetHeight || this.txPool.running) {
       return
     }
-    // We are close enough to the head of the chain
-    // that the tx pool can be started
-    if (
-      this.chain.headers.height.gte(
-        this.syncTargetHeight.subn(this.txPool.BLOCKS_BEFORE_TARGET_HEIGHT_ACTIVATION)
-      ) &&
-      !this.txPool.running
-    ) {
+    // If height gte target, we are close enough to the
+    // head of the chain that the tx pool can be started
+    const target = this.syncTargetHeight.subn(this.txPool.BLOCKS_BEFORE_TARGET_HEIGHT_ACTIVATION)
+    if (this.chain.headers.height.gte(target)) {
       this.txPool.start()
     }
   }
