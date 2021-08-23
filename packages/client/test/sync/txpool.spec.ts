@@ -1,10 +1,10 @@
 import tape from 'tape-catch'
 import Common from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { TxPool } from '../../lib/sync/txpool'
 import { Config } from '../../lib/config'
 
 tape('[TxPool]', async (t) => {
-  const { TxPool } = await import('../../lib/sync/txpool')
   const config = new Config({ transports: [], loglevel: 'error' })
 
   const A = {
