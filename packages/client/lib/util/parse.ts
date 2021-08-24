@@ -11,9 +11,11 @@ import {
   unpadBuffer,
   isHexPrefixed,
   stripHexPrefix,
+  intToBuffer,
 } from 'ethereumjs-util'
 import { MultiaddrLike } from '../types'
-import { GenesisState } from '@ethereumjs/common/dist/types'
+import { GenesisState, Hardfork } from '@ethereumjs/common/dist/types'
+import { buf as crc32Buffer } from 'crc-32'
 
 /**
  * Parses multiaddrs and bootnodes to multiaddr format.
@@ -208,6 +210,10 @@ async function parseGethParams(json: any) {
     name: name,
     block: name === 'chainstart' ? 0 : config[forkMap[name]] ?? null,
   }))
+
+  for (const hf of params.hardforks) {
+    hf.forkHash = calcForkHash(hf.name, hash, params.hardforks)
+  }
   return params
 }
 /**
@@ -238,10 +244,10 @@ function formatNonce(nonce: string): string {
  * @returns
  */
 
-export async function parseParams(json: any, name?: string) {
+export async function parseCustomParams(json: any, name?: string) {
   try {
     if (json.config && json.difficulty && json.gasLimit && json.alloc) {
-      json.name = json.name || name
+      json.name = name
       json.nonce = formatNonce(json.nonce)
       return parseGethParams(json)
     } else {
@@ -274,4 +280,30 @@ export function parseKey(input: string | Buffer) {
     return input
   }
   return Buffer.from(input, 'hex')
+}
+
+function calcForkHash(hardfork: string, hash: string, hardforks: Hardfork[]) {
+  const genesis = Buffer.from(hash.substr(2), 'hex')
+
+  let hfBuffer = Buffer.alloc(0)
+  let prevBlock = 0
+  for (const hf of hardforks) {
+    const block = hf.block
+
+    // Skip for chainstart (0), not applied HFs (null) and
+    // when already applied on same block number HFs
+    if (block !== 0 && block !== null && block !== prevBlock) {
+      const hfBlockBuffer = Buffer.from(block.toString(16).padStart(16, '0'), 'hex')
+      hfBuffer = Buffer.concat([hfBuffer, hfBlockBuffer])
+    }
+
+    if (hf.name === hardfork) break
+    prevBlock = block ?? prevBlock
+  }
+  const inputBuffer = Buffer.concat([genesis, hfBuffer])
+
+  // CRC32 delivers result as signed (negative) 32-bit integer,
+  // convert to hex string
+  const forkhash = intToBuffer(crc32Buffer(inputBuffer) >>> 0).toString('hex')
+  return `0x${forkhash}`
 }

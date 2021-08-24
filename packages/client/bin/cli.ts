@@ -2,7 +2,7 @@
 
 import { Server as RPCServer } from 'jayson/promise'
 import Common, { Hardfork } from '@ethereumjs/common'
-import { parseParams, parseMultiaddrs, parseGenesisState } from '../lib/util'
+import { parseMultiaddrs, parseGenesisState, parseCustomParams } from '../lib/util'
 import EthereumClient from '../lib/client'
 import { Config } from '../lib/config'
 import { Logger } from '../lib/logging'
@@ -93,8 +93,12 @@ const args = require('yargs')
       number: true,
       default: Config.MAXPEERS_DEFAULT,
     },
-    params: {
-      describe: 'Path to chain parameters json file',
+    customGenesis: {
+      describe: 'Path to custom genesis parameters json file',
+      coerce: path.resolve,
+    },
+    customGenesisState: {
+      describe: 'Path to custom genesis state json file',
       coerce: path.resolve,
     },
     dnsAddr: {
@@ -191,17 +195,21 @@ async function run() {
   // configure common based on args given
   let common: Common = {} as Common
   // Use custom chain parameters file if specified
-  if (args.params) {
+  if (args.customGenesis) {
     try {
-      const params = JSON.parse(fs.readFileSync(args.params, 'utf-8'))
-      common = new Common({ chain: params })
+      const genesisParams = JSON.parse(fs.readFileSync(args.customGenesis, 'utf-8'))
+      const genesisState = args.readFileSync(args.customGenesisState) ?? {}
+      common = new Common({
+        chain: args.customGenesis.split('.')[0],
+        customChains: [[genesisParams, genesisState]],
+      })
     } catch (err) {
-      throw new Error('invalid chain parameters')
+      throw new Error(`invalid chain parameters: ${err.message}`)
     }
     // Use geth genesis parameters file if specified
   } else if (args.gethGenesis) {
     const genesisFile = JSON.parse(fs.readFileSync(args.gethGenesis, 'utf-8'))
-    const genesisParams = await parseParams(genesisFile, 'custom-chain')
+    const genesisParams = await parseCustomParams(genesisFile, args.gethGenesis.split('.')[0])
     const genesisState = genesisFile.alloc ? await parseGenesisState(genesisFile) : {}
     common = new Common({
       chain: genesisParams.name,
@@ -213,6 +221,7 @@ async function run() {
     common = new Common({ chain: chain, hardfork: Hardfork.Chainstart })
   }
 
+  console.log(common.hardforks())
   const datadir = args.datadir ?? Config.DATADIR_DEFAULT
   const configDirectory = `${datadir}/${common.chainName()}/config`
   fs.ensureDirSync(configDirectory)
