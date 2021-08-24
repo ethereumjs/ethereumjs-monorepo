@@ -158,7 +158,6 @@ export abstract class Synchronizer {
       this.config.synchronized = true
       this.config.lastSyncDate = Date.now()
 
-      // TODO: analyze if this event is still needed
       this.config.events.emit(Event.SYNC_SYNCHRONIZED, this.chain.headers.height)
     }
   }
@@ -168,18 +167,14 @@ export abstract class Synchronizer {
    * @return Resolves with true if sync successful
    */
   async sync(): Promise<boolean> {
-    const peer = this.best()
-    // TODO: only activate along fixing test failures
-    /*let numAttempts = 1
-    while (!peer) {
-      if (numAttempts === 2) {
-        this.syncTargetHeight = this.chain.headers.height
-        this.updateSynchronizedState()
-      }
+    let peer = this.best()
+    let numAttempts = 1
+    while (!peer && this.opened) {
+      this.config.logger.debug(`Waiting for best peer (attempt #${numAttempts})`)
       await new Promise((resolve) => setTimeout(resolve, 5000))
       peer = this.best()
       numAttempts += 1
-    }*/
+    }
     return this.syncWithPeer(peer)
   }
 
