@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events'
 import tape from 'tape-catch'
 import td from 'testdouble'
 import { BN } from 'ethereumjs-util'
@@ -21,7 +20,7 @@ class SynchronizerTest extends Synchronizer {
 }
 
 tape('[Synchronizer]', async (t) => {
-  class PeerPool extends EventEmitter {
+  class PeerPool {
     open() {}
     close() {}
   }

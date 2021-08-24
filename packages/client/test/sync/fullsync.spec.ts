@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events'
 import tape from 'tape-catch'
 import td from 'testdouble'
 import { BN } from 'ethereumjs-util'
@@ -7,14 +6,14 @@ import { Chain } from '../../lib/blockchain'
 import { Event } from '../../lib/types'
 
 tape('[FullSynchronizer]', async (t) => {
-  class PeerPool extends EventEmitter {
+  class PeerPool {
     open() {}
     close() {}
   }
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
   td.replace('../../lib/net/peerpool', { PeerPool })
-  class BlockFetcher extends EventEmitter {
+  class BlockFetcher {
     fetch() {}
   }
   BlockFetcher.prototype.fetch = td.func<any>()
@@ -27,7 +26,6 @@ tape('[FullSynchronizer]', async (t) => {
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
     const sync = new FullSynchronizer({ config, pool, chain })
-    pool.emit('added', { eth: true })
     t.equals(sync.type, 'full', 'full type')
     t.end()
   })
@@ -46,7 +44,7 @@ tape('[FullSynchronizer]', async (t) => {
     td.when((sync as any).pool.open()).thenResolve(null)
     await sync.open()
     t.pass('opened')
-    await sync.stop()
+    await sync.close()
     t.end()
   })
 
@@ -60,7 +58,7 @@ tape('[FullSynchronizer]', async (t) => {
     td.when(peer.eth.getBlockHeaders({ block: 'hash', max: 1 })).thenResolve([new BN(1), headers])
     const latest = await sync.latest(peer as any)
     t.ok(latest!.number.eqn(5), 'got height')
-    await sync.stop()
+    await sync.close()
     t.end()
   })
 
@@ -90,7 +88,7 @@ tape('[FullSynchronizer]', async (t) => {
       Promise.resolve(peer.eth.status.td)
     )
     t.equals(sync.best(), peers[1], 'found best')
-    await sync.stop()
+    await sync.close()
     t.end()
   })
 
@@ -131,6 +129,7 @@ tape('[FullSynchronizer]', async (t) => {
     } catch (err) {
       t.equals(err.message, 'err0', 'got error')
       await sync.stop()
+      await sync.close()
     }
   })
 

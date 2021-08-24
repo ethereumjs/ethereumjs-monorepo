@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events'
 import tape from 'tape-catch'
 import td from 'testdouble'
 import { BN } from 'ethereumjs-util'
@@ -6,7 +5,7 @@ import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
 
 tape('[LightEthereumService]', async (t) => {
-  class PeerPool extends EventEmitter {
+  class PeerPool {
     open() {}
     close() {}
   }
@@ -18,14 +17,16 @@ tape('[LightEthereumService]', async (t) => {
   td.replace('../../lib/blockchain', { Chain })
   const LesProtocol = td.constructor([] as any)
   td.replace('../../lib/net/protocol/lesprotocol', { LesProtocol })
-  class LightSynchronizer extends EventEmitter {
+  class LightSynchronizer {
     start() {}
     stop() {}
     open() {}
+    close() {}
   }
   LightSynchronizer.prototype.start = td.func<any>()
   LightSynchronizer.prototype.stop = td.func<any>()
   LightSynchronizer.prototype.open = td.func<any>()
+  LightSynchronizer.prototype.close = td.func<any>()
   td.replace('../../lib/sync/lightsync', { LightSynchronizer })
 
   const { LightEthereumService } = await import('../../lib/service/lightethereumservice')
@@ -51,7 +52,6 @@ tape('[LightEthereumService]', async (t) => {
     const config = new Config({ servers: [server], loglevel: 'error' })
     const service = new LightEthereumService({ config })
     await service.open()
-    td.verify(service.chain.open())
     td.verify(service.synchronizer.open())
     td.verify(server.addProtocols(td.matchers.anything()))
     service.config.events.on(Event.SYNC_SYNCHRONIZED, () => t.pass('synchronized'))
@@ -64,7 +64,7 @@ tape('[LightEthereumService]', async (t) => {
       if (err.message === 'error1') t.pass('got error 2')
     })
     service.config.events.emit(Event.SERVER_ERROR, new Error('error1'), server)
-    await service.stop()
+    await service.close()
   })
 
   t.test('should start/stop', async (t) => {

@@ -24,6 +24,20 @@ export class LightSynchronizer extends Synchronizer {
   }
 
   /**
+   * Open synchronizer. Must be called before sync() is called
+   */
+  async open(): Promise<void> {
+    await super.open()
+    await this.chain.open()
+    await this.pool.open()
+    const number = this.chain.headers.height.toNumber()
+    const td = this.chain.headers.td.toString(10)
+    const hash = this.chain.blocks.latest!.hash()
+    this.startingBlock = number
+    this.config.logger.info(`Latest local header: number=${number} td=${td} hash=${short(hash)}`)
+  }
+
+  /**
    * Returns true if peer can be used for syncing
    * @return {boolean}
    */
@@ -129,19 +143,6 @@ export class LightSynchronizer extends Synchronizer {
         reject(error)
       }
     })
-  }
-
-  /**
-   * Open synchronizer. Must be called before sync() is called
-   */
-  async open(): Promise<void> {
-    await this.chain.open()
-    await this.pool.open()
-    const number = this.chain.headers.height.toNumber()
-    const td = this.chain.headers.td.toString(10)
-    const hash = this.chain.blocks.latest!.hash()
-    this.startingBlock = number
-    this.config.logger.info(`Latest local header: number=${number} td=${td} hash=${short(hash)}`)
   }
 
   /**

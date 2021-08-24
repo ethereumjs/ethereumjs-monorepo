@@ -42,6 +42,7 @@ export abstract class Synchronizer {
   protected fetcher: BlockFetcher | HeaderFetcher | null
   protected flow: FlowControl
   protected interval: number
+  public opened: boolean
   public running: boolean
   protected forceSync: boolean
   public startingBlock: number
@@ -65,6 +66,7 @@ export abstract class Synchronizer {
     this.fetcher = null
     this.flow = options.flow ?? new FlowControl()
     this.interval = options.interval ?? 1000
+    this.opened = false
     this.running = false
     this.forceSync = false
     this.startingBlock = 0
@@ -80,51 +82,6 @@ export abstract class Synchronizer {
     })
   }
 
-  abstract best(): Peer | undefined
-
-  abstract syncWithPeer(peer?: Peer): Promise<boolean>
-
-  /**
-   * Checks if the synchronized state of the chain has changed
-   *
-   * @emits Event.SYNC_SYNCHRONIZED
-   */
-  updateSynchronizedState() {
-    if (this.syncTargetHeight && this.chain.headers.height.gte(this.syncTargetHeight)) {
-      if (!this.config.synchronized) {
-        const hash = this.chain.headers.latest?.hash()
-        this.config.logger.info(
-          `Chain synchronized height=${this.chain.headers.height} number=${short(hash!)}`
-        )
-      }
-      this.config.synchronized = true
-      this.config.lastSyncDate = Date.now()
-
-      // TODO: analyze if this event is still needed
-      this.config.events.emit(Event.SYNC_SYNCHRONIZED, this.chain.headers.height)
-    }
-  }
-
-  /**
-   * Fetch all blocks from current height up to highest found amongst peers
-   * @return Resolves with true if sync successful
-   */
-  async sync(): Promise<boolean> {
-    const peer = this.best()
-    // TODO: only activate along fixing test failures
-    /*let numAttempts = 1
-    while (!peer) {
-      if (numAttempts === 2) {
-        this.syncTargetHeight = this.chain.headers.height
-        this.updateSynchronizedState()
-      }
-      await new Promise((resolve) => setTimeout(resolve, 5000))
-      peer = this.best()
-      numAttempts += 1
-    }*/
-    return this.syncWithPeer(peer)
-  }
-
   /**
    * Returns synchronizer type
    */
@@ -136,7 +93,9 @@ export abstract class Synchronizer {
    * Open synchronizer. Must be called before sync() is called
    * @return {Promise}
    */
-  async open() {}
+  async open() {
+    this.opened = true
+  }
 
   /**
    * Returns true if peer can be used for syncing
@@ -174,6 +133,49 @@ export abstract class Synchronizer {
     }
     this.running = false
     clearTimeout(timeout)
+  }
+
+  abstract best(): Peer | undefined
+
+  abstract syncWithPeer(peer?: Peer): Promise<boolean>
+
+  /**
+   * Checks if the synchronized state of the chain has changed
+   *
+   * @emits Event.SYNC_SYNCHRONIZED
+   */
+  updateSynchronizedState() {
+    if (!this.syncTargetHeight) {
+      return
+    }
+    if (this.chain.headers.height.gte(this.syncTargetHeight)) {
+      if (!this.config.synchronized) {
+        const hash = this.chain.headers.latest?.hash()
+        this.config.logger.info(
+          `Chain synchronized height=${this.chain.headers.height} number=${short(hash!)}`
+        )
+      }
+      this.config.synchronized = true
+      this.config.lastSyncDate = Date.now()
+
+      this.config.events.emit(Event.SYNC_SYNCHRONIZED, this.chain.headers.height)
+    }
+  }
+
+  /**
+   * Fetch all blocks from current height up to highest found amongst peers
+   * @return Resolves with true if sync successful
+   */
+  async sync(): Promise<boolean> {
+    let peer = this.best()
+    let numAttempts = 1
+    while (!peer && this.opened) {
+      this.config.logger.debug(`Waiting for best peer (attempt #${numAttempts})`)
+      await new Promise((resolve) => setTimeout(resolve, 5000))
+      peer = this.best()
+      numAttempts += 1
+    }
+    return this.syncWithPeer(peer)
   }
 
   /**
@@ -257,6 +259,14 @@ export abstract class Synchronizer {
     this.running = false
     this.config.logger.info('Stopped synchronization.')
     return true
+  }
+
+  /**
+   * Close synchronizer.
+   * @return {Promise}
+   */
+  async close() {
+    this.opened = false
   }
 
   /**

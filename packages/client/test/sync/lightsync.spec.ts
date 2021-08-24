@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events'
 import tape from 'tape-catch'
 import td from 'testdouble'
 import { BN } from 'ethereumjs-util'
@@ -7,14 +6,14 @@ import { Chain } from '../../lib/blockchain'
 import { Event } from '../../lib/types'
 
 tape('[LightSynchronizer]', async (t) => {
-  class PeerPool extends EventEmitter {
+  class PeerPool {
     open() {}
     close() {}
   }
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
   td.replace('../../lib/net/peerpool', { PeerPool })
-  class HeaderFetcher extends EventEmitter {
+  class HeaderFetcher {
     fetch() {}
   }
   HeaderFetcher.prototype.fetch = td.func<any>()
@@ -27,7 +26,6 @@ tape('[LightSynchronizer]', async (t) => {
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
     const sync = new LightSynchronizer({ config, pool, chain })
-    pool.emit('added', { les: { status: { serveHeaders: true } } })
     t.equals(sync.type, 'light', 'light type')
     t.end()
   })

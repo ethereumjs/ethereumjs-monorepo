@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events'
 import tape from 'tape-catch'
 import td from 'testdouble'
 import { BN } from 'ethereumjs-util'
@@ -10,7 +9,7 @@ async function wait(delay?: number) {
 }
 
 tape('[BlockFetcher]', async (t) => {
-  class PeerPool extends EventEmitter {
+  class PeerPool {
     idle() {}
     ban() {}
   }

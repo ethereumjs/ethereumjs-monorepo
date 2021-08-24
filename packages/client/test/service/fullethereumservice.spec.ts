@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events'
 import tape from 'tape-catch'
 import td from 'testdouble'
 import { BN } from 'ethereumjs-util'
@@ -6,7 +5,7 @@ import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
 
 tape('[FullEthereumService]', async (t) => {
-  class PeerPool extends EventEmitter {
+  class PeerPool {
     open() {}
     close() {}
   }
@@ -20,14 +19,16 @@ tape('[FullEthereumService]', async (t) => {
   const LesProtocol = td.constructor([] as any)
   td.replace('../../lib/net/protocol/ethprotocol', { EthProtocol })
   td.replace('../../lib/net/protocol/lesprotocol', { LesProtocol })
-  class FullSynchronizer extends EventEmitter {
+  class FullSynchronizer {
     start() {}
     stop() {}
     open() {}
+    close() {}
   }
   FullSynchronizer.prototype.start = td.func<any>()
   FullSynchronizer.prototype.stop = td.func<any>()
   FullSynchronizer.prototype.open = td.func<any>()
+  FullSynchronizer.prototype.close = td.func<any>()
   td.replace('../../lib/sync/fullsync', { FullSynchronizer })
 
   const { FullEthereumService } = await import('../../lib/service/fullethereumservice')
