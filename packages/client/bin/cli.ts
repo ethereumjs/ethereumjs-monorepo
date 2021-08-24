@@ -94,7 +94,7 @@ const args = require('yargs')
       default: Config.MAXPEERS_DEFAULT,
     },
     customGenesis: {
-      describe: 'Path to custom genesis parameters json file',
+      describe: 'Path to custom genesis parameters json file from Common',
       coerce: path.resolve,
     },
     customGenesisState: {
