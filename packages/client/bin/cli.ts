@@ -125,7 +125,7 @@ const args = require('yargs')
     },
     gethGenesis: {
       describe: 'Import a geth genesis file for running a custom network',
-      string: true,
+      coerce: path.resolve
     },
   })
   .locale('en_EN').argv
@@ -198,9 +198,12 @@ async function run() {
   if (args.customGenesis) {
     try {
       const genesisParams = JSON.parse(fs.readFileSync(args.customGenesis, 'utf-8'))
-      const genesisState = args.readFileSync(args.customGenesisState) ?? {}
+      let genesisState = {}
+      if (args.customGenesisState) {
+         genesisState = JSON.parse(fs.readFileSync(args.customGenesisState))
+      }
       common = new Common({
-        chain: args.customGenesis.split('.')[0],
+        chain: genesisParams.name,
         customChains: [[genesisParams, genesisState]],
       })
     } catch (err) {
@@ -209,14 +212,14 @@ async function run() {
     // Use geth genesis parameters file if specified
   } else if (args.gethGenesis) {
     const genesisFile = JSON.parse(fs.readFileSync(args.gethGenesis, 'utf-8'))
-    const genesisParams = await parseCustomParams(genesisFile, args.gethGenesis.split('.')[0])
+    const genesisParams = await parseCustomParams(genesisFile, path.parse(args.gethGenesis).base.split('.')[0])
     const genesisState = genesisFile.alloc ? await parseGenesisState(genesisFile) : {}
     common = new Common({
       chain: genesisParams.name,
       customChains: [[genesisParams, genesisState]],
     })
   }
-  // Use default common configuration if no custom parameters specified
+  // Use default common configuration for specified `chain` if no custom parameters specified
   else {
     common = new Common({ chain: chain, hardfork: Hardfork.Chainstart })
   }
