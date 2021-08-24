@@ -30,7 +30,7 @@ export class TxPool {
   public running: boolean
 
   /* global NodeJS */
-  private _logInterval: NodeJS.Timeout | null
+  private _logInterval: NodeJS.Timeout | undefined
 
   /**
    * List of pending tx hashes to avoid double requests
@@ -71,7 +71,6 @@ export class TxPool {
    */
   constructor(options: TxPoolOptions) {
     this.config = options.config
-    this._logInterval = null
 
     this.pool = new Map<string, TxPoolObject[]>()
     this.opened = false
