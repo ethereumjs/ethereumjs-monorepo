@@ -22,9 +22,8 @@
   "browser": "dist.browser/index.js",
   "scripts": {
     "build": "npm run build:node && npm run build:browser",
-    "build:node": "tsc --build ./tsconfig.prod.json",
-    "build:browser": "tsc -p ./tsconfig.browser.json",
-    "build:old": "../../config/cli/ts-build.sh",
+    "build:node": "../../config/cli/ts-build.sh node",
+    "build:browser": "../../config/cli/ts-build.sh browser",
     "prepublishOnly": "npm run clean && npm run build && npm run test",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "../../config/cli/coverage.sh",

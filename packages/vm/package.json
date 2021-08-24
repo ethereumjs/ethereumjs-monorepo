@@ -18,9 +18,8 @@
   "browser": "dist.browser/index.js",
   "scripts": {
     "build": "npm run build:node && npm run build:browser",
-    "build:node": "tsc --build ./tsconfig.prod.json",
-    "build:browser": "tsc -p ./tsconfig.browser.json",
-    "build:old": "../../config/cli/ts-build.sh",
+    "build:node": "../../config/cli/ts-build.sh node",
+    "build:browser": "../../config/cli/ts-build.sh browser",
     "build:benchmarks": "npm run build && tsc -p tsconfig.benchmarks.json",
     "benchmarks": "node --max-old-space-size=4096 ./benchmarks/run.js benchmarks mainnetBlocks:10",
     "profiling": "0x ./benchmarks/run.js profiling",
