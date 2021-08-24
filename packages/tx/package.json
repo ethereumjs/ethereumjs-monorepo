@@ -17,7 +17,9 @@
   "types": "dist/index.d.ts",
   "browser": "dist.browser/index.js",
   "scripts": {
-    "build": "../../config/cli/ts-build.sh",
+    "build": "npm run build:node && npm run build:browser",
+    "build:node": "../../config/cli/ts-build.sh node",
+    "build:browser": "../../config/cli/ts-build.sh browser",
     "prepublishOnly": "npm run clean && npm run build && npm run test",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "../../config/cli/coverage.sh",

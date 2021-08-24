@@ -29,37 +29,56 @@ dim() {
 }
 
 
-# Begin of the build steps
+# Build function declaration.
 
-blue "[Node build] "
-echo "Using tsconfig.prod.json"
+build_node() {
+    blue "[Node build] "
+    echo "Using tsconfig.prod.json"
 
-echo "> tsc --build ./tsconfig.prod.json"
-printf "${BLUE}[Node build] Working... "
+    echo "> tsc --build ./tsconfig.prod.json"
+    printf "${BLUE}[Node build] Working... "
 
-tsc --build ./tsconfig.prod.json
-green "DONE"
+    tsc --build ./tsconfig.prod.json
+    green "DONE"
 
-echo "\n";
+    echo "\n";
+}
 
-if [ -f ./tsconfig.browser.json ];
-then
-    blue "[Browser build] "
-    echo "Using tsconfig.browser.json"
-    echo "> tsc -p ./tsconfig.browser.json"
+build_browser() {
+    if [ -f ./tsconfig.browser.json ];
+    then
+        blue "[Browser build] "
+        echo "Using tsconfig.browser.json"
+        echo "> tsc -p ./tsconfig.browser.json"
 
-    blue "[Browser build] "
-    printf "Working... "
+        blue "[Browser build] "
+        printf "Working... "
 
-    tsc -p ./tsconfig.browser.json
-    RETURN_CODE=$?
+        tsc -p ./tsconfig.browser.json
+        RETURN_CODE=$?
 
-    if [ $RETURN_CODE -eq 0 ]; then
-        green "DONE"
+        if [ $RETURN_CODE -eq 0 ]; then
+            green "DONE"
+        else
+            exit $RETURN_CODE
+        fi
     else
-        exit $RETURN_CODE
+        dim "Skipping browser build, because no tsconfig.browser.json file is present."
     fi
-else
-    dim "Skipping browser build, because no tsconfig.browser.json file is present."
-fi
 
+    echo "\n";
+}
+
+
+# Begin build process.
+
+if [ "$1" == "node" ];
+then
+    build_node
+elif [ "$1" == "browser" ];
+then
+    build_browser
+else
+    build_node
+    build_browser
+fi
