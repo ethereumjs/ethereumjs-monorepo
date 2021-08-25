@@ -290,6 +290,25 @@ That's it! Now, you should start seeing headers being downloaded to the local st
 
 ![EthereumJS Client Libp2p Browser Syncing](./browser_sync.png?raw=true)
 
+### Example 3: Running a private network with geth
+
+In this example, we import the genesis parameters for a private network using the geth genesis parameters format and then sync our client with a geth instance that is mining blocks.
+
+First, get geth configured to use the genesis parameters provided [here](./test/util/testnet.json).
+`geth --datadir data testnet.json`
+
+Now, let's run geth and ensure that its mining blocks.
+`geth --datadir data --nat extip:[your local ip address here] --networkid 50434 --mine --miner.threads=1 --networkid 45375`
+
+Next, let's get the geth `enode` address as follows:
+`geth attach data/geth.ipc`
+Then, execute this command in the geth javascript console - `admin.nodeInfo` and copy the enode address.
+
+Start the ethereumjs client with the custom genesis parameters:
+`npm run client:start -- --gethGenesis=path/to/testnet.json --bootnodes=[enode address of your geth node] --port=30305`
+
+Shortly, you should start seeing the client produce logs showing it importing and executing blocks produced by the geth client!
+
 ## Design
 
 **Goals**
