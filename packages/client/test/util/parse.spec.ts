@@ -1,6 +1,6 @@
 import tape from 'tape-catch'
 import multiaddr from 'multiaddr'
-import { parseMultiaddrs, parseTransports, parseParams, parseGenesisState } from '../../lib/util'
+import { parseMultiaddrs, parseTransports, parseCustomParams, parseGenesisState } from '../../lib/util'
 
 tape('[Util/Parse]', (t) => {
   t.test('should parse multiaddrs', (t) => {
@@ -59,7 +59,7 @@ tape('[Util/Parse]', (t) => {
 
   t.test('should parse geth params file', async (t) => {
     const json = require('./rinkeby.json')
-    const params = await parseParams(json, 'rinkeby')
+    const params = await parseCustomParams(json, 'rinkeby')
     const expected = require('./params.json')
     t.deepEquals(params, expected, 'parsed params correctly')
     t.end()
@@ -67,7 +67,7 @@ tape('[Util/Parse]', (t) => {
 
   t.test('should parse contracts from geth params file', async (t) => {
     const json = require('./lisinski.json')
-    const params = await parseParams(json, 'lisinsky')
+    const params = await parseCustomParams(json, 'lisinsky')
     const expected = 'e7fd8db206dcaf066b7c97b8a42a0abc18653613560748557ab44868652a78b6'
     t.equals(params.genesis.hash.slice(2), expected, 'parsed contracts correctly')
 
