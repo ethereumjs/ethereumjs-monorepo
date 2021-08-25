@@ -383,7 +383,7 @@ export class Peer extends EventEmitter {
           if (code > obj.length) throw new Error('Code out of range')
           this._sendMessage(_offset + code, data)
         }
-        // Dynamically instantiate the subprotocol object 
+        // Dynamically instantiate the subprotocol object
         // from the constructor
         const SubProtocol = obj.constructor
         const protocol = new SubProtocol(obj.version, this, sendMethod)
