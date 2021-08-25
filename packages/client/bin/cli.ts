@@ -224,7 +224,6 @@ async function run() {
     common = new Common({ chain: chain, hardfork: Hardfork.Chainstart })
   }
 
-  console.log(common.hardforks())
   const datadir = args.datadir ?? Config.DATADIR_DEFAULT
   const configDirectory = `${datadir}/${common.chainName()}/config`
   fs.ensureDirSync(configDirectory)
