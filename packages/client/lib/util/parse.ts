@@ -144,6 +144,12 @@ async function parseGethHeader(json: any) {
 async function parseGethParams(json: any) {
   const { name, config, timestamp, gasLimit, difficulty, nonce, extraData, mixHash, coinbase } =
     json
+  // EIP155 and EIP158 are both part of Spurious Dragon hardfork and must occur at the same time
+  // but have different configuration parameters in geth genesis parameters
+  if (config.eip155Block !== config.eip158Block) {
+    throw new Error("EIP155 block number must equal EIP 158 block number")
+  }
+
   const { chainId } = config
   const header = await parseGethHeader(json)
   const { stateRoot } = header
