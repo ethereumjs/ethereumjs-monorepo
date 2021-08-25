@@ -11,11 +11,9 @@ import {
   unpadBuffer,
   isHexPrefixed,
   stripHexPrefix,
-  intToBuffer,
 } from 'ethereumjs-util'
 import { MultiaddrLike } from '../types'
-import { GenesisState, Hardfork } from '@ethereumjs/common/dist/types'
-import { buf as crc32Buffer } from 'crc-32'
+import { GenesisState } from '@ethereumjs/common/dist/types'
 
 /**
  * Parses multiaddrs and bootnodes to multiaddr format.
@@ -147,7 +145,7 @@ async function parseGethParams(json: any) {
   // EIP155 and EIP158 are both part of Spurious Dragon hardfork and must occur at the same time
   // but have different configuration parameters in geth genesis parameters
   if (config.eip155Block !== config.eip158Block) {
-    throw new Error("EIP155 block number must equal EIP 158 block number")
+    throw new Error('EIP155 block number must equal EIP 158 block number')
   }
 
   const { chainId } = config
@@ -229,8 +227,8 @@ function formatNonce(nonce: string): string {
   if (nonce === undefined || nonce === '0x0') {
     return '0x0000000000000000'
   } else if (isHexPrefixed(nonce)) {
-    return '0x' + stripHexPrefix(nonce).padStart(16,'0')
-  } else return '0x' + nonce.padStart(16,'0')
+    return '0x' + stripHexPrefix(nonce).padStart(16, '0')
+  } else return '0x' + nonce.padStart(16, '0')
 }
 
 /**

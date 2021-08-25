@@ -125,7 +125,7 @@ const args = require('yargs')
     },
     gethGenesis: {
       describe: 'Import a geth genesis file for running a custom network',
-      coerce: path.resolve
+      coerce: path.resolve,
     },
   })
   .locale('en_EN').argv
@@ -200,7 +200,7 @@ async function run() {
       const genesisParams = JSON.parse(fs.readFileSync(args.customGenesis, 'utf-8'))
       let genesisState = {}
       if (args.customGenesisState) {
-         genesisState = JSON.parse(fs.readFileSync(args.customGenesisState))
+        genesisState = JSON.parse(fs.readFileSync(args.customGenesisState))
       }
       common = new Common({
         chain: genesisParams.name,
@@ -212,7 +212,10 @@ async function run() {
     // Use geth genesis parameters file if specified
   } else if (args.gethGenesis) {
     const genesisFile = JSON.parse(fs.readFileSync(args.gethGenesis, 'utf-8'))
-    const genesisParams = await parseCustomParams(genesisFile, path.parse(args.gethGenesis).base.split('.')[0])
+    const genesisParams = await parseCustomParams(
+      genesisFile,
+      path.parse(args.gethGenesis).base.split('.')[0]
+    )
     const genesisState = genesisFile.alloc ? await parseGenesisState(genesisFile) : {}
     common = new Common({
       chain: genesisParams.name,

@@ -198,6 +198,8 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
       'customChains, should allow to initialize with genesis state'
     )
 
+    st.equal(c.hardforks()[3].forkHash, '0x215201ca', 'forkhash should be calculated correctly')
+
     st.end()
   })
 })
