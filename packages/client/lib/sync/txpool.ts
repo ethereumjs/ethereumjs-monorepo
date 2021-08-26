@@ -140,7 +140,9 @@ export class TxPool {
           txsToSend.push(tx.serialize())
         }
       }
-      peer.eth?.send('Transactions', txsToSend)
+      if (txsToSend.length > 0) {
+        peer.eth?.send('Transactions', txsToSend)
+      }
     }
   }
 
