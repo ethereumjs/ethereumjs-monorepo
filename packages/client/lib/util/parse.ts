@@ -233,9 +233,11 @@ async function parseGethParams(json: any) {
 function formatNonce(nonce: string): string {
   if (nonce === undefined || nonce === '0x0') {
     return '0x0000000000000000'
-  } else if (isHexPrefixed(nonce)) {
+  }
+  if (isHexPrefixed(nonce)) {
     return '0x' + stripHexPrefix(nonce).padStart(16, '0')
-  } else return '0x' + nonce.padStart(16, '0')
+  }
+  return '0x' + nonce.padStart(16, '0')
 }
 
 /**
