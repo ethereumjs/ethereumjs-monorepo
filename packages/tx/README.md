@@ -244,6 +244,54 @@ const common = Common.custom({ chainId: 1234 })
 
 ## Special Topics
 
+### Signing with a hardware or external wallet
+
+To sign a tx with a hardware or external wallet use `tx.getMessageToSign(false)` to return an [EIP-155](https://eips.ethereum.org/EIPS/eip-155) compliant unsigned tx.
+
+A legacy transaction will return a Buffer list of the values, and a Typed Transaction ([EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)) will return the serialized output.
+
+Here is an example of signing txs with `@ledgerhq/hw-app-eth` as of `v6.5.0`:
+
+```typescript
+import { Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import Common, { Chain } from '@ethereumjs/common'
+import { rlp } from 'ethereumjs-util'
+import Eth from '@ledgerhq/hw-app-eth'
+
+const eth = new Eth(transport)
+const common = new Common({ chain: Chain.Rinkeby })
+
+let txData: any = { value: 1 }
+let tx: Transaction | FeeMarketEIP1559Transaction
+let unsignedTx: Buffer[] | Buffer
+let signedTx: typeof tx
+const bip32Path = "44'/60'/0'/0/0"
+
+const run = async () => {
+  // Signing a legacy tx
+  tx = Transaction.fromTxData(txData, { common })
+  unsignedTx = tx.getMessageToSign(false)
+  unsignedTx = rlp.encode(unsignedTx) // ledger signTransaction API expects it to be serialized
+  let { v, r, s } = await eth.signTransaction(bip32Path, unsignedTx)
+  txData = { ...txData, v, r, s }
+  signedTx = Transaction.fromTxData(txData, { common })
+  let from = signedTx.getSenderAddress().toString()
+  console.log(`signedTx: 0x${signedTx.serialize().toString('hex')}\nfrom: ${from}`)
+
+  // Signing a 1559 tx
+  txData = { value: 1 }
+  tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
+  unsignedTx = tx.getMessageToSign(false)
+  ;({ v, r, s } = await eth.signTransaction(bip32Path, unsignedTx)) // this syntax is: object destructuring - assignment without declaration
+  txData = { ...txData, v, r, s }
+  signedTx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
+  from = signedTx.getSenderAddress().toString()
+  console.log(`signedTx: ${signedTx.serialize().toString('hex')}\nfrom: ${from}`)
+}
+
+run()
+```
+
 ### Fake Transaction
 
 Creating a fake transaction for use in e.g. `VM.runTx()` is simple, just overwrite `getSenderAddress()` with a custom [`Address`](https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/classes/_address_.address.md) like so:
@@ -256,13 +304,13 @@ _getFakeTransaction(txParams: TxParams): Transaction {
   const from = Address.fromString(txParams.from)
   delete txParams.from
 
-  const opts = { common: this._common }
+  const opts = { common: this._common, freeze: false }
   const tx = Transaction.fromTxData(txParams, opts)
 
-  const fakeTx = Object.create(tx)
   // override getSenderAddress
-  fakeTx.getSenderAddress = () => { return from }
-  return fakeTx
+  tx.getSenderAddress = () => { return from }
+
+  return tx
 }
 ```
 

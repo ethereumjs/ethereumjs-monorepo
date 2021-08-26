@@ -189,7 +189,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
   }
 
   /**
-   * Returns the serialized unsigned tx (hashed or raw), which can be used
+   * Returns the unsigned tx (hashed or raw), which can be used
    * to sign the transaction (e.g. for sending to a hardware wallet).
    *
    * Note: the raw message message format for the legacy tx is not RLP encoded
