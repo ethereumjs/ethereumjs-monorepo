@@ -15,7 +15,7 @@ import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
 import { RpcTx } from '../types'
 import type { Chain } from '../../blockchain'
 import type { EthereumClient } from '../..'
-import { EthereumService } from '../../service'
+import { EthereumService, FullEthereumService } from '../../service'
 import type { EthProtocol } from '../../net/protocol'
 import type VM from '@ethereumjs/vm'
 import { Block } from '@ethereumjs/block'
@@ -471,9 +471,15 @@ export class Eth {
 
     try {
       const common = this.client.config.chainCommon.copy()
-      // TODO: generalize with a new Common.latestSupportedHardfork() method or similar
-      // Alternative: common.setHardfork('latest')
-      common.setHardfork(Hardfork.London)
+      if (!this.service.synchronizer.syncTargetHeight) {
+        return {
+          code: INTERNAL_ERROR,
+          message: `client is not aware of the current chain height yet (give sync some more time)`,
+        }
+      }
+      // Set the tx common to an appropriate HF to create a tx
+      // with matching HF rules
+      common.setHardforkByBlockNumber(this.service.synchronizer.syncTargetHeight)
       const tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), { common })
       if (!tx.isSigned()) {
         return {
