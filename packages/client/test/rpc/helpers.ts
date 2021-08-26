@@ -10,6 +10,7 @@ import { RlpxServer } from '../../lib/net/server/rlpxserver'
 import { mockBlockchain } from './mockBlockchain'
 import type Blockchain from '@ethereumjs/blockchain'
 import type EthereumClient from '../../lib/client'
+import { TxPool } from '../../lib/sync/txpool'
 const request = require('supertest')
 
 const config: any = { loglevel: 'error' }
@@ -61,6 +62,7 @@ export function createClient(clientOpts: any = {}) {
       return undefined
     },
     syncTargetHeight: common.hardforkBlockBN(Hardfork.London),
+    txPool: new TxPool({ config }),
   }
   if (clientOpts.includeVM) {
     synchronizer = { ...synchronizer, execution: { vm: new VM({ blockchain, common }) } }

@@ -3,6 +3,7 @@ import { Config } from '../config'
 import { Peer } from '../net/peer'
 import { EthProtocolMethods } from '../net/protocol'
 import type { Block } from '@ethereumjs/block'
+import { PeerPool } from '../net/peerpool'
 
 export interface TxPoolOptions {
   /* Config */
@@ -103,6 +104,47 @@ export class TxPool {
   }
 
   /**
+   * Adds a tx to the pool
+   * @param tx Transaction
+   */
+  addTransaction(tx: TypedTransaction) {
+    const sender = tx.getSenderAddress().toString()
+    const inPool = this.pool.get(sender)
+    let add: TxPoolObject[] = []
+    if (inPool) {
+      // Replace pooled txs with the same nonce
+      add = inPool.filter((poolObj) => !poolObj.tx.nonce.eq(tx.nonce))
+    }
+    const hash = tx.hash().toString('hex')
+    add.push({ tx, added: Date.now(), hash })
+
+    this.pool.set(tx.getSenderAddress().toString(), add)
+    this.handled.push(hash)
+  }
+
+  /**
+   * Send transactions to other peers in the peer pool
+   * @param pool
+   * @param tx Array with transactions to send
+   */
+  sendTransactions(peerPool: PeerPool, txs: TypedTransaction[]) {
+    const peers = peerPool.peers
+
+    for (const peer of peers) {
+      const txsToSend = []
+      for (const tx of txs) {
+        // TODO: check if tx has already been sent to peer
+        if (tx.type === 0) {
+          txsToSend.push(tx.raw())
+        } else {
+          txsToSend.push(tx.serialize())
+        }
+      }
+      peer.eth?.send('Transactions', txsToSend)
+    }
+  }
+
+  /**
    * New pooled txs announced
    * @param  announcements new block hash announcements
    * @param  peer peer
@@ -144,18 +186,7 @@ export class TxPool {
 
     for (const txData of txsResult[1]) {
       const tx = TransactionFactory.fromBlockBodyData(txData)
-      const sender = tx.getSenderAddress().toString()
-      const inPool = this.pool.get(sender)
-      let add: TxPoolObject[] = []
-      if (inPool) {
-        // Replace pooled txs with the same nonce
-        add = inPool.filter((poolObj) => !poolObj.tx.nonce.eq(tx.nonce))
-      }
-      const hash = tx.hash().toString('hex')
-      add.push({ tx, added: Date.now(), hash })
-
-      this.pool.set(tx.getSenderAddress().toString(), add)
-      this.handled.push(hash)
+      this.addTransaction(tx)
     }
   }
 
