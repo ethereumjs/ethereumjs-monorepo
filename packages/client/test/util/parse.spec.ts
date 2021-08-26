@@ -63,7 +63,7 @@ tape('[Util/Parse]', (t) => {
   })
 
   t.test('should parse geth params file', async (t) => {
-    const json = require('./testnet.json')
+    const json = require('../testdata/testnet2.json')
     const params = await parseCustomParams(json, 'rinkeby')
     t.equals(
       params.genesis.hash,
@@ -81,7 +81,7 @@ tape('[Util/Parse]', (t) => {
   })
 
   t.test('should throw with invalid Spurious Dragon blocks', async (t) => {
-    const json = require('./invalid_spurious_dragon.json')
+    const json = require('../testdata/invalid_spurious_dragon.json')
     try {
       await parseCustomParams(json, 'bad_params')
       t.fail('should have thrown')
@@ -89,5 +89,17 @@ tape('[Util/Parse]', (t) => {
       t.pass('should throw')
       t.end()
     }
+  })
+
+  t.test('should import poa network params correctly', async (t) => {
+    const json = require('../testdata/poa.json')
+    const params = await parseCustomParams(json, 'poa')
+    t.equals(params.genesis.nonce, '0x0000000000000000', 'nonce is formatted correctly')
+    t.deepEquals(
+      params.consensus,
+      { type: 'poa', algorithm: 'clique', clique: { period: 15, epoch: 30000 } },
+      'consensus config matches'
+    )
+    t.end()
   })
 })

@@ -80,7 +80,7 @@ export function parseTransports(transports: string[]) {
 }
 
 /**
- * 
+ *
  * @param storage - Object containing storage trie entries from geth genesis state
  * @returns genesis storage trie
  */
@@ -150,7 +150,9 @@ async function parseGethParams(json: any) {
   // EIP155 and EIP158 are both part of Spurious Dragon hardfork and must occur at the same time
   // but have different configuration parameters in geth genesis parameters
   if (config.eip155Block !== config.eip158Block) {
-    throw new Error('EIP155 block number must equal EIP 158 block number since both are part of SpuriousDragon hardfork and the client only supports activating the full hardfork')
+    throw new Error(
+      'EIP155 block number must equal EIP 158 block number since both are part of SpuriousDragon hardfork and the client only supports activating the full hardfork'
+    )
   }
 
   const { chainId } = config

@@ -21,7 +21,7 @@ const args = require('yargs')
     network: {
       describe: `Network`,
       choices: networks.map((n) => n[1]),
-      default: 'mainnet',
+      default: undefined,
     },
     'network-id': {
       describe: `Network ID`,
@@ -188,14 +188,20 @@ async function run() {
   let chain: string | number
   if (args.networkId) {
     chain = args.networkId
-  } else {
+  } else if (args.network) {
     chain = args.network
+  } else {
+    chain = 'mainnet'
   }
 
   // configure common based on args given
   let common: Common = {} as Common
-  if ((args.customChainParams || args.customGenesisState || args.gethGenesis) && (args.network || args.networkId)) {
-    throw new Error('cannot specify both custom chain parameters and preset network ID')  }
+  if (
+    (args.customChainParams || args.customGenesisState || args.gethGenesis) &&
+    (args.network || args.networkId)
+  ) {
+    throw new Error('cannot specify both custom chain parameters and preset network ID')
+  }
   // Use custom chain parameters file if specified
   if (args.customChain) {
     if (!args.customGenesisState) {
