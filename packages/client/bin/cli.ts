@@ -21,7 +21,7 @@ const args = require('yargs')
     network: {
       describe: `Network`,
       choices: networks.map((n) => n[1]),
-      default: undefined,
+      default: 'mainnet',
     },
     'network-id': {
       describe: `Network ID`,
@@ -185,20 +185,13 @@ function runRpcServer(client: EthereumClient, config: Config) {
  */
 async function run() {
   // give network id precedence over network name
-  let chain: string | number
-  if (args.networkId) {
-    chain = args.networkId
-  } else if (args.network) {
-    chain = args.network
-  } else {
-    chain = 'mainnet'
-  }
+  const chain = args.networkId ?? args.network ?? 'mainnet'
 
   // configure common based on args given
   let common: Common = {} as Common
   if (
     (args.customChainParams || args.customGenesisState || args.gethGenesis) &&
-    (args.network || args.networkId)
+    (!(args.network === 'mainnet') || args.networkId)
   ) {
     throw new Error('cannot specify both custom chain parameters and preset network ID')
   }
