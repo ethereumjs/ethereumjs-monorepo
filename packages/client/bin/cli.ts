@@ -42,6 +42,18 @@ const args = require('yargs')
       describe: 'Data directory for the blockchain',
       default: `${os.homedir()}/Library/Ethereum/ethereumjs`,
     },
+    customChain: {
+      describe: 'Path to custom chain parameters json file from Common',
+      coerce: path.resolve,
+    },
+    customGenesisState: {
+      describe: 'Path to custom genesis state json file from Common',
+      coerce: path.resolve,
+    },
+    gethGenesis: {
+      describe: 'Import a geth genesis file for running a custom network',
+      coerce: path.resolve,
+    },
     transports: {
       describe: 'Network transports',
       default: Config.TRANSPORTS_DEFAULT,
@@ -93,14 +105,6 @@ const args = require('yargs')
       number: true,
       default: Config.MAXPEERS_DEFAULT,
     },
-    customGenesis: {
-      describe: 'Path to custom genesis parameters json file from Common',
-      coerce: path.resolve,
-    },
-    customGenesisState: {
-      describe: 'Path to custom genesis state json file',
-      coerce: path.resolve,
-    },
     dnsAddr: {
       describe: 'IPv4 address of DNS server to use when acquiring peer discovery targets',
       string: true,
@@ -122,10 +126,6 @@ const args = require('yargs')
     discV4: {
       describe: 'Use v4 ("findneighbour" node requests) for peer discovery',
       boolean: true,
-    },
-    gethGenesis: {
-      describe: 'Import a geth genesis file for running a custom network',
-      coerce: path.resolve,
     },
   })
   .locale('en_EN').argv
@@ -194,17 +194,19 @@ async function run() {
 
   // configure common based on args given
   let common: Common = {} as Common
+  if ((args.customChainParams || args.customGenesisState || args.gethGenesis) && (args.network || args.networkId)) {
+    throw new Error('cannot specify both custom chain parameters and preset network ID')  }
   // Use custom chain parameters file if specified
-  if (args.customGenesis) {
+  if (args.customChain) {
+    if (!args.customGenesisState) {
+      throw new Error('cannot have custom chain parameters without genesis state')
+    }
     try {
-      const genesisParams = JSON.parse(fs.readFileSync(args.customGenesis, 'utf-8'))
-      let genesisState = {}
-      if (args.customGenesisState) {
-        genesisState = JSON.parse(fs.readFileSync(args.customGenesisState))
-      }
+      const customChainParams = JSON.parse(fs.readFileSync(args.customChain, 'utf-8'))
+      const genesisState = JSON.parse(fs.readFileSync(args.customGenesisState))
       common = new Common({
-        chain: genesisParams.name,
-        customChains: [[genesisParams, genesisState]],
+        chain: customChainParams.name,
+        customChains: [[customChainParams, genesisState]],
       })
     } catch (err) {
       throw new Error(`invalid chain parameters: ${err.message}`)
