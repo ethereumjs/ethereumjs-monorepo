@@ -60,7 +60,7 @@ export function createClient(clientOpts: any = {}) {
     latest: () => {
       return undefined
     },
-    syncTargetHeight: common.hardforkBlockBN(Hardfork.London)
+    syncTargetHeight: common.hardforkBlockBN(Hardfork.London),
   }
   if (clientOpts.includeVM) {
     synchronizer = { ...synchronizer, execution: { vm: new VM({ blockchain, common }) } }
@@ -99,9 +99,10 @@ export function createClient(clientOpts: any = {}) {
 }
 
 export function baseSetup() {
-  const manager = createManager(createClient())
+  const client = createClient()
+  const manager = createManager(client)
   const server = startRPC(manager.getMethods())
-  return server
+  return { server, manager, client }
 }
 
 export function params(method: string, params: Array<any> = []) {

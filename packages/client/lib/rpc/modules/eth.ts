@@ -1,4 +1,3 @@
-import { Hardfork } from '@ethereumjs/common'
 import { Transaction, TransactionFactory } from '@ethereumjs/tx'
 import {
   Account,
@@ -15,7 +14,7 @@ import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
 import { RpcTx } from '../types'
 import type { Chain } from '../../blockchain'
 import type { EthereumClient } from '../..'
-import { EthereumService, FullEthereumService } from '../../service'
+import { EthereumService } from '../../service'
 import type { EthProtocol } from '../../net/protocol'
 import type VM from '@ethereumjs/vm'
 import { Block } from '@ethereumjs/block'

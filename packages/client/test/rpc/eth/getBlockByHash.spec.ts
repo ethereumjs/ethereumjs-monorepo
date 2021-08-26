@@ -6,7 +6,7 @@ import { checkError } from '../util'
 const method = 'eth_getBlockByHash'
 
 tape(`${method}: call with valid arguments`, (t) => {
-  const server = baseSetup()
+  const { server } = baseSetup()
 
   const req = params(method, [
     '0x910abca1728c53e8d6df870dd7af5352e974357dc58205dea1676be17ba6becf',
@@ -20,7 +20,7 @@ tape(`${method}: call with valid arguments`, (t) => {
 })
 
 tape(`${method}: call with false for second argument`, (t) => {
-  const server = baseSetup()
+  const { server } = baseSetup()
 
   const req = params(method, [
     '0xdc0818cf78f21a8e70579cb46a43643f78291264dda342ae31049421c82d21ae',
@@ -36,7 +36,7 @@ tape(`${method}: call with false for second argument`, (t) => {
 })
 
 tape(`${method}: call with invalid block hash without 0x`, (t) => {
-  const server = baseSetup()
+  const { server } = baseSetup()
 
   const req = params(method, ['WRONG BLOCK NUMBER', true])
   const expectRes = checkError(
@@ -48,7 +48,7 @@ tape(`${method}: call with invalid block hash without 0x`, (t) => {
 })
 
 tape(`${method}: call with invalid hex string as block hash`, (t) => {
-  const server = baseSetup()
+  const { server } = baseSetup()
 
   const req = params(method, ['0xWRONG BLOCK NUMBER', true])
   const expectRes = checkError(t, INVALID_PARAMS, 'invalid argument 0: invalid block hash')
@@ -56,7 +56,7 @@ tape(`${method}: call with invalid hex string as block hash`, (t) => {
 })
 
 tape(`${method}: call without second parameter`, (t) => {
-  const server = baseSetup()
+  const { server } = baseSetup()
 
   const req = params(method, ['0x0'])
   const expectRes = checkError(t, INVALID_PARAMS, 'missing value for required argument 1')
@@ -64,7 +64,7 @@ tape(`${method}: call without second parameter`, (t) => {
 })
 
 tape(`${method}: call with invalid second parameter`, (t) => {
-  const server = baseSetup()
+  const { server } = baseSetup()
 
   const req = params(method, ['0x0', 'INVALID PARAMETER'])
   const expectRes = checkError(t, INVALID_PARAMS)

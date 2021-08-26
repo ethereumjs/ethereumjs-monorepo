@@ -7,7 +7,7 @@ import { baseSetup, params, baseRequest, createClient, createManager, startRPC }
 const method = 'eth_sendRawTransaction'
 
 tape(`${method}: call with valid arguments`, (t) => {
-  const server = baseSetup()
+  const { server } = baseSetup()
 
   // Mainnet EIP-1559 tx
   const txData =
@@ -25,7 +25,7 @@ tape(`${method}: call with valid arguments`, (t) => {
 })
 
 tape(`${method}: call with invalid tx (wrong chain ID)`, (t) => {
-  const server = baseSetup()
+  const { server } = baseSetup()
 
   // Baikal EIP-1559 tx
   const txData =
@@ -46,7 +46,7 @@ tape(`${method}: call with invalid tx (wrong chain ID)`, (t) => {
 })
 
 tape(`${method}: call with unsigned tx`, (t) => {
-  const server = baseSetup()
+  const { server } = baseSetup()
 
   // Mainnet EIP-1559 tx
   const txData =
