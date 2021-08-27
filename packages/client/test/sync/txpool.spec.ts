@@ -231,4 +231,59 @@ tape('[TxPool]', async (t) => {
     pool.close()
     t.end()
   })
+
+  t.test('cleanup()', async (t) => {
+    const pool = new TxPool({ config })
+
+    pool.open()
+    pool.start()
+    const peer: any = {
+      eth: {
+        getPooledTransactions: () => {
+          return [null, [txA01.serialize(), txB01.serialize()]]
+        },
+      },
+    }
+    await pool.includeAnnouncedTxs([txA01.hash(), txB01.hash()], peer)
+    t.equal(pool.pool.size, 2, 'pool size 2')
+    t.equal((pool as any).handled.size, 2, 'handled size 2')
+
+    pool.cleanup()
+    t.equal(
+      pool.pool.size,
+      2,
+      'should not remove txs from pool (POOLED_STORAGE_TIME_LIMIT within range)'
+    )
+    t.equal(
+      (pool as any).handled.size,
+      2,
+      'should not remove txs from handled (HANDLED_CLEANUP_TIME_LIMIT within range)'
+    )
+
+    const address = txB01.getSenderAddress().toString()
+    const poolObj = pool.pool.get(address)![0]
+    poolObj.added = Date.now() - pool.POOLED_STORAGE_TIME_LIMIT * 60 - 1
+    pool.pool.set(address, [poolObj])
+
+    const hash = txB01.hash().toString('hex')
+    const handledObj = (pool as any).handled.get(hash)
+    handledObj.added = Date.now() - pool.HANDLED_CLEANUP_TIME_LIMIT * 60 - 1
+    ;(pool as any).handled.set(hash, handledObj)
+
+    pool.cleanup()
+    t.equal(
+      pool.pool.size,
+      1,
+      'should remove txs from pool (POOLED_STORAGE_TIME_LIMIT before range)'
+    )
+    t.equal(
+      (pool as any).handled.size,
+      1,
+      'should remove txs from handled (HANDLED_CLEANUP_TIME_LIMIT before range)'
+    )
+
+    pool.stop()
+    pool.close()
+    t.end()
+  })
 })

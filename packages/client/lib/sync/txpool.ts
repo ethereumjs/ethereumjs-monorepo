@@ -75,6 +75,17 @@ export class TxPool {
   private TX_RETRIEVAL_LIMIT = 256
 
   /**
+   * Number of minutes to keep txs in the pool
+   */
+  public POOLED_STORAGE_TIME_LIMIT = 20
+
+  /**
+   * Number of minutes to forget about handled
+   * txs (for cleanup/memory reasons)
+   */
+  public HANDLED_CLEANUP_TIME_LIMIT = 60
+
+  /**
    * Log pool statistics on the given interval
    */
   private LOG_STATISTICS_INTERVAL = 10000 // ms
@@ -199,6 +210,8 @@ export class TxPool {
     }
     this.config.logger.debug(`TxPool: received new pooled hashes number=${txHashes.length}`)
 
+    this.cleanup()
+
     const reqHashes = []
     for (const txHash of txHashes) {
       const txHashStr: UnprefixedHash = txHash.toString('hex')
@@ -247,6 +260,32 @@ export class TxPool {
         this.removeByHash(txHash)
       }
     }
+  }
+
+  /**
+   * Regular tx pool cleanup
+   */
+  cleanup() {
+    // Remove txs older than POOLED_STORAGE_TIME_LIMIT from the pool
+    let compDate = Date.now() - this.POOLED_STORAGE_TIME_LIMIT * 60
+    this.pool.forEach((poolObjects, address) => {
+      const newPoolObjects = poolObjects.filter((obj) => obj.added >= compDate)
+      if (newPoolObjects.length < poolObjects.length) {
+        if (newPoolObjects.length === 0) {
+          this.pool.delete(address)
+        } else {
+          this.pool.set(address, newPoolObjects)
+        }
+      }
+    })
+
+    // Cleanup handled txs
+    compDate = Date.now() - this.HANDLED_CLEANUP_TIME_LIMIT * 60
+    this.handled.forEach((handleObj, address) => {
+      if (handleObj.added < compDate) {
+        this.handled.delete(address)
+      }
+    })
   }
 
   /**

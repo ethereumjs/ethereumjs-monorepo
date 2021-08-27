@@ -492,7 +492,7 @@ export class Eth {
       // TODO: eslint is giving an "Insert `;`" error, retest periodically or fix
       // eslint-disable-next-line
       const txPool = (this.service.synchronizer as FullSynchronizer).txPool
-      txPool.addTransaction(tx)
+      txPool.add(tx)
 
       const peerPool = this.service.pool
       if (peerPool.peers.length === 0) {
