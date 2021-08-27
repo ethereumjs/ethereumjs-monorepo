@@ -294,11 +294,13 @@ That's it! Now, you should start seeing headers being downloaded to the local st
 
 In this example, we import the genesis parameters for a private Proof-of-Authority network using the geth genesis parameters format and then sync our client with a geth instance that is sealing blocks.
 
-First, get geth configured to use the genesis parameters provided [here](./test/testdata/poa.json).
+First, create a signer account and place in the `data` directory to use with geth to seal blocks following [these instructions](https://geth.ethereum.org/docs/interface/managing-your-accounts).
+
+Next, open [these genesis parameters](./test/testdata/poa.json) and replace "728bb68502bfcd91ce4c7a692a0c0773ced5cff" with your signer address in both the `extradata` property and in the `alloc` section.
+
+Second, get geth configured to use the genesis parameters file just updated.
 
 `geth init --datadir data poa.json`
-
-Second, create a signer account to use with Geth to seal blocks following [these instructions](https://geth.ethereum.org/docs/interface/managing-your-accounts).
 
 Now, let's run geth and ensure that its sealing blocks.  Note, geth will prompt you for a password to unlock your signer account.
 
