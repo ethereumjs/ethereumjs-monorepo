@@ -119,11 +119,14 @@ export class TxPool {
   }
 
   /**
-   * Adds a tx to the pool
+   * Adds a tx to the pool.
+   *
+   * If there is a tx in the pool with the same address and
+   * nonce it will be replaced by the new tx.
    * @param tx Transaction
    */
-  addTransaction(tx: TypedTransaction) {
-    const sender = tx.getSenderAddress().toString()
+  add(tx: TypedTransaction) {
+    const sender: UnprefixedAddress = tx.getSenderAddress().toString()
     const inPool = this.pool.get(sender)
     let add: TxPoolObject[] = []
     if (inPool) {
@@ -134,8 +137,8 @@ export class TxPool {
     const hash: UnprefixedHash = tx.hash().toString('hex')
     const added = Date.now()
     add.push({ tx, added, hash })
-
     this.pool.set(address, add)
+
     this.handled.set(hash, { address, added })
   }
 
@@ -164,11 +167,11 @@ export class TxPool {
   }
 
   /**
-   * New pooled txs announced
-   * @param  announcements new block hash announcements
+   * Include new pooled txs announced in the pool
+   * @param  txHashes new tx hashes announced
    * @param  peer peer
    */
-  async announcedTxHashes(txHashes: Buffer[], peer: Peer) {
+  async includeAnnouncedTxs(txHashes: Buffer[], peer: Peer) {
     if (!this.running || txHashes.length === 0) {
       return
     }
@@ -205,18 +208,18 @@ export class TxPool {
 
     for (const txData of txsResult[1]) {
       const tx = TransactionFactory.fromBlockBodyData(txData)
-      this.addTransaction(tx)
+      this.add(tx)
     }
   }
 
   /**
-   * Sync txs in the pool with txs from latest blocks
+   * Remove txs included in the latest blocks from the tx pool
    */
-  newBlocks(blocks: Block[]) {
+  removeNewBlockTxs(newBlocks: Block[]) {
     if (!this.running) {
       return
     }
-    for (const block of blocks) {
+    for (const block of newBlocks) {
       const includedTxs: string[] = []
       for (const tx of block.transactions) {
         const hash: UnprefixedHash = tx.hash().toString('hex')
