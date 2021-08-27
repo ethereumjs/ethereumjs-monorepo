@@ -32,25 +32,25 @@ assert.equal(new BN('dead', 16).add(new BN('101010', 2)), 57047)
 
 ### Modules
 
-- [account](docs/modules/_account_.md)
+- [account](docs/modules/account.md)
   - Account class
   - Private/public key and address-related functionality (creation, validation, conversion)
-- [address](docs/modules/_address_.md)
+- [address](docs/modules/address.md)
   - Address class and type
-- [bytes](docs/modules/_bytes_.md)
+- [bytes](docs/modules/bytes.md)
   - Byte-related helper and conversion functions
-- [constants](docs/modules/_constants_.md)
+- [constants](docs/modules/constants.md)
   - Exposed constants
     - e.g. KECCAK256_NULL_S for string representation of Keccak-256 hash of null
-- [hash](docs/modules/_hash_.md)
+- [hash](docs/modules/hash.md)
   - Hash functions
-- [object](docs/modules/_object_.md)
+- [object](docs/modules/object.md)
   - Helper function for creating a binary object (`DEPRECATED`)
-- [signature](docs/modules/_signature_.md)
+- [signature](docs/modules/signature.md)
   - Signing, signature validation, conversion, recovery
-- [types](docs/modules/_types_.md)
+- [types](docs/modules/types.md)
   - Helpful TypeScript types
-- [externals](docs/modules/_externals_.md)
+- [externals](docs/modules/externals.md)
   - Helper methods from `ethjs-util`
   - Re-exports of `BN`, `rlp`
 
