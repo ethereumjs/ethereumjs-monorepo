@@ -90,7 +90,7 @@ tape('[TxPool]', async (t) => {
     await pool.announcedTxHashes([txA01.hash()], peer)
     t.equal(pool.pool.size, 1, 'pool size 1')
     t.equal((pool as any).pending.length, 0, 'cleared pending txs')
-    t.equal((pool as any).handled.length, 1, 'added to handled txs')
+    t.equal((pool as any).handled.size, 1, 'added to handled txs')
 
     pool.pool.clear()
     await pool.announcedTxHashes([txA01.hash()], peer)

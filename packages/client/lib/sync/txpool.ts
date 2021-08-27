@@ -10,9 +10,14 @@ export interface TxPoolOptions {
   config: Config
 }
 
-export type TxPoolObject = {
+type TxPoolObject = {
   tx: TypedTransaction
-  hash: string
+  hash: string // plain strings without hex prefix
+  added: number
+}
+
+type HandledObject = {
+  address: string // plain strings without hex prefix
   added: number
 }
 
@@ -41,13 +46,23 @@ export class TxPool {
   private pending: string[] = []
 
   /**
-   * List of handled tx hashes
+   * Map for handled tx hashes
    * (have been added to the pool at some point)
+   *
+   * This is meant to be a superset of the tx pool
+   * so at any point it time containing minimally
+   * all txs from the pool.
    *
    * (plain strings without hex prefix)
    */
-  private handled: string[] = []
+  private handled: Map<string, HandledObject>
 
+  /**
+   * The central pool dataset.
+   *
+   * Maps an address (no hex prefix) to a
+   * `TxPoolObject`
+   */
   public pool: Map<string, TxPoolObject[]>
 
   /**
@@ -74,6 +89,8 @@ export class TxPool {
     this.config = options.config
 
     this.pool = new Map<string, TxPoolObject[]>()
+    this.handled = new Map<string, HandledObject>()
+
     this.opened = false
     this.running = false
   }
@@ -115,11 +132,13 @@ export class TxPool {
       // Replace pooled txs with the same nonce
       add = inPool.filter((poolObj) => !poolObj.tx.nonce.eq(tx.nonce))
     }
+    const address = tx.getSenderAddress().toString()
     const hash = tx.hash().toString('hex')
-    add.push({ tx, added: Date.now(), hash })
+    const added = Date.now()
+    add.push({ tx, added, hash })
 
-    this.pool.set(tx.getSenderAddress().toString(), add)
-    this.handled.push(hash)
+    this.pool.set(address, add)
+    this.handled.set(hash, { address, added })
   }
 
   /**
@@ -160,7 +179,7 @@ export class TxPool {
     const reqHashes = []
     for (const txHash of txHashes) {
       const txHashStr = txHash.toString('hex')
-      if (this.pending.includes(txHashStr) || this.handled.includes(txHashStr)) {
+      if (this.pending.includes(txHashStr) || this.handled.has(txHashStr)) {
         continue
       }
       reqHashes.push(txHash)
@@ -205,7 +224,7 @@ export class TxPool {
         const hash = tx.hash().toString('hex')
         // If tx hasn't been handled by the pool continue
         // (performance optimization)
-        if (!this.handled.includes(hash)) {
+        if (!this.handled.has(hash)) {
           continue
         }
         includedTxs.push(hash)
