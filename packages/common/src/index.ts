@@ -311,6 +311,11 @@ export default class Common extends EventEmitter {
     this._customChains = opts.customChains ?? []
     this._chainParams = this.setChain(opts.chain)
     this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Istanbul
+    for (const hf of this._chainParams.hardforks) {
+      if (!hf.forkHash) {
+        hf.forkHash = this._calcForkHash(hf.name)
+      }
+    }
     this._hardfork = this.DEFAULT_HARDFORK
     if (opts.supportedHardforks) {
       this._supportedHardforks = opts.supportedHardforks

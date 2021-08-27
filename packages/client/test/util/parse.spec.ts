@@ -1,6 +1,11 @@
 import tape from 'tape-catch'
 import multiaddr from 'multiaddr'
-import { parseMultiaddrs, parseTransports, parseParams, parseGenesisState } from '../../lib/util'
+import {
+  parseMultiaddrs,
+  parseTransports,
+  parseCustomParams,
+  parseGenesisState,
+} from '../../lib/util'
 
 tape('[Util/Parse]', (t) => {
   t.test('should parse multiaddrs', (t) => {
@@ -58,33 +63,43 @@ tape('[Util/Parse]', (t) => {
   })
 
   t.test('should parse geth params file', async (t) => {
-    const json = require('./rinkeby.json')
-    const params = await parseParams(json, 'rinkeby')
-    const expected = require('./params.json')
-    t.deepEquals(params, expected, 'parsed params correctly')
-    t.end()
-  })
-
-  t.test('should parse contracts from geth params file', async (t) => {
-    const json = require('./lisinski.json')
-    const params = await parseParams(json, 'lisinsky')
-    const expected = 'e7fd8db206dcaf066b7c97b8a42a0abc18653613560748557ab44868652a78b6'
-    t.equals(params.genesis.hash.slice(2), expected, 'parsed contracts correctly')
-
-    const genesisState = await parseGenesisState(json)
+    const json = require('../testdata/testnet2.json')
+    const params = await parseCustomParams(json, 'rinkeby')
     t.equals(
-      genesisState['0x385a157f6cc00d980420e50cb2083054cea32e90'],
-      '0x033b2e3c9fd0803ce8000000',
-      'genesis state correctly produced'
+      params.genesis.hash,
+      '0x7f09347ab897f9a0d76d8eacd1cc9803488309ba24b428406293ecd927dacdf3',
+      'parsed params correctly'
+    )
+    t.equals(params.genesis.nonce, '0x0000000000000042', 'nonce should be correctly formatted')
+    const rinkebyGenesiState = await parseGenesisState(json)
+    t.equals(
+      rinkebyGenesiState['0x4c2ae482593505f0163cdefc073e81c63cda4107'],
+      '0x152d02c7e14af6800000',
+      'parsed genesis state correctly'
     )
     t.end()
   })
 
-  t.test('should format nonce correctly from geth params file', async (t) => {
-    const json = require('./gethnonce.json')
-    const params = await parseParams(json, 'testnet')
-    const expected = '0x0000000000000042'
-    t.equals(params.genesis.nonce, expected, 'formatted nonce correctly')
+  t.test('should throw with invalid Spurious Dragon blocks', async (t) => {
+    const json = require('../testdata/invalid_spurious_dragon.json')
+    try {
+      await parseCustomParams(json, 'bad_params')
+      t.fail('should have thrown')
+    } catch {
+      t.pass('should throw')
+      t.end()
+    }
+  })
+
+  t.test('should import poa network params correctly', async (t) => {
+    const json = require('../testdata/poa.json')
+    const params = await parseCustomParams(json, 'poa')
+    t.equals(params.genesis.nonce, '0x0000000000000000', 'nonce is formatted correctly')
+    t.deepEquals(
+      params.consensus,
+      { type: 'poa', algorithm: 'clique', clique: { period: 15, epoch: 30000 } },
+      'consensus config matches'
+    )
     t.end()
   })
 })
