@@ -87,13 +87,13 @@ tape('[TxPool]', async (t) => {
         },
       },
     }
-    await pool.announcedTxHashes([txA01.hash()], peer)
+    await pool.includeAnnouncedTxs([txA01.hash()], peer)
     t.equal(pool.pool.size, 1, 'pool size 1')
     t.equal((pool as any).pending.length, 0, 'cleared pending txs')
-    t.equal((pool as any).handled.length, 1, 'added to handled txs')
+    t.equal((pool as any).handled.size, 1, 'added to handled txs')
 
     pool.pool.clear()
-    await pool.announcedTxHashes([txA01.hash()], peer)
+    await pool.includeAnnouncedTxs([txA01.hash()], peer)
     t.equal(pool.pool.size, 0, 'should not add a once handled tx')
 
     pool.stop()
@@ -121,7 +121,7 @@ tape('[TxPool]', async (t) => {
       hashes.push(Buffer.from(i.toString().padStart(64, '0'), 'hex')) // '0000000000000000000000000000000000000000000000000000000000000001',...
     }
 
-    await pool.announcedTxHashes(hashes, peer as any)
+    await pool.includeAnnouncedTxs(hashes, peer as any)
     pool.stop()
     pool.close()
     t.end()
@@ -139,7 +139,7 @@ tape('[TxPool]', async (t) => {
         },
       },
     }
-    await pool.announcedTxHashes([txA01.hash(), txB01.hash()], peer)
+    await pool.includeAnnouncedTxs([txA01.hash(), txB01.hash()], peer)
     t.equal(pool.pool.size, 2, 'pool size 2')
     pool.stop()
     pool.close()
@@ -159,7 +159,7 @@ tape('[TxPool]', async (t) => {
         },
       },
     }
-    await pool.announcedTxHashes([txA01.hash(), txA02.hash()], peer)
+    await pool.includeAnnouncedTxs([txA01.hash(), txA02.hash()], peer)
     t.equal(pool.pool.size, 1, 'pool size 1')
     const address = `0x${A.address.toString('hex')}`
     const poolContent = pool.pool.get(address)!
@@ -183,17 +183,17 @@ tape('[TxPool]', async (t) => {
         },
       },
     }
-    await pool.announcedTxHashes([txA01.hash()], peer)
+    await pool.includeAnnouncedTxs([txA01.hash()], peer)
     t.equal(pool.pool.size, 1, 'pool size 1')
 
     // Craft block with tx not in pool
     let block = Block.fromBlockData({ transactions: [txA02] }, { common })
-    pool.newBlocks([block])
+    pool.removeNewBlockTxs([block])
     t.equal(pool.pool.size, 1, 'pool size 1')
 
     // Craft block with tx in pool
     block = Block.fromBlockData({ transactions: [txA01] }, { common })
-    pool.newBlocks([block])
+    pool.removeNewBlockTxs([block])
     t.equal(pool.pool.size, 0, 'pool should be empty')
 
     peer = {
@@ -203,7 +203,7 @@ tape('[TxPool]', async (t) => {
         },
       },
     }
-    await pool.announcedTxHashes([txB01.hash(), txB02.hash()], peer)
+    await pool.includeAnnouncedTxs([txB01.hash(), txB02.hash()], peer)
     t.equal(pool.pool.size, 1, 'pool size 1')
     const address = `0x${B.address.toString('hex')}`
     let poolContent = pool.pool.get(address)!
@@ -211,21 +211,76 @@ tape('[TxPool]', async (t) => {
 
     // Craft block with tx not in pool
     block = Block.fromBlockData({ transactions: [txA02] }, { common })
-    pool.newBlocks([block])
+    pool.removeNewBlockTxs([block])
     t.equal(pool.pool.size, 1, 'pool size 1')
     poolContent = pool.pool.get(address)!
     t.equal(poolContent.length, 2, 'two txs')
 
     // Craft block with tx in pool
     block = Block.fromBlockData({ transactions: [txB01] }, { common })
-    pool.newBlocks([block])
+    pool.removeNewBlockTxs([block])
     poolContent = pool.pool.get(address)!
     t.equal(poolContent.length, 1, 'only one tx')
 
     // Craft block with tx in pool
     block = Block.fromBlockData({ transactions: [txB02] }, { common })
-    pool.newBlocks([block])
+    pool.removeNewBlockTxs([block])
     t.equal(pool.pool.size, 0, 'pool size 0')
+
+    pool.stop()
+    pool.close()
+    t.end()
+  })
+
+  t.test('cleanup()', async (t) => {
+    const pool = new TxPool({ config })
+
+    pool.open()
+    pool.start()
+    const peer: any = {
+      eth: {
+        getPooledTransactions: () => {
+          return [null, [txA01.serialize(), txB01.serialize()]]
+        },
+      },
+    }
+    await pool.includeAnnouncedTxs([txA01.hash(), txB01.hash()], peer)
+    t.equal(pool.pool.size, 2, 'pool size 2')
+    t.equal((pool as any).handled.size, 2, 'handled size 2')
+
+    pool.cleanup()
+    t.equal(
+      pool.pool.size,
+      2,
+      'should not remove txs from pool (POOLED_STORAGE_TIME_LIMIT within range)'
+    )
+    t.equal(
+      (pool as any).handled.size,
+      2,
+      'should not remove txs from handled (HANDLED_CLEANUP_TIME_LIMIT within range)'
+    )
+
+    const address = txB01.getSenderAddress().toString()
+    const poolObj = pool.pool.get(address)![0]
+    poolObj.added = Date.now() - pool.POOLED_STORAGE_TIME_LIMIT * 60 - 1
+    pool.pool.set(address, [poolObj])
+
+    const hash = txB01.hash().toString('hex')
+    const handledObj = (pool as any).handled.get(hash)
+    handledObj.added = Date.now() - pool.HANDLED_CLEANUP_TIME_LIMIT * 60 - 1
+    ;(pool as any).handled.set(hash, handledObj)
+
+    pool.cleanup()
+    t.equal(
+      pool.pool.size,
+      1,
+      'should remove txs from pool (POOLED_STORAGE_TIME_LIMIT before range)'
+    )
+    t.equal(
+      (pool as any).handled.size,
+      1,
+      'should remove txs from handled (HANDLED_CLEANUP_TIME_LIMIT before range)'
+    )
 
     pool.stop()
     pool.close()

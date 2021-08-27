@@ -5,7 +5,7 @@ import { baseSetup, params, baseRequest } from '../helpers'
 const method = 'web3_clientVersion'
 
 tape(`${method}: call`, (t) => {
-  const server = baseSetup()
+  const { server } = baseSetup()
 
   const req = params(method, [])
   const expectRes = (res: any) => {

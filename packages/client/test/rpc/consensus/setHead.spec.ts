@@ -6,7 +6,7 @@ import { checkError } from '../util'
 const method = 'consensus_setHead'
 
 tape(`${method}: call with invalid block hash without 0x`, (t) => {
-  const server = baseSetup()
+  const { server } = baseSetup()
 
   const req = params(method, ['WRONG BLOCK NUMBER'])
   const expectRes = checkError(
@@ -18,7 +18,7 @@ tape(`${method}: call with invalid block hash without 0x`, (t) => {
 })
 
 tape(`${method}: call with invalid hex string as block hash`, (t) => {
-  const server = baseSetup()
+  const { server } = baseSetup()
 
   const req = params(method, ['0xWRONG BLOCK NUMBER'])
   const expectRes = checkError(t, INVALID_PARAMS, 'invalid argument 0: invalid block hash')

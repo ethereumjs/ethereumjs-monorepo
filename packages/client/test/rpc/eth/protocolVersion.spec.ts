@@ -4,7 +4,7 @@ import { baseSetup, params, baseRequest } from '../helpers'
 const method = 'eth_protocolVersion'
 
 tape(`${method}: call`, (t) => {
-  const server = baseSetup()
+  const { server } = baseSetup()
 
   const req = params(method, [])
   const expectRes = (res: any) => {
