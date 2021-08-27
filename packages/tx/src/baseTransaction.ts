@@ -195,7 +195,12 @@ export abstract class BaseTransaction<TransactionObject> {
   /**
    * Returns a Buffer Array of the raw Buffers of this transaction, in order.
    *
-   * To return an EIP-155 compliant unsigned tx for external signing, please use {@link BaseTransaction.getMessageToSign}
+   * Use {@link BaseTransaction.serialize} to add a transaction to a block
+   * with {@link Block.fromValuesArray}.
+   *
+   * For an unsigned tx this method uses the empty Buffer values for the
+   * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
+   * representation for external signing use {@link BaseTransaction.getMessageToSign}.
    */
   abstract raw(): TxValuesArray | AccessListEIP2930ValuesArray | FeeMarketEIP1559ValuesArray
 
