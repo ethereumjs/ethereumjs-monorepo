@@ -21,6 +21,9 @@ type HandledObject = {
   added: number
 }
 
+type UnprefixedAddress = string
+type UnprefixedHash = string
+
 /**
  * @module service
  */
@@ -40,10 +43,8 @@ export class TxPool {
 
   /**
    * List of pending tx hashes to avoid double requests
-   *
-   * (plain strings without hex prefix)
    */
-  private pending: string[] = []
+  private pending: UnprefixedHash[] = []
 
   /**
    * Map for handled tx hashes
@@ -52,18 +53,15 @@ export class TxPool {
    * This is meant to be a superset of the tx pool
    * so at any point it time containing minimally
    * all txs from the pool.
-   *
-   * (plain strings without hex prefix)
    */
-  private handled: Map<string, HandledObject>
+  private handled: Map<UnprefixedHash, HandledObject>
 
   /**
    * The central pool dataset.
    *
-   * Maps an address (no hex prefix) to a
-   * `TxPoolObject`
+   * Maps an address to a `TxPoolObject`
    */
-  public pool: Map<string, TxPoolObject[]>
+  public pool: Map<UnprefixedAddress, TxPoolObject[]>
 
   /**
    * Activate before chain head is reached to start
@@ -88,8 +86,8 @@ export class TxPool {
   constructor(options: TxPoolOptions) {
     this.config = options.config
 
-    this.pool = new Map<string, TxPoolObject[]>()
-    this.handled = new Map<string, HandledObject>()
+    this.pool = new Map<UnprefixedAddress, TxPoolObject[]>()
+    this.handled = new Map<UnprefixedHash, HandledObject>()
 
     this.opened = false
     this.running = false
@@ -132,8 +130,8 @@ export class TxPool {
       // Replace pooled txs with the same nonce
       add = inPool.filter((poolObj) => !poolObj.tx.nonce.eq(tx.nonce))
     }
-    const address = tx.getSenderAddress().toString()
-    const hash = tx.hash().toString('hex')
+    const address: UnprefixedAddress = tx.getSenderAddress().toString()
+    const hash: UnprefixedHash = tx.hash().toString('hex')
     const added = Date.now()
     add.push({ tx, added, hash })
 
@@ -178,7 +176,7 @@ export class TxPool {
 
     const reqHashes = []
     for (const txHash of txHashes) {
-      const txHashStr = txHash.toString('hex')
+      const txHashStr: UnprefixedHash = txHash.toString('hex')
       if (this.pending.includes(txHashStr) || this.handled.has(txHashStr)) {
         continue
       }
@@ -189,7 +187,7 @@ export class TxPool {
       return
     }
 
-    const reqHashesStr = reqHashes.map((hash) => hash.toString('hex'))
+    const reqHashesStr: UnprefixedHash[] = reqHashes.map((hash) => hash.toString('hex'))
     this.pending.concat(reqHashesStr)
     this.config.logger.debug(
       `TxPool: requesting txs number=${reqHashes.length} pending=${this.pending.length}`
@@ -221,7 +219,7 @@ export class TxPool {
     for (const block of blocks) {
       const includedTxs: string[] = []
       for (const tx of block.transactions) {
-        const hash = tx.hash().toString('hex')
+        const hash: UnprefixedHash = tx.hash().toString('hex')
         // If tx hasn't been handled by the pool continue
         // (performance optimization)
         if (!this.handled.has(hash)) {
