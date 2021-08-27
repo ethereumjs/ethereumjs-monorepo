@@ -79,7 +79,12 @@ export function parseTransports(transports: string[]) {
   })
 }
 
-async function parseStorage(storage: any) {
+/**
+ *
+ * @param storage - Object containing storage trie entries from geth genesis state
+ * @returns genesis storage trie
+ */
+async function createStorageTrie(storage: any) {
   const trie = new Trie()
   for (const [address, value] of Object.entries(storage)) {
     const key = Buffer.from(address, 'hex')
@@ -89,13 +94,13 @@ async function parseStorage(storage: any) {
   return trie
 }
 /**
- * Derives storage trie of genesis block bases on genesis allocations
+ * Derives state trie of genesis block bases on genesis allocations
  * @param alloc - Object containing genesis allocations from geth genesis block
  *
- * @returns genesis block storage trie
+ * @returns genesis state trie
  */
 //
-async function parseGethState(alloc: any) {
+async function createGethGenesisStateTrie(alloc: any) {
   const trie = new Trie()
   for (const [key, value] of Object.entries(alloc)) {
     const address = isHexPrefixed(key) ? toBuffer(key) : Buffer.from(key, 'hex')
@@ -109,7 +114,7 @@ async function parseGethState(alloc: any) {
       account.codeHash = keccak(toBuffer(code))
     }
     if (storage) {
-      const storageTrie = await parseStorage(storage)
+      const storageTrie = await createStorageTrie(storage)
       account.stateRoot = storageTrie.root
     }
     await trie.put(address, account.serialize())
@@ -117,9 +122,9 @@ async function parseGethState(alloc: any) {
   return trie
 }
 
-async function parseGethHeader(json: any) {
+async function createGethGenesisBlockHeader(json: any) {
   const { gasLimit, difficulty, extraData, number, nonce, timestamp, mixHash, alloc } = json
-  const storageTrie = await parseGethState(alloc)
+  const storageTrie = await createGethGenesisStateTrie(alloc)
   const stateRoot = storageTrie.root
   const headerData = {
     gasLimit,
@@ -142,8 +147,16 @@ async function parseGethHeader(json: any) {
 async function parseGethParams(json: any) {
   const { name, config, timestamp, gasLimit, difficulty, nonce, extraData, mixHash, coinbase } =
     json
+  // EIP155 and EIP158 are both part of Spurious Dragon hardfork and must occur at the same time
+  // but have different configuration parameters in geth genesis parameters
+  if (config.eip155Block !== config.eip158Block) {
+    throw new Error(
+      'EIP155 block number must equal EIP 158 block number since both are part of SpuriousDragon hardfork and the client only supports activating the full hardfork'
+    )
+  }
+
   const { chainId } = config
-  const header = await parseGethHeader(json)
+  const header = await createGethGenesisBlockHeader(json)
   const { stateRoot } = header
   const hash = '0x' + header.hash().toString('hex')
   const params: any = {
@@ -218,17 +231,13 @@ async function parseGethParams(json: any) {
  */
 
 function formatNonce(nonce: string): string {
-  let formattedNonce = '0x0000000000000000'
   if (nonce === undefined || nonce === '0x0') {
-    return formattedNonce
-  } else if (isHexPrefixed(nonce)) {
-    formattedNonce = stripHexPrefix(nonce)
-    while (formattedNonce.length < 16) {
-      formattedNonce = '0' + formattedNonce
-    }
-    formattedNonce = '0x' + formattedNonce
+    return '0x0000000000000000'
   }
-  return formattedNonce
+  if (isHexPrefixed(nonce)) {
+    return '0x' + stripHexPrefix(nonce).padStart(16, '0')
+  }
+  return '0x' + nonce.padStart(16, '0')
 }
 
 /**
@@ -238,10 +247,10 @@ function formatNonce(nonce: string): string {
  * @returns
  */
 
-export async function parseParams(json: any, name?: string) {
+export async function parseCustomParams(json: any, name?: string) {
   try {
     if (json.config && json.difficulty && json.gasLimit && json.alloc) {
-      json.name = json.name || name
+      json.name = name
       json.nonce = formatNonce(json.nonce)
       return parseGethParams(json)
     } else {

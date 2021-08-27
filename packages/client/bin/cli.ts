@@ -2,7 +2,7 @@
 
 import { Server as RPCServer } from 'jayson/promise'
 import Common, { Hardfork } from '@ethereumjs/common'
-import { parseParams, parseMultiaddrs, parseGenesisState } from '../lib/util'
+import { parseMultiaddrs, parseGenesisState, parseCustomParams } from '../lib/util'
 import EthereumClient from '../lib/client'
 import { Config } from '../lib/config'
 import { Logger } from '../lib/logging'
@@ -41,6 +41,18 @@ const args = require('yargs')
     datadir: {
       describe: 'Data directory for the blockchain',
       default: `${os.homedir()}/Library/Ethereum/ethereumjs`,
+    },
+    customChain: {
+      describe: 'Path to custom chain parameters json file from Common',
+      coerce: path.resolve,
+    },
+    customGenesisState: {
+      describe: 'Path to custom genesis state json file from Common',
+      coerce: path.resolve,
+    },
+    gethGenesis: {
+      describe: 'Import a geth genesis file for running a custom network',
+      coerce: path.resolve,
     },
     transports: {
       describe: 'Network transports',
@@ -93,10 +105,6 @@ const args = require('yargs')
       number: true,
       default: Config.MAXPEERS_DEFAULT,
     },
-    params: {
-      describe: 'Path to chain parameters json file',
-      coerce: path.resolve,
-    },
     dnsAddr: {
       describe: 'IPv4 address of DNS server to use when acquiring peer discovery targets',
       string: true,
@@ -118,10 +126,6 @@ const args = require('yargs')
     discV4: {
       describe: 'Use v4 ("findneighbour" node requests) for peer discovery',
       boolean: true,
-    },
-    gethGenesis: {
-      describe: 'Import a geth genesis file for running a custom network',
-      string: true,
     },
   })
   .locale('en_EN').argv
@@ -181,34 +185,45 @@ function runRpcServer(client: EthereumClient, config: Config) {
  */
 async function run() {
   // give network id precedence over network name
-  let chain: string | number
-  if (args.networkId) {
-    chain = args.networkId
-  } else {
-    chain = args.network
-  }
+  const chain = args.networkId ?? args.network ?? 'mainnet'
 
   // configure common based on args given
   let common: Common = {} as Common
+  if (
+    (args.customChainParams || args.customGenesisState || args.gethGenesis) &&
+    (!(args.network === 'mainnet') || args.networkId)
+  ) {
+    throw new Error('cannot specify both custom chain parameters and preset network ID')
+  }
   // Use custom chain parameters file if specified
-  if (args.params) {
+  if (args.customChain) {
+    if (!args.customGenesisState) {
+      throw new Error('cannot have custom chain parameters without genesis state')
+    }
     try {
-      const params = JSON.parse(fs.readFileSync(args.params, 'utf-8'))
-      common = new Common({ chain: params })
+      const customChainParams = JSON.parse(fs.readFileSync(args.customChain, 'utf-8'))
+      const genesisState = JSON.parse(fs.readFileSync(args.customGenesisState))
+      common = new Common({
+        chain: customChainParams.name,
+        customChains: [[customChainParams, genesisState]],
+      })
     } catch (err) {
-      throw new Error('invalid chain parameters')
+      throw new Error(`invalid chain parameters: ${err.message}`)
     }
     // Use geth genesis parameters file if specified
   } else if (args.gethGenesis) {
     const genesisFile = JSON.parse(fs.readFileSync(args.gethGenesis, 'utf-8'))
-    const genesisParams = await parseParams(genesisFile, 'custom-chain')
+    const genesisParams = await parseCustomParams(
+      genesisFile,
+      path.parse(args.gethGenesis).base.split('.')[0]
+    )
     const genesisState = genesisFile.alloc ? await parseGenesisState(genesisFile) : {}
     common = new Common({
       chain: genesisParams.name,
       customChains: [[genesisParams, genesisState]],
     })
   }
-  // Use default common configuration if no custom parameters specified
+  // Use default common configuration for specified `chain` if no custom parameters specified
   else {
     common = new Common({ chain: chain, hardfork: Hardfork.Chainstart })
   }

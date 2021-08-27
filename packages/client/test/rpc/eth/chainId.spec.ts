@@ -6,7 +6,7 @@ import { baseSetup, params, baseRequest, createClient, createManager, startRPC }
 const method = 'eth_chainId'
 
 tape(`${method}: calls`, (t) => {
-  const server = baseSetup()
+  const { server } = baseSetup()
 
   const req = params(method, [])
   const expectRes = (res: any) => {
@@ -21,7 +21,7 @@ tape(`${method}: calls`, (t) => {
 })
 
 tape(`${method}: returns 1 for Mainnet`, (t) => {
-  const server = baseSetup()
+  const { server } = baseSetup()
 
   const req = params(method, [])
   const expectRes = (res: any) => {

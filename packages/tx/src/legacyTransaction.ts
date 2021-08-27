@@ -138,7 +138,11 @@ export default class Transaction extends BaseTransaction<Transaction> {
    *
    * Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
    *
-   * For an unsigned legacy tx this method returns the the empty Buffer values
+   * For legacy txs this is also the correct format to add transactions
+   * to a block with {@link Block.fromValuesArray} (use the `serialize()` method
+   * for typed txs).
+   *
+   * For an unsigned tx this method returns the empty Buffer values
    * for the signature parameters `v`, `r` and `s`. For an EIP-155 compliant
    * representation have a look at {@link Transaction.getMessageToSign}.
    */
@@ -161,9 +165,9 @@ export default class Transaction extends BaseTransaction<Transaction> {
    *
    * Format: `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
    *
-   * For an unsigned legacy tx this method uses the empty Buffer values
-   * for the signature parameters `v`, `r` and `s` for encoding. For an
-   * EIP-155 compliant representation use {@link Transaction.getMessageToSign}.
+   * For an unsigned tx this method uses the empty Buffer values for the
+   * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
+   * representation for external signing use {@link Transaction.getMessageToSign}.
    */
   serialize(): Buffer {
     return rlp.encode(this.raw())
@@ -189,7 +193,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
   }
 
   /**
-   * Returns the serialized unsigned tx (hashed or raw), which can be used
+   * Returns the unsigned tx (hashed or raw), which can be used
    * to sign the transaction (e.g. for sending to a hardware wallet).
    *
    * Note: the raw message message format for the legacy tx is not RLP encoded

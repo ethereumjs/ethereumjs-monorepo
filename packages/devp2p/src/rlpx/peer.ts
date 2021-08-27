@@ -52,7 +52,7 @@ export type HelloMsg = {
 }
 
 export interface ProtocolDescriptor {
-  protocol?: any
+  protocol: any
   offset: number
   length?: number
 }
@@ -99,6 +99,11 @@ export class Peer extends EventEmitter {
   _disconnectReason?: DISCONNECT_REASONS
   _disconnectWe: any
   _pingTimeout: number
+
+  /**
+   * Subprotocols (e.g. `ETH`) derived from the exchange on
+   * capabilities
+   */
   _protocols: ProtocolDescriptor[]
 
   constructor(options: any) {
@@ -371,11 +376,17 @@ export class Peer extends EventEmitter {
         const _offset = offset
         offset += obj.length
 
-        const SubProtocol = obj.constructor
-        const protocol = new SubProtocol(obj.version, this, (code: number, data: Buffer) => {
+        // The send method handed over to the subprotocol object (e.g. an `ETH` instance).
+        // The subprotocol is then calling into the lower level method
+        // (e.g. `ETH` calling into `Peer._sendMessage()`).
+        const sendMethod = (code: number, data: Buffer) => {
           if (code > obj.length) throw new Error('Code out of range')
           this._sendMessage(_offset + code, data)
-        })
+        }
+        // Dynamically instantiate the subprotocol object
+        // from the constructor
+        const SubProtocol = obj.constructor
+        const protocol = new SubProtocol(obj.version, this, sendMethod)
 
         return { protocol, offset: _offset, length: obj.length }
       })
@@ -491,13 +502,22 @@ export class Peer extends EventEmitter {
     if (code !== PREFIXES.HELLO && code !== PREFIXES.DISCONNECT && this._hello === null) {
       return this.disconnect(DISCONNECT_REASONS.PROTOCOL_ERROR)
     }
-    const obj = this._getProtocol(code)
-    if (obj === undefined) return this.disconnect(DISCONNECT_REASONS.PROTOCOL_ERROR)
+    // Protocol object referencing either this Peer object or the
+    // underlying subprotocol (e.g. `ETH`)
+    const protocolObj = this._getProtocol(code)
+    if (protocolObj === undefined) return this.disconnect(DISCONNECT_REASONS.PROTOCOL_ERROR)
 
-    const msgCode = code - obj.offset
-    const prefix = this.getMsgPrefix(msgCode)
+    const msgCode = code - protocolObj.offset
+    const protocolName = protocolObj.protocol.constructor.name
+
+    let prefix = ''
+    if (protocolName === 'Peer') {
+      prefix += `${this.getMsgPrefix(msgCode)}`
+    } else {
+      prefix += `${protocolName} subprotocol`
+    }
     debug(
-      `Received ${prefix} (message code: ${code} - ${obj.offset} = ${msgCode}) ${this._socket.remoteAddress}:${this._socket.remotePort}`
+      `Received ${prefix} message (code: ${code} - ${protocolObj.offset} = ${msgCode}) ${this._socket.remoteAddress}:${this._socket.remotePort}`
     )
 
     try {
@@ -507,8 +527,7 @@ export class Peer extends EventEmitter {
       if (this._hello?.protocolVersion && this._hello?.protocolVersion >= 5) {
         payload = snappy.uncompress(payload)
       }
-
-      obj.protocol._handleMessage(msgCode, payload)
+      protocolObj.protocol._handleMessage(msgCode, payload)
     } catch (err) {
       this.disconnect(DISCONNECT_REASONS.SUBPROTOCOL_ERROR)
       debug(`Error on peer subprotocol message handling: ${err}`)
@@ -559,6 +578,11 @@ export class Peer extends EventEmitter {
     if (this._connected) this.emit('close', this._disconnectReason, this._disconnectWe)
   }
 
+  /**
+   * Returns either a protocol object with a `protocol` parameter
+   * reference to this Peer instance or to a subprotocol instance (e.g. `ETH`)
+   * (depending on the `code` provided)
+   */
   _getProtocol(code: number): ProtocolDescriptor | undefined {
     if (code < BASE_PROTOCOL_LENGTH) return { protocol: this, offset: 0 }
     for (const obj of this._protocols) {

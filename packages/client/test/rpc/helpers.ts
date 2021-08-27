@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { Server as RPCServer, HttpServer } from 'jayson/promise'
 import VM from '@ethereumjs/vm'
-import Common, { Chain as ChainEnum } from '@ethereumjs/common'
+import Common, { Chain as ChainEnum, Hardfork } from '@ethereumjs/common'
 import { RPCManager as Manager } from '../../lib/rpc'
 import { getLogger } from '../../lib/logging'
 import { Config } from '../../lib/config'
@@ -10,6 +10,7 @@ import { RlpxServer } from '../../lib/net/server/rlpxserver'
 import { mockBlockchain } from './mockBlockchain'
 import type Blockchain from '@ethereumjs/blockchain'
 import type EthereumClient from '../../lib/client'
+import { TxPool } from '../../lib/sync/txpool'
 const request = require('supertest')
 
 const config: any = { loglevel: 'error' }
@@ -31,7 +32,7 @@ export function createManager(client: EthereumClient) {
 }
 
 export function createClient(clientOpts: any = {}) {
-  const common = clientOpts.commonChain ?? new Common({ chain: ChainEnum.Mainnet })
+  const common: Common = clientOpts.commonChain ?? new Common({ chain: ChainEnum.Mainnet })
   const config = new Config({ transports: [], common })
   const blockchain = clientOpts.blockchain ?? ((<any>mockBlockchain()) as Blockchain)
 
@@ -60,6 +61,8 @@ export function createClient(clientOpts: any = {}) {
     latest: () => {
       return undefined
     },
+    syncTargetHeight: common.hardforkBlockBN(Hardfork.London),
+    txPool: new TxPool({ config }),
   }
   if (clientOpts.includeVM) {
     synchronizer = { ...synchronizer, execution: { vm: new VM({ blockchain, common }) } }
@@ -98,9 +101,10 @@ export function createClient(clientOpts: any = {}) {
 }
 
 export function baseSetup() {
-  const manager = createManager(createClient())
+  const client = createClient()
+  const manager = createManager(client)
   const server = startRPC(manager.getMethods())
-  return server
+  return { server, manager, client }
 }
 
 export function params(method: string, params: Array<any> = []) {

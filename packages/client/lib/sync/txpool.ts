@@ -3,17 +3,26 @@ import { Config } from '../config'
 import { Peer } from '../net/peer'
 import { EthProtocolMethods } from '../net/protocol'
 import type { Block } from '@ethereumjs/block'
+import { PeerPool } from '../net/peerpool'
 
 export interface TxPoolOptions {
   /* Config */
   config: Config
 }
 
-export type TxPoolObject = {
+type TxPoolObject = {
   tx: TypedTransaction
-  hash: string
+  hash: string // plain strings without hex prefix
   added: number
 }
+
+type HandledObject = {
+  address: string // plain strings without hex prefix
+  added: number
+}
+
+type UnprefixedAddress = string
+type UnprefixedHash = string
 
 /**
  * @module service
@@ -34,20 +43,25 @@ export class TxPool {
 
   /**
    * List of pending tx hashes to avoid double requests
-   *
-   * (plain strings without hex prefix)
    */
-  private pending: string[] = []
+  private pending: UnprefixedHash[] = []
 
   /**
-   * List of handled tx hashes
+   * Map for handled tx hashes
    * (have been added to the pool at some point)
    *
-   * (plain strings without hex prefix)
+   * This is meant to be a superset of the tx pool
+   * so at any point it time containing minimally
+   * all txs from the pool.
    */
-  private handled: string[] = []
+  private handled: Map<UnprefixedHash, HandledObject>
 
-  public pool: Map<string, TxPoolObject[]>
+  /**
+   * The central pool dataset.
+   *
+   * Maps an address to a `TxPoolObject`
+   */
+  public pool: Map<UnprefixedAddress, TxPoolObject[]>
 
   /**
    * Activate before chain head is reached to start
@@ -61,6 +75,17 @@ export class TxPool {
   private TX_RETRIEVAL_LIMIT = 256
 
   /**
+   * Number of minutes to keep txs in the pool
+   */
+  public POOLED_STORAGE_TIME_LIMIT = 20
+
+  /**
+   * Number of minutes to forget about handled
+   * txs (for cleanup/memory reasons)
+   */
+  public HANDLED_CLEANUP_TIME_LIMIT = 60
+
+  /**
    * Log pool statistics on the given interval
    */
   private LOG_STATISTICS_INTERVAL = 10000 // ms
@@ -72,7 +97,9 @@ export class TxPool {
   constructor(options: TxPoolOptions) {
     this.config = options.config
 
-    this.pool = new Map<string, TxPoolObject[]>()
+    this.pool = new Map<UnprefixedAddress, TxPoolObject[]>()
+    this.handled = new Map<UnprefixedHash, HandledObject>()
+
     this.opened = false
     this.running = false
   }
@@ -103,20 +130,92 @@ export class TxPool {
   }
 
   /**
-   * New pooled txs announced
-   * @param  announcements new block hash announcements
+   * Adds a tx to the pool.
+   *
+   * If there is a tx in the pool with the same address and
+   * nonce it will be replaced by the new tx.
+   * @param tx Transaction
+   */
+  add(tx: TypedTransaction) {
+    const sender: UnprefixedAddress = tx.getSenderAddress().toString()
+    const inPool = this.pool.get(sender)
+    let add: TxPoolObject[] = []
+    if (inPool) {
+      // Replace pooled txs with the same nonce
+      add = inPool.filter((poolObj) => !poolObj.tx.nonce.eq(tx.nonce))
+    }
+    const address: UnprefixedAddress = tx.getSenderAddress().toString()
+    const hash: UnprefixedHash = tx.hash().toString('hex')
+    const added = Date.now()
+    add.push({ tx, added, hash })
+    this.pool.set(address, add)
+
+    this.handled.set(hash, { address, added })
+  }
+
+  /**
+   * Removes the given tx from the pool
+   * @param txHash Hash of the transaction
+   */
+  removeByHash(txHash: UnprefixedHash) {
+    if (!this.handled.has(txHash)) {
+      return
+    }
+    const address = this.handled.get(txHash)!.address
+    if (!this.pool.has(address)) {
+      return
+    }
+    const newPoolObjects = this.pool.get(address)!.filter((poolObj) => poolObj.hash !== txHash)
+    if (newPoolObjects.length === 0) {
+      // List of txs for address is now empty, can delete
+      this.pool.delete(address)
+    } else {
+      // There are more txs from this address
+      this.pool.set(address, newPoolObjects)
+    }
+  }
+
+  /**
+   * Send transactions to other peers in the peer pool
+   * @param pool
+   * @param tx Array with transactions to send
+   */
+  sendTransactions(peerPool: PeerPool, txs: TypedTransaction[]) {
+    const peers = peerPool.peers
+
+    for (const peer of peers) {
+      const txsToSend = []
+      for (const tx of txs) {
+        // TODO: check if tx has already been sent to peer
+        if (tx.type === 0) {
+          txsToSend.push(tx.raw())
+        } else {
+          txsToSend.push(tx.serialize())
+        }
+      }
+      if (txsToSend.length > 0) {
+        peer.eth?.send('Transactions', txsToSend)
+      }
+    }
+  }
+
+  /**
+   * Include new pooled txs announced in the pool
+   * @param  txHashes new tx hashes announced
    * @param  peer peer
    */
-  async announcedTxHashes(txHashes: Buffer[], peer: Peer) {
+  async includeAnnouncedTxs(txHashes: Buffer[], peer: Peer) {
     if (!this.running || txHashes.length === 0) {
       return
     }
     this.config.logger.debug(`TxPool: received new pooled hashes number=${txHashes.length}`)
 
+    this.cleanup()
+
     const reqHashes = []
     for (const txHash of txHashes) {
-      const txHashStr = txHash.toString('hex')
-      if (this.pending.includes(txHashStr) || this.handled.includes(txHashStr)) {
+      const txHashStr: UnprefixedHash = txHash.toString('hex')
+      if (this.pending.includes(txHashStr) || this.handled.has(txHashStr)) {
         continue
       }
       reqHashes.push(txHash)
@@ -126,7 +225,7 @@ export class TxPool {
       return
     }
 
-    const reqHashesStr = reqHashes.map((hash) => hash.toString('hex'))
+    const reqHashesStr: UnprefixedHash[] = reqHashes.map((hash) => hash.toString('hex'))
     this.pending.concat(reqHashesStr)
     this.config.logger.debug(
       `TxPool: requesting txs number=${reqHashes.length} pending=${this.pending.length}`
@@ -144,56 +243,49 @@ export class TxPool {
 
     for (const txData of txsResult[1]) {
       const tx = TransactionFactory.fromBlockBodyData(txData)
-      const sender = tx.getSenderAddress().toString()
-      const inPool = this.pool.get(sender)
-      let add: TxPoolObject[] = []
-      if (inPool) {
-        // Replace pooled txs with the same nonce
-        add = inPool.filter((poolObj) => !poolObj.tx.nonce.eq(tx.nonce))
-      }
-      const hash = tx.hash().toString('hex')
-      add.push({ tx, added: Date.now(), hash })
-
-      this.pool.set(tx.getSenderAddress().toString(), add)
-      this.handled.push(hash)
+      this.add(tx)
     }
   }
 
   /**
-   * Sync txs in the pool with txs from latest blocks
+   * Remove txs included in the latest blocks from the tx pool
    */
-  newBlocks(blocks: Block[]) {
+  removeNewBlockTxs(newBlocks: Block[]) {
     if (!this.running) {
       return
     }
-    for (const block of blocks) {
-      const includedTxs: string[] = []
+    for (const block of newBlocks) {
       for (const tx of block.transactions) {
-        const hash = tx.hash().toString('hex')
-        // If tx hasn't been handled by the pool continue
-        // (performance optimization)
-        if (!this.handled.includes(hash)) {
-          continue
-        }
-        includedTxs.push(hash)
+        const txHash: UnprefixedHash = tx.hash().toString('hex')
+        this.removeByHash(txHash)
       }
-      this.pool.forEach((poolObjects, address) => {
-        for (const poolObject of poolObjects) {
-          if (includedTxs.includes(poolObject.hash)) {
-            if (poolObjects.length === 1) {
-              // This was the only tx from this address, can delete entry
-              this.pool.delete(address)
-            } else {
-              // There are more txs from this address, just remove the included hashes
-              this.pool.set(
-                address,
-                poolObjects.filter((obj) => !includedTxs.includes(obj.hash))
-              )
-            }
-          }
-        }
-      })
     }
+  }
+
+  /**
+   * Regular tx pool cleanup
+   */
+  cleanup() {
+    // Remove txs older than POOLED_STORAGE_TIME_LIMIT from the pool
+    let compDate = Date.now() - this.POOLED_STORAGE_TIME_LIMIT * 60
+    this.pool.forEach((poolObjects, address) => {
+      const newPoolObjects = poolObjects.filter((obj) => obj.added >= compDate)
+      if (newPoolObjects.length < poolObjects.length) {
+        if (newPoolObjects.length === 0) {
+          this.pool.delete(address)
+        } else {
+          this.pool.set(address, newPoolObjects)
+        }
+      }
+    })
+
+    // Cleanup handled txs
+    compDate = Date.now() - this.HANDLED_CLEANUP_TIME_LIMIT * 60
+    this.handled.forEach((handleObj, address) => {
+      if (handleObj.added < compDate) {
+        this.handled.delete(address)
+      }
+    })
   }
 
   /**
