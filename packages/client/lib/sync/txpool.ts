@@ -143,6 +143,28 @@ export class TxPool {
   }
 
   /**
+   * Removes the given tx from the pool
+   * @param txHash Hash of the transaction
+   */
+  removeByHash(txHash: UnprefixedHash) {
+    if (!this.handled.has(txHash)) {
+      return
+    }
+    const address = this.handled.get(txHash)!.address
+    if (!this.pool.has(address)) {
+      return
+    }
+    const newPoolObjects = this.pool.get(address)!.filter((poolObj) => poolObj.hash !== txHash)
+    if (newPoolObjects.length === 0) {
+      // List of txs for address is now empty, can delete
+      this.pool.delete(address)
+    } else {
+      // There are more txs from this address
+      this.pool.set(address, newPoolObjects)
+    }
+  }
+
+  /**
    * Send transactions to other peers in the peer pool
    * @param pool
    * @param tx Array with transactions to send
@@ -220,32 +242,10 @@ export class TxPool {
       return
     }
     for (const block of newBlocks) {
-      const includedTxs: string[] = []
       for (const tx of block.transactions) {
-        const hash: UnprefixedHash = tx.hash().toString('hex')
-        // If tx hasn't been handled by the pool continue
-        // (performance optimization)
-        if (!this.handled.has(hash)) {
-          continue
-        }
-        includedTxs.push(hash)
+        const txHash: UnprefixedHash = tx.hash().toString('hex')
+        this.removeByHash(txHash)
       }
-      this.pool.forEach((poolObjects, address) => {
-        for (const poolObject of poolObjects) {
-          if (includedTxs.includes(poolObject.hash)) {
-            if (poolObjects.length === 1) {
-              // This was the only tx from this address, can delete entry
-              this.pool.delete(address)
-            } else {
-              // There are more txs from this address, just remove the included hashes
-              this.pool.set(
-                address,
-                poolObjects.filter((obj) => !includedTxs.includes(obj.hash))
-              )
-            }
-          }
-        }
-      })
     }
   }
 
