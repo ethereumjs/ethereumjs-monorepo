@@ -22,7 +22,7 @@ function compareErrorMsg(t: any, error: any, errorMsg: any) {
 }
 
 tape(`${method}: call with one valid parameter`, (t) => {
-  const server = baseSetup()
+  const { server } = baseSetup()
 
   const req = params(method, ['0x68656c6c6f20776f726c64'])
   const expectRes = (res: any) => {
@@ -45,7 +45,7 @@ tape(`${method}: call with one valid parameter`, (t) => {
 })
 
 tape(`${method}: call with one non-hex parameter`, (t) => {
-  const server = baseSetup()
+  const { server } = baseSetup()
 
   const req = params(method, ['hello world'])
   const expectRes = (res: any) => {
@@ -60,7 +60,7 @@ tape(`${method}: call with one non-hex parameter`, (t) => {
 })
 
 tape(`${method}: call with no parameters`, (t) => {
-  const server = baseSetup()
+  const { server } = baseSetup()
 
   const req = params(method, [])
   const expectRes = (res: any) => {

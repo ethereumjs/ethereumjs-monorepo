@@ -1,4 +1,3 @@
-import { Hardfork } from '@ethereumjs/common'
 import { Transaction, TransactionFactory } from '@ethereumjs/tx'
 import {
   Account,
@@ -19,6 +18,7 @@ import { EthereumService } from '../../service'
 import type { EthProtocol } from '../../net/protocol'
 import type VM from '@ethereumjs/vm'
 import { Block } from '@ethereumjs/block'
+import { FullSynchronizer } from '../../sync'
 
 /**
  * eth_* RPC module
@@ -471,9 +471,15 @@ export class Eth {
 
     try {
       const common = this.client.config.chainCommon.copy()
-      // TODO: generalize with a new Common.latestSupportedHardfork() method or similar
-      // Alternative: common.setHardfork('latest')
-      common.setHardfork(Hardfork.London)
+      if (!this.service.synchronizer.syncTargetHeight) {
+        return {
+          code: INTERNAL_ERROR,
+          message: `client is not aware of the current chain height yet (give sync some more time)`,
+        }
+      }
+      // Set the tx common to an appropriate HF to create a tx
+      // with matching HF rules
+      common.setHardforkByBlockNumber(this.service.synchronizer.syncTargetHeight)
       const tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), { common })
       if (!tx.isSigned()) {
         return {
@@ -481,21 +487,21 @@ export class Eth {
           message: `tx needs to be signed`,
         }
       }
-      const peers = this.service.pool.peers
-      if (peers.length === 0) {
+
+      // Add the tx to own tx pool
+      // TODO: eslint is giving an "Insert `;`" error, retest periodically or fix
+      // eslint-disable-next-line
+      const txPool = (this.service.synchronizer as FullSynchronizer).txPool
+      txPool.add(tx)
+
+      const peerPool = this.service.pool
+      if (peerPool.peers.length === 0) {
         return {
           code: INTERNAL_ERROR,
           message: `no peer connection available`,
         }
       }
-
-      for (const peer of peers.slice(0, 5)) {
-        if (tx.type === 0) {
-          peer.eth?.send('Transactions', [tx.raw()])
-        } else {
-          peer.eth?.send('Transactions', [tx.serialize()])
-        }
-      }
+      txPool.sendTransactions(peerPool, [tx])
 
       return `0x${tx.hash().toString('hex')}`
     } catch (e) {
