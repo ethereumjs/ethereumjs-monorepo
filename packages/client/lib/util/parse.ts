@@ -166,7 +166,7 @@ async function parseGethParams(json: any) {
     genesis: {
       hash,
       timestamp,
-      gasLimit,
+      gasLimit: parseInt(gasLimit), // Geth stores gasLimit as a hex string while our gasLimit is a `number`
       difficulty,
       nonce,
       extraData,
