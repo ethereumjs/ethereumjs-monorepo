@@ -320,29 +320,31 @@ export async function setupPreConditions(state: DefaultStateManager, testData: a
 
     const addressBuf = format(addressStr)
     const address = new Address(addressBuf)
+
     const codeBuf = format(code)
     const codeHash = keccak256(codeBuf)
 
     // Set contract storage
     for (const storageKey of Object.keys(storage)) {
+      console.log(storage[storageKey])
       const valBN = new BN(format(storage[storageKey]), 16)
       if (valBN.isZero()) {
         continue
       }
-      const val = rlp.encode(valBN.toArrayLike(Buffer, 'be'))
+      const val = valBN.toArrayLike(Buffer, 'be')
       const key = setLengthLeft(format(storageKey), 32)
 
       await state.putContractStorage(address, key, val)
     }
+
+    // Put contract code
+    await state.putContractCode(address, codeBuf)
 
     const stateRoot = (await state.getAccount(address)).stateRoot
 
     if (testData.exec && testData.exec.address === addressStr) {
       testData.root = stateRoot
     }
-
-    // Put contract code
-    await state.putContractCode(address, codeBuf)
 
     // Put account data
     const account = Account.fromAccountData({ nonce, balance, codeHash, stateRoot })

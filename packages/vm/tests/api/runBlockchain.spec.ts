@@ -73,7 +73,7 @@ tape('runBlockchain', (t) => {
     const head = await vm.blockchain.getHead()
     st.equal(head.hash().toString('hex'), testData.blocks[0].blockHeader.hash.slice(2))
 
-    await setupPreConditions((vm.stateManager as DefaultStateManager)._trie, testData)
+    await setupPreConditions(vm.stateManager as DefaultStateManager, testData)
 
     vm.runBlock = async () => new Promise((resolve, reject) => reject(new Error('test')))
 
@@ -105,7 +105,7 @@ tape('runBlockchain', (t) => {
     const head = await vm.blockchain.getHead()
     st.equal(head.hash().toString('hex'), testData.blocks[0].blockHeader.hash.slice(2))
 
-    await setupPreConditions((vm.stateManager as DefaultStateManager)._trie, testData)
+    await setupPreConditions(vm.stateManager as DefaultStateManager, testData)
 
     await vm.runBlockchain()
 
