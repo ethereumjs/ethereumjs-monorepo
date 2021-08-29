@@ -20,6 +20,8 @@ import { AccessList, AccessListItem } from '@ethereumjs/tx'
 
 const debug = createDebugLogger('vm:state')
 
+const CODEHASH_PREFIX = Buffer.from('c')
+
 type AddressHex = string
 
 /**
@@ -174,7 +176,8 @@ export default class DefaultStateManager implements StateManager {
       return
     }
 
-    await this._trie.db.put(codeHash, value)
+    const key = Buffer.concat([CODEHASH_PREFIX, codeHash])
+    await this._trie.db.put(key, value)
 
     const account = await this.getAccount(address)
     if (this.DEBUG) {
@@ -195,7 +198,8 @@ export default class DefaultStateManager implements StateManager {
     if (!account.isContract()) {
       return Buffer.alloc(0)
     }
-    const code = await this._trie.db.get(account.codeHash)
+    const key = Buffer.concat([CODEHASH_PREFIX, account.codeHash])
+    const code = await this._trie.db.get(key)
     return code ?? Buffer.alloc(0)
   }
 

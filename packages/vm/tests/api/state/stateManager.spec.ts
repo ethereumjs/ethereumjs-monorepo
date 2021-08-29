@@ -289,6 +289,75 @@ tape('StateManager', (t) => {
     st.fail('Should have failed')
     st.end()
   })
+
+  t.test('should store codehashes using a prefix', async (st) => {
+    /*
+      This test is mostly an example of why a code prefix is necessary
+      I an address, we put two storage values. The preimage of the (storage trie) root hash is known
+      This preimage is used as codeHash
+
+      NOTE: Currently, the only problem which this code prefix fixes, is putting 0x80 as contract code
+      -> This hashes to the empty trie node hash (0x80 = RLP([])), so keccak256(0x80) = empty trie node hash
+      -> Therefore, each empty state trie now points to 0x80, which is not a valid trie node, which crashes @ethereumjs/trie
+    */
+
+    // Setup
+    const stateManager = new DefaultStateManager()
+    const codeStateManager = new DefaultStateManager()
+    const address1 = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+    const key1 = Buffer.from('00'.repeat(32), 'hex')
+    const key2 = Buffer.from('00'.repeat(31) + '01', 'hex')
+
+    await stateManager.putContractStorage(address1, key1, key2)
+    await stateManager.putContractStorage(address1, key2, key2)
+    const root = await stateManager.getStateRoot()
+    const rawNode = await stateManager._trie.db.get(root)
+
+    await codeStateManager.putContractCode(address1, rawNode!)
+
+    let codeSlot1 = await codeStateManager.getContractStorage(address1, key1)
+    let codeSlot2 = await codeStateManager.getContractStorage(address1, key2)
+
+    st.ok(codeSlot1.length == 0, 'slot 0 is empty')
+    st.ok(codeSlot2.length == 0, 'slot 1 is empty')
+
+    const code = await codeStateManager.getContractCode(address1)
+    st.ok(code.length > 0, 'code deposited correctly')
+
+    const slot1 = await stateManager.getContractStorage(address1, key1)
+    const slot2 = await stateManager.getContractStorage(address1, key2)
+
+    st.ok(slot1.length > 0, 'storage key0 deposited correctly')
+    st.ok(slot2.length > 0, 'storage key1 deposited correctly')
+
+    let slotCode = await stateManager.getContractCode(address1)
+    st.ok(slotCode.length == 0, 'code cannot be loaded')
+
+    // Checks by either setting state root to codeHash, or codeHash to stateRoot
+    // The knowledge of the tries should not change
+    let account = await stateManager.getAccount(address1)
+    account.codeHash = root
+
+    await stateManager.putAccount(address1, account)
+
+    slotCode = await stateManager.getContractCode(address1)
+    st.ok(slotCode.length == 0, 'code cannot be loaded') // This test fails if no code prefix is used
+
+    account = await codeStateManager.getAccount(address1)
+    console.log(account.codeHash.toString('hex'))
+    console.log(root.toString('hex'))
+    account.stateRoot = root
+
+    await codeStateManager.putAccount(address1, account)
+
+    codeSlot1 = await codeStateManager.getContractStorage(address1, key1)
+    codeSlot2 = await codeStateManager.getContractStorage(address1, key2)
+
+    st.ok(codeSlot1.length == 0, 'slot 0 is empty')
+    st.ok(codeSlot2.length == 0, 'slot 1 is empty')
+
+    st.end()
+  })
 })
 
 tape('Original storage cache', async (t) => {
