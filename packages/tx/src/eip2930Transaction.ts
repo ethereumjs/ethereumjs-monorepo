@@ -228,7 +228,12 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
    * signatureYParity (v), signatureR (r), signatureS (s)]`
    *
-   * Use {@link AccessListEIP2930Transaction.serialize} to add to block data for {@link Block.fromValuesArray}.
+   * Use {@link AccessListEIP2930Transaction.serialize} to add a transaction to a block
+   * with {@link Block.fromValuesArray}.
+   *
+   * For an unsigned tx this method uses the empty Buffer values for the
+   * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
+   * representation for external signing use {@link AccessListEIP2930Transaction.getMessageToSign}.
    */
   raw(): AccessListEIP2930ValuesArray {
     return [

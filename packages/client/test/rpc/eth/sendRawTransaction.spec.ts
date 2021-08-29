@@ -7,7 +7,7 @@ import { baseSetup, params, baseRequest, createClient, createManager, startRPC }
 const method = 'eth_sendRawTransaction'
 
 tape(`${method}: call with valid arguments`, (t) => {
-  const server = baseSetup()
+  const { server } = baseSetup()
 
   // Mainnet EIP-1559 tx
   const txData =
@@ -24,8 +24,31 @@ tape(`${method}: call with valid arguments`, (t) => {
   baseRequest(t, server, req, 200, expectRes)
 })
 
+tape(`${method}: call with sync target height not set yet`, (t) => {
+  const { server, client } = baseSetup()
+  const service = client.services.find((s) => s.name === 'eth')
+  service!.synchronizer.syncTargetHeight = undefined
+
+  // Mainnet EIP-1559 tx
+  const txData =
+    '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
+  const req = params(method, [txData])
+  const expectRes = (res: any) => {
+    const msg = 'should return error'
+    if (
+      res.body.result.message ===
+      'client is not aware of the current chain height yet (give sync some more time)'
+    ) {
+      t.pass(msg)
+    } else {
+      throw new Error(msg)
+    }
+  }
+  baseRequest(t, server, req, 200, expectRes)
+})
+
 tape(`${method}: call with invalid tx (wrong chain ID)`, (t) => {
-  const server = baseSetup()
+  const { server } = baseSetup()
 
   // Baikal EIP-1559 tx
   const txData =
@@ -46,7 +69,7 @@ tape(`${method}: call with invalid tx (wrong chain ID)`, (t) => {
 })
 
 tape(`${method}: call with unsigned tx`, (t) => {
-  const server = baseSetup()
+  const { server } = baseSetup()
 
   // Mainnet EIP-1559 tx
   const txData =

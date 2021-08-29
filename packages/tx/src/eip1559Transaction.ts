@@ -257,7 +257,12 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
    * accessList, signatureYParity, signatureR, signatureS]`
    *
-   * Use {@link FeeMarketEIP1559Transaction.serialize} to add to block data for {@link Block.fromValuesArray}.
+   * Use {@link FeeMarketEIP1559Transaction.serialize} to add a transaction to a block
+   * with {@link Block.fromValuesArray}.
+   *
+   * For an unsigned tx this method uses the empty Buffer values for the
+   * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
+   * representation for external signing use {@link FeeMarketEIP1559Transaction.getMessageToSign}.
    */
   raw(): FeeMarketEIP1559ValuesArray {
     return [

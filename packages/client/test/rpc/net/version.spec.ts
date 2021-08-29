@@ -42,7 +42,7 @@ tape(`${method}: call on ropsten`, (t) => {
 })
 
 tape(`${method}: call on mainnet`, (t) => {
-  const server = baseSetup()
+  const { server } = baseSetup()
 
   const req = params(method, [])
   const expectRes = (res: any) => {
