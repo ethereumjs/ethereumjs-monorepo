@@ -9,6 +9,8 @@ tape('[TxPool]', async (t) => {
   const common = new Common({ chain: 'mainnet', hardfork: 'london' })
   const config = new Config({ transports: [], loglevel: 'error' })
 
+  const { PeerPool } = await import('../../lib/net/peerpool')
+
   const A = {
     address: Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex'),
     privateKey: Buffer.from(
@@ -87,13 +89,15 @@ tape('[TxPool]', async (t) => {
         },
       },
     }
-    await pool.includeAnnouncedTxs([txA01.hash()], peer)
+    const peerPool = new PeerPool({ config })
+
+    await pool.includeAnnouncedTxs([txA01.hash()], peer, peerPool)
     t.equal(pool.pool.size, 1, 'pool size 1')
     t.equal((pool as any).pending.length, 0, 'cleared pending txs')
     t.equal((pool as any).handled.size, 1, 'added to handled txs')
 
     pool.pool.clear()
-    await pool.includeAnnouncedTxs([txA01.hash()], peer)
+    await pool.includeAnnouncedTxs([txA01.hash()], peer, peerPool)
     t.equal(pool.pool.size, 0, 'should not add a once handled tx')
 
     pool.stop()
@@ -115,13 +119,15 @@ tape('[TxPool]', async (t) => {
         },
       },
     }
+    const peerPool = new PeerPool({ config })
+
     const hashes = []
     for (let i = 1; i <= TX_RETRIEVAL_LIMIT + 1; i++) {
       // One more than TX_RETRIEVAL_LIMIT
       hashes.push(Buffer.from(i.toString().padStart(64, '0'), 'hex')) // '0000000000000000000000000000000000000000000000000000000000000001',...
     }
 
-    await pool.includeAnnouncedTxs(hashes, peer as any)
+    await pool.includeAnnouncedTxs(hashes, peer as any, peerPool)
     pool.stop()
     pool.close()
     t.end()
@@ -139,7 +145,9 @@ tape('[TxPool]', async (t) => {
         },
       },
     }
-    await pool.includeAnnouncedTxs([txA01.hash(), txB01.hash()], peer)
+    const peerPool = new PeerPool({ config })
+
+    await pool.includeAnnouncedTxs([txA01.hash(), txB01.hash()], peer, peerPool)
     t.equal(pool.pool.size, 2, 'pool size 2')
     pool.stop()
     pool.close()
@@ -159,7 +167,9 @@ tape('[TxPool]', async (t) => {
         },
       },
     }
-    await pool.includeAnnouncedTxs([txA01.hash(), txA02.hash()], peer)
+    const peerPool = new PeerPool({ config })
+
+    await pool.includeAnnouncedTxs([txA01.hash(), txA02.hash()], peer, peerPool)
     t.equal(pool.pool.size, 1, 'pool size 1')
     const address = `0x${A.address.toString('hex')}`
     const poolContent = pool.pool.get(address)!
@@ -183,7 +193,9 @@ tape('[TxPool]', async (t) => {
         },
       },
     }
-    await pool.includeAnnouncedTxs([txA01.hash()], peer)
+    const peerPool = new PeerPool({ config })
+
+    await pool.includeAnnouncedTxs([txA01.hash()], peer, peerPool)
     t.equal(pool.pool.size, 1, 'pool size 1')
 
     // Craft block with tx not in pool
@@ -203,7 +215,7 @@ tape('[TxPool]', async (t) => {
         },
       },
     }
-    await pool.includeAnnouncedTxs([txB01.hash(), txB02.hash()], peer)
+    await pool.includeAnnouncedTxs([txB01.hash(), txB02.hash()], peer, peerPool)
     t.equal(pool.pool.size, 1, 'pool size 1')
     const address = `0x${B.address.toString('hex')}`
     let poolContent = pool.pool.get(address)!
@@ -244,7 +256,9 @@ tape('[TxPool]', async (t) => {
         },
       },
     }
-    await pool.includeAnnouncedTxs([txA01.hash(), txB01.hash()], peer)
+    const peerPool = new PeerPool({ config })
+
+    await pool.includeAnnouncedTxs([txA01.hash(), txB01.hash()], peer, peerPool)
     t.equal(pool.pool.size, 2, 'pool size 2')
     t.equal((pool as any).handled.size, 2, 'handled size 2')
 

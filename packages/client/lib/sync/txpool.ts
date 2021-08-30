@@ -12,17 +12,23 @@ export interface TxPoolOptions {
 
 type TxPoolObject = {
   tx: TypedTransaction
-  hash: string // plain strings without hex prefix
+  hash: UnprefixedHash
   added: number
 }
 
 type HandledObject = {
-  address: string // plain strings without hex prefix
+  address: UnprefixedAddress
+  added: number
+}
+
+type SentObject = {
+  hash: UnprefixedHash
   added: number
 }
 
 type UnprefixedAddress = string
 type UnprefixedHash = string
+type PeerId = string
 
 /**
  * @module service
@@ -47,6 +53,13 @@ export class TxPool {
   private pending: UnprefixedHash[] = []
 
   /**
+   * The central pool dataset.
+   *
+   * Maps an address to a `TxPoolObject`
+   */
+  public pool: Map<UnprefixedAddress, TxPoolObject[]>
+
+  /**
    * Map for handled tx hashes
    * (have been added to the pool at some point)
    *
@@ -57,11 +70,10 @@ export class TxPool {
   private handled: Map<UnprefixedHash, HandledObject>
 
   /**
-   * The central pool dataset.
-   *
-   * Maps an address to a `TxPoolObject`
+   * Map for tx hashes already broadcasted to other
+   * peers.
    */
-  public pool: Map<UnprefixedAddress, TxPoolObject[]>
+  private sentTxHashes: Map<PeerId, SentObject[]>
 
   /**
    * Activate before chain head is reached to start
@@ -99,6 +111,7 @@ export class TxPool {
 
     this.pool = new Map<UnprefixedAddress, TxPoolObject[]>()
     this.handled = new Map<UnprefixedHash, HandledObject>()
+    this.sentTxHashes = new Map<PeerId, SentObject[]>()
 
     this.opened = false
     this.running = false
@@ -176,7 +189,54 @@ export class TxPool {
   }
 
   /**
+   * Send (broadcast) tx hashes from the pool to connected
+   * peers.
+   *
+   * Double sending is avoided by compare towards the
+   * `SentTxHashes` map.
+   * @param pool
+   * @param tx Array with transactions to send
+   */
+  async sendNewTxHashes(peerPool: PeerPool, txHashes: UnprefixedHash[]) {
+    const peers = peerPool.peers
+
+    for (const peer of peers) {
+      // Make sure data structure is initialized
+      if (!this.sentTxHashes.has(peer.id)) {
+        this.sentTxHashes.set(peer.id, [])
+      }
+      // Filter tx hashes not sent yet
+      const hashesToSend = []
+      for (const txHash of txHashes) {
+        const inSent = this.sentTxHashes
+          .get(peer.id)!
+          .filter((sentObject) => sentObject.hash === txHash).length
+        if (inSent === 0) {
+          hashesToSend.push(txHash)
+        }
+      }
+      // Broadcast to peer if at least 1 new tx hash to announce
+      if (hashesToSend.length > 0) {
+        // TODO
+        //await peer.eth?.send('NewPooledTxHashes', hashesToSend)
+      }
+      for (const hash of hashesToSend) {
+        const added = Date.now()
+        const add = {
+          hash,
+          added,
+        }
+        this.sentTxHashes.get(peer.id)!.push(add)
+      }
+    }
+  }
+
+  /**
    * Send transactions to other peers in the peer pool
+   *
+   * Note that there is currently no data structure to avoid
+   * double sending to a peer, so this has to be made sure
+   * by checking on the context the sending is performed.
    * @param pool
    * @param tx Array with transactions to send
    */
@@ -186,7 +246,6 @@ export class TxPool {
     for (const peer of peers) {
       const txsToSend = []
       for (const tx of txs) {
-        // TODO: check if tx has already been sent to peer
         if (tx.type === 0) {
           txsToSend.push(tx.raw())
         } else {
@@ -204,7 +263,7 @@ export class TxPool {
    * @param  txHashes new tx hashes announced
    * @param  peer peer
    */
-  async includeAnnouncedTxs(txHashes: Buffer[], peer: Peer) {
+  async includeAnnouncedTxs(txHashes: Buffer[], peer: Peer, peerPool: PeerPool) {
     if (!this.running || txHashes.length === 0) {
       return
     }
@@ -241,10 +300,13 @@ export class TxPool {
       this.pending = this.pending.filter((hash) => hash !== reqHashStr)
     }
 
+    const newTxHashes = []
     for (const txData of txsResult[1]) {
       const tx = TransactionFactory.fromBlockBodyData(txData)
       this.add(tx)
+      newTxHashes.push(tx.hash().toString('hex'))
     }
+    await this.sendNewTxHashes(peerPool, newTxHashes)
   }
 
   /**
