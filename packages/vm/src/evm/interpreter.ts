@@ -6,6 +6,7 @@ import Memory from './memory'
 import Stack from './stack'
 import EEI from './eei'
 import { Opcode, handlers as opHandlers, OpHandler, AsyncOpHandler } from './opcodes'
+import { dynamicGasHandlers } from './opcodes/gas'
 
 export interface InterpreterOpts {
   pc?: number
@@ -24,6 +25,7 @@ export interface RunState {
   validJumpSubs: number[]
   stateManager: StateManager
   eei: EEI
+  messageGasLimit?: BN // Cache value from `gas.ts` to save gas limit for a message call
 }
 
 export interface InterpreterResult {
@@ -44,7 +46,7 @@ export interface InterpreterStep {
   memoryWordCount: BN
   opcode: {
     name: string
-    fee: number
+    fee: BN
     isAsync: boolean
   }
   account: Account
@@ -107,7 +109,6 @@ export default class Interpreter {
     while (this._runState.programCounter < this._runState.code.length) {
       const opCode = this._runState.code[this._runState.programCounter]
       this._runState.opCode = opCode
-      await this._runStepHook()
 
       try {
         await this.runStep()
@@ -136,13 +137,28 @@ export default class Interpreter {
    */
   async runStep(): Promise<void> {
     const opInfo = this.lookupOpInfo(this._runState.opCode)
+
+    const gas = new BN(opInfo.fee)
+    // clone the gas limit; call opcodes can add stipend,
+    // which makes it seem like the gas left increases
+    const gasLimitClone = this._eei.getGasLeft()
+
+    if (opInfo.dynamicGas) {
+      const dynamicGasHandler = dynamicGasHandlers.get(this._runState.opCode)!
+      // This function updates the gas BN in-place using `i*` methods
+      // It needs the base fee, for correct gas limit calculation for the CALL opcodes
+      await dynamicGasHandler(this._runState, gas, this._vm._common)
+    }
+
+    await this._runStepHook(gas, gasLimitClone)
+
     // Check for invalid opcode
     if (opInfo.name === 'INVALID') {
       throw new VmError(ERROR.INVALID_OPCODE)
     }
 
     // Reduce opcode's base fee
-    this._eei.useGas(new BN(opInfo.fee), `${opInfo.name} (base fee)`)
+    this._eei.useGas(gas, `${opInfo.name} fee`)
     // Advance program counter
     this._runState.programCounter++
 
@@ -170,15 +186,15 @@ export default class Interpreter {
     return this._vm._opcodes.get(op) ?? this._vm._opcodes.get(0xfe)
   }
 
-  async _runStepHook(): Promise<void> {
+  async _runStepHook(fee: BN, gasLeft: BN): Promise<void> {
     const opcode = this.lookupOpInfo(this._runState.opCode)
     const eventObj: InterpreterStep = {
       pc: this._runState.programCounter,
-      gasLeft: this._eei.getGasLeft(),
+      gasLeft,
       gasRefund: this._eei._evm._refund,
       opcode: {
         name: opcode.fullName,
-        fee: opcode.fee,
+        fee,
         isAsync: opcode.isAsync,
       },
       stack: this._runState.stack._store,

@@ -2,7 +2,6 @@ import Common from '@ethereumjs/common'
 import { BN, keccak256, setLengthRight, setLengthLeft } from 'ethereumjs-util'
 import { ERROR, VmError } from './../../exceptions'
 import { RunState } from './../interpreter'
-import { adjustSstoreGasEIP2929 } from './EIP2929'
 
 const MASK_160 = new BN(1).shln(160).subn(1)
 
@@ -186,10 +185,10 @@ export function maxCallGas(gasLimit: BN, gasLeft: BN, runState: RunState, common
  */
 export function subMemUsage(runState: RunState, offset: BN, length: BN, common: Common) {
   // YP (225): access with zero length will not extend the memory
-  if (length.isZero()) return
+  if (length.isZero()) return new BN(0)
 
   const newMemoryWordCount = divCeil(offset.add(length), new BN(32))
-  if (newMemoryWordCount.lte(runState.memoryWordCount)) return
+  if (newMemoryWordCount.lte(runState.memoryWordCount)) return new BN(0)
 
   const words = newMemoryWordCount
   const fee = new BN(common.param('gasPrices', 'memory'))
@@ -198,11 +197,14 @@ export function subMemUsage(runState: RunState, offset: BN, length: BN, common: 
   const cost = words.mul(fee).add(words.mul(words).div(quadCoeff))
 
   if (cost.gt(runState.highestMemCost)) {
-    runState.eei.useGas(cost.sub(runState.highestMemCost), 'subMemUsage')
-    runState.highestMemCost = cost
+    const currentHighestMemCost = runState.highestMemCost
+    runState.highestMemCost = cost.clone()
+    cost.isub(currentHighestMemCost)
   }
 
   runState.memoryWordCount = newMemoryWordCount
+
+  return cost
 }
 
 /**
@@ -236,25 +238,26 @@ export function updateSstoreGas(
   runState: RunState,
   currentStorage: Buffer,
   value: Buffer,
-  keyBuf: Buffer,
   common: Common
-) {
-  const sstoreResetCost = common.param('gasPrices', 'sstoreReset')
+): BN {
   if (
-    (value.length === 0 && !currentStorage.length) ||
-    (value.length !== 0 && currentStorage.length)
+    (value.length === 0 && currentStorage.length === 0) ||
+    (value.length > 0 && currentStorage.length > 0)
   ) {
-    runState.eei.useGas(
-      new BN(adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset', common)),
-      'updateSstoreGas'
-    )
-  } else if (value.length === 0 && currentStorage.length) {
-    runState.eei.useGas(
-      new BN(adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset', common)),
-      'updateSstoreGas'
-    )
+    const gas = new BN(common.param('gasPrices', 'sstoreReset'))
+    return gas
+  } else if (value.length === 0 && currentStorage.length > 0) {
+    const gas = new BN(common.param('gasPrices', 'sstoreReset'))
     runState.eei.refundGas(new BN(common.param('gasPrices', 'sstoreRefund')), 'updateSstoreGas')
-  } else if (value.length !== 0 && !currentStorage.length) {
-    runState.eei.useGas(new BN(common.param('gasPrices', 'sstoreSet')), 'updateSstoreGas')
+    return gas
+  } else {
+    /*
+      The situations checked above are:
+      -> Value/Slot are both 0
+      -> Value/Slot are both nonzero
+      -> Value is zero, but slot is nonzero
+      Thus, the remaining case is where value is nonzero, but slot is zero, which is this clause
+    */
+    return new BN(common.param('gasPrices', 'sstoreSet'))
   }
 }
