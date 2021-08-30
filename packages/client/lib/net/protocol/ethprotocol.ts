@@ -1,5 +1,5 @@
 import { BN, bufferToInt } from 'ethereumjs-util'
-import { BlockBuffer, BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
+import { Block, BlockBuffer, BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
 import { Chain } from './../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'
 import { BlockBodyBuffer } from '@ethereumjs/block'
@@ -124,6 +124,7 @@ export class EthProtocol extends Protocol {
     {
       name: 'NewBlock',
       code: 0x07,
+      encode: ([block, td]: [Block, BN]) => [block.serialize(), Buffer.from(td)],
       decode: ([block, td]: [BlockBuffer, Buffer]) => [block, new BN(td)],
     },
     {

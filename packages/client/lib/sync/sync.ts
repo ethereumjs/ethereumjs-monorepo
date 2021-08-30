@@ -9,7 +9,7 @@ import { Event } from '../types'
 import type { LevelUp } from 'levelup'
 import { BlockFetcher, HeaderFetcher } from './fetcher'
 import { short } from '../util'
-import { Block, BlockBuffer } from '@ethereumjs/block'
+import { Block } from '@ethereumjs/block'
 
 export interface SynchronizerOptions {
   /* Config */
@@ -258,8 +258,7 @@ export abstract class Synchronizer {
     // If block parent is current chain tip, insert block into chain
     if (chainTip.toString('hex') === block.header.parentHash.toString('hex')) {
       await this.chain.putBlocks([block])
-    }
-    else {
+    } else {
       // If block is beyond current tip, handle as `NEW_BLOCK_HASHES`
       this.handleNewBlockHashes([[block.header.hash(), block.header.number]])
     }
