@@ -282,7 +282,7 @@ export class Peer extends EventEmitter {
    */
   _sendPong() {
     debug(`Send PONG to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
-    let data = rlp.encode([])    
+    let data = rlp.encode([])
 
     if (this._hello?.protocolVersion && this._hello.protocolVersion >= 5) {
       data = snappy.compress(data)
