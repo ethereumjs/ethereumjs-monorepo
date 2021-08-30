@@ -249,16 +249,16 @@ export abstract class Synchronizer {
   }
 
   /**
-   * 
-   * Processes `NEW_BLOCK` announcement from a peer and inserts into local chain if 
+   *
+   * Processes `NEW_BLOCK` announcement from a peer and inserts into local chain if
    * @param blockData `NEW_BLOCK` received from peer
    */
   async handleNewBlock(blockData: BlockBuffer) {
     const block = Block.fromValuesArray(blockData, { common: this.config.execCommon })
-    const chainTip = await (await this.chain.getLatestHeader()).hash()
+    const chainTip = (await this.chain.getLatestHeader()).hash()
     // If block parent is current chain tip, insert block into chain
     if (chainTip.toString('hex') === block.header.parentHash.toString('hex')) {
-      this.chain.putBlocks([block])
+      await this.chain.putBlocks([block])
     }
     // If block is beyond current tip, handle as `NEW_BLOCK_HASHES`
     else {
