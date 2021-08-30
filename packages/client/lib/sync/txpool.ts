@@ -70,10 +70,10 @@ export class TxPool {
   private handled: Map<UnprefixedHash, HandledObject>
 
   /**
-   * Map for tx hashes already broadcasted to other
-   * peers.
+   * Map for tx hashes a peer is already aware of
+   * (so no need to re-broadcast)
    */
-  private sentTxHashes: Map<PeerId, SentObject[]>
+  private knownTxHashes: Map<PeerId, SentObject[]>
 
   /**
    * Activate before chain head is reached to start
@@ -111,7 +111,7 @@ export class TxPool {
 
     this.pool = new Map<UnprefixedAddress, TxPoolObject[]>()
     this.handled = new Map<UnprefixedHash, HandledObject>()
-    this.sentTxHashes = new Map<PeerId, SentObject[]>()
+    this.knownTxHashes = new Map<PeerId, SentObject[]>()
 
     this.opened = false
     this.running = false
@@ -188,6 +188,21 @@ export class TxPool {
     }
   }
 
+  addKnownTxHashes(peer: Peer, txHashes: Buffer[]) {
+    // Make sure data structure is initialized
+    if (!this.knownTxHashes.has(peer.id)) {
+      this.knownTxHashes.set(peer.id, [])
+    }
+    for (const hash of txHashes) {
+      const added = Date.now()
+      const add = {
+        hash: hash.toString('hex'),
+        added,
+      }
+      this.knownTxHashes.get(peer.id)!.push(add)
+    }
+  }
+
   /**
    * Send (broadcast) tx hashes from the pool to connected
    * peers.
@@ -202,32 +217,24 @@ export class TxPool {
 
     for (const peer of peers) {
       // Make sure data structure is initialized
-      if (!this.sentTxHashes.has(peer.id)) {
-        this.sentTxHashes.set(peer.id, [])
+      if (!this.knownTxHashes.has(peer.id)) {
+        this.knownTxHashes.set(peer.id, [])
       }
       // Filter tx hashes not sent yet
-      const hashesToSend = []
+      const hashesToSend: Buffer[] = []
       for (const txHash of txHashes) {
-        const inSent = this.sentTxHashes
+        const inSent = this.knownTxHashes
           .get(peer.id)!
           .filter((sentObject) => sentObject.hash === txHash).length
         if (inSent === 0) {
-          hashesToSend.push(txHash)
+          hashesToSend.push(Buffer.from(txHash, 'hex'))
         }
       }
       // Broadcast to peer if at least 1 new tx hash to announce
       if (hashesToSend.length > 0) {
-        // TODO
-        //await peer.eth?.send('NewPooledTxHashes', hashesToSend)
+        peer.eth?.send('NewPooledTransactionHashes', hashesToSend)
       }
-      for (const hash of hashesToSend) {
-        const added = Date.now()
-        const add = {
-          hash,
-          added,
-        }
-        this.sentTxHashes.get(peer.id)!.push(add)
-      }
+      this.addKnownTxHashes(peer, hashesToSend)
     }
   }
 
@@ -268,6 +275,7 @@ export class TxPool {
       return
     }
     this.config.logger.debug(`TxPool: received new pooled hashes number=${txHashes.length}`)
+    this.addKnownTxHashes(peer, txHashes)
 
     this.cleanup()
 
