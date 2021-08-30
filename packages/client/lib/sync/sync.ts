@@ -9,6 +9,7 @@ import { Event } from '../types'
 import type { LevelUp } from 'levelup'
 import { BlockFetcher, HeaderFetcher } from './fetcher'
 import { short } from '../util'
+import { Block, BlockBuffer } from '@ethereumjs/block'
 
 export interface SynchronizerOptions {
   /* Config */
@@ -248,8 +249,23 @@ export abstract class Synchronizer {
   }
 
   /**
-   * Stop synchronization. Returns a promise that resolves once stopped.
+   * 
+   * Processes `NEW_BLOCK` announcement from a peer and inserts into local chain if 
+   * @param blockData `NEW_BLOCK` received from peer
    */
+  async handleNewBlock(blockData: BlockBuffer) {
+    const block = Block.fromValuesArray(blockData, { common: this.config.execCommon })
+    const chainTip = await (await this.chain.getLatestHeader()).hash()
+    // If block parent is current chain tip, insert block into chain
+    if (chainTip.toString('hex') === block.header.parentHash.toString('hex')) {
+      this.chain.putBlocks([block])
+    }
+    // If block is beyond current tip, handle as `NEW_BLOCK_HASHES`
+    else {
+      this.handleNewBlockHashes([[block.header.hash(), block.header.number]])
+    }
+  }
+
   async stop(): Promise<boolean> {
     if (!this.running) {
       return false
