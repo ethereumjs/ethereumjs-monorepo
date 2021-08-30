@@ -179,6 +179,9 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
         return
       }
     } catch (error) {
+      if (options.debug) {
+        await verifyPostConditions(state, testData.postState, t)
+      }
       // caught an error, reduce block number
       currentBlock.isubn(1)
       await handleError(error, expectException)
