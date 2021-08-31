@@ -1,5 +1,5 @@
 import tape from 'tape-catch'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
 import { PeerPool } from '../../lib/net/peerpool'
@@ -7,7 +7,7 @@ import { TxPool } from '../../lib/sync/txpool'
 import { Config } from '../../lib/config'
 
 tape('[TxPool]', async (t) => {
-  const common = new Common({ chain: 'mainnet', hardfork: 'london' })
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
   const config = new Config({ transports: [], loglevel: 'error' })
 
   const A = {
@@ -42,8 +42,8 @@ tape('[TxPool]', async (t) => {
 
   const txA01 = createTx() // A -> B, nonce: 0, value: 1
   const txA02 = createTx(A, B, 0, 2) // A -> B, nonce: 0, value: 2 (different hash)
-  const txB01 = createTx(B, A) // B -> A, nonce: 0
-  const txB02 = createTx(B, A, 1, 5) // B -> A, nonce: 1
+  const txB01 = createTx(B, A) // B -> A, nonce: 0, value: 1
+  const txB02 = createTx(B, A, 1, 5) // B -> A, nonce: 1, value: 5
 
   t.test('should initialize correctly', (t) => {
     const config = new Config({ transports: [], loglevel: 'error' })

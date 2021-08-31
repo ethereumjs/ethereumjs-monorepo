@@ -14,7 +14,6 @@ import { Event } from '../types'
  */
 export class FullSynchronizer extends Synchronizer {
   public execution: VMExecution
-
   public txPool: TxPool
 
   constructor(options: SynchronizerOptions) {
@@ -72,6 +71,10 @@ export class FullSynchronizer extends Synchronizer {
         hash
       )} hardfork=${this.config.chainCommon.hardfork()}`
     )
+    if (this.config.mine) {
+      // Start the TxPool immediately if mining
+      this.txPool.start()
+    }
   }
 
   /**
