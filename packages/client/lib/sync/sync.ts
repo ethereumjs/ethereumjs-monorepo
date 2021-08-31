@@ -250,7 +250,7 @@ export abstract class Synchronizer {
 
   /**
    *
-   * Processes `NEW_BLOCK` announcement from a peer and inserts into local chain if
+   * Processes `NEW_BLOCK` announcement from a peer and inserts into local chain if child of chain tip
    * @param blockData `NEW_BLOCK` received from peer
    */
   async handleNewBlock(block: Block) {

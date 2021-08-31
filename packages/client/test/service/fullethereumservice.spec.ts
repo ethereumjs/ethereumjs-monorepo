@@ -24,13 +24,21 @@ tape('[FullEthereumService]', async (t) => {
     stop() {}
     open() {}
     close() {}
+    handleNewBlock() {}
   }
   FullSynchronizer.prototype.start = td.func<any>()
   FullSynchronizer.prototype.stop = td.func<any>()
   FullSynchronizer.prototype.open = td.func<any>()
   FullSynchronizer.prototype.close = td.func<any>()
+  FullSynchronizer.prototype.handleNewBlock = td.func<any>()
   td.replace('../../lib/sync/fullsync', { FullSynchronizer })
 
+  class Block {
+    static fromValuesArray() {
+      return {}
+    }
+  }
+  td.replace('@ethereumjs/block', { Block })
   const { FullEthereumService } = await import('../../lib/service/fullethereumservice')
 
   t.test('should initialize correctly', (t) => {
@@ -84,6 +92,15 @@ tape('[FullEthereumService]', async (t) => {
     await service.stop()
     td.verify(service.synchronizer.stop())
     t.notOk(await service.stop(), 'already stopped')
+    t.end()
+  })
+
+  t.test('handleNewBlock should be called', async (t) => {
+    const config = new Config({ transports: [], loglevel: 'error' })
+    const service = new FullEthereumService({ config })
+
+    await service.handle({ name: 'NewBlock', data: {} }, 'eth', undefined as any)
+    td.verify(service.synchronizer.handleNewBlock({} as any))
     t.end()
   })
 
