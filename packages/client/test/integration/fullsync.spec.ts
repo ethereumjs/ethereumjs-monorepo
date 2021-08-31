@@ -45,7 +45,7 @@ tape('[Integration:FullSync]', async (t) => {
     await localServer.discover('remotePeer2', '127.0.0.3')
     localService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
       switch (localService.chain.blocks.height.toNumber()) {
-        case 10:
+        case 10: {
           t.pass('synced with best peer')
           const block = Block.fromBlockData({
             header: {
@@ -61,12 +61,14 @@ tape('[Integration:FullSync]', async (t) => {
             undefined as any
           )
           break
-        case 11:
+        }
+        case 11: {
           t.pass('processed new block')
           await destroy(localServer, localService)
           await destroy(remoteServer1, remoteService1)
           await destroy(remoteServer2, remoteService2)
           t.end()
+        }
       }
     })
 
