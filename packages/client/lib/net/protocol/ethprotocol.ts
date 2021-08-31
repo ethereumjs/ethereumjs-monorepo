@@ -3,6 +3,7 @@ import { BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
 import { Chain } from './../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'
 import { BlockBodyBuffer } from '@ethereumjs/block'
+import { TypedTransaction } from '../../../../tx/dist'
 
 interface EthProtocolOptions extends ProtocolOptions {
   /* Blockchain */
@@ -65,6 +66,17 @@ export class EthProtocol extends Protocol {
     {
       name: 'Transactions',
       code: 0x02,
+      encode: (txs: TypedTransaction[]) => {
+        const serializedTxs = []
+        for (const tx of txs) {
+          if (tx.type === 0) {
+            serializedTxs.push(tx.raw())
+          } else {
+            serializedTxs.push(tx.serialize())
+          }
+        }
+        return serializedTxs
+      },
     },
     {
       name: 'GetBlockHeaders',
@@ -133,10 +145,25 @@ export class EthProtocol extends Protocol {
         (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
         hashes,
       ],
+      decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
+        reqId: new BN(reqId),
+        hashes,
+      }),
     },
     {
       name: 'PooledTransactions',
       code: 0x0a,
+      encode: ({ reqId, txs }: { reqId: BN; txs: TypedTransaction[] }) => {
+        const serializedTxs = []
+        for (const tx of txs) {
+          if (tx.type === 0) {
+            serializedTxs.push(tx.raw())
+          } else {
+            serializedTxs.push(tx.serialize())
+          }
+        }
+        return [reqId.toNumber(), serializedTxs]
+      },
       decode: ([reqId, txs]: [Buffer, any[]]) => [new BN(reqId), txs],
     },
   ]

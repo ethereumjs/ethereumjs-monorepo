@@ -76,9 +76,9 @@ tape('[TxPool]', async (t) => {
     t.end()
   })
 
-  t.test('announcedTxHashes() -> add single tx', async (t) => {
+  t.test('announcedTxHashes() -> add single tx / knownByPeer / getByHash()', async (t) => {
     // Safeguard that send() method from peer2 gets called
-    t.plan(10)
+    t.plan(12)
     const pool = new TxPool({ config })
 
     pool.open()
@@ -119,6 +119,14 @@ tape('[TxPool]', async (t) => {
       (pool as any).knownByPeer.get(peer.id)[0].hash,
       txA01.hash().toString('hex'),
       'new known tx hashes entry for announcing peer'
+    )
+
+    const txs = pool.getByHash([txA01.hash()])
+    t.equal(txs.length, 1, 'should get correct number of txs by hash')
+    t.equal(
+      txs[0].serialize().toString('hex'),
+      txA01.serialize().toString('hex'),
+      'should get correct tx by hash'
     )
 
     pool.pool.clear()

@@ -167,6 +167,27 @@ export class TxPool {
   }
 
   /**
+   * Returns the available txs from the pool
+   * @param txHashes
+   * @returns Array with tx objects
+   */
+  getByHash(txHashes: Buffer[]): TypedTransaction[] {
+    const found = []
+    for (const txHash of txHashes) {
+      const txHashStr = txHash.toString('hex')
+      const handled = this.handled.get(txHashStr)
+      if (!handled) {
+        continue
+      }
+      const inPool = this.pool.get(handled.address)?.filter((poolObj) => poolObj.hash === txHashStr)
+      if (inPool && inPool.length === 1) {
+        found.push(inPool[0].tx)
+      }
+    }
+    return found
+  }
+
+  /**
    * Removes the given tx from the pool
    * @param txHash Hash of the transaction
    */
@@ -259,16 +280,8 @@ export class TxPool {
     const peers = peerPool.peers
 
     for (const peer of peers) {
-      const txsToSend = []
-      for (const tx of txs) {
-        if (tx.type === 0) {
-          txsToSend.push(tx.raw())
-        } else {
-          txsToSend.push(tx.serialize())
-        }
-      }
-      if (txsToSend.length > 0) {
-        peer.eth?.send('Transactions', txsToSend)
+      if (txs.length > 0) {
+        peer.eth?.send('Transactions', txs)
       }
     }
   }
