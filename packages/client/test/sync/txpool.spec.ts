@@ -2,14 +2,13 @@ import tape from 'tape-catch'
 import Common from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
+import { PeerPool } from '../../lib/net/peerpool'
 import { TxPool } from '../../lib/sync/txpool'
 import { Config } from '../../lib/config'
 
 tape('[TxPool]', async (t) => {
   const common = new Common({ chain: 'mainnet', hardfork: 'london' })
   const config = new Config({ transports: [], loglevel: 'error' })
-
-  const { PeerPool } = await import('../../lib/net/peerpool')
 
   const A = {
     address: Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex'),
@@ -78,27 +77,59 @@ tape('[TxPool]', async (t) => {
   })
 
   t.test('announcedTxHashes() -> add single tx', async (t) => {
+    // Safeguard that send() method from peer2 gets called
+    t.plan(10)
     const pool = new TxPool({ config })
 
     pool.open()
     pool.start()
     const peer: any = {
+      id: '1',
       eth: {
         getPooledTransactions: () => {
           return [null, [txA01.serialize()]]
         },
+        send: () => {
+          t.fail('should not send to announcing peer')
+        },
+      },
+    }
+    let sentToPeer2 = 0
+    const peer2: any = {
+      id: '2',
+      eth: {
+        send: () => {
+          sentToPeer2++
+          t.equal(sentToPeer2, 1, 'should send once to non-announcing peer')
+        },
       },
     }
     const peerPool = new PeerPool({ config })
+    peerPool.add(peer)
+    peerPool.add(peer2)
 
     await pool.includeAnnouncedTxs([txA01.hash()], peer, peerPool)
     t.equal(pool.pool.size, 1, 'pool size 1')
     t.equal((pool as any).pending.length, 0, 'cleared pending txs')
     t.equal((pool as any).handled.size, 1, 'added to handled txs')
 
+    t.equal((pool as any).knownByPeer.size, 2, 'known tx hashes size 2 (entries for both peers)')
+    t.equal((pool as any).knownByPeer.get(peer.id).length, 1, 'one tx added for peer 1')
+    t.equal(
+      (pool as any).knownByPeer.get(peer.id)[0].hash,
+      txA01.hash().toString('hex'),
+      'new known tx hashes entry for announcing peer'
+    )
+
     pool.pool.clear()
     await pool.includeAnnouncedTxs([txA01.hash()], peer, peerPool)
     t.equal(pool.pool.size, 0, 'should not add a once handled tx')
+    t.equal(
+      (pool as any).knownByPeer.get(peer.id).length,
+      1,
+      'should add tx only once to known tx hashes'
+    )
+    t.equal((pool as any).knownByPeer.size, 2, 'known tx hashes size 2 (entries for both peers)')
 
     pool.stop()
     pool.close()
@@ -255,18 +286,27 @@ tape('[TxPool]', async (t) => {
           return [null, [txA01.serialize(), txB01.serialize()]]
         },
       },
+      send: () => {},
     }
     const peerPool = new PeerPool({ config })
+    peerPool.add(peer)
 
     await pool.includeAnnouncedTxs([txA01.hash(), txB01.hash()], peer, peerPool)
     t.equal(pool.pool.size, 2, 'pool size 2')
     t.equal((pool as any).handled.size, 2, 'handled size 2')
+    t.equal((pool as any).knownByPeer.size, 1, 'known by peer size 1')
+    t.equal((pool as any).knownByPeer.get(peer.id).length, 2, '2 known txs')
 
     pool.cleanup()
     t.equal(
       pool.pool.size,
       2,
       'should not remove txs from pool (POOLED_STORAGE_TIME_LIMIT within range)'
+    )
+    t.equal(
+      (pool as any).knownByPeer.size,
+      1,
+      'should not remove txs from known by peer map (POOLED_STORAGE_TIME_LIMIT within range)'
     )
     t.equal(
       (pool as any).handled.size,
@@ -279,6 +319,11 @@ tape('[TxPool]', async (t) => {
     poolObj.added = Date.now() - pool.POOLED_STORAGE_TIME_LIMIT * 60 - 1
     pool.pool.set(address, [poolObj])
 
+    const knownByPeerObj1 = (pool as any).knownByPeer.get(peer.id)[0]
+    const knownByPeerObj2 = (pool as any).knownByPeer.get(peer.id)[1]
+    knownByPeerObj1.added = Date.now() - pool.POOLED_STORAGE_TIME_LIMIT * 60 - 1
+    ;(pool as any).knownByPeer.set(peer.id, [knownByPeerObj1, knownByPeerObj2])
+
     const hash = txB01.hash().toString('hex')
     const handledObj = (pool as any).handled.get(hash)
     handledObj.added = Date.now() - pool.HANDLED_CLEANUP_TIME_LIMIT * 60 - 1
@@ -289,6 +334,11 @@ tape('[TxPool]', async (t) => {
       pool.pool.size,
       1,
       'should remove txs from pool (POOLED_STORAGE_TIME_LIMIT before range)'
+    )
+    t.equal(
+      (pool as any).knownByPeer.get(peer.id).length,
+      1,
+      'should remove one tx from known by peer map (POOLED_STORAGE_TIME_LIMIT before range)'
     )
     t.equal(
       (pool as any).handled.size,
