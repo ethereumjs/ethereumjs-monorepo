@@ -202,6 +202,7 @@ export class Peer extends EventEmitter {
    */
   _sendMessage(code: number, data: Buffer) {
     if (this._closed) return false
+
     const msg = Buffer.concat([rlp.encode(code), data])
     const header = this._eciesSession.createHeader(msg.length)
     if (!header || this._socket.destroyed) return
@@ -263,7 +264,11 @@ export class Peer extends EventEmitter {
    */
   _sendPing() {
     debug(`Send PING to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
-    const data = rlp.encode([])
+    let data = rlp.encode([])
+    if (this._hello?.protocolVersion && this._hello.protocolVersion >= 5) {
+      data = snappy.compress(data)
+    }
+
     if (!this._sendMessage(PREFIXES.PING, data)) return
 
     clearTimeout(this._pingTimeoutId!)
@@ -277,7 +282,11 @@ export class Peer extends EventEmitter {
    */
   _sendPong() {
     debug(`Send PONG to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
-    const data = rlp.encode([])
+    let data = rlp.encode([])
+
+    if (this._hello?.protocolVersion && this._hello.protocolVersion >= 5) {
+      data = snappy.compress(data)
+    }
     this._sendMessage(PREFIXES.PONG, data)
   }
 
