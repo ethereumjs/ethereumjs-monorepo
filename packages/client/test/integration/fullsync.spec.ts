@@ -1,7 +1,8 @@
 import tape from 'tape'
 import { Event } from '../../lib/types'
 import { wait, setup, destroy } from './util'
-
+import { Block } from '@ethereumjs/block'
+import { BN } from '../../../util/dist'
 tape('[Integration:FullSync]', async (t) => {
   t.test('should sync blocks', async (t) => {
     const [remoteServer, remoteService] = await setup({ location: '127.0.0.2', height: 20 })
@@ -40,17 +41,35 @@ tape('[Integration:FullSync]', async (t) => {
       minPeers: 2,
     })
     await localService.synchronizer.stop()
-    await localServer.discover('remotePeer1', '127.0.0.2')
+    const peer = await localServer.discover('remotePeer1', '127.0.0.2')
     await localServer.discover('remotePeer2', '127.0.0.3')
     localService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
-      if (localService.chain.blocks.height.toNumber() === 10) {
-        t.pass('synced with best peer')
-        await destroy(localServer, localService)
-        await destroy(remoteServer1, remoteService1)
-        await destroy(remoteServer2, remoteService2)
-        t.end()
+      switch (localService.chain.blocks.height.toNumber()) {
+        case 10:
+          t.pass('synced with best peer')
+          const block = Block.fromBlockData({
+            header: {
+              number: 11,
+              difficulty: 1,
+              parentHash: (await localService.chain.getLatestHeader()).hash(),
+            },
+          })
+          peer.config.events.emit(
+            Event.PROTOCOL_MESSAGE,
+            { name: 'NewBlock', data: [block.raw(), new BN(11)] },
+            'eth',
+            undefined as any
+          )
+          break
+        case 11:
+          t.pass('processed new block')
+          await destroy(localServer, localService)
+          await destroy(remoteServer1, remoteService1)
+          await destroy(remoteServer2, remoteService2)
+          t.end()
       }
     })
+
     await localService.synchronizer.start()
   })
 })
