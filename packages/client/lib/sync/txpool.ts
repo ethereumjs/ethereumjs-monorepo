@@ -1,4 +1,4 @@
-import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
+import { TypedTransaction } from '@ethereumjs/tx'
 import { Config } from '../config'
 import { Peer } from '../net/peer'
 import { EthProtocolMethods } from '../net/protocol'
@@ -318,11 +318,11 @@ export class TxPool {
     this.config.logger.debug(
       `TxPool: requesting txs number=${reqHashes.length} pending=${this.pending.length}`
     )
-    const txsResult = await (peer!.eth as EthProtocolMethods).getPooledTransactions({
+    const [, txs] = await (peer!.eth as EthProtocolMethods).getPooledTransactions({
       hashes: reqHashes.slice(0, this.TX_RETRIEVAL_LIMIT),
     })
 
-    this.config.logger.debug(`TxPool: received txs number=${txsResult[1].length}`)
+    this.config.logger.debug(`TxPool: received txs number=${txs.length}`)
 
     // Remove from pending list regardless if tx is in result
     for (const reqHashStr of reqHashesStr) {
@@ -330,8 +330,7 @@ export class TxPool {
     }
 
     const newTxHashes = []
-    for (const txData of txsResult[1]) {
-      const tx = TransactionFactory.fromBlockBodyData(txData)
+    for (const tx of txs) {
       this.add(tx)
       newTxHashes.push(tx.hash())
     }

@@ -3,7 +3,7 @@ import { BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
 import { Chain } from './../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'
 import { BlockBodyBuffer } from '@ethereumjs/block'
-import { TypedTransaction } from '../../../../tx/dist'
+import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
 
 interface EthProtocolOptions extends ProtocolOptions {
   /* Blockchain */
@@ -44,7 +44,7 @@ type GetPooledTransactionsOpts = {
 export interface EthProtocolMethods {
   getBlockHeaders: (opts: GetBlockHeadersOpts) => Promise<[BN, BlockHeader[]]>
   getBlockBodies: (opts: GetBlockBodiesOpts) => Promise<[BN, BlockBodyBuffer[]]>
-  getPooledTransactions: (opts: GetPooledTransactionsOpts) => Promise<[BN, any[]]>
+  getPooledTransactions: (opts: GetPooledTransactionsOpts) => Promise<[BN, TypedTransaction[]]>
 }
 
 const id = new BN(0)
@@ -164,7 +164,10 @@ export class EthProtocol extends Protocol {
         }
         return [reqId.toNumber(), serializedTxs]
       },
-      decode: ([reqId, txs]: [Buffer, any[]]) => [new BN(reqId), txs],
+      decode: ([reqId, txs]: [Buffer, any[]]) => [
+        new BN(reqId),
+        txs.map((txData) => TransactionFactory.fromBlockBodyData(txData)),
+      ],
     },
   ]
 

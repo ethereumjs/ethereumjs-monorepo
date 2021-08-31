@@ -87,7 +87,7 @@ tape('[TxPool]', async (t) => {
       id: '1',
       eth: {
         getPooledTransactions: () => {
-          return [null, [txA01.serialize()]]
+          return [null, [txA01]]
         },
         send: () => {
           t.fail('should not send to announcing peer')
@@ -180,7 +180,7 @@ tape('[TxPool]', async (t) => {
     const peer: any = {
       eth: {
         getPooledTransactions: () => {
-          return [null, [txA01.serialize(), txB01.serialize()]]
+          return [null, [txA01, txB01]]
         },
       },
     }
@@ -202,7 +202,7 @@ tape('[TxPool]', async (t) => {
     const peer: any = {
       eth: {
         getPooledTransactions: () => {
-          return [null, [txA01.serialize(), txA02.serialize()]]
+          return [null, [txA01, txA02]]
         },
       },
     }
@@ -228,7 +228,7 @@ tape('[TxPool]', async (t) => {
     let peer: any = {
       eth: {
         getPooledTransactions: () => {
-          return [null, [txA01.serialize()]]
+          return [null, [txA01]]
         },
       },
     }
@@ -250,7 +250,7 @@ tape('[TxPool]', async (t) => {
     peer = {
       eth: {
         getPooledTransactions: () => {
-          return [null, [txB01.serialize(), txB02.serialize()]]
+          return [null, [txB01, txB02]]
         },
       },
     }
@@ -291,7 +291,7 @@ tape('[TxPool]', async (t) => {
     const peer: any = {
       eth: {
         getPooledTransactions: () => {
-          return [null, [txA01.serialize(), txB01.serialize()]]
+          return [null, [txA01, txB01]]
         },
       },
       send: () => {},
