@@ -20,6 +20,14 @@ import { AccessList, AccessListItem } from '@ethereumjs/tx'
 
 const debug = createDebugLogger('vm:state')
 
+/**
+ * Prefix to distinguish between a contract deployed with code `0x80`
+ * and `RLP([])` (also having the value `0x80`).
+ *
+ * Otherwise the creation of the code hash for the `0x80` contract
+ * will be the same as the hash of the empty trie which leads to
+ * misbehaviour in the underyling trie library.
+ */
 const CODEHASH_PREFIX = Buffer.from('c')
 
 type AddressHex = string
