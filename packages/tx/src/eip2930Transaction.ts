@@ -305,7 +305,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       throw new Error('Cannot call hash method if transaction is not signed')
     }
 
-    if (Object.isFrozen(this) && this._cachedHash) {
+    if (this._cachedHash) {
       return this._cachedHash
     }
 

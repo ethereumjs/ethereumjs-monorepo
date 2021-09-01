@@ -728,7 +728,7 @@ export class BlockHeader {
    * Returns the hash of the block header.
    */
   hash(): Buffer {
-    if (Object.isFrozen(this) && this._cachedHash) {
+    if (this._cachedHash) {
       return this._cachedHash
     }
 
