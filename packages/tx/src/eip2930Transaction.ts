@@ -38,6 +38,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
   public readonly common: Common
 
+  private readonly _cachedHash?: Buffer
+
   /**
    * The default HF if the tx type is active on that HF
    * or the first greater HF where the tx is active.
@@ -202,6 +204,9 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
     const freeze = opts?.freeze ?? true
     if (freeze) {
+      if (this.isSigned()) {
+        this._cachedHash = this.hash()
+      }
       Object.freeze(this)
     }
   }
@@ -298,6 +303,10 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   public hash(): Buffer {
     if (!this.isSigned()) {
       throw new Error('Cannot call hash method if transaction is not signed')
+    }
+
+    if (Object.isFrozen(this)) {
+      return this._cachedHash as Buffer
     }
 
     return keccak256(this.serialize())
