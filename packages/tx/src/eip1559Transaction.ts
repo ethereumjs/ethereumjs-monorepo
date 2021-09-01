@@ -335,8 +335,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       throw new Error('Cannot call hash method if transaction is not signed')
     }
 
-    if (Object.isFrozen(this)) {
-      return this._cachedHash as Buffer
+    if (Object.isFrozen(this) && this._cachedHash) {
+      return this._cachedHash
     }
 
     return keccak256(this.serialize())

@@ -131,7 +131,9 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
     const freeze = opts?.freeze ?? true
     if (freeze) {
-      this._cachedHash = this.hash()
+      if (this.isSigned()) {
+        this._cachedHash = this.hash()
+      }
       Object.freeze(this)
     }
   }
@@ -235,9 +237,14 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * Use {@link Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   hash(): Buffer {
-    if (Object.isFrozen(this)) {
-      return this._cachedHash as Buffer
+    if (!this.isSigned()) {
+      throw new Error('Cannot call hash method if transaction is not signed')
     }
+
+    if (Object.isFrozen(this) && this._cachedHash) {
+      return this._cachedHash
+    }
+
     return rlphash(this.raw())
   }
 
