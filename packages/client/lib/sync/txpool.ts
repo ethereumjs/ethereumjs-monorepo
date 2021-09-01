@@ -98,6 +98,13 @@ export class TxPool {
   public HANDLED_CLEANUP_TIME_LIMIT = 60
 
   /**
+   * Rebroadcast full txs and new blocks to a fraction
+   * of peers by doing
+   * `min(1, floor(NUM_PEERS/NUM_PEERS_REBROADCAST_QUOTIENT))`
+   */
+  public NUM_PEERS_REBROADCAST_QUOTIENT = 4
+
+  /**
    * Log pool statistics on the given interval
    */
   private LOG_STATISTICS_INTERVAL = 10000 // ms
@@ -247,11 +254,9 @@ export class TxPool {
    * Double sending is avoided by compare towards the
    * `SentTxHashes` map.
    * @param txHashes Array with transactions to send
-   * @param peerPool
+   * @param peers
    */
-  async sendNewTxHashes(txHashes: Buffer[], peerPool: PeerPool) {
-    const peers = peerPool.peers
-
+  async sendNewTxHashes(txHashes: Buffer[], peers: Peer[]) {
     for (const peer of peers) {
       // Make sure data structure is initialized
       if (!this.knownByPeer.has(peer.id)) {
@@ -274,30 +279,63 @@ export class TxPool {
    * double sending to a peer, so this has to be made sure
    * by checking on the context the sending is performed.
    * @param txs Array with transactions to send
-   * @param peerPool
+   * @param peers
    */
-  sendTransactions(txs: TypedTransaction[], peerPool: PeerPool) {
-    const peers = peerPool.peers
-
-    for (const peer of peers) {
-      if (txs.length > 0) {
+  sendTransactions(txs: TypedTransaction[], peers: Peer[]) {
+    if (txs.length > 0) {
+      const hashes = txs.map((tx) => tx.hash())
+      for (const peer of peers) {
+        // This is used to avoid re-sending along pooledTxHashes
+        // announcements/re-broadcasts
+        this.addToKnownByPeer(hashes, peer)
         peer.eth?.send('Transactions', txs)
       }
     }
   }
 
   /**
-   * Include new pooled txs announced in the pool
-   * @param  txHashes new tx hashes announced
-   * @param  peer peer
+   * Include new announced txs in the pool
+   * and re-broadcast to other peers
+   * @param txs
+   * @param peer Announcing peer
+   * @param peerPool Reference to the peer pool
    */
-  async includeAnnouncedTxs(txHashes: Buffer[], peer: Peer, peerPool: PeerPool) {
+  async handleAnnouncedTxs(txs: TypedTransaction[], peer: Peer, peerPool: PeerPool) {
+    if (!this.running || txs.length === 0) {
+      return
+    }
+    this.config.logger.debug(`TxPool: received new transactions number=${txs.length}`)
+    this.addToKnownByPeer(
+      txs.map((tx) => tx.hash()),
+      peer
+    )
+    this.cleanup()
+
+    const newTxHashes = []
+    for (const tx of txs) {
+      this.add(tx)
+      newTxHashes.push(tx.hash())
+    }
+    const peers = peerPool.peers
+    const numPeers = peers.length
+    const sendFull = Math.min(1, Math.floor(numPeers / this.NUM_PEERS_REBROADCAST_QUOTIENT))
+    this.sendTransactions(txs, peers.slice(0, sendFull))
+    await this.sendNewTxHashes(newTxHashes, peers.slice(sendFull))
+  }
+
+  /**
+   * Request new pooled txs from tx hashes announced and include them in the pool
+   * and re-broadcast to other peers
+   * @param txHashes new tx hashes announced
+   * @param peer Announcing peer
+   * @param peerPool Reference to the peer pool
+   */
+  async handleAnnouncedTxHashes(txHashes: Buffer[], peer: Peer, peerPool: PeerPool) {
     if (!this.running || txHashes.length === 0) {
       return
     }
     this.config.logger.debug(`TxPool: received new pooled hashes number=${txHashes.length}`)
     this.addToKnownByPeer(txHashes, peer)
-
     this.cleanup()
 
     const reqHashes = []
@@ -322,7 +360,7 @@ export class TxPool {
       hashes: reqHashes.slice(0, this.TX_RETRIEVAL_LIMIT),
     })
 
-    this.config.logger.debug(`TxPool: received txs number=${txs.length}`)
+    this.config.logger.debug(`TxPool: received requested txs number=${txs.length}`)
 
     // Remove from pending list regardless if tx is in result
     for (const reqHashStr of reqHashesStr) {
@@ -334,7 +372,7 @@ export class TxPool {
       this.add(tx)
       newTxHashes.push(tx.hash())
     }
-    await this.sendNewTxHashes(newTxHashes, peerPool)
+    await this.sendNewTxHashes(newTxHashes, peerPool.peers)
   }
 
   /**

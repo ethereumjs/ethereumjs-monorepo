@@ -77,6 +77,12 @@ export class EthProtocol extends Protocol {
         }
         return serializedTxs
       },
+      decode: ([txs]: [Buffer[]]) => {
+        // TODO: add proper Common instance (problem: service not accesible)
+        //const common = this.config.chainCommon.copy()
+        //common.setHardforkByBlockNumber(this.service.synchronizer.syncTargetHeight)
+        return txs.map((txData) => TransactionFactory.fromBlockBodyData(txData))
+      },
     },
     {
       name: 'GetBlockHeaders',
@@ -166,6 +172,9 @@ export class EthProtocol extends Protocol {
       },
       decode: ([reqId, txs]: [Buffer, any[]]) => [
         new BN(reqId),
+        // TODO: add proper Common instance (problem: service not accesible)
+        //const common = this.config.chainCommon.copy()
+        //common.setHardforkByBlockNumber(this.service.synchronizer.syncTargetHeight)
         txs.map((txData) => TransactionFactory.fromBlockBodyData(txData)),
       ],
     },
