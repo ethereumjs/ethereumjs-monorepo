@@ -124,8 +124,8 @@ export class EthProtocol extends Protocol {
     {
       name: 'NewBlock',
       code: 0x07,
-      encode: ([block, td]: [Block, BN]) => [block.serialize(), Buffer.from(td)],
-      decode: ([block, td]: [BlockBuffer, Buffer]) => [block, new BN(td)],
+      encode: ([block, td]: [Block, BN]) => [block.serialize(), td.toBuffer()],
+      decode: ([block, td]: [BlockBuffer, Buffer]) => [Block.fromValuesArray(block), new BN(td)] 
     },
     {
       name: 'NewPooledTransactionHashes',
