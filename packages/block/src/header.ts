@@ -48,6 +48,8 @@ export class BlockHeader {
   public readonly _common: Common
   public _errorPostfix = ''
 
+  private readonly _cachedHash?: Buffer
+
   /**
    * Static constructor to create a block header from a header data dictionary
    *
@@ -295,6 +297,7 @@ export class BlockHeader {
 
     const freeze = options?.freeze ?? true
     if (freeze) {
+      this._cachedHash = this.hash()
       Object.freeze(this)
     }
   }
@@ -725,6 +728,10 @@ export class BlockHeader {
    * Returns the hash of the block header.
    */
   hash(): Buffer {
+    if (Object.isFrozen(this)) {
+      return this._cachedHash as Buffer
+    }
+
     return rlphash(this.raw())
   }
 
