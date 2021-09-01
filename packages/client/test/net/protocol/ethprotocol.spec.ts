@@ -3,7 +3,7 @@ import { BN } from 'ethereumjs-util'
 import { Chain } from '../../../lib/blockchain/chain'
 import { Config } from '../../../lib/config'
 import { EthProtocol } from '../../../lib/net/protocol'
-import { Block } from '../../../../block/dist'
+import { Block } from '@ethereumjs/block'
 
 tape('[EthProtocol]', (t) => {
   t.test('should get properties', (t) => {
@@ -80,8 +80,14 @@ tape('[EthProtocol]', (t) => {
     const p = new EthProtocol({ config, chain })
     const td = new BN(100)
     const block = Block.fromBlockData({})
-    const res = p.decode(p.messages.filter((message) => message.name === 'NewBlock')[0],[block.raw(), td.toBuffer()])
-    const res2 = p.encode(p.messages.filter((message) => message.name === 'NewBlock')[0],[block, td])
+    const res = p.decode(p.messages.filter((message) => message.name === 'NewBlock')[0], [
+      block.raw(),
+      td.toBuffer(),
+    ])
+    const res2 = p.encode(p.messages.filter((message) => message.name === 'NewBlock')[0], [
+      block,
+      td,
+    ])
     t.deepEquals(res[0].hash(), block.hash(), 'correctly decoded block')
     t.ok(new BN(res2[1]).eq(td), 'correctly encoded td')
     t.end()
