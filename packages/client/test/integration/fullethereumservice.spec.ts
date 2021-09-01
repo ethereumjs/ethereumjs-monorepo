@@ -59,6 +59,9 @@ tape('[Integration:FullEthereumService]', async (t) => {
       'handled GetPooledTransactions'
     )
 
+    peer.eth!.send('Transactions', [tx])
+    t.pass('handled Transactions')
+
     await destroy(server, service)
     t.end()
   })
