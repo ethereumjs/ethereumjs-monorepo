@@ -97,8 +97,8 @@ export class FullEthereumService extends EthereumService {
     } else if (message.name === 'NewPooledTransactionHashes') {
       await this.synchronizer.txPool.includeAnnouncedTxs(message.data, peer, this.pool)
     } else if (message.name === 'GetPooledTransactions') {
-      const { reqId, txHashes } = message.data
-      const txs = this.synchronizer.txPool.getByHash(txHashes)
+      const { reqId, hashes } = message.data
+      const txs = this.synchronizer.txPool.getByHash(hashes)
       // Always respond, also on an empty list
       peer.eth?.send('PooledTransactions', { reqId, txs })
     }
