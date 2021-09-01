@@ -13,17 +13,16 @@ tape('[FullEthereumService]', async (t) => {
   class Chain {
     private blocks = {}
     constructor() {
-      this.blocks = { height: new BN(1)}
+      this.blocks = { height: new BN(1) }
     }
     open() {}
-
   }
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
   td.replace('../../lib/net/peerpool', { PeerPool })
- // let Chain = td.constructor([] as any)
+  // let Chain = td.constructor([] as any)
   Chain.prototype.open = td.func<any>()
-//  Chain.prototype.blocks.height = new BN(1)
+  //  Chain.prototype.blocks.height = new BN(1)
   td.replace('../../lib/blockchain', { Chain })
   const EthProtocol = td.constructor([] as any)
   const LesProtocol = td.constructor([] as any)
