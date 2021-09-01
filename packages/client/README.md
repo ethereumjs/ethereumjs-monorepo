@@ -55,7 +55,6 @@ The client currently supports the below networks:
 - rinkeby
 - ropsten
 - goerli
-- calaveras
 - kovan -- Note: kovan support is limited and chain syncing may not work due to the kovan consensus mechanism not being implemented
 
 
