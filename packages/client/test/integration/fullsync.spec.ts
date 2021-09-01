@@ -2,7 +2,7 @@ import tape from 'tape'
 import { Event } from '../../lib/types'
 import { wait, setup, destroy } from './util'
 import { Block } from '@ethereumjs/block'
-import { BN } from '../../../util/dist'
+import { BN } from 'ethereumjs-util'
 tape('[Integration:FullSync]', async (t) => {
   t.test('should sync blocks', async (t) => {
     const [remoteServer, remoteService] = await setup({ location: '127.0.0.2', height: 20 })
