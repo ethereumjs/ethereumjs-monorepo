@@ -17,7 +17,6 @@ export const DEFAULT_FORK_CONFIG = 'Istanbul'
 export const SKIP_BROKEN = [
   'ForkStressTest', // Only BlockchainTest, temporary till fixed (2020-05-23)
   'ChainAtoChainB', // Only BlockchainTest, temporary, along expectException fixes (2020-05-23)
-  'undefinedOpcodeFirstByte', // https://github.com/ethereumjs/ethereumjs-monorepo/issues/1271 (2021-05-26)
 
   // In these tests, we have access to two forked chains. Their total difficulty is equal. There are errors in the second chain, but we have no reason to execute this chain if the TD remains equal.
   'blockChainFrontierWithLargerTDvsHomesteadBlockchain2_FrontierToHomesteadAt5',
