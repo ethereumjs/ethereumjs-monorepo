@@ -79,7 +79,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   await blockchain.initPromise
 
   // set up pre-state
-  await setupPreConditions(vm.stateManager._trie, testData)
+  await setupPreConditions(vm.stateManager, testData)
 
   t.ok(vm.stateManager._trie.root.equals(genesisBlock.header.stateRoot), 'correct pre stateRoot')
 
@@ -182,6 +182,9 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
         return
       }
     } catch (error: any) {
+      if (options.debug) {
+        await verifyPostConditions(state, testData.postState, t)
+      }
       // caught an error, reduce block number
       currentBlock.isubn(1)
       await handleError(error, expectException)

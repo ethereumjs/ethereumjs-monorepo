@@ -71,7 +71,8 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const state = new Trie()
   const vm = new VM({ state, common })
 
-  await setupPreConditions(vm.stateManager._trie, testData)
+  await setupPreConditions(vm.stateManager, testData)
+
   let execInfo = ''
   let tx
 

@@ -15,7 +15,9 @@ import {
   stripHexPrefix,
   setLengthLeft,
   toBuffer,
+  Address,
 } from 'ethereumjs-util'
+import { DefaultStateManager } from '../src/state'
 
 export function dumpState(state: any, cb: Function) {
   function readAccounts(state: any) {
@@ -314,17 +316,16 @@ export function makeBlockFromEnv(env: any, opts?: BlockOptions): Block {
  * @param state - the state DB/trie
  * @param testData - JSON from tests repo
  */
-export async function setupPreConditions(state: any, testData: any) {
+export async function setupPreConditions(state: DefaultStateManager, testData: any) {
   await state.checkpoint()
-  for (const address of Object.keys(testData.pre)) {
-    const { nonce, balance, code, storage } = testData.pre[address]
+  for (const addressStr of Object.keys(testData.pre)) {
+    const { nonce, balance, code, storage } = testData.pre[addressStr]
 
-    const addressBuf = format(address)
+    const addressBuf = format(addressStr)
+    const address = new Address(addressBuf)
+
     const codeBuf = format(code)
     const codeHash = keccak256(codeBuf)
-
-    const storageTrie = state.copy(false)
-    storageTrie.root = null
 
     // Set contract storage
     for (const storageKey of Object.keys(storage)) {
@@ -332,26 +333,29 @@ export async function setupPreConditions(state: any, testData: any) {
       if (valBN.isZero()) {
         continue
       }
-      const val = rlp.encode(valBN.toArrayLike(Buffer, 'be'))
+      const val = valBN.toArrayLike(Buffer, 'be')
       const key = setLengthLeft(format(storageKey), 32)
 
-      await storageTrie.put(key, val)
-    }
-
-    const stateRoot = storageTrie.root
-
-    if (testData.exec && testData.exec.address === address) {
-      testData.root = storageTrie.root
+      await state.putContractStorage(address, key, val)
     }
 
     // Put contract code
-    await state.db.put(codeHash, codeBuf)
+    await state.putContractCode(address, codeBuf)
+
+    const stateRoot = (await state.getAccount(address)).stateRoot
+
+    if (testData.exec && testData.exec.address === addressStr) {
+      testData.root = stateRoot
+    }
 
     // Put account data
     const account = Account.fromAccountData({ nonce, balance, codeHash, stateRoot })
-    await state.put(addressBuf, account.serialize())
+    await state.putAccount(address, account)
   }
   await state.commit()
+  // Clear the touched stack, otherwise untouched accounts in the block which are empty (>= SpuriousDragon)
+  // will get deleted from the state, resulting in state trie errors
+  ;(<any>state)._touched.clear()
 }
 
 /**
