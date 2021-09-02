@@ -45,23 +45,24 @@ tape('[Integration:FullEthereumService]', async (t) => {
     const [reqId2, bodies] = await peer.eth!.getBlockBodies({ hashes: [hash] })
     t.ok(reqId2.eqn(2), 'handled GetBlockBodies')
     t.deepEquals(bodies, [[[], []]], 'handled GetBlockBodies')
-    service.config.events.on(Event.PROTOCOL_MESSAGE, async (msg, src, som) => {
+    service.config.events.on(Event.PROTOCOL_MESSAGE, async (msg) => {
       switch (msg.name) {
         case 'NewBlockHashes': {
           t.pass('handled NewBlockHashes')
           break
         }
-        case 'NewBlock': {
+        case 'NewBlock':
           {
-            t.pass('handled NewBlock')
-            await destroy(server, service)
-            t.end()
+            {
+              t.pass('handled NewBlock')
+              await destroy(server, service)
+              t.end()
+            }
           }
-        }
-        break
+          break
       }
     })
-    peer.eth!.send('NewBlockHashes', [[hash, new BN(2)]])      
+    peer.eth!.send('NewBlockHashes', [[hash, new BN(2)]])
     const block = Block.fromBlockData({
       header: {
         number: 1,

@@ -10,17 +10,10 @@ tape('[FullEthereumService]', async (t) => {
     close() {}
   }
 
-  class Chain {
-    private blocks = {}
-    constructor() {
-      this.blocks = { height: new BN(1) }
-    }
-    open() {}
-  }
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
   td.replace('../../lib/net/peerpool', { PeerPool })
-  // let Chain = td.constructor([] as any)
+  const Chain = td.constructor([] as any)
   Chain.prototype.open = td.func<any>()
   //  Chain.prototype.blocks.height = new BN(1)
   td.replace('../../lib/blockchain', { Chain })
@@ -107,7 +100,7 @@ tape('[FullEthereumService]', async (t) => {
   t.test('handleNewBlock should be called', async (t) => {
     const config = new Config({ transports: [], loglevel: 'error' })
     const service = new FullEthereumService({ config })
-    await service.handle({ name: 'NewBlock', data: {} }, 'eth', undefined as any)
+    await service.handle({ name: 'NewBlock', data: [{}, new BN(1)] }, 'eth', undefined as any)
     td.verify(service.synchronizer.handleNewBlock({} as any))
     t.end()
   })

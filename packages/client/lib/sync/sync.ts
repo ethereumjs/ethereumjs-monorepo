@@ -9,7 +9,6 @@ import { Event } from '../types'
 import type { LevelUp } from 'levelup'
 import { BlockFetcher, HeaderFetcher } from './fetcher'
 import { short } from '../util'
-import { Block } from '@ethereumjs/block'
 
 export interface SynchronizerOptions {
   /* Config */
