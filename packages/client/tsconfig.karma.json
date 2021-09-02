@@ -3,5 +3,6 @@
   "include": ["bin", "lib", "test"],
   "compilerOptions": {
     "skipLibCheck": true,
+    "typeRoots": ["node_modules/@types", "lib/@types"],
   },
 }
