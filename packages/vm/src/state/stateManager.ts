@@ -37,6 +37,16 @@ export type Proof = {
 }
 
 /**
+ * Prefix to distinguish between a contract deployed with code `0x80`
+ * and `RLP([])` (also having the value `0x80`).
+ *
+ * Otherwise the creation of the code hash for the `0x80` contract
+ * will be the same as the hash of the empty trie which leads to
+ * misbehaviour in the underyling trie library.
+ */
+const CODEHASH_PREFIX = Buffer.from('c')
+
+/**
  * Options for constructing a {@link StateManager}.
  */
 export interface DefaultStateManagerOpts {
@@ -119,7 +129,8 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
       return
     }
 
-    await this._trie.db.put(codeHash, value)
+    const key = Buffer.concat([CODEHASH_PREFIX, codeHash])
+    await this._trie.db.put(key, value)
 
     const account = await this.getAccount(address)
     if (this.DEBUG) {
@@ -140,7 +151,8 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
     if (!account.isContract()) {
       return Buffer.alloc(0)
     }
-    const code = await this._trie.db.get(account.codeHash)
+    const key = Buffer.concat([CODEHASH_PREFIX, account.codeHash])
+    const code = await this._trie.db.get(key)
     return code ?? Buffer.alloc(0)
   }
 
