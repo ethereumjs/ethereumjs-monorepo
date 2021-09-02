@@ -200,6 +200,28 @@ export class FullSynchronizer extends Synchronizer {
   }
 
   /**
+   *
+   * Processes `NEW_BLOCK` announcement from a peer and inserts into local chain if child of chain tip
+   * @param blockData `NEW_BLOCK` received from peer
+   */
+  async handleNewBlock(block: Block) {
+    console.log('sync ', block)
+    const chainTip = (await this.chain.getLatestHeader()).hash()
+    // If block parent is current chain tip, insert block into chain
+    if (chainTip.toString('hex') === block.header.parentHash.toString('hex')) {
+      try {
+        await this.chain.putBlocks([block])
+      }
+      catch (err) {
+        console.log(err)
+      }
+    } else {
+      // If block is beyond current tip, handle as `NEW_BLOCK_HASHES`
+      this.handleNewBlockHashes([[block.header.hash(), block.header.number]])
+    }
+  }
+
+  /**
    * Stop synchronization. Returns a promise that resolves once its stopped.
    * @return {Promise}
    */

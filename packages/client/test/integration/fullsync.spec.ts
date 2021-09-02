@@ -41,37 +41,18 @@ tape('[Integration:FullSync]', async (t) => {
       minPeers: 2,
     })
     await localService.synchronizer.stop()
-    const peer = await localServer.discover('remotePeer1', '127.0.0.2')
+    await localServer.discover('remotePeer1', '127.0.0.2')
     await localServer.discover('remotePeer2', '127.0.0.3')
+
     localService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
-      switch (localService.chain.blocks.height.toNumber()) {
-        case 10: {
-          t.pass('synced with best peer')
-          const block = Block.fromBlockData({
-            header: {
-              number: 11,
-              difficulty: 1,
-              parentHash: (await localService.chain.getLatestHeader()).hash(),
-            },
-          })
-          peer.config.events.emit(
-            Event.PROTOCOL_MESSAGE,
-            { name: 'NewBlock', data: [block.raw(), new BN(11)] },
-            'eth',
-            undefined as any
-          )
-          break
-        }
-        case 11: {
-          t.pass('processed new block')
-          await destroy(localServer, localService)
-          await destroy(remoteServer1, remoteService1)
-          await destroy(remoteServer2, remoteService2)
-          t.end()
-        }
+      if (localService.chain.blocks.height.toNumber() === 10) {
+        t.pass('synced with best peer')
+        t.end()
+        destroy(remoteServer1, remoteService1)
+        destroy(remoteServer2, remoteService2)
+        destroy(localServer, localService)
       }
     })
-
     await localService.synchronizer.start()
   })
 })

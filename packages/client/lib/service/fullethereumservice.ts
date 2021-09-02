@@ -96,10 +96,8 @@ export class FullEthereumService extends EthereumService {
     } else if (message.name === 'NewBlockHashes') {
       this.synchronizer.handleNewBlockHashes(message.data)
     } else if (message.name === 'NewBlock') {
-      const common = this.config.chainCommon.copy()
-      common.setHardforkByBlockNumber(this.chain.blocks.height)
-      const block = Block.fromValuesArray(message.data[0], { common })
-      await this.synchronizer.handleNewBlock(block)
+      console.log('ethereum service', message.data)
+      await this.synchronizer.handleNewBlock(message.data[0])
     } else if (message.name === 'NewPooledTransactionHashes') {
       await this.synchronizer.txPool.includeAnnouncedTxs(message.data, peer)
     }
