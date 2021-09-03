@@ -24,7 +24,7 @@ export class Miner {
   private config: Config
   private synchronizer: FullSynchronizer
   private assembling: boolean
-  private mineInterval: number
+  private period: number
   public running: boolean
 
   /* global NodeJS */
@@ -39,7 +39,7 @@ export class Miner {
     this.synchronizer = options.synchronizer
     this.running = false
     this.assembling = false
-    this.mineInterval = 15000 // sensible default for a 15s period (in ms)
+    this.period = 15000 // default: 15s period defined in ms
   }
 
   /**
@@ -54,10 +54,7 @@ export class Miner {
    */
   private queueNextAssembly(timeout?: number) {
     this._nextAssemblyTimeoutId && clearTimeout(this._nextAssemblyTimeoutId)
-    this._nextAssemblyTimeoutId = setTimeout(
-      this.assembleBlock.bind(this),
-      timeout ?? this.mineInterval
-    )
+    this._nextAssemblyTimeoutId = setTimeout(this.assembleBlock.bind(this), timeout ?? this.period)
   }
 
   /**
@@ -65,13 +62,12 @@ export class Miner {
    */
   private async chainUpdated() {
     const latestBlock = await this.latestBlock()
-    const period = new BN(this.mineInterval)
-    const target = latestBlock.header.timestamp.muln(1000).add(period).sub(new BN(Date.now()))
+    const target = latestBlock.header.timestamp.muln(1000).addn(this.period).sub(new BN(Date.now()))
     const timeout = BN.max(new BN(0), target).toNumber()
     this.config.logger.debug(
-      `Miner: Chain updated with block ${latestBlock.header.number.toNumber()}. Queuing next block assembly in ${
+      `Miner: Chain updated with block ${latestBlock.header.number.toNumber()}. Queuing next block assembly in ${Math.round(
         timeout / 1000
-      }s`
+      )}s`
     )
     this.queueNextAssembly(timeout)
   }
@@ -85,17 +81,17 @@ export class Miner {
     }
     this.running = true
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority) {
-      // Set the mine interval to the period in ms
-      this.mineInterval = this.config.chainCommon.consensusConfig().period * 1000
+      this.period = this.config.chainCommon.consensusConfig().period * 1000
     }
     this.config.events.on(Event.CHAIN_UPDATED, this.chainUpdated.bind(this))
     this.queueNextAssembly()
-    this.config.logger.info(`Miner started. Assembling next block in ${this.mineInterval / 1000}s`)
+    this.config.logger.info(`Miner started. Assembling next block in ${this.period / 1000}s`)
     return true
   }
 
   /**
-   * Assembles a block from txs in the TxPool.
+   * Assembles a block from txs in the TxPool and adds it to the chain.
+   * If a new block is received while assembling it will abort.
    */
   async assembleBlock() {
     if (this.assembling) {

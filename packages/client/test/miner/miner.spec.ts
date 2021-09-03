@@ -169,10 +169,10 @@ tape('[Miner]', async (t) => {
 
       chain.putBlocks = (blocks: Block[]) => {
         const msg = 'txs in block should be properly ordered by gasPrice and nonce'
-        t.ok(blocks[0].transactions[0].hash().equals(txB01.hash()), msg)
-        t.ok(blocks[0].transactions[1].hash().equals(txA01.hash()), msg)
-        t.ok(blocks[0].transactions[2].hash().equals(txA02.hash()), msg)
-        t.ok(blocks[0].transactions[3].hash().equals(txA03.hash()), msg)
+        const expectedOrder = [txB01, txA01, txA02, txA03]
+        for (const [index, tx] of expectedOrder.entries()) {
+          t.ok(blocks[0].transactions[index].hash().equals(tx.hash()), msg)
+        }
         miner.stop()
         txPool.stop()
         t.end()

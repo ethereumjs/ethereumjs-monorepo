@@ -480,7 +480,7 @@ export class TxPool {
     // Initialize a price based heap with the head transactions
     const byPrice = new Heap<TypedTransaction>({
       comparBefore: (a: TypedTransaction, b: TypedTransaction) =>
-        this.txGasPrice(b).sub(this.txGasPrice(a)).toNumber() < 0,
+        this.txGasPrice(b).sub(this.txGasPrice(a)).ltn(0),
     })
     byNonce.forEach((txs, address) => {
       byPrice.insert(txs[0])

@@ -1,6 +1,7 @@
 /**
  * QHeap types.
- * @types/qheap does not exist, so we define a custom interface here.
+ * @types/qheap does not exist, so we define it here.
+ * https://www.npmjs.com/package/qheap
  */
 declare module 'qheap' {
   type QHeapOptions = {
