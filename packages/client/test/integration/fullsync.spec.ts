@@ -45,10 +45,10 @@ tape('[Integration:FullSync]', async (t) => {
     localService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
       if (localService.chain.blocks.height.toNumber() === 10) {
         t.pass('synced with best peer')
-        t.end()
         await destroy(remoteServer1, remoteService1)
         await destroy(remoteServer2, remoteService2)
         await destroy(localServer, localService)
+        t.end()
       }
     })
     await localService.synchronizer.start()
