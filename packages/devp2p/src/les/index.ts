@@ -12,6 +12,12 @@ const verbose = createDebugLogger('verbose').enabled
 
 export const DEFAULT_ANNOUNCE_TYPE = 1
 
+/**
+ * Will be set to the first successfully connected peer to allow for
+ * debugging with the `devp2p:FIRST_PEER` debugger
+ */
+let _firstPeer = ''
+
 type SendMethod = (code: LES.MESSAGE_CODES, data: Buffer) => any
 
 export class LES extends EventEmitter {
@@ -136,6 +142,9 @@ export class LES extends EventEmitter {
     )
 
     this.emit('status', this._peerStatus)
+    if (_firstPeer === '') {
+      this._addFirstPeerDebugger()
+    }
   }
 
   getVersion() {
@@ -269,6 +278,21 @@ export class LES extends EventEmitter {
     ) as string[]
     for (const name of MESSAGE_NAMES) {
       this.msgDebuggers[name] = createDebugLogger(`${DEBUG_BASE_NAME}:${name}`)
+    }
+  }
+
+  /**
+   * Called once on the peer where a first successful `STATUS`
+   * msg exchange could be achieved.
+   *
+   * Can be used together with the `devp2p:FIRST_PEER` debugger.
+   */
+  _addFirstPeerDebugger() {
+    const ip = this._peer._socket.remoteAddress
+    if (ip) {
+      this.msgDebuggers[ip] = createDebugLogger(`devp2p:FIRST_PEER`)
+      this._peer._addFirstPeerDebugger()
+      _firstPeer = ip
     }
   }
 

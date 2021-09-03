@@ -439,12 +439,34 @@ DEBUG=devp2p:eth:GET_BLOCK_HEADERS,devp2p:eth:BLOCK_HEADERS -r ts-node/register 
 Exemplary logging output:
 
 ```shell
-  devp2p:eth:GET_BLOCK_HEADERS Received GET_BLOCK_HEADERS message from 207.154.201.177:30303: d188659b37d8e321bc52c782198181c08080 +50ms
-  devp2p:eth:GET_BLOCK_HEADERS Send GET_BLOCK_HEADERS message to 159.65.72.121:30303: c81bc682ded8328080 +431ms
-  devp2p:eth:BLOCK_HEADERS Received BLOCK_HEADERS message from 159.65.72.121:30303: c21bc0 +417ms
-  devp2p:eth:GET_BLOCK_HEADERS Send GET_BLOCK_HEADERS message to 162.55.98.224:30303: c81dc682df0a328080 +339ms
-  devp2p:eth:BLOCK_HEADERS Received BLOCK_HEADERS message from 162.55.98.224:30303: f968dd1df968d9f90217a0af80dab03492dfc689936dc9ff272ed3743da1... +72ms
-  ```
+devp2p:eth:GET_BLOCK_HEADERS Received GET_BLOCK_HEADERS message from 207.154.201.177:30303: d188659b37d8e321bc52c782198181c08080 +50ms
+devp2p:eth:GET_BLOCK_HEADERS Send GET_BLOCK_HEADERS message to 159.65.72.121:30303: c81bc682ded8328080 +431ms
+devp2p:eth:BLOCK_HEADERS Received BLOCK_HEADERS message from 159.65.72.121:30303: c21bc0 +417ms
+devp2p:eth:GET_BLOCK_HEADERS Send GET_BLOCK_HEADERS message to 162.55.98.224:30303: c81dc682df0a328080 +339ms
+devp2p:eth:BLOCK_HEADERS Received BLOCK_HEADERS message from 162.55.98.224:30303: f968dd1df968d9f90217a0af80dab03492dfc689936dc9ff272ed3743da1... +72ms
+```
+
+### Per-Peer Debuggig
+
+There are the following ways to limit debug output to a certain peer:
+
+#### Logging per IP
+
+Log output can be limited to one or several certain IPs. This can be useful to follow on the message exchange with a certain remote peer (e.g. a bootstrap peer):
+
+```shell
+DEBUG=devp2p:3.209.45.79 -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
+```
+
+#### First Connected
+
+Logging can be limited to the peer the first successful subprotocol (e.g. `ETH`) connection could be established:
+
+```shell
+DEBUG=devp2p:FIRST_PEER -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
+```
+
+This logger can be used in various practical scenarios if you want to concentrate on the message exchange with just one peer.
 
 ## Developer
 

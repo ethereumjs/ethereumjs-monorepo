@@ -12,6 +12,12 @@ const DEBUG_BASE_NAME = 'devp2p:eth'
 const debug = createDebugLogger(DEBUG_BASE_NAME)
 const verbose = createDebugLogger('verbose').enabled
 
+/**
+ * Will be set to the first successfully connected peer to allow for
+ * debugging with the `devp2p:FIRST_PEER` debugger
+ */
+let _firstPeer = ''
+
 type SendMethod = (code: ETH.MESSAGE_CODES, data: Buffer) => any
 
 export class ETH extends EventEmitter {
@@ -203,6 +209,9 @@ export class ETH extends EventEmitter {
     }
 
     this.emit('status', status)
+    if (_firstPeer === '') {
+      this._addFirstPeerDebugger()
+    }
   }
 
   getVersion() {
@@ -337,6 +346,27 @@ export class ETH extends EventEmitter {
     for (const name of MESSAGE_NAMES) {
       this.msgDebuggers[name] = createDebugLogger(`${DEBUG_BASE_NAME}:${name}`)
     }
+
+    // Remote Peer IP logger
+    const ip = this._peer._socket.remoteAddress
+    if (ip) {
+      this.msgDebuggers[ip] = createDebugLogger(`devp2p:${ip}`)
+    }
+  }
+
+  /**
+   * Called once on the peer where a first successful `STATUS`
+   * msg exchange could be achieved.
+   *
+   * Can be used together with the `devp2p:FIRST_PEER` debugger.
+   */
+  _addFirstPeerDebugger() {
+    const ip = this._peer._socket.remoteAddress
+    if (ip) {
+      this.msgDebuggers[ip] = createDebugLogger(`devp2p:FIRST_PEER`)
+      this._peer._addFirstPeerDebugger()
+      _firstPeer = ip
+    }
   }
 
   /**
@@ -349,6 +379,10 @@ export class ETH extends EventEmitter {
     debug(msg)
     if (this.msgDebuggers[messageName]) {
       this.msgDebuggers[messageName](msg)
+    }
+    const ip = this._peer._socket.remoteAddress
+    if (ip && this.msgDebuggers[ip]) {
+      this.msgDebuggers[ip](msg)
     }
   }
 }

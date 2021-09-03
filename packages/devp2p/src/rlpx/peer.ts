@@ -635,12 +635,31 @@ export class Peer extends EventEmitter {
       this.msgDebuggers[name] = createDebugLogger(`${DEBUG_BASE_NAME}:${name}`)
     }
 
+    // Remote Peer IP logger
+    const ip = this._socket.remoteAddress
+    if (ip) {
+      this.msgDebuggers[ip] = createDebugLogger(`devp2p:${ip}`)
+    }
+
     // Special DISCONNECT per-reason logger
     const DISCONNECT_NAMES = Object.values(DISCONNECT_REASONS).filter(
       (value) => typeof value === 'string'
     ) as string[]
     for (const name of DISCONNECT_NAMES) {
       this.msgDebuggers[name] = createDebugLogger(`${DEBUG_BASE_NAME}:DISCONNECT:${name}`)
+    }
+  }
+
+  /**
+   * Called once from the subprotocol (e.g. `ETH`) on the peer
+   * where a first successful `STATUS` msg exchange could be achieved.
+   *
+   * Can be used together with the `devp2p:FIRST_PEER` debugger.
+   */
+  _addFirstPeerDebugger() {
+    const ip = this._socket.remoteAddress
+    if (ip) {
+      this.msgDebuggers[ip] = createDebugLogger(`devp2p:FIRST_PEER`)
     }
   }
 
@@ -654,6 +673,10 @@ export class Peer extends EventEmitter {
     debug(msg)
     if (this.msgDebuggers[messageName]) {
       this.msgDebuggers[messageName](msg)
+    }
+    const ip = this._socket.remoteAddress
+    if (ip && this.msgDebuggers[ip]) {
+      this.msgDebuggers[ip](msg)
     }
     if (disconnectReason && messageName === 'DISCONNECT') {
       if (this.msgDebuggers[disconnectReason]) {
