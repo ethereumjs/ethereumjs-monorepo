@@ -6,6 +6,7 @@ import { Account, Address, BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { FullSynchronizer } from '../../lib/sync/fullsync'
 import { Miner } from '../../lib/miner'
+import { Event } from '../../lib/types'
 
 tape('[Miner]', async (t) => {
   class PeerPool {
@@ -35,6 +36,7 @@ tape('[Miner]', async (t) => {
   }
 
   const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berlin })
+  common.setMaxListeners(50)
   const accounts: [Address, Buffer][] = [[A.address, A.privateKey]]
   const config = new Config({ transports: [], loglevel: 'error', accounts, mine: true, common })
   config.events.setMaxListeners(50)
@@ -63,6 +65,8 @@ tape('[Miner]', async (t) => {
   const txA02 = createTx(A, B, 1, 1, 2000000000) // A -> B, nonce: 1, value: 1, 2x gasPrice
   const txA03 = createTx(A, B, 2, 1, 3000000000) // A -> B, nonce: 2, value: 1, 3x gasPrice
   const txB01 = createTx(B, A, 0, 1, 2500000000) // B -> A, nonce: 0, value: 1, 2.5x gasPrice
+
+  const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
   t.test('should initialize correctly', (t) => {
     const pool = new PeerPool() as any
@@ -263,5 +267,50 @@ tape('[Miner]', async (t) => {
       t.end()
     }
     ;(miner as any).queueNextAssembly(0)
+  })
+
+  t.test('assembleBlocks() -> should stop assembling when a new block is received', async (t) => {
+    const pool = new PeerPool() as any
+    const chain = new Chain() as any
+    const config = new Config({ transports: [], loglevel: 'error', accounts, mine: true, common })
+    const synchronizer = new FullSynchronizer({
+      config,
+      pool,
+      chain,
+    })
+    const miner = new Miner({ config, synchronizer })
+
+    // stub chainUpdated so assemble isn't called again
+    // when emitting Event.CHAIN_UPDATED in this test
+    ;(miner as any).chainUpdated = async () => {}
+
+    const { txPool } = synchronizer
+    const { vm } = synchronizer.execution
+    txPool.start()
+    miner.start()
+
+    // add balance to accounts
+    await vm.stateManager.putAccount(A.address, new Account(new BN(0), new BN('200000000000001'))) // this line can be replaced with modifyAccountFields() when #1369 is available
+
+    // add a block to skip generateCanonicalGenesis() in assembleBlock()
+    await vm.runBlock({ block: Block.fromBlockData({}, { common }), generate: true })
+
+    // add many txs to slow assembling
+    for (let i = 0; i < 1000; i++) {
+      txPool.add(createTx())
+    }
+
+    chain.putBlocks = () => {
+      t.fail('should have stopped assembling when a new block was received')
+    }
+    ;(miner as any).queueNextAssembly(5)
+    await wait(10)
+    t.ok((miner as any).assembling, 'miner should be assembling')
+    config.events.emit(Event.CHAIN_UPDATED)
+    await wait(10)
+    t.notOk((miner as any).assembling, 'miner should have stopped assembling')
+    miner.stop()
+    txPool.stop()
+    t.end()
   })
 })

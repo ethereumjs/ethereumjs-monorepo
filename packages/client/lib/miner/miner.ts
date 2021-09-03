@@ -103,8 +103,9 @@ export class Miner {
     let interrupt = false
     const setInterrupt = () => {
       interrupt = true
+      this.assembling = false
     }
-    this.config.events.on(Event.CHAIN_UPDATED, setInterrupt)
+    this.config.events.on(Event.CHAIN_UPDATED, setInterrupt.bind(this))
 
     const parentBlock = await this.latestBlock()
     const { gasLimit } = parentBlock.header
@@ -187,7 +188,7 @@ export class Miner {
     // Put block in blockchain and remove included txs from TxPool
     await (this.synchronizer as any).chain.putBlocks([block]) // when #1443 is merged replace this line with `await this.synchronizer.handleNewBlock(block)`
     this.synchronizer.txPool.removeNewBlockTxs([block])
-    this.config.events.removeListener(Event.CHAIN_UPDATED, setInterrupt)
+    this.config.events.removeListener(Event.CHAIN_UPDATED, setInterrupt.bind(this))
   }
 
   /**
