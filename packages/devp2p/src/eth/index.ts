@@ -44,6 +44,8 @@ export class ETH extends EventEmitter {
       this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
     }, ms('5s'))
 
+    this.initMsgDebuggers()
+
     // Set forkHash and nextForkBlock
     if (this._version >= 64) {
       const c = this._peer._common
@@ -55,8 +57,6 @@ export class ETH extends EventEmitter {
       // Next fork block number or 0 if none available
       this._nextForkBlock = c.nextHardforkBlockBN(this._hardfork) ?? new BN(0)
     }
-
-    this.initMsgDebuggers()
   }
 
   static eth62 = { name: 'eth', version: 62, length: 8, constructor: ETH }
