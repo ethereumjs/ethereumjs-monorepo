@@ -109,7 +109,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
       const blockRlp = Buffer.from(raw.rlp.slice(2), 'hex')
       const decodedRLP: any = rlp.decode(blockRlp)
       currentBlock = new BN(decodedRLP[0][8])
-    } catch (e) {
+    } catch (e: any) {
       await handleError(e, expectException)
       continue
     }
@@ -135,7 +135,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
             if (shouldFail) {
               t.fail('tx should fail, but did not fail')
             }
-          } catch (e) {
+          } catch (e: any) {
             if (!shouldFail) {
               t.fail('tx should not fail, but failed')
             } else {
@@ -178,7 +178,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
         t.fail('expected exception but test did not throw an exception: ' + <string>expectException)
         return
       }
-    } catch (error) {
+    } catch (error: any) {
       // caught an error, reduce block number
       currentBlock.isubn(1)
       await handleError(error, expectException)

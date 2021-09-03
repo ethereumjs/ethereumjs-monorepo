@@ -52,7 +52,7 @@ export class Libp2pSender extends Sender {
           } else {
             this.emit('message', { code, payload })
           }
-        } catch (error) {
+        } catch (error: any) {
           this.emit('error', error)
         }
       }

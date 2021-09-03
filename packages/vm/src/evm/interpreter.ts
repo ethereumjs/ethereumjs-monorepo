@@ -111,7 +111,7 @@ export default class Interpreter {
 
       try {
         await this.runStep()
-      } catch (e) {
+      } catch (e: any) {
         // re-throw on non-VM errors
         if (!('errorType' in e && e.errorType === 'VmError')) {
           throw e

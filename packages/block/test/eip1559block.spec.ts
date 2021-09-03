@@ -55,7 +55,7 @@ tape('EIP1559 tests', function (t) {
           common,
         }
       )
-    } catch (e) {
+    } catch (e: any) {
       const expectedError = 'A base fee for a block can only be set with EIP1559 being activated'
       st.ok(e.message.includes(expectedError), 'should throw with EIP1559 not being activated')
     }
@@ -80,7 +80,7 @@ tape('EIP1559 tests', function (t) {
     try {
       await header.validate(blockchain1)
       st.fail('should throw')
-    } catch (e) {
+    } catch (e: any) {
       const expectedError = 'Initial EIP1559 block does not have initial base fee'
       st.ok(
         e.message.includes(expectedError),
@@ -92,7 +92,7 @@ tape('EIP1559 tests', function (t) {
       // eslint-disable-next-line no-extra-semi
       ;(header as any).baseFeePerGas = undefined
       await header.validate(blockchain1)
-    } catch (e) {
+    } catch (e: any) {
       const expectedError = 'EIP1559 block has no base fee field'
       st.ok(
         e.message.includes(expectedError),
@@ -120,7 +120,7 @@ tape('EIP1559 tests', function (t) {
         }
       )
       await header.validate(blockchain)
-    } catch (e) {
+    } catch (e: any) {
       const expectedError = 'Invalid block: base fee not correct'
       st.ok(e.message.includes(expectedError), 'should throw when base fee is not correct')
     }
@@ -170,7 +170,7 @@ tape('EIP1559 tests', function (t) {
     try {
       await header.validate(blockchain1)
       st.fail('should throw')
-    } catch (e) {
+    } catch (e: any) {
       st.ok(e.message.includes('base fee'), 'should throw on wrong initial base fee')
     }
     st.end()
@@ -219,7 +219,7 @@ tape('EIP1559 tests', function (t) {
     try {
       await header.validate(blockchain1)
       st.fail('should throw')
-    } catch (e) {
+    } catch (e: any) {
       st.ok(e.message.includes('too much gas used'), 'should throw when elasticity is exceeded')
     }
     st.end()
@@ -333,7 +333,7 @@ tape('EIP1559 tests', function (t) {
     try {
       await header.validate(blockchain1)
       st.fail('should throw')
-    } catch (e) {
+    } catch (e: any) {
       st.ok(
         e.message.includes('invalid gas limit'),
         'should throw if gas limit is increased too much (HF transition block)'
@@ -357,7 +357,7 @@ tape('EIP1559 tests', function (t) {
     try {
       await header.validate(blockchain2)
       st.fail('should throw')
-    } catch (e) {
+    } catch (e: any) {
       st.ok(
         e.message.includes('invalid gas limit'),
         'should throw if gas limit is increased too much (post-HF transition block)'
@@ -384,7 +384,7 @@ tape('EIP1559 tests', function (t) {
     try {
       await header.validate(blockchain1)
       st.fail('should throw')
-    } catch (e) {
+    } catch (e: any) {
       st.ok(
         e.message.includes('invalid gas limit'),
         'should throw if gas limit is decreased too much (HF transition block)'
@@ -408,7 +408,7 @@ tape('EIP1559 tests', function (t) {
     try {
       await header.validate(blockchain2)
       st.fail('should throw')
-    } catch (e) {
+    } catch (e: any) {
       st.ok(
         e.message.includes('invalid gas limit'),
         'should throw if gas limit is decreased too much (post-HF transition block)'
@@ -454,7 +454,7 @@ tape('EIP1559 tests', function (t) {
     try {
       await block.validate(blockchain1)
       st.fail('should throw')
-    } catch (e) {
+    } catch (e: any) {
       st.ok(
         e.message.includes('unable to pay base fee'),
         'should throw if transaction is unable to pay base fee'

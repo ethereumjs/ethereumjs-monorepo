@@ -148,7 +148,7 @@ export class RlpxServer extends Server {
     for (const promise of promises) {
       try {
         await promise
-      } catch (e) {
+      } catch (e: any) {
         this.error(e)
       }
     }
@@ -258,7 +258,7 @@ export class RlpxServer extends Server {
           this.peers.set(peer.id, peer)
           this.config.logger.debug(`Peer connected: ${peer}`)
           this.config.events.emit(Event.PEER_CONNECTED, peer)
-        } catch (error) {
+        } catch (error: any) {
           this.error(error)
         }
       })

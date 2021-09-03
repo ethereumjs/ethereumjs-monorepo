@@ -118,7 +118,7 @@ export class RlpxPeer extends Peer {
       try {
         await this.bindProtocols(rlpxPeer)
         this.config.events.emit(Event.PEER_CONNECTED, this)
-      } catch (error) {
+      } catch (error: any) {
         this.config.events.emit(Event.PEER_ERROR, error, this)
       }
     })
@@ -130,7 +130,7 @@ export class RlpxPeer extends Peer {
         this.rlpxPeer = null
         this.connected = false
         this.config.events.emit(Event.PEER_DISCONNECTED, this)
-      } catch (error) {
+      } catch (error: any) {
         this.config.events.emit(Event.PEER_ERROR, error, this)
       }
     })

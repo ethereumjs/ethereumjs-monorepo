@@ -269,7 +269,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
         bnToUnpaddedBuffer(s!),
         this.supports(Capability.EIP155ReplayProtection) ? this.common.chainIdBN() : undefined
       )
-    } catch (e) {
+    } catch (e: any) {
       throw new Error('Invalid Signature')
     }
   }

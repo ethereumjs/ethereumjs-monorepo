@@ -105,7 +105,7 @@ test('LES: send unknown message code', async (t) => {
   opts.onOnceStatus0 = function (rlpxs: any, les: any) {
     try {
       les.sendMessage(0x55, [1, []])
-    } catch (err) {
+    } catch (err: any) {
       const msg = 'Error: Unknown code 85'
       t.equal(err.toString(), msg, `should emit error: ${msg}`)
       util.destroyRLPXs(rlpxs)
@@ -122,7 +122,7 @@ test('LES: invalid status send', async (t) => {
   opts.onOnceStatus0 = function (rlpxs: any, les: any) {
     try {
       les.sendMessage(devp2p.ETH.MESSAGE_CODES.STATUS, 1, [])
-    } catch (err) {
+    } catch (err: any) {
       const msg = 'Error: Please send status message through .sendStatus'
       t.equal(err.toString(), msg, `should emit error: ${msg}`)
       util.destroyRLPXs(rlpxs)

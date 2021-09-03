@@ -36,7 +36,7 @@ tape('VM.runCode: initial program counter', (t) => {
         if (testData.resultPC !== undefined) {
           t.equals(result.runState?.programCounter, testData.resultPC, 'runstate.programCounter')
         }
-      } catch (e) {
+      } catch (e: any) {
         err = e
       }
 
@@ -65,7 +65,7 @@ tape('VM.runCode: interpreter', (t) => {
     let result: any
     try {
       result = await vm.runCode(runCodeArgs)
-    } catch (e) {
+    } catch (e: any) {
       st.fail('should not throw error')
     }
     st.equal(result!.exceptionError!.errorType, 'VmError')
@@ -89,7 +89,7 @@ tape('VM.runCode: interpreter', (t) => {
     try {
       await vm.runCode(runCodeArgs)
       st.fail('should throw error')
-    } catch (e) {
+    } catch (e: any) {
       st.ok(e.toString().includes('Test'), 'error thrown')
     }
     st.end()

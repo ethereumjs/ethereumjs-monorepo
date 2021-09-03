@@ -52,7 +52,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   try {
     mclPoint1 = BLS12_381_ToG2Point(opts.data.slice(0, 256), mcl)
     mclPoint2 = BLS12_381_ToG2Point(opts.data.slice(256, 512), mcl)
-  } catch (e) {
+  } catch (e: any) {
     return VmErrorResult(e, opts.gasLimit)
   }
 

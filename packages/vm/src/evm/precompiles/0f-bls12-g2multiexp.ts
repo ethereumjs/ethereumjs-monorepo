@@ -75,7 +75,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
     let G2
     try {
       G2 = BLS12_381_ToG2Point(opts.data.slice(pairStart, pairStart + 256), mcl)
-    } catch (e) {
+    } catch (e: any) {
       return VmErrorResult(e, opts.gasLimit)
     }
     const Fr = BLS12_381_ToFrPoint(opts.data.slice(pairStart + 256, pairStart + 288), mcl)

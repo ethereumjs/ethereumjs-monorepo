@@ -57,7 +57,7 @@ export function parseMultiaddrs(input: MultiaddrLike): multiaddr[] {
       }
       throw new Error(`Unable to parse bootnode URL: ${s}`)
     })
-  } catch (e) {
+  } catch (e: any) {
     throw new Error(`Invalid bootnode URLs: ${e.message}`)
   }
 }
@@ -256,7 +256,7 @@ export async function parseCustomParams(json: any, name?: string) {
     } else {
       throw new Error('Invalid format')
     }
-  } catch (e) {
+  } catch (e: any) {
     throw new Error(`Error parsing parameters file: ${e.message}`)
   }
 }

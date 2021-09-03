@@ -504,7 +504,7 @@ export class Eth {
       txPool.sendTransactions(peerPool, [tx])
 
       return `0x${tx.hash().toString('hex')}`
-    } catch (e) {
+    } catch (e: any) {
       return {
         code: PARSE_ERROR,
         message: `serialized tx data could not be parsed (${e.message})`,

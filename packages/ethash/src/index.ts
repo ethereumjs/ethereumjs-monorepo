@@ -138,7 +138,7 @@ export default class Ethash {
       let data
       try {
         data = await this.cacheDB!.get(epoc, this.dbOpts)
-      } catch (error) {
+      } catch (error: any) {
         if (error.type !== 'NotFoundError') {
           throw error
         }
@@ -153,7 +153,7 @@ export default class Ethash {
     let data
     try {
       data = await this.cacheDB!.get(epoc, this.dbOpts)
-    } catch (error) {
+    } catch (error: any) {
       if (error.type !== 'NotFoundError') {
         throw error
       }

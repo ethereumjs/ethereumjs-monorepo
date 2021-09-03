@@ -197,7 +197,7 @@ tape('Clique: Initialization', (t) => {
     try {
       await blockchain.putBlock(block)
       st.fail('should fail')
-    } catch (error) {
+    } catch (error: any) {
       if (error.message.includes('checkpoint signer not found in active signers list')) {
         st.pass('correct error')
       } else {
@@ -223,7 +223,7 @@ tape('Clique: Initialization', (t) => {
     try {
       await block.validate(blockchain)
       st.fail('should fail')
-    } catch (error) {
+    } catch (error: any) {
       if (error.message.includes('difficulty for clique block must be INTURN (2) or NOTURN (1)')) {
         st.pass('correct error')
       } else {
@@ -241,7 +241,7 @@ tape('Clique: Initialization', (t) => {
     try {
       await block.validate(blockchain)
       st.fail('should fail')
-    } catch (error) {
+    } catch (error: any) {
       if (error.message.includes('invalid clique difficulty')) {
         st.pass('correct error')
       } else {
@@ -565,7 +565,7 @@ tape('Clique: Initialization', (t) => {
     try {
       await addNextBlock(blockchain, blocks, B)
       st.fail('should throw error')
-    } catch (error) {
+    } catch (error: any) {
       if (error.message.includes('invalid PoA block signature (clique)')) {
         st.pass('correct error thrown')
       } else {
@@ -583,7 +583,7 @@ tape('Clique: Initialization', (t) => {
       try {
         await addNextBlock(blockchain, blocks, A)
         st.fail('should throw error')
-      } catch (error) {
+      } catch (error: any) {
         if (error.message.includes('recently signed')) {
           st.pass('correct error thrown')
         } else {
@@ -618,7 +618,7 @@ tape('Clique: Initialization', (t) => {
       try {
         await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
         st.fail('should throw error')
-      } catch (error) {
+      } catch (error: any) {
         if (error.message.includes('recently signed')) {
           st.pass('correct error thrown')
         } else {

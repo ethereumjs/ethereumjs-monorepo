@@ -130,7 +130,7 @@ tape('[Block]: block functions', function (t) {
     try {
       await block.validate(blockchain)
       st.pass('does not throw')
-    } catch (error) {
+    } catch (error: any) {
       st.fail('error thrown')
     }
     st.end()
@@ -149,7 +149,7 @@ tape('[Block]: block functions', function (t) {
     try {
       await block.validateData()
       st.fail('should throw')
-    } catch (error) {
+    } catch (error: any) {
       st.equal(error.message, 'invalid transaction trie')
     }
     st.end()
@@ -184,7 +184,7 @@ tape('[Block]: block functions', function (t) {
     try {
       await block.validateData()
       st.fail('should throw')
-    } catch (error) {
+    } catch (error: any) {
       st.equal(error.message, 'invalid uncle hash')
     }
     st.end()
@@ -208,7 +208,7 @@ tape('[Block]: block functions', function (t) {
     try {
       await block2.validate(blockchain)
       st.fail('cannot reach this')
-    } catch (e) {
+    } catch (e: any) {
       st.pass('block throws if the uncle is included twice in the block')
     }
     st.end()
@@ -239,7 +239,7 @@ tape('[Block]: block functions', function (t) {
     try {
       await block3.validate(blockchain)
       st.fail('cannot reach this')
-    } catch (e) {
+    } catch (e: any) {
       st.pass('block throws if uncle is already included')
     }
     st.end()
@@ -275,7 +275,7 @@ tape('[Block]: block functions', function (t) {
       try {
         await block3.validate(blockchain)
         st.fail('cannot reach this')
-      } catch (e) {
+      } catch (e: any) {
         st.pass('block throws if uncle parent hash is not part of the canonical chain')
       }
       st.end()
@@ -302,7 +302,7 @@ tape('[Block]: block functions', function (t) {
     try {
       await blockWithUnclesTooOld.validate(blockchain)
       st.fail('cannot reach this')
-    } catch (e) {
+    } catch (e: any) {
       st.pass('block throws uncle is too old')
     }
     st.end()
@@ -323,7 +323,7 @@ tape('[Block]: block functions', function (t) {
     try {
       await block1.validate(blockchain)
       st.fail('cannot reach this')
-    } catch (e) {
+    } catch (e: any) {
       st.pass('block throws uncle is too young')
     }
     st.end()
@@ -355,7 +355,7 @@ tape('[Block]: block functions', function (t) {
     try {
       await block2.validate(blockchain)
       st.fail('cannot reach this')
-    } catch (e) {
+    } catch (e: any) {
       st.pass('block throws uncle header is invalid')
     }
     st.end()
@@ -395,7 +395,7 @@ tape('[Block]: block functions', function (t) {
     try {
       await block2.validate(blockchain)
       st.fail('cannot reach this')
-    } catch (e) {
+    } catch (e: any) {
       st.pass('block throws if more than 2 uncles are included')
     }
     st.end()
@@ -416,7 +416,7 @@ tape('[Block]: block functions', function (t) {
     try {
       await block2.validate(blockchain)
       st.fail('cannot reach this')
-    } catch (e) {
+    } catch (e: any) {
       st.pass('block throws if an uncle is a canonical block')
     }
     st.end()
@@ -548,7 +548,7 @@ tape('[Block]: block functions', function (t) {
       try {
         await forkBlock_InvalidCommon.validate(blockchain)
         st.fail('cannot reach this')
-      } catch (e) {
+      } catch (e: any) {
         st.ok(
           e.message.includes('with EIP1559 being activated'),
           'explicitly set hardforkByBlockNumber to false, pre-london block interpreted as london block and succesfully failed'

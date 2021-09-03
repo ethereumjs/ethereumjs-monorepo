@@ -14,7 +14,7 @@ test('ENR (root): should parse and verify and DNS root entry', (t) => {
 test('ENR (root): should error if DNS root entry is mis-prefixed', (t) => {
   try {
     ENR.parseAndVerifyRoot(dns.enrRootBadPrefix, dns.publicKey)
-  } catch (e) {
+  } catch (e: any) {
     t.ok(
       e.toString().includes("ENR root entry must start with 'enrtree-root:'"),
       'has correct error message'
@@ -26,7 +26,7 @@ test('ENR (root): should error if DNS root entry is mis-prefixed', (t) => {
 test('ENR (root): should error if DNS root entry signature is invalid', (t) => {
   try {
     ENR.parseAndVerifyRoot(dns.enrRootBadSig, dns.publicKey)
-  } catch (e) {
+  } catch (e: any) {
     t.ok(e.toString().includes('Unable to verify ENR root signature'), 'has correct error message')
     t.end()
   }
@@ -35,7 +35,7 @@ test('ENR (root): should error if DNS root entry signature is invalid', (t) => {
 test('ENR (root): should error if DNS root entry is malformed', (t) => {
   try {
     ENR.parseAndVerifyRoot(dns.enrRootMalformed, dns.publicKey)
-  } catch (e) {
+  } catch (e: any) {
     t.ok(
       e.toString().includes("Could not parse 'l' value from ENR root entry"),
       'has correct error message'
@@ -56,7 +56,7 @@ test('ENR (tree): should parse a DNS tree entry', (t) => {
 test('ENR (tree): should error if DNS tree entry is mis-prefixed', (t) => {
   try {
     ENR.parseTree(dns.enrTreeBadPrefix)
-  } catch (e) {
+  } catch (e: any) {
     t.ok(
       e.toString().includes("ENR tree entry must start with 'enrtree:'"),
       'has correct error message'
@@ -68,7 +68,7 @@ test('ENR (tree): should error if DNS tree entry is mis-prefixed', (t) => {
 test('ENR (tree): should error if DNS tree entry is misformatted', (t) => {
   try {
     ENR.parseTree(dns.enrTreeMalformed)
-  } catch (e) {
+  } catch (e: any) {
     t.ok(
       e.toString().includes('Could not parse domain from ENR tree entry'),
       'has correct error message'
@@ -93,7 +93,7 @@ test('ENR (branch): should parse and verify a single component DNS branch entry'
 test('ENR (branch): should error if DNS branch entry is mis-prefixed', (t) => {
   try {
     ENR.parseBranch(dns.enrBranchBadPrefix)
-  } catch (e) {
+  } catch (e: any) {
     t.ok(
       e.toString().includes("ENR branch entry must start with 'enrtree-branch:'"),
       'has correct error message'
@@ -124,7 +124,7 @@ test('ENR (enr): should return correct multiaddr conversion codes for ipv6', (t)
 test('ENR (enr): should error if record mis-prefixed', (t) => {
   try {
     ENR.parseAndVerifyRecord(dns.enrBadPrefix)
-  } catch (e) {
+  } catch (e: any) {
     t.ok(
       e.toString().includes("String encoded ENR must start with 'enr:'"),
       'has correct error message'
@@ -137,7 +137,7 @@ test('ENR (enr): should error when converting to unrecognized ip protocol id', (
   const protocolId = Buffer.from('v7')
   try {
     ENR._getIpProtocolConversionCodes(protocolId)
-  } catch (e) {
+  } catch (e: any) {
     t.ok(e.toString().includes("IP protocol must be 'v4' or 'v6'"), 'has correct error message')
     t.end()
   }
