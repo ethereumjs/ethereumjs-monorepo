@@ -86,7 +86,7 @@ export class EthProtocol extends Protocol {
       name: 'BlockHeaders',
       code: 0x04,
       encode: ({ reqId, headers }: { reqId: BN; headers: BlockHeader[] }) => [
-        reqId.toNumber(),
+        reqId.toArrayLike(Buffer),
         headers.map((h) => h.raw()),
       ],
       decode: ([reqId, headers]: [Buffer, BlockHeaderBuffer[]]) => [
@@ -116,7 +116,7 @@ export class EthProtocol extends Protocol {
       name: 'BlockBodies',
       code: 0x06,
       encode: ({ reqId, bodies }: { reqId: BN; bodies: BlockBodyBuffer[] }) => [
-        reqId.toNumber(),
+        reqId.toArrayLike(Buffer),
         bodies,
       ],
       decode: ([reqId, bodies]: [Buffer, BlockBodyBuffer[]]) => [new BN(reqId), bodies],
