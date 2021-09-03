@@ -67,25 +67,28 @@ export class ETH extends EventEmitter {
 
   _handleMessage(code: ETH.MESSAGE_CODES, data: any) {
     const payload = rlp.decode(data) as unknown
+    const messageName = this.getMsgPrefix(code)
+    const debugMsg = `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}`
+
     if (code !== ETH.MESSAGE_CODES.STATUS) {
-      const messageName = this.getMsgPrefix(code)
       const logData = formatLogData(data.toString('hex'), verbose)
-      const debugMsg = `Received ${messageName} message from ${
-        this._peer._socket.remoteAddress
-      }:${this._peer._socket.remotePort}: ${logData}`
-      
-      this.debug(messageName, debugMsg)
+      this.debug(messageName, `${debugMsg}: ${logData}`)
     }
     switch (code) {
-      case ETH.MESSAGE_CODES.STATUS:
-        assertEq(this._peerStatus, null, 'Uncontrolled status message', debug)
+      case ETH.MESSAGE_CODES.STATUS: {
+        assertEq(
+          this._peerStatus,
+          null,
+          'Uncontrolled status message',
+          this.debug.bind(this),
+          'STATUS'
+        )
         this._peerStatus = payload as ETH.StatusMsg
-        const debugMsg = `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
-          this._peer._socket.remotePort
-        }: : ${this._peerStatus ? this._getStatusString(this._peerStatus) : ''}`
-        this.debug('STATUS', debugMsg)
+        const peerStatusMsg = `${this._peerStatus ? this._getStatusString(this._peerStatus) : ''}`
+        this.debug(messageName, `${debugMsg}: ${peerStatusMsg}`)
         this._handleStatus()
         break
+      }
 
       case ETH.MESSAGE_CODES.NEW_BLOCK_HASHES:
       case ETH.MESSAGE_CODES.TX:
@@ -158,9 +161,27 @@ export class ETH extends EventEmitter {
     if (this._status === null || this._peerStatus === null) return
     clearTimeout(this._statusTimeoutId)
 
-    assertEq(this._status[0], this._peerStatus[0], 'Protocol version mismatch', this.debug.bind(this), 'STATUS')
-    assertEq(this._status[1], this._peerStatus[1], 'NetworkId mismatch', this.debug.bind(this), 'STATUS')
-    assertEq(this._status[4], this._peerStatus[4], 'Genesis block mismatch', this.debug.bind(this), 'STATUS')
+    assertEq(
+      this._status[0],
+      this._peerStatus[0],
+      'Protocol version mismatch',
+      this.debug.bind(this),
+      'STATUS'
+    )
+    assertEq(
+      this._status[1],
+      this._peerStatus[1],
+      'NetworkId mismatch',
+      this.debug.bind(this),
+      'STATUS'
+    )
+    assertEq(
+      this._status[4],
+      this._peerStatus[4],
+      'Genesis block mismatch',
+      this.debug.bind(this),
+      'STATUS'
+    )
 
     const status: any = {
       networkId: this._peerStatus[1],
@@ -170,7 +191,13 @@ export class ETH extends EventEmitter {
     }
 
     if (this._version >= 64) {
-      assertEq(this._peerStatus[5].length, 2, 'Incorrect forkId msg format', this.debug.bind(this), 'STATUS')
+      assertEq(
+        this._peerStatus[5].length,
+        2,
+        'Incorrect forkId msg format',
+        this.debug.bind(this),
+        'STATUS'
+      )
       this._validateForkId(this._peerStatus[5] as Buffer[])
       status['forkId'] = this._peerStatus[5]
     }
@@ -233,7 +260,8 @@ export class ETH extends EventEmitter {
       this._status.push([forkHashB, nextForkB])
     }
 
-    this.debug('STATUS',
+    this.debug(
+      'STATUS',
       `Send STATUS message to ${this._peer._socket.remoteAddress}:${
         this._peer._socket.remotePort
       } (eth${this._version}): ${this._getStatusString(this._status)}`
@@ -253,10 +281,8 @@ export class ETH extends EventEmitter {
   sendMessage(code: ETH.MESSAGE_CODES, payload: any) {
     const messageName = this.getMsgPrefix(code)
     const logData = formatLogData(rlp.encode(payload).toString('hex'), verbose)
-    const debugMsg = `Send ${messageName} message to ${
-      this._peer._socket.remoteAddress
-    }:${this._peer._socket.remotePort}: ${logData}`
-    
+    const debugMsg = `Send ${messageName} message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${logData}`
+
     this.debug(messageName, debugMsg)
 
     switch (code) {
@@ -305,7 +331,9 @@ export class ETH extends EventEmitter {
   }
 
   private initMsgDebuggers() {
-    const MESSAGE_NAMES = Object.values(ETH.MESSAGE_CODES).filter(value => typeof value === 'string') as string[]
+    const MESSAGE_NAMES = Object.values(ETH.MESSAGE_CODES).filter(
+      (value) => typeof value === 'string'
+    ) as string[]
     for (const name of MESSAGE_NAMES) {
       this.msgDebuggers[name] = createDebugLogger(`${DEBUG_BASE_NAME}:${name}`)
     }
@@ -319,7 +347,9 @@ export class ETH extends EventEmitter {
    */
   private debug(messageName: string, msg: string) {
     debug(msg)
-    this.msgDebuggers[messageName](msg)
+    if (this.msgDebuggers[messageName]) {
+      this.msgDebuggers[messageName](msg)
+    }
   }
 }
 

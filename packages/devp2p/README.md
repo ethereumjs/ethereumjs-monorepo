@@ -422,6 +422,7 @@ Remove peer: 52.169.42.101:30303 (peer disconnect, reason code: 16) (total: 1)
 The following loggers from above support per-message debugging:
 
 | `devp2p:eth` | e.g. `devp2p:eth:GET_BLOCK_HEADERS` |
+| `devp2p:les` | e.g. `devp2p:les:GET_PROOFS` |
 
 Available messages can be added to the logger base name to filter on a per message basis. See the following example to filter
 on two message names along `ETH` protocol debugging:
