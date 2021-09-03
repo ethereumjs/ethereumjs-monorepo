@@ -373,14 +373,33 @@ npm run test
 
 ## Debugging
 
-This library uses [debug](https://github.com/visionmedia/debug) debugging utility package.
+### Introduction
+
+This library uses the [debug](https://github.com/visionmedia/debug) debugging utility package.
 
 For the debugging output to show up, set the `DEBUG` environment variable (e.g. in Linux/Mac OS:
 `export DEBUG=*,-babel`).
 
 Use the `DEBUG` environment variable to active the logger output you are interested in, e.g.:
 
+```shell
 DEBUG=devp2p:dpt:\*,devp2p:eth node -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
+```
+
+The following loggers are available:
+
+| Logger | Description |
+| - | - |
+| `devp2p:dpt` | General DPT peer discovery logging |
+| `devp2p:dpt:server` | DPT server communication (`ping`, `pong`, `findNeighbour`,... messages) |
+| `devp2p:dpt:ban-list` | DPT ban list |
+| `devp2p:dns:dns` | DNS discovery logging |
+| `devp2p:rlpx` | General RLPx debug logger |
+| `devp2p:rlpx:peer` | RLPx peer message exchange logging (`PING`, `PONG`, `HELLO`, `DISCONNECT`,... messages) |
+| `devp2p:eth` | ETH protocol message logging (`STATUS`, `GET_BLOCK_HEADER`, `TRANSACTIONS`,... messages) |
+| `devp2p:les` | LES protocol message logging (`STATUS`, `GET_BLOCK_HEADER`, `GET_PROOFS`,... messages) |
+
+### Debug Verbosity
 
 For more verbose output on logging (e.g. to output the entire msg payload) use the `verbose` logger
 in addition:
@@ -389,7 +408,7 @@ DEBUG=devp2p:dpt:\*,devp2p:eth,verbose node -r ts-node/register [YOUR_SCRIPT_TO_
 
 Exemplary logging output:
 
-```
+```shell
 Add peer: 52.3.158.184:30303 Geth/v1.7.3-unstable-479aa61f/linux-amd64/go1.9 (eth63) (total: 2)
   devp2p:rlpx:peer Received body 52.169.42.101:30303 01c110 +133ms
   devp2p:rlpx:peer Message code: 1 - 0 = 1 +0ms
@@ -397,6 +416,29 @@ Add peer: 52.3.158.184:30303 Geth/v1.7.3-unstable-479aa61f/linux-amd64/go1.9 (et
   devp2p:rlpx 52.169.42.101:30303 disconnect, reason: 16 +1ms
 Remove peer: 52.169.42.101:30303 (peer disconnect, reason code: 16) (total: 1)
 ```
+
+### Per-Message Debugging
+
+The following loggers from above support per-message debugging:
+
+| `devp2p:eth` | e.g. `devp2p:eth:GET_BLOCK_HEADERS` |
+
+Available messages can be added to the logger base name to filter on a per message basis. See the following example to filter
+on two message names along `ETH` protocol debugging:
+
+```shell
+DEBUG=devp2p:eth:GET_BLOCK_HEADERS,devp2p:eth:BLOCK_HEADERS -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
+```
+
+Exemplary logging output:
+
+```shell
+  devp2p:eth:GET_BLOCK_HEADERS Received GET_BLOCK_HEADERS message from 207.154.201.177:30303: d188659b37d8e321bc52c782198181c08080 +50ms
+  devp2p:eth:GET_BLOCK_HEADERS Send GET_BLOCK_HEADERS message to 159.65.72.121:30303: c81bc682ded8328080 +431ms
+  devp2p:eth:BLOCK_HEADERS Received BLOCK_HEADERS message from 159.65.72.121:30303: c21bc0 +417ms
+  devp2p:eth:GET_BLOCK_HEADERS Send GET_BLOCK_HEADERS message to 162.55.98.224:30303: c81dc682df0a328080 +339ms
+  devp2p:eth:BLOCK_HEADERS Received BLOCK_HEADERS message from 162.55.98.224:30303: f968dd1df968d9f90217a0af80dab03492dfc689936dc9ff272ed3743da1... +72ms
+  ```
 
 ## Developer
 
