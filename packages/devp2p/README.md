@@ -421,9 +421,12 @@ Remove peer: 52.169.42.101:30303 (peer disconnect, reason code: 16) (total: 1)
 
 The following loggers from above support per-message debugging:
 
+| Logger | Usage |
+| - | - |
 | `devp2p:eth` | e.g. `devp2p:eth:GET_BLOCK_HEADERS` |
 | `devp2p:les` | e.g. `devp2p:les:GET_PROOFS` |
-| `devp2p:rlpx:peer` | e.g. `devp2p:rlpx:peer:DISCONNECT` |
+| `devp2p:rlpx:peer` | e.g. `devp2p:rlpx:peer:HELLO` |
+| `devp2p:rlpx:peer:DISCONNECT` | e.g. `devp2p:rlpx:peer:DISCONNECT:TOO_MANY_PEERS` (special logger to filter on `DISCONNECT` reasons) |
 | `devp2p:dpt:server` | e.g. `devp2p:dpt:server:findneighbours` |
 
 Available messages can be added to the logger base name to filter on a per message basis. See the following example to filter

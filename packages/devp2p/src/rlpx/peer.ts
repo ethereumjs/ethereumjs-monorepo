@@ -252,10 +252,9 @@ export class Peer extends EventEmitter {
    * @param reason
    */
   _sendDisconnect(reason: DISCONNECT_REASONS) {
-    const debugMsg = `Send DISCONNECT to ${this._socket.remoteAddress}:${
-      this._socket.remotePort
-    } (reason: ${this.getDisconnectPrefix(reason)})`
-    this.debug('DISCONNECT', debugMsg)
+    const reasonName = this.getDisconnectPrefix(reason)
+    const debugMsg = `Send DISCONNECT to ${this._socket.remoteAddress}:${this._socket.remotePort} (reason: ${reasonName})`
+    this.debug('DISCONNECT', debugMsg, reasonName)
     const data = rlp.encode(reason)
     if (!this._sendMessage(PREFIXES.DISCONNECT, data)) return
 
@@ -426,10 +425,9 @@ export class Peer extends EventEmitter {
   _handleDisconnect(payload: any) {
     this._closed = true
     this._disconnectReason = payload[0].length === 0 ? 0 : payload[0][0]
-    const debugMsg = `DISCONNECT reason: ${DISCONNECT_REASONS[this._disconnectReason as number]} ${
-      this._socket.remoteAddress
-    }:${this._socket.remotePort}`
-    this.debug('DISCONNECT', debugMsg)
+    const reason = DISCONNECT_REASONS[this._disconnectReason as number]
+    const debugMsg = `DISCONNECT reason: ${reason} ${this._socket.remoteAddress}:${this._socket.remotePort}`
+    this.debug('DISCONNECT', debugMsg, reason)
     this._disconnectWe = false
     this._socket.end()
   }
@@ -531,9 +529,7 @@ export class Peer extends EventEmitter {
       const messageName = this.getMsgPrefix(msgCode)
       this.debug(messageName, `Received ${messageName} message ${postAdd}`)
     } else {
-      debug(
-        `Received ${protocolName} subprotocol message ${postAdd}`
-      )
+      debug(`Received ${protocolName} subprotocol message ${postAdd}`)
     }
 
     try {
@@ -638,6 +634,14 @@ export class Peer extends EventEmitter {
     for (const name of MESSAGE_NAMES) {
       this.msgDebuggers[name] = createDebugLogger(`${DEBUG_BASE_NAME}:${name}`)
     }
+
+    // Special DISCONNECT per-reason logger
+    const DISCONNECT_NAMES = Object.values(DISCONNECT_REASONS).filter(
+      (value) => typeof value === 'string'
+    ) as string[]
+    for (const name of DISCONNECT_NAMES) {
+      this.msgDebuggers[name] = createDebugLogger(`${DEBUG_BASE_NAME}:DISCONNECT:${name}`)
+    }
   }
 
   /**
@@ -646,10 +650,15 @@ export class Peer extends EventEmitter {
    * @param messageName Capitalized message name (e.g. `HELLO`)
    * @param msg Message text to debug
    */
-  private debug(messageName: string, msg: string) {
+  private debug(messageName: string, msg: string, disconnectReason?: string) {
     debug(msg)
     if (this.msgDebuggers[messageName]) {
       this.msgDebuggers[messageName](msg)
+    }
+    if (disconnectReason && messageName === 'DISCONNECT') {
+      if (this.msgDebuggers[disconnectReason]) {
+        this.msgDebuggers[disconnectReason](msg)
+      }
     }
   }
 }

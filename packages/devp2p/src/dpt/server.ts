@@ -171,10 +171,9 @@ export class Server extends EventEmitter {
   _handler(msg: Buffer, rinfo: RemoteInfo) {
     const info = decode(msg)
     const peerId = pk2id(info.publicKey)
-    const debugMsg = `received ${info.typename} from ${rinfo.address}:${rinfo.port} (peerId: ${formatLogId(
-      peerId.toString('hex'),
-      verbose
-    )})`
+    const debugMsg = `received ${info.typename} from ${rinfo.address}:${
+      rinfo.port
+    } (peerId: ${formatLogId(peerId.toString('hex'), verbose)})`
     this.debug(info.typename.toString(), debugMsg)
 
     // add peer if not in our table
