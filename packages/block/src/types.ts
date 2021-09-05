@@ -101,6 +101,10 @@ export interface BlockData {
   uncleHeaders?: Array<HeaderData>
 }
 
+export interface HeaderCache {
+  hash: Buffer | undefined
+}
+
 export type BlockBuffer = [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer]
 export type BlockHeaderBuffer = Buffer[]
 export type BlockBodyBuffer = [TransactionsBuffer, UncleHeadersBuffer]

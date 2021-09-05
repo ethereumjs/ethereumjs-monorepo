@@ -14,7 +14,7 @@ import {
   toBuffer,
   zeros,
 } from 'ethereumjs-util'
-import { HeaderData, JsonHeader, BlockHeaderBuffer, Blockchain, BlockOptions } from './types'
+import { HeaderCache, HeaderData, JsonHeader, BlockHeaderBuffer, Blockchain, BlockOptions } from './types'
 import {
   CLIQUE_EXTRA_VANITY,
   CLIQUE_EXTRA_SEAL,
@@ -48,7 +48,9 @@ export class BlockHeader {
   public readonly _common: Common
   public _errorPostfix = ''
 
-  private readonly _cachedHash?: Buffer
+  private cache: HeaderCache = {
+    hash: undefined
+  }
 
   /**
    * Static constructor to create a block header from a header data dictionary
@@ -297,7 +299,6 @@ export class BlockHeader {
 
     const freeze = options?.freeze ?? true
     if (freeze) {
-      this._cachedHash = this.hash()
       Object.freeze(this)
     }
   }
@@ -728,8 +729,11 @@ export class BlockHeader {
    * Returns the hash of the block header.
    */
   hash(): Buffer {
-    if (this._cachedHash) {
-      return this._cachedHash
+    if (Object.isFrozen(this)) {
+      if (!this.cache.hash) {
+        this.cache.hash = rlphash(this.raw())
+      }
+      return this.cache.hash
     }
 
     return rlphash(this.raw())
