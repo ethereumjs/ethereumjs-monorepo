@@ -14,7 +14,14 @@ import {
   toBuffer,
   zeros,
 } from 'ethereumjs-util'
-import { HeaderCache, HeaderData, JsonHeader, BlockHeaderBuffer, Blockchain, BlockOptions } from './types'
+import {
+  Blockchain,
+  BlockHeaderBuffer,
+  BlockOptions,
+  HeaderCache,
+  HeaderData,
+  JsonHeader,
+} from './types'
 import {
   CLIQUE_EXTRA_VANITY,
   CLIQUE_EXTRA_SEAL,
@@ -49,7 +56,7 @@ export class BlockHeader {
   public _errorPostfix = ''
 
   private cache: HeaderCache = {
-    hash: undefined
+    hash: undefined,
   }
 
   /**
