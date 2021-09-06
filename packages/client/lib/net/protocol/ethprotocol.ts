@@ -1,5 +1,5 @@
 import { BN, bufferToInt } from 'ethereumjs-util'
-import { BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
+import { Block, BlockBuffer, BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
 import { Chain } from './../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'
 import { BlockBodyBuffer } from '@ethereumjs/block'
@@ -86,7 +86,7 @@ export class EthProtocol extends Protocol {
       name: 'BlockHeaders',
       code: 0x04,
       encode: ({ reqId, headers }: { reqId: BN; headers: BlockHeader[] }) => [
-        reqId.toNumber(),
+        reqId.toArrayLike(Buffer),
         headers.map((h) => h.raw()),
       ],
       decode: ([reqId, headers]: [Buffer, BlockHeaderBuffer[]]) => [
@@ -116,10 +116,23 @@ export class EthProtocol extends Protocol {
       name: 'BlockBodies',
       code: 0x06,
       encode: ({ reqId, bodies }: { reqId: BN; bodies: BlockBodyBuffer[] }) => [
-        reqId.toNumber(),
+        reqId.toArrayLike(Buffer),
         bodies,
       ],
       decode: ([reqId, bodies]: [Buffer, BlockBodyBuffer[]]) => [new BN(reqId), bodies],
+    },
+    {
+      name: 'NewBlock',
+      code: 0x07,
+      encode: ([block, td]: [Block, BN]) => [block.raw(), td.toBuffer()],
+      decode: ([block, td]: [BlockBuffer, Buffer]) => [
+        Block.fromValuesArray(block, {
+          // eslint-disable-next-line no-invalid-this
+          common: this.config.chainCommon,
+          hardforkByBlockNumber: true,
+        }),
+        new BN(td),
+      ],
     },
     {
       name: 'NewPooledTransactionHashes',

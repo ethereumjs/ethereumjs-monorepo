@@ -11,7 +11,8 @@ import { ECIES } from './ecies'
 import { ETH, LES } from '../'
 import { int2buffer, buffer2int, formatLogData } from '../util'
 
-const debug = createDebugLogger('devp2p:rlpx:peer')
+const DEBUG_BASE_NAME = 'devp2p:rlpx:peer'
+const debug = createDebugLogger(DEBUG_BASE_NAME)
 const verbose = createDebugLogger('verbose').enabled
 
 export const BASE_PROTOCOL_VERSION = 5
@@ -100,6 +101,9 @@ export class Peer extends EventEmitter {
   _disconnectWe: any
   _pingTimeout: number
 
+  // Message debuggers (e.g. { 'HELLO': [debug Object], ...})
+  private msgDebuggers: { [key: string]: (debug: string) => void } = {}
+
   /**
    * Subprotocols (e.g. `ETH`) derived from the exchange on
    * capabilities
@@ -144,6 +148,8 @@ export class Peer extends EventEmitter {
 
     // sub-protocols
     this._protocols = []
+
+    this.initMsgDebuggers()
 
     // send AUTH if outgoing connection
     if (this._remoteId !== null) {
@@ -221,7 +227,8 @@ export class Peer extends EventEmitter {
    * Send HELLO message
    */
   _sendHello() {
-    debug(`Send HELLO to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
+    const debugMsg = `Send HELLO to ${this._socket.remoteAddress}:${this._socket.remotePort}`
+    this.debug('HELLO', debugMsg)
     const payload: HelloMsg = [
       int2buffer(BASE_PROTOCOL_VERSION),
       this._clientId,
@@ -245,11 +252,9 @@ export class Peer extends EventEmitter {
    * @param reason
    */
   _sendDisconnect(reason: DISCONNECT_REASONS) {
-    debug(
-      `Send DISCONNECT to ${this._socket.remoteAddress}:${
-        this._socket.remotePort
-      } (reason: ${this.getDisconnectPrefix(reason)})`
-    )
+    const reasonName = this.getDisconnectPrefix(reason)
+    const debugMsg = `Send DISCONNECT to ${this._socket.remoteAddress}:${this._socket.remotePort} (reason: ${reasonName})`
+    this.debug('DISCONNECT', debugMsg, reasonName)
     const data = rlp.encode(reason)
     if (!this._sendMessage(PREFIXES.DISCONNECT, data)) return
 
@@ -263,7 +268,8 @@ export class Peer extends EventEmitter {
    * Send PING message
    */
   _sendPing() {
-    debug(`Send PING to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
+    const debugMsg = `Send PING to ${this._socket.remoteAddress}:${this._socket.remotePort}`
+    this.debug('PING', debugMsg)
     let data = rlp.encode([])
     if (this._hello?.protocolVersion && this._hello.protocolVersion >= 5) {
       data = snappy.compress(data)
@@ -281,7 +287,8 @@ export class Peer extends EventEmitter {
    * Send PONG message
    */
   _sendPong() {
-    debug(`Send PONG to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
+    const debugMsg = `Send PONG to ${this._socket.remoteAddress}:${this._socket.remotePort}`
+    this.debug('PONG', debugMsg)
     let data = rlp.encode([])
 
     if (this._hello?.protocolVersion && this._hello.protocolVersion >= 5) {
@@ -418,11 +425,9 @@ export class Peer extends EventEmitter {
   _handleDisconnect(payload: any) {
     this._closed = true
     this._disconnectReason = payload[0].length === 0 ? 0 : payload[0][0]
-    debug(
-      `DISCONNECT reason: ${DISCONNECT_REASONS[this._disconnectReason as number]} ${
-        this._socket.remoteAddress
-      }:${this._socket.remotePort}`
-    )
+    const reason = DISCONNECT_REASONS[this._disconnectReason as number]
+    const debugMsg = `DISCONNECT reason: ${reason} ${this._socket.remoteAddress}:${this._socket.remotePort}`
+    this.debug('DISCONNECT', debugMsg, reason)
     this._disconnectWe = false
     this._socket.end()
   }
@@ -519,15 +524,13 @@ export class Peer extends EventEmitter {
     const msgCode = code - protocolObj.offset
     const protocolName = protocolObj.protocol.constructor.name
 
-    let prefix = ''
+    const postAdd = `(code: ${code} - ${protocolObj.offset} = ${msgCode}) ${this._socket.remoteAddress}:${this._socket.remotePort}`
     if (protocolName === 'Peer') {
-      prefix += `${this.getMsgPrefix(msgCode)}`
+      const messageName = this.getMsgPrefix(msgCode)
+      this.debug(messageName, `Received ${messageName} message ${postAdd}`)
     } else {
-      prefix += `${protocolName} subprotocol`
+      debug(`Received ${protocolName} subprotocol message ${postAdd}`)
     }
-    debug(
-      `Received ${prefix} message (code: ${code} - ${protocolObj.offset} = ${msgCode}) ${this._socket.remoteAddress}:${this._socket.remotePort}`
-    )
 
     try {
       let payload = body.slice(1)
@@ -622,5 +625,63 @@ export class Peer extends EventEmitter {
 
   disconnect(reason: DISCONNECT_REASONS = DISCONNECT_REASONS.DISCONNECT_REQUESTED) {
     this._sendDisconnect(reason)
+  }
+
+  private initMsgDebuggers() {
+    const MESSAGE_NAMES = Object.values(PREFIXES).filter(
+      (value) => typeof value === 'string'
+    ) as string[]
+    for (const name of MESSAGE_NAMES) {
+      this.msgDebuggers[name] = createDebugLogger(`${DEBUG_BASE_NAME}:${name}`)
+    }
+
+    // Remote Peer IP logger
+    const ip = this._socket.remoteAddress
+    if (ip) {
+      this.msgDebuggers[ip] = createDebugLogger(`devp2p:${ip}`)
+    }
+
+    // Special DISCONNECT per-reason logger
+    const DISCONNECT_NAMES = Object.values(DISCONNECT_REASONS).filter(
+      (value) => typeof value === 'string'
+    ) as string[]
+    for (const name of DISCONNECT_NAMES) {
+      this.msgDebuggers[name] = createDebugLogger(`${DEBUG_BASE_NAME}:DISCONNECT:${name}`)
+    }
+  }
+
+  /**
+   * Called once from the subprotocol (e.g. `ETH`) on the peer
+   * where a first successful `STATUS` msg exchange could be achieved.
+   *
+   * Can be used together with the `devp2p:FIRST_PEER` debugger.
+   */
+  _addFirstPeerDebugger() {
+    const ip = this._socket.remoteAddress
+    if (ip) {
+      this.msgDebuggers[ip] = createDebugLogger(`devp2p:FIRST_PEER`)
+    }
+  }
+
+  /**
+   * Debug message both on the generic as well as the
+   * per-message debug logger
+   * @param messageName Capitalized message name (e.g. `HELLO`)
+   * @param msg Message text to debug
+   */
+  private debug(messageName: string, msg: string, disconnectReason?: string) {
+    debug(msg)
+    if (this.msgDebuggers[messageName]) {
+      this.msgDebuggers[messageName](msg)
+    }
+    const ip = this._socket.remoteAddress
+    if (ip && this.msgDebuggers[ip]) {
+      this.msgDebuggers[ip](msg)
+    }
+    if (disconnectReason && messageName === 'DISCONNECT') {
+      if (this.msgDebuggers[disconnectReason]) {
+        this.msgDebuggers[disconnectReason](msg)
+      }
+    }
   }
 }

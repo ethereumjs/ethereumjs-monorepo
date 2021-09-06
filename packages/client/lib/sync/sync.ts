@@ -247,9 +247,6 @@ export abstract class Synchronizer {
     }
   }
 
-  /**
-   * Stop synchronization. Returns a promise that resolves once stopped.
-   */
   async stop(): Promise<boolean> {
     if (!this.running) {
       return false
