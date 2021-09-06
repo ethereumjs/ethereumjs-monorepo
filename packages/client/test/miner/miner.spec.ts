@@ -13,10 +13,14 @@ tape('[Miner]', async (t) => {
     open() {}
     close() {}
   }
+  let latestHash = Buffer.alloc(32)
   class Chain {
     open() {}
     close() {}
     update() {}
+    getLatestHeader() {
+      return { hash: () => latestHash }
+    }
   }
 
   const A = {
@@ -115,6 +119,8 @@ tape('[Miner]', async (t) => {
     const miner = new Miner({ config, synchronizer })
     const { txPool } = synchronizer
     const { vm } = synchronizer.execution
+    vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
+    latestHash = (await vm.blockchain.getLatestHeader()).hash() // stub
     txPool.start()
     miner.start()
 
@@ -152,6 +158,8 @@ tape('[Miner]', async (t) => {
       const miner = new Miner({ config, synchronizer })
       const { txPool } = synchronizer
       const { vm } = synchronizer.execution
+      vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
+      latestHash = (await vm.blockchain.getLatestHeader()).hash() // stub
       txPool.start()
       miner.start()
 
@@ -199,6 +207,8 @@ tape('[Miner]', async (t) => {
     const miner = new Miner({ config, synchronizer })
     const { txPool } = synchronizer
     const { vm } = synchronizer.execution
+    vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
+    latestHash = (await vm.blockchain.getLatestHeader()).hash() // stub
     txPool.start()
     miner.start()
 
@@ -234,6 +244,8 @@ tape('[Miner]', async (t) => {
     const miner = new Miner({ config, synchronizer })
     const { txPool } = synchronizer
     const { vm } = synchronizer.execution
+    vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
+    latestHash = (await vm.blockchain.getLatestHeader()).hash() // stub
     txPool.start()
     miner.start()
 
@@ -286,6 +298,8 @@ tape('[Miner]', async (t) => {
 
     const { txPool } = synchronizer
     const { vm } = synchronizer.execution
+    vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
+    latestHash = (await vm.blockchain.getLatestHeader()).hash() // stub
     txPool.start()
     miner.start()
 

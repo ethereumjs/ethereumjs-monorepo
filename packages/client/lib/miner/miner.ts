@@ -39,7 +39,7 @@ export class Miner {
     this.synchronizer = options.synchronizer
     this.running = false
     this.assembling = false
-    this.period = 15000 // default: 15s period defined in ms
+    this.period = (this.config.chainCommon.consensusConfig().period ?? 15) * 1000 // default: 15s period defined in ms
   }
 
   /**
@@ -53,7 +53,9 @@ export class Miner {
    * Sets the timeout for the next block assembly
    */
   private queueNextAssembly(timeout?: number) {
-    this._nextAssemblyTimeoutId && clearTimeout(this._nextAssemblyTimeoutId)
+    if (this._nextAssemblyTimeoutId) {
+      clearTimeout(this._nextAssemblyTimeoutId)
+    }
     this._nextAssemblyTimeoutId = setTimeout(this.assembleBlock.bind(this), timeout ?? this.period)
   }
 
@@ -80,9 +82,6 @@ export class Miner {
       return false
     }
     this.running = true
-    if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority) {
-      this.period = this.config.chainCommon.consensusConfig().period * 1000
-    }
     this.config.events.on(Event.CHAIN_UPDATED, this.chainUpdated.bind(this))
     this.queueNextAssembly()
     this.config.logger.info(`Miner started. Assembling next block in ${this.period / 1000}s`)
@@ -116,18 +115,27 @@ export class Miner {
     // is inserted into the canonical chain.
     const vmCopy = this.synchronizer.execution.vm.copy()
 
-    // If we are on the genesis block the canonical
-    // genesis state has not been initialiezd yet.
     if (parentBlock.header.number.isZero()) {
+      // In the current architecture of the client,
+      // if we are on the genesis block the canonical genesis state
+      // will not have been initialized yet in the execution vm
+      // since the following line won't be reached:
+      // https://github.com/ethereumjs/ethereumjs-monorepo/blob/c008e8eb76f520df83eb47c769e3a006bc24124f/packages/client/lib/sync/execution/vmexecution.ts#L100
+      // So we will do it here:
       await vmCopy.stateManager.generateCanonicalGenesis()
+    } else {
+      // Set the state root to ensure the resulting state
+      // is based on the parent block's state
+      await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
     }
 
     let difficulty
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority) {
       // Determine if signer is INTURN (2) or NOTURN (1)
-      const signers = vmCopy.blockchain.cliqueActiveSigners()
-      const signerIndex = signers.findIndex((address) => address.equals(signerAddress))
-      const inTurn = parentBlock.header.number.addn(1).modn(signers.length) === signerIndex
+      const inTurn = vmCopy.blockchain.cliqueSignerInTurn(
+        signerAddress,
+        parentBlock.header.number.addn(1)
+      )
       difficulty = inTurn ? 2 : 1
     }
 
@@ -186,7 +194,7 @@ export class Miner {
     this.assembling = false
     if (interrupt) return
     // Put block in blockchain and remove included txs from TxPool
-    await (this.synchronizer as any).chain.putBlocks([block]) // when #1443 is merged replace this line with `await this.synchronizer.handleNewBlock(block)`
+    await this.synchronizer.handleNewBlock(block)
     this.synchronizer.txPool.removeNewBlockTxs([block])
     this.config.events.removeListener(Event.CHAIN_UPDATED, setInterrupt.bind(this))
   }
@@ -199,7 +207,9 @@ export class Miner {
       return false
     }
     this.config.events.removeListener(Event.CHAIN_UPDATED, this.chainUpdated.bind(this))
-    this._nextAssemblyTimeoutId && clearTimeout(this._nextAssemblyTimeoutId)
+    if (this._nextAssemblyTimeoutId) {
+      clearTimeout(this._nextAssemblyTimeoutId)
+    }
     this.running = false
     this.config.logger.info('Miner stopped.')
     return true

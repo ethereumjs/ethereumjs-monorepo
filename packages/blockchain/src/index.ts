@@ -1564,4 +1564,18 @@ export default class Blockchain implements BlockchainInterface {
       return false
     }
   }
+
+  /**
+   * Helper to deterimine if a signer is in or out of turn.
+   * @param signer
+   * @param blockNumber
+   */
+  cliqueSignerInTurn(signer: Address, blockNumber: BN): boolean {
+    const signers = this.cliqueActiveSigners()
+    const signerIndex = signers.findIndex((address) => address.equals(signer))
+    if (signerIndex === -1) {
+      throw new Error('Signer not found')
+    }
+    return blockNumber.mod(new BN(signers.length)).eqn(signerIndex)
+  }
 }

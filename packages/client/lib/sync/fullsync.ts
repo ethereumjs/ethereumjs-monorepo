@@ -210,7 +210,7 @@ export class FullSynchronizer extends Synchronizer {
   async handleNewBlock(block: Block) {
     const chainTip = (await this.chain.getLatestHeader()).hash()
     // If block parent is current chain tip, insert block into chain
-    if (chainTip.toString('hex') === block.header.parentHash.toString('hex')) {
+    if (chainTip.equals(block.header.parentHash) || this.config.mine) {
       await this.chain.putBlocks([block])
     } else {
       // If block is beyond current tip, handle as `NEW_BLOCK_HASHES`

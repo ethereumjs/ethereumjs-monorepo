@@ -136,7 +136,7 @@ const args = require('yargs')
     },
     unlock: {
       describe:
-        'Comma separated list of accounts to unlock - currently only the first account is used for sealing mined blocks. Beta, you will be promped for a 0x-prefixed private key until keystore functionality is added',
+        'Comma separated list of accounts to unlock - currently only the first account is used for sealing mined blocks. Beta, you will be promped for a 0x-prefixed private key until keystore functionality is added - FOR YOUR SAFETY PLEASE DO NOT USE ANY ACCOUNTS HOLDING SUBSTANTIAL AMOUNTS OF ETH',
       array: true,
     },
   })
@@ -240,9 +240,6 @@ async function run() {
   }
 
   if (args.mine) {
-    if (!args.customChain && !args.gethGenesis) {
-      throw new Error('Currently mining is only supported for custom chains')
-    }
     if (common.consensusType() !== ConsensusType.ProofOfAuthority) {
       throw new Error('Currently mining is only supported for PoA consensus')
     }
