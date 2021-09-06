@@ -1,7 +1,5 @@
 name: VM Nightly
 on:
-  pull_request:
-    types: [opened, reopened, synchronize]
   schedule:
     - cron: 0 0 * * *
 
