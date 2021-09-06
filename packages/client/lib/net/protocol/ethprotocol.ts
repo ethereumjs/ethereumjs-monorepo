@@ -1,5 +1,5 @@
 import { BN, bufferToInt } from 'ethereumjs-util'
-import { BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
+import { Block, BlockBuffer, BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
 import { Chain } from './../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'
 import { BlockBodyBuffer } from '@ethereumjs/block'
@@ -120,6 +120,19 @@ export class EthProtocol extends Protocol {
         bodies,
       ],
       decode: ([reqId, bodies]: [Buffer, BlockBodyBuffer[]]) => [new BN(reqId), bodies],
+    },
+    {
+      name: 'NewBlock',
+      code: 0x07,
+      encode: ([block, td]: [Block, BN]) => [block.raw(), td.toBuffer()],
+      decode: ([block, td]: [BlockBuffer, Buffer]) => [
+        Block.fromValuesArray(block, {
+          // eslint-disable-next-line no-invalid-this
+          common: this.config.chainCommon,
+          hardforkByBlockNumber: true,
+        }),
+        new BN(td),
+      ],
     },
     {
       name: 'NewPooledTransactionHashes',
