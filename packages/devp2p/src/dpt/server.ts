@@ -8,7 +8,8 @@ import { keccak256, pk2id, createDeferred, formatLogId } from '../util'
 import { DPT, PeerInfo } from './dpt'
 import { Socket as DgramSocket, RemoteInfo } from 'dgram'
 
-const debug = createDebugLogger('devp2p:dpt:server')
+const DEBUG_BASE_NAME = 'devp2p:dpt:server'
+const debug = createDebugLogger(DEBUG_BASE_NAME)
 const verbose = createDebugLogger('verbose').enabled
 
 const VERSION = 0x04
@@ -46,6 +47,9 @@ export class Server extends EventEmitter {
   _requestsCache: LRUCache<string, Promise<any>>
   _socket: DgramSocket | null
 
+  // Message debuggers (e.g. { 'findneighbours': [debug Object], ...})
+  private msgDebuggers: { [key: string]: (debug: string) => void } = {}
+
   constructor(dpt: DPT, privateKey: Buffer, options: DPTServerOptions) {
     super()
 
@@ -57,6 +61,8 @@ export class Server extends EventEmitter {
     this._requests = new Map()
     this._parityRequestMap = new Map()
     this._requestsCache = new LRUCache({ max: 1000, maxAge: ms('1s'), stale: false })
+
+    this.initMsgDebuggers()
 
     const createSocket = options.createSocket ?? dgram.createSocket.bind(null, { type: 'udp4' })
     this._socket = createSocket()
@@ -137,11 +143,10 @@ export class Server extends EventEmitter {
   }
 
   _send(peer: PeerInfo, typename: string, data: any) {
-    debug(
-      `send ${typename} to ${peer.address}:${peer.udpPort} (peerId: ${
-        peer.id ? formatLogId(peer.id.toString('hex'), verbose) : '-'
-      })`
-    )
+    const debugMsg = `send ${typename} to ${peer.address}:${peer.udpPort} (peerId: ${
+      peer.id ? formatLogId(peer.id.toString('hex'), verbose) : '-'
+    })`
+    this.debug(typename, debugMsg)
 
     const msg = encode(typename, data, this._privateKey)
     // Parity hack
@@ -166,12 +171,10 @@ export class Server extends EventEmitter {
   _handler(msg: Buffer, rinfo: RemoteInfo) {
     const info = decode(msg)
     const peerId = pk2id(info.publicKey)
-    debug(
-      `received ${info.typename} from ${rinfo.address}:${rinfo.port} (peerId: ${formatLogId(
-        peerId.toString('hex'),
-        verbose
-      )})`
-    )
+    const debugMsg = `received ${info.typename} from ${rinfo.address}:${
+      rinfo.port
+    } (peerId: ${formatLogId(peerId.toString('hex'), verbose)})`
+    this.debug(info.typename.toString(), debugMsg)
 
     // add peer if not in our table
     const peer = this._dpt.getPeer(peerId)
@@ -235,6 +238,26 @@ export class Server extends EventEmitter {
         )
         break
       }
+    }
+  }
+
+  private initMsgDebuggers() {
+    const MESSAGE_NAMES = ['ping', 'pong', 'findneighbours', 'neighbours']
+    for (const name of MESSAGE_NAMES) {
+      this.msgDebuggers[name] = createDebugLogger(`${DEBUG_BASE_NAME}:${name}`)
+    }
+  }
+
+  /**
+   * Debug message both on the generic as well as the
+   * per-message debug logger
+   * @param messageName Lower capital message name (e.g. `findneighbours`)
+   * @param msg Message text to debug
+   */
+  private debug(messageName: string, msg: string) {
+    debug(msg)
+    if (this.msgDebuggers[messageName]) {
+      this.msgDebuggers[messageName](msg)
     }
   }
 }
