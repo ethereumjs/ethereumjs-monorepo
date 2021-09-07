@@ -42,7 +42,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   let Fp2Point
   try {
     Fp2Point = BLS12_381_ToFp2Point(opts.data.slice(0, 64), opts.data.slice(64, 128), mcl)
-  } catch (e) {
+  } catch (e: any) {
     return VmErrorResult(e, opts.gasLimit)
   }
   // map it to G2

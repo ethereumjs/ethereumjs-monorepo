@@ -37,7 +37,7 @@ export class Service {
       if (this.running) {
         try {
           await this.handle(message, protocol, peer)
-        } catch (error) {
+        } catch (error: any) {
           this.config.logger.debug(
             `Error handling message (${protocol}:${message.name}): ${error.message}`
           )

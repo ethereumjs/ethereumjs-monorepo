@@ -129,7 +129,7 @@ export class Account {
 export const isValidAddress = function (hexAddress: string): boolean {
   try {
     assertIsString(hexAddress)
-  } catch (e) {
+  } catch (e: any) {
     return false
   }
 
@@ -311,7 +311,7 @@ export const zeroAddress = function (): string {
 export const isZeroAddress = function (hexAddress: string): boolean {
   try {
     assertIsString(hexAddress)
-  } catch (e) {
+  } catch (e: any) {
     return false
   }
 

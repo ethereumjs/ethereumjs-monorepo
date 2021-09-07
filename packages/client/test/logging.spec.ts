@@ -7,7 +7,7 @@ tape('[Logging]', (t) => {
   t.test('should log error stacks properly', (st) => {
     try {
       throw new Error('an error')
-    } catch (e) {
+    } catch (e: any) {
       e.level = 'error'
       // st.ok(
       //   /an error\n {4}at/.test(logger.format.transform(e).message),

@@ -64,23 +64,33 @@ export function assertEq(
   expected: assertInput,
   actual: assertInput,
   msg: string,
-  debug: Function
+  debug: Function,
+  messageName?: string
 ): void {
-  let message
+  let fullMsg
   if (Buffer.isBuffer(expected) && Buffer.isBuffer(actual)) {
     if (expected.equals(actual)) return
-    message = `${msg}: ${expected.toString('hex')} / ${actual.toString('hex')}`
-    debug(`[ERROR] ${message}`)
+    fullMsg = `${msg}: ${expected.toString('hex')} / ${actual.toString('hex')}`
+    const debugMsg = `[ERROR] ${fullMsg}`
+    if (messageName) {
+      debug(messageName, debugMsg)
+    } else {
+      debug(debugMsg)
+    }
     throw new assert.AssertionError({
-      message: message,
+      message: fullMsg,
     })
   }
 
   if (expected === actual) return
-  message = `${msg}: ${expected} / ${actual}`
-  debug(message)
+  fullMsg = `${msg}: ${expected} / ${actual}`
+  if (messageName) {
+    debug(messageName, fullMsg)
+  } else {
+    debug(fullMsg)
+  }
   throw new assert.AssertionError({
-    message: message,
+    message: fullMsg,
   })
 }
 

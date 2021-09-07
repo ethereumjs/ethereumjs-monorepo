@@ -81,7 +81,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
 
   try {
     tx = makeTx(testData.transaction, { common })
-  } catch (e) {
+  } catch (e: any) {
     execInfo = 'tx instantiation exception'
   }
 
@@ -119,7 +119,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
       try {
         await vm.runTx({ tx, block })
         execInfo = 'successful tx run'
-      } catch (e) {
+      } catch (e: any) {
         // If tx is invalid and coinbase is empty, the test harness
         // expects the coinbase account to be deleted from state.
         // Without this ecmul_0-3_5616_28000_96 would fail.
@@ -161,7 +161,7 @@ export default async function runStateTest(options: any, testData: any, t: tape.
     for (const testCase of testCases) {
       await runTestCase(options, testCase, t)
     }
-  } catch (e) {
+  } catch (e: any) {
     console.log(e)
     t.fail('error running test case for fork: ' + <string>options.forkConfigTestSuite)
   }

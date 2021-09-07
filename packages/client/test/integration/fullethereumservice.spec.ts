@@ -7,6 +7,8 @@ import MockChain from './mocks/mockchain'
 import { destroy } from './util'
 import Blockchain from '@ethereumjs/blockchain'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { Block } from '@ethereumjs/block'
+import { Event } from '../../lib/types'
 
 tape('[Integration:FullEthereumService]', async (t) => {
   async function setup(): Promise<[MockServer, FullEthereumService]> {
@@ -45,8 +47,24 @@ tape('[Integration:FullEthereumService]', async (t) => {
     const [reqId2, bodies] = await peer.eth!.getBlockBodies({ hashes: [hash] })
     t.ok(reqId2.eqn(2), 'handled GetBlockBodies')
     t.deepEquals(bodies, [[[], []]], 'handled GetBlockBodies')
+    service.config.events.on(Event.PROTOCOL_MESSAGE, async (msg) => {
+      switch (msg.name) {
+        case 'NewBlockHashes': {
+          t.pass('handled NewBlockHashes')
+          break
+        }
+        case 'NewBlock':
+          {
+            {
+              t.pass('handled NewBlock')
+              await destroy(server, service)
+              t.end()
+            }
+          }
+          break
+      }
+    })
     peer.eth!.send('NewBlockHashes', [[hash, new BN(2)]])
-    t.pass('handled NewBlockHashes')
 
     const txData =
       '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
@@ -64,6 +82,13 @@ tape('[Integration:FullEthereumService]', async (t) => {
 
     await destroy(server, service)
     t.end()
+    const block = Block.fromBlockData({
+      header: {
+        number: 1,
+        difficulty: 1,
+      },
+    })
+    peer.eth!.send('NewBlock', [block, new BN(1)])
   })
 
   t.test('should handle LES requests', async (t) => {

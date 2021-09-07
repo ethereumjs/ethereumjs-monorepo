@@ -85,7 +85,7 @@ tape('VM -> common (chain, HFs, EIPs)', (t) => {
       common = new Common({ chain: 'mainchain', hardfork: Hardfork.Homestead })
       vm = new VM({ common })
       st.fail('should have failed for invalid chain')
-    } catch (e) {
+    } catch (e: any) {
       st.ok(e.message.includes('not supported'))
     }
 

@@ -348,7 +348,7 @@ export class Config {
     let key
     try {
       key = await db.get(dbKey, encodingOpts)
-    } catch (error) {
+    } catch (error: any) {
       if (error.type === 'NotFoundError') {
         // generate and save a new key
         key = genPrivateKey()

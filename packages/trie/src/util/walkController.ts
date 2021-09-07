@@ -52,7 +52,7 @@ export class WalkController {
       let node
       try {
         node = await this.trie._lookupNode(root)
-      } catch (error) {
+      } catch (error: any) {
         return this.reject(error)
       }
       this.processNode(root, node, [])
@@ -99,7 +99,7 @@ export class WalkController {
         let childNode
         try {
           childNode = await this.trie._lookupNode(nodeRef)
-        } catch (error) {
+        } catch (error: any) {
           return this.reject(error)
         }
         taskFinishedCallback() // this marks the current task as finished. If there are any tasks left in the queue, this will immediately execute the first task.

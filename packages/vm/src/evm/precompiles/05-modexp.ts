@@ -31,7 +31,7 @@ function getAdjustedExponentLength(data: Buffer): BN {
   try {
     const baseLen = new BN(data.slice(0, 32)).toNumber()
     expBytesStart = 96 + baseLen // 96 for base length, then exponent length, and modulus length, then baseLen for the base data, then exponent bytes start
-  } catch (e) {
+  } catch (e: any) {
     expBytesStart = Number.MAX_SAFE_INTEGER - 32
   }
   const expLen = new BN(data.slice(32, 64))

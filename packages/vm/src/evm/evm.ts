@@ -233,7 +233,7 @@ export default class EVM {
     if (!message.delegatecall) {
       try {
         await this._addToBalance(toAccount, message)
-      } catch (e) {
+      } catch (e: any) {
         errorMessage = e
       }
     }
@@ -335,7 +335,7 @@ export default class EVM {
     let errorMessage
     try {
       await this._addToBalance(toAccount, message)
-    } catch (e) {
+    } catch (e: any) {
       errorMessage = e
     }
 

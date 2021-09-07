@@ -83,7 +83,7 @@ tape('[Protocol]', (t) => {
     }, 101)
     try {
       await p.handshake(sender)
-    } catch (e) {
+    } catch (e: any) {
       t.ok(/timed out/.test(e.message), 'got timeout error')
     }
     t.end()

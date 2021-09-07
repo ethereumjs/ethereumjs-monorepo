@@ -913,7 +913,7 @@ export class BlockHeader {
     try {
       const header = (await blockchain.getBlock(hash)).header
       return header
-    } catch (error) {
+    } catch (error: any) {
       if (error.type === 'NotFoundError') {
         return undefined
       } else {

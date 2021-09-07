@@ -102,7 +102,7 @@ tape('blockchain test', (t) => {
         validateConsensus: false,
         genesisBlock,
       })
-    } catch (error) {
+    } catch (error: any) {
       st.ok(error, 'returned with error')
       st.end()
     }
@@ -490,7 +490,7 @@ tape('blockchain test', (t) => {
       await blockchain.iterator('error', () => {
         throw new Error('iterator func error')
       })
-    } catch (error) {
+    } catch (error: any) {
       st.ok(error)
       st.equal(error.message, 'iterator func error', 'should return correct error')
       st.end()
@@ -663,7 +663,7 @@ tape('blockchain test', (t) => {
     try {
       await blockchain.putBlock(invalidBlock)
       st.fail('should not validate an invalid block')
-    } catch (error) {
+    } catch (error: any) {
       t.ok(error, 'should not validate an invalid block')
     }
     st.end()
@@ -844,7 +844,7 @@ tape('blockchain test', (t) => {
       let error
       try {
         await blockchain.putBlock(blocks[i])
-      } catch (err) {
+      } catch (err: any) {
         error = err
       }
       if (i === 2) {
@@ -930,7 +930,7 @@ tape('initialization tests', (t) => {
     try {
       await blockchain.putBlock(otherGenesisBlock)
       st.fail('putting a genesis block did not throw')
-    } catch (e) {
+    } catch (e: any) {
       st.pass('putting a genesis block did throw')
     }
 
@@ -938,7 +938,7 @@ tape('initialization tests', (t) => {
     try {
       await Blockchain.create({ genesisBlock: otherGenesisBlock, db })
       st.fail('creating blockchain with different genesis block than in db did not throw')
-    } catch (e) {
+    } catch (e: any) {
       st.pass('creating blockchain with different genesis block than in db throws')
     }
 

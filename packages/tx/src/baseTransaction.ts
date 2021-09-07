@@ -245,7 +245,7 @@ export abstract class BaseTransaction<TransactionObject> {
       // Main signature verification is done in `getSenderPublicKey()`
       const publicKey = this.getSenderPublicKey()
       return unpadBuffer(publicKey).length !== 0
-    } catch (e) {
+    } catch (e: any) {
       return false
     }
   }

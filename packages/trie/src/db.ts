@@ -40,7 +40,7 @@ export class DB {
     let value = null
     try {
       value = await this._leveldb.get(key, ENCODING_OPTS)
-    } catch (error) {
+    } catch (error: any) {
       if (error.notFound) {
         // not found, returning null
       } else {

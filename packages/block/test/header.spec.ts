@@ -80,7 +80,7 @@ tape('[Block]: Header functions', function (t) {
   t.test('Initialization -> fromRLPSerializedHeader() -> error cases', function (st) {
     try {
       BlockHeader.fromRLPSerializedHeader(rlp.encode('a'))
-    } catch (e) {
+    } catch (e: any) {
       const expectedError = 'Invalid serialized header input. Must be array'
       st.ok(e.message.includes(expectedError), 'should throw with header as rlp encoded string')
     }
@@ -125,14 +125,14 @@ tape('[Block]: Header functions', function (t) {
     headerArray[15] = zeros(4) // bad data
     try {
       BlockHeader.fromValuesArray(headerArray)
-    } catch (e) {
+    } catch (e: any) {
       const expectedError = 'invalid header. More values than expected were received'
       st.ok(e.message.includes(expectedError), 'should throw on more values than expected')
     }
 
     try {
       BlockHeader.fromValuesArray(headerArray.slice(0, 5))
-    } catch (e) {
+    } catch (e: any) {
       const expectedError = 'invalid header. Less values than expected were received'
       st.ok(e.message.includes(expectedError), 'should throw on less values than expected')
     }
@@ -171,7 +171,7 @@ tape('[Block]: Header functions', function (t) {
     try {
       await header.validate(blockchain)
       st.pass(testCase)
-    } catch (error) {
+    } catch (error: any) {
       st.fail(testCase)
     }
 
@@ -182,7 +182,7 @@ tape('[Block]: Header functions', function (t) {
     try {
       await header.validate(blockchain)
       st.ok(testCase)
-    } catch (error) {
+    } catch (error: any) {
       st.fail(testCase)
     }
 
@@ -193,7 +193,7 @@ tape('[Block]: Header functions', function (t) {
     try {
       await header.validate(blockchain)
       st.fail(testCase)
-    } catch (error) {
+    } catch (error: any) {
       st.ok(error.message.includes('invalid amount of extra data'), testCase)
     }
 
@@ -216,7 +216,7 @@ tape('[Block]: Header functions', function (t) {
     try {
       await header.validate(blockchain)
       t.pass(testCase)
-    } catch (error) {
+    } catch (error: any) {
       t.fail(testCase)
     }
 
@@ -227,7 +227,7 @@ tape('[Block]: Header functions', function (t) {
     try {
       await header.validate(blockchain)
       t.fail(testCase)
-    } catch (error) {
+    } catch (error: any) {
       t.ok(
         error.message.includes(
           'extraData must be 97 bytes on non-epoch transition blocks, received 32 bytes'
@@ -249,7 +249,7 @@ tape('[Block]: Header functions', function (t) {
     try {
       await header.validate(blockchain)
       st.fail(testCase)
-    } catch (error) {
+    } catch (error: any) {
       st.ok(
         error.message.includes(
           'invalid signer list length in extraData, received signer length of 41 (not divisible by 20)'
@@ -281,7 +281,7 @@ tape('[Block]: Header functions', function (t) {
     try {
       await header.validate(blockchain)
       st.fail(testCase)
-    } catch (error) {
+    } catch (error: any) {
       st.equals(error.message, 'invalid timestamp diff (lower than period)', testCase)
     }
 
@@ -291,7 +291,7 @@ tape('[Block]: Header functions', function (t) {
     try {
       await header.validate(blockchain)
       st.pass(testCase)
-    } catch (error) {
+    } catch (error: any) {
       st.fail(testCase)
     }
 
@@ -302,7 +302,7 @@ tape('[Block]: Header functions', function (t) {
     try {
       await header.validate(blockchain)
       st.fail('should throw')
-    } catch (error) {
+    } catch (error: any) {
       if (error.message.includes('coinbase must be filled with zeros on epoch transition blocks')) {
         st.pass('error thrown')
       } else {
@@ -318,7 +318,7 @@ tape('[Block]: Header functions', function (t) {
     try {
       await header.validate(blockchain)
       st.fail('should throw')
-    } catch (error) {
+    } catch (error: any) {
       if (error.message.includes('mixHash must be filled with zeros')) {
         st.pass('error thrown')
       } else {
@@ -333,7 +333,7 @@ tape('[Block]: Header functions', function (t) {
     try {
       header.validateCliqueDifficulty(blockchain)
       st.fail(testCase)
-    } catch (error) {
+    } catch (error: any) {
       if (error.message.includes('difficulty for clique block must be INTURN (2) or NOTURN (1)')) {
         st.pass('error thrown on invalid clique difficulty')
       } else {
@@ -355,7 +355,7 @@ tape('[Block]: Header functions', function (t) {
     try {
       const res = header.validateCliqueDifficulty(poaBlockchain)
       st.equal(res, true, testCase)
-    } catch (error) {
+    } catch (error: any) {
       st.fail(testCase)
     }
 
@@ -366,7 +366,7 @@ tape('[Block]: Header functions', function (t) {
     try {
       const res = header.validateCliqueDifficulty(poaBlockchain)
       st.equal(res, false, testCase)
-    } catch (error) {
+    } catch (error: any) {
       st.fail(testCase)
     }
     st.end()
