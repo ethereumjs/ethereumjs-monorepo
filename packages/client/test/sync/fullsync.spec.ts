@@ -145,6 +145,7 @@ tape('[FullSynchronizer]', async (t) => {
       chain,
     })
 
+    let timesSentToPeer2 = 0
     const peers = [
       {
         id: 'abc',
@@ -162,6 +163,7 @@ tape('[FullSynchronizer]', async (t) => {
           status: { td: new BN(2) },
           send() {
             t.pass('sent NewBlockHashes to peer2')
+            timesSentToPeer2++
           },
         },
         inbound: false,
@@ -184,6 +186,8 @@ tape('[FullSynchronizer]', async (t) => {
     td.when(chain.putBlocks(td.matchers.anything())).thenResolve()
 
     await sync.handleNewBlock(newBlock)
+    await sync.handleNewBlock(newBlock)
+    t.ok(timesSentToPeer2 === 1, 'sent NewBlockHashes to Peer 2 once')
     t.end()
   })
 
