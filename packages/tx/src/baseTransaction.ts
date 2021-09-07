@@ -21,6 +21,10 @@ import {
   Capability,
 } from './types'
 
+interface TransactionCache {
+  hash: Buffer | undefined
+}
+
 /**
  * This base class will likely be subject to further
  * refactoring along the introduction of additional tx types
@@ -42,6 +46,8 @@ export abstract class BaseTransaction<TransactionObject> {
   public readonly s?: BN
 
   public readonly common!: Common
+
+  public cache: TransactionCache
 
   /**
    * List of tx type defining EIPs,
@@ -86,6 +92,10 @@ export abstract class BaseTransaction<TransactionObject> {
     this.v = vB.length > 0 ? new BN(vB) : undefined
     this.r = rB.length > 0 ? new BN(rB) : undefined
     this.s = sB.length > 0 ? new BN(sB) : undefined
+
+    this.cache = {
+      hash: undefined,
+    }
 
     this._validateCannotExceedMaxInteger({
       nonce: this.nonce,

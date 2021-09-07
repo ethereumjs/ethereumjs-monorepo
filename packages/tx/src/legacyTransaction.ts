@@ -22,8 +22,6 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
   public readonly common: Common
 
-  private readonly _cachedHash?: Buffer
-
   /**
    * Instantiate a transaction from a data dictionary.
    *
@@ -131,9 +129,6 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
     const freeze = opts?.freeze ?? true
     if (freeze) {
-      if (this.isSigned()) {
-        this._cachedHash = this.hash()
-      }
       Object.freeze(this)
     }
   }
@@ -241,8 +236,11 @@ export default class Transaction extends BaseTransaction<Transaction> {
       throw new Error('Cannot call hash method if transaction is not signed')
     }
 
-    if (this._cachedHash) {
-      return this._cachedHash
+    if (Object.isFrozen(this)) {
+      if (!this.cache.hash) {
+        this.cache.hash = rlphash(this.raw())
+      }
+      return this.cache.hash
     }
 
     return rlphash(this.raw())

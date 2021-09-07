@@ -38,8 +38,6 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
 
   public readonly common: Common
 
-  private readonly _cachedHash?: Buffer
-
   /**
    * The default HF if the tx type is active on that HF
    * or the first greater HF where the tx is active.
@@ -230,9 +228,6 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
 
     const freeze = opts?.freeze ?? true
     if (freeze) {
-      if (this.isSigned()) {
-        this._cachedHash = this.hash()
-      }
       Object.freeze(this)
     }
   }
@@ -335,8 +330,11 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       throw new Error('Cannot call hash method if transaction is not signed')
     }
 
-    if (this._cachedHash) {
-      return this._cachedHash
+    if (Object.isFrozen(this)) {
+      if (!this.cache.hash) {
+        this.cache.hash = keccak256(this.serialize())
+      }
+      return this.cache.hash
     }
 
     return keccak256(this.serialize())
