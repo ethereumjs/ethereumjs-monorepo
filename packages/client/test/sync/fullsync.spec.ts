@@ -4,6 +4,7 @@ import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
 import { Event } from '../../lib/types'
+import { Block } from '@ethereumjs/block'
 
 tape('[FullSynchronizer]', async (t) => {
   class PeerPool {
@@ -131,6 +132,59 @@ tape('[FullSynchronizer]', async (t) => {
       await sync.stop()
       await sync.close()
     }
+  })
+
+  t.test('should send NewBlock', async (t) => {
+    const config = new Config({ loglevel: 'error', transports: [] })
+    const pool = new PeerPool() as any
+    const chain = new Chain({ config })
+    const sync = new FullSynchronizer({
+      config,
+      interval: 1,
+      pool,
+      chain,
+    })
+
+    const peers = [
+      {
+        id: 'abc',
+        eth: {
+          status: { td: new BN(1) },
+          send() {
+            t.pass('sent NewBlock to peer1')
+          },
+        },
+        inbound: false,
+      },
+      {
+        id: 'efg',
+        eth: {
+          status: { td: new BN(2) },
+          send() {
+            t.pass('sent NewBlockHashes to peer2')
+          },
+        },
+        inbound: false,
+      },
+    ]
+    ;(sync as any).pool = { peers }
+
+    Block.prototype.validateDifficulty = td.func<any>()
+    td.when(Block.prototype.validateDifficulty(td.matchers.anything())).thenReturn(true)
+    const chainTip = Block.fromBlockData()
+    const newBlock = Block.fromBlockData({
+      header: {
+        parentHash: chainTip.hash(),
+      },
+    })
+
+    chain.getLatestBlock = td.func<any>()
+    chain.putBlocks = td.func<any>()
+    td.when(chain.getLatestBlock()).thenResolve(chainTip)
+    td.when(chain.putBlocks(td.matchers.anything())).thenResolve()
+
+    await sync.handleNewBlock(newBlock)
+    t.end()
   })
 
   t.test('should reset td', (t) => {
