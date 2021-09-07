@@ -260,8 +260,9 @@ export class FullSynchronizer extends Synchronizer {
 
         const knownBlocks = this.blocksKnownByPeer.get(peer.id)
 
-        if (knownBlocks
-            ?.filter((sentBlock) => sentBlock.hash === block.hash().toString('hex')).length === 0
+        if (
+          knownBlocks?.filter((sentBlock) => sentBlock.hash === block.hash().toString('hex'))
+            .length === 0
         ) {
           peer.eth?.send('NewBlockHashes', [block.hash(), this.chain.blocks.td])
           knownBlocks.push({ hash: block.hash().toString('hex'), timeSent: Date.now() })
