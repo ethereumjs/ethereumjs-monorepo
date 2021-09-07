@@ -6,19 +6,32 @@ import { debug as createDebugLogger } from 'debug'
 import { int2buffer, buffer2int, assertEq, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 
-const debug = createDebugLogger('devp2p:les')
+const DEBUG_BASE_NAME = 'devp2p:les'
+const debug = createDebugLogger(DEBUG_BASE_NAME)
 const verbose = createDebugLogger('verbose').enabled
 
 export const DEFAULT_ANNOUNCE_TYPE = 1
 
+/**
+ * Will be set to the first successfully connected peer to allow for
+ * debugging with the `devp2p:FIRST_PEER` debugger
+ */
+let _firstPeer = ''
+
+type SendMethod = (code: LES.MESSAGE_CODES, data: Buffer) => any
+
 export class LES extends EventEmitter {
-  _version: any
+  _version: number
   _peer: Peer
-  _send: any
+  _send: SendMethod
   _status: LES.Status | null
   _peerStatus: LES.Status | null
   _statusTimeoutId: NodeJS.Timeout
-  constructor(version: number, peer: Peer, send: any) {
+
+  // Message debuggers (e.g. { 'GET_BLOCK_HEADERS': [debug Object], ...})
+  private msgDebuggers: { [key: string]: (debug: string) => void } = {}
+
+  constructor(version: number, peer: Peer, send: SendMethod) {
     super()
 
     this._version = version
@@ -30,6 +43,8 @@ export class LES extends EventEmitter {
     this._statusTimeoutId = setTimeout(() => {
       this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
     }, ms('5s'))
+
+    this.initMsgDebuggers()
   }
 
   static les2 = { name: 'les', version: 2, length: 21, constructor: LES }
@@ -38,26 +53,29 @@ export class LES extends EventEmitter {
 
   _handleMessage(code: LES.MESSAGE_CODES, data: any) {
     const payload = rlp.decode(data)
+    const messageName = this.getMsgPrefix(code)
+    const debugMsg = `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}`
+
     if (code !== LES.MESSAGE_CODES.STATUS) {
-      const debugMsg = `Received ${this.getMsgPrefix(code)} message from ${
-        this._peer._socket.remoteAddress
-      }:${this._peer._socket.remotePort}`
       const logData = formatLogData(data.toString('hex'), verbose)
-      debug(`${debugMsg}: ${logData}`)
+      this.debug(messageName, `${debugMsg}: ${logData}`)
     }
     switch (code) {
       case LES.MESSAGE_CODES.STATUS: {
-        assertEq(this._peerStatus, null, 'Uncontrolled status message', debug)
+        assertEq(
+          this._peerStatus,
+          null,
+          'Uncontrolled status message',
+          this.debug.bind(this),
+          'STATUS'
+        )
         const statusArray: any = {}
         payload.forEach(function (value: any) {
           statusArray[value[0].toString()] = value[1]
         })
         this._peerStatus = statusArray
-        debug(
-          `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
-            this._peer._socket.remotePort
-          }: : ${this._peerStatus ? this._getStatusString(this._peerStatus) : ''}`
-        )
+        const peerStatusMsg = `${this._peerStatus ? this._getStatusString(this._peerStatus) : ''}`
+        this.debug(messageName, `${debugMsg}: ${peerStatusMsg}`)
         this._handleStatus()
         break
       }
@@ -105,17 +123,28 @@ export class LES extends EventEmitter {
       this._status['protocolVersion'],
       this._peerStatus['protocolVersion'],
       'Protocol version mismatch',
-      debug
+      this.debug.bind(this),
+      'STATUS'
     )
-    assertEq(this._status['networkId'], this._peerStatus['networkId'], 'NetworkId mismatch', debug)
+    assertEq(
+      this._status['networkId'],
+      this._peerStatus['networkId'],
+      'NetworkId mismatch',
+      this.debug.bind(this),
+      'STATUS'
+    )
     assertEq(
       this._status['genesisHash'],
       this._peerStatus['genesisHash'],
       'Genesis block mismatch',
-      debug
+      this.debug.bind(this),
+      'STATUS'
     )
 
     this.emit('status', this._peerStatus)
+    if (_firstPeer === '') {
+      this._addFirstPeerDebugger()
+    }
   }
 
   getVersion() {
@@ -162,7 +191,8 @@ export class LES extends EventEmitter {
       statusList.push([key, status[key]])
     })
 
-    debug(
+    this.debug(
+      'STATUS',
       `Send STATUS message to ${this._peer._socket.remoteAddress}:${
         this._peer._socket.remotePort
       } (les${this._version}): ${this._getStatusString(this._status)}`
@@ -185,11 +215,11 @@ export class LES extends EventEmitter {
    * @param payload Payload (including reqId, e.g. `[1, [437000, 1, 0, 0]]`)
    */
   sendMessage(code: LES.MESSAGE_CODES, payload: any) {
-    const debugMsg = `Send ${this.getMsgPrefix(code)} message to ${
-      this._peer._socket.remoteAddress
-    }:${this._peer._socket.remotePort}`
+    const messageName = this.getMsgPrefix(code)
     const logData = formatLogData(rlp.encode(payload).toString('hex'), verbose)
-    debug(`${debugMsg}: ${logData}`)
+    const debugMsg = `Send ${messageName} message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${logData}`
+
+    this.debug(messageName, debugMsg)
 
     switch (code) {
       case LES.MESSAGE_CODES.STATUS:
@@ -240,6 +270,43 @@ export class LES extends EventEmitter {
 
   getMsgPrefix(msgCode: LES.MESSAGE_CODES) {
     return LES.MESSAGE_CODES[msgCode]
+  }
+
+  private initMsgDebuggers() {
+    const MESSAGE_NAMES = Object.values(LES.MESSAGE_CODES).filter(
+      (value) => typeof value === 'string'
+    ) as string[]
+    for (const name of MESSAGE_NAMES) {
+      this.msgDebuggers[name] = createDebugLogger(`${DEBUG_BASE_NAME}:${name}`)
+    }
+  }
+
+  /**
+   * Called once on the peer where a first successful `STATUS`
+   * msg exchange could be achieved.
+   *
+   * Can be used together with the `devp2p:FIRST_PEER` debugger.
+   */
+  _addFirstPeerDebugger() {
+    const ip = this._peer._socket.remoteAddress
+    if (ip) {
+      this.msgDebuggers[ip] = createDebugLogger(`devp2p:FIRST_PEER`)
+      this._peer._addFirstPeerDebugger()
+      _firstPeer = ip
+    }
+  }
+
+  /**
+   * Debug message both on the generic as well as the
+   * per-message debug logger
+   * @param messageName Capitalized message name (e.g. `GET_BLOCK_HEADERS`)
+   * @param msg Message text to debug
+   */
+  private debug(messageName: string, msg: string) {
+    debug(msg)
+    if (this.msgDebuggers[messageName]) {
+      this.msgDebuggers[messageName](msg)
+    }
   }
 }
 

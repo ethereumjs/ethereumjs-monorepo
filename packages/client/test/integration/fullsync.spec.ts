@@ -1,7 +1,6 @@
 import tape from 'tape'
 import { Event } from '../../lib/types'
 import { wait, setup, destroy } from './util'
-
 tape('[Integration:FullSync]', async (t) => {
   t.test('should sync blocks', async (t) => {
     const [remoteServer, remoteService] = await setup({ location: '127.0.0.2', height: 20 })
@@ -42,12 +41,13 @@ tape('[Integration:FullSync]', async (t) => {
     await localService.synchronizer.stop()
     await localServer.discover('remotePeer1', '127.0.0.2')
     await localServer.discover('remotePeer2', '127.0.0.3')
+
     localService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
       if (localService.chain.blocks.height.toNumber() === 10) {
         t.pass('synced with best peer')
-        await destroy(localServer, localService)
         await destroy(remoteServer1, remoteService1)
         await destroy(remoteServer2, remoteService2)
+        await destroy(localServer, localService)
         t.end()
       }
     })

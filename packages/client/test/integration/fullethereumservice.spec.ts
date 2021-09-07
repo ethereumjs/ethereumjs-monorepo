@@ -6,6 +6,8 @@ import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
 import { destroy } from './util'
 import Blockchain from '@ethereumjs/blockchain'
+import { Block } from '@ethereumjs/block'
+import { Event } from '../../lib/types'
 
 tape('[Integration:FullEthereumService]', async (t) => {
   async function setup(): Promise<[MockServer, FullEthereumService]> {
@@ -43,10 +45,31 @@ tape('[Integration:FullEthereumService]', async (t) => {
     const [reqId2, bodies] = await peer.eth!.getBlockBodies({ hashes: [hash] })
     t.ok(reqId2.eqn(2), 'handled GetBlockBodies')
     t.deepEquals(bodies, [[[], []]], 'handled GetBlockBodies')
+    service.config.events.on(Event.PROTOCOL_MESSAGE, async (msg) => {
+      switch (msg.name) {
+        case 'NewBlockHashes': {
+          t.pass('handled NewBlockHashes')
+          break
+        }
+        case 'NewBlock':
+          {
+            {
+              t.pass('handled NewBlock')
+              await destroy(server, service)
+              t.end()
+            }
+          }
+          break
+      }
+    })
     peer.eth!.send('NewBlockHashes', [[hash, new BN(2)]])
-    t.pass('handled NewBlockHashes')
-    await destroy(server, service)
-    t.end()
+    const block = Block.fromBlockData({
+      header: {
+        number: 1,
+        difficulty: 1,
+      },
+    })
+    peer.eth!.send('NewBlock', [block, new BN(1)])
   })
 
   t.test('should handle LES requests', async (t) => {
