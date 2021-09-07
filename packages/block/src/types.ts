@@ -52,6 +52,7 @@ export interface BlockOptions {
   /**
    * A block object by default gets frozen along initialization. This gives you
    * strong additional security guarantees on the consistency of the block parameters.
+   * It also enables block hash caching when the `hash()` method is called multiple times.
    *
    * If you need to deactivate the block freeze - e.g. because you want to subclass block and
    * add aditional properties - it is strongly encouraged that you do the freeze yourself
@@ -99,10 +100,6 @@ export interface BlockData {
   header?: HeaderData
   transactions?: Array<TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData>
   uncleHeaders?: Array<HeaderData>
-}
-
-export interface HeaderCache {
-  hash: Buffer | undefined
 }
 
 export type BlockBuffer = [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer]

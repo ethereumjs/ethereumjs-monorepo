@@ -14,20 +14,17 @@ import {
   toBuffer,
   zeros,
 } from 'ethereumjs-util'
-import {
-  Blockchain,
-  BlockHeaderBuffer,
-  BlockOptions,
-  HeaderCache,
-  HeaderData,
-  JsonHeader,
-} from './types'
+import { Blockchain, BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
 import {
   CLIQUE_EXTRA_VANITY,
   CLIQUE_EXTRA_SEAL,
   CLIQUE_DIFF_INTURN,
   CLIQUE_DIFF_NOTURN,
 } from './clique'
+
+interface HeaderCache {
+  hash: Buffer | undefined
+}
 
 const DEFAULT_GAS_LIMIT = new BN(Buffer.from('ffffffffffffff', 'hex'))
 
