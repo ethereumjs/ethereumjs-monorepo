@@ -139,7 +139,7 @@ export class LightSynchronizer extends Synchronizer {
 
       try {
         await this.fetcher.fetch()
-      } catch (error) {
+      } catch (error: any) {
         reject(error)
       }
     })

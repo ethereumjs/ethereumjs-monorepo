@@ -94,7 +94,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
       //@ts-ignore TypeScript complains, nevertheless do the test for JS behavior
       Common.custom('this-chain-is-not-supported')
       st.fail('test should fail')
-    } catch (e) {
+    } catch (e: any) {
       st.ok(
         e.message.includes('not supported'),
         'supported chain -> should throw if chain name is not supported'
@@ -136,7 +136,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     try {
       new Common({ chain: testnet, customChains: [testnet] })
       st.fail('should throw')
-    } catch (e) {
+    } catch (e: any) {
       st.ok(
         e.message.includes(
           'Chain must be a string, number, or BN when initialized with customChains passed in'

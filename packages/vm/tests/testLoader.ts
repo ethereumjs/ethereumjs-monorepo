@@ -97,7 +97,7 @@ const getTestFromSource = (exports.getTestFromSource = function (file: string, o
     .on('end', function () {
       try {
         test = JSON.parse(contents)
-      } catch (e) {
+      } catch (e: any) {
         onFile(e)
       }
 

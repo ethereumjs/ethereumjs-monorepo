@@ -265,7 +265,7 @@ tape('StateManager', (t) => {
     const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
     try {
       await stateManager.putContractStorage(address, Buffer.alloc(12), toBuffer('0x1231'))
-    } catch (e) {
+    } catch (e: any) {
       st.equal(e.message, 'Storage key must be 32 bytes long')
       st.end()
       return
@@ -280,7 +280,7 @@ tape('StateManager', (t) => {
     const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
     try {
       await stateManager.getContractStorage(address, Buffer.alloc(12))
-    } catch (e) {
+    } catch (e: any) {
       st.equal(e.message, 'Storage key must be 32 bytes long')
       st.end()
       return
@@ -372,7 +372,7 @@ tape('Original storage cache', async (t) => {
   t.test("getOriginalContractStorage should validate the key's length", async (st) => {
     try {
       await stateManager.getOriginalContractStorage(address, Buffer.alloc(12))
-    } catch (e) {
+    } catch (e: any) {
       st.equal(e.message, 'Storage key must be 32 bytes long')
       st.end()
       return
@@ -450,7 +450,7 @@ tape('StateManager - Contract storage', (tester) => {
     try {
       await stateManager.putContractStorage(address, key, value)
       t.fail('did not throw')
-    } catch (e) {
+    } catch (e: any) {
       t.pass('threw on trying to set storage values larger than 32 bytes')
     }
     t.end()

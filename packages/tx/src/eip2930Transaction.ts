@@ -336,7 +336,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
         bnToUnpaddedBuffer(r!),
         bnToUnpaddedBuffer(s!)
       )
-    } catch (e) {
+    } catch (e: any) {
       throw new Error('Invalid Signature')
     }
   }

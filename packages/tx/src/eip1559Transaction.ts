@@ -366,7 +366,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
         bnToUnpaddedBuffer(r!),
         bnToUnpaddedBuffer(s!)
       )
-    } catch (e) {
+    } catch (e: any) {
       throw new Error('Invalid Signature')
     }
   }

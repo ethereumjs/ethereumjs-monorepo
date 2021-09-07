@@ -247,7 +247,7 @@ tape('hashPersonalMessage', function (t) {
   t.test('should throw if input is not a buffer', function (st) {
     try {
       hashPersonalMessage((<unknown>[0, 1, 2, 3, 4]) as Buffer)
-    } catch (err) {
+    } catch (err: any) {
       st.ok(err.message.includes('This method only supports Buffer'))
     }
     st.end()

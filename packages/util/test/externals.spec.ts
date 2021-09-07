@@ -64,7 +64,7 @@ tape('External rlp export', (t) => {
     let result
     try {
       result = src.rlp.decode(val)
-    } catch (e) {
+    } catch (e: any) {
       // pass
     }
     st.equal(result, undefined)
@@ -78,7 +78,7 @@ tape('External rlp export', (t) => {
     let res
     try {
       result = src.rlp.decode(a)
-    } catch (e) {
+    } catch (e: any) {
       // pass
     }
     st.equal(res, undefined)

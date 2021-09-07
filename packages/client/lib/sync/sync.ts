@@ -126,7 +126,7 @@ export abstract class Synchronizer {
     while (this.running) {
       try {
         await this.sync()
-      } catch (error) {
+      } catch (error: any) {
         this.config.events.emit(Event.SYNC_ERROR, error)
       }
       await new Promise((resolve) => setTimeout(resolve, this.interval))

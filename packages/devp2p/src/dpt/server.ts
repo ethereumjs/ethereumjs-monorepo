@@ -73,7 +73,7 @@ export class Server extends EventEmitter {
       this._socket.on('message', (msg: Buffer, rinfo: RemoteInfo) => {
         try {
           this._handler(msg, rinfo)
-        } catch (err) {
+        } catch (err: any) {
           this.emit('error', err)
         }
       })
