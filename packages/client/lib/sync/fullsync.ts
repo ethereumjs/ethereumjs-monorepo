@@ -9,10 +9,11 @@ import { TxPool } from './txpool'
 import { Event } from '../types'
 
 interface sentBlock {
-  hash: string
+  hash: Buffer
   timeSent: number
 }
 
+type peerId = string
 /**
  * Implements an ethereum full sync synchronizer
  * @memberof module:sync
@@ -22,12 +23,12 @@ export class FullSynchronizer extends Synchronizer {
 
   public txPool: TxPool
 
-  private blocksKnownByPeer: Map<string, sentBlock[]>
+  private newBlocksKnownByPeer: Map<peerId, sentBlock[]>
 
   constructor(options: SynchronizerOptions) {
     super(options)
 
-    this.blocksKnownByPeer = new Map()
+    this.newBlocksKnownByPeer = new Map()
     this.execution = new VMExecution({
       config: options.config,
       stateDB: options.stateDB,
@@ -212,11 +213,19 @@ export class FullSynchronizer extends Synchronizer {
    * Processes `NEW_BLOCK` announcement from a peer and inserts into local chain if child of chain tip
    * @param blockData `NEW_BLOCK` received from peer
    */
-  async handleNewBlock(block: Block) {
+  async handleNewBlock(block: Block, sendingPeer?: string) {
+
+    if (sendingPeer) {
+      // Don't send NEW_BLOCK announcement to peer that sent original new block message
+      const knownBlocks = this.newBlocksKnownByPeer.get(sendingPeer) ?? []
+      knownBlocks.push({ hash: block.hash(), timeSent: Date.now() })
+      this.newBlocksKnownByPeer.set(sendingPeer, knownBlocks)
+    }
+
     const chainTip = await this.chain.getLatestBlock()
 
     // If block parent is current chain tip, insert block into chain
-    if (chainTip.header.hash().toString('hex') === block.header.parentHash.toString('hex')) {
+    if (chainTip.header.hash().equals(block.header.parentHash)) {
       if (!block.validateDifficulty(chainTip)) return
 
       // Send NEW_BLOCK to square root of total number of peers in pool
@@ -226,24 +235,18 @@ export class FullSynchronizer extends Synchronizer {
       let x = 0
       while (x < numPeersToShareWith) {
         const currentPeer = this.pool.peers[x]
-        if (!this.blocksKnownByPeer.has(currentPeer.id)) {
-          // Create new map of blocks known by peer if none exists
-          this.blocksKnownByPeer.set(currentPeer.id, [])
-        }
-
-        const knownBlocks = this.blocksKnownByPeer.get(currentPeer.id) ?? []
+        const knownBlocks = this.newBlocksKnownByPeer.get(currentPeer.id) ?? []
 
         if (
-          knownBlocks.filter((sentBlock) => sentBlock.hash === block.hash().toString('hex'))
-            .length > 0
+          knownBlocks.find((sentBlock) => sentBlock.hash && sentBlock.hash.equals(block.hash()))
         ) {
           // If peer has already been sent this block, skip peer
           x++
           continue
         }
 
-        knownBlocks.push({ hash: block.hash().toString('hex'), timeSent: Date.now() })
-        this.blocksKnownByPeer.set(currentPeer.id, knownBlocks)
+        knownBlocks.push({ hash: block.hash(), timeSent: Date.now() })
+        this.newBlocksKnownByPeer.set(currentPeer.id, knownBlocks)
         currentPeer.eth?.send('NewBlock', [block, this.chain.blocks.td])
 
         x++
@@ -254,19 +257,11 @@ export class FullSynchronizer extends Synchronizer {
 
       for (const peer of this.pool.peers) {
         // Send `NEW_BLOCK_HASHES` message for received block to all other peers
-        if (!this.blocksKnownByPeer.has(peer.id)) {
-          this.blocksKnownByPeer.set(peer.id, [])
-        }
-
-        const knownBlocks = this.blocksKnownByPeer.get(peer.id)
-
-        if (
-          knownBlocks?.filter((sentBlock) => sentBlock.hash === block.hash().toString('hex'))
-            .length === 0
-        ) {
+        const knownBlocks = this.newBlocksKnownByPeer.get(peer.id) ?? []
+        if (!knownBlocks?.find(sentBlock => sentBlock.hash.equals(block.hash()))) {
           peer.eth?.send('NewBlockHashes', [block.hash(), this.chain.blocks.td])
-          knownBlocks.push({ hash: block.hash().toString('hex'), timeSent: Date.now() })
-          this.blocksKnownByPeer.set(peer.id, knownBlocks)
+          knownBlocks.push({ hash: block.hash(), timeSent: Date.now() })
+          this.newBlocksKnownByPeer.set(peer.id, knownBlocks)
         }
       }
     } else {
