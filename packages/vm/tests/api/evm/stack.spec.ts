@@ -161,7 +161,7 @@ tape('Stack', (t) => {
       const executionReturnValue = res.execResult.returnValue
       st.assert(executionReturnValue.equals(expectedReturnValue))
       st.end()
-    } catch (e) {
+    } catch (e: any) {
       st.fail(e.message)
     }
   })

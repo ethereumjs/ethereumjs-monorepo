@@ -120,7 +120,7 @@ export class VMExecution extends Execution {
             txCounter += block.transactions.length
             // set as new head block
             headBlock = block
-          } catch (error) {
+          } catch (error: any) {
             // TODO: determine if there is a way to differentiate between the cases
             // a) a bad block is served by a bad peer -> delete the block and restart sync
             //    sync from parent block
@@ -136,7 +136,7 @@ export class VMExecution extends Execution {
             /*try {
             // remove invalid block
               await blockchain!.delBlock(block.header.hash())
-            } catch (error) {
+            } catch (error: any) {
               this.config.logger.error(
                 `Error deleting block number=${blockNumber} hash=${hash} on failed execution`
               )

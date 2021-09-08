@@ -43,7 +43,7 @@ tape('Istanbul: EIP-1884', async (t) => {
             new BN(Buffer.from(testCase.selfbalance.slice(2), 'hex')).eq(new BN(res.returnValue))
           )
         }
-      } catch (e) {
+      } catch (e: any) {
         st.fail(e.message)
       }
     }

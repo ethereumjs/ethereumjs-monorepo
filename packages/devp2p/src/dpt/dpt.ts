@@ -186,7 +186,7 @@ export class DPT extends EventEmitter {
   async bootstrap(peer: PeerInfo): Promise<void> {
     try {
       peer = await this.addPeer(peer)
-    } catch (error) {
+    } catch (error: any) {
       this.emit('error', error)
       return
     }
@@ -210,7 +210,7 @@ export class DPT extends EventEmitter {
       this.emit('peer:new', peer)
       this._kbucket.add(peer)
       return peer
-    } catch (err) {
+    } catch (err: any) {
       this.banlist.add(obj, ms('5m'))
       throw err
     }

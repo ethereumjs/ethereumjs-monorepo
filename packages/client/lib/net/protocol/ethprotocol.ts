@@ -3,6 +3,7 @@ import { Block, BlockBuffer, BlockHeader, BlockHeaderBuffer } from '@ethereumjs/
 import { Chain } from './../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'
 import { BlockBodyBuffer } from '@ethereumjs/block'
+import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
 
 interface EthProtocolOptions extends ProtocolOptions {
   /* Blockchain */
@@ -43,7 +44,7 @@ type GetPooledTransactionsOpts = {
 export interface EthProtocolMethods {
   getBlockHeaders: (opts: GetBlockHeadersOpts) => Promise<[BN, BlockHeader[]]>
   getBlockBodies: (opts: GetBlockBodiesOpts) => Promise<[BN, BlockBodyBuffer[]]>
-  getPooledTransactions: (opts: GetPooledTransactionsOpts) => Promise<[BN, any[]]>
+  getPooledTransactions: (opts: GetPooledTransactionsOpts) => Promise<[BN, TypedTransaction[]]>
 }
 
 const id = new BN(0)
@@ -65,6 +66,23 @@ export class EthProtocol extends Protocol {
     {
       name: 'Transactions',
       code: 0x02,
+      encode: (txs: TypedTransaction[]) => {
+        const serializedTxs = []
+        for (const tx of txs) {
+          if (tx.type === 0) {
+            serializedTxs.push(tx.raw())
+          } else {
+            serializedTxs.push(tx.serialize())
+          }
+        }
+        return serializedTxs
+      },
+      decode: ([txs]: [Buffer[]]) => {
+        // TODO: add proper Common instance (problem: service not accesible)
+        //const common = this.config.chainCommon.copy()
+        //common.setHardforkByBlockNumber(this.service.synchronizer.syncTargetHeight)
+        return txs.map((txData) => TransactionFactory.fromBlockBodyData(txData))
+      },
     },
     {
       name: 'GetBlockHeaders',
@@ -146,11 +164,32 @@ export class EthProtocol extends Protocol {
         (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
         hashes,
       ],
+      decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
+        reqId: new BN(reqId),
+        hashes,
+      }),
     },
     {
       name: 'PooledTransactions',
       code: 0x0a,
-      decode: ([reqId, txs]: [Buffer, any[]]) => [new BN(reqId), txs],
+      encode: ({ reqId, txs }: { reqId: BN; txs: TypedTransaction[] }) => {
+        const serializedTxs = []
+        for (const tx of txs) {
+          if (tx.type === 0) {
+            serializedTxs.push(tx.raw())
+          } else {
+            serializedTxs.push(tx.serialize())
+          }
+        }
+        return [reqId.toNumber(), serializedTxs]
+      },
+      decode: ([reqId, txs]: [Buffer, any[]]) => [
+        new BN(reqId),
+        // TODO: add proper Common instance (problem: service not accesible)
+        //const common = this.config.chainCommon.copy()
+        //common.setHardforkByBlockNumber(this.service.synchronizer.syncTargetHeight)
+        txs.map((txData) => TransactionFactory.fromBlockBodyData(txData)),
+      ],
     },
   ]
 

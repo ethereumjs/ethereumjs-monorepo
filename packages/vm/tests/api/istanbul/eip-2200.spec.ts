@@ -65,7 +65,7 @@ tape('Istanbul: EIP-2200', async (t) => {
         }
         st.assert(new BN(testCase.used).eq(res.gasUsed))
         st.assert(new BN(testCase.refund).eq(res.execResult.gasRefund!))
-      } catch (e) {
+      } catch (e: any) {
         st.fail(e.message)
       }
     }

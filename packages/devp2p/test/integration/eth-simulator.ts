@@ -96,7 +96,7 @@ function sendNotAllowed(
   opts.onOnceStatus0 = function (rlpxs: any, eth: any) {
     try {
       eth.sendMessage(expectedCode, [])
-    } catch (err) {
+    } catch (err: any) {
       const msg = `Error: Code ${expectedCode} not allowed with version ${version}`
       t.equal(err.toString(), msg, `should emit error: ${msg}`)
       util.destroyRLPXs(rlpxs)
@@ -182,7 +182,7 @@ test('ETH: send unknown message code', async (t) => {
   opts.onOnceStatus0 = function (rlpxs: any, eth: any) {
     try {
       eth.sendMessage(0x55, [])
-    } catch (err) {
+    } catch (err: any) {
       const msg = 'Error: Unknown code 85'
       t.equal(err.toString(), msg, `should emit error: ${msg}`)
       util.destroyRLPXs(rlpxs)
@@ -199,7 +199,7 @@ test('ETH: invalid status send', async (t) => {
   opts.onOnceStatus0 = function (rlpxs: any, eth: any) {
     try {
       eth.sendMessage(devp2p.ETH.MESSAGE_CODES.STATUS, [])
-    } catch (err) {
+    } catch (err: any) {
       const msg = 'Error: Please send status message through .sendStatus'
       t.equal(err.toString(), msg, `should emit error: ${msg}`)
       util.destroyRLPXs(rlpxs)

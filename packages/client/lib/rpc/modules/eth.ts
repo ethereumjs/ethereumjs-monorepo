@@ -501,10 +501,10 @@ export class Eth {
           message: `no peer connection available`,
         }
       }
-      txPool.sendTransactions(peerPool, [tx])
+      txPool.sendTransactions([tx], peerPool.peers)
 
       return `0x${tx.hash().toString('hex')}`
-    } catch (e) {
+    } catch (e: any) {
       return {
         code: PARSE_ERROR,
         message: `serialized tx data could not be parsed (${e.message})`,

@@ -22,7 +22,7 @@ export default function (opts: PrecompileInput): ExecResult {
   let publicKey
   try {
     publicKey = ecrecover(msgHash, new BN(v), r, s)
-  } catch (e) {
+  } catch (e: any) {
     return {
       gasUsed,
       returnValue: Buffer.alloc(0),

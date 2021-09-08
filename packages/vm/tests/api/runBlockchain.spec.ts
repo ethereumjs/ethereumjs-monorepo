@@ -50,7 +50,7 @@ tape('runBlockchain', (t) => {
       // @ts-ignore
       await vm.runBlockchain()
       st.end()
-    } catch (e) {
+    } catch (e: any) {
       st.end(e)
     }
   })
@@ -80,7 +80,7 @@ tape('runBlockchain', (t) => {
     try {
       await vm.runBlockchain()
       st.fail("it hasn't returned any errors")
-    } catch (e) {
+    } catch (e: any) {
       st.equal(e.message, 'test', "it has correctly propagated runBlock's error")
       st.end()
     }
@@ -152,7 +152,7 @@ tape('runBlockchain', (t) => {
     try {
       await vm.runBlockchain()
       st.fail('should have returned error')
-    } catch (e) {
+    } catch (e: any) {
       st.equal(e.message, 'test')
 
       head = await blockchain.getHead()

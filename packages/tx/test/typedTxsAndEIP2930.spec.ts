@@ -92,7 +92,7 @@ tape(
       for (const txType of txTypes) {
         try {
           txType.class.fromSerializedTx(Buffer.from([99]), {})
-        } catch (e) {
+        } catch (e: any) {
           t.ok(
             e.message.includes('wrong tx type'),
             `should throw on wrong tx type (${txType.name})`
@@ -103,7 +103,7 @@ tape(
           // Correct tx type + RLP-encoded 5
           const serialized = Buffer.concat([Buffer.from([txType.type]), Buffer.from([5])])
           txType.class.fromSerializedTx(serialized, {})
-        } catch (e) {
+        } catch (e: any) {
           t.ok(
             e.message.includes('must be array'),
             `should throw when RLP payload not an array (${txType.name})`
@@ -114,7 +114,7 @@ tape(
           // Correct tx type + RLP-encoded empty list
           const serialized = Buffer.concat([Buffer.from([txType.type]), Buffer.from('c0', 'hex')])
           txType.class.fromSerializedTx(serialized, {})
-        } catch (e) {
+        } catch (e: any) {
           t.ok(
             e.message.includes('values (for unsigned tx)'),
             `should throw with invalid number of values (${txType.name})`

@@ -94,10 +94,17 @@ export class FullEthereumService extends EthereumService {
       peer.eth!.send('BlockBodies', { reqId, bodies })
     } else if (message.name === 'NewBlockHashes') {
       this.synchronizer.handleNewBlockHashes(message.data)
+    } else if (message.name === 'Transactions') {
+      await this.synchronizer.txPool.handleAnnouncedTxs(message.data, peer, this.pool)
     } else if (message.name === 'NewBlock') {
       await this.synchronizer.handleNewBlock(message.data[0])
     } else if (message.name === 'NewPooledTransactionHashes') {
-      await this.synchronizer.txPool.includeAnnouncedTxs(message.data, peer)
+      await this.synchronizer.txPool.handleAnnouncedTxHashes(message.data, peer, this.pool)
+    } else if (message.name === 'GetPooledTransactions') {
+      const { reqId, hashes } = message.data
+      const txs = this.synchronizer.txPool.getByHash(hashes)
+      // Always respond, also on an empty list
+      peer.eth?.send('PooledTransactions', { reqId, txs })
     }
   }
 

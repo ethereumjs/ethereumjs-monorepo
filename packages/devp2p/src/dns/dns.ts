@@ -6,7 +6,7 @@ import { debug as createDebugLogger } from 'debug'
 let dns: any
 try {
   dns = require('dns')
-} catch (e) {
+} catch (e: any) {
   dns = require('../browser/dns')
 }
 
@@ -105,7 +105,7 @@ export class DNS {
         default:
           return null
       }
-    } catch (error) {
+    } catch (error: any) {
       debug(`Errored searching DNS tree at subdomain ${subdomain}: ${error}`)
       return null
     }

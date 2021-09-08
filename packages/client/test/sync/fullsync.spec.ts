@@ -126,7 +126,7 @@ tape('[FullSynchronizer]', async (t) => {
     td.when((BlockFetcher.prototype as any).fetch()).thenReject(new Error('err0'))
     try {
       await sync.sync()
-    } catch (err) {
+    } catch (err: any) {
       t.equals(err.message, 'err0', 'got error')
       await sync.stop()
       await sync.close()

@@ -540,7 +540,7 @@ export class Peer extends EventEmitter {
         payload = snappy.uncompress(payload)
       }
       protocolObj.protocol._handleMessage(msgCode, payload)
-    } catch (err) {
+    } catch (err: any) {
       this.disconnect(DISCONNECT_REASONS.SUBPROTOCOL_ERROR)
       debug(`Error on peer subprotocol message handling: ${err}`)
       this.emit('error', err)
@@ -572,7 +572,7 @@ export class Peer extends EventEmitter {
             break
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       this.disconnect(DISCONNECT_REASONS.SUBPROTOCOL_ERROR)
       debug(`Error on peer socket data handling: ${err}`)
       this.emit('error', err)

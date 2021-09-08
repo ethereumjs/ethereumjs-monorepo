@@ -1,11 +1,12 @@
 import tape from 'tape'
-import { BN } from 'ethereumjs-util'
+import { BN, toBuffer } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { FullEthereumService } from '../../lib/service'
 import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
 import { destroy } from './util'
 import Blockchain from '@ethereumjs/blockchain'
+import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
 import { Event } from '../../lib/types'
 
@@ -29,6 +30,7 @@ tape('[Integration:FullEthereumService]', async (t) => {
     await service.open()
     await server.start()
     await service.start()
+    service.synchronizer.txPool.start()
     return [server, service]
   }
 
@@ -63,6 +65,20 @@ tape('[Integration:FullEthereumService]', async (t) => {
       }
     })
     peer.eth!.send('NewBlockHashes', [[hash, new BN(2)]])
+
+    const txData =
+      '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
+    const tx = FeeMarketEIP1559Transaction.fromSerializedTx(toBuffer(txData))
+    service.synchronizer.txPool.add(tx)
+    const [, txs] = await peer.eth!.getPooledTransactions({ hashes: [tx.hash()] })
+    t.equal(
+      txs[0].hash().toString('hex'),
+      tx.hash().toString('hex'),
+      'handled GetPooledTransactions'
+    )
+
+    peer.eth!.send('Transactions', [tx])
+    t.pass('handled Transactions')
     const block = Block.fromBlockData({
       header: {
         number: 1,
