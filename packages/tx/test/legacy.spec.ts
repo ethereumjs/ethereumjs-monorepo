@@ -173,13 +173,14 @@ tape('[Transaction]', function (t) {
       chain: Chain.Mainnet,
       hardfork: Hardfork.TangerineWhistle,
     })
-    let tx = Transaction.fromValuesArray(txFixtures[3].raw.slice(0, 6).map(toBuffer), {
+    // Test currently commented out, see comment on legacy tx hash() function
+    /*let tx = Transaction.fromValuesArray(txFixtures[3].raw.slice(0, 6).map(toBuffer), {
       common,
     })
     st.throws(() => {
       tx.hash()
-    }, 'should throw calling hash with unsigned tx')
-    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), {
+    }, 'should throw calling hash with unsigned tx')*/
+    let tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), {
       common,
       freeze: false,
     })
