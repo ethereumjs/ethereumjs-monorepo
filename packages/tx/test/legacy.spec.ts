@@ -173,7 +173,13 @@ tape('[Transaction]', function (t) {
       chain: Chain.Mainnet,
       hardfork: Hardfork.TangerineWhistle,
     })
-    const tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), {
+    let tx = Transaction.fromValuesArray(txFixtures[3].raw.slice(0, 6).map(toBuffer), {
+      common,
+    })
+    st.throws(() => {
+      tx.hash()
+    }, 'should throw calling hash with unsigned tx')
+    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), {
       common,
     })
     st.deepEqual(

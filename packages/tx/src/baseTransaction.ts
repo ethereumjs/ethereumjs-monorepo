@@ -47,7 +47,9 @@ export abstract class BaseTransaction<TransactionObject> {
 
   public readonly common!: Common
 
-  public cache: TransactionCache
+  protected cache: TransactionCache = {
+    hash: undefined,
+  }
 
   /**
    * List of tx type defining EIPs,
@@ -92,10 +94,6 @@ export abstract class BaseTransaction<TransactionObject> {
     this.v = vB.length > 0 ? new BN(vB) : undefined
     this.r = rB.length > 0 ? new BN(rB) : undefined
     this.s = sB.length > 0 ? new BN(sB) : undefined
-
-    this.cache = {
-      hash: undefined,
-    }
 
     this._validateCannotExceedMaxInteger({
       nonce: this.nonce,
