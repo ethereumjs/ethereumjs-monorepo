@@ -232,6 +232,27 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * Use {@link Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   hash(): Buffer {
+    // In contrast to the tx type transaction implementations the `hash()` function
+    // for the legacy tx does not throw if the tx is not signed.
+    // This has been considered for inclusion but lead to unexpected backwards
+    // compatibility problems (no concrete reference found, needs validation).
+    //
+    // For context see also https://github.com/ethereumjs/ethereumjs-monorepo/pull/1445,
+    // September, 2021 as well as work done before.
+    //
+    // This should be updated along the next major version release by adding:
+    //
+    //if (!this.isSigned()) {
+    //  throw new Error('Cannot call hash method if transaction is not signed')
+    //}
+
+    if (Object.isFrozen(this)) {
+      if (!this.cache.hash) {
+        this.cache.hash = rlphash(this.raw())
+      }
+      return this.cache.hash
+    }
+
     return rlphash(this.raw())
   }
 

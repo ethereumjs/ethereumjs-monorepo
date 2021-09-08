@@ -501,7 +501,7 @@ export class Eth {
           message: `no peer connection available`,
         }
       }
-      txPool.sendTransactions(peerPool, [tx])
+      txPool.sendTransactions([tx], peerPool.peers)
 
       return `0x${tx.hash().toString('hex')}`
     } catch (e: any) {

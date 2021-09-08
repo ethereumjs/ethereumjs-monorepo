@@ -21,6 +21,10 @@ import {
   Capability,
 } from './types'
 
+interface TransactionCache {
+  hash: Buffer | undefined
+}
+
 /**
  * This base class will likely be subject to further
  * refactoring along the introduction of additional tx types
@@ -42,6 +46,10 @@ export abstract class BaseTransaction<TransactionObject> {
   public readonly s?: BN
 
   public readonly common!: Common
+
+  protected cache: TransactionCache = {
+    hash: undefined,
+  }
 
   /**
    * List of tx type defining EIPs,

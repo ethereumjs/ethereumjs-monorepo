@@ -55,13 +55,16 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
   t.test('hash()', function (st) {
     const data = testdata[0]
     const pkey = Buffer.from(data.privateKey.slice(2), 'hex')
-    const txn = FeeMarketEIP1559Transaction.fromTxData(data, { common })
-    const signed = txn.sign(pkey)
+    let txn = FeeMarketEIP1559Transaction.fromTxData(data, { common })
+    let signed = txn.sign(pkey)
     const expectedHash = Buffer.from(
       '2e564c87eb4b40e7f469b2eec5aa5d18b0b46a24e8bf0919439cfb0e8fcae446',
       'hex'
     )
-    st.ok(signed.hash().equals(expectedHash), 'Should provide the correct hash')
+    st.ok(signed.hash().equals(expectedHash), 'Should provide the correct hash when frozen')
+    txn = FeeMarketEIP1559Transaction.fromTxData(data, { common, freeze: false })
+    signed = txn.sign(pkey)
+    st.ok(signed.hash().equals(expectedHash), 'Should provide the correct hash when not frozen')
     st.end()
   })
 

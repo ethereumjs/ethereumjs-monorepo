@@ -14,13 +14,17 @@ import {
   toBuffer,
   zeros,
 } from 'ethereumjs-util'
-import { HeaderData, JsonHeader, BlockHeaderBuffer, Blockchain, BlockOptions } from './types'
+import { Blockchain, BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
 import {
   CLIQUE_EXTRA_VANITY,
   CLIQUE_EXTRA_SEAL,
   CLIQUE_DIFF_INTURN,
   CLIQUE_DIFF_NOTURN,
 } from './clique'
+
+interface HeaderCache {
+  hash: Buffer | undefined
+}
 
 const DEFAULT_GAS_LIMIT = new BN(Buffer.from('ffffffffffffff', 'hex'))
 
@@ -47,6 +51,10 @@ export class BlockHeader {
 
   public readonly _common: Common
   public _errorPostfix = ''
+
+  private cache: HeaderCache = {
+    hash: undefined,
+  }
 
   /**
    * Static constructor to create a block header from a header data dictionary
@@ -725,6 +733,13 @@ export class BlockHeader {
    * Returns the hash of the block header.
    */
   hash(): Buffer {
+    if (Object.isFrozen(this)) {
+      if (!this.cache.hash) {
+        this.cache.hash = rlphash(this.raw())
+      }
+      return this.cache.hash
+    }
+
     return rlphash(this.raw())
   }
 
