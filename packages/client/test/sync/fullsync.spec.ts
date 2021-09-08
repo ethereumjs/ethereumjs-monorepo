@@ -134,7 +134,7 @@ tape('[FullSynchronizer]', async (t) => {
     }
   })
 
-  t.test('should send NewBlock', async (t) => {
+  t.test('should send NewBlock/NewBlockHash to right peers', async (t) => {
     const config = new Config({ loglevel: 'error', transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
@@ -168,6 +168,16 @@ tape('[FullSynchronizer]', async (t) => {
         },
         inbound: false,
       },
+      {
+        id: 'hij',
+        eth: {
+          status: { td: new BN(3) },
+          send() {
+            t.fail('should not send announcement to peer3')
+          },
+        },
+        inbound: false,
+      },
     ]
     ;(sync as any).pool = { peers }
 
@@ -185,9 +195,10 @@ tape('[FullSynchronizer]', async (t) => {
     td.when(chain.getLatestBlock()).thenResolve(chainTip)
     td.when(chain.putBlocks(td.matchers.anything())).thenResolve()
 
-    await sync.handleNewBlock(newBlock)
+    await sync.handleNewBlock(newBlock, 'hij')
     await sync.handleNewBlock(newBlock)
     t.ok(timesSentToPeer2 === 1, 'sent NewBlockHashes to Peer 2 once')
+    t.pass('did not send NewBlock to peer3')
     t.end()
   })
 

@@ -8,7 +8,7 @@ import { VMExecution } from './execution/vmexecution'
 import { TxPool } from './txpool'
 import { Event } from '../types'
 
-interface sentBlock {
+interface handledObject {
   hash: Buffer
   timeSent: number
 }
@@ -23,7 +23,7 @@ export class FullSynchronizer extends Synchronizer {
 
   public txPool: TxPool
 
-  private newBlocksKnownByPeer: Map<peerId, sentBlock[]>
+  private newBlocksKnownByPeer: Map<peerId, handledObject[]>
 
   constructor(options: SynchronizerOptions) {
     super(options)
@@ -214,7 +214,6 @@ export class FullSynchronizer extends Synchronizer {
    * @param blockData `NEW_BLOCK` received from peer
    */
   async handleNewBlock(block: Block, sendingPeer?: string) {
-
     if (sendingPeer) {
       // Don't send NEW_BLOCK announcement to peer that sent original new block message
       const knownBlocks = this.newBlocksKnownByPeer.get(sendingPeer) ?? []
@@ -236,9 +235,10 @@ export class FullSynchronizer extends Synchronizer {
       while (x < numPeersToShareWith) {
         const currentPeer = this.pool.peers[x]
         const knownBlocks = this.newBlocksKnownByPeer.get(currentPeer.id) ?? []
-
         if (
-          knownBlocks.find((sentBlock) => sentBlock.hash && sentBlock.hash.equals(block.hash()))
+          knownBlocks.find(
+            (handledObject) => handledObject.hash && handledObject.hash.equals(block.hash())
+          )
         ) {
           // If peer has already been sent this block, skip peer
           x++
@@ -258,7 +258,7 @@ export class FullSynchronizer extends Synchronizer {
       for (const peer of this.pool.peers) {
         // Send `NEW_BLOCK_HASHES` message for received block to all other peers
         const knownBlocks = this.newBlocksKnownByPeer.get(peer.id) ?? []
-        if (!knownBlocks?.find(sentBlock => sentBlock.hash.equals(block.hash()))) {
+        if (!knownBlocks?.find((handledObject) => handledObject.hash.equals(block.hash()))) {
           peer.eth?.send('NewBlockHashes', [block.hash(), this.chain.blocks.td])
           knownBlocks.push({ hash: block.hash(), timeSent: Date.now() })
           this.newBlocksKnownByPeer.set(peer.id, knownBlocks)
