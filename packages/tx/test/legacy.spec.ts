@@ -181,6 +181,14 @@ tape('[Transaction]', function (t) {
     }, 'should throw calling hash with unsigned tx')
     tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), {
       common,
+      freeze: false,
+    })
+    st.deepEqual(
+      tx.hash(),
+      Buffer.from('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa', 'hex')
+    )
+    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), {
+      common,
     })
     st.deepEqual(
       tx.hash(),
