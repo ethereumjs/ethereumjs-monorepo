@@ -223,3 +223,42 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
 
   t.end()
 })
+
+tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
+  // This test replays the Geth chain split; https://etherscan.io/tx/0x1cb6fb36633d270edefc04d048145b4298e67b8aa82a9e5ec4aa1435dd770ce4
+  // Exploit post-mortem: https://github.com/ethereum/go-ethereum/blob/master/docs/postmortems/2021-08-22-split-postmortem.md
+  // Permalink: https://github.com/ethereum/go-ethereum/blob/90987db7334c1d10eb866ca550efedb66dea8a20/docs/postmortems/2021-08-22-split-postmortem.md
+  // setup the accounts for this test
+  const caller = new Address(Buffer.from('1a02a619e51cc5f8a2a61d2a60f6c80476ee8ead', 'hex')) // caller addres
+  // setup the vm
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+  const vm = new VM({ common: common })
+  const code = '3034526020600760203460045afa602034343e604034f3'
+
+  const account = await vm.stateManager.getAccount(caller)
+  account.nonce = new BN(1) // ensure nonce for contract is correct
+  account.balance = new BN('10000000000000000')
+  await vm.stateManager.putAccount(caller, account)
+
+  // setup the call arguments
+  const runCallArgs = {
+    caller: caller, // call address
+    gasLimit: new BN(150000),
+    data: Buffer.from(code, 'hex'),
+    gasPrice: new BN(70000000000),
+  }
+
+  const result = await vm.runCall(runCallArgs)
+
+  const expectedAddress = Buffer.from('8eae784e072e961f76948a785b62c9a950fb17ae', 'hex')
+  const expectedCode = Buffer.from(
+    '0000000000000000000000008eae784e072e961f76948a785b62c9a950fb17ae62c9a950fb17ae00000000000000000000000000000000000000000000000000',
+    'hex'
+  )
+
+  t.ok(result.createdAddress?.buf.equals(expectedAddress), 'created address correct')
+  const deployedCode = await vm.stateManager.getContractCode(result.createdAddress!)
+  t.ok(deployedCode.equals(expectedCode), 'deployed code correct')
+
+  t.end()
+})
