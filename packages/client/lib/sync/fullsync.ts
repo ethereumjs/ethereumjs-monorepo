@@ -8,12 +8,12 @@ import { VMExecution } from './execution/vmexecution'
 import { TxPool } from './txpool'
 import { Event } from '../types'
 
-interface handledObject {
+interface HandledObject {
   hash: Buffer
-  timeSent: number
+  added: number
 }
 
-type peerId = string
+type PeerId = string
 /**
  * Implements an ethereum full sync synchronizer
  * @memberof module:sync
@@ -23,7 +23,7 @@ export class FullSynchronizer extends Synchronizer {
 
   public txPool: TxPool
 
-  private newBlocksKnownByPeer: Map<peerId, handledObject[]>
+  private newBlocksKnownByPeer: Map<PeerId, HandledObject[]>
 
   constructor(options: SynchronizerOptions) {
     super(options)
@@ -213,12 +213,12 @@ export class FullSynchronizer extends Synchronizer {
    * Processes `NEW_BLOCK` announcement from a peer and inserts into local chain if child of chain tip
    * @param blockData `NEW_BLOCK` received from peer
    */
-  async handleNewBlock(block: Block, sendingPeer?: string) {
-    if (sendingPeer) {
+  async handleNewBlock(block: Block, peer?: Peer) {
+    if (peer) {
       // Don't send NEW_BLOCK announcement to peer that sent original new block message
-      const knownBlocks = this.newBlocksKnownByPeer.get(sendingPeer) ?? []
-      knownBlocks.push({ hash: block.hash(), timeSent: Date.now() })
-      this.newBlocksKnownByPeer.set(sendingPeer, knownBlocks)
+      const knownBlocks = this.newBlocksKnownByPeer.get(peer.id) ?? []
+      knownBlocks.push({ hash: block.hash(), added: Date.now() })
+      this.newBlocksKnownByPeer.set(peer.id, knownBlocks)
     }
 
     const chainTip = await this.chain.getLatestBlock()
@@ -245,7 +245,7 @@ export class FullSynchronizer extends Synchronizer {
           continue
         }
 
-        knownBlocks.push({ hash: block.hash(), timeSent: Date.now() })
+        knownBlocks.push({ hash: block.hash(), added: Date.now() })
         this.newBlocksKnownByPeer.set(currentPeer.id, knownBlocks)
         currentPeer.eth?.send('NewBlock', [block, this.chain.blocks.td])
 
@@ -255,13 +255,13 @@ export class FullSynchronizer extends Synchronizer {
       // Insert new block into chain
       await this.chain.putBlocks([block])
 
-      for (const peer of this.pool.peers) {
+      for (const pooledPeer of this.pool.peers) {
         // Send `NEW_BLOCK_HASHES` message for received block to all other peers
-        const knownBlocks = this.newBlocksKnownByPeer.get(peer.id) ?? []
+        const knownBlocks = this.newBlocksKnownByPeer.get(pooledPeer.id) ?? []
         if (!knownBlocks?.find((handledObject) => handledObject.hash.equals(block.hash()))) {
-          peer.eth?.send('NewBlockHashes', [block.hash(), this.chain.blocks.td])
-          knownBlocks.push({ hash: block.hash(), timeSent: Date.now() })
-          this.newBlocksKnownByPeer.set(peer.id, knownBlocks)
+          pooledPeer.eth?.send('NewBlockHashes', [block.hash(), this.chain.blocks.td])
+          knownBlocks.push({ hash: block.hash(), added: Date.now() })
+          this.newBlocksKnownByPeer.set(pooledPeer.id, knownBlocks)
         }
       }
     } else {
