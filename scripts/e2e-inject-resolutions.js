@@ -1,5 +1,6 @@
 /*
-  This script sets hardhat-core's ethereumjs dependencies to the versions created from the e2e-resolutions.js script.
+ * This script sets hardhat-core's ethereumjs dependencies
+ * to the versions created from the e2e-resolutions.js script.
  */
 
 const fs = require('fs')
@@ -30,7 +31,14 @@ fs.writeFileSync(
 const rootPackageJsonLocation = `${process.cwd()}/hardhat/package.json`
 const rootPackageJson = require(rootPackageJsonLocation)
 
-const newRootPackageJson = { ...rootPackageJson, resolutions: { '@types/node': '^10.17.24' } }
+const newRootPackageJson = {
+  ...rootPackageJson,
+  resolutions: {
+    ...rootPackageJson.resolutions,
+    '@types/node': '^10.17.24',
+    '@types/bn.js': '^5.1.0'
+  }
+}
 
 fs.writeFileSync(
   rootPackageJsonLocation,
