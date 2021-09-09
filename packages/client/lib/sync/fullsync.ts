@@ -248,7 +248,9 @@ export class FullSynchronizer extends Synchronizer {
     } catch (err) {
       this.config.logger.debug(
         `Error processing new block from peer: ${short(Buffer.from(peer!.id))} hash: ${short(
-          block.hash())}`)
+          block.hash()
+        )}`
+      )
       this.config.logger.debug(err)
       return
     }
