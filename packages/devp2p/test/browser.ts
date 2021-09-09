@@ -7,7 +7,7 @@ tape('dns browser polyfill stub', async (t) => {
   t.test('dns.promises.resolve throws an error', async (t) => {
     try {
       await dns.promises.resolve('www.hello.com', 'TXT')
-    } catch (e) {
+    } catch (e: any) {
       t.ok(e.toString().includes(expectedError), 'throws expected error')
       t.end()
     }
@@ -16,7 +16,7 @@ tape('dns browser polyfill stub', async (t) => {
   t.test('dns.setServers throws and error', (t) => {
     try {
       dns.setServers(['8.8.8.8'])
-    } catch (e) {
+    } catch (e: any) {
       t.ok(e.toString().includes(expectedError), 'throws expected error')
       t.end()
     }

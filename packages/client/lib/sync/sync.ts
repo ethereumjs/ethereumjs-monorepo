@@ -126,7 +126,7 @@ export abstract class Synchronizer {
     while (this.running) {
       try {
         await this.sync()
-      } catch (error) {
+      } catch (error: any) {
         this.config.events.emit(Event.SYNC_ERROR, error)
       }
       await new Promise((resolve) => setTimeout(resolve, this.interval))
@@ -247,9 +247,6 @@ export abstract class Synchronizer {
     }
   }
 
-  /**
-   * Stop synchronization. Returns a promise that resolves once stopped.
-   */
   async stop(): Promise<boolean> {
     if (!this.running) {
       return false

@@ -32,7 +32,7 @@ tape('Istanbul: EIP-1344', async (t) => {
           st.assert(res.exceptionError === undefined)
           st.assert(testCase.chainId.eq(new BN(res.returnValue)))
         }
-      } catch (e) {
+      } catch (e: any) {
         st.fail(e.message)
       }
     }

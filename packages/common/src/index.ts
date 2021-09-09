@@ -42,7 +42,6 @@ export enum Chain {
   Rinkeby = 4,
   Kovan = 42,
   Goerli = 5,
-  Calaveras = 123,
 }
 
 export enum Hardfork {
@@ -911,8 +910,6 @@ export default class Common extends EventEmitter {
         return require('./genesisStates/kovan.json')
       case 'goerli':
         return require('./genesisStates/goerli.json')
-      case 'calaveras':
-        return require('./genesisStates/calaveras.json')
     }
 
     // Custom chains with genesis state provided

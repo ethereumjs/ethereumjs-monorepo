@@ -71,7 +71,7 @@ tape('Proof of Stake - inserting blocks into blockchain', async (t) => {
   try {
     await blockchain.putBlock(powBlock)
     t.fail('should throw when inserting PoW block')
-  } catch (err) {
+  } catch (err: any) {
     t.equals(err.message, 'invalid difficulty', 'should throw with invalid difficulty message')
     t.end()
   }

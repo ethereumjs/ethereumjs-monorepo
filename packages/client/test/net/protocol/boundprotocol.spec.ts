@@ -129,7 +129,7 @@ tape('[BoundProtocol]', (t) => {
     td.when(protocol.decode(testResponse, '2')).thenThrow(new Error('error1'))
     try {
       await (bound as any).testMessage(1)
-    } catch (err) {
+    } catch (err: any) {
       t.ok(/error1/.test(err.message), 'got error')
     }
     t.end()
@@ -146,7 +146,7 @@ tape('[BoundProtocol]', (t) => {
     })
     try {
       await (bound as any).testMessage(1)
-    } catch (err) {
+    } catch (err: any) {
       t.ok(/timed out/.test(err.message), 'got error')
     }
     t.end()

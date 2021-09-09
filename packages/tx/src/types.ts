@@ -52,6 +52,7 @@ export interface TxOptions {
   /**
    * A transaction object by default gets frozen along initialization. This gives you
    * strong additional security guarantees on the consistency of the tx parameters.
+   * It also enables tx hash caching when the `hash()` method is called multiple times.
    *
    * If you need to deactivate the tx freeze - e.g. because you want to subclass tx and
    * add aditional properties - it is strongly encouraged that you do the freeze yourself

@@ -34,7 +34,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   let Fp1Point
   try {
     Fp1Point = BLS12_381_ToFpPoint(opts.data.slice(0, 64), mcl)
-  } catch (e) {
+  } catch (e: any) {
     return VmErrorResult(e, opts.gasLimit)
   }
 

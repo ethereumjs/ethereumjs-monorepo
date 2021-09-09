@@ -66,7 +66,7 @@ tape('TransactionTests', (t) => {
                   `Transaction should be valid on ${forkName}`
                 )
               }
-            } catch (e) {
+            } catch (e: any) {
               if (shouldBeInvalid) {
                 st.assert(shouldBeInvalid, `Transaction should be invalid on ${forkName}`)
               } else {

@@ -1,7 +1,55 @@
 
-## Examples of running the client
+# Networking/Running the client
 
-### Example 1: Light sync
+Below are various use cases for running the client.  
+
+## Local Connections : EthereumJS <- EthereumJS
+
+For debugging on networking issues there are two custom npm start scripts with appropriate settings.
+
+Start a first client listening on the default port and using the default data directory with:
+
+```shell
+DEBUG=devp2p:* npm run client:start:dev1
+DEBUG=devp2p:* npm run client:start:dev1 -- --datadir=datadir-dev1
+```
+
+Then take the enode address from the started client instance (use `127.0.0.1` for the IP address) and start a second client with:
+
+```shell
+DEBUG=devp2p:* npm run client:start:dev2 -- --bootnodes=enode://[DEV1_NODE_ID]@127.0.0.1:30303
+```
+
+This second client is using './datadir-dev2' for its data directory.
+
+## Local Connection: EthereumJS <- Geth
+
+To connect Geth to a running EthereumJS instance start a client with:
+
+```shell
+DEBUG=devp2p:* npm run client:start:dev1
+```
+
+Then connect with your Geth instance via:
+
+```shell
+geth --maxpeers=1 --bootnodes=enode://[DEV1_NODE_ID]@127.0.0.1:30303
+```
+
+## Local Connection: Geth <- EthereumJS
+
+Start your Geth instance:
+
+```shell
+geth [--syncmode=full] [--verbosity=5]
+```
+Then connect with your EthereumJS instance via:
+
+```shell
+DEBUG=devp2p:* npm run client:start:dev2 -- --bootnodes=enode://[GETH_NODE_ID]@127.0.0.1:30303
+```
+
+## Light sync 
 
 In this example, we will run two ethereumjs-clients. The first will be a full sync client that
 will connect to the rinkeby network and start downloading the blockchain. The second will be a
@@ -35,7 +83,7 @@ ethereumjs --syncmode light --network rinkeby --datadir second --transports libp
 
 Notice that we have to run the second client on port 50506 using the `--multiaddrs /ip4/0.0.0.0/tcp/50506` libp2p option to avoid port conflicts.
 
-### Example 2: Light sync from within a browser
+## Light sync from within a browser
 
 In this example, we will again perform a light sync by connecting to the first client from above. However, this time we will connect directly to the first client from within a browser window using libp2p websockets.
 
@@ -72,7 +120,7 @@ That's it! Now, you should start seeing headers being downloaded to the local st
 
 ![EthereumJS Client Libp2p Browser Syncing](./browser_sync.png?raw=true)
 
-### Example 3: Running a private network with geth
+## Running a private network with geth
 
 In this example, we import the genesis parameters for a private Proof-of-Authority network using the geth genesis parameters format and then sync our client with a geth instance that is sealing blocks.
 

@@ -1,10 +1,8 @@
 name: E2E Hardhat Tests
 on:
   push:
-    branches:
-      - master
-    tags:
-      - '*'
+    branches: [master, develop]
+    tags: ['*']
   pull_request:
     types: [opened, reopened, synchronize]
     
