@@ -24,9 +24,20 @@ fs.writeFileSync(
 )
 
 /*
-  workaround: yarn is picking up @types/node 16.x
-  that the ci is running on, so use resolutions to pin
-  the hardhat version so types don't mismatch on build
+ * resolutions workaround notes:
+ * 
+ * `@types/node`:
+ * yarn is picking up @types/node v16.x that the ci is running on,
+ * so pin the hardhat version to the ethereumjs version
+ * so types match on build.
+ *
+ * `@types/bn.js`:
+ * helped fix this error (this can be solved by issue #1200):
+ * ```
+ * The inferred type of 'rpcNewBlockTagObjectWithNumber' cannot be
+ * named without a reference to 'ethereumjs-util/node_modules/@types/bn.js'.
+ * This is likely not portable. A type annotation is necessary.
+ * ```
 */
 const rootPackageJsonLocation = `${process.cwd()}/hardhat/package.json`
 const rootPackageJson = require(rootPackageJsonLocation)
