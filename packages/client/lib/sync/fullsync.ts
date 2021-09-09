@@ -244,8 +244,9 @@ export class FullSynchronizer extends Synchronizer {
     }
 
     try {
-      await block.validate(this.chain, true)
-    } catch {
+      await block.header.validate(this.chain.blockchain)
+    } catch (err) {
+      console.log(err)
       this.config.logger.debug(
         `Received invalid block from peer: ${short(Buffer.from(peer!.id))} hash: ${short(
           block.hash()
@@ -271,9 +272,7 @@ export class FullSynchronizer extends Synchronizer {
       x++
     }
 
-    const chainTip = await this.chain.getLatestBlock()
-
-    if (chainTip.header.parentHash.equals(block.hash())) {
+    if (this.chain.blocks.latest?.hash().equals(block.header.parentHash)) {
       // If new block is child of current chain tip, insert new block into chain
       await this.chain.putBlocks([block])
     } else {
@@ -285,7 +284,7 @@ export class FullSynchronizer extends Synchronizer {
       // Send `NEW_BLOCK_HASHES` message for received block to all other peers
       const knownBlocks = this.newBlocksKnownByPeer.get(pooledPeer.id) ?? []
       if (!knownBlocks?.find((handledObject) => handledObject.hash.equals(block.hash()))) {
-        pooledPeer.eth?.send('NewBlockHashes', [block.hash(), this.chain.blocks.td])
+        pooledPeer.eth?.send('NewBlockHashes', [[block.hash(), this.chain.blocks.td]])
         knownBlocks.push({ hash: block.hash(), added: Date.now() })
         this.newBlocksKnownByPeer.set(pooledPeer.id, knownBlocks)
       }
