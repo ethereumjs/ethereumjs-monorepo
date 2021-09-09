@@ -33,7 +33,6 @@ export interface StateManager {
   accountExists(address: Address): Promise<boolean>
   cleanupTouchedAccounts(): Promise<void>
   clearOriginalStorageCache(): void
-  someNewlyAddedBreakingMethod(): void
 }
 
 export interface EIP2929StateManager extends StateManager {
