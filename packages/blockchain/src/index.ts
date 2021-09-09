@@ -305,6 +305,13 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
+   * Returns a deep copy of this {@link Blockchain} instance.
+   */
+  copy(): Blockchain {
+    return Object.create(Object.getPrototypeOf(this), Object.getOwnPropertyDescriptors(this))
+  }
+
+  /**
    * This method is called in the constructor and either sets up the DB or reads
    * values from the DB and makes these available to the consumers of
    * Blockchain.
@@ -709,6 +716,9 @@ export default class Blockchain implements BlockchainInterface {
   public cliqueActiveSigners(): Address[] {
     this._requireClique()
     const signers = this._cliqueLatestSignerStates
+    if (signers.length === 0) {
+      return []
+    }
     return [...signers[signers.length - 1][1]]
   }
 
@@ -1566,9 +1576,9 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Helper to deterimine if a signer is in or out of turn.
-   * @param signer
-   * @param blockNumber
+   * Helper to determine if a signer is in or out of turn.
+   * @param signer The signer address
+   * @param blockNumber The block number - please note this will be checked based on the blockchain's current active signer list only.
    */
   cliqueSignerInTurn(signer: Address, blockNumber: BN): boolean {
     const signers = this.cliqueActiveSigners()

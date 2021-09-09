@@ -1,7 +1,7 @@
 import tape from 'tape-catch'
 import Common, { Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
-import { Block } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import { Account, Address, BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { FullSynchronizer } from '../../lib/sync/fullsync'
@@ -12,14 +12,23 @@ tape('[Miner]', async (t) => {
   class PeerPool {
     open() {}
     close() {}
+    get peers() {
+      return []
+    }
   }
-  let latestHash = Buffer.alloc(32)
   class Chain {
     open() {}
     close() {}
     update() {}
-    getLatestHeader() {
-      return { hash: () => latestHash }
+    get headers() {
+      return {
+        latest: BlockHeader.fromHeaderData(),
+      }
+    }
+    get blocks() {
+      return {
+        latest: Block.fromBlockData(),
+      }
     }
   }
 
@@ -93,6 +102,7 @@ tape('[Miner]', async (t) => {
       pool,
       chain,
     })
+    synchronizer.execution.vm.blockchain.cliqueSignerInTurn = () => true // stub
     let miner = new Miner({ config, synchronizer })
     t.notOk(miner.running)
     miner.start()
@@ -119,8 +129,8 @@ tape('[Miner]', async (t) => {
     const miner = new Miner({ config, synchronizer })
     const { txPool } = synchronizer
     const { vm } = synchronizer.execution
+    vm.blockchain.putBlock = async () => undefined // stub
     vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
-    latestHash = (await vm.blockchain.getLatestHeader()).hash() // stub
     txPool.start()
     miner.start()
 
@@ -158,8 +168,8 @@ tape('[Miner]', async (t) => {
       const miner = new Miner({ config, synchronizer })
       const { txPool } = synchronizer
       const { vm } = synchronizer.execution
+      vm.blockchain.putBlock = async () => undefined // stub
       vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
-      latestHash = (await vm.blockchain.getLatestHeader()).hash() // stub
       txPool.start()
       miner.start()
 
@@ -199,16 +209,26 @@ tape('[Miner]', async (t) => {
     const config = new Config({ transports: [], loglevel: 'error', accounts, mine: true, common })
     const pool = new PeerPool() as any
     const chain = new Chain() as any
+    Object.defineProperty(chain, 'headers', {
+      get: function () {
+        return { latest: BlockHeader.fromHeaderData({}, { common }) }
+      },
+    })
+    Object.defineProperty(chain, 'blocks', {
+      get: function () {
+        return { latest: Block.fromBlockData({}, { common }) }
+      },
+    })
     const synchronizer = new FullSynchronizer({
       config,
       pool,
       chain,
     })
+    ;(synchronizer as any).handleNewBlock = () => {} // stub
     const miner = new Miner({ config, synchronizer })
     const { txPool } = synchronizer
     const { vm } = synchronizer.execution
     vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
-    latestHash = (await vm.blockchain.getLatestHeader()).hash() // stub
     txPool.start()
     miner.start()
 
@@ -224,8 +244,8 @@ tape('[Miner]', async (t) => {
     ;(vm.blockchain as any)._validateConsensus = false
     vm.blockchain.putBlock = async () => {}
 
-    chain.putBlocks = (blocks: Block[]) => {
-      t.equal(blocks[0].transactions.length, 0, 'should not include tx')
+    synchronizer.handleNewBlock = async (block: Block) => {
+      t.equal(block.transactions.length, 0, 'should not include tx')
       miner.stop()
       txPool.stop()
       t.end()
@@ -236,6 +256,17 @@ tape('[Miner]', async (t) => {
   t.test("assembleBlocks() -> should stop assembling a block after it's full", async (t) => {
     const pool = new PeerPool() as any
     const chain = new Chain() as any
+    const gasLimit = 100000
+    Object.defineProperty(chain, 'headers', {
+      get: function () {
+        return { latest: BlockHeader.fromHeaderData({ gasLimit }, { common }) }
+      },
+    })
+    Object.defineProperty(chain, 'blocks', {
+      get: function () {
+        return { latest: Block.fromBlockData({ header: { gasLimit } }, { common }) }
+      },
+    })
     const synchronizer = new FullSynchronizer({
       config,
       pool,
@@ -244,8 +275,8 @@ tape('[Miner]', async (t) => {
     const miner = new Miner({ config, synchronizer })
     const { txPool } = synchronizer
     const { vm } = synchronizer.execution
+    vm.blockchain.putBlock = async () => undefined // stub
     vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
-    latestHash = (await vm.blockchain.getLatestHeader()).hash() // stub
     txPool.start()
     miner.start()
 
@@ -256,10 +287,9 @@ tape('[Miner]', async (t) => {
     await vm.runBlock({ block: Block.fromBlockData({}, { common }), generate: true })
 
     // add txs
-    const { gasLimit } = (await vm.blockchain.getLatestBlock()).header
     const data = '0xfe' // INVALID opcode, consumes all gas
     const tx1FillsBlockGasLimit = Transaction.fromTxData(
-      { gasLimit: gasLimit.subn(1), data },
+      { gasLimit: gasLimit - 1, data },
       { common }
     ).sign(A.privateKey)
     const tx2ExceedsBlockGasLimit = Transaction.fromTxData(
@@ -298,8 +328,8 @@ tape('[Miner]', async (t) => {
 
     const { txPool } = synchronizer
     const { vm } = synchronizer.execution
+    vm.blockchain.putBlock = async () => undefined // stub
     vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
-    latestHash = (await vm.blockchain.getLatestHeader()).hash() // stub
     txPool.start()
     miner.start()
 

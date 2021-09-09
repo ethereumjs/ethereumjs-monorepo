@@ -208,9 +208,9 @@ export class FullSynchronizer extends Synchronizer {
    * @param blockData `NEW_BLOCK` received from peer
    */
   async handleNewBlock(block: Block) {
-    const chainTip = (await this.chain.getLatestHeader()).hash()
+    const chainTip = this.chain.headers.latest?.hash()
     // If block parent is current chain tip, insert block into chain
-    if (chainTip.equals(block.header.parentHash) || this.config.mine) {
+    if (chainTip?.equals(block.header.parentHash)) {
       await this.chain.putBlocks([block])
     } else {
       // If block is beyond current tip, handle as `NEW_BLOCK_HASHES`

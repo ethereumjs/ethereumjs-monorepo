@@ -1,3 +1,4 @@
+import { BlockHeader } from '@ethereumjs/block'
 import { BN } from 'ethereumjs-util'
 import { ConsensusType } from '@ethereumjs/common'
 import { Event } from '../types'
@@ -45,8 +46,8 @@ export class Miner {
   /**
    * Convenience alias to return the latest block in the blockchain
    */
-  private async latestBlock() {
-    return this.synchronizer.execution.vm.blockchain.getLatestBlock()
+  private latestBlockHeader(): BlockHeader {
+    return (this.synchronizer as any).chain.headers.latest
   }
 
   /**
@@ -56,18 +57,31 @@ export class Miner {
     if (this._nextAssemblyTimeoutId) {
       clearTimeout(this._nextAssemblyTimeoutId)
     }
-    this._nextAssemblyTimeoutId = setTimeout(this.assembleBlock.bind(this), timeout ?? this.period)
+    timeout = timeout ?? this.period
+    if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority) {
+      // EIP-225 spec: If the signer is out-of-turn,
+      // delay signing by rand(SIGNER_COUNT * 500ms)
+      const [signerAddress] = this.config.accounts[0]
+      const { blockchain } = this.synchronizer.execution.vm
+      const signerCount = blockchain.cliqueActiveSigners().length
+      const nextBlock = this.latestBlockHeader().number.addn(1)
+      const inTurn = blockchain.cliqueSignerInTurn(signerAddress, nextBlock)
+      if (!inTurn) {
+        timeout += Math.random() * signerCount * 500
+      }
+    }
+    this._nextAssemblyTimeoutId = setTimeout(this.assembleBlock.bind(this), timeout)
   }
 
   /**
    * Sets the next block assembly to latestBlock.timestamp + period
    */
   private async chainUpdated() {
-    const latestBlock = await this.latestBlock()
-    const target = latestBlock.header.timestamp.muln(1000).addn(this.period).sub(new BN(Date.now()))
+    const latestBlockHeader = this.latestBlockHeader()
+    const target = latestBlockHeader.timestamp.muln(1000).addn(this.period).sub(new BN(Date.now()))
     const timeout = BN.max(new BN(0), target).toNumber()
     this.config.logger.debug(
-      `Miner: Chain updated with block ${latestBlock.header.number.toNumber()}. Queuing next block assembly in ${Math.round(
+      `Miner: Chain updated with block ${latestBlockHeader.number.toNumber()}. Queuing next block assembly in ${Math.round(
         timeout / 1000
       )}s`
     )
@@ -106,16 +120,30 @@ export class Miner {
     }
     this.config.events.on(Event.CHAIN_UPDATED, setInterrupt.bind(this))
 
-    const parentBlock = await this.latestBlock()
-    const { gasLimit } = parentBlock.header
+    const parentBlockHeader = this.latestBlockHeader()
+    const number = parentBlockHeader.number.addn(1)
+    const { gasLimit } = parentBlockHeader
     const [signerAddress, signerPrivKey] = this.config.accounts[0]
+
+    // Abort if we have too recently signed
+    if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority) {
+      const header = BlockHeader.fromHeaderData(
+        { number },
+        { common: this.config.chainCommon, cliqueSigner: signerPrivKey }
+      )
+      if ((this.synchronizer.execution.vm.blockchain as any).cliqueCheckRecentlySigned(header)) {
+        this.config.logger.info(`Miner: We have too recently signed, waiting for next block`)
+        this.assembling = false
+        return
+      }
+    }
 
     // Use a copy of the vm to not modify the existing state.
     // The state will be updated when the newly assembled block
     // is inserted into the canonical chain.
     const vmCopy = this.synchronizer.execution.vm.copy()
 
-    if (parentBlock.header.number.isZero()) {
+    if (parentBlockHeader.number.isZero()) {
       // In the current architecture of the client,
       // if we are on the genesis block the canonical genesis state
       // will not have been initialized yet in the execution vm
@@ -126,39 +154,44 @@ export class Miner {
     } else {
       // Set the state root to ensure the resulting state
       // is based on the parent block's state
-      await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
+      await vmCopy.stateManager.setStateRoot(parentBlockHeader.stateRoot)
     }
 
     let difficulty
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority) {
       // Determine if signer is INTURN (2) or NOTURN (1)
-      const inTurn = vmCopy.blockchain.cliqueSignerInTurn(
-        signerAddress,
-        parentBlock.header.number.addn(1)
-      )
+      const inTurn = vmCopy.blockchain.cliqueSignerInTurn(signerAddress, number)
       difficulty = inTurn ? 2 : 1
     }
 
+    let baseFeePerGas
+    const londonHardforkBlock = this.config.chainCommon.hardforkBlockBN('london')
+    const isInitialEIP1559Block = londonHardforkBlock && number.eq(londonHardforkBlock)
+    if (isInitialEIP1559Block) {
+      baseFeePerGas = new BN(this.config.chainCommon.param('gasConfig', 'initialBaseFee'))
+    } else if (this.config.chainCommon.isActivatedEIP(1559)) {
+      baseFeePerGas = parentBlockHeader.calcNextBaseFee()
+    }
+
+    const parentBlock = (this.synchronizer as any).chain.blocks.latest
     const blockBuilder = await vmCopy.buildBlock({
       parentBlock,
       headerData: {
+        number,
         difficulty,
         gasLimit,
+        baseFeePerGas,
       },
       blockOpts: {
         cliqueSigner: signerPrivKey,
+        hardforkByBlockNumber: true,
       },
     })
 
-    let baseFee
-    if (this.config.chainCommon.isActivatedEIP(1559)) {
-      // Exclude txs below base fee
-      baseFee = parentBlock.header.calcNextBaseFee()
-    }
-    const txs = this.synchronizer.txPool.txsByPriceAndNonce(baseFee)
+    const txs = this.synchronizer.txPool.txsByPriceAndNonce(baseFeePerGas)
     this.config.logger.info(
       `Miner: Assembling block from ${txs.length} eligible txs ${
-        baseFee ? `(baseFee: ${baseFee.toNumber()})` : ''
+        baseFeePerGas ? `(baseFee: ${baseFeePerGas.toNumber()})` : ''
       }`
     )
     let index = 0
@@ -166,7 +199,7 @@ export class Miner {
     while (index < txs.length && !blockFull && !interrupt) {
       try {
         await blockBuilder.addTransaction(txs[index])
-      } catch (error) {
+      } catch (error: any) {
         if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
           if (blockBuilder.gasUsed.gt(gasLimit.subn(21000))) {
             // If block has less than 21000 gas remaining, consider it full
@@ -193,9 +226,15 @@ export class Miner {
     this.config.logger.info(`Miner: Sealed block with ${block.transactions.length} txs`)
     this.assembling = false
     if (interrupt) return
-    // Put block in blockchain and remove included txs from TxPool
+    // Put block in blockchain
     await this.synchronizer.handleNewBlock(block)
+    // Remove included txs from TxPool
     this.synchronizer.txPool.removeNewBlockTxs([block])
+    // Inform connected peers of new block
+    for (const peer of (this.synchronizer as any).pool.peers) {
+      const { td } = (this.synchronizer as any).chain.headers
+      peer.eth.send('NewBlock', [block, td])
+    }
     this.config.events.removeListener(Event.CHAIN_UPDATED, setInterrupt.bind(this))
   }
 
