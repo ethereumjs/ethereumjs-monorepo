@@ -195,6 +195,9 @@ tape('[FullSynchronizer]', async (t) => {
     td.when(chain.getLatestBlock()).thenResolve(chainTip)
     td.when(chain.putBlocks(td.matchers.anything())).thenResolve()
 
+    sync.handleNewBlockHashes = td.func<any>()
+    td.when(sync.handleNewBlockHashes(td.matchers.anything())).thenResolve()
+
     await sync.handleNewBlock(newBlock, peers[2] as any)
     await sync.handleNewBlock(newBlock)
     t.ok(timesSentToPeer2 === 1, 'sent NewBlockHashes to Peer 2 once')

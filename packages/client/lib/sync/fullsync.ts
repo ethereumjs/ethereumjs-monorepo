@@ -209,9 +209,31 @@ export class FullSynchronizer extends Synchronizer {
   }
 
   /**
+   * Add newly broadcasted blocks to peer record
+   * @param blockHash hash of block received in NEW_BLOCK message
+   * @param peerId id of peer being checked
+   * @returns {boolean} true if block has already been sent to peer
+   */
+  private addToKnownByPeer(blockHash: Buffer, peerId: string): boolean {
+    if (!this.newBlocksKnownByPeer.has(peerId)) {
+      this.newBlocksKnownByPeer.set(peerId, [{ hash: blockHash, added: Date.now() }])
+      return false
+    }
+
+    const knownBlocks = this.newBlocksKnownByPeer.get(peerId) ?? []
+    if (knownBlocks?.filter((knownBlock) => knownBlock.hash.equals(blockHash)).length > 0) {
+      return true
+    }
+    knownBlocks.push({ hash: blockHash, added: Date.now() })
+    this.newBlocksKnownByPeer.set(peerId, knownBlocks)
+    return false
+  }
+
+  /**
    *
-   * Processes `NEW_BLOCK` announcement from a peer and inserts into local chain if child of chain tip
+   * Handles `NEW_BLOCK` announcement from a peer and inserts into local chain if child of chain tip
    * @param blockData `NEW_BLOCK` received from peer
+   * @param peer `Peer` that sent `NEW_BLOCK` announcement
    */
   async handleNewBlock(block: Block, peer?: Peer) {
     if (peer) {
@@ -221,52 +243,121 @@ export class FullSynchronizer extends Synchronizer {
       this.newBlocksKnownByPeer.set(peer.id, knownBlocks)
     }
 
+    try {
+      await block.validate(this.chain, true)
+    } catch {
+      this.config.logger.debug(
+        `Received invalid block from peer: ${short(Buffer.from(peer!.id))} hash: ${short(
+          block.hash()
+        )} `
+      )
+      return
+    }
+
+    // Send NEW_BLOCK to square root of total number of peers in pool
+    // https://github.com/ethereum/devp2p/blob/master/caps/eth.md#block-propagation
+    const numPeersToShareWith = Math.floor(Math.sqrt(this.pool.peers.length))
+
+    let x = 0
+    while (x < numPeersToShareWith) {
+      const currentPeer = this.pool.peers[x]
+      const alreadyKnownByPeer = this.addToKnownByPeer(block.hash(), currentPeer.id)
+      if (alreadyKnownByPeer) {
+        // If peer has already been sent this block, skip peer
+        x++
+        continue
+      }
+      currentPeer.eth?.send('NewBlock', [block, this.chain.blocks.td])
+      x++
+    }
+
     const chainTip = await this.chain.getLatestBlock()
 
-    // If block parent is current chain tip, insert block into chain
-    if (chainTip.header.hash().equals(block.header.parentHash)) {
-      if (!block.validateDifficulty(chainTip)) return
-
-      // Send NEW_BLOCK to square root of total number of peers in pool
-      // https://github.com/ethereum/devp2p/blob/master/caps/eth.md#block-propagation
-      const numPeersToShareWith = Math.floor(Math.sqrt(this.pool.peers.length))
-
-      let x = 0
-      while (x < numPeersToShareWith) {
-        const currentPeer = this.pool.peers[x]
-        const knownBlocks = this.newBlocksKnownByPeer.get(currentPeer.id) ?? []
-        if (
-          knownBlocks.find(
-            (handledObject) => handledObject.hash && handledObject.hash.equals(block.hash())
-          )
-        ) {
-          // If peer has already been sent this block, skip peer
-          x++
-          continue
-        }
-
-        knownBlocks.push({ hash: block.hash(), added: Date.now() })
-        this.newBlocksKnownByPeer.set(currentPeer.id, knownBlocks)
-        currentPeer.eth?.send('NewBlock', [block, this.chain.blocks.td])
-
-        x++
-      }
-
-      // Insert new block into chain
+    if (chainTip.header.parentHash.equals(block.hash())) {
+      // If new block is child of current chain tip, insert new block into chain
       await this.chain.putBlocks([block])
-
-      for (const pooledPeer of this.pool.peers) {
-        // Send `NEW_BLOCK_HASHES` message for received block to all other peers
-        const knownBlocks = this.newBlocksKnownByPeer.get(pooledPeer.id) ?? []
-        if (!knownBlocks?.find((handledObject) => handledObject.hash.equals(block.hash()))) {
-          pooledPeer.eth?.send('NewBlockHashes', [block.hash(), this.chain.blocks.td])
-          knownBlocks.push({ hash: block.hash(), added: Date.now() })
-          this.newBlocksKnownByPeer.set(pooledPeer.id, knownBlocks)
-        }
-      }
     } else {
-      // If block is beyond current tip, handle as `NEW_BLOCK_HASHES`
-      this.handleNewBlockHashes([[block.header.hash(), block.header.number]])
+      // Call handleNewBlockHashes to retrieve all blocks between chain tip and new block
+      this.handleNewBlockHashes([[block.hash(), block.header.number]])
+    }
+
+    for (const pooledPeer of this.pool.peers) {
+      // Send `NEW_BLOCK_HASHES` message for received block to all other peers
+      const knownBlocks = this.newBlocksKnownByPeer.get(pooledPeer.id) ?? []
+      if (!knownBlocks?.find((handledObject) => handledObject.hash.equals(block.hash()))) {
+        pooledPeer.eth?.send('NewBlockHashes', [block.hash(), this.chain.blocks.td])
+        knownBlocks.push({ hash: block.hash(), added: Date.now() })
+        this.newBlocksKnownByPeer.set(pooledPeer.id, knownBlocks)
+      }
+    }
+  }
+
+  /**
+   * Chain was updated, new block hashes received
+   * @param {[blockhash, number][]} data new block hash announcements
+   */
+  handleNewBlockHashes(data: [Buffer, BN][]) {
+    if (!data.length) {
+      return
+    }
+    let min = new BN(-1)
+    let newSyncHeight
+    const blockNumberList: string[] = []
+    data.forEach((value) => {
+      const blockNumber = value[1]
+      blockNumberList.push(blockNumber.toString())
+      if (min.eqn(-1) || blockNumber.lt(min)) {
+        min = blockNumber
+      }
+
+      // Check if new sync target height can be set
+      if (!this.syncTargetHeight || blockNumber.gt(this.syncTargetHeight)) {
+        newSyncHeight = blockNumber
+      }
+    })
+    if (min.eqn(-1)) {
+      return
+    }
+    if (newSyncHeight) {
+      this.syncTargetHeight = newSyncHeight
+      const [hash, height] = data[data.length - 1]
+      this.config.logger.info(
+        `New sync target height number=${height.toString(10)} hash=${short(hash)}`
+      )
+    }
+
+    const numBlocks = blockNumberList.length
+
+    // check if we can request the blocks in bulk
+    let bulkRequest = true
+    const minCopy = min.clone()
+    for (let num = 1; num < numBlocks; num++) {
+      min.iaddn(1)
+      if (!blockNumberList.includes(min.toString())) {
+        bulkRequest = false
+        break
+      }
+    }
+
+    if (bulkRequest) {
+      this.fetcher!.enqueueTask(
+        {
+          first: minCopy,
+          count: numBlocks,
+        },
+        true
+      )
+    } else {
+      data.forEach((value) => {
+        const blockNumber = value[1]
+        this.fetcher!.enqueueTask(
+          {
+            first: blockNumber,
+            count: 1,
+          },
+          true
+        )
+      })
     }
   }
 
