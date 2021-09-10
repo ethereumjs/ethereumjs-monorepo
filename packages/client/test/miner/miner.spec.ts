@@ -209,14 +209,15 @@ tape('[Miner]', async (t) => {
     const config = new Config({ transports: [], loglevel: 'error', accounts, mine: true, common })
     const pool = new PeerPool() as any
     const chain = new Chain() as any
+    const block = Block.fromBlockData({}, { common })
     Object.defineProperty(chain, 'headers', {
       get: function () {
-        return { latest: BlockHeader.fromHeaderData({}, { common }) }
+        return { latest: block.header }
       },
     })
     Object.defineProperty(chain, 'blocks', {
       get: function () {
-        return { latest: Block.fromBlockData({}, { common }) }
+        return { latest: block }
       },
     })
     const synchronizer = new FullSynchronizer({
@@ -257,14 +258,15 @@ tape('[Miner]', async (t) => {
     const pool = new PeerPool() as any
     const chain = new Chain() as any
     const gasLimit = 100000
+    const block = Block.fromBlockData({ header: { gasLimit } }, { common })
     Object.defineProperty(chain, 'headers', {
       get: function () {
-        return { latest: BlockHeader.fromHeaderData({ gasLimit }, { common }) }
+        return { latest: block.header }
       },
     })
     Object.defineProperty(chain, 'blocks', {
       get: function () {
-        return { latest: Block.fromBlockData({ header: { gasLimit } }, { common }) }
+        return { latest: block }
       },
     })
     const synchronizer = new FullSynchronizer({
