@@ -326,7 +326,6 @@ export class FullSynchronizer extends Synchronizer {
     }
 
     const numBlocks = blockNumberList.length
-
     // check if we can request the blocks in bulk
     let bulkRequest = true
     const minCopy = min.clone()
@@ -339,13 +338,27 @@ export class FullSynchronizer extends Synchronizer {
     }
 
     if (bulkRequest) {
-      this.fetcher!.enqueueTask(
-        {
+      if (!this.fetcher) {
+        // Checks to see if fetcher is running and start if not since sometimes fetcher is destroyed
+        // when `NEW_BLOCK_HASHES` message received right after node start-up
+        this.fetcher = new BlockFetcher({
+          config: this.config,
+          pool: this.pool,
+          chain: this.chain,
+          interval: this.interval,
           first: minCopy,
-          count: numBlocks,
-        },
-        true
-      )
+          count: new BN(numBlocks),
+          destroyWhenDone: false,
+        })
+      } else {
+        this.fetcher!.enqueueTask(
+          {
+            first: minCopy,
+            count: numBlocks,
+          },
+          true
+        )
+      }
     } else {
       data.forEach((value) => {
         const blockNumber = value[1]
