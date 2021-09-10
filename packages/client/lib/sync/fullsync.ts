@@ -284,7 +284,7 @@ export class FullSynchronizer extends Synchronizer {
       // Send `NEW_BLOCK_HASHES` message for received block to all other peers
       const knownBlocks = this.newBlocksKnownByPeer.get(pooledPeer.id) ?? []
       if (!knownBlocks?.find((handledObject) => handledObject.hash.equals(block.hash()))) {
-        pooledPeer.eth?.send('NewBlockHashes', [[block.hash(), this.chain.blocks.td]])
+        pooledPeer.eth?.send('NewBlockHashes', [[block.hash(), block.header.number]])
         knownBlocks.push({ hash: block.hash(), added: Date.now() })
         this.newBlocksKnownByPeer.set(pooledPeer.id, knownBlocks)
       }
