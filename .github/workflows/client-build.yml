@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        network: ['rinkeby', 'goerli']
+        network: ['goerli']
         syncmode: ['full', 'light']
       fail-fast: false
     steps:
