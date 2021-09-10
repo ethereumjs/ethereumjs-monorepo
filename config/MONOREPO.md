@@ -23,9 +23,11 @@ TLDR: To update dependencies
 npm run build --workspaces
 ```
 
+Above is the quickest way to set you up.
+
 ### ℹ️ Note for Windows users:
 
-Windows users might run into the following error when trying to install the repo: `'.' is not recognized as an internal or external command,`. To remediate for this, you can force Windows to use Git bash to run scripts (you'll need to install [Git for Windows](https://git-scm.com/download/win) for this) with the following command:
+Windows users might run into the following error when trying to install the repo: `'.' is not recognized as an internal or external command`. To remediate for this, you can force Windows to use Git bash to run scripts (you'll need to install [Git for Windows](https://git-scm.com/download/win) for this) with the following command:
 
 ```sh
 npm config set script-shell "C:\\Program Files (x86)\\git\\bin\\bash.exe"
@@ -37,7 +39,7 @@ If you ever need to reset this change, you can do so with this command:
 npm config delete script-shell
 ```
 
-Above is the quickest way to set you up. Going down the road, there are two sets of commands: _project_ and _package-specific_ commands. You can find them at `./package.json` and `./packages/*/package.json`, respectively. Here's a breakdown:
+Going down the road, there are two sets of commands: _project_ and _package-specific_ commands. You can find them at `./package.json` and `./packages/*/package.json`, respectively. Here's a breakdown:
 
 ### Project scripts — run from repository root
 
