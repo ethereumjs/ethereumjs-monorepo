@@ -316,27 +316,27 @@ export class FullSynchronizer extends Synchronizer {
         newSyncHeight = blockNumber
       }
     })
-    if (min.eqn(-1)) {
+    
+    if (!newSyncHeight) {
       return
     }
-    if (newSyncHeight) {
-      this.syncTargetHeight = newSyncHeight
-      const [hash, height] = data[data.length - 1]
-      this.config.logger.info(
-        `New sync target height number=${height.toString(10)} hash=${short(hash)}`
-      )
-    }
+    this.syncTargetHeight = newSyncHeight
+    const [hash, height] = data[data.length - 1]
+    this.config.logger.info(
+      `New sync target height number=${height.toString(10)} hash=${short(hash)}`
+    )
 
     const numBlocks = blockNumberList.length
-    // check if we can request the blocks in bulk
+    // check if block numbers are sequential and
+    // we can therefore request the blocks in bulk
     let bulkRequest = true
-    const minCopy = min.clone()
-    for (let num = 1; num < numBlocks; num++) {
-      min.iaddn(1)
-      if (!blockNumberList.includes(min.toString())) {
+    const seqCheckNum = min.clone()
+    for (let num = 1; num <= numBlocks; num++) {
+      if (!blockNumberList.includes(seqCheckNum.toString())) {
         bulkRequest = false
         break
       }
+      seqCheckNum.iaddn(1)
     }
 
     if (bulkRequest) {
@@ -348,14 +348,14 @@ export class FullSynchronizer extends Synchronizer {
           pool: this.pool,
           chain: this.chain,
           interval: this.interval,
-          first: minCopy,
+          first: min,
           count: new BN(numBlocks),
           destroyWhenDone: false,
         })
       } else {
         this.fetcher!.enqueueTask(
           {
-            first: minCopy,
+            first: min,
             count: numBlocks,
           },
           true
