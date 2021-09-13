@@ -275,6 +275,11 @@ export class FullSynchronizer extends Synchronizer {
     if (this.chain.blocks.latest?.hash().equals(block.header.parentHash)) {
       // If new block is child of current chain tip, insert new block into chain
       await this.chain.putBlocks([block])
+      // Check if new sync target height can be set
+      const blockNumber = block.header.number
+      if (!this.syncTargetHeight || blockNumber.gt(this.syncTargetHeight)) {
+        this.syncTargetHeight = blockNumber
+      }
     } else {
       // Call handleNewBlockHashes to retrieve all blocks between chain tip and new block
       this.handleNewBlockHashes([[block.hash(), block.header.number]])
