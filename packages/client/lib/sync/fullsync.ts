@@ -252,9 +252,7 @@ export class FullSynchronizer extends Synchronizer {
   async handleNewBlock(block: Block, peer?: Peer) {
     if (peer) {
       // Don't send NEW_BLOCK announcement to peer that sent original new block message
-      const knownBlocks = this.newBlocksKnownByPeer.get(peer.id) ?? []
-      knownBlocks.push({ hash: block.hash(), added: Date.now() })
-      this.newBlocksKnownByPeer.set(peer.id, knownBlocks)
+      this.addToKnownByPeer(block.hash(), peer)
     }
 
     try {
