@@ -8,8 +8,15 @@ import { BN } from 'ethereumjs-util'
 import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 
-const debug = createDebugLogger('devp2p:eth')
+const DEBUG_BASE_NAME = 'devp2p:eth'
+const debug = createDebugLogger(DEBUG_BASE_NAME)
 const verbose = createDebugLogger('verbose').enabled
+
+/**
+ * Will be set to the first successfully connected peer to allow for
+ * debugging with the `devp2p:FIRST_PEER` debugger
+ */
+let _firstPeer = ''
 
 type SendMethod = (code: ETH.MESSAGE_CODES, data: Buffer) => any
 
@@ -27,6 +34,9 @@ export class ETH extends EventEmitter {
   _forkHash: string = ''
   _nextForkBlock = new BN(0)
 
+  // Message debuggers (e.g. { 'GET_BLOCK_HEADERS': [debug Object], ...})
+  private msgDebuggers: { [key: string]: (debug: string) => void } = {}
+
   constructor(version: number, peer: Peer, send: SendMethod) {
     super()
 
@@ -39,6 +49,8 @@ export class ETH extends EventEmitter {
     this._statusTimeoutId = setTimeout(() => {
       this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
     }, ms('5s'))
+
+    this.initMsgDebuggers()
 
     // Set forkHash and nextForkBlock
     if (this._version >= 64) {
@@ -61,24 +73,28 @@ export class ETH extends EventEmitter {
 
   _handleMessage(code: ETH.MESSAGE_CODES, data: any) {
     const payload = rlp.decode(data) as unknown
+    const messageName = this.getMsgPrefix(code)
+    const debugMsg = `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}`
+
     if (code !== ETH.MESSAGE_CODES.STATUS) {
-      const debugMsg = `Received ${this.getMsgPrefix(code)} message from ${
-        this._peer._socket.remoteAddress
-      }:${this._peer._socket.remotePort}`
       const logData = formatLogData(data.toString('hex'), verbose)
-      debug(`${debugMsg}: ${logData}`)
+      this.debug(messageName, `${debugMsg}: ${logData}`)
     }
     switch (code) {
-      case ETH.MESSAGE_CODES.STATUS:
-        assertEq(this._peerStatus, null, 'Uncontrolled status message', debug)
-        this._peerStatus = payload as ETH.StatusMsg
-        debug(
-          `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
-            this._peer._socket.remotePort
-          }: : ${this._peerStatus ? this._getStatusString(this._peerStatus) : ''}`
+      case ETH.MESSAGE_CODES.STATUS: {
+        assertEq(
+          this._peerStatus,
+          null,
+          'Uncontrolled status message',
+          this.debug.bind(this),
+          'STATUS'
         )
+        this._peerStatus = payload as ETH.StatusMsg
+        const peerStatusMsg = `${this._peerStatus ? this._getStatusString(this._peerStatus) : ''}`
+        this.debug(messageName, `${debugMsg}: ${peerStatusMsg}`)
         this._handleStatus()
         break
+      }
 
       case ETH.MESSAGE_CODES.NEW_BLOCK_HASHES:
       case ETH.MESSAGE_CODES.TX:
@@ -125,7 +141,7 @@ export class ETH extends EventEmitter {
       if (!peerNextFork.isZero()) {
         if (this._latestBlock.gte(peerNextFork)) {
           const msg = 'Remote is advertising a future fork that passed locally'
-          debug(msg)
+          this.debug('STATUS', msg)
           throw new assert.AssertionError({ message: msg })
         }
       }
@@ -133,7 +149,7 @@ export class ETH extends EventEmitter {
     const peerFork: any = c.hardforkForForkHash(peerForkHash)
     if (peerFork === null) {
       const msg = 'Unknown fork hash'
-      debug(msg)
+      this.debug('STATUS', msg)
       throw new assert.AssertionError({ message: msg })
     }
 
@@ -141,7 +157,7 @@ export class ETH extends EventEmitter {
       const nextHardforkBlock = c.nextHardforkBlockBN(peerFork.name)
       if (peerNextFork === null || !nextHardforkBlock || !nextHardforkBlock.eq(peerNextFork)) {
         const msg = 'Outdated fork status, remote needs software update'
-        debug(msg)
+        this.debug('STATUS', msg)
         throw new assert.AssertionError({ message: msg })
       }
     }
@@ -151,9 +167,27 @@ export class ETH extends EventEmitter {
     if (this._status === null || this._peerStatus === null) return
     clearTimeout(this._statusTimeoutId)
 
-    assertEq(this._status[0], this._peerStatus[0], 'Protocol version mismatch', debug)
-    assertEq(this._status[1], this._peerStatus[1], 'NetworkId mismatch', debug)
-    assertEq(this._status[4], this._peerStatus[4], 'Genesis block mismatch', debug)
+    assertEq(
+      this._status[0],
+      this._peerStatus[0],
+      'Protocol version mismatch',
+      this.debug.bind(this),
+      'STATUS'
+    )
+    assertEq(
+      this._status[1],
+      this._peerStatus[1],
+      'NetworkId mismatch',
+      this.debug.bind(this),
+      'STATUS'
+    )
+    assertEq(
+      this._status[4],
+      this._peerStatus[4],
+      'Genesis block mismatch',
+      this.debug.bind(this),
+      'STATUS'
+    )
 
     const status: any = {
       networkId: this._peerStatus[1],
@@ -163,12 +197,21 @@ export class ETH extends EventEmitter {
     }
 
     if (this._version >= 64) {
-      assertEq(this._peerStatus[5].length, 2, 'Incorrect forkId msg format', debug)
+      assertEq(
+        this._peerStatus[5].length,
+        2,
+        'Incorrect forkId msg format',
+        this.debug.bind(this),
+        'STATUS'
+      )
       this._validateForkId(this._peerStatus[5] as Buffer[])
       status['forkId'] = this._peerStatus[5]
     }
 
     this.emit('status', status)
+    if (_firstPeer === '') {
+      this._addFirstPeerDebugger()
+    }
   }
 
   getVersion() {
@@ -226,7 +269,8 @@ export class ETH extends EventEmitter {
       this._status.push([forkHashB, nextForkB])
     }
 
-    debug(
+    this.debug(
+      'STATUS',
       `Send STATUS message to ${this._peer._socket.remoteAddress}:${
         this._peer._socket.remotePort
       } (eth${this._version}): ${this._getStatusString(this._status)}`
@@ -244,11 +288,11 @@ export class ETH extends EventEmitter {
   }
 
   sendMessage(code: ETH.MESSAGE_CODES, payload: any) {
-    const debugMsg = `Send ${this.getMsgPrefix(code)} message to ${
-      this._peer._socket.remoteAddress
-    }:${this._peer._socket.remotePort}`
+    const messageName = this.getMsgPrefix(code)
     const logData = formatLogData(rlp.encode(payload).toString('hex'), verbose)
-    debug(`${debugMsg}: ${logData}`)
+    const debugMsg = `Send ${messageName} message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${logData}`
+
+    this.debug(messageName, debugMsg)
 
     switch (code) {
       case ETH.MESSAGE_CODES.STATUS:
@@ -293,6 +337,53 @@ export class ETH extends EventEmitter {
 
   getMsgPrefix(msgCode: ETH.MESSAGE_CODES): string {
     return ETH.MESSAGE_CODES[msgCode]
+  }
+
+  private initMsgDebuggers() {
+    const MESSAGE_NAMES = Object.values(ETH.MESSAGE_CODES).filter(
+      (value) => typeof value === 'string'
+    ) as string[]
+    for (const name of MESSAGE_NAMES) {
+      this.msgDebuggers[name] = createDebugLogger(`${DEBUG_BASE_NAME}:${name}`)
+    }
+
+    // Remote Peer IP logger
+    const ip = this._peer._socket.remoteAddress
+    if (ip) {
+      this.msgDebuggers[ip] = createDebugLogger(`devp2p:${ip}`)
+    }
+  }
+
+  /**
+   * Called once on the peer where a first successful `STATUS`
+   * msg exchange could be achieved.
+   *
+   * Can be used together with the `devp2p:FIRST_PEER` debugger.
+   */
+  _addFirstPeerDebugger() {
+    const ip = this._peer._socket.remoteAddress
+    if (ip) {
+      this.msgDebuggers[ip] = createDebugLogger(`devp2p:FIRST_PEER`)
+      this._peer._addFirstPeerDebugger()
+      _firstPeer = ip
+    }
+  }
+
+  /**
+   * Debug message both on the generic as well as the
+   * per-message debug logger
+   * @param messageName Capitalized message name (e.g. `GET_BLOCK_HEADERS`)
+   * @param msg Message text to debug
+   */
+  private debug(messageName: string, msg: string) {
+    debug(msg)
+    if (this.msgDebuggers[messageName]) {
+      this.msgDebuggers[messageName](msg)
+    }
+    const ip = this._peer._socket.remoteAddress
+    if (ip && this.msgDebuggers[ip]) {
+      this.msgDebuggers[ip](msg)
+    }
   }
 }
 

@@ -86,7 +86,7 @@ export class DBManager {
         const addrs = (<any>state[1]).map((buf: Buffer) => new Address(buf))
         return [blockNum, addrs]
       }) as CliqueLatestSignerStates
-    } catch (error) {
+    } catch (error: any) {
       if (error.type === 'NotFoundError') {
         return []
       }
@@ -108,7 +108,7 @@ export class DBManager {
         const nonce = (vote[1] as any)[2]
         return [blockNum, [signer, beneficiary, nonce]]
       }) as CliqueLatestVotes
-    } catch (error) {
+    } catch (error: any) {
       if (error.type === 'NotFoundError') {
         return []
       }
@@ -128,7 +128,7 @@ export class DBManager {
         const signer = new Address(s[1] as any)
         return [blockNum, signer]
       }) as CliqueLatestBlockSigners
-    } catch (error) {
+    } catch (error: any) {
       if (error.type === 'NotFoundError') {
         return []
       }
@@ -161,7 +161,7 @@ export class DBManager {
     let body: BlockBodyBuffer = [[], []]
     try {
       body = await this.getBody(hash, number)
-    } catch (error) {
+    } catch (error: any) {
       if (error.type !== 'NotFoundError') {
         throw error
       }

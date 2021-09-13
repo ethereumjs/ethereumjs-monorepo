@@ -207,7 +207,7 @@ async function run() {
         chain: customChainParams.name,
         customChains: [[customChainParams, genesisState]],
       })
-    } catch (err) {
+    } catch (err: any) {
       throw new Error(`invalid chain parameters: ${err.message}`)
     }
     // Use geth genesis parameters file if specified

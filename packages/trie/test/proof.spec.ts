@@ -44,7 +44,7 @@ tape('simple merkle proofs generation and verification', function (tester) {
     try {
       await CheckpointTrie.verifyProof(trie.root, Buffer.from('key1aa'), proof)
       t.fail('expected error: Invalid proof provided')
-    } catch (e) {
+    } catch (e: any) {
       t.equal(e.message, 'Invalid proof provided')
     }
 
@@ -54,7 +54,7 @@ tape('simple merkle proofs generation and verification', function (tester) {
     try {
       await CheckpointTrie.verifyProof(trie.root, Buffer.from('key2bb'), proof)
       t.fail('expected error: Invalid proof provided')
-    } catch (e) {
+    } catch (e: any) {
       t.equal(e.message, 'Invalid proof provided')
     }
 
@@ -69,7 +69,7 @@ tape('simple merkle proofs generation and verification', function (tester) {
     try {
       await CheckpointTrie.verifyProof(trie.root, myKey, proof)
       t.fail('expected error: Invalid proof provided')
-    } catch (e) {
+    } catch (e: any) {
       t.equal(e.message, 'Invalid proof provided')
     }
 

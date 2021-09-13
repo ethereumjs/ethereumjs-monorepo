@@ -46,7 +46,7 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
       }
       BlockHeader.fromHeaderData(headerData, { common })
       st.fail('should throw')
-    } catch (e) {
+    } catch (e: any) {
       st.pass('should throw on wrong uncleHash')
     }
 
@@ -56,7 +56,7 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
       }
       BlockHeader.fromHeaderData(headerData, { common })
       st.fail('should throw')
-    } catch (e) {
+    } catch (e: any) {
       st.pass('should throw on wrong difficulty')
     }
 
@@ -66,7 +66,7 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
       }
       BlockHeader.fromHeaderData(headerData, { common })
       st.fail('should throw')
-    } catch (e) {
+    } catch (e: any) {
       st.pass('should throw on wrong extraData')
     }
 
@@ -76,7 +76,7 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
       }
       BlockHeader.fromHeaderData(headerData, { common })
       st.fail('should throw')
-    } catch (e) {
+    } catch (e: any) {
       st.pass('should throw on wrong mixHash')
     }
 
@@ -86,7 +86,7 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
       }
       BlockHeader.fromHeaderData(headerData, { common })
       st.fail('should throw')
-    } catch (e) {
+    } catch (e: any) {
       st.pass('should throw on wrong nonce')
     }
 
@@ -99,7 +99,7 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
         common,
       })
       st.fail('should have thrown')
-    } catch (e) {
+    } catch (e: any) {
       st.pass('should throw')
     }
     st.end()

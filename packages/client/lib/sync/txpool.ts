@@ -1,4 +1,4 @@
-import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
+import { TypedTransaction } from '@ethereumjs/tx'
 import { Config } from '../config'
 import { Peer } from '../net/peer'
 import { EthProtocolMethods } from '../net/protocol'
@@ -12,17 +12,23 @@ export interface TxPoolOptions {
 
 type TxPoolObject = {
   tx: TypedTransaction
-  hash: string // plain strings without hex prefix
+  hash: UnprefixedHash
   added: number
 }
 
 type HandledObject = {
-  address: string // plain strings without hex prefix
+  address: UnprefixedAddress
+  added: number
+}
+
+type SentObject = {
+  hash: UnprefixedHash
   added: number
 }
 
 type UnprefixedAddress = string
 type UnprefixedHash = string
+type PeerId = string
 
 /**
  * @module service
@@ -47,6 +53,13 @@ export class TxPool {
   private pending: UnprefixedHash[] = []
 
   /**
+   * The central pool dataset.
+   *
+   * Maps an address to a `TxPoolObject`
+   */
+  public pool: Map<UnprefixedAddress, TxPoolObject[]>
+
+  /**
    * Map for handled tx hashes
    * (have been added to the pool at some point)
    *
@@ -57,11 +70,10 @@ export class TxPool {
   private handled: Map<UnprefixedHash, HandledObject>
 
   /**
-   * The central pool dataset.
-   *
-   * Maps an address to a `TxPoolObject`
+   * Map for tx hashes a peer is already aware of
+   * (so no need to re-broadcast)
    */
-  public pool: Map<UnprefixedAddress, TxPoolObject[]>
+  private knownByPeer: Map<PeerId, SentObject[]>
 
   /**
    * Activate before chain head is reached to start
@@ -86,6 +98,13 @@ export class TxPool {
   public HANDLED_CLEANUP_TIME_LIMIT = 60
 
   /**
+   * Rebroadcast full txs and new blocks to a fraction
+   * of peers by doing
+   * `min(1, floor(NUM_PEERS/NUM_PEERS_REBROADCAST_QUOTIENT))`
+   */
+  public NUM_PEERS_REBROADCAST_QUOTIENT = 4
+
+  /**
    * Log pool statistics on the given interval
    */
   private LOG_STATISTICS_INTERVAL = 10000 // ms
@@ -99,6 +118,7 @@ export class TxPool {
 
     this.pool = new Map<UnprefixedAddress, TxPoolObject[]>()
     this.handled = new Map<UnprefixedHash, HandledObject>()
+    this.knownByPeer = new Map<PeerId, SentObject[]>()
 
     this.opened = false
     this.running = false
@@ -154,6 +174,27 @@ export class TxPool {
   }
 
   /**
+   * Returns the available txs from the pool
+   * @param txHashes
+   * @returns Array with tx objects
+   */
+  getByHash(txHashes: Buffer[]): TypedTransaction[] {
+    const found = []
+    for (const txHash of txHashes) {
+      const txHashStr = txHash.toString('hex')
+      const handled = this.handled.get(txHashStr)
+      if (!handled) {
+        continue
+      }
+      const inPool = this.pool.get(handled.address)?.filter((poolObj) => poolObj.hash === txHashStr)
+      if (inPool && inPool.length === 1) {
+        found.push(inPool[0].tx)
+      }
+    }
+    return found
+  }
+
+  /**
    * Removes the given tx from the pool
    * @param txHash Hash of the transaction
    */
@@ -176,40 +217,125 @@ export class TxPool {
   }
 
   /**
-   * Send transactions to other peers in the peer pool
-   * @param pool
-   * @param tx Array with transactions to send
+   * Adds passed in txs to the map keeping track
+   * of tx hashes known by a peer.
+   * @param txHashes
+   * @param peer
+   * @returns Array with txs which are new to the list
    */
-  sendTransactions(peerPool: PeerPool, txs: TypedTransaction[]) {
-    const peers = peerPool.peers
+  addToKnownByPeer(txHashes: Buffer[], peer: Peer): Buffer[] {
+    // Make sure data structure is initialized
+    if (!this.knownByPeer.has(peer.id)) {
+      this.knownByPeer.set(peer.id, [])
+    }
 
-    for (const peer of peers) {
-      const txsToSend = []
-      for (const tx of txs) {
-        // TODO: check if tx has already been sent to peer
-        if (tx.type === 0) {
-          txsToSend.push(tx.raw())
-        } else {
-          txsToSend.push(tx.serialize())
+    const newHashes: Buffer[] = []
+    for (const hash of txHashes) {
+      const inSent = this.knownByPeer
+        .get(peer.id)!
+        .filter((sentObject) => sentObject.hash === hash.toString('hex')).length
+      if (inSent === 0) {
+        const added = Date.now()
+        const add = {
+          hash: hash.toString('hex'),
+          added,
         }
+        this.knownByPeer.get(peer.id)!.push(add)
+        newHashes.push(hash)
       }
-      if (txsToSend.length > 0) {
-        peer.eth?.send('Transactions', txsToSend)
+    }
+    return newHashes
+  }
+
+  /**
+   * Send (broadcast) tx hashes from the pool to connected
+   * peers.
+   *
+   * Double sending is avoided by compare towards the
+   * `SentTxHashes` map.
+   * @param txHashes Array with transactions to send
+   * @param peers
+   */
+  async sendNewTxHashes(txHashes: Buffer[], peers: Peer[]) {
+    for (const peer of peers) {
+      // Make sure data structure is initialized
+      if (!this.knownByPeer.has(peer.id)) {
+        this.knownByPeer.set(peer.id, [])
+      }
+      // Add to known tx hashes and get hashes still to send to peer
+      const hashesToSend = this.addToKnownByPeer(txHashes, peer)
+
+      // Broadcast to peer if at least 1 new tx hash to announce
+      if (hashesToSend.length > 0) {
+        peer.eth?.send('NewPooledTransactionHashes', hashesToSend)
       }
     }
   }
 
   /**
-   * Include new pooled txs announced in the pool
-   * @param  txHashes new tx hashes announced
-   * @param  peer peer
+   * Send transactions to other peers in the peer pool
+   *
+   * Note that there is currently no data structure to avoid
+   * double sending to a peer, so this has to be made sure
+   * by checking on the context the sending is performed.
+   * @param txs Array with transactions to send
+   * @param peers
    */
-  async includeAnnouncedTxs(txHashes: Buffer[], peer: Peer) {
+  sendTransactions(txs: TypedTransaction[], peers: Peer[]) {
+    if (txs.length > 0) {
+      const hashes = txs.map((tx) => tx.hash())
+      for (const peer of peers) {
+        // This is used to avoid re-sending along pooledTxHashes
+        // announcements/re-broadcasts
+        this.addToKnownByPeer(hashes, peer)
+        peer.eth?.send('Transactions', txs)
+      }
+    }
+  }
+
+  /**
+   * Include new announced txs in the pool
+   * and re-broadcast to other peers
+   * @param txs
+   * @param peer Announcing peer
+   * @param peerPool Reference to the peer pool
+   */
+  async handleAnnouncedTxs(txs: TypedTransaction[], peer: Peer, peerPool: PeerPool) {
+    if (!this.running || txs.length === 0) {
+      return
+    }
+    this.config.logger.debug(`TxPool: received new transactions number=${txs.length}`)
+    this.addToKnownByPeer(
+      txs.map((tx) => tx.hash()),
+      peer
+    )
+    this.cleanup()
+
+    const newTxHashes = []
+    for (const tx of txs) {
+      this.add(tx)
+      newTxHashes.push(tx.hash())
+    }
+    const peers = peerPool.peers
+    const numPeers = peers.length
+    const sendFull = Math.min(1, Math.floor(numPeers / this.NUM_PEERS_REBROADCAST_QUOTIENT))
+    this.sendTransactions(txs, peers.slice(0, sendFull))
+    await this.sendNewTxHashes(newTxHashes, peers.slice(sendFull))
+  }
+
+  /**
+   * Request new pooled txs from tx hashes announced and include them in the pool
+   * and re-broadcast to other peers
+   * @param txHashes new tx hashes announced
+   * @param peer Announcing peer
+   * @param peerPool Reference to the peer pool
+   */
+  async handleAnnouncedTxHashes(txHashes: Buffer[], peer: Peer, peerPool: PeerPool) {
     if (!this.running || txHashes.length === 0) {
       return
     }
     this.config.logger.debug(`TxPool: received new pooled hashes number=${txHashes.length}`)
-
+    this.addToKnownByPeer(txHashes, peer)
     this.cleanup()
 
     const reqHashes = []
@@ -230,21 +356,23 @@ export class TxPool {
     this.config.logger.debug(
       `TxPool: requesting txs number=${reqHashes.length} pending=${this.pending.length}`
     )
-    const txsResult = await (peer!.eth as EthProtocolMethods).getPooledTransactions({
+    const [, txs] = await (peer!.eth as EthProtocolMethods).getPooledTransactions({
       hashes: reqHashes.slice(0, this.TX_RETRIEVAL_LIMIT),
     })
 
-    this.config.logger.debug(`TxPool: received txs number=${txsResult[1].length}`)
+    this.config.logger.debug(`TxPool: received requested txs number=${txs.length}`)
 
     // Remove from pending list regardless if tx is in result
     for (const reqHashStr of reqHashesStr) {
       this.pending = this.pending.filter((hash) => hash !== reqHashStr)
     }
 
-    for (const txData of txsResult[1]) {
-      const tx = TransactionFactory.fromBlockBodyData(txData)
+    const newTxHashes = []
+    for (const tx of txs) {
       this.add(tx)
+      newTxHashes.push(tx.hash())
     }
+    await this.sendNewTxHashes(newTxHashes, peerPool.peers)
   }
 
   /**
@@ -267,17 +395,20 @@ export class TxPool {
    */
   cleanup() {
     // Remove txs older than POOLED_STORAGE_TIME_LIMIT from the pool
+    // as well as the list of txs being known by a peer
     let compDate = Date.now() - this.POOLED_STORAGE_TIME_LIMIT * 60
-    this.pool.forEach((poolObjects, address) => {
-      const newPoolObjects = poolObjects.filter((obj) => obj.added >= compDate)
-      if (newPoolObjects.length < poolObjects.length) {
-        if (newPoolObjects.length === 0) {
-          this.pool.delete(address)
-        } else {
-          this.pool.set(address, newPoolObjects)
+    for (const mapToClean of [this.pool, this.knownByPeer]) {
+      mapToClean.forEach((objects, key) => {
+        const updatedObjects = objects.filter((obj) => obj.added >= compDate)
+        if (updatedObjects.length < objects.length) {
+          if (updatedObjects.length === 0) {
+            mapToClean.delete(key)
+          } else {
+            mapToClean.set(key, updatedObjects)
+          }
         }
-      }
-    })
+      })
+    }
 
     // Cleanup handled txs
     compDate = Date.now() - this.HANDLED_CLEANUP_TIME_LIMIT * 60

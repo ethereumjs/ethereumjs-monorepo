@@ -194,7 +194,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
       result.accessList = state.generateAccessList!(removed, onlyStorage)
     }
     return result
-  } catch (e) {
+  } catch (e: any) {
     await state.revert()
     if (this.DEBUG) {
       debug(`tx checkpoint reverted`)

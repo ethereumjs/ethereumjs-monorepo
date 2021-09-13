@@ -289,7 +289,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         this.finished++
         this.config.events.emit(Event.SYNC_FETCHER_FETCHED, result as any)
         cb()
-      } catch (error) {
+      } catch (error: any) {
         cb(error)
       }
     }

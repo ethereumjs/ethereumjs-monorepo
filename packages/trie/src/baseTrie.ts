@@ -105,7 +105,7 @@ export class Trie {
     try {
       const value = await this._lookupNode(root)
       return value !== null
-    } catch (error) {
+    } catch (error: any) {
       if (error.message == 'Missing node in DB') {
         return false
       } else {
@@ -235,7 +235,7 @@ export class Trie {
       // walk trie and process nodes
       try {
         await this.walkTrie(this.root, onFound)
-      } catch (error) {
+      } catch (error: any) {
         if (error.message == 'Missing node in DB' && !throwIfMissing) {
           // pass
         } else {
@@ -704,13 +704,13 @@ export class Trie {
     let proofTrie = new Trie(null, rootHash)
     try {
       proofTrie = await Trie.fromProof(proof, proofTrie)
-    } catch (e) {
+    } catch (e: any) {
       throw new Error('Invalid proof nodes given')
     }
     try {
       const value = await proofTrie.get(key, true)
       return value
-    } catch (err) {
+    } catch (err: any) {
       if (err.message == 'Missing node in DB') {
         throw new Error('Invalid proof provided')
       } else {

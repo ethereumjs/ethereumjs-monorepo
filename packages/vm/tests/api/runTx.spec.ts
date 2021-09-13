@@ -186,7 +186,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
       await vm.runTx({ tx })
       // TODO uncomment:
       // t.fail('should throw error')
-    } catch (e) {
+    } catch (e: any) {
       t.ok(
         e.message.includes('(EIP-2718) not activated'),
         `should fail for ${TRANSACTION_TYPES[1].name}`
@@ -221,7 +221,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
       try {
         await vm.runTx({ tx })
         t.fail('should throw error')
-      } catch (e) {
+      } catch (e: any) {
         t.ok(e.message.includes('not signed'), `should fail for ${txType.name}`)
       }
     }
@@ -234,7 +234,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
       const tx = getTransaction(vm._common, txType.type, true)
       try {
         await vm.runTx({ tx })
-      } catch (e) {
+      } catch (e: any) {
         t.ok(e.message.toLowerCase().includes('enough funds'), `should fail for ${txType.name}`)
       }
     }
@@ -250,7 +250,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
     try {
       await vm.runTx({ tx })
       t.fail('should throw error')
-    } catch (e) {
+    } catch (e: any) {
       t.ok(e.message.toLowerCase().includes('max cost'), `should fail if max cost exceeds balance`)
     }
     // set sufficient balance
@@ -275,7 +275,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
     try {
       await vm.runTx({ tx: tx2 })
       t.fail('cannot reach this')
-    } catch (e) {
+    } catch (e: any) {
       t.pass('succesfully threw on insufficient balance for transaction')
     }
     t.end()
@@ -292,7 +292,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
     try {
       await vm.runTx({ tx })
       t.fail('cannot reach this')
-    } catch (e) {
+    } catch (e: any) {
       t.pass('succesfully threw on wrong nonces')
     }
     t.end()
@@ -308,7 +308,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
       try {
         await vm.runTx({ tx, block })
         t.fail('should fail')
-      } catch (e) {
+      } catch (e: any) {
         t.ok(
           e.message.includes("is less than the block's baseFeePerGas"),
           'should fail with appropriate error'

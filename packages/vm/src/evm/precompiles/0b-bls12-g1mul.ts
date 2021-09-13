@@ -46,7 +46,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   let mclPoint
   try {
     mclPoint = BLS12_381_ToG1Point(opts.data.slice(0, 128), mcl)
-  } catch (e) {
+  } catch (e: any) {
     return VmErrorResult(e, opts.gasLimit)
   }
 

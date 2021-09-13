@@ -316,7 +316,7 @@ export default class Blockchain implements BlockchainInterface {
     try {
       const genesisHash = await this.dbManager.numberToHash(new BN(0))
       dbGenesisBlock = await this.dbManager.getBlock(genesisHash)
-    } catch (error) {
+    } catch (error: any) {
       if (error.type !== 'NotFoundError') {
         throw error
       }
@@ -369,7 +369,7 @@ export default class Blockchain implements BlockchainInterface {
     try {
       const heads = await this.dbManager.getHeads()
       this._heads = heads
-    } catch (error) {
+    } catch (error: any) {
       if (error.type !== 'NotFoundError') {
         throw error
       }
@@ -380,7 +380,7 @@ export default class Blockchain implements BlockchainInterface {
     try {
       const hash = await this.dbManager.getHeadHeader()
       this._headHeaderHash = hash
-    } catch (error) {
+    } catch (error: any) {
       if (error.type !== 'NotFoundError') {
         throw error
       }
@@ -391,7 +391,7 @@ export default class Blockchain implements BlockchainInterface {
     try {
       const hash = await this.dbManager.getHeadBlock()
       this._headBlockHash = hash
-    } catch (error) {
+    } catch (error: any) {
       if (error.type !== 'NotFoundError') {
         throw error
       }
@@ -1076,7 +1076,7 @@ export default class Blockchain implements BlockchainInterface {
         let block
         try {
           block = await this._getBlock(blockId)
-        } catch (error) {
+        } catch (error: any) {
           if (error.type !== 'NotFoundError') {
             throw error
           }
@@ -1117,7 +1117,7 @@ export default class Blockchain implements BlockchainInterface {
         let number
         try {
           number = await this.dbManager.hashToNumber(hashes[mid])
-        } catch (error) {
+        } catch (error: any) {
           if (error.type !== 'NotFoundError') {
             throw error
           }
@@ -1225,7 +1225,7 @@ export default class Blockchain implements BlockchainInterface {
     try {
       const childHeader = await this._getCanonicalHeader(blockNumber.addn(1))
       await this._delChild(childHeader.hash(), childHeader.number, headHash, ops)
-    } catch (error) {
+    } catch (error: any) {
       if (error.type !== 'NotFoundError') {
         throw error
       }
@@ -1275,7 +1275,7 @@ export default class Blockchain implements BlockchainInterface {
           await onBlock(nextBlock, reorg)
           nextBlockNumber.iaddn(1)
           blocksRanCounter++
-        } catch (error) {
+        } catch (error: any) {
           if (error.type === 'NotFoundError') {
             break
           } else {
@@ -1481,7 +1481,7 @@ export default class Blockchain implements BlockchainInterface {
       currentNumber.isubn(1)
       try {
         header = await this._getHeader(header.parentHash, currentNumber)
-      } catch (error) {
+      } catch (error: any) {
         staleHeads = []
         if (error.type !== 'NotFoundError') {
           throw error
@@ -1557,7 +1557,7 @@ export default class Blockchain implements BlockchainInterface {
     try {
       const hash = await this.dbManager.numberToHash(number)
       return hash
-    } catch (error) {
+    } catch (error: any) {
       if (error.type !== 'NotFoundError') {
         throw error
       }
