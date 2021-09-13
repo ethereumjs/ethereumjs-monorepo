@@ -85,7 +85,6 @@ export class FullSynchronizer extends Synchronizer {
 
   /**
    * Returns true if peer can be used for syncing
-   * @return {boolean}
    */
   syncable(peer: Peer): boolean {
     return peer.eth !== undefined
@@ -115,7 +114,7 @@ export class FullSynchronizer extends Synchronizer {
 
   /**
    * Get latest header of peer
-   * @return {Promise} Resolves with header
+   * @return Resolves with header
    */
   async latest(peer: Peer) {
     const result = await peer.eth?.getBlockHeaders({
@@ -212,7 +211,7 @@ export class FullSynchronizer extends Synchronizer {
    * Add newly broadcasted blocks to peer record
    * @param blockHash hash of block received in NEW_BLOCK message
    * @param peer
-   * @returns {boolean} true if block has already been sent to peer
+   * @returns True if block has already been sent to peer
    */
   private addToKnownByPeer(blockHash: Buffer, peer: Peer): boolean {
     if (!this.newBlocksKnownByPeer.has(peer.id)) {
@@ -296,7 +295,7 @@ export class FullSynchronizer extends Synchronizer {
 
   /**
    * Chain was updated, new block hashes received
-   * @param {[blockhash, number][]} data new block hash announcements
+   * @param data new block hash announcements
    */
   handleNewBlockHashes(data: [Buffer, BN][]) {
     if (!data.length) {
@@ -378,7 +377,6 @@ export class FullSynchronizer extends Synchronizer {
 
   /**
    * Stop synchronization. Returns a promise that resolves once its stopped.
-   * @return {Promise}
    */
   async stop(): Promise<boolean> {
     this.execution.syncing = false
@@ -402,7 +400,6 @@ export class FullSynchronizer extends Synchronizer {
 
   /**
    * Close synchronizer.
-   * @return {Promise}
    */
   async close() {
     if (this.opened) {
