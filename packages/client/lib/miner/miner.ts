@@ -188,7 +188,10 @@ export class Miner {
       },
     })
 
-    const txs = this.synchronizer.txPool.txsByPriceAndNonce(baseFeePerGas)
+    const txs = await this.synchronizer.txPool.txsByPriceAndNonce(
+      vmCopy.stateManager,
+      baseFeePerGas
+    )
     this.config.logger.info(
       `Miner: Assembling block from ${txs.length} eligible txs ${
         baseFeePerGas ? `(baseFee: ${baseFeePerGas.toNumber()})` : ''

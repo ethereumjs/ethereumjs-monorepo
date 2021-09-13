@@ -5,12 +5,13 @@ import {
   Transaction,
   TypedTransaction,
 } from '@ethereumjs/tx'
-import { BN } from 'ethereumjs-util'
+import { Address, BN } from 'ethereumjs-util'
 import { Config } from '../config'
 import { Peer } from '../net/peer'
 import { EthProtocolMethods } from '../net/protocol'
-import type { Block } from '@ethereumjs/block'
 import { PeerPool } from '../net/peerpool'
+import type { Block } from '@ethereumjs/block'
+import type { StateManager } from '@ethereumjs/vm/dist/state'
 
 export interface TxPoolOptions {
   /* Config */
@@ -457,16 +458,24 @@ export class TxPool {
    * satisfied, the results are merged back together by price, always comparing only
    * the head transaction from each account. This is done via a heap to keep it fast.
    *
+   * @param stateManager Account nonces are queried to only include executable txs
    * @param baseFee Provide a baseFee to exclude txs with a lower gasPrice
    */
-  txsByPriceAndNonce(baseFee?: BN) {
+  async txsByPriceAndNonce(stateManager: StateManager, baseFee?: BN) {
     const txs: TypedTransaction[] = []
     // Separate the transactions by account and sort by nonce
     const byNonce = new Map<string, TypedTransaction[]>()
-    this.pool.forEach((poolObjects, address) => {
+    for (const [address, poolObjects] of this.pool) {
       let txsSortedByNonce = poolObjects
         .map((obj) => obj.tx)
         .sort((a, b) => a.nonce.sub(b.nonce).toNumber())
+      // Check if the account nonce matches the lowest known tx nonce
+      const { nonce } = await stateManager.getAccount(new Address(Buffer.from(address, 'hex')))
+      if (!txsSortedByNonce[0].nonce.eq(nonce)) {
+        // Account nonce does not match the lowest known tx nonce,
+        // therefore no txs from this address are currently exectuable
+        continue
+      }
       if (baseFee) {
         // If any tx has an insiffucient gasPrice,
         // remove all txs after that since they cannot be executed
@@ -476,7 +485,7 @@ export class TxPool {
         }
       }
       byNonce.set(address, txsSortedByNonce)
-    })
+    }
     // Initialize a price based heap with the head transactions
     const byPrice = new Heap<TypedTransaction>({
       comparBefore: (a: TypedTransaction, b: TypedTransaction) =>
