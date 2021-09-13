@@ -306,10 +306,10 @@ export class FullSynchronizer extends Synchronizer {
     }
     let min = new BN(-1)
     let newSyncHeight
-    const blockNumberList: string[] = []
+    const blockNumberList: BN[] = []
     data.forEach((value) => {
       const blockNumber = value[1]
-      blockNumberList.push(blockNumber.toString())
+      blockNumberList.push(blockNumber)
       if (min.eqn(-1) || blockNumber.lt(min)) {
         min = blockNumber
       }
@@ -319,7 +319,7 @@ export class FullSynchronizer extends Synchronizer {
         newSyncHeight = blockNumber
       }
     })
-    
+
     if (!newSyncHeight) {
       return
     }
@@ -328,40 +328,7 @@ export class FullSynchronizer extends Synchronizer {
     this.config.logger.info(
       `New sync target height number=${height.toString(10)} hash=${short(hash)}`
     )
-
-    const numBlocks = blockNumberList.length
-    // check if block numbers are sequential and
-    // we can therefore request the blocks in bulk
-    let bulkRequest = true
-    const seqCheckNum = min.clone()
-    for (let num = 1; num <= numBlocks; num++) {
-      if (!blockNumberList.includes(seqCheckNum.toString())) {
-        bulkRequest = false
-        break
-      }
-      seqCheckNum.iaddn(1)
-    }
-
-    if (bulkRequest) {
-      this.fetcher!.enqueueTask(
-        {
-          first: min,
-          count: numBlocks,
-        },
-        true
-      )
-    } else {
-      data.forEach((value) => {
-        const blockNumber = value[1]
-        this.fetcher!.enqueueTask(
-          {
-            first: blockNumber,
-            count: 1,
-          },
-          true
-        )
-      })
-    }
+    this.fetcher.enqueueByNumberList(blockNumberList, min)
   }
 
   /**
