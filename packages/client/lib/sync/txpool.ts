@@ -164,14 +164,14 @@ export class TxPool {
    * @param tx Transaction
    */
   add(tx: TypedTransaction) {
-    const sender: UnprefixedAddress = tx.getSenderAddress().toString()
+    const sender: UnprefixedAddress = tx.getSenderAddress().toString().slice(2)
     const inPool = this.pool.get(sender)
     let add: TxPoolObject[] = []
     if (inPool) {
       // Replace pooled txs with the same nonce
       add = inPool.filter((poolObj) => !poolObj.tx.nonce.eq(tx.nonce))
     }
-    const address: UnprefixedAddress = tx.getSenderAddress().toString()
+    const address: UnprefixedAddress = tx.getSenderAddress().toString().slice(2)
     const hash: UnprefixedHash = tx.hash().toString('hex')
     const added = Date.now()
     add.push({ tx, added, hash })
@@ -492,7 +492,7 @@ export class TxPool {
       const best = byPrice.remove()
       if (!best) break
       // Push in its place the next transaction from the same account
-      const address = best.getSenderAddress().toString()
+      const address = best.getSenderAddress().toString().slice(2)
       const accTxs = byNonce.get(address)!
       if (accTxs.length > 0) {
         byPrice.insert(accTxs[0])
