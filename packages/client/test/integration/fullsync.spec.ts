@@ -12,7 +12,6 @@ tape('[Integration:FullSync]', async (t) => {
       t.equals(localService.chain.blocks.height.toNumber(), 20, 'synced')
       await destroy(localServer, localService)
       await destroy(remoteServer, remoteService)
-      t.end()
     })
     await localService.synchronizer.start()
   })
@@ -28,7 +27,6 @@ tape('[Integration:FullSync]', async (t) => {
     await destroy(localServer, localService)
     await destroy(remoteServer, remoteService)
     t.pass('did not sync')
-    t.end()
   })
 
   t.test('should sync with best peer', async (t) => {
@@ -48,7 +46,6 @@ tape('[Integration:FullSync]', async (t) => {
         await destroy(localServer, localService)
         await destroy(remoteServer1, remoteService1)
         await destroy(remoteServer2, remoteService2)
-        t.end()
       }
     })
     await localService.synchronizer.start()

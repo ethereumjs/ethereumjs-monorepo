@@ -3,7 +3,7 @@ import { startRPC, createManager, createClient, params, baseRequest } from '../h
 
 const method = 'net_peerCount'
 
-tape(`${method}: call`, (t) => {
+tape(`${method}: call`, async (t) => {
   const manager = createManager(createClient({ opened: true }))
   const server = startRPC(manager.getMethods())
 
@@ -17,5 +17,5 @@ tape(`${method}: call`, (t) => {
       t.pass(msg)
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })

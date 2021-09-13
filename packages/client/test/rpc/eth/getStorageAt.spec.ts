@@ -82,7 +82,7 @@ tape(`${method}: call with valid arguments (retrieve pos0)`, async (t) => {
       throw new Error(msg)
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
 tape(`${method}: call with valid arguments (retrieve pos1)`, async (t) => {
@@ -106,7 +106,7 @@ tape(`${method}: call with valid arguments (retrieve pos1)`, async (t) => {
       throw new Error(msg)
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
 tape(`${method}: call with unsupported block argument`, async (t) => {
@@ -121,5 +121,5 @@ tape(`${method}: call with unsupported block argument`, async (t) => {
       throw new Error(msg)
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })

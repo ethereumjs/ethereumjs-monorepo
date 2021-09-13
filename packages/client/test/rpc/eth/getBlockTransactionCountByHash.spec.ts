@@ -5,7 +5,7 @@ import { checkError } from '../util'
 
 const method = 'eth_getBlockTransactionCountByHash'
 
-tape(`${method}: call with valid arguments`, (t) => {
+tape(`${method}: call with valid arguments`, async (t) => {
   const { server } = baseSetup()
 
   const req = params(method, ['0x910abca1728c53e8d6df870dd7af5352e974357dc58205dea1676be17ba6becf'])
@@ -17,10 +17,10 @@ tape(`${method}: call with valid arguments`, (t) => {
       t.pass(msg)
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with invalid block hash without 0x`, (t) => {
+tape(`${method}: call with invalid block hash without 0x`, async (t) => {
   const { server } = baseSetup()
 
   const req = params(method, ['WRONG BLOCK NUMBER'])
@@ -29,29 +29,29 @@ tape(`${method}: call with invalid block hash without 0x`, (t) => {
     INVALID_PARAMS,
     'invalid argument 0: hex string without 0x prefix'
   )
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with invalid hex string as block hash`, (t) => {
+tape(`${method}: call with invalid hex string as block hash`, async (t) => {
   const { server } = baseSetup()
 
   const req = params(method, ['0xWRONG BLOCK NUMBER', true])
   const expectRes = checkError(t, INVALID_PARAMS, 'invalid argument 0: invalid block hash')
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call without first parameter`, (t) => {
+tape(`${method}: call without first parameter`, async (t) => {
   const { server } = baseSetup()
 
   const req = params(method, [])
   const expectRes = checkError(t, INVALID_PARAMS, 'missing value for required argument 0')
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with invalid second parameter`, (t) => {
+tape(`${method}: call with invalid second parameter`, async (t) => {
   const { server } = baseSetup()
 
   const req = params(method, ['INVALID PARAMETER'])
   const expectRes = checkError(t, INVALID_PARAMS)
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
