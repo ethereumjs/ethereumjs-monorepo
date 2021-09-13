@@ -39,6 +39,8 @@ If you ever need to reset this change, you can do so with this command:
 npm config delete script-shell
 ```
 
+---
+
 Going down the road, there are two sets of commands: _project_ and _package-specific_ commands. You can find them at `./package.json` and `./packages/*/package.json`, respectively. Here's a breakdown:
 
 ### Project scripts — run from repository root
