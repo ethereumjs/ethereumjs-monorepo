@@ -211,22 +211,36 @@ export class FullSynchronizer extends Synchronizer {
   /**
    * Add newly broadcasted blocks to peer record
    * @param blockHash hash of block received in NEW_BLOCK message
-   * @param peerId id of peer being checked
+   * @param peer
    * @returns {boolean} true if block has already been sent to peer
    */
-  private addToKnownByPeer(blockHash: Buffer, peerId: string): boolean {
-    if (!this.newBlocksKnownByPeer.has(peerId)) {
-      this.newBlocksKnownByPeer.set(peerId, [{ hash: blockHash, added: Date.now() }])
+  private addToKnownByPeer(blockHash: Buffer, peer: Peer): boolean {
+    if (!this.newBlocksKnownByPeer.has(peer.id)) {
+      this.newBlocksKnownByPeer.set(peer.id, [{ hash: blockHash, added: Date.now() }])
       return false
     }
 
-    const knownBlocks = this.newBlocksKnownByPeer.get(peerId) ?? []
+    const knownBlocks = this.newBlocksKnownByPeer.get(peer.id) ?? []
     if (knownBlocks?.filter((knownBlock) => knownBlock.hash.equals(blockHash)).length > 0) {
       return true
     }
     knownBlocks.push({ hash: blockHash, added: Date.now() })
-    this.newBlocksKnownByPeer.set(peerId, knownBlocks)
+    this.newBlocksKnownByPeer.set(peer.id, knownBlocks)
     return false
+  }
+
+  /**
+   * Send (broadcast) a new block to connected peers.
+   * @param Block
+   * @param peers
+   */
+  async sendNewBlock(block: Block, peers: Peer[]) {
+    for (const peer of peers) {
+      const alreadyKnownByPeer = this.addToKnownByPeer(block.hash(), peer)
+      if (!alreadyKnownByPeer) {
+        peer.eth?.send('NewBlock', [block, this.chain.blocks.td])
+      }
+    }
   }
 
   /**
@@ -258,19 +272,7 @@ export class FullSynchronizer extends Synchronizer {
     // Send NEW_BLOCK to square root of total number of peers in pool
     // https://github.com/ethereum/devp2p/blob/master/caps/eth.md#block-propagation
     const numPeersToShareWith = Math.floor(Math.sqrt(this.pool.peers.length))
-
-    let x = 0
-    while (x < numPeersToShareWith) {
-      const currentPeer = this.pool.peers[x]
-      const alreadyKnownByPeer = this.addToKnownByPeer(block.hash(), currentPeer.id)
-      if (alreadyKnownByPeer) {
-        // If peer has already been sent this block, skip peer
-        x++
-        continue
-      }
-      currentPeer.eth?.send('NewBlock', [block, this.chain.blocks.td])
-      x++
-    }
+    await this.sendNewBlock(block, this.pool.peers.slice(0, numPeersToShareWith))
 
     if (this.chain.blocks.latest?.hash().equals(block.header.parentHash)) {
       // If new block is child of current chain tip, insert new block into chain
