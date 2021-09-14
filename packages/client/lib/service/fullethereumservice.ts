@@ -97,7 +97,7 @@ export class FullEthereumService extends EthereumService {
     } else if (message.name === 'Transactions') {
       await this.synchronizer.txPool.handleAnnouncedTxs(message.data, peer, this.pool)
     } else if (message.name === 'NewBlock') {
-      await this.synchronizer.handleNewBlock(message.data[0])
+      await this.synchronizer.handleNewBlock(message.data[0], peer)
     } else if (message.name === 'NewPooledTransactionHashes') {
       await this.synchronizer.txPool.handleAnnouncedTxHashes(message.data, peer, this.pool)
     } else if (message.name === 'GetPooledTransactions') {
