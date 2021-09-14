@@ -8,6 +8,12 @@ import { VMExecution } from './execution/vmexecution'
 import { TxPool } from './txpool'
 import { Event } from '../types'
 
+interface HandledObject {
+  hash: Buffer
+  added: number
+}
+
+type PeerId = string
 /**
  * Implements an ethereum full sync synchronizer
  * @memberof module:sync
@@ -17,9 +23,12 @@ export class FullSynchronizer extends Synchronizer {
 
   public txPool: TxPool
 
+  private newBlocksKnownByPeer: Map<PeerId, HandledObject[]>
+
   constructor(options: SynchronizerOptions) {
     super(options)
 
+    this.newBlocksKnownByPeer = new Map()
     this.execution = new VMExecution({
       config: options.config,
       stateDB: options.stateDB,
@@ -76,7 +85,6 @@ export class FullSynchronizer extends Synchronizer {
 
   /**
    * Returns true if peer can be used for syncing
-   * @return {boolean}
    */
   syncable(peer: Peer): boolean {
     return peer.eth !== undefined
@@ -106,7 +114,7 @@ export class FullSynchronizer extends Synchronizer {
 
   /**
    * Get latest header of peer
-   * @return {Promise} Resolves with header
+   * @return Resolves with header
    */
   async latest(peer: Peer) {
     const result = await peer.eth?.getBlockHeaders({
@@ -200,24 +208,131 @@ export class FullSynchronizer extends Synchronizer {
   }
 
   /**
-   *
-   * Processes `NEW_BLOCK` announcement from a peer and inserts into local chain if child of chain tip
-   * @param blockData `NEW_BLOCK` received from peer
+   * Add newly broadcasted blocks to peer record
+   * @param blockHash hash of block received in NEW_BLOCK message
+   * @param peer
+   * @returns True if block has already been sent to peer
    */
-  async handleNewBlock(block: Block) {
-    const chainTip = (await this.chain.getLatestHeader()).hash()
-    // If block parent is current chain tip, insert block into chain
-    if (chainTip.toString('hex') === block.header.parentHash.toString('hex')) {
-      await this.chain.putBlocks([block])
-    } else {
-      // If block is beyond current tip, handle as `NEW_BLOCK_HASHES`
-      this.handleNewBlockHashes([[block.header.hash(), block.header.number]])
+  private addToKnownByPeer(blockHash: Buffer, peer: Peer): boolean {
+    if (!this.newBlocksKnownByPeer.has(peer.id)) {
+      this.newBlocksKnownByPeer.set(peer.id, [{ hash: blockHash, added: Date.now() }])
+      return false
+    }
+
+    const knownBlocks = this.newBlocksKnownByPeer.get(peer.id) ?? []
+    if (knownBlocks?.filter((knownBlock) => knownBlock.hash.equals(blockHash))) {
+      return true
+    }
+    knownBlocks.push({ hash: blockHash, added: Date.now() })
+    this.newBlocksKnownByPeer.set(peer.id, knownBlocks)
+    return false
+  }
+
+  /**
+   * Send (broadcast) a new block to connected peers.
+   * @param Block
+   * @param peers
+   */
+  async sendNewBlock(block: Block, peers: Peer[]) {
+    for (const peer of peers) {
+      const alreadyKnownByPeer = this.addToKnownByPeer(block.hash(), peer)
+      if (!alreadyKnownByPeer) {
+        peer.eth?.send('NewBlock', [block, this.chain.blocks.td])
+      }
     }
   }
 
   /**
+   *
+   * Handles `NEW_BLOCK` announcement from a peer and inserts into local chain if child of chain tip
+   * @param blockData `NEW_BLOCK` received from peer
+   * @param peer `Peer` that sent `NEW_BLOCK` announcement
+   */
+  async handleNewBlock(block: Block, peer?: Peer) {
+    if (peer) {
+      // Don't send NEW_BLOCK announcement to peer that sent original new block message
+      this.addToKnownByPeer(block.hash(), peer)
+    }
+
+    try {
+      await block.header.validate(this.chain.blockchain)
+    } catch (err) {
+      this.config.logger.debug(
+        `Error processing new block from peer: ${short(Buffer.from(peer!.id))} hash: ${short(
+          block.hash()
+        )}`
+      )
+      this.config.logger.debug(err)
+      return
+    }
+
+    // Send NEW_BLOCK to square root of total number of peers in pool
+    // https://github.com/ethereum/devp2p/blob/master/caps/eth.md#block-propagation
+    const numPeersToShareWith = Math.floor(Math.sqrt(this.pool.peers.length))
+    await this.sendNewBlock(block, this.pool.peers.slice(0, numPeersToShareWith))
+
+    if (this.chain.blocks.latest?.hash().equals(block.header.parentHash)) {
+      // If new block is child of current chain tip, insert new block into chain
+      await this.chain.putBlocks([block])
+      // Check if new sync target height can be set
+      const blockNumber = block.header.number
+      if (!this.syncTargetHeight || blockNumber.gt(this.syncTargetHeight)) {
+        this.syncTargetHeight = blockNumber
+      }
+    } else {
+      // Call handleNewBlockHashes to retrieve all blocks between chain tip and new block
+      this.handleNewBlockHashes([[block.hash(), block.header.number]])
+    }
+
+    for (const peer of this.pool.peers.slice(numPeersToShareWith)) {
+      // Send `NEW_BLOCK_HASHES` message for received block to all other peers
+      const alreadyKnownByPeer = this.addToKnownByPeer(block.hash(), peer)
+      if (!alreadyKnownByPeer) {
+        peer.eth?.send('NewBlockHashes', [[block.hash(), block.header.number]])
+      }
+    }
+  }
+
+  /**
+   * Chain was updated, new block hashes received
+   * @param data new block hash announcements
+   */
+  handleNewBlockHashes(data: [Buffer, BN][]) {
+    if (!data.length) {
+      return
+    }
+    if (!this.fetcher) {
+      return
+    }
+    let min = new BN(-1)
+    let newSyncHeight
+    const blockNumberList: BN[] = []
+    data.forEach((value) => {
+      const blockNumber = value[1]
+      blockNumberList.push(blockNumber)
+      if (min.eqn(-1) || blockNumber.lt(min)) {
+        min = blockNumber
+      }
+
+      // Check if new sync target height can be set
+      if (!this.syncTargetHeight || blockNumber.gt(this.syncTargetHeight)) {
+        newSyncHeight = blockNumber
+      }
+    })
+
+    if (!newSyncHeight) {
+      return
+    }
+    this.syncTargetHeight = newSyncHeight
+    const [hash, height] = data[data.length - 1]
+    this.config.logger.info(
+      `New sync target height number=${height.toString(10)} hash=${short(hash)}`
+    )
+    this.fetcher.enqueueByNumberList(blockNumberList, min)
+  }
+
+  /**
    * Stop synchronization. Returns a promise that resolves once its stopped.
-   * @return {Promise}
    */
   async stop(): Promise<boolean> {
     this.execution.syncing = false
@@ -241,7 +356,6 @@ export class FullSynchronizer extends Synchronizer {
 
   /**
    * Close synchronizer.
-   * @return {Promise}
    */
   async close() {
     if (this.opened) {
