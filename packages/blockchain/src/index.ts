@@ -1576,16 +1576,16 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Helper to determine if a signer is in or out of turn.
+   * Helper to determine if a signer is in or out of turn for the next block.
    * @param signer The signer address
-   * @param blockNumber The block number - please note this will be checked based on the blockchain's current active signer list only.
    */
-  cliqueSignerInTurn(signer: Address, blockNumber: BN): boolean {
+  async cliqueSignerInTurn(signer: Address): Promise<boolean> {
     const signers = this.cliqueActiveSigners()
     const signerIndex = signers.findIndex((address) => address.equals(signer))
     if (signerIndex === -1) {
       throw new Error('Signer not found')
     }
-    return blockNumber.mod(new BN(signers.length)).eqn(signerIndex)
+    const { number } = await this.getLatestHeader()
+    return number.addn(1).mod(new BN(signers.length)).eqn(signerIndex)
   }
 }

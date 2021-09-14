@@ -53,7 +53,7 @@ export class Miner {
   /**
    * Sets the timeout for the next block assembly
    */
-  private queueNextAssembly(timeout?: number) {
+  private async queueNextAssembly(timeout?: number) {
     if (this._nextAssemblyTimeoutId) {
       clearTimeout(this._nextAssemblyTimeoutId)
     }
@@ -63,10 +63,9 @@ export class Miner {
       // delay signing by rand(SIGNER_COUNT * 500ms)
       const [signerAddress] = this.config.accounts[0]
       const { blockchain } = this.synchronizer.execution.vm
-      const signerCount = blockchain.cliqueActiveSigners().length
-      const nextBlock = this.latestBlockHeader().number.addn(1)
-      const inTurn = blockchain.cliqueSignerInTurn(signerAddress, nextBlock)
+      const inTurn = await blockchain.cliqueSignerInTurn(signerAddress)
       if (!inTurn) {
+        const signerCount = blockchain.cliqueActiveSigners().length
         timeout += Math.random() * signerCount * 500
       }
     }
@@ -85,7 +84,7 @@ export class Miner {
         timeout / 1000
       )}s`
     )
-    this.queueNextAssembly(timeout)
+    await this.queueNextAssembly(timeout)
   }
 
   /**
@@ -97,7 +96,7 @@ export class Miner {
     }
     this.running = true
     this.config.events.on(Event.CHAIN_UPDATED, this.chainUpdated.bind(this))
-    this.queueNextAssembly()
+    void this.queueNextAssembly() // void operator satisfies eslint rule for no-floating-promises
     this.config.logger.info(`Miner started. Assembling next block in ${this.period / 1000}s`)
     return true
   }
@@ -160,7 +159,7 @@ export class Miner {
     let difficulty
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority) {
       // Determine if signer is INTURN (2) or NOTURN (1)
-      const inTurn = vmCopy.blockchain.cliqueSignerInTurn(signerAddress, number)
+      const inTurn = await vmCopy.blockchain.cliqueSignerInTurn(signerAddress)
       difficulty = inTurn ? 2 : 1
     }
 

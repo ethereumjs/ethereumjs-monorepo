@@ -102,11 +102,12 @@ tape('[Miner]', async (t) => {
       pool,
       chain,
     })
-    synchronizer.execution.vm.blockchain.cliqueSignerInTurn = () => true // stub
+    synchronizer.execution.vm.blockchain.cliqueSignerInTurn = async () => true // stub
     let miner = new Miner({ config, synchronizer })
     t.notOk(miner.running)
     miner.start()
     t.ok(miner.running)
+    await wait(10)
     miner.stop()
     t.notOk(miner.running)
 
@@ -129,7 +130,7 @@ tape('[Miner]', async (t) => {
     const miner = new Miner({ config, synchronizer })
     const { txPool } = synchronizer
     const { vm } = synchronizer.execution
-    vm.blockchain.putBlock = async () => undefined // stub
+    vm.blockchain.putBlock = async () => {} // stub
     vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
     txPool.start()
     miner.start()
@@ -152,7 +153,7 @@ tape('[Miner]', async (t) => {
       txPool.stop()
       t.end()
     }
-    ;(miner as any).queueNextAssembly(0)
+    await (miner as any).queueNextAssembly(0)
   })
 
   t.test(
@@ -168,7 +169,7 @@ tape('[Miner]', async (t) => {
       const miner = new Miner({ config, synchronizer })
       const { txPool } = synchronizer
       const { vm } = synchronizer.execution
-      vm.blockchain.putBlock = async () => undefined // stub
+      vm.blockchain.putBlock = async () => {} // stub
       vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
       txPool.start()
       miner.start()
@@ -199,7 +200,7 @@ tape('[Miner]', async (t) => {
         txPool.stop()
         t.end()
       }
-      ;(miner as any).queueNextAssembly(0)
+      await (miner as any).queueNextAssembly(0)
     }
   )
 
@@ -225,10 +226,10 @@ tape('[Miner]', async (t) => {
       pool,
       chain,
     })
-    ;(synchronizer as any).handleNewBlock = () => {} // stub
     const miner = new Miner({ config, synchronizer })
     const { txPool } = synchronizer
     const { vm } = synchronizer.execution
+    vm.blockchain.putBlock = async () => {} // stub
     vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
     txPool.start()
     miner.start()
@@ -243,7 +244,6 @@ tape('[Miner]', async (t) => {
 
     // disable consensus to skip PoA block signer validation
     ;(vm.blockchain as any)._validateConsensus = false
-    vm.blockchain.putBlock = async () => {}
 
     synchronizer.handleNewBlock = async (block: Block) => {
       t.equal(block.transactions.length, 0, 'should not include tx')
@@ -251,7 +251,8 @@ tape('[Miner]', async (t) => {
       txPool.stop()
       t.end()
     }
-    ;(miner as any).queueNextAssembly(0)
+    await wait(500)
+    await (miner as any).queueNextAssembly(0)
   })
 
   t.test("assembleBlocks() -> should stop assembling a block after it's full", async (t) => {
@@ -277,7 +278,7 @@ tape('[Miner]', async (t) => {
     const miner = new Miner({ config, synchronizer })
     const { txPool } = synchronizer
     const { vm } = synchronizer.execution
-    vm.blockchain.putBlock = async () => undefined // stub
+    vm.blockchain.putBlock = async () => {} // stub
     vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
     txPool.start()
     miner.start()
@@ -310,7 +311,7 @@ tape('[Miner]', async (t) => {
       txPool.stop()
       t.end()
     }
-    ;(miner as any).queueNextAssembly(0)
+    await (miner as any).queueNextAssembly(0)
   })
 
   t.test('assembleBlocks() -> should stop assembling when a new block is received', async (t) => {
@@ -330,7 +331,7 @@ tape('[Miner]', async (t) => {
 
     const { txPool } = synchronizer
     const { vm } = synchronizer.execution
-    vm.blockchain.putBlock = async () => undefined // stub
+    vm.blockchain.putBlock = async () => {} // stub
     vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
     txPool.start()
     miner.start()
@@ -349,8 +350,8 @@ tape('[Miner]', async (t) => {
     chain.putBlocks = () => {
       t.fail('should have stopped assembling when a new block was received')
     }
-    ;(miner as any).queueNextAssembly(5)
-    await wait(10)
+    await (miner as any).queueNextAssembly(5)
+    await wait(5)
     t.ok((miner as any).assembling, 'miner should be assembling')
     config.events.emit(Event.CHAIN_UPDATED)
     await wait(10)
