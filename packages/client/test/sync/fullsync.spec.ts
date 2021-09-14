@@ -197,11 +197,8 @@ tape('[FullSynchronizer]', async (t) => {
         parentHash: chainTip.hash(),
       },
     })
-
     chain.getLatestBlock = td.func<any>()
     chain.putBlocks = td.func<any>()
-    td.when(chain.getLatestBlock()).thenResolve(chainTip)
-    //td.when(chain.putBlocks(td.matchers.anything())).thenResolve()
 
     // NewBlock message from Peer 3
     await sync.handleNewBlock(newBlock, peers[2] as any)
@@ -216,8 +213,6 @@ tape('[FullSynchronizer]', async (t) => {
     ;(sync as any).newBlocksKnownByPeer.delete(peers[0].id)
     await sync.handleNewBlock(newBlock, peers[2] as any)
     td.verify(chain.putBlocks([newBlock]))
-
-    t.end()
   })
 
   t.test('should reset td', (t) => {
