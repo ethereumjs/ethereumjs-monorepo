@@ -2,7 +2,7 @@ import { BN } from 'ethereumjs-util'
 import { BlockHeader } from '@ethereumjs/block'
 import { Peer } from '../net/peer/peer'
 import { Synchronizer, SynchronizerOptions } from './sync'
-import { HeaderFetcher } from './fetcher/headerfetcher'
+import { HeaderFetcher } from './fetcher'
 import { short } from '../util'
 import { Event } from '../types'
 
@@ -155,9 +155,7 @@ export class LightSynchronizer extends Synchronizer {
     }
     if (this.fetcher) {
       this.fetcher.destroy()
-      // TODO: Should this be deleted?
-      // @ts-ignore: error: The operand of a 'delete' operator must be optional
-      delete this.fetcher
+      this.fetcher = null
     }
     await super.stop()
     return true

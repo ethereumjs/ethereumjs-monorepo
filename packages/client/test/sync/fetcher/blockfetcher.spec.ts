@@ -3,10 +3,7 @@ import td from 'testdouble'
 import { BN } from 'ethereumjs-util'
 import { Config } from '../../../lib/config'
 import { Chain } from '../../../lib/blockchain/chain'
-
-async function wait(delay?: number) {
-  await new Promise((resolve) => setTimeout(resolve, delay ?? 10))
-}
+import { wait } from '../../integration/util'
 
 tape('[BlockFetcher]', async (t) => {
   class PeerPool {
@@ -15,7 +12,6 @@ tape('[BlockFetcher]', async (t) => {
   }
   PeerPool.prototype.idle = td.func<any>()
   PeerPool.prototype.ban = td.func<any>()
-  td.replace('../../lib/net/peerpool', { PeerPool })
 
   const { BlockFetcher } = await import('../../../lib/sync/fetcher/blockfetcher')
 

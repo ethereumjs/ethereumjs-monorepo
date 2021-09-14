@@ -356,7 +356,7 @@ export class TxPool {
     this.config.logger.debug(
       `TxPool: requesting txs number=${reqHashes.length} pending=${this.pending.length}`
     )
-    const [, txs] = await (peer!.eth as EthProtocolMethods).getPooledTransactions({
+    const [_, txs] = await (peer!.eth as EthProtocolMethods).getPooledTransactions({
       hashes: reqHashes.slice(0, this.TX_RETRIEVAL_LIMIT),
     })
 

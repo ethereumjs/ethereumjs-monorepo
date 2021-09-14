@@ -26,7 +26,6 @@ tape('[Synchronizer]', async (t) => {
   }
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
-  td.replace('../../lib/net/peerpool', { PeerPool })
 
   t.test('should sync', async (t) => {
     const config = new Config({ loglevel: 'error', transports: [] })
