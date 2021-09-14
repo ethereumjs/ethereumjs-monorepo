@@ -134,7 +134,8 @@ tape('[FullSynchronizer]', async (t) => {
     }
   })
 
-  t.test('should send NewBlock/NewBlockHash to right peers', async (t) => {
+  t.test('should send NewBlock/NewBlockHashes to right peers', async (t) => {
+    t.plan(4)
     const config = new Config({ loglevel: 'error', transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
@@ -148,28 +149,28 @@ tape('[FullSynchronizer]', async (t) => {
     let timesSentToPeer2 = 0
     const peers = [
       {
-        id: 'abc',
+        id: 'Peer 1',
         eth: {
           status: { td: new BN(1) },
-          send() {
-            t.pass('sent NewBlock to peer1')
+          send(name: string) {
+            t.equal(name, 'NewBlock', 'sent NewBlock to Peer 1')
           },
         },
         inbound: false,
       },
       {
-        id: 'efg',
+        id: 'Peer 2',
         eth: {
           status: { td: new BN(2) },
-          send() {
-            t.pass('sent NewBlockHashes to peer2')
+          send(name: string) {
+            t.equal(name, 'NewBlockHashes', 'sent NewBlockHashes to Peer 2')
             timesSentToPeer2++
           },
         },
         inbound: false,
       },
       {
-        id: 'hij',
+        id: 'Peer 3',
         eth: {
           status: { td: new BN(3) },
           send() {
@@ -195,13 +196,11 @@ tape('[FullSynchronizer]', async (t) => {
     td.when(chain.getLatestBlock()).thenResolve(chainTip)
     td.when(chain.putBlocks(td.matchers.anything())).thenResolve()
 
-    sync.handleNewBlockHashes = td.func<any>()
-    td.when(sync.handleNewBlockHashes(td.matchers.anything())).thenResolve()
-
+    // NewBlock message from Peer 3
     await sync.handleNewBlock(newBlock, peers[2] as any)
     await sync.handleNewBlock(newBlock)
     t.ok(timesSentToPeer2 === 1, 'sent NewBlockHashes to Peer 2 once')
-    t.pass('did not send NewBlock to peer3')
+    t.pass('did not send NewBlock to Peer 3')
     t.end()
   })
 
