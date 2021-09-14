@@ -135,7 +135,7 @@ tape('[FullSynchronizer]', async (t) => {
   })
 
   t.test('should send NewBlock/NewBlockHashes to right peers', async (t) => {
-    t.plan(4)
+    t.plan(7)
     const config = new Config({ loglevel: 'error', transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
@@ -145,6 +145,13 @@ tape('[FullSynchronizer]', async (t) => {
       pool,
       chain,
     })
+    ;(sync as any).fetcher = {
+      enqueueByNumberList: (blockNumberList: BN[], min: BN) => {
+        t.ok(blockNumberList[0].eqn(0), 'enqueueing the correct block in the Fetcher')
+        t.equal(blockNumberList.length, 1, 'correct number of blocks enqueued in Fetcher')
+        t.ok(min.eqn(0), 'correct start block number in Fetcher')
+      },
+    }
 
     let timesSentToPeer2 = 0
     const peers = [
@@ -184,7 +191,9 @@ tape('[FullSynchronizer]', async (t) => {
 
     Block.prototype.validateDifficulty = td.func<any>()
     td.when(Block.prototype.validateDifficulty(td.matchers.anything())).thenReturn(true)
-    const chainTip = Block.fromBlockData()
+    const chainTip = Block.fromBlockData({
+      header: {},
+    })
     const newBlock = Block.fromBlockData({
       header: {
         parentHash: chainTip.hash(),
