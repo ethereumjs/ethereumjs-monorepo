@@ -220,7 +220,7 @@ export class FullSynchronizer extends Synchronizer {
     }
 
     const knownBlocks = this.newBlocksKnownByPeer.get(peer.id) ?? []
-    if (knownBlocks?.filter((knownBlock) => knownBlock.hash.equals(blockHash)).length > 0) {
+    if (knownBlocks?.filter((knownBlock) => knownBlock.hash.equals(blockHash))) {
       return true
     }
     knownBlocks.push({ hash: blockHash, added: Date.now() })

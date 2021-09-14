@@ -135,7 +135,7 @@ tape('[FullSynchronizer]', async (t) => {
   })
 
   t.test('should send NewBlock/NewBlockHashes to right peers', async (t) => {
-    t.plan(8)
+    t.plan(9)
     const config = new Config({ loglevel: 'error', transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
@@ -203,14 +203,22 @@ tape('[FullSynchronizer]', async (t) => {
     chain.getLatestBlock = td.func<any>()
     chain.putBlocks = td.func<any>()
     td.when(chain.getLatestBlock()).thenResolve(chainTip)
-    td.when(chain.putBlocks(td.matchers.anything())).thenResolve()
+    //td.when(chain.putBlocks(td.matchers.anything())).thenResolve()
 
     // NewBlock message from Peer 3
     await sync.handleNewBlock(newBlock, peers[2] as any)
+
     t.ok(sync.syncTargetHeight?.eqn(0), 'sync target height should be set to 0')
     await sync.handleNewBlock(newBlock)
     t.ok(timesSentToPeer2 === 1, 'sent NewBlockHashes to Peer 2 once')
     t.pass('did not send NewBlock to Peer 3')
+    ;(sync as any).chain._blocks = {
+      latest: chainTip,
+    }
+    ;(sync as any).newBlocksKnownByPeer.delete(peers[0].id)
+    await sync.handleNewBlock(newBlock, peers[2] as any)
+    td.verify(chain.putBlocks([newBlock]))
+
     t.end()
   })
 
