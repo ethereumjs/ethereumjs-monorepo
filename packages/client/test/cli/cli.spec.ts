@@ -12,20 +12,13 @@ tape('[CLI]', (t) => {
     const child = spawn(process.execPath, [file, ...cliArgs])
 
     let hasEnded = false
-
-    const timeout = setTimeout(() => {
-      t.fail('timed out before finishing')
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      end()
-    }, 240000)
-
     const end = () => {
-      clearTimeout(timeout)
-      if (!hasEnded) {
-        hasEnded = true
-        child.kill('SIGINT')
-        t.end()
-      }
+      if (hasEnded) return
+      hasEnded = true
+      child.stdout.removeAllListeners()
+      child.stderr.removeAllListeners()
+      child.kill('SIGINT')
+      t.end()
     }
 
     child.stdout.on('data', (data) => {
