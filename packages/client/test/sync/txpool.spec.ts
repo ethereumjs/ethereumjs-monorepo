@@ -1,4 +1,4 @@
-import tape from 'tape-catch'
+import tape from 'tape'
 import Common from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'

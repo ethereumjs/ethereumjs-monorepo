@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import tape from 'tape-catch'
+import tape from 'tape'
 import td from 'testdouble'
 import multiaddr from 'multiaddr'
 import { Config } from '../../../lib/config'

@@ -1,4 +1,4 @@
-import tape from 'tape-catch'
+import tape from 'tape'
 import td from 'testdouble'
 import { baseRequest, createManager, createClient, params, startRPC } from '../helpers'
 import { BN } from 'ethereumjs-util'

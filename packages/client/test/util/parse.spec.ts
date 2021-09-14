@@ -1,4 +1,4 @@
-import tape from 'tape-catch'
+import tape from 'tape'
 import multiaddr from 'multiaddr'
 import {
   parseMultiaddrs,
