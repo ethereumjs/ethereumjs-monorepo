@@ -44,6 +44,38 @@ tape('[BlockFetcher]', async (t) => {
     t.end()
   })
 
+  t.test('enqueueByNumberList()', async (t) => {
+    const config = new Config({ maxPerRequest: 5, loglevel: 'error', transports: [] })
+    const pool = new PeerPool() as any
+    const chain = new Chain({ config })
+    const fetcher = new BlockFetcher({
+      config,
+      pool,
+      chain,
+      first: new BN(1),
+      count: new BN(10),
+      timeout: 5,
+    })
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    fetcher.fetch()
+    t.equals((fetcher as any).in.size(), 2, 'added 2 tasks')
+    await wait()
+
+    let blockNumberList = [new BN(11), new BN(12)]
+    let min = new BN(11)
+    fetcher.enqueueByNumberList(blockNumberList, min)
+    t.equals((fetcher as any).in.size(), 3, ' 1 new task for two subsequent block numbers')
+
+    blockNumberList = [new BN(13), new BN(15)]
+    min = new BN(13)
+    fetcher.enqueueByNumberList(blockNumberList, min)
+    t.equals((fetcher as any).in.size(), 5, ' 2 new tasks for two non-subsequent block numbers')
+
+    fetcher.destroy()
+    await wait()
+    t.end()
+  })
+
   t.test('should process', (t) => {
     const config = new Config({ loglevel: 'error', transports: [] })
     const pool = new PeerPool() as any

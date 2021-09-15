@@ -101,7 +101,7 @@ tape('[FullEthereumService]', async (t) => {
     const config = new Config({ transports: [], loglevel: 'error' })
     const service = new FullEthereumService({ config })
     await service.handle({ name: 'NewBlock', data: [{}, new BN(1)] }, 'eth', undefined as any)
-    td.verify(service.synchronizer.handleNewBlock({} as any))
+    td.verify(service.synchronizer.handleNewBlock({} as any, undefined))
     t.end()
   })
 

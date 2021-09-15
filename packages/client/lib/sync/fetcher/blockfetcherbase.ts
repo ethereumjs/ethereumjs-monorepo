@@ -60,4 +60,47 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     }
     return tasks
   }
+
+  /**
+   * Create new tasks based on the list with
+   * block/header numbers provided.
+   *
+   * If numbers are sequential request is created
+   * as bulk request.
+   *
+   * @param numberList Block/header numbers
+   * @param min Start block number
+   */
+  enqueueByNumberList(numberList: BN[], min: BN) {
+    const numBlocks = numberList.length
+    let bulkRequest = true
+    const seqCheckNum = min.clone()
+    for (let num = 1; num <= numBlocks; num++) {
+      if (!numberList.map((num) => num.toString()).includes(seqCheckNum.toString())) {
+        bulkRequest = false
+        break
+      }
+      seqCheckNum.iaddn(1)
+    }
+
+    if (bulkRequest) {
+      this.enqueueTask(
+        {
+          first: min,
+          count: numBlocks,
+        },
+        true
+      )
+    } else {
+      numberList.forEach((first) => {
+        this.enqueueTask(
+          {
+            first,
+            count: 1,
+          },
+          true
+        )
+      })
+    }
+  }
 }
