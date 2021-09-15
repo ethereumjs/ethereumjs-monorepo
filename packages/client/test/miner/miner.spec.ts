@@ -1,4 +1,5 @@
-import tape from 'tape-catch'
+import tape from 'tape'
+import td from 'testdouble'
 import Common, { Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
@@ -7,8 +8,12 @@ import { Config } from '../../lib/config'
 import { FullSynchronizer } from '../../lib/sync/fullsync'
 import { Miner } from '../../lib/miner'
 import { Event } from '../../lib/types'
+import { wait } from '../integration/util'
 
 tape('[Miner]', async (t) => {
+  BlockHeader.prototype.validate = td.func<any>()
+  td.replace('@ethereumjs/block', { BlockHeader })
+
   class PeerPool {
     open() {}
     close() {}
@@ -79,8 +84,6 @@ tape('[Miner]', async (t) => {
   const txA03 = createTx(A, B, 2, 1, 3000000000) // A -> B, nonce: 2, value: 1, 3x gasPrice
   const txB01 = createTx(B, A, 0, 1, 2500000000) // B -> A, nonce: 0, value: 1, 2.5x gasPrice
 
-  const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-
   t.test('should initialize correctly', (t) => {
     const pool = new PeerPool() as any
     const chain = new Chain() as any
@@ -95,6 +98,7 @@ tape('[Miner]', async (t) => {
   })
 
   t.test('should start/stop', async (t) => {
+    t.plan(4)
     const pool = new PeerPool() as any
     const chain = new Chain() as any
     const synchronizer = new FullSynchronizer({
@@ -116,10 +120,10 @@ tape('[Miner]', async (t) => {
     miner = new Miner({ config: configMineFalse, synchronizer })
     miner.start()
     t.notOk(miner.running, 'miner should not start when config.mine=false')
-    t.end()
   })
 
   t.test('assembleBlocks() -> with a single tx', async (t) => {
+    t.plan(1)
     const pool = new PeerPool() as any
     const chain = new Chain() as any
     const synchronizer = new FullSynchronizer({
@@ -151,14 +155,15 @@ tape('[Miner]', async (t) => {
       t.equal(blocks[0].transactions.length, 1, 'new block should include tx')
       miner.stop()
       txPool.stop()
-      t.end()
     }
     await (miner as any).queueNextAssembly(0)
+    await wait(500)
   })
 
   t.test(
     'assembleBlocks() -> with multiple txs, properly ordered by gasPrice and nonce',
     async (t) => {
+      t.plan(4)
       const pool = new PeerPool() as any
       const chain = new Chain() as any
       const synchronizer = new FullSynchronizer({
@@ -198,13 +203,14 @@ tape('[Miner]', async (t) => {
         }
         miner.stop()
         txPool.stop()
-        t.end()
       }
       await (miner as any).queueNextAssembly(0)
+      await wait(500)
     }
   )
 
   t.test('assembleBlocks() -> should not include tx under the baseFee', async (t) => {
+    t.plan(1)
     const customChainParams = { hardforks: [{ name: 'london', block: 0 }] }
     const common = Common.forCustomChain(CommonChain.Rinkeby, customChainParams, Hardfork.London)
     const config = new Config({ transports: [], loglevel: 'error', accounts, mine: true, common })
@@ -249,13 +255,14 @@ tape('[Miner]', async (t) => {
       t.equal(block.transactions.length, 0, 'should not include tx')
       miner.stop()
       txPool.stop()
-      t.end()
     }
     await wait(500)
     await (miner as any).queueNextAssembly(0)
+    await wait(500)
   })
 
   t.test("assembleBlocks() -> should stop assembling a block after it's full", async (t) => {
+    t.plan(1)
     const pool = new PeerPool() as any
     const chain = new Chain() as any
     const gasLimit = 100000
@@ -309,12 +316,13 @@ tape('[Miner]', async (t) => {
       t.equal(blocks[0].transactions.length, 1, 'only one tx should be included')
       miner.stop()
       txPool.stop()
-      t.end()
     }
     await (miner as any).queueNextAssembly(0)
+    await wait(500)
   })
 
   t.test('assembleBlocks() -> should stop assembling when a new block is received', async (t) => {
+    t.plan(2)
     const pool = new PeerPool() as any
     const chain = new Chain() as any
     const config = new Config({ transports: [], loglevel: 'error', accounts, mine: true, common })
@@ -358,6 +366,10 @@ tape('[Miner]', async (t) => {
     t.notOk((miner as any).assembling, 'miner should have stopped assembling')
     miner.stop()
     txPool.stop()
+  })
+
+  t.test('should reset td', (t) => {
+    td.reset()
     t.end()
   })
 })

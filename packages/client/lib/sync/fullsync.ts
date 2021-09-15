@@ -261,9 +261,9 @@ export class FullSynchronizer extends Synchronizer {
       await block.header.validate(this.chain.blockchain)
     } catch (err) {
       this.config.logger.debug(
-        `Error processing new block from peer: ${short(Buffer.from(peer!.id))} hash: ${short(
-          block.hash()
-        )}`
+        `Error processing new block from peer: ${
+          peer ? short(Buffer.from(peer.id)) : 'no peer'
+        } hash: ${short(block.hash())}`
       )
       this.config.logger.debug(err)
       return
