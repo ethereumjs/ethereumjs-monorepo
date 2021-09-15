@@ -158,10 +158,9 @@ test('DPT: simulate bootstrap', async (t) => {
   await delay(1000)
 
   util.destroyDPTs(dpts)
-
 })
 
-test('DPT: simulate acquiring peers via DNS', async (t) => {
+test('DPT: simulate acquiring peers via DNS', async () => {
   const dpts = util.getTestDPTsWithDns(1)
 
   const mockDns = {
