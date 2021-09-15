@@ -14,6 +14,65 @@ import type { LevelUp } from 'levelup'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 const xor = require('buffer-xor')
 
+type Solution = {
+  mixHash: Buffer
+  nonce: Buffer
+}
+
+class Miner {
+  public blockHeader: BlockHeader
+  public ethash: Ethash
+
+  public currentNonce: BN
+  public solution?: Solution
+
+  private headerHash?: Buffer
+  private stopMining: boolean
+
+  constructor(blockHeader: BlockHeader, ethash: Ethash) {
+    this.blockHeader = blockHeader
+    this.currentNonce = new BN(0)
+    this.ethash = ethash
+    this.stopMining = false
+  }
+
+  stop() {
+    this.stopMining = true
+  }
+
+  async iterate(iterations: number = 0): Promise<undefined | Solution> {
+    if (this.solution) {
+      return this.solution
+    }
+    if (!this.headerHash) {
+      this.headerHash = this.ethash.headerHash(this.blockHeader.raw())
+    }
+    const headerHash = this.headerHash
+    const { number, difficulty } = this.blockHeader
+
+    await this.ethash.loadEpoc(number.toNumber())
+
+    while (iterations != 0 || !this.stopMining) {
+      const nonce = this.currentNonce.toBuffer(undefined, 8)
+
+      const a = this.ethash.run(headerHash, nonce)
+      const result = new BN(a.hash)
+
+      if (TWO_POW256.div(difficulty).cmp(result) === 1) {
+        const solution: Solution = {
+          mixHash: <Buffer>a.mix,
+          nonce,
+        }
+        this.solution = solution
+        return solution
+      }
+
+      this.currentNonce.iaddn(1)
+      iterations--
+    }
+  }
+}
+
 export default class Ethash {
   dbOpts: Object
   cacheDB?: LevelUp
@@ -186,6 +245,10 @@ export default class Ethash {
       this.fullSize = data.fullSize
       this.seed = Buffer.from(data.seed)
     }
+  }
+
+  getMiner(blockHeader: BlockHeader): Miner {
+    return new Miner(blockHeader, this)
   }
 
   async _verifyPOW(header: BlockHeader) {
