@@ -4,7 +4,7 @@ import { startRPC, createManager, createClient, params, baseRequest } from '../h
 
 const method = 'eth_blockNumber'
 
-tape(`${method}: call with valid arguments`, (t) => {
+tape(`${method}: call with valid arguments`, async (t) => {
   const mockBlockNumber = 123
   const mockBlockChain = {
     getLatestHeader: async function (): Promise<any> {
@@ -20,5 +20,5 @@ tape(`${method}: call with valid arguments`, (t) => {
   const expectRes = (res: any) => {
     t.equal(res.body.result, intToHex(mockBlockNumber))
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })

@@ -1,4 +1,4 @@
-import tape from 'tape-catch'
+import tape from 'tape'
 import VM from '@ethereumjs/vm'
 import Blockchain from '@ethereumjs/blockchain'
 import { Config } from '../../../lib/config'

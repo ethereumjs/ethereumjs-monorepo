@@ -3,7 +3,7 @@ import { startRPC, createManager, createClient, params, baseRequest } from '../h
 
 const method = 'admin_nodeInfo'
 
-tape(method, (t) => {
+tape(method, async (t) => {
   const manager = createManager(createClient({ opened: true }))
   const server = startRPC(manager.getMethods())
 
@@ -17,5 +17,5 @@ tape(method, (t) => {
       throw new Error('no return value')
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })

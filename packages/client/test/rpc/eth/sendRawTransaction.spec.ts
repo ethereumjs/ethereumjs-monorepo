@@ -6,7 +6,7 @@ import { baseSetup, params, baseRequest, createClient, createManager, startRPC }
 
 const method = 'eth_sendRawTransaction'
 
-tape(`${method}: call with valid arguments`, (t) => {
+tape(`${method}: call with valid arguments`, async (t) => {
   const { server } = baseSetup()
 
   // Mainnet EIP-1559 tx
@@ -21,10 +21,10 @@ tape(`${method}: call with valid arguments`, (t) => {
       msg
     )
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with sync target height not set yet`, (t) => {
+tape(`${method}: call with sync target height not set yet`, async (t) => {
   const { server, client } = baseSetup()
   const service = client.services.find((s) => s.name === 'eth')
   service!.synchronizer.syncTargetHeight = undefined
@@ -44,10 +44,10 @@ tape(`${method}: call with sync target height not set yet`, (t) => {
       throw new Error(msg)
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with invalid tx (wrong chain ID)`, (t) => {
+tape(`${method}: call with invalid tx (wrong chain ID)`, async (t) => {
   const { server } = baseSetup()
 
   // Baikal EIP-1559 tx
@@ -65,10 +65,10 @@ tape(`${method}: call with invalid tx (wrong chain ID)`, (t) => {
       throw new Error(msg)
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with unsigned tx`, (t) => {
+tape(`${method}: call with unsigned tx`, async (t) => {
   const { server } = baseSetup()
 
   // Mainnet EIP-1559 tx
@@ -92,10 +92,10 @@ tape(`${method}: call with unsigned tx`, (t) => {
       throw new Error(msg)
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with no peers`, (t) => {
+tape(`${method}: call with no peers`, async (t) => {
   const client = createClient({ noPeers: true })
   const manager = createManager(client)
   const server = startRPC(manager.getMethods())
@@ -112,5 +112,5 @@ tape(`${method}: call with no peers`, (t) => {
       throw new Error(msg)
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })

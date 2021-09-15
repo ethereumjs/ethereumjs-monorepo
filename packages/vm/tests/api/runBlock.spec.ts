@@ -21,7 +21,7 @@ const testData = require('./testdata/blockchain.json')
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 
 tape('runBlock() -> successful API parameter usage', async (t) => {
-  async function simpleRun(vm: VM) {
+  async function simpleRun(vm: VM, st: tape.Test) {
     const genesisRlp = testData.genesisRLP
     const genesis = Block.fromRLPSerializedBlock(genesisRlp)
 
@@ -31,7 +31,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     //@ts-ignore
     await setupPreConditions(vm.stateManager._trie, testData)
 
-    t.ok(
+    st.ok(
       //@ts-ignore
       vm.stateManager._trie.root.equals(genesis.header.stateRoot),
       'genesis state root should match calculated state root'
@@ -44,14 +44,14 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       skipBlockValidation: true,
     })
 
-    t.equal(
+    st.equal(
       res.results[0].gasUsed.toString('hex'),
       '5208',
       'actual gas used should equal blockHeader gasUsed'
     )
   }
 
-  async function uncleRun(vm: VM) {
+  async function uncleRun(vm: VM, st: tape.Test) {
     const testData = require('./testdata/uncleData.json')
 
     //@ts-ignore
@@ -90,45 +90,41 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       )
     ).balance.toString('hex')
 
-    t.equals(
+    st.equals(
       `0x${uncleReward}`,
       testData.postState['0xb94f5374fce5ed0000000097c15331677e6ebf0b'].balance,
       'calculated balance should equal postState balance'
     )
   }
 
-  t.test('PoW block, unmodified options', async (t) => {
+  t.test('PoW block, unmodified options', async (st) => {
     const vm = setupVM()
-    await simpleRun(vm)
-    t.end()
+    await simpleRun(vm, st)
   })
 
-  t.test('Uncle blocks, compute uncle rewards', async (t) => {
+  t.test('Uncle blocks, compute uncle rewards', async (st) => {
     const vm = setupVM()
-    await uncleRun(vm)
-    t.end()
+    await uncleRun(vm, st)
   })
 
   t.test(
     'PoW block, Common custom chain (Common.forCustomChain() static constructor)',
-    async (t) => {
+    async (st) => {
       const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
       const common = Common.forCustomChain('mainnet', customChainParams, 'berlin')
       const vm = setupVM({ common })
-      await simpleRun(vm)
-      t.end()
+      await simpleRun(vm, st)
     }
   )
 
-  t.test('PoW block, Common custom chain (Common customChains constructor option)', async (t) => {
+  t.test('PoW block, Common custom chain (Common customChains constructor option)', async (st) => {
     const customChains = [testnet]
     const common = new Common({ chain: 'testnet', hardfork: Hardfork.Berlin, customChains })
     const vm = setupVM({ common })
-    await simpleRun(vm)
-    t.end()
+    await simpleRun(vm, st)
   })
 
-  t.test('hardforkByBlockNumber option', async (t) => {
+  t.test('hardforkByBlockNumber option', async (st) => {
     const common1 = new Common({
       chain: Chain.Mainnet,
       hardfork: Hardfork.MuirGlacier,
@@ -178,22 +174,21 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       skipBlockValidation: true,
       generate: true,
     })
-    t.ok(
+    st.ok(
       txResultChainstart.results[0].gasUsed.toNumber() == 21000 + 68 * 3 + 3 + 50,
       'tx charged right gas on chainstart hard fork'
     )
-    t.ok(
+    st.ok(
       txResultMuirGlacier.results[0].gasUsed.toNumber() == 21000 + 32000 + 16 * 3 + 3 + 800,
       'tx charged right gas on muir glacier hard fork'
     )
-    t.end()
   })
 })
 
 tape('runBlock() -> API parameter usage/data errors', async (t) => {
   const vm = new VM({ common })
 
-  t.test('should fail when runTx fails', async (st) => {
+  t.test('should fail when runTx fails', async (t) => {
     const blockRlp = testData.blocks[0].rlp
     const block = Block.fromRLPSerializedBlock(blockRlp)
 
@@ -203,8 +198,6 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
       .runBlock({ block, skipBlockValidation: true })
       .then(() => t.fail('should have returned error'))
       .catch((e) => t.ok(e.message.includes("sender doesn't have enough funds to send tx")))
-
-    st.end()
   })
 
   t.test('should fail when block gas limit higher than 2^63-1', async (t) => {
@@ -220,8 +213,6 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
       .runBlock({ block })
       .then(() => t.fail('should have returned error'))
       .catch((e) => t.ok(e.message.includes('Invalid block')))
-
-    t.end()
   })
 
   t.test('should fail when block validation fails', async (t) => {
@@ -237,8 +228,6 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
       .runBlock({ block })
       .then(() => t.fail('should have returned error'))
       .catch((e) => t.ok(e.message.includes('test')))
-
-    t.end()
   })
 
   t.test('should fail when tx gas limit higher than block gas limit', async (t) => {
@@ -260,8 +249,6 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
       .runBlock({ block, skipBlockValidation: true })
       .then(() => t.fail('should have returned error'))
       .catch((e) => t.ok(e.message.includes('higher gas limit')))
-
-    t.end()
   })
 })
 
@@ -317,8 +304,6 @@ tape('runBlock() -> runtime behavior', async (t) => {
     const msg =
       'should transfer balance from DAO children to the Refund DAO account in the DAO fork'
     t.ok(DAORefundAccount.balance.eq(new BN(Buffer.from('7777', 'hex'))), msg)
-
-    t.end()
   })
 
   t.test('should allocate to correct clique beneficiary', async (t) => {
@@ -365,7 +350,6 @@ tape('runBlock() -> runtime behavior', async (t) => {
     await vm.runBlock({ block, skipNonce: true, skipBlockValidation: true, generate: true })
     const account = await vm.stateManager.getAccount(signer.address)
     t.ok(account.balance.eqn(42000), 'beneficiary balance should equal the cost of the txs')
-    t.end()
   })
 })
 
@@ -411,8 +395,6 @@ tape('should correctly reflect generated fields', async (t) => {
   t.ok(results.block.header.receiptTrie.equals(KECCAK256_RLP))
   t.ok(results.block.header.transactionsTrie.equals(KECCAK256_RLP))
   t.ok(results.block.header.gasUsed.eqn(0))
-
-  t.end()
 })
 
 async function runWithHf(hardfork: string) {
@@ -448,13 +430,11 @@ tape('runBlock() -> API return values', async (t) => {
       Buffer.from('4477e2cfaf9fd2eed4f74426798b55d140f6a9612da33413c4745f57d7a97fcc', 'hex'),
       'should return correct pre-Byzantium receipt format'
     )
-
-    t.end()
   })
 })
 
 tape('runBlock() -> tx types', async (t) => {
-  async function simpleRun(vm: VM, transactions: TypedTransaction[]) {
+  async function simpleRun(vm: VM, transactions: TypedTransaction[], st: tape.Test) {
     const common = vm._common
 
     const blockRlp = testData.blocks[0].rlp
@@ -477,7 +457,7 @@ tape('runBlock() -> tx types', async (t) => {
       generate: true,
     })
 
-    t.ok(
+    st.ok(
       res.gasUsed.eq(
         res.receipts
           .map((r) => r.gasUsed)
@@ -487,7 +467,7 @@ tape('runBlock() -> tx types', async (t) => {
     )
   }
 
-  t.test('legacy tx', async (t) => {
+  t.test('legacy tx', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
     const vm = setupVM({ common })
 
@@ -500,11 +480,10 @@ tape('runBlock() -> tx types', async (t) => {
       return address
     }
 
-    await simpleRun(vm, [tx])
-    t.end()
+    await simpleRun(vm, [tx], st)
   })
 
-  t.test('access list tx', async (t) => {
+  t.test('access list tx', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
     const vm = setupVM({ common })
 
@@ -520,11 +499,10 @@ tape('runBlock() -> tx types', async (t) => {
       return address
     }
 
-    await simpleRun(vm, [tx])
-    t.end()
+    await simpleRun(vm, [tx], st)
   })
 
-  t.test('fee market tx', async (t) => {
+  t.test('fee market tx', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const vm = setupVM({ common })
 
@@ -540,7 +518,6 @@ tape('runBlock() -> tx types', async (t) => {
       return address
     }
 
-    await simpleRun(vm, [tx])
-    t.end()
+    await simpleRun(vm, [tx], st)
   })
 })

@@ -1,11 +1,12 @@
 import tape from 'tape'
+import Blockchain from '@ethereumjs/blockchain'
 import { Config } from '../../lib/config'
+import { Event } from '../../lib/types'
 import { EthProtocol } from '../../lib/net/protocol'
 import { PeerPool } from '../../lib/net/peerpool'
 import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
-import Blockchain from '@ethereumjs/blockchain'
-import { Event } from '../../lib/types'
+import { wait } from './util'
 
 tape('[Integration:PeerPool]', async (t) => {
   async function setup(protocols: EthProtocol[] = []): Promise<[MockServer, PeerPool]> {
@@ -28,7 +29,6 @@ tape('[Integration:PeerPool]', async (t) => {
     const [server, pool] = await setup()
     t.ok((pool as any).opened, 'opened')
     await destroy(server, pool)
-    t.end()
   })
 
   t.test('should add/remove peer', async (t) => {
@@ -40,12 +40,10 @@ tape('[Integration:PeerPool]', async (t) => {
       t.equal(peer.id, 'peer0', 'removed peer')
     )
     pool.add(await server.accept('peer0'))
-    setTimeout(async () => {
-      server.disconnect('peer0')
-      await destroy(server, pool)
-      t.pass('destroyed')
-      t.end()
-    }, 100)
+    await wait(100)
+    server.disconnect('peer0')
+    await destroy(server, pool)
+    t.pass('destroyed')
   })
 
   t.test('should ban peer', async (t) => {
@@ -57,12 +55,10 @@ tape('[Integration:PeerPool]', async (t) => {
       t.equal(peer.id, 'peer0', 'banned peer')
     )
     pool.add(await server.accept('peer0'))
-    setTimeout(async () => {
-      pool.ban(pool.peers[0])
-      await destroy(server, pool)
-      t.pass('destroyed')
-      t.end()
-    }, 100)
+    await wait(100)
+    pool.ban(pool.peers[0])
+    await destroy(server, pool)
+    t.pass('destroyed')
   })
 
   t.test('should handle peer messages', async (t) => {
@@ -85,11 +81,9 @@ tape('[Integration:PeerPool]', async (t) => {
       t.deepEqual([msg, proto, peer.id], ['msg0', 'proto0', 'peer0'], 'got message')
     })
     pool.add(await server.accept('peer0'))
-    setTimeout(async () => {
-      config.events.emit(Event.PROTOCOL_MESSAGE, 'msg0', 'proto0', pool.peers[0])
-      await destroy(server, pool)
-      t.pass('destroyed')
-      t.end()
-    }, 100)
+    await wait(100)
+    config.events.emit(Event.PROTOCOL_MESSAGE, 'msg0', 'proto0', pool.peers[0])
+    await destroy(server, pool)
+    t.pass('destroyed')
   })
 })

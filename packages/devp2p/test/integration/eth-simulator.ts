@@ -21,7 +21,7 @@ const status = {
 // FIXME: Handle unhandled promises directly
 process.on('unhandledRejection', () => {})
 
-test('ETH: send status message (successful)', async (t) => {
+test('ETH: send status message (successful)', (t) => {
   const opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
@@ -33,7 +33,7 @@ test('ETH: send status message (successful)', async (t) => {
   util.twoPeerMsgExchange(t, opts, capabilities)
 })
 
-test('ETH: send status message (NetworkId mismatch)', async (t) => {
+test('ETH: send status message (NetworkId mismatch)', (t) => {
   const opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
@@ -49,7 +49,7 @@ test('ETH: send status message (NetworkId mismatch)', async (t) => {
   util.twoPeerMsgExchange(t, opts, capabilities, [c1, c2])
 })
 
-test('ETH: send status message (Genesis block mismatch)', async (t) => {
+test('ETH: send status message (Genesis block mismatch)', (t) => {
   const opts: any = {}
   opts.status0 = Object.assign({}, status)
   const status1 = Object.assign({}, status)
@@ -106,11 +106,11 @@ function sendNotAllowed(
   util.twoPeerMsgExchange(t, opts, cap)
 }
 
-test('ETH: should use latest protocol version on default', async (t) => {
+test('ETH: should use latest protocol version on default', (t) => {
   sendWithProtocolVersion(t, 66)
 })
 
-test('ETH -> Eth64 -> sendStatus(): should throw on non-matching latest block provided', async (t) => {
+test('ETH -> Eth64 -> sendStatus(): should throw on non-matching latest block provided', (t) => {
   const cap = [devp2p.ETH.eth65]
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
   const status0: any = Object.assign({}, status)
@@ -127,16 +127,16 @@ test('ETH -> Eth64 -> sendStatus(): should throw on non-matching latest block pr
   })
 })
 
-test('ETH: should work with allowed eth64', async (t) => {
+test('ETH: should work with allowed eth64', (t) => {
   const cap = [devp2p.ETH.eth64]
   sendWithProtocolVersion(t, 64, cap)
 })
 
-test('ETH: send not-allowed eth64', async (t) => {
+test('ETH: send not-allowed eth64', (t) => {
   sendNotAllowed(t, 64, [devp2p.ETH.eth64], ETH.MESSAGE_CODES.POOLED_TRANSACTIONS)
 })
 
-test('ETH -> Eth64 -> ForkId validation 1a)', async (t) => {
+test('ETH -> Eth64 -> ForkId validation 1a)', (t) => {
   const opts: any = {}
   const cap = [devp2p.ETH.eth64]
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
@@ -156,26 +156,26 @@ test('ETH -> Eth64 -> ForkId validation 1a)', async (t) => {
   util.twoPeerMsgExchange(t, opts, cap, common)
 })
 
-test('ETH: should work with allowed eth63', async (t) => {
+test('ETH: should work with allowed eth63', (t) => {
   const cap = [devp2p.ETH.eth63]
   sendWithProtocolVersion(t, 63, cap)
 })
 
-test('ETH: should work with allowed eth63', async (t) => {
+test('ETH: should work with allowed eth63', (t) => {
   const cap = [devp2p.ETH.eth63]
   sendWithProtocolVersion(t, 63, cap)
 })
 
-test('ETH: work with allowed eth62', async (t) => {
+test('ETH: work with allowed eth62', (t) => {
   const cap = [devp2p.ETH.eth62]
   sendWithProtocolVersion(t, 62, cap)
 })
 
-test('ETH: send not-allowed eth62', async (t) => {
+test('ETH: send not-allowed eth62', (t) => {
   sendNotAllowed(t, 62, [devp2p.ETH.eth62], ETH.MESSAGE_CODES.GET_NODE_DATA)
 })
 
-test('ETH: send unknown message code', async (t) => {
+test('ETH: send unknown message code', (t) => {
   const opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
@@ -192,7 +192,7 @@ test('ETH: send unknown message code', async (t) => {
   util.twoPeerMsgExchange(t, opts, capabilities)
 })
 
-test('ETH: invalid status send', async (t) => {
+test('ETH: invalid status send', (t) => {
   const opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)

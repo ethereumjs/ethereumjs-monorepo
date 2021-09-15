@@ -1,4 +1,4 @@
-import tape from 'tape-catch'
+import tape from 'tape'
 import td from 'testdouble'
 import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
@@ -10,15 +10,16 @@ tape('[FullSynchronizer]', async (t) => {
   class PeerPool {
     open() {}
     close() {}
+    idle() {}
   }
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
-  td.replace('../../lib/net/peerpool', { PeerPool })
+  PeerPool.prototype.idle = td.func<any>()
   class BlockFetcher {
     fetch() {}
   }
   BlockFetcher.prototype.fetch = td.func<any>()
-  td.replace('../../lib/sync/fetcher/blockfetcher', { BlockFetcher })
+  td.replace('../../lib/sync/fetcher', { BlockFetcher })
 
   const { FullSynchronizer } = await import('../../lib/sync/fullsync')
 
@@ -111,10 +112,9 @@ tape('[FullSynchronizer]', async (t) => {
       number: new BN(2),
       hash: () => Buffer.from([]),
     })
-    td.when((BlockFetcher.prototype as any).fetch(), { delay: 20 }).thenResolve(undefined)
+    td.when(BlockFetcher.prototype.fetch(), { delay: 20, times: 2 }).thenResolve(undefined)
     ;(sync as any).chain = { blocks: { height: new BN(3) } }
     t.notOk(await sync.sync(), 'local height > remote height')
-    await sync.stop()
     ;(sync as any).chain = {
       blocks: { height: new BN(0) },
     }
@@ -122,9 +122,7 @@ tape('[FullSynchronizer]', async (t) => {
       config.events.emit(Event.SYNC_SYNCHRONIZED, new BN(0))
     }, 100)
     t.ok(await sync.sync(), 'local height < remote height')
-    await sync.stop()
-
-    td.when((BlockFetcher.prototype as any).fetch()).thenReject(new Error('err0'))
+    td.when(BlockFetcher.prototype.fetch()).thenReject(new Error('err0'))
     try {
       await sync.sync()
     } catch (err: any) {
@@ -199,11 +197,8 @@ tape('[FullSynchronizer]', async (t) => {
         parentHash: chainTip.hash(),
       },
     })
-
     chain.getLatestBlock = td.func<any>()
     chain.putBlocks = td.func<any>()
-    td.when(chain.getLatestBlock()).thenResolve(chainTip)
-    //td.when(chain.putBlocks(td.matchers.anything())).thenResolve()
 
     // NewBlock message from Peer 3
     await sync.handleNewBlock(newBlock, peers[2] as any)
@@ -218,8 +213,6 @@ tape('[FullSynchronizer]', async (t) => {
     ;(sync as any).newBlocksKnownByPeer.delete(peers[0].id)
     await sync.handleNewBlock(newBlock, peers[2] as any)
     td.verify(chain.putBlocks([newBlock]))
-
-    t.end()
   })
 
   t.test('should reset td', (t) => {

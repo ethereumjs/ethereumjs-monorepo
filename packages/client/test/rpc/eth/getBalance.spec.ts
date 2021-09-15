@@ -32,7 +32,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
       throw new Error(msg)
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
 tape(`${method}: ensure balance deducts after a tx`, async (t) => {
@@ -73,7 +73,7 @@ tape(`${method}: ensure balance deducts after a tx`, async (t) => {
       throw new Error(msg)
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
 tape(`${method}: call with unsupported block argument`, async (t) => {
@@ -102,5 +102,5 @@ tape(`${method}: call with unsupported block argument`, async (t) => {
       throw new Error(msg)
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })

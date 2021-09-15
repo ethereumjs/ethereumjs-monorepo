@@ -1,4 +1,4 @@
-import tape from 'tape-catch'
+import tape from 'tape'
 import td from 'testdouble'
 import { EventEmitter } from 'events'
 import { Config } from '../../lib/config'

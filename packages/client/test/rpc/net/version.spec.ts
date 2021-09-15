@@ -27,7 +27,7 @@ function compareResult(t: any, result: any, chainId: any) {
   }
 }
 
-tape(`${method}: call on ropsten`, (t) => {
+tape(`${method}: call on ropsten`, async (t) => {
   const manager = createManager(
     createClient({ opened: true, commonChain: new Common({ chain: Chain.Ropsten }) })
   )
@@ -38,10 +38,10 @@ tape(`${method}: call on ropsten`, (t) => {
     const { result } = res.body
     compareResult(t, result, '3')
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call on mainnet`, (t) => {
+tape(`${method}: call on mainnet`, async (t) => {
   const { server } = baseSetup()
 
   const req = params(method, [])
@@ -49,10 +49,10 @@ tape(`${method}: call on mainnet`, (t) => {
     const { result } = res.body
     compareResult(t, result, '1')
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call on rinkeby`, (t) => {
+tape(`${method}: call on rinkeby`, async (t) => {
   const manager = createManager(
     createClient({ opened: true, commonChain: new Common({ chain: Chain.Rinkeby }) })
   )
@@ -63,10 +63,10 @@ tape(`${method}: call on rinkeby`, (t) => {
     const { result } = res.body
     compareResult(t, result, '4')
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call on kovan`, (t) => {
+tape(`${method}: call on kovan`, async (t) => {
   const manager = createManager(
     createClient({ opened: true, commonChain: new Common({ chain: Chain.Kovan }) })
   )
@@ -77,10 +77,10 @@ tape(`${method}: call on kovan`, (t) => {
     const { result } = res.body
     compareResult(t, result, '42')
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call on goerli`, (t) => {
+tape(`${method}: call on goerli`, async (t) => {
   const manager = createManager(
     createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) })
   )
@@ -91,5 +91,5 @@ tape(`${method}: call on goerli`, (t) => {
     const { result } = res.body
     compareResult(t, result, '5')
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })

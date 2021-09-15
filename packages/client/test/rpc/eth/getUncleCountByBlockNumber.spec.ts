@@ -18,7 +18,7 @@ function createBlockchain() {
 
 const method = 'eth_getUncleCountByBlockNumber'
 
-tape(`${method}: call with valid arguments`, (t) => {
+tape(`${method}: call with valid arguments`, async (t) => {
   const mockUncleCount = 3
 
   const manager = createManager(createClient({ blockchain: createBlockchain() }))
@@ -33,10 +33,10 @@ tape(`${method}: call with valid arguments`, (t) => {
       t.pass(msg)
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with invalid block number`, (t) => {
+tape(`${method}: call with invalid block number`, async (t) => {
   const manager = createManager(createClient({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
@@ -53,5 +53,5 @@ tape(`${method}: call with invalid block number`, (t) => {
     }
   }
 
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })

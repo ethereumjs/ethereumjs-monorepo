@@ -4,7 +4,7 @@ import { baseSetup, params, baseRequest } from '../helpers'
 
 const method = 'web3_clientVersion'
 
-tape(`${method}: call`, (t) => {
+tape(`${method}: call`, async (t) => {
   const { server } = baseSetup()
 
   const req = params(method, [])
@@ -51,5 +51,5 @@ tape(`${method}: call`, (t) => {
       t.pass(msg)
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })

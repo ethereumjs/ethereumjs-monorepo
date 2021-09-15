@@ -6,7 +6,7 @@ import { checkError } from './util'
 
 const prefix = 'rpc/validation:'
 
-tape(`${prefix} should work without \`params\` when it's optional`, (t) => {
+tape(`${prefix} should work without \`params\` when it's optional`, async (t) => {
   const mockMethodName = 'mock'
   const server = startRPC({
     [mockMethodName]: middleware((_params: any) => true, 0, []),
@@ -20,10 +20,10 @@ tape(`${prefix} should work without \`params\` when it's optional`, (t) => {
   const expectRes = (res: any) => {
     t.equal(res.body.error, undefined, 'should not return an error object')
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${prefix} should return error without \`params\` when it's required`, (t) => {
+tape(`${prefix} should return error without \`params\` when it's required`, async (t) => {
   const mockMethodName = 'mock'
   const server = startRPC({
     [mockMethodName]: middleware((_params: any) => true, 1, []),
@@ -37,7 +37,7 @@ tape(`${prefix} should return error without \`params\` when it's required`, (t) 
 
   const expectRes = checkError(t, INVALID_PARAMS, 'missing value for required argument 0')
 
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
 const validatorResult = (result: Object | undefined) => {

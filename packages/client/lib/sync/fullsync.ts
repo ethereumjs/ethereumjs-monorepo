@@ -345,9 +345,7 @@ export class FullSynchronizer extends Synchronizer {
 
     if (this.fetcher) {
       this.fetcher.destroy()
-      // TODO: Should this be deleted?
-      // @ts-ignore: error: The operand of a 'delete' operator must be optional
-      delete this.fetcher
+      this.fetcher = null
     }
     await super.stop()
 
