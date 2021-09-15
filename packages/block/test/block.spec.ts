@@ -1,10 +1,13 @@
 import tape from 'tape'
-import { BN, keccak256, rlp, zeros } from 'ethereumjs-util'
+import { BN, keccak256, rlp, zeros, toBuffer } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block, BlockBuffer, BlockHeader } from '../src'
 import blockFromRpc from '../src/from-rpc'
 import { Mockchain } from './mockchain'
 import { createBlock } from './util'
+import * as testData from './testdata/testdata.json'
+import * as testData2 from './testdata/testdata2.json'
+import * as testDataGenesis from './testdata/genesishashestest.json'
 import * as testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
 
 // explicitly import util, needed for karma-typescript bundling
@@ -66,13 +69,14 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should initialize with null parameters without throwing', function (st) {
+    const common = new Common({ chain: Chain.Ropsten })
+    const opts = { common }
     st.doesNotThrow(function () {
-      const common = new Common({ chain: Chain.Ropsten })
-      const opts = { common }
       Block.fromBlockData({}, opts)
-      st.end()
     })
+    st.end()
   })
+
   t.test(
     'should throw when trying to initialize with uncle headers on a PoA network',
     function (st) {
@@ -81,7 +85,6 @@ tape('[Block]: block functions', function (t) {
         { header: { extraData: Buffer.alloc(117) } },
         { common }
       )
-
       st.throws(function () {
         Block.fromBlockData({ uncleHeaders: [uncleBlock.header] }, { common })
       })
@@ -89,18 +92,18 @@ tape('[Block]: block functions', function (t) {
     }
   )
 
-  const testData = require('./testdata/testdata.json')
-
   t.test('should test block validation on pow chain', async function (st) {
-    const blockRlp = testData.blocks[0].rlp
+    const blockRlp = toBuffer(testData.blocks[0].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp)
     const blockchain = new Mockchain()
-    const genesisBlock = Block.fromRLPSerializedBlock(testData.genesisRLP)
+    const genesisBlock = Block.fromRLPSerializedBlock(toBuffer(testData.genesisRLP))
     await blockchain.putBlock(genesisBlock)
-    st.doesNotThrow(async () => {
+    try {
       await block.validate(blockchain)
-      st.end()
-    })
+      st.pass('should pass')
+    } catch (error: any) {
+      st.fail('should not throw')
+    }
   })
 
   t.test('should test block validation on poa chain', async function (st) {
@@ -133,7 +136,6 @@ tape('[Block]: block functions', function (t) {
     } catch (error: any) {
       st.fail('error thrown')
     }
-    st.end()
   })
 
   async function testTransactionValidation(st: tape.Test, block: Block) {
@@ -142,7 +144,7 @@ tape('[Block]: block functions', function (t) {
   }
 
   t.test('should test transaction validation', async function (st) {
-    const blockRlp = testData.blocks[0].rlp
+    const blockRlp = toBuffer(testData.blocks[0].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { freeze: false })
     await testTransactionValidation(st, block)
     ;(block.header as any).transactionsTrie = Buffer.alloc(32)
@@ -152,18 +154,16 @@ tape('[Block]: block functions', function (t) {
     } catch (error: any) {
       st.equal(error.message, 'invalid transaction trie')
     }
-    st.end()
   })
 
   t.test('should test transaction validation with empty transaction list', async function (st) {
     const block = Block.fromBlockData({})
     await testTransactionValidation(st, block)
-    st.end()
   })
 
   t.test('should test transaction validation with legacy tx in london', async function (st) {
     const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.London })
-    const blockRlp = testData.blocks[0].rlp
+    const blockRlp = toBuffer(testData.blocks[0].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     await testTransactionValidation(st, block)
     ;(block.transactions[0] as any).gasPrice = new BN(0)
@@ -172,12 +172,10 @@ tape('[Block]: block functions', function (t) {
       result[0].includes('tx unable to pay base fee (non EIP-1559 tx)'),
       'should throw when legacy tx is unable to pay base fee'
     )
-    st.end()
   })
 
-  const testData2 = require('./testdata/testdata2.json')
   t.test('should test uncles hash validation', async function (st) {
-    const blockRlp = testData2.blocks[2].rlp
+    const blockRlp = toBuffer(testData2.blocks[2].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { freeze: false })
     st.equal(block.validateUnclesHash(), true)
     ;(block.header as any).uncleHash = Buffer.alloc(32)
@@ -187,7 +185,6 @@ tape('[Block]: block functions', function (t) {
     } catch (error: any) {
       st.equal(error.message, 'invalid uncle hash')
     }
-    st.end()
   })
 
   t.test('should throw if an uncle is listed twice', async function (st) {
@@ -211,7 +208,6 @@ tape('[Block]: block functions', function (t) {
     } catch (e: any) {
       st.pass('block throws if the uncle is included twice in the block')
     }
-    st.end()
   })
 
   t.test('should throw if an uncle is included before', async function (st) {
@@ -242,7 +238,6 @@ tape('[Block]: block functions', function (t) {
     } catch (e: any) {
       st.pass('block throws if uncle is already included')
     }
-    st.end()
   })
 
   t.test(
@@ -278,7 +273,6 @@ tape('[Block]: block functions', function (t) {
       } catch (e: any) {
         st.pass('block throws if uncle parent hash is not part of the canonical chain')
       }
-      st.end()
     }
   )
 
@@ -305,7 +299,6 @@ tape('[Block]: block functions', function (t) {
     } catch (e: any) {
       st.pass('block throws uncle is too old')
     }
-    st.end()
   })
 
   t.test('should throw if uncle is too young', async function (st) {
@@ -326,7 +319,6 @@ tape('[Block]: block functions', function (t) {
     } catch (e: any) {
       st.pass('block throws uncle is too young')
     }
-    st.end()
   })
 
   t.test('should throw if the uncle header is invalid', async function (st) {
@@ -358,7 +350,6 @@ tape('[Block]: block functions', function (t) {
     } catch (e: any) {
       st.pass('block throws uncle header is invalid')
     }
-    st.end()
   })
 
   t.test('throws if more than 2 uncles included', async function (st) {
@@ -398,7 +389,6 @@ tape('[Block]: block functions', function (t) {
     } catch (e: any) {
       st.pass('block throws if more than 2 uncles are included')
     }
-    st.end()
   })
 
   t.test('throws if uncle is a canonical block', async function (st) {
@@ -419,7 +409,6 @@ tape('[Block]: block functions', function (t) {
     } catch (e: any) {
       st.pass('block throws if an uncle is a canonical block')
     }
-    st.end()
   })
 
   t.test('successfully validates uncles', async function (st) {
@@ -440,8 +429,6 @@ tape('[Block]: block functions', function (t) {
     await block1.validate(blockchain)
     await block2.validate(blockchain)
     st.pass('uncle blocks validated succesfully')
-
-    st.end()
   })
 
   t.test(
@@ -556,7 +543,6 @@ tape('[Block]: block functions', function (t) {
       }
 
       st.ok(common.hardfork() === 'london', 'validation did not change common hardfork')
-      st.end()
     }
   )
 
@@ -577,14 +563,15 @@ tape('[Block]: block functions', function (t) {
     st.end()
   })
 
-  const testDataGenesis = require('./testdata/genesishashestest.json').test
   t.test('should test genesis hashes (mainnet default)', function (st) {
     const genesis = Block.genesis()
     const genesisRlp = genesis.serialize()
-    st.strictEqual(genesisRlp.toString('hex'), testDataGenesis.genesis_rlp_hex, 'rlp hex match')
-    st.strictEqual(
-      genesis.hash().toString('hex'),
-      testDataGenesis.genesis_hash,
+    st.ok(
+      genesisRlp.equals(Buffer.from(testDataGenesis.test.genesis_rlp_hex, 'hex')),
+      'rlp hex match'
+    )
+    st.ok(
+      genesis.hash().equals(Buffer.from(testDataGenesis.test.genesis_hash, 'hex')),
       'genesis hash match'
     )
     st.end()
@@ -593,34 +580,25 @@ tape('[Block]: block functions', function (t) {
   t.test('should test genesis hashes (ropsten)', function (st) {
     const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
     const genesis = Block.genesis({}, { common })
-    st.strictEqual(
-      genesis.hash().toString('hex'),
-      common.genesis().hash.slice(2),
-      'genesis hash match'
-    )
+    st.ok(genesis.hash().equals(toBuffer(common.genesis().hash)), 'genesis hash match')
     st.end()
   })
 
   t.test('should test genesis hashes (rinkeby)', function (st) {
     const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
     const genesis = Block.genesis({}, { common })
-    st.strictEqual(
-      genesis.hash().toString('hex'),
-      common.genesis().hash.slice(2),
-      'genesis hash match'
-    )
+    st.ok(genesis.hash().equals(toBuffer(common.genesis().hash)), 'genesis hash match')
     st.end()
   })
 
   t.test('should test genesis parameters (ropsten)', function (st) {
     const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
     const genesis = Block.genesis({}, { common })
-    const ropstenStateRoot = '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
-    st.strictEqual(
-      genesis.header.stateRoot.toString('hex'),
-      ropstenStateRoot,
-      'genesis stateRoot match'
+    const ropstenStateRoot = Buffer.from(
+      '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b',
+      'hex'
     )
+    st.ok(genesis.header.stateRoot.equals(ropstenStateRoot), 'genesis stateRoot match')
     st.end()
   })
 
@@ -635,14 +613,14 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should return the same block data from raw()', function (st) {
-    const block = Block.fromRLPSerializedBlock(testData2.blocks[2].rlp)
+    const block = Block.fromRLPSerializedBlock(toBuffer(testData2.blocks[2].rlp))
     const blockFromRaw = Block.fromValuesArray(block.raw())
     st.ok(block.hash().equals(blockFromRaw.hash()))
     st.end()
   })
 
   t.test('should test toJSON', function (st) {
-    const block = Block.fromRLPSerializedBlock(testData2.blocks[2].rlp)
+    const block = Block.fromRLPSerializedBlock(toBuffer(testData2.blocks[2].rlp))
     st.equal(typeof block.toJSON(), 'object')
     st.end()
   })

@@ -46,7 +46,7 @@
     "@types/assert": "^1.5.4",
     "@types/node": "^11.13.4",
     "@types/secp256k1": "^4.0.1",
-    "@types/tape": "^4.13.0",
+    "@types/tape": "^4.13.2",
     "eslint": "^6.8.0",
     "karma": "^6.3.2",
     "karma-chrome-launcher": "^3.1.0",

@@ -20,7 +20,6 @@ tape('runBlockchain', (t) => {
     const vm = setupVM({ common })
     st.doesNotThrow(async function () {
       await vm.runBlockchain()
-      st.end()
     })
   })
 
@@ -28,7 +27,6 @@ tape('runBlockchain', (t) => {
     const vm = setupVM({ common })
     st.doesNotThrow(async function () {
       await vm.runBlockchain()
-      st.end()
     })
   })
 

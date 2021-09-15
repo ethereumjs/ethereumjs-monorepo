@@ -5,7 +5,7 @@ import { baseSetup, params, baseRequest, createClient, createManager, startRPC }
 
 const method = 'eth_chainId'
 
-tape(`${method}: calls`, (t) => {
+tape(`${method}: calls`, async (t) => {
   const { server } = baseSetup()
 
   const req = params(method, [])
@@ -17,10 +17,10 @@ tape(`${method}: calls`, (t) => {
       t.pass(msg)
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: returns 1 for Mainnet`, (t) => {
+tape(`${method}: returns 1 for Mainnet`, async (t) => {
   const { server } = baseSetup()
 
   const req = params(method, [])
@@ -28,10 +28,10 @@ tape(`${method}: returns 1 for Mainnet`, (t) => {
     const msg = 'should return chainId 1'
     t.equal(res.body.result, '0x1', msg)
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: returns 3 for Ropsten`, (t) => {
+tape(`${method}: returns 3 for Ropsten`, async (t) => {
   const manager = createManager(
     createClient({ opened: true, commonChain: new Common({ chain: Chain.Ropsten }) })
   )
@@ -42,10 +42,10 @@ tape(`${method}: returns 3 for Ropsten`, (t) => {
     const msg = 'should return chainId 3'
     t.equal(res.body.result, '0x3', msg)
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: returns 42 for Kovan`, (t) => {
+tape(`${method}: returns 42 for Kovan`, async (t) => {
   const manager = createManager(
     createClient({ opened: true, commonChain: new Common({ chain: Chain.Kovan }) })
   )
@@ -57,5 +57,5 @@ tape(`${method}: returns 42 for Kovan`, (t) => {
     const chainId = new BN(42).toString(16)
     t.equal(res.body.result, `0x${chainId}`, msg)
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })

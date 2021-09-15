@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import tape from 'tape-catch'
+import tape from 'tape'
 import td from 'testdouble'
 import { Config } from '../../../lib/config'
 import { RlpxSender } from '../../../lib/net/protocol/rlpxsender'

@@ -1,4 +1,4 @@
-import tape from 'tape-catch'
+import tape from 'tape'
 import td from 'testdouble'
 import { BoundProtocol, Protocol, Sender } from '../../../lib/net/protocol'
 import { Config } from '../../../lib/config'

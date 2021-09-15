@@ -1,12 +1,9 @@
-import tape from 'tape-catch'
+import tape from 'tape'
 import td from 'testdouble'
 import { BN } from 'ethereumjs-util'
 import { Config } from '../../../lib/config'
 import { Chain } from '../../../lib/blockchain/chain'
-
-async function wait(delay?: number) {
-  await new Promise((resolve) => setTimeout(resolve, delay ?? 10))
-}
+import { wait } from '../../integration/util'
 
 tape('[BlockFetcher]', async (t) => {
   class PeerPool {
@@ -15,7 +12,6 @@ tape('[BlockFetcher]', async (t) => {
   }
   PeerPool.prototype.idle = td.func<any>()
   PeerPool.prototype.ban = td.func<any>()
-  td.replace('../../lib/net/peerpool', { PeerPool })
 
   const { BlockFetcher } = await import('../../../lib/sync/fetcher/blockfetcher')
 
@@ -36,10 +32,10 @@ tape('[BlockFetcher]', async (t) => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     fetcher.fetch()
     t.equals((fetcher as any).in.size(), 2, 'added 2 tasks')
-    await wait()
+    await wait(100)
     t.ok((fetcher as any).running, 'started')
     fetcher.destroy()
-    await wait()
+    await wait(100)
     t.notOk((fetcher as any).running, 'stopped')
     t.end()
   })
@@ -59,20 +55,18 @@ tape('[BlockFetcher]', async (t) => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     fetcher.fetch()
     t.equals((fetcher as any).in.size(), 2, 'added 2 tasks')
-    await wait()
+    await wait(100)
 
     let blockNumberList = [new BN(11), new BN(12)]
     let min = new BN(11)
     fetcher.enqueueByNumberList(blockNumberList, min)
-    t.equals((fetcher as any).in.size(), 3, ' 1 new task for two subsequent block numbers')
+    t.equals((fetcher as any).in.size(), 3, '1 new task for two subsequent block numbers')
 
     blockNumberList = [new BN(13), new BN(15)]
     min = new BN(13)
     fetcher.enqueueByNumberList(blockNumberList, min)
-    t.equals((fetcher as any).in.size(), 5, ' 2 new tasks for two non-subsequent block numbers')
-
+    t.equals((fetcher as any).in.size(), 5, '2 new tasks for two non-subsequent block numbers')
     fetcher.destroy()
-    await wait()
     t.end()
   })
 
@@ -87,11 +81,9 @@ tape('[BlockFetcher]', async (t) => {
       first: new BN(0),
       count: new BN(0),
     })
-    const blocks = [{ header: { number: 1 } }, { header: { number: 2 } }]
-    //@ts-ignore
-    t.deepEquals(fetcher.process({ task: { count: 2 } }, blocks), blocks, 'got results')
-    //@ts-ignore
-    t.notOk(fetcher.process({ task: { count: 2 } }, { blocks: [] }), 'bad results')
+    const blocks: any = [{ header: { number: 1 } }, { header: { number: 2 } }]
+    t.deepEquals(fetcher.process({ task: { count: 2 } } as any, blocks), blocks, 'got results')
+    t.notOk(fetcher.process({ task: { count: 2 } } as any, { blocks: [] } as any), 'bad results')
     t.end()
   })
 

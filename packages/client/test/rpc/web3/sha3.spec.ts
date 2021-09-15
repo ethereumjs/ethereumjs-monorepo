@@ -21,7 +21,7 @@ function compareErrorMsg(t: any, error: any, errorMsg: any) {
   }
 }
 
-tape(`${method}: call with one valid parameter`, (t) => {
+tape(`${method}: call with one valid parameter`, async (t) => {
   const { server } = baseSetup()
 
   const req = params(method, ['0x68656c6c6f20776f726c64'])
@@ -41,10 +41,10 @@ tape(`${method}: call with one valid parameter`, (t) => {
       t.pass(msg)
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with one non-hex parameter`, (t) => {
+tape(`${method}: call with one non-hex parameter`, async (t) => {
   const { server } = baseSetup()
 
   const req = params(method, ['hello world'])
@@ -56,10 +56,10 @@ tape(`${method}: call with one non-hex parameter`, (t) => {
     const errorMsg = 'invalid argument 0: hex string without 0x prefix'
     compareErrorMsg(t, error, errorMsg)
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with no parameters`, (t) => {
+tape(`${method}: call with no parameters`, async (t) => {
   const { server } = baseSetup()
 
   const req = params(method, [])
@@ -71,5 +71,5 @@ tape(`${method}: call with no parameters`, (t) => {
     const errorMsg = 'missing value for required argument 0'
     compareErrorMsg(t, error, errorMsg)
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })

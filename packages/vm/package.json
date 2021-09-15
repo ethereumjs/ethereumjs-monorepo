@@ -67,7 +67,7 @@
     "@types/core-js": "^2.5.0",
     "@types/lru-cache": "^5.1.0",
     "@types/node": "^11.13.4",
-    "@types/tape": "^4.13.0",
+    "@types/tape": "^4.13.2",
     "benchmark": "^2.1.4",
     "eslint": "^6.8.0",
     "karma": "^6.3.2",
@@ -84,7 +84,7 @@
     "rlp": "^2.2.4",
     "standard": "^10.0.0",
     "tap-spec": "^5.0.0",
-    "tape": "^4.10.1",
+    "tape": "^5.3.1",
     "ts-node": "^10.2.1",
     "typedoc": "^0.21.5",
     "typescript": "^4.4.2"

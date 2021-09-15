@@ -1,4 +1,4 @@
-import tape from 'tape-catch'
+import tape from 'tape'
 import { Config } from '../lib/config'
 import Common, { Chain } from '@ethereumjs/common'
 

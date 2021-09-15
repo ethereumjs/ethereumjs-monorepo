@@ -1,4 +1,4 @@
-import tape from 'tape-catch'
+import tape from 'tape'
 import { BN } from 'ethereumjs-util'
 import { Chain } from '../../../lib/blockchain'
 import { Config } from '../../../lib/config'

@@ -24,7 +24,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 common.setMaxListeners(100)
 
 tape('runTx() -> successful API parameter usage', async (t) => {
-  async function simpleRun(vm: VM, msg: string) {
+  async function simpleRun(vm: VM, msg: string, st: tape.Test) {
     for (const txType of TRANSACTION_TYPES) {
       const tx = getTransaction(vm._common, txType.type, true)
 
@@ -33,20 +33,20 @@ tape('runTx() -> successful API parameter usage', async (t) => {
       await vm.stateManager.putAccount(caller, acc)
 
       const res = await vm.runTx({ tx })
-      t.true(res.gasUsed.gt(new BN(0)), `${msg} (${txType.name})`)
+      st.true(res.gasUsed.gt(new BN(0)), `${msg} (${txType.name})`)
     }
   }
 
-  t.test('simple run (unmodified options)', async (t) => {
+  t.test('simple run (unmodified options)', async (st) => {
     let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     let vm = new VM({ common })
-    await simpleRun(vm, 'mainnet (PoW), london HF, default SM - should run without errors')
+    await simpleRun(vm, 'mainnet (PoW), london HF, default SM - should run without errors', st)
 
     common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London })
     vm = new VM({ common })
-    await simpleRun(vm, 'rinkeby (PoA), london HF, default SM - should run without errors')
+    await simpleRun(vm, 'rinkeby (PoA), london HF, default SM - should run without errors', st)
 
-    t.end()
+    st.end()
   })
 
   t.test('should use passed in blockGasUsed to generate tx receipt', async (t) => {

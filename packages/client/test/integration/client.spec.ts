@@ -1,8 +1,8 @@
 import tape from 'tape'
 import { Config } from '../../lib/config'
 import EthereumClient from '../../lib/client'
-import MockServer from './mocks/mockserver'
 import { Event } from '../../lib/types'
+import MockServer from './mocks/mockserver'
 
 tape('[Integration:EthereumClient]', (t) => {
   const serverConfig = new Config({ loglevel: 'error' })

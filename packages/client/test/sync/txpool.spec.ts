@@ -1,4 +1,4 @@
-import tape from 'tape-catch'
+import tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
@@ -210,7 +210,7 @@ tape('[TxPool]', async (t) => {
 
     await pool.handleAnnouncedTxHashes([txA01.hash(), txA02.hash()], peer, peerPool)
     t.equal(pool.pool.size, 1, 'pool size 1')
-    const address = `0x${A.address.toString('hex')}`
+    const address = A.address.toString('hex')
     const poolContent = pool.pool.get(address)!
     t.equal(poolContent.length, 1, 'only one tx')
     t.deepEqual(poolContent[0].tx.hash(), txA02.hash(), 'only later-added tx')
@@ -234,7 +234,7 @@ tape('[TxPool]', async (t) => {
 
     await pool.handleAnnouncedTxs([txA01], peer, peerPool)
     t.equal(pool.pool.size, 1, 'pool size 1')
-    const address = `0x${A.address.toString('hex')}`
+    const address = A.address.toString('hex')
     const poolContent = pool.pool.get(address)!
     t.equal(poolContent.length, 1, 'one tx')
     t.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'correct tx')
@@ -280,7 +280,7 @@ tape('[TxPool]', async (t) => {
     }
     await pool.handleAnnouncedTxHashes([txB01.hash(), txB02.hash()], peer, peerPool)
     t.equal(pool.pool.size, 1, 'pool size 1')
-    const address = `0x${B.address.toString('hex')}`
+    const address = B.address.toString('hex')
     let poolContent = pool.pool.get(address)!
     t.equal(poolContent.length, 2, 'two txs')
 
@@ -346,7 +346,7 @@ tape('[TxPool]', async (t) => {
       'should not remove txs from handled (HANDLED_CLEANUP_TIME_LIMIT within range)'
     )
 
-    const address = txB01.getSenderAddress().toString()
+    const address = txB01.getSenderAddress().toString().slice(2)
     const poolObj = pool.pool.get(address)![0]
     poolObj.added = Date.now() - pool.POOLED_STORAGE_TIME_LIMIT * 60 - 1
     pool.pool.set(address, [poolObj])

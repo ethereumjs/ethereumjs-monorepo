@@ -21,7 +21,7 @@ const status = {
 // FIXME: Handle unhandled promises directly
 process.on('unhandledRejection', () => {})
 
-test('LES: send status message (successful)', async (t) => {
+test('LES: send status message (successful)', (t) => {
   const opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
@@ -33,7 +33,7 @@ test('LES: send status message (successful)', async (t) => {
   util.twoPeerMsgExchange(t, opts, capabilities)
 })
 
-test('LES: send status message (modified announceType)', async (t) => {
+test('LES: send status message (modified announceType)', (t) => {
   const opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status0['announceType'] = 0
@@ -47,7 +47,7 @@ test('LES: send status message (modified announceType)', async (t) => {
   util.twoPeerMsgExchange(t, opts, capabilities)
 })
 
-test('LES: send status message (NetworkId mismatch)', async (t) => {
+test('LES: send status message (NetworkId mismatch)', (t) => {
   const opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
@@ -63,7 +63,7 @@ test('LES: send status message (NetworkId mismatch)', async (t) => {
   util.twoPeerMsgExchange(t, opts, capabilities, [c1, c2])
 })
 
-test('ETH: send status message (Genesis block mismatch)', async (t) => {
+test('ETH: send status message (Genesis block mismatch)', (t) => {
   const opts: any = {}
   opts.status0 = Object.assign({}, status)
   const status1 = Object.assign({}, status)
@@ -79,7 +79,7 @@ test('ETH: send status message (Genesis block mismatch)', async (t) => {
   util.twoPeerMsgExchange(t, opts, capabilities)
 })
 
-test('LES: send valid message', async (t) => {
+test('LES: send valid message', (t) => {
   const opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
@@ -98,7 +98,7 @@ test('LES: send valid message', async (t) => {
   util.twoPeerMsgExchange(t, opts, capabilities)
 })
 
-test('LES: send unknown message code', async (t) => {
+test('LES: send unknown message code', (t) => {
   const opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
@@ -115,7 +115,7 @@ test('LES: send unknown message code', async (t) => {
   util.twoPeerMsgExchange(t, opts, capabilities)
 })
 
-test('LES: invalid status send', async (t) => {
+test('LES: invalid status send', (t) => {
   const opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
