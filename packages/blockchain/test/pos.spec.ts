@@ -43,7 +43,7 @@ tape('Proof of Stake - inserting blocks into blockchain', async (t) => {
   const testnetOnlyTD = JSON.parse(JSON.stringify(testnet))
   testnetOnlyTD['hardforks'][11] = {
     name: 'merge',
-    td: 1445313,
+    td: 1313600,
     block: null,
   }
   const scenarios = [
