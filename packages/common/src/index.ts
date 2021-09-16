@@ -391,7 +391,7 @@ export default class Common extends EventEmitter {
 
   /**
    * Returns the hardfork based on the block number or an optional
-   * total difficulty provided.
+   * total difficulty (Merge HF) provided.
    *
    * An optional TD takes precedence in case the corresponding HF block
    * is set to `null` or otherwise needs to match (if not an error
@@ -452,7 +452,7 @@ export default class Common extends EventEmitter {
 
   /**
    * Sets a new hardfork based on the block number or an optional
-   * total difficulty provided.
+   * total difficulty (Merge HF) provided.
    *
    * An optional TD takes precedence in case the corresponding HF block
    * is set to `null` or otherwise needs to match (if not an error
@@ -807,7 +807,7 @@ export default class Common extends EventEmitter {
   }
 
   /**
-   * Returns the hardfork change total difficulty for hardfork provided or set
+   * Returns the hardfork change total difficulty (Merge HF) for hardfork provided or set
    * @param hardfork Hardfork name, optional if HF set
    * @returns Total difficulty or null if no set
    */

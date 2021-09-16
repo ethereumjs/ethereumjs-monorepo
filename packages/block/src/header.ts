@@ -219,8 +219,15 @@ export class BlockHeader {
       }
     }
 
-    if (options.hardforkByBlockNumber) {
-      this._common.setHardforkByBlockNumber(number.toNumber())
+    if (options.hardforkByBlockNumber !== undefined && options.hardforkByTD !== undefined) {
+      throw new Error(
+        `The hardforkByBlockNumber and hardforkByTD options can't be used in conjunction`
+      )
+    }
+
+    const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
+    if (hardforkByBlockNumber || options.hardforkByTD) {
+      this._common.setHardforkByBlockNumber(number.toNumber(), options.hardforkByTD)
     }
 
     if (this._common.isActivatedEIP(1559)) {
