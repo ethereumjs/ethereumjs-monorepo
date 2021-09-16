@@ -34,6 +34,8 @@ module.exports = {
     '@typescript-eslint/no-unnecessary-condition': 'off',
     'no-dupe-class-members': 'off',
     'prettier/prettier': 'error',
+    'no-redeclare': 'off',
+    '@typescript-eslint/no-redeclare': ['error'],
   },
   parserOptions: {
     sourceType: 'module',

@@ -53,7 +53,7 @@ export declare interface EventBus<T extends Event> {
   on(event: T, listener: (...args: EventParams[T]) => void): this
 }
 
-// eslint-disable-next-line no-redeclare, @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export class EventBus<T extends Event> extends EventEmitter {}
 export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
   EventBus<Event.SYNC_EXECUTION_VM_ERROR> &
