@@ -2,7 +2,7 @@
   "name": "testnetPOS",
   "chainId": 66666,
   "networkId": 66666,
-  "defaultHardfork": "merge",
+  "defaultHardfork": "chainstart",
   "consensus": {
     "type": "pos",
     "algorithm": "casper",
@@ -21,9 +21,13 @@
   },
   "hardforks": [
     {
+      "name": "chainstart",
+      "block": 0,
+      "td": 0
+    },
+    {
       "name": "shanghai",
-      "block": 5,
-      "forkash": null
+      "block": 5
     }
   ],
   "bootstrapNodes": [

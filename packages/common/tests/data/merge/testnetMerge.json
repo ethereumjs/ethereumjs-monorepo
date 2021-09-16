@@ -62,8 +62,7 @@
     },
     {
       "name": "shanghai",
-      "block": null,
-      "forkash": null
+      "block": null
     }
   ],
   "bootstrapNodes": [

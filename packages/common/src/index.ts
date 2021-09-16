@@ -807,6 +807,20 @@ export default class Common extends EventEmitter {
   }
 
   /**
+   * Returns the hardfork change total difficulty for hardfork provided or set
+   * @param hardfork Hardfork name, optional if HF set
+   * @returns Total difficulty or null if no set
+   */
+  hardforkTD(hardfork?: string | Hardfork): BN | null {
+    hardfork = this._chooseHardfork(hardfork, false)
+    const td = this._getHardfork(hardfork)['td']
+    if (td === undefined || td === null) {
+      return null
+    }
+    return new BN(td)
+  }
+
+  /**
    * True if block number provided is the hardfork (given or set) change block
    * @param blockNumber Number of the block to check
    * @param hardfork Hardfork name, optional if HF set
