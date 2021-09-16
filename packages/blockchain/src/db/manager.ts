@@ -167,7 +167,8 @@ export class DBManager {
       }
     }
     const blockData = [header, ...body] as BlockBuffer
-    const opts = { common: this._common, hardforkByBlockNumber: true }
+    const td = await this.getTotalDifficulty(hash, number)
+    const opts = { common: this._common, hardforkByTD: td }
     return Block.fromValuesArray(blockData, opts)
   }
 
@@ -184,7 +185,8 @@ export class DBManager {
    */
   async getHeader(blockHash: Buffer, blockNumber: BN) {
     const encodedHeader = await this.get(DBTarget.Header, { blockHash, blockNumber })
-    const opts = { common: this._common, hardforkByBlockNumber: true }
+    const td = await this.getTotalDifficulty(blockHash, blockNumber)
+    const opts = { common: this._common, hardforkByTD: td }
     return BlockHeader.fromRLPSerializedHeader(encodedHeader, opts)
   }
 

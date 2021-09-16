@@ -433,16 +433,17 @@ export default class Common extends EventEmitter {
     }
     if (td) {
       let msgAdd = `block number: ${blockNumber} (-> ${hardfork}), `
-      msgAdd += `total difficulty: ${td} (-> ${minTdHF})`
       if (minTdHF) {
         if (!this.hardforkGteHardfork(hardfork, minTdHF)) {
           const msg = 'HF determined by block number is lower than the minimum total difficulty HF'
+          msgAdd += `total difficulty: ${td} (-> ${minTdHF})`
           throw new Error(`${msg}: ${msgAdd}`)
         }
       }
       if (maxTdHF) {
         if (!this.hardforkGteHardfork(maxTdHF, hardfork)) {
           const msg = 'Maximum HF determined by total difficulty is lower than the block number HF'
+          msgAdd += `total difficulty: ${td} (-> ${maxTdHF})`
           throw new Error(`${msg}: ${msgAdd}`)
         }
       }
