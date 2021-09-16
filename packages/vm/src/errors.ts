@@ -39,48 +39,6 @@ export type CodedGeneralError<T> = T extends ErrorCode.INVALID_BLOCK_HEADER
 export class Logger {
   static errors = ErrorCode
 
-  // makeError<T>(codedError: CodedGeneralError<T>): Error {
-  //   let { message } = codedError
-  //   const { code } = codedError
-  //   const messageDetails: Array<string> = []
-
-  //   if (isError(codedError, ErrorCode.INVALID_BLOCK_HEADER)) {
-  //     messageDetails.push('Invalid param' + '=' + codedError.param)
-  //   }
-
-  //   if (isError(codedError, ErrorCode.UNKNOWN_ERROR)) {
-  //     Object.keys(codedError)
-  //       .filter((key) => key !== 'message' && key !== 'code')
-  //       .forEach((key) => {
-  //         const value = codedError[key]
-  //         try {
-  //           messageDetails.push(key + '=' + JSON.stringify(value))
-  //         } catch {
-  //           messageDetails.push(key + '=' + JSON.stringify(codedError[key].toString()))
-  //         }
-  //       })
-  //   }
-
-  //   messageDetails.push(`code=${codedError.code}`)
-
-  //   if (messageDetails.length) {
-  //     message += ' (' + messageDetails.join(', ') + ')'
-  //   }
-
-  //   const error = new Error(message) as CodedGeneralError<T>
-  //   error.code = code
-
-  //   // TODO: Find how to add all args
-
-  //   // Object.keys(codedError)
-  //   //   .filter((key) => key !== 'message' && key !== 'code')
-  //   //   .forEach((key) => {
-  //   //     error[key] = codedError[key]
-  //   //   })
-
-  //   return error
-  // }
-
   throwError<T extends ErrorCode>(error: CodedGeneralError<T>): never {
     if (!error.code) {
       error.code = ErrorCode.UNKNOWN_ERROR
