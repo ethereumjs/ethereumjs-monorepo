@@ -214,13 +214,8 @@ export class FullSynchronizer extends Synchronizer {
    * @returns True if block has already been sent to peer
    */
   private addToKnownByPeer(blockHash: Buffer, peer: Peer): boolean {
-    if (!this.newBlocksKnownByPeer.has(peer.id)) {
-      this.newBlocksKnownByPeer.set(peer.id, [{ hash: blockHash, added: Date.now() }])
-      return false
-    }
-
     const knownBlocks = this.newBlocksKnownByPeer.get(peer.id) ?? []
-    if (knownBlocks?.filter((knownBlock) => knownBlock.hash.equals(blockHash))) {
+    if (knownBlocks.find((knownBlock) => knownBlock.hash.equals(blockHash))) {
       return true
     }
     knownBlocks.push({ hash: blockHash, added: Date.now() })
@@ -253,7 +248,6 @@ export class FullSynchronizer extends Synchronizer {
       // Don't send NEW_BLOCK announcement to peer that sent original new block message
       this.addToKnownByPeer(block.hash(), peer)
     }
-
     try {
       await block.header.validate(this.chain.blockchain)
     } catch (err) {
@@ -265,12 +259,10 @@ export class FullSynchronizer extends Synchronizer {
       this.config.logger.debug(err)
       return
     }
-
     // Send NEW_BLOCK to square root of total number of peers in pool
     // https://github.com/ethereum/devp2p/blob/master/caps/eth.md#block-propagation
     const numPeersToShareWith = Math.floor(Math.sqrt(this.pool.peers.length))
     await this.sendNewBlock(block, this.pool.peers.slice(0, numPeersToShareWith))
-
     if (this.chain.blocks.latest?.hash().equals(block.header.parentHash)) {
       // If new block is child of current chain tip, insert new block into chain
       await this.chain.putBlocks([block])
@@ -283,7 +275,6 @@ export class FullSynchronizer extends Synchronizer {
       // Call handleNewBlockHashes to retrieve all blocks between chain tip and new block
       this.handleNewBlockHashes([[block.hash(), block.header.number]])
     }
-
     for (const peer of this.pool.peers.slice(numPeersToShareWith)) {
       // Send `NEW_BLOCK_HASHES` message for received block to all other peers
       const alreadyKnownByPeer = this.addToKnownByPeer(block.hash(), peer)
