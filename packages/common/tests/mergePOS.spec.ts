@@ -5,7 +5,7 @@ import testnetPOS from './data/merge/testnetPOS.json'
 
 tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
   t.test('hardforkTD()', function (st: tape.Test) {
-    const customChains = [testnetMerge]
+    const customChains = [testnetMerge as any]
     const c = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
     st.ok(c.hardforkTD(Hardfork.Merge)?.eqn(5000), 'should get the HF total difficulty')
 
@@ -15,7 +15,7 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
   t.test(
     'getHardforkByBlockNumber(), merge block null, with total difficulty',
     function (st: tape.Test) {
-      const customChains = [testnetMerge]
+      const customChains = [testnetMerge as any]
       const c = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
 
       let msg = 'block number < last HF block number set, without TD set'
@@ -94,7 +94,7 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
   t.test(
     'setHardforkByBlockNumber(), merge block null, with total difficulty',
     function (st: tape.Test) {
-      const customChains = [testnetMerge]
+      const customChains = [testnetMerge as any]
       const c = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
 
       let msg = 'block number < last HF block number set, without TD set'
@@ -171,7 +171,7 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
   )
 
   t.test('Pure POS testnet', function (st: tape.Test) {
-    const customChains = [testnetPOS]
+    const customChains = [testnetPOS as any]
     const c = new Common({ chain: 'testnetPOS', hardfork: Hardfork.Istanbul, customChains })
 
     st.ok(c.hardforkTD(Hardfork.Chainstart)?.eqn(0), 'should get the HF total difficulty')
