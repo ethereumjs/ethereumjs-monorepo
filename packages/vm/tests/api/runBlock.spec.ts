@@ -118,7 +118,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
   )
 
   t.test('PoW block, Common custom chain (Common customChains constructor option)', async (st) => {
-    const customChains = [testnet as any]
+    const customChains = [testnet]
     const common = new Common({ chain: 'testnet', hardfork: Hardfork.Berlin, customChains })
     const vm = setupVM({ common })
     await simpleRun(vm, st)

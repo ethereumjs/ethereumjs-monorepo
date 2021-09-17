@@ -120,7 +120,7 @@ tape('VM -> common (chain, HFs, EIPs)', (t) => {
   t.test(
     'should accept a custom chain config (Common customChains constructor option)',
     async (st) => {
-      const customChains = [testnet, testnet2] as any
+      const customChains = [testnet, testnet2]
       const common = new Common({ chain: 'testnet', hardfork: Hardfork.Berlin, customChains })
 
       const vm = await VM.create({ common })
@@ -132,7 +132,7 @@ tape('VM -> common (chain, HFs, EIPs)', (t) => {
 
 tape('VM -> hardforkByBlockNumber, hardforkByTD, state (deprecated), blockchain', (t) => {
   t.test('hardforkByBlockNumber, hardforkByTD', async (st) => {
-    const customChains = [testnetMerge] as any
+    const customChains = [testnetMerge]
     const common = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
 
     let vm = await VM.create({ common, hardforkByBlockNumber: true })

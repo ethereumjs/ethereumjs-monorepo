@@ -67,7 +67,7 @@ tape('[Block]: block functions', function (t) {
     const common = new Common({
       chain: 'testnetMerge',
       hardfork: Hardfork.Istanbul,
-      customChains: customChains as any,
+      customChains,
     })
 
     let block = Block.fromBlockData(

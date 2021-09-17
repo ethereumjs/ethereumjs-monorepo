@@ -55,7 +55,7 @@ tape('[VMExecution]', async (t) => {
     newHead = await exec.vm.blockchain.getHead()
     t.deepEqual(newHead.header.number.toNumber(), 5, 'should run all blocks')
 
-    const common = new Common({ chain: 'testnet', customChains: [testnet as any] })
+    const common = new Common({ chain: 'testnet', customChains: [testnet] })
     exec = await testSetup(blockchain, common)
     await exec.run()
     t.equal(exec.hardfork, 'byzantium', 'should update HF on block run')

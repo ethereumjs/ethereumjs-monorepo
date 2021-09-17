@@ -29,8 +29,8 @@ export interface Chain {
   dnsNetworks?: string[]
   // TODO: make mandatory in next breaking release
   consensus?: {
-    type: ConsensusType
-    algorithm: ConsensusAlgorithm
+    type: ConsensusType | string
+    algorithm: ConsensusAlgorithm | string
     clique?: {
       period: number
       epoch: number
@@ -59,7 +59,7 @@ export interface GenesisBlock {
 }
 
 export interface HardforkParams {
-  name: Hardfork
+  name: Hardfork | string
   block: number | null
   td?: number
   forkHash?: string | null

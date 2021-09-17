@@ -420,7 +420,7 @@ export default class Common extends EventEmitter {
         continue
       }
       if (blockNumber.gte(new BN(hf.block))) {
-        hardfork = hf.name
+        hardfork = hf.name as Hardfork
       }
       if (td && hf.td) {
         if (td.gten(hf.td)) {
@@ -529,7 +529,7 @@ export default class Common extends EventEmitter {
       }
       if (EIPs[eip].requiredEIPs) {
         // eslint-disable-next-line prettier/prettier
-        (<number[]>EIPs[eip].requiredEIPs).forEach((elem: number) => {
+        ;(<number[]>EIPs[eip].requiredEIPs).forEach((elem: number) => {
           if (!(eips.includes(elem) || this.isActivatedEIP(elem))) {
             throw new Error(`${eip} requires EIP ${elem}, but is not included in the EIP list`)
           }

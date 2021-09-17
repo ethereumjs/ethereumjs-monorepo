@@ -134,7 +134,8 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
 
   t.test('customChains parameter: initialization exception', (st) => {
     try {
-      new Common({ chain: testnet, customChains: [testnet as any] })
+      const test = testnet.bootstrapNodes
+      new Common({ chain: testnet, customChains: [testnet] })
       st.fail('should throw')
     } catch (e: any) {
       st.ok(
@@ -152,7 +153,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     let c = new Common({
       chain: Chain.Mainnet,
       hardfork: Hardfork.Byzantium,
-      customChains: [testnet as any],
+      customChains: [testnet],
     })
     st.equal(c.chainName(), 'mainnet', 'customChains, chain set to supported chain')
     st.equal(c.hardforkBlock(), 4370000, 'customChains, chain set to supported chain')
@@ -164,7 +165,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     c = new Common({
       chain: 'testnet',
       hardfork: Hardfork.Byzantium,
-      customChains: [testnet as any],
+      customChains: [testnet],
     })
     st.equal(c.chainName(), 'testnet', 'customChains, chain initialized with custom chain')
     st.equal(c.hardforkBlock(), 4, 'customChains, chain initialized with custom chain')
@@ -178,7 +179,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     c = new Common({
       chain: 'testnet2',
       hardfork: Hardfork.Istanbul,
-      customChains: customChains as any,
+      customChains,
     })
     st.equal(c.chainName(), 'testnet2', 'customChains, chain initialized with custom chain')
     st.equal(c.hardforkBlock(), 10, 'customChains, chain initialized with custom chain')
@@ -194,7 +195,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     const genesisState = {
       '0x0000000000000000000000000000000000000000': '0x1',
     }
-    const customChainsWithGenesis: [IChain, GenesisState][] = [[testnet as any, genesisState]]
+    const customChainsWithGenesis: [IChain, GenesisState][] = [[testnet, genesisState]]
     c = new Common({
       chain: 'testnet',
       hardfork: Hardfork.Istanbul,
