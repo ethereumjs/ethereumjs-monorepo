@@ -860,10 +860,10 @@ export default class Common extends EventEmitter {
     // Logic: if accumulator is still null and on the first occurence of
     // a block greater than the current hfBlock set the accumulator,
     // pass on the accumulator as the final result from this time on
-    const nextHfBlock = this.hardforks().reduce((acc: BN, hf: HardforkParams) => {
-      const block = hf.block ? new BN(hf.block) : null
-      return block && block.gt(hfBlock) && acc === null ? block : acc
-    }, new BN(0))
+    const nextHfBlock = this.hardforks().reduce((acc: BN | null, hf: any) => {
+      const block = new BN(hf.block)
+      return block.gt(hfBlock) && acc === null ? block : acc
+    }, null)
     return nextHfBlock
   }
 
@@ -877,6 +877,7 @@ export default class Common extends EventEmitter {
     blockNumber = toType(blockNumber, TypeOutput.BN)
     hardfork = this._chooseHardfork(hardfork, false)
     const nextHardforkBlock = this.nextHardforkBlockBN(hardfork)
+
     return nextHardforkBlock === null ? false : nextHardforkBlock.eq(blockNumber)
   }
 
