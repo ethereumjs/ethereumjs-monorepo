@@ -214,13 +214,8 @@ export class FullSynchronizer extends Synchronizer {
    * @returns True if block has already been sent to peer
    */
   private addToKnownByPeer(blockHash: Buffer, peer: Peer): boolean {
-    if (!this.newBlocksKnownByPeer.has(peer.id)) {
-      this.newBlocksKnownByPeer.set(peer.id, [{ hash: blockHash, added: Date.now() }])
-      return false
-    }
-
     const knownBlocks = this.newBlocksKnownByPeer.get(peer.id) ?? []
-    if (knownBlocks?.filter((knownBlock) => knownBlock.hash.equals(blockHash)).length > 0) {
+    if (knownBlocks.find((knownBlock) => knownBlock.hash.equals(blockHash))) {
       return true
     }
     knownBlocks.push({ hash: blockHash, added: Date.now() })
