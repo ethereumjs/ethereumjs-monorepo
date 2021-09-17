@@ -528,7 +528,7 @@ export default class Common extends EventEmitter {
         )
       }
       if (EIPs[eip].requiredEIPs) {
-        ;(<number[]>EIPs[eip].requiredEIPs).forEach((elem: number) => {
+        (<number[]>EIPs[eip].requiredEIPs).forEach((elem: number) => {
           if (!(eips.includes(elem) || this.isActivatedEIP(elem))) {
             throw new Error(`${eip} requires EIP ${elem}, but is not included in the EIP list`)
           }
