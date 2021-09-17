@@ -1,6 +1,5 @@
 {
   "extends": "../../config/tsconfig.json",
   "include": ["bin", "lib", "test"],
-  "compilerOptions": {
-  },
+  "compilerOptions": {"skipLibCheck": true}
 }
