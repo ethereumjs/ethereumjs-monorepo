@@ -29,7 +29,7 @@
     "coverage": "../../config/cli/coverage.sh",
     "format": "ethereumjs-config-format",
     "format:fix": "ethereumjs-config-format-fix",
-    "tsc": "ethereumjs-config-ts-compile",
+    "tsc": "../../config/cli/ts-compile.sh",
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "tape": "tape -r ts-node/register",

@@ -134,7 +134,6 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
 
   t.test('customChains parameter: initialization exception', (st) => {
     try {
-      const test = testnet.bootstrapNodes
       new Common({ chain: testnet, customChains: [testnet] })
       st.fail('should throw')
     } catch (e: any) {
