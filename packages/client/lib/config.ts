@@ -288,7 +288,8 @@ export class Config {
       // Otherwise parse transports from transports option
       this.servers = parseTransports(this.transports).map((t) => {
         if (t.name === 'rlpx') {
-          const bootnodes = this.bootnodes ?? this.chainCommon.bootstrapNodes()
+          // TODO: Commented out this.chainCommon.bootstrapNodes() as its type is incompatible with the format required byRlpxServer
+          const bootnodes = this.bootnodes ?? [] // this.chainCommon.bootstrapNodes()
           const dnsNetworks = options.dnsNetworks ?? this.chainCommon.dnsNetworks()
           return new RlpxServer({ config: this, bootnodes, dnsNetworks })
         } else if (t.name === 'libp2p') {
