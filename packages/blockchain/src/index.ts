@@ -71,7 +71,11 @@ export interface BlockchainOptions {
   common?: Common
 
   /**
-   * Set the HF to the fork determined by the head block and update on head updates
+   * Set the HF to the fork determined by the head block and update on head updates.
+   *
+   * Note: for HFs where the transition is also determined by a total difficulty
+   * threshold (merge HF) the calculated TD is additionally taken into account
+   * for HF determination.
    *
    * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
    */
@@ -399,7 +403,8 @@ export default class Blockchain implements BlockchainInterface {
     }
     if (this._hardforkByHeadBlockNumber) {
       const latestHeader = await this._getHeader(this._headHeaderHash)
-      this._common.setHardforkByBlockNumber(latestHeader.number)
+      const td = await this.getTotalDifficulty(this._headHeaderHash)
+      this._common.setHardforkByBlockNumber(latestHeader.number, td)
     }
   }
 
@@ -872,8 +877,7 @@ export default class Blockchain implements BlockchainInterface {
       const block =
         item instanceof BlockHeader
           ? new Block(item, undefined, undefined, {
-              common: this._common,
-              hardforkByBlockNumber: true,
+              common: item._common,
             })
           : item
       const isGenesis = block.isGenesis()
@@ -938,25 +942,23 @@ export default class Blockchain implements BlockchainInterface {
         }
       }
 
-      if (block._common.consensusType() !== ConsensusType.ProofOfStake) {
-        // set total difficulty in the current context scope
-        if (this._headHeaderHash) {
-          currentTd.header = await this.getTotalDifficulty(this._headHeaderHash)
-        }
-        if (this._headBlockHash) {
-          currentTd.block = await this.getTotalDifficulty(this._headBlockHash)
-        }
-
-        // calculate the total difficulty of the new block
-        let parentTd = new BN(0)
-        if (!block.isGenesis()) {
-          parentTd = await this.getTotalDifficulty(header.parentHash, blockNumber.subn(1))
-        }
-        td.iadd(parentTd)
-
-        // save total difficulty to the database
-        dbOps = dbOps.concat(DBSetTD(td, blockNumber, blockHash))
+      // set total difficulty in the current context scope
+      if (this._headHeaderHash) {
+        currentTd.header = await this.getTotalDifficulty(this._headHeaderHash)
       }
+      if (this._headBlockHash) {
+        currentTd.block = await this.getTotalDifficulty(this._headBlockHash)
+      }
+
+      // calculate the total difficulty of the new block
+      let parentTd = new BN(0)
+      if (!block.isGenesis()) {
+        parentTd = await this.getTotalDifficulty(header.parentHash, blockNumber.subn(1))
+      }
+      td.iadd(parentTd)
+
+      // save total difficulty to the database
+      dbOps = dbOps.concat(DBSetTD(td, blockNumber, blockHash))
 
       // save header/block to the database
       dbOps = dbOps.concat(DBSetBlockOrHeader(block))
@@ -977,7 +979,7 @@ export default class Blockchain implements BlockchainInterface {
           this._headBlockHash = blockHash
         }
         if (this._hardforkByHeadBlockNumber) {
-          this._common.setHardforkByBlockNumber(blockNumber)
+          this._common.setHardforkByBlockNumber(blockNumber, td)
         }
 
         // TODO SET THIS IN CONSTRUCTOR
@@ -1478,9 +1480,8 @@ export default class Blockchain implements BlockchainInterface {
         staleHeadBlock = true
       }
 
-      currentNumber.isubn(1)
       try {
-        header = await this._getHeader(header.parentHash, currentNumber)
+        header = await this._getHeader(header.parentHash, currentNumber.isubn(1))
       } catch (error: any) {
         staleHeads = []
         if (error.type !== 'NotFoundError') {

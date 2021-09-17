@@ -1,17 +1,14 @@
 {
-  "name": "testnet3",
-  "chainId": 33333,
-  "networkId": 33333,
-  "defaultHardfork": "istanbul",
+  "name": "testnetPOS",
+  "chainId": 66666,
+  "networkId": 66666,
+  "defaultHardfork": "chainstart",
   "consensus": {
-    "type": "poa",
-    "algorithm": "clique",
-    "clique": {
-      "period": 15,
-      "epoch": 30000
-    }
+    "type": "pos",
+    "algorithm": "casper",
+    "casper": {}
   },
-  "comment": "Private test network",
+  "comment": "Private test network (TODO: genesis block not constructed according to POS block rules yet)",
   "url": "[TESTNET_URL]",
   "genesis": {
     "hash": "0xaa00000000000000000000000000000000000000000000000000000000000000",
@@ -25,23 +22,12 @@
   "hardforks": [
     {
       "name": "chainstart",
-      "block": 0
+      "block": 0,
+      "td": 0
     },
     {
-      "name": "homestead",
-      "block": 1
-    },
-    {
-      "name": "tangerineWhistle",
-      "block": 2
-    },
-    {
-      "name": "spuriousDragon",
-      "block": 3
-    },
-    {
-      "name": "istanbul",
-      "block": 10
+      "name": "shanghai",
+      "block": 5
     }
   ],
   "bootstrapNodes": [

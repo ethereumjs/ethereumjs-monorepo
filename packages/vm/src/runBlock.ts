@@ -114,8 +114,8 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
    */
   await this._emit('beforeBlock', block)
 
-  if (this._hardforkByBlockNumber) {
-    this._common.setHardforkByBlockNumber(block.header.number.toNumber())
+  if (this._hardforkByBlockNumber || this._hardforkByTD) {
+    this._common.setHardforkByBlockNumber(block.header.number.toNumber(), this._hardforkByTD)
   }
   if (this.DEBUG) {
     debug('-'.repeat(100))

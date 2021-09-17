@@ -5,6 +5,7 @@ import { Block, BlockBuffer, BlockHeader } from '../src'
 import blockFromRpc from '../src/from-rpc'
 import { Mockchain } from './mockchain'
 import { createBlock } from './util'
+import testnetMerge from './testdata/testnetMerge.json'
 import * as testData from './testdata/testdata.json'
 import * as testData2 from './testdata/testdata2.json'
 import * as testDataGenesis from './testdata/genesishashestest.json'
@@ -57,6 +58,61 @@ tape('[Block]: block functions', function (t) {
 
     block = Block.fromValuesArray(valuesArray, { freeze: false })
     st.ok(!Object.isFrozen(block), 'block should not be frozen when freeze deactivated in options')
+
+    st.end()
+  })
+
+  t.test('initialization -> hardforkByBlockNumber option', function (st) {
+    const customChains = [testnetMerge]
+    const common = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
+
+    let block = Block.fromBlockData(
+      {
+        header: {
+          number: 12, // Berlin block
+        },
+      },
+      { common, hardforkByBlockNumber: true }
+    )
+    st.equal(block._common.hardfork(), 'berlin', 'should use hardforkByBlockNumber option')
+
+    block = Block.fromBlockData(
+      {
+        header: {
+          number: 20, // Future block
+        },
+      },
+      { common, hardforkByTD: 5001 }
+    )
+    st.equal(block._common.hardfork(), 'merge', 'should use hardforkByTD option (td > threshold)')
+
+    block = Block.fromBlockData(
+      {
+        header: {
+          number: 12, // Berlin block
+        },
+      },
+      { common, hardforkByTD: 3000 }
+    )
+    st.equal(
+      block._common.hardfork(),
+      'berlin',
+      'should work with hardforkByTD option (td < threshold)'
+    )
+
+    try {
+      Block.fromBlockData({}, { common, hardforkByBlockNumber: true, hardforkByTD: 3000 })
+      st.fail('should not reach this')
+    } catch (e: any) {
+      const msg =
+        'should throw if hardforkByBlockNumber and hardforkByTD options are used in conjunction'
+      st.ok(
+        e.message.includes(
+          `The hardforkByBlockNumber and hardforkByTD options can't be used in conjunction`
+        ),
+        msg
+      )
+    }
 
     st.end()
   })
