@@ -288,7 +288,7 @@ export class Config {
       // Otherwise parse transports from transports option
       this.servers = parseTransports(this.transports).map((t) => {
         if (t.name === 'rlpx') {
-          // TODO: Commented out this.chainCommon.bootstrapNodes() as its type is incompatible with the format required byRlpxServer
+          // TODO: Commented out this.chainCommon.bootstrapNodes() as its type is incompatible with the format required by RlpxServer
           const bootnodes = this.bootnodes ?? [] // this.chainCommon.bootstrapNodes()
           const dnsNetworks = options.dnsNetworks ?? this.chainCommon.dnsNetworks()
           return new RlpxServer({ config: this, bootnodes, dnsNetworks })
