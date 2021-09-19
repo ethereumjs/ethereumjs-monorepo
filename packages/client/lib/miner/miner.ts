@@ -216,7 +216,7 @@ export class Miner {
         } else {
           // If there is an error adding a tx, it will be skipped
           const hash = '0x' + txs[index].hash().toString('hex')
-          this.config.logger.error(
+          this.config.logger.debug(
             `Skipping tx ${hash}, error encountered when trying to add tx:\n${error}`
           )
         }
@@ -233,11 +233,6 @@ export class Miner {
     await this.synchronizer.handleNewBlock(block)
     // Remove included txs from TxPool
     this.synchronizer.txPool.removeNewBlockTxs([block])
-    // Inform connected peers of new block
-    for (const peer of (this.synchronizer as any).pool.peers) {
-      const { td } = (this.synchronizer as any).chain.headers
-      peer.eth.send('NewBlock', [block, td])
-    }
     this.config.events.removeListener(Event.CHAIN_UPDATED, setInterrupt.bind(this))
   }
 

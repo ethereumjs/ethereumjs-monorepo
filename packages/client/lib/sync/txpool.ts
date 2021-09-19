@@ -428,19 +428,27 @@ export class TxPool {
   }
 
   /**
-   * Helper to return a normalized gas price across different transaction types.
+   * Helper to return a normalized gas price across different
+   * transaction types. Providing the baseFee param returns the
+   * priority tip, and omitting it returns the max total fee.
    * @param tx The tx
-   * @param priority If a 1559 tx and true, returns the maxPriorityFeePerGas. If false, returns the maxFeePerGas. (default: true)
+   * @param baseFee Provide a baseFee to subtract from the legacy
+   * gasPrice to determine the leftover priority tip.
    */
-  private txGasPrice(tx: TypedTransaction, priority = true) {
-    if (tx.supports(Capability.EIP1559FeeMarket)) {
-      if (priority) {
+  private txGasPrice(tx: TypedTransaction, baseFee?: BN) {
+    const supports1559 = tx.supports(Capability.EIP1559FeeMarket)
+    if (baseFee) {
+      if (supports1559) {
         return (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
       } else {
-        return (tx as FeeMarketEIP1559Transaction).maxFeePerGas
+        return (tx as Transaction).gasPrice.sub(baseFee)
       }
     } else {
-      return (tx as Transaction).gasPrice
+      if (supports1559) {
+        return (tx as FeeMarketEIP1559Transaction).maxFeePerGas
+      } else {
+        return (tx as Transaction).gasPrice
+      }
     }
   }
 
@@ -479,7 +487,7 @@ export class TxPool {
       if (baseFee) {
         // If any tx has an insiffucient gasPrice,
         // remove all txs after that since they cannot be executed
-        const found = txsSortedByNonce.findIndex((tx) => this.txGasPrice(tx, false).lt(baseFee))
+        const found = txsSortedByNonce.findIndex((tx) => this.txGasPrice(tx).lt(baseFee))
         if (found > -1) {
           txsSortedByNonce = txsSortedByNonce.slice(0, found)
         }
@@ -489,7 +497,7 @@ export class TxPool {
     // Initialize a price based heap with the head transactions
     const byPrice = new Heap<TypedTransaction>({
       comparBefore: (a: TypedTransaction, b: TypedTransaction) =>
-        this.txGasPrice(b).sub(this.txGasPrice(a)).ltn(0),
+        this.txGasPrice(b, baseFee).sub(this.txGasPrice(a, baseFee)).ltn(0),
     })
     byNonce.forEach((txs, address) => {
       byPrice.insert(txs[0])
