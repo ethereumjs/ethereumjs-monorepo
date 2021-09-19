@@ -159,7 +159,7 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
       const c = new Common({ chain: network })
       const dnsNetworks = c.dnsNetworks()
       st.ok(Array.isArray(dnsNetworks), 'is an array')
-      st.equal(typeof dnsNetworks?.[0], 'string', 'returns the DNS ENR url as a string')
+      st.equal(typeof dnsNetworks[0], 'string', 'returns the DNS ENR url as a string')
     }
     st.end()
   })

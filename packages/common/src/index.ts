@@ -4,7 +4,13 @@ import { BN, BNLike, toType, TypeOutput, intToBuffer } from 'ethereumjs-util'
 import { _getInitializedChains } from './chains'
 import { hardforks as HARDFORK_CHANGES } from './hardforks'
 import { EIPs } from './eips'
-import { BootstrapNode, Chain as IChain, GenesisBlock, GenesisState, HardforkParams } from './types'
+import {
+  BootstrapNode,
+  Chain as IChain,
+  GenesisBlock,
+  GenesisState,
+  Hardfork as HardforkParams,
+} from './types'
 
 export enum CustomChain {
   /**
@@ -529,7 +535,7 @@ export default class Common extends EventEmitter {
       }
       if (EIPs[eip].requiredEIPs) {
         // eslint-disable-next-line prettier/prettier
-        (<number[]>EIPs[eip].requiredEIPs).forEach((elem: number) => {
+        ;(<number[]>EIPs[eip].requiredEIPs).forEach((elem: number) => {
           if (!(eips.includes(elem) || this.isActivatedEIP(elem))) {
             throw new Error(`${eip} requires EIP ${elem}, but is not included in the EIP list`)
           }
@@ -857,11 +863,11 @@ export default class Common extends EventEmitter {
       return null
     }
     // Next fork block number or null if none available
-    // Logic: if accumulator is still null and on the first occurence of
+    // Logic: if accumulator is still null and on the first occurrence of
     // a block greater than the current hfBlock set the accumulator,
     // pass on the accumulator as the final result from this time on
-    const nextHfBlock = this.hardforks().reduce((acc: BN | null, hf: any) => {
-      const block = new BN(hf.block)
+    const nextHfBlock = this.hardforks().reduce((acc: BN | null, hf: HardforkParams) => {
+      const block = new BN(hf.block!)
       return block.gt(hfBlock) && acc === null ? block : acc
     }, null)
     return nextHfBlock
@@ -1011,8 +1017,8 @@ export default class Common extends EventEmitter {
    * Returns DNS networks for the current chain
    * @returns {String[]} Array of DNS ENR urls
    */
-  dnsNetworks(): string[] | undefined {
-    return this._chainParams['dnsNetworks']
+  dnsNetworks(): string[] {
+    return this._chainParams['dnsNetworks']!
   }
 
   /**
@@ -1079,7 +1085,7 @@ export default class Common extends EventEmitter {
    *
    * Note: This value can update along a hardfork.
    */
-  consensusType(): string | ConsensusType | undefined {
+  consensusType(): string | ConsensusType {
     const hardfork = this.hardfork()
 
     let value
@@ -1092,7 +1098,7 @@ export default class Common extends EventEmitter {
     if (value) {
       return value
     }
-    return this._chainParams['consensus']?.['type']
+    return this._chainParams['consensus']!['type']
   }
 
   /**
@@ -1117,8 +1123,7 @@ export default class Common extends EventEmitter {
     if (value) {
       return value
     }
-    // TODO: Remove null coalescing when consensus property becomes required
-    return this._chainParams['consensus']?.['algorithm'] ?? ConsensusAlgorithm.Ethash
+    return this._chainParams['consensus']!['algorithm'] as ConsensusAlgorithm
   }
 
   /**
@@ -1149,11 +1154,8 @@ export default class Common extends EventEmitter {
     if (value) {
       return value
     }
-    const consensusAlgorithm = this.consensusAlgorithm() as
-      | ConsensusAlgorithm.Ethash
-      | ConsensusAlgorithm.Clique
-      | ConsensusAlgorithm.Casper
-    return consensusAlgorithm ? this._chainParams['consensus']?.[consensusAlgorithm] ?? {} : {}
+    const consensusAlgorithm = this.consensusAlgorithm()
+    return this._chainParams['consensus']![consensusAlgorithm as ConsensusAlgorithm]
   }
 
   /**
