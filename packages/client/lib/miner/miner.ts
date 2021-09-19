@@ -22,6 +22,7 @@ export interface MinerOptions {
  * @memberof module:miner
  */
 export class Miner {
+  private DEFAULT_PERIOD = 15
   private config: Config
   private synchronizer: FullSynchronizer
   private assembling: boolean
@@ -40,7 +41,7 @@ export class Miner {
     this.synchronizer = options.synchronizer
     this.running = false
     this.assembling = false
-    this.period = (this.config.chainCommon.consensusConfig().period ?? 15) * 1000 // default: 15s period defined in ms
+    this.period = (this.config.chainCommon.consensusConfig().period ?? this.DEFAULT_PERIOD) * 1000 // defined in ms for setTimeout use
   }
 
   /**
