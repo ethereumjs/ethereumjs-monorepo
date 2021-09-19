@@ -11,7 +11,7 @@ import {
 } from './util'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
-import type { Block, BlockHeader } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 const xor = require('buffer-xor')
 
 type Solution = {
@@ -21,6 +21,7 @@ type Solution = {
 
 class Miner {
   public blockHeader: BlockHeader
+  public block?: Block
   public ethash: Ethash
 
   public currentNonce: BN
@@ -29,17 +30,62 @@ class Miner {
   private headerHash?: Buffer
   private stopMining: boolean
 
-  constructor(blockHeader: BlockHeader, ethash: Ethash) {
-    this.blockHeader = blockHeader
+  /**
+   * Create a Miner object
+   * @param mineObject - The object to mine on, either a `BlockHeader` or a `Block` object
+   * @param ethash - Ethash object to use for mining
+   */
+
+  constructor(mineObject: BlockHeader | Block, ethash: Ethash) {
+    if (mineObject.constructor === BlockHeader) {
+      this.blockHeader = mineObject
+    } else if (mineObject.constructor === Block) {
+      this.block = mineObject
+      this.blockHeader = mineObject.header
+    } else {
+      throw new Error('unsupported mineObject')
+    }
     this.currentNonce = new BN(0)
     this.ethash = ethash
     this.stopMining = false
   }
 
+  /**
+   * Stop the miner on the next iteration
+   */
   stop() {
     this.stopMining = true
   }
 
+  /**
+   * Iterate `iterations` time over nonces, returns a `BlockHeader` or `Block` if a solution is found, `undefined` otherwise
+   * @param iterations - Number of iterations to iterate over. If `-1` is passed, the loop runs until a solution is found
+   * @returns - `undefined` if no solution was found within the iterations, or a `BlockHeader` or `Block`
+   *           with valid PoW based upon what was passed in the constructor
+   */
+  async mine(iterations: number = 0): Promise<undefined | BlockHeader | Block> {
+    const solution = await this.iterate(iterations)
+
+    if (solution) {
+      if (this.block) {
+        const data = this.block.toJSON()
+        data.header!.mixHash = '0x' + solution.mixHash.toString('hex')
+        data.header!.nonce = '0x' + solution.nonce.toString('hex')
+        return Block.fromBlockData(data)
+      } else {
+        const data = this.blockHeader.toJSON()
+        data.mixHash = '0x' + solution.mixHash.toString('hex')
+        data.nonce = '0x' + solution.nonce.toString('hex')
+        return BlockHeader.fromHeaderData(data)
+      }
+    }
+  }
+
+  /**
+   * Iterate `iterations` times over nonces to find a valid PoW. Caches solution if one is found
+   * @param iterations - Number of iterations to iterate over. If `-1` is passed, the loop runs until a solution is found
+   * @returns - `undefined` if no solution was found, or otherwise a `Solution` object
+   */
   async iterate(iterations: number = 0): Promise<undefined | Solution> {
     if (this.solution) {
       return this.solution
@@ -51,24 +97,37 @@ class Miner {
     const { number, difficulty } = this.blockHeader
 
     await this.ethash.loadEpoc(number.toNumber())
+    const self = this
+    while (iterations != 0 && !this.stopMining) {
+      // The promise/setTimeout construction is necessary to ensure we jump out of the event loop
+      // Without this, for high-difficulty blocks JS never jumps out of the Promise
+      const solution = await new Promise((resolve) => {
+        setTimeout(function () {
+          const nonce = self.currentNonce.toBuffer(undefined, 8)
 
-    while (iterations != 0 || !this.stopMining) {
-      const nonce = this.currentNonce.toBuffer(undefined, 8)
+          const a = self.ethash.run(headerHash, nonce)
+          const result = new BN(a.hash)
 
-      const a = this.ethash.run(headerHash, nonce)
-      const result = new BN(a.hash)
+          if (TWO_POW256.div(difficulty).cmp(result) === 1) {
+            const solution: Solution = {
+              mixHash: <Buffer>a.mix,
+              nonce,
+            }
+            self.solution = solution
+            resolve(solution)
+            return
+          }
 
-      if (TWO_POW256.div(difficulty).cmp(result) === 1) {
-        const solution: Solution = {
-          mixHash: <Buffer>a.mix,
-          nonce,
-        }
-        this.solution = solution
-        return solution
+          self.currentNonce.iaddn(1)
+          iterations--
+
+          resolve(null)
+        }, 0)
+      })
+
+      if (solution) {
+        return <Solution>solution
       }
-
-      this.currentNonce.iaddn(1)
-      iterations--
     }
   }
 }
@@ -247,8 +306,14 @@ export default class Ethash {
     }
   }
 
-  getMiner(blockHeader: BlockHeader): Miner {
-    return new Miner(blockHeader, this)
+  /**
+   * Returns a `Miner` object
+   * To mine a `BlockHeader` or `Block`, use the one-liner `await ethash.getMiner(block).mine(-1)`
+   * @param mineObject - Object to mine on, either a `BlockHeader` or a `Block`
+   * @returns - A miner object
+   */
+  getMiner(mineObject: BlockHeader | Block): Miner {
+    return new Miner(mineObject, this)
   }
 
   async _verifyPOW(header: BlockHeader) {
