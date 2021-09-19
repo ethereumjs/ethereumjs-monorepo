@@ -390,35 +390,81 @@ export default class Common extends EventEmitter {
   }
 
   /**
-   * Returns the hardfork based on the block number provided
+   * Returns the hardfork based on the block number or an optional
+   * total difficulty (Merge HF) provided.
+   *
+   * An optional TD takes precedence in case the corresponding HF block
+   * is set to `null` or otherwise needs to match (if not an error
+   * will be thrown).
+   *
    * @param blockNumber
+   * @param td
    * @returns The name of the HF
    */
-  getHardforkByBlockNumber(blockNumber: BNLike): string {
+  getHardforkByBlockNumber(blockNumber: BNLike, td?: BNLike): string {
     blockNumber = toType(blockNumber, TypeOutput.BN)
+    td = td ? toType(td, TypeOutput.BN) : undefined
 
     let hardfork = Hardfork.Chainstart
+    let minTdHF
+    let maxTdHF
+    let previousHF
     for (const hf of this.hardforks()) {
       // Skip comparison for not applied HFs
       if (hf.block === null) {
+        if (td && hf.td) {
+          if (td.gten(hf.td)) {
+            return hf.name
+          }
+        }
         continue
       }
-
       if (blockNumber.gte(new BN(hf.block))) {
         hardfork = hf.name
+      }
+      if (td && hf.td) {
+        if (td.gten(hf.td)) {
+          minTdHF = hf.name
+        } else {
+          maxTdHF = previousHF
+        }
+      }
+      previousHF = hf.name
+    }
+    if (td) {
+      let msgAdd = `block number: ${blockNumber} (-> ${hardfork}), `
+      if (minTdHF) {
+        if (!this.hardforkGteHardfork(hardfork, minTdHF)) {
+          const msg = 'HF determined by block number is lower than the minimum total difficulty HF'
+          msgAdd += `total difficulty: ${td} (-> ${minTdHF})`
+          throw new Error(`${msg}: ${msgAdd}`)
+        }
+      }
+      if (maxTdHF) {
+        if (!this.hardforkGteHardfork(maxTdHF, hardfork)) {
+          const msg = 'Maximum HF determined by total difficulty is lower than the block number HF'
+          msgAdd += `total difficulty: ${td} (-> ${maxTdHF})`
+          throw new Error(`${msg}: ${msgAdd}`)
+        }
       }
     }
     return hardfork
   }
 
   /**
-   * Sets a new hardfork based on the block number provided
+   * Sets a new hardfork based on the block number or an optional
+   * total difficulty (Merge HF) provided.
+   *
+   * An optional TD takes precedence in case the corresponding HF block
+   * is set to `null` or otherwise needs to match (if not an error
+   * will be thrown).
+   *
    * @param blockNumber
+   * @param td
    * @returns The name of the HF set
    */
-  setHardforkByBlockNumber(blockNumber: BNLike): string {
-    blockNumber = toType(blockNumber, TypeOutput.BN)
-    const hardfork = this.getHardforkByBlockNumber(blockNumber)
+  setHardforkByBlockNumber(blockNumber: BNLike, td?: BNLike): string {
+    const hardfork = this.getHardforkByBlockNumber(blockNumber, td)
     this.setHardfork(hardfork)
     return hardfork
   }
@@ -759,6 +805,20 @@ export default class Common extends EventEmitter {
       return null
     }
     return new BN(block)
+  }
+
+  /**
+   * Returns the hardfork change total difficulty (Merge HF) for hardfork provided or set
+   * @param hardfork Hardfork name, optional if HF set
+   * @returns Total difficulty or null if no set
+   */
+  hardforkTD(hardfork?: string | Hardfork): BN | null {
+    hardfork = this._chooseHardfork(hardfork, false)
+    const td = this._getHardfork(hardfork)['td']
+    if (td === undefined || td === null) {
+      return null
+    }
+    return new BN(td)
   }
 
   /**

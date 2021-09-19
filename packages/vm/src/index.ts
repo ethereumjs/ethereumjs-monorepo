@@ -1,5 +1,5 @@
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { Account, Address } from 'ethereumjs-util'
+import { Account, Address, BNLike } from 'ethereumjs-util'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain } from '@ethereumjs/common'
 import { StateManager, DefaultStateManager } from './state/index'
@@ -105,6 +105,17 @@ export interface VMOpts {
    * Default: `false`
    */
   hardforkByBlockNumber?: boolean
+  /**
+   * Select the HF by total difficulty (Merge HF)
+   *
+   * This option is a superset of `hardforkByBlockNumber` (so only use one of both options)
+   * and determines the HF by both the block number and the TD.
+   *
+   * Since the TD is only a threshold the block number will in doubt take precedence (imagine
+   * e.g. both Merge and Shanghai HF blocks set and the block number from the block provided
+   * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
+   */
+  hardforkByTD?: BNLike
 }
 
 /**
@@ -130,6 +141,7 @@ export default class VM extends AsyncEventEmitter {
   protected readonly _allowUnlimitedContractSize: boolean
   protected _opcodes: OpcodeList
   protected readonly _hardforkByBlockNumber: boolean
+  protected readonly _hardforkByTD?: BNLike
 
   /**
    * Cached emit() function, not for public usage
@@ -233,7 +245,14 @@ export default class VM extends AsyncEventEmitter {
 
     this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize ?? false
 
+    if (opts.hardforkByBlockNumber !== undefined && opts.hardforkByTD !== undefined) {
+      throw new Error(
+        `The hardforkByBlockNumber and hardforkByTD options can't be used in conjunction`
+      )
+    }
+
     this._hardforkByBlockNumber = opts.hardforkByBlockNumber ?? false
+    this._hardforkByTD = opts.hardforkByTD
 
     if (this._common.isActivatedEIP(2537)) {
       if (isBrowser()) {

@@ -74,12 +74,12 @@
       "forkHash": "0xb8c6299d"
     },
     {
-      "name": "shanghai",
+      "name": "merge",
       "block": null,
       "forkash": null
     },
     {
-      "name": "merge",
+      "name": "shanghai",
       "block": null,
       "forkash": null
     }

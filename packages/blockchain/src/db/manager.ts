@@ -1,12 +1,6 @@
 import * as rlp from 'rlp'
 import { Address, BN } from 'ethereumjs-util'
-import {
-  Block,
-  BlockHeader,
-  BlockBuffer,
-  BlockHeaderBuffer,
-  BlockBodyBuffer,
-} from '@ethereumjs/block'
+import { Block, BlockHeader, BlockBuffer, BlockBodyBuffer } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import { CliqueLatestSignerStates, CliqueLatestVotes, CliqueLatestBlockSigners } from '../clique'
 import Cache from './cache'
@@ -157,7 +151,7 @@ export class DBManager {
       throw new Error('Unknown blockId type')
     }
 
-    const header: BlockHeaderBuffer = (await this.getHeader(hash, number)).raw()
+    const header = await this.getHeader(hash, number)
     let body: BlockBodyBuffer = [[], []]
     try {
       body = await this.getBody(hash, number)
@@ -166,8 +160,12 @@ export class DBManager {
         throw error
       }
     }
-    const blockData = [header, ...body] as BlockBuffer
-    const opts = { common: this._common, hardforkByBlockNumber: true }
+    const blockData = [header.raw(), ...body] as BlockBuffer
+    let parentTd
+    if (!number.eqn(0)) {
+      parentTd = await this.getTotalDifficulty(header.parentHash, number.subn(1))
+    }
+    const opts = { common: this._common, hardforkByTD: parentTd }
     return Block.fromValuesArray(blockData, opts)
   }
 
@@ -184,7 +182,12 @@ export class DBManager {
    */
   async getHeader(blockHash: Buffer, blockNumber: BN) {
     const encodedHeader = await this.get(DBTarget.Header, { blockHash, blockNumber })
-    const opts = { common: this._common, hardforkByBlockNumber: true }
+    let parentTd
+    if (!blockNumber.eqn(0)) {
+      const parentHash = await this.numberToHash(blockNumber.subn(1))
+      parentTd = await this.getTotalDifficulty(parentHash, blockNumber.subn(1))
+    }
+    const opts = { common: this._common, hardforkByTD: parentTd }
     return BlockHeader.fromRLPSerializedHeader(encodedHeader, opts)
   }
 
