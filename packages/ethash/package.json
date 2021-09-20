@@ -22,7 +22,7 @@
     "build:node": "../../config/cli/ts-build.sh node",
     "build:browser": "../../config/cli/ts-build.sh browser",
     "tsc": "../../config/cli/ts-compile.sh",
-    "prepublishOnly": "npm run clean && npm run build && npm run test",
+    "prepublishOnly": "../../config/cli/prepublish.sh",
     "clean": "../../config/cli/clean-package.sh",
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
