@@ -3,8 +3,7 @@
   "compilerOptions": {
       "outDir": "./dist",
       "lib": ["dom"],
-      "skipLibCheck": true,
     },
-  "include": ["src/**/*.ts", "test/*.spec.ts"],
+  "include": ["src/**/*.ts", "test/*.spec.ts"]
 }
   
