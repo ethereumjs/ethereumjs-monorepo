@@ -142,7 +142,7 @@ export class EthProtocol extends Protocol {
     {
       name: 'NewBlock',
       code: 0x07,
-      encode: ([block, td]: [Block, BN]) => [block.raw(), td.toBuffer()],
+      encode: ([block, td]: [Block, BN]) => [block.raw(), td.toArrayLike(Buffer)],
       decode: ([block, td]: [BlockBuffer, Buffer]) => [
         Block.fromValuesArray(block, {
           // eslint-disable-next-line no-invalid-this
