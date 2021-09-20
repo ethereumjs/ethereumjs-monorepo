@@ -9,7 +9,7 @@ const Stream = function (protocols: string[]) {
   }
 }
 
-// eslint-disable-next-line no-redeclare
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export type Stream = ReturnType<typeof Stream>
 export type RemoteStream = ReturnType<Stream['remote']>
 

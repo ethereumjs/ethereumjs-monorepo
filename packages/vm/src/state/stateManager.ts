@@ -544,7 +544,7 @@ export default class DefaultStateManager implements StateManager {
    */
   async hasGenesisState(): Promise<boolean> {
     const root = this._common.genesis().stateRoot
-    return await this._trie.checkRoot(root)
+    return await this._trie.checkRoot(toBuffer(root))
   }
 
   /**

@@ -2,6 +2,7 @@
   "extends": "../../config/tsconfig.json",
   "include": ["bin", "lib", "test"],
   "compilerOptions": {
-    "typeRoots": ["node_modules/@types", "lib/@types"],
+    "skipLibCheck": true,
+    "typeRoots": ["node_modules/@types", "lib/@types"]
   },
 }

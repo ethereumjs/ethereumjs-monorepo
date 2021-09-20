@@ -12,6 +12,17 @@ import {
 } from '../src'
 
 tape('toType', function (t) {
+  t.test('from null and undefined', function (st) {
+    st.equal(toType(null, TypeOutput.Number), null)
+    st.equal(toType(null, TypeOutput.BN), null)
+    st.equal(toType(null, TypeOutput.Buffer), null)
+    st.equal(toType(null, TypeOutput.PrefixedHexString), null)
+    st.equal(toType(undefined, TypeOutput.Number), undefined)
+    st.equal(toType(undefined, TypeOutput.BN), undefined)
+    st.equal(toType(undefined, TypeOutput.Buffer), undefined)
+    st.equal(toType(undefined, TypeOutput.PrefixedHexString), undefined)
+    st.end()
+  })
   t.test('from Number', function (st) {
     const num = 1000
     st.test('should convert to Number', function (st) {
