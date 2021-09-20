@@ -46,7 +46,7 @@ export class Block {
 
     // parse uncle headers
     const uncleHeaders = []
-    const uncleOpts: any = {
+    const uncleOpts: BlockOptions = {
       hardforkByBlockNumber: true,
       ...opts, // This potentially overwrites hardforkByBlocknumber
       // Use header common in case of hardforkByBlockNumber being activated
@@ -110,7 +110,7 @@ export class Block {
 
     // parse uncle headers
     const uncleHeaders = []
-    const uncleOpts: any = {
+    const uncleOpts: BlockOptions = {
       hardforkByBlockNumber: true,
       ...opts, // This potentially overwrites hardforkByBlocknumber
       // Use header common in case of hardforkByBlockNumber being activated

@@ -64,7 +64,11 @@ tape('[Block]: block functions', function (t) {
 
   t.test('initialization -> hardforkByBlockNumber option', function (st) {
     const customChains = [testnetMerge]
-    const common = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
+    const common = new Common({
+      chain: 'testnetMerge',
+      hardfork: Hardfork.Istanbul,
+      customChains,
+    })
 
     let block = Block.fromBlockData(
       {
