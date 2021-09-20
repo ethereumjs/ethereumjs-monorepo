@@ -1,7 +1,7 @@
 {
-  "name": "testnet3",
-  "chainId": 33333,
-  "networkId": 33333,
+  "name": "testnetMerge",
+  "chainId": 55555,
+  "networkId": 55555,
   "defaultHardfork": "istanbul",
   "consensus": {
     "type": "poa",
@@ -41,7 +41,28 @@
     },
     {
       "name": "istanbul",
+      "block": 8
+    },
+    {
+      "name": "muirGlacier",
       "block": 10
+    },
+    {
+      "name": "berlin",
+      "block": 12
+    }, 
+    {
+      "name": "london",
+      "block": 14
+    },
+    {
+      "name": "merge",
+      "block": null,
+      "td": 5000
+    },
+    {
+      "name": "shanghai",
+      "block": null
     }
   ],
   "bootstrapNodes": [

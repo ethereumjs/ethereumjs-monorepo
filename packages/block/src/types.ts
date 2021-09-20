@@ -29,6 +29,17 @@ export interface BlockOptions {
    */
   hardforkByBlockNumber?: boolean
   /**
+   * Determine the HF by total difficulty (Merge HF)
+   *
+   * This option is a superset of `hardforkByBlockNumber` (so only use one of both options)
+   * and determines the HF by both the block number and the TD.
+   *
+   * Since the TD is only a threshold the block number will in doubt take precedence (imagine
+   * e.g. both Merge and Shanghai HF blocks set and the block number from the block provided
+   * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
+   */
+  hardforkByTD?: BNLike
+  /**
    * Turns the block header into the canonical genesis block header
    *
    * If set to `true` all other header data is ignored.
