@@ -1,7 +1,9 @@
 #!/usr/bin/env client
 
+import readline from 'readline'
 import { Server as RPCServer } from 'jayson/promise'
-import Common, { Hardfork } from '@ethereumjs/common'
+import Common, { Hardfork, ConsensusType } from '@ethereumjs/common'
+import { Address, toBuffer, privateToAddress } from 'ethereumjs-util'
 import { parseMultiaddrs, parseGenesisState, parseCustomParams } from '../lib/util'
 import EthereumClient from '../lib/client'
 import { Config } from '../lib/config'
@@ -127,6 +129,16 @@ const args = require('yargs')
       describe: 'Use v4 ("findneighbour" node requests) for peer discovery',
       boolean: true,
     },
+    mine: {
+      describe: 'Enable private custom network mining (beta, PoA only)',
+      boolean: true,
+      default: false,
+    },
+    unlock: {
+      describe:
+        'Comma separated list of accounts to unlock - currently only the first account is used for sealing mined blocks. Beta, you will be promped for a 0x-prefixed private key until keystore functionality is added - FOR YOUR SAFETY PLEASE DO NOT USE ANY ACCOUNTS HOLDING SUBSTANTIAL AMOUNTS OF ETH',
+      array: true,
+    },
   })
   .locale('en_EN').argv
 
@@ -210,8 +222,8 @@ async function run() {
     } catch (err: any) {
       throw new Error(`invalid chain parameters: ${err.message}`)
     }
-    // Use geth genesis parameters file if specified
   } else if (args.gethGenesis) {
+    // Use geth genesis parameters file if specified
     const genesisFile = JSON.parse(fs.readFileSync(args.gethGenesis, 'utf-8'))
     const genesisParams = await parseCustomParams(
       genesisFile,
@@ -222,10 +234,51 @@ async function run() {
       chain: genesisParams.name,
       customChains: [[genesisParams, genesisState]],
     })
-  }
-  // Use default common configuration for specified `chain` if no custom parameters specified
-  else {
+  } else {
+    // Use default common configuration for specified `chain` if no custom parameters specified
     common = new Common({ chain: chain, hardfork: Hardfork.Chainstart })
+  }
+
+  if (args.mine) {
+    if (common.consensusType() !== ConsensusType.ProofOfAuthority) {
+      throw new Error('Currently mining is only supported for PoA consensus')
+    }
+    if (!args.unlock) {
+      throw new Error('Please provide an account to sign sealed blocks with `--unlock [address]` ')
+    }
+  }
+  const accounts: [Address, Buffer][] = [] // [address, privateKey]
+  if (args.unlock) {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    })
+    const question = (text: string) => {
+      return new Promise<string>((resolve) => {
+        rl.question(text, resolve)
+      })
+    }
+
+    try {
+      for (const addressString of args.unlock) {
+        const address = Address.fromString(addressString)
+        const inputKey = await question(
+          `Please enter the 0x-prefixed private key to unlock ${address}:\n`
+        )
+        const privKey = toBuffer(inputKey)
+        const derivedAddress = new Address(privateToAddress(privKey))
+        if (address.equals(derivedAddress)) {
+          accounts.push([address, privKey])
+        } else {
+          throw new Error(
+            `Private key does not match for ${address} (address derived: ${derivedAddress})`
+          )
+        }
+      }
+    } catch (error) {
+      console.error(`Encountered error unlocking account:\n${error}`)
+    }
+    rl.close()
   }
 
   const datadir = args.datadir ?? Config.DATADIR_DEFAULT
@@ -254,6 +307,8 @@ async function run() {
     debugCode: args.debugCode,
     discDns: args.discDns,
     discV4: args.discV4,
+    mine: args.mine,
+    accounts,
   })
   logger = config.logger
   config.events.setMaxListeners(50)
@@ -270,5 +325,4 @@ async function run() {
   })
 }
 
-// eslint-disable-next-line no-console
 run().catch((err) => logger?.error(err) ?? console.error(err))

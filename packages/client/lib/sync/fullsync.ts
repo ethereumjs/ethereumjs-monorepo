@@ -20,7 +20,6 @@ type PeerId = string
  */
 export class FullSynchronizer extends Synchronizer {
   public execution: VMExecution
-
   public txPool: TxPool
 
   private newBlocksKnownByPeer: Map<PeerId, HandledObject[]>
@@ -81,6 +80,10 @@ export class FullSynchronizer extends Synchronizer {
         hash
       )} hardfork=${this.config.chainCommon.hardfork()}`
     )
+    if (this.config.mine) {
+      // Start the TxPool immediately if mining
+      this.txPool.start()
+    }
   }
 
   /**
@@ -252,9 +255,9 @@ export class FullSynchronizer extends Synchronizer {
       await block.header.validate(this.chain.blockchain)
     } catch (err) {
       this.config.logger.debug(
-        `Error processing new block from peer: ${short(Buffer.from(peer!.id))} hash: ${short(
-          block.hash()
-        )}`
+        `Error processing new block from peer: ${
+          peer ? short(Buffer.from(peer.id)) : 'no peer'
+        } hash: ${short(block.hash())}`
       )
       this.config.logger.debug(err)
       return

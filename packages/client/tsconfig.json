@@ -1,5 +1,7 @@
 {
   "extends": "../../config/tsconfig.json",
   "include": ["bin", "lib", "test"],
-  "compilerOptions": {"skipLibCheck": true}
+  "compilerOptions": {
+    "typeRoots": ["node_modules/@types", "lib/@types"]
+  },
 }

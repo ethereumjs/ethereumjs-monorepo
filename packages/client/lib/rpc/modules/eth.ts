@@ -471,7 +471,8 @@ export class Eth {
 
     try {
       const common = this.client.config.chainCommon.copy()
-      if (!this.service.synchronizer.syncTargetHeight) {
+      const { syncTargetHeight } = this.service.synchronizer
+      if (!syncTargetHeight && !this.client.config.mine) {
         return {
           code: INTERNAL_ERROR,
           message: `client is not aware of the current chain height yet (give sync some more time)`,
@@ -479,7 +480,9 @@ export class Eth {
       }
       // Set the tx common to an appropriate HF to create a tx
       // with matching HF rules
-      common.setHardforkByBlockNumber(this.service.synchronizer.syncTargetHeight)
+      if (syncTargetHeight) {
+        common.setHardforkByBlockNumber(syncTargetHeight)
+      }
       const tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), { common })
       if (!tx.isSigned()) {
         return {
@@ -489,13 +492,11 @@ export class Eth {
       }
 
       // Add the tx to own tx pool
-      // TODO: eslint is giving an "Insert `;`" error, retest periodically or fix
-      // eslint-disable-next-line
-      const txPool = (this.service.synchronizer as FullSynchronizer).txPool
+      const { txPool } = this.service.synchronizer as FullSynchronizer
       txPool.add(tx)
 
       const peerPool = this.service.pool
-      if (peerPool.peers.length === 0) {
+      if (peerPool.peers.length === 0 && !this.client.config.mine) {
         return {
           code: INTERNAL_ERROR,
           message: `no peer connection available`,

@@ -628,4 +628,29 @@ tape('Clique: Initialization', (t) => {
       st.end()
     }
   )
+
+  t.test('cliqueSignerInTurn() -> should work as expected', async (st) => {
+    const { blocks, blockchain } = await initWithSigners([A, B, C])
+    // block 1: B, next signer: C
+    await addNextBlock(blockchain, blocks, B)
+    st.notOk(await blockchain.cliqueSignerInTurn(A.address))
+    st.notOk(await blockchain.cliqueSignerInTurn(B.address))
+    st.ok(await blockchain.cliqueSignerInTurn(C.address))
+    // block 2: C, next signer: A
+    await addNextBlock(blockchain, blocks, C)
+    st.ok(await blockchain.cliqueSignerInTurn(A.address))
+    st.notOk(await blockchain.cliqueSignerInTurn(B.address))
+    st.notOk(await blockchain.cliqueSignerInTurn(C.address))
+    // block 3: A, next signer: B
+    await addNextBlock(blockchain, blocks, A)
+    st.notOk(await blockchain.cliqueSignerInTurn(A.address))
+    st.ok(await blockchain.cliqueSignerInTurn(B.address))
+    st.notOk(await blockchain.cliqueSignerInTurn(C.address))
+    // block 4: B, next signer: C
+    await addNextBlock(blockchain, blocks, B)
+    st.notOk(await blockchain.cliqueSignerInTurn(A.address))
+    st.notOk(await blockchain.cliqueSignerInTurn(B.address))
+    st.ok(await blockchain.cliqueSignerInTurn(C.address))
+    st.end()
+  })
 })
