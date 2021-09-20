@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Address, BN } from 'ethereumjs-util'
 import tape from 'tape'
 import Blockchain from '../src'
@@ -538,8 +538,8 @@ tape('Clique: Initialization', (t) => {
         'rinkeby',
         {
           consensus: {
-            type: 'poa',
-            algorithm: 'clique',
+            type: ConsensusType.ProofOfAuthority,
+            algorithm: ConsensusAlgorithm.Clique,
             clique: {
               period: 15,
               epoch: 3,
@@ -601,8 +601,8 @@ tape('Clique: Initialization', (t) => {
         'rinkeby',
         {
           consensus: {
-            type: 'poa',
-            algorithm: 'clique',
+            type: ConsensusType.ProofOfAuthority,
+            algorithm: ConsensusAlgorithm.Clique,
             clique: {
               period: 15,
               epoch: 3,

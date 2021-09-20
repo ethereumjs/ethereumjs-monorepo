@@ -4,5 +4,6 @@
   "compilerOptions": {
     "baseUrl": ".",
     "typeRoots": ["node_modules/@types", "src/@types"],
+    "skipLibCheck": true
   },
 }
