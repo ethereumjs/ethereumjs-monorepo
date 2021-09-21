@@ -30,7 +30,7 @@
     "build": "npm run build:node && npm run build:browser",
     "build:node": "tsc --build ./tsconfig.prod.json",
     "build:browser": "tsc -p ./tsconfig.browser.json && npm run bundle && rm -rf dist.browser",
-    "prepublishOnly": "npm run clean && npm run build && npm run test",
+    "prepublishOnly": "../../config/cli/prepublish.sh",
     "clean": "../../config/cli/clean-package.sh",
     "bundle": "webpack",
     "client:start": "ts-node bin/cli.ts",

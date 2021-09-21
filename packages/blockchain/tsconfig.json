@@ -3,7 +3,6 @@
   "include": ["src/**/*.ts", "test/**/*.ts"],
   "compilerOptions": {
     "types": ["node"],
-    "typeRoots": ["node_modules/@types"],
-    "skipLibCheck": true
+    "typeRoots": ["node_modules/@types"]
   },
 }
