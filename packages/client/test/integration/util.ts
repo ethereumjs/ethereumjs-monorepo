@@ -3,6 +3,7 @@ import { FullEthereumService, LightEthereumService } from '../../lib/service'
 import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
 import Blockchain from '@ethereumjs/blockchain'
+import Common from '@ethereumjs/common'
 
 interface SetupOptions {
   location?: string
@@ -10,6 +11,7 @@ interface SetupOptions {
   interval?: number
   syncmode?: string
   minPeers?: number
+  common?: Common
 }
 
 export async function setup(
@@ -20,20 +22,22 @@ export async function setup(
 
   const loglevel = 'error'
   const lightserv = syncmode === 'full'
-  const config = new Config({ loglevel, syncmode, lightserv, minPeers })
+  const common = options.common
+  const config = new Config({ loglevel, syncmode, lightserv, minPeers, common })
 
   const server = new MockServer({ config, location })
-  const blockchain = new Blockchain({
+  const blockchain = await Blockchain.create({
     validateBlocks: false,
     validateConsensus: false,
+    common,
   })
 
   const chain = new MockChain({ config, blockchain, height })
 
   const servers = [server] as any
-  const serviceConfig = new Config({ loglevel, syncmode, servers, lightserv, minPeers })
-  //@ts-ignore -- attach server eventbus to ethereums service eventbus (to simulate centralized client eventbus))
-  server.config.events = serviceConfig.events
+  const serviceConfig = new Config({ loglevel, syncmode, servers, lightserv, minPeers, common })
+  // attach server to centralized event bus
+  ;(server.config as any).events = serviceConfig.events
   const serviceOpts = {
     config: serviceConfig,
     chain,
