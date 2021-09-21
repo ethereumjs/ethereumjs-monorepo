@@ -5,7 +5,7 @@ import { VmError, ERROR } from '../../exceptions'
 const assert = require('assert')
 
 // The following blake2 code has been taken from (license: Creative Commons CC0):
-// https://github.com/dcposch/blakejs/blob/410c640d0f08d3b26904c6d1ab3d81df3619d282/blake2s.js
+// https://github.com/dcposch/blakejs/blob/410c640d0f08d3b26904c6d1ab3d81df3619d282/blake2b.js
 // The modifications include:
 //  - Avoiding the use of context in F
 //  - F accepts number of rounds as parameter
@@ -41,11 +41,6 @@ function ADD64AC(v: Uint32Array, a: number, b0: number, b1: number) {
   }
   v[a] = o0
   v[a + 1] = o1
-}
-
-// Little-endian byte access
-function B2B_GET32(arr: Uint32Array, i: number) {
-  return arr[i] ^ (arr[i + 1] << 8) ^ (arr[i + 2] << 16) ^ (arr[i + 3] << 24)
 }
 
 // G Mixing function
@@ -139,11 +134,7 @@ export function F(h: Uint32Array, m: Uint32Array, t: Uint32Array, f: boolean, ro
   }
 
   // message words
-  const mw = new Uint32Array(32)
-  // get little-endian words
-  for (i = 0; i < 32; i++) {
-    mw[i] = B2B_GET32(m, 4 * i)
-  }
+  const mw = m
 
   // twelve rounds of mixing
   // uncomment the DebugPrint calls to log the computation
