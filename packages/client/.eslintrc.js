@@ -15,6 +15,12 @@ module.exports = {
         ],
       },
     },
+    {
+      files: ['bin/cli.ts'],
+      rules: {
+        'no-console': 'off'
+      },
+    },
   ],
   ignorePatterns: ['webpack.config.js']
 }

@@ -91,14 +91,28 @@ export type TypeOutputReturnType = {
 }
 
 /**
- * Convert an input to a specified type
+ * Convert an input to a specified type.
+ * Input of null/undefined returns null/undefined regardless of the output type.
  * @param input value to convert
  * @param outputType type to output
  */
+export function toType<T extends TypeOutput>(input: null, outputType: T): null
+export function toType<T extends TypeOutput>(input: undefined, outputType: T): undefined
 export function toType<T extends TypeOutput>(
   input: ToBufferInputTypes,
   outputType: T
-): TypeOutputReturnType[T] {
+): TypeOutputReturnType[T]
+export function toType<T extends TypeOutput>(
+  input: ToBufferInputTypes,
+  outputType: T
+): TypeOutputReturnType[T] | undefined | null {
+  if (input === null) {
+    return null
+  }
+  if (input === undefined) {
+    return undefined
+  }
+
   if (typeof input === 'string' && !isHexString(input)) {
     throw new Error(`A string must be provided with a 0x-prefix, given: ${input}`)
   } else if (typeof input === 'number' && !Number.isSafeInteger(input)) {
@@ -107,23 +121,23 @@ export function toType<T extends TypeOutput>(
     )
   }
 
-  input = toBuffer(input)
+  const output = toBuffer(input)
 
   if (outputType === TypeOutput.Buffer) {
-    return input as any
+    return output as TypeOutputReturnType[T]
   } else if (outputType === TypeOutput.BN) {
-    return new BN(input) as any
+    return new BN(output) as TypeOutputReturnType[T]
   } else if (outputType === TypeOutput.Number) {
-    const bn = new BN(input)
+    const bn = new BN(output)
     const max = new BN(Number.MAX_SAFE_INTEGER.toString())
     if (bn.gt(max)) {
       throw new Error(
         'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative output type)'
       )
     }
-    return bn.toNumber() as any
+    return bn.toNumber() as TypeOutputReturnType[T]
   } else {
     // outputType === TypeOutput.PrefixedHexString
-    return `0x${input.toString('hex')}` as any
+    return `0x${output.toString('hex')}` as TypeOutputReturnType[T]
   }
 }

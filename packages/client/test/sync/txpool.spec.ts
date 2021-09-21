@@ -1,5 +1,5 @@
 import tape from 'tape'
-import Common from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
 import { PeerPool } from '../../lib/net/peerpool'
@@ -7,7 +7,7 @@ import { TxPool } from '../../lib/sync/txpool'
 import { Config } from '../../lib/config'
 
 tape('[TxPool]', async (t) => {
-  const common = new Common({ chain: 'mainnet', hardfork: 'london' })
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
   const config = new Config({ transports: [], loglevel: 'error' })
 
   const A = {
@@ -42,8 +42,8 @@ tape('[TxPool]', async (t) => {
 
   const txA01 = createTx() // A -> B, nonce: 0, value: 1
   const txA02 = createTx(A, B, 0, 2) // A -> B, nonce: 0, value: 2 (different hash)
-  const txB01 = createTx(B, A) // B -> A, nonce: 0
-  const txB02 = createTx(B, A, 1, 5) // B -> A, nonce: 1
+  const txB01 = createTx(B, A) // B -> A, nonce: 0, value: 1
+  const txB02 = createTx(B, A, 1, 5) // B -> A, nonce: 1, value: 5
 
   t.test('should initialize correctly', (t) => {
     const config = new Config({ transports: [], loglevel: 'error' })
@@ -210,7 +210,7 @@ tape('[TxPool]', async (t) => {
 
     await pool.handleAnnouncedTxHashes([txA01.hash(), txA02.hash()], peer, peerPool)
     t.equal(pool.pool.size, 1, 'pool size 1')
-    const address = `0x${A.address.toString('hex')}`
+    const address = A.address.toString('hex')
     const poolContent = pool.pool.get(address)!
     t.equal(poolContent.length, 1, 'only one tx')
     t.deepEqual(poolContent[0].tx.hash(), txA02.hash(), 'only later-added tx')
@@ -234,7 +234,7 @@ tape('[TxPool]', async (t) => {
 
     await pool.handleAnnouncedTxs([txA01], peer, peerPool)
     t.equal(pool.pool.size, 1, 'pool size 1')
-    const address = `0x${A.address.toString('hex')}`
+    const address = A.address.toString('hex')
     const poolContent = pool.pool.get(address)!
     t.equal(poolContent.length, 1, 'one tx')
     t.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'correct tx')
@@ -280,7 +280,7 @@ tape('[TxPool]', async (t) => {
     }
     await pool.handleAnnouncedTxHashes([txB01.hash(), txB02.hash()], peer, peerPool)
     t.equal(pool.pool.size, 1, 'pool size 1')
-    const address = `0x${B.address.toString('hex')}`
+    const address = B.address.toString('hex')
     let poolContent = pool.pool.get(address)!
     t.equal(poolContent.length, 2, 'two txs')
 
@@ -346,7 +346,7 @@ tape('[TxPool]', async (t) => {
       'should not remove txs from handled (HANDLED_CLEANUP_TIME_LIMIT within range)'
     )
 
-    const address = txB01.getSenderAddress().toString()
+    const address = txB01.getSenderAddress().toString().slice(2)
     const poolObj = pool.pool.get(address)![0]
     poolObj.added = Date.now() - pool.POOLED_STORAGE_TIME_LIMIT * 60 - 1
     pool.pool.set(address, [poolObj])

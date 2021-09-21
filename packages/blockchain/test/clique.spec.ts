@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Address, BN } from 'ethereumjs-util'
 import tape from 'tape'
 import Blockchain from '../src'
@@ -538,8 +538,8 @@ tape('Clique: Initialization', (t) => {
         'rinkeby',
         {
           consensus: {
-            type: 'poa',
-            algorithm: 'clique',
+            type: ConsensusType.ProofOfAuthority,
+            algorithm: ConsensusAlgorithm.Clique,
             clique: {
               period: 15,
               epoch: 3,
@@ -601,8 +601,8 @@ tape('Clique: Initialization', (t) => {
         'rinkeby',
         {
           consensus: {
-            type: 'poa',
-            algorithm: 'clique',
+            type: ConsensusType.ProofOfAuthority,
+            algorithm: ConsensusAlgorithm.Clique,
             clique: {
               period: 15,
               epoch: 3,
@@ -628,4 +628,29 @@ tape('Clique: Initialization', (t) => {
       st.end()
     }
   )
+
+  t.test('cliqueSignerInTurn() -> should work as expected', async (st) => {
+    const { blocks, blockchain } = await initWithSigners([A, B, C])
+    // block 1: B, next signer: C
+    await addNextBlock(blockchain, blocks, B)
+    st.notOk(await blockchain.cliqueSignerInTurn(A.address))
+    st.notOk(await blockchain.cliqueSignerInTurn(B.address))
+    st.ok(await blockchain.cliqueSignerInTurn(C.address))
+    // block 2: C, next signer: A
+    await addNextBlock(blockchain, blocks, C)
+    st.ok(await blockchain.cliqueSignerInTurn(A.address))
+    st.notOk(await blockchain.cliqueSignerInTurn(B.address))
+    st.notOk(await blockchain.cliqueSignerInTurn(C.address))
+    // block 3: A, next signer: B
+    await addNextBlock(blockchain, blocks, A)
+    st.notOk(await blockchain.cliqueSignerInTurn(A.address))
+    st.ok(await blockchain.cliqueSignerInTurn(B.address))
+    st.notOk(await blockchain.cliqueSignerInTurn(C.address))
+    // block 4: B, next signer: C
+    await addNextBlock(blockchain, blocks, B)
+    st.notOk(await blockchain.cliqueSignerInTurn(A.address))
+    st.notOk(await blockchain.cliqueSignerInTurn(B.address))
+    st.ok(await blockchain.cliqueSignerInTurn(C.address))
+    st.end()
+  })
 })

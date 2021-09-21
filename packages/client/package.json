@@ -30,7 +30,7 @@
     "build": "npm run build:node && npm run build:browser",
     "build:node": "tsc --build ./tsconfig.prod.json",
     "build:browser": "tsc -p ./tsconfig.browser.json && npm run bundle && rm -rf dist.browser",
-    "prepublishOnly": "npm run clean && npm run build && npm run test",
+    "prepublishOnly": "../../config/cli/prepublish.sh",
     "clean": "../../config/cli/clean-package.sh",
     "bundle": "webpack",
     "client:start": "ts-node bin/cli.ts",
@@ -45,7 +45,8 @@
     "test:unit": "npm run tape -- 'test/!(integration|cli)/**/*.spec.ts' 'test/*.spec.ts'",
     "test:integration": "npm run tape -- 'test/integration/**/*.spec.ts'",
     "test:cli": "npm run tape -- 'test/cli/*.spec.ts'",
-    "test:browser": "karma start karma.conf.js"
+    "test:browser": "karma start karma.conf.js",
+    "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
     "@ethereumjs/block": "^3.4.0",

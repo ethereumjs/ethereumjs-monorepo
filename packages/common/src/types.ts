@@ -1,4 +1,5 @@
 import { BN } from 'ethereumjs-util'
+import { ConsensusAlgorithm, ConsensusType, Hardfork as HardforkName } from '.'
 
 export interface genesisStatesType {
   names: {
@@ -28,13 +29,14 @@ export interface Chain {
   dnsNetworks?: string[]
   // TODO: make mandatory in next breaking release
   consensus?: {
-    type: string
-    algorithm: string
+    type: ConsensusType | string
+    algorithm: ConsensusAlgorithm | string
     clique?: {
       period: number
       epoch: number
     }
     ethash?: any
+    casper?: any
   }
 }
 
@@ -57,7 +59,7 @@ export interface GenesisBlock {
 }
 
 export interface Hardfork {
-  name: string
+  name: HardforkName | string
   block: number | null
   td?: number
   forkHash?: string | null

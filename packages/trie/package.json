@@ -21,7 +21,7 @@
   "scripts": {
     "benchmarks": "node -r ts-node/register --max-old-space-size=8024 benchmarks",
     "profiling": "tsc --target ES5 benchmarks/random.ts && 0x benchmarks/random.js",
-    "prepublishOnly": "npm run clean && npm run build && npm run test",
+    "prepublishOnly": "../../config/cli/prepublish.sh",
     "clean": "../../config/cli/clean-package.sh",
     "build": "npm run build:node && npm run build:browser",
     "build:node": "../../config/cli/ts-build.sh node",
