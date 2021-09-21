@@ -11,7 +11,7 @@ import {
 } from './util'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Block, BlockData, BlockHeader, HeaderData } from '@ethereumjs/block'
 const xor = require('buffer-xor')
 
 type Solution = {
@@ -37,9 +37,9 @@ class Miner {
    */
 
   constructor(mineObject: BlockHeader | Block, ethash: Ethash) {
-    if (mineObject.constructor === BlockHeader) {
+    if (mineObject instanceof BlockHeader) {
       this.blockHeader = mineObject
-    } else if (mineObject.constructor === Block) {
+    } else if (mineObject instanceof Block) {
       this.block = mineObject
       this.blockHeader = mineObject.header
     } else {
@@ -68,15 +68,15 @@ class Miner {
 
     if (solution) {
       if (this.block) {
-        const data = this.block.toJSON()
-        data.header!.mixHash = '0x' + solution.mixHash.toString('hex')
-        data.header!.nonce = '0x' + solution.nonce.toString('hex')
-        return Block.fromBlockData(data)
+        const data = <BlockData>this.block.toJSON()
+        data.header!.mixHash = solution.mixHash
+        data.header!.nonce = solution.nonce
+        return Block.fromBlockData(data, { common: this.block._common })
       } else {
-        const data = this.blockHeader.toJSON()
-        data.mixHash = '0x' + solution.mixHash.toString('hex')
-        data.nonce = '0x' + solution.nonce.toString('hex')
-        return BlockHeader.fromHeaderData(data)
+        const data = <HeaderData>this.blockHeader.toJSON()
+        data.mixHash = solution.mixHash
+        data.nonce = solution.nonce
+        return BlockHeader.fromHeaderData(data, { common: this.blockHeader._common })
       }
     }
   }

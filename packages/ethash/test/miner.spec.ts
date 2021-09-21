@@ -2,6 +2,7 @@ import tape from 'tape'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Ethash from '../src'
 import { BN } from 'ethereumjs-util'
+import Common from '@ethereumjs/common'
 const level = require('level-mem')
 
 const cacheDB = level()
@@ -95,6 +96,38 @@ tape('Check if it is possible to stop the miner', async function (t) {
   t.throws(() => {
     e.getMiner(block)
   }, 'miner constructor succesfully throws if no BlockHeader or Block object is passed')
+
+  t.end()
+})
+
+tape('Should keep common when mining blocks or headers', async function (t) {
+  const e = new Ethash(cacheDB)
+
+  const common = new Common({ chain: 'ropsten', hardfork: 'petersburg' })
+
+  const block = Block.fromBlockData(
+    {
+      header: {
+        difficulty: new BN(100),
+        number: new BN(1),
+      },
+    },
+    {
+      common,
+    }
+  )
+
+  const miner = e.getMiner(block.header)
+  const solution = <BlockHeader>await miner.mine(-1)
+
+  t.ok(solution._common.hardfork() === 'petersburg', 'hardfork did not change')
+  t.ok(solution._common.chainName() === 'ropsten', 'chain name did not change')
+
+  const blockMiner = e.getMiner(block)
+  const blockSolution = <Block>await blockMiner.mine(-1)
+
+  t.ok(blockSolution._common.hardfork() === 'petersburg', 'hardfork did not change')
+  t.ok(blockSolution._common.chainName() === 'ropsten', 'chain name did not change')
 
   t.end()
 })
