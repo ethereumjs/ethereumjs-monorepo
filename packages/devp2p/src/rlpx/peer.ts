@@ -452,14 +452,12 @@ export class Peer extends EventEmitter {
    * @param msg
    */
   _handleMessage(code: PREFIXES, msg: Buffer) {
-    const payload = rlp.decode(msg)
-
     switch (code) {
       case PREFIXES.HELLO:
-        this._handleHello(payload)
+        this._handleHello(msg)
         break
       case PREFIXES.DISCONNECT:
-        this._handleDisconnect(payload)
+        this._handleDisconnect(msg)
         break
       case PREFIXES.PING:
         this._handlePing()
@@ -536,8 +534,40 @@ export class Peer extends EventEmitter {
       let payload = body.slice(1)
 
       // Use snappy uncompression if peer supports DevP2P >=v5
+      let compressed = false
+      const origPayload = payload
       if (this._hello?.protocolVersion && this._hello?.protocolVersion >= 5) {
         payload = snappy.uncompress(payload)
+        compressed = true
+      }
+      // Hotfix, 2021-09-21
+      // For a DISCONNECT message received it is often hard to
+      // decide if received within or outside the scope of the
+      // protocol handshake (both can happen).
+      //
+      // This lead to problems with unjustifiedly applying
+      // the snappy compression which subsequently breaks the
+      // RLP decoding.
+      //
+      // This is fixed by this hotfix by re-trying with the
+      // respective compressed/non-compressed payload.
+      //
+      // Note: there might be a cleaner solution to apply here.
+      //
+      if (protocolName === 'Peer') {
+        try {
+          payload = rlp.decode(payload)
+        } catch (e: any) {
+          if (msgCode === PREFIXES.DISCONNECT) {
+            if (compressed) {
+              payload = rlp.decode(origPayload)
+            } else {
+              payload = rlp.decode(snappy.uncompress(payload))
+            }
+          } else {
+            throw new Error(e)
+          }
+        }
       }
       protocolObj.protocol._handleMessage(msgCode, payload)
     } catch (err: any) {
