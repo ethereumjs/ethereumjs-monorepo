@@ -1,4 +1,4 @@
-# SYNOPSIS
+# @ethereumjs/client
 
 [![NPM Package][client-npm-badge]][client-npm-link]
 [![GitHub Issues][client-issues-badge]][client-issues-link]
@@ -6,24 +6,32 @@
 [![Code Coverage][client-coverage-badge]][client-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-This is the work repository for the EthereumJS client project targeting both Node.js and the browser.
+| Ethereum Execution (Eth 1.0) Client build in TypeScript/JavaScript. |
+| --- |
 
-See [Technical Guidelines](#technical-guidelines) to dive directly into development info.
+Note: there is no current release on npm and the releases from the [standalone repository](https://github.com/ethereumjs/ethereumjs-client) are outdated. Use the latest `master` to run the client. There will be an up-to-date client release soon (Fall 2021) under a scoped `@ethereumjs/client` naming scheme. 
 
-Current development stage: `EARLY DEVELOPMENT`
+# INTRODUCTION
 
-# PROJECT SUMMARY
+The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](https://github.com/ethereum/go-ethereum) or [Nethermind](https://github.com/NethermindEth/nethermind)) written in `TypeScript`/`JavaScript`, the non-Smart-Contract language Ethereum dApp developers are most familiar with. It is targetet to be a client for research and development and not meant to be used in production on `mainnet` for the forseable future (out of ressource and security considerations). 
 
-Project summary from [this document](./PROJECT.md) is currently outdated. Please refer to our communication channels for some information on the current state of client development.
+Potential use cases are:
 
-# TECHNICAL GUIDELINES
+- Sync the main Ethereum networks (`mainnet`, `goerli`, `rinkeby`,...)
+- Set up your own local development networks (PoA Clique)
+- Run a network with your own custom [EthereumJS VM](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm)
+- Analyze what's in the Ethereum `mainnet` [transaction pool](./lib/sync/txpool.ts)
+- Run experiments on Ethereum browser sync (see [examples](./EXAMPLES.md))
+- ...
 
-## Client Setup
+We invite you to dig deep and give us feedback! 🙂 ❤️
 
-### Installing the Client
+# SETUP
+
+## INSTALL
 
 ```shell
-npm install ethereumjs-client
+npm install @ethereumjs/client // Release during Fall 2021
 ```
 
 For the `ethereumjs` CLI command to work run:
@@ -32,7 +40,13 @@ For the `ethereumjs` CLI command to work run:
 npm link
 ```
 
-Note: for development purposes, you can invoke the client with `npm run client:start` from the `client` root directory (e.g. `packages/client` if working on a local copy of the monorepo)
+As long as there is no up-to-date client release on npm and for development purposes the client can be used like this:
+
+1. Clone the monorepo with `git clone https://github.com/ethereumjs/ethereumjs-monorepo.git`
+2. Set things up and install dependencies (see [monorepo docs](../../config/MONOREPO.md))
+3. Run the client with `npm run client:start` from the `client` root directory (e.g. `packages/client` if working on a local copy of the monorepo)
+
+Furthermore see the [Technical Guidelines](#technical-guidelines) to dive directly into some more in-depth development info.
 
 ### Running the Client
 
