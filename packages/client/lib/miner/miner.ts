@@ -196,7 +196,6 @@ export class Miner {
       vmCopy.stateManager,
       baseFeePerGas
     )
-    console.log(baseFeePerGas)
     this.config.logger.info(
       `Miner: Assembling block from ${txs.length} eligible txs ${
         baseFeePerGas ? `(baseFee: ${baseFeePerGas.toNumber()})` : ''
