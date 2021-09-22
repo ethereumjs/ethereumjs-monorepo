@@ -21,7 +21,7 @@ Potential use cases are:
 - Set up your own local development networks (PoA Clique)
 - Run a network with your own custom [EthereumJS VM](../vm)
 - Analyze what's in the Ethereum `mainnet` [transaction pool](./lib/sync/txpool.ts)
-- Run experiments on Ethereum browser sync (see [examples](./EXAMPLES.md))
+- Run experiments on Ethereum browser sync (see [example](./examples/light-browser-sync.md))
 - ...
 
 The client has an extremely modular design by building upon central other libraries in the EthereumJS monorepo ([VM](../vm), [Merkle Patricia Tree](../trie), [Blockchain](../blockchain), [Block](../block), [tx](../tx) and [Common](../common)) and is therefore extremely well suited for a deep dive into Ethereum protocol development.
@@ -97,12 +97,8 @@ Use the CLI `--network` option to switch the network:
 ethereumjs --network=rinkeby
 ```
 
+### Custom Chains
 
-#### Client Customization
-
-For getting a start on customizing the client and use programatically see the code from [./bin/cli.ts](./bin/cli.ts) to get an idea how an [EthereumClient](./lib/client.ts) instance is invoked programatically.
-
-We would love to hear feedback from you on what you are planning and exchange on ideas how a programmatic exposure of the client API can be achieved more systematically and useful for third-party development use.
 
 ## API
 
@@ -207,17 +203,26 @@ Output:
   }
 }
 ```
-### Running the client
-
-See [the examples](./EXAMPLES.md) for various scenarios for running the client.
-
-## DESIGN
-
-For an overview on the design goals which served as a guideline on design decisions as well as some structural client overview see the dedicated [DESIGN.md](./DESIGN.md) document.
 
 ## DEVELOPER
 
-### Client Debugging
+### Design
+
+For an overview on the design goals which served as a guideline on design decisions as well as some structural client overview see the dedicated [DESIGN.md](./DESIGN.md) document.
+
+### Client Customization
+
+For getting a start on customizing the client and use programatically see the code from [./bin/cli.ts](./bin/cli.ts) to get an idea how an [EthereumClient](./lib/client.ts) instance is invoked programatically.
+
+We would love to hear feedback from you on what you are planning and exchange on ideas how a programmatic exposure of the client API can be achieved more systematically and useful for third-party development use.
+
+### Debugging
+
+### Local Test Network
+
+For some guidance on how to setup local testnetworks see the examples on [local debugging](./examples/local-debugging.md) and setting up a [private network with Geth](./examples/private-geth-network.md).
+
+#### Using Debug Loggers
 
 The client's logging verbosity level can be set with `--loglevel`.  Available levels are
 `error`, `warn`, `info`, `debug`.
