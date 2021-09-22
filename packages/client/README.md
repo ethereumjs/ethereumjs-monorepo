@@ -15,16 +15,15 @@ Note: there is no current release on npm and the releases from the [standalone r
 
 The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](https://github.com/ethereum/go-ethereum) or [Nethermind](https://github.com/NethermindEth/nethermind)) written in `TypeScript`/`JavaScript`, the non-Smart-Contract language Ethereum dApp developers are most familiar with. It is targetet to be a client for research and development and not meant to be used in production on `mainnet` for the forseable future (out of ressource and security considerations). 
 
-Potential use cases are:
+Here are some use cases:
 
 - Sync the main Ethereum networks (`mainnet`, `goerli`, `rinkeby`,...)
 - Set up your own local development networks (PoA Clique)
 - Run a network with your own custom [EthereumJS VM](../vm)
 - Analyze what's in the Ethereum `mainnet` [transaction pool](./lib/sync/txpool.ts)
 - Run experiments on Ethereum browser sync (see [example](./examples/light-browser-sync.md))
-- ...
 
-The client has an extremely modular design by building upon central other libraries in the EthereumJS monorepo ([VM](../vm), [Merkle Patricia Tree](../trie), [Blockchain](../blockchain), [Block](../block), [tx](../tx) and [Common](../common)) and is therefore extremely well suited for a deep dive into Ethereum protocol development.
+The client has an extremely modular design by building upon central other libraries in the EthereumJS monorepo ([VM](../vm), [Merkle Patricia Tree](../trie), [Blockchain](../blockchain), [Block](../block), [tx](../tx), [devp2p](../devp2p) and [Common](../common)) and is therefore extremely well suited for a deep dive into Ethereum protocol development.
 
 We invite you to explore and would be delighted if you give us feedback on your journey! 🙂 ❤️
 
@@ -97,8 +96,41 @@ Use the CLI `--network` option to switch the network:
 ethereumjs --network=rinkeby
 ```
 
+The client currently supports `full` sync being set as a default and has experimental support for `light` sync.
+
 ### Custom Chains
 
+The EthereumJS client supports running custom chains based on a custom chain configuration. There are two ways of reading in custom chain configuration parameters
+
+#### Common-based Configuration
+
+We have got our own flexible chain configuration and genesis state configuration format applied in the `Common` library, see the `Common` [chain JSON files](../common/src/chains/) as well as corresponding [Genesis JSON files](../common/src/genesisStates/) for inspiration.
+
+Custom chain files following this format can be passed in to the client with the following options:
+
+```shell
+ethereumjs --customChain=[COMMON_FORMAT_CHAIN_FILE] --customGenesisState=[COMMON_FORMAT_GENESIS_STATE]
+```
+
+#### Geth Genesis Files
+
+It is also possible to use a chain configuration as defined by the Go-Ethereum [genesis.json file format](https://geth.ethereum.org/docs/interface/private-network).
+
+Use the following option to pass in to the client:
+
+```shell
+ethereumjs --gethGenesis=[GETH_GENESIS_JSON_FILE]
+```
+
+### Custom Network Mining (Beta)
+
+The client supports private custom network mining on PoA clique chains by using the `--mine` option together with passing in a comma separated list of accounts with the `--unlock` option:
+
+```shell
+ethereumjs --mine --unlock=[ADDRESS1],[ADDRESS2],...
+```
+
+Note that this feature is in `beta` and shouldn't be used with accounts holding a substantial amount of `Ether` on mainnet (or other valuable assets) for security reasons.
 
 ## API
 
@@ -204,7 +236,7 @@ Output:
 }
 ```
 
-## DEVELOPER
+## DEVELOPMENT
 
 ### Design
 
