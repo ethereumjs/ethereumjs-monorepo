@@ -19,12 +19,14 @@ Potential use cases are:
 
 - Sync the main Ethereum networks (`mainnet`, `goerli`, `rinkeby`,...)
 - Set up your own local development networks (PoA Clique)
-- Run a network with your own custom [EthereumJS VM](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm)
+- Run a network with your own custom [EthereumJS VM](../vm)
 - Analyze what's in the Ethereum `mainnet` [transaction pool](./lib/sync/txpool.ts)
 - Run experiments on Ethereum browser sync (see [examples](./EXAMPLES.md))
 - ...
 
-We invite you to dig deep and give us feedback! 🙂 ❤️
+The client has an extremely modular design by building upon central other libraries in the EthereumJS monorepo ([VM](../vm), [Merkle Patricia Tree](../trie), [Blockchain](../blockchain), [Block](../block), [tx](../tx) and [Common](../common)) and is therefore extremely well suited for a deep dive into Ethereum protocol development.
+
+We invite you to explore and would be delighted if you give us feedback on your journey! 🙂 ❤️
 
 # SETUP
 
@@ -48,83 +50,59 @@ As long as there is no up-to-date client release on npm and for development purp
 
 Furthermore see the [Technical Guidelines](#technical-guidelines) to dive directly into some more in-depth development info.
 
-### Running the Client
+## USAGE
 
-You can get up the client up and running with default settings with:
+### Introduction
 
-```shell
-ethereumjs --network=mainnet [--loglevel=debug]
-```
-### CLI reference [WORK-IN-PROGRESS] 
-
-#### `--network`
-You can connect to specific networks by name using the `--network` parameter as below: (`rinkeby` is used here)
+You can get up the client up and running by going to the shell and run:
 
 ```shell
-ethereumjs --network rinkeby
+# npm installation
+ethereumjs
+
+# GitHub installation
+npm run client:start
 ```
 
-The client currently supports the below networks:
-- mainnet
-- rinkeby
-- ropsten
-- goerli
-- kovan -- Note: kovan support is limited and chain syncing may not work due to the kovan consensus mechanism not being implemented
+And pass in CLI paramters like:
 
+```shell
+# npm installation
+ethereumjs --network=goerli
 
-#### `--help`
+# GitHub installation
+npm run client:start -- --network=goerli
+```
 
-The help can be shown with:
+To see a help page with the full list of client options available run:
 
 ```shell
 ethereumjs --help
 ```
-### `--loglevel`
 
-The client's logging verbosity level can be set with `--loglevel`.  Available levels are
-`error`, `warn`, `info`, `debug`
+### Supported Networks
 
-```shell
-ethereumjs --loglevel=debug
-```
+The EthereumJS client is tightly integrated with the EthereumJS [Common](../common) library and gets its network state and information from this library and supports all networks support by `Common`.
 
-If you want to have verbose logging output across the stack you can use...
+The main supported networks are:
 
-```shell
-DEBUG=*,-babel [CLIENT_START_COMMAND]
-```
+- `mainnet`
+- `rinkeby`
+- `ropsten`
+- `goerli`
 
-for all output or something more targeted by listing the loggers like
+Use the CLI `--network` option to switch the network:
 
 ```shell
-DEBUG=devp2p:rlpx,devp2p:eth,-babel [CLIENT_START_COMMAND]
+ethereumjs --network=rinkeby
 ```
 
-#### Node.js
 
-To programmatically run a client do:
+#### Client Customization
 
-```typescript
-import { Config, EthereumClient } from '@ethereumjs/client'
-const config = new Config()
-const client = new EthereumClient({ config })
+For getting a start on customizing the client and use programatically see the code from [./bin/cli.ts](./bin/cli.ts) to get an idea how an [EthereumClient](./lib/client.ts) instance is invoked programatically.
 
-client.open()
-client.start()
-client.stop()
-```
-
-You can also provide your custom [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) instance:
-
-```typescript
-import VM from '@ethereumjs/vm'
-import { Config, EthereumClient } from '@ethereumjs/client'
-const vm = new VM()
-const config = new Config({ vm })
-const client = new EthereumClient({ config })
-```
-
-[WORK-IN-PROGRESS] Programmatic invocation on the client is in a very early stage and only meant for experimental purposes. You are invited to play around, please let us know what control functionality you would want the client to expose and what information you would need to get out of the client to be useful in your usage context.
+We would love to hear feedback from you on what you are planning and exchange on ideas how a programmatic exposure of the client API can be achieved more systematically and useful for third-party development use.
 
 ## API
 
@@ -303,18 +281,32 @@ to help contributors better understand how the project is organized.
 
 ## Developer
 
+### Client Debugging
+
+The client's logging verbosity level can be set with `--loglevel`.  Available levels are
+`error`, `warn`, `info`, `debug`.
+
+```shell
+ethereumjs --loglevel=debug
+```
+
+If you want to have verbose logging output across the stack you can use the f
+
+For more in-depth debugging on networking the the underlying [devp2p](../devp2p) library integrates with the [debug](https://github.com/visionmedia/debug) package and can also be used from within a client execution context:
+
+```shell
+DEBUG=*,-babel [CLIENT_START_COMMAND]
+```
+
+The above command outputs the log messages from all `devp2p` debug loggers available. For a more targeted logging the different loggers can also be activated separately, e.g.:
+
+```shell
+DEBUG=devp2p:rlpx,devp2p:eth,-babel [CLIENT_START_COMMAND]
+```
+
 ### Diagram Updates
 
 To update the structure diagram files in the root folder open the `client.drawio` file in [draw.io](https://draw.io/), make your changes, and open a PR with the updated files. Export `svg` and `png` with `border` `width=20` and `transparency=false`. For `png` go to "Advanced" and select `300 DPI`.
-
-## Environment / Ecosystem
-
-**EthereumJS Ecosystem**
-
-This project will be embedded in the EthereumJS ecosystem and many submodules already exist and
-can be used within the project, have a look e.g. at [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block), [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm),
-[merkle-patricia-tree](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie) or the
-[@ethereumjs/devp2p](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/devp2p) implementation. Work needs to be done both within these repos and related libraries.
 
 ## EthereumJS
 
