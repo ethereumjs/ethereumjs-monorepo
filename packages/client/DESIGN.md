@@ -14,7 +14,7 @@ Contributors should aim to achieve the following goals when making design decisi
   with bug fixing.
 - **Well documented**: Similar to above, this will help both contributors and users of the project.
 
-The current design tries to achieves the goals of loose coupling and ease of testing by using an
+The current design tries to achieve the goals of loose coupling and ease of testing by using an
 event-driven architecture where possible. Readability is improved by using features of JavaScript
 ES6 such as classes, async/await, promises, arrow functions, for...of, template literals and
 destructuring assignment among others. Shorter names are used when possible and long functions are

@@ -6,7 +6,7 @@
 [![Code Coverage][client-coverage-badge]][client-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-| Ethereum Execution (Eth 1.0) Client build in TypeScript/JavaScript. |
+| Ethereum Execution (Eth 1.0) Client built in TypeScript/JavaScript. |
 | --- |
 
 Note: there is no current release on npm and the releases from the [standalone repository](https://github.com/ethereumjs/ethereumjs-client) are outdated. Use the latest `master` to run the client. There will be an up-to-date client release soon (Fall 2021) under a scoped `@ethereumjs/client` naming scheme. 
