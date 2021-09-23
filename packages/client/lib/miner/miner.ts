@@ -122,7 +122,7 @@ export class Miner {
 
     const parentBlockHeader = this.latestBlockHeader()
     const number = parentBlockHeader.number.addn(1)
-    const { gasLimit } = parentBlockHeader
+    let { gasLimit } = parentBlockHeader
     const [signerAddress, signerPrivKey] = this.config.accounts[0]
 
     // Abort if we have too recently signed
@@ -168,11 +168,15 @@ export class Miner {
     const londonHardforkBlock = this.config.chainCommon.hardforkBlockBN('london')
     const isInitialEIP1559Block = londonHardforkBlock && number.eq(londonHardforkBlock)
     if (isInitialEIP1559Block) {
-      baseFeePerGas = new BN(this.config.chainCommon.param('gasConfig', 'initialBaseFee'))
+      // Get baseFeePerGas from `paramByEIP` since 1559 not currently active on common
+      baseFeePerGas = new BN(
+        this.config.chainCommon.paramByEIP('gasConfig', 'initialBaseFee', 1559)
+      )
+      // Set initial EIP1559 block gas limit to 2x parent gas limit per logic in `block.validateGasLimit`
+      gasLimit = gasLimit.muln(2)
     } else if (this.config.chainCommon.isActivatedEIP(1559)) {
       baseFeePerGas = parentBlockHeader.calcNextBaseFee()
     }
-
     const parentBlock = (this.synchronizer as any).chain.blocks.latest
     const blockBuilder = await vmCopy.buildBlock({
       parentBlock,

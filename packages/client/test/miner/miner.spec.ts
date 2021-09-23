@@ -6,6 +6,7 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Account, Address, BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { FullSynchronizer } from '../../lib/sync/fullsync'
+import { Chain } from '../../lib/blockchain'
 import { Miner } from '../../lib/miner'
 import { Event } from '../../lib/types'
 import { wait } from '../integration/util'
@@ -21,7 +22,7 @@ tape('[Miner]', async (t) => {
       return []
     }
   }
-  class Chain {
+  class FakeChain {
     open() {}
     close() {}
     update() {}
@@ -86,7 +87,7 @@ tape('[Miner]', async (t) => {
 
   t.test('should initialize correctly', (t) => {
     const pool = new PeerPool() as any
-    const chain = new Chain() as any
+    const chain = new FakeChain() as any
     const synchronizer = new FullSynchronizer({
       config,
       pool,
@@ -100,7 +101,7 @@ tape('[Miner]', async (t) => {
   t.test('should start/stop', async (t) => {
     t.plan(4)
     const pool = new PeerPool() as any
-    const chain = new Chain() as any
+    const chain = new FakeChain() as any
     const synchronizer = new FullSynchronizer({
       config,
       pool,
@@ -125,7 +126,7 @@ tape('[Miner]', async (t) => {
   t.test('assembleBlocks() -> with a single tx', async (t) => {
     t.plan(1)
     const pool = new PeerPool() as any
-    const chain = new Chain() as any
+    const chain = new FakeChain() as any
     const synchronizer = new FullSynchronizer({
       config,
       pool,
@@ -165,7 +166,7 @@ tape('[Miner]', async (t) => {
     async (t) => {
       t.plan(4)
       const pool = new PeerPool() as any
-      const chain = new Chain() as any
+      const chain = new FakeChain() as any
       const synchronizer = new FullSynchronizer({
         config,
         pool,
@@ -215,7 +216,7 @@ tape('[Miner]', async (t) => {
     const common = Common.forCustomChain(CommonChain.Rinkeby, customChainParams, Hardfork.London)
     const config = new Config({ transports: [], loglevel: 'error', accounts, mine: true, common })
     const pool = new PeerPool() as any
-    const chain = new Chain() as any
+    const chain = new FakeChain() as any
     const block = Block.fromBlockData({}, { common })
     Object.defineProperty(chain, 'headers', {
       get: function () {
@@ -264,7 +265,7 @@ tape('[Miner]', async (t) => {
   t.test("assembleBlocks() -> should stop assembling a block after it's full", async (t) => {
     t.plan(1)
     const pool = new PeerPool() as any
-    const chain = new Chain() as any
+    const chain = new FakeChain() as any
     const gasLimit = 100000
     const block = Block.fromBlockData({ header: { gasLimit } }, { common })
     Object.defineProperty(chain, 'headers', {
@@ -324,7 +325,7 @@ tape('[Miner]', async (t) => {
   t.test('assembleBlocks() -> should stop assembling when a new block is received', async (t) => {
     t.plan(2)
     const pool = new PeerPool() as any
-    const chain = new Chain() as any
+    const chain = new FakeChain() as any
     const config = new Config({ transports: [], loglevel: 'error', accounts, mine: true, common })
     const synchronizer = new FullSynchronizer({
       config,
@@ -366,6 +367,79 @@ tape('[Miner]', async (t) => {
     t.notOk((miner as any).assembling, 'miner should have stopped assembling')
     miner.stop()
     txPool.stop()
+  })
+
+  t.test('should handle mining over the london hardfork block', async (t) => {
+    const customChainParams = {
+      hardforks: [
+        { name: 'chainstart', block: 0 },
+        { name: 'berlin', block: 2 },
+        { name: 'london', block: 3 },
+      ],
+    }
+    const common = Common.custom(customChainParams, { baseChain: CommonChain.Rinkeby })
+    common.setHardforkByBlockNumber(0)
+    const pool = new PeerPool() as any
+    const config = new Config({ transports: [], loglevel: 'error', accounts, mine: true, common })
+    const chain = new Chain({ config })
+    await chain.open()
+    const synchronizer = new FullSynchronizer({
+      config,
+      pool,
+      chain,
+    })
+    const miner = new Miner({ config, synchronizer })
+
+    const { vm } = synchronizer.execution
+    vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
+    ;(miner as any).chainUpdated = async () => {} // stub
+    miner.start()
+    await wait(100)
+
+    // in this test we need to explicitly update common with
+    // setHardforkByBlockNumber() to test the hardfork() value
+    // since the vmexecution run method isn't reached in this
+    // stubbed configuration.
+
+    // block 1: chainstart
+    await (miner as any).queueNextAssembly(0)
+    await wait(100)
+    config.execCommon.setHardforkByBlockNumber(1)
+    t.equal(config.execCommon.hardfork(), 'chainstart')
+
+    // block 2: berlin
+    await (miner as any).queueNextAssembly(0)
+    await wait(100)
+    config.execCommon.setHardforkByBlockNumber(2)
+    t.equal(config.execCommon.hardfork(), 'berlin')
+    const blockHeader2 = await chain.getLatestHeader()
+
+    // block 3: london
+    await (miner as any).queueNextAssembly(0)
+    await wait(100)
+    const blockHeader3 = await chain.getLatestHeader()
+    config.execCommon.setHardforkByBlockNumber(3)
+    t.equal(config.execCommon.hardfork(), 'london')
+    t.ok(
+      blockHeader2.gasLimit.muln(2).eq(blockHeader3.gasLimit),
+      'gas limit should be double previous block'
+    )
+    const initialBaseFee = new BN(config.execCommon.paramByEIP('gasConfig', 'initialBaseFee', 1559))
+    t.ok(blockHeader3.baseFeePerGas!.eq(initialBaseFee), 'baseFee should be initial value')
+
+    // block 4
+    await (miner as any).queueNextAssembly(0)
+    await wait(100)
+    const blockHeader4 = await chain.getLatestHeader()
+    config.execCommon.setHardforkByBlockNumber(4)
+    t.equal(config.execCommon.hardfork(), 'london')
+    t.ok(
+      blockHeader4.baseFeePerGas!.eq(blockHeader3.calcNextBaseFee()),
+      'baseFee should be as calculated'
+    )
+    t.ok((await chain.getLatestHeader()).number.eqn(4))
+    miner.stop()
+    await chain.close()
   })
 
   t.test('should reset td', (t) => {

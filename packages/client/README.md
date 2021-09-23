@@ -1,4 +1,4 @@
-# SYNOPSIS
+# @ethereumjs/client
 
 [![NPM Package][client-npm-badge]][client-npm-link]
 [![GitHub Issues][client-issues-badge]][client-issues-link]
@@ -6,24 +6,33 @@
 [![Code Coverage][client-coverage-badge]][client-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-This is the work repository for the EthereumJS client project targeting both Node.js and the browser.
+| Ethereum Execution (Eth 1.0) Client built in TypeScript/JavaScript. |
+| --- |
 
-See [Technical Guidelines](#technical-guidelines) to dive directly into development info.
+Note: there is no current release on npm and the releases from the [standalone repository](https://github.com/ethereumjs/ethereumjs-client) are outdated. Use the latest `master` to run the client. There will be an up-to-date client release soon (Fall 2021) under a scoped `@ethereumjs/client` naming scheme. 
 
-Current development stage: `EARLY DEVELOPMENT`
+# INTRODUCTION
 
-# PROJECT SUMMARY
+The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](https://github.com/ethereum/go-ethereum) or [Nethermind](https://github.com/NethermindEth/nethermind)) written in `TypeScript`/`JavaScript`, the non-Smart-Contract language Ethereum dApp developers are most familiar with. It is targeted to be a client for research and development and not meant to be used in production on `mainnet` for the foreseeable future (out of resource and security considerations). 
 
-Project summary from [this document](./PROJECT.md) is currently outdated. Please refer to our communication channels for some information on the current state of client development.
+Here are some use cases:
 
-# TECHNICAL GUIDELINES
+- Sync the main Ethereum networks (`mainnet`, `goerli`, `rinkeby`,...)
+- Set up your own local development networks (PoA Clique)
+- Run a network with your own custom [EthereumJS VM](../vm)
+- Analyze what's in the Ethereum `mainnet` [transaction pool](./lib/sync/txpool.ts)
+- Run experiments on Ethereum browser sync (see [example](./examples/light-browser-sync.md))
 
-## Client Setup
+The client has an extremely modular design by building upon central other libraries in the EthereumJS monorepo ([VM](../vm), [Merkle Patricia Tree](../trie), [Blockchain](../blockchain), [Block](../block), [tx](../tx), [devp2p](../devp2p) and [Common](../common)) and is therefore extremely well suited for a deep dive into Ethereum protocol development.
 
-### Installing the Client
+We invite you to explore and would be delighted if you give us feedback on your journey! 🙂 ❤️
+
+# SETUP
+
+## INSTALL
 
 ```shell
-npm install ethereumjs-client
+npm install @ethereumjs/client // Release during Fall 2021
 ```
 
 For the `ethereumjs` CLI command to work run:
@@ -32,85 +41,96 @@ For the `ethereumjs` CLI command to work run:
 npm link
 ```
 
-Note: for development purposes, you can invoke the client with `npm run client:start` from the `client` root directory (e.g. `packages/client` if working on a local copy of the monorepo)
+As long as there is no up-to-date client release on npm and for development purposes the client can be used like this:
 
-### Running the Client
+1. Clone the monorepo with `git clone https://github.com/ethereumjs/ethereumjs-monorepo.git`
+2. Set things up and install dependencies (see [monorepo docs](../../config/MONOREPO.md))
+3. Run the client with `npm run client:start` from the `client` root directory (e.g. `packages/client` if working on a local copy of the monorepo)
 
-You can get up the client up and running with default settings with:
+Furthermore see the [Technical Guidelines](#technical-guidelines) to dive directly into some more in-depth development info.
+
+## USAGE
+
+### Introduction
+
+You can get the client up and running by going to the shell and run:
 
 ```shell
-ethereumjs --network=mainnet [--loglevel=debug]
-```
-### CLI reference [WORK-IN-PROGRESS] 
+# npm installation
+ethereumjs
 
-#### `--network`
-You can connect to specific networks by name using the `--network` parameter as below: (`rinkeby` is used here)
+# GitHub installation
+npm run client:start
+```
+
+And pass in CLI paramters like:
 
 ```shell
-ethereumjs --network rinkeby
+# npm installation
+ethereumjs --network=goerli
+
+# GitHub installation
+npm run client:start -- --network=goerli
 ```
 
-The client currently supports the below networks:
-- mainnet
-- rinkeby
-- ropsten
-- goerli
-- kovan -- Note: kovan support is limited and chain syncing may not work due to the kovan consensus mechanism not being implemented
-
-
-#### `--help`
-
-The help can be shown with:
+To see a help page with the full list of client options available run:
 
 ```shell
 ethereumjs --help
 ```
-### `--loglevel`
 
-The client's logging verbosity level can be set with `--loglevel`.  Available levels are
-`error`, `warn`, `info`, `debug`
+### Supported Networks
 
-```shell
-ethereumjs --loglevel=debug
-```
+The EthereumJS client is tightly integrated with the EthereumJS [Common](../common) library and gets its network state and information from this library and supports all networks support by `Common`.
 
-If you want to have verbose logging output across the stack you can use...
+The main supported networks are:
 
-```shell
-DEBUG=*,-babel [CLIENT_START_COMMAND]
-```
+- `mainnet`
+- `rinkeby`
+- `ropsten`
+- `goerli`
 
-for all output or something more targeted by listing the loggers like
+Use the CLI `--network` option to switch the network:
 
 ```shell
-DEBUG=devp2p:rlpx,devp2p:eth,-babel [CLIENT_START_COMMAND]
+ethereumjs --network=rinkeby
 ```
 
-#### Node.js
+The client currently supports `full` sync being set as a default and has experimental support for `light` sync.
 
-To programmatically run a client do:
+### Custom Chains
 
-```typescript
-import { Config, EthereumClient } from '@ethereumjs/client'
-const config = new Config()
-const client = new EthereumClient({ config })
+The EthereumJS client supports running custom chains based on a custom chain configuration. There are two ways of reading in custom chain configuration parameters:
 
-client.open()
-client.start()
-client.stop()
+#### Common-based Configuration
+
+We have got our own flexible chain configuration and genesis state configuration format applied in the `Common` library, see the `Common` [chain JSON files](../common/src/chains/) as well as corresponding [Genesis JSON files](../common/src/genesisStates/) for inspiration.
+
+Custom chain files following this format can be passed in to the client with the following options:
+
+```shell
+ethereumjs --customChain=[COMMON_FORMAT_CHAIN_FILE] --customGenesisState=[COMMON_FORMAT_GENESIS_STATE]
 ```
 
-You can also provide your custom [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) instance:
+#### Geth Genesis Files
 
-```typescript
-import VM from '@ethereumjs/vm'
-import { Config, EthereumClient } from '@ethereumjs/client'
-const vm = new VM()
-const config = new Config({ vm })
-const client = new EthereumClient({ config })
+It is also possible to use a chain configuration as defined by the Go-Ethereum [genesis.json file format](https://geth.ethereum.org/docs/interface/private-network).
+
+Use the following option to pass in to the client:
+
+```shell
+ethereumjs --gethGenesis=[GETH_GENESIS_JSON_FILE]
 ```
 
-[WORK-IN-PROGRESS] Programmatic invocation on the client is in a very early stage and only meant for experimental purposes. You are invited to play around, please let us know what control functionality you would want the client to expose and what information you would need to get out of the client to be useful in your usage context.
+### Custom Network Mining (Beta)
+
+The client supports private custom network mining on PoA clique chains by using the `--mine` option together with passing in a comma separated list of accounts with the `--unlock` option:
+
+```shell
+ethereumjs --mine --unlock=[ADDRESS1],[ADDRESS2],...
+```
+
+Note that this feature is in `beta` and shouldn't be used with accounts holding a substantial amount of `Ether` on mainnet (or other valuable assets) for security reasons.
 
 ## API
 
@@ -215,92 +235,49 @@ Output:
   }
 }
 ```
-### Running the client
 
-See [the examples](./EXAMPLES.md) for various scenarios for running the client
+## DEVELOPMENT
 
-## Design
+### Design
 
-**Goals**
+For an overview on the design goals which served as a guideline on design decisions as well as some structural client overview see the dedicated [DESIGN.md](./DESIGN.md) document.
 
-Contributors should aim to achieve the following goals when making design decisions:
+### Client Customization
 
-- **Loosely coupled components**: Components should require as little knowledge of the definitions of
-  other components as possible. This reduces dependencies between PRs and encourages contributors
-  to work in parallel. It also improves extensibility of the code as new features like sharding
-  and libp2p support are added.
-- **Easily tested**: The design should make testing of individual components as easy as possible.
-  This goes hand in hand with the previous goal of loose coupling.
-- **Readable code**: More readable code should encourage more contributions from the community and help
-  with bug fixing.
-- **Well documented**: Similar to above, this will help both contributors and users of the project.
+To get a start on customizing the client and using it programmatically see the code from [./bin/cli.ts](./bin/cli.ts) to get an idea of how an [EthereumClient](./lib/client.ts) instance is invoked programmatically.
 
-The current design tries to achieves the goals of loose coupling and ease of testing by using an
-event-driven architecture where possible. Readability is improved by using features of JavaScript
-ES6 such as classes, async/await, promises, arrow functions, for...of, template literals and
-destructuring assignment among others. Shorter names are used when possible and long functions are
-broken up into smaller helpers, along with TypeDoc annotations for most methods and parameters.
-Documentation is auto-generated from TypeDoc comments and many examples of usage are provided (TO DO).
+We would love to hear feedback from you on what you are planning and exchange on ideas how a programmatic exposure of the client API can be achieved more systematically and useful for third-party development use.
 
-We will now briefly describe the directory structure and main components of the Ethereumjs client
-to help contributors better understand how the project is organized.
+### Debugging
 
-**Directory structure**
+### Local Test Network
 
-- `/bin` Contains the CLI script for the `ethereumjs` command.
-- `/docs` Contains auto-generated API docs.
-- `/lib/blockchain` Contains the `Chain` class.
-- `/lib/net` Contains all of the network layer classes including `Peer`, `Protocol` and its subclasses, `Server` and its subclasses, and `PeerPool`.
-- `/lib/service` Contains the main Ethereum services (`FullEthereumService` and `LightEthereumService`).
-- `/lib/rpc` Contains the RPC server (optionally) embedded in the client.
-- `/lib/sync` Contains the various chain synchronizers and `Fetcher` helpers.
-- `/test` Contains test cases, testing helper functions, mocks and test data.
+For some guidance on how to setup local testnetworks see the examples on [local debugging](./examples/local-debugging.md) and setting up a [private network with Geth](./examples/private-geth-network.md).
 
-**Components**
+#### Using Debug Loggers
 
-- `Chain` [**In Progress**] This class represents the blockchain and is a wrapper around
-  `@ethereumjs/blockchain`. It handles creation of the data directory, provides basic blockchain operations
-  and maintains an updated current state of the blockchain, including current height, total difficulty, and
-  latest block.
-- `Server` This class represents a server that discovers new peers and handles incoming and dropped
-  connections. When a new peer connects, the `Server` class will negotiate protocols and emit a `connected`
-  event with a new `Peer`instance. The peer will have properties corresponding to each protocol. For example,
-  if a new peer understands the `eth` protocol, it will contain an `eth` property that provides all `eth`
-  protocol methods (for example: `peer.eth.getBlockHeaders()`) - `RlpxServer` [**In Progress**] Subclass of `Server` that implements the `devp2p/rlpx` transport. - `Libp2pServer` [**In Progress**] Subclass of `Server` that implements the `libp2p` transport.
-- `Peer` Represents a network peer. Instances of `Peer` are generated by the `Server`
-  subclasses and contain instances of supported protocol classes as properties. Instances of `Peer` subclasses can also be used to directly connect to other nodes via the `connect()` method. Peers emit `message` events
-  whenever a new message is received using any of the supported protocols. - `RlpxPeer` [**In Progress**] Subclass of `Peer` that implements the `devp2p/rlpx` transport. - `Libp2pPeer` [**In Progress**] Subclass of `Peer` that implements the `libp2p` transport.
-- `Protocol` [**In Progress**] This class and subclasses provide a user-friendly wrapper around the
-  low level ethereum protocols such as `eth/62`, `eth/63` and `les/2`. Subclasses must define the messages provided by the protocol. - `EthProtocol` [**In Progress**] Implements the `eth/62` and `eth/63` protocols. - `LesProtocol` [**In Progress**] Implements the `les/2` protocol. - `ShhProtocol` [**Not Started**] Implements the whisper protocol.
-- `PeerPool` [**In Progress**] Represents a pool of network peers. `PeerPool` instances emit `added`
-  and `removed` events when new peers are added and removed and also emit the `message` event whenever
-  any of the peers in the pool emit a message. Each `Service` has an associated `PeerPool` and they are used primarily by `Synchronizer`s to help with blockchain synchronization.
-- `Synchronizer` Subclasses of this class implements a specific blockchain synchronization strategy. They
-  also make use of subclasses of the `Fetcher` class that help fetch headers and bodies from pool peers. The fetchers internally make use of streams to handle things like queuing and backpressure. - `FullSynchronizer` [**In Progress**] Implements full syncing of the blockchain - `LightSynchronizer` [**In Progress**] Implements light syncing of the blockchain
-- `Handler` Subclasses of this class implements a protocol message handler. Handlers respond to incoming requests from peers.
-  - `EthHandler` [**In Progress**] Handles incoming ETH requests
-  - `LesHandler` [**In Progress**] Handles incoming LES requests
-- `Service` Subclasses of `Service` will implement specific functionality of a `Client`. For example, the `EthereumService` subclasses will synchronize the blockchain using the full or light sync protocols. Each service must specify which protocols it needs and define a `start()` and `stop()` function.
-  - `FullEthereumService` [**In Progress**] Implementation of ethereum full sync.
-  - `LightEthereumService` [**In Progress**] Implementation of ethereum light sync.
-  - `WhisperService` [**Not Started**] Implementation of an ethereum whisper node.
-- `Client` [**In Progress**] Represents the top-level ethereum client, and is responsible for managing the lifecycle of included services.
-- `RPCManager` [**In Progress**] Implements an embedded JSON-RPC server to handle incoming RPC requests.
+The client's logging verbosity level can be set with `--loglevel`.  Available levels are
+`error`, `warn`, `info`, `debug`.
 
-## Developer
+```shell
+ethereumjs --loglevel=debug
+```
+
+For more in-depth debugging on networking the underlying [devp2p](../devp2p) library integrates with the [debug](https://github.com/visionmedia/debug) package and can also be used from within a client execution context:
+
+```shell
+DEBUG=*,-babel [CLIENT_START_COMMAND]
+```
+
+The above command outputs the log messages from all `devp2p` debug loggers available. For a more targeted logging the different loggers can also be activated separately, e.g.:
+
+```shell
+DEBUG=devp2p:rlpx,devp2p:eth,-babel [CLIENT_START_COMMAND]
+```
 
 ### Diagram Updates
 
 To update the structure diagram files in the root folder open the `client.drawio` file in [draw.io](https://draw.io/), make your changes, and open a PR with the updated files. Export `svg` and `png` with `border` `width=20` and `transparency=false`. For `png` go to "Advanced" and select `300 DPI`.
-
-## Environment / Ecosystem
-
-**EthereumJS Ecosystem**
-
-This project will be embedded in the EthereumJS ecosystem and many submodules already exist and
-can be used within the project, have a look e.g. at [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block), [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm),
-[merkle-patricia-tree](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie) or the
-[@ethereumjs/devp2p](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/devp2p) implementation. Work needs to be done both within these repos and related libraries.
 
 ## EthereumJS
 
