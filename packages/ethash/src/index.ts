@@ -20,12 +20,12 @@ type Solution = {
 }
 
 class Miner {
-  public blockHeader: BlockHeader
-  public block?: Block
-  public ethash: Ethash
+  private blockHeader: BlockHeader
+  private block?: Block
+  private ethash: Ethash
 
-  public currentNonce: BN
-  public solution?: Solution
+  private currentNonce: BN
+  private solution?: Solution
 
   private headerHash?: Buffer
   private stopMining: boolean

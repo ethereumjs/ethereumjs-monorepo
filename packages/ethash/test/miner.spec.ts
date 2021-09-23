@@ -23,9 +23,9 @@ tape('Check if miner works as expected', async function (t) {
   const miner = e.getMiner(block.header)
   t.ok((await miner.iterate(1)) === undefined, 'iterations can return undefined')
 
-  t.ok(miner.currentNonce.eqn(1), 'miner saves current nonce')
+  t.ok((miner as any).currentNonce.eqn(1), 'miner saves current nonce')
   await miner.iterate(1)
-  t.ok(miner.currentNonce.eqn(2), 'miner succesfully iterates over nonces')
+  t.ok((miner as any).currentNonce.eqn(2), 'miner succesfully iterates over nonces')
 
   const solution = await miner.iterate(-1)
 
@@ -40,7 +40,7 @@ tape('Check if miner works as expected', async function (t) {
 
   const validBlockResult = await e.verifyPOW(validBlock)
   t.ok(validBlockResult, 'succesfully mined block')
-  t.ok(miner.solution != undefined, 'cached the solution')
+  t.ok((miner as any).solution != undefined, 'cached the solution')
 
   t.end()
 })
