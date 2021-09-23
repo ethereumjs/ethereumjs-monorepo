@@ -13,7 +13,7 @@ Note: there is no current release on npm and the releases from the [standalone r
 
 # INTRODUCTION
 
-The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](https://github.com/ethereum/go-ethereum) or [Nethermind](https://github.com/NethermindEth/nethermind)) written in `TypeScript`/`JavaScript`, the non-Smart-Contract language Ethereum dApp developers are most familiar with. It is targetet to be a client for research and development and not meant to be used in production on `mainnet` for the forseable future (out of ressource and security considerations). 
+The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](https://github.com/ethereum/go-ethereum) or [Nethermind](https://github.com/NethermindEth/nethermind)) written in `TypeScript`/`JavaScript`, the non-Smart-Contract language Ethereum dApp developers are most familiar with. It is targeted to be a client for research and development and not meant to be used in production on `mainnet` for the foreseeable future (out of resource and security considerations). 
 
 Here are some use cases:
 
@@ -53,7 +53,7 @@ Furthermore see the [Technical Guidelines](#technical-guidelines) to dive direct
 
 ### Introduction
 
-You can get up the client up and running by going to the shell and run:
+You can get the client up and running by going to the shell and run:
 
 ```shell
 # npm installation
@@ -100,7 +100,7 @@ The client currently supports `full` sync being set as a default and has experim
 
 ### Custom Chains
 
-The EthereumJS client supports running custom chains based on a custom chain configuration. There are two ways of reading in custom chain configuration parameters
+The EthereumJS client supports running custom chains based on a custom chain configuration. There are two ways of reading in custom chain configuration parameters:
 
 #### Common-based Configuration
 
@@ -244,7 +244,7 @@ For an overview on the design goals which served as a guideline on design decisi
 
 ### Client Customization
 
-For getting a start on customizing the client and use programatically see the code from [./bin/cli.ts](./bin/cli.ts) to get an idea how an [EthereumClient](./lib/client.ts) instance is invoked programatically.
+To get a start on customizing the client and using it programmatically see the code from [./bin/cli.ts](./bin/cli.ts) to get an idea of how an [EthereumClient](./lib/client.ts) instance is invoked programmatically.
 
 We would love to hear feedback from you on what you are planning and exchange on ideas how a programmatic exposure of the client API can be achieved more systematically and useful for third-party development use.
 
@@ -263,9 +263,7 @@ The client's logging verbosity level can be set with `--loglevel`.  Available le
 ethereumjs --loglevel=debug
 ```
 
-If you want to have verbose logging output across the stack you can use the f
-
-For more in-depth debugging on networking the the underlying [devp2p](../devp2p) library integrates with the [debug](https://github.com/visionmedia/debug) package and can also be used from within a client execution context:
+For more in-depth debugging on networking the underlying [devp2p](../devp2p) library integrates with the [debug](https://github.com/visionmedia/debug) package and can also be used from within a client execution context:
 
 ```shell
 DEBUG=*,-babel [CLIENT_START_COMMAND]
