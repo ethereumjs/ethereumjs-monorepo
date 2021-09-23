@@ -71,6 +71,5 @@ to help contributors better understand how the project is organized.
 - `Service` Subclasses of `Service` will implement specific functionality of a `Client`. For example, the `EthereumService` subclasses will synchronize the blockchain using the full or light sync protocols. Each service must specify which protocols it needs and define a `start()` and `stop()` function.
   - `FullEthereumService` [**In Progress**] Implementation of ethereum full sync.
   - `LightEthereumService` [**In Progress**] Implementation of ethereum light sync.
-  - `WhisperService` [**Not Started**] Implementation of an ethereum whisper node.
 - `Client` [**In Progress**] Represents the top-level ethereum client, and is responsible for managing the lifecycle of included services.
 - `RPCManager` [**In Progress**] Implements an embedded JSON-RPC server to handle incoming RPC requests.
