@@ -67,7 +67,7 @@ export class BeamSynchronizer extends Synchronizer {
         const result = await oldGet.apply(this, [node, ENCODING_OPTS])
         hits++
         return result
-      } catch (e) {
+      } catch (e: any) {
         if (e.notFound) {
           misses++
           const time = Date.now() / 1000
@@ -142,7 +142,7 @@ export class BeamSynchronizer extends Synchronizer {
     this.execution.vm.blockchain.getHeader = async function (blockId: Buffer | number | BN) {
       try {
         return await oldGetHeader.apply(this, [blockId])
-      } catch (e) {
+      } catch (e: any) {
         if (e.notFound) {
           let block
           if (typeof blockId === 'number') {
