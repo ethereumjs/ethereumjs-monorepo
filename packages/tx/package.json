@@ -34,7 +34,7 @@
     "test:browser": "karma start karma.conf.js"
   },
   "dependencies": {
-    "@ethereumjs/common": "^2.4.0",
+    "@ethereumjs/common": "^2.5.0",
     "ethereumjs-util": "^7.1.1"
   },
   "devDependencies": {

@@ -178,6 +178,14 @@ common1.setChain('customChain1')
 const common1 = new Common({ chain: 'customChain1', customChains: [ myCustomChain1, myCustomChain2 ] })
 ```
 
+It is also possible (`v2.5.0`+) to pass in a custom genesis state file (see e.g. `src/genesisStates/goerli.json` for an example on the format needed) along with the custom chain configuration:
+
+```typescript
+import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
+import chain1GenesisState from '[PATH_TO_GENESIS_STATES]/chain1GenesisState.json'
+const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, chain1GenesisState ] ]})
+```
+
 ## Hardforks
 
 The `hardfork` can be set in constructor like this:
@@ -214,6 +222,7 @@ library supported:
 - `muirGlacier` (`Hardfork.MuirGlacier`)
 - `berlin` (`Hardfork.Berlin`) (since `v2.2.0`)
 - `london` (`Hardfork.London`) (since `v2.4.0`)
+- `merge` (`Hardfork.Merge`) (since `v2.5.0`, `experimental`)
 
 ### Future Hardforks
 
@@ -254,9 +263,11 @@ The following EIPs are currently supported:
 - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2565): Transaction Types
 - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929): gas cost increases for state access opcodes
 - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930): Optional accesss list tx type
+- [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198): Base fee Opcode
 - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529): Reduction in refunds
 - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541): Reject new contracts starting with the 0xEF byte
 - [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554): Difficulty Bomb Delay to December 2021 (only PoW networks)
+- [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675): Upgrade consensus to Proof-of-Stake (`experimental`)
 
 ## Bootstrap Nodes
 
