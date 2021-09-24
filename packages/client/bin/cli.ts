@@ -1,6 +1,7 @@
 #!/usr/bin/env client
 
 import readline from 'readline'
+import crypto from 'crypto'
 import { Server as RPCServer } from 'jayson/promise'
 import Common, { Hardfork, ConsensusType } from '@ethereumjs/common'
 import { Address, toBuffer, privateToAddress } from 'ethereumjs-util'
@@ -10,6 +11,7 @@ import { Config } from '../lib/config'
 import { Logger } from '../lib/logging'
 import { RPCManager } from '../lib/rpc'
 import { Event } from '../lib/types'
+import { Chain, GenesisState } from '@ethereumjs/common/dist/types'
 const os = require('os')
 const path = require('path')
 const fs = require('fs-extra')
@@ -139,6 +141,11 @@ const args = require('yargs')
         'Comma separated list of accounts to unlock - currently only the first account is used for sealing mined blocks. Beta, you will be promped for a 0x-prefixed private key until keystore functionality is added - FOR YOUR SAFETY PLEASE DO NOT USE ANY ACCOUNTS HOLDING SUBSTANTIAL AMOUNTS OF ETH',
       array: true,
     },
+    dev: {
+      describe: 'Start an ephemeral PoA blockchain with a single miner and prefunded accounts',
+      boolean: true,
+      default: false,
+    },
   })
   .locale('en_EN').argv
 
@@ -199,54 +206,7 @@ async function run() {
   // give network id precedence over network name
   const chain = args.networkId ?? args.network ?? 'mainnet'
 
-  // configure common based on args given
-  let common: Common = {} as Common
-  if (
-    (args.customChainParams || args.customGenesisState || args.gethGenesis) &&
-    (!(args.network === 'mainnet') || args.networkId)
-  ) {
-    throw new Error('cannot specify both custom chain parameters and preset network ID')
-  }
-  // Use custom chain parameters file if specified
-  if (args.customChain) {
-    if (!args.customGenesisState) {
-      throw new Error('cannot have custom chain parameters without genesis state')
-    }
-    try {
-      const customChainParams = JSON.parse(fs.readFileSync(args.customChain, 'utf-8'))
-      const genesisState = JSON.parse(fs.readFileSync(args.customGenesisState))
-      common = new Common({
-        chain: customChainParams.name,
-        customChains: [[customChainParams, genesisState]],
-      })
-    } catch (err: any) {
-      throw new Error(`invalid chain parameters: ${err.message}`)
-    }
-  } else if (args.gethGenesis) {
-    // Use geth genesis parameters file if specified
-    const genesisFile = JSON.parse(fs.readFileSync(args.gethGenesis, 'utf-8'))
-    const genesisParams = await parseCustomParams(
-      genesisFile,
-      path.parse(args.gethGenesis).base.split('.')[0]
-    )
-    const genesisState = genesisFile.alloc ? await parseGenesisState(genesisFile) : {}
-    common = new Common({
-      chain: genesisParams.name,
-      customChains: [[genesisParams, genesisState]],
-    })
-  } else {
-    // Use default common configuration for specified `chain` if no custom parameters specified
-    common = new Common({ chain: chain, hardfork: Hardfork.Chainstart })
-  }
-
-  if (args.mine) {
-    if (common.consensusType() !== ConsensusType.ProofOfAuthority) {
-      throw new Error('Currently mining is only supported for PoA consensus')
-    }
-    if (!args.unlock) {
-      throw new Error('Please provide an account to sign sealed blocks with `--unlock [address]` ')
-    }
-  }
+  // configure accounts for mining and prefunding in a local devnet
   const accounts: [Address, Buffer][] = [] // [address, privateKey]
   if (args.unlock) {
     const rl = readline.createInterface({
@@ -281,7 +241,80 @@ async function run() {
     rl.close()
   }
 
-  const datadir = args.datadir ?? Config.DATADIR_DEFAULT
+  let common: Common = {} as Common
+  if (args.dev) {
+    fs.rmdirSync('./dev', { recursive: true })
+    if (accounts.length === 0) {
+      // Create new account for devnet if not provided
+      const privKey = crypto.randomBytes(32)
+      const account = new Address(privateToAddress(privKey))
+      accounts.push([account, privKey])
+      console.log(`Account generated for mining blocks: ${account.toString()}`)
+      console.log(`Private key associated with mining account: 0x${privKey.toString('hex')}`)
+      console.log('WARNING: Do not use this account for mainnet funds')
+    }
+
+    const prefundAddress = accounts[0][0].toString().slice(2)
+    const genesisState: GenesisState = { ['0x' + prefundAddress]: '0x10000000000000000000' }
+    const chainJson = JSON.parse(fs.readFileSync('./bin/devnet.json'))
+    const extraData = '0x' + '0'.repeat(64) + prefundAddress + '0'.repeat(130)
+    const newJson = Object.assign(chainJson, { extraData: extraData })
+    //@ts-ignore
+    chainJson.alloc[prefundAddress] = { balance: '0x10000000000000000000' }
+    const chainParams = await parseCustomParams(newJson, 'devnet')
+    const customChainParams: [Chain, GenesisState][] = [[chainParams, genesisState]]
+    common = new Common({ chain: 'devnet', customChains: customChainParams })
+  }
+
+  // configure common based on args given
+  if (
+    (args.customChainParams || args.customGenesisState || args.gethGenesis) &&
+    (!(args.network === 'mainnet') || args.networkId)
+  ) {
+    throw new Error('cannot specify both custom chain parameters and preset network ID')
+  }
+  // Use custom chain parameters file if specified
+  if (args.customChain) {
+    if (!args.customGenesisState) {
+      throw new Error('cannot have custom chain parameters without genesis state')
+    }
+    try {
+      const customChainParams = JSON.parse(fs.readFileSync(args.customChain, 'utf-8'))
+      const genesisState = JSON.parse(fs.readFileSync(args.customGenesisState))
+      common = new Common({
+        chain: customChainParams.name,
+        customChains: [[customChainParams, genesisState]],
+      })
+    } catch (err: any) {
+      throw new Error(`invalid chain parameters: ${err.message}`)
+    }
+  } else if (args.gethGenesis) {
+    // Use geth genesis parameters file if specified
+    const genesisFile = JSON.parse(fs.readFileSync(args.gethGenesis, 'utf-8'))
+    const genesisParams = await parseCustomParams(
+      genesisFile,
+      path.parse(args.gethGenesis).base.split('.')[0]
+    )
+    const genesisState = genesisFile.alloc ? await parseGenesisState(genesisFile) : {}
+    common = new Common({
+      chain: genesisParams.name,
+      customChains: [[genesisParams, genesisState]],
+    })
+  } else if (!args.dev) {
+    // Use default common configuration for specified `chain` if no custom parameters specified
+    common = new Common({ chain: chain, hardfork: Hardfork.Chainstart })
+  }
+
+  if (args.mine) {
+    if (common.consensusType() !== ConsensusType.ProofOfAuthority) {
+      throw new Error('Currently mining is only supported for PoA consensus')
+    }
+    if (!args.unlock) {
+      throw new Error('Please provide an account to sign sealed blocks with `--unlock [address]` ')
+    }
+  }
+
+  const datadir = args.datadir ?? args.dev ? 'dev' : Config.DATADIR_DEFAULT
   const configDirectory = `${datadir}/${common.chainName()}/config`
   fs.ensureDirSync(configDirectory)
   const key = await Config.getClientKey(datadir, common)
@@ -307,7 +340,7 @@ async function run() {
     debugCode: args.debugCode,
     discDns: args.discDns,
     discV4: args.discV4,
-    mine: args.mine,
+    mine: args.dev ?? args.mine,
     accounts,
   })
   logger = config.logger
