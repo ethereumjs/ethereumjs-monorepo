@@ -226,7 +226,7 @@ async function run() {
           `Please enter the 0x-prefixed private key to unlock ${address}:\n`
         )
         const privKey = toBuffer(inputKey)
-        const derivedAddress = new Address(privateToAddress(privKey))
+        const derivedAddress = Address.fromPrivateKey(privKey)
         if (address.equals(derivedAddress)) {
           accounts.push([address, privKey])
         } else {
