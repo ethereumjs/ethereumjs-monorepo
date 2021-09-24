@@ -207,7 +207,7 @@ async function run() {
   const chain = args.networkId ?? args.network ?? 'mainnet'
 
   // configure accounts for mining and prefunding in a local devnet
-  const accounts: [Address, Buffer][] = [] // [address, privateKey]
+  const accounts: [address: Address, privateKey: Buffer][] = []
   if (args.unlock) {
     const rl = readline.createInterface({
       input: process.stdin,
