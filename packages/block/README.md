@@ -131,6 +131,23 @@ Additionally there are the following utility methods for Clique/PoA related func
 
 See the API docs for detailed documentation. Note that these methods will throw if called in a non-Clique/PoA context.
 
+### Casper/PoS (since v3.5.0) (experimental)
+
+Merge-friendly Casper/PoS blocks have been introduced along the `v3.5.0` release. Proof-of-Stake compatible execution blocks come with its own set of header field simplifications and associated validation rules. The difficuly is set to `0` since not relevant any more, just to name an example. For a full list of changes see [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675).
+
+You can instantiate a Merge/PoS block like this:
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge, })
+const block = Block.fromBlockData({
+  // Provide your block data here or use default values
+}, { common })
+```
+
+Note that all `Merge` respectively `Casper/PoS` related functionality is still considered `experimental`.
+
 # API
 
 [Documentation](./docs/README.md)

@@ -32,6 +32,8 @@ See e.g. the following HF definition in one of our test chain files:
 }
 ```
 
+There is also a new `consensusType` `pos` which can be set along a HF file (see `src/hardforks/merge.json`) or directly in a chain file (like `src/chains/mainnet.json`) to create a pure PoS chain (note that the creation of pure PoS chains is still untested). To reference this new consensus type `ConsensusType.ProofOfStake` from the `ConsensusType` enum dict can be used.
+
 To allow a HF switch by total difficulty (TD) - which is planned for the Merge - the chain file type has been updated to now also accept a `td` value as an alternative (respectively also: in addition) to the `block` number value, see PR [#1473](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1473). Along the `getHardforkByBlockNumber()` and `setHardforkByBlockNumber()` function signatures have been expanded to also allow for setting/getting a HF by the total difficulty value:
 
 - -> `getHardforkByBlockNumber(blockNumber: BNLike, td?: BNLike): string`

@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 3.3.1 - 2021-09-24
 
-- The hash from the `tx.hash()` now gets cached for txs created with the `freeze` option (activated by default), PR [#1445](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1445)
+- The hash from the `tx.hash()` method now gets cached for txs created with the `freeze` option (activated by default), PR [#1445](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1445)
 - Fixed `getMessageToSign()` return type for `EIP1559Transaction`, PR [#1382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1382)
 
 ## 3.3.0 - 2021-07-08

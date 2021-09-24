@@ -35,7 +35,7 @@
   },
   "author": "mjbecze <mjbecze@gmail.com>",
   "dependencies": {
-    "@ethereumjs/block": "^3.4.0",
+    "@ethereumjs/block": "^3.5.0",
     "@ethereumjs/common": "^2.5.0",
     "@ethereumjs/ethash": "^1.0.0",
     "debug": "^2.2.0",
