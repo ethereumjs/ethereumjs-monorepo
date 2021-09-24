@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "@ethereumjs/block": "^3.5.0",
-    "@ethereumjs/blockchain": "^5.4.0",
+    "@ethereumjs/blockchain": "^5.4.1",
     "@ethereumjs/common": "^2.5.0",
     "@ethereumjs/devp2p": "^4.1.0",
     "@ethereumjs/tx": "^3.3.1",
