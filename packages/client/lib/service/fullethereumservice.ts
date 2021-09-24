@@ -132,6 +132,14 @@ export class FullEthereumService extends EthereumService {
       const txs = this.synchronizer.txPool.getByHash(hashes)
       // Always respond, also on an empty list
       peer.eth?.send('PooledTransactions', { reqId, txs })
+    } else if (message.name === 'GetNodeData') {
+      let data: (Buffer | null)[] = await Promise.all(
+        message.data.map((hash: Buffer) => (<any>this.config.vm!.stateManager)._trie.db.get(hash))
+      )
+      data = data.filter((value: Buffer | null) => {
+        return !(value === null)
+      })
+      peer.eth!.send('NodeData', data)
     }
   }
 
