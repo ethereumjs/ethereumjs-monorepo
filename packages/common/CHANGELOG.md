@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Common with custom Genesis State
 
-In addition to initializing Common with a custom chain configuration it is now also possible to provide a custom genesis state JSON file, which completes the Common custom chain functionality. Format follows our genesis state file definitions for the build in chains (see e.g. `src/genesisStates/goerli.json`) and can be used to initialize a Common instance like:
+In addition to initializing Common with a custom chain configuration it is now also possible to provide a custom genesis state JSON file, which completes the Common custom chain functionality. The format follows our genesis state file definitions for the built-in chains (see e.g. `src/genesisStates/goerli.json`) and can be used to initialize a Common instance like:
 
 ```typescript
 import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
@@ -28,7 +28,7 @@ This now also provides direct access to custom genesis states passed into `Commo
 
 ### Experimental Merge HF Support / HF by Total Difficulty
 
-The Merge HF has been added as a new HF and can be used with `Hardfork.Merge`, also [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675) as the core HF EIP has been added as an EIP JSON config file, see #1393 . Note that all Merge HF related functionality is still considered `experimental`.
+The Merge HF has been added as a new HF and can be used with `Hardfork.Merge`, also [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675) as the core HF EIP has been added as an EIP JSON config file, see #1393. Note that all Merge HF related functionality is still considered `experimental`.
 
 See e.g. the following HF definition in one of our test chain files:
 

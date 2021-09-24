@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Experimental Casper/PoS and Merge Support
 
-This release adds first experimental Casper/PoS respectively Merge HF support by allowing to build a blockchain which switches to Casper/PoS consensus validation at some point triggered by a merge HF occured. The `Blockchain` library now allows for taking in the respective Casper/PoS conforming blocks (see `@ethereumjs/block` release v3.5.0), do the correct validations and set the HF accordingly (Merge HF-related logic and a new PoS consensus type have been added to the `Common` library along the v2.5.0 release).
+This release adds first experimental Casper/PoS respectively Merge HF support by allowing to build a blockchain which switches to Casper/PoS consensus validation at some point triggered by a merge HF occurred. The `Blockchain` library now allows for taking in the respective Casper/PoS conforming blocks (see `@ethereumjs/block` release v3.5.0), do the correct validations and set the HF accordingly (Merge HF-related logic and a new PoS consensus type have been added to the `Common` library along with the v2.5.0 release).
 
 See: PR [#1408](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1408)
 

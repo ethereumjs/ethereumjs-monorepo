@@ -133,7 +133,7 @@ See the API docs for detailed documentation. Note that these methods will throw 
 
 ### Casper/PoS (since v3.5.0) (experimental)
 
-Merge-friendly Casper/PoS blocks have been introduced along the `v3.5.0` release. Proof-of-Stake compatible execution blocks come with its own set of header field simplifications and associated validation rules. The difficuly is set to `0` since not relevant any more, just to name an example. For a full list of changes see [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675).
+Merge-friendly Casper/PoS blocks have been introduced along with the `v3.5.0` release. Proof-of-Stake compatible execution blocks come with their own set of header field simplifications and associated validation rules. The difficulty is set to `0` since not relevant anymore, just to name an example. For a full list of changes see [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675).
 
 You can instantiate a Merge/PoS block like this:
 
