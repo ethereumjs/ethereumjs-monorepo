@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.2.0 - 2021-09-24
+
+### EIP-706 Snappy Compression (RLPx v5)
+
+This release adds support for RLPx v5 allowing for the compression of RLPx messages with the Snappy compression algorithm as defined in [EIP-706](https://eips.ethereum.org/EIPS/eip-706). If the connecting peer doesn't support v5, the connection falls back to v4 and does the communication without compressing the payload.
+
+See: PRs [#1399](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1399), [#1442](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1442) and [#1484](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1484)
+
+### Improved Per-Message Debugging
+
+Per-message debugging with the `debug` package has been substantially expanded and allow for a much more targeted debugging experience.
+
+There are new debug loggers added to:
+
+- Debug per specific `ETH` or `LES` message (e.g. `devp2p:eth:GET_BLOCK_HEADERS`)
+- Debug per disconnect reason (e.g. `devp2p:rlpx:peer:DISCONNECT:TOO_MANY_PEERS`)
+- Debug per peer IP address (e.g. `devp2p:3.209.45.79`)
+- Debug per first connected peer (`DEBUG=devp2p:FIRST_PEER`)
+
+See: PR [#1449](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1449)
+
 ## 4.1.0 - 2021-07-15
 
 ### Finalized London HF Support

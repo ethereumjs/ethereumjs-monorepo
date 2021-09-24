@@ -446,7 +446,7 @@ devp2p:eth:GET_BLOCK_HEADERS Send GET_BLOCK_HEADERS message to 162.55.98.224:303
 devp2p:eth:BLOCK_HEADERS Received BLOCK_HEADERS message from 162.55.98.224:30303: f968dd1df968d9f90217a0af80dab03492dfc689936dc9ff272ed3743da1... +72ms
 ```
 
-### Per-Peer Debuggig
+### Per-Peer Debugging
 
 There are the following ways to limit debug output to a certain peer:
 
