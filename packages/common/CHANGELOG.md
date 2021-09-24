@@ -18,6 +18,14 @@ import chain1GenesisState from '[PATH_TO_GENESIS_STATES]/chain1GenesisState.json
 const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, chain1GenesisState ] ]})
 ```
 
+Accessing the genesis state is now integrated into the `Common` class and can be accessed in a much more natural way by doing:
+
+```typescript
+const genesisState = common.genesisState()
+```
+
+This now also provides direct access to custom genesis states passed into `Common` as described above. The old Common-separate `genesisStateByName()` and `genesisStateById()` functions are now `deprecated` and usage should be avoided.
+
 ### Experimental Merge HF Support / HF by Total Difficulty
 
 The Merge HF has been added as a new HF and can be used with `Hardfork.Merge`, also [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675) as the core HF EIP has been added as an EIP JSON config file, see #1393 . Note that all Merge HF related functionality is still considered `experimental`.

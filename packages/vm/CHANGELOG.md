@@ -6,7 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [UNRELEASED]
+## 5.5.3 - 2021-09-24
+
+- Fixed a consensus-relevant bug in the Blake2B precompile (see [EIP-152](https://eips.ethereum.org/EIPS/eip-152)) with messages with a length >= 5 (thanks @jochem-brouwer for the great analysis and quick fix on this! ❤️), PR [#1486](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1486)
+- Improved support for custom chain genesis states in `StateManager.generateCanonicalGenesis()` (see `Common` v2.5.0 release for the corresponding functionality), PR [#1409](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1409)
+- Fixed `VM.copy()` to also copy the `blockchain` and `common` objects, PR [#1444](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1444)
+
+And, also worth to note: we are not susceptible to the IDENTITY precompile bug which caused a minority fork in August 2021, see PR [#1436](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1436) and - again - thanks @jochem-brouwer for the quick analysis! 😃
 
 **New Features**
 

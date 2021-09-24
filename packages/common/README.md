@@ -186,6 +186,14 @@ import chain1GenesisState from '[PATH_TO_GENESIS_STATES]/chain1GenesisState.json
 const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, chain1GenesisState ] ]})
 ```
 
+Accessing the genesis state can be done as follows:
+
+```typescript
+const genesisState = common.genesisState()
+```
+
+This now also provides direct access to custom genesis states passed into `Common` as described above. The old Common-separate `genesisStateByName()` and `genesisStateById()` functions are now `deprecated` and usage should be avoided.
+
 ## Hardforks
 
 The `hardfork` can be set in constructor like this:
@@ -272,25 +280,6 @@ The following EIPs are currently supported:
 ## Bootstrap Nodes
 
 You can use `common.bootstrapNodes()` function to get nodes for a specific chain/network.
-
-## Genesis States
-
-Network-specific genesis files are located in the `genesisStates` folder.
-
-Due to the large file sizes genesis states are not directly included in the `index.js` file
-but have to be accessed directly, e.g.:
-
-```javascript
-const mainnetGenesisState = require('@ethereumjs/common/dist/genesisStates/mainnet')
-```
-
-Or by accessing dynamically:
-
-```javascript
-const genesisStates = require('@ethereumjs/common/dist/genesisStates')
-const mainnetGenesisState = genesisStates.genesisStateByName('mainnet')
-const mainnetGenesisState = genesisStates.genesisStateById(1) // alternative via network Id
-```
 
 # EthereumJS
 
