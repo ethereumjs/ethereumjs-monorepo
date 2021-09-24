@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@ethereumjs/common": "^2.4.0",
-    "ethereumjs-util": "^7.1.0"
+    "ethereumjs-util": "^7.1.1"
   },
   "devDependencies": {
     "@types/minimist": "^1.2.0",
