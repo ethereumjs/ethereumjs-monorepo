@@ -255,13 +255,14 @@ async function run() {
     }
 
     const prefundAddress = accounts[0][0].toString().slice(2)
-    const genesisState: GenesisState = { ['0x' + prefundAddress]: '0x10000000000000000000' }
     const chainJson = JSON.parse(fs.readFileSync('./bin/devnet.json'))
     const extraData = '0x' + '0'.repeat(64) + prefundAddress + '0'.repeat(130)
-    const newJson = Object.assign(chainJson, { extraData: extraData })
-    //@ts-ignore
-    chainJson.alloc[prefundAddress] = { balance: '0x10000000000000000000' }
+    const newJson = Object.assign(chainJson, {
+      extraData: extraData,
+      alloc: { [prefundAddress]: { balance: '0x10000000000000000000' } },
+    })
     const chainParams = await parseCustomParams(newJson, 'devnet')
+    const genesisState = await parseGenesisState(newJson)
     const customChainParams: [Chain, GenesisState][] = [[chainParams, genesisState]]
     common = new Common({ chain: 'devnet', customChains: customChainParams })
   }
