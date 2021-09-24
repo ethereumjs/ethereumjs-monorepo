@@ -1,8 +1,6 @@
-[ethereumjs-util](../README.md) / [externals](externals.md) / rlp
+[ethereumjs-util](../README.md) / rlp
 
 # Namespace: rlp
-
-[externals](externals.md).rlp
 
 [`rlp`](https://github.com/ethereumjs/rlp)
 
@@ -10,24 +8,24 @@
 
 ### Interfaces
 
-- [Decoded](../interfaces/externals.rlp.decoded.md)
-- [List](../interfaces/externals.rlp.list.md)
+- [Decoded](../interfaces/rlp.Decoded.md)
+- [List](../interfaces/rlp.List.md)
 
 ### Type aliases
 
-- [Input](externals.rlp.md#input)
+- [Input](rlp.md#input)
 
 ### Functions
 
-- [decode](externals.rlp.md#decode)
-- [encode](externals.rlp.md#encode)
-- [getLength](externals.rlp.md#getlength)
+- [decode](rlp.md#decode)
+- [encode](rlp.md#encode)
+- [getLength](rlp.md#getlength)
 
 ## Type aliases
 
 ### Input
 
-Ƭ **Input**: `Buffer` \| `string` \| `number` \| `bigint` \| `Uint8Array` \| [BN](../classes/externals.bn-1.md) \| [List](../interfaces/externals.rlp.list.md) \| ``null``
+Ƭ **Input**: `Buffer` \| `string` \| `number` \| `bigint` \| `Uint8Array` \| [`BN`](../classes/BN.md) \| [`List`](../interfaces/rlp.List.md) \| ``null``
 
 #### Defined in
 
@@ -75,18 +73,18 @@ node_modules/rlp/dist/index.d.ts:17
 
 node_modules/rlp/dist/index.d.ts:18
 
-▸ **decode**(`input`, `stream?`): `Buffer`[] \| `Buffer` \| [Decoded](../interfaces/externals.rlp.decoded.md)
+▸ **decode**(`input`, `stream?`): `Buffer`[] \| `Buffer` \| [`Decoded`](../interfaces/rlp.Decoded.md)
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `input` | [Input](externals.rlp.md#input) |
+| `input` | [`Input`](rlp.md#input) |
 | `stream?` | `boolean` |
 
 #### Returns
 
-`Buffer`[] \| `Buffer` \| [Decoded](../interfaces/externals.rlp.decoded.md)
+`Buffer`[] \| `Buffer` \| [`Decoded`](../interfaces/rlp.Decoded.md)
 
 #### Defined in
 
@@ -105,7 +103,7 @@ This function takes in a data, convert it to buffer if not, and a length for rec
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `input` | [Input](externals.rlp.md#input) | will be converted to buffer |
+| `input` | [`Input`](rlp.md#input) | will be converted to buffer |
 
 #### Returns
 
@@ -129,7 +127,7 @@ Get the length of the RLP input
 
 | Name | Type |
 | :------ | :------ |
-| `input` | [Input](externals.rlp.md#input) |
+| `input` | [`Input`](rlp.md#input) |
 
 #### Returns
 

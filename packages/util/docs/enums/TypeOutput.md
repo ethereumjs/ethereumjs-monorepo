@@ -1,8 +1,6 @@
-[ethereumjs-util](../README.md) / [types](../modules/types.md) / TypeOutput
+[ethereumjs-util](../README.md) / TypeOutput
 
 # Enumeration: TypeOutput
-
-[types](../modules/types.md).TypeOutput
 
 Type output options
 
@@ -10,16 +8,16 @@ Type output options
 
 ### Enumeration members
 
-- [BN](types.typeoutput.md#bn)
-- [Buffer](types.typeoutput.md#buffer)
-- [Number](types.typeoutput.md#number)
-- [PrefixedHexString](types.typeoutput.md#prefixedhexstring)
+- [BN](TypeOutput.md#bn)
+- [Buffer](TypeOutput.md#buffer)
+- [Number](TypeOutput.md#number)
+- [PrefixedHexString](TypeOutput.md#prefixedhexstring)
 
 ## Enumeration members
 
 ### BN
 
-• **BN** = 1
+• **BN** = `1`
 
 #### Defined in
 
@@ -29,7 +27,7 @@ ___
 
 ### Buffer
 
-• **Buffer** = 2
+• **Buffer** = `2`
 
 #### Defined in
 
@@ -39,7 +37,7 @@ ___
 
 ### Number
 
-• **Number** = 0
+• **Number** = `0`
 
 #### Defined in
 
@@ -49,7 +47,7 @@ ___
 
 ### PrefixedHexString
 
-• **PrefixedHexString** = 3
+• **PrefixedHexString** = `3`
 
 #### Defined in
 

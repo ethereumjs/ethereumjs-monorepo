@@ -1,31 +1,29 @@
-[ethereumjs-util](../README.md) / [account](../modules/account.md) / Account
+[ethereumjs-util](../README.md) / Account
 
 # Class: Account
-
-[account](../modules/account.md).Account
 
 ## Table of contents
 
 ### Constructors
 
-- [constructor](account.account-1.md#constructor)
+- [constructor](Account.md#constructor)
 
 ### Properties
 
-- [balance](account.account-1.md#balance)
-- [codeHash](account.account-1.md#codehash)
-- [nonce](account.account-1.md#nonce)
-- [stateRoot](account.account-1.md#stateroot)
+- [balance](Account.md#balance)
+- [codeHash](Account.md#codehash)
+- [nonce](Account.md#nonce)
+- [stateRoot](Account.md#stateroot)
 
 ### Methods
 
-- [isContract](account.account-1.md#iscontract)
-- [isEmpty](account.account-1.md#isempty)
-- [raw](account.account-1.md#raw)
-- [serialize](account.account-1.md#serialize)
-- [fromAccountData](account.account-1.md#fromaccountdata)
-- [fromRlpSerializedAccount](account.account-1.md#fromrlpserializedaccount)
-- [fromValuesArray](account.account-1.md#fromvaluesarray)
+- [isContract](Account.md#iscontract)
+- [isEmpty](Account.md#isempty)
+- [raw](Account.md#raw)
+- [serialize](Account.md#serialize)
+- [fromAccountData](Account.md#fromaccountdata)
+- [fromRlpSerializedAccount](Account.md#fromrlpserializedaccount)
+- [fromValuesArray](Account.md#fromvaluesarray)
 
 ## Constructors
 
@@ -40,20 +38,20 @@ Use the static factory methods to assist in creating an Account from varying dat
 
 | Name | Type |
 | :------ | :------ |
-| `nonce` | [BN](externals.bn-1.md) |
-| `balance` | [BN](externals.bn-1.md) |
+| `nonce` | [`BN`](BN.md) |
+| `balance` | [`BN`](BN.md) |
 | `stateRoot` | `Buffer` |
 | `codeHash` | `Buffer` |
 
 #### Defined in
 
-[packages/util/src/account.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L55)
+[packages/util/src/account.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L61)
 
 ## Properties
 
 ### balance
 
-• **balance**: [BN](externals.bn-1.md)
+• **balance**: [`BN`](BN.md)
 
 #### Defined in
 
@@ -73,7 +71,7 @@ ___
 
 ### nonce
 
-• **nonce**: [BN](externals.bn-1.md)
+• **nonce**: [`BN`](BN.md)
 
 #### Defined in
 
@@ -159,17 +157,17 @@ ___
 
 ### fromAccountData
 
-▸ `Static` **fromAccountData**(`accountData`): [Account](account.account-1.md)
+▸ `Static` **fromAccountData**(`accountData`): [`Account`](Account.md)
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `accountData` | [AccountData](../interfaces/account.accountdata.md) |
+| `accountData` | [`AccountData`](../interfaces/AccountData.md) |
 
 #### Returns
 
-[Account](account.account-1.md)
+[`Account`](Account.md)
 
 #### Defined in
 
@@ -179,7 +177,7 @@ ___
 
 ### fromRlpSerializedAccount
 
-▸ `Static` **fromRlpSerializedAccount**(`serialized`): [Account](account.account-1.md)
+▸ `Static` **fromRlpSerializedAccount**(`serialized`): [`Account`](Account.md)
 
 #### Parameters
 
@@ -189,7 +187,7 @@ ___
 
 #### Returns
 
-[Account](account.account-1.md)
+[`Account`](Account.md)
 
 #### Defined in
 
@@ -199,7 +197,7 @@ ___
 
 ### fromValuesArray
 
-▸ `Static` **fromValuesArray**(`values`): [Account](account.account-1.md)
+▸ `Static` **fromValuesArray**(`values`): [`Account`](Account.md)
 
 #### Parameters
 
@@ -209,7 +207,7 @@ ___
 
 #### Returns
 
-[Account](account.account-1.md)
+[`Account`](Account.md)
 
 #### Defined in
 

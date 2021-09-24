@@ -1,16 +1,14 @@
-[ethereumjs-util](../README.md) / [signature](../modules/signature.md) / ECDSASignatureBuffer
+[ethereumjs-util](../README.md) / ECDSASignatureBuffer
 
 # Interface: ECDSASignatureBuffer
-
-[signature](../modules/signature.md).ECDSASignatureBuffer
 
 ## Table of contents
 
 ### Properties
 
-- [r](signature.ecdsasignaturebuffer.md#r)
-- [s](signature.ecdsasignaturebuffer.md#s)
-- [v](signature.ecdsasignaturebuffer.md#v)
+- [r](ECDSASignatureBuffer.md#r)
+- [s](ECDSASignatureBuffer.md#s)
+- [v](ECDSASignatureBuffer.md#v)
 
 ## Properties
 

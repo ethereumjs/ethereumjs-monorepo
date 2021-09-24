@@ -1,8 +1,6 @@
-[ethereumjs-util](../README.md) / [externals](externals.md) / BN
+[ethereumjs-util](../README.md) / BN
 
 # Namespace: BN
-
-[externals](externals.md).BN
 
 [`BN`](https://github.com/indutny/bn.js)
 
@@ -10,13 +8,13 @@
 
 ### Interfaces
 
-- [MPrime](../interfaces/externals.bn.mprime.md)
-- [ReductionContext](../interfaces/externals.bn.reductioncontext.md)
+- [MPrime](../interfaces/BN.MPrime.md)
+- [ReductionContext](../interfaces/BN.ReductionContext.md)
 
 ### Type aliases
 
-- [Endianness](externals.bn.md#endianness)
-- [IPrimeName](externals.bn.md#iprimename)
+- [Endianness](BN.md#endianness)
+- [IPrimeName](BN.md#iprimename)
 
 ## Type aliases
 

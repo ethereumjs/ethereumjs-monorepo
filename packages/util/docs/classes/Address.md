@@ -1,32 +1,30 @@
-[ethereumjs-util](../README.md) / [address](../modules/address.md) / Address
+[ethereumjs-util](../README.md) / Address
 
 # Class: Address
-
-[address](../modules/address.md).Address
 
 ## Table of contents
 
 ### Constructors
 
-- [constructor](address.address-1.md#constructor)
+- [constructor](Address.md#constructor)
 
 ### Properties
 
-- [buf](address.address-1.md#buf)
+- [buf](Address.md#buf)
 
 ### Methods
 
-- [equals](address.address-1.md#equals)
-- [isPrecompileOrSystemAddress](address.address-1.md#isprecompileorsystemaddress)
-- [isZero](address.address-1.md#iszero)
-- [toBuffer](address.address-1.md#tobuffer)
-- [toString](address.address-1.md#tostring)
-- [fromPrivateKey](address.address-1.md#fromprivatekey)
-- [fromPublicKey](address.address-1.md#frompublickey)
-- [fromString](address.address-1.md#fromstring)
-- [generate](address.address-1.md#generate)
-- [generate2](address.address-1.md#generate2)
-- [zero](address.address-1.md#zero)
+- [equals](Address.md#equals)
+- [isPrecompileOrSystemAddress](Address.md#isprecompileorsystemaddress)
+- [isZero](Address.md#iszero)
+- [toBuffer](Address.md#tobuffer)
+- [toString](Address.md#tostring)
+- [fromPrivateKey](Address.md#fromprivatekey)
+- [fromPublicKey](Address.md#frompublickey)
+- [fromString](Address.md#fromstring)
+- [generate](Address.md#generate)
+- [generate2](Address.md#generate2)
+- [zero](Address.md#zero)
 
 ## Constructors
 
@@ -42,7 +40,7 @@
 
 #### Defined in
 
-[packages/util/src/address.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L13)
+[packages/util/src/address.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L15)
 
 ## Properties
 
@@ -66,7 +64,7 @@ Is address equal to another.
 
 | Name | Type |
 | :------ | :------ |
-| `address` | [Address](address.address-1.md) |
+| `address` | [`Address`](Address.md) |
 
 #### Returns
 
@@ -145,7 +143,7 @@ ___
 
 ### fromPrivateKey
 
-▸ `Static` **fromPrivateKey**(`privateKey`): [Address](address.address-1.md)
+▸ `Static` **fromPrivateKey**(`privateKey`): [`Address`](Address.md)
 
 Returns an address for a given private key.
 
@@ -157,7 +155,7 @@ Returns an address for a given private key.
 
 #### Returns
 
-[Address](address.address-1.md)
+[`Address`](Address.md)
 
 #### Defined in
 
@@ -167,7 +165,7 @@ ___
 
 ### fromPublicKey
 
-▸ `Static` **fromPublicKey**(`pubKey`): [Address](address.address-1.md)
+▸ `Static` **fromPublicKey**(`pubKey`): [`Address`](Address.md)
 
 Returns an address for a given public key.
 
@@ -179,7 +177,7 @@ Returns an address for a given public key.
 
 #### Returns
 
-[Address](address.address-1.md)
+[`Address`](Address.md)
 
 #### Defined in
 
@@ -189,7 +187,7 @@ ___
 
 ### fromString
 
-▸ `Static` **fromString**(`str`): [Address](address.address-1.md)
+▸ `Static` **fromString**(`str`): [`Address`](Address.md)
 
 Returns an Address object from a hex-encoded string.
 
@@ -201,7 +199,7 @@ Returns an Address object from a hex-encoded string.
 
 #### Returns
 
-[Address](address.address-1.md)
+[`Address`](Address.md)
 
 #### Defined in
 
@@ -211,7 +209,7 @@ ___
 
 ### generate
 
-▸ `Static` **generate**(`from`, `nonce`): [Address](address.address-1.md)
+▸ `Static` **generate**(`from`, `nonce`): [`Address`](Address.md)
 
 Generates an address for a newly created contract.
 
@@ -219,12 +217,12 @@ Generates an address for a newly created contract.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `from` | [Address](address.address-1.md) | The address which is creating this new address |
-| `nonce` | [BN](externals.bn-1.md) | The nonce of the from account |
+| `from` | [`Address`](Address.md) | The address which is creating this new address |
+| `nonce` | [`BN`](BN.md) | The nonce of the from account |
 
 #### Returns
 
-[Address](address.address-1.md)
+[`Address`](Address.md)
 
 #### Defined in
 
@@ -234,7 +232,7 @@ ___
 
 ### generate2
 
-▸ `Static` **generate2**(`from`, `salt`, `initCode`): [Address](address.address-1.md)
+▸ `Static` **generate2**(`from`, `salt`, `initCode`): [`Address`](Address.md)
 
 Generates an address for a contract created using CREATE2.
 
@@ -242,13 +240,13 @@ Generates an address for a contract created using CREATE2.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `from` | [Address](address.address-1.md) | The address which is creating this new address |
+| `from` | [`Address`](Address.md) | The address which is creating this new address |
 | `salt` | `Buffer` | A salt |
 | `initCode` | `Buffer` | The init code of the contract being created |
 
 #### Returns
 
-[Address](address.address-1.md)
+[`Address`](Address.md)
 
 #### Defined in
 
@@ -258,13 +256,13 @@ ___
 
 ### zero
 
-▸ `Static` **zero**(): [Address](address.address-1.md)
+▸ `Static` **zero**(): [`Address`](Address.md)
 
 Returns the zero address.
 
 #### Returns
 
-[Address](address.address-1.md)
+[`Address`](Address.md)
 
 #### Defined in
 

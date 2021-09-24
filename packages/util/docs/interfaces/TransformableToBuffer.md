@@ -1,15 +1,13 @@
-[ethereumjs-util](../README.md) / [types](../modules/types.md) / TransformableToBuffer
+[ethereumjs-util](../README.md) / TransformableToBuffer
 
 # Interface: TransformableToBuffer
-
-[types](../modules/types.md).TransformableToBuffer
 
 ## Table of contents
 
 ### Methods
 
-- [toArray](types.transformabletobuffer.md#toarray)
-- [toBuffer](types.transformabletobuffer.md#tobuffer)
+- [toArray](TransformableToBuffer.md#toarray)
+- [toBuffer](TransformableToBuffer.md#tobuffer)
 
 ## Methods
 

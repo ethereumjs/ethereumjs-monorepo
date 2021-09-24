@@ -1,8 +1,6 @@
-[ethereumjs-util](../README.md) / [externals](../modules/externals.md) / BN
+[ethereumjs-util](../README.md) / BN
 
 # Class: BN
-
-[externals](../modules/externals.md).BN
 
 [`BN`](https://github.com/indutny/bn.js)
 
@@ -10,108 +8,108 @@
 
 ### Constructors
 
-- [constructor](externals.bn-1.md#constructor)
+- [constructor](BN.md#constructor)
 
 ### Properties
 
-- [BN](externals.bn-1.md#bn)
-- [wordSize](externals.bn-1.md#wordsize)
+- [BN](BN.md#bn)
+- [wordSize](BN.md#wordsize)
 
 ### Methods
 
-- [abs](externals.bn-1.md#abs)
-- [add](externals.bn-1.md#add)
-- [addn](externals.bn-1.md#addn)
-- [and](externals.bn-1.md#and)
-- [andln](externals.bn-1.md#andln)
-- [bincn](externals.bn-1.md#bincn)
-- [bitLength](externals.bn-1.md#bitlength)
-- [byteLength](externals.bn-1.md#bytelength)
-- [clone](externals.bn-1.md#clone)
-- [cmp](externals.bn-1.md#cmp)
-- [cmpn](externals.bn-1.md#cmpn)
-- [div](externals.bn-1.md#div)
-- [divRound](externals.bn-1.md#divround)
-- [divn](externals.bn-1.md#divn)
-- [egcd](externals.bn-1.md#egcd)
-- [eq](externals.bn-1.md#eq)
-- [eqn](externals.bn-1.md#eqn)
-- [fromTwos](externals.bn-1.md#fromtwos)
-- [gcd](externals.bn-1.md#gcd)
-- [gt](externals.bn-1.md#gt)
-- [gte](externals.bn-1.md#gte)
-- [gten](externals.bn-1.md#gten)
-- [gtn](externals.bn-1.md#gtn)
-- [iabs](externals.bn-1.md#iabs)
-- [iadd](externals.bn-1.md#iadd)
-- [iaddn](externals.bn-1.md#iaddn)
-- [iand](externals.bn-1.md#iand)
-- [idivn](externals.bn-1.md#idivn)
-- [imaskn](externals.bn-1.md#imaskn)
-- [imul](externals.bn-1.md#imul)
-- [imuln](externals.bn-1.md#imuln)
-- [ineg](externals.bn-1.md#ineg)
-- [inotn](externals.bn-1.md#inotn)
-- [invm](externals.bn-1.md#invm)
-- [ior](externals.bn-1.md#ior)
-- [isEven](externals.bn-1.md#iseven)
-- [isNeg](externals.bn-1.md#isneg)
-- [isOdd](externals.bn-1.md#isodd)
-- [isZero](externals.bn-1.md#iszero)
-- [ishln](externals.bn-1.md#ishln)
-- [ishrn](externals.bn-1.md#ishrn)
-- [isqr](externals.bn-1.md#isqr)
-- [isub](externals.bn-1.md#isub)
-- [isubn](externals.bn-1.md#isubn)
-- [iuand](externals.bn-1.md#iuand)
-- [iuor](externals.bn-1.md#iuor)
-- [iushln](externals.bn-1.md#iushln)
-- [iushrn](externals.bn-1.md#iushrn)
-- [iuxor](externals.bn-1.md#iuxor)
-- [ixor](externals.bn-1.md#ixor)
-- [lt](externals.bn-1.md#lt)
-- [lte](externals.bn-1.md#lte)
-- [lten](externals.bn-1.md#lten)
-- [ltn](externals.bn-1.md#ltn)
-- [maskn](externals.bn-1.md#maskn)
-- [mod](externals.bn-1.md#mod)
-- [modn](externals.bn-1.md#modn)
-- [modrn](externals.bn-1.md#modrn)
-- [mul](externals.bn-1.md#mul)
-- [muln](externals.bn-1.md#muln)
-- [neg](externals.bn-1.md#neg)
-- [notn](externals.bn-1.md#notn)
-- [or](externals.bn-1.md#or)
-- [pow](externals.bn-1.md#pow)
-- [setn](externals.bn-1.md#setn)
-- [shln](externals.bn-1.md#shln)
-- [shrn](externals.bn-1.md#shrn)
-- [sqr](externals.bn-1.md#sqr)
-- [sub](externals.bn-1.md#sub)
-- [subn](externals.bn-1.md#subn)
-- [testn](externals.bn-1.md#testn)
-- [toArray](externals.bn-1.md#toarray)
-- [toArrayLike](externals.bn-1.md#toarraylike)
-- [toBuffer](externals.bn-1.md#tobuffer)
-- [toJSON](externals.bn-1.md#tojson)
-- [toNumber](externals.bn-1.md#tonumber)
-- [toRed](externals.bn-1.md#tored)
-- [toString](externals.bn-1.md#tostring)
-- [toTwos](externals.bn-1.md#totwos)
-- [uand](externals.bn-1.md#uand)
-- [ucmp](externals.bn-1.md#ucmp)
-- [umod](externals.bn-1.md#umod)
-- [uor](externals.bn-1.md#uor)
-- [ushln](externals.bn-1.md#ushln)
-- [ushrn](externals.bn-1.md#ushrn)
-- [uxor](externals.bn-1.md#uxor)
-- [xor](externals.bn-1.md#xor)
-- [zeroBits](externals.bn-1.md#zerobits)
-- [isBN](externals.bn-1.md#isbn)
-- [max](externals.bn-1.md#max)
-- [min](externals.bn-1.md#min)
-- [mont](externals.bn-1.md#mont)
-- [red](externals.bn-1.md#red)
+- [abs](BN.md#abs)
+- [add](BN.md#add)
+- [addn](BN.md#addn)
+- [and](BN.md#and)
+- [andln](BN.md#andln)
+- [bincn](BN.md#bincn)
+- [bitLength](BN.md#bitlength)
+- [byteLength](BN.md#bytelength)
+- [clone](BN.md#clone)
+- [cmp](BN.md#cmp)
+- [cmpn](BN.md#cmpn)
+- [div](BN.md#div)
+- [divRound](BN.md#divround)
+- [divn](BN.md#divn)
+- [egcd](BN.md#egcd)
+- [eq](BN.md#eq)
+- [eqn](BN.md#eqn)
+- [fromTwos](BN.md#fromtwos)
+- [gcd](BN.md#gcd)
+- [gt](BN.md#gt)
+- [gte](BN.md#gte)
+- [gten](BN.md#gten)
+- [gtn](BN.md#gtn)
+- [iabs](BN.md#iabs)
+- [iadd](BN.md#iadd)
+- [iaddn](BN.md#iaddn)
+- [iand](BN.md#iand)
+- [idivn](BN.md#idivn)
+- [imaskn](BN.md#imaskn)
+- [imul](BN.md#imul)
+- [imuln](BN.md#imuln)
+- [ineg](BN.md#ineg)
+- [inotn](BN.md#inotn)
+- [invm](BN.md#invm)
+- [ior](BN.md#ior)
+- [isEven](BN.md#iseven)
+- [isNeg](BN.md#isneg)
+- [isOdd](BN.md#isodd)
+- [isZero](BN.md#iszero)
+- [ishln](BN.md#ishln)
+- [ishrn](BN.md#ishrn)
+- [isqr](BN.md#isqr)
+- [isub](BN.md#isub)
+- [isubn](BN.md#isubn)
+- [iuand](BN.md#iuand)
+- [iuor](BN.md#iuor)
+- [iushln](BN.md#iushln)
+- [iushrn](BN.md#iushrn)
+- [iuxor](BN.md#iuxor)
+- [ixor](BN.md#ixor)
+- [lt](BN.md#lt)
+- [lte](BN.md#lte)
+- [lten](BN.md#lten)
+- [ltn](BN.md#ltn)
+- [maskn](BN.md#maskn)
+- [mod](BN.md#mod)
+- [modn](BN.md#modn)
+- [modrn](BN.md#modrn)
+- [mul](BN.md#mul)
+- [muln](BN.md#muln)
+- [neg](BN.md#neg)
+- [notn](BN.md#notn)
+- [or](BN.md#or)
+- [pow](BN.md#pow)
+- [setn](BN.md#setn)
+- [shln](BN.md#shln)
+- [shrn](BN.md#shrn)
+- [sqr](BN.md#sqr)
+- [sub](BN.md#sub)
+- [subn](BN.md#subn)
+- [testn](BN.md#testn)
+- [toArray](BN.md#toarray)
+- [toArrayLike](BN.md#toarraylike)
+- [toBuffer](BN.md#tobuffer)
+- [toJSON](BN.md#tojson)
+- [toNumber](BN.md#tonumber)
+- [toRed](BN.md#tored)
+- [toString](BN.md#tostring)
+- [toTwos](BN.md#totwos)
+- [uand](BN.md#uand)
+- [ucmp](BN.md#ucmp)
+- [umod](BN.md#umod)
+- [uor](BN.md#uor)
+- [ushln](BN.md#ushln)
+- [ushrn](BN.md#ushrn)
+- [uxor](BN.md#uxor)
+- [xor](BN.md#xor)
+- [zeroBits](BN.md#zerobits)
+- [isBN](BN.md#isbn)
+- [max](BN.md#max)
+- [min](BN.md#min)
+- [mont](BN.md#mont)
+- [red](BN.md#red)
 
 ## Constructors
 
@@ -123,13 +121,13 @@
 
 | Name | Type |
 | :------ | :------ |
-| `number` | `string` \| `number` \| `Buffer` \| [BN](externals.bn-1.md) \| `Uint8Array` \| `number`[] |
+| `number` | `string` \| `number` \| [`BN`](BN.md) \| `Buffer` \| `Uint8Array` \| `number`[] |
 | `base?` | `number` \| ``"hex"`` |
-| `endian?` | ``"le"`` \| ``"be"`` |
+| `endian?` | [`Endianness`](../modules/BN.md#endianness) |
 
 #### Defined in
 
-node_modules/@types/bn.js/index.d.ts:30
+node_modules/@types/bn.js/index.d.ts:32
 
 • **new BN**(`number`, `endian?`)
 
@@ -137,18 +135,18 @@ node_modules/@types/bn.js/index.d.ts:30
 
 | Name | Type |
 | :------ | :------ |
-| `number` | `string` \| `number` \| `Buffer` \| [BN](externals.bn-1.md) \| `Uint8Array` \| `number`[] |
-| `endian?` | ``"le"`` \| ``"be"`` |
+| `number` | `string` \| `number` \| [`BN`](BN.md) \| `Buffer` \| `Uint8Array` \| `number`[] |
+| `endian?` | [`Endianness`](../modules/BN.md#endianness) |
 
 #### Defined in
 
-node_modules/@types/bn.js/index.d.ts:36
+node_modules/@types/bn.js/index.d.ts:37
 
 ## Properties
 
 ### BN
 
-▪ `Static` **BN**: typeof [BN](externals.bn-1.md)
+▪ `Static` **BN**: typeof [`BN`](BN.md)
 
 #### Defined in
 
@@ -168,13 +166,13 @@ node_modules/@types/bn.js/index.d.ts:30
 
 ### abs
 
-▸ **abs**(): [BN](externals.bn-1.md)
+▸ **abs**(): [`BN`](BN.md)
 
 **`description`** absolute value
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -184,7 +182,7 @@ ___
 
 ### add
 
-▸ **add**(`b`): [BN](externals.bn-1.md)
+▸ **add**(`b`): [`BN`](BN.md)
 
 **`description`** addition
 
@@ -192,11 +190,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -206,7 +204,7 @@ ___
 
 ### addn
 
-▸ **addn**(`b`): [BN](externals.bn-1.md)
+▸ **addn**(`b`): [`BN`](BN.md)
 
 **`description`** addition
 
@@ -218,7 +216,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -228,7 +226,7 @@ ___
 
 ### and
 
-▸ **and**(`b`): [BN](externals.bn-1.md)
+▸ **and**(`b`): [`BN`](BN.md)
 
 **`description`** and
 
@@ -236,11 +234,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -250,7 +248,7 @@ ___
 
 ### andln
 
-▸ **andln**(`b`): [BN](externals.bn-1.md)
+▸ **andln**(`b`): [`BN`](BN.md)
 
 **`description`** and (NOTE: `andln` is going to be replaced with `andn` in future)
 
@@ -262,7 +260,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -272,7 +270,7 @@ ___
 
 ### bincn
 
-▸ **bincn**(`b`): [BN](externals.bn-1.md)
+▸ **bincn**(`b`): [`BN`](BN.md)
 
 **`description`** add `1 << b` to the number
 
@@ -284,7 +282,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -326,13 +324,13 @@ ___
 
 ### clone
 
-▸ **clone**(): [BN](externals.bn-1.md)
+▸ **clone**(): [`BN`](BN.md)
 
 **`description`** clone number
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -350,7 +348,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
@@ -386,7 +384,7 @@ ___
 
 ### div
 
-▸ **div**(`b`): [BN](externals.bn-1.md)
+▸ **div**(`b`): [`BN`](BN.md)
 
 **`description`** divide
 
@@ -394,11 +392,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -408,7 +406,7 @@ ___
 
 ### divRound
 
-▸ **divRound**(`b`): [BN](externals.bn-1.md)
+▸ **divRound**(`b`): [`BN`](BN.md)
 
 **`description`** rounded division
 
@@ -416,11 +414,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -430,7 +428,7 @@ ___
 
 ### divn
 
-▸ **divn**(`b`): [BN](externals.bn-1.md)
+▸ **divn**(`b`): [`BN`](BN.md)
 
 **`description`** divide
 
@@ -442,7 +440,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -460,7 +458,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
@@ -468,9 +466,9 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `a` | [BN](externals.bn-1.md) |
-| `b` | [BN](externals.bn-1.md) |
-| `gcd` | [BN](externals.bn-1.md) |
+| `a` | [`BN`](BN.md) |
+| `b` | [`BN`](BN.md) |
+| `gcd` | [`BN`](BN.md) |
 
 #### Defined in
 
@@ -488,7 +486,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
@@ -524,7 +522,7 @@ ___
 
 ### fromTwos
 
-▸ **fromTwos**(`width`): [BN](externals.bn-1.md)
+▸ **fromTwos**(`width`): [`BN`](BN.md)
 
 **`description`** convert from two's complement representation, where width is the bit width
 
@@ -536,7 +534,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -546,7 +544,7 @@ ___
 
 ### gcd
 
-▸ **gcd**(`b`): [BN](externals.bn-1.md)
+▸ **gcd**(`b`): [`BN`](BN.md)
 
 **`description`** GCD
 
@@ -554,11 +552,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -576,7 +574,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
@@ -598,7 +596,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
@@ -656,13 +654,13 @@ ___
 
 ### iabs
 
-▸ **iabs**(): [BN](externals.bn-1.md)
+▸ **iabs**(): [`BN`](BN.md)
 
 **`description`** absolute value
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -672,7 +670,7 @@ ___
 
 ### iadd
 
-▸ **iadd**(`b`): [BN](externals.bn-1.md)
+▸ **iadd**(`b`): [`BN`](BN.md)
 
 **`description`** addition
 
@@ -680,11 +678,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -694,7 +692,7 @@ ___
 
 ### iaddn
 
-▸ **iaddn**(`b`): [BN](externals.bn-1.md)
+▸ **iaddn**(`b`): [`BN`](BN.md)
 
 **`description`** addition
 
@@ -706,7 +704,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -716,7 +714,7 @@ ___
 
 ### iand
 
-▸ **iand**(`b`): [BN](externals.bn-1.md)
+▸ **iand**(`b`): [`BN`](BN.md)
 
 **`description`** and
 
@@ -724,11 +722,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -738,7 +736,7 @@ ___
 
 ### idivn
 
-▸ **idivn**(`b`): [BN](externals.bn-1.md)
+▸ **idivn**(`b`): [`BN`](BN.md)
 
 **`description`** divide
 
@@ -750,7 +748,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -760,7 +758,7 @@ ___
 
 ### imaskn
 
-▸ **imaskn**(`b`): [BN](externals.bn-1.md)
+▸ **imaskn**(`b`): [`BN`](BN.md)
 
 **`description`** clear bits with indexes higher or equal to `b`
 
@@ -772,7 +770,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -782,7 +780,7 @@ ___
 
 ### imul
 
-▸ **imul**(`b`): [BN](externals.bn-1.md)
+▸ **imul**(`b`): [`BN`](BN.md)
 
 **`description`** multiply
 
@@ -790,11 +788,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -804,7 +802,7 @@ ___
 
 ### imuln
 
-▸ **imuln**(`b`): [BN](externals.bn-1.md)
+▸ **imuln**(`b`): [`BN`](BN.md)
 
 **`description`** multiply
 
@@ -816,7 +814,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -826,13 +824,13 @@ ___
 
 ### ineg
 
-▸ **ineg**(): [BN](externals.bn-1.md)
+▸ **ineg**(): [`BN`](BN.md)
 
 **`description`** negate sign
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -842,7 +840,7 @@ ___
 
 ### inotn
 
-▸ **inotn**(`w`): [BN](externals.bn-1.md)
+▸ **inotn**(`w`): [`BN`](BN.md)
 
 **`description`** not (for the width specified by `w`)
 
@@ -854,7 +852,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -864,7 +862,7 @@ ___
 
 ### invm
 
-▸ **invm**(`b`): [BN](externals.bn-1.md)
+▸ **invm**(`b`): [`BN`](BN.md)
 
 **`description`** inverse `a` modulo `b`
 
@@ -872,11 +870,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -886,7 +884,7 @@ ___
 
 ### ior
 
-▸ **ior**(`b`): [BN](externals.bn-1.md)
+▸ **ior**(`b`): [`BN`](BN.md)
 
 **`description`** or
 
@@ -894,11 +892,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -972,7 +970,7 @@ ___
 
 ### ishln
 
-▸ **ishln**(`b`): [BN](externals.bn-1.md)
+▸ **ishln**(`b`): [`BN`](BN.md)
 
 **`description`** shift left
 
@@ -984,7 +982,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -994,7 +992,7 @@ ___
 
 ### ishrn
 
-▸ **ishrn**(`b`): [BN](externals.bn-1.md)
+▸ **ishrn**(`b`): [`BN`](BN.md)
 
 **`description`** shift right (unimplemented https://github.com/indutny/bn.js/blob/master/lib/bn.js#L2086)
 
@@ -1006,7 +1004,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1016,13 +1014,13 @@ ___
 
 ### isqr
 
-▸ **isqr**(): [BN](externals.bn-1.md)
+▸ **isqr**(): [`BN`](BN.md)
 
 **`description`** square
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1032,7 +1030,7 @@ ___
 
 ### isub
 
-▸ **isub**(`b`): [BN](externals.bn-1.md)
+▸ **isub**(`b`): [`BN`](BN.md)
 
 **`description`** subtraction
 
@@ -1040,11 +1038,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1054,7 +1052,7 @@ ___
 
 ### isubn
 
-▸ **isubn**(`b`): [BN](externals.bn-1.md)
+▸ **isubn**(`b`): [`BN`](BN.md)
 
 **`description`** subtraction
 
@@ -1066,7 +1064,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1076,7 +1074,7 @@ ___
 
 ### iuand
 
-▸ **iuand**(`b`): [BN](externals.bn-1.md)
+▸ **iuand**(`b`): [`BN`](BN.md)
 
 **`description`** and
 
@@ -1084,11 +1082,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1098,7 +1096,7 @@ ___
 
 ### iuor
 
-▸ **iuor**(`b`): [BN](externals.bn-1.md)
+▸ **iuor**(`b`): [`BN`](BN.md)
 
 **`description`** or
 
@@ -1106,11 +1104,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1120,7 +1118,7 @@ ___
 
 ### iushln
 
-▸ **iushln**(`b`): [BN](externals.bn-1.md)
+▸ **iushln**(`b`): [`BN`](BN.md)
 
 **`description`** shift left
 
@@ -1132,7 +1130,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1142,7 +1140,7 @@ ___
 
 ### iushrn
 
-▸ **iushrn**(`b`): [BN](externals.bn-1.md)
+▸ **iushrn**(`b`): [`BN`](BN.md)
 
 **`description`** shift right
 
@@ -1154,7 +1152,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1164,7 +1162,7 @@ ___
 
 ### iuxor
 
-▸ **iuxor**(`b`): [BN](externals.bn-1.md)
+▸ **iuxor**(`b`): [`BN`](BN.md)
 
 **`description`** xor
 
@@ -1172,11 +1170,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1186,7 +1184,7 @@ ___
 
 ### ixor
 
-▸ **ixor**(`b`): [BN](externals.bn-1.md)
+▸ **ixor**(`b`): [`BN`](BN.md)
 
 **`description`** xor
 
@@ -1194,11 +1192,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1216,7 +1214,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
@@ -1238,7 +1236,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
@@ -1296,7 +1294,7 @@ ___
 
 ### maskn
 
-▸ **maskn**(`b`): [BN](externals.bn-1.md)
+▸ **maskn**(`b`): [`BN`](BN.md)
 
 **`description`** clear bits with indexes higher or equal to `b`
 
@@ -1308,7 +1306,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1318,7 +1316,7 @@ ___
 
 ### mod
 
-▸ **mod**(`b`): [BN](externals.bn-1.md)
+▸ **mod**(`b`): [`BN`](BN.md)
 
 **`description`** reduct
 
@@ -1326,11 +1324,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1386,7 +1384,7 @@ ___
 
 ### mul
 
-▸ **mul**(`b`): [BN](externals.bn-1.md)
+▸ **mul**(`b`): [`BN`](BN.md)
 
 **`description`** multiply
 
@@ -1394,11 +1392,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1408,7 +1406,7 @@ ___
 
 ### muln
 
-▸ **muln**(`b`): [BN](externals.bn-1.md)
+▸ **muln**(`b`): [`BN`](BN.md)
 
 **`description`** multiply
 
@@ -1420,7 +1418,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1430,13 +1428,13 @@ ___
 
 ### neg
 
-▸ **neg**(): [BN](externals.bn-1.md)
+▸ **neg**(): [`BN`](BN.md)
 
 **`description`** negate sign
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1446,7 +1444,7 @@ ___
 
 ### notn
 
-▸ **notn**(`w`): [BN](externals.bn-1.md)
+▸ **notn**(`w`): [`BN`](BN.md)
 
 **`description`** not (for the width specified by `w`)
 
@@ -1458,7 +1456,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1468,7 +1466,7 @@ ___
 
 ### or
 
-▸ **or**(`b`): [BN](externals.bn-1.md)
+▸ **or**(`b`): [`BN`](BN.md)
 
 **`description`** or
 
@@ -1476,11 +1474,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1490,7 +1488,7 @@ ___
 
 ### pow
 
-▸ **pow**(`b`): [BN](externals.bn-1.md)
+▸ **pow**(`b`): [`BN`](BN.md)
 
 **`description`** raise `a` to the power of `b`
 
@@ -1498,11 +1496,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1512,7 +1510,7 @@ ___
 
 ### setn
 
-▸ **setn**(`b`): [BN](externals.bn-1.md)
+▸ **setn**(`b`): [`BN`](BN.md)
 
 **`description`** set specified bit to 1
 
@@ -1524,7 +1522,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1534,7 +1532,7 @@ ___
 
 ### shln
 
-▸ **shln**(`b`): [BN](externals.bn-1.md)
+▸ **shln**(`b`): [`BN`](BN.md)
 
 **`description`** shift left
 
@@ -1546,7 +1544,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1556,7 +1554,7 @@ ___
 
 ### shrn
 
-▸ **shrn**(`b`): [BN](externals.bn-1.md)
+▸ **shrn**(`b`): [`BN`](BN.md)
 
 **`description`** shift right
 
@@ -1568,7 +1566,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1578,13 +1576,13 @@ ___
 
 ### sqr
 
-▸ **sqr**(): [BN](externals.bn-1.md)
+▸ **sqr**(): [`BN`](BN.md)
 
 **`description`** square
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1594,7 +1592,7 @@ ___
 
 ### sub
 
-▸ **sub**(`b`): [BN](externals.bn-1.md)
+▸ **sub**(`b`): [`BN`](BN.md)
 
 **`description`** subtraction
 
@@ -1602,11 +1600,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1616,7 +1614,7 @@ ___
 
 ### subn
 
-▸ **subn**(`b`): [BN](externals.bn-1.md)
+▸ **subn**(`b`): [`BN`](BN.md)
 
 **`description`** subtraction
 
@@ -1628,7 +1626,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1668,7 +1666,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `endian?` | ``"le"`` \| ``"be"`` |
+| `endian?` | [`Endianness`](../modules/BN.md#endianness) |
 | `length?` | `number` |
 
 #### Returns
@@ -1694,17 +1692,17 @@ ___
 | `ArrayType` | `Object` | - |
 | `ArrayType.poolSize` | `number` | This is the number of bytes used to determine the size of pre-allocated, internal Buffer instances used for pooling. This value may be modified. |
 | `ArrayType.prototype` | `Buffer` | - |
-| `ArrayType.alloc` |  | - |
-| `ArrayType.allocUnsafe` |  | - |
-| `ArrayType.allocUnsafeSlow` |  | - |
-| `ArrayType.byteLength` |  | - |
-| `ArrayType.compare` |  | - |
-| `ArrayType.concat` |  | - |
-| `ArrayType.from` |  | - |
-| `ArrayType.isBuffer` |  | - |
-| `ArrayType.isEncoding` |  | - |
-| `ArrayType.of` |  | - |
-| `endian?` | ``"le"`` \| ``"be"`` | - |
+| `ArrayType.alloc` | (`size`: `number`, `fill?`: `string` \| `number` \| `Buffer`, `encoding?`: `BufferEncoding`) => `Buffer` | - |
+| `ArrayType.allocUnsafe` | (`size`: `number`) => `Buffer` | - |
+| `ArrayType.allocUnsafeSlow` | (`size`: `number`) => `Buffer` | - |
+| `ArrayType.byteLength` | (`string`: `string` \| `ArrayBuffer` \| `SharedArrayBuffer` \| `TypedArray` \| `DataView`, `encoding?`: `BufferEncoding`) => `number` | - |
+| `ArrayType.compare` | (`buf1`: `Uint8Array`, `buf2`: `Uint8Array`) => `number` | - |
+| `ArrayType.concat` | (`list`: readonly `Uint8Array`[], `totalLength?`: `number`) => `Buffer` | - |
+| `ArrayType.from` | (`arrayBuffer`: `ArrayBuffer` \| `SharedArrayBuffer`, `byteOffset?`: `number`, `length?`: `number`) => `Buffer`(`data`: readonly `number`[]) => `Buffer`(`data`: `Uint8Array`) => `Buffer`(`obj`: { `valueOf`: () => `string` \| `object`  } \| { `[toPrimitive]`: (`hint`: ``"string"``) => `string`  }, `byteOffset?`: `number`, `length?`: `number`) => `Buffer`(`str`: `string`, `encoding?`: `BufferEncoding`) => `Buffer` | - |
+| `ArrayType.isBuffer` | (`obj`: `any`) => obj is Buffer | - |
+| `ArrayType.isEncoding` | (`encoding`: `string`) => encoding is BufferEncoding | - |
+| `ArrayType.of` | (...`items`: `number`[]) => `Buffer` | - |
+| `endian?` | [`Endianness`](../modules/BN.md#endianness) | - |
 | `length?` | `number` | - |
 
 #### Returns
@@ -1722,7 +1720,7 @@ node_modules/@types/bn.js/index.d.ts:95
 | Name | Type |
 | :------ | :------ |
 | `ArrayType` | `any`[] |
-| `endian?` | ``"le"`` \| ``"be"`` |
+| `endian?` | [`Endianness`](../modules/BN.md#endianness) |
 | `length?` | `number` |
 
 #### Returns
@@ -1745,7 +1743,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `endian?` | ``"le"`` \| ``"be"`` |
+| `endian?` | [`Endianness`](../modules/BN.md#endianness) |
 | `length?` | `number` |
 
 #### Returns
@@ -1800,7 +1798,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `reductionContext` | [ReductionContext](../interfaces/externals.bn.reductioncontext.md) |
+| `reductionContext` | [`ReductionContext`](../interfaces/BN.ReductionContext.md) |
 
 #### Returns
 
@@ -1837,7 +1835,7 @@ ___
 
 ### toTwos
 
-▸ **toTwos**(`width`): [BN](externals.bn-1.md)
+▸ **toTwos**(`width`): [`BN`](BN.md)
 
 **`description`** convert to two's complement representation, where width is bit width
 
@@ -1849,7 +1847,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1859,7 +1857,7 @@ ___
 
 ### uand
 
-▸ **uand**(`b`): [BN](externals.bn-1.md)
+▸ **uand**(`b`): [`BN`](BN.md)
 
 **`description`** and
 
@@ -1867,11 +1865,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1889,7 +1887,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
@@ -1903,7 +1901,7 @@ ___
 
 ### umod
 
-▸ **umod**(`b`): [BN](externals.bn-1.md)
+▸ **umod**(`b`): [`BN`](BN.md)
 
 **`description`** reduct
 
@@ -1911,11 +1909,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1925,7 +1923,7 @@ ___
 
 ### uor
 
-▸ **uor**(`b`): [BN](externals.bn-1.md)
+▸ **uor**(`b`): [`BN`](BN.md)
 
 **`description`** or
 
@@ -1933,11 +1931,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1947,7 +1945,7 @@ ___
 
 ### ushln
 
-▸ **ushln**(`b`): [BN](externals.bn-1.md)
+▸ **ushln**(`b`): [`BN`](BN.md)
 
 **`description`** shift left
 
@@ -1959,7 +1957,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1969,7 +1967,7 @@ ___
 
 ### ushrn
 
-▸ **ushrn**(`b`): [BN](externals.bn-1.md)
+▸ **ushrn**(`b`): [`BN`](BN.md)
 
 **`description`** shift right
 
@@ -1981,7 +1979,7 @@ ___
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -1991,7 +1989,7 @@ ___
 
 ### uxor
 
-▸ **uxor**(`b`): [BN](externals.bn-1.md)
+▸ **uxor**(`b`): [`BN`](BN.md)
 
 **`description`** xor
 
@@ -1999,11 +1997,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -2013,7 +2011,7 @@ ___
 
 ### xor
 
-▸ **xor**(`b`): [BN](externals.bn-1.md)
+▸ **xor**(`b`): [`BN`](BN.md)
 
 **`description`** xor
 
@@ -2021,11 +2019,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `b` | [BN](externals.bn-1.md) |
+| `b` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -2073,7 +2071,7 @@ ___
 
 ### max
 
-▸ `Static` **max**(`left`, `right`): [BN](externals.bn-1.md)
+▸ `Static` **max**(`left`, `right`): [`BN`](BN.md)
 
 **`description`** returns the maximum of 2 BN instances.
 
@@ -2081,12 +2079,12 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `left` | [BN](externals.bn-1.md) |
-| `right` | [BN](externals.bn-1.md) |
+| `left` | [`BN`](BN.md) |
+| `right` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -2096,7 +2094,7 @@ ___
 
 ### min
 
-▸ `Static` **min**(`left`, `right`): [BN](externals.bn-1.md)
+▸ `Static` **min**(`left`, `right`): [`BN`](BN.md)
 
 **`description`** returns the minimum of 2 BN instances.
 
@@ -2104,12 +2102,12 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `left` | [BN](externals.bn-1.md) |
-| `right` | [BN](externals.bn-1.md) |
+| `left` | [`BN`](BN.md) |
+| `right` | [`BN`](BN.md) |
 
 #### Returns
 
-[BN](externals.bn-1.md)
+[`BN`](BN.md)
 
 #### Defined in
 
@@ -2119,7 +2117,7 @@ ___
 
 ### mont
 
-▸ `Static` **mont**(`num`): [ReductionContext](../interfaces/externals.bn.reductioncontext.md)
+▸ `Static` **mont**(`num`): [`ReductionContext`](../interfaces/BN.ReductionContext.md)
 
 **`description`** create a reduction context  with the Montgomery trick.
 
@@ -2127,11 +2125,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `num` | [BN](externals.bn-1.md) |
+| `num` | [`BN`](BN.md) |
 
 #### Returns
 
-[ReductionContext](../interfaces/externals.bn.reductioncontext.md)
+[`ReductionContext`](../interfaces/BN.ReductionContext.md)
 
 #### Defined in
 
@@ -2141,7 +2139,7 @@ ___
 
 ### red
 
-▸ `Static` **red**(`reductionContext`): [ReductionContext](../interfaces/externals.bn.reductioncontext.md)
+▸ `Static` **red**(`reductionContext`): [`ReductionContext`](../interfaces/BN.ReductionContext.md)
 
 **`description`** create a reduction context
 
@@ -2149,11 +2147,11 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `reductionContext` | [BN](externals.bn-1.md) \| ``"k256"`` \| ``"p224"`` \| ``"p192"`` \| ``"p25519"`` |
+| `reductionContext` | [`BN`](BN.md) \| [`IPrimeName`](../modules/BN.md#iprimename) |
 
 #### Returns
 
-[ReductionContext](../interfaces/externals.bn.reductioncontext.md)
+[`ReductionContext`](../interfaces/BN.ReductionContext.md)
 
 #### Defined in
 
