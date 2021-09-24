@@ -62,64 +62,9 @@ const miner = e.getMiner(block.header)
 const solution = await miner.iterate(-1) // iterate until solution is found
 ```
 
-# BROWSER
-
-Yep, you can [browserify](http://browserify.org/) it.
-
 # API
 
-- [`new Ethash([cacheDB])`](#newethashcachedb)
-- [`ethash.verifyPOW(block)`](#ethashverifypowblock)
-- [`ethash.mkcache(cacheSize, seed)`](#ethashmkcachecachesize-seed)
-- [`ethash.run(val, nonce, fullsize)`](#ethashrunval-nonce-fullsize)
-
-### `new Ethash([cacheDB])`
-
-Creates a new instance of `Ethash`.
-
-**Parameters**
-
-- `cacheDB` - an instance of a levelup db which is used to store the cache(s)
-
-### `ethash.verifyPOW(block)`
-
-Verifies the POW on a block and its uncles.
-
-Returns a promise that resolves to a boolean.
-
-**Parameters**
-
-- `block` - the [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) to verify
-
-### `ethash.mkcache(cacheSize, seed)`
-
-Creates a cache. NOTE: this is automatically done for in - [`ethash.verifyPOW(block)`](#ethashverifypowblock) so you do not need to use this function if you are just validating blocks
-
-**Parameters**
-
-- `cachSize` - the size of the cach
-- `seed` - the seed as a `Buffer`
-
-### `ethash.run(val, nonce, fullsize)`
-
-Runs ethash on a give val/nonce pair. NOTE: you need to run [`ethash.mkcache(cacheSize, seed)`](#ethashverifypowcachesize-seed) first before using this function.
-
-**Parameters**
-
-- `val` - value to run ethash on e.g. the header hash
-- `nonce` - the nonce used for this hash attempt
-- `fullsize` - the fullsize of the cache.
-
-**Returns**
-
-An `Object` containing:
-
-- `hash` - the hash of the value
-- `mix` - the mis result
-
-# TESTS
-
-`npm run test`
+See [Documentation](./docs/README.md).
 
 # LICENSE
 

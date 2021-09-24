@@ -28,7 +28,7 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "coverage": "../../config/cli/coverage.sh",
     "test": "tape -r ts-node/register test/*.spec.ts",
-    "docs:build": "echo 'Package has no generated docs'"
+    "docs:build": "typedoc --options typedoc.js"
   },
   "dependencies": {
     "@ethereumjs/block": "^3.5.0",
