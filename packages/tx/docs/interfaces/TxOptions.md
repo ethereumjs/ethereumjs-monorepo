@@ -1,17 +1,15 @@
-[@ethereumjs/tx](../README.md) / [types](../modules/types.md) / TxOptions
+[@ethereumjs/tx](../README.md) / TxOptions
 
 # Interface: TxOptions
 
-[types](../modules/types.md).TxOptions
-
-The options for initializing a [Transaction](../modules/index.md#transaction).
+The options for initializing a [Transaction](../classes/Transaction.md).
 
 ## Table of contents
 
 ### Properties
 
-- [common](types.txoptions.md#common)
-- [freeze](types.txoptions.md#freeze)
+- [common](TxOptions.md#common)
+- [freeze](TxOptions.md#freeze)
 
 ## Properties
 
@@ -40,6 +38,7 @@ ___
 
 A transaction object by default gets frozen along initialization. This gives you
 strong additional security guarantees on the consistency of the tx parameters.
+It also enables tx hash caching when the `hash()` method is called multiple times.
 
 If you need to deactivate the tx freeze - e.g. because you want to subclass tx and
 add aditional properties - it is strongly encouraged that you do the freeze yourself
@@ -49,4 +48,4 @@ Default: true
 
 #### Defined in
 
-[types.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L62)
+[types.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L63)
