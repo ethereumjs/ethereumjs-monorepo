@@ -17,6 +17,8 @@ Note: this `README` reflects the state of the library from `v1.0.0` onwards. See
 
 # USAGE
 
+## PoW Validation
+
 ```typescript
 import Ethash from '@ethereumjs/ethash'
 import { Block } from '@ethereumjs/block'
@@ -32,6 +34,32 @@ const validBlock = Block.fromRLPSerializedBlock(Buffer.from(validblockRlp, 'hex'
 
 const result = await ethash.verifyPOW(validBlock)
 console.log(result) // => true
+```
+
+### PoW Ethash CPU Miner
+
+There is a simple CPU miner included within `Ethash` package which can be used for testing purposes.
+
+See the following example on how to use the new `Miner` class:
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import Ethash from '@ethereumjs/ethash'
+import Common from '@ethereumjs/common'
+import { BN } from 'ethereumjs-util'
+const level = require('level-mem')
+
+const cacheDB = level()
+const block = Block.fromBlockData({
+  header: {
+    difficulty: new BN(100),
+    number: new BN(1),
+  },
+})
+
+const e = new Ethash(cacheDB)
+const miner = e.getMiner(block.header)
+const solution = await miner.iterate(-1) // iterate until solution is found
 ```
 
 # BROWSER
