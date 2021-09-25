@@ -9,7 +9,7 @@
 | Implements schema and functions related to Ethereum's block. |
 | --- |
 
-Note: this `README` reflects the state of the library from `v3.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-block) for an introduction on the last preceeding release.
+Note: this `README` reflects the state of the library from `v3.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-block) for an introduction on the last preceding release.
 
 # INSTALL
 
@@ -25,7 +25,7 @@ There are three static factories to instantiate a `Block`:
 - `Block.fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions)`
 - `Block.fromValuesArray(values: BlockBuffer, opts?: BlockOptions)`
 
-For `BlockHeader` instantiation analogue factory methods exists, see API docs linked below.
+For `BlockHeader` instantiation analog factory methods exists, see API docs linked below.
 
 Instantiation Example:
 

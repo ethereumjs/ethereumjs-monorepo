@@ -631,7 +631,7 @@ Format: `0x02 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLim
 accessList, signatureYParity, signatureR, signatureS])`
 
 Note that in contrast to the legacy tx serialization format this is not
-valid RLP any more due to the raw tx type preceeding and concatenated to
+valid RLP any more due to the raw tx type preceding and concatenated to
 the RLP encoding of the values.
 
 #### Returns

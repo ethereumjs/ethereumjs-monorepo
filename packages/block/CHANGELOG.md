@@ -245,7 +245,7 @@ Generally internal types representing block header values are now closer to thei
 
 **Block Class**
 
-There are analogue new static factories for the `Block` class:
+There are analog new static factories for the `Block` class:
 
 - `Block.fromBlockData(blockData: BlockData = {}, opts?: BlockOptions)`
 - `Block.fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions)`
@@ -454,7 +454,7 @@ Generally internal types representing block header values are now closer to thei
 
 **Block Class**
 
-There are analogue new static factories for the `Block` class:
+There are analog new static factories for the `Block` class:
 
 - `Block.fromBlockData(blockData: BlockData = {}, opts?: BlockOptions)`
 - `Block.fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions)`

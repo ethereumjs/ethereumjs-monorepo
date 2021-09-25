@@ -54,7 +54,7 @@ npm i @ethereumjs/ethash
 
 ### Library Promisification
 
-The `Ethash` library has been promisified and callbacks have been removed along PR [#833](https://github.com/ethereumjs/ethereumjs-monorepo/pull/833) and preceeding PR [#779](https://github.com/ethereumjs/ethereumjs-monorepo/pull/779).
+The `Ethash` library has been promisified and callbacks have been removed along PR [#833](https://github.com/ethereumjs/ethereumjs-monorepo/pull/833) and preceding PR [#779](https://github.com/ethereumjs/ethereumjs-monorepo/pull/779).
 
 Old API:
 
@@ -110,7 +110,7 @@ npm i @ethereumjs/ethash
 ### Library Promisification
 
 The `Ethash` library has been promisified and callbacks have been removed along
-PR [#833](https://github.com/ethereumjs/ethereumjs-monorepo/pull/833) and preceeding PR
+PR [#833](https://github.com/ethereumjs/ethereumjs-monorepo/pull/833) and preceding PR
 [#779](https://github.com/ethereumjs/ethereumjs-monorepo/pull/779).
 
 Old API:
@@ -164,7 +164,7 @@ Changes from PR [#23](https://github.com/ethereumjs/ethashjs/pull/23):
 - Use single imports for ethereumjs-util, upgrades to v7.0.2
 - Modernizes buffer init syntax
 
-Further/preceeding dependency updates in
+Further/preceding dependency updates in
 PR [#19](https://github.com/ethereumjs/ethashjs/pull/19),
 PR [#11](https://github.com/ethereumjs/ethashjs/pull/11),
 PR [#8](https://github.com/ethereumjs/ethashjs/pull/8) and

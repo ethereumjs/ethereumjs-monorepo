@@ -117,7 +117,7 @@ npm i @ethereumjs/blockchain
 
 ### Library Promisification
 
-The `Blockchain` library has been promisified and callbacks have been removed along PR [#833](https://github.com/ethereumjs/ethereumjs-monorepo/pull/833) and preceeding PR [#779](https://github.com/ethereumjs/ethereumjs-monorepo/pull/779).
+The `Blockchain` library has been promisified and callbacks have been removed along PR [#833](https://github.com/ethereumjs/ethereumjs-monorepo/pull/833) and preceding PR [#779](https://github.com/ethereumjs/ethereumjs-monorepo/pull/779).
 
 Old API example:
 
@@ -249,7 +249,7 @@ npm i @ethereumjs/blockchain
 ### Library Promisification
 
 The `Blockchain` library has been promisified and callbacks have been removed along
-PR [#833](https://github.com/ethereumjs/ethereumjs-monorepo/pull/833) and preceeding PR
+PR [#833](https://github.com/ethereumjs/ethereumjs-monorepo/pull/833) and preceding PR
 [#779](https://github.com/ethereumjs/ethereumjs-monorepo/pull/779).
 
 Old API example:

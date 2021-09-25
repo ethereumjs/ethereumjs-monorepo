@@ -9,7 +9,7 @@
 | [Ethash](https://github.com/ethereum/wiki/wiki/Ethash) implementation in TypeScript. |
 | --- |
 
-Note: this `README` reflects the state of the library from `v1.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethashjs) for an introduction on the last preceeding release.
+Note: this `README` reflects the state of the library from `v1.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethashjs) for an introduction on the last preceding release.
 
 # INSTALL
 
