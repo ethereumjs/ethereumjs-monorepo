@@ -296,7 +296,7 @@ The opFns for `CREATE`, `CALL`, and `CALLCODE` call back up to `runCall`.
 
 # DEVELOPMENT
 
-Developer documentation - currently mainly with information on testing and debugging - can be found [here](./developer.md).
+Developer documentation - currently mainly with information on testing and debugging - can be found [here](./DEVELOPER.md).
 
 # EthereumJS
 

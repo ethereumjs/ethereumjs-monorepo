@@ -62,15 +62,22 @@ Source files from the `src` folder are now included in the distribution build, s
 This `Block` release comes with full functional support for the `london` hardfork (all EIPs are finalized and integrated and `london` HF can be activated, there are no final block numbers for the HF integrated though yet). Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `Common` instance with a `london` HF activated:
 
 ```typescript
+import { BN } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 const common = new Common({ chain: 'mainnet', hardfork: 'london' })
+
 const block = Block.fromBlockData({
   header: {
-    //...,
     baseFeePerGas: new BN(10),
+    gasLimit: new BN(100),
+    gasUsed: new BN(60)
   }
 }, { common })
+
+// Base fee will increase for next block since the
+// gas used is greater than half the gas limit
+block.header.calcNextBaseFee().toNumber() // 11
 ```
 
 #### EIP-1559: Fee market change for ETH 1.0 chain

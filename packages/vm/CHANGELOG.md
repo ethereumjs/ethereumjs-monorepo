@@ -99,7 +99,7 @@ const common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [ 3529 ]
 
 #### EIP-1559: Gas Fee Market
 
-The VM can now run `EIP-1559` compatible blocks (introduced with the `@ethereumjs/block` `v3.3.0` release) with `VM.runBlocks()` as well as `EIP-1559` txs with type `2` (introduced along the `@ethereumjs/tx` `v3.2.0` release), which can now be passed to `VM.runTx()` as the tx to be executed. Block and tx validation is happening accordingly and the gas calculation takes the new gas fee market parameters from the block (`baseFeePerGas`) and the tx(s) (`maxFeePerGas` and `maxPriorityFeePerGas` instead of a `gasPrice`) into account.
+The VM can now run `EIP-1559` compatible blocks (introduced with the `@ethereumjs/block` `v3.3.0` release) with `VM.runBlock()` as well as `EIP-1559` txs with type `2` (introduced along the `@ethereumjs/tx` `v3.2.0` release), which can now be passed to `VM.runTx()` as the tx to be executed. Block and tx validation is happening accordingly and the gas calculation takes the new gas fee market parameters from the block (`baseFeePerGas`) and the tx(s) (`maxFeePerGas` and `maxPriorityFeePerGas` instead of a `gasPrice`) into account.
 
 #### EIP-3198: BASEFEE Opcode
 
