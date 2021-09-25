@@ -62,15 +62,22 @@ This library supports the creation of [EIP-1559](https://eips.ethereum.org/EIPS/
 To instantiate an EIP-1559 block the hardfork parameter on the `Common` instance needs to be explicitly set to `london` (default is still `istanbul`):
 
 ```typescript
-import { Block } from 'ethereumjs-block'
+import { BN } from 'ethereumjs-util'
+import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+
 const block = Block.fromBlockData({
   header: {
-    //...,
     baseFeePerGas: new BN(10),
+    gasLimit: new BN(100),
+    gasUsed: new BN(60)
   }
 }, { common })
+
+// Base fee will increase for next block since the
+// gas used is greater than half the gas limit
+block.header.calcNextBaseFee().toNumber() // 11
 ```
 
 EIP-1559 blocks have an extra `baseFeePerGas` field (default: `new BN(7)`) and can encompass `FeeMarketEIP1559Transaction` txs (type `2`) (supported by `@ethereumjs/tx` `v3.2.0` or higher) as well as  `Transaction` legacy txs (internal type `0`) and `AccessListEIP2930Transaction` txs (type `1`).
