@@ -55,8 +55,8 @@ to help contributors better understand how the project is organized.
     - `RlpxPeer` [**In Progress**] Subclass of `Peer` that implements the `devp2p/rlpx` transport.
     - `Libp2pPeer` [**In Progress**] Subclass of `Peer` that implements the `libp2p` transport.
 - `Protocol` [**In Progress**] This class and subclasses provide a user-friendly wrapper around the
-  low level ethereum protocols `eth/64` and `les/4`. Subclasses must define the messages provided by the protocol.
-    - `EthProtocol` [**In Progress**] Implements `eth/64` protocol.
+  low level ethereum protocols `eth/66` and `les/4`. Subclasses must define the messages provided by the protocol.
+    - `EthProtocol` [**In Progress**] Implements `eth/66` protocol.
     - `LesProtocol` [**In Progress**] Implements `les/4` protocol.
 - `PeerPool` [**In Progress**] Represents a pool of network peers. `PeerPool` instances emit `added`
   and `removed` events when new peers are added and removed and also emit the `message` event whenever

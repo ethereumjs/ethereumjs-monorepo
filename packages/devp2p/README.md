@@ -10,11 +10,8 @@ This library bundles different components for lower-level peer-to-peer connectio
 
 - Distributed Peer Table (DPT) / v4 Node Discovery / DNS Discovery
 - RLPx Transport Protocol
-- Ethereum Wire Protocol (ETH/65)
-- Light Ethereum Subprotocol (LES/2)
-
-The library is based on [ethereumjs/node-devp2p](https://github.com/ethereumjs/node-devp2p) as well
-as other sub-libraries (`node-*` named) (all outdated).
+- Ethereum Wire Protocol (ETH/66)
+- Light Ethereum Subprotocol (LES/4)
 
 ## Run/Build
 
