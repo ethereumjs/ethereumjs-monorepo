@@ -16,6 +16,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 - Remove use of deprecated setRoot, PR [#1376](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1376)
 
+### Included Source Files
+
+Source files from the `src` folder are now included in the distribution build, see PR [#1301](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1301). This allows for a better debugging experience in debug tools like Chrome DevTools by having working source map references to the original sources available for inspection.
+
 ## 4.2.0 - 2021-05-20
 
 ### Changed Delete Behavior: NO Default Node Deletes

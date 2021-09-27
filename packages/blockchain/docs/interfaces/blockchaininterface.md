@@ -4,22 +4,22 @@
 
 ## Implemented by
 
-- [*default*](../classes/default.md)
+- [`default`](../classes/default.md)
 
 ## Table of contents
 
 ### Methods
 
-- [delBlock](blockchaininterface.md#delblock)
-- [getBlock](blockchaininterface.md#getblock)
-- [iterator](blockchaininterface.md#iterator)
-- [putBlock](blockchaininterface.md#putblock)
+- [delBlock](BlockchainInterface.md#delblock)
+- [getBlock](BlockchainInterface.md#getblock)
+- [iterator](BlockchainInterface.md#iterator)
+- [putBlock](BlockchainInterface.md#putblock)
 
 ## Methods
 
 ### delBlock
 
-▸ **delBlock**(`blockHash`: *Buffer*): *Promise*<void\>
+▸ **delBlock**(`blockHash`): `Promise`<`void`\>
 
 Deletes a block from the blockchain. All child blocks in the chain are
 deleted and any encountered heads are set to the parent block.
@@ -28,17 +28,21 @@ deleted and any encountered heads are set to the parent block.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `blockHash` | *Buffer* | The hash of the block to be deleted |
+| `blockHash` | `Buffer` | The hash of the block to be deleted |
 
-**Returns:** *Promise*<void\>
+#### Returns
 
-Defined in: [index.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L42)
+`Promise`<`void`\>
+
+#### Defined in
+
+[index.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L43)
 
 ___
 
 ### getBlock
 
-▸ **getBlock**(`blockId`: *number* \| *Buffer* \| *BN*): *Promise*<``null`` \| Block\>
+▸ **getBlock**(`blockId`): `Promise`<``null`` \| `Block`\>
 
 Returns a block by its hash or number.
 
@@ -46,17 +50,21 @@ Returns a block by its hash or number.
 
 | Name | Type |
 | :------ | :------ |
-| `blockId` | *number* \| *Buffer* \| *BN* |
+| `blockId` | `number` \| `Buffer` \| `BN` |
 
-**Returns:** *Promise*<``null`` \| Block\>
+#### Returns
 
-Defined in: [index.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L47)
+`Promise`<``null`` \| `Block`\>
+
+#### Defined in
+
+[index.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L48)
 
 ___
 
 ### iterator
 
-▸ **iterator**(`name`: *string*, `onBlock`: OnBlock): *Promise*<number \| void\>
+▸ **iterator**(`name`, `onBlock`): `Promise`<`number` \| `void`\>
 
 Iterates through blocks starting at the specified iterator head and calls
 the onBlock function on each block.
@@ -65,18 +73,22 @@ the onBlock function on each block.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `name` | *string* | Name of the state root head |
-| `onBlock` | OnBlock | Function called on each block with params (block: Block, reorg: boolean) |
+| `name` | `string` | Name of the state root head |
+| `onBlock` | `OnBlock` | Function called on each block with params (block: Block, reorg: boolean) |
 
-**Returns:** *Promise*<number \| void\>
+#### Returns
 
-Defined in: [index.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L57)
+`Promise`<`number` \| `void`\>
+
+#### Defined in
+
+[index.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L58)
 
 ___
 
 ### putBlock
 
-▸ **putBlock**(`block`: *Block*): *Promise*<void\>
+▸ **putBlock**(`block`): `Promise`<`void`\>
 
 Adds a block to the blockchain.
 
@@ -84,8 +96,12 @@ Adds a block to the blockchain.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `block` | *Block* | The block to be added to the blockchain. |
+| `block` | `Block` | The block to be added to the blockchain. |
 
-**Returns:** *Promise*<void\>
+#### Returns
 
-Defined in: [index.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L34)
+`Promise`<`void`\>
+
+#### Defined in
+
+[index.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/index.ts#L35)

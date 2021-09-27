@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/vm",
-  "version": "5.5.2",
+  "version": "5.5.3",
   "description": "An Ethereum VM implementation",
   "license": "MPL-2.0",
   "author": "mjbecze <mjbecze@gmail.com>",
@@ -48,15 +48,15 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "^3.4.0",
-    "@ethereumjs/blockchain": "^5.4.0",
-    "@ethereumjs/common": "^2.4.0",
-    "@ethereumjs/tx": "^3.3.0",
+    "@ethereumjs/block": "^3.5.0",
+    "@ethereumjs/blockchain": "^5.4.1",
+    "@ethereumjs/common": "^2.5.0",
+    "@ethereumjs/tx": "^3.3.1",
     "merkle-patricia-tree": "^4.2.1",
     "async-eventemitter": "^0.2.4",
     "core-js-pure": "^3.0.1",
     "debug": "^2.2.0",
-    "ethereumjs-util": "^7.1.0",
+    "ethereumjs-util": "^7.1.1",
     "functional-red-black-tree": "^1.0.1",
     "mcl-wasm": "^0.7.1",
     "rustbn.js": "~0.2.0",
@@ -86,7 +86,7 @@
     "tap-spec": "^5.0.0",
     "tape": "^5.3.1",
     "ts-node": "^10.2.1",
-    "typedoc": "^0.21.5",
+    "typedoc": "^0.22.4",
     "typescript": "^4.4.2"
   },
   "contributors": [

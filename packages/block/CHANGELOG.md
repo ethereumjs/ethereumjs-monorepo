@@ -6,6 +6,40 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.5.0 - 2021-09-24
+
+### Experimental Merge/PoS Support
+
+This release comes with experimental support for the Merge HF as defined in [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675) respectively support for creating PoS compatible `Block` objects (from an Eth 1.0 perspective).
+
+#### PoS Block Instantiation
+
+Proof-of-Stake compatible execution blocks come with its own set of header field simplifications and associated validation rules. The difficuly is set to `0` since not relevant any more, just to name an example. For a full list of changes see `EIP-3675`.
+
+You can instantiate a Merge/PoS block like this:
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge, })
+const block = Block.fromBlockData({
+  // Provide your block data here or use default values
+}, { common })
+```
+
+See: PR [#1393](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1393) and PR [#1408](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1393)
+
+#### Set Hardfork by Total Difficulty
+
+There is a new `hardforkByTD` option which expands the current `hardforkByBlockNumber` option and allows for setting the hardfork either by total difficulty or a `Common`-matching block number. The supportive functionality within the `Common` library has been introduced along the `v2.5.0` release.
+
+See. PR [#1473](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1473)
+
+### Other Changes
+
+- The hash from the `block.hash()` method now gets cached for blocks created with the `freeze` option (activated by default), PR [#1445](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1445)
+
+
 ## 3.4.0 - 2021-07-08
 
 ### Finalized London HF Support
@@ -28,15 +62,22 @@ Source files from the `src` folder are now included in the distribution build, s
 This `Block` release comes with full functional support for the `london` hardfork (all EIPs are finalized and integrated and `london` HF can be activated, there are no final block numbers for the HF integrated though yet). Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `Common` instance with a `london` HF activated:
 
 ```typescript
-import { Block } from 'ethereumjs-block'
+import { BN } from 'ethereumjs-util'
+import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 const common = new Common({ chain: 'mainnet', hardfork: 'london' })
+
 const block = Block.fromBlockData({
   header: {
-    //...,
     baseFeePerGas: new BN(10),
+    gasLimit: new BN(100),
+    gasUsed: new BN(60)
   }
 }, { common })
+
+// Base fee will increase for next block since the
+// gas used is greater than half the gas limit
+block.header.calcNextBaseFee().toNumber() // 11
 ```
 
 #### EIP-1559: Fee market change for ETH 1.0 chain
@@ -204,7 +245,7 @@ Generally internal types representing block header values are now closer to thei
 
 **Block Class**
 
-There are analogue new static factories for the `Block` class:
+There are analog new static factories for the `Block` class:
 
 - `Block.fromBlockData(blockData: BlockData = {}, opts?: BlockOptions)`
 - `Block.fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions)`
@@ -413,7 +454,7 @@ Generally internal types representing block header values are now closer to thei
 
 **Block Class**
 
-There are analogue new static factories for the `Block` class:
+There are analog new static factories for the `Block` class:
 
 - `Block.fromBlockData(blockData: BlockData = {}, opts?: BlockOptions)`
 - `Block.fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions)`

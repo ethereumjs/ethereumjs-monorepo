@@ -4,8 +4,19 @@
 
 ## Table of contents
 
-### Modules
+### Enumerations
 
-- [genesisStates](modules/genesisstates.md)
-- [index](modules/index.md)
-- [types](modules/types.md)
+- [Chain](enums/Chain.md)
+- [ConsensusAlgorithm](enums/ConsensusAlgorithm.md)
+- [ConsensusType](enums/ConsensusType.md)
+- [CustomChain](enums/CustomChain.md)
+- [Hardfork](enums/Hardfork.md)
+
+### Classes
+
+- [default](classes/default.md)
+
+### Interfaces
+
+- [CommonOpts](interfaces/CommonOpts.md)
+- [CustomCommonOpts](interfaces/CustomCommonOpts.md)

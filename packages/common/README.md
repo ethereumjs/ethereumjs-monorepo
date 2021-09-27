@@ -9,7 +9,7 @@
 | Resources common to all EthereumJS implementations. |
 | --- |
 
-Note: this `README` reflects the state of the library from `v2.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-common) for an introduction on the last preceeding release.
+Note: this `README` reflects the state of the library from `v2.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-common) for an introduction on the last preceding release.
 
 # INSTALL
 
@@ -178,6 +178,22 @@ common1.setChain('customChain1')
 const common1 = new Common({ chain: 'customChain1', customChains: [ myCustomChain1, myCustomChain2 ] })
 ```
 
+It is also possible (`v2.5.0`+) to pass in a custom genesis state file (see e.g. `src/genesisStates/goerli.json` for an example on the format needed) along with the custom chain configuration:
+
+```typescript
+import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
+import chain1GenesisState from '[PATH_TO_GENESIS_STATES]/chain1GenesisState.json'
+const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, chain1GenesisState ] ]})
+```
+
+Accessing the genesis state can be done as follows:
+
+```typescript
+const genesisState = common.genesisState()
+```
+
+This now also provides direct access to custom genesis states passed into `Common` as described above. The old Common-separate `genesisStateByName()` and `genesisStateById()` functions are now `deprecated` and usage should be avoided.
+
 ## Hardforks
 
 The `hardfork` can be set in constructor like this:
@@ -214,6 +230,7 @@ library supported:
 - `muirGlacier` (`Hardfork.MuirGlacier`)
 - `berlin` (`Hardfork.Berlin`) (since `v2.2.0`)
 - `london` (`Hardfork.London`) (since `v2.4.0`)
+- `merge` (`Hardfork.Merge`) (since `v2.5.0`, `experimental`)
 
 ### Future Hardforks
 
@@ -254,32 +271,15 @@ The following EIPs are currently supported:
 - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2565): Transaction Types
 - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929): gas cost increases for state access opcodes
 - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930): Optional accesss list tx type
+- [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198): Base fee Opcode
 - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529): Reduction in refunds
 - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541): Reject new contracts starting with the 0xEF byte
 - [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554): Difficulty Bomb Delay to December 2021 (only PoW networks)
+- [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675): Upgrade consensus to Proof-of-Stake (`experimental`)
 
 ## Bootstrap Nodes
 
 You can use `common.bootstrapNodes()` function to get nodes for a specific chain/network.
-
-## Genesis States
-
-Network-specific genesis files are located in the `genesisStates` folder.
-
-Due to the large file sizes genesis states are not directly included in the `index.js` file
-but have to be accessed directly, e.g.:
-
-```javascript
-const mainnetGenesisState = require('@ethereumjs/common/dist/genesisStates/mainnet')
-```
-
-Or by accessing dynamically:
-
-```javascript
-const genesisStates = require('@ethereumjs/common/dist/genesisStates')
-const mainnetGenesisState = genesisStates.genesisStateByName('mainnet')
-const mainnetGenesisState = genesisStates.genesisStateById(1) // alternative via network Id
-```
 
 # EthereumJS
 

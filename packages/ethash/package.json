@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/ethash",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "An ethash implementation in JavaScript",
   "license": "MPL-2.0",
   "author": "mjbecze <mjbecze@gmail.com>",
@@ -28,20 +28,21 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "coverage": "../../config/cli/coverage.sh",
     "test": "tape -r ts-node/register test/*.spec.ts",
-    "docs:build": "echo 'Package has no generated docs'"
+    "docs:build": "typedoc --options typedoc.js"
   },
   "dependencies": {
-    "@ethereumjs/block": "^3.4.0",
+    "@ethereumjs/block": "^3.5.0",
     "@types/levelup": "^4.3.0",
     "buffer-xor": "^2.0.1",
-    "ethereumjs-util": "^7.1.0",
+    "ethereumjs-util": "^7.1.1",
     "miller-rabin": "^4.0.0"
   },
   "devDependencies": {
-    "@ethereumjs/common": "^2.4.0",
+    "@ethereumjs/common": "^2.5.0",
     "@types/tape": "^4.13.2",
     "eslint": "^6.8.0",
     "level-mem": "^5.0.1",
+    "typedoc": "^0.22.4",
     "nyc": "^14.0.0",
     "prettier": "^2.0.5",
     "tape": "^5.3.1",

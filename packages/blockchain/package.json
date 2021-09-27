@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/blockchain",
-  "version": "5.4.0",
+  "version": "5.4.1",
   "description": "A module to store and interact with blocks",
   "license": "MPL-2.0",
   "keywords": [
@@ -35,11 +35,11 @@
   },
   "author": "mjbecze <mjbecze@gmail.com>",
   "dependencies": {
-    "@ethereumjs/block": "^3.4.0",
-    "@ethereumjs/common": "^2.4.0",
-    "@ethereumjs/ethash": "^1.0.0",
+    "@ethereumjs/block": "^3.5.0",
+    "@ethereumjs/common": "^2.5.0",
+    "@ethereumjs/ethash": "^1.1.0",
     "debug": "^2.2.0",
-    "ethereumjs-util": "^7.1.0",
+    "ethereumjs-util": "^7.1.1",
     "level-mem": "^5.0.1",
     "lru-cache": "^5.1.1",
     "rlp": "^2.2.4",
@@ -59,7 +59,7 @@
     "nyc": "^14.0.0",
     "prettier": "^2.0.5",
     "tape": "^5.3.1",
-    "typedoc": "^0.21.5",
+    "typedoc": "^0.22.4",
     "ts-node": "^10.2.1",
     "typescript": "^4.4.2"
   },
