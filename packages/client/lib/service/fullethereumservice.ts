@@ -1,3 +1,4 @@
+import { Hardfork } from '@ethereumjs/common'
 import { EthereumService, EthereumServiceOptions } from './ethereumservice'
 import { FullSynchronizer } from '../sync/fullsync'
 import { EthProtocol } from '../net/protocol/ethprotocol'
@@ -120,11 +121,25 @@ export class FullEthereumService extends EthereumService {
       const bodies: any = blocks.map((block: any) => block.raw().slice(1))
       peer.eth!.send('BlockBodies', { reqId, bodies })
     } else if (message.name === 'NewBlockHashes') {
-      this.synchronizer.handleNewBlockHashes(message.data)
+      if (this.config.execCommon.gteHardfork(Hardfork.Merge)) {
+        this.config.logger.debug(
+          `Dropping peer ${peer.id} for sending NewBlockHashes after merge (EIP-3675)`
+        )
+        this.pool.ban(peer, 9000000)
+      } else {
+        this.synchronizer.handleNewBlockHashes(message.data)
+      }
     } else if (message.name === 'Transactions') {
       await this.synchronizer.txPool.handleAnnouncedTxs(message.data, peer, this.pool)
     } else if (message.name === 'NewBlock') {
-      await this.synchronizer.handleNewBlock(message.data[0], peer)
+      if (this.config.execCommon.gteHardfork(Hardfork.Merge)) {
+        this.config.logger.debug(
+          `Dropping peer ${peer.id} for sending NewBlock after merge (EIP-3675)`
+        )
+        this.pool.ban(peer, 9000000)
+      } else {
+        await this.synchronizer.handleNewBlock(message.data[0], peer)
+      }
     } else if (message.name === 'NewPooledTransactionHashes') {
       await this.synchronizer.txPool.handleAnnouncedTxHashes(message.data, peer, this.pool)
     } else if (message.name === 'GetPooledTransactions') {
