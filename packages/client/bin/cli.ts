@@ -243,26 +243,65 @@ async function run() {
 
   let common: Common = {} as Common
   if (args.dev) {
-    fs.rmdirSync('./dev', { recursive: true })
+    if (accounts.length === 0) {
+      // Delete old chain data for devnet if generating ephemeral keys for mining to prevent genesis block mismatch
+      fs.rmdirSync(`${args.datadir}/devnet`, { recursive: true })
+    }
+
     if (accounts.length === 0) {
       // Create new account for devnet if not provided
       const privKey = crypto.randomBytes(32)
       const account = new Address(privateToAddress(privKey))
       accounts.push([account, privKey])
-      console.log(`Account generated for mining blocks: ${account.toString()}`)
-      console.log(`Private key associated with mining account: 0x${privKey.toString('hex')}`)
-      console.log('WARNING: Do not use this account for mainnet funds')
+      console.log(
+        `===========================================\n
+        Account generated for mining blocks:\n
+          Address: ${account.toString()}\n
+          Private key: 0x${privKey.toString('hex')}\n
+        WARNING: Do not use this account for mainnet funds\n
+        ===========================================
+        `
+      )
     }
 
     const prefundAddress = accounts[0][0].toString().slice(2)
-    const chainJson = JSON.parse(fs.readFileSync('./bin/devnet.json'))
+    const defaultChainData = {
+      config: {
+        chainId: 123456,
+        homesteadBlock: 0,
+        eip150Block: 0,
+        eip150Hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        eip155Block: 0,
+        eip158Block: 0,
+        byzantiumBlock: 0,
+        constantinopleBlock: 0,
+        petersburgBlock: 0,
+        istanbulBlock: 0,
+        berlinBlock: 0,
+        londonBlock: 2,
+        clique: {
+          period: 10,
+          epoch: 30000,
+        },
+      },
+      nonce: '0x0',
+      timestamp: '0x614b3731',
+      gasLimit: '0x47b760',
+      difficulty: '0x1',
+      mixHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      coinbase: '0x0000000000000000000000000000000000000000',
+      number: '0x0',
+      gasUsed: '0x0',
+      parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      baseFeePerGas: 1,
+    }
     const extraData = '0x' + '0'.repeat(64) + prefundAddress + '0'.repeat(130)
-    const newJson = Object.assign(chainJson, {
+    const chainData = Object.assign(defaultChainData, {
       extraData: extraData,
       alloc: { [prefundAddress]: { balance: '0x10000000000000000000' } },
     })
-    const chainParams = await parseCustomParams(newJson, 'devnet')
-    const genesisState = await parseGenesisState(newJson)
+    const chainParams = await parseCustomParams(chainData, 'devnet')
+    const genesisState = await parseGenesisState(chainData)
     const customChainParams: [Chain, GenesisState][] = [[chainParams, genesisState]]
     common = new Common({ chain: 'devnet', customChains: customChainParams })
   }
@@ -315,7 +354,7 @@ async function run() {
     }
   }
 
-  const datadir = args.datadir ?? args.dev ? 'dev' : Config.DATADIR_DEFAULT
+  const datadir = args.datadir ?? Config.DATADIR_DEFAULT
   const configDirectory = `${datadir}/${common.chainName()}/config`
   fs.ensureDirSync(configDirectory)
   const key = await Config.getClientKey(datadir, common)
@@ -341,7 +380,7 @@ async function run() {
     debugCode: args.debugCode,
     discDns: args.discDns,
     discV4: args.discV4,
-    mine: args.dev ?? args.mine,
+    mine: args.mine || args.dev,
     accounts,
   })
   logger = config.logger
