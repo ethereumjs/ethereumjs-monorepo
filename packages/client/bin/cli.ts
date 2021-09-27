@@ -1,20 +1,20 @@
 #!/usr/bin/env client
 
+import os from 'os'
+import path from 'path'
 import readline from 'readline'
 import crypto from 'crypto'
+import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import { Server as RPCServer } from 'jayson/promise'
-import Common, { Hardfork, ConsensusType } from '@ethereumjs/common'
-import { Address, toBuffer, privateToAddress } from 'ethereumjs-util'
+import Common, { Chain, Hardfork, ConsensusType } from '@ethereumjs/common'
+import { Address, toBuffer } from 'ethereumjs-util'
 import { parseMultiaddrs, parseGenesisState, parseCustomParams } from '../lib/util'
 import EthereumClient from '../lib/client'
 import { Config } from '../lib/config'
 import { Logger } from '../lib/logging'
 import { RPCManager } from '../lib/rpc'
 import { Event } from '../lib/types'
-import { Chain, GenesisState } from '@ethereumjs/common/dist/types'
-const os = require('os')
-const path = require('path')
-const fs = require('fs-extra')
+import type { Chain as IChain, GenesisState } from '@ethereumjs/common/dist/types'
 const chains = require('@ethereumjs/common/dist/chains').chains
 const level = require('level')
 
@@ -159,9 +159,9 @@ let logger: Logger | null = null
  */
 async function runNode(config: Config) {
   const chainDataDir = config.getChainDataDirectory()
-  fs.ensureDirSync(chainDataDir)
+  ensureDirSync(chainDataDir)
   const stateDataDir = config.getStateDataDirectory()
-  fs.ensureDirSync(stateDataDir)
+  ensureDirSync(stateDataDir)
 
   config.logger.info(`Data directory: ${config.datadir}`)
 
@@ -241,27 +241,21 @@ async function run() {
     rl.close()
   }
 
-  let common: Common = {} as Common
+  let common = new Common({ chain: Chain.Mainnet })
+
   if (args.dev) {
     if (accounts.length === 0) {
       // Delete old chain data for devnet if generating ephemeral keys for mining to prevent genesis block mismatch
-      fs.rmdirSync(`${args.datadir}/devnet`, { recursive: true })
+      removeSync(`${args.datadir}/devnet`)
     }
 
     if (accounts.length === 0) {
       // Create new account for devnet if not provided
       const privKey = crypto.randomBytes(32)
-      const account = new Address(privateToAddress(privKey))
+      const account = Address.fromPrivateKey(privKey)
       accounts.push([account, privKey])
-      console.log(
-        `===========================================\n
-        Account generated for mining blocks:\n
-          Address: ${account.toString()}\n
-          Private key: 0x${privKey.toString('hex')}\n
-        WARNING: Do not use this account for mainnet funds\n
-        ===========================================
-        `
-      )
+      // prettier-ignore
+      console.log(`==================================================\nAccount generated for mining blocks:\nAddress: ${account.toString()}\nPrivate key: 0x${privKey.toString( 'hex')}\nWARNING: Do not use this account for mainnet funds\n==================================================`)
     }
 
     const prefundAddress = accounts[0][0].toString().slice(2)
@@ -296,10 +290,11 @@ async function run() {
       baseFeePerGas: 1,
     }
     const extraData = '0x' + '0'.repeat(64) + prefundAddress + '0'.repeat(130)
-    const chainData = Object.assign(defaultChainData, {
-      extraData: extraData,
+    const chainData = {
+      ...defaultChainData,
+      extraData,
       alloc: { [prefundAddress]: { balance: '0x10000000000000000000' } },
-    })
+    }
     const chainParams = await parseCustomParams(chainData, 'devnet')
     const genesisState = await parseGenesisState(chainData)
     const customChainParams: [Chain, GenesisState][] = [[chainParams, genesisState]]
@@ -319,8 +314,8 @@ async function run() {
       throw new Error('cannot have custom chain parameters without genesis state')
     }
     try {
-      const customChainParams = JSON.parse(fs.readFileSync(args.customChain, 'utf-8'))
-      const genesisState = JSON.parse(fs.readFileSync(args.customGenesisState))
+      const customChainParams = JSON.parse(readFileSync(args.customChain, 'utf-8'))
+      const genesisState = JSON.parse(readFileSync(args.customGenesisState, 'utf-8'))
       common = new Common({
         chain: customChainParams.name,
         customChains: [[customChainParams, genesisState]],
@@ -330,7 +325,7 @@ async function run() {
     }
   } else if (args.gethGenesis) {
     // Use geth genesis parameters file if specified
-    const genesisFile = JSON.parse(fs.readFileSync(args.gethGenesis, 'utf-8'))
+    const genesisFile = JSON.parse(readFileSync(args.gethGenesis, 'utf-8'))
     const genesisParams = await parseCustomParams(
       genesisFile,
       path.parse(args.gethGenesis).base.split('.')[0]
@@ -356,7 +351,7 @@ async function run() {
 
   const datadir = args.datadir ?? Config.DATADIR_DEFAULT
   const configDirectory = `${datadir}/${common.chainName()}/config`
-  fs.ensureDirSync(configDirectory)
+  ensureDirSync(configDirectory)
   const key = await Config.getClientKey(datadir, common)
   const config = new Config({
     common,
