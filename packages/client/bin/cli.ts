@@ -272,7 +272,7 @@ async function run() {
         petersburgBlock: 0,
         istanbulBlock: 0,
         berlinBlock: 0,
-        londonBlock: 2,
+        londonBlock: 0,
         clique: {
           period: 10,
           epoch: 30000,
@@ -287,7 +287,7 @@ async function run() {
       number: '0x0',
       gasUsed: '0x0',
       parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
-      baseFeePerGas: 1,
+      baseFeePerGas: 7,
     }
     const extraData = '0x' + '0'.repeat(64) + prefundAddress + '0'.repeat(130)
     const chainData = {
@@ -297,8 +297,12 @@ async function run() {
     }
     const chainParams = await parseCustomParams(chainData, 'devnet')
     const genesisState = await parseGenesisState(chainData)
-    const customChainParams: [Chain, GenesisState][] = [[chainParams, genesisState]]
-    common = new Common({ chain: 'devnet', customChains: customChainParams })
+    const customChainParams: [IChain, GenesisState][] = [[chainParams, genesisState]]
+    common = new Common({
+      chain: 'devnet',
+      customChains: customChainParams,
+      hardfork: Hardfork.London,
+    })
   }
 
   // configure common based on args given
