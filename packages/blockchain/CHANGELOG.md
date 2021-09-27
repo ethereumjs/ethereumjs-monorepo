@@ -6,14 +6,27 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.4.1 - 2021-09-24
 
-# 5.4.0 - 2021-07-08
+### Experimental Casper/PoS and Merge Support
+
+This release adds first experimental Casper/PoS respectively Merge HF support by allowing to build a blockchain which switches to Casper/PoS consensus validation at some point triggered by a merge HF occurred. The `Blockchain` library now allows for taking in the respective Casper/PoS conforming blocks (see `@ethereumjs/block` release v3.5.0), do the correct validations and set the HF accordingly (Merge HF-related logic and a new PoS consensus type have been added to the `Common` library along with the v2.5.0 release).
+
+See: PR [#1408](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1408)
+
+### Other Changes
+
+- Added new `Blockchain.cliqueSignerInTurn()` method, PR [#1444](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1444)
+- Added new `Blockchain.copy()` method, PR [#1444](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1444)
+- Added browser tests, PR [#1380](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1380)
+
+## 5.4.0 - 2021-07-08
 
 ### Finalized London HF Support
 
 This release integrates a `Common` library version which provides the `london` HF blocks for all networks including `mainnet` and is therefore the first release with finalized London HF support.
 
-# 5.3.1 - 2021-06-25
+## 5.3.1 - 2021-06-25
 
 ### PoA Reorg Fix
 
@@ -104,7 +117,7 @@ npm i @ethereumjs/blockchain
 
 ### Library Promisification
 
-The `Blockchain` library has been promisified and callbacks have been removed along PR [#833](https://github.com/ethereumjs/ethereumjs-monorepo/pull/833) and preceeding PR [#779](https://github.com/ethereumjs/ethereumjs-monorepo/pull/779).
+The `Blockchain` library has been promisified and callbacks have been removed along PR [#833](https://github.com/ethereumjs/ethereumjs-monorepo/pull/833) and preceding PR [#779](https://github.com/ethereumjs/ethereumjs-monorepo/pull/779).
 
 Old API example:
 
@@ -236,7 +249,7 @@ npm i @ethereumjs/blockchain
 ### Library Promisification
 
 The `Blockchain` library has been promisified and callbacks have been removed along
-PR [#833](https://github.com/ethereumjs/ethereumjs-monorepo/pull/833) and preceeding PR
+PR [#833](https://github.com/ethereumjs/ethereumjs-monorepo/pull/833) and preceding PR
 [#779](https://github.com/ethereumjs/ethereumjs-monorepo/pull/779).
 
 Old API example:

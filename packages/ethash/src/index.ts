@@ -24,9 +24,9 @@ class Miner {
   private block?: Block
   private ethash: Ethash
 
-  private currentNonce: BN
-  private solution?: Solution
+  public solution?: Solution
 
+  private currentNonce: BN
   private headerHash?: Buffer
   private stopMining: boolean
 

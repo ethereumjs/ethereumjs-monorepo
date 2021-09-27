@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 7.1.1 - 2021-09-24
+
+- Fixed a bug in `toType()` helper function to now return `null`/`undefined` for respective input values, PR [#1477](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1477)
+-  Add note discouraging use of `EIP-1191` format checksums when using `toChecksumAddress()` (breaks checksum backwards compatibility in current form), PR [#1463](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1463)
+
 ## 7.1.0 - 2021-07-08
 
 ### Distribution Changes

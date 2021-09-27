@@ -9,13 +9,15 @@
 | [Ethash](https://github.com/ethereum/wiki/wiki/Ethash) implementation in TypeScript. |
 | --- |
 
-Note: this `README` reflects the state of the library from `v1.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethashjs) for an introduction on the last preceeding release.
+Note: this `README` reflects the state of the library from `v1.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethashjs) for an introduction on the last preceding release.
 
 # INSTALL
 
 `npm install @ethereumjs/ethash`
 
 # USAGE
+
+## PoW Validation
 
 ```typescript
 import Ethash from '@ethereumjs/ethash'
@@ -34,64 +36,35 @@ const result = await ethash.verifyPOW(validBlock)
 console.log(result) // => true
 ```
 
-# BROWSER
+### PoW Ethash CPU Miner
 
-Yep, you can [browserify](http://browserify.org/) it.
+There is a simple CPU miner included within `Ethash` package which can be used for testing purposes.
+
+See the following example on how to use the new `Miner` class:
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import Ethash from '@ethereumjs/ethash'
+import Common from '@ethereumjs/common'
+import { BN } from 'ethereumjs-util'
+const level = require('level-mem')
+
+const cacheDB = level()
+const block = Block.fromBlockData({
+  header: {
+    difficulty: new BN(100),
+    number: new BN(1),
+  },
+})
+
+const e = new Ethash(cacheDB)
+const miner = e.getMiner(block.header)
+const solution = await miner.iterate(-1) // iterate until solution is found
+```
 
 # API
 
-- [`new Ethash([cacheDB])`](#newethashcachedb)
-- [`ethash.verifyPOW(block)`](#ethashverifypowblock)
-- [`ethash.mkcache(cacheSize, seed)`](#ethashmkcachecachesize-seed)
-- [`ethash.run(val, nonce, fullsize)`](#ethashrunval-nonce-fullsize)
-
-### `new Ethash([cacheDB])`
-
-Creates a new instance of `Ethash`.
-
-**Parameters**
-
-- `cacheDB` - an instance of a levelup db which is used to store the cache(s)
-
-### `ethash.verifyPOW(block)`
-
-Verifies the POW on a block and its uncles.
-
-Returns a promise that resolves to a boolean.
-
-**Parameters**
-
-- `block` - the [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) to verify
-
-### `ethash.mkcache(cacheSize, seed)`
-
-Creates a cache. NOTE: this is automatically done for in - [`ethash.verifyPOW(block)`](#ethashverifypowblock) so you do not need to use this function if you are just validating blocks
-
-**Parameters**
-
-- `cachSize` - the size of the cach
-- `seed` - the seed as a `Buffer`
-
-### `ethash.run(val, nonce, fullsize)`
-
-Runs ethash on a give val/nonce pair. NOTE: you need to run [`ethash.mkcache(cacheSize, seed)`](#ethashverifypowcachesize-seed) first before using this function.
-
-**Parameters**
-
-- `val` - value to run ethash on e.g. the header hash
-- `nonce` - the nonce used for this hash attempt
-- `fullsize` - the fullsize of the cache.
-
-**Returns**
-
-An `Object` containing:
-
-- `hash` - the hash of the value
-- `mix` - the mis result
-
-# TESTS
-
-`npm run test`
+See [Documentation](./docs/README.md).
 
 # LICENSE
 

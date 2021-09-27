@@ -9,7 +9,7 @@
 | Implements schema and functions related to Ethereum's block. |
 | --- |
 
-Note: this `README` reflects the state of the library from `v3.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-block) for an introduction on the last preceeding release.
+Note: this `README` reflects the state of the library from `v3.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-block) for an introduction on the last preceding release.
 
 # INSTALL
 
@@ -25,7 +25,7 @@ There are three static factories to instantiate a `Block`:
 - `Block.fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions)`
 - `Block.fromValuesArray(values: BlockBuffer, opts?: BlockOptions)`
 
-For `BlockHeader` instantiation analogue factory methods exists, see API docs linked below.
+For `BlockHeader` instantiation analog factory methods exists, see API docs linked below.
 
 Instantiation Example:
 
@@ -62,15 +62,22 @@ This library supports the creation of [EIP-1559](https://eips.ethereum.org/EIPS/
 To instantiate an EIP-1559 block the hardfork parameter on the `Common` instance needs to be explicitly set to `london` (default is still `istanbul`):
 
 ```typescript
-import { Block } from 'ethereumjs-block'
+import { BN } from 'ethereumjs-util'
+import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+
 const block = Block.fromBlockData({
   header: {
-    //...,
     baseFeePerGas: new BN(10),
+    gasLimit: new BN(100),
+    gasUsed: new BN(60)
   }
 }, { common })
+
+// Base fee will increase for next block since the
+// gas used is greater than half the gas limit
+block.header.calcNextBaseFee().toNumber() // 11
 ```
 
 EIP-1559 blocks have an extra `baseFeePerGas` field (default: `new BN(7)`) and can encompass `FeeMarketEIP1559Transaction` txs (type `2`) (supported by `@ethereumjs/tx` `v3.2.0` or higher) as well as  `Transaction` legacy txs (internal type `0`) and `AccessListEIP2930Transaction` txs (type `1`).
@@ -130,6 +137,23 @@ Additionally there are the following utility methods for Clique/PoA related func
 - `BlockHeader.cliqueSigner(): Address`
 
 See the API docs for detailed documentation. Note that these methods will throw if called in a non-Clique/PoA context.
+
+### Casper/PoS (since v3.5.0) (experimental)
+
+Merge-friendly Casper/PoS blocks have been introduced along with the `v3.5.0` release. Proof-of-Stake compatible execution blocks come with their own set of header field simplifications and associated validation rules. The difficulty is set to `0` since not relevant anymore, just to name an example. For a full list of changes see [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675).
+
+You can instantiate a Merge/PoS block like this:
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge, })
+const block = Block.fromBlockData({
+  // Provide your block data here or use default values
+}, { common })
+```
+
+Note that all `Merge` respectively `Casper/PoS` related functionality is still considered `experimental`.
 
 # API
 

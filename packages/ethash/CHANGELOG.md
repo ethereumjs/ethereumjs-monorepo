@@ -6,6 +6,38 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 1.1.0 - 2021-09-24
+
+### PoW Ethash CPU Miner
+
+There is now a new simple CPU miner added to the `Ethash` package which can be used for testing purposes.
+
+See the following example on how to use the new `Miner` class:
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import Ethash from '@ethereumjs/ethash'
+import Common from '@ethereumjs/common'
+import { BN } from 'ethereumjs-util'
+const level = require('level-mem')
+
+const cacheDB = level()
+const block = Block.fromBlockData({
+  header: {
+    difficulty: new BN(100),
+    number: new BN(1),
+  },
+})
+
+const e = new Ethash(cacheDB)
+const miner = e.getMiner(block.header)
+const solution = await miner.iterate(-1) // iterate until solution is found
+```
+
+### Included Source Files
+
+Source files from the `src` folder are now included in the distribution build, see PR [#1301](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1301). This allows for a better debugging experience in debug tools like Chrome DevTools by having working source map references to the original sources available for inspection.
+
 ## 1.0.0 - 2020-11-24
 
 ### New Package Name
@@ -22,7 +54,7 @@ npm i @ethereumjs/ethash
 
 ### Library Promisification
 
-The `Ethash` library has been promisified and callbacks have been removed along PR [#833](https://github.com/ethereumjs/ethereumjs-monorepo/pull/833) and preceeding PR [#779](https://github.com/ethereumjs/ethereumjs-monorepo/pull/779).
+The `Ethash` library has been promisified and callbacks have been removed along PR [#833](https://github.com/ethereumjs/ethereumjs-monorepo/pull/833) and preceding PR [#779](https://github.com/ethereumjs/ethereumjs-monorepo/pull/779).
 
 Old API:
 
@@ -78,7 +110,7 @@ npm i @ethereumjs/ethash
 ### Library Promisification
 
 The `Ethash` library has been promisified and callbacks have been removed along
-PR [#833](https://github.com/ethereumjs/ethereumjs-monorepo/pull/833) and preceeding PR
+PR [#833](https://github.com/ethereumjs/ethereumjs-monorepo/pull/833) and preceding PR
 [#779](https://github.com/ethereumjs/ethereumjs-monorepo/pull/779).
 
 Old API:
@@ -132,7 +164,7 @@ Changes from PR [#23](https://github.com/ethereumjs/ethashjs/pull/23):
 - Use single imports for ethereumjs-util, upgrades to v7.0.2
 - Modernizes buffer init syntax
 
-Further/preceeding dependency updates in
+Further/preceding dependency updates in
 PR [#19](https://github.com/ethereumjs/ethashjs/pull/19),
 PR [#11](https://github.com/ethereumjs/ethashjs/pull/11),
 PR [#8](https://github.com/ethereumjs/ethashjs/pull/8) and

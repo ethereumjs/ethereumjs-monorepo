@@ -6,13 +6,80 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [UNRELEASED]
+## 2.5.0 - 2021-09-24
 
-**New Features**
+### Common with custom Genesis State
 
-**Bug Fixes and Maintenance**
+In addition to initializing Common with a custom chain configuration it is now also possible to provide a custom genesis state JSON file, which completes the Common custom chain functionality. The format follows our genesis state file definitions for the built-in chains (see e.g. `src/genesisStates/goerli.json`) and can be used to initialize a Common instance like:
 
-- Fixed `hardforkBlockBN()` to correctly return null for unscheduled hardforks, PR [#1329](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1329)
+```typescript
+import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
+import chain1GenesisState from '[PATH_TO_GENESIS_STATES]/chain1GenesisState.json'
+const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, chain1GenesisState ] ]})
+```
+
+Accessing the genesis state is now integrated into the `Common` class and can be accessed in a much more natural way by doing:
+
+```typescript
+const genesisState = common.genesisState()
+```
+
+This now also provides direct access to custom genesis states passed into `Common` as described above. The old Common-separate `genesisStateByName()` and `genesisStateById()` functions are now `deprecated` and usage should be avoided.
+
+### Experimental Merge HF Support / HF by Total Difficulty
+
+The Merge HF has been added as a new HF and can be used with `Hardfork.Merge`, also [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675) as the core HF EIP has been added as an EIP JSON config file, see #1393. Note that all Merge HF related functionality is still considered `experimental`.
+
+See e.g. the following HF definition in one of our test chain files:
+
+```json
+{
+  "name": "merge",
+  "block": null,
+  "td": 5000
+}
+```
+
+There is also a new `consensusType` `pos` which can be set along a HF file (see `src/hardforks/merge.json`) or directly in a chain file (like `src/chains/mainnet.json`) to create a pure PoS chain (note that the creation of pure PoS chains is still untested). To reference this new consensus type `ConsensusType.ProofOfStake` from the `ConsensusType` enum dict can be used.
+
+To allow a HF switch by total difficulty (TD) - which is planned for the Merge - the chain file type has been updated to now also accept a `td` value as an alternative (respectively also: in addition) to the `block` number value, see PR [#1473](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1473). Along the `getHardforkByBlockNumber()` and `setHardforkByBlockNumber()` function signatures have been expanded to also allow for setting/getting a HF by the total difficulty value:
+
+- -> `getHardforkByBlockNumber(blockNumber: BNLike, td?: BNLike): string`
+- -> `setHardforkByBlockNumber(blockNumber: BNLike, td?: BNLike): string`
+
+There is a new `hardforkTD(hardfork?: string | Hardfork): BN | null` function to get the TD value for a HF switch (so primarily: for the `merge` HF) if a total difficulty HF switch is configured.
+
+### Improved Typing for Hardfork, Chain and Genesis releated API Calls
+
+In the Common library all functionality returning hardfork, chain or genesis parameters has previously been under-typed respectively just returned `any` in most cases. This has been improved along PR [#1480](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1480) and is now finding its way into a release.
+
+Improved Signature Types:
+
+- -> `activeHardforks(blockNumber?: BNLike | null, opts: hardforkOptions = {}): HardforkParams[]`
+- -> `genesis(): GenesisBlock`
+- -> `hardforks(): HardforkParams[]`
+- -> `bootstrapNodes(): BootstrapNode[]`
+- -> `dnsNetworks(): string[]`
+
+**Potentially TypeScript Breaking**: Note while this is not strictly `TypeScript` breaking this might cause problems e.g. in the combination of using custom chain files with incomplete (but previously unused) parameters. So it is recommended to be a bit careful here. 
+
+### Changed Null Semantics for Hardfork Block Numbers in Chain Files
+
+From this release onwards we will work with a tightened semantics using `null` for hardforks in the chain files. Up to this release `null` was used both for 1. HFs from the past which were not applied on a particular chain (e.g. the `dao` HF on `goerli`) as well as 2. HFs which are known to take place in the future but do not have a block number yet (e.g. the `shanghai` HF).
+
+We have removed all type 1. HF usages (so mainly `dao` HF inclusions) with PR [#1344](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1344) and HF block number `null` values are now strictly reserved for type 2..
+
+If you have got left over type 1. `dao` HF inclusions in your custom chain files we encourage you to remove since this might cause problems along future releases.
+
+### Bug Fixes
+
+- **TypeScript Breaking**: Fixed `hardforkBlockBN()` to correctly return `null` for unscheduled hardforks, note that this changes the `TypeScript` function signature and might break your development setup (sorry for this, but this bugfix was nevertheless necessary), PR [#1329](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1329)
+- Always pre-compute the HF `forkHash` values if not hardcoded in the chain files, PR [#1423](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1423)
+
+### Maintenance
+
+- Removed `calaveras` ephemeral testnet, PR [#1430](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1430)
+- Added browser tests to `Common`, PR [#1380](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1380)
 
 **Dependencies, CI and Docs**
 

@@ -10,5 +10,5 @@
 
 ### Interfaces
 
-- [BlockchainInterface](interfaces/blockchaininterface.md)
-- [BlockchainOptions](interfaces/blockchainoptions.md)
+- [BlockchainInterface](interfaces/BlockchainInterface.md)
+- [BlockchainOptions](interfaces/BlockchainOptions.md)
