@@ -1,12 +1,13 @@
 #!/usr/bin/env client
 
-import os from 'os'
+import { homedir } from 'os'
 import path from 'path'
 import readline from 'readline'
-import crypto from 'crypto'
+import { randomBytes } from 'crypto'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import { Server as RPCServer } from 'jayson/promise'
 import Common, { Chain, Hardfork, ConsensusType } from '@ethereumjs/common'
+import { _getInitializedChains } from '@ethereumjs/common/dist/chains'
 import { Address, toBuffer } from 'ethereumjs-util'
 import { parseMultiaddrs, parseGenesisState, parseCustomParams } from '../lib/util'
 import EthereumClient from '../lib/client'
@@ -15,10 +16,9 @@ import { Logger } from '../lib/logging'
 import { RPCManager } from '../lib/rpc'
 import { Event } from '../lib/types'
 import type { Chain as IChain, GenesisState } from '@ethereumjs/common/dist/types'
-const chains = require('@ethereumjs/common/dist/chains').chains
 const level = require('level')
 
-const networks = Object.entries(chains.names)
+const networks = Object.entries(_getInitializedChains().names)
 
 const args = require('yargs')
   .options({
@@ -44,7 +44,7 @@ const args = require('yargs')
     },
     datadir: {
       describe: 'Data directory for the blockchain',
-      default: `${os.homedir()}/Library/Ethereum/ethereumjs`,
+      default: `${homedir()}/Library/Ethereum/ethereumjs`,
     },
     customChain: {
       describe: 'Path to custom chain parameters json file from Common',
@@ -251,7 +251,7 @@ async function run() {
 
     if (accounts.length === 0) {
       // Create new account for devnet if not provided
-      const privKey = crypto.randomBytes(32)
+      const privKey = randomBytes(32)
       const account = Address.fromPrivateKey(privKey)
       accounts.push([account, privKey])
       // prettier-ignore
