@@ -210,8 +210,9 @@ export class BlockHeader {
     if (options.common) {
       this._common = options.common.copy()
     } else {
-      const chain = Chain.Mainnet // default
-      this._common = new Common({ chain })
+      this._common = new Common({
+        chain: Chain.Mainnet, // default
+      })
       if (options.initWithGenesisHeader) {
         this._common.setHardforkByBlockNumber(0)
       }
