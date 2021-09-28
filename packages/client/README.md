@@ -32,13 +32,7 @@ We invite you to explore and would be delighted if you give us feedback on your 
 ## INSTALL
 
 ```shell
-npm install @ethereumjs/client // Release during Fall 2021
-```
-
-For the `ethereumjs` CLI command to work run:
-
-```shell
-npm link
+npm install -g @ethereumjs/client // Release during Fall 2021
 ```
 
 As long as there is no up-to-date client release on npm and for development purposes the client can be used like this:
