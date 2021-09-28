@@ -155,7 +155,7 @@ This can also be paired with the `--unlock` command if you would like to specify
 ethereumjs --dev --rpc --unlock=0xd8066d5822138e7c76d1565deb249f5f7ae370fa
 ```
 
-Note: If the `--dev` command is used in conjunction with `--unlock` to use a predefined account, the blockchain's state will be preserved between consecutive runs. If you try to use a different predefined account, you may see errors related to incompatible genesis blocks.  Simply run the client with the `--dev` flag by itself and use the new prefunded account provided by the client in further rounds of execution.
+Note: If the `--dev` command is used in conjunction with `--unlock` to use a predefined account, the blockchain's state will be preserved between consecutive runs. If you try to use a different predefined account, you may see errors related to incompatible genesis blocks. Simply run the client with the `--dev` flag by itself and use the new prefunded account provided by the client in further rounds of execution.
 ## API
 
 [API Reference](./docs/README.md)
