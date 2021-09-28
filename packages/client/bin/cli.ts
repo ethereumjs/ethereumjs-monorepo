@@ -33,7 +33,7 @@ const args = require('yargs')
       default: undefined,
     },
     syncmode: {
-      describe: 'Blockchain sync mode',
+      describe: 'Blockchain sync mode (light sync experimental)',
       choices: ['light', 'full'],
       default: Config.SYNCMODE_DEFAULT,
     },
@@ -47,11 +47,11 @@ const args = require('yargs')
       default: `${homedir()}/Library/Ethereum/ethereumjs`,
     },
     customChain: {
-      describe: 'Path to custom chain parameters json file from Common',
+      describe: 'Path to custom chain parameters json file (@ethereumjs/common format)',
       coerce: path.resolve,
     },
     customGenesisState: {
-      describe: 'Path to custom genesis state json file from Common',
+      describe: 'Path to custom genesis state json file (@ethereumjs/common format)',
       coerce: path.resolve,
     },
     gethGenesis: {
