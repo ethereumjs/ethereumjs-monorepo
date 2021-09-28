@@ -147,7 +147,7 @@ ethereumjs --dev --rpc --unlock=0xd8066d5822138e7c76d1565deb249f5f7ae370fa
 
 Note: If the `--dev` command is used in conjunction with `--unlock` to use a predefined account, the blockchain's state will be preserved between consecutive runs. If you try to use a different predefined account, you may see errors related to incompatible genesis blocks. Simply run the client with the `--dev` flag by itself and use the new prefunded account provided by the client in further rounds of execution.
 
-To explicitly set the miner coinbase (etherbase) specify `--coinbase=[ADDRESS]` - otherwise this will default to the primary account.
+To explicitly set the miner coinbase (etherbase) specify `--minerCoinbase=[ADDRESS]` - otherwise this will default to the primary account.
 
 The `--dev` command defaults to `--dev=poa`. If you would like to use PoW ethash with CPU miner (warning: slow) then pass `--dev=pow`.
 

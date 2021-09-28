@@ -143,8 +143,7 @@ const args = require('yargs')
     },
     dev: {
       describe: 'Start an ephemeral PoA blockchain with a single miner and prefunded accounts',
-      choices: ['poa', 'pow'],
-      default: 'poa',
+      choices: [undefined, false, true, 'poa', 'pow'],
     },
     minerCoinbase: {
       describe:
@@ -209,7 +208,7 @@ function runRpcServer(client: EthereumClient, config: Config) {
  */
 async function run() {
   // give network id precedence over network name
-  const chain = args.networkId ?? args.network ?? 'mainnet'
+  const chain = args.networkId ?? args.network ?? Chain.Mainnet
 
   // configure accounts for mining and prefunding in a local devnet
   const accounts: [address: Address, privateKey: Buffer][] = []
@@ -265,16 +264,14 @@ async function run() {
     rl.close()
   }
 
-  let common = new Common({ chain: Chain.Mainnet })
+  let common = new Common({ chain, hardfork: Hardfork.Chainstart })
 
   if (args.dev) {
+    args.discDns = false
     if (accounts.length === 0) {
-      // Delete old chain data for devnet if generating ephemeral keys for mining to prevent genesis block mismatch
+      // If generating new keys delete old chain data to prevent genesis block mismatch
       removeSync(`${args.datadir}/devnet`)
-    }
-
-    if (accounts.length === 0) {
-      // Create new account for devnet if not provided
+      // Create new account
       const privKey = randomBytes(32)
       const account = Address.fromPrivateKey(privKey)
       accounts.push([account, privKey])
@@ -372,16 +369,13 @@ async function run() {
       chain: genesisParams.name,
       customChains: [[genesisParams, genesisState]],
     })
-  } else if (!args.dev) {
-    // Use default common configuration for specified `chain` if no custom parameters specified
-    common = new Common({ chain: chain, hardfork: Hardfork.Chainstart })
   }
 
-  if (args.mine) {
-    if (!args.unlock) {
-      console.error('Please provide an account to mine blocks with `--unlock [address]`')
-      process.exit()
-    }
+  if (args.mine && accounts.length === 0) {
+    console.error(
+      'Please provide an account to mine blocks with `--unlock [address]` or use `--dev` to generate'
+    )
+    process.exit()
   }
 
   const datadir = args.datadir ?? Config.DATADIR_DEFAULT

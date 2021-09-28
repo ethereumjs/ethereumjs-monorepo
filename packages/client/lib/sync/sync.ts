@@ -49,8 +49,8 @@ export abstract class Synchronizer {
 
   // Best known sync block height
   public syncTargetHeight?: BN
-  // Time (in seconds) after which the synced state is reset
-  private SYNCED_STATE_REMOVAL_PERIOD = 60
+  // Time (in ms) after which the synced state is reset
+  private SYNCED_STATE_REMOVAL_PERIOD = 60000
   /* global NodeJS */
   private _syncedStatusCheckInterval: NodeJS.Timeout | undefined
 

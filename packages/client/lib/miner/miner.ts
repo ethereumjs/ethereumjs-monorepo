@@ -82,7 +82,7 @@ export class Miner {
       // EIP-225 spec: If the signer is out-of-turn,
       // delay signing by rand(SIGNER_COUNT * 500ms)
       const [signerAddress] = this.config.accounts[0]
-      const { blockchain } = this.synchronizer.execution.vm
+      const { blockchain } = (this.synchronizer as any).chain
       const inTurn = await blockchain.cliqueSignerInTurn(signerAddress)
       if (!inTurn) {
         const signerCount = blockchain.cliqueActiveSigners().length
@@ -172,12 +172,12 @@ export class Miner {
 
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority) {
       // Abort if we have too recently signed
-      const [_, signerPrivKey] = this.config.accounts[0]
+      const cliqueSigner = this.config.accounts[0][1]
       const header = BlockHeader.fromHeaderData(
         { number },
-        { common: this.config.chainCommon, cliqueSigner: signerPrivKey }
+        { common: this.config.chainCommon, cliqueSigner }
       )
-      if ((this.synchronizer.execution.vm.blockchain as any).cliqueCheckRecentlySigned(header)) {
+      if ((this.synchronizer as any).chain.blockchain.cliqueCheckRecentlySigned(header)) {
         this.config.logger.info(`Miner: We have too recently signed, waiting for next block`)
         this.assembling = false
         return
@@ -185,9 +185,9 @@ export class Miner {
     }
 
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfWork) {
-      if (!this.nextSolution) {
+      while (!this.nextSolution) {
         this.config.logger.info(`Miner: Waiting for next PoW solution 🔨`)
-        await this.findNextSolution()
+        await new Promise((r) => setTimeout(r, 1000))
       }
     }
 
@@ -235,11 +235,13 @@ export class Miner {
     }
 
     const parentBlock = (this.synchronizer as any).chain.blocks.latest
-    const calcDifficultyFromHeader =
-      this.config.chainCommon.consensusType() === ConsensusType.ProofOfWork
-        ? parentBlock.header
-        : undefined
-    const coinbase = this.config.minerCoinbase ?? this.config.accounts[0][0]
+
+    let calcDifficultyFromHeader
+    let coinbase
+    if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfWork) {
+      calcDifficultyFromHeader = parentBlock.header
+      coinbase = this.config.minerCoinbase ?? this.config.accounts[0][0]
+    }
 
     const blockBuilder = await vmCopy.buildBlock({
       parentBlock,
@@ -295,7 +297,11 @@ export class Miner {
     if (interrupt) return
     // Build block, sealing it
     const block = await blockBuilder.build(this.nextSolution)
-    this.config.logger.info(`Miner: Sealed block with ${block.transactions.length} txs`)
+    this.config.logger.info(
+      `Miner: Sealed block with ${block.transactions.length} txs${
+        this.nextSolution ? ` (difficulty: ${block.header.difficulty})` : ''
+      }`
+    )
     this.assembling = false
     if (interrupt) return
     // Put block in blockchain

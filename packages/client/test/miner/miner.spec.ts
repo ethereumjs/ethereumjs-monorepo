@@ -461,7 +461,6 @@ tape('[Miner]', async (t) => {
     miner.start()
     await wait(100)
     config.events.on(Event.CHAIN_UPDATED, async () => {
-      await wait(1000)
       t.ok(chain.blocks.latest!.header.number.eqn(1))
       miner.stop()
       await chain.close()
