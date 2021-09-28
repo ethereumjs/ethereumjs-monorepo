@@ -3,7 +3,7 @@ import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { baseSetup, params, baseRequest } from '../helpers'
 import { checkError } from '../util'
 
-const method = 'consensus_newBlock'
+const method = 'engine_consensusValidated'
 
 tape(`${method}: call without parameter`, async (t) => {
   const { server } = baseSetup()
