@@ -151,6 +151,7 @@ WARNING: Do not use this account for mainnet funds
 Please **heed** the warning and do not use the provided account/private key for mainnet funds.
 
 This can also be paired with the `--unlock` command if you would like to specify the miner/prefunded account:
+
 ```shell
 ethereumjs --dev --rpc --unlock=0xd8066d5822138e7c76d1565deb249f5f7ae370fa
 ```
