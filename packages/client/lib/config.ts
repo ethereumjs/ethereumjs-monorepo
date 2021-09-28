@@ -192,6 +192,12 @@ export interface ConfigOptions {
    * Default: []
    */
   accounts?: [address: Address, privKey: Buffer][]
+
+  /**
+   * Address for mining rewards (etherbase)
+   * If not provided, defaults to the primary account.
+   */
+  minerCoinbase?: Address
 }
 
 export class Config {
@@ -240,6 +246,7 @@ export class Config {
   public readonly discV4: boolean
   public readonly mine: boolean
   public readonly accounts: [address: Address, privKey: Buffer][]
+  public readonly minerCoinbase?: Address
 
   public synchronized: boolean
   public lastSyncDate: number
@@ -272,6 +279,7 @@ export class Config {
     this.debugCode = options.debugCode ?? Config.DEBUGCODE_DEFAULT
     this.mine = options.mine ?? false
     this.accounts = options.accounts ?? []
+    this.minerCoinbase = options.minerCoinbase
 
     this.synchronized = false
     this.lastSyncDate = 0
