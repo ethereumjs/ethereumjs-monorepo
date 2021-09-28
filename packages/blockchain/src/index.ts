@@ -335,7 +335,7 @@ export default class Blockchain implements BlockchainInterface {
 
     if (!genesisBlock) {
       const common = this._common.copy()
-      common.setHardfork(Hardfork.Chainstart)
+      common.setHardforkByBlockNumber(0)
       genesisBlock = Block.genesis({}, { common })
     }
 
@@ -1470,13 +1470,13 @@ export default class Blockchain implements BlockchainInterface {
       const blockHash = header.hash()
       const blockNumber = header.number
 
-      DBSaveLookups(blockHash, blockNumber).map((op) => {
-        ops.push(op)
-      })
-
       if (blockNumber.isZero()) {
         break
       }
+
+      DBSaveLookups(blockHash, blockNumber).map((op) => {
+        ops.push(op)
+      })
 
       // mark each key `_heads` which is currently set to the hash in the DB as
       // stale to overwrite this later.

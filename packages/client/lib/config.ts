@@ -191,7 +191,7 @@ export interface ConfigOptions {
    *
    * Default: []
    */
-  accounts?: [Address, Buffer][]
+  accounts?: [address: Address, privKey: Buffer][]
 }
 
 export class Config {
@@ -239,7 +239,7 @@ export class Config {
   public readonly discDns: boolean
   public readonly discV4: boolean
   public readonly mine: boolean
-  public readonly accounts: [Address, Buffer][]
+  public readonly accounts: [address: Address, privKey: Buffer][]
 
   public synchronized: boolean
   public lastSyncDate: number
