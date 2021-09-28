@@ -1,4 +1,4 @@
-#!/usr/bin/env client
+#!/usr/bin/env node
 
 import { homedir } from 'os'
 import path from 'path'
