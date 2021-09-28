@@ -135,7 +135,7 @@ Note that this feature is in `beta` and shouldn't be used with accounts holding 
 ### Custom network for development
 
 The client provides a quick way to get a local instance of a blockchain up and running using the `--dev` command. This will start up a private PoA clique
-network with a prefunded account that also mines block on 10 second intervals. The prefunded account and its private key are printed to the screen when the client starts. When paired with the `--rpc` command, you have a ready-made environment for local development.
+network with a prefunded account that mines block on 10 second intervals. The prefunded account and its private key are printed to the screen when the client starts. When paired with the `--rpc` command, you have a ready-made environment for local development.
 
 ```shell
 ethereumjs --dev --rpc
