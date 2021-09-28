@@ -230,13 +230,15 @@ async function run() {
         if (address.equals(derivedAddress)) {
           accounts.push([address, privKey])
         } else {
-          throw new Error(
+          console.error(
             `Private key does not match for ${address} (address derived: ${derivedAddress})`
           )
+          process.exit()
         }
       }
-    } catch (error) {
-      console.error(`Encountered error unlocking account:\n${error}`)
+    } catch (e: any) {
+      console.error(`Encountered error unlocking account:\n${e.message}`)
+      process.exit()
     }
     rl.close()
   }
@@ -310,12 +312,14 @@ async function run() {
     (args.customChainParams || args.customGenesisState || args.gethGenesis) &&
     (!(args.network === 'mainnet') || args.networkId)
   ) {
-    throw new Error('cannot specify both custom chain parameters and preset network ID')
+    console.error('cannot specify both custom chain parameters and preset network ID')
+    process.exit()
   }
   // Use custom chain parameters file if specified
   if (args.customChain) {
     if (!args.customGenesisState) {
-      throw new Error('cannot have custom chain parameters without genesis state')
+      console.error('cannot have custom chain parameters without genesis state')
+      process.exit()
     }
     try {
       const customChainParams = JSON.parse(readFileSync(args.customChain, 'utf-8'))
@@ -325,7 +329,8 @@ async function run() {
         customChains: [[customChainParams, genesisState]],
       })
     } catch (err: any) {
-      throw new Error(`invalid chain parameters: ${err.message}`)
+      console.error(`invalid chain parameters: ${err.message}`)
+      process.exit()
     }
   } else if (args.gethGenesis) {
     // Use geth genesis parameters file if specified
@@ -346,10 +351,12 @@ async function run() {
 
   if (args.mine) {
     if (common.consensusType() !== ConsensusType.ProofOfAuthority) {
-      throw new Error('Currently mining is only supported for PoA consensus')
+      console.error('Currently mining is only supported for PoA consensus')
+      process.exit()
     }
     if (!args.unlock) {
-      throw new Error('Please provide an account to sign sealed blocks with `--unlock [address]` ')
+      console.error('Please provide an account to sign sealed blocks with `--unlock [address]` ')
+      process.exit()
     }
   }
 
