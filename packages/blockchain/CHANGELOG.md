@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.4.2 - 2021-09-28
+
+- Fixed a bug not initializing the HF correctly when run on a custom chain with the `london` HF happening on block 0 or 1, PR [#1492](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1492)
+
 ## 5.4.1 - 2021-09-24
 
 ### Experimental Casper/PoS and Merge Support

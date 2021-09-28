@@ -21,7 +21,7 @@ Here are some use cases:
 - Set up your own local development networks (PoA Clique)
 - Run a network with your own custom [EthereumJS VM](../vm)
 - Analyze what's in the Ethereum `mainnet` [transaction pool](./lib/sync/txpool.ts)
-- Run experiments on Ethereum browser sync (see [example](./examples/light-browser-sync.md))
+- Run experiments with Ethereum browser sync (see [example](./examples/light-browser-sync.md))
 
 The client has an extremely modular design by building upon central other libraries in the EthereumJS monorepo ([VM](../vm), [Merkle Patricia Tree](../trie), [Blockchain](../blockchain), [Block](../block), [tx](../tx), [devp2p](../devp2p) and [Common](../common)) and is therefore extremely well suited for a deep dive into Ethereum protocol development.
 
@@ -32,13 +32,7 @@ We invite you to explore and would be delighted if you give us feedback on your 
 ## INSTALL
 
 ```shell
-npm install @ethereumjs/client // Release during Fall 2021
-```
-
-For the `ethereumjs` CLI command to work run:
-
-```shell
-npm link
+npm install -g @ethereumjs/client // Release during Fall 2021
 ```
 
 As long as there is no up-to-date client release on npm and for development purposes the client can be used like this:

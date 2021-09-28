@@ -1,4 +1,4 @@
-#!/usr/bin/env client
+#!/usr/bin/env node
 
 import { homedir } from 'os'
 import path from 'path'
@@ -33,7 +33,7 @@ const args = require('yargs')
       default: undefined,
     },
     syncmode: {
-      describe: 'Blockchain sync mode',
+      describe: 'Blockchain sync mode (light sync experimental)',
       choices: ['light', 'full'],
       default: Config.SYNCMODE_DEFAULT,
     },
@@ -47,11 +47,11 @@ const args = require('yargs')
       default: `${homedir()}/Library/Ethereum/ethereumjs`,
     },
     customChain: {
-      describe: 'Path to custom chain parameters json file from Common',
+      describe: 'Path to custom chain parameters json file (@ethereumjs/common format)',
       coerce: path.resolve,
     },
     customGenesisState: {
-      describe: 'Path to custom genesis state json file from Common',
+      describe: 'Path to custom genesis state json file (@ethereumjs/common format)',
       coerce: path.resolve,
     },
     gethGenesis: {
@@ -213,6 +213,22 @@ async function run() {
       input: process.stdin,
       output: process.stdout,
     })
+
+    // Hide key input
+    ;(rl as any).input.on('keypress', function () {
+      // get the number of characters entered so far:
+      const len = (rl as any).line.length
+      // move cursor back to the beginning of the input:
+      readline.moveCursor((rl as any).output, -len, 0)
+      // clear everything to the right of the cursor:
+      readline.clearLine((rl as any).output, 1)
+      // replace the original input with asterisks:
+      for (let i = 0; i < len; i++) {
+        // eslint-disable-next-line no-extra-semi
+        ;(rl as any).output.write('*')
+      }
+    })
+
     const question = (text: string) => {
       return new Promise<string>((resolve) => {
         rl.question(text, resolve)
@@ -225,18 +241,21 @@ async function run() {
         const inputKey = await question(
           `Please enter the 0x-prefixed private key to unlock ${address}:\n`
         )
+        ;(rl as any).history = (rl as any).history.slice(1)
         const privKey = toBuffer(inputKey)
         const derivedAddress = Address.fromPrivateKey(privKey)
         if (address.equals(derivedAddress)) {
           accounts.push([address, privKey])
         } else {
-          throw new Error(
+          console.error(
             `Private key does not match for ${address} (address derived: ${derivedAddress})`
           )
+          process.exit()
         }
       }
-    } catch (error) {
-      console.error(`Encountered error unlocking account:\n${error}`)
+    } catch (e: any) {
+      console.error(`Encountered error unlocking account:\n${e.message}`)
+      process.exit()
     }
     rl.close()
   }
@@ -310,12 +329,14 @@ async function run() {
     (args.customChainParams || args.customGenesisState || args.gethGenesis) &&
     (!(args.network === 'mainnet') || args.networkId)
   ) {
-    throw new Error('cannot specify both custom chain parameters and preset network ID')
+    console.error('cannot specify both custom chain parameters and preset network ID')
+    process.exit()
   }
   // Use custom chain parameters file if specified
   if (args.customChain) {
     if (!args.customGenesisState) {
-      throw new Error('cannot have custom chain parameters without genesis state')
+      console.error('cannot have custom chain parameters without genesis state')
+      process.exit()
     }
     try {
       const customChainParams = JSON.parse(readFileSync(args.customChain, 'utf-8'))
@@ -325,7 +346,8 @@ async function run() {
         customChains: [[customChainParams, genesisState]],
       })
     } catch (err: any) {
-      throw new Error(`invalid chain parameters: ${err.message}`)
+      console.error(`invalid chain parameters: ${err.message}`)
+      process.exit()
     }
   } else if (args.gethGenesis) {
     // Use geth genesis parameters file if specified
@@ -346,10 +368,12 @@ async function run() {
 
   if (args.mine) {
     if (common.consensusType() !== ConsensusType.ProofOfAuthority) {
-      throw new Error('Currently mining is only supported for PoA consensus')
+      console.error('Currently mining is only supported for PoA consensus')
+      process.exit()
     }
     if (!args.unlock) {
-      throw new Error('Please provide an account to sign sealed blocks with `--unlock [address]` ')
+      console.error('Please provide an account to sign sealed blocks with `--unlock [address]` ')
+      process.exit()
     }
   }
 
