@@ -1,4 +1,4 @@
-import tape from 'tape-catch'
+import tape from 'tape'
 import td from 'testdouble'
 import { baseRequest, createManager, createClient, params, startRPC } from '../helpers'
 import { BN } from 'ethereumjs-util'
@@ -23,7 +23,7 @@ tape(`${method}: should return false when the client is synchronized`, async (t)
       throw new Error(msg)
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
 tape(`${method}: should return no peer available error`, async (t) => {
@@ -43,7 +43,7 @@ tape(`${method}: should return no peer available error`, async (t) => {
     }
   }
 
-  baseRequest(t, rpcServer, req, 200, expectRes)
+  await baseRequest(t, rpcServer, req, 200, expectRes)
 })
 
 tape(`${method}: should return highest block header unavailable error`, async (t) => {
@@ -67,7 +67,7 @@ tape(`${method}: should return highest block header unavailable error`, async (t
     }
   }
 
-  baseRequest(t, rpcServer, req, 200, expectRes)
+  await baseRequest(t, rpcServer, req, 200, expectRes)
 })
 
 tape(`${method}: should return syncing status object when unsynced`, async (t) => {
@@ -97,7 +97,7 @@ tape(`${method}: should return syncing status object when unsynced`, async (t) =
     }
   }
 
-  baseRequest(t, rpcServer, req, 200, expectRes)
+  await baseRequest(t, rpcServer, req, 200, expectRes)
 })
 
 tape('should reset td', (t) => {

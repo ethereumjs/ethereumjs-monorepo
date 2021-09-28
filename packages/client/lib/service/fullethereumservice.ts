@@ -4,6 +4,7 @@ import { EthProtocol } from '../net/protocol/ethprotocol'
 import { LesProtocol } from '../net/protocol/lesprotocol'
 import { Peer } from '../net/peer/peer'
 import { Protocol } from '../net/protocol'
+import { Miner } from '../miner'
 
 interface FullEthereumServiceOptions extends EthereumServiceOptions {
   /* Serve LES requests (default: false) */
@@ -17,6 +18,7 @@ interface FullEthereumServiceOptions extends EthereumServiceOptions {
 export class FullEthereumService extends EthereumService {
   public synchronizer: FullSynchronizer
   public lightserv: boolean
+  public miner: Miner | undefined
 
   /**
    * Create new ETH service
@@ -36,6 +38,31 @@ export class FullEthereumService extends EthereumService {
       stateDB: options.stateDB,
       interval: this.interval,
     })
+
+    if (this.config.mine) {
+      this.miner = new Miner({
+        config: this.config,
+        synchronizer: this.synchronizer,
+      })
+    }
+  }
+
+  /**
+   * Start service
+   * @return {Promise}
+   */
+  async start(): Promise<void | boolean> {
+    await super.start()
+    this.miner?.start()
+  }
+
+  /**
+   * Stop service
+   * @return {Promise}
+   */
+  async stop(): Promise<void | boolean> {
+    this.miner?.stop()
+    await super.stop()
   }
 
   /**
@@ -97,7 +124,7 @@ export class FullEthereumService extends EthereumService {
     } else if (message.name === 'Transactions') {
       await this.synchronizer.txPool.handleAnnouncedTxs(message.data, peer, this.pool)
     } else if (message.name === 'NewBlock') {
-      await this.synchronizer.handleNewBlock(message.data[0])
+      await this.synchronizer.handleNewBlock(message.data[0], peer)
     } else if (message.name === 'NewPooledTransactionHashes') {
       await this.synchronizer.txPool.handleAnnouncedTxHashes(message.data, peer, this.pool)
     } else if (message.name === 'GetPooledTransactions') {

@@ -9,7 +9,7 @@
 | TypeScript implementation of the Ethereum VM. |
 | --- |
 
-Note: this `README` reflects the state of the library from `v5.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-vm) for an introduction on the last preceeding release.
+Note: this `README` reflects the state of the library from `v5.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-vm) for an introduction on the last preceding release.
 
 # INSTALL
 
@@ -296,7 +296,7 @@ The opFns for `CREATE`, `CALL`, and `CALLCODE` call back up to `runCall`.
 
 # DEVELOPMENT
 
-Developer documentation - currently mainly with information on testing and debugging - can be found [here](./developer.md).
+Developer documentation - currently mainly with information on testing and debugging - can be found [here](./DEVELOPER.md).
 
 # EthereumJS
 

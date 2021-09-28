@@ -1,23 +1,25 @@
-import tape from 'tape-catch'
+import tape from 'tape'
 import td from 'testdouble'
 import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
 import { Event } from '../../lib/types'
+import { Block } from '@ethereumjs/block'
 
 tape('[FullSynchronizer]', async (t) => {
   class PeerPool {
     open() {}
     close() {}
+    idle() {}
   }
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
-  td.replace('../../lib/net/peerpool', { PeerPool })
+  PeerPool.prototype.idle = td.func<any>()
   class BlockFetcher {
     fetch() {}
   }
   BlockFetcher.prototype.fetch = td.func<any>()
-  td.replace('../../lib/sync/fetcher/blockfetcher', { BlockFetcher })
+  td.replace('../../lib/sync/fetcher', { BlockFetcher })
 
   const { FullSynchronizer } = await import('../../lib/sync/fullsync')
 
@@ -110,10 +112,9 @@ tape('[FullSynchronizer]', async (t) => {
       number: new BN(2),
       hash: () => Buffer.from([]),
     })
-    td.when((BlockFetcher.prototype as any).fetch(), { delay: 20 }).thenResolve(undefined)
+    td.when(BlockFetcher.prototype.fetch(), { delay: 20, times: 2 }).thenResolve(undefined)
     ;(sync as any).chain = { blocks: { height: new BN(3) } }
     t.notOk(await sync.sync(), 'local height > remote height')
-    await sync.stop()
     ;(sync as any).chain = {
       blocks: { height: new BN(0) },
     }
@@ -121,9 +122,7 @@ tape('[FullSynchronizer]', async (t) => {
       config.events.emit(Event.SYNC_SYNCHRONIZED, new BN(0))
     }, 100)
     t.ok(await sync.sync(), 'local height < remote height')
-    await sync.stop()
-
-    td.when((BlockFetcher.prototype as any).fetch()).thenReject(new Error('err0'))
+    td.when(BlockFetcher.prototype.fetch()).thenReject(new Error('err0'))
     try {
       await sync.sync()
     } catch (err: any) {
@@ -131,6 +130,89 @@ tape('[FullSynchronizer]', async (t) => {
       await sync.stop()
       await sync.close()
     }
+  })
+
+  t.test('should send NewBlock/NewBlockHashes to right peers', async (t) => {
+    t.plan(9)
+    const config = new Config({ loglevel: 'error', transports: [] })
+    const pool = new PeerPool() as any
+    const chain = new Chain({ config })
+    const sync = new FullSynchronizer({
+      config,
+      interval: 1,
+      pool,
+      chain,
+    })
+    ;(sync as any).fetcher = {
+      enqueueByNumberList: (blockNumberList: BN[], min: BN) => {
+        t.ok(blockNumberList[0].eqn(0), 'enqueueing the correct block in the Fetcher')
+        t.equal(blockNumberList.length, 1, 'correct number of blocks enqueued in Fetcher')
+        t.ok(min.eqn(0), 'correct start block number in Fetcher')
+      },
+    }
+
+    let timesSentToPeer2 = 0
+    const peers = [
+      {
+        id: 'Peer 1',
+        eth: {
+          status: { td: new BN(1) },
+          send(name: string) {
+            t.equal(name, 'NewBlock', 'sent NewBlock to Peer 1')
+          },
+        },
+        inbound: false,
+      },
+      {
+        id: 'Peer 2',
+        eth: {
+          status: { td: new BN(2) },
+          send(name: string) {
+            t.equal(name, 'NewBlockHashes', 'sent NewBlockHashes to Peer 2')
+            timesSentToPeer2++
+          },
+        },
+        inbound: false,
+      },
+      {
+        id: 'Peer 3',
+        eth: {
+          status: { td: new BN(3) },
+          send() {
+            t.fail('should not send announcement to peer3')
+          },
+        },
+        inbound: false,
+      },
+    ]
+    ;(sync as any).pool = { peers }
+
+    Block.prototype.validateDifficulty = td.func<any>()
+    td.when(Block.prototype.validateDifficulty(td.matchers.anything())).thenReturn(true)
+    const chainTip = Block.fromBlockData({
+      header: {},
+    })
+    const newBlock = Block.fromBlockData({
+      header: {
+        parentHash: chainTip.hash(),
+      },
+    })
+    chain.getLatestBlock = td.func<any>()
+    chain.putBlocks = td.func<any>()
+
+    // NewBlock message from Peer 3
+    await sync.handleNewBlock(newBlock, peers[2] as any)
+
+    t.ok(sync.syncTargetHeight?.eqn(0), 'sync target height should be set to 0')
+    await sync.handleNewBlock(newBlock)
+    t.ok(timesSentToPeer2 === 1, 'sent NewBlockHashes to Peer 2 once')
+    t.pass('did not send NewBlock to Peer 3')
+    ;(sync as any).chain._blocks = {
+      latest: chainTip,
+    }
+    ;(sync as any).newBlocksKnownByPeer.delete(peers[0].id)
+    await sync.handleNewBlock(newBlock, peers[2] as any)
+    td.verify(chain.putBlocks([newBlock]))
   })
 
   t.test('should reset td', (t) => {

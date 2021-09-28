@@ -28,7 +28,7 @@ function createBlockchain() {
 
 const method = 'eth_getBlockByNumber'
 
-tape(`${method}: call with valid arguments`, (t) => {
+tape(`${method}: call with valid arguments`, async (t) => {
   const manager = createManager(createClient({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
@@ -41,10 +41,10 @@ tape(`${method}: call with valid arguments`, (t) => {
       t.pass(msg)
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with false for second argument`, (t) => {
+tape(`${method}: call with false for second argument`, async (t) => {
   const manager = createManager(createClient({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
@@ -63,10 +63,10 @@ tape(`${method}: call with false for second argument`, (t) => {
       t.pass(msg)
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with earliest param`, (t) => {
+tape(`${method}: call with earliest param`, async (t) => {
   const manager = createManager(createClient({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
@@ -79,10 +79,10 @@ tape(`${method}: call with earliest param`, (t) => {
       t.pass(msg)
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with latest param`, (t) => {
+tape(`${method}: call with latest param`, async (t) => {
   const manager = createManager(createClient({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
@@ -95,10 +95,10 @@ tape(`${method}: call with latest param`, (t) => {
       t.pass(msg)
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with unimplemented pending param`, (t) => {
+tape(`${method}: call with unimplemented pending param`, async (t) => {
   const manager = createManager(createClient({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
@@ -112,19 +112,19 @@ tape(`${method}: call with unimplemented pending param`, (t) => {
       throw new Error(msg)
     }
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with non-string block number`, (t) => {
+tape(`${method}: call with non-string block number`, async (t) => {
   const manager = createManager(createClient({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
   const req = params(method, [10, true])
   const expectRes = checkError(t, INVALID_PARAMS, 'invalid argument 0: argument must be a string')
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with invalid block number`, (t) => {
+tape(`${method}: call with invalid block number`, async (t) => {
   const manager = createManager(createClient({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
@@ -135,23 +135,23 @@ tape(`${method}: call with invalid block number`, (t) => {
     'invalid argument 0: block option must be a valid 0x-prefixed block hash or hex integer, or "latest", "earliest" or "pending"'
   )
 
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call without second parameter`, (t) => {
+tape(`${method}: call without second parameter`, async (t) => {
   const manager = createManager(createClient({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
   const req = params(method, ['0x0'])
   const expectRes = checkError(t, INVALID_PARAMS, 'missing value for required argument 1')
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with invalid second parameter`, (t) => {
+tape(`${method}: call with invalid second parameter`, async (t) => {
   const manager = createManager(createClient({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
   const req = params(method, ['0x0', 'INVALID PARAMETER'])
   const expectRes = checkError(t, INVALID_PARAMS)
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })

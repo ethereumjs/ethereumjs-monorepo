@@ -1,4 +1,4 @@
-import tape from 'tape-catch'
+import tape from 'tape'
 import td from 'testdouble'
 import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
@@ -12,12 +12,11 @@ tape('[LightSynchronizer]', async (t) => {
   }
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
-  td.replace('../../lib/net/peerpool', { PeerPool })
   class HeaderFetcher {
     fetch() {}
   }
   HeaderFetcher.prototype.fetch = td.func<any>()
-  td.replace('../../lib/sync/fetcher/headerfetcher', { HeaderFetcher })
+  td.replace('../../lib/sync/fetcher', { HeaderFetcher })
 
   const { LightSynchronizer } = await import('../../lib/sync/lightsync')
 
@@ -76,7 +75,7 @@ tape('[LightSynchronizer]', async (t) => {
       number: new BN(2),
       hash: () => Buffer.from([]),
     })
-    td.when(HeaderFetcher.prototype.fetch(), { delay: 20 }).thenResolve(undefined)
+    td.when(HeaderFetcher.prototype.fetch(), { delay: 20, times: 2 }).thenResolve(undefined)
     ;(sync as any).chain = { headers: { height: new BN(3) } }
     t.notOk(await sync.sync(), 'local height > remote height')
     ;(sync as any).chain = { headers: { height: new BN(0) } }
@@ -89,6 +88,8 @@ tape('[LightSynchronizer]', async (t) => {
       await sync.sync()
     } catch (err: any) {
       t.equals(err.message, 'err0', 'got error')
+      await sync.stop()
+      await sync.close()
     }
   })
 

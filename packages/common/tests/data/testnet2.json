@@ -4,7 +4,7 @@
   "networkId": 22222,
   "defaultHardfork": "istanbul",
   "consensus": {
-    "type": "pos",
+    "type": "poa",
     "algorithm": "clique",
     "clique": {
       "period": 15,

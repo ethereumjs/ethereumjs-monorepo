@@ -5,7 +5,7 @@ import { checkError } from '../util'
 
 const method = 'eth_getBlockByHash'
 
-tape(`${method}: call with valid arguments`, (t) => {
+tape(`${method}: call with valid arguments`, async (t) => {
   const { server } = baseSetup()
 
   const req = params(method, [
@@ -16,10 +16,10 @@ tape(`${method}: call with valid arguments`, (t) => {
     const msg = 'should return the correct number'
     t.equal(res.body.result.number, 444444, msg)
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with false for second argument`, (t) => {
+tape(`${method}: call with false for second argument`, async (t) => {
   const { server } = baseSetup()
 
   const req = params(method, [
@@ -32,10 +32,10 @@ tape(`${method}: call with false for second argument`, (t) => {
     msg = 'should return only the hashes of the transactions'
     t.equal(typeof res.body.result.transactions[0], 'string', msg)
   }
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with invalid block hash without 0x`, (t) => {
+tape(`${method}: call with invalid block hash without 0x`, async (t) => {
   const { server } = baseSetup()
 
   const req = params(method, ['WRONG BLOCK NUMBER', true])
@@ -44,29 +44,29 @@ tape(`${method}: call with invalid block hash without 0x`, (t) => {
     INVALID_PARAMS,
     'invalid argument 0: hex string without 0x prefix'
   )
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with invalid hex string as block hash`, (t) => {
+tape(`${method}: call with invalid hex string as block hash`, async (t) => {
   const { server } = baseSetup()
 
   const req = params(method, ['0xWRONG BLOCK NUMBER', true])
   const expectRes = checkError(t, INVALID_PARAMS, 'invalid argument 0: invalid block hash')
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call without second parameter`, (t) => {
+tape(`${method}: call without second parameter`, async (t) => {
   const { server } = baseSetup()
 
   const req = params(method, ['0x0'])
   const expectRes = checkError(t, INVALID_PARAMS, 'missing value for required argument 1')
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with invalid second parameter`, (t) => {
+tape(`${method}: call with invalid second parameter`, async (t) => {
   const { server } = baseSetup()
 
   const req = params(method, ['0x0', 'INVALID PARAMETER'])
   const expectRes = checkError(t, INVALID_PARAMS)
-  baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes)
 })

@@ -1,4 +1,4 @@
-import tape from 'tape-catch'
+import tape from 'tape'
 import td from 'testdouble'
 import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
@@ -9,13 +9,11 @@ tape('[FullEthereumService]', async (t) => {
     open() {}
     close() {}
   }
-
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
   td.replace('../../lib/net/peerpool', { PeerPool })
   const Chain = td.constructor([] as any)
   Chain.prototype.open = td.func<any>()
-  //  Chain.prototype.blocks.height = new BN(1)
   td.replace('../../lib/blockchain', { Chain })
   const EthProtocol = td.constructor([] as any)
   const LesProtocol = td.constructor([] as any)
@@ -101,7 +99,7 @@ tape('[FullEthereumService]', async (t) => {
     const config = new Config({ transports: [], loglevel: 'error' })
     const service = new FullEthereumService({ config })
     await service.handle({ name: 'NewBlock', data: [{}, new BN(1)] }, 'eth', undefined as any)
-    td.verify(service.synchronizer.handleNewBlock({} as any))
+    td.verify(service.synchronizer.handleNewBlock({} as any, undefined))
     t.end()
   })
 

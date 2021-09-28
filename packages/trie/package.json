@@ -21,7 +21,7 @@
   "scripts": {
     "benchmarks": "node -r ts-node/register --max-old-space-size=8024 benchmarks",
     "profiling": "tsc --target ES5 benchmarks/random.ts && 0x benchmarks/random.js",
-    "prepublishOnly": "npm run clean && npm run build && npm run test",
+    "prepublishOnly": "../../config/cli/prepublish.sh",
     "clean": "../../config/cli/clean-package.sh",
     "build": "npm run build:node && npm run build:browser",
     "build:node": "../../config/cli/ts-build.sh node",
@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@types/levelup": "^4.3.0",
-    "ethereumjs-util": "^7.1.0",
+    "ethereumjs-util": "^7.1.1",
     "level-mem": "^5.0.1",
     "level-ws": "^2.0.0",
     "readable-stream": "^3.6.0",
@@ -49,7 +49,7 @@
     "0x": "^4.9.1",
     "@types/benchmark": "^1.0.33",
     "@types/node": "^11.13.4",
-    "@types/tape": "^4.13.0",
+    "@types/tape": "^4.13.2",
     "benchmark": "^2.1.4",
     "eslint": "^6.8.0",
     "karma": "^6.3.2",
@@ -59,8 +59,8 @@
     "karma-typescript": "^5.5.1",
     "nyc": "^14.0.0",
     "prettier": "^2.0.5",
-    "tape": "^4.10.1",
-    "typedoc": "^0.21.5",
+    "tape": "^5.3.1",
+    "typedoc": "^0.22.4",
     "ts-node": "^10.2.1",
     "typescript": "^4.4.2"
   },

@@ -5,7 +5,7 @@ import { VmError, ERROR } from '../../exceptions'
 const assert = require('assert')
 
 // The following blake2 code has been taken from (license: Creative Commons CC0):
-// https://github.com/dcposch/blakejs/blob/410c640d0f08d3b26904c6d1ab3d81df3619d282/blake2s.js
+// https://github.com/dcposch/blakejs/blob/410c640d0f08d3b26904c6d1ab3d81df3619d282/blake2b.js
 // The modifications include:
 //  - Avoiding the use of context in F
 //  - F accepts number of rounds as parameter
@@ -41,11 +41,6 @@ function ADD64AC(v: Uint32Array, a: number, b0: number, b1: number) {
   }
   v[a] = o0
   v[a + 1] = o1
-}
-
-// Little-endian byte access
-function B2B_GET32(arr: Uint32Array, i: number) {
-  return arr[i] ^ (arr[i + 1] << 8) ^ (arr[i + 2] << 16) ^ (arr[i + 3] << 24)
 }
 
 // G Mixing function
@@ -138,13 +133,6 @@ export function F(h: Uint32Array, m: Uint32Array, t: Uint32Array, f: boolean, ro
     v[29] = ~v[29]
   }
 
-  // message words
-  const mw = new Uint32Array(32)
-  // get little-endian words
-  for (i = 0; i < 32; i++) {
-    mw[i] = B2B_GET32(m, 4 * i)
-  }
-
   // twelve rounds of mixing
   // uncomment the DebugPrint calls to log the computation
   // and match the RFC sample documentation
@@ -152,14 +140,14 @@ export function F(h: Uint32Array, m: Uint32Array, t: Uint32Array, f: boolean, ro
   for (i = 0; i < rounds; i++) {
     // util.debugPrint('   (i=' + (i < 10 ? ' ' : '') + i + ') v[16]', v, 64)
     const ri = (i % 10) * 16
-    B2B_G(v, mw, 0, 8, 16, 24, SIGMA82[ri + 0], SIGMA82[ri + 1])
-    B2B_G(v, mw, 2, 10, 18, 26, SIGMA82[ri + 2], SIGMA82[ri + 3])
-    B2B_G(v, mw, 4, 12, 20, 28, SIGMA82[ri + 4], SIGMA82[ri + 5])
-    B2B_G(v, mw, 6, 14, 22, 30, SIGMA82[ri + 6], SIGMA82[ri + 7])
-    B2B_G(v, mw, 0, 10, 20, 30, SIGMA82[ri + 8], SIGMA82[ri + 9])
-    B2B_G(v, mw, 2, 12, 22, 24, SIGMA82[ri + 10], SIGMA82[ri + 11])
-    B2B_G(v, mw, 4, 14, 16, 26, SIGMA82[ri + 12], SIGMA82[ri + 13])
-    B2B_G(v, mw, 6, 8, 18, 28, SIGMA82[ri + 14], SIGMA82[ri + 15])
+    B2B_G(v, m, 0, 8, 16, 24, SIGMA82[ri + 0], SIGMA82[ri + 1])
+    B2B_G(v, m, 2, 10, 18, 26, SIGMA82[ri + 2], SIGMA82[ri + 3])
+    B2B_G(v, m, 4, 12, 20, 28, SIGMA82[ri + 4], SIGMA82[ri + 5])
+    B2B_G(v, m, 6, 14, 22, 30, SIGMA82[ri + 6], SIGMA82[ri + 7])
+    B2B_G(v, m, 0, 10, 20, 30, SIGMA82[ri + 8], SIGMA82[ri + 9])
+    B2B_G(v, m, 2, 12, 22, 24, SIGMA82[ri + 10], SIGMA82[ri + 11])
+    B2B_G(v, m, 4, 14, 16, 26, SIGMA82[ri + 12], SIGMA82[ri + 13])
+    B2B_G(v, m, 6, 8, 18, 28, SIGMA82[ri + 14], SIGMA82[ri + 15])
   }
 
   for (i = 0; i < 16; i++) {

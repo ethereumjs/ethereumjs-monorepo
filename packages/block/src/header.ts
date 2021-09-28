@@ -1,4 +1,4 @@
-import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
+import Common, { Chain, ConsensusAlgorithm, ConsensusType } from '@ethereumjs/common'
 import {
   Address,
   BN,
@@ -210,17 +210,23 @@ export class BlockHeader {
     if (options.common) {
       this._common = options.common.copy()
     } else {
-      const chain = Chain.Mainnet // default
+      this._common = new Common({
+        chain: Chain.Mainnet, // default
+      })
       if (options.initWithGenesisHeader) {
-        this._common = new Common({ chain, hardfork: Hardfork.Chainstart })
-      } else {
-        // This initializes on the Common default hardfork
-        this._common = new Common({ chain })
+        this._common.setHardforkByBlockNumber(0)
       }
     }
 
-    if (options.hardforkByBlockNumber) {
-      this._common.setHardforkByBlockNumber(number.toNumber())
+    if (options.hardforkByBlockNumber !== undefined && options.hardforkByTD !== undefined) {
+      throw new Error(
+        `The hardforkByBlockNumber and hardforkByTD options can't be used in conjunction`
+      )
+    }
+
+    const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
+    if (hardforkByBlockNumber || options.hardforkByTD) {
+      this._common.setHardforkByBlockNumber(number, options.hardforkByTD)
     }
 
     if (this._common.isActivatedEIP(1559)) {

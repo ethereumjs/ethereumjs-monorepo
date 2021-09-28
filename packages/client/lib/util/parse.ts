@@ -217,10 +217,12 @@ async function parseGethParams(json: any) {
     berlin: 'berlinBlock',
     london: 'londonBlock',
   }
-  params.hardforks = hardforks.map((name) => ({
-    name: name,
-    block: name === 'chainstart' ? 0 : config[forkMap[name]] ?? null,
-  }))
+  params.hardforks = hardforks
+    .map((name) => ({
+      name: name,
+      block: name === 'chainstart' ? 0 : config[forkMap[name]] ?? null,
+    }))
+    .filter((fork) => fork.block !== null)
   return params
 }
 /**

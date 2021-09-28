@@ -4,7 +4,13 @@ import { BN, BNLike, toType, TypeOutput, intToBuffer } from 'ethereumjs-util'
 import { _getInitializedChains } from './chains'
 import { hardforks as HARDFORK_CHANGES } from './hardforks'
 import { EIPs } from './eips'
-import { Chain as IChain, GenesisState } from './types'
+import {
+  BootstrapNode,
+  Chain as IChain,
+  GenesisBlock,
+  GenesisState,
+  Hardfork as HardforkParams,
+} from './types'
 
 export enum CustomChain {
   /**
@@ -390,35 +396,81 @@ export default class Common extends EventEmitter {
   }
 
   /**
-   * Returns the hardfork based on the block number provided
+   * Returns the hardfork based on the block number or an optional
+   * total difficulty (Merge HF) provided.
+   *
+   * An optional TD takes precedence in case the corresponding HF block
+   * is set to `null` or otherwise needs to match (if not an error
+   * will be thrown).
+   *
    * @param blockNumber
+   * @param td
    * @returns The name of the HF
    */
-  getHardforkByBlockNumber(blockNumber: BNLike): string {
+  getHardforkByBlockNumber(blockNumber: BNLike, td?: BNLike): string {
     blockNumber = toType(blockNumber, TypeOutput.BN)
+    td = td ? toType(td, TypeOutput.BN) : undefined
 
     let hardfork = Hardfork.Chainstart
+    let minTdHF
+    let maxTdHF
+    let previousHF
     for (const hf of this.hardforks()) {
       // Skip comparison for not applied HFs
       if (hf.block === null) {
+        if (td && hf.td) {
+          if (td.gten(hf.td)) {
+            return hf.name
+          }
+        }
         continue
       }
-
       if (blockNumber.gte(new BN(hf.block))) {
-        hardfork = hf.name
+        hardfork = hf.name as Hardfork
+      }
+      if (td && hf.td) {
+        if (td.gten(hf.td)) {
+          minTdHF = hf.name
+        } else {
+          maxTdHF = previousHF
+        }
+      }
+      previousHF = hf.name
+    }
+    if (td) {
+      let msgAdd = `block number: ${blockNumber} (-> ${hardfork}), `
+      if (minTdHF) {
+        if (!this.hardforkGteHardfork(hardfork, minTdHF)) {
+          const msg = 'HF determined by block number is lower than the minimum total difficulty HF'
+          msgAdd += `total difficulty: ${td} (-> ${minTdHF})`
+          throw new Error(`${msg}: ${msgAdd}`)
+        }
+      }
+      if (maxTdHF) {
+        if (!this.hardforkGteHardfork(maxTdHF, hardfork)) {
+          const msg = 'Maximum HF determined by total difficulty is lower than the block number HF'
+          msgAdd += `total difficulty: ${td} (-> ${maxTdHF})`
+          throw new Error(`${msg}: ${msgAdd}`)
+        }
       }
     }
     return hardfork
   }
 
   /**
-   * Sets a new hardfork based on the block number provided
+   * Sets a new hardfork based on the block number or an optional
+   * total difficulty (Merge HF) provided.
+   *
+   * An optional TD takes precedence in case the corresponding HF block
+   * is set to `null` or otherwise needs to match (if not an error
+   * will be thrown).
+   *
    * @param blockNumber
+   * @param td
    * @returns The name of the HF set
    */
-  setHardforkByBlockNumber(blockNumber: BNLike): string {
-    blockNumber = toType(blockNumber, TypeOutput.BN)
-    const hardfork = this.getHardforkByBlockNumber(blockNumber)
+  setHardforkByBlockNumber(blockNumber: BNLike, td?: BNLike): string {
+    const hardfork = this.getHardforkByBlockNumber(blockNumber, td)
     this.setHardfork(hardfork)
     return hardfork
   }
@@ -708,8 +760,8 @@ export default class Common extends EventEmitter {
    * @param opts Hardfork options (onlyActive unused)
    * @return Array with hardfork arrays
    */
-  activeHardforks(blockNumber?: BNLike | null, opts: hardforkOptions = {}): Array<any> {
-    const activeHardforks = []
+  activeHardforks(blockNumber?: BNLike | null, opts: hardforkOptions = {}): HardforkParams[] {
+    const activeHardforks: HardforkParams[] = []
     const hfs = this.hardforks()
     for (const hf of hfs) {
       if (hf['block'] === null) continue
@@ -762,6 +814,20 @@ export default class Common extends EventEmitter {
   }
 
   /**
+   * Returns the hardfork change total difficulty (Merge HF) for hardfork provided or set
+   * @param hardfork Hardfork name, optional if HF set
+   * @returns Total difficulty or null if no set
+   */
+  hardforkTD(hardfork?: string | Hardfork): BN | null {
+    hardfork = this._chooseHardfork(hardfork, false)
+    const td = this._getHardfork(hardfork)['td']
+    if (td === undefined || td === null) {
+      return null
+    }
+    return new BN(td)
+  }
+
+  /**
    * True if block number provided is the hardfork (given or set) change block
    * @param blockNumber Number of the block to check
    * @param hardfork Hardfork name, optional if HF set
@@ -797,11 +863,11 @@ export default class Common extends EventEmitter {
       return null
     }
     // Next fork block number or null if none available
-    // Logic: if accumulator is still null and on the first occurence of
+    // Logic: if accumulator is still null and on the first occurrence of
     // a block greater than the current hfBlock set the accumulator,
     // pass on the accumulator as the final result from this time on
-    const nextHfBlock = this.hardforks().reduce((acc: BN, hf: any) => {
-      const block = new BN(hf.block)
+    const nextHfBlock = this.hardforks().reduce((acc: BN | null, hf: HardforkParams) => {
+      const block = new BN(hf.block!)
       return block.gt(hfBlock) && acc === null ? block : acc
     }, null)
     return nextHfBlock
@@ -817,6 +883,7 @@ export default class Common extends EventEmitter {
     blockNumber = toType(blockNumber, TypeOutput.BN)
     hardfork = this._chooseHardfork(hardfork, false)
     const nextHardforkBlock = this.nextHardforkBlockBN(hardfork)
+
     return nextHardforkBlock === null ? false : nextHardforkBlock.eq(blockNumber)
   }
 
@@ -841,7 +908,9 @@ export default class Common extends EventEmitter {
       }
 
       if (hf.name === hardfork) break
-      prevBlock = block
+      if (block !== null) {
+        prevBlock = block
+      }
     }
     const inputBuffer = Buffer.concat([genesis, hfBuffer])
 
@@ -884,8 +953,8 @@ export default class Common extends EventEmitter {
    * Returns the Genesis parameters of the current chain
    * @returns Genesis dictionary
    */
-  genesis(): any {
-    return (<any>this._chainParams)['genesis']
+  genesis(): GenesisBlock {
+    return this._chainParams['genesis']
   }
 
   /**
@@ -932,24 +1001,24 @@ export default class Common extends EventEmitter {
    * Returns the hardforks for current chain
    * @returns {Array} Array with arrays of hardforks
    */
-  hardforks(): any {
-    return (<any>this._chainParams)['hardforks']
+  hardforks(): HardforkParams[] {
+    return this._chainParams['hardforks']
   }
 
   /**
    * Returns bootstrap nodes for the current chain
    * @returns {Dictionary} Dict with bootstrap nodes
    */
-  bootstrapNodes(): any {
-    return (<any>this._chainParams)['bootstrapNodes']
+  bootstrapNodes(): BootstrapNode[] {
+    return this._chainParams['bootstrapNodes']
   }
 
   /**
    * Returns DNS networks for the current chain
    * @returns {String[]} Array of DNS ENR urls
    */
-  dnsNetworks(): any {
-    return (<any>this._chainParams)['dnsNetworks']
+  dnsNetworks(): string[] {
+    return this._chainParams['dnsNetworks']!
   }
 
   /**
@@ -982,7 +1051,7 @@ export default class Common extends EventEmitter {
    * @returns chain name (lower case)
    */
   chainName(): string {
-    return (<any>this._chainParams)['name']
+    return this._chainParams['name']
   }
 
   /**
@@ -1029,7 +1098,7 @@ export default class Common extends EventEmitter {
     if (value) {
       return value
     }
-    return (<any>this._chainParams)['consensus']['type']
+    return this._chainParams['consensus']!['type']
   }
 
   /**
@@ -1054,7 +1123,7 @@ export default class Common extends EventEmitter {
     if (value) {
       return value
     }
-    return (<any>this._chainParams)['consensus']['algorithm']
+    return this._chainParams['consensus']!['algorithm'] as ConsensusAlgorithm
   }
 
   /**
@@ -1071,7 +1140,7 @@ export default class Common extends EventEmitter {
    *
    * Note: This value can update along a hardfork.
    */
-  consensusConfig(): any {
+  consensusConfig(): { [key: string]: any } {
     const hardfork = this.hardfork()
 
     let value
@@ -1085,7 +1154,8 @@ export default class Common extends EventEmitter {
     if (value) {
       return value
     }
-    return (<any>this._chainParams)['consensus'][this.consensusAlgorithm()]
+    const consensusAlgorithm = this.consensusAlgorithm()
+    return this._chainParams['consensus']![consensusAlgorithm as ConsensusAlgorithm]
   }
 
   /**

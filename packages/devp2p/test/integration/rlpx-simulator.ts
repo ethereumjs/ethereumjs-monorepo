@@ -3,7 +3,7 @@ import test from 'tape'
 import * as util from './util'
 import { DISCONNECT_REASONS } from '../../src/rlpx/peer'
 
-test('RLPX: add working node', async (t) => {
+test('RLPX: add working node', (t) => {
   const rlpxs = util.initTwoPeerRLPXSetup()
 
   rlpxs[0].on('peer:added', function (peer: any) {
@@ -15,7 +15,7 @@ test('RLPX: add working node', async (t) => {
   })
 })
 
-test('RLPX: ban node with missing tcp port', async (t) => {
+test('RLPX: ban node with missing tcp port', (t) => {
   const rlpxs = util.initTwoPeerRLPXSetup()
   rlpxs[0].on('peer:added', function () {
     const peer = {
@@ -35,7 +35,7 @@ test('RLPX: ban node with missing tcp port', async (t) => {
   })
 })
 
-test('RLPX: remove node', async (t) => {
+test('RLPX: remove node', (t) => {
   const rlpxs = util.initTwoPeerRLPXSetup()
 
   async.series(
@@ -68,7 +68,7 @@ test('RLPX: remove node', async (t) => {
   )
 })
 
-test('RLPX: test peer queue / refill connections', async (t) => {
+test('RLPX: test peer queue / refill connections', (t) => {
   const rlpxs = util.getTestRLPXs(3, 1)
 
   const peer = { address: util.localhost, udpPort: util.basePort + 1, tcpPort: util.basePort + 1 }

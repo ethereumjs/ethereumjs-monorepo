@@ -71,7 +71,11 @@ export interface BlockchainOptions {
   common?: Common
 
   /**
-   * Set the HF to the fork determined by the head block and update on head updates
+   * Set the HF to the fork determined by the head block and update on head updates.
+   *
+   * Note: for HFs where the transition is also determined by a total difficulty
+   * threshold (merge HF) the calculated TD is additionally taken into account
+   * for HF determination.
    *
    * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
    */
@@ -305,6 +309,13 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
+   * Returns a deep copy of this {@link Blockchain} instance.
+   */
+  copy(): Blockchain {
+    return Object.create(Object.getPrototypeOf(this), Object.getOwnPropertyDescriptors(this))
+  }
+
+  /**
    * This method is called in the constructor and either sets up the DB or reads
    * values from the DB and makes these available to the consumers of
    * Blockchain.
@@ -324,7 +335,7 @@ export default class Blockchain implements BlockchainInterface {
 
     if (!genesisBlock) {
       const common = this._common.copy()
-      common.setHardfork(Hardfork.Chainstart)
+      common.setHardforkByBlockNumber(0)
       genesisBlock = Block.genesis({}, { common })
     }
 
@@ -399,7 +410,8 @@ export default class Blockchain implements BlockchainInterface {
     }
     if (this._hardforkByHeadBlockNumber) {
       const latestHeader = await this._getHeader(this._headHeaderHash)
-      this._common.setHardforkByBlockNumber(latestHeader.number)
+      const td = await this.getTotalDifficulty(this._headHeaderHash)
+      this._common.setHardforkByBlockNumber(latestHeader.number, td)
     }
   }
 
@@ -709,6 +721,9 @@ export default class Blockchain implements BlockchainInterface {
   public cliqueActiveSigners(): Address[] {
     this._requireClique()
     const signers = this._cliqueLatestSignerStates
+    if (signers.length === 0) {
+      return []
+    }
     return [...signers[signers.length - 1][1]]
   }
 
@@ -872,8 +887,7 @@ export default class Blockchain implements BlockchainInterface {
       const block =
         item instanceof BlockHeader
           ? new Block(item, undefined, undefined, {
-              common: this._common,
-              hardforkByBlockNumber: true,
+              common: item._common,
             })
           : item
       const isGenesis = block.isGenesis()
@@ -938,25 +952,23 @@ export default class Blockchain implements BlockchainInterface {
         }
       }
 
-      if (block._common.consensusType() !== ConsensusType.ProofOfStake) {
-        // set total difficulty in the current context scope
-        if (this._headHeaderHash) {
-          currentTd.header = await this.getTotalDifficulty(this._headHeaderHash)
-        }
-        if (this._headBlockHash) {
-          currentTd.block = await this.getTotalDifficulty(this._headBlockHash)
-        }
-
-        // calculate the total difficulty of the new block
-        let parentTd = new BN(0)
-        if (!block.isGenesis()) {
-          parentTd = await this.getTotalDifficulty(header.parentHash, blockNumber.subn(1))
-        }
-        td.iadd(parentTd)
-
-        // save total difficulty to the database
-        dbOps = dbOps.concat(DBSetTD(td, blockNumber, blockHash))
+      // set total difficulty in the current context scope
+      if (this._headHeaderHash) {
+        currentTd.header = await this.getTotalDifficulty(this._headHeaderHash)
       }
+      if (this._headBlockHash) {
+        currentTd.block = await this.getTotalDifficulty(this._headBlockHash)
+      }
+
+      // calculate the total difficulty of the new block
+      let parentTd = new BN(0)
+      if (!block.isGenesis()) {
+        parentTd = await this.getTotalDifficulty(header.parentHash, blockNumber.subn(1))
+      }
+      td.iadd(parentTd)
+
+      // save total difficulty to the database
+      dbOps = dbOps.concat(DBSetTD(td, blockNumber, blockHash))
 
       // save header/block to the database
       dbOps = dbOps.concat(DBSetBlockOrHeader(block))
@@ -977,7 +989,7 @@ export default class Blockchain implements BlockchainInterface {
           this._headBlockHash = blockHash
         }
         if (this._hardforkByHeadBlockNumber) {
-          this._common.setHardforkByBlockNumber(blockNumber)
+          this._common.setHardforkByBlockNumber(blockNumber, td)
         }
 
         // TODO SET THIS IN CONSTRUCTOR
@@ -1458,13 +1470,13 @@ export default class Blockchain implements BlockchainInterface {
       const blockHash = header.hash()
       const blockNumber = header.number
 
-      DBSaveLookups(blockHash, blockNumber).map((op) => {
-        ops.push(op)
-      })
-
       if (blockNumber.isZero()) {
         break
       }
+
+      DBSaveLookups(blockHash, blockNumber).map((op) => {
+        ops.push(op)
+      })
 
       // mark each key `_heads` which is currently set to the hash in the DB as
       // stale to overwrite this later.
@@ -1478,9 +1490,8 @@ export default class Blockchain implements BlockchainInterface {
         staleHeadBlock = true
       }
 
-      currentNumber.isubn(1)
       try {
-        header = await this._getHeader(header.parentHash, currentNumber)
+        header = await this._getHeader(header.parentHash, currentNumber.isubn(1))
       } catch (error: any) {
         staleHeads = []
         if (error.type !== 'NotFoundError') {
@@ -1563,5 +1574,19 @@ export default class Blockchain implements BlockchainInterface {
       }
       return false
     }
+  }
+
+  /**
+   * Helper to determine if a signer is in or out of turn for the next block.
+   * @param signer The signer address
+   */
+  async cliqueSignerInTurn(signer: Address): Promise<boolean> {
+    const signers = this.cliqueActiveSigners()
+    const signerIndex = signers.findIndex((address) => address.equals(signer))
+    if (signerIndex === -1) {
+      throw new Error('Signer not found')
+    }
+    const { number } = await this.getLatestHeader()
+    return number.addn(1).mod(new BN(signers.length)).eqn(signerIndex)
   }
 }

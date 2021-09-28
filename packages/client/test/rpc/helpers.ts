@@ -117,21 +117,24 @@ export function params(method: string, params: Array<any> = []) {
   return req
 }
 
-export function baseRequest(
+export async function baseRequest(
   t: tape.Test,
   server: HttpServer,
   req: Object,
   expect: number,
   expectRes: Function
 ) {
-  request(server)
-    .post('/')
-    .set('Content-Type', 'application/json')
-    .send(req)
-    .expect(expect)
-    .expect(expectRes)
-    .end((err?: Error) => {
-      closeRPC(server)
-      t.end(err)
-    })
+  try {
+    await request(server)
+      .post('/')
+      .set('Content-Type', 'application/json')
+      .send(req)
+      .expect(expect)
+      .expect(expectRes)
+    closeRPC(server)
+    t.end()
+  } catch (err) {
+    closeRPC(server)
+    t.end(err)
+  }
 }

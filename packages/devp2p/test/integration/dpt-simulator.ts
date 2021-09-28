@@ -7,7 +7,7 @@ async function delay(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-test('DPT: new working node', async (t) => {
+test('DPT: new working node', (t) => {
   const dpts = util.initTwoPeerDPTSetup()
 
   dpts[0].on('peer:new', function (peer: any) {
@@ -17,7 +17,7 @@ test('DPT: new working node', async (t) => {
   })
 })
 
-test('DPT: working node added', async (t) => {
+test('DPT: working node added', (t) => {
   const dpts = util.initTwoPeerDPTSetup()
 
   dpts[0].on('peer:added', function () {
@@ -27,7 +27,7 @@ test('DPT: working node added', async (t) => {
   })
 })
 
-test('DPT: remove node', async (t) => {
+test('DPT: remove node', (t) => {
   const dpts = util.initTwoPeerDPTSetup()
 
   async.series(
@@ -59,7 +59,7 @@ test('DPT: remove node', async (t) => {
   )
 })
 
-test('DPT: ban node', async (t) => {
+test('DPT: ban node', (t) => {
   const dpts = util.initTwoPeerDPTSetup()
 
   async.series(
@@ -92,7 +92,7 @@ test('DPT: ban node', async (t) => {
   )
 })
 
-test('DPT: k-bucket ping', async (t) => {
+test('DPT: k-bucket ping', (t) => {
   const dpts = util.initTwoPeerDPTSetup()
 
   async.series(
@@ -127,7 +127,6 @@ test('DPT: add non-available node', async (t) => {
   await dpts[0].addPeer(peer).catch((e: Error) => {
     t.equal(e.message, 'Timeout error: ping 127.0.0.1:30307', 'should throw Timeout error')
     util.destroyDPTs(dpts)
-    t.end()
   })
 })
 
@@ -159,11 +158,9 @@ test('DPT: simulate bootstrap', async (t) => {
   await delay(1000)
 
   util.destroyDPTs(dpts)
-
-  t.end()
 })
 
-test('DPT: simulate acquiring peers via DNS', async (t) => {
+test('DPT: simulate acquiring peers via DNS', async () => {
   const dpts = util.getTestDPTsWithDns(1)
 
   const mockDns = {
@@ -177,5 +174,4 @@ test('DPT: simulate acquiring peers via DNS', async (t) => {
   await delay(400)
 
   util.destroyDPTs(dpts)
-  t.end()
 })

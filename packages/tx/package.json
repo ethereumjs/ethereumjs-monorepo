@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/tx",
-  "version": "3.3.0",
+  "version": "3.3.1",
   "description": "A simple module for creating, manipulating and signing Ethereum transactions",
   "license": "MPL-2.0",
   "author": "mjbecze <mb@ethdev.com>",
@@ -20,7 +20,7 @@
     "build": "npm run build:node && npm run build:browser",
     "build:node": "../../config/cli/ts-build.sh node",
     "build:browser": "../../config/cli/ts-build.sh browser",
-    "prepublishOnly": "npm run clean && npm run build && npm run test",
+    "prepublishOnly": "../../config/cli/prepublish.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "../../config/cli/coverage.sh",
     "docs:build": "typedoc --options typedoc.js",
@@ -34,13 +34,13 @@
     "test:browser": "karma start karma.conf.js"
   },
   "dependencies": {
-    "@ethereumjs/common": "^2.4.0",
-    "ethereumjs-util": "^7.1.0"
+    "@ethereumjs/common": "^2.5.0",
+    "ethereumjs-util": "^7.1.1"
   },
   "devDependencies": {
     "@types/minimist": "^1.2.0",
     "@types/node": "^11.13.4",
-    "@types/tape": "^4.13.0",
+    "@types/tape": "^4.13.2",
     "eslint": "^6.8.0",
     "karma": "^6.3.2",
     "karma-chrome-launcher": "^3.1.0",
@@ -51,8 +51,8 @@
     "node-dir": "^0.1.16",
     "nyc": "^14.0.0",
     "prettier": "^2.0.5",
-    "tape": "^4.10.1",
-    "typedoc": "^0.21.5",
+    "tape": "^5.3.1",
+    "typedoc": "^0.22.4",
     "ts-node": "^10.2.1",
     "typescript": "^4.4.2"
   },

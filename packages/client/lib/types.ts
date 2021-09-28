@@ -53,7 +53,7 @@ export declare interface EventBus<T extends Event> {
   on(event: T, listener: (...args: EventParams[T]) => void): this
 }
 
-// eslint-disable-next-line no-redeclare, @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export class EventBus<T extends Event> extends EventEmitter {}
 export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
   EventBus<Event.SYNC_EXECUTION_VM_ERROR> &
@@ -90,27 +90,3 @@ export type DnsNetwork = string
  */
 export type Libp2pConnection = Connection
 export type Libp2pMuxedStream = MuxedStream
-
-/**
- * QHeap types.
- * @types/qheap does not exist, so we define a custom interface here.
- */
-type QHeapOptions = {
-  comparBefore(a: any, b: any): boolean
-  compar(a: any, b: any): number
-  freeSpace: number
-  size: number
-}
-export interface QHeap<T> {
-  // eslint-disable-next-line @typescript-eslint/no-misused-new
-  new (opts: QHeapOptions): QHeap<T>
-  insert(item: T): void
-  push(item: T): void
-  enqueue(item: T): void
-  remove(): T | undefined
-  shift(): T | undefined
-  dequeue(): T | undefined
-  peek(): T | undefined
-  length: number
-  gc(opts: { minLength: number; maxLength: number }): void
-}

@@ -157,7 +157,7 @@ export class VMExecution extends Execution {
             const blockNumber = block.header.number.toNumber()
             const hash = short(block.hash())
             this.config.logger.warn(
-              `Execution of block number=${blockNumber} hash=${hash} hardfork=${this.hardfork} failed`
+              `Execution of block number=${blockNumber} hash=${hash} hardfork=${this.hardfork} failed:\n${error}`
             )
             if (this.config.debugCode) {
               await debugCodeReplayBlock(this, block)

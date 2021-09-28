@@ -1,12 +1,10 @@
 import { Readable, Writable } from 'stream'
-const Heap = require('qheap')
-
+import Heap from 'qheap'
 import { PeerPool } from '../../net/peerpool'
-import { Config } from '../../config'
-
-import { Event, QHeap } from '../../types'
-import { Job } from './types'
 import { Peer } from '../../net/peer'
+import { Config } from '../../config'
+import { Event } from '../../types'
+import { Job } from './types'
 
 export interface FetcherOptions {
   /* Common chain config*/
@@ -48,8 +46,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   protected interval: number
   protected banTime: number
   protected maxQueue: number
-  protected in: QHeap<Job<JobTask, JobResult, StorageItem>>
-  protected out: QHeap<Job<JobTask, JobResult, StorageItem>>
+  protected in: Heap<Job<JobTask, JobResult, StorageItem>>
+  protected out: Heap<Job<JobTask, JobResult, StorageItem>>
   protected total: number
   protected processed: number // number of processed tasks, awaiting the write job
   protected finished: number // number of tasks which are both processed and also finished writing

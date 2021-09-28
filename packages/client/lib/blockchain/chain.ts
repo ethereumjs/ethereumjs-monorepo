@@ -150,10 +150,11 @@ export class Chain {
    */
   get genesis(): GenesisBlockParams {
     const genesis = this.config.chainCommon.genesis()
+    const genesisParams: GenesisBlockParams = {}
     Object.entries(genesis).forEach(([k, v]) => {
-      genesis[k] = toBuffer(v as string)
+      genesisParams[k] = toBuffer(v as string)
     })
-    return genesis
+    return genesisParams
   }
 
   /**

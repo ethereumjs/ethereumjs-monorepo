@@ -362,7 +362,7 @@ const expectedTestsFull: any = {
     Petersburg: 10397,
     Istanbul: 10715,
     MuirGlacier: 10715,
-    Berlin: 13156,
+    Berlin: 13065,
     ByzantiumToConstantinopleFixAt5: 0,
     EIP158ToByzantiumAt5: 0,
     FrontierToHomesteadAt5: 0,

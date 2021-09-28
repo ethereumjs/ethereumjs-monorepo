@@ -20,7 +20,6 @@ export interface ECDSASignatureBuffer {
 /**
  * Returns the ECDSA signature of a message hash.
  */
-/* eslint-disable no-redeclare */
 export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: number): ECDSASignature
 export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: BNLike): ECDSASignatureBuffer
 export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: any): any {
@@ -40,7 +39,7 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: any): any {
     return { r, s, v }
   }
 
-  const chainIdBN = toType(chainId, TypeOutput.BN)
+  const chainIdBN = toType(chainId as BNLike, TypeOutput.BN)
   const v = chainIdBN.muln(2).addn(35).addn(recovery).toArrayLike(Buffer)
   return { r, s, v }
 }

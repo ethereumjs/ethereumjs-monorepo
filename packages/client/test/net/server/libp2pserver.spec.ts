@@ -1,9 +1,10 @@
 import { EventEmitter } from 'events'
-import tape from 'tape-catch'
+import tape from 'tape'
 import td from 'testdouble'
 import multiaddr from 'multiaddr'
 import { Config } from '../../../lib/config'
 import { Event } from '../../../lib/types'
+import { wait } from '../../integration/util'
 
 tape('[Libp2pServer]', async (t) => {
   const Libp2pPeer = td.replace('../../../lib/net/peer/libp2ppeer')
@@ -136,9 +137,8 @@ tape('[Libp2pServer]', async (t) => {
     t.notOk(server.addProtocols([]), 'cannot add protocols after start')
     server.ban('peer0', 10)
     t.ok(server.isBanned('peer0'), 'banned')
-    setTimeout(() => {
-      t.notOk(server.isBanned('peer0'), 'ban expired')
-    }, 20)
+    await wait(100)
+    t.notOk(server.isBanned('peer0'), 'ban expired')
     const { node } = server as any
     t.equals(node.constructor.name, 'Libp2pNode', 'libp2p node created')
     node.emit('peer:discovery', peerId)
