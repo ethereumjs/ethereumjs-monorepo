@@ -11,13 +11,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 Heydiho, glad you are here! 😀
 
 After over a year of continued development the EthereumJS team is proud to announce that
-our client is finally as stable, feature-complete (or - let's call it: feature-consistent)
+our client is finally stable, feature-complete (or - let's call it: feature-consistent)
 and useful in many regards that we have decided to do a first official release! 🌼
 
-There have been done such an extensive amount of work pieces during that time that it 
+There has been such an extensive amount of work done that it
 would be neither useful nor enlightening to list all associated PRs.
 
-So here are just a few milestones, where the ones till November 2020 still happened in
+So here are just a few milestones, where the ones before November 2020 happened in
 the - now archived - standalone `ethereumjs-client` monorepo before we moved the client
 to our monorepo 
 [ethereumjs-monorepo](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client):
@@ -39,13 +39,13 @@ to our monorepo
 
 And here we are. 🙂
 
-We joined various ephemeral testnets along the way - like `Yolov3` (still remember? 😃) or `Calaveras` - and helped find latest consensus bugs before they reach `mainnet` in preparation for the latest forks like `london` in conjunction with the other clients.
+We joined various ephemeral testnets along the way - like `Yolov3` (still remember? 😃) and `Calaveras` - and helped find consensus bugs before they reached `mainnet` in preparation for the latest forks like `london` in conjunction with the other clients.
 
 Now we are ready for the next step and hand this out to you - the community! 🥳
 
-We are eager to see what you will do with this client and how you will use this software, which for the first time in Ethereum's history brings the full Ethereum core protocol stack - complemented by the excellent [Lodestar](https://github.com/ChainSafe/lodestar) client ChainSafe is developing on the Eth2 side - into the hand of Node.js developers.
+We are eager to see what you will do with this client and how you will use this software, which for the first time in Ethereum's history brings the full Ethereum core protocol stack - complemented by the excellent [Lodestar](https://github.com/ChainSafe/lodestar) client ChainSafe is developing on the Eth2 side - into the hands of Node.js developers.
 
-We have also updated our [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client) on the client directly before the release which you should take as a comprise reference on the currently implemented client capabilities, some usages instructions complemented by various examples and developer notes.
+We have also updated our [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client/README.md) on the client directly before the release which you should take as a concise reference on the currently implemented client capabilities, some usage instructions complemented by various examples, and developer notes.
 
 **So thanks to the whole EthereumJS team - including some former team members - for the relentless work on this, and some special thanks to Vinay Pulim, who wrote the initial version of this software and therefore provided the ground for all this subsequent work!**
 

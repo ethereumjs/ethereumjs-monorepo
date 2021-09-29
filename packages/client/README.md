@@ -33,7 +33,7 @@ We invite you to explore and would be delighted if you give us feedback on your 
 npm install -g @ethereumjs/client
 ```
 
-For development purposes the client can be also used like this:
+For development purposes the client can also be set up like this:
 
 1. Clone the monorepo with `git clone https://github.com/ethereumjs/ethereumjs-monorepo.git`
 2. Set things up and install dependencies (see [monorepo docs](../../config/MONOREPO.md))
