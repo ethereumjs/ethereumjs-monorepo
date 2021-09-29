@@ -213,9 +213,7 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
     await vm
       .runBlock({ block })
       .then(() => t.fail('should have returned error'))
-      .catch((e) =>
-        t.ok(e.code === ErrorCode.INVALID_BLOCK_HEADER /*  && e.param === 'gasLimit' */)
-      )
+      .catch((e) => t.ok(e.code === ErrorCode.INVALID_BLOCK_HEADER && e.param === 'gasLimit'))
   })
 
   t.test('should fail when block validation fails', async (t) => {
