@@ -1,13 +1,13 @@
-enum ErrorCode {
+export enum ErrorCode {
   INVALID_BLOCK_HEADER = 'INVALID_BLOCK_HEADER',
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
 }
 
-export interface GeneralError<T extends ErrorCode = ErrorCode> extends Error {
+interface GeneralError<T extends ErrorCode = ErrorCode> extends Error {
   code?: T
 }
 
-export interface InvalidBlockHeaderError extends GeneralError<ErrorCode.INVALID_BLOCK_HEADER> {
+interface InvalidBlockHeaderError extends GeneralError<ErrorCode.INVALID_BLOCK_HEADER> {
   param?:
     | 'uncleHash'
     | 'coinbase'
@@ -25,18 +25,18 @@ export interface InvalidBlockHeaderError extends GeneralError<ErrorCode.INVALID_
     | 'nonce'
     | 'baseFeePerGas'
 }
-export interface UnknownError extends GeneralError<ErrorCode.UNKNOWN_ERROR> {
+interface UnknownError extends GeneralError<ErrorCode.UNKNOWN_ERROR> {
   [key: string]: any
 }
 
 // Convert an ErrorCode into its Typed Error
-export type CodedGeneralError<T> = T extends ErrorCode.INVALID_BLOCK_HEADER
+type CodedGeneralError<T> = T extends ErrorCode.INVALID_BLOCK_HEADER
   ? InvalidBlockHeaderError
   : T extends ErrorCode.UNKNOWN_ERROR
   ? UnknownError
   : never
 
-export class ErrorLogger {
+class ErrorLogger {
   static errors = ErrorCode
 
   makeError<T>(codedError: CodedGeneralError<T>): Error {
@@ -44,11 +44,11 @@ export class ErrorLogger {
     const { code } = codedError
     const messageDetails: Array<string> = []
 
-    if (isError(codedError, ErrorCode.INVALID_BLOCK_HEADER)) {
+    if (isInvalidBlockHeaderError(codedError)) {
       messageDetails.push('Invalid param' + '=' + codedError.param)
     }
 
-    if (isError(codedError, ErrorCode.UNKNOWN_ERROR)) {
+    if (isUnknownError(codedError)) {
       Object.keys(codedError)
         .filter((key) => key !== 'message' && key !== 'code')
         .forEach((key) => {
@@ -79,6 +79,7 @@ export class ErrorLogger {
     throw error
   }
 
+  // TODO: Make name (and maybe message?) optional fields when throwing an error
   throwError<T extends ErrorCode>(error: CodedGeneralError<T>): never {
     if (!error.code) {
       error.code = ErrorCode.UNKNOWN_ERROR
@@ -100,6 +101,10 @@ export function isError<K extends ErrorCode, T extends CodedGeneralError<K>>(
   return false
 }
 
-export function isInvalidBlockHeader(error: Error): error is InvalidBlockHeaderError {
+export function isInvalidBlockHeaderError(error: Error): error is InvalidBlockHeaderError {
   return isError(error, ErrorCode.INVALID_BLOCK_HEADER)
+}
+
+export function isUnknownError(error: Error): error is UnknownError {
+  return isError(error, ErrorCode.UNKNOWN_ERROR)
 }

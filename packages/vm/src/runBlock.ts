@@ -18,6 +18,7 @@ import * as DAOConfig from './config/dao_fork_accounts_config.json'
 // deprecated and may be removed soon, please
 // update your imports to the new types file.
 import { PreByzantiumTxReceipt, PostByzantiumTxReceipt, EIP2930Receipt } from './types'
+import { ErrorCode, errorLog } from './errors'
 export { PreByzantiumTxReceipt, PostByzantiumTxReceipt, EIP2930Receipt }
 
 const debug = createDebugLogger('vm:block')
@@ -230,7 +231,12 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
           )} expected=${block.header.stateRoot.toString('hex')}`
         )
       }
-      throw new Error('invalid block stateRoot')
+      errorLog.throwError({
+        code: ErrorCode.INVALID_BLOCK_HEADER,
+        param: 'stateRoot',
+        name: 'invalid block stateRoot',
+        message: 'invalid block stateRoot',
+      })
     }
   }
 
