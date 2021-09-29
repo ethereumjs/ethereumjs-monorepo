@@ -205,7 +205,9 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
           )} expected=${block.header.receiptTrie.toString('hex')}`
         )
       }
-      throw new Error('invalid receiptTrie')
+      errorLog.throwError('invalid receiptTrie', ErrorCode.INVALID_BLOCK_HEADER, {
+        param: 'receiptTrie',
+      })
     }
     if (!result.bloom.bitvector.equals(block.header.bloom)) {
       if (this.DEBUG) {
@@ -215,13 +217,17 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
           )} expected=${block.header.bloom.toString('hex')}`
         )
       }
-      throw new Error('invalid bloom')
+      errorLog.throwError('invalid bloom', ErrorCode.INVALID_BLOCK_HEADER, {
+        param: 'bloom',
+      })
     }
     if (!result.gasUsed.eq(block.header.gasUsed)) {
       if (this.DEBUG) {
         debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
       }
-      throw new Error('invalid gasUsed')
+      errorLog.throwError('invalid gasUsed', ErrorCode.INVALID_BLOCK_HEADER, {
+        param: 'gasUsed',
+      })
     }
     if (!stateRoot.equals(block.header.stateRoot)) {
       if (this.DEBUG) {
@@ -281,7 +287,13 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   // Validate block
   if (!opts.skipBlockValidation) {
     if (block.header.gasLimit.gte(new BN('8000000000000000', 16))) {
-      throw new Error('Invalid block with gas limit greater than (2^63 - 1)')
+      errorLog.throwError(
+        'Invalid block with gas limit greater than (2^63 - 1)',
+        ErrorCode.INVALID_BLOCK_HEADER,
+        {
+          param: 'gasLimit',
+        }
+      )
     } else {
       if (this.DEBUG) {
         debug(`Validate block`)
