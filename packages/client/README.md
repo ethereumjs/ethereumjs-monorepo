@@ -39,8 +39,6 @@ For development purposes the client can also be set up like this:
 2. Set things up and install dependencies (see [monorepo docs](../../config/MONOREPO.md))
 3. Run the client with `npm run client:start` from the `client` root directory (e.g. `packages/client` if working on a local copy of the monorepo)
 
-Furthermore see the [Technical Guidelines](#technical-guidelines) to dive directly into some more in-depth development info.
-
 ## USAGE
 
 ### Introduction
