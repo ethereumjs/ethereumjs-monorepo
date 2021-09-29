@@ -12,9 +12,7 @@ export const intToHex = function (i: number) {
   if (!Number.isSafeInteger(i) || i < 0) {
     throw new Error(`Received an invalid integer type: ${i}`)
   }
-  var hex = i.toString(16); // eslint-disable-line
-
-  return `0x${hex}`
+  return `0x${i.toString(16)}`
 }
 
 /**
