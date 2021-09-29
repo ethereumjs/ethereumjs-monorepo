@@ -88,6 +88,39 @@ tape(
       t.end()
     })
 
+    t.test('cannot input decimal values', (st) => {
+      const values = ['chainId', 'nonce', 'gasPrice', 'gasLimit', 'value', 'v', 'r', 's']
+      const cases = [
+        10.1,
+        '10.1',
+        '0xaa.1',
+        -10.1,
+        -1,
+        '-10.1',
+        '-0xaa',
+        Infinity,
+        -Infinity,
+        NaN,
+        {},
+        true,
+        false,
+        () => {},
+        Number.MAX_SAFE_INTEGER + 1,
+      ]
+      for (const value of values) {
+        const txData: any = {}
+        for (const testCase of cases) {
+          if (!(value === 'chainId' && (isNaN(<number>testCase) || testCase === false))) {
+            txData[value] = testCase
+            st.throws(() => {
+              AccessListEIP2930Transaction.fromTxData(txData)
+            })
+          }
+        }
+      }
+      st.end()
+    })
+
     t.test('Initialization / Getter -> fromSerializedTx()', function (t) {
       for (const txType of txTypes) {
         try {

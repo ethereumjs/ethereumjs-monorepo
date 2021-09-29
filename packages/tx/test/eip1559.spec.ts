@@ -15,6 +15,49 @@ const validSlot = Buffer.from('01'.repeat(32), 'hex')
 const chainId = new BN(4)
 
 tape('[FeeMarketEIP1559Transaction]', function (t) {
+  t.test('cannot input decimal values', (st) => {
+    const values = [
+      'maxFeePerGas',
+      'maxPriorityFeePerGas',
+      'chainId',
+      'nonce',
+      'gasLimit',
+      'value',
+      'v',
+      'r',
+      's',
+    ]
+    const cases = [
+      10.1,
+      '10.1',
+      '0xaa.1',
+      -10.1,
+      -1,
+      '-10.1',
+      '-0xaa',
+      Infinity,
+      -Infinity,
+      NaN,
+      {},
+      true,
+      false,
+      () => {},
+      Number.MAX_SAFE_INTEGER + 1,
+    ]
+    for (const value of values) {
+      const txData: any = {}
+      for (const testCase of cases) {
+        if (!(value === 'chainId' && (isNaN(<number>testCase) || testCase === false))) {
+          txData[value] = testCase
+          st.throws(() => {
+            FeeMarketEIP1559Transaction.fromTxData(txData)
+          })
+        }
+      }
+    }
+    st.end()
+  })
+
   t.test('getUpfrontCost()', function (st) {
     const tx = FeeMarketEIP1559Transaction.fromTxData(
       {

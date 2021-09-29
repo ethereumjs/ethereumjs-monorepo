@@ -17,6 +17,8 @@ import {
   addHexPrefix,
   toBuffer,
   baToJSON,
+  intToBuffer,
+  intToHex,
 } from '../src'
 
 tape('zeros function', function (t) {
@@ -284,4 +286,44 @@ tape('baToJSON', function (t) {
     st.deepEqual(baToJSON(Buffer.from([0])), '0x00')
     st.end()
   })
+})
+
+tape('intToBuffer', function (st) {
+  st.throws(() => intToBuffer(<any>'test'), 'throws on string')
+  st.throws(() => intToBuffer(<any>Infinity), 'throws on +Infinity')
+  st.throws(() => intToBuffer(<any>-Infinity), 'throws on -Infinity')
+  st.throws(() => intToBuffer(<any>NaN), 'throws on NaN')
+  st.throws(() => intToBuffer(<any>undefined), 'throws on undefined')
+  st.throws(() => intToBuffer(<any>null), 'throws on null')
+  st.throws(() => intToBuffer(<any>-1), 'throws on negative numbers')
+  st.throws(() => intToBuffer(<any>1.05), 'throws on decimal numbers')
+  st.throws(() => intToBuffer(<any>{}), 'throws on objects')
+  st.throws(() => intToBuffer(<any>true), 'throws on true')
+  st.throws(() => intToBuffer(<any>false), 'throws on false')
+  st.throws(() => intToBuffer(<any>[]), 'throws on arrays')
+  st.throws(() => intToBuffer(<any>(() => {})), 'throws on arrays')
+  st.throws(() => intToBuffer(Number.MAX_SAFE_INTEGER + 1), 'throws on unsafe integers')
+  st.ok(intToBuffer(0).equals(Buffer.from('00', 'hex')), 'correctly converts 0 to a buffer')
+  st.ok(intToBuffer(1).equals(Buffer.from('01', 'hex')), 'correctly converts 1 to a buffer')
+  st.end()
+})
+
+tape('intToHex', function (st) {
+  st.throws(() => intToHex(<any>'test'), 'throws on string')
+  st.throws(() => intToHex(<any>Infinity), 'throws on +Infinity')
+  st.throws(() => intToHex(<any>-Infinity), 'throws on -Infinity')
+  st.throws(() => intToHex(<any>NaN), 'throws on NaN')
+  st.throws(() => intToHex(<any>undefined), 'throws on undefined')
+  st.throws(() => intToHex(<any>null), 'throws on null')
+  st.throws(() => intToHex(<any>-1), 'throws on negative numbers')
+  st.throws(() => intToHex(<any>1.05), 'throws on decimal numbers')
+  st.throws(() => intToHex(<any>{}), 'throws on objects')
+  st.throws(() => intToHex(<any>true), 'throws on true')
+  st.throws(() => intToHex(<any>false), 'throws on false')
+  st.throws(() => intToHex(<any>[]), 'throws on arrays')
+  st.throws(() => intToHex(<any>(() => {})), 'throws on arrays')
+  st.throws(() => intToHex(Number.MAX_SAFE_INTEGER + 1), 'throws on unsafe integers')
+  st.ok(intToHex(0) == '0x0', 'correctly converts 0 to a hex string')
+  st.ok(intToHex(1) == '0x1', 'correctly converts 1 to a hex string')
+  st.end()
 })

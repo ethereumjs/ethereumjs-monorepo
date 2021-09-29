@@ -15,16 +15,6 @@ declare module 'ethjs-util' {
   export function padToEven(value: string): string
 
   /**
-   * @description Converts a `Number` into a hex `String`
-   */
-  export function intToHex(i: number): string
-
-  /**
-   * @description Converts an `Number` to a `Buffer`
-   */
-  export function intToBuffer(i: number): Buffer
-
-  /**
    * @description Get the binary size of a string
    */
   export function getBinarySize(str: string): number
