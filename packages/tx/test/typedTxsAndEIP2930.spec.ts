@@ -90,22 +90,31 @@ tape(
 
     t.test('cannot input decimal values', (st) => {
       const values = ['chainId', 'nonce', 'gasPrice', 'gasLimit', 'value', 'v', 'r', 's']
+      const cases = [
+        10.1,
+        '10.1',
+        '0xaa.1',
+        -10.1,
+        '-10.1',
+        '-0xaa',
+        Infinity,
+        -Infinity,
+        NaN,
+        {},
+        true,
+        false,
+        () => {},
+      ]
       for (const value of values) {
         const txData: any = {}
-        const strTxData: any = {}
-        const hexStrTxData: any = {}
-        txData[value] = 10.1
-        strTxData[value] = '10.1'
-        hexStrTxData[value] = '0xaa.1'
-        st.throws(() => {
-          AccessListEIP2930Transaction.fromTxData(txData, { common })
-        }, 'throws when setting decimal values on the ' + value + ' field')
-        st.throws(() => {
-          AccessListEIP2930Transaction.fromTxData(strTxData, { common })
-        }, 'throws when setting decimal string values on the ' + value + ' field')
-        st.throws(() => {
-          AccessListEIP2930Transaction.fromTxData(hexStrTxData, { common })
-        }, 'throws when setting decimal string values on the ' + value + ' field')
+        for (const testCase of cases) {
+          if (!(value === 'chainId' && (isNaN(<number>testCase) || testCase === false))) {
+            txData[value] = testCase
+            st.throws(() => {
+              AccessListEIP2930Transaction.fromTxData(txData)
+            })
+          }
+        }
       }
       st.end()
     })

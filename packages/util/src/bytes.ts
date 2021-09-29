@@ -22,7 +22,6 @@ export const intToHex = function (i: number) {
  */
 export const intToBuffer = function (i: number) {
   const hex = intToHex(i)
-
   return Buffer.from(padToEven(hex.slice(2)), 'hex')
 }
 
