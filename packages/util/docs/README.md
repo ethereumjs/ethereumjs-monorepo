@@ -165,7 +165,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/bytes.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L108)
+[packages/util/src/bytes.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L130)
 
 ___
 
@@ -302,7 +302,7 @@ Adds "0x" to a given `String` if it does not already start with "0x".
 
 #### Defined in
 
-[packages/util/src/bytes.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L205)
+[packages/util/src/bytes.ts:227](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L227)
 
 ___
 
@@ -329,7 +329,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L38)
+[packages/util/src/@types/ethjs-util/index.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L28)
 
 ___
 
@@ -353,7 +353,7 @@ Converts a `Buffer` or `Array` to JSON.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L218)
+[packages/util/src/bytes.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L240)
 
 ___
 
@@ -444,7 +444,7 @@ Converts a `Buffer` into a `0x`-prefixed hex `String`.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L181)
+[packages/util/src/bytes.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L203)
 
 ___
 
@@ -468,7 +468,7 @@ Converts a `Buffer` to a `Number`.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L173)
+[packages/util/src/bytes.ts:195](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L195)
 
 ___
 
@@ -586,7 +586,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L58)
+[packages/util/src/@types/ethjs-util/index.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L48)
 
 ___
 
@@ -631,7 +631,7 @@ Interprets a `Buffer` as a signed integer and returns a `BN`. Assumes 256-bit nu
 
 #### Defined in
 
-[packages/util/src/bytes.ts:190](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L190)
+[packages/util/src/bytes.ts:212](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L212)
 
 ___
 
@@ -653,7 +653,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L53)
+[packages/util/src/@types/ethjs-util/index.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L43)
 
 ___
 
@@ -722,7 +722,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L30)
+[packages/util/src/@types/ethjs-util/index.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L20)
 
 ___
 
@@ -746,7 +746,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L63)
+[packages/util/src/@types/ethjs-util/index.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L53)
 
 ___
 
@@ -799,9 +799,9 @@ ___
 
 ### intToBuffer
 
-▸ **intToBuffer**(`i`): `Buffer`
+▸ `Const` **intToBuffer**(`i`): `Buffer`
 
-**`description`** Converts an `Number` to a `Buffer`
+Converts an `Number` to a `Buffer`
 
 #### Parameters
 
@@ -815,15 +815,15 @@ ___
 
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L25)
+[packages/util/src/bytes.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L23)
 
 ___
 
 ### intToHex
 
-▸ **intToHex**(`i`): `string`
+▸ `Const` **intToHex**(`i`): `string`
 
-**`description`** Converts a `Number` into a hex `String`
+Converts a `Number` into a hex `String`
 
 #### Parameters
 
@@ -837,7 +837,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L20)
+[packages/util/src/bytes.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L11)
 
 ___
 
@@ -882,7 +882,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L68)
+[packages/util/src/@types/ethjs-util/index.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L58)
 
 ___
 
@@ -1365,7 +1365,7 @@ Or it truncates the beginning if it exceeds.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L46)
+[packages/util/src/bytes.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L68)
 
 ___
 
@@ -1391,7 +1391,7 @@ it truncates the end if it exceeds.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L58)
+[packages/util/src/bytes.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L80)
 
 ___
 
@@ -1501,7 +1501,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L48)
+[packages/util/src/@types/ethjs-util/index.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L38)
 
 ___
 
@@ -1525,7 +1525,7 @@ with a `toArray()` or `toBuffer()` method.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L126)
+[packages/util/src/bytes.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L148)
 
 ___
 
@@ -1709,7 +1709,7 @@ Converts a `BN` to an unsigned integer and returns it as a `Buffer`. Assumes 256
 
 #### Defined in
 
-[packages/util/src/bytes.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L198)
+[packages/util/src/bytes.ts:220](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L220)
 
 ___
 
@@ -1731,7 +1731,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L43)
+[packages/util/src/@types/ethjs-util/index.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L33)
 
 ___
 
@@ -1755,7 +1755,7 @@ Trims leading zeros from an `Array` (of numbers).
 
 #### Defined in
 
-[packages/util/src/bytes.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L92)
+[packages/util/src/bytes.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L114)
 
 ___
 
@@ -1779,7 +1779,7 @@ Trims leading zeros from a `Buffer`.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L82)
+[packages/util/src/bytes.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L104)
 
 ___
 
@@ -1803,7 +1803,7 @@ Trims leading zeros from a hex-prefixed `String`.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L102)
+[packages/util/src/bytes.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L124)
 
 ___
 
@@ -1841,4 +1841,4 @@ Returns a buffer filled with 0s.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L10)
+[packages/util/src/bytes.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L32)

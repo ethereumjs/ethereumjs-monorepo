@@ -59,13 +59,11 @@ assert.equal(new BN('dead', 16).add(new BN('101010', 2)), 57047)
 The following methods are available provided by [ethjs-util](https://github.com/ethjs/ethjs-util):
 
 - arrayContainsArray
-- toBuffer
 - getBinarySize
 - stripHexPrefix
 - isHexPrefixed
 - isHexString
 - padToEven
-- intToHex
 - fromAscii
 - fromUtf8
 - toUtf8
@@ -75,7 +73,7 @@ The following methods are available provided by [ethjs-util](https://github.com/
 They can be imported by name:
 
 ```js
-import { intToHex, stripHexPrefix } from 'ethereumjs-util'
+import { stripHexPrefix } from 'ethereumjs-util'
 ```
 
 ### Re-Exports
