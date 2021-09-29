@@ -19,7 +19,7 @@ would be neither useful nor enlightening to list all associated PRs.
 
 So here are just a few milestones, where the ones before November 2020 happened in
 the - now archived - standalone `ethereumjs-client` monorepo before we moved the client
-to our monorepo 
+to our monorepo
 [ethereumjs-monorepo](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client):
 
 - Full transition to `TypeScript`, PR [#144](https://github.com/ethereumjs/ethereumjs-client/pull/144) and subsequent PRs

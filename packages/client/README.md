@@ -7,11 +7,11 @@
 [![Discord][discord-badge]][discord-link]
 
 | Ethereum Execution (Eth 1.0) Client built in TypeScript/JavaScript. |
-| --- |
+| ------------------------------------------------------------------- |
 
 # INTRODUCTION
 
-The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](https://github.com/ethereum/go-ethereum) or [Nethermind](https://github.com/NethermindEth/nethermind)) written in `TypeScript`/`JavaScript`, the non-Smart-Contract language Ethereum dApp developers are most familiar with. It is targeted to be a client for research and development and not meant to be used in production on `mainnet` for the foreseeable future (out of resource and security considerations). 
+The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](https://github.com/ethereum/go-ethereum) or [Nethermind](https://github.com/NethermindEth/nethermind)) written in `TypeScript`/`JavaScript`, the non-Smart-Contract language Ethereum dApp developers are most familiar with. It is targeted to be a client for research and development and not meant to be used in production on `mainnet` for the foreseeable future (out of resource and security considerations).
 
 Here are some use cases:
 
@@ -147,6 +147,7 @@ ethereumjs --dev --rpc --unlock=0xd8066d5822138e7c76d1565deb249f5f7ae370fa
 ```
 
 Note: If the `--dev` command is used in conjunction with `--unlock` to use a predefined account, the blockchain's state will be preserved between consecutive runs. If you try to use a different predefined account, you may see errors related to incompatible genesis blocks. Simply run the client with the `--dev` flag by itself and use the new prefunded account provided by the client in further rounds of execution.
+
 ## API
 
 [API Reference](./docs/README.md)
@@ -271,7 +272,7 @@ For some guidance on how to setup local testnetworks see the examples on [local 
 
 #### Using Debug Loggers
 
-The client's logging verbosity level can be set with `--loglevel`.  Available levels are
+The client's logging verbosity level can be set with `--loglevel`. Available levels are
 `error`, `warn`, `info`, `debug`.
 
 ```shell
