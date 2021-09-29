@@ -18,6 +18,7 @@ tape('[Transaction]', function (t) {
       '10.1',
       '0xaa.1',
       -10.1,
+      -1,
       '-10.1',
       '-0xaa',
       Infinity,
