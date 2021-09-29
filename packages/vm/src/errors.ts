@@ -3,7 +3,7 @@ export enum ErrorCode {
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
 }
 
-interface GeneralError<T extends ErrorCode = ErrorCode> extends Error {
+interface GeneralError<T extends ErrorCode = ErrorCode> extends Partial<Error> {
   code?: T
 }
 
@@ -79,20 +79,23 @@ class ErrorLogger {
     throw error
   }
 
-  // TODO: Make name (and maybe message?) optional fields when throwing an error
-  throwError<T extends ErrorCode>(error: CodedGeneralError<T>): never {
-    if (!error.code) {
-      error.code = ErrorCode.UNKNOWN_ERROR
-    }
-
-    throw this.makeError(error)
+  throwError<T extends ErrorCode>(
+    message?: string,
+    code?: ErrorCode,
+    params?: Omit<CodedGeneralError<T>, 'message' | 'code'>
+  ): never {
+    throw this.makeError({
+      message: message ?? 'Unknown error',
+      code: code ?? ErrorCode.UNKNOWN_ERROR,
+      ...params,
+    } as CodedGeneralError<T>)
   }
 }
 
 export const errorLog = new ErrorLogger()
 
-export function isError<K extends ErrorCode, T extends CodedGeneralError<K>>(
-  error: Error,
+function isError<K extends ErrorCode, T extends CodedGeneralError<K>>(
+  error: GeneralError,
   code: K
 ): error is T {
   if (error && (<GeneralError>error).code === code) {
@@ -101,10 +104,10 @@ export function isError<K extends ErrorCode, T extends CodedGeneralError<K>>(
   return false
 }
 
-export function isInvalidBlockHeaderError(error: Error): error is InvalidBlockHeaderError {
+function isInvalidBlockHeaderError(error: GeneralError): error is InvalidBlockHeaderError {
   return isError(error, ErrorCode.INVALID_BLOCK_HEADER)
 }
 
-export function isUnknownError(error: Error): error is UnknownError {
+function isUnknownError(error: GeneralError): error is UnknownError {
   return isError(error, ErrorCode.UNKNOWN_ERROR)
 }

@@ -231,11 +231,8 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
           )} expected=${block.header.stateRoot.toString('hex')}`
         )
       }
-      errorLog.throwError({
-        code: ErrorCode.INVALID_BLOCK_HEADER,
+      errorLog.throwError('invalid block stateRoot', ErrorCode.INVALID_BLOCK_HEADER, {
         param: 'stateRoot',
-        name: 'invalid block stateRoot',
-        message: 'invalid block stateRoot',
       })
     }
   }
