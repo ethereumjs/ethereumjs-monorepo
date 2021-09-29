@@ -104,6 +104,7 @@ tape(
         true,
         false,
         () => {},
+        Number.MAX_SAFE_INTEGER + 1,
       ]
       for (const value of values) {
         const txData: any = {}
