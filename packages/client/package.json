@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/client",
-  "version": "0.0.6",
+  "version": "0.1.0",
   "description": "EthereumJS client implementation",
   "license": "MPL-2.0",
   "author": "Vinay Pulim (v@pulim.com)",
