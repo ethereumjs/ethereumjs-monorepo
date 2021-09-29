@@ -41,11 +41,10 @@ class ErrorLogger {
 
   makeError<T>(codedError: CodedGeneralError<T>): Error {
     let { message } = codedError
-    const { code } = codedError
     const messageDetails: Array<string> = []
 
     if (isInvalidBlockHeaderError(codedError)) {
-      messageDetails.push('Invalid param' + '=' + codedError.param)
+      messageDetails.push(`Invalid param = ${codedError.param}`)
     }
 
     if (isUnknownError(codedError)) {
