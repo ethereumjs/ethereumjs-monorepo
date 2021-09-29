@@ -48,7 +48,6 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
       const txData: any = {}
       for (const testCase of cases) {
         if (!(value === 'chainId' && (isNaN(<number>testCase) || testCase === false))) {
-          console.log(Number.isSafeInteger(Number.MAX_SAFE_INTEGER + 1))
           txData[value] = testCase
           st.throws(() => {
             FeeMarketEIP1559Transaction.fromTxData(txData)
