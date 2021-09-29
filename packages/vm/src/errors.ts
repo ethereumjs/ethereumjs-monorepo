@@ -68,8 +68,6 @@ export class ErrorLogger {
     }
 
     const error = new Error(message) as CodedGeneralError<T>
-    error.code = code
-    error['name'] = 'hi'
 
     Object.keys(codedError)
       .filter((key) => key !== 'message' && key !== 'code')
