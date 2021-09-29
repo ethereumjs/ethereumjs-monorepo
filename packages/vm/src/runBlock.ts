@@ -205,7 +205,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
           )} expected=${block.header.receiptTrie.toString('hex')}`
         )
       }
-      errorLog.throwError('invalid receiptTrie', ErrorCode.INVALID_BLOCK_HEADER, {
+      errorLog.throwError(ErrorCode.INVALID_BLOCK_HEADER, {
         param: 'receiptTrie',
       })
     }
@@ -217,7 +217,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
           )} expected=${block.header.bloom.toString('hex')}`
         )
       }
-      errorLog.throwError('invalid bloom', ErrorCode.INVALID_BLOCK_HEADER, {
+      errorLog.throwError(ErrorCode.INVALID_BLOCK_HEADER, {
         param: 'bloom',
       })
     }
@@ -225,7 +225,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
       if (this.DEBUG) {
         debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
       }
-      errorLog.throwError('invalid gasUsed', ErrorCode.INVALID_BLOCK_HEADER, {
+      errorLog.throwError(ErrorCode.INVALID_BLOCK_HEADER, {
         param: 'gasUsed',
       })
     }
@@ -237,7 +237,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
           )} expected=${block.header.stateRoot.toString('hex')}`
         )
       }
-      errorLog.throwError('invalid block stateRoot', ErrorCode.INVALID_BLOCK_HEADER, {
+      errorLog.throwError(ErrorCode.INVALID_BLOCK_HEADER, {
         param: 'stateRoot',
       })
     }
@@ -287,13 +287,10 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   // Validate block
   if (!opts.skipBlockValidation) {
     if (block.header.gasLimit.gte(new BN('8000000000000000', 16))) {
-      errorLog.throwError(
-        'Invalid block with gas limit greater than (2^63 - 1)',
-        ErrorCode.INVALID_BLOCK_HEADER,
-        {
-          param: 'gasLimit',
-        }
-      )
+      errorLog.throwError(ErrorCode.INVALID_BLOCK_HEADER, {
+        message: 'Invalid block with gas limit greater than (2^63 - 1)',
+        param: 'gasLimit',
+      })
     } else {
       if (this.DEBUG) {
         debug(`Validate block`)

@@ -16,6 +16,7 @@ import { setupVM, createAccount } from './utils'
 import testnet from './testdata/testnet.json'
 import VM from '../../src/index'
 import { setBalance } from './utils'
+import { ErrorCode } from '../../src/errors'
 
 const testData = require('./testdata/blockchain.json')
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
@@ -212,7 +213,9 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
     await vm
       .runBlock({ block })
       .then(() => t.fail('should have returned error'))
-      .catch((e) => t.ok(e.message.includes('Invalid block')))
+      .catch((e) =>
+        t.ok(e.code === ErrorCode.INVALID_BLOCK_HEADER /*  && e.param === 'gasLimit' */)
+      )
   })
 
   t.test('should fail when block validation fails', async (t) => {

@@ -30,7 +30,7 @@ interface UnknownError extends GeneralError<ErrorCode.UNKNOWN_ERROR> {
 }
 
 // Convert an ErrorCode into its Typed Error
-type CodedGeneralError<T> = T extends ErrorCode.INVALID_BLOCK_HEADER
+export type CodedGeneralError<T> = T extends ErrorCode.INVALID_BLOCK_HEADER
   ? InvalidBlockHeaderError
   : T extends ErrorCode.UNKNOWN_ERROR
   ? UnknownError
@@ -67,6 +67,7 @@ class ErrorLogger {
     }
 
     const error = new Error(message) as CodedGeneralError<T>
+    error.code = codedError.code
 
     Object.keys(codedError)
       .filter((key) => key !== 'message' && key !== 'code')
@@ -79,12 +80,10 @@ class ErrorLogger {
   }
 
   throwError<T extends ErrorCode>(
-    message?: string,
     code?: ErrorCode,
-    params?: Omit<CodedGeneralError<T>, 'message' | 'code'>
+    params?: Omit<CodedGeneralError<T>, 'code'>
   ): never {
     throw this.makeError({
-      message: message ?? 'Unknown error',
       code: code ?? ErrorCode.UNKNOWN_ERROR,
       ...params,
     } as CodedGeneralError<T>)
