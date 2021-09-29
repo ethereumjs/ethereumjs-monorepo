@@ -303,8 +303,8 @@ tape('intToBuffer', function (st) {
   st.throws(() => intToBuffer(<any>[]), 'throws on arrays')
   st.throws(() => intToBuffer(<any>(() => {})), 'throws on arrays')
   st.throws(() => intToBuffer(Number.MAX_SAFE_INTEGER + 1), 'throws on unsafe integers')
-  st.ok(intToBuffer(0).equals(Buffer.from('00', 'hex')), 'correctly convers 0 to a buffer')
-  st.ok(intToBuffer(1).equals(Buffer.from('01', 'hex')), 'correctly convers 1 to a buffer')
+  st.ok(intToBuffer(0).equals(Buffer.from('00', 'hex')), 'correctly converts 0 to a buffer')
+  st.ok(intToBuffer(1).equals(Buffer.from('01', 'hex')), 'correctly converts 1 to a buffer')
   st.end()
 })
 
