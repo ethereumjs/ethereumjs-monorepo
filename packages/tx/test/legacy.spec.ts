@@ -11,6 +11,18 @@ const txFixturesEip155: VitaliksTestsDataEntry[] = require('./json/ttTransaction
 tape('[Transaction]', function (t) {
   const transactions: Transaction[] = []
 
+  t.test('cannot input decimal values', (st) => {
+    const values = ['gasPrice', 'gasLimit', 'nonce', 'value', 'v', 'r', 's']
+    for (const value of values) {
+      const txData: any = {}
+      txData[value] = 10.1
+      st.throws(() => {
+        Transaction.fromTxData(txData)
+      }, 'throws when setting decimal values on the ' + value + ' field')
+    }
+    st.end()
+  })
+
   t.test('Initialization', function (st) {
     const nonEIP2930Common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     st.ok(

@@ -1,7 +1,32 @@
 import BN from 'bn.js'
-import { intToBuffer, stripHexPrefix, padToEven, isHexString, isHexPrefixed } from 'ethjs-util'
+import { stripHexPrefix, padToEven, isHexString, isHexPrefixed } from 'ethjs-util'
 import { PrefixedHexString, TransformableToArray, TransformableToBuffer } from './types'
 import { assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
+
+/**
+ * Converts a `Number` into a hex `String`
+ * @param {Number} i
+ * @return {String}
+ */
+export const intToHex = function (i: number) {
+  if (typeof i !== 'number' || isNaN(i) || i === Infinity || i < 0 || i % 1 !== 0) {
+    throw new Error(`Received an invalid integer type: ${i}`)
+  }
+  var hex = i.toString(16); // eslint-disable-line
+
+  return `0x${hex}`
+}
+
+/**
+ * Converts an `Number` to a `Buffer`
+ * @param {Number} i
+ * @return {Buffer}
+ */
+export const intToBuffer = function (i: number) {
+  const hex = intToHex(i)
+
+  return Buffer.from(padToEven(hex.slice(2)), 'hex')
+}
 
 /**
  * Returns a buffer filled with 0s.

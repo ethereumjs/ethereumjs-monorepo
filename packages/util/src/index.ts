@@ -47,4 +47,16 @@ export * from './types'
 /**
  * Export ethjs-util methods
  */
-export * from 'ethjs-util'
+export {
+  isHexPrefixed,
+  stripHexPrefix,
+  padToEven,
+  getBinarySize,
+  arrayContainsArray,
+  toUtf8,
+  toAscii,
+  fromUtf8,
+  fromAscii,
+  getKeys,
+  isHexString,
+} from 'ethjs-util'

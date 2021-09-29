@@ -88,6 +88,18 @@ tape(
       t.end()
     })
 
+    t.test('cannot input decimal values', (st) => {
+      const values = ['chainId', 'nonce', 'gasPrice', 'gasLimit', 'value', 'v', 'r', 's']
+      for (const value of values) {
+        const txData: any = {}
+        txData[value] = 10.1
+        st.throws(() => {
+          AccessListEIP2930Transaction.fromTxData(txData, { common })
+        }, 'throws when setting decimal values on the ' + value + ' field')
+      }
+      st.end()
+    })
+
     t.test('Initialization / Getter -> fromSerializedTx()', function (t) {
       for (const txType of txTypes) {
         try {
