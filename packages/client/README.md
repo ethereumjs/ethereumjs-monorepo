@@ -9,8 +9,6 @@
 | Ethereum Execution (Eth 1.0) Client built in TypeScript/JavaScript. |
 | --- |
 
-Note: there is no current release on npm and the releases from the [standalone repository](https://github.com/ethereumjs/ethereumjs-client) are outdated. Use the latest `master` to run the client. There will be an up-to-date client release soon (Fall 2021) under a scoped `@ethereumjs/client` naming scheme. 
-
 # INTRODUCTION
 
 The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](https://github.com/ethereum/go-ethereum) or [Nethermind](https://github.com/NethermindEth/nethermind)) written in `TypeScript`/`JavaScript`, the non-Smart-Contract language Ethereum dApp developers are most familiar with. It is targeted to be a client for research and development and not meant to be used in production on `mainnet` for the foreseeable future (out of resource and security considerations). 
@@ -32,10 +30,10 @@ We invite you to explore and would be delighted if you give us feedback on your 
 ## INSTALL
 
 ```shell
-npm install -g @ethereumjs/client // Release during Fall 2021
+npm install -g @ethereumjs/client
 ```
 
-As long as there is no up-to-date client release on npm and for development purposes the client can be used like this:
+For development purposes the client can be also used like this:
 
 1. Clone the monorepo with `git clone https://github.com/ethereumjs/ethereumjs-monorepo.git`
 2. Set things up and install dependencies (see [monorepo docs](../../config/MONOREPO.md))
