@@ -50,7 +50,6 @@ ethereumjs-util
 ### Functions
 
 - [addHexPrefix](README.md#addhexprefix)
-- [arrayContainsArray](README.md#arraycontainsarray)
 - [baToJSON](README.md#batojson)
 - [bnToHex](README.md#bntohex)
 - [bnToRlp](README.md#bntorlp)
@@ -60,20 +59,14 @@ ethereumjs-util
 - [defineProperties](README.md#defineproperties)
 - [ecrecover](README.md#ecrecover)
 - [ecsign](README.md#ecsign)
-- [fromAscii](README.md#fromascii)
 - [fromRpcSig](README.md#fromrpcsig)
 - [fromSigned](README.md#fromsigned)
-- [fromUtf8](README.md#fromutf8)
 - [generateAddress](README.md#generateaddress)
 - [generateAddress2](README.md#generateaddress2)
-- [getBinarySize](README.md#getbinarysize)
-- [getKeys](README.md#getkeys)
 - [hashPersonalMessage](README.md#hashpersonalmessage)
 - [importPublic](README.md#importpublic)
 - [intToBuffer](README.md#inttobuffer)
 - [intToHex](README.md#inttohex)
-- [isHexPrefixed](README.md#ishexprefixed)
-- [isHexString](README.md#ishexstring)
 - [isValidAddress](README.md#isvalidaddress)
 - [isValidChecksumAddress](README.md#isvalidchecksumaddress)
 - [isValidPrivate](README.md#isvalidprivate)
@@ -85,7 +78,6 @@ ethereumjs-util
 - [keccakFromArray](README.md#keccakfromarray)
 - [keccakFromHexString](README.md#keccakfromhexstring)
 - [keccakFromString](README.md#keccakfromstring)
-- [padToEven](README.md#padtoeven)
 - [privateToAddress](README.md#privatetoaddress)
 - [privateToPublic](README.md#privatetopublic)
 - [pubToAddress](README.md#pubtoaddress)
@@ -99,15 +91,12 @@ ethereumjs-util
 - [sha256](README.md#sha256)
 - [sha256FromArray](README.md#sha256fromarray)
 - [sha256FromString](README.md#sha256fromstring)
-- [stripHexPrefix](README.md#striphexprefix)
-- [toAscii](README.md#toascii)
 - [toBuffer](README.md#tobuffer)
 - [toChecksumAddress](README.md#tochecksumaddress)
 - [toCompactSig](README.md#tocompactsig)
 - [toRpcSig](README.md#torpcsig)
 - [toType](README.md#totype)
 - [toUnsigned](README.md#tounsigned)
-- [toUtf8](README.md#toutf8)
 - [unpadArray](README.md#unpadarray)
 - [unpadBuffer](README.md#unpadbuffer)
 - [unpadHexString](README.md#unpadhexstring)
@@ -165,7 +154,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/bytes.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L108)
+[packages/util/src/bytes.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L130)
 
 ___
 
@@ -302,34 +291,7 @@ Adds "0x" to a given `String` if it does not already start with "0x".
 
 #### Defined in
 
-[packages/util/src/bytes.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L205)
-
-___
-
-### arrayContainsArray
-
-▸ **arrayContainsArray**(`superset`, `subset`, `some?`): `boolean`
-
-**`description`** Returns TRUE if the first specified array contains all elements
-             from the second one. FALSE otherwise. If `some` is true, will
-             return true if first specified array contain some elements of
-             the second.
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `superset` | `any`[] |
-| `subset` | `any`[] |
-| `some?` | `boolean` |
-
-#### Returns
-
-`boolean`
-
-#### Defined in
-
-[packages/util/src/@types/ethjs-util/index.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L38)
+[packages/util/src/bytes.ts:227](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L227)
 
 ___
 
@@ -353,7 +315,7 @@ Converts a `Buffer` or `Array` to JSON.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L218)
+[packages/util/src/bytes.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L240)
 
 ___
 
@@ -444,7 +406,7 @@ Converts a `Buffer` into a `0x`-prefixed hex `String`.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L181)
+[packages/util/src/bytes.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L203)
 
 ___
 
@@ -468,7 +430,7 @@ Converts a `Buffer` to a `Number`.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L173)
+[packages/util/src/bytes.ts:195](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L195)
 
 ___
 
@@ -568,28 +530,6 @@ Returns the ECDSA signature of a message hash.
 
 ___
 
-### fromAscii
-
-▸ **fromAscii**(`stringValue`): `string`
-
-**`description`** Should be called to get hex representation (prefixed by 0x) of ascii string
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `stringValue` | `string` |
-
-#### Returns
-
-`string`
-
-#### Defined in
-
-[packages/util/src/@types/ethjs-util/index.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L58)
-
-___
-
 ### fromRpcSig
 
 ▸ `Const` **fromRpcSig**(`sig`): [`ECDSASignature`](interfaces/ECDSASignature.md)
@@ -631,29 +571,7 @@ Interprets a `Buffer` as a signed integer and returns a `BN`. Assumes 256-bit nu
 
 #### Defined in
 
-[packages/util/src/bytes.ts:190](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L190)
-
-___
-
-### fromUtf8
-
-▸ **fromUtf8**(`stringValue`): `string`
-
-**`description`** Should be called to get hex representation (prefixed by 0x) of utf8 string
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `stringValue` | `string` |
-
-#### Returns
-
-`string`
-
-#### Defined in
-
-[packages/util/src/@types/ethjs-util/index.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L53)
+[packages/util/src/bytes.ts:212](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L212)
 
 ___
 
@@ -701,52 +619,6 @@ Generates an address for a contract created using CREATE2.
 #### Defined in
 
 [packages/util/src/account.ts:213](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L213)
-
-___
-
-### getBinarySize
-
-▸ **getBinarySize**(`str`): `number`
-
-**`description`** Get the binary size of a string
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `str` | `string` |
-
-#### Returns
-
-`number`
-
-#### Defined in
-
-[packages/util/src/@types/ethjs-util/index.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L30)
-
-___
-
-### getKeys
-
-▸ **getKeys**(`params`, `key`, `allowEmpty?`): `any`[]
-
-**`description`** getKeys([{a: 1, b: 2}, {a: 3, b: 4}], 'a') => [1, 3]
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `params` | `any`[] |
-| `key` | `string` |
-| `allowEmpty?` | `boolean` |
-
-#### Returns
-
-`any`[]
-
-#### Defined in
-
-[packages/util/src/@types/ethjs-util/index.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L63)
 
 ___
 
@@ -799,9 +671,9 @@ ___
 
 ### intToBuffer
 
-▸ **intToBuffer**(`i`): `Buffer`
+▸ `Const` **intToBuffer**(`i`): `Buffer`
 
-**`description`** Converts an `Number` to a `Buffer`
+Converts an `Number` to a `Buffer`
 
 #### Parameters
 
@@ -815,15 +687,15 @@ ___
 
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L25)
+[packages/util/src/bytes.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L23)
 
 ___
 
 ### intToHex
 
-▸ **intToHex**(`i`): `string`
+▸ `Const` **intToHex**(`i`): `string`
 
-**`description`** Converts a `Number` into a hex `String`
+Converts a `Number` into a hex `String`
 
 #### Parameters
 
@@ -837,52 +709,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L20)
-
-___
-
-### isHexPrefixed
-
-▸ **isHexPrefixed**(`str`): `boolean`
-
-**`description`** Returns a `Boolean` on whether or not the a `String` starts with '0x'
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `str` | `string` |
-
-#### Returns
-
-`boolean`
-
-#### Defined in
-
-[packages/util/src/@types/ethjs-util/index.ts:5](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L5)
-
-___
-
-### isHexString
-
-▸ **isHexString**(`value`, `length?`): `boolean`
-
-**`description`** check if string is hex string of specific length
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `value` | `string` |
-| `length?` | `number` |
-
-#### Returns
-
-`boolean`
-
-#### Defined in
-
-[packages/util/src/@types/ethjs-util/index.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L68)
+[packages/util/src/bytes.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L11)
 
 ___
 
@@ -1141,28 +968,6 @@ Creates Keccak hash of a utf-8 string input
 
 ___
 
-### padToEven
-
-▸ **padToEven**(`value`): `string`
-
-**`description`** Pads a `String` to have an even length
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `value` | `string` |
-
-#### Returns
-
-`string`
-
-#### Defined in
-
-[packages/util/src/@types/ethjs-util/index.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L15)
-
-___
-
 ### privateToAddress
 
 ▸ `Const` **privateToAddress**(`privateKey`): `Buffer`
@@ -1365,7 +1170,7 @@ Or it truncates the beginning if it exceeds.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L46)
+[packages/util/src/bytes.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L68)
 
 ___
 
@@ -1391,7 +1196,7 @@ it truncates the end if it exceeds.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L58)
+[packages/util/src/bytes.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L80)
 
 ___
 
@@ -1461,50 +1266,6 @@ Creates SHA256 hash of a string input.
 
 ___
 
-### stripHexPrefix
-
-▸ **stripHexPrefix**(`str`): `string`
-
-**`description`** Removes '0x' from a given `String` if present
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `str` | `string` |
-
-#### Returns
-
-`string`
-
-#### Defined in
-
-[packages/util/src/@types/ethjs-util/index.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L10)
-
-___
-
-### toAscii
-
-▸ **toAscii**(`hex`): `string`
-
-**`description`** Should be called to get ascii from it's hex representation
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `hex` | `string` |
-
-#### Returns
-
-`string`
-
-#### Defined in
-
-[packages/util/src/@types/ethjs-util/index.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L48)
-
-___
-
 ### toBuffer
 
 ▸ `Const` **toBuffer**(`v`): `Buffer`
@@ -1525,7 +1286,7 @@ with a `toArray()` or `toBuffer()` method.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L126)
+[packages/util/src/bytes.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L148)
 
 ___
 
@@ -1709,29 +1470,7 @@ Converts a `BN` to an unsigned integer and returns it as a `Buffer`. Assumes 256
 
 #### Defined in
 
-[packages/util/src/bytes.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L198)
-
-___
-
-### toUtf8
-
-▸ **toUtf8**(`hex`): `string`
-
-**`description`** Should be called to get utf8 from it's hex representation
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `hex` | `string` |
-
-#### Returns
-
-`string`
-
-#### Defined in
-
-[packages/util/src/@types/ethjs-util/index.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L43)
+[packages/util/src/bytes.ts:220](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L220)
 
 ___
 
@@ -1755,7 +1494,7 @@ Trims leading zeros from an `Array` (of numbers).
 
 #### Defined in
 
-[packages/util/src/bytes.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L92)
+[packages/util/src/bytes.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L114)
 
 ___
 
@@ -1779,7 +1518,7 @@ Trims leading zeros from a `Buffer`.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L82)
+[packages/util/src/bytes.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L104)
 
 ___
 
@@ -1803,7 +1542,7 @@ Trims leading zeros from a hex-prefixed `String`.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L102)
+[packages/util/src/bytes.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L124)
 
 ___
 
@@ -1841,4 +1580,4 @@ Returns a buffer filled with 0s.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L10)
+[packages/util/src/bytes.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L32)
