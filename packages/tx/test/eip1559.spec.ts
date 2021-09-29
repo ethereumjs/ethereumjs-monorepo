@@ -29,10 +29,20 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
     ]
     for (const value of values) {
       const txData: any = {}
+      const strTxData: any = {}
+      const hexStrTxData: any = {}
       txData[value] = 10.1
+      strTxData[value] = '10.1'
+      hexStrTxData[value] = '0xaa.1'
       st.throws(() => {
         FeeMarketEIP1559Transaction.fromTxData(txData, { common })
       }, 'throws when setting decimal values on the ' + value + ' field')
+      st.throws(() => {
+        FeeMarketEIP1559Transaction.fromTxData(strTxData, { common })
+      }, 'throws when setting decimal string values on the ' + value + ' field')
+      st.throws(() => {
+        FeeMarketEIP1559Transaction.fromTxData(hexStrTxData, { common })
+      }, 'throws when setting decimal string values on the ' + value + ' field')
     }
     st.end()
   })

@@ -9,7 +9,7 @@ import { assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
  * @return {String}
  */
 export const intToHex = function (i: number) {
-  if (typeof i !== 'number' || isNaN(i) || i === Infinity || i < 0 || i % 1 !== 0) {
+  if (!Number.isSafeInteger(i) || i < 0) {
     throw new Error(`Received an invalid integer type: ${i}`)
   }
   var hex = i.toString(16); // eslint-disable-line

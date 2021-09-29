@@ -15,10 +15,20 @@ tape('[Transaction]', function (t) {
     const values = ['gasPrice', 'gasLimit', 'nonce', 'value', 'v', 'r', 's']
     for (const value of values) {
       const txData: any = {}
+      const strTxData: any = {}
+      const hexStrTxData: any = {}
       txData[value] = 10.1
+      strTxData[value] = '10.1'
+      hexStrTxData[value] = '0xaa.1'
       st.throws(() => {
         Transaction.fromTxData(txData)
       }, 'throws when setting decimal values on the ' + value + ' field')
+      st.throws(() => {
+        Transaction.fromTxData(strTxData)
+      }, 'throws when setting decimal string values on the ' + value + ' field')
+      st.throws(() => {
+        Transaction.fromTxData(hexStrTxData)
+      }, 'throws when setting decimal string values on the ' + value + ' field')
     }
     st.end()
   })
