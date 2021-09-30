@@ -143,7 +143,13 @@ export class Miner {
     }
     this.running = true
     this.config.events.on(Event.CHAIN_UPDATED, this.chainUpdated.bind(this))
-    this.config.logger.info(`Miner started. Assembling next block in ${this.period / 1000}s`)
+    this.config.logger.info(
+      `Miner started. ${
+        this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority
+          ? `Assembling next block in ${this.period / 1000}s`
+          : `Finding next PoW solution 🔨`
+      }`
+    )
     void this.queueNextAssembly() // void operator satisfies eslint rule for no-floating-promises
     return true
   }
@@ -298,7 +304,11 @@ export class Miner {
     // Build block, sealing it
     const block = await blockBuilder.build(this.nextSolution)
     this.config.logger.info(
-      `Miner: Sealed block with ${block.transactions.length} txs${
+      `Miner: ${
+        this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority
+          ? `Sealed`
+          : `Mined`
+      } block with ${block.transactions.length} txs${
         this.nextSolution ? ` (difficulty: ${block.header.difficulty})` : ''
       }`
     )
