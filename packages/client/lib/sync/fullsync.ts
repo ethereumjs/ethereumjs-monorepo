@@ -70,13 +70,12 @@ export class FullSynchronizer extends Synchronizer {
     this.txPool.open()
     await this.pool.open()
     this.execution.syncing = true
-    const number = this.chain.blocks.height.toNumber()
-    const td = this.chain.blocks.td.toString(10)
+    const { height: number, td } = this.chain.blocks
     const hash = this.chain.blocks.latest!.hash()
     this.startingBlock = number
-    this.config.chainCommon.setHardforkByBlockNumber(number)
+    this.config.chainCommon.setHardforkByBlockNumber(number, td)
     this.config.logger.info(
-      `Latest local block: number=${number} td=${td} hash=${short(
+      `Latest local block: number=${number.toNumber()} td=${td.toNumber()} hash=${short(
         hash
       )} hardfork=${this.config.chainCommon.hardfork()}`
     )

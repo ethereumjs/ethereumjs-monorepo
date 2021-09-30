@@ -3,7 +3,7 @@ import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { params, baseRequest, baseSetup } from '../helpers'
 import { checkError } from '../util'
 
-const method = 'consensus_setHead'
+const method = 'engine_executePayload'
 
 tape(`${method}: call with invalid block hash without 0x`, async (t) => {
   const { server } = baseSetup()

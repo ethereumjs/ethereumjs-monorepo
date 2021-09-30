@@ -30,11 +30,12 @@ export class LightSynchronizer extends Synchronizer {
     await super.open()
     await this.chain.open()
     await this.pool.open()
-    const number = this.chain.headers.height.toNumber()
-    const td = this.chain.headers.td.toString(10)
+    const { height: number, td } = this.chain.headers
     const hash = this.chain.blocks.latest!.hash()
     this.startingBlock = number
-    this.config.logger.info(`Latest local header: number=${number} td=${td} hash=${short(hash)}`)
+    this.config.logger.info(
+      `Latest local header: number=${number.toNumber()} td=${td.toNumber()} hash=${short(hash)}`
+    )
   }
 
   /**

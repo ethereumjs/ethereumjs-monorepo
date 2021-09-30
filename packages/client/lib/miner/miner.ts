@@ -1,9 +1,11 @@
+import Ethash, { Solution, Miner as EthashMiner } from '@ethereumjs/ethash'
 import { BlockHeader } from '@ethereumjs/block'
 import { BN } from 'ethereumjs-util'
-import { ConsensusType } from '@ethereumjs/common'
+import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Event } from '../types'
 import { Config } from '../config'
 import { FullSynchronizer } from '../sync'
+const level = require('level-mem')
 
 export interface MinerOptions {
   /* Config */
@@ -22,12 +24,15 @@ export interface MinerOptions {
  * @memberof module:miner
  */
 export class Miner {
-  private DEFAULT_PERIOD = 15
+  private DEFAULT_PERIOD = 10
   private config: Config
   private synchronizer: FullSynchronizer
   private assembling: boolean
   private period: number
   public running: boolean
+  private ethash: Ethash | undefined
+  private ethashMiner: EthashMiner | undefined
+  private nextSolution: Solution | undefined
 
   /* global NodeJS */
   private _nextAssemblyTimeoutId: NodeJS.Timeout | undefined
@@ -42,6 +47,10 @@ export class Miner {
     this.running = false
     this.assembling = false
     this.period = (this.config.chainCommon.consensusConfig().period ?? this.DEFAULT_PERIOD) * 1000 // defined in ms for setTimeout use
+    if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfWork) {
+      const cacheDB = level()
+      this.ethash = new Ethash(cacheDB)
+    }
   }
 
   /**
@@ -58,25 +67,62 @@ export class Miner {
     if (this._nextAssemblyTimeoutId) {
       clearTimeout(this._nextAssemblyTimeoutId)
     }
+    if (!this.running) {
+      return
+    }
+    if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+      this.config.logger.info('Miner: reached merge hardfork - stopping')
+      this.stop()
+      return
+    }
+
     timeout = timeout ?? this.period
+
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority) {
       // EIP-225 spec: If the signer is out-of-turn,
       // delay signing by rand(SIGNER_COUNT * 500ms)
       const [signerAddress] = this.config.accounts[0]
-      const { blockchain } = this.synchronizer.execution.vm
+      const { blockchain } = (this.synchronizer as any).chain
       const inTurn = await blockchain.cliqueSignerInTurn(signerAddress)
       if (!inTurn) {
         const signerCount = blockchain.cliqueActiveSigners().length
         timeout += Math.random() * signerCount * 500
       }
     }
+
     this._nextAssemblyTimeoutId = setTimeout(this.assembleBlock.bind(this), timeout)
+
+    if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfWork) {
+      // If PoW, find next solution while waiting for next block assembly to start
+      void this.findNextSolution()
+    }
+  }
+
+  /**
+   * Finds the next PoW solution.
+   */
+  private async findNextSolution() {
+    if (!this.ethash) {
+      return
+    }
+    this.config.logger.debug('Miner: Finding next PoW solution 🔨')
+    const header = this.latestBlockHeader()
+    this.ethashMiner = this.ethash.getMiner(header)
+    const solution = await this.ethashMiner.iterate(-1)
+    if (!header.hash().equals(this.latestBlockHeader().hash())) {
+      // New block was inserted while iterating so we will discard solution
+      return
+    }
+    this.nextSolution = solution
+    this.config.logger.debug('Miner: Found PoW solution 🔨')
+    return solution
   }
 
   /**
    * Sets the next block assembly to latestBlock.timestamp + period
    */
   private async chainUpdated() {
+    this.ethashMiner?.stop()
     const latestBlockHeader = this.latestBlockHeader()
     const target = latestBlockHeader.timestamp.muln(1000).addn(this.period).sub(new BN(Date.now()))
     const timeout = BN.max(new BN(0), target).toNumber()
@@ -97,8 +143,14 @@ export class Miner {
     }
     this.running = true
     this.config.events.on(Event.CHAIN_UPDATED, this.chainUpdated.bind(this))
+    this.config.logger.info(
+      `Miner started. ${
+        this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority
+          ? `Assembling next block in ${this.period / 1000}s`
+          : `Finding next PoW solution 🔨`
+      }`
+    )
     void this.queueNextAssembly() // void operator satisfies eslint rule for no-floating-promises
-    this.config.logger.info(`Miner started. Assembling next block in ${this.period / 1000}s`)
     return true
   }
 
@@ -123,18 +175,25 @@ export class Miner {
     const parentBlockHeader = this.latestBlockHeader()
     const number = parentBlockHeader.number.addn(1)
     let { gasLimit } = parentBlockHeader
-    const [signerAddress, signerPrivKey] = this.config.accounts[0]
 
-    // Abort if we have too recently signed
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority) {
+      // Abort if we have too recently signed
+      const cliqueSigner = this.config.accounts[0][1]
       const header = BlockHeader.fromHeaderData(
         { number },
-        { common: this.config.chainCommon, cliqueSigner: signerPrivKey }
+        { common: this.config.chainCommon, cliqueSigner }
       )
-      if ((this.synchronizer.execution.vm.blockchain as any).cliqueCheckRecentlySigned(header)) {
+      if ((this.synchronizer as any).chain.blockchain.cliqueCheckRecentlySigned(header)) {
         this.config.logger.info(`Miner: We have too recently signed, waiting for next block`)
         this.assembling = false
         return
+      }
+    }
+
+    if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfWork) {
+      while (!this.nextSolution) {
+        this.config.logger.info(`Miner: Waiting for next PoW solution 🔨`)
+        await new Promise((r) => setTimeout(r, 1000))
       }
     }
 
@@ -158,7 +217,10 @@ export class Miner {
     }
 
     let difficulty
+    let cliqueSigner
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority) {
+      const [signerAddress, signerPrivKey] = this.config.accounts[0]
+      cliqueSigner = signerPrivKey
       // Determine if signer is INTURN (2) or NOTURN (1)
       const inTurn = await vmCopy.blockchain.cliqueSignerInTurn(signerAddress)
       difficulty = inTurn ? 2 : 1
@@ -177,7 +239,16 @@ export class Miner {
     } else if (this.config.chainCommon.isActivatedEIP(1559)) {
       baseFeePerGas = parentBlockHeader.calcNextBaseFee()
     }
+
     const parentBlock = (this.synchronizer as any).chain.blocks.latest
+
+    let calcDifficultyFromHeader
+    let coinbase
+    if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfWork) {
+      calcDifficultyFromHeader = parentBlock.header
+      coinbase = this.config.minerCoinbase ?? this.config.accounts[0][0]
+    }
+
     const blockBuilder = await vmCopy.buildBlock({
       parentBlock,
       headerData: {
@@ -185,10 +256,12 @@ export class Miner {
         difficulty,
         gasLimit,
         baseFeePerGas,
+        coinbase,
       },
       blockOpts: {
-        cliqueSigner: signerPrivKey,
+        cliqueSigner,
         hardforkByBlockNumber: true,
+        calcDifficultyFromHeader,
       },
     })
 
@@ -229,8 +302,16 @@ export class Miner {
     }
     if (interrupt) return
     // Build block, sealing it
-    const block = await blockBuilder.build()
-    this.config.logger.info(`Miner: Sealed block with ${block.transactions.length} txs`)
+    const block = await blockBuilder.build(this.nextSolution)
+    this.config.logger.info(
+      `Miner: ${
+        this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority
+          ? `Sealed`
+          : `Mined`
+      } block with ${block.transactions.length} txs${
+        this.nextSolution ? ` (difficulty: ${block.header.difficulty})` : ''
+      }`
+    )
     this.assembling = false
     if (interrupt) return
     // Put block in blockchain
