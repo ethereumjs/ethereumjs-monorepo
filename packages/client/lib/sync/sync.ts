@@ -45,12 +45,12 @@ export abstract class Synchronizer {
   public opened: boolean
   public running: boolean
   protected forceSync: boolean
-  public startingBlock: number
+  public startingBlock: BN
 
   // Best known sync block height
   public syncTargetHeight?: BN
-  // Time (in seconds) after which the synced state is reset
-  private SYNCED_STATE_REMOVAL_PERIOD = 60
+  // Time (in ms) after which the synced state is reset
+  private SYNCED_STATE_REMOVAL_PERIOD = 60000
   /* global NodeJS */
   private _syncedStatusCheckInterval: NodeJS.Timeout | undefined
 
@@ -69,7 +69,7 @@ export abstract class Synchronizer {
     this.opened = false
     this.running = false
     this.forceSync = false
-    this.startingBlock = 0
+    this.startingBlock = new BN(0)
 
     this.config.events.on(Event.POOL_PEER_ADDED, (peer) => {
       if (this.syncable(peer)) {

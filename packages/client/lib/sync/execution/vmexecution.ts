@@ -47,8 +47,9 @@ export class VMExecution extends Execution {
    */
   async open(): Promise<void> {
     const headBlock = await this.vm.blockchain.getIteratorHead()
-    const blockNumber = headBlock.header.number.toNumber()
-    this.config.execCommon.setHardforkByBlockNumber(blockNumber)
+    const { number } = headBlock.header
+    const td = await this.vm.blockchain.getTotalDifficulty(headBlock.header.hash())
+    this.config.execCommon.setHardforkByBlockNumber(number, td)
     this.hardfork = this.config.execCommon.hardfork()
     this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
   }
@@ -92,7 +93,7 @@ export class VMExecution extends Execution {
           // determine starting state for block run
           // if we are just starting or if a chain re-org has happened
           if (!headBlock || reorg) {
-            const parentBlock = await blockchain!.getBlock(block.header.parentHash)
+            const parentBlock = await blockchain.getBlock(block.header.parentHash)
             parentState = parentBlock.header.stateRoot
             // generate genesis state if we are at the genesis block
             // we don't have the genesis state
@@ -104,14 +105,19 @@ export class VMExecution extends Execution {
           }
           // run block, update head if valid
           try {
-            const blockNumber = block.header.number.toNumber()
-            const hardfork = this.config.execCommon.getHardforkByBlockNumber(blockNumber)
+            const { number } = block.header
+            const td = (await blockchain.getTotalDifficulty(block.header.parentHash)).add(
+              block.header.difficulty
+            )
+            const hardfork = this.config.execCommon.getHardforkByBlockNumber(number, td)
             if (hardfork !== this.hardfork) {
               const hash = short(block.hash())
               this.config.logger.info(
-                `Execution hardfork switch on block number=${blockNumber} hash=${hash} old=${this.hardfork} new=${hardfork}`
+                `Execution hardfork switch on block number=${number.toNumber()} hash=${hash} old=${
+                  this.hardfork
+                } new=${hardfork}`
               )
-              this.hardfork = this.config.execCommon.setHardforkByBlockNumber(blockNumber)
+              this.hardfork = this.config.execCommon.setHardforkByBlockNumber(number, td)
             }
             // Block validation is redundant here and leads to consistency problems
             // on PoA clique along blockchain-including validation checks
@@ -154,10 +160,12 @@ export class VMExecution extends Execution {
             }*/
             // Option a): set iterator head to the parent block so that an
             // error can repeatedly processed for debugging
-            const blockNumber = block.header.number.toNumber()
+            const { number } = block.header
             const hash = short(block.hash())
             this.config.logger.warn(
-              `Execution of block number=${blockNumber} hash=${hash} hardfork=${this.hardfork} failed:\n${error}`
+              `Execution of block number=${number.toNumber()} hash=${hash} hardfork=${
+                this.hardfork
+              } failed:\n${error}`
             )
             if (this.config.debugCode) {
               await debugCodeReplayBlock(this, block)
@@ -185,7 +193,7 @@ export class VMExecution extends Execution {
           ? `basefee=${endHeadBlock.header.baseFeePerGas} `
           : ''
         this.config.logger.info(
-          `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} with txs=${txCounter}`
+          `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} td=${this.chain.blocks.td} ${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} with txs=${txCounter}`
         )
       } else {
         this.config.logger.warn(

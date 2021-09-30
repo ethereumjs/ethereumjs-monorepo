@@ -6,7 +6,7 @@ import readline from 'readline'
 import { randomBytes } from 'crypto'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import { Server as RPCServer } from 'jayson/promise'
-import Common, { Chain, Hardfork, ConsensusType } from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { _getInitializedChains } from '@ethereumjs/common/dist/chains'
 import { Address, toBuffer } from 'ethereumjs-util'
 import { parseMultiaddrs, parseGenesisState, parseCustomParams } from '../lib/util'
@@ -132,19 +132,23 @@ const args = require('yargs')
       boolean: true,
     },
     mine: {
-      describe: 'Enable private custom network mining (beta, PoA only)',
+      describe: 'Enable private custom network mining (beta)',
       boolean: true,
       default: false,
     },
     unlock: {
       describe:
-        'Comma separated list of accounts to unlock - currently only the first account is used for sealing mined blocks. Beta, you will be promped for a 0x-prefixed private key until keystore functionality is added - FOR YOUR SAFETY PLEASE DO NOT USE ANY ACCOUNTS HOLDING SUBSTANTIAL AMOUNTS OF ETH',
+        'Comma separated list of accounts to unlock - currently only the first account is used (for sealing PoA blocks and as the default coinbase). Beta, you will be promped for a 0x-prefixed private key until keystore functionality is added - FOR YOUR SAFETY PLEASE DO NOT USE ANY ACCOUNTS HOLDING SUBSTANTIAL AMOUNTS OF ETH',
       array: true,
     },
     dev: {
       describe: 'Start an ephemeral PoA blockchain with a single miner and prefunded accounts',
-      boolean: true,
-      default: false,
+      choices: [undefined, false, true, 'poa', 'pow'],
+    },
+    minerCoinbase: {
+      describe:
+        'Address for mining rewards (etherbase). If not provided, defaults to the primary account',
+      string: true,
     },
   })
   .locale('en_EN').argv
@@ -204,7 +208,7 @@ function runRpcServer(client: EthereumClient, config: Config) {
  */
 async function run() {
   // give network id precedence over network name
-  const chain = args.networkId ?? args.network ?? 'mainnet'
+  const chain = args.networkId ?? args.network ?? Chain.Mainnet
 
   // configure accounts for mining and prefunding in a local devnet
   const accounts: [address: Address, privateKey: Buffer][] = []
@@ -260,16 +264,14 @@ async function run() {
     rl.close()
   }
 
-  let common = new Common({ chain: Chain.Mainnet })
+  let common = new Common({ chain, hardfork: Hardfork.Chainstart })
 
   if (args.dev) {
+    args.discDns = false
     if (accounts.length === 0) {
-      // Delete old chain data for devnet if generating ephemeral keys for mining to prevent genesis block mismatch
+      // If generating new keys delete old chain data to prevent genesis block mismatch
       removeSync(`${args.datadir}/devnet`)
-    }
-
-    if (accounts.length === 0) {
-      // Create new account for devnet if not provided
+      // Create new account
       const privKey = randomBytes(32)
       const account = Address.fromPrivateKey(privKey)
       accounts.push([account, privKey])
@@ -278,6 +280,15 @@ async function run() {
     }
 
     const prefundAddress = accounts[0][0].toString().slice(2)
+    const consensusConfig =
+      args.dev === 'pow'
+        ? { ethash: true }
+        : {
+            clique: {
+              period: 10,
+              epoch: 30000,
+            },
+          }
     const defaultChainData = {
       config: {
         chainId: 123456,
@@ -292,10 +303,7 @@ async function run() {
         istanbulBlock: 0,
         berlinBlock: 0,
         londonBlock: 0,
-        clique: {
-          period: 10,
-          epoch: 30000,
-        },
+        ...consensusConfig,
       },
       nonce: '0x0',
       timestamp: '0x614b3731',
@@ -361,20 +369,13 @@ async function run() {
       chain: genesisParams.name,
       customChains: [[genesisParams, genesisState]],
     })
-  } else if (!args.dev) {
-    // Use default common configuration for specified `chain` if no custom parameters specified
-    common = new Common({ chain: chain, hardfork: Hardfork.Chainstart })
   }
 
-  if (args.mine) {
-    if (common.consensusType() !== ConsensusType.ProofOfAuthority) {
-      console.error('Currently mining is only supported for PoA consensus')
-      process.exit()
-    }
-    if (!args.unlock) {
-      console.error('Please provide an account to sign sealed blocks with `--unlock [address]` ')
-      process.exit()
-    }
+  if (args.mine && accounts.length === 0) {
+    console.error(
+      'Please provide an account to mine blocks with `--unlock [address]` or use `--dev` to generate'
+    )
+    process.exit()
   }
 
   const datadir = args.datadir ?? Config.DATADIR_DEFAULT
@@ -405,6 +406,7 @@ async function run() {
     discV4: args.discV4,
     mine: args.mine || args.dev,
     accounts,
+    minerCoinbase: args.minerCoinbase,
   })
   logger = config.logger
   config.events.setMaxListeners(50)

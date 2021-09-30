@@ -14,12 +14,12 @@ import type { LevelUp } from 'levelup'
 import { Block, BlockData, BlockHeader, HeaderData } from '@ethereumjs/block'
 const xor = require('buffer-xor')
 
-type Solution = {
+export type Solution = {
   mixHash: Buffer
   nonce: Buffer
 }
 
-class Miner {
+export class Miner {
   private blockHeader: BlockHeader
   private block?: Block
   private ethash: Ethash

@@ -36,6 +36,12 @@ tape('[Miner]', async (t) => {
         latest: Block.fromBlockData(),
       }
     }
+    blockchain: any = {
+      cliqueSignerInTurn: async () => true,
+      cliqueCheckRecentlySigned: () => false,
+      // eslint-disable-next-line no-invalid-this
+      copy: () => this.blockchain,
+    }
   }
 
   const A = {
@@ -107,7 +113,6 @@ tape('[Miner]', async (t) => {
       pool,
       chain,
     })
-    synchronizer.execution.vm.blockchain.cliqueSignerInTurn = async () => true // stub
     let miner = new Miner({ config, synchronizer })
     t.notOk(miner.running)
     miner.start()
@@ -440,6 +445,33 @@ tape('[Miner]', async (t) => {
     t.ok((await chain.getLatestHeader()).number.eqn(4))
     miner.stop()
     await chain.close()
+  })
+
+  t.test('should handle mining ethash PoW', async (t) => {
+    t.plan(1)
+    const common = new Common({ chain: CommonChain.Ropsten })
+    ;(common as any)._chainParams['genesis'].difficulty = 1
+    const pool = new PeerPool() as any
+    const config = new Config({ transports: [], loglevel: 'error', accounts, mine: true, common })
+    const chain = new Chain({ config })
+    await chain.open()
+    const synchronizer = new FullSynchronizer({
+      config,
+      pool,
+      chain,
+    })
+    const miner = new Miner({ config, synchronizer })
+    ;(chain.blockchain as any)._validateConsensus = false
+    ;(miner as any).chainUpdated = async () => {} // stub
+    miner.start()
+    await wait(100)
+    config.events.on(Event.CHAIN_UPDATED, async () => {
+      t.ok(chain.blocks.latest!.header.number.eqn(1))
+      miner.stop()
+      await chain.close()
+    })
+    await (miner as any).queueNextAssembly(0)
+    await wait(3000)
   })
 
   t.test('should reset td', (t) => {
