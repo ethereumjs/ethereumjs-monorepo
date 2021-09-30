@@ -113,9 +113,7 @@ export class VMExecution extends Execution {
             if (hardfork !== this.hardfork) {
               const hash = short(block.hash())
               this.config.logger.info(
-                `Execution hardfork switch on block number=${number.toNumber()} hash=${hash} old=${
-                  this.hardfork
-                } new=${hardfork}`
+                `Execution hardfork switch on block number=${number} hash=${hash} old=${this.hardfork} new=${hardfork}`
               )
               this.hardfork = this.config.execCommon.setHardforkByBlockNumber(number, td)
             }
@@ -163,9 +161,7 @@ export class VMExecution extends Execution {
             const { number } = block.header
             const hash = short(block.hash())
             this.config.logger.warn(
-              `Execution of block number=${number.toNumber()} hash=${hash} hardfork=${
-                this.hardfork
-              } failed:\n${error}`
+              `Execution of block number=${number} hash=${hash} hardfork=${this.hardfork} failed:\n${error}`
             )
             if (this.config.debugCode) {
               await debugCodeReplayBlock(this, block)
@@ -197,9 +193,9 @@ export class VMExecution extends Execution {
         )
       } else {
         this.config.logger.warn(
-          `No blocks executed past chain head hash=${short(
-            endHeadBlock.hash()
-          )} number=${endHeadBlock.header.number.toNumber()}`
+          `No blocks executed past chain head hash=${short(endHeadBlock.hash())} number=${
+            endHeadBlock.header.number
+          }`
         )
       }
       startHeadBlock = endHeadBlock
