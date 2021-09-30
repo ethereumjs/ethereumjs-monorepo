@@ -44,7 +44,7 @@ export class ErrorLogger {
     const messageDetails: Array<string> = []
 
     if (isInvalidBlockHeaderError(codedError)) {
-      messageDetails.push(`Invalid param = ${codedError.param}`)
+      messageDetails.push(`Invalid param=${codedError.param}`)
     }
 
     if (isUnknownError(codedError)) {
@@ -63,7 +63,7 @@ export class ErrorLogger {
     messageDetails.push(`code=${codedError.code}`)
 
     if (messageDetails.length) {
-      message += ' (' + messageDetails.join(', ') + ')'
+      message += ' | Details: ' + messageDetails.join(', ')
     }
 
     const error = new Error(message) as CodedGeneralError<T>
@@ -82,6 +82,7 @@ export class ErrorLogger {
   throwError<T extends ErrorCode>(code?: T, params?: Omit<CodedGeneralError<T>, 'code'>): never {
     throw this.makeError({
       code: code ?? ErrorCode.UNKNOWN_ERROR,
+      message: params?.message ?? '',
       ...params,
     } as CodedGeneralError<T>)
   }
