@@ -36,6 +36,12 @@ tape('[Miner]', async (t) => {
         latest: Block.fromBlockData(),
       }
     }
+    blockchain: any = {
+      cliqueSignerInTurn: async () => true,
+      cliqueCheckRecentlySigned: () => false,
+      // eslint-disable-next-line no-invalid-this
+      copy: () => this.blockchain,
+    }
   }
 
   const A = {
@@ -107,7 +113,6 @@ tape('[Miner]', async (t) => {
       pool,
       chain,
     })
-    synchronizer.execution.vm.blockchain.cliqueSignerInTurn = async () => true // stub
     let miner = new Miner({ config, synchronizer })
     t.notOk(miner.running)
     miner.start()

@@ -12,7 +12,7 @@ tape(`${method}: call with invalid payloadId`, async (t) => {
   const expectRes = checkError(
     t,
     INVALID_PARAMS,
-    'invalid argument 0: hex string without 0x prefix'
+    'invalid argument 0: argument must be a hex string'
   )
   await baseRequest(t, server, req, 200, expectRes)
 })

@@ -1,4 +1,5 @@
-import { Address, BN, toBuffer, toType, TypeOutput } from 'ethereumjs-util'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { Address, toBuffer, toType, TypeOutput } from 'ethereumjs-util'
 import { middleware, validators } from '../validation'
 import type { Chain } from '../../blockchain'
 import type { EthereumClient } from '../..'
@@ -6,7 +7,6 @@ import type { EthereumService } from '../../service'
 import type VM from '@ethereumjs/vm'
 import { Block } from '@ethereumjs/block'
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type ExecutionPayload = {
   parentHash: string // DATA, 32 Bytes
   coinbase: string // DATA, 20 Bytes
@@ -52,12 +52,14 @@ export class Engine {
       [validators.blockHash, validators.hex, validators.hex, validators.address],
     ])
     this.getPayload = middleware(this.getPayload.bind(this), 1, [[validators.hex]])
-    this.executePayload = middleware(this.executePayload.bind(this), 1, [[validators.blockHash]])
+    this.executePayload = middleware(this.executePayload.bind(this), 1, [
+      [validators.hex, validators.blockHash],
+    ])
     this.consensusValidated = middleware(this.consensusValidated.bind(this), 2, [
       [validators.blockHash],
     ])
     this.forkchoiceUpdated = middleware(this.forkchoiceUpdated.bind(this), 1, [
-      [validators.blockHash],
+      [validators.hex, validators.blockHash],
     ])
   }
 
@@ -136,7 +138,7 @@ export class Engine {
    * @returns None or an error
    */
   async consensusValidated(params: [{ blockHash: string; status: string }]) {
-    let [blockHash, status]: any = params[0]
+    let [blockHash]: any = params[0]
 
     blockHash = toType(blockHash, TypeOutput.Buffer)
 
