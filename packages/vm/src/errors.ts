@@ -36,7 +36,7 @@ export type CodedGeneralError<T> = T extends ErrorCode.INVALID_BLOCK_HEADER
   ? UnknownError
   : never
 
-class ErrorLogger {
+export class ErrorLogger {
   static errors = ErrorCode
 
   makeError<T>(codedError: CodedGeneralError<T>): Error {
@@ -79,10 +79,7 @@ class ErrorLogger {
     throw error
   }
 
-  throwError<T extends ErrorCode>(
-    code?: ErrorCode,
-    params?: Omit<CodedGeneralError<T>, 'code'>
-  ): never {
+  throwError<T extends ErrorCode>(code?: T, params?: Omit<CodedGeneralError<T>, 'code'>): never {
     throw this.makeError({
       code: code ?? ErrorCode.UNKNOWN_ERROR,
       ...params,
