@@ -7,13 +7,11 @@
 [![Discord][discord-badge]][discord-link]
 
 | Ethereum Execution (Eth 1.0) Client built in TypeScript/JavaScript. |
-| --- |
-
-Note: there is no current release on npm and the releases from the [standalone repository](https://github.com/ethereumjs/ethereumjs-client) are outdated. Use the latest `master` to run the client. There will be an up-to-date client release soon (Fall 2021) under a scoped `@ethereumjs/client` naming scheme. 
+| ------------------------------------------------------------------- |
 
 # INTRODUCTION
 
-The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](https://github.com/ethereum/go-ethereum) or [Nethermind](https://github.com/NethermindEth/nethermind)) written in `TypeScript`/`JavaScript`, the non-Smart-Contract language Ethereum dApp developers are most familiar with. It is targeted to be a client for research and development and not meant to be used in production on `mainnet` for the foreseeable future (out of resource and security considerations). 
+The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](https://github.com/ethereum/go-ethereum) or [Nethermind](https://github.com/NethermindEth/nethermind)) written in `TypeScript`/`JavaScript`, the non-Smart-Contract language Ethereum dApp developers are most familiar with. It is targeted to be a client for research and development and not meant to be used in production on `mainnet` for the foreseeable future (out of resource and security considerations).
 
 Here are some use cases:
 
@@ -32,16 +30,14 @@ We invite you to explore and would be delighted if you give us feedback on your 
 ## INSTALL
 
 ```shell
-npm install -g @ethereumjs/client // Release during Fall 2021
+npm install -g @ethereumjs/client
 ```
 
-As long as there is no up-to-date client release on npm and for development purposes the client can be used like this:
+For development purposes the client can also be set up like this:
 
 1. Clone the monorepo with `git clone https://github.com/ethereumjs/ethereumjs-monorepo.git`
 2. Set things up and install dependencies (see [monorepo docs](../../config/MONOREPO.md))
 3. Run the client with `npm run client:start` from the `client` root directory (e.g. `packages/client` if working on a local copy of the monorepo)
-
-Furthermore see the [Technical Guidelines](#technical-guidelines) to dive directly into some more in-depth development info.
 
 ## USAGE
 
@@ -151,6 +147,7 @@ ethereumjs --dev --rpc --unlock=0xd8066d5822138e7c76d1565deb249f5f7ae370fa
 ```
 
 Note: If the `--dev` command is used in conjunction with `--unlock` to use a predefined account, the blockchain's state will be preserved between consecutive runs. If you try to use a different predefined account, you may see errors related to incompatible genesis blocks. Simply run the client with the `--dev` flag by itself and use the new prefunded account provided by the client in further rounds of execution.
+
 ## API
 
 [API Reference](./docs/README.md)
@@ -275,7 +272,7 @@ For some guidance on how to setup local testnetworks see the examples on [local 
 
 #### Using Debug Loggers
 
-The client's logging verbosity level can be set with `--loglevel`.  Available levels are
+The client's logging verbosity level can be set with `--loglevel`. Available levels are
 `error`, `warn`, `info`, `debug`.
 
 ```shell

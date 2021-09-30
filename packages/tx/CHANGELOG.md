@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.3.2 - 2021-09-30
+
+This release updates the `ethereumjs-util` library to `v7.1.2` which provides a safer conversion of integer values with the `intToHex` and `intToBuffer` functions by replacing the re-exported functions with own implementations which throw on wrong integer input (decimal values, non-safe integers, negative numbers,...), see PR [#1500](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1500).
+
+An upgrade is recommended since this provides a safer user experience for the tx library by not allowing malformed integer values to be passed in for tx number values (e.g. `gasPrice` or `maxPriorityFeePerGas`) which could lead to undefined behavior before.
+
 ## 3.3.1 - 2021-09-24
 
 - The hash from the `tx.hash()` method now gets cached for txs created with the `freeze` option (activated by default), PR [#1445](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1445)

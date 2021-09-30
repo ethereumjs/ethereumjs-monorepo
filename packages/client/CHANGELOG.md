@@ -6,50 +6,50 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [UNRELEASED]
+## 0.1.0 - 2021-09-29
 
-**New Features**
+Heydiho, glad you are here! 😀
 
-- Integrate ETH/64 Protocol into Client, PR [#1020](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1020)
-- Upgrade to eth/66 [#1331](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1331)
-- Add les v3/v4, PR [#1324](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1324)
-- Implement EIP-1459: DNS peer discovery, PR [#1070](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1070)
-- Add VM execution, PR [#1028](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1028)
-- Add 6 new RPC methods, PR [#1130](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1130)
-- "The merge" rpc scaffolding, PR [#1265](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1265)
-- eth_chainID and eth_syncing RPC implementations, PR [#1314](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1314)
-- Central event bus implementation, PR [#1187](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1187)
-- Add node discovery mode flags & define network-based defaults, PR [#1097](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1097)
-- Add debugCode CLI option to generate Block execution script, PR [#1091](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1091)
-- Local client connections for debugging, PR [#1147](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1147)
+After over a year of continued development the EthereumJS team is proud to announce that
+our client is finally stable, feature-complete (or - let's call it: feature-consistent)
+and useful in many regards that we have decided to do a first official release! 🌼
 
-**Bug Fixes**
+There has been such an extensive amount of work done that it
+would be neither useful nor enlightening to list all associated PRs.
 
-- Clique PoA fixes, PR [#1088](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1088)
-- Fix Sync Bugs and Error Messages, PR [#1075](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1075)
-- Client Network Improvements and fix `nextForkBlock` bug, PR [#1031](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1031)
-- Fix HF switching. Fix TangerineWhistle update bug (Rinkeby: Block 14182), PR [#1101](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1101)
-- Fix Goerli Clique Difficulty Bug, PR [#1103](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1103)
-- Add fix for kovan nonce, PR [#1334](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1334)
+So here are just a few milestones, where the ones before November 2020 happened in
+the - now archived - standalone `ethereumjs-client` monorepo before we moved the client
+to our monorepo
+[ethereumjs-monorepo](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client):
 
-**Maintenance**
+- Full transition to `TypeScript`, PR [#144](https://github.com/ethereumjs/ethereumjs-client/pull/144) and subsequent PRs
+- Integration with our monorepo CI config, e.g. PR [#153](https://github.com/ethereumjs/ethereumjs-client/pull/153)
+- Full alignment with the latest versions of the `EthereumJS` monorepo libraries (`Block`, `Tx`, `VM`,...), e.g. PR [#158](https://github.com/ethereumjs/ethereumjs-client/pull/158)
+- Integration of the `@ethereumjs/vm` to execute on blocks, PR [#1028](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1028)
+- EIP-1459: DNS peer recovery, PR [#1070](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1070)
+- Following the VM integration: working down various HF bugs like this one from TangerineWhistle (hardening our VM along the way): PR [#1101](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1101)
+- Tip-of-the-chain syncing behavior, PR [#1132](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1132)
+- A basic transaction pool, PR [#1176](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1176)
+- Upgraded `devp2p` `ETH` protocol up to version `ETH/66`, PR [#1331](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1331)
+- `LES` protocol v3 and v5 support, PR [#1324](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1324)
+- Support for `devp2p` snappy compression (RLPx v5), PR [#1399](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1399)
+- A simple miner for PoA/clique, PR [#1444](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1444)
+- Finalized on `devp2p` message handling support (e.g. by adding `NEW_BLOCK` rebroadcast capabilities) to serve as a good network citizen, PR [#1458](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1458)
+- Added developer capabilities, e.g. by adding a `--dev` flag to auto-start and prefund a miner, PR [#1492](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1492)
 
-- Save node key for consistent enode id, PR [#1067](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1067)
-- Refactor VM execution, PR [#1068](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1068)
-- Restart rlpx server on peerpool re-bootstrap, PR [#1113](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1113)
-- Split CLI transports options for bootnodes and multiaddrs, PR [#1145](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1145)
-- Simple message queue to handle unhandled ETH messages during handshake, PR [#1237](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1237)
-- bootstrap() extraction, PR [#1222](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1222)
-- Await DPT init, PR [#1233](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1233)
-- Make fetcher more typesafe, PR [#1023](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1023)
+And here we are. 🙂
 
-**Dependencies, CI and Docs**
+We joined various ephemeral testnets along the way - like `Yolov3` (still remember? 😃) and `Calaveras` - and helped find consensus bugs before they reached `mainnet` in preparation for the latest forks like `london` in conjunction with the other clients.
 
-- Upgrade `libp2p` modules to js-libp2p v0.30.7 and associated modules, PR [#1027](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1027)
-- Add basic cli test, PR [#1165](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1165)
-- Update client diagram [#1005](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1005)
-- Fix Fetcher.ts failure on Node v14, PR [#1022](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1022)
-- Fix failing node 16 CI, PR [#1346](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1346)
+Now we are ready for the next step and hand this out to you - the community! 🥳
+
+We are eager to see what you will do with this client and how you will use this software, which for the first time in Ethereum's history brings the full Ethereum core protocol stack - complemented by the excellent [Lodestar](https://github.com/ChainSafe/lodestar) client ChainSafe is developing on the Eth2 side - into the hands of Node.js developers.
+
+We have also updated our [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client/README.md) on the client directly before the release which you should take as a concise reference on the currently implemented client capabilities, some usage instructions complemented by various examples, and developer notes.
+
+**So thanks to the whole EthereumJS team - including some former team members - for the relentless work on this, and some special thanks to Vinay Pulim, who wrote the initial version of this software and therefore provided the ground for all this subsequent work!**
+
+Again: Thank you! ❤️ Exciting times ahead.
 
 ## [0.0.6] - 2020-06-19
 
