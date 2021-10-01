@@ -113,7 +113,9 @@ export class BlockHeader {
       mixHash ? toBuffer(mixHash) : zeros(32),
       nonce ? toBuffer(nonce) : zeros(8),
       opts,
-      baseFeePerGas !== undefined ? new BN(toBuffer(baseFeePerGas)) : undefined
+      baseFeePerGas !== undefined && baseFeePerGas !== null
+        ? new BN(toBuffer(baseFeePerGas))
+        : undefined
     )
   }
 
@@ -183,7 +185,9 @@ export class BlockHeader {
       toBuffer(mixHash),
       toBuffer(nonce),
       opts,
-      baseFeePerGas !== undefined ? new BN(toBuffer(baseFeePerGas)) : undefined
+      baseFeePerGas !== undefined && baseFeePerGas !== null
+        ? new BN(toBuffer(baseFeePerGas))
+        : undefined
     )
   }
 
@@ -239,7 +243,7 @@ export class BlockHeader {
     }
 
     const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
-    if (hardforkByBlockNumber || options.hardforkByTD) {
+    if (hardforkByBlockNumber || options.hardforkByTD !== undefined) {
       this._common.setHardforkByBlockNumber(number, options.hardforkByTD)
     }
 

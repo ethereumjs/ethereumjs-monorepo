@@ -247,14 +247,14 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Validate gas limit against tx base fee (DataFee + TxFee + Creation Fee)
-  const baseFee = tx.getBaseFee()
+  const txBaseFee = tx.getBaseFee()
   const gasLimit = tx.gasLimit.clone()
-  if (gasLimit.lt(baseFee)) {
+  if (gasLimit.lt(txBaseFee)) {
     throw new Error('base fee exceeds gas limit')
   }
-  gasLimit.isub(baseFee)
+  gasLimit.isub(txBaseFee)
   if (this.DEBUG) {
-    debugGas(`Subtracting base fee (${baseFee}) from gasLimit (-> ${gasLimit})`)
+    debugGas(`Subtracting base fee (${txBaseFee}) from gasLimit (-> ${gasLimit})`)
   }
 
   if (this._common.isActivatedEIP(1559)) {
@@ -378,9 +378,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Caculate the total gas used
-  results.gasUsed.iadd(basefee)
+  results.gasUsed.iadd(txBaseFee)
   if (this.DEBUG) {
-    debugGas(`tx add baseFee ${basefee} to gasUsed (-> ${results.gasUsed})`)
+    debugGas(`tx add baseFee ${txBaseFee} to gasUsed (-> ${results.gasUsed})`)
   }
 
   // Process any gas refund

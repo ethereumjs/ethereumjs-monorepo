@@ -149,7 +149,7 @@ async function createGethGenesisBlockHeader(json: any) {
     baseFeePerGas,
   }
   let common
-  if (baseFeePerGas !== undefined) {
+  if (baseFeePerGas !== undefined && baseFeePerGas !== null) {
     // chainId is not important here, we just need London enabled to set baseFeePerGas
     common = new Common({ chain: 1, hardfork: Hardfork.London })
   }

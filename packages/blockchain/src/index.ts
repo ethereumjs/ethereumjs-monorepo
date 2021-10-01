@@ -334,8 +334,9 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     if (!genesisBlock) {
-      this._common.setHardforkByBlockNumber(0)
-      genesisBlock = Block.genesis({}, { common: this._common })
+      const common = this._common.copy()
+      common.setHardforkByBlockNumber(0)
+      genesisBlock = Block.genesis({}, { common })
     }
 
     // If the DB has a genesis block, then verify that the genesis block in the
