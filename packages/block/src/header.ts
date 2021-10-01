@@ -917,9 +917,10 @@ export class BlockHeader {
       nonce: '0x' + this.nonce.toString('hex'),
     }
     if (this._common.isActivatedEIP(1559)) {
-      jsonDict.baseFee = '0x' + this.baseFeePerGas!.toString('hex')
+      jsonDict.baseFeePerGas = '0x' + this.baseFeePerGas!.toString('hex')
+      jsonDict.baseFee = '0x' + this.baseFeePerGas!.toString('hex') // deprecated alias, please use `baseFeePerGas`, will be removed in next major release
     }
-    jsonDict.bloom = jsonDict.logsBloom // deprecated alias, remove in next major release
+    jsonDict.bloom = jsonDict.logsBloom // deprecated alias, please use `logsBloom`, will be removed in next major release
     return jsonDict
   }
 

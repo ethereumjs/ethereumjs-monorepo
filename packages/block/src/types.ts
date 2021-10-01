@@ -161,8 +161,14 @@ export interface JsonHeader {
   extraData?: string
   mixHash?: string
   nonce?: string
-  baseFee?: string
+  baseFeePerGas?: string
 
+  /*
+   * Backwards compatible alias for {@link JsonHeader.baseFeePerGas}
+   * (planned to be removed in next major release)
+   * @deprecated
+   */
+  baseFee?: string
   /*
    * Backwards compatible alias for {@link JsonHeader.logsBloom}
    * (planned to be removed in next major release)

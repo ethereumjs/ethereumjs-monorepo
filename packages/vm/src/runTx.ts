@@ -246,15 +246,15 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
   }
 
-  // Validate gas limit against base fee
-  const basefee = tx.getBaseFee()
+  // Validate gas limit against tx base fee (DataFee + TxFee + Creation Fee)
+  const baseFee = tx.getBaseFee()
   const gasLimit = tx.gasLimit.clone()
-  if (gasLimit.lt(basefee)) {
+  if (gasLimit.lt(baseFee)) {
     throw new Error('base fee exceeds gas limit')
   }
-  gasLimit.isub(basefee)
+  gasLimit.isub(baseFee)
   if (this.DEBUG) {
-    debugGas(`Subtracting base fee (${basefee}) from gasLimit (-> ${gasLimit})`)
+    debugGas(`Subtracting base fee (${baseFee}) from gasLimit (-> ${gasLimit})`)
   }
 
   if (this._common.isActivatedEIP(1559)) {
