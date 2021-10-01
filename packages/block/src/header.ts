@@ -1,4 +1,4 @@
-import Common, { Chain, ConsensusAlgorithm, ConsensusType } from '@ethereumjs/common'
+import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
 import {
   Address,
   BN,
@@ -279,7 +279,7 @@ export class BlockHeader {
     this.baseFeePerGas = baseFeePerGas
 
     this._validateHeaderFields()
-    this._checkDAOExtraData()
+    this._validateDAOExtraData()
 
     // Now we have set all the values of this Header, we possibly have set a dummy
     // `difficulty` value (defaults to 0). If we have a `calcDifficultyFromHeader`
@@ -944,25 +944,22 @@ export class BlockHeader {
   }
 
   /**
-   * Force extra data be DAO_ExtraData for DAO_ForceExtraDataRange blocks after DAO
+   * Validates extra data is DAO_ExtraData for DAO_ForceExtraDataRange blocks after DAO
    * activation block (see: https://blog.slock.it/hard-fork-specification-24b889e70703)
    */
-  private _checkDAOExtraData() {
+  private _validateDAOExtraData() {
+    if (!this._common.hardforkIsActiveOnChain(Hardfork.Dao)) {
+      return
+    }
+    const DAOActivationBlock = this._common.hardforkBlockBN(Hardfork.Dao)
+    if (!DAOActivationBlock || DAOActivationBlock.isZero() || this.number.lt(DAOActivationBlock)) {
+      return
+    }
     const DAO_ExtraData = Buffer.from('64616f2d686172642d666f726b', 'hex')
     const DAO_ForceExtraDataRange = new BN(9)
-
-    if (this._common.hardforkIsActiveOnChain('dao')) {
-      // verify the extraData field.
-      const blockNumber = this.number
-      const DAOActivationBlock = this._common.hardforkBlockBN('dao')!
-      if (blockNumber.gte(DAOActivationBlock)) {
-        const drift = blockNumber.sub(DAOActivationBlock)
-        if (drift.lte(DAO_ForceExtraDataRange)) {
-          if (!this.extraData.equals(DAO_ExtraData)) {
-            throw new Error("extraData should be 'dao-hard-fork'")
-          }
-        }
-      }
+    const drift = this.number.sub(DAOActivationBlock)
+    if (drift.lte(DAO_ForceExtraDataRange) && !this.extraData.equals(DAO_ExtraData)) {
+      throw new Error("extraData should be 'dao-hard-fork'")
     }
   }
 }
