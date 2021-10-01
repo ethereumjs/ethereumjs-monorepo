@@ -120,11 +120,9 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   if (this.DEBUG) {
     debug('-'.repeat(100))
     debug(
-      `Running block hash=${block
-        .hash()
-        .toString(
-          'hex'
-        )} number=${block.header.number.toNumber()} hardfork=${this._common.hardfork()}`
+      `Running block hash=${block.hash().toString('hex')} number=${
+        block.header.number
+      } hardfork=${this._common.hardfork()}`
     )
   }
 
@@ -255,11 +253,9 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   await this._emit('afterBlock', afterBlockEvent)
   if (this.DEBUG) {
     debug(
-      `Running block finished hash=${block
-        .hash()
-        .toString(
-          'hex'
-        )} number=${block.header.number.toNumber()} hardfork=${this._common.hardfork()}`
+      `Running block finished hash=${block.hash().toString('hex')} number=${
+        block.header.number
+      } hardfork=${this._common.hardfork()}`
     )
   }
 
@@ -462,7 +458,7 @@ export async function generateTxReceipt(
 
   let receiptLog = `Generate tx receipt transactionType=${
     tx.type
-  } gasUsed=${blockGasUsed.toString()} bitvector=${short(abstractTxReceipt.bitvector)} (${
+  } gasUsed=${blockGasUsed} bitvector=${short(abstractTxReceipt.bitvector)} (${
     abstractTxReceipt.bitvector.length
   } bytes) logs=${abstractTxReceipt.logs.length}`
 

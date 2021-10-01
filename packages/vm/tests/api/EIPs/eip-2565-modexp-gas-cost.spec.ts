@@ -24,9 +24,7 @@ tape('EIP-2565 ModExp gas cost tests', (t) => {
 
       if (!result.execResult.gasUsed.eq(new BN(test.Gas))) {
         st.fail(
-          `[${testName}]: Gas usage incorrect, expected ${
-            test.Gas
-          }, got ${result.execResult.gasUsed.toNumber()}`
+          `[${testName}]: Gas usage incorrect, expected ${test.Gas}, got ${result.execResult.gasUsed}`
         )
         continue
       }

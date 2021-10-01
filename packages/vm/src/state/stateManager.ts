@@ -755,7 +755,7 @@ export default class DefaultStateManager implements StateManager {
         if (empty) {
           this._cache.del(address)
           if (this.DEBUG) {
-            debug(`Cleanup touched account address=${address.toString()} (>= SpuriousDragon)`)
+            debug(`Cleanup touched account address=${address} (>= SpuriousDragon)`)
           }
         }
       }

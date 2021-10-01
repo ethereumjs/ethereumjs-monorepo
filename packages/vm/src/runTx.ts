@@ -230,7 +230,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(
       `New tx run hash=${
         opts.tx.isSigned() ? opts.tx.hash().toString('hex') : 'unsigned'
-      } sender=${caller.toString()}`
+      } sender=${caller}`
     )
   }
 
@@ -348,7 +348,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(
       `Running tx=0x${
         tx.isSigned() ? tx.hash().toString('hex') : 'unsigned'
-      } with caller=${caller.toString()} gasLimit=${gasLimit} to=${
+      } with caller=${caller} gasLimit=${gasLimit} to=${
         to ? to.toString() : ''
       } value=${value} data=0x${short(data)}`
     )
@@ -439,7 +439,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // we clean the touched accounts below in case we are in a fork >= SpuriousDragon
   await state.putAccount(miner, minerAccount)
   if (this.DEBUG) {
-    debug(`tx update miner account (${miner.toString()}) balance (-> ${minerAccount.balance})`)
+    debug(`tx update miner account (${miner}) balance (-> ${minerAccount.balance})`)
   }
 
   /*
@@ -451,7 +451,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       const address = new Address(Buffer.from(k, 'hex'))
       await state.deleteAccount(address)
       if (this.DEBUG) {
-        debug(`tx selfdestruct on address=${address.toString()}`)
+        debug(`tx selfdestruct on address=${address}`)
       }
     }
   }
@@ -475,7 +475,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(
       `tx run finished hash=${
         opts.tx.isSigned() ? opts.tx.hash().toString('hex') : 'unsigned'
-      } sender=${caller.toString()}`
+      } sender=${caller}`
     )
   }
 
@@ -527,7 +527,7 @@ export async function generateTxReceipt(
     debug(
       `Generate tx receipt transactionType=${
         tx.type
-      } gasUsed=${cumulativeGasUsed.toString()} bitvector=${short(baseReceipt.bitvector)} (${
+      } gasUsed=${cumulativeGasUsed} bitvector=${short(baseReceipt.bitvector)} (${
         baseReceipt.bitvector.length
       } bytes) logs=${baseReceipt.logs.length}`
     )
