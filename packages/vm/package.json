@@ -25,7 +25,7 @@
     "profiling": "0x ./benchmarks/run.js profiling",
     "prepublishOnly": "../../config/cli/prepublish.sh && npm run test:buildIntegrity",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "nyc npm run coverage:test && nyc report --reporter=lcov",
+    "coverage": "nyc npm run coverage:test",
     "coverage:test": "npm run tape -- './tests/api/**/*.spec.ts' && npm run tester -- --state",
     "docs:build": "typedoc --options typedoc.js",
     "tape": "tape -r ts-node/register --stack-size=1500",
