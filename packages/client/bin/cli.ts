@@ -300,9 +300,10 @@ async function run() {
         byzantiumBlock: 0,
         constantinopleBlock: 0,
         petersburgBlock: 0,
-        istanbulBlock: 0,
-        berlinBlock: 0,
-        londonBlock: 0,
+        istanbulBlock: 2,
+        berlinBlock: 4,
+        londonBlock: 6,
+        mergeBlock: 8,
         ...consensusConfig,
       },
       nonce: '0x0',
@@ -322,6 +323,7 @@ async function run() {
       extraData,
       alloc: { [prefundAddress]: { balance: '0x10000000000000000000' } },
     }
+    console.log(chainData)
     const chainParams = await parseCustomParams(chainData, 'devnet')
     const genesisState = await parseGenesisState(chainData)
     const customChainParams: [IChain, GenesisState][] = [[chainParams, genesisState]]

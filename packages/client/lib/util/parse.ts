@@ -203,6 +203,7 @@ async function parseGethParams(json: any) {
     'muirGlacier',
     'berlin',
     'london',
+    'merge',
   ]
   const forkMap: { [key: string]: string } = {
     homestead: 'homesteadBlock',
@@ -216,13 +217,34 @@ async function parseGethParams(json: any) {
     muirGlacier: 'muirGlacierBlock',
     berlin: 'berlinBlock',
     london: 'londonBlock',
+    merge: 'mergeBlock',
   }
+  
   params.hardforks = hardforks
-    .map((name) => ({
-      name: name,
-      block: name === 'chainstart' ? 0 : config[forkMap[name]] ?? null,
-    }))
-    .filter((fork) => fork.block !== null)
+    .map((name) => {
+      let block
+      if (name === 'chainstart') {
+        block = 0
+      } else if (name === 'merge') {
+        block = null
+      } else {
+        block = config[forkMap[name]] ?? null
+      }
+      let td
+      if (name === 'merge') {
+        td = 16
+      } else {
+        td = null
+      }
+      const hf = {
+        name: name,
+        block,
+        td,
+      }
+      return hf
+    })
+    .filter((fork) => fork.name !== 'dao' && fork.name !== 'muirGlacier')
+  console.log(params)
   return params
 }
 /**
