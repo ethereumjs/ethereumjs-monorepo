@@ -300,7 +300,7 @@ export class Miner {
       `Miner: Sealed block with ${block.transactions.length} txs${
         this.config.chainCommon.consensusType() === ConsensusType.ProofOfWork
           ? ` (difficulty: ${block.header.difficulty})`
-          : ` (${inTurn ? 'inTurn' : 'not inTurn'})`
+          : ` (${inTurn ? 'in turn' : 'not in turn'})`
       }`
     )
     this.assembling = false
