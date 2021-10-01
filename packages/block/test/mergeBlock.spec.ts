@@ -16,7 +16,7 @@ function validateMergeHeader(st: tape.Test, header: BlockHeader) {
   st.ok(header.stateRoot.equals(zeros(32)), 'stateRoot')
   st.ok(header.transactionsTrie.equals(KECCAK256_RLP), 'transactionsTrie')
   st.ok(header.receiptTrie.equals(KECCAK256_RLP), 'receiptTrie')
-  st.ok(header.bloom.equals(zeros(256)), 'bloom')
+  st.ok(header.logsBloom.equals(zeros(256)), 'bloom')
   st.ok(header.difficulty.isZero(), 'difficulty')
   st.ok(header.number.isZero(), 'number')
   st.ok(header.gasLimit.eq(new BN(Buffer.from('ffffffffffffff', 'hex'))), 'gasLimit')

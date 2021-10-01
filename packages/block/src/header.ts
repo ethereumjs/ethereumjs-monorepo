@@ -38,7 +38,7 @@ export class BlockHeader {
   public readonly stateRoot: Buffer
   public readonly transactionsTrie: Buffer
   public readonly receiptTrie: Buffer
-  public readonly bloom: Buffer
+  public readonly logsBloom: Buffer
   public readonly difficulty: BN
   public readonly number: BN
   public readonly gasLimit: BN
@@ -57,12 +57,26 @@ export class BlockHeader {
   }
 
   /**
+   * Backwards compatible alias for {@link BlockHeader.logsBloom}
+   * (planned to be removed in next major release)
+   * @deprecated
+   */
+  get bloom() {
+    return this.logsBloom
+  }
+
+  /**
    * Static constructor to create a block header from a header data dictionary
    *
    * @param headerData
    * @param opts
    */
   public static fromHeaderData(headerData: HeaderData = {}, opts: BlockOptions = {}) {
+    if (headerData.logsBloom === undefined && headerData.bloom !== undefined) {
+      // backwards compatible alias for deprecated `bloom` key renamed to `logsBloom`
+      // (planned to be removed in next major release)
+      headerData.logsBloom = headerData.bloom
+    }
     const {
       parentHash,
       uncleHash,
@@ -70,7 +84,7 @@ export class BlockHeader {
       stateRoot,
       transactionsTrie,
       receiptTrie,
-      bloom,
+      logsBloom,
       difficulty,
       number,
       gasLimit,
@@ -89,7 +103,7 @@ export class BlockHeader {
       stateRoot ? toBuffer(stateRoot) : zeros(32),
       transactionsTrie ? toBuffer(transactionsTrie) : KECCAK256_RLP,
       receiptTrie ? toBuffer(receiptTrie) : KECCAK256_RLP,
-      bloom ? toBuffer(bloom) : zeros(256),
+      logsBloom ? toBuffer(logsBloom) : zeros(256),
       difficulty ? new BN(toBuffer(difficulty)) : new BN(0),
       number ? new BN(toBuffer(number)) : new BN(0),
       gasLimit ? new BN(toBuffer(gasLimit)) : DEFAULT_GAS_LIMIT,
@@ -133,7 +147,7 @@ export class BlockHeader {
       stateRoot,
       transactionsTrie,
       receiptTrie,
-      bloom,
+      logsBloom,
       difficulty,
       number,
       gasLimit,
@@ -159,7 +173,7 @@ export class BlockHeader {
       toBuffer(stateRoot),
       toBuffer(transactionsTrie),
       toBuffer(receiptTrie),
-      toBuffer(bloom),
+      toBuffer(logsBloom),
       new BN(toBuffer(difficulty)),
       new BN(toBuffer(number)),
       new BN(toBuffer(gasLimit)),
@@ -195,7 +209,7 @@ export class BlockHeader {
     stateRoot: Buffer,
     transactionsTrie: Buffer,
     receiptTrie: Buffer,
-    bloom: Buffer,
+    logsBloom: Buffer,
     difficulty: BN,
     number: BN,
     gasLimit: BN,
@@ -267,7 +281,7 @@ export class BlockHeader {
     this.stateRoot = stateRoot
     this.transactionsTrie = transactionsTrie
     this.receiptTrie = receiptTrie
-    this.bloom = bloom
+    this.logsBloom = logsBloom
     this.difficulty = difficulty
     this.number = number
     this.gasLimit = gasLimit
@@ -303,9 +317,7 @@ export class BlockHeader {
       this.extraData = this.cliqueSealBlock(options.cliqueSigner)
     }
 
-    this._errorPostfix = `block number=${this.number.toNumber()} hash=${this.hash().toString(
-      'hex'
-    )}`
+    this._errorPostfix = `block number=${this.number} hash=${this.hash().toString('hex')}`
 
     const freeze = options?.freeze ?? true
     if (freeze) {
@@ -484,7 +496,7 @@ export class BlockHeader {
     this._requireClique('validateCliqueDifficulty')
     if (!this.difficulty.eq(CLIQUE_DIFF_INTURN) && !this.difficulty.eq(CLIQUE_DIFF_NOTURN)) {
       throw new Error(
-        `difficulty for clique block must be INTURN (2) or NOTURN (1), received: ${this.difficulty.toString()}`
+        `difficulty for clique block must be INTURN (2) or NOTURN (1), received: ${this.difficulty}`
       )
     }
     if ('cliqueActiveSigners' in blockchain === false) {
@@ -589,7 +601,7 @@ export class BlockHeader {
         }
         // coinbase (beneficiary) on epoch transition
         if (!this.coinbase.isZero()) {
-          const msg = `coinbase must be filled with zeros on epoch transition blocks, received ${this.coinbase.toString()}`
+          const msg = `coinbase must be filled with zeros on epoch transition blocks, received ${this.coinbase}`
           throw this._error(msg)
         }
       }
@@ -717,7 +729,7 @@ export class BlockHeader {
       this.stateRoot,
       this.transactionsTrie,
       this.receiptTrie,
-      this.bloom,
+      this.logsBloom,
       bnToUnpaddedBuffer(this.difficulty),
       bnToUnpaddedBuffer(this.number),
       bnToUnpaddedBuffer(this.gasLimit),
@@ -894,7 +906,7 @@ export class BlockHeader {
       stateRoot: '0x' + this.stateRoot.toString('hex'),
       transactionsTrie: '0x' + this.transactionsTrie.toString('hex'),
       receiptTrie: '0x' + this.receiptTrie.toString('hex'),
-      bloom: '0x' + this.bloom.toString('hex'),
+      logsBloom: '0x' + this.logsBloom.toString('hex'),
       difficulty: bnToHex(this.difficulty),
       number: bnToHex(this.number),
       gasLimit: bnToHex(this.gasLimit),
@@ -905,9 +917,9 @@ export class BlockHeader {
       nonce: '0x' + this.nonce.toString('hex'),
     }
     if (this._common.isActivatedEIP(1559)) {
-      jsonDict['baseFee'] = '0x' + this.baseFeePerGas!.toString('hex')
+      jsonDict.baseFee = '0x' + this.baseFeePerGas!.toString('hex')
     }
-
+    jsonDict.bloom = jsonDict.logsBloom // deprecated alias, remove in next major release
     return jsonDict
   }
 

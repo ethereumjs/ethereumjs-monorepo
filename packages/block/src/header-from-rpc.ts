@@ -44,7 +44,7 @@ export default function blockHeaderFromRpc(blockParams: any, options?: BlockOpti
       stateRoot,
       transactionsTrie: transactionsRoot,
       receiptTrie: receiptRoot || receiptsRoot,
-      bloom: logsBloom,
+      logsBloom,
       difficulty: numberToHex(difficulty),
       number,
       gasLimit,

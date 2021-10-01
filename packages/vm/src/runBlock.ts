@@ -206,12 +206,12 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
       }
       throw new Error('invalid receiptTrie')
     }
-    if (!result.bloom.bitvector.equals(block.header.bloom)) {
+    if (!result.bloom.bitvector.equals(block.header.logsBloom)) {
       if (this.DEBUG) {
         debug(
           `Invalid bloom received=${result.bloom.bitvector.toString(
             'hex'
-          )} expected=${block.header.bloom.toString('hex')}`
+          )} expected=${block.header.logsBloom.toString('hex')}`
         )
       }
       throw new Error('invalid bloom')
