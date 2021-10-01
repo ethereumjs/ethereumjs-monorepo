@@ -14,6 +14,7 @@ import EthereumClient from '../lib/client'
 import { Config } from '../lib/config'
 import { Logger } from '../lib/logging'
 import { RPCManager } from '../lib/rpc'
+import * as modules from '../lib/rpc/modules'
 import { Event } from '../lib/types'
 import type { Chain as IChain, GenesisState } from '@ethereumjs/common/dist/types'
 const level = require('level')
@@ -88,6 +89,10 @@ const args = require('yargs')
     rpcaddr: {
       describe: 'HTTP-RPC server listening interface',
       default: Config.RPCADDR_DEFAULT,
+    },
+    helprpc: {
+      describe: 'Display the JSON RPC help with a list of all RPC methods implemented (and exit)',
+      boolean: true,
     },
     loglevel: {
       describe: 'Logging verbosity',
@@ -207,6 +212,23 @@ function runRpcServer(client: EthereumClient, config: Config) {
  * Main entry point to start a client
  */
 async function run() {
+  if (args.helprpc) {
+    // Display RPC help and exit
+    console.log('-'.repeat(27))
+    console.log('JSON-RPC: Supported Methods')
+    console.log('-'.repeat(27))
+    console.log()
+    modules.list.forEach((modName: string) => {
+      console.log(`${modName}:`)
+      RPCManager.getMethodNames((modules as any)[modName]).forEach((methodName: string) => {
+        console.log(`-> ${modName.toLowerCase()}_${methodName}`)
+      })
+      console.log()
+    })
+    console.log()
+    process.exit()
+  }
+
   // give network id precedence over network name
   const chain = args.networkId ?? args.network ?? Chain.Mainnet
 
