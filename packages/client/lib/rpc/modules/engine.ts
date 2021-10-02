@@ -1,11 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { Address, toBuffer, toType, TypeOutput } from 'ethereumjs-util'
+import { Block } from '@ethereumjs/block'
+import { Address, BN, toBuffer, toType, TypeOutput } from 'ethereumjs-util'
 import { middleware, validators } from '../validation'
 import type { Chain } from '../../blockchain'
 import type { EthereumClient } from '../..'
 import type { EthereumService } from '../../service'
 import type VM from '@ethereumjs/vm'
-import { Block } from '@ethereumjs/block'
 
 type ExecutionPayload = {
   parentHash: string // DATA, 32 Bytes
@@ -27,6 +26,20 @@ type ExecutionPayload = {
   // as defined in EIP-2718.
 }
 
+type PreparePayloadParamsObject = {
+  parentHash: string
+  timestamp: string
+  random: string
+  feeRecipient: string
+}
+
+type PayloadCache = {
+  parentHash: Buffer
+  timestamp: BN
+  random: Buffer
+  feeRecipient: Address
+}
+
 /**
  * engine_* RPC module
  * @memberof module:rpc/modules
@@ -35,6 +48,8 @@ export class Engine {
   private client: EthereumClient
   private _chain: Chain
   private _vm: VM | undefined
+  private payloadCache: Map<BN, PayloadCache>
+  private nextPayloadId = new BN(0)
 
   /**
    * Create engine_* RPC module
@@ -45,21 +60,54 @@ export class Engine {
     const service = client.services.find((s) => s.name === 'eth') as EthereumService
     this._chain = service.chain
     this._vm = (service.synchronizer as any)?.execution?.vm
+    this.payloadCache = new Map()
 
-    // TODO: validation for assembleBlock and newBlock methods,
-    // see https://github.com/ethereum/execution-apis/blob/v1.0.0-alpha.1/src/engine/interop/specification.md
-    this.preparePayload = middleware(this.preparePayload.bind(this), 4, [
-      [validators.blockHash, validators.hex, validators.hex, validators.address],
+    this.preparePayload = middleware(this.preparePayload.bind(this), 1, [
+      [
+        validators.object({
+          parentHash: validators.blockHash,
+          timestamp: validators.hex,
+          random: validators.hex,
+          feeRecipient: validators.address,
+        }),
+      ],
     ])
     this.getPayload = middleware(this.getPayload.bind(this), 1, [[validators.hex]])
     this.executePayload = middleware(this.executePayload.bind(this), 1, [
-      [validators.hex, validators.blockHash],
+      [
+        validators.object({
+          parentHash: validators.blockHash,
+          coinbase: validators.address,
+          stateRoot: validators.hex,
+          receiptRoot: validators.hex,
+          logsBloom: validators.hex,
+          random: validators.hex,
+          blockNumber: validators.hex,
+          gasLimit: validators.hex,
+          gasUsed: validators.hex,
+          timestamp: validators.hex,
+          extraData: validators.hex,
+          baseFeePerGas: validators.hex,
+          blockHash: validators.blockHash,
+          transactions: validators.array(validators.hex),
+        }),
+      ],
     ])
-    this.consensusValidated = middleware(this.consensusValidated.bind(this), 2, [
-      [validators.blockHash],
+    this.consensusValidated = middleware(this.consensusValidated.bind(this), 1, [
+      [
+        validators.object({
+          blockHash: validators.blockHash,
+          status: validators.values(['VALID', 'INVALID']),
+        }),
+      ],
     ])
     this.forkchoiceUpdated = middleware(this.forkchoiceUpdated.bind(this), 1, [
-      [validators.hex, validators.blockHash],
+      [
+        validators.object({
+          headBlockHash: validators.blockHash,
+          finalizedBlockHash: validators.blockHash,
+        }),
+      ],
     ])
   }
 
@@ -77,15 +125,20 @@ export class Engine {
    * @returns A response object or an error. Response object:
    *       * payloadId - identifier of the payload building process
    */
-  async preparePayload(params: [string, string, string, string]) {
-    let [parentHash, timestamp, random, feeRecipient]: any = params
+  async preparePayload(params: [PreparePayloadParamsObject]) {
+    const { parentHash, timestamp, random, feeRecipient } = params[0]
 
-    parentHash = toBuffer(parentHash)
-    timestamp = toType(timestamp, TypeOutput.BN)
-    random = toBuffer(random)
-    feeRecipient = Address.fromString(feeRecipient)
+    const payloadCache = {
+      parentHash: toBuffer(parentHash),
+      timestamp: toType(timestamp, TypeOutput.BN),
+      random: toBuffer(random),
+      feeRecipient: Address.fromString(feeRecipient),
+    }
 
-    return `Not implemented yet.`
+    const payloadId = this.nextPayloadId.clone()
+    this.payloadCache.set(payloadId, payloadCache)
+    this.nextPayloadId.iaddn(1)
+    return { payloadId: `0x${payloadId.toString('hex')}` }
   }
 
   /**
@@ -102,6 +155,16 @@ export class Engine {
 
     payloadId = toType(payloadId, TypeOutput.BN)
 
+    const payloadCache = this.payloadCache.get(payloadId)
+    if (!payloadCache) {
+      // https://notes.ethereum.org/@9AeMAlpyQYaAAyuj47BzRw/rkwW3ceVY#unknown-payload
+      throw {
+        code: 5,
+        message: 'unknown payload',
+      }
+    }
+
+    // Assemble block and return toJSON() with random, transactions
     return `Not implemented yet.`
   }
   /**
@@ -118,7 +181,7 @@ export class Engine {
    */
   async executePayload(params: [ExecutionPayload]) {
     if (!this.client.config.synchronized) {
-      return { STATUS: 'SYNCING' }
+      return { status: 'SYNCING' }
     }
 
     const [blockData] = params
@@ -139,11 +202,21 @@ export class Engine {
    * @returns None or an error
    */
   async consensusValidated(params: [{ blockHash: string; status: string }]) {
-    let [blockHash]: any = params[0]
+    let { blockHash }: any = params[0]
+    const { status } = params[0]
 
     blockHash = toType(blockHash, TypeOutput.Buffer)
 
-    return `Not implemented yet.`
+    const blockHashFound = false
+    if (!blockHashFound) {
+      // https://notes.ethereum.org/@9AeMAlpyQYaAAyuj47BzRw/rkwW3ceVY#unknown-header
+      throw {
+        code: 4,
+        message: 'unknown header',
+      }
+    }
+
+    return `Not implemented yet. ${blockHash}, ${status}`
   }
 
   /**
@@ -161,6 +234,6 @@ export class Engine {
     headBlockHash = toType(headBlockHash, TypeOutput.Buffer)
     finalizedBlockHash = toType(finalizedBlockHash, TypeOutput.Buffer)
 
-    return `Not implemented yet`
+    return `Not implemented yet. ${headBlockHash}, ${finalizedBlockHash}`
   }
 }
