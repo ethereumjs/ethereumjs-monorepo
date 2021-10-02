@@ -39,10 +39,16 @@ module.exports = {
     path: resolve(__dirname, 'dist'),
     library: 'ethereumjs',
   },
-  node: {
-    dgram: 'empty', // used by: rlpxpeer via ethereumjs-devp2p
-    net: 'empty', // used by: rlpxpeer
-    fs: 'empty', // used by: FullSynchronizer via @ethereumjs/vm
+  resolve: {
+    fallback: {
+      crypto: require.resolve('crypto-browserify'),
+      dgram: false,
+      fs: false,
+      net: false,
+      os: require.resolve('os-browserify/browser'),
+      path: false,
+      stream: require.resolve('stream-browserify'),
+    },
   },
   performance: {
     hints: false, // suppress maxAssetSize warnings etc..

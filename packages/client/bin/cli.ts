@@ -188,7 +188,7 @@ async function runNode(config: Config) {
     config.logger.info(`Listener up transport=${details.transport} url=${details.url}`)
   })
   config.events.on(Event.SYNC_SYNCHRONIZED, (height) => {
-    client.config.logger.info(`Synchronized blockchain at height ${height.toNumber()}`)
+    client.config.logger.info(`Synchronized blockchain at height ${height}`)
   })
   config.logger.info(`Connecting to network: ${config.chainCommon.chainName()}`)
   await client.open()
@@ -295,10 +295,14 @@ async function run() {
       removeSync(`${args.datadir}/devnet`)
       // Create new account
       const privKey = randomBytes(32)
-      const account = Address.fromPrivateKey(privKey)
-      accounts.push([account, privKey])
-      // prettier-ignore
-      console.log(`==================================================\nAccount generated for mining blocks:\nAddress: ${account.toString()}\nPrivate key: 0x${privKey.toString( 'hex')}\nWARNING: Do not use this account for mainnet funds\n==================================================`)
+      const address = Address.fromPrivateKey(privKey)
+      accounts.push([address, privKey])
+      console.log('='.repeat(50))
+      console.log('Account generated for mining blocks:')
+      console.log(`Address: ${address}`)
+      console.log(`Private key: 0x${privKey.toString('hex')}`)
+      console.log('WARNING: Do not use this account for mainnet funds')
+      console.log('='.repeat(50))
     }
 
     const prefundAddress = accounts[0][0].toString().slice(2)
@@ -382,10 +386,8 @@ async function run() {
   } else if (args.gethGenesis) {
     // Use geth genesis parameters file if specified
     const genesisFile = JSON.parse(readFileSync(args.gethGenesis, 'utf-8'))
-    const genesisParams = await parseCustomParams(
-      genesisFile,
-      path.parse(args.gethGenesis).base.split('.')[0]
-    )
+    const chainName = path.parse(args.gethGenesis).base.split('.')[0]
+    const genesisParams = await parseCustomParams(genesisFile, chainName)
     const genesisState = genesisFile.alloc ? await parseGenesisState(genesisFile) : {}
     common = new Common({
       chain: genesisParams.name,

@@ -160,14 +160,14 @@ export default class EVM {
     let result
     if (this._vm.DEBUG) {
       debug(
-        `New message caller=${message.caller.toString()} gasLimit=${message.gasLimit.toString()} to=${
+        `New message caller=${message.caller} gasLimit=${message.gasLimit} to=${
           message.to ? message.to.toString() : ''
-        } value=${message.value.toString()} delegatecall=${message.delegatecall ? 'yes' : 'no'}`
+        } value=${message.value} delegatecall=${message.delegatecall ? 'yes' : 'no'}`
       )
     }
     if (message.to) {
       if (this._vm.DEBUG) {
-        debug(`Message CALL execution (to: ${message.to.toString()})`)
+        debug(`Message CALL execution (to: ${message.to})`)
       }
       result = await this._executeCall(message)
     } else {
@@ -182,9 +182,9 @@ export default class EVM {
           result.gasUsed
         } exceptionError=${
           result.execResult.exceptionError ? result.execResult.exceptionError.toString() : ''
-        } returnValue=${short(
-          result.execResult.returnValue
-        )} gasRefund=${result.execResult.gasRefund?.toString()} ]`
+        } returnValue=${short(result.execResult.returnValue)} gasRefund=${
+          result.execResult.gasRefund
+        } ]`
       )
     }
 
@@ -296,7 +296,7 @@ export default class EVM {
     message.data = Buffer.alloc(0)
     message.to = await this._generateAddress(message)
     if (this._vm.DEBUG) {
-      debug(`Generated CREATE contract address ${message.to.toString()}`)
+      debug(`Generated CREATE contract address ${message.to}`)
     }
     let toAccount = await this._state.getAccount(message.to)
 

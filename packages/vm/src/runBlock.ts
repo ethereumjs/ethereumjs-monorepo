@@ -120,11 +120,9 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   if (this.DEBUG) {
     debug('-'.repeat(100))
     debug(
-      `Running block hash=${block
-        .hash()
-        .toString(
-          'hex'
-        )} number=${block.header.number.toNumber()} hardfork=${this._common.hardfork()}`
+      `Running block hash=${block.hash().toString('hex')} number=${
+        block.header.number
+      } hardfork=${this._common.hardfork()}`
     )
   }
 
@@ -206,12 +204,12 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
       }
       throw new Error('invalid receiptTrie')
     }
-    if (!result.bloom.bitvector.equals(block.header.bloom)) {
+    if (!result.bloom.bitvector.equals(block.header.logsBloom)) {
       if (this.DEBUG) {
         debug(
           `Invalid bloom received=${result.bloom.bitvector.toString(
             'hex'
-          )} expected=${block.header.bloom.toString('hex')}`
+          )} expected=${block.header.logsBloom.toString('hex')}`
         )
       }
       throw new Error('invalid bloom')
@@ -255,11 +253,9 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   await this._emit('afterBlock', afterBlockEvent)
   if (this.DEBUG) {
     debug(
-      `Running block finished hash=${block
-        .hash()
-        .toString(
-          'hex'
-        )} number=${block.header.number.toNumber()} hardfork=${this._common.hardfork()}`
+      `Running block finished hash=${block.hash().toString('hex')} number=${
+        block.header.number
+      } hardfork=${this._common.hardfork()}`
     )
   }
 
@@ -462,7 +458,7 @@ export async function generateTxReceipt(
 
   let receiptLog = `Generate tx receipt transactionType=${
     tx.type
-  } gasUsed=${blockGasUsed.toString()} bitvector=${short(abstractTxReceipt.bitvector)} (${
+  } gasUsed=${blockGasUsed} bitvector=${short(abstractTxReceipt.bitvector)} (${
     abstractTxReceipt.bitvector.length
   } bytes) logs=${abstractTxReceipt.logs.length}`
 

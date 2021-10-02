@@ -33,9 +33,7 @@ export class LightSynchronizer extends Synchronizer {
     const { height: number, td } = this.chain.headers
     const hash = this.chain.blocks.latest!.hash()
     this.startingBlock = number
-    this.config.logger.info(
-      `Latest local header: number=${number.toNumber()} td=${td.toNumber()} hash=${short(hash)}`
-    )
+    this.config.logger.info(`Latest local header: number=${number} td=${td} hash=${short(hash)}`)
   }
 
   /**
@@ -125,12 +123,10 @@ export class LightSynchronizer extends Synchronizer {
         const first = new BN(headers[0].number)
         const hash = short(headers[0].hash())
         const baseFeeAdd = this.config.chainCommon.gteHardfork('london')
-          ? `basefee=${headers[0].baseFeePerGas} `
+          ? `baseFee=${headers[0].baseFeePerGas} `
           : ''
         this.config.logger.info(
-          `Imported headers count=${headers.length} number=${first.toString(
-            10
-          )} hash=${hash} ${baseFeeAdd}peers=${this.pool.size}`
+          `Imported headers count=${headers.length} number=${first} hash=${hash} ${baseFeeAdd}peers=${this.pool.size}`
         )
       })
 

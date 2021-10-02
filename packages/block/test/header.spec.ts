@@ -18,7 +18,7 @@ tape('[Block]: Header functions', function (t) {
       st.ok(header.stateRoot.equals(zeros(32)))
       st.ok(header.transactionsTrie.equals(KECCAK256_RLP))
       st.ok(header.receiptTrie.equals(KECCAK256_RLP))
-      st.ok(header.bloom.equals(zeros(256)))
+      st.ok(header.logsBloom.equals(zeros(256)))
       st.ok(header.difficulty.isZero())
       st.ok(header.number.isZero())
       st.ok(header.gasLimit.eq(new BN(Buffer.from('ffffffffffffff', 'hex'))))

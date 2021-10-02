@@ -97,7 +97,7 @@ export class Libp2pServer extends Server {
     this.node.addressManager.getListenAddrs().map(async (ma) => {
       this.config.events.emit(Event.SERVER_LISTENING, {
         transport: this.name,
-        url: `${ma.toString()}/p2p/${peerId.toB58String()}`,
+        url: `${ma}/p2p/${peerId.toB58String()}`,
       })
     })
     this.started = true

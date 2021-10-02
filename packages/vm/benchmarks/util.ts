@@ -24,7 +24,7 @@ export async function getPreState(
   pre: {
     [k: string]: StateTestPreAccount
   },
-  common: Common,
+  common: Common
 ): Promise<StateManager> {
   const state = new DefaultStateManager({ common })
   await state.checkpoint()
@@ -68,10 +68,12 @@ const hexToBuffer = (h: string, allowZero: boolean = false): Buffer => {
 }
 
 export const verifyResult = (block: Block, result: RunBlockResult) => {
-  // verify the receipt root, the logs bloom and the gas used after block execution, throw if any of these is not the expected value
+  // verify the receipt root, the logs bloom and the gas used after block execution,
+  // throw if any of these is not the expected value
   if (result.receiptRoot && !result.receiptRoot.equals(block.header.receiptTrie)) {
-    // there's something wrong here with the receipts trie. if block has receipt data we can check against the expected result of the block and the
-    // reported data of the VM in order to isolate the problem
+    // there's something wrong here with the receipts trie.
+    // if block has receipt data we can check against the expected result of the block
+    // and the reported data of the VM in order to isolate the problem
 
     // check if there are receipts
     const { receipts } = result
@@ -93,11 +95,10 @@ export const verifyResult = (block: Block, result: RunBlockResult) => {
         cumGasUsed = cumGasUsedActual
       }
     }
-
     throw new Error('invalid receiptTrie')
   }
-  if (result.logsBloom.equals(block.header.bloom)) {
-    throw new Error('invalid bloom')
+  if (!result.logsBloom.equals(block.header.logsBloom)) {
+    throw new Error('invalid logsBloom')
   }
   if (!block.header.gasUsed.eq(result.gasUsed)) {
     throw new Error('invalid gasUsed')

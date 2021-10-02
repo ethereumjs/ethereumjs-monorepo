@@ -45,7 +45,7 @@ tape('BlockBuilder', async (t) => {
     st.ok(result.gasUsed.eq(block.header.gasUsed))
     st.ok(result.receiptRoot.equals(block.header.receiptTrie))
     st.ok(result.stateRoot.equals(block.header.stateRoot))
-    st.ok(result.logsBloom.equals(block.header.bloom))
+    st.ok(result.logsBloom.equals(block.header.logsBloom))
     st.end()
   })
 
@@ -274,7 +274,7 @@ tape('BlockBuilder', async (t) => {
     st.ok(result.gasUsed.eq(block.header.gasUsed))
     st.ok(result.receiptRoot.equals(block.header.receiptTrie))
     st.ok(result.stateRoot.equals(block.header.stateRoot))
-    st.ok(result.logsBloom.equals(block.header.bloom))
+    st.ok(result.logsBloom.equals(block.header.logsBloom))
     st.end()
   })
 
@@ -365,7 +365,7 @@ tape('BlockBuilder', async (t) => {
     st.ok(result.gasUsed.eq(block.header.gasUsed))
     st.ok(result.receiptRoot.equals(block.header.receiptTrie))
     st.ok(result.stateRoot.equals(block.header.stateRoot))
-    st.ok(result.logsBloom.equals(block.header.bloom))
+    st.ok(result.logsBloom.equals(block.header.logsBloom))
     st.end()
   })
 })

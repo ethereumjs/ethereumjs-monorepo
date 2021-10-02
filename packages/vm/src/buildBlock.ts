@@ -104,7 +104,7 @@ export class BlockBuilder {
   /**
    * Calculates and returns the logs bloom for the block.
    */
-  private bloom() {
+  private logsBloom() {
     const bloom = new Bloom()
     for (const txResult of this.transactionResults) {
       // Combine blooms via bitwise OR
@@ -212,7 +212,7 @@ export class BlockBuilder {
     const stateRoot = await this.vm.stateManager.getStateRoot(true)
     const transactionsTrie = await this.transactionsTrie()
     const receiptTrie = await this.receiptTrie()
-    const bloom = this.bloom()
+    const logsBloom = this.logsBloom()
     const gasUsed = this.gasUsed
     const timestamp = this.headerData.timestamp ?? Math.round(Date.now() / 1000)
 
@@ -221,7 +221,7 @@ export class BlockBuilder {
       stateRoot,
       transactionsTrie,
       receiptTrie,
-      bloom,
+      logsBloom,
       gasUsed,
       timestamp,
     }

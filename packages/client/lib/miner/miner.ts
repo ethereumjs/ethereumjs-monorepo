@@ -105,7 +105,7 @@ export class Miner {
     if (!this.ethash) {
       return
     }
-    this.config.logger.debug('Miner: Finding next PoW solution 🔨')
+    this.config.logger.info('Miner: Finding next PoW solution 🔨')
     const header = this.latestBlockHeader()
     this.ethashMiner = this.ethash.getMiner(header)
     const solution = await this.ethashMiner.iterate(-1)
@@ -114,7 +114,7 @@ export class Miner {
       return
     }
     this.nextSolution = solution
-    this.config.logger.debug('Miner: Found PoW solution 🔨')
+    this.config.logger.info('Miner: Found PoW solution 🔨')
     return solution
   }
 
@@ -127,9 +127,9 @@ export class Miner {
     const target = latestBlockHeader.timestamp.muln(1000).addn(this.period).sub(new BN(Date.now()))
     const timeout = BN.max(new BN(0), target).toNumber()
     this.config.logger.debug(
-      `Miner: Chain updated with block ${latestBlockHeader.number.toNumber()}. Queuing next block assembly in ${Math.round(
-        timeout / 1000
-      )}s`
+      `Miner: Chain updated with block ${
+        latestBlockHeader.number
+      }. Queuing next block assembly in ${Math.round(timeout / 1000)}s`
     )
     await this.queueNextAssembly(timeout)
   }
@@ -143,13 +143,7 @@ export class Miner {
     }
     this.running = true
     this.config.events.on(Event.CHAIN_UPDATED, this.chainUpdated.bind(this))
-    this.config.logger.info(
-      `Miner started. ${
-        this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority
-          ? `Assembling next block in ${this.period / 1000}s`
-          : `Finding next PoW solution 🔨`
-      }`
-    )
+    this.config.logger.info(`Miner started. Assembling next block in ${this.period / 1000}s`)
     void this.queueNextAssembly() // void operator satisfies eslint rule for no-floating-promises
     return true
   }
@@ -192,7 +186,7 @@ export class Miner {
 
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfWork) {
       while (!this.nextSolution) {
-        this.config.logger.info(`Miner: Waiting for next PoW solution 🔨`)
+        this.config.logger.info(`Miner: Waiting to find next PoW solution 🔨`)
         await new Promise((r) => setTimeout(r, 1000))
       }
     }
@@ -218,11 +212,12 @@ export class Miner {
 
     let difficulty
     let cliqueSigner
+    let inTurn
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority) {
       const [signerAddress, signerPrivKey] = this.config.accounts[0]
       cliqueSigner = signerPrivKey
       // Determine if signer is INTURN (2) or NOTURN (1)
-      const inTurn = await vmCopy.blockchain.cliqueSignerInTurn(signerAddress)
+      inTurn = await vmCopy.blockchain.cliqueSignerInTurn(signerAddress)
       difficulty = inTurn ? 2 : 1
     }
 
@@ -271,7 +266,7 @@ export class Miner {
     )
     this.config.logger.info(
       `Miner: Assembling block from ${txs.length} eligible txs ${
-        baseFeePerGas ? `(baseFee: ${baseFeePerGas.toNumber()})` : ''
+        baseFeePerGas ? `(baseFee: ${baseFeePerGas})` : ''
       }`
     )
     let index = 0
@@ -284,10 +279,8 @@ export class Miner {
           if (blockBuilder.gasUsed.gt(gasLimit.subn(21000))) {
             // If block has less than 21000 gas remaining, consider it full
             blockFull = true
-            this.config.logger.debug(
-              `Miner: Assembled block full (gasLeft: ${gasLimit
-                .sub(blockBuilder.gasUsed)
-                .toNumber()})`
+            this.config.logger.info(
+              `Miner: Assembled block full (gasLeft: ${gasLimit.sub(blockBuilder.gasUsed)})`
             )
           }
         } else {
@@ -304,12 +297,10 @@ export class Miner {
     // Build block, sealing it
     const block = await blockBuilder.build(this.nextSolution)
     this.config.logger.info(
-      `Miner: ${
-        this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority
-          ? `Sealed`
-          : `Mined`
-      } block with ${block.transactions.length} txs${
-        this.nextSolution ? ` (difficulty: ${block.header.difficulty})` : ''
+      `Miner: Sealed block with ${block.transactions.length} txs${
+        this.config.chainCommon.consensusType() === ConsensusType.ProofOfWork
+          ? ` (difficulty: ${block.header.difficulty})`
+          : ` (${inTurn ? 'in turn' : 'not in turn'})`
       }`
     )
     this.assembling = false

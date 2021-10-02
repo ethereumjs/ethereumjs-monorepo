@@ -75,7 +75,7 @@ export class FullSynchronizer extends Synchronizer {
     this.startingBlock = number
     this.config.chainCommon.setHardforkByBlockNumber(number, td)
     this.config.logger.info(
-      `Latest local block: number=${number.toNumber()} td=${td.toNumber()} hash=${short(
+      `Latest local block: number=${number} td=${td} hash=${short(
         hash
       )} hardfork=${this.config.chainCommon.hardfork()}`
     )
@@ -185,12 +185,12 @@ export class FullSynchronizer extends Synchronizer {
         const first = new BN(blocks[0].header.number)
         const hash = short(blocks[0].hash())
         const baseFeeAdd = this.config.chainCommon.gteHardfork('london')
-          ? `basefee=${blocks[0].header.baseFeePerGas} `
+          ? `baseFee=${blocks[0].header.baseFeePerGas} `
           : ''
         this.config.logger.info(
-          `Imported blocks count=${blocks.length} number=${first.toString(
-            10
-          )} hash=${hash} ${baseFeeAdd}hardfork=${this.config.chainCommon.hardfork()} peers=${
+          `Imported blocks count=${
+            blocks.length
+          } number=${first} hash=${hash} ${baseFeeAdd}hardfork=${this.config.chainCommon.hardfork()} peers=${
             this.pool.size
           }`
         )

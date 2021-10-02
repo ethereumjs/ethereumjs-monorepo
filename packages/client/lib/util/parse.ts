@@ -1,6 +1,7 @@
 import { URL } from 'url'
 import multiaddr from 'multiaddr'
 import { BlockHeader } from '@ethereumjs/block'
+import Common, { Hardfork } from '@ethereumjs/common'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import {
   Account,
@@ -12,8 +13,8 @@ import {
   isHexPrefixed,
   stripHexPrefix,
 } from 'ethereumjs-util'
-import { MultiaddrLike } from '../types'
-import { GenesisState } from '@ethereumjs/common/dist/types'
+import type { MultiaddrLike } from '../types'
+import type { GenesisState } from '@ethereumjs/common/dist/types'
 
 /**
  * Parses multiaddrs and bootnodes to multiaddr format.
@@ -123,7 +124,17 @@ async function createGethGenesisStateTrie(alloc: any) {
 }
 
 async function createGethGenesisBlockHeader(json: any) {
-  const { gasLimit, difficulty, extraData, number, nonce, timestamp, mixHash, alloc } = json
+  const {
+    gasLimit,
+    difficulty,
+    extraData,
+    number,
+    nonce,
+    timestamp,
+    mixHash,
+    alloc,
+    baseFeePerGas,
+  } = json
   const storageTrie = await createGethGenesisStateTrie(alloc)
   const stateRoot = storageTrie.root
   const headerData = {
@@ -135,8 +146,14 @@ async function createGethGenesisBlockHeader(json: any) {
     timestamp,
     mixHash,
     stateRoot,
+    baseFeePerGas,
   }
-  return BlockHeader.fromHeaderData(headerData) // TODO: Pass in common?
+  let common
+  if (baseFeePerGas !== undefined && baseFeePerGas !== null) {
+    // chainId is not important here, we just need London enabled to set baseFeePerGas
+    common = new Common({ chain: 1, hardfork: Hardfork.London })
+  }
+  return BlockHeader.fromHeaderData(headerData, { common })
 }
 
 /**
@@ -145,8 +162,18 @@ async function createGethGenesisBlockHeader(json: any) {
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
 async function parseGethParams(json: any) {
-  const { name, config, timestamp, gasLimit, difficulty, nonce, extraData, mixHash, coinbase } =
-    json
+  const {
+    name,
+    config,
+    timestamp,
+    gasLimit,
+    difficulty,
+    nonce,
+    extraData,
+    mixHash,
+    coinbase,
+    baseFeePerGas,
+  } = json
   // EIP155 and EIP158 are both part of Spurious Dragon hardfork and must occur at the same time
   // but have different configuration parameters in geth genesis parameters
   if (config.eip155Block !== config.eip158Block) {
@@ -173,6 +200,7 @@ async function parseGethParams(json: any) {
       mixHash,
       coinbase,
       stateRoot: '0x' + stateRoot.toString('hex'),
+      baseFeePerGas,
     },
     bootstrapNodes: [],
     consensus: config.ethash
@@ -219,10 +247,13 @@ async function parseGethParams(json: any) {
   }
   params.hardforks = hardforks
     .map((name) => ({
-      name: name,
+      name,
       block: name === 'chainstart' ? 0 : config[forkMap[name]] ?? null,
     }))
     .filter((fork) => fork.block !== null)
+  if (config.terminalTotalDifficulty !== undefined) {
+    params.hardforks.push({ name: 'merge', td: config.terminalTotalDifficulty, block: null })
+  }
   return params
 }
 /**

@@ -74,7 +74,8 @@ export class Engine {
    *       * timestamp - value for the `timestamp` field of the new payload
    *       * random - value for the `random` field of the new payload
    *       * feeRecipient - suggested value for the `coinbase` field of the new payload
-   * @returns payloadId|Error
+   * @returns A response object or an error. Response object:
+   *       * payloadId - identifier of the payload building process
    */
   async preparePayload(params: [string, string, string, string]) {
     let [parentHash, timestamp, random, feeRecipient]: any = params

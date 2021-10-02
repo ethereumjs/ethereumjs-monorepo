@@ -89,7 +89,7 @@ export interface HeaderData {
   stateRoot?: BufferLike
   transactionsTrie?: BufferLike
   receiptTrie?: BufferLike
-  bloom?: BufferLike
+  logsBloom?: BufferLike
   difficulty?: BNLike
   number?: BNLike
   gasLimit?: BNLike
@@ -99,6 +99,14 @@ export interface HeaderData {
   mixHash?: BufferLike
   nonce?: BufferLike
   baseFeePerGas?: BNLike
+
+  /*
+   * Backwards compatible alias for {@link HeaderData.logsBloom}
+   * Will only be used if {@link HeaderData.logsBloom} is undefined
+   * (planned to be removed in next major release)
+   * @deprecated
+   */
+  bloom?: BufferLike
 }
 
 /**
@@ -144,7 +152,7 @@ export interface JsonHeader {
   stateRoot?: string
   transactionsTrie?: string
   receiptTrie?: string
-  bloom?: string
+  logsBloom?: string
   difficulty?: string
   number?: string
   gasLimit?: string
@@ -153,7 +161,20 @@ export interface JsonHeader {
   extraData?: string
   mixHash?: string
   nonce?: string
+  baseFeePerGas?: string
+
+  /*
+   * Backwards compatible alias for {@link JsonHeader.baseFeePerGas}
+   * (planned to be removed in next major release)
+   * @deprecated
+   */
   baseFee?: string
+  /*
+   * Backwards compatible alias for {@link JsonHeader.logsBloom}
+   * (planned to be removed in next major release)
+   * @deprecated
+   */
+  bloom?: BufferLike
 }
 
 export interface Blockchain {
