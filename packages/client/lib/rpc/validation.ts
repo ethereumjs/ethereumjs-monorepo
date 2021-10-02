@@ -224,4 +224,81 @@ export const validators = {
       }
     }
   },
+
+  /**
+   * object validator to check if type is object with
+   * required keys and expected validation of values
+   * @param form object with keys and values of validators
+   * @returns validator function with params:
+   *   - @param params parameters of method
+   *   - @param index index of parameter
+   */
+  get object() {
+    return (form: { [key: string]: Function }) => {
+      return (params: any[], index: number) => {
+        if (typeof params[index] !== 'object') {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: argument is not object`,
+          }
+        }
+        for (const [key, validator] of Object.entries(form)) {
+          const value = params[index][key]
+          const result = validator([value], 0)
+          if (result) {
+            // add key to message for context
+            const originalMessage = result.message.split(':')
+            const message = `invalid argument ${index} for key '${key}':${originalMessage[1]}`
+            return { ...result, message }
+          }
+        }
+      }
+    }
+  },
+
+  /**
+   * array validator to check if each element
+   * of the array passes the passed-in validator
+   * @param validator validator to check against the elements of the array
+   * @returns validator function with params:
+   *   - @param params parameters of method
+   *   - @param index index of parameter
+   */
+  get array() {
+    return (validator: Function) => {
+      return (params: any[], index: number) => {
+        if (!Array.isArray(params[index])) {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: argument is not array`,
+          }
+        }
+        for (const value of params[index]) {
+          const result = validator([value], 0)
+          if (result) return result
+        }
+      }
+    }
+  },
+
+  /**
+   * validator to ensure that contains one of the string values
+   * @param values array of possible values
+   * @returns validator function with params:
+   *   - @param params parameters of method
+   *   - @param index index of parameter
+   */
+  get values() {
+    return (values: string[]) => {
+      return (params: any[], index: number) => {
+        if (!values.includes(params[index])) {
+          const valueOptions = '[' + values.map((v) => `"${v}"`).join(', ') + ']'
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: argument is not one of ${valueOptions}`,
+          }
+        }
+      }
+    }
+  },
 }

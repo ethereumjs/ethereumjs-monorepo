@@ -253,3 +253,96 @@ tape(`${prefix} transaction`, (t) => {
 
   t.end()
 })
+
+tape(`${prefix} object`, (t) => {
+  // valid
+  t.ok(
+    validatorResult(
+      validators.object({
+        address: validators.address,
+        blockHash: validators.blockHash,
+        bool: validators.bool,
+        hex: validators.hex,
+      })(
+        [
+          {
+            address: '0x25ed58c027921e14d86380ea2646e3a1b5c55a8b',
+            blockHash: '0x4152dae052dceaeaeff588aec17a88679fc61aa0c0ca362a2572b94f9c542b24',
+            bool: true,
+            hex: '0x1',
+          },
+        ],
+        0
+      )
+    )
+  )
+
+  // invalid
+  t.notOk(
+    validatorResult(validators.object({ address: validators.address })([{ address: '0x0' }], 0))
+  )
+  t.notOk(
+    validatorResult(
+      validators.object({ blockHash: validators.blockHash })([{ blockHash: '0x0' }], 0)
+    )
+  )
+  t.notOk(validatorResult(validators.object({ bool: validators.bool })([{ bool: '0x0' }], 0)))
+  t.notOk(validatorResult(validators.object({ hex: validators.hex })([{ hex: '1' }], 0)))
+
+  t.end()
+})
+
+tape(`${prefix} array`, (t) => {
+  // valid
+  t.ok(validatorResult(validators.array(validators.hex)([['0x0', '0x1', '0x2']], 0)))
+  t.ok(
+    validatorResult(
+      validators.array(validators.address)(
+        [
+          [
+            '0xb7e390864a90b7b923c9f9310c6f98aafe43f707',
+            '0xda4a22ad0d0e9aff0846ca54225637ada5bf7a14',
+          ],
+        ],
+        0
+      )
+    )
+  )
+  t.ok(
+    validatorResult(
+      validators.array(validators.blockHash)(
+        [['0xb6dbbc1c702583de187e1284a00a23f9d322bf96f70fd4968b6339d0ace066b3']],
+        0
+      )
+    )
+  )
+  t.ok(validatorResult(validators.array(validators.bool)([[true, false]], 0)))
+
+  // invalid
+  t.notOk(validatorResult(validators.array(validators.hex)([['0x0', '0x1', '0x2', 'true']], 0)))
+  t.notOk(
+    validatorResult(
+      validators.array(validators.address)(
+        [['0xb7e390864a90b7b923c9f9310c6f98aafe43f707', '0x0']],
+        0
+      )
+    )
+  )
+  t.notOk(validatorResult(validators.array(validators.blockHash)([['0xb6dbbc1cd0ace066b3']], 0)))
+  t.notOk(validatorResult(validators.array(validators.bool)([['0x123', '0x456', '0x789']], 0)))
+  t.notOk(validatorResult(validators.array(validators.bool)([[true, 'true']], 0)))
+
+  t.end()
+})
+
+tape(`${prefix} values`, (t) => {
+  // valid
+  t.ok(validatorResult(validators.values(['VALID', 'INVALID'])(['VALID'], 0)))
+  t.ok(validatorResult(validators.values(['VALID', 'INVALID'])(['INVALID'], 0)))
+
+  // invalid
+  t.notOk(validatorResult(validators.values(['VALID', 'INVALID'])(['ANOTHER'], 0)))
+  t.notOk(validatorResult(validators.values(['VALID', 'INVALID'])(['valid'], 0)))
+
+  t.end()
+})
