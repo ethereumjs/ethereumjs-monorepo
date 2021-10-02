@@ -32,7 +32,7 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
+    extensions: ['.ts', '.js'],
   },
   output: {
     filename: 'bundle.js',
@@ -41,13 +41,13 @@ module.exports = {
   },
   resolve: {
     fallback: {
-      crypto: require.resolve('crypto-browserify'),
-      dgram: false,
-      fs: false,
-      net: false,
-      os: require.resolve('os-browserify/browser'),
-      path: false,
-      stream: require.resolve('stream-browserify'),
+      crypto: require.resolve('crypto-browserify'), // used by: rlpxpeer, bin/cli.ts
+      dgram: false, // used by: rlpxpeer via @ethereumjs/devp2p
+      fs: false, // used by: FullSynchronizer via @ethereumjs/vm
+      net: false, // used by: rlpxpeer
+      os: require.resolve('os-browserify/browser'), // used by: bin/cli.ts, web3_clientVersion rpc
+      path: false, // used by: bin/cli.ts
+      stream: require.resolve('stream-browserify'), // used by: fetcher
     },
   },
   performance: {

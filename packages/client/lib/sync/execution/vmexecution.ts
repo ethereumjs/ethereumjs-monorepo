@@ -1,9 +1,10 @@
-import { Execution, ExecutionOptions } from './execution'
-import { short } from '../../util'
+import { Block } from '@ethereumjs/block'
+import { Hardfork } from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { Block } from '@ethereumjs/block'
+import { Execution, ExecutionOptions } from './execution'
+import { short } from '../../util'
 import { debugCodeReplayBlock } from '../../util/debug'
 import { Event } from '../../types'
 
@@ -185,7 +186,7 @@ export class VMExecution extends Execution {
         const firstHash = short(startHeadBlock.hash())
         const lastNumber = endHeadBlock.header.number.toNumber()
         const lastHash = short(endHeadBlock.hash())
-        const baseFeeAdd = this.config.execCommon.gteHardfork('london')
+        const baseFeeAdd = this.config.execCommon.gteHardfork(Hardfork.London)
           ? `baseFee=${endHeadBlock.header.baseFeePerGas} `
           : ''
         this.config.logger.info(

@@ -1,5 +1,6 @@
 import { BN } from 'ethereumjs-util'
 import { BlockHeader } from '@ethereumjs/block'
+import { Hardfork } from '@ethereumjs/common'
 import { Peer } from '../net/peer/peer'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import { HeaderFetcher } from './fetcher'
@@ -122,7 +123,7 @@ export class LightSynchronizer extends Synchronizer {
         headers = headers as BlockHeader[]
         const first = new BN(headers[0].number)
         const hash = short(headers[0].hash())
-        const baseFeeAdd = this.config.chainCommon.gteHardfork('london')
+        const baseFeeAdd = this.config.chainCommon.gteHardfork(Hardfork.London)
           ? `baseFee=${headers[0].baseFeePerGas} `
           : ''
         this.config.logger.info(

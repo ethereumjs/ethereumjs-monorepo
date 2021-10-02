@@ -1,9 +1,10 @@
+import { Block } from '@ethereumjs/block'
+import { Hardfork } from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
 import { Peer } from '../net/peer/peer'
 import { short } from '../util'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import { BlockFetcher } from './fetcher'
-import { Block } from '@ethereumjs/block'
 import { VMExecution } from './execution/vmexecution'
 import { TxPool } from './txpool'
 import { Event } from '../types'
@@ -184,7 +185,7 @@ export class FullSynchronizer extends Synchronizer {
         blocks = blocks as Block[]
         const first = new BN(blocks[0].header.number)
         const hash = short(blocks[0].hash())
-        const baseFeeAdd = this.config.chainCommon.gteHardfork('london')
+        const baseFeeAdd = this.config.chainCommon.gteHardfork(Hardfork.London)
           ? `baseFee=${blocks[0].header.baseFeePerGas} `
           : ''
         this.config.logger.info(

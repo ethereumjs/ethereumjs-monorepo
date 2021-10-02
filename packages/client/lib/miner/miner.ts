@@ -222,7 +222,7 @@ export class Miner {
     }
 
     let baseFeePerGas
-    const londonHardforkBlock = this.config.chainCommon.hardforkBlockBN('london')
+    const londonHardforkBlock = this.config.chainCommon.hardforkBlockBN(Hardfork.London)
     const isInitialEIP1559Block = londonHardforkBlock && number.eq(londonHardforkBlock)
     if (isInitialEIP1559Block) {
       // Get baseFeePerGas from `paramByEIP` since 1559 not currently active on common
@@ -297,10 +297,10 @@ export class Miner {
     // Build block, sealing it
     const block = await blockBuilder.build(this.nextSolution)
     this.config.logger.info(
-      `Miner: Sealed block with ${block.transactions.length} txs${
+      `Miner: Sealed block with ${block.transactions.length} txs ${
         this.config.chainCommon.consensusType() === ConsensusType.ProofOfWork
-          ? ` (difficulty: ${block.header.difficulty})`
-          : ` (${inTurn ? 'in turn' : 'not in turn'})`
+          ? `(difficulty: ${block.header.difficulty})`
+          : `(${inTurn ? 'in turn' : 'not in turn'})`
       }`
     )
     this.assembling = false
