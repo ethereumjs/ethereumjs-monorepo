@@ -13,7 +13,7 @@ import { OpcodeList, getOpcodesForHF } from './evm/opcodes'
 import { precompiles } from './evm/precompiles'
 import runBlockchain from './runBlockchain'
 const AsyncEventEmitter = require('async-eventemitter')
-const promisify = require('util.promisify')
+import { promisify } from 'util'
 
 // very ugly way to detect if we are running in a browser
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
