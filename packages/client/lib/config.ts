@@ -107,6 +107,11 @@ export interface ConfigOptions {
   rpcaddr?: string
 
   /**
+   * Enable merge Engine API RPC endpoints
+   */
+  rpcEngine?: boolean
+
+  /**
    * Logging verbosity
    *
    * Choices: ['debug', 'info', 'warn', 'error', 'off']
@@ -214,6 +219,7 @@ export class Config {
   public static readonly TRANSPORTS_DEFAULT = ['rlpx', 'libp2p']
   public static readonly PORT_DEFAULT = 30303
   public static readonly RPC_DEFAULT = false
+  public static readonly RPC_ENGINE_DEFAULT = false
   public static readonly RPCPORT_DEFAULT = 8545
   public static readonly RPCADDR_DEFAULT = 'localhost'
   public static readonly LOGLEVEL_DEFAULT = 'info'
@@ -236,6 +242,7 @@ export class Config {
   public readonly rpc: boolean
   public readonly rpcport: number
   public readonly rpcaddr: string
+  public readonly rpcEngine: boolean
   public readonly loglevel: string
   public readonly maxPerRequest: number
   public readonly minPeers: number
@@ -271,6 +278,7 @@ export class Config {
     this.rpc = options.rpc ?? Config.RPC_DEFAULT
     this.rpcport = options.rpcport ?? Config.RPCPORT_DEFAULT
     this.rpcaddr = options.rpcaddr ?? Config.RPCADDR_DEFAULT
+    this.rpcEngine = options.rpcEngine ?? Config.RPC_ENGINE_DEFAULT
     this.loglevel = options.loglevel ?? Config.LOGLEVEL_DEFAULT
     this.maxPerRequest = options.maxPerRequest ?? Config.MAXPERREQUEST_DEFAULT
     this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
@@ -283,6 +291,11 @@ export class Config {
 
     this.synchronized = false
     this.lastSyncDate = 0
+    if (this.rpcEngine) {
+      // Temporary workaround for merge interop
+      this.synchronized = true
+      this.lastSyncDate = Date.now()
+    }
 
     // TODO: map chainParams (and lib/util.parseParams) to new Common format
     const common =

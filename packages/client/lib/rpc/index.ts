@@ -27,8 +27,14 @@ export class RPCManager {
   getMethods(): any {
     const methods: any = {}
 
-    modules.list.forEach((modName: string) => {
-      this._config.logger.debug(`Initialize ${modName} module`)
+    for (const modName of modules.list) {
+      if (modName === 'Engine' && !this._config.rpcEngine) {
+        continue
+      }
+      this._config.logger.debug('='.repeat(29))
+      this._config.logger.debug(`RPC: Initialize ${modName} module`)
+      this._config.logger.debug('='.repeat(29))
+
       const mod = new (modules as any)[modName](this._client)
 
       RPCManager.getMethodNames((modules as any)[modName])
@@ -36,11 +42,11 @@ export class RPCManager {
         .forEach((methodName: string) => {
           const concatedMethodName = `${modName.toLowerCase()}_${methodName}`
 
-          this._config.logger.debug(`Setup module method '${concatedMethodName}' to RPC`)
+          this._config.logger.debug(`Setup method ${concatedMethodName}`)
           methods[concatedMethodName] = mod[methodName].bind(mod)
         })
-    })
-
+      this._config.logger.debug('')
+    }
     return methods
   }
 

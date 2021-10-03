@@ -53,6 +53,7 @@ export class VMExecution extends Execution {
     this.config.execCommon.setHardforkByBlockNumber(number, td)
     this.hardfork = this.config.execCommon.hardfork()
     this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
+    await this.vm.stateManager.generateCanonicalGenesis()
   }
 
   /**
@@ -98,9 +99,7 @@ export class VMExecution extends Execution {
             parentState = parentBlock.header.stateRoot
             // generate genesis state if we are at the genesis block
             // we don't have the genesis state
-            if (!headBlock) {
-              await this.vm.stateManager.generateCanonicalGenesis()
-            } else {
+            if (headBlock) {
               parentState = headBlock.header.stateRoot
             }
           }
@@ -155,7 +154,7 @@ export class VMExecution extends Execution {
               this.config.logger.warn(
                 `Set back hardfork along block deletion number=${blockNumber} hash=${hash} old=${this.hardfork} new=${hardfork}`
               )
-              this.config.execCommon.setHardforkByBlockNumber(blockNumber)
+              this.config.execCommon.setHardforkByBlockNumber(blockNumber, td)
             }*/
             // Option a): set iterator head to the parent block so that an
             // error can repeatedly processed for debugging

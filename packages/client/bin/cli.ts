@@ -9,7 +9,7 @@ import { Server as RPCServer } from 'jayson/promise'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { _getInitializedChains } from '@ethereumjs/common/dist/chains'
 import { Address, toBuffer } from 'ethereumjs-util'
-import { parseMultiaddrs, parseGenesisState, parseCustomParams } from '../lib/util'
+import { parseMultiaddrs, parseGenesisState, parseCustomParams, inspectParams } from '../lib/util'
 import EthereumClient from '../lib/client'
 import { Config } from '../lib/config'
 import { Logger } from '../lib/logging'
@@ -89,6 +89,11 @@ const args = require('yargs')
     rpcaddr: {
       describe: 'HTTP-RPC server listening interface',
       default: Config.RPCADDR_DEFAULT,
+    },
+    rpcEngine: {
+      describe: 'Enable merge Engine API RPC endpoints',
+      boolean: true,
+      default: Config.RPC_ENGINE_DEFAULT,
     },
     helprpc: {
       describe: 'Display the JSON RPC help with a list of all RPC methods implemented (and exit)',
@@ -204,6 +209,13 @@ function runRpcServer(client: EthereumClient, config: Config) {
   const server = new RPCServer(manager.getMethods())
   config.logger.info(`RPC HTTP endpoint opened: http://${rpcaddr}:${rpcport}`)
   server.http().listen(rpcport)
+
+  server.on('request', (request) => {
+    config.logger.debug(`${request.method} called with params:\n${inspectParams(request.params)}`)
+  })
+  server.on('response', (request, response) => {
+    config.logger.debug(`${request.method} responded with:\n${inspectParams(response)}`)
+  })
 
   return server
 }
@@ -387,6 +399,10 @@ async function run() {
     // Use geth genesis parameters file if specified
     const genesisFile = JSON.parse(readFileSync(args.gethGenesis, 'utf-8'))
     const chainName = path.parse(args.gethGenesis).base.split('.')[0]
+    if (chainName.includes('merge')) {
+      // Temporary: remove merge interop datadir for clean runs
+      removeSync(`${args.datadir ?? Config.DATADIR_DEFAULT}/${chainName}`)
+    }
     const genesisParams = await parseCustomParams(genesisFile, chainName)
     const genesisState = genesisFile.alloc ? await parseGenesisState(genesisFile) : {}
     common = new Common({
@@ -419,6 +435,7 @@ async function run() {
     rpc: args.rpc,
     rpcport: args.rpcport,
     rpcaddr: args.rpcaddr,
+    rpcEngine: args.rpcEngine,
     loglevel: args.loglevel,
     maxPerRequest: args.maxPerRequest,
     minPeers: args.minPeers,

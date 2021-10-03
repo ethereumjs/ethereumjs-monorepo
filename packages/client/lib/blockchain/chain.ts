@@ -80,10 +80,10 @@ export interface GenesisBlockParams {
  */
 export class Chain {
   public config: Config
-
   public chainDB: LevelUp
   public blockchain: Blockchain
   public opened: boolean
+  public mergeFirstFinalizedBlockNumber: BN | undefined
 
   private _headers: ChainHeaders = {
     latest: null,
@@ -231,6 +231,9 @@ export class Chain {
 
     this._headers = headers
     this._blocks = blocks
+
+    this.config.chainCommon.setHardforkByBlockNumber(headers.latest.number, headers.td)
+
     this.config.events.emit(Event.CHAIN_UPDATED)
   }
 

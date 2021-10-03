@@ -53,9 +53,8 @@ export class Block {
       common: header._common,
       // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
       calcDifficultyFromHeader: undefined,
-    }
-    if (uncleOpts.hardforkByTD) {
-      delete uncleOpts.hardforkByBlockNumber
+      // Uncles are obsolete post-merge (no use for hardforkByTD)
+      hardforkByTD: undefined,
     }
     for (const uhData of uhsData ?? []) {
       const uh = BlockHeader.fromHeaderData(uhData, uncleOpts)
@@ -297,15 +296,17 @@ export class Block {
       throw this.header._error(msg)
     }
 
-    if (!onlyHeader) {
-      const validateTxTrie = await this.validateTransactionsTrie()
-      if (!validateTxTrie) {
-        throw new Error('invalid transaction trie')
-      }
+    if (onlyHeader) {
+      return
+    }
 
-      if (!this.validateUnclesHash()) {
-        throw new Error('invalid uncle hash')
-      }
+    const validateTxTrie = await this.validateTransactionsTrie()
+    if (!validateTxTrie) {
+      throw new Error('invalid transaction trie')
+    }
+
+    if (!this.validateUnclesHash()) {
+      throw new Error('invalid uncle hash')
     }
   }
 

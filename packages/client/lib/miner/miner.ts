@@ -25,17 +25,15 @@ export interface MinerOptions {
  */
 export class Miner {
   private DEFAULT_PERIOD = 10
+  private _nextAssemblyTimeoutId: NodeJS.Timeout | undefined /* global NodeJS */
   private config: Config
   private synchronizer: FullSynchronizer
   private assembling: boolean
   private period: number
-  public running: boolean
   private ethash: Ethash | undefined
   private ethashMiner: EthashMiner | undefined
   private nextSolution: Solution | undefined
-
-  /* global NodeJS */
-  private _nextAssemblyTimeoutId: NodeJS.Timeout | undefined
+  public running: boolean
 
   /**
    * Create miner
@@ -166,9 +164,9 @@ export class Miner {
     }
     this.config.events.on(Event.CHAIN_UPDATED, setInterrupt.bind(this))
 
-    const parentBlockHeader = this.latestBlockHeader()
-    const number = parentBlockHeader.number.addn(1)
-    let { gasLimit } = parentBlockHeader
+    const parentBlock = (this.synchronizer as any).chain.blocks.latest
+    const number = parentBlock.header.number.addn(1)
+    let { gasLimit } = parentBlock.header
 
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority) {
       // Abort if we have too recently signed
@@ -196,19 +194,9 @@ export class Miner {
     // is inserted into the canonical chain.
     const vmCopy = this.synchronizer.execution.vm.copy()
 
-    if (parentBlockHeader.number.isZero()) {
-      // In the current architecture of the client,
-      // if we are on the genesis block the canonical genesis state
-      // will not have been initialized yet in the execution vm
-      // since the following line won't be reached:
-      // https://github.com/ethereumjs/ethereumjs-monorepo/blob/c008e8eb76f520df83eb47c769e3a006bc24124f/packages/client/lib/sync/execution/vmexecution.ts#L100
-      // So we will do it here:
-      await vmCopy.stateManager.generateCanonicalGenesis()
-    } else {
-      // Set the state root to ensure the resulting state
-      // is based on the parent block's state
-      await vmCopy.stateManager.setStateRoot(parentBlockHeader.stateRoot)
-    }
+    // Set the state root to ensure the resulting state
+    // is based on the parent block's state
+    await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
 
     let difficulty
     let cliqueSigner
@@ -232,10 +220,8 @@ export class Miner {
       // Set initial EIP1559 block gas limit to 2x parent gas limit per logic in `block.validateGasLimit`
       gasLimit = gasLimit.muln(2)
     } else if (this.config.chainCommon.isActivatedEIP(1559)) {
-      baseFeePerGas = parentBlockHeader.calcNextBaseFee()
+      baseFeePerGas = parentBlock.header.calcNextBaseFee()
     }
-
-    const parentBlock = (this.synchronizer as any).chain.blocks.latest
 
     let calcDifficultyFromHeader
     let coinbase
