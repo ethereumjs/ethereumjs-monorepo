@@ -59,8 +59,7 @@
     "ethereumjs-util": "^7.1.2",
     "functional-red-black-tree": "^1.0.1",
     "mcl-wasm": "^0.7.1",
-    "rustbn.js": "~0.2.0",
-    "util.promisify": "^1.0.1"
+    "rustbn.js": "~0.2.0"
   },
   "devDependencies": {
     "@types/benchmark": "^1.0.33",
