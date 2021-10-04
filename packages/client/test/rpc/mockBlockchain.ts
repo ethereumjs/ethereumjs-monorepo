@@ -1,12 +1,24 @@
 import { Block } from '@ethereumjs/block'
-import { bufferToHex } from 'ethereumjs-util'
+import { BN, bufferToHex, toBuffer } from 'ethereumjs-util'
 
 export function mockBlockchain(options: any = {}) {
+  const number = options.number ?? '0x444444'
+  const blockHash =
+    options.hash ?? '0x910abca1728c53e8d6df870dd7af5352e974357dc58205dea1676be17ba6becf'
   const txHash = Buffer.from(
     '0be3065cf288b071ccff922c1c601e2e5628d488b66e781c260ecee36054a2dc',
     'hex'
   )
   const block = {
+    hash: () => toBuffer(blockHash),
+    header: {
+      number: new BN(toBuffer(number)),
+    },
+    toJSON: () => ({
+      ...Block.fromBlockData({ header: { number } }).toJSON(),
+      hash: options.hash ?? blockHash,
+      transactions: options.transactions ?? [{ hash: bufferToHex(txHash) }],
+    }),
     transactions: options.transactions ?? [
       {
         hash: () => {
@@ -14,11 +26,7 @@ export function mockBlockchain(options: any = {}) {
         },
       },
     ],
-    toJSON: () => ({
-      number: options.number ?? 444444,
-      hash: options.hash ?? '0x910abca1728c53e8d6df870dd7af5352e974357dc58205dea1676be17ba6becf',
-      transactions: options.transactions ?? [{ hash: bufferToHex(txHash) }],
-    }),
+    uncleHeaders: [],
   }
   return {
     getBlock: async (_data: any) => {

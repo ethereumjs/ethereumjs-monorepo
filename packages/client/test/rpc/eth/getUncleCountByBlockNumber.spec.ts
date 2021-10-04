@@ -2,6 +2,7 @@ import tape from 'tape'
 import { BN } from 'ethereumjs-util'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
+import { checkError } from '../util'
 
 function createBlockchain() {
   const block = {
@@ -41,17 +42,7 @@ tape(`${method}: call with invalid block number`, async (t) => {
   const server = startRPC(manager.getMethods())
 
   const req = params(method, ['0x5a'])
-  const expectRes = (res: any) => {
-    const msg = 'should return invalid params'
-    if (
-      res.body.result.code !== INVALID_PARAMS &&
-      res.body.result.message !== 'specified block greater than current height'
-    ) {
-      throw new Error(msg)
-    } else {
-      t.pass(msg)
-    }
-  }
 
+  const expectRes = checkError(t, INVALID_PARAMS, 'specified block greater than current height')
   await baseRequest(t, server, req, 200, expectRes)
 })

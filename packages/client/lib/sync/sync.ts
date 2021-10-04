@@ -202,6 +202,11 @@ export abstract class Synchronizer {
    * chain updates
    */
   _syncedStatusCheck() {
+    if (this.config.rpcEngine) {
+      // Temporary for merge interop
+      return
+    }
+
     if (this.config.synchronized) {
       const diff = Date.now() - this.config.lastSyncDate
       if (diff >= this.SYNCED_STATE_REMOVAL_PERIOD) {

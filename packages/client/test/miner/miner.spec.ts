@@ -3,6 +3,7 @@ import td from 'testdouble'
 import Common, { Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
+import { DefaultStateManager, StateManager } from '@ethereumjs/vm/dist/state'
 import { Account, Address, BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { FullSynchronizer } from '../../lib/sync/fullsync'
@@ -11,9 +12,35 @@ import { Miner } from '../../lib/miner'
 import { Event } from '../../lib/types'
 import { wait } from '../integration/util'
 
+const A = {
+  address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
+  privateKey: Buffer.from(
+    '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
+    'hex'
+  ),
+}
+
+const B = {
+  address: new Address(Buffer.from('6f62d8382bf2587361db73ceca28be91b2acb6df', 'hex')),
+  privateKey: Buffer.from(
+    '2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6',
+    'hex'
+  ),
+}
+
+const setBalance = async (stateManager: StateManager, address: Address, balance: BN) => {
+  // this fn can be replaced with modifyAccountFields() when #1369 is available
+  await stateManager.checkpoint()
+  await stateManager.putAccount(address, new Account(new BN(0), balance))
+  await stateManager.commit()
+}
+
 tape('[Miner]', async (t) => {
   BlockHeader.prototype.validate = td.func<any>()
   td.replace('@ethereumjs/block', { BlockHeader })
+
+  DefaultStateManager.prototype.setStateRoot = td.func<any>()
+  td.replace('@ethereumjs/vm/dist/state', { DefaultStateManager })
 
   class PeerPool {
     open() {}
@@ -37,27 +64,13 @@ tape('[Miner]', async (t) => {
       }
     }
     blockchain: any = {
+      putBlock: async () => {},
+      cliqueActiveSigners: () => [A.address],
       cliqueSignerInTurn: async () => true,
       cliqueCheckRecentlySigned: () => false,
       // eslint-disable-next-line no-invalid-this
       copy: () => this.blockchain,
     }
-  }
-
-  const A = {
-    address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
-    privateKey: Buffer.from(
-      '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
-      'hex'
-    ),
-  }
-
-  const B = {
-    address: new Address(Buffer.from('6f62d8382bf2587361db73ceca28be91b2acb6df', 'hex')),
-    privateKey: Buffer.from(
-      '2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6',
-      'hex'
-    ),
   }
 
   const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berlin })
@@ -140,16 +153,11 @@ tape('[Miner]', async (t) => {
     const miner = new Miner({ config, synchronizer })
     const { txPool } = synchronizer
     const { vm } = synchronizer.execution
-    vm.blockchain.putBlock = async () => {} // stub
-    vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
+
     txPool.start()
     miner.start()
 
-    // add balance to account
-    await vm.stateManager.putAccount(A.address, new Account(new BN(0), new BN('200000000000001'))) // this line can be replaced with modifyAccountFields() when #1369 is available
-
-    // add a block to skip generateCanonicalGenesis() in assembleBlock()
-    await vm.runBlock({ block: Block.fromBlockData({}, { common }), generate: true })
+    await setBalance(vm.stateManager, A.address, new BN('200000000000001'))
 
     // add tx
     txPool.add(txA01)
@@ -180,17 +188,11 @@ tape('[Miner]', async (t) => {
       const miner = new Miner({ config, synchronizer })
       const { txPool } = synchronizer
       const { vm } = synchronizer.execution
-      vm.blockchain.putBlock = async () => {} // stub
-      vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
       txPool.start()
       miner.start()
 
-      // add balance to accounts
-      await vm.stateManager.putAccount(A.address, new Account(new BN(0), new BN('400000000000001'))) // these two lines can be replaced with modifyAccountFields() when #1369 is available
-      await vm.stateManager.putAccount(B.address, new Account(new BN(0), new BN('400000000000001')))
-
-      // add a block to skip generateCanonicalGenesis() in assembleBlock()
-      await vm.runBlock({ block: Block.fromBlockData({}, { common }), generate: true })
+      await setBalance(vm.stateManager, A.address, new BN('400000000000001'))
+      await setBalance(vm.stateManager, B.address, new BN('400000000000001'))
 
       // add txs
       txPool.add(txA01)
@@ -241,8 +243,6 @@ tape('[Miner]', async (t) => {
     const miner = new Miner({ config, synchronizer })
     const { txPool } = synchronizer
     const { vm } = synchronizer.execution
-    vm.blockchain.putBlock = async () => {} // stub
-    vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
     txPool.start()
     miner.start()
 
@@ -291,16 +291,10 @@ tape('[Miner]', async (t) => {
     const miner = new Miner({ config, synchronizer })
     const { txPool } = synchronizer
     const { vm } = synchronizer.execution
-    vm.blockchain.putBlock = async () => {} // stub
-    vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
     txPool.start()
     miner.start()
 
-    // add balance to accounts
-    await vm.stateManager.putAccount(A.address, new Account(new BN(0), new BN('200000000000001'))) // this line can be replaced with modifyAccountFields() when #1369 is available
-
-    // add a block to skip generateCanonicalGenesis() in assembleBlock()
-    await vm.runBlock({ block: Block.fromBlockData({}, { common }), generate: true })
+    await setBalance(vm.stateManager, A.address, new BN('200000000000001'))
 
     // add txs
     const data = '0xfe' // INVALID opcode, consumes all gas
@@ -345,16 +339,10 @@ tape('[Miner]', async (t) => {
 
     const { txPool } = synchronizer
     const { vm } = synchronizer.execution
-    vm.blockchain.putBlock = async () => {} // stub
-    vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
     txPool.start()
     miner.start()
 
-    // add balance to accounts
-    await vm.stateManager.putAccount(A.address, new Account(new BN(0), new BN('200000000000001'))) // this line can be replaced with modifyAccountFields() when #1369 is available
-
-    // add a block to skip generateCanonicalGenesis() in assembleBlock()
-    await vm.runBlock({ block: Block.fromBlockData({}, { common }), generate: true })
+    await setBalance(vm.stateManager, A.address, new BN('200000000000001'))
 
     // add many txs to slow assembling
     for (let i = 0; i < 1000; i++) {

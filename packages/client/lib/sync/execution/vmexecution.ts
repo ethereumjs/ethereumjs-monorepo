@@ -38,8 +38,7 @@ export class VMExecution extends Execution {
       })
     } else {
       this.vm = this.config.vm
-      //@ts-ignore blockchain has readonly property
-      this.vm.blockchain = this.chain.blockchain
+      ;(this.vm as any).blockchain = this.chain.blockchain
     }
   }
 
@@ -97,8 +96,6 @@ export class VMExecution extends Execution {
           if (!headBlock || reorg) {
             const parentBlock = await blockchain.getBlock(block.header.parentHash)
             parentState = parentBlock.header.stateRoot
-            // generate genesis state if we are at the genesis block
-            // we don't have the genesis state
             if (headBlock) {
               parentState = headBlock.header.stateRoot
             }

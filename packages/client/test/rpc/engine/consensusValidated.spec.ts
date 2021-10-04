@@ -39,6 +39,6 @@ tape(`${method}: call with unknown header`, async (t) => {
       status: 'VALID',
     },
   ])
-  const expectRes = checkError(t, 4, 'unknown header')
+  const expectRes = checkError(t, 4, 'Unknown header')
   await baseRequest(t, server, req, 200, expectRes)
 })

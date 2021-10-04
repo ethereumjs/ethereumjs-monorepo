@@ -21,6 +21,6 @@ tape(`${method}: call with unknown payloadId`, async (t) => {
   const { server } = baseSetup()
 
   const req = params(method, ['0x123'])
-  const expectRes = checkError(t, 5, 'unknown payload')
+  const expectRes = checkError(t, 5, 'Unknown payload')
   await baseRequest(t, server, req, 200, expectRes)
 })

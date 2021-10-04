@@ -284,7 +284,7 @@ export class Engine {
       await vmCopy.blockchain.putBlock(parent)
     }
 
-    const parentBlock = parentBlocks.length > 0 ? parentBlocks[0] : vmHead
+    const parentBlock = await vmCopy.blockchain.getBlock(parentHash)
     const number = parentBlock.header.number.addn(1)
     const { gasLimit } = parentBlock.header
     const baseFeePerGas = parentBlock.header.calcNextBaseFee()
@@ -301,9 +301,6 @@ export class Engine {
         gasLimit,
         baseFeePerGas,
         coinbase,
-      },
-      blockOpts: {
-        // hardforkByBlockNumber: true,
       },
     })
 
@@ -492,7 +489,7 @@ export class Engine {
       throw EngineError.UnknownHeader
     }
 
-    if (finalizedBlockHash.equals(Buffer.from([], 0, 32))) {
+    if (finalizedBlockHash.equals(Buffer.alloc(32))) {
       // All zeros means no finalized block yet
     } else {
       const finalizedBlock = this.validBlocks.get(finalizedBlockHash)

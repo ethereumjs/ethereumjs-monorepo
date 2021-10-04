@@ -28,7 +28,7 @@ export class RPCManager {
     const methods: any = {}
 
     for (const modName of modules.list) {
-      if (modName === 'Engine' && !this._config.rpcEngine) {
+      if (modName === 'Engine' && this._config.rpcEngine === false) {
         continue
       }
       this._config.logger.debug('='.repeat(29))

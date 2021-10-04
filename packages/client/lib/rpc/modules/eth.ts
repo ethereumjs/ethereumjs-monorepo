@@ -1,9 +1,12 @@
-import { Transaction, TransactionFactory } from '@ethereumjs/tx'
+import { Block } from '@ethereumjs/block'
+import { Transaction, TransactionFactory, JsonTx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
   BN,
   bufferToHex,
+  bnToHex,
+  intToHex,
   toBuffer,
   stripHexPrefix,
   setLengthLeft,
@@ -15,10 +18,72 @@ import { RpcTx } from '../types'
 import type { Chain } from '../../blockchain'
 import type { EthereumClient } from '../..'
 import { EthereumService } from '../../service'
+import { FullSynchronizer } from '../../sync'
 import type { EthProtocol } from '../../net/protocol'
 import type VM from '@ethereumjs/vm'
-import { Block } from '@ethereumjs/block'
-import { FullSynchronizer } from '../../sync'
+
+// Based on https://eth.wiki/json-rpc/API
+type StandardJsonRpcBlockParams = {
+  number: string // the block number. null when pending block.
+  hash: string // hash of the block. null when pending block.
+  parentHash: string // hash of the parent block.
+  nonce: string // hash of the generated proof-of-work. null when pending block.
+  sha3Uncles: string // SHA3 of the uncles data in the block.
+  logsBloom: string // the bloom filter for the logs of the block. null when pending block.
+  transactionsRoot: string // the root of the transaction trie of the block.
+  stateRoot: string // the root of the final state trie of the block.
+  receiptsRoot: string // the root of the receipts trie of the block.
+  miner: string // the address of the beneficiary to whom the mining rewards were given.
+  difficulty: string // integer of the difficulty for this block.
+  totalDifficulty: string // integer of the total difficulty of the chain until this block.
+  extraData: string // the “extra data” field of this block.
+  size: string // integer the size of this block in bytes.
+  gasLimit: string // the maximum gas allowed in this block.
+  gasUsed: string // the total used gas by all transactions in this block.
+  timestamp: string // the unix timestamp for when the block was collated.
+  transactions: JsonTx[] | string[] // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
+  uncles: string[] // Array of uncle hashes
+  baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
+}
+
+const blockToStandardJsonRpcFields = async (
+  block: Block,
+  chain: Chain,
+  includeTransactions: boolean
+): Promise<StandardJsonRpcBlockParams> => {
+  const json = block.toJSON()
+  const header = json!.header!
+  let transactions = json!.transactions ?? []
+
+  if (!includeTransactions) {
+    transactions = block.transactions.map((tx) => bufferToHex(tx.hash())) as any
+  }
+
+  const td = await chain.getTd(block.hash(), block.header.number)
+
+  return {
+    number: header.number!,
+    hash: bufferToHex(block.hash()),
+    parentHash: header.parentHash!,
+    nonce: header.nonce!,
+    sha3Uncles: header.uncleHash!,
+    logsBloom: header.logsBloom!,
+    transactionsRoot: header.transactionsTrie!,
+    stateRoot: header.stateRoot!,
+    receiptsRoot: header.receiptTrie!,
+    miner: header.coinbase!,
+    difficulty: header.difficulty!,
+    totalDifficulty: bnToHex(td),
+    extraData: header.extraData!,
+    size: intToHex(Buffer.byteLength(JSON.stringify(json))),
+    gasLimit: header.gasLimit!,
+    gasUsed: header.gasUsed!,
+    timestamp: header.timestamp!,
+    transactions,
+    uncles: block.uncleHeaders.map((uh) => bufferToHex(uh.hash())),
+    baseFeePerGas: header.baseFeePerGas,
+  }
+}
 
 /**
  * eth_* RPC module
@@ -108,7 +173,7 @@ export class Eth {
    */
   async blockNumber(_params = []) {
     const latestHeader = await this._chain.getLatestHeader()
-    return `0x${latestHeader.number.toString(16)}`
+    return bnToHex(latestHeader.number)
   }
 
   /**
@@ -140,7 +205,7 @@ export class Eth {
       const latest = await vm.blockchain.getLatestHeader()
       const number = latest.number.toString(16)
       if (blockOpt !== `0x${number}`) {
-        return {
+        throw {
           code: INVALID_PARAMS,
           message: `Currently only "latest" block supported`,
         }
@@ -173,7 +238,7 @@ export class Eth {
    */
   async chainId(_params = []) {
     const chainId = this._chain.config.chainCommon.chainIdBN()
-    return `0x${chainId.toString(16)}`
+    return bnToHex(chainId)
   }
 
   /**
@@ -207,7 +272,7 @@ export class Eth {
       const latest = await vm.blockchain.getLatestHeader()
       const number = latest.number.toString(16)
       if (blockOpt !== `0x${number}`) {
-        return {
+        throw {
           code: INVALID_PARAMS,
           message: `Currently only "latest" block supported`,
         }
@@ -235,7 +300,7 @@ export class Eth {
       skipBalance: true,
       skipBlockGasLimitValidation: true,
     })
-    return `0x${gasUsed.toString(16)}`
+    return bnToHex(gasUsed)
   }
 
   /**
@@ -259,7 +324,7 @@ export class Eth {
       const latest = await vm.blockchain.getLatestHeader()
       const number = latest.number.toString(16)
       if (blockOpt !== `0x${number}`) {
-        return {
+        throw {
           code: INVALID_PARAMS,
           message: `Currently only "latest" block supported`,
         }
@@ -268,7 +333,7 @@ export class Eth {
 
     const address = Address.fromString(addressHex)
     const account: Account = await vm.stateManager.getAccount(address)
-    return `0x${account.balance.toString(16)}`
+    return bnToHex(account.balance)
   }
 
   /**
@@ -281,11 +346,7 @@ export class Eth {
     const [blockHash, includeTransactions] = params
 
     const block = await this._chain.getBlock(toBuffer(blockHash))
-    const json = block.toJSON()
-    if (!includeTransactions) {
-      json.transactions = block.transactions.map((tx) => bufferToHex(tx.hash())) as any
-    }
-    return json
+    return await blockToStandardJsonRpcFields(block, this._chain, includeTransactions)
   }
 
   /**
@@ -300,7 +361,7 @@ export class Eth {
     if (blockOpt === 'latest') {
       block = await this._chain.getLatestBlock()
     } else if (blockOpt === 'pending') {
-      return {
+      throw {
         code: INVALID_PARAMS,
         message: `"pending" is not yet supported`,
       }
@@ -311,11 +372,7 @@ export class Eth {
       block = await this._chain.getBlock(blockNumberBN)
     }
 
-    const json = block.toJSON()
-    if (!includeTransactions) {
-      json.transactions = block.transactions.map((tx) => bufferToHex(tx.hash())) as any
-    }
-    return json
+    return await blockToStandardJsonRpcFields(block, this._chain, includeTransactions)
   }
 
   /**
@@ -325,8 +382,7 @@ export class Eth {
   async getBlockTransactionCountByHash(params: [string]) {
     const [blockHash] = params
     const block = await this._chain.getBlock(toBuffer(blockHash))
-    const json = block.toJSON()
-    return `0x${json.transactions!.length.toString(16)}`
+    return intToHex(block.transactions.length)
   }
 
   /**
@@ -350,7 +406,7 @@ export class Eth {
       const latest = await vm.blockchain.getLatestHeader()
       const number = latest.number.toString(16)
       if (blockOpt !== `0x${number}`) {
-        return {
+        throw {
           code: INVALID_PARAMS,
           message: `Currently only "latest" block supported`,
         }
@@ -384,7 +440,7 @@ export class Eth {
       const latest = await vm.blockchain.getLatestHeader()
       const number = latest.number.toString(16)
       if (blockOpt !== `0x${number}`) {
-        return {
+        throw {
           code: INVALID_PARAMS,
           message: `Currently only "latest" block supported`,
         }
@@ -419,7 +475,7 @@ export class Eth {
       const latest = await vm.blockchain.getLatestHeader()
       const number = latest.number.toString(16)
       if (blockOpt !== `0x${number}`) {
-        return {
+        throw {
           code: INVALID_PARAMS,
           message: `Currently only "latest" block supported`,
         }
@@ -428,7 +484,7 @@ export class Eth {
 
     const address = Address.fromString(addressHex)
     const account: Account = await vm.stateManager.getAccount(address)
-    return `0x${account.nonce.toString(16)}`
+    return bnToHex(account.nonce)
   }
 
   /**
@@ -436,7 +492,7 @@ export class Eth {
    * @param params An empty array
    */
   protocolVersion(_params = []) {
-    return `0x${this.ethVersion.toString(16)}`
+    return intToHex(this.ethVersion)
   }
 
   /**
@@ -450,7 +506,7 @@ export class Eth {
     const latest = (await this._chain.getLatestHeader()).number
 
     if (latest < blockNumberBN) {
-      return {
+      throw {
         code: INVALID_PARAMS,
         message: `specified block greater than current height`,
       }
@@ -469,48 +525,51 @@ export class Eth {
   async sendRawTransaction(params: [string]) {
     const [serializedTx] = params
 
+    const common = this.client.config.chainCommon.copy()
+    const { syncTargetHeight } = this.service.synchronizer
+    if (!syncTargetHeight && !this.client.config.mine) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: `client is not aware of the current chain height yet (give sync some more time)`,
+      }
+    }
+    // Set the tx common to an appropriate HF to create a tx
+    // with matching HF rules
+    if (syncTargetHeight) {
+      common.setHardforkByBlockNumber(syncTargetHeight)
+    }
+
+    let tx
     try {
-      const common = this.client.config.chainCommon.copy()
-      const { syncTargetHeight } = this.service.synchronizer
-      if (!syncTargetHeight && !this.client.config.mine) {
-        return {
-          code: INTERNAL_ERROR,
-          message: `client is not aware of the current chain height yet (give sync some more time)`,
-        }
-      }
-      // Set the tx common to an appropriate HF to create a tx
-      // with matching HF rules
-      if (syncTargetHeight) {
-        common.setHardforkByBlockNumber(syncTargetHeight)
-      }
-      const tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), { common })
-      if (!tx.isSigned()) {
-        return {
-          code: INVALID_PARAMS,
-          message: `tx needs to be signed`,
-        }
-      }
-
-      // Add the tx to own tx pool
-      const { txPool } = this.service.synchronizer as FullSynchronizer
-      txPool.add(tx)
-
-      const peerPool = this.service.pool
-      if (peerPool.peers.length === 0 && !this.client.config.mine) {
-        return {
-          code: INTERNAL_ERROR,
-          message: `no peer connection available`,
-        }
-      }
-      txPool.sendTransactions([tx], peerPool.peers)
-
-      return `0x${tx.hash().toString('hex')}`
+      tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), { common })
     } catch (e: any) {
-      return {
+      throw {
         code: PARSE_ERROR,
         message: `serialized tx data could not be parsed (${e.message})`,
       }
     }
+
+    if (!tx.isSigned()) {
+      throw {
+        code: INVALID_PARAMS,
+        message: `tx needs to be signed`,
+      }
+    }
+
+    // Add the tx to own tx pool
+    const { txPool } = this.service.synchronizer as FullSynchronizer
+    txPool.add(tx)
+
+    const peerPool = this.service.pool
+    if (peerPool.peers.length === 0 && !this.client.config.mine) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: `no peer connection available`,
+      }
+    }
+    txPool.sendTransactions([tx], peerPool.peers)
+
+    return bufferToHex(tx.hash())
   }
   /**
    * Returns an object with data about the sync status or false.
@@ -532,7 +591,7 @@ export class Eth {
     const startingBlock = `0x${synchronizer.startingBlock.toString(16)}`
     const bestPeer = synchronizer.best()
     if (!bestPeer) {
-      return {
+      throw {
         code: INTERNAL_ERROR,
         message: `no peer available for synchronization`,
       }
@@ -540,7 +599,7 @@ export class Eth {
 
     const highestBlockHeader = await synchronizer.latest(bestPeer)
     if (!highestBlockHeader) {
-      return {
+      throw {
         code: INTERNAL_ERROR,
         message: `highest block header unavailable`,
       }
