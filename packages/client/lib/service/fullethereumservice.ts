@@ -123,10 +123,10 @@ export class FullEthereumService extends EthereumService {
       peer.eth!.send('BlockBodies', { reqId, bodies })
     } else if (message.name === 'NewBlockHashes') {
       const blockNumbers: BN[] = message.data.map((v: [Buffer, BN]) => v[1])
-      const { mergeFirstFinalizedBlockNumber } = this.chain
+      const { mergeFirstFinalizedBlock } = this.chain
       if (
-        mergeFirstFinalizedBlockNumber &&
-        blockNumbers.some((n) => n.gte(mergeFirstFinalizedBlockNumber))
+        mergeFirstFinalizedBlock &&
+        blockNumbers.some((n) => n.gte(mergeFirstFinalizedBlock.header.number))
       ) {
         this.config.logger.debug(
           `Dropping peer ${peer.id} for sending NewBlockHashes after merge (EIP-3675)`

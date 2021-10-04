@@ -444,8 +444,9 @@ export default class Blockchain implements BlockchainInterface {
     }
   }
 
-  private _requireClique() {
-    if (this._common.consensusAlgorithm() !== ConsensusAlgorithm.Clique) {
+  private _requireClique(common?: Common) {
+    common = common ?? this._common
+    if (common.consensusAlgorithm() !== ConsensusAlgorithm.Clique) {
       throw new Error('Function call only supported for clique PoA networks')
     }
   }
@@ -713,9 +714,11 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * Returns a list with the current block signers
    * (only clique PoA, throws otherwise)
+   * @param common optionally pass a common if it may differ from the
+   * blockchain's current common (checks consensus is set to PoA)
    */
-  public cliqueActiveSigners(): Address[] {
-    this._requireClique()
+  public cliqueActiveSigners(common?: Common): Address[] {
+    this._requireClique(common)
     const signers = this._cliqueLatestSignerStates
     if (signers.length === 0) {
       return []

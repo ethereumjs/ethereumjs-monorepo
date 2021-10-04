@@ -489,6 +489,14 @@ export class Engine {
       throw EngineError.UnknownHeader
     }
 
+    const vmHeadHash = (await this.vm.blockchain.getLatestHeader()).hash()
+    const parentBlocks = await recursivelyFindParents(
+      vmHeadHash,
+      headBlock.header.parentHash,
+      this.validBlocks,
+      this.chain
+    )
+
     if (finalizedBlockHash.equals(Buffer.alloc(32))) {
       // All zeros means no finalized block yet
     } else {
@@ -496,12 +504,13 @@ export class Engine {
       if (!finalizedBlock) {
         throw EngineError.UnknownHeader
       }
-      if (!this.chain.mergeFirstFinalizedBlockNumber) {
-        this.chain.mergeFirstFinalizedBlockNumber = finalizedBlock.header.number
+      if (!this.chain.mergeFirstFinalizedBlock) {
+        this.chain.mergeFirstFinalizedBlock = finalizedBlock
       }
+      this.chain.mergeLastFinalizedBlock = finalizedBlock
     }
 
-    await this.chain.putBlocks([headBlock])
+    await this.chain.putBlocks([...parentBlocks, headBlock])
 
     return null
   }

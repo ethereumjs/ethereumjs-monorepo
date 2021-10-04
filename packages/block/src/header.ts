@@ -510,7 +510,7 @@ export class BlockHeader {
         'PoA blockchain requires method blockchain.cliqueActiveSigners() to validate clique difficulty'
       )
     }
-    const signers = (blockchain as any).cliqueActiveSigners()
+    const signers = (blockchain as any).cliqueActiveSigners(this._common)
     if (signers.length === 0) {
       // abort if signers are unavailable
       return true

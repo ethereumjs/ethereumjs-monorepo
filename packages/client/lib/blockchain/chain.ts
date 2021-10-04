@@ -83,7 +83,8 @@ export class Chain {
   public chainDB: LevelUp
   public blockchain: Blockchain
   public opened: boolean
-  public mergeFirstFinalizedBlockNumber: BN | undefined
+  public mergeFirstFinalizedBlock: Block | undefined
+  public mergeLastFinalizedBlock: Block | undefined
 
   private _headers: ChainHeaders = {
     latest: null,
