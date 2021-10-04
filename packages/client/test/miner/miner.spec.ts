@@ -356,7 +356,7 @@ tape('[Miner]', async (t) => {
     await wait(5)
     t.ok((miner as any).assembling, 'miner should be assembling')
     config.events.emit(Event.CHAIN_UPDATED)
-    await wait(10)
+    await wait(25)
     t.notOk((miner as any).assembling, 'miner should have stopped assembling')
     miner.stop()
     txPool.stop()

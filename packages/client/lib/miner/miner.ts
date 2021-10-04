@@ -26,6 +26,7 @@ export interface MinerOptions {
 export class Miner {
   private DEFAULT_PERIOD = 10
   private _nextAssemblyTimeoutId: NodeJS.Timeout | undefined /* global NodeJS */
+  private _boundChainUpdatedHandler: (() => void) | undefined
   private config: Config
   private synchronizer: FullSynchronizer
   private assembling: boolean
@@ -140,7 +141,8 @@ export class Miner {
       return false
     }
     this.running = true
-    this.config.events.on(Event.CHAIN_UPDATED, this.chainUpdated.bind(this))
+    this._boundChainUpdatedHandler = this.chainUpdated.bind(this)
+    this.config.events.on(Event.CHAIN_UPDATED, this._boundChainUpdatedHandler)
     this.config.logger.info(`Miner started. Assembling next block in ${this.period / 1000}s`)
     void this.queueNextAssembly() // void operator satisfies eslint rule for no-floating-promises
     return true
@@ -157,12 +159,16 @@ export class Miner {
     this.assembling = true
 
     // Abort if a new block is received while assembling this block
+    // eslint-disable-next-line prefer-const
+    let _boundSetInterruptHandler: () => void
     let interrupt = false
     const setInterrupt = () => {
       interrupt = true
       this.assembling = false
+      this.config.events.removeListener(Event.CHAIN_UPDATED, _boundSetInterruptHandler)
     }
-    this.config.events.on(Event.CHAIN_UPDATED, setInterrupt.bind(this))
+    _boundSetInterruptHandler = setInterrupt.bind(this)
+    this.config.events.once(Event.CHAIN_UPDATED, _boundSetInterruptHandler)
 
     const parentBlock = (this.synchronizer as any).chain.blocks.latest
     const number = parentBlock.header.number.addn(1)
@@ -295,7 +301,7 @@ export class Miner {
     await this.synchronizer.handleNewBlock(block)
     // Remove included txs from TxPool
     this.synchronizer.txPool.removeNewBlockTxs([block])
-    this.config.events.removeListener(Event.CHAIN_UPDATED, setInterrupt.bind(this))
+    this.config.events.removeListener(Event.CHAIN_UPDATED, _boundSetInterruptHandler)
   }
 
   /**
@@ -305,7 +311,7 @@ export class Miner {
     if (!this.running) {
       return false
     }
-    this.config.events.removeListener(Event.CHAIN_UPDATED, this.chainUpdated.bind(this))
+    this.config.events.removeListener(Event.CHAIN_UPDATED, this._boundChainUpdatedHandler!)
     if (this._nextAssemblyTimeoutId) {
       clearTimeout(this._nextAssemblyTimeoutId)
     }
