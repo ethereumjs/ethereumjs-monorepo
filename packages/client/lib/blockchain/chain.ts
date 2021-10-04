@@ -278,7 +278,7 @@ export class Chain {
     blocks = blocks.map((b: Block) =>
       Block.fromValuesArray(b.raw(), {
         common: this.config.chainCommon,
-        hardforkByBlockNumber: true,
+        hardforkByTD: this.headers.td,
       })
     )
     await this.blockchain.putBlocks(blocks)

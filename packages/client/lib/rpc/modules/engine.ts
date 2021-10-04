@@ -114,7 +114,7 @@ const recursivelyFindParents = async (
     )
     parentBlocks.push(block)
   }
-  return parentBlocks
+  return parentBlocks.reverse()
 }
 
 /**
@@ -279,7 +279,7 @@ export class Engine {
       this.chain
     )
 
-    for (const parent of parentBlocks.reverse()) {
+    for (const parent of parentBlocks) {
       await vmCopy.runBlock({ block: parent })
       await vmCopy.blockchain.putBlock(parent)
     }
@@ -423,7 +423,7 @@ export class Engine {
       this.chain
     )
 
-    for (const parent of parentBlocks.reverse()) {
+    for (const parent of parentBlocks) {
       await vmCopy.runBlock({ block: parent })
       await vmCopy.blockchain.putBlock(parent)
     }
@@ -451,12 +451,9 @@ export class Engine {
    * @returns None or an error
    */
   async consensusValidated(params: [{ blockHash: string; status: string }]) {
-    let { blockHash, status }: any = params[0]
+    const { blockHash, status }: any = params[0]
 
-    blockHash = toType(blockHash, TypeOutput.Buffer)
-    status = (Status as any)[status]
-
-    const block = this.validBlocks.get(blockHash)
+    const block = this.validBlocks.get(blockHash.slice(2))
 
     if (!block && status === Status.VALID) {
       throw EngineError.UnknownHeader
@@ -479,12 +476,9 @@ export class Engine {
    * @returns None or an error
    */
   async forkchoiceUpdated(params: [{ headBlockHash: string; finalizedBlockHash: string }]) {
-    let [headBlockHash, finalizedBlockHash]: any = params[0]
+    const { headBlockHash, finalizedBlockHash } = params[0]
 
-    headBlockHash = toType(headBlockHash, TypeOutput.Buffer)
-    finalizedBlockHash = toType(finalizedBlockHash, TypeOutput.Buffer)
-
-    const headBlock = this.validBlocks.get(headBlockHash)
+    const headBlock = this.validBlocks.get(headBlockHash.slice(2))
     if (!headBlock) {
       throw EngineError.UnknownHeader
     }
@@ -497,10 +491,10 @@ export class Engine {
       this.chain
     )
 
-    if (finalizedBlockHash.equals(Buffer.alloc(32))) {
+    if (finalizedBlockHash.slice(2) === '0'.repeat(64)) {
       // All zeros means no finalized block yet
     } else {
-      const finalizedBlock = this.validBlocks.get(finalizedBlockHash)
+      const finalizedBlock = this.validBlocks.get(finalizedBlockHash.slice(2))
       if (!finalizedBlock) {
         throw EngineError.UnknownHeader
       }
