@@ -29,11 +29,11 @@ export class TrieReadStream extends Readable {
         }
       })
     } catch (error: any) {
-        if (error.message == 'Missing node in DB') {
-          // pass
-        } else {
-          throw error
-        }
+      if (error.message == 'Missing node in DB') {
+        // pass
+      } else {
+        throw error
+      }
     }
     this.push(null)
   }
