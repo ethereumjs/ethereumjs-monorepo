@@ -4,6 +4,10 @@ import tape from 'tape'
 import VM from '../src'
 
 tape('correctly apply new account gas fee on pre-Spurious Dragon hardforks', async (t) => {
+  // This transaction https://etherscan.io/tx/0x26ea8719eeca5737f8ca872bca1ac53cea9bf6e11462dd83317c2e66a4e43d7b produced an error
+  // in our VM where we were not applying the new account gas fee (25k wei) for account creation in hardforks before Spurious Dragon
+  // This test verifies that issue is now resolved
+
   // setup the accounts for this test
     const caller = new Address(Buffer.from('1747de68ae74afa4e00f8ef79b9c875a339cda70', 'hex')) // caller address
     const contractAddress = new Address(
@@ -35,8 +39,8 @@ tape('correctly apply new account gas fee on pre-Spurious Dragon hardforks', asy
             'a9059cbb000000000000000000000000f48a1bdc65d9ccb4b569ffd4bffff415b90783d60000000000000000000000000000000000000000000000000000000000000001',
             'hex'
         ),
-      to: contractAddress, // call to the contract address
-      value: new BN(0),
+        to: contractAddress, // call to the contract address
+        value: new BN(0),
   }
 
     const result = await vm.runCall(runCallArgs)
