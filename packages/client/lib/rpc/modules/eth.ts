@@ -47,10 +47,16 @@ type StandardJsonRpcBlockParams = {
 }
 
 type GetLogsParamsObject = {
-  fromBlock?: string // QUANTITY, integer block number
-  toBlock?: string // QUANTITY, integer block number
-  address?: string // DATA, 20 Byte address
-  topics?: string[] // DATA array
+  fromBlock?: string // QUANTITY, integer block number or "earliest" or "latest"
+  toBlock?: string // QUANTITY, integer block number or "earliest" or "latest"
+  address?: string // DATA, 20 Bytes, address
+  topics?: string[] // DATA, array
+  blockhash?: string // DATA, 32 Bytes. With the addition of EIP-234,
+  // blockHash restricts the logs returned to the single block with
+  // the 32-byte hash blockHash. Using blockHash is equivalent to
+  // fromBlock = toBlock = the block number with hash blockHash.
+  // If blockHash is present in in the filter criteria, then
+  // neither fromBlock nor toBlock are allowed.
 }
 
 const blockToStandardJsonRpcFields = async (
@@ -170,10 +176,11 @@ export class Eth {
     this.getLogs = middleware(this.getLogs.bind(this), 1, [
       [
         validators.object({
-          fromBlock: validators.hex,
-          toBlock: validators.hex,
-          address: validators.hex,
+          fromBlock: validators.blockHash,
+          toBlock: validators.blockHash,
+          address: validators.address,
           topics: validators.array(validators.hex),
+          blockhash: validators.blockHash,
         }),
       ],
     ])
@@ -535,9 +542,8 @@ export class Eth {
   }
 
   // MERGE-INTEROP-HACK: stubbed method to satify Lodestar needs
-  // TODO: do proper implementation
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getLogs(params: GetLogsParamsObject) {
+  // TODO: do proper implementation (would need to store logs in db for retrieval)
+  async getLogs(_params: GetLogsParamsObject) {
     return []
   }
 
