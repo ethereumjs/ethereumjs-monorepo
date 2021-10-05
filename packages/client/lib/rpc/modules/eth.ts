@@ -177,11 +177,10 @@ export class Eth {
     this.getLogs = middleware(this.getLogs.bind(this), 1, [
       [
         validators.object({
-          fromBlock: validators.blockHash,
-          toBlock: validators.blockHash,
+          fromBlock: validators.hex,
+          toBlock: validators.hex,
           address: validators.address,
           topics: validators.array(validators.hex),
-          blockhash: validators.blockHash,
         }),
       ],
     ])
