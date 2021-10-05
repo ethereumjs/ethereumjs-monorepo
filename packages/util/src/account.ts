@@ -7,7 +7,7 @@ import {
   publicKeyVerify,
   publicKeyConvert,
 } from 'ethereum-cryptography/secp256k1'
-import { stripHexPrefix } from 'ethjs-util'
+import { stripHexPrefix } from './internal'
 import { KECCAK256_RLP, KECCAK256_NULL } from './constants'
 import { zeros, bufferToHex, toBuffer } from './bytes'
 import { keccak, keccak256, keccakFromString, rlphash } from './hash'

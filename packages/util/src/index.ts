@@ -1,4 +1,3 @@
-/// <reference path="./@types/ethjs-util/index.ts"/>
 /**
  * Constants
  */
@@ -59,4 +58,4 @@ export {
   fromAscii,
   getKeys,
   isHexString,
-} from 'ethjs-util'
+} from './internal'

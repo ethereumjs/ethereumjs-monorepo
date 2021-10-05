@@ -1,5 +1,5 @@
 import BN from 'bn.js'
-import { stripHexPrefix, padToEven, isHexString, isHexPrefixed } from 'ethjs-util'
+import { stripHexPrefix, padToEven, isHexString, isHexPrefixed } from './internal'
 import { PrefixedHexString, TransformableToArray, TransformableToBuffer } from './types'
 import { assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
 
