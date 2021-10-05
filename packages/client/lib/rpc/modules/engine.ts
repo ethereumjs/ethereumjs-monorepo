@@ -50,8 +50,6 @@ type PayloadCache = {
   timestamp: BN
   random: Buffer
   feeRecipient: Address
-  executionPayload?: ExecutionPayload
-  block?: Block
 }
 
 const EngineError = {
@@ -82,10 +80,14 @@ const findBlock = async (hash: Buffer, validBlocks: Map<String, Block>, chain: C
     return parentBlock
   } else {
     // search in chain
-    const parentBlock = await chain.getBlock(hash)
-    if (parentBlock) {
-      return parentBlock
-    } else {
+    try {
+      const parentBlock = await chain.getBlock(hash)
+      if (parentBlock) {
+        return parentBlock
+      } else {
+        throw EngineError.UnknownHeader
+      }
+    } catch (error) {
       throw EngineError.UnknownHeader
     }
   }
@@ -349,7 +351,7 @@ export class Engine {
     delete header.difficulty
     delete header.mixHash
     delete header.nonce
-    // remove deprecated block fields, remove in next major release
+    // remove deprecated block fields (remove in next major release)
     delete header.bloom
     delete header.baseFee
 
