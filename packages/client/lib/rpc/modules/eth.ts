@@ -1,4 +1,5 @@
 import { Block } from '@ethereumjs/block'
+import { ConsensusType } from '@ethereumjs/common'
 import { Transaction, TransactionFactory, JsonTx } from '@ethereumjs/tx'
 import {
   Account,
@@ -21,7 +22,6 @@ import { EthereumService } from '../../service'
 import { FullSynchronizer } from '../../sync'
 import type { EthProtocol } from '../../net/protocol'
 import type VM from '@ethereumjs/vm'
-import { ConsensusType } from '@ethereumjs/common'
 
 // Based on https://eth.wiki/json-rpc/API
 type StandardJsonRpcBlockParams = {
@@ -67,10 +67,12 @@ const blockToStandardJsonRpcFields = async (
 ): Promise<StandardJsonRpcBlockParams> => {
   const json = block.toJSON()
   const header = json!.header!
-  let transactions = json!.transactions ?? []
 
-  if (!includeTransactions) {
-    transactions = block.transactions.map((tx) => bufferToHex(tx.hash())) as any
+  let transactions
+  if (includeTransactions) {
+    transactions = block.transactions.map((tx) => bufferToHex(tx.serialize()))
+  } else {
+    transactions = block.transactions.map((tx) => bufferToHex(tx.hash()))
   }
 
   const td = await chain.getTd(block.hash(), block.header.number)
@@ -177,10 +179,15 @@ export class Eth {
     this.getLogs = middleware(this.getLogs.bind(this), 1, [
       [
         validators.object({
-          fromBlock: validators.hex,
-          toBlock: validators.hex,
+          fromBlock: validators.blockOption,
+          toBlock: validators.blockOption,
           address: validators.address,
           topics: validators.array(validators.hex),
+          // TODO: blockhash would be nice to have
+          // (but not required for first iteration)
+          // also...create a validators.optional() modifier
+          // so we can do:
+          //blockhash: validators.optional(validators.blockHash),
         }),
       ],
     ])

@@ -72,7 +72,33 @@ const EngineError = {
 }
 
 /**
- *  Finds a block in validBlocks or the blockchain, otherwise throws UnknownHeader.
+ * Formats a block to {@link ExecutionPayload}.
+ */
+const blockToExecutionPayload = (block: Block, random: Buffer) => {
+  const header = block.toJSON().header!
+  const transactions = block.transactions.map((tx) => bufferToHex(tx.serialize())) ?? []
+
+  const payload: ExecutionPayload = {
+    blockNumber: header.number!,
+    parentHash: header.parentHash!,
+    coinbase: header.coinbase!,
+    stateRoot: header.stateRoot!,
+    receiptRoot: header.receiptTrie!,
+    logsBloom: header.logsBloom!,
+    gasLimit: header.gasLimit!,
+    gasUsed: header.gasUsed!,
+    timestamp: header.timestamp!,
+    extraData: header.extraData!,
+    baseFeePerGas: header.baseFeePerGas!,
+    blockHash: bufferToHex(block.hash()),
+    random: bufferToHex(random),
+    transactions,
+  }
+  return payload
+}
+
+/**
+ * Finds a block in validBlocks or the blockchain, otherwise throws {@link EngineError.UnknownPayload}.
  */
 const findBlock = async (hash: Buffer, validBlocks: Map<String, Block>, chain: Chain) => {
   const parentBlock = validBlocks.get(hash.toString('hex'))
@@ -271,8 +297,6 @@ export class Engine {
     }
 
     // Use a copy of the vm to not modify the existing state.
-    // The state will be updated when the newly assembled block
-    // is inserted into the canonical chain.
     const vmCopy = this.vm.copy()
 
     const vmHead = await vmCopy.blockchain.getLatestBlock()
@@ -339,35 +363,11 @@ export class Engine {
     }
 
     const block = await blockBuilder.build()
-    const json = block.toJSON()
-    const header: any = json.header
-    const transactions = block.transactions.map((tx) => `0x${tx.serialize().toString('hex')}`) ?? []
-
-    // reassign aliased fields
-    header.blockNumber = header.number
-    delete header.number
-    header.receiptRoot = header.receiptTrie
-    delete header.receiptTrie
-    // remove unneeded legacy fields
-    delete header.uncleHash
-    delete header.difficulty
-    delete header.mixHash
-    delete header.nonce
-    // remove deprecated block fields (remove in next major release)
-    delete header.bloom
-    delete header.baseFee
-
-    const executionPayload: ExecutionPayload = {
-      ...header,
-      random: bufferToHex(payload.random),
-      blockHash: bufferToHex(block.hash()),
-      transactions,
-    }
 
     this.pendingPayloads.delete(payloadId)
     this.validBlocks.set(block.hash().toString('hex'), block)
 
-    return executionPayload
+    return blockToExecutionPayload(block, payload.random)
   }
   /**
    * Verifies the payload according to the execution environment rule set (EIP-3675)
@@ -494,7 +494,9 @@ export class Engine {
       this.validBlocks,
       this.chain
     )
+
     await this.chain.putBlocks([...parentBlocks, headBlock])
+
     this.synchronizer.syncTargetHeight = headBlock.header.number
     this.synchronizer.updateSynchronizedState()
 
