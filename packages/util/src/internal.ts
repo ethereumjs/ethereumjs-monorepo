@@ -132,8 +132,8 @@ export function toUtf8(hex: string) {
  */
 export function toAscii(hex: string): string {
   let str = ''
-  let i = 0,
-    l = hex.length
+  let i = 0
+  const l = hex.length
 
   if (hex.substring(0, 2) === '0x') i = 2
 
@@ -166,8 +166,8 @@ export function fromUtf8(stringValue: string) {
  * @returns  hex representation of input string
  */
 export function fromAscii(stringValue: string) {
-  var hex = ''
-  for (var i = 0; i < stringValue.length; i++) {
+  let hex = ''
+  for (let i = 0; i < stringValue.length; i++) {
     const code = stringValue.charCodeAt(i)
     const n = code.toString(16)
     hex += n.length < 2 ? `0${n}` : n
@@ -198,7 +198,7 @@ export function getKeys(params: any[], key: any, allowEmpty?: boolean) {
 
   const result = []
 
-  for (var i = 0; i < params.length; i++) {
+  for (let i = 0; i < params.length; i++) {
     let value = params[i][key]
     if (allowEmpty && !value) value = ''
     else if (typeof value !== 'string') throw new Error('invalid abi')
