@@ -5,7 +5,7 @@ import VM from '../src'
 
 tape('correctly apply new account gas fee on pre-Spurious Dragon hardforks', async (t) => {
   // This transaction https://etherscan.io/tx/0x26ea8719eeca5737f8ca872bca1ac53cea9bf6e11462dd83317c2e66a4e43d7b produced an error
-  // in our VM where we were not applying the new account gas fee (25k wei) for account creation in hardforks before Spurious Dragon
+  // in our VM where we were not applying the new account gas fee (25k) for account creation in hardforks before Spurious Dragon
   // This test verifies that issue is now resolved
 
   // setup the accounts for this test
