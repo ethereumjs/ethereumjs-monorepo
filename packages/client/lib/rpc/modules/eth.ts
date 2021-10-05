@@ -46,6 +46,13 @@ type StandardJsonRpcBlockParams = {
   baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
 }
 
+type GetLogsParamsObject = {
+  fromBlock?: string // QUANTITY, integer block number
+  toBlock?: string // QUANTITY, integer block number
+  address?: string // DATA, 20 Byte address
+  topics?: string[] // DATA array
+}
+
 const blockToStandardJsonRpcFields = async (
   block: Block,
   chain: Chain,
@@ -158,6 +165,17 @@ export class Eth {
     this.getTransactionCount = middleware(this.getTransactionCount.bind(this), 2, [
       [validators.address],
       [validators.blockOption],
+    ])
+
+    this.getLogs = middleware(this.getLogs.bind(this), 1, [
+      [
+        validators.object({
+          fromBlock: validators.hex,
+          toBlock: validators.hex,
+          address: validators.hex,
+          topics: validators.array(validators.hex),
+        }),
+      ],
     ])
 
     this.sendRawTransaction = middleware(this.sendRawTransaction.bind(this), 1, [[validators.hex]])
@@ -514,6 +532,13 @@ export class Eth {
 
     const block = await this._chain.getBlock(blockNumberBN)
     return block.uncleHeaders.length
+  }
+
+  // MERGE-INTEROP-HACK: stubbed method to satify Lodestar needs
+  // TODO: do proper implementation
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getLogs(params: GetLogsParamsObject) {
+    return []
   }
 
   /**
