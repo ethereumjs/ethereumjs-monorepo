@@ -21,6 +21,7 @@ import { EthereumService } from '../../service'
 import { FullSynchronizer } from '../../sync'
 import type { EthProtocol } from '../../net/protocol'
 import type VM from '@ethereumjs/vm'
+import { ConsensusType } from '@ethereumjs/common'
 
 // Based on https://eth.wiki/json-rpc/API
 type StandardJsonRpcBlockParams = {
@@ -592,7 +593,11 @@ export class Eth {
     txPool.add(tx)
 
     const peerPool = this.service.pool
-    if (peerPool.peers.length === 0 && !this.client.config.mine) {
+    if (
+      peerPool.peers.length === 0 &&
+      !this.client.config.mine &&
+      this._chain.config.chainCommon.consensusType() !== ConsensusType.ProofOfStake
+    ) {
       throw {
         code: INTERNAL_ERROR,
         message: `no peer connection available`,

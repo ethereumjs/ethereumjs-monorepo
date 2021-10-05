@@ -139,6 +139,7 @@ export class Engine {
   private client: EthereumClient
   private chain: Chain
   private config: Config
+  private synchronizer: FullSynchronizer
   private vm: VM
   private txPool: TxPool
   private pendingPayloads: Map<Number, PayloadCache> // payloadId, payload
@@ -154,7 +155,8 @@ export class Engine {
     const service = client.services.find((s) => s.name === 'eth') as EthereumService
     this.chain = service.chain
     this.config = this.chain.config
-    this.vm = (service.synchronizer as FullSynchronizer).execution?.vm
+    this.synchronizer = service.synchronizer as FullSynchronizer
+    this.vm = this.synchronizer.execution?.vm
     this.txPool = (service.synchronizer as FullSynchronizer).txPool
     this.pendingPayloads = new Map()
     this.validBlocks = new Map()
@@ -339,7 +341,7 @@ export class Engine {
     const block = await blockBuilder.build()
     const json = block.toJSON()
     const header: any = json.header
-    const transactions = json.transactions ?? []
+    const transactions = block.transactions.map((tx) => `0x${tx.serialize().toString('hex')}`) ?? []
 
     // reassign aliased fields
     header.blockNumber = header.number
@@ -492,6 +494,9 @@ export class Engine {
       this.validBlocks,
       this.chain
     )
+    await this.chain.putBlocks([...parentBlocks, headBlock])
+    this.synchronizer.syncTargetHeight = headBlock.header.number
+    this.synchronizer.updateSynchronizedState()
 
     if (finalizedBlockHash.slice(2) === '0'.repeat(64)) {
       // All zeros means no finalized block yet
@@ -505,8 +510,6 @@ export class Engine {
       }
       this.chain.mergeLastFinalizedBlock = finalizedBlock
     }
-
-    await this.chain.putBlocks([...parentBlocks, headBlock])
 
     return null
   }
