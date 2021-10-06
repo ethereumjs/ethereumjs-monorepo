@@ -76,7 +76,7 @@ export function padToEven(value: string) {
 export function getBinarySize(str: string) {
   if (typeof str !== 'string') {
     throw new Error(
-      `[ethjs-util] while getting binary size, method getBinarySize requires input 'str' to be type String, got '${typeof str}'.`
+      `[getBinarySize] method requires input type 'string', recieved ${typeof str}`
     )
   }
 
