@@ -1,6 +1,6 @@
 import * as assert from 'assert'
 import * as RLP from '../src'
-const BN = require('bn.js')
+import BN from 'bn.js'
 
 describe('offical tests', function() {
   const officalTests = require('./fixture/rlptest.json').tests

@@ -1,7 +1,7 @@
 import { version } from 'process'
 import * as assert from 'assert'
 import * as RLP from '../src'
-const BN = require('bn.js')
+import BN from 'bn.js'
 const Buffer = require('buffer').Buffer // needed for karma
 
 describe('invalid rlps', function() {
@@ -25,13 +25,13 @@ describe('invalid rlps', function() {
     it(`should not crash on an invalid rlp - ${index}`, function() {
       try {
         RLP.decode(input)
-        assert(false)
+        assert.ok(false)
       } catch (e) {
         if (msg) {
           assert.equal(e.message, msg)
         } else {
           // FIXME: check for exception name
-          assert(true)
+          assert.ok(true)
         }
       }
     })

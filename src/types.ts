@@ -1,4 +1,4 @@
-import BN = require('bn.js')
+import BN from 'bn.js'
 
 export type Input = Buffer | string | number | bigint | Uint8Array | BN | List | null
 

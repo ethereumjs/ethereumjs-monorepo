@@ -1,3 +1,6 @@
 {
-  "extends": "@ethereumjs/config-tslint"
+  "extends": "@ethereumjs/config-tslint",
+  "linterOptions": {
+    "exclude": ["src/index.ts"]
+  }
 }

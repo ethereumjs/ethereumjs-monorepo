@@ -1,4 +1,4 @@
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
     frameworks: ['mocha', 'karma-typescript'],
     files: ['src/**/*.ts', 'test/**/!(integration)*.ts'],
@@ -6,11 +6,6 @@ module.exports = function(config) {
       '**/*.ts': ['karma-typescript'],
     },
     plugins: ['karma-mocha', 'karma-typescript', 'karma-chrome-launcher', 'karma-firefox-launcher'],
-    karmaTypescriptConfig: {
-      bundlerOptions: {
-        entrypoints: /\.spec\.ts$/,
-      },
-    },
     colors: true,
     reporters: ['progress', 'karma-typescript'],
     browsers: ['FirefoxHeadless', 'ChromeHeadless'],
@@ -19,5 +14,11 @@ module.exports = function(config) {
     // Fail after timeout
     browserDisconnectTimeout: 100000,
     browserNoActivityTimeout: 100000,
+    karmaTypescriptConfig: {
+      bundlerOptions: {
+        entrypoints: /\.spec\.ts$/,
+      },
+      tsconfig: './tsconfig.json',
+    },
   })
 }

@@ -1,4 +1,4 @@
-import BN = require('bn.js')
+import BN from 'bn.js'
 
 import { Decoded, Input, List } from './types'
 
@@ -61,7 +61,7 @@ export function decode(input: Buffer, stream?: boolean): Buffer
 export function decode(input: Buffer[], stream?: boolean): Buffer[]
 export function decode(input: Input, stream?: boolean): Buffer[] | Buffer | Decoded
 export function decode(input: Input, stream: boolean = false): Buffer[] | Buffer | Decoded {
-  if (!input || (<any>input).length === 0) {
+  if (!input || (input as any).length === 0) {
     return Buffer.from([])
   }
 
@@ -84,7 +84,7 @@ export function decode(input: Input, stream: boolean = false): Buffer[] | Buffer
  * @returns The length of the input or an empty Buffer if no input
  */
 export function getLength(input: Input): Buffer | number {
-  if (!input || (<any>input).length === 0) {
+  if (!input || (input as any).length === 0) {
     return Buffer.from([])
   }
 
