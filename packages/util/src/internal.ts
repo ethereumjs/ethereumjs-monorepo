@@ -200,8 +200,11 @@ export function getKeys(params: any[], key: any, allowEmpty?: boolean) {
 
   for (let i = 0; i < params.length; i++) {
     let value = params[i][key]
-    if (allowEmpty && !value) value = ''
-    else if (typeof value !== 'string') throw new Error('invalid abi')
+    if (allowEmpty && !value) {
+      value = ''
+    } else if (typeof value !== 'string') {
+      throw new Error(`invalid abi - expected type 'string', received ${typeof value}`)
+    }
     result.push(value)
   }
 
