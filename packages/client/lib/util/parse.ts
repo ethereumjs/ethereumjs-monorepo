@@ -162,7 +162,6 @@ async function createGethGenesisBlockHeader(json: any) {
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
 async function parseGethParams(json: any) {
-  json['baseFeePerGas'] = 1000000000 // NASTY v1 TESTNET HACK
   const {
     name,
     config,
@@ -194,14 +193,15 @@ async function parseGethParams(json: any) {
     genesis: {
       hash,
       timestamp,
-      gasLimit: parseInt(gasLimit), // Geth stores gasLimit as a hex string while our gasLimit is a `number`
+      gasLimit: parseInt(gasLimit), // geth stores gasLimit as a hex string while our gasLimit is a `number`
       difficulty,
       nonce,
-      extraData: extraData === '' ? '0x' : extraData, // Merge interop hotfix
+      extraData: extraData === '' ? '0x' : extraData,
       mixHash,
       coinbase,
       stateRoot: '0x' + stateRoot.toString('hex'),
-      baseFeePerGas,
+      baseFeePerGas:
+        baseFeePerGas === undefined && config.londonBlock === 0 ? 1000000000 : undefined, // geth assumes an initial base fee value on londonBlock=0
     },
     bootstrapNodes: [],
     consensus: config.clique

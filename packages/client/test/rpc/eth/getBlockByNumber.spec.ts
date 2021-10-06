@@ -48,6 +48,8 @@ function createBlockchain() {
   return {
     getBlock: () => genesisBlock,
     getLatestBlock: () => block,
+    getLatestHeader: () => block.header,
+    getTd: () => new BN(0),
   }
 }
 
@@ -57,7 +59,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const manager = createManager(createClient({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
-  const req = params(method, ['0x0', true])
+  const req = params(method, ['0x0', false])
   const expectRes = (res: any) => {
     const msg = 'should return a valid block'
     if (res.body.result.number === '0x0') {

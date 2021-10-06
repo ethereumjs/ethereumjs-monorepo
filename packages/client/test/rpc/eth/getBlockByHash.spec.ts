@@ -10,7 +10,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   const req = params(method, [
     '0x910abca1728c53e8d6df870dd7af5352e974357dc58205dea1676be17ba6becf',
-    true,
+    false,
   ])
   const expectRes = (res: any) => {
     const msg = 'should return the correct number'

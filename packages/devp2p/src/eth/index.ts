@@ -227,9 +227,9 @@ export class ETH extends EventEmitter {
   }
 
   _getStatusString(status: ETH.StatusMsg) {
-    let sStr = `[V:${buffer2int(status[0] as Buffer)}, NID:${buffer2int(
-      status[1] as Buffer
-    )}, TD:${buffer2int(status[2] as Buffer)}`
+    let sStr = `[V:${buffer2int(status[0] as Buffer)}, NID:${buffer2int(status[1] as Buffer)}, TD:${
+      status[2].length === 0 ? 0 : buffer2int(status[2] as Buffer)
+    }`
     sStr += `, BestH:${formatLogId(status[3].toString('hex'), verbose)}, GenH:${formatLogId(
       status[4].toString('hex'),
       verbose
