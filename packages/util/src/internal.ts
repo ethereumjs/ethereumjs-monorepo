@@ -31,9 +31,7 @@ THE SOFTWARE
 export function isHexPrefixed(str: string): boolean {
   if (typeof str !== 'string') {
     throw new Error(
-      "[is-hex-prefixed] value must be type 'string', is currently type " +
-        typeof str +
-        ', while checking isHexPrefixed.'
+      `[isHexPrefixed] input must be type 'string', received type ${typeof str}`
     )
   }
 
