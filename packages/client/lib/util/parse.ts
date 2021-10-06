@@ -162,6 +162,7 @@ async function createGethGenesisBlockHeader(json: any) {
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
 async function parseGethParams(json: any) {
+  json['baseFeePerGas'] = 1000000000 // NASTY v1 TESTNET HACK
   const {
     name,
     config,
@@ -196,7 +197,7 @@ async function parseGethParams(json: any) {
       gasLimit: parseInt(gasLimit), // Geth stores gasLimit as a hex string while our gasLimit is a `number`
       difficulty,
       nonce,
-      extraData,
+      extraData: extraData === '' ? '0x' : extraData, // Merge interop hotfix
       mixHash,
       coinbase,
       stateRoot: '0x' + stateRoot.toString('hex'),
@@ -205,18 +206,18 @@ async function parseGethParams(json: any) {
     bootstrapNodes: [],
     consensus: config.clique
       ? {
-        type: 'poa',
-        algorithm: 'clique',
-        clique: {
-          period: config.clique.period,
-          epoch: config.clique.epoch,
-        },
-      }
+          type: 'poa',
+          algorithm: 'clique',
+          clique: {
+            period: config.clique.period,
+            epoch: config.clique.epoch,
+          },
+        }
       : {
-        type: 'pow',
-        algorithm: 'ethash',
-        ethash: {},
-      },
+          type: 'pow',
+          algorithm: 'ethash',
+          ethash: {},
+        },
   }
   const hardforks = [
     'chainstart',
