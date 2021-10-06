@@ -106,7 +106,7 @@ export function arrayContainsArray(
 }
 
 /**
- * Should be called to get utf8 from it's hex representation
+ * Should be called to get utf8 from its hex representation
  *
  * @param string in hex
  * @returns ascii string representation of hex value
