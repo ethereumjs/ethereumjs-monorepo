@@ -12,7 +12,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Update BN from require to import, PR [#99](https://github.com/ethereumjs/rlp/pull/99)
 - Update dependencies to latest and add browser build, PR [#102](https://github.com/ethereumjs/rlp/pull/102)
 
-[v2.2.7]: https://github.com/ethereumjs/rlp/compare/2.2.6...v2.2.7
+#### Included Source Files
+
+Source files from the `src` folder are now included in the distribution build, see PR [#97](https://github.com/ethereumjs/rlp/pull/97). This allows for a better debugging experience in debug tools like Chrome DevTools by having working source map references to the original sources available for inspection.
+
+[v2.2.7]: https://github.com/ethereumjs/rlp/compare/v2.2.6...v2.2.7
 
 ## [v2.2.6] - 2020-07-17
 
@@ -22,7 +26,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Updated GitHub `actions/checkout` to v2,
   PR [#92](https://github.com/ethereumjs/rlp/pull/92)
 
-[v2.2.6]: https://github.com/ethereumjs/rlp/compare/2.2.5...v2.2.6
+[v2.2.6]: https://github.com/ethereumjs/rlp/compare/v2.2.5...v2.2.6
 
 ## [v2.2.5] - 2020-05-25
 
@@ -34,7 +38,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
   PRs [#86](https://github.com/ethereumjs/rlp/pull/86) and
   [#88](https://github.com/ethereumjs/rlp/pull/88)
 
-[v2.2.5]: https://github.com/ethereumjs/rlp/compare/2.2.4...v2.2.5
+[v2.2.5]: https://github.com/ethereumjs/rlp/compare/v2.2.4...v2.2.5
 
 ## [v2.2.4] - 2019-11-02
 
@@ -43,7 +47,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Removed unused `safe-buffer` dependency,
   PR [#80](https://github.com/ethereumjs/rlp/pull/80)
 
-[v2.2.4]: https://github.com/ethereumjs/rlp/compare/2.2.3...v2.2.4
+[v2.2.4]: https://github.com/ethereumjs/rlp/compare/v2.2.3...v2.2.4
 
 ## [v2.2.3] - 2019-03-19
 
@@ -53,7 +57,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
   values (e.g. `RLP.encode(-1)`),
   PR [#71](https://github.com/ethereumjs/rlp/pull/70)
 
-[v2.2.3]: https://github.com/ethereumjs/rlp/compare/2.2.2...v2.2.3
+[v2.2.3]: https://github.com/ethereumjs/rlp/compare/v2.2.2...v2.2.3
 
 ## [v2.2.2] - 2019-01-15
 
@@ -61,7 +65,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
   clean install, PR [#64](https://github.com/ethereumjs/rlp/pull/64)
 - Use local version of official tests, fixed testing issue, PR [#66](https://github.com/ethereumjs/rlp/pull/66)
 
-[v2.2.2]: https://github.com/ethereumjs/rlp/compare/2.2.1...v2.2.2
+[v2.2.2]: https://github.com/ethereumjs/rlp/compare/v2.2.1...v2.2.2
 
 ## [v2.2.1] - 2018-12-20
 
@@ -75,7 +79,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Additional test structure and new integration tests for distribution and
   `bin/rlp` CLI command, see PR [#57](https://github.com/ethereumjs/rlp/pull/57)
 
-[v2.2.1]: https://github.com/ethereumjs/rlp/compare/2.2.0...v2.2.1
+[v2.2.1]: https://github.com/ethereumjs/rlp/compare/v2.2.0...v2.2.1
 
 ## [v2.2.0] - 2018-12-17
 
@@ -106,7 +110,7 @@ Other changes:
 
 - Added `LICENSE` file for `MPL2.0`, see PR [#31](https://github.com/ethereumjs/rlp/pull/31)
 
-[v2.2.0]: https://github.com/ethereumjs/rlp/compare/2.1.0...v2.2.0
+[v2.2.0]: https://github.com/ethereumjs/rlp/compare/v2.1.0...v2.2.0
 
 ## [v2.1.0] - 2018-06-28
 
