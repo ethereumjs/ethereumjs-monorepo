@@ -162,18 +162,18 @@ async function createGethGenesisBlockHeader(json: any) {
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
 async function parseGethParams(json: any) {
-  const {
-    name,
-    config,
-    timestamp,
-    gasLimit,
-    difficulty,
-    nonce,
-    extraData,
-    mixHash,
-    coinbase,
-    baseFeePerGas,
-  } = json
+  const { name, config, timestamp, difficulty, nonce, mixHash, coinbase } = json
+
+  let { gasLimit, extraData, baseFeePerGas } = json
+
+  // geth stores gasLimit as a hex string while our gasLimit is a `number`
+  json['gasLimit'] = gasLimit = parseInt(gasLimit)
+  // geth assumes an initial base fee value on londonBlock=0
+  json['baseFeePerGas'] = baseFeePerGas =
+    baseFeePerGas === undefined && config.londonBlock === 0 ? 1000000000 : undefined
+  // geth is not strictly putting in emtpy fields with a 0x prefix
+  json['extraData'] = extraData = extraData === '' ? '0x' : extraData
+
   // EIP155 and EIP158 are both part of Spurious Dragon hardfork and must occur at the same time
   // but have different configuration parameters in geth genesis parameters
   if (config.eip155Block !== config.eip158Block) {
@@ -193,15 +193,14 @@ async function parseGethParams(json: any) {
     genesis: {
       hash,
       timestamp,
-      gasLimit: parseInt(gasLimit), // geth stores gasLimit as a hex string while our gasLimit is a `number`
+      gasLimit,
       difficulty,
       nonce,
-      extraData: extraData === '' ? '0x' : extraData,
+      extraData,
       mixHash,
       coinbase,
       stateRoot: '0x' + stateRoot.toString('hex'),
-      baseFeePerGas:
-        baseFeePerGas === undefined && config.londonBlock === 0 ? 1000000000 : undefined, // geth assumes an initial base fee value on londonBlock=0
+      baseFeePerGas,
     },
     bootstrapNodes: [],
     consensus: config.clique
@@ -219,6 +218,7 @@ async function parseGethParams(json: any) {
           ethash: {},
         },
   }
+
   const hardforks = [
     'chainstart',
     'homestead',
