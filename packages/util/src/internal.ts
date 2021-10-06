@@ -185,7 +185,7 @@ export function fromAscii(stringValue: string) {
 export function getKeys(params: any[], key: any, allowEmpty?: boolean) {
   if (!Array.isArray(params)) {
     throw new Error(
-      `[ethjs-util] method getKeys expecting type Array as 'params' input, got '${typeof params}'`
+      `[getKeys] method expects input 'params' to be an array, got ${typeof params}`
     )
   }
   if (typeof key !== 'string') {
