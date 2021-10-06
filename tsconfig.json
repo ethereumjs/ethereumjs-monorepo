@@ -1,8 +1,4 @@
 {
-  "extends": "@ethereumjs/config-tsc",
-  "include": ["src/**/*.ts", "test/**/*.ts"],
-  "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true
-  }
+  "extends": "@ethereumjs/config-typescript",
+  "include": ["src/**/*.ts", "test/**/*.ts"]
 }

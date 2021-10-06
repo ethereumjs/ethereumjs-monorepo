@@ -2,11 +2,12 @@ import * as assert from 'assert'
 import * as RLP from '../src'
 import BN from 'bn.js'
 
-describe('offical tests', function() {
+describe('offical tests', function () {
   const officalTests = require('./fixture/rlptest.json').tests
 
+  // eslint-disable-next-line no-restricted-syntax
   for (const testName in officalTests) {
-    it(`should pass ${testName}`, function(done) {
+    it(`should pass ${testName}`, function (done) {
       let incoming = officalTests[testName].in
       // if we are testing a big number
       if (incoming[0] === '#') {

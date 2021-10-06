@@ -38,7 +38,11 @@ assert.deepEqual(nestedList, decoded)
 
 ## TESTS
 
-Test uses mocha. To run tests and linting: `npm test`. To auto fix linting problems use: `npm run test:fix`.
+Tests use mocha.
+
+To run tests and linting: `npm test`
+
+To auto fix linting problems use: `npm run lint:fix`
 
 ## CODE COVERAGE
 
