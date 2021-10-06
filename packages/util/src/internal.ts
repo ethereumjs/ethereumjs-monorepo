@@ -30,9 +30,7 @@ THE SOFTWARE
  */
 export function isHexPrefixed(str: string): boolean {
   if (typeof str !== 'string') {
-    throw new Error(
-      `[isHexPrefixed] input must be type 'string', received type ${typeof str}`
-    )
+    throw new Error(`[isHexPrefixed] input must be type 'string', received type ${typeof str}`)
   }
 
   return str.slice(0, 2) === '0x'
@@ -58,9 +56,7 @@ export function padToEven(value: string) {
   let a = value
 
   if (typeof a !== 'string') {
-    throw new Error(
-      `[padToEven] value must be type 'string', received ${typeof a}`
-    )
+    throw new Error(`[padToEven] value must be type 'string', received ${typeof a}`)
   }
 
   if (a.length % 2) a = `0${a}`
@@ -75,9 +71,7 @@ export function padToEven(value: string) {
  */
 export function getBinarySize(str: string) {
   if (typeof str !== 'string') {
-    throw new Error(
-      `[getBinarySize] method requires input type 'string', recieved ${typeof str}`
-    )
+    throw new Error(`[getBinarySize] method requires input type 'string', recieved ${typeof str}`)
   }
 
   return Buffer.byteLength(str, 'utf8')
@@ -184,9 +178,7 @@ export function fromAscii(stringValue: string) {
  */
 export function getKeys(params: any[], key: any, allowEmpty?: boolean) {
   if (!Array.isArray(params)) {
-    throw new Error(
-      `[getKeys] method expects input 'params' to be an array, got ${typeof params}`
-    )
+    throw new Error(`[getKeys] method expects input 'params' to be an array, got ${typeof params}`)
   }
   if (typeof key !== 'string') {
     throw new Error(
