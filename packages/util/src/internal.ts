@@ -42,7 +42,8 @@ export function isHexPrefixed(str: string): boolean {
  * @return  a string by pass if necessary
  */
 export const stripHexPrefix = (str: string): string => {
-  if (typeof str !== 'string') return str
+  if (typeof str !== 'string')
+    throw new Error(`[stripHexPrefix] input must be type 'string', received ${typeof str}`)
 
   return isHexPrefixed(str) ? str.slice(2) : str
 }
