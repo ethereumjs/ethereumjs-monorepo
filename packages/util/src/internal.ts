@@ -98,7 +98,7 @@ export function arrayContainsArray(
 ): boolean {
   if (Array.isArray(superset) !== true) {
     throw new Error(
-      `[ethjs-util] method arrayContainsArray requires input 'superset' to be an array got type '${typeof superset}'`
+      `[arrayContainsArray] method requires input 'superset' to be an array, got type '${typeof superset}'`
     )
   }
   if (Array.isArray(subset) !== true) {
