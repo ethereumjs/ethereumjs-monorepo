@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+# 4.2.2 - 2021-10-06
+
+**Bug Fixes**
+
+- Adds try-catch for "Missing node in DB" in ReadStream, PR [#1515](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1515)
+
 ## 4.2.1 - 2021-08-17
 
 **Bug Fixes**
@@ -26,7 +32,7 @@ Source files from the `src` folder are now included in the distribution build, s
 
 This release changes the behavior on trie node deletes after doing a `commit()` on a checkpoint trie (`CheckpointTrie`). This was the scenario where trie nodes were deleted from the database in older versions of the library. After a long discussion we decided to switch to a more conservative approach and keep the trie nodes in the DB in all scenarios. This now allows for setting back the state root to an older root (e.g. with the `StateManager` included in the `VM`) and still be sure to operate on a consistent and complete trie. This had been reported as a problem in some usage scenarios by third-party users of the library.
 
-So the default behavior on the trie is now: there are no node deletions happening in all type of setups and usage scenarios, so for a `BaseTrie`, `CheckpointTrie` or `SecureTrie` and working checkpointed or non-checkpointed. 
+So the default behavior on the trie is now: there are no node deletions happening in all type of setups and usage scenarios, so for a `BaseTrie`, `CheckpointTrie` or `SecureTrie` and working checkpointed or non-checkpointed.
 
 While this change is not directly breaking, it might nevertheless have side effects depending on your usage scenario. If you use a somewhat larger trie and do a lot of change operations, this will significantly increase the disk space used. We have nevertheless decided to make this a non-breaking release since we don't expect this to be the usual way the trie library is used. Instead the former behavior appeared more as some sort of "bug" when reported by developers integrating the library.
 
