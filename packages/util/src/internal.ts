@@ -33,7 +33,7 @@ export function isHexPrefixed(str: string): boolean {
     throw new Error(`[isHexPrefixed] input must be type 'string', received type ${typeof str}`)
   }
 
-  return str.slice(0, 2) === '0x'
+  return str[0] === '0' && str[1] === 'x'
 }
 
 /**
