@@ -277,6 +277,12 @@ export class BlockHeader {
       if (stateRoot.equals(zeros(32))) {
         stateRoot = toBuffer(this._common.genesis().stateRoot)
       }
+      if (
+        this._common.gteHardfork(Hardfork.London) &&
+        this._common.genesis().baseFeePerGas !== undefined
+      ) {
+        baseFeePerGas = new BN(toBuffer(this._common.genesis().baseFeePerGas))
+      }
     }
 
     this.parentHash = parentHash
