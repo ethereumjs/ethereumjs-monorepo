@@ -235,8 +235,7 @@ export class Eth {
 
     if (blockOpt !== 'latest') {
       const latest = await vm.blockchain.getLatestHeader()
-      const number = latest.number.toString(16)
-      if (blockOpt !== `0x${number}`) {
+      if (blockOpt !== bnToHex(latest.number)) {
         throw {
           code: INVALID_PARAMS,
           message: `Currently only "latest" block supported`,
@@ -302,8 +301,7 @@ export class Eth {
 
     if (blockOpt !== 'latest') {
       const latest = await vm.blockchain.getLatestHeader()
-      const number = latest.number.toString(16)
-      if (blockOpt !== `0x${number}`) {
+      if (blockOpt !== bnToHex(latest.number)) {
         throw {
           code: INVALID_PARAMS,
           message: `Currently only "latest" block supported`,
@@ -354,8 +352,7 @@ export class Eth {
 
     if (blockOpt !== 'latest') {
       const latest = await vm.blockchain.getLatestHeader()
-      const number = latest.number.toString(16)
-      if (blockOpt !== `0x${number}`) {
+      if (blockOpt !== bnToHex(latest.number)) {
         throw {
           code: INVALID_PARAMS,
           message: `Currently only "latest" block supported`,
@@ -377,8 +374,15 @@ export class Eth {
   async getBlockByHash(params: [string, boolean]) {
     const [blockHash, includeTransactions] = params
 
-    const block = await this._chain.getBlock(toBuffer(blockHash))
-    return await blockToStandardJsonRpcFields(block, this._chain, includeTransactions)
+    try {
+      const block = await this._chain.getBlock(toBuffer(blockHash))
+      return await blockToStandardJsonRpcFields(block, this._chain, includeTransactions)
+    } catch (error) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'Unknown block',
+      }
+    }
   }
 
   /**
@@ -401,6 +405,14 @@ export class Eth {
       block = await this._chain.getBlock(new BN(0))
     } else {
       const blockNumberBN = new BN(stripHexPrefix(blockOpt), 16)
+      const latest = (await this._chain.getLatestHeader()).number
+
+      if (blockNumberBN.gt(latest)) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'specified block greater than current height',
+        }
+      }
       block = await this._chain.getBlock(blockNumberBN)
     }
 
@@ -413,8 +425,15 @@ export class Eth {
    */
   async getBlockTransactionCountByHash(params: [string]) {
     const [blockHash] = params
-    const block = await this._chain.getBlock(toBuffer(blockHash))
-    return intToHex(block.transactions.length)
+    try {
+      const block = await this._chain.getBlock(toBuffer(blockHash))
+      return intToHex(block.transactions.length)
+    } catch (error) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'Unknown block',
+      }
+    }
   }
 
   /**
@@ -436,8 +455,7 @@ export class Eth {
 
     if (blockOpt !== 'latest') {
       const latest = await vm.blockchain.getLatestHeader()
-      const number = latest.number.toString(16)
-      if (blockOpt !== `0x${number}`) {
+      if (blockOpt !== bnToHex(latest.number)) {
         throw {
           code: INVALID_PARAMS,
           message: `Currently only "latest" block supported`,
@@ -470,8 +488,7 @@ export class Eth {
 
     if (blockOpt !== 'latest') {
       const latest = await vm.blockchain.getLatestHeader()
-      const number = latest.number.toString(16)
-      if (blockOpt !== `0x${number}`) {
+      if (blockOpt !== bnToHex(latest.number)) {
         throw {
           code: INVALID_PARAMS,
           message: `Currently only "latest" block supported`,
@@ -505,8 +522,7 @@ export class Eth {
 
     if (blockOpt !== 'latest') {
       const latest = await vm.blockchain.getLatestHeader()
-      const number = latest.number.toString(16)
-      if (blockOpt !== `0x${number}`) {
+      if (blockOpt !== bnToHex(latest.number)) {
         throw {
           code: INVALID_PARAMS,
           message: `Currently only "latest" block supported`,
@@ -537,10 +553,10 @@ export class Eth {
     const blockNumberBN = new BN(stripHexPrefix(blockNumber), 16)
     const latest = (await this._chain.getLatestHeader()).number
 
-    if (latest < blockNumberBN) {
+    if (blockNumberBN.gt(latest)) {
       throw {
         code: INVALID_PARAMS,
-        message: `specified block greater than current height`,
+        message: 'specified block greater than current height',
       }
     }
 
@@ -616,7 +632,7 @@ export class Eth {
   /**
    * Returns an object with data about the sync status or false.
    * @param params An empty array
-   * @returns  An object with sync status data or false (when not syncing)
+   * @returns An object with sync status data or false (when not syncing)
    *   * startingBlock - The block at which the import started (will only be reset after the sync reached his head)
    *   * currentBlock - The current block, same as eth_blockNumber
    *   * highestBlock - The estimated highest block
@@ -627,10 +643,10 @@ export class Eth {
     }
 
     const currentBlockHeader = await this._chain.getLatestHeader()
-    const currentBlock = `0x${currentBlockHeader.number.toString(16)}`
+    const currentBlock = bnToHex(currentBlockHeader.number)
 
     const synchronizer = this.client.services[0].synchronizer
-    const startingBlock = `0x${synchronizer.startingBlock.toString(16)}`
+    const startingBlock = bnToHex(synchronizer.startingBlock)
     const bestPeer = synchronizer.best()
     if (!bestPeer) {
       throw {
@@ -646,7 +662,7 @@ export class Eth {
         message: `highest block header unavailable`,
       }
     }
-    const highestBlock = `0x${highestBlockHeader.number.toString(16)}`
+    const highestBlock = bnToHex(highestBlockHeader.number)
 
     return { startingBlock, currentBlock, highestBlock }
   }

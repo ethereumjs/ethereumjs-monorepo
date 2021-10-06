@@ -65,10 +65,6 @@ const EngineError = {
     code: 5,
     message: 'Unknown payload',
   },
-  TimeExceeded: {
-    code: -999, // TODO need proper code if error is added to spec, otherwise spec says to use ActionNotAllowed
-    message: 'Time allowance exceeded (Date.now() > timestamp + SECONDS_PER_SLOT)',
-  },
 }
 
 /**
@@ -108,11 +104,7 @@ const findBlock = async (hash: Buffer, validBlocks: Map<String, Block>, chain: C
     // search in chain
     try {
       const parentBlock = await chain.getBlock(hash)
-      if (parentBlock) {
-        return parentBlock
-      } else {
-        throw EngineError.UnknownHeader
-      }
+      return parentBlock
     } catch (error) {
       throw EngineError.UnknownHeader
     }
@@ -278,7 +270,9 @@ export class Engine {
    */
   async getPayload(params: [string]) {
     if (!this.client.config.synchronized) {
-      return EngineError.ActionNotAllowed // TODO: EngineError.SyncInProgress?
+      // From spec: Client software SHOULD respond with
+      // `2: Action not allowed` error if the sync process is in progress.
+      return EngineError.ActionNotAllowed
     }
 
     let [payloadId]: any = params
@@ -292,8 +286,10 @@ export class Engine {
 
     const { parentHash, timestamp, feeRecipient: coinbase } = payload
 
+    // From spec: If timestamp + SECONDS_PER_SLOT has passed, block is no longer valid
     if (new BN(Date.now()).divn(1000).gt(timestamp.add(this.SECONDS_PER_SLOT))) {
-      throw EngineError.TimeExceeded
+      this.pendingPayloads.delete(payloadId)
+      throw EngineError.UnknownHeader
     }
 
     // Use a copy of the vm to not modify the existing state.
@@ -498,7 +494,6 @@ export class Engine {
     await this.chain.putBlocks([...parentBlocks, headBlock])
 
     this.synchronizer.syncTargetHeight = headBlock.header.number
-    this.synchronizer.updateSynchronizedState()
 
     if (finalizedBlockHash.slice(2) === '0'.repeat(64)) {
       // All zeros means no finalized block yet
