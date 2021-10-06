@@ -170,7 +170,8 @@ export function fromAscii(stringValue: string) {
 }
 
 /**
- * getKeys([{a: 1, b: 2}, {a: 3, b: 4}], 'a') => [1, 3]
+ * Returns the keys from an array of objects.
+ * Example: getKeys([{a: 1, b: 2}, {a: 3, b: 4}], 'a') => [1, 3]
  *
  * @param  params
  * @param  key
