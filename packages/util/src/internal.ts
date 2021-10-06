@@ -59,7 +59,7 @@ export function padToEven(value: string) {
 
   if (typeof a !== 'string') {
     throw new Error(
-      `[ethjs-util] while padding to even, value must be string, is currently ${typeof a}, while padToEven.`
+      `[padToEven] value must be type 'string', received ${typeof a}`
     )
   }
 
