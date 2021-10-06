@@ -68,7 +68,7 @@ export function padToEven(value: string) {
 /**
  * Get the binary size of a string
  * @param str
- * @return
+ * @returns the number of bytes contained within the string
  */
 export function getBinarySize(str: string) {
   if (typeof str !== 'string') {
