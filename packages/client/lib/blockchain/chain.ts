@@ -1,6 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
-import { ConsensusAlgorithm } from '@ethereumjs/common'
+import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { BN, toBuffer } from 'ethereumjs-util'
 import { Config } from '../config'
 import { Event } from '../types'
@@ -203,9 +203,10 @@ export class Chain {
 
   /**
    * Update blockchain properties (latest block, td, height, etc...)
+   * @param emit Emit a `CHAIN_UPDATED` event
    * @return {Promise<boolean|void>} Returns false if chain is closed
    */
-  async update(): Promise<boolean | void> {
+  async update(emit: boolean = true): Promise<boolean | void> {
     if (!this.opened) {
       return false
     }
@@ -235,7 +236,9 @@ export class Chain {
 
     this.config.chainCommon.setHardforkByBlockNumber(headers.latest.number, headers.td)
 
-    this.config.events.emit(Event.CHAIN_UPDATED)
+    if (emit) {
+      this.config.events.emit(Event.CHAIN_UPDATED)
+    }
   }
 
   /**
@@ -269,20 +272,30 @@ export class Chain {
   /**
    * Insert new blocks into blockchain
    * @param blocks list of blocks to add
+   * @param mergeIncludes skip adding after merge
+   * @return Numbers of blocks added
    */
-  async putBlocks(blocks: Block[]): Promise<void> {
+  async putBlocks(blocks: Block[], mergeIncludes = false): Promise<number> {
     if (blocks.length === 0) {
-      return
+      return 0
     }
     await this.open()
-    blocks = blocks.map((b: Block) =>
-      Block.fromValuesArray(b.raw(), {
+    await this.blockchain.initPromise
+    let numAdded = 0
+    for (const b of blocks) {
+      if (!mergeIncludes && this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+        break
+      }
+      const block = Block.fromValuesArray(b.raw(), {
         common: this.config.chainCommon,
         hardforkByTD: this.headers.td,
       })
-    )
-    await this.blockchain.putBlocks(blocks)
+      await this.blockchain.putBlock(block)
+      numAdded++
+      await this.update(false)
+    }
     await this.update()
+    return numAdded
   }
 
   /**
@@ -306,21 +319,30 @@ export class Chain {
   /**
    * Insert new headers into blockchain
    * @param  {BlockHeader[]} headers
-   * @return {Promise<void>}
+   * @param mergeIncludes skip adding after merge
+   * @return Numbers of blocks added
    */
-  async putHeaders(headers: BlockHeader[]): Promise<void> {
+  async putHeaders(headers: BlockHeader[], mergeIncludes = false): Promise<number> {
     if (headers.length === 0) {
-      return
+      return 0
     }
     await this.open()
-    headers = headers.map((h) =>
-      BlockHeader.fromValuesArray(h.raw(), {
+    await this.blockchain.initPromise
+    let numAdded = 0
+    for (const h of headers) {
+      if (!mergeIncludes && this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+        break
+      }
+      const header = BlockHeader.fromValuesArray(h.raw(), {
         common: this.config.chainCommon,
-        hardforkByBlockNumber: true,
+        hardforkByTD: this.headers.td,
       })
-    )
-    await this.blockchain.putHeaders(headers)
+      await this.blockchain.putHeader(header)
+      numAdded++
+      await this.update(false)
+    }
     await this.update()
+    return numAdded
   }
 
   /**

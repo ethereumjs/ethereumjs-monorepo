@@ -285,7 +285,6 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       try {
         await this.store(result)
         this.finished++
-        this.config.events.emit(Event.SYNC_FETCHER_FETCHED, result as any)
         cb()
       } catch (error: any) {
         this.config.logger.warn(`Error along storing received block or header result: ${error}`)

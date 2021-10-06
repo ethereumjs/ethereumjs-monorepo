@@ -3,6 +3,7 @@ import { Peer } from '../../net/peer'
 import { EthProtocolMethods } from '../../net/protocol'
 import { Job } from './types'
 import { BlockFetcherBase, JobTask, BlockFetcherOptions } from './blockfetcherbase'
+import { Event } from '../../types'
 
 /**
  * Implements an eth/66 based block fetcher
@@ -95,7 +96,8 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
    * @return {Promise}
    */
   async store(blocks: Block[]) {
-    await this.chain.putBlocks(blocks)
+    const num = await this.chain.putBlocks(blocks)
+    this.config.events.emit(Event.SYNC_FETCHER_FETCHED, blocks.slice(0, num))
   }
 
   /**

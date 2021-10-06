@@ -4,6 +4,7 @@ import { FlowControl, LesProtocolMethods } from '../../net/protocol'
 import { BlockHeader } from '@ethereumjs/block'
 import { Job } from './types'
 import { BN } from 'ethereumjs-util'
+import { Event } from '../../types'
 
 export interface HeaderFetcherOptions extends BlockFetcherOptions {
   /* Flow control manager */
@@ -83,7 +84,8 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
    * @return {Promise}
    */
   async store(headers: BlockHeader[]) {
-    await this.chain.putHeaders(headers)
+    const num = await this.chain.putHeaders(headers)
+    this.config.events.emit(Event.SYNC_FETCHER_FETCHED, headers.slice(0, num))
   }
 
   /**

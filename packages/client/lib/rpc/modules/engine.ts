@@ -491,7 +491,7 @@ export class Engine {
       this.chain
     )
 
-    await this.chain.putBlocks([...parentBlocks, headBlock])
+    await this.chain.putBlocks([...parentBlocks, headBlock], true)
 
     this.synchronizer.syncTargetHeight = headBlock.header.number
 
