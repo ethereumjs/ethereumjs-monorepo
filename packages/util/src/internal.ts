@@ -39,7 +39,7 @@ export function isHexPrefixed(str: string): boolean {
 /**
  * Removes '0x' from a given `String` if present
  * @param str the string value
- * @return  a string by pass if necessary
+ * @returns the string without 0x prefix
  */
 export const stripHexPrefix = (str: string): string => {
   if (typeof str !== 'string')
