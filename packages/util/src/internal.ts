@@ -190,7 +190,7 @@ export function getKeys(params: any[], key: any, allowEmpty?: boolean) {
   }
   if (typeof key !== 'string') {
     throw new Error(
-      `[ethjs-util] method getKeys expecting type String for input 'key' got '${typeof key}'.`
+      `[getKeys] method expects input 'key' to be type 'string', got ${typeof params}`
     )
   }
 
