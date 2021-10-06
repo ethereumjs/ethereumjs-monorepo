@@ -246,7 +246,7 @@ export class EthProtocol extends Protocol {
   encodeStatus(): any {
     return {
       networkId: this.chain.networkId.toArrayLike(Buffer),
-      td: this.chain.blocks.td.toArrayLike(Buffer),
+      td: this.chain.blocks.td.eqn(0) ? Buffer.from([]) : this.chain.blocks.td.toArrayLike(Buffer),
       bestHash: this.chain.blocks.latest!.hash(),
       genesisHash: this.chain.genesis.hash,
       latestBlock: this.chain.blocks.latest!.header.number.toArrayLike(Buffer),
