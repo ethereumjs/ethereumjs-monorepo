@@ -103,7 +103,7 @@ export function arrayContainsArray(
   }
   if (Array.isArray(subset) !== true) {
     throw new Error(
-      `[ethjs-util] method arrayContainsArray requires input 'subset' to be an array got type '${typeof subset}'`
+      `[arrayContainsArray] method requires input 'subset' to be an array, got type '${typeof subset}'`
     )
   }
 
