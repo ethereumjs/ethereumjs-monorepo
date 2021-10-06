@@ -118,7 +118,7 @@ export function toUtf8(hex: string) {
 }
 
 /**
- * Should be called to get ascii from it's hex representation
+ * Should be called to get ascii from its hex representation
  *
  * @param string in hex
  * @returns ascii string representation of hex value
