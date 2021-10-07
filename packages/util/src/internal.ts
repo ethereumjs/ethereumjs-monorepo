@@ -53,7 +53,7 @@ export const stripHexPrefix = (str: string): string => {
  * @param value
  * @return output
  */
-export function padToEven(value: string) {
+export function padToEven(value: string): string {
   let a = value
 
   if (typeof a !== 'string') {
@@ -102,7 +102,7 @@ export function arrayContainsArray(
     )
   }
 
-  return subset[(Boolean(some) && 'some') || 'every']((value) => superset.indexOf(value) >= 0)
+  return subset[some ? 'some' : 'every']((value) => superset.indexOf(value) >= 0)
 }
 
 /**
@@ -171,14 +171,16 @@ export function fromAscii(stringValue: string) {
 
 /**
  * Returns the keys from an array of objects.
- * Example: getKeys([{a: 1, b: 2}, {a: 3, b: 4}], 'a') => [1, 3]
- *
+ * @example
+ * ```js
+ * getKeys([{a: '1', b: '2'}, {a: '3', b: '4'}], 'a') => ['1', '3']
+ *````
  * @param  params
  * @param  key
  * @param  allowEmpty
  * @returns output just a simple array of output keys
  */
-export function getKeys(params: any[], key: any, allowEmpty?: boolean) {
+export function getKeys(params: Record<string, string>[], key: string, allowEmpty?: boolean) {
   if (!Array.isArray(params)) {
     throw new Error(`[getKeys] method expects input 'params' to be an array, got ${typeof params}`)
   }
