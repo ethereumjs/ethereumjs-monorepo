@@ -3,7 +3,9 @@ import { Address, BN, bufferToHex } from 'ethereumjs-util'
 import Blockchain from '@ethereumjs/blockchain'
 import { Transaction } from '@ethereumjs/tx'
 import { FullSynchronizer } from '../../../lib/sync'
+import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
+import { checkError } from '../util'
 
 const method = 'eth_call'
 
@@ -94,13 +96,6 @@ tape(`${method}: call with unsupported block argument`, async (t) => {
   }
 
   const req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'pending'])
-  const expectRes = (res: any) => {
-    const msg = 'should return error if block argument is not "latest"'
-    if (res.body.result.message === 'Currently only "latest" block supported') {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
-  }
+  const expectRes = checkError(t, INVALID_PARAMS, 'Currently only "latest" block supported')
   await baseRequest(t, server, req, 200, expectRes)
 })
