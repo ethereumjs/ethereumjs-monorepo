@@ -266,6 +266,15 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   }
 
   /**
+   * Clears all outstanding tasks from the fetcher
+   */
+  clear() {
+    while (this.in.length > 0) {
+      this.in.remove()
+    }
+  }
+
+  /**
    * Handle error
    * @param  {Error}  error error object
    * @param  {Object} job  task
