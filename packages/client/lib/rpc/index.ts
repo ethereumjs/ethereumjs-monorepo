@@ -31,9 +31,11 @@ export class RPCManager {
       if (modName === 'Engine' && this._config.rpcEngine === false) {
         continue
       }
-      this._config.logger.debug('='.repeat(29))
-      this._config.logger.debug(`RPC: Initialize ${modName} module`)
-      this._config.logger.debug('='.repeat(29))
+      if (this._config.rpcDebug) {
+        this._config.logger.debug('='.repeat(29))
+        this._config.logger.debug(`RPC: Initialize ${modName} module`)
+        this._config.logger.debug('='.repeat(29))
+      }
 
       const mod = new (modules as any)[modName](this._client)
 
@@ -42,10 +44,14 @@ export class RPCManager {
         .forEach((methodName: string) => {
           const concatedMethodName = `${modName.toLowerCase()}_${methodName}`
 
-          this._config.logger.debug(`Setup method ${concatedMethodName}`)
+          if (this._config.rpcDebug) {
+            this._config.logger.debug(`Setup method ${concatedMethodName}`)
+          }
           methods[concatedMethodName] = mod[methodName].bind(mod)
         })
-      this._config.logger.debug('')
+      if (this._config.rpcDebug) {
+        this._config.logger.debug('')
+      }
     }
     return methods
   }

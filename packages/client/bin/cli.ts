@@ -104,6 +104,11 @@ const args = require('yargs')
       choices: ['error', 'warn', 'info', 'debug'],
       default: Config.LOGLEVEL_DEFAULT,
     },
+    rpcDebug: {
+      describe: 'Additionally log complete RPC calls on log level debug',
+      boolean: true,
+      default: Config.RPCDEBUG_DEFAULT,
+    },
     maxPerRequest: {
       describe: 'Max items per block or header request',
       number: true,
@@ -211,10 +216,28 @@ function runRpcServer(client: EthereumClient, config: Config) {
   server.http().listen(rpcport)
 
   server.on('request', (request) => {
-    config.logger.debug(`${request.method} called with params:\n${inspectParams(request.params)}`)
+    let msg = ''
+    if (config.rpcDebug) {
+      msg += `${request.method} called with params:\n${inspectParams(request.params)}`
+    } else {
+      msg += `${request.method} called with params: ${inspectParams(request.params, 125)}`
+    }
+    config.logger.debug(msg)
   })
   server.on('response', (request, response) => {
-    config.logger.debug(`${request.method} responded with:\n${inspectParams(response)}`)
+    let msg = ''
+    if (config.rpcDebug) {
+      msg = `${request.method} responded with:\n${inspectParams(response)}`
+    } else {
+      msg = `${request.method} responded with: `
+      if (response.result) {
+        msg += inspectParams(response, 125)
+      }
+      if (response.error) {
+        msg += `error: ${response.error.message}`
+      }
+    }
+    config.logger.debug(msg)
   })
 
   return server
@@ -437,6 +460,7 @@ async function run() {
     rpcaddr: args.rpcaddr,
     rpcEngine: args.rpcEngine,
     loglevel: args.loglevel,
+    rpcDebug: args.rpcDebug,
     maxPerRequest: args.maxPerRequest,
     minPeers: args.minPeers,
     maxPeers: args.maxPeers,

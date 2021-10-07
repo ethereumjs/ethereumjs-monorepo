@@ -120,6 +120,11 @@ export interface ConfigOptions {
   loglevel?: string
 
   /**
+   * Additionally log complete RPC calls on log level debug
+   */
+  rpcDebug?: boolean
+
+  /**
    * A custom winston logger can be provided
    * if setting logging verbosity is not sufficient
    *
@@ -223,6 +228,7 @@ export class Config {
   public static readonly RPCPORT_DEFAULT = 8545
   public static readonly RPCADDR_DEFAULT = 'localhost'
   public static readonly LOGLEVEL_DEFAULT = 'info'
+  public static readonly RPCDEBUG_DEFAULT = false
   public static readonly MAXPERREQUEST_DEFAULT = 50
   public static readonly MINPEERS_DEFAULT = 1
   public static readonly MAXPEERS_DEFAULT = 25
@@ -244,6 +250,7 @@ export class Config {
   public readonly rpcaddr: string
   public readonly rpcEngine: boolean
   public readonly loglevel: string
+  public readonly rpcDebug: boolean
   public readonly maxPerRequest: number
   public readonly minPeers: number
   public readonly maxPeers: number
@@ -280,6 +287,7 @@ export class Config {
     this.rpcaddr = options.rpcaddr ?? Config.RPCADDR_DEFAULT
     this.rpcEngine = options.rpcEngine ?? Config.RPC_ENGINE_DEFAULT
     this.loglevel = options.loglevel ?? Config.LOGLEVEL_DEFAULT
+    this.rpcDebug = options.rpcDebug ?? Config.RPCDEBUG_DEFAULT
     this.maxPerRequest = options.maxPerRequest ?? Config.MAXPERREQUEST_DEFAULT
     this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
     this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT

@@ -19,9 +19,17 @@ export function getClientVersion() {
 /**
  * Internal util to pretty print params for logging.
  */
-export function inspectParams(params: any) {
-  return inspect(params, {
+export function inspectParams(params: any, shorten?: number) {
+  let inspected = inspect(params, {
     colors: true,
     maxStringLength: 32,
   } as any)
+  if (!shorten) {
+    return inspected
+  }
+  inspected = inspected.replace(/\n/g, '').replace(/ {2}/g, ' ')
+  if (inspected.length > shorten) {
+    inspected = inspected.slice(0, shorten) + '...'
+  }
+  return inspected
 }
