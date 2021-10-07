@@ -1,5 +1,5 @@
-import { Block } from '@ethereumjs/block'
-import { VMExecution } from '../sync/execution'
+import type { Block } from '@ethereumjs/block'
+import type { VMExecution } from '../sync/execution'
 
 /**
  * Generates a code snippet which can be used to replay an erraneous block

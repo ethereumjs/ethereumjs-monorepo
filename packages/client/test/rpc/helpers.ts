@@ -2,15 +2,16 @@ import tape from 'tape'
 import { Server as RPCServer, HttpServer } from 'jayson/promise'
 import VM from '@ethereumjs/vm'
 import Common, { Chain as ChainEnum, Hardfork } from '@ethereumjs/common'
+import { BN } from 'ethereumjs-util'
 import { RPCManager as Manager } from '../../lib/rpc'
 import { getLogger } from '../../lib/logging'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain/chain'
+import { TxPool } from '../../lib/sync/txpool'
 import { RlpxServer } from '../../lib/net/server/rlpxserver'
 import { mockBlockchain } from './mockBlockchain'
 import type Blockchain from '@ethereumjs/blockchain'
 import type EthereumClient from '../../lib/client'
-import { TxPool } from '../../lib/sync/txpool'
 const request = require('supertest')
 
 const config: any = { loglevel: 'error' }
@@ -45,6 +46,8 @@ export function createClient(clientOpts: any = {}) {
     ethProtocolVersions: [63],
   }
   const clientConfig = { ...defaultClientConfig, ...clientOpts }
+
+  clientConfig.blockchain.getTd = async (_hash: Buffer, _num: BN) => new BN(1000)
 
   const servers = [
     new RlpxServer({

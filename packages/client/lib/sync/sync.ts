@@ -206,7 +206,9 @@ export abstract class Synchronizer {
       const diff = Date.now() - this.config.lastSyncDate
       if (diff >= this.SYNCED_STATE_REMOVAL_PERIOD) {
         this.config.synchronized = false
-        this.config.logger.info(`Sync status reset (no chain updates for ${diff} seconds).`)
+        this.config.logger.info(
+          `Sync status reset (no chain updates for ${Math.round(diff / 1000)} seconds).`
+        )
       }
     }
   }

@@ -409,7 +409,7 @@ export default class Common extends EventEmitter {
    */
   getHardforkByBlockNumber(blockNumber: BNLike, td?: BNLike): string {
     blockNumber = toType(blockNumber, TypeOutput.BN)
-    td = td ? toType(td, TypeOutput.BN) : undefined
+    td = toType(td, TypeOutput.BN)
 
     let hardfork = Hardfork.Chainstart
     let minTdHF
@@ -534,8 +534,8 @@ export default class Common extends EventEmitter {
         )
       }
       if (EIPs[eip].requiredEIPs) {
-        // eslint-disable-next-line prettier/prettier
-        (<number[]>EIPs[eip].requiredEIPs).forEach((elem: number) => {
+        // eslint-disable-next-line no-extra-semi
+        ;(EIPs[eip].requiredEIPs as number[]).forEach((elem) => {
           if (!(eips.includes(elem) || this.isActivatedEIP(elem))) {
             throw new Error(`${eip} requires EIP ${elem}, but is not included in the EIP list`)
           }
@@ -796,7 +796,7 @@ export default class Common extends EventEmitter {
    */
   hardforkBlock(hardfork?: string | Hardfork): number | null {
     const block = this.hardforkBlockBN(hardfork)
-    return block ? toType(block, TypeOutput.Number) : null
+    return toType(block, TypeOutput.Number)
   }
 
   /**
@@ -848,7 +848,7 @@ export default class Common extends EventEmitter {
    */
   nextHardforkBlock(hardfork?: string | Hardfork): number | null {
     const block = this.nextHardforkBlockBN(hardfork)
-    return block === null ? null : toType(block, TypeOutput.Number)
+    return toType(block, TypeOutput.Number)
   }
 
   /**

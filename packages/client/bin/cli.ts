@@ -9,7 +9,7 @@ import { Server as RPCServer } from 'jayson/promise'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { _getInitializedChains } from '@ethereumjs/common/dist/chains'
 import { Address, toBuffer } from 'ethereumjs-util'
-import { parseMultiaddrs, parseGenesisState, parseCustomParams } from '../lib/util'
+import { parseMultiaddrs, parseGenesisState, parseCustomParams, inspectParams } from '../lib/util'
 import EthereumClient from '../lib/client'
 import { Config } from '../lib/config'
 import { Logger } from '../lib/logging'
@@ -98,6 +98,11 @@ const args = require('yargs')
       describe: 'Logging verbosity',
       choices: ['error', 'warn', 'info', 'debug'],
       default: Config.LOGLEVEL_DEFAULT,
+    },
+    rpcDebug: {
+      describe: 'Additionally log complete RPC calls on log level debug (i.e. --loglevel=debug)',
+      boolean: true,
+      default: Config.RPCDEBUG_DEFAULT,
     },
     maxPerRequest: {
       describe: 'Max items per block or header request',
@@ -204,6 +209,31 @@ function runRpcServer(client: EthereumClient, config: Config) {
   const server = new RPCServer(manager.getMethods())
   config.logger.info(`RPC HTTP endpoint opened: http://${rpcaddr}:${rpcport}`)
   server.http().listen(rpcport)
+
+  server.on('request', (request) => {
+    let msg = ''
+    if (config.rpcDebug) {
+      msg += `${request.method} called with params:\n${inspectParams(request.params)}`
+    } else {
+      msg += `${request.method} called with params: ${inspectParams(request.params, 125)}`
+    }
+    config.logger.debug(msg)
+  })
+  server.on('response', (request, response) => {
+    let msg = ''
+    if (config.rpcDebug) {
+      msg = `${request.method} responded with:\n${inspectParams(response)}`
+    } else {
+      msg = `${request.method} responded with: `
+      if (response.result) {
+        msg += inspectParams(response, 125)
+      }
+      if (response.error) {
+        msg += `error: ${response.error.message}`
+      }
+    }
+    config.logger.debug(msg)
+  })
 
   return server
 }
@@ -420,6 +450,7 @@ async function run() {
     rpcport: args.rpcport,
     rpcaddr: args.rpcaddr,
     loglevel: args.loglevel,
+    rpcDebug: args.rpcDebug,
     maxPerRequest: args.maxPerRequest,
     minPeers: args.minPeers,
     maxPeers: args.maxPeers,
