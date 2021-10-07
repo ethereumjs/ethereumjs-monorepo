@@ -103,9 +103,8 @@ export class VMExecution extends Execution {
           // run block, update head if valid
           try {
             const { number } = block.header
-            const td = (await blockchain.getTotalDifficulty(block.header.parentHash)).add(
-              block.header.difficulty
-            )
+            const td = await blockchain.getTotalDifficulty(block.header.parentHash)
+
             const hardfork = this.config.execCommon.getHardforkByBlockNumber(number, td)
             if (hardfork !== this.hardfork) {
               const hash = short(block.hash())

@@ -182,6 +182,20 @@ export class FullSynchronizer extends Synchronizer {
       })
 
       this.config.events.on(Event.SYNC_FETCHER_FETCHED, (blocks) => {
+        if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+          // If we are beyond the merge block we should stop the fetcher
+          this.config.logger.info('Merge hardfork reached, stopping block fetcher')
+          if (this.fetcher) {
+            this.fetcher.destroy()
+            this.fetcher = null
+          }
+          return
+        }
+        if (blocks.length === 0) {
+          this.config.logger.warn('No blocks fetched are applicable for import')
+          return
+        }
+
         blocks = blocks as Block[]
         const first = new BN(blocks[0].header.number)
         const hash = short(blocks[0].hash())
