@@ -4,6 +4,7 @@ import { Address, BN, toBuffer, toType, TypeOutput, bufferToHex, intToHex } from
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { encode } from 'rlp'
 import { middleware, validators } from '../validation'
+import { INTERNAL_ERROR } from '../error-code'
 import type VM from '@ethereumjs/vm'
 import type EthereumClient from '../../client'
 import type { Chain } from '../../blockchain'
@@ -96,7 +97,12 @@ const blockToExecutionPayload = (block: Block, random: Buffer) => {
 /**
  * Finds a block in validBlocks or the blockchain, otherwise throws {@link EngineError.UnknownPayload}.
  */
-const findBlock = async (hash: Buffer, validBlocks: Map<String, Block>, chain: Chain) => {
+const findBlock = async (
+  hash: Buffer,
+  validBlocks: Map<String, Block>,
+  chain: Chain,
+  synchronizer: FullSynchronizer
+) => {
   const parentBlock = validBlocks.get(hash.toString('hex'))
   if (parentBlock) {
     return parentBlock
@@ -106,6 +112,20 @@ const findBlock = async (hash: Buffer, validBlocks: Map<String, Block>, chain: C
       const parentBlock = await chain.getBlock(hash)
       return parentBlock
     } catch (error) {
+      // block not found, search network (devp2p)
+      const peer = synchronizer.best()
+      const headerResult = await peer?.eth!.getBlockHeaders({ block: hash, max: 1 })
+      if (headerResult) {
+        const header = headerResult[1]
+        const bodiesResult = await peer?.eth!.getBlockBodies({ hashes: [hash] })
+        if (bodiesResult) {
+          const blockBody = bodiesResult[1][0]
+          const block = Block.fromValuesArray([header[0].raw(), ...blockBody], {
+            common: chain.config.chainCommon,
+          })
+          return block
+        }
+      }
       throw EngineError.UnknownHeader
     }
   }
@@ -118,19 +138,21 @@ const recursivelyFindParents = async (
   vmHeadHash: Buffer,
   parentHash: Buffer,
   validBlocks: Map<String, Block>,
-  chain: Chain
+  chain: Chain,
+  synchronizer: FullSynchronizer
 ) => {
   if (parentHash.equals(vmHeadHash)) {
     return []
   }
   const parentBlocks = []
-  const block = await findBlock(parentHash, validBlocks, chain)
+  const block = await findBlock(parentHash, validBlocks, chain, synchronizer)
   parentBlocks.push(block)
   while (!vmHeadHash.equals(parentBlocks[parentBlocks.length - 1].header.parentHash)) {
     const block: Block = await findBlock(
       parentBlocks[parentBlocks.length - 1].header.parentHash,
       validBlocks,
-      chain
+      chain,
+      synchronizer
     )
     parentBlocks.push(block)
   }
@@ -300,12 +322,20 @@ export class Engine {
       vmHead.hash(),
       parentHash,
       this.validBlocks,
-      this.chain
+      this.chain,
+      this.synchronizer
     )
 
     for (const parent of parentBlocks) {
-      await vmCopy.runBlock({ block: parent })
-      await vmCopy.blockchain.putBlock(parent)
+      try {
+        await vmCopy.runBlock({ block: parent })
+        await vmCopy.blockchain.putBlock(parent)
+      } catch (error: any) {
+        throw {
+          code: INTERNAL_ERROR,
+          message: error.toString(),
+        }
+      }
     }
 
     const parentBlock = await vmCopy.blockchain.getBlock(parentHash)
@@ -420,12 +450,20 @@ export class Engine {
       vmHeadHash,
       block.header.parentHash,
       this.validBlocks,
-      this.chain
+      this.chain,
+      this.synchronizer
     )
 
     for (const parent of parentBlocks) {
-      await vmCopy.runBlock({ block: parent })
-      await vmCopy.blockchain.putBlock(parent)
+      try {
+        await vmCopy.runBlock({ block: parent })
+        await vmCopy.blockchain.putBlock(parent)
+      } catch (error: any) {
+        throw {
+          code: INTERNAL_ERROR,
+          message: error.toString(),
+        }
+      }
     }
 
     try {
@@ -488,7 +526,8 @@ export class Engine {
       vmHeadHash,
       headBlock.header.parentHash,
       this.validBlocks,
-      this.chain
+      this.chain,
+      this.synchronizer
     )
 
     await this.chain.putBlocks([...parentBlocks, headBlock], true)
