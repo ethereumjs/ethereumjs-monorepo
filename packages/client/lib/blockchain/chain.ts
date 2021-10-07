@@ -273,7 +273,7 @@ export class Chain {
    * Insert new blocks into blockchain
    * @param blocks list of blocks to add
    * @param mergeIncludes skip adding after merge
-   * @return Numbers of blocks added
+   * @returns number of blocks added
    */
   async putBlocks(blocks: Block[], mergeIncludes = false): Promise<number> {
     if (blocks.length === 0) {

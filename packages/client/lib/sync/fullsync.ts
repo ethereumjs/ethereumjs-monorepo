@@ -1,13 +1,13 @@
-import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
 import { Peer } from '../net/peer/peer'
 import { short } from '../util'
+import { Event } from '../types'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import { BlockFetcher } from './fetcher'
 import { VMExecution } from './execution/vmexecution'
 import { TxPool } from './txpool'
-import { Event } from '../types'
+import type { Block } from '@ethereumjs/block'
 
 interface HandledObject {
   hash: Buffer

@@ -24,12 +24,11 @@ export function inspectParams(params: any, shorten?: number) {
     colors: true,
     maxStringLength: 32,
   } as any)
-  if (!shorten) {
-    return inspected
-  }
-  inspected = inspected.replace(/\n/g, '').replace(/ {2}/g, ' ')
-  if (inspected.length > shorten) {
-    inspected = inspected.slice(0, shorten) + '...'
+  if (shorten) {
+    inspected = inspected.replace(/\n/g, '').replace(/ {2}/g, ' ')
+    if (inspected.length > shorten) {
+      inspected = inspected.slice(0, shorten) + '...'
+    }
   }
   return inspected
 }

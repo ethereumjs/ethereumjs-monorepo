@@ -1,12 +1,12 @@
-import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { Execution, ExecutionOptions } from './execution'
 import { short } from '../../util'
 import { debugCodeReplayBlock } from '../../util/debug'
 import { Event } from '../../types'
+import { Execution, ExecutionOptions } from './execution'
+import type { Block } from '@ethereumjs/block'
 
 export class VMExecution extends Execution {
   public vm: VM
@@ -96,9 +96,6 @@ export class VMExecution extends Execution {
           if (!headBlock || reorg) {
             const parentBlock = await blockchain.getBlock(block.header.parentHash)
             parentState = parentBlock.header.stateRoot
-            if (headBlock) {
-              parentState = headBlock.header.stateRoot
-            }
           }
           // run block, update head if valid
           try {
