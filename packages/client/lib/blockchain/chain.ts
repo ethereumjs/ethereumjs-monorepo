@@ -253,9 +253,9 @@ export class Chain {
   }
 
   /**
-   * Gets a block by its hash or number
-   * @param  {Buffer|BN}        block
-   * @return {Promise<Block>}
+   * Get a block by its hash or number
+   * @param block block hash or number
+   * @throws if block is not found
    */
   async getBlock(block: Buffer | BN): Promise<Block> {
     await this.open()
@@ -264,7 +264,7 @@ export class Chain {
 
   /**
    * Insert new blocks into blockchain
-   * @param {Block[]} blocks list of blocks to add
+   * @param blocks list of blocks to add
    */
   async putBlocks(blocks: Block[]): Promise<void> {
     if (blocks.length === 0) {

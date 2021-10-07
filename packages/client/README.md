@@ -161,7 +161,7 @@ See also this [diagram](./diagram/client.svg) for an overview of the client stru
 
 ### Overview
 
-You can expose a [JSON-RPC](https://github.com/ethereum/wiki/wiki/JSON-RPC) interface along a client run with:
+You can expose a [JSON-RPC](https://eth.wiki/json-rpc/API) interface along a client run with:
 
 ```shell
 ethereumjs --rpc
@@ -183,7 +183,7 @@ contribution on the project *hint\* _hint_. 😄
 ### API Examples
 
 You can use `cURL` to request data from an API endpoint. Here is a simple example for
-[web3_clientVersion](https://github.com/ethereum/wiki/wiki/JSON-RPC#web3_clientversion):
+[web3_clientVersion](https://eth.wiki/json-rpc/API#web3_clientversion):
 
 ```shell
 curl -X POST -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","id":1,"method":"web3_clientVersion", "params": []}' http://localhost:8545
@@ -211,8 +211,8 @@ This will give you an output like the following:
 ```
 
 Here's an example for a call on an endpoint with the need for parameters. The following call uses
-the [eth_getBlockByNumer](https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getblockbynumber) endpoint
-to request data for block number 436 (you can use an tool like
+the [eth_getBlockByNumer](https://eth.wiki/json-rpc/API#eth_getblockbynumber) endpoint
+to request data for block number 436 (you can use a tool like
 [RapidTables](https://www.rapidtables.com/convert/number/decimal-to-hex.html) for conversion to `hex`):
 
 ```shell
@@ -229,28 +229,28 @@ Output:
 
 ```json
 {
-  "id": "1",
   "jsonrpc": "2.0",
+  "id": "1",
   "result": {
-    "header": {
-      "bloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-      "coinbase": "0xbb7b8287f3f0a933474a79eae42cbca977791171",
-      "difficulty": "0x04ea3f27bc",
-      "extraData": "0x476574682f4c5649562f76312e302e302f6c696e75782f676f312e342e32",
-      "gasLimit": "0x1388",
-      "gasUsed": "0x",
-      "mixHash": "0x4fffe9ae21f1c9e15207b1f472d5bbdd68c9595d461666602f2be20daf5e7843",
-      "nonce": "0x689056015818adbe",
-      "number": "0x01b4",
-      "parentHash": "0xe99e022112df268087ea7eafaf4790497fd21dbeeb6bd7a1721df161a6657a54",
-      "receiptTrie": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
-      "stateRoot": "0xddc8b0234c2e0cad087c8b389aa7ef01f7d79b2570bccb77ce48648aa61c904d",
-      "timestamp": "0x55ba467c",
-      "transactionsTrie": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
-      "uncleHash": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"
-    },
+    "number": "0x1b4",
+    "hash": "0xdc0818cf78f21a8e70579cb46a43643f78291264dda342ae31049421c82d21ae",
+    "parentHash": "0xe99e022112df268087ea7eafaf4790497fd21dbeeb6bd7a1721df161a6657a54",
+    "nonce": "0x689056015818adbe",
+    "sha3Uncles": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "transactionsRoot": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+    "stateRoot": "0xddc8b0234c2e0cad087c8b389aa7ef01f7d79b2570bccb77ce48648aa61c904d",
+    "receiptsRoot": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+    "miner": "0xbb7b8287f3f0a933474a79eae42cbca977791171",
+    "difficulty": "0x4ea3f27bc",
+    "totalDifficulty": "0x78ed983323d",
+    "extraData": "0x476574682f4c5649562f76312e302e302f6c696e75782f676f312e342e32",
+    "size": "0x747",
+    "gasLimit": "0x1388",
+    "gasUsed": "0x0",
+    "timestamp": "0x55ba467c",
     "transactions": [],
-    "uncleHeaders": []
+    "uncles": []
   }
 }
 ```

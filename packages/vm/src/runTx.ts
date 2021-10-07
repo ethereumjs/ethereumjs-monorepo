@@ -278,7 +278,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const cost = tx.getUpfrontCost(block.header.baseFeePerGas)
     if (balance.lt(cost)) {
       throw new Error(
-        `sender doesn't have enough funds to send tx. The upfront cost is: ${cost} and the sender's account only has: ${balance}`
+        `sender doesn't have enough funds to send tx. The upfront cost is: ${cost} and the sender's account (${caller}) only has: ${balance}`
       )
     }
     if (tx.supports(Capability.EIP1559FeeMarket)) {
@@ -288,7 +288,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       const cost = tx.gasLimit.mul((tx as FeeMarketEIP1559Transaction).maxFeePerGas).add(tx.value)
       if (balance.lt(cost)) {
         throw new Error(
-          `sender doesn't have enough funds to send tx. The max cost is: ${cost} and the sender's account only has: ${balance}`
+          `sender doesn't have enough funds to send tx. The max cost is: ${cost} and the sender's account (${caller}) only has: ${balance}`
         )
       }
     }
@@ -414,9 +414,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Update miner's balance
   let miner
-  if (this._common.consensusType() === ConsensusType.ProofOfWork) {
-    miner = block.header.coinbase
-  } else {
+  if (this._common.consensusType() === ConsensusType.ProofOfAuthority) {
     // Backwards-compatibilty check
     // TODO: can be removed along VM v6 release
     if ('cliqueSigner' in block.header) {
@@ -424,10 +422,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     } else {
       miner = Address.zero()
     }
+  } else {
+    miner = block.header.coinbase
   }
   const minerAccount = await state.getAccount(miner)
   // add the amount spent on gas to the miner's account
-
   if (this._common.isActivatedEIP(1559)) {
     minerAccount.balance.iadd(results.gasUsed.mul(<BN>inclusionFeePerGas))
   } else {

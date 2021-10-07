@@ -1,28 +1,55 @@
-import { bufferToHex } from 'ethereumjs-util'
+import { Block } from '@ethereumjs/block'
+import { BN, bufferToHex } from 'ethereumjs-util'
 import tape from 'tape'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
 import { checkError } from '../util'
 
 function createBlockchain() {
+  const genesisBlockHash = Buffer.from(
+    'dcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5',
+    'hex'
+  )
+  const blockHash = Buffer.from(
+    'dcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5',
+    'hex'
+  )
   const txHash = Buffer.from(
     'c6ef2fc5426d6ad6fd9e2a26abeab0aa2411b7ab17f30a99d3cb96aed1d1055b',
     'hex'
   )
+  const txHash2 = Buffer.from(
+    'a2285835057e8252ebd4980cf498f7538cedb3600dc183f1c523c6971b6889aa',
+    'hex'
+  )
   const transactions = [{ hash: bufferToHex(txHash) }]
+  const transactions2 = [{ hash: bufferToHex(txHash2) }]
+  const genesisBlock = {
+    hash: () => genesisBlockHash,
+    header: {
+      number: new BN(0),
+    },
+    toJSON: () => ({ ...Block.fromBlockData({ header: { number: 0 } }).toJSON(), transactions }),
+    transactions: [{ hash: () => txHash }],
+    uncleHeaders: [],
+  }
   const block = {
-    transactions: [
-      {
-        hash: () => {
-          return txHash
-        },
-      },
-    ],
-    toJSON: () => ({ number: 1, transactions }),
+    hash: () => blockHash,
+    header: {
+      number: new BN(1),
+    },
+    toJSON: () => ({
+      ...Block.fromBlockData({ header: { number: 1 } }).toJSON(),
+      transactions: transactions2,
+    }),
+    transactions: [{ hash: () => txHash2 }],
+    uncleHeaders: [],
   }
   return {
-    getBlock: () => block,
+    getBlock: () => genesisBlock,
     getLatestBlock: () => block,
+    getLatestHeader: () => block.header,
+    getTd: () => new BN(0),
   }
 }
 
@@ -32,13 +59,13 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const manager = createManager(createClient({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
-  const req = params(method, ['0x1', true])
+  const req = params(method, ['0x0', false])
   const expectRes = (res: any) => {
-    const msg = 'should return a valid block with a number prop'
-    if (typeof res.body.result.number !== 'number') {
-      throw new Error(msg)
-    } else {
+    const msg = 'should return a valid block'
+    if (res.body.result.number === '0x0') {
       t.pass(msg)
+    } else {
+      throw new Error(msg)
     }
   }
   await baseRequest(t, server, req, 200, expectRes)
@@ -48,13 +75,13 @@ tape(`${method}: call with false for second argument`, async (t) => {
   const manager = createManager(createClient({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
-  const req = params(method, ['0x1', false])
+  const req = params(method, ['0x0', false])
   const expectRes = (res: any) => {
-    let msg = 'should return a valid block with a number prop'
-    if (typeof res.body.result.number !== 'number') {
-      throw new Error(msg)
-    } else {
+    let msg = 'should return a valid block'
+    if (res.body.result.number === '0x0') {
       t.pass(msg)
+    } else {
+      throw new Error(msg)
     }
     msg = 'should return only the hashes of the transactions'
     if (typeof res.body.result.transactions[0] !== 'string') {
@@ -73,10 +100,10 @@ tape(`${method}: call with earliest param`, async (t) => {
   const req = params(method, ['earliest', false])
   const expectRes = (res: any) => {
     const msg = 'should return the genesis block number'
-    if (typeof res.body.result.number !== 'number') {
-      throw new Error(msg)
-    } else {
+    if (res.body.result.number === '0x0') {
       t.pass(msg)
+    } else {
+      throw new Error(msg)
     }
   }
   await baseRequest(t, server, req, 200, expectRes)
@@ -89,10 +116,10 @@ tape(`${method}: call with latest param`, async (t) => {
   const req = params(method, ['latest', false])
   const expectRes = (res: any) => {
     const msg = 'should return a block number'
-    if (typeof res.body.result.number !== 'number') {
-      throw new Error(msg)
-    } else {
+    if (res.body.result.number === '0x1') {
       t.pass(msg)
+    } else {
+      throw new Error(msg)
     }
   }
   await baseRequest(t, server, req, 200, expectRes)
@@ -104,14 +131,7 @@ tape(`${method}: call with unimplemented pending param`, async (t) => {
 
   const req = params(method, ['pending', true])
 
-  const expectRes = (res: any) => {
-    const msg = 'should return error if block argument is "pending"'
-    if (res.body.result.message === '"pending" is not yet supported') {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
-  }
+  const expectRes = checkError(t, INVALID_PARAMS, '"pending" is not yet supported')
   await baseRequest(t, server, req, 200, expectRes)
 })
 

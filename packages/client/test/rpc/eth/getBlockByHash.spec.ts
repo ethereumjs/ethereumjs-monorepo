@@ -10,11 +10,11 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   const req = params(method, [
     '0x910abca1728c53e8d6df870dd7af5352e974357dc58205dea1676be17ba6becf',
-    true,
+    false,
   ])
   const expectRes = (res: any) => {
     const msg = 'should return the correct number'
-    t.equal(res.body.result.number, 444444, msg)
+    t.equal(res.body.result.number, '0x444444', msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
@@ -28,7 +28,7 @@ tape(`${method}: call with false for second argument`, async (t) => {
   ])
   const expectRes = (res: any) => {
     let msg = 'should return the correct number'
-    t.equal(res.body.result.number, 444444, msg)
+    t.equal(res.body.result.number, '0x444444', msg)
     msg = 'should return only the hashes of the transactions'
     t.equal(typeof res.body.result.transactions[0], 'string', msg)
   }

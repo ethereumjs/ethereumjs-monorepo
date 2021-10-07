@@ -203,19 +203,19 @@ async function parseGethParams(json: any) {
       baseFeePerGas,
     },
     bootstrapNodes: [],
-    consensus: config.ethash
+    consensus: config.clique
       ? {
-          type: 'pow',
-          algorithm: 'ethash',
-          ethash: {},
-        }
-      : {
           type: 'poa',
           algorithm: 'clique',
           clique: {
             period: config.clique.period,
             epoch: config.clique.epoch,
           },
+        }
+      : {
+          type: 'pow',
+          algorithm: 'ethash',
+          ethash: {},
         },
   }
   const hardforks = [
