@@ -1,5 +1,5 @@
 import BN from 'bn.js'
-import { isHexString } from 'ethjs-util'
+import { isHexString } from './internal'
 import { Address } from './address'
 import { unpadBuffer, toBuffer, ToBufferInputTypes } from './bytes'
 
