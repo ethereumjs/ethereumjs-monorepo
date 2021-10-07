@@ -284,7 +284,9 @@ export class Chain {
     let numAdded = 0
     for (const b of blocks) {
       if (!mergeIncludes && this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
-        this.config.logger.info(`Merge hardfork reached at block number=${b.header.number} td=${this.headers.td}`)
+        this.config.logger.info(
+          `Merge hardfork reached at block number=${b.header.number} td=${this.headers.td}`
+        )
         break
       }
       const block = Block.fromValuesArray(b.raw(), {

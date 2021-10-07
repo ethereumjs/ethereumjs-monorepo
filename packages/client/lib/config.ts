@@ -120,7 +120,7 @@ export interface ConfigOptions {
   loglevel?: string
 
   /**
-   * Additionally log complete RPC calls on log level debug
+   * Additionally log complete RPC calls on log level debug (i.e. --loglevel=debug)
    */
   rpcDebug?: boolean
 

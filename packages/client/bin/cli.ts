@@ -105,7 +105,7 @@ const args = require('yargs')
       default: Config.LOGLEVEL_DEFAULT,
     },
     rpcDebug: {
-      describe: 'Additionally log complete RPC calls on log level debug',
+      describe: 'Additionally log complete RPC calls on log level debug (i.e. --loglevel=debug)',
       boolean: true,
       default: Config.RPCDEBUG_DEFAULT,
     },
