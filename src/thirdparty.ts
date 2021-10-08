@@ -242,12 +242,7 @@ export async function fromKryptoKit(entropy: string, password: string): Promise<
     ])
 
     if (checksum.length > 0) {
-      if (
-        checksum !==
-        sha256(sha256(privateKey))
-          .slice(0, 8)
-          .toString('hex')
-      ) {
+      if (checksum !== sha256(sha256(privateKey)).slice(0, 8).toString('hex')) {
         throw new Error('Failed to decrypt input - possibly invalid passphrase')
       }
     }

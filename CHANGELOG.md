@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2021-10-08
+
+- Updated dependencies to latest, added browser build, PR [#157](https://github.com/ethereumjs/ethereumjs-wallet/pull/157)
+
+#### Included Source Files
+
+Source files from the `src` folder are now included in the distribution build. This allows for a better debugging experience in debug tools like Chrome DevTools by having working source map references to the original sources available for inspection.
+
+[1.0.2]: https://github.com/ethereumjs/ethereumjs-wallet/compare/v1.0.1...v1.0.2
+
 ## [1.0.1] - 2020-09-25
 
 - Fixed a browser issue in `Wallet.fromV3()` and `Wallet.toV3()` triggered when using web bundlers using Buffer v4 shim (Webpack 4),
@@ -46,7 +56,7 @@ This leads to cases where some input - while not having been the intended way to
 One example for this is the `Wallet.fromPublicKey()` function, here is the old code of the function:
 
 ```js
-Wallet.fromPublicKey = function(pub, nonStrict) {
+Wallet.fromPublicKey = function (pub, nonStrict) {
   if (nonStrict) {
     pub = ethUtil.importPublic(pub)
   }

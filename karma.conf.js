@@ -7,6 +7,7 @@ module.exports = function(config) {
     },
     plugins: ['karma-mocha', 'karma-typescript', 'karma-chrome-launcher', 'karma-firefox-launcher'],
     karmaTypescriptConfig: {
+      tsconfig: './tsconfig.json',
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
       },
@@ -15,7 +16,7 @@ module.exports = function(config) {
     reporters: ['progress', 'karma-typescript'],
     browsers: ['FirefoxHeadless', 'ChromeHeadless'],
     singleRun: true,
-    concurrency: Infinity,
+    concurrency: 1,
     // Extend timeouts for long tests
     browserDisconnectTimeout: 1000000,
     browserNoActivityTimeout: 1000000,

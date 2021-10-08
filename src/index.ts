@@ -18,7 +18,7 @@ export { default as thirdparty } from './thirdparty'
 
 const bs58check = require('bs58check')
 const randomBytes = require('randombytes')
-const uuidv4 = require('uuid/v4')
+const uuidv4 = require('uuid').v4
 
 // parameters for the toV3() method
 
@@ -74,7 +74,7 @@ function validateBuffer(paramName: string, buff: Buffer, length?: number) {
       typeof length === 'number' ? `${length * 2}` : 'empty or a non-zero even number of'
     const howManyBytes = typeof length === 'number' ? ` (${length} bytes)` : ''
     throw new Error(
-      `Invalid ${paramName}, must be a string (${howManyHex} hex characters) or buffer${howManyBytes}`,
+      `Invalid ${paramName}, must be a string (${howManyHex} hex characters) or buffer${howManyBytes}`
     )
   }
   if (typeof length === 'number' && buff.length !== length) {
@@ -240,7 +240,7 @@ interface EthSaleKeystore {
 export default class Wallet {
   constructor(
     private readonly privateKey?: Buffer | undefined,
-    private publicKey: Buffer | undefined = undefined,
+    private publicKey: Buffer | undefined = undefined
   ) {
     if (privateKey && publicKey) {
       throw new Error('Cannot supply both a private and a public key to the constructor')
@@ -362,7 +362,7 @@ export default class Wallet {
       kdfparams.N,
       kdfparams.R,
       kdfparams.P,
-      kdfparams.DkLen,
+      kdfparams.DkLen
     )
 
     const ciphertext = Buffer.from(json.Crypto.CipherText, 'hex')
@@ -374,7 +374,7 @@ export default class Wallet {
     const decipher = crypto.createDecipheriv(
       'aes-128-cbc',
       keccak256(derivedKey.slice(0, 16) as Buffer).slice(0, 16),
-      Buffer.from(json.Crypto.IV, 'hex'),
+      Buffer.from(json.Crypto.IV, 'hex')
     )
     const seed = runCipherBuffer(decipher, ciphertext)
     return new Wallet(seed)
@@ -389,7 +389,7 @@ export default class Wallet {
   public static async fromV3(
     input: string | V3Keystore,
     password: string,
-    nonStrict: boolean = false,
+    nonStrict: boolean = false
   ): Promise<Wallet> {
     const json: V3Keystore =
       typeof input === 'object' ? input : JSON.parse(nonStrict ? input.toLowerCase() : input)
@@ -409,7 +409,7 @@ export default class Wallet {
         kdfparams.n,
         kdfparams.r,
         kdfparams.p,
-        kdfparams.dklen,
+        kdfparams.dklen
       )
     } else if (json.crypto.kdf === 'pbkdf2') {
       kdfparams = json.crypto.kdfparams
@@ -423,7 +423,7 @@ export default class Wallet {
         Buffer.from(kdfparams.salt, 'hex'),
         kdfparams.c,
         kdfparams.dklen,
-        'sha256',
+        'sha256'
       )
     } else {
       throw new Error('Unsupported key derivation scheme')
@@ -438,7 +438,7 @@ export default class Wallet {
     const decipher = crypto.createDecipheriv(
       json.crypto.cipher,
       derivedKey.slice(0, 16),
-      Buffer.from(json.crypto.cipherparams.iv, 'hex'),
+      Buffer.from(json.crypto.cipherparams.iv, 'hex')
     )
     const seed = runCipherBuffer(decipher, ciphertext)
     return new Wallet(seed)
@@ -570,7 +570,7 @@ export default class Wallet {
           kdfParams.salt,
           kdfParams.c,
           kdfParams.dklen,
-          'sha256',
+          'sha256'
         )
         break
       case KDFFunctions.Scrypt:
@@ -582,7 +582,7 @@ export default class Wallet {
           kdfParams.n,
           kdfParams.r,
           kdfParams.p,
-          kdfParams.dklen,
+          kdfParams.dklen
         )
         break
       default:
@@ -592,14 +592,16 @@ export default class Wallet {
     const cipher: crypto.Cipher = crypto.createCipheriv(
       v3Params.cipher,
       derivedKey.slice(0, 16),
-      v3Params.iv,
+      v3Params.iv
     )
     if (!cipher) {
       throw new Error('Unsupported cipher')
     }
 
     const ciphertext = runCipherBuffer(cipher, this.privKey)
-    const mac = keccak256(Buffer.concat([Buffer.from(derivedKey.slice(16, 32)), Buffer.from(ciphertext)]))
+    const mac = keccak256(
+      Buffer.concat([Buffer.from(derivedKey.slice(16, 32)), Buffer.from(ciphertext)])
+    )
 
     return {
       version: 3,
@@ -637,7 +639,7 @@ export default class Wallet {
      */
     const ts = timestamp ? new Date(timestamp) : new Date()
     return ['UTC--', ts.toJSON().replace(/:/g, '-'), '--', this.getAddress().toString('hex')].join(
-      '',
+      ''
     )
   }
 

@@ -27,7 +27,6 @@ build/Release
 # Dependency directory
 # https://docs.npmjs.com/misc/faq#should-i-check-my-node-modules-folder-into-git
 node_modules
-package-lock.json
 
 # Optional npm cache directory
 .npm
@@ -42,3 +41,4 @@ package-lock.json
 
 # build output
 dist
+dist.browser
