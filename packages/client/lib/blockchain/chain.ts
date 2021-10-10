@@ -295,9 +295,9 @@ export class Chain {
       })
       await this.blockchain.putBlock(block)
       numAdded++
-      await this.update(false)
+      const emitOnLast = blocks.length === numAdded
+      await this.update(emitOnLast)
     }
-    await this.update()
     return numAdded
   }
 
