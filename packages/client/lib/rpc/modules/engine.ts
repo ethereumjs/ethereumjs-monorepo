@@ -296,18 +296,15 @@ export class Engine {
       // `2: Action not allowed` error if the sync process is in progress.
       return EngineError.ActionNotAllowed
     }
-
     let [payloadId]: any = params
 
     payloadId = toType(payloadId, TypeOutput.Number)
-
     const payload = this.pendingPayloads.get(payloadId)
     if (!payload) {
       throw EngineError.UnknownPayload
     }
 
     const { parentHash, timestamp, feeRecipient: coinbase } = payload
-
     // From spec: If timestamp + SECONDS_PER_SLOT has passed, block is no longer valid
     if (new BN(Date.now()).divn(1000).gt(timestamp.add(this.SECONDS_PER_SLOT))) {
       this.pendingPayloads.delete(payloadId)
@@ -328,6 +325,8 @@ export class Engine {
 
     for (const parent of parentBlocks) {
       try {
+        const td = await vmCopy.blockchain.getTotalDifficulty(parent.hash())
+        vmCopy._common.setHardforkByBlockNumber(parent.header.number, td)
         await vmCopy.runBlock({ block: parent })
         await vmCopy.blockchain.putBlock(parent)
       } catch (error: any) {
@@ -337,16 +336,15 @@ export class Engine {
         }
       }
     }
-
     const parentBlock = await vmCopy.blockchain.getBlock(parentHash)
     const number = parentBlock.header.number.addn(1)
     const { gasLimit } = parentBlock.header
     const baseFeePerGas = parentBlock.header.calcNextBaseFee()
-
     // Set the state root to ensure the resulting state
     // is based on the parent block's state
     await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
-
+    const td = await vmCopy.blockchain.getTotalDifficulty(vmHead.hash())
+    vmCopy._common.setHardforkByBlockNumber(vmHead.header.number, td)
     const blockBuilder = await vmCopy.buildBlock({
       parentBlock,
       headerData: {
@@ -357,12 +355,10 @@ export class Engine {
         coinbase,
       },
     })
-
     const txs = await this.txPool.txsByPriceAndNonce(vmCopy.stateManager, baseFeePerGas)
     this.config.logger.info(
       `Engine: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`
     )
-
     let index = 0
     let blockFull = false
     while (index < txs.length && !blockFull) {
@@ -387,14 +383,12 @@ export class Engine {
       }
       index++
     }
-
     const block = await blockBuilder.build()
-
     this.pendingPayloads.delete(payloadId)
     this.validBlocks.set(block.hash().toString('hex'), block)
-
     return blockToExecutionPayload(block, payload.random)
   }
+
   /**
    * Verifies the payload according to the execution environment rule set (EIP-3675)
    * and returns the status of the verification.
