@@ -79,8 +79,8 @@ const block = Block.fromBlockData({
 // gas used is greater than half the gas limit
 block.header.calcNextBaseFee().toNumber() // 11
 
-So for creating a block with a matching base fee in a certain
-chain context you can do:
+// So for creating a block with a matching base fee in a certain
+// chain context you can do:
 
 const blockWithMatchingBaseFee = Block.fromBlockData({
   header: {
