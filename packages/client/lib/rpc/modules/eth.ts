@@ -52,7 +52,7 @@ type GetLogsParamsObject = {
   toBlock?: string // QUANTITY, integer block number or "earliest" or "latest"
   address?: string // DATA, 20 Bytes, address
   topics?: string[] // DATA, array
-  blockhash?: string // DATA, 32 Bytes. With the addition of EIP-234,
+  blockHash?: string // DATA, 32 Bytes. With the addition of EIP-234,
   // blockHash restricts the logs returned to the single block with
   // the 32-byte hash blockHash. Using blockHash is equivalent to
   // fromBlock = toBlock = the block number with hash blockHash.
@@ -183,11 +183,11 @@ export class Eth {
           toBlock: validators.blockOption,
           address: validators.address,
           topics: validators.array(validators.hex),
-          // TODO: blockhash would be nice to have
+          // TODO: blockHash would be nice to have
           // (but not required for first iteration)
           // also...create a validators.optional() modifier
           // so we can do:
-          //blockhash: validators.optional(validators.blockHash),
+          //blockHash: validators.optional(validators.blockHash),
         }),
       ],
     ])
@@ -566,6 +566,7 @@ export class Eth {
 
   // MERGE-INTEROP-HACK: stubbed method to satify Lodestar needs
   // TODO: do proper implementation (would need to store logs in db for retrieval)
+  // https://github.com/ethereumjs/ethereumjs-monorepo/issues/1520
   async getLogs(_params: GetLogsParamsObject) {
     return []
   }

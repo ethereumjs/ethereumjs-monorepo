@@ -29,6 +29,7 @@ export class RPCManager {
 
     for (const modName of modules.list) {
       if (modName === 'Engine' && this._config.rpcEngine === false) {
+        // Skip `engine_` namespace if rpcEngine is not enabled
         continue
       }
       if (this._config.rpcDebug) {

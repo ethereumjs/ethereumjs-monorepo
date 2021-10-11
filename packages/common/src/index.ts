@@ -419,7 +419,7 @@ export default class Common extends EventEmitter {
       // Skip comparison for not applied HFs
       if (hf.block === null) {
         if (td !== undefined && td !== null && hf.td !== undefined && hf.td !== null) {
-          if (td.gten(hf.td)) {
+          if (td.gte(new BN(hf.td))) {
             return hf.name
           }
         }

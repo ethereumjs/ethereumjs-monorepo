@@ -1,3 +1,4 @@
+import { Hardfork } from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
 import { PeerPool } from '../net/peerpool'
 import { Peer } from '../net/peer/peer'
@@ -51,8 +52,7 @@ export abstract class Synchronizer {
   public syncTargetHeight?: BN
   // Time (in ms) after which the synced state is reset
   private SYNCED_STATE_REMOVAL_PERIOD = 60000
-  /* global NodeJS */
-  private _syncedStatusCheckInterval: NodeJS.Timeout | undefined
+  private _syncedStatusCheckInterval: NodeJS.Timeout | undefined /* global NodeJS */
 
   /**
    * Create new node
@@ -202,8 +202,9 @@ export abstract class Synchronizer {
    * chain updates
    */
   _syncedStatusCheck() {
-    if (this.config.rpcEngine) {
-      // Temporary for merge interop
+    if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+      // Have passed merge hardfork, stopping sync
+      void this.stop()
       return
     }
 

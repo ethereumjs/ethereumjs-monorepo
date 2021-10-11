@@ -100,7 +100,7 @@ export class Chain {
 
   /**
    * Create new chain
-   * @param {ChainOptions} options
+   * @param options
    */
   constructor(options: ChainOptions) {
     this.config = options.config
@@ -160,7 +160,6 @@ export class Chain {
 
   /**
    * Returns properties of the canonical headerchain.
-   * @return {ChainHeaders}
    */
   get headers(): ChainHeaders {
     return { ...this._headers }
@@ -176,7 +175,7 @@ export class Chain {
 
   /**
    * Open blockchain and wait for database to load
-   * @return {Promise<boolean|void>} Returns false if chain is already open
+   * @returns false if chain is already open, otherwise void
    */
   async open(): Promise<boolean | void> {
     if (this.opened) {
@@ -190,7 +189,7 @@ export class Chain {
 
   /**
    * Closes chain
-   * @return {Promise<boolean|void>} Returns false if chain is closed
+   * @returns false if chain is closed, otherwise void
    */
   async close(): Promise<boolean | void> {
     if (!this.opened) {
@@ -204,9 +203,9 @@ export class Chain {
   /**
    * Update blockchain properties (latest block, td, height, etc...)
    * @param emit Emit a `CHAIN_UPDATED` event
-   * @return {Promise<boolean|void>} Returns false if chain is closed
+   * @returns false if chain is closed, otherwise void
    */
-  async update(emit: boolean = true): Promise<boolean | void> {
+  async update(emit = true): Promise<boolean | void> {
     if (!this.opened) {
       return false
     }
@@ -243,18 +242,13 @@ export class Chain {
 
   /**
    * Get blocks from blockchain
-   * @param  {Buffer | BN}      block   hash or number to start from
-   * @param  {number = 1}       max     maximum number of blocks to get
-   * @param  {number = 0}       skip    number of blocks to skip
-   * @param  {boolean = false}  reverse get blocks in reverse
-   * @return {Promise<Block[]>}
+   * @param block hash or number to start from
+   * @param max maximum number of blocks to get
+   * @param skip number of blocks to skip
+   * @param reverse get blocks in reverse
+   * @returns an array of the blocks
    */
-  async getBlocks(
-    block: Buffer | BN,
-    max: number = 1,
-    skip: number = 0,
-    reverse: boolean = false
-  ): Promise<Block[]> {
+  async getBlocks(block: Buffer | BN, max = 1, skip = 0, reverse = false): Promise<Block[]> {
     await this.open()
     return this.blockchain.getBlocks(block, max, skip, reverse)
   }
@@ -272,7 +266,7 @@ export class Chain {
   /**
    * Insert new blocks into blockchain
    * @param blocks list of blocks to add
-   * @param mergeIncludes skip adding after merge
+   * @param mergeIncludes skip adding blocks after merge
    * @returns number of blocks added
    */
   async putBlocks(blocks: Block[], mergeIncludes = false): Promise<number> {
@@ -282,11 +276,15 @@ export class Chain {
     await this.open()
     await this.blockchain.initPromise
     let numAdded = 0
-    for (const b of blocks) {
+    for (const [i, b] of blocks.entries()) {
       if (!mergeIncludes && this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
         this.config.logger.info(
           `Merge hardfork reached at block number=${b.header.number} td=${this.headers.td}`
         )
+        if (i > 0) {
+          // emitOnLast below won't be reached, so run an update here
+          await this.update(true)
+        }
         break
       }
       const block = Block.fromValuesArray(b.raw(), {
@@ -303,11 +301,11 @@ export class Chain {
 
   /**
    * Get headers from blockchain
-   * @param  {Buffer|BN}  block   block hash or number to start from
-   * @param  {number}     max     maximum number of headers to get
-   * @param  {number}     skip    number of headers to skip
-   * @param  {boolean}    reverse get headers in reverse
-   * @return {Promise<BlockHeader[]>}
+   * @param block hash or number to start from
+   * @param max maximum number of headers to get
+   * @param skip number of headers to skip
+   * @param reverse get headers in reverse
+   * @returns list of block headers
    */
   async getHeaders(
     block: Buffer | BN,
@@ -321,9 +319,9 @@ export class Chain {
 
   /**
    * Insert new headers into blockchain
-   * @param  {BlockHeader[]} headers
-   * @param mergeIncludes skip adding after merge
-   * @return Numbers of blocks added
+   * @param headers
+   * @param mergeIncludes skip adding headers after merge
+   * @returns number of headers added
    */
   async putHeaders(headers: BlockHeader[], mergeIncludes = false): Promise<number> {
     if (headers.length === 0) {
@@ -332,8 +330,15 @@ export class Chain {
     await this.open()
     await this.blockchain.initPromise
     let numAdded = 0
-    for (const h of headers) {
+    for (const [i, h] of headers.entries()) {
       if (!mergeIncludes && this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+        this.config.logger.info(
+          `Merge hardfork reached at block number=${h.number} td=${this.headers.td}`
+        )
+        if (i > 0) {
+          // emitOnLast below won't be reached, so run an update here
+          await this.update(true)
+        }
         break
       }
       const header = BlockHeader.fromValuesArray(h.raw(), {
@@ -342,15 +347,14 @@ export class Chain {
       })
       await this.blockchain.putHeader(header)
       numAdded++
-      await this.update(false)
+      const emitOnLast = headers.length === numAdded
+      await this.update(emitOnLast)
     }
-    await this.update()
     return numAdded
   }
 
   /**
    * Gets the latest header in the canonical chain
-   * @return {Promise<BlockHeader>}
    */
   async getLatestHeader(): Promise<BlockHeader> {
     await this.open()
@@ -359,7 +363,6 @@ export class Chain {
 
   /**
    * Gets the latest block in the canonical chain
-   * @return {Promise<Block>}
    */
   async getLatestBlock(): Promise<Block> {
     await this.open()
@@ -368,9 +371,9 @@ export class Chain {
 
   /**
    * Gets total difficulty for a block
-   * @param  {Buffer}      hash
-   * @param  {BN}          num
-   * @return {Promise<BN>}
+   * @param hash the block hash
+   * @param num the block number
+   * @returns the td
    */
   async getTd(hash: Buffer, num: BN): Promise<BN> {
     await this.open()

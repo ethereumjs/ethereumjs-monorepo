@@ -299,13 +299,7 @@ export class Config {
 
     this.synchronized = false
     this.lastSyncDate = 0
-    if (this.rpcEngine) {
-      // Temporary workaround for merge interop
-      this.synchronized = true
-      this.lastSyncDate = Date.now()
-    }
 
-    // TODO: map chainParams (and lib/util.parseParams) to new Common format
     const common =
       options.common ?? new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.Chainstart })
     this.chainCommon = common.copy()

@@ -438,10 +438,6 @@ async function run() {
     // Use geth genesis parameters file if specified
     const genesisFile = JSON.parse(readFileSync(args.gethGenesis, 'utf-8'))
     const chainName = path.parse(args.gethGenesis).base.split('.')[0]
-    if (chainName.includes('merge')) {
-      // Temporary: remove merge interop datadir for clean runs
-      removeSync(`${args.datadir ?? Config.DATADIR_DEFAULT}/${chainName}`)
-    }
     const genesisParams = await parseCustomParams(genesisFile, chainName)
     const genesisState = genesisFile.alloc ? await parseGenesisState(genesisFile) : {}
     common = new Common({
