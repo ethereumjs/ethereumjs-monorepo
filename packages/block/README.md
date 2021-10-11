@@ -78,6 +78,18 @@ const block = Block.fromBlockData({
 // Base fee will increase for next block since the
 // gas used is greater than half the gas limit
 block.header.calcNextBaseFee().toNumber() // 11
+
+So for creating a block with a matching base fee in a certain
+chain context you can do:
+
+const blockWithMatchingBaseFee = Block.fromBlockData({
+  header: {
+    baseFeePerGas: parentHeader.calcNextBaseFee(),
+    gasLimit: new BN(100),
+    gasUsed: new BN(60)
+  }
+}, { common })
+
 ```
 
 EIP-1559 blocks have an extra `baseFeePerGas` field (default: `new BN(7)`) and can encompass `FeeMarketEIP1559Transaction` txs (type `2`) (supported by `@ethereumjs/tx` `v3.2.0` or higher) as well as  `Transaction` legacy txs (internal type `0`) and `AccessListEIP2930Transaction` txs (type `1`).
