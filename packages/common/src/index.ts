@@ -927,8 +927,8 @@ export default class Common extends EventEmitter {
   forkHash(hardfork?: string | Hardfork) {
     hardfork = this._chooseHardfork(hardfork, false)
     const data = this._getHardfork(hardfork)
-    if (data['block'] === null) {
-      const msg = 'No fork hash calculation possible for non-applied or future hardfork'
+    if (data['block'] === null && data['td'] === undefined) {
+      const msg = 'No fork hash calculation possible for future hardfork'
       throw new Error(msg)
     }
     if (data['forkHash'] !== undefined) {

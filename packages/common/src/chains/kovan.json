@@ -73,12 +73,12 @@
     {
       "name": "merge",
       "block": null,
-      "forkash": null
+      "forkHash": null
     },
     {
       "name": "shanghai",
       "block": null,
-      "forkash": null
+      "forkHash": null
     }
   ],
   "bootstrapNodes": [
