@@ -294,7 +294,7 @@ export class Engine {
     if (!this.client.config.synchronized) {
       // From spec: Client software SHOULD respond with
       // `2: Action not allowed` error if the sync process is in progress.
-      return EngineError.ActionNotAllowed
+      throw EngineError.ActionNotAllowed
     }
 
     let [payloadId]: any = params

@@ -49,6 +49,9 @@ export function createClient(clientOpts: any = {}) {
 
   clientConfig.blockchain.getTd = async (_hash: Buffer, _num: BN) => new BN(1000)
 
+  config.synchronized = true
+  config.lastSyncDate = Date.now()
+
   const servers = [
     new RlpxServer({
       config,
