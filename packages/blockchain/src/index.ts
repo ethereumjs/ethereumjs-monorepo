@@ -312,7 +312,10 @@ export default class Blockchain implements BlockchainInterface {
    * Returns a deep copy of this {@link Blockchain} instance.
    */
   copy(): Blockchain {
-    const copyB: Blockchain = Object.create(Object.getPrototypeOf(this), Object.getOwnPropertyDescriptors(this))
+    const copyB: Blockchain = Object.create(
+      Object.getPrototypeOf(this),
+      Object.getOwnPropertyDescriptors(this)
+    )
     copyB._common = this._common.copy()
     return copyB
   }
