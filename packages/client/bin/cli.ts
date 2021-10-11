@@ -224,12 +224,13 @@ function runRpcServer(client: EthereumClient, config: Config) {
     }
     config.logger.debug(msg)
   })
-  server.on('response', (request, response) => {
+
+  const handleResponse = (request: any, response: any, batchAddOn = '') => {
     let msg = ''
     if (config.rpcDebug) {
-      msg = `${request.method} responded with:\n${inspectParams(response)}`
+      msg = `${request.method}${batchAddOn} responded with:\n${inspectParams(response)}`
     } else {
-      msg = `${request.method} responded with: `
+      msg = `${request.method}${batchAddOn} responded with: `
       if (response.result) {
         msg += inspectParams(response, 125)
       }
@@ -238,6 +239,21 @@ function runRpcServer(client: EthereumClient, config: Config) {
       }
     }
     config.logger.debug(msg)
+  }
+
+  server.on('response', (request, response) => {
+    // Batch request
+    if (request.length !== undefined) {
+      if (response.length === undefined || response.length !== request.length) {
+        config.logger.debug('Invalid batch request received.')
+        return
+      }
+      for (let i = 0; i < request.length; i++) {
+        handleResponse(request[i], response[i], ' (batch request)')
+      }
+    } else {
+      handleResponse(request, response)
+    }
   })
 
   return server
