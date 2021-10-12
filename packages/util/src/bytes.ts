@@ -251,7 +251,11 @@ export const addHexPrefix = function (str: string): string {
  */
 export const toUtf8 = function (hex: string): string {
   const zerosRegexp = /^(00)+|(00)+$/g
-  const bufferVal = Buffer.from(padToEven(stripHexPrefix(hex).replace(zerosRegexp, '')), 'hex')
+  hex = stripHexPrefix(hex)
+  if (hex.length % 2 !== 0) {
+    throw new Error('Invalid non-even hex string input for toUtf8() provided')
+  }
+  const bufferVal = Buffer.from(hex.replace(zerosRegexp, ''), 'hex')
 
   return bufferVal.toString('utf8')
 }

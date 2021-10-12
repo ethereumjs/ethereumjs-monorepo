@@ -238,6 +238,10 @@ tape('toUtf8', function (t) {
     st.equal(toUtf8(input), 'ethereum', 'neither trailing nor leading zeros')
     input = '000000000000000000000000000000000000000000000000657468657265756d'
     st.equal(toUtf8(input), 'ethereum', 'should handle leading double 0s correctly')
+
+    st.throws(() => {
+      toUtf8('123')
+    }, 'should throw on uneven hex-string input')
     st.end()
   })
 })
