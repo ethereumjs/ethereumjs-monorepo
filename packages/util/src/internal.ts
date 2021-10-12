@@ -112,7 +112,8 @@ export function arrayContainsArray(
  * @returns ascii string representation of hex value
  */
 export function toUtf8(hex: string) {
-  const bufferValue = Buffer.from(padToEven(stripHexPrefix(hex).replace(/^0+|0+$/g, '')), 'hex')
+  const zerosRegexp = /^(00)+|(00)+$/g
+  const bufferValue = Buffer.from(padToEven(stripHexPrefix(hex).replace(zerosRegexp, '')), 'hex')
 
   return bufferValue.toString('utf8')
 }
