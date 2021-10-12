@@ -132,6 +132,7 @@ export default class Cache {
       } else if (it.value && it.value.modified && it.value.deleted) {
         it.value.modified = false
         it.value.deleted = true
+        it.value.virtual = true
         it.value.val = new Account().serialize()
         const keyBuf = Buffer.from(it.key, 'hex')
         await this._trie.del(keyBuf)
@@ -188,6 +189,7 @@ export default class Cache {
    * @param value
    * @param modified - Has the value been modfied or is it coming unchanged from the trie (also used for deleted accounts)
    * @param deleted - Delete operation on an account
+   * @param virtual - Account doesn't exist in the underlying trie
    */
   _update(
     key: Address,
