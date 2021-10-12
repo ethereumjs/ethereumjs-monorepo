@@ -310,17 +310,15 @@ ___
 
 ▸ **arrayContainsArray**(`superset`, `subset`, `some?`): `boolean`
 
-**`description`** Returns TRUE if the first specified array contains all elements
-             from the second one. FALSE otherwise. If `some` is true, will
-             return true if first specified array contain some elements of
-             the second.
+Returns TRUE if the first specified array contains all elements
+from the second one. FALSE otherwise.
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `superset` | `any`[] |
-| `subset` | `any`[] |
+| `superset` | `unknown`[] |
+| `subset` | `unknown`[] |
 | `some?` | `boolean` |
 
 #### Returns
@@ -329,7 +327,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L28)
+[packages/util/src/internal.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L89)
 
 ___
 
@@ -353,7 +351,7 @@ Converts a `Buffer` or `Array` to JSON.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L240)
+[packages/util/src/bytes.ts:268](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L268)
 
 ___
 
@@ -572,7 +570,7 @@ ___
 
 ▸ **fromAscii**(`stringValue`): `string`
 
-**`description`** Should be called to get hex representation (prefixed by 0x) of ascii string
+Should be called to get hex representation (prefixed by 0x) of ascii string
 
 #### Parameters
 
@@ -584,9 +582,11 @@ ___
 
 `string`
 
+hex representation of input string
+
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L48)
+[packages/util/src/internal.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L149)
 
 ___
 
@@ -639,7 +639,7 @@ ___
 
 ▸ **fromUtf8**(`stringValue`): `string`
 
-**`description`** Should be called to get hex representation (prefixed by 0x) of utf8 string
+Should be called to get hex representation (prefixed by 0x) of utf8 string
 
 #### Parameters
 
@@ -651,9 +651,11 @@ ___
 
 `string`
 
+hex representation of input string
+
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L43)
+[packages/util/src/internal.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L136)
 
 ___
 
@@ -708,7 +710,7 @@ ___
 
 ▸ **getBinarySize**(`str`): `number`
 
-**`description`** Get the binary size of a string
+Get the binary size of a string
 
 #### Parameters
 
@@ -720,33 +722,42 @@ ___
 
 `number`
 
+the number of bytes contained within the string
+
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L20)
+[packages/util/src/internal.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L73)
 
 ___
 
 ### getKeys
 
-▸ **getKeys**(`params`, `key`, `allowEmpty?`): `any`[]
+▸ **getKeys**(`params`, `key`, `allowEmpty?`): `string`[]
 
-**`description`** getKeys([{a: 1, b: 2}, {a: 3, b: 4}], 'a') => [1, 3]
+Returns the keys from an array of objects.
+
+**`example`**
+```js
+getKeys([{a: '1', b: '2'}, {a: '3', b: '4'}], 'a') => ['1', '3']
+````
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `params` | `any`[] |
+| `params` | `Record`<`string`, `string`\>[] |
 | `key` | `string` |
 | `allowEmpty?` | `boolean` |
 
 #### Returns
 
-`any`[]
+`string`[]
+
+output just a simple array of output keys
 
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L53)
+[packages/util/src/internal.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L171)
 
 ___
 
@@ -845,21 +856,25 @@ ___
 
 ▸ **isHexPrefixed**(`str`): `boolean`
 
-**`description`** Returns a `Boolean` on whether or not the a `String` starts with '0x'
+Returns a `Boolean` on whether or not the a `String` starts with '0x'
+
+**`throws`** if the str input is not a string
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `str` | `string` |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `str` | `string` | the string input value |
 
 #### Returns
 
 `boolean`
 
+a boolean if it is or is not hex prefixed
+
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:5](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L5)
+[packages/util/src/internal.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L31)
 
 ___
 
@@ -867,7 +882,7 @@ ___
 
 ▸ **isHexString**(`value`, `length?`): `boolean`
 
-**`description`** check if string is hex string of specific length
+Is the string a hex string.
 
 #### Parameters
 
@@ -880,9 +895,11 @@ ___
 
 `boolean`
 
+output the string is a hex string
+
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L58)
+[packages/util/src/internal.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L203)
 
 ___
 
@@ -1145,7 +1162,7 @@ ___
 
 ▸ **padToEven**(`value`): `string`
 
-**`description`** Pads a `String` to have an even length
+Pads a `String` to have an even length
 
 #### Parameters
 
@@ -1157,9 +1174,11 @@ ___
 
 `string`
 
+output
+
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L15)
+[packages/util/src/internal.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L56)
 
 ___
 
@@ -1463,23 +1482,25 @@ ___
 
 ### stripHexPrefix
 
-▸ **stripHexPrefix**(`str`): `string`
+▸ `Const` **stripHexPrefix**(`str`): `string`
 
-**`description`** Removes '0x' from a given `String` if present
+Removes '0x' from a given `String` if present
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `str` | `string` |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `str` | `string` | the string value |
 
 #### Returns
 
 `string`
 
+the string without 0x prefix
+
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L10)
+[packages/util/src/internal.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L44)
 
 ___
 
@@ -1487,7 +1508,7 @@ ___
 
 ▸ **toAscii**(`hex`): `string`
 
-**`description`** Should be called to get ascii from it's hex representation
+Should be called to get ascii from its hex representation
 
 #### Parameters
 
@@ -1499,9 +1520,11 @@ ___
 
 `string`
 
+ascii string representation of hex value
+
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L38)
+[packages/util/src/internal.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L114)
 
 ___
 
@@ -1715,9 +1738,20 @@ ___
 
 ### toUtf8
 
-▸ **toUtf8**(`hex`): `string`
+▸ `Const` **toUtf8**(`hex`): `string`
 
-**`description`** Should be called to get utf8 from it's hex representation
+Returns the utf8 string representation from a hex string.
+
+Examples:
+
+Input 1: '657468657265756d000000000000000000000000000000000000000000000000'
+Input 2: '657468657265756d'
+Input 3: '000000000000000000000000000000000000000000000000657468657265756d'
+
+Output (all 3 input variants): 'ethereum'
+
+Note that this method is not intended to be used with hex strings
+representing quantities in both big endian or little endian notation.
 
 #### Parameters
 
@@ -1729,9 +1763,11 @@ ___
 
 `string`
 
+Utf8 string
+
 #### Defined in
 
-[packages/util/src/@types/ethjs-util/index.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/@types/ethjs-util/index.ts#L33)
+[packages/util/src/bytes.ts:252](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L252)
 
 ___
 
