@@ -42,6 +42,7 @@ tape('internal', (t) => {
   })
   t.test('toUtf8', (st) => {
     st.equal(toUtf8(buf.toString('hex')), 'hello')
+    st.equal(toUtf8(Buffer.from('bip').toString('hex')), 'bip')
     st.end()
   })
   t.test('toAscii', (st) => {
