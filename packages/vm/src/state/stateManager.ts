@@ -602,15 +602,8 @@ export default class DefaultStateManager implements StateManager {
    */
   async accountExists(address: Address): Promise<boolean> {
     const account = this._cache.lookup(address)
-    if (account && !this._cache.keyIsDeleted(address)) {
-      if (account.isEmpty() && !this._common.gteHardfork('spuriousDragon')) {
-        // If on hardfork before Spurious Dragon, check zero balance accounts in DB to confirm existence
-        if (await this._trie.get(address.buf)) {
-          return true
-        }
-      } else {
-        return true
-      }
+    if (account && !(account as any).virtual && !this._cache.keyIsDeleted(address)) {
+      return true
     }
     if (await this._cache._trie.get(address.buf)) {
       return true
