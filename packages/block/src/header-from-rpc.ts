@@ -26,15 +26,8 @@ export default function blockHeaderFromRpc(blockParams: any, options?: BlockOpti
     extraData,
     mixHash,
     nonce,
+    baseFeePerGas,
   } = blockParams
-
-  let baseFeePerGas
-
-  // Check if the field baseFeePerGas is present in the block.
-  // This field was introduced after: https://eips.ethereum.org/EIPS/eip-1559
-  if ('baseFeePerGas' in blockParams) {
-    baseFeePerGas = blockParams.baseFeePerGas
-  }
 
   const blockHeader = BlockHeader.fromHeaderData(
     {
@@ -44,7 +37,7 @@ export default function blockHeaderFromRpc(blockParams: any, options?: BlockOpti
       stateRoot,
       transactionsTrie: transactionsRoot,
       receiptTrie: receiptRoot || receiptsRoot,
-      bloom: logsBloom,
+      logsBloom,
       difficulty: numberToHex(difficulty),
       number,
       gasLimit,

@@ -1,11 +1,12 @@
-import { Execution, ExecutionOptions } from './execution'
-import { short } from '../../util'
+import { Hardfork } from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { Block } from '@ethereumjs/block'
+import { short } from '../../util'
 import { debugCodeReplayBlock } from '../../util/debug'
 import { Event } from '../../types'
+import { Execution, ExecutionOptions } from './execution'
+import type { Block } from '@ethereumjs/block'
 
 export class VMExecution extends Execution {
   public vm: VM
@@ -37,8 +38,7 @@ export class VMExecution extends Execution {
       })
     } else {
       this.vm = this.config.vm
-      //@ts-ignore blockchain has readonly property
-      this.vm.blockchain = this.chain.blockchain
+      ;(this.vm as any).blockchain = this.chain.blockchain
     }
   }
 
@@ -52,6 +52,7 @@ export class VMExecution extends Execution {
     this.config.execCommon.setHardforkByBlockNumber(number, td)
     this.hardfork = this.config.execCommon.hardfork()
     this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
+    await this.vm.stateManager.generateCanonicalGenesis()
   }
 
   /**
@@ -95,13 +96,6 @@ export class VMExecution extends Execution {
           if (!headBlock || reorg) {
             const parentBlock = await blockchain.getBlock(block.header.parentHash)
             parentState = parentBlock.header.stateRoot
-            // generate genesis state if we are at the genesis block
-            // we don't have the genesis state
-            if (!headBlock) {
-              await this.vm.stateManager.generateCanonicalGenesis()
-            } else {
-              parentState = headBlock.header.stateRoot
-            }
           }
           // run block, update head if valid
           try {
@@ -113,9 +107,7 @@ export class VMExecution extends Execution {
             if (hardfork !== this.hardfork) {
               const hash = short(block.hash())
               this.config.logger.info(
-                `Execution hardfork switch on block number=${number.toNumber()} hash=${hash} old=${
-                  this.hardfork
-                } new=${hardfork}`
+                `Execution hardfork switch on block number=${number} hash=${hash} old=${this.hardfork} new=${hardfork}`
               )
               this.hardfork = this.config.execCommon.setHardforkByBlockNumber(number, td)
             }
@@ -163,9 +155,7 @@ export class VMExecution extends Execution {
             const { number } = block.header
             const hash = short(block.hash())
             this.config.logger.warn(
-              `Execution of block number=${number.toNumber()} hash=${hash} hardfork=${
-                this.hardfork
-              } failed:\n${error}`
+              `Execution of block number=${number} hash=${hash} hardfork=${this.hardfork} failed:\n${error}`
             )
             if (this.config.debugCode) {
               await debugCodeReplayBlock(this, block)
@@ -189,17 +179,17 @@ export class VMExecution extends Execution {
         const firstHash = short(startHeadBlock.hash())
         const lastNumber = endHeadBlock.header.number.toNumber()
         const lastHash = short(endHeadBlock.hash())
-        const baseFeeAdd = this.config.execCommon.gteHardfork('london')
-          ? `basefee=${endHeadBlock.header.baseFeePerGas} `
+        const baseFeeAdd = this.config.execCommon.gteHardfork(Hardfork.London)
+          ? `baseFee=${endHeadBlock.header.baseFeePerGas} `
           : ''
         this.config.logger.info(
           `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} td=${this.chain.blocks.td} ${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} with txs=${txCounter}`
         )
       } else {
         this.config.logger.warn(
-          `No blocks executed past chain head hash=${short(
-            endHeadBlock.hash()
-          )} number=${endHeadBlock.header.number.toNumber()}`
+          `No blocks executed past chain head hash=${short(endHeadBlock.hash())} number=${
+            endHeadBlock.header.number
+          }`
         )
       }
       startHeadBlock = endHeadBlock

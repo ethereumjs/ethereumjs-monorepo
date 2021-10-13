@@ -7,16 +7,6 @@ import * as modules from './modules'
  */
 
 /**
- * get all methods. e.g., getBlockByNumber in eth module
- * @private
- * @param Object mod
- * @returns string[]
- */
-function getMethodNames(mod: any): string[] {
-  return Object.getOwnPropertyNames(mod.prototype)
-}
-
-/**
  * RPC server manager
  * @memberof module:rpc
  */
@@ -37,20 +27,41 @@ export class RPCManager {
   getMethods(): any {
     const methods: any = {}
 
-    modules.list.forEach((modName: string) => {
-      this._config.logger.debug(`Initialize ${modName} module`)
+    for (const modName of modules.list) {
+      if (this._config.rpcDebug) {
+        this._config.logger.debug('='.repeat(29))
+        this._config.logger.debug(`RPC: Initialize ${modName} module`)
+        this._config.logger.debug('='.repeat(29))
+      }
+
       const mod = new (modules as any)[modName](this._client)
 
-      getMethodNames((modules as any)[modName])
+      RPCManager.getMethodNames((modules as any)[modName])
         .filter((methodName: string) => methodName !== 'constructor')
         .forEach((methodName: string) => {
           const concatedMethodName = `${modName.toLowerCase()}_${methodName}`
 
-          this._config.logger.debug(`Setup module method '${concatedMethodName}' to RPC`)
+          if (this._config.rpcDebug) {
+            this._config.logger.debug(`Setup method ${concatedMethodName}`)
+          }
           methods[concatedMethodName] = mod[methodName].bind(mod)
         })
-    })
-
+      if (this._config.rpcDebug) {
+        this._config.logger.debug('')
+      }
+    }
     return methods
+  }
+
+  /**
+   * get all methods. e.g., getBlockByNumber in eth module
+   * @param Object mod
+   * @returns string[]
+   */
+  static getMethodNames(mod: any): string[] {
+    const methodNames = Object.getOwnPropertyNames(mod.prototype).filter(
+      (methodName: string) => methodName !== 'constructor'
+    )
+    return methodNames
   }
 }

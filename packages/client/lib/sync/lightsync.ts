@@ -1,10 +1,11 @@
+import { Hardfork } from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
-import { BlockHeader } from '@ethereumjs/block'
 import { Peer } from '../net/peer/peer'
-import { Synchronizer, SynchronizerOptions } from './sync'
-import { HeaderFetcher } from './fetcher'
 import { short } from '../util'
 import { Event } from '../types'
+import { Synchronizer, SynchronizerOptions } from './sync'
+import { HeaderFetcher } from './fetcher'
+import type { BlockHeader } from '@ethereumjs/block'
 
 /**
  * Implements an ethereum light sync synchronizer
@@ -33,9 +34,7 @@ export class LightSynchronizer extends Synchronizer {
     const { height: number, td } = this.chain.headers
     const hash = this.chain.blocks.latest!.hash()
     this.startingBlock = number
-    this.config.logger.info(
-      `Latest local header: number=${number.toNumber()} td=${td.toNumber()} hash=${short(hash)}`
-    )
+    this.config.logger.info(`Latest local header: number=${number} td=${td} hash=${short(hash)}`)
   }
 
   /**
@@ -124,13 +123,11 @@ export class LightSynchronizer extends Synchronizer {
         headers = headers as BlockHeader[]
         const first = new BN(headers[0].number)
         const hash = short(headers[0].hash())
-        const baseFeeAdd = this.config.chainCommon.gteHardfork('london')
-          ? `basefee=${headers[0].baseFeePerGas} `
+        const baseFeeAdd = this.config.chainCommon.gteHardfork(Hardfork.London)
+          ? `baseFee=${headers[0].baseFeePerGas} `
           : ''
         this.config.logger.info(
-          `Imported headers count=${headers.length} number=${first.toString(
-            10
-          )} hash=${hash} ${baseFeeAdd}peers=${this.pool.size}`
+          `Imported headers count=${headers.length} number=${first} hash=${hash} ${baseFeeAdd}peers=${this.pool.size}`
         )
       })
 

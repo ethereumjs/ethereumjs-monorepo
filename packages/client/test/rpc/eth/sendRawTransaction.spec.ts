@@ -2,7 +2,9 @@ import tape from 'tape'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { toBuffer } from 'ethereumjs-util'
+import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../lib/rpc/error-code'
 import { baseSetup, params, baseRequest, createClient, createManager, startRPC } from '../helpers'
+import { checkError } from '../util'
 
 const method = 'eth_sendRawTransaction'
 
@@ -33,17 +35,12 @@ tape(`${method}: call with sync target height not set yet`, async (t) => {
   const txData =
     '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
   const req = params(method, [txData])
-  const expectRes = (res: any) => {
-    const msg = 'should return error'
-    if (
-      res.body.result.message ===
-      'client is not aware of the current chain height yet (give sync some more time)'
-    ) {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
-  }
+
+  const expectRes = checkError(
+    t,
+    INTERNAL_ERROR,
+    'client is not aware of the current chain height yet (give sync some more time)'
+  )
   await baseRequest(t, server, req, 200, expectRes)
 })
 
@@ -54,17 +51,12 @@ tape(`${method}: call with invalid tx (wrong chain ID)`, async (t) => {
   const txData =
     '0x02f9010a82066a8001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
   const req = params(method, [txData])
-  const expectRes = (res: any) => {
-    const msg = 'should return error'
-    if (
-      res.body.result.message ===
-      'serialized tx data could not be parsed (The chain ID does not match the chain ID of Common)'
-    ) {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
-  }
+
+  const expectRes = checkError(
+    t,
+    PARSE_ERROR,
+    'serialized tx data could not be parsed (The chain ID does not match the chain ID of Common)'
+  )
   await baseRequest(t, server, req, 200, expectRes)
 })
 
@@ -84,14 +76,8 @@ tape(`${method}: call with unsigned tx`, async (t) => {
   ;(tx as any).s = undefined
   const txHex = '0x' + tx.serialize().toString('hex')
   const req = params(method, [txHex])
-  const expectRes = (res: any) => {
-    const msg = 'should return error'
-    if (res.body.result.message === 'tx needs to be signed') {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
-  }
+
+  const expectRes = checkError(t, INVALID_PARAMS, 'tx needs to be signed')
   await baseRequest(t, server, req, 200, expectRes)
 })
 
@@ -104,13 +90,7 @@ tape(`${method}: call with no peers`, async (t) => {
   const txData =
     '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
   const req = params(method, [txData])
-  const expectRes = (res: any) => {
-    const msg = 'should return error'
-    if (res.body.result.message === 'no peer connection available') {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
-  }
+
+  const expectRes = checkError(t, INTERNAL_ERROR, 'no peer connection available')
   await baseRequest(t, server, req, 200, expectRes)
 })

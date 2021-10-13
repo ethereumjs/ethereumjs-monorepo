@@ -230,7 +230,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(
       `New tx run hash=${
         opts.tx.isSigned() ? opts.tx.hash().toString('hex') : 'unsigned'
-      } sender=${caller.toString()}`
+      } sender=${caller}`
     )
   }
 
@@ -246,15 +246,15 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
   }
 
-  // Validate gas limit against base fee
-  const basefee = tx.getBaseFee()
+  // Validate gas limit against tx base fee (DataFee + TxFee + Creation Fee)
+  const txBaseFee = tx.getBaseFee()
   const gasLimit = tx.gasLimit.clone()
-  if (gasLimit.lt(basefee)) {
+  if (gasLimit.lt(txBaseFee)) {
     throw new Error('base fee exceeds gas limit')
   }
-  gasLimit.isub(basefee)
+  gasLimit.isub(txBaseFee)
   if (this.DEBUG) {
-    debugGas(`Subtracting base fee (${basefee}) from gasLimit (-> ${gasLimit})`)
+    debugGas(`Subtracting base fee (${txBaseFee}) from gasLimit (-> ${gasLimit})`)
   }
 
   if (this._common.isActivatedEIP(1559)) {
@@ -278,7 +278,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const cost = tx.getUpfrontCost(block.header.baseFeePerGas)
     if (balance.lt(cost)) {
       throw new Error(
-        `sender doesn't have enough funds to send tx. The upfront cost is: ${cost} and the sender's account only has: ${balance}`
+        `sender doesn't have enough funds to send tx. The upfront cost is: ${cost} and the sender's account (${caller}) only has: ${balance}`
       )
     }
     if (tx.supports(Capability.EIP1559FeeMarket)) {
@@ -288,7 +288,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       const cost = tx.gasLimit.mul((tx as FeeMarketEIP1559Transaction).maxFeePerGas).add(tx.value)
       if (balance.lt(cost)) {
         throw new Error(
-          `sender doesn't have enough funds to send tx. The max cost is: ${cost} and the sender's account only has: ${balance}`
+          `sender doesn't have enough funds to send tx. The max cost is: ${cost} and the sender's account (${caller}) only has: ${balance}`
         )
       }
     }
@@ -348,7 +348,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(
       `Running tx=0x${
         tx.isSigned() ? tx.hash().toString('hex') : 'unsigned'
-      } with caller=${caller.toString()} gasLimit=${gasLimit} to=${
+      } with caller=${caller} gasLimit=${gasLimit} to=${
         to ? to.toString() : ''
       } value=${value} data=0x${short(data)}`
     )
@@ -378,9 +378,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Caculate the total gas used
-  results.gasUsed.iadd(basefee)
+  results.gasUsed.iadd(txBaseFee)
   if (this.DEBUG) {
-    debugGas(`tx add baseFee ${basefee} to gasUsed (-> ${results.gasUsed})`)
+    debugGas(`tx add baseFee ${txBaseFee} to gasUsed (-> ${results.gasUsed})`)
   }
 
   // Process any gas refund
@@ -414,9 +414,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Update miner's balance
   let miner
-  if (this._common.consensusType() === ConsensusType.ProofOfWork) {
-    miner = block.header.coinbase
-  } else {
+  if (this._common.consensusType() === ConsensusType.ProofOfAuthority) {
     // Backwards-compatibilty check
     // TODO: can be removed along VM v6 release
     if ('cliqueSigner' in block.header) {
@@ -424,10 +422,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     } else {
       miner = Address.zero()
     }
+  } else {
+    miner = block.header.coinbase
   }
   const minerAccount = await state.getAccount(miner)
   // add the amount spent on gas to the miner's account
-
   if (this._common.isActivatedEIP(1559)) {
     minerAccount.balance.iadd(results.gasUsed.mul(<BN>inclusionFeePerGas))
   } else {
@@ -439,7 +438,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // we clean the touched accounts below in case we are in a fork >= SpuriousDragon
   await state.putAccount(miner, minerAccount)
   if (this.DEBUG) {
-    debug(`tx update miner account (${miner.toString()}) balance (-> ${minerAccount.balance})`)
+    debug(`tx update miner account (${miner}) balance (-> ${minerAccount.balance})`)
   }
 
   /*
@@ -451,7 +450,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       const address = new Address(Buffer.from(k, 'hex'))
       await state.deleteAccount(address)
       if (this.DEBUG) {
-        debug(`tx selfdestruct on address=${address.toString()}`)
+        debug(`tx selfdestruct on address=${address}`)
       }
     }
   }
@@ -475,7 +474,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(
       `tx run finished hash=${
         opts.tx.isSigned() ? opts.tx.hash().toString('hex') : 'unsigned'
-      } sender=${caller.toString()}`
+      } sender=${caller}`
     )
   }
 
@@ -527,7 +526,7 @@ export async function generateTxReceipt(
     debug(
       `Generate tx receipt transactionType=${
         tx.type
-      } gasUsed=${cumulativeGasUsed.toString()} bitvector=${short(baseReceipt.bitvector)} (${
+      } gasUsed=${cumulativeGasUsed} bitvector=${short(baseReceipt.bitvector)} (${
         baseReceipt.bitvector.length
       } bytes) logs=${baseReceipt.logs.length}`
     )

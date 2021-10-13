@@ -602,7 +602,7 @@ export default class DefaultStateManager implements StateManager {
    */
   async accountExists(address: Address): Promise<boolean> {
     const account = this._cache.lookup(address)
-    if (account && !this._cache.keyIsDeleted(address)) {
+    if (account && !(account as any).virtual && !this._cache.keyIsDeleted(address)) {
       return true
     }
     if (await this._cache._trie.get(address.buf)) {
@@ -755,7 +755,7 @@ export default class DefaultStateManager implements StateManager {
         if (empty) {
           this._cache.del(address)
           if (this.DEBUG) {
-            debug(`Cleanup touched account address=${address.toString()} (>= SpuriousDragon)`)
+            debug(`Cleanup touched account address=${address} (>= SpuriousDragon)`)
           }
         }
       }

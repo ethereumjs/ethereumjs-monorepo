@@ -1,12 +1,13 @@
+import { Hardfork } from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
 import { Peer } from '../net/peer/peer'
 import { short } from '../util'
+import { Event } from '../types'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import { BlockFetcher } from './fetcher'
-import { Block } from '@ethereumjs/block'
 import { VMExecution } from './execution/vmexecution'
 import { TxPool } from './txpool'
-import { Event } from '../types'
+import type { Block } from '@ethereumjs/block'
 
 interface HandledObject {
   hash: Buffer
@@ -75,7 +76,7 @@ export class FullSynchronizer extends Synchronizer {
     this.startingBlock = number
     this.config.chainCommon.setHardforkByBlockNumber(number, td)
     this.config.logger.info(
-      `Latest local block: number=${number.toNumber()} td=${td.toNumber()} hash=${short(
+      `Latest local block: number=${number} td=${td} hash=${short(
         hash
       )} hardfork=${this.config.chainCommon.hardfork()}`
     )
@@ -184,13 +185,13 @@ export class FullSynchronizer extends Synchronizer {
         blocks = blocks as Block[]
         const first = new BN(blocks[0].header.number)
         const hash = short(blocks[0].hash())
-        const baseFeeAdd = this.config.chainCommon.gteHardfork('london')
-          ? `basefee=${blocks[0].header.baseFeePerGas} `
+        const baseFeeAdd = this.config.chainCommon.gteHardfork(Hardfork.London)
+          ? `baseFee=${blocks[0].header.baseFeePerGas} `
           : ''
         this.config.logger.info(
-          `Imported blocks count=${blocks.length} number=${first.toString(
-            10
-          )} hash=${hash} ${baseFeeAdd}hardfork=${this.config.chainCommon.hardfork()} peers=${
+          `Imported blocks count=${
+            blocks.length
+          } number=${first} hash=${hash} ${baseFeeAdd}hardfork=${this.config.chainCommon.hardfork()} peers=${
             this.pool.size
           }`
         )

@@ -9,11 +9,12 @@ import { Server as RPCServer } from 'jayson/promise'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { _getInitializedChains } from '@ethereumjs/common/dist/chains'
 import { Address, toBuffer } from 'ethereumjs-util'
-import { parseMultiaddrs, parseGenesisState, parseCustomParams } from '../lib/util'
+import { parseMultiaddrs, parseGenesisState, parseCustomParams, inspectParams } from '../lib/util'
 import EthereumClient from '../lib/client'
 import { Config } from '../lib/config'
 import { Logger } from '../lib/logging'
 import { RPCManager } from '../lib/rpc'
+import * as modules from '../lib/rpc/modules'
 import { Event } from '../lib/types'
 import type { Chain as IChain, GenesisState } from '@ethereumjs/common/dist/types'
 const level = require('level')
@@ -89,10 +90,19 @@ const args = require('yargs')
       describe: 'HTTP-RPC server listening interface',
       default: Config.RPCADDR_DEFAULT,
     },
+    helprpc: {
+      describe: 'Display the JSON RPC help with a list of all RPC methods implemented (and exit)',
+      boolean: true,
+    },
     loglevel: {
       describe: 'Logging verbosity',
       choices: ['error', 'warn', 'info', 'debug'],
       default: Config.LOGLEVEL_DEFAULT,
+    },
+    rpcDebug: {
+      describe: 'Additionally log complete RPC calls on log level debug (i.e. --loglevel=debug)',
+      boolean: true,
+      default: Config.RPCDEBUG_DEFAULT,
     },
     maxPerRequest: {
       describe: 'Max items per block or header request',
@@ -183,7 +193,7 @@ async function runNode(config: Config) {
     config.logger.info(`Listener up transport=${details.transport} url=${details.url}`)
   })
   config.events.on(Event.SYNC_SYNCHRONIZED, (height) => {
-    client.config.logger.info(`Synchronized blockchain at height ${height.toNumber()}`)
+    client.config.logger.info(`Synchronized blockchain at height ${height}`)
   })
   config.logger.info(`Connecting to network: ${config.chainCommon.chainName()}`)
   await client.open()
@@ -200,6 +210,31 @@ function runRpcServer(client: EthereumClient, config: Config) {
   config.logger.info(`RPC HTTP endpoint opened: http://${rpcaddr}:${rpcport}`)
   server.http().listen(rpcport)
 
+  server.on('request', (request) => {
+    let msg = ''
+    if (config.rpcDebug) {
+      msg += `${request.method} called with params:\n${inspectParams(request.params)}`
+    } else {
+      msg += `${request.method} called with params: ${inspectParams(request.params, 125)}`
+    }
+    config.logger.debug(msg)
+  })
+  server.on('response', (request, response) => {
+    let msg = ''
+    if (config.rpcDebug) {
+      msg = `${request.method} responded with:\n${inspectParams(response)}`
+    } else {
+      msg = `${request.method} responded with: `
+      if (response.result) {
+        msg += inspectParams(response, 125)
+      }
+      if (response.error) {
+        msg += `error: ${response.error.message}`
+      }
+    }
+    config.logger.debug(msg)
+  })
+
   return server
 }
 
@@ -207,6 +242,23 @@ function runRpcServer(client: EthereumClient, config: Config) {
  * Main entry point to start a client
  */
 async function run() {
+  if (args.helprpc) {
+    // Display RPC help and exit
+    console.log('-'.repeat(27))
+    console.log('JSON-RPC: Supported Methods')
+    console.log('-'.repeat(27))
+    console.log()
+    modules.list.forEach((modName: string) => {
+      console.log(`${modName}:`)
+      RPCManager.getMethodNames((modules as any)[modName]).forEach((methodName: string) => {
+        console.log(`-> ${modName.toLowerCase()}_${methodName}`)
+      })
+      console.log()
+    })
+    console.log()
+    process.exit()
+  }
+
   // give network id precedence over network name
   const chain = args.networkId ?? args.network ?? Chain.Mainnet
 
@@ -273,10 +325,14 @@ async function run() {
       removeSync(`${args.datadir}/devnet`)
       // Create new account
       const privKey = randomBytes(32)
-      const account = Address.fromPrivateKey(privKey)
-      accounts.push([account, privKey])
-      // prettier-ignore
-      console.log(`==================================================\nAccount generated for mining blocks:\nAddress: ${account.toString()}\nPrivate key: 0x${privKey.toString( 'hex')}\nWARNING: Do not use this account for mainnet funds\n==================================================`)
+      const address = Address.fromPrivateKey(privKey)
+      accounts.push([address, privKey])
+      console.log('='.repeat(50))
+      console.log('Account generated for mining blocks:')
+      console.log(`Address: ${address}`)
+      console.log(`Private key: 0x${privKey.toString('hex')}`)
+      console.log('WARNING: Do not use this account for mainnet funds')
+      console.log('='.repeat(50))
     }
 
     const prefundAddress = accounts[0][0].toString().slice(2)
@@ -360,10 +416,8 @@ async function run() {
   } else if (args.gethGenesis) {
     // Use geth genesis parameters file if specified
     const genesisFile = JSON.parse(readFileSync(args.gethGenesis, 'utf-8'))
-    const genesisParams = await parseCustomParams(
-      genesisFile,
-      path.parse(args.gethGenesis).base.split('.')[0]
-    )
+    const chainName = path.parse(args.gethGenesis).base.split('.')[0]
+    const genesisParams = await parseCustomParams(genesisFile, chainName)
     const genesisState = genesisFile.alloc ? await parseGenesisState(genesisFile) : {}
     common = new Common({
       chain: genesisParams.name,
@@ -396,6 +450,7 @@ async function run() {
     rpcport: args.rpcport,
     rpcaddr: args.rpcaddr,
     loglevel: args.loglevel,
+    rpcDebug: args.rpcDebug,
     maxPerRequest: args.maxPerRequest,
     minPeers: args.minPeers,
     maxPeers: args.maxPeers,

@@ -1,6 +1,6 @@
 import * as rlp from 'rlp'
 import { Address, BN } from 'ethereumjs-util'
-import { Block, BlockHeader, BlockBuffer, BlockBodyBuffer } from '@ethereumjs/block'
+import { Block, BlockHeader, BlockOptions, BlockBuffer, BlockBodyBuffer } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import { CliqueLatestSignerStates, CliqueLatestVotes, CliqueLatestBlockSigners } from '../clique'
 import Cache from './cache'
@@ -161,11 +161,12 @@ export class DBManager {
       }
     }
     const blockData = [header.raw(), ...body] as BlockBuffer
-    let parentTd
-    if (!number.eqn(0)) {
-      parentTd = await this.getTotalDifficulty(header.parentHash, number.subn(1))
+    const opts: BlockOptions = { common: this._common }
+    if (number.isZero()) {
+      opts.hardforkByBlockNumber = true
+    } else {
+      opts.hardforkByTD = await this.getTotalDifficulty(header.parentHash, number.subn(1))
     }
-    const opts = { common: this._common, hardforkByTD: parentTd }
     return Block.fromValuesArray(blockData, opts)
   }
 
@@ -182,12 +183,13 @@ export class DBManager {
    */
   async getHeader(blockHash: Buffer, blockNumber: BN) {
     const encodedHeader = await this.get(DBTarget.Header, { blockHash, blockNumber })
-    let parentTd
-    if (!blockNumber.eqn(0)) {
+    const opts: BlockOptions = { common: this._common }
+    if (blockNumber.isZero()) {
+      opts.hardforkByBlockNumber = true
+    } else {
       const parentHash = await this.numberToHash(blockNumber.subn(1))
-      parentTd = await this.getTotalDifficulty(parentHash, blockNumber.subn(1))
+      opts.hardforkByTD = await this.getTotalDifficulty(parentHash, blockNumber.subn(1))
     }
-    const opts = { common: this._common, hardforkByTD: parentTd }
     return BlockHeader.fromRLPSerializedHeader(encodedHeader, opts)
   }
 

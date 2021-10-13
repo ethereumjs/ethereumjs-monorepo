@@ -18,15 +18,23 @@ export class TrieReadStream extends Readable {
       return
     }
     this._started = true
-    await this.trie._findValueNodes(async (nodeRef, node, key, walkController) => {
-      if (node !== null) {
-        this.push({
-          key: nibblesToBuffer(key),
-          value: node.value,
-        })
-        walkController.allChildren(node, key)
+    try {
+      await this.trie._findValueNodes(async (nodeRef, node, key, walkController) => {
+        if (node !== null) {
+          this.push({
+            key: nibblesToBuffer(key),
+            value: node.value,
+          })
+          walkController.allChildren(node, key)
+        }
+      })
+    } catch (error: any) {
+      if (error.message == 'Missing node in DB') {
+        // pass
+      } else {
+        throw error
       }
-    })
+    }
     this.push(null)
   }
 }

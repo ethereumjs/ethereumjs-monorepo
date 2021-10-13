@@ -360,9 +360,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
         if (!isValidEIP155V) {
           throw new Error(
-            `Incompatible EIP155-based V ${v.toString()} and chain id ${common
-              .chainIdBN()
-              .toString()}. See the Common parameter of the Transaction constructor to set the chain id.`
+            `Incompatible EIP155-based V ${v} and chain id ${common.chainIdBN()}. See the Common parameter of the Transaction constructor to set the chain id.`
           )
         }
       } else {

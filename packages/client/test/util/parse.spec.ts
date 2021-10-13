@@ -71,9 +71,9 @@ tape('[Util/Parse]', (t) => {
       'parsed params correctly'
     )
     t.equals(params.genesis.nonce, '0x0000000000000042', 'nonce should be correctly formatted')
-    const rinkebyGenesiState = await parseGenesisState(json)
+    const rinkebyGenesisState = await parseGenesisState(json)
     t.equals(
-      rinkebyGenesiState['0x4c2ae482593505f0163cdefc073e81c63cda4107'],
+      rinkebyGenesisState['0x4c2ae482593505f0163cdefc073e81c63cda4107'],
       '0x152d02c7e14af6800000',
       'parsed genesis state correctly'
     )

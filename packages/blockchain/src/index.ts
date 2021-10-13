@@ -587,9 +587,7 @@ export default class Blockchain implements BlockchainInterface {
           this._cliqueLatestVotes = this._cliqueLatestVotes.filter(
             (vote) => !vote[1][1].equals(beneficiary)
           )
-          debug(
-            `[Block ${header.number.toNumber()}] Clique majority consensus (AUTH ${beneficiary})`
-          )
+          debug(`[Block ${header.number}] Clique majority consensus (AUTH ${beneficiary})`)
         }
         // DROP vote
         votes = this._cliqueLatestVotes.filter((vote) => {
@@ -623,16 +621,14 @@ export default class Blockchain implements BlockchainInterface {
             // Discard votes from removed signer and for removed signer
             (vote) => !vote[1][0].equals(beneficiary) && !vote[1][1].equals(beneficiary)
           )
-          debug(
-            `[Block ${header.number.toNumber()}] Clique majority consensus (DROP ${beneficiary})`
-          )
+          debug(`[Block ${header.number}] Clique majority consensus (DROP ${beneficiary})`)
         }
         if (round === 1) {
           // Always add the latest vote to the history no matter if already voted
           // the same vote or not
           this._cliqueLatestVotes.push(latestVote)
           debug(
-            `[Block ${header.number.toNumber()}] New clique vote: ${signer} -> ${beneficiary} ${
+            `[Block ${header.number}] New clique vote: ${signer} -> ${beneficiary} ${
               nonce.equals(CLIQUE_NONCE_AUTH) ? 'AUTH' : 'DROP'
             }`
           )
@@ -640,11 +636,11 @@ export default class Blockchain implements BlockchainInterface {
         if (consensus) {
           if (round === 1) {
             debug(
-              `[Block ${header.number.toNumber()}] Clique majority consensus on existing votes -> update signer states`
+              `[Block ${header.number}] Clique majority consensus on existing votes -> update signer states`
             )
           } else {
             debug(
-              `[Block ${header.number.toNumber()}] Clique majority consensus on new vote -> update signer states`
+              `[Block ${header.number}] Clique majority consensus on new vote -> update signer states`
             )
           }
           const newSignerState: CliqueSignerState = [header.number, activeSigners]
@@ -945,7 +941,7 @@ export default class Blockchain implements BlockchainInterface {
           for (const [i, cSigner] of checkpointSigners.entries()) {
             if (!activeSigners[i] || !activeSigners[i].equals(cSigner)) {
               throw new Error(
-                `checkpoint signer not found in active signers list at index ${i}: ${cSigner.toString()}`
+                `checkpoint signer not found in active signers list at index ${i}: ${cSigner}`
               )
             }
           }

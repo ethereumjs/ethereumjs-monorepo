@@ -1,5 +1,5 @@
 import assert from 'assert'
-import * as ethjsUtil from 'ethjs-util'
+import { stripHexPrefix } from './internal'
 import * as rlp from 'rlp'
 import { toBuffer, baToJSON, unpadBuffer } from './bytes'
 
@@ -88,7 +88,7 @@ export const defineProperties = function (self: any, fields: any, data?: any) {
   // if the constuctor is passed data
   if (data) {
     if (typeof data === 'string') {
-      data = Buffer.from(ethjsUtil.stripHexPrefix(data), 'hex')
+      data = Buffer.from(stripHexPrefix(data), 'hex')
     }
 
     if (Buffer.isBuffer(data)) {
