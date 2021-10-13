@@ -14,8 +14,8 @@ This release replaces `ethjs-util` dependency with an `internal.ts` file which r
 
 This has a list of benefits:
 
-- Lesser maintenance burden (lesser dependencies to care about)
-- Better typings and avoiding usage of deprecated APIs (e.g. new Buffer)
+- Less maintenance burden (fewer dependencies to care about)
+- Better types and avoids use of deprecated APIs (e.g. new Buffer)
 - Smaller bundle/install size
 
 See: PR [#1517](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1517)
