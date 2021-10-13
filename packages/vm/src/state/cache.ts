@@ -44,7 +44,9 @@ export default class Cache {
     const it = this._cache.find(keyStr)
     if (it.node) {
       const rlp = it.value.val
-      return Account.fromRlpSerializedAccount(rlp)
+      const account = Account.fromRlpSerializedAccount(rlp)
+      ;(account as any).virtual = it.value.virtual
+      return account
     }
   }
 
@@ -65,9 +67,9 @@ export default class Cache {
    * Looks up address in underlying trie.
    * @param address - Address of account
    */
-  async _lookupAccount(address: Address): Promise<Account> {
+  async _lookupAccount(address: Address): Promise<Account | undefined> {
     const rlp = await this._trie.get(address.buf)
-    return rlp ? Account.fromRlpSerializedAccount(rlp) : new Account()
+    return rlp ? Account.fromRlpSerializedAccount(rlp) : undefined
   }
 
   /**
@@ -80,7 +82,13 @@ export default class Cache {
 
     if (!account) {
       account = await this._lookupAccount(address)
-      this._update(address, account, false, false)
+      if (account) {
+        this._update(address, account, false, false, false)
+      } else {
+        account = new Account()
+        ;(account as any).virtual = true
+        this._update(address, account, false, false, true)
+      }
     }
 
     return account
@@ -95,8 +103,13 @@ export default class Cache {
     for (const addressHex of addresses) {
       if (addressHex) {
         const address = new Address(Buffer.from(addressHex, 'hex'))
-        const account = await this._lookupAccount(address)
-        this._update(address, account, false, false)
+        let account = await this._lookupAccount(address)
+        if (account) {
+          this._update(address, account, false, false, false)
+        } else {
+          account = new Account()
+          this._update(address, account, false, false, true)
+        }
       }
     }
   }
@@ -119,6 +132,7 @@ export default class Cache {
       } else if (it.value && it.value.modified && it.value.deleted) {
         it.value.modified = false
         it.value.deleted = true
+        it.value.virtual = true
         it.value.val = new Account().serialize()
         const keyBuf = Buffer.from(it.key, 'hex')
         await this._trie.del(keyBuf)
@@ -165,7 +179,7 @@ export default class Cache {
    * @param key - Address
    */
   del(key: Address): void {
-    this._update(key, new Account(), true, true)
+    this._update(key, new Account(), true, true, true)
   }
 
   /**
@@ -175,15 +189,22 @@ export default class Cache {
    * @param value
    * @param modified - Has the value been modfied or is it coming unchanged from the trie (also used for deleted accounts)
    * @param deleted - Delete operation on an account
+   * @param virtual - Account doesn't exist in the underlying trie
    */
-  _update(key: Address, value: Account, modified: boolean, deleted: boolean): void {
+  _update(
+    key: Address,
+    value: Account,
+    modified: boolean,
+    deleted: boolean,
+    virtual = false
+  ): void {
     const keyHex = key.buf.toString('hex')
     const it = this._cache.find(keyHex)
     const val = value.serialize()
     if (it.node) {
-      this._cache = it.update({ val, modified, deleted })
+      this._cache = it.update({ val, modified, deleted, virtual })
     } else {
-      this._cache = this._cache.insert(keyHex, { val, modified, deleted })
+      this._cache = this._cache.insert(keyHex, { val, modified, deleted, virtual })
     }
   }
 }
