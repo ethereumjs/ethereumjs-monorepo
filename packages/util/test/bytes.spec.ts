@@ -14,6 +14,7 @@ import {
   bufferToInt,
   fromSigned,
   toUnsigned,
+  toUtf8,
   addHexPrefix,
   toBuffer,
   baToJSON,
@@ -218,6 +219,29 @@ tape('hex prefix', function (t) {
   })
   t.test('should return on non-string input', function (st) {
     st.equal(addHexPrefix(1 as any), 1)
+    st.end()
+  })
+})
+
+tape('toUtf8', function (t) {
+  t.test('toUtf8', (st) => {
+    let input = Buffer.from('hello').toString('hex') // '68656c6c6f'
+    st.equal(toUtf8(input), 'hello', 'should convert a non-hex-prefixed value')
+    st.equal(toUtf8(`0x${input}`), 'hello', 'should convert a hex-prefixed value')
+
+    input = Buffer.from('bip').toString('hex') // '626970'
+    st.equal(toUtf8(input), 'bip', 'should handle trailing single 0s correctly')
+
+    input = '657468657265756d000000000000000000000000000000000000000000000000'
+    st.equal(toUtf8(input), 'ethereum', 'should handle trailing double 0s correctly')
+    input = '657468657265756d'
+    st.equal(toUtf8(input), 'ethereum', 'neither trailing nor leading zeros')
+    input = '000000000000000000000000000000000000000000000000657468657265756d'
+    st.equal(toUtf8(input), 'ethereum', 'should handle leading double 0s correctly')
+
+    st.throws(() => {
+      toUtf8('123')
+    }, 'should throw on uneven hex-string input')
     st.end()
   })
 })
