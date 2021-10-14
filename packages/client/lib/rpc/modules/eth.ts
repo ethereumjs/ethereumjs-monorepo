@@ -453,8 +453,8 @@ export class Eth {
    *   1. address of the account to check for balance
    *   2. fromBlock - integer block number, or the string "latest", "earliest" or "pending"
    *   3. toBlock - integer block number, or the string "latest", "earliest" or "pending"
-   *   4. array of 32 Bytes DATA topics. Topics are order-dependent
-   *   5. blockHash to restrict the logs to a single block.
+   *   4. array of 32 Bytes order-dependent data topics. See https://docs.alchemy.com/alchemy/guides/eth_getlogs#a-note-on-specifying-topic-filters 
+   *   5. blockHash for which to restrict the logs 
    * @returns Array of log objects, or an empty array if nothing has changed since last poll:
    *   1. removed - boolean, true if log was removed, false if valid log
    *   2. logIndex - integer of log index position in the block encoded as a hexadecimal. null if pending
@@ -467,10 +467,17 @@ export class Eth {
    *   9. topics - array of 0 to 4 32 Bytes of indexed log arguments
    */
   async getLogs(params: [string, string, string, string[], string]) {
-    const [address, fromBlock, toBlock, topics, blockhash] = params
+    const [address, fromBlock, toBlock, topics, blockHash] = params
 
     if (!this._vm) {
       throw new Error('missing vm')
+    }
+
+    if (blockHash != undefined && (fromBlock != undefined || toBlock != undefined)) {
+      throw {
+        code: INVALID_PARAMS,
+        message: `Can only specify a blockHash if fromBlock or toBlock are not provided`,
+      }
     }
 
     return null
@@ -517,8 +524,6 @@ export class Eth {
    * @param params An array of two parameters:
    *   1. address of the account
    *   2. integer block number, or the string "latest", "earliest" or "pending"
-   * @returns An array of log objects matching a given filter object
-   *   1.
    */
   async getTransactionCount(params: [string, string]) {
     const [addressHex, blockOpt] = params
