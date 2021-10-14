@@ -152,6 +152,14 @@ export class Eth {
       [validators.blockOption],
     ])
 
+    this.getLogs = middleware(this.getLogs.bind(this), 5, [
+      [validators.address],
+      [validators.blockOption],
+      [validators.blockOption],
+      [validators.array],
+      [validators.blockHash],
+    ])
+
     this.getStorageAt = middleware(this.getStorageAt.bind(this), 3, [
       [validators.address],
       [validators.hex],
@@ -440,6 +448,35 @@ export class Eth {
   }
 
   /**
+   Returns an array of all logs matching a given filter object.
+   * @param params An array of five optional parameters:
+   *   1. address of the account to check for balance
+   *   2. fromBlock - integer block number, or the string "latest", "earliest" or "pending"
+   *   3. toBlock - integer block number, or the string "latest", "earliest" or "pending"
+   *   4. array of 32 Bytes DATA topics. Topics are order-dependent
+   *   5. blockHash to restrict the logs to a single block.
+   * @returns Array of log objects, or an empty array if nothing has changed since last poll:
+   *   1. removed - boolean, true if log was removed, false if valid log
+   *   2. logIndex - integer of log index position in the block encoded as a hexadecimal. null if pending
+   *   3. transactionIndex - integer of transactions index position log was created from. null if pending
+   *   4. transactionHash - hash of the transactions this log was created from. null if pending
+   *   5. blockHash - hash of the block where this log was in. null when its pending. null if pending
+   *   6. blockNumber - hex of block number of the log. null if pending
+   *   7. address - address from which this log originated
+   *   8. data - array of one or more 32 Bytes non-indexed arguments of the log
+   *   9. topics - array of 0 to 4 32 Bytes of indexed log arguments
+   */
+  async getLogs(params: [string, string, string, string[], string]) {
+    const [address, fromBlock, toBlock, topics, blockhash] = params
+
+    if (!this._vm) {
+      throw new Error('missing vm')
+    }
+
+    return null
+  }
+
+  /**
    * Returns the value from a storage position at a given address.
    * Currently only "latest" block is supported.
    * @param params An array of three parameters:
@@ -480,6 +517,8 @@ export class Eth {
    * @param params An array of two parameters:
    *   1. address of the account
    *   2. integer block number, or the string "latest", "earliest" or "pending"
+   * @returns An array of log objects matching a given filter object
+   *   1.
    */
   async getTransactionCount(params: [string, string]) {
     const [addressHex, blockOpt] = params
