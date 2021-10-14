@@ -32,31 +32,33 @@ assert.equal(new BN('dead', 16).add(new BN('101010', 2)), 57047)
 
 ### Modules
 
-- [account](docs/modules/account.md)
+- [account](src/account.md)
   - Account class
   - Private/public key and address-related functionality (creation, validation, conversion)
-- [address](docs/modules/address.md)
+- [address](src/address.md)
   - Address class and type
-- [bytes](docs/modules/bytes.md)
+- [bytes](src/bytes.md)
   - Byte-related helper and conversion functions
-- [constants](docs/modules/constants.md)
+- [constants](src/constants.md)
   - Exposed constants
     - e.g. KECCAK256_NULL_S for string representation of Keccak-256 hash of null
-- [hash](docs/modules/hash.md)
+- [hash](src/hash.md)
   - Hash functions
-- [object](docs/modules/object.md)
+- [object](src/object.md)
   - Helper function for creating a binary object (`DEPRECATED`)
-- [signature](docs/modules/signature.md)
+- [signature](src/signature.md)
   - Signing, signature validation, conversion, recovery
-- [types](docs/modules/types.md)
+- [types](src/types.md)
   - Helpful TypeScript types
-- [externals](docs/modules/externals.md)
+- [externals](src/externals.md)
   - Helper methods from `ethjs-util`
   - Re-exports of `BN`, `rlp`
 
+Also see [API docs](docs/).
+
 ### ethjs-util methods
 
-The following methods are available provided by [ethjs-util](https://github.com/ethjs/ethjs-util):
+The following methods are available by an internalized version of the [ethjs-util](https://github.com/ethjs/ethjs-util) package (`MIT` license), see [internal.ts](src/internal.ts). The original package is not maintained any more and the original functionality will be replaced by own implementations over time (starting with the `v7.1.3` release, October 2021).
 
 - arrayContainsArray
 - getBinarySize
@@ -78,7 +80,7 @@ import { stripHexPrefix } from 'ethereumjs-util'
 
 ### Re-Exports
 
-Additionally `ethereumjs-util` re-exports a few commonly-used libraries. These include:
+`ethereumjs-util` re-exports the following commonly-used libraries:
 
 - [BN.js](https://github.com/indutny/bn.js) (version `5.x`)
 - [rlp](https://github.com/ethereumjs/rlp) (version `2.x`)

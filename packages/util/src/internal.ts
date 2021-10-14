@@ -106,19 +106,6 @@ export function arrayContainsArray(
 }
 
 /**
- * Should be called to get utf8 from its hex representation
- *
- * @param string in hex
- * @returns ascii string representation of hex value
- */
-export function toUtf8(hex: string) {
-  const zerosRegexp = /^(00)+|(00)+$/g
-  const bufferValue = Buffer.from(padToEven(stripHexPrefix(hex).replace(zerosRegexp, '')), 'hex')
-
-  return bufferValue.toString('utf8')
-}
-
-/**
  * Should be called to get ascii from its hex representation
  *
  * @param string in hex

@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 7.1.3 - 2021-10-12
+
+### Removal of ethjs-util Package Re-Export
+
+This release replaces `ethjs-util` dependency with an `internal.ts` file which re-exports all the used functions (thanks to @talentlessguy for the PR).
+
+This has a list of benefits:
+
+- Less maintenance burden (fewer dependencies to care about)
+- Better types and avoids use of deprecated APIs (e.g. new Buffer)
+- Smaller bundle/install size
+
+See: PR [#1517](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1517)
+
+### Related Changes / Bug Fixes
+
+- Fixed a bug in `toUtf8` not working correctly with leading or trailing single 0s, see PR [#1522](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1522)
+- Rewrote `toUtf8` function and added extended code docs, method now throws on malformed uneven hex input values, see PR [#1525](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1525)
+
 ## 7.1.2 - 2021-09-30
 
 - Replaced the `ethjs-util` `intToHex` and `intToBuffer` re-exports with own implementations which throw on wrong integer input (decimal values, non-safe integers, negative numbers,...) to allow for a safer integer type input, PR [#1500](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1500)

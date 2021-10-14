@@ -52,7 +52,6 @@ export {
   padToEven,
   getBinarySize,
   arrayContainsArray,
-  toUtf8,
   toAscii,
   fromUtf8,
   fromAscii,

@@ -233,6 +233,34 @@ export const addHexPrefix = function (str: string): string {
 }
 
 /**
+ * Returns the utf8 string representation from a hex string.
+ *
+ * Examples:
+ *
+ * Input 1: '657468657265756d000000000000000000000000000000000000000000000000'
+ * Input 2: '657468657265756d'
+ * Input 3: '000000000000000000000000000000000000000000000000657468657265756d'
+ *
+ * Output (all 3 input variants): 'ethereum'
+ *
+ * Note that this method is not intended to be used with hex strings
+ * representing quantities in both big endian or little endian notation.
+ *
+ * @param string Hex string, should be `0x` prefixed
+ * @return Utf8 string
+ */
+export const toUtf8 = function (hex: string): string {
+  const zerosRegexp = /^(00)+|(00)+$/g
+  hex = stripHexPrefix(hex)
+  if (hex.length % 2 !== 0) {
+    throw new Error('Invalid non-even hex string input for toUtf8() provided')
+  }
+  const bufferVal = Buffer.from(hex.replace(zerosRegexp, ''), 'hex')
+
+  return bufferVal.toString('utf8')
+}
+
+/**
  * Converts a `Buffer` or `Array` to JSON.
  * @param ba (Buffer|Array)
  * @return (Array|String|null)
