@@ -1,5 +1,5 @@
-import { Address, BN, toBuffer } from 'ethereumjs-util'
-import { encode } from 'rlp'
+import { Address, BN, toBuffer, rlp } from 'ethereumjs-util'
+const { encode } = rlp
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'

@@ -5,12 +5,13 @@ import {
   Account,
   Address,
   BN,
-  toBuffer,
   keccak256,
   KECCAK256_NULL,
+  rlp,
+  toBuffer,
   unpadBuffer,
 } from 'ethereumjs-util'
-import { encode, decode } from 'rlp'
+const { encode, decode } = rlp
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { StateManager, StorageDump } from './interface'
 import Cache from './cache'
