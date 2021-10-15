@@ -112,6 +112,11 @@ export interface ConfigOptions {
   rpcEngine?: boolean
 
   /**
+   * Until getLogs is properly implemented, stub an empty response
+   */
+  rpcStubGetLogs?: boolean
+
+  /**
    * Logging verbosity
    *
    * Choices: ['debug', 'info', 'warn', 'error', 'off']
@@ -251,6 +256,7 @@ export class Config {
   public readonly rpcEngine: boolean
   public readonly loglevel: string
   public readonly rpcDebug: boolean
+  public readonly rpcStubGetLogs: boolean
   public readonly maxPerRequest: number
   public readonly minPeers: number
   public readonly maxPeers: number
@@ -288,6 +294,7 @@ export class Config {
     this.rpcEngine = options.rpcEngine ?? Config.RPC_ENGINE_DEFAULT
     this.loglevel = options.loglevel ?? Config.LOGLEVEL_DEFAULT
     this.rpcDebug = options.rpcDebug ?? Config.RPCDEBUG_DEFAULT
+    this.rpcStubGetLogs = options.rpcStubGetLogs ?? false
     this.maxPerRequest = options.maxPerRequest ?? Config.MAXPERREQUEST_DEFAULT
     this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
     this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT

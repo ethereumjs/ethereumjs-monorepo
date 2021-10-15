@@ -95,6 +95,11 @@ const args = require('yargs')
       boolean: true,
       default: Config.RPC_ENGINE_DEFAULT,
     },
+    rpcStubGetLogs: {
+      describe: 'Stub eth_getLogs with empty response until method is implemented',
+      boolean: true,
+      default: false,
+    },
     helprpc: {
       describe: 'Display the JSON RPC help with a list of all RPC methods implemented (and exit)',
       boolean: true,
@@ -269,13 +274,17 @@ async function run() {
     console.log('JSON-RPC: Supported Methods')
     console.log('-'.repeat(27))
     console.log()
-    modules.list.forEach((modName: string) => {
+    for (const modName of modules.list) {
       console.log(`${modName}:`)
-      RPCManager.getMethodNames((modules as any)[modName]).forEach((methodName: string) => {
+      const methods = RPCManager.getMethodNames((modules as any)[modName])
+      for (const methodName of methods) {
+        if (methodName === 'getLogs' && !args.rpcStubGetLogs) {
+          continue
+        }
         console.log(`-> ${modName.toLowerCase()}_${methodName}`)
-      })
+      }
       console.log()
-    })
+    }
     console.log()
     process.exit()
   }
@@ -473,6 +482,7 @@ async function run() {
     rpcEngine: args.rpcEngine,
     loglevel: args.loglevel,
     rpcDebug: args.rpcDebug,
+    rpcStubGetLogs: args.rpcStubGetLogs,
     maxPerRequest: args.maxPerRequest,
     minPeers: args.minPeers,
     maxPeers: args.maxPeers,
