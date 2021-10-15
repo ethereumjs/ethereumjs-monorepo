@@ -70,6 +70,24 @@ tape('[Fetcher]', (t) => {
     }, 20)
   })
 
+  t.test('should handle clearing queue', (t) => {
+    t.plan(2)
+    const config = new Config({ loglevel: 'error', transports: [] })
+    const fetcher = new FetcherTest({
+      config,
+      pool: td.object(),
+    })
+    const job1 = { index: 0 }
+    const job2 = { index: 1 }
+    const job3 = { index: 2 }
+    ;(fetcher as any).in.insert(job1)
+    ;(fetcher as any).in.insert(job2)
+    ;(fetcher as any).in.insert(job3)
+    t.equals((fetcher as any).in.size(), 3, 'queue filled')
+    fetcher.clear()
+    t.equals((fetcher as any).in.size(), 0, 'queue cleared')
+  })
+
   t.test('should reset td', (t) => {
     td.reset()
     t.end()
