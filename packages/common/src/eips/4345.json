@@ -4,7 +4,7 @@
     "comment": "Difficulty Bomb Delay to June 2022",
     "url": "https://eips.ethereum.org/EIPS/eip-4345",
     "status": "Review",
-    "minimumHardfork": "arrowGlacier",
+    "minimumHardfork": "london",
     "gasConfig": {},
     "gasPrices": {},
     "vm": {},
