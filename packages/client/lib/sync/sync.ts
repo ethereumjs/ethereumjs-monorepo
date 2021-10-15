@@ -53,6 +53,7 @@ export abstract class Synchronizer {
   // Time (in ms) after which the synced state is reset
   private SYNCED_STATE_REMOVAL_PERIOD = 60000
   private _syncedStatusCheckInterval: NodeJS.Timeout | undefined /* global NodeJS */
+  private _boundChainUpdatedEvent: () => void
 
   /**
    * Create new node
@@ -77,9 +78,8 @@ export abstract class Synchronizer {
       }
     })
 
-    this.config.events.on(Event.CHAIN_UPDATED, async () => {
-      this.updateSynchronizedState()
-    })
+    this._boundChainUpdatedEvent = this.updateSynchronizedState.bind(this)
+    this.config.events.on(Event.CHAIN_UPDATED, this._boundChainUpdatedEvent)
   }
 
   /**
@@ -183,6 +183,7 @@ export abstract class Synchronizer {
       return false
     }
     clearInterval(this._syncedStatusCheckInterval as NodeJS.Timeout)
+    this.config.events.removeListener(Event.CHAIN_UPDATED, this._boundChainUpdatedEvent)
     await new Promise((resolve) => setTimeout(resolve, this.interval))
     this.running = false
     this.config.logger.info('Stopped synchronization.')
