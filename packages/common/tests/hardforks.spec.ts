@@ -16,6 +16,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
       Hardfork.Istanbul,
       Hardfork.Berlin,
       Hardfork.London,
+      Hardfork.ArrowGlacier,
       Hardfork.Shanghai,
       Hardfork.Merge,
     ]
@@ -40,7 +41,8 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.equal(c.getHardforkByBlockNumber(9200000), Hardfork.MuirGlacier, msg)
     st.equal(c.getHardforkByBlockNumber(12244000), Hardfork.Berlin, msg)
     st.equal(c.getHardforkByBlockNumber(12965000), Hardfork.London, msg)
-    st.equal(c.getHardforkByBlockNumber(999999999999), Hardfork.London, msg)
+    st.equal(c.getHardforkByBlockNumber(13773000), Hardfork.ArrowGlacier, msg)
+    st.equal(c.getHardforkByBlockNumber(999999999999), Hardfork.ArrowGlacier, msg)
 
     msg = 'should set HF correctly'
 
@@ -50,7 +52,8 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.equal(c.setHardforkByBlockNumber(1400000), Hardfork.Homestead, msg)
     st.equal(c.setHardforkByBlockNumber(12244000), Hardfork.Berlin, msg)
     st.equal(c.setHardforkByBlockNumber(12965000), Hardfork.London, msg)
-    st.equal(c.setHardforkByBlockNumber(999999999999), Hardfork.London, msg)
+    st.equal(c.setHardforkByBlockNumber(13773000), Hardfork.ArrowGlacier, msg)
+    st.equal(c.setHardforkByBlockNumber(999999999999), Hardfork.ArrowGlacier, msg)
 
     c = new Common({ chain: Chain.Ropsten })
     st.equal(c.setHardforkByBlockNumber(0), 'tangerineWhistle', msg)
@@ -177,7 +180,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
 
     c = new Common({ chain: Chain.Mainnet })
     msg = 'should return correct number of active HFs for mainnet'
-    st.equal(c.activeHardforks().length, 12, msg)
+    st.equal(c.activeHardforks().length, 13, msg)
 
     c = new Common({ chain: Chain.Rinkeby })
     msg = 'should return correct number of active HFs for rinkeby'
