@@ -5,7 +5,6 @@ import {
   padToEven,
   getBinarySize,
   arrayContainsArray,
-  toUtf8,
   toAscii,
   getKeys,
   isHexString,
@@ -38,10 +37,6 @@ tape('internal', (t) => {
     st.equal(arrayContainsArray([1, 2, 3], [4, 5]), false)
     st.equal(arrayContainsArray([1, 2, 3], [3, 5], true), true)
     st.equal(arrayContainsArray([1, 2, 3], [4, 5], true), false)
-    st.end()
-  })
-  t.test('toUtf8', (st) => {
-    st.equal(toUtf8(buf.toString('hex')), 'hello')
     st.end()
   })
   t.test('toAscii', (st) => {

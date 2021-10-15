@@ -121,7 +121,7 @@
 
 | Name | Type |
 | :------ | :------ |
-| `number` | `string` \| `number` \| [`BN`](BN.md) \| `Buffer` \| `Uint8Array` \| `number`[] |
+| `number` | `string` \| `number` \| [`BN`](BN.md) \| `Uint8Array` \| `Buffer` \| `number`[] |
 | `base?` | `number` \| ``"hex"`` |
 | `endian?` | [`Endianness`](../modules/BN.md#endianness) |
 
@@ -135,7 +135,7 @@ node_modules/@types/bn.js/index.d.ts:32
 
 | Name | Type |
 | :------ | :------ |
-| `number` | `string` \| `number` \| [`BN`](BN.md) \| `Buffer` \| `Uint8Array` \| `number`[] |
+| `number` | `string` \| `number` \| [`BN`](BN.md) \| `Uint8Array` \| `Buffer` \| `number`[] |
 | `endian?` | [`Endianness`](../modules/BN.md#endianness) |
 
 #### Defined in
@@ -1695,7 +1695,7 @@ ___
 | `ArrayType.alloc` | (`size`: `number`, `fill?`: `string` \| `number` \| `Buffer`, `encoding?`: `BufferEncoding`) => `Buffer` | - |
 | `ArrayType.allocUnsafe` | (`size`: `number`) => `Buffer` | - |
 | `ArrayType.allocUnsafeSlow` | (`size`: `number`) => `Buffer` | - |
-| `ArrayType.byteLength` | (`string`: `string` \| `ArrayBuffer` \| `SharedArrayBuffer` \| `TypedArray` \| `DataView`, `encoding?`: `BufferEncoding`) => `number` | - |
+| `ArrayType.byteLength` | (`string`: `string` \| `TypedArray` \| `DataView` \| `ArrayBuffer` \| `SharedArrayBuffer`, `encoding?`: `BufferEncoding`) => `number` | - |
 | `ArrayType.compare` | (`buf1`: `Uint8Array`, `buf2`: `Uint8Array`) => `number` | - |
 | `ArrayType.concat` | (`list`: readonly `Uint8Array`[], `totalLength?`: `number`) => `Buffer` | - |
 | `ArrayType.from` | (`arrayBuffer`: `ArrayBuffer` \| `SharedArrayBuffer`, `byteOffset?`: `number`, `length?`: `number`) => `Buffer`(`data`: readonly `number`[]) => `Buffer`(`data`: `Uint8Array`) => `Buffer`(`obj`: { `valueOf`: () => `string` \| `object`  } \| { `[toPrimitive]`: (`hint`: ``"string"``) => `string`  }, `byteOffset?`: `number`, `length?`: `number`) => `Buffer`(`str`: `string`, `encoding?`: `BufferEncoding`) => `Buffer` | - |
