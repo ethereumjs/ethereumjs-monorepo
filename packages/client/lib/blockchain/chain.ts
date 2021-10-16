@@ -235,6 +235,10 @@ export class Chain {
 
     this.config.chainCommon.setHardforkByBlockNumber(headers.latest.number, headers.td)
 
+    if (this.config.chainCommon.hardfork() === Hardfork.Merge) {
+      this.config.synchronized = true
+    }
+
     if (emit) {
       this.config.events.emit(Event.CHAIN_UPDATED)
     }
@@ -278,9 +282,6 @@ export class Chain {
     let numAdded = 0
     for (const [i, b] of blocks.entries()) {
       if (!mergeIncludes && this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
-        this.config.logger.info(
-          `Merge hardfork reached at block number=${b.header.number} td=${this.headers.td}`
-        )
         if (i > 0) {
           // emitOnLast below won't be reached, so run an update here
           await this.update(true)

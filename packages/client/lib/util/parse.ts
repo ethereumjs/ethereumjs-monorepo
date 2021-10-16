@@ -336,6 +336,10 @@ export async function parseGenesisCodeAndStorage(json: any) {
   return genesisCodeAndStorage
 }
 
+/**
+ * Returns Buffer from input hexadeicmal string or Buffer
+ * @param input hexadecimal string or Buffer
+ */
 export function parseKey(input: string | Buffer) {
   if (Buffer.isBuffer(input)) {
     return input

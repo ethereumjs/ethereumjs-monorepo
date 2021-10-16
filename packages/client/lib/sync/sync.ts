@@ -203,8 +203,6 @@ export abstract class Synchronizer {
    */
   _syncedStatusCheck() {
     if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
-      // Have passed merge hardfork, stopping sync
-      void this.stop()
       return
     }
 

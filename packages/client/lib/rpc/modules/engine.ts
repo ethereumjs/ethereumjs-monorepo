@@ -286,8 +286,7 @@ export class Engine {
    * that is available by the time of the call or responds with an error.
    *
    * @param params An array of one parameter:
-   *   1. An object
-   *       * payloadId - identifier of the payload building process
+   *   1. payloadId - identifier of the payload building process
    * @returns Instance of {@link ExecutionPayload} or an error
    */
   async getPayload(params: [string]) {
@@ -297,9 +296,7 @@ export class Engine {
       throw EngineError.ActionNotAllowed
     }
 
-    let [payloadId]: any = params
-
-    payloadId = toType(payloadId, TypeOutput.Number)
+    const payloadId = toType(params[0], TypeOutput.Number)
     const payload = this.pendingPayloads.get(payloadId)
 
     if (!payload) {
@@ -314,89 +311,90 @@ export class Engine {
       throw EngineError.UnknownHeader
     }
 
-    // Use a copy of the vm to not modify the existing state.
-    const vmCopy = this.vm.copy()
+    try {
+      // Use a copy of the vm to not modify the existing state.
+      const vmCopy = this.vm.copy()
 
-    const vmHead = await vmCopy.blockchain.getLatestBlock()
-    const parentBlocks = await recursivelyFindParents(
-      vmHead.hash(),
-      parentHash,
-      this.validBlocks,
-      this.chain,
-      this.synchronizer
-    )
+      const vmHead = await vmCopy.blockchain.getLatestBlock()
+      const parentBlocks = await recursivelyFindParents(
+        vmHead.hash(),
+        parentHash,
+        this.validBlocks,
+        this.chain,
+        this.synchronizer
+      )
 
-    for (const parent of parentBlocks) {
-      try {
+      for (const parent of parentBlocks) {
         const td = await vmCopy.blockchain.getTotalDifficulty(parent.hash())
         vmCopy._common.setHardforkByBlockNumber(parent.header.number, td)
         await vmCopy.runBlock({ block: parent })
         await vmCopy.blockchain.putBlock(parent)
-      } catch (error: any) {
-        throw {
-          code: INTERNAL_ERROR,
-          message: error.toString(),
-        }
       }
-    }
 
-    const parentBlock = await vmCopy.blockchain.getBlock(parentHash)
-    const number = parentBlock.header.number.addn(1)
-    const { gasLimit } = parentBlock.header
-    const baseFeePerGas = parentBlock.header.calcNextBaseFee()
+      const parentBlock = await vmCopy.blockchain.getBlock(parentHash)
+      const number = parentBlock.header.number.addn(1)
+      const { gasLimit } = parentBlock.header
+      const baseFeePerGas = parentBlock.header.calcNextBaseFee()
 
-    // Set the state root to ensure the resulting state
-    // is based on the parent block's state
-    await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
+      // Set the state root to ensure the resulting state
+      // is based on the parent block's state
+      await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
 
-    const td = await vmCopy.blockchain.getTotalDifficulty(vmHead.hash())
-    vmCopy._common.setHardforkByBlockNumber(vmHead.header.number, td)
-    const blockBuilder = await vmCopy.buildBlock({
-      parentBlock,
-      headerData: {
-        timestamp,
-        number,
-        gasLimit,
-        baseFeePerGas,
-        coinbase,
-      },
-    })
+      const td = await vmCopy.blockchain.getTotalDifficulty(vmHead.hash())
+      vmCopy._common.setHardforkByBlockNumber(vmHead.header.number, td)
+      const blockBuilder = await vmCopy.buildBlock({
+        parentBlock,
+        headerData: {
+          timestamp,
+          number,
+          gasLimit,
+          baseFeePerGas,
+          coinbase,
+        },
+      })
 
-    const txs = await this.txPool.txsByPriceAndNonce(vmCopy.stateManager, baseFeePerGas)
-    this.config.logger.info(
-      `Engine: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`
-    )
+      const txs = await this.txPool.txsByPriceAndNonce(vmCopy.stateManager, baseFeePerGas)
+      this.config.logger.info(
+        `Engine: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`
+      )
 
-    let index = 0
-    let blockFull = false
-    while (index < txs.length && !blockFull) {
-      try {
-        await blockBuilder.addTransaction(txs[index])
-      } catch (error: any) {
-        if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
-          if (blockBuilder.gasUsed.gt(gasLimit.subn(21000))) {
-            // If block has less than 21000 gas remaining, consider it full
-            blockFull = true
-            this.config.logger.info(
-              `Engine: Assembled block full (gasLeft: ${gasLimit.sub(blockBuilder.gasUsed)})`
+      let index = 0
+      let blockFull = false
+      while (index < txs.length && !blockFull) {
+        try {
+          await blockBuilder.addTransaction(txs[index])
+        } catch (error: any) {
+          if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
+            if (blockBuilder.gasUsed.gt(gasLimit.subn(21000))) {
+              // If block has less than 21000 gas remaining, consider it full
+              blockFull = true
+              this.config.logger.info(
+                `Engine: Assembled block full (gasLeft: ${gasLimit.sub(blockBuilder.gasUsed)})`
+              )
+            }
+          } else {
+            // If there is an error adding a tx, it will be skipped
+            const hash = bufferToHex(txs[index].hash())
+            this.config.logger.debug(
+              `Skipping tx ${hash}, error encountered when trying to add tx:\n${error}`
             )
           }
-        } else {
-          // If there is an error adding a tx, it will be skipped
-          const hash = bufferToHex(txs[index].hash())
-          this.config.logger.debug(
-            `Skipping tx ${hash}, error encountered when trying to add tx:\n${error}`
-          )
         }
+        index++
       }
-      index++
+
+      const block = await blockBuilder.build()
+
+      this.pendingPayloads.delete(payloadId)
+      this.validBlocks.set(block.hash().toString('hex'), block)
+
+      return blockToExecutionPayload(block, payload.random)
+    } catch (error: any) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: error.message.toString(),
+      }
     }
-
-    const block = await blockBuilder.build()
-
-    this.pendingPayloads.delete(payloadId)
-    this.validBlocks.set(block.hash().toString('hex'), block)
-    return blockToExecutionPayload(block, payload.random)
   }
 
   /**
@@ -418,68 +416,68 @@ export class Engine {
 
     const [payloadData] = params
 
-    const transactions = []
-    for (const [index, serializedTx] of payloadData.transactions.entries()) {
-      try {
-        const tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), {
-          common: this.config.chainCommon,
-        })
-        transactions.push(tx)
-      } catch (error) {
-        this.config.logger.error(`Invalid tx at index ${index}: ${error}`)
-        return { status: Status.INVALID }
-      }
-    }
-
-    // Format block header
-    const header: HeaderData = {
-      ...payloadData,
-      number: payloadData.blockNumber,
-      receiptTrie: payloadData.receiptRoot,
-      transactionsTrie: await transactionsTrie(transactions),
-    }
-
-    let block
     try {
-      block = Block.fromBlockData({ header, transactions }, { common: this.config.chainCommon })
-    } catch (error) {
-      this.config.logger.debug(`Error verifying block: ${error}`)
-      return { status: Status.INVALID }
-    }
-
-    const vmCopy = this.vm.copy()
-
-    const vmHeadHash = (await vmCopy.blockchain.getLatestHeader()).hash()
-    const parentBlocks = await recursivelyFindParents(
-      vmHeadHash,
-      block.header.parentHash,
-      this.validBlocks,
-      this.chain,
-      this.synchronizer
-    )
-
-    for (const parent of parentBlocks) {
-      try {
-        await vmCopy.runBlock({ block: parent })
-        await vmCopy.blockchain.putBlock(parent)
-      } catch (error: any) {
-        throw {
-          code: INTERNAL_ERROR,
-          message: error.toString(),
+      const transactions = []
+      for (const [index, serializedTx] of payloadData.transactions.entries()) {
+        try {
+          const tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), {
+            common: this.config.chainCommon,
+          })
+          transactions.push(tx)
+        } catch (error) {
+          this.config.logger.error(`Invalid tx at index ${index}: ${error}`)
+          return { status: Status.INVALID }
         }
       }
+
+      // Format block header
+      const header: HeaderData = {
+        ...payloadData,
+        number: payloadData.blockNumber,
+        receiptTrie: payloadData.receiptRoot,
+        transactionsTrie: await transactionsTrie(transactions),
+      }
+
+      let block
+      try {
+        block = Block.fromBlockData({ header, transactions }, { common: this.config.chainCommon })
+      } catch (error) {
+        this.config.logger.debug(`Error verifying block: ${error}`)
+        return { status: Status.INVALID }
+      }
+
+      const vmCopy = this.vm.copy()
+
+      const vmHeadHash = (await vmCopy.blockchain.getLatestHeader()).hash()
+      const parentBlocks = await recursivelyFindParents(
+        vmHeadHash,
+        block.header.parentHash,
+        this.validBlocks,
+        this.chain,
+        this.synchronizer
+      )
+
+      for (const parent of parentBlocks) {
+        await vmCopy.runBlock({ block: parent })
+        await vmCopy.blockchain.putBlock(parent)
+      }
+
+      try {
+        await vmCopy.runBlock({ block })
+      } catch (error) {
+        this.config.logger.debug(`Error verifying block: ${error}`)
+        return { status: Status.INVALID }
+      }
+
+      this.validBlocks.set(block.hash().toString('hex'), block)
+
+      return { status: Status.VALID }
+    } catch (error: any) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: error.message.toString(),
+      }
     }
-
-    try {
-      await vmCopy.runBlock({ block })
-    } catch (error) {
-      this.config.logger.debug(`Error verifying block: ${error}`)
-      return { status: Status.INVALID }
-    }
-
-    this.validBlocks.set(block.hash().toString('hex'), block)
-
-    return { status: Status.VALID }
   }
 
   /**
@@ -493,16 +491,18 @@ export class Engine {
    * @returns None or an error
    */
   async consensusValidated(params: [{ blockHash: string; status: string }]) {
-    const { blockHash, status }: any = params[0]
+    const { status } = params[0]
+    let { blockHash } = params[0]
+    blockHash = blockHash.slice(2)
 
-    const block = this.validBlocks.get(blockHash.slice(2))
+    const block = this.validBlocks.get(blockHash)
 
     if (!block && status === Status.VALID) {
       throw EngineError.UnknownHeader
     }
 
     if (block && status === Status.INVALID) {
-      this.validBlocks.delete(block.hash().toString('hex'))
+      this.validBlocks.delete(blockHash)
     }
 
     return null
@@ -518,9 +518,14 @@ export class Engine {
    * @returns None or an error
    */
   async forkchoiceUpdated(params: [{ headBlockHash: string; finalizedBlockHash: string }]) {
-    const { headBlockHash, finalizedBlockHash } = params[0]
+    let { headBlockHash, finalizedBlockHash } = params[0]
+    headBlockHash = headBlockHash.slice(2)
+    finalizedBlockHash = finalizedBlockHash.slice(2)
 
-    const headBlock = this.validBlocks.get(headBlockHash.slice(2))
+    /*
+     * Process head block
+     */
+    const headBlock = this.validBlocks.get(headBlockHash)
     if (!headBlock) {
       throw EngineError.UnknownHeader
     }
@@ -536,20 +541,38 @@ export class Engine {
 
     await this.chain.putBlocks([...parentBlocks, headBlock], true)
 
-    this.synchronizer.syncTargetHeight = headBlock.header.number
+    if (
+      !this.synchronizer.syncTargetHeight ||
+      this.synchronizer.syncTargetHeight.lt(headBlock.header.number)
+    ) {
+      this.synchronizer.syncTargetHeight = headBlock.header.number
+    }
 
-    if (finalizedBlockHash.slice(2) === '0'.repeat(64)) {
+    /*
+     * Process finalized block
+     */
+    if (finalizedBlockHash === '0'.repeat(64)) {
       // All zeros means no finalized block yet
     } else {
-      const finalizedBlock = this.validBlocks.get(finalizedBlockHash.slice(2))
+      let finalizedBlock
+      finalizedBlock = this.validBlocks.get(finalizedBlockHash)
       if (!finalizedBlock) {
-        throw EngineError.UnknownHeader
+        try {
+          finalizedBlock = await this.chain.getBlock(Buffer.from(finalizedBlockHash, 'hex'))
+        } catch (error) {
+          throw EngineError.UnknownHeader
+        }
       }
+
       if (!this.chain.mergeFirstFinalizedBlock) {
         this.chain.mergeFirstFinalizedBlock = finalizedBlock
       }
       this.chain.mergeLastFinalizedBlock = finalizedBlock
+
+      this.validBlocks.delete(finalizedBlockHash)
     }
+
+    this.validBlocks.delete(headBlockHash)
 
     return null
   }
