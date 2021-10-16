@@ -559,15 +559,16 @@ export default class DefaultStateManager implements StateManager {
 
     const genesis = await this.hasGenesisState()
     if (!genesis) {
-      await this.generateGenesis(this._common.genesisState())
+      await this.generateGenesis(this._common.genesisState(), this._common.genesisCodeAndStorage())
     }
   }
 
   /**
    * Initializes the provided genesis state into the state trie
    * @param initState - Object (address -> balance)
+   * @param codeAndStorage - Object (address -> code, [storageKey, storageValue])
    */
-  async generateGenesis(initState: any): Promise<void> {
+  async generateGenesis(initState: any, codeAndStorage?: any): Promise<void> {
     if (this._checkpointCount !== 0) {
       throw new Error('Cannot create genesis state with uncommitted checkpoints')
     }
@@ -581,6 +582,19 @@ export default class DefaultStateManager implements StateManager {
       const account = Account.fromAccountData({ balance })
       const addressBuffer = toBuffer(address)
       await this._trie.put(addressBuffer, account.serialize())
+    }
+
+    if (codeAndStorage) {
+      const codeAndStorageAddresses = Object.keys(codeAndStorage)
+      for (const addressStr of codeAndStorageAddresses) {
+        const address = Address.fromString(addressStr)
+        const code = toBuffer(codeAndStorage[addressStr][0])
+        await this.putContractCode(address, code)
+        const storage = codeAndStorage[addressStr][1]
+        for (const [key, value] of Object.values(storage) as [string, string][]) {
+          await this.putContractStorage(address, toBuffer(key), toBuffer(value))
+        }
+      }
     }
   }
 

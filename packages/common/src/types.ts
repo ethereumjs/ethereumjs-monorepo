@@ -44,6 +44,10 @@ export interface GenesisState {
   [key: string]: string
 }
 
+export interface GenesisCodeAndStorage {
+  [key: string]: [string, [[string, string]]] // address: [code, [[storageKey, storageValue]]]
+}
+
 export interface eipsType {
   [key: number]: any
 }

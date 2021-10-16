@@ -8,6 +8,7 @@ import {
   BootstrapNode,
   Chain as IChain,
   GenesisBlock,
+  GenesisCodeAndStorage,
   GenesisState,
   Hardfork as HardforkParams,
 } from './types'
@@ -132,7 +133,7 @@ export interface CommonOpts extends BaseOpts {
    * const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, chain1GenesisState ] ]})
    * ```
    */
-  customChains?: IChain[] | [IChain, GenesisState][]
+  customChains?: IChain[] | [IChain, GenesisState, GenesisCodeAndStorage?][]
 }
 
 /**
@@ -168,7 +169,7 @@ export default class Common extends EventEmitter {
   private _hardfork: string | Hardfork
   private _supportedHardforks: Array<string | Hardfork> = []
   private _eips: number[] = []
-  private _customChains: IChain[] | [IChain, GenesisState][]
+  private _customChains: IChain[] | [IChain, GenesisState, GenesisCodeAndStorage?][]
 
   /**
    * Creates a {@link Common} object for a custom chain, based on a standard one.
@@ -348,7 +349,9 @@ export default class Common extends EventEmitter {
         this._customChains.length > 0 &&
         Array.isArray(this._customChains[0])
       ) {
-        plainCustomChains = (this._customChains as [IChain, GenesisState][]).map((e) => e[0])
+        plainCustomChains = (
+          this._customChains as [IChain, GenesisState, GenesisCodeAndStorage][]
+        ).map((e) => e[0])
       } else {
         plainCustomChains = this._customChains as IChain[]
       }
@@ -987,9 +990,41 @@ export default class Common extends EventEmitter {
       this._customChains.length > 0 &&
       Array.isArray(this._customChains[0])
     ) {
-      for (const chainArrayWithGenesis of this._customChains) {
-        if ((chainArrayWithGenesis as [IChain, GenesisState])[0].name === this.chainName()) {
-          return (chainArrayWithGenesis as [IChain, GenesisState])[1]
+      for (const chainArrayWithGenesis of this._customChains as [
+        IChain,
+        GenesisState,
+        GenesisCodeAndStorage
+      ][]) {
+        if (chainArrayWithGenesis[0].name === this.chainName()) {
+          return chainArrayWithGenesis[1]
+        }
+      }
+    }
+
+    return {}
+  }
+
+  /**
+   * Returns the genesis code and storage for accounts of the current chain,
+   * all values are provided as hex-prefixed strings
+   */
+  genesisCodeAndStorage(): GenesisCodeAndStorage {
+    // Custom chains with genesis code and storage provided
+    if (
+      this._customChains &&
+      this._customChains.length > 0 &&
+      Array.isArray(this._customChains[0])
+    ) {
+      for (const chainArrayWithGenesis of this._customChains as [
+        IChain,
+        GenesisState,
+        GenesisCodeAndStorage
+      ][]) {
+        if (
+          chainArrayWithGenesis[0].name === this.chainName() &&
+          Object.entries(chainArrayWithGenesis[2]).length > 0
+        ) {
+          return chainArrayWithGenesis[2]
         }
       }
     }
