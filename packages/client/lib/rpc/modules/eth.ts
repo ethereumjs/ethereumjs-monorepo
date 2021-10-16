@@ -8,11 +8,11 @@ import {
   bufferToHex,
   bnToHex,
   intToHex,
+  rlp,
   toBuffer,
   stripHexPrefix,
   setLengthLeft,
 } from 'ethereumjs-util'
-import { decode } from 'rlp'
 import { middleware, validators } from '../validation'
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
 import { RpcTx } from '../types'
@@ -471,7 +471,7 @@ export class Eth {
     const storageTrie = await (vm.stateManager as any)._getStorageTrie(address)
     const position = setLengthLeft(toBuffer(positionHex), 32)
     const storage = await storageTrie.get(position)
-    return storage ? bufferToHex(setLengthLeft(decode(storage), 32)) : '0x'
+    return storage ? bufferToHex(setLengthLeft(rlp.decode(storage), 32)) : '0x'
   }
 
   /**

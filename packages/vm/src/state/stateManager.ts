@@ -11,7 +11,6 @@ import {
   toBuffer,
   unpadBuffer,
 } from 'ethereumjs-util'
-const { encode, decode } = rlp
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { StateManager, StorageDump } from './interface'
 import Cache from './cache'
@@ -246,7 +245,7 @@ export default class DefaultStateManager implements StateManager {
 
     const trie = await this._getStorageTrie(address)
     const value = await trie.get(key)
-    const decoded = decode(value)
+    const decoded = rlp.decode(value)
     return decoded as Buffer
   }
 
@@ -350,7 +349,7 @@ export default class DefaultStateManager implements StateManager {
     await this._modifyContractStorage(address, async (storageTrie, done) => {
       if (value && value.length) {
         // format input
-        const encodedValue = encode(value)
+        const encodedValue = rlp.encode(value)
         if (this.DEBUG) {
           debug(`Update contract storage for account ${address} to ${short(value)}`)
         }
