@@ -115,7 +115,9 @@ export class FullEthereumService extends EthereumService {
     if (message.name === 'GetBlockHeaders') {
       const { reqId, block, max, skip, reverse } = message.data
       const headers: any = await this.chain.getHeaders(block, max, skip, reverse)
-      peer.eth!.send('BlockHeaders', { reqId, headers })
+      if (headers.length > 0) {
+        peer.eth!.send('BlockHeaders', { reqId, headers })
+      }
     } else if (message.name === 'GetBlockBodies') {
       const { reqId, hashes } = message.data
       const blocks = await Promise.all(hashes.map((hash: any) => this.chain.getBlock(hash)))

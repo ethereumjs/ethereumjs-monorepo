@@ -52,7 +52,9 @@ export class VMExecution extends Execution {
     this.config.execCommon.setHardforkByBlockNumber(number, td)
     this.hardfork = this.config.execCommon.hardfork()
     this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
-    await this.vm.stateManager.generateCanonicalGenesis()
+    if (number.isZero()) {
+      await this.vm.stateManager.generateCanonicalGenesis()
+    }
   }
 
   /**
