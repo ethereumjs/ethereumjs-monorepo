@@ -1,3 +1,4 @@
+import { Hardfork } from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
 import { PeerPool } from '../net/peerpool'
 import { Peer } from '../net/peer/peer'
@@ -51,8 +52,8 @@ export abstract class Synchronizer {
   public syncTargetHeight?: BN
   // Time (in ms) after which the synced state is reset
   private SYNCED_STATE_REMOVAL_PERIOD = 60000
-  /* global NodeJS */
-  private _syncedStatusCheckInterval: NodeJS.Timeout | undefined
+  private _syncedStatusCheckInterval: NodeJS.Timeout | undefined /* global NodeJS */
+  private _boundChainUpdatedEvent: () => void
 
   /**
    * Create new node
@@ -77,9 +78,8 @@ export abstract class Synchronizer {
       }
     })
 
-    this.config.events.on(Event.CHAIN_UPDATED, async () => {
-      this.updateSynchronizedState()
-    })
+    this._boundChainUpdatedEvent = this.updateSynchronizedState.bind(this)
+    this.config.events.on(Event.CHAIN_UPDATED, this._boundChainUpdatedEvent)
   }
 
   /**
@@ -183,6 +183,7 @@ export abstract class Synchronizer {
       return false
     }
     clearInterval(this._syncedStatusCheckInterval as NodeJS.Timeout)
+    this.config.events.removeListener(Event.CHAIN_UPDATED, this._boundChainUpdatedEvent)
     await new Promise((resolve) => setTimeout(resolve, this.interval))
     this.running = false
     this.config.logger.info('Stopped synchronization.')
@@ -202,6 +203,12 @@ export abstract class Synchronizer {
    * chain updates
    */
   _syncedStatusCheck() {
+    if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+      // Have passed merge hardfork, stopping sync
+      void this.stop()
+      return
+    }
+
     if (this.config.synchronized) {
       const diff = Date.now() - this.config.lastSyncDate
       if (diff >= this.SYNCED_STATE_REMOVAL_PERIOD) {

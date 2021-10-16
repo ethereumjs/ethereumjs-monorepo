@@ -80,7 +80,7 @@ export class EthProtocol extends Protocol {
       decode: ([txs]: [Buffer[]]) => {
         // TODO: add proper Common instance (problem: service not accesible)
         //const common = this.config.chainCommon.copy()
-        //common.setHardforkByBlockNumber(this.service.synchronizer.syncTargetHeight)
+        //common.setHardforkByBlockNumber(this.service.synchronizer.syncTargetHeight, this.chain.headers.td)
         return txs.map((txData) => TransactionFactory.fromBlockBodyData(txData))
       },
     },
@@ -110,6 +110,10 @@ export class EthProtocol extends Protocol {
       decode: ([reqId, headers]: [Buffer, BlockHeaderBuffer[]]) => [
         new BN(reqId),
         headers.map((h) =>
+          // TODO: need to implement hardforkByTD otherwise
+          // pre-merge blocks will fail to init if chainCommon is past merge
+          // and we request pre-mergs blocks (e.g. if we have a different terminal block
+          // and we look backwards for the correct block)
           BlockHeader.fromValuesArray(h, {
             hardforkByBlockNumber: true,
             common: this.config.chainCommon, // eslint-disable-line no-invalid-this
@@ -246,7 +250,9 @@ export class EthProtocol extends Protocol {
   encodeStatus(): any {
     return {
       networkId: this.chain.networkId.toArrayLike(Buffer),
-      td: this.chain.blocks.td.toArrayLike(Buffer),
+      td: this.chain.blocks.td.isZero()
+        ? Buffer.from([])
+        : this.chain.blocks.td.toArrayLike(Buffer),
       bestHash: this.chain.blocks.latest!.hash(),
       genesisHash: this.chain.genesis.hash,
       latestBlock: this.chain.blocks.latest!.header.number.toArrayLike(Buffer),

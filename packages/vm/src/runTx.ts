@@ -425,6 +425,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   } else {
     miner = block.header.coinbase
   }
+
   const minerAccount = await state.getAccount(miner)
   // add the amount spent on gas to the miner's account
   if (this._common.isActivatedEIP(1559)) {

@@ -56,6 +56,7 @@ export interface GenesisBlock {
   nonce: string
   extraData: string
   stateRoot: string
+  baseFeePerGas?: string
 }
 
 export interface Hardfork {

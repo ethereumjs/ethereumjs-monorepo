@@ -1,4 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
+import { BN } from 'ethereumjs-util'
 import { EthereumService, EthereumServiceOptions } from './ethereumservice'
 import { FullSynchronizer } from '../sync/fullsync'
 import { EthProtocol } from '../net/protocol/ethprotocol'
@@ -121,7 +122,12 @@ export class FullEthereumService extends EthereumService {
       const bodies: any = blocks.map((block: any) => block.raw().slice(1))
       peer.eth!.send('BlockBodies', { reqId, bodies })
     } else if (message.name === 'NewBlockHashes') {
-      if (this.config.execCommon.gteHardfork(Hardfork.Merge)) {
+      const blockNumbers: BN[] = message.data.map((v: [Buffer, BN]) => v[1])
+      const { mergeFirstFinalizedBlock } = this.chain
+      if (
+        mergeFirstFinalizedBlock &&
+        blockNumbers.some((n) => n.gte(mergeFirstFinalizedBlock.header.number))
+      ) {
         this.config.logger.debug(
           `Dropping peer ${peer.id} for sending NewBlockHashes after merge (EIP-3675)`
         )
@@ -132,7 +138,9 @@ export class FullEthereumService extends EthereumService {
     } else if (message.name === 'Transactions') {
       await this.synchronizer.txPool.handleAnnouncedTxs(message.data, peer, this.pool)
     } else if (message.name === 'NewBlock') {
-      if (this.config.execCommon.gteHardfork(Hardfork.Merge)) {
+      const blockTD: BN = message.data[1]
+      const terminalTD = this.config.chainCommon.hardforkTD(Hardfork.Merge)
+      if (terminalTD && blockTD.gt(terminalTD)) {
         this.config.logger.debug(
           `Dropping peer ${peer.id} for sending NewBlock after merge (EIP-3675)`
         )

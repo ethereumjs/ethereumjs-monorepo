@@ -1,6 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
-import { ConsensusAlgorithm } from '@ethereumjs/common'
+import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { BN, toBuffer } from 'ethereumjs-util'
 import { Config } from '../config'
 import { Event } from '../types'
@@ -80,10 +80,11 @@ export interface GenesisBlockParams {
  */
 export class Chain {
   public config: Config
-
   public chainDB: LevelUp
   public blockchain: Blockchain
   public opened: boolean
+  public mergeFirstFinalizedBlock: Block | undefined
+  public mergeLastFinalizedBlock: Block | undefined
 
   private _headers: ChainHeaders = {
     latest: null,
@@ -99,7 +100,7 @@ export class Chain {
 
   /**
    * Create new chain
-   * @param {ChainOptions} options
+   * @param options
    */
   constructor(options: ChainOptions) {
     this.config = options.config
@@ -159,7 +160,6 @@ export class Chain {
 
   /**
    * Returns properties of the canonical headerchain.
-   * @return {ChainHeaders}
    */
   get headers(): ChainHeaders {
     return { ...this._headers }
@@ -175,7 +175,7 @@ export class Chain {
 
   /**
    * Open blockchain and wait for database to load
-   * @return {Promise<boolean|void>} Returns false if chain is already open
+   * @returns false if chain is already open, otherwise void
    */
   async open(): Promise<boolean | void> {
     if (this.opened) {
@@ -189,7 +189,7 @@ export class Chain {
 
   /**
    * Closes chain
-   * @return {Promise<boolean|void>} Returns false if chain is closed
+   * @returns false if chain is closed, otherwise void
    */
   async close(): Promise<boolean | void> {
     if (!this.opened) {
@@ -202,9 +202,10 @@ export class Chain {
 
   /**
    * Update blockchain properties (latest block, td, height, etc...)
-   * @return {Promise<boolean|void>} Returns false if chain is closed
+   * @param emit Emit a `CHAIN_UPDATED` event
+   * @returns false if chain is closed, otherwise void
    */
-  async update(): Promise<boolean | void> {
+  async update(emit = true): Promise<boolean | void> {
     if (!this.opened) {
       return false
     }
@@ -231,23 +232,23 @@ export class Chain {
 
     this._headers = headers
     this._blocks = blocks
-    this.config.events.emit(Event.CHAIN_UPDATED)
+
+    this.config.chainCommon.setHardforkByBlockNumber(headers.latest.number, headers.td)
+
+    if (emit) {
+      this.config.events.emit(Event.CHAIN_UPDATED)
+    }
   }
 
   /**
    * Get blocks from blockchain
-   * @param  {Buffer | BN}      block   hash or number to start from
-   * @param  {number = 1}       max     maximum number of blocks to get
-   * @param  {number = 0}       skip    number of blocks to skip
-   * @param  {boolean = false}  reverse get blocks in reverse
-   * @return {Promise<Block[]>}
+   * @param block hash or number to start from
+   * @param max maximum number of blocks to get
+   * @param skip number of blocks to skip
+   * @param reverse get blocks in reverse
+   * @returns an array of the blocks
    */
-  async getBlocks(
-    block: Buffer | BN,
-    max: number = 1,
-    skip: number = 0,
-    reverse: boolean = false
-  ): Promise<Block[]> {
+  async getBlocks(block: Buffer | BN, max = 1, skip = 0, reverse = false): Promise<Block[]> {
     await this.open()
     return this.blockchain.getBlocks(block, max, skip, reverse)
   }
@@ -265,29 +266,46 @@ export class Chain {
   /**
    * Insert new blocks into blockchain
    * @param blocks list of blocks to add
+   * @param mergeIncludes skip adding blocks after merge
+   * @returns number of blocks added
    */
-  async putBlocks(blocks: Block[]): Promise<void> {
+  async putBlocks(blocks: Block[], mergeIncludes = false): Promise<number> {
     if (blocks.length === 0) {
-      return
+      return 0
     }
     await this.open()
-    blocks = blocks.map((b: Block) =>
-      Block.fromValuesArray(b.raw(), {
+    await this.blockchain.initPromise
+    let numAdded = 0
+    for (const [i, b] of blocks.entries()) {
+      if (!mergeIncludes && this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+        this.config.logger.info(
+          `Merge hardfork reached at block number=${b.header.number} td=${this.headers.td}`
+        )
+        if (i > 0) {
+          // emitOnLast below won't be reached, so run an update here
+          await this.update(true)
+        }
+        break
+      }
+      const block = Block.fromValuesArray(b.raw(), {
         common: this.config.chainCommon,
-        hardforkByBlockNumber: true,
+        hardforkByTD: this.headers.td,
       })
-    )
-    await this.blockchain.putBlocks(blocks)
-    await this.update()
+      await this.blockchain.putBlock(block)
+      numAdded++
+      const emitOnLast = blocks.length === numAdded
+      await this.update(emitOnLast)
+    }
+    return numAdded
   }
 
   /**
    * Get headers from blockchain
-   * @param  {Buffer|BN}  block   block hash or number to start from
-   * @param  {number}     max     maximum number of headers to get
-   * @param  {number}     skip    number of headers to skip
-   * @param  {boolean}    reverse get headers in reverse
-   * @return {Promise<BlockHeader[]>}
+   * @param block hash or number to start from
+   * @param max maximum number of headers to get
+   * @param skip number of headers to skip
+   * @param reverse get headers in reverse
+   * @returns list of block headers
    */
   async getHeaders(
     block: Buffer | BN,
@@ -301,27 +319,42 @@ export class Chain {
 
   /**
    * Insert new headers into blockchain
-   * @param  {BlockHeader[]} headers
-   * @return {Promise<void>}
+   * @param headers
+   * @param mergeIncludes skip adding headers after merge
+   * @returns number of headers added
    */
-  async putHeaders(headers: BlockHeader[]): Promise<void> {
+  async putHeaders(headers: BlockHeader[], mergeIncludes = false): Promise<number> {
     if (headers.length === 0) {
-      return
+      return 0
     }
     await this.open()
-    headers = headers.map((h) =>
-      BlockHeader.fromValuesArray(h.raw(), {
+    await this.blockchain.initPromise
+    let numAdded = 0
+    for (const [i, h] of headers.entries()) {
+      if (!mergeIncludes && this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+        this.config.logger.info(
+          `Merge hardfork reached at block number=${h.number} td=${this.headers.td}`
+        )
+        if (i > 0) {
+          // emitOnLast below won't be reached, so run an update here
+          await this.update(true)
+        }
+        break
+      }
+      const header = BlockHeader.fromValuesArray(h.raw(), {
         common: this.config.chainCommon,
-        hardforkByBlockNumber: true,
+        hardforkByTD: this.headers.td,
       })
-    )
-    await this.blockchain.putHeaders(headers)
-    await this.update()
+      await this.blockchain.putHeader(header)
+      numAdded++
+      const emitOnLast = headers.length === numAdded
+      await this.update(emitOnLast)
+    }
+    return numAdded
   }
 
   /**
    * Gets the latest header in the canonical chain
-   * @return {Promise<BlockHeader>}
    */
   async getLatestHeader(): Promise<BlockHeader> {
     await this.open()
@@ -330,7 +363,6 @@ export class Chain {
 
   /**
    * Gets the latest block in the canonical chain
-   * @return {Promise<Block>}
    */
   async getLatestBlock(): Promise<Block> {
     await this.open()
@@ -339,9 +371,9 @@ export class Chain {
 
   /**
    * Gets total difficulty for a block
-   * @param  {Buffer}      hash
-   * @param  {BN}          num
-   * @return {Promise<BN>}
+   * @param hash the block hash
+   * @param num the block number
+   * @returns the td
    */
   async getTd(hash: Buffer, num: BN): Promise<BN> {
     await this.open()

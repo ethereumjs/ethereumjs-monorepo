@@ -94,13 +94,13 @@ async function createStorageTrie(storage: any) {
   }
   return trie
 }
+
 /**
  * Derives state trie of genesis block bases on genesis allocations
  * @param alloc - Object containing genesis allocations from geth genesis block
  *
  * @returns genesis state trie
  */
-//
 async function createGethGenesisStateTrie(alloc: any) {
   const trie = new Trie()
   for (const [key, value] of Object.entries(alloc)) {
@@ -162,18 +162,18 @@ async function createGethGenesisBlockHeader(json: any) {
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
 async function parseGethParams(json: any) {
-  const {
-    name,
-    config,
-    timestamp,
-    gasLimit,
-    difficulty,
-    nonce,
-    extraData,
-    mixHash,
-    coinbase,
-    baseFeePerGas,
-  } = json
+  const { name, config, timestamp, difficulty, nonce, mixHash, coinbase } = json
+
+  let { gasLimit, extraData, baseFeePerGas } = json
+
+  // geth stores gasLimit as a hex string while our gasLimit is a `number`
+  json['gasLimit'] = gasLimit = parseInt(gasLimit)
+  // geth assumes an initial base fee value on londonBlock=0
+  json['baseFeePerGas'] = baseFeePerGas =
+    baseFeePerGas === undefined && config.londonBlock === 0 ? 1000000000 : undefined
+  // geth is not strictly putting in empty fields with a 0x prefix
+  json['extraData'] = extraData = extraData === '' ? '0x' : extraData
+
   // EIP155 and EIP158 are both part of Spurious Dragon hardfork and must occur at the same time
   // but have different configuration parameters in geth genesis parameters
   if (config.eip155Block !== config.eip158Block) {
@@ -193,7 +193,7 @@ async function parseGethParams(json: any) {
     genesis: {
       hash,
       timestamp,
-      gasLimit: parseInt(gasLimit), // Geth stores gasLimit as a hex string while our gasLimit is a `number`
+      gasLimit,
       difficulty,
       nonce,
       extraData,
@@ -218,6 +218,7 @@ async function parseGethParams(json: any) {
           ethash: {},
         },
   }
+
   const hardforks = [
     'chainstart',
     'homestead',
@@ -256,13 +257,13 @@ async function parseGethParams(json: any) {
   }
   return params
 }
+
 /**
  * Transforms Geth formatted nonce (i.e. hex string) to 8 byte hex prefixed string used internally
  *
  * @param nonce as a string parsed from the Geth genesis file
  * @returns nonce as a hex-prefixed 8 byte string
  */
-
 function formatNonce(nonce: string): string {
   if (nonce === undefined || nonce === '0x0') {
     return '0x0000000000000000'
@@ -279,7 +280,6 @@ function formatNonce(nonce: string): string {
  * @param name optional chain name
  * @returns
  */
-
 export async function parseCustomParams(json: any, name?: string) {
   try {
     if (json.config && json.difficulty && json.gasLimit && json.alloc) {
@@ -299,7 +299,6 @@ export async function parseCustomParams(json: any, name?: string) {
  * @param json representing the `alloc` key in a Geth genesis file
  * @returns a `GenesisState` compatible object
  */
-//
 export async function parseGenesisState(json: any) {
   const genesisState: GenesisState = {}
   if (json.alloc) {

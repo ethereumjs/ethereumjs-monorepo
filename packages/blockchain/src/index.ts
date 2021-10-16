@@ -310,9 +310,22 @@ export default class Blockchain implements BlockchainInterface {
 
   /**
    * Returns a deep copy of this {@link Blockchain} instance.
+   *
+   * Note: this does not make a copy of the underlying db
+   * since it is unknown if the source is on disk or in memory.
+   * This should not be a significant issue in most usage since
+   * the queries will only reflect the instance's known data.
+   * If you would like this copied blockchain to use another db
+   * set the {@link db} of this returned instance to a copy of
+   * the original.
    */
   copy(): Blockchain {
-    return Object.create(Object.getPrototypeOf(this), Object.getOwnPropertyDescriptors(this))
+    const copiedBlockchain = Object.create(
+      Object.getPrototypeOf(this),
+      Object.getOwnPropertyDescriptors(this)
+    )
+    copiedBlockchain._common = this._common.copy()
+    return copiedBlockchain
   }
 
   /**

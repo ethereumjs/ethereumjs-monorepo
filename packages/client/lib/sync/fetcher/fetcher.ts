@@ -266,6 +266,15 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   }
 
   /**
+   * Clears all outstanding tasks from the fetcher
+   */
+  clear() {
+    while (this.in.length > 0) {
+      this.in.remove()
+    }
+  }
+
+  /**
    * Handle error
    * @param  {Error}  error error object
    * @param  {Object} job  task
@@ -285,9 +294,9 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       try {
         await this.store(result)
         this.finished++
-        this.config.events.emit(Event.SYNC_FETCHER_FETCHED, result as any)
         cb()
       } catch (error: any) {
+        this.config.logger.warn(`Error along storing received block or header result: ${error}`)
         cb(error)
       }
     }

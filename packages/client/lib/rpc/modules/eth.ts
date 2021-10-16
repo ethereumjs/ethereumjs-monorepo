@@ -47,6 +47,19 @@ type StandardJsonRpcBlockParams = {
   baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
 }
 
+type GetLogsParamsObject = {
+  fromBlock?: string // QUANTITY, integer block number or "earliest" or "latest"
+  toBlock?: string // QUANTITY, integer block number or "earliest" or "latest"
+  address?: string // DATA, 20 Bytes, address
+  topics?: string[] // DATA, array
+  blockHash?: string // DATA, 32 Bytes. With the addition of EIP-234,
+  // blockHash restricts the logs returned to the single block with
+  // the 32-byte hash blockHash. Using blockHash is equivalent to
+  // fromBlock = toBlock = the block number with hash blockHash.
+  // If blockHash is present in in the filter criteria, then
+  // neither fromBlock nor toBlock are allowed.
+}
+
 const blockToStandardJsonRpcFields = async (
   block: Block,
   chain: Chain,
@@ -161,6 +174,22 @@ export class Eth {
     this.getTransactionCount = middleware(this.getTransactionCount.bind(this), 2, [
       [validators.address],
       [validators.blockOption],
+    ])
+
+    this.getLogs = middleware(this.getLogs.bind(this), 1, [
+      [
+        validators.object({
+          fromBlock: validators.blockOption,
+          toBlock: validators.blockOption,
+          address: validators.address,
+          topics: validators.array(validators.hex),
+          // TODO: blockHash would be nice to have
+          // (but not required for first iteration)
+          // also...create a validators.optional() modifier
+          // so we can do:
+          //blockHash: validators.optional(validators.blockHash),
+        }),
+      ],
     ])
 
     this.sendRawTransaction = middleware(this.sendRawTransaction.bind(this), 1, [[validators.hex]])
@@ -533,6 +562,13 @@ export class Eth {
 
     const block = await this._chain.getBlock(blockNumberBN)
     return block.uncleHeaders.length
+  }
+
+  // MERGE-INTEROP-HACK: stubbed method to satify Lodestar needs
+  // TODO: do proper implementation (would need to store logs in db for retrieval)
+  // https://github.com/ethereumjs/ethereumjs-monorepo/issues/1520
+  async getLogs(_params: GetLogsParamsObject) {
+    return []
   }
 
   /**

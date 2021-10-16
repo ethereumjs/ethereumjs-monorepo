@@ -171,17 +171,34 @@ export class FullSynchronizer extends Synchronizer {
         `Syncing with peer: ${peer.toString(true)} height=${height.toString(10)}`
       )
 
-      this.fetcher = new BlockFetcher({
-        config: this.config,
-        pool: this.pool,
-        chain: this.chain,
-        interval: this.interval,
-        first,
-        count,
-        destroyWhenDone: false,
-      })
+      if (!this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+        this.fetcher = new BlockFetcher({
+          config: this.config,
+          pool: this.pool,
+          chain: this.chain,
+          interval: this.interval,
+          first,
+          count,
+          destroyWhenDone: false,
+        })
+      }
 
       this.config.events.on(Event.SYNC_FETCHER_FETCHED, (blocks) => {
+        if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+          // If we are beyond the merge block we should stop the fetcher
+          this.config.logger.info('Merge hardfork reached, stopping block fetcher')
+          if (this.fetcher) {
+            this.fetcher.clear()
+            this.fetcher.destroy()
+            this.fetcher = null
+          }
+          return
+        }
+        if (blocks.length === 0) {
+          this.config.logger.warn('No blocks fetched are applicable for import')
+          return
+        }
+
         blocks = blocks as Block[]
         const first = new BN(blocks[0].header.number)
         const hash = short(blocks[0].hash())
@@ -203,7 +220,9 @@ export class FullSynchronizer extends Synchronizer {
       })
 
       try {
-        await this.fetcher.fetch()
+        if (this.fetcher) {
+          await this.fetcher.fetch()
+        }
       } catch (error: any) {
         reject(error)
       }

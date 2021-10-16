@@ -433,4 +433,25 @@ tape('[Block]: Header functions', function (t) {
     )
     st.end()
   })
+
+  t.test('should return the baseFeePerGas from genesis if defined', function (st) {
+    const common = Common.custom(
+      {
+        genesis: {
+          hash: '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
+          timestamp: null,
+          gasLimit: 5000,
+          difficulty: 17179869184,
+          nonce: '0x0000000000000042',
+          extraData: '0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa',
+          stateRoot: '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544',
+          baseFeePerGas: '0x1000',
+        },
+      },
+      { baseChain: Chain.Mainnet, hardfork: Hardfork.London }
+    )
+    const header = BlockHeader.fromHeaderData({}, { common, initWithGenesisHeader: true })
+    st.ok(header.baseFeePerGas!.eq(new BN('1000', 16)), 'correct baseFeePerGas')
+    st.end()
+  })
 })

@@ -90,6 +90,16 @@ const args = require('yargs')
       describe: 'HTTP-RPC server listening interface',
       default: Config.RPCADDR_DEFAULT,
     },
+    rpcEngine: {
+      describe: 'Enable merge Engine API RPC endpoints',
+      boolean: true,
+      default: Config.RPC_ENGINE_DEFAULT,
+    },
+    rpcStubGetLogs: {
+      describe: 'Stub eth_getLogs with empty response until method is implemented',
+      boolean: true,
+      default: false,
+    },
     helprpc: {
       describe: 'Display the JSON RPC help with a list of all RPC methods implemented (and exit)',
       boolean: true,
@@ -219,12 +229,13 @@ function runRpcServer(client: EthereumClient, config: Config) {
     }
     config.logger.debug(msg)
   })
-  server.on('response', (request, response) => {
+
+  const handleResponse = (request: any, response: any, batchAddOn = '') => {
     let msg = ''
     if (config.rpcDebug) {
-      msg = `${request.method} responded with:\n${inspectParams(response)}`
+      msg = `${request.method}${batchAddOn} responded with:\n${inspectParams(response)}`
     } else {
-      msg = `${request.method} responded with: `
+      msg = `${request.method}${batchAddOn} responded with: `
       if (response.result) {
         msg += inspectParams(response, 125)
       }
@@ -233,6 +244,21 @@ function runRpcServer(client: EthereumClient, config: Config) {
       }
     }
     config.logger.debug(msg)
+  }
+
+  server.on('response', (request, response) => {
+    // Batch request
+    if (request.length !== undefined) {
+      if (response.length === undefined || response.length !== request.length) {
+        config.logger.debug('Invalid batch request received.')
+        return
+      }
+      for (let i = 0; i < request.length; i++) {
+        handleResponse(request[i], response[i], ' (batch request)')
+      }
+    } else {
+      handleResponse(request, response)
+    }
   })
 
   return server
@@ -248,13 +274,17 @@ async function run() {
     console.log('JSON-RPC: Supported Methods')
     console.log('-'.repeat(27))
     console.log()
-    modules.list.forEach((modName: string) => {
+    for (const modName of modules.list) {
       console.log(`${modName}:`)
-      RPCManager.getMethodNames((modules as any)[modName]).forEach((methodName: string) => {
+      const methods = RPCManager.getMethodNames((modules as any)[modName])
+      for (const methodName of methods) {
+        if (methodName === 'getLogs' && !args.rpcStubGetLogs) {
+          continue
+        }
         console.log(`-> ${modName.toLowerCase()}_${methodName}`)
-      })
+      }
       console.log()
-    })
+    }
     console.log()
     process.exit()
   }
@@ -449,8 +479,10 @@ async function run() {
     rpc: args.rpc,
     rpcport: args.rpcport,
     rpcaddr: args.rpcaddr,
+    rpcEngine: args.rpcEngine,
     loglevel: args.loglevel,
     rpcDebug: args.rpcDebug,
+    rpcStubGetLogs: args.rpcStubGetLogs,
     maxPerRequest: args.maxPerRequest,
     minPeers: args.minPeers,
     maxPeers: args.maxPeers,

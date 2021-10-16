@@ -20,14 +20,16 @@ export class RPCManager {
   }
 
   /**
-   * gets methods for all modules which concat with underscore "_"
-   * e.g. convert getBlockByNumber() in eth module to { eth_getBlockByNumber }
-   * @return {Object} methods
+   * Returns bound methods for all modules, concat with underscore `_`
    */
-  getMethods(): any {
-    const methods: any = {}
+  getMethods() {
+    const methods: { [key: string]: Function } = {}
 
     for (const modName of modules.list) {
+      if (modName === 'Engine' && this._config.rpcEngine === false) {
+        // Skip `engine_` namespace if rpcEngine is not enabled
+        continue
+      }
       if (this._config.rpcDebug) {
         this._config.logger.debug('='.repeat(29))
         this._config.logger.debug(`RPC: Initialize ${modName} module`)
@@ -35,17 +37,17 @@ export class RPCManager {
       }
 
       const mod = new (modules as any)[modName](this._client)
-
-      RPCManager.getMethodNames((modules as any)[modName])
-        .filter((methodName: string) => methodName !== 'constructor')
-        .forEach((methodName: string) => {
-          const concatedMethodName = `${modName.toLowerCase()}_${methodName}`
-
-          if (this._config.rpcDebug) {
-            this._config.logger.debug(`Setup method ${concatedMethodName}`)
-          }
-          methods[concatedMethodName] = mod[methodName].bind(mod)
-        })
+      const rpcMethods = RPCManager.getMethodNames((modules as any)[modName])
+      for (const methodName of rpcMethods) {
+        if (methodName === 'getLogs' && !this._config.rpcStubGetLogs) {
+          continue
+        }
+        const concatedMethodName = `${modName.toLowerCase()}_${methodName}`
+        if (this._config.rpcDebug) {
+          this._config.logger.debug(`Setup method ${concatedMethodName}`)
+        }
+        methods[concatedMethodName] = mod[methodName].bind(mod)
+      }
       if (this._config.rpcDebug) {
         this._config.logger.debug('')
       }
@@ -54,12 +56,10 @@ export class RPCManager {
   }
 
   /**
-   * get all methods. e.g., getBlockByNumber in eth module
-   * @param Object mod
-   * @returns string[]
+   * Returns all methods in a module
    */
-  static getMethodNames(mod: any): string[] {
-    const methodNames = Object.getOwnPropertyNames(mod.prototype).filter(
+  static getMethodNames(mod: Object): string[] {
+    const methodNames = Object.getOwnPropertyNames((mod as any).prototype).filter(
       (methodName: string) => methodName !== 'constructor'
     )
     return methodNames

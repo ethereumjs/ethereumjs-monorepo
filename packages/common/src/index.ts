@@ -418,8 +418,8 @@ export default class Common extends EventEmitter {
     for (const hf of this.hardforks()) {
       // Skip comparison for not applied HFs
       if (hf.block === null) {
-        if (td && hf.td) {
-          if (td.gten(hf.td)) {
+        if (td !== undefined && td !== null && hf.td !== undefined && hf.td !== null) {
+          if (td.gte(new BN(hf.td))) {
             return hf.name
           }
         }
@@ -927,8 +927,8 @@ export default class Common extends EventEmitter {
   forkHash(hardfork?: string | Hardfork) {
     hardfork = this._chooseHardfork(hardfork, false)
     const data = this._getHardfork(hardfork)
-    if (data['block'] === null) {
-      const msg = 'No fork hash calculation possible for non-applied or future hardfork'
+    if (data['block'] === null && data['td'] === undefined) {
+      const msg = 'No fork hash calculation possible for future hardfork'
       throw new Error(msg)
     }
     if (data['forkHash'] !== undefined) {

@@ -277,6 +277,12 @@ export class BlockHeader {
       if (stateRoot.equals(zeros(32))) {
         stateRoot = toBuffer(this._common.genesis().stateRoot)
       }
+      if (
+        this._common.gteHardfork(Hardfork.London) &&
+        this._common.genesis().baseFeePerGas !== undefined
+      ) {
+        baseFeePerGas = new BN(toBuffer(this._common.genesis().baseFeePerGas))
+      }
     }
 
     this.parentHash = parentHash
@@ -340,7 +346,7 @@ export class BlockHeader {
       transactionsTrie,
       receiptTrie,
       difficulty,
-      extraData,
+      // extraData,
       mixHash,
       nonce,
     } = this
@@ -389,10 +395,12 @@ export class BlockHeader {
         errorMsg += `, difficulty: ${difficulty} (expected: 0)`
         error = true
       }
-      if (!extraData.equals(Buffer.from([]))) {
-        errorMsg += `, extraData: ${extraData.toString('hex')} (expected: '')`
-        error = true
-      }
+      // WIP from merge interop event:
+      // extraData behavior pending consideration, for now allowed to be non-empty
+      // if (!extraData.equals(Buffer.from([]))) {
+      //   errorMsg += `, extraData: ${extraData.toString('hex')} (expected: '')`
+      //   error = true
+      // }
       if (!mixHash.equals(zeros(32))) {
         errorMsg += `, mixHash: ${mixHash.toString('hex')} (expected: ${zeros(32).toString('hex')})`
         error = true

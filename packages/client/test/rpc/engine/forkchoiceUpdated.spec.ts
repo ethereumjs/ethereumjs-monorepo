@@ -8,11 +8,16 @@ const method = 'engine_forkchoiceUpdated'
 tape(`${method}: call with invalid block hash without 0x`, async (t) => {
   const { server } = baseSetup()
 
-  const req = params(method, ['WRONG BLOCK NUMBER'])
+  const req = params(method, [
+    {
+      headBlockHash: 'b084c10440f05f5a23a55d1d7ebcb1b3892935fb56f23cdc9a7f42c348eed174',
+      finalizedBlockHash: '0xb084c10440f05f5a23a55d1d7ebcb1b3892935fb56f23cdc9a7f42c348eed174',
+    },
+  ])
   const expectRes = checkError(
     t,
     INVALID_PARAMS,
-    'invalid argument 0: hex string without 0x prefix'
+    "invalid argument 0 for key 'headBlockHash': hex string without 0x prefix"
   )
   await baseRequest(t, server, req, 200, expectRes)
 })
@@ -20,7 +25,16 @@ tape(`${method}: call with invalid block hash without 0x`, async (t) => {
 tape(`${method}: call with invalid hex string as block hash`, async (t) => {
   const { server } = baseSetup()
 
-  const req = params(method, ['0xWRONG BLOCK NUMBER'])
-  const expectRes = checkError(t, INVALID_PARAMS, 'invalid argument 0: invalid block hash')
+  const req = params(method, [
+    {
+      headBlockHash: '0xb084c10440f05f5a23a55d1d7ebcb1b3892935fb56f23cdc9a7f42c348eed174',
+      finalizedBlockHash: '0xinvalid',
+    },
+  ])
+  const expectRes = checkError(
+    t,
+    INVALID_PARAMS,
+    "invalid argument 0 for key 'finalizedBlockHash': invalid block hash"
+  )
   await baseRequest(t, server, req, 200, expectRes)
 })

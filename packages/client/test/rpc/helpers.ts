@@ -34,7 +34,7 @@ export function createManager(client: EthereumClient) {
 
 export function createClient(clientOpts: any = {}) {
   const common: Common = clientOpts.commonChain ?? new Common({ chain: ChainEnum.Mainnet })
-  const config = new Config({ transports: [], common })
+  const config = new Config({ transports: [], common, rpcEngine: true })
   const blockchain = clientOpts.blockchain ?? ((<any>mockBlockchain()) as Blockchain)
 
   const chain = new Chain({ config, blockchain })
@@ -48,6 +48,9 @@ export function createClient(clientOpts: any = {}) {
   const clientConfig = { ...defaultClientConfig, ...clientOpts }
 
   clientConfig.blockchain.getTd = async (_hash: Buffer, _num: BN) => new BN(1000)
+
+  config.synchronized = true
+  config.lastSyncDate = Date.now()
 
   const servers = [
     new RlpxServer({

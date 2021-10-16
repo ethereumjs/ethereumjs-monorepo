@@ -60,15 +60,17 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
       st.pass('should throw on wrong difficulty')
     }
 
-    try {
-      const headerData = {
-        extraData: Buffer.from('123abc', 'hex'),
-      }
-      BlockHeader.fromHeaderData(headerData, { common })
-      st.fail('should throw')
-    } catch (e: any) {
-      st.pass('should throw on wrong extraData')
-    }
+    // WIP from merge interop event:
+    // extraData behavior pending consideration, for now allowed to be non-empty
+    // try {
+    //   const headerData = {
+    //     extraData: Buffer.from('123abc', 'hex'),
+    //   }
+    //   BlockHeader.fromHeaderData(headerData, { common })
+    //   st.fail('should throw')
+    // } catch (e: any) {
+    //   st.pass('should throw on wrong extraData')
+    // }
 
     try {
       const headerData = {

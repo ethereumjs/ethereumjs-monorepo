@@ -100,9 +100,8 @@ export class VMExecution extends Execution {
           // run block, update head if valid
           try {
             const { number } = block.header
-            const td = (await blockchain.getTotalDifficulty(block.header.parentHash)).add(
-              block.header.difficulty
-            )
+            const td = await blockchain.getTotalDifficulty(block.header.parentHash)
+
             const hardfork = this.config.execCommon.getHardforkByBlockNumber(number, td)
             if (hardfork !== this.hardfork) {
               const hash = short(block.hash())
@@ -148,7 +147,7 @@ export class VMExecution extends Execution {
               this.config.logger.warn(
                 `Set back hardfork along block deletion number=${blockNumber} hash=${hash} old=${this.hardfork} new=${hardfork}`
               )
-              this.config.execCommon.setHardforkByBlockNumber(blockNumber)
+              this.config.execCommon.setHardforkByBlockNumber(blockNumber, td)
             }*/
             // Option a): set iterator head to the parent block so that an
             // error can repeatedly processed for debugging
