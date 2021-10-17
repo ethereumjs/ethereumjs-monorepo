@@ -46,6 +46,7 @@ function createBlockchain() {
     uncleHeaders: [],
   }
   return {
+    blocks: { latest: block },
     getBlock: () => genesisBlock,
     getLatestBlock: () => block,
     getLatestHeader: () => block.header,

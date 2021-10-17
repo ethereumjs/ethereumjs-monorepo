@@ -79,7 +79,7 @@ const args = require('yargs')
       default: Config.PORT_DEFAULT,
     },
     extIP: {
-      describe: 'RLPx external IP (default: localhost)',
+      describe: 'RLPx external IP',
       string: true,
     },
     multiaddrs: {
@@ -279,11 +279,15 @@ function runRpcServers(client: EthereumClient, config: Config) {
   }
 
   const servers: RPCServer[] = []
-  const { rpcaddr, rpcport, rpcEngineAddr, rpcEnginePort } = config
+  const { rpc, rpcaddr, rpcport, rpcEngine, rpcEngineAddr, rpcEnginePort } = config
   const manager = new RPCManager(client, config)
 
-  if (rpcport && rpcaddr) {
-    const server = new RPCServer(manager.getMethods())
+  if (rpc) {
+    const methods =
+      rpcEngine && rpcEnginePort === rpcport
+        ? { ...manager.getMethods(), ...manager.getMethods(true) }
+        : { ...manager.getMethods() }
+    const server = new RPCServer(methods)
     config.logger.info(`RPC HTTP endpoint opened: http://${rpcaddr}:${rpcport}`)
     server.http().listen(rpcport)
     server.on('request', onRequest)
@@ -291,7 +295,10 @@ function runRpcServers(client: EthereumClient, config: Config) {
     servers.push(server)
   }
 
-  if (rpcEnginePort && rpcEngineAddr) {
+  if (rpcEngine) {
+    if (rpc && rpcport === rpcEnginePort) {
+      return servers
+    }
     const server = new RPCServer(manager.getMethods(true))
     config.logger.info(
       `RPC HTTP endpoint opened for Engine API: http://${rpcEngineAddr}:${rpcEnginePort}`

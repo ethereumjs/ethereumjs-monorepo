@@ -95,13 +95,41 @@ const blockToExecutionPayload = (block: Block, random: Buffer) => {
 }
 
 /**
- * Finds a block in validBlocks or the blockchain, otherwise throws {@link EngineError.UnknownPayload}.
+ * Finds a block from connected peers.
+ * If no result or times out, throws {@link EngineError.UnknownPayload}
+ */
+const getBlockFromNetwork = async (hash: Buffer, chain: Chain, service: EthereumService) => {
+  const { peers } = service.pool
+  for (const peer of peers) {
+    try {
+      const headerResult = await peer.eth!.getBlockHeaders({ block: hash, max: 1 })
+      if (headerResult) {
+        const header = headerResult[1]
+        const bodiesResult = await peer.eth!.getBlockBodies({ hashes: [hash] })
+        if (bodiesResult) {
+          const blockBody = bodiesResult[1][0]
+          const block = Block.fromValuesArray([header[0].raw(), ...blockBody], {
+            common: chain.config.chainCommon,
+          })
+          return block
+        }
+      }
+    } catch (error) {
+      chain.config.logger.debug(`Error trying to get block from network peer ${peer.id}: ${error}`)
+    }
+  }
+  throw EngineError.UnknownHeader
+}
+
+/**
+ * Finds a block from {@link ValidBlocks}, then the blockchain, then the network.
+ * If not found, throws {@link EngineError.UnknownPayload}
  */
 const findBlock = async (
   hash: Buffer,
-  validBlocks: Map<String, Block>,
+  validBlocks: ValidBlocks,
   chain: Chain,
-  synchronizer: FullSynchronizer
+  service: EthereumService
 ) => {
   const parentBlock = validBlocks.get(hash.toString('hex'))
   if (parentBlock) {
@@ -113,20 +141,7 @@ const findBlock = async (
       return parentBlock
     } catch (error) {
       // block not found, search network (devp2p)
-      const peer = synchronizer.best()
-      const headerResult = await peer?.eth!.getBlockHeaders({ block: hash, max: 1 })
-      if (headerResult) {
-        const header = headerResult[1]
-        const bodiesResult = await peer?.eth!.getBlockBodies({ hashes: [hash] })
-        if (bodiesResult) {
-          const blockBody = bodiesResult[1][0]
-          const block = Block.fromValuesArray([header[0].raw(), ...blockBody], {
-            common: chain.config.chainCommon,
-          })
-          return block
-        }
-      }
-      throw EngineError.UnknownHeader
+      return await getBlockFromNetwork(hash, chain, service)
     }
   }
 }
@@ -137,22 +152,22 @@ const findBlock = async (
 const recursivelyFindParents = async (
   vmHeadHash: Buffer,
   parentHash: Buffer,
-  validBlocks: Map<String, Block>,
+  validBlocks: ValidBlocks,
   chain: Chain,
-  synchronizer: FullSynchronizer
+  service: EthereumService
 ) => {
   if (parentHash.equals(vmHeadHash)) {
     return []
   }
   const parentBlocks = []
-  const block = await findBlock(parentHash, validBlocks, chain, synchronizer)
+  const block = await findBlock(parentHash, validBlocks, chain, service)
   parentBlocks.push(block)
   while (!vmHeadHash.equals(parentBlocks[parentBlocks.length - 1].header.parentHash)) {
     const block: Block = await findBlock(
       parentBlocks[parentBlocks.length - 1].header.parentHash,
       validBlocks,
       chain,
-      synchronizer
+      service
     )
     parentBlocks.push(block)
   }
@@ -160,7 +175,7 @@ const recursivelyFindParents = async (
 }
 
 /**
- * Calculates and returns the transactionsTrie for the block.
+ * Returns the transactionsTrie root for the block.
  */
 const transactionsTrie = async (transactions: TypedTransaction[]) => {
   const trie = new Trie()
@@ -170,6 +185,11 @@ const transactionsTrie = async (transactions: TypedTransaction[]) => {
   return trie.root
 }
 
+type PayloadId = number
+type UnprefixedBlockHash = string
+type PendingPayloads = Map<PayloadId, PayloadCache>
+type ValidBlocks = Map<UnprefixedBlockHash, Block>
+
 /**
  * engine_* RPC module
  * @memberof module:rpc/modules
@@ -177,13 +197,14 @@ const transactionsTrie = async (transactions: TypedTransaction[]) => {
 export class Engine {
   private SECONDS_PER_SLOT = new BN(12) // from beacon chain mainnet config
   private client: EthereumClient
+  private service: EthereumService
   private chain: Chain
   private config: Config
   private synchronizer: FullSynchronizer
   private vm: VM
   private txPool: TxPool
-  private pendingPayloads: Map<Number, PayloadCache> // payloadId, payload
-  private validBlocks: Map<String, Block> // blockHash, block
+  private pendingPayloads: PendingPayloads
+  private validBlocks: ValidBlocks
   private nextPayloadId = 0
 
   /**
@@ -192,12 +213,12 @@ export class Engine {
    */
   constructor(client: EthereumClient) {
     this.client = client
-    const service = client.services.find((s) => s.name === 'eth') as EthereumService
-    this.chain = service.chain
+    this.service = client.services.find((s) => s.name === 'eth') as EthereumService
+    this.chain = this.service.chain
     this.config = this.chain.config
-    this.synchronizer = service.synchronizer as FullSynchronizer
+    this.synchronizer = this.service.synchronizer as FullSynchronizer
     this.vm = this.synchronizer.execution?.vm
-    this.txPool = (service.synchronizer as FullSynchronizer).txPool
+    this.txPool = (this.service.synchronizer as FullSynchronizer).txPool
     this.pendingPayloads = new Map()
     this.validBlocks = new Map()
 
@@ -315,13 +336,13 @@ export class Engine {
       // Use a copy of the vm to not modify the existing state.
       const vmCopy = this.vm.copy()
 
-      const vmHead = await vmCopy.blockchain.getLatestBlock()
+      const vmHead = this.chain.headers.latest!
       const parentBlocks = await recursivelyFindParents(
         vmHead.hash(),
         parentHash,
         this.validBlocks,
         this.chain,
-        this.synchronizer
+        this.service
       )
 
       for (const parent of parentBlocks) {
@@ -341,7 +362,7 @@ export class Engine {
       await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
 
       const td = await vmCopy.blockchain.getTotalDifficulty(vmHead.hash())
-      vmCopy._common.setHardforkByBlockNumber(vmHead.header.number, td)
+      vmCopy._common.setHardforkByBlockNumber(vmHead.number, td)
       const blockBuilder = await vmCopy.buildBlock({
         parentBlock,
         headerData: {
@@ -448,13 +469,13 @@ export class Engine {
 
       const vmCopy = this.vm.copy()
 
-      const vmHeadHash = (await vmCopy.blockchain.getLatestHeader()).hash()
+      const vmHeadHash = this.chain.headers.latest!.hash()
       const parentBlocks = await recursivelyFindParents(
         vmHeadHash,
         block.header.parentHash,
         this.validBlocks,
         this.chain,
-        this.synchronizer
+        this.service
       )
 
       for (const parent of parentBlocks) {
@@ -530,13 +551,13 @@ export class Engine {
       throw EngineError.UnknownHeader
     }
 
-    const vmHeadHash = (await this.vm.blockchain.getLatestHeader()).hash()
+    const vmHeadHash = this.chain.headers.latest!.hash()
     const parentBlocks = await recursivelyFindParents(
       vmHeadHash,
       headBlock.header.parentHash,
       this.validBlocks,
       this.chain,
-      this.synchronizer
+      this.service
     )
 
     await this.chain.putBlocks([...parentBlocks, headBlock], true)

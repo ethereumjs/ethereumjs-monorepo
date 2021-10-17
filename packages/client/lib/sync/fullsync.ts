@@ -165,23 +165,23 @@ export class FullSynchronizer extends Synchronizer {
 
       const first = this.chain.blocks.height.addn(1)
       const count = height.sub(first).addn(1)
-      if (count.lten(0)) return resolve(false)
+      if (count.lten(0) || this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+        return resolve(false)
+      }
 
       this.config.logger.debug(
         `Syncing with peer: ${peer.toString(true)} height=${height.toString(10)}`
       )
 
-      if (!this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
-        this.fetcher = new BlockFetcher({
-          config: this.config,
-          pool: this.pool,
-          chain: this.chain,
-          interval: this.interval,
-          first,
-          count,
-          destroyWhenDone: false,
-        })
-      }
+      this.fetcher = new BlockFetcher({
+        config: this.config,
+        pool: this.pool,
+        chain: this.chain,
+        interval: this.interval,
+        first,
+        count,
+        destroyWhenDone: false,
+      })
 
       this.config.events.on(Event.SYNC_FETCHER_FETCHED, (blocks) => {
         if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {

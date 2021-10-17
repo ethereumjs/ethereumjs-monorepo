@@ -75,8 +75,6 @@ export interface ConfigOptions {
 
   /**
    * RLPx external IP
-   *
-   * Default: `localhost`
    */
   extIP?: string
 

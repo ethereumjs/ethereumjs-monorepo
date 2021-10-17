@@ -29,6 +29,7 @@ export function mockBlockchain(options: any = {}) {
     uncleHeaders: [],
   }
   return {
+    blocks: { latest: block },
     getBlock: async (_data: any) => {
       return block
     },

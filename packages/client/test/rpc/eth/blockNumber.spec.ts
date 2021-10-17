@@ -7,6 +7,7 @@ const method = 'eth_blockNumber'
 tape(`${method}: call with valid arguments`, async (t) => {
   const mockBlockNumber = 123
   const mockBlockChain = {
+    headers: { latest: { number: new BN(mockBlockNumber) } },
     getLatestHeader: async function (): Promise<any> {
       return {
         number: new BN(mockBlockNumber),

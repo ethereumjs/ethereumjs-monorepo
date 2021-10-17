@@ -9,7 +9,6 @@ import {
   bnToHex,
   intToHex,
   toBuffer,
-  stripHexPrefix,
   setLengthLeft,
 } from 'ethereumjs-util'
 import { decode } from 'rlp'
@@ -392,27 +391,32 @@ export class Eth {
    */
   async getBlockByNumber(params: [string, boolean]) {
     const [blockOpt, includeTransactions] = params
+    const latest = this._chain.blocks.latest ?? (await this._chain.getLatestBlock())
     let block: Block
-    if (blockOpt === 'latest') {
-      block = await this._chain.getLatestBlock()
-    } else if (blockOpt === 'pending') {
+
+    if (blockOpt === 'pending') {
       throw {
         code: INVALID_PARAMS,
         message: `"pending" is not yet supported`,
       }
+    }
+
+    if (blockOpt === 'latest') {
+      block = latest
     } else if (blockOpt === 'earliest') {
       block = await this._chain.getBlock(new BN(0))
     } else {
-      const blockNumberBN = new BN(stripHexPrefix(blockOpt), 16)
-      const latest = (await this._chain.getLatestHeader()).number
-
-      if (blockNumberBN.gt(latest)) {
+      const blockNumber = new BN(toBuffer(blockOpt))
+      if (blockNumber.eq(latest.header.number)) {
+        block = latest
+      } else if (blockNumber.gt(latest.header.number)) {
         throw {
           code: INVALID_PARAMS,
           message: 'specified block greater than current height',
         }
+      } else {
+        block = await this._chain.getBlock(blockNumber)
       }
-      block = await this._chain.getBlock(blockNumberBN)
     }
 
     return await blockToStandardJsonRpcFields(block, this._chain, includeTransactions)
@@ -548,18 +552,19 @@ export class Eth {
    *   1: hexadecimal representation of a block number
    */
   async getUncleCountByBlockNumber(params: [string]) {
-    const [blockNumber] = params
-    const blockNumberBN = new BN(stripHexPrefix(blockNumber), 16)
-    const latest = (await this._chain.getLatestHeader()).number
+    const [blockNumberHex] = params
+    const blockNumber = new BN(toBuffer(blockNumberHex))
+    const latest =
+      this._chain.headers.latest?.number ?? (await this._chain.getLatestHeader()).number
 
-    if (blockNumberBN.gt(latest)) {
+    if (blockNumber.gt(latest)) {
       throw {
         code: INVALID_PARAMS,
         message: 'specified block greater than current height',
       }
     }
 
-    const block = await this._chain.getBlock(blockNumberBN)
+    const block = await this._chain.getBlock(blockNumber)
     return block.uncleHeaders.length
   }
 
@@ -642,7 +647,7 @@ export class Eth {
       return false
     }
 
-    const currentBlockHeader = await this._chain.getLatestHeader()
+    const currentBlockHeader = this._chain.headers?.latest ?? (await this._chain.getLatestHeader())
     const currentBlock = bnToHex(currentBlockHeader.number)
 
     const synchronizer = this.client.services[0].synchronizer

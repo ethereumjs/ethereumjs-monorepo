@@ -12,6 +12,8 @@ function createBlockchain() {
     number: new BN('5'),
   }
   return {
+    blocks: { latest: block },
+    headers: { latest: header },
     getBlock: () => block,
     getLatestHeader: () => header,
   }
