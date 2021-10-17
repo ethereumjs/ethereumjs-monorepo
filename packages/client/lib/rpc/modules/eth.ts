@@ -204,8 +204,7 @@ export class Eth {
    * @param params An empty array
    */
   async blockNumber(_params = []) {
-    const latestHeader = await this._chain.getLatestHeader()
-    return bnToHex(latestHeader.number)
+    return bnToHex(this._chain.headers.latest?.number ?? new BN(0))
   }
 
   /**
