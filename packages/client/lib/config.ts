@@ -107,9 +107,19 @@ export interface ConfigOptions {
   rpcaddr?: string
 
   /**
-   * Enable merge Engine API RPC endpoints
+   * Enable merge Engine API RPC endpoints (default: localhost:8550)
    */
   rpcEngine?: boolean
+
+  /**
+   * HTTP-RPC server listening port for Engine API (default: 8550)
+   */
+  rpcEnginePort?: number
+
+  /**
+   * HTTP-RPC server listening interface address for Engine API (default: localhost)
+   */
+  rpcEngineAddr?: string
 
   /**
    * Until getLogs is properly implemented, stub an empty response
@@ -229,9 +239,11 @@ export class Config {
   public static readonly TRANSPORTS_DEFAULT = ['rlpx', 'libp2p']
   public static readonly PORT_DEFAULT = 30303
   public static readonly RPC_DEFAULT = false
-  public static readonly RPC_ENGINE_DEFAULT = false
   public static readonly RPCPORT_DEFAULT = 8545
   public static readonly RPCADDR_DEFAULT = 'localhost'
+  public static readonly RPC_ENGINE_DEFAULT = false
+  public static readonly RPC_ENGINE_PORT_DEFAULT = 8550
+  public static readonly RPC_ENGINE_ADDR_DEFAULT = 'localhost'
   public static readonly LOGLEVEL_DEFAULT = 'info'
   public static readonly RPCDEBUG_DEFAULT = false
   public static readonly MAXPERREQUEST_DEFAULT = 50
@@ -254,6 +266,8 @@ export class Config {
   public readonly rpcport: number
   public readonly rpcaddr: string
   public readonly rpcEngine: boolean
+  public readonly rpcEngineAddr: string
+  public readonly rpcEnginePort: number
   public readonly loglevel: string
   public readonly rpcDebug: boolean
   public readonly rpcStubGetLogs: boolean
@@ -292,6 +306,8 @@ export class Config {
     this.rpcport = options.rpcport ?? Config.RPCPORT_DEFAULT
     this.rpcaddr = options.rpcaddr ?? Config.RPCADDR_DEFAULT
     this.rpcEngine = options.rpcEngine ?? Config.RPC_ENGINE_DEFAULT
+    this.rpcEnginePort = options.rpcEnginePort ?? Config.RPC_ENGINE_PORT_DEFAULT
+    this.rpcEngineAddr = options.rpcEngineAddr ?? Config.RPC_ENGINE_ADDR_DEFAULT
     this.loglevel = options.loglevel ?? Config.LOGLEVEL_DEFAULT
     this.rpcDebug = options.rpcDebug ?? Config.RPCDEBUG_DEFAULT
     this.rpcStubGetLogs = options.rpcStubGetLogs ?? false

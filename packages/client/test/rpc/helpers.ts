@@ -106,10 +106,10 @@ export function createClient(clientOpts: any = {}) {
   return client as EthereumClient
 }
 
-export function baseSetup() {
+export function baseSetup(engine = false) {
   const client = createClient()
   const manager = createManager(client)
-  const server = startRPC(manager.getMethods())
+  const server = startRPC(manager.getMethods(engine))
   return { server, manager, client }
 }
 

@@ -83,23 +83,33 @@ const args = require('yargs')
       array: true,
     },
     rpc: {
-      describe: 'Enable the JSON-RPC server',
+      describe: 'Enable the JSON-RPC server (default: localhost:8545)',
       boolean: true,
       default: Config.RPC_DEFAULT,
     },
     rpcport: {
-      describe: 'HTTP-RPC server listening port',
+      describe: 'HTTP-RPC server listening port (default: 8545)',
       number: true,
       default: Config.RPCPORT_DEFAULT,
     },
     rpcaddr: {
-      describe: 'HTTP-RPC server listening interface',
+      describe: 'HTTP-RPC server listening interface address (default: localhost)',
       default: Config.RPCADDR_DEFAULT,
     },
     rpcEngine: {
-      describe: 'Enable merge Engine API RPC endpoints',
+      describe: 'Enable merge Engine API RPC endpoints on server (default: localhost:8550) ',
       boolean: true,
       default: Config.RPC_ENGINE_DEFAULT,
+    },
+    rpcEnginePort: {
+      describe: 'HTTP-RPC server listening port for Engine API (default: 8550)',
+      number: true,
+      default: Config.RPC_ENGINE_PORT_DEFAULT,
+    },
+    rpcEngineAddr: {
+      describe: 'HTTP-RPC server listening interface address for Engine API (default: localhost)',
+      string: true,
+      default: Config.RPC_ENGINE_ADDR_DEFAULT,
     },
     rpcStubGetLogs: {
       describe: 'Stub eth_getLogs with empty response until method is implemented',
@@ -219,14 +229,11 @@ async function runNode(config: Config) {
   return client
 }
 
-function runRpcServer(client: EthereumClient, config: Config) {
-  const { rpcport, rpcaddr } = config
-  const manager = new RPCManager(client, config)
-  const server = new RPCServer(manager.getMethods())
-  config.logger.info(`RPC HTTP endpoint opened: http://${rpcaddr}:${rpcport}`)
-  server.http().listen(rpcport)
-
-  server.on('request', (request) => {
+/*
+ * Returns enabled RPCServers
+ */
+function runRpcServers(client: EthereumClient, config: Config) {
+  const onRequest = (request: any) => {
     let msg = ''
     if (config.rpcDebug) {
       msg += `${request.method} called with params:\n${inspectParams(request.params)}`
@@ -234,7 +241,7 @@ function runRpcServer(client: EthereumClient, config: Config) {
       msg += `${request.method} called with params: ${inspectParams(request.params, 125)}`
     }
     config.logger.debug(msg)
-  })
+  }
 
   const handleResponse = (request: any, response: any, batchAddOn = '') => {
     let msg = ''
@@ -252,7 +259,7 @@ function runRpcServer(client: EthereumClient, config: Config) {
     config.logger.debug(msg)
   }
 
-  server.on('response', (request, response) => {
+  const onBatchResponse = (request: any, response: any) => {
     // Batch request
     if (request.length !== undefined) {
       if (response.length === undefined || response.length !== request.length) {
@@ -265,9 +272,33 @@ function runRpcServer(client: EthereumClient, config: Config) {
     } else {
       handleResponse(request, response)
     }
-  })
+  }
 
-  return server
+  const servers: RPCServer[] = []
+  const { rpcaddr, rpcport, rpcEngineAddr, rpcEnginePort } = config
+  const manager = new RPCManager(client, config)
+
+  if (rpcport && rpcaddr) {
+    const server = new RPCServer(manager.getMethods())
+    config.logger.info(`RPC HTTP endpoint opened: http://${rpcaddr}:${rpcport}`)
+    server.http().listen(rpcport)
+    server.on('request', onRequest)
+    server.on('response', onBatchResponse)
+    servers.push(server)
+  }
+
+  if (rpcEnginePort && rpcEngineAddr) {
+    const server = new RPCServer(manager.getMethods(true))
+    config.logger.info(
+      `RPC HTTP endpoint opened for Engine API: http://${rpcEngineAddr}:${rpcEnginePort}`
+    )
+    server.http().listen(rpcEnginePort)
+    server.on('request', onRequest)
+    server.on('response', onBatchResponse)
+    servers.push(server)
+  }
+
+  return servers
 }
 
 /**
@@ -489,6 +520,8 @@ async function run() {
     rpcport: args.rpcport,
     rpcaddr: args.rpcaddr,
     rpcEngine: args.rpcEngine,
+    rpcEnginePort: args.rpcEnginePort,
+    rpcEngineAddr: args.rpcEngineAddr,
     loglevel: args.loglevel,
     rpcDebug: args.rpcDebug,
     rpcStubGetLogs: args.rpcStubGetLogs,
@@ -508,11 +541,11 @@ async function run() {
   config.events.setMaxListeners(50)
 
   const client = await runNode(config)
-  const server = config.rpc ? runRpcServer(client, config) : null
+  const servers = config.rpc || config.rpcEngine ? runRpcServers(client, config) : []
 
   process.on('SIGINT', async () => {
     config.logger.info('Caught interrupt signal. Shutting down...')
-    if (server) server.http().close()
+    servers.forEach((s) => s.http().close())
     await client.stop()
     config.logger.info('Exiting.')
     process.exit()
