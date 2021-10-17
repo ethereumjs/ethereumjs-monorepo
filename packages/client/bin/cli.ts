@@ -78,6 +78,10 @@ const args = require('yargs')
       describe: 'RLPx listening port',
       default: Config.PORT_DEFAULT,
     },
+    extIP: {
+      describe: 'RLPx external IP (default: localhost)',
+      string: true,
+    },
     multiaddrs: {
       describe: 'Network multiaddrs',
       array: true,
@@ -515,6 +519,7 @@ async function run() {
     transports: args.transports,
     bootnodes: args.bootnodes ? parseMultiaddrs(args.bootnodes) : undefined,
     port: args.port,
+    extIP: args.extIP,
     multiaddrs: args.multiaddrs ? parseMultiaddrs(args.multiaddrs) : undefined,
     rpc: args.rpc,
     rpcport: args.rpcport,

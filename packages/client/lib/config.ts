@@ -74,6 +74,13 @@ export interface ConfigOptions {
   port?: number
 
   /**
+   * RLPx external IP
+   *
+   * Default: `localhost`
+   */
+  extIP?: string
+
+  /**
    * Network multiaddrs for libp2p
    * (e.g. /ip4/127.0.0.1/tcp/50505/p2p/QmABC)
    */
@@ -261,6 +268,7 @@ export class Config {
   public readonly transports: string[]
   public readonly bootnodes?: Multiaddr[]
   public readonly port?: number
+  public readonly extIP?: string
   public readonly multiaddrs?: Multiaddr[]
   public readonly rpc: boolean
   public readonly rpcport: number
@@ -299,6 +307,7 @@ export class Config {
     this.transports = options.transports ?? Config.TRANSPORTS_DEFAULT
     this.bootnodes = options.bootnodes
     this.port = options.port ?? Config.PORT_DEFAULT
+    this.extIP = options.extIP
     this.multiaddrs = options.multiaddrs
     this.datadir = options.datadir ?? Config.DATADIR_DEFAULT
     this.key = options.key ?? genPrivateKey()

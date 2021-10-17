@@ -58,8 +58,7 @@ export class RlpxServer extends Server {
   constructor(options: RlpxServerOptions) {
     super(options)
 
-    // TODO: get the external ip from the upnp service
-    this.ip = '::'
+    this.ip = options.config.extIP ?? '::'
     this.discovery = options.config.discV4 || options.config.discDns
     this.clientFilter = options.clientFilter ?? [
       'go1.5',
