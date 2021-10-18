@@ -23,6 +23,7 @@ import {
 
 interface TransactionCache {
   hash: Buffer | undefined
+  dataFee: BN | undefined
 }
 
 /**
@@ -49,6 +50,7 @@ export abstract class BaseTransaction<TransactionObject> {
 
   protected cache: TransactionCache = {
     hash: undefined,
+    dataFee: undefined,
   }
 
   /**
@@ -178,6 +180,10 @@ export abstract class BaseTransaction<TransactionObject> {
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): BN {
+    if (Object.isFrozen(this) && this.cache.dataFee) {
+      return this.cache.dataFee
+    }
+
     const txDataZero = this.common.param('gasPrices', 'txDataZero')
     const txDataNonZero = this.common.param('gasPrices', 'txDataNonZero')
 
@@ -185,6 +191,12 @@ export abstract class BaseTransaction<TransactionObject> {
     for (let i = 0; i < this.data.length; i++) {
       this.data[i] === 0 ? (cost += txDataZero) : (cost += txDataNonZero)
     }
+
+    if (Object.isFrozen(this) && !this.cache.dataFee) {
+      this.cache.dataFee = new BN(cost)
+      return this.cache.dataFee
+    }
+
     return new BN(cost)
   }
 

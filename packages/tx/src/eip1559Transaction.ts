@@ -236,8 +236,18 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): BN {
+    if (Object.isFrozen(this) && this.cache.dataFee) {
+      return this.cache.dataFee
+    }
+
     const cost = super.getDataFee()
     cost.iaddn(AccessLists.getDataFeeEIP2930(this.accessList, this.common))
+
+    if (Object.isFrozen(this) && !this.cache.dataFee) {
+      this.cache.dataFee = cost
+      return this.cache.dataFee
+    }
+
     return cost
   }
 
