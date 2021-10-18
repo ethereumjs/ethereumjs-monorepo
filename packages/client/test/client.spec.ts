@@ -65,7 +65,6 @@ tape('[EthereumClient]', async (t) => {
     await client.stop()
     t.notOk(client.started, 'stopped')
     t.equals(await client.stop(), false, 'already stopped')
-    t.end()
   })
 
   t.test('should reset td', (t) => {

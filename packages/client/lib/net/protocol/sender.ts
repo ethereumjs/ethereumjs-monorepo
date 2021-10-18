@@ -27,8 +27,7 @@ export class Sender extends EventEmitter {
 
   /**
    * Send a status to peer
-   * @protected
-   * @param  {Object} status
+   * @param status
    */
   sendStatus(_status: any) {
     throw new Error('Unimplemented')
@@ -36,9 +35,8 @@ export class Sender extends EventEmitter {
 
   /**
    * Send a message to peer
-   * @protected
-   * @param  {number} code message code
-   * @param  {Array|Buffer} rlpEncodedData rlp encoded message payload
+   * @param code message code
+   * @param rlpEncodedData rlp encoded message payload
    */
   sendMessage(_code: number, _rlpEncodedData: any[] | Buffer) {
     throw new Error('Unimplemented')

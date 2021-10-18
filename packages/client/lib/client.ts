@@ -49,7 +49,6 @@ export default class EthereumClient extends events.EventEmitter {
 
   /**
    * Create new node
-   * @param {EthereumClientOptions}
    */
   constructor(options: EthereumClientOptions) {
     super()
@@ -74,7 +73,6 @@ export default class EthereumClient extends events.EventEmitter {
 
   /**
    * Open node. Must be called before node is started
-   * @return {Promise}
    */
   async open() {
     if (this.opened) {
@@ -94,7 +92,6 @@ export default class EthereumClient extends events.EventEmitter {
 
   /**
    * Starts node and all services and network servers.
-   * @return {Promise}
    */
   async start() {
     if (this.started) {
@@ -108,7 +105,6 @@ export default class EthereumClient extends events.EventEmitter {
 
   /**
    * Stops node and all services and network servers.
-   * @return {Promise}
    */
   async stop() {
     if (!this.started) {
@@ -121,8 +117,7 @@ export default class EthereumClient extends events.EventEmitter {
 
   /**
    * Returns the service with the specified name.
-   * @param {string} name name of service
-   * @return {Service}
+   * @param name name of service
    */
   service(name: string) {
     return this.services.find((s) => s.name === name)
@@ -130,8 +125,7 @@ export default class EthereumClient extends events.EventEmitter {
 
   /**
    * Returns the server with the specified name.
-   * @param {string} name name of server
-   * @return {Server}
+   * @param name name of server
    */
   server(name: string) {
     return this.config.servers.find((s) => s.name === name)

@@ -20,6 +20,7 @@ import type { GenesisState, GenesisCodeAndStorage } from '@ethereumjs/common/dis
 
 /**
  * Parses multiaddrs and bootnodes to multiaddr format.
+ * @param input comma separated string
  */
 export function parseMultiaddrs(input: MultiaddrLike): multiaddr[] {
   if (!input) {
@@ -83,7 +84,7 @@ export function parseTransports(transports: string[]) {
 }
 
 /**
- *
+ * Returns initialized storage trie
  * @param storage - Object containing storage trie entries from geth genesis state
  * @returns genesis storage trie
  */
@@ -102,7 +103,6 @@ async function createStorageTrie(storage: any) {
 /**
  * Derives state trie of genesis block bases on genesis allocations
  * @param alloc - Object containing genesis allocations from geth genesis block
- *
  * @returns genesis state trie
  */
 async function createGethGenesisStateTrie(alloc: any) {
@@ -265,7 +265,6 @@ async function parseGethParams(json: any) {
 
 /**
  * Transforms Geth formatted nonce (i.e. hex string) to 8 byte hex prefixed string used internally
- *
  * @param nonce as a string parsed from the Geth genesis file
  * @returns nonce as a hex-prefixed 8 byte string
  */

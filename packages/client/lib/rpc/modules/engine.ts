@@ -46,11 +46,10 @@ type PreparePayloadParamsObject = {
   feeRecipient: string
 }
 
-type PayloadCache = {
-  parentHash: Buffer
-  timestamp: BN
-  random: Buffer
-  feeRecipient: Address
+type PayloadResult = {
+  block?: Block
+  random?: string
+  error?: Error
 }
 
 const EngineError = {
@@ -71,10 +70,9 @@ const EngineError = {
 /**
  * Formats a block to {@link ExecutionPayload}.
  */
-const blockToExecutionPayload = (block: Block, random: Buffer) => {
+const blockToExecutionPayload = (block: Block, random: string) => {
   const header = block.toJSON().header!
   const transactions = block.transactions.map((tx) => bufferToHex(tx.serialize())) ?? []
-
   const payload: ExecutionPayload = {
     blockNumber: header.number!,
     parentHash: header.parentHash!,
@@ -88,17 +86,22 @@ const blockToExecutionPayload = (block: Block, random: Buffer) => {
     extraData: header.extraData!,
     baseFeePerGas: header.baseFeePerGas!,
     blockHash: bufferToHex(block.hash()),
-    random: bufferToHex(random),
+    random,
     transactions,
   }
   return payload
 }
 
 /**
- * Finds a block from connected peers.
- * If no result or times out, throws {@link EngineError.UnknownPayload}
+ * Request a block by hash from connected peers.
+ * May help recover missing/reorged blocks around merge transition.
+ * Times out after 10s.
+ * @throws {@link EngineError.UnknownHeader}
  */
-const getBlockFromNetwork = async (hash: Buffer, chain: Chain, service: EthereumService) => {
+const getBlockFromPeers = async (hash: Buffer, chain: Chain, service: EthereumService) => {
+  const timeout = setTimeout(() => {
+    throw EngineError.UnknownHeader
+  }, 10000)
   const { peers } = service.pool
   for (const peer of peers) {
     try {
@@ -111,6 +114,7 @@ const getBlockFromNetwork = async (hash: Buffer, chain: Chain, service: Ethereum
           const block = Block.fromValuesArray([header[0].raw(), ...blockBody], {
             common: chain.config.chainCommon,
           })
+          clearTimeout(timeout)
           return block
         }
       }
@@ -122,8 +126,8 @@ const getBlockFromNetwork = async (hash: Buffer, chain: Chain, service: Ethereum
 }
 
 /**
- * Finds a block from {@link ValidBlocks}, then the blockchain, then the network.
- * If not found, throws {@link EngineError.UnknownPayload}
+ * Searches for a block in {@link ValidBlocks}, then the blockchain, then the network.
+ * @throws {@link EngineError.UnknownHeader}
  */
 const findBlock = async (
   hash: Buffer,
@@ -140,8 +144,8 @@ const findBlock = async (
       const parentBlock = await chain.getBlock(hash)
       return parentBlock
     } catch (error) {
-      // block not found, search network (devp2p)
-      return await getBlockFromNetwork(hash, chain, service)
+      // block not found, request from network (devp2p)
+      return await getBlockFromPeers(hash, chain, service)
     }
   }
 }
@@ -175,11 +179,11 @@ const recursivelyFindParents = async (
 }
 
 /**
- * Returns the transactionsTrie root for the block.
+ * Returns the txs trie root for the block.
  */
-const transactionsTrie = async (transactions: TypedTransaction[]) => {
+const txsTrieRoot = async (txs: TypedTransaction[]) => {
   const trie = new Trie()
-  for (const [i, tx] of transactions.entries()) {
+  for (const [i, tx] of txs.entries()) {
     await trie.put(encode(i), tx.serialize())
   }
   return trie.root
@@ -187,7 +191,7 @@ const transactionsTrie = async (transactions: TypedTransaction[]) => {
 
 type PayloadId = number
 type UnprefixedBlockHash = string
-type PendingPayloads = Map<PayloadId, PayloadCache>
+type PendingPayloads = Map<PayloadId, PayloadResult>
 type ValidBlocks = Map<UnprefixedBlockHash, Block>
 
 /**
@@ -195,7 +199,6 @@ type ValidBlocks = Map<UnprefixedBlockHash, Block>
  * @memberof module:rpc/modules
  */
 export class Engine {
-  private SECONDS_PER_SLOT = new BN(12) // from beacon chain mainnet config
   private client: EthereumClient
   private service: EthereumService
   private chain: Chain
@@ -286,18 +289,97 @@ export class Engine {
    *       * payloadId - identifier of the payload building process
    */
   async preparePayload(params: [PreparePayloadParamsObject]) {
-    const { parentHash, timestamp, random, feeRecipient } = params[0]
-
-    const payload = {
-      parentHash: toBuffer(parentHash),
-      timestamp: toType(timestamp, TypeOutput.BN),
-      random: toBuffer(random),
-      feeRecipient: Address.fromString(feeRecipient),
-    }
+    const { timestamp, random, feeRecipient } = params[0]
+    const parentHash = toBuffer(params[0].parentHash)
 
     const payloadId = this.nextPayloadId.valueOf() // clone with valueOf()
-    this.pendingPayloads.set(payloadId, payload)
+    this.pendingPayloads.set(payloadId, { random })
     this.nextPayloadId++
+
+    setImmediate(async () => {
+      try {
+        const vmCopy = this.vm.copy()
+        const vmHead = this.chain.headers.latest!
+        const parentBlocks = await recursivelyFindParents(
+          vmHead.hash(),
+          parentHash,
+          this.validBlocks,
+          this.chain,
+          this.service
+        )
+
+        for (const parent of parentBlocks) {
+          const td = await vmCopy.blockchain.getTotalDifficulty(parent.hash())
+          vmCopy._common.setHardforkByBlockNumber(parent.header.number, td)
+          await vmCopy.runBlock({ block: parent })
+          await vmCopy.blockchain.putBlock(parent)
+        }
+
+        const parentBlock = await vmCopy.blockchain.getBlock(parentHash)
+        const number = parentBlock.header.number.addn(1)
+        const { gasLimit } = parentBlock.header
+        const baseFeePerGas = parentBlock.header.calcNextBaseFee()
+
+        // Set the state root to ensure the resulting state
+        // is based on the parent block's state
+        await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
+
+        const td = await vmCopy.blockchain.getTotalDifficulty(vmHead.hash())
+        vmCopy._common.setHardforkByBlockNumber(vmHead.number, td)
+        const blockBuilder = await vmCopy.buildBlock({
+          parentBlock,
+          headerData: {
+            timestamp,
+            number,
+            gasLimit,
+            baseFeePerGas,
+            coinbase: Address.fromString(feeRecipient),
+          },
+          builderOpts: {
+            putBlockIntoBlockchain: false,
+          },
+        })
+
+        const txs = await this.txPool.txsByPriceAndNonce(vmCopy.stateManager, baseFeePerGas)
+        this.config.logger.info(
+          `Engine: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`
+        )
+        let index = 0
+        let blockFull = false
+        while (index < txs.length && !blockFull) {
+          try {
+            await blockBuilder.addTransaction(txs[index])
+          } catch (error: any) {
+            if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
+              if (blockBuilder.gasUsed.gt(gasLimit.subn(21000))) {
+                // If block has less than 21000 gas remaining, consider it full
+                blockFull = true
+                this.config.logger.info(
+                  `Engine: Assembled block full (gasLeft: ${gasLimit.sub(blockBuilder.gasUsed)})`
+                )
+              }
+            } else {
+              // If there is an error adding a tx, it will be skipped
+              const hash = bufferToHex(txs[index].hash())
+              this.config.logger.debug(
+                `Skipping tx ${hash}, error encountered when trying to add tx:\n${error}`
+              )
+            }
+          }
+          index++
+        }
+        const block = await blockBuilder.build()
+        this.pendingPayloads.set(payloadId, { block, random })
+        this.validBlocks.set(block.hash().toString('hex'), block)
+        this.config.logger.info(
+          `Engine: Finished assembling block number=${block.header.number} txs=${
+            txs.length
+          } hash=${block.hash().toString('hex')}`
+        )
+      } catch (error: any) {
+        this.pendingPayloads.set(payloadId, { error })
+      }
+    })
 
     return { payloadId: intToHex(payloadId) }
   }
@@ -311,119 +393,34 @@ export class Engine {
    * @returns Instance of {@link ExecutionPayload} or an error
    */
   async getPayload(params: [string]) {
-    if (!this.client.config.synchronized) {
-      // From spec: Client software SHOULD respond with
-      // `2: Action not allowed` error if the sync process is in progress.
-      throw EngineError.ActionNotAllowed
-    }
-
     const payloadId = toType(params[0], TypeOutput.Number)
     const payload = this.pendingPayloads.get(payloadId)
-
     if (!payload) {
       throw EngineError.UnknownPayload
     }
-
-    const { parentHash, timestamp, feeRecipient: coinbase } = payload
-
-    // From spec: If timestamp + SECONDS_PER_SLOT has passed, block is no longer valid
-    if (new BN(Date.now()).divn(1000).gt(timestamp.add(this.SECONDS_PER_SLOT))) {
+    if (payload.error) {
       this.pendingPayloads.delete(payloadId)
-      throw EngineError.UnknownHeader
-    }
-
-    try {
-      // Use a copy of the vm to not modify the existing state.
-      const vmCopy = this.vm.copy()
-
-      const vmHead = this.chain.headers.latest!
-      const parentBlocks = await recursivelyFindParents(
-        vmHead.hash(),
-        parentHash,
-        this.validBlocks,
-        this.chain,
-        this.service
-      )
-
-      for (const parent of parentBlocks) {
-        const td = await vmCopy.blockchain.getTotalDifficulty(parent.hash())
-        vmCopy._common.setHardforkByBlockNumber(parent.header.number, td)
-        await vmCopy.runBlock({ block: parent })
-        await vmCopy.blockchain.putBlock(parent)
-      }
-
-      const parentBlock = await vmCopy.blockchain.getBlock(parentHash)
-      const number = parentBlock.header.number.addn(1)
-      const { gasLimit } = parentBlock.header
-      const baseFeePerGas = parentBlock.header.calcNextBaseFee()
-
-      // Set the state root to ensure the resulting state
-      // is based on the parent block's state
-      await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
-
-      const td = await vmCopy.blockchain.getTotalDifficulty(vmHead.hash())
-      vmCopy._common.setHardforkByBlockNumber(vmHead.number, td)
-      const blockBuilder = await vmCopy.buildBlock({
-        parentBlock,
-        headerData: {
-          timestamp,
-          number,
-          gasLimit,
-          baseFeePerGas,
-          coinbase,
-        },
-        builderOpts: {
-          insertBlockIntoBlockchain: false,
-        },
-      })
-
-      const txs = await this.txPool.txsByPriceAndNonce(vmCopy.stateManager, baseFeePerGas)
-      this.config.logger.info(
-        `Engine: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`
-      )
-
-      let index = 0
-      let blockFull = false
-      while (index < txs.length && !blockFull) {
-        try {
-          await blockBuilder.addTransaction(txs[index])
-        } catch (error: any) {
-          if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
-            if (blockBuilder.gasUsed.gt(gasLimit.subn(21000))) {
-              // If block has less than 21000 gas remaining, consider it full
-              blockFull = true
-              this.config.logger.info(
-                `Engine: Assembled block full (gasLeft: ${gasLimit.sub(blockBuilder.gasUsed)})`
-              )
-            }
-          } else {
-            // If there is an error adding a tx, it will be skipped
-            const hash = bufferToHex(txs[index].hash())
-            this.config.logger.debug(
-              `Skipping tx ${hash}, error encountered when trying to add tx:\n${error}`
-            )
-          }
-        }
-        index++
-      }
-
-      const block = await blockBuilder.build()
-
-      this.pendingPayloads.delete(payloadId)
-      this.validBlocks.set(block.hash().toString('hex'), block)
-
-      return blockToExecutionPayload(block, payload.random)
-    } catch (error: any) {
       throw {
         code: INTERNAL_ERROR,
-        message: error.message.toString(),
+        message: payload.error.message.toString(),
       }
     }
+    if (!payload.block || !payload.random) {
+      // TODO implement:
+      // 1) an interrupt to finish processing txs and return the block
+      // 2) the ability to add/shuffle new txs while waiting (to maximize mev)
+      throw {
+        code: INTERNAL_ERROR,
+        message: 'Payload not ready, please retry',
+      }
+    }
+    this.pendingPayloads.delete(payloadId)
+    return blockToExecutionPayload(payload.block, payload.random)
   }
 
   /**
-   * Verifies the payload according to the execution environment rule set (EIP-3675)
-   * and returns the status of the verification.
+   * Verifies the payload according to the execution environment
+   * rule set (EIP-3675) and returns the status of the verification.
    *
    * @param params An array of one parameter:
    *   1. An object as an instance of {@link ExecutionPayload}
@@ -434,44 +431,47 @@ export class Engine {
    *        SYNCING - sync process is in progress
    */
   async executePayload(params: [ExecutionPayload]) {
-    if (!this.config.synchronized) {
+    const [payloadData] = params
+    const { blockNumber: number, receiptRoot: receiptTrie, transactions } = payloadData
+
+    if (new BN(toBuffer(number)).gt(this.chain.headers.height.addn(1))) {
       return { status: Status.SYNCING }
     }
 
-    const [payloadData] = params
-
     try {
-      const transactions = []
-      for (const [index, serializedTx] of payloadData.transactions.entries()) {
+      const txs = []
+      for (const [index, serializedTx] of transactions.entries()) {
         try {
           const tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), {
             common: this.config.chainCommon,
           })
-          transactions.push(tx)
+          txs.push(tx)
         } catch (error) {
           this.config.logger.error(`Invalid tx at index ${index}: ${error}`)
           return { status: Status.INVALID }
         }
       }
 
-      // Format block header
+      const transactionsTrie = await txsTrieRoot(txs)
       const header: HeaderData = {
         ...payloadData,
-        number: payloadData.blockNumber,
-        receiptTrie: payloadData.receiptRoot,
-        transactionsTrie: await transactionsTrie(transactions),
+        number,
+        receiptTrie,
+        transactionsTrie,
       }
 
       let block
       try {
-        block = Block.fromBlockData({ header, transactions }, { common: this.config.chainCommon })
+        block = Block.fromBlockData(
+          { header, transactions: txs },
+          { common: this.config.chainCommon }
+        )
       } catch (error) {
         this.config.logger.debug(`Error verifying block: ${error}`)
         return { status: Status.INVALID }
       }
 
       const vmCopy = this.vm.copy()
-
       const vmHeadHash = this.chain.headers.latest!.hash()
       const parentBlocks = await recursivelyFindParents(
         vmHeadHash,
@@ -494,7 +494,6 @@ export class Engine {
       }
 
       this.validBlocks.set(block.hash().toString('hex'), block)
-
       return { status: Status.VALID }
     } catch (error: any) {
       throw {
@@ -568,12 +567,16 @@ export class Engine {
       this.service
     )
 
-    await this.chain.putBlocks([...parentBlocks, headBlock], true)
+    const blocks = [...parentBlocks, headBlock]
+    await this.chain.putBlocks(blocks, true)
+    this.txPool.removeNewBlockTxs(blocks)
 
     if (
       !this.synchronizer.syncTargetHeight ||
       this.synchronizer.syncTargetHeight.lt(headBlock.header.number)
     ) {
+      this.config.synchronized = true
+      this.config.lastSyncDate = Date.now()
       this.synchronizer.syncTargetHeight = headBlock.header.number
     }
 
@@ -581,7 +584,7 @@ export class Engine {
      * Process finalized block
      */
     if (finalizedBlockHash === '0'.repeat(64)) {
-      // All zeros means no finalized block yet
+      // All zeros means no finalized block yet which is okay
     } else {
       let finalizedBlock
       finalizedBlock = this.validBlocks.get(finalizedBlockHash)
@@ -592,17 +595,11 @@ export class Engine {
           throw EngineError.UnknownHeader
         }
       }
-
-      if (!this.chain.mergeFirstFinalizedBlock) {
-        this.chain.mergeFirstFinalizedBlock = finalizedBlock
-      }
-      this.chain.mergeLastFinalizedBlock = finalizedBlock
-
+      this.chain.lastFinalizedBlock = finalizedBlock
       this.validBlocks.delete(finalizedBlockHash)
     }
 
     this.validBlocks.delete(headBlockHash)
-
     return null
   }
 }

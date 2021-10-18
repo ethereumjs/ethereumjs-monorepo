@@ -12,7 +12,6 @@ import { Event } from '../../types'
 export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
   /**
    * Create new block fetcher
-   * @param {BlockFetcherOptions}
    */
   constructor(options: BlockFetcherOptions) {
     super(options)
@@ -63,9 +62,9 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
 
   /**
    * Process fetch result
-   * @param  job fetch job
-   * @param  result fetch result
-   * @return {*} results of processing job or undefined if job not finished
+   * @param job fetch job
+   * @param result fetch result
+   * @returns results of processing job or undefined if job not finished
    */
   process(job: Job<JobTask, Block[], Block>, result: Block[]) {
     if (result.length === job.task.count) {
@@ -92,8 +91,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
 
   /**
    * Store fetch result. Resolves once store operation is complete.
-   * @param {Block[]} blocks fetch result
-   * @return {Promise}
+   * @param blocks fetch result
    */
   async store(blocks: Block[]) {
     const num = await this.chain.putBlocks(blocks)

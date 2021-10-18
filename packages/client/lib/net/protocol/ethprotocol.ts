@@ -199,7 +199,6 @@ export class EthProtocol extends Protocol {
 
   /**
    * Create eth protocol
-   * @param {EthProtocolOptions}
    */
   constructor(options: EthProtocolOptions) {
     super(options)
@@ -209,31 +208,27 @@ export class EthProtocol extends Protocol {
 
   /**
    * Name of protocol
-   * @type {string}
    */
-  get name(): string {
+  get name() {
     return 'eth'
   }
 
   /**
    * Protocol versions supported
-   * @type {number[]}
    */
-  get versions(): number[] {
+  get versions() {
     return [66]
   }
 
   /**
    * Messages defined by this protocol
-   * @type {Protocol~Message[]}
    */
-  get messages(): Message[] {
+  get messages() {
     return this.protocolMessages
   }
 
   /**
    * Opens protocol and any associated dependencies
-   * @return {Promise}
    */
   async open(): Promise<boolean | void> {
     if (this.opened) {
@@ -245,7 +240,6 @@ export class EthProtocol extends Protocol {
 
   /**
    * Encodes status into ETH status message payload
-   * @return {Object}
    */
   encodeStatus(): any {
     return {
@@ -261,8 +255,7 @@ export class EthProtocol extends Protocol {
 
   /**
    * Decodes ETH status message payload into a status object
-   * @param {Object} status status message payload
-   * @return {Object}
+   * @param status status message payload
    */
   decodeStatus(status: any): any {
     return {

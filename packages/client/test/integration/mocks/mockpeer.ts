@@ -54,8 +54,7 @@ export default class MockPeer extends Peer {
     const receiver = new EventEmitter()
     const pushableFn: Pushable = pushable()
     pipe(pushableFn, stream)
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    pipe(stream, async (source: any) => {
+    void pipe(stream, async (source: any) => {
       for await (const data of source) {
         setTimeout(() => {
           receiver.emit('data', data)

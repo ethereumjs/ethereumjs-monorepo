@@ -18,9 +18,10 @@ type Pushable = ReturnType<typeof wrapperPushable>
 export class Libp2pSender extends Sender {
   private stream: MuxedStream
   private pushable: Pushable
+
   /**
    * Creates a new Libp2p protocol sender
-   * @param {MuxedStream} stream stream to libp2p peer
+   * @param stream stream to libp2p peer
    */
   constructor(stream: MuxedStream) {
     super()
@@ -35,8 +36,7 @@ export class Libp2pSender extends Sender {
     pipe(this.pushable, this.stream)
 
     // incoming stream
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    pipe(this.stream, async (source: any) => {
+    void pipe(this.stream, async (source: any) => {
       for await (const bl of source) {
         // convert BufferList to Buffer
         const data: Buffer = bl.slice()
@@ -61,7 +61,7 @@ export class Libp2pSender extends Sender {
 
   /**
    * Send a status to peer
-   * @param {Object} status
+   * @param status
    */
   sendStatus(status: any) {
     const payload: any = Object.entries(status).map(([k, v]) => [k, v])
@@ -70,8 +70,8 @@ export class Libp2pSender extends Sender {
 
   /**
    * Send a message to peer
-   * @param  {number} code message code
-   * @param  {*}      data message payload
+   * @param code message code
+   * @param data message payload
    */
   sendMessage(code: number, data: any) {
     this.pushable.push(rlp.encode([code, data]))

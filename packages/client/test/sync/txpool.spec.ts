@@ -73,7 +73,6 @@ tape('[TxPool]', async (t) => {
     pool.stop()
     pool.close()
     t.notOk((pool as any).opened, 'closed')
-    t.end()
   })
 
   t.test('announcedTxHashes() -> add single tx / knownByPeer / getByHash()', async (t) => {
@@ -141,7 +140,6 @@ tape('[TxPool]', async (t) => {
 
     pool.stop()
     pool.close()
-    t.end()
   })
 
   t.test('announcedTxHashes() -> TX_RETRIEVAL_LIMIT', async (t) => {
@@ -169,7 +167,6 @@ tape('[TxPool]', async (t) => {
     await pool.handleAnnouncedTxHashes(hashes, peer as any, peerPool)
     pool.stop()
     pool.close()
-    t.end()
   })
 
   t.test('announcedTxHashes() -> add two txs (different sender)', async (t) => {
@@ -190,7 +187,6 @@ tape('[TxPool]', async (t) => {
     t.equal(pool.pool.size, 2, 'pool size 2')
     pool.stop()
     pool.close()
-    t.end()
   })
 
   t.test('announcedTxHashes() -> add two txs (same sender and nonce)', async (t) => {
@@ -216,7 +212,6 @@ tape('[TxPool]', async (t) => {
     t.deepEqual(poolContent[0].tx.hash(), txA02.hash(), 'only later-added tx')
     pool.stop()
     pool.close()
-    t.end()
   })
 
   t.test('announcedTxs()', async (t) => {
@@ -240,7 +235,6 @@ tape('[TxPool]', async (t) => {
     t.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'correct tx')
     pool.stop()
     pool.close()
-    t.end()
   })
 
   t.test('newBlocks() -> should remove included txs', async (t) => {
@@ -304,7 +298,6 @@ tape('[TxPool]', async (t) => {
 
     pool.stop()
     pool.close()
-    t.end()
   })
 
   t.test('cleanup()', async (t) => {
@@ -380,6 +373,5 @@ tape('[TxPool]', async (t) => {
 
     pool.stop()
     pool.close()
-    t.end()
   })
 })

@@ -29,8 +29,7 @@ tape('[BlockFetcher]', async (t) => {
     })
     fetcher.next = () => false
     t.notOk((fetcher as any).running, 'not started')
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    fetcher.fetch()
+    void fetcher.fetch()
     t.equals((fetcher as any).in.size(), 2, 'added 2 tasks')
     await wait(100)
     t.ok((fetcher as any).running, 'started')
@@ -52,8 +51,7 @@ tape('[BlockFetcher]', async (t) => {
       count: new BN(10),
       timeout: 5,
     })
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    fetcher.fetch()
+    void fetcher.fetch()
     t.equals((fetcher as any).in.size(), 2, 'added 2 tasks')
     await wait(100)
 

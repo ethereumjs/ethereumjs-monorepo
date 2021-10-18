@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { Server as RPCServer, HttpServer } from 'jayson/promise'
 import VM from '@ethereumjs/vm'
-import Common, { Chain as ChainEnum, Hardfork } from '@ethereumjs/common'
+import Common, { Chain as ChainEnum } from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
 import { RPCManager as Manager } from '../../lib/rpc'
 import { getLogger } from '../../lib/logging'
@@ -67,7 +67,7 @@ export function createClient(clientOpts: any = {}) {
     latest: () => {
       return undefined
     },
-    syncTargetHeight: common.hardforkBlockBN(Hardfork.London),
+    syncTargetHeight: clientOpts.syncTargetHeight,
     txPool: new TxPool({ config }),
   }
   if (clientOpts.includeVM) {
@@ -106,10 +106,10 @@ export function createClient(clientOpts: any = {}) {
   return client as EthereumClient
 }
 
-export function baseSetup(engine = false) {
-  const client = createClient()
+export function baseSetup(clientOpts: any = {}) {
+  const client = createClient(clientOpts)
   const manager = createManager(client)
-  const server = startRPC(manager.getMethods(engine))
+  const server = startRPC(manager.getMethods(clientOpts.engine === true))
   return { server, manager, client }
 }
 

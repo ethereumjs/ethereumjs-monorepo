@@ -30,7 +30,10 @@ export function mockBlockchain(options: any = {}) {
   }
   return {
     blocks: { latest: block },
-    getBlock: async (_data: any) => {
+    getBlock: async (val: any) => {
+      if (Buffer.isBuffer(val) && val.equals(Buffer.alloc(32))) {
+        throw Error
+      }
       return block
     },
     getLatestHeader: () => {

@@ -62,7 +62,6 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
 
   /**
    * Create new fetcher
-   * @param {FetcherOptions}
    */
   constructor(options: FetcherOptions) {
     super({ ...options, objectMode: true })
@@ -95,11 +94,11 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   }
 
   /**
-   * Request results from peer for the given job. Resolves with the raw result. If `undefined` is returned,
-   * re-queue the job.
-   * @param  job
-   * @param  peer
-   * @return {Promise}
+   * Request results from peer for the given job.
+   * Resolves with the raw result.
+   * If `undefined` is returned, re-queue the job.
+   * @param job
+   * @param peer
    */
   abstract request(
     _job?: Job<JobTask, JobResult, StorageItem>,
@@ -107,10 +106,11 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   ): Promise<JobResult | undefined>
 
   /**
-   * Process the reply for the given job. If the reply contains unexpected data, return `undefined`, this
-   * re-queues the job.
-   * @param  job fetch job
-   * @param  result result data
+   * Process the reply for the given job.
+   * If the reply contains unexpected data, return `undefined`,
+   * this re-queues the job.
+   * @param job fetch job
+   * @param result result data
    */
   abstract process(
     _job?: Job<JobTask, JobResult, StorageItem>,
@@ -120,13 +120,11 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   /**
    * Store fetch result. Resolves once store operation is complete.
    * @param result fetch result
-   * @return {Promise}
    */
   abstract store(_result: StorageItem[]): Promise<void>
 
   /**
    * Generate list of tasks to fetch
-   * @return {Object[]} tasks
    */
   tasks(): JobTask[] {
     return []
@@ -178,8 +176,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     }
     this.in.insert(job)
     if (!this.running && autoRestart) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.fetch()
+      void this.fetch()
     }
   }
 
@@ -192,17 +189,14 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
 
   /**
    * handle successful job completion
-   * @private
-   * @param  job successful job
-   * @param  result job result
+   * @param job successful job
+   * @param result job result
    */
-  success(job: Job<JobTask, JobResult, StorageItem>, result?: JobResult) {
+  private success(job: Job<JobTask, JobResult, StorageItem>, result?: JobResult) {
     if (job.state !== 'active') return
     if (result === undefined) {
       this.enqueue(job)
-      // TODO: should this promise actually float?
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.wait().then(() => {
+      void this.wait().then(() => {
         job.peer!.idle = true
       })
     } else {
@@ -219,12 +213,11 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   }
 
   /**
-   * handle failed job completion
-   * @private
-   * @param  job failed job
-   * @param  [error] error
+   * Handle failed job completion
+   * @param job failed job
+   * @param error error
    */
-  failure(job: Job<JobTask, JobResult, StorageItem>, error?: Error) {
+  private failure(job: Job<JobTask, JobResult, StorageItem>, error?: Error) {
     if (job.state !== 'active') return
     job.peer!.idle = true
     this.pool.ban(job.peer!, this.banTime)
@@ -276,8 +269,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
 
   /**
    * Handle error
-   * @param  {Error}  error error object
-   * @param  {Object} job  task
+   * @param error error object
+   * @param job  task
    */
   error(error: Error, job?: Job<JobTask, JobResult, StorageItem>) {
     if (this.running) {
@@ -329,7 +322,6 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
 
   /**
    * Run the fetcher. Returns a promise that resolves once all tasks are completed.
-   * @return {Promise}
    */
   async fetch() {
     if (this.running) {

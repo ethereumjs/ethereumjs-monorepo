@@ -432,7 +432,7 @@ export default class Common extends EventEmitter {
         hardfork = hf.name as Hardfork
       }
       if (td && hf.td) {
-        if (td.gten(hf.td)) {
+        if (td.gte(new BN(hf.td))) {
           minTdHF = hf.name
         } else {
           maxTdHF = previousHF

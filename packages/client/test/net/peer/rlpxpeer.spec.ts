@@ -71,9 +71,9 @@ tape('[RlpxPeer]', async (t) => {
     const config = new Config({ transports: [], loglevel: 'error' })
     const peer = new RlpxPeer({ config, id: 'abcdef0123', host: '10.0.0.1', port: 1234 })
     const rlpxPeer = { id: 'zyx321', getDisconnectPrefix: td.func() } as any
-    peer.bindProtocols = td.func<typeof peer['bindProtocols']>()
+    ;(peer as any).bindProtocols = td.func<typeof peer['bindProtocols']>()
     peer.rlpxPeer = rlpxPeer
-    td.when(peer.bindProtocols(rlpxPeer)).thenResolve()
+    td.when((peer as any).bindProtocols(rlpxPeer)).thenResolve(undefined)
     td.when(rlpxPeer.getDisconnectPrefix('reason')).thenReturn('reason')
     await peer.connect()
     config.events.on(Event.PEER_ERROR, (error) => {
@@ -89,10 +89,10 @@ tape('[RlpxPeer]', async (t) => {
     peer.rlpx!.emit('peer:error', rlpxPeer, new Error('err0'))
     peer.rlpx!.emit('peer:added', rlpxPeer)
     peer.rlpx!.emit('peer:removed', rlpxPeer, 'reason')
-    peer.bindProtocols = td.func<typeof peer['bindProtocols']>()
+    ;(peer as any).bindProtocols = td.func<typeof peer['bindProtocols']>()
     peer.rlpxPeer = rlpxPeer
     await peer.connect()
-    td.when(peer.bindProtocols(rlpxPeer)).thenReject(new Error('err1'))
+    td.when((peer as any).bindProtocols(rlpxPeer)).thenReject(new Error('err1'))
     td.when(rlpxPeer.getDisconnectPrefix('reason')).thenThrow(new Error('err2'))
     peer.config.events.on(Event.PEER_ERROR, (err) => {
       if (err.message === 'err1') t.pass('got err1')
@@ -118,10 +118,10 @@ tape('[RlpxPeer]', async (t) => {
     const peer = new RlpxPeer({ config, id: 'abcdef0123', protocols, host: '10.0.0.1', port: 1234 })
     const proto0 = new (class Proto0 extends EventEmitter {})()
     const rlpxPeer = { getProtocols: td.func() } as any
-    peer.bindProtocol = td.func<typeof peer['bindProtocol']>()
+    ;(peer as any).bindProtocol = td.func<typeof peer['bindProtocol']>()
     td.when(rlpxPeer.getProtocols()).thenReturn([proto0])
-    await peer.bindProtocols(rlpxPeer)
-    td.verify(peer.bindProtocol({ name: 'proto0' } as any, td.matchers.isA(RlpxSender)))
+    await (peer as any).bindProtocols(rlpxPeer)
+    td.verify((peer as any).bindProtocol({ name: 'proto0' } as any, td.matchers.isA(RlpxSender)))
     t.ok(peer.connected, 'connected set to true')
     t.end()
   })

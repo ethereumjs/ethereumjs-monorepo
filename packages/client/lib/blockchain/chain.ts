@@ -83,8 +83,7 @@ export class Chain {
   public chainDB: LevelUp
   public blockchain: Blockchain
   public opened: boolean
-  public mergeFirstFinalizedBlock: Block | undefined
-  public mergeLastFinalizedBlock: Block | undefined
+  public lastFinalizedBlock: Block | undefined
 
   private _headers: ChainHeaders = {
     latest: null,
@@ -167,7 +166,6 @@ export class Chain {
 
   /**
    * Returns properties of the canonical blockchain.
-   * @return {ChainBlocks}
    */
   get blocks(): ChainBlocks {
     return { ...this._blocks }
@@ -234,10 +232,6 @@ export class Chain {
     this._blocks = blocks
 
     this.config.chainCommon.setHardforkByBlockNumber(headers.latest.number, headers.td)
-
-    if (this.config.chainCommon.hardfork() === Hardfork.Merge) {
-      this.config.synchronized = true
-    }
 
     if (emit) {
       this.config.events.emit(Event.CHAIN_UPDATED)
@@ -333,9 +327,6 @@ export class Chain {
     let numAdded = 0
     for (const [i, h] of headers.entries()) {
       if (!mergeIncludes && this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
-        this.config.logger.info(
-          `Merge hardfork reached at block number=${h.number} td=${this.headers.td}`
-        )
         if (i > 0) {
           // emitOnLast below won't be reached, so run an update here
           await this.update(true)

@@ -17,11 +17,19 @@ Please ensure you have Node 12.x+ installed
 
 ### Lodestar
 
+#### Beacon
+
 1. Use lodestar branch `master` and run `yarn build`
 1. Make dir `lodestar/pithos` and copy in from this dir: `config.yml`, `genesis.ssz`, `rcconfig.yml`
 1. Run cmd: `./lodestar beacon --rootDir pithos/temp --rcConfig pithos/rcconfig.yml --paramsFile=pithos/config.yaml --network.connectToDiscv5Bootnodes`
 
+#### Validator
+
+1. Run cmd: `./lodestar validator --rootDir=pithos/temp_validatordata --paramsFile=pithos/config.yaml --keystoresDir=pithos/keystores --secretsDir=pithos/secrets`
+
 ### Lighthouse
+
+### Beacon
 
 1. In the ethereumjs client append flag `--rpcEnginePort=8545`
 1. Use lighthouse branch `merge-f2f` and run `make`

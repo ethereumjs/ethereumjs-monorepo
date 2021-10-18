@@ -202,7 +202,6 @@ export class VMExecution extends Execution {
 
   /**
    * Stop VM execution. Returns a promise that resolves once its stopped.
-   * @returns {Promise}
    */
   async stop(): Promise<boolean> {
     if (this.vmPromise) {

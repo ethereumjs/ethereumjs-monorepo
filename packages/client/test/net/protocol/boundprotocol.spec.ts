@@ -81,12 +81,12 @@ tape('[BoundProtocol]', (t) => {
       t.ok(/error0/.test(err.message), 'decode error')
     })
     td.when(protocol.decode(testMessage, '1')).thenThrow(new Error('error0'))
-    bound.handle({ name: 'TestMessage', code: 0x01, payload: '1' })
+    ;(bound as any).handle({ name: 'TestMessage', code: 0x01, payload: '1' })
     bound.config.events.once(Event.PROTOCOL_MESSAGE, (message) => {
       t.deepEquals(message, { name: 'TestMessage', data: 2 }, 'correct message')
     })
     td.when(protocol.decode(testMessage, '2')).thenReturn(2)
-    bound.handle({ name: 'TestMessage', code: 0x01, payload: '2' })
+    ;(bound as any).handle({ name: 'TestMessage', code: 0x01, payload: '2' })
     t.end()
   })
 

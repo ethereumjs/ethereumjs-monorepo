@@ -25,7 +25,7 @@ tape('[Fetcher]', (t) => {
     fetcher.next = td.func<FetcherTest['next']>()
     fetcher.wait = td.func<FetcherTest['wait']>()
     td.when(fetcher.wait()).thenResolve(undefined)
-    fetcher.success(job, undefined)
+    ;(fetcher as any).success(job, undefined)
     t.equals((fetcher as any).in.size(), 1, 'enqueued job')
     setTimeout(() => t.ok(job.peer.idle, 'peer idled'), 10)
   })
@@ -38,7 +38,7 @@ tape('[Fetcher]', (t) => {
     ;(fetcher as any).running = true
     fetcher.next = td.func<FetcherTest['next']>()
     config.events.on(Event.SYNC_FETCHER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
-    fetcher.failure(job as Job<any, any, any>, new Error('err0'))
+    ;(fetcher as any).failure(job as Job<any, any, any>, new Error('err0'))
     t.equals((fetcher as any).in.size(), 1, 'enqueued job')
   })
 

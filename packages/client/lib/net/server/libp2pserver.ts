@@ -24,7 +24,6 @@ export class Libp2pServer extends Server {
 
   /**
    * Create new DevP2P/RLPx server
-   * @param {Libp2pServerOptions}
    */
   constructor(options: Libp2pServerOptions) {
     super(options)
@@ -37,7 +36,6 @@ export class Libp2pServer extends Server {
 
   /**
    * Server name
-   * @type {string}
    */
   get name() {
     return 'libp2p'
@@ -45,7 +43,7 @@ export class Libp2pServer extends Server {
 
   /**
    * Start Libp2p server. Returns a promise that resolves once server has been started.
-   * @return Resolves with true if server successfully started
+   * @returns true if server successfully started
    */
   async start(): Promise<boolean> {
     if (this.started) {
@@ -131,8 +129,8 @@ export class Libp2pServer extends Server {
 
   /**
    * Check if peer is currently banned
-   * @param  peerId id of peer
-   * @return true if banned
+   * @param peerId id of peer
+   * @returns true if banned
    */
   isBanned(peerId: string): boolean {
     const expireTime = this.banned.get(peerId)
@@ -145,11 +143,10 @@ export class Libp2pServer extends Server {
 
   /**
    * Handles errors from server and peers
-   * @private
-   * @param  error
-   * @emits  Event.SERVER_ERROR
+   * @param error
+   * @emits {@link Event.SERVER_ERROR}
    */
-  error(error: Error) {
+  private error(error: Error) {
     this.config.events.emit(Event.SERVER_ERROR, error, this)
   }
 

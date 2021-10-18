@@ -54,13 +54,13 @@ tape('[PeerPool]', async (t) => {
     const pool = new PeerPool({ config })
     ;(peer as any).id = 'abc'
     ;(peer as any).handleMessageQueue = td.func()
-    pool.connected(peer)
+    ;(pool as any).connected(peer)
     pool.config.events.on(Event.PROTOCOL_MESSAGE, (msg: any, proto: any, p: any) => {
       t.ok(msg === 'msg0' && proto === 'proto0' && p === peer, 'got message')
     })
     config.events.emit(Event.PROTOCOL_MESSAGE, 'msg0', 'proto0', peer)
     pool.config.events.emit(Event.PEER_ERROR, new Error('err0'), peer)
-    pool.disconnected(peer)
+    ;(pool as any).disconnected(peer)
     t.notOk((pool as any).pool.get('abc'), 'peer removed')
   })
 

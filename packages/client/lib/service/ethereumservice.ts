@@ -35,7 +35,6 @@ export class EthereumService extends Service {
 
   /**
    * Create new ETH service
-   * @param {EthereumServiceOptions}
    */
   constructor(options: EthereumServiceOptions) {
     super(options)
@@ -48,16 +47,13 @@ export class EthereumService extends Service {
 
   /**
    * Service name
-   * @protected
-   * @type {string}
    */
   get name() {
     return 'eth'
   }
 
   /**
-   * Open eth service. Must be called before service is started
-   * @return {Promise}
+   * Open eth service. Must be called before service is started.
    */
   async open() {
     if (this.opened) {
@@ -66,36 +62,35 @@ export class EthereumService extends Service {
     await super.open()
     await this.chain.open()
     await this.synchronizer.open()
+    return true
   }
 
   /**
-   * Starts service and ensures blockchain is synchronized. Returns a promise
-   * that resolves once the service is started and blockchain is in sync.
-   * @return {Promise}
+   * Starts service and ensures blockchain is synchronized.
    */
-  async start(): Promise<void | boolean> {
+  async start(): Promise<boolean> {
     if (this.running) {
       return false
     }
     await super.start()
-    this.synchronizer.start() // eslint-disable-line @typescript-eslint/no-floating-promises
+    void this.synchronizer.start()
+    return true
   }
 
   /**
-   * Stop service. Interrupts blockchain synchronization if its in progress.
-   * @return {Promise}
+   * Stop service. Interrupts blockchain synchronization if in progress.
    */
-  async stop(): Promise<void | boolean> {
+  async stop(): Promise<boolean> {
     if (!this.running) {
       return false
     }
     await this.synchronizer.stop()
     await super.stop()
+    return true
   }
 
   /**
    * Close service.
-   * @return {Promise}
    */
   async close() {
     if (this.opened) {

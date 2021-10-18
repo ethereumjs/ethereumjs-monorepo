@@ -284,7 +284,7 @@ function runRpcServers(client: EthereumClient, config: Config) {
 
   if (rpc) {
     const methods =
-      rpcEngine && rpcEnginePort === rpcport
+      rpcEngine && rpcEnginePort === rpcport && rpcEngineAddr === rpcaddr
         ? { ...manager.getMethods(), ...manager.getMethods(true) }
         : { ...manager.getMethods() }
     const server = new RPCServer(methods)
@@ -296,7 +296,7 @@ function runRpcServers(client: EthereumClient, config: Config) {
   }
 
   if (rpcEngine) {
-    if (rpc && rpcport === rpcEnginePort) {
+    if (rpc && rpcport === rpcEnginePort && rpcaddr === rpcEngineAddr) {
       return servers
     }
     const server = new RPCServer(manager.getMethods(true))
