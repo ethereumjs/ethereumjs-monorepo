@@ -169,7 +169,7 @@ export abstract class Synchronizer {
   async sync(): Promise<boolean> {
     let peer = this.best()
     let numAttempts = 1
-    while (!peer && this.opened) {
+    while (!peer && this.opened && !this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
       this.config.logger.debug(`Waiting for best peer (attempt #${numAttempts})`)
       await new Promise((resolve) => setTimeout(resolve, 5000))
       peer = this.best()
