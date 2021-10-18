@@ -250,6 +250,9 @@ export class Miner {
         hardforkByBlockNumber: true,
         calcDifficultyFromHeader,
       },
+      builderOpts: {
+        insertBlockIntoBlockchain: false,
+      },
     })
 
     const txs = await this.synchronizer.txPool.txsByPriceAndNonce(

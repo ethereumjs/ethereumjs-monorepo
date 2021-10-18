@@ -372,6 +372,9 @@ export class Engine {
           baseFeePerGas,
           coinbase,
         },
+        builderOpts: {
+          insertBlockIntoBlockchain: false,
+        },
       })
 
       const txs = await this.txPool.txsByPriceAndNonce(vmCopy.stateManager, baseFeePerGas)

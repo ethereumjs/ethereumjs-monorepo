@@ -10,6 +10,22 @@ import { RunTxResult } from './runTx'
 import { calculateMinerReward, rewardAccount, encodeReceipt } from './runBlock'
 
 /**
+ * Options for the block builder.
+ */
+type BuilderOpts = {
+  /**
+   * Whether to insert the block into the blockchain after building it.
+   * This is useful for completing a full cycle when building a block so
+   * the only next step is to build again, however it may not be desired
+   * if the block is being emulated or may be discarded as to not affect
+   * the underlying blockchain.
+   *
+   * Default: true
+   */
+  insertBlockIntoBlockchain?: boolean
+}
+
+/**
  * Options for building a block.
  */
 export interface BuildBlockOpts {
@@ -28,6 +44,11 @@ export interface BuildBlockOpts {
    * The block options to use.
    */
   blockOpts?: BlockOptions
+
+  /**
+   * The builder options to use.
+   */
+  builderOpts?: BuilderOpts
 }
 
 /**
@@ -54,6 +75,7 @@ export class BlockBuilder {
   gasUsed = new BN(0)
 
   private readonly vm: VM
+  private builderOpts: BuilderOpts
   private blockOpts: BlockOptions
   private headerData: HeaderData
   private transactions: TypedTransaction[] = []
@@ -64,6 +86,7 @@ export class BlockBuilder {
 
   constructor(vm: VM, opts: BuildBlockOpts) {
     this.vm = vm
+    this.builderOpts = { insertBlockIntoBlockchain: true, ...opts.builderOpts }
     this.blockOpts = { ...opts.blockOpts, common: this.vm._common }
 
     this.headerData = {
@@ -233,7 +256,10 @@ export class BlockBuilder {
 
     const blockData = { header: headerData, transactions: this.transactions }
     const block = Block.fromBlockData(blockData, blockOpts)
-    await this.vm.blockchain.putBlock(block)
+
+    if (this.builderOpts.insertBlockIntoBlockchain) {
+      await this.vm.blockchain.putBlock(block)
+    }
 
     this.built = true
     if (this.checkpointed) {
