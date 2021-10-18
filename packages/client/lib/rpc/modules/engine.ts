@@ -522,7 +522,12 @@ export class Engine {
     const block = this.validBlocks.get(blockHash)
 
     if (!block && status === Status.VALID) {
-      throw EngineError.UnknownHeader
+      try {
+        // Check if block may already be in canonical chain before throwing unknown header.
+        await this.chain.getBlock(Buffer.from(blockHash, 'hex'))
+      } catch (error) {
+        throw EngineError.UnknownHeader
+      }
     }
 
     if (block && status === Status.INVALID) {
