@@ -219,6 +219,19 @@ export default class Transaction extends BaseTransaction<Transaction> {
   }
 
   /**
+   * The amount of gas paid for the data in this tx
+   */
+  getDataFee(): BN {
+    if (Object.isFrozen(this)) {
+      if (!this.cache.dataFee) {
+        this.cache.dataFee = super.getDataFee()
+      }
+      return this.cache.dataFee
+    }
+    return super.getDataFee()
+  }
+
+  /**
    * The up front amount that an account must have for this transaction to be valid
    */
   getUpfrontCost(): BN {

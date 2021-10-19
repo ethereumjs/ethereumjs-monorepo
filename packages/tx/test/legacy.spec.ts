@@ -152,6 +152,9 @@ tape('[Transaction]', function (t) {
     tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer))
     st.equals(tx.getDataFee().toNumber(), 1716)
 
+    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), { freeze: false })
+    st.equals(tx.getDataFee().toNumber(), 1716)
+
     st.end()
   })
 
