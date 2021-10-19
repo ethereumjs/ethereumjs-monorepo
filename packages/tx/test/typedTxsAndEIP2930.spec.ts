@@ -528,4 +528,14 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
 
     t.end()
   })
+
+  t.test('getDataFee()', function (st) {
+    let tx = AccessListEIP2930Transaction.fromTxData({}, { common })
+    st.ok(tx.getDataFee().toNumber() === 0, 'Should return data fee when frozen')
+
+    tx = AccessListEIP2930Transaction.fromTxData({}, { common, freeze: false })
+    st.ok(tx.getDataFee().toNumber() === 0, 'Should return data fee when not frozen')
+
+    st.end()
+  })
 })
