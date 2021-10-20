@@ -282,7 +282,9 @@ function runRpcServers(client: EthereumClient, config: Config) {
         ? { ...manager.getMethods(), ...manager.getMethods(true) }
         : { ...manager.getMethods() }
     const server = new RPCServer(methods)
-    config.logger.info(`RPC HTTP endpoint opened: http://${rpcaddr}:${rpcport}`)
+    config.logger.info(
+      `HTTP endpoint opened for Ethereum JSON RPC API: http://${rpcaddr}:${rpcport}`
+    )
     server.http().listen(rpcport)
     server.on('request', onRequest)
     server.on('response', onBatchResponse)
@@ -295,7 +297,7 @@ function runRpcServers(client: EthereumClient, config: Config) {
     }
     const server = new RPCServer(manager.getMethods(true))
     config.logger.info(
-      `RPC HTTP endpoint opened for Engine API: http://${rpcEngineAddr}:${rpcEnginePort}`
+      `HTTP endpoint opened for Engine JSON RPC API: http://${rpcEngineAddr}:${rpcEnginePort}`
     )
     server.http().listen(rpcEnginePort)
     server.on('request', onRequest)

@@ -335,7 +335,7 @@ export class Engine {
             baseFeePerGas,
             coinbase: Address.fromString(feeRecipient),
           },
-          builderOpts: {
+          blockOpts: {
             putBlockIntoBlockchain: false,
           },
         })
