@@ -245,7 +245,6 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
 
     if (Object.isFrozen(this) && !this.cache.dataFee) {
       this.cache.dataFee = cost
-      return this.cache.dataFee
     }
 
     return cost

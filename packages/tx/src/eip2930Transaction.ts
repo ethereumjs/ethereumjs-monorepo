@@ -219,7 +219,6 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
     if (Object.isFrozen(this) && !this.cache.dataFee) {
       this.cache.dataFee = cost
-      return this.cache.dataFee
     }
 
     return cost
