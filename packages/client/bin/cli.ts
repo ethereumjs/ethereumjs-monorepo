@@ -9,13 +9,7 @@ import { Server as RPCServer } from 'jayson/promise'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { _getInitializedChains } from '@ethereumjs/common/dist/chains'
 import { Address, toBuffer } from 'ethereumjs-util'
-import {
-  parseMultiaddrs,
-  parseGenesisState,
-  parseGenesisCodeAndStorage,
-  parseCustomParams,
-  inspectParams,
-} from '../lib/util'
+import { parseMultiaddrs, parseGenesisState, parseCustomParams, inspectParams } from '../lib/util'
 import EthereumClient from '../lib/client'
 import { Config } from '../lib/config'
 import { Logger } from '../lib/logging'
@@ -497,12 +491,9 @@ async function run() {
     const chainName = path.parse(args.gethGenesis).base.split('.')[0]
     const genesisParams = await parseCustomParams(genesisFile, chainName)
     const genesisState = genesisFile.alloc ? await parseGenesisState(genesisFile) : {}
-    const genesisCodeAndStorage = genesisFile.alloc
-      ? await parseGenesisCodeAndStorage(genesisFile)
-      : {}
     common = new Common({
       chain: genesisParams.name,
-      customChains: [[genesisParams, genesisState, genesisCodeAndStorage]],
+      customChains: [[genesisParams, genesisState]],
     })
   }
 

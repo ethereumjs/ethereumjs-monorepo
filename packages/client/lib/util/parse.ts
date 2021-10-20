@@ -14,9 +14,10 @@ import {
   stripHexPrefix,
   bnToHex,
   bufferToHex,
+  addHexPrefix,
 } from 'ethereumjs-util'
 import type { MultiaddrLike } from '../types'
-import type { GenesisState, GenesisCodeAndStorage } from '@ethereumjs/common/dist/types'
+import type { GenesisState } from '@ethereumjs/common/dist/types'
 
 /**
  * Parses multiaddrs and bootnodes to multiaddr format.
@@ -303,36 +304,16 @@ export async function parseCustomParams(json: any, name?: string) {
  * @param json representing the `alloc` key in a Geth genesis file
  */
 export async function parseGenesisState(json: any) {
-  const genesisState: GenesisState = {}
-  if (json.alloc) {
-    Object.keys(json.alloc).forEach((address: string) => {
-      const genesisAddress = isHexPrefixed(address) ? address : '0x' + address
-      const { balance } = json.alloc[address]
-      genesisState[genesisAddress] = isHexPrefixed(balance) ? balance : bnToHex(new BN(balance))
-    })
+  const state: GenesisState = {}
+  for (let address of Object.keys(json.alloc)) {
+    let { balance, code, storage } = json.alloc[address]
+    address = addHexPrefix(address)
+    balance = isHexPrefixed(balance) ? balance : bnToHex(new BN(balance))
+    code = code ? addHexPrefix(code) : undefined
+    storage = storage ? Object.entries(storage) : undefined
+    state[address] = [balance, code, storage] as any
   }
-  return genesisState
-}
-
-/**
- * Parses the geth genesis code and storage into Common {@link GenesisCodeAndStorage}
- * @param json representing the `alloc` key in a Geth genesis file
- */
-export async function parseGenesisCodeAndStorage(json: any) {
-  const genesisCodeAndStorage: GenesisCodeAndStorage = {}
-  if (json.alloc) {
-    Object.keys(json.alloc).forEach((address: string) => {
-      const { code, storage } = json.alloc[address]
-      if (code) {
-        const genesisAddress = isHexPrefixed(address) ? address : '0x' + address
-        genesisCodeAndStorage[genesisAddress] = [
-          code,
-          storage ? (Object.entries(storage) as any) : [],
-        ]
-      }
-    })
-  }
-  return genesisCodeAndStorage
+  return state
 }
 
 /**

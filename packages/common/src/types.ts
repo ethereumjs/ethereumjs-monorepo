@@ -41,11 +41,7 @@ export interface Chain {
 }
 
 export interface GenesisState {
-  [key: string]: string
-}
-
-export interface GenesisCodeAndStorage {
-  [key: string]: [string, [[string, string]]] // address: [code, [[storageKey, storageValue]]]
+  [key: string]: string | [string, [[string, string]]] // balance | [balance, code, [[storageKey, storageValue]]]
 }
 
 export interface eipsType {
