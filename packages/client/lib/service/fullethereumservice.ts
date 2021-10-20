@@ -1,4 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
+import { BN } from 'ethereumjs-util'
 import { EthereumService, EthereumServiceOptions } from './ethereumservice'
 import { FullSynchronizer } from '../sync/fullsync'
 import { EthProtocol } from '../net/protocol/ethprotocol'
@@ -6,6 +7,7 @@ import { LesProtocol } from '../net/protocol/lesprotocol'
 import { Peer } from '../net/peer/peer'
 import { Protocol } from '../net/protocol'
 import { Miner } from '../miner'
+import type { Block } from '@ethereumjs/block'
 
 interface FullEthereumServiceOptions extends EthereumServiceOptions {
   /* Serve LES requests (default: false) */
@@ -117,14 +119,25 @@ export class FullEthereumService extends EthereumService {
   async handleEth(message: any, peer: Peer): Promise<void> {
     if (message.name === 'GetBlockHeaders') {
       const { reqId, block, max, skip, reverse } = message.data
-      const headers: any = await this.chain.getHeaders(block, max, skip, reverse)
-      if (headers.length > 0) {
-        peer.eth!.send('BlockHeaders', { reqId, headers })
+      if (BN.isBN(block)) {
+        if (
+          (reverse && block.gt(this.chain.headers.height)) ||
+          (!reverse && block.addn(max * skip).gt(this.chain.headers.height))
+        ) {
+          // Don't respond to requests greater than the current height
+          return
+        }
       }
+      let headers = await this.chain.getHeaders(block, max, skip, reverse)
+      headers = headers.filter((h) => !h._common.gteHardfork(Hardfork.Merge))
+      peer.eth!.send('BlockHeaders', { reqId, headers })
     } else if (message.name === 'GetBlockBodies') {
       const { reqId, hashes } = message.data
-      const blocks = await Promise.all(hashes.map((hash: any) => this.chain.getBlock(hash)))
-      const bodies: any = blocks.map((block: any) => block.raw().slice(1))
+      let blocks: Block[] = await Promise.all(
+        hashes.map((hash: Buffer) => this.chain.getBlock(hash))
+      )
+      blocks = blocks.filter((b) => !b._common.gteHardfork(Hardfork.Merge))
+      const bodies = blocks.map((block) => block.raw().slice(1))
       peer.eth!.send('BlockBodies', { reqId, bodies })
     } else if (message.name === 'NewBlockHashes') {
       if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
@@ -169,7 +182,17 @@ export class FullEthereumService extends EthereumService {
         this.pool.ban(peer, 300000)
         this.config.logger.debug(`Dropping peer for violating flow control ${peer}`)
       } else {
-        const headers: any = await this.chain.getHeaders(block, max, skip, reverse)
+        if (BN.isBN(block)) {
+          if (
+            (reverse && block.gt(this.chain.headers.height)) ||
+            (!reverse && block.addn(max * skip).gt(this.chain.headers.height))
+          ) {
+            // Don't respond to requests greater than the current height
+            return
+          }
+        }
+        let headers = await this.chain.getHeaders(block, max, skip, reverse)
+        headers = headers.filter((h) => !h._common.gteHardfork(Hardfork.Merge))
         peer.les!.send('BlockHeaders', { reqId, bv, headers })
       }
     }
