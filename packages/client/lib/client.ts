@@ -1,10 +1,12 @@
 import events from 'events'
 import { MultiaddrLike } from './types'
 import { Config } from './config'
-import { FullEthereumService, LightEthereumService } from './service'
+import { EthereumService, FullEthereumService, LightEthereumService } from './service'
 import { Event } from './types'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
+import { FullSynchronizer } from './sync'
+import { bufferToHex } from 'ethereumjs-util'
 
 export interface EthereumClientOptions {
   /* Client configuration */
@@ -97,6 +99,8 @@ export default class EthereumClient extends events.EventEmitter {
     if (this.started) {
       return false
     }
+    this.config.logger.info('Connecting to network and synchronizing blockchain...')
+
     await Promise.all(this.services.map((s) => s.start()))
     await Promise.all(this.config.servers.map((s) => s.start()))
     await Promise.all(this.config.servers.map((s) => s.bootstrap()))
@@ -129,5 +133,58 @@ export default class EthereumClient extends events.EventEmitter {
    */
   server(name: string) {
     return this.config.servers.find((s) => s.name === name)
+  }
+
+  /**
+   * Execute a range of blocks on a copy of the VM
+   * without changing any chain or client state
+   *
+   * Possible input formats:
+   *
+   * - Single block, '5'
+   * - Range of blocks, '5-10'
+   *
+   */
+  async executeBlocks(first: number, last: number, txHashes: string[]) {
+    this.config.logger.info('Preparing for block execution (debug mode, no services started)...')
+
+    const service = this.services.find((s) => s.name === 'eth') as EthereumService
+    const synchronizer = service.synchronizer as FullSynchronizer
+    const vm = synchronizer.execution.vm.copy()
+
+    for (let blockNumber = first; blockNumber <= last; blockNumber++) {
+      const block = await vm.blockchain.getBlock(blockNumber)
+      const parentBlock = await vm.blockchain.getBlock(block.header.parentHash)
+
+      // Set the correct state root
+      await vm.stateManager.setStateRoot(parentBlock.header.stateRoot)
+
+      const td = await vm.blockchain.getTotalDifficulty(block.header.parentHash)
+      vm._common.setHardforkByBlockNumber(blockNumber, td)
+
+      if (txHashes.length === 0) {
+        const res = await vm.runBlock({ block })
+        this.config.logger.info(
+          `Executed block num=${blockNumber} hash=0x${block.hash().toString('hex')} txs=${
+            block.transactions.length
+          } gasUsed=${res.gasUsed} `
+        )
+      } else {
+        let count = 0
+        for (const tx of block.transactions) {
+          const txHash = bufferToHex(tx.hash())
+          if (txHashes.includes(txHash)) {
+            const res = await vm.runTx({ block, tx })
+            this.config.logger.info(
+              `Executed tx hash=${txHash} gasUsed=${res.gasUsed} from block num=${blockNumber}`
+            )
+            count += 1
+          }
+        }
+        if (count === 0) {
+          this.config.logger.warn(`Block number ${first} contains no txs with provided hashes`)
+        }
+      }
+    }
   }
 }

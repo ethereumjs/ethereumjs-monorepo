@@ -22,6 +22,8 @@ export class PeerPool {
   private pool: Map<string, Peer>
   private noPeerPeriods: number
   private opened: boolean
+  public running: boolean
+
   private _statusCheckInterval: NodeJS.Timeout | undefined /* global NodeJS */
 
   /**
@@ -33,6 +35,7 @@ export class PeerPool {
     this.pool = new Map<string, Peer>()
     this.noPeerPeriods = 0
     this.opened = false
+    this.running = false
 
     this.init()
   }
@@ -57,8 +60,32 @@ export class PeerPool {
     })
 
     this.opened = true
+  }
+
+  /**
+   * Start peer pool
+   */
+  async start(): Promise<boolean> {
+    if (this.running) {
+      return false
+    }
     // eslint-disable-next-line @typescript-eslint/await-thenable
     this._statusCheckInterval = setInterval(await this._statusCheck.bind(this), 20000)
+
+    this.running = true
+    return true
+  }
+
+  /**
+   * Stop peer pool
+   */
+  async stop(): Promise<boolean> {
+    if (this.opened) {
+      await this.close()
+    }
+    clearInterval(this._statusCheckInterval as NodeJS.Timeout)
+    this.running = false
+    return true
   }
 
   /**
@@ -67,7 +94,6 @@ export class PeerPool {
   async close() {
     this.pool.clear()
     this.opened = false
-    clearInterval(this._statusCheckInterval as NodeJS.Timeout)
   }
 
   /**

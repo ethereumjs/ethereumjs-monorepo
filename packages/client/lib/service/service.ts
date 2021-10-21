@@ -105,6 +105,7 @@ export class Service {
     if (this.running) {
       return false
     }
+    await this.pool.start()
     this.running = true
     this.config.logger.info(`Started ${this.name} service.`)
     return true
@@ -117,6 +118,7 @@ export class Service {
     if (this.opened) {
       await this.close()
     }
+    await this.pool.stop()
     this.running = false
     this.config.logger.info(`Stopped ${this.name} service.`)
     return true
