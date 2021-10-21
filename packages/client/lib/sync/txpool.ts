@@ -9,13 +9,16 @@ import { Address, BN } from 'ethereumjs-util'
 import { Config } from '../config'
 import { Peer } from '../net/peer'
 import { EthProtocolMethods } from '../net/protocol'
-import { PeerPool } from '../net/peerpool'
+import type { PeerPool } from '../net/peerpool'
 import type { Block } from '@ethereumjs/block'
 import type { StateManager } from '@ethereumjs/vm/dist/state'
 
 export interface TxPoolOptions {
   /* Config */
   config: Config
+
+  /* Return number of connected peers for stats logging */
+  getPeerCount?: () => number
 }
 
 type TxPoolObject = {
@@ -48,9 +51,10 @@ type PeerId = string
  */
 export class TxPool {
   public config: Config
+  public running: boolean
 
   private opened: boolean
-  public running: boolean
+  private getPeerCount?: () => number
 
   /* global NodeJS */
   private _logInterval: NodeJS.Timeout | undefined
@@ -124,6 +128,7 @@ export class TxPool {
   constructor(options: TxPoolOptions) {
     this.config = options.config
 
+    this.getPeerCount = options.getPeerCount
     this.pool = new Map<UnprefixedAddress, TxPoolObject[]>()
     this.handled = new Map<UnprefixedHash, HandledObject>()
     this.knownByPeer = new Map<PeerId, SentObject[]>()
@@ -306,7 +311,7 @@ export class TxPool {
    * and re-broadcast to other peers
    * @param txs
    * @param peer Announcing peer
-   * @param peerPool Reference to the peer pool
+   * @param peerPool Reference to the {@link PeerPool}
    */
   async handleAnnouncedTxs(txs: TypedTransaction[], peer: Peer, peerPool: PeerPool) {
     if (!this.running || txs.length === 0) {
@@ -548,6 +553,8 @@ export class TxPool {
     this.pool.forEach((poolObjects) => {
       count += poolObjects.length
     })
-    this.config.logger.info(`TxPool Statistics transactions=${count} senders=${this.pool.size}`)
+    this.config.logger.info(
+      `TxPool Statistics txs=${count} senders=${this.pool.size} peers=${this.getPeerCount?.() ?? 0}`
+    )
   }
 }

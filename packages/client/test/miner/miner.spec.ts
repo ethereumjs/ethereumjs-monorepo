@@ -76,7 +76,7 @@ tape('[Miner]', async (t) => {
   const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berlin })
   common.setMaxListeners(50)
   const accounts: [Address, Buffer][] = [[A.address, A.privateKey]]
-  const config = new Config({ transports: [], loglevel: 'error', accounts, mine: true, common })
+  const config = new Config({ transports: [], accounts, mine: true, common })
   config.events.setMaxListeners(50)
 
   const createTx = (
@@ -135,7 +135,7 @@ tape('[Miner]', async (t) => {
     t.notOk(miner.running)
 
     // Should not start when config.mine=false
-    const configMineFalse = new Config({ transports: [], loglevel: 'error', accounts, mine: false })
+    const configMineFalse = new Config({ transports: [], accounts, mine: false })
     miner = new Miner({ config: configMineFalse, synchronizer })
     miner.start()
     t.notOk(miner.running, 'miner should not start when config.mine=false')
@@ -221,7 +221,7 @@ tape('[Miner]', async (t) => {
     t.plan(1)
     const customChainParams = { hardforks: [{ name: 'london', block: 0 }] }
     const common = Common.forCustomChain(CommonChain.Rinkeby, customChainParams, Hardfork.London)
-    const config = new Config({ transports: [], loglevel: 'error', accounts, mine: true, common })
+    const config = new Config({ transports: [], accounts, mine: true, common })
     const pool = new PeerPool() as any
     const chain = new FakeChain() as any
     const block = Block.fromBlockData({}, { common })
@@ -325,7 +325,7 @@ tape('[Miner]', async (t) => {
     t.plan(2)
     const pool = new PeerPool() as any
     const chain = new FakeChain() as any
-    const config = new Config({ transports: [], loglevel: 'error', accounts, mine: true, common })
+    const config = new Config({ transports: [], accounts, mine: true, common })
     const synchronizer = new FullSynchronizer({
       config,
       pool,
@@ -373,7 +373,7 @@ tape('[Miner]', async (t) => {
     const common = Common.custom(customChainParams, { baseChain: CommonChain.Rinkeby })
     common.setHardforkByBlockNumber(0)
     const pool = new PeerPool() as any
-    const config = new Config({ transports: [], loglevel: 'error', accounts, mine: true, common })
+    const config = new Config({ transports: [], accounts, mine: true, common })
     const chain = new Chain({ config })
     await chain.open()
     const synchronizer = new FullSynchronizer({
@@ -440,7 +440,7 @@ tape('[Miner]', async (t) => {
     const common = new Common({ chain: CommonChain.Ropsten })
     ;(common as any)._chainParams['genesis'].difficulty = 1
     const pool = new PeerPool() as any
-    const config = new Config({ transports: [], loglevel: 'error', accounts, mine: true, common })
+    const config = new Config({ transports: [], accounts, mine: true, common })
     const chain = new Chain({ config })
     await chain.open()
     const synchronizer = new FullSynchronizer({

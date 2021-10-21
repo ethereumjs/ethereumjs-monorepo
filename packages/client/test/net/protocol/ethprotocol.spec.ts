@@ -7,7 +7,7 @@ import { Block } from '@ethereumjs/block'
 
 tape('[EthProtocol]', (t) => {
   t.test('should get properties', (t) => {
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const chain = new Chain({ config })
     const p = new EthProtocol({ config, chain })
     t.ok(typeof p.name === 'string', 'get name')
@@ -17,7 +17,7 @@ tape('[EthProtocol]', (t) => {
   })
 
   t.test('should open correctly', async (t) => {
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const chain = new Chain({ config })
     const p = new EthProtocol({ config, chain })
     await p.open()
@@ -27,7 +27,7 @@ tape('[EthProtocol]', (t) => {
   })
 
   t.test('should encode/decode status', (t) => {
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const chain = new Chain({ config })
     const p = new EthProtocol({ config, chain })
     Object.defineProperty(chain, 'networkId', {
@@ -75,7 +75,7 @@ tape('[EthProtocol]', (t) => {
     t.end()
   })
   t.test('verify that NEW_BLOCK handler encodes/decodes correctly', (t) => {
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const chain = new Chain({ config })
     const p = new EthProtocol({ config, chain })
     const td = new BN(100)

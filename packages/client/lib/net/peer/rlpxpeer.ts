@@ -29,7 +29,7 @@ export interface RlpxPeerOptions extends Omit<PeerOptions, 'address' | 'transpor
  * Devp2p/RLPx peer
  * @memberof module:net/peer
  * @example
- *
+ * ```typescript
  * import { RlpxPeer } from './lib/net/peer'
  * import { Chain } from './lib/blockchain'
  * import { EthProtocol } from './lib/net/protocol'
@@ -45,6 +45,7 @@ export interface RlpxPeerOptions extends Omit<PeerOptions, 'address' | 'transpor
  *   .on('connected', () => console.log('Connected'))
  *   .on('disconnected', (reason) => console.log('Disconnected:', reason))
  *   .connect()
+ * ```
  */
 export class RlpxPeer extends Peer {
   private host: string
@@ -55,7 +56,6 @@ export class RlpxPeer extends Peer {
 
   /**
    * Create new devp2p/rlpx peer
-   * @param {RlpxPeerOptions}
    */
   constructor(options: RlpxPeerOptions) {
     const address = `${options.host}:${options.port}`
@@ -74,8 +74,7 @@ export class RlpxPeer extends Peer {
 
   /**
    * Return devp2p/rlpx capabilities for the specified protocols
-   * @param  {Protocols[]} protocols protocol instances
-   * @return {Object[]} capabilities
+   * @param protocols protocol instances
    */
   static capabilities(protocols: Protocol[]): Devp2pCapabilities[] {
     const capabilities: Devp2pCapabilities[] = []
@@ -94,7 +93,6 @@ export class RlpxPeer extends Peer {
 
   /**
    * Initiate peer connection
-   * @return {Promise}
    */
   async connect(): Promise<void> {
     if (this.connected) {
@@ -138,8 +136,6 @@ export class RlpxPeer extends Peer {
 
   /**
    * Accept new peer connection from an rlpx server
-   * @private
-   * @return {Promise}
    */
   async accept(rlpxPeer: Devp2pRlpxPeer, server: RlpxServer): Promise<void> {
     if (this.connected) {
@@ -151,11 +147,9 @@ export class RlpxPeer extends Peer {
 
   /**
    * Adds protocols to this peer given an rlpx native peer instance.
-   * @private
-   * @param  {Object}  rlpxPeer rlpx native peer
-   * @return {Promise}
+   * @param rlpxPeer rlpx native peer
    */
-  async bindProtocols(rlpxPeer: Devp2pRlpxPeer): Promise<void> {
+  private async bindProtocols(rlpxPeer: Devp2pRlpxPeer): Promise<void> {
     this.rlpxPeer = rlpxPeer
     await Promise.all(
       rlpxPeer.getProtocols().map((rlpxProtocol) => {

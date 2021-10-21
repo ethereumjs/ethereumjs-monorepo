@@ -49,6 +49,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
+    "@chainsafe/libp2p-noise": "^4.1.1",
     "@ethereumjs/block": "^3.5.1",
     "@ethereumjs/blockchain": "^5.4.2",
     "@ethereumjs/common": "^2.5.0",
@@ -69,7 +70,6 @@
     "libp2p-interfaces": "^0.8.3",
     "libp2p-kad-dht": "^0.20.6",
     "libp2p-mplex": "^0.10.2",
-    "libp2p-noise": "^2.0.4",
     "libp2p-tcp": "^0.15.3",
     "libp2p-websockets": "^0.15.1",
     "merkle-patricia-tree": "^4.2.2",
@@ -77,8 +77,9 @@
     "peer-id": "^0.14.3",
     "qheap": "^1.4.0",
     "rlp": "^2.2.4",
-    "winston": "3.3.3",
-    "yargs": "^13.2.1"
+    "winston": "^3.3.3",
+    "winston-daily-rotate-file": "^4.5.5",
+    "yargs": "^17.2.1"
   },
   "devDependencies": {
     "@babel/plugin-transform-spread": "^7.10.1",

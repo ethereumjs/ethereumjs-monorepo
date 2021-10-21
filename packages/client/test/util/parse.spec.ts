@@ -9,6 +9,7 @@ import {
 
 tape('[Util/Parse]', (t) => {
   t.test('should parse multiaddrs', (t) => {
+    t.plan(7)
     t.deepEquals(parseMultiaddrs(''), [], 'handle empty')
     t.deepEquals(
       parseMultiaddrs('10.0.0.1:1234'),
@@ -40,10 +41,10 @@ tape('[Util/Parse]', (t) => {
       'parse multiple'
     )
     t.throws(() => parseMultiaddrs(10 as any), /not a function/, 'throws error')
-    t.end()
   })
 
   t.test('should parse transports', (t) => {
+    t.plan(2)
     t.deepEquals(
       parseTransports(['t1']),
       [{ name: 't1', options: {} }],
@@ -59,10 +60,10 @@ tape('[Util/Parse]', (t) => {
       ],
       'parsed transport with options'
     )
-    t.end()
   })
 
   t.test('should parse geth params file', async (t) => {
+    t.plan(3)
     const json = require('../testdata/testnet2.json')
     const params = await parseCustomParams(json, 'rinkeby')
     t.equals(
@@ -73,25 +74,25 @@ tape('[Util/Parse]', (t) => {
     t.equals(params.genesis.nonce, '0x0000000000000042', 'nonce should be correctly formatted')
     const rinkebyGenesisState = await parseGenesisState(json)
     t.equals(
-      rinkebyGenesisState['0x4c2ae482593505f0163cdefc073e81c63cda4107'],
+      rinkebyGenesisState['0x4c2ae482593505f0163cdefc073e81c63cda4107'][0],
       '0x152d02c7e14af6800000',
       'parsed genesis state correctly'
     )
-    t.end()
   })
 
   t.test('should throw with invalid Spurious Dragon blocks', async (t) => {
+    t.plan(1)
     const json = require('../testdata/invalid_spurious_dragon.json')
     try {
       await parseCustomParams(json, 'bad_params')
       t.fail('should have thrown')
     } catch {
       t.pass('should throw')
-      t.end()
     }
   })
 
   t.test('should import poa network params correctly', async (t) => {
+    t.plan(2)
     const json = require('../testdata/poa.json')
     const params = await parseCustomParams(json, 'poa')
     t.equals(params.genesis.nonce, '0x0000000000000000', 'nonce is formatted correctly')
@@ -100,6 +101,5 @@ tape('[Util/Parse]', (t) => {
       { type: 'poa', algorithm: 'clique', clique: { period: 15, epoch: 30000 } },
       'consensus config matches'
     )
-    t.end()
   })
 })

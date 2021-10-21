@@ -3,13 +3,14 @@ import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { toBuffer } from 'ethereumjs-util'
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../lib/rpc/error-code'
-import { baseSetup, params, baseRequest, createClient, createManager, startRPC } from '../helpers'
+import { baseSetup, params, baseRequest } from '../helpers'
 import { checkError } from '../util'
 
 const method = 'eth_sendRawTransaction'
 
 tape(`${method}: call with valid arguments`, async (t) => {
-  const { server } = baseSetup()
+  const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlockBN(Hardfork.London)
+  const { server } = baseSetup({ syncTargetHeight })
 
   // Mainnet EIP-1559 tx
   const txData =
@@ -27,9 +28,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 })
 
 tape(`${method}: call with sync target height not set yet`, async (t) => {
-  const { server, client } = baseSetup()
-  const service = client.services.find((s) => s.name === 'eth')
-  service!.synchronizer.syncTargetHeight = undefined
+  const { server } = baseSetup()
 
   // Mainnet EIP-1559 tx
   const txData =
@@ -45,7 +44,8 @@ tape(`${method}: call with sync target height not set yet`, async (t) => {
 })
 
 tape(`${method}: call with invalid tx (wrong chain ID)`, async (t) => {
-  const { server } = baseSetup()
+  const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlockBN(Hardfork.London)
+  const { server } = baseSetup({ syncTargetHeight })
 
   // Baikal EIP-1559 tx
   const txData =
@@ -61,7 +61,8 @@ tape(`${method}: call with invalid tx (wrong chain ID)`, async (t) => {
 })
 
 tape(`${method}: call with unsigned tx`, async (t) => {
-  const { server } = baseSetup()
+  const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlockBN(Hardfork.London)
+  const { server } = baseSetup({ syncTargetHeight })
 
   // Mainnet EIP-1559 tx
   const txData =
@@ -82,9 +83,8 @@ tape(`${method}: call with unsigned tx`, async (t) => {
 })
 
 tape(`${method}: call with no peers`, async (t) => {
-  const client = createClient({ noPeers: true })
-  const manager = createManager(client)
-  const server = startRPC(manager.getMethods())
+  const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlockBN(Hardfork.London)
+  const { server } = baseSetup({ syncTargetHeight, noPeers: true })
 
   // Mainnet EIP-1559 tx
   const txData =

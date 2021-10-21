@@ -144,7 +144,7 @@ export class Miner {
     this._boundChainUpdatedHandler = this.chainUpdated.bind(this)
     this.config.events.on(Event.CHAIN_UPDATED, this._boundChainUpdatedHandler)
     this.config.logger.info(`Miner started. Assembling next block in ${this.period / 1000}s`)
-    void this.queueNextAssembly() // void operator satisfies eslint rule for no-floating-promises
+    void this.queueNextAssembly()
     return true
   }
 
@@ -249,6 +249,7 @@ export class Miner {
         cliqueSigner,
         hardforkByBlockNumber: true,
         calcDifficultyFromHeader,
+        putBlockIntoBlockchain: false,
       },
     })
 

@@ -12,12 +12,16 @@ import {
   unpadBuffer,
   isHexPrefixed,
   stripHexPrefix,
+  bnToHex,
+  bufferToHex,
+  addHexPrefix,
 } from 'ethereumjs-util'
 import type { MultiaddrLike } from '../types'
 import type { GenesisState } from '@ethereumjs/common/dist/types'
 
 /**
  * Parses multiaddrs and bootnodes to multiaddr format.
+ * @param input comma separated string
  */
 export function parseMultiaddrs(input: MultiaddrLike): multiaddr[] {
   if (!input) {
@@ -81,15 +85,17 @@ export function parseTransports(transports: string[]) {
 }
 
 /**
- *
+ * Returns initialized storage trie
  * @param storage - Object containing storage trie entries from geth genesis state
  * @returns genesis storage trie
  */
 async function createStorageTrie(storage: any) {
   const trie = new Trie()
-  for (const [address, value] of Object.entries(storage)) {
-    const key = Buffer.from(address, 'hex')
-    const val = rlp.encode(unpadBuffer(Buffer.from(value as string, 'hex')))
+  for (const [address, value] of Object.entries(storage) as unknown as [string, string]) {
+    const key = isHexPrefixed(address) ? toBuffer(address) : Buffer.from(address, 'hex')
+    const val = rlp.encode(
+      unpadBuffer(isHexPrefixed(value) ? toBuffer(value) : Buffer.from(value, 'hex'))
+    )
     await trie.put(key, val)
   }
   return trie
@@ -98,7 +104,6 @@ async function createStorageTrie(storage: any) {
 /**
  * Derives state trie of genesis block bases on genesis allocations
  * @param alloc - Object containing genesis allocations from geth genesis block
- *
  * @returns genesis state trie
  */
 async function createGethGenesisStateTrie(alloc: any) {
@@ -108,8 +113,7 @@ async function createGethGenesisStateTrie(alloc: any) {
     const { balance, code, storage } = value as any
     const account = new Account()
     if (balance) {
-      // note: balance is a Buffer
-      account.balance = new BN(toBuffer(balance))
+      account.balance = new BN(isHexPrefixed(balance) ? toBuffer(balance) : balance)
     }
     if (code) {
       account.codeHash = keccak(toBuffer(code))
@@ -162,9 +166,9 @@ async function createGethGenesisBlockHeader(json: any) {
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
 async function parseGethParams(json: any) {
-  const { name, config, timestamp, difficulty, nonce, mixHash, coinbase } = json
+  const { name, config, difficulty, nonce, mixHash, coinbase } = json
 
-  let { gasLimit, extraData, baseFeePerGas } = json
+  let { gasLimit, extraData, baseFeePerGas, timestamp } = json
 
   // geth stores gasLimit as a hex string while our gasLimit is a `number`
   json['gasLimit'] = gasLimit = parseInt(gasLimit)
@@ -173,6 +177,8 @@ async function parseGethParams(json: any) {
     baseFeePerGas === undefined && config.londonBlock === 0 ? 1000000000 : undefined
   // geth is not strictly putting in empty fields with a 0x prefix
   json['extraData'] = extraData = extraData === '' ? '0x' : extraData
+  // geth may use number for timestamp
+  json['timestamp'] = timestamp = isHexPrefixed(timestamp) ? timestamp : bnToHex(new BN(timestamp))
 
   // EIP155 and EIP158 are both part of Spurious Dragon hardfork and must occur at the same time
   // but have different configuration parameters in geth genesis parameters
@@ -185,7 +191,7 @@ async function parseGethParams(json: any) {
   const { chainId } = config
   const header = await createGethGenesisBlockHeader(json)
   const { stateRoot } = header
-  const hash = '0x' + header.hash().toString('hex')
+  const hash = bufferToHex(header.hash())
   const params: any = {
     name,
     chainId,
@@ -199,7 +205,7 @@ async function parseGethParams(json: any) {
       extraData,
       mixHash,
       coinbase,
-      stateRoot: '0x' + stateRoot.toString('hex'),
+      stateRoot: bufferToHex(stateRoot),
       baseFeePerGas,
     },
     bootstrapNodes: [],
@@ -260,7 +266,6 @@ async function parseGethParams(json: any) {
 
 /**
  * Transforms Geth formatted nonce (i.e. hex string) to 8 byte hex prefixed string used internally
- *
  * @param nonce as a string parsed from the Geth genesis file
  * @returns nonce as a hex-prefixed 8 byte string
  */
@@ -295,21 +300,26 @@ export async function parseCustomParams(json: any, name?: string) {
 }
 
 /**
- * Parses the geth genesis state into a `Common.GenesisState`
+ * Parses the geth genesis state into Common {@link GenesisState}
  * @param json representing the `alloc` key in a Geth genesis file
- * @returns a `GenesisState` compatible object
  */
 export async function parseGenesisState(json: any) {
-  const genesisState: GenesisState = {}
-  if (json.alloc) {
-    Object.keys(json.alloc).forEach((address: string) => {
-      const genesisAddress = isHexPrefixed(address) ? address : '0x' + address
-      genesisState[genesisAddress] = json.alloc[address].balance
-    })
+  const state: GenesisState = {}
+  for (let address of Object.keys(json.alloc)) {
+    let { balance, code, storage } = json.alloc[address]
+    address = addHexPrefix(address)
+    balance = isHexPrefixed(balance) ? balance : bnToHex(new BN(balance))
+    code = code ? addHexPrefix(code) : undefined
+    storage = storage ? Object.entries(storage) : undefined
+    state[address] = [balance, code, storage] as any
   }
-  return genesisState
+  return state
 }
 
+/**
+ * Returns Buffer from input hexadeicmal string or Buffer
+ * @param input hexadecimal string or Buffer
+ */
 export function parseKey(input: string | Buffer) {
   if (Buffer.isBuffer(input)) {
     return input

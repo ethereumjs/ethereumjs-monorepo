@@ -61,7 +61,6 @@ export class Peer extends events.EventEmitter {
 
   /**
    * Create new peer
-   * @param {PeerOptions}
    */
   constructor(options: PeerOptions) {
     super()
@@ -80,7 +79,6 @@ export class Peer extends events.EventEmitter {
 
   /**
    * Get idle state of peer
-   * @type {boolean}
    */
   get idle() {
     return this._idle
@@ -88,7 +86,6 @@ export class Peer extends events.EventEmitter {
 
   /**
    * Set idle state of peer
-   * @type {boolean}
    */
   set idle(value) {
     this._idle = value
@@ -102,11 +99,10 @@ export class Peer extends events.EventEmitter {
    * arguments. send() only sends a message without waiting for a response, whereas
    * request() also sends the message but will return a promise that resolves with
    * the response payload.
-   * @protected
-   * @param  {Protocol}  protocol protocol instance
-   * @param  {Sender}    sender Sender instance provided by subclass
-   * @return {Promise}
+   * @param protocol protocol instance
+   * @param sender sender instance provided by subclass
    * @example
+   * ```typescript
    * await peer.bindProtocol(ethProtocol, sender)
    * // Example: Directly call message name as a method on the bound protocol
    * const headers1 = await peer.eth.getBlockHeaders({ block: new BN(1), max: 100 })
@@ -116,8 +112,9 @@ export class Peer extends events.EventEmitter {
    * // wait for response message as an event
    * peer.eth.send('getBlockHeaders', { block: new BN(1), max: 100 })
    * peer.eth.on('message', ({ data }) => console.log(`Received ${data.length} headers`))
+   * ```
    */
-  async bindProtocol(protocol: Protocol, sender: Sender): Promise<void> {
+  protected async bindProtocol(protocol: Protocol, sender: Sender): Promise<void> {
     const bound = await protocol.bind(this, sender)
     this.bound.set(bound.name, bound)
   }

@@ -6,7 +6,7 @@ import { checkError } from '../util'
 const method = 'engine_forkchoiceUpdated'
 
 tape(`${method}: call with invalid block hash without 0x`, async (t) => {
-  const { server } = baseSetup()
+  const { server } = baseSetup({ engine: true })
 
   const req = params(method, [
     {
@@ -23,7 +23,7 @@ tape(`${method}: call with invalid block hash without 0x`, async (t) => {
 })
 
 tape(`${method}: call with invalid hex string as block hash`, async (t) => {
-  const { server } = baseSetup()
+  const { server } = baseSetup({ engine: true })
 
   const req = params(method, [
     {

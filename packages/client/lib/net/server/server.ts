@@ -38,7 +38,6 @@ export class Server {
 
   /**
    * Create new server
-   * @param {ServerOptions}
    */
   constructor(options: ServerOptions) {
     this.config = options.config
@@ -51,20 +50,21 @@ export class Server {
     this.started = false
   }
 
-  get name(): string {
+  get name() {
     return this.constructor.name
   }
 
   /**
    * Check if server is running
    */
-  get running(): boolean {
+  get running() {
     return this.started
   }
 
   /**
-   * Start server. Returns a promise that resolves once server has been started.
-   * @return Resolves with true if server successfully started
+   * Start server.
+   * Returns a promise that resolves once server has been started.
+   * @returns true if server successfully started
    */
   async start(): Promise<boolean> {
     if (this.started) {
@@ -74,7 +74,6 @@ export class Server {
     await Promise.all(protocols.map((p) => p.open()))
     this.started = true
     this.config.logger.info(`Started ${this.name} server.`)
-
     return true
   }
 
@@ -96,9 +95,9 @@ export class Server {
   /**
    * Specify which protocols the server must support
    * @param protocols protocol classes
-   * @return True if protocol added successfully
+   * @returns true if protocol added successfully
    */
-  addProtocols(protocols: Protocol[]): boolean {
+  addProtocols(protocols: Protocol[]) {
     if (this.started) {
       this.config.logger.error('Cannot require protocols after server has been started')
       return false
@@ -109,10 +108,8 @@ export class Server {
 
   /**
    * Ban peer for a specified time
-   * @protected
-   * @param  peerId id of peer
-   * @param  maxAge how long to ban peer
-   * @return {Promise}
+   * @param peerId id of peer
+   * @param maxAge how long to ban peer
    */
   ban(_peerId: string, _maxAge: number) {
     // don't do anything by default

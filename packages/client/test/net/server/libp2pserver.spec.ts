@@ -87,7 +87,7 @@ tape('[Libp2pServer]', async (t) => {
 
   t.test('should start/stop server and test banning', async (t) => {
     t.plan(11)
-    const config = new Config({ transports: [], loglevel: 'off' })
+    const config = new Config({ transports: [] })
     const multiaddrs = [multiaddr('/ip4/6.6.6.6')]
     const server = new Libp2pServer({ config, multiaddrs, key: Buffer.from('4') })
     const protos: any = [

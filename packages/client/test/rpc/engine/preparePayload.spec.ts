@@ -18,7 +18,7 @@ const preparePayloadParams = {
 }
 
 tape(`${method}: call with invalid params`, async (t) => {
-  const { server } = baseSetup()
+  const { server } = baseSetup({ engine: true })
 
   const req = params(method, [parentHash, timestamp, random, feeRecipient])
   const expectRes = checkError(t, INVALID_PARAMS, 'invalid argument 0: argument is not object')
@@ -26,7 +26,7 @@ tape(`${method}: call with invalid params`, async (t) => {
 })
 
 tape(`${method}: call with invalid block hash without 0x`, async (t) => {
-  const { server } = baseSetup()
+  const { server } = baseSetup({ engine: true })
 
   const req = params(method, [{ ...preparePayloadParams, parentHash: parentHash.slice(2) }])
   const expectRes = checkError(
@@ -38,7 +38,7 @@ tape(`${method}: call with invalid block hash without 0x`, async (t) => {
 })
 
 tape(`${method}: call with invalid hex string as block hash`, async (t) => {
-  const { server } = baseSetup()
+  const { server } = baseSetup({ engine: true })
 
   const req = params(method, [{ ...preparePayloadParams, parentHash: '0xinvalid' }])
   const expectRes = checkError(
@@ -50,7 +50,7 @@ tape(`${method}: call with invalid hex string as block hash`, async (t) => {
 })
 
 tape(`${method}: call without a required parameter`, async (t) => {
-  const { server } = baseSetup()
+  const { server } = baseSetup({ engine: true })
 
   const req = params(method, [{ ...preparePayloadParams, random: undefined }])
   const expectRes = checkError(
@@ -62,7 +62,7 @@ tape(`${method}: call without a required parameter`, async (t) => {
 })
 
 tape(`${method}: call with params from test vector`, async (t) => {
-  const { server } = baseSetup()
+  const { server } = baseSetup({ engine: true })
 
   // from https://notes.ethereum.org/@9AeMAlpyQYaAAyuj47BzRw/rkwW3ceVY#Prepare-a-payload
   const testVector = {

@@ -18,33 +18,33 @@ class FetcherTest extends Fetcher<any, any, any> {
 tape('[Fetcher]', (t) => {
   t.test('should handle bad result', (t) => {
     t.plan(2)
-    const config = new Config({ loglevel: 'error', transports: [] })
+    const config = new Config({ transports: [] })
     const fetcher = new FetcherTest({ config, pool: td.object() })
     const job: any = { peer: {}, state: 'active' }
     ;(fetcher as any).running = true
     fetcher.next = td.func<FetcherTest['next']>()
     fetcher.wait = td.func<FetcherTest['wait']>()
     td.when(fetcher.wait()).thenResolve(undefined)
-    fetcher.success(job, undefined)
+    ;(fetcher as any).success(job, undefined)
     t.equals((fetcher as any).in.size(), 1, 'enqueued job')
     setTimeout(() => t.ok(job.peer.idle, 'peer idled'), 10)
   })
 
   t.test('should handle failure', (t) => {
     t.plan(2)
-    const config = new Config({ loglevel: 'error', transports: [] })
+    const config = new Config({ transports: [] })
     const fetcher = new FetcherTest({ config, pool: td.object() })
     const job = { peer: {}, state: 'active' }
     ;(fetcher as any).running = true
     fetcher.next = td.func<FetcherTest['next']>()
     config.events.on(Event.SYNC_FETCHER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
-    fetcher.failure(job as Job<any, any, any>, new Error('err0'))
+    ;(fetcher as any).failure(job as Job<any, any, any>, new Error('err0'))
     t.equals((fetcher as any).in.size(), 1, 'enqueued job')
   })
 
   t.test('should handle expiration', (t) => {
     t.plan(2)
-    const config = new Config({ loglevel: 'error', transports: [] })
+    const config = new Config({ transports: [] })
     const fetcher = new FetcherTest({
       config,
       pool: td.object(),
@@ -72,7 +72,7 @@ tape('[Fetcher]', (t) => {
 
   t.test('should handle clearing queue', (t) => {
     t.plan(2)
-    const config = new Config({ loglevel: 'error', transports: [] })
+    const config = new Config({ transports: [] })
     const fetcher = new FetcherTest({
       config,
       pool: td.object(),

@@ -16,7 +16,7 @@ export interface Libp2pPeerOptions extends Omit<PeerOptions, 'address' | 'transp
  * Libp2p peer
  * @memberof module:net/peer
  * @example
- *
+ * ```typescript
  * import multiaddr from 'multiaddr'
  * import { Libp2pPeer } from './lib/net/peer'
  * import { Chain } from './lib/blockchain'
@@ -32,6 +32,7 @@ export interface Libp2pPeerOptions extends Omit<PeerOptions, 'address' | 'transp
  *   .on('connected', () => console.log('Connected'))
  *   .on('disconnected', (reason) => console.log('Disconnected: ', reason))
  *   .connect()
+ * ```
  */
 export class Libp2pPeer extends Peer {
   private multiaddrs: multiaddr[]
@@ -39,7 +40,6 @@ export class Libp2pPeer extends Peer {
 
   /**
    * Create new libp2p peer
-   * @param {Libp2pPeerOptions}
    */
   constructor(options: Libp2pPeerOptions) {
     const multiaddrs = options.multiaddrs ?? [multiaddr('/ip4/0.0.0.0/tcp/0')]
@@ -53,7 +53,6 @@ export class Libp2pPeer extends Peer {
 
   /**
    * Initiate peer connection
-   * @return {Promise}
    */
   async connect(): Promise<void> {
     if (this.connected) {
@@ -72,8 +71,6 @@ export class Libp2pPeer extends Peer {
 
   /**
    * Accept new peer connection from a libp2p server
-   * @private
-   * @return {Promise}
    */
   async accept(protocol: Protocol, stream: MuxedStream, server: Libp2pServer): Promise<void> {
     await this.bindProtocol(protocol, new Libp2pSender(stream))
@@ -83,7 +80,6 @@ export class Libp2pPeer extends Peer {
 
   /**
    * Adds protocols to the peer given a libp2p node and peerId or multiaddr
-   * @private
    * @param node libp2p node
    * @param peer libp2p peerId or mutliaddr
    * @param server server that initiated connection

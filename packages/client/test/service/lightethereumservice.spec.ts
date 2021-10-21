@@ -32,7 +32,7 @@ tape('[LightEthereumService]', async (t) => {
   const { LightEthereumService } = await import('../../lib/service/lightethereumservice')
 
   t.test('should initialize correctly', async (t) => {
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const service = new LightEthereumService({ config })
     t.ok(service.synchronizer instanceof LightSynchronizer, 'light sync')
     t.equals(service.name, 'eth', 'got name')
@@ -40,7 +40,7 @@ tape('[LightEthereumService]', async (t) => {
   })
 
   t.test('should get protocols', async (t) => {
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const service = new LightEthereumService({ config })
     t.ok(service.protocols[0] instanceof LesProtocol, 'light protocols')
     t.end()
@@ -49,7 +49,7 @@ tape('[LightEthereumService]', async (t) => {
   t.test('should open', async (t) => {
     t.plan(3)
     const server = td.object() as any
-    const config = new Config({ servers: [server], loglevel: 'error' })
+    const config = new Config({ servers: [server] })
     const service = new LightEthereumService({ config })
     await service.open()
     td.verify(service.synchronizer.open())
@@ -69,7 +69,7 @@ tape('[LightEthereumService]', async (t) => {
 
   t.test('should start/stop', async (t) => {
     const server = td.object() as any
-    const config = new Config({ servers: [server], loglevel: 'error' })
+    const config = new Config({ servers: [server] })
     const service = new LightEthereumService({ config })
     await service.start()
     td.verify(service.synchronizer.start())

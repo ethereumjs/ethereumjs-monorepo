@@ -29,7 +29,11 @@ export function mockBlockchain(options: any = {}) {
     uncleHeaders: [],
   }
   return {
-    getBlock: async (_data: any) => {
+    blocks: { latest: block },
+    getBlock: async (val: any) => {
+      if (Buffer.isBuffer(val) && val.equals(Buffer.alloc(32))) {
+        throw Error
+      }
       return block
     },
     getLatestHeader: () => {

@@ -19,7 +19,7 @@ tape('[Libp2pPeer]', async (t) => {
   const { Libp2pPeer } = await import('../../../lib/net/peer/libp2ppeer')
 
   t.test('should initialize correctly', async (t) => {
-    const config = new Config({ loglevel: 'error' })
+    const config = new Config()
     const multiaddrs = [
       multiaddr('/ip4/192.0.2.1/tcp/12345'),
       multiaddr('/ip4/192.0.2.1/tcp/23456'),
@@ -30,7 +30,7 @@ tape('[Libp2pPeer]', async (t) => {
   })
 
   t.test('should connect to peer', async (t) => {
-    const config = new Config({ loglevel: 'error' })
+    const config = new Config()
     const peer = new Libp2pPeer({ config })
     config.events.on(Event.PEER_CONNECTED, (peer) => {
       t.equals((peer as Libp2pPeer).address, '/ip4/0.0.0.0/tcp/0', 'connected')
@@ -40,7 +40,7 @@ tape('[Libp2pPeer]', async (t) => {
   })
 
   t.test('should accept peer connection', async (t) => {
-    const config = new Config({ loglevel: 'error' })
+    const config = new Config()
     const peer: any = new Libp2pPeer({ config })
     peer.bindProtocol = td.func<typeof peer['bindProtocol']>()
     td.when(peer.bindProtocol('proto' as any, 'conn' as any)).thenResolve(null)
@@ -51,7 +51,7 @@ tape('[Libp2pPeer]', async (t) => {
   })
 
   t.test('should bind protocols', async (t) => {
-    const config = new Config({ loglevel: 'error' })
+    const config = new Config()
     const protocol = { name: 'proto', versions: [1], open: () => {} } as Protocol
     const badProto = { name: 'bad', versions: [1], open: () => {} } as Protocol
     const peer: any = new Libp2pPeer({ config, protocols: [protocol, badProto] })

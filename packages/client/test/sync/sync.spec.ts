@@ -7,10 +7,10 @@ import { Synchronizer } from '../../lib/sync/sync'
 import { Event } from '../../lib/types'
 
 class SynchronizerTest extends Synchronizer {
+  syncTargetHeight = new BN(1)
   async syncWithPeer() {
     return true
   }
-
   async sync() {
     return false
   }
@@ -28,29 +28,28 @@ tape('[Synchronizer]', async (t) => {
   PeerPool.prototype.close = td.func<any>()
 
   t.test('should sync', async (t) => {
-    const config = new Config({ loglevel: 'error', transports: [] })
+    const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
     const sync = new SynchronizerTest({ config, pool, chain })
     ;(sync as any).sync = td.func()
     td.when((sync as any).sync()).thenResolve(true)
     config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
-      t.ok('synchronized')
+      t.ok('synchronized', 'synchronized')
       await sync.stop()
       t.notOk((sync as any).running, 'stopped')
+      await sync.close()
+      await chain.close()
       t.end()
     })
-    sync.syncTargetHeight = new BN(1)
-    setTimeout(() => {
-      // eslint-disable-next-line no-extra-semi
-      ;(sync as any).chain._headers = {
-        latest: { hash: () => Buffer.from([]) },
-        td: new BN(0),
-        height: new BN(1),
-      }
-      config.events.emit(Event.CHAIN_UPDATED)
-    }, 100)
-    await sync.start()
+    void sync.start()
+    ;(sync as any).chain._headers = {
+      latest: { hash: () => Buffer.from([]) },
+      td: new BN(0),
+      height: new BN(1),
+    }
+    config.events.emit(Event.CHAIN_UPDATED)
+    await new Promise(() => {}) // resolves once t.end() is called
   })
 
   t.test('should reset td', (t) => {

@@ -12,7 +12,6 @@ export class LightEthereumService extends EthereumService {
 
   /**
    * Create new LES service
-   * @param options
    */
   constructor(options: EthereumServiceOptions) {
     super(options)
@@ -42,10 +41,9 @@ export class LightEthereumService extends EthereumService {
 
   /**
    * Handles incoming message from connected peer
-   * @param  {Object}  message message object
-   * @param  {string}  protocol protocol name
-   * @param  {Peer}    peer peer
-   * @return {Promise}
+   * @param message message object
+   * @param protocol protocol name
+   * @param peer peer
    */
   async handle(_message: any, _protocol: string, _peer: Peer) {}
 }

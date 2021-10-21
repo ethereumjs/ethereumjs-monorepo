@@ -21,7 +21,6 @@ export class Service {
 
   /**
    * Create new service and associated peer pool
-   * @param {ServiceOptions}
    */
   constructor(options: ServiceOptions) {
     this.config = options.config
@@ -51,17 +50,14 @@ export class Service {
 
   /**
    * Service name
-   * @protected
-   * @type {string}
    */
-  get name(): any {
+  get name() {
     return ''
     //throw new Error('Unimplemented')
   }
 
   /**
    * Returns all protocols required by this service
-   * @type {Protocol[]} required protocols
    */
   get protocols(): Protocol[] {
     return []
@@ -69,7 +65,6 @@ export class Service {
 
   /**
    * Open service. Must be called before service is running
-   * @return {Promise}
    */
   async open() {
     if (this.opened) {
@@ -87,14 +82,14 @@ export class Service {
     this.config.events.on(Event.POOL_PEER_REMOVED, (peer) =>
       this.config.logger.debug(`Peer removed: ${peer}`)
     )
-    await this.pool.open()
 
+    await this.pool.open()
     this.opened = true
+    return true
   }
 
   /**
    * Close service.
-   * @return {Promise}
    */
   async close() {
     if (this.opened) {
@@ -105,34 +100,33 @@ export class Service {
 
   /**
    * Start service
-   * @return {Promise}
    */
-  async start(): Promise<void | boolean> {
+  async start(): Promise<boolean> {
     if (this.running) {
       return false
     }
     this.running = true
     this.config.logger.info(`Started ${this.name} service.`)
+    return true
   }
 
   /**
    * Stop service
-   * @return {Promise}
    */
-  async stop(): Promise<void | boolean> {
+  async stop(): Promise<boolean> {
     if (this.opened) {
       await this.close()
     }
     this.running = false
     this.config.logger.info(`Stopped ${this.name} service.`)
+    return true
   }
 
   /**
    * Handles incoming request from connected peer
-   * @param  {Object}  message message object
-   * @param  {string}  protocol protocol name
-   * @param  {Peer}    peer peer
-   * @return {Promise}
+   * @param message message object
+   * @param protocol protocol name
+   * @param peer peer
    */
   async handle(_message: any, _protocol: string, _peer: Peer): Promise<any> {}
 }

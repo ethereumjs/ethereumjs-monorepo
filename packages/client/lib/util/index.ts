@@ -22,7 +22,7 @@ export function getClientVersion() {
 export function inspectParams(params: any, shorten?: number) {
   let inspected = inspect(params, {
     colors: true,
-    maxStringLength: 32,
+    maxStringLength: 100,
   } as any)
   if (shorten) {
     inspected = inspected.replace(/\n/g, '').replace(/ {2}/g, ' ')

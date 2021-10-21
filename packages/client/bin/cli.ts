@@ -9,171 +9,205 @@ import { Server as RPCServer } from 'jayson/promise'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { _getInitializedChains } from '@ethereumjs/common/dist/chains'
 import { Address, toBuffer } from 'ethereumjs-util'
+import { version as packageVersion } from '../package.json'
 import { parseMultiaddrs, parseGenesisState, parseCustomParams, inspectParams } from '../lib/util'
 import EthereumClient from '../lib/client'
 import { Config } from '../lib/config'
-import { Logger } from '../lib/logging'
+import { Logger, getLogger } from '../lib/logging'
 import { RPCManager } from '../lib/rpc'
 import * as modules from '../lib/rpc/modules'
 import { Event } from '../lib/types'
 import type { Chain as IChain, GenesisState } from '@ethereumjs/common/dist/types'
 const level = require('level')
+const yargs = require('yargs/yargs')
+const { hideBin } = require('yargs/helpers')
 
 const networks = Object.entries(_getInitializedChains().names)
 
-const args = require('yargs')
-  .options({
-    network: {
-      describe: `Network`,
-      choices: networks.map((n) => n[1]),
-      default: 'mainnet',
-    },
-    'network-id': {
-      describe: `Network ID`,
-      choices: networks.map((n) => parseInt(n[0])),
-      default: undefined,
-    },
-    syncmode: {
-      describe: 'Blockchain sync mode (light sync experimental)',
-      choices: ['light', 'full'],
-      default: Config.SYNCMODE_DEFAULT,
-    },
-    lightserv: {
-      describe: 'Serve light peer requests',
-      boolean: true,
-      default: Config.LIGHTSERV_DEFAULT,
-    },
-    datadir: {
-      describe: 'Data directory for the blockchain',
-      default: `${homedir()}/Library/Ethereum/ethereumjs`,
-    },
-    customChain: {
-      describe: 'Path to custom chain parameters json file (@ethereumjs/common format)',
-      coerce: path.resolve,
-    },
-    customGenesisState: {
-      describe: 'Path to custom genesis state json file (@ethereumjs/common format)',
-      coerce: path.resolve,
-    },
-    gethGenesis: {
-      describe: 'Import a geth genesis file for running a custom network',
-      coerce: path.resolve,
-    },
-    transports: {
-      describe: 'Network transports',
-      default: Config.TRANSPORTS_DEFAULT,
-      array: true,
-    },
-    bootnodes: {
-      describe: 'Network bootnodes',
-      array: true,
-    },
-    port: {
-      describe: 'RLPx listening port',
-      default: Config.PORT_DEFAULT,
-    },
-    multiaddrs: {
-      describe: 'Network multiaddrs',
-      array: true,
-    },
-    rpc: {
-      describe: 'Enable the JSON-RPC server',
-      boolean: true,
-      default: Config.RPC_DEFAULT,
-    },
-    rpcport: {
-      describe: 'HTTP-RPC server listening port',
-      number: true,
-      default: Config.RPCPORT_DEFAULT,
-    },
-    rpcaddr: {
-      describe: 'HTTP-RPC server listening interface',
-      default: Config.RPCADDR_DEFAULT,
-    },
-    rpcEngine: {
-      describe: 'Enable merge Engine API RPC endpoints',
-      boolean: true,
-      default: Config.RPC_ENGINE_DEFAULT,
-    },
-    rpcStubGetLogs: {
-      describe: 'Stub eth_getLogs with empty response until method is implemented',
-      boolean: true,
-      default: false,
-    },
-    helprpc: {
-      describe: 'Display the JSON RPC help with a list of all RPC methods implemented (and exit)',
-      boolean: true,
-    },
-    loglevel: {
-      describe: 'Logging verbosity',
-      choices: ['error', 'warn', 'info', 'debug'],
-      default: Config.LOGLEVEL_DEFAULT,
-    },
-    rpcDebug: {
-      describe: 'Additionally log complete RPC calls on log level debug (i.e. --loglevel=debug)',
-      boolean: true,
-      default: Config.RPCDEBUG_DEFAULT,
-    },
-    maxPerRequest: {
-      describe: 'Max items per block or header request',
-      number: true,
-      default: Config.MAXPERREQUEST_DEFAULT,
-    },
-    minPeers: {
-      describe: 'Peers needed before syncing',
-      number: true,
-      default: Config.MINPEERS_DEFAULT,
-    },
-    maxPeers: {
-      describe: 'Maximum peers to sync with',
-      number: true,
-      default: Config.MAXPEERS_DEFAULT,
-    },
-    dnsAddr: {
-      describe: 'IPv4 address of DNS server to use when acquiring peer discovery targets',
-      string: true,
-      default: Config.DNSADDR_DEFAULT,
-    },
-    dnsNetworks: {
-      describe: 'EIP-1459 ENR tree urls to query for peer discovery targets',
-      array: true,
-    },
-    debugCode: {
-      describe: 'Generate code for local debugging (internal usage mostly)',
-      boolean: true,
-      default: Config.DEBUGCODE_DEFAULT,
-    },
-    discDns: {
-      describe: 'Query EIP-1459 DNS TXT records for peer discovery',
-      boolean: true,
-    },
-    discV4: {
-      describe: 'Use v4 ("findneighbour" node requests) for peer discovery',
-      boolean: true,
-    },
-    mine: {
-      describe: 'Enable private custom network mining (beta)',
-      boolean: true,
-      default: false,
-    },
-    unlock: {
-      describe:
-        'Comma separated list of accounts to unlock - currently only the first account is used (for sealing PoA blocks and as the default coinbase). Beta, you will be promped for a 0x-prefixed private key until keystore functionality is added - FOR YOUR SAFETY PLEASE DO NOT USE ANY ACCOUNTS HOLDING SUBSTANTIAL AMOUNTS OF ETH',
-      array: true,
-    },
-    dev: {
-      describe: 'Start an ephemeral PoA blockchain with a single miner and prefunded accounts',
-      choices: [undefined, false, true, 'poa', 'pow'],
-    },
-    minerCoinbase: {
-      describe:
-        'Address for mining rewards (etherbase). If not provided, defaults to the primary account',
-      string: true,
-    },
+const args = yargs(hideBin(process.argv))
+  .option('network', {
+    describe: 'Network',
+    choices: networks.map((n) => n[1]),
+    default: 'mainnet',
   })
-  .locale('en_EN').argv
+  .option('network-id', {
+    describe: 'Network ID',
+    choices: networks.map((n) => parseInt(n[0])),
+    default: undefined,
+  })
+  .option('network-id', {
+    describe: `Network ID`,
+    choices: networks.map((n) => parseInt(n[0])),
+    default: undefined,
+  })
+  .option('syncmode', {
+    describe: 'Blockchain sync mode (light sync experimental)',
+    choices: ['light', 'full'],
+    default: Config.SYNCMODE_DEFAULT,
+  })
+  .option('lightserv', {
+    describe: 'Serve light peer requests',
+    boolean: true,
+    default: Config.LIGHTSERV_DEFAULT,
+  })
+  .option('datadir', {
+    describe: 'Data directory for the blockchain',
+    default: `${homedir()}/Library/Ethereum/ethereumjs`,
+  })
+  .option('customChain', {
+    describe: 'Path to custom chain parameters json file (@ethereumjs/common format)',
+    coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+  })
+  .option('customGenesisState', {
+    describe: 'Path to custom genesis state json file (@ethereumjs/common format)',
+    coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+  })
+  .option('gethGenesis', {
+    describe: 'Import a geth genesis file for running a custom network',
+    coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+  })
+  .option('transports', {
+    describe: 'Network transports',
+    default: Config.TRANSPORTS_DEFAULT,
+    array: true,
+  })
+  .option('bootnodes', {
+    describe: 'Network bootnodes',
+    array: true,
+  })
+  .option('port', {
+    describe: 'RLPx listening port',
+    default: Config.PORT_DEFAULT,
+  })
+  .option('extIP', {
+    describe: 'RLPx external IP',
+    string: true,
+  })
+  .option('multiaddrs', {
+    describe: 'Network multiaddrs',
+    array: true,
+  })
+  .option('rpc', {
+    describe: 'Enable the JSON-RPC server',
+    boolean: true,
+  })
+  .option('rpcport', {
+    describe: 'HTTP-RPC server listening port',
+    number: true,
+    default: 8545,
+  })
+  .option('rpcaddr', {
+    describe: 'HTTP-RPC server listening interface address',
+    default: 'localhost',
+  })
+  .option('rpcEngine', {
+    describe: 'Enable the JSON-RPC server for Engine namespace',
+    boolean: true,
+  })
+  .option('rpcEnginePort', {
+    describe: 'HTTP-RPC server listening port for Engine namespace',
+    number: true,
+    default: 8550,
+  })
+  .option('rpcEngineAddr', {
+    describe: 'HTTP-RPC server listening interface address for Engine namespace',
+    string: true,
+    default: 'localhost',
+  })
+  .option('rpcStubGetLogs', {
+    describe: 'Stub eth_getLogs with empty response until method is implemented',
+    boolean: true,
+    default: false,
+  })
+  .option('helprpc', {
+    describe: 'Display the JSON RPC help with a list of all RPC methods implemented (and exit)',
+    boolean: true,
+  })
+  .option('loglevel', {
+    describe: 'Logging verbosity',
+    choices: ['error', 'warn', 'info', 'debug'],
+    default: 'info',
+  })
+  .option('logFile', {
+    describe: 'File to save log file (pass true for `ethereumjs.log`)',
+  })
+  .option('logLevelFile', {
+    describe: 'Log level for logFile',
+    choices: ['error', 'warn', 'info', 'debug'],
+    default: 'info',
+  })
+  .option('logRotate', {
+    describe: 'Rotate log file daily',
+    boolean: true,
+    default: true,
+  })
+  .option('logMaxFiles', {
+    describe: 'Maximum number of log files when rotating (older will be deleted)',
+    number: true,
+    default: 5,
+  })
+  .option('rpcDebug', {
+    describe: 'Additionally log complete RPC calls on log level debug (i.e. --loglevel=debug)',
+    boolean: true,
+  })
+  .option('maxPerRequest', {
+    describe: 'Max items per block or header request',
+    number: true,
+    default: Config.MAXPERREQUEST_DEFAULT,
+  })
+  .option('minPeers', {
+    describe: 'Peers needed before syncing',
+    number: true,
+    default: Config.MINPEERS_DEFAULT,
+  })
+  .option('maxPeers', {
+    describe: 'Maximum peers to sync with',
+    number: true,
+    default: Config.MAXPEERS_DEFAULT,
+  })
+  .option('dnsAddr', {
+    describe: 'IPv4 address of DNS server to use when acquiring peer discovery targets',
+    string: true,
+    default: Config.DNSADDR_DEFAULT,
+  })
+  .option('dnsNetworks', {
+    describe: 'EIP-1459 ENR tree urls to query for peer discovery targets',
+    array: true,
+  })
+  .option('debugCode', {
+    describe: 'Generate code for local debugging (internal usage mostly)',
+    boolean: true,
+    default: Config.DEBUGCODE_DEFAULT,
+  })
+  .option('discDns', {
+    describe: 'Query EIP-1459 DNS TXT records for peer discovery',
+    boolean: true,
+  })
+  .option('discV4', {
+    describe: 'Use v4 ("findneighbour" node requests) for peer discovery',
+    boolean: true,
+  })
+  .option('mine', {
+    describe: 'Enable private custom network mining (beta)',
+    boolean: true,
+    default: false,
+  })
+  .option('unlock', {
+    describe:
+      'Comma separated list of accounts to unlock - currently only the first account is used (for sealing PoA blocks and as the default coinbase). Beta, you will be promped for a 0x-prefixed private key until keystore functionality is added - FOR YOUR SAFETY PLEASE DO NOT USE ANY ACCOUNTS HOLDING SUBSTANTIAL AMOUNTS OF ETH',
+    array: true,
+  })
+  .option('dev', {
+    describe: 'Start an ephemeral PoA blockchain with a single miner and prefunded accounts',
+    choices: [undefined, false, true, 'poa', 'pow'],
+  })
+  .option('minerCoinbase', {
+    describe:
+      'Address for mining rewards (etherbase). If not provided, defaults to the primary account',
+    string: true,
+  }).argv
 
-let logger: Logger | null = null
+let logger: Logger
 
 /**
  * Initializes and starts a Node and reacts on the
@@ -182,14 +216,14 @@ let logger: Logger | null = null
  * @param config
  */
 async function runNode(config: Config) {
+  config.logger.info(
+    `Initializing Ethereumjs client version=v${packageVersion} network=${config.chainCommon.chainName()}`
+  )
   const chainDataDir = config.getChainDataDirectory()
   ensureDirSync(chainDataDir)
   const stateDataDir = config.getStateDataDirectory()
   ensureDirSync(stateDataDir)
-
   config.logger.info(`Data directory: ${config.datadir}`)
-
-  config.logger.info('Initializing Ethereumjs client...')
   if (config.lightserv) {
     config.logger.info(`Serving light peer requests`)
   }
@@ -205,34 +239,29 @@ async function runNode(config: Config) {
   config.events.on(Event.SYNC_SYNCHRONIZED, (height) => {
     client.config.logger.info(`Synchronized blockchain at height ${height}`)
   })
-  config.logger.info(`Connecting to network: ${config.chainCommon.chainName()}`)
   await client.open()
-  config.logger.info('Synchronizing blockchain...')
+  config.logger.info('Connecting to network and synchronizing blockchain...')
   await client.start()
-
   return client
 }
 
-function runRpcServer(client: EthereumClient, config: Config) {
-  const { rpcport, rpcaddr } = config
-  const manager = new RPCManager(client, config)
-  const server = new RPCServer(manager.getMethods())
-  config.logger.info(`RPC HTTP endpoint opened: http://${rpcaddr}:${rpcport}`)
-  server.http().listen(rpcport)
-
-  server.on('request', (request) => {
+/*
+ * Returns enabled RPCServers
+ */
+function runRpcServers(client: EthereumClient, config: Config, args: any) {
+  const onRequest = (request: any) => {
     let msg = ''
-    if (config.rpcDebug) {
+    if (args.rpcDebug) {
       msg += `${request.method} called with params:\n${inspectParams(request.params)}`
     } else {
       msg += `${request.method} called with params: ${inspectParams(request.params, 125)}`
     }
     config.logger.debug(msg)
-  })
+  }
 
   const handleResponse = (request: any, response: any, batchAddOn = '') => {
     let msg = ''
-    if (config.rpcDebug) {
+    if (args.rpcDebug) {
       msg = `${request.method}${batchAddOn} responded with:\n${inspectParams(response)}`
     } else {
       msg = `${request.method}${batchAddOn} responded with: `
@@ -246,7 +275,7 @@ function runRpcServer(client: EthereumClient, config: Config) {
     config.logger.debug(msg)
   }
 
-  server.on('response', (request, response) => {
+  const onBatchResponse = (request: any, response: any) => {
     // Batch request
     if (request.length !== undefined) {
       if (response.length === undefined || response.length !== request.length) {
@@ -259,9 +288,43 @@ function runRpcServer(client: EthereumClient, config: Config) {
     } else {
       handleResponse(request, response)
     }
-  })
+  }
 
-  return server
+  const servers: RPCServer[] = []
+  const { rpc, rpcaddr, rpcport, rpcEngine, rpcEngineAddr, rpcEnginePort } = args
+  const manager = new RPCManager(client, config)
+
+  if (rpc) {
+    const methods =
+      rpcEngine && rpcEnginePort === rpcport && rpcEngineAddr === rpcaddr
+        ? { ...manager.getMethods(), ...manager.getMethods(true) }
+        : { ...manager.getMethods() }
+    const server = new RPCServer(methods)
+    const namespaces = [...new Set(Object.keys(methods).map((m) => m.split('_')[0]))].join(',')
+    config.logger.info(
+      `Started JSON RPC server address=http://${rpcaddr}:${rpcport} namespaces=${namespaces}`
+    )
+    server.http().listen(rpcport)
+    server.on('request', onRequest)
+    server.on('response', onBatchResponse)
+    servers.push(server)
+  }
+
+  if (rpcEngine) {
+    if (rpc && rpcport === rpcEnginePort && rpcaddr === rpcEngineAddr) {
+      return servers
+    }
+    const server = new RPCServer(manager.getMethods(true))
+    config.logger.info(
+      `Started JSON RPC server address=http://${rpcEngineAddr}:${rpcEnginePort} namespaces=engine`
+    )
+    server.http().listen(rpcEnginePort)
+    server.on('request', onRequest)
+    server.on('response', onBatchResponse)
+    servers.push(server)
+  }
+
+  return servers
 }
 
 /**
@@ -466,6 +529,7 @@ async function run() {
   const configDirectory = `${datadir}/${common.chainName()}/config`
   ensureDirSync(configDirectory)
   const key = await Config.getClientKey(datadir, common)
+  logger = getLogger(args)
   const config = new Config({
     common,
     syncmode: args.syncmode,
@@ -475,13 +539,9 @@ async function run() {
     transports: args.transports,
     bootnodes: args.bootnodes ? parseMultiaddrs(args.bootnodes) : undefined,
     port: args.port,
+    extIP: args.extIP,
     multiaddrs: args.multiaddrs ? parseMultiaddrs(args.multiaddrs) : undefined,
-    rpc: args.rpc,
-    rpcport: args.rpcport,
-    rpcaddr: args.rpcaddr,
-    rpcEngine: args.rpcEngine,
-    loglevel: args.loglevel,
-    rpcDebug: args.rpcDebug,
+    logger,
     rpcStubGetLogs: args.rpcStubGetLogs,
     maxPerRequest: args.maxPerRequest,
     minPeers: args.minPeers,
@@ -495,15 +555,14 @@ async function run() {
     accounts,
     minerCoinbase: args.minerCoinbase,
   })
-  logger = config.logger
   config.events.setMaxListeners(50)
 
   const client = await runNode(config)
-  const server = config.rpc ? runRpcServer(client, config) : null
+  const servers = args.rpc || args.rpcEngine ? runRpcServers(client, config, args) : []
 
   process.on('SIGINT', async () => {
     config.logger.info('Caught interrupt signal. Shutting down...')
-    if (server) server.http().close()
+    servers.forEach((s) => s.http().close())
     await client.stop()
     config.logger.info('Exiting.')
     process.exit()

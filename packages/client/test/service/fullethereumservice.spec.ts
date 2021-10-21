@@ -42,7 +42,7 @@ tape('[FullEthereumService]', async (t) => {
   const { FullEthereumService } = await import('../../lib/service/fullethereumservice')
 
   t.test('should initialize correctly', (t) => {
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const service = new FullEthereumService({ config })
     t.ok(service.synchronizer instanceof FullSynchronizer, 'full mode')
     t.equals(service.name, 'eth', 'got name')
@@ -50,11 +50,11 @@ tape('[FullEthereumService]', async (t) => {
   })
 
   t.test('should get protocols', (t) => {
-    let config = new Config({ transports: [], loglevel: 'error' })
+    let config = new Config({ transports: [] })
     let service = new FullEthereumService({ config })
     t.ok(service.protocols[0] instanceof EthProtocol, 'full protocol')
     t.notOk(service.protocols[1], 'no light protocol')
-    config = new Config({ transports: [], loglevel: 'error', lightserv: true })
+    config = new Config({ transports: [], lightserv: true })
     service = new FullEthereumService({ config })
     t.ok(service.protocols[0] instanceof EthProtocol, 'full protocol')
     t.ok(service.protocols[1] instanceof LesProtocol, 'lightserv protocols')
@@ -64,7 +64,7 @@ tape('[FullEthereumService]', async (t) => {
   t.test('should open', async (t) => {
     t.plan(3)
     const server = td.object() as any
-    const config = new Config({ servers: [server], loglevel: 'error' })
+    const config = new Config({ servers: [server] })
     const service = new FullEthereumService({ config })
     await service.open()
     td.verify(service.synchronizer.open())
@@ -84,7 +84,7 @@ tape('[FullEthereumService]', async (t) => {
 
   t.test('should start/stop', async (t) => {
     const server = td.object() as any
-    const config = new Config({ servers: [server], loglevel: 'error' })
+    const config = new Config({ servers: [server] })
     const service = new FullEthereumService({ config })
     await service.start()
     td.verify(service.synchronizer.start())
@@ -96,7 +96,7 @@ tape('[FullEthereumService]', async (t) => {
   })
 
   t.test('handleNewBlock should be called', async (t) => {
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const service = new FullEthereumService({ config })
     await service.handle({ name: 'NewBlock', data: [{}, new BN(1)] }, 'eth', undefined as any)
     td.verify(service.synchronizer.handleNewBlock({} as any, undefined))

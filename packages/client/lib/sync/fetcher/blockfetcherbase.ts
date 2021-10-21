@@ -32,7 +32,6 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
 
   /**
    * Create new block fetcher
-   * @param {BlockFetcherOptions}
    */
   constructor(options: BlockFetcherOptions) {
     super(options)
@@ -44,7 +43,6 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
 
   /**
    * Generate list of tasks to fetch
-   * @return {Object[]} tasks
    */
   tasks(): JobTask[] {
     const { first, count } = this

@@ -12,15 +12,14 @@ import { destroy } from './util'
 
 tape('[Integration:FullEthereumService]', async (t) => {
   async function setup(): Promise<[MockServer, FullEthereumService]> {
-    const loglevel = 'error'
-    const config = new Config({ loglevel })
+    const config = new Config()
     const server = new MockServer({ config })
     const blockchain = await Blockchain.create({
       validateBlocks: false,
       validateConsensus: false,
     })
     const chain = new MockChain({ config, blockchain })
-    const serviceConfig = new Config({ loglevel, servers: [server as any], lightserv: true })
+    const serviceConfig = new Config({ servers: [server as any], lightserv: true })
     const service = new FullEthereumService({
       config: serviceConfig,
       chain,

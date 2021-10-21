@@ -1,15 +1,7 @@
 const Set = require('core-js-pure/es/set')
 import { debug as createDebugLogger } from 'debug'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import {
-  Account,
-  Address,
-  BN,
-  toBuffer,
-  keccak256,
-  KECCAK256_NULL,
-  unpadBuffer,
-} from 'ethereumjs-util'
+import { Account, Address, toBuffer, keccak256, KECCAK256_NULL, unpadBuffer } from 'ethereumjs-util'
 import { encode, decode } from 'rlp'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { StateManager, StorageDump } from './interface'
@@ -565,7 +557,7 @@ export default class DefaultStateManager implements StateManager {
 
   /**
    * Initializes the provided genesis state into the state trie
-   * @param initState - Object (address -> balance)
+   * @param initState address -> balance | [balance, code, storage]
    */
   async generateGenesis(initState: any): Promise<void> {
     if (this._checkpointCount !== 0) {
@@ -577,10 +569,20 @@ export default class DefaultStateManager implements StateManager {
     }
     const addresses = Object.keys(initState)
     for (const address of addresses) {
-      const balance = new BN(toBuffer(initState[address]))
+      const state = initState[address]
+      let balance, code, storage
+      if (Array.isArray(state)) {
+        ;[balance, code, storage] = state // eslint-disable-line no-extra-semi
+        await this.putContractCode(Address.fromString(address), toBuffer(code))
+        storage = storage ? (Object.values(storage) as [string, string][]) : []
+        for (const [key, value] of storage) {
+          await this.putContractStorage(Address.fromString(address), toBuffer(key), toBuffer(value))
+        }
+      } else {
+        balance = state
+      }
       const account = Account.fromAccountData({ balance })
-      const addressBuffer = toBuffer(address)
-      await this._trie.put(addressBuffer, account.serialize())
+      await this._trie.put(toBuffer(address), account.serialize())
     }
   }
 
