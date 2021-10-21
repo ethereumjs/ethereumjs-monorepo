@@ -174,6 +174,11 @@ const args = yargs(hideBin(process.argv))
     describe: 'EIP-1459 ENR tree urls to query for peer discovery targets',
     array: true,
   })
+  .option('executeBlocks', {
+    describe:
+      'Debug mode for reexecuting existing blocks (no services will be started), allowed input formats: 5,5-10',
+    string: true,
+  })
   .option('debugCode', {
     describe: 'Generate code for local debugging (internal usage mostly)',
     boolean: true,
@@ -240,8 +245,38 @@ async function runNode(config: Config) {
     client.config.logger.info(`Synchronized blockchain at height ${height}`)
   })
   await client.open()
-  config.logger.info('Connecting to network and synchronizing blockchain...')
-  await client.start()
+
+  if (args.executeBlocks) {
+    // Special block execution debug mode (not changing any state)
+    let first = 0
+    let last = 0
+    let txHashes = []
+    try {
+      const blockRange = (args.executeBlocks as string).split('-').map((val) => {
+        const reNum = /([0-9]+)/.exec(val)
+        const num = reNum ? parseInt(reNum[1]) : 0
+        const reTxs = /[0-9]+\[(.*)\]/.exec(val)
+        const txs = reTxs ? reTxs[1].split(',') : []
+        return [num, txs]
+      })
+      first = blockRange[0][0] as number
+      last = blockRange.length === 2 ? (blockRange[1][0] as number) : first
+      txHashes = blockRange[0][1] as string[]
+
+      if ((blockRange[0][1] as string[]).length > 0 && blockRange.length === 2) {
+        throw new Error('wrong input')
+      }
+    } catch (e: any) {
+      client.config.logger.error(
+        'Wrong input format for block execution, allowed format types: 5, 5-10, 5[0xba4b5fd92a26badad3cad22eb6f7c7e745053739b5f5d1e8a3afb00f8fb2a280,[TX_HASH_2],...]'
+      )
+      process.exit()
+    }
+    await client.executeBlocks(first, last, txHashes)
+  } else {
+    // Regular client start
+    await client.start()
+  }
   return client
 }
 
