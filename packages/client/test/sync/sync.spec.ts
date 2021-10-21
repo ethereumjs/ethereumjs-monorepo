@@ -28,7 +28,7 @@ tape('[Synchronizer]', async (t) => {
   PeerPool.prototype.close = td.func<any>()
 
   t.test('should sync', async (t) => {
-    const config = new Config({ loglevel: 'error', transports: [] })
+    const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
     const sync = new SynchronizerTest({ config, pool, chain })

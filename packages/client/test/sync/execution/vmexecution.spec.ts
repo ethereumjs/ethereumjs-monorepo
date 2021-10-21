@@ -12,7 +12,7 @@ import testnet from './../../testdata/testnet.json'
 tape('[VMExecution]', async (t) => {
   t.test('Initialization', async (t) => {
     const vm = new VM()
-    const config = new Config({ vm, loglevel: 'error', transports: [] })
+    const config = new Config({ vm, transports: [] })
     const chain = new Chain({ config })
     const exec = new VMExecution({
       config,
@@ -23,7 +23,7 @@ tape('[VMExecution]', async (t) => {
   })
 
   async function testSetup(blockchain: Blockchain, common?: Common) {
-    const config = new Config({ common, loglevel: 'error', transports: [] })
+    const config = new Config({ common, transports: [] })
 
     const chain = new Chain({ config, blockchain })
     const exec = new VMExecution({

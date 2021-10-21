@@ -21,7 +21,7 @@ tape('[LightSynchronizer]', async (t) => {
   const { LightSynchronizer } = await import('../../lib/sync/lightsync')
 
   t.test('should initialize correctly', async (t) => {
-    const config = new Config({ loglevel: 'error', transports: [] })
+    const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
     const sync = new LightSynchronizer({ config, pool, chain })
@@ -30,7 +30,7 @@ tape('[LightSynchronizer]', async (t) => {
   })
 
   t.test('should find best', async (t) => {
-    const config = new Config({ loglevel: 'error', transports: [] })
+    const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
     const sync = new LightSynchronizer({
@@ -59,7 +59,7 @@ tape('[LightSynchronizer]', async (t) => {
 
   t.test('should sync', async (t) => {
     t.plan(3)
-    const config = new Config({ loglevel: 'error', transports: [] })
+    const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
     const sync = new LightSynchronizer({

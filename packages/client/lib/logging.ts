@@ -40,26 +40,29 @@ function logFormat(colors = true) {
   })
 }
 
-const formatBase = [
-  errorFormat(),
-  format.splat(),
-  label({ label: 'ethereumjs' }),
-  timestamp({ format: 'MM-DD|HH:mm:ss' }),
-]
+function formatConfig(colors = true) {
+  return combine(
+    errorFormat(),
+    format.splat(),
+    label({ label: 'ethereumjs' }),
+    timestamp({ format: 'MM-DD|HH:mm:ss' }),
+    logFormat(colors)
+  )
+}
 
 export function getLogger(args: { [key: string]: any } = { loglevel: 'info' }) {
   const transports: any[] = [
     new wTransports.Console({
       level: args.loglevel,
       silent: args.loglevel === 'off',
-      format: combine(...formatBase, logFormat()),
+      format: formatConfig(),
     }),
   ]
   let filename = args.logFile === true ? 'ethereumjs.log' : args.logFile
   if (filename) {
     const opts = {
       level: args.logLevelFile,
-      format: combine(...formatBase, logFormat(false)),
+      format: formatConfig(false),
     }
     if (args.logRotate) {
       // Insert %DATE% before the last period
@@ -82,7 +85,7 @@ export function getLogger(args: { [key: string]: any } = { loglevel: 'info' }) {
     }
   }
 
-  const logger = createLogger({ transports })
+  const logger = createLogger({ format: formatConfig(), transports })
   if (filename) {
     logger.debug(`Writing log file=${filename}`)
   }

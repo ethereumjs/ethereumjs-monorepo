@@ -18,7 +18,7 @@ class FetcherTest extends Fetcher<any, any, any> {
 tape('[Fetcher]', (t) => {
   t.test('should handle bad result', (t) => {
     t.plan(2)
-    const config = new Config({ loglevel: 'error', transports: [] })
+    const config = new Config({ transports: [] })
     const fetcher = new FetcherTest({ config, pool: td.object() })
     const job: any = { peer: {}, state: 'active' }
     ;(fetcher as any).running = true
@@ -32,7 +32,7 @@ tape('[Fetcher]', (t) => {
 
   t.test('should handle failure', (t) => {
     t.plan(2)
-    const config = new Config({ loglevel: 'error', transports: [] })
+    const config = new Config({ transports: [] })
     const fetcher = new FetcherTest({ config, pool: td.object() })
     const job = { peer: {}, state: 'active' }
     ;(fetcher as any).running = true
@@ -44,7 +44,7 @@ tape('[Fetcher]', (t) => {
 
   t.test('should handle expiration', (t) => {
     t.plan(2)
-    const config = new Config({ loglevel: 'error', transports: [] })
+    const config = new Config({ transports: [] })
     const fetcher = new FetcherTest({
       config,
       pool: td.object(),
@@ -72,7 +72,7 @@ tape('[Fetcher]', (t) => {
 
   t.test('should handle clearing queue', (t) => {
     t.plan(2)
-    const config = new Config({ loglevel: 'error', transports: [] })
+    const config = new Config({ transports: [] })
     const fetcher = new FetcherTest({
       config,
       pool: td.object(),

@@ -6,7 +6,7 @@ import { Config } from '../../../lib/config'
 import { Event } from '../../../lib/types'
 
 tape('[Peer]', (t) => {
-  const config = new Config({ transports: [], loglevel: 'error' })
+  const config = new Config({ transports: [] })
   const peer = new Peer({
     config,
     id: '0123456789abcdef',

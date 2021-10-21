@@ -14,7 +14,7 @@ import type Blockchain from '@ethereumjs/blockchain'
 import type EthereumClient from '../../lib/client'
 const request = require('supertest')
 
-const config: any = { loglevel: 'error' }
+const config: any = {}
 config.logger = getLogger(config)
 
 export function startRPC(methods: any, port: number = 3000) {
@@ -34,7 +34,7 @@ export function createManager(client: EthereumClient) {
 
 export function createClient(clientOpts: any = {}) {
   const common: Common = clientOpts.commonChain ?? new Common({ chain: ChainEnum.Mainnet })
-  const config = new Config({ transports: [], common, rpcEngine: true })
+  const config = new Config({ transports: [], common })
   const blockchain = clientOpts.blockchain ?? ((<any>mockBlockchain()) as Blockchain)
 
   const chain = new Chain({ config, blockchain })

@@ -20,10 +20,9 @@ export async function setup(
   const { location, height, interval, syncmode } = options
   const minPeers = options.minPeers ?? 1
 
-  const loglevel = 'error'
   const lightserv = syncmode === 'full'
   const common = options.common
-  const config = new Config({ loglevel, syncmode, lightserv, minPeers, common })
+  const config = new Config({ syncmode, lightserv, minPeers, common })
 
   const server = new MockServer({ config, location })
   const blockchain = await Blockchain.create({
@@ -35,7 +34,7 @@ export async function setup(
   const chain = new MockChain({ config, blockchain, height })
 
   const servers = [server] as any
-  const serviceConfig = new Config({ loglevel, syncmode, servers, lightserv, minPeers, common })
+  const serviceConfig = new Config({ syncmode, servers, lightserv, minPeers, common })
   // attach server to centralized event bus
   ;(server.config as any).events = serviceConfig.events
   const serviceOpts = {

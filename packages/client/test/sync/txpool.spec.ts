@@ -8,7 +8,7 @@ import { Config } from '../../lib/config'
 
 tape('[TxPool]', async (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-  const config = new Config({ transports: [], loglevel: 'error' })
+  const config = new Config({ transports: [] })
 
   const A = {
     address: Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex'),
@@ -46,7 +46,7 @@ tape('[TxPool]', async (t) => {
   const txB02 = createTx(B, A, 1, 5) // B -> A, nonce: 1, value: 5
 
   t.test('should initialize correctly', (t) => {
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const pool = new TxPool({ config })
     t.equal(pool.pool.size, 0, 'pool empty')
     t.notOk((pool as any).opened, 'pool not opened yet')
@@ -63,7 +63,7 @@ tape('[TxPool]', async (t) => {
 
   t.test('should open/close', async (t) => {
     t.plan(3)
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const pool = new TxPool({ config })
 
     pool.open()
@@ -190,7 +190,7 @@ tape('[TxPool]', async (t) => {
   })
 
   t.test('announcedTxHashes() -> add two txs (same sender and nonce)', async (t) => {
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const pool = new TxPool({ config })
 
     pool.open()
@@ -215,7 +215,7 @@ tape('[TxPool]', async (t) => {
   })
 
   t.test('announcedTxs()', async (t) => {
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const pool = new TxPool({ config })
 
     pool.open()
@@ -238,7 +238,7 @@ tape('[TxPool]', async (t) => {
   })
 
   t.test('newBlocks() -> should remove included txs', async (t) => {
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const pool = new TxPool({ config })
 
     pool.open()

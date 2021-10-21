@@ -34,8 +34,7 @@ tape('[Integration:Miner]', async (t) => {
     ],
   ]
   async function minerSetup(): Promise<[MockServer, FullEthereumService]> {
-    const loglevel = 'error'
-    const config = new Config({ loglevel, common })
+    const config = new Config({ common })
     const server = new MockServer({ config })
 
     const blockchain = await Blockchain.create({
@@ -46,7 +45,6 @@ tape('[Integration:Miner]', async (t) => {
     blockchain.cliqueActiveSigners = () => [accounts[0][0]] // stub
     const chain = new Chain({ config, blockchain })
     const serviceConfig = new Config({
-      loglevel,
       common,
       servers: [server as any],
       mine: true,

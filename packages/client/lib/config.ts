@@ -267,7 +267,7 @@ export class Config {
     this.discDns = this.getDnsDiscovery(options.discDns)
     this.discV4 = this.getV4Discovery(options.discV4)
 
-    this.logger = options.logger ?? getLogger()
+    this.logger = options.logger ?? getLogger({ loglevel: 'error' })
 
     if (options.servers) {
       if (options.transports) {
