@@ -40,9 +40,7 @@ export class RPCManager {
         methods[concatedMethodName] = mod[methodName].bind(mod)
       }
     }
-    if (this._config.rpcDebug) {
-      this._config.logger.debug(`RPC Initialized ${Object.keys(methods).join(', ')}`)
-    }
+    this._config.logger.debug(`RPC Initialized ${Object.keys(methods).join(', ')}`)
     return methods
   }
 

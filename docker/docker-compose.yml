@@ -1,0 +1,12 @@
+version: "3.4"
+services:
+  ethereumjs:
+    build:
+      context: .
+      dockerfile: ../Dockerfile
+    container_name: ethereumjs
+    volumes:
+      - ./datadir:/datadir
+    command: >
+      --datadir=/datadir --logFile
+    network_mode: host

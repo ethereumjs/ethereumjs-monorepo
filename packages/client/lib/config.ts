@@ -3,7 +3,7 @@ import VM from '@ethereumjs/vm'
 import { genPrivateKey } from '@ethereumjs/devp2p'
 import { Address } from 'ethereumjs-util'
 import Multiaddr from 'multiaddr'
-import { getLogger, Logger } from './logging'
+import { Logger, getLogger } from './logging'
 import { Libp2pServer, RlpxServer } from './net/server'
 import { parseTransports } from './util'
 import { EventBus, EventBusType } from './types'
@@ -93,56 +93,9 @@ export interface ConfigOptions {
   servers?: (RlpxServer | Libp2pServer)[]
 
   /**
-   * Enable the JSON-RPC server
-   *
-   * Default: false
-   */
-  rpc?: boolean
-
-  /**
-   * HTTP-RPC server listening port
-   *
-   * Default: 8545
-   */
-  rpcport?: number
-
-  /**
-   * HTTP-RPC server listening interface
-   */
-  rpcaddr?: string
-
-  /**
-   * Enable merge Engine API RPC endpoints (default: localhost:8550)
-   */
-  rpcEngine?: boolean
-
-  /**
-   * HTTP-RPC server listening port for Engine API (default: 8550)
-   */
-  rpcEnginePort?: number
-
-  /**
-   * HTTP-RPC server listening interface address for Engine API (default: localhost)
-   */
-  rpcEngineAddr?: string
-
-  /**
    * Until getLogs is properly implemented, stub an empty response
    */
   rpcStubGetLogs?: boolean
-
-  /**
-   * Logging verbosity
-   *
-   * Choices: ['debug', 'info', 'warn', 'error', 'off']
-   * Default: 'info'
-   */
-  loglevel?: string
-
-  /**
-   * Additionally log complete RPC calls on log level debug (i.e. --loglevel=debug)
-   */
-  rpcDebug?: boolean
 
   /**
    * A custom winston logger can be provided
@@ -243,14 +196,6 @@ export class Config {
   public static readonly DATADIR_DEFAULT = `./datadir`
   public static readonly TRANSPORTS_DEFAULT = ['rlpx', 'libp2p']
   public static readonly PORT_DEFAULT = 30303
-  public static readonly RPC_DEFAULT = false
-  public static readonly RPCPORT_DEFAULT = 8545
-  public static readonly RPCADDR_DEFAULT = 'localhost'
-  public static readonly RPC_ENGINE_DEFAULT = false
-  public static readonly RPC_ENGINE_PORT_DEFAULT = 8550
-  public static readonly RPC_ENGINE_ADDR_DEFAULT = 'localhost'
-  public static readonly LOGLEVEL_DEFAULT = 'info'
-  public static readonly RPCDEBUG_DEFAULT = false
   public static readonly MAXPERREQUEST_DEFAULT = 50
   public static readonly MINPEERS_DEFAULT = 1
   public static readonly MAXPEERS_DEFAULT = 25
@@ -268,14 +213,6 @@ export class Config {
   public readonly port?: number
   public readonly extIP?: string
   public readonly multiaddrs?: Multiaddr[]
-  public readonly rpc: boolean
-  public readonly rpcport: number
-  public readonly rpcaddr: string
-  public readonly rpcEngine: boolean
-  public readonly rpcEngineAddr: string
-  public readonly rpcEnginePort: number
-  public readonly loglevel: string
-  public readonly rpcDebug: boolean
   public readonly rpcStubGetLogs: boolean
   public readonly maxPerRequest: number
   public readonly minPeers: number
@@ -309,14 +246,6 @@ export class Config {
     this.multiaddrs = options.multiaddrs
     this.datadir = options.datadir ?? Config.DATADIR_DEFAULT
     this.key = options.key ?? genPrivateKey()
-    this.rpc = options.rpc ?? Config.RPC_DEFAULT
-    this.rpcport = options.rpcport ?? Config.RPCPORT_DEFAULT
-    this.rpcaddr = options.rpcaddr ?? Config.RPCADDR_DEFAULT
-    this.rpcEngine = options.rpcEngine ?? Config.RPC_ENGINE_DEFAULT
-    this.rpcEnginePort = options.rpcEnginePort ?? Config.RPC_ENGINE_PORT_DEFAULT
-    this.rpcEngineAddr = options.rpcEngineAddr ?? Config.RPC_ENGINE_ADDR_DEFAULT
-    this.loglevel = options.loglevel ?? Config.LOGLEVEL_DEFAULT
-    this.rpcDebug = options.rpcDebug ?? Config.RPCDEBUG_DEFAULT
     this.rpcStubGetLogs = options.rpcStubGetLogs ?? false
     this.maxPerRequest = options.maxPerRequest ?? Config.MAXPERREQUEST_DEFAULT
     this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
@@ -338,16 +267,7 @@ export class Config {
     this.discDns = this.getDnsDiscovery(options.discDns)
     this.discV4 = this.getV4Discovery(options.discV4)
 
-    if (options.logger) {
-      if (options.loglevel) {
-        throw new Error('Config initialization with both logger and loglevel options not allowed')
-      }
-
-      // Logger option takes precedence
-      this.logger = options.logger
-    } else {
-      this.logger = getLogger({ loglevel: this.loglevel })
-    }
+    this.logger = options.logger ?? getLogger()
 
     if (options.servers) {
       if (options.transports) {

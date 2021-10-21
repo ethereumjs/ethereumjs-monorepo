@@ -5,7 +5,7 @@
 
 import multiaddr from 'multiaddr'
 import LibP2p from 'libp2p'
-import { NOISE } from 'libp2p-noise'
+import { NOISE } from '@chainsafe/libp2p-noise'
 import PeerId from 'peer-id'
 // types currently unavailable for below libp2p deps,
 // tracking issue: https://github.com/libp2p/js-libp2p/issues/659
