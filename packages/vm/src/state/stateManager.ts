@@ -570,19 +570,25 @@ export default class DefaultStateManager implements StateManager {
     const addresses = Object.keys(initState)
     for (const address of addresses) {
       const state = initState[address]
-      let balance, code, storage
-      if (Array.isArray(state)) {
-        ;[balance, code, storage] = state // eslint-disable-line no-extra-semi
-        await this.putContractCode(Address.fromString(address), toBuffer(code))
-        storage = storage ? (Object.values(storage) as [string, string][]) : []
-        for (const [key, value] of storage) {
-          await this.putContractStorage(Address.fromString(address), toBuffer(key), toBuffer(value))
-        }
+      const addr = Address.fromString(address)
+      if (!Array.isArray(state)) {
+        // Prior format: address -> balance
+        const account = Account.fromAccountData({ balance: state })
+        await this._trie.put(toBuffer(address), account.serialize())
       } else {
-        balance = state
+        // New format: address -> [balance, code, storage]
+        let [balance, code, storage] = state // eslint-disable-line prefer-const
+        const account = Account.fromAccountData({ balance })
+        await this._trie.put(toBuffer(address), account.serialize())
+        if (code) {
+          code = toBuffer(code)
+          await this.putContractCode(addr, code)
+          storage = storage ? (Object.values(storage) as [string, string][]) : []
+          for (const [key, value] of storage) {
+            await this.putContractStorage(addr, toBuffer(key), toBuffer(value))
+          }
+        }
       }
-      const account = Account.fromAccountData({ balance })
-      await this._trie.put(toBuffer(address), account.serialize())
     }
   }
 
