@@ -3,7 +3,7 @@
  * @memberof module:net/peer
  */
 
-import multiaddr from 'multiaddr'
+import { Multiaddr } from 'multiaddr'
 import LibP2p from 'libp2p'
 import { NOISE } from '@chainsafe/libp2p-noise'
 import PeerId from 'peer-id'
@@ -24,11 +24,11 @@ export interface Libp2pNodeOptions {
   addresses?: {
     listen?: string[]
     announce?: string[]
-    announceFilter?: (ma: multiaddr[]) => multiaddr[]
+    announceFilter?: (ma: Multiaddr[]) => Multiaddr[]
   }
 
   /* Bootnodes */
-  bootnodes?: multiaddr[]
+  bootnodes?: Multiaddr[]
 }
 
 export class Libp2pNode extends LibP2p {

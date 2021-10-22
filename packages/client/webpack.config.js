@@ -6,11 +6,6 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
-        use: 'ts-loader',
-        exclude: /node_modules/,
-      },
-      {
         test: /\.js$/,
         loader: 'file-replace-loader',
         options: {
@@ -32,7 +27,7 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: ['.ts', '.js'],
+    extensions: ['.js'],
   },
   output: {
     filename: 'bundle.js',

@@ -1,6 +1,6 @@
 import tape from 'tape'
 import td from 'testdouble'
-import multiaddr from 'multiaddr'
+import { multiaddr } from 'multiaddr'
 import { Config } from '../../../lib/config'
 import { Protocol } from '../../../lib/net/protocol'
 import { Event } from '../../../lib/types'

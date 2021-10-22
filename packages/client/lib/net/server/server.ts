@@ -1,4 +1,4 @@
-import multiaddr from 'multiaddr'
+import { Multiaddr } from 'multiaddr'
 import { Config } from '../../config'
 import { MultiaddrLike, KeyLike, DnsNetwork } from '../../types'
 import { parseKey, parseMultiaddrs } from '../../util/parse'
@@ -28,7 +28,7 @@ export interface ServerOptions {
 export class Server {
   public config: Config
   public key: Buffer
-  public bootnodes: multiaddr[] = []
+  public bootnodes: Multiaddr[] = []
   public dnsNetworks: DnsNetwork[]
 
   protected refreshInterval: number

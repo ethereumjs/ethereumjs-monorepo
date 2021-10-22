@@ -3,7 +3,7 @@ import * as base32 from 'hi-base32'
 import * as rlp from 'rlp'
 import { sscanf } from 'scanf'
 import { ecdsaVerify } from 'secp256k1'
-import Multiaddr from 'multiaddr'
+import { Multiaddr } from 'multiaddr'
 import base64url from 'base64url'
 import { PeerInfo } from '../dpt'
 import { toNewUint8Array, keccak256 } from '../util'
@@ -74,8 +74,8 @@ export class ENR {
 
     const peerInfo: PeerInfo = {
       address: Convert.toString(ipCode, obj.ip) as string,
-      tcpPort: Convert.toString(tcpCode, toNewUint8Array(obj.tcp)) as number,
-      udpPort: Convert.toString(udpCode, toNewUint8Array(obj.udp)) as number,
+      tcpPort: Number(Convert.toString(tcpCode, toNewUint8Array(obj.tcp))),
+      udpPort: Number(Convert.toString(udpCode, toNewUint8Array(obj.udp))),
     }
 
     return peerInfo

@@ -1,5 +1,5 @@
 import tape from 'tape'
-import multiaddr from 'multiaddr'
+import { multiaddr } from 'multiaddr'
 import {
   parseMultiaddrs,
   parseTransports,

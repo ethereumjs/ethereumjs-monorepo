@@ -1,5 +1,5 @@
 import { URL } from 'url'
-import multiaddr from 'multiaddr'
+import { Multiaddr, multiaddr } from 'multiaddr'
 import { BlockHeader } from '@ethereumjs/block'
 import Common, { Hardfork } from '@ethereumjs/common'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
@@ -23,19 +23,19 @@ import type { GenesisState } from '@ethereumjs/common/dist/types'
  * Parses multiaddrs and bootnodes to multiaddr format.
  * @param input comma separated string
  */
-export function parseMultiaddrs(input: MultiaddrLike): multiaddr[] {
+export function parseMultiaddrs(input: MultiaddrLike): Multiaddr[] {
   if (!input) {
     return []
   }
   if (!Array.isArray(input) && typeof input === 'object') {
-    return [input] as multiaddr[]
+    return [input] as Multiaddr[]
   }
   if (!Array.isArray(input)) {
     input = input.split(',')
   }
   try {
     return (input as string[]).map((s) => {
-      if (multiaddr.isMultiaddr(s)) {
+      if (Multiaddr.isMultiaddr(s)) {
         return s
       }
       // parse as multiaddr
