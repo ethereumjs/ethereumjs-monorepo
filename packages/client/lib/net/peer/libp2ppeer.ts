@@ -1,4 +1,4 @@
-import multiaddr from 'multiaddr'
+import { Multiaddr, multiaddr } from 'multiaddr'
 import PeerId from 'peer-id'
 import { Libp2pMuxedStream as MuxedStream } from '../../types'
 import { Libp2pSender } from '../protocol/libp2psender'
@@ -7,9 +7,10 @@ import { Libp2pNode } from './libp2pnode'
 import { Protocol } from '../protocol'
 import { Libp2pServer } from '../server'
 import { Event } from '../../types'
+
 export interface Libp2pPeerOptions extends Omit<PeerOptions, 'address' | 'transport'> {
   /* Multiaddrs to listen on */
-  multiaddrs?: multiaddr[]
+  multiaddrs?: Multiaddr[]
 }
 
 /**
@@ -17,7 +18,7 @@ export interface Libp2pPeerOptions extends Omit<PeerOptions, 'address' | 'transp
  * @memberof module:net/peer
  * @example
  * ```typescript
- * import multiaddr from 'multiaddr'
+ * import { multiaddr } from 'multiaddr'
  * import { Libp2pPeer } from './lib/net/peer'
  * import { Chain } from './lib/blockchain'
  * import { EthProtocol } from './lib/net/protocol'
@@ -35,7 +36,7 @@ export interface Libp2pPeerOptions extends Omit<PeerOptions, 'address' | 'transp
  * ```
  */
 export class Libp2pPeer extends Peer {
-  private multiaddrs: multiaddr[]
+  private multiaddrs: Multiaddr[]
   private connected: boolean
 
   /**
@@ -63,7 +64,7 @@ export class Libp2pPeer extends Peer {
     const node = new Libp2pNode({ peerId, addresses })
     await node.start()
     for (const ma of this.multiaddrs) {
-      await node.dial(ma)
+      await node.dial(ma as any)
       await this.bindProtocols(node, ma)
     }
     this.config.events.emit(Event.PEER_CONNECTED, this)
@@ -86,7 +87,7 @@ export class Libp2pPeer extends Peer {
    */
   async bindProtocols(
     node: Libp2pNode,
-    peer: PeerId | multiaddr,
+    peer: PeerId | Multiaddr,
     server?: Libp2pServer
   ): Promise<void> {
     await Promise.all(
@@ -94,7 +95,7 @@ export class Libp2pPeer extends Peer {
         await p.open()
         const protocol = `/${p.name}/${p.versions[0]}`
         try {
-          const { stream } = await node.dialProtocol(peer, protocol)
+          const { stream } = await node.dialProtocol(peer as any, protocol)
           await this.bindProtocol(p, new Libp2pSender(stream))
         } catch (err: any) {
           const peerInfo = peer instanceof PeerId ? `id=${peer.toB58String()}` : `multiaddr=${peer}`

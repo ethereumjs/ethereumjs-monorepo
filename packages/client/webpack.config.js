@@ -6,11 +6,6 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
-        use: 'ts-loader',
-        exclude: /node_modules/,
-      },
-      {
         test: /\.js$/,
         loader: 'file-replace-loader',
         options: {
@@ -32,7 +27,7 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: ['.ts', '.js'],
+    extensions: ['.js'],
   },
   output: {
     filename: 'bundle.js',
@@ -44,13 +39,10 @@ module.exports = {
       crypto: require.resolve('crypto-browserify'), // used by: rlpxpeer, bin/cli.ts
       dgram: false, // used by: rlpxpeer via @ethereumjs/devp2p
       fs: false, // used by: FullSynchronizer via @ethereumjs/vm
-      http: false, // polyfill error from node-fetch (unused so can pass false)
-      https: false, // polyfill error from node-fetch (unused so can pass false)
       net: false, // used by: rlpxpeer
       os: require.resolve('os-browserify/browser'), // used by: bin/cli.ts, web3_clientVersion rpc
       path: false, // used by: bin/cli.ts
       stream: require.resolve('stream-browserify'), // used by: fetcher
-      zlib: false, // polyfill error from node-fetch (unused so can pass false)
     },
   },
   performance: {

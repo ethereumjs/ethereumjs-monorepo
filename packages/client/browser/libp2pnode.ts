@@ -6,7 +6,7 @@
 import LibP2p from 'libp2p'
 import { NOISE } from '@chainsafe/libp2p-noise'
 import PeerId from 'peer-id'
-import multiaddr from 'multiaddr'
+import { Multiaddr } from 'multiaddr'
 // types currently unavailable for below libp2p deps,
 // tracking issue: https://github.com/libp2p/js-libp2p/issues/659
 const LibP2pWebsockets = require('libp2p-websockets')
@@ -22,11 +22,11 @@ export interface Libp2pNodeOptions {
   addresses?: {
     listen?: string[]
     announce?: string[]
-    announceFilter?: (ma: multiaddr[]) => multiaddr[]
+    announceFilter?: (ma: Multiaddr[]) => Multiaddr[]
   }
 
   /* Bootnodes */
-  bootnodes?: multiaddr[]
+  bootnodes?: Multiaddr[]
 }
 
 export class Libp2pNode extends LibP2p {

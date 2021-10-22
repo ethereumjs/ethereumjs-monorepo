@@ -1,7 +1,7 @@
 import PeerId from 'peer-id'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import crypto from 'libp2p-crypto'
-import multiaddr from 'multiaddr'
+import { Multiaddr, multiaddr } from 'multiaddr'
 import { Event, Libp2pConnection as Connection } from '../../types'
 import { Libp2pNode } from '../peer/libp2pnode'
 import { Libp2pPeer } from '../peer'
@@ -9,7 +9,7 @@ import { Server, ServerOptions } from './server'
 
 export interface Libp2pServerOptions extends ServerOptions {
   /* Multiaddrs to listen on */
-  multiaddrs?: multiaddr[]
+  multiaddrs?: Multiaddr[]
 }
 
 /**
@@ -19,7 +19,7 @@ export interface Libp2pServerOptions extends ServerOptions {
 export class Libp2pServer extends Server {
   private peers: Map<string, Libp2pPeer> = new Map()
   private banned: Map<string, number> = new Map()
-  private multiaddrs: multiaddr[]
+  private multiaddrs: Multiaddr[]
   private node: Libp2pNode | null
 
   /**
@@ -156,11 +156,11 @@ export class Libp2pServer extends Server {
     return PeerId.createFromPrivKey(protoBuf)
   }
 
-  getPeerInfo(connection: Connection): [PeerId, multiaddr] {
+  getPeerInfo(connection: Connection): [PeerId, Multiaddr] {
     return [connection.remotePeer, connection.remoteAddr]
   }
 
-  createPeer(peerId: PeerId, multiaddrs?: multiaddr[]) {
+  createPeer(peerId: PeerId, multiaddrs?: Multiaddr[]) {
     const peer = new Libp2pPeer({
       config: this.config,
       id: peerId.toB58String(),
