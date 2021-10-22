@@ -13,6 +13,7 @@ import {
   rlphash,
   toBuffer,
   zeros,
+  bufferToHex,
 } from 'ethereumjs-util'
 import { Blockchain, BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
 import {
@@ -327,7 +328,9 @@ export class BlockHeader {
       this.extraData = this.cliqueSealBlock(options.cliqueSigner)
     }
 
-    this._errorPostfix = `block number=${this.number} hash=${this.hash().toString('hex')}`
+    let msg = `block header number=${this.number} hash=${bufferToHex(this.hash())} `
+    msg += `hf=${this._common.hardfork()} baseFeePerGas=${this.baseFeePerGas ?? 'none'}`
+    this._errorPostfix = msg
 
     const freeze = options?.freeze ?? true
     if (freeze) {
@@ -352,31 +355,36 @@ export class BlockHeader {
     } = this
 
     if (parentHash.length !== 32) {
-      throw new Error(`parentHash must be 32 bytes, received ${parentHash.length} bytes`)
+      const msg = `parentHash must be 32 bytes, received ${parentHash.length} bytes`
+      throw this._error(msg)
     }
     if (stateRoot.length !== 32) {
-      throw new Error(`stateRoot must be 32 bytes, received ${stateRoot.length} bytes`)
+      const msg = `stateRoot must be 32 bytes, received ${stateRoot.length} bytes`
+      throw this._error(msg)
     }
     if (transactionsTrie.length !== 32) {
-      throw new Error(
-        `transactionsTrie must be 32 bytes, received ${transactionsTrie.length} bytes`
-      )
+      const msg = `transactionsTrie must be 32 bytes, received ${transactionsTrie.length} bytes`
+      throw this._error(msg)
     }
     if (receiptTrie.length !== 32) {
-      throw new Error(`receiptTrie must be 32 bytes, received ${receiptTrie.length} bytes`)
+      const msg = `receiptTrie must be 32 bytes, received ${receiptTrie.length} bytes`
+      throw this._error(msg)
     }
     if (mixHash.length !== 32) {
-      throw new Error(`mixHash must be 32 bytes, received ${mixHash.length} bytes`)
+      const msg = `mixHash must be 32 bytes, received ${mixHash.length} bytes`
+      throw this._error(msg)
     }
 
     if (nonce.length !== 8) {
       // Hack to check for Kovan due to non-standard nonce length (65 bytes)
       if (this._common.networkIdBN().eqn(42)) {
         if (nonce.length !== 65) {
-          throw new Error(`nonce must be 65 bytes on kovan, received ${nonce.length} bytes`)
+          const msg = `nonce must be 65 bytes on kovan, received ${nonce.length} bytes`
+          throw this._error(msg)
         }
       } else {
-        throw new Error(`nonce must be 8 bytes, received ${nonce.length} bytes`)
+        const msg = `nonce must be 8 bytes, received ${nonce.length} bytes`
+        throw this._error(msg)
       }
     }
 
@@ -410,7 +418,8 @@ export class BlockHeader {
         error = true
       }
       if (error) {
-        throw new Error('Invalid PoS block' + errorMsg)
+        const msg = `Invalid PoS block${errorMsg}`
+        throw this._error(msg)
       }
     }
   }
@@ -422,10 +431,12 @@ export class BlockHeader {
    */
   canonicalDifficulty(parentBlockHeader: BlockHeader): BN {
     if (this._common.consensusType() !== ConsensusType.ProofOfWork) {
-      throw new Error('difficulty calculation is only supported on PoW chains')
+      const msg = 'difficulty calculation is only supported on PoW chains'
+      throw this._error(msg)
     }
     if (this._common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
-      throw new Error('difficulty calculation currently only supports the ethash algorithm')
+      const msg = 'difficulty calculation currently only supports the ethash algorithm'
+      throw this._error(msg)
     }
     const hardfork = this._getHardfork()
     const blockTs = this.timestamp
@@ -507,14 +518,13 @@ export class BlockHeader {
   validateCliqueDifficulty(blockchain: Blockchain): boolean {
     this._requireClique('validateCliqueDifficulty')
     if (!this.difficulty.eq(CLIQUE_DIFF_INTURN) && !this.difficulty.eq(CLIQUE_DIFF_NOTURN)) {
-      throw new Error(
-        `difficulty for clique block must be INTURN (2) or NOTURN (1), received: ${this.difficulty}`
-      )
+      const msg = `difficulty for clique block must be INTURN (2) or NOTURN (1), received: ${this.difficulty}`
+      throw this._error(msg)
     }
     if ('cliqueActiveSigners' in blockchain === false) {
-      throw new Error(
+      const msg =
         'PoA blockchain requires method blockchain.cliqueActiveSigners() to validate clique difficulty'
-      )
+      throw this._error(msg)
     }
     const signers = (blockchain as any).cliqueActiveSigners()
     if (signers.length === 0) {
@@ -631,65 +641,76 @@ export class BlockHeader {
     const parentHeader = await this._getHeaderByHash(blockchain, this.parentHash)
 
     if (!parentHeader) {
-      throw new Error('could not find parent header')
+      const msg = 'could not find parent header'
+      throw this._error(msg)
     }
 
     const { number } = this
     if (!number.eq(parentHeader.number.addn(1))) {
-      throw new Error('invalid number')
+      const msg = 'invalid number'
+      throw this._error(msg)
     }
 
     if (this.timestamp.lte(parentHeader.timestamp)) {
-      throw new Error('invalid timestamp')
+      const msg = 'invalid timestamp'
+      throw this._error(msg)
     }
 
     if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       const period = this._common.consensusConfig().period
       // Timestamp diff between blocks is lower than PERIOD (clique)
       if (parentHeader.timestamp.addn(period).gt(this.timestamp)) {
-        throw new Error('invalid timestamp diff (lower than period)')
+        const msg = 'invalid timestamp diff (lower than period)'
+        throw this._error(msg)
       }
     }
 
     if (this._common.consensusType() === 'pow') {
       if (!this.validateDifficulty(parentHeader)) {
-        throw new Error('invalid difficulty')
+        const msg = 'invalid difficulty'
+        throw this._error(msg)
       }
     }
 
     if (!this.validateGasLimit(parentHeader)) {
-      throw new Error('invalid gas limit')
+      const msg = 'invalid gas limit'
+      throw this._error(msg)
     }
 
     if (height) {
       const dif = height.sub(parentHeader.number)
       if (!(dif.ltn(8) && dif.gtn(1))) {
-        throw new Error('uncle block has a parent that is too old or too young')
+        const msg = 'uncle block has a parent that is too old or too young'
+        throw this._error(msg)
       }
     }
 
     // check if the block used too much gas
     if (this.gasUsed.gt(this.gasLimit)) {
-      throw new Error('Invalid block: too much gas used')
+      const msg = 'Invalid block: too much gas used'
+      throw this._error(msg)
     }
 
     if (this._common.isActivatedEIP(1559)) {
       if (!this.baseFeePerGas) {
-        throw new Error('EIP1559 block has no base fee field')
+        const msg = 'EIP1559 block has no base fee field'
+        throw this._error(msg)
       }
       const block = this._common.hardforkBlockBN('london')
       const isInitialEIP1559Block = block && this.number.eq(block)
       if (isInitialEIP1559Block) {
         const initialBaseFee = new BN(this._common.param('gasConfig', 'initialBaseFee'))
         if (!this.baseFeePerGas!.eq(initialBaseFee)) {
-          throw new Error('Initial EIP1559 block does not have initial base fee')
+          const msg = 'Initial EIP1559 block does not have initial base fee'
+          throw this._error(msg)
         }
       } else {
         // check if the base fee is correct
         const expectedBaseFee = parentHeader.calcNextBaseFee()
 
         if (!this.baseFeePerGas!.eq(expectedBaseFee)) {
-          throw new Error('Invalid block: base fee not correct')
+          const msg = 'Invalid block: base fee not correct'
+          throw this._error(msg)
         }
       }
     }
@@ -700,7 +721,8 @@ export class BlockHeader {
    */
   public calcNextBaseFee(): BN {
     if (!this._common.isActivatedEIP(1559)) {
-      throw new Error('calcNextBaseFee() can only be called with EIP1559 being activated')
+      const msg = 'calcNextBaseFee() can only be called with EIP1559 being activated'
+      throw this._error(msg)
     }
     let nextBaseFee: BN
     const elasticity = new BN(this._common.param('gasConfig', 'elasticityMultiplier'))
@@ -782,7 +804,8 @@ export class BlockHeader {
 
   private _requireClique(name: string) {
     if (this._common.consensusAlgorithm() !== ConsensusAlgorithm.Clique) {
-      throw new Error(`BlockHeader.${name}() call only supported for clique PoA networks`)
+      const msg = `BlockHeader.${name}() call only supported for clique PoA networks`
+      throw this._error(msg)
     }
   }
 
@@ -853,7 +876,8 @@ export class BlockHeader {
   cliqueEpochTransitionSigners(): Address[] {
     this._requireClique('cliqueEpochTransitionSigners')
     if (!this.cliqueIsEpochTransition()) {
-      throw new Error('Signers are only included in epoch transition blocks (clique)')
+      const msg = 'Signers are only included in epoch transition blocks (clique)'
+      throw this._error(msg)
     }
 
     const start = CLIQUE_EXTRA_VANITY
@@ -984,7 +1008,8 @@ export class BlockHeader {
     const DAO_ForceExtraDataRange = new BN(9)
     const drift = this.number.sub(DAOActivationBlock)
     if (drift.lte(DAO_ForceExtraDataRange) && !this.extraData.equals(DAO_ExtraData)) {
-      throw new Error("extraData should be 'dao-hard-fork'")
+      const msg = "extraData should be 'dao-hard-fork'"
+      throw this._error(msg)
     }
   }
 }

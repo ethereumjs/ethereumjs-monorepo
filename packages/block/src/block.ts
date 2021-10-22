@@ -151,10 +151,12 @@ export class Block {
     this._common = this.header._common
     if (uncleHeaders.length > 0) {
       if (this._common.consensusType() === ConsensusType.ProofOfAuthority) {
-        throw new Error('Block initialization with uncleHeaders on a PoA network is not allowed')
+        const msg = 'Block initialization with uncleHeaders on a PoA network is not allowed'
+        throw this._error(msg)
       }
       if (this._common.consensusType() === ConsensusType.ProofOfStake) {
-        throw new Error('Block initialization with uncleHeaders on a PoS network is not allowed')
+        const msg = 'Block initialization with uncleHeaders on a PoS network is not allowed'
+        throw this._error(msg)
       }
     }
 
@@ -302,11 +304,13 @@ export class Block {
 
     const validateTxTrie = await this.validateTransactionsTrie()
     if (!validateTxTrie) {
-      throw new Error('invalid transaction trie')
+      const msg = 'invalid transaction trie'
+      throw this._error(msg)
     }
 
     if (!this.validateUnclesHash()) {
-      throw new Error('invalid uncle hash')
+      const msg = 'invalid uncle hash'
+      throw this._error(msg)
     }
   }
 
@@ -341,13 +345,15 @@ export class Block {
 
     // Header has at most 2 uncles
     if (this.uncleHeaders.length > 2) {
-      throw new Error('too many uncle headers')
+      const msg = 'too many uncle headers'
+      throw this._error(msg)
     }
 
     // Header does not count an uncle twice.
     const uncleHashes = this.uncleHeaders.map((header) => header.hash().toString('hex'))
     if (!(new Set(uncleHashes).size === uncleHashes.length)) {
-      throw new Error('duplicate uncles')
+      const msg = 'duplicate uncles'
+      throw this._error(msg)
     }
 
     await this._validateUncleHeaders(this.uncleHeaders, blockchain)
@@ -399,7 +405,9 @@ export class Block {
    * @hidden
    */
   _error(msg: string) {
-    return this.header._error(msg)
+    msg += ` (${this.header._errorPostfix} txs=${this.transactions.length} uncles=${this.uncleHeaders.length})`
+    const e = new Error(msg)
+    return e
   }
 
   /**
@@ -445,7 +453,8 @@ export class Block {
     for (let i = 0; i < getBlocks; i++) {
       const parentBlock = await this._getBlockByHash(blockchain, parentHash)
       if (!parentBlock) {
-        throw new Error('could not find parent block')
+        const msg = 'could not find parent block'
+        throw this._error(msg)
       }
       canonicalBlockMap.push(parentBlock)
 
@@ -470,15 +479,18 @@ export class Block {
       const parentHash = uh.parentHash.toString('hex')
 
       if (!canonicalChainHashes[parentHash]) {
-        throw new Error('The parent hash of the uncle header is not part of the canonical chain')
+        const msg = 'The parent hash of the uncle header is not part of the canonical chain'
+        throw this._error(msg)
       }
 
       if (includedUncles[uncleHash]) {
-        throw new Error('The uncle is already included in the canonical chain')
+        const msg = 'The uncle is already included in the canonical chain'
+        throw this._error(msg)
       }
 
       if (canonicalChainHashes[uncleHash]) {
-        throw new Error('The uncle is a canonical block')
+        const msg = 'The uncle is a canonical block'
+        throw this._error(msg)
       }
     })
   }

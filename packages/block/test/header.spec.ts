@@ -282,7 +282,7 @@ tape('[Block]: Header functions', function (t) {
       await header.validate(blockchain)
       st.fail(testCase)
     } catch (error: any) {
-      st.equals(error.message, 'invalid timestamp diff (lower than period)', testCase)
+      st.ok(error.message.includes('invalid timestamp diff (lower than period)'), testCase)
     }
 
     testCase = 'should not throw on timestamp diff equal to period'
