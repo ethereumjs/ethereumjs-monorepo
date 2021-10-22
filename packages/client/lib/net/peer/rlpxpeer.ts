@@ -109,29 +109,31 @@ export class RlpxPeer extends Peer {
       address: this.host,
       tcpPort: this.port,
     })
-    this.rlpx.on('peer:error', (_: Devp2pRlpxPeer, error: Error) => {
+
+    const peerErrorHandler = (_: Devp2pRlpxPeer, error: Error) => {
       this.config.events.emit(Event.PEER_ERROR, error, this)
-    })
-    this.rlpx.once('peer:added', async (rlpxPeer: Devp2pRlpxPeer) => {
+    }
+    const peerErrorHandlerBound = peerErrorHandler.bind(this)
+    const peerAddedHandler = async (rlpxPeer: Devp2pRlpxPeer) => {
       try {
         await this.bindProtocols(rlpxPeer)
         this.config.events.emit(Event.PEER_CONNECTED, this)
       } catch (error: any) {
         this.config.events.emit(Event.PEER_ERROR, error, this)
       }
-    })
-    this.rlpx.once('peer:removed', (rlpxPeer: Devp2pRlpxPeer) => {
-      try {
-        if (rlpxPeer !== this.rlpxPeer) {
-          return
-        }
-        this.rlpxPeer = null
-        this.connected = false
-        this.config.events.emit(Event.PEER_DISCONNECTED, this)
-      } catch (error: any) {
-        this.config.events.emit(Event.PEER_ERROR, error, this)
+    }
+    const peerRemovedHandler = (rlpxPeer: Devp2pRlpxPeer) => {
+      if (rlpxPeer !== this.rlpxPeer) {
+        return
       }
-    })
+      this.rlpxPeer = null
+      this.connected = false
+      this.config.events.emit(Event.PEER_DISCONNECTED, this)
+      this.rlpx?.removeListener('peer:error', peerErrorHandlerBound)
+    }
+    this.rlpx.on('peer:error', peerErrorHandlerBound)
+    this.rlpx.once('peer:added', peerAddedHandler.bind(this))
+    this.rlpx.once('peer:removed', peerRemovedHandler.bind(this))
   }
 
   /**
