@@ -1,8 +1,10 @@
 import { keccak224, keccak384, keccak256 as k256, keccak512 } from 'ethereum-cryptography/keccak'
-const createHash = require('create-hash')
+import { sha256 as _sha256 } from 'ethereum-cryptography/sha256'
+import { ripemd160 as _rmd160 } from 'ethereum-cryptography/ripemd160'
 import * as rlp from 'rlp'
 import { toBuffer, setLengthLeft } from './bytes'
 import { assertIsString, assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
+import { utf8ToBytes } from 'ethereum-cryptography/utils'
 
 /**
  * Creates Keccak hash of a Buffer input
@@ -13,16 +15,16 @@ export const keccak = function (a: Buffer, bits: number = 256): Buffer {
   assertIsBuffer(a)
   switch (bits) {
     case 224: {
-      return keccak224(a)
+      return Buffer.from(keccak224(a))
     }
     case 256: {
-      return k256(a)
+      return Buffer.from(k256(a))
     }
     case 384: {
-      return keccak384(a)
+      return Buffer.from(keccak384(a))
     }
     case 512: {
-      return keccak512(a)
+      return Buffer.from(keccak512(a))
     }
     default: {
       throw new Error(`Invald algorithm: keccak${bits}`)
@@ -70,21 +72,12 @@ export const keccakFromArray = function (a: number[], bits: number = 256) {
 }
 
 /**
- * Creates SHA256 hash of an input.
- * @param  a The input data (Buffer|Array|String)
- */
-const _sha256 = function (a: any): Buffer {
-  a = toBuffer(a)
-  return createHash('sha256').update(a).digest()
-}
-
-/**
  * Creates SHA256 hash of a Buffer input.
  * @param a The input data (Buffer)
  */
 export const sha256 = function (a: Buffer): Buffer {
   assertIsBuffer(a)
-  return _sha256(a)
+  return Buffer.from(_sha256(a))
 }
 
 /**
@@ -93,7 +86,7 @@ export const sha256 = function (a: Buffer): Buffer {
  */
 export const sha256FromString = function (a: string): Buffer {
   assertIsString(a)
-  return _sha256(a)
+  return Buffer.from(_sha256(utf8ToBytes(a)))
 }
 
 /**
@@ -102,7 +95,7 @@ export const sha256FromString = function (a: string): Buffer {
  */
 export const sha256FromArray = function (a: number[]): Buffer {
   assertIsArray(a)
-  return _sha256(a)
+  return Buffer.from(sha256(Buffer.from(a)))
 }
 
 /**
@@ -112,7 +105,7 @@ export const sha256FromArray = function (a: number[]): Buffer {
  */
 const _ripemd160 = function (a: any, padded: boolean): Buffer {
   a = toBuffer(a)
-  const hash = createHash('rmd160').update(a).digest()
+  const hash = Buffer.from(_rmd160(a))
   if (padded === true) {
     return setLengthLeft(hash, 32)
   } else {

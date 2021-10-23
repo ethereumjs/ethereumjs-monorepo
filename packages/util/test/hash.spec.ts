@@ -1,4 +1,5 @@
 import tape from 'tape'
+import { TextDecoder, TextEncoder } from 'util'
 import {
   keccak,
   keccak256,
@@ -161,7 +162,7 @@ tape('sha256', function (t) {
 tape('sha256FromString', function (t) {
   t.test('should produce a sha256', function (st) {
     const msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
-    const r = '58bbda5e10bc11a32d808e40f9da2161a64f00b5557762a161626afe19137445'
+    const r = '3c92e6f0f0c086341de2872bff71df4b39fb2a1859cb0e25c5af16ff71eaf365'
     const hash = sha256FromString(msg)
     st.equal(hash.toString('hex'), r)
     st.end()
