@@ -13,18 +13,28 @@ export interface EthereumClientOptions {
   config: Config
 
   /**
-   * Database to store blocks and metadata. Should be an abstract-leveldown compliant store.
+   * Database to store blocks and metadata.
+   * Should be an abstract-leveldown compliant store.
    *
    * Default: Database created by the Blockchain class
    */
   chainDB?: LevelUp
 
   /**
-   * Database to store the state. Should be an abstract-leveldown compliant store.
+   * Database to store the state.
+   * Should be an abstract-leveldown compliant store.
    *
    * Default: Database created by the Trie class
    */
   stateDB?: LevelUp
+
+  /**
+   * Database to store tx receipts, logs, and indexes.
+   * Should be an abstract-leveldown compliant store.
+   *
+   * Default: Database saved in dataDir
+   */
+  metaDB?: LevelUp
 
   /* List of bootnodes to use for discovery */
   bootnodes?: MultiaddrLike[]
@@ -63,6 +73,7 @@ export default class EthereumClient extends events.EventEmitter {
             config: this.config,
             chainDB: options.chainDB,
             stateDB: options.stateDB,
+            metaDB: options.metaDB,
           })
         : new LightEthereumService({
             config: this.config,

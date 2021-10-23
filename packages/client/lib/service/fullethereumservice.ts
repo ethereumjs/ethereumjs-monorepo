@@ -38,6 +38,7 @@ export class FullEthereumService extends EthereumService {
       pool: this.pool,
       chain: this.chain,
       stateDB: options.stateDB,
+      metaDB: options.metaDB,
       interval: this.interval,
     })
 
@@ -166,6 +167,17 @@ export class FullEthereumService extends EthereumService {
       const txs = this.synchronizer.txPool.getByHash(hashes)
       // Always respond, also on an empty list
       peer.eth?.send('PooledTransactions', { reqId, txs })
+    } else if (message.name === 'GetReceipts') {
+      const [reqId, hashes] = message.data
+      const { receiptsManager } = this.synchronizer.execution
+      if (!receiptsManager) return
+      const receipts = []
+      for (const hash of hashes) {
+        const blockReceipts = await receiptsManager.getReceipts(hash, true, true)
+        if (!blockReceipts) continue
+        receipts.push(...blockReceipts)
+      }
+      peer.eth?.send('Receipts', { reqId, receipts })
     }
   }
 

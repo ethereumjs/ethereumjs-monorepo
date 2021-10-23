@@ -5,7 +5,7 @@ import { short } from '../util'
 import { Event } from '../types'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import { BlockFetcher } from './fetcher'
-import { VMExecution } from './execution/vmexecution'
+import { VMExecution } from './execution'
 import { TxPool } from './txpool'
 import type { Block } from '@ethereumjs/block'
 
@@ -32,6 +32,7 @@ export class FullSynchronizer extends Synchronizer {
     this.execution = new VMExecution({
       config: options.config,
       stateDB: options.stateDB,
+      metaDB: options.metaDB,
       chain: options.chain,
     })
 

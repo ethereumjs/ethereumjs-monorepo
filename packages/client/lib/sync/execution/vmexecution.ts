@@ -7,12 +7,14 @@ import { debugCodeReplayBlock } from '../../util/debug'
 import { Event } from '../../types'
 import { Execution, ExecutionOptions } from './execution'
 import type { Block } from '@ethereumjs/block'
+import { ReceiptsManager } from './receipt'
 
 export class VMExecution extends Execution {
   public vm: VM
   public hardfork: string = ''
 
   public syncing = false
+  public receiptsManager?: ReceiptsManager
   private vmPromise?: Promise<number | undefined>
 
   private NUM_BLOCKS_PER_ITERATION = 50
@@ -39,6 +41,14 @@ export class VMExecution extends Execution {
     } else {
       this.vm = this.config.vm
       ;(this.vm as any).blockchain = this.chain.blockchain
+    }
+
+    if (this.metaDB) {
+      this.receiptsManager = new ReceiptsManager({
+        chain: this.chain,
+        config: this.config,
+        metaDB: this.metaDB,
+      })
     }
   }
 
@@ -72,8 +82,8 @@ export class VMExecution extends Execution {
     let numExecuted: number | undefined
 
     const blockchain = this.vm.blockchain
-    let startHeadBlock = await this.vm.blockchain.getIteratorHead()
-    let canonicalHead = await this.vm.blockchain.getLatestBlock()
+    let startHeadBlock = await blockchain.getIteratorHead()
+    let canonicalHead = await blockchain.getLatestBlock()
 
     let headBlock: Block | undefined
     let parentState: Buffer | undefined
@@ -115,7 +125,12 @@ export class VMExecution extends Execution {
             // Block validation is redundant here and leads to consistency problems
             // on PoA clique along blockchain-including validation checks
             // (signer states might have moved on when sync is ahead)
-            await this.vm.runBlock({ block, root: parentState, skipBlockValidation: true })
+            const result = await this.vm.runBlock({
+              block,
+              root: parentState,
+              skipBlockValidation: true,
+            })
+            void this.receiptsManager?.saveReceipts(block, result.receipts)
             txCounter += block.transactions.length
             // set as new head block
             headBlock = block

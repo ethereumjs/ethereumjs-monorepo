@@ -74,7 +74,8 @@ tape('[EthProtocol]', (t) => {
     )
     t.end()
   })
-  t.test('verify that NEW_BLOCK handler encodes/decodes correctly', (t) => {
+
+  t.test('verify that NewBlock handler encodes/decodes correctly', (t) => {
     const config = new Config({ transports: [] })
     const chain = new Chain({ config })
     const p = new EthProtocol({ config, chain })
@@ -90,6 +91,26 @@ tape('[EthProtocol]', (t) => {
     ])
     t.deepEquals(res[0].hash(), block.hash(), 'correctly decoded block')
     t.ok(new BN(res2[1]).eq(td), 'correctly encoded td')
+    t.end()
+  })
+
+  t.test('verify that GetReceipts handler encodes/decodes correctly', (t) => {
+    const config = new Config({ transports: [] })
+    const chain = new Chain({ config })
+    const p = new EthProtocol({ config, chain })
+    const block = Block.fromBlockData({})
+    const res = p.decode(p.messages.filter((message) => message.name === 'GetReceipts')[0], [
+      new BN(1),
+      [block.hash()],
+    ])
+    const res2 = p.encode(p.messages.filter((message) => message.name === 'GetReceipts')[0], {
+      reqId: new BN(1),
+      hashes: [block.hash()],
+    })
+    t.ok(res.reqId.eqn(1), 'correctly decoded reqId')
+    t.ok(res.hashes[0].equals(block.hash()), 'correctly decoded blockHash')
+    t.ok(new BN(res2[0]).eqn(1), 'correctly encoded reqId')
+    t.ok(res2[1][0].equals(block.hash()), 'correctly encoded blockHash')
     t.end()
   })
 })

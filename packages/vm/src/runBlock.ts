@@ -432,7 +432,12 @@ export async function rewardAccount(
  * Returns the encoded tx receipt.
  */
 export function encodeReceipt(tx: TypedTransaction, receipt: TxReceipt) {
-  const encoded = rlp.encode(Object.values(receipt))
+  const encoded = rlp.encode([
+    (receipt as PreByzantiumTxReceipt).stateRoot ?? (receipt as PostByzantiumTxReceipt).status,
+    receipt.gasUsed,
+    receipt.bitvector,
+    receipt.logs,
+  ])
 
   if (!tx.supports(Capability.EIP2718TypedTransaction)) {
     return encoded

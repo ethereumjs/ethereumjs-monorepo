@@ -3,14 +3,19 @@ import td from 'testdouble'
 import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
+const level = require('level-mem')
 
 tape('[FullEthereumService]', async (t) => {
   class PeerPool {
     open() {}
     close() {}
+    start() {}
+    stop() {}
   }
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
+  PeerPool.prototype.start = td.func<any>()
+  PeerPool.prototype.stop = td.func<any>()
   td.replace('../../lib/net/peerpool', { PeerPool })
   const Chain = td.constructor([] as any)
   Chain.prototype.open = td.func<any>()
@@ -25,6 +30,9 @@ tape('[FullEthereumService]', async (t) => {
     open() {}
     close() {}
     handleNewBlock() {}
+    execution = {
+      receiptsManager: { getReceipts: td.func<any>() },
+    }
   }
   FullSynchronizer.prototype.start = td.func<any>()
   FullSynchronizer.prototype.stop = td.func<any>()
@@ -95,11 +103,20 @@ tape('[FullEthereumService]', async (t) => {
     t.end()
   })
 
-  t.test('handleNewBlock should be called', async (t) => {
+  t.test('should call handleNewBlock on NewBlock', async (t) => {
     const config = new Config({ transports: [] })
     const service = new FullEthereumService({ config })
     await service.handle({ name: 'NewBlock', data: [{}, new BN(1)] }, 'eth', undefined as any)
     td.verify(service.synchronizer.handleNewBlock({} as any, undefined))
+    t.end()
+  })
+
+  t.test('should call getReceipts on GetReceipts', async (t) => {
+    const config = new Config({ transports: [] })
+    const service = new FullEthereumService({ config, metaDB: level() })
+    const blockHash = Buffer.alloc(32)
+    await service.handle({ name: 'GetReceipts', data: [new BN(1), [blockHash]] }, 'eth', {} as any)
+    td.verify(service.synchronizer.execution.receiptsManager!.getReceipts(blockHash, true, true))
     t.end()
   })
 
