@@ -1,5 +1,4 @@
 import tape from 'tape'
-import { TextDecoder, TextEncoder } from 'util'
 import {
   keccak,
   keccak256,
