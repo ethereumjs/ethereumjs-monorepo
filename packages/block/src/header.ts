@@ -51,7 +51,6 @@ export class BlockHeader {
   public readonly baseFeePerGas?: BN
 
   public readonly _common: Common
-  public _errorPostfix = ''
 
   private cache: HeaderCache = {
     hash: undefined,
@@ -327,10 +326,6 @@ export class BlockHeader {
 
       this.extraData = this.cliqueSealBlock(options.cliqueSigner)
     }
-
-    let msg = `block header number=${this.number} hash=${bufferToHex(this.hash())} `
-    msg += `hf=${this._common.hardfork()} baseFeePerGas=${this.baseFeePerGas ?? 'none'}`
-    this._errorPostfix = msg
 
     const freeze = options?.freeze ?? true
     if (freeze) {
@@ -966,8 +961,17 @@ export class BlockHeader {
    * @param msg Base error message
    * @hidden
    */
-  _error(msg: string) {
-    msg += ` (${this._errorPostfix})`
+  protected _error(msg: string) {
+    let hash = ''
+    try {
+      hash = bufferToHex(this.hash())
+    } catch (e: any) {
+      hash = 'error'
+    }
+    let postfix = `block header number=${this.number} hash=${hash} `
+    postfix += `hf=${this._common.hardfork()} baseFeePerGas=${this.baseFeePerGas ?? 'none'}`
+
+    msg += ` (${postfix})`
     const e = new Error(msg)
     return e
   }

@@ -1,5 +1,5 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { BN, rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
+import { BN, rlp, keccak256, KECCAK256_RLP, bufferToHex } from 'ethereumjs-util'
 import Common, { ConsensusType } from '@ethereumjs/common'
 import {
   TransactionFactory,
@@ -295,7 +295,7 @@ export class Block {
     const txErrors = this.validateTransactions(true)
     if (txErrors.length > 0) {
       const msg = `invalid transactions: ${txErrors.join(' ')}`
-      throw this.header._error(msg)
+      throw this._error(msg)
     }
 
     if (onlyHeader) {
@@ -404,8 +404,18 @@ export class Block {
    * @param msg Base error message
    * @hidden
    */
-  _error(msg: string) {
-    msg += ` (${this.header._errorPostfix} txs=${this.transactions.length} uncles=${this.uncleHeaders.length})`
+  protected _error(msg: string) {
+    let hash = ''
+    try {
+      hash = bufferToHex(this.hash())
+    } catch (e: any) {
+      hash = 'error'
+    }
+    let postfix = `block number=${this.header.number} hash=${hash} `
+    postfix += `hf=${this._common.hardfork()} baseFeePerGas=${this.header.baseFeePerGas ?? 'none'}`
+    postfix += `txs=${this.transactions.length} uncles=${this.uncleHeaders.length}`
+
+    msg += ` (${postfix})`
     const e = new Error(msg)
     return e
   }
