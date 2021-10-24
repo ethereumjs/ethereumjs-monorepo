@@ -243,8 +243,8 @@ export default class Transaction extends BaseTransaction<Transaction> {
     // This should be updated along the next major version release by adding:
     //
     //if (!this.isSigned()) {
-    //  const msg = 'Cannot call hash method if transaction is not signed'
-    //  throw this._error(msg)
+    //  const msg = this._errorMsg('Cannot call hash method if transaction is not signed')
+    //  throw new Error(msg)
     //}
 
     if (Object.isFrozen(this)) {
@@ -262,8 +262,8 @@ export default class Transaction extends BaseTransaction<Transaction> {
    */
   getMessageToVerifySignature() {
     if (!this.isSigned()) {
-      const msg = 'This transaction is not signed'
-      throw this._error(msg)
+      const msg = this._errorMsg('This transaction is not signed')
+      throw new Error(msg)
     }
     const message = this._getMessageToSign()
     return rlphash(message)
@@ -278,8 +278,10 @@ export default class Transaction extends BaseTransaction<Transaction> {
     // EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
     // Reasoning: https://ethereum.stackexchange.com/a/55728
     if (this.common.gteHardfork('homestead') && this.s?.gt(N_DIV_2)) {
-      const msg = 'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
-      throw this._error(msg)
+      const msg = this._errorMsg(
+        'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
+      )
+      throw new Error(msg)
     }
 
     const { v, r, s } = this
@@ -292,8 +294,8 @@ export default class Transaction extends BaseTransaction<Transaction> {
         this.supports(Capability.EIP155ReplayProtection) ? this.common.chainIdBN() : undefined
       )
     } catch (e: any) {
-      const msg = 'Invalid Signature'
-      throw this._error(msg)
+      const msg = this._errorMsg('Invalid Signature')
+      throw new Error(msg)
     }
   }
 
@@ -392,8 +394,8 @@ export default class Transaction extends BaseTransaction<Transaction> {
    */
   private _signedTxImplementsEIP155() {
     if (!this.isSigned()) {
-      const msg = 'This transaction is not signed'
-      throw this._error(msg)
+      const msg = this._errorMsg('This transaction is not signed')
+      throw new Error(msg)
     }
     const onEIP155BlockOrLater = this.common.gteHardfork('spuriousDragon')
 
@@ -415,12 +417,11 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * @param msg Base error message
    * @hidden
    */
-  protected _error(msg: string) {
+  protected _errorMsg(msg: string) {
     let postfix = this._getSharedErrorPostfix()
     postfix += ` gasPrice=${this.gasPrice}`
 
     msg += ` (${postfix})`
-    const e = new Error(msg)
-    return e
+    return msg
   }
 }

@@ -191,13 +191,15 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
 
     if (this.v && !this.v.eqn(0) && !this.v.eqn(1)) {
-      const msg = 'The y-parity of the transaction should either be 0 or 1'
-      throw this._error(msg)
+      const msg = this._errorMsg('The y-parity of the transaction should either be 0 or 1')
+      throw new Error(msg)
     }
 
     if (this.common.gteHardfork('homestead') && this.s?.gt(N_DIV_2)) {
-      const msg = 'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
-      throw this._error(msg)
+      const msg = this._errorMsg(
+        'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
+      )
+      throw new Error(msg)
     }
 
     const freeze = opts?.freeze ?? true
@@ -297,8 +299,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    */
   public hash(): Buffer {
     if (!this.isSigned()) {
-      const msg = 'Cannot call hash method if transaction is not signed'
-      throw this._error(msg)
+      const msg = this._errorMsg('Cannot call hash method if transaction is not signed')
+      throw new Error(msg)
     }
 
     if (Object.isFrozen(this)) {
@@ -323,8 +325,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    */
   public getSenderPublicKey(): Buffer {
     if (!this.isSigned()) {
-      const msg = 'Cannot call this method if transaction is not signed'
-      throw this._error(msg)
+      const msg = this._errorMsg('Cannot call this method if transaction is not signed')
+      throw new Error(msg)
     }
 
     const msgHash = this.getMessageToVerifySignature()
@@ -332,8 +334,10 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     // EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
     // Reasoning: https://ethereum.stackexchange.com/a/55728
     if (this.common.gteHardfork('homestead') && this.s?.gt(N_DIV_2)) {
-      const msg = 'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
-      throw this._error(msg)
+      const msg = this._errorMsg(
+        'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
+      )
+      throw new Error(msg)
     }
 
     const { yParity, r, s } = this
@@ -345,8 +349,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
         bnToUnpaddedBuffer(s!)
       )
     } catch (e: any) {
-      const msg = 'Invalid Signature'
-      throw this._error(msg)
+      const msg = this._errorMsg('Invalid Signature')
+      throw new Error(msg)
     }
   }
 
@@ -400,12 +404,11 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * @param msg Base error message
    * @hidden
    */
-  protected _error(msg: string) {
+  protected _errorMsg(msg: string) {
     let postfix = this._getSharedErrorPostfix()
     postfix += ` gasPrice=${this.gasPrice} accessList=${this.accessList.length} (size)`
 
     msg += ` (${postfix})`
-    const e = new Error(msg)
-    return e
+    return msg
   }
 }

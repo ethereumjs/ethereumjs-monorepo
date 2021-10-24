@@ -282,8 +282,8 @@ export abstract class BaseTransaction<TransactionObject> {
    */
   sign(privateKey: Buffer): TransactionObject {
     if (privateKey.length !== 32) {
-      const msg = 'Private key must be 32 bytes in length.'
-      throw this._error(msg)
+      const msg = this._errorMsg('Private key must be 32 bytes in length.')
+      throw new Error(msg)
     }
 
     // Hack for the constellation that we have got a legacy tx after spuriousDragon with a non-EIP155 conforming signature
@@ -337,8 +337,8 @@ export abstract class BaseTransaction<TransactionObject> {
       const chainIdBN = new BN(toBuffer(chainId))
       if (common) {
         if (!common.chainIdBN().eq(chainIdBN)) {
-          const msg = 'The chain ID does not match the chain ID of Common'
-          throw this._error(msg)
+          const msg = this._errorMsg('The chain ID does not match the chain ID of Common')
+          throw new Error(msg)
         }
         // Common provided, chain ID does match
         // -> Return provided Common
@@ -375,17 +375,17 @@ export abstract class BaseTransaction<TransactionObject> {
     for (const [key, value] of Object.entries(values)) {
       if (bits === 53) {
         if (value?.gt(MAX_INTEGER)) {
-          const msg = `${key} cannot exceed MAX_INTEGER, given ${value}`
-          throw this._error(msg)
+          const msg = this._errorMsg(`${key} cannot exceed MAX_INTEGER, given ${value}`)
+          throw new Error(msg)
         }
       } else if (bits === 256) {
         if (value?.gte(TWO_POW256)) {
-          const msg = `${key} must be less than 2^256, given ${value}`
-          throw this._error(msg)
+          const msg = this._errorMsg(`${key} must be less than 2^256, given ${value}`)
+          throw new Error(msg)
         }
       } else {
-        const msg = 'unimplemented bits value'
-        throw this._error(msg)
+        const msg = this._errorMsg('unimplemented bits value')
+        throw new Error(msg)
       }
     }
   }
@@ -396,7 +396,7 @@ export abstract class BaseTransaction<TransactionObject> {
    * @param msg Base error message
    * @hidden
    */
-  protected abstract _error(msg: string): Error
+  protected abstract _errorMsg(msg: string): string
 
   /**
    * Returns the shared error postfix part for _error() method

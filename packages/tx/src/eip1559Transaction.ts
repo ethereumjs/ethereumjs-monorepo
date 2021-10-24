@@ -211,19 +211,22 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     )
 
     if (this.maxFeePerGas.lt(this.maxPriorityFeePerGas)) {
-      const msg =
+      const msg = this._errorMsg(
         'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)'
-      throw this._error(msg)
+      )
+      throw new Error(msg)
     }
 
     if (this.v && !this.v.eqn(0) && !this.v.eqn(1)) {
-      const msg = 'The y-parity of the transaction should either be 0 or 1'
-      throw this._error(msg)
+      const msg = this._errorMsg('The y-parity of the transaction should either be 0 or 1')
+      throw new Error(msg)
     }
 
     if (this.common.gteHardfork('homestead') && this.s?.gt(N_DIV_2)) {
-      const msg = 'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
-      throw this._error(msg)
+      const msg = this._errorMsg(
+        'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
+      )
+      throw new Error(msg)
     }
 
     const freeze = opts?.freeze ?? true
@@ -327,8 +330,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    */
   public hash(): Buffer {
     if (!this.isSigned()) {
-      const msg = 'Cannot call hash method if transaction is not signed'
-      throw this._error(msg)
+      const msg = this._errorMsg('Cannot call hash method if transaction is not signed')
+      throw new Error(msg)
     }
 
     if (Object.isFrozen(this)) {
@@ -353,8 +356,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    */
   public getSenderPublicKey(): Buffer {
     if (!this.isSigned()) {
-      const msg = 'Cannot call this method if transaction is not signed'
-      throw this._error(msg)
+      const msg = this._errorMsg('Cannot call this method if transaction is not signed')
+      throw new Error(msg)
     }
 
     const msgHash = this.getMessageToVerifySignature()
@@ -362,8 +365,10 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     // EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
     // Reasoning: https://ethereum.stackexchange.com/a/55728
     if (this.common.gteHardfork('homestead') && this.s?.gt(N_DIV_2)) {
-      const msg = 'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
-      throw this._error(msg)
+      const msg = this._errorMsg(
+        'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
+      )
+      throw new Error(msg)
     }
 
     const { v, r, s } = this
@@ -375,8 +380,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
         bnToUnpaddedBuffer(s!)
       )
     } catch (e: any) {
-      const msg = 'Invalid Signature'
-      throw this._error(msg)
+      const msg = this._errorMsg('Invalid Signature')
+      throw new Error(msg)
     }
   }
 
@@ -432,12 +437,11 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    * @param msg Base error message
    * @hidden
    */
-  protected _error(msg: string) {
+  protected _errorMsg(msg: string) {
     let postfix = this._getSharedErrorPostfix()
     postfix += ` maxFeePerGas=${this.maxFeePerGas} maxPriorityFeePerGas=${this.maxPriorityFeePerGas}`
 
     msg += ` (${postfix})`
-    const e = new Error(msg)
-    return e
+    return msg
   }
 }

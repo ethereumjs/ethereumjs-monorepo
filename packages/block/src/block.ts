@@ -151,12 +151,16 @@ export class Block {
     this._common = this.header._common
     if (uncleHeaders.length > 0) {
       if (this._common.consensusType() === ConsensusType.ProofOfAuthority) {
-        const msg = 'Block initialization with uncleHeaders on a PoA network is not allowed'
-        throw this._error(msg)
+        const msg = this._errorMsg(
+          'Block initialization with uncleHeaders on a PoA network is not allowed'
+        )
+        throw new Error(msg)
       }
       if (this._common.consensusType() === ConsensusType.ProofOfStake) {
-        const msg = 'Block initialization with uncleHeaders on a PoS network is not allowed'
-        throw this._error(msg)
+        const msg = this._errorMsg(
+          'Block initialization with uncleHeaders on a PoS network is not allowed'
+        )
+        throw new Error(msg)
       }
     }
 
@@ -294,8 +298,8 @@ export class Block {
   async validateData(onlyHeader: boolean = false): Promise<void> {
     const txErrors = this.validateTransactions(true)
     if (txErrors.length > 0) {
-      const msg = `invalid transactions: ${txErrors.join(' ')}`
-      throw this._error(msg)
+      const msg = this._errorMsg(`invalid transactions: ${txErrors.join(' ')}`)
+      throw new Error(msg)
     }
 
     if (onlyHeader) {
@@ -304,13 +308,13 @@ export class Block {
 
     const validateTxTrie = await this.validateTransactionsTrie()
     if (!validateTxTrie) {
-      const msg = 'invalid transaction trie'
-      throw this._error(msg)
+      const msg = this._errorMsg('invalid transaction trie')
+      throw new Error(msg)
     }
 
     if (!this.validateUnclesHash()) {
-      const msg = 'invalid uncle hash'
-      throw this._error(msg)
+      const msg = this._errorMsg('invalid uncle hash')
+      throw new Error(msg)
     }
   }
 
@@ -345,15 +349,15 @@ export class Block {
 
     // Header has at most 2 uncles
     if (this.uncleHeaders.length > 2) {
-      const msg = 'too many uncle headers'
-      throw this._error(msg)
+      const msg = this._errorMsg('too many uncle headers')
+      throw new Error(msg)
     }
 
     // Header does not count an uncle twice.
     const uncleHashes = this.uncleHeaders.map((header) => header.hash().toString('hex'))
     if (!(new Set(uncleHashes).size === uncleHashes.length)) {
-      const msg = 'duplicate uncles'
-      throw this._error(msg)
+      const msg = this._errorMsg('duplicate uncles')
+      throw new Error(msg)
     }
 
     await this._validateUncleHeaders(this.uncleHeaders, blockchain)
@@ -441,8 +445,8 @@ export class Block {
     for (let i = 0; i < getBlocks; i++) {
       const parentBlock = await this._getBlockByHash(blockchain, parentHash)
       if (!parentBlock) {
-        const msg = 'could not find parent block'
-        throw this._error(msg)
+        const msg = this._errorMsg('could not find parent block')
+        throw new Error(msg)
       }
       canonicalBlockMap.push(parentBlock)
 
@@ -467,18 +471,20 @@ export class Block {
       const parentHash = uh.parentHash.toString('hex')
 
       if (!canonicalChainHashes[parentHash]) {
-        const msg = 'The parent hash of the uncle header is not part of the canonical chain'
-        throw this._error(msg)
+        const msg = this._errorMsg(
+          'The parent hash of the uncle header is not part of the canonical chain'
+        )
+        throw new Error(msg)
       }
 
       if (includedUncles[uncleHash]) {
-        const msg = 'The uncle is already included in the canonical chain'
-        throw this._error(msg)
+        const msg = this._errorMsg('The uncle is already included in the canonical chain')
+        throw new Error(msg)
       }
 
       if (canonicalChainHashes[uncleHash]) {
-        const msg = 'The uncle is a canonical block'
-        throw this._error(msg)
+        const msg = this._errorMsg('The uncle is a canonical block')
+        throw new Error(msg)
       }
     })
   }
@@ -502,7 +508,7 @@ export class Block {
    * @param msg Base error message
    * @hidden
    */
-  protected _error(msg: string) {
+  protected _errorMsg(msg: string) {
     let hash = ''
     try {
       hash = bufferToHex(this.hash())
@@ -520,7 +526,6 @@ export class Block {
     postfix += `txs=${this.transactions.length} uncles=${this.uncleHeaders.length}`
 
     msg += ` (${postfix})`
-    const e = new Error(msg)
-    return e
+    return msg
   }
 }
