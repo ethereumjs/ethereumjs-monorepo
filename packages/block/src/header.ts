@@ -968,8 +968,14 @@ export class BlockHeader {
     } catch (e: any) {
       hash = 'error'
     }
+    let hf = ''
+    try {
+      hf = this._common.hardfork()
+    } catch (e: any) {
+      hf = 'error'
+    }
     let postfix = `block header number=${this.number} hash=${hash} `
-    postfix += `hf=${this._common.hardfork()} baseFeePerGas=${this.baseFeePerGas ?? 'none'}`
+    postfix += `hf=${hf} baseFeePerGas=${this.baseFeePerGas ?? 'none'}`
 
     msg += ` (${postfix})`
     const e = new Error(msg)

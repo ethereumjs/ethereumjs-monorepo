@@ -411,8 +411,14 @@ export class Block {
     } catch (e: any) {
       hash = 'error'
     }
+    let hf = ''
+    try {
+      hf = this._common.hardfork()
+    } catch (e: any) {
+      hf = 'error'
+    }
     let postfix = `block number=${this.header.number} hash=${hash} `
-    postfix += `hf=${this._common.hardfork()} baseFeePerGas=${this.header.baseFeePerGas ?? 'none'}`
+    postfix += `hf=${hf} baseFeePerGas=${this.header.baseFeePerGas ?? 'none'}`
     postfix += `txs=${this.transactions.length} uncles=${this.uncleHeaders.length}`
 
     msg += ` (${postfix})`

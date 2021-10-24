@@ -9,6 +9,7 @@ import {
   ecsign,
   publicToAddress,
   BNLike,
+  bufferToHex,
 } from 'ethereumjs-util'
 import {
   TxData,
@@ -281,7 +282,8 @@ export abstract class BaseTransaction<TransactionObject> {
    */
   sign(privateKey: Buffer): TransactionObject {
     if (privateKey.length !== 32) {
-      throw new Error('Private key must be 32 bytes in length.')
+      const msg = 'Private key must be 32 bytes in length.'
+      throw this._error(msg)
     }
 
     // Hack for the constellation that we have got a legacy tx after spuriousDragon with a non-EIP155 conforming signature
@@ -335,7 +337,8 @@ export abstract class BaseTransaction<TransactionObject> {
       const chainIdBN = new BN(toBuffer(chainId))
       if (common) {
         if (!common.chainIdBN().eq(chainIdBN)) {
-          throw new Error('The chain ID does not match the chain ID of Common')
+          const msg = 'The chain ID does not match the chain ID of Common'
+          throw this._error(msg)
         }
         // Common provided, chain ID does match
         // -> Return provided Common
@@ -372,15 +375,56 @@ export abstract class BaseTransaction<TransactionObject> {
     for (const [key, value] of Object.entries(values)) {
       if (bits === 53) {
         if (value?.gt(MAX_INTEGER)) {
-          throw new Error(`${key} cannot exceed MAX_INTEGER, given ${value}`)
+          const msg = `${key} cannot exceed MAX_INTEGER, given ${value}`
+          throw this._error(msg)
         }
       } else if (bits === 256) {
         if (value?.gte(TWO_POW256)) {
-          throw new Error(`${key} must be less than 2^256, given ${value}`)
+          const msg = `${key} must be less than 2^256, given ${value}`
+          throw this._error(msg)
         }
       } else {
-        throw new Error('unimplemented bits value')
+        const msg = 'unimplemented bits value'
+        throw this._error(msg)
       }
     }
+  }
+
+  /**
+   * Internal helper function to create an annotated error message
+   *
+   * @param msg Base error message
+   * @hidden
+   */
+  protected abstract _error(msg: string): Error
+
+  /**
+   * Returns the shared error postfix part for _error() method
+   * tx type implementations.
+   */
+  protected _getSharedErrorPostfix() {
+    let hash = ''
+    try {
+      hash = this.isSigned() ? bufferToHex(this.hash()) : 'not available (unsigned)'
+    } catch (e: any) {
+      hash = 'error'
+    }
+    let isSigned = ''
+    try {
+      isSigned = this.isSigned().toString()
+    } catch (e: any) {
+      hash = 'error'
+    }
+    let hf = ''
+    try {
+      hf = this.common.hardfork()
+    } catch (e: any) {
+      hf = 'error'
+    }
+
+    let postfix = `tx type=${this.type} hash=${hash} nonce=${this.nonce} value=${this.value} `
+    postfix += `signed=${isSigned} hf=${hf}`
+
+    return postfix
   }
 }
