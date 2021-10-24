@@ -1,7 +1,7 @@
 import { debug as createDebugLogger } from 'debug'
 import { encode } from 'rlp'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { Account, Address, BN, intToBuffer } from 'ethereumjs-util'
+import { Account, Address, BN, bufferToHex, intToBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import VM from './index'
@@ -202,7 +202,8 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
           )} expected=${block.header.receiptTrie.toString('hex')}`
         )
       }
-      throw new Error('invalid receiptTrie')
+      const msg = _errorMsg('invalid receiptTrie', this, block)
+      throw new Error(msg)
     }
     if (!result.bloom.bitvector.equals(block.header.logsBloom)) {
       if (this.DEBUG) {
@@ -212,13 +213,15 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
           )} expected=${block.header.logsBloom.toString('hex')}`
         )
       }
-      throw new Error('invalid bloom')
+      const msg = _errorMsg('invalid bloom', this, block)
+      throw new Error(msg)
     }
     if (!result.gasUsed.eq(block.header.gasUsed)) {
       if (this.DEBUG) {
         debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
       }
-      throw new Error('invalid gasUsed')
+      const msg = _errorMsg('invalid gasUsed', this, block)
+      throw new Error(msg)
     }
     if (!stateRoot.equals(block.header.stateRoot)) {
       if (this.DEBUG) {
@@ -228,7 +231,8 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
           )} expected=${block.header.stateRoot.toString('hex')}`
         )
       }
-      throw new Error('invalid block stateRoot')
+      const msg = _errorMsg('invalid block stateRoot', this, block)
+      throw new Error(msg)
     }
   }
 
@@ -274,7 +278,8 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   // Validate block
   if (!opts.skipBlockValidation) {
     if (block.header.gasLimit.gte(new BN('8000000000000000', 16))) {
-      throw new Error('Invalid block with gas limit greater than (2^63 - 1)')
+      const msg = _errorMsg('Invalid block with gas limit greater than (2^63 - 1)', this, block)
+      throw new Error(msg)
     } else {
       if (this.DEBUG) {
         debug(`Validate block`)
@@ -326,7 +331,8 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
 
     const gasLimitIsHigherThanBlock = maxGasLimit.lt(tx.gasLimit.add(gasUsed))
     if (gasLimitIsHigherThanBlock) {
-      throw new Error('tx has a higher gas limit than the block')
+      const msg = _errorMsg('tx has a higher gas limit than the block', this, block)
+      throw new Error(msg)
     }
 
     // Run the tx through the VM
@@ -525,4 +531,38 @@ async function _genTxTrie(block: Block) {
     await trie.put(encode(i), tx.serialize())
   }
   return trie.root
+}
+
+/**
+ * Internal helper function to create an annotated error message
+ *
+ * @param msg Base error message
+ * @hidden
+ */
+function _errorMsg(msg: string, vm: VM, block: Block) {
+  let vmHf = ''
+  try {
+    vmHf = vm._common.hardfork()
+  } catch (e: any) {
+    vmHf = 'error'
+  }
+  let blockHash = ''
+  try {
+    blockHash = bufferToHex(block.hash())
+  } catch (e: any) {
+    blockHash = 'error'
+  }
+  let blockHf = ''
+  try {
+    blockHf = block._common.hardfork()
+  } catch (e: any) {
+    blockHf = 'error'
+  }
+  let postfix = `vm hf=${vmHf} `
+  postfix += `-> block number=${block.header.number} hash=${blockHash} `
+  postfix += `hf=${blockHf} baseFeePerGas=${block.header.baseFeePerGas ?? 'none'} `
+  postfix += `txs=${block.transactions.length} uncles=${block.uncleHeaders.length}`
+
+  msg += ` (${postfix})`
+  return msg
 }

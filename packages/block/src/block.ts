@@ -399,34 +399,6 @@ export class Block {
   }
 
   /**
-   * Internal helper function to create an annotated error message
-   *
-   * @param msg Base error message
-   * @hidden
-   */
-  protected _error(msg: string) {
-    let hash = ''
-    try {
-      hash = bufferToHex(this.hash())
-    } catch (e: any) {
-      hash = 'error'
-    }
-    let hf = ''
-    try {
-      hf = this._common.hardfork()
-    } catch (e: any) {
-      hf = 'error'
-    }
-    let postfix = `block number=${this.header.number} hash=${hash} `
-    postfix += `hf=${hf} baseFeePerGas=${this.header.baseFeePerGas ?? 'none'}`
-    postfix += `txs=${this.transactions.length} uncles=${this.uncleHeaders.length}`
-
-    msg += ` (${postfix})`
-    const e = new Error(msg)
-    return e
-  }
-
-  /**
    * The following rules are checked in this method:
    * Uncle Header is a valid header.
    * Uncle Header is an orphan, i.e. it is not one of the headers of the canonical chain.
@@ -522,5 +494,33 @@ export class Block {
         throw error
       }
     }
+  }
+
+  /**
+   * Internal helper function to create an annotated error message
+   *
+   * @param msg Base error message
+   * @hidden
+   */
+  protected _error(msg: string) {
+    let hash = ''
+    try {
+      hash = bufferToHex(this.hash())
+    } catch (e: any) {
+      hash = 'error'
+    }
+    let hf = ''
+    try {
+      hf = this._common.hardfork()
+    } catch (e: any) {
+      hf = 'error'
+    }
+    let postfix = `block number=${this.header.number} hash=${hash} `
+    postfix += `hf=${hf} baseFeePerGas=${this.header.baseFeePerGas ?? 'none'}`
+    postfix += `txs=${this.transactions.length} uncles=${this.uncleHeaders.length}`
+
+    msg += ` (${postfix})`
+    const e = new Error(msg)
+    return e
   }
 }

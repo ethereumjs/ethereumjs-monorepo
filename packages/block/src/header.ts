@@ -955,33 +955,6 @@ export class BlockHeader {
     return jsonDict
   }
 
-  /**
-   * Internal helper function to create an annotated error message
-   *
-   * @param msg Base error message
-   * @hidden
-   */
-  protected _error(msg: string) {
-    let hash = ''
-    try {
-      hash = bufferToHex(this.hash())
-    } catch (e: any) {
-      hash = 'error'
-    }
-    let hf = ''
-    try {
-      hf = this._common.hardfork()
-    } catch (e: any) {
-      hf = 'error'
-    }
-    let postfix = `block header number=${this.number} hash=${hash} `
-    postfix += `hf=${hf} baseFeePerGas=${this.baseFeePerGas ?? 'none'}`
-
-    msg += ` (${postfix})`
-    const e = new Error(msg)
-    return e
-  }
-
   private _getHardfork(): string {
     return this._common.hardfork() || this._common.activeHardfork(this.number.toNumber())
   }
@@ -1021,5 +994,32 @@ export class BlockHeader {
       const msg = "extraData should be 'dao-hard-fork'"
       throw this._error(msg)
     }
+  }
+
+  /**
+   * Internal helper function to create an annotated error message
+   *
+   * @param msg Base error message
+   * @hidden
+   */
+  protected _error(msg: string) {
+    let hash = ''
+    try {
+      hash = bufferToHex(this.hash())
+    } catch (e: any) {
+      hash = 'error'
+    }
+    let hf = ''
+    try {
+      hf = this._common.hardfork()
+    } catch (e: any) {
+      hf = 'error'
+    }
+    let postfix = `block header number=${this.number} hash=${hash} `
+    postfix += `hf=${hf} baseFeePerGas=${this.baseFeePerGas ?? 'none'}`
+
+    msg += ` (${postfix})`
+    const e = new Error(msg)
+    return e
   }
 }
