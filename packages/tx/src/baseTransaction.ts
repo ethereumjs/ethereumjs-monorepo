@@ -391,6 +391,11 @@ export abstract class BaseTransaction<TransactionObject> {
   }
 
   /**
+   * Return a compact error string representation of the object
+   */
+  public abstract errorStr(): string
+
+  /**
    * Internal helper function to create an annotated error message
    *
    * @param msg Base error message

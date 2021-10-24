@@ -432,16 +432,21 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   }
 
   /**
+   * Return a compact error string representation of the object
+   */
+  public errorStr() {
+    let errorStr = this._getSharedErrorPostfix()
+    errorStr += ` maxFeePerGas=${this.maxFeePerGas} maxPriorityFeePerGas=${this.maxPriorityFeePerGas}`
+    return errorStr
+  }
+
+  /**
    * Internal helper function to create an annotated error message
    *
    * @param msg Base error message
    * @hidden
    */
   protected _errorMsg(msg: string) {
-    let postfix = this._getSharedErrorPostfix()
-    postfix += ` maxFeePerGas=${this.maxFeePerGas} maxPriorityFeePerGas=${this.maxPriorityFeePerGas}`
-
-    msg += ` (${postfix})`
-    return msg
+    return `${msg} (${this.errorStr()})`
   }
 }

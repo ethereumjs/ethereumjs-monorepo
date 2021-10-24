@@ -1,7 +1,7 @@
 import { debug as createDebugLogger } from 'debug'
 import { encode } from 'rlp'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { Account, Address, BN, bufferToHex, intToBuffer } from 'ethereumjs-util'
+import { Account, Address, BN, intToBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import VM from './index'
@@ -540,29 +540,8 @@ async function _genTxTrie(block: Block) {
  * @hidden
  */
 function _errorMsg(msg: string, vm: VM, block: Block) {
-  let vmHf = ''
-  try {
-    vmHf = vm._common.hardfork()
-  } catch (e: any) {
-    vmHf = 'error'
-  }
-  let blockHash = ''
-  try {
-    blockHash = bufferToHex(block.hash())
-  } catch (e: any) {
-    blockHash = 'error'
-  }
-  let blockHf = ''
-  try {
-    blockHf = block._common.hardfork()
-  } catch (e: any) {
-    blockHf = 'error'
-  }
-  let postfix = `vm hf=${vmHf} `
-  postfix += `-> block number=${block.header.number} hash=${blockHash} `
-  postfix += `hf=${blockHf} baseFeePerGas=${block.header.baseFeePerGas ?? 'none'} `
-  postfix += `txs=${block.transactions.length} uncles=${block.uncleHeaders.length}`
+  const blockErrorStr = 'errorStr' in block ? block.errorStr() : 'block'
 
-  msg += ` (${postfix})`
-  return msg
+  const errorMsg = `${msg} (${vm.errorStr()} -> ${blockErrorStr})`
+  return errorMsg
 }

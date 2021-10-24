@@ -1018,12 +1018,9 @@ export class BlockHeader {
   }
 
   /**
-   * Internal helper function to create an annotated error message
-   *
-   * @param msg Base error message
-   * @hidden
+   * Return a compact error string representation of the object
    */
-  protected _errorMsg(msg: string) {
+  public errorStr() {
     let hash = ''
     try {
       hash = bufferToHex(this.hash())
@@ -1036,10 +1033,18 @@ export class BlockHeader {
     } catch (e: any) {
       hf = 'error'
     }
-    let postfix = `block header number=${this.number} hash=${hash} `
-    postfix += `hf=${hf} baseFeePerGas=${this.baseFeePerGas ?? 'none'}`
+    let errorStr = `block header number=${this.number} hash=${hash} `
+    errorStr += `hf=${hf} baseFeePerGas=${this.baseFeePerGas ?? 'none'}`
+    return errorStr
+  }
 
-    msg += ` (${postfix})`
-    return msg
+  /**
+   * Internal helper function to create an annotated error message
+   *
+   * @param msg Base error message
+   * @hidden
+   */
+  protected _errorMsg(msg: string) {
+    return `${msg} (${this.errorStr()})`
   }
 }
