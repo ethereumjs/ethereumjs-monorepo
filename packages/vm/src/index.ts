@@ -409,4 +409,18 @@ export default class VM extends AsyncEventEmitter {
       common: this._common.copy(),
     })
   }
+
+  /**
+   * Return a compact error string representation of the object
+   */
+  errorStr() {
+    let hf = ''
+    try {
+      hf = this._common.hardfork()
+    } catch (e: any) {
+      hf = 'error'
+    }
+    const errorStr = `vm hf=${hf}`
+    return errorStr
+  }
 }

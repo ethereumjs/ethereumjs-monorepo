@@ -191,13 +191,15 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
 
     if (this.v && !this.v.eqn(0) && !this.v.eqn(1)) {
-      throw new Error('The y-parity of the transaction should either be 0 or 1')
+      const msg = this._errorMsg('The y-parity of the transaction should either be 0 or 1')
+      throw new Error(msg)
     }
 
     if (this.common.gteHardfork('homestead') && this.s?.gt(N_DIV_2)) {
-      throw new Error(
+      const msg = this._errorMsg(
         'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
       )
+      throw new Error(msg)
     }
 
     const freeze = opts?.freeze ?? true
@@ -297,7 +299,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    */
   public hash(): Buffer {
     if (!this.isSigned()) {
-      throw new Error('Cannot call hash method if transaction is not signed')
+      const msg = this._errorMsg('Cannot call hash method if transaction is not signed')
+      throw new Error(msg)
     }
 
     if (Object.isFrozen(this)) {
@@ -322,7 +325,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    */
   public getSenderPublicKey(): Buffer {
     if (!this.isSigned()) {
-      throw new Error('Cannot call this method if transaction is not signed')
+      const msg = this._errorMsg('Cannot call this method if transaction is not signed')
+      throw new Error(msg)
     }
 
     const msgHash = this.getMessageToVerifySignature()
@@ -330,9 +334,10 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     // EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
     // Reasoning: https://ethereum.stackexchange.com/a/55728
     if (this.common.gteHardfork('homestead') && this.s?.gt(N_DIV_2)) {
-      throw new Error(
+      const msg = this._errorMsg(
         'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
       )
+      throw new Error(msg)
     }
 
     const { yParity, r, s } = this
@@ -344,7 +349,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
         bnToUnpaddedBuffer(s!)
       )
     } catch (e: any) {
-      throw new Error('Invalid Signature')
+      const msg = this._errorMsg('Invalid Signature')
+      throw new Error(msg)
     }
   }
 
@@ -390,5 +396,25 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       r: this.r !== undefined ? bnToHex(this.r) : undefined,
       s: this.s !== undefined ? bnToHex(this.s) : undefined,
     }
+  }
+
+  /**
+   * Return a compact error string representation of the object
+   */
+  public errorStr() {
+    let errorStr = this._getSharedErrorPostfix()
+    // Keep ? for this.accessList since this otherwise causes Hardhat E2E tests to fail
+    errorStr += ` gasPrice=${this.gasPrice} accessList=${this.accessList?.length} (size)`
+    return errorStr
+  }
+
+  /**
+   * Internal helper function to create an annotated error message
+   *
+   * @param msg Base error message
+   * @hidden
+   */
+  protected _errorMsg(msg: string) {
+    return `${msg} (${this.errorStr()})`
   }
 }

@@ -1,5 +1,5 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { BN, rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
+import { BN, rlp, keccak256, KECCAK256_RLP, bufferToHex } from 'ethereumjs-util'
 import Common, { ConsensusType } from '@ethereumjs/common'
 import {
   TransactionFactory,
@@ -151,10 +151,16 @@ export class Block {
     this._common = this.header._common
     if (uncleHeaders.length > 0) {
       if (this._common.consensusType() === ConsensusType.ProofOfAuthority) {
-        throw new Error('Block initialization with uncleHeaders on a PoA network is not allowed')
+        const msg = this._errorMsg(
+          'Block initialization with uncleHeaders on a PoA network is not allowed'
+        )
+        throw new Error(msg)
       }
       if (this._common.consensusType() === ConsensusType.ProofOfStake) {
-        throw new Error('Block initialization with uncleHeaders on a PoS network is not allowed')
+        const msg = this._errorMsg(
+          'Block initialization with uncleHeaders on a PoS network is not allowed'
+        )
+        throw new Error(msg)
       }
     }
 
@@ -292,8 +298,8 @@ export class Block {
   async validateData(onlyHeader: boolean = false): Promise<void> {
     const txErrors = this.validateTransactions(true)
     if (txErrors.length > 0) {
-      const msg = `invalid transactions: ${txErrors.join(' ')}`
-      throw this.header._error(msg)
+      const msg = this._errorMsg(`invalid transactions: ${txErrors.join(' ')}`)
+      throw new Error(msg)
     }
 
     if (onlyHeader) {
@@ -302,11 +308,13 @@ export class Block {
 
     const validateTxTrie = await this.validateTransactionsTrie()
     if (!validateTxTrie) {
-      throw new Error('invalid transaction trie')
+      const msg = this._errorMsg('invalid transaction trie')
+      throw new Error(msg)
     }
 
     if (!this.validateUnclesHash()) {
-      throw new Error('invalid uncle hash')
+      const msg = this._errorMsg('invalid uncle hash')
+      throw new Error(msg)
     }
   }
 
@@ -341,13 +349,15 @@ export class Block {
 
     // Header has at most 2 uncles
     if (this.uncleHeaders.length > 2) {
-      throw new Error('too many uncle headers')
+      const msg = this._errorMsg('too many uncle headers')
+      throw new Error(msg)
     }
 
     // Header does not count an uncle twice.
     const uncleHashes = this.uncleHeaders.map((header) => header.hash().toString('hex'))
     if (!(new Set(uncleHashes).size === uncleHashes.length)) {
-      throw new Error('duplicate uncles')
+      const msg = this._errorMsg('duplicate uncles')
+      throw new Error(msg)
     }
 
     await this._validateUncleHeaders(this.uncleHeaders, blockchain)
@@ -393,16 +403,6 @@ export class Block {
   }
 
   /**
-   * Internal helper function to create an annotated error message
-   *
-   * @param msg Base error message
-   * @hidden
-   */
-  _error(msg: string) {
-    return this.header._error(msg)
-  }
-
-  /**
    * The following rules are checked in this method:
    * Uncle Header is a valid header.
    * Uncle Header is an orphan, i.e. it is not one of the headers of the canonical chain.
@@ -445,7 +445,8 @@ export class Block {
     for (let i = 0; i < getBlocks; i++) {
       const parentBlock = await this._getBlockByHash(blockchain, parentHash)
       if (!parentBlock) {
-        throw new Error('could not find parent block')
+        const msg = this._errorMsg('could not find parent block')
+        throw new Error(msg)
       }
       canonicalBlockMap.push(parentBlock)
 
@@ -470,15 +471,20 @@ export class Block {
       const parentHash = uh.parentHash.toString('hex')
 
       if (!canonicalChainHashes[parentHash]) {
-        throw new Error('The parent hash of the uncle header is not part of the canonical chain')
+        const msg = this._errorMsg(
+          'The parent hash of the uncle header is not part of the canonical chain'
+        )
+        throw new Error(msg)
       }
 
       if (includedUncles[uncleHash]) {
-        throw new Error('The uncle is already included in the canonical chain')
+        const msg = this._errorMsg('The uncle is already included in the canonical chain')
+        throw new Error(msg)
       }
 
       if (canonicalChainHashes[uncleHash]) {
-        throw new Error('The uncle is a canonical block')
+        const msg = this._errorMsg('The uncle is a canonical block')
+        throw new Error(msg)
       }
     })
   }
@@ -494,5 +500,37 @@ export class Block {
         throw error
       }
     }
+  }
+
+  /**
+   * Return a compact error string representation of the object
+   */
+  public errorStr() {
+    let hash = ''
+    try {
+      hash = bufferToHex(this.hash())
+    } catch (e: any) {
+      hash = 'error'
+    }
+    let hf = ''
+    try {
+      hf = this._common.hardfork()
+    } catch (e: any) {
+      hf = 'error'
+    }
+    let errorStr = `block number=${this.header.number} hash=${hash} `
+    errorStr += `hf=${hf} baseFeePerGas=${this.header.baseFeePerGas ?? 'none'} `
+    errorStr += `txs=${this.transactions.length} uncles=${this.uncleHeaders.length}`
+    return errorStr
+  }
+
+  /**
+   * Internal helper function to create an annotated error message
+   *
+   * @param msg Base error message
+   * @hidden
+   */
+  protected _errorMsg(msg: string) {
+    return `${msg} (${this.errorStr()})`
   }
 }

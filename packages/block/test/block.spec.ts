@@ -212,7 +212,7 @@ tape('[Block]: block functions', function (t) {
       await block.validateData()
       st.fail('should throw')
     } catch (error: any) {
-      st.equal(error.message, 'invalid transaction trie')
+      st.ok(error.message.includes('invalid transaction trie'))
     }
   })
 
@@ -243,7 +243,7 @@ tape('[Block]: block functions', function (t) {
       await block.validateData()
       st.fail('should throw')
     } catch (error: any) {
-      st.equal(error.message, 'invalid uncle hash')
+      st.ok(error.message.includes('invalid uncle hash'))
     }
   })
 
@@ -695,7 +695,7 @@ tape('[Block]: block functions', function (t) {
       function () {
         Block.fromValuesArray(blockData, { common })
       },
-      /Error: extraData should be 'dao-hard-fork'$/,
+      /Error: extraData should be 'dao-hard-fork'/,
       'should throw on DAO HF block with wrong extra data'
     ) // eslint-disable-line
 
