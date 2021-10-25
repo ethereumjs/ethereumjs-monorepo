@@ -12,22 +12,30 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [12.x, 13.x, 14.x, 16.x]
+        node-version: [12, 13, 14, 16]
     steps:
       - uses: actions/checkout@v2
-
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-
-      - run: npm install
-      - run: npm run coverage 
-      - run: npm run test:browser
-
+      - run: npm i
+      - run: npm run lint
+      - run: npm run coverage
       - name: Upload coverage to Coveralls
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          
+        if: ${{ matrix.node-version == 12 }}
+  test-browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 12
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12
+          cache: 'npm'
+      - run: npm i
+      - run: npm run test:browser

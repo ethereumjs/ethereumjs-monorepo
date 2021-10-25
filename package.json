@@ -11,6 +11,7 @@
     "dist.browser"
   ],
   "scripts": {
+    "postinstall": "npm run build",
     "build": "tsc -p ./tsconfig.prod.json && tsc -p tsconfig.browser.json",
     "prepublishOnly": "npm run lint && npm run build && npm run test",
     "docs:build": "typedoc --out docs --mode file --readme none --theme markdown --mdEngine github --excludeNotExported src",
@@ -18,7 +19,7 @@
     "tsc": "tsc -p ./tsconfig.prod.json --noEmit",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
-    "test": "npm run lint && npm run build && npm run test:unit && npm run test:browser",
+    "test": "npm run test:unit && npm run test:browser",
     "test:unit": "mocha --require ts-node/register ./test/**/*.ts",
     "test:browser": "karma start karma.conf.js"
   },
