@@ -194,7 +194,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   private success(job: Job<JobTask, JobResult, StorageItem>, result?: JobResult) {
     if (job.state !== 'active') return
-    if (result === undefined) {
+    if (result === undefined || (result as any).length === 0) {
       this.enqueue(job)
       void this.wait().then(() => {
         job.peer!.idle = true
@@ -329,7 +329,9 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     }
     this.write()
     this.running = true
-    this.tasks().forEach((task: JobTask) => this.enqueueTask(task))
+    for (const task of this.tasks()) {
+      this.enqueueTask(task)
+    }
     while (this.running) {
       if (!this.next()) {
         if (this.finished === this.total) {
