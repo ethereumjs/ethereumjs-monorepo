@@ -55,7 +55,6 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       hardforkByBlockNumber: true,
     }
     for (const [i, [txsData, unclesData]] of bodies.entries()) {
-      const values: BlockBuffer = [headers[i].raw(), txsData, unclesData]
       if (
         (!headers[i].transactionsTrie.equals(KECCAK256_RLP) && txsData.length === 0) ||
         (!headers[i].uncleHash.equals(KECCAK256_RLP_ARRAY) && unclesData.length === 0)
@@ -65,6 +64,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
         )
         return []
       }
+      const values: BlockBuffer = [headers[i].raw(), txsData, unclesData]
       blocks.push(Block.fromValuesArray(values, blockOpts))
     }
     return blocks
