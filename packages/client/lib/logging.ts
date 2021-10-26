@@ -16,7 +16,7 @@ enum LevelColors {
   debug = 'white',
 }
 
-/*
+/**
  * Adds stack trace to error message if included
  */
 const errorFormat = format((info: any) => {

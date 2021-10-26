@@ -270,7 +270,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   /**
    * Handle error
    * @param error error object
-   * @param job  task
+   * @param job task
    */
   error(error: Error, job?: Job<JobTask, JobResult, StorageItem>) {
     if (this.running) {
