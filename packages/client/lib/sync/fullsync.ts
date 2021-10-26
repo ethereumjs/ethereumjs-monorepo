@@ -260,13 +260,13 @@ export class FullSynchronizer extends Synchronizer {
    * @param peer `Peer` that sent `NEW_BLOCK` announcement
    */
   async handleNewBlock(block: Block, peer?: Peer) {
-    if (block.header.number.gt(this.chain.headers.height.addn(1))) {
-      // If the block number exceeds one past our height we cannot validate it
-      return
-    }
     if (peer) {
       // Don't send NEW_BLOCK announcement to peer that sent original new block message
       this.addToKnownByPeer(block.hash(), peer)
+    }
+    if (block.header.number.gt(this.chain.headers.height.addn(1))) {
+      // If the block number exceeds one past our height we cannot validate it
+      return
     }
     try {
       await block.header.validate(this.chain.blockchain)
