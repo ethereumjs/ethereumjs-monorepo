@@ -280,7 +280,7 @@ async function runNode(config: Config) {
   return client
 }
 
-/*
+/**
  * Returns enabled RPCServers
  */
 function runRpcServers(client: EthereumClient, config: Config, args: any) {

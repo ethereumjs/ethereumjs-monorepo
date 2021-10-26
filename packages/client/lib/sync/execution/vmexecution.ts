@@ -174,7 +174,7 @@ export class VMExecution extends Execution {
         return 0
       }
 
-      const endHeadBlock = await this.vm.blockchain.getHead()
+      const endHeadBlock = await this.vm.blockchain.getIteratorHead('vm')
       if (numExecuted > 0) {
         const firstNumber = startHeadBlock.header.number.toNumber()
         const firstHash = short(startHeadBlock.hash())

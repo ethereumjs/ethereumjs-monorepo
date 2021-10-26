@@ -56,11 +56,13 @@ tape('[Miner]', async (t) => {
     get headers() {
       return {
         latest: BlockHeader.fromHeaderData(),
+        height: new BN(0),
       }
     }
     get blocks() {
       return {
         latest: Block.fromBlockData(),
+        height: new BN(0),
       }
     }
     blockchain: any = {
@@ -275,12 +277,12 @@ tape('[Miner]', async (t) => {
     const block = Block.fromBlockData({ header: { gasLimit } }, { common })
     Object.defineProperty(chain, 'headers', {
       get: function () {
-        return { latest: block.header }
+        return { latest: block.header, height: new BN(0) }
       },
     })
     Object.defineProperty(chain, 'blocks', {
       get: function () {
-        return { latest: block }
+        return { latest: block, height: new BN(0) }
       },
     })
     const synchronizer = new FullSynchronizer({
