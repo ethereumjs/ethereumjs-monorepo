@@ -37,6 +37,7 @@ export class FullSynchronizer extends Synchronizer {
 
     this.txPool = new TxPool({
       config: this.config,
+      getPeerCount: () => this.pool.peers.length,
     })
 
     this.config.events.on(Event.SYNC_EXECUTION_VM_ERROR, async () => {
@@ -44,20 +45,19 @@ export class FullSynchronizer extends Synchronizer {
     })
 
     this.config.events.on(Event.CHAIN_UPDATED, async () => {
-      if (this.running) {
+      if (this.running || this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
         await this.execution.run()
         this.checkTxPoolState()
       }
     })
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.chain.update()
+
+    void this.chain.update()
   }
 
   /**
    * Returns synchronizer type
-   * @return {string} type
    */
-  get type(): string {
+  get type() {
     return 'full'
   }
 
@@ -117,7 +117,6 @@ export class FullSynchronizer extends Synchronizer {
 
   /**
    * Get latest header of peer
-   * @return Resolves with header
    */
   async latest(peer: Peer) {
     const result = await peer.eth?.getBlockHeaders({
@@ -144,7 +143,7 @@ export class FullSynchronizer extends Synchronizer {
 
   /**
    * Sync all blocks and state from peer starting from current height.
-   * @param  peer remote peer to sync with
+   * @param peer remote peer to sync with
    * @return Resolves when sync completed
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
@@ -159,7 +158,7 @@ export class FullSynchronizer extends Synchronizer {
       if (!this.syncTargetHeight) {
         this.syncTargetHeight = height
         this.config.logger.info(
-          `New sync target height number=${height.toString(10)} hash=${short(latest.hash())}`
+          `New sync target height number=${height} hash=${short(latest.hash())}`
         )
       }
 
@@ -167,21 +166,17 @@ export class FullSynchronizer extends Synchronizer {
       const count = height.sub(first).addn(1)
       if (count.lten(0)) return resolve(false)
 
-      this.config.logger.debug(
-        `Syncing with peer: ${peer.toString(true)} height=${height.toString(10)}`
-      )
+      this.config.logger.debug(`Syncing with peer: ${peer.toString(true)} height=${height}`)
 
-      if (!this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
-        this.fetcher = new BlockFetcher({
-          config: this.config,
-          pool: this.pool,
-          chain: this.chain,
-          interval: this.interval,
-          first,
-          count,
-          destroyWhenDone: false,
-        })
-      }
+      this.fetcher = new BlockFetcher({
+        config: this.config,
+        pool: this.pool,
+        chain: this.chain,
+        interval: this.interval,
+        first,
+        count,
+        destroyWhenDone: false,
+      })
 
       this.config.events.on(Event.SYNC_FETCHER_FETCHED, (blocks) => {
         if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
@@ -233,7 +228,7 @@ export class FullSynchronizer extends Synchronizer {
    * Add newly broadcasted blocks to peer record
    * @param blockHash hash of block received in NEW_BLOCK message
    * @param peer
-   * @returns True if block has already been sent to peer
+   * @returns true if block has already been sent to peer
    */
   private addToKnownByPeer(blockHash: Buffer, peer: Peer): boolean {
     const knownBlocks = this.newBlocksKnownByPeer.get(peer.id) ?? []
@@ -260,7 +255,6 @@ export class FullSynchronizer extends Synchronizer {
   }
 
   /**
-   *
    * Handles `NEW_BLOCK` announcement from a peer and inserts into local chain if child of chain tip
    * @param blockData `NEW_BLOCK` received from peer
    * @param peer `Peer` that sent `NEW_BLOCK` announcement
@@ -338,9 +332,7 @@ export class FullSynchronizer extends Synchronizer {
     }
     this.syncTargetHeight = newSyncHeight
     const [hash, height] = data[data.length - 1]
-    this.config.logger.info(
-      `New sync target height number=${height.toString(10)} hash=${short(hash)}`
-    )
+    this.config.logger.info(`New sync target height number=${height} hash=${short(hash)}`)
     this.fetcher.enqueueByNumberList(blockNumberList, min)
   }
 

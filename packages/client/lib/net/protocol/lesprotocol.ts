@@ -103,7 +103,6 @@ export class LesProtocol extends Protocol {
 
   /**
    * Create les protocol
-   * @param {LesProtocolOptions}
    */
   constructor(options: LesProtocolOptions) {
     super(options)
@@ -117,31 +116,27 @@ export class LesProtocol extends Protocol {
 
   /**
    * Name of protocol
-   * @type {string}
    */
-  get name(): string {
+  get name() {
     return 'les'
   }
 
   /**
    * Protocol versions supported
-   * @type {number[]}
    */
-  get versions(): number[] {
+  get versions() {
     return [4, 3, 2]
   }
 
   /**
    * Messages defined by this protocol
-   * @type {Protocol~Message[]}
    */
-  get messages(): Message[] {
+  get messages() {
     return this.protocolMessages
   }
 
   /**
    * Opens protocol and any associated dependencies
-   * @return {Promise}
    */
   async open(): Promise<boolean | void> {
     if (this.opened) {
@@ -153,7 +148,6 @@ export class LesProtocol extends Protocol {
 
   /**
    * Encodes status into LES status message payload
-   * @return {Object}
    */
   encodeStatus(): any {
     let serveOptions = {}
@@ -194,8 +188,7 @@ export class LesProtocol extends Protocol {
 
   /**
    * Decodes ETH status message payload into a status object
-   * @param {Object} status status message payload
-   * @return {Object}
+   * @param status status message payload
    */
   decodeStatus(status: any): any {
     this.isServer = !!status.serveHeaders

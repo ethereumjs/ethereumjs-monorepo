@@ -36,9 +36,7 @@ export class BoundProtocol {
 
   /**
    * Create bound protocol
-   * @param {BoundProtocolOptions}
    */
-
   constructor(options: BoundProtocolOptions) {
     this.config = options.config
 
@@ -81,12 +79,11 @@ export class BoundProtocol {
 
   /**
    * Handle incoming message
-   * @private
-   * @param  {Object} message message object
-   * @emits  Event.PROTOCOL_MESSAGE
-   * @emits  Event.PROTOCOL_ERROR
+   * @param message message object
+   * @emits {@link Event.PROTOCOL_MESSAGE}
+   * @emits {@link Event.PROTOCOL_ERROR}
    */
-  handle(incoming: Message) {
+  private handle(incoming: Message) {
     const messages = this.protocol.messages
     const message = messages.find((m) => m.code === incoming.code)
     if (!message) {
@@ -134,8 +131,8 @@ export class BoundProtocol {
 
   /**
    * Send message with name and the specified args
-   * @param  name message name
-   * @param  args message arguments
+   * @param name message name
+   * @param args message arguments
    */
   send(name: string, args?: any) {
     const messages = this.protocol.messages
@@ -152,9 +149,8 @@ export class BoundProtocol {
   /**
    * Returns a promise that resolves with the message payload when a response
    * to the specified message is received
-   * @param  name message to wait for
-   * @param  args message arguments
-   * @return {Promise}
+   * @param name message to wait for
+   * @param args message arguments
    */
   async request(name: string, args: any[]): Promise<any> {
     const message = this.send(name, args)

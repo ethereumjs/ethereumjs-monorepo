@@ -20,22 +20,16 @@ export class RPCManager {
   }
 
   /**
-   * Returns bound methods for all modules, concat with underscore `_`
+   * Returns bound methods for modules concat with underscore `_`
+   * @param engine Pass true to return only `engine_` API endpoints (default: false)
    */
-  getMethods() {
+  getMethods(engine = false) {
     const methods: { [key: string]: Function } = {}
+    const mods = modules.list.filter((name: string) =>
+      engine ? name === 'Engine' : name !== 'Engine'
+    )
 
-    for (const modName of modules.list) {
-      if (modName === 'Engine' && this._config.rpcEngine === false) {
-        // Skip `engine_` namespace if rpcEngine is not enabled
-        continue
-      }
-      if (this._config.rpcDebug) {
-        this._config.logger.debug('='.repeat(29))
-        this._config.logger.debug(`RPC: Initialize ${modName} module`)
-        this._config.logger.debug('='.repeat(29))
-      }
-
+    for (const modName of mods) {
       const mod = new (modules as any)[modName](this._client)
       const rpcMethods = RPCManager.getMethodNames((modules as any)[modName])
       for (const methodName of rpcMethods) {
@@ -43,15 +37,10 @@ export class RPCManager {
           continue
         }
         const concatedMethodName = `${modName.toLowerCase()}_${methodName}`
-        if (this._config.rpcDebug) {
-          this._config.logger.debug(`Setup method ${concatedMethodName}`)
-        }
         methods[concatedMethodName] = mod[methodName].bind(mod)
       }
-      if (this._config.rpcDebug) {
-        this._config.logger.debug('')
-      }
     }
+    this._config.logger.debug(`RPC Initialized ${Object.keys(methods).join(', ')}`)
     return methods
   }
 

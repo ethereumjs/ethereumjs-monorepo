@@ -50,23 +50,23 @@ tape('[PeerPool]', async (t) => {
   t.test('should connect/disconnect peer', (t) => {
     t.plan(2)
     const peer = new EventEmitter() as any
-    const config = new Config({ loglevel: 'error', transports: [] })
+    const config = new Config({ transports: [] })
     const pool = new PeerPool({ config })
     ;(peer as any).id = 'abc'
     ;(peer as any).handleMessageQueue = td.func()
-    pool.connected(peer)
+    ;(pool as any).connected(peer)
     pool.config.events.on(Event.PROTOCOL_MESSAGE, (msg: any, proto: any, p: any) => {
       t.ok(msg === 'msg0' && proto === 'proto0' && p === peer, 'got message')
     })
     config.events.emit(Event.PROTOCOL_MESSAGE, 'msg0', 'proto0', peer)
     pool.config.events.emit(Event.PEER_ERROR, new Error('err0'), peer)
-    pool.disconnected(peer)
+    ;(pool as any).disconnected(peer)
     t.notOk((pool as any).pool.get('abc'), 'peer removed')
   })
 
   t.test('should check contains', (t) => {
     const peer = new Peer('abc')
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const pool = new PeerPool({ config })
     pool.add(peer)
     t.ok(pool.contains(peer.id), 'found peer')

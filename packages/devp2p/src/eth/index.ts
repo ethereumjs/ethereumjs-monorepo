@@ -236,7 +236,9 @@ export class ETH extends EventEmitter {
     )}`
     if (this._version >= 64) {
       sStr += `, ForkHash: ${status[5] ? '0x' + (status[5][0] as Buffer).toString('hex') : '-'}`
-      sStr += `, ForkNext: ${status[5] ? buffer2int(status[5][1] as Buffer) : '-'}`
+      sStr += `, ForkNext: ${
+        (status[5][1] as Buffer).length > 0 ? buffer2int(status[5][1] as Buffer) : '-'
+      }`
     }
     sStr += `]`
     return sStr

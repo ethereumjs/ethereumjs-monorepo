@@ -124,7 +124,7 @@ export interface CommonOpts extends BaseOpts {
    * const common = new Common({ chain: 'myCustomChain1', customChains: [ myCustomChain1 ]})
    * ```
    *
-   * Pattern 2 (with genesis state, see {@link CommonOpts.genesisState} for format):
+   * Pattern 2 (with genesis state, see {@link GenesisState} for format):
    *
    * ```javascript
    * import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
@@ -429,7 +429,7 @@ export default class Common extends EventEmitter {
         hardfork = hf.name as Hardfork
       }
       if (td && hf.td) {
-        if (td.gten(hf.td)) {
+        if (td.gte(new BN(hf.td))) {
           minTdHF = hf.name
         } else {
           maxTdHF = previousHF
@@ -959,10 +959,7 @@ export default class Common extends EventEmitter {
 
   /**
    * Returns the Genesis state of the current chain,
-   * both account addresses and values are provided
-   * as hex-prefixed strings
-   *
-   * @returns {Array} Genesis state
+   * all values are provided as hex-prefixed strings.
    */
   genesisState(): GenesisState {
     // Use require statements here in favor of import statements
@@ -987,9 +984,9 @@ export default class Common extends EventEmitter {
       this._customChains.length > 0 &&
       Array.isArray(this._customChains[0])
     ) {
-      for (const chainArrayWithGenesis of this._customChains) {
-        if ((chainArrayWithGenesis as [IChain, GenesisState])[0].name === this.chainName()) {
-          return (chainArrayWithGenesis as [IChain, GenesisState])[1]
+      for (const chainArrayWithGenesis of this._customChains as [IChain, GenesisState][]) {
+        if (chainArrayWithGenesis[0].name === this.chainName()) {
+          return chainArrayWithGenesis[1]
         }
       }
     }

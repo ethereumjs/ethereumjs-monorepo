@@ -9,9 +9,10 @@ import { ETH as Devp2pETH, LES as Devp2pLES } from '@ethereumjs/devp2p'
  */
 export class RlpxSender extends Sender {
   private sender: Devp2pETH | Devp2pLES
+
   /**
    * Creates a new DevP2P/Rlpx protocol sender
-   * @param {Object} rlpxProtocol protocol object from @ethereumjs/devp2p
+   * @param rlpxProtocol protocol object from @ethereumjs/devp2p
    */
   constructor(rlpxProtocol: Devp2pETH | Devp2pLES) {
     super()
@@ -27,7 +28,7 @@ export class RlpxSender extends Sender {
 
   /**
    * Send a status to peer
-   * @param  {Object} status
+   * @param status
    */
   sendStatus(status: any) {
     try {
@@ -39,8 +40,8 @@ export class RlpxSender extends Sender {
 
   /**
    * Send a message to peer
-   * @param  {number} code message code
-   * @param  {*}      data message payload
+   * @param code message code
+   * @param data message payload
    */
   sendMessage(code: number, data: any) {
     try {

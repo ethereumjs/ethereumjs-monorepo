@@ -7,6 +7,7 @@ import { LesProtocol } from '../net/protocol/lesprotocol'
 import { Peer } from '../net/peer/peer'
 import { Protocol } from '../net/protocol'
 import { Miner } from '../miner'
+import type { Block } from '@ethereumjs/block'
 
 interface FullEthereumServiceOptions extends EthereumServiceOptions {
   /* Serve LES requests (default: false) */
@@ -24,7 +25,6 @@ export class FullEthereumService extends EthereumService {
 
   /**
    * Create new ETH service
-   * @param {FullEthereumServiceOptions}
    */
   constructor(options: FullEthereumServiceOptions) {
     super(options)
@@ -51,25 +51,30 @@ export class FullEthereumService extends EthereumService {
 
   /**
    * Start service
-   * @return {Promise}
    */
-  async start(): Promise<void | boolean> {
+  async start(): Promise<boolean> {
+    if (this.running) {
+      return false
+    }
     await super.start()
     this.miner?.start()
+    return true
   }
 
   /**
    * Stop service
-   * @return {Promise}
    */
-  async stop(): Promise<void | boolean> {
+  async stop(): Promise<boolean> {
+    if (!this.running) {
+      return false
+    }
     this.miner?.stop()
     await super.stop()
+    return true
   }
 
   /**
    * Returns all protocols required by this service
-   * @type {Protocol[]} required protocols
    */
   get protocols(): Protocol[] {
     const protocols: Protocol[] = [
@@ -94,9 +99,9 @@ export class FullEthereumService extends EthereumService {
 
   /**
    * Handles incoming message from connected peer
-   * @param  {Object}  message message object
-   * @param  protocol protocol name
-   * @param  peer peer
+   * @param message message object
+   * @param protocol protocol name
+   * @param peer peer
    */
   async handle(message: any, protocol: string, peer: Peer): Promise<any> {
     if (protocol === 'eth') {
@@ -108,26 +113,34 @@ export class FullEthereumService extends EthereumService {
 
   /**
    * Handles incoming ETH message from connected peer
-   * @param  {Object}  message message object
-   * @param  peer peer
+   * @param message message object
+   * @param peer peer
    */
   async handleEth(message: any, peer: Peer): Promise<void> {
     if (message.name === 'GetBlockHeaders') {
       const { reqId, block, max, skip, reverse } = message.data
-      const headers: any = await this.chain.getHeaders(block, max, skip, reverse)
+      if (BN.isBN(block)) {
+        if (
+          (reverse && block.gt(this.chain.headers.height)) ||
+          (!reverse && block.addn(max * skip).gt(this.chain.headers.height))
+        ) {
+          // Don't respond to requests greater than the current height
+          return
+        }
+      }
+      let headers = await this.chain.getHeaders(block, max, skip, reverse)
+      headers = headers.filter((h) => !h._common.gteHardfork(Hardfork.Merge))
       peer.eth!.send('BlockHeaders', { reqId, headers })
     } else if (message.name === 'GetBlockBodies') {
       const { reqId, hashes } = message.data
-      const blocks = await Promise.all(hashes.map((hash: any) => this.chain.getBlock(hash)))
-      const bodies: any = blocks.map((block: any) => block.raw().slice(1))
+      let blocks: Block[] = await Promise.all(
+        hashes.map((hash: Buffer) => this.chain.getBlock(hash))
+      )
+      blocks = blocks.filter((b) => !b._common.gteHardfork(Hardfork.Merge))
+      const bodies = blocks.map((block) => block.raw().slice(1))
       peer.eth!.send('BlockBodies', { reqId, bodies })
     } else if (message.name === 'NewBlockHashes') {
-      const blockNumbers: BN[] = message.data.map((v: [Buffer, BN]) => v[1])
-      const { mergeFirstFinalizedBlock } = this.chain
-      if (
-        mergeFirstFinalizedBlock &&
-        blockNumbers.some((n) => n.gte(mergeFirstFinalizedBlock.header.number))
-      ) {
+      if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
         this.config.logger.debug(
           `Dropping peer ${peer.id} for sending NewBlockHashes after merge (EIP-3675)`
         )
@@ -138,9 +151,7 @@ export class FullEthereumService extends EthereumService {
     } else if (message.name === 'Transactions') {
       await this.synchronizer.txPool.handleAnnouncedTxs(message.data, peer, this.pool)
     } else if (message.name === 'NewBlock') {
-      const blockTD: BN = message.data[1]
-      const terminalTD = this.config.chainCommon.hardforkTD(Hardfork.Merge)
-      if (terminalTD && blockTD.gt(terminalTD)) {
+      if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
         this.config.logger.debug(
           `Dropping peer ${peer.id} for sending NewBlock after merge (EIP-3675)`
         )
@@ -160,8 +171,8 @@ export class FullEthereumService extends EthereumService {
 
   /**
    * Handles incoming LES message from connected peer
-   * @param  {Object}  message message object
-   * @param  peer peer
+   * @param message message object
+   * @param peer peer
    */
   async handleLes(message: any, peer: Peer): Promise<void> {
     if (message.name === 'GetBlockHeaders' && this.config.lightserv) {
@@ -171,7 +182,17 @@ export class FullEthereumService extends EthereumService {
         this.pool.ban(peer, 300000)
         this.config.logger.debug(`Dropping peer for violating flow control ${peer}`)
       } else {
-        const headers: any = await this.chain.getHeaders(block, max, skip, reverse)
+        if (BN.isBN(block)) {
+          if (
+            (reverse && block.gt(this.chain.headers.height)) ||
+            (!reverse && block.addn(max * skip).gt(this.chain.headers.height))
+          ) {
+            // Don't respond to requests greater than the current height
+            return
+          }
+        }
+        let headers = await this.chain.getHeaders(block, max, skip, reverse)
+        headers = headers.filter((h) => !h._common.gteHardfork(Hardfork.Merge))
         peer.les!.send('BlockHeaders', { reqId, bv, headers })
       }
     }

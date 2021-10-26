@@ -6,7 +6,7 @@ import { checkError } from '../util'
 const method = 'engine_consensusValidated'
 
 tape(`${method}: call without parameter`, async (t) => {
-  const { server } = baseSetup()
+  const { server } = baseSetup({ engine: true })
 
   const req = params(method)
   const expectRes = checkError(t, INVALID_PARAMS, 'missing value for required argument 0')
@@ -14,7 +14,7 @@ tape(`${method}: call without parameter`, async (t) => {
 })
 
 tape(`${method}: call with invalid status value`, async (t) => {
-  const { server } = baseSetup()
+  const { server } = baseSetup({ engine: true })
 
   const req = params(method, [
     {
@@ -31,7 +31,7 @@ tape(`${method}: call with invalid status value`, async (t) => {
 })
 
 tape(`${method}: call with unknown header`, async (t) => {
-  const { server } = baseSetup()
+  const { server } = baseSetup({ engine: true })
 
   const req = params(method, [
     {

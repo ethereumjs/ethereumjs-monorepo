@@ -27,7 +27,7 @@ tape('[BoundProtocol]', (t) => {
 
   t.test('should add methods for messages with a response', (t) => {
     const sender = new Sender()
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const bound = new BoundProtocol({
       config,
       protocol,
@@ -40,7 +40,7 @@ tape('[BoundProtocol]', (t) => {
 
   t.test('should get/set status', (t) => {
     const sender = new Sender()
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const bound = new BoundProtocol({
       config,
       protocol,
@@ -54,7 +54,7 @@ tape('[BoundProtocol]', (t) => {
   })
 
   t.test('should do handshake', async (t) => {
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const sender = new EventEmitter() as Sender
     const bound = new BoundProtocol({
       config,
@@ -69,7 +69,7 @@ tape('[BoundProtocol]', (t) => {
   })
 
   t.test('should handle incoming without resolver', async (t) => {
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const sender = new Sender()
     const bound = new BoundProtocol({
       config,
@@ -81,17 +81,17 @@ tape('[BoundProtocol]', (t) => {
       t.ok(/error0/.test(err.message), 'decode error')
     })
     td.when(protocol.decode(testMessage, '1')).thenThrow(new Error('error0'))
-    bound.handle({ name: 'TestMessage', code: 0x01, payload: '1' })
+    ;(bound as any).handle({ name: 'TestMessage', code: 0x01, payload: '1' })
     bound.config.events.once(Event.PROTOCOL_MESSAGE, (message) => {
       t.deepEquals(message, { name: 'TestMessage', data: 2 }, 'correct message')
     })
     td.when(protocol.decode(testMessage, '2')).thenReturn(2)
-    bound.handle({ name: 'TestMessage', code: 0x01, payload: '2' })
+    ;(bound as any).handle({ name: 'TestMessage', code: 0x01, payload: '2' })
     t.end()
   })
 
   t.test('should perform send', (t) => {
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const sender = new Sender()
     sender.sendMessage = td.func<Sender['sendMessage']>()
     const bound = new BoundProtocol({
@@ -108,7 +108,7 @@ tape('[BoundProtocol]', (t) => {
   })
 
   t.test('should perform request', async (t) => {
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const sender = new Sender()
     const bound = new BoundProtocol({
       config,
@@ -136,7 +136,7 @@ tape('[BoundProtocol]', (t) => {
   })
 
   t.test('should timeout request', async (t) => {
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const sender = td.object<Sender>('Sender')
     const bound = new BoundProtocol({
       config,

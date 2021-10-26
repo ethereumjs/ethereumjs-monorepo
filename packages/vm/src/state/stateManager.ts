@@ -1,15 +1,7 @@
 const Set = require('core-js-pure/es/set')
 import { debug as createDebugLogger } from 'debug'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import {
-  Account,
-  Address,
-  BN,
-  toBuffer,
-  keccak256,
-  KECCAK256_NULL,
-  unpadBuffer,
-} from 'ethereumjs-util'
+import { Account, Address, toBuffer, keccak256, KECCAK256_NULL, unpadBuffer } from 'ethereumjs-util'
 import { encode, decode } from 'rlp'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { StateManager, StorageDump } from './interface'
@@ -565,7 +557,7 @@ export default class DefaultStateManager implements StateManager {
 
   /**
    * Initializes the provided genesis state into the state trie
-   * @param initState - Object (address -> balance)
+   * @param initState address -> balance | [balance, code, storage]
    */
   async generateGenesis(initState: any): Promise<void> {
     if (this._checkpointCount !== 0) {
@@ -577,10 +569,26 @@ export default class DefaultStateManager implements StateManager {
     }
     const addresses = Object.keys(initState)
     for (const address of addresses) {
-      const balance = new BN(toBuffer(initState[address]))
-      const account = Account.fromAccountData({ balance })
-      const addressBuffer = toBuffer(address)
-      await this._trie.put(addressBuffer, account.serialize())
+      const addr = Address.fromString(address)
+      const state = initState[address]
+      if (!Array.isArray(state)) {
+        // Prior format: address -> balance
+        const account = Account.fromAccountData({ balance: state })
+        await this._trie.put(addr.buf, account.serialize())
+      } else {
+        // New format: address -> [balance, code, storage]
+        const [balance, code, storage] = state
+        const account = Account.fromAccountData({ balance })
+        await this._trie.put(addr.buf, account.serialize())
+        if (code) {
+          await this.putContractCode(addr, toBuffer(code))
+        }
+        if (storage) {
+          for (const [key, value] of Object.values(storage) as [string, string][]) {
+            await this.putContractStorage(addr, toBuffer(key), toBuffer(value))
+          }
+        }
+      }
     }
   }
 

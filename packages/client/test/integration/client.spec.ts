@@ -5,9 +5,9 @@ import { Event } from '../../lib/types'
 import MockServer from './mocks/mockserver'
 
 tape('[Integration:EthereumClient]', (t) => {
-  const serverConfig = new Config({ loglevel: 'error' })
+  const serverConfig = new Config()
   const servers = [new MockServer({ config: serverConfig }) as any]
-  const config = new Config({ servers, syncmode: 'full', lightserv: false, loglevel: 'error' })
+  const config = new Config({ servers, syncmode: 'full', lightserv: false })
 
   // attach server to centralized event bus
   ;(config.servers[0].config as any).events = config.events
