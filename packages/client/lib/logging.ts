@@ -35,6 +35,9 @@ const errorFormat = format((info: any) => {
 function logFormat(colors = false) {
   return printf((info: any) => {
     let level = info.level.toUpperCase()
+    if (!info.message) {
+      info.message = '(empty message)'
+    }
     if (colors) {
       const colorLevel = LevelColors[info.level as keyof typeof LevelColors]
       const color = chalk.keyword(colorLevel).bind(chalk)
