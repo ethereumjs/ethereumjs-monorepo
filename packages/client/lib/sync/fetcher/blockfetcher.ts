@@ -1,4 +1,5 @@
-import { Block, BlockBodyBuffer, BlockBuffer } from '@ethereumjs/block'
+import { Block, BlockBuffer } from '@ethereumjs/block'
+import { KECCAK256_RLP, KECCAK256_RLP_ARRAY } from 'ethereumjs-util'
 import { Peer } from '../../net/peer'
 import { EthProtocolMethods } from '../../net/protocol'
 import { Job } from './types'
@@ -26,41 +27,46 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
     const { first, count } = task
 
     const blocksRange = `${first}-${first.addn(count)}`
-    const id = peer?.id.slice(0, 8)
-    const address = peer?.address
+    const peerInfo = `id=${peer?.id.slice(0, 8)} address=${peer?.address}`
 
     const headersResult = await (peer!.eth as EthProtocolMethods).getBlockHeaders({
       block: first,
       max: count,
     })
-    if (!headersResult) {
-      // Catch occasional null responses from peers who do not return block headers from peer.eth request
-      this.debug(`Peer id=${id} address=${address} returned no headers for blocks=${blocksRange}`)
+    if (!headersResult || headersResult[1].length === 0) {
+      // Catch occasional null or empty responses
+      this.debug(`Peer ${peerInfo} returned no headers for blocks=${blocksRange}`)
       return []
     }
     const headers = headersResult[1]
     const bodiesResult = await peer!.eth!.getBlockBodies({ hashes: headers.map((h) => h.hash()) })
-    if (!bodiesResult) {
-      // Catch occasional null responses from peers who do not return block bodies from peer.eth request
-      this.debug(
-        `Peer id=${id} address=${address} returned no bodies for blocks=${first}-${first.addn(
-          count
-        )}`
-      )
+    if (!bodiesResult || bodiesResult[1].length === 0) {
+      // Catch occasional null or empty responses
+      this.debug(`Peer ${peerInfo} returned no bodies for blocks=${blocksRange}`)
       return []
     }
     const bodies = bodiesResult[1]
     this.debug(
-      `Requested blocks=${blocksRange} from peer id=${id} address=${address} (received: ${headers.length} headers / ${bodies.length} bodies)`
+      `Requested blocks=${blocksRange} from ${peerInfo} (received: ${headers.length} headers / ${bodies.length} bodies)`
     )
-    const blocks: Block[] = bodies.map(([txsData, unclesData]: BlockBodyBuffer, i: number) => {
-      const opts = {
-        common: this.config.chainCommon,
-        hardforkByBlockNumber: true,
-      }
+    const blocks: Block[] = []
+    const blockOpts = {
+      common: this.config.chainCommon,
+      hardforkByBlockNumber: true,
+    }
+    for (const [i, [txsData, unclesData]] of bodies.entries()) {
       const values: BlockBuffer = [headers[i].raw(), txsData, unclesData]
-      return Block.fromValuesArray(values, opts)
-    })
+      if (
+        (!headers[i].transactionsTrie.equals(KECCAK256_RLP) && txsData.length === 0) ||
+        (!headers[i].uncleHash.equals(KECCAK256_RLP_ARRAY) && unclesData.length === 0)
+      ) {
+        this.debug(
+          `Requested block=${headers[i].number}} from peer ${peerInfo} missing non-empty txs or uncles`
+        )
+        return []
+      }
+      blocks.push(Block.fromValuesArray(values, blockOpts))
+    }
     return blocks
   }
 
