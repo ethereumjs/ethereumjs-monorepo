@@ -87,14 +87,13 @@ const args = yargs(hideBin(process.argv))
     describe: 'Network multiaddrs',
     array: true,
   })
-  .option('rpc', {
-    describe: 'Enable the JSON-RPC server',
-    boolean: true,
-  })
-  .option('rpcport', {
+  .option('rpcHttpPort', {
     describe: 'HTTP-RPC server listening port',
-    number: true,
-    default: 8545,
+    default: Config.RPCHTTPPORT_DEFAULT,
+  })
+  .option('rpcWsPort', {
+    describe: 'WS-RPC server listening port',
+    default: Config.RPCWSPORT_DEFAULT,
   })
   .option('rpcaddr', {
     describe: 'HTTP-RPC server listening interface address',
@@ -326,27 +325,31 @@ function runRpcServers(client: EthereumClient, config: Config, args: any) {
   }
 
   const servers: RPCServer[] = []
-  const { rpc, rpcaddr, rpcport, rpcEngine, rpcEngineAddr, rpcEnginePort } = args
+  const { rpc, rpcaddr, rpcHttpPort, rpcWsPort, rpcEngine, rpcEngineAddr, rpcEnginePort } = args
   const manager = new RPCManager(client, config)
 
   if (rpc) {
     const methods =
-      rpcEngine && rpcEnginePort === rpcport && rpcEngineAddr === rpcaddr
+      rpcEngine && rpcEnginePort === rpcHttpPort && rpcEngineAddr === rpcaddr
         ? { ...manager.getMethods(), ...manager.getMethods(true) }
         : { ...manager.getMethods() }
     const server = new RPCServer(methods)
     const namespaces = [...new Set(Object.keys(methods).map((m) => m.split('_')[0]))].join(',')
     config.logger.info(
-      `Started JSON RPC server address=http://${rpcaddr}:${rpcport} namespaces=${namespaces}`
+      `Started JSON RPC HTTP endpoint address=http://${rpcaddr}:${rpcHttpPort} namespaces=${namespaces}`
     )
-    server.http().listen(rpcport)
+    if (typeof rpcWsPort === 'number') {
+      server.websocket({ port: rpcWsPort })
+      config.logger.info(`RPC WS endpoint opened: ws://${rpcaddr}:${rpcWsPort}`)
+    }
+    server.http().listen(rpcHttpPort)
     server.on('request', onRequest)
     server.on('response', onBatchResponse)
     servers.push(server)
   }
 
   if (rpcEngine) {
-    if (rpc && rpcport === rpcEnginePort && rpcaddr === rpcEngineAddr) {
+    if (rpc && rpcHttpPort === rpcEnginePort && rpcaddr === rpcEngineAddr) {
       return servers
     }
     const server = new RPCServer(manager.getMethods(true))
