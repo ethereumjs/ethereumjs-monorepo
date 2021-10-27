@@ -1,3 +1,4 @@
+import { debug as createDebugLogger, Debugger } from 'debug'
 import { Readable, Writable } from 'stream'
 import Heap from 'qheap'
 import { PeerPool } from '../../net/peerpool'
@@ -19,7 +20,7 @@ export interface FetcherOptions {
   /* How long to ban misbehaving peers in ms (default: 60000) */
   banTime?: number
 
-  /* Max write queue size (default: 16) */
+  /* Max write queue size (default: 4) */
   maxQueue?: number
 
   /* Retry interval in ms (default: 1000) */
@@ -40,6 +41,7 @@ export interface FetcherOptions {
  */
 export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable {
   public config: Config
+  protected debug: Debugger
 
   protected pool: PeerPool
   protected timeout: number
@@ -53,7 +55,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   protected finished: number // number of tasks which are both processed and also finished writing
   protected running: boolean
   protected reading: boolean
-  private destroyWhenDone: boolean // Destroy the fetcher once we are finished processing each task.
+  protected destroyWhenDone: boolean // Destroy the fetcher once we are finished processing each task.
 
   private _readableState?: {
     // This property is inherited from Readable. We only need `length`.
@@ -67,11 +69,13 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     super({ ...options, objectMode: true })
 
     this.config = options.config
+    this.debug = createDebugLogger('client:fetcher')
+
     this.pool = options.pool
     this.timeout = options.timeout ?? 8000
     this.interval = options.interval ?? 1000
     this.banTime = options.banTime ?? 60000
-    this.maxQueue = options.maxQueue ?? 16
+    this.maxQueue = options.maxQueue ?? 4
 
     this.in = new Heap({
       comparBefore: (
@@ -194,7 +198,26 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   private success(job: Job<JobTask, JobResult, StorageItem>, result?: JobResult) {
     if (job.state !== 'active') return
-    if (result === undefined || (result as any).length === 0) {
+    const jobStr = `index=${job.index} first=${(job.task as any)?.first} count=${
+      (job.task as any)?.count
+    }`
+    let reenqueue = false
+    let resultSet = ''
+    if (result === undefined) {
+      resultSet = 'undefined'
+      reenqueue = true
+    }
+    if (result && (result as any).length === 0) {
+      resultSet = 'empty'
+      reenqueue = true
+    }
+    if (reenqueue) {
+      this.debug(
+        `Re-enqueuing job ${jobStr} from peer id=${job.peer?.id?.substr(
+          0,
+          8
+        )} (${resultSet} result set returned).`
+      )
       this.enqueue(job)
       void this.wait().then(() => {
         job.peer!.idle = true
@@ -206,6 +229,12 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         this.out.insert(job)
         this.dequeue()
       } else {
+        this.debug(
+          `Re-enqueuing job ${jobStr} from peer id=${job.peer?.id?.substr(
+            0,
+            8
+          )} (reply contains unexpected data).`
+        )
         this.enqueue(job)
       }
     }
@@ -233,12 +262,20 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   next() {
     const job = this.in.peek()
-    if (
-      !job ||
-      this._readableState!.length > this.maxQueue ||
-      job.index > this.processed + this.maxQueue ||
-      this.processed === this.total
-    ) {
+
+    if (!job) {
+      this.debug(`No job found on next task, skip next job execution.`)
+      return false
+    }
+    if (this._readableState!.length > this.maxQueue) {
+      this.debug(`Readable state length extends max queue size, skip next job execution.`)
+      return false
+    }
+    if (job.index > this.processed + this.maxQueue) {
+      this.debug(`Job index greater than processed + max queue size, skip next job execution.`)
+    }
+    if (this.processed === this.total) {
+      this.debug(`Total number of tasks reached, skip next job execution.`)
       return false
     }
     const peer = this.peer()
@@ -255,6 +292,9 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         .catch((error: Error) => this.failure(job, error))
         .finally(() => clearTimeout(timeout))
       return job
+    } else {
+      this.debug(`No idle peer available, skip next job execution.`)
+      return false
     }
   }
 
@@ -318,6 +358,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         this.running = false
         writer.destroy()
       })
+    this.debug(`Setup writer pipe.`)
   }
 
   /**
@@ -329,9 +370,11 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     }
     this.write()
     this.running = true
-    for (const task of this.tasks()) {
+    const tasks = this.tasks()
+    for (const task of tasks) {
       this.enqueueTask(task)
     }
+    this.debug(`Enqueued num=${tasks.length} tasks`)
     while (this.running) {
       if (!this.next()) {
         if (this.finished === this.total) {
@@ -359,15 +402,14 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   expire(job: Job<JobTask, JobResult, StorageItem>) {
     job.state = 'expired'
+    const jobStr = `index=${job.index} first=${(job.task as any)?.first} count=${
+      (job.task as any)?.count
+    }`
     if (this.pool.contains(job.peer!)) {
-      this.config.logger.debug(
-        `Task timed out for peer (banning) ${JSON.stringify(job.task)} ${job.peer}`
-      )
+      this.debug(`Task timed out for peer (banning) ${jobStr} ${job.peer}`)
       this.pool.ban(job.peer!, this.banTime)
     } else {
-      this.config.logger.debug(
-        `Peer disconnected while performing task ${JSON.stringify(job.task)} ${job.peer}`
-      )
+      this.debug(`Peer disconnected while performing task ${jobStr} ${job.peer}`)
     }
     this.enqueue(job)
   }
