@@ -336,11 +336,13 @@ function runRpcServers(client: EthereumClient, config: Config, args: any) {
     const server = new RPCServer(methods)
     const namespaces = [...new Set(Object.keys(methods).map((m) => m.split('_')[0]))].join(',')
     config.logger.info(
-      `Started JSON RPC HTTP endpoint address=http://${rpcaddr}:${rpcHttpPort} namespaces=${namespaces}`
+      `Started JSON RPC Server address=http://${rpcaddr}:${rpcHttpPort} namespaces=${namespaces}`
     )
     if (typeof rpcWsPort === 'number') {
       server.websocket({ port: rpcWsPort })
-      config.logger.info(`RPC WS endpoint opened: ws://${rpcaddr}:${rpcWsPort}`)
+      config.logger.info(
+        `Started JSON RPC address=ws://${rpcaddr}:${rpcWsPort} namespaces=${namespaces}`
+      )
     }
     server.http().listen(rpcHttpPort)
     server.on('request', onRequest)

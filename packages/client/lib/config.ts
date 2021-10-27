@@ -264,8 +264,6 @@ export class Config {
     this.datadir = options.datadir ?? Config.DATADIR_DEFAULT
     this.key = options.key ?? genPrivateKey()
     this.rpcStubGetLogs = options.rpcStubGetLogs ?? false
-    this.rpcHttpPort = options.rpcHttpPort ?? Config.RPCHTTPPORT_DEFAULT
-    this.rpcWsPort = options.rpcWsPort ?? Config.RPCWSPORT_DEFAULT
     this.maxPerRequest = options.maxPerRequest ?? Config.MAXPERREQUEST_DEFAULT
     this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
     this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT
