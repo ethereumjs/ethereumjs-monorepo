@@ -198,8 +198,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   private success(job: Job<JobTask, JobResult, StorageItem>, result?: JobResult) {
     if (job.state !== 'active') return
-    const jobStr = `index=${job.index} first=${(job.task as any).first} count=${
-      (job.task as any).count
+    const jobStr = `index=${job.index} first=${(job.task as any)?.first} count=${
+      (job.task as any)?.count
     }`
     let reenqueue = false
     let resultSet = ''
@@ -207,13 +207,13 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       resultSet = 'undefined'
       reenqueue = true
     }
-    if ((result as any).length === 0) {
+    if (result && (result as any).length === 0) {
       resultSet = 'empty'
       reenqueue = true
     }
     if (reenqueue) {
       this.debug(
-        `Re-enqueuing job ${jobStr} from peer id=${job.peer?.id.substr(
+        `Re-enqueuing job ${jobStr} from peer id=${job.peer?.id?.substr(
           0,
           8
         )} (${resultSet} result set returned).`
@@ -230,7 +230,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         this.dequeue()
       } else {
         this.debug(
-          `Re-enqueuing job ${jobStr} from peer id=${job.peer?.id.substr(
+          `Re-enqueuing job ${jobStr} from peer id=${job.peer?.id?.substr(
             0,
             8
           )} (reply contains unexpected data).`
@@ -402,8 +402,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   expire(job: Job<JobTask, JobResult, StorageItem>) {
     job.state = 'expired'
-    const jobStr = `index=${job.index} first=${(job.task as any).first} count=${
-      (job.task as any).count
+    const jobStr = `index=${job.index} first=${(job.task as any)?.first} count=${
+      (job.task as any)?.count
     }`
     if (this.pool.contains(job.peer!)) {
       this.debug(`Task timed out for peer (banning) ${jobStr} ${job.peer}`)
