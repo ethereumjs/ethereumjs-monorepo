@@ -20,7 +20,7 @@ export interface FetcherOptions {
   /* How long to ban misbehaving peers in ms (default: 60000) */
   banTime?: number
 
-  /* Max write queue size (default: 16) */
+  /* Max write queue size (default: 4) */
   maxQueue?: number
 
   /* Retry interval in ms (default: 1000) */
@@ -75,7 +75,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     this.timeout = options.timeout ?? 8000
     this.interval = options.interval ?? 1000
     this.banTime = options.banTime ?? 60000
-    this.maxQueue = options.maxQueue ?? 16
+    this.maxQueue = options.maxQueue ?? 4
 
     this.in = new Heap({
       comparBefore: (
@@ -198,9 +198,25 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   private success(job: Job<JobTask, JobResult, StorageItem>, result?: JobResult) {
     if (job.state !== 'active') return
-    if (result === undefined || (result as any).length === 0) {
+    const jobStr = `index=${job.index} first=${(job.task as any)?.first} count=${
+      (job.task as any)?.count
+    }`
+    let reenqueue = false
+    let resultSet = ''
+    if (result === undefined) {
+      resultSet = 'undefined'
+      reenqueue = true
+    }
+    if (result && (result as any).length === 0) {
+      resultSet = 'empty'
+      reenqueue = true
+    }
+    if (reenqueue) {
       this.debug(
-        `Re-enqueuing job ${JSON.stringify(job.task)} (undefined or empty result set returned).`
+        `Re-enqueuing job ${jobStr} from peer id=${job.peer?.id?.substr(
+          0,
+          8
+        )} (${resultSet} result set returned).`
       )
       this.enqueue(job)
       void this.wait().then(() => {
@@ -213,7 +229,12 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         this.out.insert(job)
         this.dequeue()
       } else {
-        this.debug(`Re-enqueuing job ${JSON.stringify(job.task)} (reply contains unexpected data).`)
+        this.debug(
+          `Re-enqueuing job ${jobStr} from peer id=${job.peer?.id?.substr(
+            0,
+            8
+          )} (reply contains unexpected data).`
+        )
         this.enqueue(job)
       }
     }
@@ -381,11 +402,14 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   expire(job: Job<JobTask, JobResult, StorageItem>) {
     job.state = 'expired'
+    const jobStr = `index=${job.index} first=${(job.task as any)?.first} count=${
+      (job.task as any)?.count
+    }`
     if (this.pool.contains(job.peer!)) {
-      this.debug(`Task timed out for peer (banning) ${JSON.stringify(job.task)} ${job.peer}`)
+      this.debug(`Task timed out for peer (banning) ${jobStr} ${job.peer}`)
       this.pool.ban(job.peer!, this.banTime)
     } else {
-      this.debug(`Peer disconnected while performing task ${JSON.stringify(job.task)} ${job.peer}`)
+      this.debug(`Peer disconnected while performing task ${jobStr} ${job.peer}`)
     }
     this.enqueue(job)
   }

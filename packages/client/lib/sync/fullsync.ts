@@ -44,13 +44,6 @@ export class FullSynchronizer extends Synchronizer {
       await this.stop()
     })
 
-    this.config.events.on(Event.CHAIN_UPDATED, async () => {
-      if (this.running || this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
-        await this.execution.run()
-        this.checkTxPoolState()
-      }
-    })
-
     void this.chain.update()
   }
 
@@ -178,7 +171,7 @@ export class FullSynchronizer extends Synchronizer {
         destroyWhenDone: false,
       })
 
-      this.config.events.on(Event.SYNC_FETCHER_FETCHED, (blocks) => {
+      this.config.events.on(Event.SYNC_FETCHER_FETCHED, async (blocks) => {
         if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
           // If we are beyond the merge block we should stop the fetcher
           this.config.logger.info('Merge hardfork reached, stopping block fetcher')
@@ -208,6 +201,11 @@ export class FullSynchronizer extends Synchronizer {
           }`
         )
         this.txPool.removeNewBlockTxs(blocks)
+
+        if (this.running || this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+          await this.execution.run()
+          this.checkTxPoolState()
+        }
       })
 
       this.config.events.on(Event.SYNC_SYNCHRONIZED, () => {
