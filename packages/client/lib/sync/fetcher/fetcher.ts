@@ -20,7 +20,7 @@ export interface FetcherOptions {
   /* How long to ban misbehaving peers in ms (default: 60000) */
   banTime?: number
 
-  /* Max write queue size (default: 16) */
+  /* Max write queue size (default: 4) */
   maxQueue?: number
 
   /* Retry interval in ms (default: 1000) */
@@ -75,7 +75,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     this.timeout = options.timeout ?? 8000
     this.interval = options.interval ?? 1000
     this.banTime = options.banTime ?? 60000
-    this.maxQueue = options.maxQueue ?? 16
+    this.maxQueue = options.maxQueue ?? 4
 
     this.in = new Heap({
       comparBefore: (
