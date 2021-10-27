@@ -3,7 +3,14 @@ import tape from 'tape'
 import { Client } from 'jayson/promise'
 
 // set args for --network and --syncmode
-const cliArgs = ['--rpc', '--rpcHttpPort=8545', '--rpcWsPort=8544', '--dev', '--transports=rlpx']
+const cliArgs = [
+  '--rpc',
+  '--ws',
+  '--rpcHttpPort=8545',
+  '--rpcWsPort=8544',
+  '--dev',
+  '--transports=rlpx',
+]
 
 tape('[CLI] rpc tests', (t) => {
   t.test('should call http and ws RPCs and verify disabled rpc', { timeout: 200000 }, (t) => {
@@ -70,14 +77,14 @@ tape('[CLI] rpc tests', (t) => {
       // eslint-disable-next-line no-console
       console.log(message)
 
-      if (message.toLowerCase().includes('http endpoint')) {
+      if (message.toLowerCase().includes('http://')) {
         // if http endpoint startup message detected, call http endpoint with RPC method
         const client = Client.http({ port: 8545 })
         const res = await client.request('web3_clientVersion', [], 2.0)
         t.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
       }
 
-      if (message.toLowerCase().includes('ws endpoint')) {
+      if (message.toLowerCase().includes('ws://')) {
         // if ws endpoint startup message detected, call ws endpoint with RPC method
         const client = Client.websocket({ url: 'ws://localhost:8544' })
         ;(client as any).ws.on('open', async function () {

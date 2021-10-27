@@ -87,9 +87,17 @@ const args = yargs(hideBin(process.argv))
     describe: 'Network multiaddrs',
     array: true,
   })
+  .option('rpc', {
+    describe: 'Enable the JSON-RPC server with HTTP endpoint',
+    boolean: true,
+  })
   .option('rpcHttpPort', {
     describe: 'HTTP-RPC server listening port',
     default: Config.RPCHTTPPORT_DEFAULT,
+  })
+  .option('ws', {
+    describe: 'Enable the JSON-RPC server with WS endpoint',
+    default: true,
   })
   .option('rpcWsPort', {
     describe: 'WS-RPC server listening port',
@@ -325,10 +333,10 @@ function runRpcServers(client: EthereumClient, config: Config, args: any) {
   }
 
   const servers: RPCServer[] = []
-  const { rpc, rpcaddr, rpcHttpPort, rpcWsPort, rpcEngine, rpcEngineAddr, rpcEnginePort } = args
+  const { rpc, ws, rpcaddr, rpcHttpPort, rpcWsPort, rpcEngine, rpcEngineAddr, rpcEnginePort } = args
   const manager = new RPCManager(client, config)
 
-  if (rpc) {
+  if (rpc || ws) {
     const methods =
       rpcEngine && rpcEnginePort === rpcHttpPort && rpcEngineAddr === rpcaddr
         ? { ...manager.getMethods(), ...manager.getMethods(true) }
@@ -338,10 +346,10 @@ function runRpcServers(client: EthereumClient, config: Config, args: any) {
     config.logger.info(
       `Started JSON RPC Server address=http://${rpcaddr}:${rpcHttpPort} namespaces=${namespaces}`
     )
-    if (typeof rpcWsPort === 'number') {
+    if (ws) {
       server.websocket({ port: rpcWsPort })
       config.logger.info(
-        `Started JSON RPC address=ws://${rpcaddr}:${rpcWsPort} namespaces=${namespaces}`
+        `Started JSON RPC Server address=ws://${rpcaddr}:${rpcWsPort} namespaces=${namespaces}`
       )
     }
     server.http().listen(rpcHttpPort)
@@ -583,6 +591,8 @@ async function run() {
     multiaddrs: args.multiaddrs ? parseMultiaddrs(args.multiaddrs) : undefined,
     logger,
     rpcStubGetLogs: args.rpcStubGetLogs,
+    rpcHttpPort: args.rpcHttpPort,
+    rpcWsPort: args.rpcWsPort,
     maxPerRequest: args.maxPerRequest,
     minPeers: args.minPeers,
     maxPeers: args.maxPeers,
