@@ -171,9 +171,12 @@ export default class EthereumClient extends events.EventEmitter {
         )
       } else {
         let count = 0
+        // Special verbose tx execution mode triggered by BLOCK_NUMBER[*]
+        // Useful e.g. to trace slow txs
+        const allTxs = txHashes.length === 1 && txHashes[0] === '*' ? true : false
         for (const tx of block.transactions) {
           const txHash = bufferToHex(tx.hash())
-          if (txHashes.includes(txHash)) {
+          if (allTxs || txHashes.includes(txHash)) {
             const res = await vm.runTx({ block, tx })
             this.config.logger.info(
               `Executed tx hash=${txHash} gasUsed=${res.gasUsed} from block num=${blockNumber}`
@@ -182,7 +185,11 @@ export default class EthereumClient extends events.EventEmitter {
           }
         }
         if (count === 0) {
-          this.config.logger.warn(`Block number ${first} contains no txs with provided hashes`)
+          if (!allTxs) {
+            this.config.logger.warn(`Block number ${first} contains no txs with provided hashes`)
+          } else {
+            this.config.logger.info(`Block has 0 transactions (no execution)`)
+          }
         }
       }
     }
