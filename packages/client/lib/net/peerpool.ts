@@ -54,11 +54,15 @@ export class PeerPool {
     this.config.events.on(Event.PEER_CONNECTED, (peer) => {
       this.connected(peer)
     })
-
     this.config.events.on(Event.PEER_DISCONNECTED, (peer) => {
       this.disconnected(peer)
     })
-
+    this.config.events.on(Event.PEER_ERROR, (error, peer) => {
+      if (this.pool.get(peer.id)) {
+        this.config.logger.warn(`Peer error: ${error} ${peer}`)
+        this.ban(peer)
+      }
+    })
     this.opened = true
   }
 
@@ -92,6 +96,9 @@ export class PeerPool {
    * Close pool
    */
   async close() {
+    this.config.events.removeAllListeners(Event.PEER_CONNECTED)
+    this.config.events.removeAllListeners(Event.PEER_DISCONNECTED)
+    this.config.events.removeAllListeners(Event.PEER_ERROR)
     this.pool.clear()
     this.opened = false
   }
@@ -141,12 +148,6 @@ export class PeerPool {
    */
   private connected(peer: Peer) {
     if (this.size >= this.config.maxPeers) return
-    this.config.events.on(Event.PEER_ERROR, (error, peer) => {
-      if (this.pool.get(peer.id)) {
-        this.config.logger.warn(`Peer error: ${error} ${peer}`)
-        this.ban(peer)
-      }
-    })
     this.add(peer)
     peer.handleMessageQueue()
   }

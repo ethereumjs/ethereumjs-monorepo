@@ -31,9 +31,9 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
     if (!headersResult) {
       // Catch occasional null responses from peers who do not return block headers from peer.eth request
       this.config.logger.debug(
-        `peer ${peer?.id} returned no headers for blocks ${first}-${first.addn(count)} from ${
+        `Peer id=${peer?.id.slice(0, 8)} address=${
           peer?.address
-        }`
+        } returned no headers for blocks=${first}-${first.addn(count)}`
       )
       return []
     }
@@ -42,9 +42,9 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
     if (!bodiesResult) {
       // Catch occasional null responses from peers who do not return block bodies from peer.eth request
       this.config.logger.debug(
-        `peer ${peer?.id} returned no bodies for blocks ${first}-${first.addn(count)} from ${
+        `Peer id=${peer?.id.slice(0, 8)} address=${
           peer?.address
-        }`
+        } returned no bodies for blocks=${first}-${first.addn(count)}`
       )
       return []
     }
