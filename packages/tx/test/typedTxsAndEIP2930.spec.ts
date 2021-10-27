@@ -301,6 +301,22 @@ tape(
       }
       t.end()
     })
+
+    t.test('getDataFee()', function (st) {
+      for (const txType of txTypes) {
+        let tx = txType.class.fromTxData({}, { common })
+        st.ok(tx.getDataFee().toNumber() === 0, 'Should return data fee when frozen')
+
+        tx = txType.class.fromTxData({}, { common, freeze: false })
+        st.ok(tx.getDataFee().toNumber() === 0, 'Should return data fee when not frozen')
+
+        const mutableCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+        tx = txType.class.fromTxData({}, { common: mutableCommon })
+        tx.common.setHardfork(Hardfork.Istanbul)
+        st.ok(tx.getDataFee().toNumber() === 0, 'Should invalidate cached value on hardfork change')
+      }
+      st.end()
+    })
   }
 )
 
@@ -527,15 +543,5 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
     t.deepEqual(signed.toJSON(), expectedJSON)
 
     t.end()
-  })
-
-  t.test('getDataFee()', function (st) {
-    let tx = AccessListEIP2930Transaction.fromTxData({}, { common })
-    st.ok(tx.getDataFee().toNumber() === 0, 'Should return data fee when frozen')
-
-    tx = AccessListEIP2930Transaction.fromTxData({}, { common, freeze: false })
-    st.ok(tx.getDataFee().toNumber() === 0, 'Should return data fee when not frozen')
-
-    st.end()
   })
 })

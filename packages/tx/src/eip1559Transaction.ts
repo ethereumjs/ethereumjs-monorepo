@@ -232,6 +232,10 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
+
+      this.common.on('hardforkChanged', () => {
+        delete this.cache.dataFee
+      })
     }
   }
 

@@ -201,14 +201,4 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
     }, 'total fee must be the larger of the two')
     st.end()
   })
-
-  t.test('getDataFee()', function (st) {
-    let tx = FeeMarketEIP1559Transaction.fromTxData({}, { common })
-    st.ok(tx.getDataFee().toNumber() === 0, 'Should return data fee when frozen')
-
-    tx = FeeMarketEIP1559Transaction.fromTxData({}, { common, freeze: false })
-    st.ok(tx.getDataFee().toNumber() === 0, 'Should return data fee when not frozen')
-
-    st.end()
-  })
 })

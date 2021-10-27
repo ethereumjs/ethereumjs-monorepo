@@ -205,6 +205,10 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
+
+      this.common.on('hardforkChanged', () => {
+        delete this.cache.dataFee
+      })
     }
   }
 
