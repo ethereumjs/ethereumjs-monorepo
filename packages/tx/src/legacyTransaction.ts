@@ -130,6 +130,10 @@ export default class Transaction extends BaseTransaction<Transaction> {
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
+
+      this.common.on('hardforkChanged', () => {
+        delete this.cache.dataFee
+      })
     }
   }
 
@@ -216,6 +220,21 @@ export default class Transaction extends BaseTransaction<Transaction> {
     } else {
       return message
     }
+  }
+
+  /**
+   * The amount of gas paid for the data in this tx
+   */
+  getDataFee(): BN {
+    if (this.cache.dataFee) {
+      return this.cache.dataFee
+    }
+
+    if (Object.isFrozen(this)) {
+      this.cache.dataFee = super.getDataFee()
+    }
+
+    return super.getDataFee()
   }
 
   /**

@@ -152,6 +152,9 @@ tape('[Transaction]', function (t) {
     tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer))
     st.equals(tx.getDataFee().toNumber(), 1716)
 
+    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), { freeze: false })
+    st.equals(tx.getDataFee().toNumber(), 1716)
+
     st.end()
   })
 
@@ -165,6 +168,17 @@ tape('[Transaction]', function (t) {
     })
     st.equals(tx.getDataFee().toNumber(), 1716)
 
+    st.end()
+  })
+
+  t.test('getDataFee() -> should invalidate cached value on hardfork change', function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+    const tx = Transaction.fromValuesArray(txFixtures[0].raw.map(toBuffer), {
+      common,
+    })
+    st.equals(tx.getDataFee().toNumber(), 656)
+    tx.common.setHardfork(Hardfork.Istanbul)
+    st.equals(tx.getDataFee().toNumber(), 240)
     st.end()
   })
 

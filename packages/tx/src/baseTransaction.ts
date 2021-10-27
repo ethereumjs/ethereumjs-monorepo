@@ -24,6 +24,7 @@ import {
 
 interface TransactionCache {
   hash: Buffer | undefined
+  dataFee: BN | undefined
 }
 
 /**
@@ -50,6 +51,7 @@ export abstract class BaseTransaction<TransactionObject> {
 
   protected cache: TransactionCache = {
     hash: undefined,
+    dataFee: undefined,
   }
 
   /**
@@ -186,6 +188,7 @@ export abstract class BaseTransaction<TransactionObject> {
     for (let i = 0; i < this.data.length; i++) {
       this.data[i] === 0 ? (cost += txDataZero) : (cost += txDataNonZero)
     }
+
     return new BN(cost)
   }
 
