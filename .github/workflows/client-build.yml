@@ -30,7 +30,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - name: Use npm v7 for workspaces support 
+      - name: Use npm v7 for workspaces support
         run: npm i -g npm@7
 
       - run: npm i
@@ -63,7 +63,7 @@ jobs:
           node-version: 12
           cache: 'npm'
 
-      - name: Use npm v7 for workspaces support 
+      - name: Use npm v7 for workspaces support
         run: npm i -g npm@7
 
       - run: npm i

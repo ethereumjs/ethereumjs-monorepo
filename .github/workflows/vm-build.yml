@@ -25,14 +25,14 @@ jobs:
           node-version: 12
           cache: 'npm'
 
-      - name: Use npm v7 for workspaces support 
+      - name: Use npm v7 for workspaces support
         run: npm i -g npm@7
 
       - run: npm i
         working-directory: ${{github.workspace}}
 
       - run: npm run coverage
-      
+
       - uses: codecov/codecov-action@v1
         with:
           file: ${{ env.cwd }}/coverage/lcov.info
@@ -41,7 +41,7 @@ jobs:
       - run: npm run test:API
       - run: npm run test:API:browser
       - run: npm run lint
-  
+
   test-vm-state:
     runs-on: ubuntu-latest
     steps:
@@ -55,7 +55,7 @@ jobs:
           node-version: 12
           cache: 'npm'
 
-      - name: Use npm v7 for workspaces support 
+      - name: Use npm v7 for workspaces support
         run: npm i -g npm@7
 
       - run: npm i
@@ -76,7 +76,7 @@ jobs:
           node-version: 12
           cache: 'npm'
 
-      - name: Use npm v7 for workspaces support 
+      - name: Use npm v7 for workspaces support
         run: npm i -g npm@7
 
       - run: npm i
@@ -97,7 +97,7 @@ jobs:
           node-version: 12
           cache: 'npm'
 
-      - name: Use npm v7 for workspaces support 
+      - name: Use npm v7 for workspaces support
         run: npm i -g npm@7
 
       - run: npm i

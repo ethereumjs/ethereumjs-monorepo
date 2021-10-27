@@ -2,15 +2,15 @@
 
 ## Testing packages locally on other projects
 
-There are some ways you can link this repository packages to other projects before publishing. You can symlink dependencies with [`npm link <package>`](https://docs.npmjs.com/cli/link), or install packages from the filesystem using [`npm install <folder>`](https://docs.npmjs.com/cli/install). But they are subject to some externalities and most importantly with how your package manager handles the lifecycle of packages during installs. 
+There are some ways you can link this repository packages to other projects before publishing. You can symlink dependencies with [`npm link <package>`](https://docs.npmjs.com/cli/link), or install packages from the filesystem using [`npm install <folder>`](https://docs.npmjs.com/cli/install). But they are subject to some externalities and most importantly with how your package manager handles the lifecycle of packages during installs.
 
 _Note: Git references do not work with monorepo setups out of the box due to the lack of directory traversal on the syntax. E.g.:_
 
-  npm install git@github.com:ethereumjs/ethereumjs-monorepo.git
+`npm install git@github.com:ethereumjs/ethereumjs-monorepo.git`
 
 _One way to fetch packages remotely from GitHub before publishing is using [gitpkg.now.sh](https://gitpkg.now.sh/)._
 
-But there's a cleaner way to manage your dependencies using Verdaccio. 
+But there's a cleaner way to manage your dependencies using Verdaccio.
 
 ### Install Verdaccio
 
@@ -45,9 +45,10 @@ against OpenZeppelin and others to keep abreast of how local changes might affec
 downstream from them.
 
 Tests like this are:
-+ a pre-publication sanity check that discovers how @ethereumjs performs in the wild
-+ useful for catching problems which are difficult to anticipate
-+ exposed to failure for reasons outside of @ethereumjs's control, ex: when fixes here surface bugs
+
+- a pre-publication sanity check that discovers how @ethereumjs performs in the wild
+- useful for catching problems which are difficult to anticipate
+- exposed to failure for reasons outside of @ethereumjs's control, ex: when fixes here surface bugs
   in the target.
 
 E2E tests are constructed by cloning a real world target and using npm or yarn to replace its
