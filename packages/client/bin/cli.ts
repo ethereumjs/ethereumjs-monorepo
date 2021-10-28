@@ -88,16 +88,27 @@ const args = yargs(hideBin(process.argv))
     array: true,
   })
   .option('rpc', {
-    describe: 'Enable the JSON-RPC server',
+    describe: 'Enable the JSON-RPC server with HTTP endpoint',
     boolean: true,
   })
   .option('rpcport', {
     describe: 'HTTP-RPC server listening port',
-    number: true,
     default: 8545,
   })
   .option('rpcaddr', {
     describe: 'HTTP-RPC server listening interface address',
+    default: 'localhost',
+  })
+  .option('ws', {
+    describe: 'Enable the JSON-RPC server with WS endpoint',
+    default: true,
+  })
+  .option('wsPort', {
+    describe: 'WS-RPC server listening port',
+    default: 8544,
+  })
+  .option('wsAddr', {
+    describe: 'WS-RPC server listening address',
     default: 'localhost',
   })
   .option('rpcEngine', {
@@ -326,22 +337,31 @@ function runRpcServers(client: EthereumClient, config: Config, args: any) {
   }
 
   const servers: RPCServer[] = []
-  const { rpc, rpcaddr, rpcport, rpcEngine, rpcEngineAddr, rpcEnginePort } = args
+  const { rpc, rpcaddr, rpcport, ws, wsPort, wsAddr, rpcEngine, rpcEngineAddr, rpcEnginePort } =
+    args
   const manager = new RPCManager(client, config)
 
-  if (rpc) {
+  if (rpc || ws) {
     const methods =
       rpcEngine && rpcEnginePort === rpcport && rpcEngineAddr === rpcaddr
         ? { ...manager.getMethods(), ...manager.getMethods(true) }
         : { ...manager.getMethods() }
     const server = new RPCServer(methods)
-    const namespaces = [...new Set(Object.keys(methods).map((m) => m.split('_')[0]))].join(',')
-    config.logger.info(
-      `Started JSON RPC server address=http://${rpcaddr}:${rpcport} namespaces=${namespaces}`
-    )
-    server.http().listen(rpcport)
     server.on('request', onRequest)
     server.on('response', onBatchResponse)
+    const namespaces = [...new Set(Object.keys(methods).map((m) => m.split('_')[0]))].join(',')
+    if (rpc) {
+      server.http().listen(rpcport)
+      config.logger.info(
+        `Started JSON RPC Server address=http://${rpcaddr}:${rpcport} namespaces=${namespaces}`
+      )
+    }
+    if (ws) {
+      server.websocket({ port: wsPort })
+      config.logger.info(
+        `Started JSON RPC Server address=ws://${wsAddr}:${wsPort} namespaces=${namespaces}`
+      )
+    }
     servers.push(server)
   }
 
