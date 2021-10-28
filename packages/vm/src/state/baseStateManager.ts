@@ -1,7 +1,7 @@
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { AccessList, AccessListItem } from '@ethereumjs/tx'
 import { debug as createDebugLogger, Debugger } from 'debug'
-import { Account, Address } from 'ethereumjs-util'
+import { Account, Address, toBuffer } from 'ethereumjs-util'
 import { getActivePrecompiles, ripemdPrecompileAddress } from '../evm/precompiles'
 import Cache from './cache'
 import { DefaultStateManagerOpts } from './stateManager'
@@ -116,7 +116,22 @@ export abstract class BaseStateManager {
     this.touchAccount(address)
   }
 
+  /**
+   * Marks an account as touched, according to the definition
+   * in [EIP-158](https://eips.ethereum.org/EIPS/eip-158).
+   * This happens when the account is triggered for a state-changing
+   * event. Touched accounts that are empty will be cleared
+   * at the end of the tx.
+   */
+   touchAccount(address: Address): void {
+    this._touched.add(address.buf.toString('hex'))
+  }
+
+  abstract putContractCode(address: Address, value: Buffer): Promise<void>
+
   abstract getContractStorage(address: Address, key: Buffer): Promise<Buffer>
+
+  abstract putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void>
 
   /**
    * Caches the storage value associated with the provided `address` and `key`
@@ -256,6 +271,61 @@ export abstract class BaseStateManager {
     }
   }
 
+  abstract hasGenesisState(): Promise<boolean>
+
+  /**
+   * Generates a canonical genesis state on the instance based on the
+   * configured chain parameters. Will error if there are uncommitted
+   * checkpoints on the instance.
+   */
+   async generateCanonicalGenesis(): Promise<void> {
+    if (this._checkpointCount !== 0) {
+      throw new Error('Cannot create genesis state with uncommitted checkpoints')
+    }
+
+    const genesis = await this.hasGenesisState()
+    if (!genesis) {
+      await this.generateGenesis(this._common.genesisState())
+    }
+  }
+
+  /**
+   * Initializes the provided genesis state into the state trie
+   * @param initState address -> balance | [balance, code, storage]
+   */
+  async generateGenesis(initState: any): Promise<void> {
+    if (this._checkpointCount !== 0) {
+      throw new Error('Cannot create genesis state with uncommitted checkpoints')
+    }
+
+    if (this.DEBUG) {
+      this._debug(`Save genesis state into the state trie`)
+    }
+    const addresses = Object.keys(initState)
+    for (const address of addresses) {
+      const addr = Address.fromString(address)
+      const state = initState[address]
+      if (!Array.isArray(state)) {
+        // Prior format: address -> balance
+        const account = Account.fromAccountData({ balance: state })
+        await this.putAccount(addr, account)
+      } else {
+        // New format: address -> [balance, code, storage]
+        const [balance, code, storage] = state
+        const account = Account.fromAccountData({ balance })
+        await this.putAccount(addr, account)
+        if (code) {
+          await this.putContractCode(addr, toBuffer(code))
+        }
+        if (storage) {
+          for (const [key, value] of Object.values(storage) as [string, string][]) {
+            await this.putContractStorage(addr, toBuffer(key), toBuffer(value))
+          }
+        }
+      }
+    }
+  }
+
   /**
    * Generates an EIP-2930 access list
    *
@@ -313,14 +383,4 @@ export abstract class BaseStateManager {
     return accessList
   }
 
-  /**
-   * Marks an account as touched, according to the definition
-   * in [EIP-158](https://eips.ethereum.org/EIPS/eip-158).
-   * This happens when the account is triggered for a state-changing
-   * event. Touched accounts that are empty will be cleared
-   * at the end of the tx.
-   */
-  touchAccount(address: Address): void {
-    this._touched.add(address.buf.toString('hex'))
-  }
 }

@@ -353,59 +353,6 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
   }
 
   /**
-   * Generates a canonical genesis state on the instance based on the
-   * configured chain parameters. Will error if there are uncommitted
-   * checkpoints on the instance.
-   */
-  async generateCanonicalGenesis(): Promise<void> {
-    if (this._checkpointCount !== 0) {
-      throw new Error('Cannot create genesis state with uncommitted checkpoints')
-    }
-
-    const genesis = await this.hasGenesisState()
-    if (!genesis) {
-      await this.generateGenesis(this._common.genesisState())
-    }
-  }
-
-  /**
-   * Initializes the provided genesis state into the state trie
-   * @param initState address -> balance | [balance, code, storage]
-   */
-  async generateGenesis(initState: any): Promise<void> {
-    if (this._checkpointCount !== 0) {
-      throw new Error('Cannot create genesis state with uncommitted checkpoints')
-    }
-
-    if (this.DEBUG) {
-      this._debug(`Save genesis state into the state trie`)
-    }
-    const addresses = Object.keys(initState)
-    for (const address of addresses) {
-      const addr = Address.fromString(address)
-      const state = initState[address]
-      if (!Array.isArray(state)) {
-        // Prior format: address -> balance
-        const account = Account.fromAccountData({ balance: state })
-        await this._trie.put(addr.buf, account.serialize())
-      } else {
-        // New format: address -> [balance, code, storage]
-        const [balance, code, storage] = state
-        const account = Account.fromAccountData({ balance })
-        await this._trie.put(addr.buf, account.serialize())
-        if (code) {
-          await this.putContractCode(addr, toBuffer(code))
-        }
-        if (storage) {
-          for (const [key, value] of Object.values(storage) as [string, string][]) {
-            await this.putContractStorage(addr, toBuffer(key), toBuffer(value))
-          }
-        }
-      }
-    }
-  }
-
-  /**
    * Checks if the `account` corresponding to `address`
    * is empty or non-existent as defined in
    * EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
