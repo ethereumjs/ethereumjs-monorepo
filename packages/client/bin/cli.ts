@@ -91,20 +91,24 @@ const args = yargs(hideBin(process.argv))
     describe: 'Enable the JSON-RPC server with HTTP endpoint',
     boolean: true,
   })
-  .option('rpcHttpPort', {
+  .option('rpcport', {
     describe: 'HTTP-RPC server listening port',
-    default: Config.RPCHTTPPORT_DEFAULT,
+    default: 8545,
+  })
+  .option('rpcaddr', {
+    describe: 'HTTP-RPC server listening interface address',
+    default: 'localhost',
   })
   .option('ws', {
     describe: 'Enable the JSON-RPC server with WS endpoint',
     default: true,
   })
-  .option('rpcWsPort', {
+  .option('wsPort', {
     describe: 'WS-RPC server listening port',
-    default: Config.RPCWSPORT_DEFAULT,
+    default: 8544,
   })
-  .option('rpcaddr', {
-    describe: 'HTTP-RPC server listening interface address',
+  .option('wsAddr', {
+    describe: 'WS-RPC server listening address',
     default: 'localhost',
   })
   .option('rpcEngine', {
@@ -333,33 +337,36 @@ function runRpcServers(client: EthereumClient, config: Config, args: any) {
   }
 
   const servers: RPCServer[] = []
-  const { rpc, ws, rpcaddr, rpcHttpPort, rpcWsPort, rpcEngine, rpcEngineAddr, rpcEnginePort } = args
+  const { rpc, rpcaddr, rpcport, ws, wsPort, wsAddr, rpcEngine, rpcEngineAddr, rpcEnginePort } =
+    args
   const manager = new RPCManager(client, config)
 
   if (rpc || ws) {
     const methods =
-      rpcEngine && rpcEnginePort === rpcHttpPort && rpcEngineAddr === rpcaddr
+      rpcEngine && rpcEnginePort === rpcport && rpcEngineAddr === rpcaddr
         ? { ...manager.getMethods(), ...manager.getMethods(true) }
         : { ...manager.getMethods() }
     const server = new RPCServer(methods)
-    const namespaces = [...new Set(Object.keys(methods).map((m) => m.split('_')[0]))].join(',')
-    config.logger.info(
-      `Started JSON RPC Server address=http://${rpcaddr}:${rpcHttpPort} namespaces=${namespaces}`
-    )
-    if (ws) {
-      server.websocket({ port: rpcWsPort })
-      config.logger.info(
-        `Started JSON RPC Server address=ws://${rpcaddr}:${rpcWsPort} namespaces=${namespaces}`
-      )
-    }
-    server.http().listen(rpcHttpPort)
     server.on('request', onRequest)
     server.on('response', onBatchResponse)
+    const namespaces = [...new Set(Object.keys(methods).map((m) => m.split('_')[0]))].join(',')
+    if (rpc) {
+      server.http().listen(rpcport)
+      config.logger.info(
+        `Started JSON RPC Server address=http://${rpcaddr}:${rpcport} namespaces=${namespaces}`
+      )
+    }
+    if (ws) {
+      server.websocket({ port: wsPort })
+      config.logger.info(
+        `Started JSON RPC Server address=ws://${wsAddr}:${wsPort} namespaces=${namespaces}`
+      )
+    }
     servers.push(server)
   }
 
   if (rpcEngine) {
-    if (rpc && rpcHttpPort === rpcEnginePort && rpcaddr === rpcEngineAddr) {
+    if (rpc && rpcport === rpcEnginePort && rpcaddr === rpcEngineAddr) {
       return servers
     }
     const server = new RPCServer(manager.getMethods(true))
@@ -591,8 +598,6 @@ async function run() {
     multiaddrs: args.multiaddrs ? parseMultiaddrs(args.multiaddrs) : undefined,
     logger,
     rpcStubGetLogs: args.rpcStubGetLogs,
-    rpcHttpPort: args.rpcHttpPort,
-    rpcWsPort: args.rpcWsPort,
     maxPerRequest: args.maxPerRequest,
     minPeers: args.minPeers,
     maxPeers: args.maxPeers,

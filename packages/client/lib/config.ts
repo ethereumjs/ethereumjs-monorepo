@@ -214,8 +214,6 @@ export class Config {
   public static readonly MAXPEERS_DEFAULT = 25
   public static readonly DNSADDR_DEFAULT = '8.8.8.8'
   public static readonly DEBUGCODE_DEFAULT = false
-  public static readonly RPCHTTPPORT_DEFAULT = false
-  public static readonly RPCWSPORT_DEFAULT = false
 
   public readonly logger: Logger
   public readonly syncmode: string
@@ -228,8 +226,6 @@ export class Config {
   public readonly port?: number
   public readonly extIP?: string
   public readonly multiaddrs?: Multiaddr[]
-  public readonly rpcHttpPort?: number | boolean
-  public readonly rpcWsPort?: number | boolean
   public readonly rpcStubGetLogs: boolean
   public readonly maxPerRequest: number
   public readonly minPeers: number
@@ -264,8 +260,6 @@ export class Config {
     this.datadir = options.datadir ?? Config.DATADIR_DEFAULT
     this.key = options.key ?? genPrivateKey()
     this.rpcStubGetLogs = options.rpcStubGetLogs ?? false
-    this.rpcHttpPort = options.rpcHttpPort
-    this.rpcWsPort = options.rpcWsPort
     this.maxPerRequest = options.maxPerRequest ?? Config.MAXPERREQUEST_DEFAULT
     this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
     this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT
