@@ -1,5 +1,4 @@
 const Set = require('core-js-pure/es/set')
-import { debug as createDebugLogger } from 'debug'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import {
   Account,
@@ -17,8 +16,6 @@ import { getActivePrecompiles, ripemdPrecompileAddress } from '../evm/precompile
 import { short } from '../evm/opcodes'
 import { AccessList, AccessListItem } from '@ethereumjs/tx'
 import { BaseStateManager } from '.'
-
-const debug = createDebugLogger('vm:state')
 
 type AddressHex = string
 
@@ -49,9 +46,6 @@ export interface DefaultStateManagerOpts {
 export default class DefaultStateManager extends BaseStateManager implements StateManager {
   _trie: Trie
   _storageTries: { [key: string]: Trie }
-  _cache: Cache
-  _touched: Set<AddressHex>
-  _touchedStack: Set<AddressHex>[]
   _checkpointCount: number
   _originalStorageCache: Map<AddressHex, Map<AddressHex, Buffer>>
 
@@ -90,10 +84,8 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
       const trie = this._trie
       await trie.del(keyBuf)
     }
-
     this._cache = new Cache({ getCb, putCb, deleteCb })
-    this._touched = new Set()
-    this._touchedStack = []
+
     this._checkpointCount = 0
     this._originalStorageCache = new Map()
     this._accessedStorage = [new Map()]
@@ -113,52 +105,15 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
   }
 
   /**
-   * Gets the account associated with `address`. Returns an empty account if the account does not exist.
-   * @param address - Address of the `account` to get
-   */
-  async getAccount(address: Address): Promise<Account> {
-    const account = await this._cache.getOrLoad(address)
-    return account
-  }
-
-  /**
-   * Saves an account into state under the provided `address`.
-   * @param address - Address under which to store `account`
-   * @param account - The account to store
-   */
-  async putAccount(address: Address, account: Account): Promise<void> {
-    if (this.DEBUG) {
-      debug(
-        `Save account address=${address} nonce=${account.nonce} balance=${
-          account.balance
-        } contract=${account.isContract() ? 'yes' : 'no'} empty=${account.isEmpty() ? 'yes' : 'no'}`
-      )
-    }
-    this._cache.put(address, account)
-    this.touchAccount(address)
-  }
-
-  /**
    * Deletes an account from state under the provided `address`. The account will also be removed from the state trie.
    * @param address - Address of the account which should be deleted
    */
   async deleteAccount(address: Address) {
     if (this.DEBUG) {
-      debug(`Delete account ${address}`)
+      this._debug(`Delete account ${address}`)
     }
     this._cache.del(address)
     this.touchAccount(address)
-  }
-
-  /**
-   * Marks an account as touched, according to the definition
-   * in [EIP-158](https://eips.ethereum.org/EIPS/eip-158).
-   * This happens when the account is triggered for a state-changing
-   * event. Touched accounts that are empty will be cleared
-   * at the end of the tx.
-   */
-  touchAccount(address: Address): void {
-    this._touched.add(address.buf.toString('hex'))
   }
 
   /**
@@ -178,7 +133,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
 
     const account = await this.getAccount(address)
     if (this.DEBUG) {
-      debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
+      this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
     }
     account.codeHash = codeHash
     await this.putAccount(address, account)
@@ -351,13 +306,13 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
         // format input
         const encodedValue = rlp.encode(value)
         if (this.DEBUG) {
-          debug(`Update contract storage for account ${address} to ${short(value)}`)
+          this._debug(`Update contract storage for account ${address} to ${short(value)}`)
         }
         await storageTrie.put(key, encodedValue)
       } else {
         // deleting a value
         if (this.DEBUG) {
-          debug(`Delete contract storage for account`)
+          this._debug(`Delete contract storage for account`)
         }
         await storageTrie.del(key)
       }
@@ -573,7 +528,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
     }
 
     if (this.DEBUG) {
-      debug(`Save genesis state into the state trie`)
+      this._debug(`Save genesis state into the state trie`)
     }
     const addresses = Object.keys(initState)
     for (const address of addresses) {
@@ -771,7 +726,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
         if (empty) {
           this._cache.del(address)
           if (this.DEBUG) {
-            debug(`Cleanup touched account address=${address} (>= SpuriousDragon)`)
+            this._debug(`Cleanup touched account address=${address} (>= SpuriousDragon)`)
           }
         }
       }
