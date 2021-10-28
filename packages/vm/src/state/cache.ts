@@ -95,26 +95,6 @@ export default class Cache {
   }
 
   /**
-   * Warms cache by loading their respective account from trie
-   * and putting them in cache.
-   * @param addresses - Array of addresses
-   */
-  async warm(addresses: string[]): Promise<void> {
-    for (const addressHex of addresses) {
-      if (addressHex) {
-        const address = new Address(Buffer.from(addressHex, 'hex'))
-        let account = await this._lookupAccount(address)
-        if (account) {
-          this._update(address, account, false, false, false)
-        } else {
-          account = new Account()
-          this._update(address, account, false, false, true)
-        }
-      }
-    }
-  }
-
-  /**
    * Flushes cache by updating accounts that have been modified
    * and removing accounts that have been deleted.
    */

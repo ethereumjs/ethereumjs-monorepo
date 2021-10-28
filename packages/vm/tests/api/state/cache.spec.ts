@@ -59,14 +59,6 @@ tape('cache put and get account', (t) => {
     st.end()
   })
 
-  t.test('should warm cache and load account from trie', async (st) => {
-    await cache.warm([addr.buf.toString('hex')])
-
-    const res = cache.get(addr)
-    st.ok(res.balance.eq(acc.balance))
-    st.end()
-  })
-
   t.test('should update loaded account and flush it', async (st) => {
     const updatedAcc = createAccount(new BN(0), new BN(0xff00))
     cache.put(addr, updatedAcc)
