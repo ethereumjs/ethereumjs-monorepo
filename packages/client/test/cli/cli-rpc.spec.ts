@@ -74,21 +74,21 @@ tape('[CLI] rpc tests', (t) => {
         end(child, hasEnded)
         t.end()
       }
+    })
 
-      child.stderr.on('data', (data) => {
-        const message = data.toString()
-        t.fail(`stderr: ${message}`)
+    child.stderr.on('data', (data) => {
+      const message = data.toString()
+      t.fail(`stderr: ${message}`)
+      end(child, hasEnded)
+      t.end()
+    })
+
+    child.on('close', (code) => {
+      if (code > 0) {
+        t.fail(`child process exited with code ${code}`)
         end(child, hasEnded)
         t.end()
-      })
-
-      child.on('close', (code) => {
-        if (code > 0) {
-          t.fail(`child process exited with code ${code}`)
-          end(child, hasEnded)
-          t.end()
-        }
-      })
+      }
     })
   })
 })
