@@ -18,7 +18,7 @@
     "husky": "^4.2.5",
     "npm-auth-to-token": "1.0.0",
     "typedoc-plugin-markdown": "^3.10.4",
-    "verdaccio": "4.4.4"
+    "verdaccio": "4.12.2"
   },
   "husky": {
     "hooks": {
