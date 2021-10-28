@@ -16,6 +16,7 @@ import Cache from './cache'
 import { getActivePrecompiles, ripemdPrecompileAddress } from '../evm/precompiles'
 import { short } from '../evm/opcodes'
 import { AccessList, AccessListItem } from '@ethereumjs/tx'
+import { BaseStateManager } from '.'
 
 const debug = createDebugLogger('vm:state')
 
@@ -36,11 +37,16 @@ export interface DefaultStateManagerOpts {
 }
 
 /**
- * Interface for getting and setting data from an underlying
- * state trie.
+ * Default StateManager implementation for the VM.
+ *
+ * The state manager abstracts from the underlying data store
+ * by providing higher level access to accounts, contract code
+ * and storage slots.
+ *
+ * The default state manager implementation uses a
+ * `merkle-patricia-tree` trie as a data backend.
  */
-export default class DefaultStateManager implements StateManager {
-  _common: Common
+export default class DefaultStateManager extends BaseStateManager implements StateManager {
   _trie: Trie
   _storageTries: { [key: string]: Trie }
   _cache: Cache
@@ -64,24 +70,10 @@ export default class DefaultStateManager implements StateManager {
   _accessedStorageReverted: Map<string, Set<string>>[]
 
   /**
-   * StateManager is run in DEBUG mode (default: false)
-   * Taken from DEBUG environment variable
-   *
-   * Safeguards on debug() calls are added for
-   * performance reasons to avoid string literal evaluation
-   * @hidden
-   */
-  protected readonly DEBUG: boolean = false
-
-  /**
    * Instantiate the StateManager interface.
    */
   constructor(opts: DefaultStateManagerOpts = {}) {
-    let common = opts.common
-    if (!common) {
-      common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    }
-    this._common = common
+    super(opts)
 
     this._trie = opts.trie ?? new Trie()
     this._storageTries = {}
@@ -92,11 +84,6 @@ export default class DefaultStateManager implements StateManager {
     this._originalStorageCache = new Map()
     this._accessedStorage = [new Map()]
     this._accessedStorageReverted = [new Map()]
-
-    // Safeguard if "process" is not available (browser)
-    if (process !== undefined && process.env.DEBUG) {
-      this.DEBUG = true
-    }
   }
 
   /**
