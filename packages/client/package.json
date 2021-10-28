@@ -77,7 +77,6 @@
     "multiaddr": "^10.0.1",
     "peer-id": "^0.14.3",
     "qheap": "^1.4.0",
-    "rlp": "^2.2.4",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.5",
     "yargs": "^17.2.1"

@@ -1,5 +1,5 @@
 import assert from 'assert'
-import BN from 'bn.js'
+import { BN } from './externals'
 import { toBuffer, zeros } from './bytes'
 import {
   isValidAddress,

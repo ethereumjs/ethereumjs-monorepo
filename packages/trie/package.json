@@ -42,7 +42,6 @@
     "level-mem": "^5.0.1",
     "level-ws": "^2.0.0",
     "readable-stream": "^3.6.0",
-    "rlp": "^2.2.4",
     "semaphore-async-await": "^1.5.1"
   },
   "devDependencies": {

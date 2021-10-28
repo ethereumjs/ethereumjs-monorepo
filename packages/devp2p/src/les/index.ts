@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import * as rlp from 'rlp'
+import { rlp } from 'ethereumjs-util'
 import ms from 'ms'
 import snappy from 'snappyjs'
 import { debug as createDebugLogger } from 'debug'

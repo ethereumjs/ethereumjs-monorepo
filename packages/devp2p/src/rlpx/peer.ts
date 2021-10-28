@@ -1,15 +1,14 @@
 import { Socket } from 'net'
 import { EventEmitter } from 'events'
-import * as rlp from 'rlp'
-import * as util from '../util'
 import BufferList = require('bl')
 import ms from 'ms'
 import snappy from 'snappyjs'
 import { debug as createDebugLogger } from 'debug'
 import Common from '@ethereumjs/common'
-import { ECIES } from './ecies'
+import { rlp } from 'ethereumjs-util'
 import { ETH, LES } from '../'
 import { int2buffer, buffer2int, formatLogData } from '../util'
+import { ECIES } from './ecies'
 
 const DEBUG_BASE_NAME = 'devp2p:rlpx:peer'
 const debug = createDebugLogger(DEBUG_BASE_NAME)
@@ -308,7 +307,7 @@ export class Peer extends EventEmitter {
         this._eciesSession.parseAuthPlain(parseData)
       } else {
         this._eciesSession._gotEIP8Auth = true
-        this._nextPacketSize = util.buffer2int(this._socketData.slice(0, 2)) + 2
+        this._nextPacketSize = buffer2int(this._socketData.slice(0, 2)) + 2
         return
       }
     } else {
@@ -334,7 +333,7 @@ export class Peer extends EventEmitter {
         )
       } else {
         this._eciesSession._gotEIP8Ack = true
-        this._nextPacketSize = util.buffer2int(this._socketData.slice(0, 2)) + 2
+        this._nextPacketSize = buffer2int(this._socketData.slice(0, 2)) + 2
         return
       }
     } else {

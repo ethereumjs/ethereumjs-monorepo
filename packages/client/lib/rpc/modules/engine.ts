@@ -1,8 +1,16 @@
 import { Block, HeaderData } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
-import { Address, BN, toBuffer, toType, TypeOutput, bufferToHex, intToHex } from 'ethereumjs-util'
+import {
+  Address,
+  BN,
+  toBuffer,
+  toType,
+  TypeOutput,
+  bufferToHex,
+  intToHex,
+  rlp,
+} from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { encode } from 'rlp'
 import { middleware, validators } from '../validation'
 import { INTERNAL_ERROR } from '../error-code'
 import type VM from '@ethereumjs/vm'
@@ -184,7 +192,7 @@ const recursivelyFindParents = async (
 const txsTrieRoot = async (txs: TypedTransaction[]) => {
   const trie = new Trie()
   for (const [i, tx] of txs.entries()) {
-    await trie.put(encode(i), tx.serialize())
+    await trie.put(rlp.encode(i), tx.serialize())
   }
   return trie.root
 }
