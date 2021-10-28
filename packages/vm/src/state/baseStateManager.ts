@@ -1,7 +1,8 @@
+const Set = require('core-js-pure/es/set')
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { AccessList, AccessListItem } from '@ethereumjs/tx'
 import { debug as createDebugLogger, Debugger } from 'debug'
-import { Account, Address, toBuffer } from 'ethereumjs-util'
+import { Account, Address } from 'ethereumjs-util'
 import { getActivePrecompiles, ripemdPrecompileAddress } from '../evm/precompiles'
 import Cache from './cache'
 import { DefaultStateManagerOpts } from './stateManager'
@@ -123,7 +124,7 @@ export abstract class BaseStateManager {
    * event. Touched accounts that are empty will be cleared
    * at the end of the tx.
    */
-   touchAccount(address: Address): void {
+  touchAccount(address: Address): void {
     this._touched.add(address.buf.toString('hex'))
   }
 
@@ -278,7 +279,7 @@ export abstract class BaseStateManager {
    * configured chain parameters. Will error if there are uncommitted
    * checkpoints on the instance.
    */
-   async generateCanonicalGenesis(): Promise<void> {
+  async generateCanonicalGenesis(): Promise<void> {
     if (this._checkpointCount !== 0) {
       throw new Error('Cannot create genesis state with uncommitted checkpoints')
     }
@@ -289,41 +290,112 @@ export abstract class BaseStateManager {
     }
   }
 
-  /**
-   * Initializes the provided genesis state into the state trie
-   * @param initState address -> balance | [balance, code, storage]
-   */
-  async generateGenesis(initState: any): Promise<void> {
-    if (this._checkpointCount !== 0) {
-      throw new Error('Cannot create genesis state with uncommitted checkpoints')
-    }
+  abstract generateGenesis(initState: any): Promise<void>
 
-    if (this.DEBUG) {
-      this._debug(`Save genesis state into the state trie`)
-    }
-    const addresses = Object.keys(initState)
-    for (const address of addresses) {
-      const addr = Address.fromString(address)
-      const state = initState[address]
-      if (!Array.isArray(state)) {
-        // Prior format: address -> balance
-        const account = Account.fromAccountData({ balance: state })
-        await this.putAccount(addr, account)
-      } else {
-        // New format: address -> [balance, code, storage]
-        const [balance, code, storage] = state
-        const account = Account.fromAccountData({ balance })
-        await this.putAccount(addr, account)
-        if (code) {
-          await this.putContractCode(addr, toBuffer(code))
-        }
-        if (storage) {
-          for (const [key, value] of Object.values(storage) as [string, string][]) {
-            await this.putContractStorage(addr, toBuffer(key), toBuffer(value))
+  /**
+   * Checks if the `account` corresponding to `address`
+   * is empty or non-existent as defined in
+   * EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
+   * @param address - Address to check
+   */
+  async accountIsEmpty(address: Address): Promise<boolean> {
+    const account = await this.getAccount(address)
+    return account.isEmpty()
+  }
+
+  /**
+   * Removes accounts form the state trie that have been touched,
+   * as defined in EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
+   */
+  async cleanupTouchedAccounts(): Promise<void> {
+    if (this._common.gteHardfork('spuriousDragon')) {
+      const touchedArray = Array.from(this._touched)
+      for (const addressHex of touchedArray) {
+        const address = new Address(Buffer.from(addressHex, 'hex'))
+        const empty = await this.accountIsEmpty(address)
+        if (empty) {
+          this._cache.del(address)
+          if (this.DEBUG) {
+            this._debug(`Cleanup touched account address=${address} (>= SpuriousDragon)`)
           }
         }
       }
     }
+    this._touched.clear()
+  }
+
+  /** EIP-2929 logic
+   * This should only be called from within the EVM
+   */
+
+  /**
+   * Returns true if the address is warm in the current context
+   * @param address - The address (as a Buffer) to check
+   */
+  isWarmedAddress(address: Buffer): boolean {
+    for (let i = this._accessedStorage.length - 1; i >= 0; i--) {
+      const currentMap = this._accessedStorage[i]
+      if (currentMap.has(address.toString('hex'))) {
+        return true
+      }
+    }
+    return false
+  }
+
+  /**
+   * Add a warm address in the current context
+   * @param address - The address (as a Buffer) to check
+   */
+  addWarmedAddress(address: Buffer): void {
+    const key = address.toString('hex')
+    const storageSet = this._accessedStorage[this._accessedStorage.length - 1].get(key)
+    if (!storageSet) {
+      const emptyStorage = new Set()
+      this._accessedStorage[this._accessedStorage.length - 1].set(key, emptyStorage)
+    }
+  }
+
+  /**
+   * Returns true if the slot of the address is warm
+   * @param address - The address (as a Buffer) to check
+   * @param slot - The slot (as a Buffer) to check
+   */
+  isWarmedStorage(address: Buffer, slot: Buffer): boolean {
+    const addressKey = address.toString('hex')
+    const storageKey = slot.toString('hex')
+
+    for (let i = this._accessedStorage.length - 1; i >= 0; i--) {
+      const currentMap = this._accessedStorage[i]
+      if (currentMap.has(addressKey) && currentMap.get(addressKey)!.has(storageKey)) {
+        return true
+      }
+    }
+
+    return false
+  }
+
+  /**
+   * Mark the storage slot in the address as warm in the current context
+   * @param address - The address (as a Buffer) to check
+   * @param slot - The slot (as a Buffer) to check
+   */
+  addWarmedStorage(address: Buffer, slot: Buffer): void {
+    const addressKey = address.toString('hex')
+    let storageSet = this._accessedStorage[this._accessedStorage.length - 1].get(addressKey)
+    if (!storageSet) {
+      storageSet = new Set()
+      this._accessedStorage[this._accessedStorage.length - 1].set(addressKey, storageSet!)
+    }
+    storageSet!.add(slot.toString('hex'))
+  }
+
+  /**
+   * Clear the warm accounts and storage. To be called after a transaction finished.
+   * @param boolean - If true, returns an EIP-2930 access list generated
+   */
+  clearWarmedAccounts(): void {
+    this._accessedStorage = [new Map()]
+    this._accessedStorageReverted = [new Map()]
   }
 
   /**
@@ -382,5 +454,4 @@ export abstract class BaseStateManager {
 
     return accessList
   }
-
 }
