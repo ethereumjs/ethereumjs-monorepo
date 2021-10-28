@@ -93,19 +93,6 @@ export interface ConfigOptions {
   servers?: (RlpxServer | Libp2pServer)[]
 
   /**
-   * HTTP-RPC server listening port
-   *
-   * Default: 8545
-   */
-  rpcHttpPort?: number | boolean
-  /**
-   * WS-RPC server listening port
-   *
-   * Default: 8544
-   */
-  rpcWsPort?: number | boolean
-
-  /**
    * Until getLogs is properly implemented, stub an empty response
    */
   rpcStubGetLogs?: boolean
