@@ -130,10 +130,6 @@ export default class Transaction extends BaseTransaction<Transaction> {
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
-
-      this.common.on('hardforkChanged', () => {
-        delete this.cache.dataFee
-      })
     }
   }
 
