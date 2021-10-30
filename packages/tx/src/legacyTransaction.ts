@@ -222,12 +222,15 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): BN {
-    if (this.cache.dataFee) {
-      return this.cache.dataFee
+    if (this.cache.dataFee && this.cache.dataFee.hardfork === this.common.hardfork()) {
+      return this.cache.dataFee.value
     }
 
     if (Object.isFrozen(this)) {
-      this.cache.dataFee = super.getDataFee()
+      this.cache.dataFee = {
+        value: super.getDataFee(),
+        hardfork: this.common.hardfork(),
+      }
     }
 
     return super.getDataFee()
