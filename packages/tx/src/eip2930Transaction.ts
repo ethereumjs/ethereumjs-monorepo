@@ -205,10 +205,6 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
-
-      this.common.on('hardforkChanged', () => {
-        delete this.cache.dataFee
-      })
     }
   }
 
@@ -216,15 +212,18 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): BN {
-    if (this.cache.dataFee) {
-      return this.cache.dataFee
+    if (this.cache.dataFee && this.cache.dataFee.hardfork === this.common.hardfork()) {
+      return this.cache.dataFee.value
     }
 
     const cost = super.getDataFee()
     cost.iaddn(AccessLists.getDataFeeEIP2930(this.accessList, this.common))
 
     if (Object.isFrozen(this)) {
-      this.cache.dataFee = cost
+      this.cache.dataFee = {
+        value: cost,
+        hardfork: this.common.hardfork(),
+      }
     }
 
     return cost
