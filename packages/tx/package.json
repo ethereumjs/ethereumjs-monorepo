@@ -49,7 +49,7 @@
     "karma-typescript": "^5.5.1",
     "minimist": "^1.2.0",
     "node-dir": "^0.1.16",
-    "nyc": "^14.0.0",
+    "nyc": "^15.1.0",
     "prettier": "^2.0.5",
     "tape": "^5.3.1",
     "typedoc": "^0.22.4",
