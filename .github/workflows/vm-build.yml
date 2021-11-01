@@ -121,10 +121,8 @@ jobs:
           output-file-path: ${{ env.cwd }}/output.txt
           # Location of data in gh-pages branch
           benchmark-data-dir-path: dev/bench/vm
-          # Enable alert commit comment
+          # Enable alert commit comment (default alert threshold: 200%)
           comment-on-alert: true
-          # If the current benchmark result is worse than previous exceeding the threshold, an alert will happen.
-          alert-threshold: 270%
           # GitHub API token to make a commit comment
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # Push and deploy to GitHub pages branch automatically (if on master)
