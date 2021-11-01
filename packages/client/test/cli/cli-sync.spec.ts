@@ -10,7 +10,6 @@ tape('[CLI]', (t) => {
   t.test('should begin downloading blocks', { timeout: 260000 }, (t) => {
     const file = require.resolve('../../dist/bin/cli.js')
     const child = spawn(process.execPath, [file, ...cliArgs])
-
     let hasEnded = false
     const end = () => {
       if (hasEnded) return
@@ -18,7 +17,6 @@ tape('[CLI]', (t) => {
       child.stdout.removeAllListeners()
       child.stderr.removeAllListeners()
       child.kill('SIGINT')
-      t.end()
     }
 
     child.stdout.on('data', (data) => {
