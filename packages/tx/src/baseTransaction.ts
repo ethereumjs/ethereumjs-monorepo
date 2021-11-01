@@ -24,7 +24,10 @@ import {
 
 interface TransactionCache {
   hash: Buffer | undefined
-  dataFee: BN | undefined
+  dataFee?: {
+    value: BN
+    hardfork: string | Hardfork
+  }
 }
 
 /**
