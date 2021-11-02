@@ -1,5 +1,5 @@
 import { ecdsaSign, ecdsaRecover, publicKeyConvert } from 'ethereum-cryptography/secp256k1'
-import BN from 'bn.js'
+import { BN } from './externals'
 import { toBuffer, setLengthLeft, bufferToHex, bufferToInt } from './bytes'
 import { keccak } from './hash'
 import { assertIsBuffer } from './helpers'

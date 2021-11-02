@@ -1,4 +1,4 @@
-import BN from 'bn.js'
+import { BN } from './externals'
 import { isHexString } from './internal'
 import { Address } from './address'
 import { unpadBuffer, toBuffer, ToBufferInputTypes } from './bytes'

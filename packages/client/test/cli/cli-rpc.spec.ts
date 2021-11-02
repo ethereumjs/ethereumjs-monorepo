@@ -4,15 +4,16 @@ import { Client } from 'jayson/promise'
 
 const cliArgs = ['--rpc', '--ws', '--dev', '--transports=rlpx']
 
-const end = (child: ChildProcessWithoutNullStreams, hasEnded: boolean) => {
+const end = (child: ChildProcessWithoutNullStreams, hasEnded: boolean, t: tape.Test) => {
   if (hasEnded) return
   hasEnded = true
   child.stdout.removeAllListeners()
   child.stderr.removeAllListeners()
   child.kill('SIGINT')
+  t.end()
 }
 
-tape('[CLI] rpc tests', (t) => {
+tape('[CLI] rpc', (t) => {
   t.test('should return valid responses from http and ws endpoints', (t) => {
     const file = require.resolve('../../dist/bin/cli.js')
     const child = spawn(process.execPath, [file, ...cliArgs])
@@ -35,8 +36,7 @@ tape('[CLI] rpc tests', (t) => {
           const res = await client.request('web3_clientVersion', [], 2.0)
           t.ok(res.result.includes('EthereumJS'), 'read from WS RPC')
           ;(client as any).ws.close()
-          end(child, hasEnded)
-          t.end()
+          end(child, hasEnded, t)
         })
       }
     })
@@ -44,13 +44,13 @@ tape('[CLI] rpc tests', (t) => {
     child.stderr.on('data', (data) => {
       const message = data.toString()
       t.fail(`stderr: ${message}`)
-      end(child, hasEnded)
+      end(child, hasEnded, t)
     })
 
     child.on('close', (code) => {
       if (code > 0) {
         t.fail(`child process exited with code ${code}`)
-        end(child, hasEnded)
+        end(child, hasEnded, t)
       }
     })
   })
@@ -71,23 +71,20 @@ tape('[CLI] rpc tests', (t) => {
       }
       if (message.includes('Miner: Assembling block')) {
         t.pass('miner started and no rpc endpoints started')
-        end(child, hasEnded)
-        t.end()
+        end(child, hasEnded, t)
       }
     })
 
     child.stderr.on('data', (data) => {
       const message = data.toString()
       t.fail(`stderr: ${message}`)
-      end(child, hasEnded)
-      t.end()
+      end(child, hasEnded, t)
     })
 
     child.on('close', (code) => {
       if (code > 0) {
         t.fail(`child process exited with code ${code}`)
-        end(child, hasEnded)
-        t.end()
+        end(child, hasEnded, t)
       }
     })
   })

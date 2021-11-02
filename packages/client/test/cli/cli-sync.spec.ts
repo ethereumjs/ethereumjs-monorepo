@@ -6,10 +6,11 @@ const cliArgs = process.argv.filter(
   (arg) => arg.startsWith('--network') || arg.startsWith('--syncmode')
 )
 
-tape('[CLI]', (t) => {
+tape('[CLI] sync', (t) => {
   t.test('should begin downloading blocks', { timeout: 260000 }, (t) => {
     const file = require.resolve('../../dist/bin/cli.js')
     const child = spawn(process.execPath, [file, ...cliArgs])
+
     let hasEnded = false
     const end = () => {
       if (hasEnded) return
@@ -17,6 +18,7 @@ tape('[CLI]', (t) => {
       child.stdout.removeAllListeners()
       child.stderr.removeAllListeners()
       child.kill('SIGINT')
+      t.end()
     }
 
     child.stdout.on('data', (data) => {
@@ -38,6 +40,10 @@ tape('[CLI]', (t) => {
 
     child.stderr.on('data', (data) => {
       const message = data.toString()
+      if (message.includes('Possible EventEmitter memory leak detected')) {
+        // This is okay.
+        return
+      }
       t.fail(`stderr: ${message}`)
       end()
     })
