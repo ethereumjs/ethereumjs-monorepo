@@ -1,10 +1,9 @@
 import assert from 'assert'
 import { EventEmitter } from 'events'
-import * as rlp from 'rlp'
 import ms from 'ms'
 import snappy from 'snappyjs'
 import { debug as createDebugLogger } from 'debug'
-import { BN } from 'ethereumjs-util'
+import { BN, rlp } from 'ethereumjs-util'
 import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 

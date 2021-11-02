@@ -1,5 +1,4 @@
-import * as rlp from 'rlp'
-import { Address, BN } from 'ethereumjs-util'
+import { Address, BN, rlp } from 'ethereumjs-util'
 import { Block, BlockHeader, BlockOptions, BlockBuffer, BlockBodyBuffer } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import { CliqueLatestSignerStates, CliqueLatestVotes, CliqueLatestBlockSigners } from '../clique'

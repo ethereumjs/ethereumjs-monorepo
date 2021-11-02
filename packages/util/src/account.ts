@@ -1,6 +1,5 @@
 import assert from 'assert'
-import BN from 'bn.js'
-import * as rlp from 'rlp'
+import { BN, rlp } from './externals'
 import {
   privateKeyVerify,
   publicKeyCreate,

@@ -1,7 +1,7 @@
 import crypto, { Decipher } from 'crypto'
 import { debug as createDebugLogger } from 'debug'
 import { publicKeyCreate, ecdh, ecdsaRecover, ecdsaSign } from 'secp256k1'
-import * as rlp from 'rlp'
+import { rlp } from 'ethereumjs-util'
 import { unstrictDecode } from '../util'
 import { MAC } from './mac'
 

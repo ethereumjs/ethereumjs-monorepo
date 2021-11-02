@@ -81,7 +81,7 @@ test()
 
 ### Invalid proofs
 
-Note, if `verifyProof` detects an invalid proof, it throws an error.  While contrived, the below example demonstrates the error condition that would result if a prover tampers with the data in a merkle proof.
+Note, if `verifyProof` detects an invalid proof, it throws an error. While contrived, the below example demonstrates the error condition that would result if a prover tampers with the data in a merkle proof.
 
 ```typescript
 const trie = new Trie()
@@ -128,9 +128,7 @@ trie
 
 ```typescript
 import level from 'level'
-import rlp from 'rlp'
-import { BN, bufferToHex } from 'ethereumjs-util'
-import Account from 'ethereumjs-account'
+import { Account, BN, bufferToHex, rlp } from 'ethereumjs-util'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 
 const stateRoot = 'STATE_ROOT_OF_A_BLOCK'
@@ -142,15 +140,15 @@ const address = 'AN_ETHEREUM_ACCOUNT_ADDRESS'
 
 async function test() {
   const data = await trie.get(address)
-  const acc = new Account(data)
+  const acc = Account.fromAccountData(data)
 
   console.log('-------State-------')
-  console.log(`nonce: ${new BN(acc.nonce)}`)
-  console.log(`balance in wei: ${new BN(acc.balance)}`)
+  console.log(`nonce: ${acc.nonce}`)
+  console.log(`balance in wei: ${acc.balance}`)
   console.log(`storageRoot: ${bufferToHex(acc.stateRoot)}`)
   console.log(`codeHash: ${bufferToHex(acc.codeHash)}`)
 
-  let storageTrie = trie.copy()
+  const storageTrie = trie.copy()
   storageTrie.root = acc.stateRoot
 
   console.log('------Storage------')

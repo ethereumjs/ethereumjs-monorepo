@@ -1,5 +1,4 @@
 import tape from 'tape'
-import { encode } from 'rlp'
 import {
   Account,
   BN,
@@ -15,6 +14,7 @@ import {
   isValidChecksumAddress,
   isValidAddress,
   toChecksumAddress,
+  rlp,
 } from '../src'
 const eip1014Testdata = require('./testdata/eip1014Examples.json')
 
@@ -111,7 +111,7 @@ tape('Account', function (t) {
       codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     }
     const account = Account.fromAccountData(raw)
-    const accountRlp = encode([raw.nonce, raw.balance, raw.stateRoot, raw.codeHash])
+    const accountRlp = rlp.encode([raw.nonce, raw.balance, raw.stateRoot, raw.codeHash])
     st.ok(account.serialize().equals(accountRlp), 'should serialize correctly')
     st.end()
   })

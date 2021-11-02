@@ -1,6 +1,6 @@
 import assert from 'assert'
 import * as base32 from 'hi-base32'
-import * as rlp from 'rlp'
+import { rlp } from 'ethereumjs-util'
 import { sscanf } from 'scanf'
 import { ecdsaVerify } from 'secp256k1'
 import { Multiaddr } from 'multiaddr'
