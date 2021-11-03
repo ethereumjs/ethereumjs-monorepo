@@ -24,14 +24,14 @@ jobs:
           node-version: 12
           cache: 'npm'
 
-      - name: Use npm v7 for workspaces support 
+      - name: Use npm v7 for workspaces support
         run: npm i -g npm@7
 
       - run: npm i
         working-directory: ${{github.workspace}}
 
       - run: npm run coverage
-      
+
       - uses: codecov/codecov-action@v1
         with:
           file: ${{ env.cwd }}/coverage/lcov.info
@@ -40,17 +40,12 @@ jobs:
       - run: npm run test:API
       - run: npm run test:API:browser
       - run: npm run lint
-  
+
   vm-state:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        fork: [
-          'London',
-          'Berlin',
-          'Istanbul',
-          'MuirGlacier'
-        ]
+        fork: ['London', 'Berlin', 'Istanbul', 'MuirGlacier']
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
@@ -63,7 +58,7 @@ jobs:
           node-version: 12
           cache: 'npm'
 
-      - name: Use npm v7 for workspaces support 
+      - name: Use npm v7 for workspaces support
         run: npm i -g npm@7
 
       - run: npm i
@@ -76,19 +71,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        fork: [
-          'London',
-          'Berlin',
-          'MuirGlacier',
-          'Istanbul',
-          'Petersburg',
-          'Constantinople',
-          'Byzantium',
-          'SpuriousDragon',
-          'TangerineWhistle',
-          'Homestead',
-          'Chainstart'
-        ]
+        fork:
+          [
+            'London',
+            'Berlin',
+            'MuirGlacier',
+            'Istanbul',
+            'Petersburg',
+            'Constantinople',
+            'Byzantium',
+            'SpuriousDragon',
+            'TangerineWhistle',
+            'Homestead',
+            'Chainstart',
+          ]
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
@@ -101,7 +97,7 @@ jobs:
           node-version: 12
           cache: 'npm'
 
-      - name: Use npm v7 for workspaces support 
+      - name: Use npm v7 for workspaces support
         run: npm i -g npm@7
 
       - run: npm i
@@ -113,18 +109,19 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # Args to pass to the tester. Note that some have splitted the slow tests and only 
-        #   running those: these are only on forks where that is applicable (see PR #489 for numbers on these)
-        
-        # Tests were splitted with --dir and --excludeDir to balance execution times below the 9min mark.
-        args: [
-          '--fork=Istanbul --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
-          '--fork=Istanbul --excludeDir=stTimeConsuming --expected-test-amount=19817',
-          '--fork=Berlin --dir=GeneralStateTests/stTimeConsuming',
-          '--fork=Berlin --excludeDir=stTimeConsuming',
-          '--fork=London --dir=GeneralStateTests/stTimeConsuming',
-          '--fork=London --excludeDir=stTimeConsuming'
-        ]
+        # Args to pass to the tester. Note that some have split the slow tests and only
+        # run on forks where applicable (see PR #489 for numbers on these)
+
+        # Tests were split with --dir and --excludeDir to balance execution times below the 9min mark.
+        args:
+          [
+            '--fork=Istanbul --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
+            '--fork=Istanbul --excludeDir=stTimeConsuming --expected-test-amount=19817',
+            '--fork=Berlin --dir=GeneralStateTests/stTimeConsuming',
+            '--fork=Berlin --excludeDir=stTimeConsuming',
+            '--fork=London --dir=GeneralStateTests/stTimeConsuming',
+            '--fork=London --excludeDir=stTimeConsuming',
+          ]
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
@@ -137,7 +134,7 @@ jobs:
           node-version: 12
           cache: 'npm'
 
-      - name: Use npm v7 for workspaces support 
+      - name: Use npm v7 for workspaces support
         run: npm i -g npm@7
 
       - run: npm i
@@ -150,19 +147,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # Args to pass to the tester. Note that some have splitted the slow tests and only 
-        #   running those: these are only on forks where that is applicable (see PR #489 for numbers on these)
-        
-        # Tests were splitted with --dir and --excludeDir to balance execution times below the 9min mark.
-        args: [
-          '--fork=Berlin --expected-test-amount=33',
-          '--fork=Constantinople --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
-          '--fork=Constantinople --excludeDir=stTimeConsuming --expected-test-amount=16836',
-          '--fork=Petersburg --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
-          '--fork=Petersburg --excludeDir=stTimeConsuming --expected-test-amount=16821',
-          '--fork=Homestead --expected-test-amount=6623',
-          '--fork=Chainstart --expected-test-amount=4044'
-        ]
+        # Args to pass to the tester. Note that some have split the slow tests and only
+        # run on forks where applicable (see PR #489 for numbers on these)
+
+        # Tests were split with --dir and --excludeDir to balance execution times below the 9min mark.
+        args:
+          [
+            '--fork=Berlin --expected-test-amount=33',
+            '--fork=Constantinople --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
+            '--fork=Constantinople --excludeDir=stTimeConsuming --expected-test-amount=16836',
+            '--fork=Petersburg --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
+            '--fork=Petersburg --excludeDir=stTimeConsuming --expected-test-amount=16821',
+            '--fork=Homestead --expected-test-amount=6623',
+            '--fork=Chainstart --expected-test-amount=4044',
+          ]
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
@@ -175,7 +173,7 @@ jobs:
           node-version: 12
           cache: 'npm'
 
-      - name: Use npm v7 for workspaces support 
+      - name: Use npm v7 for workspaces support
         run: npm i -g npm@7
 
       - run: npm i
@@ -196,7 +194,7 @@ jobs:
           node-version: 12
           cache: 'npm'
 
-      - name: Use npm v7 for workspaces support 
+      - name: Use npm v7 for workspaces support
         run: npm i -g npm@7
 
       - run: npm i

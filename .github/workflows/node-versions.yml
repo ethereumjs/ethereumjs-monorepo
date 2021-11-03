@@ -1,14 +1,14 @@
-# 
-# This special file aims to run node tests for each relevant node version. 
+#
+# This special file aims to run node tests for each relevant node version.
 # A relevant node version can be: active, current, maintenance or EOL with some months of tolerance
 # For more details, please check ./scripts/node-versions.js
-# 
+#
 
 name: Node versions
 on:
   schedule:
     - cron: 0 0 * * *
-    
+
 jobs:
   get-node-versions:
     runs-on: ubuntu-latest
@@ -26,7 +26,7 @@ jobs:
     needs: get-node-versions
     runs-on: ubuntu-latest
     strategy:
-      matrix: 
+      matrix:
         node: ${{ fromJson(needs.get-node-versions.outputs.matrix) }}
       fail-fast: false
     steps:
@@ -40,7 +40,7 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: 'npm'
 
-      - name: Use npm v7 for workspaces support 
+      - name: Use npm v7 for workspaces support
         run: npm i -g npm@7
 
       - run: npm i
@@ -65,7 +65,7 @@ jobs:
         run: npm run test
         working-directory: packages/client
         if: ${{ matrix.node >= 15 }}
-      
+
       - name: Test Devp2p
         run: npm run test
         working-directory: packages/devp2p
@@ -82,11 +82,11 @@ jobs:
       - name: Test Trie
         run: npm run test
         working-directory: packages/trie
-      
+
       - name: Test Tx
         run: npm run test
         working-directory: packages/tx
-      
+
       - name: Test Util
         run: npm run test
         working-directory: packages/util
@@ -94,4 +94,3 @@ jobs:
       - name: Test VM
         run: npm run test:API
         working-directory: packages/vm
-
