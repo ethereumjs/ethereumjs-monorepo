@@ -55,7 +55,7 @@ tape('Constantinople: EIP-1283', async (t) => {
         st.assert(res.execResult.exceptionError === undefined)
         st.assert(new BN(testCase.used).eq(res.gasUsed))
         st.assert(new BN(testCase.refund).eq(res.execResult.gasRefund!))
-      } catch (e) {
+      } catch (e: any) {
         st.fail(e.message)
       }
     }
