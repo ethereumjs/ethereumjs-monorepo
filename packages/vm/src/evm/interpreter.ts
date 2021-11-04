@@ -46,7 +46,8 @@ export interface InterpreterStep {
   memoryWordCount: BN
   opcode: {
     name: string
-    fee: BN
+    fee: number,
+    dynamicFee?: BN,
     isAsync: boolean
   }
   account: Account
@@ -186,7 +187,7 @@ export default class Interpreter {
     return this._vm._opcodes.get(op) ?? this._vm._opcodes.get(0xfe)
   }
 
-  async _runStepHook(fee: BN, gasLeft: BN): Promise<void> {
+  async _runStepHook(dynamicFee: BN, gasLeft: BN): Promise<void> {
     const opcode = this.lookupOpInfo(this._runState.opCode)
     const eventObj: InterpreterStep = {
       pc: this._runState.programCounter,
@@ -194,7 +195,8 @@ export default class Interpreter {
       gasRefund: this._eei._evm._refund,
       opcode: {
         name: opcode.fullName,
-        fee,
+        fee: opcode.fee,
+        dynamicFee,
         isAsync: opcode.isAsync,
       },
       stack: this._runState.stack._store,
