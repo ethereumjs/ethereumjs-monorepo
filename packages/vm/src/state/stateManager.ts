@@ -365,12 +365,12 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
       if (!Array.isArray(state)) {
         // Prior format: address -> balance
         const account = Account.fromAccountData({ balance: state })
-        await this._trie.put(addr.buf, account.serialize())
+        await this.putAccount(addr, account)
       } else {
         // New format: address -> [balance, code, storage]
         const [balance, code, storage] = state
         const account = Account.fromAccountData({ balance })
-        await this._trie.put(addr.buf, account.serialize())
+        await this.putAccount(addr, account)
         if (code) {
           await this.putContractCode(addr, toBuffer(code))
         }
@@ -381,6 +381,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
         }
       }
     }
+    await this._cache.flush()
   }
 
   /**
