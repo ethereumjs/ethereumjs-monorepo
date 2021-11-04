@@ -347,44 +347,6 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
   }
 
   /**
-   * Initializes the provided genesis state into the state trie
-   * @param initState address -> balance | [balance, code, storage]
-   */
-  async generateGenesis(initState: any): Promise<void> {
-    if (this._checkpointCount !== 0) {
-      throw new Error('Cannot create genesis state with uncommitted checkpoints')
-    }
-
-    if (this.DEBUG) {
-      this._debug(`Save genesis state into the state trie`)
-    }
-    const addresses = Object.keys(initState)
-    for (const address of addresses) {
-      const addr = Address.fromString(address)
-      const state = initState[address]
-      if (!Array.isArray(state)) {
-        // Prior format: address -> balance
-        const account = Account.fromAccountData({ balance: state })
-        await this.putAccount(addr, account)
-      } else {
-        // New format: address -> [balance, code, storage]
-        const [balance, code, storage] = state
-        const account = Account.fromAccountData({ balance })
-        await this.putAccount(addr, account)
-        if (code) {
-          await this.putContractCode(addr, toBuffer(code))
-        }
-        if (storage) {
-          for (const [key, value] of Object.values(storage) as [string, string][]) {
-            await this.putContractStorage(addr, toBuffer(key), toBuffer(value))
-          }
-        }
-      }
-    }
-    await this._cache.flush()
-  }
-
-  /**
    * Checks whether the current instance has the canonical genesis state
    * for the configured chain parameters.
    * @returns {Promise<boolean>} - Whether the storage trie contains the

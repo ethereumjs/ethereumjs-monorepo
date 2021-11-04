@@ -2,7 +2,7 @@ const Set = require('core-js-pure/es/set')
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { AccessList, AccessListItem } from '@ethereumjs/tx'
 import { debug as createDebugLogger, Debugger } from 'debug'
-import { Account, Address } from 'ethereumjs-util'
+import { Account, Address, toBuffer } from 'ethereumjs-util'
 import { getActivePrecompiles, ripemdPrecompileAddress } from '../evm/precompiles'
 import Cache from './cache'
 import { DefaultStateManagerOpts } from './stateManager'
@@ -299,7 +299,43 @@ export abstract class BaseStateManager {
     }
   }
 
-  abstract generateGenesis(initState: any): Promise<void>
+  /**
+   * Initializes the provided genesis state into the state trie
+   * @param initState address -> balance | [balance, code, storage]
+   */
+  async generateGenesis(initState: any): Promise<void> {
+    if (this._checkpointCount !== 0) {
+      throw new Error('Cannot create genesis state with uncommitted checkpoints')
+    }
+
+    if (this.DEBUG) {
+      this._debug(`Save genesis state into the state trie`)
+    }
+    const addresses = Object.keys(initState)
+    for (const address of addresses) {
+      const addr = Address.fromString(address)
+      const state = initState[address]
+      if (!Array.isArray(state)) {
+        // Prior format: address -> balance
+        const account = Account.fromAccountData({ balance: state })
+        await this.putAccount(addr, account)
+      } else {
+        // New format: address -> [balance, code, storage]
+        const [balance, code, storage] = state
+        const account = Account.fromAccountData({ balance })
+        await this.putAccount(addr, account)
+        if (code) {
+          await this.putContractCode(addr, toBuffer(code))
+        }
+        if (storage) {
+          for (const [key, value] of Object.values(storage) as [string, string][]) {
+            await this.putContractStorage(addr, toBuffer(key), toBuffer(value))
+          }
+        }
+      }
+    }
+    await this._cache.flush()
+  }
 
   /**
    * Checks if the `account` corresponding to `address`
