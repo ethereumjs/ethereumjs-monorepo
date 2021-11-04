@@ -46,7 +46,6 @@ export enum CustomChain {
    *
    * - [Documentation](https://community.optimism.io/docs/developers/tutorials.html)
    */
-
   OptimisticKovan = 'optimistic-kovan',
 
   /**
