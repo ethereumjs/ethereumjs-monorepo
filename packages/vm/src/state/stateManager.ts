@@ -8,7 +8,7 @@ import {
   rlp,
   unpadBuffer,
 } from 'ethereumjs-util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common from '@ethereumjs/common'
 import { StateManager, StorageDump } from './interface'
 import Cache, { getCb, putCb } from './cache'
 import { short } from '../evm/opcodes'
@@ -51,6 +51,12 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
     this._trie = opts.trie ?? new Trie()
     this._storageTries = {}
 
+    /*
+     * For a custom StateManager implementation adopt these
+     * callbacks passed to the `Cache` instantiated to perform
+     * the `get`, `put` and `delete` operations with the
+     * desired backend.
+     */
     const getCb: getCb = async (address) => {
       const rlp = await this._trie.get(address.buf)
       return rlp ? Account.fromRlpSerializedAccount(rlp) : undefined

@@ -10,7 +10,7 @@ import { DefaultStateManagerOpts } from './stateManager'
 type AddressHex = string
 
 /**
- * BaseStateManager implementation for the non-storage-backend
+ * Abstract BaseStateManager class for the non-storage-backend
  * related functionality parts of a StateManager like keeping
  * track of accessed storage (`EIP-2929`) or touched accounts
  * (`EIP-158`).
@@ -46,8 +46,6 @@ export abstract class BaseStateManager {
 
   _checkpointCount: number
 
-  protected readonly DEBUG: boolean = false
-
   /**
    * StateManager is run in DEBUG mode (default: false)
    * Taken from DEBUG environment variable
@@ -55,6 +53,11 @@ export abstract class BaseStateManager {
    * Safeguards on debug() calls are added for
    * performance reasons to avoid string literal evaluation
    * @hidden
+   */
+  protected readonly DEBUG: boolean = false
+
+  /**
+   * Needs to be called from the subclass constructor
    */
   constructor(opts: DefaultStateManagerOpts) {
     let common = opts.common
@@ -187,6 +190,8 @@ export abstract class BaseStateManager {
    * Checkpoints the current state of the StateManager instance.
    * State changes that follow can then be committed by calling
    * `commit` or `reverted` by calling rollback.
+   *
+   * Partial implementation, called from the subclass.
    */
   async checkpoint(): Promise<void> {
     this._cache.checkpoint()
@@ -222,6 +227,8 @@ export abstract class BaseStateManager {
   /**
    * Commits the current change-set to the instance since the
    * last call to checkpoint.
+   *
+   * Partial implementation, called from the subclass.
    */
   async commit(): Promise<void> {
     // setup cache checkpointing
@@ -244,6 +251,8 @@ export abstract class BaseStateManager {
   /**
    * Reverts the current change-set to the instance since the
    * last call to checkpoint.
+   *
+   * Partial implementation , called from the subclass.
    */
   async revert(): Promise<void> {
     // setup cache checkpointing
