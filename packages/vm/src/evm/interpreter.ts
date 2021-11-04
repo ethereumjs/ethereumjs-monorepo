@@ -34,23 +34,23 @@ export interface InterpreterResult {
 }
 
 export interface InterpreterStep {
+  pc: number
+  opcode: {
+    name: string
+    fee: number
+    dynamicFee?: BN
+    isAsync: boolean
+  }
   gasLeft: BN
   gasRefund: BN
   stateManager: StateManager
   stack: BN[]
   returnStack: BN[]
-  pc: number
-  depth: number
+  account: Account
   address: Address
+  depth: number
   memory: Buffer
   memoryWordCount: BN
-  opcode: {
-    name: string
-    fee: number,
-    dynamicFee?: BN,
-    isAsync: boolean
-  }
-  account: Account
   codeAddress: Address
 }
 
@@ -240,15 +240,21 @@ export default class Interpreter {
      * @event Event: step
      * @type {Object}
      * @property {Number} pc representing the program counter
-     * @property {String} opcode the next opcode to be ran
+     * @property {Object} opcode the next opcode to be ran
+     * @property {string}     opcode.name
+     * @property {fee}        opcode.number Base fee of the opcode
+     * @property {dynamicFee} opcode.dynamicFee Dynamic opcode fee
+     * @property {boolean}    opcode.isAsync opcode is async
      * @property {BN} gasLeft amount of gasLeft
+     * @property {BN} gasRefund gas refund
+     * @property {StateManager} stateManager a {@link StateManager} instance
      * @property {Array} stack an `Array` of `Buffers` containing the stack
+     * @property {Array} returnStack the return stack
      * @property {Account} account the Account which owns the code running
      * @property {Address} address the address of the `account`
      * @property {Number} depth the current number of calls deep the contract is
      * @property {Buffer} memory the memory of the VM as a `buffer`
      * @property {BN} memoryWordCount current size of memory in words
-     * @property {StateManager} stateManager a {@link StateManager} instance
      * @property {Address} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
      */
     return this._vm._emit('step', eventObj)
