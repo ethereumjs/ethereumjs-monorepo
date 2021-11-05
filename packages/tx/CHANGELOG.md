@@ -24,6 +24,27 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.ArrowGlacie
 const tx = Transaction.fromTxData({}, { common })
 ```
 
+### Additional Error Context for Error Messages
+
+This release extends the text of the error messages in the library with some consistent context information (see PR [#1540](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1540)), here an example for illustration:
+
+Before:
+
+```shell
+Invalid Signature: s-values greater than secp256k1n/2 are considered invalid
+```
+
+New:
+
+```
+Invalid Signature: s-values greater than secp256k1n/2 are considered invalid (tx type=1 hash=0xbf78bd19410294cb3c08fbbbdd675b4bd79e46b96b38e850091f5c03e0571be0 nonce=0 value=0 signed=true hf=london gasPrice=0 accessList=0 (size))
+```
+
+The extended errors give substantial more object and chain context and should ease debugging.
+
+**Potentially breaking**: Attention! If you do react on errors in your code and do exact errror matching (`error.message === 'invalid transaction trie'`) things will break. Please make sure to do error comparisons with something like `error.message.includes('invalid transaction trie')` instead. This should generally be the pattern used for all error message comparisions and is assured to be future proof on all error messages (we won't change the core text in non-breaking releases).
+
+
 ## Other Changes
 
 - The `dataFee` from `tx.getDataFee()` now gets cached for txs created with the `freeze` option (activated by default), PR [#1532](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1532) and PR [#1550](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1550)
