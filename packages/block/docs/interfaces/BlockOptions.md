@@ -1,8 +1,6 @@
-[@ethereumjs/block](../README.md) / [types](../modules/types.md) / BlockOptions
+[@ethereumjs/block](../README.md) / BlockOptions
 
 # Interface: BlockOptions
-
-[types](../modules/types.md).BlockOptions
 
 An object to set to which blockchain the blocks and their headers belong. This could be specified
 using a {@link Common} object, or `chain` and `hardfork`. Defaults to mainnet without specifying a
@@ -12,26 +10,30 @@ hardfork.
 
 ### Properties
 
-- [calcDifficultyFromHeader](types.blockoptions.md#calcdifficultyfromheader)
-- [cliqueSigner](types.blockoptions.md#cliquesigner)
-- [common](types.blockoptions.md#common)
-- [freeze](types.blockoptions.md#freeze)
-- [hardforkByBlockNumber](types.blockoptions.md#hardforkbyblocknumber)
-- [initWithGenesisHeader](types.blockoptions.md#initwithgenesisheader)
+- [calcDifficultyFromHeader](BlockOptions.md#calcdifficultyfromheader)
+- [cliqueSigner](BlockOptions.md#cliquesigner)
+- [common](BlockOptions.md#common)
+- [freeze](BlockOptions.md#freeze)
+- [hardforkByBlockNumber](BlockOptions.md#hardforkbyblocknumber)
+- [hardforkByTD](BlockOptions.md#hardforkbytd)
+- [initWithGenesisHeader](BlockOptions.md#initwithgenesisheader)
 
 ## Properties
 
 ### calcDifficultyFromHeader
 
-• `Optional` **calcDifficultyFromHeader**: [BlockHeader](../classes/header.blockheader.md)
+• `Optional` **calcDifficultyFromHeader**: [`BlockHeader`](../classes/BlockHeader.md)
 
-If a preceding [BlockHeader](../classes/header.blockheader.md) (usually the parent header) is given the preceding
+If a preceding [BlockHeader](../classes/BlockHeader.md) (usually the parent header) is given the preceding
 header will be used to calculate the difficulty for this block and the calculated
 difficulty takes precedence over a provided static `difficulty` value.
 
+Note that this option has no effect on networks other than PoW/Ethash networks
+(respectively also deactivates on the Merge HF switching to PoS/Casper).
+
 #### Defined in
 
-[types.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L48)
+[types.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L62)
 
 ___
 
@@ -44,7 +46,7 @@ Will throw if provided on a non-PoA chain.
 
 #### Defined in
 
-[types.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L64)
+[types.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L79)
 
 ___
 
@@ -74,6 +76,7 @@ ___
 
 A block object by default gets frozen along initialization. This gives you
 strong additional security guarantees on the consistency of the block parameters.
+It also enables block hash caching when the `hash()` method is called multiple times.
 
 If you need to deactivate the block freeze - e.g. because you want to subclass block and
 add aditional properties - it is strongly encouraged that you do the freeze yourself
@@ -83,7 +86,7 @@ Default: true
 
 #### Defined in
 
-[types.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L59)
+[types.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L74)
 
 ___
 
@@ -98,6 +101,25 @@ Default: `false` (HF is set to whatever default HF is set by the {@link Common} 
 #### Defined in
 
 [types.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L30)
+
+___
+
+### hardforkByTD
+
+• `Optional` **hardforkByTD**: `BNLike`
+
+Determine the HF by total difficulty (Merge HF)
+
+This option is a superset of `hardforkByBlockNumber` (so only use one of both options)
+and determines the HF by both the block number and the TD.
+
+Since the TD is only a threshold the block number will in doubt take precedence (imagine
+e.g. both Merge and Shanghai HF blocks set and the block number from the block provided
+pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
+
+#### Defined in
+
+[types.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L41)
 
 ___
 
@@ -116,4 +138,4 @@ Default: `false`
 
 #### Defined in
 
-[types.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L41)
+[types.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L52)
