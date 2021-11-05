@@ -65,7 +65,7 @@
   },
   "devDependencies": {
     "@ethereumjs/block": "^3.5.1",
-    "@ethereumjs/tx": "^3.3.2",
+    "@ethereumjs/tx": "^3.4.0",
     "@types/async": "^2.4.1",
     "@types/chalk": "^2.2.0",
     "@types/debug": "^4.1.4",

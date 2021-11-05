@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.4.0 - 2021-11-09
+
+### ArrowGlacier HF Support
+
+This release adds support for the upcoming [ArrowGlacier HF](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/arrow-glacier.md) (see PR [#1527](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1527)) targeted for December 2021. The only included EIP is [EIP-4345](https://eips.ethereum.org/EIPS/eip-4345) which delays the difficulty bomb to June/July 2022.
+
+Please note that for backwards-compatibility reasons the associated Common is still instantiated with `istanbul` by default.
+
+An ArrowGlacier transaction can be instantiated with:
+
+```typescript
+import { Transaction } from '@ethereumjs/tx'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.ArrowGlacier })
+const tx = Transaction.fromTxData({}, { common })
+```
+
+## Other Changes
+
+- The `dataFee` from `tx.getDataFee()` now gets cached for txs created with the `freeze` option (activated by default), PR [#1532](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1532) and PR [#1550](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1550)
+
 ## 3.3.2 - 2021-09-30
 
 This release updates the `ethereumjs-util` library to `v7.1.2` which provides a safer conversion of integer values with the `intToHex` and `intToBuffer` functions by replacing the re-exported functions with own implementations which throw on wrong integer input (decimal values, non-safe integers, negative numbers,...), see PR [#1500](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1500).
