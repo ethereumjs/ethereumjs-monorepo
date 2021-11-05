@@ -40,6 +40,20 @@ export enum CustomChain {
    * - [Documentation](https://www.xdaichain.com/)
    */
   xDaiChain = 'x-dai-chain',
+
+  /**
+   * Optimistic Kovan - testnet for Optimism roll-up
+   *
+   * - [Documentation](https://community.optimism.io/docs/developers/tutorials.html)
+   */
+  OptimisticKovan = 'optimistic-kovan',
+
+  /**
+   * Optimistic Ethereum - mainnet for Optimism roll-up
+   *
+   * - [Documentation](https://community.optimism.io/docs/developers/tutorials.html)
+   */
+  OptimisticEthereum = 'optimistic-ethereum',
 }
 
 export enum Chain {
@@ -240,6 +254,29 @@ export default class Common extends EventEmitter {
         })
       }
 
+      if (chainParamsOrName === CustomChain.OptimisticKovan) {
+        return Common.custom(
+          {
+            name: CustomChain.OptimisticKovan,
+            chainId: 69,
+            networkId: 69,
+          },
+          // Optimism has not implemented the London hardfork yet (targeting Q1.22)
+          { hardfork: Hardfork.Berlin }
+        )
+      }
+
+      if (chainParamsOrName === CustomChain.OptimisticEthereum) {
+        return Common.custom(
+          {
+            name: CustomChain.OptimisticEthereum,
+            chainId: 10,
+            networkId: 10,
+          },
+          // Optimism has not implemented the London hardfork yet (targeting Q1.22)
+          { hardfork: Hardfork.Berlin }
+        )
+      }
       throw new Error(`Custom chain ${chainParamsOrName} not supported`)
     }
   }

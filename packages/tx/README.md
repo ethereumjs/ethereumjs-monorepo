@@ -233,8 +233,11 @@ The following L2 networks have been tested to work with `@ethereumjs/tx`, see us
 | Polygon Mainnet | `CustomChain.PolygonMainnet` | [#1289](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1289) |
 | Polygon Mumbai Testnet | `CustomChain.PolygonMumbai` | [#1289](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1289) |
 | xDai Chain | `Common.xDaiChain` | [#1323](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1323) |
+| Optimistic Kovan | `Common.OptimisticKovan` | [#1554](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1554)
+| Optimistic Ethereum | `Common.OptimisticEthereum` | [#1554](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1554)
 
-
+Note: For Optimistic Kovan and Optimistic Ethereum, the London hardfork has not been implemented so transactions submitted with a `baseFee` will revert.
+The London hardfork is targeted to implement on Optimism in Q1.22.
 
 For a non-predefined custom chain it is also possible to just provide a chain ID as well as other parameters to `Common`:
 
