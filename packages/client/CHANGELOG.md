@@ -11,16 +11,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Experimental Merge Support
 
-This client release comes with experimental Merge support 
+This client release comes with experimental Merge support as specified in `EIP-3675` commit [504954e3](https://github.com/ethereum/EIPs/blob/504954e3bba2b58712d84865966ebc17bd4875f5/EIPS/eip-3675.md) and the Engine API [v1.0.0-alpha.2](https://github.com/ethereum/execution-apis/blob/v1.0.0-alpha.2/src/engine/interop/specification.md). This is the spec snapshot used for the [Merge Interop event](https://hackmd.io/@n0ble/merge-interop-spec) in Greece which happened in October 2021.
+
+For the curageous there are instructions [here](https://hackmd.io/B1nMKhIiRBWRtgP4-d5KHw) on how to connect the EthereumJS client with a Lodestar Eth 2.0 client and produce blocks together. Note that specifications are changing quickly though and a new testnet is already planned, so this is not guaranteed to work.
+
+Merge related work has been done in the following PRs:
+
+- PR [#1509](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1509) (first Engine API steps, JSON RPC block parameter alignments, HF-by-TD fixes)
+- PR [#1530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1530) (dedicated Engine API port, Pithos testnet, Docker)
+
+TODO
 
 ### Mainnet Sync Improvements
 
 The 1,230,833 
 
 
-### New Features
+### Other Changes
 
-TODO
+- New `--helprpc` help for CLI to print all available RPC commands, PR [#1505](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1505)
+- New `--rpcDebug` option to log complete RPC calls on log level debug (i.e. --loglevel=debug), PR [#1519](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1519)
+- Websocket support for the RPC server, PR [#1508](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1508)
+- Allow Geth genesis files with code and storage, PR [#1530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1530)
+- New `--extIP` CLI option to set an external RLPx IP, PR [#1530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1530)
+- Logfile and log rotation support (`--logFile`, `--logLevelFile`, `--logRotate` and `--logMaxFiles` options), PR [#1530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1530)
 
 
 ## 0.1.0 - 2021-09-29
