@@ -6,6 +6,41 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.6.0 - 2021-11-09
+
+### ArrowGlacier HF Support
+
+This release adds support for the upcoming [ArrowGlacier HF](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/arrow-glacier.md) (see PR [#1527](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1527)) targeted for December 2021. The only included EIP is [EIP-4345](https://eips.ethereum.org/EIPS/eip-4345) which delays the difficulty bomb to June/July 2022.
+
+Please note that for backwards-compatibility reasons Common is still instantiated with `istanbul` by default.
+
+An ArrowGlacier Common can be instantiated with:
+
+```typescript
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.ArrowGlacier })
+```
+
+### Optimism L2 Support
+
+There is now a better Optimism L2 chain integration in Common (PR [#1554](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1554)) allowing to directly instantiate an Optimism chain with the `Common.custom()` constructor. Note that this only sets the correct chain ID (and e.g. *not* corresponding HF blocks or similar) and is therefore only suitable for a limited set of use cases (e.g. sending a tx to an Optimism chain).
+
+Following Optimism chains are now integrated:
+
+- `CustomChain.OptimisticEthereum`
+- `CustomChain.OptimisticKovan`
+
+A Common with Optimism can be instantiated with:
+
+```typescript
+const common = Common.custom(CustomChain.OptimisticEthereum)
+```
+
+### Other Changes
+
+- Support for starting a (custom) chain on a `london` or later hardfork by allowing to set a `baseFeePerGas` value for the genesis block, PR [#1512](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1512)
+- Support for adding code accounts (e.g. with a "system" contract like the deposit contract) to a (custom) genesis file, PR [#1530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1530)
+
 ## 2.5.0 - 2021-09-24
 
 ### Common with custom Genesis State
