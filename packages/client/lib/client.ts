@@ -32,7 +32,8 @@ export interface EthereumClientOptions {
    * Database to store tx receipts, logs, and indexes.
    * Should be an abstract-leveldown compliant store.
    *
-   * Default: Database saved in dataDir
+   * Default: Database created in datadir folder when
+   * `--saveReceipts` is enabled, otherwise undefined
    */
   metaDB?: LevelUp
 
