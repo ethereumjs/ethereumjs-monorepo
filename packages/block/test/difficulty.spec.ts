@@ -34,6 +34,8 @@ tape('[Header]: difficulty tests', (t) => {
       require('./testdata/difficultyEIP2384_random.json').tests,
       require('./testdata/difficultyEIP2384_random_to20M.json').tests
     ),
+    arrowGlacier: require('./testdata/difficultyArrowGlacier.json').difficultyArrowGlacier
+      .ArrowGlacier,
   }
 
   /* eslint-disable-next-line no-restricted-syntax */
