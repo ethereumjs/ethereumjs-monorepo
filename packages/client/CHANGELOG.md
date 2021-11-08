@@ -8,24 +8,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 0.2.0 - 2021-11-09
 
-
 ### Experimental Merge Support
 
 This client release comes with experimental Merge support as specified in `EIP-3675` commit [504954e3](https://github.com/ethereum/EIPs/blob/504954e3bba2b58712d84865966ebc17bd4875f5/EIPS/eip-3675.md) and the Engine API [v1.0.0-alpha.2](https://github.com/ethereum/execution-apis/blob/v1.0.0-alpha.2/src/engine/interop/specification.md). This is the spec snapshot used for the [Merge Interop event](https://hackmd.io/@n0ble/merge-interop-spec) in Greece which happened in October 2021.
 
 For the curageous there are instructions [here](https://hackmd.io/B1nMKhIiRBWRtgP4-d5KHw) on how to connect the EthereumJS client with a Lodestar Eth 2.0 client and produce blocks together. Note that specifications are changing quickly though and a new testnet is already planned, so this is not guaranteed to work.
 
-Merge related work has been done in the following PRs:
+Merge related work has been done in the following PRs (all pretty extensive):
 
 - PR [#1509](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1509) (first Engine API steps, JSON RPC block parameter alignments, HF-by-TD fixes)
+- PR [#1512](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1512) (continued Engine API, `--rpcEngine` CLI option, Taunas testnet, temporary eth_getLogs RPC mockup)
 - PR [#1530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1530) (dedicated Engine API port, Pithos testnet, Docker)
 
-TODO
+### An Update on Mainnet
 
-### Mainnet Sync Improvements
+The 1,230,833 block consensus bug we had in the `v0.1.0` release has been fixed in the VM dependency (see PR [#1516](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1516) and PR [#1524](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1524)), so sync on `mainnet` will now continue from this block onwards.
 
-The 1,230,833 
+The adventure "Mainnet sync" now comes to a halt though around the Shanghai dDoS attacks mainnet blocks ranging from 2,286,910 to 2,717,576 where we realize that our VM is just not optimized enough to hold through these various edge case scenarios.
 
+We'll take this occasion and do some sustainable performance work on the VM, where everyday developer use cases will likely also benefit. This will realistically take some months time though. See Issue [#1536](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1536) and related issues if you are interested or want to join the effort.
 
 ### Other Changes
 
@@ -35,7 +36,12 @@ The 1,230,833
 - Allow Geth genesis files with code and storage, PR [#1530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1530)
 - New `--extIP` CLI option to set an external RLPx IP, PR [#1530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1530)
 - Logfile and log rotation support (`--logFile`, `--logLevelFile`, `--logRotate` and `--logMaxFiles` options), PR [#1530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1530)
-
+- New `--executeBlocks` CLI option to re-run blocks already synced (for debugging purposes), PR [#1538](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1538)
+- Allow `baseFeePerGas` and `terminalTotalDifficulty` for Geth genesis files, PR [#1509](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1509)
+- Improved sync stability in certain cases, PR [#1543](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1543)
+- New debug logger for the `Fetcher` for code debugging, can be run with `DEBUG=client:fetcher npm run client:start`, PR [#1544](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1544)
+- Sync stabilizing `Fetcher` improvements, PR [#1545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1545)
+- Use `RLP` library exposed by `ethereumjs-util` dependency (deduplication), PR [#1549](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1549)
 
 ## 0.1.0 - 2021-09-29
 
