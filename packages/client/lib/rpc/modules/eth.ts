@@ -1,6 +1,13 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
-import { Transaction, TransactionFactory, TypedTransaction, JsonTx } from '@ethereumjs/tx'
+import {
+  Capability,
+  FeeMarketEIP1559Transaction,
+  JsonTx,
+  Transaction,
+  TransactionFactory,
+  TypedTransaction,
+} from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -15,11 +22,8 @@ import {
 import { middleware, validators } from '../validation'
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
 import { RpcTx } from '../types'
-import type { Chain } from '../../blockchain'
-import type { EthereumClient } from '../..'
 import { EthereumService } from '../../service'
 import { FullSynchronizer } from '../../sync'
-import type { EthProtocol } from '../../net/protocol'
 import type VM from '@ethereumjs/vm'
 import type {
   PostByzantiumTxReceipt,
@@ -27,6 +31,9 @@ import type {
   TxReceipt,
 } from '@ethereumjs/vm/dist/types'
 import type { Log } from '@ethereumjs/vm/dist/evm/types'
+import type { EthereumClient } from '../..'
+import type { Chain } from '../../blockchain'
+import type { EthProtocol } from '../../net/protocol'
 import type { ReceiptsManager } from '../../sync/execution/receipt'
 
 type GetLogsParams = {
@@ -96,6 +103,7 @@ type JsonRpcReceipt = {
   from: string // DATA, 20 Bytes - address of the sender.
   to: string | null // DATA, 20 Bytes - address of the receiver. null when it's a contract creation transaction.
   cumulativeGasUsed: string // QUANTITY  - The total amount of gas used when this transaction was executed in the block.
+  effectiveGasPrice: string // QUANTITY - The final gas price per gas paid by the sender in wei.
   gasUsed: string // QUANTITY - The amount of gas used by this specific transaction alone.
   contractAddress: string | null // DATA, 20 Bytes - The contract address created, if the transaction was a contract creation, otherwise null.
   logs: JsonRpcLog[] // Array - Array of log objects, which this transaction generated.
@@ -217,6 +225,7 @@ const jsonRpcLog = async (
 const jsonRpcReceipt = async (
   receipt: TxReceipt,
   gasUsed: BN,
+  effectiveGasPrice: BN,
   block: Block,
   tx: TypedTransaction,
   txIndex: number,
@@ -230,6 +239,7 @@ const jsonRpcReceipt = async (
   from: tx.getSenderAddress().toString(),
   to: tx.to?.toString() ?? null,
   cumulativeGasUsed: bufferToHex(receipt.gasUsed),
+  effectiveGasPrice: bnToHex(effectiveGasPrice),
   gasUsed: bnToHex(gasUsed),
   contractAddress: contractAddress?.toString() ?? null,
   logs: await Promise.all(
@@ -766,6 +776,13 @@ export class Eth {
       const block = await this._chain.getBlock(blockHash)
       const parentBlock = await this._chain.getBlock(block.header.parentHash)
       const tx = block.transactions[txIndex]
+      const effectiveGasPrice = tx.supports(Capability.EIP1559FeeMarket)
+        ? BN.min(
+            (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas,
+            (tx as FeeMarketEIP1559Transaction).maxFeePerGas.sub(block.header.baseFeePerGas!)
+          ).add(block.header.baseFeePerGas!)
+        : (tx as Transaction).gasPrice
+
       // Run tx through copied vm to get tx gasUsed and createdAddress
       const runBlockResult = await this._vm!.copy().runBlock({
         block,
@@ -773,7 +790,16 @@ export class Eth {
         skipBlockValidation: true,
       })
       const { gasUsed, createdAddress } = runBlockResult.results[txIndex]
-      return jsonRpcReceipt(receipt, gasUsed, block, tx, txIndex, logIndex, createdAddress)
+      return jsonRpcReceipt(
+        receipt,
+        gasUsed,
+        effectiveGasPrice,
+        block,
+        tx,
+        txIndex,
+        logIndex,
+        createdAddress
+      )
     } catch (error: any) {
       throw {
         code: INTERNAL_ERROR,
