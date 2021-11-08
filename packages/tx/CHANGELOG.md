@@ -37,7 +37,7 @@ Invalid Signature: s-values greater than secp256k1n/2 are considered invalid
 New:
 
 ```
-Invalid Signature: s-values greater than secp256k1n/2 are considered invalid (tx type=1 hash=0xbf78bd19410294cb3c08fbbbdd675b4bd79e46b96b38e850091f5c03e0571be0 nonce=0 value=0 signed=true hf=london gasPrice=0 accessList=0 (size))
+Invalid Signature: s-values greater than secp256k1n/2 are considered invalid (tx type=1 hash=0xbf78bd19410294cb3c08fbbbdd675b4bd79e46b96b38e850091f5c03e0571be0 nonce=0 value=0 signed=true hf=london gasPrice=0 accessListCount=0)
 ```
 
 The extended errors give substantial more object and chain context and should ease debugging.
