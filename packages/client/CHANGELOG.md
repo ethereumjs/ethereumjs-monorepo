@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 This client release comes with experimental Merge support as specified in `EIP-3675` commit [504954e3](https://github.com/ethereum/EIPs/blob/504954e3bba2b58712d84865966ebc17bd4875f5/EIPS/eip-3675.md) and the Engine API [v1.0.0-alpha.2](https://github.com/ethereum/execution-apis/blob/v1.0.0-alpha.2/src/engine/interop/specification.md). This is the spec snapshot used for the [Merge Interop event](https://hackmd.io/@n0ble/merge-interop-spec) in Greece which happened in October 2021.
 
-For the curageous there are instructions [here](https://hackmd.io/B1nMKhIiRBWRtgP4-d5KHw) on how to connect the EthereumJS client with a Lodestar Eth 2.0 client and produce blocks together. Note that specifications are changing quickly though and a new testnet is already planned, so this is not guaranteed to work.
+For the courageous there are instructions [here](https://hackmd.io/B1nMKhIiRBWRtgP4-d5KHw) on how to connect the EthereumJS client with a Lodestar Eth 2.0 client and produce blocks together. Note that specifications are changing quickly though and a new testnet is already planned, so this is not guaranteed to work.
 
 Merge related work has been done in the following PRs (all pretty extensive):
 
@@ -24,7 +24,7 @@ Merge related work has been done in the following PRs (all pretty extensive):
 
 The 1,230,833 block consensus bug we had in the `v0.1.0` release has been fixed in the VM dependency (see PR [#1516](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1516) and PR [#1524](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1524)), so sync on `mainnet` will now continue from this block onwards.
 
-The adventure "Mainnet sync" now comes to a halt though around the Shanghai dDoS attacks mainnet blocks ranging from 2,286,910 to 2,717,576 where we realize that our VM is just not optimized enough to hold through these various edge case scenarios.
+The "Mainnet sync" adventure now comes to a halt though around the Shanghai dDoS attacks mainnet blocks ranging from 2,286,910 to 2,717,576 where we realize that our VM is just not optimized enough to hold through these various edge case scenarios.
 
 We'll take this occasion and do some sustainable performance work on the VM, where everyday developer use cases will likely also benefit. This will realistically take some months time though. See Issue [#1536](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1536) and related issues if you are interested or want to join the effort.
 
