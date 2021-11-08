@@ -67,22 +67,22 @@ export class VMExecution extends Execution {
       return 0
     }
     this.running = true
-
-    let txCounter = 0
     let numExecuted: number | undefined
 
-    const blockchain = this.vm.blockchain
-    let startHeadBlock = await this.vm.blockchain.getIteratorHead()
-    let canonicalHead = await this.vm.blockchain.getLatestBlock()
+    const { blockchain } = this.vm
+    let startHeadBlock = await blockchain.getIteratorHead()
+    let canonicalHead = await blockchain.getLatestBlock()
 
     let headBlock: Block | undefined
     let parentState: Buffer | undefined
     let errorBlock: Block | undefined
+
     while (
       (numExecuted === undefined || numExecuted === this.NUM_BLOCKS_PER_ITERATION) &&
       !startHeadBlock.hash().equals(canonicalHead.hash()) &&
       this.syncing
     ) {
+      let txCounter = 0
       headBlock = undefined
       parentState = undefined
       errorBlock = undefined
