@@ -101,7 +101,7 @@ const args = yargs(hideBin(process.argv))
   })
   .option('ws', {
     describe: 'Enable the JSON-RPC server with WS endpoint',
-    default: true,
+    boolean: true,
   })
   .option('wsPort', {
     describe: 'WS-RPC server listening port',

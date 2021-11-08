@@ -81,7 +81,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   // compare the logs
   let req = params(method, [{ fromBlock: 'earliest', toBlock: 'latest' }])
   let expectRes = (res: any) => {
-    const msg = 'should return the correct logs'
+    const msg = `should return the correct logs (fromBlock/toBlock as 'earliest' and 'latest')`
     if (
       res.body.result.length === 20 &&
       res.body.result[0].address === contractAddr1.toString() &&
@@ -95,6 +95,18 @@ tape(`${method}: call with valid arguments`, async (t) => {
       res.body.result[0].topics[3] ===
         '0x0000000000000000000000000000000000000000000000000000000000000003'
     ) {
+      t.pass(msg)
+    } else {
+      throw new Error(msg)
+    }
+  }
+  await baseRequest(t, server, req, 200, expectRes, false)
+
+  // get the logs using fromBlock/toBlock as numbers
+  req = params(method, [{ fromBlock: '0x0', toBlock: '0x1' }])
+  expectRes = (res: any) => {
+    const msg = 'should return the correct logs (fromBlock/toBlock as block numbers)'
+    if (res.body.result.length === 20) {
       t.pass(msg)
     } else {
       throw new Error(msg)

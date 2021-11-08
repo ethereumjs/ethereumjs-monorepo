@@ -825,7 +825,7 @@ export class Eth {
             message: 'specified `toBlock` greater than current height',
           }
         }
-        to = (await this._chain.getBlock(toBuffer(blockNum))).hash()
+        to = (await this._chain.getBlock(blockNum)).hash()
       }
     }
     try {
