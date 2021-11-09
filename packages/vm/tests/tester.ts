@@ -22,7 +22,8 @@ const testLoader = require('./testLoader')
  * --test: test name to run
  * --dir: test directory to look for tests
  * --excludeDir: test directory to exlude from testing
- * --testsPath: root directory of tests to look
+ * --testsPath: root directory of tests to look (default: '../ethereum-tests')
+ * --customTestsPath: custom directory to look for tests (e.g. '../../my_custom_test_folder')
  * --customStateTest: run a file with a custom state test (not in test directory)
  * --jsontrace: enable json step tracing in state tests
  * --dist: use the compiled version of the VM
@@ -161,9 +162,13 @@ async function runTests() {
       const dirs = config.getTestDirs(FORK_CONFIG_VM, name)
       for (const dir of dirs) {
         await new Promise<void>((resolve, reject) => {
-          const testDir = testGetterArgs.dir ?? ''
-          const testsPath = testGetterArgs.testsPath ?? config.DEFAULT_TESTS_PATH
-          testGetterArgs.directory = path.join(testsPath, dir, testDir)
+          if (argv.customTestsPath) {
+            testGetterArgs.directory = argv.customTestsPath
+          } else {
+            const testDir = testGetterArgs.dir ?? ''
+            const testsPath = testGetterArgs.testsPath ?? config.DEFAULT_TESTS_PATH
+            testGetterArgs.directory = path.join(testsPath, dir, testDir)
+          }
           testLoader
             .getTestsFromArgs(
               dir,
