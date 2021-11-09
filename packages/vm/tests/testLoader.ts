@@ -48,13 +48,13 @@ const getTests = (exports.getTests = (
         reject(err)
         return
       }
-
+      const subDir = fileName.substr(directory.length + 1)
       const parsedFileName = path.parse(fileName).name
       const testsByName = JSON.parse(content)
       const testNames = Object.keys(testsByName)
       for (const testName of testNames) {
         if (!skipPredicate(testName, testsByName[testName])) {
-          await onFile(parsedFileName, testName, testsByName[testName])
+          await onFile(parsedFileName, subDir, testName, testsByName[testName])
         }
       }
 

@@ -172,11 +172,11 @@ async function runTests() {
           testLoader
             .getTestsFromArgs(
               dir,
-              async (fileName: string, testName: string, test: any) => {
+              async (fileName: string, subDir: string, testName: string, test: any) => {
                 const runSkipped = testGetterArgs.runSkipped
                 const inRunSkipped = runSkipped.includes(fileName)
                 if (runSkipped.length === 0 || inRunSkipped) {
-                  testIdentifier = `file: ${fileName} test: ${testName}`
+                  testIdentifier = `file: ${subDir} test: ${testName}`
                   t.comment(testIdentifier)
                   await runner(runnerArgs, test, t)
                 }
