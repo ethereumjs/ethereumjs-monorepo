@@ -1,3 +1,6 @@
 {
-  "extends": "../../config/nyc.json"
+  "extends": "../../config/nyc.json",
+  "include": [
+    "src/**/*.ts"
+  ]
 }
