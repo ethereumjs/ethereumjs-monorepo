@@ -1,6 +1,6 @@
-const fs = require('fs')
-const dir = require('node-dir')
-import * as path from 'path'
+import fs from 'fs'
+import path from 'path'
+import dir from 'node-dir'
 import { DEFAULT_TESTS_PATH } from './config'
 
 const falsePredicate = () => false
@@ -16,13 +16,13 @@ const falsePredicate = () => false
  * @param testsPath the path to the {@code tests/} directory
  * @return The list of test files
  */
-const getTests = (exports.getTests = (
+export async function getTests(
   onFile: Function,
   fileFilter: RegExp | string[] = /.json$/,
   skipPredicate: Function = falsePredicate,
   directory: string,
   excludeDir: RegExp | string[] = []
-): Promise<string[]> => {
+): Promise<string[]> {
   const options = {
     match: fileFilter,
     excludeDir: excludeDir,
@@ -40,7 +40,7 @@ const getTests = (exports.getTests = (
 
     const fileCallback = async (
       err: Error | undefined,
-      content: string,
+      content: string | Buffer,
       fileName: string,
       next: Function
     ) => {
@@ -50,6 +50,7 @@ const getTests = (exports.getTests = (
       }
       const subDir = fileName.substr(directory.length + 1)
       const parsedFileName = path.parse(fileName).name
+      content = Buffer.isBuffer(content) ? content.toString() : content
       const testsByName = JSON.parse(content)
       const testNames = Object.keys(testsByName)
       for (const testName of testNames) {
@@ -63,7 +64,7 @@ const getTests = (exports.getTests = (
 
     dir.readFiles(directory, options, fileCallback, finishedCallback)
   })
-})
+}
 
 function skipTest(testName: string, skipList = []) {
   return skipList
@@ -77,7 +78,7 @@ function skipTest(testName: string, skipList = []) {
  * @param file or path to load a single test from
  * @param Callback function which is invoked, and passed the contents of the specified file (or an error message)
  */
-const getTestFromSource = (exports.getTestFromSource = function (file: string, onFile: Function) {
+export function getTestFromSource(file: string, onFile: Function) {
   const stream = fs.createReadStream(file)
   let contents = ''
   let test: any = null
@@ -104,9 +105,9 @@ const getTestFromSource = (exports.getTestFromSource = function (file: string, o
 
       onFile(null, testData)
     })
-})
+}
 
-exports.getTestsFromArgs = function (testType: string, onFile: Function, args: any = {}) {
+export async function getTestsFromArgs(testType: string, onFile: Function, args: any = {}) {
   let fileFilter, excludeDir, skipFn
 
   skipFn = (name: string) => {
@@ -155,6 +156,6 @@ exports.getTestsFromArgs = function (testType: string, onFile: Function, args: a
   return getTests(onFile, fileFilter, skipFn, args.directory, excludeDir)
 }
 
-exports.getSingleFile = (file: string) => {
+export function getSingleFile(file: string) {
   return require(path.join(DEFAULT_TESTS_PATH, file))
 }

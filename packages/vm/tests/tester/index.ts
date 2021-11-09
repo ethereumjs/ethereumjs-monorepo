@@ -1,14 +1,22 @@
 import { exit } from 'process'
 import * as path from 'path'
 import tape from 'tape'
+import minimist from 'minimist'
 import Common from '@ethereumjs/common'
-import stateTestsRunner from './GeneralStateTestsRunner'
-import blockchainTestsRunner from './BlockchainTestsRunner'
-import * as config from './config'
+import {
+  getCommon,
+  getExpectedTests,
+  getRequiredForkConfigAlias,
+  getSkipTests,
+  getTestDirs,
+  DEFAULT_FORK_CONFIG,
+  DEFAULT_TESTS_PATH,
+} from './config'
+import { getTestFromSource, getTestsFromArgs } from './testLoader'
+import stateTestsRunner from './runners/GeneralStateTestsRunner'
+import blockchainTestsRunner from './runners/BlockchainTestsRunner'
 
-const argv = require('minimist')(process.argv.slice(2))
-
-const testLoader = require('./testLoader')
+const argv = minimist(process.argv.slice(2))
 
 /**
  * Test runner
@@ -49,8 +57,8 @@ async function runTests() {
     exit(1)
   }
 
-  const FORK_CONFIG: string = argv.fork || config.DEFAULT_FORK_CONFIG
-  const FORK_CONFIG_TEST_SUITE = config.getRequiredForkConfigAlias(FORK_CONFIG)
+  const FORK_CONFIG: string = argv.fork || DEFAULT_FORK_CONFIG
+  const FORK_CONFIG_TEST_SUITE = getRequiredForkConfigAlias(FORK_CONFIG)
 
   // Examples: Istanbul -> istanbul, MuirGlacier -> muirGlacier
   const FORK_CONFIG_VM = FORK_CONFIG.charAt(0).toLowerCase() + FORK_CONFIG.substring(1)
@@ -59,8 +67,8 @@ async function runTests() {
    * Configuration for getting the tests from the ethereum/tests repository
    */
   const testGetterArgs: any = {}
-  testGetterArgs.skipTests = config.getSkipTests(argv.skip, argv.runSkipped ? 'NONE' : 'ALL')
-  testGetterArgs.runSkipped = config.getSkipTests(argv.runSkipped, 'NONE')
+  testGetterArgs.skipTests = getSkipTests(argv.skip, argv.runSkipped ? 'NONE' : 'ALL')
+  testGetterArgs.runSkipped = getSkipTests(argv.runSkipped, 'NONE')
   testGetterArgs.forkConfig = FORK_CONFIG_TEST_SUITE
   testGetterArgs.file = argv.file
   testGetterArgs.test = argv.test
@@ -75,7 +83,7 @@ async function runTests() {
   const runnerArgs: any = {}
   runnerArgs.forkConfigVM = FORK_CONFIG_VM
   runnerArgs.forkConfigTestSuite = FORK_CONFIG_TEST_SUITE
-  runnerArgs.common = config.getCommon(FORK_CONFIG_VM)
+  runnerArgs.common = getCommon(FORK_CONFIG_VM)
   runnerArgs.jsontrace = argv.jsontrace
   runnerArgs.dist = argv.dist
   runnerArgs.data = argv.data // GeneralStateTests
@@ -85,7 +93,7 @@ async function runTests() {
 
   let expectedTests: number | undefined
   if (argv['verify-test-amount-alltests']) {
-    expectedTests = config.getExpectedTests(FORK_CONFIG_VM, name)
+    expectedTests = getExpectedTests(FORK_CONFIG_VM, name)
   } else if (argv['expected-test-amount']) {
     expectedTests = argv['expected-test-amount']
   }
@@ -133,7 +141,7 @@ async function runTests() {
   if (argv.customStateTest) {
     const fileName = argv.customStateTest
     tape(name, (t) => {
-      testLoader.getTestFromSource(fileName, async (err: string | undefined, test: any) => {
+      getTestFromSource(fileName, async (err: string | undefined, test: any) => {
         if (err) {
           return t.fail(err)
         }
@@ -159,30 +167,30 @@ async function runTests() {
       // Tests for HFs before Istanbul have been moved under `LegacyTests/Constantinople`:
       // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
 
-      const dirs = config.getTestDirs(FORK_CONFIG_VM, name)
+      const dirs = getTestDirs(FORK_CONFIG_VM, name)
       for (const dir of dirs) {
         await new Promise<void>((resolve, reject) => {
           if (argv.customTestsPath) {
             testGetterArgs.directory = argv.customTestsPath
           } else {
             const testDir = testGetterArgs.dir ?? ''
-            const testsPath = testGetterArgs.testsPath ?? config.DEFAULT_TESTS_PATH
+            const testsPath = testGetterArgs.testsPath ?? DEFAULT_TESTS_PATH
             testGetterArgs.directory = path.join(testsPath, dir, testDir)
           }
-          testLoader
-            .getTestsFromArgs(
-              dir,
-              async (fileName: string, subDir: string, testName: string, test: any) => {
-                const runSkipped = testGetterArgs.runSkipped
-                const inRunSkipped = runSkipped.includes(fileName)
-                if (runSkipped.length === 0 || inRunSkipped) {
-                  testIdentifier = `file: ${subDir} test: ${testName}`
-                  t.comment(testIdentifier)
-                  await runner(runnerArgs, test, t)
-                }
-              },
-              testGetterArgs
-            )
+
+          getTestsFromArgs(
+            dir,
+            async (fileName: string, subDir: string, testName: string, test: any) => {
+              const runSkipped = testGetterArgs.runSkipped
+              const inRunSkipped = runSkipped.includes(fileName)
+              if (runSkipped.length === 0 || inRunSkipped) {
+                testIdentifier = `file: ${subDir} test: ${testName}`
+                t.comment(testIdentifier)
+                await runner(runnerArgs, test, t)
+              }
+            },
+            testGetterArgs
+          )
             .then(() => {
               resolve()
             })

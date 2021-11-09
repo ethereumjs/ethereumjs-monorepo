@@ -3,7 +3,7 @@
 # Manual test file for state test runner option sanity checks
 #
 # Evoke from repository root with
-# ./tests/state-test-run-test.sh
+# ./tests/tester/scripts/state-test-run-test.sh
 #############################################################
 
 ts-node ./tests/tester --state --test='stackOverflow'

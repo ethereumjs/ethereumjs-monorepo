@@ -1,11 +1,11 @@
-import * as tape from 'tape'
-import { addHexPrefix, BN, toBuffer, rlp } from 'ethereumjs-util'
+import tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
+import { addHexPrefix, BN, toBuffer, rlp } from 'ethereumjs-util'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { setupPreConditions, verifyPostConditions } from './util'
+import { setupPreConditions, verifyPostConditions } from '../../util'
 
 const level = require('level')
 const levelMem = require('level-mem')
@@ -63,9 +63,9 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
 
   let VM
   if (options.dist) {
-    VM = require('../dist').default
+    VM = require('../../../dist').default
   } else {
-    VM = require('../src').default
+    VM = require('../../../src').default
   }
 
   const begin = Date.now()
