@@ -58,6 +58,7 @@ function parseTestCases(
 }
 
 async function runTestCase(options: any, testData: any, t: tape.Test) {
+  const begin = Date.now()
   let VM
   if (options.dist) {
     VM = require('../dist').default
@@ -139,9 +140,12 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const stateManagerStateRoot = vm.stateManager._trie.root
   const testDataPostStateRoot = toBuffer(testData.postStateRoot)
 
+  const end = Date.now()
+  const timeSpent = `${(end - begin) / 1000} secs`
+
   t.ok(
     stateManagerStateRoot.equals(testDataPostStateRoot),
-    `the state roots should match (${execInfo})`
+    `[ ${timeSpent} ] the state roots should match (${execInfo})`
   )
 }
 

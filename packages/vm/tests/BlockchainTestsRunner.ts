@@ -68,6 +68,8 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     VM = require('../src').default
   }
 
+  const begin = Date.now()
+
   const vm = new VM({
     state,
     blockchain,
@@ -137,7 +139,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
             }
           } catch (e: any) {
             if (!shouldFail) {
-              t.fail('tx should not fail, but failed')
+              t.fail(`tx should not fail, but failed: ${e.message}`)
             } else {
               t.pass('tx succesfully failed')
             }
@@ -189,6 +191,9 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     testData.lastblockhash,
     'correct last header block'
   )
+  const end = Date.now()
+  const timeSpent = `${(end - begin) / 1000} secs`
+  t.comment(`Time: ${timeSpent}`)
   await cacheDB.close()
 }
 
