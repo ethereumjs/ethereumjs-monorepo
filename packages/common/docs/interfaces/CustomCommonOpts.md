@@ -30,7 +30,7 @@ a standard chain used to base the custom chain params on.
 
 #### Defined in
 
-[packages/common/src/index.ts:146](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L146)
+[packages/common/src/index.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L160)
 
 ___
 
@@ -51,7 +51,7 @@ BaseOpts.eips
 
 #### Defined in
 
-[packages/common/src/index.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L101)
+[packages/common/src/index.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L115)
 
 ___
 
@@ -69,7 +69,7 @@ BaseOpts.hardfork
 
 #### Defined in
 
-[packages/common/src/index.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L88)
+[packages/common/src/index.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L102)
 
 ___
 
@@ -85,4 +85,4 @@ BaseOpts.supportedHardforks
 
 #### Defined in
 
-[packages/common/src/index.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L92)
+[packages/common/src/index.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L106)

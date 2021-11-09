@@ -6,6 +6,49 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.4.0 - 2021-11-09
+
+### ArrowGlacier HF Support
+
+This release adds support for the upcoming [ArrowGlacier HF](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/arrow-glacier.md) (see PR [#1527](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1527)) targeted for December 2021. The only included EIP is [EIP-4345](https://eips.ethereum.org/EIPS/eip-4345) which delays the difficulty bomb to June/July 2022.
+
+Please note that for backwards-compatibility reasons the associated Common is still instantiated with `istanbul` by default.
+
+An ArrowGlacier transaction can be instantiated with:
+
+```typescript
+import { Transaction } from '@ethereumjs/tx'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.ArrowGlacier })
+const tx = Transaction.fromTxData({}, { common })
+```
+
+### Additional Error Context for Error Messages
+
+This release extends the text of the error messages in the library with some consistent context information (see PR [#1540](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1540)), here an example for illustration:
+
+Before:
+
+```shell
+Invalid Signature: s-values greater than secp256k1n/2 are considered invalid
+```
+
+New:
+
+```
+Invalid Signature: s-values greater than secp256k1n/2 are considered invalid (tx type=1 hash=0xbf78bd19410294cb3c08fbbbdd675b4bd79e46b96b38e850091f5c03e0571be0 nonce=0 value=0 signed=true hf=london gasPrice=0 accessListCount=0)
+```
+
+The extended errors give substantial more object and chain context and should ease debugging.
+
+**Potentially breaking**: Attention! If you do react on errors in your code and do exact errror matching (`error.message === 'invalid transaction trie'`) things will break. Please make sure to do error comparisons with something like `error.message.includes('invalid transaction trie')` instead. This should generally be the pattern used for all error message comparisions and is assured to be future proof on all error messages (we won't change the core text in non-breaking releases).
+
+
+## Other Changes
+
+- The `dataFee` from `tx.getDataFee()` now gets cached for txs created with the `freeze` option (activated by default), PR [#1532](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1532) and PR [#1550](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1550)
+
 ## 3.3.2 - 2021-09-30
 
 This release updates the `ethereumjs-util` library to `v7.1.2` which provides a safer conversion of integer values with the `intToHex` and `intToBuffer` functions by replacing the re-exported functions with own implementations which throw on wrong integer input (decimal values, non-safe integers, negative numbers,...), see PR [#1500](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1500).

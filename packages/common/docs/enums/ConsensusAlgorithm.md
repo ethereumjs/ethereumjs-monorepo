@@ -18,7 +18,7 @@
 
 #### Defined in
 
-[packages/common/src/index.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L79)
+[packages/common/src/index.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L93)
 
 ___
 
@@ -28,7 +28,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/index.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L78)
+[packages/common/src/index.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L92)
 
 ___
 
@@ -38,4 +38,4 @@ ___
 
 #### Defined in
 
-[packages/common/src/index.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L77)
+[packages/common/src/index.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L91)
