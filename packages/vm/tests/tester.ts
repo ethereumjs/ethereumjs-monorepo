@@ -1,4 +1,5 @@
 import { exit } from 'process'
+import * as path from 'path'
 import tape from 'tape'
 import Common from '@ethereumjs/common'
 import stateTestsRunner from './GeneralStateTestsRunner'
@@ -160,6 +161,9 @@ async function runTests() {
       const dirs = config.getTestDirs(FORK_CONFIG_VM, name)
       for (const dir of dirs) {
         await new Promise<void>((resolve, reject) => {
+          const testDir = testGetterArgs.dir ?? ''
+          const testsPath = testGetterArgs.testsPath ?? config.DEFAULT_TESTS_PATH
+          testGetterArgs.directory = path.join(testsPath, dir, testDir)
           testLoader
             .getTestsFromArgs(
               dir,

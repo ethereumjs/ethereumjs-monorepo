@@ -1,9 +1,13 @@
+import * as path from 'path'
 import Common, { Chain } from '@ethereumjs/common'
 
 /**
  * Default hardfork rules to run tests against
  */
 export const DEFAULT_FORK_CONFIG = 'Istanbul'
+
+// Load tests from git submodule
+export const DEFAULT_TESTS_PATH = path.resolve('../ethereum-tests')
 
 /**
  * Tests which should be fixed

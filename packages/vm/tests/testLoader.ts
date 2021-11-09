@@ -1,10 +1,10 @@
 const fs = require('fs')
 const dir = require('node-dir')
-const path = require('path')
+import * as path from 'path'
+import { DEFAULT_TESTS_PATH } from './config'
 
 const falsePredicate = () => false
-// Load tests from git submodule
-const defaultTestsPath = path.resolve('../ethereum-tests')
+
 /**
  * Returns the list of test files matching the given parameters
  * @param testType the test type (path segment)
@@ -17,15 +17,12 @@ const defaultTestsPath = path.resolve('../ethereum-tests')
  * @return The list of test files
  */
 const getTests = (exports.getTests = (
-  testType: string,
   onFile: Function,
   fileFilter: RegExp | string[] = /.json$/,
   skipPredicate: Function = falsePredicate,
-  testDir: string = '',
-  excludeDir: RegExp | string[] = [],
-  testsPath: string = defaultTestsPath
+  directory: string,
+  excludeDir: RegExp | string[] = []
 ): Promise<string[]> => {
-  const directory = path.join(testsPath, testType, testDir)
   const options = {
     match: fileFilter,
     excludeDir: excludeDir,
@@ -110,7 +107,7 @@ const getTestFromSource = (exports.getTestFromSource = function (file: string, o
 })
 
 exports.getTestsFromArgs = function (testType: string, onFile: Function, args: any = {}) {
-  let testsPath, testDir, fileFilter, excludeDir, skipFn
+  let fileFilter, excludeDir, skipFn
 
   skipFn = (name: string) => {
     return skipTest(name, args.skipTests)
@@ -141,10 +138,6 @@ exports.getTestsFromArgs = function (testType: string, onFile: Function, args: a
     return getTestFromSource(args.singleSource, onFile)
   }
 
-  if (args.dir) {
-    testDir = args.dir
-  }
-
   if (args.file) {
     fileFilter = new RegExp(args.file)
   }
@@ -159,13 +152,9 @@ exports.getTestsFromArgs = function (testType: string, onFile: Function, args: a
     }
   }
 
-  if (args.testsPath) {
-    testsPath = args.testsPath
-  }
-
-  return getTests(testType, onFile, fileFilter, skipFn, testDir, excludeDir, testsPath)
+  return getTests(onFile, fileFilter, skipFn, args.directory, excludeDir)
 }
 
 exports.getSingleFile = (file: string) => {
-  return require(path.join(defaultTestsPath, file))
+  return require(path.join(DEFAULT_TESTS_PATH, file))
 }
