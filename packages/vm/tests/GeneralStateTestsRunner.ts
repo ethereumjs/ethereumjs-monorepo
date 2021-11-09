@@ -129,7 +129,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
           await vm.stateManager.cleanupTouchedAccounts()
           await vm.stateManager._cache.flush()
         }
-        execInfo = 'tx runtime error'
+        execInfo = `tx runtime error :${e.message}`
       }
     } else {
       execInfo = 'tx validation failed'
