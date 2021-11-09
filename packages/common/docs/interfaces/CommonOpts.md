@@ -32,7 +32,7 @@ passed in via [CommonOpts.customChains](CommonOpts.md#customchains).
 
 #### Defined in
 
-[packages/common/src/index.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L113)
+[packages/common/src/index.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L127)
 
 ___
 
@@ -52,7 +52,7 @@ import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
 const common = new Common({ chain: 'myCustomChain1', customChains: [ myCustomChain1 ]})
 ```
 
-Pattern 2 (with genesis state, see {@link CommonOpts.genesisState} for format):
+Pattern 2 (with genesis state, see {@link GenesisState} for format):
 
 ```javascript
 import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
@@ -62,7 +62,7 @@ const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomC
 
 #### Defined in
 
-[packages/common/src/index.ts:135](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L135)
+[packages/common/src/index.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L149)
 
 ___
 
@@ -83,7 +83,7 @@ BaseOpts.eips
 
 #### Defined in
 
-[packages/common/src/index.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L101)
+[packages/common/src/index.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L115)
 
 ___
 
@@ -101,7 +101,7 @@ BaseOpts.hardfork
 
 #### Defined in
 
-[packages/common/src/index.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L88)
+[packages/common/src/index.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L102)
 
 ___
 
@@ -117,4 +117,4 @@ BaseOpts.supportedHardforks
 
 #### Defined in
 
-[packages/common/src/index.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L92)
+[packages/common/src/index.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L106)

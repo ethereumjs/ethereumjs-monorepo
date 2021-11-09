@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/tx",
-  "version": "3.3.2",
+  "version": "3.4.0",
   "description": "A simple module for creating, manipulating and signing Ethereum transactions",
   "license": "MPL-2.0",
   "author": "mjbecze <mb@ethdev.com>",
@@ -29,12 +29,13 @@
     "tsc": "../../config/cli/ts-compile.sh",
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
+    "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",
     "test:node": "tape -r ts-node/register ./test/index.ts",
     "test:browser": "karma start karma.conf.js"
   },
   "dependencies": {
-    "@ethereumjs/common": "^2.5.0",
+    "@ethereumjs/common": "^2.6.0",
     "ethereumjs-util": "^7.1.3"
   },
   "devDependencies": {
