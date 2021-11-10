@@ -7,14 +7,12 @@ const falsePredicate = () => false
 
 /**
  * Returns the list of test files matching the given parameters
- * @param testType the test type (path segment)
  * @param onFile a callback for each file
  * @param fileFilter a {@code RegExp} or array to specify filenames to operate on
  * @param skipPredicate a filtering function for test names
- * @param testDir the directory inside the {@code tests/} directory to use
+ * @param directory the directory inside the {@code tests/} directory to use
  * @param excludeDir a {@code RegExp} or array to specify directories to ignore
- * @param testsPath the path to the {@code tests/} directory
- * @return The list of test files
+ * @returns the list of test files
  */
 export async function getTests(
   onFile: Function,
@@ -25,19 +23,16 @@ export async function getTests(
 ): Promise<string[]> {
   const options = {
     match: fileFilter,
-    excludeDir: excludeDir,
+    excludeDir,
   }
-
   return new Promise((resolve, reject) => {
     const finishedCallback = (err: Error | undefined, files: string[]) => {
       if (err) {
         reject(err)
         return
       }
-
       resolve(files)
     }
-
     const fileCallback = async (
       err: Error | undefined,
       content: string | Buffer,
@@ -58,7 +53,6 @@ export async function getTests(
           await onFile(parsedFileName, subDir, testName, testsByName[testName])
         }
       }
-
       next()
     }
 
@@ -74,9 +68,8 @@ function skipTest(testName: string, skipList = []) {
 
 /**
  * Loads a single test specified in a file
- * @method getTestFromSource
- * @param file or path to load a single test from
- * @param Callback function which is invoked, and passed the contents of the specified file (or an error message)
+ * @param file path to load a single test from
+ * @param onFile callback function invoked with contents of specified file (or an error message)
  */
 export function getTestFromSource(file: string, onFile: Function) {
   const stream = fs.createReadStream(file)
@@ -107,6 +100,13 @@ export function getTestFromSource(file: string, onFile: Function) {
     })
 }
 
+/**
+ * Get list of test files from supported CLI args
+ * @param testType the test type (path segment)
+ * @param onFile a callback for each file
+ * @param args the CLI args
+ * @returns the list of test files
+ */
 export async function getTestsFromArgs(testType: string, onFile: Function, args: any = {}) {
   let fileFilter, excludeDir, skipFn
 
@@ -134,19 +134,15 @@ export async function getTestsFromArgs(testType: string, onFile: Function, args:
       return skipTest(name, args.skipVM)
     }
   }
-
   if (args.singleSource) {
     return getTestFromSource(args.singleSource, onFile)
   }
-
   if (args.file) {
     fileFilter = new RegExp(args.file)
   }
-
   if (args.excludeDir) {
     excludeDir = new RegExp(args.excludeDir)
   }
-
   if (args.test) {
     skipFn = (testName: string) => {
       return testName !== args.test
@@ -156,6 +152,10 @@ export async function getTestsFromArgs(testType: string, onFile: Function, args:
   return getTests(onFile, fileFilter, skipFn, args.directory, excludeDir)
 }
 
+/**
+ * Returns a single file from the ethereum-tests git submodule
+ * @param file
+ */
 export function getSingleFile(file: string) {
   return require(path.join(DEFAULT_TESTS_PATH, file))
 }

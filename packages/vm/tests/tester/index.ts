@@ -1,5 +1,5 @@
 import { exit } from 'process'
-import * as path from 'path'
+import path from 'path'
 import tape from 'tape'
 import minimist from 'minimist'
 import Common from '@ethereumjs/common'
@@ -15,8 +15,6 @@ import {
 import { getTestFromSource, getTestsFromArgs } from './testLoader'
 import stateTestsRunner from './runners/GeneralStateTestsRunner'
 import blockchainTestsRunner from './runners/BlockchainTestsRunner'
-
-const argv = minimist(process.argv.slice(2))
 
 /**
  * Test runner
@@ -42,6 +40,8 @@ const argv = minimist(process.argv.slice(2))
  * --expected-test-amount: (optional) if present, check after tests are ran if at least this amount of tests have passed (inclusive)
  * --verify-test-amount-alltests: if this is passed, get the expected amount from tests and verify afterwards if this is the count of tests (expects tests are ran with default settings)
  */
+
+const argv = minimist(process.argv.slice(2))
 
 async function runTests() {
   let name: string
@@ -177,7 +177,6 @@ async function runTests() {
             const testsPath = testGetterArgs.testsPath ?? DEFAULT_TESTS_PATH
             testGetterArgs.directory = path.join(testsPath, dir, testDir)
           }
-
           getTestsFromArgs(
             dir,
             async (fileName: string, subDir: string, testName: string, test: any) => {
