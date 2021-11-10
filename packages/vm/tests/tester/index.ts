@@ -1,13 +1,20 @@
 import { exit } from 'process'
+import path from 'path'
 import tape from 'tape'
+import minimist from 'minimist'
 import Common from '@ethereumjs/common'
-import stateTestsRunner from './GeneralStateTestsRunner'
-import blockchainTestsRunner from './BlockchainTestsRunner'
-import * as config from './config'
-
-const argv = require('minimist')(process.argv.slice(2))
-
-const testLoader = require('./testLoader')
+import {
+  getCommon,
+  getExpectedTests,
+  getRequiredForkConfigAlias,
+  getSkipTests,
+  getTestDirs,
+  DEFAULT_FORK_CONFIG,
+  DEFAULT_TESTS_PATH,
+} from './config'
+import { getTestFromSource, getTestsFromArgs } from './testLoader'
+import stateTestsRunner from './runners/GeneralStateTestsRunner'
+import blockchainTestsRunner from './runners/BlockchainTestsRunner'
 
 /**
  * Test runner
@@ -21,7 +28,8 @@ const testLoader = require('./testLoader')
  * --test: test name to run
  * --dir: test directory to look for tests
  * --excludeDir: test directory to exlude from testing
- * --testsPath: root directory of tests to look
+ * --testsPath: root directory of tests to look (default: '../ethereum-tests')
+ * --customTestsPath: custom directory to look for tests (e.g. '../../my_custom_test_folder')
  * --customStateTest: run a file with a custom state test (not in test directory)
  * --jsontrace: enable json step tracing in state tests
  * --dist: use the compiled version of the VM
@@ -32,6 +40,8 @@ const testLoader = require('./testLoader')
  * --expected-test-amount: (optional) if present, check after tests are ran if at least this amount of tests have passed (inclusive)
  * --verify-test-amount-alltests: if this is passed, get the expected amount from tests and verify afterwards if this is the count of tests (expects tests are ran with default settings)
  */
+
+const argv = minimist(process.argv.slice(2))
 
 async function runTests() {
   let name: string
@@ -47,8 +57,8 @@ async function runTests() {
     exit(1)
   }
 
-  const FORK_CONFIG: string = argv.fork || config.DEFAULT_FORK_CONFIG
-  const FORK_CONFIG_TEST_SUITE = config.getRequiredForkConfigAlias(FORK_CONFIG)
+  const FORK_CONFIG: string = argv.fork || DEFAULT_FORK_CONFIG
+  const FORK_CONFIG_TEST_SUITE = getRequiredForkConfigAlias(FORK_CONFIG)
 
   // Examples: Istanbul -> istanbul, MuirGlacier -> muirGlacier
   const FORK_CONFIG_VM = FORK_CONFIG.charAt(0).toLowerCase() + FORK_CONFIG.substring(1)
@@ -57,8 +67,8 @@ async function runTests() {
    * Configuration for getting the tests from the ethereum/tests repository
    */
   const testGetterArgs: any = {}
-  testGetterArgs.skipTests = config.getSkipTests(argv.skip, argv.runSkipped ? 'NONE' : 'ALL')
-  testGetterArgs.runSkipped = config.getSkipTests(argv.runSkipped, 'NONE')
+  testGetterArgs.skipTests = getSkipTests(argv.skip, argv.runSkipped ? 'NONE' : 'ALL')
+  testGetterArgs.runSkipped = getSkipTests(argv.runSkipped, 'NONE')
   testGetterArgs.forkConfig = FORK_CONFIG_TEST_SUITE
   testGetterArgs.file = argv.file
   testGetterArgs.test = argv.test
@@ -73,7 +83,7 @@ async function runTests() {
   const runnerArgs: any = {}
   runnerArgs.forkConfigVM = FORK_CONFIG_VM
   runnerArgs.forkConfigTestSuite = FORK_CONFIG_TEST_SUITE
-  runnerArgs.common = config.getCommon(FORK_CONFIG_VM)
+  runnerArgs.common = getCommon(FORK_CONFIG_VM)
   runnerArgs.jsontrace = argv.jsontrace
   runnerArgs.dist = argv.dist
   runnerArgs.data = argv.data // GeneralStateTests
@@ -83,7 +93,7 @@ async function runTests() {
 
   let expectedTests: number | undefined
   if (argv['verify-test-amount-alltests']) {
-    expectedTests = config.getExpectedTests(FORK_CONFIG_VM, name)
+    expectedTests = getExpectedTests(FORK_CONFIG_VM, name)
   } else if (argv['expected-test-amount']) {
     expectedTests = argv['expected-test-amount']
   }
@@ -131,7 +141,7 @@ async function runTests() {
   if (argv.customStateTest) {
     const fileName = argv.customStateTest
     tape(name, (t) => {
-      testLoader.getTestFromSource(fileName, async (err: string | undefined, test: any) => {
+      getTestFromSource(fileName, async (err: string | undefined, test: any) => {
         if (err) {
           return t.fail(err)
         }
@@ -157,23 +167,29 @@ async function runTests() {
       // Tests for HFs before Istanbul have been moved under `LegacyTests/Constantinople`:
       // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
 
-      const dirs = config.getTestDirs(FORK_CONFIG_VM, name)
+      const dirs = getTestDirs(FORK_CONFIG_VM, name)
       for (const dir of dirs) {
         await new Promise<void>((resolve, reject) => {
-          testLoader
-            .getTestsFromArgs(
-              dir,
-              async (fileName: string, testName: string, test: any) => {
-                const runSkipped = testGetterArgs.runSkipped
-                const inRunSkipped = runSkipped.includes(fileName)
-                if (runSkipped.length === 0 || inRunSkipped) {
-                  testIdentifier = `file: ${fileName} test: ${testName}`
-                  t.comment(testIdentifier)
-                  await runner(runnerArgs, test, t)
-                }
-              },
-              testGetterArgs
-            )
+          if (argv.customTestsPath) {
+            testGetterArgs.directory = argv.customTestsPath
+          } else {
+            const testDir = testGetterArgs.dir ?? ''
+            const testsPath = testGetterArgs.testsPath ?? DEFAULT_TESTS_PATH
+            testGetterArgs.directory = path.join(testsPath, dir, testDir)
+          }
+          getTestsFromArgs(
+            dir,
+            async (fileName: string, subDir: string, testName: string, test: any) => {
+              const runSkipped = testGetterArgs.runSkipped
+              const inRunSkipped = runSkipped.includes(fileName)
+              if (runSkipped.length === 0 || inRunSkipped) {
+                testIdentifier = `file: ${subDir} test: ${testName}`
+                t.comment(testIdentifier)
+                await runner(runnerArgs, test, t)
+              }
+            },
+            testGetterArgs
+          )
             .then(() => {
               resolve()
             })

@@ -1,4 +1,10 @@
+import path from 'path'
 import Common, { Chain } from '@ethereumjs/common'
+
+/**
+ * Default tests path (git submodule: ethereum-tests)
+ */
+export const DEFAULT_TESTS_PATH = path.resolve('../ethereum-tests')
 
 /**
  * Default hardfork rules to run tests against
@@ -228,6 +234,7 @@ const testLegacy: any = {
   HomesteadToEIP150At5: false,
   BerlinToLondonAt5: false,
 }
+
 /**
  * Returns an array of dirs to run tests on
  * @param network (fork identifier)
@@ -371,6 +378,7 @@ const expectedTestsFull: any = {
     BerlinToLondonAt5: 0,
   },
 }
+
 /**
  * Returns the amount of expected tests for a given fork, assuming all tests are ran
  */

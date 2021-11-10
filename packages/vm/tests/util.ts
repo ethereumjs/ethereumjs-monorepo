@@ -1,4 +1,12 @@
-import * as tape from 'tape'
+import tape from 'tape'
+import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import {
+  AccessListEIP2930Transaction,
+  FeeMarketEIP1559Transaction,
+  Transaction,
+  TxOptions,
+} from '@ethereumjs/tx'
 import {
   Account,
   BN,
@@ -8,14 +16,6 @@ import {
   setLengthLeft,
   toBuffer,
 } from 'ethereumjs-util'
-import {
-  AccessListEIP2930Transaction,
-  FeeMarketEIP1559Transaction,
-  Transaction,
-  TxOptions,
-} from '@ethereumjs/tx'
-import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 export function dumpState(state: any, cb: Function) {
   function readAccounts(state: any) {
@@ -70,11 +70,7 @@ export function dumpState(state: any, cb: Function) {
   })
 }
 
-const format = (exports.format = function (
-  a: any,
-  toZero: boolean = false,
-  isHex: boolean = false
-) {
+export function format(a: any, toZero: boolean = false, isHex: boolean = false) {
   if (a === '') {
     return Buffer.alloc(0)
   }
@@ -95,7 +91,7 @@ const format = (exports.format = function (
   }
 
   return a
-})
+}
 
 /**
  * Make a tx using JSON from tests repo
@@ -145,7 +141,7 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
       delete keyMap[key]
 
       if (testData) {
-        const promise = exports.verifyAccountPostConditions(state, address, account, testData, t)
+        const promise = verifyAccountPostConditions(state, address, account, testData, t)
         queue.push(promise)
       } else {
         t.fail('invalid account in the trie: ' + <string>key)
@@ -370,9 +366,9 @@ export function getRequiredForkConfigAlias(forkConfig: string): string {
 
 /**
  * Checks if in a karma test runner.
- * @returns {bool} is running in karma
+ * @returns boolean whether running in karma
  */
-export function isRunningInKarma() {
+export function isRunningInKarma(): Boolean {
   // eslint-disable-next-line no-undef
   return typeof (<any>globalThis).window !== 'undefined' && (<any>globalThis).window.__karma__
 }
