@@ -448,7 +448,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
 
       const i = pos.toNumber()
-      let loaded = runState.eei.getCallData().slice(i, i + 32)
+      // Call Data is memory.sharedRead() data, so copy to new Buffer
+      let loaded = Buffer.from(runState.eei.getCallData().slice(i, i + 32))
       loaded = loaded.length ? loaded : Buffer.from([0])
       const r = new BN(setLengthRight(loaded, 32))
 
@@ -476,7 +477,7 @@ export const handlers: Map<number, OpHandler> = new Map([
           new BN(common.param('gasPrices', 'copy')).imul(divCeil(dataLength, new BN(32))),
           'CALLDATACOPY opcode'
         )
-
+        // Attention! runState.eei.getCallData() is memory.sharedRead() variable.
         const data = getDataSlice(runState.eei.getCallData(), dataOffset, dataLength)
         const memOffsetNum = memOffset.toNumber()
         const dataLengthNum = dataLength.toNumber()

@@ -103,11 +103,11 @@ export function getDataSlice(data: Buffer, offset: BN, length: BN): Buffer {
     end = len
   }
 
-  data = data.slice(offset.toNumber(), end.toNumber())
+  let returnData = Buffer.from(data.slice(offset.toNumber(), end.toNumber()))
   // Right-pad with zeros to fill dataLength bytes
-  data = setLengthRight(data, length.toNumber())
+  returnData = setLengthRight(data, length.toNumber())
 
-  return data
+  return returnData
 }
 
 /**
