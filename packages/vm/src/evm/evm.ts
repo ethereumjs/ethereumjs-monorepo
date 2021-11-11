@@ -147,7 +147,7 @@ export default class EVM {
     await this._vm._emit('beforeMessage', message)
 
     if (!message.to && this._vm._common.isActivatedEIP(2929)) {
-      message.code = message.data
+      message.code = message.data // Attention! memory.sharedRead() variable.
       ;(<any>this._state).addWarmedAddress((await this._generateAddress(message)).buf)
     }
 
@@ -292,8 +292,7 @@ export default class EVM {
     // Reduce tx value from sender
     await this._reduceSenderBalance(account, message)
 
-    message.code = message.data
-    message.data = Buffer.alloc(0)
+    message.code = message.data // Attention! memory.sharedRead() variable.
     message.to = await this._generateAddress(message)
     if (this._vm.DEBUG) {
       debug(`Generated CREATE contract address ${message.to}`)
@@ -461,9 +460,9 @@ export default class EVM {
       blockchain: this._vm.blockchain, // Only used in BLOCKHASH
       address: message.to || Address.zero(),
       caller: message.caller || Address.zero(),
-      callData: message.data || Buffer.from([0]),
+      callData: message.data || Buffer.from([0]), // Attention! memory.sharedRead() variable.
       callValue: message.value || new BN(0),
-      code: message.code as Buffer,
+      code: message.code as Buffer, // Attention! memory.sharedRead() variable.
       isStatic: message.isStatic || false,
       depth: message.depth || 0,
       gasPrice: this._tx.gasPrice,
@@ -533,7 +532,7 @@ export default class EVM {
     }
 
     const opts = {
-      data,
+      data, // Attention! memory.sharedRead() variable.
       gasLimit,
       _common: this._vm._common,
       _VM: this._vm,

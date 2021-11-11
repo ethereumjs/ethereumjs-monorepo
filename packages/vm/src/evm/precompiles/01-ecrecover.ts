@@ -4,7 +4,7 @@ import { OOGResult, ExecResult } from '../evm'
 const assert = require('assert')
 
 export default function (opts: PrecompileInput): ExecResult {
-  assert(opts.data)
+  assert(opts.data) // Attention! memory.sharedRead() variable.
 
   const gasUsed = new BN(opts._common.param('gasPrices', 'ecRecover'))
 
@@ -12,6 +12,7 @@ export default function (opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
+  // This doesn't manipulate opts.data
   const data = setLengthRight(opts.data, 128)
 
   const msgHash = data.slice(0, 32)

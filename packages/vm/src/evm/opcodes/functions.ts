@@ -1172,7 +1172,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (!inLength.isZero()) {
-        data = runState.memory.read(inOffset.toNumber(), inLength.toNumber())
+        data = runState.memory.sharedRead(inOffset.toNumber(), inLength.toNumber())
       }
 
       const ret = await runState.eei.callStatic(gasLimit, toAddress, value, data)

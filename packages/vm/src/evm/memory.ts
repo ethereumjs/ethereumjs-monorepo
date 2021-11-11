@@ -76,4 +76,8 @@ export default class Memory {
 
     return returnBuffer
   }
+
+  sharedRead(offset: number, size: number): Buffer {
+    return this._store.slice(offset, offset + size)
+  }
 }

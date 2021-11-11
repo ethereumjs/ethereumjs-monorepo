@@ -10,7 +10,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
 
   const mcl = opts._VM._mcl
 
-  const inputData = opts.data
+  const inputData = opts.data // Attention! memory.sharedRead() variable.
 
   // note: the gas used is constant; even if the input is incorrect.
   const gasUsed = new BN(opts._common.paramByEIP('gasPrices', 'Bls12381G2AddGas', 2537))
