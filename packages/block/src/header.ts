@@ -66,6 +66,16 @@ export class BlockHeader {
   }
 
   /**
+   * EIP-4399: Post-PoS merge, `mixHash` supplanted as `random`
+   */
+  get random() {
+    if (!this._common.isActivatedEIP(4399)) {
+      throw new Error('random can only be accessed when EIP-4399 is activated')
+    }
+    return this.mixHash
+  }
+
+  /**
    * Static constructor to create a block header from a header data dictionary
    *
    * @param headerData
@@ -352,7 +362,7 @@ export class BlockHeader {
       transactionsTrie,
       receiptTrie,
       difficulty,
-      // extraData,
+      extraData,
       mixHash,
       nonce,
     } = this
@@ -397,8 +407,8 @@ export class BlockHeader {
       }
     }
 
-    // Check for constant values for PoS blocks
-    if (this._common.consensusType() === ConsensusType.ProofOfStake) {
+    // Validation for PoS blocks (EIP-3675)
+    if (this._common.isActivatedEIP(3675)) {
       let error = false
       let errorMsg = ''
 
@@ -412,14 +422,10 @@ export class BlockHeader {
         errorMsg += `, difficulty: ${difficulty} (expected: 0)`
         error = true
       }
-      // WIP from merge interop event:
-      // extraData behavior pending consideration, for now allowed to be non-empty
-      // if (!extraData.equals(Buffer.from([]))) {
-      //   errorMsg += `, extraData: ${extraData.toString('hex')} (expected: '')`
-      //   error = true
-      // }
-      if (!mixHash.equals(zeros(32))) {
-        errorMsg += `, mixHash: ${mixHash.toString('hex')} (expected: ${zeros(32).toString('hex')})`
+      if (extraData.length > 32) {
+        errorMsg += `, extraData: ${extraData.toString(
+          'hex'
+        )} (cannot exceed 32 bytes length, received ${extraData.length} bytes)`
         error = true
       }
       if (!nonce.equals(zeros(8))) {
