@@ -65,9 +65,19 @@ type rlpOut = Log[] | TxReceipt[] | TxHashIndex
 
 export class ReceiptsManager extends MetaDBManager {
   /**
-   * Limit of logs to return in getLogs method
+   * Limit of logs to return in getLogs
    */
   GET_LOGS_LIMIT = 10000
+
+  /**
+   * Size limit for the getLogs response in megabytes
+   */
+  GET_LOGS_LIMIT_MEGABYTES = 150
+
+  /**
+   * Block range limit for getLogs
+   */
+  GET_LOGS_BLOCK_RANGE_LIMIT = 2000
 
   /**
    * Saves receipts to db. Also saves tx hash indexes if within txLookupLimit,
@@ -140,35 +150,15 @@ export class ReceiptsManager extends MetaDBManager {
 
   /**
    * Returns logs as specified by the eth_getLogs JSON RPC query parameters
-   * @param fromBlock
-   * @param toBlock
-   * @param address
-   * @param topics
    */
   async getLogs(
-    fromBlock: Buffer,
-    toBlock: Buffer,
+    from: Block,
+    to: Block,
     address?: Buffer,
     topics: (Buffer | Buffer[] | null)[] = []
   ): Promise<GetLogsReturn> {
     const returnedLogs: GetLogsReturn = []
-    const from = await this.chain.getBlock(fromBlock).catch((error: any) => {
-      if (error.type === 'NotFoundError') {
-        throw new Error('fromBlock not found')
-      }
-      throw error
-    })
-    let to: Block
-    if (fromBlock.equals(toBlock)) {
-      to = from
-    } else {
-      to = await this.chain.getBlock(toBlock).catch((error: any) => {
-        if (error.type === 'NotFoundError') {
-          throw new Error('toBlock not found')
-        }
-        throw error
-      })
-    }
+    let returnedLogsSize = 0
     for (const i = from.header.number.clone(); i.lte(to.header.number); i.iaddn(1)) {
       const block = await this.chain.getBlock(i)
       const receipts = await this.getReceipts(block.hash())
@@ -214,7 +204,11 @@ export class ReceiptsManager extends MetaDBManager {
         })
       }
       returnedLogs.push(...logs)
-      if (returnedLogs.length >= this.GET_LOGS_LIMIT) {
+      returnedLogsSize += Buffer.byteLength(JSON.stringify(logs))
+      if (
+        returnedLogs.length >= this.GET_LOGS_LIMIT ||
+        returnedLogsSize >= this.GET_LOGS_LIMIT_MEGABYTES * 1048576
+      ) {
         break
       }
     }

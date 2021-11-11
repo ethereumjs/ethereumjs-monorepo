@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { Transaction } from '@ethereumjs/tx'
 import { Address, BN, bufferToHex } from 'ethereumjs-util'
-import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { params, baseRequest, setupChain, runBlockWithTxs, dummy } from '../helpers'
 import { checkError } from '../util'
 import pow from './../../testdata/pow.json'
@@ -240,7 +240,7 @@ tape(`${method}: call with invalid params`, async (t) => {
   req = params(method, [
     { blockHash: '0x1000000000000000000000000000000000000000000000000000000000000001' },
   ])
-  expectRes = checkError(t, INTERNAL_ERROR, 'fromBlock not found')
+  expectRes = checkError(t, INVALID_PARAMS, 'unknown blockHash')
   await baseRequest(t, server, req, 200, expectRes, false)
 
   // specifying fromBlock or toBlock with blockHash

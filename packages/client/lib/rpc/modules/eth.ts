@@ -821,14 +821,21 @@ export class Eth {
         message: `Can only specify a blockHash if fromBlock or toBlock are not provided`,
       }
     }
-    let from: Buffer, to: Buffer
+    let from: Block, to: Block
     if (blockHash) {
-      from = to = toBuffer(blockHash)
+      try {
+        from = to = await this._chain.getBlock(toBuffer(blockHash))
+      } catch (error: any) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'unknown blockHash',
+        }
+      }
     } else {
       if (fromBlock === 'earliest') {
-        from = (await this._chain.getBlock(new BN(0))).hash()
+        from = await this._chain.getBlock(new BN(0))
       } else if (fromBlock === 'latest' || fromBlock === undefined) {
-        from = this._chain.blocks.latest!.hash()
+        from = this._chain.blocks.latest!
       } else {
         const blockNum = new BN(toBuffer(fromBlock))
         if (blockNum.gt(this._chain.headers.height)) {
@@ -837,12 +844,12 @@ export class Eth {
             message: 'specified `fromBlock` greater than current height',
           }
         }
-        from = (await this._chain.getBlock(blockNum)).hash()
+        from = await this._chain.getBlock(blockNum)
       }
       if (toBlock === fromBlock) {
         to = from
       } else if (toBlock === 'latest' || toBlock === undefined) {
-        to = this._chain.blocks.latest!.hash()
+        to = this._chain.blocks.latest!
       } else {
         const blockNum = new BN(toBuffer(toBlock))
         if (blockNum.gt(this._chain.headers.height)) {
@@ -851,7 +858,15 @@ export class Eth {
             message: 'specified `toBlock` greater than current height',
           }
         }
-        to = (await this._chain.getBlock(blockNum)).hash()
+        to = await this._chain.getBlock(blockNum)
+      }
+    }
+    if (
+      to.header.number.sub(from.header.number).gtn(this.receiptsManager.GET_LOGS_BLOCK_RANGE_LIMIT)
+    ) {
+      throw {
+        code: INVALID_PARAMS,
+        message: `block range limit is ${this.receiptsManager.GET_LOGS_BLOCK_RANGE_LIMIT} blocks`,
       }
     }
     try {
