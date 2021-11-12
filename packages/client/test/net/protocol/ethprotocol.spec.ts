@@ -1,11 +1,11 @@
 import tape from 'tape'
+import { Block } from '@ethereumjs/block'
+import Common, { Hardfork } from '@ethereumjs/common'
+import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { BN } from 'ethereumjs-util'
 import { Chain } from '../../../lib/blockchain/chain'
 import { Config } from '../../../lib/config'
 import { EthProtocol } from '../../../lib/net/protocol'
-import { Block } from '@ethereumjs/block'
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import Common, { Hardfork } from '@ethereumjs/common'
 
 tape('[EthProtocol]', (t) => {
   t.test('should get properties', (t) => {
@@ -138,6 +138,59 @@ tape('[EthProtocol]', (t) => {
     })
     t.ok(new BN(res[0]).eqn(1), 'correctly encoded reqId')
     t.deepEqual(res[1][0], tx.serialize(), 'EIP1559 transaction correctly encoded')
+    t.end()
+  })
+
+  t.test('verify that Receipts encode/decode correctly', (t) => {
+    const config = new Config({
+      transports: [],
+      common: new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.London }),
+    })
+    const chain = new Chain({ config })
+    const p = new EthProtocol({ config, chain })
+    const receipts = [
+      {
+        status: 1 as 0 | 1,
+        gasUsed: new BN(100).toArrayLike(Buffer),
+        bitvector: Buffer.alloc(256),
+        logs: [[Buffer.alloc(20), [Buffer.alloc(32), Buffer.alloc(32, 1)], Buffer.alloc(10)]],
+        txType: 2,
+      },
+      {
+        status: 0 as 0 | 1,
+        gasUsed: new BN(1000).toArrayLike(Buffer),
+        bitvector: Buffer.alloc(256, 1),
+        logs: [[Buffer.alloc(20, 1), [Buffer.alloc(32, 1), Buffer.alloc(32, 1)], Buffer.alloc(10)]],
+        txType: 0,
+      },
+    ]
+
+    // encode
+    let res = p.encode(p.messages.filter((message) => message.name === 'Receipts')[0], {
+      reqId: new BN(1),
+      receipts,
+    })
+    t.ok(new BN(res[0]).eqn(1), 'correctly encoded reqId')
+    const expectedSerializedReceipts = [
+      Buffer.from(
+        '02f9016d0164b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f866f864940000000000000000000000000000000000000000f842a00000000000000000000000000000000000000000000000000000000000000000a001010101010101010101010101010101010101010101010101010101010101018a00000000000000000000',
+        'hex'
+      ),
+      Buffer.from(
+        'f9016f808203e8b9010001010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101f866f864940101010101010101010101010101010101010101f842a00101010101010101010101010101010101010101010101010101010101010101a001010101010101010101010101010101010101010101010101010101010101018a00000000000000000000',
+        'hex'
+      ),
+    ]
+    t.deepEqual(res[1], expectedSerializedReceipts, 'correctly encoded receipts')
+
+    // decode the encoded result and match to the original receipts (without tx type)
+    res = p.decode(p.messages.filter((message) => message.name === 'Receipts')[0], res)
+    t.ok(new BN(res[0]).eqn(1), 'correctly decoded reqId')
+    const receiptsWithoutTxType = receipts.map((r: any) => {
+      delete r.txType
+      return r
+    })
+    t.deepEqual(res[1], receiptsWithoutTxType, 'receipts correctly decoded')
     t.end()
   })
 })

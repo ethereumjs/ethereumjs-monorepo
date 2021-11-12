@@ -1,5 +1,6 @@
 import tape from 'tape'
 import td from 'testdouble'
+import { Log } from '@ethereumjs/vm/dist/evm/types'
 import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
@@ -111,12 +112,36 @@ tape('[FullEthereumService]', async (t) => {
     t.end()
   })
 
-  t.test('should call getReceipts on GetReceipts', async (t) => {
+  t.test('should send Receipts on GetReceipts', async (t) => {
     const config = new Config({ transports: [] })
     const service = new FullEthereumService({ config, metaDB: level() })
-    const blockHash = Buffer.alloc(32)
-    await service.handle({ name: 'GetReceipts', data: [new BN(1), [blockHash]] }, 'eth', {} as any)
-    td.verify(service.synchronizer.execution.receiptsManager!.getReceipts(blockHash, true, true))
+    const blockHash = Buffer.alloc(32, 1)
+    const receipts = [
+      {
+        status: 1 as 0 | 1,
+        gasUsed: new BN(100).toArrayLike(Buffer),
+        bitvector: Buffer.alloc(256),
+        logs: [
+          [Buffer.alloc(20), [Buffer.alloc(32), Buffer.alloc(32, 1)], Buffer.alloc(10)],
+        ] as Log[],
+        txType: 2,
+      },
+      {
+        status: 0 as 0 | 1,
+        gasUsed: new BN(1000).toArrayLike(Buffer),
+        bitvector: Buffer.alloc(256, 1),
+        logs: [
+          [Buffer.alloc(20, 1), [Buffer.alloc(32, 1), Buffer.alloc(32, 1)], Buffer.alloc(10)],
+        ] as Log[],
+        txType: 0,
+      },
+    ]
+    td.when(
+      service.synchronizer.execution.receiptsManager!.getReceipts(blockHash, true, true)
+    ).thenResolve(receipts)
+    const peer = { eth: { send: td.func() } } as any
+    await service.handle({ name: 'GetReceipts', data: [new BN(1), [blockHash]] }, 'eth', peer)
+    td.verify(peer.eth.send('Receipts', { reqId: new BN(1), receipts }))
     t.end()
   })
 

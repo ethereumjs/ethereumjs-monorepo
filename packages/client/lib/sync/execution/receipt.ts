@@ -10,7 +10,12 @@ import type { Block } from '@ethereumjs/block'
  * TxReceiptWithType extends TxReceipt to provide:
  *  - txType: byte prefix for serializing typed tx receipts
  */
-export interface TxReceiptWithType extends PreByzantiumTxReceipt, PostByzantiumTxReceipt {
+export type TxReceiptWithType = PreByzantiumTxReceiptWithType | PostByzantiumTxReceiptWithType
+interface PreByzantiumTxReceiptWithType extends PreByzantiumTxReceipt {
+  /* EIP-2718 Typed Transaction Envelope type */
+  txType: number
+}
+interface PostByzantiumTxReceiptWithType extends PostByzantiumTxReceipt {
   /* EIP-2718 Typed Transaction Envelope type */
   txType: number
 }
