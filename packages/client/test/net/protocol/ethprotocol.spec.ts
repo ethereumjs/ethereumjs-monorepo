@@ -4,6 +4,8 @@ import { Chain } from '../../../lib/blockchain/chain'
 import { Config } from '../../../lib/config'
 import { EthProtocol } from '../../../lib/net/protocol'
 import { Block } from '@ethereumjs/block'
+import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import Common, { Hardfork } from '@ethereumjs/common'
 
 tape('[EthProtocol]', (t) => {
   t.test('should get properties', (t) => {
@@ -111,6 +113,31 @@ tape('[EthProtocol]', (t) => {
     t.ok(res.hashes[0].equals(block.hash()), 'correctly decoded blockHash')
     t.ok(new BN(res2[0]).eqn(1), 'correctly encoded reqId')
     t.ok(res2[1][0].equals(block.hash()), 'correctly encoded blockHash')
+    t.end()
+  })
+
+  t.test('verify that PooledTransactions handler encodes correctly', (t) => {
+    const config = new Config({
+      transports: [],
+      common: new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.London }),
+    })
+    const chain = new Chain({ config })
+    const p = new EthProtocol({ config, chain })
+    const tx = FeeMarketEIP1559Transaction.fromTxData(
+      {
+        maxFeePerGas: 10,
+        maxPriorityFeePerGas: 8,
+        gasLimit: 100,
+        value: 6,
+      },
+      { common: config.chainCommon }
+    )
+    const res = p.encode(p.messages.filter((message) => message.name === 'PooledTransactions')[0], {
+      reqId: new BN(1),
+      txs: [tx],
+    })
+    t.ok(new BN(res[0]).eqn(1), 'correctly encoded reqId')
+    t.deepEqual(res[1][0], tx.serialize(), 'EIP1559 transaction correctly encoded')
     t.end()
   })
 })
