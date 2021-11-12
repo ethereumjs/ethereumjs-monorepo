@@ -6,6 +6,51 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.6.0 - 2021-11-09
+
+### ArrowGlacier HF Support
+
+This release adds support for the upcoming [ArrowGlacier HF](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/arrow-glacier.md) (see PR [#1527](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1527)) targeted for December 2021. The only included EIP is [EIP-4345](https://eips.ethereum.org/EIPS/eip-4345) which delays the difficulty bomb to June/July 2022.
+
+Please note that for backwards-compatibility reasons the associated Common is still instantiated with `istanbul` by default.
+
+An ArrowGlacier VM can be instantiated with:
+
+```typescript
+import VM from '@ethereumjs/vm'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.ArrowGlacier })
+const vm = new VM({ common })
+```
+
+### Additional Error Context for Error Messages
+
+This release extends the text of the error messages in the library with some consistent context information (see PR [#1540](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1540)), here an example for illustration:
+
+Before:
+
+```shell
+invalid receiptTrie
+```
+
+New:
+
+```
+invalid receiptTrie (vm hf=berlin -> block number=1 hash=0x8e368301586b53e30c58dd4734de4b3d6e17db837eb3fbde8cc0036bc7752d9a hf=berlin baseFeePerGas=none txs=1 uncles=0)
+```
+
+The extended errors give substantial more object and chain context and should ease debugging.
+
+**Potentially breaking**: Attention! If you do react on errors in your code and do exact errror matching (`error.message === 'invalid transaction trie'`) things will break. Please make sure to do error comparisons with something like `error.message.includes('invalid transaction trie')` instead. This should generally be the pattern used for all error message comparisions and is assured to be future proof on all error messages (we won't change the core text in non-breaking releases).
+
+### Other Changes
+
+- Fixed accountExists bug in pre-Spurious Dragon HFs, PR [#1516](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1516) and PR [#1524](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1524)
+- New `putBlockIntoBlockchain` option for `BlockBuilder` (default: `true`), PR [#1530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1530)
+- Extended `StateManager.generateGenesis()` to also allow for creating genesis blocks with contract accounts, PR [#1530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1530) and PR [#1541](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1541)
+- Use `RLP` library exposed by `ethereumjs-util` dependency (deduplication), PR [#1549](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1549)
+
 ## 5.5.3 - 2021-09-24
 
 - Fixed a consensus-relevant bug in the Blake2B precompile (see [EIP-152](https://eips.ethereum.org/EIPS/eip-152)) with messages with a length >= 5 (thanks @jochem-brouwer for the great analysis and quick fix on this! ❤️), PR [#1486](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1486)

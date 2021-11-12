@@ -33,7 +33,7 @@ export async function mainnetBlocks(suite?: Benchmark.Suite, numSamples?: number
     const blockNumber = block.header.number.toNumber()
     const { receipts, preState, blockhashes } = blockData
 
-    if ([9422909, 9422912, 9422913, 9422914].includes(blockNumber)) {
+    if ([9422909, 9422911, 9422912, 9422913, 9422914].includes(blockNumber)) {
       // Skip problematic blocks that in normal ci operation
       // sometimes exceeds the alert threshold by 2-2.5x, could use more
       // investigation to determine exactly why this is happening.

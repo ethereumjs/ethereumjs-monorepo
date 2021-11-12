@@ -3,7 +3,7 @@
 # Manual test file for blockchain test runner option sanity checks
 #
 # Evoke from repository root with
-# ./tests/blockchain-test-run-test.sh
+# ./tests/tester/scripts/blockchain-test-run-test.sh
 ##################################################################
 
 ts-node ./tests/tester --blockchain --file='randomStatetest303'

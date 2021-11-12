@@ -59,7 +59,12 @@ test docs), provided by the index of the array element in the test `transaction`
 
 `ts-node ./tests/tester --state --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0`
 
-Run a state test from a specified source file not under the `tests` directory:
+Recursively run all tests from a custom directory:
+
+`ts-node ./tests/tester --state --fork='London' --customTestsPath=../../my_custom_test_folder`
+
+Run a test from a specified source file not under the `tests` directory (only state tests):
+
 `ts-node ./tests/tester --state --customStateTest='{path_to_file}'`
 
 #### Running tests with a reporter/formatter

@@ -1,9 +1,9 @@
-import * as tape from 'tape'
+import tape from 'tape'
+import Common, { Chain } from '@ethereumjs/common'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Account, BN, toBuffer } from 'ethereumjs-util'
-import Common, { Chain } from '@ethereumjs/common'
-import { setupPreConditions, makeTx, makeBlockFromEnv } from './util'
-import { InterpreterStep } from '../src/evm/interpreter'
+import { setupPreConditions, makeTx, makeBlockFromEnv } from '../../util'
+import type { InterpreterStep } from '../../../src/evm/interpreter'
 
 function parseTestCases(
   forkConfigTestSuite: string,
@@ -58,11 +58,12 @@ function parseTestCases(
 }
 
 async function runTestCase(options: any, testData: any, t: tape.Test) {
+  const begin = Date.now()
   let VM
   if (options.dist) {
-    VM = require('../dist').default
+    VM = require('../../../dist').default
   } else {
-    VM = require('../src').default
+    VM = require('../../../src').default
   }
 
   const state = new Trie()
@@ -129,7 +130,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
           await vm.stateManager.cleanupTouchedAccounts()
           await vm.stateManager._cache.flush()
         }
-        execInfo = 'tx runtime error'
+        execInfo = `tx runtime error :${e.message}`
       }
     } else {
       execInfo = 'tx validation failed'
@@ -139,9 +140,12 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const stateManagerStateRoot = vm.stateManager._trie.root
   const testDataPostStateRoot = toBuffer(testData.postStateRoot)
 
+  const end = Date.now()
+  const timeSpent = `${(end - begin) / 1000} secs`
+
   t.ok(
     stateManagerStateRoot.equals(testDataPostStateRoot),
-    `the state roots should match (${execInfo})`
+    `[ ${timeSpent} ] the state roots should match (${execInfo})`
   )
 }
 

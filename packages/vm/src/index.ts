@@ -216,6 +216,7 @@ export default class VM extends AsyncEventEmitter {
         'istanbul',
         'muirGlacier',
         'berlin',
+        'arrowGlacier',
       ]
 
       this._common = new Common({

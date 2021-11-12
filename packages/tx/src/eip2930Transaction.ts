@@ -416,7 +416,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   public errorStr() {
     let errorStr = this._getSharedErrorPostfix()
     // Keep ? for this.accessList since this otherwise causes Hardhat E2E tests to fail
-    errorStr += ` gasPrice=${this.gasPrice} accessList=${this.accessList?.length} (size)`
+    errorStr += ` gasPrice=${this.gasPrice} accessListCount=${this.accessList?.length ?? 0}`
     return errorStr
   }
 

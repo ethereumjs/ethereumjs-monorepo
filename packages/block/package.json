@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/block",
-  "version": "3.5.1",
+  "version": "3.6.0",
   "description": "Provides Block serialization and help functions",
   "license": "MPL-2.0",
   "author": "mjbecze (mb@ethdev.com)",
@@ -35,9 +35,9 @@
     "test:browser": "karma start karma.conf.js"
   },
   "dependencies": {
-    "@ethereumjs/common": "^2.5.0",
+    "@ethereumjs/common": "^2.6.0",
     "merkle-patricia-tree": "^4.2.2",
-    "@ethereumjs/tx": "^3.3.2",
+    "@ethereumjs/tx": "^3.4.0",
     "ethereumjs-util": "^7.1.3"
   },
   "devDependencies": {
