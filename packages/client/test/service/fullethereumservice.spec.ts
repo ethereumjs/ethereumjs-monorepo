@@ -1,16 +1,22 @@
 import tape from 'tape'
 import td from 'testdouble'
+import { Log } from '@ethereumjs/vm/dist/evm/types'
 import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
+const level = require('level-mem')
 
 tape('[FullEthereumService]', async (t) => {
   class PeerPool {
     open() {}
     close() {}
+    start() {}
+    stop() {}
   }
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
+  PeerPool.prototype.start = td.func<any>()
+  PeerPool.prototype.stop = td.func<any>()
   td.replace('../../lib/net/peerpool', { PeerPool })
   const Chain = td.constructor([] as any)
   Chain.prototype.open = td.func<any>()
@@ -25,6 +31,9 @@ tape('[FullEthereumService]', async (t) => {
     open() {}
     close() {}
     handleNewBlock() {}
+    execution = {
+      receiptsManager: { getReceipts: td.func<any>() },
+    }
   }
   FullSynchronizer.prototype.start = td.func<any>()
   FullSynchronizer.prototype.stop = td.func<any>()
@@ -95,11 +104,44 @@ tape('[FullEthereumService]', async (t) => {
     t.end()
   })
 
-  t.test('handleNewBlock should be called', async (t) => {
+  t.test('should call handleNewBlock on NewBlock', async (t) => {
     const config = new Config({ transports: [] })
     const service = new FullEthereumService({ config })
     await service.handle({ name: 'NewBlock', data: [{}, new BN(1)] }, 'eth', undefined as any)
     td.verify(service.synchronizer.handleNewBlock({} as any, undefined))
+    t.end()
+  })
+
+  t.test('should send Receipts on GetReceipts', async (t) => {
+    const config = new Config({ transports: [] })
+    const service = new FullEthereumService({ config, metaDB: level() })
+    const blockHash = Buffer.alloc(32, 1)
+    const receipts = [
+      {
+        status: 1 as 0 | 1,
+        gasUsed: new BN(100).toArrayLike(Buffer),
+        bitvector: Buffer.alloc(256),
+        logs: [
+          [Buffer.alloc(20), [Buffer.alloc(32), Buffer.alloc(32, 1)], Buffer.alloc(10)],
+        ] as Log[],
+        txType: 2,
+      },
+      {
+        status: 0 as 0 | 1,
+        gasUsed: new BN(1000).toArrayLike(Buffer),
+        bitvector: Buffer.alloc(256, 1),
+        logs: [
+          [Buffer.alloc(20, 1), [Buffer.alloc(32, 1), Buffer.alloc(32, 1)], Buffer.alloc(10)],
+        ] as Log[],
+        txType: 0,
+      },
+    ]
+    td.when(
+      service.synchronizer.execution.receiptsManager!.getReceipts(blockHash, true, true)
+    ).thenResolve(receipts)
+    const peer = { eth: { send: td.func() } } as any
+    await service.handle({ name: 'GetReceipts', data: [new BN(1), [blockHash]] }, 'eth', peer)
+    td.verify(peer.eth.send('Receipts', { reqId: new BN(1), receipts }))
     t.end()
   })
 

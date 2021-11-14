@@ -12,7 +12,7 @@ import { Address, toBuffer } from 'ethereumjs-util'
 import { version as packageVersion } from '../package.json'
 import { parseMultiaddrs, parseGenesisState, parseCustomParams, inspectParams } from '../lib/util'
 import EthereumClient from '../lib/client'
-import { Config } from '../lib/config'
+import { Config, DataDirectory } from '../lib/config'
 import { Logger, getLogger } from '../lib/logging'
 import { RPCManager } from '../lib/rpc'
 import * as modules from '../lib/rpc/modules'
@@ -101,7 +101,7 @@ const args = yargs(hideBin(process.argv))
   })
   .option('ws', {
     describe: 'Enable the JSON-RPC server with WS endpoint',
-    default: true,
+    boolean: true,
   })
   .option('wsPort', {
     describe: 'WS-RPC server listening port',
@@ -124,11 +124,6 @@ const args = yargs(hideBin(process.argv))
     describe: 'HTTP-RPC server listening interface address for Engine namespace',
     string: true,
     default: 'localhost',
-  })
-  .option('rpcStubGetLogs', {
-    describe: 'Stub eth_getLogs with empty response until method is implemented',
-    boolean: true,
-    default: false,
   })
   .option('helprpc', {
     describe: 'Display the JSON RPC help with a list of all RPC methods implemented (and exit)',
@@ -221,32 +216,63 @@ const args = yargs(hideBin(process.argv))
     describe:
       'Address for mining rewards (etherbase). If not provided, defaults to the primary account',
     string: true,
+  })
+  .option('saveReceipts', {
+    describe:
+      'Save tx receipts and logs in the meta db (warning: may use a large amount of storage). With `--rpc` allows querying via eth_getLogs (max 10000 logs per request) and eth_getTransactionReceipt (within `--txLookupLimit`)',
+    boolean: true,
+  })
+  .option('txLookupLimit', {
+    describe:
+      'Number of recent blocks to maintain transactions index for (default = about one year, 0 = entire chain)',
+    number: true,
+    default: 2350000,
   }).argv
 
 let logger: Logger
 
 /**
- * Initializes and starts a Node and reacts on the
- * main client lifecycle events
- *
+ * Initializes and returns the databases needed for the client
+ * @param config
+ */
+function initDBs(config: Config, args: any) {
+  // Chain DB
+  const chainDataDir = config.getDataDirectory(DataDirectory.Chain)
+  ensureDirSync(chainDataDir)
+  const chainDB = level(chainDataDir)
+
+  // State DB
+  const stateDataDir = config.getDataDirectory(DataDirectory.State)
+  ensureDirSync(stateDataDir)
+  const stateDB = level(stateDataDir)
+
+  // Meta DB (receipts, logs, indexes)
+  let metaDB
+  if (args.saveReceipts) {
+    const metaDataDir = config.getDataDirectory(DataDirectory.Meta)
+    ensureDirSync(metaDataDir)
+    metaDB = level(metaDataDir)
+  }
+
+  return { chainDB, stateDB, metaDB }
+}
+
+/**
+ * Starts the client and reacts on the main lifecycle events
  * @param config
  */
 async function runNode(config: Config) {
   config.logger.info(
     `Initializing Ethereumjs client version=v${packageVersion} network=${config.chainCommon.chainName()}`
   )
-  const chainDataDir = config.getChainDataDirectory()
-  ensureDirSync(chainDataDir)
-  const stateDataDir = config.getStateDataDirectory()
-  ensureDirSync(stateDataDir)
   config.logger.info(`Data directory: ${config.datadir}`)
   if (config.lightserv) {
     config.logger.info(`Serving light peer requests`)
   }
+  const dbs = initDBs(config, args)
   const client = new EthereumClient({
     config,
-    chainDB: level(chainDataDir),
-    stateDB: level(stateDataDir),
+    ...dbs,
   })
   client.config.events.on(Event.SERVER_ERROR, (err) => config.logger.error(err))
   client.config.events.on(Event.SERVER_LISTENING, (details) => {
@@ -396,9 +422,6 @@ async function run() {
       console.log(`${modName}:`)
       const methods = RPCManager.getMethodNames((modules as any)[modName])
       for (const methodName of methods) {
-        if (methodName === 'getLogs' && !args.rpcStubGetLogs) {
-          continue
-        }
         console.log(`-> ${modName.toLowerCase()}_${methodName}`)
       }
       console.log()
@@ -597,7 +620,8 @@ async function run() {
     extIP: args.extIP,
     multiaddrs: args.multiaddrs ? parseMultiaddrs(args.multiaddrs) : undefined,
     logger,
-    rpcStubGetLogs: args.rpcStubGetLogs,
+    saveReceipts: args.saveReceipts,
+    txLookupLimit: args.txLookupLimit,
     maxPerRequest: args.maxPerRequest,
     minPeers: args.minPeers,
     maxPeers: args.maxPeers,

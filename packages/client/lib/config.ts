@@ -11,6 +11,12 @@ import { EventBus, EventBusType } from './types'
 import type { LevelUp } from 'levelup'
 const level = require('level')
 
+export enum DataDirectory {
+  Chain = 'chain',
+  State = 'state',
+  Meta = 'meta',
+}
+
 export interface ConfigOptions {
   /**
    * Specify the chain by providing a {@link Common} instance,
@@ -93,9 +99,15 @@ export interface ConfigOptions {
   servers?: (RlpxServer | Libp2pServer)[]
 
   /**
-   * Until getLogs is properly implemented, stub an empty response
+   * Save tx receipts and logs in the meta db (default: false)
    */
-  rpcStubGetLogs?: boolean
+  saveReceipts?: boolean
+
+  /**
+   * Number of recent blocks to maintain transactions index for
+   * (default = 2350000 = about one year, 0 = entire chain)
+   */
+  txLookupLimit?: number
 
   /**
    * A custom winston logger can be provided
@@ -213,7 +225,8 @@ export class Config {
   public readonly port?: number
   public readonly extIP?: string
   public readonly multiaddrs?: Multiaddr[]
-  public readonly rpcStubGetLogs: boolean
+  public readonly saveReceipts: boolean
+  public readonly txLookupLimit: number
   public readonly maxPerRequest: number
   public readonly minPeers: number
   public readonly maxPeers: number
@@ -246,7 +259,8 @@ export class Config {
     this.multiaddrs = options.multiaddrs
     this.datadir = options.datadir ?? Config.DATADIR_DEFAULT
     this.key = options.key ?? genPrivateKey()
-    this.rpcStubGetLogs = options.rpcStubGetLogs ?? false
+    this.saveReceipts = options.saveReceipts ?? false
+    this.txLookupLimit = options.txLookupLimit ?? 2350000
     this.maxPerRequest = options.maxPerRequest ?? Config.MAXPERREQUEST_DEFAULT
     this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
     this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT
@@ -300,26 +314,24 @@ export class Config {
    */
   getNetworkDirectory(): string {
     const networkDirName = this.chainCommon.chainName()
-    const dataDir = `${this.datadir}/${networkDirName}`
-    return dataDir
+    return `${this.datadir}/${networkDirName}`
   }
 
   /**
-   * Returns the directory for storing the client chain data
-   * based on syncmode and selected chain (subdirectory of 'datadir')
+   * Returns the location for each {@link DataDirectory}
    */
-  getChainDataDirectory(): string {
-    const chainDataDirName = this.syncmode === 'light' ? 'lightchain' : 'chain'
-    const dataDir = `${this.getNetworkDirectory()}/${chainDataDirName}`
-    return dataDir
-  }
-
-  /**
-   * Returns the directory for storing the client state data
-   * based selected chain (subdirectory of 'datadir')
-   */
-  getStateDataDirectory(): string {
-    return `${this.getNetworkDirectory()}/state`
+  getDataDirectory(dir: DataDirectory): string {
+    const networkDir = this.getNetworkDirectory()
+    switch (dir) {
+      case DataDirectory.Chain: {
+        const chainDataDirName = this.syncmode === 'light' ? 'lightchain' : 'chain'
+        return `${networkDir}/${chainDataDirName}`
+      }
+      case DataDirectory.State:
+        return `${networkDir}/state`
+      case DataDirectory.Meta:
+        return `${networkDir}/meta`
+    }
   }
 
   /**

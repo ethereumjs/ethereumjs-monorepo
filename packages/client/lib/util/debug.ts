@@ -1,3 +1,4 @@
+import { DataDirectory } from '../'
 import type { Block } from '@ethereumjs/block'
 import type { VMExecution } from '../sync/execution'
 
@@ -37,7 +38,7 @@ const main = async () => {
     .serialize()
     .toString('hex')}', 'hex'), { common })
 
-  const stateDB = level('${execution.config.getStateDataDirectory()}')
+  const stateDB = level('${execution.config.getDataDirectory(DataDirectory.State)}')
   const trie = new Trie(stateDB)
   const stateManager = new DefaultStateManager({ trie, common })
   // Ensure we run on the right root
@@ -46,7 +47,7 @@ const main = async () => {
   ).toString('hex')}', 'hex'))
 
 
-  const chainDB = level('${execution.config.getChainDataDirectory()}')
+  const chainDB = level('${execution.config.getDataDirectory(DataDirectory.Chain)}')
   const blockchain = await Blockchain.create({
     db: chainDB,
     common,
