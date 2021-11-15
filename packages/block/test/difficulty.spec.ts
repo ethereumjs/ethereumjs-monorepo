@@ -59,7 +59,7 @@ tape('[Header]: difficulty tests', (t) => {
           header: {
             timestamp: test.parentTimestamp,
             difficulty: test.parentDifficulty,
-            uncleHash: test.parentUncles === '0x00' ? KECCAK256_RLP_ARRAY : test.parentUncles,
+            uncleHash: test.parentUncles === '0x00' ? undefined : test.parentUncles,
             // Check if uncleHash is '0x00' and replace with empty array to handle change in Ethereum-Tests V10.1
             // where the uncleHash in the difficulty tests was changed from the hash of the empty array to just 0x00
           },
