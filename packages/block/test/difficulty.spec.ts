@@ -25,17 +25,26 @@ tape('[Header]: difficulty tests', (t) => {
   }
 
   const hardforkTestData: any = {
-    chainstart: require('./testdata/difficultyFrontier.json').tests,
-    homestead: require('./testdata/difficultyHomestead.json').tests,
-    byzantium: require('./testdata/difficultyByzantium.json').tests,
-    constantinople: require('./testdata/difficultyConstantinople.json').tests,
+    chainstart: require('../../ethereum-tests/DifficultyTests/dfFrontier/difficultyFrontier.json')
+      .difficultyFrontier.Frontier,
+    homestead: require('../../ethereum-tests/DifficultyTests/dfHomestead/difficultyHomestead.json')
+      .difficultyHomestead.Homestead,
+    byzantium: require('../../ethereum-tests/DifficultyTests/dfByzantium/difficultyByzantium.json')
+      .difficultyByzantium.Byzantium,
+    constantinople:
+      require('../../ethereum-tests/DifficultyTests/dfConstantinople/difficultyConstantinople.json')
+        .difficultyConstantinople.Constantinople,
     muirGlacier: Object.assign(
-      require('./testdata/difficultyEIP2384.json').tests,
-      require('./testdata/difficultyEIP2384_random.json').tests,
-      require('./testdata/difficultyEIP2384_random_to20M.json').tests
+      require('../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384.json')
+        .difficultyEIP2384.Berlin,
+      require('../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384_random.json')
+        .difficultyEIP2384_random.Berlin,
+      require('../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384_random_to20M.json')
+        .difficultyEIP2384_random_to20M.Berlin
     ),
-    arrowGlacier: require('./testdata/difficultyArrowGlacier.json').difficultyArrowGlacier
-      .ArrowGlacier,
+    arrowGlacier:
+      require('../../ethereum-tests/DifficultyTests/dfArrowGlacier/difficultyArrowGlacier.json')
+        .difficultyArrowGlacier.ArrowGlacier,
   }
 
   /* eslint-disable-next-line no-restricted-syntax */
@@ -77,8 +86,8 @@ tape('[Header]: difficulty tests', (t) => {
   }
 
   const chainTestData: any = {
-    mainnet: require('./testdata/difficultyMainNetwork.json').tests,
-    ropsten: require('./testdata/difficultyRopstenConstantinople.json').tests,
+    mainnet: require('../../ethereum-tests/BasicTests/difficultyMainNetwork.json'),
+    ropsten: require('../../ethereum-tests/BasicTests/difficultyRopsten.json'),
   }
   /* eslint-disable-next-line no-restricted-syntax */
   for (const chain in chainTestData) {
