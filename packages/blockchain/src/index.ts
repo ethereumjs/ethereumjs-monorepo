@@ -527,7 +527,7 @@ export default class Blockchain implements BlockchainInterface {
 
     // save to db
     const formatted = this._cliqueLatestSignerStates.map((state) => [
-      state[0].toBuffer(),
+      state[0].toArrayLike(Buffer),
       state[1].map((a) => a.toBuffer()),
     ])
     dbOps.push(DBOp.set(DBTarget.CliqueSignerStates, rlp.encode(formatted)))
@@ -678,7 +678,7 @@ export default class Blockchain implements BlockchainInterface {
     // save votes to db
     const dbOps: DBOp[] = []
     const formatted = this._cliqueLatestVotes.map((v) => [
-      v[0].toBuffer(),
+      v[0].toArrayLike(Buffer),
       [v[1][0].toBuffer(), v[1][1].toBuffer(), v[1][2]],
     ])
     dbOps.push(DBOp.set(DBTarget.CliqueVotes, rlp.encode(formatted)))
@@ -717,7 +717,10 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     // save to db
-    const formatted = this._cliqueLatestBlockSigners.map((b) => [b[0].toBuffer(), b[1].toBuffer()])
+    const formatted = this._cliqueLatestBlockSigners.map((b) => [
+      b[0].toArrayLike(Buffer),
+      b[1].toBuffer(),
+    ])
     dbOps.push(DBOp.set(DBTarget.CliqueBlockSigners, rlp.encode(formatted)))
 
     await this.dbManager.batch(dbOps)
