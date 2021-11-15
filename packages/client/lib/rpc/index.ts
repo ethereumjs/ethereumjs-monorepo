@@ -33,7 +33,12 @@ export class RPCManager {
       const mod = new (modules as any)[modName](this._client)
       const rpcMethods = RPCManager.getMethodNames((modules as any)[modName])
       for (const methodName of rpcMethods) {
-        if (methodName === 'getLogs' && !this._config.rpcStubGetLogs) {
+        if (
+          !this._config.saveReceipts &&
+          (methodName === 'getLogs' ||
+            methodName === 'getTransactionReceipt' ||
+            methodName === 'getTransactionByHash')
+        ) {
           continue
         }
         const concatedMethodName = `${modName.toLowerCase()}_${methodName}`

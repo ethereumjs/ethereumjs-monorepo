@@ -38,6 +38,7 @@ export class FullEthereumService extends EthereumService {
       pool: this.pool,
       chain: this.chain,
       stateDB: options.stateDB,
+      metaDB: options.metaDB,
       interval: this.interval,
     })
 
@@ -166,6 +167,23 @@ export class FullEthereumService extends EthereumService {
       const txs = this.synchronizer.txPool.getByHash(hashes)
       // Always respond, also on an empty list
       peer.eth?.send('PooledTransactions', { reqId, txs })
+    } else if (message.name === 'GetReceipts') {
+      const [reqId, hashes] = message.data
+      const { receiptsManager } = this.synchronizer.execution
+      if (!receiptsManager) return
+      const receipts = []
+      let receiptsSize = 0
+      for (const hash of hashes) {
+        const blockReceipts = await receiptsManager.getReceipts(hash, true, true)
+        if (!blockReceipts) continue
+        receipts.push(...blockReceipts)
+        receiptsSize += Buffer.byteLength(JSON.stringify(blockReceipts))
+        // From spec: The recommended soft limit for Receipts responses is 2 MiB.
+        if (receiptsSize >= 2097152) {
+          break
+        }
+      }
+      peer.eth?.send('Receipts', { reqId, receipts })
     }
   }
 

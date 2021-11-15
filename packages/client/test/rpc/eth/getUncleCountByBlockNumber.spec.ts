@@ -4,7 +4,7 @@ import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
 import { checkError } from '../util'
 
-function createBlockchain() {
+function createChain() {
   const block = {
     uncleHeaders: ['0x1', '0x2', '0x3'],
   }
@@ -24,7 +24,7 @@ const method = 'eth_getUncleCountByBlockNumber'
 tape(`${method}: call with valid arguments`, async (t) => {
   const mockUncleCount = 3
 
-  const manager = createManager(createClient({ blockchain: createBlockchain() }))
+  const manager = createManager(createClient({ chain: createChain() }))
   const server = startRPC(manager.getMethods())
 
   const req = params(method, ['0x1'])
@@ -40,7 +40,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 })
 
 tape(`${method}: call with invalid block number`, async (t) => {
-  const manager = createManager(createClient({ blockchain: createBlockchain() }))
+  const manager = createManager(createClient({ chain: createChain() }))
   const server = startRPC(manager.getMethods())
 
   const req = params(method, ['0x5a'])

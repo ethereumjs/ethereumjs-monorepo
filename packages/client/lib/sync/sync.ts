@@ -24,6 +24,9 @@ export interface SynchronizerOptions {
   /* State database */
   stateDB?: LevelUp
 
+  /* Meta database (receipts, logs, indexes) */
+  metaDB?: LevelUp
+
   /* Flow control manager */
   flow?: FlowControl
 

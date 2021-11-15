@@ -15,6 +15,9 @@ export interface EthereumServiceOptions extends ServiceOptions {
   /* State database */
   stateDB?: LevelUp
 
+  /* Meta database (receipts, logs, indexes) */
+  metaDB?: LevelUp
+
   /* Sync retry interval in ms (default: 8000) */
   interval?: number
 

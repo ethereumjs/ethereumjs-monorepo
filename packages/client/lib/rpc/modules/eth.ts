@@ -1,6 +1,13 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
-import { Transaction, TransactionFactory, JsonTx } from '@ethereumjs/tx'
+import {
+  Capability,
+  FeeMarketEIP1559Transaction,
+  JsonTx,
+  Transaction,
+  TransactionFactory,
+  TypedTransaction,
+} from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -15,12 +22,32 @@ import {
 import { middleware, validators } from '../validation'
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
 import { RpcTx } from '../types'
-import type { Chain } from '../../blockchain'
-import type { EthereumClient } from '../..'
 import { EthereumService } from '../../service'
 import { FullSynchronizer } from '../../sync'
-import type { EthProtocol } from '../../net/protocol'
 import type VM from '@ethereumjs/vm'
+import type {
+  PostByzantiumTxReceipt,
+  PreByzantiumTxReceipt,
+  TxReceipt,
+} from '@ethereumjs/vm/dist/types'
+import type { Log } from '@ethereumjs/vm/dist/evm/types'
+import type { EthereumClient } from '../..'
+import type { Chain } from '../../blockchain'
+import type { EthProtocol } from '../../net/protocol'
+import type { ReceiptsManager } from '../../sync/execution/receipt'
+
+type GetLogsParams = {
+  fromBlock?: string // QUANTITY, block number or "earliest" or "latest" (default: "latest")
+  toBlock?: string // QUANTITY, block number or "latest" (default: "latest")
+  address?: string // DATA, 20 Bytes, contract address from which logs should originate
+  topics?: string[] // DATA, array, topics are order-dependent
+  blockHash?: string // DATA, 32 Bytes. With the addition of EIP-234,
+  // blockHash restricts the logs returned to the single block with
+  // the 32-byte hash blockHash. Using blockHash is equivalent to
+  // fromBlock = toBlock = the block number with hash blockHash.
+  // If blockHash is present in in the filter criteria, then
+  // neither fromBlock nor toBlock are allowed.
+}
 
 /*
  * Based on https://eth.wiki/json-rpc/API
@@ -43,22 +70,60 @@ type JsonRpcBlock = {
   gasLimit: string // the maximum gas allowed in this block.
   gasUsed: string // the total used gas by all transactions in this block.
   timestamp: string // the unix timestamp for when the block was collated.
-  transactions: JsonTx[] | string[] // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
+  transactions: string[] // Array of serialized transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
   uncles: string[] // Array of uncle hashes
   baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
 }
-
-type GetLogsParamsObject = {
-  fromBlock?: string // QUANTITY, integer block number or "earliest" or "latest"
-  toBlock?: string // QUANTITY, integer block number or "earliest" or "latest"
-  address?: string // DATA, 20 Bytes, address
-  topics?: string[] // DATA, array
-  blockHash?: string // DATA, 32 Bytes. With the addition of EIP-234,
-  // blockHash restricts the logs returned to the single block with
-  // the 32-byte hash blockHash. Using blockHash is equivalent to
-  // fromBlock = toBlock = the block number with hash blockHash.
-  // If blockHash is present in in the filter criteria, then
-  // neither fromBlock nor toBlock are allowed.
+type JsonRpcTx = {
+  blockHash: string | null // DATA, 32 Bytes - hash of the block where this transaction was in. null when it's pending.
+  blockNumber: string | null // QUANTITY - block number where this transaction was in. null when it's pending.
+  from: string // DATA, 20 Bytes - address of the sender.
+  gas: string // QUANTITY - gas provided by the sender.
+  gasPrice: string // QUANTITY - gas price provided by the sender in wei. If EIP-1559 tx, defaults to maxFeePerGas.
+  maxFeePerGas?: string // QUANTITY - max total fee per gas provided by the sender in wei.
+  maxPriorityFeePerGas?: string // QUANTITY - max priority fee per gas provided by the sender in wei.
+  type: string // QUANTITY - EIP-2718 Typed Transaction type
+  accessList?: JsonTx['accessList'] // EIP-2930 access list
+  chainId?: string // Chain ID that this transaction is valid on.
+  hash: string // DATA, 32 Bytes - hash of the transaction.
+  input: string // DATA - the data send along with the transaction.
+  nonce: string // QUANTITY - the number of transactions made by the sender prior to this one.
+  to: string | null /// DATA, 20 Bytes - address of the receiver. null when it's a contract creation transaction.
+  transactionIndex: string | null // QUANTITY - integer of the transactions index position in the block. null when it's pending.
+  value: string // QUANTITY - value transferred in Wei.
+  v: string // QUANTITY - ECDSA recovery id
+  r: string // DATA, 32 Bytes - ECDSA signature r
+  s: string // DATA, 32 Bytes - ECDSA signature s
+}
+type JsonRpcReceipt = {
+  transactionHash: string // DATA, 32 Bytes - hash of the transaction.
+  transactionIndex: string // QUANTITY - integer of the transactions index position in the block.
+  blockHash: string // DATA, 32 Bytes - hash of the block where this transaction was in.
+  blockNumber: string // QUANTITY - block number where this transaction was in.
+  from: string // DATA, 20 Bytes - address of the sender.
+  to: string | null // DATA, 20 Bytes - address of the receiver. null when it's a contract creation transaction.
+  cumulativeGasUsed: string // QUANTITY  - The total amount of gas used when this transaction was executed in the block.
+  effectiveGasPrice: string // QUANTITY - The final gas price per gas paid by the sender in wei.
+  gasUsed: string // QUANTITY - The amount of gas used by this specific transaction alone.
+  contractAddress: string | null // DATA, 20 Bytes - The contract address created, if the transaction was a contract creation, otherwise null.
+  logs: JsonRpcLog[] // Array - Array of log objects, which this transaction generated.
+  logsBloom: string // DATA, 256 Bytes - Bloom filter for light clients to quickly retrieve related logs.
+  // It also returns either:
+  root?: string // DATA, 32 bytes of post-transaction stateroot (pre Byzantium)
+  status?: string // QUANTITY, either 1 (success) or 0 (failure)
+}
+type JsonRpcLog = {
+  removed: boolean // TAG - true when the log was removed, due to a chain reorganization. false if it's a valid log.
+  logIndex: string | null // QUANTITY - integer of the log index position in the block. null when it's pending.
+  transactionIndex: string | null // QUANTITY - integer of the transactions index position log was created from. null when it's pending.
+  transactionHash: string | null // DATA, 32 Bytes - hash of the transactions this log was created from. null when it's pending.
+  blockHash: string | null // DATA, 32 Bytes - hash of the block where this log was in. null when it's pending.
+  blockNumber: string | null // QUANTITY - the block number where this log was in. null when it's pending.
+  address: string // DATA, 20 Bytes - address from which this log originated.
+  data: string // DATA - contains one or more 32 Bytes non-indexed arguments of the log.
+  topics: string[] // Array of DATA - Array of 0 to 4 32 Bytes DATA of indexed log arguments.
+  // (In solidity: The first topic is the hash of the signature of the event
+  // (e.g. Deposit(address,bytes32,uint256)), except you declared the event with the anonymous specifier.)
 }
 
 /**
@@ -106,12 +171,97 @@ const jsonRpcBlock = async (
 }
 
 /**
+ * Returns tx formatted to the standard JSON-RPC fields
+ */
+const jsonRpcTx = (tx: TypedTransaction, block?: Block, txIndex?: number): JsonRpcTx => {
+  const txJSON = tx.toJSON()
+  return {
+    blockHash: block ? bufferToHex(block.hash()) : null,
+    blockNumber: block ? bnToHex(block.header.number) : null,
+    from: tx.getSenderAddress().toString(),
+    gas: txJSON.gasLimit!,
+    gasPrice: txJSON.gasPrice ?? txJSON.maxFeePerGas!,
+    maxFeePerGas: txJSON.maxFeePerGas,
+    maxPriorityFeePerGas: txJSON.maxPriorityFeePerGas,
+    type: intToHex(tx.type),
+    accessList: txJSON.accessList,
+    chainId: txJSON.chainId,
+    hash: bufferToHex(tx.hash()),
+    input: txJSON.data!,
+    nonce: txJSON.nonce!,
+    to: tx.to?.toString() ?? null,
+    transactionIndex: txIndex !== undefined ? intToHex(txIndex) : null,
+    value: txJSON.value!,
+    v: txJSON.v!,
+    r: txJSON.r!,
+    s: txJSON.s!,
+  }
+}
+
+/**
+ * Returns log formatted to the standard JSON-RPC fields
+ */
+const jsonRpcLog = async (
+  log: Log,
+  block?: Block,
+  tx?: TypedTransaction,
+  txIndex?: number,
+  logIndex?: number
+): Promise<JsonRpcLog> => ({
+  removed: false, // TODO implement
+  logIndex: logIndex !== undefined ? intToHex(logIndex) : null,
+  transactionIndex: txIndex !== undefined ? intToHex(txIndex) : null,
+  transactionHash: tx ? bufferToHex(tx.hash()) : null,
+  blockHash: block ? bufferToHex(block.hash()) : null,
+  blockNumber: block ? bnToHex(block.header.number) : null,
+  address: bufferToHex(log[0]),
+  topics: log[1].map((t) => bufferToHex(t as Buffer)),
+  data: bufferToHex(log[2]),
+})
+
+/**
+ * Returns receipt formatted to the standard JSON-RPC fields
+ */
+const jsonRpcReceipt = async (
+  receipt: TxReceipt,
+  gasUsed: BN,
+  effectiveGasPrice: BN,
+  block: Block,
+  tx: TypedTransaction,
+  txIndex: number,
+  logIndex: number,
+  contractAddress?: Address
+): Promise<JsonRpcReceipt> => ({
+  transactionHash: bufferToHex(tx.hash()),
+  transactionIndex: intToHex(txIndex),
+  blockHash: bufferToHex(block.hash()),
+  blockNumber: bnToHex(block.header.number),
+  from: tx.getSenderAddress().toString(),
+  to: tx.to?.toString() ?? null,
+  cumulativeGasUsed: bufferToHex(receipt.gasUsed),
+  effectiveGasPrice: bnToHex(effectiveGasPrice),
+  gasUsed: bnToHex(gasUsed),
+  contractAddress: contractAddress?.toString() ?? null,
+  logs: await Promise.all(
+    receipt.logs.map((l, i) => jsonRpcLog(l, block, tx, txIndex, logIndex + i))
+  ),
+  logsBloom: bufferToHex(receipt.bitvector),
+  root: (receipt as PreByzantiumTxReceipt).stateRoot
+    ? bufferToHex((receipt as PreByzantiumTxReceipt).stateRoot)
+    : undefined,
+  status: (receipt as PostByzantiumTxReceipt).status
+    ? intToHex((receipt as PostByzantiumTxReceipt).status)
+    : undefined,
+})
+
+/**
  * eth_* RPC module
  * @memberof module:rpc/modules
  */
 export class Eth {
   private client: EthereumClient
   private service: EthereumService
+  private receiptsManager: ReceiptsManager
   private _chain: Chain
   private _vm: VM | undefined
   public ethVersion: number
@@ -123,6 +273,7 @@ export class Eth {
   constructor(client: EthereumClient) {
     this.client = client
     this.service = client.services.find((s) => s.name === 'eth') as EthereumService
+    this.receiptsManager = (this.service.synchronizer as any).execution?.receiptsManager
     this._chain = this.service.chain
     this._vm = (this.service.synchronizer as any)?.execution?.vm
 
@@ -175,23 +326,33 @@ export class Eth {
       [validators.blockOption],
     ])
 
+    this.getTransactionByHash = middleware(this.getTransactionByHash.bind(this), 1, [
+      [validators.hex],
+    ])
+
     this.getTransactionCount = middleware(this.getTransactionCount.bind(this), 2, [
       [validators.address],
       [validators.blockOption],
     ])
 
+    this.getTransactionReceipt = middleware(this.getTransactionReceipt.bind(this), 1, [
+      [validators.hex],
+    ])
+
     this.getLogs = middleware(this.getLogs.bind(this), 1, [
       [
         validators.object({
-          fromBlock: validators.blockOption,
-          toBlock: validators.blockOption,
-          address: validators.address,
-          topics: validators.array(validators.hex),
-          // TODO: blockHash would be nice to have
-          // (but not required for first iteration)
-          // also...create a validators.optional() modifier
-          // so we can do:
-          //blockHash: validators.optional(validators.blockHash),
+          fromBlock: validators.optional(validators.blockOption),
+          toBlock: validators.optional(validators.blockOption),
+          address: validators.optional(validators.address),
+          topics: validators.optional(
+            validators.array(
+              validators.optional(
+                validators.either(validators.hex, validators.array(validators.hex))
+              )
+            )
+          ),
+          blockHash: validators.optional(validators.blockHash),
         }),
       ],
     ])
@@ -512,6 +673,29 @@ export class Eth {
   }
 
   /**
+   * Returns the transaction by hash when available within `--txLookupLimit`
+   * @param params An array of one parameter:
+   *   1. hash of the transaction
+   */
+  async getTransactionByHash(params: [string]) {
+    const [txHash] = params
+
+    try {
+      const result = await this.receiptsManager.getReceiptByTxHash(toBuffer(txHash))
+      if (!result) return null
+      const [_receipt, blockHash, txIndex] = result
+      const block = await this._chain.getBlock(blockHash)
+      const tx = block.transactions[txIndex]
+      return jsonRpcTx(tx, block, txIndex)
+    } catch (error: any) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: error.message.toString(),
+      }
+    }
+  }
+
+  /**
    * Returns the number of transactions sent from an address.
    * Currently only "latest" block is supported.
    * @param params An array of two parameters:
@@ -573,11 +757,145 @@ export class Eth {
     return block.uncleHeaders.length
   }
 
-  // MERGE-INTEROP-HACK: stubbed method to satify Lodestar needs
-  // TODO: do proper implementation (would need to store logs in db for retrieval)
-  // https://github.com/ethereumjs/ethereumjs-monorepo/issues/1520
-  async getLogs(_params: GetLogsParamsObject) {
-    return []
+  /**
+   * Returns the receipt of a transaction by transaction hash.
+   * *Note* That the receipt is not available for pending transactions.
+   * Only available with `--saveReceipts` enabled
+   * Will return empty if tx is past set `--txLookupLimit`
+   * (default = 2350000 = about one year, 0 = entire chain)
+   * @param params An array of one parameter:
+   *  1: Transaction hash
+   */
+  async getTransactionReceipt(params: [string]) {
+    const [txHash] = params
+
+    try {
+      const result = await this.receiptsManager.getReceiptByTxHash(toBuffer(txHash))
+      if (!result) return null
+      const [receipt, blockHash, txIndex, logIndex] = result
+      const block = await this._chain.getBlock(blockHash)
+      const parentBlock = await this._chain.getBlock(block.header.parentHash)
+      const tx = block.transactions[txIndex]
+      const effectiveGasPrice = tx.supports(Capability.EIP1559FeeMarket)
+        ? BN.min(
+            (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas,
+            (tx as FeeMarketEIP1559Transaction).maxFeePerGas.sub(block.header.baseFeePerGas!)
+          ).add(block.header.baseFeePerGas!)
+        : (tx as Transaction).gasPrice
+
+      // Run tx through copied vm to get tx gasUsed and createdAddress
+      const runBlockResult = await this._vm!.copy().runBlock({
+        block,
+        root: parentBlock.header.stateRoot,
+        skipBlockValidation: true,
+      })
+      const { gasUsed, createdAddress } = runBlockResult.results[txIndex]
+      return jsonRpcReceipt(
+        receipt,
+        gasUsed,
+        effectiveGasPrice,
+        block,
+        tx,
+        txIndex,
+        logIndex,
+        createdAddress
+      )
+    } catch (error: any) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: error.message.toString(),
+      }
+    }
+  }
+
+  /**
+   * Returns an array of all logs matching a given filter object.
+   * Only available with `--saveReceipts` enabled
+   * @param params An object of the filter options {@link GetLogsParams}
+   */
+  async getLogs(params: [GetLogsParams]) {
+    const { fromBlock, toBlock, blockHash, address, topics } = params[0]
+    if (blockHash !== undefined && (fromBlock !== undefined || toBlock !== undefined)) {
+      throw {
+        code: INVALID_PARAMS,
+        message: `Can only specify a blockHash if fromBlock or toBlock are not provided`,
+      }
+    }
+    let from: Block, to: Block
+    if (blockHash) {
+      try {
+        from = to = await this._chain.getBlock(toBuffer(blockHash))
+      } catch (error: any) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'unknown blockHash',
+        }
+      }
+    } else {
+      if (fromBlock === 'earliest') {
+        from = await this._chain.getBlock(new BN(0))
+      } else if (fromBlock === 'latest' || fromBlock === undefined) {
+        from = this._chain.blocks.latest!
+      } else {
+        const blockNum = new BN(toBuffer(fromBlock))
+        if (blockNum.gt(this._chain.headers.height)) {
+          throw {
+            code: INVALID_PARAMS,
+            message: 'specified `fromBlock` greater than current height',
+          }
+        }
+        from = await this._chain.getBlock(blockNum)
+      }
+      if (toBlock === fromBlock) {
+        to = from
+      } else if (toBlock === 'latest' || toBlock === undefined) {
+        to = this._chain.blocks.latest!
+      } else {
+        const blockNum = new BN(toBuffer(toBlock))
+        if (blockNum.gt(this._chain.headers.height)) {
+          throw {
+            code: INVALID_PARAMS,
+            message: 'specified `toBlock` greater than current height',
+          }
+        }
+        to = await this._chain.getBlock(blockNum)
+      }
+    }
+    if (
+      to.header.number.sub(from.header.number).gtn(this.receiptsManager.GET_LOGS_BLOCK_RANGE_LIMIT)
+    ) {
+      throw {
+        code: INVALID_PARAMS,
+        message: `block range limit is ${this.receiptsManager.GET_LOGS_BLOCK_RANGE_LIMIT} blocks`,
+      }
+    }
+    try {
+      const formattedTopics = topics?.map((t) => {
+        if (t === null) {
+          return null
+        } else if (Array.isArray(t)) {
+          return t.map((x) => toBuffer(x))
+        } else {
+          return toBuffer(t)
+        }
+      })
+      const logs = await this.receiptsManager.getLogs(
+        from,
+        to,
+        address ? toBuffer(address) : undefined,
+        formattedTopics
+      )
+      return await Promise.all(
+        logs.map(({ log, block, tx, txIndex, logIndex }) =>
+          jsonRpcLog(log, block, tx, txIndex, logIndex)
+        )
+      )
+    } catch (error: any) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: error.message.toString(),
+      }
+    }
   }
 
   /**

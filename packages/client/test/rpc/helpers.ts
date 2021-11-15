@@ -1,18 +1,22 @@
 import tape from 'tape'
 import { Server as RPCServer, HttpServer } from 'jayson/promise'
-import VM from '@ethereumjs/vm'
+import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain as ChainEnum } from '@ethereumjs/common'
-import { BN } from 'ethereumjs-util'
+import { Address, BN } from 'ethereumjs-util'
 import { RPCManager as Manager } from '../../lib/rpc'
 import { getLogger } from '../../lib/logging'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain/chain'
+import { FullSynchronizer } from '../../lib/sync'
+import { parseCustomParams, parseGenesisState } from '../../lib/util'
 import { TxPool } from '../../lib/sync/txpool'
 import { RlpxServer } from '../../lib/net/server/rlpxserver'
+import { VMExecution } from '../../lib/sync/execution'
 import { mockBlockchain } from './mockBlockchain'
-import type Blockchain from '@ethereumjs/blockchain'
 import type EthereumClient from '../../lib/client'
+import type { TypedTransaction } from '@ethereumjs/tx'
 const request = require('supertest')
+const level = require('level-mem')
 
 const config: any = {}
 config.logger = getLogger(config)
@@ -29,25 +33,29 @@ export function closeRPC(server: HttpServer) {
 }
 
 export function createManager(client: EthereumClient) {
-  return new Manager(client, config)
+  return new Manager(client, client.config)
 }
 
 export function createClient(clientOpts: any = {}) {
   const common: Common = clientOpts.commonChain ?? new Common({ chain: ChainEnum.Mainnet })
-  const config = new Config({ transports: [], common })
+  const config = new Config({
+    transports: [],
+    common,
+    saveReceipts: clientOpts.enableMetaDB,
+    txLookupLimit: clientOpts.txLookupLimit,
+  })
   const blockchain = clientOpts.blockchain ?? ((<any>mockBlockchain()) as Blockchain)
 
-  const chain = new Chain({ config, blockchain })
+  const chain = clientOpts.chain ?? new Chain({ config, blockchain })
   chain.opened = true
 
   const defaultClientConfig = {
-    blockchain: chain,
     opened: true,
-    ethProtocolVersions: [63],
+    ethProtocolVersions: [65],
   }
   const clientConfig = { ...defaultClientConfig, ...clientOpts }
 
-  clientConfig.blockchain.getTd = async (_hash: Buffer, _num: BN) => new BN(1000)
+  chain.getTd = async (_hash: Buffer, _num: BN) => new BN(1000)
 
   config.synchronized = true
   config.lastSyncDate = Date.now()
@@ -59,7 +67,7 @@ export function createClient(clientOpts: any = {}) {
     }),
   ]
 
-  let synchronizer: any = {
+  const synchronizer: any = {
     startingBlock: 0,
     best: () => {
       return undefined
@@ -71,7 +79,9 @@ export function createClient(clientOpts: any = {}) {
     txPool: new TxPool({ config }),
   }
   if (clientOpts.includeVM) {
-    synchronizer = { ...synchronizer, execution: { vm: new VM({ blockchain, common }) } }
+    const metaDB = clientOpts.enableMetaDB ? level() : undefined
+    const execution = new VMExecution({ config, chain, metaDB })
+    synchronizer.execution = execution
   }
 
   let peers = [1, 2, 3]
@@ -85,7 +95,7 @@ export function createClient(clientOpts: any = {}) {
     services: [
       {
         name: 'eth',
-        chain: clientConfig.blockchain,
+        chain,
         pool: { peers },
         protocols: [
           {
@@ -128,7 +138,8 @@ export async function baseRequest(
   server: HttpServer,
   req: Object,
   expect: number,
-  expectRes: Function
+  expectRes: Function,
+  endOnFinish = true
 ) {
   try {
     await request(server)
@@ -138,9 +149,107 @@ export async function baseRequest(
       .expect(expect)
       .expect(expectRes)
     closeRPC(server)
-    t.end()
+    if (endOnFinish) {
+      t.end()
+    }
   } catch (err) {
     closeRPC(server)
     t.end(err)
   }
+}
+
+/**
+ * Sets up a custom chain with metaDB enabled (saving receipts, logs, indexes)
+ */
+export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts = {}) {
+  const genesisParams = await parseCustomParams(genesisFile, chainName)
+  const genesisState = genesisFile.alloc ? await parseGenesisState(genesisFile) : {}
+  const common = new Common({
+    chain: chainName,
+    customChains: [[genesisParams, genesisState]],
+  })
+  common.setHardforkByBlockNumber(0)
+
+  const blockchain = await Blockchain.create({
+    common,
+    validateBlocks: false,
+    validateConsensus: false,
+  })
+  const client = createClient({
+    ...clientOpts,
+    commonChain: common,
+    blockchain,
+    includeVM: true,
+    enableMetaDB: true,
+  })
+  const manager = createManager(client)
+  const server = startRPC(manager.getMethods())
+
+  const service = client.services.find((s) => s.name === 'eth')!
+  const { chain } = service
+  const { execution } = service!.synchronizer as FullSynchronizer
+
+  await chain.open()
+  await execution.open()
+  await chain.update()
+
+  return { chain, common, execution, server }
+}
+
+/**
+ * Creates and executes a block with the specified txs
+ */
+export async function runBlockWithTxs(
+  chain: Chain,
+  execution: VMExecution,
+  txs: TypedTransaction[]
+) {
+  const { vm } = execution
+  // build block with tx
+  const parentBlock = await chain.getLatestBlock()
+  const vmCopy = vm.copy()
+  const blockBuilder = await vmCopy.buildBlock({
+    parentBlock,
+    headerData: { gasLimit: 20000000 },
+    blockOpts: {
+      calcDifficultyFromHeader: parentBlock.header,
+      putBlockIntoBlockchain: false,
+    },
+  })
+  for (const tx of txs) {
+    await blockBuilder.addTransaction(tx)
+  }
+  const block = await blockBuilder.build()
+
+  // put block into chain and run execution
+  await chain.putBlocks([block])
+  execution.syncing = true
+  await execution.run()
+}
+
+/**
+ * Formats a geth genesis file and sets all hardforks to block number zero
+ */
+export function gethGenesisStartLondon(gethGenesis: any) {
+  const londonConfig = Object.entries(gethGenesis.config)
+    .map((p) => {
+      if (p[0].endsWith('Block')) {
+        p[1] = 0
+      }
+      return p
+    })
+    .reduce((accum: any, [k, v]: any) => {
+      accum[k] = v
+      return accum
+    }, {}) // when compiler is >=es2019 `reduce` can be replaced with `Object.fromEntries`
+  return { ...gethGenesis, config: { ...gethGenesis.config, ...londonConfig } }
+}
+
+/**
+ * Randomly generated account for testing purposes (signing txs, etc.)
+ * This address has preallocated balance in gethGenesis file `testdata/pow.json`
+ */
+export const dummy = {
+  addr: Address.fromString('0xcde098d93535445768e8a2345a2f869139f45641'),
+  privKey: Buffer.from('5831aac354d13ff96a0c051af0d44c0931c2a20bdacee034ffbaa2354d84f5f8', 'hex'),
 }
