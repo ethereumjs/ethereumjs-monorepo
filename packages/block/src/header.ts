@@ -457,12 +457,7 @@ export class BlockHeader {
 
     if (this._common.hardforkGteHardfork(hardfork, 'byzantium')) {
       // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99) (EIP100)
-      const uncleAddend =
-        parentBlockHeader.uncleHash.equals(KECCAK256_RLP_ARRAY) ||
-          parentBlockHeader.uncleHash.equals(Buffer.from([0]))
-          ? // Check for uncleHash equal to a empty 1 byte buffer matching latest Ethereum-Tests (v10.1)
-          1
-          : 2
+      const uncleAddend = parentBlockHeader.uncleHash.equals(KECCAK256_RLP_ARRAY) ? 1 : 2
       let a = blockTs.sub(parentTs).idivn(9).ineg().iaddn(uncleAddend)
       const cutoff = new BN(-99)
       // MAX(cutoff, a)
