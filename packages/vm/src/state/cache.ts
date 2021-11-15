@@ -1,18 +1,33 @@
 import { Account, Address } from 'ethereumjs-util'
 const Tree = require('functional-red-black-tree')
 
+export type getCb = (address: Address) => Promise<Account | undefined>
+export type putCb = (keyBuf: Buffer, accountRlp: Buffer) => Promise<void>
+export type deleteCb = (keyBuf: Buffer) => Promise<void>
+
+export interface CacheOpts {
+  getCb: getCb
+  putCb: putCb
+  deleteCb: deleteCb
+}
+
 /**
  * @ignore
  */
 export default class Cache {
   _cache: any
   _checkpoints: any[]
-  _trie: any
 
-  constructor(trie: any) {
+  _getCb: getCb
+  _putCb: putCb
+  _deleteCb: deleteCb
+
+  constructor(opts: CacheOpts) {
     this._cache = Tree()
+    this._getCb = opts.getCb
+    this._putCb = opts.putCb
+    this._deleteCb = opts.deleteCb
     this._checkpoints = []
-    this._trie = trie
   }
 
   /**
@@ -64,15 +79,6 @@ export default class Cache {
   }
 
   /**
-   * Looks up address in underlying trie.
-   * @param address - Address of account
-   */
-  async _lookupAccount(address: Address): Promise<Account | undefined> {
-    const rlp = await this._trie.get(address.buf)
-    return rlp ? Account.fromRlpSerializedAccount(rlp) : undefined
-  }
-
-  /**
    * Looks up address in cache, if not found, looks it up
    * in the underlying trie.
    * @param key - Address of account
@@ -81,7 +87,7 @@ export default class Cache {
     let account = this.lookup(address)
 
     if (!account) {
-      account = await this._lookupAccount(address)
+      account = await this._getCb(address)
       if (account) {
         this._update(address, account, false, false, false)
       } else {
@@ -92,26 +98,6 @@ export default class Cache {
     }
 
     return account
-  }
-
-  /**
-   * Warms cache by loading their respective account from trie
-   * and putting them in cache.
-   * @param addresses - Array of addresses
-   */
-  async warm(addresses: string[]): Promise<void> {
-    for (const addressHex of addresses) {
-      if (addressHex) {
-        const address = new Address(Buffer.from(addressHex, 'hex'))
-        let account = await this._lookupAccount(address)
-        if (account) {
-          this._update(address, account, false, false, false)
-        } else {
-          account = new Account()
-          this._update(address, account, false, false, true)
-        }
-      }
-    }
   }
 
   /**
@@ -126,7 +112,7 @@ export default class Cache {
         it.value.modified = false
         const accountRlp = it.value.val
         const keyBuf = Buffer.from(it.key, 'hex')
-        await this._trie.put(keyBuf, accountRlp)
+        await this._putCb(keyBuf, accountRlp)
         next = it.hasNext
         it.next()
       } else if (it.value && it.value.modified && it.value.deleted) {
@@ -135,7 +121,7 @@ export default class Cache {
         it.value.virtual = true
         it.value.val = new Account().serialize()
         const keyBuf = Buffer.from(it.key, 'hex')
-        await this._trie.del(keyBuf)
+        await this._deleteCb(keyBuf)
         next = it.hasNext
         it.next()
       } else {
