@@ -1,6 +1,6 @@
 import tape from 'tape'
 import minimist from 'minimist'
-import { toBuffer } from 'ethereumjs-util'
+import { rlp, toBuffer } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Transaction } from '../src/'
 import { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types'
@@ -48,12 +48,11 @@ tape('TransactionTests', async (t) => {
             const hardfork = forkNameMap[forkName]
             const common = new Common({ chain: 1, hardfork })
             const tx = Transaction.fromSerializedTx(rawTx, { common })
-
             const sender = tx.getSenderAddress().toString()
             const hash = tx.hash().toString('hex')
-
+            console.log(rlp.decode(rawTx))
             const txIsValid = tx.validate()
-
+            console.log(txIsValid)
             const senderIsCorrect = forkTestData.sender === sender
             const hashIsCorrect = forkTestData.hash?.slice(2) === hash
 
