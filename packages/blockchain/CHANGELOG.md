@@ -6,9 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [Unreleased]
 
-- Fixed bug in several PoA related methods where BigNumber -> Buffer conversions would break in the browser context for tools like browserify
+## 5.5.1 - 2021-11-15
+
+This patch release contains a bug fix for using the blockchain package in a browser context with tools like browserify, see PR [#1566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1566).
+
 ## 5.5.0 - 2021-11-09
 
 ### ArrowGlacier HF Support
