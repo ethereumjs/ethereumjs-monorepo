@@ -91,19 +91,14 @@ export abstract class BaseTransaction<TransactionObject> {
     const rB = toBuffer(r === '' ? '0x' : r)
     const sB = toBuffer(s === '' ? '0x' : s)
 
-    const bufferedNonce = toBuffer(nonce)
-    if (bufferedNonce.length > 1 && bufferedNonce[0] === 0x00) {
-      throw new Error('Nonce cannot have leading zeroes')
+    const bufferedNonce = toBuffer(nonce === '' ? '0x' : nonce)
+    if (bufferedNonce.length > 8) {
+      // Implements EIP-2681 which limits nonce to 2^64-1
+      // https://eips.ethereum.org/EIPS/eip-2681
+      throw new Error('nonce cannot be more than 2^64-1')
     }
-    const bufferedValue = toBuffer(value)
-    if (bufferedValue.length > 1 && bufferedValue[0] === 0x00) {
-      throw new Error('Value cannot have leading zeroes')
-    }
-    const bufferedGasLimit = toBuffer(gasLimit)
-    if (bufferedGasLimit.length > 1 && bufferedGasLimit[0] === 0x00) {
-      throw new Error('Gas Limit cannot have leading zeroes')
-    }
-    this.nonce = new BN(toBuffer(nonce === '' ? '0x' : nonce))
+
+    this.nonce = new BN(bufferedNonce)
     this.gasLimit = new BN(toBuffer(gasLimit === '' ? '0x' : gasLimit))
     this.to = toB.length > 0 ? new Address(toB) : undefined
     this.value = new BN(toBuffer(value === '' ? '0x' : value))

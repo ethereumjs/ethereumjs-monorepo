@@ -50,9 +50,7 @@ tape('TransactionTests', async (t) => {
             const tx = Transaction.fromSerializedTx(rawTx, { common })
             const sender = tx.getSenderAddress().toString()
             const hash = tx.hash().toString('hex')
-            console.log(rlp.decode(rawTx))
             const txIsValid = tx.validate()
-            console.log(txIsValid)
             const senderIsCorrect = forkTestData.sender === sender
             const hashIsCorrect = forkTestData.hash?.slice(2) === hash
 

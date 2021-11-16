@@ -76,6 +76,14 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
     const [nonce, gasPrice, gasLimit, to, value, data, v, r, s] = values
 
+    const integerProps = [nonce, gasPrice, gasLimit, value, v, r, s]
+    for (const x of integerProps) {
+      if (x.length > 0 && x[0] === 0x00) {
+        // Throws if integer is encoded with leading zeroes
+        throw new Error('Integer values cannot have leading zeroes')
+      }
+    }
+
     return new Transaction(
       {
         nonce,
