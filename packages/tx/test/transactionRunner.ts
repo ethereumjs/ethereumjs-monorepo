@@ -1,6 +1,6 @@
 import tape from 'tape'
 import minimist from 'minimist'
-import { rlp, toBuffer } from 'ethereumjs-util'
+import { toBuffer } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Transaction } from '../src/'
 import { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types'
