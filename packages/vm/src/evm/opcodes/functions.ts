@@ -983,7 +983,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (!length.isZero()) {
-        data = runState.memory.read(offset.toNumber(), length.toNumber())
+        data = runState.memory.sharedRead(offset.toNumber(), length.toNumber())
       }
 
       const ret = await runState.eei.create(gasLimit, value, data)
@@ -1013,7 +1013,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (!length.isZero()) {
-        data = runState.memory.read(offset.toNumber(), length.toNumber())
+        data = runState.memory.sharedRead(offset.toNumber(), length.toNumber())
       }
 
       const ret = await runState.eei.create2(
@@ -1049,7 +1049,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (!inLength.isZero()) {
-        data = runState.memory.read(inOffset.toNumber(), inLength.toNumber())
+        data = runState.memory.sharedRead(inOffset.toNumber(), inLength.toNumber())
       }
 
       if (common.gteHardfork('spuriousDragon')) {
@@ -1119,7 +1119,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (!inLength.isZero()) {
-        data = runState.memory.read(inOffset.toNumber(), inLength.toNumber())
+        data = runState.memory.sharedRead(inOffset.toNumber(), inLength.toNumber())
       }
 
       const ret = await runState.eei.callCode(gasLimit, toAddress, value, data)
@@ -1148,7 +1148,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (!inLength.isZero()) {
-        data = runState.memory.read(inOffset.toNumber(), inLength.toNumber())
+        data = runState.memory.sharedRead(inOffset.toNumber(), inLength.toNumber())
       }
 
       const ret = await runState.eei.callDelegate(gasLimit, toAddress, value, data)
