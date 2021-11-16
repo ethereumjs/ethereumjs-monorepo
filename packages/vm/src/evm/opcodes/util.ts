@@ -13,12 +13,15 @@ const MASK_160 = new BN(1).shln(160).subn(1)
  * @param {Buffer} value Buffer which we want to pad
  */
 export function setLengthLeftStorage(value: Buffer) {
-  if (value.equals(Buffer.alloc(value.length, 0))) {
-    // return the empty buffer (the value is zero)
-    return Buffer.alloc(0)
-  } else {
-    return setLengthLeft(value, 32)
+  for (let i = 1; i <= value.length; i++) {
+    // Byte-per-byte comparison
+    if (value[i] !== 0) break
+    if (i === value.length) {
+      // if all bytes are zero return the empty buffer (the value is zero)
+      return Buffer.alloc(0)
+    }
   }
+  return setLengthLeft(value, 32)
 }
 
 /**
