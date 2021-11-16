@@ -25,14 +25,14 @@ tape('[Header]: difficulty tests', (t) => {
   }
 
   const hardforkTestData: any = {
-    chainstart: require('./testdata/difficultyFrontier.json').tests,
-    homestead: require('./testdata/difficultyHomestead.json').tests,
-    byzantium: require('./testdata/difficultyByzantium.json').tests,
-    constantinople: require('./testdata/difficultyConstantinople.json').tests,
+    chainstart: require('../../ethereum-tests/BasicTests/difficultyFrontier.json'),
+    homestead: require('../../ethereum-tests/BasicTests/difficultyHomestead.json'),
+    byzantium: require('../../ethereum-tests/BasicTests/difficultyByzantium.json'),
+    constantinople: require('../../ethereum-tests/BasicTests/difficultyConstantinople.json'),
     muirGlacier: Object.assign(
-      require('./testdata/difficultyEIP2384.json').tests,
-      require('./testdata/difficultyEIP2384_random.json').tests,
-      require('./testdata/difficultyEIP2384_random_to20M.json').tests
+      require('../../ethereum-tests/BasicTests/difficultyEIP2384.json'),
+      require('../../ethereum-tests/BasicTests/difficultyEIP2384_random.json'),
+      require('../../ethereum-tests/BasicTests/difficultyEIP2384_random_to20M.json')
     ),
     arrowGlacier: require('./testdata/difficultyArrowGlacier.json').difficultyArrowGlacier
       .ArrowGlacier,
@@ -50,7 +50,9 @@ tape('[Header]: difficulty tests', (t) => {
           header: {
             timestamp: test.parentTimestamp,
             difficulty: test.parentDifficulty,
-            uncleHash: test.parentUncles,
+            // Ethereum-Tests changes parentUncles field from KECCAK256_RLP_ARRAY hash to 0x00 in v10.0 so
+            // checks for that value and marks uncles undefined if so (equivalent to KECCAK256_RLP_ARRAY hash)
+            uncleHash: test.parentUncles === '0x00' ? undefined : test.parentUncles,
           },
         },
         { common }
@@ -77,8 +79,8 @@ tape('[Header]: difficulty tests', (t) => {
   }
 
   const chainTestData: any = {
-    mainnet: require('./testdata/difficultyMainNetwork.json').tests,
-    ropsten: require('./testdata/difficultyRopstenConstantinople.json').tests,
+    mainnet: require('../../ethereum-tests/BasicTests/difficultyMainNetwork.json'),
+    ropsten: require('../../ethereum-tests/BasicTests/difficultyRopsten.json'),
   }
   /* eslint-disable-next-line no-restricted-syntax */
   for (const chain in chainTestData) {
