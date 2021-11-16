@@ -78,7 +78,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
     const integerProps = [nonce, gasPrice, gasLimit, value, v, r, s]
     for (const x of integerProps) {
-      if (x.length > 0 && x[0] === 0x00) {
+      if (toBuffer(x).length > 0 && x[0] === 0x00) {
         // Throws if integer is encoded with leading zeroes
         throw new Error('Integer values cannot have leading zeroes')
       }
@@ -114,6 +114,9 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
     this.gasPrice = new BN(toBuffer(txData.gasPrice === '' ? '0x' : txData.gasPrice))
 
+    if (this.gasPrice.mul(this.gasLimit).toArray().length > 32) {
+      throw new Error('gas limit * price overflow')
+    }
     this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
 
     if (this.common.gteHardfork('spuriousDragon')) {

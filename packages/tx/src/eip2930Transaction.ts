@@ -188,6 +188,10 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
     this.gasPrice = new BN(toBuffer(gasPrice === '' ? '0x' : gasPrice))
 
+    if (this.gasPrice.mul(this.gasLimit).toArray().length > 32) {
+      throw new Error('gas limit * price overflow')
+    }
+
     this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
 
     if (this.v && !this.v.eqn(0) && !this.v.eqn(1)) {

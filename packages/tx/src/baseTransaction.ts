@@ -97,9 +97,14 @@ export abstract class BaseTransaction<TransactionObject> {
       // https://eips.ethereum.org/EIPS/eip-2681
       throw new Error('nonce cannot be more than 2^64-1')
     }
-
     this.nonce = new BN(bufferedNonce)
-    this.gasLimit = new BN(toBuffer(gasLimit === '' ? '0x' : gasLimit))
+
+    const bufferedGasLimit = toBuffer(nonce === '' ? '0x' : gasLimit)
+    if (bufferedGasLimit.length > 8) {
+      throw new Error('gasLimit can not be more than 2^64-1')
+    }
+    this.gasLimit = new BN(bufferedGasLimit)
+
     this.to = toB.length > 0 ? new Address(toB) : undefined
     this.value = new BN(toBuffer(value === '' ? '0x' : value))
     this.data = toBuffer(data === '' ? '0x' : data)
