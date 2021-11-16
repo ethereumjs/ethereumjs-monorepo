@@ -26,7 +26,7 @@
     "prepublishOnly": "../../config/cli/prepublish.sh && npm run test:buildIntegrity",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "nyc npm run coverage:test",
-    "coverage:test": "npm run tape -- './tests/api/**/*.spec.ts' && npm run tester -- --state",
+    "coverage:test": "npm run test:API && npm run tester -- --state",
     "docs:build": "typedoc --options typedoc.js",
     "tape": "tape -r ts-node/register --stack-size=1500",
     "tester": "ts-node ./tests/tester --stack-size=1500",
