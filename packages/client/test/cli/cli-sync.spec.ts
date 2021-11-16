@@ -7,7 +7,7 @@ const cliArgs = process.argv.filter(
 )
 
 tape('[CLI] sync', (t) => {
-  t.test('should begin downloading blocks', { timeout: 260000 }, (t) => {
+  t.test('should begin downloading blocks', { timeout: 260000 }, (st) => {
     const file = require.resolve('../../dist/bin/cli.js')
     const child = spawn(process.execPath, [file, ...cliArgs])
 
@@ -18,7 +18,7 @@ tape('[CLI] sync', (t) => {
       child.stdout.removeAllListeners()
       child.stderr.removeAllListeners()
       child.kill('SIGINT')
-      t.end()
+      st.end()
     }
 
     child.stdout.on('data', (data) => {
@@ -29,11 +29,11 @@ tape('[CLI] sync', (t) => {
       console.log(message)
 
       if (message.toLowerCase().includes('error')) {
-        t.fail(message)
+        st.fail(message)
         return end()
       }
       if (message.includes('Imported')) {
-        t.pass('successfully imported blocks or headers')
+        st.pass('successfully imported blocks or headers')
         return end()
       }
     })
@@ -44,13 +44,13 @@ tape('[CLI] sync', (t) => {
         // This is okay.
         return
       }
-      t.fail(`stderr: ${message}`)
+      st.fail(`stderr: ${message}`)
       end()
     })
 
     child.on('close', (code) => {
       if (code > 0) {
-        t.fail(`child process exited with code ${code}`)
+        st.fail(`child process exited with code ${code}`)
         end()
       }
     })
