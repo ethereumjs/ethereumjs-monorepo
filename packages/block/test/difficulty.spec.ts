@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { BN, toBuffer, bufferToInt, KECCAK256_RLP_ARRAY } from 'ethereumjs-util'
+import { BN, toBuffer, bufferToInt } from 'ethereumjs-util'
 import Common, { Chain } from '@ethereumjs/common'
 import { Block } from '../src'
 
