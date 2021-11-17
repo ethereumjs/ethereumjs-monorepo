@@ -91,19 +91,19 @@ export abstract class BaseTransaction<TransactionObject> {
     const rB = toBuffer(r === '' ? '0x' : r)
     const sB = toBuffer(s === '' ? '0x' : s)
 
-    const bufferedNonce = toBuffer(nonce === '' ? '0x' : nonce)
-    if (bufferedNonce.length > 8) {
+    const nonceB = toBuffer(nonce === '' ? '0x' : nonce)
+    if (nonceB.length > 8) {
       // Implements EIP-2681 which limits nonce to 2^64-1
       // https://eips.ethereum.org/EIPS/eip-2681
       throw new Error('nonce cannot be more than 2^64-1')
     }
-    this.nonce = new BN(bufferedNonce)
+    this.nonce = new BN(nonceB)
 
-    const bufferedGasLimit = toBuffer(nonce === '' ? '0x' : gasLimit)
-    if (bufferedGasLimit.length > 8) {
+    const gasLimitB = toBuffer(nonce === '' ? '0x' : gasLimit)
+    if (gasLimitB.length > 8) {
       throw new Error('gasLimit can not be more than 2^64-1')
     }
-    this.gasLimit = new BN(bufferedGasLimit)
+    this.gasLimit = new BN(gasLimitB)
 
     this.to = toB.length > 0 ? new Address(toB) : undefined
     this.value = new BN(toBuffer(value === '' ? '0x' : value))

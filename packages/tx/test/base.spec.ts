@@ -105,7 +105,6 @@ tape('[BaseTransaction]', function (t) {
       )
 
       tx = txType.class.fromTxData({}, { common, freeze: false })
-      tx = txType.class.fromTxData({}, { common, freeze: false })
       st.ok(
         !Object.isFrozen(tx),
         `${txType.name}: tx should not be frozen when freeze deactivated in options`
