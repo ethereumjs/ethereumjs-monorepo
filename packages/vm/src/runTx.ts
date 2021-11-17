@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Address, BN, toBuffer } from 'ethereumjs-util'
+import { Address, BN, KECCAK256_NULL, toBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import {
@@ -123,8 +123,8 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
 
   // Implements EIP-3607 to revert a transaction where sender address is not EOA
   // https://eips.ethereum.org/EIPS/eip-3607
-  const senderCodeHash = await this.stateManager.getContractCode(opts.tx.getSenderAddress())
-  if (senderCodeHash.length > 0) {
+  const senderCodeHash = await this.stateManager.getAccount(opts.tx.getSenderAddress())
+  if (senderCodeHash.codeHash !== KECCAK256_NULL) {
     throw new Error('invalid sender address, address is not EOA')
   }
 
