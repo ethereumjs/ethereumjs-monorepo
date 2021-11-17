@@ -123,8 +123,8 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
 
   // Implements EIP-3607 to revert a transaction where sender address is not EOA
   // https://eips.ethereum.org/EIPS/eip-3607
-  const senderCodeHash = await this.stateManager.getAccount(opts.tx.getSenderAddress())
-  if (senderCodeHash.codeHash !== KECCAK256_NULL) {
+  const senderAccount = await this.stateManager.getAccount(opts.tx.getSenderAddress())
+  if (senderAccount.codeHash !== KECCAK256_NULL) {
     throw new Error('invalid sender address, address is not EOA')
   }
 
