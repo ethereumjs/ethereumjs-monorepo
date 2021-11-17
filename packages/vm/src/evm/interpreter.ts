@@ -242,18 +242,21 @@ export default class Interpreter {
     const jumpSubs = []
 
     for (let i = 0; i < code.length; i++) {
-      const curOpCode = this.lookupOpInfo(code[i]).name
+      const curOpCode = code[i]
 
       // no destinations into the middle of PUSH
-      if (curOpCode === 'PUSH') {
+      if (curOpCode >= 0x60 && curOpCode <= 0x7f) {
+        // PUSH opcodes
         i += code[i] - 0x5f
       }
 
-      if (curOpCode === 'JUMPDEST') {
+      if (curOpCode === 0x5b) {
+        // JUMPDEST
         jumps.push(i)
       }
 
-      if (curOpCode === 'BEGINSUB') {
+      if (curOpCode === 0x5c) {
+        // BEGINSUB
         jumpSubs.push(i)
       }
     }
