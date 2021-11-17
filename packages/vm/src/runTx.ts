@@ -121,6 +121,13 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
     throw new Error('invalid input, tx is required')
   }
 
+  // Implements EIP-3607 to revert a transaction where sender address is not EOA
+  // https://eips.ethereum.org/EIPS/eip-3607
+  const senderCodeHash = await this.stateManager.getContractCode(opts.tx.getSenderAddress())
+  if (senderCodeHash.length > 0) {
+    throw new Error('invalid sender address, address is not EOA')
+  }
+
   // create a reasonable default if no block is given
   opts.block = opts.block ?? Block.fromBlockData({}, { common: opts.tx.common })
 
