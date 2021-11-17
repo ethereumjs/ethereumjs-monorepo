@@ -3,6 +3,7 @@ import {
   bnToHex,
   bnToUnpaddedBuffer,
   ecrecover,
+  MAX_INTEGER,
   rlp,
   rlphash,
   toBuffer,
@@ -120,7 +121,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
     this.gasPrice = new BN(toBuffer(txData.gasPrice === '' ? '0x' : txData.gasPrice))
 
-    if (this.gasPrice.mul(this.gasLimit).toArray().length > 32) {
+    if (this.gasPrice.mul(this.gasLimit).gt(MAX_INTEGER)) {
       throw new Error('gas limit * price overflow')
     }
     this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })

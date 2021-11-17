@@ -4,6 +4,7 @@ import {
   bnToUnpaddedBuffer,
   ecrecover,
   keccak256,
+  MAX_INTEGER,
   rlp,
   toBuffer,
 } from 'ethereumjs-util'
@@ -188,7 +189,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
     this.gasPrice = new BN(toBuffer(gasPrice === '' ? '0x' : gasPrice))
 
-    if (this.gasPrice.mul(this.gasLimit).toArray().length > 32) {
+    if (this.gasPrice.mul(this.gasLimit).gt(MAX_INTEGER)) {
       throw new Error('gas limit * price overflow')
     }
 
