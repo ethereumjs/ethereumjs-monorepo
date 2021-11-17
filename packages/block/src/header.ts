@@ -70,7 +70,10 @@ export class BlockHeader {
    */
   get random() {
     if (!this._common.isActivatedEIP(4399)) {
-      throw new Error('random can only be accessed when EIP-4399 is activated')
+      const msg = this._errorMsg(
+        'The random parameter can only be accessed when EIP-4399 is activated'
+      )
+      throw new Error(msg)
     }
     return this.mixHash
   }
@@ -408,7 +411,7 @@ export class BlockHeader {
     }
 
     // Validation for PoS blocks (EIP-3675)
-    if (this._common.isActivatedEIP(3675)) {
+    if (this._common.consensusType() === ConsensusType.ProofOfStake) {
       let error = false
       let errorMsg = ''
 
