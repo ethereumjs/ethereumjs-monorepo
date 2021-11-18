@@ -105,7 +105,7 @@ export abstract class BaseTransaction<TransactionObject> {
     }
 
     Object.entries(integerProps).forEach((entry) => {
-      if (entry[1].length > 1 && entry[1][0] === 0x00) {
+      if (entry[1].length > 0 && entry[1][0] === 0x00) {
         // RLP encoded integer values with leading zeroes are invalid
         throw new Error(`${entry[0]} cannot have leading zeroes`)
       }

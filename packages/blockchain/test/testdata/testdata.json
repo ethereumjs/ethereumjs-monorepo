@@ -56,19 +56,19 @@
     "0x095e7baea6a6c7c4c2dfeb977efac326af552d87": {
       "balance": "0x0de0b6b3a7640000",
       "code": "0x454143414543424131a4",
-      "nonce": "0x00",
+      "nonce": "0x",
       "storage": {}
     },
     "0x945304eb96065b2a98b57a48a06ae28d285a71b5": {
       "balance": "0x29a2241af62c002e",
       "code": "0x6000355415600957005b60203560003555",
-      "nonce": "0x00",
+      "nonce": "0x",
       "storage": {}
     },
     "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b": {
       "balance": "0x0de0b6b3a7640000",
       "code": "",
-      "nonce": "0x00",
+      "nonce": "0x",
       "storage": {}
     }
   },
@@ -76,19 +76,19 @@
     "0x095e7baea6a6c7c4c2dfeb977efac326af552d87": {
       "balance": "0x0de0b6b3a7640000",
       "code": "0x454143414543424131a4",
-      "nonce": "0x00",
+      "nonce": "0x",
       "storage": {}
     },
     "0x945304eb96065b2a98b57a48a06ae28d285a71b5": {
       "balance": "0x2e",
       "code": "0x6000355415600957005b60203560003555",
-      "nonce": "0x00",
+      "nonce": "0x",
       "storage": {}
     },
     "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b": {
       "balance": "0x0de0b6b3a7640000",
       "code": "",
-      "nonce": "0x00",
+      "nonce": "0x",
       "storage": {}
     }
   },

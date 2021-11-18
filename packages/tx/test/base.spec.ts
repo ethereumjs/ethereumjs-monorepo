@@ -9,7 +9,7 @@ import {
 } from '../src'
 import { TxsJsonEntry } from './types'
 import { BaseTransaction } from '../src/baseTransaction'
-import { privateToPublic, BN, toBuffer } from 'ethereumjs-util'
+import { privateToPublic, BN, toBuffer, rlp } from 'ethereumjs-util'
 
 tape('[BaseTransaction]', function (t) {
   // EIP-2930 is not enabled in Common by default (2021-03-06)
@@ -114,7 +114,7 @@ tape('[BaseTransaction]', function (t) {
       // options object works as expected.
       tx = txType.class.fromTxData({}, { common, freeze: false })
       const rlpData = tx.serialize()
-
+      if (tx instanceof AccessListEIP2930Transaction) console.log(rlp.decode(rlpData.slice(1)))
       tx = txType.class.fromSerializedTx(rlpData, { common })
       st.equal(
         tx.type,
