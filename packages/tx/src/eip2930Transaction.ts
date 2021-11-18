@@ -188,7 +188,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     AccessLists.verifyAccessList(this.accessList)
 
     const gasPriceB = toBuffer(gasPrice === '' ? '0x' : gasPrice)
-    if (gasPriceB.length > 0 && gasPriceB[0] === 0x00) {
+    if (gasPriceB.length > 1 && gasPriceB[0] === 0x00) {
       // RLP encoded integer values with leading zeroes are invalid
       throw new Error('gasPrice cannot have leading zeroes')
     }
