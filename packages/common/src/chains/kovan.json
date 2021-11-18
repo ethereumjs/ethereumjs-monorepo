@@ -63,12 +63,12 @@
     {
       "name": "berlin",
       "block": 24770900,
-      "forkHash": "0x179f954"
+      "forkHash": "0x1a0f10d9"
     }, 
     {
       "name": "london",
       "block": 26741100,
-      "forkHash": "0x198096c"
+      "forkHash": "0x1ed20b71"
     },
     {
       "name": "merge",
