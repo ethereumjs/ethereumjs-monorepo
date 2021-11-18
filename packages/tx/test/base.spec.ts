@@ -209,8 +209,8 @@ tape('[BaseTransaction]', function (t) {
   t.test('verifySignature() -> invalid', function (st) {
     for (const txType of txTypes) {
       txType.fixtures.slice(0, 4).forEach(function (txFixture: any) {
-        // set `s` to zero
-        txFixture.data.s = `0x` + '0'.repeat(16)
+        // set `s` to a single zero
+        txFixture.data.s = '0x' + '0'
         const tx = txType.class.fromTxData(txFixture.data, { common })
         st.equals(tx.verifySignature(), false, `${txType.name}: signature should not be valid`)
         st.ok(
