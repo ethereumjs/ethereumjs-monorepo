@@ -99,7 +99,7 @@ export abstract class BaseTransaction<TransactionObject> {
     }
     this.nonce = new BN(nonceB)
 
-    const gasLimitB = toBuffer(nonce === '' ? '0x' : gasLimit)
+    const gasLimitB = toBuffer(gasLimit === '' ? '0x' : gasLimit)
     if (gasLimitB.length > 8) {
       throw new Error('gasLimit cannot be more than 2^64-1')
     }
