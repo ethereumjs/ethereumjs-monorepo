@@ -105,7 +105,7 @@ export abstract class BaseTransaction<TransactionObject> {
     }
 
     Object.entries(integerProps).forEach((entry) => {
-      if (entry[1].length > 0 && entry[1][0] === 0x00) {
+      if (entry[1].length > 1 && entry[1][0] === 0x00) {
         // RLP encoded integer values with leading zeroes are invalid
         throw new Error(`${entry[0]} cannot have leading zeroes`)
       }
@@ -123,6 +123,7 @@ export abstract class BaseTransaction<TransactionObject> {
       // https://eips.ethereum.org/EIPS/eip-2681
       throw new Error('nonce cannot be more than 2^64-1')
     }
+
     this.gasLimit = new BN(gasLimitB)
     this.to = toB.length > 0 ? new Address(toB) : undefined
     this.value = new BN(valueB)
