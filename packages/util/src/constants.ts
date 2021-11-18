@@ -18,6 +18,11 @@ export const TWO_POW256: BN = new BN(
 )
 
 /**
+ * 2^64-1
+ */
+export const MAX_UINT64: BN = new BN('ffffffffffffffff', 16)
+
+/**
  * Keccak-256 hash of null
  */
 export const KECCAK256_NULL_S: string =

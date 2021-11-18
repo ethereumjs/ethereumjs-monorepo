@@ -4,6 +4,7 @@ import {
   BN,
   toBuffer,
   MAX_INTEGER,
+  MAX_UINT64,
   TWO_POW256,
   unpadBuffer,
   ecsign,
@@ -90,23 +91,41 @@ export abstract class BaseTransaction<TransactionObject> {
     const vB = toBuffer(v === '' ? '0x' : v)
     const rB = toBuffer(r === '' ? '0x' : r)
     const sB = toBuffer(s === '' ? '0x' : s)
-
     const nonceB = toBuffer(nonce === '' ? '0x' : nonce)
-    if (nonceB.length > 8) {
+    const gasLimitB = toBuffer(gasLimit === '' ? '0x' : gasLimit)
+    const valueB = toBuffer(value === '' ? '0x' : value)
+
+    const integerProps = {
+      nonce: nonceB,
+      gasLimit: gasLimitB,
+      value: valueB,
+      v: vB,
+      r: rB,
+      s: sB,
+    }
+
+    Object.entries(integerProps).forEach((entry) => {
+      if (entry[1].length > 0 && entry[1][0] === 0x00) {
+        // RLP encoded integer values with leading zeroes are invalid
+        throw new Error(`${entry[0]} cannot have leading zeroes`)
+      }
+    })
+
+    if (gasLimitB.length > 8) {
+      // Geth limits gasLimit to Uint64 so gas cannot be more than 2^64-1
+      throw new Error('gasLimit cannot be more than 2^64-1')
+    }
+
+    this.nonce = new BN(nonceB)
+
+    if (this.nonce.gte(MAX_UINT64)) {
       // Implements EIP-2681 which limits nonce to 2^64-1
       // https://eips.ethereum.org/EIPS/eip-2681
       throw new Error('nonce cannot be more than 2^64-1')
     }
-    this.nonce = new BN(nonceB)
-
-    const gasLimitB = toBuffer(gasLimit === '' ? '0x' : gasLimit)
-    if (gasLimitB.length > 8) {
-      throw new Error('gasLimit cannot be more than 2^64-1')
-    }
     this.gasLimit = new BN(gasLimitB)
-
     this.to = toB.length > 0 ? new Address(toB) : undefined
-    this.value = new BN(toBuffer(value === '' ? '0x' : value))
+    this.value = new BN(valueB)
     this.data = toBuffer(data === '' ? '0x' : data)
 
     this.v = vB.length > 0 ? new BN(vB) : undefined

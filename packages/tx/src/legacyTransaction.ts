@@ -77,18 +77,9 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
     const [nonce, gasPrice, gasLimit, to, value, data, v, r, s] = values
 
-    const integerProps = [nonce, gasPrice, gasLimit, value]
-
-    for (const x of [v, r, s]) {
-      // If transaction is signed, add v, r, and s to values checked for leading zeroes
-      if (x?.length) integerProps.push(x)
-    }
-
-    for (const x of integerProps) {
-      if (x.length > 0 && x[0] === 0x00) {
-        // Throws if integer is encoded with leading zeroes
-        throw new Error('Integer values cannot have leading zeroes')
-      }
+    if (gasPrice.length > 0 && gasPrice[0] === 0x00) {
+      // RLP encoded integer values with leading zeroes are invalid
+      throw new Error('gasPrice cannot have leading zeroes')
     }
 
     return new Transaction(
