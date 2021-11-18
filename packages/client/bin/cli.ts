@@ -673,4 +673,4 @@ async function run() {
   })
 }
 
-run().catch((err) => logger?.error(err) ?? console.error(err))
+run().catch((err) => logger?.error(err.message.toString()) ?? console.error(err))

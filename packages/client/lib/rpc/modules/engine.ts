@@ -1,6 +1,6 @@
 import { Block, HeaderData } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
-import { BN, toBuffer, bufferToHex, rlp } from 'ethereumjs-util'
+import { toBuffer, bufferToHex, rlp } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { middleware, validators } from '../validation'
 import { INTERNAL_ERROR } from '../error-code'
@@ -247,10 +247,18 @@ export class Engine {
    */
   async executePayloadV1(params: [ExecutionPayloadV1]) {
     const [payloadData] = params
-    const { blockNumber: number, receiptRoot: receiptTrie, transactions } = payloadData
+    const {
+      blockNumber: number,
+      receiptRoot: receiptTrie,
+      random: mixHash,
+      transactions,
+      parentHash,
+    } = payloadData
     const common = this.config.chainCommon
 
-    if (new BN(toBuffer(number)).gt(this.chain.headers.height.addn(1))) {
+    try {
+      await findBlock(toBuffer(parentHash), this.validBlocks, this.chain)
+    } catch (error: any) {
       return { status: Status.SYNCING, message: null, latestValidHash: null }
     }
 
@@ -278,13 +286,14 @@ export class Engine {
         number,
         receiptTrie,
         transactionsTrie,
+        mixHash,
       }
 
       let block
       try {
         block = Block.fromBlockData({ header, transactions: txs }, { common })
       } catch (error) {
-        const message = `Error verifying block: ${error}`
+        const message = `Error verifying block during init: ${error}`
         this.config.logger.debug(message)
         const latestValidHash = await validHash(
           toBuffer(header.parentHash),
@@ -295,11 +304,11 @@ export class Engine {
       }
 
       const vmCopy = this.vm.copy()
-      const vmHeadHash = this.chain.headers.latest!.hash()
-      let parentBlocks
+      const vmHead = this.chain.headers.latest!
+      let blocks: Block[]
       try {
-        parentBlocks = await recursivelyFindParents(
-          vmHeadHash,
+        blocks = await recursivelyFindParents(
+          vmHead.hash(),
           block.header.parentHash,
           this.validBlocks,
           this.chain
@@ -308,14 +317,16 @@ export class Engine {
         return { status: Status.SYNCING, message: null, latestValidHash: null }
       }
 
-      for (const parent of parentBlocks) {
-        await vmCopy.runBlock({ block: parent })
-      }
+      blocks.push(block)
 
       try {
-        await vmCopy.runBlock({ block })
+        for (const [i, block] of blocks.entries()) {
+          const root = (i > 0 ? blocks[i - 1].header : vmHead).stateRoot
+          await vmCopy.runBlock({ block, root })
+          await vmCopy.blockchain.putBlock(block)
+        }
       } catch (error) {
-        const message = `Error verifying block: ${error}`
+        const message = `Error verifying block while running: ${error}`
         this.config.logger.debug(message)
         const latestValidHash = await validHash(
           block.header.parentHash,
@@ -348,7 +359,7 @@ export class Engine {
    * @returns None or an error
    */
   async forkchoiceUpdatedV1(
-    params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | null]
+    params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | undefined]
   ) {
     const { headBlockHash, finalizedBlockHash } = params[0]
     const payloadAttributes = params[1]
@@ -384,6 +395,8 @@ export class Engine {
 
         const blocks = [...parentBlocks, headBlock]
         await this.chain.putBlocks(blocks, true)
+        await this.synchronizer.execution.run()
+        this.synchronizer.checkTxPoolState()
         this.txPool.removeNewBlockTxs(blocks)
 
         for (const block of blocks) {
@@ -412,7 +425,7 @@ export class Engine {
       /*
        * If payloadAttributes is present, start building block and return payloadId
        */
-      if (payloadAttributes !== null) {
+      if (payloadAttributes) {
         const { timestamp, random, feeRecipient } = payloadAttributes
         const parentBlock = this.chain.blocks.latest!
         const payloadId = await this.pendingBlock.start(this.vm.copy(), parentBlock, {

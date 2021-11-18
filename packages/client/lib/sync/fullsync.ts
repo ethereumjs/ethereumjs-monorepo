@@ -181,8 +181,8 @@ export class FullSynchronizer extends Synchronizer {
             this.fetcher.destroy()
             this.fetcher = null
           }
-          return
         }
+
         if (blocks.length === 0) {
           this.config.logger.warn('No blocks fetched are applicable for import')
           return
@@ -203,7 +203,7 @@ export class FullSynchronizer extends Synchronizer {
         )
         this.txPool.removeNewBlockTxs(blocks)
 
-        if (this.running || this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+        if (this.running) {
           await this.execution.run()
           this.checkTxPoolState()
         }
