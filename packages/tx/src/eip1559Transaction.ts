@@ -216,23 +216,10 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     // Verify the access list format.
     AccessLists.verifyAccessList(this.accessList)
 
-    const maxFeePerGasB = toBuffer(maxFeePerGas === '' ? '0x' : maxFeePerGas)
-    const maxPriorityFeePerGasB = toBuffer(
-      maxPriorityFeePerGas === '' ? '0x' : maxPriorityFeePerGas
+    this.maxFeePerGas = new BN(toBuffer(maxFeePerGas === '' ? '0x' : maxFeePerGas))
+    this.maxPriorityFeePerGas = new BN(
+      toBuffer(maxPriorityFeePerGas === '' ? '0x' : maxPriorityFeePerGas)
     )
-
-    if (maxFeePerGasB.length > 1 && maxFeePerGasB[0] === 0x00) {
-      // RLP encoded integer values with leading zeroes are invalid
-      throw new Error('maxFeePerGas cannot have leading zeroes')
-    }
-
-    if (maxPriorityFeePerGasB.length > 1 && maxPriorityFeePerGasB[0] === 0x00) {
-      // RLP encoded integer values with leading zeroes are invalid
-      throw new Error('maxPriorityFeePerGas cannot have leading zeroes')
-    }
-
-    this.maxFeePerGas = new BN(maxFeePerGasB)
-    this.maxPriorityFeePerGas = new BN(maxPriorityFeePerGasB)
 
     this._validateCannotExceedMaxInteger(
       {
