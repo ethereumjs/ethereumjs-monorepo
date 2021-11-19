@@ -20,6 +20,8 @@ import {
   baToJSON,
   intToBuffer,
   intToHex,
+  RlpValues,
+  hasLeadingZeroes,
 } from '../src'
 
 tape('zeros function', function (t) {
@@ -349,5 +351,31 @@ tape('intToHex', function (st) {
   st.throws(() => intToHex(Number.MAX_SAFE_INTEGER + 1), 'throws on unsafe integers')
   st.ok(intToHex(0) == '0x0', 'correctly converts 0 to a hex string')
   st.ok(intToHex(1) == '0x1', 'correctly converts 1 to a hex string')
+  st.end()
+})
+
+tape('hasLeadingZeroes', function (st) {
+  const noLeadingZeroes: RlpValues = {
+    a: toBuffer('0x123'),
+    b: undefined,
+    c: toBuffer('0x'),
+  }
+  const leadingZeroes: RlpValues = {
+    a: toBuffer('0x001'),
+    b: toBuffer('0x'),
+  }
+  const onlyZeroes: RlpValues = {
+    a: toBuffer('0x0'),
+  }
+
+  st.ok(
+    hasLeadingZeroes(noLeadingZeroes) === undefined,
+    'returns undefined when no encoded leading zeroes'
+  )
+  st.ok(
+    hasLeadingZeroes(leadingZeroes) === 'a',
+    'returns the key of the property with leading zeroes'
+  )
+  st.ok(hasLeadingZeroes(onlyZeroes) === 'a', 'returns key that contains encoded 0 value')
   st.end()
 })
