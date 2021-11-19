@@ -6,6 +6,8 @@ import {
   FeeMarketEIP1559Transaction,
   N_DIV_2,
   Capability,
+  TxValuesArray,
+  AccessListEIP2930ValuesArray,
 } from '../src'
 import { TxsJsonEntry } from './types'
 import { BaseTransaction } from '../src/baseTransaction'
@@ -149,6 +151,53 @@ tape('[BaseTransaction]', function (t) {
     st.end()
   })
 
+  t.test('fromValuesArray()', function (st) {
+    let rlpData: any = legacyTxs[0].raw() as TxValuesArray
+    rlpData[0] = toBuffer('0x0')
+    try {
+      Transaction.fromValuesArray(rlpData)
+      st.fail('should have thrown when nonce has leading zeroes')
+    } catch (err: any) {
+      st.ok(
+        err.message === 'nonce cannot have leading zeroes',
+        'should throw with nonce with leading zeroes'
+      )
+    }
+    rlpData[0] = toBuffer('0x')
+    rlpData[6] = toBuffer('0x0')
+    try {
+      Transaction.fromValuesArray(rlpData)
+      st.fail('should have thrown when v has leading zeroes')
+    } catch (err: any) {
+      st.ok(
+        err.message === 'v cannot have leading zeroes',
+        'should throw with v with leading zeroes'
+      )
+    }
+    rlpData = eip2930Txs[0].raw() as AccessListEIP2930ValuesArray
+    rlpData[3] = toBuffer('0x0')
+    try {
+      AccessListEIP2930Transaction.fromValuesArray(rlpData as AccessListEIP2930ValuesArray)
+      st.fail('should have thrown when gasLimit has leading zeroes')
+    } catch (err: any) {
+      st.ok(
+        err.message === 'gasLimit cannot have leading zeroes',
+        'should throw with gasLimit with leading zeroes'
+      )
+    }
+    rlpData = eip1559Txs[0].raw()
+    rlpData[2] = toBuffer('0x0')
+    try {
+      FeeMarketEIP1559Transaction.fromValuesArray(rlpData)
+      st.fail('should have thrown when maxPriorityFeePerGas has leading zeroes')
+    } catch (err: any) {
+      st.ok(
+        err.message === 'maxPriorityFeePerGas cannot have leading zeroes',
+        'should throw with maxPriorityFeePerGas with leading zeroes'
+      )
+    }
+    st.end()
+  })
   t.test('serialize()', function (st) {
     for (const txType of txTypes) {
       txType.txs.forEach(function (tx: any) {
