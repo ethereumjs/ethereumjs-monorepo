@@ -31,6 +31,10 @@ Please ensure you have Node 12.x+ installed
 
 ### Beacon
 
-1. Use lighthouse branch `merge-f2f` and run `make`
+1. Use lighthouse branch `kintsugi` and run `make`
 1. Make dir `lighthouse/kintsugi` and copy in from this dir: `config.yaml`, `genesis.ssz`, `deploy_block.txt`, `deposit_contract.txt`, `deposit_contract_block.txt`
-1. Run cmd: `lighthouse --debug-level=info --datadir=kintsugi/temp --testnet-dir=kintsugi beacon_node --disable-enr-auto-update --dummy-eth1 --boot-nodes="enr:-Iq4QKuNB_wHmWon7hv5HntHiSsyE1a6cUTK1aT7xDSU_hNTLW3R4mowUboCsqYoh1kN9v3ZoSu_WuvW9Aw0tQ0Dxv6GAXxQ7Nv5gmlkgnY0gmlwhLKAlv6Jc2VjcDI1NmsxoQK6S-Cii_KmfFdUJL2TANL3ksaKUnNXvTCv1tLwXs0QgIN1ZHCCIyk" --merge --http-allow-sync-stalled --metrics --disable-packet-filter --execution-endpoints=http://127.0.0.1:8545 --terminal-total-difficulty-override=60000000`
+1. Run cmd: `lighthouse --debug-level=info --datadir=kintsugi/datadir --testnet-dir=kintsugi beacon_node --disable-enr-auto-update --dummy-eth1 --boot-nodes="enr:-Iq4QKuNB_wHmWon7hv5HntHiSsyE1a6cUTK1aT7xDSU_hNTLW3R4mowUboCsqYoh1kN9v3ZoSu_WuvW9Aw0tQ0Dxv6GAXxQ7Nv5gmlkgnY0gmlwhLKAlv6Jc2VjcDI1NmsxoQK6S-Cii_KmfFdUJL2TANL3ksaKUnNXvTCv1tLwXs0QgIN1ZHCCIyk" --merge --http-allow-sync-stalled --metrics --disable-packet-filter --execution-endpoints=http://127.0.0.1:8545 --terminal-total-difficulty-override=60000000`
+
+### Docker
+
+`docker-compose --file docker-compose.ethereumjs.yml up`
