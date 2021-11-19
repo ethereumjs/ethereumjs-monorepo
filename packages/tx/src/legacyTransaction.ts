@@ -8,6 +8,8 @@ import {
   rlphash,
   toBuffer,
   unpadBuffer,
+  hasLeadingZeroes,
+  RlpValues,
 } from 'ethereumjs-util'
 import { TxOptions, TxData, JsonTx, N_DIV_2, TxValuesArray, Capability } from './types'
 import { BaseTransaction } from './baseTransaction'
@@ -77,9 +79,20 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
     const [nonce, gasPrice, gasLimit, to, value, data, v, r, s] = values
 
-    if (gasPrice.length > 0 && gasPrice[0] === 0x00) {
-      // RLP encoded integer values with leading zeroes are invalid
-      throw new Error('gasPrice cannot have leading zeroes')
+    const integerValues: RlpValues = {
+      nonce: nonce,
+      gasPrice: gasPrice,
+      gasLimit: gasLimit,
+      value: value,
+      v: v,
+      r: r,
+      s: s,
+    }
+
+    const res = hasLeadingZeroes(integerValues)
+
+    if (res) {
+      throw new Error(`${res} cannot have leading zeroes`)
     }
 
     return new Transaction(

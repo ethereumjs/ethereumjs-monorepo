@@ -3,8 +3,10 @@ import {
   bnToHex,
   bnToUnpaddedBuffer,
   ecrecover,
+  hasLeadingZeroes,
   keccak256,
   rlp,
+  RlpValues,
   toBuffer,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
@@ -151,6 +153,23 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       r,
       s,
     ] = values
+
+    const integerValues: RlpValues = {
+      nonce: nonce,
+      maxPriorityFeePerGas: maxPriorityFeePerGas,
+      maxFeePerGas: maxFeePerGas,
+      gasLimit: gasLimit,
+      value: value,
+      v: v,
+      r: r,
+      s: s,
+    }
+
+    const res = hasLeadingZeroes(integerValues)
+
+    if (res) {
+      throw new Error(`${res} cannot have leading zeroes`)
+    }
 
     return new FeeMarketEIP1559Transaction(
       {

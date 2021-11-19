@@ -141,3 +141,10 @@ export function toType<T extends TypeOutput>(
     return `0x${output.toString('hex')}` as TypeOutputReturnType[T]
   }
 }
+
+/**
+ * An object containing pairs of keys and the RLP encoded value for that key
+ */
+export type RlpValues = {
+  [value: string]: Buffer | undefined
+}

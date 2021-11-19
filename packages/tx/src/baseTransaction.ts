@@ -95,22 +95,6 @@ export abstract class BaseTransaction<TransactionObject> {
     const gasLimitB = toBuffer(gasLimit === '' ? '0x' : gasLimit)
     const valueB = toBuffer(value === '' ? '0x' : value)
 
-    const integerProps = {
-      nonce: nonceB,
-      gasLimit: gasLimitB,
-      value: valueB,
-      v: vB,
-      r: rB,
-      s: sB,
-    }
-
-    Object.entries(integerProps).forEach((entry) => {
-      if (entry[1].length > 0 && entry[1][0] === 0x00) {
-        // RLP encoded integer values with leading zeroes are invalid
-        throw new Error(`${entry[0]} cannot have leading zeroes`)
-      }
-    })
-
     if (gasLimitB.length > 8) {
       // Geth limits gasLimit to Uint64 so gas cannot be more than 2^64-1
       throw new Error('gasLimit cannot be more than 2^64-1')

@@ -3,9 +3,11 @@ import {
   bnToHex,
   bnToUnpaddedBuffer,
   ecrecover,
+  hasLeadingZeroes,
   keccak256,
   MAX_INTEGER,
   rlp,
+  RlpValues,
   toBuffer,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
@@ -139,6 +141,22 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     }
 
     const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = values
+
+    const integerValues: RlpValues = {
+      nonce: nonce,
+      gasPrice: gasPrice,
+      gasLimit: gasLimit,
+      value: value,
+      v: v,
+      r: r,
+      s: s,
+    }
+
+    const res = hasLeadingZeroes(integerValues)
+
+    if (res) {
+      throw new Error(`${res} cannot have leading zeroes`)
+    }
 
     const emptyAccessList: AccessList = []
 
