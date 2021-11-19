@@ -62,13 +62,13 @@
     },
     {
       "name": "berlin",
-      "block": null,
-      "forkHash": null
+      "block": 24770900,
+      "forkHash": "0x1a0f10d9"
     }, 
     {
       "name": "london",
-      "block": null, 
-      "forkHash": null
+      "block": 26741100,
+      "forkHash": "0x1ed20b71"
     },
     {
       "name": "merge",

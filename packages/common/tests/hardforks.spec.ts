@@ -380,7 +380,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
 
     c = new Common({ chain: Chain.Kovan })
     const f = () => {
-      c.forkHash(Hardfork.London)
+      c.forkHash(Hardfork.Merge)
     }
     msg = 'should throw when called on non-applied or future HF'
     st.throws(f, /No fork hash calculation possible/, msg)
