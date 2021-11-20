@@ -7,7 +7,7 @@ const formatter = process.argv.find((arg, i, array) => array[i - 1] === '-with')
 
 runTestsWithFormatter(testScript, formatter)
 
-function runTestsWithFormatter (testScript, formatter = './node_modules/.bin/tap-spec') {
+function runTestsWithFormatter (testScript, formatter = '../../node_modules/.bin/tap-spec') {
   if (!testScript) {
     console.log('No test script specified!')
     return
