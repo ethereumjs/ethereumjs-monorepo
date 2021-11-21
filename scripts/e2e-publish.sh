@@ -28,6 +28,13 @@ curl -XPUT \
    -d '{ "name": "test", "password": "test" }' \
    'http://localhost:4873/-/user/org.couchdb.user:test'
 
+# `npm login`
+NPM_USER=test \
+  NPM_PASS=test \
+  NPM_EMAIL=test@test.com \
+  npx npm-login-cmd \
+  --registry=http://localhost:4873
+
 # npm version
 npm version minor \
   --workspaces \
