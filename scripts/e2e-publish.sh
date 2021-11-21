@@ -28,13 +28,6 @@ curl -XPUT \
    -d '{ "name": "test", "password": "test" }' \
    'http://localhost:4873/-/user/org.couchdb.user:test'
 
-# `npm login`
-npm-auth-to-token \
-  -u test \
-  -p test \
-  -e test@test.com \
-  -r http://localhost:4873
-
 # npm version
 npm version minor \
   --workspaces \
