@@ -23,30 +23,10 @@ verdaccio --config verdaccio.yml &
 npx wait-port 4873
 
 # `npm add user`
-# curl -XPUT \
-#    -H "Content-type: application/json" \
-#    -d '{ "name": "test", "password": "test" }' \
-#    'http://localhost:4873/-/user/org.couchdb.user:test'
 TOKEN=$(curl -XPUT \
   -H "Content-type: application/json" \
   -d '{ "name": "test", "password": "test" }' \
   'http://localhost:4873/-/user/org.couchdb.user:test')
-
-# `npm login`
-# export NPM_USER=test
-# export NPM_PASS=test
-# export NPM_EMAIL=test@test.com
-# npx npm-login-cmd --registry=http://localhost:4873
-
-# TOKEN=$(curl -s \
-#   -H "Accept: application/json" \
-#   -H "Content-Type:application/json" \
-#   -X PUT --data '{"name": "test", "password": "test"}' \
-#   http://localhost:4873/-/user/org.couchdb.user:test 2>&1 | grep -oP \
-#   "token\":\"\K\w+"))
-
-echo "*** TOKEN ***"
-echo $TOKEN
 
 npm set registry "http://localhost:4873"
 npm set //localhost:4873/:_authToken $TOKEN
