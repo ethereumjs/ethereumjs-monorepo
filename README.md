@@ -51,7 +51,7 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 # LICENSE
 
-[MIT](https://opensource.org/licenses/MIT)
+Most packages are [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>) licensed, see package folder for the respective license.
 
 [coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg
 [coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo
