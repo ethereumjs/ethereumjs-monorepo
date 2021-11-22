@@ -62,6 +62,7 @@ export enum Chain {
   Rinkeby = 4,
   Kovan = 42,
   Goerli = 5,
+  Sepolia = 11155111,
 }
 
 export enum Hardfork {
