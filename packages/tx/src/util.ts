@@ -1,6 +1,6 @@
 import Common from '@ethereumjs/common'
 import { bufferToHex, setLengthLeft, toBuffer } from 'ethereumjs-util'
-import { AccessList, AccessListBuffer, AccessListItem, isAccessList } from './types'
+import { AccessList, AccessListBuffer, AccessListItem, isAccessList, RlpValues } from './types'
 
 export class AccessLists {
   public static getAccessListData(accessList: AccessListBuffer | AccessList) {
