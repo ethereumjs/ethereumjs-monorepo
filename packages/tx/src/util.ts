@@ -100,3 +100,15 @@ export class AccessLists {
     return addresses * accessListAddressCost + slots * accessListStorageKeyCost
   }
 }
+
+/**
+ *
+ * @param values An object containing a set keys and RLP encoded values
+ * @returns a string with the value that was encoded with leading zeroes or undefined if no values have leading zeroes
+ */
+export const hasLeadingZeroes = function (values: RlpValues): string | undefined {
+  const res = Object.entries(values).find(
+    (entry) => entry[1] && entry[1]?.length > 0 && entry[1][0] === 0x00
+  )
+  return res ? res[0] : undefined
+}

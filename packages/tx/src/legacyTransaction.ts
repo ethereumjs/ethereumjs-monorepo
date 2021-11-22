@@ -8,10 +8,9 @@ import {
   rlphash,
   toBuffer,
   unpadBuffer,
-  hasLeadingZeroes,
-  RlpValues,
 } from 'ethereumjs-util'
-import { TxOptions, TxData, JsonTx, N_DIV_2, TxValuesArray, Capability } from './types'
+import { TxOptions, TxData, JsonTx, N_DIV_2, TxValuesArray, Capability, RlpValues } from './types'
+import { hasLeadingZeroes } from './util'
 import { BaseTransaction } from './baseTransaction'
 import Common from '@ethereumjs/common'
 

@@ -3,11 +3,9 @@ import {
   bnToHex,
   bnToUnpaddedBuffer,
   ecrecover,
-  hasLeadingZeroes,
   keccak256,
   MAX_INTEGER,
   rlp,
-  RlpValues,
   toBuffer,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
@@ -20,9 +18,10 @@ import {
   JsonTx,
   TxOptions,
   N_DIV_2,
+  RlpValues,
 } from './types'
 
-import { AccessLists } from './util'
+import { AccessLists, hasLeadingZeroes } from './util'
 
 const TRANSACTION_TYPE = 1
 const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')
