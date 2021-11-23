@@ -21,7 +21,7 @@ import {
   RlpValues,
 } from './types'
 
-import { AccessLists, hasLeadingZeroes } from './util'
+import { AccessLists, validateNoLeadingZeroes } from './util'
 
 const TRANSACTION_TYPE = 1
 const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')
@@ -151,11 +151,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       s: s,
     }
 
-    const res = hasLeadingZeroes(integerValues)
-
-    if (res) {
-      throw new Error(`${res} cannot have leading zeroes`)
-    }
+    validateNoLeadingZeroes(integerValues)
 
     const emptyAccessList: AccessList = []
 

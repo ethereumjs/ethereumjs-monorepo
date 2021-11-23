@@ -106,9 +106,11 @@ export class AccessLists {
  * @param values An object containing a set keys and RLP encoded values
  * @returns a string with the value that was encoded with leading zeroes or undefined if no values have leading zeroes
  */
-export const hasLeadingZeroes = function (values: RlpValues): string | undefined {
+export const validateNoLeadingZeroes = function (values: RlpValues) {
   const res = Object.entries(values).find(
     (entry) => entry[1] && entry[1]?.length > 0 && entry[1][0] === 0x00
   )
-  return res ? res[0] : undefined
+  if (res) {
+    throw new Error(`${res[0]} cannot have leading zeroes`)
+  }
 }

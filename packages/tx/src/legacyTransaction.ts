@@ -10,7 +10,7 @@ import {
   unpadBuffer,
 } from 'ethereumjs-util'
 import { TxOptions, TxData, JsonTx, N_DIV_2, TxValuesArray, Capability, RlpValues } from './types'
-import { hasLeadingZeroes } from './util'
+import { validateNoLeadingZeroes } from './util'
 import { BaseTransaction } from './baseTransaction'
 import Common from '@ethereumjs/common'
 
@@ -88,11 +88,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
       s: s,
     }
 
-    const res = hasLeadingZeroes(integerValues)
-
-    if (res) {
-      throw new Error(`${res} cannot have leading zeroes`)
-    }
+    validateNoLeadingZeroes(integerValues)
 
     return new Transaction(
       {
