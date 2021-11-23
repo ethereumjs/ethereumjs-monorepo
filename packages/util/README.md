@@ -21,7 +21,7 @@ import { isValidChecksumAddress, unpadBuffer, BN } from 'ethereumjs-util'
 const address = '0x2F015C60E0be116B1f0CD534704Db9c92118FB6A'
 assert.ok(isValidChecksumAddress(address))
 
-assert.equal(unpadBuffer(Buffer.from('000000006600', 'hex')), Buffer.from('6600', 'hex'))
+assert.ok(unpadBuffer(Buffer.from('000000006600', 'hex')).equals(Buffer.from('6600', 'hex')))
 
 assert.equal(new BN('dead', 16).add(new BN('101010', 2)), 57047)
 ```
