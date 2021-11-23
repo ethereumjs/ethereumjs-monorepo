@@ -103,21 +103,13 @@ export abstract class BaseTransaction<TransactionObject> {
     this.r = rB.length > 0 ? new BN(rB) : undefined
     this.s = sB.length > 0 ? new BN(sB) : undefined
 
-    this._validateCannotExceedMaxInteger({
-      value: this.value,
-      r: this.r,
-      s: this.s,
-    })
+    this._validateCannotExceedMaxInteger({ value: this.value, r: this.r, s: this.s })
 
-    // EIP-2681 limits nonce to 2^64-1
-    // and geth limits gasLimit to 2^64-1
-    this._validateCannotExceedMaxInteger(
-      {
-        nonce: this.nonce,
-        gasLimit: this.gasLimit,
-      },
-      64
-    )
+    // geth limits gasLimit to 2^64-1
+    this._validateCannotExceedMaxInteger({ gasLimit: this.gasLimit }, 64)
+
+    // EIP-2681 limits nonce to 2^64-1 (cannot equal 2^64-1)
+    this._validateCannotExceedMaxInteger({ nonce: this.nonce }, 64, true)
   }
 
   /**
@@ -387,19 +379,49 @@ export abstract class BaseTransaction<TransactionObject> {
     }
   }
 
-  protected _validateCannotExceedMaxInteger(values: { [key: string]: BN | undefined }, bits = 256) {
+  /**
+   * Validates that an object with BN values cannot exceed the specified bit limit.
+   * @param values Object containing string keys and BN values
+   * @param bits Number of bits to check (64 or 256)
+   * @param cannotEqual Pass true if the number also cannot equal one less the maximum value
+   */
+  protected _validateCannotExceedMaxInteger(
+    values: { [key: string]: BN | undefined },
+    bits = 256,
+    cannotEqual = false
+  ) {
     for (const [key, value] of Object.entries(values)) {
       switch (bits) {
         case 64:
-          if (value?.gt(MAX_UINT64)) {
-            const msg = this._errorMsg(`${key} cannot exceed MAX_UINT64 (2^64-1), given ${value}`)
-            throw new Error(msg)
+          if (cannotEqual) {
+            if (value?.gte(MAX_UINT64)) {
+              const msg = this._errorMsg(
+                `${key} cannot equal or exceed MAX_UINT64 (2^64-1), given ${value}`
+              )
+              throw new Error(msg)
+            }
+          } else {
+            if (value?.gt(MAX_UINT64)) {
+              const msg = this._errorMsg(`${key} cannot exceed MAX_UINT64 (2^64-1), given ${value}`)
+              throw new Error(msg)
+            }
           }
           break
         case 256:
-          if (value?.gte(MAX_INTEGER)) {
-            const msg = this._errorMsg(`${key} cannot exceed MAX_INTEGER (2^256-1), given ${value}`)
-            throw new Error(msg)
+          if (cannotEqual) {
+            if (value?.gte(MAX_INTEGER)) {
+              const msg = this._errorMsg(
+                `${key} cannot equal or exceed MAX_INTEGER (2^256-1), given ${value}`
+              )
+              throw new Error(msg)
+            }
+          } else {
+            if (value?.gt(MAX_INTEGER)) {
+              const msg = this._errorMsg(
+                `${key} cannot exceed MAX_INTEGER (2^256-1), given ${value}`
+              )
+              throw new Error(msg)
+            }
           }
           break
         default: {

@@ -283,7 +283,7 @@ export const baToJSON = function (ba: any): any {
  */
 export const validateNoLeadingZeroes = function (values: { [key: string]: Buffer | undefined }) {
   for (const [k, v] of Object.entries(values)) {
-    if (v && v.length > 0 && v[0] === 0x00) {
+    if (v !== undefined && v.length > 0 && v[0] === 0) {
       throw new Error(`${k} cannot have leading zeroes, received: ${v.toString('hex')}`)
     }
   }
