@@ -8,8 +8,8 @@
     "algorithm": "ethash",
     "ethash": {}
   },
-  "comment": "PoW test network",
-  "url": "https://github.com/ethereum/ropsten",
+  "comment": "PoW test network to replace Ropsten",
+  "url": "https://github.com/ethereum/go-ethereum/pull/23730",
   "genesis": {
     "hash": "0x25a5cc106eea7138acab33231d7160d69cb777ee0c2c553fcddf5138993e6dd9",
     "timestamp": "0x6159af19",
