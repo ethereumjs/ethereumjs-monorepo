@@ -7,7 +7,6 @@ import {
   rlp,
   toBuffer,
   validateNoLeadingZeroes,
-  RlpValues,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { BaseTransaction } from './baseTransaction'
@@ -154,18 +153,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       s,
     ] = values
 
-    const integerValues: RlpValues = {
-      nonce: nonce,
-      maxPriorityFeePerGas: maxPriorityFeePerGas,
-      maxFeePerGas: maxFeePerGas,
-      gasLimit: gasLimit,
-      value: value,
-      v: v,
-      r: r,
-      s: s,
-    }
-
-    validateNoLeadingZeroes(integerValues)
+    validateNoLeadingZeroes({ nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, value, v, r, s })
 
     return new FeeMarketEIP1559Transaction(
       {
@@ -217,13 +205,10 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       toBuffer(maxPriorityFeePerGas === '' ? '0x' : maxPriorityFeePerGas)
     )
 
-    this._validateCannotExceedMaxInteger(
-      {
-        maxFeePerGas: this.maxFeePerGas,
-        maxPriorityFeePerGas: this.maxPriorityFeePerGas,
-      },
-      256
-    )
+    this._validateCannotExceedMaxInteger({
+      maxFeePerGas: this.maxFeePerGas,
+      maxPriorityFeePerGas: this.maxPriorityFeePerGas,
+    })
 
     if (this.maxFeePerGas.lt(this.maxPriorityFeePerGas)) {
       const msg = this._errorMsg(

@@ -7,7 +7,6 @@ import {
   MAX_INTEGER,
   rlp,
   toBuffer,
-  RlpValues,
   validateNoLeadingZeroes,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
@@ -142,17 +141,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
     const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = values
 
-    const integerValues: RlpValues = {
-      nonce: nonce,
-      gasPrice: gasPrice,
-      gasLimit: gasLimit,
-      value: value,
-      v: v,
-      r: r,
-      s: s,
-    }
-
-    validateNoLeadingZeroes(integerValues)
+    validateNoLeadingZeroes({ nonce, gasPrice, gasLimit, value, v, r, s })
 
     const emptyAccessList: AccessList = []
 

@@ -20,7 +20,6 @@ import {
   baToJSON,
   intToBuffer,
   intToHex,
-  RlpValues,
   validateNoLeadingZeroes,
 } from '../src'
 
@@ -355,16 +354,16 @@ tape('intToHex', function (st) {
 })
 
 tape('validateNoLeadingZeroes', function (st) {
-  const noLeadingZeroes: RlpValues = {
+  const noLeadingZeroes = {
     a: toBuffer('0x123'),
     b: undefined,
     c: toBuffer('0x'),
   }
-  const leadingZeroes: RlpValues = {
+  const leadingZeroes = {
     a: toBuffer('0x001'),
     b: toBuffer('0x'),
   }
-  const onlyZeroes: RlpValues = {
+  const onlyZeroes = {
     a: toBuffer('0x0'),
   }
 

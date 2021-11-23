@@ -5,7 +5,6 @@ import {
   toBuffer,
   MAX_INTEGER,
   MAX_UINT64,
-  TWO_POW256,
   unpadBuffer,
   ecsign,
   publicToAddress,
@@ -105,12 +104,20 @@ export abstract class BaseTransaction<TransactionObject> {
     this.s = sB.length > 0 ? new BN(sB) : undefined
 
     this._validateCannotExceedMaxInteger({
-      nonce: this.nonce,
-      gasLimit: this.gasLimit,
       value: this.value,
       r: this.r,
       s: this.s,
     })
+
+    // EIP-2681 limits nonce to 2^64-1
+    // and geth limits gasLimit to 2^64-1
+    this._validateCannotExceedMaxInteger(
+      {
+        nonce: this.nonce,
+        gasLimit: this.gasLimit,
+      },
+      64
+    )
   }
 
   /**
@@ -380,33 +387,24 @@ export abstract class BaseTransaction<TransactionObject> {
     }
   }
 
-  protected _validateCannotExceedMaxInteger(values: { [key: string]: BN | undefined }, bits = 53) {
+  protected _validateCannotExceedMaxInteger(values: { [key: string]: BN | undefined }, bits = 256) {
     for (const [key, value] of Object.entries(values)) {
-      if (bits === 53) {
-        if (value?.gt(MAX_INTEGER)) {
-          const msg = this._errorMsg(`${key} cannot exceed MAX_INTEGER, given ${value}`)
+      switch (bits) {
+        case 64:
+          if (value?.gt(MAX_UINT64)) {
+            const msg = this._errorMsg(`${key} cannot exceed MAX_UINT64 (2^64-1), given ${value}`)
+            throw new Error(msg)
+          }
+          break
+        case 256:
+          if (value?.gte(MAX_INTEGER)) {
+            const msg = this._errorMsg(`${key} cannot exceed MAX_INTEGER (2^256-1), given ${value}`)
+            throw new Error(msg)
+          }
+          break
+        default: {
+          const msg = this._errorMsg('unimplemented bits value')
           throw new Error(msg)
-        }
-      } else if (bits === 256) {
-        if (value?.gte(TWO_POW256)) {
-          const msg = this._errorMsg(`${key} must be less than 2^256, given ${value}`)
-          throw new Error(msg)
-        }
-      } else {
-        const msg = this._errorMsg('unimplemented bits value')
-        throw new Error(msg)
-      }
-      if (key == 'nonce') {
-        if (value && value.gte(MAX_UINT64)) {
-          // Implements EIP-2681 which limits nonce to 2^64-1
-          // https://eips.ethereum.org/EIPS/eip-2681
-          const msg = this._errorMsg('nonce cannot be greater than 2^64-1')
-          throw new Error(msg)
-        }
-      } else if (key === 'gasLimit') {
-        if (value && value.byteLength() > 8) {
-          // Geth limits gasLimit to Uint64 so gas cannot be more than 2^64-1
-          throw new Error('gasLimit cannot be more than 2^64-1')
         }
       }
     }

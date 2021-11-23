@@ -8,7 +8,6 @@ import {
   rlphash,
   toBuffer,
   unpadBuffer,
-  RlpValues,
   validateNoLeadingZeroes,
 } from 'ethereumjs-util'
 import { TxOptions, TxData, JsonTx, N_DIV_2, TxValuesArray, Capability } from './types'
@@ -79,17 +78,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
     const [nonce, gasPrice, gasLimit, to, value, data, v, r, s] = values
 
-    const integerValues: RlpValues = {
-      nonce: nonce,
-      gasPrice: gasPrice,
-      gasLimit: gasLimit,
-      value: value,
-      v: v,
-      r: r,
-      s: s,
-    }
-
-    validateNoLeadingZeroes(integerValues)
+    validateNoLeadingZeroes({ nonce, gasPrice, gasLimit, value, v, r, s })
 
     return new Transaction(
       {
