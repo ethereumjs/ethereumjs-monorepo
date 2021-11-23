@@ -7,6 +7,8 @@ import {
   MAX_INTEGER,
   rlp,
   toBuffer,
+  RlpValues,
+  validateNoLeadingZeroes,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { BaseTransaction } from './baseTransaction'
@@ -18,10 +20,9 @@ import {
   JsonTx,
   TxOptions,
   N_DIV_2,
-  RlpValues,
 } from './types'
 
-import { AccessLists, validateNoLeadingZeroes } from './util'
+import { AccessLists } from './util'
 
 const TRANSACTION_TYPE = 1
 const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')

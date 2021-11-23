@@ -1,6 +1,6 @@
 import Common from '@ethereumjs/common'
 import { bufferToHex, setLengthLeft, toBuffer } from 'ethereumjs-util'
-import { AccessList, AccessListBuffer, AccessListItem, isAccessList, RlpValues } from './types'
+import { AccessList, AccessListBuffer, AccessListItem, isAccessList } from './types'
 
 export class AccessLists {
   public static getAccessListData(accessList: AccessListBuffer | AccessList) {
@@ -98,19 +98,5 @@ export class AccessLists {
 
     const addresses = accessList.length
     return addresses * accessListAddressCost + slots * accessListStorageKeyCost
-  }
-}
-
-/**
- *
- * @param values An object containing a set keys and RLP encoded values
- * @returns a string with the value that was encoded with leading zeroes or undefined if no values have leading zeroes
- */
-export const validateNoLeadingZeroes = function (values: RlpValues) {
-  const res = Object.entries(values).find(
-    (entry) => entry[1] && entry[1]?.length > 0 && entry[1][0] === 0x00
-  )
-  if (res) {
-    throw new Error(`${res[0]} cannot have leading zeroes`)
   }
 }

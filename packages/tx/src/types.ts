@@ -271,10 +271,3 @@ export const N_DIV_2 = new BN(
   '7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
   16
 )
-
-/**
- * An object containing pairs of keys and the RLP encoded value for that key
- */
-export type RlpValues = {
-  [value: string]: Buffer | undefined
-}

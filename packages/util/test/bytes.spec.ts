@@ -21,7 +21,7 @@ import {
   intToBuffer,
   intToHex,
   RlpValues,
-  hasLeadingZeroes,
+  validateNoLeadingZeroes,
 } from '../src'
 
 tape('zeros function', function (t) {
@@ -354,7 +354,7 @@ tape('intToHex', function (st) {
   st.end()
 })
 
-tape('hasLeadingZeroes', function (st) {
+tape('validateNoLeadingZeroes', function (st) {
   const noLeadingZeroes: RlpValues = {
     a: toBuffer('0x123'),
     b: undefined,
@@ -368,14 +368,23 @@ tape('hasLeadingZeroes', function (st) {
     a: toBuffer('0x0'),
   }
 
-  st.ok(
-    hasLeadingZeroes(noLeadingZeroes) === undefined,
-    'returns undefined when no encoded leading zeroes'
+  st.doesNotThrow(
+    () => validateNoLeadingZeroes(noLeadingZeroes),
+    'does not throw when no leading zeroes'
   )
-  st.ok(
-    hasLeadingZeroes(leadingZeroes) === 'a',
-    'returns the key of the property with leading zeroes'
-  )
-  st.ok(hasLeadingZeroes(onlyZeroes) === 'a', 'returns key that contains encoded 0 value')
+  try {
+    validateNoLeadingZeroes(leadingZeroes)
+    st.fail('should throw')
+  } catch (err: any) {
+    st.ok(
+      err.message.includes('a cannot have leading zeroes'),
+      'error message names property with leading zeroes'
+    )
+    st.notOk(
+      err.message.includes('b cannot have leading zeroes'),
+      'error message should not name property without leading zeroes'
+    )
+  }
+  st.throws(() => validateNoLeadingZeroes(onlyZeroes), 'throws when propery has only zeroes')
   st.end()
 })

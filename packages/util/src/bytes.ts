@@ -1,6 +1,6 @@
 import { BN } from './externals'
 import { stripHexPrefix, padToEven, isHexString, isHexPrefixed } from './internal'
-import { PrefixedHexString, TransformableToArray, TransformableToBuffer } from './types'
+import { PrefixedHexString, RlpValues, TransformableToArray, TransformableToBuffer } from './types'
 import { assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
 
 /**
@@ -274,5 +274,19 @@ export const baToJSON = function (ba: any): any {
       array.push(baToJSON(ba[i]))
     }
     return array
+  }
+}
+
+/**
+ *
+ * @param values An object containing a set keys and RLP encoded values
+ * @returns a string with the value that was encoded with leading zeroes or undefined if no values have leading zeroes
+ */
+export const validateNoLeadingZeroes = function (values: RlpValues) {
+  const res = Object.entries(values).find(
+    (entry) => entry[1] && entry[1]?.length > 0 && entry[1][0] === 0x00
+  )
+  if (res) {
+    throw new Error(`${res[0]} cannot have leading zeroes`)
   }
 }

@@ -6,6 +6,8 @@ import {
   keccak256,
   rlp,
   toBuffer,
+  validateNoLeadingZeroes,
+  RlpValues,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { BaseTransaction } from './baseTransaction'
@@ -17,9 +19,8 @@ import {
   JsonTx,
   N_DIV_2,
   TxOptions,
-  RlpValues,
 } from './types'
-import { AccessLists, validateNoLeadingZeroes } from './util'
+import { AccessLists } from './util'
 
 const TRANSACTION_TYPE = 2
 const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')
