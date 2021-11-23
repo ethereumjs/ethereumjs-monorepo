@@ -279,8 +279,8 @@ export const baToJSON = function (ba: any): any {
 
 /**
  *
+ * Checks a provided set of RLP encoded values for leading zeroes and throws if found
  * @param values An object containing a set keys and RLP encoded values
- * @returns a string with the value that was encoded with leading zeroes or undefined if no values have leading zeroes
  */
 export const validateNoLeadingZeroes = function (values: RlpValues) {
   const res = Object.entries(values).find(
