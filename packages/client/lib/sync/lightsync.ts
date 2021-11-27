@@ -40,7 +40,7 @@ export class LightSynchronizer extends Synchronizer {
    * Returns true if peer can be used for syncing
    */
   syncable(peer: Peer): boolean {
-    return peer.les?.status.serveHeaders
+    return peer.les?.status.serveHeaders ?? false
   }
 
   /**
