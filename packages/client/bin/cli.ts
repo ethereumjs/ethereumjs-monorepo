@@ -204,6 +204,7 @@ const args = yargs(hideBin(process.argv))
   .option('unlock', {
     describe:
       'Comma separated list of accounts to unlock - currently only the first account is used (for sealing PoA blocks and as the default coinbase). Beta, you will be promped for a 0x-prefixed private key until keystore functionality is added - FOR YOUR SAFETY PLEASE DO NOT USE ANY ACCOUNTS HOLDING SUBSTANTIAL AMOUNTS OF ETH',
+    string: true,
     array: true,
   })
   .option('dev', {
