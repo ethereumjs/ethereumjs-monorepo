@@ -356,20 +356,28 @@ tape('intToHex', function (st) {
 tape('validateNoLeadingZeroes', function (st) {
   const noLeadingZeroes = {
     a: toBuffer('0x123'),
-    b: undefined,
-    c: toBuffer('0x'),
   }
   const leadingZeroes = {
     a: toBuffer('0x001'),
-    b: toBuffer('0x'),
   }
   const onlyZeroes = {
     a: toBuffer('0x0'),
   }
+  const emptyBuffer = {
+    a: toBuffer('0x'),
+  }
 
+  const undefinedValue = {
+    a: undefined,
+  }
   st.doesNotThrow(
     () => validateNoLeadingZeroes(noLeadingZeroes),
     'does not throw when no leading zeroes'
+  )
+  st.doesNotThrow(() => validateNoLeadingZeroes(emptyBuffer), 'does not throw with empty buffer')
+  st.doesNotThrow(
+    () => validateNoLeadingZeroes(undefinedValue),
+    'does not throw when undefined passed in'
   )
   try {
     validateNoLeadingZeroes(leadingZeroes)
