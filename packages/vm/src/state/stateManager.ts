@@ -312,19 +312,17 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
     const storageProof: StorageProof[] = []
     const storageTrie = await this._getStorageTrie(address)
 
-    await Promise.all(
-      storageSlots.map(async (storageKey: Buffer) => {
-        const proof = (await Trie.createProof(storageTrie, storageKey)).map((e: Buffer) =>
-          bufferToHex(e)
-        )
-        const proofItem: StorageProof = {
-          key: bufferToHex(storageKey),
-          value: bufferToHex(await this.getContractStorage(address, storageKey)),
-          proof,
-        }
-        storageProof.push(proofItem)
-      })
-    )
+    for (const storageKey of storageSlots) {
+      const proof = (await Trie.createProof(storageTrie, storageKey)).map((e: Buffer) =>
+        bufferToHex(e)
+      )
+      const proofItem: StorageProof = {
+        key: bufferToHex(storageKey),
+        value: bufferToHex(await this.getContractStorage(address, storageKey)),
+        proof,
+      }
+      storageProof.push(proofItem)
+    }
 
     const returnValue: Proof = {
       balance: bnToHex(account.balance),
