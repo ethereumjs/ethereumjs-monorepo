@@ -385,7 +385,6 @@ tape('Original storage cache', async (t) => {
 
 tape('StateManager - Contract code', (tester) => {
   const it = tester.test
-
   it('should set and get code', async (t) => {
     const stateManager = new DefaultStateManager()
     const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
@@ -521,20 +520,22 @@ tape('StateManager - Contract storage', (tester) => {
     const value = Buffer.from('0000aabb00', 'hex')
     const code = Buffer.from('6000', 'hex')
     const stateManager = new DefaultStateManager()
+    await stateManager.checkpoint()
     await stateManager.putContractStorage(address, key, value)
     await stateManager.putContractCode(address, code)
     const account = await stateManager.getAccount(address)
     account.balance = new BN(1)
     account.nonce = new BN(2)
     await stateManager.putAccount(address, account)
-
     const address2 = new Address(Buffer.from('20'.repeat(20), 'hex'))
     const account2 = await stateManager.getAccount(address2)
     account.nonce = new BN(2)
     await stateManager.putAccount(address2, account2)
+    await stateManager.commit()
 
     const proof = await stateManager.getProof(address, [key])
-    console.log(proof)
+    const ok = await stateManager.verifyProof(proof)
+    t.ok(ok)
     t.end()
   })
 })

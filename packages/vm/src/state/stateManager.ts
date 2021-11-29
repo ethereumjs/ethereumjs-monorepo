@@ -342,7 +342,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
    * @param proof - The Proof to prove
    */
   async verifyProof(proof: Proof): Promise<boolean> {
-    const rootHash = rlp.decode(toBuffer(proof.accountProof[0]))
+    const rootHash = keccak256(toBuffer(proof.accountProof[0]))
     const key = keccak256(toBuffer(proof.accountProof[proof.accountProof.length - 1]))
     const accountProof = proof.accountProof.map((rlpString: PrefixedHexString) =>
       toBuffer(rlpString)
@@ -361,8 +361,9 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
         const storageKey = toBuffer(stProof.key)
 
         // TODO figure out in what case verifyProof returns null (empty trie?)
-        const reportedValue = <Buffer>await Trie.verifyProof(storageRoot, storageKey, storageProof)
-
+        const reportedValue = rlp.decode(
+          <Buffer>await Trie.verifyProof(storageRoot, storageKey, storageProof)
+        )
         if (!reportedValue.equals(storageValue)) {
           throw 'Reported trie value does not match storage'
         }
