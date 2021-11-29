@@ -659,7 +659,6 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [offset, word] = runState.stack.popN(2)
       const buf = word.toArrayLike(Buffer, 'be', 32)
       const offsetNum = offset.toNumber()
-      runState.memory.extend(offsetNum, 32)
       runState.memory.write(offsetNum, 32, buf)
     },
   ],
@@ -674,7 +673,6 @@ export const handlers: Map<number, OpHandler> = new Map([
       // the types are wrong
       const buf = Buffer.from([byte.andln(0xff) as unknown as number])
       const offsetNum = offset.toNumber()
-      runState.memory.extend(offsetNum, 1)
       runState.memory.write(offsetNum, 1, buf)
     },
   ],
