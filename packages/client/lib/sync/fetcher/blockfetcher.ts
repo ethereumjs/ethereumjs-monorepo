@@ -109,10 +109,10 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
   async store(blocks: Block[]) {
     try {
       const num = await this.chain.putBlocks(blocks)
-      this.debug(`Fetcher results stored in blockchain (blocks num=${blocks.length}).`)
+      this.debug(`Fetcher results stored in blockchain (blocks num=${blocks.length})`)
       this.config.events.emit(Event.SYNC_FETCHER_FETCHED, blocks.slice(0, num))
     } catch (e: any) {
-      this.debug(`Error on storing fetcher results in blockchain (blocks num=${blocks.length}).`)
+      this.debug(`Error storing fetcher results in blockchain (blocks num=${blocks.length}): ${e}`)
       throw e
     }
   }
