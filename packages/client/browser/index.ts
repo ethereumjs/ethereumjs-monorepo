@@ -40,7 +40,6 @@ export * from '../lib/sync/lightsync'
 export * from '../lib/util'
 import { parseMultiaddrs } from '../lib/util'
 import { Config } from '../lib/config'
-import { Event } from '../lib/types'
 
 // Logging
 export * from './logging'
@@ -66,21 +65,12 @@ export async function createClient(args: any) {
     discDns: false,
   })
   config.events.setMaxListeners(50)
-  const chainDB = level(common.chainName())
+  const chainDB = level(`${datadir}/${common.chainName()}`)
   return new EthereumClient({ config, chainDB })
 }
 
 export async function run(args: any) {
   const client = await createClient(args)
-  const { logger, chainCommon } = client.config
-  logger.info(`Initializing Ethereumjs client network=${chainCommon.chainName()}`)
-  client.config.events.on(Event.SERVER_ERROR, (err) => logger.error(err))
-  client.config.events.on(Event.SERVER_LISTENING, (details) => {
-    logger.info(`Listener up transport=${details.transport} url=${details.url}`)
-  })
-  client.config.events.on(Event.SYNC_SYNCHRONIZED, (height) => {
-    logger.info(`Synchronized blockchain at height ${height}`)
-  })
   await client.open()
   await client.start()
   return client

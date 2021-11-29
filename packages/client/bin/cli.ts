@@ -9,14 +9,12 @@ import { Server as RPCServer } from 'jayson/promise'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { _getInitializedChains } from '@ethereumjs/common/dist/chains'
 import { Address, toBuffer } from 'ethereumjs-util'
-import { version as packageVersion } from '../package.json'
 import { parseMultiaddrs, parseGenesisState, parseCustomParams, inspectParams } from '../lib/util'
 import EthereumClient from '../lib/client'
 import { Config, DataDirectory } from '../lib/config'
 import { Logger, getLogger } from '../lib/logging'
 import { RPCManager } from '../lib/rpc'
 import * as modules from '../lib/rpc/modules'
-import { Event } from '../lib/types'
 import type { Chain as IChain, GenesisState } from '@ethereumjs/common/dist/types'
 const level = require('level')
 const yargs = require('yargs/yargs')
@@ -262,9 +260,6 @@ function initDBs(config: Config, args: any) {
  * @param config
  */
 async function runNode(config: Config) {
-  config.logger.info(
-    `Initializing Ethereumjs client version=v${packageVersion} network=${config.chainCommon.chainName()}`
-  )
   config.logger.info(`Data directory: ${config.datadir}`)
   if (config.lightserv) {
     config.logger.info(`Serving light peer requests`)
@@ -273,13 +268,6 @@ async function runNode(config: Config) {
   const client = new EthereumClient({
     config,
     ...dbs,
-  })
-  client.config.events.on(Event.SERVER_ERROR, (err) => config.logger.error(err))
-  client.config.events.on(Event.SERVER_LISTENING, (details) => {
-    config.logger.info(`Listener up transport=${details.transport} url=${details.url}`)
-  })
-  config.events.on(Event.SYNC_SYNCHRONIZED, (height) => {
-    client.config.logger.info(`Synchronized blockchain at height ${height}`)
   })
   await client.open()
 
@@ -409,25 +397,146 @@ function runRpcServers(client: EthereumClient, config: Config, args: any) {
 }
 
 /**
+ * Returns a configured common for devnet with a prefunded address
+ */
+async function setupDev(prefundAddress: Address) {
+  const addr = prefundAddress.toString().slice(2)
+  const consensusConfig =
+    args.dev === 'pow'
+      ? { ethash: true }
+      : {
+          clique: {
+            period: 10,
+            epoch: 30000,
+          },
+        }
+  const defaultChainData = {
+    config: {
+      chainId: 123456,
+      homesteadBlock: 0,
+      eip150Block: 0,
+      eip150Hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      eip155Block: 0,
+      eip158Block: 0,
+      byzantiumBlock: 0,
+      constantinopleBlock: 0,
+      petersburgBlock: 0,
+      istanbulBlock: 0,
+      berlinBlock: 0,
+      londonBlock: 0,
+      ...consensusConfig,
+    },
+    nonce: '0x0',
+    timestamp: '0x614b3731',
+    gasLimit: '0x47b760',
+    difficulty: '0x1',
+    mixHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+    coinbase: '0x0000000000000000000000000000000000000000',
+    number: '0x0',
+    gasUsed: '0x0',
+    parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+    baseFeePerGas: 7,
+  }
+  const extraData = '0x' + '0'.repeat(64) + addr + '0'.repeat(130)
+  const chainData = {
+    ...defaultChainData,
+    extraData,
+    alloc: { [addr]: { balance: '0x10000000000000000000' } },
+  }
+  const chainParams = await parseCustomParams(chainData, 'devnet')
+  const genesisState = await parseGenesisState(chainData)
+  const customChainParams: [IChain, GenesisState][] = [[chainParams, genesisState]]
+  return new Common({
+    chain: 'devnet',
+    customChains: customChainParams,
+    hardfork: Hardfork.London,
+  })
+}
+
+/**
+ * Accept account input from command line
+ */
+async function inputAccounts() {
+  const accounts: [address: Address, privateKey: Buffer][] = []
+
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  })
+
+  // Hide key input
+  ;(rl as any).input.on('keypress', function () {
+    // get the number of characters entered so far:
+    const len = (rl as any).line.length
+    // move cursor back to the beginning of the input:
+    readline.moveCursor((rl as any).output, -len, 0)
+    // clear everything to the right of the cursor:
+    readline.clearLine((rl as any).output, 1)
+    // replace the original input with asterisks:
+    for (let i = 0; i < len; i++) {
+      // eslint-disable-next-line no-extra-semi
+      ;(rl as any).output.write('*')
+    }
+  })
+
+  const question = (text: string) => {
+    return new Promise<string>((resolve) => {
+      rl.question(text, resolve)
+    })
+  }
+
+  try {
+    for (const addressString of args.unlock) {
+      const address = Address.fromString(addressString)
+      const inputKey = await question(
+        `Please enter the 0x-prefixed private key to unlock ${address}:\n`
+      )
+      ;(rl as any).history = (rl as any).history.slice(1)
+      const privKey = toBuffer(inputKey)
+      const derivedAddress = Address.fromPrivateKey(privKey)
+      if (address.equals(derivedAddress)) {
+        accounts.push([address, privKey])
+      } else {
+        console.error(
+          `Private key does not match for ${address} (address derived: ${derivedAddress})`
+        )
+        process.exit()
+      }
+    }
+  } catch (e: any) {
+    console.error(`Encountered error unlocking account:\n${e.message}`)
+    process.exit()
+  }
+  rl.close()
+  return accounts
+}
+
+/**
+ * Output RPC help and exit
+ */
+function helprpc() {
+  console.log('-'.repeat(27))
+  console.log('JSON-RPC: Supported Methods')
+  console.log('-'.repeat(27))
+  console.log()
+  for (const modName of modules.list) {
+    console.log(`${modName}:`)
+    const methods = RPCManager.getMethodNames((modules as any)[modName])
+    for (const methodName of methods) {
+      console.log(`-> ${modName.toLowerCase()}_${methodName}`)
+    }
+    console.log()
+  }
+  console.log()
+  process.exit()
+}
+
+/**
  * Main entry point to start a client
  */
 async function run() {
   if (args.helprpc) {
-    // Display RPC help and exit
-    console.log('-'.repeat(27))
-    console.log('JSON-RPC: Supported Methods')
-    console.log('-'.repeat(27))
-    console.log()
-    for (const modName of modules.list) {
-      console.log(`${modName}:`)
-      const methods = RPCManager.getMethodNames((modules as any)[modName])
-      for (const methodName of methods) {
-        console.log(`-> ${modName.toLowerCase()}_${methodName}`)
-      }
-      console.log()
-    }
-    console.log()
-    process.exit()
+    helprpc()
   }
 
   // give network id precedence over network name
@@ -436,55 +545,7 @@ async function run() {
   // configure accounts for mining and prefunding in a local devnet
   const accounts: [address: Address, privateKey: Buffer][] = []
   if (args.unlock) {
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-    })
-
-    // Hide key input
-    ;(rl as any).input.on('keypress', function () {
-      // get the number of characters entered so far:
-      const len = (rl as any).line.length
-      // move cursor back to the beginning of the input:
-      readline.moveCursor((rl as any).output, -len, 0)
-      // clear everything to the right of the cursor:
-      readline.clearLine((rl as any).output, 1)
-      // replace the original input with asterisks:
-      for (let i = 0; i < len; i++) {
-        // eslint-disable-next-line no-extra-semi
-        ;(rl as any).output.write('*')
-      }
-    })
-
-    const question = (text: string) => {
-      return new Promise<string>((resolve) => {
-        rl.question(text, resolve)
-      })
-    }
-
-    try {
-      for (const addressString of args.unlock) {
-        const address = Address.fromString(addressString)
-        const inputKey = await question(
-          `Please enter the 0x-prefixed private key to unlock ${address}:\n`
-        )
-        ;(rl as any).history = (rl as any).history.slice(1)
-        const privKey = toBuffer(inputKey)
-        const derivedAddress = Address.fromPrivateKey(privKey)
-        if (address.equals(derivedAddress)) {
-          accounts.push([address, privKey])
-        } else {
-          console.error(
-            `Private key does not match for ${address} (address derived: ${derivedAddress})`
-          )
-          process.exit()
-        }
-      }
-    } catch (e: any) {
-      console.error(`Encountered error unlocking account:\n${e.message}`)
-      process.exit()
-    }
-    rl.close()
+    accounts.push(...(await inputAccounts()))
   }
 
   let common = new Common({ chain, hardfork: Hardfork.Chainstart })
@@ -505,58 +566,8 @@ async function run() {
       console.log('WARNING: Do not use this account for mainnet funds')
       console.log('='.repeat(50))
     }
-
-    const prefundAddress = accounts[0][0].toString().slice(2)
-    const consensusConfig =
-      args.dev === 'pow'
-        ? { ethash: true }
-        : {
-            clique: {
-              period: 10,
-              epoch: 30000,
-            },
-          }
-    const defaultChainData = {
-      config: {
-        chainId: 123456,
-        homesteadBlock: 0,
-        eip150Block: 0,
-        eip150Hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
-        eip155Block: 0,
-        eip158Block: 0,
-        byzantiumBlock: 0,
-        constantinopleBlock: 0,
-        petersburgBlock: 0,
-        istanbulBlock: 0,
-        berlinBlock: 0,
-        londonBlock: 0,
-        ...consensusConfig,
-      },
-      nonce: '0x0',
-      timestamp: '0x614b3731',
-      gasLimit: '0x47b760',
-      difficulty: '0x1',
-      mixHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
-      coinbase: '0x0000000000000000000000000000000000000000',
-      number: '0x0',
-      gasUsed: '0x0',
-      parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
-      baseFeePerGas: 7,
-    }
-    const extraData = '0x' + '0'.repeat(64) + prefundAddress + '0'.repeat(130)
-    const chainData = {
-      ...defaultChainData,
-      extraData,
-      alloc: { [prefundAddress]: { balance: '0x10000000000000000000' } },
-    }
-    const chainParams = await parseCustomParams(chainData, 'devnet')
-    const genesisState = await parseGenesisState(chainData)
-    const customChainParams: [IChain, GenesisState][] = [[chainParams, genesisState]]
-    common = new Common({
-      chain: 'devnet',
-      customChains: customChainParams,
-      hardfork: Hardfork.London,
-    })
+    const prefundAddress = accounts[0][0]
+    common = await setupDev(prefundAddress)
   }
 
   // configure common based on args given
