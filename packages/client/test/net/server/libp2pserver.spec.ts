@@ -148,7 +148,7 @@ tape('[Libp2pServer]', async (t) => {
     node.emit('peer:discovery', peerId2)
     td.when(server.getPeerInfo('conn3' as any)).thenReturn([peerId3, 'ma1' as any])
     node.connectionManager.emit('peer:connect', 'conn3')
-    td.verify(server.createPeer(peerId3, ['ma1'] as any))
+    td.verify(server.createPeer(peerId3, ['ma1'] as any, td.matchers.anything()))
     await server.stop()
     t.notOk(server.running, 'stopped')
   })
