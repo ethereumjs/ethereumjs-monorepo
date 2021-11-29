@@ -1,5 +1,6 @@
 import { Account, Address } from 'ethereumjs-util'
 import { AccessList } from '@ethereumjs/tx'
+import { Proof } from 'merkle-patricia-tree/dist/baseTrie'
 
 /**
  * Storage values of an account
@@ -42,4 +43,6 @@ export interface EIP2929StateManager extends StateManager {
   isWarmedStorage(address: Buffer, slot: Buffer): boolean
   clearWarmedAccounts(): void
   generateAccessList?(addressesRemoved: Address[], addressesOnlyStorage: Address[]): AccessList
+  getProof(address: Address, storageSlots: Buffer[]): Promise<Proof>
+  verifyProof(proof: Proof): Promise<boolean>
 }
