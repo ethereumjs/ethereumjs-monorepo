@@ -486,44 +486,6 @@ export default class DefaultStateManager implements StateManager {
   }
 
   /**
-   * Get an EIP-1186 proof
-   * @param address - address to get proof of
-   * @param storageSlots - storage slots to get proof of
-   */
-  async getProof(address: Address, storageSlots: Buffer[] = []): Promise<Proof> {
-    const account = await this.getAccount(address)
-    const accountProof: PrefixedHexString[] = (
-      await Trie.createProof(this._trie, address.buf)
-    ).map((e: Buffer) => bufferToHex(e))
-    const storageProof: StorageProof[] = []
-    const storageTrie = await this._getStorageTrie(address)
-
-    await Promise.all(
-      storageSlots.map(async (storageKey: Buffer) => {
-        const proof = (await Trie.createProof(storageTrie, storageKey)).map((e: Buffer) =>
-          bufferToHex(e)
-        )
-        const proofItem: StorageProof = {
-          key: bufferToHex(storageKey),
-          value: bufferToHex(await this.getContractStorage(address, storageKey)),
-          proof,
-        }
-        storageProof.push(proofItem)
-      })
-    )
-
-    const returnValue: Proof = {
-      balance: bnToHex(account.balance),
-      codeHash: bufferToHex(account.codeHash),
-      nonce: bnToHex(account.nonce),
-      storageHash: bufferToHex(account.stateRoot),
-      accountProof,
-      storageProof,
-    }
-    return returnValue
-  }
-
-  /**
    * Verify an EIP-1186 proof. Throws if proof is invalid, otherwise returns true
    * @param proof - The Proof to prove
    */
