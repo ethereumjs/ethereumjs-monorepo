@@ -6,7 +6,6 @@ import {
   FeeMarketEIP1559Transaction,
   N_DIV_2,
   Capability,
-  FeeMarketEIP1559ValuesArray,
 } from '../src'
 import { TxsJsonEntry } from './types'
 import { BaseTransaction } from '../src/baseTransaction'
@@ -388,7 +387,7 @@ tape('[BaseTransaction]', function (t) {
   t.test('_validateCannotExceedMaxInteger()', function (st) {
     const tx = FeeMarketEIP1559Transaction.fromTxData(eip1559Txs[0])
     try {
-      ; (tx as any)._validateCannotExceedMaxInteger({ a: MAX_INTEGER }, 256, true)
+      ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_INTEGER }, 256, true)
     } catch (err: any) {
       st.ok(
         err.message.includes('equal or exceed MAX_INTEGER'),
@@ -396,7 +395,7 @@ tape('[BaseTransaction]', function (t) {
       )
     }
     try {
-      (tx as any)._validateCannotExceedMaxInteger({ a: new BN(0) }, 100, false)
+      ;(tx as any)._validateCannotExceedMaxInteger({ a: new BN(0) }, 100, false)
     } catch (err: any) {
       st.ok(
         err.message.includes('unimplemented bits value'),
