@@ -69,20 +69,16 @@ Run a test from a specified source file not under the `tests` directory (only st
 
 #### Running tests with a reporter/formatter
 
-`npm run formatTest -t [npm script name OR node command]` will pipe to `tap-spec` by default.
-
-To pipe the results of the API tests through `tap-spec`:
-
-`npm run formatTest -- -t test:API`
-
-To pipe the results of tests run with a node command through `tap-spec`:
-
-`npm run formatTest -- -t "./tests/tester --blockchain --dir='bcBlockGasLimitTest'"`
-
-The `-with` flag allows the specification of a formatter of your choosing:
+`npm run formatTest -t [npm script name OR node command] -with [formatter]` will report test results using a formatter of your choosing.
 
 `npm install -g tap-mocha-reporter`
 `npm run formatTest -- -t test:API -with 'tap-mocha-reporter json'`
+
+To pipe the results of tests run with a node command to a formatter:
+
+`npm run formatTest -- -t "./tests/tester --blockchain --dir='bcBlockGasLimitTest'" -with 'tap-mocha-reporter json'`
+
+If no reporter or formatter is provided, test results will be reported by `tape` without any additional formatting.
 
 #### Skipping Tests
 
