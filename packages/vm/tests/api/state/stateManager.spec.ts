@@ -542,11 +542,11 @@ tape('StateManager - Contract storage', (tester) => {
 
   it('should report data equal to geth output for EIP 1178 proofs', async (t) => {
     // Data source: Ropsten, retrieved with Geth eth_getProof
-    // Block: 11098094
+    // Block: 11098094 (hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146)
     // Account: 0xc626553e7c821d0f8308c28d56c60e3c15f8d55a
     // Storage slots: empty list
     const address = new Address(Buffer.from('c626553e7c821d0f8308c28d56c60e3c15f8d55a', 'hex'))
-    const ropstenData = require('./testdata.json')
+    const ropstenData = require('./testdata_validAccount.json')
     const trie = new SecureTrie()
     const stateManager = new DefaultStateManager({ trie })
     // Dump all the account proof data in the DB
@@ -561,6 +561,70 @@ tape('StateManager - Contract storage', (tester) => {
     }
     trie.root = stateRoot!
     const proof = await stateManager.getProof(address)
+    t.deepEqual(ropstenData, proof)
+    t.end()
+  })
+
+  it('should report data equal to geth output for EIP 1178 proofs - nonexistent account', async (t) => {
+    // Data source: Ropsten, retrieved with Geth eth_getProof
+    // Block: 11098094 (hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146)
+    // Account: 0x68268f12253f69f66b188c95b8106b2f847859fc (this account does not exist)
+    // Storage slots: empty list
+    const address = new Address(Buffer.from('68268f12253f69f66b188c95b8106b2f847859fc', 'hex'))
+    const ropstenData = require('./testdata_nonexistentAccount.json')
+    const trie = new SecureTrie()
+    const stateManager = new DefaultStateManager({ trie })
+    // Dump all the account proof data in the DB
+    let stateRoot: Buffer | undefined
+    for (const proofData of ropstenData.accountProof) {
+      const bufferData = Buffer.from(proofData.slice(2), 'hex')
+      const key = keccak256(bufferData)
+      if (stateRoot === undefined) {
+        stateRoot = key
+      }
+      await trie.db.put(key, bufferData)
+    }
+    trie.root = stateRoot!
+    const proof = await stateManager.getProof(address)
+    t.deepEqual(ropstenData, proof)
+    t.end()
+  })
+
+  it('should report data equal to geth output for EIP 1178 proofs - nonexistent account', async (t) => {
+    // Data source: Ropsten, retrieved with Geth eth_getProof
+    // eth.getProof("0x2D80502854FC7304c3E3457084DE549f5016B73f", ["0x1e8bf26b05059b66f11b6e0c5b9fe941f81181d6cc9f2af65ccee86e95cea1ca", "0x1e8bf26b05059b66f11b6e0c5b9fe941f81181d6cc9f2af65ccee86e95cea1cb"], 11098094)
+    // Note: the first slot has a value, but the second slot is empty
+    // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
+    const address = new Address(Buffer.from('2D80502854FC7304c3E3457084DE549f5016B73f', 'hex'))
+    const ropstenData = require('./testdata_contractWithStorage.json')
+    const trie = new SecureTrie()
+    const stateManager = new DefaultStateManager({ trie })
+    // Dump all the account proof data in the DB
+    let stateRoot: Buffer | undefined
+    for (const proofData of ropstenData.accountProof) {
+      const bufferData = Buffer.from(proofData.slice(2), 'hex')
+      const key = keccak256(bufferData)
+      if (stateRoot === undefined) {
+        stateRoot = key
+      }
+      await trie.db.put(key, bufferData)
+    }
+    const storageRoot = ropstenData.storageHash
+    const storageTrie = new SecureTrie()
+    const storageKeys: Buffer[] = []
+    for (const storageProofsData of ropstenData.storageProof) {
+      storageKeys.push(Buffer.from(storageProofsData.key.slice(2), 'hex'))
+      for (const storageProofData of storageProofsData.proof) {
+        const key = keccak256(Buffer.from(storageProofData.slice(2), 'hex'))
+        await storageTrie.db.put(key, Buffer.from(storageProofData.slice(2), 'hex'))
+      }
+    }
+    storageTrie.root = Buffer.from(storageRoot.slice(2), 'hex')
+    const addressHex = address.buf.toString('hex')
+    stateManager._storageTries[addressHex] = storageTrie
+    trie.root = stateRoot!
+
+    const proof = await stateManager.getProof(address, storageKeys)
     t.deepEqual(ropstenData, proof)
     t.end()
   })

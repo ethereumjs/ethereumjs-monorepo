@@ -317,9 +317,11 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
       const proof = (await Trie.createProof(storageTrie, storageKey)).map((e: Buffer) =>
         bufferToHex(e)
       )
+      let value = bufferToHex(await this.getContractStorage(address, storageKey))
+      if (value === '0x') value = '0x0'
       const proofItem: StorageProof = {
         key: bufferToHex(storageKey),
-        value: bufferToHex(await this.getContractStorage(address, storageKey)),
+        value,
         proof,
       }
       storageProof.push(proofItem)
