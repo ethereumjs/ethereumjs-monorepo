@@ -9,7 +9,7 @@ import {
 } from '../src'
 import { TxsJsonEntry } from './types'
 import { BaseTransaction } from '../src/baseTransaction'
-import { privateToPublic, BN, toBuffer, MAX_INTEGER } from 'ethereumjs-util'
+import { privateToPublic, BN, toBuffer, MAX_INTEGER, MAX_UINT64 } from 'ethereumjs-util'
 
 tape('[BaseTransaction]', function (t) {
   // EIP-2930 is not enabled in Common by default (2021-03-06)
@@ -392,8 +392,14 @@ tape('[BaseTransaction]', function (t) {
     } catch (err: any) {
       st.ok(
         err.message.includes('equal or exceed MAX_INTEGER'),
-        'throws when value exceeds MAX_INTEGER'
+        'throws when value equals or exceeds MAX_INTEGER'
       )
+    }
+    try {
+      // eslint-disable-next-line no-extra-semi
+      ; (tx as any)._validateCannotExceedMaxInteger({ a: MAX_INTEGER.addn(1) }, 256, false)
+    } catch (err: any) {
+      st.ok(err.message.includes('exceed MAX_INTEGER'), 'throws when value exceeds MAX_INTEGER')
     }
     try {
       // eslint-disable-next-line no-extra-semi
@@ -403,6 +409,18 @@ tape('[BaseTransaction]', function (t) {
         err.message.includes('unimplemented bits value'),
         'throws when bits value other than 64 or 256 provided'
       )
+    }
+    try {
+      // eslint-disable-next-line no-extra-semi
+      ; (tx as any)._validateCannotExceedMaxInteger({ a: MAX_UINT64.addn(1) }, 64, false)
+    } catch (err: any) {
+      st.ok(err.message.includes('2^64'), 'throws when 64 bit integer exceeds MAX_UINT64')
+    }
+    try {
+      // eslint-disable-next-line no-extra-semi
+      ; (tx as any)._validateCannotExceedMaxInteger({ a: MAX_UINT64 }, 64, true)
+    } catch (err: any) {
+      st.ok(err.message.includes('2^64'), 'throws when 64 bit integer equals or exceeds MAX_UINT64')
     }
     st.end()
   })
