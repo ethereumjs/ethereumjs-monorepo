@@ -171,7 +171,7 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
         {
           maxFeePerGas: TWO_POW256.subn(1),
           maxPriorityFeePerGas: 100,
-          gasLimit: 100,
+          gasLimit: 1,
           value: 6,
         },
         { common }
