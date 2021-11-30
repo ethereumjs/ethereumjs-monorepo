@@ -194,9 +194,12 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
     this._validateCannotExceedMaxInteger({
       gasPrice: this.gasPrice,
-      gasPriceXgasLimit: this.gasPrice.mul(this.gasLimit),
     })
 
+    if (this.gasPrice.mul(this.gasLimit).gt(MAX_INTEGER)) {
+      const msg = this._errorMsg('gasLimit * gasPrice cannot exceed MAX_INTEGER')
+      throw new Error(msg)
+    }
     if (this.v && !this.v.eqn(0) && !this.v.eqn(1)) {
       const msg = this._errorMsg('The y-parity of the transaction should either be 0 or 1')
       throw new Error(msg)
