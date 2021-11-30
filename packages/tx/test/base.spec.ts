@@ -397,7 +397,7 @@ tape('[BaseTransaction]', function (t) {
     }
     try {
       // eslint-disable-next-line no-extra-semi
-      ; (tx as any)._validateCannotExceedMaxInteger({ a: MAX_INTEGER.addn(1) }, 256, false)
+      ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_INTEGER.addn(1) }, 256, false)
     } catch (err: any) {
       st.ok(err.message.includes('exceed MAX_INTEGER'), 'throws when value exceeds MAX_INTEGER')
     }
@@ -412,13 +412,13 @@ tape('[BaseTransaction]', function (t) {
     }
     try {
       // eslint-disable-next-line no-extra-semi
-      ; (tx as any)._validateCannotExceedMaxInteger({ a: MAX_UINT64.addn(1) }, 64, false)
+      ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_UINT64.addn(1) }, 64, false)
     } catch (err: any) {
       st.ok(err.message.includes('2^64'), 'throws when 64 bit integer exceeds MAX_UINT64')
     }
     try {
       // eslint-disable-next-line no-extra-semi
-      ; (tx as any)._validateCannotExceedMaxInteger({ a: MAX_UINT64 }, 64, true)
+      ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_UINT64 }, 64, true)
     } catch (err: any) {
       st.ok(err.message.includes('2^64'), 'throws when 64 bit integer equals or exceeds MAX_UINT64')
     }
