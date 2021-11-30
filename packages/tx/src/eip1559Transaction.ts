@@ -4,6 +4,7 @@ import {
   bnToUnpaddedBuffer,
   ecrecover,
   keccak256,
+  MAX_INTEGER,
   rlp,
   toBuffer,
   validateNoLeadingZeroes,
@@ -210,13 +211,11 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
     })
 
-    this._validateCannotExceedMaxInteger(
-      {
-        gasLimitXmaxFeePerGas: this.gasLimit.mul(this.maxFeePerGas),
-      },
-      256,
-      false
-    )
+    if (this.gasLimit.mul(this.maxFeePerGas).gt(MAX_INTEGER)) {
+      const msg = this._errorMsg('gasLimit * maxFeePerGas cannot exceed MAX_INTEGER(2^256)')
+      throw new Error(msg)
+    }
+
     if (this.maxFeePerGas.lt(this.maxPriorityFeePerGas)) {
       const msg = this._errorMsg(
         'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)'
