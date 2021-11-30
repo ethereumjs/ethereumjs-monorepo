@@ -192,11 +192,10 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
     this.gasPrice = new BN(toBuffer(gasPrice === '' ? '0x' : gasPrice))
 
-    if (this.gasPrice.mul(this.gasLimit).gt(MAX_INTEGER)) {
-      throw new Error('gas limit * price causes integer overflow')
-    }
-
-    this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
+    this._validateCannotExceedMaxInteger({
+      gasPrice: this.gasPrice,
+      gasPriceXgasLimit: this.gasPrice.mul(this.gasLimit),
+    })
 
     if (this.v && !this.v.eqn(0) && !this.v.eqn(1)) {
       const msg = this._errorMsg('The y-parity of the transaction should either be 0 or 1')

@@ -6,10 +6,11 @@ import {
   FeeMarketEIP1559Transaction,
   N_DIV_2,
   Capability,
+  FeeMarketEIP1559ValuesArray,
 } from '../src'
 import { TxsJsonEntry } from './types'
 import { BaseTransaction } from '../src/baseTransaction'
-import { privateToPublic, BN, toBuffer } from 'ethereumjs-util'
+import { privateToPublic, BN, toBuffer, MAX_INTEGER, MAX_UINT64 } from 'ethereumjs-util'
 
 tape('[BaseTransaction]', function (t) {
   // EIP-2930 is not enabled in Common by default (2021-03-06)
@@ -381,6 +382,49 @@ tape('[BaseTransaction]', function (t) {
     st.isEquivalent(tx.gasLimit, new BN(bufferZero))
     st.isEquivalent(tx.nonce, new BN(bufferZero))
 
+    st.end()
+  })
+
+  t.test('_validateCannotExceedMaxInteger()', function (st) {
+    const tx = FeeMarketEIP1559Transaction.fromTxData(eip1559Txs[0])
+    try {
+      ; (tx as any)._validateCannotExceedMaxInteger({ a: MAX_INTEGER }, 256, true)
+    } catch (err: any) {
+      st.ok(
+        err.message.includes('equal or exceed MAX_INTEGER'),
+        'throws when value exceeds MAX_INTEGER'
+      )
+    }
+    try {
+      (tx as any)._validateCannotExceedMaxInteger({ a: new BN(0) }, 100, false)
+    } catch (err: any) {
+      st.ok(
+        err.message.includes('unimplemented bits value'),
+        'throws when bits value other than 64 or 256 provided'
+      )
+    }
+
+    const validAddress = Buffer.from('01'.repeat(20), 'hex')
+    const validSlot = Buffer.from('01'.repeat(32), 'hex')
+    const chainId = new BN(1)
+    try {
+      AccessListEIP2930Transaction.fromTxData(
+        {
+          data: Buffer.from('010200', 'hex'),
+          to: validAddress,
+          accessList: [[validAddress, [validSlot]]],
+          chainId,
+          gasLimit: MAX_UINT64,
+          gasPrice: MAX_INTEGER,
+        },
+        { common }
+      )
+    } catch (err: any) {
+      st.ok(
+        err.message.includes('gasPriceXgasLimit cannot exceed MAX_INTEGER'),
+        'throws when gasLimit * gasPrice exceeds MAX_INTEGER'
+      )
+    }
     st.end()
   })
 })

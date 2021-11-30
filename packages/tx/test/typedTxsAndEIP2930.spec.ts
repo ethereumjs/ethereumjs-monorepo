@@ -1,5 +1,12 @@
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { Address, BN, bufferToHex, privateToAddress } from 'ethereumjs-util'
+import {
+  Address,
+  BN,
+  bufferToHex,
+  MAX_INTEGER,
+  MAX_UINT64,
+  privateToAddress,
+} from 'ethereumjs-util'
 import tape from 'tape'
 import {
   AccessList,
