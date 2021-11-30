@@ -15,6 +15,7 @@ import { DefaultStateManager } from '../../../src/state'
 import { getSingleFile } from '../../tester/testLoader'
 import { isRunningInKarma } from '../../util'
 import { createAccount } from '../utils'
+import { SecureTrie } from 'merkle-patricia-tree'
 
 const StateManager = DefaultStateManager
 
@@ -536,6 +537,31 @@ tape('StateManager - Contract storage', (tester) => {
     const proof = await stateManager.getProof(address, [key])
     const ok = await stateManager.verifyProof(proof)
     t.ok(ok)
+    t.end()
+  })
+
+  it('should report data equal to geth output for EIP 1178 proofs', async (t) => {
+    // Data source: Ropsten, retrieved with Geth eth_getProof
+    // Block: 11098094
+    // Account: 0xc626553e7c821d0f8308c28d56c60e3c15f8d55a
+    // Storage slots: empty list
+    const address = new Address(Buffer.from('c626553e7c821d0f8308c28d56c60e3c15f8d55a', 'hex'))
+    const ropstenData = require('./testdata.json')
+    const trie = new SecureTrie()
+    const stateManager = new DefaultStateManager({ trie })
+    // Dump all the account proof data in the DB
+    let stateRoot: Buffer | undefined
+    for (const proofData of ropstenData.accountProof) {
+      const bufferData = Buffer.from(proofData.slice(2), 'hex')
+      const key = keccak256(bufferData)
+      if (stateRoot === undefined) {
+        stateRoot = key
+      }
+      await trie.db.put(key, bufferData)
+    }
+    trie.root = stateRoot!
+    const proof = await stateManager.getProof(address)
+    t.deepEqual(ropstenData, proof)
     t.end()
   })
 })

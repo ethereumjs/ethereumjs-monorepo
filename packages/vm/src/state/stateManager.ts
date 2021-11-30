@@ -30,6 +30,7 @@ type Proof = {
   storageHash: PrefixedHexString
   accountProof: PrefixedHexString[]
   storageProof: StorageProof[]
+  address: PrefixedHexString
 }
 
 /**
@@ -331,6 +332,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
       storageHash: bufferToHex(account.stateRoot),
       accountProof,
       storageProof,
+      address: address.toString(),
     }
     return returnValue
   }
