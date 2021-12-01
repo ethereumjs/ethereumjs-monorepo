@@ -101,6 +101,36 @@ tape('[BlockFetcher]', async (t) => {
     t.end()
   })
 
+  t.test('store()', async (st) => {
+    td.reset()
+    st.plan(2)
+
+    const config = new Config({ maxPerRequest: 5, transports: [] })
+    const pool = new PeerPool() as any
+    const chain = new Chain({ config })
+    chain.putBlocks = td.func<any>()
+    const fetcher = new BlockFetcher({
+      config,
+      pool,
+      chain,
+      first: new BN(1),
+      count: new BN(10),
+      timeout: 5,
+    })
+    td.when(chain.putBlocks(td.matchers.anything())).thenReject(new Error('err0'))
+    try {
+      await fetcher.store([])
+    } catch (err: any) {
+      st.ok(err.message === 'err0', 'store() threw on invalid block')
+    }
+    td.reset()
+    chain.putBlocks = td.func<any>()
+    td.when(chain.putBlocks(td.matchers.anything())).thenResolve(1)
+    st.doesNotThrow(
+      () => fetcher.store([]),
+      'store() does not throw when putBlocks returns valid result'
+    )
+  })
   t.test('should reset td', (t) => {
     td.reset()
     t.end()
