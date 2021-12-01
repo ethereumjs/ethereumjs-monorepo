@@ -562,6 +562,7 @@ tape('StateManager - Contract storage', (tester) => {
     trie.root = stateRoot!
     const proof = await stateManager.getProof(address)
     t.deepEqual(ropstenData, proof)
+    await stateManager.verifyProof(ropstenData)
     t.end()
   })
 
@@ -587,6 +588,7 @@ tape('StateManager - Contract storage', (tester) => {
     trie.root = stateRoot!
     const proof = await stateManager.getProof(address)
     t.deepEqual(ropstenData, proof)
+    await stateManager.verifyProof(ropstenData)
     t.end()
   })
 
@@ -626,6 +628,7 @@ tape('StateManager - Contract storage', (tester) => {
 
     const proof = await stateManager.getProof(address, storageKeys)
     t.deepEqual(ropstenData, proof)
+    await stateManager.verifyProof(ropstenData)
     t.end()
   })
 })

@@ -10,12 +10,14 @@ import {
   PrefixedHexString,
   bufferToHex,
   bnToHex,
+  KECCAK256_RLP_ARRAY,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { StateManager, StorageDump } from './interface'
 import Cache, { getCb, putCb } from './cache'
 import { short } from '../evm/opcodes'
 import { BaseStateManager } from '.'
+import { BN } from 'ethereumjs-util'
 
 type StorageProof = {
   key: PrefixedHexString
@@ -345,17 +347,56 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
    */
   async verifyProof(proof: Proof): Promise<boolean> {
     const rootHash = keccak256(toBuffer(proof.accountProof[0]))
-    const key = keccak256(toBuffer(proof.accountProof[proof.accountProof.length - 1]))
+    const key = toBuffer(proof.address)
     const accountProof = proof.accountProof.map((rlpString: PrefixedHexString) =>
       toBuffer(rlpString)
     )
 
     // This returns the account if the trie is OK, verify that it matches the reported account
-    await Trie.verifyProof(rootHash, key, accountProof)
+    const value = await Trie.verifyProof(rootHash, key, accountProof)
+
+    if (value === null) {
+      // Verify that in the proof, the account is empty.
+      KECCAK256_RLP_ARRAY
+      KECCAK256_NULL
+      const emptyBuffer = Buffer.from('')
+      const nonce = toBuffer(proof.nonce)
+      if (!nonce.equals(emptyBuffer)) {
+        throw new Error('Invalid proof provided')
+      }
+      const balance = toBuffer(proof.balance)
+      if (!balance.equals(emptyBuffer)) {
+        throw new Error('Invalid proof provided')
+      }
+      const storageHash = toBuffer(proof.storageHash)
+      if (!storageHash.equals(KECCAK256_RLP_ARRAY)) {
+        throw new Error('Invalid proof provided')
+      }
+      const codeHash = toBuffer(proof.codeHash)
+      if (!codeHash.equals(KECCAK256_NULL)) {
+        throw new Error('Invalid proof provided')
+      }
+    } else {
+      const account = Account.fromRlpSerializedAccount(value)
+      const nonce = account.nonce
+      if (!nonce.eq(new BN(toBuffer(proof.nonce)))) {
+        throw new Error('Invalid proof provided')
+      }
+      const balance = account.balance
+      if (!balance.eq(new BN(toBuffer(proof.balance)))) {
+        throw new Error('Invalid proof provided')
+      }
+      const storageHash = toBuffer(proof.storageHash)
+      if (!storageHash.equals(toBuffer(proof.storageHash))) {
+        throw new Error('Invalid proof provided')
+      }
+      const codeHash = toBuffer(proof.codeHash)
+      if (!codeHash.equals(toBuffer(proof.codeHash))) {
+        throw new Error('Invalid proof provided')
+      }
+    }
 
     const storageRoot = toBuffer(proof.storageHash)
-
-    /* TODO verify that value matches the account */
 
     for (const stProof of proof.storageProof) {
       const storageProof = stProof.proof.map((value: PrefixedHexString) => toBuffer(value))
