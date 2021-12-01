@@ -11,13 +11,15 @@ import {
   bufferToHex,
   bnToHex,
   KECCAK256_RLP_ARRAY,
+  BN,
+  KECCAK256_RLP,
+  setLengthLeft,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { StateManager, StorageDump } from './interface'
 import Cache, { getCb, putCb } from './cache'
-import { short } from '../evm/opcodes'
 import { BaseStateManager } from '.'
-import { BN } from 'ethereumjs-util'
+import { short } from '../evm/opcodes'
 
 type StorageProof = {
   key: PrefixedHexString
@@ -360,16 +362,16 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
       KECCAK256_RLP_ARRAY
       KECCAK256_NULL
       const emptyBuffer = Buffer.from('')
-      const nonce = toBuffer(proof.nonce)
+      const nonce = unpadBuffer(toBuffer(proof.nonce))
       if (!nonce.equals(emptyBuffer)) {
         throw new Error('Invalid proof provided')
       }
-      const balance = toBuffer(proof.balance)
+      const balance = unpadBuffer(toBuffer(proof.balance))
       if (!balance.equals(emptyBuffer)) {
         throw new Error('Invalid proof provided')
       }
       const storageHash = toBuffer(proof.storageHash)
-      if (!storageHash.equals(KECCAK256_RLP_ARRAY)) {
+      if (!storageHash.equals(KECCAK256_RLP)) {
         throw new Error('Invalid proof provided')
       }
       const codeHash = toBuffer(proof.codeHash)
@@ -400,11 +402,13 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
 
     for (const stProof of proof.storageProof) {
       const storageProof = stProof.proof.map((value: PrefixedHexString) => toBuffer(value))
-      const storageValue = toBuffer(stProof.value)
+      const storageValue = setLengthLeft(toBuffer(stProof.value), 32)
       const storageKey = toBuffer(stProof.key)
-      const reportedValue = rlp.decode(
-        <Buffer>await Trie.verifyProof(storageRoot, storageKey, storageProof)
+      const reportedValue = setLengthLeft(
+        rlp.decode(<Buffer>await Trie.verifyProof(storageRoot, storageKey, storageProof)),
+        32
       )
+
       if (!reportedValue.equals(storageValue)) {
         throw 'Reported trie value does not match storage'
       }
