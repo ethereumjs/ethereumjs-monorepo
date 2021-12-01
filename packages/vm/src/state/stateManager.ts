@@ -27,7 +27,7 @@ type StorageProof = {
   value: PrefixedHexString
 }
 
-type Proof = {
+export type Proof = {
   balance: PrefixedHexString
   codeHash: PrefixedHexString
   nonce: PrefixedHexString

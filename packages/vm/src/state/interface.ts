@@ -1,6 +1,6 @@
 import { Account, Address } from 'ethereumjs-util'
 import { AccessList } from '@ethereumjs/tx'
-import { Proof } from 'merkle-patricia-tree/dist/baseTrie'
+import { Proof } from './stateManager'
 
 /**
  * Storage values of an account
