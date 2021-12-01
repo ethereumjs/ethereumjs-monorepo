@@ -388,11 +388,11 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
       if (!balance.eq(new BN(toBuffer(proof.balance)))) {
         throw new Error('Invalid proof provided')
       }
-      const storageHash = toBuffer(proof.storageHash)
+      const storageHash = account.stateRoot
       if (!storageHash.equals(toBuffer(proof.storageHash))) {
         throw new Error('Invalid proof provided')
       }
-      const codeHash = toBuffer(proof.codeHash)
+      const codeHash = account.codeHash
       if (!codeHash.equals(toBuffer(proof.codeHash))) {
         throw new Error('Invalid proof provided')
       }

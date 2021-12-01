@@ -592,7 +592,7 @@ tape('StateManager - Contract storage', (tester) => {
     t.end()
   })
 
-  it('should report data equal to geth output for EIP 1178 proofs - nonexistent account', async (t) => {
+  it('should report data equal to geth output for EIP 1178 proofs - account with storage', async (t) => {
     // Data source: Ropsten, retrieved with Geth eth_getProof
     // eth.getProof("0x2D80502854FC7304c3E3457084DE549f5016B73f", ["0x1e8bf26b05059b66f11b6e0c5b9fe941f81181d6cc9f2af65ccee86e95cea1ca", "0x1e8bf26b05059b66f11b6e0c5b9fe941f81181d6cc9f2af65ccee86e95cea1cb"], 11098094)
     // Note: the first slot has a value, but the second slot is empty
@@ -629,6 +629,129 @@ tape('StateManager - Contract storage', (tester) => {
     const proof = await stateManager.getProof(address, storageKeys)
     t.deepEqual(ropstenData, proof)
     await stateManager.verifyProof(ropstenData)
+    t.end()
+  })
+
+  it('should throw on invalid proofs - existing accounts/slots', async (t) => {
+    // Data source: Ropsten, retrieved with Geth eth_getProof
+    // eth.getProof("0x2D80502854FC7304c3E3457084DE549f5016B73f", ["0x1e8bf26b05059b66f11b6e0c5b9fe941f81181d6cc9f2af65ccee86e95cea1ca", "0x1e8bf26b05059b66f11b6e0c5b9fe941f81181d6cc9f2af65ccee86e95cea1cb"], 11098094)
+    // Note: the first slot has a value, but the second slot is empty
+    // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
+    const address = new Address(Buffer.from('2D80502854FC7304c3E3457084DE549f5016B73f', 'hex'))
+    const ropstenData = require('./testdata_contractWithStorage.json')
+    const trie = new SecureTrie()
+    const stateManager = new DefaultStateManager({ trie })
+    // Dump all the account proof data in the DB
+    let stateRoot: Buffer | undefined
+    for (const proofData of ropstenData.accountProof) {
+      const bufferData = Buffer.from(proofData.slice(2), 'hex')
+      const key = keccak256(bufferData)
+      if (stateRoot === undefined) {
+        stateRoot = key
+      }
+      await trie.db.put(key, bufferData)
+    }
+    const storageRoot = ropstenData.storageHash
+    const storageTrie = new SecureTrie()
+    const storageKeys: Buffer[] = []
+    for (const storageProofsData of ropstenData.storageProof) {
+      storageKeys.push(Buffer.from(storageProofsData.key.slice(2), 'hex'))
+      for (const storageProofData of storageProofsData.proof) {
+        const key = keccak256(Buffer.from(storageProofData.slice(2), 'hex'))
+        await storageTrie.db.put(key, Buffer.from(storageProofData.slice(2), 'hex'))
+      }
+    }
+    storageTrie.root = Buffer.from(storageRoot.slice(2), 'hex')
+    const addressHex = address.buf.toString('hex')
+    stateManager._storageTries[addressHex] = storageTrie
+    trie.root = stateRoot!
+
+    // tamper with account data
+    for (const tamper of ['nonce', 'balance', 'codeHash', 'storageHash']) {
+      const original = ropstenData[tamper]
+      try {
+        const newField = `0x9${original.slice(3)}`
+        ropstenData[tamper] = newField
+        console.log(tamper)
+        await stateManager.verifyProof(ropstenData)
+        // note: this implicitly means that newField != original, if newField = original then the proof would be valid and test would fail
+        t.fail('should throw')
+      } catch (e) {
+        t.pass('threw on invalid proof')
+      } finally {
+        // restore original valid proof
+        ropstenData[tamper] = original
+      }
+    }
+
+    // tamper with storage slots
+    for (const slot of ropstenData.storageProof) {
+      const original = slot.value
+      slot.value = `0x9${original.slice(3)}`
+      try {
+        await stateManager.verifyProof(ropstenData)
+        t.fail('should throw')
+      } catch {
+        t.pass('threw on invalid proof')
+      } finally {
+        slot.value = original
+      }
+    }
+
+    t.end()
+  })
+
+  it('should throw on invalid proofs - nonexisting account', async (t) => {
+    // Data source: Ropsten, retrieved with Geth eth_getProof
+    // eth.getProof("0x2D80502854FC7304c3E3457084DE549f5016B73f", ["0x1e8bf26b05059b66f11b6e0c5b9fe941f81181d6cc9f2af65ccee86e95cea1ca", "0x1e8bf26b05059b66f11b6e0c5b9fe941f81181d6cc9f2af65ccee86e95cea1cb"], 11098094)
+    // Note: the first slot has a value, but the second slot is empty
+    // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
+    const address = new Address(Buffer.from('68268f12253f69f66b188c95b8106b2f847859fc', 'hex'))
+    const ropstenData = require('./testdata_nonexistentAccount.json')
+    const trie = new SecureTrie()
+    const stateManager = new DefaultStateManager({ trie })
+    // Dump all the account proof data in the DB
+    let stateRoot: Buffer | undefined
+    for (const proofData of ropstenData.accountProof) {
+      const bufferData = Buffer.from(proofData.slice(2), 'hex')
+      const key = keccak256(bufferData)
+      if (stateRoot === undefined) {
+        stateRoot = key
+      }
+      await trie.db.put(key, bufferData)
+    }
+    const storageRoot = ropstenData.storageHash
+    const storageTrie = new SecureTrie()
+    const storageKeys: Buffer[] = []
+    for (const storageProofsData of ropstenData.storageProof) {
+      storageKeys.push(Buffer.from(storageProofsData.key.slice(2), 'hex'))
+      for (const storageProofData of storageProofsData.proof) {
+        const key = keccak256(Buffer.from(storageProofData.slice(2), 'hex'))
+        await storageTrie.db.put(key, Buffer.from(storageProofData.slice(2), 'hex'))
+      }
+    }
+    storageTrie.root = Buffer.from(storageRoot.slice(2), 'hex')
+    const addressHex = address.buf.toString('hex')
+    stateManager._storageTries[addressHex] = storageTrie
+    trie.root = stateRoot!
+
+    // tamper with account data
+    for (const tamper of ['nonce', 'balance', 'codeHash', 'storageHash']) {
+      const original = ropstenData[tamper]
+      try {
+        const newField = `0x9${original.slice(3)}`
+        ropstenData[tamper] = newField
+        await stateManager.verifyProof(ropstenData)
+        // note: this implicitly means that newField != original, if newField = original then the proof would be valid and test would fail
+        t.fail('should throw')
+      } catch (e) {
+        t.pass('threw on invalid proof')
+      } finally {
+        // restore original valid proof
+        ropstenData[tamper] = original
+      }
+    }
+
     t.end()
   })
 })
