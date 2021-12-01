@@ -4,6 +4,7 @@ import { BN } from 'ethereumjs-util'
 import { Config } from '../../../lib/config'
 import { Chain } from '../../../lib/blockchain/chain'
 import { wait } from '../../integration/util'
+import { Event } from '../../../lib/types'
 
 tape('[BlockFetcher]', async (t) => {
   class PeerPool {
@@ -126,10 +127,10 @@ tape('[BlockFetcher]', async (t) => {
     td.reset()
     chain.putBlocks = td.func<any>()
     td.when(chain.putBlocks(td.matchers.anything())).thenResolve(1)
-    st.doesNotThrow(
-      () => fetcher.store([]),
-      'store() does not throw when putBlocks returns valid result'
+    config.events.on(Event.SYNC_FETCHER_FETCHED, () =>
+      st.pass('store() does not throw when putBlocks returns valid result')
     )
+    await fetcher.store([])
   })
   t.test('should reset td', (t) => {
     td.reset()
