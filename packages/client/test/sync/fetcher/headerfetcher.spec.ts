@@ -2,6 +2,8 @@ import tape from 'tape'
 import td from 'testdouble'
 import { Config } from '../../../lib/config'
 import { BN } from 'ethereumjs-util'
+import { Chain } from '../../../lib/blockchain'
+import { Event } from '../../../lib/types'
 
 tape('[HeaderFetcher]', async (t) => {
   class PeerPool {
@@ -42,6 +44,36 @@ tape('[HeaderFetcher]', async (t) => {
     t.end()
   })
 
+  t.test('store()', async (st) => {
+    td.reset()
+    st.plan(2)
+
+    const config = new Config({ maxPerRequest: 5, transports: [] })
+    const pool = new PeerPool() as any
+    const chain = new Chain({ config })
+    chain.putHeaders = td.func<any>()
+    const fetcher = new HeaderFetcher({
+      config,
+      pool,
+      chain,
+      first: new BN(1),
+      count: new BN(10),
+      timeout: 5,
+    })
+    td.when(chain.putHeaders(td.matchers.anything())).thenReject(new Error('err0'))
+    try {
+      await fetcher.store([])
+    } catch (err: any) {
+      st.ok(err.message === 'err0', 'store() threw on invalid header')
+    }
+    td.reset()
+    chain.putBlocks = td.func<any>()
+    td.when(chain.putHeaders(td.matchers.anything())).thenResolve(1)
+    config.events.on(Event.SYNC_FETCHER_FETCHED, () =>
+      st.pass('store() emitted SYNC_FETCHER_FETCHED event on putting headers')
+    )
+    await fetcher.store([])
+  })
   t.test('should reset td', (t) => {
     td.reset()
     t.end()

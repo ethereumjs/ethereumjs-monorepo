@@ -128,7 +128,7 @@ tape('[BlockFetcher]', async (t) => {
     chain.putBlocks = td.func<any>()
     td.when(chain.putBlocks(td.matchers.anything())).thenResolve(1)
     config.events.on(Event.SYNC_FETCHER_FETCHED, () =>
-      st.pass('store() does not throw when putBlocks returns valid result')
+      st.pass('store() emitted SYNC_FETCHER_FETCHED event on putting blocks')
     )
     await fetcher.store([])
   })
