@@ -45,7 +45,6 @@ tape('[HeaderFetcher]', async (t) => {
   })
 
   t.test('store()', async (st) => {
-    td.reset()
     st.plan(2)
 
     const config = new Config({ maxPerRequest: 5, transports: [] })
@@ -60,20 +59,19 @@ tape('[HeaderFetcher]', async (t) => {
       count: new BN(10),
       timeout: 5,
     })
-    td.when(chain.putHeaders(td.matchers.anything())).thenReject(new Error('err0'))
+    td.when(chain.putHeaders([0 as any])).thenReject(new Error('err0'))
     try {
-      await fetcher.store([])
+      await fetcher.store([0 as any])
     } catch (err: any) {
       st.ok(err.message === 'err0', 'store() threw on invalid header')
     }
-    td.reset()
-    chain.putBlocks = td.func<any>()
-    td.when(chain.putHeaders(td.matchers.anything())).thenResolve(1)
+    td.when(chain.putHeaders([1 as any])).thenResolve(1)
     config.events.on(Event.SYNC_FETCHER_FETCHED, () =>
       st.pass('store() emitted SYNC_FETCHER_FETCHED event on putting headers')
     )
-    await fetcher.store([])
+    await fetcher.store([1 as any])
   })
+
   t.test('should reset td', (t) => {
     td.reset()
     t.end()
