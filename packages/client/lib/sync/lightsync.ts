@@ -1,5 +1,4 @@
 import { Hardfork } from '@ethereumjs/common'
-import { BN } from 'ethereumjs-util'
 import { Peer } from '../net/peer/peer'
 import { short } from '../util'
 import { Event } from '../types'
@@ -40,7 +39,7 @@ export class LightSynchronizer extends Synchronizer {
    * Returns true if peer can be used for syncing
    */
   syncable(peer: Peer): boolean {
-    return peer.les?.status.serveHeaders
+    return peer.les?.status.serveHeaders ?? false
   }
 
   /**
@@ -90,7 +89,7 @@ export class LightSynchronizer extends Synchronizer {
       const latest = await this.latest(peer)
       if (!latest) return resolve(false)
 
-      const height = new BN(peer.les!.status.headNum)
+      const height = peer.les!.status.headNum
       if (!this.syncTargetHeight) {
         this.syncTargetHeight = height
         this.config.logger.info(
@@ -117,7 +116,11 @@ export class LightSynchronizer extends Synchronizer {
 
       this.config.events.on(Event.SYNC_FETCHER_FETCHED, (headers) => {
         headers = headers as BlockHeader[]
-        const first = new BN(headers[0].number)
+        if (headers.length === 0) {
+          this.config.logger.warn('No headers fetched are applicable for import')
+          return
+        }
+        const first = headers[0].number
         const hash = short(headers[0].hash())
         const baseFeeAdd = this.config.chainCommon.gteHardfork(Hardfork.London)
           ? `baseFee=${headers[0].baseFeePerGas} `

@@ -1,6 +1,6 @@
 # Example: Light Browser Sync
 
-## Light sync 
+## Light sync
 
 In this example, we will run two ethereumjs clients. The first will be a full sync client that
 connects to the rinkeby network and starts downloading the blockchain. The second will be a
@@ -63,7 +63,6 @@ ethereumjs.run({
   network: 'rinkeby',
   syncmode: 'light',
   bootnodes: '/ip4/127.0.0.1/tcp/50505/ws/p2p/QmYAuYxw6QX1x5aafs6g3bUrPbMDifP5pDun3N9zbVLpEa',
-  discDns: false
 })
 ```
 
