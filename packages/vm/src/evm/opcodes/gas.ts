@@ -146,7 +146,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
     0x52,
     async function (runState, gas, common): Promise<void> {
       const offset = runState.stack.peek()[0]
-      runState.memory.extend(offset.toNumber(), 32)
       gas.iadd(subMemUsage(runState, offset, new BN(32), common))
     },
   ],
@@ -155,7 +154,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
     0x53,
     async function (runState, gas, common): Promise<void> {
       const offset = runState.stack.peek()[0]
-      runState.memory.extend(offset.toNumber(), 1)
       gas.iadd(subMemUsage(runState, offset, new BN(1), common))
     },
   ],
