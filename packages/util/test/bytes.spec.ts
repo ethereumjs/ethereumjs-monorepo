@@ -20,6 +20,7 @@ import {
   baToJSON,
   intToBuffer,
   intToHex,
+  validateNoLeadingZeroes,
 } from '../src'
 
 tape('zeros function', function (t) {
@@ -349,5 +350,48 @@ tape('intToHex', function (st) {
   st.throws(() => intToHex(Number.MAX_SAFE_INTEGER + 1), 'throws on unsafe integers')
   st.ok(intToHex(0) == '0x0', 'correctly converts 0 to a hex string')
   st.ok(intToHex(1) == '0x1', 'correctly converts 1 to a hex string')
+  st.end()
+})
+
+tape('validateNoLeadingZeroes', function (st) {
+  const noLeadingZeroes = {
+    a: toBuffer('0x123'),
+  }
+  const leadingZeroes = {
+    a: toBuffer('0x001'),
+  }
+  const onlyZeroes = {
+    a: toBuffer('0x0'),
+  }
+  const emptyBuffer = {
+    a: toBuffer('0x'),
+  }
+
+  const undefinedValue = {
+    a: undefined,
+  }
+  st.doesNotThrow(
+    () => validateNoLeadingZeroes(noLeadingZeroes),
+    'does not throw when no leading zeroes'
+  )
+  st.doesNotThrow(() => validateNoLeadingZeroes(emptyBuffer), 'does not throw with empty buffer')
+  st.doesNotThrow(
+    () => validateNoLeadingZeroes(undefinedValue),
+    'does not throw when undefined passed in'
+  )
+  try {
+    validateNoLeadingZeroes(leadingZeroes)
+    st.fail('should throw')
+  } catch (err: any) {
+    st.ok(
+      err.message.includes('a cannot have leading zeroes'),
+      'error message names property with leading zeroes'
+    )
+    st.notOk(
+      err.message.includes('b cannot have leading zeroes'),
+      'error message should not name property without leading zeroes'
+    )
+  }
+  st.throws(() => validateNoLeadingZeroes(onlyZeroes), 'throws when propery has only zeroes')
   st.end()
 })

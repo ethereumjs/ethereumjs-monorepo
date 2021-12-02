@@ -27,17 +27,26 @@ function runDifficultyTests(
 type TestData = { [key: string]: any }
 
 const hardforkTestData: TestData = {
-  chainstart: require('../../ethereum-tests/BasicTests/difficultyFrontier.json'),
-  homestead: require('../../ethereum-tests/BasicTests/difficultyHomestead.json'),
-  byzantium: require('../../ethereum-tests/BasicTests/difficultyByzantium.json'),
-  constantinople: require('../../ethereum-tests/BasicTests/difficultyConstantinople.json'),
+  chainstart: require('../../ethereum-tests/DifficultyTests/dfFrontier/difficultyFrontier.json')
+    .difficultyFrontier.Frontier,
+  homestead: require('../../ethereum-tests/DifficultyTests/dfHomestead/difficultyHomestead.json')
+    .difficultyHomestead.Homestead,
+  byzantium: require('../../ethereum-tests/DifficultyTests/dfByzantium/difficultyByzantium.json')
+    .difficultyByzantium.Byzantium,
+  constantinople:
+    require('../../ethereum-tests/DifficultyTests/dfConstantinople/difficultyConstantinople.json')
+      .difficultyConstantinople.Constantinople,
   muirGlacier: Object.assign(
-    require('../../ethereum-tests/BasicTests/difficultyEIP2384.json'),
-    require('../../ethereum-tests/BasicTests/difficultyEIP2384_random.json'),
-    require('../../ethereum-tests/BasicTests/difficultyEIP2384_random_to20M.json')
+    require('../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384.json')
+      .difficultyEIP2384.Berlin,
+    require('../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384_random.json')
+      .difficultyEIP2384_random.Berlin,
+    require('../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384_random_to20M.json')
+      .difficultyEIP2384_random_to20M.Berlin
   ),
-  arrowGlacier: require('./testdata/difficultyArrowGlacier.json').difficultyArrowGlacier
-    .ArrowGlacier,
+  arrowGlacier:
+    require('../../ethereum-tests/DifficultyTests/dfArrowGlacier/difficultyArrowGlacier.json')
+      .difficultyArrowGlacier.ArrowGlacier,
 }
 
 const chainTestData: TestData = {

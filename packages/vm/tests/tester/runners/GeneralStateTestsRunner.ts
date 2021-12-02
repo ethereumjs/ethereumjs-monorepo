@@ -1,7 +1,7 @@
 import tape from 'tape'
 import Common, { Chain } from '@ethereumjs/common'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { Account, BN, toBuffer } from 'ethereumjs-util'
+import { BN, toBuffer } from 'ethereumjs-util'
 import { setupPreConditions, makeTx, makeBlockFromEnv } from '../../util'
 import type { InterpreterStep } from '../../../src/evm/interpreter'
 
@@ -44,8 +44,10 @@ function parseTestCases(
       return {
         transaction: tx,
         postStateRoot: testCase['hash'],
+        logs: testCase['logs'],
         env: testData['env'],
         pre: testData['pre'],
+        expectException: testCase['expectException'],
       }
     })
   }
@@ -76,7 +78,6 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const vm = new VM({ state, common })
 
   await setupPreConditions(vm.stateManager._trie, testData)
-
   let execInfo = ''
   let tx
 
@@ -116,20 +117,10 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
           t.comment(JSON.stringify(stateRoot))
         })
       }
-
       try {
         await vm.runTx({ tx, block })
         execInfo = 'successful tx run'
       } catch (e: any) {
-        // If tx is invalid and coinbase is empty, the test harness
-        // expects the coinbase account to be deleted from state.
-        // Without this ecmul_0-3_5616_28000_96 would fail.
-        const account = await vm.stateManager.getAccount(block.header.coinbase)
-        if (account.balance.isZero()) {
-          await vm.stateManager.putAccount(block.header.coinbase, new Account())
-          await vm.stateManager.cleanupTouchedAccounts()
-          await vm.stateManager._cache.flush()
-        }
         execInfo = `tx runtime error :${e.message}`
       }
     } else {
@@ -139,14 +130,12 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
 
   const stateManagerStateRoot = vm.stateManager._trie.root
   const testDataPostStateRoot = toBuffer(testData.postStateRoot)
+  const stateRootsAreEqual = stateManagerStateRoot.equals(testDataPostStateRoot)
 
   const end = Date.now()
   const timeSpent = `${(end - begin) / 1000} secs`
 
-  t.ok(
-    stateManagerStateRoot.equals(testDataPostStateRoot),
-    `[ ${timeSpent} ] the state roots should match (${execInfo})`
-  )
+  t.ok(stateRootsAreEqual, `[ ${timeSpent} ] the state roots should match (${execInfo})`)
 }
 
 export default async function runStateTest(options: any, testData: any, t: tape.Test) {

@@ -1,5 +1,12 @@
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { Address, BN, bufferToHex, privateToAddress } from 'ethereumjs-util'
+import {
+  Address,
+  BN,
+  bufferToHex,
+  MAX_INTEGER,
+  MAX_UINT64,
+  privateToAddress,
+} from 'ethereumjs-util'
 import tape from 'tape'
 import {
   AccessList,
@@ -327,6 +334,28 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
       AccessListEIP2930Transaction.fromTxData(tx, { common }),
       'should initialize correctly from its own data'
     )
+
+    const validAddress = Buffer.from('01'.repeat(20), 'hex')
+    const validSlot = Buffer.from('01'.repeat(32), 'hex')
+    const chainId = new BN(1)
+    try {
+      AccessListEIP2930Transaction.fromTxData(
+        {
+          data: Buffer.from('010200', 'hex'),
+          to: validAddress,
+          accessList: [[validAddress, [validSlot]]],
+          chainId,
+          gasLimit: MAX_UINT64,
+          gasPrice: MAX_INTEGER,
+        },
+        { common }
+      )
+    } catch (err: any) {
+      st.ok(
+        err.message.includes('gasLimit * gasPrice cannot exceed MAX_INTEGER'),
+        'throws when gasLimit * gasPrice exceeds MAX_INTEGER'
+      )
+    }
     st.end()
   })
 
