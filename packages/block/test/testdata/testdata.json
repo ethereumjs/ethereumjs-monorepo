@@ -25,7 +25,7 @@
           "data": "0x",
           "gasLimit": "0x55f0",
           "gasPrice": "0x0a",
-          "nonce": "0x00",
+          "nonce": "0x",
           "r": "0x575da4e21b66fa764be5f74da9389e67693d066fb0d1312e19e17e501da00ecd",
           "s": "0x6baf5a5327595f6619dfc2fcb3f2e6fb410b5810af3cb52d0e7508038e91a188",
           "to": "0xaaaf5374fce5edbc8e2a8697c15331677e6ebf0b",
@@ -126,7 +126,7 @@
     "8888f1f195afa192cfee860698584c030f4c9db1": {
       "balance": "0x456391824508d41c",
       "code": "0x",
-      "nonce": "0x00",
+      "nonce": "0x",
       "storage": {}
     },
     "a94f5374fce5edbc8e2a8697c15331677e6ebf0b": {
@@ -138,7 +138,7 @@
     "bbbf5374fce5edbc8e2a8697c15331677e6ebf0b": {
       "balance": "0x3c",
       "code": "0x",
-      "nonce": "0x00",
+      "nonce": "0x",
       "storage": {}
     }
   },
@@ -146,13 +146,13 @@
     "a94f5374fce5edbc8e2a8697c15331677e6ebf0b": {
       "balance": "0x4a723dc6b40b8a9a000000",
       "code": "0x",
-      "nonce": "0x00",
+      "nonce": "0x",
       "storage": {}
     },
     "aaaf5374fce5edbc8e2a8697c15331677e6ebf0b": {
       "balance": "0x02540be400",
       "code": "0x73a94f5374fce5edbc8e2a8697c15331677e6ebf0bff",
-      "nonce": "0x00",
+      "nonce": "0x",
       "storage": {}
     }
   }

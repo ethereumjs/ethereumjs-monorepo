@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Address, BN, toBuffer } from 'ethereumjs-util'
+import { Address, BN, KECCAK256_NULL, toBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import {
@@ -300,6 +300,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   let fromAccount = await state.getAccount(caller)
   const { nonce, balance } = fromAccount
 
+  // EIP-3607: Reject transactions from senders with deployed code
+  if (!fromAccount.codeHash.equals(KECCAK256_NULL)) {
+    const msg = _errorMsg('invalid sender address, address is not EOA', this, block, tx)
+    throw new Error(msg)
+  }
   if (!opts.skipBalance) {
     const cost = tx.getUpfrontCost(block.header.baseFeePerGas)
     if (balance.lt(cost)) {
