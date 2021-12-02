@@ -91,12 +91,10 @@ export abstract class BaseTransaction<TransactionObject> {
     const rB = toBuffer(r === '' ? '0x' : r)
     const sB = toBuffer(s === '' ? '0x' : s)
 
-    const valueB = toBuffer(value === '' ? '0x' : value)
-
     this.nonce = new BN(toBuffer(nonce === '' ? '0x' : nonce))
     this.gasLimit = new BN(toBuffer(gasLimit === '' ? '0x' : gasLimit))
     this.to = toB.length > 0 ? new Address(toB) : undefined
-    this.value = new BN(valueB)
+    this.value = new BN(toBuffer(value === '' ? '0x' : value))
     this.data = toBuffer(data === '' ? '0x' : data)
 
     this.v = vB.length > 0 ? new BN(vB) : undefined
