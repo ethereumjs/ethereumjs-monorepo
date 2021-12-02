@@ -4,7 +4,7 @@ import { Config } from '../../../lib/config'
 import { Fetcher } from '../../../lib/sync/fetcher/fetcher'
 import { Job } from '../../../lib/sync/fetcher/types'
 import { Event } from '../../../lib/types'
-
+import { debug } from 'debug'
 class FetcherTest extends Fetcher<any, any, any> {
   process(_job: any, _res: any) {
     return undefined // have to return undefined, otherwise the function return signature is void.
@@ -70,8 +70,8 @@ tape('[Fetcher]', (t) => {
     }, 20)
   })
 
-  t.test('should handle clearing queue', (t) => {
-    t.plan(2)
+  t.test('should handle queue management', (t) => {
+    t.plan(3)
     const config = new Config({ transports: [] })
     const fetcher = new FetcherTest({
       config,
@@ -86,6 +86,16 @@ tape('[Fetcher]', (t) => {
     t.equals((fetcher as any).in.size(), 3, 'queue filled')
     fetcher.clear()
     t.equals((fetcher as any).in.size(), 0, 'queue cleared')
+    const job4 = { index: 3 }
+    const job5 = { index: 4 }
+
+    ;(fetcher as any).in.insert(job1)
+    ;(fetcher as any).in.insert(job2)
+    ;(fetcher as any).in.insert(job3)
+    ;(fetcher as any).in.insert(job4)
+    ;(fetcher as any).in.insert(job5)
+
+    t.ok(fetcher.next() === false, 'next() fails when heap length exceeds maxQueue')
   })
 
   t.test('should reset td', (t) => {
