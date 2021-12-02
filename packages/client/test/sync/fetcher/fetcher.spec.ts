@@ -4,7 +4,7 @@ import { Config } from '../../../lib/config'
 import { Fetcher } from '../../../lib/sync/fetcher/fetcher'
 import { Job } from '../../../lib/sync/fetcher/types'
 import { Event } from '../../../lib/types'
-import { debug } from 'debug'
+
 class FetcherTest extends Fetcher<any, any, any> {
   process(_job: any, _res: any) {
     return undefined // have to return undefined, otherwise the function return signature is void.
