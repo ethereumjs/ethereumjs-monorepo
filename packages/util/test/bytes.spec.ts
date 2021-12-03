@@ -357,7 +357,10 @@ tape('validateNoLeadingZeroes', function (st) {
   const noLeadingZeroes = {
     a: toBuffer('0x123'),
   }
-  const leadingZeroes = {
+  const noleadingZeroBytes = {
+    a: toBuffer('0x01'),
+  }
+  const leadingZeroBytes = {
     a: toBuffer('0x001'),
   }
   const onlyZeroes = {
@@ -370,6 +373,7 @@ tape('validateNoLeadingZeroes', function (st) {
   const undefinedValue = {
     a: undefined,
   }
+
   st.doesNotThrow(
     () => validateNoLeadingZeroes(noLeadingZeroes),
     'does not throw when no leading zeroes'
@@ -379,19 +383,14 @@ tape('validateNoLeadingZeroes', function (st) {
     () => validateNoLeadingZeroes(undefinedValue),
     'does not throw when undefined passed in'
   )
-  try {
-    validateNoLeadingZeroes(leadingZeroes)
-    st.fail('should throw')
-  } catch (err: any) {
-    st.ok(
-      err.message.includes('a cannot have leading zeroes'),
-      'error message names property with leading zeroes'
-    )
-    st.notOk(
-      err.message.includes('b cannot have leading zeroes'),
-      'error message should not name property without leading zeroes'
-    )
-  }
-  st.throws(() => validateNoLeadingZeroes(onlyZeroes), 'throws when propery has only zeroes')
+  st.doesNotThrow(
+    () => validateNoLeadingZeroes(noleadingZeroBytes),
+    'does not throw when value has leading zero bytes'
+  )
+  st.throws(
+    () => validateNoLeadingZeroes(leadingZeroBytes),
+    'throws when value has leading zero bytes'
+  )
+  st.throws(() => validateNoLeadingZeroes(onlyZeroes), 'throws when value has only zeroes')
   st.end()
 })

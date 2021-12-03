@@ -212,7 +212,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     })
 
     if (this.gasLimit.mul(this.maxFeePerGas).gt(MAX_INTEGER)) {
-      const msg = this._errorMsg('gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256)')
+      const msg = this._errorMsg('gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)')
       throw new Error(msg)
     }
 

@@ -111,7 +111,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
     this.gasPrice = new BN(toBuffer(txData.gasPrice === '' ? '0x' : txData.gasPrice))
 
     if (this.gasPrice.mul(this.gasLimit).gt(MAX_INTEGER)) {
-      const msg = this._errorMsg('gas limit * gasPrice cannot exceed MAX_INTEGER(2^256-1)')
+      const msg = this._errorMsg('gas limit * gasPrice cannot exceed MAX_INTEGER (2^256-1)')
       throw new Error(msg)
     }
     this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
