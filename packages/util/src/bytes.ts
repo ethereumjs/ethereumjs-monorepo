@@ -286,7 +286,7 @@ export const baToJSON = function (ba: any): any {
  * Invalid values: 0x0, 0x00, 0x001, 0x0001
  *
  * Note: This method is useful for validating that RLP encoded integers comply with the rule that all
- * integer values encoded to RLP must be in the most compact form and contain no leading zeroes
+ * integer values encoded to RLP must be in the most compact form and contain no leading zero bytes
  * @param values An object containing string keys and Buffer values
  * @throws if any provided value is found to have leading zero bytes
  */
