@@ -105,6 +105,9 @@ export function getLogger(args: { [key: string]: any } = { loglevel: 'info' }) {
   if (args.logFile) {
     transports.push(logFileTransport(args))
   }
-  const logger = createLogger({ transports })
+  const logger = createLogger({
+    transports,
+    format: formatConfig(),
+  })
   return logger
 }
