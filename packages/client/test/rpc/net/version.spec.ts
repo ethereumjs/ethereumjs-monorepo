@@ -6,25 +6,11 @@ const method = 'net_version'
 
 function compareResult(t: any, result: any, chainId: any) {
   let msg = 'result should be a string'
-  if (typeof result !== 'string') {
-    throw new Error(msg)
-  } else {
-    t.pass(msg)
-  }
-
+  t.equal(typeof result, 'string', msg)
   msg = 'result string should not be empty'
-  if (result.length === 0) {
-    throw new Error(msg)
-  } else {
-    t.pass(msg)
-  }
-
+  t.notEqual(result.length, 0, msg)
   msg = `should be the correct chain ID (expected: ${chainId}, received: ${result})`
-  if (result !== chainId) {
-    throw new Error(msg)
-  } else {
-    t.pass(msg)
-  }
+  t.equal(result, chainId, msg)
 }
 
 tape(`${method}: call on ropsten`, async (t) => {
