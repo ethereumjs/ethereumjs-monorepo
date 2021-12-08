@@ -43,6 +43,11 @@ export interface EIP2929StateManager extends StateManager {
   isWarmedStorage(address: Buffer, slot: Buffer): boolean
   clearWarmedAccounts(): void
   generateAccessList?(addressesRemoved: Address[], addressesOnlyStorage: Address[]): AccessList
-  getProof?(address: Address, storageSlots: Buffer[]): Promise<Proof>
-  verifyProof?(proof: Proof): Promise<boolean>
+}
+
+// Note: if a StateManager supports both EIP2929StateManager and the ProofStateManager interface,
+// it can be cast as: <EIP2929StateManager & ProofStateManager>(StateManager)
+export interface ProofStateManager extends StateManager {
+  getProof(address: Address, storageSlots: Buffer[]): Promise<Proof>
+  verifyProof(proof: Proof): Promise<boolean>
 }
