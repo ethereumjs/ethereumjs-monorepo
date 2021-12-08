@@ -362,6 +362,12 @@ export class Eth {
     this.protocolVersion = middleware(this.protocolVersion.bind(this), 0, [])
 
     this.syncing = middleware(this.syncing.bind(this), 0, [])
+
+    this.getProof = middleware(this.getProof.bind(this), 3, [
+      [validators.address],
+      [validators.hexArray],
+      [validators.blockOption],
+    ])
   }
 
   /**
@@ -957,6 +963,34 @@ export class Eth {
 
     return bufferToHex(tx.hash())
   }
+
+  async getProof(params: [string, string[], string]) {
+    const [addressHex, slotsHex, blockOption] = params
+
+    if (!this._vm) {
+      throw new Error('missing vm')
+    }
+
+    // use a copy of the vm in case new blocks are executed
+    const vm = this._vm.copy()
+    if (blockOption !== 'latest') {
+      const latest = await vm.blockchain.getLatestHeader()
+      if (blockOption !== bnToHex(latest.number)) {
+        throw {
+          code: INVALID_PARAMS,
+          message: `Currently only "latest" block supported`,
+        }
+      }
+    }
+
+    const address = Address.fromString(addressHex)
+    const slots = slotsHex.map((slotHex) => setLengthLeft(toBuffer(slotHex), 32))
+    const stateManager = vm.stateManager as any
+
+    const proof = await stateManager.getProof(address, slots)
+    return proof
+  }
+
   /**
    * Returns an object with data about the sync status or false.
    * @param params An empty array

@@ -93,6 +93,27 @@ export const validators = {
     }
   },
 
+  get hexArray() {
+    return (params: any[], index: number) => {
+      const array = params[index]
+      if (!Array.isArray(array)) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be an array`,
+        }
+      }
+      for (let i = 0; i < array.length; i++) {
+        const result = validators.hex(array, i)
+        if (result) {
+          return {
+            code: result.code,
+            message: `invalid argument ${index}: ${result.message}`,
+          }
+        }
+      }
+    }
+  },
+
   /**
    * hex validator to validate block hash
    * @param params parameters of method
