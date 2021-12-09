@@ -59,6 +59,11 @@ tape('[Libp2pServer]', async (t) => {
     )
     t.equals(server.key!.toString(), 'abcd', 'key is correct')
     t.equals(server.name, 'libp2p', 'get name')
+    t.equals(
+      (await server.getPeerId()).toB58String(),
+      '12D3KooWHnPxZvSVGxToTNaK1xd9z3J1TkQM2S2hLeX4bhraGE64',
+      'computes correct peerId'
+    )
     t.end()
   })
 
@@ -87,7 +92,7 @@ tape('[Libp2pServer]', async (t) => {
   })
 
   t.test('should start/stop server and test banning', async (t) => {
-    t.plan(11)
+    t.plan(12)
     const config = new Config({ transports: [], logger: getLogger({ loglevel: 'off' }) })
     const multiaddrs = [multiaddr('/ip4/6.6.6.6')]
     const server = new Libp2pServer({ config, multiaddrs, key: Buffer.from('4') })
@@ -148,7 +153,8 @@ tape('[Libp2pServer]', async (t) => {
     node.emit('peer:discovery', peerId2)
     td.when(server.getPeerInfo('conn3' as any)).thenReturn([peerId3, 'ma1' as any])
     node.connectionManager.emit('peer:connect', 'conn3')
-    td.verify(server.createPeer(peerId3, ['ma1'] as any))
+    td.verify(server.createPeer(peerId3, ['ma1'] as any, td.matchers.anything()))
+    t.ok((await server.start()) === false, 'server already started')
     await server.stop()
     t.notOk(server.running, 'stopped')
   })

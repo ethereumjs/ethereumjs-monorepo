@@ -4,8 +4,10 @@ import {
   bnToUnpaddedBuffer,
   ecrecover,
   keccak256,
+  MAX_INTEGER,
   rlp,
   toBuffer,
+  validateNoLeadingZeroes,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { BaseTransaction } from './baseTransaction'
@@ -139,6 +141,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
     const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = values
 
+    validateNoLeadingZeroes({ nonce, gasPrice, gasLimit, value, v, r, s })
+
     const emptyAccessList: AccessList = []
 
     return new AccessListEIP2930Transaction(
@@ -188,8 +192,14 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
     this.gasPrice = new BN(toBuffer(gasPrice === '' ? '0x' : gasPrice))
 
-    this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
+    this._validateCannotExceedMaxInteger({
+      gasPrice: this.gasPrice,
+    })
 
+    if (this.gasPrice.mul(this.gasLimit).gt(MAX_INTEGER)) {
+      const msg = this._errorMsg('gasLimit * gasPrice cannot exceed MAX_INTEGER')
+      throw new Error(msg)
+    }
     if (this.v && !this.v.eqn(0) && !this.v.eqn(1)) {
       const msg = this._errorMsg('The y-parity of the transaction should either be 0 or 1')
       throw new Error(msg)

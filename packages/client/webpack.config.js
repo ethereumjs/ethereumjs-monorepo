@@ -1,8 +1,17 @@
 const { resolve } = require('path')
+const { ProvidePlugin } = require('webpack')
 
 module.exports = {
   mode: 'production',
   entry: './dist.browser/browser/index.js',
+  plugins: [
+    new ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+    }),
+    new ProvidePlugin({
+      process: 'process/browser',
+    }),
+  ],
   module: {
     rules: [
       {
@@ -36,6 +45,7 @@ module.exports = {
   },
   resolve: {
     fallback: {
+      buffer: require.resolve('buffer'),
       crypto: require.resolve('crypto-browserify'), // used by: rlpxpeer, bin/cli.ts
       dgram: false, // used by: rlpxpeer via @ethereumjs/devp2p
       fs: false, // used by: FullSynchronizer via @ethereumjs/vm

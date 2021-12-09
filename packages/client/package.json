@@ -101,6 +101,7 @@
     "os-browserify": "^0.3.0",
     "pino": "^5.8.0",
     "pino-pretty": "^2.2.2",
+    "process": "^0.11.10",
     "pull-pair": "^1.1.0",
     "stream-browserify": "^3.0.0",
     "supertest": "^6.1.3",

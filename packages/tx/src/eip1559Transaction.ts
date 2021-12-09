@@ -4,8 +4,10 @@ import {
   bnToUnpaddedBuffer,
   ecrecover,
   keccak256,
+  MAX_INTEGER,
   rlp,
   toBuffer,
+  validateNoLeadingZeroes,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { BaseTransaction } from './baseTransaction'
@@ -152,6 +154,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       s,
     ] = values
 
+    validateNoLeadingZeroes({ nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, value, v, r, s })
+
     return new FeeMarketEIP1559Transaction(
       {
         chainId: new BN(chainId),
@@ -202,13 +206,15 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       toBuffer(maxPriorityFeePerGas === '' ? '0x' : maxPriorityFeePerGas)
     )
 
-    this._validateCannotExceedMaxInteger(
-      {
-        maxFeePerGas: this.maxFeePerGas,
-        maxPriorityFeePerGas: this.maxPriorityFeePerGas,
-      },
-      256
-    )
+    this._validateCannotExceedMaxInteger({
+      maxFeePerGas: this.maxFeePerGas,
+      maxPriorityFeePerGas: this.maxPriorityFeePerGas,
+    })
+
+    if (this.gasLimit.mul(this.maxFeePerGas).gt(MAX_INTEGER)) {
+      const msg = this._errorMsg('gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)')
+      throw new Error(msg)
+    }
 
     if (this.maxFeePerGas.lt(this.maxPriorityFeePerGas)) {
       const msg = this._errorMsg(

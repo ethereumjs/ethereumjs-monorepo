@@ -9,7 +9,7 @@ import {
 } from '../src'
 import { TxsJsonEntry } from './types'
 import { BaseTransaction } from '../src/baseTransaction'
-import { privateToPublic, BN, toBuffer } from 'ethereumjs-util'
+import { privateToPublic, BN, toBuffer, MAX_INTEGER, MAX_UINT64 } from 'ethereumjs-util'
 
 tape('[BaseTransaction]', function (t) {
   // EIP-2930 is not enabled in Common by default (2021-03-06)
@@ -105,7 +105,6 @@ tape('[BaseTransaction]', function (t) {
       )
 
       tx = txType.class.fromTxData({}, { common, freeze: false })
-      tx = txType.class.fromTxData({}, { common, freeze: false })
       st.ok(
         !Object.isFrozen(tx),
         `${txType.name}: tx should not be frozen when freeze deactivated in options`
@@ -145,6 +144,54 @@ tape('[BaseTransaction]', function (t) {
       st.ok(
         !Object.isFrozen(tx),
         `${txType.name}: tx should not be frozen when freeze deactivated in options`
+      )
+    }
+    st.end()
+  })
+
+  t.test('fromValuesArray()', function (st) {
+    let rlpData: any = legacyTxs[0].raw()
+    rlpData[0] = toBuffer('0x0')
+    try {
+      Transaction.fromValuesArray(rlpData)
+      st.fail('should have thrown when nonce has leading zeroes')
+    } catch (err: any) {
+      st.ok(
+        err.message.includes('nonce cannot have leading zeroes'),
+        'should throw with nonce with leading zeroes'
+      )
+    }
+    rlpData[0] = toBuffer('0x')
+    rlpData[6] = toBuffer('0x0')
+    try {
+      Transaction.fromValuesArray(rlpData)
+      st.fail('should have thrown when v has leading zeroes')
+    } catch (err: any) {
+      st.ok(
+        err.message.includes('v cannot have leading zeroes'),
+        'should throw with v with leading zeroes'
+      )
+    }
+    rlpData = eip2930Txs[0].raw()
+    rlpData[3] = toBuffer('0x0')
+    try {
+      AccessListEIP2930Transaction.fromValuesArray(rlpData)
+      st.fail('should have thrown when gasLimit has leading zeroes')
+    } catch (err: any) {
+      st.ok(
+        err.message.includes('gasLimit cannot have leading zeroes'),
+        'should throw with gasLimit with leading zeroes'
+      )
+    }
+    rlpData = eip1559Txs[0].raw()
+    rlpData[2] = toBuffer('0x0')
+    try {
+      FeeMarketEIP1559Transaction.fromValuesArray(rlpData)
+      st.fail('should have thrown when maxPriorityFeePerGas has leading zeroes')
+    } catch (err: any) {
+      st.ok(
+        err.message.includes('maxPriorityFeePerGas cannot have leading zeroes'),
+        'should throw with maxPriorityFeePerGas with leading zeroes'
       )
     }
     st.end()
@@ -210,8 +257,8 @@ tape('[BaseTransaction]', function (t) {
   t.test('verifySignature() -> invalid', function (st) {
     for (const txType of txTypes) {
       txType.fixtures.slice(0, 4).forEach(function (txFixture: any) {
-        // set `s` to zero
-        txFixture.data.s = `0x` + '0'.repeat(16)
+        // set `s` to a single zero
+        txFixture.data.s = '0x' + '0'
         const tx = txType.class.fromTxData(txFixture.data, { common })
         st.equals(tx.verifySignature(), false, `${txType.name}: signature should not be valid`)
         st.ok(
@@ -334,6 +381,47 @@ tape('[BaseTransaction]', function (t) {
     st.isEquivalent(tx.gasLimit, new BN(bufferZero))
     st.isEquivalent(tx.nonce, new BN(bufferZero))
 
+    st.end()
+  })
+
+  t.test('_validateCannotExceedMaxInteger()', function (st) {
+    const tx = FeeMarketEIP1559Transaction.fromTxData(eip1559Txs[0])
+    try {
+      // eslint-disable-next-line no-extra-semi
+      ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_INTEGER }, 256, true)
+    } catch (err: any) {
+      st.ok(
+        err.message.includes('equal or exceed MAX_INTEGER'),
+        'throws when value equals or exceeds MAX_INTEGER'
+      )
+    }
+    try {
+      // eslint-disable-next-line no-extra-semi
+      ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_INTEGER.addn(1) }, 256, false)
+    } catch (err: any) {
+      st.ok(err.message.includes('exceed MAX_INTEGER'), 'throws when value exceeds MAX_INTEGER')
+    }
+    try {
+      // eslint-disable-next-line no-extra-semi
+      ;(tx as any)._validateCannotExceedMaxInteger({ a: new BN(0) }, 100, false)
+    } catch (err: any) {
+      st.ok(
+        err.message.includes('unimplemented bits value'),
+        'throws when bits value other than 64 or 256 provided'
+      )
+    }
+    try {
+      // eslint-disable-next-line no-extra-semi
+      ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_UINT64.addn(1) }, 64, false)
+    } catch (err: any) {
+      st.ok(err.message.includes('2^64'), 'throws when 64 bit integer exceeds MAX_UINT64')
+    }
+    try {
+      // eslint-disable-next-line no-extra-semi
+      ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_UINT64 }, 64, true)
+    } catch (err: any) {
+      st.ok(err.message.includes('2^64'), 'throws when 64 bit integer equals or exceeds MAX_UINT64')
+    }
     st.end()
   })
 })

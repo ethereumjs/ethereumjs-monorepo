@@ -3,10 +3,12 @@ import {
   bnToHex,
   bnToUnpaddedBuffer,
   ecrecover,
+  MAX_INTEGER,
   rlp,
   rlphash,
   toBuffer,
   unpadBuffer,
+  validateNoLeadingZeroes,
 } from 'ethereumjs-util'
 import { TxOptions, TxData, JsonTx, N_DIV_2, TxValuesArray, Capability } from './types'
 import { BaseTransaction } from './baseTransaction'
@@ -76,6 +78,8 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
     const [nonce, gasPrice, gasLimit, to, value, data, v, r, s] = values
 
+    validateNoLeadingZeroes({ nonce, gasPrice, gasLimit, value, v, r, s })
+
     return new Transaction(
       {
         nonce,
@@ -106,6 +110,10 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
     this.gasPrice = new BN(toBuffer(txData.gasPrice === '' ? '0x' : txData.gasPrice))
 
+    if (this.gasPrice.mul(this.gasLimit).gt(MAX_INTEGER)) {
+      const msg = this._errorMsg('gas limit * gasPrice cannot exceed MAX_INTEGER (2^256-1)')
+      throw new Error(msg)
+    }
     this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
 
     if (this.common.gteHardfork('spuriousDragon')) {

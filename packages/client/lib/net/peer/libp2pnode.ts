@@ -3,18 +3,16 @@
  * @memberof module:net/peer
  */
 
-import { Multiaddr } from 'multiaddr'
-import LibP2p from 'libp2p'
 import { NOISE } from '@chainsafe/libp2p-noise'
+import LibP2p from 'libp2p'
+import { Multiaddr } from 'multiaddr'
 import PeerId from 'peer-id'
-// types currently unavailable for below libp2p deps,
-// tracking issue: https://github.com/libp2p/js-libp2p/issues/659
-const LibP2pTcp = require('libp2p-tcp')
-const LibP2pWebsockets = require('libp2p-websockets')
+import Bootstrap from 'libp2p-bootstrap'
+const TCP = require('libp2p-tcp')
+const Websockets = require('libp2p-websockets')
 const filters = require('libp2p-websockets/src/filters')
-const LibP2pBootstrap = require('libp2p-bootstrap')
-const LibP2pKadDht = require('libp2p-kad-dht')
-const mplex = require('libp2p-mplex')
+const KadDht = require('libp2p-kad-dht')
+const MPLEX = require('libp2p-mplex')
 
 export interface Libp2pNodeOptions {
   /* Peer id */
@@ -33,17 +31,17 @@ export interface Libp2pNodeOptions {
 
 export class Libp2pNode extends LibP2p {
   constructor(options: Libp2pNodeOptions) {
-    const wsTransportKey = LibP2pWebsockets.prototype[Symbol.toStringTag]
+    const wsTransportKey = Websockets.prototype[Symbol.toStringTag]
     options.bootnodes = options.bootnodes ?? []
     super({
       peerId: options.peerId,
       addresses: options.addresses,
       modules: {
-        transport: [LibP2pTcp, LibP2pWebsockets],
-        streamMuxer: [mplex],
+        transport: [TCP, Websockets],
+        streamMuxer: [MPLEX],
         connEncryption: [NOISE],
-        [<any>'peerDiscovery']: [LibP2pBootstrap],
-        [<any>'dht']: LibP2pKadDht,
+        [<any>'peerDiscovery']: [Bootstrap],
+        [<any>'dht']: KadDht,
       },
       config: {
         transport: {
@@ -53,7 +51,7 @@ export class Libp2pNode extends LibP2p {
         },
         peerDiscovery: {
           autoDial: false,
-          [LibP2pBootstrap.tag]: {
+          [Bootstrap.tag]: {
             interval: 2000,
             enabled: options.bootnodes.length > 0,
             list: options.bootnodes,

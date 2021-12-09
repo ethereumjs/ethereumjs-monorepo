@@ -40,25 +40,21 @@ tape('TransactionTests', async (t) => {
     ) => {
       t.test(testName, (st) => {
         for (const forkName of forkNames) {
-          const forkTestData = testData[forkName]
-          const shouldBeInvalid = Object.keys(forkTestData).length === 0
+          const forkTestData = testData.result[forkName]
+          const shouldBeInvalid = !!forkTestData.exception
 
           try {
-            const rawTx = toBuffer(testData.rlp)
+            const rawTx = toBuffer(testData.txbytes)
             const hardfork = forkNameMap[forkName]
             const common = new Common({ chain: 1, hardfork })
             const tx = Transaction.fromSerializedTx(rawTx, { common })
-
             const sender = tx.getSenderAddress().toString()
             const hash = tx.hash().toString('hex')
-
             const txIsValid = tx.validate()
-
-            const senderIsCorrect = sender === `0x${forkTestData.sender}`
-            const hashIsCorrect = hash === forkTestData.hash
+            const senderIsCorrect = forkTestData.sender === sender
+            const hashIsCorrect = forkTestData.hash?.slice(2) === hash
 
             const hashAndSenderAreCorrect = forkTestData && senderIsCorrect && hashIsCorrect
-
             if (shouldBeInvalid) {
               st.assert(!txIsValid, `Transaction should be invalid on ${forkName}`)
             } else {
