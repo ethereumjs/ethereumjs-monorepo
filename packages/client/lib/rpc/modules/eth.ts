@@ -31,6 +31,7 @@ import type {
   TxReceipt,
 } from '@ethereumjs/vm/dist/types'
 import type { Log } from '@ethereumjs/vm/dist/evm/types'
+import type { Proof, ProofStateManager } from '@ethereumjs/vm/dist/state'
 import type { EthereumClient } from '../..'
 import type { Chain } from '../../blockchain'
 import type { EthProtocol } from '../../net/protocol'
@@ -365,7 +366,7 @@ export class Eth {
 
     this.getProof = middleware(this.getProof.bind(this), 3, [
       [validators.address],
-      [validators.hexArray],
+      [validators.array(validators.hex)],
       [validators.blockOption],
     ])
   }
@@ -964,7 +965,15 @@ export class Eth {
     return bufferToHex(tx.hash())
   }
 
-  async getProof(params: [string, string[], string]) {
+  /**
+   * Returns an account object along with data about the proof.
+   * @param params An array of three parameters:
+   *   1. address of the account
+   *   2. array of storage keys which should be proofed and included
+   *   3. integer block number, or the string "latest" or "earliest"
+   * @returns The {@link Proof}
+   */
+  async getProof(params: [string, string[], string]): Promise<Proof> {
     const [addressHex, slotsHex, blockOption] = params
 
     if (!this._vm) {
@@ -985,9 +994,7 @@ export class Eth {
 
     const address = Address.fromString(addressHex)
     const slots = slotsHex.map((slotHex) => setLengthLeft(toBuffer(slotHex), 32))
-    const stateManager = vm.stateManager as any
-
-    const proof = await stateManager.getProof(address, slots)
+    const proof = await (vm.stateManager as ProofStateManager).getProof(address, slots)
     return proof
   }
 
