@@ -1,5 +1,4 @@
 import assert from 'assert'
-import { EventEmitter } from 'events'
 import ms from 'ms'
 import snappy from 'snappyjs'
 import { debug as createDebugLogger, Debugger } from 'debug'
@@ -7,6 +6,7 @@ import { devp2pDebug } from '../util'
 import { BN, rlp } from 'ethereumjs-util'
 import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
+import { ExchangeProtocol } from '../ExchangeProtocol'
 
 const DEBUG_BASE_NAME = 'eth'
 const verbose = createDebugLogger('verbose').enabled
@@ -19,7 +19,7 @@ let _firstPeer = ''
 
 type SendMethod = (code: ETH.MESSAGE_CODES, data: Buffer) => any
 
-export class ETH extends EventEmitter {
+export class ETH extends ExchangeProtocol {
   _version: number
   _peer: Peer
   _status: ETH.StatusMsg | null

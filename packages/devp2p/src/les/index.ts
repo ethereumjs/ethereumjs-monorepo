@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events'
 import { rlp } from 'ethereumjs-util'
 import ms from 'ms'
 import snappy from 'snappyjs'
@@ -6,6 +5,7 @@ import { debug as createDebugLogger, Debugger } from 'debug'
 import { devp2pDebug } from '../util'
 import { int2buffer, buffer2int, assertEq, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
+import { ExchangeProtocol } from '../ExchangeProtocol'
 
 const DEBUG_BASE_NAME = 'les'
 const verbose = createDebugLogger('verbose').enabled
@@ -20,7 +20,7 @@ let _firstPeer = ''
 
 type SendMethod = (code: LES.MESSAGE_CODES, data: Buffer) => any
 
-export class LES extends EventEmitter {
+export class LES extends ExchangeProtocol {
   _version: number
   _peer: Peer
   _send: SendMethod
