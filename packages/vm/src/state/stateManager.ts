@@ -10,7 +10,6 @@ import {
   PrefixedHexString,
   bufferToHex,
   bnToHex,
-  KECCAK256_RLP_ARRAY,
   BN,
   KECCAK256_RLP,
   setLengthLeft,
@@ -18,7 +17,7 @@ import {
 import Common from '@ethereumjs/common'
 import { StateManager, StorageDump } from './interface'
 import Cache, { getCb, putCb } from './cache'
-import { BaseStateManager } from '.'
+import { BaseStateManager } from './'
 import { short } from '../evm/opcodes'
 
 type StorageProof = {
@@ -28,13 +27,13 @@ type StorageProof = {
 }
 
 export type Proof = {
+  address: PrefixedHexString
   balance: PrefixedHexString
   codeHash: PrefixedHexString
   nonce: PrefixedHexString
   storageHash: PrefixedHexString
   accountProof: PrefixedHexString[]
   storageProof: StorageProof[]
-  address: PrefixedHexString
 }
 
 /**
@@ -306,23 +305,23 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
 
   /**
    * Get an EIP-1186 proof
-   * @param address - address to get proof of
-   * @param storageSlots - storage slots to get proof of
+   * @param address address to get proof of
+   * @param storageSlots storage slots to get proof of
    */
   async getProof(address: Address, storageSlots: Buffer[] = []): Promise<Proof> {
     const account = await this.getAccount(address)
     const accountProof: PrefixedHexString[] = (await Trie.createProof(this._trie, address.buf)).map(
-      (e: Buffer) => bufferToHex(e)
+      (p) => bufferToHex(p)
     )
     const storageProof: StorageProof[] = []
     const storageTrie = await this._getStorageTrie(address)
 
     for (const storageKey of storageSlots) {
-      const proof = (await Trie.createProof(storageTrie, storageKey)).map((e: Buffer) =>
-        bufferToHex(e)
-      )
+      const proof = (await Trie.createProof(storageTrie, storageKey)).map((p) => bufferToHex(p))
       let value = bufferToHex(await this.getContractStorage(address, storageKey))
-      if (value === '0x') value = '0x0'
+      if (value === '0x') {
+        value = '0x0'
+      }
       const proofItem: StorageProof = {
         key: bufferToHex(storageKey),
         value,
@@ -332,20 +331,20 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
     }
 
     const returnValue: Proof = {
+      address: address.toString(),
       balance: bnToHex(account.balance),
       codeHash: bufferToHex(account.codeHash),
       nonce: bnToHex(account.nonce),
       storageHash: bufferToHex(account.stateRoot),
       accountProof,
       storageProof,
-      address: address.toString(),
     }
     return returnValue
   }
 
   /**
-   * Verify an EIP-1186 proof. Throws if proof is invalid, otherwise returns true
-   * @param proof - The Proof to prove
+   * Verify an EIP-1186 proof. Throws if proof is invalid, otherwise returns true.
+   * @param proof the proof to prove
    */
   async verifyProof(proof: Proof): Promise<boolean> {
     const rootHash = keccak256(toBuffer(proof.accountProof[0]))
@@ -354,47 +353,45 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
       toBuffer(rlpString)
     )
 
-    // This returns the account if the trie is OK, verify that it matches the reported account
+    // This returns the account if the proof is valid.
+    // Verify that it matches the reported account.
     const value = await Trie.verifyProof(rootHash, key, accountProof)
 
     if (value === null) {
-      // Verify that in the proof, the account is empty.
-      KECCAK256_RLP_ARRAY
-      KECCAK256_NULL
+      // Verify that the account is empty in the proof.
       const emptyBuffer = Buffer.from('')
+      const notEmptyErrorMsg = 'Invalid proof provided: account is not empty'
       const nonce = unpadBuffer(toBuffer(proof.nonce))
       if (!nonce.equals(emptyBuffer)) {
-        throw new Error('Invalid proof provided')
+        throw new Error(`${notEmptyErrorMsg} (nonce is not zero)`)
       }
       const balance = unpadBuffer(toBuffer(proof.balance))
       if (!balance.equals(emptyBuffer)) {
-        throw new Error('Invalid proof provided')
+        throw new Error(`${notEmptyErrorMsg} (balance is not zero)`)
       }
       const storageHash = toBuffer(proof.storageHash)
       if (!storageHash.equals(KECCAK256_RLP)) {
-        throw new Error('Invalid proof provided')
+        throw new Error(`${notEmptyErrorMsg} (storageHash does not equal KECCAK256_RLP)`)
       }
       const codeHash = toBuffer(proof.codeHash)
       if (!codeHash.equals(KECCAK256_NULL)) {
-        throw new Error('Invalid proof provided')
+        throw new Error(`${notEmptyErrorMsg} (codeHash does not equal KECCAK256_NULL)`)
       }
     } else {
       const account = Account.fromRlpSerializedAccount(value)
-      const nonce = account.nonce
+      const { nonce, balance, stateRoot, codeHash } = account
+      const invalidErrorMsg = 'Invalid proof provided:'
       if (!nonce.eq(new BN(toBuffer(proof.nonce)))) {
-        throw new Error('Invalid proof provided')
+        throw new Error(`${invalidErrorMsg} nonce does not match`)
       }
-      const balance = account.balance
       if (!balance.eq(new BN(toBuffer(proof.balance)))) {
-        throw new Error('Invalid proof provided')
+        throw new Error(`${invalidErrorMsg} balance does not match`)
       }
-      const storageHash = account.stateRoot
-      if (!storageHash.equals(toBuffer(proof.storageHash))) {
-        throw new Error('Invalid proof provided')
+      if (!stateRoot.equals(toBuffer(proof.storageHash))) {
+        throw new Error(`${invalidErrorMsg} storageHash does not match`)
       }
-      const codeHash = account.codeHash
       if (!codeHash.equals(toBuffer(proof.codeHash))) {
-        throw new Error('Invalid proof provided')
+        throw new Error(`${invalidErrorMsg} codeHash does not match`)
       }
     }
 
@@ -404,16 +401,12 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
       const storageProof = stProof.proof.map((value: PrefixedHexString) => toBuffer(value))
       const storageValue = setLengthLeft(toBuffer(stProof.value), 32)
       const storageKey = toBuffer(stProof.key)
-      const reportedValue = setLengthLeft(
-        rlp.decode(<Buffer>await Trie.verifyProof(storageRoot, storageKey, storageProof)),
-        32
-      )
-
+      const proofValue = await Trie.verifyProof(storageRoot, storageKey, storageProof)
+      const reportedValue = setLengthLeft(rlp.decode(proofValue as Buffer), 32)
       if (!reportedValue.equals(storageValue)) {
-        throw 'Reported trie value does not match storage'
+        throw new Error('Reported trie value does not match storage')
       }
     }
-
     return true
   }
 
