@@ -20,7 +20,6 @@ let _firstPeer = ''
 type SendMethod = (code: ETH.MESSAGE_CODES, data: Buffer) => any
 
 export class ETH extends ExchangeProtocol {
-  _version: number
   _peer: Peer
   _status: ETH.StatusMsg | null
   _peerStatus: ETH.StatusMsg | null
@@ -38,9 +37,8 @@ export class ETH extends ExchangeProtocol {
   private msgDebuggers: { [key: string]: (debug: string) => void } = {}
 
   constructor(version: number, peer: Peer, send: SendMethod) {
-    super()
+    super(version)
 
-    this._version = version
     this._peer = peer
     this._send = send
     this._debug = devp2pDebug.extend(DEBUG_BASE_NAME)

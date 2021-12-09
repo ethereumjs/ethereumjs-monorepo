@@ -21,7 +21,6 @@ let _firstPeer = ''
 type SendMethod = (code: LES.MESSAGE_CODES, data: Buffer) => any
 
 export class LES extends ExchangeProtocol {
-  _version: number
   _peer: Peer
   _send: SendMethod
   _status: LES.Status | null
@@ -33,9 +32,8 @@ export class LES extends ExchangeProtocol {
   private msgDebuggers: { [key: string]: (debug: string) => void } = {}
 
   constructor(version: number, peer: Peer, send: SendMethod) {
-    super()
+    super(version)
 
-    this._version = version
     this._peer = peer
     this._send = send
     this._debug = devp2pDebug
