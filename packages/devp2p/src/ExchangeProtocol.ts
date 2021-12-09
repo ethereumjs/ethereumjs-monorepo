@@ -1,5 +1,3 @@
 import { EventEmitter } from 'events'
 
-export class ExchangeProtocol extends EventEmitter {
-
-}
+export class ExchangeProtocol extends EventEmitter {}
