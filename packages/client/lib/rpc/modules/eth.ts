@@ -920,23 +920,15 @@ export class Eth {
    * @returns The {@link Proof}
    */
   async getProof(params: [string, string[], string]): Promise<Proof> {
-    const [addressHex, slotsHex, blockOption] = params
+    const [addressHex, slotsHex, blockOpt] = params
+    const block = await getBlockByOption(blockOpt, this._chain)
 
     if (!this._vm) {
       throw new Error('missing vm')
     }
 
-    // use a copy of the vm in case new blocks are executed
     const vm = this._vm.copy()
-    if (blockOption !== 'latest') {
-      const latest = await vm.blockchain.getLatestHeader()
-      if (blockOption !== bnToHex(latest.number)) {
-        throw {
-          code: INVALID_PARAMS,
-          message: `Currently only "latest" block supported`,
-        }
-      }
-    }
+    await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = Address.fromString(addressHex)
     const slots = slotsHex.map((slotHex) => setLengthLeft(toBuffer(slotHex), 32))
