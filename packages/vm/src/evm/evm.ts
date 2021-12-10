@@ -197,6 +197,7 @@ export default class EVM {
       // TODO: Move `gasRefund` to a tx-level result object
       // instead of `ExecResult`.
       this._refund = oldRefund
+      result.execResult.selfdestruct = {}
     }
     result.execResult.gasRefund = this._refund.clone()
 
