@@ -540,7 +540,7 @@ const txdata = {
 }
 
 tape('consensus bugs', async (t) => {
-  t.test('validate out-of-gas does not refund any refunds', async (t) => {
+  t.test('validate out-of-gas does not give any refunds', async (t) => {
     const vm = new VM({ common: sdCommon })
     const addr = new Address(Buffer.from('d3563d8f19a85c95beab50901fd59ca4de69174c', 'hex'))
     const acc = await vm.stateManager.getAccount(addr)
