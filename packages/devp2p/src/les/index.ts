@@ -142,10 +142,6 @@ export class LES extends ExchangeProtocol {
     }
   }
 
-  getVersion() {
-    return this._version
-  }
-
   _getStatusString(status: LES.Status) {
     let sStr = `[V:${buffer2int(status['protocolVersion'])}, `
     sStr += `NID:${buffer2int(status['networkId'] as Buffer)}, HTD:${buffer2int(
