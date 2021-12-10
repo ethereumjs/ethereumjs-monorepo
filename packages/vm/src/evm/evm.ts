@@ -191,12 +191,15 @@ export default class EVM {
     }
     const err = result.execResult.exceptionError
 
+    // This clause captures any error which happened during execution
+    // If that is the case, then set the _refund tracker to the old refund value
+    // If there is no error, then clone the current refund and use that as the gas refund
     if (!err) {
-      result.execResult.gasRefund = this._refund
+      result.execResult.gasRefund = this._refund.clone()
     } else {
       // TODO: Move `gasRefund` to a tx-level result object
       // instead of `ExecResult`.
-      result.execResult.gasRefund = oldRefund
+      this._refund = oldRefund
     }
 
     if (err) {
