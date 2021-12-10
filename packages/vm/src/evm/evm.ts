@@ -193,14 +193,12 @@ export default class EVM {
 
     // This clause captures any error which happened during execution
     // If that is the case, then set the _refund tracker to the old refund value
-    // If there is no error, then clone the current refund and use that as the gas refund
-    if (!err) {
-      result.execResult.gasRefund = this._refund.clone()
-    } else {
+    if (err) {
       // TODO: Move `gasRefund` to a tx-level result object
       // instead of `ExecResult`.
       this._refund = oldRefund
     }
+    result.execResult.gasRefund = this._refund.clone()
 
     if (err) {
       if (this._vm._common.gteHardfork('homestead') || err.error != ERROR.CODESTORE_OUT_OF_GAS) {
