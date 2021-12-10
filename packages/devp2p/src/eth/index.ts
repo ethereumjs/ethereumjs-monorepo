@@ -1,11 +1,10 @@
 import assert from 'assert'
-import ms from 'ms'
 import snappy from 'snappyjs'
 import { debug as createDebugLogger, Debugger } from 'debug'
 import { devp2pDebug } from '../util'
 import { BN, rlp } from 'ethereumjs-util'
 import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
-import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
+import { Peer } from '../rlpx/peer'
 import { ExchangeProtocol } from '../ExchangeProtocol'
 
 const DEBUG_BASE_NAME = 'eth'
@@ -22,7 +21,6 @@ type SendMethod = (code: ETH.MESSAGE_CODES, data: Buffer) => any
 export class ETH extends ExchangeProtocol {
   _status: ETH.StatusMsg | null
   _peerStatus: ETH.StatusMsg | null
-  _statusTimeoutId: NodeJS.Timeout
   _send: SendMethod
   _debug: Debugger
 
@@ -43,9 +41,6 @@ export class ETH extends ExchangeProtocol {
     this._debug = devp2pDebug.extend(DEBUG_BASE_NAME)
     this._status = null
     this._peerStatus = null
-    this._statusTimeoutId = setTimeout(() => {
-      this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
-    }, ms('5s'))
 
     this.initMsgDebuggers()
 

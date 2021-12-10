@@ -1,10 +1,9 @@
 import { rlp } from 'ethereumjs-util'
-import ms from 'ms'
 import snappy from 'snappyjs'
 import { debug as createDebugLogger, Debugger } from 'debug'
 import { devp2pDebug } from '../util'
 import { int2buffer, buffer2int, assertEq, formatLogData } from '../util'
-import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
+import { Peer } from '../rlpx/peer'
 import { ExchangeProtocol } from '../ExchangeProtocol'
 
 const DEBUG_BASE_NAME = 'les'
