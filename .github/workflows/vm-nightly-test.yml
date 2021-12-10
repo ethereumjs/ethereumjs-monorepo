@@ -35,6 +35,8 @@ jobs:
       - run: npm i
         working-directory: ${{github.workspace}}
 
+      - run: cat package-lock.json
+
       - run: npm run test:API
       - run: npm run test:API:browser
 
