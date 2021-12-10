@@ -2,6 +2,9 @@ name: VM Nightly
 on:
   schedule:
     - cron: 0 0 * * *
+  push:
+    branches:
+      - vm-nightly-typescript-version
 
 env:
   cwd: ${{github.workspace}}/packages/vm
