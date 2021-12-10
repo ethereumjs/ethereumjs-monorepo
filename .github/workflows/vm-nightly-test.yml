@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - vm-nightly-typescript-version
-
+      
 env:
   cwd: ${{github.workspace}}/packages/vm
 
@@ -38,8 +38,102 @@ jobs:
       - run: npm i
         working-directory: ${{github.workspace}}
 
+      # The API:browser tests are failing due to this Typescript issue 
+      # https://github.com/monounity/karma-typescript/issues/499
+      # so reverting to Typescript 4.4.4 for browser tests
       - run: npm i typescript@4.4.4
         working-directory: ${{github.workspace}}
-        
+
       - run: npm run test:API
       - run: npm run test:API:browser
+
+  test-vm-state:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Use Node.js 12
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12
+          cache: 'npm'
+
+      - name: Use npm v7 for workspaces support
+        run: npm i -g npm@7
+
+      # The job is meant to run with a fresh lock file
+      # to detect any possible issues with new dep versions.
+      - run: rm package-lock.json
+        working-directory: ${{github.workspace}}
+
+      - run: npm i
+        working-directory: ${{github.workspace}}
+
+      # The API:browser tests are failing due to this Typescript issue 
+      # https://github.com/monounity/karma-typescript/issues/499
+      # so reverting to Typescript 4.4.4 for browser tests
+      - run: npm i typescript@4.4.4
+        working-directory: ${{github.workspace}}
+
+      - run: npm run test:state:allForks
+
+  test-vm-blockchain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Use Node.js 12
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12
+          cache: 'npm'
+
+      - name: Use npm v7 for workspaces support
+        run: npm i -g npm@7
+
+      # The job is meant to run with a fresh lock file
+      # to detect any possible issues with new dep versions.
+      - run: rm package-lock.json
+        working-directory: ${{github.workspace}}
+
+      - run: npm i
+        working-directory: ${{github.workspace}}
+
+      - run: npm i typescript@4.4.4
+        working-directory: ${{github.workspace}}
+
+      - run: npm run test:blockchain:allForks
+        working-directory: '${{ env.cwd }}'
+
+  test-vm-slow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Use Node.js 12
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12
+          cache: 'npm'
+
+      - name: Use npm v7 for workspaces support
+        run: npm i -g npm@7
+
+      # The job is meant to run with a fresh lock file
+      # to detect any possible issues with new dep versions.
+      - run: rm package-lock.json
+        working-directory: ${{github.workspace}}
+
+      - run: npm i
+        working-directory: ${{github.workspace}}
+
+      - run: npm i typescript@4.4.4
+        working-directory: ${{github.workspace}}
+
+      - run: npm run test:state:slow
