@@ -151,6 +151,8 @@ export default class EVM {
       ;(<any>this._state).addWarmedAddress((await this._generateAddress(message)).buf)
     }
 
+    const oldRefund = this._refund.clone()
+
     await this._state.checkpoint()
     if (this._vm.DEBUG) {
       debug('-'.repeat(100))
@@ -189,12 +191,12 @@ export default class EVM {
     }
     const err = result.execResult.exceptionError
 
-    if (err) {
-      result.execResult.gasRefund = result.execResult.gasRefund ?? new BN(0)
+    if (!err) {
+      result.execResult.gasRefund = this._refund
     } else {
       // TODO: Move `gasRefund` to a tx-level result object
       // instead of `ExecResult`.
-      result.execResult.gasRefund = this._refund.clone()
+      result.execResult.gasRefund = oldRefund
     }
 
     if (err) {
