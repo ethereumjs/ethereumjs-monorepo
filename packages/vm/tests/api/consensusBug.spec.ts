@@ -5,7 +5,8 @@ import { Transaction } from '@ethereumjs/tx'
 import VM from '../../src'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.SpuriousDragon })
-common.setHardforkByBlockNumber(2772981)
+common.setHardforkByBlockNumber(4993075)
+console.log(common.hardfork())
 
 //0xe3b0fb0a45bc905d1f98baabaadd194901267d02de74cdad187b7feb8920d7b3
 const txdata = {

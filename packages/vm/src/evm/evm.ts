@@ -187,12 +187,16 @@ export default class EVM {
         } ]`
       )
     }
-
-    // TODO: Move `gasRefund` to a tx-level result object
-    // instead of `ExecResult`.
-    result.execResult.gasRefund = this._refund.clone()
-
     const err = result.execResult.exceptionError
+
+    if (err) {
+      result.execResult.gasRefund = result.execResult.gasRefund ?? new BN(0)
+    } else {
+      // TODO: Move `gasRefund` to a tx-level result object
+      // instead of `ExecResult`.
+      result.execResult.gasRefund = this._refund.clone()
+    }
+
     if (err) {
       if (this._vm._common.gteHardfork('homestead') || err.error != ERROR.CODESTORE_OUT_OF_GAS) {
         result.execResult.logs = []
@@ -477,7 +481,6 @@ export default class EVM {
       eei._result.selfdestruct = message.selfdestruct
     }
 
-    const oldRefund = this._refund.clone()
     const interpreter = new Interpreter(this._vm, eei)
     const interpreterRes = await interpreter.run(message.code as Buffer, opts)
 
@@ -494,8 +497,6 @@ export default class EVM {
         logs: [],
         selfdestruct: {},
       }
-      // Revert gas refund if message failed
-      this._refund = oldRefund
     }
 
     return {
