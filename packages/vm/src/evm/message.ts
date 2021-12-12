@@ -18,7 +18,7 @@ export default class Message {
 
   constructor(opts: any) {
     if (opts.value && BN.isBN(opts.value) && new BN(opts.value).isNeg()) {
-      throw new Error('invalid negative value field')
+      throw new Error('value field can not be negative')
     }
     this.to = opts.to
     this.value = opts.value ? opts.value : new BN(0)

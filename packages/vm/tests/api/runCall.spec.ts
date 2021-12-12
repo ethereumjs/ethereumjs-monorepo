@@ -264,25 +264,20 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
 })
 
 tape('Throws on negative call value', async (t) => {
-  // setup the accounts for this test
-  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
-  const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
   const vm = new VM({ common: common })
 
   // setup the call arguments
   const runCallArgs = {
-    caller: caller, // call address
-    to: address,
     value: new BN(-10),
   }
 
   try {
     await vm.runCall(runCallArgs)
     t.notOk('should not accept a negative call value')
-  } catch {
-    t.ok('throws on negative call value')
+  } catch (err: any) {
+    t.ok(err.message.includes('value field can not be negative'), 'throws on negative call value')
   }
 
   t.end()
