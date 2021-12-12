@@ -172,6 +172,9 @@ export const toBuffer = function (v: ToBufferInputTypes): Buffer {
   }
 
   if (BN.isBN(v)) {
+    if (v.isNeg()) {
+      throw new Error(`Cannot convert negative BN to buffer. Given: ${v}`)
+    }
     return v.toArrayLike(Buffer)
   }
 

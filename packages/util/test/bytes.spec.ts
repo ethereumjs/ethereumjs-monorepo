@@ -279,6 +279,9 @@ tape('toBuffer', function (t) {
     st.throws(function () {
       toBuffer({ test: 1 } as any)
     })
+    st.throws(function () {
+      toBuffer(new BN(-10))
+    })
     st.end()
   })
 
