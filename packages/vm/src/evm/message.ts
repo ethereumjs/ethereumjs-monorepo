@@ -17,9 +17,6 @@ export default class Message {
   delegatecall: boolean
 
   constructor(opts: any) {
-    if (opts.value && BN.isBN(opts.value) && new BN(opts.value).isNeg()) {
-      throw new Error('value field can not be negative')
-    }
     this.to = opts.to
     this.value = opts.value ? opts.value : new BN(0)
     this.caller = opts.caller
@@ -33,6 +30,10 @@ export default class Message {
     this.salt = opts.salt // For CREATE2, TODO: Move from here
     this.selfdestruct = opts.selfdestruct // TODO: Move from here
     this.delegatecall = opts.delegatecall || false
+
+    if (this.value.isNeg()) {
+      throw new Error(`value field can not be negative, received ${this.value}`)
+    }
   }
 
   get codeAddress(): Address {

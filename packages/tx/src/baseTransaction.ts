@@ -83,17 +83,7 @@ export abstract class BaseTransaction<TransactionObject> {
   protected DEFAULT_HARDFORK: string | Hardfork = Hardfork.Istanbul
 
   constructor(txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData) {
-    const { data, nonce, gasLimit, gasPrice, r, s, to, type, v, value } = txData
-    this._validateCannotHaveNegativeBN({
-      gasLimit,
-      gasPrice,
-      nonce,
-      v,
-      r,
-      s,
-      type,
-      value,
-    })
+    const { data, nonce, gasLimit, r, s, to, type, v, value } = txData
     this._type = new BN(toBuffer(type)).toNumber()
 
     const toB = toBuffer(to === '' ? '0x' : to)
@@ -348,7 +338,6 @@ export abstract class BaseTransaction<TransactionObject> {
    * @param chainId - Chain ID from tx options (typed txs) or signature (legacy tx)
    */
   protected _getCommon(common?: Common, chainId?: BNLike) {
-    this._validateCannotHaveNegativeBN({ chainId })
     // Chain ID provided
     if (chainId) {
       const chainIdBN = new BN(toBuffer(chainId))
@@ -437,19 +426,6 @@ export abstract class BaseTransaction<TransactionObject> {
           const msg = this._errorMsg('unimplemented bits value')
           throw new Error(msg)
         }
-      }
-    }
-  }
-
-  /**
-   * Validates that an object with BN values has no negative BN values
-   * @param values Object containing string keys and BN values
-   */
-  protected _validateCannotHaveNegativeBN(values: { [key: string]: BNLike | undefined }) {
-    for (const [key, value] of Object.entries(values)) {
-      if (value && BN.isBN(value) && value.isNeg()) {
-        const msg = this._errorMsg(`${key} cannot be negative, given ${value}`)
-        throw new Error(msg)
       }
     }
   }
