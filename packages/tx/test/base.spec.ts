@@ -424,4 +424,15 @@ tape('[BaseTransaction]', function (t) {
     }
     st.end()
   })
+
+  t.test('_validateCannotHaveNegativeBN()', function (st) {
+    const tx = FeeMarketEIP1559Transaction.fromTxData(eip1559Txs[0])
+    try {
+      // eslint-disable-next-line no-extra-semi
+      ;(tx as any)._validateCannotHaveNegativeBN({ a: new BN(-10) })
+    } catch (err: any) {
+      st.ok(err.message.includes('cannot be negative'), 'throws when value is a negative BN')
+    }
+    st.end()
+  })
 })

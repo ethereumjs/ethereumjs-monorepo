@@ -11,7 +11,7 @@ const txFixturesEip155: VitaliksTestsDataEntry[] = require('./json/ttTransaction
 tape('[Transaction]', function (t) {
   const transactions: Transaction[] = []
 
-  t.test('cannot input decimal values', (st) => {
+  t.test('cannot input decimal or negative values', (st) => {
     const values = ['gasPrice', 'gasLimit', 'nonce', 'value', 'v', 'r', 's']
     const cases = [
       10.1,
@@ -19,6 +19,8 @@ tape('[Transaction]', function (t) {
       '0xaa.1',
       -10.1,
       -1,
+      new BN(-10),
+      '-100',
       '-10.1',
       '-0xaa',
       Infinity,

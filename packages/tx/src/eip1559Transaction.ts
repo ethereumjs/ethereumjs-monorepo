@@ -201,6 +201,11 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     // Verify the access list format.
     AccessLists.verifyAccessList(this.accessList)
 
+    this._validateCannotHaveNegativeBN({
+      maxFeePerGas,
+      maxPriorityFeePerGas,
+    })
+
     this.maxFeePerGas = new BN(toBuffer(maxFeePerGas === '' ? '0x' : maxFeePerGas))
     this.maxPriorityFeePerGas = new BN(
       toBuffer(maxPriorityFeePerGas === '' ? '0x' : maxPriorityFeePerGas)

@@ -15,7 +15,7 @@ const validSlot = Buffer.from('01'.repeat(32), 'hex')
 const chainId = new BN(4)
 
 tape('[FeeMarketEIP1559Transaction]', function (t) {
-  t.test('cannot input decimal values', (st) => {
+  t.test('cannot input decimal or negative values', (st) => {
     const values = [
       'maxFeePerGas',
       'maxPriorityFeePerGas',
@@ -33,6 +33,8 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
       '0xaa.1',
       -10.1,
       -1,
+      new BN(-10),
+      '-100',
       '-10.1',
       '-0xaa',
       Infinity,
