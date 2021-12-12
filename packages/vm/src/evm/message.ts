@@ -17,7 +17,7 @@ export default class Message {
   delegatecall: boolean
 
   constructor(opts: any) {
-    if (opts.value && BN.isBN(opts.value) && !new BN(opts.value).isNeg()) {
+    if (opts.value && BN.isBN(opts.value) && new BN(opts.value).isNeg()) {
       throw new Error('invalid negative value field')
     }
     this.to = opts.to
