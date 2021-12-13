@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, keccak256, padToEven } from 'ethereumjs-util'
+import { Address, BN, keccak256, MAX_UINT64, padToEven } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../src'
 
@@ -220,6 +220,59 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
   console.log(result.gasUsed, result.execResult.gasRefund)
   t.equal(result.gasUsed.toNumber(), 5812, 'gas used incorrect')
   t.equal(result.execResult.gasRefund!.toNumber(), 4200, 'gas refund incorrect')
+
+  t.end()
+})
+
+tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', async (t) => {
+  // setup the accounts for this test
+  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
+  const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
+  const slot = Buffer.from('00'.repeat(32), 'hex')
+  const emptyBuffer = Buffer.from('')
+  // setup the vm
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+  const vm = new VM({ common: common })
+  const code = '60008080F060005500'
+  /*
+      This simple code tries to create an empty contract and then stores the address of the contract in the zero slot.
+        CODE:
+          PUSH 0 
+          DUP1
+          DUP1
+          CREATE -> Stack is now [0,0,0] ([value, offset, length])
+          PUSH 0
+          SSTORE -> stack is now [0, <Created Address>], so this stores the <Created Address> at slot 0
+          STOP
+    */
+
+  await vm.stateManager.putContractCode(address, Buffer.from(code, 'hex'))
+
+  const account = await vm.stateManager.getAccount(address)
+  account.nonce = MAX_UINT64.subn(1)
+  await vm.stateManager.putAccount(address, account)
+
+  // setup the call arguments
+  const runCallArgs = {
+    caller: caller, // call address
+    to: address,
+    gasLimit: new BN(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
+  }
+
+  await vm.runCall(runCallArgs)
+  let storage = await vm.stateManager.getContractStorage(address, slot)
+
+  // The nonce is MAX_UINT64 - 1, so we are allowed to create a contract (nonce of creating contract is now MAX_UINT64)
+  t.ok(!storage.equals(emptyBuffer), 'succesfully created contract')
+
+  await vm.runCall(runCallArgs)
+
+  // The nonce is MAX_UINT64, so we are NOT allowed to create a contract (nonce of creating contract is now MAX_UINT64)
+  storage = await vm.stateManager.getContractStorage(address, slot)
+  t.ok(
+    storage.equals(emptyBuffer),
+    'failed to create contract; nonce of creating contract is too high (MAX_UINT64)'
+  )
 
   t.end()
 })
