@@ -10,6 +10,7 @@ import {
   toRpcSig,
   toCompactSig,
   intToBuffer,
+  ecsignRaw,
 } from '../src'
 
 const echash = Buffer.from(
@@ -36,6 +37,43 @@ tape('ecsign', function (t) {
       )
     )
     st.equal(sig.v, 27)
+    st.end()
+  })
+
+  t.test('should produce a raw signature - v: 0', function (st) {
+    const sig = ecsignRaw(echash, ecprivkey)
+    st.ok(
+      sig.r.equals(
+        Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+      )
+    )
+    st.ok(
+      sig.s.equals(
+        Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+      )
+    )
+    st.equal(sig.v, 0)
+    st.end()
+  })
+
+  t.test('should produce a raw signature - v: 1', function (st) {
+    // Note: the last hex character has changed from 1 to 4 and this is thus a different key than ecprivkey.
+    const newPrivkey = Buffer.from(
+      '3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca4',
+      'hex'
+    )
+    const sig = ecsignRaw(echash, newPrivkey)
+    st.ok(
+      sig.r.equals(
+        Buffer.from('c865831b789442c8608da6084d8dd27f1eb1a6e1a6812601485f2ed3798b870d', 'hex')
+      )
+    )
+    st.ok(
+      sig.s.equals(
+        Buffer.from('7467bb32885a9f1ca89fcb95cf7e26fb6aea74da9291034c56e49bfefa0175f9', 'hex')
+      )
+    )
+    st.equal(sig.v, 1)
     st.end()
   })
 

@@ -44,6 +44,11 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: any): any {
   return { r, s, v }
 }
 
+export function ecsignRaw(msgHash: Buffer, privateKey: Buffer): ECDSASignature {
+  const { r, s, v } = ecsign(msgHash, privateKey)
+  return { r, s, v: v - 27 }
+}
+
 function calculateSigRecovery(v: BNLike, chainId?: BNLike): BN {
   const vBN = toType(v, TypeOutput.BN)
   if (!chainId) {
