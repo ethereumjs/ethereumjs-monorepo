@@ -24,6 +24,8 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
   public readonly common: Common
 
+  protected useRawSign: boolean = false
+
   /**
    * Instantiate a transaction from a data dictionary.
    *

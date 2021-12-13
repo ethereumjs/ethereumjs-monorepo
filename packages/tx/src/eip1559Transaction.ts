@@ -40,6 +40,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
 
   public readonly common: Common
 
+  protected useRawSign: boolean = true
+
   /**
    * The default HF if the tx type is active on that HF
    * or the first greater HF where the tx is active.
@@ -419,7 +421,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
         value: this.value,
         data: this.data,
         accessList: this.accessList,
-        v: new BN(v - 27), // This looks extremely hacky: ethereumjs-util actually adds 27 to the value, the recovery bit is either 0 or 1.
+        v: new BN(v),
         r: new BN(r),
         s: new BN(s),
       },

@@ -10,6 +10,7 @@ import {
   publicToAddress,
   BNLike,
   bufferToHex,
+  ecsignRaw,
 } from 'ethereumjs-util'
 import {
   TxData,
@@ -51,6 +52,10 @@ export abstract class BaseTransaction<TransactionObject> {
   public readonly s?: BN
 
   public readonly common!: Common
+
+  // This flag switches between using ecsignRaw (v is either 0 or 1) in case it is true,
+  // or ecsign (v is either 27 or 28) in case it is false.
+  protected abstract readonly useRawSign: boolean
 
   protected cache: TransactionCache = {
     hash: undefined,
@@ -307,7 +312,9 @@ export abstract class BaseTransaction<TransactionObject> {
     }
 
     const msgHash = this.getMessageToSign(true)
-    const { v, r, s } = ecsign(msgHash, privateKey)
+    const { v, r, s } = this.useRawSign
+      ? ecsignRaw(msgHash, privateKey)
+      : ecsign(msgHash, privateKey)
     const tx = this._processSignature(v, r, s)
 
     // Hack part 2
