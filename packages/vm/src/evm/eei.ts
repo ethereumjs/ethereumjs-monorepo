@@ -589,6 +589,7 @@ export default class EEI {
       return new BN(0)
     }
 
+    // EIP-2681 check
     if (this._env.contract.nonce.eq(MAX_UINT64)) {
       return new BN(0)
     }
