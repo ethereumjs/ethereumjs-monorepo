@@ -1,7 +1,8 @@
 import tape from 'tape'
-import { Address } from 'ethereumjs-util'
+import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import { Transaction } from '@ethereumjs/tx'
+import { Address } from 'ethereumjs-util'
 import { FullSynchronizer } from '../../../lib/sync'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
@@ -10,57 +11,58 @@ import { checkError } from '../util'
 const method = 'eth_getTransactionCount'
 
 tape(`${method}: call with valid arguments`, async (t) => {
-  const blockchain = await Blockchain.create()
-
-  const manager = createManager(createClient({ blockchain, includeVM: true }))
-  const server = startRPC(manager.getMethods())
-
-  // a genesis address
-  const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
-
-  // verify nonce is 0
-  const req = params(method, [address.toString(), 'latest'])
-  const expectRes = (res: any) => {
-    const msg = 'should return the correct nonce (0)'
-    if (res.body.result === '0x0') {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
-  }
-  await baseRequest(t, server, req, 200, expectRes)
-})
-
-tape(`${method}: ensure count increments after a tx`, async (t) => {
-  const blockchain = await Blockchain.create()
+  const blockchain = await Blockchain.create({ validateBlocks: false, validateConsensus: false })
 
   const client = createClient({ blockchain, includeVM: true })
   const manager = createManager(client)
   const server = startRPC(manager.getMethods())
 
   const service = client.services.find((s) => s.name === 'eth')
-  const vm = (service!.synchronizer as FullSynchronizer).execution.vm
+  const { vm } = (service!.synchronizer as FullSynchronizer).execution
+
+  // since synchronizer.run() is not executed in the mock setup,
+  // manually run stateManager.generateCanonicalGenesis()
+  await vm.stateManager.generateCanonicalGenesis()
 
   // a genesis address
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
-  // construct tx
+  // verify nonce is 0
+  let req = params(method, [address.toString(), 'latest'])
+  let expectRes = (res: any) => {
+    const msg = 'should return the correct nonce (0)'
+    t.equal(res.body.result, '0x0', msg)
+  }
+  await baseRequest(t, server, req, 200, expectRes, false)
+
+  // construct block with tx
   const tx = Transaction.fromTxData({ gasLimit: 53000 }, { freeze: false })
   tx.getSenderAddress = () => {
     return address
   }
+  const parent = await blockchain.getLatestHeader()
+  const block = Block.fromBlockData(
+    {
+      header: {
+        parentHash: parent.hash(),
+        number: 1,
+        gasLimit: 2000000,
+      },
+    },
+    { calcDifficultyFromHeader: parent }
+  )
+  block.transactions[0] = tx
 
-  await vm.runTx({ tx })
+  let ranBlock: Block | undefined = undefined
+  vm.once('afterBlock', (result: any) => (ranBlock = result.block))
+  await vm.runBlock({ block, generate: true, skipBlockValidation: true })
+  await vm.blockchain.putBlock(ranBlock!)
 
-  // verify nonce is incremented to 1
-  const req = params(method, [address.toString(), 'latest'])
-  const expectRes = (res: any) => {
+  // verify nonce increments after a tx
+  req = params(method, [address.toString(), 'latest'])
+  expectRes = (res: any) => {
     const msg = 'should return the correct nonce (1)'
-    if (res.body.result === '0x1') {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
+    t.equal(res.body.result, '0x1', msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
@@ -72,10 +74,7 @@ tape(`${method}: call with unsupported block argument`, async (t) => {
   const manager = createManager(client)
   const server = startRPC(manager.getMethods())
 
-  // genesis address with balance
-  const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
-
-  const req = params(method, [address.toString(), 'pending'])
-  const expectRes = checkError(t, INVALID_PARAMS, 'Currently only "latest" block supported')
+  const req = params(method, ['0xccfd725760a68823ff1e062f4cc97e1360e8d997', 'pending'])
+  const expectRes = checkError(t, INVALID_PARAMS, '"pending" is not yet supported')
   await baseRequest(t, server, req, 200, expectRes)
 })

@@ -30,11 +30,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const req = params(method, ['0x1'])
   const expectRes = (res: any) => {
     const msg = 'should return the correct number'
-    if (res.body.result !== mockUncleCount) {
-      throw new Error(msg)
-    } else {
-      t.pass(msg)
-    }
+    t.equal(res.body.result, mockUncleCount, msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })

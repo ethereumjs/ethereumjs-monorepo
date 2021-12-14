@@ -28,11 +28,7 @@ tape(`${method}: call with legacy tx`, async (t) => {
   const req = params(method, [bufferToHex(tx.hash())])
   const expectRes = (res: any) => {
     const msg = 'should return the correct tx'
-    if (res.body.result.transactionHash === bufferToHex(tx.hash())) {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
+    t.equal(res.body.result.transactionHash, bufferToHex(tx.hash()), msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
@@ -60,11 +56,7 @@ tape(`${method}: call with 1559 tx`, async (t) => {
   const req = params(method, [bufferToHex(tx.hash())])
   const expectRes = (res: any) => {
     const msg = 'should return the correct tx'
-    if (res.body.result.transactionHash === bufferToHex(tx.hash())) {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
+    t.equal(res.body.result.transactionHash, bufferToHex(tx.hash()), msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
@@ -76,11 +68,7 @@ tape(`${method}: call with unknown tx hash`, async (t) => {
   const req = params(method, ['0x89ea5b54111befb936851660a72b686a21bc2fc4889a9a308196ff99d08925a0'])
   const expectRes = (res: any) => {
     const msg = 'should return null'
-    if (res.body.result === null) {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
+    t.equal(res.body.result, null, msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })

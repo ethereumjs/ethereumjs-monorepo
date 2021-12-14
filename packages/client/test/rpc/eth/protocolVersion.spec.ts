@@ -10,11 +10,7 @@ tape(`${method}: call`, async (t) => {
   const expectRes = (res: any) => {
     const responseBlob = res.body
     const msg = 'protocol version should be a string'
-    if (typeof responseBlob.result !== 'string') {
-      throw new Error(msg)
-    } else {
-      t.pass(msg)
-    }
+    t.equal(typeof responseBlob.result, 'string', msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })

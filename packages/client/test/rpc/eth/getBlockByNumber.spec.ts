@@ -63,11 +63,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const req = params(method, ['0x0', false])
   const expectRes = (res: any) => {
     const msg = 'should return a valid block'
-    if (res.body.result.number === '0x0') {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
+    t.equal(res.body.result.number, '0x0', msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
@@ -79,17 +75,9 @@ tape(`${method}: call with false for second argument`, async (t) => {
   const req = params(method, ['0x0', false])
   const expectRes = (res: any) => {
     let msg = 'should return a valid block'
-    if (res.body.result.number === '0x0') {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
+    t.equal(res.body.result.number, '0x0', msg)
     msg = 'should return only the hashes of the transactions'
-    if (typeof res.body.result.transactions[0] !== 'string') {
-      throw new Error(msg)
-    } else {
-      t.pass(msg)
-    }
+    t.equal(typeof res.body.result.transactions[0], 'string', msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
@@ -101,11 +89,7 @@ tape(`${method}: call with earliest param`, async (t) => {
   const req = params(method, ['earliest', false])
   const expectRes = (res: any) => {
     const msg = 'should return the genesis block number'
-    if (res.body.result.number === '0x0') {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
+    t.equal(res.body.result.number, '0x0', msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
@@ -117,11 +101,7 @@ tape(`${method}: call with latest param`, async (t) => {
   const req = params(method, ['latest', false])
   const expectRes = (res: any) => {
     const msg = 'should return a block number'
-    if (res.body.result.number === '0x1') {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
+    t.equal(res.body.result.number, '0x1', msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
