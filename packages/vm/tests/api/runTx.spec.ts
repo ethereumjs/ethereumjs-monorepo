@@ -563,9 +563,8 @@ tape('runTx() -> consensus bugs', async (t) => {
 
 tape('runTx() -> RunTxOptions', (t) => {
   t.test('should throw on negative value args', async (t) => {
+    const vm = new VM({ common })
     for (const txType of TRANSACTION_TYPES) {
-      const vm = new VM({ common })
-
       const tx = getTransaction(vm._common, txType.type, true)
       tx.value.isubn(1)
 
