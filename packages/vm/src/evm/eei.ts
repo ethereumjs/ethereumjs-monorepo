@@ -590,7 +590,7 @@ export default class EEI {
     }
 
     // EIP-2681 check
-    if (this._env.contract.nonce.eq(MAX_UINT64)) {
+    if (this._env.contract.nonce.gte(MAX_UINT64)) {
       return new BN(0)
     }
     this._env.contract.nonce.iaddn(1)
