@@ -20,6 +20,7 @@ const TRANSACTION_TYPES = [
     name: 'EIP1559 tx',
   },
 ]
+
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 common.setMaxListeners(100)
 
@@ -328,7 +329,7 @@ tape('runTx() -> runtime behavior', async (t) => {
         'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
         'hex'
       )
-      /* Code which is deployed here: 
+      /* Code which is deployed here:
         PUSH1 01
         PUSH1 00
         SSTORE
@@ -556,6 +557,30 @@ tape('runTx() -> consensus bugs', async (t) => {
 
     const newBalance = (await vm.stateManager.getAccount(addr)).balance
     t.ok(newBalance.eq(afterBalance))
+    t.end()
+  })
+})
+
+tape('runTx() -> RunTxOptions', (t) => {
+  t.test('should throw on negative value args', async (t) => {
+    const vm = new VM({ common })
+    for (const txType of TRANSACTION_TYPES) {
+      const tx = getTransaction(vm._common, txType.type, true)
+      tx.value.isubn(1)
+
+      try {
+        await vm.runTx({
+          tx,
+          skipBalance: true,
+        })
+        t.fail('should not accept a negative call value')
+      } catch (err: any) {
+        t.ok(
+          err.message.includes('value field cannot be negative'),
+          'throws on negative call value'
+        )
+      }
+    }
     t.end()
   })
 })

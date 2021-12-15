@@ -217,9 +217,8 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
   }
 
   const result = await vm.runCall(runCallArgs)
-  console.log(result.gasUsed, result.execResult.gasRefund)
-  t.equal(result.gasUsed.toNumber(), 5812, 'gas used incorrect')
-  t.equal(result.execResult.gasRefund!.toNumber(), 4200, 'gas refund incorrect')
+  t.ok(result.gasUsed.eqn(5812), 'gas used correct')
+  t.ok(result.execResult.gasRefund!.eqn(4200), 'gas refund correct')
 
   t.end()
 })
@@ -315,6 +314,26 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
   t.ok(result.createdAddress?.buf.equals(expectedAddress), 'created address correct')
   const deployedCode = await vm.stateManager.getContractCode(result.createdAddress!)
   t.ok(deployedCode.equals(expectedCode), 'deployed code correct')
+
+  t.end()
+})
+
+tape('Throws on negative call value', async (t) => {
+  // setup the vm
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+  const vm = new VM({ common: common })
+
+  // setup the call arguments
+  const runCallArgs = {
+    value: new BN(-10),
+  }
+
+  try {
+    await vm.runCall(runCallArgs)
+    t.fail('should not accept a negative call value')
+  } catch (err: any) {
+    t.ok(err.message.includes('value field cannot be negative'), 'throws on negative call value')
+  }
 
   t.end()
 })

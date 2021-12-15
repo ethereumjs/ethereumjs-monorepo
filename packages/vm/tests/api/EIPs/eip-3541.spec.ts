@@ -90,8 +90,6 @@ tape('EIP 3541 tests', (t) => {
       nonce: 1,
     }).sign(pkey)
 
-    console.log('tx1')
-
     await vm.runTx({ tx: tx1 })
 
     code = await vm.stateManager.getContractCode(address!)

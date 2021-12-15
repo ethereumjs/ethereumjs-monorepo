@@ -89,7 +89,6 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     if (expectException) {
       t.pass(`Expected exception ${expectException}`)
     } else {
-      console.log(error)
       t.fail(error)
     }
   }

@@ -140,6 +140,11 @@ tape('[TransactionFactory]: Basic functions', function (t) {
     st.throws(() => {
       TransactionFactory.fromTxData({ type: 999 })
     })
+
+    st.throws(() => {
+      TransactionFactory.fromTxData({ value: new BN('-100') })
+    })
+
     st.end()
   })
 
