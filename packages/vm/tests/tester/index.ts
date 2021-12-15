@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { exit } from 'process'
 import path from 'path'
 import tape from 'tape'

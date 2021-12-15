@@ -6,4 +6,12 @@ module.exports = {
     'no-invalid-this': 'off',
     'no-restricted-syntax': 'off',
   },
+  overrides: [
+    {
+      files: ['tests/util.ts', 'tests/tester/**/*.ts'],
+      rules: {
+        'no-console': 'off',
+      },
+    },
+  ],
 }
