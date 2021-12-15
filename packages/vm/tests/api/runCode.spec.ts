@@ -106,7 +106,7 @@ tape('VM.runCode: RunCodeOptions', (t) => {
 
     try {
       await vm.runCode(runCodeArgs)
-      st.notOk('should not accept a negative call value')
+      st.fail('should not accept a negative call value')
     } catch (err: any) {
       st.ok(err.message.includes('value field cannot be negative'), 'throws on negative call value')
     }
