@@ -11,18 +11,9 @@ tape(`${method}: call while listening`, async (t) => {
   const expectRes = (res: any) => {
     const { result } = res.body
     let msg = 'result should be a boolean'
-    if (typeof result !== 'boolean') {
-      throw new Error(msg)
-    } else {
-      t.pass(msg)
-    }
-
+    t.equal(typeof result, 'boolean', msg)
     msg = 'should be listening'
-    if (result !== true) {
-      throw new Error(msg)
-    } else {
-      t.pass(msg)
-    }
+    t.equal(result, true, msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
@@ -35,18 +26,9 @@ tape(`${method}: call while not listening`, async (t) => {
   const expectRes = (res: any) => {
     const { result } = res.body
     let msg = 'result should be a boolean'
-    if (typeof result !== 'boolean') {
-      throw new Error(msg)
-    } else {
-      t.pass(msg)
-    }
-
+    t.equal(typeof result, 'boolean', msg)
     msg = 'should not be listening'
-    if (result !== false) {
-      throw new Error(msg)
-    } else {
-      t.pass(msg)
-    }
+    t.equal(result, false, msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })

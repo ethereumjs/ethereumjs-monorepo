@@ -97,7 +97,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
     ) {
       t.pass(msg)
     } else {
-      throw new Error(msg)
+      t.fail(msg)
     }
   }
   await baseRequest(t, server, req, 200, expectRes, false)
@@ -106,11 +106,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   req = params(method, [{ fromBlock: '0x0', toBlock: '0x1' }])
   expectRes = (res: any) => {
     const msg = 'should return the correct logs (fromBlock/toBlock as block numbers)'
-    if (res.body.result.length === 20) {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
+    t.equal(res.body.result.length, 20, msg)
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
@@ -121,7 +117,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
     if (res.body.result.length === 10 && res.body.result[0].address === contractAddr1.toString()) {
       t.pass(msg)
     } else {
-      throw new Error(msg)
+      t.fail(msg)
     }
   }
   await baseRequest(t, server, req, 200, expectRes, false)
@@ -130,11 +126,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   req = params(method, [{ topics: [] }])
   expectRes = (res: any) => {
     const msg = 'should return the correct logs (filter by topic - empty means anything)'
-    if (res.body.result.length === 20) {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
+    t.equal(res.body.result.length, 20, msg)
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
@@ -144,11 +136,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   ])
   expectRes = (res: any) => {
     const msg = 'should return the correct logs (filter by topic - exact match)'
-    if (res.body.result.length === 20) {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
+    t.equal(res.body.result.length, 20, msg)
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
@@ -158,11 +146,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   ])
   expectRes = (res: any) => {
     const msg = 'should return the correct logs (filter by topic - exact match for second topic)'
-    if (res.body.result.length === 20) {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
+    t.equal(res.body.result.length, 20, msg)
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
@@ -181,11 +165,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   ])
   expectRes = (res: any) => {
     const msg = 'should return the correct logs (filter by topic - A or B in first position)'
-    if (res.body.result.length === 20) {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
+    t.equal(res.body.result.length, 20, msg)
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
@@ -197,11 +177,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   ])
   expectRes = (res: any) => {
     const msg = 'should return the correct logs (filter by topic - null means anything)'
-    if (res.body.result.length === 20) {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
+    t.equal(res.body.result.length, 20, msg)
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
@@ -214,11 +190,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   ])
   expectRes = (res: any) => {
     const msg = 'should return the correct logs (filter by blockHash)'
-    if (res.body.result.length === 20) {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
+    t.equal(res.body.result.length, 20, msg)
   }
   await baseRequest(t, server, req, 200, expectRes, true) // pass endOnFinish=true for last test
 })
@@ -273,11 +245,7 @@ tape(`${method}: call with invalid params`, async (t) => {
   req = params(method, [{ address: '0x0000000000000000000000000000000000000001' }])
   expectRes = (res: any) => {
     const msg = 'should return empty logs'
-    if (res.body.result.length === 0) {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
+    t.equal(res.body.result.length, 0, msg)
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
@@ -285,11 +253,7 @@ tape(`${method}: call with invalid params`, async (t) => {
   req = params(method, [{ topics: ['0x1234'] }])
   expectRes = (res: any) => {
     const msg = 'should return empty logs'
-    if (res.body.result.length === 0) {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
+    t.equal(res.body.result.length, 0, msg)
   }
   await baseRequest(t, server, req, 200, expectRes, true) // pass endOnFinish=true for last test
 })

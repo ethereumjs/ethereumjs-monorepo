@@ -5,20 +5,12 @@ const method = 'web3_sha3'
 
 function compareErrorCode(t: any, error: any, errorCode: any) {
   const msg = `should return the correct error code (expected: ${errorCode}, received: ${error.code})`
-  if (error.code !== errorCode) {
-    throw new Error(msg)
-  } else {
-    t.pass(msg)
-  }
+  t.equal(error.code, errorCode, msg)
 }
 
 function compareErrorMsg(t: any, error: any, errorMsg: any) {
   const msg = `should return "${errorMsg}" error message`
-  if (error.message !== errorMsg) {
-    throw new Error(msg)
-  } else {
-    t.pass(msg)
-  }
+  t.equal(error.message, errorMsg, msg)
 }
 
 tape(`${method}: call with one valid parameter`, async (t) => {
@@ -28,18 +20,10 @@ tape(`${method}: call with one valid parameter`, async (t) => {
   const expectRes = (res: any) => {
     const { result } = res.body
     let msg = 'result string should not be empty'
-    if (result.length === 0) {
-      throw new Error(msg)
-    } else {
-      t.pass(msg)
-    }
+    t.notEqual(result.length, 0, msg)
 
     msg = 'should return the correct hash value'
-    if (result !== '0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad') {
-      throw new Error(msg)
-    } else {
-      t.pass(msg)
-    }
+    t.equal(result, '0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad', msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
