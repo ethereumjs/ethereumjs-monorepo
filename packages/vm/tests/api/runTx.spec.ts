@@ -573,7 +573,7 @@ tape('runTx() -> RunTxOptions', (t) => {
           tx,
           skipBalance: true,
         })
-        t.notOk('should not accept a negative call value')
+        t.fail('should not accept a negative call value')
       } catch (err: any) {
         t.ok(
           err.message.includes('value field cannot be negative'),
