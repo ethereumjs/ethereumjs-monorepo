@@ -224,17 +224,19 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
   t.end()
 })
 
-tape('Ensure that contracts cannot exceed nonce of MAX_UINT64 when creating new contracts (EIP-2681)', async (t) => {
-  // setup the accounts for this test
-  const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
-  const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
-  const slot = Buffer.from('00'.repeat(32), 'hex')
-  const emptyBuffer = Buffer.from('')
-  // setup the vm
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-  const vm = new VM({ common: common })
-  const code = '60008080F060005500'
-  /*
+tape(
+  'Ensure that contracts cannot exceed nonce of MAX_UINT64 when creating new contracts (EIP-2681)',
+  async (t) => {
+    // setup the accounts for this test
+    const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
+    const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
+    const slot = Buffer.from('00'.repeat(32), 'hex')
+    const emptyBuffer = Buffer.from('')
+    // setup the vm
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const vm = new VM({ common: common })
+    const code = '60008080F060005500'
+    /*
       This simple code tries to create an empty contract and then stores the address of the contract in the zero slot.
         CODE:
           PUSH 0 
@@ -246,36 +248,37 @@ tape('Ensure that contracts cannot exceed nonce of MAX_UINT64 when creating new 
           STOP
     */
 
-  await vm.stateManager.putContractCode(address, Buffer.from(code, 'hex'))
+    await vm.stateManager.putContractCode(address, Buffer.from(code, 'hex'))
 
-  const account = await vm.stateManager.getAccount(address)
-  account.nonce = MAX_UINT64.subn(1)
-  await vm.stateManager.putAccount(address, account)
+    const account = await vm.stateManager.getAccount(address)
+    account.nonce = MAX_UINT64.subn(1)
+    await vm.stateManager.putAccount(address, account)
 
-  // setup the call arguments
-  const runCallArgs = {
-    caller: caller, // call address
-    to: address,
-    gasLimit: new BN(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
+    // setup the call arguments
+    const runCallArgs = {
+      caller: caller, // call address
+      to: address,
+      gasLimit: new BN(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
+    }
+
+    await vm.runCall(runCallArgs)
+    let storage = await vm.stateManager.getContractStorage(address, slot)
+
+    // The nonce is MAX_UINT64 - 1, so we are allowed to create a contract (nonce of creating contract is now MAX_UINT64)
+    t.ok(!storage.equals(emptyBuffer), 'succesfully created contract')
+
+    await vm.runCall(runCallArgs)
+
+    // The nonce is MAX_UINT64, so we are NOT allowed to create a contract (nonce of creating contract is now MAX_UINT64)
+    storage = await vm.stateManager.getContractStorage(address, slot)
+    t.ok(
+      storage.equals(emptyBuffer),
+      'failed to create contract; nonce of creating contract is too high (MAX_UINT64)'
+    )
+
+    t.end()
   }
-
-  await vm.runCall(runCallArgs)
-  let storage = await vm.stateManager.getContractStorage(address, slot)
-
-  // The nonce is MAX_UINT64 - 1, so we are allowed to create a contract (nonce of creating contract is now MAX_UINT64)
-  t.ok(!storage.equals(emptyBuffer), 'succesfully created contract')
-
-  await vm.runCall(runCallArgs)
-
-  // The nonce is MAX_UINT64, so we are NOT allowed to create a contract (nonce of creating contract is now MAX_UINT64)
-  storage = await vm.stateManager.getContractStorage(address, slot)
-  t.ok(
-    storage.equals(emptyBuffer),
-    'failed to create contract; nonce of creating contract is too high (MAX_UINT64)'
-  )
-
-  t.end()
-})
+)
 
 tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
   // This test replays the Geth chain split; https://etherscan.io/tx/0x1cb6fb36633d270edefc04d048145b4298e67b8aa82a9e5ec4aa1435dd770ce4
