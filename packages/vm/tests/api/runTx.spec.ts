@@ -561,7 +561,7 @@ tape('runTx() -> consensus bugs', async (t) => {
   })
 })
 
-tape('runTx: RunTxOptions', (t) => {
+tape('runTx() -> RunTxOptions', (t) => {
   t.test('should throw on negative value args', async (t) => {
     for (const txType of TRANSACTION_TYPES) {
       const vm = new VM({ common })
