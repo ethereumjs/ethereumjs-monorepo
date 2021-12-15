@@ -576,7 +576,6 @@ tape('runTx: RunTxOptions', (t) => {
         })
         t.notOk('should not accept a negative call value')
       } catch (err: any) {
-        console.log(err)
         t.ok(
           err.message.includes('value field cannot be negative'),
           'throws on negative call value'
