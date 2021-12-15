@@ -224,7 +224,7 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
   t.end()
 })
 
-tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', async (t) => {
+tape('Ensure that contracts cannot exceed nonce of MAX_UINT64 when creating new contracts (EIP-2681)', async (t) => {
   // setup the accounts for this test
   const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
   const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
