@@ -217,7 +217,6 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
   }
 
   const result = await vm.runCall(runCallArgs)
-  console.log(result.gasUsed, result.execResult.gasRefund)
   t.equal(result.gasUsed.toNumber(), 5812, 'gas used incorrect')
   t.equal(result.execResult.gasRefund!.toNumber(), 4200, 'gas refund incorrect')
 

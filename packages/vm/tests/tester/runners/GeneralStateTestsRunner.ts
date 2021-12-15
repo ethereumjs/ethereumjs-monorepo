@@ -154,8 +154,7 @@ export default async function runStateTest(options: any, testData: any, t: tape.
     for (const testCase of testCases) {
       await runTestCase(options, testCase, t)
     }
-  } catch (e: any) {
-    console.log(e)
+  } catch {
     t.fail('error running test case for fork: ' + <string>options.forkConfigTestSuite)
   }
 }

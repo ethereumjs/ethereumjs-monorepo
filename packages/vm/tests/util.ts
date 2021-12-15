@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import tape from 'tape'
 import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
