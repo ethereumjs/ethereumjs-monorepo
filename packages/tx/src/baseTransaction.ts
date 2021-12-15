@@ -83,7 +83,7 @@ export abstract class BaseTransaction<TransactionObject> {
   protected DEFAULT_HARDFORK: string | Hardfork = Hardfork.Istanbul
 
   constructor(txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData) {
-    const { data, nonce, gasLimit, r, s, to, type, v, value } = txData
+    const { nonce, gasLimit, to, value, data, v, r, s, type } = txData
     this._type = new BN(toBuffer(type)).toNumber()
 
     const toB = toBuffer(to === '' ? '0x' : to)

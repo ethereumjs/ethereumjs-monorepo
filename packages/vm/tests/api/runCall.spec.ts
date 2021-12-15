@@ -277,7 +277,7 @@ tape('Throws on negative call value', async (t) => {
     await vm.runCall(runCallArgs)
     t.notOk('should not accept a negative call value')
   } catch (err: any) {
-    t.ok(err.message.includes('value field can not be negative'), 'throws on negative call value')
+    t.ok(err.message.includes('value field cannot be negative'), 'throws on negative call value')
   }
 
   t.end()

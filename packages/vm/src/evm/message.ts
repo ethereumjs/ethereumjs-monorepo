@@ -32,7 +32,7 @@ export default class Message {
     this.delegatecall = opts.delegatecall || false
 
     if (this.value.isNeg()) {
-      throw new Error(`value field can not be negative, received ${this.value}`)
+      throw new Error(`value field cannot be negative, received ${this.value}`)
     }
   }
 
