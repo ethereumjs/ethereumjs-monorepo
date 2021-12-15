@@ -256,6 +256,41 @@ const jsonRpcReceipt = async (
 })
 
 /**
+ * Get block by option
+ */
+const getBlockByOption = async (blockOpt: string, chain: Chain) => {
+  if (blockOpt === 'pending') {
+    throw {
+      code: INVALID_PARAMS,
+      message: `"pending" is not yet supported`,
+    }
+  }
+
+  let block: Block
+  const latest = chain.blocks.latest ?? (await chain.getLatestBlock())
+
+  if (blockOpt === 'latest') {
+    block = latest
+  } else if (blockOpt === 'earliest') {
+    block = await chain.getBlock(new BN(0))
+  } else {
+    const blockNumber = new BN(toBuffer(blockOpt))
+    if (blockNumber.eq(latest.header.number)) {
+      block = latest
+    } else if (blockNumber.gt(latest.header.number)) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'specified block greater than current height',
+      }
+    } else {
+      block = await chain.getBlock(blockNumber)
+    }
+  }
+
+  return block
+}
+
+/**
  * eth_* RPC module
  * @memberof module:rpc/modules
  */
@@ -381,7 +416,6 @@ export class Eth {
 
   /**
    * Executes a new message call immediately without creating a transaction on the block chain.
-   * Currently only "latest" block is supported.
    * @param params An array of two parameters:
    *   1. The transaction object
    *       * from (optional) - The address the transaction is sent from
@@ -395,24 +429,14 @@ export class Eth {
    */
   async call(params: [RpcTx, string]) {
     const [transaction, blockOpt] = params
+    const block = await getBlockByOption(blockOpt, this._chain)
 
     if (!this._vm) {
       throw new Error('missing vm')
     }
 
-    // use a copy of the vm in case new blocks are executed,
-    // and to not make any underlying changes during the call
     const vm = this._vm.copy()
-
-    if (blockOpt !== 'latest') {
-      const latest = await vm.blockchain.getLatestHeader()
-      if (blockOpt !== bnToHex(latest.number)) {
-        throw {
-          code: INVALID_PARAMS,
-          message: `Currently only "latest" block supported`,
-        }
-      }
-    }
+    await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     if (!transaction.gas) {
       // If no gas limit is specified use the last block gas limit as an upper bound.
@@ -448,7 +472,6 @@ export class Eth {
    * The transaction will not be added to the blockchain.
    * Note that the estimate may be significantly more than the amount of gas actually used by the transaction,
    * for a variety of reasons including EVM mechanics and node performance.
-   * Currently only "latest" block is supported.
    * @param params An array of two parameters:
    *   1. The transaction object
    *       * from (optional) - The address the transaction is sent from
@@ -462,23 +485,14 @@ export class Eth {
    */
   async estimateGas(params: [RpcTx, string]) {
     const [transaction, blockOpt] = params
+    const block = await getBlockByOption(blockOpt, this._chain)
 
     if (!this._vm) {
       throw new Error('missing vm')
     }
 
-    // use a copy of the vm in case new blocks are executed
     const vm = this._vm.copy()
-
-    if (blockOpt !== 'latest') {
-      const latest = await vm.blockchain.getLatestHeader()
-      if (blockOpt !== bnToHex(latest.number)) {
-        throw {
-          code: INVALID_PARAMS,
-          message: `Currently only "latest" block supported`,
-        }
-      }
-    }
+    await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     if (!transaction.gas) {
       // If no gas limit is specified use the last block gas limit as an upper bound.
@@ -506,33 +520,22 @@ export class Eth {
 
   /**
    * Returns the balance of the account at the given address.
-   * Currently only "latest" block is supported.
    * @param params An array of two parameters:
    *   1. address of the account
    *   2. integer block number, or the string "latest", "earliest" or "pending"
    */
   async getBalance(params: [string, string]) {
     const [addressHex, blockOpt] = params
+    const address = Address.fromString(addressHex)
+    const block = await getBlockByOption(blockOpt, this._chain)
 
     if (!this._vm) {
       throw new Error('missing vm')
     }
 
-    // use a copy of the vm in case new blocks are sync'd
     const vm = this._vm.copy()
-
-    if (blockOpt !== 'latest') {
-      const latest = await vm.blockchain.getLatestHeader()
-      if (blockOpt !== bnToHex(latest.number)) {
-        throw {
-          code: INVALID_PARAMS,
-          message: `Currently only "latest" block supported`,
-        }
-      }
-    }
-
-    const address = Address.fromString(addressHex)
-    const account: Account = await vm.stateManager.getAccount(address)
+    await vm.stateManager.setStateRoot(block.header.stateRoot)
+    const account = await vm.stateManager.getAccount(address)
     return bnToHex(account.balance)
   }
 
@@ -564,34 +567,7 @@ export class Eth {
    */
   async getBlockByNumber(params: [string, boolean]) {
     const [blockOpt, includeTransactions] = params
-    const latest = this._chain.blocks.latest ?? (await this._chain.getLatestBlock())
-    let block: Block
-
-    if (blockOpt === 'pending') {
-      throw {
-        code: INVALID_PARAMS,
-        message: `"pending" is not yet supported`,
-      }
-    }
-
-    if (blockOpt === 'latest') {
-      block = latest
-    } else if (blockOpt === 'earliest') {
-      block = await this._chain.getBlock(new BN(0))
-    } else {
-      const blockNumber = new BN(toBuffer(blockOpt))
-      if (blockNumber.eq(latest.header.number)) {
-        block = latest
-      } else if (blockNumber.gt(latest.header.number)) {
-        throw {
-          code: INVALID_PARAMS,
-          message: 'specified block greater than current height',
-        }
-      } else {
-        block = await this._chain.getBlock(blockNumber)
-      }
-    }
-
+    const block = await getBlockByOption(blockOpt, this._chain)
     return await jsonRpcBlock(block, this._chain, includeTransactions)
   }
 
@@ -614,30 +590,20 @@ export class Eth {
 
   /**
    * Returns code of the account at the given address.
-   * Currently only "latest" block is supported.
    * @param params An array of two parameters:
    *   1. address of the account
    *   2. integer block number, or the string "latest", "earliest" or "pending"
    */
   async getCode(params: [string, string]) {
     const [addressHex, blockOpt] = params
+    const block = await getBlockByOption(blockOpt, this._chain)
 
     if (!this._vm) {
       throw new Error('missing vm')
     }
 
-    // use a copy of the vm in case new blocks are sync'd
     const vm = this._vm.copy()
-
-    if (blockOpt !== 'latest') {
-      const latest = await vm.blockchain.getLatestHeader()
-      if (blockOpt !== bnToHex(latest.number)) {
-        throw {
-          code: INVALID_PARAMS,
-          message: `Currently only "latest" block supported`,
-        }
-      }
-    }
+    await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = Address.fromString(addressHex)
     const code = await vm.stateManager.getContractCode(address)
@@ -646,7 +612,6 @@ export class Eth {
 
   /**
    * Returns the value from a storage position at a given address.
-   * Currently only "latest" block is supported.
    * @param params An array of three parameters:
    *   1. address of the storage
    *   2. integer of the position in the storage
@@ -654,23 +619,14 @@ export class Eth {
    */
   async getStorageAt(params: [string, string, string]) {
     const [addressHex, positionHex, blockOpt] = params
+    const block = await getBlockByOption(blockOpt, this._chain)
 
     if (!this._vm) {
       throw new Error('missing vm')
     }
 
-    // use a copy of the vm in case new blocks are executed
     const vm = this._vm.copy()
-
-    if (blockOpt !== 'latest') {
-      const latest = await vm.blockchain.getLatestHeader()
-      if (blockOpt !== bnToHex(latest.number)) {
-        throw {
-          code: INVALID_PARAMS,
-          message: `Currently only "latest" block supported`,
-        }
-      }
-    }
+    await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = Address.fromString(addressHex)
     const storageTrie = await (vm.stateManager as any)._getStorageTrie(address)
@@ -704,30 +660,20 @@ export class Eth {
 
   /**
    * Returns the number of transactions sent from an address.
-   * Currently only "latest" block is supported.
    * @param params An array of two parameters:
    *   1. address of the account
    *   2. integer block number, or the string "latest", "earliest" or "pending"
    */
   async getTransactionCount(params: [string, string]) {
     const [addressHex, blockOpt] = params
+    const block = await getBlockByOption(blockOpt, this._chain)
 
     if (!this._vm) {
       throw new Error('missing vm')
     }
 
-    // use a copy of the vm in case new blocks are executed
     const vm = this._vm.copy()
-
-    if (blockOpt !== 'latest') {
-      const latest = await vm.blockchain.getLatestHeader()
-      if (blockOpt !== bnToHex(latest.number)) {
-        throw {
-          code: INVALID_PARAMS,
-          message: `Currently only "latest" block supported`,
-        }
-      }
-    }
+    await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = Address.fromString(addressHex)
     const account: Account = await vm.stateManager.getAccount(address)
@@ -974,23 +920,15 @@ export class Eth {
    * @returns The {@link Proof}
    */
   async getProof(params: [string, string[], string]): Promise<Proof> {
-    const [addressHex, slotsHex, blockOption] = params
+    const [addressHex, slotsHex, blockOpt] = params
+    const block = await getBlockByOption(blockOpt, this._chain)
 
     if (!this._vm) {
       throw new Error('missing vm')
     }
 
-    // use a copy of the vm in case new blocks are executed
     const vm = this._vm.copy()
-    if (blockOption !== 'latest') {
-      const latest = await vm.blockchain.getLatestHeader()
-      if (blockOption !== bnToHex(latest.number)) {
-        throw {
-          code: INVALID_PARAMS,
-          message: `Currently only "latest" block supported`,
-        }
-      }
-    }
+    await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = Address.fromString(addressHex)
     const slots = slotsHex.map((slotHex) => setLengthLeft(toBuffer(slotHex), 32))
