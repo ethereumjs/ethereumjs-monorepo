@@ -16,8 +16,4 @@ export class ExchangeProtocol extends EventEmitter {
       this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
     }, ms('5s'))
   }
-
-  getVersion() {
-    return this._version
-  }
 }

@@ -206,6 +206,10 @@ export class ETH extends ExchangeProtocol {
     }
   }
 
+  getVersion() {
+    return this._version
+  }
+
   _forkHashFromForkId(forkId: Buffer): string {
     return `0x${forkId.toString('hex')}`
   }
