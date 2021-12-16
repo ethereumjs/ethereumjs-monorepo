@@ -89,7 +89,6 @@ tape('EIP1559 tests', function (t) {
     }
 
     try {
-      // eslint-disable-next-line no-extra-semi
       ;(header as any).baseFeePerGas = undefined
       await header.validate(blockchain1)
     } catch (e: any) {
@@ -100,7 +99,6 @@ tape('EIP1559 tests', function (t) {
       )
     }
 
-    // eslint-disable-next-line no-extra-semi
     ;(header as any).baseFeePerGas = new BN(7) // reset for next test
     const block = Block.fromBlockData({ header }, { common })
     try {

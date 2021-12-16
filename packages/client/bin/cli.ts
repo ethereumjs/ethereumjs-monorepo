@@ -479,7 +479,6 @@ async function inputAccounts() {
     readline.clearLine((rl as any).output, 1)
     // replace the original input with asterisks:
     for (let i = 0; i < len; i++) {
-      // eslint-disable-next-line no-extra-semi
       ;(rl as any).output.write('*')
     }
   })
