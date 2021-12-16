@@ -31,11 +31,8 @@ export class ETH extends Protocol {
   _forkHash: string = ''
   _nextForkBlock = new BN(0)
 
-  // Message debuggers (e.g. { 'GET_BLOCK_HEADERS': [debug Object], ...})
-  private msgDebuggers: { [key: string]: (debug: string) => void } = {}
-
   constructor(version: number, peer: Peer, send: SendMethod) {
-    super(peer)
+    super(peer, ETH.MESSAGE_CODES, DEBUG_BASE_NAME)
 
     this._version = version
     this._peer = peer
@@ -43,8 +40,6 @@ export class ETH extends Protocol {
     this._debug = devp2pDebug.extend(DEBUG_BASE_NAME)
     this._status = null
     this._peerStatus = null
-
-    this.initMsgDebuggers()
 
     // Set forkHash and nextForkBlock
     if (this._version >= 64) {
@@ -71,7 +66,7 @@ export class ETH extends Protocol {
     const debugMsg = `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}`
 
     if (code !== ETH.MESSAGE_CODES.STATUS) {
-      const logData = formatLogData(data.toString('hex'), verbose)
+      const logData = formatLogData(data.toString('hex'), this._verbose)
       this.debug(messageName, `${debugMsg}: ${logData}`)
     }
     switch (code) {
@@ -203,7 +198,7 @@ export class ETH extends Protocol {
     }
 
     this.emit('status', status)
-    if (_firstPeer === '') {
+    if (this._firstPeer === '') {
       this._addFirstPeerDebugger()
     }
   }
@@ -224,9 +219,9 @@ export class ETH extends Protocol {
     let sStr = `[V:${buffer2int(status[0] as Buffer)}, NID:${buffer2int(status[1] as Buffer)}, TD:${
       status[2].length === 0 ? 0 : buffer2int(status[2] as Buffer)
     }`
-    sStr += `, BestH:${formatLogId(status[3].toString('hex'), verbose)}, GenH:${formatLogId(
+    sStr += `, BestH:${formatLogId(status[3].toString('hex'), this._verbose)}, GenH:${formatLogId(
       status[4].toString('hex'),
-      verbose
+      this._verbose
     )}`
     if (this._version >= 64) {
       sStr += `, ForkHash: ${status[5] ? '0x' + (status[5][0] as Buffer).toString('hex') : '-'}`
@@ -285,7 +280,7 @@ export class ETH extends Protocol {
 
   sendMessage(code: ETH.MESSAGE_CODES, payload: any) {
     const messageName = this.getMsgPrefix(code)
-    const logData = formatLogData(rlp.encode(payload).toString('hex'), verbose)
+    const logData = formatLogData(rlp.encode(payload).toString('hex'), this._verbose)
     const debugMsg = `Send ${messageName} message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${logData}`
 
     this.debug(messageName, debugMsg)
