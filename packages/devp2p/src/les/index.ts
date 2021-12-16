@@ -4,7 +4,7 @@ import { debug as createDebugLogger, Debugger } from 'debug'
 import { devp2pDebug } from '../util'
 import { int2buffer, buffer2int, assertEq, formatLogData } from '../util'
 import { Peer } from '../rlpx/peer'
-import { ExchangeProtocol } from '../ExchangeProtocol'
+import { Protocol } from '../protocol'
 
 const DEBUG_BASE_NAME = 'les'
 const verbose = createDebugLogger('verbose').enabled
@@ -19,7 +19,7 @@ let _firstPeer = ''
 
 type SendMethod = (code: LES.MESSAGE_CODES, data: Buffer) => any
 
-export class LES extends ExchangeProtocol {
+export class LES extends Protocol {
   _version: number
   _send: SendMethod
   _status: LES.Status | null

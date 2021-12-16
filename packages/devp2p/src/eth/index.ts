@@ -5,7 +5,7 @@ import { devp2pDebug } from '../util'
 import { BN, rlp } from 'ethereumjs-util'
 import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
 import { Peer } from '../rlpx/peer'
-import { ExchangeProtocol } from '../ExchangeProtocol'
+import { Protocol } from '../protocol'
 
 const DEBUG_BASE_NAME = 'eth'
 const verbose = createDebugLogger('verbose').enabled
@@ -18,7 +18,7 @@ let _firstPeer = ''
 
 type SendMethod = (code: ETH.MESSAGE_CODES, data: Buffer) => any
 
-export class ETH extends ExchangeProtocol {
+export class ETH extends Protocol {
   _version: number
   _status: ETH.StatusMsg | null
   _peerStatus: ETH.StatusMsg | null

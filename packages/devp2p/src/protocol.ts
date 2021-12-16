@@ -2,7 +2,7 @@ import ms from 'ms'
 import { EventEmitter } from 'events'
 import { Peer, DISCONNECT_REASONS } from './rlpx/peer'
 
-export class ExchangeProtocol extends EventEmitter {
+export class Protocol extends EventEmitter {
   _peer: Peer
   _statusTimeoutId: NodeJS.Timeout
 
