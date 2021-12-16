@@ -5,7 +5,7 @@ import { devp2pDebug } from '../util'
 import { BN, rlp } from 'ethereumjs-util'
 import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
 import { Peer } from '../rlpx/peer'
-import { Protocol } from '../protocol'
+import { Protocol } from './protocol'
 
 const DEBUG_BASE_NAME = 'eth'
 const verbose = createDebugLogger('verbose').enabled
