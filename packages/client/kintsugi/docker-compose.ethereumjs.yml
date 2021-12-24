@@ -8,7 +8,7 @@ services:
     volumes:
       - ./execution_data:/execution_data
     ports:
-      - "8545:8545"
+      - '8545:8545'
     #network_mode: host
     command: >
-      --datadir=/execution_data --gethGenesis=./ethereumjs-monorepo/packages/client/kintsugi/genesis.json --rpc --rpcEngine --rpcEnginePort=8545 --saveReceipts --rpcDebug --loglevel=debug --bootnodes=206.189.207.53:30303
+      --datadir=/execution_data --gethGenesis=./ethereumjs-monorepo/packages/client/kintsugi/genesis.json --rpc --rpcEngine --rpcEnginePort=8545 --saveReceipts --rpcDebug --loglevel=debug --bootnodes=137.184.55.117:30303
