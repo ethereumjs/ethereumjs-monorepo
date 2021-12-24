@@ -242,8 +242,7 @@ export class Engine {
    *        SYNCING - sync process is in progress
    *   2. latestValidHash: DATA|null - the hash of the most recent
    *      valid block in the branch defined by payload and its ancestors
-   *   3. message: String|null - the message providing additional details
-   *      on the response to the method call if needed.
+   *   3. validationError: String|null - validation error message
    */
   async executePayloadV1(params: [ExecutionPayloadV1]) {
     const [payloadData] = params
@@ -259,7 +258,7 @@ export class Engine {
     try {
       await findBlock(toBuffer(parentHash), this.validBlocks, this.chain)
     } catch (error: any) {
-      return { status: Status.SYNCING, message: null, latestValidHash: null }
+      return { status: Status.SYNCING, validationError: null, latestValidHash: null }
     }
 
     try {
@@ -269,14 +268,14 @@ export class Engine {
           const tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), { common })
           txs.push(tx)
         } catch (error) {
-          const message = `Invalid tx at index ${index}: ${error}`
-          this.config.logger.error(message)
+          const validationError = `Invalid tx at index ${index}: ${error}`
+          this.config.logger.error(validationError)
           const latestValidHash = await validHash(
             toBuffer(payloadData.parentHash),
             this.validBlocks,
             this.chain
           )
-          return { status: Status.INVALID, message, latestValidHash }
+          return { status: Status.INVALID, validationError, latestValidHash }
         }
       }
 
@@ -293,14 +292,14 @@ export class Engine {
       try {
         block = Block.fromBlockData({ header, transactions: txs }, { common })
       } catch (error) {
-        const message = `Error verifying block during init: ${error}`
-        this.config.logger.debug(message)
+        const validationError = `Error verifying block during init: ${error}`
+        this.config.logger.debug(validationError)
         const latestValidHash = await validHash(
           toBuffer(header.parentHash),
           this.validBlocks,
           this.chain
         )
-        return { status: Status.INVALID, message, latestValidHash }
+        return { status: Status.INVALID, validationError, latestValidHash }
       }
 
       const vmCopy = this.vm.copy()
@@ -314,7 +313,7 @@ export class Engine {
           this.chain
         )
       } catch (error) {
-        return { status: Status.SYNCING, message: null, latestValidHash: null }
+        return { status: Status.SYNCING, validationError: null, latestValidHash: null }
       }
 
       blocks.push(block)
@@ -326,14 +325,14 @@ export class Engine {
           await vmCopy.blockchain.putBlock(block)
         }
       } catch (error) {
-        const message = `Error verifying block while running: ${error}`
-        this.config.logger.debug(message)
+        const validationError = `Error verifying block while running: ${error}`
+        this.config.logger.debug(validationError)
         const latestValidHash = await validHash(
           block.header.parentHash,
           this.validBlocks,
           this.chain
         )
-        return { status: Status.INVALID, message, latestValidHash }
+        return { status: Status.INVALID, validationError, latestValidHash }
       }
 
       this.validBlocks.set(block.hash().toString('hex'), block)
