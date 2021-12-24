@@ -261,88 +261,77 @@ export class Engine {
       return { status: Status.SYNCING, validationError: null, latestValidHash: null }
     }
 
-    try {
-      const txs = []
-      for (const [index, serializedTx] of transactions.entries()) {
-        try {
-          const tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), { common })
-          txs.push(tx)
-        } catch (error) {
-          const validationError = `Invalid tx at index ${index}: ${error}`
-          this.config.logger.error(validationError)
-          const latestValidHash = await validHash(
-            toBuffer(payloadData.parentHash),
-            this.validBlocks,
-            this.chain
-          )
-          return { status: Status.INVALID, validationError, latestValidHash }
-        }
-      }
-
-      const transactionsTrie = await txsTrieRoot(txs)
-      const header: HeaderData = {
-        ...payloadData,
-        number,
-        receiptTrie,
-        transactionsTrie,
-        mixHash,
-      }
-
-      let block
+    const txs = []
+    for (const [index, serializedTx] of transactions.entries()) {
       try {
-        block = Block.fromBlockData({ header, transactions: txs }, { common })
+        const tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), { common })
+        txs.push(tx)
       } catch (error) {
-        const validationError = `Error verifying block during init: ${error}`
-        this.config.logger.debug(validationError)
+        const validationError = `Invalid tx at index ${index}: ${error}`
+        this.config.logger.error(validationError)
         const latestValidHash = await validHash(
-          toBuffer(header.parentHash),
+          toBuffer(payloadData.parentHash),
           this.validBlocks,
           this.chain
         )
         return { status: Status.INVALID, validationError, latestValidHash }
-      }
-
-      const vmCopy = this.vm.copy()
-      const vmHead = this.chain.headers.latest!
-      let blocks: Block[]
-      try {
-        blocks = await recursivelyFindParents(
-          vmHead.hash(),
-          block.header.parentHash,
-          this.validBlocks,
-          this.chain
-        )
-      } catch (error) {
-        return { status: Status.SYNCING, validationError: null, latestValidHash: null }
-      }
-
-      blocks.push(block)
-
-      try {
-        for (const [i, block] of blocks.entries()) {
-          const root = (i > 0 ? blocks[i - 1].header : vmHead).stateRoot
-          await vmCopy.runBlock({ block, root })
-          await vmCopy.blockchain.putBlock(block)
-        }
-      } catch (error) {
-        const validationError = `Error verifying block while running: ${error}`
-        this.config.logger.debug(validationError)
-        const latestValidHash = await validHash(
-          block.header.parentHash,
-          this.validBlocks,
-          this.chain
-        )
-        return { status: Status.INVALID, validationError, latestValidHash }
-      }
-
-      this.validBlocks.set(block.hash().toString('hex'), block)
-      return { status: Status.VALID, latestValidHash: bufferToHex(block.hash()) }
-    } catch (error: any) {
-      throw {
-        code: INTERNAL_ERROR,
-        message: error.message.toString(),
       }
     }
+
+    const transactionsTrie = await txsTrieRoot(txs)
+    const header: HeaderData = {
+      ...payloadData,
+      number,
+      receiptTrie,
+      transactionsTrie,
+      mixHash,
+    }
+
+    let block
+    try {
+      block = Block.fromBlockData({ header, transactions: txs }, { common })
+    } catch (error) {
+      const validationError = `Error verifying block during init: ${error}`
+      this.config.logger.debug(validationError)
+      const latestValidHash = await validHash(
+        toBuffer(header.parentHash),
+        this.validBlocks,
+        this.chain
+      )
+      return { status: Status.INVALID, validationError, latestValidHash }
+    }
+
+    const vmCopy = this.vm.copy()
+    const vmHead = this.chain.headers.latest!
+    let blocks: Block[]
+    try {
+      blocks = await recursivelyFindParents(
+        vmHead.hash(),
+        block.header.parentHash,
+        this.validBlocks,
+        this.chain
+      )
+    } catch (error) {
+      return { status: Status.SYNCING, validationError: null, latestValidHash: null }
+    }
+
+    blocks.push(block)
+
+    try {
+      for (const [i, block] of blocks.entries()) {
+        const root = (i > 0 ? blocks[i - 1].header : vmHead).stateRoot
+        await vmCopy.runBlock({ block, root })
+        await vmCopy.blockchain.putBlock(block)
+      }
+    } catch (error) {
+      const validationError = `Error verifying block while running: ${error}`
+      this.config.logger.debug(validationError)
+      const latestValidHash = await validHash(block.header.parentHash, this.validBlocks, this.chain)
+      return { status: Status.INVALID, validationError, latestValidHash }
+    }
+
+    this.validBlocks.set(block.hash().toString('hex'), block)
+    return { status: Status.VALID, latestValidHash: bufferToHex(block.hash()) }
   }
 
   /**
@@ -363,96 +352,89 @@ export class Engine {
     const { headBlockHash, finalizedBlockHash } = params[0]
     const payloadAttributes = params[1]
 
-    try {
-      /*
-       * Process head block
-       */
-      let headBlock = this.validBlocks.get(headBlockHash.slice(2))
-      if (!headBlock) {
-        // In case this request was not received sequentially,
-        // the block may already be in the blockchain.
-        try {
-          headBlock = await this.chain.getBlock(toBuffer(headBlockHash))
-        } catch (error) {
-          return { status: Status.SYNCING, payloadId: null }
-        }
-      }
-
-      const vmHeadHash = this.chain.headers.latest!.hash()
-      if (!vmHeadHash.equals(headBlock.hash())) {
-        let parentBlocks
-        try {
-          parentBlocks = await recursivelyFindParents(
-            vmHeadHash,
-            headBlock.header.parentHash,
-            this.validBlocks,
-            this.chain
-          )
-        } catch (error) {
-          return { status: Status.SYNCING, payloadId: null }
-        }
-
-        const blocks = [...parentBlocks, headBlock]
-        await this.chain.putBlocks(blocks, true)
-        await this.synchronizer.execution.run()
-        this.synchronizer.checkTxPoolState()
-        this.txPool.removeNewBlockTxs(blocks)
-
-        for (const block of blocks) {
-          this.validBlocks.delete(block.hash().toString('hex'))
-        }
-
-        if (
-          !this.synchronizer.syncTargetHeight ||
-          this.synchronizer.syncTargetHeight.lt(headBlock.header.number)
-        ) {
-          this.config.synchronized = true
-          this.config.lastSyncDate = Date.now()
-          this.synchronizer.syncTargetHeight = headBlock.header.number
-        }
-      }
-
-      /*
-       * Process finalized block
-       */
-      if (finalizedBlockHash === '0'.repeat(64)) {
-        // All zeros means no finalized block yet which is okay
-      } else {
-        this.chain.lastFinalizedBlockHash = toBuffer(finalizedBlockHash)
-      }
-
-      /*
-       * If payloadAttributes is present, start building block and return payloadId
-       */
-      if (payloadAttributes) {
-        const { timestamp, random, feeRecipient } = payloadAttributes
-        const parentBlock = this.chain.blocks.latest!
-        const payloadId = await this.pendingBlock.start(this.vm.copy(), parentBlock, {
-          timestamp,
-          mixHash: random,
-          coinbase: feeRecipient,
-        })
-        return { status: Status.SUCCESS, payloadId: bufferToHex(payloadId) }
-      }
-
-      /*
-       * TODO: set terminalPoWBlock, transitionPoSBlock
-       */
-      // if (!this.config.chainCommon.hardforkBlockBN(Hardfork.Merge)) {
-      //   // EIP-3675: Add PoS transition block number to forkHash calculation
-      //   // eslint-disable-next-line no-extra-semi
-      //   ;(this.config.chainCommon as any)._chainParams['hardforks'].find(
-      //     (hf: any) => hf.name === Hardfork.Merge
-      //   )!.block = this.chain.transitionPoSBlock.header.number.toNumber()
-      // }
-
-      return { status: Status.SUCCESS }
-    } catch (error: any) {
-      throw {
-        code: INTERNAL_ERROR,
-        message: error.message.toString(),
+    /*
+     * Process head block
+     */
+    let headBlock = this.validBlocks.get(headBlockHash.slice(2))
+    if (!headBlock) {
+      // In case this request was not received sequentially,
+      // the block may already be in the blockchain.
+      try {
+        headBlock = await this.chain.getBlock(toBuffer(headBlockHash))
+      } catch (error) {
+        return { status: Status.SYNCING, payloadId: null }
       }
     }
+
+    const vmHeadHash = this.chain.headers.latest!.hash()
+    if (!vmHeadHash.equals(headBlock.hash())) {
+      let parentBlocks
+      try {
+        parentBlocks = await recursivelyFindParents(
+          vmHeadHash,
+          headBlock.header.parentHash,
+          this.validBlocks,
+          this.chain
+        )
+      } catch (error) {
+        return { status: Status.SYNCING, payloadId: null }
+      }
+
+      const blocks = [...parentBlocks, headBlock]
+      await this.chain.putBlocks(blocks, true)
+      await this.synchronizer.execution.run()
+      this.synchronizer.checkTxPoolState()
+      this.txPool.removeNewBlockTxs(blocks)
+
+      for (const block of blocks) {
+        this.validBlocks.delete(block.hash().toString('hex'))
+      }
+
+      if (
+        !this.synchronizer.syncTargetHeight ||
+        this.synchronizer.syncTargetHeight.lt(headBlock.header.number)
+      ) {
+        this.config.synchronized = true
+        this.config.lastSyncDate = Date.now()
+        this.synchronizer.syncTargetHeight = headBlock.header.number
+      }
+    }
+
+    /*
+     * Process finalized block
+     */
+    if (finalizedBlockHash === '0'.repeat(64)) {
+      // All zeros means no finalized block yet which is okay
+    } else {
+      this.chain.lastFinalizedBlockHash = toBuffer(finalizedBlockHash)
+    }
+
+    /*
+     * If payloadAttributes is present, start building block and return payloadId
+     */
+    if (payloadAttributes) {
+      const { timestamp, random, feeRecipient } = payloadAttributes
+      const parentBlock = this.chain.blocks.latest!
+      const payloadId = await this.pendingBlock.start(this.vm.copy(), parentBlock, {
+        timestamp,
+        mixHash: random,
+        coinbase: feeRecipient,
+      })
+      return { status: Status.SUCCESS, payloadId: bufferToHex(payloadId) }
+    }
+
+    /*
+     * TODO: set terminalPoWBlock, transitionPoSBlock
+     */
+    // if (!this.config.chainCommon.hardforkBlockBN(Hardfork.Merge)) {
+    //   // EIP-3675: Add PoS transition block number to forkHash calculation
+    //   // eslint-disable-next-line no-extra-semi
+    //   ;(this.config.chainCommon as any)._chainParams['hardforks'].find(
+    //     (hf: any) => hf.name === Hardfork.Merge
+    //   )!.block = this.chain.transitionPoSBlock.header.number.toNumber()
+    // }
+
+    return { status: Status.SUCCESS }
   }
 
   /**
@@ -476,7 +458,7 @@ export class Engine {
       if (error === EngineError.UnknownPayload) throw error
       throw {
         code: INTERNAL_ERROR,
-        message: error.message.toString(),
+        message: error.message ?? error,
       }
     }
   }
