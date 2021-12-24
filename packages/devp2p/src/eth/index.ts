@@ -263,6 +263,17 @@ export class ETH extends EventEmitter {
         this._latestBlock = latestBlock
       }
       const forkHashB = Buffer.from(this._forkHash.substr(2), 'hex')
+
+      // EIP-3675: Set merge FORK_NEXT to mergeForkBlock
+      if (this._peer._common.hardfork() === 'london' && this._nextForkBlock.eqn(0)) {
+        const mergeForkBlock = (
+          this._peer._common.hardforks().filter((h) => h.name === 'merge') as any
+        )[0]?.mergeForkBlock
+        if (mergeForkBlock) {
+          this._nextForkBlock = new BN(mergeForkBlock)
+        }
+      }
+
       const nextForkB = this._nextForkBlock.eqn(0)
         ? Buffer.from('', 'hex')
         : this._nextForkBlock.toArrayLike(Buffer)

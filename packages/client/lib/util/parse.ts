@@ -259,7 +259,12 @@ async function parseGethParams(json: any) {
     }))
     .filter((fork) => fork.block !== null)
   if (config.terminalTotalDifficulty !== undefined) {
-    params.hardforks.push({ name: 'merge', td: config.terminalTotalDifficulty, block: null })
+    params.hardforks.push({
+      name: 'merge',
+      td: config.terminalTotalDifficulty,
+      block: null,
+      mergeForkBlock: config.mergeForkBlock,
+    })
   }
   return params
 }
