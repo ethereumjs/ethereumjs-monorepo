@@ -24,7 +24,7 @@ type ExecutionPayloadV1 = {
   parentHash: string // DATA, 32 Bytes
   coinbase: string // DATA, 20 Bytes
   stateRoot: string // DATA, 32 Bytes
-  receiptRoot: string // DATA, 32 bytes
+  receiptsRoot: string // DATA, 32 bytes
   logsBloom: string // DATA, 256 Bytes
   random: string // DATA, 32 Bytes
   blockNumber: string // QUANTITY, 64 Bits
@@ -49,7 +49,7 @@ type ForkchoiceStateV1 = {
 type PayloadAttributesV1 = {
   timestamp: string
   random: string
-  feeRecipient: string
+  suggestedFeeRecipient: string
 }
 
 const EngineError = {
@@ -70,7 +70,7 @@ const blockToExecutionPayload = (block: Block) => {
     parentHash: header.parentHash!,
     coinbase: header.coinbase!,
     stateRoot: header.stateRoot!,
-    receiptRoot: header.receiptTrie!,
+    receiptsRoot: header.receiptTrie!,
     logsBloom: header.logsBloom!,
     gasLimit: header.gasLimit!,
     gasUsed: header.gasUsed!,
@@ -248,7 +248,7 @@ export class Engine {
     const [payloadData] = params
     const {
       blockNumber: number,
-      receiptRoot: receiptTrie,
+      receiptsRoot: receiptTrie,
       random: mixHash,
       transactions,
       parentHash,
@@ -413,12 +413,12 @@ export class Engine {
      * If payloadAttributes is present, start building block and return payloadId
      */
     if (payloadAttributes) {
-      const { timestamp, random, feeRecipient } = payloadAttributes
+      const { timestamp, random, suggestedFeeRecipient } = payloadAttributes
       const parentBlock = this.chain.blocks.latest!
       const payloadId = await this.pendingBlock.start(this.vm.copy(), parentBlock, {
         timestamp,
         mixHash: random,
-        coinbase: feeRecipient,
+        coinbase: suggestedFeeRecipient,
       })
       return { status: Status.SUCCESS, payloadId: bufferToHex(payloadId) }
     }
