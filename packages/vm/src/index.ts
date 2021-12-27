@@ -51,6 +51,7 @@ export interface VMOpts {
    * - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - BASEFEE opcode
    * - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
    * - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
+   * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction
    *
    * *Annotations:*
    *
@@ -194,7 +195,7 @@ export default class VM extends AsyncEventEmitter {
 
     if (opts.common) {
       //EIPs
-      const supportedEIPs = [1559, 2315, 2537, 2565, 2718, 2929, 2930, 3198, 3529, 3541]
+      const supportedEIPs = [1559, 2315, 2537, 2565, 2718, 2929, 2930, 3198, 3529, 3541, 3855]
       for (const eip of opts.common.eips()) {
         if (!supportedEIPs.includes(eip)) {
           throw new Error(`${eip} is not supported by the VM`)
