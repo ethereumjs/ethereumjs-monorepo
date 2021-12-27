@@ -83,7 +83,7 @@ export default function runCode(this: VM, opts: RunCodeOpts): Promise<ExecResult
     new Message({
       code: opts.code,
       data: opts.data,
-      gasLimit: opts.gasLimit ?? new BN(0),
+      gasLimit: opts.gasLimit,
       to: opts.address ?? Address.zero(),
       caller: opts.caller,
       value: opts.value,
