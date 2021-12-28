@@ -258,7 +258,12 @@ export function getTestDirs(network: string, testType: string) {
  * @param {String} network - the network field of a test
  * @returns {Common} the Common which should be used
  */
-export function getCommon(network: string) {
+export function getCommon(targetNetwork: string) {
+  let network = targetNetwork
+  if (network.includes('+')) {
+    const index = network.indexOf('+')
+    network = network.slice(0, index)
+  }
   const networkLowercase = network.toLowerCase()
   if (normalHardforks.map((str) => str.toLowerCase()).includes(networkLowercase)) {
     // normal hard fork, return the common with this hard fork
@@ -289,13 +294,20 @@ export function getCommon(network: string) {
         })
       }
     }
-    return Common.forCustomChain(
+    console.log(network)
+    console.log(hfName)
+    const common = Common.forCustomChain(
       'mainnet',
       {
         hardforks: testHardforks,
       },
       hfName
     )
+    const eips = targetNetwork.match(/(?<=\+)(.\d+)/g)
+    if (eips) {
+      common.setEIPs(eips.map((e: string) => parseInt(e)))
+    }
+    return common
   } else {
     // this is not a "default fork" network, but it is a "transition" network. we will test the VM if it transitions the right way
     const transitionForks =
