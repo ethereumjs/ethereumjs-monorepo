@@ -110,8 +110,6 @@ async function runTests() {
     testGetterArgs.forkConfig = str
   }
 
-  console.log(testGetterArgs.forkConfig)
-
   let expectedTests: number | undefined
   if (argv['verify-test-amount-alltests']) {
     expectedTests = getExpectedTests(FORK_CONFIG_VM, name)

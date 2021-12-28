@@ -294,8 +294,6 @@ export function getCommon(targetNetwork: string) {
         })
       }
     }
-    console.log(network)
-    console.log(hfName)
     const common = Common.forCustomChain(
       'mainnet',
       {
