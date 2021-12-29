@@ -14,5 +14,6 @@ export const EIPs: eipsType = {
   3554: require('./3554.json'),
   3675: require('./3675.json'),
   3855: require('./3855.json'),
+  3860: require('./3860.json'),
   4345: require('./4345.json'),
 }
