@@ -21,15 +21,23 @@ function createBlock(
     throw new Error('extra data graffiti must be 32 bytes or less')
   }
 
+  const londonHfBlock = common.hardforkBlockBN('london')
+  const number = parentBlock.header.number.addn(1)
+  const timestamp = parentBlock.header.timestamp.addn(1)
+
   return Block.fromBlockData(
     {
       header: {
-        number: parentBlock.header.number.addn(1),
+        number,
         parentHash: parentBlock.hash(),
-        timestamp: parentBlock.header.timestamp.addn(1),
+        timestamp,
         gasLimit: new BN(5000),
         extraData: Buffer.from(extraData),
         uncleHash: keccak256(rlp.encode(uncles.map((uh) => uh.raw()))),
+        baseFeePerGas:
+          londonHfBlock && number.gt(londonHfBlock)
+            ? parentBlock.header.calcNextBaseFee()
+            : undefined,
       },
       uncleHeaders: uncles,
     },

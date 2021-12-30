@@ -578,7 +578,7 @@ tape('[Block]: block functions', function (t) {
 
       await forkBlock_ValidCommon.validate(blockchain)
 
-      st.pass('succesfully validated a pre-london uncle on a london block')
+      st.pass('successfully validated a pre-london uncle on a london block')
       st.ok(common.hardfork() === 'london', 'validation did not change common hardfork')
 
       const forkBlock_InvalidCommon = Block.fromBlockData(
