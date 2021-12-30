@@ -187,16 +187,17 @@ export abstract class BaseTransaction<TransactionObject> {
     const txDataZero = this.common.param('gasPrices', 'txDataZero')
     const txDataNonZero = this.common.param('gasPrices', 'txDataNonZero')
 
-
     let cost: number | BN = 0
     for (let i = 0; i < this.data.length; i++) {
       this.data[i] === 0 ? (cost += txDataZero) : (cost += txDataNonZero)
     }
 
     cost = new BN(cost)
-    if ( (this.to === undefined || this.to === null) && this.common.isActivatedEIP(3860)) {
+    if ((this.to === undefined || this.to === null) && this.common.isActivatedEIP(3860)) {
       const dataLength = Math.ceil(this.data.length / 32)
-      const initCodeCost = new BN(this.common.param('gasPrices', 'initCodeWordCost')).imuln(dataLength)
+      const initCodeCost = new BN(this.common.param('gasPrices', 'initCodeWordCost')).imuln(
+        dataLength
+      )
       cost.iadd(initCodeCost)
     }
 
