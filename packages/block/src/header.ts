@@ -249,8 +249,8 @@ export class BlockHeader {
 
     if (this._common.isActivatedEIP(1559)) {
       if (baseFeePerGas === undefined) {
-        const block = this._common.hardforkBlockBN('london')
-        const isInitialEIP1559Block = block && number.eq(block)
+        const londonHfBlock = this._common.hardforkBlockBN('london')
+        const isInitialEIP1559Block = londonHfBlock && number.eq(londonHfBlock)
         if (isInitialEIP1559Block) {
           baseFeePerGas = new BN(this._common.param('gasConfig', 'initialBaseFee'))
         } else {
@@ -716,8 +716,8 @@ export class BlockHeader {
         const msg = this._errorMsg('EIP1559 block has no base fee field')
         throw new Error(msg)
       }
-      const block = this._common.hardforkBlockBN('london')
-      const isInitialEIP1559Block = block && this.number.eq(block)
+      const londonHfBlock = this._common.hardforkBlockBN('london')
+      const isInitialEIP1559Block = londonHfBlock && this.number.eq(londonHfBlock)
       if (isInitialEIP1559Block) {
         const initialBaseFee = new BN(this._common.param('gasConfig', 'initialBaseFee'))
         if (!this.baseFeePerGas!.eq(initialBaseFee)) {
