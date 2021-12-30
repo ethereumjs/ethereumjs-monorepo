@@ -249,7 +249,15 @@ export class BlockHeader {
 
     if (this._common.isActivatedEIP(1559)) {
       if (baseFeePerGas === undefined) {
-        baseFeePerGas = new BN(7)
+        const block = this._common.hardforkBlockBN('london')
+        const isInitialEIP1559Block = block && number.eq(block)
+        if (isInitialEIP1559Block) {
+          baseFeePerGas = new BN(this._common.param('gasConfig', 'initialBaseFee'))
+        } else {
+          // Minimum possible value for baseFeePerGas is 7,
+          // so we use it as the default if the field is missing.
+          baseFeePerGas = new BN(7)
+        }
       }
     } else {
       if (baseFeePerGas) {
