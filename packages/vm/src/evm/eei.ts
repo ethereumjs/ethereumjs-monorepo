@@ -605,6 +605,21 @@ export default class EEI {
     // this should always be safe
     this.useGas(results.gasUsed, 'CREATE')
 
+    // EIP 3860 checks
+    if (this._common.isActivatedEIP(3860)) {
+      if (msg.data.length > this._common.param('vm', 'maxInitCodeSize')) {
+        trap(ERROR.INITCODE_SIZE_VIOLATION)
+      }
+
+      // Meter initcode
+      // Note: this is not charged when creating a contract at tx-level. This is charged as upfront cost in the tx
+      // This is thus only ran if CREATE/CREATE2 is used
+      const initCodeCost = new BN(this._common.param('gasPrices', 'initCodeWordCost')).imuln(
+        Math.ceil(msg.data.length / 32)
+      )
+      this.useGas(initCodeCost, 'Initcode cost')
+    }
+
     // Set return buffer in case revert happened
     if (
       results.execResult.exceptionError &&
