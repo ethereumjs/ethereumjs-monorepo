@@ -25,7 +25,7 @@ function generateBufferLikeValues(value: string): BufferLike[] {
   return [Buffer.from(value.slice(2)), parseInt(value), new BN(value), value]
 }
 
-export const baseTxValues = {
+const baseTxValues = {
   data: [...generateBufferLikeValues('0x0'), ...generateBufferLikeValues('0x123abc')],
   gasLimit: generateBNLikeValues(100000),
   nonce: [...generateBNLikeValues(0), ...generateBNLikeValues(100)],
@@ -36,16 +36,16 @@ export const baseTxValues = {
   type: [generateBNLikeValues(0), generateBNLikeValues(1), generateBNLikeValues(2)],
 }
 
-export const legacyTxValues = {
+const legacyTxValues = {
   gasPrice: generateBNLikeValues(100),
 }
 
 // TODO: AccessList
-export const accessListEip2930TxValues = {
+const accessListEip2930TxValues = {
   chainId: generateBNLikeValues(1),
 }
 
-export const eip1559TxValues = {
+const eip1559TxValues = {
   maxFeePerGas: generateBNLikeValues(100),
   maxPriorityFeePerGas: generateBNLikeValues(50),
 }
