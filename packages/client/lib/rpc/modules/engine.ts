@@ -1,9 +1,9 @@
 import { Block, HeaderData } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
-import { toBuffer, bufferToHex, rlp } from 'ethereumjs-util'
+import { toBuffer, bufferToHex, rlp, BN } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { middleware, validators } from '../validation'
-import { INTERNAL_ERROR } from '../error-code'
+import { INTERNAL_ERROR, INVALID_REQUEST } from '../error-code'
 import { PendingBlock } from '../../miner'
 import type VM from '@ethereumjs/vm'
 import type EthereumClient from '../../client'
@@ -19,6 +19,8 @@ enum Status {
   SYNCING = 'SYNCING',
   SUCCESS = 'SUCCESS',
 }
+
+const MESSAGE_ORDER_RESET_ID = new BN(0)
 
 type ExecutionPayloadV1 = {
   parentHash: string // DATA, 32 Bytes
@@ -56,6 +58,10 @@ const EngineError = {
   UnknownPayload: {
     code: -32001,
     message: 'Unknown payload',
+  },
+  InvalidTerminalBlock: {
+    code: -32002,
+    message: 'Invalid terminal block',
   },
 }
 
@@ -170,6 +176,7 @@ export class Engine {
   private txPool: TxPool
   private pendingBlock: PendingBlock
   private validBlocks: ValidBlocks
+  private lastMessageID = new BN(0)
 
   /**
    * Create engine_* RPC module
@@ -347,10 +354,27 @@ export class Engine {
    * @returns None or an error
    */
   async forkchoiceUpdatedV1(
-    params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | undefined]
+    params: [
+      forkchoiceState: ForkchoiceStateV1,
+      payloadAttributes: PayloadAttributesV1 | undefined
+    ],
+    context: any
   ) {
     const { headBlockHash, finalizedBlockHash } = params[0]
     const payloadAttributes = params[1]
+
+    console.log(context)
+    const reqId = new BN(context.request.id)
+    if (reqId.eq(MESSAGE_ORDER_RESET_ID)) {
+      this.lastMessageID = new BN(0)
+    } else if (reqId.lte(this.lastMessageID)) {
+      throw {
+        code: INVALID_REQUEST,
+        message: `Skipping request ID ${reqId}, less than last processed message ID ${this.lastMessageID}`,
+      }
+    } else {
+      this.lastMessageID = reqId
+    }
 
     /*
      * Process head block
