@@ -28,17 +28,13 @@ function generateBufferLikeValues(value: string): BufferLike[] {
 }
 
 const baseTxValues = {
-  data: [...generateBufferLikeValues('0x0'), ...generateBufferLikeValues('0x123abc')],
+  data: generateBufferLikeValues('0x0'),
   gasLimit: generateBNLikeValues(100000),
-  nonce: [...generateBNLikeValues(0), ...generateBNLikeValues(100)],
-  to: [
-    ...generateAddressLikeValues('0x0000000000000000000000000000000000000000'),
-    ...generateAddressLikeValues('0xab5801a7d398351b8be11c439e05c5b3259aec9b'),
-  ],
+  nonce: generateBNLikeValues(0),
+  to: generateAddressLikeValues('0x0000000000000000000000000000000000000000'),
   v: generateBNLikeValues(100),
   r: generateBNLikeValues(100),
   s: generateBNLikeValues(100),
-  type: [...generateBNLikeValues(0), ...generateBNLikeValues(1), ...generateBNLikeValues(2)],
 }
 
 const legacyTxValues = {
