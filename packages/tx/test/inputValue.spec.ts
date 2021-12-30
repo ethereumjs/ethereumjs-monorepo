@@ -38,7 +38,7 @@ const baseTxValues = {
   v: generateBNLikeValues(100),
   r: generateBNLikeValues(100),
   s: generateBNLikeValues(100),
-  type: [generateBNLikeValues(0), generateBNLikeValues(1), generateBNLikeValues(2)],
+  type: [...generateBNLikeValues(0), ...generateBNLikeValues(1), ...generateBNLikeValues(2)],
 }
 
 const legacyTxValues = {
