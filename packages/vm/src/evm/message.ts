@@ -30,6 +30,10 @@ export default class Message {
     this.salt = opts.salt // For CREATE2, TODO: Move from here
     this.selfdestruct = opts.selfdestruct // TODO: Move from here
     this.delegatecall = opts.delegatecall || false
+
+    if (this.value.isNeg()) {
+      throw new Error(`value field cannot be negative, received ${this.value}`)
+    }
   }
 
   get codeAddress(): Address {

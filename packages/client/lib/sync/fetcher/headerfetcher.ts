@@ -82,8 +82,16 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
    * @param headers fetch result
    */
   async store(headers: BlockHeader[]) {
-    const num = await this.chain.putHeaders(headers)
-    this.config.events.emit(Event.SYNC_FETCHER_FETCHED, headers.slice(0, num))
+    try {
+      const num = await this.chain.putHeaders(headers)
+      this.debug(`Fetcher results stored in blockchain (headers num=${headers.length})`)
+      this.config.events.emit(Event.SYNC_FETCHER_FETCHED, headers.slice(0, num))
+    } catch (e: any) {
+      this.debug(
+        `Error storing fetcher results in blockchain (headers num=${headers.length}): ${e}`
+      )
+      throw e
+    }
   }
 
   /**

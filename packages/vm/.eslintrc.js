@@ -8,7 +8,7 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['tests/**/*.ts'],
+      files: ['tests/util.ts', 'tests/tester/**/*.ts'],
       rules: {
         'no-console': 'off',
       },

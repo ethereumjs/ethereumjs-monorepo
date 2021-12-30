@@ -6,7 +6,7 @@ In this example, we import the genesis parameters for a private Proof-of-Authori
 
 First, create a signer account and place in the `data` directory to use with geth to seal blocks following [these instructions](https://geth.ethereum.org/docs/interface/managing-your-accounts).
 
-Next, open [these genesis parameters](./test/testdata/poa.json) and replace "728bb68502bfcd91ce4c7a692a0c0773ced5cff0" with your signer address in both the `extradata` property and in the `alloc` section.
+Next, open [these genesis parameters](../test/testdata/poa.json) and replace "728bb68502bfcd91ce4c7a692a0c0773ced5cff0" with your signer address in both the `extradata` property and in the `alloc` section.
 
 Second, get geth configured to use the genesis parameters file just updated.
 

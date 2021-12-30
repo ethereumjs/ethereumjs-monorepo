@@ -172,6 +172,9 @@ export const toBuffer = function (v: ToBufferInputTypes): Buffer {
   }
 
   if (BN.isBN(v)) {
+    if (v.isNeg()) {
+      throw new Error(`Cannot convert negative BN to buffer. Given: ${v}`)
+    }
     return v.toArrayLike(Buffer)
   }
 
@@ -274,5 +277,26 @@ export const baToJSON = function (ba: any): any {
       array.push(baToJSON(ba[i]))
     }
     return array
+  }
+}
+
+/**
+ * Checks provided Buffers for leading zeroes and throws if found.
+ *
+ * Examples:
+ *
+ * Valid values: 0x1, 0x, 0x01, 0x1234
+ * Invalid values: 0x0, 0x00, 0x001, 0x0001
+ *
+ * Note: This method is useful for validating that RLP encoded integers comply with the rule that all
+ * integer values encoded to RLP must be in the most compact form and contain no leading zero bytes
+ * @param values An object containing string keys and Buffer values
+ * @throws if any provided value is found to have leading zero bytes
+ */
+export const validateNoLeadingZeroes = function (values: { [key: string]: Buffer | undefined }) {
+  for (const [k, v] of Object.entries(values)) {
+    if (v !== undefined && v.length > 0 && v[0] === 0) {
+      throw new Error(`${k} cannot have leading zeroes, received: ${v.toString('hex')}`)
+    }
   }
 }

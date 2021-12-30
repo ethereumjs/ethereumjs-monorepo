@@ -899,6 +899,13 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.programCounter = destNum + 1
     },
   ],
+  // 0x5f: PUSH0
+  [
+    0x5f,
+    function (runState) {
+      runState.stack.push(new BN(0))
+    },
+  ],
   // 0x60: PUSH
   [
     0x60,

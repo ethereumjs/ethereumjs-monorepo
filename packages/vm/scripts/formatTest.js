@@ -7,7 +7,7 @@ const formatter = process.argv.find((arg, i, array) => array[i - 1] === '-with')
 
 runTestsWithFormatter(testScript, formatter)
 
-function runTestsWithFormatter (testScript, formatter = './node_modules/.bin/tap-spec') {
+function runTestsWithFormatter (testScript, formatter) {
   if (!testScript) {
     console.log('No test script specified!')
     return
@@ -17,11 +17,13 @@ function runTestsWithFormatter (testScript, formatter = './node_modules/.bin/tap
   const parsedPackageJson = JSON.parse(packageJson)
   const npmTestScriptNames = Object.keys(parsedPackageJson.scripts)
 
-  const commandToRun = npmTestScriptNames.find(name => name === testScript)
-    ? `npm run ${testScript}`
-    : `node ${testScript}`
+  const withFormatter = formatter ? ` | ${formatter}` : ''
 
-  const child = spawn('sh', ['-c', `${commandToRun} | ${formatter}`])
+  const commandToRun = npmTestScriptNames.find(name => name === testScript)
+    ? `npm run ${testScript}${withFormatter}`
+    : `node ${testScript}${withFormatter}`
+
+  const child = spawn('sh', ['-c', commandToRun])
 
   child.stdout.on('data', (data) => {
     process.stdout.write(data)

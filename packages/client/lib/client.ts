@@ -1,12 +1,12 @@
-import events from 'events'
+import { bufferToHex } from 'ethereumjs-util'
+import { version as packageVersion } from '../package.json'
 import { MultiaddrLike } from './types'
 import { Config } from './config'
 import { EthereumService, FullEthereumService, LightEthereumService } from './service'
 import { Event } from './types'
+import { FullSynchronizer } from './sync'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
-import { FullSynchronizer } from './sync'
-import { bufferToHex } from 'ethereumjs-util'
 
 export interface EthereumClientOptions {
   /* Client configuration */
@@ -52,7 +52,7 @@ export interface EthereumClientOptions {
  * lifecycle of included services.
  * @memberof module:node
  */
-export default class EthereumClient extends events.EventEmitter {
+export default class EthereumClient {
   public config: Config
 
   public services: (FullEthereumService | LightEthereumService)[]
@@ -64,8 +64,6 @@ export default class EthereumClient extends events.EventEmitter {
    * Create new node
    */
   constructor(options: EthereumClientOptions) {
-    super()
-
     this.config = options.config
 
     this.services = [
@@ -92,15 +90,24 @@ export default class EthereumClient extends events.EventEmitter {
     if (this.opened) {
       return false
     }
+    this.config.logger.info(
+      `Initializing Ethereumjs client version=v${packageVersion} network=${this.config.chainCommon.chainName()}`
+    )
 
     this.config.events.on(Event.SERVER_ERROR, (error) => {
       this.config.logger.warn(`Server error: ${error.name} - ${error.message}`)
     })
-
     this.config.events.on(Event.SERVER_LISTENING, (details) => {
-      this.config.logger.info(`Server listening: ${details.transport} - ${details.url}`)
+      this.config.logger.info(
+        `Server listener up transport=${details.transport} url=${details.url}`
+      )
     })
+    this.config.events.on(Event.SYNC_SYNCHRONIZED, (height) => {
+      this.config.logger.info(`Synchronized blockchain at height ${height}`)
+    })
+
     await Promise.all(this.services.map((s) => s.open()))
+
     this.opened = true
   }
 

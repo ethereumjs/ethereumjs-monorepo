@@ -385,7 +385,6 @@ tape('Original storage cache', async (t) => {
 
 tape('StateManager - Contract code', (tester) => {
   const it = tester.test
-
   it('should set and get code', async (t) => {
     const stateManager = new DefaultStateManager()
     const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))

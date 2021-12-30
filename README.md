@@ -7,7 +7,7 @@
 [![Code Coverage][coverage-badge]][coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-This was originally the EthereumJS VM repository. On Q1 2020 we brought some of its building blocks together to simplify development. Below you can find the packages included in this repository.
+This was originally the EthereumJS VM repository. In Q1 2020 we brought some of its building blocks together to simplify development. Below you can find the packages included in this repository.
 
 🚧 Please note that the `master` branch is updated on a daily basis, and to inspect code related to a specific package version, refer to the [tags](https://github.com/ethereumjs/ethereumjs-monorepo/tags).
 
@@ -51,7 +51,7 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 # LICENSE
 
-[MIT](https://opensource.org/licenses/MIT)
+Most packages are [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>) licensed, see package folder for the respective license.
 
 [coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg
 [coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo

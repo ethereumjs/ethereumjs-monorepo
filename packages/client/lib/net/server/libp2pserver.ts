@@ -1,6 +1,6 @@
 import PeerId from 'peer-id'
 // eslint-disable-next-line implicit-dependencies/no-implicit
-import crypto from 'libp2p-crypto'
+import { keys } from 'libp2p-crypto'
 import { Multiaddr, multiaddr } from 'multiaddr'
 import { Event, Libp2pConnection as Connection } from '../../types'
 import { Libp2pNode } from '../peer/libp2pnode'
@@ -81,11 +81,12 @@ export class Libp2pServer extends Server {
       this.config.logger.debug(`Peer discovered: ${peer}`)
       this.config.events.emit(Event.PEER_CONNECTED, peer)
     })
-    this.node.connectionManager.on('peer:connect', (connection: Connection) => {
-      const [peerId, multiaddr] = this.getPeerInfo(connection)
-      const peer = this.createPeer(peerId, [multiaddr])
+    this.node.connectionManager.on('peer:connect', async (connection: Connection) => {
+      const [peerId, multiaddr, inbound] = this.getPeerInfo(connection)
+      const peer = this.createPeer(peerId, [multiaddr], inbound)
       this.config.logger.debug(`Peer connected: ${peer}`)
-      this.config.events.emit(Event.PEER_CONNECTED, peer)
+      // note: do not call Event.PEER_CONNECTED here, it will
+      // be called after bindProtocols on peer:discovery
     })
     this.node.connectionManager.on('peer:disconnect', (_connection: Connection) => {
       // TODO: do anything here on disconnect?
@@ -151,21 +152,22 @@ export class Libp2pServer extends Server {
   }
 
   async getPeerId() {
-    const privKey = await crypto.keys.generateKeyPairFromSeed('ed25519', this.key, 512)
-    const protoBuf = crypto.keys.marshalPrivateKey(privKey)
+    const privKey = await keys.generateKeyPairFromSeed('ed25519', this.key, 512)
+    const protoBuf = keys.marshalPrivateKey(privKey)
     return PeerId.createFromPrivKey(protoBuf)
   }
 
-  getPeerInfo(connection: Connection): [PeerId, Multiaddr] {
-    return [connection.remotePeer, connection.remoteAddr]
+  getPeerInfo(connection: Connection): [peerId: PeerId, multiaddr: Multiaddr, inbound: boolean] {
+    return [connection.remotePeer, connection.remoteAddr, connection._stat.direction === 'inbound']
   }
 
-  createPeer(peerId: PeerId, multiaddrs?: Multiaddr[]) {
+  createPeer(peerId: PeerId, multiaddrs?: Multiaddr[], inbound = false) {
     const peer = new Libp2pPeer({
       config: this.config,
       id: peerId.toB58String(),
       multiaddrs,
       protocols: Array.from(this.protocols),
+      inbound,
     })
     this.peers.set(peer.id, peer)
     return peer

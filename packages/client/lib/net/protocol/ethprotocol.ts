@@ -257,10 +257,8 @@ export class EthProtocol extends Protocol {
           const [stateRootOrStatus, cumulativeGasUsed, logsBloom, logs] = decoded
           const receipt = { gasUsed: cumulativeGasUsed, bitvector: logsBloom, logs } as TxReceipt
           if (stateRootOrStatus.length === 32) {
-            // eslint-disable-next-line no-extra-semi
             ;(receipt as PreByzantiumTxReceipt).stateRoot = stateRootOrStatus
           } else {
-            // eslint-disable-next-line no-extra-semi
             ;(receipt as PostByzantiumTxReceipt).status = bufferToInt(stateRootOrStatus) as 0 | 1
           }
           return receipt

@@ -268,7 +268,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       return false
     }
     if (this._readableState!.length > this.maxQueue) {
-      this.debug(`Readable state length extends max queue size, skip next job execution.`)
+      this.debug(`Readable state length exceeds max queue size, skip next job execution.`)
       return false
     }
     if (job.index > this.processed + this.maxQueue) {
@@ -329,7 +329,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         this.finished++
         cb()
       } catch (error: any) {
-        this.config.logger.warn(`Error along storing received block or header result: ${error}`)
+        this.config.logger.warn(`Error storing received block or header result: ${error}`)
         cb(error)
       }
     }

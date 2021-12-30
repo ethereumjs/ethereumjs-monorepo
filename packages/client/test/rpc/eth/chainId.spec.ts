@@ -11,11 +11,7 @@ tape(`${method}: calls`, async (t) => {
   const req = params(method, [])
   const expectRes = (res: any) => {
     const msg = 'chainId should be a string'
-    if (typeof res.body.result !== 'string') {
-      throw new Error(msg)
-    } else {
-      t.pass(msg)
-    }
+    t.equal(typeof res.body.result, 'string', msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })

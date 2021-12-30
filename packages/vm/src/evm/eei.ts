@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Account, Address, BN } from 'ethereumjs-util'
+import { Account, Address, BN, MAX_UINT64 } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
@@ -589,6 +589,10 @@ export default class EEI {
       return new BN(0)
     }
 
+    // EIP-2681 check
+    if (this._env.contract.nonce.gte(MAX_UINT64)) {
+      return new BN(0)
+    }
     this._env.contract.nonce.iaddn(1)
     await this._state.putAccount(this._env.address, this._env.contract)
 

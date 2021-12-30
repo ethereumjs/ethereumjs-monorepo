@@ -20,6 +20,7 @@ import {
   baToJSON,
   intToBuffer,
   intToHex,
+  validateNoLeadingZeroes,
 } from '../src'
 
 tape('zeros function', function (t) {
@@ -278,6 +279,9 @@ tape('toBuffer', function (t) {
     st.throws(function () {
       toBuffer({ test: 1 } as any)
     })
+    st.throws(function () {
+      toBuffer(new BN(-10))
+    })
     st.end()
   })
 
@@ -349,5 +353,47 @@ tape('intToHex', function (st) {
   st.throws(() => intToHex(Number.MAX_SAFE_INTEGER + 1), 'throws on unsafe integers')
   st.ok(intToHex(0) == '0x0', 'correctly converts 0 to a hex string')
   st.ok(intToHex(1) == '0x1', 'correctly converts 1 to a hex string')
+  st.end()
+})
+
+tape('validateNoLeadingZeroes', function (st) {
+  const noLeadingZeroes = {
+    a: toBuffer('0x123'),
+  }
+  const noleadingZeroBytes = {
+    a: toBuffer('0x01'),
+  }
+  const leadingZeroBytes = {
+    a: toBuffer('0x001'),
+  }
+  const onlyZeroes = {
+    a: toBuffer('0x0'),
+  }
+  const emptyBuffer = {
+    a: toBuffer('0x'),
+  }
+
+  const undefinedValue = {
+    a: undefined,
+  }
+
+  st.doesNotThrow(
+    () => validateNoLeadingZeroes(noLeadingZeroes),
+    'does not throw when no leading zeroes'
+  )
+  st.doesNotThrow(() => validateNoLeadingZeroes(emptyBuffer), 'does not throw with empty buffer')
+  st.doesNotThrow(
+    () => validateNoLeadingZeroes(undefinedValue),
+    'does not throw when undefined passed in'
+  )
+  st.doesNotThrow(
+    () => validateNoLeadingZeroes(noleadingZeroBytes),
+    'does not throw when value has leading zero bytes'
+  )
+  st.throws(
+    () => validateNoLeadingZeroes(leadingZeroBytes),
+    'throws when value has leading zero bytes'
+  )
+  st.throws(() => validateNoLeadingZeroes(onlyZeroes), 'throws when value has only zeroes')
   st.end()
 })

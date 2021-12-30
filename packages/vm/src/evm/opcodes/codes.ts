@@ -257,6 +257,12 @@ const eipOpcodes = [
       0x48: { name: 'BASEFEE', isAsync: false },
     },
   },
+  {
+    eip: 3855,
+    opcodes: {
+      0x5f: { name: 'PUSH0', isAsync: false },
+    },
+  },
 ]
 
 /**
