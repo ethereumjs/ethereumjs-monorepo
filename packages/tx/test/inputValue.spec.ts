@@ -1,4 +1,6 @@
+import tape from 'tape'
 import { Address, AddressLike, BN, BNLike, BufferLike } from 'ethereumjs-util'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 // @returns: Array with all subtypes of the AddressLike type for a given address
 function generateAddressLikeValues(address: string): AddressLike[] {
@@ -29,7 +31,10 @@ const baseTxValues = {
   data: [...generateBufferLikeValues('0x0'), ...generateBufferLikeValues('0x123abc')],
   gasLimit: generateBNLikeValues(100000),
   nonce: [...generateBNLikeValues(0), ...generateBNLikeValues(100)],
-  to: generateAddressLikeValues('0xab5801a7d398351b8be11c439e05c5b3259aec9b'),
+  to: [
+    ...generateAddressLikeValues('0x0000000000000000000000000000000000000000'),
+    ...generateAddressLikeValues('0xab5801a7d398351b8be11c439e05c5b3259aec9b'),
+  ],
   v: generateBNLikeValues(100),
   r: generateBNLikeValues(100),
   s: generateBNLikeValues(100),
@@ -42,10 +47,16 @@ const legacyTxValues = {
 
 // TODO: AccessList
 const accessListEip2930TxValues = {
-  chainId: generateBNLikeValues(1),
+  chainId: generateBNLikeValues(4),
 }
 
 const eip1559TxValues = {
   maxFeePerGas: generateBNLikeValues(100),
   maxPriorityFeePerGas: generateBNLikeValues(50),
 }
+
+tape('[Transaction Input Values]', function (t) {
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+
+  t.test('Legacy Transaction Values', function (st) {})
+})
