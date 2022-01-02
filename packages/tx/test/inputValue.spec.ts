@@ -88,7 +88,6 @@ tape('[Transaction Input Values]', function (t) {
       ...eip1559TxValues,
       type: '2',
     })
-    // console.log(legacyTxData)
     const expectedHash = Transaction.fromTxData(eip1559TxData[0]).hash
     for (const txData of eip1559TxData) {
       const tx = Transaction.fromTxData(txData, { common })
