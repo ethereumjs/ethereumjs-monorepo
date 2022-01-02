@@ -18,22 +18,29 @@ function generateBufferLikeValues(value: string): BufferLike[] {
   return [value, toBuffer(value)]
 }
 
-export function generateCombinations(
-  options: { [x: string]: any },
+interface GenerateCombinationsArgs {
+  options: { [x: string]: any }
+  optionIndex?: number
+  results?: { [x: string]: any }[]
+  current?: { [x: string]: any }
+}
+
+export function generateCombinations({
+  options,
   optionIndex = 0,
-  results: { [x: string]: any }[] = [],
-  current: { [x: string]: any } = {}
-) {
+  results = [],
+  current = {},
+}: GenerateCombinationsArgs) {
   const allKeys = Object.keys(options)
   const optionKey = allKeys[optionIndex]
 
-  const vals = options[optionKey]
+  const values = options[optionKey]
 
-  for (let i = 0; i < vals.length; i++) {
-    current[optionKey] = vals[i]
+  for (let i = 0; i < values.length; i++) {
+    current[optionKey] = values[i]
 
     if (optionIndex + 1 < allKeys.length) {
-      generateCombinations(options, optionIndex + 1, results, current)
+      generateCombinations({ options, optionIndex: optionIndex + 1, results, current })
     } else {
       results.push(current)
     }
@@ -70,12 +77,14 @@ const eip1559TxValues = {
 tape('[Transaction Input Values]', function (t) {
   t.test('Legacy Transaction Values', function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
-    const legacyTxData = generateCombinations({ ...baseTxValues, ...legacyTxValues, type: '0' })
-    const expectedHash = Transaction.fromTxData(legacyTxData[0]).hash
+    const legacyTxData = generateCombinations({
+      options: { ...baseTxValues, ...legacyTxValues, type: '0' },
+    })
+    const expectedHash = Transaction.fromTxData(legacyTxData[0]).hash()
     for (const txData of legacyTxData) {
       const tx = Transaction.fromTxData(txData, { common })
 
-      st.deepEqual(tx.hash, expectedHash), 'correct tx hash'
+      st.deepEqual(tx.hash(), expectedHash), 'correct tx hash'
     }
     st.end()
   })
@@ -83,16 +92,19 @@ tape('[Transaction Input Values]', function (t) {
   t.test('EIP-1559 Transaction Values', function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const eip1559TxData = generateCombinations({
-      ...baseTxValues,
-      ...accessListEip2930TxValues,
-      ...eip1559TxValues,
-      type: '2',
+      options: {
+        ...baseTxValues,
+        ...accessListEip2930TxValues,
+        ...eip1559TxValues,
+        type: '2',
+      },
     })
-    const expectedHash = Transaction.fromTxData(eip1559TxData[0]).hash
+    const expectedHash = Transaction.fromTxData(eip1559TxData[0]).hash()
+
     for (const txData of eip1559TxData) {
       const tx = Transaction.fromTxData(txData, { common })
 
-      st.deepEqual(tx.hash, expectedHash), 'correct tx hash'
+      st.deepEqual(tx.hash(), expectedHash), 'correct tx hash'
     }
     st.end()
   })
