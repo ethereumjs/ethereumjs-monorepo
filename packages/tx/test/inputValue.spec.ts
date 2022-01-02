@@ -68,9 +68,8 @@ const eip1559TxValues = {
 }
 
 tape('[Transaction Input Values]', function (t) {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
-
   t.test('Legacy Transaction Values', function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
     const legacyTxData = generateCombinations({ ...baseTxValues, ...legacyTxValues, type: '0' })
     const expectedHash = Transaction.fromTxData(legacyTxData[0]).hash
     for (const txData of legacyTxData) {
@@ -82,6 +81,7 @@ tape('[Transaction Input Values]', function (t) {
   })
 
   t.test('EIP-1559 Transaction Values', function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const eip1559TxData = generateCombinations({
       ...baseTxValues,
       ...accessListEip2930TxValues,
