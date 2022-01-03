@@ -249,7 +249,15 @@ export class BlockHeader {
 
     if (this._common.isActivatedEIP(1559)) {
       if (baseFeePerGas === undefined) {
-        baseFeePerGas = new BN(7)
+        const londonHfBlock = this._common.hardforkBlockBN(Hardfork.London)
+        const isInitialEIP1559Block = londonHfBlock && number.eq(londonHfBlock)
+        if (isInitialEIP1559Block) {
+          baseFeePerGas = new BN(this._common.param('gasConfig', 'initialBaseFee'))
+        } else {
+          // Minimum possible value for baseFeePerGas is 7,
+          // so we use it as the default if the field is missing.
+          baseFeePerGas = new BN(7)
+        }
       }
     } else {
       if (baseFeePerGas) {
@@ -455,7 +463,7 @@ export class BlockHeader {
     // We use a ! here as TS cannot follow this hardfork-dependent logic, but it always gets assigned
     let dif!: BN
 
-    if (this._common.hardforkGteHardfork(hardfork, 'byzantium')) {
+    if (this._common.hardforkGteHardfork(hardfork, Hardfork.Byzantium)) {
       // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99) (EIP100)
       const uncleAddend = parentBlockHeader.uncleHash.equals(KECCAK256_RLP_ARRAY) ? 1 : 2
       let a = blockTs.sub(parentTs).idivn(9).ineg().iaddn(uncleAddend)
@@ -467,13 +475,13 @@ export class BlockHeader {
       dif = parentDif.add(offset.mul(a))
     }
 
-    if (this._common.hardforkGteHardfork(hardfork, 'byzantium')) {
+    if (this._common.hardforkGteHardfork(hardfork, Hardfork.Byzantium)) {
       // Get delay as parameter from common
       num.isubn(this._common.param('pow', 'difficultyBombDelay'))
       if (num.ltn(0)) {
         num = new BN(0)
       }
-    } else if (this._common.hardforkGteHardfork(hardfork, 'homestead')) {
+    } else if (this._common.hardforkGteHardfork(hardfork, Hardfork.Homestead)) {
       // 1 - (block_timestamp - parent_timestamp) // 10
       let a = blockTs.sub(parentTs).idivn(10).ineg().iaddn(1)
       const cutoff = new BN(-99)
@@ -558,7 +566,7 @@ export class BlockHeader {
     let parentGasLimit = parentBlockHeader.gasLimit
     // EIP-1559: assume double the parent gas limit on fork block
     // to adopt to the new gas target centered logic
-    const londonHardforkBlock = this._common.hardforkBlockBN('london')
+    const londonHardforkBlock = this._common.hardforkBlockBN(Hardfork.London)
     if (londonHardforkBlock && this.number.eq(londonHardforkBlock)) {
       const elasticity = new BN(this._common.param('gasConfig', 'elasticityMultiplier'))
       parentGasLimit = parentGasLimit.mul(elasticity)
@@ -708,8 +716,8 @@ export class BlockHeader {
         const msg = this._errorMsg('EIP1559 block has no base fee field')
         throw new Error(msg)
       }
-      const block = this._common.hardforkBlockBN('london')
-      const isInitialEIP1559Block = block && this.number.eq(block)
+      const londonHfBlock = this._common.hardforkBlockBN(Hardfork.London)
+      const isInitialEIP1559Block = londonHfBlock && this.number.eq(londonHfBlock)
       if (isInitialEIP1559Block) {
         const initialBaseFee = new BN(this._common.param('gasConfig', 'initialBaseFee'))
         if (!this.baseFeePerGas!.eq(initialBaseFee)) {
