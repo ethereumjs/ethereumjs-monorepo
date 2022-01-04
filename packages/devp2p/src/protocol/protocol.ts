@@ -6,7 +6,7 @@ import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 export class Protocol extends EventEmitter {
   _peer: Peer
   _statusTimeoutId: NodeJS.Timeout
-  _message_codes: any
+  _messageCodes: any
   _debug: any
   _verbose: any
 
@@ -19,12 +19,12 @@ export class Protocol extends EventEmitter {
   // Message debuggers (e.g. { 'GET_BLOCK_HEADERS': [debug Object], ...})
   protected msgDebuggers: { [key: string]: (debug: string) => void } = {}
 
-  constructor(peer: Peer, message_codes: any, debugBaseName: string) {
+  constructor(peer: Peer, _messageCodes: any, debugBaseName: string) {
     super()
 
     this._firstPeer = ''
     this._peer = peer
-    this._message_codes = message_codes
+    this._messageCodes = _messageCodes
     this._statusTimeoutId = setTimeout(() => {
       this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
     }, ms('5s'))
@@ -35,7 +35,7 @@ export class Protocol extends EventEmitter {
   }
 
   private initMsgDebuggers(debugBaseName: string) {
-    const MESSAGE_NAMES = Object.values(this._message_codes).filter(
+    const MESSAGE_NAMES = Object.values(this._messageCodes).filter(
       (value) => typeof value === 'string'
     ) as string[]
     for (const name of MESSAGE_NAMES) {
