@@ -33,8 +33,15 @@ assert.deepEqual(nestedList, decoded)
 
 ## CLI
 
-`rlp decode <hex string>`  
-`rlp encode <json String>`
+`rlp encode <JSON string>`
+`rlp decode <0x-prefixed hex string>`
+
+### Examples
+
+- `rlp encode '5'` => `0x05`
+- `rlp encode '[5]'` => `0xc105`
+- `rlp encode '["cat", "dog"]'` => `0xc88363617483646f67`
+- `rlp decode 0xc88363617483646f67` => `["cat","dog"]`
 
 ## TESTS
 
