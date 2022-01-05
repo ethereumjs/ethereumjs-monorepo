@@ -49,12 +49,34 @@ export function generateCombinations({
   return results
 }
 
+function mulberry32(seed: number) {
+  let t = (seed += 0x6d2b79f5)
+  t = Math.imul(t ^ (t >>> 15), t | 1)
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+}
+
+function getRandomSubarray(array: any[], size: number) {
+  const shuffled = array.slice(0),
+    seed = 1559
+  let index: number,
+    i = array.length,
+    temp: any[]
+  while (i--) {
+    index = Math.floor((i + 1) * mulberry32(seed))
+    temp = shuffled[index]
+    shuffled[index] = shuffled[i]
+    shuffled[i] = temp
+  }
+  return shuffled.slice(0, size)
+}
+
 const baseTxValues = {
-  data: generateBufferLikeValues('0x0'),
+  data: generateBufferLikeValues('0x12345abcd'),
   gasLimit: generateBNLikeValues(100000),
   nonce: generateBNLikeValues(0),
   to: generateAddressLikeValues('0x0000000000000000000000000000000000000000'),
-  v: generateBNLikeValues(100),
+  // v: generateBNLikeValues(100),
   r: generateBNLikeValues(100),
   s: generateBNLikeValues(100),
   value: generateBNLikeValues(10),
@@ -81,7 +103,8 @@ tape('[Transaction Input Values]', function (t) {
       options: { ...baseTxValues, ...legacyTxValues, type: '0' },
     })
     const expectedHash = Transaction.fromTxData(legacyTxData[0]).hash()
-    for (const txData of legacyTxData) {
+    const randomSample = getRandomSubarray(legacyTxData, 1000)
+    for (const txData of randomSample) {
       const tx = Transaction.fromTxData(txData, { common })
 
       st.deepEqual(tx.hash(), expectedHash), 'correct tx hash'
@@ -100,8 +123,9 @@ tape('[Transaction Input Values]', function (t) {
       },
     })
     const expectedHash = Transaction.fromTxData(eip1559TxData[0]).hash()
+    const randomSample = getRandomSubarray(eip1559TxData, 1000)
 
-    for (const txData of eip1559TxData) {
+    for (const txData of randomSample) {
       const tx = Transaction.fromTxData(txData, { common })
 
       st.deepEqual(tx.hash(), expectedHash), 'correct tx hash'
