@@ -87,6 +87,7 @@
     "@types/levelup": "^4.3.0",
     "@types/node": "^11.13.4",
     "@types/tape": "^4.13.2",
+    "constants-browserify": "^1.0.0",
     "crypto-browserify": "^3.12.0",
     "eslint": "^6.8.0",
     "file-replace-loader": "^1.2.0",

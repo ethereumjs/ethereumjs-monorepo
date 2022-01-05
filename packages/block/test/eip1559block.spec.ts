@@ -40,9 +40,9 @@ tape('EIP1559 tests', function (t) {
     st.end()
   })
 
-  t.test('Header -> Initialization', async function (st) {
-    try {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+  t.test('Header -> Initialization', function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    st.throws(() => {
       BlockHeader.fromHeaderData(
         {
           number: new BN(1),
@@ -54,11 +54,9 @@ tape('EIP1559 tests', function (t) {
         {
           common,
         }
-      )
-    } catch (e: any) {
-      const expectedError = 'A base fee for a block can only be set with EIP1559 being activated'
-      st.ok(e.message.includes(expectedError), 'should throw with EIP1559 not being activated')
-    }
+      ),
+        'should throw when setting baseFeePerGas with EIP1559 not being activated'
+    })
     st.end()
   })
 
@@ -69,6 +67,7 @@ tape('EIP1559 tests', function (t) {
         parentHash: genesis.hash(),
         gasLimit: genesis.header.gasLimit.muln(2), // Special case on EIP-1559 transition block
         timestamp: new BN(1),
+        baseFeePerGas: 100,
       },
       {
         calcDifficultyFromHeader: genesis.header,
@@ -79,7 +78,7 @@ tape('EIP1559 tests', function (t) {
 
     try {
       await header.validate(blockchain1)
-      st.fail('should throw')
+      st.fail('should throw when baseFeePerGas is not set to initial base fee')
     } catch (e: any) {
       const expectedError = 'Initial EIP1559 block does not have initial base fee'
       st.ok(
