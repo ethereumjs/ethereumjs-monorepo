@@ -86,7 +86,6 @@ const legacyTxValues = {
   gasPrice: generateBNLikeValues(100),
 }
 
-// TODO: AccessList
 const accessListEip2930TxValues = {
   chainId: generateBNLikeValues(4),
 }
