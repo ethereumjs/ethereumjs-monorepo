@@ -49,6 +49,7 @@ export function generateCombinations({
   return results
 }
 
+// Deterministic pseudorandom number generator
 function mulberry32(seed: number) {
   let t = (seed += 0x6d2b79f5)
   t = Math.imul(t ^ (t >>> 15), t | 1)
@@ -76,7 +77,6 @@ const baseTxValues = {
   gasLimit: generateBNLikeValues(100000),
   nonce: generateBNLikeValues(0),
   to: generateAddressLikeValues('0x0000000000000000000000000000000000000000'),
-  // v: generateBNLikeValues(100),
   r: generateBNLikeValues(100),
   s: generateBNLikeValues(100),
   value: generateBNLikeValues(10),
