@@ -57,17 +57,17 @@ function mulberry32(seed: number) {
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296
 }
 
-function getRandomSubarray(array: any[], size: number) {
-  const shuffled = array.slice(0),
-    seed = 1559
-  let index: number,
-    i = array.length,
-    temp: any[]
-  while (i--) {
-    index = Math.floor((i + 1) * mulberry32(seed))
+function getRandomSubarray<TArrayItem>(array: TArrayItem[], size: number) {
+  const shuffled = array.slice(0)
+  const seed = 1559
+  let index: number
+  let length = array.length
+  let temp: TArrayItem
+  while (length--) {
+    index = Math.floor((length + 1) * mulberry32(seed))
     temp = shuffled[index]
-    shuffled[index] = shuffled[i]
-    shuffled[i] = temp
+    shuffled[index] = shuffled[length]
+    shuffled[length] = temp
   }
   return shuffled.slice(0, size)
 }
