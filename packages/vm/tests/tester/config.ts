@@ -294,14 +294,12 @@ export function getCommon(targetNetwork: string) {
         })
       }
     }
-    const common = Common.forCustomChain(
-      'mainnet',
-      {
-        hardforks: testHardforks,
-      },
-      hfName
-    )
+    const common = Common.custom({
+      hardforks: testHardforks,
+      defaultHardfork: hfName,
+    })
     const eips = targetNetwork.match(/(?<=\+)(.\d+)/g)
+    console.log(eips)
     if (eips) {
       common.setEIPs(eips.map((e: string) => parseInt(e)))
     }
