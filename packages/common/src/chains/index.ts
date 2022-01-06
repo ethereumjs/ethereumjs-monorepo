@@ -4,6 +4,7 @@ import ropsten from './ropsten.json'
 import rinkeby from './rinkeby.json'
 import kovan from './kovan.json'
 import goerli from './goerli.json'
+import sepolia from './sepolia.json'
 
 /**
  * @hidden
@@ -15,6 +16,7 @@ export function _getInitializedChains(customChains?: Chain[]) {
     '4': 'rinkeby',
     '42': 'kovan',
     '5': 'goerli',
+    '11155111': 'sepolia',
   }
   const chains: any = {
     mainnet,
@@ -22,6 +24,7 @@ export function _getInitializedChains(customChains?: Chain[]) {
     rinkeby,
     kovan,
     goerli,
+    sepolia,
   }
   if (customChains) {
     for (const chain of customChains) {

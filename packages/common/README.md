@@ -115,6 +115,7 @@ Supported chains:
 - `rinkeby` (`Chain.Rinkeby`)
 - `kovan` (`Chain.Kovan`)
 - `goerli` (`Chain.Goerli`)
+- `sepolia` (`Chain.Sepolia`)
 - Private/custom chain parameters
 
 The following chain-specific parameters are provided:

@@ -78,7 +78,7 @@ tape('[Block]: block functions', function (t) {
       },
       { common, hardforkByBlockNumber: true }
     )
-    st.equal(block._common.hardfork(), 'berlin', 'should use hardforkByBlockNumber option')
+    st.equal(block._common.hardfork(), Hardfork.Berlin, 'should use hardforkByBlockNumber option')
 
     block = Block.fromBlockData(
       {
@@ -88,7 +88,11 @@ tape('[Block]: block functions', function (t) {
       },
       { common, hardforkByTD: 5001 }
     )
-    st.equal(block._common.hardfork(), 'merge', 'should use hardforkByTD option (td > threshold)')
+    st.equal(
+      block._common.hardfork(),
+      Hardfork.Merge,
+      'should use hardforkByTD option (td > threshold)'
+    )
 
     block = Block.fromBlockData(
       {
@@ -100,7 +104,7 @@ tape('[Block]: block functions', function (t) {
     )
     st.equal(
       block._common.hardfork(),
-      'berlin',
+      Hardfork.Berlin,
       'should work with hardforkByTD option (td < threshold)'
     )
 
@@ -522,7 +526,7 @@ tape('[Block]: block functions', function (t) {
       const common = new Common({ chain: Chain.Mainnet })
       common.setHardfork(Hardfork.Berlin)
 
-      const mainnetForkBlock = common.hardforkBlockBN('london')
+      const mainnetForkBlock = common.hardforkBlockBN(Hardfork.London)
       const rootBlock = Block.fromBlockData({
         header: {
           number: mainnetForkBlock!.subn(3),
@@ -552,10 +556,10 @@ tape('[Block]: block functions', function (t) {
       await blockchain.putBlock(forkBlock)
       await preForkBlock.validate(blockchain)
 
-      st.ok(common.hardfork() === 'london', 'validation did not change common hardfork')
+      st.ok(common.hardfork() === Hardfork.London, 'validation did not change common hardfork')
       await forkBlock2.validate(blockchain)
 
-      st.ok(common.hardfork() === 'london', 'validation did not change common hardfork')
+      st.ok(common.hardfork() === Hardfork.London, 'validation did not change common hardfork')
 
       const forkBlock2HeaderData = forkBlock2.header.toJSON()
       const uncleHeaderData = unclePreFork.header.toJSON()
@@ -578,8 +582,8 @@ tape('[Block]: block functions', function (t) {
 
       await forkBlock_ValidCommon.validate(blockchain)
 
-      st.pass('succesfully validated a pre-london uncle on a london block')
-      st.ok(common.hardfork() === 'london', 'validation did not change common hardfork')
+      st.pass('successfully validated a pre-london uncle on a london block')
+      st.ok(common.hardfork() === Hardfork.London, 'validation did not change common hardfork')
 
       const forkBlock_InvalidCommon = Block.fromBlockData(
         {
@@ -602,7 +606,7 @@ tape('[Block]: block functions', function (t) {
         )
       }
 
-      st.ok(common.hardfork() === 'london', 'validation did not change common hardfork')
+      st.ok(common.hardfork() === Hardfork.London, 'validation did not change common hardfork')
     }
   )
 
