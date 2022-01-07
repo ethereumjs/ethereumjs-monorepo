@@ -8,11 +8,11 @@
     "bin",
     "src"
   ],
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "browser": "dist.browser/index.js",
   "bin": {
-    "rlp": "./bin/rlp"
+    "rlp": "bin/rlp"
   },
   "scripts": {
     "build": "tsc -p ./tsconfig.prod.json && tsc -p tsconfig.browser.json",
