@@ -8,7 +8,7 @@ const testData = require('./test-data')
 const level = require('level')
 
 async function main() {
-  const common = new Common({ chain: testData.network.toLowerCase() })
+  const common = new Common({ chain: 1, hardfork: testData.network.toLowerCase() })
   const validatePow = common.consensusType() === ConsensusType.ProofOfWork
   const validateBlocks = true
 
@@ -16,7 +16,7 @@ async function main() {
     common,
     validateConsensus: validatePow,
     validateBlocks,
-    genesisBlock: getGenesisBlock(common)
+    genesisBlock: getGenesisBlock(common),
   })
 
   // When verifying PoW, setting this cache improves the
