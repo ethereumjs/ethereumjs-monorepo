@@ -83,7 +83,7 @@ async function deployContract(
   vm: VM,
   senderPrivateKey: Buffer,
   deploymentBytecode: Buffer,
-  greeting: string,
+  greeting: string
 ): Promise<Address> {
   // Contracts are deployed by sending their deployment bytecode to the address 0
   // The contract params should be abi-encoded and appended to the deployment bytecode.
@@ -111,7 +111,7 @@ async function setGreeting(
   vm: VM,
   senderPrivateKey: Buffer,
   contractAddress: Address,
-  greeting: string,
+  greeting: string
 ) {
   const params = AbiCoder.encode(['string'], [greeting])
   const sigHash = new Interface(['function setGreeting(string)']).getSighash('setGreeting')
@@ -154,7 +154,7 @@ async function getGreeting(vm: VM, contractAddress: Address, caller: Address) {
 async function main() {
   const accountPk = Buffer.from(
     'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-    'hex',
+    'hex'
   )
 
   const accountAddress = Address.fromPrivateKey(accountPk)
@@ -205,7 +205,7 @@ async function main() {
 
   assert.equal(greeting2, SECOND_GREETING)
 
-  console.log('Everything run correctly!')
+  console.log('Everything ran correctly!')
 }
 
 main()

@@ -9,38 +9,38 @@ const data =
 
 nameOpCodes(Buffer.from(data, 'hex'))
 
-function nameOpCodes(raw) {
+function nameOpCodes(raw: Buffer) {
   let pushData
 
   for (let i = 0; i < raw.length; i++) {
     const pc = i
-    const curOpCode = opcodes[raw[pc]].name
+    const curOpCode = opcodes.get(raw[pc])?.name
 
     // no destinations into the middle of PUSH
-    if (curOpCode.slice(0, 4) === 'PUSH') {
+    if (curOpCode?.slice(0, 4) === 'PUSH') {
       const jumpNum = raw[pc] - 0x5f
       pushData = raw.slice(pc + 1, pc + jumpNum + 1)
       i += jumpNum
     }
 
     console.log(
-      pad(pc, roundLog(raw.length, 10)) + '  ' + curOpCode + ' ' + pushData.toString('hex'),
+      pad(pc, roundLog(raw.length, 10)) + '  ' + curOpCode + ' ' + pushData?.toString('hex')
     )
 
     pushData = ''
   }
 }
 
-function pad(num, size) {
+function pad(num: number, size: number) {
   let s = num + ''
   while (s.length < size) s = '0' + s
   return s
 }
 
-function log(num, base) {
+function log(num: number, base: number) {
   return Math.log(num) / Math.log(base)
 }
 
-function roundLog(num, base) {
+function roundLog(num: number, base: number) {
   return Math.ceil(log(num, base))
 }

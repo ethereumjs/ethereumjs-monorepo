@@ -2,6 +2,6 @@
   "name": "decode-opcodes",
   "private": true,
   "scripts": {
-    "example": "node index.js"
+    "example": "ts-node index.ts"
   }
 }
