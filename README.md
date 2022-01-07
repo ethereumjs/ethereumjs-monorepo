@@ -1,4 +1,4 @@
-# SYNOPSIS
+# rlp
 
 [![NPM Package][npm-badge]][npm-link]
 [![GitHub Issues][issues-badge]][issues-link]
