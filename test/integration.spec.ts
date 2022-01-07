@@ -1,8 +1,8 @@
-import * as assert from 'assert'
+import assert from 'assert'
 import { exec } from 'child_process'
 import { promisify } from 'util'
+import vm from 'vm'
 import * as RLP from '../dist'
-import * as vm from 'vm'
 
 describe('Distribution:', function () {
   it('should be able to execute functionality from distribution build', function () {

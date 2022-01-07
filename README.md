@@ -1,11 +1,12 @@
 # SYNOPSIS
 
-[![NPM Package](https://img.shields.io/npm/v/rlp.svg)](https://www.npmjs.org/package/rlp)
-[![Actions Status](https://github.com/ethereumjs/rlp/workflows/Build/badge.svg)](https://github.com/ethereumjs/rlp/actions)
-[![Coverage Status](https://img.shields.io/coveralls/ethereumjs/rlp.svg)](https://coveralls.io/r/ethereumjs/rlp)
-[![Discord](https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue)](https://discord.gg/TNwARpR)
+[![NPM Package][npm-badge]][npm-link]
+[![GitHub Issues][issues-badge]][issues-link]
+[![Actions Status][actions-badge]][actions-link]
+[![Code Coverage][coverage-badge]][coverage-link]
+[![Discord][discord-badge]][discord-link]
 
-[Recursive Length](https://github.com/ethereum/wiki/wiki/RLP) Prefix Encoding for Node.js.
+[Recursive Length Prefix](https://eth.wiki/en/fundamentals/rlp) encoding for Node.js and the browser.
 
 ## INSTALL
 
@@ -16,7 +17,7 @@ install with `-g` if you want to use the cli.
 ## USAGE
 
 ```typescript
-import * as assert from 'assert'
+import assert from 'assert'
 import * as rlp from 'rlp'
 
 const nestedList = [[], [[]], [[], [[]]]]
@@ -67,3 +68,14 @@ The results are at
 See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
 
 If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
+
+[npm-badge]: https://img.shields.io/npm/v/rlp.svg
+[npm-link]: https://www.npmjs.org/package/rlp
+[issues-badge]: https://img.shields.io/github/issues/ethereumjs/rlp
+[issues-link]: https://github.com/ethereumjs/rlp/issues?q=is%3Aopen+is%3Aissue
+[actions-badge]: https://github.com/ethereumjs/rlp/workflows/Build/badge.svg
+[actions-link]: https://github.com/ethereumjs/rlp/actions
+[coverage-badge]: https://img.shields.io/coveralls/ethereumjs/rlp.svg
+[coverage-link]: https://coveralls.io/r/ethereumjs/rlp
+[discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
+[discord-link]: https://discord.gg/TNwARpR
