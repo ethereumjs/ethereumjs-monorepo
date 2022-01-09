@@ -44,20 +44,17 @@
   },
   "contributors": [
     "Alex Beregszaszi <alex@rtfs.hu>",
-    "Holger Drewes <Holger.Drewes@gmail.com>"
+    "Holger Drewes <Holger.Drewes@gmail.com>",
+    "Paul Miller <pkg@paulmillr.com>"
   ],
   "license": "MPL-2.0",
   "bugs": {
     "url": "https://github.com/ethereumjs/rlp/issues"
   },
-  "dependencies": {
-    "bn.js": "^5.2.0"
-  },
   "devDependencies": {
     "@ethereumjs/eslint-config-defaults": "^2.0.0",
     "@ethereumjs/config-coverage": "^2.0.0",
     "@ethereumjs/config-typescript": "^2.0.0",
-    "@types/bn.js": "^5.1.0",
     "@types/mocha": "^9.0.0",
     "@types/node": "^12.13.0",
     "husky": "^4.2.5",

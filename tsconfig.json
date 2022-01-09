@@ -1,4 +1,7 @@
 {
   "extends": "@ethereumjs/config-typescript",
-  "include": ["src/**/*.ts", "test/**/*.ts"]
+  "include": ["src/**/*.ts", "test/**/*.ts"],
+  "compilerOptions": {
+    "target": "es2020"
+  }
 }

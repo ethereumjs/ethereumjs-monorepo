@@ -1,7 +1,13 @@
 import assert from 'assert'
-import BN from 'bn.js'
-import * as RLP from '../src'
+import RLP, { utils } from '../src'
 import official from './fixture/rlptest.json'
+const { bytesToHex, hexToBytes } = utils
+
+function numberToBytes(a: bigint): Uint8Array {
+  const hex = a.toString(16)
+  const pad = hex.length % 2 ? `0${hex}` : hex
+  return hexToBytes(pad)
+}
 
 describe('offical tests', function () {
   for (const [testName, test] of Object.entries(official.tests)) {
@@ -9,13 +15,12 @@ describe('offical tests', function () {
       let incoming: any = test.in
       // if we are testing a big number
       if (incoming[0] === '#') {
-        const bn = new BN(incoming.slice(1))
-        incoming = Buffer.from(bn.toArray())
+        incoming = numberToBytes(BigInt(incoming.slice(1))) // eslint-disable-line
       }
 
       const encoded = RLP.encode(incoming)
       const out = test.out[0] === '0' && test.out[1] === 'x' ? test.out.slice(2) : test.out
-      assert.ok(encoded.equals(Buffer.from(out, 'hex')))
+      assert.deepStrictEqual(encoded, hexToBytes(out))
       done()
     })
   }
@@ -157,13 +162,13 @@ function bufferArrayToStringArray(buffer: any): any {
     if (Array.isArray(buf)) {
       return bufferArrayToStringArray(buf)
     }
-    return buf.toString('hex')
+    return bytesToHex(buf)
   })
 }
 
 describe('geth tests', function () {
   for (const gethCase of gethCases) {
-    const buffer = Buffer.from(gethCase.input, 'hex')
+    const buffer = hexToBytes(gethCase.input)
     it('should pass Geth test', function (done) {
       try {
         const output = RLP.decode(buffer)
@@ -176,7 +181,7 @@ describe('geth tests', function () {
           )
         } else {
           assert.strictEqual(
-            output.toString('hex'),
+            bytesToHex(Uint8Array.from(output as any)),
             gethCase.value,
             `invalid output: ${gethCase.input}`
           )

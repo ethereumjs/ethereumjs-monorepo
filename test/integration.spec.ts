@@ -2,13 +2,14 @@ import assert from 'assert'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 import vm from 'vm'
-import * as RLP from '../dist'
+import RLP from '../dist'
+import { bytesToUtf8 } from './utils'
 
 describe('Distribution:', function () {
   it('should be able to execute functionality from distribution build', function () {
     const encodedSelf = RLP.encode('a')
-    assert.strictEqual(encodedSelf.toString(), 'a')
-    assert.strictEqual(RLP.getLength(encodedSelf), 1)
+    assert.strictEqual(bytesToUtf8(encodedSelf), 'a')
+    assert.strictEqual(encodedSelf.length, 1)
   })
 })
 
@@ -46,7 +47,10 @@ describe('CLI command:', function () {
 describe('Cross-frame:', function () {
   it('should be able to encode Arrays across stack frames', function () {
     assert.strictEqual(
-      vm.runInNewContext("RLP.encode(['dog', 'god', 'cat']).toString('hex')", { RLP }),
+      vm.runInNewContext(
+        "Array.from(RLP.encode(['dog', 'god', 'cat'])).map(n => n.toString(16).padStart(2, '0')).join('')",
+        { RLP }
+      ),
       'cc83646f6783676f6483636174'
     )
   })
