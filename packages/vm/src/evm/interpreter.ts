@@ -51,11 +51,6 @@ export interface InterpreterStep {
   codeAddress: Address
 }
 
-interface JumpDests {
-  jumps: number[]
-  jumpSubs: number[]
-}
-
 /**
  * Parses and executes EVM bytecode.
  */
@@ -93,8 +88,7 @@ export default class Interpreter {
     this._runState.programCounter = opts.pc ?? this._runState.programCounter
 
     const valid = this._getValidJumpDests(code)
-    this._runState.validJumps = valid.jumps
-    this._runState.validJumpSubs = valid.jumpSubs
+    this._runState.validJumps = valid
 
     // Check that the programCounter is in range
     const pc = this._runState.programCounter
@@ -237,9 +231,8 @@ export default class Interpreter {
   }
 
   // Returns all valid jump and jumpsub destinations.
-  _getValidJumpDests(code: Buffer): JumpDests {
-    const jumps = []
-    const jumpSubs = []
+  _getValidJumpDests(code: Buffer) {
+    const j = new Array(code.length).fill(0)
 
     for (let i = 0; i < code.length; i++) {
       const curOpCode = this.lookupOpInfo(code[i]).name
@@ -250,14 +243,13 @@ export default class Interpreter {
       }
 
       if (curOpCode === 'JUMPDEST') {
-        jumps.push(i)
+        j[i] = 1
       }
 
       if (curOpCode === 'BEGINSUB') {
-        jumpSubs.push(i)
+        j[i] = 2
       }
     }
-
-    return { jumps, jumpSubs }
+    return j
   }
 }

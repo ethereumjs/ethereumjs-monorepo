@@ -143,7 +143,7 @@ export function getFullname(code: number, name: string): string {
  * @return {boolean}
  */
 export function jumpIsValid(runState: RunState, dest: number): boolean {
-  return runState.validJumps.indexOf(dest) !== -1
+  return runState.validJumps[dest] === 1
 }
 
 /**
@@ -154,7 +154,7 @@ export function jumpIsValid(runState: RunState, dest: number): boolean {
  * @return {boolean}
  */
 export function jumpSubIsValid(runState: RunState, dest: number): boolean {
-  return runState.validJumpSubs.indexOf(dest) !== -1
+  return runState.validJumps[dest] === 2
 }
 
 /**
