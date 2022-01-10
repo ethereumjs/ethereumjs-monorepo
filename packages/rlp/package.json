@@ -2,6 +2,11 @@
   "name": "rlp",
   "version": "3.0.0",
   "description": "Recursive Length Prefix Encoding Module",
+  "license": "MPL-2.0",
+  "keywords": [
+    "rlp",
+    "ethereum"
+  ],
   "files": [
     "dist",
     "bin",
@@ -13,29 +18,32 @@
     "rlp": "bin/rlp"
   },
   "scripts": {
-    "build": "tsc -p ./tsconfig.prod.json",
-    "prepublishOnly": "npm run test && npm run build",
-    "coverage": "npm run build && nyc --reporter=lcov npm run test:unit",
-    "tsc": "tsc -p ./tsconfig.prod.json --noEmit",
-    "lint": "ethereumjs-config-lint",
-    "lint:fix": "ethereumjs-config-lint-fix",
-    "test": "npm run lint && npm run build && npm run test:unit && npm run test:browser",
-    "test:unit": "mocha --reporter spec --require ts-node/register test/*.spec.ts",
+    "build": "../../config/cli/ts-build.sh node",
+    "prepublishOnly": "../../config/cli/prepublish.sh",
+    "clean": "../../config/cli/clean-package.sh",
+    "coverage": "../../config/cli/coverage.sh",
+    "tsc": "../../config/cli/ts-compile.sh",
+    "lint": "../../config/cli/lint.sh",
+    "lint:fix": "../../config/cli/lint-fix.sh",
+    "tape": "tape -r ts-node/register",
+    "test": "npm run test:node && npm run test:browser",
+    "test:node": "mocha --reporter spec --require ts-node/register test/*.spec.ts",
     "test:browser": "karma start karma.conf.js"
   },
-  "husky": {
-    "hooks": {
-      "pre-push": "npm run lint"
-    }
+  "devDependencies": {
+    "@types/mocha": "^9.0.0",
+    "@types/node": "^16.11.7",
+    "karma": "^6.3.4",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-firefox-launcher": "^2.1.1",
+    "karma-mocha": "^2.0.1",
+    "karma-typescript": "^5.5.1",
+    "mocha": "^7.1.2",
+    "nyc": "^15.1.0",
+    "prettier": "^2.4.1",
+    "ts-node": "^10.2.1",
+    "typescript": "^4.4.2"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ethereumjs/rlp.git"
-  },
-  "keywords": [
-    "rlp",
-    "ethereum"
-  ],
   "author": {
     "name": "martin becze",
     "email": "mjbecze@gmail.com"
@@ -45,26 +53,12 @@
     "Holger Drewes <Holger.Drewes@gmail.com>",
     "Paul Miller <pkg@paulmillr.com>"
   ],
-  "license": "MPL-2.0",
-  "bugs": {
-    "url": "https://github.com/ethereumjs/rlp/issues"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
   },
-  "devDependencies": {
-    "@ethereumjs/eslint-config-defaults": "^2.0.0",
-    "@ethereumjs/config-coverage": "^2.0.0",
-    "@ethereumjs/config-typescript": "^2.0.0",
-    "@types/mocha": "^9.0.0",
-    "@types/node": "^12.13.0",
-    "husky": "^4.2.5",
-    "karma": "^6.3.4",
-    "karma-chrome-launcher": "^3.1.0",
-    "karma-firefox-launcher": "^2.1.1",
-    "karma-mocha": "^2.0.1",
-    "karma-typescript": "https://gitpkg.now.sh/monounity/karma-typescript/packages/karma-typescript?8c0664d864a00c8d6a3bf6d04d26cc2255600435&scripts.preinstall=npm%20config%20set%20puppeteer_skip_chromium_download%20true%20%26%26%20%%26%26%20npm%20i%20typescript%404%20--ignore-scripts%20%26%26%20npm%20i%20--only%3Ddev%20--ignore-scripts%20%26%26%20npx%20json%20-I%20-f%20tsconfig.json%20-e%20%22this.compilerOptions.noImplicitAny%3Dfalse%3Bthis.compilerOptions.skipLibCheck%3Dtrue%22%20&scripts.postinstall=%26%26%20npm%20run%20build",
-    "mocha": "7.1.2",
-    "nyc": "^15.1.0",
-    "prettier": "^2.4.1",
-    "ts-node": "^10.2.1",
-    "typescript": "^4.4.3"
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/rlp#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+rlp%22"
   }
 }
