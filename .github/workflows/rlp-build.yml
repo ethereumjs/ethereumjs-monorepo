@@ -3,10 +3,10 @@ on:
   push:
     branches: [master, develop]
     tags: ['*']
-    paths: ['packages/rlp']
+    paths: ['packages/rlp/**']
   pull_request:
     types: [opened, reopened, synchronize]
-    paths: ['packages/rlp']
+    paths: ['packages/rlp/**']
 
 defaults:
   run:
