@@ -42,8 +42,6 @@
     "test": "echo \"[INFO] Generic test cmd not used. See package.json for more specific test run cmds.\"",
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
-    "format": "ethereumjs-config-format",
-    "format:fix": "ethereumjs-config-format-fix",
     "formatTest": "node ./scripts/formatTest",
     "tsc": "../../config/cli/ts-compile.sh"
   },

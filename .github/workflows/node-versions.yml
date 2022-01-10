@@ -91,3 +91,7 @@ jobs:
       - name: Test VM
         run: npm run test:API
         working-directory: packages/vm
+
+      - name: Test RLP
+        run: npm run test
+        working-directory: packages/rlp
