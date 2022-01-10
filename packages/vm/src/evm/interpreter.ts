@@ -96,7 +96,8 @@ export default class Interpreter {
     while (this._runState.programCounter < this._runState.code.length) {
       const opCode = this._runState.code[this._runState.programCounter]
 
-      if (!(this._runState.validJumps.length > 0) && (opCode === 0x56 || opCode === 0x5c)) {
+      if (!(this._runState.validJumps.length > 0) && (opCode === 0x56 || opCode === 0x57)) {
+        // Only run the jump destination analysis if `code` actually contains a JUMP/BEGINSUB opcode
         const valid = this._getValidJumpDests(code)
         this._runState.validJumps = valid
       }
@@ -232,7 +233,7 @@ export default class Interpreter {
 
   // Returns all valid jump and jumpsub destinations.
   _getValidJumpDests(code: Buffer) {
-    const j = new Uint8Array(code.length).fill(0)
+    const jumps = new Uint8Array(code.length).fill(0)
 
     for (let i = 0; i < code.length; i++) {
       const curOpCode = this.lookupOpInfo(code[i]).name
@@ -243,13 +244,13 @@ export default class Interpreter {
       }
 
       if (curOpCode === 'JUMPDEST') {
-        j[i] = 1
+        jumps[i] = 1
       }
 
       if (curOpCode === 'BEGINSUB') {
-        j[i] = 2
+        jumps[i] = 2
       }
     }
-    return j
+    return jumps
   }
 }
