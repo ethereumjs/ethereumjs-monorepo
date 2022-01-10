@@ -47,7 +47,7 @@
   "devDependencies": {
     "@types/async": "^2.4.1",
     "@types/lru-cache": "^5.1.0",
-    "@types/node": "^11.13.4",
+    "@types/node": "^16.11.7",
     "@types/tape": "^4.13.2",
     "eslint": "^6.8.0",
     "karma": "^6.3.2",

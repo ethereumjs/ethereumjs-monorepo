@@ -48,7 +48,7 @@ tape('[CLI] rpc', (t) => {
     })
 
     child.on('close', (code) => {
-      if (code > 0) {
+      if (code && code > 0) {
         st.fail(`child process exited with code ${code}`)
         end(child, hasEnded, st)
       }
@@ -82,7 +82,7 @@ tape('[CLI] rpc', (t) => {
     })
 
     child.on('close', (code) => {
-      if (code > 0) {
+      if (code && code > 0) {
         st.fail(`child process exited with code ${code}`)
         end(child, hasEnded, st)
       }
