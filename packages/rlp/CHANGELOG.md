@@ -43,7 +43,7 @@ PRs included in this release:
 - Improve cli interface, PR [#95](https://github.com/ethereumjs/rlp/pull/95)
 - Ensure we do not decode invalid RLPs, PR [#101](https://github.com/ethereumjs/rlp/pull/101)
 
-[v3.0.0]: https://github.com/ethereumjs/rlp/compare/v2.2.7...v3.0.0
+[v3.0.0]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/rlp@2.2.7...rlp@3.0.0
 
 ## [v2.2.7] - 2021-10-06
 
@@ -55,7 +55,7 @@ PRs included in this release:
 
 Source files from the `src` folder are now included in the distribution build, see PR [#97](https://github.com/ethereumjs/rlp/pull/97). This allows for a better debugging experience in debug tools like Chrome DevTools by having working source map references to the original sources available for inspection.
 
-[v2.2.7]: https://github.com/ethereumjs/rlp/compare/v2.2.6...v2.2.7
+[v2.2.7]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/rlp@2.2.7...rlp@2.2.6
 
 ## [v2.2.6] - 2020-07-17
 
@@ -65,7 +65,7 @@ Source files from the `src` folder are now included in the distribution build, s
 - Updated GitHub `actions/checkout` to v2,
   PR [#92](https://github.com/ethereumjs/rlp/pull/92)
 
-[v2.2.6]: https://github.com/ethereumjs/rlp/compare/v2.2.5...v2.2.6
+[v2.2.6]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/rlp@2.2.5...rlp@2.2.6
 
 ## [v2.2.5] - 2020-05-25
 
@@ -77,7 +77,7 @@ Source files from the `src` folder are now included in the distribution build, s
   PRs [#86](https://github.com/ethereumjs/rlp/pull/86) and
   [#88](https://github.com/ethereumjs/rlp/pull/88)
 
-[v2.2.5]: https://github.com/ethereumjs/rlp/compare/v2.2.4...v2.2.5
+[v2.2.5]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/rlp@2.2.4...rlp@2.2.5
 
 ## [v2.2.4] - 2019-11-02
 
@@ -86,7 +86,7 @@ Source files from the `src` folder are now included in the distribution build, s
 - Removed unused `safe-buffer` dependency,
   PR [#80](https://github.com/ethereumjs/rlp/pull/80)
 
-[v2.2.4]: https://github.com/ethereumjs/rlp/compare/v2.2.3...v2.2.4
+[v2.2.4]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/rlp@2.2.3...rlp@2.2.4
 
 ## [v2.2.3] - 2019-03-19
 
@@ -96,7 +96,7 @@ Source files from the `src` folder are now included in the distribution build, s
   values (e.g. `RLP.encode(-1)`),
   PR [#71](https://github.com/ethereumjs/rlp/pull/70)
 
-[v2.2.3]: https://github.com/ethereumjs/rlp/compare/v2.2.2...v2.2.3
+[v2.2.3]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/rlp@2.2.2...rlp@2.2.3
 
 ## [v2.2.2] - 2019-01-15
 
@@ -104,7 +104,7 @@ Source files from the `src` folder are now included in the distribution build, s
   clean install, PR [#64](https://github.com/ethereumjs/rlp/pull/64)
 - Use local version of official tests, fixed testing issue, PR [#66](https://github.com/ethereumjs/rlp/pull/66)
 
-[v2.2.2]: https://github.com/ethereumjs/rlp/compare/v2.2.1...v2.2.2
+[v2.2.2]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/rlp@2.2.1...rlp@2.2.2
 
 ## [v2.2.1] - 2018-12-20
 
@@ -118,7 +118,7 @@ Source files from the `src` folder are now included in the distribution build, s
 - Additional test structure and new integration tests for distribution and
   `bin/rlp` CLI command, see PR [#57](https://github.com/ethereumjs/rlp/pull/57)
 
-[v2.2.1]: https://github.com/ethereumjs/rlp/compare/v2.2.0...v2.2.1
+[v2.2.1]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/rlp@2.2.0...rlp@2.2.1
 
 ## [v2.2.0] - 2018-12-17
 
@@ -149,7 +149,7 @@ Other changes:
 
 - Added `LICENSE` file for `MPL2.0`, see PR [#31](https://github.com/ethereumjs/rlp/pull/31)
 
-[v2.2.0]: https://github.com/ethereumjs/rlp/compare/v2.1.0...v2.2.0
+[v2.2.0]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/rlp@2.1.0...rlp@2.2.0
 
 ## [v2.1.0] - 2018-06-28
 
@@ -160,25 +160,25 @@ Other changes:
 - Fix test runs on Windows, Issue [#7](https://github.com/ethereumjs/rlp/issues/7)
 - Added code coverage, PR [#8](https://github.com/ethereumjs/rlp/pull/8)
 
-[v2.1.0]: https://github.com/ethereumjs/rlp/compare/2.0.0...v2.1.0
+[v2.1.0]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/rlp@2.0.0...rlp@2.1.0
 
 ## [2.0.0] - 2015-09-23
 
 - User `Buffer` values as input for encoding
 
-[2.0.0]: https://github.com/ethereumjs/rlp/compare/1.1.2...2.0.0
+[2.0.0]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/rlp@1.1.2...rlp@2.0.0
 
 ## [1.1.2] - 2015-09-22
 
 - Fix zero encoding
 
-[1.1.2]: https://github.com/ethereumjs/rlp/compare/1.1.1...1.1.2
+[1.1.2]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/rlp@1.1.1...rlp@1.1.2
 
 ## [1.1.1] - 2015-09-21
 
 - Fixes for `bin`
 
-[1.1.1]: https://github.com/ethereumjs/rlp/compare/1.1.0...1.1.1
+[1.1.1]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/rlp@1.1.0...rlp@1.1.1
 
 ## [1.1.0] - 2015-09-21
 
@@ -186,23 +186,23 @@ Other changes:
 - Added hex prefix stripping (`isHexPrefix()` / `stripHexPrefix()`)
 - Code formatting clean-ups
 
-[1.1.0]: https://github.com/ethereumjs/rlp/compare/1.0.1...1.1.0
+[1.1.0]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/rlp@1.0.1...rlp@1.1.0
 
 ## [1.0.1] - 2015-06-27
 
 - Code formatting clean-ups
 
-[1.0.1]: https://github.com/ethereumjs/rlp/compare/1.0.0...1.0.1
+[1.0.1]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/rlp@1.0.0...rlp@1.0.1
 
 ## [1.0.0] - 2015-06-06
 
 - Added check for invalid 0
 - Hardened rlp
 
-[1.0.0]: https://github.com/ethereumjs/rlp/compare/0.0.14...1.0.0
+[1.0.0]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/rlp@0.0.14...rlp@1.0.0
 
 ## Older releases:
 
-- [0.0.14](https://github.com/ethereumjs/rlp/compare/0.0.13...0.0.14) - 2015-03-31
-- [0.0.13](https://github.com/ethereumjs/rlp/compare/0.0.12...0.0.13) - 2015-03-30
-- [0.0.12](https://github.com/ethereumjs/rlp/compare/0.0.11...0.0.12) - 2014-12-26
+- [0.0.14](https://github.com/ethereumjs/ethereumjs-monorepo/compare/rlp@0.0.13...rlp@0.0.14) - 2015-03-31
+- [0.0.13](https://github.com/ethereumjs/ethereumjs-monorepo/compare/rlp@0.0.12...rlp@0.0.13) - 2015-03-30
+- [0.0.12](https://github.com/ethereumjs/ethereumjs-monorepo/compare/rlp@0.0.11...rlp@0.0.12) - 2014-12-26
