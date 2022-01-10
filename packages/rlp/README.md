@@ -1,9 +1,9 @@
 # rlp
 
-[![NPM Package][npm-badge]][npm-link]
-[![GitHub Issues][issues-badge]][issues-link]
-[![Actions Status][actions-badge]][actions-link]
-[![Code Coverage][coverage-badge]][coverage-link]
+[![NPM Package][rlp-npm-badge]][rlp-npm-link]
+[![GitHub Issues][rlp-issues-badge]][rlp-issues-link]
+[![Actions Status][rlp-actions-badge]][rlp-actions-link]
+[![Code Coverage][rlp-coverage-badge]][rlp-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
 [Recursive Length Prefix](https://eth.wiki/en/fundamentals/rlp) encoding for Node.js and the browser.
@@ -66,13 +66,13 @@ See our organizational [documentation](https://ethereumjs.readthedocs.io) for an
 
 If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
 
-[npm-badge]: https://img.shields.io/npm/v/rlp.svg
-[npm-link]: https://www.npmjs.org/package/rlp
-[issues-badge]: https://img.shields.io/github/issues/ethereumjs/rlp
-[issues-link]: https://github.com/ethereumjs/rlp/issues?q=is%3Aopen+is%3Aissue
-[actions-badge]: https://github.com/ethereumjs/rlp/workflows/Build/badge.svg
-[actions-link]: https://github.com/ethereumjs/rlp/actions
-[coverage-badge]: https://img.shields.io/coveralls/ethereumjs/rlp.svg
-[coverage-link]: https://coveralls.io/r/ethereumjs/rlp
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR
+[rlp-npm-badge]: https://img.shields.io/npm/v/rlp.svg
+[rlp-npm-link]: https://www.npmjs.com/package/rlp
+[rlp-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20rlp?label=issues
+[rlp-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+rlp"
+[rlp-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/rlp/badge.svg
+[rlp-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22rlp%22
+[rlp-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=rlp
+[rlp-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/rlp
