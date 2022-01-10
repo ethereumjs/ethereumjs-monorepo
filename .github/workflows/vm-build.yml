@@ -33,7 +33,7 @@ jobs:
 
       - uses: codecov/codecov-action@v2
         with:
-          file: ${{ env.cwd }}/coverage/lcov.info
+          files: ${{ env.cwd }}/coverage/lcov.info
           flags: vm
 
   test-vm-state:
