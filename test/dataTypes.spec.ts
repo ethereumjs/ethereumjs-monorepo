@@ -1,8 +1,8 @@
-import { version } from 'process'
 import assert from 'assert'
 import RLP, { utils } from '../src'
 import { bytesToUtf8 } from './utils'
-const { bytesToHex, hexToBytes, utf8ToBytes } = utils
+
+const { bytesToHex, concatBytes, hexToBytes, utf8ToBytes } = utils
 
 describe('invalid RLPs', function () {
   const errCases = [
@@ -89,27 +89,35 @@ describe('RLP encoding (list):', function () {
       assert.ok(str.includes(innerStr))
     }
     // Verified with Geth's RLPDump
-    const expectedBuffer = hexToBytes(
+    const expected = hexToBytes(
       'f85483646f6783676f6483636174b8467a6f6f3235357a6f6f3235357a7a7a7a7a7a7a7a7a7a7a7a73737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373'
     )
-    assert.deepStrictEqual(encodedArrayOfStrings, expectedBuffer)
+    assert.deepStrictEqual(encodedArrayOfStrings, expected)
   })
 })
 
 describe('RLP encoding (BigInt):', function () {
-  before(function () {
-    if (version) {
-      const nodeVersionNumber = Number(version.match(/^v([0-9]+)/)![1])
-      if (nodeVersionNumber < 10) {
-        // eslint-disable-next-line no-invalid-this
-        this.skip()
-      }
-    }
-  })
   it('should encode a BigInt value', function () {
-    // eslint-disable-next-line no-undef
     const encodedBN = RLP.encode(BigInt(3))
     assert.strictEqual(encodedBN[0], 3)
+  })
+
+  it('length of bigint = 1, less than 0x7f, similar to string', function () {
+    const encodedNumber = RLP.encode(BigInt(15))
+    assert.strictEqual(1, encodedNumber.length)
+    assert.strictEqual(encodedNumber[0], 15)
+  })
+
+  it('length of bigint > 55, similar to string', function () {
+    const encodedNumber = RLP.encode(BigInt(1024))
+    assert.strictEqual(3, encodedNumber.length)
+    assert.strictEqual(encodedNumber[0], 130)
+    assert.strictEqual(encodedNumber[1], 4)
+    assert.strictEqual(encodedNumber[2], 0)
+  })
+
+  it('it should handle zero', function () {
+    assert.strictEqual(bytesToHex(RLP.encode(BigInt(0))), '80')
   })
 })
 
@@ -135,13 +143,13 @@ describe('RLP encoding (integer):', function () {
 
 describe('RLP decoding (string):', function () {
   it('first byte < 0x7f, return byte itself', function () {
-    const decodedStr = RLP.decode(Uint8Array.from([97]))
+    const decodedStr = RLP.decode(Uint8Array.from([97])) as Uint8Array
     assert.strictEqual(1, decodedStr.length)
     assert.strictEqual(bytesToUtf8(decodedStr), 'a')
   })
 
   it('first byte < 0xb7, data is everything except first byte', function () {
-    const decodedStr = RLP.decode(Uint8Array.from([131, 100, 111, 103]))
+    const decodedStr = RLP.decode(Uint8Array.from([131, 100, 111, 103])) as Uint8Array
     assert.strictEqual(3, decodedStr.length)
     assert.strictEqual(bytesToUtf8(decodedStr), 'dog')
   })
@@ -165,33 +173,47 @@ describe('RLP decoding (int):', function () {
   })
 
   it('first byte < 0xb7, data is everything except first byte', function () {
-    const decodedNum = RLP.decode(Uint8Array.from([130, 4, 0]))
+    const decodedNum = RLP.decode(Uint8Array.from([130, 4, 0])) as Uint8Array
     assert.strictEqual(2, decodedNum.length)
     assert.strictEqual(bytesToHex(decodedNum), '0400')
   })
 })
 
+describe('RLP decoding (BigInt):', function () {
+  it('first byte < 0x7f, return itself', function () {
+    const decodedSmallNum = bytesToHex(RLP.decode(BigInt(15)) as Uint8Array)
+    assert.strictEqual(2, decodedSmallNum.length)
+    assert.deepStrictEqual(decodedSmallNum, '0f')
+  })
+
+  it('first byte < 0xb7, data is everything except first byte', function () {
+    const decodedNum = bytesToHex(RLP.decode(BigInt(0x820400)) as Uint8Array)
+    assert.strictEqual(4, decodedNum.length)
+    assert.strictEqual(decodedNum, '0400')
+  })
+})
+
 describe('strings over 55 bytes long', function () {
   const testString =
-    'This function takes in a data, convert it to buffer if not, and a length for recursion'
-  const testBuffer = utils.utf8ToBytes(testString)
+    'This function takes in data, converts it to bytes, and adds a length for recursion'
+  const test = utf8ToBytes(testString)
   let encoded: Uint8Array
 
   it('should encode it', function () {
-    encoded = RLP.encode(testBuffer)
+    encoded = RLP.encode(test)
     assert.strictEqual(encoded[0], 184)
-    assert.strictEqual(encoded[1], 86)
+    assert.strictEqual(encoded[1], 82)
   })
 
   it('should decode', function () {
-    const decoded = RLP.decode(encoded)
+    const decoded = RLP.decode(encoded) as Uint8Array
     assert.deepStrictEqual(bytesToUtf8(decoded), testString)
   })
 })
 
 describe('list over 55 bytes long', function () {
   // prettier-ignore
-  const testString = ['This', 'function', 'takes', 'in', 'a', 'data', 'convert', 'it', 'to', 'buffer', 'if', 'not', 'and', 'a', 'length', 'for', 'recursion', 'a1', 'a2', 'a3', 'ia4', 'a5', 'a6', 'a7', 'a8', 'ba9']
+  const testString = ['This', 'function', 'takes', 'in', 'a', 'data', 'convert', 'it', 'to', 'bytes', 'if', 'not', 'and', 'a', 'length', 'for', 'recursion', 'a1', 'a2', 'a3', 'ia4', 'a5', 'a6', 'a7', 'a8', 'ba9']
   let encoded: Uint8Array
 
   it('should encode it', function () {
@@ -199,8 +221,8 @@ describe('list over 55 bytes long', function () {
   })
 
   it('should decode', function () {
-    const decodedBuffer = RLP.decode(encoded) as any as Uint8Array[]
-    const decoded: string[] = decodedBuffer.map((b) => bytesToUtf8(b))
+    const decodedArr = RLP.decode(encoded) as Uint8Array[]
+    const decoded: string[] = decodedArr.map((a) => bytesToUtf8(a))
     assert.deepStrictEqual(decoded, testString)
   })
 })
@@ -252,9 +274,9 @@ describe('typed lists:', function () {
   const valueList = [
     [1, 2, 3],
     [
-      new Uint8Array([4, 5, 6]),
-      new Uint8Array([7, 8, 9]),
-      [new Uint8Array([0]), hexToBytes('abcd')],
+      Uint8Array.from([4, 5, 6]),
+      Uint8Array.from([7, 8, 9]),
+      [Uint8Array.from([0]), hexToBytes('abcd')],
     ],
   ]
 
@@ -294,7 +316,7 @@ describe('zero values', function () {
 
 describe('empty values', function () {
   let decoded
-  it('decode empty buffer', function () {
+  it('decode empty array', function () {
     decoded = RLP.decode(Uint8Array.from([]))
     assert.deepStrictEqual(decoded, Uint8Array.from([]))
   })
@@ -395,5 +417,30 @@ describe('recursive typings', function () {
     // tslint:disable-next-line:no-dead-store
     const a = RLP.encode([[[[[0]]]]])
     assert.ok(assertType<typeof a, Uint8Array>(true))
+  })
+})
+
+describe('stream', function () {
+  it('should handle stream decoding correctly', function () {
+    const encodedNumber = RLP.encode(1)
+    const str = 'This is a string'
+    const longString =
+      'This is a long string, so we can trigger the prefix when the array length is larger than 55.'
+    const encodedString = RLP.encode(str)
+    const encodedLongString = RLP.encode(longString)
+    const encodedList = RLP.encode([1, 2, 3])
+    const bufferStream = concatBytes(encodedNumber, encodedString, encodedLongString, encodedList)
+    let decoded = RLP.decode(bufferStream, true)
+    assert.strictEqual(bytesToHex(decoded.data as Uint8Array), '01')
+    decoded = RLP.decode(decoded.remainder, true)
+    assert.deepStrictEqual(decoded.data, utf8ToBytes(str))
+    decoded = RLP.decode(decoded.remainder, true)
+    assert.deepStrictEqual(decoded.data, utf8ToBytes(longString))
+    decoded = RLP.decode(decoded.remainder, true)
+    assert.ok(decoded.data.length === 3)
+    assert.deepStrictEqual(decoded.data[0], Uint8Array.from([1]))
+    assert.deepStrictEqual(decoded.data[1], Uint8Array.from([2]))
+    assert.deepStrictEqual(decoded.data[2], Uint8Array.from([3]))
+    assert.ok(decoded.remainder.length === 0)
   })
 })

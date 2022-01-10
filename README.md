@@ -12,37 +12,37 @@
 
 `npm install rlp`
 
-install with `-g` if you want to use the cli.
+install with `-g` if you want to use the CLI.
 
 ## USAGE
 
 ```typescript
 import assert from 'assert'
-import * as rlp from 'rlp'
+import RLP from 'rlp'
 
 const nestedList = [[], [[]], [[], [[]]]]
-const encoded = rlp.encode(nestedList)
-const decoded = rlp.decode(encoded)
+const encoded = RLP.encode(nestedList)
+const decoded = RLP.decode(encoded)
 assert.deepEqual(nestedList, decoded)
 ```
 
 ## API
 
-`rlp.encode(plain)` - RLP encodes an `Array`, `Uint8Array` or `String` and returns a `Uint8Array`.
+`RLP.encode(plain)` - RLP encodes an `Array`, `Uint8Array` or `String` and returns a `Uint8Array`.
 
-`rlp.decode(encoded, [skipRemainderCheck=false])` - Decodes an RLP encoded `Uint8Array`, `Array` or `String` and returns a `Uint8Array` or an `Array` of `Uint8Arrays`. If `skipRemainderCheck` is enabled, `rlp` will just decode the first rlp sequence in the Uint8Array. By default, it would throw an error if there are more bytes in Uint8Array than used by rlp sequence.
+`RLP.decode(encoded, [stream=false])` - Decodes an RLP encoded `Uint8Array`, `Array` or `String` and returns a `Uint8Array` or `NestedUint8Array`. If `stream` is enabled, it will just decode the first rlp sequence in the Uint8Array. By default, it would throw an error if there are more bytes in Uint8Array than used by the rlp sequence.
 
 ## CLI
 
-`rlp encode <JSON string>`
+`rlp encode <JSON string>`\
 `rlp decode <0x-prefixed hex string>`
 
 ### Examples
 
-- `rlp encode '5'` => `0x05`
-- `rlp encode '[5]'` => `0xc105`
-- `rlp encode '["cat", "dog"]'` => `0xc88363617483646f67`
-- `rlp decode 0xc88363617483646f67` => `["cat","dog"]`
+- `rlp encode '5'` -> `0x05`
+- `rlp encode '[5]'` -> `0xc105`
+- `rlp encode '["cat", "dog"]'` -> `0xc88363617483646f67`
+- `rlp decode 0xc88363617483646f67` -> `["cat","dog"]`
 
 ## TESTS
 
@@ -50,18 +50,15 @@ Tests use mocha.
 
 To run tests and linting: `npm test`
 
-To auto fix linting problems use: `npm run lint:fix`
+To auto-fix linting problems run: `npm run lint:fix`
 
 ## CODE COVERAGE
 
-Install dev dependencies
-`npm install`
+Install dev dependencies: `npm install`
 
-Run
-`npm run coverage`
+Run coverage: `npm run coverage`
 
-The results are at
-`coverage/lcov-report/index.html`
+The results will be at: `coverage/lcov-report/index.html`
 
 # EthereumJS
 

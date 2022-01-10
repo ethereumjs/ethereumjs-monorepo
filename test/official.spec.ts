@@ -1,13 +1,9 @@
 import assert from 'assert'
 import RLP, { utils } from '../src'
+import { numberToBytes } from './utils'
 import official from './fixture/rlptest.json'
-const { bytesToHex, hexToBytes } = utils
 
-function numberToBytes(a: bigint): Uint8Array {
-  const hex = a.toString(16)
-  const pad = hex.length % 2 ? `0${hex}` : hex
-  return hexToBytes(pad)
-}
+const { bytesToHex, hexToBytes } = utils
 
 describe('offical tests', function () {
   for (const [testName, test] of Object.entries(official.tests)) {
@@ -157,23 +153,23 @@ const gethCases = [
   },
 ]
 
-function bufferArrayToStringArray(buffer: any): any {
-  return buffer.map((buf: any) => {
-    if (Array.isArray(buf)) {
-      return bufferArrayToStringArray(buf)
+function arrToStringArr(arr: any): any {
+  return arr.map((a: any) => {
+    if (Array.isArray(a)) {
+      return arrToStringArr(a)
     }
-    return bytesToHex(buf)
+    return bytesToHex(a)
   })
 }
 
 describe('geth tests', function () {
   for (const gethCase of gethCases) {
-    const buffer = hexToBytes(gethCase.input)
+    const input = hexToBytes(gethCase.input)
     it('should pass Geth test', function (done) {
       try {
-        const output = RLP.decode(buffer)
+        const output = RLP.decode(input)
         if (Array.isArray(output)) {
-          const arrayOutput = bufferArrayToStringArray(output)
+          const arrayOutput = arrToStringArr(output)
           assert.strictEqual(
             JSON.stringify(arrayOutput),
             JSON.stringify(gethCase.value!),

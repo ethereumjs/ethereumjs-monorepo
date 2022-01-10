@@ -1,21 +1,19 @@
 {
   "name": "rlp",
-  "version": "2.2.7",
+  "version": "3.0.0",
   "description": "Recursive Length Prefix Encoding Module",
   "files": [
     "dist",
-    "dist.browser",
     "bin",
     "src"
   ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "browser": "dist.browser/index.js",
   "bin": {
     "rlp": "bin/rlp"
   },
   "scripts": {
-    "build": "tsc -p ./tsconfig.prod.json && tsc -p tsconfig.browser.json",
+    "build": "tsc -p ./tsconfig.prod.json",
     "prepublishOnly": "npm run test && npm run build",
     "coverage": "npm run build && nyc --reporter=lcov npm run test:unit",
     "tsc": "tsc -p ./tsconfig.prod.json --noEmit",
@@ -62,7 +60,7 @@
     "karma-chrome-launcher": "^3.1.0",
     "karma-firefox-launcher": "^2.1.1",
     "karma-mocha": "^2.0.1",
-    "karma-typescript": "^5.5.2",
+    "karma-typescript": "https://gitpkg.now.sh/monounity/karma-typescript/packages/karma-typescript?8c0664d864a00c8d6a3bf6d04d26cc2255600435&scripts.preinstall=npm%20config%20set%20puppeteer_skip_chromium_download%20true%20%26%26%20%%26%26%20npm%20i%20typescript%404%20--ignore-scripts%20%26%26%20npm%20i%20--only%3Ddev%20--ignore-scripts%20%26%26%20npx%20json%20-I%20-f%20tsconfig.json%20-e%20%22this.compilerOptions.noImplicitAny%3Dfalse%3Bthis.compilerOptions.skipLibCheck%3Dtrue%22%20&scripts.postinstall=%26%26%20npm%20run%20build",
     "mocha": "7.1.2",
     "nyc": "^15.1.0",
     "prettier": "^2.4.1",

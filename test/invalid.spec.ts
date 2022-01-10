@@ -2,6 +2,8 @@ import assert from 'assert'
 import RLP, { utils } from '../src'
 import invalid from './fixture/invalid.json'
 
+const { hexToBytes } = utils
+
 describe('invalid tests', function () {
   for (const [testName, test] of Object.entries(invalid.tests)) {
     it(`should pass ${testName}`, function (done) {
@@ -10,7 +12,7 @@ describe('invalid tests', function () {
         out = out.slice(2)
       }
       try {
-        RLP.decode(utils.hexToBytes(out))
+        RLP.decode(hexToBytes(out))
         assert.fail(`should not decode invalid RLPs, input: ${out}`)
       } finally {
         done()
@@ -71,10 +73,10 @@ const invalidGethCases: string[] = [
 
 describe('invalid geth tests', function () {
   for (const gethCase of invalidGethCases) {
-    const buffer = utils.hexToBytes(gethCase)
+    const input = hexToBytes(gethCase)
     it('should pass Geth test', function (done) {
       try {
-        RLP.decode(buffer)
+        RLP.decode(input)
         assert.fail(`should throw: ${gethCase}`)
       } finally {
         done()

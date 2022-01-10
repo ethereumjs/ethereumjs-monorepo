@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
-const rlp = require('../dist/index.js')
+const RLP = require('../dist/index.js')
 const method = process.argv[2]
 const strInput = process.argv[3]
+
+const { bytesToHex } = RLP.utils
 
 if (typeof strInput !== 'string') {
   return console.error(`Expected JSON string input, received type: ${typeof strInput}`)
@@ -19,16 +21,16 @@ if (method === 'encode') {
 
   // Encode RLP
   try {
-    const encoded = rlp.encode(json)
-    console.log('0x' + rlp.utils.bytesToHex(Uint8Array.from(encoded)))
+    const encoded = RLP.encode(json)
+    console.log('0x' + bytesToHex(Uint8Array.from(encoded)))
   } catch (error) {
     console.error(`Error encoding RLP: ${JSON.stringify(error)}`)
   }
 } else if (method === 'decode') {
   // Decode
   try {
-    const decoded = rlp.decode(strInput)
-    const json = JSON.stringify(baToJSON(decoded))
+    const decoded = RLP.decode(strInput)
+    const json = JSON.stringify(arrToJSON(decoded))
     console.log(json)
   } catch (error) {
     console.error(`Error decoding RLP: ${JSON.stringify(error)}`)
@@ -38,15 +40,15 @@ if (method === 'encode') {
 }
 
 /**
- * Buffer or Buffer Array to JSON
+ * Uint8Array or Array<Uint8Array> to JSON
  */
-function baToJSON(ba) {
+function arrToJSON(ba) {
   if (ba instanceof Uint8Array) {
-    return rlp.utils.bytesToHex(ba)
+    return bytesToHex(ba)
   } else if (ba instanceof Array) {
     const arr = []
     for (let i = 0; i < ba.length; i++) {
-      arr.push(baToJSON(ba[i]))
+      arr.push(arrToJSON(ba[i]))
     }
     return arr
   }

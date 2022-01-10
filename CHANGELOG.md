@@ -6,6 +6,45 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v3.0.0] - UNRELEASED
+
+rlp v3 is a breaking release with several important updates. Special thanks to [@paulmillr](https://github.com/paulmillr) for the majority of this work in PR [#90](https://github.com/ethereumjs/rlp/pull/90).
+
+### Dependencies
+
+bn.js was removed in favor of BigInt support so the package now contains zero dependencies.
+
+### Default export
+
+A new default export `RLP` now contains `encode` and `decode`.
+
+You can now import and use RLP like this:
+
+```javascript
+import RLP from 'rlp'
+RLP.encode(1)
+```
+
+### Uint8Array
+
+Buffers were replaced in favor of using Uint8Arrays for greater compatibility with browsers.
+
+### Invalid RLPs
+
+Increased strictness has been added to ensure invalid RLPs are not decoded, see PR [#101](https://github.com/ethereumjs/rlp/pull/101).
+
+---
+
+PRs included in this release:
+
+- Fix karma, readme updates, combine source to one file, PR [#109](https://github.com/ethereumjs/rlp/pull/109)
+- Add browser support, remove dependencies, PR [#90](https://github.com/ethereumjs/rlp/pull/90)
+- Readme and typedoc updates, normalize source error messages to capital RLP, PR [#108](https://github.com/ethereumjs/rlp/pull/108)
+- Improve cli interface, PR [#95](https://github.com/ethereumjs/rlp/pull/95)
+- Ensure we do not decode invalid RLPs, PR [#101](https://github.com/ethereumjs/rlp/pull/101)
+
+[v3.0.0]: https://github.com/ethereumjs/rlp/compare/v2.2.7...v3.0.0
+
 ## [v2.2.7] - 2021-10-06
 
 - Performance: Avoid creating new array when checking first two chars, PR [#100](https://github.com/ethereumjs/rlp/pull/100)

@@ -60,5 +60,4 @@ build/Release
 node_modules
 
 dist
-dist.browser
 .nyc_output

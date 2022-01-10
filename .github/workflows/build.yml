@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [12.x, 13.x, 14.x, 16.x]
+        node-version: [12, 14, 16, 17]
     steps:
       - uses: actions/checkout@v2
 
@@ -22,23 +22,17 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
+      - name: Use npm v7 for package.json karma-typescript workaround (this step can be removed when karma-typescript has a new release)
+        run: npm i -g npm@7
+
       - run: npm install
       - run: npm run test
 
-  coverage:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 12.x
-          cache: 'npm'
-      
-      - run: npm install
       - run: npm run coverage
+        if: ${{ matrix.node-version == 16 }}
 
       - name: Upload coverage to Coveralls
         uses: coverallsapp/github-action@master
+        if: ${{ matrix.node-version == 16 }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

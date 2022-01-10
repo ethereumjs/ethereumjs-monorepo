@@ -1,13 +1,22 @@
-import { Decoded, Input, List } from './types'
+export type Input = string | number | bigint | Uint8Array | List | null | undefined
 
-// Types exported outside of this package
-export { Decoded, Input, List }
+// Use interface extension instead of type alias to
+// make circular declaration possible.
+export interface List extends Array<Input> {}
+
+export interface Decoded {
+  data: Uint8Array | NestedUint8Array
+  remainder: Uint8Array
+}
+
+export interface NestedUint8Array extends Array<Uint8Array | NestedUint8Array> {}
 
 /**
  * RLP Encoding based on https://eth.wiki/en/fundamentals/rlp
- * This function takes in a data, convert it to Uint8Array if not, and a length for recursion
- * @param input - will be converted to Uint8Array
- * @returns returns Uint8Array of encoded data
+ * This function takes in data, converts it to Uint8Array if not,
+ * and adds a length for recursion.
+ * @param input Will be converted to Uint8Array
+ * @returns Uint8Array of encoded data
  **/
 export function encode(input: Input): Uint8Array {
   if (Array.isArray(input)) {
@@ -17,17 +26,17 @@ export function encode(input: Input): Uint8Array {
     }
     const buf = concatBytes(...output)
     return concatBytes(encodeLength(buf.length, 192), buf)
-  } else {
-    const inputBuf = toBytes(input)
-    return inputBuf.length === 1 && inputBuf[0] < 128
-      ? inputBuf
-      : concatBytes(encodeLength(inputBuf.length, 128), inputBuf)
   }
+  const inputBuf = toBytes(input)
+  if (inputBuf.length === 1 && inputBuf[0] < 128) {
+    return inputBuf
+  }
+  return concatBytes(encodeLength(inputBuf.length, 128), inputBuf)
 }
 
 /**
- * Slices a Uint8Array, throws if the slice goes out-of-bounds of the Uint8Array
- * E.g. safeSlice(RLP.utils.hexToBytes('aa'), 1, 2) will throw.
+ * Slices a Uint8Array, throws if the slice goes out-of-bounds of the Uint8Array.
+ * E.g. `safeSlice(hexToBytes('aa'), 1, 2)` will throw.
  * @param input
  * @param start
  * @param end
@@ -55,24 +64,22 @@ function decodeLength(v: Uint8Array): number {
 function encodeLength(len: number, offset: number): Uint8Array {
   if (len < 56) {
     return Uint8Array.from([len + offset])
-  } else {
-    const hexLength = numberToHex(len)
-    const lLength = hexLength.length / 2
-    const firstByte = numberToHex(offset + 55 + lLength)
-    return Uint8Array.from(hexToBytes(firstByte + hexLength))
   }
+  const hexLength = numberToHex(len)
+  const lLength = hexLength.length / 2
+  const firstByte = numberToHex(offset + 55 + lLength)
+  return Uint8Array.from(hexToBytes(firstByte + hexLength))
 }
 
 /**
  * RLP Decoding based on https://eth.wiki/en/fundamentals/rlp
- * @param input - will be converted to Uint8Array
- * @param stream - Is the input a stream (false by default)
- * @returns - returns decode Array of Uint8Arrays containing the original message
+ * @param input Will be converted to Uint8Array
+ * @param stream Is the input a stream (false by default)
+ * @returns decoded Array of Uint8Arrays containing the original message
  **/
-export function decode(input: Uint8Array, stream?: boolean): Uint8Array
-export function decode(input: Uint8Array[], stream?: boolean): Uint8Array[]
-export function decode(input: Input, stream?: boolean): Uint8Array[] | Uint8Array | Decoded
-export function decode(input: Input, stream: boolean = false): Uint8Array[] | Uint8Array | Decoded {
+export function decode(input: Input, stream?: false): Uint8Array | NestedUint8Array
+export function decode(input: Input, stream?: true): Decoded
+export function decode(input: Input, stream = false): Uint8Array | NestedUint8Array | Decoded {
   if (!input || (input as any).length === 0) {
     return Uint8Array.from([])
   }
@@ -84,7 +91,7 @@ export function decode(input: Input, stream: boolean = false): Uint8Array[] | Ui
     return decoded
   }
   if (decoded.remainder.length !== 0) {
-    throw new Error('invalid remainder')
+    throw new Error('invalid RLP: remainder must be zero')
   }
 
   return decoded.data
@@ -180,25 +187,12 @@ function _decode(input: Uint8Array): Decoded {
   }
 }
 
-// Check if a string is prefixed by 0x
-function isHexPrefixed(str: string): boolean {
-  return str.length >= 2 && str[0] === '0' && str[1] === 'x'
-}
-
-// Removes 0x from a given String
-function stripHexPrefix(str: string): string {
-  if (typeof str !== 'string') {
-    return str
-  }
-  return isHexPrefixed(str) ? str.slice(2) : str
-}
-
-const hexes = Array.from({ length: 256 }, (v, i) => i.toString(16).padStart(2, '0'))
+const cachedHexes = Array.from({ length: 256 }, (_v, i) => i.toString(16).padStart(2, '0'))
 function bytesToHex(uint8a: Uint8Array): string {
-  // pre-caching chars could speed this up 6x.
+  // Pre-caching chars with `cachedHexes` speeds this up 6x
   let hex = ''
   for (let i = 0; i < uint8a.length; i++) {
-    hex += hexes[uint8a[i]]
+    hex += cachedHexes[uint8a[i]]
   }
   return hex
 }
@@ -224,7 +218,7 @@ function hexToBytes(hex: string): Uint8Array {
   return array
 }
 
-// Concatenates two Uint8Arrays into one.
+/** Concatenates two Uint8Arrays into one. */
 function concatBytes(...arrays: Uint8Array[]): Uint8Array {
   if (arrays.length === 1) return arrays[0]
   const length = arrays.reduce((a, arr) => a + arr.length, 0)
@@ -243,7 +237,6 @@ declare const TextEncoder: any
 declare const TextDecoder: any
 
 function utf8ToBytes(utf: string): Uint8Array {
-  // @ts-ignore
   return new TextEncoder().encode(utf)
 }
 
@@ -261,32 +254,47 @@ function padToEven(a: string): string {
   return a.length % 2 ? `0${a}` : a
 }
 
-export const utils = {
-  bytesToHex,
-  hexToBytes,
-  utf8ToBytes,
+/** Check if a string is prefixed by 0x */
+function isHexPrefixed(str: string): boolean {
+  return str.length >= 2 && str[0] === '0' && str[1] === 'x'
+}
+
+/** Removes 0x from a given String */
+function stripHexPrefix(str: string): string {
+  if (typeof str !== 'string') {
+    return str
+  }
+  return isHexPrefixed(str) ? str.slice(2) : str
 }
 
 /** Transform anything into a Uint8Array */
 function toBytes(v: Input): Uint8Array {
-  if (v instanceof Uint8Array) return v
+  if (v instanceof Uint8Array) {
+    return v
+  }
   if (typeof v === 'string') {
     if (isHexPrefixed(v)) {
       return hexToBytes(padToEven(stripHexPrefix(v)))
-    } else {
-      return utf8ToBytes(v)
     }
-  } else if (typeof v === 'number' || typeof v === 'bigint') {
+    return utf8ToBytes(v)
+  }
+  if (typeof v === 'number' || typeof v === 'bigint') {
     if (!v) {
       return Uint8Array.from([])
-    } else {
-      return hexToBytes(numberToHex(v))
     }
-  } else if (v === null || v === undefined) {
-    return Uint8Array.from([])
-  } else {
-    throw new Error('invalid type')
+    return hexToBytes(numberToHex(v))
   }
+  if (v === null || v === undefined) {
+    return Uint8Array.from([])
+  }
+  throw new Error('toBytes: received unsupported type ' + typeof v)
+}
+
+export const utils = {
+  bytesToHex,
+  concatBytes,
+  hexToBytes,
+  utf8ToBytes,
 }
 
 const RLP = { encode, decode }
