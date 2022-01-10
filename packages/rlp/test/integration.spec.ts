@@ -1,35 +1,33 @@
-import assert from 'assert'
+import tape from 'tape'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 import vm from 'vm'
-import RLP from '../dist'
+import RLP from '../src'
 import { bytesToUtf8 } from './utils'
+import official from './fixture/rlptest.json'
 
-describe('Distribution:', function () {
-  it('should be able to execute functionality from distribution build', function () {
+tape('Distribution', (t) => {
+  t.test('should be able to execute functionality from distribution build', (st) => {
     const encodedSelf = RLP.encode('a')
-    assert.strictEqual(bytesToUtf8(encodedSelf), 'a')
-    assert.strictEqual(encodedSelf.length, 1)
+    st.deepEqual(bytesToUtf8(encodedSelf), 'a')
+    st.deepEqual(encodedSelf.length, 1)
+    st.end()
   })
 })
 
 const execAsync = promisify(exec)
 
-describe('CLI command:', function () {
-  it('should be able to run CLI command', async function () {
+tape('CLI command', (t) => {
+  t.test('should be able to run CLI command', async (st) => {
     const result = await execAsync('./bin/rlp encode "[ 5 ]"')
     const resultFormatted = result.stdout.trim()
-    assert.strictEqual(resultFormatted, '0xc105')
+    st.deepEqual(resultFormatted, '0xc105')
+    st.end()
   })
 
-  const officalTests = require('./fixture/rlptest.json').tests
-  it('should return valid values for official tests', async function () {
-    // eslint-disable-next-line no-invalid-this
-    this.timeout(10000)
-
-    // eslint-disable-next-line no-restricted-syntax
-    for (const testName in officalTests) {
-      const { in: incoming, out } = officalTests[testName]
+  t.test('should return valid values for official tests', { timeout: 10000 }, async (st) => {
+    for (const testName of Object.values(official.tests)) {
+      const { in: incoming, out } = testName as any
 
       // skip if testing a big number
       if (incoming[0] === '#') {
@@ -39,19 +37,21 @@ describe('CLI command:', function () {
       const json = JSON.stringify(incoming)
       const encodeResult = await execAsync(`./bin/rlp encode '${json}'`)
       const encodeResultTrimmed = encodeResult.stdout.trim()
-      assert.strictEqual(encodeResultTrimmed, out.toLowerCase(), `should pass encoding ${testName}`)
+      st.deepEqual(encodeResultTrimmed, out.toLowerCase(), `should pass encoding ${testName}`)
     }
+    st.end()
   })
 })
 
-describe('Cross-frame:', function () {
-  it('should be able to encode Arrays across stack frames', function () {
-    assert.strictEqual(
+tape('Cross-frame', (t) => {
+  t.test('should be able to encode Arrays across stack frames', (st) => {
+    st.deepEqual(
       vm.runInNewContext(
         "Array.from(RLP.encode(['dog', 'god', 'cat'])).map(n => n.toString(16).padStart(2, '0')).join('')",
         { RLP }
       ),
       'cc83646f6783676f6483636174'
     )
+    st.end()
   })
 })

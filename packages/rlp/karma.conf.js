@@ -1,6 +1,6 @@
 module.exports = function (config) {
   config.set({
-    frameworks: ['mocha', 'karma-typescript'],
+    frameworks: ['karma-typescript', 'tap'],
     files: ['src/**/*.ts', 'test/**/!(integration)*.ts'],
     preprocessors: {
       '**/*.ts': ['karma-typescript'],

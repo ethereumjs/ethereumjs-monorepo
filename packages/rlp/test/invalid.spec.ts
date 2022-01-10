@@ -1,41 +1,37 @@
-import assert from 'assert'
+import tape from 'tape'
 import RLP, { utils } from '../src'
 import invalid from './fixture/invalid.json'
 
 const { hexToBytes } = utils
 
-describe('invalid tests', function () {
+tape('invalid tests', (t) => {
   for (const [testName, test] of Object.entries(invalid.tests)) {
-    it(`should pass ${testName}`, function (done) {
+    t.test(`should pass ${testName}`, (st) => {
       let { out } = test
       if (out[0] === '0' && out[1] === 'x') {
         out = out.slice(2)
       }
-      try {
+      st.throws(() => {
         RLP.decode(hexToBytes(out))
-        assert.fail(`should not decode invalid RLPs, input: ${out}`)
-      } finally {
-        done()
-      }
+      }, `should not decode invalid RLPs, input: ${out}`)
+      st.end()
     })
   }
 
-  it('should pass long string sanity check test', function (done) {
+  t.test('should pass long string sanity check test', function (st) {
     // long string invalid test; string length > 55
     const longBufferTest = RLP.encode(
       'zoo255zoo255zzzzzzzzzzzzssssssssssssssssssssssssssssssssssssssssssssss'
     )
     // sanity checks
-    assert.ok(longBufferTest[0] > 0xb7)
-    assert.ok(longBufferTest[0] <= 0xbf)
+    st.ok(longBufferTest[0] > 0xb7)
+    st.ok(longBufferTest[0] <= 0xbf)
 
     // try to decode the partial buffer
-    try {
+    st.throws(() => {
       RLP.decode(longBufferTest.slice(1, longBufferTest.length - 1))
-      assert.fail('string longer than 55 bytes: should throw')
-    } catch (e) {
-      done()
-    }
+    }, 'string longer than 55 bytes: should throw')
+    st.end()
   })
 })
 
@@ -71,16 +67,14 @@ const invalidGethCases: string[] = [
   'F8020004',
 ]
 
-describe('invalid geth tests', function () {
+tape('invalid geth tests', (t) => {
   for (const gethCase of invalidGethCases) {
     const input = hexToBytes(gethCase)
-    it('should pass Geth test', function (done) {
-      try {
+    t.test('should pass Geth test', (st) => {
+      st.throws(() => {
         RLP.decode(input)
-        assert.fail(`should throw: ${gethCase}`)
-      } finally {
-        done()
-      }
+      }, `should throw: ${gethCase}`)
+      st.end()
     })
   }
 })

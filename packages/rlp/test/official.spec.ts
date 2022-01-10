@@ -1,13 +1,13 @@
-import assert from 'assert'
+import tape from 'tape'
 import RLP, { utils } from '../src'
 import { numberToBytes } from './utils'
 import official from './fixture/rlptest.json'
 
 const { bytesToHex, hexToBytes } = utils
 
-describe('offical tests', function () {
+tape('official tests', (t) => {
   for (const [testName, test] of Object.entries(official.tests)) {
-    it(`should pass ${testName}`, function (done) {
+    t.test(`should pass ${testName}`, (st) => {
       let incoming: any = test.in
       // if we are testing a big number
       if (incoming[0] === '#') {
@@ -16,8 +16,8 @@ describe('offical tests', function () {
 
       const encoded = RLP.encode(incoming)
       const out = test.out[0] === '0' && test.out[1] === 'x' ? test.out.slice(2) : test.out
-      assert.deepStrictEqual(encoded, hexToBytes(out))
-      done()
+      st.deepEqual(encoded, hexToBytes(out))
+      st.end()
     })
   }
 })
@@ -148,9 +148,6 @@ const gethCases = [
 
   { input: 'C3808005', value: ['', '', '05'] },
   { input: 'C50183040404', value: ['01', '040404'] },
-  {
-    input: 'c330f9c030f93030ce3030303030303030bd303030303030',
-  },
 ]
 
 function arrToStringArr(arr: any): any {
@@ -162,31 +159,28 @@ function arrToStringArr(arr: any): any {
   })
 }
 
-describe('geth tests', function () {
+tape('geth tests', (t) => {
   for (const gethCase of gethCases) {
     const input = hexToBytes(gethCase.input)
-    it('should pass Geth test', function (done) {
-      try {
+    t.test('should pass Geth test', (st) => {
+      st.doesNotThrow(() => {
         const output = RLP.decode(input)
         if (Array.isArray(output)) {
           const arrayOutput = arrToStringArr(output)
-          assert.strictEqual(
+          st.deepEqual(
             JSON.stringify(arrayOutput),
             JSON.stringify(gethCase.value!),
             `invalid output: ${gethCase.input}`
           )
         } else {
-          assert.strictEqual(
+          st.deepEqual(
             bytesToHex(Uint8Array.from(output as any)),
             gethCase.value,
             `invalid output: ${gethCase.input}`
           )
         }
-      } catch (e) {
-        assert.fail(`should not throw: ${gethCase.input}`)
-      } finally {
-        done()
-      }
+      }, `should not throw: ${gethCase.input}`)
+      st.end()
     })
   }
 })
