@@ -20,8 +20,7 @@ export interface RunState {
   stack: Stack
   returnStack: Stack
   code: Buffer
-  validJumps: number[]
-  validJumpSubs: number[]
+  validJumps: Uint8Array
   stateManager: StateManager
   eei: EEI
 }
@@ -76,8 +75,7 @@ export default class Interpreter {
       stack: new Stack(),
       returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
       code: Buffer.alloc(0),
-      validJumps: [],
-      validJumpSubs: [],
+      validJumps: Uint8Array.from([]),
       stateManager: this._state,
       eei: this._eei,
     }
@@ -86,9 +84,6 @@ export default class Interpreter {
   async run(code: Buffer, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
     this._runState.code = code
     this._runState.programCounter = opts.pc ?? this._runState.programCounter
-
-    const valid = this._getValidJumpDests(code)
-    this._runState.validJumps = valid
 
     // Check that the programCounter is in range
     const pc = this._runState.programCounter
@@ -100,6 +95,11 @@ export default class Interpreter {
     // Iterate through the given ops until something breaks or we hit STOP
     while (this._runState.programCounter < this._runState.code.length) {
       const opCode = this._runState.code[this._runState.programCounter]
+
+      if (!(this._runState.validJumps.length > 0) && (opCode === 0x56 || opCode === 0x5c)) {
+        const valid = this._getValidJumpDests(code)
+        this._runState.validJumps = valid
+      }
       this._runState.opCode = opCode
       await this._runStepHook()
 
@@ -232,7 +232,7 @@ export default class Interpreter {
 
   // Returns all valid jump and jumpsub destinations.
   _getValidJumpDests(code: Buffer) {
-    const j = new Array(code.length).fill(0)
+    const j = new Uint8Array(code.length).fill(0)
 
     for (let i = 0; i < code.length; i++) {
       const curOpCode = this.lookupOpInfo(code[i]).name
