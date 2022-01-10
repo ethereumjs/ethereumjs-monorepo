@@ -190,9 +190,9 @@ export class ETH extends EventEmitter {
 
     const status: any = {
       networkId: this._peerStatus[1],
-      td: Buffer.from(this._peerStatus[2]),
-      bestHash: Buffer.from(this._peerStatus[3]),
-      genesisHash: Buffer.from(this._peerStatus[4]),
+      td: Buffer.from(this._peerStatus[2] as Buffer),
+      bestHash: Buffer.from(this._peerStatus[3] as Buffer),
+      genesisHash: Buffer.from(this._peerStatus[4] as Buffer),
     }
 
     if (this._version >= 64) {
