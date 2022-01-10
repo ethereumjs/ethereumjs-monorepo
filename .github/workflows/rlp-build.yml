@@ -13,7 +13,7 @@ defaults:
     working-directory: packages/rlp
 
 jobs:
-  test:
+  test-rlp:
     runs-on: ubuntu-latest
     strategy:
       matrix:
