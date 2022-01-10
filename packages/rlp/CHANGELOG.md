@@ -55,7 +55,7 @@ PRs included in this release:
 
 Source files from the `src` folder are now included in the distribution build, see PR [#97](https://github.com/ethereumjs/rlp/pull/97). This allows for a better debugging experience in debug tools like Chrome DevTools by having working source map references to the original sources available for inspection.
 
-[v2.2.7]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/rlp@2.2.7...rlp@2.2.6
+[v2.2.7]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/rlp@2.2.6...rlp@2.2.7
 
 ## [v2.2.6] - 2020-07-17
 
