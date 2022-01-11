@@ -37,7 +37,7 @@ jobs:
 
       - uses: codecov/codecov-action@v2
         with:
-          file: ${{ env.cwd }}/coverage/lcov.info
+          files: ${{ env.cwd }}/coverage/lcov.info
           flags: util
         if: ${{ matrix.node-version == 16 }}
 

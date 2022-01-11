@@ -33,15 +33,14 @@ jobs:
       - run: npm i
         working-directory: ${{github.workspace}}
 
+      - run: npm run lint
       - run: npm run coverage
 
       - uses: codecov/codecov-action@v2
         with:
-          file: ${{ env.cwd }}/coverage/lcov.info
+          files: ${{ env.cwd }}/coverage/lcov.info
           flags: trie
         if: ${{ matrix.node-version == 16 }}
-
-      - run: npm run lint
 
   trie-benchmarks:
     runs-on: ubuntu-latest

@@ -23,8 +23,6 @@
     "build:browser": "../../config/cli/ts-build.sh browser",
     "coverage": "../../config/cli/coverage.sh",
     "docs:build": "typedoc --options typedoc.js",
-    "format": "ethereumjs-config-format",
-    "format:fix": "ethereumjs-config-format-fix",
     "tsc": "../../config/cli/ts-compile.sh",
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
