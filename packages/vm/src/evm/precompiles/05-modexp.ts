@@ -74,7 +74,7 @@ function expmod(B: BN, E: BN, M: BN): BN {
 export default function (opts: PrecompileInput): ExecResult {
   assert(opts.data)
 
-  const data = opts.data
+  const data = opts.data // Attention! memory.sharedRead() variable.
 
   let adjustedELen = getAdjustedExponentLength(data)
   if (adjustedELen.ltn(1)) {

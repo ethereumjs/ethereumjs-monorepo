@@ -14,7 +14,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
 
   const mcl = opts._VM._mcl
 
-  const inputData = opts.data
+  const inputData = opts.data // Attention! memory.sharedRead() variable.
 
   if (inputData.length == 0) {
     return VmErrorResult(new VmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit) // follow Geths implementation

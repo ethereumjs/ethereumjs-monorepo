@@ -89,7 +89,7 @@ export default class Interpreter {
   }
 
   async run(code: Buffer, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
-    this._runState.code = code
+    this._runState.code = code // Attention! memory.sharedRead() variable.
     this._runState.programCounter = opts.pc ?? this._runState.programCounter
 
     const valid = this._getValidJumpDests(code)

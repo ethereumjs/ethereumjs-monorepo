@@ -6,7 +6,7 @@ const assert = require('assert')
 export default function (opts: PrecompileInput): ExecResult {
   assert(opts.data)
 
-  const data = opts.data
+  const data = opts.data // Attention! memory.sharedRead() variable.
 
   const gasUsed = new BN(opts._common.param('gasPrices', 'sha256'))
   gasUsed.iadd(

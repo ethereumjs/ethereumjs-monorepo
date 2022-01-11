@@ -7,7 +7,7 @@ const bn128 = require('rustbn.js')
 export default function (opts: PrecompileInput): ExecResult {
   assert(opts.data)
 
-  const inputData = opts.data
+  const inputData = opts.data // Attention! memory.sharedRead() variable.
   const gasUsed = new BN(opts._common.param('gasPrices', 'ecMul'))
 
   if (opts.gasLimit.lt(gasUsed)) {

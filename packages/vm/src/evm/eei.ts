@@ -190,7 +190,7 @@ export default class EEI {
    * data passed with the message call instruction or transaction.
    */
   getCallData(): Buffer {
-    return this._env.callData
+    return this._env.callData // Attention! memory.sharedRead() variable.
   }
 
   /**
@@ -212,7 +212,7 @@ export default class EEI {
    * Returns the code running in current environment.
    */
   getCode(): Buffer {
-    return this._env.code
+    return this._env.code // Attention! memory.sharedRead() variable.
   }
 
   /**

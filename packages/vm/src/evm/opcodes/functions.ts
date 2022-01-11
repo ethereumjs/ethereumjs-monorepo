@@ -448,7 +448,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
 
       const i = pos.toNumber()
-      let loaded = runState.eei.getCallData().slice(i, i + 32)
+      // Call Data is memory.sharedRead() data, so copy to new Buffer
+      let loaded = Buffer.from(runState.eei.getCallData().slice(i, i + 32))
       loaded = loaded.length ? loaded : Buffer.from([0])
       const r = new BN(setLengthRight(loaded, 32))
 
@@ -476,7 +477,7 @@ export const handlers: Map<number, OpHandler> = new Map([
           new BN(common.param('gasPrices', 'copy')).imul(divCeil(dataLength, new BN(32))),
           'CALLDATACOPY opcode'
         )
-
+        // Attention! runState.eei.getCallData() is memory.sharedRead() variable.
         const data = getDataSlice(runState.eei.getCallData(), dataOffset, dataLength)
         const memOffsetNum = memOffset.toNumber()
         const dataLengthNum = dataLength.toNumber()
@@ -987,9 +988,11 @@ export const handlers: Map<number, OpHandler> = new Map([
       let gasLimit = new BN(runState.eei.getGasLeft())
       gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft(), runState, common)
 
-      let data = Buffer.alloc(0)
+      let data
       if (!length.isZero()) {
-        data = runState.memory.read(offset.toNumber(), length.toNumber())
+        data = runState.memory.sharedRead(offset.toNumber(), length.toNumber())
+      } else {
+        data = Buffer.alloc(0)
       }
 
       const ret = await runState.eei.create(gasLimit, value, data)
@@ -1017,9 +1020,11 @@ export const handlers: Map<number, OpHandler> = new Map([
       let gasLimit = new BN(runState.eei.getGasLeft())
       gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft(), runState, common) // CREATE2 is only available after TangerineWhistle (Constantinople introduced this opcode)
 
-      let data = Buffer.alloc(0)
+      let data
       if (!length.isZero()) {
-        data = runState.memory.read(offset.toNumber(), length.toNumber())
+        data = runState.memory.sharedRead(offset.toNumber(), length.toNumber())
+      } else {
+        data = Buffer.alloc(0)
       }
 
       const ret = await runState.eei.create2(
@@ -1055,7 +1060,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (!inLength.isZero()) {
-        data = runState.memory.read(inOffset.toNumber(), inLength.toNumber())
+        data = runState.memory.sharedRead(inOffset.toNumber(), inLength.toNumber())
       }
 
       if (common.gteHardfork('spuriousDragon')) {
@@ -1123,9 +1128,11 @@ export const handlers: Map<number, OpHandler> = new Map([
         gasLimit.iadd(callStipend)
       }
 
-      let data = Buffer.alloc(0)
+      let data
       if (!inLength.isZero()) {
-        data = runState.memory.read(inOffset.toNumber(), inLength.toNumber())
+        data = runState.memory.sharedRead(inOffset.toNumber(), inLength.toNumber())
+      } else {
+        data = Buffer.alloc(0)
       }
 
       const ret = await runState.eei.callCode(gasLimit, toAddress, value, data)
@@ -1154,7 +1161,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let data = Buffer.alloc(0)
       if (!inLength.isZero()) {
-        data = runState.memory.read(inOffset.toNumber(), inLength.toNumber())
+        data = runState.memory.sharedRead(inOffset.toNumber(), inLength.toNumber())
       }
 
       const ret = await runState.eei.callDelegate(gasLimit, toAddress, value, data)
@@ -1177,9 +1184,11 @@ export const handlers: Map<number, OpHandler> = new Map([
       accessAddressEIP2929(runState, toAddress, common)
       const gasLimit = maxCallGas(currentGasLimit, runState.eei.getGasLeft(), runState, common) // we set TangerineWhistle or later to true here, as STATICCALL was available from Byzantium (which is after TangerineWhistle)
 
-      let data = Buffer.alloc(0)
+      let data
       if (!inLength.isZero()) {
-        data = runState.memory.read(inOffset.toNumber(), inLength.toNumber())
+        data = runState.memory.sharedRead(inOffset.toNumber(), inLength.toNumber())
+      } else {
+        data = Buffer.alloc(0)
       }
 
       const ret = await runState.eei.callStatic(gasLimit, toAddress, value, data)

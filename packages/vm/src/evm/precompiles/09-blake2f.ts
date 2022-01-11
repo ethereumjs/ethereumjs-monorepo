@@ -158,7 +158,7 @@ export function F(h: Uint32Array, m: Uint32Array, t: Uint32Array, f: boolean, ro
 export default function (opts: PrecompileInput): ExecResult {
   assert(opts.data)
 
-  const data = opts.data
+  const data = opts.data // Attention! memory.sharedRead() variable.
   if (data.length !== 213) {
     return {
       returnValue: Buffer.alloc(0),
