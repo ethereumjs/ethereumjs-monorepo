@@ -1,28 +1,28 @@
-name: Ethash
+name: rlp
 on:
   push:
     branches: [master, develop]
     tags: ['*']
+    paths: ['packages/rlp/**']
   pull_request:
     types: [opened, reopened, synchronize]
+    paths: ['packages/rlp/**']
 
 env:
-  cwd: ${{github.workspace}}/packages/ethash
+  cwd: ${{github.workspace}}/packages/rlp
 
 defaults:
   run:
-    working-directory: packages/ethash
+    working-directory: packages/rlp
 
 jobs:
-  test-ethash:
+  test-rlp:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [16]
     steps:
       - uses: actions/checkout@v2
-        with:
-          submodules: recursive
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
@@ -33,11 +33,12 @@ jobs:
       - run: npm i
         working-directory: ${{github.workspace}}
 
-      - run: npm run lint
       - run: npm run coverage
 
       - uses: codecov/codecov-action@v2
         with:
           files: ${{ env.cwd }}/coverage/lcov.info
-          flags: ethash
+          flags: rlp
         if: ${{ matrix.node-version == 16 }}
+
+      - run: npm run lint
