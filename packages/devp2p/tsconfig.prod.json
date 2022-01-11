@@ -10,6 +10,7 @@
   },
   "references": [
     { "path": "../common/tsconfig.prod.json" },
+    { "path": "../rlp/tsconfig.prod.json" },
     { "path": "../util/tsconfig.prod.json" }
   ],
 }
