@@ -8,6 +8,9 @@ on:
     types: [opened, reopened, synchronize]
     paths: ['packages/rlp/**']
 
+env:
+  cwd: ${{github.workspace}}/packages/rlp
+
 defaults:
   run:
     working-directory: packages/rlp
