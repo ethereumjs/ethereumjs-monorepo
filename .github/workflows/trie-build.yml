@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [12]
+        node-version: [16]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -30,9 +30,6 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - name: Use npm v7 for workspaces support
-        run: npm i -g npm@7
-
       - run: npm i
         working-directory: ${{github.workspace}}
 
@@ -42,7 +39,7 @@ jobs:
         with:
           file: ${{ env.cwd }}/coverage/lcov.info
           flags: trie
-        if: ${{ matrix.node-version == 12 }}
+        if: ${{ matrix.node-version == 16 }}
 
       - run: npm run lint
 
@@ -53,14 +50,10 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Use Node.js 12
-        uses: actions/setup-node@v2
+      - uses: actions/setup-node@v2
         with:
-          node-version: 12
+          node-version: 16
           cache: 'npm'
-
-      - name: Use npm v7 for workspaces support
-        run: npm i -g npm@7
 
       - run: npm i
         working-directory: ${{github.workspace}}
