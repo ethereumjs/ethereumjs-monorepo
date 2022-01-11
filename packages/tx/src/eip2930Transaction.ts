@@ -6,11 +6,11 @@ import {
   ecrecover,
   keccak256,
   MAX_INTEGER,
-  RLP,
   toBuffer,
   validateNoLeadingZeroes,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
+import RLP from 'rlp'
 import { BaseTransaction } from './baseTransaction'
 import {
   AccessList,

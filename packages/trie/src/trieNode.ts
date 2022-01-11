@@ -1,4 +1,5 @@
-import { arrToBufferArr, keccak256, RLP } from 'ethereumjs-util'
+import RLP from 'rlp'
+import { arrToBufferArr, keccak256 } from 'ethereumjs-util'
 import { bufferToNibbles, nibblesToBuffer } from './util/nibbles'
 import { isTerminator, addHexPrefix, removeHexPrefix } from './util/hex'
 

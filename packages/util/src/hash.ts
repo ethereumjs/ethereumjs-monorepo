@@ -1,8 +1,8 @@
 import { keccak224, keccak384, keccak256 as k256, keccak512 } from 'ethereum-cryptography/keccak'
-const createHash = require('create-hash')
-import { RLP } from './externals'
+import RLP, { Input as rlpInput } from 'rlp'
 import { toBuffer, setLengthLeft } from './bytes'
 import { assertIsString, assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
+const createHash = require('create-hash')
 
 /**
  * Creates Keccak hash of a Buffer input
@@ -154,6 +154,6 @@ export const ripemd160FromArray = function (a: number[], padded: boolean): Buffe
  * Creates SHA-3 hash of the RLP encoded version of the input.
  * @param a The input data
  */
-export const rlphash = function (a: RLP.Input): Buffer {
+export const rlphash = function (a: rlpInput): Buffer {
   return keccak(Buffer.from(RLP.encode(a)))
 }

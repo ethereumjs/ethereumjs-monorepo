@@ -1,15 +1,7 @@
 import { Block, HeaderData } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
-import {
-  Address,
-  BN,
-  toBuffer,
-  toType,
-  TypeOutput,
-  bufferToHex,
-  intToHex,
-  RLP,
-} from 'ethereumjs-util'
+import { Address, BN, toBuffer, toType, TypeOutput, bufferToHex, intToHex } from 'ethereumjs-util'
+import RLP from 'rlp'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { middleware, validators } from '../validation'
 import { INTERNAL_ERROR } from '../error-code'

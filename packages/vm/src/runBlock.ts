@@ -1,6 +1,7 @@
 import { debug as createDebugLogger } from 'debug'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { Account, Address, BN, intToBuffer, RLP } from 'ethereumjs-util'
+import RLP from 'rlp'
+import { Account, Address, BN, intToBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import VM from './index'

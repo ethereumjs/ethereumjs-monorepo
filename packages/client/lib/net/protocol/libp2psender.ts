@@ -1,7 +1,8 @@
 import pipe from 'it-pipe'
 import pushable from 'it-pushable'
+import RLP from 'rlp'
+import { arrToBufferArr, bufferToInt } from 'ethereumjs-util'
 import { Libp2pMuxedStream as MuxedStream } from '../../types'
-import { arrToBufferArr, bufferToInt, RLP } from 'ethereumjs-util'
 import { Sender } from './sender'
 
 // TypeScript doesn't have support yet for ReturnType

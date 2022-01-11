@@ -16,10 +16,10 @@ import {
   bufferToHex,
   bnToHex,
   intToHex,
-  RLP,
   toBuffer,
   setLengthLeft,
 } from 'ethereumjs-util'
+import RLP from 'rlp'
 import { middleware, validators } from '../validation'
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
 import { RpcTx } from '../types'

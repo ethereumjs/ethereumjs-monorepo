@@ -1,6 +1,6 @@
 import { debug as createDebugLogger } from 'debug'
 import ip from 'ip'
-import { RLP } from 'ethereumjs-util'
+import RLP from 'rlp'
 import secp256k1 from 'secp256k1'
 import { keccak256, int2buffer, buffer2int, assertEq, unstrictDecode } from '../util'
 import { PeerInfo } from './dpt'

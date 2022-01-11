@@ -1,4 +1,5 @@
-import { BN, RLP } from 'ethereumjs-util'
+import RLP from 'rlp'
+import { BN } from 'ethereumjs-util'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import Blockchain from '../src'

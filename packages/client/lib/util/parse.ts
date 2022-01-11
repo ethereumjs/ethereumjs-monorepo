@@ -7,7 +7,6 @@ import {
   Account,
   BN,
   keccak,
-  RLP,
   toBuffer,
   unpadBuffer,
   isHexPrefixed,
@@ -16,6 +15,7 @@ import {
   bufferToHex,
   addHexPrefix,
 } from 'ethereumjs-util'
+import RLP from 'rlp'
 import type { MultiaddrLike } from '../types'
 import type { GenesisState } from '@ethereumjs/common/dist/types'
 

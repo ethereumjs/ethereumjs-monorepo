@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events'
-import { arrToBufferArr, RLP } from 'ethereumjs-util'
+import RLP from 'rlp'
+import { arrToBufferArr } from 'ethereumjs-util'
 import ms from 'ms'
 import snappy from 'snappyjs'
 import { debug as createDebugLogger } from 'debug'

@@ -10,12 +10,12 @@ import {
   intToBuffer,
   KECCAK256_RLP_ARRAY,
   KECCAK256_RLP,
-  RLP,
   rlphash,
   toBuffer,
   zeros,
   bufferToHex,
 } from 'ethereumjs-util'
+import RLP from 'rlp'
 import { Blockchain, BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
 import {
   CLIQUE_EXTRA_VANITY,

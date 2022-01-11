@@ -1,6 +1,6 @@
 import assert from 'assert'
+import RLP from 'rlp'
 import { stripHexPrefix } from './internal'
-import { RLP } from './externals'
 import { toBuffer, baToJSON, unpadBuffer } from './bytes'
 
 /**

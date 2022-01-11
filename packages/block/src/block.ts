@@ -1,5 +1,6 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { arrToBufferArr, BN, RLP, keccak256, KECCAK256_RLP, bufferToHex } from 'ethereumjs-util'
+import RLP from 'rlp'
+import { arrToBufferArr, BN, keccak256, KECCAK256_RLP, bufferToHex } from 'ethereumjs-util'
 import Common, { ConsensusType } from '@ethereumjs/common'
 import {
   TransactionFactory,

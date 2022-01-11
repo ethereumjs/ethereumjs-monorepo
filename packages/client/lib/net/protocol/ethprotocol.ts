@@ -1,3 +1,4 @@
+import RLP from 'rlp'
 import {
   Block,
   BlockBuffer,
@@ -6,7 +7,7 @@ import {
   BlockBodyBuffer,
 } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
-import { arrToBufferArr, BN, bufferToInt, intToBuffer, RLP } from 'ethereumjs-util'
+import { arrToBufferArr, BN, bufferToInt, intToBuffer } from 'ethereumjs-util'
 import { Chain } from './../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'
 import type { TxReceiptWithType } from '../../sync/execution/receipt'

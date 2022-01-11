@@ -1,4 +1,5 @@
 import tape from 'tape'
+import RLP from 'rlp'
 import {
   Account,
   BN,
@@ -14,7 +15,6 @@ import {
   isValidChecksumAddress,
   isValidAddress,
   toChecksumAddress,
-  RLP,
 } from '../src'
 const eip1014Testdata = require('./testdata/eip1014Examples.json')
 

@@ -3,12 +3,12 @@ import { Buffer } from 'buffer'
 import {
   arrToBufferArr,
   BN,
-  RLP,
   toBuffer,
   bufferToHex,
   intToBuffer,
   unpadBuffer,
 } from 'ethereumjs-util'
+import RLP from 'rlp'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction, TxData } from '../src'
 import { TxsJsonEntry, VitaliksTestsDataEntry } from './types'

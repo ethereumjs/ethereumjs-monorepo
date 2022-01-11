@@ -2,7 +2,7 @@ import assert from 'assert'
 import { randomBytes } from 'crypto'
 import { privateKeyVerify, publicKeyConvert } from 'secp256k1'
 import createKeccakHash from 'keccak'
-import { RLP } from 'ethereumjs-util'
+import RLP from 'rlp'
 import { ETH } from './eth'
 import { LES } from './les'
 

@@ -5,7 +5,6 @@ import {
   toBuffer,
   keccak256,
   KECCAK256_NULL,
-  RLP,
   unpadBuffer,
   PrefixedHexString,
   bufferToHex,
@@ -15,6 +14,7 @@ import {
   setLengthLeft,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
+import RLP from 'rlp'
 import { StateManager, StorageDump } from './interface'
 import Cache, { getCb, putCb } from './cache'
 import { BaseStateManager } from './'

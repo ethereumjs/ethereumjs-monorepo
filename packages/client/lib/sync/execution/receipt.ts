@@ -2,7 +2,8 @@ import { PreByzantiumTxReceipt, PostByzantiumTxReceipt, TxReceipt } from '@ether
 import { Log } from '@ethereumjs/vm/dist/evm/types'
 import Bloom from '@ethereumjs/vm/dist/bloom'
 import { TypedTransaction } from '@ethereumjs/tx'
-import { arrToBufferArr, RLP, intToBuffer, bufferToInt } from 'ethereumjs-util'
+import { arrToBufferArr, intToBuffer, bufferToInt } from 'ethereumjs-util'
+import RLP from 'rlp'
 import { MetaDBManager, DBKey } from './metaDBManager'
 import type { Block } from '@ethereumjs/block'
 

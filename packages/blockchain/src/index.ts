@@ -1,6 +1,7 @@
 import { debug as createDebugLogger } from 'debug'
 import Semaphore from 'semaphore-async-await'
-import { Address, BN, RLP } from 'ethereumjs-util'
+import RLP from 'rlp'
+import { Address, BN } from 'ethereumjs-util'
 import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
 import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'

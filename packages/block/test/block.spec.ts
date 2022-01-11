@@ -1,5 +1,6 @@
 import tape from 'tape'
-import { arrToBufferArr, BN, keccak256, RLP, zeros, toBuffer } from 'ethereumjs-util'
+import RLP from 'rlp'
+import { arrToBufferArr, BN, keccak256, zeros, toBuffer } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block, BlockBuffer, BlockHeader } from '../src'
 import blockFromRpc from '../src/from-rpc'

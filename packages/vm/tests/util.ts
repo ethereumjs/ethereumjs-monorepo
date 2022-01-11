@@ -7,15 +7,8 @@ import {
   Transaction,
   TxOptions,
 } from '@ethereumjs/tx'
-import {
-  Account,
-  BN,
-  RLP,
-  keccak256,
-  stripHexPrefix,
-  setLengthLeft,
-  toBuffer,
-} from 'ethereumjs-util'
+import { Account, BN, keccak256, stripHexPrefix, setLengthLeft, toBuffer } from 'ethereumjs-util'
+import RLP from 'rlp'
 
 export function dumpState(state: any, cb: Function) {
   function readAccounts(state: any) {

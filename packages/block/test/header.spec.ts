@@ -1,5 +1,6 @@
 import tape from 'tape'
-import { Address, BN, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY, RLP } from 'ethereumjs-util'
+import RLP from 'rlp'
+import { Address, BN, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src'
