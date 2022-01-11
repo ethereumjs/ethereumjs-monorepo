@@ -26,11 +26,11 @@ tape('CLI command', (t) => {
   })
 
   t.test('should return valid values for official tests', { timeout: 10000 }, async (st) => {
-    for (const testName of Object.values(official.tests)) {
-      const { in: incoming, out } = testName as any
+    for (const [testName, test] of Object.entries(official.tests)) {
+      const { in: incoming, out } = test
 
       // skip if testing a big number
-      if (incoming[0] === '#') {
+      if ((incoming as any)[0] === '#') {
         continue
       }
 
