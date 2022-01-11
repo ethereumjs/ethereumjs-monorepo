@@ -1,13 +1,6 @@
 import tape from 'tape'
 import { Buffer } from 'buffer'
-import {
-  arrToBufferArr,
-  BN,
-  toBuffer,
-  bufferToHex,
-  intToBuffer,
-  unpadBuffer,
-} from 'ethereumjs-util'
+import { BN, toBuffer, bufferToHex, intToBuffer, unpadBuffer } from 'ethereumjs-util'
 import RLP from 'rlp'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction, TxData } from '../src'
@@ -502,7 +495,7 @@ tape('[Transaction]', function (t) {
     tx = Transaction.fromSerializedTx(rawSigned)
     st.ok(tx.isSigned())
 
-    const signedValues = arrToBufferArr(RLP.decode(rawSigned))
+    const signedValues = RLP.decode(Uint8Array.from(rawSigned)) as any
     tx = Transaction.fromValuesArray(signedValues)
     st.ok(tx.isSigned())
     tx = Transaction.fromValuesArray(signedValues.slice(0, 6))

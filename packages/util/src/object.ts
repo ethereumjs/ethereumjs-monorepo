@@ -1,7 +1,7 @@
 import assert from 'assert'
 import RLP from 'rlp'
 import { stripHexPrefix } from './internal'
-import { toBuffer, baToJSON, unpadBuffer } from './bytes'
+import { bufArrToArr, toBuffer, baToJSON, unpadBuffer } from './bytes'
 
 /**
  * Defines properties on a `Object`. It make the assumption that underlying data is binary.
@@ -32,7 +32,7 @@ export const defineProperties = function (self: any, fields: any, data?: any) {
   }
 
   self.serialize = function serialize() {
-    return Buffer.from(RLP.encode(self.raw))
+    return Buffer.from(RLP.encode(bufArrToArr(self.raw)))
   }
 
   fields.forEach((field: any, i: number) => {
@@ -92,7 +92,7 @@ export const defineProperties = function (self: any, fields: any, data?: any) {
     }
 
     if (Buffer.isBuffer(data)) {
-      data = RLP.decode(data)
+      data = RLP.decode(Uint8Array.from(data))
     }
 
     if (Array.isArray(data)) {

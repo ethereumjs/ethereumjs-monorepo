@@ -9,7 +9,7 @@ import {
 } from 'ethereum-cryptography/secp256k1'
 import { stripHexPrefix } from './internal'
 import { KECCAK256_RLP, KECCAK256_NULL } from './constants'
-import { arrToBufferArr, zeros, bufferToHex, toBuffer } from './bytes'
+import { arrToBufArr, bufArrToArr, bufferToHex, toBuffer, zeros } from './bytes'
 import { keccak, keccak256, keccakFromString, rlphash } from './hash'
 import { assertIsString, assertIsHexString, assertIsBuffer } from './helpers'
 import { BNLike, BufferLike, bnToUnpaddedBuffer, toType, TypeOutput } from './types'
@@ -39,13 +39,13 @@ export class Account {
   }
 
   public static fromRlpSerializedAccount(serialized: Buffer) {
-    const values = arrToBufferArr(RLP.decode(serialized))
+    const values = arrToBufArr(RLP.decode(Uint8Array.from(serialized)))
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized account input. Must be array')
     }
 
-    return this.fromValuesArray(values)
+    return this.fromValuesArray(values as any)
   }
 
   public static fromValuesArray(values: Buffer[]) {
@@ -103,7 +103,7 @@ export class Account {
    * Returns the RLP serialization of the account as a `Buffer`.
    */
   serialize(): Buffer {
-    return Buffer.from(RLP.encode(this.raw()))
+    return Buffer.from(RLP.encode(bufArrToArr(this.raw())))
   }
 
   /**

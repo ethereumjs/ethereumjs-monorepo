@@ -1,7 +1,7 @@
 import { debug as createDebugLogger } from 'debug'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import RLP from 'rlp'
-import { Account, Address, BN, intToBuffer } from 'ethereumjs-util'
+import { Account, Address, BN, bufArrToArr, intToBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import VM from './index'
@@ -434,12 +434,14 @@ export async function rewardAccount(
  */
 export function encodeReceipt(tx: TypedTransaction, receipt: TxReceipt) {
   const encoded = Buffer.from(
-    RLP.encode([
-      (receipt as PreByzantiumTxReceipt).stateRoot ?? (receipt as PostByzantiumTxReceipt).status,
-      receipt.gasUsed,
-      receipt.bitvector,
-      receipt.logs,
-    ])
+    RLP.encode(
+      bufArrToArr([
+        (receipt as PreByzantiumTxReceipt).stateRoot ?? (receipt as PostByzantiumTxReceipt).status,
+        receipt.gasUsed,
+        receipt.bitvector,
+        receipt.logs,
+      ])
+    )
   )
 
   if (!tx.supports(Capability.EIP2718TypedTransaction)) {
@@ -494,7 +496,7 @@ export async function generateTxReceipt(
       } as PreByzantiumTxReceipt
       receiptLog += ` stateRoot=${txReceipt.stateRoot.toString('hex')} (< Byzantium)`
     }
-    encodedReceipt = Buffer.from(RLP.encode(Object.values(txReceipt)))
+    encodedReceipt = Buffer.from(RLP.encode(bufArrToArr(Object.values(txReceipt))))
   } else {
     // EIP2930 Transaction
     txReceipt = {
@@ -503,7 +505,7 @@ export async function generateTxReceipt(
     } as PostByzantiumTxReceipt
     encodedReceipt = Buffer.concat([
       intToBuffer(tx.type),
-      Buffer.from(RLP.encode(Object.values(txReceipt))),
+      Buffer.from(RLP.encode(bufArrToArr(Object.values(txReceipt)))),
     ])
   }
   return {

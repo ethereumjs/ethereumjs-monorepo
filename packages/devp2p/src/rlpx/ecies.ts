@@ -2,6 +2,7 @@ import crypto, { Decipher } from 'crypto'
 import { debug as createDebugLogger } from 'debug'
 import { publicKeyCreate, ecdh, ecdsaRecover, ecdsaSign } from 'secp256k1'
 import RLP from 'rlp'
+import { bufArrToArr } from 'ethereumjs-util'
 import { unstrictDecode } from '../util'
 import { MAC } from './mac'
 
@@ -180,7 +181,7 @@ export class ECIES {
       Buffer.from([0x04]),
     ]
 
-    const dataRLP = Buffer.from(RLP.encode(data))
+    const dataRLP = Buffer.from(RLP.encode(bufArrToArr(data)))
     const pad = crypto.randomBytes(100 + Math.floor(Math.random() * 151)) // Random padding between 100, 250
     const authMsg = Buffer.concat([dataRLP, pad])
     const overheadLength = 113
@@ -269,7 +270,7 @@ export class ECIES {
   createAckEIP8(): Buffer | undefined {
     const data = [pk2id(this._ephemeralPublicKey), this._nonce, Buffer.from([0x04])]
 
-    const dataRLP = Buffer.from(RLP.encode(data))
+    const dataRLP = Buffer.from(RLP.encode(bufArrToArr(data)))
     const pad = crypto.randomBytes(100 + Math.floor(Math.random() * 151)) // Random padding between 100, 250
     const ackMsg = Buffer.concat([dataRLP, pad])
     const overheadLength = 113

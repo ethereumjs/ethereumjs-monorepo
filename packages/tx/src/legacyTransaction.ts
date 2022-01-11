@@ -1,8 +1,8 @@
 import {
-  arrToBufferArr,
   BN,
   bnToHex,
   bnToUnpaddedBuffer,
+  bufArrToArr,
   ecrecover,
   MAX_INTEGER,
   rlphash,
@@ -43,13 +43,13 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * Format: `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
    */
   public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
-    const values = arrToBufferArr(RLP.decode(serialized))
+    const values = RLP.decode(Uint8Array.from(serialized))
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized tx input. Must be array')
     }
 
-    return this.fromValuesArray(values, opts)
+    return this.fromValuesArray(values as any, opts)
   }
 
   /**
@@ -179,7 +179,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * representation for external signing use {@link Transaction.getMessageToSign}.
    */
   serialize(): Buffer {
-    return Buffer.from(RLP.encode(this.raw()))
+    return Buffer.from(RLP.encode(bufArrToArr(this.raw())))
   }
 
   private _getMessageToSign() {
@@ -211,7 +211,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * ```javascript
    * import RLP from 'rlp'
    * const message = tx.getMessageToSign(false)
-   * const serializedMessage = Buffer.from(RLP.encode(message)) // use this for the HW wallet input
+   * const serializedMessage = Buffer.from(RLP.encode(bufArrToArr(message))) // use this for the HW wallet input
    * ```
    *
    * @param hashMessage - Return hashed message if set to true (default: true)

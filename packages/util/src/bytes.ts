@@ -285,11 +285,23 @@ export const baToJSON = function (ba: any): any {
  * @param arr Uint8Array or NestedUint8Array
  * @returns Buffer or NestedBufferArray
  */
-export const arrToBufferArr = function (arr: any): any {
+export const arrToBufArr = function (arr: any): any {
   if (!Array.isArray(arr)) {
     return Buffer.from(arr)
   }
-  return arr.map((a: Uint8Array | Uint8Array[]) => arrToBufferArr(a)) as Buffer[]
+  return arr.map((a: Uint8Array | Uint8Array[]) => arrToBufArr(a))
+}
+
+/**
+ * Converts a `Buffer` or `NestedBufferArray` to `Uint8Array` or `NestedUint8Array`
+ * @param arr Buffer or NestedBufferArray
+ * @returns Uint8Array or NestedUint8Array
+ */
+export const bufArrToArr = function (arr: any): any {
+  if (!Array.isArray(arr)) {
+    return Uint8Array.from(arr ?? [])
+  }
+  return arr.map((a: Uint8Array | Uint8Array[]) => bufArrToArr(a))
 }
 
 /**

@@ -1,6 +1,6 @@
 import tape from 'tape'
 import RLP from 'rlp'
-import { arrToBufferArr, BN, keccak256, zeros, toBuffer } from 'ethereumjs-util'
+import { BN, bufArrToArr, bufferToHex, keccak256, zeros, toBuffer } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block, BlockBuffer, BlockHeader } from '../src'
 import blockFromRpc from '../src/from-rpc'
@@ -568,8 +568,9 @@ tape('[Block]: block functions', function (t) {
       uncleHeaderData.extraData = '0xffff'
       const uncleHeader = BlockHeader.fromHeaderData(uncleHeaderData)
 
-      forkBlock2HeaderData.uncleHash =
-        '0x' + keccak256(Buffer.from(RLP.encode([uncleHeader.raw()]))).toString('hex')
+      forkBlock2HeaderData.uncleHash = bufferToHex(
+        keccak256(Buffer.from(RLP.encode(bufArrToArr([uncleHeader.raw()]))))
+      )
 
       const forkBlock_ValidCommon = Block.fromBlockData(
         {
@@ -691,7 +692,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('DAO hardfork', function (st) {
-    const blockData: any = arrToBufferArr(RLP.decode(testData2.blocks[0].rlp))
+    const blockData: any = RLP.decode(testData2.blocks[0].rlp)
     // Set block number from test block to mainnet DAO fork block 1920000
     blockData[0][8] = Buffer.from('1D4C00', 'hex')
 

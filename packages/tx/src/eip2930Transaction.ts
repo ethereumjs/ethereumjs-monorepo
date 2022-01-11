@@ -1,8 +1,8 @@
 import {
-  arrToBufferArr,
   BN,
   bnToHex,
   bnToUnpaddedBuffer,
+  bufArrToArr,
   ecrecover,
   keccak256,
   MAX_INTEGER,
@@ -105,7 +105,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       )
     }
 
-    const values = arrToBufferArr(RLP.decode(serialized.slice(1)))
+    const values = RLP.decode(Uint8Array.from(serialized.slice(1)))
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized tx input: must be array')
@@ -288,7 +288,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    */
   serialize(): Buffer {
     const base = this.raw()
-    return Buffer.concat([TRANSACTION_TYPE_BUFFER, Buffer.from(RLP.encode(base as any))])
+    return Buffer.concat([TRANSACTION_TYPE_BUFFER, Buffer.from(RLP.encode(bufArrToArr(base)))])
   }
 
   /**
@@ -306,7 +306,10 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    */
   getMessageToSign(hashMessage = true): Buffer {
     const base = this.raw().slice(0, 8)
-    const message = Buffer.concat([TRANSACTION_TYPE_BUFFER, Buffer.from(RLP.encode(base as any))])
+    const message = Buffer.concat([
+      TRANSACTION_TYPE_BUFFER,
+      Buffer.from(RLP.encode(bufArrToArr(base))),
+    ])
     if (hashMessage) {
       return keccak256(message)
     } else {

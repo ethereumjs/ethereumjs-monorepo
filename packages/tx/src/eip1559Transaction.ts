@@ -1,8 +1,8 @@
 import {
-  arrToBufferArr,
   BN,
   bnToHex,
   bnToUnpaddedBuffer,
+  bufArrToArr,
   ecrecover,
   keccak256,
   MAX_INTEGER,
@@ -105,7 +105,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       )
     }
 
-    const values = arrToBufferArr(RLP.decode(serialized.slice(1)))
+    const values = RLP.decode(serialized.slice(1))
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized tx input: must be array')
@@ -315,7 +315,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    */
   serialize(): Buffer {
     const base = this.raw()
-    return Buffer.concat([TRANSACTION_TYPE_BUFFER, Buffer.from(RLP.encode(base as any))])
+    return Buffer.concat([TRANSACTION_TYPE_BUFFER, Buffer.from(RLP.encode(bufArrToArr(base)))])
   }
 
   /**
@@ -333,7 +333,10 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    */
   getMessageToSign(hashMessage = true): Buffer {
     const base = this.raw().slice(0, 9)
-    const message = Buffer.concat([TRANSACTION_TYPE_BUFFER, Buffer.from(RLP.encode(base as any))])
+    const message = Buffer.concat([
+      TRANSACTION_TYPE_BUFFER,
+      Buffer.from(RLP.encode(bufArrToArr(base))),
+    ])
     if (hashMessage) {
       return keccak256(message)
     } else {

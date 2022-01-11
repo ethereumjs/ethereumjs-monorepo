@@ -2,7 +2,7 @@ import { PreByzantiumTxReceipt, PostByzantiumTxReceipt, TxReceipt } from '@ether
 import { Log } from '@ethereumjs/vm/dist/evm/types'
 import Bloom from '@ethereumjs/vm/dist/bloom'
 import { TypedTransaction } from '@ethereumjs/tx'
-import { arrToBufferArr, intToBuffer, bufferToInt } from 'ethereumjs-util'
+import { arrToBufArr, bufArrToArr, intToBuffer, bufferToInt } from 'ethereumjs-util'
 import RLP from 'rlp'
 import { MetaDBManager, DBKey } from './metaDBManager'
 import type { Block } from '@ethereumjs/block'
@@ -301,16 +301,18 @@ export class ReceiptsManager extends MetaDBManager {
           value = value as TxReceipt[]
           return Buffer.from(
             RLP.encode(
-              value.map((r) => [
-                (r as PreByzantiumTxReceipt).stateRoot ??
-                  intToBuffer((r as PostByzantiumTxReceipt).status),
-                r.gasUsed,
-                this.rlp(RlpConvert.Encode, RlpType.Logs, r.logs),
-              ])
+              bufArrToArr(
+                value.map((r) => [
+                  (r as PreByzantiumTxReceipt).stateRoot ??
+                    intToBuffer((r as PostByzantiumTxReceipt).status),
+                  r.gasUsed,
+                  this.rlp(RlpConvert.Encode, RlpType.Logs, r.logs),
+                ])
+              )
             )
           )
         } else {
-          const decoded = arrToBufferArr(RLP.decode(value as Buffer)) as rlpReceipt[]
+          const decoded = arrToBufArr(RLP.decode(Uint8Array.from(value as Buffer))) as rlpReceipt[]
           return decoded.map((r) => {
             const gasUsed = r[1]
             const logs = this.rlp(RlpConvert.Decode, RlpType.Logs, r[2])
@@ -333,16 +335,18 @@ export class ReceiptsManager extends MetaDBManager {
         }
       case RlpType.Logs:
         if (conversion === RlpConvert.Encode) {
-          return Buffer.from(RLP.encode(value as Log[]))
+          return Buffer.from(RLP.encode(bufArrToArr(value as Log[])))
         } else {
-          return arrToBufferArr(RLP.decode(value as Buffer)) as Log[]
+          return arrToBufArr(RLP.decode(Uint8Array.from(value as Buffer))) as Log[]
         }
       case RlpType.TxHash:
         if (conversion === RlpConvert.Encode) {
           const [blockHash, txIndex] = value as TxHashIndex
-          return Buffer.from(RLP.encode([blockHash, intToBuffer(txIndex)]))
+          return Buffer.from(RLP.encode(bufArrToArr([blockHash, intToBuffer(txIndex)])))
         } else {
-          const [blockHash, txIndex] = arrToBufferArr(RLP.decode(value as Buffer)) as rlpTxHash
+          const [blockHash, txIndex] = arrToBufArr(
+            RLP.decode(Uint8Array.from(value as Buffer))
+          ) as rlpTxHash
           return [blockHash, bufferToInt(txIndex)] as TxHashIndex
         }
       default:

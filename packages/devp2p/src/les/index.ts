@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import RLP from 'rlp'
-import { arrToBufferArr } from 'ethereumjs-util'
+import { arrToBufArr, bufArrToArr } from 'ethereumjs-util'
 import ms from 'ms'
 import snappy from 'snappyjs'
 import { debug as createDebugLogger } from 'debug'
@@ -53,7 +53,7 @@ export class LES extends EventEmitter {
   static les4 = { name: 'les', version: 4, length: 23, constructor: LES }
 
   _handleMessage(code: LES.MESSAGE_CODES, data: any) {
-    const payload = arrToBufferArr(RLP.decode(data))
+    const payload = arrToBufArr(RLP.decode(data))
     const messageName = this.getMsgPrefix(code)
     const debugMsg = `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}`
 
@@ -199,7 +199,7 @@ export class LES extends EventEmitter {
       } (les${this._version}): ${this._getStatusString(this._status)}`
     )
 
-    let payload = Buffer.from(RLP.encode(statusList))
+    let payload = Buffer.from(RLP.encode(bufArrToArr(statusList)))
 
     // Use snappy compression if peer supports DevP2P >=v5
     if (this._peer._hello?.protocolVersion && this._peer._hello?.protocolVersion >= 5) {
@@ -217,7 +217,10 @@ export class LES extends EventEmitter {
    */
   sendMessage(code: LES.MESSAGE_CODES, payload: any) {
     const messageName = this.getMsgPrefix(code)
-    const logData = formatLogData(Buffer.from(RLP.encode(payload)).toString('hex'), verbose)
+    const logData = formatLogData(
+      Buffer.from(RLP.encode(bufArrToArr(payload))).toString('hex'),
+      verbose
+    )
     const debugMsg = `Send ${messageName} message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${logData}`
 
     this.debug(messageName, debugMsg)

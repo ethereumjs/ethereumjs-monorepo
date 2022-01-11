@@ -51,13 +51,11 @@ function safeSlice(input: Uint8Array, start: number, end: number) {
 /**
  * Parse integers. Check if there is no leading zeros
  * @param v The value to parse
- * @param base The base to parse the integer into
  */
-function decodeLength(v: any): number {
+function decodeLength(v: Uint8Array): number {
   if (v[0] === 0 && v[1] === 0) {
     throw new Error('invalid RLP: extra zeros')
   }
-
   return parseHexByte(bytesToHex(v))
 }
 
@@ -147,12 +145,12 @@ function _decode(input: Uint8Array): Decoded {
       remainder: input.slice(length + llength),
     }
   } else if (firstByte <= 0xf7) {
-    // a list between  0-55 bytes long
+    // a list between 0-55 bytes long
     length = firstByte - 0xbf
     innerRemainder = safeSlice(input, 1, length)
     while (innerRemainder.length) {
       d = _decode(innerRemainder)
-      decoded.push(d.data as Uint8Array)
+      decoded.push(d.data)
       innerRemainder = d.remainder
     }
 
@@ -161,7 +159,7 @@ function _decode(input: Uint8Array): Decoded {
       remainder: input.slice(length),
     }
   } else {
-    // a list  over 55 bytes long
+    // a list over 55 bytes long
     llength = firstByte - 0xf6
     length = decodeLength(safeSlice(input, 1, llength))
     if (length < 56) {
@@ -176,7 +174,7 @@ function _decode(input: Uint8Array): Decoded {
 
     while (innerRemainder.length) {
       d = _decode(innerRemainder)
-      decoded.push(d.data as Uint8Array)
+      decoded.push(d.data)
       innerRemainder = d.remainder
     }
 

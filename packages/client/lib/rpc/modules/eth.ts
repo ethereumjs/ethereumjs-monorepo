@@ -11,7 +11,7 @@ import {
 import {
   Account,
   Address,
-  arrToBufferArr,
+  arrToBufArr,
   BN,
   bufferToHex,
   bnToHex,
@@ -633,7 +633,9 @@ export class Eth {
     const storageTrie = await (vm.stateManager as any)._getStorageTrie(address)
     const position = setLengthLeft(toBuffer(positionHex), 32)
     const storage = await storageTrie.get(position)
-    return storage ? bufferToHex(setLengthLeft(arrToBufferArr(RLP.decode(storage)), 32)) : '0x'
+    return storage
+      ? bufferToHex(setLengthLeft(arrToBufArr(RLP.decode(Uint8Array.from(storage))), 32))
+      : '0x'
   }
 
   /**

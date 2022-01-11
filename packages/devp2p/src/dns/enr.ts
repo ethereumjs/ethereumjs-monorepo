@@ -1,7 +1,7 @@
 import assert from 'assert'
 import * as base32 from 'hi-base32'
 import RLP from 'rlp'
-import { arrToBufferArr } from 'ethereumjs-util'
+import { arrToBufArr, bufArrToArr } from 'ethereumjs-util'
 import { sscanf } from 'scanf'
 import { ecdsaVerify } from 'secp256k1'
 import { Multiaddr } from 'multiaddr'
@@ -56,7 +56,7 @@ export class ENR {
 
     // ENRs are RLP encoded and written to DNS TXT entries as base64 url-safe strings
     const base64BufferEnr = base64url.toBuffer(enr.slice(this.RECORD_PREFIX.length))
-    const decoded = arrToBufferArr(RLP.decode(base64BufferEnr))
+    const decoded = arrToBufArr(RLP.decode(Uint8Array.from(base64BufferEnr)))
     const [signature, seq, ...kvs] = decoded
 
     // Convert ENR key/value pairs to object
@@ -69,7 +69,7 @@ export class ENR {
     // Validate sig
     const isVerified = ecdsaVerify(
       signature,
-      keccak256(Buffer.from(RLP.encode([seq, ...kvs]))),
+      keccak256(Buffer.from(RLP.encode(bufArrToArr([seq, ...kvs])))),
       obj.secp256k1
     )
 

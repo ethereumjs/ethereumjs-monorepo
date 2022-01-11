@@ -131,7 +131,7 @@ export function createDeferred<T>(): Deferred<T> {
 export function unstrictDecode(value: Buffer) {
   // rlp library throws on remainder.length !== 0
   // this utility function bypasses that
-  return (RLP.decode(value, true) as any).data
+  return (RLP.decode(Uint8Array.from(value), true) as any).data
 }
 
 // multiaddr 8.0.0 expects an Uint8Array with internal buffer starting at 0 offset

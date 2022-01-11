@@ -5,7 +5,7 @@ import ms from 'ms'
 import snappy from 'snappyjs'
 import { debug as createDebugLogger } from 'debug'
 import Common from '@ethereumjs/common'
-import { arrToBufferArr } from 'ethereumjs-util'
+import { arrToBufArr, bufArrToArr } from 'ethereumjs-util'
 import RLP from 'rlp'
 import { ETH, LES } from '../'
 import { int2buffer, buffer2int, formatLogData } from '../util'
@@ -238,7 +238,7 @@ export class Peer extends EventEmitter {
     ]
 
     if (!this._closed) {
-      if (this._sendMessage(PREFIXES.HELLO, Buffer.from(RLP.encode(payload as any)))) {
+      if (this._sendMessage(PREFIXES.HELLO, Buffer.from(RLP.encode(bufArrToArr(payload))))) {
         this._weHello = payload
       }
       if (this._hello) {
@@ -556,13 +556,13 @@ export class Peer extends EventEmitter {
       //
       if (protocolName === 'Peer') {
         try {
-          payload = arrToBufferArr(RLP.decode(payload))
+          payload = arrToBufArr(RLP.decode(Uint8Array.from(payload)))
         } catch (e: any) {
           if (msgCode === PREFIXES.DISCONNECT) {
             if (compressed) {
-              payload = arrToBufferArr(RLP.decode(origPayload))
+              payload = arrToBufArr(RLP.decode(Uint8Array.from(origPayload)))
             } else {
-              payload = arrToBufferArr(RLP.decode(snappy.uncompress(payload)))
+              payload = arrToBufArr(RLP.decode(Uint8Array.from(snappy.uncompress(payload))))
             }
           } else {
             throw new Error(e)

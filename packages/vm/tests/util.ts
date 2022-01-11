@@ -7,7 +7,15 @@ import {
   Transaction,
   TxOptions,
 } from '@ethereumjs/tx'
-import { Account, BN, keccak256, stripHexPrefix, setLengthLeft, toBuffer } from 'ethereumjs-util'
+import {
+  Account,
+  BN,
+  keccak256,
+  stripHexPrefix,
+  setLengthLeft,
+  toBuffer,
+  bufferToHex,
+} from 'ethereumjs-util'
 import RLP from 'rlp'
 
 export function dumpState(state: any, cb: Function) {
@@ -188,7 +196,7 @@ export function verifyAccountPostConditions(
       const rs = state.createReadStream()
       rs.on('data', function (data: any) {
         let key = data.key.toString('hex')
-        const val = '0x' + Buffer.from(RLP.decode(data.value)).toString('hex')
+        const val = bufferToHex(Buffer.from(RLP.decode(Uint8Array.from(data.value)) as Uint8Array))
 
         if (key === '0x') {
           key = '0x00'
@@ -318,7 +326,7 @@ export async function setupPreConditions(state: any, testData: any) {
       if (valBN.isZero()) {
         continue
       }
-      const val = Buffer.from(RLP.encode(valBN.toArrayLike(Buffer, 'be')))
+      const val = Buffer.from(RLP.encode(valBN.toArray()))
       const key = setLengthLeft(format(storageKey), 32)
 
       await storageTrie.put(key, val)

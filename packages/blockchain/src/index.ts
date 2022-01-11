@@ -1,7 +1,7 @@
 import { debug as createDebugLogger } from 'debug'
 import Semaphore from 'semaphore-async-await'
 import RLP from 'rlp'
-import { Address, BN } from 'ethereumjs-util'
+import { Address, BN, bufArrToArr } from 'ethereumjs-util'
 import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
 import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
@@ -531,7 +531,9 @@ export default class Blockchain implements BlockchainInterface {
       state[0].toArrayLike(Buffer),
       state[1].map((a) => a.toBuffer()),
     ])
-    dbOps.push(DBOp.set(DBTarget.CliqueSignerStates, Buffer.from(RLP.encode(formatted))))
+    dbOps.push(
+      DBOp.set(DBTarget.CliqueSignerStates, Buffer.from(RLP.encode(bufArrToArr(formatted))))
+    )
 
     await this.dbManager.batch(dbOps)
     // Output active signers for debugging purposes
@@ -682,7 +684,7 @@ export default class Blockchain implements BlockchainInterface {
       v[0].toArrayLike(Buffer),
       [v[1][0].toBuffer(), v[1][1].toBuffer(), v[1][2]],
     ])
-    dbOps.push(DBOp.set(DBTarget.CliqueVotes, Buffer.from(RLP.encode(formatted))))
+    dbOps.push(DBOp.set(DBTarget.CliqueVotes, Buffer.from(RLP.encode(bufArrToArr(formatted)))))
 
     await this.dbManager.batch(dbOps)
   }
@@ -722,7 +724,9 @@ export default class Blockchain implements BlockchainInterface {
       b[0].toArrayLike(Buffer),
       b[1].toBuffer(),
     ])
-    dbOps.push(DBOp.set(DBTarget.CliqueBlockSigners, Buffer.from(RLP.encode(formatted))))
+    dbOps.push(
+      DBOp.set(DBTarget.CliqueBlockSigners, Buffer.from(RLP.encode(bufArrToArr(formatted))))
+    )
 
     await this.dbManager.batch(dbOps)
   }

@@ -1,5 +1,5 @@
 import RLP from 'rlp'
-import { Address, arrToBufferArr, BN } from 'ethereumjs-util'
+import { Address, arrToBufArr, BN } from 'ethereumjs-util'
 import { Block, BlockHeader, BlockOptions, BlockBuffer, BlockBodyBuffer } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import { CliqueLatestSignerStates, CliqueLatestVotes, CliqueLatestBlockSigners } from '../clique'
@@ -74,7 +74,7 @@ export class DBManager {
   async getCliqueLatestSignerStates(): Promise<CliqueLatestSignerStates> {
     try {
       const signerStates = await this.get(DBTarget.CliqueSignerStates)
-      const states = arrToBufferArr(RLP.decode(signerStates)) as [Buffer, Buffer[]]
+      const states = arrToBufArr(RLP.decode(Uint8Array.from(signerStates))) as [Buffer, Buffer[]]
       return states.map((state) => {
         const blockNum = new BN(state[0])
         const addrs = (<any>state[1]).map((buf: Buffer) => new Address(buf))
@@ -94,7 +94,10 @@ export class DBManager {
   async getCliqueLatestVotes(): Promise<CliqueLatestVotes> {
     try {
       const signerVotes = await this.get(DBTarget.CliqueVotes)
-      const votes = arrToBufferArr(RLP.decode(signerVotes)) as [Buffer, [Buffer, Buffer, Buffer]]
+      const votes = arrToBufArr(RLP.decode(Uint8Array.from(signerVotes))) as [
+        Buffer,
+        [Buffer, Buffer, Buffer]
+      ]
       return votes.map((vote) => {
         const blockNum = new BN(vote[0])
         const signer = new Address((vote[1] as any)[0])
@@ -116,7 +119,7 @@ export class DBManager {
   async getCliqueLatestBlockSigners(): Promise<CliqueLatestBlockSigners> {
     try {
       const blockSigners = await this.get(DBTarget.CliqueBlockSigners)
-      const signers = arrToBufferArr(RLP.decode(blockSigners)) as [Buffer, Buffer][]
+      const signers = arrToBufArr(RLP.decode(Uint8Array.from(blockSigners))) as [Buffer, Buffer][]
       return signers.map((s) => {
         const blockNum = new BN(s[0])
         const signer = new Address(s[1] as any)
@@ -175,7 +178,7 @@ export class DBManager {
    */
   async getBody(blockHash: Buffer, blockNumber: BN): Promise<BlockBodyBuffer> {
     const body = await this.get(DBTarget.Body, { blockHash, blockNumber })
-    return arrToBufferArr(RLP.decode(body)) as BlockBodyBuffer
+    return arrToBufArr(RLP.decode(Uint8Array.from(body))) as BlockBodyBuffer
   }
 
   /**
@@ -198,7 +201,7 @@ export class DBManager {
    */
   async getTotalDifficulty(blockHash: Buffer, blockNumber: BN): Promise<BN> {
     const td = await this.get(DBTarget.TotalDifficulty, { blockHash, blockNumber })
-    return new BN(RLP.decode(td) as Uint8Array)
+    return new BN(RLP.decode(Uint8Array.from(td)) as Uint8Array)
   }
 
   /**

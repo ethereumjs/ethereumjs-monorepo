@@ -94,7 +94,11 @@ async function createStorageTrie(storage: any) {
   for (const [address, value] of Object.entries(storage) as unknown as [string, string]) {
     const key = isHexPrefixed(address) ? toBuffer(address) : Buffer.from(address, 'hex')
     const val = Buffer.from(
-      RLP.encode(unpadBuffer(isHexPrefixed(value) ? toBuffer(value) : Buffer.from(value, 'hex')))
+      RLP.encode(
+        Uint8Array.from(
+          unpadBuffer(isHexPrefixed(value) ? toBuffer(value) : Buffer.from(value, 'hex'))
+        )
+      )
     )
     await trie.put(key, val)
   }
