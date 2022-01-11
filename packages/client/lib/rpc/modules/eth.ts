@@ -11,11 +11,12 @@ import {
 import {
   Account,
   Address,
+  arrToBufferArr,
   BN,
   bufferToHex,
   bnToHex,
   intToHex,
-  rlp,
+  RLP,
   toBuffer,
   setLengthLeft,
 } from 'ethereumjs-util'
@@ -632,7 +633,7 @@ export class Eth {
     const storageTrie = await (vm.stateManager as any)._getStorageTrie(address)
     const position = setLengthLeft(toBuffer(positionHex), 32)
     const storage = await storageTrie.get(position)
-    return storage ? bufferToHex(setLengthLeft(rlp.decode(storage), 32)) : '0x'
+    return storage ? bufferToHex(setLengthLeft(arrToBufferArr(RLP.decode(storage)), 32)) : '0x'
   }
 
   /**

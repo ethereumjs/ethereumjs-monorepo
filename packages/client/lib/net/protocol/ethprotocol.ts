@@ -6,7 +6,7 @@ import {
   BlockBodyBuffer,
 } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
-import { BN, bufferToInt, intToBuffer, rlp } from 'ethereumjs-util'
+import { arrToBufferArr, BN, bufferToInt, intToBuffer, RLP } from 'ethereumjs-util'
 import { Chain } from './../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'
 import type { TxReceiptWithType } from '../../sync/execution/receipt'
@@ -233,13 +233,15 @@ export class EthProtocol extends Protocol {
       encode: ({ reqId, receipts }: { reqId: BN; receipts: TxReceiptWithType[] }) => {
         const serializedReceipts = []
         for (const receipt of receipts) {
-          let encodedReceipt = rlp.encode([
-            (receipt as PreByzantiumTxReceipt).stateRoot ??
-              (receipt as PostByzantiumTxReceipt).status,
-            receipt.gasUsed,
-            receipt.bitvector,
-            receipt.logs,
-          ])
+          let encodedReceipt = Buffer.from(
+            RLP.encode([
+              (receipt as PreByzantiumTxReceipt).stateRoot ??
+                (receipt as PostByzantiumTxReceipt).status,
+              receipt.gasUsed,
+              receipt.bitvector,
+              receipt.logs,
+            ])
+          )
           if (receipt.txType > 0) {
             // Serialize receipt according to EIP-2718:
             // `typed-receipt = tx-type || receipt-data`
@@ -253,7 +255,7 @@ export class EthProtocol extends Protocol {
         new BN(reqId),
         receipts.map((r) => {
           // Legacy receipt if r[0] >= 0xc0, otherwise typed receipt with first byte as TransactionType
-          const decoded = rlp.decode(r[0] >= 0xc0 ? r : r.slice(1)) as any
+          const decoded = arrToBufferArr(RLP.decode(r[0] >= 0xc0 ? r : r.slice(1))) as any
           const [stateRootOrStatus, cumulativeGasUsed, logsBloom, logs] = decoded
           const receipt = { gasUsed: cumulativeGasUsed, bitvector: logsBloom, logs } as TxReceipt
           if (stateRootOrStatus.length === 32) {

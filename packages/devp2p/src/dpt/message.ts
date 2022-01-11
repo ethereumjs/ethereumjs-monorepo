@@ -1,6 +1,6 @@
 import { debug as createDebugLogger } from 'debug'
 import ip from 'ip'
-import { rlp } from 'ethereumjs-util'
+import { RLP } from 'ethereumjs-util'
 import secp256k1 from 'secp256k1'
 import { keccak256, int2buffer, buffer2int, assertEq, unstrictDecode } from '../util'
 import { PeerInfo } from './dpt'
@@ -169,7 +169,7 @@ export function encode<T>(typename: string, data: T, privateKey: Buffer) {
   const type: number = types.byName[typename] as number
   if (type === undefined) throw new Error(`Invalid typename: ${typename}`)
   const encodedMsg = messages[typename].encode(data)
-  const typedata = Buffer.concat([Buffer.from([type]), rlp.encode(encodedMsg)])
+  const typedata = Buffer.concat([Buffer.from([type]), Buffer.from(RLP.encode(encodedMsg))])
 
   const sighash = keccak256(typedata)
   const sig = secp256k1.ecdsaSign(sighash, privateKey)

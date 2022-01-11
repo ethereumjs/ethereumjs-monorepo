@@ -1,5 +1,5 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { BN, rlp, keccak256, KECCAK256_RLP, bufferToHex } from 'ethereumjs-util'
+import { arrToBufferArr, BN, RLP, keccak256, KECCAK256_RLP, bufferToHex } from 'ethereumjs-util'
 import Common, { ConsensusType } from '@ethereumjs/common'
 import {
   TransactionFactory,
@@ -71,7 +71,7 @@ export class Block {
    * @param opts
    */
   public static fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions) {
-    const values = rlp.decode(serialized) as any as BlockBuffer
+    const values = arrToBufferArr(RLP.decode(serialized)) as BlockBuffer
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized block input. Must be array')
@@ -201,7 +201,7 @@ export class Block {
    * Returns the rlp encoding of the block.
    */
   serialize(): Buffer {
-    return rlp.encode(this.raw())
+    return Buffer.from(RLP.encode(this.raw()))
   }
 
   /**
@@ -211,7 +211,7 @@ export class Block {
     const { transactions, txTrie } = this
     for (let i = 0; i < transactions.length; i++) {
       const tx = transactions[i]
-      const key = rlp.encode(i)
+      const key = Buffer.from(RLP.encode(i))
       const value = tx.serialize()
       await txTrie.put(key, value)
     }
@@ -322,7 +322,7 @@ export class Block {
    * Validates the uncle's hash.
    */
   validateUnclesHash(): boolean {
-    const raw = rlp.encode(this.uncleHeaders.map((uh) => uh.raw()))
+    const raw = Buffer.from(RLP.encode(this.uncleHeaders.map((uh) => uh.raw())))
     return keccak256(raw).equals(this.header.uncleHash)
   }
 

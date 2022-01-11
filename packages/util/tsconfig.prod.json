@@ -5,5 +5,8 @@
     "outDir": "./dist",
     "composite": true
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts"],
+  "references": [
+    { "path": "../rlp/tsconfig.prod.json" },
+  ],
 }

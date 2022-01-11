@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { KECCAK256_NULL, rlp } from 'ethereumjs-util'
+import { KECCAK256_NULL, RLP } from 'ethereumjs-util'
 import { BaseTrie, CheckpointTrie } from '../src'
 
 tape('simple save and retrieve', function (tester) {
@@ -272,7 +272,7 @@ tape('it should create the genesis state root from ethereum', function (tester) 
   startAmount[0] = 1
 
   const account = [startAmount, 0, stateRoot, KECCAK256_NULL]
-  const rlpAccount = rlp.encode(account)
+  const rlpAccount = Buffer.from(RLP.encode(account))
   const cppRlp =
     'f85e9a010000000000000000000000000000000000000000000000000080a00000000000000000000000000000000000000000000000000000000000000000a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
 
@@ -293,7 +293,7 @@ tape('setting back state root (deleteFromDB)', async (t) => {
   const k1 = Buffer.from('1')
   /* Testing with longer value due to `rlpNode.length >= 32` check in `_formatNode()`
    * Reasoning from https://eth.wiki/fundamentals/patricia-tree:
-   * "When one node is referenced inside another node, what is included is `H(rlp.encode(x))`,
+   * "When one node is referenced inside another node, what is included is `H(Buffer.from(RLP.encode(x)))`,
    * where `H(x) = sha3(x) if len(x) >= 32 else x`"
    */
   const v1 = Buffer.from('this-is-some-longer-value-to-test-the-delete-operation-value1')

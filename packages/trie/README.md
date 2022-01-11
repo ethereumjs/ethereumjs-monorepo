@@ -128,7 +128,7 @@ trie
 
 ```typescript
 import level from 'level'
-import { Account, BN, bufferToHex, rlp } from 'ethereumjs-util'
+import { Account, BN, bufferToHex, RLP } from 'ethereumjs-util'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 
 const stateRoot = 'STATE_ROOT_OF_A_BLOCK'
@@ -156,7 +156,7 @@ async function test() {
   stream
     .on('data', (data) => {
       console.log(`key: ${bufferToHex(data.key)}`)
-      console.log(`Value: ${bufferToHex(rlp.decode(data.value))}`)
+      console.log(`Value: ${bufferToHex(Buffer.from(RLP.decode(data.value)))}`)
     })
     .on('end', () => {
       console.log('Finished reading storage.')

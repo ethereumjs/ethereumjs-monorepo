@@ -44,7 +44,6 @@ The extended errors give substantial more object and chain context and should ea
 
 **Potentially breaking**: Attention! If you do react on errors in your code and do exact errror matching (`error.message === 'invalid transaction trie'`) things will break. Please make sure to do error comparisons with something like `error.message.includes('invalid transaction trie')` instead. This should generally be the pattern used for all error message comparisions and is assured to be future proof on all error messages (we won't change the core text in non-breaking releases).
 
-
 ## Other Changes
 
 - The `dataFee` from `tx.getDataFee()` now gets cached for txs created with the `freeze` option (activated by default), PR [#1532](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1532) and PR [#1550](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1550)
@@ -157,25 +156,24 @@ We tried to get more intelligent on the instantiation with a default chain if no
 
 Both these changes with the new default HF rules and the more intelligent chain ID instantiation now allows for an e.g. `EIP-155` tx instantiation without a Common (and generally for a safer non-Common tx instantiation) like this:
 
-
 ```typescript
 import Common from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 
 const txData = {
-  "data": "0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-  "gasLimit": "0x02625a00",
-  "maxPriorityFeePerGas": "0x01",
-  "maxFeePerGas": "0xff",
-  "nonce": "0x00",
-  "to": "0xcccccccccccccccccccccccccccccccccccccccc",
-  "value": "0x0186a0",
-  "v": "0x01",
-  "r": "0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9",
-  "s": "0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64",
-  "chainId": "0x01",
-  "accessList": [],
-  "type": "0x02"
+  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+  gasLimit: '0x02625a00',
+  maxPriorityFeePerGas: '0x01',
+  maxFeePerGas: '0xff',
+  nonce: '0x00',
+  to: '0xcccccccccccccccccccccccccccccccccccccccc',
+  value: '0x0186a0',
+  v: '0x01',
+  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
+  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
+  chainId: '0x01',
+  accessList: [],
+  type: '0x02',
 }
 
 const tx = FeeMarketEIP1559Transaction.fromTxData(txData)
@@ -192,11 +190,11 @@ import { rlp } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 
-const common = new Common({ chain: 'goerli', hardfork: 'berlin'})
+const common = new Common({ chain: 'goerli', hardfork: 'berlin' })
 const tx = Transaction.fromTxData({}, { common })
 
 const message = tx.getMessageToSign(false)
-const serializedMessage = rlp.encode(message) // use this for the ledger input
+const serializedMessage = Buffer.from(RLP.encode(message)) // use this for the ledger input
 ```
 
 ### Other Changes
@@ -223,19 +221,19 @@ import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 const common = new Common({ chain: 'mainnet', hardfork: 'london' })
 
 const txData = {
-  "data": "0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-  "gasLimit": "0x02625a00",
-  "maxPriorityFeePerGas": "0x01",
-  "maxFeePerGas": "0xff",
-  "nonce": "0x00",
-  "to": "0xcccccccccccccccccccccccccccccccccccccccc",
-  "value": "0x0186a0",
-  "v": "0x01",
-  "r": "0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9",
-  "s": "0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64",
-  "chainId": "0x01",
-  "accessList": [],
-  "type": "0x02"
+  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+  gasLimit: '0x02625a00',
+  maxPriorityFeePerGas: '0x01',
+  maxFeePerGas: '0xff',
+  nonce: '0x00',
+  to: '0xcccccccccccccccccccccccccccccccccccccccc',
+  value: '0x0186a0',
+  v: '0x01',
+  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
+  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
+  chainId: '0x01',
+  accessList: [],
+  type: '0x02',
 }
 
 const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
@@ -265,7 +263,7 @@ This release fixes a critical EIP-2930 tx constructor bug which slipped through 
 - Added alias `type` for `transactionType` so it can be interpreted correctly for an `AccessListEIP2930Transaction` instantiation when passed to `fromTxData()`, PR [#1185](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1185)
 - `TransactionFactory.fromTxData()`: fixed a bug where instantiation was breaking when `type` was passed in as a 0x-prefixed hex string, PR [#1185](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1185)
 - `AccessListEIP2930Transaction`: added a test that initializes correctly from its own data (adds coverage for `type` property alias), PR [#1185](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1185)
-- EIP-2930 aliases for `senderS`, `senderR`, `yParity` are now marked as *deprecated*, use `v`, `r`, `s` instead
+- EIP-2930 aliases for `senderS`, `senderR`, `yParity` are now marked as _deprecated_, use `v`, `r`, `s` instead
 
 ## 3.1.2 - 2021-03-31
 
@@ -298,26 +296,26 @@ import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
 const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
 
 const txData = {
-  "data": "0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-  "gasLimit": "0x02625a00",
-  "gasPrice": "0x01",
-  "nonce": "0x00",
-  "to": "0xcccccccccccccccccccccccccccccccccccccccc",
-  "value": "0x0186a0",
-  "v": "0x01",
-  "r": "0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9",
-  "s": "0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64",
-  "chainId": "0x01",
-  "accessList": [
+  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+  gasLimit: '0x02625a00',
+  gasPrice: '0x01',
+  nonce: '0x00',
+  to: '0xcccccccccccccccccccccccccccccccccccccccc',
+  value: '0x0186a0',
+  v: '0x01',
+  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
+  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
+  chainId: '0x01',
+  accessList: [
     {
-      "address": "0x0000000000000000000000000000000000000101",
-      "storageKeys": [
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
-        "0x00000000000000000000000000000000000000000000000000000000000060a7"
-      ]
-    }
+      address: '0x0000000000000000000000000000000000000101',
+      storageKeys: [
+        '0x0000000000000000000000000000000000000000000000000000000000000000',
+        '0x00000000000000000000000000000000000000000000000000000000000060a7',
+      ],
+    },
   ],
-  "type": "0x01"
+  type: '0x01',
 }
 
 const tx = AccessListEIP2930Transaction.fromTxData(txData, { common })

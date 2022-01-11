@@ -7,7 +7,7 @@ import {
   Account,
   BN,
   keccak,
-  rlp,
+  RLP,
   toBuffer,
   unpadBuffer,
   isHexPrefixed,
@@ -93,8 +93,8 @@ async function createStorageTrie(storage: any) {
   const trie = new Trie()
   for (const [address, value] of Object.entries(storage) as unknown as [string, string]) {
     const key = isHexPrefixed(address) ? toBuffer(address) : Buffer.from(address, 'hex')
-    const val = rlp.encode(
-      unpadBuffer(isHexPrefixed(value) ? toBuffer(value) : Buffer.from(value, 'hex'))
+    const val = Buffer.from(
+      RLP.encode(unpadBuffer(isHexPrefixed(value) ? toBuffer(value) : Buffer.from(value, 'hex')))
     )
     await trie.put(key, val)
   }

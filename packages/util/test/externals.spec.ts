@@ -43,14 +43,14 @@ tape('External BN export', (t) => {
 
 tape('External rlp export', (t) => {
   t.test('should export `rlp`', (st) => {
-    st.equal(src.rlp, rlp_export)
+    st.equal(src.RLP, rlp_export)
     st.end()
   })
 
   t.test('should use a rlp function correctly', (st) => {
     const nestedList = [[], [[]], [[], [[]]]]
-    const encoded = src.rlp.encode(nestedList)
-    const decoded = src.rlp.decode(encoded)
+    const encoded = src.RLP.encode(nestedList)
+    const decoded = src.RLP.decode(encoded)
     st.deepEqual(nestedList, decoded)
     st.end()
   })
@@ -63,7 +63,7 @@ tape('External rlp export', (t) => {
     )
     let result
     try {
-      result = src.rlp.decode(val)
+      result = src.RLP.decode(val)
     } catch (e: any) {
       // pass
     }
@@ -77,7 +77,7 @@ tape('External rlp export', (t) => {
 
     let res
     try {
-      result = src.rlp.decode(a)
+      result = src.RLP.decode(a)
     } catch (e: any) {
       // pass
     }

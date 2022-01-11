@@ -88,7 +88,7 @@ import { stripHexPrefix } from 'ethereumjs-util'
 They can be imported by name:
 
 ```js
-import { BN, rlp } from 'ethereumjs-util'
+import { BN, RLP } from 'ethereumjs-util'
 ```
 
 # EthereumJS

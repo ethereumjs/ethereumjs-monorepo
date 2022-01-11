@@ -53,7 +53,7 @@ function safeSlice(input: Uint8Array, start: number, end: number) {
  * @param v The value to parse
  * @param base The base to parse the integer into
  */
-function decodeLength(v: Uint8Array): number {
+function decodeLength(v: any): number {
   if (v[0] === 0 && v[1] === 0) {
     throw new Error('invalid RLP: extra zeros')
   }

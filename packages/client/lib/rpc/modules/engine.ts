@@ -8,7 +8,7 @@ import {
   TypeOutput,
   bufferToHex,
   intToHex,
-  rlp,
+  RLP,
 } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { middleware, validators } from '../validation'
@@ -192,7 +192,7 @@ const recursivelyFindParents = async (
 const txsTrieRoot = async (txs: TypedTransaction[]) => {
   const trie = new Trie()
   for (const [i, tx] of txs.entries()) {
-    await trie.put(rlp.encode(i), tx.serialize())
+    await trie.put(Buffer.from(RLP.encode(i)), tx.serialize())
   }
   return trie.root
 }

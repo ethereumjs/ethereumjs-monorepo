@@ -1,5 +1,5 @@
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { BN, rlp, TWO_POW256 } from 'ethereumjs-util'
+import { BN, RLP, TWO_POW256 } from 'ethereumjs-util'
 import tape from 'tape'
 import { FeeMarketEIP1559Transaction } from '../src'
 
@@ -88,7 +88,7 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
       const pkey = Buffer.from(data.privateKey.slice(2), 'hex')
       const txn = FeeMarketEIP1559Transaction.fromTxData(data, { common })
       const signed = txn.sign(pkey)
-      const rlpSerialized = rlp.encode(signed.serialize())
+      const rlpSerialized = Buffer.from(RLP.encode(signed.serialize()))
       st.ok(
         rlpSerialized.equals(Buffer.from(data.signedTransactionRLP.slice(2), 'hex')),
         'Should sign txs correctly'

@@ -1,6 +1,6 @@
 import { debug as createDebugLogger } from 'debug'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { Account, Address, BN, intToBuffer, rlp } from 'ethereumjs-util'
+import { Account, Address, BN, intToBuffer, RLP } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import VM from './index'
@@ -361,7 +361,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     // Add receipt to trie to later calculate receipt root
     receipts.push(txRes.receipt)
     const encodedReceipt = encodeReceipt(tx, txRes.receipt)
-    await receiptTrie.put(rlp.encode(txIdx), encodedReceipt)
+    await receiptTrie.put(Buffer.from(RLP.encode(txIdx)), encodedReceipt)
   }
 
   return {
@@ -432,12 +432,14 @@ export async function rewardAccount(
  * Returns the encoded tx receipt.
  */
 export function encodeReceipt(tx: TypedTransaction, receipt: TxReceipt) {
-  const encoded = rlp.encode([
-    (receipt as PreByzantiumTxReceipt).stateRoot ?? (receipt as PostByzantiumTxReceipt).status,
-    receipt.gasUsed,
-    receipt.bitvector,
-    receipt.logs,
-  ])
+  const encoded = Buffer.from(
+    RLP.encode([
+      (receipt as PreByzantiumTxReceipt).stateRoot ?? (receipt as PostByzantiumTxReceipt).status,
+      receipt.gasUsed,
+      receipt.bitvector,
+      receipt.logs,
+    ])
+  )
 
   if (!tx.supports(Capability.EIP2718TypedTransaction)) {
     return encoded
@@ -491,14 +493,17 @@ export async function generateTxReceipt(
       } as PreByzantiumTxReceipt
       receiptLog += ` stateRoot=${txReceipt.stateRoot.toString('hex')} (< Byzantium)`
     }
-    encodedReceipt = rlp.encode(Object.values(txReceipt))
+    encodedReceipt = Buffer.from(RLP.encode(Object.values(txReceipt)))
   } else {
     // EIP2930 Transaction
     txReceipt = {
       status: txRes.execResult.exceptionError ? 0 : 1,
       ...abstractTxReceipt,
     } as PostByzantiumTxReceipt
-    encodedReceipt = Buffer.concat([intToBuffer(tx.type), rlp.encode(Object.values(txReceipt))])
+    encodedReceipt = Buffer.concat([
+      intToBuffer(tx.type),
+      Buffer.from(RLP.encode(Object.values(txReceipt))),
+    ])
   }
   return {
     txReceipt,
@@ -532,7 +537,7 @@ async function _applyDAOHardfork(state: StateManager) {
 async function _genTxTrie(block: Block) {
   const trie = new Trie()
   for (const [i, tx] of block.transactions.entries()) {
-    await trie.put(rlp.encode(i), tx.serialize())
+    await trie.put(Buffer.from(RLP.encode(i)), tx.serialize())
   }
   return trie.root
 }

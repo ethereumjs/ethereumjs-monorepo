@@ -1,6 +1,6 @@
 import assert from 'assert'
 import { stripHexPrefix } from './internal'
-import { rlp } from './externals'
+import { RLP } from './externals'
 import { toBuffer, baToJSON, unpadBuffer } from './bytes'
 
 /**
@@ -32,7 +32,7 @@ export const defineProperties = function (self: any, fields: any, data?: any) {
   }
 
   self.serialize = function serialize() {
-    return rlp.encode(self.raw)
+    return Buffer.from(RLP.encode(self.raw))
   }
 
   fields.forEach((field: any, i: number) => {
@@ -92,7 +92,7 @@ export const defineProperties = function (self: any, fields: any, data?: any) {
     }
 
     if (Buffer.isBuffer(data)) {
-      data = rlp.decode(data)
+      data = RLP.decode(data)
     }
 
     if (Array.isArray(data)) {

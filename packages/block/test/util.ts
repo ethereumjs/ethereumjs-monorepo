@@ -1,5 +1,5 @@
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { BN, rlp, keccak256 } from 'ethereumjs-util'
+import { BN, RLP, keccak256 } from 'ethereumjs-util'
 import { Block, BlockHeader } from '../src'
 
 /**
@@ -36,7 +36,7 @@ function createBlock(
         timestamp,
         gasLimit: new BN(5000),
         extraData: Buffer.from(extraData),
-        uncleHash: keccak256(rlp.encode(uncles.map((uh) => uh.raw()))),
+        uncleHash: keccak256(Buffer.from(RLP.encode(uncles.map((uh) => uh.raw())))),
         baseFeePerGas,
       },
       uncleHeaders: uncles,

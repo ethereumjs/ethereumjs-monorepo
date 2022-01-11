@@ -1,6 +1,7 @@
 import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
 import {
   Address,
+  arrToBufferArr,
   BN,
   bnToHex,
   bnToUnpaddedBuffer,
@@ -9,7 +10,7 @@ import {
   intToBuffer,
   KECCAK256_RLP_ARRAY,
   KECCAK256_RLP,
-  rlp,
+  RLP,
   rlphash,
   toBuffer,
   zeros,
@@ -126,7 +127,7 @@ export class BlockHeader {
    * @param opts
    */
   public static fromRLPSerializedHeader(serialized: Buffer, opts: BlockOptions = {}) {
-    const values = rlp.decode(serialized)
+    const values = arrToBufferArr(RLP.decode(serialized))
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized header input. Must be array')
@@ -952,7 +953,7 @@ export class BlockHeader {
    * Returns the rlp encoding of the block header.
    */
   serialize(): Buffer {
-    return rlp.encode(this.raw())
+    return Buffer.from(RLP.encode(this.raw()))
   }
 
   /**

@@ -1,10 +1,11 @@
 import {
+  arrToBufferArr,
   BN,
   bnToHex,
   bnToUnpaddedBuffer,
   ecrecover,
   MAX_INTEGER,
-  rlp,
+  RLP,
   rlphash,
   toBuffer,
   unpadBuffer,
@@ -42,7 +43,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * Format: `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
    */
   public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
-    const values = rlp.decode(serialized)
+    const values = arrToBufferArr(RLP.decode(serialized))
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized tx input. Must be array')
@@ -178,7 +179,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * representation for external signing use {@link Transaction.getMessageToSign}.
    */
   serialize(): Buffer {
-    return rlp.encode(this.raw())
+    return Buffer.from(RLP.encode(this.raw()))
   }
 
   private _getMessageToSign() {
@@ -208,9 +209,9 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * and you might need to do yourself with:
    *
    * ```javascript
-   * import { rlp } from 'ethereumjs-util'
+   * import { RLP } from 'ethereumjs-util'
    * const message = tx.getMessageToSign(false)
-   * const serializedMessage = rlp.encode(message) // use this for the HW wallet input
+   * const serializedMessage = Buffer.from(RLP.encode(message)) // use this for the HW wallet input
    * ```
    *
    * @param hashMessage - Return hashed message if set to true (default: true)

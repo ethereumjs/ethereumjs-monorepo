@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, rlp, KECCAK256_RLP, Account } from 'ethereumjs-util'
+import { Address, BN, RLP, KECCAK256_RLP, Account } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import {
@@ -259,7 +259,7 @@ tape('runBlock() -> runtime behavior', async (t) => {
 
     const vm = setupVM({ common })
 
-    const block1: any = rlp.decode(testData.blocks[0].rlp)
+    const block1: any = RLP.decode(testData.blocks[0].rlp)
     // edit extra data of this block to "dao-hard-fork"
     block1[0][12] = Buffer.from('dao-hard-fork')
     const block = Block.fromValuesArray(block1)

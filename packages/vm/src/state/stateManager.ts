@@ -5,7 +5,7 @@ import {
   toBuffer,
   keccak256,
   KECCAK256_NULL,
-  rlp,
+  RLP,
   unpadBuffer,
   PrefixedHexString,
   bufferToHex,
@@ -19,6 +19,7 @@ import { StateManager, StorageDump } from './interface'
 import Cache, { getCb, putCb } from './cache'
 import { BaseStateManager } from './'
 import { short } from '../evm/opcodes'
+import { arrToBufferArr } from 'ethereumjs-util'
 
 type StorageProof = {
   key: PrefixedHexString
@@ -190,8 +191,8 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
 
     const trie = await this._getStorageTrie(address)
     const value = await trie.get(key)
-    const decoded = rlp.decode(value)
-    return decoded as Buffer
+    const decoded = arrToBufferArr(RLP.decode(value))
+    return decoded
   }
 
   /**
@@ -245,7 +246,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
     await this._modifyContractStorage(address, async (storageTrie, done) => {
       if (value && value.length) {
         // format input
-        const encodedValue = rlp.encode(value)
+        const encodedValue = Buffer.from(RLP.encode(value))
         if (this.DEBUG) {
           this._debug(`Update contract storage for account ${address} to ${short(value)}`)
         }
@@ -402,7 +403,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
       const storageValue = setLengthLeft(toBuffer(stProof.value), 32)
       const storageKey = toBuffer(stProof.key)
       const proofValue = await Trie.verifyProof(storageRoot, storageKey, storageProof)
-      const reportedValue = setLengthLeft(rlp.decode(proofValue as Buffer), 32)
+      const reportedValue = setLengthLeft(arrToBufferArr(RLP.decode(proofValue as Buffer)), 32)
       if (!reportedValue.equals(storageValue)) {
         throw new Error('Reported trie value does not match storage')
       }

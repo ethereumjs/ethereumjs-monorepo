@@ -1,6 +1,14 @@
 import tape from 'tape'
 import { Buffer } from 'buffer'
-import { BN, rlp, toBuffer, bufferToHex, intToBuffer, unpadBuffer } from 'ethereumjs-util'
+import {
+  arrToBufferArr,
+  BN,
+  RLP,
+  toBuffer,
+  bufferToHex,
+  intToBuffer,
+  unpadBuffer,
+} from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction, TxData } from '../src'
 import { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
@@ -197,7 +205,7 @@ tape('[Transaction]', function (t) {
   t.test('serialize()', function (st) {
     transactions.forEach(function (tx, i) {
       const s1 = tx.serialize()
-      const s2 = rlp.encode(txFixtures[i].raw)
+      const s2 = Buffer.from(RLP.encode(txFixtures[i].raw))
       st.ok(s1.equals(s2))
     })
     st.end()
@@ -494,7 +502,7 @@ tape('[Transaction]', function (t) {
     tx = Transaction.fromSerializedTx(rawSigned)
     st.ok(tx.isSigned())
 
-    const signedValues = rlp.decode(rawSigned) as any as Buffer[]
+    const signedValues = arrToBufferArr(RLP.decode(rawSigned))
     tx = Transaction.fromValuesArray(signedValues)
     st.ok(tx.isSigned())
     tx = Transaction.fromValuesArray(signedValues.slice(0, 6))

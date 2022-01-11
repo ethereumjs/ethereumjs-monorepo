@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY, rlp } from 'ethereumjs-util'
+import { Address, BN, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY, RLP } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src'
@@ -79,7 +79,7 @@ tape('[Block]: Header functions', function (t) {
 
   t.test('Initialization -> fromRLPSerializedHeader() -> error cases', function (st) {
     try {
-      BlockHeader.fromRLPSerializedHeader(rlp.encode('a'))
+      BlockHeader.fromRLPSerializedHeader(Buffer.from(RLP.encode('a')))
     } catch (e: any) {
       const expectedError = 'Invalid serialized header input. Must be array'
       st.ok(e.message.includes(expectedError), 'should throw with header as rlp encoded string')

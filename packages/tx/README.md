@@ -7,7 +7,7 @@
 [![Discord][discord-badge]][discord-link]
 
 | Implements schema and functions related to Ethereum's transaction. |
-| --- |
+| ------------------------------------------------------------------ |
 
 Note: this `README` reflects the state of the library from `v3.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-tx) for an introduction on the last preceding release.
 
@@ -41,13 +41,13 @@ Starting with `v3.2.1` the tx library now deviates from the default HF for typed
 
 Supported Hardforks:
 
-Hardfork | Introduced | Description
---- | --- | ---
-`london` | `v3.2.0` | `EIP-1559` Transactions 
-`berlin` | `v3.1.0` | `EIP-2718` Typed Transactions, Optional Access Lists Tx Type `EIP-2930`
-`muirGlacier` | `v2.1.2` | -
-`istanbul` | `v2.1.1` | Support for reduced non-zero call data gas prices ([EIP-2028](https://eips.ethereum.org/EIPS/eip-2028))
-`spuriousDragon` | `v2.0.0` | `EIP-155` replay protection (disable by setting HF pre-`spuriousDragon`)
+| Hardfork         | Introduced | Description                                                                                             |
+| ---------------- | ---------- | ------------------------------------------------------------------------------------------------------- |
+| `london`         | `v3.2.0`   | `EIP-1559` Transactions                                                                                 |
+| `berlin`         | `v3.1.0`   |  `EIP-2718` Typed Transactions, Optional Access Lists Tx Type `EIP-2930`                                |
+| `muirGlacier`    |  `v2.1.2`  |  -                                                                                                      |
+| `istanbul`       |  `v2.1.1`  | Support for reduced non-zero call data gas prices ([EIP-2028](https://eips.ethereum.org/EIPS/eip-2028)) |
+| `spuriousDragon` |  `v2.0.0`  |  `EIP-155` replay protection (disable by setting HF pre-`spuriousDragon`)                               |
 
 ## Transaction Types
 
@@ -74,19 +74,19 @@ import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
 const txData = {
-  "data": "0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-  "gasLimit": "0x02625a00",
-  "maxPriorityFeePerGas": "0x01",
-  "maxFeePerGas": "0xff",
-  "nonce": "0x00",
-  "to": "0xcccccccccccccccccccccccccccccccccccccccc",
-  "value": "0x0186a0",
-  "v": "0x01",
-  "r": "0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9",
-  "s": "0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64",
-  "chainId": "0x01",
-  "accessList": [],
-  "type": "0x02"
+  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+  gasLimit: '0x02625a00',
+  maxPriorityFeePerGas: '0x01',
+  maxFeePerGas: '0xff',
+  nonce: '0x00',
+  to: '0xcccccccccccccccccccccccccccccccccccccccc',
+  value: '0x0186a0',
+  v: '0x01',
+  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
+  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
+  chainId: '0x01',
+  accessList: [],
+  type: '0x02',
 }
 
 const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
@@ -107,26 +107,26 @@ import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 
 const txData = {
-  "data": "0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-  "gasLimit": "0x02625a00",
-  "gasPrice": "0x01",
-  "nonce": "0x00",
-  "to": "0xcccccccccccccccccccccccccccccccccccccccc",
-  "value": "0x0186a0",
-  "v": "0x01",
-  "r": "0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9",
-  "s": "0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64",
-  "chainId": "0x01",
-  "accessList": [
+  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+  gasLimit: '0x02625a00',
+  gasPrice: '0x01',
+  nonce: '0x00',
+  to: '0xcccccccccccccccccccccccccccccccccccccccc',
+  value: '0x0186a0',
+  v: '0x01',
+  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
+  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
+  chainId: '0x01',
+  accessList: [
     {
-      "address": "0x0000000000000000000000000000000000000101",
-      "storageKeys": [
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
-        "0x00000000000000000000000000000000000000000000000000000000000060a7"
-      ]
-    }
+      address: '0x0000000000000000000000000000000000000101',
+      storageKeys: [
+        '0x0000000000000000000000000000000000000000000000000000000000000000',
+        '0x00000000000000000000000000000000000000000000000000000000000060a7',
+      ],
+    },
   ],
-  "type": "0x01"
+  type: '0x01',
 }
 
 const tx = AccessListEIP2930Transaction.fromTxData(txData, { common })
@@ -162,7 +162,7 @@ const tx = Transaction.fromTxData(txParams, { common })
 
 const privateKey = Buffer.from(
   'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-  'hex',
+  'hex'
 )
 
 const signedTx = tx.sign(privateKey)
@@ -227,14 +227,14 @@ const signedTx = tx.sign(Buffer.from(PRIV_KEY, 'hex'))
 
 The following L2 networks have been tested to work with `@ethereumjs/tx`, see usage examples as well as some notes on pecularities in the issues linked below:
 
-| L2 Network | Common name | Issue |
-|---|---|---|
-| Arbitrum Rinkeby Testnet | `CustomChain.ArbitrumRinkebyTestnet` | [#1290](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1290) |
-| Polygon Mainnet | `CustomChain.PolygonMainnet` | [#1289](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1289) |
-| Polygon Mumbai Testnet | `CustomChain.PolygonMumbai` | [#1289](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1289) |
-| xDai Chain | `Common.xDaiChain` | [#1323](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1323) |
-| Optimistic Kovan | `Common.OptimisticKovan` | [#1554](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1554)
-| Optimistic Ethereum | `Common.OptimisticEthereum` | [#1554](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1554)
+|  L2 Network              |  Common name                          |  Issue                                                                  |
+| ------------------------ | ------------------------------------- | ----------------------------------------------------------------------- |
+| Arbitrum Rinkeby Testnet |  `CustomChain.ArbitrumRinkebyTestnet` |  [#1290](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1290) |
+| Polygon Mainnet          |  `CustomChain.PolygonMainnet`         |  [#1289](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1289) |
+| Polygon Mumbai Testnet   |  `CustomChain.PolygonMumbai`          |  [#1289](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1289) |
+| xDai Chain               |  `Common.xDaiChain`                   |  [#1323](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1323) |
+| Optimistic Kovan         | `Common.OptimisticKovan`              | [#1554](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1554)    |
+| Optimistic Ethereum      | `Common.OptimisticEthereum`           | [#1554](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1554)    |
 
 Note: For Optimistic Kovan and Optimistic Ethereum, the London hardfork has not been implemented so transactions submitted with a `baseFee` will revert.
 The London hardfork is targeted to implement on Optimism in Q1.22.
@@ -258,7 +258,7 @@ Here is an example of signing txs with `@ledgerhq/hw-app-eth` as of `v6.5.0`:
 ```typescript
 import { Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import Common, { Chain } from '@ethereumjs/common'
-import { rlp } from 'ethereumjs-util'
+import { RLP } from 'ethereumjs-util'
 import Eth from '@ledgerhq/hw-app-eth'
 
 const eth = new Eth(transport)
@@ -274,7 +274,7 @@ const run = async () => {
   // Signing a legacy tx
   tx = Transaction.fromTxData(txData, { common })
   unsignedTx = tx.getMessageToSign(false)
-  unsignedTx = rlp.encode(unsignedTx) // ledger signTransaction API expects it to be serialized
+  unsignedTx = Buffer.from(RLP.encode(unsignedTx)) // ledger signTransaction API expects it to be serialized
   let { v, r, s } = await eth.signTransaction(bip32Path, unsignedTx)
   txData = { ...txData, v, r, s }
   signedTx = Transaction.fromTxData(txData, { common })

@@ -1,7 +1,7 @@
 import pipe from 'it-pipe'
 import pushable from 'it-pushable'
 import { Libp2pMuxedStream as MuxedStream } from '../../types'
-import { bufferToInt, rlp } from 'ethereumjs-util'
+import { arrToBufferArr, bufferToInt, RLP } from 'ethereumjs-util'
 import { Sender } from './sender'
 
 // TypeScript doesn't have support yet for ReturnType
@@ -41,7 +41,7 @@ export class Libp2pSender extends Sender {
         // convert BufferList to Buffer
         const data: Buffer = bl.slice()
         try {
-          const [codeBuf, payload]: any = rlp.decode(data)
+          const [codeBuf, payload]: any = arrToBufferArr(RLP.decode(data))
           const code = bufferToInt(codeBuf)
           if (code === 0) {
             const status: any = {}
@@ -65,7 +65,7 @@ export class Libp2pSender extends Sender {
    */
   sendStatus(status: any) {
     const payload: any = Object.entries(status).map(([k, v]) => [k, v])
-    this.pushable.push(rlp.encode([0, payload]))
+    this.pushable.push(Buffer.from(RLP.encode([0, payload])))
   }
 
   /**
@@ -74,6 +74,6 @@ export class Libp2pSender extends Sender {
    * @param data message payload
    */
   sendMessage(code: number, data: any) {
-    this.pushable.push(rlp.encode([code, data]))
+    this.pushable.push(Buffer.from(RLP.encode([code, data])))
   }
 }

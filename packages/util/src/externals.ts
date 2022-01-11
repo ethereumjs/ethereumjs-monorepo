@@ -4,8 +4,8 @@
  * @packageDocumentation
  */
 
-import BN from 'bn.js'
-import * as rlp from 'rlp'
+import BN = require('bn.js')
+import * as RLP from 'rlp'
 
 /**
  * [`BN`](https://github.com/indutny/bn.js)
@@ -15,4 +15,4 @@ export { BN }
 /**
  * [`rlp`](https://github.com/ethereumjs/rlp)
  */
-export { rlp }
+export { RLP }
