@@ -91,7 +91,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
     /* EXTCODECOPY */
     0x3c,
     async function (runState, gas, common): Promise<void> {
-      const [addressBN, memOffset /*codeOffset*/, , dataLength] = runState.stack.peek(4)
+      const [addressBN, memOffset, _codeOffset, dataLength] = runState.stack.peek(4)
 
       gas.iadd(subMemUsage(runState, memOffset, dataLength, common))
 
