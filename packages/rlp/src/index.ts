@@ -196,7 +196,6 @@ function bytesToHex(uint8a: Uint8Array): string {
 }
 
 function parseHexByte(hexByte: string): number {
-  if (hexByte.length !== 2) throw new Error('Invalid byte sequence')
   const byte = Number.parseInt(hexByte, 16)
   if (Number.isNaN(byte)) throw new Error('Invalid byte sequence')
   return byte
