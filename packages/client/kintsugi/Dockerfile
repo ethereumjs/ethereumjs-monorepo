@@ -1,14 +1,13 @@
-FROM node:14-alpine as build
+FROM node:16-alpine as build
 WORKDIR /usr/app
 RUN apk update && apk add --no-cache bash git && rm -rf /var/cache/apk/*
 
 WORKDIR /usr/app
 RUN git clone --depth 1 --branch merge-kintsugi https://github.com/ethereumjs/ethereumjs-monorepo.git
 WORKDIR /usr/app/ethereumjs-monorepo
-RUN npm i -g npm@7
 RUN npm i
 
-FROM node:14-alpine
+FROM node:16-alpine
 WORKDIR /usr/app
 COPY --from=build /usr/app .
 

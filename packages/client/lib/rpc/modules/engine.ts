@@ -363,7 +363,6 @@ export class Engine {
     const { headBlockHash, finalizedBlockHash } = params[0]
     const payloadAttributes = params[1]
 
-    console.log(context)
     const reqId = new BN(context.request.id)
     if (reqId.eq(MESSAGE_ORDER_RESET_ID)) {
       this.lastMessageID = new BN(0)
