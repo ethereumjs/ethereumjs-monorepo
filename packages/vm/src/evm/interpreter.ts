@@ -100,8 +100,8 @@ export default class Interpreter {
       const opCode = this._runState.code[this._runState.programCounter]
 
       if (
-        !(this._runState.validJumps.length > 0) &&
-        (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e)
+        (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e) &&
+        this._runState.validJumps.length === 0
       ) {
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
         const valid = this._getValidJumpDests(code)
