@@ -62,4 +62,10 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo "Running hardhat tests                       "
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
+# Temporary workaround for:
+# tracing: memory output erroneously reports post-op memory size
+# https://github.com/ethereumjs/ethereumjs-monorepo/pull/1553#issuecomment-1009881362
+# https://github.com/ethereum/go-ethereum/issues/24109
+rm test/internal/hardhat-network/provider/modules/debug.ts
+
 yarn run test:except-tracing
