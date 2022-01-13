@@ -135,25 +135,25 @@ export function getFullname(code: number, name: string): string {
 }
 
 /**
- * Checks if a jump is valid given a destination
+ * Checks if a jump is valid given a destination (defined as a 1 in the validJumps array)
  *
  * @param  {RunState} runState
  * @param  {number}   dest
  * @return {boolean}
  */
 export function jumpIsValid(runState: RunState, dest: number): boolean {
-  return runState.validJumps.indexOf(dest) !== -1
+  return runState.validJumps[dest] === 1
 }
 
 /**
- * Checks if a jumpsub is valid given a destination
+ * Checks if a jumpsub is valid given a destination (defined as a 2 in the validJumps array)
  *
  * @param  {RunState} runState
  * @param  {number}   dest
  * @return {boolean}
  */
 export function jumpSubIsValid(runState: RunState, dest: number): boolean {
-  return runState.validJumpSubs.indexOf(dest) !== -1
+  return runState.validJumps[dest] === 2
 }
 
 /**
