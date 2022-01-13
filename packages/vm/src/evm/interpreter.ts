@@ -266,16 +266,18 @@ export default class Interpreter {
     for (let i = 0; i < code.length; i++) {
       const opcode = code[i]
       // skip over PUSH0-32 since no jump destinations in the middle of a push block
-      if (opcode >= 0x60 && opcode <= 0x7f) {
-        i += opcode - 0x5f
-      }
-      // Define a JUMPDEST as a 1 in the valid jumps array
-      else if (opcode === 0x5b) {
-        jumps[i] = 1
-      }
-      // Define a BEGINSUB as a 2 in the valid jumps array
-      else if (opcode === 0x5c) {
-        jumps[i] = 2
+      if (opcode <= 0x7f) {
+        if (opcode >= 0x60) {
+          i += opcode - 0x5f
+        }
+        // Define a JUMPDEST as a 1 in the valid jumps array
+        else if (opcode === 0x5b) {
+          jumps[i] = 1
+        }
+        // Define a BEGINSUB as a 2 in the valid jumps array
+        else if (opcode === 0x5c) {
+          jumps[i] = 2
+        }
       }
     }
     return jumps
