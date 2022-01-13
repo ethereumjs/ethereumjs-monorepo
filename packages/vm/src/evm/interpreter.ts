@@ -21,7 +21,8 @@ export interface RunState {
   stack: Stack
   returnStack: Stack
   code: Buffer
-  validJumps: Uint8Array
+  jumpAnalysisDone: boolean
+  validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
   stateManager: StateManager
   eei: EEI
   messageGasLimit?: BN // Cache value from `gas.ts` to save gas limit for a message call
@@ -81,6 +82,7 @@ export default class Interpreter {
       validJumps: Uint8Array.from([]),
       stateManager: this._state,
       eei: this._eei,
+      jumpAnalysisDone: false,
     }
   }
 
@@ -98,14 +100,13 @@ export default class Interpreter {
     // Iterate through the given ops until something breaks or we hit STOP
     while (this._runState.programCounter < this._runState.code.length) {
       const opCode = this._runState.code[this._runState.programCounter]
-
       if (
-        (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e) &&
-        this._runState.validJumps.length === 0
+        !this._runState.jumpAnalysisDone &&
+        (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e)
       ) {
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
-        const valid = this._getValidJumpDests(code)
-        this._runState.validJumps = valid
+        this._runState.validJumps = this._getValidJumpDests(code)
+        this._runState.jumpAnalysisDone = true
       }
       this._runState.opCode = opCode
 
@@ -263,20 +264,18 @@ export default class Interpreter {
     const jumps = new Uint8Array(code.length).fill(0)
 
     for (let i = 0; i < code.length; i++) {
-      const curOpCode = this.lookupOpInfo(code[i]).name
-
       // skip over PUSH0-32 since no jump destinations in the middle of a push block
-      if (curOpCode === 'PUSH') {
+      if (code[i] >= 0x60 && code[i] <= 0x7f) {
         i += code[i] - 0x5f
       }
 
       // Define a JUMPDEST as a 1 in the valid jumps array
-      if (curOpCode === 'JUMPDEST') {
+      if (code[i] === 0x5b) {
         jumps[i] = 1
       }
 
       // Define a BEGINSUB as a 2 in the valid jumps array
-      if (curOpCode === 'BEGINSUB') {
+      if (code[i] === 0x5c) {
         jumps[i] = 2
       }
     }
