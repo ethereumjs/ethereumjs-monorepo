@@ -21,7 +21,7 @@ export interface RunState {
   stack: Stack
   returnStack: Stack
   code: Buffer
-  jumpAnalysisDone: boolean
+  shouldDoJumpAnalysis: boolean
   validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
   stateManager: StateManager
   eei: EEI
@@ -82,7 +82,7 @@ export default class Interpreter {
       validJumps: Uint8Array.from([]),
       stateManager: this._state,
       eei: this._eei,
-      jumpAnalysisDone: false,
+      shouldDoJumpAnalysis: true,
     }
   }
 
@@ -101,12 +101,12 @@ export default class Interpreter {
     while (this._runState.programCounter < this._runState.code.length) {
       const opCode = this._runState.code[this._runState.programCounter]
       if (
-        !this._runState.jumpAnalysisDone &&
+        this._runState.shouldDoJumpAnalysis &&
         (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e)
       ) {
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
         this._runState.validJumps = this._getValidJumpDests(code)
-        this._runState.jumpAnalysisDone = true
+        this._runState.shouldDoJumpAnalysis = false
       }
       this._runState.opCode = opCode
 
