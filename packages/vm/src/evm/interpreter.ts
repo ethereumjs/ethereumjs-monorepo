@@ -269,13 +269,11 @@ export default class Interpreter {
       if (opcode <= 0x7f) {
         if (opcode >= 0x60) {
           i += opcode - 0x5f
-        }
-        // Define a JUMPDEST as a 1 in the valid jumps array
-        else if (opcode === 0x5b) {
+        } else if (opcode === 0x5b) {
+          // Define a JUMPDEST as a 1 in the valid jumps array
           jumps[i] = 1
-        }
-        // Define a BEGINSUB as a 2 in the valid jumps array
-        else if (opcode === 0x5c) {
+        } else if (opcode === 0x5c) {
+          // Define a BEGINSUB as a 2 in the valid jumps array
           jumps[i] = 2
         }
       }
