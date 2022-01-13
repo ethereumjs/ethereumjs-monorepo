@@ -45,7 +45,7 @@
     "karma-chrome-launcher": "^3.1.0",
     "karma-firefox-launcher": "^2.1.0",
     "karma-tap": "^4.2.0",
-    "karma-typescript": "^5.5.1",
+    "karma-typescript": "^5.5.3",
     "minimist": "^1.2.0",
     "node-dir": "^0.1.16",
     "nyc": "^15.1.0",
