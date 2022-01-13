@@ -264,18 +264,17 @@ export default class Interpreter {
     const jumps = new Uint8Array(code.length).fill(0)
 
     for (let i = 0; i < code.length; i++) {
+      const opcode = code[i]
       // skip over PUSH0-32 since no jump destinations in the middle of a push block
-      if (code[i] >= 0x60 && code[i] <= 0x7f) {
-        i += code[i] - 0x5f
+      if (opcode >= 0x60 && opcode <= 0x7f) {
+        i += opcode - 0x5f
       }
-
       // Define a JUMPDEST as a 1 in the valid jumps array
-      if (code[i] === 0x5b) {
+      else if (opcode === 0x5b) {
         jumps[i] = 1
       }
-
       // Define a BEGINSUB as a 2 in the valid jumps array
-      if (code[i] === 0x5c) {
+      else if (opcode === 0x5c) {
         jumps[i] = 2
       }
     }
