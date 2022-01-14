@@ -21,8 +21,8 @@ export interface RunState {
   stack: Stack
   returnStack: Stack
   code: Buffer
-  validJumps: number[]
-  validJumpSubs: number[]
+  shouldDoJumpAnalysis: boolean
+  validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
   stateManager: StateManager
   eei: EEI
   messageGasLimit?: BN // Cache value from `gas.ts` to save gas limit for a message call
@@ -54,11 +54,6 @@ export interface InterpreterStep {
   codeAddress: Address
 }
 
-interface JumpDests {
-  jumps: number[]
-  jumpSubs: number[]
-}
-
 /**
  * Parses and executes EVM bytecode.
  */
@@ -84,20 +79,16 @@ export default class Interpreter {
       stack: new Stack(),
       returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
       code: Buffer.alloc(0),
-      validJumps: [],
-      validJumpSubs: [],
+      validJumps: Uint8Array.from([]),
       stateManager: this._state,
       eei: this._eei,
+      shouldDoJumpAnalysis: true,
     }
   }
 
   async run(code: Buffer, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
     this._runState.code = code
     this._runState.programCounter = opts.pc ?? this._runState.programCounter
-
-    const valid = this._getValidJumpDests(code)
-    this._runState.validJumps = valid.jumps
-    this._runState.validJumpSubs = valid.jumpSubs
 
     // Check that the programCounter is in range
     const pc = this._runState.programCounter
@@ -109,6 +100,14 @@ export default class Interpreter {
     // Iterate through the given ops until something breaks or we hit STOP
     while (this._runState.programCounter < this._runState.code.length) {
       const opCode = this._runState.code[this._runState.programCounter]
+      if (
+        this._runState.shouldDoJumpAnalysis &&
+        (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e)
+      ) {
+        // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
+        this._runState.validJumps = this._getValidJumpDests(code)
+        this._runState.shouldDoJumpAnalysis = false
+      }
       this._runState.opCode = opCode
 
       try {
@@ -261,27 +260,24 @@ export default class Interpreter {
   }
 
   // Returns all valid jump and jumpsub destinations.
-  _getValidJumpDests(code: Buffer): JumpDests {
-    const jumps = []
-    const jumpSubs = []
+  _getValidJumpDests(code: Buffer) {
+    const jumps = new Uint8Array(code.length).fill(0)
 
     for (let i = 0; i < code.length; i++) {
-      const curOpCode = this.lookupOpInfo(code[i]).name
-
-      // no destinations into the middle of PUSH
-      if (curOpCode === 'PUSH') {
-        i += code[i] - 0x5f
-      }
-
-      if (curOpCode === 'JUMPDEST') {
-        jumps.push(i)
-      }
-
-      if (curOpCode === 'BEGINSUB') {
-        jumpSubs.push(i)
+      const opcode = code[i]
+      // skip over PUSH0-32 since no jump destinations in the middle of a push block
+      if (opcode <= 0x7f) {
+        if (opcode >= 0x60) {
+          i += opcode - 0x5f
+        } else if (opcode === 0x5b) {
+          // Define a JUMPDEST as a 1 in the valid jumps array
+          jumps[i] = 1
+        } else if (opcode === 0x5c) {
+          // Define a BEGINSUB as a 2 in the valid jumps array
+          jumps[i] = 2
+        }
       }
     }
-
-    return { jumps, jumpSubs }
+    return jumps
   }
 }
