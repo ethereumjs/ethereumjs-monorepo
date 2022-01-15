@@ -33,7 +33,6 @@ export function generateCombinations({
 }: GenerateCombinationsArgs) {
   const allKeys = Object.keys(options)
   const optionKey = allKeys[optionIndex]
-
   const values = options[optionKey]
 
   for (let i = 0; i < values.length; i++) {
@@ -42,7 +41,9 @@ export function generateCombinations({
     if (optionIndex + 1 < allKeys.length) {
       generateCombinations({ options, optionIndex: optionIndex + 1, results, current })
     } else {
-      results.push(current)
+      // Clone the object
+      const res = { ...current }
+      results.push(res)
     }
   }
 
@@ -59,21 +60,23 @@ function mulberry32(seed: number) {
 
 function getRandomSubarray<TArrayItem>(array: TArrayItem[], size: number) {
   const shuffled = array.slice(0)
-  const seed = 1559
+  let seed = 1559
   let index: number
   let length = array.length
   let temp: TArrayItem
-  while (length--) {
+  while (length > 0) {
     index = Math.floor((length + 1) * mulberry32(seed))
     temp = shuffled[index]
     shuffled[index] = shuffled[length]
     shuffled[length] = temp
+    seed++
+    length--
   }
   return shuffled.slice(0, size)
 }
 
 const baseTxValues = {
-  data: generateBufferLikeValues('0x12345abcd'),
+  data: generateBufferLikeValues('0x65'),
   gasLimit: generateBNLikeValues(100000),
   nonce: generateBNLikeValues(0),
   to: generateAddressLikeValues('0x0000000000000000000000000000000000000000'),
@@ -98,11 +101,12 @@ const eip1559TxValues = {
 tape('[Transaction Input Values]', function (t) {
   t.test('Legacy Transaction Values', function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
+    const options = { ...baseTxValues, ...legacyTxValues, type: '0' }
     const legacyTxData = generateCombinations({
-      options: { ...baseTxValues, ...legacyTxValues, type: '0' },
+      options,
     })
     const expectedHash = Transaction.fromTxData(legacyTxData[0]).hash()
-    const randomSample = getRandomSubarray(legacyTxData, 1000)
+    const randomSample = getRandomSubarray(legacyTxData, 100)
     for (const txData of randomSample) {
       const tx = Transaction.fromTxData(txData, { common })
 
@@ -113,16 +117,17 @@ tape('[Transaction Input Values]', function (t) {
 
   t.test('EIP-1559 Transaction Values', function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const options = {
+      ...baseTxValues,
+      ...accessListEip2930TxValues,
+      ...eip1559TxValues,
+      type: '2',
+    }
     const eip1559TxData = generateCombinations({
-      options: {
-        ...baseTxValues,
-        ...accessListEip2930TxValues,
-        ...eip1559TxValues,
-        type: '2',
-      },
+      options,
     })
     const expectedHash = Transaction.fromTxData(eip1559TxData[0]).hash()
-    const randomSample = getRandomSubarray(eip1559TxData, 1000)
+    const randomSample = getRandomSubarray(eip1559TxData, 100)
 
     for (const txData of randomSample) {
       const tx = Transaction.fromTxData(txData, { common })
