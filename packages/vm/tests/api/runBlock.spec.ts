@@ -206,7 +206,7 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
     const block = Block.fromBlockData({
       header: {
         ...testData.blocks[0].header,
-        gasLimit: Buffer.from('8000000000000000', 16),
+        gasLimit: Buffer.from('8000000000000000', 'hex'),
       },
     })
     await vm
