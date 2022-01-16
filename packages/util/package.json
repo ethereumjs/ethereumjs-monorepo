@@ -36,6 +36,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
+    "assert": "^2.0.0",
     "@types/bn.js": "^5.1.0",
     "bn.js": "^5.1.2",
     "create-hash": "^1.1.2",
