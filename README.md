@@ -132,7 +132,7 @@ Most packages are [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-licens
 [trie-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22Trie%22
 [trie-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=trie
 [trie-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie
-[rlp-package]: ./packages/trie
+[rlp-package]: ./packages/rlp
 [rlp-npm-badge]: https://img.shields.io/npm/v/rlp.svg
 [rlp-npm-link]: https://www.npmjs.com/package/rlp
 [rlp-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20rlp?label=issues
