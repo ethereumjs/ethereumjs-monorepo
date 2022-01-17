@@ -156,7 +156,7 @@ export const createTestDB = async () => {
       ),
       keyEncoding: 'binary',
       valueEncoding: 'binary',
-      value: Buffer.from(RLP.encode(new BN(17179869184).toArray())),
+      value: Buffer.from(RLP.encode(Uint8Array.from(new BN(17179869184).toArray()))),
     },
     {
       type: 'put',

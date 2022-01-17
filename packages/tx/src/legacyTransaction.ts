@@ -1,4 +1,5 @@
 import {
+  arrToBufArr,
   BN,
   bnToHex,
   bnToUnpaddedBuffer,
@@ -43,13 +44,13 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * Format: `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
    */
   public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
-    const values = RLP.decode(Uint8Array.from(serialized))
+    const values = arrToBufArr(RLP.decode(Uint8Array.from(serialized)))
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized tx input. Must be array')
     }
 
-    return this.fromValuesArray(values as any, opts)
+    return this.fromValuesArray(values, opts)
   }
 
   /**

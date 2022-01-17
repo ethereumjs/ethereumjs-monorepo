@@ -45,7 +45,7 @@ export class Account {
       throw new Error('Invalid serialized account input. Must be array')
     }
 
-    return this.fromValuesArray(values as any)
+    return this.fromValuesArray(values)
   }
 
   public static fromValuesArray(values: Buffer[]) {

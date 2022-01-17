@@ -1,4 +1,5 @@
 import {
+  arrToBufArr,
   BN,
   bnToHex,
   bnToUnpaddedBuffer,
@@ -105,7 +106,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       )
     }
 
-    const values = RLP.decode(Uint8Array.from(serialized.slice(1)))
+    const values = arrToBufArr(RLP.decode(Uint8Array.from(serialized.slice(1))))
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized tx input: must be array')

@@ -1,4 +1,5 @@
 import {
+  arrToBufArr,
   BN,
   bnToHex,
   bnToUnpaddedBuffer,
@@ -105,7 +106,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       )
     }
 
-    const values = RLP.decode(serialized.slice(1))
+    const values = arrToBufArr(RLP.decode(serialized.slice(1)))
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized tx input: must be array')

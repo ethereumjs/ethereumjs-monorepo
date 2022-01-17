@@ -1,6 +1,13 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import RLP from 'rlp'
-import { bufArrToArr, BN, keccak256, KECCAK256_RLP, bufferToHex } from 'ethereumjs-util'
+import {
+  arrToBufArr,
+  bufArrToArr,
+  BN,
+  keccak256,
+  KECCAK256_RLP,
+  bufferToHex,
+} from 'ethereumjs-util'
 import Common, { ConsensusType } from '@ethereumjs/common'
 import {
   TransactionFactory,
@@ -72,7 +79,7 @@ export class Block {
    * @param opts
    */
   public static fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions) {
-    const values = RLP.decode(Uint8Array.from(serialized)) as BlockBuffer
+    const values = arrToBufArr(RLP.decode(Uint8Array.from(serialized))) as BlockBuffer
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized block input. Must be array')

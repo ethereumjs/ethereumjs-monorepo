@@ -326,7 +326,7 @@ export async function setupPreConditions(state: any, testData: any) {
       if (valBN.isZero()) {
         continue
       }
-      const val = Buffer.from(RLP.encode(valBN.toArray()))
+      const val = Buffer.from(RLP.encode(Uint8Array.from(valBN.toArray())))
       const key = setLengthLeft(format(storageKey), 32)
 
       await storageTrie.put(key, val)

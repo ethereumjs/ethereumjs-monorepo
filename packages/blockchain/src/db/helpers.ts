@@ -10,10 +10,14 @@ import { bufBE8 } from './constants'
  */
 
 function DBSetTD(TD: BN, blockNumber: BN, blockHash: Buffer): DBOp {
-  return DBOp.set(DBTarget.TotalDifficulty, Buffer.from(RLP.encode(TD.toArray())), {
-    blockNumber,
-    blockHash,
-  })
+  return DBOp.set(
+    DBTarget.TotalDifficulty,
+    Buffer.from(RLP.encode(Uint8Array.from(TD.toArray()))),
+    {
+      blockNumber,
+      blockHash,
+    }
+  )
 }
 
 /*
