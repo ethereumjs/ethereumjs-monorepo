@@ -72,7 +72,7 @@ export class ETH extends EventEmitter {
   static eth66 = { name: 'eth', version: 66, length: 29, constructor: ETH }
 
   _handleMessage(code: ETH.MESSAGE_CODES, data: any) {
-    const payload = arrToBufArr(RLP.decode(bufArrToArr(data))) as unknown
+    const payload = arrToBufArr(RLP.decode(bufArrToArr(data)))
     const messageName = this.getMsgPrefix(code)
     const debugMsg = `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}`
 
