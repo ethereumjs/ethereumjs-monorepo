@@ -301,6 +301,8 @@ export const bufArrToArr = function (arr: any): any {
   if (!Array.isArray(arr)) {
     if (typeof arr === 'number') {
       arr = arr.toString()
+    } else if (typeof arr === 'string') {
+      arr = Buffer.from(arr)
     }
     return Uint8Array.from(arr ?? [])
   }
