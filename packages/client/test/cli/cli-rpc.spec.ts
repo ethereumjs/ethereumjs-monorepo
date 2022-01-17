@@ -7,9 +7,8 @@ const cliArgs = ['--rpc', '--ws', '--dev', '--transports=rlpx']
 const end = (child: ChildProcessWithoutNullStreams, hasEnded: boolean, st: tape.Test) => {
   if (hasEnded) return
   hasEnded = true
-  child.stdout.removeAllListeners()
-  child.stderr.removeAllListeners()
-  child.kill('SIGINT')
+  const res = child.kill('SIGINT')
+  st.ok(res === true, 'client shut down successfully')
   st.end()
 }
 
@@ -21,7 +20,6 @@ tape('[CLI] rpc', (t) => {
 
     child.stdout.on('data', async (data) => {
       const message = data.toString()
-
       if (message.includes('http://')) {
         // if http endpoint startup message detected, call http endpoint with RPC method
         const client = Client.http({ port: 8545 })
@@ -69,9 +67,14 @@ tape('[CLI] rpc', (t) => {
       if (message.includes('address=ws://')) {
         st.fail('ws endpoint should not be enabled')
       }
+      if (message.includes('Exiting')) {
+        st.pass('client received shutdown signal')
+      }
       if (message.includes('Miner: Assembling block')) {
         st.pass('miner started and no rpc endpoints started')
         end(child, hasEnded, st)
+        child.stdout.removeAllListeners()
+        child.stderr.removeAllListeners()
       }
     })
 
