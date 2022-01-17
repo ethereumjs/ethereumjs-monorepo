@@ -255,9 +255,8 @@ export class Server extends EventEmitter {
    * @param msg Message text to debug
    */
   private debug(messageName: string, msg: string) {
-    debug(msg)
     if (this.msgDebuggers[messageName]) {
       this.msgDebuggers[messageName](msg)
-    }
+    } else debug(msg)
   }
 }
