@@ -10,7 +10,7 @@ const end = (child: ChildProcessWithoutNullStreams, hasEnded: boolean, st: tape.
   child.stdout.removeAllListeners()
   child.stderr.removeAllListeners()
   const res = child.kill('SIGINT')
-  st.ok(res === true, 'client shut down successfully')
+  st.ok(res, 'client shut down successfully')
   st.end()
 }
 
