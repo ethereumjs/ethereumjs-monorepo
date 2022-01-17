@@ -10,3 +10,6 @@ coverage:
         threshold: 5%
 comment:
   layout: 'reach, flags'
+flags:
+  rlp:
+    carryforward: true
