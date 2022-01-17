@@ -22,6 +22,7 @@
 
 - [[iterator]](rlp.List.md#[iterator])
 - [[unscopables]](rlp.List.md#[unscopables])
+- [at](rlp.List.md#at)
 - [concat](rlp.List.md#concat)
 - [copyWithin](rlp.List.md#copywithin)
 - [entries](rlp.List.md#entries)
@@ -30,6 +31,8 @@
 - [filter](rlp.List.md#filter)
 - [find](rlp.List.md#find)
 - [findIndex](rlp.List.md#findindex)
+- [flat](rlp.List.md#flat)
+- [flatMap](rlp.List.md#flatmap)
 - [forEach](rlp.List.md#foreach)
 - [includes](rlp.List.md#includes)
 - [indexOf](rlp.List.md#indexof)
@@ -111,7 +114,7 @@ Iterator
 
 #### Inherited from
 
-Array.\_\_@iterator@81
+Array.\_\_@iterator@83
 
 #### Defined in
 
@@ -142,11 +145,39 @@ when they will be absent when used in a 'with' statement.
 
 #### Inherited from
 
-Array.\_\_@unscopables@105
+Array.\_\_@unscopables@85
 
 #### Defined in
 
 node_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts:99
+
+___
+
+### at
+
+▸ **at**(`index`): `undefined` \| [`Input`](../modules/rlp.md#input)
+
+Takes an integer value and returns the item at that index,
+allowing for positive and negative integers.
+Negative integers count back from the last item in the array.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `index` | `number` |
+
+#### Returns
+
+`undefined` \| [`Input`](../modules/rlp.md#input)
+
+#### Inherited from
+
+Array.at
+
+#### Defined in
+
+node_modules/@types/node/globals.d.ts:86
 
 ___
 
@@ -469,6 +500,76 @@ Array.findIndex
 #### Defined in
 
 node_modules/typescript/lib/lib.es2015.core.d.ts:43
+
+___
+
+### flat
+
+▸ **flat**<`A`, `D`\>(`depth?`): `FlatArray`<`A`, `D`\>[]
+
+Returns a new array with all sub-array elements concatenated into it recursively up to the
+specified depth.
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `A` | `A` |
+| `D` | extends `number```1`` |
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `depth?` | `D` | The maximum recursion depth |
+
+#### Returns
+
+`FlatArray`<`A`, `D`\>[]
+
+#### Inherited from
+
+Array.flat
+
+#### Defined in
+
+node_modules/typescript/lib/lib.es2019.array.d.ts:81
+
+___
+
+### flatMap
+
+▸ **flatMap**<`U`, `This`\>(`callback`, `thisArg?`): `U`[]
+
+Calls a defined callback function on each element of an array. Then, flattens the result into
+a new array.
+This is identical to a map followed by flat with depth 1.
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `U` | `U` |
+| `This` | `undefined` |
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `callback` | (`value`: [`Input`](../modules/rlp.md#input), `index`: `number`, `array`: [`Input`](../modules/rlp.md#input)[]) => `U` \| readonly `U`[] | A function that accepts up to three arguments. The flatMap method calls the callback function one time for each element in the array. |
+| `thisArg?` | `This` | An object to which the this keyword can refer in the callback function. If thisArg is omitted, undefined is used as the this value. |
+
+#### Returns
+
+`U`[]
+
+#### Inherited from
+
+Array.flatMap
+
+#### Defined in
+
+node_modules/typescript/lib/lib.es2019.array.d.ts:70
 
 ___
 
