@@ -299,7 +299,7 @@ export const arrToBufArr = function (arr: any): any {
  */
 export const bufArrToArr = function (arr: any): any {
   if (!Array.isArray(arr)) {
-    if (typeof arr === 'number') {
+    if (typeof arr === 'number' && arr !== 0) {
       arr = arr.toString()
     } else if (typeof arr === 'string') {
       arr = Buffer.from(arr)
