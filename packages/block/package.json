@@ -36,7 +36,7 @@
     "@ethereumjs/common": "^2.6.0",
     "merkle-patricia-tree": "^4.2.3",
     "@ethereumjs/tx": "^3.4.0",
-    "ethereumjs-util": "^7.1.3"
+    "ethereumjs-util": "^7.1.4"
   },
   "devDependencies": {
     "@types/lru-cache": "^5.1.0",

@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 7.1.4 - 2022-01-20
+
+### Features
+
+- New `validateNoLeadingZeroes()` function in `bytes` module for validating Buffers to have no leading zeros (mainly within an RLP context), PR [#1568](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1568)
+- New `MAX_UINT64` constant which can be used to check if a `BN` instance exceeds the max. possible 64-bit integer value, PR [#1568](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1568)
+
+### Maintenance
+
+- `toBuffer` (`bytes` module) now throws when a negative BN is provided as input, PR [#1606](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1606)
+- Dependencies: deduplicated RLP import, PR [#1549](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1549)
+
 ## 7.1.3 - 2021-10-12
 
 ### Removal of ethjs-util Package Re-Export
