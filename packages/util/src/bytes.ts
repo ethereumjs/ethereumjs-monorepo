@@ -299,6 +299,9 @@ export const arrToBufArr = function (arr: any): any {
  */
 export const bufArrToArr = function (arr: any): any {
   if (!Array.isArray(arr)) {
+    if (typeof arr === 'number') {
+      arr = arr.toString()
+    }
     return Uint8Array.from(arr ?? [])
   }
   return arr.map((a: Uint8Array | Uint8Array[]) => bufArrToArr(a))
