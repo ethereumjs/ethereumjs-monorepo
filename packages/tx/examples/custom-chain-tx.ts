@@ -1,20 +1,17 @@
-import { Address } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
-import { Transaction } from '../src'
+import {Address} from 'ethereumjs-util'
+import Common, {CustomChain} from '@ethereumjs/common'
+import {Transaction} from '../src'
 
 // In this example we create a transaction for a custom network.
 
 // This custom network has the same params as mainnet,
 // except for name, chainId, and networkId,
 // so we use the `Common.forCustomChain` method.
-const customCommon = Common.forCustomChain(
-  'mainnet',
+const customCommon = Common.custom(
+  CustomChain.xDaiChain,
   {
-    name: 'my-network',
-    networkId: 123,
-    chainId: 2134,
-  },
-  'petersburg',
+    hardfork: 'petersburg'
+  }
 )
 
 // We pass our custom Common object whenever we create a transaction

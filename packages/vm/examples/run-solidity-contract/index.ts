@@ -5,6 +5,7 @@ import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
 import { Account, Address, BN } from 'ethereumjs-util'
 import { Transaction } from '@ethereumjs/tx'
 import VM from '../../dist'
+
 const solc = require('solc')
 
 const INITIAL_GREETING = 'Hello, World!'

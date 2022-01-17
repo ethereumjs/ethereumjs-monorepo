@@ -1,0 +1,29 @@
+name: VM
+on:
+  push:
+    branches: [feat/examples-improvemens]
+
+env:
+  cwd: ${{github.workspace}}/packages/vm
+
+defaults:
+  run:
+    working-directory: packages/vm
+
+jobs:
+  test-vm-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'npm'
+
+      - run: npm i
+        working-directory: ${{github.workspace}}
+
+      - run: npm run examples:ci

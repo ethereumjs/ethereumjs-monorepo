@@ -521,7 +521,7 @@ export default class EEI {
   }
 
   async _baseCall(msg: Message): Promise<BN> {
-    const selfdestruct = { ...this._result.selfdestruct }
+    const { selfdestruct } = { ...this._result }
     msg.selfdestruct = selfdestruct
 
     // empty the return data buffer
@@ -556,8 +556,7 @@ export default class EEI {
     if (!results.execResult.exceptionError) {
       Object.assign(this._result.selfdestruct, selfdestruct)
       // update stateRoot on current contract
-      const account = await this._state.getAccount(this._env.address)
-      this._env.contract = account
+      this._env.contract = await this._state.getAccount(this._env.address)
     }
 
     return this._getReturnCode(results)

@@ -23,9 +23,8 @@ function nameOpCodes(raw: Buffer) {
       i += jumpNum
     }
 
-    console.log(
-      pad(pc, roundLog(raw.length, 10)) + '  ' + curOpCode + ' ' + pushData?.toString('hex')
-    )
+    const log = pad(pc, roundLog(raw.length, 10)) + '  ' + curOpCode + ' ' + pushData?.toString('hex')
+    console.log(log)
 
     pushData = ''
   }

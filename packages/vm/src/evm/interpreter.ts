@@ -105,8 +105,7 @@ export default class Interpreter {
     let err
     // Iterate through the given ops until something breaks or we hit STOP
     while (this._runState.programCounter < this._runState.code.length) {
-      const opCode = this._runState.code[this._runState.programCounter]
-      this._runState.opCode = opCode
+      this._runState.opCode = this._runState.code[this._runState.programCounter]
       await this._runStepHook()
 
       try {

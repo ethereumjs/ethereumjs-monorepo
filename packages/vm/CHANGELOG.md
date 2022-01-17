@@ -1153,7 +1153,7 @@ try {
 
 ##### Bug Fixes
 
-- Fixed error message in `runTx()`,
+- Fixed error message in `runTx`,
   PR [#523](https://github.com/ethereumjs/ethereumjs-monorepo/pull/523)
 - Changed default hardfork in `StateManager` to `petersburg`,
   PR [#524](https://github.com/ethereumjs/ethereumjs-monorepo/pull/524)
