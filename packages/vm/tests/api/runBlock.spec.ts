@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, KECCAK256_RLP, Account } from 'ethereumjs-util'
+import { Account, Address, BN, toBuffer, KECCAK256_RLP } from 'ethereumjs-util'
 import RLP from 'rlp'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
@@ -23,10 +23,10 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 
 tape('runBlock() -> successful API parameter usage', async (t) => {
   async function simpleRun(vm: VM, st: tape.Test) {
-    const genesisRlp = testData.genesisRLP
+    const genesisRlp = toBuffer(testData.genesisRLP)
     const genesis = Block.fromRLPSerializedBlock(genesisRlp)
 
-    const blockRlp = testData.blocks[0].rlp
+    const blockRlp = toBuffer(testData.blocks[0].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp)
 
     //@ts-ignore
@@ -58,7 +58,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     //@ts-ignore
     await setupPreConditions(vm.stateManager._trie, testData)
 
-    const block1Rlp = testData.blocks[0].rlp
+    const block1Rlp = toBuffer(testData.blocks[0].rlp)
     const block1 = Block.fromRLPSerializedBlock(block1Rlp)
     await vm.runBlock({
       block: block1,
@@ -67,7 +67,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       skipBlockValidation: true,
     })
 
-    const block2Rlp = testData.blocks[1].rlp
+    const block2Rlp = toBuffer(testData.blocks[1].rlp)
     const block2 = Block.fromRLPSerializedBlock(block2Rlp)
     await vm.runBlock({
       block: block2,
@@ -76,7 +76,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       skipBlockValidation: true,
     })
 
-    const block3Rlp = testData.blocks[2].rlp
+    const block3Rlp = toBuffer(testData.blocks[2].rlp)
     const block3 = Block.fromRLPSerializedBlock(block3Rlp)
     await vm.runBlock({
       block: block3,
@@ -190,7 +190,7 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
   const vm = new VM({ common })
 
   t.test('should fail when runTx fails', async (t) => {
-    const blockRlp = testData.blocks[0].rlp
+    const blockRlp = toBuffer(testData.blocks[0].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp)
 
     // The mocked VM uses a mocked runTx
@@ -219,7 +219,7 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
   t.test('should fail when block validation fails', async (t) => {
     const vm = new VM({ common })
 
-    const blockRlp = testData.blocks[0].rlp
+    const blockRlp = toBuffer(testData.blocks[0].rlp)
     const block = Object.create(Block.fromRLPSerializedBlock(blockRlp))
     block.validate = async () => {
       throw new Error('test')
@@ -234,7 +234,7 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
   t.test('should fail when tx gas limit higher than block gas limit', async (t) => {
     const vm = new VM({ common })
 
-    const blockRlp = testData.blocks[0].rlp
+    const blockRlp = toBuffer(testData.blocks[0].rlp)
     const block = Object.create(Block.fromRLPSerializedBlock(blockRlp))
     // modify first tx's gasLimit
     const { nonce, gasPrice, to, value, data, v, r, s } = block.transactions[0]
@@ -401,7 +401,7 @@ tape('should correctly reflect generated fields', async (t) => {
 async function runWithHf(hardfork: string) {
   const vm = setupVM({ common: new Common({ chain: Chain.Mainnet, hardfork }) })
 
-  const blockRlp = testData.blocks[0].rlp
+  const blockRlp = toBuffer(testData.blocks[0].rlp)
   const block = Block.fromRLPSerializedBlock(blockRlp)
 
   // @ts-ignore
@@ -438,7 +438,7 @@ tape('runBlock() -> tx types', async (t) => {
   async function simpleRun(vm: VM, transactions: TypedTransaction[], st: tape.Test) {
     const common = vm._common
 
-    const blockRlp = testData.blocks[0].rlp
+    const blockRlp = toBuffer(testData.blocks[0].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
 
     //@ts-ignore overwrite transactions
