@@ -233,15 +233,15 @@ export class RLPx extends EventEmitter {
     })
 
     peer.once('close', (reason, disconnectWe) => {
-      if (disconnectWe) {
-        debug(
-          `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASONS[reason]}`
-        )
-      } else {
-        debug(
-          `${socket.remoteAddress}:${socket.remotePort} disconnect, reason: ${DISCONNECT_REASONS[reason]}`
-        )
-      }
+      // if (disconnectWe) {
+      //   debug(
+      //     `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASONS[reason]}`
+      //   )
+      // } else {
+      //   debug(
+      //     `${socket.remoteAddress}:${socket.remotePort} disconnect, reason: ${DISCONNECT_REASONS[reason]}`
+      //   )
+      // }
 
       if (!disconnectWe && reason === DISCONNECT_REASONS.TOO_MANY_PEERS) {
         // hack

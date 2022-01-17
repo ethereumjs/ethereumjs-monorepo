@@ -699,18 +699,15 @@ export class Peer extends EventEmitter {
    * @param msg Message text to debug
    */
   private debug(messageName: string, msg: string, disconnectReason?: string) {
-    debug(msg)
-    if (this.msgDebuggers[messageName]) {
-      this.msgDebuggers[messageName](msg)
-    }
     const ip = this._socket.remoteAddress
-    if (ip && this.msgDebuggers[ip]) {
-      this.msgDebuggers[ip](msg)
-    }
     if (disconnectReason && messageName === 'DISCONNECT') {
       if (this.msgDebuggers[disconnectReason]) {
         this.msgDebuggers[disconnectReason](msg)
       }
-    }
+    } else if (this.msgDebuggers[messageName]) {
+      this.msgDebuggers[messageName](msg)
+    } else if (ip && this.msgDebuggers[ip]) {
+      this.msgDebuggers[ip](msg)
+    } else debug(msg)
   }
 }

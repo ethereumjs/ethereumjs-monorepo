@@ -377,14 +377,12 @@ export class ETH extends EventEmitter {
    * @param msg Message text to debug
    */
   private debug(messageName: string, msg: string) {
-    debug(msg)
+    const ip = this._peer._socket.remoteAddress
     if (this.msgDebuggers[messageName]) {
       this.msgDebuggers[messageName](msg)
-    }
-    const ip = this._peer._socket.remoteAddress
-    if (ip && this.msgDebuggers[ip]) {
+    } else if (ip && this.msgDebuggers[ip]) {
       this.msgDebuggers[ip](msg)
-    }
+    } else debug(msg)
   }
 }
 
