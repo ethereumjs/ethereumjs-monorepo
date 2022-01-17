@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.prod.json",
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "node12",
+    "moduleResolution": "node12",
+    "outDir": "./dist.esm",
+  },
+}

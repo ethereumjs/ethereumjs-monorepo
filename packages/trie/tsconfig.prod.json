@@ -4,7 +4,6 @@
     "rootDir": "./src",
     "outDir": "./dist",
     "target": "ES2017",
-    "lib": ["dom"],
     "composite": true
   },
   "include": ["src/**/*.ts"],

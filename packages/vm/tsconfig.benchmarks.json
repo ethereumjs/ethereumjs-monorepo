@@ -2,7 +2,6 @@
   "extends": "../../config/tsconfig.json",
   "compilerOptions": {
     "target": "ES6",
-    "lib": ["dom"],
     "sourceMap": false,
     "declaration": false,
     "esModuleInterop": true

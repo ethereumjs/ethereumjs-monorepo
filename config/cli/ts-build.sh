@@ -42,6 +42,8 @@ build_node() {
     green "DONE"
 
     echo "\n";
+
+    build_esm
 }
 
 build_browser() {
@@ -69,6 +71,30 @@ build_browser() {
     echo "\n";
 }
 
+build_esm() {
+    if [ -f ./tsconfig.esm.json ];
+    then
+        blue "[ESM build] "
+        echo "Using tsconfig.esm.json"
+        echo "> tsc -p ./tsconfig.esm.json"
+
+        blue "[ESM build] "
+        printf "Working... "
+
+        tsc -p ./tsconfig.esm.json
+        RETURN_CODE=$?
+
+        if [ $RETURN_CODE -eq 0 ]; then
+            green "DONE"
+        else
+            exit $RETURN_CODE
+        fi
+    else
+        dim "Skipping ESM build, because no tsconfig.esm.json file is present."
+    fi
+
+    echo "\n";
+}
 
 # Begin build process.
 

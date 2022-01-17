@@ -66,8 +66,7 @@ jspm_packages/
 .cache
 
 # generate output
-dist
-dist.browser
+dist*
 
 # Gatsby files
 .cache/

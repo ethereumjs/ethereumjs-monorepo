@@ -13,14 +13,24 @@
     "full sync"
   ],
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=12.0.0"
   },
+  "type": "module",
   "files": [
-    "dist"
+    "dist",
+    "dist.esm",
+    "lib"
   ],
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
   "browser": "dist/bundle.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist.esm/index.js",
+      "require": "./dist/index.js"
+    }
+  },
   "bin": {
     "ethereumjs": "dist/bin/cli.js"
   },
@@ -111,7 +121,7 @@
     "testdouble-timers": "^0.1.1",
     "ts-node": "^10.2.1",
     "typedoc": "^0.22.4",
-    "typescript": "^4.4.2",
+    "typescript": "next",
     "webpack": "^5.55.1",
     "webpack-cli": "^4.8.0"
   },

@@ -8,14 +8,23 @@
     "ethereum",
     "VM"
   ],
+  "type": "module",
   "files": [
     "dist",
     "dist.browser",
+    "dist.esm",
     "src"
   ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "browser": "dist.browser/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist.esm/index.js",
+      "require": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "npm run build:node && npm run build:browser",
     "build:node": "../../config/cli/ts-build.sh node",
@@ -84,7 +93,7 @@
     "tape": "^5.3.1",
     "ts-node": "^10.2.1",
     "typedoc": "^0.22.4",
-    "typescript": "^4.4.2"
+    "typescript": "next"
   },
   "contributors": [
     "Alex Beregszaszi <alex@rtfs.hu>"
