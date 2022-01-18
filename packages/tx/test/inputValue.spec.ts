@@ -1,5 +1,13 @@
 import tape from 'tape'
-import { Address, AddressLike, BN, BNLike, BufferLike, toBuffer } from 'ethereumjs-util'
+import {
+  Address,
+  AddressLike,
+  BN,
+  BNLike,
+  BufferLike,
+  bufferToHex,
+  toBuffer,
+} from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '../src'
 
@@ -110,7 +118,7 @@ tape('[Transaction Input Values]', function (t) {
     for (const txData of randomSample) {
       const tx = Transaction.fromTxData(txData, { common })
       const hash = tx.hash()
-      st.deepEqual(hash, expectedHash, `correct tx hash (${hash})`)
+      st.deepEqual(hash, expectedHash, `correct tx hash (0x${bufferToHex(hash)})`)
     }
     st.end()
   })
@@ -132,7 +140,8 @@ tape('[Transaction Input Values]', function (t) {
     for (const txData of randomSample) {
       const tx = Transaction.fromTxData(txData, { common })
       const hash = tx.hash()
-      st.deepEqual(hash, expectedHash, `correct tx hash (${hash})`)
+
+      st.deepEqual(hash, expectedHash, `correct tx hash (0x${bufferToHex(hash)})`)
     }
     st.end()
   })
