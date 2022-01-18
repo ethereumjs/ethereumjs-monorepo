@@ -162,12 +162,12 @@ export interface CustomCommonOpts extends BaseOpts {
   baseChain?: string | number | Chain | BN
 }
 
-interface hardforkOptions {
-  /** optional, only allow supported HFs (default: false) */
-  onlySupported?: boolean
-  /** optional, only active HFs (default: false) */
-  onlyActive?: boolean
-}
+// interface hardforkOptions {
+//   /** optional, only allow supported HFs (default: false) */
+//   onlySupported?: boolean
+//   /** optional, only active HFs (default: false) */
+//   onlyActive?: boolean
+// }
 
 /**
  * Common class to access chain and hardfork parameters and to provide
@@ -703,17 +703,11 @@ export default class Common extends EventEmitter {
    * Checks if set or provided hardfork is active on block number
    * @param hardfork Hardfork name or null (for HF set)
    * @param blockNumber
-   * @param opts Hardfork options (onlyActive unused)
    * @returns True if HF is active on block number
    */
-  hardforkIsActiveOnBlock(
-    hardfork: string | Hardfork | null,
-    blockNumber: BNLike,
-    opts: hardforkOptions = {}
-  ): boolean {
+  hardforkIsActiveOnBlock(hardfork: string | Hardfork | null, blockNumber: BNLike): boolean {
     blockNumber = toType(blockNumber, TypeOutput.BN)
-    const onlySupported = opts.onlySupported ?? false
-    hardfork = this._chooseHardfork(hardfork, onlySupported)
+    hardfork = this._chooseHardfork(hardfork)
     const hfBlock = this.hardforkBlockBN(hardfork)
     if (hfBlock && blockNumber.gte(hfBlock)) {
       return true
@@ -724,11 +718,10 @@ export default class Common extends EventEmitter {
   /**
    * Alias to hardforkIsActiveOnBlock when hardfork is set
    * @param blockNumber
-   * @param opts Hardfork options (onlyActive unused)
    * @returns True if HF is active on block number
    */
-  activeOnBlock(blockNumber: BNLike, opts?: hardforkOptions): boolean {
-    return this.hardforkIsActiveOnBlock(null, blockNumber, opts)
+  activeOnBlock(blockNumber: BNLike): boolean {
+    return this.hardforkIsActiveOnBlock(null, blockNumber)
   }
 
   /**
@@ -738,20 +731,9 @@ export default class Common extends EventEmitter {
    * @param opts Hardfork options
    * @returns True if HF1 gte HF2
    */
-  hardforkGteHardfork(
-    hardfork1: string | Hardfork | null,
-    hardfork2: string | Hardfork,
-    opts: hardforkOptions = {}
-  ): boolean {
-    const onlyActive = opts.onlyActive === undefined ? false : opts.onlyActive
-    hardfork1 = this._chooseHardfork(hardfork1, opts.onlySupported)
-
-    let hardforks
-    if (onlyActive) {
-      hardforks = this.activeHardforks(null, opts)
-    } else {
-      hardforks = this.hardforks()
-    }
+  hardforkGteHardfork(hardfork1: string | Hardfork | null, hardfork2: string | Hardfork): boolean {
+    hardfork1 = this._chooseHardfork(hardfork1)
+    const hardforks = this.hardforks()
 
     let posHf1 = -1,
       posHf2 = -1
@@ -767,25 +749,19 @@ export default class Common extends EventEmitter {
   /**
    * Alias to hardforkGteHardfork when hardfork is set
    * @param hardfork Hardfork name
-   * @param opts Hardfork options
    * @returns True if hardfork set is greater than hardfork provided
    */
-  gteHardfork(hardfork: string | Hardfork, opts?: hardforkOptions): boolean {
-    return this.hardforkGteHardfork(null, hardfork, opts)
+  gteHardfork(hardfork: string | Hardfork): boolean {
+    return this.hardforkGteHardfork(null, hardfork)
   }
 
   /**
    * Checks if given or set hardfork is active on the chain
    * @param hardfork Hardfork name, optional if HF set
-   * @param opts Hardfork options (onlyActive unused)
    * @returns True if hardfork is active on the chain
    */
-  hardforkIsActiveOnChain(
-    hardfork?: string | Hardfork | null,
-    opts: hardforkOptions = {}
-  ): boolean {
-    const onlySupported = opts.onlySupported ?? false
-    hardfork = this._chooseHardfork(hardfork, onlySupported)
+  hardforkIsActiveOnChain(hardfork?: string | Hardfork | null): boolean {
+    hardfork = this._chooseHardfork(hardfork)
     for (const hf of this.hardforks()) {
       if (hf['name'] === hardfork && hf['block'] !== null) return true
     }
@@ -795,16 +771,15 @@ export default class Common extends EventEmitter {
   /**
    * Returns the active hardfork switches for the current chain
    * @param blockNumber up to block if provided, otherwise for the whole chain
-   * @param opts Hardfork options (onlyActive unused)
    * @return Array with hardfork arrays
    */
-  activeHardforks(blockNumber?: BNLike | null, opts: hardforkOptions = {}): HardforkParams[] {
+  activeHardforks(blockNumber?: BNLike | null): HardforkParams[] {
     const activeHardforks: HardforkParams[] = []
     const hfs = this.hardforks()
     for (const hf of hfs) {
       if (hf['block'] === null) continue
       if (blockNumber !== undefined && blockNumber !== null && blockNumber < hf['block']) break
-      if (opts.onlySupported && !this._isSupportedHardfork(hf['name'])) continue
+      // if (opts.onlySupported && !this._isSupportedHardfork(hf['name'])) continue
 
       activeHardforks.push(hf)
     }
@@ -814,11 +789,10 @@ export default class Common extends EventEmitter {
   /**
    * Returns the latest active hardfork name for chain or block or throws if unavailable
    * @param blockNumber up to block if provided, otherwise for the whole chain
-   * @param opts Hardfork options (onlyActive unused)
    * @return Hardfork name
    */
-  activeHardfork(blockNumber?: BNLike | null, opts: hardforkOptions = {}): string {
-    const activeHardforks = this.activeHardforks(blockNumber, opts)
+  activeHardfork(blockNumber?: BNLike | null): string {
+    const activeHardforks = this.activeHardforks(blockNumber)
     if (activeHardforks.length > 0) {
       return activeHardforks[activeHardforks.length - 1]['name']
     } else {
