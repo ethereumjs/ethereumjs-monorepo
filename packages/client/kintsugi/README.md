@@ -11,7 +11,7 @@ Please ensure you have Node 12.x+ installed
 
 ### Run client
 
-1. `npm run client:start -- --datadir kintsugi/datadir --gethGenesis kintsugi/config/genesis.json --saveReceipts --rpc --ws --rpcEngine --rpcEnginePort=8545 --rpcDebug --loglevel=debug --bootnodes=64.225.4.226:30303`
+1. `npm run client:start -- --datadir kintsugi/datadir --gethGenesis kintsugi/config/genesis.json --saveReceipts --rpc --ws --rpcEngine --rpcEnginePort=8545 --rpcDebug --loglevel=debug --bootnodes=161.35.67.219:30303`
 
 ## Consensus
 
