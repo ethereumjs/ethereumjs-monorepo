@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/client",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "EthereumJS client implementation",
   "license": "MPL-2.0",
   "author": "Vinay Pulim (v@pulim.com)",
@@ -13,7 +13,7 @@
     "full sync"
   ],
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=12.0.0"
   },
   "files": [
     "dist"
