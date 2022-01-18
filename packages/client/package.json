@@ -53,7 +53,7 @@
     "@ethereumjs/block": "^3.6.0",
     "@ethereumjs/blockchain": "^5.5.1",
     "@ethereumjs/common": "^2.6.1",
-    "@ethereumjs/devp2p": "^4.2.0",
+    "@ethereumjs/devp2p": "^4.2.1",
     "@ethereumjs/ethash": "^1.1.0",
     "@ethereumjs/tx": "^3.5.0",
     "@ethereumjs/vm": "^5.6.0",
