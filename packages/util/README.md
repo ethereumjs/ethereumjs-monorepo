@@ -80,6 +80,8 @@ import { stripHexPrefix } from 'ethereumjs-util'
 
 ### Re-Exports
 
+(Please note these are deprecated and planned to be removed in the next major release, util v8)
+
 `ethereumjs-util` re-exports the following commonly-used libraries:
 
 - [BN.js](https://github.com/indutny/bn.js) (version `5.x`)
