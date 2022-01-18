@@ -109,8 +109,8 @@ tape('[Transaction Input Values]', function (t) {
     const randomSample = getRandomSubarray(legacyTxData, 100)
     for (const txData of randomSample) {
       const tx = Transaction.fromTxData(txData, { common })
-
-      st.deepEqual(tx.hash(), expectedHash), 'correct tx hash'
+      const hash = tx.hash()
+      st.deepEqual(hash, expectedHash, `correct tx hash (${hash})`)
     }
     st.end()
   })
@@ -131,8 +131,8 @@ tape('[Transaction Input Values]', function (t) {
 
     for (const txData of randomSample) {
       const tx = Transaction.fromTxData(txData, { common })
-
-      st.deepEqual(tx.hash(), expectedHash), 'correct tx hash'
+      const hash = tx.hash()
+      st.deepEqual(hash, expectedHash, `correct tx hash (${hash})`)
     }
     st.end()
   })
