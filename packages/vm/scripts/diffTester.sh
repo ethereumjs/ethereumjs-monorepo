@@ -5,7 +5,7 @@ usage() {
 }
 
 FORK="London"
-
+STASH="f"
 while getopts "b:t:r:f::" c
 do
     case $c in
@@ -19,7 +19,11 @@ done
 
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
-git stash
+if ! git status | grep -q "nothing to commit"
+then    
+    git stash
+    STASH="t"
+fi
 
 git checkout $BRANCH
 
@@ -29,4 +33,8 @@ git checkout $CURRENT_BRANCH
 
 npm run tester -- --state --fork=$FORK --customStateTest=$TEST --reps=$REPS
 
-git stash pop
+echo "stash" $STASH
+if [ "$STASH" = "t" ]
+then
+    git stash pop
+fi
