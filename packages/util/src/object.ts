@@ -1,4 +1,3 @@
-import assert from 'assert'
 import { stripHexPrefix } from './internal'
 import { rlp } from './externals'
 import { toBuffer, baToJSON, unpadBuffer } from './bytes'
@@ -49,15 +48,13 @@ export const defineProperties = function (self: any, fields: any, data?: any) {
 
       if (field.allowLess && field.length) {
         v = unpadBuffer(v)
-        assert(
-          field.length >= v.length,
-          `The field ${field.name} must not have more ${field.length} bytes`
-        )
+        if (field.length < v.length) {
+          throw new Error(`The field ${field.name} must not have more ${field.length} bytes`)
+        }
       } else if (!(field.allowZero && v.length === 0) && field.length) {
-        assert(
-          field.length === v.length,
-          `The field ${field.name} must have byte length of ${field.length}`
-        )
+        if (field.length !== v.length) {
+          throw new Error(`The field ${field.name} must have byte length of ${field.length}`)
+        }
       }
 
       self.raw[i] = v
