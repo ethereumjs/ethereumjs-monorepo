@@ -4,5 +4,9 @@
   "private": true,
   "version": "0.0.1",
   "license": "MIT",
-  "main": "index.ts"
+  "main": "index.ts",
+  "devDependencies": {
+    "@ethersproject/abi": "5.5.0",
+    "solc": "0.8.11"
+  }
 }
