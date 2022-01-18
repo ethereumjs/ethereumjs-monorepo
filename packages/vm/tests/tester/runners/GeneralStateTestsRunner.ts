@@ -60,14 +60,13 @@ function parseTestCases(
 }
 
 async function runTestCase(options: any, testData: any, t: tape.Test) {
-  const begin = Date.now()
   let VM
   if (options.dist) {
     VM = require('../../../dist').default
   } else {
     VM = require('../../../src').default
   }
-
+  const begin = Date.now()
   const state = new Trie()
   const hardfork = options.forkConfigVM
 
