@@ -44,7 +44,6 @@
     "rlp": "^2.2.4"
   },
   "devDependencies": {
-    "@types/assert": "^1.5.4",
     "@types/node": "^16.11.7",
     "@types/secp256k1": "^4.0.1",
     "@types/tape": "^4.13.2",
