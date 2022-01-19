@@ -2,14 +2,16 @@ import ms from 'ms'
 import { EventEmitter } from 'events'
 import { publicKeyCreate } from 'secp256k1'
 import { randomBytes } from 'crypto'
-import { debug as createDebugLogger } from 'debug'
+// import { debug as createDebugLogger } from 'debug'
+import { devp2pDebug } from '../util'
 import { buffer2int, pk2id } from '../util'
 import { KBucket } from './kbucket'
 import { BanList } from './ban-list'
 import { Server as DPTServer } from './server'
 import { DNS } from '../dns'
 
-const debug = createDebugLogger('devp2p:dpt')
+const DEFAULT_BASE_NAME = 'dpt'
+const debug = devp2pDebug.extend(DEFAULT_BASE_NAME)
 
 export interface PeerInfo {
   id?: Uint8Array | Buffer
