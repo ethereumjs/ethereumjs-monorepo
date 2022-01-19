@@ -16,13 +16,14 @@ if (method === 'encode') {
   try {
     json = JSON.parse(strInput)
   } catch (error) {
-    return console.error(`Error could not parse JSON: ${JSON.stringify(error)}`)
+    const errorMsg = error.message ? error.message : error
+    return console.error(`Error could not parse JSON: ${errorMsg}`)
   }
 
   // Encode RLP
   try {
     const encoded = RLP.encode(json)
-    console.log('0x' + bytesToHex(Uint8Array.from(encoded)))
+    console.log('0x' + bytesToHex(encoded))
   } catch (error) {
     const errorMsg = error.message ? error.message : error
     console.error(`Error encoding RLP: ${errorMsg}`)
