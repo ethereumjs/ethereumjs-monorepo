@@ -35,7 +35,6 @@ export * from './object'
 
 /**
  * External exports (BN, RLP)
- * @deprecated will be removed in the next major release (util v8)
  */
 export * from './externals'
 
