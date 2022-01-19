@@ -4,12 +4,12 @@ import ms from 'ms'
 import { debug as createDebugLogger } from 'debug'
 import LRUCache = require('lru-cache')
 import { encode, decode } from './message'
-import { keccak256, pk2id, createDeferred, formatLogId } from '../util'
+import { keccak256, pk2id, createDeferred, formatLogId, devp2pDebug } from '../util'
 import { DPT, PeerInfo } from './dpt'
 import { Socket as DgramSocket, RemoteInfo } from 'dgram'
 
-const DEBUG_BASE_NAME = 'devp2p:dpt:server'
-const debug = createDebugLogger(DEBUG_BASE_NAME)
+const DEBUG_BASE_NAME = 'dpt:server'
+const debug = devp2pDebug.extend(DEBUG_BASE_NAME)
 const verbose = createDebugLogger('verbose').enabled
 
 const VERSION = 0x04
@@ -48,7 +48,7 @@ export class Server extends EventEmitter {
   _socket: DgramSocket | null
 
   // Message debuggers (e.g. { 'findneighbours': [debug Object], ...})
-  private msgDebuggers: { [key: string]: (debug: string) => void } = {}
+  // private msgDebuggers: { [key: string]: (debug: string) => void } = {}
 
   constructor(dpt: DPT, privateKey: Buffer, options: DPTServerOptions) {
     super()
@@ -62,7 +62,7 @@ export class Server extends EventEmitter {
     this._parityRequestMap = new Map()
     this._requestsCache = new LRUCache({ max: 1000, maxAge: ms('1s'), stale: false })
 
-    this.initMsgDebuggers()
+    // this.initMsgDebuggers()
 
     const createSocket = options.createSocket ?? dgram.createSocket.bind(null, { type: 'udp4' })
     this._socket = createSocket()
@@ -241,12 +241,12 @@ export class Server extends EventEmitter {
     }
   }
 
-  private initMsgDebuggers() {
-    const MESSAGE_NAMES = ['ping', 'pong', 'findneighbours', 'neighbours']
-    for (const name of MESSAGE_NAMES) {
-      this.msgDebuggers[name] = createDebugLogger(`${DEBUG_BASE_NAME}:${name}`)
-    }
-  }
+  // private initMsgDebuggers() {
+  //   const MESSAGE_NAMES = ['ping', 'pong', 'findneighbours', 'neighbours']
+  //   for (const name of MESSAGE_NAMES) {
+  //     this.msgDebuggers[name] = createDebugLogger(`${DEBUG_BASE_NAME}:${name}`)
+  //   }
+  // }
 
   /**
    * Debug message both on the generic as well as the
@@ -255,8 +255,10 @@ export class Server extends EventEmitter {
    * @param msg Message text to debug
    */
   private debug(messageName: string, msg: string) {
-    if (this.msgDebuggers[messageName]) {
-      this.msgDebuggers[messageName](msg)
-    } else debug(msg)
+    debug.extend(messageName)(msg)
+
+    // if (this.msgDebuggers[messageName]) {
+    //   this.msgDebuggers[messageName](msg)
+    // } else debug(msg)
   }
 }
