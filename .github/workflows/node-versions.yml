@@ -8,6 +8,8 @@ name: Node versions
 on:
   schedule:
     - cron: 0 0 * * *
+  pull_request:
+    types: [opened, reopened, synchronize]
 
 jobs:
   get-node-versions:
