@@ -1,11 +1,10 @@
-import { BN, MAX_INTEGER } from 'ethereumjs-util'
 const { ERROR, VmError } = require('../exceptions')
 
 /**
  * Implementation of the stack used in evm.
  */
 export default class Stack {
-  _store: BN[]
+  _store: bigint[]
   _maxHeight: number
 
   constructor(maxHeight?: number) {
@@ -17,14 +16,16 @@ export default class Stack {
     return this._store.length
   }
 
-  push(value: BN) {
-    if (!BN.isBN(value)) {
+  push(value: bigint) {
+    if (typeof value !== 'bigint') {
       throw new VmError(ERROR.INTERNAL_ERROR)
     }
 
-    if (value.gt(MAX_INTEGER)) {
-      throw new VmError(ERROR.OUT_OF_RANGE)
-    }
+    // Why do we have this MAX_INTEGER check here on the BN.js values?
+    // Is this still needed for BigInt? (in doubt I would leave to not chance behavior)
+    //if (value.gt(MAX_INTEGER)) {
+    //  throw new VmError(ERROR.OUT_OF_RANGE)
+    //}
 
     if (this._store.length >= this._maxHeight) {
       throw new VmError(ERROR.STACK_OVERFLOW)
@@ -33,7 +34,7 @@ export default class Stack {
     this._store.push(value)
   }
 
-  pop(): BN {
+  pop(): bigint {
     if (this._store.length < 1) {
       throw new VmError(ERROR.STACK_UNDERFLOW)
     }
@@ -47,7 +48,7 @@ export default class Stack {
    * in returned array.
    * @param num - Number of items to pop
    */
-  popN(num: number = 1): BN[] {
+  popN(num: number = 1): bigint[] {
     if (this._store.length < num) {
       throw new VmError(ERROR.STACK_UNDERFLOW)
     }
@@ -80,12 +81,16 @@ export default class Stack {
    * Pushes a copy of an item in the stack.
    * @param position - Index of item to be copied (1-indexed)
    */
-  dup(position: number) {
+  // I would say that we do not need this method any more
+  // since you can't copy a primitive data type
+  // Nevertheless not sure if we "loose" something here?
+  // Will keep commented out for now
+  /*dup(position: number) {
     if (this._store.length < position) {
       throw new VmError(ERROR.STACK_UNDERFLOW)
     }
 
     const i = this._store.length - position
     this.push(this._store[i].clone())
-  }
+  }*/
 }

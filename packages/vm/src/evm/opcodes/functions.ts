@@ -7,6 +7,7 @@ import {
   TWO_POW256,
   MAX_INTEGER,
   KECCAK256_NULL,
+  TWO_POW256_BIGINT,
 } from 'ethereumjs-util'
 import {
   addressToBuffer,
@@ -52,7 +53,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x01,
     function (runState) {
       const [a, b] = runState.stack.popN(2)
-      const r = a.add(b).mod(TWO_POW256)
+      const r = (a + b) % TWO_POW256_BIGINT
       runState.stack.push(r)
     },
   ],
@@ -61,7 +62,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x02,
     function (runState) {
       const [a, b] = runState.stack.popN(2)
-      const r = a.mul(b).mod(TWO_POW256)
+      const r = (a * b) % TWO_POW256_BIGINT
       runState.stack.push(r)
     },
   ],

@@ -35,8 +35,8 @@ export interface InterpreterStep {
   gasLeft: BN
   gasRefund: BN
   stateManager: StateManager
-  stack: BN[]
-  returnStack: BN[]
+  stack: bigint[]
+  returnStack: bigint[]
   pc: number
   depth: number
   address: Address
