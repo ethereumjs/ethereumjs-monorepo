@@ -42,6 +42,7 @@ jobs:
 
       - name: Use npm v7 for workspaces support
         run: npm i -g npm@7
+        if: ${{ matrix.node-version < 16 }}
 
       - run: npm i
 
