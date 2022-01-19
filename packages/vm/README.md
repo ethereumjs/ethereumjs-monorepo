@@ -140,6 +140,18 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 const vm = new VM({ common })
 ```
 
+If your use case only supports a certain range of `hardforks`, you can use the `supportedHardforks` option to restrict hardfork access on the `VM` instance:
+
+```typescript
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+const vm = new VM({
+  common,
+  supportedHardforks: [Hardfork.Byzantium, Hardfork.Constantinople],
+})
+```
+
+This will throw an error if the hardfork set in `Common` is not included in the `supportedHardforks` array, which can help prevent unpredicted behaviour.
+
 ## EIP Support
 
 It is possible to individually activate EIP support in the VM by instantiate the `Common` instance passed
