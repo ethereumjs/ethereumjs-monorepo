@@ -3,11 +3,12 @@ import { rlp } from 'ethereumjs-util'
 import ms from 'ms'
 import snappy from 'snappyjs'
 import { debug as createDebugLogger } from 'debug'
+import { devp2pDebug } from '../util'
 import { int2buffer, buffer2int, assertEq, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 
-const DEBUG_BASE_NAME = 'devp2p:les'
-const debug = createDebugLogger(DEBUG_BASE_NAME)
+const DEBUG_BASE_NAME = 'les'
+const debug = devp2pDebug.extend(DEBUG_BASE_NAME)
 const verbose = createDebugLogger('verbose').enabled
 
 export const DEFAULT_ANNOUNCE_TYPE = 1
@@ -303,10 +304,11 @@ export class LES extends EventEmitter {
    * @param msg Message text to debug
    */
   private debug(messageName: string, msg: string) {
-    debug(msg)
-    if (this.msgDebuggers[messageName]) {
-      this.msgDebuggers[messageName](msg)
-    }
+    debug.extend(messageName)(msg)
+    // debug(msg)
+    // if (this.msgDebuggers[messageName]) {
+    //   this.msgDebuggers[messageName](msg)
+    // }
   }
 }
 
