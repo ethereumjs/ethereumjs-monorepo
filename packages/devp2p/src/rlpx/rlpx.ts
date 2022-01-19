@@ -4,6 +4,7 @@ import ms from 'ms'
 import { publicKeyCreate } from 'secp256k1'
 import { EventEmitter } from 'events'
 import { debug as createDebugLogger } from 'debug'
+import { devp2pDebug } from '../util'
 import LRUCache from 'lru-cache'
 import Common from '@ethereumjs/common'
 // note: relative path only valid in .js file in dist
@@ -12,7 +13,7 @@ import { pk2id, createDeferred, formatLogId, buffer2int } from '../util'
 import { Peer, DISCONNECT_REASONS, Capabilities } from './peer'
 import { DPT, PeerInfo } from '../dpt'
 
-const debug = createDebugLogger('devp2p:rlpx')
+const debug = devp2pDebug.extend('rlpx')
 const verbose = createDebugLogger('verbose').enabled
 
 export interface RLPxOptions {
@@ -91,7 +92,6 @@ export class RLPx extends EventEmitter {
         )
       })
     }
-
     // internal
     this._server = net.createServer()
     this._server.once('listening', () => this.emit('listening'))
@@ -234,12 +234,14 @@ export class RLPx extends EventEmitter {
 
     peer.once('close', (reason, disconnectWe) => {
       // if (disconnectWe) {
-      //   debug(
-      //     `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASONS[reason]}`
+      //   this.debug(
+      //     `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASONS[reason]}`,
+      //     `disconnect`
       //   )
       // } else {
-      //   debug(
-      //     `${socket.remoteAddress}:${socket.remotePort} disconnect, reason: ${DISCONNECT_REASONS[reason]}`
+      //   this.debug(
+      //     `${socket.remoteAddress}:${socket.remotePort} disconnect, reason: ${DISCONNECT_REASONS[reason]}`,
+      //     'disconnect'
       //   )
       // }
 
