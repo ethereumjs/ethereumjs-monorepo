@@ -3,12 +3,13 @@ import { EventEmitter } from 'events'
 import ms from 'ms'
 import snappy from 'snappyjs'
 import { debug as createDebugLogger } from 'debug'
+import { devp2pDebug } from '../util'
 import { BN, rlp } from 'ethereumjs-util'
 import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 
-const DEBUG_BASE_NAME = 'devp2p:eth'
-const debug = createDebugLogger(DEBUG_BASE_NAME)
+const DEBUG_BASE_NAME = 'eth'
+const debug = devp2pDebug.extend(DEBUG_BASE_NAME)
 const verbose = createDebugLogger('verbose').enabled
 
 /**
@@ -378,11 +379,16 @@ export class ETH extends EventEmitter {
    */
   private debug(messageName: string, msg: string) {
     const ip = this._peer._socket.remoteAddress
-    if (this.msgDebuggers[messageName]) {
-      this.msgDebuggers[messageName](msg)
-    } else if (ip && this.msgDebuggers[ip]) {
-      this.msgDebuggers[ip](msg)
-    } else debug(msg)
+    if (ip) {
+      debug.extend(ip).extend(messageName)(msg)
+    } else {
+      debug.extend(messageName)(msg)
+    }
+    // if (this.msgDebuggers[messageName]) {
+    //   this.msgDebuggers[messageName](msg)
+    // } else if (ip && this.msgDebuggers[ip]) {
+    //   this.msgDebuggers[ip](msg)
+    // } else debug(msg)
   }
 }
 
