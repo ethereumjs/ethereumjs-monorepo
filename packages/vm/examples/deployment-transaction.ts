@@ -1,9 +1,9 @@
-import {toBuffer} from 'ethereumjs-util'
+import {debugLog, deploySimpleStorage, execute, insertOne, privateKey,} from "@ethereumjs/test-cases";
 import VM from "@ethereumjs/vm";
-import {debugLog, deploySimpleStorage, execute, insertOne, privateKey} from "@ethereumjs/test-cases";
+import {toBuffer} from "ethereumjs-util";
 
-const main = async () => {
-  const vm = new VM()
+const main = async (vmInstance?: VM) => {
+  const vm = vmInstance ?? new VM()
 
   // used to sign transactions and generate addresses
   const privateKeyBuf: Buffer = toBuffer(privateKey)
@@ -12,8 +12,13 @@ const main = async () => {
   debugLog(`Account ${address.toString()} has been saved into local chain`)
 
   const deployContractTransaction = deploySimpleStorage()
-  await execute(vm, deployContractTransaction, privateKeyBuf)
+  return {
+    accountAddress: address,
+    deployedContractAddress: await execute(vm, deployContractTransaction, privateKeyBuf)
+  }
 }
+
+export default main
 
 main()
   .then(() => process.exit(0))

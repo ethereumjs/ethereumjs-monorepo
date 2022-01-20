@@ -5,6 +5,25 @@ import {defaultAbiCoder as AbiCoder, Interface} from "@ethersproject/abi";
 import {debugLog} from "./utils";
 import {simpleStorageData} from "./data";
 
+export type TransactionTypes = TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData;
+
+export const read = async (
+  vm: VM,
+  txData: TransactionTypes & { from?: Address }
+): Promise<any> => {
+  const tx = Transaction.fromTxData(txData)
+
+  const result = await vm.runCall({...tx, caller: txData.from})
+
+  if (result.execResult.exceptionError) {
+    throw result.execResult.exceptionError
+  }
+
+  const [decodedResult] = AbiCoder.decode(['uint256'], result.execResult.returnValue)
+
+  return decodedResult
+}
+
 export const execute = async (
   vm: VM,
   txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData,
@@ -12,7 +31,6 @@ export const execute = async (
 ): Promise<Address | undefined> => {
   const tx = Transaction.fromTxData(txData).sign(privateKey)
 
-  debugLog('EVM - Starting execution of transaction', tx)
   const results = await vm.runTx({tx})
 
   debugLog('EVM - Gas used: ' + results.gasUsed.toString())
@@ -31,7 +49,7 @@ export const deploySimpleStorage = (): TxData => {
 }
 
 export const createTransaction = (
-  data: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData
+  data: TransactionTypes
 ): TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData => {
 
 
@@ -44,10 +62,10 @@ export const encodeParameters = (
     types: any[],
     values: unknown[]
   }): string => {
-  const parameters = params.types ?? []
+  const parameters = params?.types ?? []
   const methodWithParemeters = `function ${method}(${parameters.join(',')})`
   const signatureHash = new Interface([methodWithParemeters]).getSighash(method)
-  const encodedArgs = AbiCoder.encode(params.types, params.values);
+  const encodedArgs = AbiCoder.encode(parameters, params?.values ?? []);
 
   return signatureHash + encodedArgs.slice(2)
 }

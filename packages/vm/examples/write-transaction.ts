@@ -1,6 +1,7 @@
-import {toBuffer} from 'ethereumjs-util'
+import {Address, toBuffer} from 'ethereumjs-util'
 import VM from "@ethereumjs/vm";
-import {debugLog, deploySimpleStorage, encodeParameters, execute, insertOne, privateKey} from "@ethereumjs/test-cases";
+import {encodeParameters, execute, privateKey, read} from "@ethereumjs/test-cases";
+import deployContract from "./deployment-transaction"
 import Common, {Chain} from "@ethereumjs/common";
 import {TxData} from "@ethereumjs/tx";
 
@@ -11,14 +12,7 @@ const main = async () => {
 
   const vm = new VM({common})
 
-  // used to sign transactions and generate addresses
-  const privateKeyBuf: Buffer = toBuffer(privateKey)
-  const {address: accountAddress} = await insertOne(vm)
-
-  debugLog(`Account ${accountAddress.toString()} has been saved into local chain`)
-
-  const deployContractTransaction = deploySimpleStorage()
-  const contractAddress = await execute(vm, deployContractTransaction, privateKeyBuf)
+  const {deployedContractAddress, accountAddress} = await deployContract(vm)
 
   const params = {
     types: ['uint256'],
@@ -27,16 +21,26 @@ const main = async () => {
   const updateStorageData = encodeParameters('store', params)
 
   const updateStorageTransaction: TxData = {
-    to: contractAddress,
+    to: deployedContractAddress,
     data: updateStorageData,
     nonce: "0x01",
     gasPrice: "0x09184e72a000",
     gasLimit: "0x90710",
   }
+  await execute(vm, updateStorageTransaction, toBuffer(privateKey))
 
-  await execute(vm, updateStorageTransaction, privateKeyBuf)
+  const retrieveStorageData = encodeParameters('retrieve')
 
+  const retrieveStorageTransaction: TxData & { from: Address } = {
+    to: deployedContractAddress,
+    data: retrieveStorageData,
+    from: accountAddress,
+    gasPrice: "0x09184e72a000",
+    gasLimit: "0x90710"
+  }
 
+  const result = await read(vm, retrieveStorageTransaction)
+  console.log({result})
 }
 
 main()

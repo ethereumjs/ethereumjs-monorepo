@@ -30,7 +30,8 @@
     "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",
     "test:node": "tape -r ts-node/register ./test/index.ts",
-    "test:browser": "karma start karma.conf.js"
+    "test:browser": "karma start karma.conf.js",
+    "examples": "ts-node ../../scripts/examples-runner.ts -- tx"
   },
   "dependencies": {
     "@ethereumjs/common": "^2.6.0",
