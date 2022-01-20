@@ -8,7 +8,7 @@ const method = 'engine_executePayloadV1'
 const validTestVector = {
   blockHash: '0xb084c10440f05f5a23a55d1d7ebcb1b3892935fb56f23cdc9a7f42c348eed174',
   parentHash: '0xa0513a503d5bd6e89a144c3268e5b7e9da9dbf63df125a360e3950a7d0d67131',
-  coinbase: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
+  feeRecipient: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
   stateRoot: '0xca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
   receiptsRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
   logsBloom:
