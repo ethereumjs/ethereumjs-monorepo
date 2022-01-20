@@ -1,4 +1,4 @@
-import * as events from 'events'
+import events from 'events'
 import {
   Protocol,
   BoundProtocol,
@@ -6,8 +6,8 @@ import {
   LesProtocolMethods,
   Sender,
 } from '../protocol'
-import { Server } from '../server'
-import { Config } from '../../config'
+import { Server } from '../server/index.js'
+import { Config } from '../../config.js'
 
 export interface PeerOptions {
   /* Config */

@@ -12,9 +12,9 @@ import {
   DEFAULT_FORK_CONFIG,
   DEFAULT_TESTS_PATH,
 } from './config'
-import { getTestFromSource, getTestsFromArgs } from './testLoader'
-import stateTestsRunner from './runners/GeneralStateTestsRunner'
-import blockchainTestsRunner from './runners/BlockchainTestsRunner'
+import { getTestFromSource, getTestsFromArgs } from './testLoader.js'
+import stateTestsRunner from './runners/GeneralStateTestsRunner.js'
+import blockchainTestsRunner from './runners/BlockchainTestsRunner.js'
 
 /**
  * Test runner

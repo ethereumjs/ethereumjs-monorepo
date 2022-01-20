@@ -1,11 +1,11 @@
 import { debug as createDebugLogger, Debugger } from 'debug'
 import { Readable, Writable } from 'stream'
 import Heap from 'qheap'
-import { PeerPool } from '../../net/peerpool'
-import { Peer } from '../../net/peer'
-import { Config } from '../../config'
-import { Event } from '../../types'
-import { Job } from './types'
+import { PeerPool } from '../../net/peerpool.js'
+import { Peer } from '../../net/peer/index.js'
+import { Config } from '../../config.js'
+import { Event } from '../../types.js'
+import { Job } from './types.js'
 
 export interface FetcherOptions {
   /* Common chain config*/

@@ -4,7 +4,7 @@ import { Address, BN } from 'ethereumjs-util'
 import tape from 'tape'
 import Blockchain from '../src'
 import { CLIQUE_NONCE_AUTH } from '../src/clique'
-import { generateConsecutiveBlock } from './util'
+import { generateConsecutiveBlock } from './util.js'
 
 const genesis = Block.fromBlockData({
   header: {

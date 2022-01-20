@@ -20,7 +20,7 @@ import {
   FeeMarketEIP1559TxData,
   TxValuesArray,
   Capability,
-} from './types'
+} from './types.js'
 
 interface TransactionCache {
   hash: Buffer | undefined

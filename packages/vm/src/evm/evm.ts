@@ -9,16 +9,16 @@ import {
   MAX_INTEGER,
 } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
-import { ERROR, VmError } from '../exceptions'
-import { StateManager } from '../state/index'
-import { getPrecompile, PrecompileFunc } from './precompiles'
-import TxContext from './txContext'
-import Message from './message'
-import EEI from './eei'
+import { ERROR, VmError } from '../exceptions.js'
+import { StateManager } from '../state/index.js'
+import { getPrecompile, PrecompileFunc } from './precompiles/index.js'
+import TxContext from './txContext.js'
+import Message from './message.js'
+import EEI from './eei.js'
 // eslint-disable-next-line
-import { short } from './opcodes/util'
-import { Log } from './types'
-import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
+import { short } from './opcodes/util.js'
+import { Log } from './types.js'
+import { default as Interpreter, InterpreterOpts, RunState } from './interpreter.js'
 
 const debug = createDebugLogger('vm:evm')
 const debugGas = createDebugLogger('vm:evm:gas')

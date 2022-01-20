@@ -1,6 +1,6 @@
 import { Account, Address } from 'ethereumjs-util'
 import { AccessList } from '@ethereumjs/tx'
-import { Proof } from './stateManager'
+import { Proof } from './stateManager.js'
 
 /**
  * Storage values of an account

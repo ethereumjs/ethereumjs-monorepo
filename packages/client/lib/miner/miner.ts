@@ -2,8 +2,8 @@ import Ethash, { Solution, Miner as EthashMiner } from '@ethereumjs/ethash'
 import { BlockHeader } from '@ethereumjs/block'
 import { BN } from 'ethereumjs-util'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { Event } from '../types'
-import { Config } from '../config'
+import { Event } from '../types.js'
+import { Config } from '../config.js'
 import { FullSynchronizer } from '../sync'
 const level = require('level-mem')
 

@@ -1,6 +1,6 @@
 {
   "extends": "../../config/tsconfig.prod.json",
-  "include": ["bin", "lib"],
+  "include": ["bin"],
   "compilerOptions": {
     "outDir": "dist",
     "lib": ["es2018", "dom"],

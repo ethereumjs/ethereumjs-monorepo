@@ -15,10 +15,10 @@ import {
   setLengthLeft,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { StateManager, StorageDump } from './interface'
-import Cache, { getCb, putCb } from './cache'
-import { BaseStateManager } from './'
-import { short } from '../evm/opcodes'
+import { StateManager, StorageDump } from './interface.js'
+import Cache, { getCb, putCb } from './cache.js'
+import { BaseStateManager } from './index.js'
+import { short } from '../evm/opcodes/index.js'
 
 type StorageProof = {
   key: PrefixedHexString

@@ -1,4 +1,4 @@
-import { Nibbles } from '../trieNode'
+import { Nibbles } from '../trieNode.js'
 
 /**
  * Prepends hex prefix to an array of nibbles.

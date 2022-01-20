@@ -1,6 +1,6 @@
 import tape from 'tape'
 const request = require('supertest')
-import { startRPC, closeRPC } from './helpers'
+import { startRPC, closeRPC } from './helpers.js'
 import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code'
 
 tape('call JSON-RPC without Content-Type header', (t) => {

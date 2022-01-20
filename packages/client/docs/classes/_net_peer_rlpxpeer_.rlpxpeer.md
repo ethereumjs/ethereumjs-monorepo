@@ -8,9 +8,9 @@ Devp2p/RLPx peer
 
 **`example`** 
 
-import { RlpxPeer } from './lib/net/peer'
-import { Chain } from './lib/blockchain'
-import { EthProtocol } from './lib/net/protocol'
+import { RlpxPeer } from './lib/net/peer.js'
+import { Chain } from './lib/blockchain.js'
+import { EthProtocol } from './lib/net/protocol.js'
 
 const chain = new Chain()
 const protocols = [ new EthProtocol({ chain })]

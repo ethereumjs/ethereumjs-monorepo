@@ -10,7 +10,7 @@ import {
   validateNoLeadingZeroes,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { BaseTransaction } from './baseTransaction'
+import { BaseTransaction } from './baseTransaction.js'
 import {
   AccessList,
   AccessListBuffer,
@@ -19,9 +19,9 @@ import {
   JsonTx,
   TxOptions,
   N_DIV_2,
-} from './types'
+} from './types.js'
 
-import { AccessLists } from './util'
+import { AccessLists } from './util.js'
 
 const TRANSACTION_TYPE = 1
 const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')

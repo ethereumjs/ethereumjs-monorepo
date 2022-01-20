@@ -7,7 +7,7 @@ import {
   N_DIV_2,
   Capability,
 } from '../src'
-import { TxsJsonEntry } from './types'
+import { TxsJsonEntry } from './types.js'
 import { BaseTransaction } from '../src/baseTransaction'
 import { privateToPublic, BN, toBuffer, MAX_INTEGER, MAX_UINT64 } from 'ethereumjs-util'
 

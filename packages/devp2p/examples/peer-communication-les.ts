@@ -1,5 +1,5 @@
-import * as devp2p from '../src/index'
-import { LES, Peer } from '../src/index'
+import * as devp2p from '../src/index.js'
+import { LES, Peer } from '../src/index.js'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { TypedTransaction } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'

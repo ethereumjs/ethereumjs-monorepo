@@ -11,8 +11,8 @@ import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
 import { FullEthereumService } from '../../lib/service'
 import { Event } from '../../lib/types'
-import MockServer from './mocks/mockserver'
-import { setup, destroy } from './util'
+import MockServer from './mocks/mockserver.js'
+import { setup, destroy } from './util.js'
 
 tape('[Integration:Merge]', async (t) => {
   const commonPoA = Common.custom(

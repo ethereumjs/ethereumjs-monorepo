@@ -1,9 +1,9 @@
 import tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { BlockHeader } from '../src/header'
+import { BlockHeader } from '../src/header.js'
 import { BN } from 'ethereumjs-util'
-import { Mockchain } from './mockchain'
-import { Block } from '../src/block'
+import { Mockchain } from './mockchain.js'
+import { Block } from '../src/block.js'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 
 // Test data from Besu (retrieved via Discord)

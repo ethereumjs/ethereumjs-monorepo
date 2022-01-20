@@ -1,5 +1,5 @@
 import { Test } from 'tape'
-import { DPT, ETH, RLPx, genPrivateKey } from '../../src'
+import { DPT, ETH, RLPx, genPrivateKey } from '../../src/index.js'
 import Common, { Chain } from '@ethereumjs/common'
 import testdata from '../testdata.json'
 

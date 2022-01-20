@@ -1,7 +1,7 @@
 import { BN } from 'ethereumjs-util'
-import { PrecompileInput } from './types'
-import { OOGResult, ExecResult } from '../evm'
-import { VmError, ERROR } from '../../exceptions'
+import { PrecompileInput } from './types.js'
+import { OOGResult, ExecResult } from '../evm.js'
+import { VmError, ERROR } from '../../exceptions.js'
 const assert = require('assert')
 
 // The following blake2 code has been taken from (license: Creative Commons CC0):

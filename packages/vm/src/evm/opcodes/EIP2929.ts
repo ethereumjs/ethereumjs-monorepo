@@ -1,7 +1,7 @@
 import Common from '@ethereumjs/common'
 import { Address, BN } from 'ethereumjs-util'
-import { EIP2929StateManager } from '../../state/interface'
-import { RunState } from './../interpreter'
+import { EIP2929StateManager } from '../../state/interface.js'
+import { RunState } from './../interpreter.js'
 
 /**
  * Adds address to accessedAddresses set if not already included.

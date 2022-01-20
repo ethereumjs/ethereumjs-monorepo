@@ -1,4 +1,4 @@
-import { eipsType } from './../types'
+import { eipsType } from './../types.js'
 
 export const EIPs: eipsType = {
   1559: require('./1559.json'),

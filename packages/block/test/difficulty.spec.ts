@@ -1,7 +1,7 @@
 import tape from 'tape'
 import Common, { Chain } from '@ethereumjs/common'
 import { BN, toBuffer, bufferToInt, isHexPrefixed } from 'ethereumjs-util'
-import { Block } from '../src'
+import { Block } from '../src/index.js'
 
 function normalize(data: any) {
   Object.keys(data).forEach((i) => {

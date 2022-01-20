@@ -12,10 +12,10 @@ import {
 import { RunBlockOpts, AfterBlockEvent } from '../../src/runBlock'
 import type { PreByzantiumTxReceipt, PostByzantiumTxReceipt } from '../../src/types'
 import { setupPreConditions, getDAOCommon } from '../util'
-import { setupVM, createAccount } from './utils'
+import { setupVM, createAccount } from './utils.js'
 import testnet from './testdata/testnet.json'
-import VM from '../../src/index'
-import { setBalance } from './utils'
+import VM from '../../src/index.js'
+import { setBalance } from './utils.js'
 
 const testData = require('./testdata/blockchain.json')
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })

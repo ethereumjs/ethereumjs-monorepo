@@ -1,7 +1,7 @@
 import Common from '@ethereumjs/common'
 import { BN, keccak256, setLengthRight, setLengthLeft } from 'ethereumjs-util'
-import { ERROR, VmError } from './../../exceptions'
-import { RunState } from './../interpreter'
+import { ERROR, VmError } from './../../exceptions.js'
+import { RunState } from './../interpreter.js'
 
 const MASK_160 = new BN(1).shln(160).subn(1)
 

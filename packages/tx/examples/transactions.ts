@@ -2,7 +2,7 @@
 // You can run them with ts-node, as this project is developed in TypeScript.
 // Install the dependencies and run `npx ts-node examples/transactions.ts`
 
-import { Transaction } from '../src'
+import { Transaction } from '../src/index.js'
 import { toBuffer } from 'ethereumjs-util'
 
 // We create an unsigned transaction.

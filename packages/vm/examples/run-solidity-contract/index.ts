@@ -4,7 +4,7 @@ import { readFileSync } from 'fs'
 import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
 import { Account, Address, BN } from 'ethereumjs-util'
 import { Transaction } from '@ethereumjs/tx'
-import VM from '../../dist'
+import VM from '../../dist/index.js'
 const solc = require('solc')
 
 const INITIAL_GREETING = 'Hello, World!'

@@ -1,9 +1,9 @@
-import { ecdsaSign, ecdsaRecover, publicKeyConvert } from 'ethereum-cryptography/secp256k1'
-import { BN } from './externals'
-import { toBuffer, setLengthLeft, bufferToHex, bufferToInt } from './bytes'
-import { keccak } from './hash'
-import { assertIsBuffer } from './helpers'
-import { BNLike, toType, TypeOutput } from './types'
+import { ecdsaSign, ecdsaRecover, publicKeyConvert } from 'ethereum-cryptography/secp256k1.js'
+import { BN } from './externals.js'
+import { toBuffer, setLengthLeft, bufferToHex, bufferToInt } from './bytes.js'
+import { keccak } from './hash.js'
+import { assertIsBuffer } from './helpers.js'
+import { BNLike, toType, TypeOutput } from './types.js'
 
 export interface ECDSASignature {
   v: number

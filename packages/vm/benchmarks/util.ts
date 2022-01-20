@@ -3,7 +3,7 @@ import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { StateManager, DefaultStateManager } from '../dist/state'
 import { RunBlockResult } from '../dist/runBlock'
-import Mockchain from './mockchain'
+import Mockchain from './mockchain.js'
 
 export interface BenchmarkType {
   [key: string]: Function

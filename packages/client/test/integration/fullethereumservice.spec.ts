@@ -6,9 +6,9 @@ import { BN, toBuffer } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { FullEthereumService } from '../../lib/service'
 import { Event } from '../../lib/types'
-import MockServer from './mocks/mockserver'
-import MockChain from './mocks/mockchain'
-import { destroy } from './util'
+import MockServer from './mocks/mockserver.js'
+import MockChain from './mocks/mockchain.js'
+import { destroy } from './util.js'
 
 tape('[Integration:FullEthereumService]', async (t) => {
   async function setup(): Promise<[MockServer, FullEthereumService]> {

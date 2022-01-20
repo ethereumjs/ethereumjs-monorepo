@@ -3,20 +3,20 @@ import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Account, Address, BN, intToBuffer, rlp } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
-import VM from './index'
-import Bloom from './bloom'
-import { StateManager } from './state'
-import { short } from './evm/opcodes'
+import VM from './index.js'
+import Bloom from './bloom/index.js'
+import { StateManager } from './state/index.js'
+import { short } from './evm/opcodes/index.js'
 import { Capability, TypedTransaction } from '@ethereumjs/tx'
-import type { RunTxResult } from './runTx'
-import type { TxReceipt } from './types'
-import * as DAOConfig from './config/dao_fork_accounts_config.json'
+import type { RunTxResult } from './runTx.js'
+import type { TxReceipt } from './types.js'
+import DAOConfig = require('./config/dao_fork_accounts_config.json')
 
 // For backwards compatibility from v5.3.0,
 // TxReceipts are exported. These exports are
 // deprecated and may be removed soon, please
 // update your imports to the new types file.
-import { PreByzantiumTxReceipt, PostByzantiumTxReceipt, EIP2930Receipt } from './types'
+import { PreByzantiumTxReceipt, PostByzantiumTxReceipt, EIP2930Receipt } from './types.js'
 export { PreByzantiumTxReceipt, PostByzantiumTxReceipt, EIP2930Receipt }
 
 const debug = createDebugLogger('vm:block')

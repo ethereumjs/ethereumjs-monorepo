@@ -16,9 +16,9 @@ import {
   jumpSubIsValid,
   trap,
   writeCallOutput,
-} from './util'
-import { ERROR } from '../../exceptions'
-import { RunState } from './../interpreter'
+} from './util.js'
+import { ERROR } from '../../exceptions.js'
+import { RunState } from './../interpreter.js'
 
 export interface SyncOpHandler {
   (runState: RunState, common: Common): void

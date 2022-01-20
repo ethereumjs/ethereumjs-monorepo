@@ -4,9 +4,9 @@ import { Address, BN, rlp } from 'ethereumjs-util'
 import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
 import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
-import { DBManager } from './db/manager'
-import { DBOp, DBSetBlockOrHeader, DBSetTD, DBSetHashToNumber, DBSaveLookups } from './db/helpers'
-import { DBTarget } from './db/operation'
+import { DBManager } from './db/manager.js'
+import { DBOp, DBSetBlockOrHeader, DBSetTD, DBSetHashToNumber, DBSaveLookups } from './db/helpers.js'
+import { DBTarget } from './db/operation.js'
 import {
   CliqueSignerState,
   CliqueLatestSignerStates,
@@ -16,7 +16,7 @@ import {
   CliqueLatestBlockSigners,
   CLIQUE_NONCE_AUTH,
   CLIQUE_NONCE_DROP,
-} from './clique'
+} from './clique.js'
 
 const debug = createDebugLogger('blockchain:clique')
 

@@ -4,7 +4,7 @@ import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction, TransactionFactory, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import VM from '../../src'
-import { createAccount, getTransaction } from './utils'
+import { createAccount, getTransaction } from './utils.js'
 
 const TRANSACTION_TYPES = [
   {

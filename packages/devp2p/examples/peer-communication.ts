@@ -7,8 +7,8 @@ import { rlp } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { TypedTransaction, TransactionFactory } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
-import * as devp2p from '../src/index'
-import { ETH, Peer } from '../src/index'
+import * as devp2p from '../src/index.js'
+import { ETH, Peer } from '../src/index.js'
 
 const PRIVATE_KEY = randomBytes(32)
 

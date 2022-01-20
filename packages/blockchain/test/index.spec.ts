@@ -3,7 +3,7 @@ import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
 import tape from 'tape'
 import Blockchain from '../src'
-import { generateBlockchain, generateBlocks, isConsecutive, createTestDB } from './util'
+import { generateBlockchain, generateBlocks, isConsecutive, createTestDB } from './util.js'
 import * as testData from './testdata/testdata.json'
 import blocksData from './testdata/blocks_mainnet.json'
 

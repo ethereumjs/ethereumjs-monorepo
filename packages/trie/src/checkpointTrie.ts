@@ -1,5 +1,5 @@
-import { Trie as BaseTrie } from './baseTrie'
-import { CheckpointDB } from './checkpointDb'
+import { Trie as BaseTrie } from './baseTrie.js'
+import { CheckpointDB } from './checkpointDb.js'
 
 /**
  * Adds checkpointing to the {@link BaseTrie}

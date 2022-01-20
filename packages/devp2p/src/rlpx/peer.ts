@@ -6,9 +6,9 @@ import snappy from 'snappyjs'
 import { debug as createDebugLogger } from 'debug'
 import Common from '@ethereumjs/common'
 import { rlp } from 'ethereumjs-util'
-import { ETH, LES } from '../'
-import { int2buffer, buffer2int, formatLogData } from '../util'
-import { ECIES } from './ecies'
+import { ETH, LES } from '../index.js'
+import { int2buffer, buffer2int, formatLogData } from '../util.js'
+import { ECIES } from './ecies.js'
 
 const DEBUG_BASE_NAME = 'devp2p:rlpx:peer'
 const debug = createDebugLogger(DEBUG_BASE_NAME)

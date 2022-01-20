@@ -1,6 +1,6 @@
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { BN, rlp, keccak256 } from 'ethereumjs-util'
-import { Block, BlockHeader } from '../src'
+import { Block, BlockHeader } from '../src/index.js'
 
 /**
  * This helper function creates a valid block (except the PoW) with the ability to add uncles. Returns a Block.

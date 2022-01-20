@@ -1,6 +1,6 @@
 import { keccak256, rlp } from 'ethereumjs-util'
-import { bufferToNibbles, nibblesToBuffer } from './util/nibbles'
-import { isTerminator, addHexPrefix, removeHexPrefix } from './util/hex'
+import { bufferToNibbles, nibblesToBuffer } from './util/nibbles.js'
+import { isTerminator, addHexPrefix, removeHexPrefix } from './util/hex.js'
 
 export type TrieNode = BranchNode | ExtensionNode | LeafNode
 export type Nibbles = number[]

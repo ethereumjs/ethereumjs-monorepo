@@ -9,8 +9,8 @@ import {
   Transaction,
   Capability,
 } from '@ethereumjs/tx'
-import { BlockHeader } from './header'
-import { BlockData, BlockOptions, JsonBlock, BlockBuffer, Blockchain } from './types'
+import { BlockHeader } from './header.js'
+import { BlockData, BlockOptions, JsonBlock, BlockBuffer, Blockchain } from './types.js'
 
 /**
  * An object that represents the block.

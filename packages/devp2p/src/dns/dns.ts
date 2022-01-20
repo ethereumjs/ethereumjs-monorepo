@@ -1,6 +1,6 @@
 import assert from 'assert'
-import { PeerInfo } from '../dpt'
-import { ENR } from './enr'
+import { PeerInfo } from '../dpt/index.js'
+import { ENR } from './enr.js'
 import { debug as createDebugLogger } from 'debug'
 
 let dns: any

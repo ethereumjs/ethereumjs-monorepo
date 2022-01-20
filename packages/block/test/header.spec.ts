@@ -3,8 +3,8 @@ import { Address, BN, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY, rlp } from 'eth
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src'
-import { Mockchain } from './mockchain'
-import { PoaMockchain } from './poaMockchain'
+import { Mockchain } from './mockchain.js'
+import { PoaMockchain } from './poaMockchain.js'
 const testData = require('./testdata/testdata.json')
 const blocksMainnet = require('./testdata/blocks_mainnet.json')
 const blocksGoerli = require('./testdata/blocks_goerli.json')

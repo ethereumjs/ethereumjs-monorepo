@@ -1,4 +1,4 @@
-import { DB, BatchDBOp, ENCODING_OPTS } from './db'
+import { DB, BatchDBOp, ENCODING_OPTS } from './db.js'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
 

@@ -3,7 +3,7 @@ import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { InterpreterStep } from '../../../src/evm/interpreter'
 import { BN } from 'ethereumjs-util'
-import { ERROR } from '../../../src/exceptions'
+import { ERROR } from '../../../src/exceptions.js'
 
 tape('EIP 3541 tests', (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart, eips: [3855] })

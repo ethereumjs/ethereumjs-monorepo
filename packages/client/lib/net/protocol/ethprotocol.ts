@@ -7,9 +7,9 @@ import {
 } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
 import { BN, bufferToInt, intToBuffer, rlp } from 'ethereumjs-util'
-import { Chain } from './../../blockchain'
-import { Message, Protocol, ProtocolOptions } from './protocol'
-import type { TxReceiptWithType } from '../../sync/execution/receipt'
+import { Chain } from './../../blockchain/index.js'
+import { Message, Protocol, ProtocolOptions } from './protocol.js'
+import type { TxReceiptWithType } from '../../sync/execution/receipt.js'
 import type {
   PostByzantiumTxReceipt,
   PreByzantiumTxReceipt,

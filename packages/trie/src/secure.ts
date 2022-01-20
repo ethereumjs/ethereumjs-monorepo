@@ -1,6 +1,6 @@
 import { keccak256 } from 'ethereumjs-util'
-import { CheckpointTrie } from './checkpointTrie'
-import { Proof } from './baseTrie'
+import { CheckpointTrie } from './checkpointTrie.js'
+import { Proof } from './baseTrie.js'
 
 /**
  * You can create a secure Trie where the keys are automatically hashed

@@ -1,9 +1,9 @@
 import { Address, BN, rlp } from 'ethereumjs-util'
 import { Block, BlockHeader, BlockOptions, BlockBuffer, BlockBodyBuffer } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
-import { CliqueLatestSignerStates, CliqueLatestVotes, CliqueLatestBlockSigners } from '../clique'
-import Cache from './cache'
-import { DatabaseKey, DBOp, DBTarget, DBOpData } from './operation'
+import { CliqueLatestSignerStates, CliqueLatestVotes, CliqueLatestBlockSigners } from '../clique.js'
+import Cache from './cache.js'
+import { DatabaseKey, DBOp, DBTarget, DBOpData } from './operation.js'
 
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'

@@ -11,15 +11,15 @@ import {
   rlp,
 } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { middleware, validators } from '../validation'
-import { INTERNAL_ERROR } from '../error-code'
+import { middleware, validators } from '../validation.js'
+import { INTERNAL_ERROR } from '../error-code.js'
 import type VM from '@ethereumjs/vm'
-import type EthereumClient from '../../client'
-import type { Chain } from '../../blockchain'
-import type { Config } from '../../config'
-import type { EthereumService } from '../../service'
-import type { FullSynchronizer } from '../../sync'
-import type { TxPool } from '../../sync/txpool'
+import type EthereumClient from '../../client.js'
+import type { Chain } from '../../blockchain/index.js'
+import type { Config } from '../../config.js'
+import type { EthereumService } from '../../service/index.js'
+import type { FullSynchronizer } from '../../sync/index.js'
+import type { TxPool } from '../../sync/txpool.js'
 
 enum Status {
   VALID = 'VALID',

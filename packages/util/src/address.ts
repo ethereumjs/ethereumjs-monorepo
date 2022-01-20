@@ -1,13 +1,13 @@
 import assert from 'assert'
-import { BN } from './externals'
-import { toBuffer, zeros } from './bytes'
+import { BN } from './externals.js'
+import { toBuffer, zeros } from './bytes.js'
 import {
   isValidAddress,
   pubToAddress,
   privateToAddress,
   generateAddress,
   generateAddress2,
-} from './account'
+} from './account.js'
 
 export class Address {
   public readonly buf: Buffer

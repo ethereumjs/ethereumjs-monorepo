@@ -1,4 +1,4 @@
-import { genesisStatesType } from './../types'
+import { genesisStatesType } from './../types.js'
 
 const genesisStates: genesisStatesType = {
   names: {

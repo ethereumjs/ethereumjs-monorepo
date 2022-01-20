@@ -1,7 +1,7 @@
-import { BN } from './externals'
-import { stripHexPrefix, padToEven, isHexString, isHexPrefixed } from './internal'
-import { PrefixedHexString, TransformableToArray, TransformableToBuffer } from './types'
-import { assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
+import { BN } from './externals.js'
+import { stripHexPrefix, padToEven, isHexString, isHexPrefixed } from './internal.js'
+import { PrefixedHexString, TransformableToArray, TransformableToBuffer } from './types.js'
+import { assertIsBuffer, assertIsArray, assertIsHexString } from './helpers.js'
 
 /**
  * Converts a `Number` into a hex `String`

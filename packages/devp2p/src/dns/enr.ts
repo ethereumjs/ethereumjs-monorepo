@@ -5,8 +5,8 @@ import { sscanf } from 'scanf'
 import { ecdsaVerify } from 'secp256k1'
 import { Multiaddr } from 'multiaddr'
 import base64url from 'base64url'
-import { PeerInfo } from '../dpt'
-import { toNewUint8Array, keccak256 } from '../util'
+import { PeerInfo } from '../dpt/index.js'
+import { toNewUint8Array, keccak256 } from '../util.js'
 
 const Convert = require('multiaddr/src/convert')
 

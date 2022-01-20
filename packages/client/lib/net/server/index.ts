@@ -1,6 +1,6 @@
-export * from './server'
-export * from './rlpxserver'
-export * from './libp2pserver'
+export * from './server.js'
+export * from './rlpxserver.js'
+export * from './libp2pserver.js'
 
 /**
  * @module net/server

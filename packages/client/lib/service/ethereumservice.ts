@@ -1,7 +1,7 @@
-import { FlowControl } from '../net/protocol/flowcontrol'
-import { Chain } from '../blockchain'
-import { Service, ServiceOptions } from './service'
-import { Synchronizer } from '../sync'
+import { FlowControl } from '../net/protocol/flowcontrol.js'
+import { Chain } from '../blockchain/index.js'
+import { Service, ServiceOptions } from './service.js'
+import { Synchronizer } from '../sync/index.js'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
 

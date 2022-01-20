@@ -3,9 +3,9 @@ import * as dgram from 'dgram'
 import ms from 'ms'
 import { debug as createDebugLogger } from 'debug'
 import LRUCache = require('lru-cache')
-import { encode, decode } from './message'
-import { keccak256, pk2id, createDeferred, formatLogId } from '../util'
-import { DPT, PeerInfo } from './dpt'
+import { encode, decode } from './message.js'
+import { keccak256, pk2id, createDeferred, formatLogId } from '../util.js'
+import { DPT, PeerInfo } from './dpt.js'
 import { Socket as DgramSocket, RemoteInfo } from 'dgram'
 
 const DEBUG_BASE_NAME = 'devp2p:dpt:server'

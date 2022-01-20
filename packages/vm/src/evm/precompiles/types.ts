@@ -1,7 +1,7 @@
 import { BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { ExecResult } from '../evm'
-import VM from '../../index'
+import { ExecResult } from '../evm.js'
+import VM from '../../index.js'
 
 export interface PrecompileFunc {
   (opts: PrecompileInput): Promise<ExecResult> | ExecResult

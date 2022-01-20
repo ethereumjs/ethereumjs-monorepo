@@ -1,6 +1,6 @@
 import { sha256, BN } from 'ethereumjs-util'
-import { PrecompileInput } from './types'
-import { OOGResult, ExecResult } from '../evm'
+import { PrecompileInput } from './types.js'
+import { OOGResult, ExecResult } from '../evm.js'
 const assert = require('assert')
 
 export default function (opts: PrecompileInput): ExecResult {

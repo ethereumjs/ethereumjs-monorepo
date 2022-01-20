@@ -2,11 +2,11 @@
  * @module net/protocol
  */
 
-export * from './boundprotocol'
-export * from './protocol'
-export * from './ethprotocol'
-export * from './lesprotocol'
-export * from './sender'
-export * from './rlpxsender'
-export * from './libp2psender'
-export * from './flowcontrol'
+export * from './boundprotocol.js'
+export * from './protocol.js'
+export * from './ethprotocol.js'
+export * from './lesprotocol.js'
+export * from './sender.js'
+export * from './rlpxsender.js'
+export * from './libp2psender.js'
+export * from './flowcontrol.js'

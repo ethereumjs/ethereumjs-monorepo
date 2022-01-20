@@ -1,4 +1,4 @@
-import { Transaction } from '../src'
+import { Transaction } from '../src/index.js'
 import { toBuffer } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 

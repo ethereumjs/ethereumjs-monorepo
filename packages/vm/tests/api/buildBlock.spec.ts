@@ -5,7 +5,7 @@ import { Block } from '@ethereumjs/block'
 import { Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import Blockchain from '@ethereumjs/blockchain'
 import VM from '../../src'
-import { setBalance } from './utils'
+import { setBalance } from './utils.js'
 
 tape('BlockBuilder', async (t) => {
   t.test('should build a valid block', async (st) => {

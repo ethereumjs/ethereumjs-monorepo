@@ -1,5 +1,5 @@
 import { pseudoRandomBytes } from 'crypto'
-import { CheckpointTrie } from '../dist'
+import { CheckpointTrie } from '../dist/index.js'
 
 export const iterTest = async (numOfIter: number) => {
   const keys: Buffer[] = []

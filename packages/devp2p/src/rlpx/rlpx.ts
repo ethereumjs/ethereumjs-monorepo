@@ -8,9 +8,9 @@ import LRUCache from 'lru-cache'
 import Common from '@ethereumjs/common'
 // note: relative path only valid in .js file in dist
 const { version: pVersion } = require('../../package.json')
-import { pk2id, createDeferred, formatLogId, buffer2int } from '../util'
-import { Peer, DISCONNECT_REASONS, Capabilities } from './peer'
-import { DPT, PeerInfo } from '../dpt'
+import { pk2id, createDeferred, formatLogId, buffer2int } from '../util.js'
+import { Peer, DISCONNECT_REASONS, Capabilities } from './peer.js'
+import { DPT, PeerInfo } from '../dpt/index.js'
 
 const debug = createDebugLogger('devp2p:rlpx')
 const verbose = createDebugLogger('verbose').enabled

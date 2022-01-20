@@ -2,7 +2,7 @@ import tape from 'tape'
 import { BN } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
-import { ERROR } from '../../../src/exceptions'
+import { ERROR } from '../../../src/exceptions.js'
 
 const testCases = [
   { chain: Chain.Mainnet, hardfork: Hardfork.Istanbul, chainId: new BN(1) },

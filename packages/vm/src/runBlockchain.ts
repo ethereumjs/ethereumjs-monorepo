@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
-import VM from './index'
+import VM from './index.js'
 
 /**
  * @ignore

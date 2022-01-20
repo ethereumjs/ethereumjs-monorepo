@@ -1,6 +1,6 @@
 import Benchmark = require('benchmark')
-import { runTrie } from './random'
-import { iterTest } from './checkpointing'
+import { runTrie } from './random.js'
+import { iterTest } from './checkpointing.js'
 
 const suite = new Benchmark.Suite()
 

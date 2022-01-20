@@ -1,17 +1,17 @@
 import assert from 'assert'
-import { BN, rlp } from './externals'
+import { BN, rlp } from './externals.js'
 import {
   privateKeyVerify,
   publicKeyCreate,
   publicKeyVerify,
   publicKeyConvert,
-} from 'ethereum-cryptography/secp256k1'
-import { stripHexPrefix } from './internal'
-import { KECCAK256_RLP, KECCAK256_NULL } from './constants'
-import { zeros, bufferToHex, toBuffer } from './bytes'
-import { keccak, keccak256, keccakFromString, rlphash } from './hash'
-import { assertIsString, assertIsHexString, assertIsBuffer } from './helpers'
-import { BNLike, BufferLike, bnToUnpaddedBuffer, toType, TypeOutput } from './types'
+} from 'ethereum-cryptography/secp256k1.js'
+import { stripHexPrefix } from './internal.js'
+import { KECCAK256_RLP, KECCAK256_NULL } from './constants.js'
+import { zeros, bufferToHex, toBuffer } from './bytes.js'
+import { keccak, keccak256, keccakFromString, rlphash } from './hash.js'
+import { assertIsString, assertIsHexString, assertIsBuffer } from './helpers.js'
+import { BNLike, BufferLike, bnToUnpaddedBuffer, toType, TypeOutput } from './types.js'
 
 export interface AccountData {
   nonce?: BNLike

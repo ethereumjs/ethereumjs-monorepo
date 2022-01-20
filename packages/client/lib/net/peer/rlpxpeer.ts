@@ -6,10 +6,10 @@ import {
   Peer as Devp2pRlpxPeer,
   RLPx as Devp2pRLPx,
 } from '@ethereumjs/devp2p'
-import { Protocol, RlpxSender } from '../protocol'
-import { Peer, PeerOptions } from './peer'
-import { RlpxServer } from '../server'
-import { Event } from '../../types'
+import { Protocol, RlpxSender } from '../protocol/index.js'
+import { Peer, PeerOptions } from './peer.js'
+import { RlpxServer } from '../server/index.js'
+import { Event } from '../../types.js'
 const devp2pCapabilities: any = {
   eth66: Devp2pETH.eth66,
   les2: Devp2pLES.les2,
@@ -30,9 +30,9 @@ export interface RlpxPeerOptions extends Omit<PeerOptions, 'address' | 'transpor
  * @memberof module:net/peer
  * @example
  * ```typescript
- * import { RlpxPeer } from './lib/net/peer'
- * import { Chain } from './lib/blockchain'
- * import { EthProtocol } from './lib/net/protocol'
+ * import { RlpxPeer } from './lib/net/peer.js'
+ * import { Chain } from './lib/blockchain.js'
+ * import { EthProtocol } from './lib/net/protocol.js'
  *
  * const chain = new Chain()
  * const protocols = [ new EthProtocol({ chain })]

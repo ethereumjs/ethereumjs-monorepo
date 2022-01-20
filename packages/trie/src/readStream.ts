@@ -1,5 +1,5 @@
-import { nibblesToBuffer } from './util/nibbles'
-import { Trie as BaseTrie } from './baseTrie'
+import { nibblesToBuffer } from './util/nibbles.js'
+import { Trie as BaseTrie } from './baseTrie.js'
 const Readable = require('readable-stream').Readable
 
 export class TrieReadStream extends Readable {

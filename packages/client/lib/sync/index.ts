@@ -1,6 +1,6 @@
 /**
  * @module sync
  */
-export * from './sync'
-export * from './lightsync'
-export * from './fullsync'
+export * from './sync.js'
+export * from './lightsync.js'
+export * from './fullsync.js'

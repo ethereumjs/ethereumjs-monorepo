@@ -3,9 +3,9 @@
  */
 import { platform } from 'os'
 import { inspect } from 'util'
-import { version as packageVersion } from '../../package.json'
+import packageJson = require('../../package.json')
 
-export * from './parse'
+export * from './parse.js'
 
 export function short(buffer: Buffer): string {
   return buffer.toString('hex').slice(0, 8) + '...'
@@ -13,7 +13,7 @@ export function short(buffer: Buffer): string {
 
 export function getClientVersion() {
   const { version } = process
-  return `EthereumJS/${packageVersion}/${platform()}/node${version.substring(1)}`
+  return `EthereumJS/${packageJson.version}/${platform()}/node${version.substring(1)}`
 }
 
 /**

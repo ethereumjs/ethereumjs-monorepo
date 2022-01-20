@@ -1,7 +1,7 @@
 import assert from 'assert'
-import { stripHexPrefix } from './internal'
-import { rlp } from './externals'
-import { toBuffer, baToJSON, unpadBuffer } from './bytes'
+import { stripHexPrefix } from './internal.js'
+import { rlp } from './externals.js'
+import { toBuffer, baToJSON, unpadBuffer } from './bytes.js'
 
 /**
  * Defines properties on a `Object`. It make the assumption that underlying data is binary.

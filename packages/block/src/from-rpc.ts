@@ -1,9 +1,9 @@
 import { TransactionFactory, TypedTransaction, TxData } from '@ethereumjs/tx'
 import { toBuffer, setLengthLeft } from 'ethereumjs-util'
-import { Block, BlockOptions } from './index'
-import { numberToHex } from './helpers'
+import { Block, BlockOptions } from './index.js'
+import { numberToHex } from './helpers.js'
 
-import blockHeaderFromRpc from './header-from-rpc'
+import blockHeaderFromRpc from './header-from-rpc.js'
 
 function normalizeTxParams(_txParams: any) {
   const txParams = Object.assign({}, _txParams)

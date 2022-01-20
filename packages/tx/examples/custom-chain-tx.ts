@@ -1,6 +1,6 @@
 import { Address } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { Transaction } from '../src'
+import { Transaction } from '../src/index.js'
 
 // In this example we create a transaction for a custom network.
 

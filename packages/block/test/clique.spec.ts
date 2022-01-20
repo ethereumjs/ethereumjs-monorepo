@@ -1,6 +1,6 @@
 import tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { BlockHeader } from '../src/header'
+import { BlockHeader } from '../src/header.js'
 import { Address } from 'ethereumjs-util'
 
 tape('[Header]: Clique PoA Functionality', function (t) {

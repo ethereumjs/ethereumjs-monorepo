@@ -2,7 +2,7 @@
  * @module service
  */
 
-export * from './service'
-export * from './ethereumservice'
-export * from './fullethereumservice'
-export * from './lightethereumservice'
+export * from './service.js'
+export * from './ethereumservice.js'
+export * from './fullethereumservice.js'
+export * from './lightethereumservice.js'

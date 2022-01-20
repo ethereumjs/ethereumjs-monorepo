@@ -2,10 +2,10 @@ import PeerId from 'peer-id'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import { keys } from 'libp2p-crypto'
 import { Multiaddr, multiaddr } from 'multiaddr'
-import { Event, Libp2pConnection as Connection } from '../../types'
-import { Libp2pNode } from '../peer/libp2pnode'
-import { Libp2pPeer } from '../peer'
-import { Server, ServerOptions } from './server'
+import { Event, Libp2pConnection as Connection } from '../../types.js'
+import { Libp2pNode } from '../peer/libp2pnode.js'
+import { Libp2pPeer } from '../peer/index.js'
+import { Server, ServerOptions } from './server.js'
 
 export interface Libp2pServerOptions extends ServerOptions {
   /* Multiaddrs to listen on */

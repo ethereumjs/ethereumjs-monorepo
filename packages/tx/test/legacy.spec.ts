@@ -3,7 +3,7 @@ import { Buffer } from 'buffer'
 import { BN, rlp, toBuffer, bufferToHex, intToBuffer, unpadBuffer } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction, TxData } from '../src'
-import { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
+import { TxsJsonEntry, VitaliksTestsDataEntry } from './types.js'
 
 const txFixtures: TxsJsonEntry[] = require('./json/txs.json')
 const txFixturesEip155: VitaliksTestsDataEntry[] = require('./json/ttTransactionTestEip155VitaliksTests.json')

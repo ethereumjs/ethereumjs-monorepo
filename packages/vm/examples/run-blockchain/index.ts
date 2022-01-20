@@ -2,7 +2,7 @@ import { Account, Address, toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { ConsensusType } from '@ethereumjs/common'
-import VM from '../../'
+import VM from '../../index.js'
 
 const testData = require('./test-data')
 const level = require('level')

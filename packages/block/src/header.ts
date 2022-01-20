@@ -15,13 +15,13 @@ import {
   zeros,
   bufferToHex,
 } from 'ethereumjs-util'
-import { Blockchain, BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
+import { Blockchain, BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types.js'
 import {
   CLIQUE_EXTRA_VANITY,
   CLIQUE_EXTRA_SEAL,
   CLIQUE_DIFF_INTURN,
   CLIQUE_DIFF_NOTURN,
-} from './clique'
+} from './clique.js'
 
 interface HeaderCache {
   hash: Buffer | undefined

@@ -3,8 +3,8 @@ import { randomBytes } from 'crypto'
 import { privateKeyVerify, publicKeyConvert } from 'secp256k1'
 import createKeccakHash from 'keccak'
 import { rlp } from 'ethereumjs-util'
-import { ETH } from './eth'
-import { LES } from './les'
+import { ETH } from './eth/index.js'
+import { LES } from './les/index.js'
 
 export function keccak256(...buffers: Buffer[]) {
   const buffer = Buffer.concat(buffers)

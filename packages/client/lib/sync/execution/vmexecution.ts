@@ -2,12 +2,12 @@ import { Hardfork } from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { short } from '../../util'
-import { debugCodeReplayBlock } from '../../util/debug'
-import { Event } from '../../types'
-import { Execution, ExecutionOptions } from './execution'
+import { short } from '../../util/index.js'
+import { debugCodeReplayBlock } from '../../util/debug.js'
+import { Event } from '../../types.js'
+import { Execution, ExecutionOptions } from './execution.js'
 import type { Block } from '@ethereumjs/block'
-import { ReceiptsManager } from './receipt'
+import { ReceiptsManager } from './receipt.js'
 
 export class VMExecution extends Execution {
   public vm: VM

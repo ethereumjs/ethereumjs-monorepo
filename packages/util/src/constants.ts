@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer'
-import { BN } from './externals'
+import { BN } from './externals.js'
 
 /**
  * 2^64-1

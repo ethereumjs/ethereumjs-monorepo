@@ -11,20 +11,20 @@ import {
   TypedTransaction,
   Capability,
 } from '@ethereumjs/tx'
-import VM from './index'
-import Bloom from './bloom'
-import { default as EVM, EVMResult } from './evm/evm'
-import { short } from './evm/opcodes/util'
-import Message from './evm/message'
-import TxContext from './evm/txContext'
-import { getActivePrecompiles } from './evm/precompiles'
-import { EIP2929StateManager } from './state/interface'
+import VM from './index.js'
+import Bloom from './bloom/index.js'
+import { default as EVM, EVMResult } from './evm/evm.js'
+import { short } from './evm/opcodes/util.js'
+import Message from './evm/message.js'
+import TxContext from './evm/txContext.js'
+import { getActivePrecompiles } from './evm/precompiles/index.js'
+import { EIP2929StateManager } from './state/interface.js'
 import type {
   TxReceipt,
   BaseTxReceipt,
   PreByzantiumTxReceipt,
   PostByzantiumTxReceipt,
-} from './types'
+} from './types.js'
 
 const debug = createDebugLogger('vm:tx')
 const debugGas = createDebugLogger('vm:tx:gas')

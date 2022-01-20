@@ -1,12 +1,12 @@
 import { debug as createDebugLogger } from 'debug'
 import { Account, Address, BN } from 'ethereumjs-util'
-import { StateManager } from '../state/index'
-import { ERROR, VmError } from '../exceptions'
-import Memory from './memory'
-import Stack from './stack'
-import EEI from './eei'
-import { Opcode, handlers as opHandlers, OpHandler, AsyncOpHandler } from './opcodes'
-import { dynamicGasHandlers } from './opcodes/gas'
+import { StateManager } from '../state/index.js'
+import { ERROR, VmError } from '../exceptions.js'
+import Memory from './memory.js'
+import Stack from './stack.js'
+import EEI from './eei.js'
+import { Opcode, handlers as opHandlers, OpHandler, AsyncOpHandler } from './opcodes/index.js'
+import { dynamicGasHandlers } from './opcodes/gas.js'
 
 export interface InterpreterOpts {
   pc?: number

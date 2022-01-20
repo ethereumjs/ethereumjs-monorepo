@@ -1,16 +1,16 @@
 import { EventEmitter } from 'events'
 import { buf as crc32Buffer } from 'crc-32'
 import { BN, BNLike, toType, TypeOutput, intToBuffer } from 'ethereumjs-util'
-import { _getInitializedChains } from './chains'
-import { hardforks as HARDFORK_CHANGES } from './hardforks'
-import { EIPs } from './eips'
+import { _getInitializedChains } from './chains/index.js'
+import { hardforks as HARDFORK_CHANGES } from './hardforks/index.js'
+import { EIPs } from './eips/index.js'
 import {
   BootstrapNode,
   Chain as IChain,
   GenesisBlock,
   GenesisState,
   Hardfork as HardforkParams,
-} from './types'
+} from './types.js'
 
 export enum CustomChain {
   /**

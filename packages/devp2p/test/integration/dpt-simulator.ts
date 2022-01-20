@@ -1,6 +1,6 @@
 import async from 'async'
 import test from 'tape'
-import * as util from './util'
+import * as util from './util.js'
 import testdata from '../testdata.json'
 
 async function delay(ms: number) {

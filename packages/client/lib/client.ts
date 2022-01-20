@@ -1,10 +1,10 @@
 import { bufferToHex } from 'ethereumjs-util'
-import { version as packageVersion } from '../package.json'
-import { MultiaddrLike } from './types'
-import { Config } from './config'
-import { EthereumService, FullEthereumService, LightEthereumService } from './service'
-import { Event } from './types'
-import { FullSynchronizer } from './sync'
+import packageJson = require('../package.json')
+import { MultiaddrLike } from './types.js'
+import { Config } from './config.js'
+import { EthereumService, FullEthereumService, LightEthereumService } from './service/index.js'
+import { Event } from './types.js'
+import { FullSynchronizer } from './sync/index.js'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
 
@@ -91,7 +91,7 @@ export default class EthereumClient {
       return false
     }
     this.config.logger.info(
-      `Initializing Ethereumjs client version=v${packageVersion} network=${this.config.chainCommon.chainName()}`
+      `Initializing Ethereumjs client version=v${packageJson.version} network=${this.config.chainCommon.chainName()}`
     )
 
     this.config.events.on(Event.SERVER_ERROR, (error) => {

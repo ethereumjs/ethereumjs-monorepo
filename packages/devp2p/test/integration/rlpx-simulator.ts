@@ -1,6 +1,6 @@
 import async from 'async'
 import test from 'tape'
-import * as util from './util'
+import * as util from './util.js'
 import { DISCONNECT_REASONS } from '../../src/rlpx/peer'
 
 test('RLPX: add working node', (t) => {

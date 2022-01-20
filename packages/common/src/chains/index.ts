@@ -1,10 +1,10 @@
-import { Chain, chainsType } from './../types'
-import mainnet from './mainnet.json'
-import ropsten from './ropsten.json'
-import rinkeby from './rinkeby.json'
-import kovan from './kovan.json'
-import goerli from './goerli.json'
-import sepolia from './sepolia.json'
+import { Chain, chainsType } from './../types.js'
+import mainnet = require('./mainnet.json')
+import ropsten = require('./ropsten.json')
+import rinkeby = require('./rinkeby.json')
+import kovan  = require('./kovan.json')
+import goerli = require('./goerli.json')
+import sepolia  = require('./sepolia.json')
 
 /**
  * @hidden

@@ -1,10 +1,10 @@
-import { BlockFetcherBase, BlockFetcherOptions, JobTask } from './blockfetcherbase'
+import { BlockFetcherBase, BlockFetcherOptions, JobTask } from './blockfetcherbase.js'
 import { Peer } from '../../net/peer'
-import { FlowControl, LesProtocolMethods } from '../../net/protocol'
+import { FlowControl, LesProtocolMethods } from '../../net/protocol/index.js'
 import { BlockHeader } from '@ethereumjs/block'
-import { Job } from './types'
+import { Job } from './types.js'
 import { BN } from 'ethereumjs-util'
-import { Event } from '../../types'
+import { Event } from '../../types.js'
 
 export interface HeaderFetcherOptions extends BlockFetcherOptions {
   /* Flow control manager */

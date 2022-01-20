@@ -11,9 +11,9 @@ import {
   CLIQUE_SIGNERS_KEY as CLIQUE_SIGNER_STATES_KEY,
   CLIQUE_VOTES_KEY,
   CLIQUE_BLOCK_SIGNERS_KEY,
-} from './constants'
+} from './constants.js'
 
-import { CacheMap } from './manager'
+import { CacheMap } from './manager.js'
 
 export enum DBTarget {
   Heads,

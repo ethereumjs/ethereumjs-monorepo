@@ -10,8 +10,8 @@ import {
   unpadBuffer,
   validateNoLeadingZeroes,
 } from 'ethereumjs-util'
-import { TxOptions, TxData, JsonTx, N_DIV_2, TxValuesArray, Capability } from './types'
-import { BaseTransaction } from './baseTransaction'
+import { TxOptions, TxData, JsonTx, N_DIV_2, TxValuesArray, Capability } from './types.js'
+import { BaseTransaction } from './baseTransaction.js'
 import Common from '@ethereumjs/common'
 
 const TRANSACTION_TYPE = 0

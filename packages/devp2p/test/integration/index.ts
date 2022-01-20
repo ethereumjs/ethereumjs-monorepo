@@ -3,4 +3,4 @@ import './eth-simulator'
 import './les-simulator'
 import './rlpx-simulator'
 
-export * from './util'
+export * from './util.js'

@@ -1,9 +1,9 @@
 import Semaphore from 'semaphore-async-await'
 import { keccak, KECCAK256_RLP } from 'ethereumjs-util'
-import { DB, BatchDBOp, PutBatch } from './db'
-import { TrieReadStream as ReadStream } from './readStream'
-import { bufferToNibbles, matchingNibbleLength, doKeysMatch } from './util/nibbles'
-import { WalkController } from './util/walkController'
+import { DB, BatchDBOp, PutBatch } from './db.js'
+import { TrieReadStream as ReadStream } from './readStream.js'
+import { bufferToNibbles, matchingNibbleLength, doKeysMatch } from './util/nibbles.js'
+import { WalkController } from './util/walkController.js'
 import {
   TrieNode,
   decodeNode,
@@ -14,7 +14,7 @@ import {
   LeafNode,
   EmbeddedNode,
   Nibbles,
-} from './trieNode'
+} from './trieNode.js'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
 const assert = require('assert')

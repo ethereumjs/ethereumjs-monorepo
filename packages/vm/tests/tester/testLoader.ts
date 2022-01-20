@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import dir from 'node-dir'
-import { DEFAULT_TESTS_PATH } from './config'
+import { DEFAULT_TESTS_PATH } from './config.js'
 
 const falsePredicate = () => false
 

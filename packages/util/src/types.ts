@@ -1,7 +1,7 @@
-import { BN } from './externals'
-import { isHexString } from './internal'
-import { Address } from './address'
-import { unpadBuffer, toBuffer, ToBufferInputTypes } from './bytes'
+import { BN } from './externals.js'
+import { isHexString } from './internal.js'
+import { Address } from './address.js'
+import { unpadBuffer, toBuffer, ToBufferInputTypes } from './bytes.js'
 
 /*
  * A type that represents a BNLike input that can be converted to a BN.

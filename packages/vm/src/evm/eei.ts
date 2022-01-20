@@ -3,11 +3,11 @@ import { Account, Address, BN, MAX_UINT64 } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
-import { StateManager } from '../state/index'
-import { VmError, ERROR } from '../exceptions'
-import Message from './message'
-import EVM, { EVMResult } from './evm'
-import { Log } from './types'
+import { StateManager } from '../state/index.js'
+import { VmError, ERROR } from '../exceptions.js'
+import Message from './message.js'
+import EVM, { EVMResult } from './evm.js'
+import { Log } from './types.js'
 
 const debugGas = createDebugLogger('vm:eei:gas')
 

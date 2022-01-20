@@ -16,7 +16,7 @@ import {
   bufferToHex,
   addHexPrefix,
 } from 'ethereumjs-util'
-import type { MultiaddrLike } from '../types'
+import type { MultiaddrLike } from '../types.js'
 import type { GenesisState } from '@ethereumjs/common/dist/types'
 
 /**

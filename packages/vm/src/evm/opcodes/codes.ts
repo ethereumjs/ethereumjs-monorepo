@@ -1,5 +1,5 @@
 import Common from '@ethereumjs/common'
-import { getFullname } from './util'
+import { getFullname } from './util.js'
 
 export class Opcode {
   readonly code: number

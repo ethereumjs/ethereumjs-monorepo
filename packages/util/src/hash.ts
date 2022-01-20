@@ -1,8 +1,8 @@
-import { keccak224, keccak384, keccak256 as k256, keccak512 } from 'ethereum-cryptography/keccak'
+import { keccak224, keccak384, keccak256 as k256, keccak512 } from 'ethereum-cryptography/keccak.js'
 const createHash = require('create-hash')
-import { rlp } from './externals'
-import { toBuffer, setLengthLeft } from './bytes'
-import { assertIsString, assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
+import { rlp } from './externals.js'
+import { toBuffer, setLengthLeft } from './bytes.js'
+import { assertIsString, assertIsBuffer, assertIsArray, assertIsHexString } from './helpers.js'
 
 /**
  * Creates Keccak hash of a Buffer input

@@ -3,11 +3,11 @@ import { EventEmitter } from 'events'
 import { publicKeyCreate } from 'secp256k1'
 import { randomBytes } from 'crypto'
 import { debug as createDebugLogger } from 'debug'
-import { buffer2int, pk2id } from '../util'
-import { KBucket } from './kbucket'
-import { BanList } from './ban-list'
-import { Server as DPTServer } from './server'
-import { DNS } from '../dns'
+import { buffer2int, pk2id } from '../util.js'
+import { KBucket } from './kbucket.js'
+import { BanList } from './ban-list.js'
+import { Server as DPTServer } from './server.js'
+import { DNS } from '../dns/index.js'
 
 const debug = createDebugLogger('devp2p:dpt')
 

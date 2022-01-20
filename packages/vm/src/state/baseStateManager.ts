@@ -3,9 +3,9 @@ import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { AccessList, AccessListItem } from '@ethereumjs/tx'
 import { debug as createDebugLogger, Debugger } from 'debug'
 import { Account, Address, toBuffer } from 'ethereumjs-util'
-import { getActivePrecompiles, ripemdPrecompileAddress } from '../evm/precompiles'
-import Cache from './cache'
-import { DefaultStateManagerOpts } from './stateManager'
+import { getActivePrecompiles, ripemdPrecompileAddress } from '../evm/precompiles/index.js'
+import Cache from './cache.js'
+import { DefaultStateManagerOpts } from './stateManager.js'
 
 type AddressHex = string
 

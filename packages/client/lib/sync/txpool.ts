@@ -6,10 +6,10 @@ import {
   TypedTransaction,
 } from '@ethereumjs/tx'
 import { Address, BN } from 'ethereumjs-util'
-import { Config } from '../config'
-import { Peer } from '../net/peer'
-import { EthProtocolMethods } from '../net/protocol'
-import type { PeerPool } from '../net/peerpool'
+import { Config } from '../config.js'
+import { Peer } from '../net/peer/index.js'
+import { EthProtocolMethods } from '../net/protocol/index.js'
+import type { PeerPool } from '../net/peerpool.js'
 import type { Block } from '@ethereumjs/block'
 import type { StateManager } from '@ethereumjs/vm/dist/state'
 

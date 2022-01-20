@@ -1,4 +1,4 @@
-import Ethash from '../src'
+import Ethash from '../src/index.js'
 
 const ethash = new Ethash()
 

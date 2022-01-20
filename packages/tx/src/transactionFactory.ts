@@ -5,8 +5,8 @@ import {
   TxData,
   AccessListEIP2930TxData,
   FeeMarketEIP1559TxData,
-} from './types'
-import { Transaction, AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '.'
+} from './types.js'
+import { Transaction, AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from './index.js'
 import Common from '@ethereumjs/common'
 
 export default class TransactionFactory {

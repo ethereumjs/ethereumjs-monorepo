@@ -2,7 +2,7 @@ import tape from 'tape'
 import { Config } from '../../lib/config'
 import EthereumClient from '../../lib/client'
 import { Event } from '../../lib/types'
-import MockServer from './mocks/mockserver'
+import MockServer from './mocks/mockserver.js'
 
 tape('[Integration:EthereumClient]', (t) => {
   const serverConfig = new Config()

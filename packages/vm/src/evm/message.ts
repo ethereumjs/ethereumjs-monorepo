@@ -1,5 +1,5 @@
 import { Address, BN } from 'ethereumjs-util'
-import { PrecompileFunc } from './precompiles'
+import { PrecompileFunc } from './precompiles/index.js'
 
 export default class Message {
   to: Address

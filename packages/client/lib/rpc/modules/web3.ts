@@ -1,9 +1,9 @@
 import { addHexPrefix, keccak, toBuffer } from 'ethereumjs-util'
-import { middleware, validators } from '../validation'
-import { getClientVersion } from '../../util'
-import type { EthereumClient } from '../..'
-import type { Chain } from '../../blockchain'
-import type { EthereumService } from '../../service'
+import { middleware, validators } from '../validation.js'
+import { getClientVersion } from '../../util/index.js'
+import type { EthereumClient } from '../../index.js'
+import type { Chain } from '../../blockchain/index.js'
+import type { EthereumService } from '../../service/index.js'
 
 /**
  * web3_* RPC module

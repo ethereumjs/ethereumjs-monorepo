@@ -8,7 +8,7 @@ import {
   getCacheSize,
   getFullSize,
   getSeed,
-} from './util'
+} from './util.js'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
 import { Block, BlockData, BlockHeader, HeaderData } from '@ethereumjs/block'

@@ -19,11 +19,11 @@ import {
   toBuffer,
   setLengthLeft,
 } from 'ethereumjs-util'
-import { middleware, validators } from '../validation'
-import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
-import { RpcTx } from '../types'
-import { EthereumService } from '../../service'
-import { FullSynchronizer } from '../../sync'
+import { middleware, validators } from '../validation.js'
+import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code.js'
+import { RpcTx } from '../types.js'
+import { EthereumService } from '../../service/index.js'
+import { FullSynchronizer } from '../../sync/index.js'
 import type VM from '@ethereumjs/vm'
 import type {
   PostByzantiumTxReceipt,
@@ -32,10 +32,10 @@ import type {
 } from '@ethereumjs/vm/dist/types'
 import type { Log } from '@ethereumjs/vm/dist/evm/types'
 import type { Proof, ProofStateManager } from '@ethereumjs/vm/dist/state'
-import type { EthereumClient } from '../..'
-import type { Chain } from '../../blockchain'
-import type { EthProtocol } from '../../net/protocol'
-import type { ReceiptsManager } from '../../sync/execution/receipt'
+import type { EthereumClient } from '../../index.js'
+import type { Chain } from '../../blockchain/index.js'
+import type { EthProtocol } from '../../net/protocol/index.js'
+import type { ReceiptsManager } from '../../sync/execution/receipt.js'
 
 type GetLogsParams = {
   fromBlock?: string // QUANTITY, block number or "earliest" or "latest" (default: "latest")

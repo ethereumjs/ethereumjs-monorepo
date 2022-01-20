@@ -1,8 +1,8 @@
 import pipe from 'it-pipe'
 import pushable from 'it-pushable'
-import { Libp2pMuxedStream as MuxedStream } from '../../types'
+import { Libp2pMuxedStream as MuxedStream } from '../../types.js'
 import { bufferToInt, rlp } from 'ethereumjs-util'
-import { Sender } from './sender'
+import { Sender } from './sender.js'
 
 // TypeScript doesn't have support yet for ReturnType
 // with generic types, so this wrapper is used as a helper.

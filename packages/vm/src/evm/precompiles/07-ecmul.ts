@@ -1,6 +1,6 @@
 import { BN } from 'ethereumjs-util'
-import { PrecompileInput } from './types'
-import { OOGResult, ExecResult } from '../evm'
+import { PrecompileInput } from './types.js'
+import { OOGResult, ExecResult } from '../evm.js'
 const assert = require('assert')
 const bn128 = require('rustbn.js')
 

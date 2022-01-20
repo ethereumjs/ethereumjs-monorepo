@@ -2,4 +2,4 @@
  * @module miner
  */
 
-export * from './miner'
+export * from './miner.js'

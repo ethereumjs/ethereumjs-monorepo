@@ -4,9 +4,9 @@ import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
 import { EthProtocol } from '../../lib/net/protocol'
 import { PeerPool } from '../../lib/net/peerpool'
-import MockServer from './mocks/mockserver'
-import MockChain from './mocks/mockchain'
-import { wait } from './util'
+import MockServer from './mocks/mockserver.js'
+import MockChain from './mocks/mockchain.js'
+import { wait } from './util.js'
 
 tape('[Integration:PeerPool]', async (t) => {
   async function setup(protocols: EthProtocol[] = []): Promise<[MockServer, PeerPool]> {

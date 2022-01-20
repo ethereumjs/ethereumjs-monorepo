@@ -1,6 +1,6 @@
 'use strict'
 import { keccak256 } from 'ethereumjs-util'
-import { CheckpointTrie as Trie } from '../dist'
+import { CheckpointTrie as Trie } from '../dist/index.js'
 
 // References:
 // https://eth.wiki/en/fundamentals/benchmarks#the-trie

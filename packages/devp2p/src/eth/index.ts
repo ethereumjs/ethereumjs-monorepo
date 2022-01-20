@@ -4,8 +4,8 @@ import ms from 'ms'
 import snappy from 'snappyjs'
 import { debug as createDebugLogger } from 'debug'
 import { BN, rlp } from 'ethereumjs-util'
-import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
-import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
+import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util.js'
+import { Peer, DISCONNECT_REASONS } from '../rlpx/peer.js'
 
 const DEBUG_BASE_NAME = 'devp2p:eth'
 const debug = createDebugLogger(DEBUG_BASE_NAME)

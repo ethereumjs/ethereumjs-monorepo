@@ -1,7 +1,7 @@
-import { Config } from '../../lib/config'
-import { FullEthereumService, LightEthereumService } from '../../lib/service'
-import MockServer from './mocks/mockserver'
-import MockChain from './mocks/mockchain'
+import { Config } from '../../lib/config.js'
+import { FullEthereumService, LightEthereumService } from '../../lib/service/index.js'
+import MockServer from './mocks/mockserver.js'
+import MockChain from './mocks/mockchain.js'
 import Blockchain from '@ethereumjs/blockchain'
 import Common from '@ethereumjs/common'
 

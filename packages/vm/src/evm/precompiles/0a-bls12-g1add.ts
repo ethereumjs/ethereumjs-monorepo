@@ -1,7 +1,7 @@
 import { BN } from 'ethereumjs-util'
-import { PrecompileInput } from './types'
-import { VmErrorResult, ExecResult, OOGResult } from '../evm'
-import { ERROR, VmError } from '../../exceptions'
+import { PrecompileInput } from './types.js'
+import { VmErrorResult, ExecResult, OOGResult } from '../evm.js'
+import { ERROR, VmError } from '../../exceptions.js'
 const assert = require('assert')
 const { BLS12_381_ToG1Point, BLS12_381_FromG1Point } = require('./util/bls12_381')
 

@@ -1,6 +1,6 @@
-import { Fetcher, FetcherOptions } from './fetcher'
+import { Fetcher, FetcherOptions } from './fetcher.js'
 import { BN } from 'ethereumjs-util'
-import { Chain } from '../../blockchain'
+import { Chain } from '../../blockchain/index.js'
 
 export interface BlockFetcherOptions extends FetcherOptions {
   /* Blockchain */

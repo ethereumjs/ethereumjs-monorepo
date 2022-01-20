@@ -3,7 +3,7 @@ import { exec } from 'child_process'
 import { promisify } from 'util'
 import vm from 'vm'
 import RLP from '../src'
-import { bytesToUtf8 } from './utils'
+import { bytesToUtf8 } from './utils.js'
 import official from './fixture/rlptest.json'
 
 tape('Distribution', (t) => {
