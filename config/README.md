@@ -33,20 +33,20 @@ Exposed CLI commands:
 
 ### Usage
 
-Add `.eslintrc.js`:
+Add `.eslintrc.cjs`:
 
 ```js
 module.exports = {
-  extends: '../../config/eslint.js',
+  extends: '../../config/eslint.cjs',
 }
 ```
 
 In this file you can add rule adjustments or overrides for the specific package.
 
-Add `prettier.config.js`:
+Add `prettier.config.cjs`:
 
 ```js
-module.exports = require('../../config/prettier.config')
+module.exports = require('../../config/prettier.config.cjs')
 ```
 
 Use CLI commands above in your `package.json`:

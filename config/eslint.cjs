@@ -10,7 +10,7 @@ module.exports = {
     'dist/',
     'dist.browser/',
     'coverage/',
-    'prettier.config.js',
+    'prettier.config.cjs',
     'typedoc.js',
     'karma.conf.js',
   ],

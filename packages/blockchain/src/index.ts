@@ -5,7 +5,13 @@ import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
 import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
 import { DBManager } from './db/manager.js'
-import { DBOp, DBSetBlockOrHeader, DBSetTD, DBSetHashToNumber, DBSaveLookups } from './db/helpers.js'
+import {
+  DBOp,
+  DBSetBlockOrHeader,
+  DBSetTD,
+  DBSetHashToNumber,
+  DBSaveLookups,
+} from './db/helpers.js'
 import { DBTarget } from './db/operation.js'
 import {
   CliqueSignerState,

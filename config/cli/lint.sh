@@ -17,12 +17,12 @@ dim() {
     echo "${DIM}$1${NOCOLOR}"
 }
 
-dim "> eslint --format codeframe --config ./.eslintrc.js . \\ "
+dim "> eslint --format codeframe --config ./.eslintrc.cjs . \\ "
 dim "\t --ext .js,.jsx,.ts,.tsx \\ "
 
 blue "[Lint]${NOCOLOR} checking..."
 
-eslint --format codeframe --config ./.eslintrc.js . --ext .js,.jsx,.ts,.tsx
+eslint --format codeframe --config ./.eslintrc.cjs . --ext .js,.jsx,.ts,.tsx
 
 RETURN_CODE=$?
 
