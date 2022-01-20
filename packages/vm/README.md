@@ -140,17 +140,12 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 const vm = new VM({ common })
 ```
 
-If your use case only supports a certain range of `hardforks`, you can use the `supportedHardforks` option to restrict hardfork access on the `VM` instance:
+Please note that the `VM` constructor will throw an error if you pass in a `Common` instance that is set to a hardfork that the `VM` does not currently support. For example, the following would throw because the `VM` does not yet support the Merge hardfork:
 
 ```typescript
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
-const vm = new VM({
-  common,
-  supportedHardforks: [Hardfork.Byzantium, Hardfork.Constantinople],
-})
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+const vm = new VM({ common })
 ```
-
-This will throw an error if the hardfork set in `Common` is not included in the `supportedHardforks` array, which can help prevent unpredicted behaviour.
 
 ## EIP Support
 

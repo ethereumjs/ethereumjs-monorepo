@@ -117,10 +117,6 @@ export interface VMOpts {
    * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
    */
   hardforkByTD?: BNLike
-  /**
-   * Limit parameter returns to the given hardforks
-   */
-  supportedHardforks?: Array<string | Hardfork>
 }
 
 /**
@@ -147,7 +143,7 @@ export default class VM extends AsyncEventEmitter {
   protected _opcodes: OpcodeList
   protected readonly _hardforkByBlockNumber: boolean
   protected readonly _hardforkByTD?: BNLike
-  // private _supportedHardforks: Array<string | Hardfork> = []
+  private _supportedHardforks: Array<string | Hardfork> = []
 
   /**
    * Cached emit() function, not for public usage
@@ -210,31 +206,33 @@ export default class VM extends AsyncEventEmitter {
       this._common = opts.common
     } else {
       const DEFAULT_CHAIN = Chain.Mainnet
-      // const supportedHardforks = [
-      //   'chainstart',
-      //   'homestead',
-      //   'dao',
-      //   'tangerineWhistle',
-      //   'spuriousDragon',
-      //   'byzantium',
-      //   'constantinople',
-      //   'petersburg',
-      //   'istanbul',
-      //   'muirGlacier',
-      //   'berlin',
-      //   'arrowGlacier',
-      // ]
 
-      this._common = new Common({
-        chain: DEFAULT_CHAIN,
-        // supportedHardforks,
-      })
-
-      // this._supportedHardforks = supportedHardforks
+      this._common = new Common({ chain: DEFAULT_CHAIN })
     }
     this._common.on('hardforkChanged', () => {
       this._opcodes = getOpcodesForHF(this._common)
     })
+
+    this._supportedHardforks = [
+      'chainstart',
+      'homestead',
+      'dao',
+      'tangerineWhistle',
+      'spuriousDragon',
+      'byzantium',
+      'constantinople',
+      'petersburg',
+      'istanbul',
+      'muirGlacier',
+      'berlin',
+      'london',
+      'arrowGlacier',
+    ]
+    if (!this._supportedHardforks.includes(this._common.hardfork())) {
+      throw new Error(
+        `Hardfork ${this._common.hardfork()} not set as supported in supportedHardforks`
+      )
+    }
 
     // Set list of opcodes based on HF
     // TODO: make this EIP-friendly
@@ -269,14 +267,6 @@ export default class VM extends AsyncEventEmitter {
       } else {
         this._mcl = mcl
       }
-    }
-
-    if (opts.supportedHardforks) {
-      const hardfork = this._common.hardfork()
-      if (!opts.supportedHardforks.includes(hardfork)) {
-        throw new Error(`Hardfork ${hardfork} not set as supported in supportedHardforks`)
-      }
-      // this._supportedHardforks = opts.supportedHardforks
     }
 
     // Safeguard if "process" is not available (browser)
