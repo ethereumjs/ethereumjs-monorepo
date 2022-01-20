@@ -24,7 +24,7 @@ const MESSAGE_ORDER_RESET_ID = new BN(0)
 
 type ExecutionPayloadV1 = {
   parentHash: string // DATA, 32 Bytes
-  coinbase: string // DATA, 20 Bytes
+  feeRecipient: string // DATA, 20 Bytes
   stateRoot: string // DATA, 32 Bytes
   receiptsRoot: string // DATA, 32 bytes
   logsBloom: string // DATA, 256 Bytes
@@ -74,7 +74,7 @@ const blockToExecutionPayload = (block: Block) => {
   const payload: ExecutionPayloadV1 = {
     blockNumber: header.number!,
     parentHash: header.parentHash!,
-    coinbase: header.coinbase!,
+    feeRecipient: header.coinbase!,
     stateRoot: header.stateRoot!,
     receiptsRoot: header.receiptTrie!,
     logsBloom: header.logsBloom!,
@@ -197,9 +197,9 @@ export class Engine {
       [
         validators.object({
           parentHash: validators.blockHash,
-          coinbase: validators.address,
+          feeRecipient: validators.address,
           stateRoot: validators.hex,
-          receiptRoot: validators.hex,
+          receiptsRoot: validators.hex,
           logsBloom: validators.hex,
           random: validators.hex,
           blockNumber: validators.hex,
