@@ -1,7 +1,7 @@
 name: VM
 on:
   push:
-    branches: [feat/examples-improvemens]
+    branches: [examples-improvements]
 
 jobs:
   test-examples:
