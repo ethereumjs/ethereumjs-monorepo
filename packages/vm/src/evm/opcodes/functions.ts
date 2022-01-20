@@ -71,7 +71,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x03,
     function (runState) {
       const [a, b] = runState.stack.popN(2)
-      const r = a.sub(b).toTwos(256)
+      const r = (a - b) & TWO_POW256_BIGINT
       runState.stack.push(r)
     },
   ],
@@ -81,10 +81,10 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const [a, b] = runState.stack.popN(2)
       let r
-      if (b.isZero()) {
-        r = new BN(b)
+      if (b === BigInt(0)) {
+        r = b
       } else {
-        r = a.div(b)
+        r = a / b
       }
       runState.stack.push(r)
     },
