@@ -7,8 +7,7 @@ module.exports = {
   },
   ignorePatterns: [
     'node_modules/',
-    'dist/',
-    'dist.browser/',
+    'dist*',
     'coverage/',
     'prettier.config.cjs',
     'typedoc.js',

@@ -121,7 +121,7 @@
     "testdouble-timers": "^0.1.1",
     "ts-node": "^10.2.1",
     "typedoc": "^0.22.4",
-    "typescript": "next",
+    "typescript": "4.6.0-dev.20220119",
     "webpack": "^5.55.1",
     "webpack-cli": "^4.8.0"
   },

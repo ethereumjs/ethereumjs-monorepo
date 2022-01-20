@@ -91,7 +91,7 @@
     "testdouble": "^3.8.2",
     "typedoc": "^0.22.4",
     "ts-node": "^10.2.1",
-    "typescript": "next"
+    "typescript": "4.6.0-dev.20220119"
   },
   "repository": {
     "type": "git",

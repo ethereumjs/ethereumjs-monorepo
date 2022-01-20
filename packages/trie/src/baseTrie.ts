@@ -1,4 +1,4 @@
-import Semaphore from 'semaphore-async-await'
+const Semaphore = require('semaphore-async-await') // TODO find out why types are failing
 import { keccak, KECCAK256_RLP } from 'ethereumjs-util'
 import { DB, BatchDBOp, PutBatch } from './db.js'
 import { TrieReadStream as ReadStream } from './readStream.js'
@@ -42,7 +42,7 @@ export type FoundNodeFunction = (
 export class Trie {
   /** The root for an empty trie */
   EMPTY_TRIE_ROOT: Buffer
-  protected lock: Semaphore
+  protected lock: any // TODO find out why Semaphore type is failing
 
   /** The backend DB */
   db: DB

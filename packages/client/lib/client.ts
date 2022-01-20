@@ -91,7 +91,9 @@ export default class EthereumClient {
       return false
     }
     this.config.logger.info(
-      `Initializing Ethereumjs client version=v${packageJson.version} network=${this.config.chainCommon.chainName()}`
+      `Initializing Ethereumjs client version=v${
+        packageJson.version
+      } network=${this.config.chainCommon.chainName()}`
     )
 
     this.config.events.on(Event.SERVER_ERROR, (error) => {

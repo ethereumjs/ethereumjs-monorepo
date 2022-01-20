@@ -2,9 +2,9 @@ import { Chain, chainsType } from './../types.js'
 import mainnet = require('./mainnet.json')
 import ropsten = require('./ropsten.json')
 import rinkeby = require('./rinkeby.json')
-import kovan  = require('./kovan.json')
+import kovan = require('./kovan.json')
 import goerli = require('./goerli.json')
-import sepolia  = require('./sepolia.json')
+import sepolia = require('./sepolia.json')
 
 /**
  * @hidden

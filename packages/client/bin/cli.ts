@@ -9,7 +9,12 @@ import { Server as RPCServer } from 'jayson/promise/index.js'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { _getInitializedChains } from '@ethereumjs/common/dist/chains/index.js'
 import { Address, toBuffer } from 'ethereumjs-util'
-import { parseMultiaddrs, parseGenesisState, parseCustomParams, inspectParams } from '../lib/util/index.js'
+import {
+  parseMultiaddrs,
+  parseGenesisState,
+  parseCustomParams,
+  inspectParams,
+} from '../lib/util/index.js'
 import EthereumClient from '../lib/client.js'
 import { Config, DataDirectory } from '../lib/config.js'
 import { Logger, getLogger } from '../lib/logging.js'

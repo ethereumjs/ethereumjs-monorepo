@@ -66,7 +66,7 @@
     "prettier": "^2.0.5",
     "tape": "^4.10.1",
     "ts-node": "^10.2.1",
-    "typescript": "next"
+    "typescript": "4.6.0-dev.20220119"
   },
   "repository": {
     "type": "git",
