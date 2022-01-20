@@ -43,7 +43,8 @@
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "formatTest": "node ./scripts/formatTest",
-    "tsc": "../../config/cli/ts-compile.sh"
+    "tsc": "../../config/cli/ts-compile.sh",
+    "examples": "ts-node ../../scripts/examples-runner.ts -- vm"
   },
   "dependencies": {
     "@ethereumjs/block": "^3.6.0",

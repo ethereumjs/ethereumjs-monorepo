@@ -1,0 +1,20 @@
+name: VM
+on:
+  push:
+    branches: [examples-in-ci]
+
+jobs:
+  test-examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'npm'
+
+      - run: npm i
+      - run: npm run examples:ci
