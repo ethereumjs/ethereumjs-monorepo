@@ -17,7 +17,7 @@ import {
   addHexPrefix,
 } from 'ethereumjs-util'
 import type { MultiaddrLike } from '../types.js'
-import type { GenesisState } from '@ethereumjs/common/dist/types'
+import { GenesisState } from '@ethereumjs/common/dist/types.js'
 
 /**
  * Parses multiaddrs and bootnodes to multiaddr format.

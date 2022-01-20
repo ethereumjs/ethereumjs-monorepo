@@ -5,7 +5,7 @@ import {
   EthProtocolMethods,
   LesProtocolMethods,
   Sender,
-} from '../protocol'
+} from '../protocol/index.js'
 import { Server } from '../server/index.js'
 import { Config } from '../../config.js'
 

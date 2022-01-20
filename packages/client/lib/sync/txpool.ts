@@ -11,7 +11,7 @@ import { Peer } from '../net/peer/index.js'
 import { EthProtocolMethods } from '../net/protocol/index.js'
 import type { PeerPool } from '../net/peerpool.js'
 import type { Block } from '@ethereumjs/block'
-import type { StateManager } from '@ethereumjs/vm/dist/state'
+import type { StateManager } from '@ethereumjs/vm/dist/state/index.js'
 
 export interface TxPoolOptions {
   /* Config */

@@ -1,9 +1,9 @@
 import tape from 'tape'
 import td from 'testdouble'
-import { Log } from '@ethereumjs/vm/dist/evm/types'
+import { Log } from '@ethereumjs/vm/dist/evm/types.js'
 import { BN } from 'ethereumjs-util'
-import { Config } from '../../lib/config'
-import { Event } from '../../lib/types'
+import { Config } from '../../lib/config.js'
+import { Event } from '../../lib/types.js'
 const level = require('level-mem')
 
 tape('[FullEthereumService]', async (t) => {

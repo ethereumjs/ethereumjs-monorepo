@@ -4,7 +4,7 @@ import { BN } from 'ethereumjs-util'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Event } from '../types.js'
 import { Config } from '../config.js'
-import { FullSynchronizer } from '../sync'
+import { FullSynchronizer } from '../sync/index.js'
 const level = require('level-mem')
 
 export interface MinerOptions {

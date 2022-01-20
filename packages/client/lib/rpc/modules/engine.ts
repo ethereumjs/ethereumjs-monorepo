@@ -119,7 +119,7 @@ const getBlockFromPeers = async (hash: Buffer, chain: Chain, service: EthereumSe
         const bodiesResult = await peer.eth!.getBlockBodies({ hashes: [hash] })
         if (bodiesResult) {
           const blockBody = bodiesResult[1][0]
-          const block = Block.fromValuesArray([header[0].raw(), ...blockBody], {
+          const block = Block.fromValuesArray([header[0].raw(), ...blockBody] as any, {
             common: chain.config.chainCommon,
           })
           clearTimeout(timeout)

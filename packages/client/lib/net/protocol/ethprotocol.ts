@@ -14,7 +14,7 @@ import type {
   PostByzantiumTxReceipt,
   PreByzantiumTxReceipt,
   TxReceipt,
-} from '@ethereumjs/vm/dist/types'
+} from '@ethereumjs/vm/dist/types.js'
 
 interface EthProtocolOptions extends ProtocolOptions {
   /* Blockchain */

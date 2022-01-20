@@ -29,9 +29,9 @@ import type {
   PostByzantiumTxReceipt,
   PreByzantiumTxReceipt,
   TxReceipt,
-} from '@ethereumjs/vm/dist/types'
-import type { Log } from '@ethereumjs/vm/dist/evm/types'
-import type { Proof, ProofStateManager } from '@ethereumjs/vm/dist/state'
+} from '@ethereumjs/vm/dist/types.js'
+import type { Log } from '@ethereumjs/vm/dist/evm/types.js'
+import type { Proof, ProofStateManager } from '@ethereumjs/vm/dist/state/index.js'
 import type { EthereumClient } from '../../index.js'
 import type { Chain } from '../../blockchain/index.js'
 import type { EthProtocol } from '../../net/protocol/index.js'

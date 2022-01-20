@@ -20,7 +20,7 @@ import { Config, DataDirectory } from '../lib/config.js'
 import { Logger, getLogger } from '../lib/logging.js'
 import { RPCManager } from '../lib/rpc/index.js'
 import * as modules from '../lib/rpc/modules/index.js'
-import type { Chain as IChain, GenesisState } from '@ethereumjs/common/dist/types'
+import type { Chain as IChain, GenesisState } from '@ethereumjs/common/dist/types.js'
 const level = require('level')
 const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')

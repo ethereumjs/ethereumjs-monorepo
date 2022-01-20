@@ -1,5 +1,5 @@
 import { BlockFetcherBase, BlockFetcherOptions, JobTask } from './blockfetcherbase.js'
-import { Peer } from '../../net/peer'
+import { Peer } from '../../net/peer/index.js'
 import { FlowControl, LesProtocolMethods } from '../../net/protocol/index.js'
 import { BlockHeader } from '@ethereumjs/block'
 import { Job } from './types.js'
