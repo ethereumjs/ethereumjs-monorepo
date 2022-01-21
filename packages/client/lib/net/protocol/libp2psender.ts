@@ -1,5 +1,5 @@
-import pipe from 'it-pipe'
-import pushable from 'it-pushable'
+import { pipe } from 'it-pipe'
+import { pushable } from 'it-pushable'
 import { Libp2pMuxedStream as MuxedStream } from '../../types.js'
 import { bufferToInt, rlp } from 'ethereumjs-util'
 import { Sender } from './sender.js'
@@ -33,7 +33,7 @@ export class Libp2pSender extends Sender {
 
   init() {
     // outgoing stream
-    pipe(this.pushable, this.stream)
+    pipe(this.pushable, this.stream as any)
 
     // incoming stream
     void pipe(this.stream, async (source: any) => {

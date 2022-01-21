@@ -4,7 +4,7 @@ import { rlp } from 'ethereumjs-util'
 import { sscanf } from 'scanf'
 import { ecdsaVerify } from 'secp256k1'
 import { Multiaddr } from 'multiaddr'
-import base64url from 'base64url'
+import base64url = require('base64url')
 import { PeerInfo } from '../dpt/index.js'
 import { toNewUint8Array, keccak256 } from '../util.js'
 
@@ -54,7 +54,7 @@ export class ENR {
     )
 
     // ENRs are RLP encoded and written to DNS TXT entries as base64 url-safe strings
-    const base64BufferEnr = base64url.toBuffer(enr.slice(this.RECORD_PREFIX.length))
+    const base64BufferEnr = base64url.default.toBuffer(enr.slice(this.RECORD_PREFIX.length))
     const decoded = rlp.decode(base64BufferEnr) as unknown as Buffer[]
     const [signature, seq, ...kvs] = decoded
 
@@ -116,7 +116,7 @@ export class ENR {
     // (Trailing recovery bit must be trimmed to pass `ecdsaVerify` method)
     const signedComponent = root.split(' sig')[0]
     const signedComponentBuffer = Buffer.from(signedComponent)
-    const signatureBuffer = base64url.toBuffer(rootVals.signature).slice(0, 64)
+    const signatureBuffer = base64url.default.toBuffer(rootVals.signature).slice(0, 64)
     const keyBuffer = Buffer.from(decodedPublicKey)
 
     const isVerified = ecdsaVerify(signatureBuffer, keccak256(signedComponentBuffer), keyBuffer)

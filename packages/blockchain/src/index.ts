@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import Semaphore from 'semaphore-async-await'
+import Semaphore = require('semaphore-async-await')
 import { Address, BN, rlp } from 'ethereumjs-util'
 import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
@@ -148,7 +148,7 @@ export default class Blockchain implements BlockchainInterface {
   private _heads: { [key: string]: Buffer }
 
   public initPromise: Promise<void>
-  private _lock: Semaphore
+  private _lock: Semaphore.default
 
   private _common: Common
   private _hardforkByHeadBlockNumber: boolean
@@ -292,7 +292,7 @@ export default class Blockchain implements BlockchainInterface {
 
     this._heads = {}
 
-    this._lock = new Semaphore(1)
+    this._lock = new Semaphore.default(1)
 
     if (opts.genesisBlock && !opts.genesisBlock.isGenesis()) {
       throw 'supplied block is not a genesis block'

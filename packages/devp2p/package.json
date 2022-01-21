@@ -25,17 +25,27 @@
     "dist.esm",
     "src"
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "browser": "dist.browser/index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "browser": "./dist.browser/index.js",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist.esm/index.js",
-      "require": "./dist/index.js"
+      "require": "./dist/index.js",
+      "browser": "./dist.browser/index.js"
+    },
+    "./dist/*": {
+      "types": "./dist/*",
+      "import": "./dist.esm/*",
+      "require": "./dist/*",
+      "browser": "./dist.browser/*"
     }
   },
   "scripts": {
+    "postinstall": "npm run hotFixModuleDep && npm run hotFixModuleDep2",
+    "hotFixModuleDep": "npx json -I -f ../../node_modules/@types/ms/package.json -e \"this.types='./index.d.ts'\"",
+    "hotFixModuleDep2": "npx json -I -f ../../node_modules/@types/ip/package.json -e \"this.types='./index.d.ts'\"",
     "build": "npm run build:node && npm run build:browser",
     "build:node": "../../config/cli/ts-build.sh node",
     "build:browser": "../../config/cli/ts-build.sh browser",
@@ -64,7 +74,7 @@
     "k-bucket": "^5.0.0",
     "keccak": "^3.0.1",
     "lru-cache": "^5.1.1",
-    "ms": "^0.7.1",
+    "ms": "^2.1.3",
     "multiaddr": "^10.0.1",
     "scanf": "^1.1.2",
     "secp256k1": "^4.0.2",
@@ -83,7 +93,7 @@
     "@types/secp256k1": "^4.0.1",
     "@types/tape": "^4.13.2",
     "async": "^2.6.0",
-    "chalk": "^2.4.2",
+    "chalk": "^5.0.0",
     "eslint": "^8.7.0",
     "nyc": "^15.1.0",
     "prettier": "^2.0.5",
@@ -91,7 +101,7 @@
     "testdouble": "^3.8.2",
     "typedoc": "^0.22.4",
     "ts-node": "^10.2.1",
-    "typescript": "4.6.0-dev.20220119"
+    "typescript": "next"
   },
   "repository": {
     "type": "git",

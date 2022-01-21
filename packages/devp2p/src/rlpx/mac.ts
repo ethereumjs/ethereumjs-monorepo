@@ -1,12 +1,12 @@
 import { createCipheriv } from 'crypto'
-import createKeccakHash from 'keccak'
-import { xor } from '../util'
+import createKeccakHash = require('keccak')
+import { xor } from '../util.js'
 
 export class MAC {
   _hash: any
   _secret: Buffer
   constructor(secret: Buffer) {
-    this._hash = createKeccakHash('keccak256')
+    this._hash = createKeccakHash.default('keccak256')
     this._secret = secret
   }
 

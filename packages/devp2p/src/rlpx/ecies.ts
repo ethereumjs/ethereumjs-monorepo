@@ -2,9 +2,6 @@ import crypto, { Decipher } from 'crypto'
 import { debug as createDebugLogger } from 'debug'
 import { publicKeyCreate, ecdh, ecdsaRecover, ecdsaSign } from 'secp256k1'
 import { rlp } from 'ethereumjs-util'
-import { unstrictDecode } from '../util.js'
-import { MAC } from './mac.js'
-
 import {
   pk2id,
   genPrivateKey,
@@ -15,7 +12,9 @@ import {
   int2buffer,
   buffer2int,
   zfill,
-} from '../util'
+  unstrictDecode,
+} from '../util.js'
+import { MAC } from './mac.js'
 
 const debug = createDebugLogger('devp2p:rlpx:peer')
 

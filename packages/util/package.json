@@ -18,14 +18,21 @@
     "dist.esm",
     "src"
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "browser": "dist.browser/index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "browser": "./dist.browser/index.js",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist.esm/index.js",
-      "require": "./dist/index.js"
+      "require": "./dist/index.js",
+      "browser": "./dist.browser/index.js"
+    },
+    "./dist/*": {
+      "types": "./dist/*",
+      "import": "./dist.esm/*",
+      "require": "./dist/*",
+      "browser": "./dist.browser/*"
     }
   },
   "scripts": {
@@ -66,7 +73,7 @@
     "prettier": "^2.0.5",
     "tape": "^4.10.1",
     "ts-node": "^10.2.1",
-    "typescript": "4.6.0-dev.20220119"
+    "typescript": "next"
   },
   "repository": {
     "type": "git",

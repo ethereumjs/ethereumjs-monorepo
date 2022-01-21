@@ -1,14 +1,14 @@
 import assert from 'assert'
 import { randomBytes } from 'crypto'
 import { privateKeyVerify, publicKeyConvert } from 'secp256k1'
-import createKeccakHash from 'keccak'
+import createKeccakHash = require('keccak')
 import { rlp } from 'ethereumjs-util'
 import { ETH } from './eth/index.js'
 import { LES } from './les/index.js'
 
 export function keccak256(...buffers: Buffer[]) {
   const buffer = Buffer.concat(buffers)
-  return createKeccakHash('keccak256').update(buffer).digest()
+  return createKeccakHash.default('keccak256').update(buffer).digest()
 }
 
 export function genPrivateKey(): Buffer {

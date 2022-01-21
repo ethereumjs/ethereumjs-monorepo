@@ -40,7 +40,7 @@ function logFormat(colors = false) {
     }
     if (colors) {
       const colorLevel = LevelColors[info.level as keyof typeof LevelColors]
-      const color = chalk.keyword(colorLevel).bind(chalk)
+      const color = chalk[colorLevel].bind(chalk)
       level = color(level)
       const re = /(\w+)=(.+?)(?:\s|$)/g
       info.message = info.message.replace(
