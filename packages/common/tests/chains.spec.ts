@@ -16,7 +16,6 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
       c.DEFAULT_HARDFORK,
       'should set hardfork to hardfork set as DEFAULT_HARDFORK'
     )
-    st.equal(c._isSupportedHardfork('constantinople'), true, 'should not restrict supported HFs')
 
     c = new Common({ chain: 1 })
     st.equal(c.chainName(), 'mainnet', 'should initialize with chain Id')
@@ -37,7 +36,6 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
       c.DEFAULT_HARDFORK,
       'should set hardfork to hardfork set as DEFAULT_HARDFORK'
     )
-    st.equal(c._isSupportedHardfork('constantinople'), true, 'should not restrict supported HFs')
 
     st.end()
   })
@@ -59,19 +57,6 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
     }
   )
 
-  t.test('Should initialize with supportedHardforks provided', function (st: tape.Test) {
-    const c = new Common({
-      chain: 'mainnet',
-      hardfork: 'byzantium',
-      supportedHardforks: ['byzantium', 'constantinople'],
-    })
-    st.equal(c._isSupportedHardfork('byzantium'), true, 'should return true for supported HF')
-    const msg = 'should return false for unsupported HF'
-    st.equal(c._isSupportedHardfork('spuriousDragon'), false, msg)
-
-    st.end()
-  })
-
   t.test('Should handle initialization errors', function (st: tape.Test) {
     let f = function () {
       new Common({ chain: 'chainnotexisting' })
@@ -84,16 +69,6 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
     }
     msg = 'should throw an exception on non-existing hardfork'
     st.throws(f, /not supported$/, msg) // eslint-disable-line no-new
-
-    f = function () {
-      new Common({
-        chain: 'mainnet',
-        hardfork: 'spuriousDragon',
-        supportedHardforks: ['byzantium', 'constantinople'],
-      })
-    }
-    msg = 'should throw an exception on conflicting active/supported HF params'
-    st.throws(f, /supportedHardforks$/, msg) // eslint-disable-line no-new
 
     st.end()
   })
