@@ -164,20 +164,6 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     msg = 'should return 4 active hardforks for Ropsten up to block 10'
     st.equal(c.activeHardforks(10).length, 4, msg)
 
-    c = new Common({
-      chain: Chain.Ropsten,
-      supportedHardforks: [Hardfork.SpuriousDragon, Hardfork.Byzantium, Hardfork.Constantinople],
-    })
-    msg = 'should return 3 active HFs when restricted to supported HFs'
-    st.equal(c.activeHardforks(null, { onlySupported: true }).length, 3, msg)
-
-    c = new Common({
-      chain: Chain.Ropsten,
-      supportedHardforks: [Hardfork.SpuriousDragon, Hardfork.Byzantium, Hardfork.Dao],
-    })
-    msg = 'should return 2 active HFs when restricted to supported HFs'
-    st.equal(c.activeHardforks(null, { onlySupported: true }).length, 2, msg)
-
     c = new Common({ chain: Chain.Mainnet })
     msg = 'should return correct number of active HFs for mainnet'
     st.equal(c.activeHardforks().length, 13, msg)
@@ -200,13 +186,6 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
 
     msg = 'should return spuriousDragon as latest active HF for Ropsten for block 10'
     st.equal(c.activeHardfork(10), Hardfork.SpuriousDragon, msg)
-
-    c = new Common({
-      chain: Chain.Ropsten,
-      supportedHardforks: [Hardfork.TangerineWhistle, Hardfork.SpuriousDragon],
-    })
-    msg = 'should return spuriousDragon as latest active HF for Ropsten with limited supported HFs'
-    st.equal(c.activeHardfork(null, { onlySupported: true }), Hardfork.SpuriousDragon, msg)
 
     c = new Common({ chain: Chain.Rinkeby })
     msg = 'should return correct latest active HF for Rinkeby'
@@ -264,14 +243,8 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     let msg = 'Ropsten, constantinople >= byzantium (provided) -> true'
     st.equal(c.hardforkGteHardfork(Hardfork.Constantinople, Hardfork.Byzantium), true, msg)
 
-    msg = 'Ropsten, dao >= chainstart (provided), onlyActive -> false'
-    st.equal(
-      c.hardforkGteHardfork(Hardfork.Dao, Hardfork.Chainstart, {
-        onlyActive: true,
-      }),
-      false,
-      msg
-    )
+    msg = 'Ropsten, dao >= chainstart (provided) -> false'
+    st.equal(c.hardforkGteHardfork(Hardfork.Dao, Hardfork.Chainstart), false, msg)
 
     msg = 'Ropsten, byzantium >= byzantium (provided) -> true'
     st.equal(c.hardforkGteHardfork(Hardfork.Byzantium, Hardfork.Byzantium), true, msg)
@@ -285,9 +258,6 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
 
     msg = 'Ropsten, byzantium (set) >= spuriousDragon -> true (alias function)'
     st.equal(c.gteHardfork(Hardfork.SpuriousDragon), true, msg)
-
-    msg = 'Ropsten, byzantium (set) >= spuriousDragon, onlyActive -> true'
-    st.equal(c.hardforkGteHardfork(null, Hardfork.SpuriousDragon, { onlyActive: true }), true, msg)
 
     msg = 'Ropsten, byzantium (set) >= byzantium -> true'
     st.equal(c.hardforkGteHardfork(null, Hardfork.Byzantium), true, msg)
@@ -320,25 +290,9 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     msg = 'should return false for a non-existing HF (provided) on Ropsten'
     st.equal(c.hardforkIsActiveOnChain('notexistinghardfork'), false, msg)
 
-    let f = function () {
-      c.hardforkIsActiveOnChain(Hardfork.SpuriousDragon, { onlySupported: true })
-    }
-    msg = 'should not throw with unsupported Hf (provided) and onlySupported set to false'
-    st.doesNotThrow(f, /unsupported hardfork$/, msg)
-
     c = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
     msg = 'should return true for byzantium (set) on Ropsten'
     st.equal(c.hardforkIsActiveOnChain(), true, msg)
-
-    c = new Common({
-      chain: Chain.Ropsten,
-      supportedHardforks: [Hardfork.Byzantium, Hardfork.Constantinople],
-    })
-    f = function () {
-      c.hardforkIsActiveOnChain(Hardfork.SpuriousDragon, { onlySupported: true })
-    }
-    msg = 'should throw with unsupported Hf and onlySupported set to true'
-    st.throws(f, /not set as supported in supportedHardforks$/, msg)
 
     st.end()
   })
