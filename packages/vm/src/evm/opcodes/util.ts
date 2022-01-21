@@ -258,3 +258,11 @@ export function updateSstoreGas(
     runState.eei.useGas(new BN(common.param('gasPrices', 'sstoreSet')), 'updateSstoreGas')
   }
 }
+
+export function mod(a: bigint, b: bigint) {
+  let r = a % b
+  if (r < 0n) {
+    r = b + r
+  }
+  return r
+}

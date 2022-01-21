@@ -15,6 +15,11 @@ export const MAX_INTEGER = new BN(
 )
 
 /**
+ * The max integer that the evm can handle (2^256-1) as a bigint
+ */
+export const MAX_INTEGER_BIGINT = 2n ** 256n - 1n
+
+/**
  * 2^256
  *
  * @deprecated

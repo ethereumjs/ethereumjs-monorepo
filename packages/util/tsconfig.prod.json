@@ -3,7 +3,8 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist",
-    "composite": true
+    "composite": true,
+    "target": "ES2020"
   },
   "include": ["src/**/*.ts"]
 }
