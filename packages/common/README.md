@@ -48,18 +48,6 @@ c.genesis().hash // 0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1
 c.bootstrapNodes() // Array with current nodes
 ```
 
-If the initializing library only supports a certain range of `hardforks` you can use the `supportedHardforks` option to restrict hardfork access on the `Common` instance:
-
-```typescript
-const c = new Common({
-  chain: 'ropsten',
-  supportedHardforks: ['byzantium', 'constantinople', 'petersburg'],
-})
-```
-
-This will e.g. throw an error when a param is requested for an unsupported hardfork and
-like this prevents unpredicted behaviour.
-
 For an improved developer experience, there are `Chain` and `Hardfork` enums available:
 
 ```typescript
