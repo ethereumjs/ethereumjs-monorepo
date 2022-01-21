@@ -140,13 +140,6 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 const vm = new VM({ common })
 ```
 
-Please note that the `VM` constructor will throw an error if you pass in a `Common` instance that is set to a hardfork that the `VM` does not currently support. For example, the following would throw because the `VM` does not yet support the Merge hardfork:
-
-```typescript
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
-const vm = new VM({ common })
-```
-
 ## EIP Support
 
 It is possible to individually activate EIP support in the VM by instantiate the `Common` instance passed
