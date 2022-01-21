@@ -112,7 +112,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   if (this._hardforkByBlockNumber || this._hardforkByTD || opts.hardforkByTD) {
     this._common.setHardforkByBlockNumber(
       block.header.number,
-      opts.hardforkByTD ?? this._hardforkByTD
+      (this._hardforkByTD as bigint | undefined) ?? this._hardforkByTD
     )
   }
 
