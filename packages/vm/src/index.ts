@@ -143,7 +143,6 @@ export default class VM extends AsyncEventEmitter {
   protected _opcodes: OpcodeList
   protected readonly _hardforkByBlockNumber: boolean
   protected readonly _hardforkByTD?: BNLike
-  private _supportedHardforks: Array<string | Hardfork> = []
 
   /**
    * Cached emit() function, not for public usage
@@ -213,22 +212,22 @@ export default class VM extends AsyncEventEmitter {
       this._opcodes = getOpcodesForHF(this._common)
     })
 
-    this._supportedHardforks = [
-      'chainstart',
-      'homestead',
-      'dao',
-      'tangerineWhistle',
-      'spuriousDragon',
-      'byzantium',
-      'constantinople',
-      'petersburg',
-      'istanbul',
-      'muirGlacier',
-      'berlin',
-      'london',
-      'arrowGlacier',
+    const supportedHardforks = [
+      Hardfork.Chainstart,
+      Hardfork.Homestead,
+      Hardfork.Dao,
+      Hardfork.TangerineWhistle,
+      Hardfork.SpuriousDragon,
+      Hardfork.Byzantium,
+      Hardfork.Constantinople,
+      Hardfork.Petersburg,
+      Hardfork.Istanbul,
+      Hardfork.MuirGlacier,
+      Hardfork.Berlin,
+      Hardfork.London,
+      Hardfork.ArrowGlacier,
     ]
-    if (!this._supportedHardforks.includes(this._common.hardfork())) {
+    if (!supportedHardforks.includes(this._common.hardfork() as Hardfork)) {
       throw new Error(
         `Hardfork ${this._common.hardfork()} not set as supported in supportedHardforks`
       )
