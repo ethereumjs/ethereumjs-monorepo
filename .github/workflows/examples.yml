@@ -1,7 +1,9 @@
 name: Packages examples
 on:
   push:
-    branches: [examples-in-ci]
+    branches: [master, develop]
+  pull_request:
+    types: [opened, reopened, synchronize]
 
 jobs:
   test-examples:

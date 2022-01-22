@@ -1,9 +1,9 @@
-import {extname, join} from "path";
-import {readdir} from "fs";
+import { extname, join } from 'path'
+import { readdir } from 'fs'
 
 const pkg = process.argv[3]
 if (!pkg) {
-  throw new Error("Package argument must be passed")
+  throw new Error('Package argument must be passed')
 }
 
 const examplesPath = `../packages/${pkg}/examples/`
@@ -11,13 +11,16 @@ const path = join(__dirname, examplesPath)
 
 readdir(path, async (err, files) => {
   if (err) {
-    return console.log("Error loading examples directory: ", err)
+    throw new Error('Error loading examples directory: ' + err.message)
   }
-  const importedFiles = files.map(fileName => {
-    if (extname(fileName) === ".ts") {
-      return import(examplesPath + fileName);
+
+  const getTsFiles = (fileName: string): Promise<NodeModule> | undefined => {
+    if (extname(fileName) === '.ts') {
+      return import(examplesPath + fileName)
     }
-  }).filter(file => file)
+  }
+
+  const importedFiles = files.map(getTsFiles).filter((file) => file)
 
   await Promise.all(importedFiles)
 })
