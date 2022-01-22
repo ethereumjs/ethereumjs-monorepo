@@ -1,7 +1,8 @@
 /* eslint @typescript-eslint/no-unused-vars: 0 */
 
 import Common from '@ethereumjs/common'
-import { Account, Address, keccak256, KECCAK256_NULL } from 'ethereumjs-util'
+import { hasKey } from 'benchmark'
+import { Account, Address, keccak256, KECCAK256_NULL, unpadBuffer } from 'ethereumjs-util'
 import { BaseStateManager, StateManager } from '.'
 import { short } from '../evm/opcodes'
 import Cache, { getCb, putCb } from './cache'
@@ -17,6 +18,11 @@ export interface State {
   }
   code: {
     [key: HexPrefixedCodeHash]: UnprefixedHexString
+  }
+  storage: {
+    [key: HexPrefixedAddress]: {
+      [key: UnprefixedHexString]: UnprefixedHexString
+    }
   }
 }
 
@@ -45,12 +51,14 @@ export default class StatelessVerkleStateManager extends BaseStateManager implem
   private _preState: State = {
     accounts: {},
     code: {},
+    storage: {},
   }
 
   // State along execution (should update)
   private _state: State = {
     accounts: {},
     code: {},
+    storage: {},
   }
 
   // Checkpointing
@@ -165,6 +173,17 @@ export default class StatelessVerkleStateManager extends BaseStateManager implem
    * If this does not exist an empty `Buffer` is returned.
    */
   async getContractStorage(address: Address, key: Buffer): Promise<Buffer> {
+    if (key.length !== 32) {
+      throw new Error('Storage key must be 32 bytes long')
+    }
+
+    const keyStr = key.toString('hex')
+    if (
+      address.toString() in this._state.storage &&
+      keyStr in this._state.storage[address.toString()]
+    ) {
+      return Buffer.from(this._state.storage[address.toString()][keyStr], 'hex')
+    }
     return Buffer.alloc(0)
   }
 
@@ -175,13 +194,30 @@ export default class StatelessVerkleStateManager extends BaseStateManager implem
    * @param key - Key to set the value at. Must be 32 bytes long.
    * @param value - Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped. If it is a empty or filled with zeros, deletes the value.
    */
-  async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {}
+  async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {
+    if (key.length !== 32) {
+      throw new Error('Storage key must be 32 bytes long')
+    }
+
+    if (value.length > 32) {
+      throw new Error('Storage value cannot be longer than 32 bytes')
+    }
+
+    value = unpadBuffer(value)
+    if (!(address.toString() in this._state.storage)) {
+      this._state.storage[address.toString()] = {}
+    }
+    this._state.storage[address.toString()][key.toString('hex')] = value.toString('hex')
+    this.touchAccount(address)
+  }
 
   /**
    * Clears all storage entries for the account corresponding to `address`.
    * @param address -  Address to clear the storage of
    */
-  async clearContractStorage(address: Address): Promise<void> {}
+  async clearContractStorage(address: Address): Promise<void> {
+    delete this._state.storage[address.toString()]
+  }
 
   /**
    * Checkpoints the current state of the StateManager instance.
