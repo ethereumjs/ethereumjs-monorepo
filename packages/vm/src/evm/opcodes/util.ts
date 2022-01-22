@@ -58,19 +58,19 @@ export function describeLocation(runState: RunState): string {
 /**
  * Find Ceil(a / b)
  *
- * @param {BN} a
- * @param {BN} b
- * @return {BN}
+ * @param {bigint} a
+ * @param {bigint} b
+ * @return {bigint}
  */
-export function divCeil(a: BN, b: BN): BN {
-  const div = a.div(b)
-  const mod = a.mod(b)
+export function divCeil(a: bigint, b: bigint): bigint {
+  const div = a / b
+  const modulus = mod(a, b)
 
   // Fast case - exact division
-  if (mod.isZero()) return div
+  if (modulus === 0n) return div
 
   // Round up
-  return div.isNeg() ? div.isubn(1) : div.iaddn(1)
+  return div < 0n ? div - 1n : div + 1n
 }
 
 export function short(buffer: Buffer): string {
@@ -184,12 +184,12 @@ export function maxCallGas(gasLimit: BN, gasLeft: BN, runState: RunState, common
  * @param {BN} offset
  * @param {BN} length
  */
-export function subMemUsage(runState: RunState, offset: BN, length: BN, common: Common) {
+export function subMemUsage(runState: RunState, offset: bigint, length: bigint, common: Common) {
   // YP (225): access with zero length will not extend the memory
-  if (length.isZero()) return
+  if (length === 0n) return
 
-  const newMemoryWordCount = divCeil(offset.add(length), new BN(32))
-  if (newMemoryWordCount.lte(runState.memoryWordCount)) return
+  const newMemoryWordCount = divCeil(offset + length, 32n)
+  if (newMemoryWordCount >= runState.memoryWordCount) return
 
   const words = newMemoryWordCount
   const fee = new BN(common.param('gasPrices', 'memory'))

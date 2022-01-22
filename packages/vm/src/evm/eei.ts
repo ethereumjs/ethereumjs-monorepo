@@ -68,9 +68,9 @@ export default class EEI {
   _evm: EVM
   _lastReturned: Buffer
   _common: Common
-  _gasLeft: BN
+  _gasLeft: bigint
 
-  constructor(env: Env, state: StateManager, evm: EVM, common: Common, gasLeft: BN) {
+  constructor(env: Env, state: StateManager, evm: EVM, common: Common, gasLeft: bigint) {
     this._env = env
     this._state = state
     this._evm = evm
@@ -90,13 +90,13 @@ export default class EEI {
    * @param context - Usage context for debugging
    * @throws if out of gas
    */
-  useGas(amount: BN, context?: string): void {
+  useGas(amount: bigint, context?: string): void {
     this._gasLeft.isub(amount)
     if (this._evm._vm.DEBUG) {
       debugGas(`${context ? context + ': ' : ''}used ${amount} gas (-> ${this._gasLeft})`)
     }
-    if (this._gasLeft.ltn(0)) {
-      this._gasLeft = new BN(0)
+    if (this._gasLeft < 0n) {
+      this._gasLeft = 0n
       trap(ERROR.OUT_OF_GAS)
     }
   }

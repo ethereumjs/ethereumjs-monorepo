@@ -15,8 +15,8 @@ export interface RunState {
   programCounter: number
   opCode: number
   memory: Memory
-  memoryWordCount: BN
-  highestMemCost: BN
+  memoryWordCount: bigint
+  highestMemCost: bigint
   stack: Stack
   returnStack: Stack
   code: Buffer

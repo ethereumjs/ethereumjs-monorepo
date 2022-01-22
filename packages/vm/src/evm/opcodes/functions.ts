@@ -380,15 +380,15 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [offset, length] = runState.stack.popN(2)
       subMemUsage(runState, offset, length, common)
       let data = Buffer.alloc(0)
-      if (!length.isZero()) {
-        data = runState.memory.read(offset.toNumber(), length.toNumber())
+      if (!(length === 0n)) {
+        data = runState.memory.read(Number(offset), Number(length))
       }
       // copy fee
       runState.eei.useGas(
-        new BN(common.param('gasPrices', 'sha3Word')).imul(divCeil(length, new BN(32))),
+        BigInt(common.param('gasPrices', 'sha3Word') * divCeil(length, 32n)),
         'SHA3 opcode'
       )
-      const r = new BN(keccak256(data))
+      const r = BigInt(keccak256(data).toString('hex'))
       runState.stack.push(r)
     },
   ],
@@ -397,7 +397,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x30,
     function (runState) {
-      const address = new BN(runState.eei.getAddress().buf)
+      const address = BigInt(runState.eei.getAddress().buf.toString('hex'))
       runState.stack.push(address)
     },
   ],
