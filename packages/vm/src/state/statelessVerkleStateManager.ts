@@ -1,16 +1,22 @@
 /* eslint @typescript-eslint/no-unused-vars: 0 */
 
 import Common from '@ethereumjs/common'
-import { Account, Address } from 'ethereumjs-util'
+import { Account, Address, keccak256, KECCAK256_NULL } from 'ethereumjs-util'
 import { BaseStateManager, StateManager } from '.'
+import { short } from '../evm/opcodes'
 import Cache, { getCb, putCb } from './cache'
 import { StorageDump } from './interface'
 
 type HexPrefixedAddress = string
+type HexPrefixedCodeHash = string
+type UnprefixedHexString = string
 
 export interface State {
   accounts: {
-    [key: HexPrefixedAddress]: string
+    [key: HexPrefixedAddress]: UnprefixedHexString
+  }
+  code: {
+    [key: HexPrefixedCodeHash]: UnprefixedHexString
   }
 }
 
@@ -38,11 +44,13 @@ export default class StatelessVerkleStateManager extends BaseStateManager implem
   // Pre-state (should not change)
   private _preState: State = {
     accounts: {},
+    code: {},
   }
 
   // State along execution (should update)
   private _state: State = {
     accounts: {},
+    code: {},
   }
 
   // Checkpointing
@@ -112,7 +120,22 @@ export default class StatelessVerkleStateManager extends BaseStateManager implem
    * @param address - Address of the `account` to add the `code` for
    * @param value - The value of the `code`
    */
-  async putContractCode(address: Address, value: Buffer): Promise<void> {}
+  async putContractCode(address: Address, value: Buffer): Promise<void> {
+    const codeHash = keccak256(value)
+
+    if (codeHash.equals(KECCAK256_NULL)) {
+      return
+    }
+    const codeHashStr = `0x${codeHash.toString('hex')}`
+    this._state.code[codeHashStr] = value.toString('hex')
+
+    const account = await this.getAccount(address)
+    if (this.DEBUG) {
+      this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
+    }
+    account.codeHash = codeHash
+    await this.putAccount(address, account)
+  }
 
   /**
    * Gets the code corresponding to the provided `address`.
@@ -121,6 +144,14 @@ export default class StatelessVerkleStateManager extends BaseStateManager implem
    * Returns an empty `Buffer` if the account has no associated code.
    */
   async getContractCode(address: Address): Promise<Buffer> {
+    const account = await this.getAccount(address)
+    if (!account.isContract()) {
+      return Buffer.alloc(0)
+    }
+    const codeHashStr = `0x${account.codeHash.toString('hex')}`
+    if (codeHashStr in this._state.code) {
+      return Buffer.from(this._state.code[codeHashStr], 'hex')
+    }
     return Buffer.alloc(0)
   }
 
