@@ -13,6 +13,7 @@ if (
   tx.validate() &&
   tx.getSenderAddress().toString() === '0x9dfd2d2b2ed960923f7bf2e8883d73f213f3b24b'
 ) {
+  throw new Error("This should break the CI")
   console.log('Correctly created the tx')
 } else {
   console.error('Invalid tx')

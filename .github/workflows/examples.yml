@@ -1,4 +1,4 @@
-name: VM
+name: Packages examples
 on:
   push:
     branches: [examples-in-ci]
@@ -17,4 +17,4 @@ jobs:
           cache: 'npm'
 
       - run: npm i
-      - run: npm run examples:ci
+      - run: npm run examples
