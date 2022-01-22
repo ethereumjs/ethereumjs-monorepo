@@ -37,7 +37,6 @@
   },
   "dependencies": {
     "@types/bn.js": "^5.1.0",
-    "bigint-buffer": "^1.1.5",
     "bn.js": "^5.1.2",
     "create-hash": "^1.1.2",
     "ethereum-cryptography": "^0.1.3",

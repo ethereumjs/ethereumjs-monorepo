@@ -1,9 +1,8 @@
 import Common from '@ethereumjs/common'
-import { BN, keccak256, setLengthRight, setLengthLeft } from 'ethereumjs-util'
+import { BN, keccak256, setLengthRight, setLengthLeft, toBuffer } from 'ethereumjs-util'
 import { ERROR, VmError } from './../../exceptions'
 import { RunState } from './../interpreter'
 import { adjustSstoreGasEIP2929 } from './EIP2929'
-import { toBufferBE } from 'bigint-buffer'
 
 const MASK_160 = (1n << 160n) - 1n
 
@@ -33,14 +32,14 @@ export function trap(err: string) {
 }
 
 /**
- * Converts BN address (they're stored like this on the stack) to buffer address
+ * Converts bigint address (they're stored like this on the stack) to buffer address
  *
  * @param  {BN}     address
  * @return {Buffer}
  */
 export function addressToBuffer(address: bigint | Buffer) {
   if (Buffer.isBuffer(address)) return address
-  return toBufferBE(address & MASK_160, 20)
+  return setLengthLeft(toBuffer('0x' + (address & MASK_160).toString(16)), 20)
 }
 
 /**

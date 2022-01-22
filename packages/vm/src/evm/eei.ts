@@ -8,18 +8,12 @@ import { VmError, ERROR } from '../exceptions'
 import Message from './message'
 import EVM, { EVMResult } from './evm'
 import { Log } from './types'
-import { toBigIntBE } from 'bigint-buffer'
+import { addressToBuffer } from './opcodes'
 
 const debugGas = createDebugLogger('vm:eei:gas')
 
 function trap(err: ERROR) {
   throw new VmError(err)
-}
-
-const MASK_160 = new BN(1).shln(160).subn(1)
-function addressToBuffer(address: BN) {
-  if (Buffer.isBuffer(address)) return address
-  return address.and(MASK_160).toArrayLike(Buffer, 'be', 20)
 }
 
 /**
@@ -107,7 +101,7 @@ export default class EEI {
    * @param amount - Amount of gas refunded
    * @param context - Usage context for debugging
    */
-  refundGas(amount: BigInt, context?: string): void {
+  refundGas(amount: bigint, context?: string): void {
     if (this._evm._vm.DEBUG) {
       debugGas(`${context ? context + ': ' : ''}refund ${amount} gas (-> ${this._evm._refund})`)
     }
@@ -119,13 +113,13 @@ export default class EEI {
    * @param amount - Amount to subtract from gas refunds
    * @param context - Usage context for debugging
    */
-  subRefund(amount: BN, context?: string): void {
+  subRefund(amount: bigint, context?: string): void {
     if (this._evm._vm.DEBUG) {
       debugGas(`${context ? context + ': ' : ''}sub gas refund ${amount} (-> ${this._evm._refund})`)
     }
-    this._evm._refund.isub(amount)
-    if (this._evm._refund.ltn(0)) {
-      this._evm._refund = new BN(0)
+    this._evm._refund -= amount
+    if (this._evm._refund < 0n) {
+      this._evm._refund = 0n
       trap(ERROR.REFUND_EXHAUSTED)
     }
   }
@@ -227,10 +221,10 @@ export default class EEI {
    * Get size of an account’s code.
    * @param address - Address of account
    */
-  async getExternalCodeSize(address: BN): Promise<BN> {
+  async getExternalCodeSize(address: bigint): Promise<bigint> {
     const addr = new Address(addressToBuffer(address))
     const code = await this._state.getContractCode(addr)
-    return new BN(code.length)
+    return BigInt(code.length)
   }
 
   /**

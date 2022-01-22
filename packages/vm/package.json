@@ -51,7 +51,6 @@
     "@ethereumjs/common": "^2.6.0",
     "@ethereumjs/tx": "^3.4.0",
     "async-eventemitter": "^0.2.4",
-    "bigint-buffer": "^1.1.5",
     "core-js-pure": "^3.0.1",
     "debug": "^2.2.0",
     "ethereumjs-util": "^7.1.3",

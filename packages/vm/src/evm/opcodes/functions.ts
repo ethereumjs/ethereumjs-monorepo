@@ -2,10 +2,11 @@ import Common from '@ethereumjs/common'
 import {
   Address,
   BN,
-  keccak256,,
+  keccak256,
   KECCAK256_NULL,
   TWO_POW256_BIGINT,
   MAX_INTEGER_BIGINT,
+  bufferToHex,
 } from 'ethereumjs-util'
 import {
   addressToBuffer,
@@ -30,7 +31,7 @@ import { updateSstoreGasEIP2200 } from './EIP2200'
 import { accessAddressEIP2929, accessStorageEIP2929 } from './EIP2929'
 import { ERROR } from '../../exceptions'
 import { RunState } from './../interpreter'
-import { toBigIntLE } from 'bigint-buffer'
+
 export interface SyncOpHandler {
   (runState: RunState, common: Common): void
 }
@@ -435,7 +436,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x35,
     function (runState) {
       const pos = runState.stack.pop()
-      if (pos.gt(runState.eei.getCallDataSize())) {
+      if (pos > runState.eei.getCallDataSize()) {
         runState.stack.push(0n)
         return
       }
@@ -443,7 +444,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const i = Number(pos)
       let loaded = runState.eei.getCallData().slice(i, i + 32)
       loaded = loaded.length ? loaded : Buffer.from([0])
-      const r = BigInt.asUintN(256, toBigIntLE(loaded))
+      const r = BigInt.asUintN(256, BigInt(bufferToHex(loaded)))
       runState.stack.push(r)
     },
   ],
@@ -465,13 +466,13 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       if (!(dataLength === 0n)) {
         runState.eei.useGas(
-          BigInt(common.param('gasPrices', 'copy')) * (divCeil(dataLength, 32n)),
+          BigInt(common.param('gasPrices', 'copy')) * divCeil(dataLength, 32n),
           'CALLDATACOPY opcode'
         )
 
         const data = getDataSlice(runState.eei.getCallData(), dataOffset, dataLength)
-        const memOffsetNum = memOffset.toNumber()
-        const dataLengthNum = dataLength.toNumber()
+        const memOffsetNum = Number(memOffset)
+        const dataLengthNum = Number(dataLength)
         runState.memory.extend(memOffsetNum, dataLengthNum)
         runState.memory.write(memOffsetNum, dataLengthNum, data)
       }
@@ -492,15 +493,15 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       subMemUsage(runState, memOffset, dataLength, common)
 
-      if (!dataLength.eqn(0)) {
+      if (!(dataLength === 0n)) {
         runState.eei.useGas(
-          new BN(common.param('gasPrices', 'copy')).imul(divCeil(dataLength, new BN(32))),
+          BigInt(common.param('gasPrices', 'copy')) * divCeil(dataLength, 32n),
           'CODECOPY opcode'
         )
 
         const data = getDataSlice(runState.eei.getCode(), codeOffset, dataLength)
-        const memOffsetNum = memOffset.toNumber()
-        const lengthNum = dataLength.toNumber()
+        const memOffsetNum = Number(memOffset)
+        const lengthNum = Number(dataLength)
         runState.memory.extend(memOffsetNum, lengthNum)
         runState.memory.write(memOffsetNum, lengthNum, data)
       }
@@ -510,10 +511,10 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x3b,
     async function (runState, common) {
-      const addressBN = runState.stack.pop()
-      const address = new Address(addressToBuffer(addressBN))
+      const addressBigInt = runState.stack.pop()
+      const address = new Address(addressToBuffer(addressBigInt))
       accessAddressEIP2929(runState, address, common)
-      const size = await runState.eei.getExternalCodeSize(addressBN)
+      const size = await runState.eei.getExternalCodeSize(addressBigInt)
       runState.stack.push(size)
     },
   ],
