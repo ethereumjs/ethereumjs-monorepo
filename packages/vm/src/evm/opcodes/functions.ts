@@ -24,6 +24,9 @@ import {
   writeCallOutput,
   updateSstoreGas,
   mod,
+  fromTwos,
+  toTwos,
+  abs,
 } from './util'
 import { updateSstoreGasEIP1283 } from './EIP1283'
 import { updateSstoreGasEIP2200 } from './EIP2200'
@@ -100,7 +103,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (b === 0n) {
         r = 0n
       } else {
-        r = a / b
+        r = toTwos(fromTwos(a) / fromTwos(b))
       }
       runState.stack.push(r)
     },
@@ -128,9 +131,12 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (b === 0n) {
         r = b
       } else {
-        r = mod(a, b)
+        r = mod(abs(fromTwos(a)), abs(fromTwos(b)))
+        if (r < 0) {
+          r ^= -1n
+        }
       }
-      runState.stack.push(r)
+      runState.stack.push(toTwos(r))
     },
   ],
   // 0x08: ADDMOD
@@ -228,7 +234,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x12,
     function (runState) {
       const [a, b] = runState.stack.popN(2)
-      const r = a < b ? 1n : 0n
+      const r = fromTwos(a) < fromTwos(b) ? 1n : 0n
       runState.stack.push(r)
     },
   ],
@@ -237,7 +243,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x13,
     function (runState) {
       const [a, b] = runState.stack.popN(2)
-      const r = a > b ? 1n : 0n
+      const r = fromTwos(a) > fromTwos(b) ? 1n : 0n
       runState.stack.push(r)
     },
   ],

@@ -266,3 +266,18 @@ export function mod(a: bigint, b: bigint) {
   }
   return r
 }
+
+export function fromTwos(a: bigint) {
+  return BigInt.asUintN(256, ~(a - 1n))
+}
+
+export function toTwos(a: bigint) {
+  return BigInt.asUintN(256, ~a) + 1n
+}
+
+export function abs(a: bigint) {
+  if (a > 0) {
+    return a
+  }
+  return a * -1n
+}
