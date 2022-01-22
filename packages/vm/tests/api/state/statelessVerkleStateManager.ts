@@ -23,6 +23,7 @@ tape('StatelessVerkleStateManager', (t) => {
           'f8478083fff384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
       },
       code: {},
+      storage: {},
     }
     await stateManager.initPreState(preState)
     const address = Address.fromString('0xbe862ad9abfe6f22bcb087716c7d89a26051f74c')
@@ -44,6 +45,7 @@ tape('StatelessVerkleStateManager', (t) => {
     await stateManager.initPreState({
       accounts: {},
       code: {},
+      storage: {},
     })
     await stateManager.checkpoint()
     st.equal((stateManager as any)._checkpoints.length, 1, 'should have set a checkpoint')
@@ -59,6 +61,7 @@ tape('StatelessVerkleStateManager', (t) => {
     await stateManager.initPreState({
       accounts: {},
       code: {},
+      storage: {},
     })
     await stateManager.checkpoint()
 
@@ -68,6 +71,34 @@ tape('StatelessVerkleStateManager', (t) => {
     isInState =
       '0xbe862ad9abfe6f22bcb087716c7d89a26051f74c' in (stateManager as any)._state.accounts
     st.ok(!isInState, 'should not have caller account in current state on revert')
+  })
+
+  t.test('putContractStorage() / getContractStorage() / clearContractStorage()', async (st) => {
+    const stateManager = new StatelessVerkleStateManager()
+
+    // Init pre state (format: address -> RLP serialized account)
+    // Here: Caller address from `const tx = getTransaction(vm._common, 0, true)`
+    const preState = {
+      accounts: {
+        '0xbe862ad9abfe6f22bcb087716c7d89a26051f74c':
+          'f8478083fff384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      },
+      code: {},
+      storage: {},
+    }
+    await stateManager.initPreState(preState)
+
+    const address = Address.fromString('0xbe862ad9abfe6f22bcb087716c7d89a26051f74c')
+    const key = Buffer.alloc(32, 0)
+    const val = Buffer.from('01', 'hex')
+    await stateManager.putContractStorage(address, key, val)
+
+    let valReceived = await stateManager.getContractStorage(address, key)
+    st.deepEqual(valReceived, val, 'received correct storage value')
+
+    await stateManager.clearContractStorage(address)
+    valReceived = await stateManager.getContractStorage(address, key)
+    st.deepEqual(valReceived, Buffer.alloc(0), 'received empty Buffer after clearing')
   })
 
   t.test('should run simple transfer-tx (stateful)', async (st) => {
@@ -94,6 +125,7 @@ tape('StatelessVerkleStateManager', (t) => {
           'f8478083fff384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
       },
       code: {},
+      storage: {},
     }
     const stateManager = new StatelessVerkleStateManager({ common })
     await stateManager.initPreState(preState)
@@ -144,6 +176,7 @@ tape('StatelessVerkleStateManager', (t) => {
           'f8478083fff384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
       },
       code: {},
+      storage: {},
     }
     const stateManager = new StatelessVerkleStateManager({ common })
     await stateManager.initPreState(preState)
