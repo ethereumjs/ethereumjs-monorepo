@@ -6,9 +6,9 @@ import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 export class Protocol extends EventEmitter {
   _peer: Peer
   _statusTimeoutId: NodeJS.Timeout
-  _messageCodes: any
-  _debug: any
-  _verbose: any
+  _messageCodes: { [key: string : number }
+  _debug: createDebugLogger
+  _verbose: boolean
 
   /**
    * Will be set to the first successfully connected peer to allow for
