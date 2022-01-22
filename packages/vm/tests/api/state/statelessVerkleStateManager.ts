@@ -22,6 +22,7 @@ tape('StatelessVerkleStateManager', (t) => {
         '0xbe862ad9abfe6f22bcb087716c7d89a26051f74c':
           'f8478083fff384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
       },
+      code: {},
     }
     await stateManager.initPreState(preState)
     const address = Address.fromString('0xbe862ad9abfe6f22bcb087716c7d89a26051f74c')
@@ -42,6 +43,7 @@ tape('StatelessVerkleStateManager', (t) => {
     let stateManager = new StatelessVerkleStateManager({ common })
     await stateManager.initPreState({
       accounts: {},
+      code: {},
     })
     await stateManager.checkpoint()
     st.equal((stateManager as any)._checkpoints.length, 1, 'should have set a checkpoint')
@@ -56,6 +58,7 @@ tape('StatelessVerkleStateManager', (t) => {
     stateManager = new StatelessVerkleStateManager({ common })
     await stateManager.initPreState({
       accounts: {},
+      code: {},
     })
     await stateManager.checkpoint()
 
@@ -90,6 +93,7 @@ tape('StatelessVerkleStateManager', (t) => {
         '0xbe862ad9abfe6f22bcb087716c7d89a26051f74c':
           'f8478083fff384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
       },
+      code: {},
     }
     const stateManager = new StatelessVerkleStateManager({ common })
     await stateManager.initPreState(preState)
@@ -109,7 +113,68 @@ tape('StatelessVerkleStateManager', (t) => {
     st.equal(account.balance.toString('hex'), '1e2418')
 
     msg = 'should correctly update underlying state datastructure'
-    st.ok('0x0000000000000000000000000000000000000000' in (stateManager as any)._state.accounts)
+    st.ok(
+      '0x0000000000000000000000000000000000000000' in (stateManager as any)._state.accounts,
+      `${msg}, accounts`
+    )
+    st.pass('Whohoo, tx passed in stateless mode!!!')
+  })
+
+  t.test('should run simple code-tx (stateful)', async (st) => {
+    const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London })
+    const vm = new VM({ common })
+    const tx = getTransaction(vm._common, 0, true, '0x00', true)
+
+    const caller = tx.getSenderAddress()
+    const acc = createAccount()
+    await vm.stateManager.putAccount(caller, acc)
+
+    const res = await vm.runTx({ tx })
+    st.pass('Ok, that is something. Passed in stateful mode.')
+  })
+
+  t.test('should run simple contract-tx (stateless)', async (st) => {
+    const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London })
+
+    // Init pre state (format: address -> RLP serialized account)
+    // Here: Caller address -> Account from tx created below
+    const preState = {
+      accounts: {
+        '0xbe862ad9abfe6f22bcb087716c7d89a26051f74c':
+          'f8478083fff384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      },
+      code: {},
+    }
+    const stateManager = new StatelessVerkleStateManager({ common })
+    await stateManager.initPreState(preState)
+
+    const vm = new VM({ common, stateManager })
+    const tx = getTransaction(vm._common, 0, true, '0x00', true)
+
+    const res = await vm.runTx({ tx })
+
+    let address = Address.fromString('0xbe862ad9abfe6f22bcb087716c7d89a26051f74c')
+    let account = await stateManager.getAccount(address)
+    st.equal(account.nonce.toString('hex'), '1', 'should correctly update caller nonce')
+
+    address = Address.fromString('0x0000000000000000000000000000000000000000')
+    account = await stateManager.getAccount(address)
+    let msg = 'should correctly update miner account balance'
+    st.equal(account.balance.toString('hex'), '5edd5a')
+
+    msg = 'should correctly update underlying state datastructure'
+    st.ok(
+      '0x0000000000000000000000000000000000000000' in (stateManager as any)._state.accounts,
+      `${msg}, accounts`
+    )
+    st.equal(
+      (stateManager as any)._state.code[
+        '0x8ba225ea8d12294db5a6a470baaea45e7f5ceba89a0ea0cb6d4c171f3ca2366f'
+      ],
+      '6080604052600080fdfea265627a7a723158204aed884a44fd1747efccba1447a2aa2d9a4b06dd6021c4a3bbb993021e0a909e64736f6c634300050f0032',
+      `${msg}, code`
+    )
+
     st.pass('Whohoo, tx passed in stateless mode!!!')
   })
 })
