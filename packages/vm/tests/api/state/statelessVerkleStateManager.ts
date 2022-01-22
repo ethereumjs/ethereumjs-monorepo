@@ -18,8 +18,10 @@ tape('StatelessVerkleStateManager', (t) => {
     // Init pre state (format: address -> RLP serialized account)
     // Here: Caller address from `const tx = getTransaction(vm._common, 0, true)`
     const preState = {
-      '0xbe862ad9abfe6f22bcb087716c7d89a26051f74c':
-        'f8478083fff384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      accounts: {
+        '0xbe862ad9abfe6f22bcb087716c7d89a26051f74c':
+          'f8478083fff384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      },
     }
     await stateManager.initPreState(preState)
     const address = Address.fromString('0xbe862ad9abfe6f22bcb087716c7d89a26051f74c')
@@ -38,24 +40,30 @@ tape('StatelessVerkleStateManager', (t) => {
     const acc = createAccount()
 
     let stateManager = new StatelessVerkleStateManager({ common })
-    await stateManager.initPreState({})
+    await stateManager.initPreState({
+      accounts: {},
+    })
     await stateManager.checkpoint()
     st.equal((stateManager as any)._checkpoints.length, 1, 'should have set a checkpoint')
 
     await stateManager.putAccount(caller, acc)
     await stateManager.commit()
     st.equal((stateManager as any)._checkpoints.length, 0, 'should remove checkpoint on commit')
-    let isInState = '0xbe862ad9abfe6f22bcb087716c7d89a26051f74c' in (stateManager as any)._state
+    let isInState =
+      '0xbe862ad9abfe6f22bcb087716c7d89a26051f74c' in (stateManager as any)._state.accounts
     st.ok(isInState, 'should have caller account in current state on commit')
 
     stateManager = new StatelessVerkleStateManager({ common })
-    await stateManager.initPreState({})
+    await stateManager.initPreState({
+      accounts: {},
+    })
     await stateManager.checkpoint()
 
     await stateManager.putAccount(caller, acc)
     await stateManager.revert()
     st.equal((stateManager as any)._checkpoints.length, 0, 'should remove checkpoint on revert')
-    isInState = '0xbe862ad9abfe6f22bcb087716c7d89a26051f74c' in (stateManager as any)._state
+    isInState =
+      '0xbe862ad9abfe6f22bcb087716c7d89a26051f74c' in (stateManager as any)._state.accounts
     st.ok(!isInState, 'should not have caller account in current state on revert')
   })
 
@@ -78,8 +86,10 @@ tape('StatelessVerkleStateManager', (t) => {
     // Init pre state (format: address -> RLP serialized account)
     // Here: Caller address -> Account from tx created below
     const preState = {
-      '0xbe862ad9abfe6f22bcb087716c7d89a26051f74c':
-        'f8478083fff384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      accounts: {
+        '0xbe862ad9abfe6f22bcb087716c7d89a26051f74c':
+          'f8478083fff384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      },
     }
     const stateManager = new StatelessVerkleStateManager({ common })
     await stateManager.initPreState(preState)
@@ -99,7 +109,7 @@ tape('StatelessVerkleStateManager', (t) => {
     st.equal(account.balance.toString('hex'), '1e2418')
 
     msg = 'should correctly update underlying state datastructure'
-    st.ok('0x0000000000000000000000000000000000000000' in (stateManager as any)._state)
+    st.ok('0x0000000000000000000000000000000000000000' in (stateManager as any)._state.accounts)
     st.pass('Whohoo, tx passed in stateless mode!!!')
   })
 })

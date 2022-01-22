@@ -6,10 +6,12 @@ import { BaseStateManager, StateManager } from '.'
 import Cache, { getCb, putCb } from './cache'
 import { StorageDump } from './interface'
 
-type HexPrefixedString = string
+type HexPrefixedAddress = string
 
 export interface State {
-  [key: string]: string
+  accounts: {
+    [key: HexPrefixedAddress]: string
+  }
 }
 
 /**
@@ -34,10 +36,14 @@ export interface StatelessVerkleStateManagerOpts {
  */
 export default class StatelessVerkleStateManager extends BaseStateManager implements StateManager {
   // Pre-state (should not change)
-  private _preState: State = {}
+  private _preState: State = {
+    accounts: {},
+  }
 
   // State along execution (should update)
-  private _state: State = {}
+  private _state: State = {
+    accounts: {},
+  }
 
   // Checkpointing
   private _checkpoints: State[] = []
@@ -56,30 +62,30 @@ export default class StatelessVerkleStateManager extends BaseStateManager implem
      */
     const getCb: getCb = async (address) => {
       const addressStr = address.toString()
-      if (addressStr in this._state) {
-        const accountRLP = Buffer.from(this._state[addressStr], 'hex')
+      if (addressStr in this._state.accounts) {
+        const accountRLP = Buffer.from(this._state.accounts[addressStr], 'hex')
         return Account.fromRlpSerializedAccount(accountRLP)
       }
       return undefined
     }
     const putCb: putCb = async (keyBuf, accountRlp) => {
-      const addressStr: HexPrefixedString = `0x${keyBuf.toString('hex')}`
+      const addressStr: HexPrefixedAddress = `0x${keyBuf.toString('hex')}`
       const accountStr = accountRlp.toString('hex')
-      this._state[addressStr] = accountStr
+      this._state.accounts[addressStr] = accountStr
     }
     const deleteCb = async (keyBuf: Buffer) => {
-      const addressStr: HexPrefixedString = `0x${keyBuf.toString('hex')}`
-      if (addressStr in this._state) {
-        delete this._state[addressStr]
+      const addressStr: HexPrefixedAddress = `0x${keyBuf.toString('hex')}`
+      if (addressStr in this._state.accounts) {
+        delete this._state.accounts[addressStr]
       }
     }
     this._cache = new Cache({ getCb, putCb, deleteCb })
   }
 
   public async initPreState(preState: State) {
-    for (const addressStr in preState) {
+    for (const addressStr in preState.accounts) {
       const address = Address.fromString(addressStr)
-      const accountRLP = preState[addressStr]
+      const accountRLP = preState.accounts[addressStr]
       const account = Account.fromRlpSerializedAccount(Buffer.from(accountRLP, 'hex'))
       await this.putAccount(address, account)
     }
