@@ -2,10 +2,7 @@ import Common from '@ethereumjs/common'
 import {
   Address,
   BN,
-  keccak256,
-  setLengthRight,
-  TWO_POW256,
-  MAX_INTEGER,
+  keccak256,,
   KECCAK256_NULL,
   TWO_POW256_BIGINT,
   MAX_INTEGER_BIGINT,
@@ -33,7 +30,7 @@ import { updateSstoreGasEIP2200 } from './EIP2200'
 import { accessAddressEIP2929, accessStorageEIP2929 } from './EIP2929'
 import { ERROR } from '../../exceptions'
 import { RunState } from './../interpreter'
-
+import { toBigIntLE } from 'bigint-buffer'
 export interface SyncOpHandler {
   (runState: RunState, common: Common): void
 }
@@ -182,7 +179,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
       const gasPrice = common.param('gasPrices', 'expByte')
       const amount = byteLength * gasPrice
-      runState.eei.useGas(amount, 'EXP opcode')
+      runState.eei.useGas(BigInt(amount), 'EXP opcode')
 
       if (base === 0n) {
         runState.stack.push(base)
@@ -405,8 +402,8 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x31,
     async function (runState, common) {
-      const addressBN = runState.stack.pop()
-      const address = new Address(addressToBuffer(addressBN))
+      const addressBigInt = runState.stack.pop()
+      const address = new Address(addressToBuffer(addressBigInt))
       accessAddressEIP2929(runState, address, common)
       const balance = await runState.eei.getExternalBalance(address)
       runState.stack.push(balance)
@@ -439,15 +436,14 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const pos = runState.stack.pop()
       if (pos.gt(runState.eei.getCallDataSize())) {
-        runState.stack.push(new BN(0))
+        runState.stack.push(0n)
         return
       }
 
-      const i = pos.toNumber()
+      const i = Number(pos)
       let loaded = runState.eei.getCallData().slice(i, i + 32)
       loaded = loaded.length ? loaded : Buffer.from([0])
-      const r = new BN(setLengthRight(loaded, 32))
-
+      const r = BigInt.asUintN(256, toBigIntLE(loaded))
       runState.stack.push(r)
     },
   ],
@@ -467,9 +463,9 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       subMemUsage(runState, memOffset, dataLength, common)
 
-      if (!dataLength.eqn(0)) {
+      if (!(dataLength === 0n)) {
         runState.eei.useGas(
-          new BN(common.param('gasPrices', 'copy')).imul(divCeil(dataLength, new BN(32))),
+          BigInt(common.param('gasPrices', 'copy')) * (divCeil(dataLength, 32n)),
           'CALLDATACOPY opcode'
         )
 

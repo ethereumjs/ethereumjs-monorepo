@@ -128,14 +128,14 @@ export default class EVM {
   /**
    * Amount of gas to refund from deleting storage values
    */
-  _refund: BN
+  _refund: bigint
 
   constructor(vm: any, txContext: TxContext, block: Block) {
     this._vm = vm
     this._state = this._vm.stateManager
     this._tx = txContext
     this._block = block
-    this._refund = new BN(0)
+    this._refund = 0n
   }
 
   /**
@@ -151,7 +151,7 @@ export default class EVM {
       ;(<any>this._state).addWarmedAddress((await this._generateAddress(message)).buf)
     }
 
-    const oldRefund = this._refund.clone()
+    const oldRefund = this._refund
 
     await this._state.checkpoint()
     if (this._vm.DEBUG) {
@@ -199,7 +199,7 @@ export default class EVM {
       this._refund = oldRefund
       result.execResult.selfdestruct = {}
     }
-    result.execResult.gasRefund = this._refund.clone()
+    result.execResult.gasRefund = this._refund
 
     if (err) {
       if (this._vm._common.gteHardfork('homestead') || err.error != ERROR.CODESTORE_OUT_OF_GAS) {
@@ -470,17 +470,17 @@ export default class EVM {
       address: message.to || Address.zero(),
       caller: message.caller || Address.zero(),
       callData: message.data || Buffer.from([0]),
-      callValue: message.value || new BN(0),
+      callValue: message.value || 0n,
       code: message.code as Buffer,
       isStatic: message.isStatic || false,
       depth: message.depth || 0,
-      gasPrice: this._tx.gasPrice,
+      gasPrice: BigInt(this._tx.gasPrice.toString(10)),
       origin: this._tx.origin || message.caller || Address.zero(),
       block: this._block || new Block(),
       contract: await this._state.getAccount(message.to || Address.zero()),
       codeAddress: message.codeAddress,
     }
-    const eei = new EEI(env, this._state, this, this._vm._common, message.gasLimit.clone())
+    const eei = new EEI(env, this._state, this, this._vm._common, message.gasLimit)
     if (message.selfdestruct) {
       eei._result.selfdestruct = message.selfdestruct
     }
@@ -489,7 +489,7 @@ export default class EVM {
     const interpreterRes = await interpreter.run(message.code as Buffer, opts)
 
     let result = eei._result
-    let gasUsed = message.gasLimit.sub(eei._gasLeft)
+    let gasUsed = message.gasLimit - eei._gasLeft
     if (interpreterRes.exceptionError) {
       if (interpreterRes.exceptionError.error !== ERROR.REVERT) {
         gasUsed = message.gasLimit

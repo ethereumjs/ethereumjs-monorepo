@@ -3,8 +3,9 @@ import { BN, keccak256, setLengthRight, setLengthLeft } from 'ethereumjs-util'
 import { ERROR, VmError } from './../../exceptions'
 import { RunState } from './../interpreter'
 import { adjustSstoreGasEIP2929 } from './EIP2929'
+import { toBufferBE } from 'bigint-buffer'
 
-const MASK_160 = new BN(1).shln(160).subn(1)
+const MASK_160 = (1n << 160n) - 1n
 
 /**
  * Proxy function for ethereumjs-util's setLengthLeft, except it returns a zero
@@ -37,9 +38,9 @@ export function trap(err: string) {
  * @param  {BN}     address
  * @return {Buffer}
  */
-export function addressToBuffer(address: BN | Buffer) {
+export function addressToBuffer(address: bigint | Buffer) {
   if (Buffer.isBuffer(address)) return address
-  return address.and(MASK_160).toArrayLike(Buffer, 'be', 20)
+  return toBufferBE(address & MASK_160, 20)
 }
 
 /**
@@ -92,20 +93,20 @@ export function short(buffer: Buffer): string {
  * @param {Buffer} data
  * @returns {Buffer}
  */
-export function getDataSlice(data: Buffer, offset: BN, length: BN): Buffer {
-  const len = new BN(data.length)
-  if (offset.gt(len)) {
+export function getDataSlice(data: Buffer, offset: bigint, length: bigint): Buffer {
+  const len = BigInt(data.length)
+  if (offset > len) {
     offset = len
   }
 
-  let end = offset.add(length)
-  if (end.gt(len)) {
+  let end = offset + length
+  if (end > len) {
     end = len
   }
 
-  data = data.slice(offset.toNumber(), end.toNumber())
+  data = data.slice(Number(offset), Number(end))
   // Right-pad with zeros to fill dataLength bytes
-  data = setLengthRight(data, length.toNumber())
+  data = setLengthRight(data, Number(length))
 
   return data
 }
@@ -192,13 +193,13 @@ export function subMemUsage(runState: RunState, offset: bigint, length: bigint, 
   if (newMemoryWordCount >= runState.memoryWordCount) return
 
   const words = newMemoryWordCount
-  const fee = new BN(common.param('gasPrices', 'memory'))
-  const quadCoeff = new BN(common.param('gasPrices', 'quadCoeffDiv'))
+  const fee = BigInt(common.param('gasPrices', 'memory'))
+  const quadCoeff = BigInt(common.param('gasPrices', 'quadCoeffDiv'))
   // words * 3 + words ^2 / 512
-  const cost = words.mul(fee).add(words.mul(words).div(quadCoeff))
+  const cost = words * fee + (words * words) / quadCoeff
 
-  if (cost.gt(runState.highestMemCost)) {
-    runState.eei.useGas(cost.sub(runState.highestMemCost), 'subMemUsage')
+  if (cost > runState.highestMemCost) {
+    runState.eei.useGas(cost - runState.highestMemCost, 'subMemUsage')
     runState.highestMemCost = cost
   }
 
@@ -212,15 +213,15 @@ export function subMemUsage(runState: RunState, offset: bigint, length: bigint, 
  * @param {BN}       outOffset
  * @param {BN}       outLength
  */
-export function writeCallOutput(runState: RunState, outOffset: BN, outLength: BN) {
+export function writeCallOutput(runState: RunState, outOffset: bigint, outLength: bigint) {
   const returnData = runState.eei.getReturnData()
   if (returnData.length > 0) {
-    const memOffset = outOffset.toNumber()
-    let dataLength = outLength.toNumber()
-    if (returnData.length < dataLength) {
+    const memOffset = Number(outOffset)
+    let dataLength = Number(outLength)
+    if (BigInt(returnData.length) < dataLength) {
       dataLength = returnData.length
     }
-    const data = getDataSlice(returnData, new BN(0), new BN(dataLength))
+    const data = getDataSlice(returnData, 0n, BigInt(dataLength))
     runState.memory.extend(memOffset, dataLength)
     runState.memory.write(memOffset, dataLength, data)
   }
@@ -245,17 +246,17 @@ export function updateSstoreGas(
     (value.length !== 0 && currentStorage.length)
   ) {
     runState.eei.useGas(
-      new BN(adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset', common)),
+      BigInt(adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset', common)),
       'updateSstoreGas'
     )
   } else if (value.length === 0 && currentStorage.length) {
     runState.eei.useGas(
-      new BN(adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset', common)),
+      BigInt(adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset', common)),
       'updateSstoreGas'
     )
-    runState.eei.refundGas(new BN(common.param('gasPrices', 'sstoreRefund')), 'updateSstoreGas')
+    runState.eei.refundGas(BigInt(common.param('gasPrices', 'sstoreRefund')), 'updateSstoreGas')
   } else if (value.length !== 0 && !currentStorage.length) {
-    runState.eei.useGas(new BN(common.param('gasPrices', 'sstoreSet')), 'updateSstoreGas')
+    runState.eei.useGas(BigInt(common.param('gasPrices', 'sstoreSet')), 'updateSstoreGas')
   }
 }
 

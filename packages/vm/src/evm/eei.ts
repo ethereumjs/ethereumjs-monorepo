@@ -8,6 +8,7 @@ import { VmError, ERROR } from '../exceptions'
 import Message from './message'
 import EVM, { EVMResult } from './evm'
 import { Log } from './types'
+import { toBigIntBE } from 'bigint-buffer'
 
 const debugGas = createDebugLogger('vm:eei:gas')
 
@@ -29,11 +30,11 @@ export interface Env {
   address: Address
   caller: Address
   callData: Buffer
-  callValue: BN
+  callValue: bigint
   code: Buffer
   isStatic: boolean
   depth: number
-  gasPrice: BN
+  gasPrice: bigint
   origin: Address
   block: Block
   contract: Account
@@ -91,7 +92,7 @@ export default class EEI {
    * @throws if out of gas
    */
   useGas(amount: bigint, context?: string): void {
-    this._gasLeft.isub(amount)
+    this._gasLeft -= amount
     if (this._evm._vm.DEBUG) {
       debugGas(`${context ? context + ': ' : ''}used ${amount} gas (-> ${this._gasLeft})`)
     }
@@ -106,11 +107,11 @@ export default class EEI {
    * @param amount - Amount of gas refunded
    * @param context - Usage context for debugging
    */
-  refundGas(amount: BN, context?: string): void {
+  refundGas(amount: BigInt, context?: string): void {
     if (this._evm._vm.DEBUG) {
       debugGas(`${context ? context + ': ' : ''}refund ${amount} gas (-> ${this._evm._refund})`)
     }
-    this._evm._refund.iadd(amount)
+    this._evm._refund += amount
   }
 
   /**
@@ -151,38 +152,38 @@ export default class EEI {
    * Returns balance of the given account.
    * @param address - Address of account
    */
-  async getExternalBalance(address: Address): Promise<BN> {
+  async getExternalBalance(address: Address): Promise<bigint> {
     // shortcut if current account
     if (address.equals(this._env.address)) {
-      return this._env.contract.balance
+      return BigInt(this._env.contract.balance.toString(10))
     }
 
     // otherwise load account then return balance
     const account = await this._state.getAccount(address)
-    return account.balance
+    return BigInt(account.balance.toString(10))
   }
 
   /**
    * Returns balance of self.
    */
-  getSelfBalance(): BN {
-    return this._env.contract.balance
+  getSelfBalance(): bigint {
+    return BigInt(this._env.contract.balance.toString(10))
   }
 
   /**
    * Returns caller address. This is the address of the account
    * that is directly responsible for this execution.
    */
-  getCaller(): BN {
-    return new BN(this._env.caller.buf)
+  getCaller(): bigint {
+    return toBigIntBE(this._env.caller.buf)
   }
 
   /**
    * Returns the deposited value by the instruction/transaction
    * responsible for this execution.
    */
-  getCallValue(): BN {
-    return new BN(this._env.callValue)
+  getCallValue(): bigint {
+    return this._env.callValue
   }
 
   /**
@@ -197,15 +198,15 @@ export default class EEI {
    * Returns size of input data in current environment. This pertains to the
    * input data passed with the message call instruction or transaction.
    */
-  getCallDataSize(): BN {
-    return new BN(this._env.callData.length)
+  getCallDataSize(): bigint {
+    return BigInt(this._env.callData.length)
   }
 
   /**
    * Returns the size of code running in current environment.
    */
-  getCodeSize(): BN {
-    return new BN(this._env.code.length)
+  getCodeSize(): bigint {
+    return BigInt(this._env.code.length)
   }
 
   /**
@@ -271,21 +272,21 @@ export default class EEI {
    * sender of original transaction; it is never an account with
    * non-empty associated code.
    */
-  getTxOrigin(): BN {
-    return new BN(this._env.origin.buf)
+  getTxOrigin(): bigint {
+    return toBigIntBE(this._env.origin.buf)
   }
 
   /**
    * Returns the block’s number.
    */
-  getBlockNumber(): BN {
-    return this._env.block.header.number
+  getBlockNumber(): bigint {
+    return BigInt(this._env.block.header.number.toString(10))
   }
 
   /**
    * Returns the block's beneficiary address.
    */
-  getBlockCoinbase(): BN {
+  getBlockCoinbase(): bigint {
     let coinbase: Address
     if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       // Backwards-compatibilty check
@@ -298,7 +299,7 @@ export default class EEI {
     } else {
       coinbase = this._env.block.header.coinbase
     }
-    return new BN(coinbase.toBuffer())
+    return toBigIntBE(coinbase.toBuffer())
   }
 
   /**
