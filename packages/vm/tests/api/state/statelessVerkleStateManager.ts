@@ -30,6 +30,35 @@ tape('StatelessVerkleStateManager', (t) => {
     )
   })
 
+  t.test('checkpoint() / commit() / revert', async (st) => {
+    const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London })
+
+    const tx = getTransaction(common, 0, true)
+    const caller = tx.getSenderAddress()
+    const acc = createAccount()
+
+    let stateManager = new StatelessVerkleStateManager({ common })
+    await stateManager.initPreState({})
+    await stateManager.checkpoint()
+    st.equal((stateManager as any)._checkpoints.length, 1, 'should have set a checkpoint')
+
+    await stateManager.putAccount(caller, acc)
+    await stateManager.commit()
+    st.equal((stateManager as any)._checkpoints.length, 0, 'should remove checkpoint on commit')
+    let isInState = '0xbe862ad9abfe6f22bcb087716c7d89a26051f74c' in (stateManager as any)._state
+    st.ok(isInState, 'should have caller account in current state on commit')
+
+    stateManager = new StatelessVerkleStateManager({ common })
+    await stateManager.initPreState({})
+    await stateManager.checkpoint()
+
+    await stateManager.putAccount(caller, acc)
+    await stateManager.revert()
+    st.equal((stateManager as any)._checkpoints.length, 0, 'should remove checkpoint on revert')
+    isInState = '0xbe862ad9abfe6f22bcb087716c7d89a26051f74c' in (stateManager as any)._state
+    st.ok(!isInState, 'should not have caller account in current state on revert')
+  })
+
   t.test('should run simple transfer-tx (stateful)', async (st) => {
     const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London })
     const vm = new VM({ common })
