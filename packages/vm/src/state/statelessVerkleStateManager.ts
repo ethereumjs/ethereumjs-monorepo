@@ -35,8 +35,12 @@ export interface StatelessVerkleStateManagerOpts {
 export default class StatelessVerkleStateManager extends BaseStateManager implements StateManager {
   // Pre-state (should not change)
   private _preState: State = {}
+
   // State along execution (should update)
   private _state: State = {}
+
+  // Checkpointing
+  private _checkpoints: State[] = []
 
   /**
    * Instantiate the StateManager interface.
@@ -148,6 +152,7 @@ export default class StatelessVerkleStateManager extends BaseStateManager implem
    * `commit` or `reverted` by calling rollback.
    */
   async checkpoint(): Promise<void> {
+    this._checkpoints.push(this._state)
     await super.checkpoint()
   }
 
@@ -156,6 +161,7 @@ export default class StatelessVerkleStateManager extends BaseStateManager implem
    * last call to checkpoint.
    */
   async commit(): Promise<void> {
+    this._checkpoints.pop()
     await super.commit()
   }
 
@@ -164,6 +170,10 @@ export default class StatelessVerkleStateManager extends BaseStateManager implem
    * last call to checkpoint.
    */
   async revert(): Promise<void> {
+    if (this._checkpoints.length === 0) {
+      throw new Error('StatelessVerkleStateManager state cannot be reverted, no checkpoints set')
+    }
+    this._state = this._checkpoints.pop()!
     await super.revert()
   }
 
