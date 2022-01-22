@@ -1,9 +1,16 @@
 /* eslint @typescript-eslint/no-unused-vars: 0 */
 
 import Common from '@ethereumjs/common'
-import { Address } from 'ethereumjs-util'
+import { Account, Address } from 'ethereumjs-util'
 import { BaseStateManager, StateManager } from '.'
+import Cache, { getCb, putCb } from './cache'
 import { StorageDump } from './interface'
+
+type HexPrefixedString = string
+
+export interface State {
+  [key: string]: string
+}
 
 /**
  * Options dictionary.
@@ -13,11 +20,6 @@ export interface StatelessVerkleStateManagerOpts {
    * Parameters of the chain {@link Common}
    */
   common?: Common
-
-  /**
-   * Let's take the preState here in some first round
-   */
-  //preState
 }
 
 /**
@@ -31,11 +33,56 @@ export interface StatelessVerkleStateManagerOpts {
  * `merkle-patricia-tree` trie as a data backend.
  */
 export default class StatelessVerkleStateManager extends BaseStateManager implements StateManager {
+  // Pre-state (should not change)
+  private _preState: State = {}
+  // State along execution (should update)
+  private _state: State = {}
+
   /**
    * Instantiate the StateManager interface.
    */
   constructor(opts: StatelessVerkleStateManagerOpts = {}) {
     super(opts)
+
+    /*
+     * For a custom StateManager implementation adopt these
+     * callbacks passed to the `Cache` instantiated to perform
+     * the `get`, `put` and `delete` operations with the
+     * desired backend.
+     */
+    const getCb: getCb = async (address) => {
+      const addressStr = address.toString()
+      if (addressStr in this._state) {
+        const accountRLP = Buffer.from(this._state[addressStr], 'hex')
+        return Account.fromRlpSerializedAccount(accountRLP)
+      }
+      return undefined
+    }
+    const putCb: putCb = async (keyBuf, accountRlp) => {
+      const addressStr: HexPrefixedString = `0x${keyBuf.toString('hex')}`
+      const accountStr = accountRlp.toString('hex')
+      this._state[addressStr] = accountStr
+    }
+    const deleteCb = async (keyBuf: Buffer) => {
+      const addressStr: HexPrefixedString = `0x${keyBuf.toString('hex')}`
+      if (addressStr in this._state) {
+        delete this._state[addressStr]
+      }
+    }
+    this._cache = new Cache({ getCb, putCb, deleteCb })
+  }
+
+  public async initPreState(preState: State) {
+    for (const addressStr in preState) {
+      const address = Address.fromString(addressStr)
+      const accountRLP = preState[addressStr]
+      const account = Account.fromRlpSerializedAccount(Buffer.from(accountRLP, 'hex'))
+      await this.putAccount(address, account)
+    }
+    // Set new pre-state
+    this._preState = preState
+    // Initialize the state with the pre-state
+    this._state = preState
   }
 
   /**
