@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Account, Address, BN, MAX_UINT64 } from 'ethereumjs-util'
+import { Account, Address, BN, MAX_UINT6, bufferToHex } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
@@ -169,7 +169,7 @@ export default class EEI {
    * that is directly responsible for this execution.
    */
   getCaller(): bigint {
-    return toBigIntBE(this._env.caller.buf)
+    return BigInt(bufferToHex(this._env.caller.buf))
   }
 
   /**
@@ -241,8 +241,8 @@ export default class EEI {
    * from the last executed call, callCode, callDelegate, callStatic or create.
    * Note: create only fills the return data buffer in case of a failure.
    */
-  getReturnDataSize(): BN {
-    return new BN(this._lastReturned.length)
+  getReturnDataSize(): bigint {
+    return BigInt(this._lastReturned.length)
   }
 
   /**
@@ -257,7 +257,7 @@ export default class EEI {
   /**
    * Returns price of gas in current environment.
    */
-  getTxGasPrice(): BN {
+  getTxGasPrice(): bigint {
     return this._env.gasPrice
   }
 
@@ -267,7 +267,7 @@ export default class EEI {
    * non-empty associated code.
    */
   getTxOrigin(): bigint {
-    return toBigIntBE(this._env.origin.buf)
+    return BigInt(bufferToHex(this._env.origin.buf))
   }
 
   /**
@@ -293,7 +293,7 @@ export default class EEI {
     } else {
       coinbase = this._env.block.header.coinbase
     }
-    return toBigIntBE(coinbase.toBuffer())
+    return BigInt(bufferToHex(coinbase.toBuffer()))
   }
 
   /**
@@ -306,44 +306,44 @@ export default class EEI {
   /**
    * Returns the block's difficulty.
    */
-  getBlockDifficulty(): BN {
-    return this._env.block.header.difficulty
+  getBlockDifficulty(): bigint {
+    return BigInt(this._env.block.header.difficulty.toString(10))
   }
 
   /**
    * Returns the block's gas limit.
    */
-  getBlockGasLimit(): BN {
-    return this._env.block.header.gasLimit
+  getBlockGasLimit(): bigint {
+    return BigInt(this._env.block.header.gasLimit.toString(10))
   }
 
   /**
    * Returns the chain ID for current chain. Introduced for the
    * CHAINID opcode proposed in [EIP-1344](https://eips.ethereum.org/EIPS/eip-1344).
    */
-  getChainId(): BN {
-    return this._common.chainIdBN()
+  getChainId(): bigint {
+    return BigInt(this._common.chainIdBN().toString(10))
   }
 
   /**
    * Returns the Base Fee of the block as proposed in [EIP-3198](https;//eips.etheruem.org/EIPS/eip-3198)
    */
-  getBlockBaseFee(): BN {
+  getBlockBaseFee(): bigint {
     const baseFee = this._env.block.header.baseFeePerGas
     if (baseFee === undefined) {
       // Sanity check
       throw new Error('Block has no Base Fee')
     }
-    return baseFee
+    return BigInt(baseFee.toString(10))
   }
 
   /**
    * Returns Gets the hash of one of the 256 most recent complete blocks.
    * @param num - Number of block
    */
-  async getBlockHash(num: BN): Promise<BN> {
-    const block = await this._env.blockchain.getBlock(num)
-    return new BN(block.hash())
+  async getBlockHash(num: bigint): Promise<bigint> {
+    const block = await this._env.blockchain.getBlock(Number(num))
+    return BigInt(bufferToHex(block.hash()))
   }
 
   /**

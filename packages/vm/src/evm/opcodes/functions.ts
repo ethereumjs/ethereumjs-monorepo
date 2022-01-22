@@ -522,25 +522,25 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x3c,
     async function (runState, common) {
-      const [addressBN, memOffset, codeOffset, dataLength] = runState.stack.popN(4)
+      const [addressBigInt, memOffset, codeOffset, dataLength] = runState.stack.popN(4)
 
       // FIXME: for some reason this must come before subGas
       subMemUsage(runState, memOffset, dataLength, common)
-      const address = new Address(addressToBuffer(addressBN))
+      const address = new Address(addressToBuffer(addressBigInt))
       accessAddressEIP2929(runState, address, common)
 
-      if (!dataLength.eqn(0)) {
+      if (!(dataLength === 0n)) {
         // copy fee
         runState.eei.useGas(
-          new BN(common.param('gasPrices', 'copy')).imul(divCeil(dataLength, new BN(32))),
+          BigInt(common.param('gasPrices', 'copy')) * divCeil(dataLength, 32n),
           'EXTCODECOPY opcode'
         )
 
-        const code = await runState.eei.getExternalCode(addressBN)
+        const code = await runState.eei.getExternalCode(addressBigInt)
 
         const data = getDataSlice(code, codeOffset, dataLength)
-        const memOffsetNum = memOffset.toNumber()
-        const lengthNum = dataLength.toNumber()
+        const memOffsetNum = Number(memOffset)
+        const lengthNum = Number(dataLength)
         runState.memory.extend(memOffsetNum, lengthNum)
         runState.memory.write(memOffsetNum, lengthNum, data)
       }
@@ -550,22 +550,22 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x3f,
     async function (runState, common) {
-      const addressBN = runState.stack.pop()
-      const address = new Address(addressToBuffer(addressBN))
+      const addressBigInt = runState.stack.pop()
+      const address = new Address(addressToBuffer(addressBigInt))
       accessAddressEIP2929(runState, address, common)
       const empty = await runState.eei.isAccountEmpty(address)
       if (empty) {
-        runState.stack.push(new BN(0))
+        runState.stack.push(0n)
         return
       }
 
-      const code = await runState.eei.getExternalCode(addressBN)
+      const code = await runState.eei.getExternalCode(addressBigInt)
       if (code.length === 0) {
-        runState.stack.push(new BN(KECCAK256_NULL))
+        runState.stack.push(BigInt(bufferToHex(KECCAK256_NULL)))
         return
       }
 
-      runState.stack.push(new BN(keccak256(code)))
+      runState.stack.push(BigInt(bufferToHex(keccak256(code))))
     },
   ],
   // 0x3d: RETURNDATASIZE
@@ -581,21 +581,21 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState, common) {
       const [memOffset, returnDataOffset, dataLength] = runState.stack.popN(3)
 
-      if (returnDataOffset.add(dataLength).gt(runState.eei.getReturnDataSize())) {
+      if ((returnDataOffset + dataLength) > runState.eei.getReturnDataSize()) {
         trap(ERROR.OUT_OF_GAS)
       }
 
       subMemUsage(runState, memOffset, dataLength, common)
 
-      if (!dataLength.eqn(0)) {
+      if (!(dataLength === 0n)) {
         runState.eei.useGas(
-          new BN(common.param('gasPrices', 'copy')).mul(divCeil(dataLength, new BN(32))),
+          BigInt(common.param('gasPrices', 'copy')) * divCeil(dataLength, 32n),
           'RETURNDATACOPY opcode'
         )
 
         const data = getDataSlice(runState.eei.getReturnData(), returnDataOffset, dataLength)
-        const memOffsetNum = memOffset.toNumber()
-        const lengthNum = dataLength.toNumber()
+        const memOffsetNum = Number(memOffset)
+        const lengthNum = Number(dataLength)
         runState.memory.extend(memOffsetNum, lengthNum)
         runState.memory.write(memOffsetNum, lengthNum, data)
       }
@@ -615,10 +615,10 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState) {
       const number = runState.stack.pop()
 
-      const diff = runState.eei.getBlockNumber().sub(number)
+      const diff = runState.eei.getBlockNumber() - number
       // block lookups must be within the past 256 blocks
-      if (diff.gtn(256) || diff.lten(0)) {
-        runState.stack.push(new BN(0))
+      if ((diff > 256n) || diff <= 0n) {
+        runState.stack.push(0n)
         return
       }
 
