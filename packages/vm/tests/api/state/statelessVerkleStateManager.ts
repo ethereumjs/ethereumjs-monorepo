@@ -59,6 +59,18 @@ tape('StatelessVerkleStateManager', (t) => {
     const tx = getTransaction(vm._common, 0, true)
 
     const res = await vm.runTx({ tx })
+
+    let address = Address.fromString('0xbe862ad9abfe6f22bcb087716c7d89a26051f74c')
+    let account = await stateManager.getAccount(address)
+    st.equal(account.nonce.toString('hex'), '1', 'should correctly update caller nonce')
+
+    address = Address.fromString('0x0000000000000000000000000000000000000000')
+    account = await stateManager.getAccount(address)
+    let msg = 'should correctly update miner account balance'
+    st.equal(account.balance.toString('hex'), '1e2418')
+
+    msg = 'should correctly update underlying state datastructure'
+    st.ok('0x0000000000000000000000000000000000000000' in (stateManager as any)._state)
     st.pass('Whohoo, tx passed in stateless mode!!!')
   })
 })
