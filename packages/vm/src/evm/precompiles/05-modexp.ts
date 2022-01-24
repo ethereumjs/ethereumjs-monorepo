@@ -1,4 +1,4 @@
-import { setLengthRight, BN, bufferToHex } from 'ethereumjs-util'
+import { setLengthRight, BN, bufferToHex, toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
 import { mod } from '../opcodes/util'
@@ -78,79 +78,85 @@ export default function (opts: PrecompileInput): ExecResult {
   const data = opts.data
 
   let adjustedELen = getAdjustedExponentLength(data)
-  if (adjustedELen.ltn(1)) {
-    adjustedELen = new BN(1)
+  if (adjustedELen < 1n) {
+    adjustedELen = 1n
   }
 
-  const bLen = new BN(data.slice(0, 32))
-  const eLen = new BN(data.slice(32, 64))
-  const mLen = new BN(data.slice(64, 96))
+  const bLen = BigInt(bufferToHex(data.slice(0, 32)))
+  const eLen = BigInt(bufferToHex(data.slice(32, 64)))
+  const mLen = BigInt(bufferToHex(data.slice(64, 96)))
 
   let maxLen = bLen
-  if (maxLen.lt(mLen)) {
+  if (maxLen < mLen) {
     maxLen = mLen
   }
-  const Gquaddivisor = opts._common.param('gasPrices', 'modexpGquaddivisor')
+  const Gquaddivisor = BigInt(opts._common.param('gasPrices', 'modexpGquaddivisor'))
   let gasUsed
 
-  const bStart = new BN(96)
-  const bEnd = bStart.add(bLen)
+  const bStart = 96n
+  const bEnd = bStart + bLen
   const eStart = bEnd
-  const eEnd = eStart.add(eLen)
+  const eEnd = eStart + eLen
   const mStart = eEnd
-  const mEnd = mStart.add(mLen)
+  const mEnd = mStart + mLen
 
   if (!opts._common.isActivatedEIP(2565)) {
-    gasUsed = adjustedELen.mul(multComplexity(maxLen)).divn(Gquaddivisor)
+    gasUsed = (adjustedELen * multComplexity(maxLen)) / Gquaddivisor
   } else {
-    gasUsed = adjustedELen.mul(multComplexityEIP2565(maxLen)).divn(Gquaddivisor)
-    if (gasUsed.ltn(200)) {
-      gasUsed = new BN(200)
+    gasUsed = (adjustedELen * multComplexityEIP2565(maxLen)) / Gquaddivisor
+    if (gasUsed < 200n) {
+      gasUsed = 200n
     }
   }
 
-  if (opts.gasLimit.lt(gasUsed)) {
+  if (opts.gasLimit < gasUsed) {
     return OOGResult(opts.gasLimit)
   }
 
-  if (bLen.isZero()) {
+  if (bLen === 0n) {
     return {
       gasUsed,
-      returnValue: new BN(0).toArrayLike(Buffer, 'be', mLen.toNumber()),
+      returnValue: setLengthLeft(toBuffer('0x' + 0n.toString(16)), Number(mLen)),
     }
   }
 
-  if (mLen.isZero()) {
+  if (mLen === 0n) {
     return {
       gasUsed,
       returnValue: Buffer.alloc(0),
     }
   }
 
-  const maxInt = new BN(Number.MAX_SAFE_INTEGER)
-  const maxSize = new BN(2147483647) // ethereumjs-util setLengthRight limitation
+  const maxInt = BigInt(Number.MAX_SAFE_INTEGER)
+  const maxSize = 2147483647n // ethereumjs-util setLengthRight limitation
 
-  if (bLen.gt(maxSize) || eLen.gt(maxSize) || mLen.gt(maxSize)) {
+  if (bLen > maxSize || eLen > maxSize || mLen > maxSize) {
     return OOGResult(opts.gasLimit)
   }
 
-  const B = new BN(setLengthRight(data.slice(bStart.toNumber(), bEnd.toNumber()), bLen.toNumber()))
-  const E = new BN(setLengthRight(data.slice(eStart.toNumber(), eEnd.toNumber()), eLen.toNumber()))
-  const M = new BN(setLengthRight(data.slice(mStart.toNumber(), mEnd.toNumber()), mLen.toNumber()))
+  const B = BigInt(
+    bufferToHex(setLengthRight(data.slice(Number(bStart), Number(bEnd)), Number(bLen)))
+  )
+  const E = BigInt(
+    bufferToHex(setLengthRight(data.slice(Number(eStart), Number(eEnd)), Number(eLen)))
+  )
+  const M = BigInt(
+    bufferToHex(setLengthRight(data.slice(Number(mStart), Number(mEnd)), Number(mLen)))
+  )
 
-  if (mEnd.gt(maxInt)) {
+  if (mEnd > maxInt) {
     return OOGResult(opts.gasLimit)
   }
 
   let R
-  if (M.isZero()) {
-    R = new BN(0)
+  if (M === 0n) {
+    R = 0n
   } else {
     R = expmod(B, E, M)
   }
 
   return {
     gasUsed,
-    returnValue: R.toArrayLike(Buffer, 'be', mLen.toNumber()),
+    returnValue: setLengthLeft(toBuffer('0x' + R.toString(16)), Number(mLen)),
   }
 }
