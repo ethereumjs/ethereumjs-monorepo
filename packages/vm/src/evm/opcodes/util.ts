@@ -166,11 +166,16 @@ export function jumpSubIsValid(runState: RunState, dest: number): boolean {
  * @param {RunState} runState - the current runState
  * @param {Common} common - the common
  */
-export function maxCallGas(gasLimit: BN, gasLeft: BN, runState: RunState, common: Common): BN {
+export function maxCallGas(
+  gasLimit: bigint,
+  gasLeft: bigint,
+  runState: RunState,
+  common: Common
+): bigint {
   const isTangerineWhistleOrLater = common.gteHardfork('tangerineWhistle')
   if (isTangerineWhistleOrLater) {
-    const gasAllowed = gasLeft.sub(gasLeft.divn(64))
-    return gasLimit.gt(gasAllowed) ? gasAllowed : gasLimit
+    const gasAllowed = gasLeft - gasLeft / 64n
+    return gasLimit > gasAllowed ? gasAllowed : gasLimit
   } else {
     return gasLimit
   }

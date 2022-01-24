@@ -30,7 +30,7 @@ export interface EVMResult {
   /**
    * Amount of gas used by the transaction
    */
-  gasUsed: BN
+  gasUsed: bigint
   /**
    * Address of created account durint transaction, if any
    */
@@ -53,11 +53,11 @@ export interface ExecResult {
   /**
    * Amount of gas left
    */
-  gas?: BN
+  gas?: bigint
   /**
    * Amount of gas the code used to run
    */
-  gasUsed: BN
+  gasUsed: bigint
   /**
    * Return value from the contract
    */
@@ -73,7 +73,7 @@ export interface ExecResult {
   /**
    * Total amount of gas to be refunded from all nested calls.
    */
-  gasRefund?: BN
+  gasRefund?: bigint
 }
 
 export interface NewContractEvent {
@@ -263,9 +263,9 @@ export default class EVM {
     }
     if (exit) {
       return {
-        gasUsed: new BN(0),
+        gasUsed: 0n,
         execResult: {
-          gasUsed: new BN(0),
+          gasUsed: 0n,
           exceptionError: errorMessage, // Only defined if addToBalance failed
           returnValue: Buffer.alloc(0),
         },

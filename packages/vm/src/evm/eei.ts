@@ -128,11 +128,11 @@ export default class EEI {
    * Increments the internal gasLeft counter. Used for adding callStipend.
    * @param amount - Amount to add
    */
-  addStipend(amount: BN): void {
+  addStipend(amount: bigint): void {
     if (this._evm._vm.DEBUG) {
       debugGas(`add stipend ${amount} (-> ${this._gasLeft})`)
     }
-    this._gasLeft.iadd(amount)
+    this._gasLeft += amount
   }
 
   /**
@@ -444,7 +444,7 @@ export default class EEI {
   /**
    * Sends a message with arbitrary data to a given address path.
    */
-  async call(gasLimit: BN, address: Address, value: BN, data: Buffer): Promise<BN> {
+  async call(gasLimit: bigint, address: Address, value: bigint, data: Buffer): Promise<bigint> {
     const msg = new Message({
       caller: this._env.address,
       gasLimit,
@@ -461,7 +461,7 @@ export default class EEI {
   /**
    * Message-call into this account with an alternative account's code.
    */
-  async callCode(gasLimit: BN, address: Address, value: BN, data: Buffer): Promise<BN> {
+  async callCode(gasLimit: bigint, address: Address, value: bigint, data: Buffer): Promise<bigint> {
     const msg = new Message({
       caller: this._env.address,
       gasLimit,
@@ -481,7 +481,12 @@ export default class EEI {
    * state modifications. This includes log, create, selfdestruct and call with
    * a non-zero value.
    */
-  async callStatic(gasLimit: BN, address: Address, value: BN, data: Buffer): Promise<BN> {
+  async callStatic(
+    gasLimit: bigint,
+    address: Address,
+    value: bigint,
+    data: Buffer
+  ): Promise<bigint> {
     const msg = new Message({
       caller: this._env.address,
       gasLimit,
@@ -499,7 +504,12 @@ export default class EEI {
    * Message-call into this account with an alternative account’s code, but
    * persisting the current values for sender and value.
    */
-  async callDelegate(gasLimit: BN, address: Address, value: BN, data: Buffer): Promise<BN> {
+  async callDelegate(
+    gasLimit: bigint,
+    address: Address,
+    value: bigint,
+    data: Buffer
+  ): Promise<bigint> {
     const msg = new Message({
       caller: this._env.caller,
       gasLimit,
@@ -515,7 +525,7 @@ export default class EEI {
     return this._baseCall(msg)
   }
 
-  async _baseCall(msg: Message): Promise<BN> {
+  async _baseCall(msg: Message): Promise<bigint> {
     const selfdestruct = { ...this._result.selfdestruct }
     msg.selfdestruct = selfdestruct
 
@@ -525,9 +535,9 @@ export default class EEI {
     // Check if account has enough ether and max depth not exceeded
     if (
       this._env.depth >= this._common.param('vm', 'stackLimit') ||
-      (msg.delegatecall !== true && this._env.contract.balance.lt(msg.value))
+      (msg.delegatecall !== true && BigInt(this._env.contract.balance.toString(10)) < msg.value)
     ) {
-      return new BN(0)
+      return 0n
     }
 
     const results = await this._evm.executeMessage(msg)
@@ -561,7 +571,12 @@ export default class EEI {
   /**
    * Creates a new contract with a given value.
    */
-  async create(gasLimit: BN, value: BN, data: Buffer, salt: Buffer | null = null): Promise<BN> {
+  async create(
+    gasLimit: bigint,
+    value: bigint,
+    data: Buffer,
+    salt: Buffer | null = null
+  ): Promise<bigint> {
     const selfdestruct = { ...this._result.selfdestruct }
     const msg = new Message({
       caller: this._env.address,
@@ -579,14 +594,14 @@ export default class EEI {
     // Check if account has enough ether and max depth not exceeded
     if (
       this._env.depth >= this._common.param('vm', 'stackLimit') ||
-      (msg.delegatecall !== true && this._env.contract.balance.lt(msg.value))
+      (msg.delegatecall !== true && BigInt(this._env.contract.balance.toString(10)) < msg.value)
     ) {
-      return new BN(0)
+      return 0n
     }
 
     // EIP-2681 check
     if (this._env.contract.nonce.gte(MAX_UINT64)) {
-      return new BN(0)
+      return 0n
     }
     this._env.contract.nonce.iaddn(1)
     await this._state.putAccount(this._env.address, this._env.contract)
@@ -618,7 +633,7 @@ export default class EEI {
       this._env.contract = account
       if (results.createdAddress) {
         // push the created address to the stack
-        return new BN(results.createdAddress.buf)
+        return BigInt(bufferToHex(results.createdAddress.buf))
       }
     }
 
@@ -629,7 +644,7 @@ export default class EEI {
    * Creates a new contract with a given value. Generates
    * a deterministic address via CREATE2 rules.
    */
-  async create2(gasLimit: BN, value: BN, data: Buffer, salt: Buffer): Promise<BN> {
+  async create2(gasLimit: bigint, value: bigint, data: Buffer, salt: Buffer): Promise<bigint> {
     return this.create(gasLimit, value, data, salt)
   }
 
@@ -653,9 +668,9 @@ export default class EEI {
     // This preserves the previous logic, but seems to contradict the EEI spec
     // https://github.com/ewasm/design/blob/38eeded28765f3e193e12881ea72a6ab807a3371/eth_interface.md
     if (results.execResult.exceptionError) {
-      return new BN(0)
+      return 0n
     } else {
-      return new BN(1)
+      return 1n
     }
   }
 }

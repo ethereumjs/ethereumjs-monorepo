@@ -85,12 +85,12 @@ export default class Stack {
   // since you can't copy a primitive data type
   // Nevertheless not sure if we "loose" something here?
   // Will keep commented out for now
-  /*dup(position: number) {
+  dup(position: number) {
     if (this._store.length < position) {
       throw new VmError(ERROR.STACK_UNDERFLOW)
     }
 
     const i = this._store.length - position
-    this.push(this._store[i].clone())
-  }*/
+    this.push(this._store[i])
+  }
 }
