@@ -12,7 +12,6 @@ import { int2buffer, buffer2int, formatLogData } from '../util'
 import { ECIES } from './ecies'
 
 const DEBUG_BASE_NAME = 'rlpx:peer'
-// const debug = devp2pDebug.extend(DEBUG_BASE_NAME)
 const verbose = createDebugLogger('verbose').enabled
 
 export const BASE_PROTOCOL_VERSION = 5
@@ -102,9 +101,6 @@ export class Peer extends EventEmitter {
   _pingTimeout: number
   _logger: Debugger
 
-  // Message debuggers (e.g. { 'HELLO': [debug Object], ...})
-  private msgDebuggers: { [key: string]: (debug: string) => void } = {}
-
   /**
    * Subprotocols (e.g. `ETH`) derived from the exchange on
    * capabilities
@@ -151,8 +147,6 @@ export class Peer extends EventEmitter {
 
     // sub-protocols
     this._protocols = []
-
-    this.initMsgDebuggers()
 
     // send AUTH if outgoing connection
     if (this._remoteId !== null) {
@@ -662,29 +656,6 @@ export class Peer extends EventEmitter {
     this._sendDisconnect(reason)
   }
 
-  private initMsgDebuggers() {
-    const MESSAGE_NAMES = Object.values(PREFIXES).filter(
-      (value) => typeof value === 'string'
-    ) as string[]
-    for (const name of MESSAGE_NAMES) {
-      this.msgDebuggers[name] = createDebugLogger(`${DEBUG_BASE_NAME}:${name}`)
-    }
-
-    // Remote Peer IP logger
-    const ip = this._socket.remoteAddress
-    if (ip) {
-      this.msgDebuggers[ip] = createDebugLogger(`devp2p:${ip}`)
-    }
-
-    // Special DISCONNECT per-reason logger
-    const DISCONNECT_NAMES = Object.values(DISCONNECT_REASONS).filter(
-      (value) => typeof value === 'string'
-    ) as string[]
-    for (const name of DISCONNECT_NAMES) {
-      this.msgDebuggers[name] = createDebugLogger(`${DEBUG_BASE_NAME}:DISCONNECT:${name}`)
-    }
-  }
-
   /**
    * Called once from the subprotocol (e.g. `ETH`) on the peer
    * where a first successful `STATUS` msg exchange could be achieved.
@@ -694,7 +665,7 @@ export class Peer extends EventEmitter {
   _addFirstPeerDebugger() {
     const ip = this._socket.remoteAddress
     if (ip) {
-      this.msgDebuggers[ip] = createDebugLogger(`devp2p:FIRST_PEER`)
+      this._logger = devp2pDebug.extend(ip).extend(`FIRST_PEER`).extend(DEBUG_BASE_NAME)
     }
   }
 
@@ -703,6 +674,7 @@ export class Peer extends EventEmitter {
    * per-message debug logger
    * @param messageName Capitalized message name (e.g. `HELLO`)
    * @param msg Message text to debug
+   * @param disconnectReason Capitalized disconnect reason (e.g. 'TIMEOUT')
    */
   private debug(messageName: string, msg: string, disconnectReason?: string) {
     if (disconnectReason) {
@@ -710,15 +682,5 @@ export class Peer extends EventEmitter {
     } else {
       this._logger.extend(messageName)(msg)
     }
-
-    // if (disconnectReason && messageName === 'DISCONNECT') {
-    //   if (this.msgDebuggers[disconnectReason]) {
-    //     this.msgDebuggers[disconnectReason](msg)
-    //   }
-    // } else if (ip && this.msgDebuggers[ip]) {
-    //   this.msgDebuggers[ip](msg)
-    // } else if (this.msgDebuggers[messageName]) {
-    //   this.msgDebuggers[messageName](msg)
-    // } else debug(msg)
   }
 }

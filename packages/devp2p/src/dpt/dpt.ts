@@ -9,9 +9,9 @@ import { KBucket } from './kbucket'
 import { BanList } from './ban-list'
 import { Server as DPTServer } from './server'
 import { DNS } from '../dns'
+import { Debugger } from 'debug'
 
-const DEFAULT_BASE_NAME = 'dpt'
-const debug = devp2pDebug.extend(DEFAULT_BASE_NAME)
+const DEBUG_BASE_NAME = 'dpt'
 
 export interface PeerInfo {
   id?: Uint8Array | Buffer
@@ -89,6 +89,7 @@ export class DPT extends EventEmitter {
   privateKey: Buffer
   banlist: BanList
   dns: DNS
+  _debug: Debugger
 
   private _id: Buffer | undefined
   private _kbucket: KBucket
@@ -129,7 +130,7 @@ export class DPT extends EventEmitter {
     this._server.once('listening', () => this.emit('listening'))
     this._server.once('close', () => this.emit('close'))
     this._server.on('error', (err) => this.emit('error', err))
-
+    this._debug = devp2pDebug.extend(DEBUG_BASE_NAME)
     // When not using peer neighbour discovery we don't add peers here
     // because it results in duplicate calls for the same targets
     this._server.on('peers', (peers) => {
@@ -200,7 +201,7 @@ export class DPT extends EventEmitter {
 
   async addPeer(obj: PeerInfo): Promise<any> {
     if (this.banlist.has(obj)) throw new Error('Peer is banned')
-    debug(`attempt adding peer ${obj.address}:${obj.udpPort}`)
+    this._debug(`attempt adding peer ${obj.address}:${obj.udpPort}`)
 
     // check k-bucket first
     const peer = this._kbucket.get(obj)
@@ -249,7 +250,7 @@ export class DPT extends EventEmitter {
       this._refreshIntervalSelectionCounter = (this._refreshIntervalSelectionCounter + 1) % 10
 
       const peers = this.getPeers()
-      debug(
+      this._debug(
         `call .refresh() (selector ${this._refreshIntervalSelectionCounter}) (${peers.length} peers in table)`
       )
 
@@ -266,7 +267,7 @@ export class DPT extends EventEmitter {
     if (this._shouldGetDnsPeers) {
       const dnsPeers = await this.getDnsPeers()
 
-      debug(
+      this._debug(
         `.refresh() Adding ${dnsPeers.length} from DNS tree, (${
           this.getPeers().length
         } current peers in table)`
