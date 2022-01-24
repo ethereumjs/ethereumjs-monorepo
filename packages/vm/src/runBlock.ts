@@ -350,7 +350,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     }
 
     // Add to total block gas usage
-    gasUsed = gasUsed + txRes.gasUsed
+    gasUsed = gasUsed + BigInt(txRes.gasUsed.toString(10))
     if (this.DEBUG) {
       debug(`Add tx gas used (${txRes.gasUsed}) to total block gas usage (-> ${gasUsed})`)
     }
@@ -410,7 +410,7 @@ function calculateOmmerReward(
   minerReward: bigint
 ): bigint {
   const heightDiff = blockNumber - ommerBlockNumber
-  let reward = 8n - (heightDiff * minerReward) / 8n
+  let reward = ((8n - heightDiff) * minerReward) / 8n
   if (reward < 0n) {
     reward = 0n
   }

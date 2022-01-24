@@ -344,8 +344,6 @@ tape('StateManager', (t) => {
     st.ok(slotCode.length == 0, 'code cannot be loaded') // This test fails if no code prefix is used
 
     account = await codeStateManager.getAccount(address1)
-    console.log(account.codeHash.toString('hex'))
-    console.log(root.toString('hex'))
     account.stateRoot = root
 
     await codeStateManager.putAccount(address1, account)

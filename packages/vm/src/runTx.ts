@@ -502,8 +502,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   state.clearOriginalStorageCache()
 
   // Generate the tx receipt
-  const cumulativeGasUsed =
-    (opts.blockGasUsed ?? BigInt(block.header.gasUsed.toString(10))) + results.gasUsed
+  const gasUsed = opts.blockGasUsed ?? BigInt(block.header.gasUsed.toString(10))
+  const cumulativeGasUsed = gasUsed + results.gasUsed
   results.receipt = await generateTxReceipt.bind(this)(tx, results, cumulativeGasUsed)
 
   /**

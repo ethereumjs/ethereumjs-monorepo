@@ -17,7 +17,7 @@ tape('Istanbul: EIP-1884', async (t) => {
     const addr = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
     const runCodeArgs = {
       code: Buffer.from(code.join(''), 'hex'),
-      gasLimit: new BN(0xffff),
+      gasLimit: BigInt(0xffff),
       address: addr,
     }
 

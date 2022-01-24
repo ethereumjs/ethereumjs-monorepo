@@ -49,9 +49,9 @@ tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', asyn
     // setup the call arguments
     const runCallArgs = {
       caller: caller, // call address
-      gasLimit: new BN(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
+      gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
       to: contractAddress, // call to the contract address
-      value: new BN(value), // call with this value (the value is used in the contract as an argument, see above's code)
+      value: BigInt(value), // call with this value (the value is used in the contract as an argument, see above's code)
     }
 
     const hexString = padToEven(value.toString(16))
@@ -105,7 +105,7 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
 
   const runCallArgs = {
     caller: caller, // call address
-    gasLimit: new BN(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
+    gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
     to: contractAddress, // call to the contract address
   }
 
@@ -157,18 +157,18 @@ tape('Ensure that precompile activation creates non-empty accounts', async (t) =
   // setup the call arguments
   const runCallArgs = {
     caller: caller, // call address
-    gasLimit: new BN(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
+    gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
     to: contractAddress, // call to the contract address,
-    value: new BN(1),
+    value: 1n,
   }
 
   const resultNotActivated = await vmNotActivated.runCall(runCallArgs)
   const resultActivated = await vmActivated.runCall(runCallArgs)
 
-  const diff = resultNotActivated.gasUsed.sub(resultActivated.gasUsed)
-  const expected = common.param('gasPrices', 'callNewAccount')
+  const diff = resultNotActivated.gasUsed - resultActivated.gasUsed
+  const expected = BigInt(common.param('gasPrices', 'callNewAccount'))
 
-  t.assert(diff.eq(new BN(expected)), 'precompiles are activated')
+  t.assert(diff === expected, 'precompiles are activated')
 
   t.end()
 })
@@ -213,12 +213,12 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
   const runCallArgs = {
     caller: caller, // call address
     to: address,
-    gasLimit: new BN(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
+    gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
   }
 
   const result = await vm.runCall(runCallArgs)
-  t.ok(result.gasUsed.eqn(5812), 'gas used correct')
-  t.ok(result.execResult.gasRefund!.eqn(4200), 'gas refund correct')
+  t.ok(result.gasUsed === 5812n, 'gas used correct')
+  t.ok(result.execResult.gasRefund! === 4200n, 'gas refund correct')
 
   t.end()
 })
@@ -257,7 +257,7 @@ tape(
     const runCallArgs = {
       caller: caller, // call address
       to: address,
-      gasLimit: new BN(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
+      gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
     }
 
     await vm.runCall(runCallArgs)
@@ -298,9 +298,9 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
   // setup the call arguments
   const runCallArgs = {
     caller: caller, // call address
-    gasLimit: new BN(150000),
+    gasLimit: 150000n,
     data: Buffer.from(code, 'hex'),
-    gasPrice: new BN(70000000000),
+    gasPrice: 70000000000n,
   }
 
   const result = await vm.runCall(runCallArgs)
@@ -325,7 +325,7 @@ tape('Throws on negative call value', async (t) => {
 
   // setup the call arguments
   const runCallArgs = {
-    value: new BN(-10),
+    value: -10n,
   }
 
   try {

@@ -1,5 +1,4 @@
 import tape from 'tape'
-import { BN } from 'ethereumjs-util'
 import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
@@ -20,7 +19,7 @@ tape('Berlin: EIP 2315 tests', (t) => {
 
     const result = await vm.runCode({
       code: Buffer.from(test.code, 'hex'),
-      gasLimit: new BN(0xffffffffff),
+      gasLimit: BigInt(0xffffffffff),
     })
 
     st.equal(i, test.totalSteps)

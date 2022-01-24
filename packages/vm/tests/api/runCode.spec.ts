@@ -1,5 +1,4 @@
 import tape from 'tape'
-import { BN } from 'ethereumjs-util'
 import VM from '../../src'
 import { DefaultStateManager } from '../../src/state'
 
@@ -27,7 +26,7 @@ tape('VM.runCode: initial program counter', (t) => {
       const runCodeArgs = {
         code: Buffer.from(testData.code.join(''), 'hex'),
         pc: testData.pc,
-        gasLimit: new BN(0xffff),
+        gasLimit: BigInt(0xffff),
       }
 
       let err
@@ -59,7 +58,7 @@ tape('VM.runCode: interpreter', (t) => {
     const INVALID_opcode = 'fe'
     const runCodeArgs = {
       code: Buffer.from(INVALID_opcode, 'hex'),
-      gasLimit: new BN(0xffff),
+      gasLimit: BigInt(0xffff),
     }
 
     let result: any
@@ -83,7 +82,7 @@ tape('VM.runCode: interpreter', (t) => {
     const SSTORE = '55'
     const runCodeArgs = {
       code: Buffer.from([PUSH1, '01', PUSH1, '05', SSTORE].join(''), 'hex'),
-      gasLimit: new BN(0xffff),
+      gasLimit: BigInt(0xffff),
     }
 
     try {
@@ -101,7 +100,7 @@ tape('VM.runCode: RunCodeOptions', (t) => {
     const vm = new VM()
 
     const runCodeArgs = {
-      value: new BN('-10'),
+      value: -10n,
     }
 
     try {
