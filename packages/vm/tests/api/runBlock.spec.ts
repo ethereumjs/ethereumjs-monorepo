@@ -30,7 +30,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     const block = Block.fromRLPSerializedBlock(blockRlp)
 
     //@ts-ignore
-    await setupPreConditions(vm.stateManager._trie, testData)
+    await setupPreConditions(vm.stateManager, testData)
 
     st.ok(
       //@ts-ignore
@@ -56,7 +56,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     const testData = require('./testdata/uncleData.json')
 
     //@ts-ignore
-    await setupPreConditions(vm.stateManager._trie, testData)
+    await setupPreConditions(vm.stateManager, testData)
 
     const block1Rlp = toBuffer(testData.blocks[0].rlp)
     const block1 = Block.fromRLPSerializedBlock(block1Rlp)
@@ -265,7 +265,7 @@ tape('runBlock() -> runtime behavior', async (t) => {
     block1[0][12] = Buffer.from('dao-hard-fork')
     const block = Block.fromValuesArray(block1)
     // @ts-ignore
-    await setupPreConditions(vm.stateManager._trie, testData)
+    await setupPreConditions(vm.stateManager, testData)
 
     // fill two original DAO child-contracts with funds and the recovery account with funds in order to verify that the balance gets summed correctly
     const fundBalance1 = new BN(Buffer.from('1111', 'hex'))
@@ -405,7 +405,7 @@ async function runWithHf(hardfork: string) {
   const block = Block.fromRLPSerializedBlock(blockRlp)
 
   // @ts-ignore
-  await setupPreConditions(vm.stateManager._trie, testData)
+  await setupPreConditions(vm.stateManager, testData)
 
   const res = await vm.runBlock({
     block,
@@ -450,7 +450,7 @@ tape('runBlock() -> tx types', async (t) => {
     }
 
     //@ts-ignore
-    await setupPreConditions(vm.stateManager._trie, testData)
+    await setupPreConditions(vm.stateManager, testData)
 
     const res = await vm.runBlock({
       block,

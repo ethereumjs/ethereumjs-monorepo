@@ -1,4 +1,4 @@
-import assert from 'assert'
+
 import RLP from 'rlp'
 import { BN } from './externals'
 import {
@@ -215,8 +215,12 @@ export const generateAddress2 = function (from: Buffer, salt: Buffer, initCode: 
   assertIsBuffer(salt)
   assertIsBuffer(initCode)
 
-  assert(from.length === 20)
-  assert(salt.length === 32)
+  if (from.length !== 20) {
+    throw new Error('Expected from to be of length 20')
+  }
+  if (salt.length !== 32) {
+    throw new Error('Expected salt to be of length 32')
+  }
 
   const address = keccak256(
     Buffer.concat([Buffer.from('ff', 'hex'), from, salt, keccak256(initCode)])
@@ -263,7 +267,9 @@ export const pubToAddress = function (pubKey: Buffer, sanitize: boolean = false)
   if (sanitize && pubKey.length !== 64) {
     pubKey = Buffer.from(publicKeyConvert(pubKey, false).slice(1))
   }
-  assert(pubKey.length === 64)
+  if (pubKey.length !== 64) {
+    throw new Error('Expected pubKey to be of length 64')
+  }
   // Only take the lower 160bits of the hash
   return keccak(pubKey).slice(-20)
 }
