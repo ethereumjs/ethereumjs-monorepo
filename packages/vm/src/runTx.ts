@@ -474,7 +474,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (this._common.isActivatedEIP(1559)) {
     minerAccount.balance.iadd(new BN(results.gasUsed.toString(10), 10).mul(<BN>inclusionFeePerGas))
   } else {
-    minerAccount.balance.iadd(results.amountSpent)
+    minerAccount.balance.iadd(new BN(results.amountSpent.toString(10)))
   }
 
   // Put the miner account into the state. If the balance of the miner account remains zero, note that

@@ -1019,7 +1019,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         gasLimit,
         value,
         data,
-        setLengthLeft(toBuffer(salt.toString(16)), 32)
+        setLengthLeft(toBuffer('0x' + salt.toString(16)), 32)
       )
       runState.stack.push(ret)
     },
