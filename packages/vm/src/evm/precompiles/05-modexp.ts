@@ -1,7 +1,6 @@
-import { setLengthRight, BN, bufferToHex, toBuffer, setLengthLeft } from 'ethereumjs-util'
+import { setLengthRight, bufferToHex, toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
-import { mod } from '../opcodes/util'
 const assert = require('assert')
 
 function multComplexity(x: bigint): bigint {
@@ -62,14 +61,14 @@ function getAdjustedExponentLength(data: Buffer): bigint {
   return adjustedExpLen
 }
 
-function expmod(B: bigint, E: bigint, M: bigint): bigint {
-  if (E === 0n) return mod(1n, M)
-  // Red asserts M > 1
-  if (M <= 1n) return 0n
-  const red = BN.red(M)
-  const redB = B.toRed(red)
-  const res = redB.redPow(E)
-  return res.fromRed()
+export function expmod(a: bigint, power: bigint, modulo: bigint) {
+  let res = 1n
+  while (power > 0n) {
+    if (power & 1n) res = (res * a) % modulo
+    a = (a * a) % modulo
+    power >>= 1n
+  }
+  return res
 }
 
 export default function (opts: PrecompileInput): ExecResult {

@@ -366,7 +366,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Update from account's nonce and balance
   fromAccount.nonce.iaddn(1)
   const txCost = BigInt(tx.gasLimit.toString(10)) * gasPrice
-  fromAccount.balance.isub(txCost)
+  fromAccount.balance.isub(new BN(txCost.toString(10), 10))
   await state.putAccount(caller, fromAccount)
   if (this.DEBUG) {
     debug(
