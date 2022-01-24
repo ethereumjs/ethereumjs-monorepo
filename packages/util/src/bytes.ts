@@ -1,6 +1,12 @@
 import { BN } from './externals'
 import { stripHexPrefix, padToEven, isHexString, isHexPrefixed } from './internal'
-import { PrefixedHexString, TransformableToArray, TransformableToBuffer } from './types'
+import {
+  PrefixedHexString,
+  TransformableToArray,
+  TransformableToBuffer,
+  NestedBufferArray,
+  NestedUint8Array,
+} from './types'
 import { assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
 
 /**
@@ -299,4 +305,30 @@ export const validateNoLeadingZeroes = function (values: { [key: string]: Buffer
       throw new Error(`${k} cannot have leading zeroes, received: ${v.toString('hex')}`)
     }
   }
+}
+
+/**
+ * Converts a {@link Uint8Array} or {@link NestedUint8Array} to {@link Buffer} or {@link NestedBufferArray}
+ */
+export function arrToBufArr(arr: Uint8Array): Buffer
+export function arrToBufArr(arr: NestedUint8Array): NestedBufferArray
+export function arrToBufArr(arr: Uint8Array | NestedUint8Array): Buffer | NestedBufferArray
+export function arrToBufArr(arr: Uint8Array | NestedUint8Array): Buffer | NestedBufferArray {
+  if (!Array.isArray(arr)) {
+    return Buffer.from(arr)
+  }
+  return arr.map((a) => arrToBufArr(a))
+}
+
+/**
+ * Converts a {@link Buffer} or {@link NestedBufferArray} to {@link Uint8Array} or {@link NestedUint8Array}
+ */
+export function bufArrToArr(arr: Buffer): Uint8Array
+export function bufArrToArr(arr: NestedBufferArray): NestedUint8Array
+export function bufArrToArr(arr: Buffer | NestedBufferArray): Uint8Array | NestedUint8Array
+export function bufArrToArr(arr: Buffer | NestedBufferArray): Uint8Array | NestedUint8Array {
+  if (!Array.isArray(arr)) {
+    return Uint8Array.from(arr ?? [])
+  }
+  return arr.map((a) => bufArrToArr(a))
 }

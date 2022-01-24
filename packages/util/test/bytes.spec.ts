@@ -1,7 +1,9 @@
 import tape from 'tape'
 import {
+  arrToBufArr,
   Address,
   BN,
+  bufArrToArr,
   zeros,
   zeroAddress,
   isZeroAddress,
@@ -395,5 +397,49 @@ tape('validateNoLeadingZeroes', function (st) {
     'throws when value has leading zero bytes'
   )
   st.throws(() => validateNoLeadingZeroes(onlyZeroes), 'throws when value has only zeroes')
+  st.end()
+})
+
+tape('arrToBufArr', function (st) {
+  const uint8 = Uint8Array.from([0, 1, 2])
+  const uint8Arr = [
+    Uint8Array.from([1, 2, 3]),
+    Uint8Array.from([4, 5, 6]),
+    [Uint8Array.from([7, 8, 9]), Uint8Array.from([1, 0, 0]), [Uint8Array.from([1, 1, 1])]],
+  ]
+  const buf = Buffer.from(uint8)
+  const bufArr = [
+    Buffer.from(Uint8Array.from([1, 2, 3])),
+    Buffer.from(Uint8Array.from([4, 5, 6])),
+    [
+      Buffer.from(Uint8Array.from([7, 8, 9])),
+      Buffer.from(Uint8Array.from([1, 0, 0])),
+      [Buffer.from(Uint8Array.from([1, 1, 1]))],
+    ],
+  ]
+  st.deepEqual(arrToBufArr(uint8), buf)
+  st.deepEqual(arrToBufArr(uint8Arr), bufArr)
+  st.end()
+})
+
+tape('bufArrToArr', function (st) {
+  const buf = Buffer.from('123', 'hex')
+  const bufArr = [
+    Buffer.from('123', 'hex'),
+    Buffer.from('456', 'hex'),
+    [Buffer.from('789', 'hex'), Buffer.from('100', 'hex'), [Buffer.from('111', 'hex')]],
+  ]
+  const uint8 = Uint8Array.from(buf)
+  const uint8Arr = [
+    Uint8Array.from(Buffer.from('123', 'hex')),
+    Uint8Array.from(Buffer.from('456', 'hex')),
+    [
+      Uint8Array.from(Buffer.from('789', 'hex')),
+      Uint8Array.from(Buffer.from('100', 'hex')),
+      [Uint8Array.from(Buffer.from('111', 'hex'))],
+    ],
+  ]
+  st.deepEqual(bufArrToArr(buf), uint8)
+  st.deepEqual(bufArrToArr(bufArr), uint8Arr)
   st.end()
 })
