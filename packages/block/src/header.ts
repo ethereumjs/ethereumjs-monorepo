@@ -128,7 +128,7 @@ export class BlockHeader {
    * @param opts
    */
   public static fromRLPSerializedHeader(serialized: Buffer, opts: BlockOptions = {}) {
-    const values = arrToBufArr(RLP.decode(Uint8Array.from(serialized)))
+    const values = arrToBufArr(RLP.decode(Uint8Array.from(serialized))) as Buffer[]
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized header input. Must be array')

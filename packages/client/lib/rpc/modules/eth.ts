@@ -11,7 +11,6 @@ import {
 import {
   Account,
   Address,
-  arrToBufArr,
   BN,
   bufferToHex,
   bnToHex,
@@ -634,7 +633,9 @@ export class Eth {
     const position = setLengthLeft(toBuffer(positionHex), 32)
     const storage = await storageTrie.get(position)
     return storage
-      ? bufferToHex(setLengthLeft(arrToBufArr(RLP.decode(Uint8Array.from(storage))), 32))
+      ? bufferToHex(
+          setLengthLeft(Buffer.from(RLP.decode(Uint8Array.from(storage)) as Uint8Array), 32)
+        )
       : '0x'
   }
 

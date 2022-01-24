@@ -436,7 +436,10 @@ export function encodeReceipt(tx: TypedTransaction, receipt: TxReceipt) {
   const encoded = Buffer.from(
     RLP.encode(
       bufArrToArr([
-        (receipt as PreByzantiumTxReceipt).stateRoot ?? (receipt as PostByzantiumTxReceipt).status,
+        (receipt as PreByzantiumTxReceipt).stateRoot ??
+        (receipt as PostByzantiumTxReceipt).status === 0
+          ? Buffer.from([])
+          : Buffer.from('01', 'hex'),
         receipt.gasUsed,
         receipt.bitvector,
         receipt.logs,

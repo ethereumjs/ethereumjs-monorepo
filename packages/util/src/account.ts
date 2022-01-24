@@ -39,7 +39,7 @@ export class Account {
   }
 
   public static fromRlpSerializedAccount(serialized: Buffer) {
-    const values = arrToBufArr(RLP.decode(Uint8Array.from(serialized)))
+    const values = arrToBufArr(RLP.decode(Uint8Array.from(serialized)) as Uint8Array[]) as Buffer[]
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized account input. Must be array')

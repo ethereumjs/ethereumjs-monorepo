@@ -316,7 +316,10 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    */
   serialize(): Buffer {
     const base = this.raw()
-    return Buffer.concat([TRANSACTION_TYPE_BUFFER, Buffer.from(RLP.encode(bufArrToArr(base)))])
+    return Buffer.concat([
+      TRANSACTION_TYPE_BUFFER,
+      Buffer.from(RLP.encode(bufArrToArr(base as Buffer[]))),
+    ])
   }
 
   /**
@@ -336,7 +339,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     const base = this.raw().slice(0, 9)
     const message = Buffer.concat([
       TRANSACTION_TYPE_BUFFER,
-      Buffer.from(RLP.encode(bufArrToArr(base))),
+      Buffer.from(RLP.encode(bufArrToArr(base as Buffer[]))),
     ])
     if (hashMessage) {
       return keccak256(message)

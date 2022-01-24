@@ -289,7 +289,10 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    */
   serialize(): Buffer {
     const base = this.raw()
-    return Buffer.concat([TRANSACTION_TYPE_BUFFER, Buffer.from(RLP.encode(bufArrToArr(base)))])
+    return Buffer.concat([
+      TRANSACTION_TYPE_BUFFER,
+      Buffer.from(RLP.encode(bufArrToArr(base as Buffer[]))),
+    ])
   }
 
   /**
@@ -309,7 +312,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     const base = this.raw().slice(0, 8)
     const message = Buffer.concat([
       TRANSACTION_TYPE_BUFFER,
-      Buffer.from(RLP.encode(bufArrToArr(base))),
+      Buffer.from(RLP.encode(bufArrToArr(base as Buffer[]))),
     ])
     if (hashMessage) {
       return keccak256(message)

@@ -42,7 +42,7 @@ export class BranchNode {
   }
 
   serialize(): Buffer {
-    return Buffer.from(RLP.encode(bufArrToArr(this.raw())))
+    return Buffer.from(RLP.encode(bufArrToArr(this.raw() as Buffer[])))
   }
 
   hash(): Buffer {
@@ -185,7 +185,7 @@ export function decodeRawNode(raw: Buffer[]): TrieNode {
 }
 
 export function decodeNode(raw: Buffer): TrieNode {
-  const des = arrToBufArr(RLP.decode(Uint8Array.from(raw)))
+  const des = arrToBufArr(RLP.decode(Uint8Array.from(raw))) as Buffer[]
 
   if (!Array.isArray(des)) {
     throw new Error('Invalid node')

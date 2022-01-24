@@ -238,7 +238,12 @@ export class Peer extends EventEmitter {
     ]
 
     if (!this._closed) {
-      if (this._sendMessage(PREFIXES.HELLO, Buffer.from(RLP.encode(bufArrToArr(payload))))) {
+      if (
+        this._sendMessage(
+          PREFIXES.HELLO,
+          Buffer.from(RLP.encode(bufArrToArr(payload as unknown as Buffer[])))
+        )
+      ) {
         this._weHello = payload
       }
       if (this._hello) {
@@ -556,13 +561,15 @@ export class Peer extends EventEmitter {
       //
       if (protocolName === 'Peer') {
         try {
-          payload = arrToBufArr(RLP.decode(Uint8Array.from(payload)))
+          payload = arrToBufArr(RLP.decode(Uint8Array.from(payload))) as Buffer
         } catch (e: any) {
           if (msgCode === PREFIXES.DISCONNECT) {
             if (compressed) {
-              payload = arrToBufArr(RLP.decode(Uint8Array.from(origPayload)))
+              payload = arrToBufArr(RLP.decode(Uint8Array.from(origPayload))) as Buffer
             } else {
-              payload = arrToBufArr(RLP.decode(Uint8Array.from(snappy.uncompress(payload))))
+              payload = arrToBufArr(
+                RLP.decode(Uint8Array.from(snappy.uncompress(payload))) as Buffer
+              )
             }
           } else {
             throw new Error(e)
