@@ -183,14 +183,17 @@ export default class EVM {
         `Received message results gasUsed=${result.gasUsed} execResult: [ gasUsed=${
           result.gasUsed
         } exceptionError=${
-          result.execResult.exceptionError ? result.execResult.exceptionError.toString() : ''
+        result.execResult.exceptionError
+          ? result.execResult.exceptionError.errorType +
+          ' ' +
+          result.execResult.exceptionError.error
+          : ''
         } returnValue=${short(result.execResult.returnValue)} gasRefund=${
           result.execResult.gasRefund
         } ]`
       )
     }
     const err = result.execResult.exceptionError
-
     // This clause captures any error which happened during execution
     // If that is the case, then set the _refund tracker to the old refund value
     if (err) {
