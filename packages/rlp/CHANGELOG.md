@@ -27,7 +27,26 @@ RLP.encode(1)
 
 ### Uint8Array
 
-Buffers were replaced in favor of using Uint8Arrays for greater compatibility with browsers.
+Buffers were replaced in favor of using Uint8Arrays for improved performance and greater compatibility with browsers.
+
+When upgrading from rlp v2 to v3, you must convert your Buffers to Uint8Arrays before passing in. To help, two new utility methods were added to `ethereumjs-util v7.1.4`: `arrToBufArr` and `bufArrToArr`. These will recursively step through your arrays to replace Buffers with Uint8Arrays, or vise versa.
+
+Example:
+
+```typescript
+// Old, rlp v2
+import * as rlp from 'rlp'
+const bufArr = [Buffer.from('123', 'hex'), Buffer.from('456', 'hex')]
+const encoded = rlp.encode(bufArr)
+const decoded = rlp.decode(encoded)
+
+// New, rlp v3
+import RLP from 'rlp'
+const encoded: Uint8Array = RLP.encode(bufArrToArr(bufArr))
+const encodedAsBuffer = Buffer.from(encoded)
+const decoded: Uint8Array[] = RLP.decode(encoded)
+const decodedAsBuffers = arrToBufArr(decoded)
+```
 
 ### Invalid RLPs
 
