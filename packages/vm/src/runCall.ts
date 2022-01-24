@@ -10,12 +10,12 @@ import { default as EVM, EVMResult } from './evm/evm'
  */
 export interface RunCallOpts {
   block?: Block
-  gasPrice?: BN
+  gasPrice?: bigint
   origin?: Address
   caller?: Address
-  gasLimit?: BN
+  gasLimit?: bigint
   to?: Address
-  value?: BN
+  value?: bigint
   data?: Buffer
   /**
    * This is for CALLCODE where the code to load is different than the code from the `opts.to` address.
@@ -35,10 +35,7 @@ export interface RunCallOpts {
 export default function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult> {
   const block = opts.block ?? Block.fromBlockData({}, { common: this._common })
 
-  const txContext = new TxContext(
-    opts.gasPrice ?? new BN(0),
-    opts.origin ?? opts.caller ?? Address.zero()
-  )
+  const txContext = new TxContext(opts.gasPrice ?? 0n, opts.origin ?? opts.caller ?? Address.zero())
 
   const message = new Message({
     caller: opts.caller,

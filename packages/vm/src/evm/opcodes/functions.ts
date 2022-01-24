@@ -1,7 +1,6 @@
 import Common from '@ethereumjs/common'
 import {
   Address,
-  BN,
   keccak256,
   KECCAK256_NULL,
   TWO_POW256_BIGINT,

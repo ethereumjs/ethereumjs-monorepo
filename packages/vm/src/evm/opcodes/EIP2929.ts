@@ -1,5 +1,5 @@
 import Common from '@ethereumjs/common'
-import { Address, BN } from 'ethereumjs-util'
+import { Address } from 'ethereumjs-util'
 import { EIP2929StateManager } from '../../state/interface'
 import { RunState } from './../interpreter'
 
@@ -8,7 +8,7 @@ import { RunState } from './../interpreter'
  * Adjusts cost incurred for executing opcode based on whether address read
  * is warm/cold. (EIP 2929)
  * @param {RunState} runState
- * @param {BN}       address
+ * @param {Address}  address
  * @param {Common}   common
  * @param {Boolean}  chargeGas (default: true)
  * @param {Boolean}  isSelfdestruct (default: false)
@@ -33,14 +33,14 @@ export function accessAddressEIP2929(
     // selfdestruct beneficiary address reads are charged an *additional* cold access
     if (chargeGas) {
       runState.eei.useGas(
-        new BN(common.param('gasPrices', 'coldaccountaccess')),
+        BigInt(common.param('gasPrices', 'coldaccountaccess')),
         'EIP-2929 -> coldaccountaccess'
       )
     }
     // Warm: (selfdestruct beneficiary address reads are not charged when warm)
   } else if (chargeGas && !isSelfdestruct) {
     runState.eei.useGas(
-      new BN(common.param('gasPrices', 'warmstorageread')),
+      BigInt(common.param('gasPrices', 'warmstorageread')),
       'EIP-2929 -> warmstorageread'
     )
   }
@@ -70,10 +70,10 @@ export function accessStorageEIP2929(
   if (slotIsCold) {
     // eslint-disable-next-line prettier/prettier
     (<EIP2929StateManager>runState.stateManager).addWarmedStorage(address, key)
-    runState.eei.useGas(new BN(common.param('gasPrices', 'coldsload')), 'EIP-2929 -> coldsload')
+    runState.eei.useGas(BigInt(common.param('gasPrices', 'coldsload')), 'EIP-2929 -> coldsload')
   } else if (!isSstore) {
     runState.eei.useGas(
-      new BN(common.param('gasPrices', 'warmstorageread')),
+      BigInt(common.param('gasPrices', 'warmstorageread')),
       'EIP-2929 -> warmstorageread'
     )
   }

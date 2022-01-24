@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Account, Address, BN } from 'ethereumjs-util'
+import { Account, Address } from 'ethereumjs-util'
 import { StateManager } from '../state/index'
 import { ERROR, VmError } from '../exceptions'
 import Memory from './memory'
@@ -32,8 +32,8 @@ export interface InterpreterResult {
 }
 
 export interface InterpreterStep {
-  gasLeft: BN
-  gasRefund: BN
+  gasLeft: bigint
+  gasRefund: bigint
   stateManager: StateManager
   stack: bigint[]
   returnStack: bigint[]
@@ -41,7 +41,7 @@ export interface InterpreterStep {
   depth: number
   address: Address
   memory: Buffer
-  memoryWordCount: BN
+  memoryWordCount: bigint
   opcode: {
     name: string
     fee: number
@@ -76,8 +76,8 @@ export default class Interpreter {
       programCounter: 0,
       opCode: 0xfe, // INVALID opcode
       memory: new Memory(),
-      memoryWordCount: new BN(0),
-      highestMemCost: new BN(0),
+      memoryWordCount: 0n,
+      highestMemCost: 0n,
       stack: new Stack(),
       returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
       code: Buffer.alloc(0),
@@ -142,7 +142,7 @@ export default class Interpreter {
     }
 
     // Reduce opcode's base fee
-    this._eei.useGas(new BN(opInfo.fee), `${opInfo.name} (base fee)`)
+    this._eei.useGas(BigInt(opInfo.fee), `${opInfo.name} (base fee)`)
     // Advance program counter
     this._runState.programCounter++
 
@@ -196,7 +196,7 @@ export default class Interpreter {
       // Create opTrace for debug functionality
       let hexStack = []
       hexStack = eventObj.stack.map((item: any) => {
-        return '0x' + new BN(item).toString(16, 0)
+        return '0x' + BigInt(item).toString(16)
       })
 
       const name = eventObj.opcode.name
@@ -204,7 +204,7 @@ export default class Interpreter {
       const opTrace = {
         pc: eventObj.pc,
         op: name,
-        gas: '0x' + eventObj.gasLeft.toString('hex'),
+        gas: '0x' + eventObj.gasLeft.toString(16),
         gasCost: '0x' + eventObj.opcode.fee.toString(16),
         stack: hexStack,
         depth: eventObj.depth,

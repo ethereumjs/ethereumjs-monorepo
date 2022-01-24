@@ -1,4 +1,3 @@
-import { BN } from 'ethereumjs-util'
 import { PrecompileInput } from './types'
 import { VmErrorResult, ExecResult, OOGResult } from '../evm'
 import { ERROR, VmError } from '../../exceptions'
@@ -22,7 +21,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
 
   const numPairs = Math.floor(inputData.length / 160)
 
-  const gasUsedPerPair = new BN(opts._common.paramByEIP('gasPrices', 'Bls12381G1MulGas', 2537))
+  const gasUsedPerPair = BigInt(opts._common.paramByEIP('gasPrices', 'Bls12381G1MulGas', 2537))
   const gasDiscountArray = opts._common.paramByEIP('gasPrices', 'Bls12381MultiExpGasDiscount', 2537)
   const gasDiscountMax = gasDiscountArray[gasDiscountArray.length - 1][1]
   let gasDiscountMultiplier
@@ -37,9 +36,9 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
     gasDiscountMultiplier = gasDiscountMax
   }
 
-  const gasUsed = gasUsedPerPair.imuln(numPairs).imuln(gasDiscountMultiplier).idivn(1000)
+  const gasUsed = (gasUsedPerPair * BigInt(numPairs) * BigInt(gasDiscountMultiplier)) / 1000n
 
-  if (opts.gasLimit.lt(gasUsed)) {
+  if (opts.gasLimit < gasUsed) {
     return OOGResult(opts.gasLimit)
   }
 

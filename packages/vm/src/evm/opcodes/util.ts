@@ -1,5 +1,5 @@
 import Common from '@ethereumjs/common'
-import { BN, keccak256, setLengthRight, setLengthLeft, toBuffer } from 'ethereumjs-util'
+import { keccak256, setLengthRight, setLengthLeft, toBuffer } from 'ethereumjs-util'
 import { ERROR, VmError } from './../../exceptions'
 import { RunState } from './../interpreter'
 import { adjustSstoreGasEIP2929 } from './EIP2929'

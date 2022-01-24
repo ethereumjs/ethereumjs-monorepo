@@ -72,7 +72,7 @@ export interface RunTxOpts {
   /**
    * To obtain an accurate tx receipt input the block gas used up until this tx.
    */
-  blockGasUsed?: BN
+  blockGasUsed?: bigint
 }
 
 /**
@@ -87,7 +87,7 @@ export interface RunTxResult extends EVMResult {
   /**
    * The amount of ether used by this transaction
    */
-  amountSpent: BN
+  amountSpent: bigint
 
   /**
    * The tx receipt
@@ -97,7 +97,7 @@ export interface RunTxResult extends EVMResult {
   /**
    * The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
    */
-  gasRefund?: BN
+  gasRefund?: bigint
 
   /**
    * EIP-2930 access list generated for the tx (see `reportAccessList` option)
@@ -268,13 +268,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Validate gas limit against tx base fee (DataFee + TxFee + Creation Fee)
-  const txBaseFee = tx.getBaseFee()
-  const gasLimit = tx.gasLimit.clone()
-  if (gasLimit.lt(txBaseFee)) {
+  const txBaseFee = BigInt(tx.getBaseFee().toString(10))
+  let gasLimit = BigInt(tx.gasLimit.toString(10))
+  if (gasLimit < txBaseFee) {
     const msg = _errorMsg('base fee exceeds gas limit', this, block, tx)
     throw new Error(msg)
   }
-  gasLimit.isub(txBaseFee)
+  gasLimit -= txBaseFee
   if (this.DEBUG) {
     debugGas(`Subtracting base fee (${txBaseFee}) from gasLimit (-> ${gasLimit})`)
   }
@@ -353,10 +353,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas,
       (tx as FeeMarketEIP1559Transaction).maxFeePerGas.sub(baseFee)
     )
-    gasPrice = inclusionFeePerGas.add(baseFee)
+    gasPrice = BigInt(inclusionFeePerGas.add(baseFee).toString(10))
   } else {
     // Have to cast as legacy tx since EIP1559 tx does not have gas price
-    gasPrice = (<Transaction>tx).gasPrice
+    gasPrice = BigInt((<Transaction>tx).gasPrice.toString(10))
     if (this._common.isActivatedEIP(1559)) {
       const baseFee = block.header.baseFeePerGas!
       inclusionFeePerGas = (<Transaction>tx).gasPrice.sub(baseFee)
@@ -365,7 +365,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Update from account's nonce and balance
   fromAccount.nonce.iaddn(1)
-  const txCost = tx.gasLimit.mul(gasPrice)
+  const txCost = BigInt(tx.gasLimit.toString(10)) * gasPrice
   fromAccount.balance.isub(txCost)
   await state.putAccount(caller, fromAccount)
   if (this.DEBUG) {
@@ -421,18 +421,18 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Caculate the total gas used
-  results.gasUsed.iadd(txBaseFee)
+  results.gasUsed += txBaseFee
   if (this.DEBUG) {
     debugGas(`tx add baseFee ${txBaseFee} to gasUsed (-> ${results.gasUsed})`)
   }
 
   // Process any gas refund
-  let gasRefund = results.execResult.gasRefund ?? new BN(0)
-  const maxRefundQuotient = this._common.param('gasConfig', 'maxRefundQuotient')
-  if (!gasRefund.isZero()) {
-    const maxRefund = results.gasUsed.divn(maxRefundQuotient)
-    gasRefund = BN.min(gasRefund, maxRefund)
-    results.gasUsed.isub(gasRefund)
+  let gasRefund = results.execResult.gasRefund ?? 0n
+  const maxRefundQuotient = BigInt(this._common.param('gasConfig', 'maxRefundQuotient'))
+  if (!(gasRefund === 0n)) {
+    const maxRefund = results.gasUsed / maxRefundQuotient
+    gasRefund = gasRefund < maxRefund ? gasRefund : maxRefund
+    results.gasUsed -= gasRefund
     if (this.DEBUG) {
       debug(`Subtract tx gasRefund (${gasRefund}) from gasUsed (-> ${results.gasUsed})`)
     }
@@ -441,13 +441,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       debug(`No tx gasRefund`)
     }
   }
-  results.amountSpent = results.gasUsed.mul(gasPrice)
+  results.amountSpent = results.gasUsed * gasPrice
 
   // Update sender's balance
   fromAccount = await state.getAccount(caller)
-  const actualTxCost = results.gasUsed.mul(gasPrice)
-  const txCostDiff = txCost.sub(actualTxCost)
-  fromAccount.balance.iadd(txCostDiff)
+  const actualTxCost = results.gasUsed * gasPrice
+  const txCostDiff = txCost - actualTxCost
+  fromAccount.balance.iadd(new BN(txCostDiff.toString(10), 10))
   await state.putAccount(caller, fromAccount)
   if (this.DEBUG) {
     debug(
@@ -472,7 +472,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const minerAccount = await state.getAccount(miner)
   // add the amount spent on gas to the miner's account
   if (this._common.isActivatedEIP(1559)) {
-    minerAccount.balance.iadd(results.gasUsed.mul(<BN>inclusionFeePerGas))
+    minerAccount.balance.iadd(new BN(results.gasUsed.toString(10), 10).mul(<BN>inclusionFeePerGas))
   } else {
     minerAccount.balance.iadd(results.amountSpent)
   }
@@ -502,7 +502,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   state.clearOriginalStorageCache()
 
   // Generate the tx receipt
-  const cumulativeGasUsed = (opts.blockGasUsed ?? block.header.gasUsed).add(results.gasUsed)
+  const cumulativeGasUsed =
+    (opts.blockGasUsed ?? BigInt(block.header.gasUsed.toString(10))) + results.gasUsed
   results.receipt = await generateTxReceipt.bind(this)(tx, results, cumulativeGasUsed)
 
   /**
@@ -557,10 +558,10 @@ export async function generateTxReceipt(
   this: VM,
   tx: TypedTransaction,
   txResult: RunTxResult,
-  cumulativeGasUsed: BN
+  cumulativeGasUsed: bigint
 ): Promise<TxReceipt> {
   const baseReceipt: BaseTxReceipt = {
-    gasUsed: cumulativeGasUsed.toArrayLike(Buffer),
+    gasUsed: toBuffer('0x' + cumulativeGasUsed.toString(16)),
     bitvector: txResult.bloom.bitvector,
     logs: txResult.execResult.logs ?? [],
   }

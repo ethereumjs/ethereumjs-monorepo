@@ -82,7 +82,7 @@ export interface NewContractEvent {
   code: Buffer
 }
 
-export function OOGResult(gasLimit: BN): ExecResult {
+export function OOGResult(gasLimit: bigint): ExecResult {
   return {
     returnValue: Buffer.alloc(0),
     gasUsed: gasLimit,
@@ -90,7 +90,7 @@ export function OOGResult(gasLimit: BN): ExecResult {
   }
 }
 // CodeDeposit OOG Result
-export function COOGResult(gasUsedCreateCode: BN): ExecResult {
+export function COOGResult(gasUsedCreateCode: bigint): ExecResult {
   return {
     returnValue: Buffer.alloc(0),
     gasUsed: gasUsedCreateCode,
@@ -98,7 +98,7 @@ export function COOGResult(gasUsedCreateCode: BN): ExecResult {
   }
 }
 
-export function INVALID_BYTECODE_RESULT(gasLimit: BN): ExecResult {
+export function INVALID_BYTECODE_RESULT(gasLimit: bigint): ExecResult {
   return {
     returnValue: Buffer.alloc(0),
     gasUsed: gasLimit,
@@ -106,7 +106,7 @@ export function INVALID_BYTECODE_RESULT(gasLimit: BN): ExecResult {
   }
 }
 
-export function VmErrorResult(error: VmError, gasUsed: BN): ExecResult {
+export function VmErrorResult(error: VmError, gasUsed: bigint): ExecResult {
   return {
     returnValue: Buffer.alloc(0),
     gasUsed: gasUsed,
@@ -362,10 +362,10 @@ export default class EVM {
     }
     if (exit) {
       return {
-        gasUsed: new BN(0),
+        gasUsed: 0n,
         createdAddress: message.to,
         execResult: {
-          gasUsed: new BN(0),
+          gasUsed: 0n,
           exceptionError: errorMessage, // only defined if addToBalance failed
           returnValue: Buffer.alloc(0),
         },
@@ -379,12 +379,12 @@ export default class EVM {
 
     // fee for size of the return value
     let totalGas = result.gasUsed
-    let returnFee = new BN(0)
+    let returnFee = 0n
     if (!result.exceptionError) {
-      returnFee = new BN(result.returnValue.length).imuln(
-        this._vm._common.param('gasPrices', 'createData')
-      )
-      totalGas = totalGas.add(returnFee)
+      returnFee =
+        BigInt(result.returnValue.length) *
+        BigInt(this._vm._common.param('gasPrices', 'createData'))
+      totalGas = totalGas + returnFee
       if (this._vm.DEBUG) {
         debugGas(`Add return value size fee (${returnFee} to gas used (-> ${totalGas}))`)
       }
@@ -401,10 +401,7 @@ export default class EVM {
 
     // If enough gas and allowed code size
     let CodestoreOOG = false
-    if (
-      totalGas.lte(message.gasLimit) &&
-      (this._vm._allowUnlimitedContractSize || allowedCodeSize)
-    ) {
+    if (totalGas <= message.gasLimit && (this._vm._allowUnlimitedContractSize || allowedCodeSize)) {
       if (
         this._vm._common.isActivatedEIP(3541) &&
         result.returnValue.slice(0, 1).equals(Buffer.from('EF', 'hex'))
@@ -424,9 +421,9 @@ export default class EVM {
         if (this._vm.DEBUG) {
           debug(`Not enough gas or code size not allowed (Frontier)`)
         }
-        if (totalGas.sub(returnFee).lte(message.gasLimit)) {
+        if (totalGas - returnFee <= message.gasLimit) {
           // we cannot pay the code deposit fee (but the deposit code actually did run)
-          result = { ...result, ...COOGResult(totalGas.sub(returnFee)) }
+          result = { ...result, ...COOGResult(totalGas - returnFee) }
           CodestoreOOG = true
         } else {
           result = { ...result, ...OOGResult(message.gasLimit) }
@@ -531,7 +528,7 @@ export default class EVM {
   runPrecompile(
     code: PrecompileFunc,
     data: Buffer,
-    gasLimit: BN
+    gasLimit: bigint
   ): Promise<ExecResult> | ExecResult {
     if (typeof code !== 'function') {
       throw new Error('Invalid precompile')
@@ -573,7 +570,7 @@ export default class EVM {
   }
 
   async _reduceSenderBalance(account: Account, message: Message): Promise<void> {
-    account.balance.isub(message.value)
+    account.balance.isub(new BN(message.value.toString(10)))
     const result = this._state.putAccount(message.caller, account)
     if (this._vm.DEBUG) {
       debug(`Reduced sender (${message.caller}) balance (-> ${account.balance})`)
@@ -582,7 +579,7 @@ export default class EVM {
   }
 
   async _addToBalance(toAccount: Account, message: Message): Promise<void> {
-    const newBalance = toAccount.balance.add(message.value)
+    const newBalance = toAccount.balance.add(new BN(message.value.toString(10)))
     if (newBalance.gt(MAX_INTEGER)) {
       throw new VmError(ERROR.VALUE_OVERFLOW)
     }

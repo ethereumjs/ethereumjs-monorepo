@@ -1,5 +1,4 @@
 import Common from '@ethereumjs/common'
-import { BN } from 'ethereumjs-util'
 import { RunState } from './../interpreter'
 
 /**
@@ -21,7 +20,7 @@ export function updateSstoreGasEIP1283(
   if (currentStorage.equals(value)) {
     // If current value equals new value (this is a no-op), 200 gas is deducted.
     runState.eei.useGas(
-      new BN(common.param('gasPrices', 'netSstoreNoopGas')),
+      BigInt(common.param('gasPrices', 'netSstoreNoopGas')),
       'EIP-1283 -> netSstoreNoopGas'
     )
     return
@@ -32,20 +31,20 @@ export function updateSstoreGasEIP1283(
     if (originalStorage.length === 0) {
       // If original value is 0, 20000 gas is deducted.
       return runState.eei.useGas(
-        new BN(common.param('gasPrices', 'netSstoreInitGas')),
+        BigInt(common.param('gasPrices', 'netSstoreInitGas')),
         'EIP-1283 -> netSstoreInitGas'
       )
     }
     if (value.length === 0) {
       // If new value is 0, add 15000 gas to refund counter.
       runState.eei.refundGas(
-        new BN(common.param('gasPrices', 'netSstoreClearRefund')),
+        BigInt(common.param('gasPrices', 'netSstoreClearRefund')),
         'EIP-1283 -> netSstoreClearRefund'
       )
     }
     // Otherwise, 5000 gas is deducted.
     return runState.eei.useGas(
-      new BN(common.param('gasPrices', 'netSstoreCleanGas')),
+      BigInt(common.param('gasPrices', 'netSstoreCleanGas')),
       'EIP-1283 -> netSstoreCleanGas'
     )
   }
@@ -55,13 +54,13 @@ export function updateSstoreGasEIP1283(
     if (currentStorage.length === 0) {
       // If current value is 0 (also means that new value is not 0), remove 15000 gas from refund counter. We can prove that refund counter will never go below 0.
       runState.eei.subRefund(
-        new BN(common.param('gasPrices', 'netSstoreClearRefund')),
+        BigInt(common.param('gasPrices', 'netSstoreClearRefund')),
         'EIP-1283 -> netSstoreClearRefund'
       )
     } else if (value.length === 0) {
       // If new value is 0 (also means that current value is not 0), add 15000 gas to refund counter.
       runState.eei.refundGas(
-        new BN(common.param('gasPrices', 'netSstoreClearRefund')),
+        BigInt(common.param('gasPrices', 'netSstoreClearRefund')),
         'EIP-1283 -> netSstoreClearRefund'
       )
     }
@@ -71,19 +70,19 @@ export function updateSstoreGasEIP1283(
     if (originalStorage.length === 0) {
       // If original value is 0, add 19800 gas to refund counter.
       runState.eei.refundGas(
-        new BN(common.param('gasPrices', 'netSstoreResetClearRefund')),
+        BigInt(common.param('gasPrices', 'netSstoreResetClearRefund')),
         'EIP-1283 -> netSstoreResetClearRefund'
       )
     } else {
       // Otherwise, add 4800 gas to refund counter.
       runState.eei.refundGas(
-        new BN(common.param('gasPrices', 'netSstoreResetRefund')),
+        BigInt(common.param('gasPrices', 'netSstoreResetRefund')),
         'EIP-1283 -> netSstoreResetRefund'
       )
     }
   }
   return runState.eei.useGas(
-    new BN(common.param('gasPrices', 'netSstoreDirtyGas')),
+    BigInt(common.param('gasPrices', 'netSstoreDirtyGas')),
     'EIP-1283 -> netSstoreDirtyGas'
   )
 }

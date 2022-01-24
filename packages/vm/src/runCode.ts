@@ -11,7 +11,7 @@ from the stack, instead you should `copy` it first.
 item length then you must use `utils.pad(<item>, 32)` first.
 
 */
-import { Address, BN } from 'ethereumjs-util'
+import { Address } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import VM from './index'
 import TxContext from './evm/txContext'
@@ -28,7 +28,7 @@ export interface RunCodeOpts {
   block?: Block
   evm?: EVM
   txContext?: TxContext
-  gasPrice?: BN
+  gasPrice?: bigint
   /**
    * The address where the call originated from. Defaults to the zero address.
    */
@@ -49,11 +49,11 @@ export interface RunCodeOpts {
   /**
    * Gas limit
    */
-  gasLimit?: BN
+  gasLimit?: bigint
   /**
    * The value in ether that is being sent to `opt.address`. Defaults to `0`
    */
-  value?: BN
+  value?: bigint
   depth?: number
   isStatic?: boolean
   selfdestruct?: { [k: string]: boolean }
@@ -76,7 +76,7 @@ export default function runCode(this: VM, opts: RunCodeOpts): Promise<ExecResult
   // Backwards compatibility
   const txContext =
     opts.txContext ??
-    new TxContext(opts.gasPrice ?? new BN(0), opts.origin ?? opts.caller ?? Address.zero())
+    new TxContext(opts.gasPrice ?? 0n, opts.origin ?? opts.caller ?? Address.zero())
 
   const message =
     opts.message ??
