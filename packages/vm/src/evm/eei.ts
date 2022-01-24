@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Account, Address, BN, MAX_UINT6, bufferToHex } from 'ethereumjs-util'
+import { Account, Address, BN, MAX_UINT64, bufferToHex } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
@@ -231,7 +231,7 @@ export default class EEI {
    * Returns code of an account.
    * @param address - Address of account
    */
-  async getExternalCode(address: BN): Promise<Buffer> {
+  async getExternalCode(address: bigint): Promise<Buffer> {
     const addr = new Address(addressToBuffer(address))
     return this._state.getContractCode(addr)
   }
@@ -299,8 +299,8 @@ export default class EEI {
   /**
    * Returns the block's timestamp.
    */
-  getBlockTimestamp(): BN {
-    return this._env.block.header.timestamp
+  getBlockTimestamp(): bigint {
+    return BigInt(this._env.block.header.timestamp.toString(10))
   }
 
   /**
@@ -371,8 +371,8 @@ export default class EEI {
   /**
    * Returns the current gasCounter.
    */
-  getGasLeft(): BN {
-    return this._gasLeft.clone()
+  getGasLeft(): bigint {
+    return this._gasLeft
   }
 
   /**
@@ -407,7 +407,7 @@ export default class EEI {
   async _selfDestruct(toAddress: Address): Promise<void> {
     // only add to refund if this is the first selfdestruct for the address
     if (!this._result.selfdestruct[this._env.address.buf.toString('hex')]) {
-      this.refundGas(new BN(this._common.param('gasPrices', 'selfdestructRefund')))
+      this.refundGas(BigInt(this._common.param('gasPrices', 'selfdestructRefund')))
     }
 
     this._result.selfdestruct[this._env.address.buf.toString('hex')] = toAddress.buf

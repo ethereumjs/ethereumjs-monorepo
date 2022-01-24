@@ -7,6 +7,8 @@ import {
   TWO_POW256_BIGINT,
   MAX_INTEGER_BIGINT,
   bufferToHex,
+  toBuffer,
+  setLengthLeft,
 } from 'ethereumjs-util'
 import {
   addressToBuffer,
@@ -581,7 +583,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState, common) {
       const [memOffset, returnDataOffset, dataLength] = runState.stack.popN(3)
 
-      if ((returnDataOffset + dataLength) > runState.eei.getReturnDataSize()) {
+      if (returnDataOffset + dataLength > runState.eei.getReturnDataSize()) {
         trap(ERROR.OUT_OF_GAS)
       }
 
@@ -617,7 +619,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       const diff = runState.eei.getBlockNumber() - number
       // block lookups must be within the past 256 blocks
-      if ((diff > 256n) || diff <= 0n) {
+      if (diff > 256n || diff <= 0n) {
         runState.stack.push(0n)
         return
       }
@@ -695,9 +697,9 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x51,
     function (runState, common) {
       const pos = runState.stack.pop()
-      subMemUsage(runState, pos, new BN(32), common)
-      const word = runState.memory.read(pos.toNumber(), 32)
-      runState.stack.push(new BN(word))
+      subMemUsage(runState, pos, 32n, common)
+      const word = runState.memory.read(Number(pos), 32)
+      runState.stack.push(BigInt(bufferToHex(word)))
     },
   ],
   // 0x52: MSTORE
@@ -705,9 +707,9 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x52,
     function (runState, common) {
       const [offset, word] = runState.stack.popN(2)
-      const buf = word.toArrayLike(Buffer, 'be', 32)
-      subMemUsage(runState, offset, new BN(32), common)
-      const offsetNum = offset.toNumber()
+      const buf = setLengthLeft(toBuffer('0x' + word.toString(16)), 32)
+      subMemUsage(runState, offset, 32n, common)
+      const offsetNum = Number(offset)
       runState.memory.extend(offsetNum, 32)
       runState.memory.write(offsetNum, 32, buf)
     },
@@ -718,12 +720,11 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState, common) {
       const [offset, byte] = runState.stack.popN(2)
 
-      // NOTE: we're using a 'trick' here to get the least significant byte
-      // NOTE: force cast necessary because `BN.andln` returns number but
-      // the types are wrong
-      const buf = Buffer.from([byte.andln(0xff) as unknown as number])
-      subMemUsage(runState, offset, new BN(1), common)
-      const offsetNum = offset.toNumber()
+      // Convert bigint to hex string and then take the least significant byte (i.e. the last character of the string)
+      const byteHex = byte.toString(16)
+      const buf = toBuffer(byteHex[byteHex.length - 1])
+      subMemUsage(runState, offset, 1n, common)
+      const offsetNum = Number(offset)
       runState.memory.extend(offsetNum, 1)
       runState.memory.write(offsetNum, 1, buf)
     },
@@ -733,12 +734,11 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x54,
     async function (runState, common) {
       const key = runState.stack.pop()
-      const keyBuf = key.toArrayLike(Buffer, 'be', 32)
-
+      const keyBuf = setLengthLeft(toBuffer('0x' + key.toString(16)), 32)
       accessStorageEIP2929(runState, keyBuf, false, common)
       const value = await runState.eei.storageLoad(keyBuf)
-      const valueBN = value.length ? new BN(value) : new BN(0)
-      runState.stack.push(valueBN)
+      const valueBigInt = value.length ? BigInt(bufferToHex(value)) : 0n
+      runState.stack.push(valueBigInt)
     },
   ],
   // 0x55: SSTORE
@@ -751,13 +751,13 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       const [key, val] = runState.stack.popN(2)
 
-      const keyBuf = key.toArrayLike(Buffer, 'be', 32)
+      const keyBuf = setLengthLeft(toBuffer('0x' + key.toString(16)), 32)
       // NOTE: this should be the shortest representation
       let value
-      if (val.isZero()) {
+      if (val === 0n) {
         value = Buffer.from([])
       } else {
-        value = val.toArrayLike(Buffer, 'be')
+        value = toBuffer('0x' + val.toString(16))
       }
 
       const currentStorage = setLengthLeftStorage(await runState.eei.storageLoad(keyBuf))
@@ -797,11 +797,11 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x56,
     function (runState) {
       const dest = runState.stack.pop()
-      if (dest.gt(runState.eei.getCodeSize())) {
+      if (dest > runState.eei.getCodeSize()) {
         trap(ERROR.INVALID_JUMP + ' at ' + describeLocation(runState))
       }
 
-      const destNum = dest.toNumber()
+      const destNum = Number(dest)
 
       if (!jumpIsValid(runState, destNum)) {
         trap(ERROR.INVALID_JUMP + ' at ' + describeLocation(runState))
@@ -815,12 +815,12 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x57,
     function (runState) {
       const [dest, cond] = runState.stack.popN(2)
-      if (!cond.isZero()) {
-        if (dest.gt(runState.eei.getCodeSize())) {
+      if (!(cond === 0n)) {
+        if (dest > runState.eei.getCodeSize()) {
           trap(ERROR.INVALID_JUMP + ' at ' + describeLocation(runState))
         }
 
-        const destNum = dest.toNumber()
+        const destNum = Number(dest)
 
         if (!jumpIsValid(runState, destNum)) {
           trap(ERROR.INVALID_JUMP + ' at ' + describeLocation(runState))
@@ -834,21 +834,21 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x58,
     function (runState) {
-      runState.stack.push(new BN(runState.programCounter - 1))
+      runState.stack.push(BigInt(runState.programCounter - 1))
     },
   ],
   // 0x59: MSIZE
   [
     0x59,
     function (runState) {
-      runState.stack.push(runState.memoryWordCount.muln(32))
+      runState.stack.push(runState.memoryWordCount * 32n)
     },
   ],
   // 0x5a: GAS
   [
     0x5a,
     function (runState) {
-      runState.stack.push(new BN(runState.eei.getGasLeft()))
+      runState.stack.push(runState.eei.getGasLeft())
     },
   ],
   // 0x5b: JUMPDEST
@@ -869,7 +869,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
 
       const dest = runState.returnStack.pop()
-      runState.programCounter = dest.toNumber()
+      runState.programCounter = Number(dest)
     },
   ],
   // 0x5e: JUMPSUB
@@ -878,17 +878,17 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const dest = runState.stack.pop()
 
-      if (dest.gt(runState.eei.getCodeSize())) {
+      if (dest > runState.eei.getCodeSize()) {
         trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
       }
 
-      const destNum = dest.toNumber()
+      const destNum = Number(dest)
 
       if (!jumpSubIsValid(runState, destNum)) {
         trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
       }
 
-      runState.returnStack.push(new BN(runState.programCounter))
+      runState.returnStack.push(BigInt(runState.programCounter))
       runState.programCounter = destNum + 1
     },
   ],
@@ -896,7 +896,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x5f,
     function (runState) {
-      runState.stack.push(new BN(0))
+      runState.stack.push(0n)
     },
   ],
   // 0x60: PUSH
@@ -904,8 +904,10 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x60,
     function (runState) {
       const numToPush = runState.opCode - 0x5f
-      const loaded = new BN(
-        runState.eei.getCode().slice(runState.programCounter, runState.programCounter + numToPush)
+      const loaded = BigInt(
+        bufferToHex(
+          runState.eei.getCode().slice(runState.programCounter, runState.programCounter + numToPush)
+        )
       )
       runState.programCounter += numToPush
       runState.stack.push(loaded)
