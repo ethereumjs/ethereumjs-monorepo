@@ -1,15 +1,11 @@
-export type Input = string | number | bigint | Uint8Array | List | null | undefined
+export type Input = string | number | bigint | Uint8Array | Array<Input> | null | undefined
 
-// Use interface extension instead of type alias to
-// make circular declaration possible.
-export interface List extends Array<Input> {}
+export type NestedUint8Array = Array<Uint8Array | NestedUint8Array>
 
 export interface Decoded {
   data: Uint8Array | NestedUint8Array
   remainder: Uint8Array
 }
-
-export interface NestedUint8Array extends Array<Uint8Array | NestedUint8Array> {}
 
 /**
  * RLP Encoding based on https://eth.wiki/en/fundamentals/rlp

@@ -32,6 +32,23 @@ assert.deepEqual(nestedList, decoded)
 
 `RLP.decode(encoded, [stream=false])` - Decodes an RLP encoded `Uint8Array`, `Array` or `String` and returns a `Uint8Array` or `NestedUint8Array`. If `stream` is enabled, it will just decode the first rlp sequence in the Uint8Array. By default, it would throw an error if there are more bytes in Uint8Array than used by the rlp sequence.
 
+### Buffer compatibility
+
+If you would like to continue using Buffers like in rlp v2, you can use:
+
+```typescript
+import assert from 'assert'
+import { arrToBufArr, bufArrToArr } from 'ethereumjs-util'
+import RLP from 'rlp'
+
+const bufferList = [Buffer.from('123', 'hex'), Buffer.from('456', 'hex')]
+const encoded = RLP.encode(bufArrToArr(bufferList))
+const encodedAsBuffer = Buffer.from(encoded)
+const decoded = RLP.decode(Uint8Array.from(encodedAsBuffer)) // or RLP.decode(encoded)
+const decodedAsBuffers = arrToBufArr(decoded)
+assert.deepEqual(bufferList, decodedAsBuffers)
+```
+
 ## CLI
 
 `rlp encode <JSON string>`\

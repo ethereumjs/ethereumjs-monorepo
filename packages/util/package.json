@@ -6,7 +6,8 @@
   "author": "mjbecze <mjbecze@gmail.com>",
   "keywords": [
     "ethereum",
-    "utilities"
+    "utilities",
+    "utils"
   ],
   "engines": {
     "node": ">=12.0.0"

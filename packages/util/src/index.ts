@@ -34,8 +34,7 @@ export * from './bytes'
 export * from './object'
 
 /**
- * External exports (BN, RLP)
- * @deprecated will be removed in the next major release (util v8)
+ * External exports (BN, rlp)
  */
 export * from './externals'
 

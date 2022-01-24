@@ -1,6 +1,7 @@
 {
   "extends": "../../config/tsconfig.prod.json",
   "compilerOptions": {
+    "target": "es2020",
     "rootDir": "./src",
     "outDir": "./dist",
     "composite": true
