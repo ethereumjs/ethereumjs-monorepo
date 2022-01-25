@@ -100,7 +100,7 @@ export const verifyResult = (block: Block, result: RunBlockResult) => {
   if (!result.logsBloom.equals(block.header.logsBloom)) {
     throw new Error('invalid logsBloom')
   }
-  if (!block.header.gasUsed.eq(result.gasUsed)) {
+  if (!(BigInt(block.header.gasUsed.toString(10)) === result.gasUsed)) {
     throw new Error('invalid gasUsed')
   }
 }
