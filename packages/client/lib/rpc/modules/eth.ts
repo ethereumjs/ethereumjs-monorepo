@@ -31,7 +31,7 @@ import type {
   TxReceipt,
 } from '@ethereumjs/vm/dist/types'
 import type { Log } from '@ethereumjs/vm/dist/evm/types'
-import type { Proof, ProofStateManager } from '@ethereumjs/vm/dist/state'
+import type { Proof } from '@ethereumjs/vm/dist/state'
 import type { EthereumClient } from '../..'
 import type { Chain } from '../../blockchain'
 import type { EthProtocol } from '../../net/protocol'
@@ -928,11 +928,15 @@ export class Eth {
     }
 
     const vm = this._vm.copy()
+
+    if (!('getProof' in vm.stateManager)) {
+      throw new Error('getProof RPC method not supported with the StateManager provided')
+    }
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = Address.fromString(addressHex)
     const slots = slotsHex.map((slotHex) => setLengthLeft(toBuffer(slotHex), 32))
-    const proof = await (vm.stateManager as ProofStateManager).getProof(address, slots)
+    const proof = await vm.stateManager.getProof!(address, slots)
     return proof
   }
 
