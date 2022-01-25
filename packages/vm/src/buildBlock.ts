@@ -1,5 +1,6 @@
-import { Address, toBuffer, rlp, toType, TypeOutput } from 'ethereumjs-util'
+import { Address, toBuffer, toType, TypeOutput } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
+import RLP from 'rlp'
 import { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import { TypedTransaction } from '@ethereumjs/tx'
@@ -115,7 +116,7 @@ export class BlockBuilder {
   private async transactionsTrie() {
     const trie = new Trie()
     for (const [i, tx] of this.transactions.entries()) {
-      await trie.put(rlp.encode(i), tx.serialize())
+      await trie.put(Buffer.from(RLP.encode(i)), tx.serialize())
     }
     return trie.root
   }
@@ -140,7 +141,7 @@ export class BlockBuilder {
     for (const [i, txResult] of this.transactionResults.entries()) {
       const tx = this.transactions[i]
       const encodedReceipt = encodeReceipt(txResult.receipt, tx.type)
-      await receiptTrie.put(rlp.encode(i), encodedReceipt)
+      await receiptTrie.put(Buffer.from(RLP.encode(i)), encodedReceipt)
     }
     return receiptTrie.root
   }
