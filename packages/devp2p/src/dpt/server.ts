@@ -1,15 +1,14 @@
 import { EventEmitter } from 'events'
 import * as dgram from 'dgram'
 import ms from 'ms'
-import { debug as createDebugLogger } from 'debug'
+import { debug as createDebugLogger, Debugger } from 'debug'
 import LRUCache = require('lru-cache')
 import { encode, decode } from './message'
-import { keccak256, pk2id, createDeferred, formatLogId } from '../util'
+import { keccak256, pk2id, createDeferred, formatLogId, devp2pDebug } from '../util'
 import { DPT, PeerInfo } from './dpt'
 import { Socket as DgramSocket, RemoteInfo } from 'dgram'
 
-const DEBUG_BASE_NAME = 'devp2p:dpt:server'
-const debug = createDebugLogger(DEBUG_BASE_NAME)
+const DEBUG_BASE_NAME = 'dpt:server'
 const verbose = createDebugLogger('verbose').enabled
 
 const VERSION = 0x04
@@ -46,9 +45,7 @@ export class Server extends EventEmitter {
   _parityRequestMap: Map<string, string>
   _requestsCache: LRUCache<string, Promise<any>>
   _socket: DgramSocket | null
-
-  // Message debuggers (e.g. { 'findneighbours': [debug Object], ...})
-  private msgDebuggers: { [key: string]: (debug: string) => void } = {}
+  _debug: Debugger
 
   constructor(dpt: DPT, privateKey: Buffer, options: DPTServerOptions) {
     super()
@@ -62,10 +59,9 @@ export class Server extends EventEmitter {
     this._parityRequestMap = new Map()
     this._requestsCache = new LRUCache({ max: 1000, maxAge: ms('1s'), stale: false })
 
-    this.initMsgDebuggers()
-
     const createSocket = options.createSocket ?? dgram.createSocket.bind(null, { type: 'udp4' })
     this._socket = createSocket()
+    this._debug = devp2pDebug.extend(DEBUG_BASE_NAME)
     if (this._socket) {
       this._socket.once('listening', () => this.emit('listening'))
       this._socket.once('close', () => this.emit('close'))
@@ -82,14 +78,14 @@ export class Server extends EventEmitter {
 
   bind(...args: any[]) {
     this._isAliveCheck()
-    debug('call .bind')
+    this._debug('call .bind')
 
     if (this._socket) this._socket.bind(...args)
   }
 
   destroy(...args: any[]) {
     this._isAliveCheck()
-    debug('call .destroy')
+    this._debug('call .destroy')
 
     if (this._socket) {
       this._socket.close(...args)
@@ -117,7 +113,7 @@ export class Server extends EventEmitter {
       deferred,
       timeoutId: setTimeout(() => {
         if (this._requests.get(rkey) !== undefined) {
-          debug(
+          this._debug(
             `ping timeout: ${peer.address}:${peer.udpPort} ${
               peer.id ? formatLogId(peer.id.toString('hex'), verbose) : '-'
             }`
@@ -241,13 +237,6 @@ export class Server extends EventEmitter {
     }
   }
 
-  private initMsgDebuggers() {
-    const MESSAGE_NAMES = ['ping', 'pong', 'findneighbours', 'neighbours']
-    for (const name of MESSAGE_NAMES) {
-      this.msgDebuggers[name] = createDebugLogger(`${DEBUG_BASE_NAME}:${name}`)
-    }
-  }
-
   /**
    * Debug message both on the generic as well as the
    * per-message debug logger
@@ -255,9 +244,6 @@ export class Server extends EventEmitter {
    * @param msg Message text to debug
    */
   private debug(messageName: string, msg: string) {
-    debug(msg)
-    if (this.msgDebuggers[messageName]) {
-      this.msgDebuggers[messageName](msg)
-    }
+    this._debug.extend(messageName)(msg)
   }
 }
