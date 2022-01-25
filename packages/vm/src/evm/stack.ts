@@ -1,3 +1,5 @@
+import { MAX_INTEGER_BIGINT } from 'ethereumjs-util'
+
 const { ERROR, VmError } = require('../exceptions')
 
 /**
@@ -21,11 +23,9 @@ export default class Stack {
       throw new VmError(ERROR.INTERNAL_ERROR)
     }
 
-    // Why do we have this MAX_INTEGER check here on the BN.js values?
-    // Is this still needed for BigInt? (in doubt I would leave to not chance behavior)
-    //if (value.gt(MAX_INTEGER)) {
-    //  throw new VmError(ERROR.OUT_OF_RANGE)
-    //}
+    if (value > MAX_INTEGER_BIGINT) {
+      throw new VmError(ERROR.OUT_OF_RANGE)
+    }
 
     if (this._store.length >= this._maxHeight) {
       throw new VmError(ERROR.STACK_OVERFLOW)
