@@ -2,7 +2,6 @@ import Common from '@ethereumjs/common'
 import { keccak256, setLengthRight, setLengthLeft, toBuffer } from 'ethereumjs-util'
 import { ERROR, VmError } from './../../exceptions'
 import { RunState } from './../interpreter'
-import { adjustSstoreGasEIP2929 } from './EIP2929'
 
 const MASK_160 = (1n << 160n) - 1n
 
@@ -136,25 +135,25 @@ export function getFullname(code: number, name: string): string {
 }
 
 /**
- * Checks if a jump is valid given a destination
+ * Checks if a jump is valid given a destination (defined as a 1 in the validJumps array)
  *
  * @param  {RunState} runState
  * @param  {number}   dest
  * @return {boolean}
  */
 export function jumpIsValid(runState: RunState, dest: number): boolean {
-  return runState.validJumps.indexOf(dest) !== -1
+  return runState.validJumps[dest] === 1
 }
 
 /**
- * Checks if a jumpsub is valid given a destination
+ * Checks if a jumpsub is valid given a destination (defined as a 2 in the validJumps array)
  *
  * @param  {RunState} runState
  * @param  {number}   dest
  * @return {boolean}
  */
 export function jumpSubIsValid(runState: RunState, dest: number): boolean {
-  return runState.validJumpSubs.indexOf(dest) !== -1
+  return runState.validJumps[dest] === 2
 }
 
 /**
@@ -191,7 +190,7 @@ export function maxCallGas(
  */
 export function subMemUsage(runState: RunState, offset: bigint, length: bigint, common: Common) {
   // YP (225): access with zero length will not extend the memory
-  if (length === 0n) return
+  if (length === 0n) return 0n
 
   const newMemoryWordCount = divCeil(offset + length, 32n)
   if (newMemoryWordCount <= runState.memoryWordCount) return
@@ -200,13 +199,17 @@ export function subMemUsage(runState: RunState, offset: bigint, length: bigint, 
   const fee = BigInt(common.param('gasPrices', 'memory'))
   const quadCoeff = BigInt(common.param('gasPrices', 'quadCoeffDiv'))
   // words * 3 + words ^2 / 512
-  const cost = words * fee + (words * words) / quadCoeff
+  let cost = words * fee + (words * words) / quadCoeff
+
   if (cost > runState.highestMemCost) {
-    runState.eei.useGas(cost - runState.highestMemCost, 'subMemUsage')
+    const currentHighestMemCost = runState.highestMemCost
     runState.highestMemCost = cost
+    cost -= currentHighestMemCost
   }
 
   runState.memoryWordCount = newMemoryWordCount
+
+  return cost
 }
 
 /**
@@ -240,26 +243,27 @@ export function updateSstoreGas(
   runState: RunState,
   currentStorage: Buffer,
   value: Buffer,
-  keyBuf: Buffer,
   common: Common
-) {
-  const sstoreResetCost = common.param('gasPrices', 'sstoreReset')
+): bigint {
   if (
-    (value.length === 0 && !currentStorage.length) ||
-    (value.length !== 0 && currentStorage.length)
+    (value.length === 0 && currentStorage.length === 0) ||
+    (value.length > 0 && currentStorage.length > 0)
   ) {
-    runState.eei.useGas(
-      BigInt(adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset', common)),
-      'updateSstoreGas'
-    )
-  } else if (value.length === 0 && currentStorage.length) {
-    runState.eei.useGas(
-      BigInt(adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset', common)),
-      'updateSstoreGas'
-    )
+    const gas = BigInt(common.param('gasPrices', 'sstoreReset'))
+    return gas
+  } else if (value.length === 0 && currentStorage.length > 0) {
+    const gas = BigInt(common.param('gasPrices', 'sstoreReset'))
     runState.eei.refundGas(BigInt(common.param('gasPrices', 'sstoreRefund')), 'updateSstoreGas')
-  } else if (value.length !== 0 && !currentStorage.length) {
-    runState.eei.useGas(BigInt(common.param('gasPrices', 'sstoreSet')), 'updateSstoreGas')
+    return gas
+  } else {
+    /*
+      The situations checked above are:
+      -> Value/Slot are both 0
+      -> Value/Slot are both nonzero
+      -> Value is zero, but slot is nonzero
+      Thus, the remaining case is where value is nonzero, but slot is zero, which is this clause
+    */
+    return BigInt(common.param('gasPrices', 'sstoreSet'))
   }
 }
 

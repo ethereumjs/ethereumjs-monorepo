@@ -19,21 +19,14 @@ export function updateSstoreGasEIP1283(
 ) {
   if (currentStorage.equals(value)) {
     // If current value equals new value (this is a no-op), 200 gas is deducted.
-    runState.eei.useGas(
-      BigInt(common.param('gasPrices', 'netSstoreNoopGas')),
-      'EIP-1283 -> netSstoreNoopGas'
-    )
-    return
+    return BigInt(common.param('gasPrices', 'netSstoreNoopGas'))
   }
   // If current value does not equal new value
   if (originalStorage.equals(currentStorage)) {
     // If original value equals current value (this storage slot has not been changed by the current execution context)
     if (originalStorage.length === 0) {
       // If original value is 0, 20000 gas is deducted.
-      return runState.eei.useGas(
-        BigInt(common.param('gasPrices', 'netSstoreInitGas')),
-        'EIP-1283 -> netSstoreInitGas'
-      )
+      return BigInt(common.param('gasPrices', 'netSstoreInitGas'))
     }
     if (value.length === 0) {
       // If new value is 0, add 15000 gas to refund counter.
@@ -43,10 +36,7 @@ export function updateSstoreGasEIP1283(
       )
     }
     // Otherwise, 5000 gas is deducted.
-    return runState.eei.useGas(
-      BigInt(common.param('gasPrices', 'netSstoreCleanGas')),
-      'EIP-1283 -> netSstoreCleanGas'
-    )
+    return BigInt(common.param('gasPrices', 'netSstoreCleanGas'))
   }
   // If original value does not equal current value (this storage slot is dirty), 200 gas is deducted. Apply both of the following clauses.
   if (originalStorage.length !== 0) {
@@ -81,8 +71,5 @@ export function updateSstoreGasEIP1283(
       )
     }
   }
-  return runState.eei.useGas(
-    BigInt(common.param('gasPrices', 'netSstoreDirtyGas')),
-    'EIP-1283 -> netSstoreDirtyGas'
-  )
+  return BigInt(common.param('gasPrices', 'netSstoreDirtyGas'))
 }

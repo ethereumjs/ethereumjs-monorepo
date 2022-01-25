@@ -133,7 +133,8 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
   }
 
   // Have to cast as `EIP2929StateManager` to access clearWarmedAccounts
-  const state: EIP2929StateManager = <EIP2929StateManager>this.stateManager
+  const state = this.stateManager as EIP2929StateManager
+
   if (opts.reportAccessList && !('generateAccessList' in state)) {
     const msg = _errorMsg(
       'reportAccessList needs a StateManager implementing the generateAccessList() method',
@@ -229,8 +230,9 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
 }
 
 async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
-  // Casted as `any` to access the EIP2929 methods
-  const state: any = this.stateManager
+  // Have to cast as `EIP2929StateManager` to access the EIP2929 methods
+  const state = this.stateManager as EIP2929StateManager
+
   const { tx, block } = opts
 
   if (!block) {

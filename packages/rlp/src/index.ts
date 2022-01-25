@@ -1,15 +1,11 @@
-export type Input = string | number | bigint | Uint8Array | List | null | undefined
+export type Input = string | number | bigint | Uint8Array | Array<Input> | null | undefined
 
-// Use interface extension instead of type alias to
-// make circular declaration possible.
-export interface List extends Array<Input> {}
+export type NestedUint8Array = Array<Uint8Array | NestedUint8Array>
 
 export interface Decoded {
   data: Uint8Array | NestedUint8Array
   remainder: Uint8Array
 }
-
-export interface NestedUint8Array extends Array<Uint8Array | NestedUint8Array> {}
 
 /**
  * RLP Encoding based on https://eth.wiki/en/fundamentals/rlp
@@ -51,13 +47,11 @@ function safeSlice(input: Uint8Array, start: number, end: number) {
 /**
  * Parse integers. Check if there is no leading zeros
  * @param v The value to parse
- * @param base The base to parse the integer into
  */
 function decodeLength(v: Uint8Array): number {
-  if (v[0] === 0 && v[1] === 0) {
+  if (v[0] === 0) {
     throw new Error('invalid RLP: extra zeros')
   }
-
   return parseHexByte(bytesToHex(v))
 }
 
@@ -147,12 +141,12 @@ function _decode(input: Uint8Array): Decoded {
       remainder: input.slice(length + llength),
     }
   } else if (firstByte <= 0xf7) {
-    // a list between  0-55 bytes long
+    // a list between 0-55 bytes long
     length = firstByte - 0xbf
     innerRemainder = safeSlice(input, 1, length)
     while (innerRemainder.length) {
       d = _decode(innerRemainder)
-      decoded.push(d.data as Uint8Array)
+      decoded.push(d.data)
       innerRemainder = d.remainder
     }
 
@@ -161,7 +155,7 @@ function _decode(input: Uint8Array): Decoded {
       remainder: input.slice(length),
     }
   } else {
-    // a list  over 55 bytes long
+    // a list over 55 bytes long
     llength = firstByte - 0xf6
     length = decodeLength(safeSlice(input, 1, llength))
     if (length < 56) {
@@ -176,7 +170,7 @@ function _decode(input: Uint8Array): Decoded {
 
     while (innerRemainder.length) {
       d = _decode(innerRemainder)
-      decoded.push(d.data as Uint8Array)
+      decoded.push(d.data)
       innerRemainder = d.remainder
     }
 
@@ -198,7 +192,6 @@ function bytesToHex(uint8a: Uint8Array): string {
 }
 
 function parseHexByte(hexByte: string): number {
-  if (hexByte.length !== 2) throw new Error('Invalid byte sequence')
   const byte = Number.parseInt(hexByte, 16)
   if (Number.isNaN(byte)) throw new Error('Invalid byte sequence')
   return byte

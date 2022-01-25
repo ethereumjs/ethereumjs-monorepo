@@ -144,6 +144,27 @@ python utils/diffTestOutput.py output-wip-byzantium.txt output-master.txt
 
 An extremely rich and powerful toolbox is the [evmlab](https://github.com/holiman/evmlab) from `holiman`, both for debugging and creating new test cases or example data.
 
+## Git Branch Performance Testing
+
+The [`diffTester`](./scripts/diffTester.sh) script can be used to do simple comparative performance testing of changes made targeting the VM.  This script allows you to run a single State test a specified number of times on two different branches and reports the average time of the test run for each branch.  While not statistically rigorous, it gives you a quick sense of how a specific change (or set of changes) may impact VM performance on a given area that is covered by one specific test.  Run this script from `[monorepo-root]/packages/vm` as below:
+```sh
+./scripts/diffTester.sh -b git-branch-you-want-to-test -t "path/to/my/favorite/state/test.json" -r [the number of times to run the test]
+```
+
+and it will produce output like for the `git-branch-you-want-to-test` and then whatever git branch you are currently on:
+```sh
+TAP version 13
+# GeneralStateTests
+# file: path/to/my/favorite/state/test.json test: test
+ok 1 [ 3.785 secs ] the state roots should match (successful tx run)
+ok 2 [ 1.228 secs ] the state roots should match (successful tx run)
+ok 3 [ 1.212 secs ] the state roots should match (successful tx run)
+ok 4 [ 1.306 secs ] the state roots should match (successful tx run)
+ok 5 [ 1.472 secs ] the state roots should match (successful tx run)
+# Average test run: 1.801 s
+```
+
+Note: this script runs by actually checking out the targeted branch, running the test, and then switching back to your current branch, running the test again, and then restoring any changes you had in the current branch.  For best results, you shuld run this test while you currently have `master` checked out.
 ## Profiling
 
 [Clinic](https://github.com/nearform/node-clinic) allows profiling the VM in the node environment. It supports various profiling methods, among them is [flame](https://github.com/nearform/node-clinic-flame) which can be used for generating flamegraphs to highlight bottlenecks and hot paths. As an example, to generate a flamegraph for the VM blockchain tests, you can run:

@@ -29,6 +29,7 @@
     "preinstall": "npm run checkNpmVersion",
     "postinstall": "npm run build --workspaces",
     "checkNpmVersion": "./scripts/check-npm-version.sh",
+    "examples": "npm run examples --workspaces --if-present",
     "clean": "./config/cli/clean-root.sh",
     "e2e:publish": "./scripts/e2e-publish.sh",
     "e2e:resolutions": "node ./scripts/e2e-resolutions.js",
