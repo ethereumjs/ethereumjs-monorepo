@@ -148,6 +148,7 @@ export default class Interpreter {
 
     // Execute opcode handler
     const opFn = this.getOpHandler(opInfo)
+
     if (opInfo.isAsync) {
       await (opFn as AsyncOpHandler).apply(null, [this._runState, this._vm._common])
     } else {

@@ -98,7 +98,7 @@ tape('EIP 2929: gas cost tests', (t) => {
     )
 
     const result = await vm.runTx({ tx })
-    console.log(result.gasUsed, expectedGasUsed)
+
     st.ok(result.gasUsed == expectedGasUsed)
   }
 

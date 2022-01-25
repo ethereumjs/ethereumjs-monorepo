@@ -383,7 +383,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     caller,
     gasLimit,
     to,
-    value,
+    value: BigInt(value.toString(10)),
     data,
   })
   const evm = new EVM(this, txContext, block)
