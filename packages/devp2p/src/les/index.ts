@@ -2,12 +2,12 @@ import { EventEmitter } from 'events'
 import { rlp } from 'ethereumjs-util'
 import ms from 'ms'
 import snappy from 'snappyjs'
-import { debug as createDebugLogger } from 'debug'
+import { debug as createDebugLogger, Debugger } from 'debug'
+import { devp2pDebug } from '../util'
 import { int2buffer, buffer2int, assertEq, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 
-const DEBUG_BASE_NAME = 'devp2p:les'
-const debug = createDebugLogger(DEBUG_BASE_NAME)
+const DEBUG_BASE_NAME = 'les'
 const verbose = createDebugLogger('verbose').enabled
 
 export const DEFAULT_ANNOUNCE_TYPE = 1
@@ -27,6 +27,7 @@ export class LES extends EventEmitter {
   _status: LES.Status | null
   _peerStatus: LES.Status | null
   _statusTimeoutId: NodeJS.Timeout
+  _debug: Debugger
 
   // Message debuggers (e.g. { 'GET_BLOCK_HEADERS': [debug Object], ...})
   private msgDebuggers: { [key: string]: (debug: string) => void } = {}
@@ -37,14 +38,12 @@ export class LES extends EventEmitter {
     this._version = version
     this._peer = peer
     this._send = send
-
+    this._debug = devp2pDebug
     this._status = null
     this._peerStatus = null
     this._statusTimeoutId = setTimeout(() => {
       this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
     }, ms('5s'))
-
-    this.initMsgDebuggers()
   }
 
   static les2 = { name: 'les', version: 2, length: 21, constructor: LES }
@@ -272,15 +271,6 @@ export class LES extends EventEmitter {
     return LES.MESSAGE_CODES[msgCode]
   }
 
-  private initMsgDebuggers() {
-    const MESSAGE_NAMES = Object.values(LES.MESSAGE_CODES).filter(
-      (value) => typeof value === 'string'
-    ) as string[]
-    for (const name of MESSAGE_NAMES) {
-      this.msgDebuggers[name] = createDebugLogger(`${DEBUG_BASE_NAME}:${name}`)
-    }
-  }
-
   /**
    * Called once on the peer where a first successful `STATUS`
    * msg exchange could be achieved.
@@ -290,7 +280,7 @@ export class LES extends EventEmitter {
   _addFirstPeerDebugger() {
     const ip = this._peer._socket.remoteAddress
     if (ip) {
-      this.msgDebuggers[ip] = createDebugLogger(`devp2p:FIRST_PEER`)
+      this._debug = this._debug.extend('FIRST_PEER')
       this._peer._addFirstPeerDebugger()
       _firstPeer = ip
     }
@@ -303,9 +293,11 @@ export class LES extends EventEmitter {
    * @param msg Message text to debug
    */
   private debug(messageName: string, msg: string) {
-    debug(msg)
-    if (this.msgDebuggers[messageName]) {
-      this.msgDebuggers[messageName](msg)
+    const ip = this._peer._socket.remoteAddress
+    if (ip) {
+      this._debug.extend(ip).extend(DEBUG_BASE_NAME).extend(messageName)(msg)
+    } else {
+      this._debug.extend(DEBUG_BASE_NAME).extend(messageName)(msg)
     }
   }
 }

@@ -9,7 +9,8 @@ const end = (child: ChildProcessWithoutNullStreams, hasEnded: boolean, st: tape.
   hasEnded = true
   child.stdout.removeAllListeners()
   child.stderr.removeAllListeners()
-  child.kill('SIGINT')
+  const res = child.kill('SIGINT')
+  st.ok(res, 'client shut down successfully')
   st.end()
 }
 
@@ -21,7 +22,6 @@ tape('[CLI] rpc', (t) => {
 
     child.stdout.on('data', async (data) => {
       const message = data.toString()
-
       if (message.includes('http://')) {
         // if http endpoint startup message detected, call http endpoint with RPC method
         const client = Client.http({ port: 8545 })

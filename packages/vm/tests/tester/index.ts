@@ -39,6 +39,7 @@ import blockchainTestsRunner from './runners/BlockchainTestsRunner'
  * --debug: enable BlockchainTests debugger (compares post state against the expected post state)
  * --expected-test-amount: (optional) if present, check after tests are ran if at least this amount of tests have passed (inclusive)
  * --verify-test-amount-alltests: if this is passed, get the expected amount from tests and verify afterwards if this is the count of tests (expects tests are ran with default settings)
+ * --reps: if passed, each test case will be run the number of times indicated
  */
 
 const argv = minimist(process.argv.slice(2))
@@ -90,6 +91,7 @@ async function runTests() {
   runnerArgs.gasLimit = argv.gas // GeneralStateTests
   runnerArgs.value = argv.value // GeneralStateTests
   runnerArgs.debug = argv.debug // BlockchainTests
+  runnerArgs.reps = argv.reps // test repetitions
 
   let expectedTests: number | undefined
   if (argv['verify-test-amount-alltests']) {
