@@ -3,7 +3,7 @@ import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { addHexPrefix, toBuffer, rlp } from 'ethereumjs-util'
+import { addHexPrefix, toBuffer, rlp, bufferToHex } from 'ethereumjs-util'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { setupPreConditions, verifyPostConditions } from '../../util'
 
@@ -109,7 +109,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     try {
       const blockRlp = Buffer.from(raw.rlp.slice(2), 'hex')
       const decodedRLP: any = rlp.decode(blockRlp)
-      currentBlock = BigInt(decodedRLP[0][8])
+      currentBlock = BigInt(bufferToHex(decodedRLP[0][8]))
     } catch (e: any) {
       await handleError(e, expectException)
       continue
