@@ -8,10 +8,12 @@ import { Peer } from '../net/peer/peer'
 import { Protocol } from '../net/protocol'
 import { Miner } from '../miner'
 import type { Block } from '@ethereumjs/block'
+import { VMExecution } from '../execution'
 
 interface FullEthereumServiceOptions extends EthereumServiceOptions {
   /* Serve LES requests (default: false) */
   lightserv?: boolean
+  execution: VMExecution
 }
 
 /**
@@ -37,6 +39,7 @@ export class FullEthereumService extends EthereumService {
       config: this.config,
       pool: this.pool,
       chain: this.chain,
+      execution: options.execution,
       stateDB: options.stateDB,
       metaDB: options.metaDB,
       interval: this.interval,

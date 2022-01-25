@@ -1,10 +1,12 @@
 import { bufferToHex } from 'ethereumjs-util'
 import { version as packageVersion } from '../package.json'
 import { MultiaddrLike } from './types'
-import { Config } from './config'
+import { Config, SyncMode } from './config'
 import { EthereumService, FullEthereumService, LightEthereumService } from './service'
 import { Event } from './types'
+import { VMExecution } from './execution'
 import { FullSynchronizer } from './sync'
+import { Chain } from './blockchain'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
 
@@ -54,8 +56,11 @@ export interface EthereumClientOptions {
  */
 export default class EthereumClient {
   public config: Config
+  public chain: Chain
 
-  public services: (FullEthereumService | LightEthereumService)[]
+  public node:
+    | { syncmode: SyncMode.full; execution: VMExecution; services: FullEthereumService[] }
+    | { syncmode: SyncMode.light; execution: null; services: LightEthereumService[] }
 
   public opened: boolean
   public started: boolean
@@ -65,20 +70,38 @@ export default class EthereumClient {
    */
   constructor(options: EthereumClientOptions) {
     this.config = options.config
+    this.chain = new Chain(options)
 
-    this.services = [
-      this.config.syncmode === 'full'
-        ? new FullEthereumService({
-            config: this.config,
-            chainDB: options.chainDB,
-            stateDB: options.stateDB,
-            metaDB: options.metaDB,
-          })
-        : new LightEthereumService({
-            config: this.config,
-            chainDB: options.chainDB,
-          }),
-    ]
+    if (this.config.syncmode === SyncMode.full) {
+      const execution = new VMExecution({
+        config: options.config,
+        stateDB: options.stateDB,
+        metaDB: options.metaDB,
+        chain: this.chain,
+      })
+
+      const services = [
+        new FullEthereumService({
+          config: this.config,
+          chainDB: options.chainDB,
+          stateDB: options.stateDB,
+          metaDB: options.metaDB,
+          chain: this.chain,
+          execution: execution,
+        }),
+      ]
+      this.node = { syncmode: SyncMode.full, execution, services }
+    } else {
+      const services = [
+        new LightEthereumService({
+          config: this.config,
+          chainDB: options.chainDB,
+          chain: this.chain,
+        }),
+      ]
+      this.node = { syncmode: SyncMode.light, execution: null, services }
+    }
+
     this.opened = false
     this.started = false
   }
@@ -106,7 +129,7 @@ export default class EthereumClient {
       this.config.logger.info(`Synchronized blockchain at height ${height}`)
     })
 
-    await Promise.all(this.services.map((s) => s.open()))
+    await Promise.all(this.node.services.map((s) => s.open()))
 
     this.opened = true
   }
@@ -120,7 +143,7 @@ export default class EthereumClient {
     }
     this.config.logger.info('Connecting to network and synchronizing blockchain...')
 
-    await Promise.all(this.services.map((s) => s.start()))
+    await Promise.all(this.node.services.map((s) => s.start()))
     await Promise.all(this.config.servers.map((s) => s.start()))
     await Promise.all(this.config.servers.map((s) => s.bootstrap()))
     this.started = true
@@ -133,7 +156,7 @@ export default class EthereumClient {
     if (!this.started) {
       return false
     }
-    await Promise.all(this.services.map((s) => s.stop()))
+    await Promise.all(this.node.services.map((s) => s.stop()))
     await Promise.all(this.config.servers.map((s) => s.stop()))
     this.started = false
   }
@@ -143,7 +166,8 @@ export default class EthereumClient {
    * @param name name of service
    */
   service(name: string) {
-    return this.services.find((s) => s.name === name)
+    const services: EthereumService[] = this.node.services
+    return services.find((s) => s.name === name)
   }
 
   /**
@@ -167,7 +191,8 @@ export default class EthereumClient {
   async executeBlocks(first: number, last: number, txHashes: string[]) {
     this.config.logger.info('Preparing for block execution (debug mode, no services started)...')
 
-    const service = this.services.find((s) => s.name === 'eth') as EthereumService
+    const services: EthereumService[] = this.node.services
+    const service = services.find((s) => s.name === 'eth') as EthereumService
     const synchronizer = service.synchronizer as FullSynchronizer
     const vm = synchronizer.execution.vm.copy()
 

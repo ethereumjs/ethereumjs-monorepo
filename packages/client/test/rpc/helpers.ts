@@ -7,11 +7,10 @@ import { RPCManager as Manager } from '../../lib/rpc'
 import { getLogger } from '../../lib/logging'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain/chain'
-import { FullSynchronizer } from '../../lib/sync'
 import { parseCustomParams, parseGenesisState } from '../../lib/util'
 import { TxPool } from '../../lib/sync/txpool'
 import { RlpxServer } from '../../lib/net/server/rlpxserver'
-import { VMExecution } from '../../lib/sync/execution'
+import { VMExecution } from '../../lib/execution'
 import { mockBlockchain } from './mockBlockchain'
 import type EthereumClient from '../../lib/client'
 import type { TypedTransaction } from '@ethereumjs/tx'
@@ -78,6 +77,7 @@ export function createClient(clientOpts: any = {}) {
     syncTargetHeight: clientOpts.syncTargetHeight,
     txPool: new TxPool({ config }),
   }
+
   if (clientOpts.includeVM) {
     const metaDB = clientOpts.enableMetaDB ? level() : undefined
     const execution = new VMExecution({ config, chain, metaDB })
@@ -92,20 +92,25 @@ export function createClient(clientOpts: any = {}) {
   const client: any = {
     synchronized: false,
     config,
-    services: [
-      {
-        name: 'eth',
-        chain,
-        pool: { peers },
-        protocols: [
-          {
-            name: 'eth',
-            versions: clientConfig.ethProtocolVersions,
-          },
-        ],
-        synchronizer,
-      },
-    ],
+    chain,
+    node: {
+      syncmode: clientOpts.includeVM ? 'full' : 'light',
+      execution: synchronizer.execution,
+      services: [
+        {
+          name: 'eth',
+          chain,
+          pool: { peers },
+          protocols: [
+            {
+              name: 'eth',
+              versions: clientConfig.ethProtocolVersions,
+            },
+          ],
+          synchronizer,
+        },
+      ],
+    },
     servers,
     opened: clientConfig.opened,
     server: (name: string) => {
@@ -185,15 +190,16 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   const manager = createManager(client)
   const server = startRPC(manager.getMethods())
 
-  const service = client.services.find((s) => s.name === 'eth')!
-  const { chain } = service
-  const { execution } = service!.synchronizer as FullSynchronizer
+  const {
+    chain,
+    node: { execution },
+  } = client
 
   await chain.open()
-  await execution.open()
+  await execution?.open()
   await chain.update()
 
-  return { chain, common, execution, server }
+  return { chain, common, execution: execution as VMExecution, server }
 }
 
 /**

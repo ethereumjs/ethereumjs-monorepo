@@ -19,7 +19,8 @@ export class Net {
    * @param client Client to which the module binds
    */
   constructor(client: EthereumClient) {
-    const service: EthereumService = client.services.find((s) => s.name === 'eth')!
+    const services: EthereumService[] = client.node.services
+    const service: EthereumService = services.find((s: EthereumService) => s.name === 'eth')!
     this._chain = service.chain
     this._client = client
     this._peerPool = service.pool

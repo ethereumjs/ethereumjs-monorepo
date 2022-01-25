@@ -35,7 +35,7 @@ import type { Proof } from '@ethereumjs/vm/dist/state'
 import type { EthereumClient } from '../..'
 import type { Chain } from '../../blockchain'
 import type { EthProtocol } from '../../net/protocol'
-import type { ReceiptsManager } from '../../sync/execution/receipt'
+import type { ReceiptsManager } from '../../execution/receipt'
 
 type GetLogsParams = {
   fromBlock?: string // QUANTITY, block number or "earliest" or "latest" (default: "latest")
@@ -308,7 +308,8 @@ export class Eth {
    */
   constructor(client: EthereumClient) {
     this.client = client
-    this.service = client.services.find((s) => s.name === 'eth') as EthereumService
+    const services: EthereumService[] = client.node.services
+    this.service = services.find((s) => s.name === 'eth') as EthereumService
     this.receiptsManager = (this.service.synchronizer as any).execution?.receiptsManager
     this._chain = this.service.chain
     this._vm = (this.service.synchronizer as any)?.execution?.vm
@@ -376,6 +377,10 @@ export class Eth {
     ])
 
     this.getTransactionReceipt = middleware(this.getTransactionReceipt.bind(this), 1, [
+      [validators.hex],
+    ])
+
+    this.getUncleCountByBlockNumber = middleware(this.getUncleCountByBlockNumber.bind(this), 1, [
       [validators.hex],
     ])
 
@@ -960,7 +965,7 @@ export class Eth {
     const currentBlockHeader = this._chain.headers?.latest ?? (await this._chain.getLatestHeader())
     const currentBlock = bnToHex(currentBlockHeader.number)
 
-    const synchronizer = this.client.services[0].synchronizer
+    const synchronizer = this.client.node.services[0].synchronizer
     const startingBlock = bnToHex(synchronizer.startingBlock)
 
     let highestBlock

@@ -40,7 +40,7 @@ tape('[EthereumClient]', async (t) => {
   t.test('should initialize correctly', (t) => {
     const config = new Config({ transports: [] })
     const client = new EthereumClient({ config })
-    t.ok(client.services[0] instanceof FullEthereumService, 'added service')
+    t.ok(client.node.services[0] instanceof FullEthereumService, 'added service')
     t.end()
   })
 

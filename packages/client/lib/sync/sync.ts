@@ -4,6 +4,7 @@ import { PeerPool } from '../net/peerpool'
 import { Peer } from '../net/peer/peer'
 import { FlowControl } from '../net/protocol'
 import { Config } from '../config'
+import { VMExecution } from '../execution'
 import { Chain } from '../blockchain'
 import { Event } from '../types'
 // eslint-disable-next-line implicit-dependencies/no-implicit
@@ -14,6 +15,8 @@ import { short } from '../util'
 export interface SynchronizerOptions {
   /* Config */
   config: Config
+
+  execution?: VMExecution
 
   /* Peer pool */
   pool: PeerPool

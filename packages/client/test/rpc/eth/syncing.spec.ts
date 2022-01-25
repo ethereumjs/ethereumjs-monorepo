@@ -44,7 +44,7 @@ tape(`${method}: should return highest block header unavailable error`, async (t
   const manager = createManager(client)
   const rpcServer = startRPC(manager.getMethods())
 
-  const synchronizer = client.services[0].synchronizer
+  const synchronizer = client.node.services[0].synchronizer
   synchronizer.best = td.func<typeof synchronizer['best']>()
   td.when(synchronizer.best()).thenReturn('peer')
 
@@ -62,7 +62,7 @@ tape(`${method}: should return syncing status object when unsynced`, async (t) =
   const manager = createManager(client)
   const rpcServer = startRPC(manager.getMethods())
 
-  const synchronizer = client.services[0].synchronizer
+  const synchronizer = client.node.services[0].synchronizer
   synchronizer.best = td.func<typeof synchronizer['best']>()
   synchronizer.latest = td.func<typeof synchronizer['latest']>()
   td.when(synchronizer.best()).thenReturn('peer')

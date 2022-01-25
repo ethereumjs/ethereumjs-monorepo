@@ -182,7 +182,8 @@ export class Engine {
    */
   constructor(client: EthereumClient) {
     this.client = client
-    this.service = client.services.find((s) => s.name === 'eth') as EthereumService
+    const services: EthereumService[] = client.node.services
+    this.service = services.find((s) => s.name === 'eth') as EthereumService
     this.chain = this.service.chain
     this.config = this.chain.config
     this.synchronizer = this.service.synchronizer as FullSynchronizer

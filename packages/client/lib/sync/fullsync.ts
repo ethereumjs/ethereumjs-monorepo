@@ -5,7 +5,7 @@ import { short } from '../util'
 import { Event } from '../types'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import { BlockFetcher } from './fetcher'
-import { VMExecution } from './execution'
+import { VMExecution } from '../execution'
 import { TxPool } from './txpool'
 import type { Block } from '@ethereumjs/block'
 
@@ -29,12 +29,9 @@ export class FullSynchronizer extends Synchronizer {
     super(options)
 
     this.newBlocksKnownByPeer = new Map()
-    this.execution = new VMExecution({
-      config: options.config,
-      stateDB: options.stateDB,
-      metaDB: options.metaDB,
-      chain: options.chain,
-    })
+
+    if (!options.execution) throw new Error('Execution required in full Synchronizer')
+    this.execution = options.execution
 
     this.txPool = new TxPool({
       config: this.config,

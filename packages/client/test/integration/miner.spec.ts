@@ -4,6 +4,7 @@ import Common, { Chain as ChainCommon, ConsensusType, ConsensusAlgorithm } from 
 import { BN, Address } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
+import { VMExecution } from '../../lib/execution'
 import { FullEthereumService } from '../../lib/service'
 import { Event } from '../../lib/types'
 import MockServer from './mocks/mockserver'
@@ -52,9 +53,11 @@ tape('[Integration:Miner]', async (t) => {
     })
     // attach chain to centralized event bus
     ;(chain.config as any).events = serviceConfig.events
+    const execution = new VMExecution({ config: serviceConfig, chain })
     const service = new FullEthereumService({
       config: serviceConfig,
       chain,
+      execution,
     })
     service.synchronizer.execution.run = async () => 1 // stub
     await service.open()
