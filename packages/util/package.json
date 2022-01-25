@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "ethereum-cryptography": "^1.0.3",
-    "rlp": "^2.2.4"
+    "rlp": "^3.0.0"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.0",
