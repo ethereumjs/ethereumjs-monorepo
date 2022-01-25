@@ -1,4 +1,5 @@
-import { rlp, toBuffer } from 'ethereumjs-util'
+import { bufArrToArr, toBuffer } from 'ethereumjs-util'
+import RLP from 'rlp'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import Blockchain from '../src'
@@ -155,7 +156,7 @@ export const createTestDB = async () => {
       ),
       keyEncoding: 'binary',
       valueEncoding: 'binary',
-      value: rlp.encode(toBuffer(17179869184)),
+      value: Buffer.from(RLP.encode(Uint8Array.from(toBuffer(17179869184)))),
     },
     {
       type: 'put',
@@ -165,7 +166,7 @@ export const createTestDB = async () => {
       ),
       keyEncoding: 'binary',
       valueEncoding: 'binary',
-      value: rlp.encode(genesis.raw().slice(1)),
+      value: Buffer.from(RLP.encode(bufArrToArr(genesis.raw()).slice(1))),
     },
     {
       type: 'put',

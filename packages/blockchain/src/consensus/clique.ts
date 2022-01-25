@@ -1,6 +1,7 @@
 import { debug as createDebugLogger } from 'debug'
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { Address, rlp, bigIntToBuffer, bufferToBigInt } from 'ethereumjs-util'
+import { Address, bigIntToBuffer, bufferToBigInt, arrToBufArr, bufArrToArr } from 'ethereumjs-util'
+import RLP from 'rlp'
 import Blockchain from '..'
 import { Consensus, ConsensusOptions } from './interface'
 
@@ -191,7 +192,11 @@ export class CliqueConsensus implements Consensus {
       bigIntToBuffer(state[0]),
       state[1].map((a) => a.toBuffer()),
     ])
-    await this.blockchain.db.put(CLIQUE_SIGNERS_KEY, rlp.encode(formatted), DB_OPTS)
+    await this.blockchain.db.put(
+      CLIQUE_SIGNERS_KEY,
+      Buffer.from(RLP.encode(bufArrToArr(formatted))),
+      DB_OPTS
+    )
     // Output active signers for debugging purposes
     let i = 0
     for (const signer of this.cliqueActiveSigners()) {
@@ -338,7 +343,11 @@ export class CliqueConsensus implements Consensus {
       bigIntToBuffer(v[0]),
       [v[1][0].toBuffer(), v[1][1].toBuffer(), v[1][2]],
     ])
-    await this.blockchain.db.put(CLIQUE_VOTES_KEY, rlp.encode(formatted), DB_OPTS)
+    await this.blockchain.db.put(
+      CLIQUE_VOTES_KEY,
+      Buffer.from(RLP.encode(bufArrToArr(formatted))),
+      DB_OPTS
+    )
   }
 
   /**
@@ -438,7 +447,11 @@ export class CliqueConsensus implements Consensus {
       bigIntToBuffer(b[0]),
       b[1].toBuffer(),
     ])
-    await this.blockchain.db.put(CLIQUE_BLOCK_SIGNERS_SNAPSHOT_KEY, rlp.encode(formatted), DB_OPTS)
+    await this.blockchain.db.put(
+      CLIQUE_BLOCK_SIGNERS_SNAPSHOT_KEY,
+      Buffer.from(RLP.encode(bufArrToArr(formatted))),
+      DB_OPTS
+    )
   }
 
   /**
@@ -448,7 +461,7 @@ export class CliqueConsensus implements Consensus {
   private async getCliqueLatestSignerStates(): Promise<CliqueLatestSignerStates> {
     try {
       const signerStates = await this.blockchain.db.get(CLIQUE_SIGNERS_KEY, DB_OPTS)
-      const states = (<any>rlp.decode(signerStates)) as [Buffer, Buffer[]]
+      const states = arrToBufArr(RLP.decode(Uint8Array.from(signerStates))) as [Buffer, Buffer[]]
       return states.map((state) => {
         const blockNum = bufferToBigInt(state[0] as Buffer)
         const addrs = (<any>state[1]).map((buf: Buffer) => new Address(buf))
@@ -469,7 +482,10 @@ export class CliqueConsensus implements Consensus {
   private async getCliqueLatestVotes(): Promise<CliqueLatestVotes> {
     try {
       const signerVotes = await this.blockchain.db.get(CLIQUE_VOTES_KEY, DB_OPTS)
-      const votes = (<any>rlp.decode(signerVotes)) as [Buffer, [Buffer, Buffer, Buffer]]
+      const votes = arrToBufArr(RLP.decode(Uint8Array.from(signerVotes))) as [
+        Buffer,
+        [Buffer, Buffer, Buffer]
+      ]
       return votes.map((vote) => {
         const blockNum = bufferToBigInt(vote[0] as Buffer)
         const signer = new Address((vote[1] as any)[0])
@@ -492,7 +508,7 @@ export class CliqueConsensus implements Consensus {
   private async getCliqueLatestBlockSigners(): Promise<CliqueLatestBlockSigners> {
     try {
       const blockSigners = await this.blockchain.db.get(CLIQUE_BLOCK_SIGNERS_SNAPSHOT_KEY, DB_OPTS)
-      const signers = (<any>rlp.decode(blockSigners)) as [Buffer, Buffer][]
+      const signers = arrToBufArr(RLP.decode(Uint8Array.from(blockSigners))) as [Buffer, Buffer][]
       return signers.map((s) => {
         const blockNum = bufferToBigInt(s[0] as Buffer)
         const signer = new Address(s[1] as any)
