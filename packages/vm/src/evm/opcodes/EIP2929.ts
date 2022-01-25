@@ -100,9 +100,9 @@ export function adjustSstoreGasEIP2929(
       case 'noop':
         return warmRead
       case 'initRefund':
-        return BigInt(common.param('gasPrices', 'sstoreInitGasEIP2200')).sub(warmRead)
+        return BigInt(common.param('gasPrices', 'sstoreInitGasEIP2200')) - warmRead
       case 'cleanRefund':
-        return BigInt(common.param('gasPrices', 'sstoreReset')).sub(coldSload).sub(warmRead)
+        return BigInt(common.param('gasPrices', 'sstoreReset')) - coldSload - warmRead
     }
   }
 

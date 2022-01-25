@@ -46,15 +46,15 @@ tape('Constantinople: EIP-1283', async (t) => {
 
       const runCallArgs = {
         caller,
-        gasLimit: new BN(0xffffffffff),
+        gasLimit: BigInt(0xffffffffff),
         to: addr,
       }
 
       try {
         const res = await vm.runCall(runCallArgs)
         st.assert(res.execResult.exceptionError === undefined)
-        st.assert(new BN(testCase.used).eq(res.gasUsed))
-        st.assert(new BN(testCase.refund).eq(res.execResult.gasRefund!))
+        st.assert(BigInt(testCase.used) === res.gasUsed)
+        st.assert(BigInt(testCase.refund) === res.execResult.gasRefund!)
       } catch (e: any) {
         st.fail(e.message)
       }

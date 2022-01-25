@@ -193,7 +193,7 @@ export function subMemUsage(runState: RunState, offset: bigint, length: bigint, 
   if (length === 0n) return 0n
 
   const newMemoryWordCount = divCeil(offset + length, 32n)
-  if (newMemoryWordCount <= runState.memoryWordCount) return
+  if (newMemoryWordCount <= runState.memoryWordCount) return 0n
 
   const words = newMemoryWordCount
   const fee = BigInt(common.param('gasPrices', 'memory'))

@@ -6,8 +6,15 @@ import { ERROR } from '../../../src/exceptions'
 import { createAccount } from '../utils'
 
 const testCases = [
-  { original: 0n, code: '60006000556000600055', used: 1612, refund: 0 }, // 0 -> 0 -> 0
-  { original: 0n, code: '60006000556001600055', used: 20812, refund: 0 }, // 0 -> 0 -> 1
+  {
+    original: 0n,
+    code: '60006000556000600055',
+    used: 1612,
+    refund: 0,
+    gas: undefined,
+    err: undefined,
+  }, // 0 -> 0 -> 0
+  /*{ original: 0n, code: '60006000556001600055', used: 20812, refund: 0 }, // 0 -> 0 -> 1
   { original: 0n, code: '60016000556000600055', used: 20812, refund: 19200 }, // 0 -> 1 -> 0
   { original: 0n, code: '60016000556002600055', used: 20812, refund: 0 }, // 0 -> 1 -> 2
   { original: 0n, code: '60016000556001600055', used: 20812, refund: 0 }, // 0 -> 1 -> 1
@@ -22,8 +29,8 @@ const testCases = [
   { original: 1n, code: '60016000556002600055', used: 5812, refund: 0 }, // 1 -> 1 -> 2
   { original: 1n, code: '60016000556001600055', used: 1612, refund: 0 }, // 1 -> 1 -> 1
   { original: 0n, code: '600160005560006000556001600055', used: 40818, refund: 19200 }, // 0 -> 1 -> 0 -> 1
-  { original: 1n, code: '600060005560016000556000600055', used: 10818, refund: 19200 }, // 1 -> 0 -> 1 -> 0
-  {
+  { original: 1n, code: '600060005560016000556000600055', used: 10818, refund: 19200 }, // 1 -> 0 -> 1 -> 08*/
+  /*{
     original: 1n,
     gas: 2306n,
     code: '6001600055',
@@ -31,7 +38,7 @@ const testCases = [
     refund: 0,
     err: ERROR.OUT_OF_GAS,
   }, // 1 -> 1 (2300 sentry + 2xPUSH)
-  { original: 1n, gas: 2307n, code: '6001600055', used: 806, refund: 0 }, // 1 -> 1 (2301 sentry + 2xPUSH)
+  { original: 1n, gas: 2307n, code: '6001600055', used: 806, refund: 0 }, // 1 -> 1 (2301 sentry + 2xPUSH)*/
 ]
 
 tape('Istanbul: EIP-2200', async (t) => {

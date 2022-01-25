@@ -25,7 +25,7 @@ export interface RunState {
   validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
   stateManager: StateManager
   eei: EEI
-  messageGasLimit?: BN // Cache value from `gas.ts` to save gas limit for a message call
+  messageGasLimit?: bigint // Cache value from `gas.ts` to save gas limit for a message call
 }
 
 export interface InterpreterResult {
@@ -138,7 +138,7 @@ export default class Interpreter {
   async runStep(): Promise<void> {
     const opInfo = this.lookupOpInfo(this._runState.opCode)
 
-    const gas = BigInt(opInfo.fee)
+    let gas = BigInt(opInfo.fee)
     // clone the gas limit; call opcodes can add stipend,
     // which makes it seem like the gas left increases
     const gasLimitClone = this._eei.getGasLeft()
@@ -147,7 +147,7 @@ export default class Interpreter {
       const dynamicGasHandler = dynamicGasHandlers.get(this._runState.opCode)!
       // This function updates the gas BN in-place using `i*` methods
       // It needs the base fee, for correct gas limit calculation for the CALL opcodes
-      await dynamicGasHandler(this._runState, gas, this._vm._common)
+      gas = await dynamicGasHandler(this._runState, gas, this._vm._common)
     }
 
     await this._runStepHook(gas, gasLimitClone)
@@ -187,7 +187,7 @@ export default class Interpreter {
     return this._vm._opcodes.get(op) ?? this._vm._opcodes.get(0xfe)
   }
 
-  async _runStepHook(dynamicFee: BN, gasLeft: BN): Promise<void> {
+  async _runStepHook(dynamicFee: bigint, gasLeft: bigint): Promise<void> {
     const opcode = this.lookupOpInfo(this._runState.opCode)
     const eventObj: InterpreterStep = {
       pc: this._runState.programCounter,
