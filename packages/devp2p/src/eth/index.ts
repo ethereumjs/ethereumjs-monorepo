@@ -2,13 +2,13 @@ import assert from 'assert'
 import { EventEmitter } from 'events'
 import ms from 'ms'
 import snappy from 'snappyjs'
-import { debug as createDebugLogger } from 'debug'
+import { debug as createDebugLogger, Debugger } from 'debug'
+import { devp2pDebug } from '../util'
 import { BN, rlp } from 'ethereumjs-util'
 import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 
-const DEBUG_BASE_NAME = 'devp2p:eth'
-const debug = createDebugLogger(DEBUG_BASE_NAME)
+const DEBUG_BASE_NAME = 'eth'
 const verbose = createDebugLogger('verbose').enabled
 
 /**
@@ -26,6 +26,7 @@ export class ETH extends EventEmitter {
   _peerStatus: ETH.StatusMsg | null
   _statusTimeoutId: NodeJS.Timeout
   _send: SendMethod
+  _debug: Debugger
 
   // Eth64
   _hardfork: string = 'chainstart'
@@ -42,7 +43,7 @@ export class ETH extends EventEmitter {
     this._version = version
     this._peer = peer
     this._send = send
-
+    this._debug = devp2pDebug.extend(DEBUG_BASE_NAME)
     this._status = null
     this._peerStatus = null
     this._statusTimeoutId = setTimeout(() => {
@@ -341,17 +342,10 @@ export class ETH extends EventEmitter {
   }
 
   private initMsgDebuggers() {
-    const MESSAGE_NAMES = Object.values(ETH.MESSAGE_CODES).filter(
-      (value) => typeof value === 'string'
-    ) as string[]
-    for (const name of MESSAGE_NAMES) {
-      this.msgDebuggers[name] = createDebugLogger(`${DEBUG_BASE_NAME}:${name}`)
-    }
-
     // Remote Peer IP logger
     const ip = this._peer._socket.remoteAddress
     if (ip) {
-      this.msgDebuggers[ip] = createDebugLogger(`devp2p:${ip}`)
+      this._debug = devp2pDebug.extend(ip)
     }
   }
 
@@ -364,7 +358,7 @@ export class ETH extends EventEmitter {
   _addFirstPeerDebugger() {
     const ip = this._peer._socket.remoteAddress
     if (ip) {
-      this.msgDebuggers[ip] = createDebugLogger(`devp2p:FIRST_PEER`)
+      this._debug = this._debug.extend(`FIRST_PEER`)
       this._peer._addFirstPeerDebugger()
       _firstPeer = ip
     }
@@ -377,13 +371,11 @@ export class ETH extends EventEmitter {
    * @param msg Message text to debug
    */
   private debug(messageName: string, msg: string) {
-    debug(msg)
-    if (this.msgDebuggers[messageName]) {
-      this.msgDebuggers[messageName](msg)
-    }
     const ip = this._peer._socket.remoteAddress
-    if (ip && this.msgDebuggers[ip]) {
-      this.msgDebuggers[ip](msg)
+    if (ip) {
+      this._debug.extend(ip).extend(messageName)(msg)
+    } else {
+      this._debug.extend(messageName)(msg)
     }
   }
 }
