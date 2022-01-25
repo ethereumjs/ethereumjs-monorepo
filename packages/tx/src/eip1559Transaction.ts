@@ -298,7 +298,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       Buffer.from(RLP.encode(bufArrToArr(base as Buffer[]))),
     ])
     if (hashMessage) {
-      return toBuffer(keccak256(message))
+      return Buffer.from(keccak256(message))
     } else {
       return message
     }
@@ -318,12 +318,12 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
 
     if (Object.isFrozen(this)) {
       if (!this.cache.hash) {
-        this.cache.hash = toBuffer(keccak256(this.serialize()))
+        this.cache.hash = Buffer.from(keccak256(this.serialize()))
       }
       return this.cache.hash
     }
 
-    return toBuffer(keccak256(this.serialize()))
+    return Buffer.from(keccak256(this.serialize()))
   }
 
   /**

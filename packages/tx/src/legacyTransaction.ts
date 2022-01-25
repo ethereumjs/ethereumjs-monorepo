@@ -7,7 +7,6 @@ import {
   bufArrToArr,
   ecrecover,
   MAX_INTEGER,
-  rlp,
   toBuffer,
   unpadBuffer,
   validateNoLeadingZeroes,
@@ -221,7 +220,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
   getMessageToSign(hashMessage = true) {
     const message = this._getMessageToSign()
     if (hashMessage) {
-      return toBuffer(keccak256(rlp.encode(message)))
+      return Buffer.from(keccak256(RLP.encode(bufArrToArr(message))))
     } else {
       return message
     }
@@ -276,12 +275,12 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
     if (Object.isFrozen(this)) {
       if (!this.cache.hash) {
-        this.cache.hash = toBuffer(keccak256(rlp.encode(this.raw())))
+        this.cache.hash = Buffer.from(keccak256(RLP.encode(bufArrToArr(this.raw()))))
       }
       return this.cache.hash
     }
 
-    return toBuffer(keccak256(rlp.encode(this.raw())))
+    return Buffer.from(keccak256(RLP.encode(bufArrToArr(this.raw()))))
   }
 
   /**
@@ -293,7 +292,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
       throw new Error(msg)
     }
     const message = this._getMessageToSign()
-    return toBuffer(keccak256(rlp.encode(message)))
+    return Buffer.from(keccak256(RLP.encode(bufArrToArr(message))))
   }
 
   /**

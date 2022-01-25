@@ -795,12 +795,12 @@ export class BlockHeader {
   hash(): Buffer {
     if (Object.isFrozen(this)) {
       if (!this.cache.hash) {
-        this.cache.hash = toBuffer(keccak256(rlp.encode(this.raw())))
+        this.cache.hash = Buffer.from(keccak256(RLP.encode(bufArrToArr(this.raw()))))
       }
       return this.cache.hash
     }
 
-    return toBuffer(keccak256(rlp.encode(this.raw())))
+    return Buffer.from(keccak256(RLP.encode(bufArrToArr(this.raw()))))
   }
 
   /**
@@ -826,7 +826,7 @@ export class BlockHeader {
     this._requireClique('cliqueSigHash')
     const raw = this.raw()
     raw[12] = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
-    return toBuffer(keccak256(rlp.encode(raw)))
+    return Buffer.from(keccak256(RLP.encode(bufArrToArr(raw))))
   }
 
   /**

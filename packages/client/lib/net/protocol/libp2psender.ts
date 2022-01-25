@@ -1,6 +1,6 @@
 import pipe from 'it-pipe'
 import pushable from 'it-pushable'
-import { arrToBufArr, bufferToInt, bufArrToArr } from 'ethereumjs-util'
+import { arrToBufArr, bufferToInt, bufArrToArr, intToBuffer } from 'ethereumjs-util'
 import RLP from 'rlp'
 import { Libp2pMuxedStream as MuxedStream } from '../../types'
 import { Sender } from './sender'
@@ -65,8 +65,8 @@ export class Libp2pSender extends Sender {
    * @param status
    */
   sendStatus(status: any) {
-    const payload: any = Object.entries(status).map(([k, v]) => [k, v])
-    this.pushable.push(Buffer.from(RLP.encode(bufArrToArr([0, payload]))))
+    const payload: any = Object.entries(status).map(([k, v]) => [Buffer.from(k), v])
+    this.pushable.push(Buffer.from(RLP.encode(bufArrToArr([intToBuffer(0), payload]))))
   }
 
   /**
@@ -75,6 +75,6 @@ export class Libp2pSender extends Sender {
    * @param data message payload
    */
   sendMessage(code: number, data: any) {
-    this.pushable.push(Buffer.from(RLP.encode(bufArrToArr([code, data]))))
+    this.pushable.push(Buffer.from(RLP.encode(bufArrToArr([intToBuffer(code), data]))))
   }
 }

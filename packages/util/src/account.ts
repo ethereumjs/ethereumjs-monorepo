@@ -199,11 +199,11 @@ export const generateAddress = function (from: Buffer, nonce: Buffer): Buffer {
   if (bufferToBigInt(nonce) === BigInt(0)) {
     // in RLP we want to encode null in the case of zero nonce
     // read the RLP documentation for an answer if you dare
-    return toBuffer(keccak256(rlp.encode([from, null]))).slice(-20)
+    return Buffer.from(keccak256(RLP.encode(bufArrToArr([from, null] as any)))).slice(-20)
   }
 
   // Only take the lower 160bits of the hash
-  return toBuffer(keccak256(rlp.encode([from, nonce]))).slice(-20)
+  return Buffer.from(keccak256(RLP.encode(bufArrToArr([from, nonce])))).slice(-20)
 }
 
 /**
@@ -284,7 +284,7 @@ export const pubToAddress = function (pubKey: Buffer, sanitize: boolean = false)
     throw new Error('Expected pubKey to be of length 64')
   }
   // Only take the lower 160bits of the hash
-  return toBuffer(keccak256(pubKey)).slice(-20)
+  return Buffer.from(keccak256(pubKey)).slice(-20)
 }
 export const publicToAddress = pubToAddress
 

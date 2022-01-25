@@ -1,6 +1,6 @@
 import Semaphore from 'semaphore-async-await'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { toBuffer, KECCAK256_RLP } from 'ethereumjs-util'
+import { KECCAK256_RLP } from 'ethereumjs-util'
 import { DB, BatchDBOp, PutBatch } from './db'
 import { TrieReadStream as ReadStream } from './readStream'
 import { bufferToNibbles, matchingNibbleLength, doKeysMatch } from './util/nibbles'
@@ -580,7 +580,7 @@ export class Trie {
     if (rlpNode.length >= 32 || topLevel) {
       // Do not use TrieNode.hash() here otherwise serialize()
       // is applied twice (performance)
-      const hashRoot = toBuffer(keccak256(rlpNode))
+      const hashRoot = Buffer.from(keccak256(rlpNode))
 
       if (remove) {
         if (this._deleteFromDB) {
@@ -639,7 +639,7 @@ export class Trie {
     const opStack = proof.map((nodeValue) => {
       return {
         type: 'put',
-        key: toBuffer(keccak256(nodeValue)),
+        key: Buffer.from(keccak256(nodeValue)),
         value: nodeValue,
       } as PutBatch
     })

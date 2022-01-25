@@ -125,7 +125,7 @@ async function createGethGenesisStateTrie(alloc: any) {
       account.balance = BigInt(balance)
     }
     if (code) {
-      account.codeHash = toBuffer(keccak256(toBuffer(code)))
+      account.codeHash = Buffer.from(keccak256(toBuffer(code)))
     }
     if (storage) {
       const storageTrie = await createStorageTrie(storage)

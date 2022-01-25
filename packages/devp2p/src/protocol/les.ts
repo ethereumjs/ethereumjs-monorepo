@@ -1,4 +1,4 @@
-import { , arrToBufArr, bigIntToBuffer, bufArrToArr } from 'ethereumjs-util'
+import { arrToBufArr, bigIntToBuffer, bufArrToArr } from 'ethereumjs-util'
 import RLP from 'rlp'
 import ms from 'ms'
 import snappy from 'snappyjs'
@@ -161,7 +161,7 @@ export class LES extends Protocol {
 
     const statusList: any[][] = []
     Object.keys(status).forEach((key) => {
-      statusList.push([key, status[key]])
+      statusList.push([Buffer.from(key), status[key]])
     })
 
     this.debug(
