@@ -3,7 +3,8 @@ import * as os from 'os'
 import ms from 'ms'
 import { publicKeyCreate } from 'secp256k1'
 import { EventEmitter } from 'events'
-import { debug as createDebugLogger } from 'debug'
+import { debug as createDebugLogger, Debugger } from 'debug'
+import { devp2pDebug } from '../util'
 import LRUCache from 'lru-cache'
 import Common from '@ethereumjs/common'
 // note: relative path only valid in .js file in dist
@@ -12,7 +13,7 @@ import { pk2id, createDeferred, formatLogId, buffer2int } from '../util'
 import { Peer, DISCONNECT_REASONS, Capabilities } from './peer'
 import { DPT, PeerInfo } from '../dpt'
 
-const debug = createDebugLogger('devp2p:rlpx')
+const DEBUG_BASE_NAME = 'rlpx'
 const verbose = createDebugLogger('verbose').enabled
 
 export interface RLPxOptions {
@@ -31,7 +32,7 @@ export interface RLPxOptions {
 export class RLPx extends EventEmitter {
   _privateKey: Buffer
   _id: Buffer
-
+  _debug: Debugger
   _timeout: number
   _maxPeers: number
   _clientId: Buffer
@@ -74,7 +75,7 @@ export class RLPx extends EventEmitter {
       this._dpt.on('peer:new', (peer: PeerInfo) => {
         if (!peer.tcpPort) {
           this._dpt!.banPeer(peer, ms('5m'))
-          debug(`banning peer with missing tcp port: ${peer.address}`)
+          this._debug(`banning peer with missing tcp port: ${peer.address}`)
           return
         }
 
@@ -91,14 +92,15 @@ export class RLPx extends EventEmitter {
         )
       })
     }
-
     // internal
     this._server = net.createServer()
     this._server.once('listening', () => this.emit('listening'))
     this._server.once('close', () => this.emit('close'))
     this._server.on('error', (err) => this.emit('error', err))
     this._server.on('connection', (socket) => this._onConnect(socket, null))
-
+    this._debug = this._server.address()
+      ? devp2pDebug.extend(DEBUG_BASE_NAME).extend(this._server.address() as string)
+      : devp2pDebug.extend(DEBUG_BASE_NAME)
     this._peers = new Map()
     this._peersQueue = []
     this._peersLRU = new LRUCache({ max: 25000 })
@@ -109,14 +111,14 @@ export class RLPx extends EventEmitter {
 
   listen(...args: any[]) {
     this._isAliveCheck()
-    debug('call .listen')
+    this._debug('call .listen')
 
     if (this._server) this._server.listen(...args)
   }
 
   destroy(...args: any[]) {
     this._isAliveCheck()
-    debug('call .destroy')
+    this._debug('call .destroy')
 
     clearInterval(this._refillIntervalId)
 
@@ -136,7 +138,7 @@ export class RLPx extends EventEmitter {
     if (this._peers.has(peerKey)) throw new Error('Already connected')
     if (this._getOpenSlots() === 0) throw new Error('Too many peers already connected')
 
-    debug(`connect to ${peer.address}:${peer.tcpPort} (id: ${formatLogId(peerKey, verbose)})`)
+    this._debug(`connect to ${peer.address}:${peer.tcpPort} (id: ${formatLogId(peerKey, verbose)})`)
     const deferred = createDeferred()
 
     const socket = new net.Socket()
@@ -185,7 +187,7 @@ export class RLPx extends EventEmitter {
   }
 
   _onConnect(socket: net.Socket, peerId: Buffer | null) {
-    debug(`connected to ${socket.remoteAddress}:${socket.remotePort}, handshake waiting..`)
+    this._debug(`connected to ${socket.remoteAddress}:${socket.remotePort}, handshake waiting..`)
 
     const peer: Peer = new Peer({
       socket: socket,
@@ -216,7 +218,7 @@ export class RLPx extends EventEmitter {
       if (peer._eciesSession._gotEIP8Ack === true) {
         msg += ` (peer eip8 ack)`
       }
-      debug(msg)
+      this._debug(msg)
       const id = peer.getId()
       if (id && id.equals(this._id)) {
         return peer.disconnect(DISCONNECT_REASONS.SAME_IDENTITY)
@@ -234,12 +236,9 @@ export class RLPx extends EventEmitter {
 
     peer.once('close', (reason, disconnectWe) => {
       if (disconnectWe) {
-        debug(
-          `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASONS[reason]}`
-        )
-      } else {
-        debug(
-          `${socket.remoteAddress}:${socket.remotePort} disconnect, reason: ${DISCONNECT_REASONS[reason]}`
+        this._debug(
+          `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASONS[reason]}`,
+          `disconnect`
         )
       }
 
@@ -267,7 +266,7 @@ export class RLPx extends EventEmitter {
   _refillConnections() {
     if (!this._isAlive()) return
     if (this._refillIntervalSelectionCounter === 0) {
-      debug(
+      this._debug(
         `Restart connection refill .. with selector ${
           this._refillIntervalSelectionCounter
         } peers: ${this._peers.size}, queue size: ${

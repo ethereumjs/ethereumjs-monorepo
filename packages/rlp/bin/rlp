@@ -16,15 +16,17 @@ if (method === 'encode') {
   try {
     json = JSON.parse(strInput)
   } catch (error) {
-    return console.error(`Error could not parse JSON: ${JSON.stringify(error)}`)
+    const errorMsg = error.message ? error.message : error
+    return console.error(`Error could not parse JSON: ${errorMsg}`)
   }
 
   // Encode RLP
   try {
     const encoded = RLP.encode(json)
-    console.log('0x' + bytesToHex(Uint8Array.from(encoded)))
+    console.log('0x' + bytesToHex(encoded))
   } catch (error) {
-    console.error(`Error encoding RLP: ${error.message ?? error}`)
+    const errorMsg = error.message ? error.message : error
+    console.error(`Error encoding RLP: ${errorMsg}`)
   }
 } else if (method === 'decode') {
   // Decode
@@ -33,7 +35,8 @@ if (method === 'encode') {
     const json = JSON.stringify(arrToJSON(decoded))
     console.log(json)
   } catch (error) {
-    console.error(`Error decoding RLP: ${error.message ?? error}`)
+    const errorMsg = error.message ? error.message : error
+    console.error(`Error decoding RLP: ${errorMsg}`)
   }
 } else {
   console.error('Unsupported method')
