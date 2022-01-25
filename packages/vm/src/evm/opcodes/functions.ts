@@ -384,10 +384,10 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
       // copy fee
       runState.eei.useGas(
-        BigInt(common.param('gasPrices', 'sha3Word') * divCeil(length, 32n)),
+        BigInt(common.param('gasPrices', 'sha3Word')) * divCeil(length, 32n),
         'SHA3 opcode'
       )
-      const r = BigInt(keccak256(data).toString('hex'))
+      const r = BigInt('0x' + keccak256(data).toString('hex'))
       runState.stack.push(r)
     },
   ],
