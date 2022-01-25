@@ -663,9 +663,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const [offset, byte] = runState.stack.popN(2)
 
-      // Convert bigint to hex string and then take the least significant byte (i.e. the last character of the string)
-      const byteHex = byte.toString(16)
-      const buf = toBuffer('0x' + byteHex[byteHex.length - 1])
+      const buf = toBuffer('0x' + (byte & 0xffn).toString(16))
       const offsetNum = Number(offset)
       runState.memory.extend(offsetNum, 1)
       runState.memory.write(offsetNum, 1, buf)

@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN } from 'ethereumjs-util'
+import { Address, BN, bufferToHex } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import { ERROR } from '../../../src/exceptions'
@@ -40,7 +40,8 @@ tape('Istanbul: EIP-1884', async (t) => {
         } else {
           st.assert(res.exceptionError === undefined)
           st.assert(
-            new BN(Buffer.from(testCase.selfbalance.slice(2), 'hex')).eq(new BN(res.returnValue))
+            BigInt(testCase.selfbalance) ===
+            BigInt(bufferToHex(res.returnValue) === '0x' ? 0 : bufferToHex(res.returnValue))
           )
         }
       } catch (e: any) {
