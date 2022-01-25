@@ -2,21 +2,23 @@ import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@eth
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import {
   Address,
+  arrToBufArr,
   bigIntToHex,
   bigIntToUnpaddedBuffer,
+  bufArrToArr,
+  bufferToBigInt,
+  bufferToHex,
   ecrecover,
   ecsign,
   intToBuffer,
   KECCAK256_RLP_ARRAY,
   KECCAK256_RLP,
-  rlp,
   toBuffer,
-  zeros,
-  bufferToHex,
-  bufferToBigInt,
   toType,
   TypeOutput,
+  zeros,
 } from 'ethereumjs-util'
+import RLP from 'rlp'
 import { Blockchain, BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
 import {
   CLIQUE_EXTRA_VANITY,
@@ -91,7 +93,7 @@ export class BlockHeader {
    * @param opts
    */
   public static fromRLPSerializedHeader(serialized: Buffer, opts: BlockOptions = {}) {
-    const values = rlp.decode(serialized)
+    const values = arrToBufArr(RLP.decode(Uint8Array.from(serialized))) as Buffer[]
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized header input. Must be array')
@@ -936,7 +938,7 @@ export class BlockHeader {
    * Returns the rlp encoding of the block header.
    */
   serialize(): Buffer {
-    return rlp.encode(this.raw())
+    return Buffer.from(RLP.encode(bufArrToArr(this.raw())))
   }
 
   /**

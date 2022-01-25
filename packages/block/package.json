@@ -37,7 +37,8 @@
     "merkle-patricia-tree": "^4.2.4",
     "@ethereumjs/tx": "^3.5.1",
     "ethereum-cryptography": "^1.0.3",
-    "ethereumjs-util": "^7.1.4"
+    "ethereumjs-util": "^7.1.4",
+    "rlp": "^3.0.0"
   },
   "devDependencies": {
     "@types/lru-cache": "^5.1.0",
