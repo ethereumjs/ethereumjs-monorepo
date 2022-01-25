@@ -171,7 +171,8 @@ tape('EIP-3529 tests', (t) => {
     })
 
     st.ok(result.execResult.exceptionError === undefined, 'transaction executed succesfully')
-    st.ok(BN.isBN(result.execResult.gasRefund), 'gas refund is defined')
+    console.log(result.execResult)
+    st.ok(result.execResult.gasRefund !== undefined, 'gas refund is defined')
     st.ok(result.execResult.gasRefund === 0n, 'gas refund is zero')
     st.end()
   })
@@ -222,10 +223,10 @@ tape('EIP-3529 tests', (t) => {
     const result = await vm.runTx({ tx })
 
     const actualGasUsed = startGas! - finalGas! + 21000n
-    const maxRefund = actualGasUsed - 5n
+    const maxRefund = actualGasUsed / 5n
     const minGasUsed = actualGasUsed - maxRefund
     const gasUsed = result.execResult.gasUsed
-
+    console.log(result.execResult.gasRefund, maxRefund)
     st.ok(result.execResult.gasRefund! > maxRefund, 'refund is larger than the max refund')
     st.ok(gasUsed >= minGasUsed, 'gas used respects the max refund quotient')
     st.end()
