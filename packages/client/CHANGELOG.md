@@ -18,7 +18,7 @@ Enable with `--saveReceipts` and use with --rpc to enable `eth_getLogs`, `eth_ge
 
 ### Sepolia PoW Testnet Support
 
-The client now support the new [Sepolia](https://sepolia.ethdevops.io/) testnet, which is a PoW network intended to replace the coming-to-ages `ropsten` network, see PR [#1581](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1581).
+The client now supports the new [Sepolia](https://sepolia.ethdevops.io/) testnet, which is a PoW network intended to replace the `ropsten` network, see PR [#1581](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1581).
 
 A client connecting to the Sepolia network can be started as follows:
 

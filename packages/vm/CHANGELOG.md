@@ -12,13 +12,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 Jochem from our team did a great refactoring how the VM handles gas costs in PR [#1364](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1364) by splitting up the opcode gas cost calculation (new file: `evm/opcodes/gas.ts`) from their actual behavior (stack edits, getting block hashes, etc.).
 
-This initial work was adopted a bit in PR [#1553](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1553) to remain backwards-compatibility and now allows to output the dynamic gas cost value in the VM `step` event (see `README`) now taking things like memory usage, address access or storage changes into account and therefore much better reflecting the real gas usage than only showing the (much lower) static part.
+This initial work was adopted a bit in PR [#1553](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1553) to remain backwards-compatible and now allows to output the dynamic gas cost value in the VM `step` event (see `README`) now taking things like memory usage, address access or storage changes into account and therefore much better reflecting the real gas usage than only showing the (much lower) static part.
 
-So along to the static `opcode.fee` output there is now a new event object property `opcode.dynamicFee`.
+So along with the static `opcode.fee` output there is now a new event object property `opcode.dynamicFee`.
 
 ### StateManager Refactoring
 
-The VM `StateManager` has been substantially refactored in PR [#1548](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1548) and most of the generic functionality has been extracted to a super class `BaseStateManager`. This should make it substantially easier to do custom `StateManager` implementations with an alternativ access to the state by inheriting from `BaseStateManager` and only adopt the methods which directly access the underlying data structure. Have a look at the existing `DefaultStateManager` implementation for some guidance.
+The VM `StateManager` has been substantially refactored in PR [#1548](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1548) and most of the generic functionality has been extracted to a super class `BaseStateManager`. This should make it substantially easier to do custom `StateManager` implementations with an alternative access to the state by inheriting from `BaseStateManager` and only adopting the methods which directly access the underlying data structure. Have a look at the existing `DefaultStateManager` implementation for some guidance.
 
 ### Other Features
 
