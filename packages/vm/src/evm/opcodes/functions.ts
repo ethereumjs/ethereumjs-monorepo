@@ -721,7 +721,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       // Convert bigint to hex string and then take the least significant byte (i.e. the last character of the string)
       const byteHex = byte.toString(16)
-      const buf = toBuffer(byteHex[byteHex.length - 1])
+      const buf = toBuffer('0x' + byteHex[byteHex.length - 1])
       subMemUsage(runState, offset, 1n, common)
       const offsetNum = Number(offset)
       runState.memory.extend(offsetNum, 1)
