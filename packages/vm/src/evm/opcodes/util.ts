@@ -194,14 +194,13 @@ export function subMemUsage(runState: RunState, offset: bigint, length: bigint, 
   if (length === 0n) return
 
   const newMemoryWordCount = divCeil(offset + length, 32n)
-  if (newMemoryWordCount >= runState.memoryWordCount) return
+  if (newMemoryWordCount <= runState.memoryWordCount) return
 
   const words = newMemoryWordCount
   const fee = BigInt(common.param('gasPrices', 'memory'))
   const quadCoeff = BigInt(common.param('gasPrices', 'quadCoeffDiv'))
   // words * 3 + words ^2 / 512
   const cost = words * fee + (words * words) / quadCoeff
-
   if (cost > runState.highestMemCost) {
     runState.eei.useGas(cost - runState.highestMemCost, 'subMemUsage')
     runState.highestMemCost = cost
