@@ -1,6 +1,13 @@
 import assert from 'assert'
 import snappy from 'snappyjs'
-import { bufferToBigInt, bufferToHex, rlp, bigIntToBuffer } from 'ethereumjs-util'
+import {
+  arrToBufArr,
+  bigIntToBuffer,
+  bufArrToArr,
+  bufferToBigInt,
+  bufferToHex,
+} from 'ethereumjs-util'
+import RLP from 'rlp'
 import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
 import { Peer } from '../rlpx/peer'
 import { EthProtocol, Protocol, SendMethod } from './protocol'
@@ -38,7 +45,7 @@ export class ETH extends Protocol {
   static eth66 = { name: 'eth', version: 66, length: 29, constructor: ETH }
 
   _handleMessage(code: ETH.MESSAGE_CODES, data: any) {
-    const payload = rlp.decode(data) as unknown
+    const payload = arrToBufArr(RLP.decode(bufArrToArr(data)))
     const messageName = this.getMsgPrefix(code)
     const debugMsg = `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}`
 
@@ -246,7 +253,7 @@ export class ETH extends Protocol {
       } (eth${this._version}): ${this._getStatusString(this._status)}`
     )
 
-    let payload = rlp.encode(this._status as any)
+    let payload = Buffer.from(RLP.encode(bufArrToArr(this._status)))
 
     // Use snappy compression if peer supports DevP2P >=v5
     if (this._peer._hello?.protocolVersion && this._peer._hello?.protocolVersion >= 5) {
@@ -259,7 +266,10 @@ export class ETH extends Protocol {
 
   sendMessage(code: ETH.MESSAGE_CODES, payload: any) {
     const messageName = this.getMsgPrefix(code)
-    const logData = formatLogData(rlp.encode(payload).toString('hex'), this._verbose)
+    const logData = formatLogData(
+      Buffer.from(RLP.encode(bufArrToArr(payload))).toString('hex'),
+      this._verbose
+    )
     const debugMsg = `Send ${messageName} message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${logData}`
 
     this.debug(messageName, debugMsg)
@@ -295,7 +305,7 @@ export class ETH extends Protocol {
         throw new Error(`Unknown code ${code}`)
     }
 
-    payload = rlp.encode(payload)
+    payload = Buffer.from(RLP.encode(bufArrToArr(payload)))
 
     // Use snappy compression if peer supports DevP2P >=v5
     if (this._peer._hello?.protocolVersion && this._peer._hello?.protocolVersion >= 5) {
