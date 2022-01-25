@@ -443,7 +443,7 @@ tape('runTx() -> API return values', async (t) => {
       await vm.stateManager.putAccount(caller, acc)
 
       const res = await vm.runTx({ tx })
-      t.true(res.execResult.gasUsed > 0n, `execution result -> gasUsed -> 0 (${txType.name})`)
+      t.true(res.execResult.gasUsed === 0n, `execution result -> gasUsed -> 0 (${txType.name})`)
       t.equal(
         res.execResult.exceptionError,
         undefined,
@@ -454,7 +454,10 @@ tape('runTx() -> API return values', async (t) => {
         Buffer.from([]),
         `execution result -> return value -> empty Buffer (${txType.name})`
       )
-      t.true(res.execResult.gasRefund! > 0n, `execution result -> gasRefund -> 0 (${txType.name})`)
+      t.true(
+        res.execResult.gasRefund! === 0n,
+        `execution result -> gasRefund -> 0 (${txType.name})`
+      )
     }
     t.end()
   })
@@ -472,7 +475,7 @@ tape('runTx() -> API return values', async (t) => {
 
       t.deepEqual(
         res.gasUsed,
-        tx.getBaseFee(),
+        BigInt(tx.getBaseFee().toString(10)),
         `runTx result -> gasUsed -> tx.getBaseFee() (${txType.name})`
       )
       if (tx instanceof FeeMarketEIP1559Transaction) {

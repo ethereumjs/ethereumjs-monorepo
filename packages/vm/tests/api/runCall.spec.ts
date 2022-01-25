@@ -402,8 +402,8 @@ tape('ensure that sstores pay for the right gas costs pre-byzantium', async (t) 
     }
 
     const result = await vm.runCall(runCallArgs)
-    t.equal(result.gasUsed, callData.gas, 'gas used correct')
-    t.equal(result.execResult.gasRefund, callData.refund, 'gas refund correct')
+    t.equal(result.gasUsed, BigInt(callData.gas), 'gas used correct')
+    t.equal(result.execResult.gasRefund, BigInt(callData.refund), 'gas refund correct')
   }
 
   t.end()
