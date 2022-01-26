@@ -173,10 +173,10 @@ export class DNS {
 
     const response = await dns.promises.resolve(location, 'TXT')
 
-    if (!response.length) {
+    if (response.length === 0) {
       throw new Error('Received empty result array while fetching TXT record')
     }
-    if (!response[0].length) {
+    if (response[0].length === 0) {
       throw new Error('Received empty TXT record')
     }
 
