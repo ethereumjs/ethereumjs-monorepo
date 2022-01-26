@@ -2,7 +2,6 @@ import { setLengthRight, BN } from 'ethereumjs-util'
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
 
-
 function multComplexity(x: BN): BN {
   let fac1
   let fac2
@@ -72,7 +71,7 @@ function expmod(B: BN, E: BN, M: BN): BN {
 }
 
 export default function (opts: PrecompileInput): ExecResult {
-    if (!opts.data) {
+  if (!opts.data) {
     throw new Error('opts.data is undefined')
   }
 

@@ -6,7 +6,7 @@ import { ERROR, VmError } from '../../exceptions'
 const { BLS12_381_ToG2Point, BLS12_381_FromG2Point } = require('./util/bls12_381')
 
 export default async function (opts: PrecompileInput): Promise<ExecResult> {
-    if (!opts.data) {
+  if (!opts.data) {
     throw new Error('opts.data is undefined')
   }
 

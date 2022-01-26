@@ -2,9 +2,8 @@ import { BN } from 'ethereumjs-util'
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
 
-
 export default function (opts: PrecompileInput): ExecResult {
-    if (!opts.data) {
+  if (!opts.data) {
     throw new Error('opts.data is undefined')
   }
 

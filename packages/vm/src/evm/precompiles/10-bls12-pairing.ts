@@ -9,7 +9,7 @@ const zeroBuffer = Buffer.alloc(32, 0)
 const oneBuffer = Buffer.concat([Buffer.alloc(31, 0), Buffer.from('01', 'hex')])
 
 export default async function (opts: PrecompileInput): Promise<ExecResult> {
-    if (!opts.data) {
+  if (!opts.data) {
     throw new Error('opts.data is undefined')
   }
 

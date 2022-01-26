@@ -10,7 +10,7 @@ const {
 } = require('./util/bls12_381')
 
 export default async function (opts: PrecompileInput): Promise<ExecResult> {
-    if (!opts.data) {
+  if (!opts.data) {
     throw new Error('opts.data is undefined')
   }
 
