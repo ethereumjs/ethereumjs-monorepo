@@ -1,4 +1,3 @@
-import { BN } from 'ethereumjs-util'
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
 const assert = require('assert')
@@ -8,9 +7,9 @@ export default function (opts: PrecompileInput): ExecResult {
   assert(opts.data)
 
   const inputData = opts.data
-  const gasUsed = new BN(opts._common.param('gasPrices', 'ecMul'))
+  const gasUsed = BigInt(opts._common.param('gasPrices', 'ecMul'))
 
-  if (opts.gasLimit.lt(gasUsed)) {
+  if (opts.gasLimit < gasUsed) {
     return OOGResult(opts.gasLimit)
   }
 

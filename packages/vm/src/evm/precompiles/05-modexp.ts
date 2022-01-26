@@ -1,74 +1,74 @@
-import { setLengthRight, BN } from 'ethereumjs-util'
+import { setLengthRight, bufferToHex, toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
 const assert = require('assert')
 
-function multComplexity(x: BN): BN {
+function multComplexity(x: bigint): bigint {
   let fac1
   let fac2
-  if (x.lten(64)) {
-    return x.sqr()
-  } else if (x.lten(1024)) {
+  if (x <= 64n) {
+    return x ** 2n
+  } else if (x <= 1024n) {
     // return Math.floor(Math.pow(x, 2) / 4) + 96 * x - 3072
-    fac1 = x.sqr().divn(4)
-    fac2 = x.muln(96)
-    return fac1.add(fac2).subn(3072)
+    fac1 = x ** 2n / 4n
+    fac2 = x * 96n
+    return fac1 + fac2 - 3072n
   } else {
     // return Math.floor(Math.pow(x, 2) / 16) + 480 * x - 199680
-    fac1 = x.sqr().divn(16)
-    fac2 = x.muln(480)
-    return fac1.add(fac2).subn(199680)
+    fac1 = x ** 2n / 16n
+    fac2 = x * 480n
+    return fac1 + fac2 - 199680n
   }
 }
 
-function multComplexityEIP2565(x: BN): BN {
-  const words = x.addn(7).divn(8)
-  return words.mul(words)
+function multComplexityEIP2565(x: bigint): bigint {
+  const words = (x + 7n) / 8n
+  return words * words
 }
 
-function getAdjustedExponentLength(data: Buffer): BN {
+function getAdjustedExponentLength(data: Buffer): bigint {
   let expBytesStart
   try {
-    const baseLen = new BN(data.slice(0, 32)).toNumber()
-    expBytesStart = 96 + baseLen // 96 for base length, then exponent length, and modulus length, then baseLen for the base data, then exponent bytes start
+    const baseLen = BigInt(bufferToHex(data.slice(0, 32)))
+    expBytesStart = 96 + Number(baseLen) // 96 for base length, then exponent length, and modulus length, then baseLen for the base data, then exponent bytes start
   } catch (e: any) {
     expBytesStart = Number.MAX_SAFE_INTEGER - 32
   }
-  const expLen = new BN(data.slice(32, 64))
+  const expLen = BigInt(bufferToHex(data.slice(32, 64)))
   let firstExpBytes = Buffer.from(data.slice(expBytesStart, expBytesStart + 32)) // first word of the exponent data
   firstExpBytes = setLengthRight(firstExpBytes, 32) // reading past the data reads virtual zeros
-  let firstExpBN = new BN(firstExpBytes)
+  let firstExpBigInt = BigInt(bufferToHex(firstExpBytes))
   let max32expLen = 0
-  if (expLen.ltn(32)) {
-    max32expLen = 32 - expLen.toNumber()
+  if (expLen < 32n) {
+    max32expLen = 32 - Number(expLen)
   }
-  firstExpBN = firstExpBN.shrn(8 * Math.max(max32expLen, 0))
+  firstExpBigInt = firstExpBigInt >> (8n * BigInt(Math.max(max32expLen, 0)))
 
   let bitLen = -1
-  while (firstExpBN.gtn(0)) {
+  while (firstExpBigInt > 0n) {
     bitLen = bitLen + 1
-    firstExpBN = firstExpBN.ushrn(1)
+    firstExpBigInt = firstExpBigInt >> 1n
   }
-  let expLenMinus32OrZero = expLen.subn(32)
-  if (expLenMinus32OrZero.ltn(0)) {
-    expLenMinus32OrZero = new BN(0)
+  let expLenMinus32OrZero = expLen - 32n
+  if (expLenMinus32OrZero < 0n) {
+    expLenMinus32OrZero = 0n
   }
-  const eightTimesExpLenMinus32OrZero = expLenMinus32OrZero.muln(8)
-  const adjustedExpLen = eightTimesExpLenMinus32OrZero
+  const eightTimesExpLenMinus32OrZero = expLenMinus32OrZero * 8n
+  let adjustedExpLen = eightTimesExpLenMinus32OrZero
   if (bitLen > 0) {
-    adjustedExpLen.iaddn(bitLen)
+    adjustedExpLen += BigInt(bitLen)
   }
   return adjustedExpLen
 }
 
-function expmod(B: BN, E: BN, M: BN): BN {
-  if (E.isZero()) return new BN(1).mod(M)
-  // Red asserts M > 1
-  if (M.lten(1)) return new BN(0)
-  const red = BN.red(M)
-  const redB = B.toRed(red)
-  const res = redB.redPow(E)
-  return res.fromRed()
+export function expmod(a: bigint, power: bigint, modulo: bigint) {
+  let res = 1n
+  while (power > 0n) {
+    if (power & 1n) res = (res * a) % modulo
+    a = (a * a) % modulo
+    power >>= 1n
+  }
+  return res
 }
 
 export default function (opts: PrecompileInput): ExecResult {
@@ -77,79 +77,85 @@ export default function (opts: PrecompileInput): ExecResult {
   const data = opts.data
 
   let adjustedELen = getAdjustedExponentLength(data)
-  if (adjustedELen.ltn(1)) {
-    adjustedELen = new BN(1)
+  if (adjustedELen < 1n) {
+    adjustedELen = 1n
   }
 
-  const bLen = new BN(data.slice(0, 32))
-  const eLen = new BN(data.slice(32, 64))
-  const mLen = new BN(data.slice(64, 96))
+  const bLen = BigInt(bufferToHex(data.slice(0, 32)))
+  const eLen = BigInt(bufferToHex(data.slice(32, 64)))
+  const mLen = BigInt(bufferToHex(data.slice(64, 96)))
 
   let maxLen = bLen
-  if (maxLen.lt(mLen)) {
+  if (maxLen < mLen) {
     maxLen = mLen
   }
-  const Gquaddivisor = opts._common.param('gasPrices', 'modexpGquaddivisor')
+  const Gquaddivisor = BigInt(opts._common.param('gasPrices', 'modexpGquaddivisor'))
   let gasUsed
 
-  const bStart = new BN(96)
-  const bEnd = bStart.add(bLen)
+  const bStart = 96n
+  const bEnd = bStart + bLen
   const eStart = bEnd
-  const eEnd = eStart.add(eLen)
+  const eEnd = eStart + eLen
   const mStart = eEnd
-  const mEnd = mStart.add(mLen)
+  const mEnd = mStart + mLen
 
   if (!opts._common.isActivatedEIP(2565)) {
-    gasUsed = adjustedELen.mul(multComplexity(maxLen)).divn(Gquaddivisor)
+    gasUsed = (adjustedELen * multComplexity(maxLen)) / Gquaddivisor
   } else {
-    gasUsed = adjustedELen.mul(multComplexityEIP2565(maxLen)).divn(Gquaddivisor)
-    if (gasUsed.ltn(200)) {
-      gasUsed = new BN(200)
+    gasUsed = (adjustedELen * multComplexityEIP2565(maxLen)) / Gquaddivisor
+    if (gasUsed < 200n) {
+      gasUsed = 200n
     }
   }
 
-  if (opts.gasLimit.lt(gasUsed)) {
+  if (opts.gasLimit < gasUsed) {
     return OOGResult(opts.gasLimit)
   }
 
-  if (bLen.isZero()) {
+  if (bLen === 0n) {
     return {
       gasUsed,
-      returnValue: new BN(0).toArrayLike(Buffer, 'be', mLen.toNumber()),
+      returnValue: setLengthLeft(toBuffer('0x' + 0n.toString(16)), Number(mLen)),
     }
   }
 
-  if (mLen.isZero()) {
+  if (mLen === 0n) {
     return {
       gasUsed,
       returnValue: Buffer.alloc(0),
     }
   }
 
-  const maxInt = new BN(Number.MAX_SAFE_INTEGER)
-  const maxSize = new BN(2147483647) // ethereumjs-util setLengthRight limitation
+  const maxInt = BigInt(Number.MAX_SAFE_INTEGER)
+  const maxSize = 2147483647n // ethereumjs-util setLengthRight limitation
 
-  if (bLen.gt(maxSize) || eLen.gt(maxSize) || mLen.gt(maxSize)) {
+  if (bLen > maxSize || eLen > maxSize || mLen > maxSize) {
     return OOGResult(opts.gasLimit)
   }
 
-  const B = new BN(setLengthRight(data.slice(bStart.toNumber(), bEnd.toNumber()), bLen.toNumber()))
-  const E = new BN(setLengthRight(data.slice(eStart.toNumber(), eEnd.toNumber()), eLen.toNumber()))
-  const M = new BN(setLengthRight(data.slice(mStart.toNumber(), mEnd.toNumber()), mLen.toNumber()))
+  const B = BigInt(
+    bufferToHex(setLengthRight(data.slice(Number(bStart), Number(bEnd)), Number(bLen)))
+  )
+  const E = BigInt(
+    bufferToHex(setLengthRight(data.slice(Number(eStart), Number(eEnd)), Number(eLen)))
+  )
+  const M = BigInt(
+    bufferToHex(setLengthRight(data.slice(Number(mStart), Number(mEnd)), Number(mLen)))
+  )
 
-  if (mEnd.gt(maxInt)) {
+  if (mEnd > maxInt) {
     return OOGResult(opts.gasLimit)
   }
 
   let R
-  if (M.isZero()) {
-    R = new BN(0)
+  if (M === 0n) {
+    R = 0n
   } else {
     R = expmod(B, E, M)
   }
 
   return {
     gasUsed,
-    returnValue: R.toArrayLike(Buffer, 'be', mLen.toNumber()),
+    returnValue: setLengthLeft(toBuffer('0x' + R.toString(16)), Number(mLen)),
   }
 }

@@ -1,11 +1,11 @@
-import { BN, MAX_INTEGER } from 'ethereumjs-util'
+import { MAX_INTEGER_BIGINT } from 'ethereumjs-util'
 import { ERROR, VmError } from '../exceptions'
 
 /**
  * Implementation of the stack used in evm.
  */
 export default class Stack {
-  _store: BN[]
+  _store: bigint[]
   _maxHeight: number
 
   constructor(maxHeight?: number) {
@@ -17,12 +17,12 @@ export default class Stack {
     return this._store.length
   }
 
-  push(value: BN) {
-    if (!BN.isBN(value)) {
+  push(value: bigint) {
+    if (typeof value !== 'bigint') {
       throw new VmError(ERROR.INTERNAL_ERROR)
     }
 
-    if (value.gt(MAX_INTEGER)) {
+    if (value > MAX_INTEGER_BIGINT) {
       throw new VmError(ERROR.OUT_OF_RANGE)
     }
 
@@ -33,7 +33,7 @@ export default class Stack {
     this._store.push(value)
   }
 
-  pop(): BN {
+  pop(): bigint {
     if (this._store.length < 1) {
       throw new VmError(ERROR.STACK_UNDERFLOW)
     }
@@ -47,7 +47,7 @@ export default class Stack {
    * in returned array.
    * @param num - Number of items to pop
    */
-  popN(num: number = 1): BN[] {
+  popN(num: number = 1): bigint[] {
     if (this._store.length < num) {
       throw new VmError(ERROR.STACK_UNDERFLOW)
     }
@@ -64,8 +64,8 @@ export default class Stack {
    * @param num Number of items to return
    * @throws {@link ERROR.STACK_UNDERFLOW}
    */
-  peek(num: number = 1): BN[] {
-    const peekArray: BN[] = []
+  peek(num: number = 1): bigint[] {
+    const peekArray: bigint[] = []
 
     for (let peek = 1; peek <= num; peek++) {
       const index = this._store.length - peek
@@ -98,12 +98,16 @@ export default class Stack {
    * Pushes a copy of an item in the stack.
    * @param position - Index of item to be copied (1-indexed)
    */
+  // I would say that we do not need this method any more
+  // since you can't copy a primitive data type
+  // Nevertheless not sure if we "loose" something here?
+  // Will keep commented out for now
   dup(position: number) {
     if (this._store.length < position) {
       throw new VmError(ERROR.STACK_UNDERFLOW)
     }
 
     const i = this._store.length - position
-    this.push(this._store[i].clone())
+    this.push(this._store[i])
   }
 }

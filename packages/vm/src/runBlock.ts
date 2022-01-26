@@ -79,7 +79,7 @@ export interface RunBlockResult {
   /**
    * The gas used after executing the block
    */
-  gasUsed: BN
+  gasUsed: bigint
   /**
    * The bloom filter of the LOGs (events) after executing the block
    */
@@ -183,7 +183,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   // header values against the current block.
   if (generateFields) {
     const bloom = result.bloom.bitvector
-    const gasUsed = result.gasUsed
+    const gasUsed = new BN(result.gasUsed.toString(10), 10)
     const receiptTrie = result.receiptRoot
     const transactionsTrie = await _genTxTrie(block)
     const generatedFields = { stateRoot, bloom, gasUsed, receiptTrie, transactionsTrie }
@@ -215,7 +215,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
       const msg = _errorMsg('invalid bloom', this, block)
       throw new Error(msg)
     }
-    if (!result.gasUsed.eq(block.header.gasUsed)) {
+    if (!(result.gasUsed === BigInt(block.header.gasUsed.toString(10)))) {
       if (this.DEBUG) {
         debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
       }
@@ -308,7 +308,7 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
 async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   const bloom = new Bloom()
   // the total amount of gas used processing these transactions
-  let gasUsed = new BN(0)
+  let gasUsed = 0n
   const receiptTrie = new Trie()
   const receipts = []
   const txResults = []
@@ -321,14 +321,14 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
 
     let maxGasLimit
     if (this._common.isActivatedEIP(1559)) {
-      maxGasLimit = block.header.gasLimit.muln(
-        this._common.param('gasConfig', 'elasticityMultiplier')
-      )
+      maxGasLimit =
+        BigInt(block.header.gasLimit.toString(10)) *
+        BigInt(this._common.param('gasConfig', 'elasticityMultiplier'))
     } else {
       maxGasLimit = block.header.gasLimit
     }
 
-    const gasLimitIsHigherThanBlock = maxGasLimit.lt(tx.gasLimit.add(gasUsed))
+    const gasLimitIsHigherThanBlock = maxGasLimit < BigInt(tx.gasLimit.toString(10)) + gasUsed
     if (gasLimitIsHigherThanBlock) {
       const msg = _errorMsg('tx has a higher gas limit than the block', this, block)
       throw new Error(msg)
@@ -350,7 +350,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     }
 
     // Add to total block gas usage
-    gasUsed = gasUsed.add(txRes.gasUsed)
+    gasUsed = gasUsed + BigInt(txRes.gasUsed.toString(10))
     if (this.DEBUG) {
       debug(`Add tx gas used (${txRes.gasUsed}) to total block gas usage (-> ${gasUsed})`)
     }
@@ -382,11 +382,15 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
     debug(`Assign block rewards`)
   }
   const state = this.stateManager
-  const minerReward = new BN(this._common.param('pow', 'minerReward'))
+  const minerReward = BigInt(this._common.param('pow', 'minerReward'))
   const ommers = block.uncleHeaders
   // Reward ommers
   for (const ommer of ommers) {
-    const reward = calculateOmmerReward(ommer.number, block.header.number, minerReward)
+    const reward = calculateOmmerReward(
+      BigInt(ommer.number.toString(10)),
+      BigInt(block.header.number.toString(10)),
+      minerReward
+    )
     const account = await rewardAccount(state, ommer.coinbase, reward)
     if (this.DEBUG) {
       debug(`Add uncle reward ${reward} to account ${ommer.coinbase} (-> ${account.balance})`)
@@ -400,30 +404,34 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
   }
 }
 
-function calculateOmmerReward(ommerBlockNumber: BN, blockNumber: BN, minerReward: BN): BN {
-  const heightDiff = blockNumber.sub(ommerBlockNumber)
-  let reward = new BN(8).sub(heightDiff).mul(minerReward.divn(8))
-  if (reward.ltn(0)) {
-    reward = new BN(0)
+function calculateOmmerReward(
+  ommerBlockNumber: bigint,
+  blockNumber: bigint,
+  minerReward: bigint
+): bigint {
+  const heightDiff = blockNumber - ommerBlockNumber
+  let reward = ((8n - heightDiff) * minerReward) / 8n
+  if (reward < 0n) {
+    reward = 0n
   }
   return reward
 }
 
-export function calculateMinerReward(minerReward: BN, ommersNum: number): BN {
+export function calculateMinerReward(minerReward: bigint, ommersNum: number): bigint {
   // calculate nibling reward
-  const niblingReward = minerReward.divn(32)
-  const totalNiblingReward = niblingReward.muln(ommersNum)
-  const reward = minerReward.add(totalNiblingReward)
+  const niblingReward = minerReward / 32n
+  const totalNiblingReward = niblingReward * BigInt(ommersNum)
+  const reward = minerReward + totalNiblingReward
   return reward
 }
 
 export async function rewardAccount(
   state: StateManager,
   address: Address,
-  reward: BN
+  reward: bigint
 ): Promise<Account> {
   const account = await state.getAccount(address)
-  account.balance.iadd(reward)
+  account.balance.iadd(new BN(reward.toString(10), 10))
   await state.putAccount(address, account)
   return account
 }

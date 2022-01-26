@@ -2,7 +2,6 @@ import tape from 'tape'
 import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { InterpreterStep } from '../../../src/evm/interpreter'
-import { BN } from 'ethereumjs-util'
 import { ERROR } from '../../../src/exceptions'
 
 tape('EIP 3541 tests', (t) => {
@@ -15,7 +14,7 @@ tape('EIP 3541 tests', (t) => {
 
   t.test('should correctly use push0 opcode', async (st) => {
     const vm = new VM({ common })
-    let stack: BN[]
+    let stack: bigint[]
 
     vm.on('step', (e: InterpreterStep) => {
       if (stack) {
@@ -26,18 +25,18 @@ tape('EIP 3541 tests', (t) => {
 
     const result = await vm.runCode({
       code: Buffer.from('5F', 'hex'),
-      gasLimit: new BN(10),
+      gasLimit: 10n,
     })
 
     st.ok(stack!.length == 1)
-    st.ok(stack![0].eqn(0))
-    st.ok(result.gasUsed.eqn(common.param('gasPrices', 'push0')))
+    st.ok(stack![0] === 0n)
+    st.ok(result.gasUsed === BigInt(common.param('gasPrices', 'push0')))
     st.end()
   })
 
   t.test('should correctly use push0 to create a stack with stack limit length', async (st) => {
     const vm = new VM({ common })
-    let stack: BN[] = []
+    let stack: bigint[] = []
 
     vm.on('step', (e: InterpreterStep) => {
       stack = e.stack
@@ -47,16 +46,16 @@ tape('EIP 3541 tests', (t) => {
 
     const result = await vm.runCode({
       code: Buffer.from('5F'.repeat(depth), 'hex'),
-      gasLimit: new BN(10000),
+      gasLimit: 10000n,
     })
 
     st.ok(stack.length == depth)
-    stack.forEach((elem: BN) => {
-      if (!elem.eqn(0)) {
+    stack.forEach((elem: bigint) => {
+      if (!(elem === 0n)) {
         st.fail('stack element is not 0')
       }
     })
-    st.ok(result.gasUsed.eqn(common.param('gasPrices', 'push0') * depth))
+    st.ok(result.gasUsed === BigInt(common.param('gasPrices', 'push0') * depth))
     st.end()
   })
 
@@ -67,7 +66,7 @@ tape('EIP 3541 tests', (t) => {
 
     const result = await vm.runCode({
       code: Buffer.from('5F'.repeat(depth), 'hex'),
-      gasLimit: new BN(10000),
+      gasLimit: 10000n,
     })
 
     st.ok(result.exceptionError?.error === ERROR.STACK_OVERFLOW)
@@ -79,7 +78,7 @@ tape('EIP 3541 tests', (t) => {
 
     const result = await vm.runCode({
       code: Buffer.from('5F', 'hex'),
-      gasLimit: new BN(10000),
+      gasLimit: 10000n,
     })
 
     st.ok(result.exceptionError!.error === ERROR.INVALID_OPCODE)

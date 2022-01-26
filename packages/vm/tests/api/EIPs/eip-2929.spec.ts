@@ -6,7 +6,7 @@ import { Transaction } from '@ethereumjs/tx'
 
 // Test cases source: https://gist.github.com/holiman/174548cad102096858583c6fbbb0649a
 tape('EIP 2929: gas cost tests', (t) => {
-  const initialGas = new BN(0xffffffffff)
+  const initialGas = BigInt(0xffffffffff)
   const address = new Address(Buffer.from('000000000000000000000000636F6E7472616374', 'hex'))
   const senderKey = Buffer.from(
     'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
@@ -20,7 +20,7 @@ tape('EIP 2929: gas cost tests', (t) => {
     const vm = new VM({ common })
 
     vm.on('step', function (step: any) {
-      const gasUsed = currentGas.sub(step.gasLeft)
+      const gasUsed = currentGas - step.gasLeft
       currentGas = step.gasLeft
 
       if (test.steps.length) {
@@ -35,10 +35,10 @@ tape('EIP 2929: gas cost tests', (t) => {
         // The first opcode of every test should be +/- irrelevant
         // (ex: PUSH) and the last opcode is always STOP
         if (i > 0) {
-          const expectedGasUsed = new BN(test.steps[i - 1].expectedGasUsed)
+          const expectedGasUsed = BigInt(test.steps[i - 1].expectedGasUsed)
           st.equal(
             true,
-            gasUsed.eq(expectedGasUsed),
+            gasUsed === expectedGasUsed,
             `Opcode: ${
               test.steps[i - 1].expectedOpcode
             }, Gase Used: ${gasUsed}, Expected: ${expectedGasUsed}`
@@ -51,7 +51,7 @@ tape('EIP 2929: gas cost tests', (t) => {
     await vm.stateManager.putContractCode(address, Buffer.from(test.code, 'hex'))
 
     const unsignedTx = Transaction.fromTxData({
-      gasLimit: initialGas, // ensure we pass a lot of gas, so we do not run out of gas
+      gasLimit: new BN(initialGas.toString(10)), // ensure we pass a lot of gas, so we do not run out of gas
       to: address, // call to the contract address,
     })
 
@@ -59,12 +59,12 @@ tape('EIP 2929: gas cost tests', (t) => {
 
     const result = await vm.runTx({ tx })
 
-    const totalGasUsed = initialGas.sub(currentGas)
-    st.equal(true, totalGasUsed.eq(new BN(test.totalGasUsed).addn(21000))) // Add tx upfront cost.
+    const totalGasUsed = initialGas - currentGas
+    st.equal(true, totalGasUsed === BigInt(test.totalGasUsed) + 21000n) // Add tx upfront cost.
     return result
   }
 
-  const runCodeTest = async function (code: string, expectedGasUsed: number, st: tape.Test) {
+  const runCodeTest = async function (code: string, expectedGasUsed: bigint, st: tape.Test) {
     // setup the accounts for this test
     const privateKey = Buffer.from(
       'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
@@ -99,7 +99,7 @@ tape('EIP 2929: gas cost tests', (t) => {
 
     const result = await vm.runTx({ tx })
 
-    st.ok(result.gasUsed.toNumber() == expectedGasUsed)
+    st.ok(result.gasUsed == expectedGasUsed)
   }
 
   // Checks EXT(codehash,codesize,balance) of precompiles, which should be 100,
@@ -157,24 +157,24 @@ tape('EIP 2929: gas cost tests', (t) => {
   t.test('should charge for extcodecopy correctly', async (st) => {
     const test = {
       code: '60006000600060ff3c60006000600060ff3c600060006000303c00',
-      totalGasUsed: 2835,
+      totalGasUsed: 2835n,
       steps: [
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'EXTCODECOPY', expectedGasUsed: 2600 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'EXTCODECOPY', expectedGasUsed: 100 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'ADDRESS', expectedGasUsed: 2 },
-        { expectedOpcode: 'EXTCODECOPY', expectedGasUsed: 100 },
-        { expectedOpcode: 'STOP', expectedGasUsed: 0 },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3n },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3n },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3n },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3n },
+        { expectedOpcode: 'EXTCODECOPY', expectedGasUsed: 2600n },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3n },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3n },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3n },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3n },
+        { expectedOpcode: 'EXTCODECOPY', expectedGasUsed: 100n },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3n },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3n },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3n },
+        { expectedOpcode: 'ADDRESS', expectedGasUsed: 2n },
+        { expectedOpcode: 'EXTCODECOPY', expectedGasUsed: 100n },
+        { expectedOpcode: 'STOP', expectedGasUsed: 0n },
       ],
     }
 
@@ -272,18 +272,18 @@ tape('EIP 2929: gas cost tests', (t) => {
     // SLOAD or CALL operations.
 
     // load same storage slot twice (also in inner call)
-    await runCodeTest('60005460003415601357600080808080305AF15B00', 23369, t)
+    await runCodeTest('60005460003415601357600080808080305AF15B00', 23369n, t)
     // call to contract, load slot 0, revert inner call. load slot 0 in outer call.
-    await runCodeTest('341515600D57600054600080FD5B600080808080305AF160005400', 25374, t)
+    await runCodeTest('341515600D57600054600080FD5B600080808080305AF160005400', 25374n, t)
 
     // call to address 0xFFFF..FF
     const callFF = '6000808080806000195AF1'
     // call address 0xFF..FF, now call same contract again, call 0xFF..FF again (it is now warm)
-    await runCodeTest(callFF + '60003415601B57600080808080305AF15B00', 23909, t)
+    await runCodeTest(callFF + '60003415601B57600080808080305AF15B00', 23909n, t)
     // call to contract, call 0xFF..FF, revert, call 0xFF..FF (should be cold)
     await runCodeTest(
       '341515601557' + callFF + '600080FD5B600080808080305AF1' + callFF + '00',
-      26414,
+      26414n,
       t
     )
 

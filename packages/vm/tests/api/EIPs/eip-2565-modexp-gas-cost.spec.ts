@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN } from 'ethereumjs-util'
+import { Address } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 
@@ -16,13 +16,13 @@ tape('EIP-2565 ModExp gas cost tests', (t) => {
       const to = new Address(Buffer.from('0000000000000000000000000000000000000005', 'hex'))
       const result = await vm.runCall({
         caller: Address.zero(),
-        gasLimit: new BN(0xffffffffff),
+        gasLimit: BigInt(0xffffffffff),
         to,
-        value: new BN(0),
+        value: 0n,
         data: Buffer.from(test.Input, 'hex'),
       })
 
-      if (!result.execResult.gasUsed.eq(new BN(test.Gas))) {
+      if (!(result.execResult.gasUsed === BigInt(test.Gas))) {
         st.fail(
           `[${testName}]: Gas usage incorrect, expected ${test.Gas}, got ${result.execResult.gasUsed}`
         )

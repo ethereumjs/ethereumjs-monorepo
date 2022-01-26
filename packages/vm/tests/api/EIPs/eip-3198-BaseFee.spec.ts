@@ -91,10 +91,10 @@ tape('EIP3198 tests', (t) => {
       tx: block.transactions[0],
       block,
     })
-    const txBaseFee = block.transactions[0].getBaseFee()
-    const gasUsed = results.gasUsed.sub(txBaseFee)
-    st.ok(gasUsed.eqn(2), 'gas used correct')
-    st.ok(stack[0].eq(fee), 'right item pushed on stack')
+    const txBaseFee = BigInt(block.transactions[0].getBaseFee().toString(10))
+    const gasUsed = results.gasUsed - txBaseFee
+    st.ok(gasUsed === 2n, 'gas used correct')
+    st.ok(stack[0] === BigInt(fee.toString(10)), 'right item pushed on stack')
     st.end()
   })
 })

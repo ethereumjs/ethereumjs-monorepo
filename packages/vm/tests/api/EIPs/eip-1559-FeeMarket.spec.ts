@@ -98,7 +98,7 @@ tape('EIP1559 tests', (t) => {
     st.ok(miner.balance.eq(expectedMinerBalance), 'miner balance correct')
     account = await vm.stateManager.getAccount(sender)
     st.ok(account.balance.eq(expectedAccountBalance), 'account balance correct')
-    st.ok(results.amountSpent.eq(expectedCost), 'reported cost correct')
+    st.ok(new BN(results.amountSpent.toString(10), 10).eq(expectedCost), 'reported cost correct')
 
     const tx2 = new AccessListEIP2930Transaction(
       {
@@ -129,7 +129,7 @@ tape('EIP1559 tests', (t) => {
     st.ok(miner.balance.eq(expectedMinerBalance), 'miner balance correct')
     account = await vm.stateManager.getAccount(sender)
     st.ok(account.balance.eq(expectedAccountBalance), 'account balance correct')
-    st.ok(results2.amountSpent.eq(expectedCost), 'reported cost correct')
+    st.ok(new BN(results2.amountSpent.toString(10), 10).eq(expectedCost), 'reported cost correct')
 
     const tx3 = new Transaction(
       {
@@ -160,7 +160,7 @@ tape('EIP1559 tests', (t) => {
     st.ok(miner.balance.eq(expectedMinerBalance), 'miner balance correct')
     account = await vm.stateManager.getAccount(sender)
     st.ok(account.balance.eq(expectedAccountBalance), 'account balance correct')
-    st.ok(results3.amountSpent.eq(expectedCost), 'reported cost correct')
+    st.ok(new BN(results3.amountSpent.toString(10), 10).eq(expectedCost), 'reported cost correct')
 
     st.end()
   })

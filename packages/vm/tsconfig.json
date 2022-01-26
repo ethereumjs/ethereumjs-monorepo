@@ -1,4 +1,7 @@
 {
   "extends": "../../config/tsconfig.json",
-  "include": ["src/**/*.ts", "src/**/*.json", "tests/**/*.ts"]
+  "include": ["src/**/*.ts", "src/**/*.json", "tests/**/*.ts"],
+  "compilerOptions" : {
+    "target": "ES2020"
+  }
 }

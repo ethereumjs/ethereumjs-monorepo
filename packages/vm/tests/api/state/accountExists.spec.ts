@@ -32,17 +32,17 @@ tape('correctly apply new account gas fee on pre-Spurious Dragon hardforks', asy
   // setup the call arguments
   const runCallArgs = {
     caller: caller, // call address
-    gasLimit: new BN(174146 - 22872), // tx gas limit minus the tx fee (21000) and data fee (1872) to represent correct gas costs
+    gasLimit: BigInt(174146 - 22872), // tx gas limit minus the tx fee (21000) and data fee (1872) to represent correct gas costs
     data: Buffer.from(
       'a9059cbb000000000000000000000000f48a1bdc65d9ccb4b569ffd4bffff415b90783d60000000000000000000000000000000000000000000000000000000000000001',
       'hex'
     ),
     to: contractAddress, // call to the contract address
-    value: new BN(0),
+    value: 0n,
   }
 
   const result = await vm.runCall(runCallArgs)
-  t.ok(result.gasUsed.toNumber() === 53552, 'vm correctly applies new account gas price')
+  t.ok(result.gasUsed === 53552n, 'vm correctly applies new account gas price')
   t.end()
 })
 
@@ -77,20 +77,17 @@ tape(
     // setup the call arguments
     const runCallArgs = {
       caller: caller, // call address
-      gasLimit: new BN(174146 - 22872), // tx gas limit minus the tx fee (21000) and data fee (1872) to represent correct gas costs
+      gasLimit: BigInt(174146 - 22872), // tx gas limit minus the tx fee (21000) and data fee (1872) to represent correct gas costs
       data: Buffer.from(
         'a9059cbb000000000000000000000000f48a1bdc65d9ccb4b569ffd4bffff415b90783d60000000000000000000000000000000000000000000000000000000000000001',
         'hex'
       ),
       to: contractAddress, // call to the contract address
-      value: new BN(0),
+      value: 0n,
     }
 
     const result = await vm.runCall(runCallArgs)
-    t.ok(
-      result.gasUsed.toNumber() === 28552,
-      'new account price not applied as empty account exists'
-    )
+    t.ok(result.gasUsed === 28552n, 'new account price not applied as empty account exists')
     t.end()
   }
 )

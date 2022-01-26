@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN } from 'ethereumjs-util'
+import { Address } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../../src'
 import { getPrecompile } from '../../../../src/evm/precompiles'
@@ -13,12 +13,12 @@ tape('Precompiles: ECMUL', (t) => {
 
     const result = await ECMUL({
       data: Buffer.alloc(0),
-      gasLimit: new BN(0xffff),
+      gasLimit: BigInt(0xffff),
       _common: common,
       _VM: vm,
     })
 
-    st.deepEqual(result.gasUsed.toNumber(), 40000, 'should use petersburg gas costs')
+    st.deepEqual(result.gasUsed, 40000n, 'should use petersburg gas costs')
     st.end()
   })
 })

@@ -17,7 +17,7 @@ tape('Istanbul: EIP-1344', async (t) => {
   t.test('CHAINID', async (st) => {
     const runCodeArgs = {
       code: Buffer.from(code.join(''), 'hex'),
-      gasLimit: new BN(0xffff),
+      gasLimit: BigInt(0xffff),
     }
 
     for (const testCase of testCases) {

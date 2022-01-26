@@ -42,7 +42,7 @@ tape('BlockBuilder', async (t) => {
       return address
     }
     const result = await vmCopy.runBlock({ block })
-    st.ok(result.gasUsed.eq(block.header.gasUsed))
+    st.ok(result.gasUsed === BigInt(block.header.gasUsed.toString(10)))
     st.ok(result.receiptRoot.equals(block.header.receiptTrie))
     st.ok(result.stateRoot.equals(block.header.stateRoot))
     st.ok(result.logsBloom.equals(block.header.logsBloom))
@@ -271,7 +271,7 @@ tape('BlockBuilder', async (t) => {
 
     // block should successfully execute with VM.runBlock and have same outputs
     const result = await vmCopy.runBlock({ block })
-    st.ok(result.gasUsed.eq(block.header.gasUsed))
+    st.ok(result.gasUsed === BigInt(block.header.gasUsed.toString(10)))
     st.ok(result.receiptRoot.equals(block.header.receiptTrie))
     st.ok(result.stateRoot.equals(block.header.stateRoot))
     st.ok(result.logsBloom.equals(block.header.logsBloom))
@@ -362,7 +362,7 @@ tape('BlockBuilder', async (t) => {
       return address
     }
     const result = await vmCopy.runBlock({ block })
-    st.ok(result.gasUsed.eq(block.header.gasUsed))
+    st.ok(result.gasUsed === BigInt(block.header.gasUsed.toString(10)))
     st.ok(result.receiptRoot.equals(block.header.receiptTrie))
     st.ok(result.stateRoot.equals(block.header.stateRoot))
     st.ok(result.logsBloom.equals(block.header.logsBloom))

@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Account, Address, BN, MAX_INTEGER } from 'ethereumjs-util'
+import { Account, Address, BN, bufferToHex, MAX_INTEGER, toBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction, TransactionFactory, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
@@ -34,7 +34,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
       await vm.stateManager.putAccount(caller, acc)
 
       const res = await vm.runTx({ tx })
-      st.true(res.gasUsed.gt(new BN(0)), `${msg} (${txType.name})`)
+      st.true(res.gasUsed > 0n, `${msg} (${txType.name})`)
     }
   }
 
@@ -60,10 +60,10 @@ tape('runTx() -> successful API parameter usage', async (t) => {
     const acc = createAccount()
     await vm.stateManager.putAccount(caller, acc)
 
-    const blockGasUsed = new BN(1000)
+    const blockGasUsed = 1000n
     const res = await vm.runTx({ tx, blockGasUsed })
     t.ok(
-      new BN(res.receipt.gasUsed).eq(blockGasUsed.add(res.gasUsed)),
+      BigInt(bufferToHex(res.receipt.gasUsed)) === blockGasUsed + res.gasUsed,
       'receipt.gasUsed should equal block gas used + tx gas used'
     )
     t.end()
@@ -81,7 +81,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
 
     const res = await vm.runTx({ tx })
     t.true(
-      res.gasUsed.gt(new BN(0)),
+      res.gasUsed > 0n,
       `mainnet (PoW), istanbul HF, default SM - should run without errors (${TRANSACTION_TYPES[0].name})`
     )
 
@@ -146,14 +146,14 @@ tape('runTx() -> successful API parameter usage', async (t) => {
         const baseFee = block.header.baseFeePerGas!
         const inclusionFeePerGas =
           tx instanceof FeeMarketEIP1559Transaction
-            ? BN.min(tx.maxPriorityFeePerGas, tx.maxFeePerGas.sub(baseFee))
-            : tx.gasPrice.sub(baseFee)
+            ? BigInt(BN.min(tx.maxPriorityFeePerGas, tx.maxFeePerGas.sub(baseFee)).toString(10))
+            : BigInt(tx.gasPrice.sub(baseFee).toString(10))
         const expectedCoinbaseBalance = common.isActivatedEIP(1559)
-          ? result.gasUsed.mul(inclusionFeePerGas)
+          ? result.gasUsed * inclusionFeePerGas
           : result.amountSpent
 
         t.ok(
-          coinbaseAccount.balance.eq(expectedCoinbaseBalance),
+          BigInt(coinbaseAccount.balance.toString(10)) === expectedCoinbaseBalance,
           `should use custom block (${txType.name})`
         )
 
@@ -208,7 +208,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
 
     const res = await vm.runTx({ tx, reportAccessList: true })
     t.true(
-      res.gasUsed.gt(new BN(0)),
+      res.gasUsed > 0n,
       `mainnet (PoW), istanbul HF, default SM - should run without errors (${TRANSACTION_TYPES[0].name})`
     )
     t.deepEqual(res.accessList, [])
@@ -443,7 +443,7 @@ tape('runTx() -> API return values', async (t) => {
       await vm.stateManager.putAccount(caller, acc)
 
       const res = await vm.runTx({ tx })
-      t.true(res.execResult.gasUsed.eqn(0), `execution result -> gasUsed -> 0 (${txType.name})`)
+      t.true(res.execResult.gasUsed === 0n, `execution result -> gasUsed -> 0 (${txType.name})`)
       t.equal(
         res.execResult.exceptionError,
         undefined,
@@ -455,7 +455,7 @@ tape('runTx() -> API return values', async (t) => {
         `execution result -> return value -> empty Buffer (${txType.name})`
       )
       t.true(
-        res.execResult.gasRefund!.eqn(0),
+        res.execResult.gasRefund! === 0n,
         `execution result -> gasRefund -> 0 (${txType.name})`
       )
     }
@@ -475,22 +475,22 @@ tape('runTx() -> API return values', async (t) => {
 
       t.deepEqual(
         res.gasUsed,
-        tx.getBaseFee(),
+        BigInt(tx.getBaseFee().toString(10)),
         `runTx result -> gasUsed -> tx.getBaseFee() (${txType.name})`
       )
       if (tx instanceof FeeMarketEIP1559Transaction) {
         const baseFee = new BN(7)
         const inclusionFeePerGas = BN.min(tx.maxPriorityFeePerGas, tx.maxFeePerGas.sub(baseFee))
-        const gasPrice = inclusionFeePerGas.add(baseFee)
-        t.deepEqual(
+        const gasPrice = BigInt(inclusionFeePerGas.toString(10)) + BigInt(baseFee.toString(10))
+        t.deepEquals(
           res.amountSpent,
-          res.gasUsed.mul(gasPrice),
+          res.gasUsed * gasPrice,
           `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`
         )
       } else {
         t.deepEqual(
           res.amountSpent,
-          res.gasUsed.mul((<Transaction>tx).gasPrice),
+          res.gasUsed * BigInt((<Transaction>tx).gasPrice.toString(10)),
           `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`
         )
       }
@@ -502,7 +502,7 @@ tape('runTx() -> API return values', async (t) => {
       )
       t.deepEqual(
         res.receipt.gasUsed,
-        res.gasUsed.toArrayLike(Buffer),
+        toBuffer('0x' + res.gasUsed.toString(16)),
         `runTx result -> receipt.gasUsed -> result.gasUsed as Buffer (${txType.name})`
       )
       t.deepEqual(

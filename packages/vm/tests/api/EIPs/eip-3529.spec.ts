@@ -114,17 +114,17 @@ tape('EIP-3529 tests', (t) => {
   t.test('should verify EIP test cases', async (st) => {
     const vm = new VM({ common })
 
-    let gasRefund: BN
-    let gasLeft: BN
+    let gasRefund: bigint
+    let gasLeft: bigint
 
     vm.on('step', (step: InterpreterStep) => {
       if (step.opcode.name === 'STOP') {
-        gasRefund = step.gasRefund.clone()
-        gasLeft = step.gasLeft.clone()
+        gasRefund = step.gasRefund
+        gasLeft = step.gasLeft
       }
     })
 
-    const gasLimit = new BN(100000)
+    const gasLimit = 100000n
     const key = Buffer.from('00'.repeat(32), 'hex')
 
     for (const testCase of testCases) {
@@ -145,11 +145,11 @@ tape('EIP-3529 tests', (t) => {
         gasLimit,
       })
 
-      const gasUsed = gasLimit.sub(gasLeft!)
-      const effectiveGas = gasUsed.sub(gasRefund!)
+      const gasUsed = gasLimit - gasLeft!
+      const effectiveGas = gasUsed - gasRefund!
 
-      st.equals(effectiveGas.toNumber(), testCase.effectiveGas, 'correct effective gas')
-      st.equals(gasUsed.toNumber(), testCase.usedGas, 'correct used gas')
+      st.equals(Number(effectiveGas), testCase.effectiveGas, 'correct effective gas')
+      st.equals(Number(gasUsed), testCase.usedGas, 'correct used gas')
 
       // clear the storage cache, otherwise next test will use current original value
       vm.stateManager.clearOriginalStorageCache()
@@ -171,8 +171,8 @@ tape('EIP-3529 tests', (t) => {
     })
 
     st.ok(result.execResult.exceptionError === undefined, 'transaction executed succesfully')
-    st.ok(BN.isBN(result.execResult.gasRefund), 'gas refund is defined')
-    st.ok(result.execResult.gasRefund?.isZero(), 'gas refund is zero')
+    st.ok(result.execResult.gasRefund !== undefined, 'gas refund is defined')
+    st.ok(result.execResult.gasRefund === 0n, 'gas refund is zero')
     st.end()
   })
 
@@ -184,15 +184,15 @@ tape('EIP-3529 tests', (t) => {
      */
     const vm = new VM({ common })
 
-    let startGas: any
-    let finalGas: any
+    let startGas: bigint
+    let finalGas: bigint
 
     vm.on('step', (step: InterpreterStep) => {
       if (startGas === undefined) {
-        startGas = step.gasLeft.clone()
+        startGas = step.gasLeft
       }
       if (step.opcode.name === 'STOP') {
-        finalGas = step.gasLeft.clone()
+        finalGas = step.gasLeft
       }
     })
 
@@ -221,13 +221,13 @@ tape('EIP-3529 tests', (t) => {
 
     const result = await vm.runTx({ tx })
 
-    const actualGasUsed = startGas.sub(finalGas).addn(21000)
-    const maxRefund = actualGasUsed.divn(5)
-    const minGasUsed = actualGasUsed.sub(maxRefund)
+    const actualGasUsed = startGas! - finalGas! + 21000n
+    const maxRefund = actualGasUsed / 5n
+    const minGasUsed = actualGasUsed - maxRefund
     const gasUsed = result.execResult.gasUsed
-
-    st.ok(result.execResult.gasRefund?.gt(maxRefund), 'refund is larger than the max refund')
-    st.ok(gasUsed.gte(minGasUsed), 'gas used respects the max refund quotient')
+    console.log(result.execResult.gasRefund, maxRefund)
+    st.ok(result.execResult.gasRefund! > maxRefund, 'refund is larger than the max refund')
+    st.ok(gasUsed >= minGasUsed, 'gas used respects the max refund quotient')
     st.end()
   })
 })
