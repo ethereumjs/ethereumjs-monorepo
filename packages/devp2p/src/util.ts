@@ -1,4 +1,3 @@
-import assert from 'assert'
 import { randomBytes } from 'crypto'
 import { privateKeyVerify, publicKeyConvert } from 'secp256k1'
 import createKeccakHash from 'keccak'
@@ -80,9 +79,7 @@ export function assertEq(
     } else {
       debug(debugMsg)
     }
-    throw new assert.AssertionError({
-      message: fullMsg,
-    })
+    throw new Error(fullMsg)
   }
 
   if (expected === actual) return
@@ -92,9 +89,7 @@ export function assertEq(
   } else {
     debug(fullMsg)
   }
-  throw new assert.AssertionError({
-    message: fullMsg,
-  })
+  throw new Error(fullMsg)
 }
 
 export function formatLogId(id: string, verbose: boolean): string {

@@ -1,4 +1,3 @@
-import assert from 'assert'
 import { EventEmitter } from 'events'
 import ms from 'ms'
 import snappy from 'snappyjs'
@@ -142,7 +141,7 @@ export class ETH extends EventEmitter {
         if (this._latestBlock.gte(peerNextFork)) {
           const msg = 'Remote is advertising a future fork that passed locally'
           this.debug('STATUS', msg)
-          throw new assert.AssertionError({ message: msg })
+          throw new Error(msg)
         }
       }
     }
@@ -150,7 +149,7 @@ export class ETH extends EventEmitter {
     if (peerFork === null) {
       const msg = 'Unknown fork hash'
       this.debug('STATUS', msg)
-      throw new assert.AssertionError({ message: msg })
+      throw new Error(msg)
     }
 
     if (!c.hardforkGteHardfork(peerFork.name, this._hardfork)) {
@@ -158,7 +157,7 @@ export class ETH extends EventEmitter {
       if (peerNextFork === null || !nextHardforkBlock || !nextHardforkBlock.eq(peerNextFork)) {
         const msg = 'Outdated fork status, remote needs software update'
         this.debug('STATUS', msg)
-        throw new assert.AssertionError({ message: msg })
+        throw new Error(msg)
       }
     }
   }
