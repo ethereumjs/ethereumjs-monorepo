@@ -1,4 +1,3 @@
-import assert from 'assert'
 import { zeros, keccak256 } from 'ethereumjs-util'
 
 const BYTE_SIZE = 256
@@ -13,7 +12,9 @@ export default class Bloom {
     if (!bitvector) {
       this.bitvector = zeros(BYTE_SIZE)
     } else {
-      assert(bitvector.length === BYTE_SIZE, 'bitvectors must be 2048 bits long')
+      if (bitvector.length !== BYTE_SIZE) {
+        throw new Error('bitvectors must be 2048 bits long')
+      }
       this.bitvector = bitvector
     }
   }
@@ -23,7 +24,9 @@ export default class Bloom {
    * @param e - The element to add
    */
   add(e: Buffer) {
-    assert(Buffer.isBuffer(e), 'Element should be buffer')
+    if (!Buffer.isBuffer(e)) {
+      throw new Error('Element should be buffer')
+    }
     e = keccak256(e)
     const mask = 2047 // binary 11111111111
 
@@ -41,7 +44,9 @@ export default class Bloom {
    * @param e - The element to check
    */
   check(e: Buffer): boolean {
-    assert(Buffer.isBuffer(e), 'Element should be Buffer')
+    if (!Buffer.isBuffer(e)) {
+      throw new Error('Element should be Buffer')
+    }
     e = keccak256(e)
     const mask = 2047 // binary 11111111111
     let match = true

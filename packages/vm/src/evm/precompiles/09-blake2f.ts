@@ -2,7 +2,7 @@ import { BN } from 'ethereumjs-util'
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
 import { VmError, ERROR } from '../../exceptions'
-const assert = require('assert')
+
 
 // The following blake2 code has been taken from (license: Creative Commons CC0):
 // https://github.com/dcposch/blakejs/blob/410c640d0f08d3b26904c6d1ab3d81df3619d282/blake2b.js
@@ -156,7 +156,9 @@ export function F(h: Uint32Array, m: Uint32Array, t: Uint32Array, f: boolean, ro
 }
 
 export default function (opts: PrecompileInput): ExecResult {
-  assert(opts.data)
+    if (!opts.data) {
+    throw new Error('opts.data is undefined')
+  }
 
   const data = opts.data
   if (data.length !== 213) {

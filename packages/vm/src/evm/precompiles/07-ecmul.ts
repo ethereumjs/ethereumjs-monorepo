@@ -1,11 +1,13 @@
 import { BN } from 'ethereumjs-util'
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
-const assert = require('assert')
+
 const bn128 = require('rustbn.js')
 
 export default function (opts: PrecompileInput): ExecResult {
-  assert(opts.data)
+  if (!opts.data) {
+    throw new Error('opts.data is undefined')
+  }
 
   const inputData = opts.data
   const gasUsed = new BN(opts._common.param('gasPrices', 'ecMul'))

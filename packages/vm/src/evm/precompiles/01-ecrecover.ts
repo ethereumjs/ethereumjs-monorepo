@@ -1,10 +1,11 @@
 import { setLengthLeft, setLengthRight, ecrecover, publicToAddress, BN } from 'ethereumjs-util'
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
-const assert = require('assert')
 
 export default function (opts: PrecompileInput): ExecResult {
-  assert(opts.data)
+  if (!opts.data) {
+    throw new Error('opts.data is undefined')
+  }
 
   const gasUsed = new BN(opts._common.param('gasPrices', 'ecRecover'))
 

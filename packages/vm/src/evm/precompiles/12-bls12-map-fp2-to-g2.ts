@@ -2,11 +2,13 @@ import { BN } from 'ethereumjs-util'
 import { PrecompileInput } from './types'
 import { VmErrorResult, ExecResult, OOGResult } from '../evm'
 import { ERROR, VmError } from '../../exceptions'
-const assert = require('assert')
+
 const { BLS12_381_ToFp2Point, BLS12_381_FromG2Point } = require('./util/bls12_381')
 
 export default async function (opts: PrecompileInput): Promise<ExecResult> {
-  assert(opts.data)
+  if (!opts.data) {
+    throw new Error('opts.data is undefined')
+  }
 
   const mcl = opts._VM._mcl
 
