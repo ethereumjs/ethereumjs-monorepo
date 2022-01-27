@@ -1,9 +1,6 @@
-#
 # This special file aims to run node tests for each relevant node version.
 # A relevant node version can be: active, current, maintenance or EOL with some months of tolerance
 # For more details, please check ./scripts/node-versions.js
-#
-
 name: Node versions
 on:
   schedule:
