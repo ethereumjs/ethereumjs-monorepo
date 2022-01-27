@@ -167,7 +167,10 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.stack.push(1n)
         return
       }
-      const byteLength = exponent.toString(16).length
+      let byteLength = exponent.toString(2).length / 8
+      if (byteLength > Math.trunc(byteLength)) {
+        byteLength = Math.trunc(byteLength) + 1
+      }
       if (byteLength < 1 || byteLength > 32) {
         trap(ERROR.OUT_OF_RANGE)
       }
