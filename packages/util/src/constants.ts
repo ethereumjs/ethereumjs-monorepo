@@ -32,8 +32,7 @@ export const TWO_POW256 = new BN(
 /**
  * 2^256
  */
-export const TWO_POW256_BIGINT =
-  BigInt(0x10000000000000000000000000000000000000000000000000000000000000000)
+export const TWO_POW256_BIGINT = 2n ** 256n
 
 /**
  * Keccak-256 hash of null
