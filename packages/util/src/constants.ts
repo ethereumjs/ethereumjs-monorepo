@@ -22,7 +22,7 @@ export const MAX_INTEGER_BIGINT = 2n ** 256n - 1n
 /**
  * 2^256
  *
- * @deprecated
+ * @deprecated bn.js constants are deprecated, please use the newly introduced bigint constants
  */
 export const TWO_POW256 = new BN(
   '10000000000000000000000000000000000000000000000000000000000000000',
