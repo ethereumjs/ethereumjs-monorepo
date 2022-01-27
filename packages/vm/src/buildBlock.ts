@@ -132,11 +132,9 @@ export class BlockBuilder {
    * Calculates and returns the receiptTrie for the block.
    */
   private async receiptTrie() {
-    let _gasUsed = 0n
     const receiptTrie = new Trie()
     for (const [i, txResult] of this.transactionResults.entries()) {
       const tx = this.transactions[i]
-      _gasUsed += txResult.gasUsed
       const encodedReceipt = encodeReceipt(tx, txResult.receipt)
       await receiptTrie.put(rlp.encode(i), encodedReceipt)
     }
