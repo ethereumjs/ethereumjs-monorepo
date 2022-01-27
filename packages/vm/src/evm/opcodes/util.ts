@@ -280,7 +280,7 @@ export function fromTwos(a: bigint) {
 }
 
 export function toTwos(a: bigint) {
-  return BigInt.asUintN(256, ~a) + 1n
+  return BigInt.asUintN(256, ~a + 1n)
 }
 
 export function abs(a: bigint) {
