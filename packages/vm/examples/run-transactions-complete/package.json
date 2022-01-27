@@ -1,7 +1,0 @@
-{
-  "name": "run-transactions-complete",
-  "private": true,
-  "scripts": {
-    "example": "ts-node index.ts"
-  }
-}
