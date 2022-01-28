@@ -1,6 +1,7 @@
 import { setLengthRight, bufferToHex, toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
+import { bufferToBigInt } from '../opcodes'
 const assert = require('assert')
 
 function multComplexity(x: bigint): bigint {
@@ -81,9 +82,9 @@ export default function (opts: PrecompileInput): ExecResult {
     adjustedELen = 1n
   }
 
-  const bLen = BigInt(bufferToHex(data.slice(0, 32)))
-  const eLen = BigInt(bufferToHex(data.slice(32, 64)))
-  const mLen = BigInt(bufferToHex(data.slice(64, 96)))
+  const bLen = bufferToBigInt(data.slice(0, 32))
+  const eLen = bufferToBigInt(data.slice(32, 64))
+  const mLen = bufferToBigInt(data.slice(64, 96))
 
   let maxLen = bLen
   if (maxLen < mLen) {
@@ -133,15 +134,9 @@ export default function (opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  const B = BigInt(
-    bufferToHex(setLengthRight(data.slice(Number(bStart), Number(bEnd)), Number(bLen)))
-  )
-  const E = BigInt(
-    bufferToHex(setLengthRight(data.slice(Number(eStart), Number(eEnd)), Number(eLen)))
-  )
-  const M = BigInt(
-    bufferToHex(setLengthRight(data.slice(Number(mStart), Number(mEnd)), Number(mLen)))
-  )
+  const B = bufferToBigInt(setLengthRight(data.slice(Number(bStart), Number(bEnd)), Number(bLen)))
+  const E = bufferToBigInt(setLengthRight(data.slice(Number(eStart), Number(eEnd)), Number(eLen)))
+  const M = bufferToBigInt(setLengthRight(data.slice(Number(mStart), Number(mEnd)), Number(mLen)))
 
   if (mEnd > maxInt) {
     return OOGResult(opts.gasLimit)

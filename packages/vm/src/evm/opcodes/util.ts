@@ -1,5 +1,5 @@
 import Common from '@ethereumjs/common'
-import { keccak256, setLengthRight, setLengthLeft, toBuffer } from 'ethereumjs-util'
+import { keccak256, setLengthRight, setLengthLeft, toBuffer, bufferToHex } from 'ethereumjs-util'
 import { ERROR, VmError } from './../../exceptions'
 import { RunState } from './../interpreter'
 
@@ -288,4 +288,12 @@ export function abs(a: bigint) {
     return a
   }
   return a * -1n
+}
+
+export function bufferToBigInt(buf: Buffer) {
+  const hex = bufferToHex(buf)
+  if (hex === '0x') {
+    return 0n
+  }
+  return BigInt(hex)
 }
