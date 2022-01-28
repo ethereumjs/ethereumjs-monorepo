@@ -182,8 +182,13 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.stack.push(base)
         return
       }
-      const r = base ** exponent
-      runState.stack.push(r)
+      try {
+        const r = BigInt.asUintN(256, base ** exponent)
+        runState.stack.push(r)
+      } catch (err) {
+        // Push 0 to stack (i.e. overflow) if operation exceeds maximum system supported bigint size
+        runState.stack.push(0n)
+      }
     },
   ],
   // 0x0b: SIGNEXTEND
