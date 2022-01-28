@@ -24,6 +24,7 @@ import {
 } from './util'
 import { ERROR } from '../../exceptions'
 import { RunState } from './../interpreter'
+import { exponentation } from '.'
 
 export interface SyncOpHandler {
   (runState: RunState, common: Common): void
@@ -182,13 +183,8 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.stack.push(base)
         return
       }
-      try {
-        const r = BigInt.asUintN(256, base ** exponent)
-        runState.stack.push(r)
-      } catch (err) {
-        // Push 0 to stack (i.e. overflow) if operation exceeds maximum system supported bigint size
-        runState.stack.push(0n)
-      }
+      const r = exponentation(base, exponent)
+      runState.stack.push(r)
     },
   ],
   // 0x0b: SIGNEXTEND

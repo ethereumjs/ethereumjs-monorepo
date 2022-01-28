@@ -297,3 +297,16 @@ export function bufferToBigInt(buf: Buffer) {
   }
   return BigInt(hex)
 }
+
+const N = 115792089237316195423570985008687907853269984665640564039457584007913129639936n
+export function exponentation(bas: bigint, exp: bigint) {
+  let t = 1n
+  while (exp > 0n) {
+    if (exp % 2n != 0n) {
+      t = (t * bas) % N
+    }
+    bas = (bas * bas) % N
+    exp = exp / 2n
+  }
+  return t
+}
