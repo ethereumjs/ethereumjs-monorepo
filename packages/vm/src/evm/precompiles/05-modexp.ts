@@ -1,4 +1,4 @@
-import { setLengthRight, bufferToHex, toBuffer, setLengthLeft } from 'ethereumjs-util'
+import { setLengthRight, toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
 import { bufferToBigInt } from '../opcodes'
@@ -30,15 +30,15 @@ function multComplexityEIP2565(x: bigint): bigint {
 function getAdjustedExponentLength(data: Buffer): bigint {
   let expBytesStart
   try {
-    const baseLen = BigInt(bufferToHex(data.slice(0, 32)))
+    const baseLen = bufferToBigInt(data.slice(0, 32))
     expBytesStart = 96 + Number(baseLen) // 96 for base length, then exponent length, and modulus length, then baseLen for the base data, then exponent bytes start
   } catch (e: any) {
     expBytesStart = Number.MAX_SAFE_INTEGER - 32
   }
-  const expLen = BigInt(bufferToHex(data.slice(32, 64)))
+  const expLen = bufferToBigInt(data.slice(32, 64))
   let firstExpBytes = Buffer.from(data.slice(expBytesStart, expBytesStart + 32)) // first word of the exponent data
   firstExpBytes = setLengthRight(firstExpBytes, 32) // reading past the data reads virtual zeros
-  let firstExpBigInt = BigInt(bufferToHex(firstExpBytes))
+  let firstExpBigInt = bufferToBigInt(firstExpBytes)
   let max32expLen = 0
   if (expLen < 32n) {
     max32expLen = 32 - Number(expLen)
