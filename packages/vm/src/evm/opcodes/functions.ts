@@ -193,7 +193,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       /* eslint-disable-next-line prefer-const */
       let [k, val] = runState.stack.popN(2)
-      if (k > 31n) {
+      if (k < 31n) {
         const signBit = k * 8n + 7n
         const mask = (1n << signBit) - 1n
         if (val.toString(2)[Number(signBit)] === '1') {
