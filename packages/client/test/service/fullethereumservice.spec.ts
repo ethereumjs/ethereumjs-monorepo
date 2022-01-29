@@ -32,9 +32,6 @@ tape('[FullEthereumService]', async (t) => {
     open() {}
     close() {}
     handleNewBlock() {}
-    execution = {
-      receiptsManager: { getReceipts: td.func<any>() },
-    }
   }
   FullSynchronizer.prototype.start = td.func<any>()
   FullSynchronizer.prototype.stop = td.func<any>()
@@ -127,7 +124,9 @@ tape('[FullEthereumService]', async (t) => {
   t.test('should send Receipts on GetReceipts', async (t) => {
     const config = new Config({ transports: [] })
     const chain = new Chain({ config })
-    const execution = new VMExecution({ config, chain })
+    const execution = {
+      receiptsManager: { getReceipts: td.func<any>() },
+    } as VMExecution
     const service = new FullEthereumService({ config, execution, chain })
     const blockHash = Buffer.alloc(32, 1)
     const receipts = [
@@ -150,9 +149,7 @@ tape('[FullEthereumService]', async (t) => {
         txType: 0,
       },
     ]
-    td.when(
-      service.synchronizer.execution.receiptsManager!.getReceipts(blockHash, true, true)
-    ).thenResolve(receipts)
+    td.when(execution.receiptsManager!.getReceipts(blockHash, true, true)).thenResolve(receipts)
     const peer = { eth: { send: td.func() } } as any
     await service.handle({ name: 'GetReceipts', data: [new BN(1), [blockHash]] }, 'eth', peer)
     td.verify(peer.eth.send('Receipts', { reqId: new BN(1), receipts }))

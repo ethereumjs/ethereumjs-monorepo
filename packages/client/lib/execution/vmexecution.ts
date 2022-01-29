@@ -226,6 +226,7 @@ export class VMExecution extends Execution {
    * Stop VM execution. Returns a promise that resolves once its stopped.
    */
   async stop(): Promise<boolean> {
+    this.syncing = false
     if (this.vmPromise) {
       // ensure that we wait that the VM finishes executing the block (and flushing the trie cache)
       await this.vmPromise

@@ -187,7 +187,10 @@ export class Engine {
     this.chain = this.service.chain
     this.config = this.chain.config
     this.synchronizer = this.service.synchronizer as FullSynchronizer
-    this.vm = this.synchronizer.execution?.vm
+    if (!this.client.node.execution) {
+      throw Error('execution required for engine module')
+    }
+    this.vm = this.client.node.execution.vm
     this.txPool = (this.service.synchronizer as FullSynchronizer).txPool
     this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.txPool })
     this.validBlocks = new Map()

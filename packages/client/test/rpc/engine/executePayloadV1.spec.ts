@@ -24,7 +24,7 @@ const validTestVector = {
 }
 
 tape(`${method}: call with invalid block hash without 0x`, async (t) => {
-  const { server } = baseSetup({ engine: true })
+  const { server } = baseSetup({ engine: true, includeVM: true })
 
   const req = params(method, [
     { ...validTestVector, parentHash: validTestVector.parentHash.slice(2) },
@@ -38,7 +38,7 @@ tape(`${method}: call with invalid block hash without 0x`, async (t) => {
 })
 
 tape(`${method}: call with invalid hex string as block hash`, async (t) => {
-  const { server } = baseSetup({ engine: true })
+  const { server } = baseSetup({ engine: true, includeVM: true })
 
   const req = params(method, [
     {

@@ -78,10 +78,10 @@ export function createClient(clientOpts: any = {}) {
     txPool: new TxPool({ config }),
   }
 
+  let execution
   if (clientOpts.includeVM) {
     const metaDB = clientOpts.enableMetaDB ? level() : undefined
-    const execution = new VMExecution({ config, chain, metaDB })
-    synchronizer.execution = execution
+    execution = new VMExecution({ config, chain, metaDB })
   }
 
   let peers = [1, 2, 3]
@@ -95,7 +95,7 @@ export function createClient(clientOpts: any = {}) {
     chain,
     node: {
       syncmode: clientOpts.includeVM ? 'full' : 'light',
-      execution: synchronizer.execution,
+      execution,
       services: [
         {
           name: 'eth',

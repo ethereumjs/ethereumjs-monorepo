@@ -5,6 +5,8 @@ import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Event } from '../types'
 import { Config } from '../config'
 import { FullSynchronizer } from '../sync'
+import { VMExecution } from '../execution'
+
 const level = require('level-mem')
 
 export interface MinerOptions {
@@ -13,6 +15,7 @@ export interface MinerOptions {
 
   /* FullSynchronizer */
   synchronizer: FullSynchronizer
+  execution: VMExecution
 }
 
 /**
@@ -29,6 +32,7 @@ export class Miner {
   private _boundChainUpdatedHandler: (() => void) | undefined
   private config: Config
   private synchronizer: FullSynchronizer
+  private execution: VMExecution
   private assembling: boolean
   private period: number
   private ethash: Ethash | undefined
@@ -43,6 +47,7 @@ export class Miner {
   constructor(options: MinerOptions) {
     this.config = options.config
     this.synchronizer = options.synchronizer
+    this.execution = options.execution
     this.running = false
     this.assembling = false
     this.period = (this.config.chainCommon.consensusConfig().period ?? this.DEFAULT_PERIOD) * 1000 // defined in ms for setTimeout use
@@ -198,7 +203,7 @@ export class Miner {
     // Use a copy of the vm to not modify the existing state.
     // The state will be updated when the newly assembled block
     // is inserted into the canonical chain.
-    const vmCopy = this.synchronizer.execution.vm.copy()
+    const vmCopy = this.execution.vm.copy()
 
     // Set the state root to ensure the resulting state
     // is based on the parent block's state

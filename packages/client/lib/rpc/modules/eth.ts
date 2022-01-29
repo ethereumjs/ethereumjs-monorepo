@@ -310,9 +310,10 @@ export class Eth {
     this.client = client
     const services: EthereumService[] = client.node.services
     this.service = services.find((s) => s.name === 'eth') as EthereumService
-    this.receiptsManager = (this.service.synchronizer as any).execution?.receiptsManager
+    // TODO: remove the forced typecasing here
+    this.receiptsManager = client.node.execution?.receiptsManager as ReceiptsManager
     this._chain = this.service.chain
-    this._vm = (this.service.synchronizer as any)?.execution?.vm
+    this._vm = client.node.execution?.vm
 
     const ethProtocol = this.service.protocols.find((p) => p.name === 'eth') as EthProtocol
     this.ethVersion = Math.max(...ethProtocol.versions)

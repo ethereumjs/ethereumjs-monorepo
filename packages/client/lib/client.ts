@@ -5,7 +5,6 @@ import { Config, SyncMode } from './config'
 import { EthereumService, FullEthereumService, LightEthereumService } from './service'
 import { Event } from './types'
 import { VMExecution } from './execution'
-import { FullSynchronizer } from './sync'
 import { Chain } from './blockchain'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
@@ -79,7 +78,6 @@ export default class EthereumClient {
         metaDB: options.metaDB,
         chain: this.chain,
       })
-
       const services = [
         new FullEthereumService({
           config: this.config,
@@ -87,7 +85,7 @@ export default class EthereumClient {
           stateDB: options.stateDB,
           metaDB: options.metaDB,
           chain: this.chain,
-          execution: execution,
+          execution,
         }),
       ]
       this.node = { syncmode: SyncMode.full, execution, services }
@@ -129,6 +127,7 @@ export default class EthereumClient {
       this.config.logger.info(`Synchronized blockchain at height ${height}`)
     })
 
+    await this.node.execution?.open()
     await Promise.all(this.node.services.map((s) => s.open()))
 
     this.opened = true
@@ -156,6 +155,7 @@ export default class EthereumClient {
     if (!this.started) {
       return false
     }
+    await this.node.execution?.stop()
     await Promise.all(this.node.services.map((s) => s.stop()))
     await Promise.all(this.config.servers.map((s) => s.stop()))
     this.started = false
@@ -191,10 +191,8 @@ export default class EthereumClient {
   async executeBlocks(first: number, last: number, txHashes: string[]) {
     this.config.logger.info('Preparing for block execution (debug mode, no services started)...')
 
-    const services: EthereumService[] = this.node.services
-    const service = services.find((s) => s.name === 'eth') as EthereumService
-    const synchronizer = service.synchronizer as FullSynchronizer
-    const vm = synchronizer.execution.vm.copy()
+    if (!this.node.execution) throw new Error('executeBlocks requires execution')
+    const vm = this.node.execution.vm.copy()
 
     for (let blockNumber = first; blockNumber <= last; blockNumber++) {
       const block = await vm.blockchain.getBlock(blockNumber)

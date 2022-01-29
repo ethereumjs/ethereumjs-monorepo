@@ -117,9 +117,8 @@ tape('[Miner]', async (t) => {
       config,
       pool,
       chain,
-      execution,
     })
-    const miner = new Miner({ config, synchronizer })
+    const miner = new Miner({ config, synchronizer, execution })
     t.notOk(miner.running)
     t.end()
   })
@@ -133,9 +132,8 @@ tape('[Miner]', async (t) => {
       config,
       pool,
       chain,
-      execution,
     })
-    let miner = new Miner({ config, synchronizer })
+    let miner = new Miner({ config, synchronizer, execution })
     t.notOk(miner.running)
     miner.start()
     t.ok(miner.running)
@@ -145,7 +143,7 @@ tape('[Miner]', async (t) => {
 
     // Should not start when config.mine=false
     const configMineFalse = new Config({ transports: [], accounts, mine: false })
-    miner = new Miner({ config: configMineFalse, synchronizer })
+    miner = new Miner({ config: configMineFalse, synchronizer, execution })
     miner.start()
     t.notOk(miner.running, 'miner should not start when config.mine=false')
   })
@@ -159,11 +157,10 @@ tape('[Miner]', async (t) => {
       config,
       pool,
       chain,
-      execution,
     })
-    const miner = new Miner({ config, synchronizer })
+    const miner = new Miner({ config, synchronizer, execution })
     const { txPool } = synchronizer
-    const { vm } = synchronizer.execution
+    const { vm } = execution
 
     txPool.start()
     miner.start()
@@ -196,11 +193,10 @@ tape('[Miner]', async (t) => {
         config,
         pool,
         chain,
-        execution,
       })
-      const miner = new Miner({ config, synchronizer })
+      const miner = new Miner({ config, synchronizer, execution })
       const { txPool } = synchronizer
-      const { vm } = synchronizer.execution
+      const { vm } = execution
       txPool.start()
       miner.start()
 
@@ -253,11 +249,10 @@ tape('[Miner]', async (t) => {
       config,
       pool,
       chain,
-      execution,
     })
-    const miner = new Miner({ config, synchronizer })
+    const miner = new Miner({ config, synchronizer, execution })
     const { txPool } = synchronizer
-    const { vm } = synchronizer.execution
+    const { vm } = execution
     txPool.start()
     miner.start()
 
@@ -303,11 +298,10 @@ tape('[Miner]', async (t) => {
       config,
       pool,
       chain,
-      execution,
     })
-    const miner = new Miner({ config, synchronizer })
+    const miner = new Miner({ config, synchronizer, execution })
     const { txPool } = synchronizer
-    const { vm } = synchronizer.execution
+    const { vm } = execution
     txPool.start()
     miner.start()
 
@@ -348,16 +342,15 @@ tape('[Miner]', async (t) => {
       config,
       pool,
       chain,
-      execution,
     })
-    const miner = new Miner({ config, synchronizer })
+    const miner = new Miner({ config, synchronizer, execution })
 
     // stub chainUpdated so assemble isn't called again
     // when emitting Event.CHAIN_UPDATED in this test
     ;(miner as any).chainUpdated = async () => {}
 
     const { txPool } = synchronizer
-    const { vm } = synchronizer.execution
+    const { vm } = execution
     txPool.start()
     miner.start()
 
@@ -400,11 +393,10 @@ tape('[Miner]', async (t) => {
       config,
       pool,
       chain,
-      execution,
     })
-    const miner = new Miner({ config, synchronizer })
+    const miner = new Miner({ config, synchronizer, execution })
 
-    const { vm } = synchronizer.execution
+    const { vm } = execution
     vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
     ;(miner as any).chainUpdated = async () => {} // stub
     miner.start()
@@ -469,9 +461,8 @@ tape('[Miner]', async (t) => {
       config,
       pool,
       chain,
-      execution,
     })
-    const miner = new Miner({ config, synchronizer })
+    const miner = new Miner({ config, synchronizer, execution })
     ;(chain.blockchain as any)._validateConsensus = false
     ;(miner as any).chainUpdated = async () => {} // stub
     miner.start()
