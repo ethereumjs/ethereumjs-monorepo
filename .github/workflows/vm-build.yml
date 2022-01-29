@@ -11,6 +11,10 @@ defaults:
   run:
     working-directory: packages/vm
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   test-vm-api:
     runs-on: ubuntu-latest
