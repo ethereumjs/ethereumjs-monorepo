@@ -2,7 +2,7 @@
   "name": "rinkeby",
   "chainId": 4,
   "networkId": 4,
-  "defaultHardfork": "istanbul",
+  "defaultHardfork": "london",
   "consensus": {
     "type": "poa",
     "algorithm": "clique",

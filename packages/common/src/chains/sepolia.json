@@ -2,7 +2,7 @@
   "name": "sepolia",
   "chainId": 11155111,
   "networkId": 11155111,
-  "defaultHardfork": "istanbul",
+  "defaultHardfork": "london",
   "consensus": {
     "type": "pow",
     "algorithm": "ethash",
