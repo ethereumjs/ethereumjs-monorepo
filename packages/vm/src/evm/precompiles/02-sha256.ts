@@ -9,7 +9,7 @@ export default function (opts: PrecompileInput): ExecResult {
   const data = opts.data
 
   const gasUsed = BigInt(opts._common.param('gasPrices', 'sha256'))
-  gasUsed +
+  gasUsed +=
     BigInt(opts._common.param('gasPrices', 'sha256Word')) * BigInt(Math.ceil(data.length / 32))
 
   if (opts.gasLimit < gasUsed) {
