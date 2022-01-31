@@ -264,7 +264,7 @@ tape('[Block]: Header functions', function (t) {
   t.test('header validation -> poa checks', async function (st) {
     const headerData = testData.blocks[0].blockHeader
 
-    const common = new Common({ chain: Chain.Goerli })
+    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Istanbul })
     const blockchain = new Mockchain()
 
     const block = Block.fromRLPSerializedBlock(testData.genesisRLP, { common })
