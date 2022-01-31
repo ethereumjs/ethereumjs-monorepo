@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.6.1 - 2022-01-20
+## 2.6.1 - 2022-02-01
 
 - Added support for [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) `push0` opcode, PR [#1616](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1616)
 - Added support for the new [Sepolia](https://sepolia.ethdevops.io/) (`Chain.Sepolia`) test network (PoW network replacing `ropsten`), PR [#1581](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1581)

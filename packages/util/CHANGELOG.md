@@ -6,7 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 7.1.4 - 2022-01-20
+## 7.1.4 - 2022-02-01
+
+### Buffer <-> Uint8Array Conversion Helpers (RLP v3)
+
+The new RLP [v3](https://github.com/ethereumjs/ethereumjs-monorepo/releases/tag/rlp%403.0.0) release is accepting and returning `Uint8Array` objects instead of `Buffer` for improved browser compatibility and usage.
+
+There are two new helper functions in the `bytes` module from the `Util` library introduced in PR [#1648](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1648) to help with associated Buffer conversions (while this is our main reason for introducing these functions the functionality can of course be used for other things as well):
+
+- `arrToBufArr()`: Converts a `Uint8Array` or `NestedUint8Array` to `Buffer` or `NestedBufferArray`
+- `bufArrToArr()`: Converts a `Buffer` or `NestedBufferArray` to `Uint8Array` or `NestedUint8Array`
+
+Note: the RLP version exposed by this package as a re-export is still RLP `v2`. This won't change along additional `v7` Util releases and other current monorepo libraries (VM, Tx,...) are also still using the `v2` RLP version.
 
 ### Features
 

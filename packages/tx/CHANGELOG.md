@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 3.5.0 - 2022-01-20
+## 3.5.0 - 2022-02-01
 
 This release comes with various additional checks on integrity and maximally allowed values for input values on tx creation. All these checks are activated by default as being suggested by the respective EIPs (e.g. `EIP-2681`).
 

@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 5.7.0 - 2022-01-20
+## 5.7.0 - 2022-02-01
 
 ### Dynamic Gas Costs
 
@@ -22,7 +22,7 @@ The VM `StateManager` has been substantially refactored in PR [#1548](https://gi
 
 ### Other Features
 
-- New `ProofStateManager` to get an [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186)-compatible (respectively `eth_getProof rPC endpoint-compatible) proof for a specific address and associated storage slots, PR [#1590](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1590)
+- New `ProofStateManager` to get an [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186)-compatible (respectively `eth_getProof rPC endpoint-compatible) proof for a specific address and associated storage slots, PR [#1590](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1590) and PR [#1660](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1660)
 - VM JumpDest analysis refactor for better performance, PR [#1629](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1629)
 - [EIP-3607](https://eips.ethereum.org/EIPS/eip-3607): Reject transactions from senders with deployed code, PR [#1568](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1568)
 - Support for new [Sepolia](https://sepolia.ethdevops.io/) PoW test network (use `Chain.Sepolia` for `@ethereumjs/common` instance passed in), PR [#1581](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1581)
