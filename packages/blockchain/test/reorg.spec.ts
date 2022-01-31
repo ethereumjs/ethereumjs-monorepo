@@ -66,6 +66,8 @@ tape('reorg tests', (t) => {
         'low TD block should have a higher number than high TD block'
       )
 
+      // TODO: Fix error:
+      // not ok 3 Error: A base fee for a block can only be set with EIP1559 being activated
       await blockchain.putBlocks(blocks_lowTD)
 
       const head_lowTD = await blockchain.getHead()
