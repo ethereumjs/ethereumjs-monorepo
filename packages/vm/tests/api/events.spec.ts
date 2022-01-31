@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { toBuffer, bufferToHex } from 'ethereumjs-util'
-import { Transaction } from '@ethereumjs/tx'
+import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
 import VM from '../../src/index'
 
@@ -58,9 +58,9 @@ tape('VM events', (t) => {
       emitted = val
     })
 
-    const tx = Transaction.fromTxData({
-      gasPrice: 40000,
+    const tx = FeeMarketEIP1559Transaction.fromTxData({
       gasLimit: 90000,
+      maxFeePerGas: 40000,
       to: '0x1111111111111111111111111111111111111111',
     }).sign(privKey)
 
@@ -79,9 +79,9 @@ tape('VM events', (t) => {
       emitted = val
     })
 
-    const tx = Transaction.fromTxData({
-      gasPrice: 40000,
+    const tx = FeeMarketEIP1559Transaction.fromTxData({
       gasLimit: 90000,
+      maxFeePerGas: 40000,
       to: '0x1111111111111111111111111111111111111111',
       value: 1,
     }).sign(privKey)
@@ -101,9 +101,9 @@ tape('VM events', (t) => {
       emitted = val
     })
 
-    const tx = Transaction.fromTxData({
-      gasPrice: 40000,
+    const tx = FeeMarketEIP1559Transaction.fromTxData({
       gasLimit: 90000,
+      maxFeePerGas: 40000,
       to: '0x1111111111111111111111111111111111111111',
       value: 1,
     }).sign(privKey)
@@ -124,9 +124,9 @@ tape('VM events', (t) => {
       emitted = val
     })
 
-    const tx = Transaction.fromTxData({
-      gasPrice: 40000,
+    const tx = FeeMarketEIP1559Transaction.fromTxData({
       gasLimit: 90000,
+      maxFeePerGas: 40000,
       to: '0x1111111111111111111111111111111111111111',
       value: 1,
     }).sign(privKey)
@@ -149,9 +149,9 @@ tape('VM events', (t) => {
     // This is a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to
     // the stack, stores that in memory, and then returns the first byte from memory.
     // This deploys a contract which has a single byte of code, 0x41.
-    const tx = Transaction.fromTxData({
-      gasPrice: 40000,
+    const tx = FeeMarketEIP1559Transaction.fromTxData({
       gasLimit: 90000,
+      maxFeePerGas: 40000,
       data: '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
     }).sign(privKey)
 
@@ -173,9 +173,9 @@ tape('VM events', (t) => {
     // This is a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to
     // the stack, stores that in memory, and then returns the first byte from memory.
     // This deploys a contract which has a single byte of code, 0x41.
-    const tx = Transaction.fromTxData({
-      gasPrice: 40000,
+    const tx = FeeMarketEIP1559Transaction.fromTxData({
       gasLimit: 90000,
+      maxFeePerGas: 40000,
       data: '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
     }).sign(privKey)
 
