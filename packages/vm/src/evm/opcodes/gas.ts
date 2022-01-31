@@ -106,7 +106,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
       }
 
       if (!(dataLength === 0n)) {
-        gas = (gas + BigInt(common.param('gasPrices', 'copy'))) * divCeil(dataLength, 32n)
+        gas += BigInt(common.param('gasPrices', 'copy')) * divCeil(dataLength, 32n)
       }
       return gas
     },
