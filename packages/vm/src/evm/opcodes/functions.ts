@@ -192,7 +192,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (k < 31n) {
         const signBit = k * 8n + 7n
         const mask = (1n << signBit) - 1n
-        if (val.toString(2)[Number(signBit)] === '1') {
+        if ((val >> signBit) & 1n) {
           val = val | BigInt.asUintN(256, ~mask)
         } else {
           val = val & mask
