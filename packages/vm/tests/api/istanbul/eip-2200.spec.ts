@@ -2,7 +2,6 @@ import tape from 'tape'
 import { Address, BN, setLengthLeft, toBuffer } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
-import { ERROR } from '../../../src/exceptions'
 import { createAccount } from '../utils'
 
 const testCases = [

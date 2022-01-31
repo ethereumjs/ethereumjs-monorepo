@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN } from 'ethereumjs-util'
+import { Address } from 'ethereumjs-util'
 import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { InterpreterStep } from '../../../src/evm/interpreter'
@@ -225,7 +225,6 @@ tape('EIP-3529 tests', (t) => {
     const maxRefund = actualGasUsed / 5n
     const minGasUsed = actualGasUsed - maxRefund
     const gasUsed = result.execResult.gasUsed
-    console.log(result.execResult.gasRefund, maxRefund)
     st.ok(result.execResult.gasRefund! > maxRefund, 'refund is larger than the max refund')
     st.ok(gasUsed >= minGasUsed, 'gas used respects the max refund quotient')
     st.end()

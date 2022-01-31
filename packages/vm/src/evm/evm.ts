@@ -183,11 +183,11 @@ export default class EVM {
         `Received message results gasUsed=${result.gasUsed} execResult: [ gasUsed=${
           result.gasUsed
         } exceptionError=${
-        result.execResult.exceptionError
-          ? result.execResult.exceptionError.errorType +
-          ' ' +
-          result.execResult.exceptionError.error
-          : ''
+          result.execResult.exceptionError
+            ? result.execResult.exceptionError.errorType +
+              ' ' +
+              result.execResult.exceptionError.error
+            : ''
         } returnValue=${short(result.execResult.returnValue)} gasRefund=${
           result.execResult.gasRefund
         } ]`

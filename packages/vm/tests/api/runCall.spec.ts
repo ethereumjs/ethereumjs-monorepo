@@ -115,7 +115,7 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
 
   t.assert(
     byzantiumResult.execResult.exceptionError &&
-    byzantiumResult.execResult.exceptionError.error === 'invalid opcode',
+      byzantiumResult.execResult.exceptionError.error === 'invalid opcode',
     'byzantium cannot accept constantinople opcodes (SHL)'
   )
   t.assert(

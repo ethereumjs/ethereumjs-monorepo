@@ -456,9 +456,9 @@ tape('runBlock() -> tx types', async (t) => {
 
     st.ok(
       res.gasUsed ===
-      BigInt(
-        res.receipts
-          .map((r) => r.gasUsed)
+        BigInt(
+          res.receipts
+            .map((r) => r.gasUsed)
             .reduce(
               (prevValue: BN, currValue: Buffer) => prevValue.add(new BN(currValue)),
               new BN(0)
