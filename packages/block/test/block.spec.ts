@@ -157,10 +157,11 @@ tape('[Block]: block functions', function (t) {
   )
 
   t.test('should test block validation on pow chain', async function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const blockRlp = toBuffer(testData.blocks[0].rlp)
-    const block = Block.fromRLPSerializedBlock(blockRlp)
+    const block = Block.fromRLPSerializedBlock(blockRlp, { common })
     const blockchain = new Mockchain()
-    const genesisBlock = Block.fromRLPSerializedBlock(toBuffer(testData.genesisRLP))
+    const genesisBlock = Block.fromRLPSerializedBlock(toBuffer(testData.genesisRLP), { common })
     await blockchain.putBlock(genesisBlock)
     try {
       await block.validate(blockchain)
@@ -239,8 +240,9 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test uncles hash validation', async function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const blockRlp = toBuffer(testData2.blocks[2].rlp)
-    const block = Block.fromRLPSerializedBlock(blockRlp, { freeze: false })
+    const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     st.equal(block.validateUnclesHash(), true)
     ;(block.header as any).uncleHash = Buffer.alloc(32)
     try {
@@ -252,15 +254,16 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should throw if an uncle is listed twice', async function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const blockchain = new Mockchain()
 
     const genesis = Block.genesis({})
     await blockchain.putBlock(genesis)
 
-    const uncleBlock1 = createBlock(genesis, 'uncle')
+    const uncleBlock1 = createBlock(genesis, 'uncle', [], common)
 
-    const block1 = createBlock(genesis, 'block1')
-    const block2 = createBlock(block1, 'block1', [uncleBlock1.header, uncleBlock1.header])
+    const block1 = createBlock(genesis, 'block1', [], common)
+    const block2 = createBlock(block1, 'block1', [uncleBlock1.header, uncleBlock1.header], common)
 
     await blockchain.putBlock(uncleBlock1)
     await blockchain.putBlock(block1)
@@ -275,16 +278,17 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should throw if an uncle is included before', async function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const blockchain = new Mockchain()
 
     const genesis = Block.genesis({})
     await blockchain.putBlock(genesis)
 
-    const uncleBlock = createBlock(genesis, 'uncle')
+    const uncleBlock = createBlock(genesis, 'uncle', [], common)
 
-    const block1 = createBlock(genesis, 'block1')
-    const block2 = createBlock(block1, 'block2', [uncleBlock.header])
-    const block3 = createBlock(block2, 'block3', [uncleBlock.header])
+    const block1 = createBlock(genesis, 'block1', [], common)
+    const block2 = createBlock(block1, 'block2', [uncleBlock.header], common)
+    const block3 = createBlock(block2, 'block3', [uncleBlock.header], common)
 
     await blockchain.putBlock(uncleBlock)
     await blockchain.putBlock(block1)
@@ -307,12 +311,13 @@ tape('[Block]: block functions', function (t) {
   t.test(
     'should throw if the uncle parent block is not part of the canonical chain',
     async function (st) {
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
       const blockchain = new Mockchain()
 
       const genesis = Block.genesis({})
       await blockchain.putBlock(genesis)
 
-      const emptyBlock = Block.fromBlockData({ header: { number: new BN(1) } })
+      const emptyBlock = Block.fromBlockData({ header: { number: new BN(1) } }, { common })
 
       //assertion
       if (emptyBlock.hash().equals(genesis.hash())) {
@@ -321,10 +326,10 @@ tape('[Block]: block functions', function (t) {
 
       await blockchain.putBlock(emptyBlock)
 
-      const uncleBlock = createBlock(emptyBlock, 'uncle')
-      const block1 = createBlock(genesis, 'block1')
-      const block2 = createBlock(block1, 'block2')
-      const block3 = createBlock(block2, 'block3', [uncleBlock.header])
+      const uncleBlock = createBlock(emptyBlock, 'uncle', [], common)
+      const block1 = createBlock(genesis, 'block1', [], common)
+      const block2 = createBlock(block1, 'block2', [], common)
+      const block3 = createBlock(block2, 'block3', [uncleBlock.header], common)
 
       await blockchain.putBlock(uncleBlock)
       await blockchain.putBlock(block1)
@@ -341,21 +346,27 @@ tape('[Block]: block functions', function (t) {
   )
 
   t.test('should throw if the uncle is too old', async function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const blockchain = new Mockchain()
 
     const genesis = Block.genesis({})
     await blockchain.putBlock(genesis)
 
-    const uncleBlock = createBlock(genesis, 'uncle')
+    const uncleBlock = createBlock(genesis, 'uncle', [], common)
 
     let lastBlock = genesis
     for (let i = 0; i < 7; i++) {
-      const block = createBlock(lastBlock, 'block' + i.toString())
+      const block = createBlock(lastBlock, 'block' + i.toString(), [], common)
       await blockchain.putBlock(block)
       lastBlock = block
     }
 
-    const blockWithUnclesTooOld = createBlock(lastBlock, 'too-old-uncle', [uncleBlock.header])
+    const blockWithUnclesTooOld = createBlock(
+      lastBlock,
+      'too-old-uncle',
+      [uncleBlock.header],
+      common
+    )
 
     try {
       await blockWithUnclesTooOld.validate(blockchain)
@@ -366,13 +377,14 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should throw if uncle is too young', async function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const blockchain = new Mockchain()
 
     const genesis = Block.genesis({})
     await blockchain.putBlock(genesis)
 
-    const uncleBlock = createBlock(genesis, 'uncle')
-    const block1 = createBlock(genesis, 'block1', [uncleBlock.header])
+    const uncleBlock = createBlock(genesis, 'uncle', [], common)
+    const block1 = createBlock(genesis, 'block1', [uncleBlock.header], common)
 
     await blockchain.putBlock(uncleBlock)
     await blockchain.putBlock(block1)
@@ -386,23 +398,27 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should throw if the uncle header is invalid', async function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const blockchain = new Mockchain()
 
     const genesis = Block.genesis({})
     await blockchain.putBlock(genesis)
 
-    const uncleBlock = Block.fromBlockData({
-      header: {
-        number: genesis.header.number.addn(1),
-        parentHash: genesis.hash(),
-        timestamp: genesis.header.timestamp.addn(1),
-        gasLimit: new BN(5000),
-        difficulty: new BN(0), // invalid difficulty
+    const uncleBlock = Block.fromBlockData(
+      {
+        header: {
+          number: genesis.header.number.addn(1),
+          parentHash: genesis.hash(),
+          timestamp: genesis.header.timestamp.addn(1),
+          gasLimit: new BN(5000),
+          difficulty: new BN(0), // invalid difficulty
+        },
       },
-    })
+      { common }
+    )
 
-    const block1 = createBlock(genesis, 'block1')
-    const block2 = createBlock(block1, 'block2', [uncleBlock.header])
+    const block1 = createBlock(genesis, 'block1', [], common)
+    const block2 = createBlock(block1, 'block2', [uncleBlock.header], common)
 
     await blockchain.putBlock(uncleBlock)
     await blockchain.putBlock(block1)
@@ -417,14 +433,15 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('throws if more than 2 uncles included', async function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const blockchain = new Mockchain()
 
     const genesis = Block.genesis({})
     await blockchain.putBlock(genesis)
 
-    const uncleBlock1 = createBlock(genesis, 'uncle1')
-    const uncleBlock2 = createBlock(genesis, 'uncle2')
-    const uncleBlock3 = createBlock(genesis, 'uncle3')
+    const uncleBlock1 = createBlock(genesis, 'uncle1', [], common)
+    const uncleBlock2 = createBlock(genesis, 'uncle2', [], common)
+    const uncleBlock3 = createBlock(genesis, 'uncle3', [], common)
 
     // sanity check
     if (
@@ -434,12 +451,13 @@ tape('[Block]: block functions', function (t) {
       st.fail('uncles 1/2/3 should be unique')
     }
 
-    const block1 = createBlock(genesis, 'block1')
-    const block2 = createBlock(block1, 'block1', [
-      uncleBlock1.header,
-      uncleBlock2.header,
-      uncleBlock3.header,
-    ])
+    const block1 = createBlock(genesis, 'block1', [], common)
+    const block2 = createBlock(
+      block1,
+      'block1',
+      [uncleBlock1.header, uncleBlock2.header, uncleBlock3.header],
+      common
+    )
 
     await blockchain.putBlock(uncleBlock1)
     await blockchain.putBlock(uncleBlock2)
@@ -456,13 +474,14 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('throws if uncle is a canonical block', async function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const blockchain = new Mockchain()
 
     const genesis = Block.genesis({})
     await blockchain.putBlock(genesis)
 
-    const block1 = createBlock(genesis, 'block1')
-    const block2 = createBlock(block1, 'block2', [block1.header])
+    const block1 = createBlock(genesis, 'block1', [], common)
+    const block2 = createBlock(block1, 'block2', [block1.header], common)
 
     await blockchain.putBlock(block1)
     await blockchain.putBlock(block2)
@@ -476,16 +495,17 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('successfully validates uncles', async function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const blockchain = new Mockchain()
 
     const genesis = Block.genesis({})
     await blockchain.putBlock(genesis)
 
-    const uncleBlock = createBlock(genesis, 'uncle')
+    const uncleBlock = createBlock(genesis, 'uncle', [], common)
     await blockchain.putBlock(uncleBlock)
 
-    const block1 = createBlock(genesis, 'block1')
-    const block2 = createBlock(block1, 'block2', [uncleBlock.header])
+    const block1 = createBlock(genesis, 'block1', [], common)
+    const block2 = createBlock(block1, 'block2', [uncleBlock.header], common)
 
     await blockchain.putBlock(block1)
     await blockchain.putBlock(block2)
@@ -580,6 +600,9 @@ tape('[Block]: block functions', function (t) {
         }
       )
 
+      // TODO: Fix error: invalid uncle hash
+      // raw:  f8727170ca9711b9e4c8b5a4b085386a8330acb24bffa2e401848e5c0d5be900
+      // uncleHash:  e7aeb84154d1e398fdbd3d1492c0b7be6ee5e689b5dbb78b0f59889579ed2e03
       await forkBlock_ValidCommon.validate(blockchain)
 
       st.pass('successfully validated a pre-london uncle on a london block')
