@@ -20,7 +20,6 @@ import {
   mod,
   fromTwos,
   toTwos,
-  abs,
 } from './util'
 import { ERROR } from '../../exceptions'
 import { RunState } from './../interpreter'
@@ -123,10 +122,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (b === 0n) {
         r = b
       } else {
-        r = mod(abs(fromTwos(a)), abs(fromTwos(b)))
-        if (r < 0) {
-          r ^= -1n
-        }
+        r = fromTwos(a) % fromTwos(b)
       }
       runState.stack.push(toTwos(r))
     },
