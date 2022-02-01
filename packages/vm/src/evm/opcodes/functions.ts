@@ -5,7 +5,6 @@ import {
   KECCAK256_NULL,
   TWO_POW256_BIGINT,
   MAX_INTEGER_BIGINT,
-  bufferToHex,
   toBuffer,
   setLengthLeft,
 } from 'ethereumjs-util'
@@ -431,7 +430,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const i = Number(pos)
       let loaded = runState.eei.getCallData().slice(i, i + 32)
       loaded = loaded.length ? loaded : Buffer.from([0])
-      let r = BigInt(bufferToHex(loaded))
+      let r = bufferToBigInt(loaded)
       if (loaded.length < 32) {
         r = r << (8n * BigInt(32 - loaded.length))
       }
@@ -523,11 +522,11 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       const code = await runState.eei.getExternalCode(addressBigInt)
       if (code.length === 0) {
-        runState.stack.push(BigInt(bufferToHex(KECCAK256_NULL)))
+        runState.stack.push(bufferToBigInt(KECCAK256_NULL))
         return
       }
 
-      runState.stack.push(BigInt(bufferToHex(keccak256(code))))
+      runState.stack.push(bufferToBigInt(keccak256(code)))
     },
   ],
   // 0x3d: RETURNDATASIZE
@@ -647,7 +646,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const pos = runState.stack.pop()
       const word = runState.memory.read(Number(pos), 32)
-      runState.stack.push(BigInt(bufferToHex(word)))
+      runState.stack.push(bufferToBigInt(word))
     },
   ],
   // 0x52: MSTORE
@@ -680,7 +679,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const key = runState.stack.pop()
       const keyBuf = setLengthLeft(toBuffer('0x' + key.toString(16)), 32)
       const value = await runState.eei.storageLoad(keyBuf)
-      const valueBigInt = value.length ? BigInt(bufferToHex(value)) : 0n
+      const valueBigInt = value.length ? bufferToBigInt(value) : 0n
       runState.stack.push(valueBigInt)
     },
   ],

@@ -1,4 +1,4 @@
-import { Address, toBuffer, rlp, bufferToHex, BN } from 'ethereumjs-util'
+import { Address, toBuffer, rlp, BN } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
@@ -7,6 +7,7 @@ import VM from '.'
 import Bloom from './bloom'
 import { RunTxResult } from './runTx'
 import { calculateMinerReward, rewardAccount, encodeReceipt } from './runBlock'
+import { bufferToBigInt } from './evm/opcodes'
 
 /**
  * Options for the block builder.
@@ -169,7 +170,7 @@ export class BlockBuilder {
 
     // According to the Yellow Paper, a transaction's gas limit
     // cannot be greater than the remaining gas in the block
-    const blockGasLimit = BigInt(bufferToHex(toBuffer(this.headerData.gasLimit)))
+    const blockGasLimit = bufferToBigInt(toBuffer(this.headerData.gasLimit))
     const blockGasRemaining = blockGasLimit - this.gasUsed
     if (BigInt(tx.gasLimit.toString(10)) > blockGasRemaining) {
       throw new Error('tx has a higher gas limit than the remaining gas in the block')

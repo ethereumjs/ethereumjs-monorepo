@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Account, Address, BN, MAX_UINT64, bufferToHex } from 'ethereumjs-util'
+import { Account, Address, BN, MAX_UINT64 } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
@@ -8,7 +8,7 @@ import { VmError, ERROR } from '../exceptions'
 import Message from './message'
 import EVM, { EVMResult } from './evm'
 import { Log } from './types'
-import { addressToBuffer } from './opcodes'
+import { addressToBuffer, bufferToBigInt } from './opcodes'
 
 const debugGas = createDebugLogger('vm:eei:gas')
 
@@ -169,7 +169,7 @@ export default class EEI {
    * that is directly responsible for this execution.
    */
   getCaller(): bigint {
-    return BigInt(bufferToHex(this._env.caller.buf))
+    return bufferToBigInt(this._env.caller.buf)
   }
 
   /**
@@ -267,7 +267,7 @@ export default class EEI {
    * non-empty associated code.
    */
   getTxOrigin(): bigint {
-    return BigInt(bufferToHex(this._env.origin.buf))
+    return bufferToBigInt(this._env.origin.buf)
   }
 
   /**
@@ -293,7 +293,7 @@ export default class EEI {
     } else {
       coinbase = this._env.block.header.coinbase
     }
-    return BigInt(bufferToHex(coinbase.toBuffer()))
+    return bufferToBigInt(coinbase.toBuffer())
   }
 
   /**
@@ -343,7 +343,7 @@ export default class EEI {
    */
   async getBlockHash(num: bigint): Promise<bigint> {
     const block = await this._env.blockchain.getBlock(Number(num))
-    return BigInt(bufferToHex(block.hash()))
+    return bufferToBigInt(block.hash())
   }
 
   /**
@@ -633,7 +633,7 @@ export default class EEI {
       this._env.contract = account
       if (results.createdAddress) {
         // push the created address to the stack
-        return BigInt(bufferToHex(results.createdAddress.buf))
+        return bufferToBigInt(results.createdAddress.buf)
       }
     }
 

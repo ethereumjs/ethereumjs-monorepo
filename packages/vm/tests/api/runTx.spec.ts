@@ -63,7 +63,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
     const blockGasUsed = 1000n
     const res = await vm.runTx({ tx, blockGasUsed })
     t.ok(
-      BigInt(bufferToHex(res.receipt.gasUsed)) === blockGasUsed + res.gasUsed,
+      bufferToBigInt(res.receipt.gasUsed)) === blockGasUsed + res.gasUsed,
       'receipt.gasUsed should equal block gas used + tx gas used'
     )
     t.end()

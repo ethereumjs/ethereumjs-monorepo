@@ -107,7 +107,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     try {
       const blockRlp = Buffer.from(raw.rlp.slice(2), 'hex')
       const decodedRLP: any = rlp.decode(blockRlp)
-      currentBlock = BigInt(bufferToHex(decodedRLP[0][8]))
+      currentBlock = bufferToBigInt(decodedRLP[0][8]))
     } catch (e: any) {
       await handleError(e, expectException)
       continue

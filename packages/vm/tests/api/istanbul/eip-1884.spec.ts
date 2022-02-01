@@ -41,7 +41,7 @@ tape('Istanbul: EIP-1884', async (t) => {
           st.assert(res.exceptionError === undefined)
           st.assert(
             BigInt(testCase.selfbalance) ===
-              BigInt(bufferToHex(res.returnValue) === '0x' ? 0 : bufferToHex(res.returnValue))
+              bufferToBigInt(res.returnValue) === '0x' ? 0 : bufferToHex(res.returnValue))
           )
         }
       } catch (e: any) {
