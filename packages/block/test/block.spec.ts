@@ -547,12 +547,15 @@ tape('[Block]: block functions', function (t) {
       common.setHardfork(Hardfork.Berlin)
 
       const mainnetForkBlock = common.hardforkBlock(Hardfork.London)
-      const rootBlock = Block.fromBlockData({
-        header: {
-          number: mainnetForkBlock!.subn(3),
-          gasLimit: new BN(5000),
+      const rootBlock = Block.fromBlockData(
+        {
+          header: {
+            number: mainnetForkBlock!.subn(3),
+            gasLimit: new BN(5000),
+          },
         },
-      })
+        { common }
+      )
 
       await blockchain.putBlock(rootBlock)
 
@@ -585,7 +588,9 @@ tape('[Block]: block functions', function (t) {
       const uncleHeaderData = unclePreFork.header.toJSON()
 
       uncleHeaderData.extraData = '0xffff'
-      const uncleHeader = BlockHeader.fromHeaderData(uncleHeaderData)
+      const uncleHeader = BlockHeader.fromHeaderData(uncleHeaderData, {
+        common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin }),
+      })
 
       forkBlock2HeaderData.uncleHash =
         '0x' + keccak256(rlp.encode([uncleHeader.raw()])).toString('hex')
@@ -600,9 +605,6 @@ tape('[Block]: block functions', function (t) {
         }
       )
 
-      // TODO: Fix error: invalid uncle hash
-      // raw:  f8727170ca9711b9e4c8b5a4b085386a8330acb24bffa2e401848e5c0d5be900
-      // uncleHash:  e7aeb84154d1e398fdbd3d1492c0b7be6ee5e689b5dbb78b0f59889579ed2e03
       await forkBlock_ValidCommon.validate(blockchain)
 
       st.pass('successfully validated a pre-london uncle on a london block')
