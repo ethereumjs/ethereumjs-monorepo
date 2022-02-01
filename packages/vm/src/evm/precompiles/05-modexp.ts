@@ -63,6 +63,9 @@ function getAdjustedExponentLength(data: Buffer): bigint {
 }
 
 export function expmod(a: bigint, power: bigint, modulo: bigint) {
+  if (power === 0n) {
+    return 1n % modulo
+  }
   let res = 1n
   while (power > 0n) {
     if (power & 1n) res = (res * a) % modulo
