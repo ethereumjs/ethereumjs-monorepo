@@ -180,11 +180,9 @@ export default class EVM {
     }
     if (this._vm.DEBUG) {
       debug(
-        `Received message results gasUsed=${result.gasUsed} execResult: [ gasUsed=${
-          result.gasUsed
-        } exceptionError=${
-          result.execResult.exceptionError ? result.execResult.exceptionError.toString() : ''
-        } returnValue=${short(result.execResult.returnValue)} gasRefund=${
+        `Received message execResult: [ gasUsed=${result.execResult.gasUsed} exceptionError=${
+          result.execResult.exceptionError ? `'${result.execResult.exceptionError?.error}'` : 'none'
+        } returnValue=0x${short(result.execResult.returnValue)} gasRefund=${
           result.execResult.gasRefund
         } ]`
       )

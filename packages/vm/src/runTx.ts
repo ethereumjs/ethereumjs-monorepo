@@ -403,11 +403,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (this.DEBUG) {
     debug('-'.repeat(100))
     debug(
-      `Received tx results gasUsed=${results.gasUsed} execResult: [ gasUsed=${
-        results.gasUsed
-      } exceptionError=${
-        results.execResult.exceptionError ? results.execResult.exceptionError.error : ''
-      } returnValue=${short(results.execResult.returnValue)} gasRefund=${
+      `Received tx execResult: [ gasUsed=${results.execResult.gasUsed} exceptionError=${
+        results.execResult.exceptionError ? `'${results.execResult.exceptionError?.error}'` : 'none'
+      } returnValue=0x${short(results.execResult.returnValue)} gasRefund=${
         results.execResult.gasRefund
       } ]`
     )
