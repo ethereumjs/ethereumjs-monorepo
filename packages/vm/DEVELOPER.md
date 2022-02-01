@@ -37,6 +37,16 @@ or
 
 By default it is set to use the latest hardfork (`FORK_CONFIG` in `tests/tester.js`).
 
+The `--fork` parameter can also be used to activate EIPs. This is done by first entering the hardfork, and then add the EIPs seperated with the `+` sign. For instance:
+
+`npm run test:state -- --fork='London+3855'` 
+
+Will run the state tests with the London hardfork and with EIP-3855 activated. To activate multiple EIPs:
+
+`npm run test:blockchain -- --fork='London+3855+3860'` 
+
+This runs the blockchain tests on the London hardfork with the EIP-3855 and EIP-3860 activated. Note, that only tests which have testdata on this specific configuration will run: most combinations will run 0 tests.
+
 State tests run significantly faster than Blockchain tests, so it is often a good choice to start fixing State tests.
 
 #### Running Specific Tests
