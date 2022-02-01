@@ -53,7 +53,7 @@ export interface RunTxOpts {
 
   /**
    * If true, skips the validation of the tx's gas limit
-   * agains the block's gas limit.
+   * against the block's gas limit.
    */
   skipBlockGasLimitValidation?: boolean
 
@@ -420,7 +420,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(`Generated tx bloom with logs=${results.execResult.logs?.length}`)
   }
 
-  // Caculate the total gas used
+  // Calculate the total gas used
   results.gasUsed.iadd(txBaseFee)
   if (this.DEBUG) {
     debugGas(`tx add baseFee ${txBaseFee} to gasUsed (-> ${results.gasUsed})`)
@@ -458,7 +458,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Update miner's balance
   let miner
   if (this._common.consensusType() === ConsensusType.ProofOfAuthority) {
-    // Backwards-compatibilty check
+    // Backwards-compatibility check
     // TODO: can be removed along VM v6 release
     if ('cliqueSigner' in block.header) {
       miner = block.header.cliqueSigner()
