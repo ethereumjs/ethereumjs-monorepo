@@ -430,7 +430,10 @@ export const handlers: Map<number, OpHandler> = new Map([
       const i = Number(pos)
       let loaded = runState.eei.getCallData().slice(i, i + 32)
       loaded = loaded.length ? loaded : Buffer.from([0])
-      const r = BigInt.asUintN(256, BigInt(bufferToHex(loaded)))
+      let r = BigInt(bufferToHex(loaded))
+      if (loaded.length < 32) {
+        r = r << (8n * BigInt(32 - loaded.length))
+      }
       runState.stack.push(r)
     },
   ],
@@ -457,7 +460,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
     },
   ],
-  // 0x38: CODESIZE
+  // 0x38: CODESIZE0xbcdef00000000000000000000000000000000000000000000000000024
   [
     0x38,
     function (runState) {
