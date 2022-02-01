@@ -94,9 +94,8 @@ async function runTests() {
   runnerArgs.reps = argv.reps // test repetitions
 
   /**
-   * Edit the forkConfig string to ensure it works with RegEx (escape + characters)
+   * Modify the forkConfig string to ensure it works with RegEx (escape `+` characters)
    */
-
   if (testGetterArgs.forkConfig.includes('+')) {
     let str = testGetterArgs.forkConfig
     const indicies = []

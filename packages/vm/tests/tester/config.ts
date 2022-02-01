@@ -255,7 +255,11 @@ export function getTestDirs(network: string, testType: string) {
 
 /**
  * Returns a Common for the given network (a test parameter)
- * @param {String} network - the network field of a test
+ * @param {String} network - the network field of a test.
+ * If this network has a `+` sign, it will also include these EIPs.
+ * For instance, London+3855 will activate the network on the London hardfork, but will also activate EIP 3855.
+ * Multiple EIPs can also be activated by seperating them with a `+` sign.
+ * For instance, "London+3855+3860" will also activate EIP-3855 and EIP-3860.
  * @returns {Common} the Common which should be used
  */
 export function getCommon(targetNetwork: string) {
