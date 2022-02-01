@@ -341,7 +341,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [a, b] = runState.stack.popN(2)
 
       let r
-      const isSigned = b.toString(2)[255] === '1'
+      const bComp = BigInt.asIntN(256, b)
+      const isSigned = bComp < 0
       if (a > 256) {
         if (isSigned) {
           r = MAX_INTEGER_BIGINT
