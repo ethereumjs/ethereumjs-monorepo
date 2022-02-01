@@ -394,7 +394,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       `Running tx=0x${
         tx.isSigned() ? tx.hash().toString('hex') : 'unsigned'
       } with caller=${caller} gasLimit=${gasLimit} to=${
-        to ? to.toString() : ''
+        to ? to.toString() : 'none'
       } value=${value} data=0x${short(data)}`
     )
   }
