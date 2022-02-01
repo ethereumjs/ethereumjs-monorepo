@@ -303,7 +303,6 @@ export function getCommon(targetNetwork: string) {
       defaultHardfork: hfName,
     })
     const eips = targetNetwork.match(/(?<=\+)(.\d+)/g)
-    console.log(eips)
     if (eips) {
       common.setEIPs(eips.map((e: string) => parseInt(e)))
     }
