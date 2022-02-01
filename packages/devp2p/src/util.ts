@@ -5,6 +5,9 @@ import createKeccakHash from 'keccak'
 import { rlp } from 'ethereumjs-util'
 import { ETH } from './eth'
 import { LES } from './les'
+import { debug as createDebugLogger } from 'debug'
+
+export const devp2pDebug = createDebugLogger('devp2p')
 
 export function keccak256(...buffers: Buffer[]) {
   const buffer = Buffer.concat(buffers)

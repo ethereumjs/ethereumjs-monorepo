@@ -6,7 +6,8 @@
   "author": "mjbecze <mjbecze@gmail.com>",
   "keywords": [
     "ethereum",
-    "utilties"
+    "utilities",
+    "utils"
   ],
   "engines": {
     "node": ">=10.0.0"
@@ -44,7 +45,7 @@
   },
   "devDependencies": {
     "@types/assert": "^1.5.4",
-    "@types/node": "^11.13.4",
+    "@types/node": "^16.11.7",
     "@types/secp256k1": "^4.0.1",
     "@types/tape": "^4.13.2",
     "eslint": "^6.8.0",
@@ -52,7 +53,7 @@
     "karma-chrome-launcher": "^3.1.0",
     "karma-firefox-launcher": "^2.1.0",
     "karma-tap": "^4.2.0",
-    "karma-typescript": "^5.5.1",
+    "karma-typescript": "^5.5.3",
     "nyc": "^15.1.0",
     "prettier": "^2.0.5",
     "tape": "^4.10.1",
