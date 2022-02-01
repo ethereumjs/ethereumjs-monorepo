@@ -23,7 +23,7 @@ import {
 } from './util'
 import { ERROR } from '../../exceptions'
 import { RunState } from './../interpreter'
-import { exponentation } from '.'
+import { bufferToBigInt, exponentation } from '.'
 
 export interface SyncOpHandler {
   (runState: RunState, common: Common): void
@@ -814,10 +814,8 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x60,
     function (runState) {
       const numToPush = runState.opCode - 0x5f
-      const loaded = BigInt(
-        bufferToHex(
-          runState.eei.getCode().slice(runState.programCounter, runState.programCounter + numToPush)
-        )
+      const loaded = bufferToBigInt(
+        runState.eei.getCode().slice(runState.programCounter, runState.programCounter + numToPush)
       )
       runState.programCounter += numToPush
       runState.stack.push(loaded)
