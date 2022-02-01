@@ -1,4 +1,5 @@
 import tape from 'tape'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import Ethash from '../src'
 import { getEpoc, getCacheSize, getFullSize } from '../src/util'
 import { BlockHeader } from '@ethereumjs/block'
@@ -6,11 +7,12 @@ const powTests = require('./ethash_tests.json')
 
 const ethash = new Ethash()
 const tests = Object.keys(powTests)
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 
 tape('POW tests', function (t) {
   tests.forEach(function (key) {
     const test = powTests[key]
-    const header = BlockHeader.fromRLPSerializedHeader(Buffer.from(test.header, 'hex'), {})
+    const header = BlockHeader.fromRLPSerializedHeader(Buffer.from(test.header, 'hex'), { common })
 
     const headerHash = ethash.headerHash(header.raw())
     t.equal(headerHash.toString('hex'), test.header_hash, 'generate header hash')
