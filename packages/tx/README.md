@@ -35,7 +35,7 @@ All types of transaction objects are frozen with `Object.freeze()` which gives y
 
 The `Transaction` constructor receives a parameter of an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common) object that lets you specify the chain and hardfork to be used. If there is no `Common` provided the chain ID provided as a paramter on typed tx or the chain ID derived from the `v` value on signed EIP-155 conforming legacy txs will be taken (introduced in `v3.2.1`). In other cases the chain defaults to `mainnet`.
 
-Base default HF (determined by `Common`): `istanbul`
+Base default HF (determined by `Common`): `london`
 
 Starting with `v3.2.1` the tx library now deviates from the default HF for typed tx using the following rule: "The default HF is the default HF from `Common` if the tx type is active on that HF. Otherwise it is set to the first greater HF where the tx is active."
 
@@ -145,7 +145,7 @@ Legacy transaction are still valid transaction within Ethereum `mainnet` but wil
 See this [example script](./examples/transactions.ts) or the following code example on how to use.
 
 ```typescript
-import Common, { Chain } from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 
 const txParams = {
@@ -157,7 +157,7 @@ const txParams = {
   data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
 }
 
-const common = new Common({ chain: Chain.Mainnet })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 const tx = Transaction.fromTxData(txParams, { common })
 
 const privateKey = Buffer.from(

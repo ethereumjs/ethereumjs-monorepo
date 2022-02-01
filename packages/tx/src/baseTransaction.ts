@@ -80,7 +80,7 @@ export abstract class BaseTransaction<TransactionObject> {
    *
    * @hidden
    */
-  protected DEFAULT_HARDFORK: string | Hardfork = Hardfork.Istanbul
+  protected DEFAULT_HARDFORK: string | Hardfork = Hardfork.London
 
   constructor(txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData) {
     const { nonce, gasLimit, to, value, data, v, r, s, type } = txData
