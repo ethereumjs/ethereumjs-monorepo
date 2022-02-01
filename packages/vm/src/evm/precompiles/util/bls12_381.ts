@@ -1,5 +1,6 @@
-import { bufferToHex, padToEven } from 'ethereumjs-util'
+import { padToEven } from 'ethereumjs-util'
 import { VmError, ERROR } from '../../../exceptions'
+import { bufferToBigInt } from '../../opcodes'
 
 // base field modulus as described in the EIP
 const fieldModulus = BigInt(
@@ -158,7 +159,7 @@ function BLS12_381_ToFrPoint(input: Buffer, mcl: any): any {
 
 function BLS12_381_ToFpPoint(fpCoordinate: Buffer, mcl: any): any {
   // check if point is in field
-  if (bufferToBigInt(fpCoordinate)) >= fieldModulus) {
+  if (bufferToBigInt(fpCoordinate) >= fieldModulus) {
     throw new VmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
   }
 
@@ -174,10 +175,10 @@ function BLS12_381_ToFpPoint(fpCoordinate: Buffer, mcl: any): any {
 
 function BLS12_381_ToFp2Point(fpXCoordinate: Buffer, fpYCoordinate: Buffer, mcl: any): any {
   // check if the coordinates are in the field
-  if (bufferToBigInt(fpXCoordinate)) >= fieldModulus) {
+  if (bufferToBigInt(fpXCoordinate) >= fieldModulus) {
     throw new VmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
   }
-  if (bufferToBigInt(fpYCoordinate)) >= fieldModulus) {
+  if (bufferToBigInt(fpYCoordinate) >= fieldModulus) {
     throw new VmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
   }
 
