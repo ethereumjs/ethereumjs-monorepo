@@ -460,7 +460,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
     },
   ],
-  // 0x38: CODESIZE0xbcdef00000000000000000000000000000000000000000000000000024
+  // 0x38: CODESIZE
   [
     0x38,
     function (runState) {
