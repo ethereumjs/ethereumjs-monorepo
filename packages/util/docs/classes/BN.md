@@ -1687,23 +1687,11 @@ ___
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `ArrayType` | `Object` | - |
-| `ArrayType.poolSize` | `number` | This is the number of bytes used to determine the size of pre-allocated, internal Buffer instances used for pooling. This value may be modified. |
-| `ArrayType.prototype` | `Buffer` | - |
-| `ArrayType.alloc` | (`size`: `number`, `fill?`: `string` \| `number` \| `Buffer`, `encoding?`: `BufferEncoding`) => `Buffer` | - |
-| `ArrayType.allocUnsafe` | (`size`: `number`) => `Buffer` | - |
-| `ArrayType.allocUnsafeSlow` | (`size`: `number`) => `Buffer` | - |
-| `ArrayType.byteLength` | (`string`: `string` \| `TypedArray` \| `DataView` \| `ArrayBuffer` \| `SharedArrayBuffer`, `encoding?`: `BufferEncoding`) => `number` | - |
-| `ArrayType.compare` | (`buf1`: `Uint8Array`, `buf2`: `Uint8Array`) => `number` | - |
-| `ArrayType.concat` | (`list`: readonly `Uint8Array`[], `totalLength?`: `number`) => `Buffer` | - |
-| `ArrayType.from` | (`arrayBuffer`: `ArrayBuffer` \| `SharedArrayBuffer`, `byteOffset?`: `number`, `length?`: `number`) => `Buffer`(`data`: readonly `number`[]) => `Buffer`(`data`: `Uint8Array`) => `Buffer`(`obj`: { `valueOf`: () => `string` \| `object`  } \| { `[toPrimitive]`: (`hint`: ``"string"``) => `string`  }, `byteOffset?`: `number`, `length?`: `number`) => `Buffer`(`str`: `string`, `encoding?`: `BufferEncoding`) => `Buffer` | - |
-| `ArrayType.isBuffer` | (`obj`: `any`) => obj is Buffer | - |
-| `ArrayType.isEncoding` | (`encoding`: `string`) => encoding is BufferEncoding | - |
-| `ArrayType.of` | (...`items`: `number`[]) => `Buffer` | - |
-| `endian?` | [`Endianness`](../modules/BN.md#endianness) | - |
-| `length?` | `number` | - |
+| Name | Type |
+| :------ | :------ |
+| `ArrayType` | `BufferConstructor` |
+| `endian?` | [`Endianness`](../modules/BN.md#endianness) |
+| `length?` | `number` |
 
 #### Returns
 

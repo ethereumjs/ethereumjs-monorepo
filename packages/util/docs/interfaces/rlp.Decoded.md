@@ -19,7 +19,7 @@
 
 #### Defined in
 
-node_modules/rlp/dist/types.d.ts:7
+packages/util/node_modules/rlp/dist/types.d.ts:7
 
 ___
 
@@ -29,4 +29,4 @@ ___
 
 #### Defined in
 
-node_modules/rlp/dist/types.d.ts:8
+packages/util/node_modules/rlp/dist/types.d.ts:8
