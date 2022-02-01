@@ -22,6 +22,7 @@
 
 - [[iterator]](rlp.List.md#[iterator])
 - [[unscopables]](rlp.List.md#[unscopables])
+- [at](rlp.List.md#at)
 - [concat](rlp.List.md#concat)
 - [copyWithin](rlp.List.md#copywithin)
 - [entries](rlp.List.md#entries)
@@ -30,6 +31,8 @@
 - [filter](rlp.List.md#filter)
 - [find](rlp.List.md#find)
 - [findIndex](rlp.List.md#findindex)
+- [flat](rlp.List.md#flat)
+- [flatMap](rlp.List.md#flatmap)
 - [forEach](rlp.List.md#foreach)
 - [includes](rlp.List.md#includes)
 - [indexOf](rlp.List.md#indexof)
@@ -95,7 +98,7 @@ Array.length
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1224
+node_modules/typescript/lib/lib.es5.d.ts:1273
 
 ## Methods
 
@@ -111,7 +114,7 @@ Iterator
 
 #### Inherited from
 
-Array.\_\_@iterator@81
+Array.\_\_@iterator@83
 
 #### Defined in
 
@@ -142,11 +145,39 @@ when they will be absent when used in a 'with' statement.
 
 #### Inherited from
 
-Array.\_\_@unscopables@105
+Array.\_\_@unscopables@85
 
 #### Defined in
 
 node_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts:99
+
+___
+
+### at
+
+▸ **at**(`index`): `undefined` \| [`Input`](../modules/rlp.md#input)
+
+Takes an integer value and returns the item at that index,
+allowing for positive and negative integers.
+Negative integers count back from the last item in the array.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `index` | `number` |
+
+#### Returns
+
+`undefined` \| [`Input`](../modules/rlp.md#input)
+
+#### Inherited from
+
+Array.at
+
+#### Defined in
+
+node_modules/@types/node/globals.d.ts:86
 
 ___
 
@@ -173,7 +204,7 @@ Array.concat
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1248
+node_modules/typescript/lib/lib.es5.d.ts:1297
 
 ▸ **concat**(...`items`): [`Input`](../modules/rlp.md#input)[]
 
@@ -196,7 +227,7 @@ Array.concat
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1254
+node_modules/typescript/lib/lib.es5.d.ts:1303
 
 ___
 
@@ -278,7 +309,7 @@ Array.every
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1331
+node_modules/typescript/lib/lib.es5.d.ts:1380
 
 ▸ **every**(`predicate`, `thisArg?`): `boolean`
 
@@ -301,7 +332,7 @@ Array.every
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1340
+node_modules/typescript/lib/lib.es5.d.ts:1389
 
 ___
 
@@ -362,7 +393,7 @@ Array.filter
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1367
+node_modules/typescript/lib/lib.es5.d.ts:1416
 
 ▸ **filter**(`predicate`, `thisArg?`): [`Input`](../modules/rlp.md#input)[]
 
@@ -385,7 +416,7 @@ Array.filter
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1373
+node_modules/typescript/lib/lib.es5.d.ts:1422
 
 ___
 
@@ -472,6 +503,76 @@ node_modules/typescript/lib/lib.es2015.core.d.ts:43
 
 ___
 
+### flat
+
+▸ **flat**<`A`, `D`\>(`depth?`): `FlatArray`<`A`, `D`\>[]
+
+Returns a new array with all sub-array elements concatenated into it recursively up to the
+specified depth.
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `A` | `A` |
+| `D` | extends `number` = ``1`` |
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `depth?` | `D` | The maximum recursion depth |
+
+#### Returns
+
+`FlatArray`<`A`, `D`\>[]
+
+#### Inherited from
+
+Array.flat
+
+#### Defined in
+
+node_modules/typescript/lib/lib.es2019.array.d.ts:81
+
+___
+
+### flatMap
+
+▸ **flatMap**<`U`, `This`\>(`callback`, `thisArg?`): `U`[]
+
+Calls a defined callback function on each element of an array. Then, flattens the result into
+a new array.
+This is identical to a map followed by flat with depth 1.
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `U` | `U` |
+| `This` | `undefined` |
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `callback` | (`value`: [`Input`](../modules/rlp.md#input), `index`: `number`, `array`: [`Input`](../modules/rlp.md#input)[]) => `U` \| readonly `U`[] | A function that accepts up to three arguments. The flatMap method calls the callback function one time for each element in the array. |
+| `thisArg?` | `This` | An object to which the this keyword can refer in the callback function. If thisArg is omitted, undefined is used as the this value. |
+
+#### Returns
+
+`U`[]
+
+#### Inherited from
+
+Array.flatMap
+
+#### Defined in
+
+node_modules/typescript/lib/lib.es2019.array.d.ts:70
+
+___
+
 ### forEach
 
 ▸ **forEach**(`callbackfn`, `thisArg?`): `void`
@@ -495,7 +596,7 @@ Array.forEach
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1355
+node_modules/typescript/lib/lib.es5.d.ts:1404
 
 ___
 
@@ -549,7 +650,7 @@ Array.indexOf
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1316
+node_modules/typescript/lib/lib.es5.d.ts:1365
 
 ___
 
@@ -575,7 +676,7 @@ Array.join
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1259
+node_modules/typescript/lib/lib.es5.d.ts:1308
 
 ___
 
@@ -622,7 +723,7 @@ Array.lastIndexOf
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1322
+node_modules/typescript/lib/lib.es5.d.ts:1371
 
 ___
 
@@ -655,7 +756,7 @@ Array.map
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1361
+node_modules/typescript/lib/lib.es5.d.ts:1410
 
 ___
 
@@ -676,7 +777,7 @@ Array.pop
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1237
+node_modules/typescript/lib/lib.es5.d.ts:1286
 
 ___
 
@@ -702,7 +803,7 @@ Array.push
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1242
+node_modules/typescript/lib/lib.es5.d.ts:1291
 
 ___
 
@@ -728,7 +829,7 @@ Array.reduce
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1379
+node_modules/typescript/lib/lib.es5.d.ts:1428
 
 ▸ **reduce**(`callbackfn`, `initialValue`): [`Input`](../modules/rlp.md#input)
 
@@ -749,7 +850,7 @@ Array.reduce
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1380
+node_modules/typescript/lib/lib.es5.d.ts:1429
 
 ▸ **reduce**<`U`\>(`callbackfn`, `initialValue`): `U`
 
@@ -778,7 +879,7 @@ Array.reduce
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1386
+node_modules/typescript/lib/lib.es5.d.ts:1435
 
 ___
 
@@ -804,7 +905,7 @@ Array.reduceRight
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1392
+node_modules/typescript/lib/lib.es5.d.ts:1441
 
 ▸ **reduceRight**(`callbackfn`, `initialValue`): [`Input`](../modules/rlp.md#input)
 
@@ -825,7 +926,7 @@ Array.reduceRight
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1393
+node_modules/typescript/lib/lib.es5.d.ts:1442
 
 ▸ **reduceRight**<`U`\>(`callbackfn`, `initialValue`): `U`
 
@@ -854,7 +955,7 @@ Array.reduceRight
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1399
+node_modules/typescript/lib/lib.es5.d.ts:1448
 
 ___
 
@@ -875,7 +976,7 @@ Array.reverse
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1264
+node_modules/typescript/lib/lib.es5.d.ts:1313
 
 ___
 
@@ -896,7 +997,7 @@ Array.shift
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1269
+node_modules/typescript/lib/lib.es5.d.ts:1318
 
 ___
 
@@ -925,7 +1026,7 @@ Array.slice
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1279
+node_modules/typescript/lib/lib.es5.d.ts:1328
 
 ___
 
@@ -952,7 +1053,7 @@ Array.some
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1349
+node_modules/typescript/lib/lib.es5.d.ts:1398
 
 ___
 
@@ -967,7 +1068,7 @@ This method mutates the array and returns a reference to the same array.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `compareFn?` | (`a`: [`Input`](../modules/rlp.md#input), `b`: [`Input`](../modules/rlp.md#input)) => `number` | Function used to determine the order of the elements. It is expected to return a negative value if first argument is less than second argument, zero if they're equal and a positive value otherwise. If omitted, the elements are sorted in ascending, ASCII character order. ```ts [11,2,22,1].sort((a, b) => a - b) ``` |
+| `compareFn?` | (`a`: [`Input`](../modules/rlp.md#input), `b`: [`Input`](../modules/rlp.md#input)) => `number` | Function used to determine the order of the elements. It is expected to return a negative value if the first argument is less than the second argument, zero if they're equal, and a positive value otherwise. If omitted, the elements are sorted in ascending, ASCII character order. ```ts [11,2,22,1].sort((a, b) => a - b) ``` |
 
 #### Returns
 
@@ -979,7 +1080,7 @@ Array.sort
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1290
+node_modules/typescript/lib/lib.es5.d.ts:1339
 
 ___
 
@@ -1008,7 +1109,7 @@ Array.splice
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1297
+node_modules/typescript/lib/lib.es5.d.ts:1346
 
 ▸ **splice**(`start`, `deleteCount`, ...`items`): [`Input`](../modules/rlp.md#input)[]
 
@@ -1034,7 +1135,7 @@ Array.splice
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1305
+node_modules/typescript/lib/lib.es5.d.ts:1354
 
 ___
 
@@ -1054,7 +1155,7 @@ Array.toLocaleString
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1232
+node_modules/typescript/lib/lib.es5.d.ts:1281
 
 ___
 
@@ -1074,7 +1175,7 @@ Array.toString
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1228
+node_modules/typescript/lib/lib.es5.d.ts:1277
 
 ___
 
@@ -1156,7 +1257,7 @@ Array.unshift
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1310
+node_modules/typescript/lib/lib.es5.d.ts:1359
 
 ___
 

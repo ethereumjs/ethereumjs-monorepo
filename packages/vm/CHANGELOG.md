@@ -6,6 +6,34 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.7.0 - 2022-02-01
+
+### Dynamic Gas Costs
+
+Jochem from our team did a great refactoring how the VM handles gas costs in PR [#1364](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1364) by splitting up the opcode gas cost calculation (new file: `evm/opcodes/gas.ts`) from their actual behavior (stack edits, getting block hashes, etc.).
+
+This initial work was adopted a bit in PR [#1553](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1553) to remain backwards-compatible and now allows to output the dynamic gas cost value in the VM `step` event (see `README`) now taking things like memory usage, address access or storage changes into account and therefore much better reflecting the real gas usage than only showing the (much lower) static part.
+
+So along with the static `opcode.fee` output there is now a new event object property `opcode.dynamicFee`.
+
+### StateManager Refactoring
+
+The VM `StateManager` has been substantially refactored in PR [#1548](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1548) and most of the generic functionality has been extracted to a super class `BaseStateManager`. This should make it substantially easier to do custom `StateManager` implementations with an alternative access to the state by inheriting from `BaseStateManager` and only adopting the methods which directly access the underlying data structure. Have a look at the existing `DefaultStateManager` implementation for some guidance.
+
+### Other Features
+
+- New `ProofStateManager` to get an [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186)-compatible (respectively `eth_getProof rPC endpoint-compatible) proof for a specific address and associated storage slots, PR [#1590](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1590) and PR [#1660](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1660)
+- VM JumpDest analysis refactor for better performance, PR [#1629](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1629)
+- [EIP-3607](https://eips.ethereum.org/EIPS/eip-3607): Reject transactions from senders with deployed code, PR [#1568](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1568)
+- Support for new [Sepolia](https://sepolia.ethdevops.io/) PoW test network (use `Chain.Sepolia` for `@ethereumjs/common` instance passed in), PR [#1581](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1581)
+- [EIP-2681](https://eips.ethereum.org/EIPS/eip-2681): Limit account nonce to 2^64-1, PR [#1608](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1608)
+- [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855): Push0 opcode, PR [#1616](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1616)
+
+### Bug Fixes & Maintenance
+
+- Addressed consensus issue: tx goes OOG but refunds get applied anyways (thanks @LogvinovLeon for reporting! ❤️), PR [#1603](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1603)
+- VM now throws when a negative `Call` `value` is passed in, PR [#1606](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1606)
+
 ## 5.6.0 - 2021-11-09
 
 ### ArrowGlacier HF Support

@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/client",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "EthereumJS client implementation",
   "license": "MPL-2.0",
   "author": "Vinay Pulim (v@pulim.com)",
@@ -13,7 +13,7 @@
     "full sync"
   ],
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=12.0.0"
   },
   "files": [
     "dist"
@@ -52,14 +52,14 @@
     "@chainsafe/libp2p-noise": "^4.1.1",
     "@ethereumjs/block": "^3.6.0",
     "@ethereumjs/blockchain": "^5.5.1",
-    "@ethereumjs/common": "^2.6.0",
-    "@ethereumjs/devp2p": "^4.2.0",
+    "@ethereumjs/common": "^2.6.1",
+    "@ethereumjs/devp2p": "^4.2.1",
     "@ethereumjs/ethash": "^1.1.0",
-    "@ethereumjs/tx": "^3.4.0",
-    "@ethereumjs/vm": "^5.6.0",
+    "@ethereumjs/tx": "^3.5.0",
+    "@ethereumjs/vm": "^5.7.0",
     "chalk": "^4.1.2",
     "debug": "^4.3.3",
-    "ethereumjs-util": "^7.1.3",
+    "ethereumjs-util": "^7.1.4",
     "fs-extra": "^10.0.0",
     "it-pipe": "^1.1.0",
     "it-pushable": "^1.4.2",
@@ -73,7 +73,7 @@
     "libp2p-mplex": "^0.10.2",
     "libp2p-tcp": "^0.15.3",
     "libp2p-websockets": "^0.15.1",
-    "merkle-patricia-tree": "^4.2.2",
+    "merkle-patricia-tree": "^4.2.3",
     "multiaddr": "^10.0.1",
     "peer-id": "^0.14.3",
     "qheap": "^1.4.0",
