@@ -18,8 +18,8 @@ export enum DataDirectory {
 }
 
 export enum SyncMode {
-  full = 'full',
-  light = 'light',
+  Full = 'full',
+  Light = 'light',
 }
 
 export interface ConfigOptions {
