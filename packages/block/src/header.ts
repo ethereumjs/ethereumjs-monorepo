@@ -22,6 +22,7 @@ import {
   CLIQUE_DIFF_INTURN,
   CLIQUE_DIFF_NOTURN,
 } from './clique'
+import { HexPrefixedString, VerkleState } from '.'
 
 interface HeaderCache {
   hash: Buffer | undefined
@@ -49,6 +50,8 @@ export class BlockHeader {
   public readonly mixHash: Buffer
   public readonly nonce: Buffer
   public readonly baseFeePerGas?: BN
+  public readonly verkleProof?: HexPrefixedString
+  public readonly verkleState?: VerkleState
 
   public readonly _common: Common
 
@@ -107,6 +110,8 @@ export class BlockHeader {
       mixHash,
       nonce,
       baseFeePerGas,
+      verkleProof,
+      verkleState,
     } = headerData
 
     return new BlockHeader(
@@ -128,7 +133,9 @@ export class BlockHeader {
       opts,
       baseFeePerGas !== undefined && baseFeePerGas !== null
         ? new BN(toBuffer(baseFeePerGas))
-        : undefined
+        : undefined,
+      verkleProof,
+      verkleState
     )
   }
 
@@ -236,7 +243,9 @@ export class BlockHeader {
     mixHash: Buffer,
     nonce: Buffer,
     options: BlockOptions = {},
-    baseFeePerGas?: BN
+    baseFeePerGas?: BN,
+    verkleProof?: HexPrefixedString,
+    verkleState?: VerkleState
   ) {
     if (options.common) {
       this._common = options.common.copy()
@@ -322,6 +331,8 @@ export class BlockHeader {
     this.mixHash = mixHash
     this.nonce = nonce
     this.baseFeePerGas = baseFeePerGas
+    this.verkleProof = verkleProof
+    this.verkleState = verkleState
 
     this._validateHeaderFields()
     this._validateDAOExtraData()
