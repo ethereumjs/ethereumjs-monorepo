@@ -1,0 +1,12 @@
+{
+  "name": "EIP-999001",
+  "number": 999001,
+  "comment": "Verkle Proof Support (Fake EIP)",
+  "url": "https://github.com/gballet/verkle-block-sample",
+  "status": "custom",
+  "minimumHardfork": "london",
+  "gasConfig": {},
+  "gasPrices": {},
+  "vm": {},
+  "pow": {}
+}
