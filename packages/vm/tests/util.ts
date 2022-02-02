@@ -153,7 +153,6 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
       for (const [_key, address] of Object.entries(keyMap)) {
         t.fail(`Missing account!: ${address}`)
       }
-
       resolve()
     })
   })
