@@ -936,10 +936,6 @@ export default class Common extends EventEmitter {
     let hfBuffer = Buffer.alloc(0)
     let prevBlock = 0
     for (const hf of this.hardforks()) {
-      if (hf.name === 'merge' && !hf.block && (hf as any).mergeForkBlock) {
-        hf.block = (hf as any).mergeForkBlock
-      }
-
       const block = hf.block
 
       // Skip for chainstart (0), not applied HFs (null) and
