@@ -62,7 +62,7 @@
     "snappyjs": "^0.6.1"
   },
   "devDependencies": {
-    "@ethereumjs/block": "^3.6.0",
+    "@ethereumjs/block": "^3.6.1",
     "@ethereumjs/tx": "^3.5.0",
     "@types/async": "^2.4.1",
     "@types/chalk": "^2.2.0",

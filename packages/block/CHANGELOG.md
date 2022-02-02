@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.6.1 - 2022-02-02
+
+- Use initial configured base fee as default for `EIP-1559`-enabled blocks, PR [#1581](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1581)
+
 ## 3.6.0 - 2021-11-09
 
 ### ArrowGlacier HF Support
