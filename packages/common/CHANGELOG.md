@@ -244,10 +244,10 @@ Methods with a respective input parameter now allow for a `BNLike` input (`numbe
 
 For methods with a respective `number` return value corresponding [METHOD_NAME]BN methods have been added:
 
-- `hardforkBlockBN(hardfork?: string): BN`
-- `nextHardforkBlockBN(hardfork?: string): BN | null`
-- `chainIdBN(): BN`
-- `networkIdBN(): BN`
+- `hardforkBlock(hardfork?: string): BN`
+- `nextHardforkBlock(hardfork?: string): BN | null`
+- `chainId(): BN`
+- `networkId(): BN`
 
 Note that in the next major release these methods will be unified again by switching to use the original version names for the new BN-output functions.
 
