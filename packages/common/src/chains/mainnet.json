@@ -87,7 +87,7 @@
     },
     {
       "name": "preMerge",
-      "block": 100,
+      "block": null,
       "forkHash": null
     },
     {
