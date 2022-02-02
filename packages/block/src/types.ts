@@ -4,6 +4,8 @@ import { TxData, JsonTx, AccessListEIP2930TxData, FeeMarketEIP1559TxData } from 
 import { Block } from './block'
 import { BlockHeader } from './header'
 
+export type HexPrefixedString = string
+
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified
  * using a {@link Common} object, or `chain` and `hardfork`. Defaults to mainnet without specifying a
@@ -79,6 +81,10 @@ export interface BlockOptions {
   cliqueSigner?: Buffer
 }
 
+export interface VerkleState {
+  [key: HexPrefixedString]: HexPrefixedString
+}
+
 /**
  * A block header's data.
  */
@@ -99,6 +105,13 @@ export interface HeaderData {
   mixHash?: BufferLike
   nonce?: BufferLike
   baseFeePerGas?: BNLike
+
+  /**
+   * Verkle Proof Data (experimental)
+   * Fake-EIP 999001 (see Common library)
+   */
+  verkleProof?: HexPrefixedString
+  verkleState?: VerkleState
 
   /*
    * Backwards compatible alias for {@link HeaderData.logsBloom}
