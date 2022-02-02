@@ -39,6 +39,7 @@ import blockchainTestsRunner from './runners/BlockchainTestsRunner'
  * --debug: enable BlockchainTests debugger (compares post state against the expected post state)
  * --expected-test-amount: (optional) if present, check after tests are ran if at least this amount of tests have passed (inclusive)
  * --verify-test-amount-alltests: if this is passed, get the expected amount from tests and verify afterwards if this is the count of tests (expects tests are ran with default settings)
+ * --reps: if passed, each test case will be run the number of times indicated
  */
 
 const argv = minimist(process.argv.slice(2))
@@ -90,6 +91,25 @@ async function runTests() {
   runnerArgs.gasLimit = argv.gas // GeneralStateTests
   runnerArgs.value = argv.value // GeneralStateTests
   runnerArgs.debug = argv.debug // BlockchainTests
+  runnerArgs.reps = argv.reps // test repetitions
+
+  /**
+   * Modify the forkConfig string to ensure it works with RegEx (escape `+` characters)
+   */
+  if (testGetterArgs.forkConfig.includes('+')) {
+    let str = testGetterArgs.forkConfig
+    const indicies = []
+    for (let i = 0; i < str.length; i++) {
+      if (str[i] == '+') {
+        indicies.push(i)
+      }
+    }
+    // traverse array in reverse order to ensure indicies match when we replace the '+' with '/+'
+    for (let i = indicies.length - 1; i >= 0; i--) {
+      str = `${str.substr(0, indicies[i])}\\${str.substr(indicies[i])}`
+    }
+    testGetterArgs.forkConfig = str
+  }
 
   let expectedTests: number | undefined
   if (argv['verify-test-amount-alltests']) {

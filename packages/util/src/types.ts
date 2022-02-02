@@ -47,6 +47,9 @@ export interface TransformableToBuffer {
   toArray?(): Uint8Array
 }
 
+export type NestedUint8Array = Array<Uint8Array | NestedUint8Array>
+export type NestedBufferArray = Array<Buffer | NestedBufferArray>
+
 /**
  * Convert BN to 0x-prefixed hex string.
  */

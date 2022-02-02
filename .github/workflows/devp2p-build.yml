@@ -13,6 +13,10 @@ defaults:
   run:
     working-directory: packages/devp2p
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   test-devp2p:
     runs-on: ubuntu-latest
