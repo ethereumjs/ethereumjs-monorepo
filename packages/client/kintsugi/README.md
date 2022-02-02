@@ -19,9 +19,8 @@ Please ensure you have Node 12.x+ installed
 
 #### Beacon
 
-1. Use lodestar branch `master` and run `yarn build`
-1. Make dir `lodestar/kintsugi/config` and copy in from this dir: `config.yml`, `genesis.ssz`
-1. Run cmd: `./lodestar beacon --rootDir kintsugi/temp --paramsFile=kintsugi/config/config.yaml --genesisStateFile=kintsugi/config/genesis.ssz --network.connectToDiscv5Bootnodes --network.discv5.enabled=true --network.discv5.bootEnrs="enr:-Iq4QKuNB_wHmWon7hv5HntHiSsyE1a6cUTK1aT7xDSU_hNTLW3R4mowUboCsqYoh1kN9v3ZoSu_WuvW9Aw0tQ0Dxv6GAXxQ7Nv5gmlkgnY0gmlwhLKAlv6Jc2VjcDI1NmsxoQK6S-Cii_KmfFdUJL2TANL3ksaKUnNXvTCv1tLwXs0QgIN1ZHCCIyk" --eth1.enabled=true --eth1.disableEth1DepositDataTracker=true --eth1.providerUrls=http://localhost:8545 --execution.urls=http://localhost:8545`
+1. Use lodestar branch `master` and run `yarn && yarn build`
+1. Run cmd: `./lodestar beacon --rootDir kintsugi/temp --network=kintsugi --eth1.providerUrls=http://localhost:8545 --execution.urls=http://localhost:8545`
 
 #### Validator
 
