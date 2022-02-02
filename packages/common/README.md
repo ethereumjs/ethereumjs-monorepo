@@ -295,6 +295,14 @@ The following EIPs are currently supported:
 - [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675): Upgrade consensus to Proof-of-Stake (`experimental`)
 - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855): Push0 opcode (`v2.6.1`+)
 
+### Fake EIPs
+
+This library supports the notion of "Fake EIPs". Fake EIPs are not real EIPs but take upon a range of (future-proof) unused EIP numbers to allow for adding certain types of generic EIP-like custom functionality which is not specified in a dedicated EIP (yet).
+
+Following Fake EIP numbers are assigned:
+
+- [Fake-EIP-999001](https://github.com/gballet/verkle-block-sample): Support for Verkle Proof Blocks (experimental)
+
 ## Bootstrap Nodes
 
 You can use `common.bootstrapNodes()` function to get nodes for a specific chain/network.
