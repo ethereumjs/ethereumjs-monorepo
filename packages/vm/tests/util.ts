@@ -150,8 +150,8 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
 
     stream.on('end', async function () {
       await Promise.all(queue)
-      for (const entry of Object.entries(keyMap)) {
-        t.fail(`Missing account!: ${entry[1]}`)
+      for (const [_key, address] of Object.entries(keyMap)) {
+        t.fail(`Missing account!: ${address}`)
       }
 
       resolve()
