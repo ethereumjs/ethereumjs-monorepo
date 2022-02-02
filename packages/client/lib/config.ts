@@ -208,7 +208,7 @@ export class Config {
   public readonly events: EventBusType
 
   public static readonly CHAIN_DEFAULT = 'mainnet'
-  public static readonly SYNCMODE_DEFAULT = SyncMode.full
+  public static readonly SYNCMODE_DEFAULT = SyncMode.Full
   public static readonly LIGHTSERV_DEFAULT = false
   public static readonly DATADIR_DEFAULT = `./datadir`
   public static readonly TRANSPORTS_DEFAULT = ['rlpx', 'libp2p']
@@ -329,7 +329,7 @@ export class Config {
     const networkDir = this.getNetworkDirectory()
     switch (dir) {
       case DataDirectory.Chain: {
-        const chainDataDirName = this.syncmode === SyncMode.light ? 'lightchain' : 'chain'
+        const chainDataDirName = this.syncmode === SyncMode.Light ? 'lightchain' : 'chain'
         return `${networkDir}/${chainDataDirName}`
       }
       case DataDirectory.State:

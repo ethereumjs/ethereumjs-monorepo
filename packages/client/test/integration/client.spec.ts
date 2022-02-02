@@ -7,7 +7,7 @@ import MockServer from './mocks/mockserver'
 tape('[Integration:EthereumClient]', (t) => {
   const serverConfig = new Config()
   const servers = [new MockServer({ config: serverConfig }) as any]
-  const config = new Config({ servers, syncmode: SyncMode.full, lightserv: false })
+  const config = new Config({ servers, syncmode: SyncMode.Full, lightserv: false })
 
   // attach server to centralized event bus
   ;(config.servers[0].config as any).events = config.events

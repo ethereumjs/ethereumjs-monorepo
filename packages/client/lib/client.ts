@@ -58,8 +58,8 @@ export default class EthereumClient {
   public chain: Chain
 
   public node:
-    | { syncmode: SyncMode.full; execution: VMExecution; services: FullEthereumService[] }
-    | { syncmode: SyncMode.light; execution: null; services: LightEthereumService[] }
+    | { syncmode: SyncMode.Full; execution: VMExecution; services: FullEthereumService[] }
+    | { syncmode: SyncMode.Light; execution: null; services: LightEthereumService[] }
 
   public opened: boolean
   public started: boolean
@@ -71,7 +71,7 @@ export default class EthereumClient {
     this.config = options.config
     this.chain = new Chain(options)
 
-    if (this.config.syncmode === SyncMode.full) {
+    if (this.config.syncmode === SyncMode.Full) {
       const execution = new VMExecution({
         config: options.config,
         stateDB: options.stateDB,
@@ -88,7 +88,7 @@ export default class EthereumClient {
           execution,
         }),
       ]
-      this.node = { syncmode: SyncMode.full, execution, services }
+      this.node = { syncmode: SyncMode.Full, execution, services }
     } else {
       const services = [
         new LightEthereumService({
@@ -97,7 +97,7 @@ export default class EthereumClient {
           chain: this.chain,
         }),
       ]
-      this.node = { syncmode: SyncMode.light, execution: null, services }
+      this.node = { syncmode: SyncMode.Light, execution: null, services }
     }
 
     this.opened = false

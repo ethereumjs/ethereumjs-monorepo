@@ -8,12 +8,12 @@ tape('[Integration:LightSync]', async (t) => {
     const [remoteServer, remoteService] = await setup({
       location: '127.0.0.2',
       height: 20,
-      syncmode: SyncMode.full,
+      syncmode: SyncMode.Full,
     })
     const [localServer, localService] = await setup({
       location: '127.0.0.1',
       height: 0,
-      syncmode: SyncMode.light,
+      syncmode: SyncMode.Light,
     })
     await localService.synchronizer.stop()
     await localServer.discover('remotePeer1', '127.0.0.2')
@@ -29,12 +29,12 @@ tape('[Integration:LightSync]', async (t) => {
     const [remoteServer, remoteService] = await setup({
       location: '127.0.0.2',
       height: 9,
-      syncmode: SyncMode.full,
+      syncmode: SyncMode.Full,
     })
     const [localServer, localService] = await setup({
       location: '127.0.0.1',
       height: 10,
-      syncmode: SyncMode.light,
+      syncmode: SyncMode.Light,
     })
     localService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
       t.fail('synced with a stale peer')
@@ -50,17 +50,17 @@ tape('[Integration:LightSync]', async (t) => {
     const [remoteServer1, remoteService1] = await setup({
       location: '127.0.0.2',
       height: 9,
-      syncmode: SyncMode.full,
+      syncmode: SyncMode.Full,
     })
     const [remoteServer2, remoteService2] = await setup({
       location: '127.0.0.3',
       height: 10,
-      syncmode: SyncMode.full,
+      syncmode: SyncMode.Full,
     })
     const [localServer, localService] = await setup({
       location: '127.0.0.1',
       height: 0,
-      syncmode: SyncMode.light,
+      syncmode: SyncMode.Light,
     })
     await localService.synchronizer.stop()
     await localServer.discover('remotePeer1', '127.0.0.2')
