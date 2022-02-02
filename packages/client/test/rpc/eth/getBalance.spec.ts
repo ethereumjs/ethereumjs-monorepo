@@ -18,9 +18,7 @@ tape(`${method}: ensure balance deducts after a tx`, async (t) => {
 
   const server = startRPC(manager.getMethods())
 
-  const {
-    node: { execution },
-  } = client
+  const { execution } = client
   t.notEqual(execution, undefined, 'should have valid execution')
 
   const { vm } = execution as VMExecution

@@ -308,12 +308,12 @@ export class Eth {
    */
   constructor(client: EthereumClient) {
     this.client = client
-    const services: EthereumService[] = client.node.services
+    const services: EthereumService[] = client.services
     this.service = services.find((s) => s.name === 'eth') as EthereumService
     // TODO: remove the forced typecasing here
-    this.receiptsManager = client.node.execution?.receiptsManager as ReceiptsManager
+    this.receiptsManager = client.execution?.receiptsManager as ReceiptsManager
     this._chain = this.service.chain
-    this._vm = client.node.execution?.vm
+    this._vm = client.execution?.vm
 
     const ethProtocol = this.service.protocols.find((p) => p.name === 'eth') as EthProtocol
     this.ethVersion = Math.max(...ethProtocol.versions)
@@ -966,7 +966,7 @@ export class Eth {
     const currentBlockHeader = this._chain.headers?.latest ?? (await this._chain.getLatestHeader())
     const currentBlock = bnToHex(currentBlockHeader.number)
 
-    const synchronizer = this.client.node.services[0].synchronizer
+    const synchronizer = this.client.services[0].synchronizer
     const startingBlock = bnToHex(synchronizer.startingBlock)
 
     let highestBlock

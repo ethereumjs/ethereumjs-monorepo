@@ -93,24 +93,21 @@ export function createClient(clientOpts: any = {}) {
     synchronized: false,
     config,
     chain,
-    node: {
-      syncmode: clientOpts.includeVM ? 'full' : 'light',
-      execution,
-      services: [
-        {
-          name: 'eth',
-          chain,
-          pool: { peers },
-          protocols: [
-            {
-              name: 'eth',
-              versions: clientConfig.ethProtocolVersions,
-            },
-          ],
-          synchronizer,
-        },
-      ],
-    },
+    execution,
+    services: [
+      {
+        name: 'eth',
+        chain,
+        pool: { peers },
+        protocols: [
+          {
+            name: 'eth',
+            versions: clientConfig.ethProtocolVersions,
+          },
+        ],
+        synchronizer,
+      },
+    ],
     servers,
     opened: clientConfig.opened,
     server: (name: string) => {
@@ -190,10 +187,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   const manager = createManager(client)
   const server = startRPC(manager.getMethods())
 
-  const {
-    chain,
-    node: { execution },
-  } = client
+  const { chain, execution } = client
 
   await chain.open()
   await execution?.open()

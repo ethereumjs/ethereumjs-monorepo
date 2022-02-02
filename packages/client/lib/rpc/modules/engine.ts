@@ -182,15 +182,15 @@ export class Engine {
    */
   constructor(client: EthereumClient) {
     this.client = client
-    const services: EthereumService[] = client.node.services
+    const services: EthereumService[] = client.services
     this.service = services.find((s) => s.name === 'eth') as EthereumService
     this.chain = this.service.chain
     this.config = this.chain.config
     this.synchronizer = this.service.synchronizer as FullSynchronizer
-    if (!this.client.node.execution) {
+    if (!this.client.execution) {
       throw Error('execution required for engine module')
     }
-    this.vm = this.client.node.execution.vm
+    this.vm = this.client.execution.vm
     this.txPool = (this.service.synchronizer as FullSynchronizer).txPool
     this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.txPool })
     this.validBlocks = new Map()

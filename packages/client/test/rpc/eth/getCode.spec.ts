@@ -17,9 +17,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const manager = createManager(client)
   const server = startRPC(manager.getMethods())
 
-  const {
-    node: { execution },
-  } = client
+  const { execution } = client
   t.notEqual(execution, undefined, 'should have valid execution')
 
   const { vm } = execution as VMExecution
@@ -44,9 +42,7 @@ tape(`${method}: ensure returns correct code`, async (t) => {
   const manager = createManager(client)
   const server = startRPC(manager.getMethods())
 
-  const {
-    node: { execution },
-  } = client
+  const { execution } = client
   t.notEqual(execution, undefined, 'should have valid execution')
 
   const { vm } = execution as VMExecution

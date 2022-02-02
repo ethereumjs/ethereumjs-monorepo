@@ -56,10 +56,8 @@ export interface EthereumClientOptions {
 export default class EthereumClient {
   public config: Config
   public chain: Chain
-
-  public node:
-    | { syncmode: SyncMode.Full; execution: VMExecution; services: FullEthereumService[] }
-    | { syncmode: SyncMode.Light; execution: null; services: LightEthereumService[] }
+  public services: (FullEthereumService | LightEthereumService)[]
+  public execution: VMExecution | undefined
 
   public opened: boolean
   public started: boolean
@@ -72,32 +70,30 @@ export default class EthereumClient {
     this.chain = new Chain(options)
 
     if (this.config.syncmode === SyncMode.Full) {
-      const execution = new VMExecution({
+      this.execution = new VMExecution({
         config: options.config,
         stateDB: options.stateDB,
         metaDB: options.metaDB,
         chain: this.chain,
       })
-      const services = [
+      this.services = [
         new FullEthereumService({
           config: this.config,
           chainDB: options.chainDB,
           stateDB: options.stateDB,
           metaDB: options.metaDB,
           chain: this.chain,
-          execution,
+          execution: this.execution,
         }),
       ]
-      this.node = { syncmode: SyncMode.Full, execution, services }
     } else {
-      const services = [
+      this.services = [
         new LightEthereumService({
           config: this.config,
           chainDB: options.chainDB,
           chain: this.chain,
         }),
       ]
-      this.node = { syncmode: SyncMode.Light, execution: null, services }
     }
 
     this.opened = false
@@ -127,8 +123,8 @@ export default class EthereumClient {
       this.config.logger.info(`Synchronized blockchain at height ${height}`)
     })
 
-    await this.node.execution?.open()
-    await Promise.all(this.node.services.map((s) => s.open()))
+    await this.execution?.open()
+    await Promise.all(this.services.map((s) => s.open()))
 
     this.opened = true
   }
@@ -142,7 +138,7 @@ export default class EthereumClient {
     }
     this.config.logger.info('Connecting to network and synchronizing blockchain...')
 
-    await Promise.all(this.node.services.map((s) => s.start()))
+    await Promise.all(this.services.map((s) => s.start()))
     await Promise.all(this.config.servers.map((s) => s.start()))
     await Promise.all(this.config.servers.map((s) => s.bootstrap()))
     this.started = true
@@ -155,8 +151,8 @@ export default class EthereumClient {
     if (!this.started) {
       return false
     }
-    await this.node.execution?.stop()
-    await Promise.all(this.node.services.map((s) => s.stop()))
+    await this.execution?.stop()
+    await Promise.all(this.services.map((s) => s.stop()))
     await Promise.all(this.config.servers.map((s) => s.stop()))
     this.started = false
   }
@@ -166,7 +162,7 @@ export default class EthereumClient {
    * @param name name of service
    */
   service(name: string) {
-    const services: EthereumService[] = this.node.services
+    const services: EthereumService[] = this.services
     return services.find((s) => s.name === name)
   }
 
@@ -191,8 +187,8 @@ export default class EthereumClient {
   async executeBlocks(first: number, last: number, txHashes: string[]) {
     this.config.logger.info('Preparing for block execution (debug mode, no services started)...')
 
-    if (!this.node.execution) throw new Error('executeBlocks requires execution')
-    const vm = this.node.execution.vm.copy()
+    if (!this.execution) throw new Error('executeBlocks requires execution')
+    const vm = this.execution.vm.copy()
 
     for (let blockNumber = first; blockNumber <= last; blockNumber++) {
       const block = await vm.blockchain.getBlock(blockNumber)
