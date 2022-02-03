@@ -57,8 +57,6 @@ This library supports the following transaction types ([EIP-2718](https://eips.e
 - `AccessListEIP2930Transaction` ([EIP-2930](https://eips.ethereum.org/EIPS/eip-2930), optional access lists)
 - `Transaction`, the Ethereum standard tx up to `berlin`, now referred to as legacy txs with the introduction of tx types
 
-Please note that up to `v3.2.0` you mandatorily had to use a `Common` instance for typed tx instantiation and set the `hardfork` in `Common` to minimally `berlin` (`EIP-2930`) respectively `london` (`EIP-1559`) to allow for typed tx instantiation, since the current `Common` release series v2 (tx type support introduced with `v2.2.0`) still defaults to `istanbul` for backwards-compatibility reasons (also see tx default HF section below).
-
 #### Gas Fee Market Transactions (EIP-1559)
 
 - Class: `FeeMarketEIP1559Transaction`
