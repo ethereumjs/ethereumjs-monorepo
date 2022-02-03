@@ -1,4 +1,4 @@
-import { Hardfork } from '@ethereumjs/common'
+import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
@@ -122,13 +122,17 @@ export class VMExecution extends Execution {
               )
               this.hardfork = this.config.execCommon.setHardforkByBlockNumber(number, td)
             }
-            // Block validation is redundant here and leads to consistency problems
-            // on PoA clique along blockchain-including validation checks
-            // (signer states might have moved on when sync is ahead)
+            let skipBlockValidation = false
+            if (this.config.execCommon.consensusType() === ConsensusType.ProofOfAuthority) {
+              // Block validation is redundant here and leads to consistency problems
+              // on PoA clique along blockchain-including validation checks
+              // (signer states might have moved on when sync is ahead)
+              skipBlockValidation = true
+            }
             const result = await this.vm.runBlock({
               block,
               root: parentState,
-              skipBlockValidation: true,
+              skipBlockValidation,
             })
             void this.receiptsManager?.saveReceipts(block, result.receipts)
             txCounter += block.transactions.length
