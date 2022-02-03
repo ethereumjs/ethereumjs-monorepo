@@ -363,7 +363,9 @@ export class Engine {
                 // If block has less than 21000 gas remaining, consider it full
                 blockFull = true
                 this.config.logger.info(
-                  `Engine: Assembled block full (gasLeft: ${gasLimit.sub(blockBuilder.gasUsed)})`
+                  // eslint-disable-next-line prettier/prettier
+                  `Engine: Assembled block full (gasLeft: ${BigInt(`0x ${gasLimit.toString('hex')}`) - blockBuilder.gasUsed
+                  })`
                 )
               }
             } else {
@@ -380,8 +382,7 @@ export class Engine {
         this.pendingPayloads.set(payloadId, { block, random })
         this.validBlocks.set(block.hash().toString('hex'), block)
         this.config.logger.info(
-          `Engine: Finished assembling block number=${block.header.number} txs=${
-            txs.length
+          `Engine: Finished assembling block number=${block.header.number} txs=${txs.length
           } hash=${block.hash().toString('hex')}`
         )
       } catch (error: any) {
