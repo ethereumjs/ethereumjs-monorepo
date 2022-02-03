@@ -31,7 +31,7 @@
     "docs:build": "typedoc --options typedoc.js"
   },
   "dependencies": {
-    "@ethereumjs/block": "^3.6.0",
+    "@ethereumjs/block": "^3.6.1",
     "@types/levelup": "^4.3.0",
     "buffer-xor": "^2.0.1",
     "ethereumjs-util": "^7.1.4",
