@@ -43,7 +43,8 @@
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "formatTest": "node ./scripts/formatTest",
-    "tsc": "../../config/cli/ts-compile.sh"
+    "tsc": "../../config/cli/ts-compile.sh",
+    "examples": "ts-node ../../scripts/examples-runner.ts -- vm"
   },
   "dependencies": {
     "@ethereumjs/block": "^3.6.1",
@@ -60,6 +61,7 @@
     "rustbn.js": "~0.2.0"
   },
   "devDependencies": {
+    "@ethersproject/abi": "^5.0.12",
     "@types/benchmark": "^1.0.33",
     "@types/core-js": "^2.5.0",
     "@types/lru-cache": "^5.1.0",
@@ -84,7 +86,8 @@
     "tape": "^5.3.1",
     "ts-node": "^10.2.1",
     "typedoc": "^0.22.4",
-    "typescript": "^4.4.2"
+    "typescript": "^4.4.2",
+    "solc": "^0.8.1"
   },
   "contributors": [
     "Alex Beregszaszi <alex@rtfs.hu>"

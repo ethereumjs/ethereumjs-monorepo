@@ -1,7 +1,0 @@
-{
-  "name": "run-blockchain",
-  "private": true,
-  "scripts": {
-    "example": "ts-node index.ts"
-  }
-}

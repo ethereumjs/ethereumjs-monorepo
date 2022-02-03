@@ -1,5 +1,9 @@
+// Decode opcodes example
+//
+// 1. Takes binary EVM code and decodes it into opcodes
+
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { getOpcodesForHF } from '../../src/evm/opcodes'
+import { getOpcodesForHF } from '../src/evm/opcodes'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 const opcodes = getOpcodesForHF(common)
