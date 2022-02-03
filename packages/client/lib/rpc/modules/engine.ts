@@ -257,6 +257,7 @@ export class Engine {
       blockNumber: number,
       receiptsRoot: receiptTrie,
       random: mixHash,
+      feeRecipient: coinbase,
       transactions,
       parentHash,
     } = payloadData
@@ -292,11 +293,21 @@ export class Engine {
       receiptTrie,
       transactionsTrie,
       mixHash,
+      coinbase,
     }
 
     let block
     try {
       block = Block.fromBlockData({ header, transactions: txs }, { common })
+
+      // Verify blockHash matches payload
+      if (!block.hash().equals(toBuffer(payloadData.blockHash))) {
+        throw new Error(
+          `Invalid blockHash, expected: ${payloadData.blockHash}, received: ${bufferToHex(
+            block.hash()
+          )}`
+        )
+      }
     } catch (error) {
       const validationError = `Error verifying block during init: ${error}`
       this.config.logger.debug(validationError)
