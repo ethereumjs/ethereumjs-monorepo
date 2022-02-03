@@ -90,7 +90,6 @@ can be created via the main constructor and the [CommonOpts.customChains](../int
 - [setHardforkByBlockNumber](default.md#sethardforkbyblocknumber)
 - [setMaxListeners](default.md#setmaxlisteners)
 - [custom](default.md#custom)
-- [forCustomChain](default.md#forcustomchain)
 - [isSupportedChainId](default.md#issupportedchainid)
 - [listenerCount](default.md#listenercount)
 - [once](default.md#once)
@@ -1590,17 +1589,6 @@ the `@ethereumjs/tx` library to a Layer-2 chain).
 #### Defined in
 
 [packages/common/src/index.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L211)
-
-___
-
-### forCustomChain
-
-▸ `Static` **forCustomChain**(`baseChain`, `customChainParams`, `hardfork?`, `supportedHardforks?`): [`default`](default.md)
-
-Creates a {@link Common} object for a custom chain, based on a standard one. It uses all the `Chain`
-params from [baseChain](../interfaces/CustomCommonOpts.md#basechain) except the ones overridden in {@link customChainParams}.
-
-**`deprecated`** Use {@link Common.custom} instead
 
 #### Parameters
 

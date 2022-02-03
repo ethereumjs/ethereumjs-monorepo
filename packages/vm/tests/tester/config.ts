@@ -288,13 +288,9 @@ export function getCommon(network: string) {
         })
       }
     }
-    return Common.forCustomChain(
-      'mainnet',
-      {
-        hardforks: testHardforks,
-      },
-      hfName
-    )
+    return Common.custom({
+      hardforks: testHardforks,
+    })
   } else {
     // this is not a "default fork" network, but it is a "transition" network. we will test the VM if it transitions the right way
     const transitionForks =
@@ -327,13 +323,9 @@ export function getCommon(network: string) {
         })
       }
     }
-    return Common.forCustomChain(
-      'mainnet',
-      {
-        hardforks: testHardforks,
-      },
-      transitionForks.startFork
-    )
+    return Common.custom({
+      hardforks: testHardforks,
+    })
   }
 }
 
