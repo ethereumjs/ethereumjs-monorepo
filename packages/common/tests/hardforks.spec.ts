@@ -226,14 +226,14 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
 
     let msg = 'should return correct value'
     st.equal(c.hardforkBlock(Hardfork.Berlin), 12244000, msg)
-    st.ok(c.hardforkBlockBN(Hardfork.Berlin)!.eq(new BN(12244000)), msg)
+    st.ok(c.hardforkBlock(Hardfork.Berlin)!.eq(new BN(12244000)), msg)
 
     msg = 'should return null for unscheduled hardfork'
     // developer note: when Shanghai is set,
     // update this test to next unscheduled hardfork.
     st.equal(c.hardforkBlock(Hardfork.Shanghai), null, msg)
-    st.equal(c.hardforkBlockBN(Hardfork.Shanghai), null, msg)
-    st.equal(c.nextHardforkBlockBN(Hardfork.Shanghai), null, msg)
+    st.equal(c.hardforkBlock(Hardfork.Shanghai), null, msg)
+    st.equal(c.nextHardforkBlock(Hardfork.Shanghai), null, msg)
 
     st.end()
   })
