@@ -3,7 +3,7 @@ import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
 import { toBuffer, bufferToHex, rlp, BN } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { middleware, validators } from '../validation'
-import { INTERNAL_ERROR, INVALID_REQUEST } from '../error-code'
+import { INTERNAL_ERROR } from '../error-code'
 import { PendingBlock } from '../../miner'
 import type VM from '@ethereumjs/vm'
 import type EthereumClient from '../../client'
@@ -20,7 +20,7 @@ enum Status {
   SUCCESS = 'SUCCESS',
 }
 
-const MESSAGE_ORDER_RESET_ID = new BN(0)
+const _MESSAGE_ORDER_RESET_ID = new BN(0)
 
 type ExecutionPayloadV1 = {
   parentHash: string // DATA, 32 Bytes
@@ -369,11 +369,12 @@ export class Engine {
       forkchoiceState: ForkchoiceStateV1,
       payloadAttributes: PayloadAttributesV1 | undefined
     ],
-    context: any
+    _context: any
   ) {
     const { headBlockHash, finalizedBlockHash } = params[0]
     const payloadAttributes = params[1]
 
+    /*
     const reqId = new BN(context.request.id)
     if (reqId.eq(MESSAGE_ORDER_RESET_ID)) {
       this.lastMessageID = new BN(0)
@@ -385,6 +386,7 @@ export class Engine {
     } else {
       this.lastMessageID = reqId
     }
+    */
 
     /*
      * Process head block
