@@ -66,7 +66,7 @@ export function getTransaction(
   }
 
   if (txType === 1) {
-    txParams['chainId'] = common.chainIdBN()
+    txParams['chainId'] = common.chainId()
     txParams['accessList'] = [
       {
         address: '0x0000000000000000000000000000000000000101',
