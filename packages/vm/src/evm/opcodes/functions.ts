@@ -604,10 +604,11 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x44,
     function (runState, common) {
-      const value = common.isActivatedEIP(4399)
-        ? runState.eei.getBlockRandom()
-        : runState.eei.getBlockDifficulty()
-      runState.stack.push(value)
+      if (common.isActivatedEIP(4399)) {
+        runState.stack.push(runState.eei.getBlockRandom())
+      } else {
+        runState.stack.push(runState.eei.getBlockDifficulty())
+      }
     },
   ],
   // 0x45: GASLIMIT
