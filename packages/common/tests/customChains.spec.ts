@@ -104,6 +104,30 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     st.end()
   })
 
+  t.test('forCustomChain() (deprecated) -> base functionality', function (st: tape.Test) {
+    const mainnetCommon = new Common({ chain: Chain.Mainnet })
+
+    const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
+    const customChainCommon = Common.custom(customChainParams)
+
+    // From custom chain params
+    st.equal(customChainCommon.chainName(), customChainParams.name)
+    st.equal(customChainCommon.chainId(), customChainParams.chainId)
+    st.ok(customChainCommon.chainId().eqn(customChainParams.chainId))
+    st.equal(customChainCommon.networkId(), customChainParams.networkId)
+    st.ok(customChainCommon.networkId().eqn(customChainParams.networkId))
+
+    // Fallback params from mainnet
+    st.equal(customChainCommon.genesis(), mainnetCommon.genesis())
+    st.equal(customChainCommon.bootstrapNodes(), mainnetCommon.bootstrapNodes())
+    st.equal(customChainCommon.hardforks(), mainnetCommon.hardforks())
+
+    // Set only to this Common
+    st.equal(customChainCommon.hardfork(), 'byzantium')
+
+    st.end()
+  })
+
   t.test('customChains parameter: initialization exception', (st) => {
     try {
       new Common({ chain: testnet, customChains: [testnet] })
