@@ -2,9 +2,11 @@ import assert from 'assert'
 import { join } from 'path'
 import { readFileSync } from 'fs'
 import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
-import { Account, Address, BN } from 'ethereumjs-util'
+import { Address } from 'ethereumjs-util'
 import { Transaction } from '@ethereumjs/tx'
-import VM from '../../dist'
+import VM from '..'
+import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder'
+import { getAccountNonce, insertAccount } from './helpers/account-utils'
 const solc = require('solc')
 
 const INITIAL_GREETING = 'Hello, World!'
@@ -19,8 +21,8 @@ function getSolcInput() {
   return {
     language: 'Solidity',
     sources: {
-      'contracts/Greeter.sol': {
-        content: readFileSync(join(__dirname, 'contracts', 'Greeter.sol'), 'utf8'),
+      'helpers/Greeter.sol': {
+        content: readFileSync(join(__dirname, 'helpers', 'Greeter.sol'), 'utf8'),
       },
       // If more contracts were to be compiled, they should have their own entries here
     },
@@ -70,13 +72,7 @@ function compileContracts() {
 }
 
 function getGreeterDeploymentBytecode(solcOutput: any): any {
-  return solcOutput.contracts['contracts/Greeter.sol'].Greeter.evm.bytecode.object
-}
-
-async function getAccountNonce(vm: VM, accountPrivateKey: Buffer) {
-  const address = Address.fromPrivateKey(accountPrivateKey)
-  const account = await vm.stateManager.getAccount(address)
-  return account.nonce
+  return solcOutput.contracts['helpers/Greeter.sol'].Greeter.evm.bytecode.object
 }
 
 async function deployContract(
@@ -87,16 +83,16 @@ async function deployContract(
 ): Promise<Address> {
   // Contracts are deployed by sending their deployment bytecode to the address 0
   // The contract params should be abi-encoded and appended to the deployment bytecode.
-  const params = AbiCoder.encode(['string'], [greeting])
+  const data = encodeDeployment(deploymentBytecode.toString('hex'), {
+    types: ['string'],
+    values: [greeting],
+  })
   const txData = {
-    value: 0,
-    gasLimit: 2000000, // We assume that 2M is enough,
-    gasPrice: 1,
-    data: '0x' + deploymentBytecode.toString('hex') + params.slice(2),
+    data,
     nonce: await getAccountNonce(vm, senderPrivateKey),
   }
 
-  const tx = Transaction.fromTxData(txData).sign(senderPrivateKey)
+  const tx = Transaction.fromTxData(buildTransaction(txData)).sign(senderPrivateKey)
 
   const deploymentResult = await vm.runTx({ tx })
 
@@ -113,18 +109,18 @@ async function setGreeting(
   contractAddress: Address,
   greeting: string
 ) {
-  const params = AbiCoder.encode(['string'], [greeting])
-  const sigHash = new Interface(['function setGreeting(string)']).getSighash('setGreeting')
+  const data = encodeFunction('setGreeting', {
+    types: ['string'],
+    values: [greeting],
+  })
+
   const txData = {
     to: contractAddress,
-    value: 0,
-    gasLimit: 2000000, // We assume that 2M is enough,
-    gasPrice: 1,
-    data: sigHash + params.slice(2),
+    data,
     nonce: await getAccountNonce(vm, senderPrivateKey),
   }
 
-  const tx = Transaction.fromTxData(txData).sign(senderPrivateKey)
+  const tx = Transaction.fromTxData(buildTransaction(txData)).sign(senderPrivateKey)
 
   const setGreetingResult = await vm.runTx({ tx })
 
@@ -135,6 +131,7 @@ async function setGreeting(
 
 async function getGreeting(vm: VM, contractAddress: Address, caller: Address) {
   const sigHash = new Interface(['function greet()']).getSighash('greet')
+
   const greetResult = await vm.runCall({
     to: contractAddress,
     caller: caller,
@@ -157,20 +154,11 @@ async function main() {
     'hex'
   )
 
+  const vm = new VM()
   const accountAddress = Address.fromPrivateKey(accountPk)
 
   console.log('Account: ', accountAddress.toString())
-
-  const acctData = {
-    nonce: 0,
-    balance: new BN(10).pow(new BN(18)), // 1 eth
-  }
-  const account = Account.fromAccountData(acctData)
-
-  const vm = new VM()
-  await vm.stateManager.putAccount(accountAddress, account)
-
-  console.log('Set account a balance of 1 ETH')
+  await insertAccount(vm, accountAddress)
 
   console.log('Compiling...')
 
@@ -204,6 +192,19 @@ async function main() {
   console.log('Greeting:', greeting2)
 
   assert.equal(greeting2, SECOND_GREETING)
+
+  // Now let's look at what we created. The transaction
+  // should have created a new account for the contract
+  // in the state. Let's test to see if it did.
+
+  const createdAccount = await vm.stateManager.getAccount(contractAddress)
+
+  console.log('-------results-------')
+  console.log('nonce: ' + createdAccount.nonce.toString())
+  console.log('balance in wei: ', createdAccount.balance.toString())
+  console.log('stateRoot: 0x' + createdAccount.stateRoot.toString('hex'))
+  console.log('codeHash: 0x' + createdAccount.codeHash.toString('hex'))
+  console.log('---------------------')
 
   console.log('Everything ran correctly!')
 }
