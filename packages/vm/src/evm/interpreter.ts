@@ -152,9 +152,7 @@ export default class Interpreter {
 
     if (this._vm.listenerCount('step') > 0 || this._vm.DEBUG) {
       // Only run this stepHook function if there is an event listener (e.g. test runner)
-      // or if vm is running in debug mode to display op code debug logs since its sole
-      // purpose is to create debug logs for the step event
-
+      // or if the vm is running in debug mode (to display opcode debug logs)
       await this._runStepHook(gas, gasLimitClone)
     }
 
