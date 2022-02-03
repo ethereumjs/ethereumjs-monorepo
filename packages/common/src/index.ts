@@ -220,6 +220,7 @@ export default class Common extends EventEmitter {
           name: CustomChain.PolygonMainnet,
           chainId: 137,
           networkId: 137,
+          ...opts,
         })
       }
       if (chainParamsOrName === CustomChain.PolygonMumbai) {
@@ -327,7 +328,6 @@ export default class Common extends EventEmitter {
     if (initializedChains[chain]) {
       return initializedChains[chain]
     }
-
     throw new Error(`Chain with name ${chain} not supported`)
   }
 
