@@ -384,7 +384,7 @@ export class BlockHeader {
 
     if (nonce.length !== 8) {
       // Hack to check for Kovan due to non-standard nonce length (65 bytes)
-      if (this._common.networkIdBN().eqn(42)) {
+      if (this._common.networkId().eqn(42)) {
         if (nonce.length !== 65) {
           const msg = this._errorMsg(
             `nonce must be 65 bytes on kovan, received ${nonce.length} bytes`
