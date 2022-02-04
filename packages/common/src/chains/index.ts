@@ -6,40 +6,39 @@ import kovan from './kovan.json'
 import goerli from './goerli.json'
 import sepolia from './sepolia.json'
 
-/**
- * @hidden
- */
+const names: Record<string, string> = {
+  '1': 'mainnet',
+  '3': 'ropsten',
+  '4': 'rinkeby',
+  '42': 'kovan',
+  '5': 'goerli',
+  '137': 'matic',
+  '11155111': 'sepolia',
+}
+const chainsMapping: any = {
+  mainnet,
+  ropsten,
+  rinkeby,
+  kovan,
+  goerli,
+  sepolia,
+}
+
 export function _getInitializedChains(customChains?: Chain[]) {
-  const names: any = {
-    '1': 'mainnet',
-    '3': 'ropsten',
-    '4': 'rinkeby',
-    '42': 'kovan',
-    '5': 'goerli',
-    '11155111': 'sepolia',
-  }
-  const chains: any = {
-    mainnet,
-    ropsten,
-    rinkeby,
-    kovan,
-    goerli,
-    sepolia,
-  }
   if (customChains) {
     for (const chain of customChains) {
       const name = chain.name
       names[chain.chainId.toString()] = name
-      chains[name] = chain
+      chainsMapping[name] = chain
     }
   }
 
-  chains['names'] = names
-  return chains
+  chainsMapping['names'] = names
+  return chainsMapping
 }
 
 /**
- * @deprecated this constant will be internalized (removed)
- * on next major version update
- */
+ - * @deprecated this constant will be internalized (removed)
+ - * on next major version update
+ - */
 export const chains: chainsType = _getInitializedChains()

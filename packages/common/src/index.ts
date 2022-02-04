@@ -217,7 +217,7 @@ export default class Common extends EventEmitter {
     } else {
       if (chainParamsOrName === CustomChain.PolygonMainnet) {
         return Common.custom({
-          name: CustomChain.PolygonMainnet,
+          name: CustomChain.PolygonMumbai,
           chainId: 137,
           networkId: 137,
           ...opts,
@@ -313,7 +313,7 @@ export default class Common extends EventEmitter {
     chain: string | number | Chain | BN,
     customChains?: IChain[]
   ): IChain {
-    const initializedChains: any = _getInitializedChains(customChains)
+    const initializedChains = _getInitializedChains(customChains)
     if (typeof chain === 'number' || BN.isBN(chain)) {
       chain = chain.toString()
 

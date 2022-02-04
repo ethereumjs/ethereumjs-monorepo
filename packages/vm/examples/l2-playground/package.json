@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "fetch": "ts-node fetch-polygon.ts"
+  },
+  "devDependencies": {
+    "node-fetch": "3.2.0"
+  }
+}

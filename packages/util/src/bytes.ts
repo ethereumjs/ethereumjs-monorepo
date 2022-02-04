@@ -166,6 +166,7 @@ export const toBuffer = function (v: ToBufferInputTypes): Buffer {
 
   if (typeof v === 'string') {
     if (!isHexString(v)) {
+      console.log({ v })
       throw new Error(
         `Cannot convert string to buffer. toBuffer only supports 0x-prefixed hex strings and this string was given: ${v}`
       )

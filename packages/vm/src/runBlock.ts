@@ -193,6 +193,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
     }
     block = Block.fromBlockData(blockData, { common: this._common })
   } else {
+    console.log({ result })
     if (result.receiptRoot && !result.receiptRoot.equals(block.header.receiptTrie)) {
       if (this.DEBUG) {
         debug(
