@@ -150,7 +150,11 @@ export default class Interpreter {
       await dynamicGasHandler(this._runState, gas, this._vm._common)
     }
 
-    await this._runStepHook(gas, gasLimitClone)
+    if (this._vm.listenerCount('step') > 0 || this._vm.DEBUG) {
+      // Only run this stepHook function if there is an event listener (e.g. test runner)
+      // or if the vm is running in debug mode (to display opcode debug logs)
+      await this._runStepHook(gas, gasLimitClone)
+    }
 
     // Check for invalid opcode
     if (opInfo.name === 'INVALID') {
