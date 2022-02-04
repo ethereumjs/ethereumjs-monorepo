@@ -61,7 +61,7 @@ export class ETH extends EventEmitter {
       this._latestBlock = c.hardforkBlock(this._hardfork) ?? new BN(0)
       this._forkHash = c.forkHash(this._hardfork)
       // Next fork block number or 0 if none available
-      this._nextForkBlock = c.nextHardforkBlockBN(this._hardfork) ?? new BN(0)
+      this._nextForkBlock = c.nextHardforkBlock(this._hardfork) ?? new BN(0)
     }
   }
 
@@ -154,7 +154,7 @@ export class ETH extends EventEmitter {
     }
 
     if (!c.hardforkGteHardfork(peerFork.name, this._hardfork)) {
-      const nextHardforkBlock = c.nextHardforkBlockBN(peerFork.name)
+      const nextHardforkBlock = c.nextHardforkBlock(peerFork.name)
       if (peerNextFork === null || !nextHardforkBlock || !nextHardforkBlock.eq(peerNextFork)) {
         const msg = 'Outdated fork status, remote needs software update'
         this.debug('STATUS', msg)

@@ -687,7 +687,7 @@ export default class Common extends EventEmitter {
   hardforkIsActiveOnBlock(hardfork: string | Hardfork | null, blockNumber: BNLike): boolean {
     blockNumber = toType(blockNumber, TypeOutput.BN)
     hardfork = hardfork ?? this._hardfork
-    const hfBlock = this.hardforkBlock(hardfork)
+    const hfBlock = this.hardforkBlockBN(hardfork)
     if (hfBlock && blockNumber.gte(hfBlock)) {
       return true
     }
