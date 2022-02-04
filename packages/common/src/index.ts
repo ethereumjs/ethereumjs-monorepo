@@ -1,7 +1,12 @@
+import mainnet from './chains/mainnet.json'
+import ropsten from './chains/ropsten.json'
+import rinkeby from './chains/rinkeby.json'
+import kovan from './chains/kovan.json'
+import goerli from './chains/goerli.json'
+import sepolia from './chains/sepolia.json'
 import { EventEmitter } from 'events'
 import { buf as crc32Buffer } from 'crc-32'
 import { BN, BNLike, toType, TypeOutput, intToBuffer } from 'ethereumjs-util'
-import { _getInitializedChains } from './chains'
 import { hardforks as HARDFORK_CHANGES } from './hardforks'
 import { EIPs } from './eips'
 import {
@@ -296,6 +301,33 @@ export default class Common extends EventEmitter {
       },
       hardfork: hardfork,
     })
+  static _getInitializedChains(customChains?: IChain[]) {
+    const names: any = {
+      '1': 'mainnet',
+      '3': 'ropsten',
+      '4': 'rinkeby',
+      '42': 'kovan',
+      '5': 'goerli',
+      '11155111': 'sepolia',
+    }
+    const chains: any = {
+      mainnet,
+      ropsten,
+      rinkeby,
+      kovan,
+      goerli,
+      sepolia,
+    }
+    if (customChains) {
+      for (const chain of customChains) {
+        const name = chain.name
+        names[chain.chainId.toString()] = name
+        chains[name] = chain
+      }
+    }
+
+    chains['names'] = names
+    return chains
   }
 
   /**
@@ -304,7 +336,7 @@ export default class Common extends EventEmitter {
    * @returns boolean
    */
   static isSupportedChainId(chainId: BN): boolean {
-    const initializedChains: any = _getInitializedChains()
+    const initializedChains: any = this._getInitializedChains()
     return Boolean(initializedChains['names'][chainId.toString()])
   }
 
@@ -312,7 +344,7 @@ export default class Common extends EventEmitter {
     chain: string | number | Chain | BN,
     customChains?: IChain[]
   ): IChain {
-    const initializedChains: any = _getInitializedChains(customChains)
+    const initializedChains: any = this._getInitializedChains(customChains)
     if (typeof chain === 'number' || BN.isBN(chain)) {
       chain = chain.toString()
 
@@ -655,7 +687,7 @@ export default class Common extends EventEmitter {
   hardforkIsActiveOnBlock(hardfork: string | Hardfork | null, blockNumber: BNLike): boolean {
     blockNumber = toType(blockNumber, TypeOutput.BN)
     hardfork = hardfork ?? this._hardfork
-    const hfBlock = this.hardforkBlockBN(hardfork)
+    const hfBlock = this.hardforkBlock(hardfork)
     if (hfBlock && blockNumber.gte(hfBlock)) {
       return true
     }
