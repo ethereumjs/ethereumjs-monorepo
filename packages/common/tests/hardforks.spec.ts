@@ -221,18 +221,16 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.end()
   })
 
-  t.test('hardforkBlock() / hardforkBlockBN()', function (st: tape.Test) {
+  t.test('hardforkBlock()', function (st: tape.Test) {
     const c = new Common({ chain: Chain.Mainnet })
 
     let msg = 'should return correct value'
-    st.equal(c.hardforkBlock(Hardfork.Berlin), 12244000, msg)
-    st.ok(c.hardforkBlockBN(Hardfork.Berlin)!.eq(new BN(12244000)), msg)
+    st.ok(c.hardforkBlock(Hardfork.Berlin).eqn(12244000), msg)
 
     msg = 'should return null for unscheduled hardfork'
     // developer note: when Shanghai is set,
     // update this test to next unscheduled hardfork.
     st.equal(c.hardforkBlock(Hardfork.Shanghai), null, msg)
-    st.equal(c.hardforkBlockBN(Hardfork.Shanghai), null, msg)
     st.equal(c.nextHardforkBlockBN(Hardfork.Shanghai), null, msg)
 
     st.end()
