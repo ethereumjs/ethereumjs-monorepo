@@ -4,7 +4,7 @@
   "comment": "Reject transactions from senders with deployed code",
   "url": "https://eips.ethereum.org/EIPS/eip-3607",
   "status": "Draft",
-  "minimumHardfork": "berlin",
+  "minimumHardfork": "chainstart",
   "requiredEIPs": [],
   "gasConfig": {},
   "gasPrices": {},
