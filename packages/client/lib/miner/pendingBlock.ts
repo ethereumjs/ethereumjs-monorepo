@@ -15,7 +15,7 @@ interface PendingBlockOpts {
 }
 
 /**
- * In the future this class will build a pending block by keeping the
+ * In the future this class should build a pending block by keeping the
  * transaction set up-to-date with the state of local mempool until called.
  *
  * For now this simple implementation just adds txs from the pool when
@@ -38,7 +38,9 @@ export class PendingBlock {
   async start(vm: VM, parentBlock: Block, headerData: Partial<HeaderData> = {}) {
     const number = parentBlock.header.number.addn(1)
     const { gasLimit } = parentBlock.header
-    const baseFeePerGas = parentBlock.header.calcNextBaseFee()
+    const baseFeePerGas = vm._common.isActivatedEIP(1559)
+      ? parentBlock.header.calcNextBaseFee()
+      : undefined
 
     // Set the state root to ensure the resulting state
     // is based on the parent block's state
@@ -93,12 +95,6 @@ export class PendingBlock {
       }
       index++
     }
-
-    // Stop builder if block isn't returned after 1 minute
-    setTimeout(() => {
-      this.stop(payloadId)
-    }, 60000)
-
     return payloadId
   }
 
@@ -108,7 +104,10 @@ export class PendingBlock {
   stop(payloadId: Buffer) {
     const payload = this.pendingPayloads.find((p) => p[0].equals(payloadId))
     if (!payload) return
+    // Revert blockBuilder
     void payload[1].revert()
+    // Remove from pendingPayloads
+    this.pendingPayloads = this.pendingPayloads.filter((p) => !p[0].equals(payloadId))
   }
 
   /**
@@ -129,7 +128,7 @@ export class PendingBlock {
       )
     ).filter(
       (tx) =>
-        !(builder as any).transactions.any((t: TypedTransaction) => t.hash().equals(tx.hash()))
+        !(builder as any).transactions.some((t: TypedTransaction) => t.hash().equals(tx.hash()))
     )
     this.config.logger.info(`Pending: Adding ${txs.length} additional eligible txs`)
     let index = 0
