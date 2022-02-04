@@ -38,7 +38,6 @@ can be created via the main constructor and the [CommonOpts.customChains](../int
 - [addListener](default.md#addlistener)
 - [bootstrapNodes](default.md#bootstrapnodes)
 - [chainId](default.md#chainid)
-- [chainIdBN](default.md#chainidbn)
 - [chainName](default.md#chainname)
 - [consensusAlgorithm](default.md#consensusalgorithm)
 - [consensusConfig](default.md#consensusconfig)
@@ -56,7 +55,6 @@ can be created via the main constructor and the [CommonOpts.customChains](../int
 - [gteHardfork](default.md#gtehardfork)
 - [hardfork](default.md#hardfork)
 - [hardforkBlock](default.md#hardforkblock)
-- [hardforkBlockBN](default.md#hardforkblockbn)
 - [hardforkForForkHash](default.md#hardforkforforkhash)
 - [hardforkGteHardfork](default.md#hardforkgtehardfork)
 - [hardforkIsActiveOnBlock](default.md#hardforkisactiveonblock)
@@ -69,9 +67,7 @@ can be created via the main constructor and the [CommonOpts.customChains](../int
 - [listenerCount](default.md#listenercount)
 - [listeners](default.md#listeners)
 - [networkId](default.md#networkid)
-- [networkIdBN](default.md#networkidbn)
 - [nextHardforkBlock](default.md#nexthardforkblock)
-- [nextHardforkBlockBN](default.md#nexthardforkblockbn)
 - [off](default.md#off)
 - [on](default.md#on)
 - [once](default.md#once)
@@ -90,7 +86,6 @@ can be created via the main constructor and the [CommonOpts.customChains](../int
 - [setHardforkByBlockNumber](default.md#sethardforkbyblocknumber)
 - [setMaxListeners](default.md#setmaxlisteners)
 - [custom](default.md#custom)
-- [forCustomChain](default.md#forcustomchain)
 - [isSupportedChainId](default.md#issupportedchainid)
 - [listenerCount](default.md#listenercount)
 - [once](default.md#once)
@@ -357,28 +352,6 @@ Dict with bootstrap nodes
 ___
 
 ### chainId
-
-▸ **chainId**(): `number`
-
-Returns the Id of current chain
-
-**`deprecated`** Please use {@link Common.chainIdBN} for large number support
-
-#### Returns
-
-`number`
-
-chain Id
-
-#### Defined in
-
-[packages/common/src/index.ts:1071](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1071)
-
-___
-
-### chainIdBN
-
-▸ **chainIdBN**(): `BN`
 
 Returns the Id of current chain
 
@@ -725,33 +698,6 @@ ___
 
 ### hardforkBlock
 
-▸ **hardforkBlock**(`hardfork?`): ``null`` \| `number`
-
-Returns the hardfork change block for hardfork provided or set
-
-**`deprecated`** Please use {@link Common.hardforkBlockBN} for large number support
-
-#### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `hardfork?` | `string` | Hardfork name, optional if HF set |
-
-#### Returns
-
-``null`` \| `number`
-
-Block number or null if unscheduled
-
-#### Defined in
-
-[packages/common/src/index.ts:834](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L834)
-
-___
-
-### hardforkBlockBN
-
-▸ **hardforkBlockBN**(`hardfork?`): ``null`` \| `BN`
 
 Returns the hardfork change block for hardfork provided or set
 
@@ -1041,27 +987,6 @@ ___
 
 ### networkId
 
-▸ **networkId**(): `number`
-
-Returns the Id of current network
-
-**`deprecated`** Please use {@link Common.networkIdBN} for large number support
-
-#### Returns
-
-`number`
-
-network Id
-
-#### Defined in
-
-[packages/common/src/index.ts:1096](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1096)
-
-___
-
-### networkIdBN
-
-▸ **networkIdBN**(): `BN`
 
 Returns the Id of current network
 
@@ -1078,34 +1003,6 @@ network Id
 ___
 
 ### nextHardforkBlock
-
-▸ **nextHardforkBlock**(`hardfork?`): ``null`` \| `number`
-
-Returns the change block for the next hardfork after the hardfork provided or set
-
-**`deprecated`** Please use {@link Common.nextHardforkBlockBN} for large number support
-
-#### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `hardfork?` | `string` | Hardfork name, optional if HF set |
-
-#### Returns
-
-``null`` \| `number`
-
-Block number or null if not available
-
-#### Defined in
-
-[packages/common/src/index.ts:886](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L886)
-
-___
-
-### nextHardforkBlockBN
-
-▸ **nextHardforkBlockBN**(`hardfork?`): ``null`` \| `BN`
 
 Returns the change block for the next hardfork after the hardfork provided or set
 
@@ -1590,17 +1487,6 @@ the `@ethereumjs/tx` library to a Layer-2 chain).
 #### Defined in
 
 [packages/common/src/index.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L211)
-
-___
-
-### forCustomChain
-
-▸ `Static` **forCustomChain**(`baseChain`, `customChainParams`, `hardfork?`, `supportedHardforks?`): [`default`](default.md)
-
-Creates a {@link Common} object for a custom chain, based on a standard one. It uses all the `Chain`
-params from [baseChain](../interfaces/CustomCommonOpts.md#basechain) except the ones overridden in {@link customChainParams}.
-
-**`deprecated`** Use {@link Common.custom} instead
 
 #### Parameters
 
