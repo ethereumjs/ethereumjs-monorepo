@@ -398,12 +398,11 @@ export function getDAOCommon(activationBlock: number) {
       editedForks.push(fork)
     }
   }
-  const DAOCommon = Common.forCustomChain(
-    'mainnet',
-    {
-      hardforks: editedForks,
-    },
-    Hardfork.Dao
-  )
+  const DAOCommon = Common.custom({
+    hardforks: editedForks,
+  }, {
+    baseChain: Chain.Mainnet,
+    hardFork: Hardfork.Dao
+  })
   return DAOCommon
 }

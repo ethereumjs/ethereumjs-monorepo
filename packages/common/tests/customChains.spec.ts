@@ -103,12 +103,12 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
   t.test('forCustomChain() (deprecated) -> base functionality', function (st: tape.Test) {
     const mainnetCommon = new Common({ chain: Chain.Mainnet })
 
-    const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
-    const customChainCommon = Common.forCustomChain(
-      'mainnet',
-      customChainParams,
-      Hardfork.Byzantium
-    )
+    const customChainParams = {
+      chainId: 123,
+      networkId: 678,
+      defaultHardfork: Hardfork.Byzantium,
+    }
+    const customChainCommon = Common.custom(customChainParams, {baseChain: Chain.Mainnet, hardfork: Hardfork.Byzantium})
 
     // From custom chain params
     st.equal(customChainCommon.chainName(), customChainParams.name)

@@ -276,31 +276,6 @@ export default class Common extends EventEmitter {
     }
   }
 
-  /**
-   * Creates a {@link Common} object for a custom chain, based on a standard one. It uses all the `Chain`
-   * params from {@link baseChain} except the ones overridden in {@link customChainParams}.
-   *
-   * @deprecated Use {@link Common.custom} instead
-   *
-   * @param baseChain The name (`mainnet`) or id (`1`) of a standard chain used to base the custom
-   * chain params on.
-   * @param customChainParams The custom parameters of the chain.
-   * @param hardfork String identifier ('byzantium') for hardfork (optional)
-   */
-  static forCustomChain(
-    baseChain: string | number | Chain,
-    customChainParams: Partial<IChain>,
-    hardfork?: string | Hardfork
-  ): Common {
-    const standardChainParams = Common._getChainParams(baseChain)
-
-    return new Common({
-      chain: {
-        ...standardChainParams,
-        ...customChainParams,
-      },
-      hardfork: hardfork,
-    })
   static _getInitializedChains(customChains?: IChain[]) {
     const names: any = {
       '1': 'mainnet',
