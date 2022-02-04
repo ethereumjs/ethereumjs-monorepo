@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.7.1 - 2022-02-04
+
+This patch release adds a guard to not enable the recently added EIP-3607 by default. This helps downstream users who may emulate contract accounts as part of their testing strategies.
+
+- Add guard to not enable EIP-3607 by default, PR [#1691](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1691)
+
 ## 5.7.0 - 2022-02-01
 
 ### Dynamic Gas Costs

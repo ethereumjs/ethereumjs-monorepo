@@ -33,7 +33,7 @@
     "test:browser": "karma start karma.conf.js"
   },
   "dependencies": {
-    "@ethereumjs/common": "^2.6.1",
+    "@ethereumjs/common": "^2.6.2",
     "merkle-patricia-tree": "^4.2.3",
     "@ethereumjs/tx": "^3.5.0",
     "ethereumjs-util": "^7.1.4"
