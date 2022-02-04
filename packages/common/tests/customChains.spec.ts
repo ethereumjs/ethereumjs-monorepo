@@ -13,10 +13,9 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     function (st: tape.Test) {
       const c = new Common({ chain: testnet, hardfork: Hardfork.Byzantium })
       st.equal(c.chainName(), 'testnet', 'should initialize with chain name')
-      st.equal(c.chainId(), 12345, 'should return correct chain Id')
-      st.ok(c.chainIdBN().eqn(12345), 'should return correct chain Id')
       st.equal(c.networkId(), 12345, 'should return correct network Id')
       st.ok(c.networkIdBN().eqn(12345), 'should return correct network Id')
+      st.ok(c.chainId().eqn(12345), 'should return correct chain Id')
       st.equal(
         c.genesis().hash,
         '0xaa00000000000000000000000000000000000000000000000000000000000000',
@@ -54,10 +53,9 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
 
     // From custom chain params
     st.equal(customChainCommon.chainName(), customChainParams.name)
-    st.equal(customChainCommon.chainId(), customChainParams.chainId)
-    st.ok(customChainCommon.chainIdBN().eqn(customChainParams.chainId))
     st.equal(customChainCommon.networkId(), customChainParams.networkId)
     st.ok(customChainCommon.networkIdBN().eqn(customChainParams.networkId))
+    st.ok(customChainCommon.chainId().eqn(customChainParams.chainId))
 
     // Fallback params from mainnet
     st.equal(customChainCommon.genesis(), mainnetCommon.genesis())

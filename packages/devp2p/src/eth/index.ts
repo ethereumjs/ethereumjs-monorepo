@@ -248,7 +248,7 @@ export class ETH extends EventEmitter {
     if (this._status !== null) return
     this._status = [
       int2buffer(this._version),
-      this._peer._common.chainIdBN().toArrayLike(Buffer),
+      this._peer._common.chainId().toArrayLike(Buffer),
       status.td,
       status.bestHash,
       status.genesisHash,
