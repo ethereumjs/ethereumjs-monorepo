@@ -106,6 +106,51 @@ tape('[PendingBlock]', async (t) => {
     t.end()
   })
 
+  t.test('should stop adding txs when block is full', async (t) => {
+    const txPool = new TxPool({ config })
+    txPool.add(txA01)
+    txPool.add(txA02)
+    const txA03 = Transaction.fromTxData(
+      {
+        data: '0xFE', // INVALID opcode, uses all gas
+        gasLimit: 10000000,
+        nonce: 2,
+      },
+      { common }
+    ).sign(A.privateKey)
+    txPool.add(txA03)
+    const pendingBlock = new PendingBlock({ config, txPool })
+    const vm = await VM.create({ common })
+    await setBalance(vm.stateManager, A.address, new BN(5000000000000000))
+    const parentBlock = await vm.blockchain.getLatestBlock()
+    const payloadId = await pendingBlock.start(vm, parentBlock)
+    t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
+    const block = await pendingBlock.build(payloadId)
+    t.ok(block?.header.number.eqn(1), 'should have built block number 1')
+    t.equal(block?.transactions.length, 2, 'should include txs from pool that fit in the block')
+    t.equal(pendingBlock.pendingPayloads.length, 0, 'should reset the pending payload after build')
+    t.end()
+  })
+
+  t.test('should not add tx that errors (sender with insufficient funds)', async (t) => {
+    const txPool = new TxPool({ config })
+    txPool.add(txA01)
+    const pendingBlock = new PendingBlock({ config, txPool })
+    const vm = await VM.create({ common })
+    const parentBlock = await vm.blockchain.getLatestBlock()
+    const payloadId = await pendingBlock.start(vm, parentBlock)
+    t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
+    const block = await pendingBlock.build(payloadId)
+    t.ok(block?.header.number.eqn(1), 'should have built block number 1')
+    t.equal(
+      block?.transactions.length,
+      0,
+      'should not include tx with sender that has insufficient funds'
+    )
+    t.equal(pendingBlock.pendingPayloads.length, 0, 'should reset the pending payload after build')
+    t.end()
+  })
+
   t.test('should reset td', (t) => {
     td.reset()
     // according to https://github.com/testdouble/testdouble.js/issues/379#issuecomment-415868424
