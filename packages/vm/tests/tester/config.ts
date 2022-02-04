@@ -298,10 +298,13 @@ export function getCommon(targetNetwork: string) {
         })
       }
     }
-    const common = Common.custom({
-      hardforks: testHardforks,
-      defaultHardfork: hfName,
-    })
+    const common = Common.custom(
+      {
+        hardforks: testHardforks,
+        defaultHardfork: hfName,
+      },
+      { eips: [3607] }
+    )
     const eips = targetNetwork.match(/(?<=\+)(.\d+)/g)
     if (eips) {
       common.setEIPs(eips.map((e: string) => parseInt(e)))
