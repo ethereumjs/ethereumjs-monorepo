@@ -70,7 +70,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const state = new Trie()
   const hardfork = options.forkConfigVM
 
-  const eips: number[] = []
+  const eips: number[] = [3607]
 
   const common = new Common({ chain: Chain.Mainnet, hardfork, eips })
 

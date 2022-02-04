@@ -303,10 +303,18 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const { nonce, balance } = fromAccount
 
   // EIP-3607: Reject transactions from senders with deployed code
-  if (!fromAccount.codeHash.equals(KECCAK256_NULL)) {
-    const msg = _errorMsg('invalid sender address, address is not EOA (EIP-3607)', this, block, tx)
-    throw new Error(msg)
+  if (this._common.isActivatedEIP(3607)) {
+    if (!fromAccount.codeHash.equals(KECCAK256_NULL)) {
+      const msg = _errorMsg(
+        'invalid sender address, address is not EOA (EIP-3607)',
+        this,
+        block,
+        tx
+      )
+      throw new Error(msg)
+    }
   }
+
   if (!opts.skipBalance) {
     const cost = tx.getUpfrontCost(block.header.baseFeePerGas)
     if (balance.lt(cost)) {
