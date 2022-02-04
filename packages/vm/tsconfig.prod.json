@@ -3,8 +3,6 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist",
-    "target": "es2020",
-    "lib":["ES2020.BigInt"],
     "composite": true,
   },
   "include": ["src/**/*.ts", "src/**/*.json"],

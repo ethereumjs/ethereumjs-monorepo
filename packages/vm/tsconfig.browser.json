@@ -3,6 +3,5 @@
   "include": ["src/**/*.ts", "src/**/*.json"],
   "compilerOptions": {
     "outDir": "./dist.browser",
-    "lib":["ES2020"]
   }
 }
