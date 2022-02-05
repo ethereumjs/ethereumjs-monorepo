@@ -41,7 +41,7 @@
     "test": "npm run tape -- ./test/index.ts"
   },
   "dependencies": {
-    "@ethereumjs/common": "^2.6.1",
+    "@ethereumjs/common": "^2.6.2",
     "@types/bl": "^2.1.0",
     "@types/k-bucket": "^5.0.0",
     "@types/lru-cache": "^5.1.0",
