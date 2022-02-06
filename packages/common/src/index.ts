@@ -714,7 +714,7 @@ export default class Common extends EventEmitter {
     blockNumber = toType(blockNumber, TypeOutput.BN)
     const onlySupported = opts.onlySupported ?? false
     hardfork = this._chooseHardfork(hardfork, onlySupported)
-    const hfBlock = this.hardforkBlockBN(hardfork)
+    const hfBlock = this.hardforkBlock(hardfork)
     if (hfBlock && blockNumber.gte(hfBlock)) {
       return true
     }
@@ -874,7 +874,7 @@ export default class Common extends EventEmitter {
   isHardforkBlock(blockNumber: BNLike, hardfork?: string | Hardfork): boolean {
     blockNumber = toType(blockNumber, TypeOutput.BN)
     hardfork = this._chooseHardfork(hardfork, false)
-    const block = this.hardforkBlockBN(hardfork)
+    const block = this.hardforkBlock(hardfork)
     return block ? block.eq(blockNumber) : false
   }
 
@@ -896,7 +896,7 @@ export default class Common extends EventEmitter {
    */
   nextHardforkBlockBN(hardfork?: string | Hardfork): BN | null {
     hardfork = this._chooseHardfork(hardfork, false)
-    const hfBlock = this.hardforkBlockBN(hardfork)
+    const hfBlock = this.hardforkBlock(hardfork)
     if (hfBlock === null) {
       return null
     }
