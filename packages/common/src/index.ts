@@ -967,15 +967,6 @@ export default class Common extends EventEmitter {
   /**
    * Returns the Id of current chain
    * @returns chain Id
-   * @deprecated Please use {@link Common.chainIdBN} for large number support
-   */
-  chainId(): number {
-    return toType(this.chainIdBN(), TypeOutput.Number)
-  }
-
-  /**
-   * Returns the Id of current chain
-   * @returns chain Id
    */
   chainIdBN(): BN {
     return new BN(this._chainParams['chainId'])
