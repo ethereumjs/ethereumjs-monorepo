@@ -29,10 +29,10 @@ export const SKIP_BROKEN = [
  * Tests skipped due to system specifics / design considerations
  */
 export const SKIP_PERMANENT = [
-  'SuicidesMixingCoinbase', // sucides to the coinbase, since we run a blockLevel we create coinbase account.
-  'static_SuicidesMixingCoinbase', // sucides to the coinbase, since we run a blockLevel we create coinbase account.
-  'ForkUncle', // Only BlockchainTest, correct behaviour unspecified (?)
-  'UncleFromSideChain', // Only BlockchainTest, same as ForkUncle, the TD is the same for two diffent branches so its not clear which one should be the finally chain
+  'SuicidesMixingCoinbase', // suicides to the coinbase, since we run a blockLevel we create coinbase account.
+  'static_SuicidesMixingCoinbase', // suicides to the coinbase, since we run a blockLevel we create coinbase account.
+  'ForkUncle', // Only BlockchainTest, correct behavior unspecified (?)
+  'UncleFromSideChain', // Only BlockchainTest, same as ForkUncle, the TD is the same for two different branches so its not clear which one should be the finally chain
 ]
 
 /**
@@ -298,10 +298,13 @@ export function getCommon(targetNetwork: string) {
         })
       }
     }
-    const common = Common.custom({
-      hardforks: testHardforks,
-      defaultHardfork: hfName,
-    })
+    const common = Common.custom(
+      {
+        hardforks: testHardforks,
+        defaultHardfork: hfName,
+      },
+      { eips: [3607] }
+    )
     const eips = targetNetwork.match(/(?<=\+)(.\d+)/g)
     if (eips) {
       common.setEIPs(eips.map((e: string) => parseInt(e)))
