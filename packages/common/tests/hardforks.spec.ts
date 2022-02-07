@@ -108,14 +108,14 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     let c = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
     let msg =
       'should work with HF set / return correct next HF block for chainstart (rinkeby: chainstart -> homestead)'
-    st.equal(c.nextHardforkBlockBN(), 1, msg)
+    st.ok(c.nextHardforkBlockBN()!.eqn(1), msg)
 
     msg =
       'should correctly skip a HF where block is set to null (rinkeby: homestead -> (dao) -> tangerineWhistle)'
-    st.equal(c.nextHardforkBlockBN('homestead'), 2, msg)
+    st.ok(c.nextHardforkBlockBN('homestead')!.eqn(2), msg)
 
     msg = 'should return correct next HF (rinkeby: byzantium -> constantinople)'
-    st.equal(c.nextHardforkBlockBN(Hardfork.Byzantium), 3660663, msg)
+    st.ok(c.nextHardforkBlockBN(Hardfork.Byzantium)!.eqn(3660663), msg)
 
     msg = 'should return null if next HF is not available (rinkeby: london -> shanghai)'
     st.equal(c.nextHardforkBlockBN(Hardfork.London), null, msg)
@@ -123,7 +123,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     msg =
       'should work correctly along the need to skip several forks (ropsten: chainstart -> (homestead) -> (dao) -> (tangerineWhistle) -> spuriousDragon)'
     c = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
-    st.equal(c.nextHardforkBlockBN(), 10, msg)
+    st.ok(c.nextHardforkBlockBN()!.eqn(10), msg)
 
     st.end()
   })
