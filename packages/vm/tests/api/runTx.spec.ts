@@ -1,10 +1,11 @@
 import tape from 'tape'
-import { Account, Address, BN, bufferToHex, MAX_INTEGER, toBuffer } from 'ethereumjs-util'
+import { Account, Address, BN, MAX_INTEGER, toBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction, TransactionFactory, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import VM from '../../src'
 import { createAccount, getTransaction } from './utils'
+import { bufferToBigInt } from '../../src/evm/opcodes'
 
 const TRANSACTION_TYPES = [
   {
@@ -63,7 +64,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
     const blockGasUsed = 1000n
     const res = await vm.runTx({ tx, blockGasUsed })
     t.ok(
-      bufferToBigInt(res.receipt.gasUsed)) === blockGasUsed + res.gasUsed,
+      bufferToBigInt(res.receipt.gasUsed) === blockGasUsed + res.gasUsed,
       'receipt.gasUsed should equal block gas used + tx gas used'
     )
     t.end()

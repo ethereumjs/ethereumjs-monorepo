@@ -1,9 +1,10 @@
 import tape from 'tape'
-import { Address, BN, bufferToHex } from 'ethereumjs-util'
+import { Address, BN } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import { ERROR } from '../../../src/exceptions'
 import { createAccount } from '../utils'
+import { bufferToBigInt } from '../../../src/evm/opcodes'
 
 const testCases = [
   { chain: Chain.Mainnet, hardfork: Hardfork.Istanbul, selfbalance: '0xf1' },
@@ -39,10 +40,7 @@ tape('Istanbul: EIP-1884', async (t) => {
           st.equal(res.exceptionError?.error, testCase.err)
         } else {
           st.assert(res.exceptionError === undefined)
-          st.assert(
-            BigInt(testCase.selfbalance) ===
-              bufferToBigInt(res.returnValue) === '0x' ? 0 : bufferToHex(res.returnValue))
-          )
+          st.assert(BigInt(testCase.selfbalance) === bufferToBigInt(res.returnValue))
         }
       } catch (e: any) {
         st.fail(e.message)
