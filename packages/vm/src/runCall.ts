@@ -1,4 +1,4 @@
-import { Address, BN } from 'ethereumjs-util'
+import { Address } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import VM from './index'
 import TxContext from './evm/txContext'
@@ -39,7 +39,7 @@ export default function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult>
 
   const message = new Message({
     caller: opts.caller,
-    gasLimit: opts.gasLimit ?? new BN(0xffffff),
+    gasLimit: opts.gasLimit ?? 0xffffffn,
     to: opts.to ?? undefined,
     value: opts.value,
     data: opts.data,
