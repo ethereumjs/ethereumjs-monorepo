@@ -992,15 +992,6 @@ export default class Common extends EventEmitter {
   /**
    * Returns the Id of current network
    * @returns network Id
-   * @deprecated Please use {@link Common.networkIdBN} for large number support
-   */
-  networkId(): number {
-    return toType(this.networkIdBN(), TypeOutput.Number)
-  }
-
-  /**
-   * Returns the Id of current network
-   * @returns network Id
    */
   networkIdBN(): BN {
     return new BN(this._chainParams['networkId'])
