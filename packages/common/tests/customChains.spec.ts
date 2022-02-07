@@ -15,7 +15,6 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
       st.equal(c.chainName(), 'testnet', 'should initialize with chain name')
       st.equal(c.chainId(), 12345, 'should return correct chain Id')
       st.ok(c.chainIdBN().eqn(12345), 'should return correct chain Id')
-      st.equal(c.networkId(), 12345, 'should return correct network Id')
       st.ok(c.networkIdBN().eqn(12345), 'should return correct network Id')
       st.equal(
         c.genesis().hash,
@@ -56,7 +55,6 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     st.equal(customChainCommon.chainName(), customChainParams.name)
     st.equal(customChainCommon.chainId(), customChainParams.chainId)
     st.ok(customChainCommon.chainIdBN().eqn(customChainParams.chainId))
-    st.equal(customChainCommon.networkId(), customChainParams.networkId)
     st.ok(customChainCommon.networkIdBN().eqn(customChainParams.networkId))
 
     // Fallback params from mainnet
@@ -118,7 +116,6 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     st.equal(customChainCommon.chainName(), customChainParams.name)
     st.equal(customChainCommon.chainId(), customChainParams.chainId)
     st.ok(customChainCommon.chainIdBN().eqn(customChainParams.chainId))
-    st.equal(customChainCommon.networkId(), customChainParams.networkId)
     st.ok(customChainCommon.networkIdBN().eqn(customChainParams.networkId))
 
     // Fallback params from mainnet
