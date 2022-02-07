@@ -333,6 +333,7 @@ export async function setupPreConditions(state: DefaultStateManager, testData: a
     // Put contract code
     await state.putContractCode(address, codeBuf)
 
+
     const stateRoot = (await state.getAccount(address)).stateRoot
 
     if (testData.exec && testData.exec.address === addressStr) {
