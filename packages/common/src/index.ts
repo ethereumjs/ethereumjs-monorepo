@@ -791,17 +791,6 @@ export default class Common extends EventEmitter {
    * Returns the change block for the next hardfork after the hardfork provided or set
    * @param hardfork Hardfork name, optional if HF set
    * @returns Block number or null if not available
-   * @deprecated Please use {@link Common.nextHardforkBlockBN} for large number support
-   */
-  nextHardforkBlock(hardfork?: string | Hardfork): number | null {
-    const block = this.nextHardforkBlockBN(hardfork)
-    return toType(block, TypeOutput.Number)
-  }
-
-  /**
-   * Returns the change block for the next hardfork after the hardfork provided or set
-   * @param hardfork Hardfork name, optional if HF set
-   * @returns Block number or null if not available
    */
   nextHardforkBlockBN(hardfork?: string | Hardfork): BN | null {
     hardfork = hardfork ?? this._hardfork
