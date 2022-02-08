@@ -377,6 +377,13 @@ export default class EVM {
     }
     let result = await this.runInterpreter(message)
 
+    if (result.exceptionError) {
+      return {
+        gasUsed: result.gasUsed,
+        execResult: result,
+      }
+    }
+
     // fee for size of the return value
     let totalGas = result.gasUsed
     let returnFee = new BN(0)

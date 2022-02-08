@@ -1,8 +1,13 @@
 import tape from 'tape'
 import { Account, Address, BN, MAX_INTEGER } from 'ethereumjs-util'
-import { Block } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { Transaction, TransactionFactory, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import {
+  Transaction,
+  TransactionFactory,
+  FeeMarketEIP1559Transaction,
+  FeeMarketEIP1559TxData,
+} from '@ethereumjs/tx'
 import VM from '../../src'
 import { createAccount, getTransaction } from './utils'
 
@@ -557,6 +562,46 @@ tape('runTx() -> consensus bugs', async (t) => {
 
     const newBalance = (await vm.stateManager.getAccount(addr)).balance
     t.ok(newBalance.eq(afterBalance))
+    t.end()
+  })
+
+  t.test('validate REVERT opcode does not consume all gas', async (t) => {
+    // This test simulates the Kintsugi transaction: https://explorer.kintsugi.themerge.dev/tx/0x1fb8a5ac000196a54dfe63dfda60542340b790a874b1d319b0aa834ef2ea1425
+    // This tests that REVERTed contract creation does not try to store code
+    const pkey = Buffer.alloc(32, 1)
+    const txData: FeeMarketEIP1559TxData = {
+      gasLimit: 100000,
+      maxPriorityFeePerGas: 1000,
+      maxFeePerGas: 1000,
+      data: '0x5a600060085548fd896000606e5591b1e13d6000593e596000208055600060e5557fce5f47d3286fafb6fd28e73513c7671cd3ade974d1c1d898b43f07f89c82aee960aa527f4a97c424e9050663e203c27528f85ca5b0348980d5e61cc3e062d253a246f95760ca52606660ea53605060eb53607360ec53602960ed5360a460',
+      nonce: 0,
+      accessList: [
+        {
+          address: '0x32dcab0ef3fb2de2fce1d2e0799d36239671f04a',
+          storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000008'],
+        },
+      ],
+    }
+
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const vm = new VM({ common })
+
+    const addr = Address.fromPrivateKey(pkey)
+    const acc = await vm.stateManager.getAccount(addr)
+    acc.balance = new BN(10000000000000)
+    await vm.stateManager.putAccount(addr, acc)
+
+    const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common }).sign(pkey)
+
+    const block = new Block(
+      BlockHeader.fromHeaderData({ baseFeePerGas: 0x0c }, { common }),
+      [],
+      [],
+      { common }
+    )
+    const result = await vm.runTx({ tx, block })
+
+    t.equal(result.gasUsed.toNumber(), 66382)
     t.end()
   })
 })
