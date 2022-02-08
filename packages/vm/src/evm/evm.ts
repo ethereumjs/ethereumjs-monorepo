@@ -161,10 +161,11 @@ export default class EVM {
 
     let result
     if (this._vm.DEBUG) {
+      const { caller, gasLimit, to, value, delegatecall } = message
       debug(
-        `New message caller=${message.caller} gasLimit=${message.gasLimit} to=${
-          message.to ? message.to.toString() : ''
-        } value=${message.value} delegatecall=${message.delegatecall ? 'yes' : 'no'}`
+        `New message caller=${caller} gasLimit=${gasLimit} to=${
+          to?.toString() ?? 'none'
+        } value=${value} delegatecall=${delegatecall ? 'yes' : 'no'}`
       )
     }
     if (message.to) {
@@ -179,14 +180,11 @@ export default class EVM {
       result = await this._executeCreate(message)
     }
     if (this._vm.DEBUG) {
+      const { gasUsed, exceptionError, returnValue, gasRefund } = result.execResult
       debug(
-        `Received message results gasUsed=${result.gasUsed} execResult: [ gasUsed=${
-          result.gasUsed
-        } exceptionError=${
-          result.execResult.exceptionError ? result.execResult.exceptionError.toString() : ''
-        } returnValue=${short(result.execResult.returnValue)} gasRefund=${
-          result.execResult.gasRefund
-        } ]`
+        `Received message execResult: [ gasUsed=${gasUsed} exceptionError=${
+          exceptionError ? `'${exceptionError.error}'` : 'none'
+        } returnValue=0x${short(returnValue)} gasRefund=${gasRefund ?? 0} ]`
       )
     }
     const err = result.execResult.exceptionError
@@ -258,7 +256,7 @@ export default class EVM {
     if (errorMessage) {
       exit = true
       if (this._vm.DEBUG) {
-        debug(`Exit early on value tranfer overflowed`)
+        debug(`Exit early on value transfer overflowed`)
       }
     }
     if (exit) {
@@ -357,7 +355,7 @@ export default class EVM {
     if (errorMessage) {
       exit = true
       if (this._vm.DEBUG) {
-        debug(`Exit early on value tranfer overflowed`)
+        debug(`Exit early on value transfer overflowed`)
       }
     }
     if (exit) {
