@@ -7,7 +7,6 @@ import { randomBytes } from 'crypto'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import { Server as RPCServer } from 'jayson/promise'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { _getInitializedChains } from '@ethereumjs/common/dist/chains'
 import { Address, toBuffer } from 'ethereumjs-util'
 import { parseMultiaddrs, parseGenesisState, parseCustomParams, inspectParams } from '../lib/util'
 import EthereumClient from '../lib/client'
@@ -22,7 +21,7 @@ const { hideBin } = require('yargs/helpers')
 
 type Account = [address: Address, privateKey: Buffer]
 
-const networks = Object.entries(_getInitializedChains().names)
+const networks = Object.entries(Common._getInitializedChains().names)
 
 let logger: Logger
 
