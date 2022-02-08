@@ -256,7 +256,7 @@ export default class EVM {
     if (errorMessage) {
       exit = true
       if (this._vm.DEBUG) {
-        debug(`Exit early on value tranfer overflowed`)
+        debug(`Exit early on value transfer overflowed`)
       }
     }
     if (exit) {
@@ -355,7 +355,7 @@ export default class EVM {
     if (errorMessage) {
       exit = true
       if (this._vm.DEBUG) {
-        debug(`Exit early on value tranfer overflowed`)
+        debug(`Exit early on value transfer overflowed`)
       }
     }
     if (exit) {
