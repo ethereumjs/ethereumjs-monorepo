@@ -395,20 +395,19 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       `Running tx=0x${
         tx.isSigned() ? tx.hash().toString('hex') : 'unsigned'
       } with caller=${caller} gasLimit=${gasLimit} to=${
-        to ? to.toString() : 'none'
+        to?.toString() ?? 'none'
       } value=${value} data=0x${short(data)}`
     )
   }
 
   const results = (await evm.executeMessage(message)) as RunTxResult
   if (this.DEBUG) {
+    const { gasUsed, exceptionError, returnValue, gasRefund } = results.execResult
     debug('-'.repeat(100))
     debug(
-      `Received tx execResult: [ gasUsed=${results.execResult.gasUsed} exceptionError=${
-        results.execResult.exceptionError ? `'${results.execResult.exceptionError?.error}'` : 'none'
-      } returnValue=0x${short(results.execResult.returnValue)} gasRefund=${
-        results.execResult.gasRefund
-      } ]`
+      `Received tx execResult: [ gasUsed=${gasUsed} exceptionError=${
+        exceptionError ? `'${exceptionError.error}'` : 'none'
+      } returnValue=0x${short(returnValue)} gasRefund=${gasRefund ?? 0} ]`
     )
   }
 
