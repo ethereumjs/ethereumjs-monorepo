@@ -1,4 +1,4 @@
-import { Address, toBuffer, rlp, BN, bufferToBigInt, bnToBigInt } from 'ethereumjs-util'
+import { Address, toBuffer, rlp, BN, bnToBigInt } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'

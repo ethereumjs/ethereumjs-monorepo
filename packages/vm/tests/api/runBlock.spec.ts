@@ -456,13 +456,13 @@ tape('runBlock() -> tx types', async (t) => {
 
     st.ok(
       res.gasUsed ===
-      bnToBigInt(
+        bnToBigInt(
           res.receipts
             .map((r) => r.gasUsed)
             .reduce(
               (prevValue: BN, currValue: Buffer) => prevValue.add(new BN(currValue)),
               new BN(0)
-          )
+            )
         ),
       "gas used should equal transaction's total gasUsed"
     )

@@ -1,10 +1,4 @@
-import {
-  setLengthRight,
-  toBuffer,
-  setLengthLeft,
-  bufferToBigInt,
-  bigIntToBuffer,
-} from 'ethereumjs-util'
+import { setLengthRight, setLengthLeft, bufferToBigInt, bigIntToBuffer } from 'ethereumjs-util'
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
 const assert = require('assert')
