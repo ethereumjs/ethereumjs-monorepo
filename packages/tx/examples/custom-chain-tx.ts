@@ -6,15 +6,17 @@ import { Transaction } from '../src'
 
 // This custom network has the same params as mainnet,
 // except for name, chainId, and networkId,
-// so we use the `Common.forCustomChain` method.
-const customCommon = Common.forCustomChain(
-  'mainnet',
+// so we use the `Common.custom` method.
+const customCommon = Common.custom(
+  
   {
     name: 'my-network',
     networkId: 123,
     chainId: 2134,
   },
-  'petersburg',
+  {
+    baseChain: 'mainnet',
+    hardfork: 'petersburg',}
 )
 
 // We pass our custom Common object whenever we create a transaction
