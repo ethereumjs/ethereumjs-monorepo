@@ -262,6 +262,14 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
 
       gas.iadd(subMemUsage(runState, offset, length, common))
 
+      if (common.isActivatedEIP(3860)) {
+        // Meter initcode
+        const initCodeCost = new BN(common.param('gasPrices', 'initCodeWordCost')).imul(
+          length.addn(31).divn(32)
+        )
+        gas.iadd(initCodeCost)
+      }
+
       let gasLimit = new BN(runState.eei.getGasLeft().isub(gas))
       gasLimit = maxCallGas(gasLimit.clone(), gasLimit.clone(), runState, common)
 
@@ -419,6 +427,15 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
       }
 
       gas.iadd(new BN(common.param('gasPrices', 'sha3Word')).imul(divCeil(length, new BN(32))))
+
+      if (common.isActivatedEIP(3860)) {
+        // Meter initcode
+        const initCodeCost = new BN(common.param('gasPrices', 'initCodeWordCost')).imul(
+          length.addn(31).divn(32)
+        )
+        gas.iadd(initCodeCost)
+      }
+
       let gasLimit = new BN(runState.eei.getGasLeft().isub(gas))
       gasLimit = maxCallGas(gasLimit.clone(), gasLimit.clone(), runState, common) // CREATE2 is only available after TangerineWhistle (Constantinople introduced this opcode)
       runState.messageGasLimit = gasLimit
