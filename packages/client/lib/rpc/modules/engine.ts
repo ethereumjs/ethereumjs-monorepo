@@ -118,7 +118,7 @@ const recursivelyFindParents = async (
   const parentBlocks = []
   const block = await findBlock(parentHash, validBlocks, chain)
   parentBlocks.push(block)
-  while (!vmHeadHash.equals(parentBlocks[parentBlocks.length - 1].header.parentHash)) {
+  while (!parentBlocks[parentBlocks.length - 1].hash().equals(parentHash)) {
     const block: Block = await findBlock(
       parentBlocks[parentBlocks.length - 1].header.parentHash,
       validBlocks,
@@ -337,7 +337,8 @@ export class Engine {
 
     try {
       for (const [i, block] of blocks.entries()) {
-        const root = (i > 0 ? blocks[i - 1].header : vmHead).stateRoot
+        const root = (i > 0 ? blocks[i - 1] : await this.chain.getBlock(block.header.parentHash))
+          .header.stateRoot
         await vmCopy.runBlock({ block, root })
         await vmCopy.blockchain.putBlock(block)
       }
