@@ -511,7 +511,10 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
       chainId: txData.chainId,
       eips: [2718, 2929, 2930],
     }
-    const usedCommon = Common.forCustomChain('mainnet', customChainParams, 'berlin')
+    const usedCommon = Common.custom(customChainParams, {
+      baseChain: Chain.Mainnet,
+      hardfork: Hardfork.Berlin,
+    })
     usedCommon.setEIPs([2718, 2929, 2930])
 
     const expectedUnsignedRaw = Buffer.from(

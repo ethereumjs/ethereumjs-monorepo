@@ -229,7 +229,10 @@ tape('[Miner]', async (t) => {
   t.test('assembleBlocks() -> should not include tx under the baseFee', async (t) => {
     t.plan(1)
     const customChainParams = { hardforks: [{ name: 'london', block: 0 }] }
-    const common = Common.forCustomChain(CommonChain.Rinkeby, customChainParams, Hardfork.London)
+    const common = Common.custom(customChainParams, {
+      baseChain: CommonChain.Rinkeby,
+      hardfork: Hardfork.London,
+    })
     const config = new Config({ transports: [], accounts, mine: true, common })
     const pool = new PeerPool() as any
     const chain = new FakeChain() as any

@@ -341,12 +341,14 @@ export function getCommon(targetNetwork: string) {
         })
       }
     }
-    return Common.forCustomChain(
-      'mainnet',
+    return Common.custom(
       {
         hardforks: testHardforks,
       },
-      transitionForks.startFork
+      {
+        baseChain: 'mainnet',
+        hardfork: transitionForks.startFork,
+      }
     )
   }
 }
