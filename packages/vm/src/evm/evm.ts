@@ -377,13 +377,6 @@ export default class EVM {
     }
     let result = await this.runInterpreter(message)
 
-    if (result.exceptionError) {
-      return {
-        gasUsed: result.gasUsed,
-        execResult: result,
-      }
-    }
-
     // fee for size of the return value
     let totalGas = result.gasUsed
     let returnFee = new BN(0)
@@ -400,6 +393,7 @@ export default class EVM {
     // Check for SpuriousDragon EIP-170 code size limit
     let allowedCodeSize = true
     if (
+      !result.exceptionError &&
       this._vm._common.gteHardfork('spuriousDragon') &&
       result.returnValue.length > this._vm._common.param('vm', 'maxCodeSize')
     ) {
