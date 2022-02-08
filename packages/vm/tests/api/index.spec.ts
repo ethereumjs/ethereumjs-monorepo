@@ -124,17 +124,17 @@ tape('VM -> common (chain, HFs, EIPs)', (t) => {
     st.end()
   })
 
-  t.test(
-    'should accept a custom chain config (Common.forCustomChain() static constructor)',
-    async (st) => {
-      const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
-      const common = Common.forCustomChain('mainnet', customChainParams, 'byzantium')
+  t.test('should accept a custom chain config (Common.custom() static constructor)', async (st) => {
+    const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
+    const common = Common.custom(customChainParams, {
+      baseChain: 'mainnet',
+      hardfork: 'byzantium',
+    })
 
-      const vm = await VM.create({ common })
-      st.equal(vm._common, common)
-      st.end()
-    }
-  )
+    const vm = await VM.create({ common })
+    st.equal(vm._common, common)
+    st.end()
+  })
 
   t.test(
     'should accept a custom chain config (Common customChains constructor option)',
