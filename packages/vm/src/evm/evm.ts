@@ -393,6 +393,7 @@ export default class EVM {
     // Check for SpuriousDragon EIP-170 code size limit
     let allowedCodeSize = true
     if (
+      !result.exceptionError &&
       this._vm._common.gteHardfork('spuriousDragon') &&
       result.returnValue.length > this._vm._common.param('vm', 'maxCodeSize')
     ) {
