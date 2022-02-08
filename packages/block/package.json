@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/block",
-  "version": "3.6.0",
+  "version": "3.6.1",
   "description": "Provides Block serialization and help functions",
   "license": "MPL-2.0",
   "author": "mjbecze (mb@ethdev.com)",
@@ -24,8 +24,6 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "../../config/cli/coverage.sh",
     "docs:build": "typedoc --options typedoc.js",
-    "format": "ethereumjs-config-format",
-    "format:fix": "ethereumjs-config-format-fix",
     "tsc": "../../config/cli/ts-compile.sh",
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
@@ -35,21 +33,21 @@
     "test:browser": "karma start karma.conf.js"
   },
   "dependencies": {
-    "@ethereumjs/common": "^2.6.0",
-    "merkle-patricia-tree": "^4.2.2",
-    "@ethereumjs/tx": "^3.4.0",
-    "ethereumjs-util": "^7.1.3"
+    "@ethereumjs/common": "^2.6.2",
+    "merkle-patricia-tree": "^4.2.3",
+    "@ethereumjs/tx": "^3.5.0",
+    "ethereumjs-util": "^7.1.4"
   },
   "devDependencies": {
     "@types/lru-cache": "^5.1.0",
-    "@types/node": "^11.13.4",
+    "@types/node": "^16.11.7",
     "@types/tape": "^4.13.2",
     "eslint": "^6.8.0",
     "karma": "^6.3.2",
     "karma-chrome-launcher": "^3.1.0",
     "karma-firefox-launcher": "^2.1.0",
     "karma-tap": "^4.2.0",
-    "karma-typescript": "^5.5.1",
+    "karma-typescript": "^5.5.3",
     "nyc": "^15.1.0",
     "prettier": "^2.0.5",
     "tape": "^5.3.1",

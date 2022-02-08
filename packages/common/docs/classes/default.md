@@ -24,7 +24,10 @@ can be created via the main constructor and the [CommonOpts.customChains](../int
 ### Properties
 
 - [DEFAULT\_HARDFORK](default.md#default_hardfork)
+- [captureRejectionSymbol](default.md#capturerejectionsymbol)
+- [captureRejections](default.md#capturerejections)
 - [defaultMaxListeners](default.md#defaultmaxlisteners)
+- [errorMonitor](default.md#errormonitor)
 
 ### Methods
 
@@ -91,8 +94,10 @@ can be created via the main constructor and the [CommonOpts.customChains](../int
 - [setMaxListeners](default.md#setmaxlisteners)
 - [custom](default.md#custom)
 - [forCustomChain](default.md#forcustomchain)
+- [getEventListeners](default.md#geteventlisteners)
 - [isSupportedChainId](default.md#issupportedchainid)
 - [listenerCount](default.md#listenercount)
+- [on](default.md#on)
 - [once](default.md#once)
 
 ## Constructors
@@ -113,7 +118,7 @@ EventEmitter.constructor
 
 #### Defined in
 
-[packages/common/src/index.ts:351](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L351)
+[packages/common/src/index.ts:353](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L353)
 
 ## Properties
 
@@ -123,7 +128,37 @@ EventEmitter.constructor
 
 #### Defined in
 
-[packages/common/src/index.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L179)
+[packages/common/src/index.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L181)
+
+___
+
+### captureRejectionSymbol
+
+▪ `Static` `Readonly` **captureRejectionSymbol**: typeof [`captureRejectionSymbol`](default.md#capturerejectionsymbol)
+
+#### Inherited from
+
+EventEmitter.captureRejectionSymbol
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:273
+
+___
+
+### captureRejections
+
+▪ `Static` **captureRejections**: `boolean`
+
+Sets or gets the default captureRejection value for all emitters.
+
+#### Inherited from
+
+EventEmitter.captureRejections
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:278
 
 ___
 
@@ -137,7 +172,29 @@ EventEmitter.defaultMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:20
+node_modules/@types/node/events.d.ts:279
+
+___
+
+### errorMonitor
+
+▪ `Static` `Readonly` **errorMonitor**: typeof [`errorMonitor`](default.md#errormonitor)
+
+This symbol shall be used to install a listener for only monitoring `'error'`
+events. Listeners installed using this symbol are called before the regular
+`'error'` listeners are called.
+
+Installing a listener using this symbol does not change the behavior once an
+`'error'` event is emitted, therefore the process will still crash if no
+regular `'error'` listener is installed.
+
+#### Inherited from
+
+EventEmitter.errorMonitor
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:272
 
 ## Methods
 
@@ -161,7 +218,7 @@ Fork hash as hex string
 
 #### Defined in
 
-[packages/common/src/index.ts:932](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L932)
+[packages/common/src/index.ts:933](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L933)
 
 ___
 
@@ -186,7 +243,7 @@ Hardfork chosen to be used
 
 #### Defined in
 
-[packages/common/src/index.ts:520](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L520)
+[packages/common/src/index.ts:522](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L522)
 
 ___
 
@@ -210,7 +267,7 @@ Dictionary with hardfork params
 
 #### Defined in
 
-[packages/common/src/index.ts:534](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L534)
+[packages/common/src/index.ts:536](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L536)
 
 ___
 
@@ -234,7 +291,7 @@ True if hardfork is supported
 
 #### Defined in
 
-[packages/common/src/index.ts:547](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L547)
+[packages/common/src/index.ts:549](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L549)
 
 ___
 
@@ -259,7 +316,7 @@ Hardfork name
 
 #### Defined in
 
-[packages/common/src/index.ts:819](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L819)
+[packages/common/src/index.ts:820](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L820)
 
 ___
 
@@ -284,7 +341,7 @@ Array with hardfork arrays
 
 #### Defined in
 
-[packages/common/src/index.ts:800](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L800)
+[packages/common/src/index.ts:801](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L801)
 
 ___
 
@@ -309,19 +366,23 @@ True if HF is active on block number
 
 #### Defined in
 
-[packages/common/src/index.ts:729](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L729)
+[packages/common/src/index.ts:730](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L730)
 
 ___
 
 ### addListener
 
-▸ **addListener**(`event`, `listener`): [`default`](default.md)
+▸ **addListener**(`eventName`, `listener`): [`default`](default.md)
+
+Alias for `emitter.on(eventName, listener)`.
+
+**`since`** v0.1.26
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `event` | `string` \| `symbol` |
+| `eventName` | `string` \| `symbol` |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -334,7 +395,7 @@ EventEmitter.addListener
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:595
+node_modules/@types/node/events.d.ts:299
 
 ___
 
@@ -352,7 +413,7 @@ Dict with bootstrap nodes
 
 #### Defined in
 
-[packages/common/src/index.ts:1046](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1046)
+[packages/common/src/index.ts:1049](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1049)
 
 ___
 
@@ -372,7 +433,7 @@ chain Id
 
 #### Defined in
 
-[packages/common/src/index.ts:1071](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1071)
+[packages/common/src/index.ts:1074](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1074)
 
 ___
 
@@ -390,7 +451,7 @@ chain Id
 
 #### Defined in
 
-[packages/common/src/index.ts:1079](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1079)
+[packages/common/src/index.ts:1082](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1082)
 
 ___
 
@@ -408,7 +469,7 @@ chain name (lower case)
 
 #### Defined in
 
-[packages/common/src/index.ts:1087](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1087)
+[packages/common/src/index.ts:1090](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1090)
 
 ___
 
@@ -430,7 +491,7 @@ Note: This value can update along a hardfork.
 
 #### Defined in
 
-[packages/common/src/index.ts:1147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1147)
+[packages/common/src/index.ts:1150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1150)
 
 ___
 
@@ -457,7 +518,7 @@ Note: This value can update along a hardfork.
 
 #### Defined in
 
-[packages/common/src/index.ts:1177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1177)
+[packages/common/src/index.ts:1180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1180)
 
 ___
 
@@ -476,7 +537,7 @@ Note: This value can update along a hardfork.
 
 #### Defined in
 
-[packages/common/src/index.ts:1122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1122)
+[packages/common/src/index.ts:1125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1125)
 
 ___
 
@@ -492,7 +553,7 @@ Returns a deep copy of this {@link Common} instance.
 
 #### Defined in
 
-[packages/common/src/index.ts:1198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1198)
+[packages/common/src/index.ts:1201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1201)
 
 ___
 
@@ -510,7 +571,7 @@ Array of DNS ENR urls
 
 #### Defined in
 
-[packages/common/src/index.ts:1054](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1054)
+[packages/common/src/index.ts:1057](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1057)
 
 ___
 
@@ -528,19 +589,59 @@ List of EIPs
 
 #### Defined in
 
-[packages/common/src/index.ts:1112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1112)
+[packages/common/src/index.ts:1115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1115)
 
 ___
 
 ### emit
 
-▸ **emit**(`event`, ...`args`): `boolean`
+▸ **emit**(`eventName`, ...`args`): `boolean`
+
+Synchronously calls each of the listeners registered for the event named`eventName`, in the order they were registered, passing the supplied arguments
+to each.
+
+Returns `true` if the event had listeners, `false` otherwise.
+
+```js
+const EventEmitter = require('events');
+const myEmitter = new EventEmitter();
+
+// First listener
+myEmitter.on('event', function firstListener() {
+  console.log('Helloooo! first listener');
+});
+// Second listener
+myEmitter.on('event', function secondListener(arg1, arg2) {
+  console.log(`event with parameters ${arg1}, ${arg2} in second listener`);
+});
+// Third listener
+myEmitter.on('event', function thirdListener(...args) {
+  const parameters = args.join(', ');
+  console.log(`event with parameters ${parameters} in third listener`);
+});
+
+console.log(myEmitter.listeners('event'));
+
+myEmitter.emit('event', 1, 2, 3, 4, 5);
+
+// Prints:
+// [
+//   [Function: firstListener],
+//   [Function: secondListener],
+//   [Function: thirdListener]
+// ]
+// Helloooo! first listener
+// event with parameters 1, 2 in second listener
+// event with parameters 1, 2, 3, 4, 5 in third listener
+```
+
+**`since`** v0.1.26
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `event` | `string` \| `symbol` |
+| `eventName` | `string` \| `symbol` |
 | `...args` | `any`[] |
 
 #### Returns
@@ -553,13 +654,31 @@ EventEmitter.emit
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:605
+node_modules/@types/node/events.d.ts:555
 
 ___
 
 ### eventNames
 
 ▸ **eventNames**(): (`string` \| `symbol`)[]
+
+Returns an array listing the events for which the emitter has registered
+listeners. The values in the array are strings or `Symbol`s.
+
+```js
+const EventEmitter = require('events');
+const myEE = new EventEmitter();
+myEE.on('foo', () => {});
+myEE.on('bar', () => {});
+
+const sym = Symbol('symbol');
+myEE.on(sym, () => {});
+
+console.log(myEE.eventNames());
+// Prints: [ 'foo', 'bar', Symbol(symbol) ]
+```
+
+**`since`** v6.0.0
 
 #### Returns
 
@@ -571,7 +690,7 @@ EventEmitter.eventNames
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:610
+node_modules/@types/node/events.d.ts:614
 
 ___
 
@@ -593,7 +712,7 @@ Returns an eth/64 compliant fork hash (EIP-2124)
 
 #### Defined in
 
-[packages/common/src/index.ts:964](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L964)
+[packages/common/src/index.ts:965](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L965)
 
 ___
 
@@ -611,7 +730,7 @@ Genesis dictionary
 
 #### Defined in
 
-[packages/common/src/index.ts:993](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L993)
+[packages/common/src/index.ts:994](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L994)
 
 ___
 
@@ -628,7 +747,7 @@ all values are provided as hex-prefixed strings.
 
 #### Defined in
 
-[packages/common/src/index.ts:1001](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1001)
+[packages/common/src/index.ts:1002](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1002)
 
 ___
 
@@ -658,13 +777,18 @@ The name of the HF
 
 #### Defined in
 
-[packages/common/src/index.ts:447](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L447)
+[packages/common/src/index.ts:449](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L449)
 
 ___
 
 ### getMaxListeners
 
 ▸ **getMaxListeners**(): `number`
+
+Returns the current max listener value for the `EventEmitter` which is either
+set by `emitter.setMaxListeners(n)` or defaults to [defaultMaxListeners](default.md#defaultmaxlisteners).
+
+**`since`** v1.0.0
 
 #### Returns
 
@@ -676,7 +800,7 @@ EventEmitter.getMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:602
+node_modules/@types/node/events.d.ts:471
 
 ___
 
@@ -701,7 +825,7 @@ True if hardfork set is greater than hardfork provided
 
 #### Defined in
 
-[packages/common/src/index.ts:772](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L772)
+[packages/common/src/index.ts:773](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L773)
 
 ___
 
@@ -719,7 +843,7 @@ Hardfork name
 
 #### Defined in
 
-[packages/common/src/index.ts:1062](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1062)
+[packages/common/src/index.ts:1065](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1065)
 
 ___
 
@@ -745,7 +869,7 @@ Block number or null if unscheduled
 
 #### Defined in
 
-[packages/common/src/index.ts:834](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L834)
+[packages/common/src/index.ts:835](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L835)
 
 ___
 
@@ -769,7 +893,7 @@ Block number or null if unscheduled
 
 #### Defined in
 
-[packages/common/src/index.ts:844](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L844)
+[packages/common/src/index.ts:845](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L845)
 
 ___
 
@@ -791,7 +915,7 @@ Array with hardfork data (name, block, forkHash)
 
 #### Defined in
 
-[packages/common/src/index.ts:982](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L982)
+[packages/common/src/index.ts:983](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L983)
 
 ___
 
@@ -817,7 +941,7 @@ True if HF1 gte HF2
 
 #### Defined in
 
-[packages/common/src/index.ts:740](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L740)
+[packages/common/src/index.ts:741](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L741)
 
 ___
 
@@ -843,7 +967,7 @@ True if HF is active on block number
 
 #### Defined in
 
-[packages/common/src/index.ts:708](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L708)
+[packages/common/src/index.ts:709](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L709)
 
 ___
 
@@ -868,7 +992,7 @@ True if hardfork is active on the chain
 
 #### Defined in
 
-[packages/common/src/index.ts:782](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L782)
+[packages/common/src/index.ts:783](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L783)
 
 ___
 
@@ -892,7 +1016,7 @@ Total difficulty or null if no set
 
 #### Defined in
 
-[packages/common/src/index.ts:858](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L858)
+[packages/common/src/index.ts:859](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L859)
 
 ___
 
@@ -910,7 +1034,7 @@ Array with arrays of hardforks
 
 #### Defined in
 
-[packages/common/src/index.ts:1038](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1038)
+[packages/common/src/index.ts:1041](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1041)
 
 ___
 
@@ -937,7 +1061,7 @@ by the [CommonOpts.eips](../interfaces/CommonOpts.md#eips) constructor option
 
 #### Defined in
 
-[packages/common/src/index.ts:686](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L686)
+[packages/common/src/index.ts:687](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L687)
 
 ___
 
@@ -962,7 +1086,7 @@ True if blockNumber is HF block
 
 #### Defined in
 
-[packages/common/src/index.ts:873](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L873)
+[packages/common/src/index.ts:874](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L874)
 
 ___
 
@@ -987,19 +1111,23 @@ True if blockNumber is HF block
 
 #### Defined in
 
-[packages/common/src/index.ts:919](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L919)
+[packages/common/src/index.ts:920](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L920)
 
 ___
 
 ### listenerCount
 
-▸ **listenerCount**(`type`): `number`
+▸ **listenerCount**(`eventName`): `number`
+
+Returns the number of listeners listening to the event named `eventName`.
+
+**`since`** v3.2.0
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `type` | `string` \| `symbol` |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `eventName` | `string` \| `symbol` | The name of the event being listened for |
 
 #### Returns
 
@@ -1011,19 +1139,31 @@ EventEmitter.listenerCount
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:606
+node_modules/@types/node/events.d.ts:561
 
 ___
 
 ### listeners
 
-▸ **listeners**(`event`): `Function`[]
+▸ **listeners**(`eventName`): `Function`[]
+
+Returns a copy of the array of listeners for the event named `eventName`.
+
+```js
+server.on('connection', (stream) => {
+  console.log('someone connected!');
+});
+console.log(util.inspect(server.listeners('connection')));
+// Prints: [ [Function] ]
+```
+
+**`since`** v0.1.26
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `event` | `string` \| `symbol` |
+| `eventName` | `string` \| `symbol` |
 
 #### Returns
 
@@ -1035,7 +1175,7 @@ EventEmitter.listeners
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:603
+node_modules/@types/node/events.d.ts:484
 
 ___
 
@@ -1055,7 +1195,7 @@ network Id
 
 #### Defined in
 
-[packages/common/src/index.ts:1096](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1096)
+[packages/common/src/index.ts:1099](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1099)
 
 ___
 
@@ -1073,7 +1213,7 @@ network Id
 
 #### Defined in
 
-[packages/common/src/index.ts:1104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1104)
+[packages/common/src/index.ts:1107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L1107)
 
 ___
 
@@ -1099,7 +1239,7 @@ Block number or null if not available
 
 #### Defined in
 
-[packages/common/src/index.ts:886](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L886)
+[packages/common/src/index.ts:887](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L887)
 
 ___
 
@@ -1123,19 +1263,23 @@ Block number or null if not available
 
 #### Defined in
 
-[packages/common/src/index.ts:896](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L896)
+[packages/common/src/index.ts:897](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L897)
 
 ___
 
 ### off
 
-▸ **off**(`event`, `listener`): [`default`](default.md)
+▸ **off**(`eventName`, `listener`): [`default`](default.md)
+
+Alias for `emitter.removeListener()`.
+
+**`since`** v10.0.0
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `event` | `string` \| `symbol` |
+| `eventName` | `string` \| `symbol` |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -1148,20 +1292,48 @@ EventEmitter.off
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:599
+node_modules/@types/node/events.d.ts:444
 
 ___
 
 ### on
 
-▸ **on**(`event`, `listener`): [`default`](default.md)
+▸ **on**(`eventName`, `listener`): [`default`](default.md)
+
+Adds the `listener` function to the end of the listeners array for the
+event named `eventName`. No checks are made to see if the `listener` has
+already been added. Multiple calls passing the same combination of `eventName`and `listener` will result in the `listener` being added, and called, multiple
+times.
+
+```js
+server.on('connection', (stream) => {
+  console.log('someone connected!');
+});
+```
+
+Returns a reference to the `EventEmitter`, so that calls can be chained.
+
+By default, event listeners are invoked in the order they are added. The`emitter.prependListener()` method can be used as an alternative to add the
+event listener to the beginning of the listeners array.
+
+```js
+const myEE = new EventEmitter();
+myEE.on('foo', () => console.log('a'));
+myEE.prependListener('foo', () => console.log('b'));
+myEE.emit('foo');
+// Prints:
+//   b
+//   a
+```
+
+**`since`** v0.1.101
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
-| `listener` | (...`args`: `any`[]) => `void` |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `eventName` | `string` \| `symbol` | The name of the event. |
+| `listener` | (...`args`: `any`[]) => `void` | The callback function |
 
 #### Returns
 
@@ -1173,20 +1345,46 @@ EventEmitter.on
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:596
+node_modules/@types/node/events.d.ts:330
 
 ___
 
 ### once
 
-▸ **once**(`event`, `listener`): [`default`](default.md)
+▸ **once**(`eventName`, `listener`): [`default`](default.md)
+
+Adds a **one-time**`listener` function for the event named `eventName`. The
+next time `eventName` is triggered, this listener is removed and then invoked.
+
+```js
+server.once('connection', (stream) => {
+  console.log('Ah, we have our first user!');
+});
+```
+
+Returns a reference to the `EventEmitter`, so that calls can be chained.
+
+By default, event listeners are invoked in the order they are added. The`emitter.prependOnceListener()` method can be used as an alternative to add the
+event listener to the beginning of the listeners array.
+
+```js
+const myEE = new EventEmitter();
+myEE.once('foo', () => console.log('a'));
+myEE.prependOnceListener('foo', () => console.log('b'));
+myEE.emit('foo');
+// Prints:
+//   b
+//   a
+```
+
+**`since`** v0.3.0
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
-| `listener` | (...`args`: `any`[]) => `void` |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `eventName` | `string` \| `symbol` | The name of the event. |
+| `listener` | (...`args`: `any`[]) => `void` | The callback function |
 
 #### Returns
 
@@ -1198,7 +1396,7 @@ EventEmitter.once
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:597
+node_modules/@types/node/events.d.ts:359
 
 ___
 
@@ -1227,7 +1425,7 @@ The value requested or `null` if not found
 
 #### Defined in
 
-[packages/common/src/index.ts:596](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L596)
+[packages/common/src/index.ts:597](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L597)
 
 ___
 
@@ -1251,7 +1449,7 @@ Returns a parameter for the hardfork active on block number
 
 #### Defined in
 
-[packages/common/src/index.ts:671](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L671)
+[packages/common/src/index.ts:672](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L672)
 
 ___
 
@@ -1277,7 +1475,7 @@ The value requested or `null` if not found
 
 #### Defined in
 
-[packages/common/src/index.ts:649](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L649)
+[packages/common/src/index.ts:650](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L650)
 
 ___
 
@@ -1303,20 +1501,35 @@ The value requested or `null` if not found
 
 #### Defined in
 
-[packages/common/src/index.ts:616](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L616)
+[packages/common/src/index.ts:617](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L617)
 
 ___
 
 ### prependListener
 
-▸ **prependListener**(`event`, `listener`): [`default`](default.md)
+▸ **prependListener**(`eventName`, `listener`): [`default`](default.md)
+
+Adds the `listener` function to the _beginning_ of the listeners array for the
+event named `eventName`. No checks are made to see if the `listener` has
+already been added. Multiple calls passing the same combination of `eventName`and `listener` will result in the `listener` being added, and called, multiple
+times.
+
+```js
+server.prependListener('connection', (stream) => {
+  console.log('someone connected!');
+});
+```
+
+Returns a reference to the `EventEmitter`, so that calls can be chained.
+
+**`since`** v6.0.0
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
-| `listener` | (...`args`: `any`[]) => `void` |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `eventName` | `string` \| `symbol` | The name of the event. |
+| `listener` | (...`args`: `any`[]) => `void` | The callback function |
 
 #### Returns
 
@@ -1328,20 +1541,33 @@ EventEmitter.prependListener
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:608
+node_modules/@types/node/events.d.ts:579
 
 ___
 
 ### prependOnceListener
 
-▸ **prependOnceListener**(`event`, `listener`): [`default`](default.md)
+▸ **prependOnceListener**(`eventName`, `listener`): [`default`](default.md)
+
+Adds a **one-time**`listener` function for the event named `eventName` to the_beginning_ of the listeners array. The next time `eventName` is triggered, this
+listener is removed, and then invoked.
+
+```js
+server.prependOnceListener('connection', (stream) => {
+  console.log('Ah, we have our first user!');
+});
+```
+
+Returns a reference to the `EventEmitter`, so that calls can be chained.
+
+**`since`** v6.0.0
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `event` | `string` \| `symbol` |
-| `listener` | (...`args`: `any`[]) => `void` |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `eventName` | `string` \| `symbol` | The name of the event. |
+| `listener` | (...`args`: `any`[]) => `void` | The callback function |
 
 #### Returns
 
@@ -1353,19 +1579,48 @@ EventEmitter.prependOnceListener
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:609
+node_modules/@types/node/events.d.ts:595
 
 ___
 
 ### rawListeners
 
-▸ **rawListeners**(`event`): `Function`[]
+▸ **rawListeners**(`eventName`): `Function`[]
+
+Returns a copy of the array of listeners for the event named `eventName`,
+including any wrappers (such as those created by `.once()`).
+
+```js
+const emitter = new EventEmitter();
+emitter.once('log', () => console.log('log once'));
+
+// Returns a new Array with a function `onceWrapper` which has a property
+// `listener` which contains the original listener bound above
+const listeners = emitter.rawListeners('log');
+const logFnWrapper = listeners[0];
+
+// Logs "log once" to the console and does not unbind the `once` event
+logFnWrapper.listener();
+
+// Logs "log once" to the console and removes the listener
+logFnWrapper();
+
+emitter.on('log', () => console.log('log persistently'));
+// Will return a new Array with a single function bound by `.on()` above
+const newListeners = emitter.rawListeners('log');
+
+// Logs "log persistently" twice
+newListeners[0]();
+emitter.emit('log');
+```
+
+**`since`** v9.4.0
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `event` | `string` \| `symbol` |
+| `eventName` | `string` \| `symbol` |
 
 #### Returns
 
@@ -1377,13 +1632,23 @@ EventEmitter.rawListeners
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:604
+node_modules/@types/node/events.d.ts:514
 
 ___
 
 ### removeAllListeners
 
 ▸ **removeAllListeners**(`event?`): [`default`](default.md)
+
+Removes all listeners, or those of the specified `eventName`.
+
+It is bad practice to remove listeners added elsewhere in the code,
+particularly when the `EventEmitter` instance was created by some other
+component or module (e.g. sockets or file streams).
+
+Returns a reference to the `EventEmitter`, so that calls can be chained.
+
+**`since`** v0.1.26
 
 #### Parameters
 
@@ -1401,19 +1666,98 @@ EventEmitter.removeAllListeners
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:600
+node_modules/@types/node/events.d.ts:455
 
 ___
 
 ### removeListener
 
-▸ **removeListener**(`event`, `listener`): [`default`](default.md)
+▸ **removeListener**(`eventName`, `listener`): [`default`](default.md)
+
+Removes the specified `listener` from the listener array for the event named`eventName`.
+
+```js
+const callback = (stream) => {
+  console.log('someone connected!');
+};
+server.on('connection', callback);
+// ...
+server.removeListener('connection', callback);
+```
+
+`removeListener()` will remove, at most, one instance of a listener from the
+listener array. If any single listener has been added multiple times to the
+listener array for the specified `eventName`, then `removeListener()` must be
+called multiple times to remove each instance.
+
+Once an event is emitted, all listeners attached to it at the
+time of emitting are called in order. This implies that any`removeListener()` or `removeAllListeners()` calls _after_ emitting and_before_ the last listener finishes execution will
+not remove them from`emit()` in progress. Subsequent events behave as expected.
+
+```js
+const myEmitter = new MyEmitter();
+
+const callbackA = () => {
+  console.log('A');
+  myEmitter.removeListener('event', callbackB);
+};
+
+const callbackB = () => {
+  console.log('B');
+};
+
+myEmitter.on('event', callbackA);
+
+myEmitter.on('event', callbackB);
+
+// callbackA removes listener callbackB but it will still be called.
+// Internal listener array at time of emit [callbackA, callbackB]
+myEmitter.emit('event');
+// Prints:
+//   A
+//   B
+
+// callbackB is now removed.
+// Internal listener array [callbackA]
+myEmitter.emit('event');
+// Prints:
+//   A
+```
+
+Because listeners are managed using an internal array, calling this will
+change the position indices of any listener registered _after_ the listener
+being removed. This will not impact the order in which listeners are called,
+but it means that any copies of the listener array as returned by
+the `emitter.listeners()` method will need to be recreated.
+
+When a single function has been added as a handler multiple times for a single
+event (as in the example below), `removeListener()` will remove the most
+recently added instance. In the example the `once('ping')`listener is removed:
+
+```js
+const ee = new EventEmitter();
+
+function pong() {
+  console.log('pong');
+}
+
+ee.on('ping', pong);
+ee.once('ping', pong);
+ee.removeListener('ping', pong);
+
+ee.emit('ping');
+ee.emit('ping');
+```
+
+Returns a reference to the `EventEmitter`, so that calls can be chained.
+
+**`since`** v0.1.26
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `event` | `string` \| `symbol` |
+| `eventName` | `string` \| `symbol` |
 | `listener` | (...`args`: `any`[]) => `void` |
 
 #### Returns
@@ -1426,7 +1770,7 @@ EventEmitter.removeListener
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:598
+node_modules/@types/node/events.d.ts:439
 
 ___
 
@@ -1450,7 +1794,7 @@ The dictionary with parameters set as chain
 
 #### Defined in
 
-[packages/common/src/index.ts:379](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L379)
+[packages/common/src/index.ts:381](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L381)
 
 ___
 
@@ -1472,7 +1816,7 @@ Sets the active EIPs
 
 #### Defined in
 
-[packages/common/src/index.ts:562](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L562)
+[packages/common/src/index.ts:564](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L564)
 
 ___
 
@@ -1494,7 +1838,7 @@ Sets the hardfork to get params for
 
 #### Defined in
 
-[packages/common/src/index.ts:416](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L416)
+[packages/common/src/index.ts:418](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L418)
 
 ___
 
@@ -1524,13 +1868,22 @@ The name of the HF set
 
 #### Defined in
 
-[packages/common/src/index.ts:509](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L509)
+[packages/common/src/index.ts:511](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L511)
 
 ___
 
 ### setMaxListeners
 
 ▸ **setMaxListeners**(`n`): [`default`](default.md)
+
+By default `EventEmitter`s will print a warning if more than `10` listeners are
+added for a particular event. This is a useful default that helps finding
+memory leaks. The `emitter.setMaxListeners()` method allows the limit to be
+modified for this specific `EventEmitter` instance. The value can be set to`Infinity` (or `0`) to indicate an unlimited number of listeners.
+
+Returns a reference to the `EventEmitter`, so that calls can be chained.
+
+**`since`** v0.3.5
 
 #### Parameters
 
@@ -1548,7 +1901,7 @@ EventEmitter.setMaxListeners
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:601
+node_modules/@types/node/events.d.ts:465
 
 ___
 
@@ -1589,7 +1942,7 @@ the `@ethereumjs/tx` library to a Layer-2 chain).
 
 #### Defined in
 
-[packages/common/src/index.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L211)
+[packages/common/src/index.ts:213](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L213)
 
 ___
 
@@ -1617,7 +1970,59 @@ params from [baseChain](../interfaces/CustomCommonOpts.md#basechain) except the 
 
 #### Defined in
 
-[packages/common/src/index.ts:296](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L296)
+[packages/common/src/index.ts:298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L298)
+
+___
+
+### getEventListeners
+
+▸ `Static` **getEventListeners**(`emitter`, `name`): `Function`[]
+
+Returns a copy of the array of listeners for the event named `eventName`.
+
+For `EventEmitter`s this behaves exactly the same as calling `.listeners` on
+the emitter.
+
+For `EventTarget`s this is the only way to get the event listeners for the
+event target. This is useful for debugging and diagnostic purposes.
+
+```js
+const { getEventListeners, EventEmitter } = require('events');
+
+{
+  const ee = new EventEmitter();
+  const listener = () => console.log('Events are fun');
+  ee.on('foo', listener);
+  getEventListeners(ee, 'foo'); // [listener]
+}
+{
+  const et = new EventTarget();
+  const listener = () => console.log('Events are fun');
+  et.addEventListener('foo', listener);
+  getEventListeners(et, 'foo'); // [listener]
+}
+```
+
+**`since`** v15.2.0
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `emitter` | `DOMEventTarget` \| `EventEmitter` |
+| `name` | `string` \| `symbol` |
+
+#### Returns
+
+`Function`[]
+
+#### Inherited from
+
+EventEmitter.getEventListeners
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:262
 
 ___
 
@@ -1641,22 +2046,35 @@ boolean
 
 #### Defined in
 
-[packages/common/src/index.ts:319](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L319)
+[packages/common/src/index.ts:321](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L321)
 
 ___
 
 ### listenerCount
 
-▸ `Static` **listenerCount**(`emitter`, `event`): `number`
+▸ `Static` **listenerCount**(`emitter`, `eventName`): `number`
 
-**`deprecated`** since v4.0.0
+A class method that returns the number of listeners for the given `eventName`registered on the given `emitter`.
+
+```js
+const { EventEmitter, listenerCount } = require('events');
+const myEmitter = new EventEmitter();
+myEmitter.on('event', () => {});
+myEmitter.on('event', () => {});
+console.log(listenerCount(myEmitter, 'event'));
+// Prints: 2
+```
+
+**`since`** v0.9.12
+
+**`deprecated`** Since v3.2.0 - Use `listenerCount` instead.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `emitter` | `EventEmitter` |
-| `event` | `string` \| `symbol` |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `emitter` | `EventEmitter` | The emitter to query |
+| `eventName` | `string` \| `symbol` | The event name |
 
 #### Returns
 
@@ -1668,20 +2086,187 @@ EventEmitter.listenerCount
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:17
+node_modules/@types/node/events.d.ts:234
+
+___
+
+### on
+
+▸ `Static` **on**(`emitter`, `eventName`, `options?`): `AsyncIterableIterator`<`any`\>
+
+```js
+const { on, EventEmitter } = require('events');
+
+(async () => {
+  const ee = new EventEmitter();
+
+  // Emit later on
+  process.nextTick(() => {
+    ee.emit('foo', 'bar');
+    ee.emit('foo', 42);
+  });
+
+  for await (const event of on(ee, 'foo')) {
+    // The execution of this inner block is synchronous and it
+    // processes one event at a time (even with await). Do not use
+    // if concurrent execution is required.
+    console.log(event); // prints ['bar'] [42]
+  }
+  // Unreachable here
+})();
+```
+
+Returns an `AsyncIterator` that iterates `eventName` events. It will throw
+if the `EventEmitter` emits `'error'`. It removes all listeners when
+exiting the loop. The `value` returned by each iteration is an array
+composed of the emitted event arguments.
+
+An `AbortSignal` can be used to cancel waiting on events:
+
+```js
+const { on, EventEmitter } = require('events');
+const ac = new AbortController();
+
+(async () => {
+  const ee = new EventEmitter();
+
+  // Emit later on
+  process.nextTick(() => {
+    ee.emit('foo', 'bar');
+    ee.emit('foo', 42);
+  });
+
+  for await (const event of on(ee, 'foo', { signal: ac.signal })) {
+    // The execution of this inner block is synchronous and it
+    // processes one event at a time (even with await). Do not use
+    // if concurrent execution is required.
+    console.log(event); // prints ['bar'] [42]
+  }
+  // Unreachable here
+})();
+
+process.nextTick(() => ac.abort());
+```
+
+**`since`** v13.6.0, v12.16.0
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `emitter` | `EventEmitter` | - |
+| `eventName` | `string` | The name of the event being listened for |
+| `options?` | `StaticEventEmitterOptions` | - |
+
+#### Returns
+
+`AsyncIterableIterator`<`any`\>
+
+that iterates `eventName` events emitted by the `emitter`
+
+#### Inherited from
+
+EventEmitter.on
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:217
 
 ___
 
 ### once
 
-▸ `Static` **once**(`emitter`, `event`): `Promise`<`any`[]\>
+▸ `Static` **once**(`emitter`, `eventName`, `options?`): `Promise`<`any`[]\>
+
+Creates a `Promise` that is fulfilled when the `EventEmitter` emits the given
+event or that is rejected if the `EventEmitter` emits `'error'` while waiting.
+The `Promise` will resolve with an array of all the arguments emitted to the
+given event.
+
+This method is intentionally generic and works with the web platform [EventTarget](https://dom.spec.whatwg.org/#interface-eventtarget) interface, which has no special`'error'` event
+semantics and does not listen to the `'error'` event.
+
+```js
+const { once, EventEmitter } = require('events');
+
+async function run() {
+  const ee = new EventEmitter();
+
+  process.nextTick(() => {
+    ee.emit('myevent', 42);
+  });
+
+  const [value] = await once(ee, 'myevent');
+  console.log(value);
+
+  const err = new Error('kaboom');
+  process.nextTick(() => {
+    ee.emit('error', err);
+  });
+
+  try {
+    await once(ee, 'myevent');
+  } catch (err) {
+    console.log('error happened', err);
+  }
+}
+
+run();
+```
+
+The special handling of the `'error'` event is only used when `events.once()`is used to wait for another event. If `events.once()` is used to wait for the
+'`error'` event itself, then it is treated as any other kind of event without
+special handling:
+
+```js
+const { EventEmitter, once } = require('events');
+
+const ee = new EventEmitter();
+
+once(ee, 'error')
+  .then(([err]) => console.log('ok', err.message))
+  .catch((err) => console.log('error', err.message));
+
+ee.emit('error', new Error('boom'));
+
+// Prints: ok boom
+```
+
+An `AbortSignal` can be used to cancel waiting for the event:
+
+```js
+const { EventEmitter, once } = require('events');
+
+const ee = new EventEmitter();
+const ac = new AbortController();
+
+async function foo(emitter, event, signal) {
+  try {
+    await once(emitter, event, { signal });
+    console.log('event emitted!');
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      console.error('Waiting for the event was canceled!');
+    } else {
+      console.error('There was an error', error.message);
+    }
+  }
+}
+
+foo(ee, 'foo', ac.signal);
+ac.abort(); // Abort waiting for the event
+ee.emit('foo'); // Prints: Waiting for the event was canceled!
+```
+
+**`since`** v11.13.0, v10.16.0
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
 | `emitter` | `NodeEventTarget` |
-| `event` | `string` \| `symbol` |
+| `eventName` | `string` \| `symbol` |
+| `options?` | `StaticEventEmitterOptions` |
 
 #### Returns
 
@@ -1693,16 +2278,17 @@ EventEmitter.once
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:13
+node_modules/@types/node/events.d.ts:157
 
-▸ `Static` **once**(`emitter`, `event`): `Promise`<`any`[]\>
+▸ `Static` **once**(`emitter`, `eventName`, `options?`): `Promise`<`any`[]\>
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
 | `emitter` | `DOMEventTarget` |
-| `event` | `string` |
+| `eventName` | `string` |
+| `options?` | `StaticEventEmitterOptions` |
 
 #### Returns
 
@@ -1714,4 +2300,4 @@ EventEmitter.once
 
 #### Defined in
 
-node_modules/@types/node/events.d.ts:14
+node_modules/@types/node/events.d.ts:158

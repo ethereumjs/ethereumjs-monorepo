@@ -29,19 +29,13 @@ export function updateSstoreGasEIP2200(
 
   // Noop
   if (currentStorage.equals(value)) {
-    const sstoreNoopCost = common.param('gasPrices', 'sstoreNoopGasEIP2200')
-    return runState.eei.useGas(
-      new BN(adjustSstoreGasEIP2929(runState, key, sstoreNoopCost, 'noop', common)),
-      'EIP-2200 -> sstoreNoopGasEIP2200'
-    )
+    const sstoreNoopCost = new BN(common.param('gasPrices', 'sstoreNoopGasEIP2200'))
+    return adjustSstoreGasEIP2929(runState, key, sstoreNoopCost, 'noop', common)
   }
   if (originalStorage.equals(currentStorage)) {
     // Create slot
     if (originalStorage.length === 0) {
-      return runState.eei.useGas(
-        new BN(common.param('gasPrices', 'sstoreInitGasEIP2200')),
-        'EIP-2200 -> sstoreInitGasEIP2200'
-      )
+      return new BN(common.param('gasPrices', 'sstoreInitGasEIP2200'))
     }
     // Delete slot
     if (value.length === 0) {
@@ -51,10 +45,7 @@ export function updateSstoreGasEIP2200(
       )
     }
     // Write existing slot
-    return runState.eei.useGas(
-      new BN(common.param('gasPrices', 'sstoreCleanGasEIP2200')),
-      'EIP-2200 -> sstoreCleanGasEIP2200'
-    )
+    return new BN(common.param('gasPrices', 'sstoreCleanGasEIP2200'))
   }
   if (originalStorage.length > 0) {
     if (currentStorage.length === 0) {
@@ -74,23 +65,20 @@ export function updateSstoreGasEIP2200(
   if (originalStorage.equals(value)) {
     if (originalStorage.length === 0) {
       // Reset to original non-existent slot
-      const sstoreInitRefund = common.param('gasPrices', 'sstoreInitRefundEIP2200')
+      const sstoreInitRefund = new BN(common.param('gasPrices', 'sstoreInitRefundEIP2200'))
       runState.eei.refundGas(
-        new BN(adjustSstoreGasEIP2929(runState, key, sstoreInitRefund, 'initRefund', common)),
+        adjustSstoreGasEIP2929(runState, key, sstoreInitRefund, 'initRefund', common),
         'EIP-2200 -> initRefund'
       )
     } else {
       // Reset to original existing slot
-      const sstoreCleanRefund = common.param('gasPrices', 'sstoreCleanRefundEIP2200')
+      const sstoreCleanRefund = new BN(common.param('gasPrices', 'sstoreCleanRefundEIP2200'))
       runState.eei.refundGas(
-        new BN(adjustSstoreGasEIP2929(runState, key, sstoreCleanRefund, 'cleanRefund', common)),
+        adjustSstoreGasEIP2929(runState, key, sstoreCleanRefund, 'cleanRefund', common),
         'EIP-2200 -> cleanRefund'
       )
     }
   }
   // Dirty update
-  return runState.eei.useGas(
-    new BN(common.param('gasPrices', 'sstoreDirtyGasEIP2200')),
-    'EIP-2200 -> sstoreDirtyGasEIP2200'
-  )
+  return new BN(common.param('gasPrices', 'sstoreDirtyGasEIP2200'))
 }

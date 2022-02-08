@@ -60,21 +60,19 @@ function parseTestCases(
 }
 
 async function runTestCase(options: any, testData: any, t: tape.Test) {
-  const begin = Date.now()
   let VM
   if (options.dist) {
     VM = require('../../../dist').default
   } else {
     VM = require('../../../src').default
   }
+  const begin = Date.now()
 
-  const state = new Trie()
   const hardfork = options.forkConfigVM
-
-  const eips: number[] = []
-
+  const eips: number[] = [3607]
   const common = new Common({ chain: Chain.Mainnet, hardfork, eips })
 
+  const state = new Trie()
   const vm = new VM({ state, common })
 
   await setupPreConditions(vm.stateManager._trie, testData)
@@ -136,6 +134,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const timeSpent = `${(end - begin) / 1000} secs`
 
   t.ok(stateRootsAreEqual, `[ ${timeSpent} ] the state roots should match (${execInfo})`)
+  return parseFloat(timeSpent)
 }
 
 export default async function runStateTest(options: any, testData: any, t: tape.Test) {
@@ -152,7 +151,15 @@ export default async function runStateTest(options: any, testData: any, t: tape.
       return
     }
     for (const testCase of testCases) {
-      await runTestCase(options, testCase, t)
+      if (options.reps) {
+        let totalTimeSpent = 0
+        for (let x = 0; x < options.reps; x++) {
+          totalTimeSpent += await runTestCase(options, testCase, t)
+        }
+        t.comment(`Average test run: ${(totalTimeSpent / options.reps).toLocaleString()} s`)
+      } else {
+        await runTestCase(options, testCase, t)
+      }
     }
   } catch (e: any) {
     console.log(e)

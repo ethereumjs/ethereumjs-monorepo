@@ -1,9 +1,6 @@
-#
 # This special file aims to run node tests for each relevant node version.
 # A relevant node version can be: active, current, maintenance or EOL with some months of tolerance
 # For more details, please check ./scripts/node-versions.js
-#
-
 name: Node versions
 on:
   schedule:
@@ -17,7 +14,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v2
         with:
-          node-version: 12
+          node-version: 16
 
       - id: set-matrix
         run: echo "::set-output name=matrix::$(npx testable-node-versions)"
@@ -42,6 +39,7 @@ jobs:
 
       - name: Use npm v7 for workspaces support
         run: npm i -g npm@7
+        if: ${{ matrix.node-version < 16 }}
 
       - run: npm i
 
@@ -94,3 +92,7 @@ jobs:
       - name: Test VM
         run: npm run test:API
         working-directory: packages/vm
+
+      - name: Test RLP
+        run: npm run test
+        working-directory: packages/rlp

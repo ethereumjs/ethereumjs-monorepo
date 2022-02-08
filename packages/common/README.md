@@ -115,6 +115,7 @@ Supported chains:
 - `rinkeby` (`Chain.Rinkeby`)
 - `kovan` (`Chain.Kovan`)
 - `goerli` (`Chain.Goerli`)
+- `sepolia` (`Chain.Sepolia`) (`v2.6.1`+)
 - Private/custom chain parameters
 
 The following chain-specific parameters are provided:
@@ -292,6 +293,7 @@ The following EIPs are currently supported:
 - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541): Reject new contracts starting with the 0xEF byte
 - [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554): Difficulty Bomb Delay to December 2021 (only PoW networks)
 - [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675): Upgrade consensus to Proof-of-Stake (`experimental`)
+- [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855): Push0 opcode (`v2.6.1`+)
 
 ## Bootstrap Nodes
 

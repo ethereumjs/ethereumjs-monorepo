@@ -13,12 +13,16 @@ defaults:
   run:
     working-directory: packages/devp2p
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   test-devp2p:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [12]
+        node-version: [16]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -30,9 +34,6 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - name: Use npm v7 for workspaces support
-        run: npm i -g npm@7
-
       - run: npm i
         working-directory: ${{github.workspace}}
 
@@ -40,8 +41,8 @@ jobs:
 
       - uses: codecov/codecov-action@v2
         with:
-          file: ${{ env.cwd }}/coverage/lcov.info
+          files: ${{ env.cwd }}/coverage/lcov.info
           flags: devp2p
-        if: ${{ matrix.node-version == 12 }}
+        if: ${{ matrix.node-version == 16 }}
 
       - run: npm run lint

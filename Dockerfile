@@ -1,6 +1,6 @@
-FROM node:14-alpine as build
+FROM node:16-alpine as build
 WORKDIR /usr/app
-RUN apk update && apk add --no-cache g++ make python bash git && rm -rf /var/cache/apk/*
+RUN apk update && apk add --no-cache bash git && rm -rf /var/cache/apk/*
 
 ARG VERSION=latest
 ENV VERSION=$VERSION

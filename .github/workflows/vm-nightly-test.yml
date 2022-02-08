@@ -18,14 +18,10 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Use Node.js 12
-        uses: actions/setup-node@v2
+      - uses: actions/setup-node@v2
         with:
-          node-version: 12
+          node-version: 16
           cache: 'npm'
-
-      - name: Use npm v7 for workspaces support
-        run: npm i -g npm@7
 
       # The job is meant to run with a fresh lock file
       # to detect any possible issues with new dep versions.
@@ -45,14 +41,10 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Use Node.js 12
-        uses: actions/setup-node@v2
+      - uses: actions/setup-node@v2
         with:
-          node-version: 12
+          node-version: 16
           cache: 'npm'
-
-      - name: Use npm v7 for workspaces support
-        run: npm i -g npm@7
 
       # The job is meant to run with a fresh lock file
       # to detect any possible issues with new dep versions.
@@ -71,14 +63,10 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Use Node.js 12
-        uses: actions/setup-node@v2
+      - uses: actions/setup-node@v2
         with:
-          node-version: 12
+          node-version: 16
           cache: 'npm'
-
-      - name: Use npm v7 for workspaces support
-        run: npm i -g npm@7
 
       # The job is meant to run with a fresh lock file
       # to detect any possible issues with new dep versions.
@@ -98,14 +86,10 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Use Node.js 12
-        uses: actions/setup-node@v2
+      - uses: actions/setup-node@v2
         with:
-          node-version: 12
+          node-version: 16
           cache: 'npm'
-
-      - name: Use npm v7 for workspaces support
-        run: npm i -g npm@7
 
       # The job is meant to run with a fresh lock file
       # to detect any possible issues with new dep versions.

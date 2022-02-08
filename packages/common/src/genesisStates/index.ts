@@ -7,12 +7,14 @@ const genesisStates: genesisStatesType = {
     '4': 'rinkeby',
     '42': 'kovan',
     '5': 'goerli',
+    '11155111': 'sepolia',
   },
   mainnet: require('./mainnet.json'),
   ropsten: require('./ropsten.json'),
   rinkeby: require('./rinkeby.json'),
   kovan: require('./kovan.json'),
   goerli: require('./goerli.json'),
+  sepolia: require('./sepolia.json'),
 }
 
 /**

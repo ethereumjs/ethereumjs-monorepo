@@ -3,15 +3,15 @@ import { EventEmitter } from 'events'
 import BufferList = require('bl')
 import ms from 'ms'
 import snappy from 'snappyjs'
-import { debug as createDebugLogger } from 'debug'
+import { debug as createDebugLogger, Debugger } from 'debug'
+import { devp2pDebug } from '../util'
 import Common from '@ethereumjs/common'
 import { rlp } from 'ethereumjs-util'
 import { ETH, LES } from '../'
 import { int2buffer, buffer2int, formatLogData } from '../util'
 import { ECIES } from './ecies'
 
-const DEBUG_BASE_NAME = 'devp2p:rlpx:peer'
-const debug = createDebugLogger(DEBUG_BASE_NAME)
+const DEBUG_BASE_NAME = 'rlpx:peer'
 const verbose = createDebugLogger('verbose').enabled
 
 export const BASE_PROTOCOL_VERSION = 5
@@ -99,9 +99,7 @@ export class Peer extends EventEmitter {
   _disconnectReason?: DISCONNECT_REASONS
   _disconnectWe: any
   _pingTimeout: number
-
-  // Message debuggers (e.g. { 'HELLO': [debug Object], ...})
-  private msgDebuggers: { [key: string]: (debug: string) => void } = {}
+  _logger: Debugger
 
   /**
    * Subprotocols (e.g. `ETH`) derived from the exchange on
@@ -137,7 +135,9 @@ export class Peer extends EventEmitter {
     this._socket.on('data', this._onSocketData.bind(this))
     this._socket.on('error', (err: Error) => this.emit('error', err))
     this._socket.once('close', this._onSocketClose.bind(this))
-
+    this._logger = this._socket.remoteAddress
+      ? devp2pDebug.extend(this._socket.remoteAddress).extend(DEBUG_BASE_NAME)
+      : devp2pDebug.extend(DEBUG_BASE_NAME)
     this._connected = false
     this._closed = false
     this._disconnectWe = null
@@ -147,8 +147,6 @@ export class Peer extends EventEmitter {
 
     // sub-protocols
     this._protocols = []
-
-    this.initMsgDebuggers()
 
     // send AUTH if outgoing connection
     if (this._remoteId !== null) {
@@ -161,7 +159,7 @@ export class Peer extends EventEmitter {
    */
   _sendAuth() {
     if (this._closed) return
-    debug(
+    this._logger(
       `Send auth (EIP8: ${this._EIP8}) to ${this._socket.remoteAddress}:${this._socket.remotePort}`
     )
     if (this._EIP8) {
@@ -182,7 +180,7 @@ export class Peer extends EventEmitter {
    */
   _sendAck() {
     if (this._closed) return
-    debug(
+    this._logger(
       `Send ack (EIP8: ${this._eciesSession._gotEIP8Auth}) to ${this._socket.remoteAddress}:${this._socket.remotePort}`
     )
     if (this._eciesSession._gotEIP8Auth) {
@@ -328,7 +326,7 @@ export class Peer extends EventEmitter {
     if (!this._eciesSession._gotEIP8Ack) {
       if (parseData.slice(0, 1) === Buffer.from('04', 'hex')) {
         this._eciesSession.parseAckPlain(parseData)
-        debug(
+        this._logger(
           `Received ack (old format) from ${this._socket.remoteAddress}:${this._socket.remotePort}`
         )
       } else {
@@ -338,7 +336,9 @@ export class Peer extends EventEmitter {
       }
     } else {
       this._eciesSession.parseAckEIP8(parseData)
-      debug(`Received ack (EIP8) from ${this._socket.remoteAddress}:${this._socket.remotePort}`)
+      this._logger(
+        `Received ack (EIP8) from ${this._socket.remoteAddress}:${this._socket.remotePort}`
+      )
     }
     this._state = 'Header'
     this._nextPacketSize = 32
@@ -473,10 +473,10 @@ export class Peer extends EventEmitter {
   _handleHeader() {
     const bytesCount = this._nextPacketSize
     const parseData = this._socketData.slice(0, bytesCount)
-    debug(`Received header ${this._socket.remoteAddress}:${this._socket.remotePort}`)
+    this._logger(`Received header ${this._socket.remoteAddress}:${this._socket.remotePort}`)
     const size = this._eciesSession.parseHeader(parseData)
     if (!size) {
-      debug('invalid header size!')
+      this._logger('invalid header size!')
       return
     }
 
@@ -494,10 +494,10 @@ export class Peer extends EventEmitter {
     const parseData = this._socketData.slice(0, bytesCount)
     const body = this._eciesSession.parseBody(parseData)
     if (!body) {
-      debug('empty body!')
+      this._logger('empty body!')
       return
     }
-    debug(
+    this._logger(
       `Received body ${this._socket.remoteAddress}:${this._socket.remotePort} ${formatLogData(
         body.toString('hex'),
         verbose
@@ -526,7 +526,7 @@ export class Peer extends EventEmitter {
       const messageName = this.getMsgPrefix(msgCode)
       this.debug(messageName, `Received ${messageName} message ${postAdd}`)
     } else {
-      debug(`Received ${protocolName} subprotocol message ${postAdd}`)
+      this._logger(`Received ${protocolName} subprotocol message ${postAdd}`)
     }
 
     try {
@@ -571,7 +571,7 @@ export class Peer extends EventEmitter {
       protocolObj.protocol._handleMessage(msgCode, payload)
     } catch (err: any) {
       this.disconnect(DISCONNECT_REASONS.SUBPROTOCOL_ERROR)
-      debug(`Error on peer subprotocol message handling: ${err}`)
+      this._logger(`Error on peer subprotocol message handling: ${err}`)
       this.emit('error', err)
     }
     this._socketData.consume(bytesCount)
@@ -603,7 +603,7 @@ export class Peer extends EventEmitter {
       }
     } catch (err: any) {
       this.disconnect(DISCONNECT_REASONS.SUBPROTOCOL_ERROR)
-      debug(`Error on peer socket data handling: ${err}`)
+      this._logger(`Error on peer socket data handling: ${err}`)
       this.emit('error', err)
     }
   }
@@ -656,29 +656,6 @@ export class Peer extends EventEmitter {
     this._sendDisconnect(reason)
   }
 
-  private initMsgDebuggers() {
-    const MESSAGE_NAMES = Object.values(PREFIXES).filter(
-      (value) => typeof value === 'string'
-    ) as string[]
-    for (const name of MESSAGE_NAMES) {
-      this.msgDebuggers[name] = createDebugLogger(`${DEBUG_BASE_NAME}:${name}`)
-    }
-
-    // Remote Peer IP logger
-    const ip = this._socket.remoteAddress
-    if (ip) {
-      this.msgDebuggers[ip] = createDebugLogger(`devp2p:${ip}`)
-    }
-
-    // Special DISCONNECT per-reason logger
-    const DISCONNECT_NAMES = Object.values(DISCONNECT_REASONS).filter(
-      (value) => typeof value === 'string'
-    ) as string[]
-    for (const name of DISCONNECT_NAMES) {
-      this.msgDebuggers[name] = createDebugLogger(`${DEBUG_BASE_NAME}:DISCONNECT:${name}`)
-    }
-  }
-
   /**
    * Called once from the subprotocol (e.g. `ETH`) on the peer
    * where a first successful `STATUS` msg exchange could be achieved.
@@ -688,7 +665,7 @@ export class Peer extends EventEmitter {
   _addFirstPeerDebugger() {
     const ip = this._socket.remoteAddress
     if (ip) {
-      this.msgDebuggers[ip] = createDebugLogger(`devp2p:FIRST_PEER`)
+      this._logger = devp2pDebug.extend(ip).extend(`FIRST_PEER`).extend(DEBUG_BASE_NAME)
     }
   }
 
@@ -697,20 +674,13 @@ export class Peer extends EventEmitter {
    * per-message debug logger
    * @param messageName Capitalized message name (e.g. `HELLO`)
    * @param msg Message text to debug
+   * @param disconnectReason Capitalized disconnect reason (e.g. 'TIMEOUT')
    */
   private debug(messageName: string, msg: string, disconnectReason?: string) {
-    debug(msg)
-    if (this.msgDebuggers[messageName]) {
-      this.msgDebuggers[messageName](msg)
-    }
-    const ip = this._socket.remoteAddress
-    if (ip && this.msgDebuggers[ip]) {
-      this.msgDebuggers[ip](msg)
-    }
-    if (disconnectReason && messageName === 'DISCONNECT') {
-      if (this.msgDebuggers[disconnectReason]) {
-        this.msgDebuggers[disconnectReason](msg)
-      }
+    if (disconnectReason) {
+      this._logger.extend(messageName).extend(disconnectReason)(msg)
+    } else {
+      this._logger.extend(messageName)(msg)
     }
   }
 }
