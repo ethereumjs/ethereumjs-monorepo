@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, privateToAddress } from 'ethereumjs-util'
+import { Address, BN, bnToBigInt, privateToAddress } from 'ethereumjs-util'
 import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TypedTransaction } from '@ethereumjs/tx'
@@ -91,10 +91,10 @@ tape('EIP3198 tests', (t) => {
       tx: block.transactions[0],
       block,
     })
-    const txBaseFee = BigInt(block.transactions[0].getBaseFee().toString(10))
+    const txBaseFee = bnToBigInt(block.transactions[0].getBaseFee())
     const gasUsed = results.gasUsed - txBaseFee
     st.ok(gasUsed === 2n, 'gas used correct')
-    st.ok(stack[0] === BigInt(fee.toString(10)), 'right item pushed on stack')
+    st.ok(stack[0] === bnToBigInt(fee), 'right item pushed on stack')
     st.end()
   })
 })

@@ -1,5 +1,5 @@
 import Common from '@ethereumjs/common'
-import { keccak256, setLengthRight, setLengthLeft, toBuffer, bufferToHex } from 'ethereumjs-util'
+import { keccak256, setLengthRight, setLengthLeft, bigIntToBuffer } from 'ethereumjs-util'
 import { ERROR, VmError } from './../../exceptions'
 import { RunState } from './../interpreter'
 
@@ -38,7 +38,7 @@ export function trap(err: string) {
  */
 export function addressToBuffer(address: bigint | Buffer) {
   if (Buffer.isBuffer(address)) return address
-  return setLengthLeft(toBuffer('0x' + (address & MASK_160).toString(16)), 20)
+  return setLengthLeft(bigIntToBuffer(address & MASK_160), 20)
 }
 
 /**
@@ -288,14 +288,6 @@ export function abs(a: bigint) {
     return a
   }
   return a * -1n
-}
-
-export function bufferToBigInt(buf: Buffer) {
-  const hex = bufferToHex(buf)
-  if (hex === '0x') {
-    return 0n
-  }
-  return BigInt(hex)
 }
 
 const N = 115792089237316195423570985008687907853269984665640564039457584007913129639936n

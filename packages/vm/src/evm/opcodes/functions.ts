@@ -5,8 +5,9 @@ import {
   KECCAK256_NULL,
   TWO_POW256_BIGINT,
   MAX_INTEGER_BIGINT,
-  toBuffer,
   setLengthLeft,
+  bufferToBigInt,
+  bigIntToBuffer,
 } from 'ethereumjs-util'
 import {
   addressToBuffer,
@@ -22,7 +23,7 @@ import {
 } from './util'
 import { ERROR } from '../../exceptions'
 import { RunState } from './../interpreter'
-import { bufferToBigInt, exponentation } from '.'
+import { exponentation } from '.'
 
 export interface SyncOpHandler {
   (runState: RunState, common: Common): void
@@ -382,7 +383,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x30,
     function (runState) {
-      const address = BigInt('0x' + runState.eei.getAddress().buf.toString('hex'))
+      const address = bufferToBigInt(runState.eei.getAddress().buf)
       runState.stack.push(address)
     },
   ],
@@ -654,7 +655,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x52,
     function (runState) {
       const [offset, word] = runState.stack.popN(2)
-      const buf = setLengthLeft(toBuffer('0x' + word.toString(16)), 32)
+      const buf = setLengthLeft(bigIntToBuffer(word), 32)
       const offsetNum = Number(offset)
       runState.memory.extend(offsetNum, 32)
       runState.memory.write(offsetNum, 32, buf)
@@ -666,7 +667,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const [offset, byte] = runState.stack.popN(2)
 
-      const buf = toBuffer('0x' + (byte & 0xffn).toString(16))
+      const buf = bigIntToBuffer(byte & 0xffn)
       const offsetNum = Number(offset)
       runState.memory.extend(offsetNum, 1)
       runState.memory.write(offsetNum, 1, buf)
@@ -677,7 +678,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x54,
     async function (runState) {
       const key = runState.stack.pop()
-      const keyBuf = setLengthLeft(toBuffer('0x' + key.toString(16)), 32)
+      const keyBuf = setLengthLeft(bigIntToBuffer(key), 32)
       const value = await runState.eei.storageLoad(keyBuf)
       const valueBigInt = value.length ? bufferToBigInt(value) : 0n
       runState.stack.push(valueBigInt)
@@ -689,13 +690,13 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState) {
       const [key, val] = runState.stack.popN(2)
 
-      const keyBuf = setLengthLeft(toBuffer('0x' + key.toString(16)), 32)
+      const keyBuf = setLengthLeft(bigIntToBuffer(key), 32)
       // NOTE: this should be the shortest representation
       let value
       if (val === 0n) {
         value = Buffer.from([])
       } else {
-        value = toBuffer('0x' + val.toString(16))
+        value = bigIntToBuffer(val)
       }
 
       await runState.eei.storageStore(keyBuf, value)
@@ -846,7 +847,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       const topics = runState.stack.popN(topicsCount)
       const topicsBuf = topics.map(function (a: bigint) {
-        return setLengthLeft(toBuffer('0x' + a.toString(16)), 32)
+        return setLengthLeft(bigIntToBuffer(a), 32)
       })
 
       let mem = Buffer.alloc(0)
@@ -899,7 +900,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         gasLimit,
         value,
         data,
-        setLengthLeft(toBuffer('0x' + salt.toString(16)), 32)
+        setLengthLeft(bigIntToBuffer(salt), 32)
       )
       runState.stack.push(ret)
     },

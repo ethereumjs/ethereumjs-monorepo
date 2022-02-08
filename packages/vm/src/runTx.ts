@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Address, BN, KECCAK256_NULL, toBuffer } from 'ethereumjs-util'
+import { Address, bigIntToBuffer, BN, bnToBigInt, KECCAK256_NULL, toBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import {
@@ -270,8 +270,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Validate gas limit against tx base fee (DataFee + TxFee + Creation Fee)
-  const txBaseFee = BigInt(tx.getBaseFee().toString(10))
-  let gasLimit = BigInt(tx.gasLimit.toString(10))
+  const txBaseFee = bnToBigInt(tx.getBaseFee())
+  let gasLimit = bnToBigInt(tx.gasLimit)
   if (gasLimit < txBaseFee) {
     const msg = _errorMsg('base fee exceeds gas limit', this, block, tx)
     throw new Error(msg)
@@ -356,10 +356,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas,
       (tx as FeeMarketEIP1559Transaction).maxFeePerGas.sub(baseFee)
     )
-    gasPrice = BigInt(inclusionFeePerGas.add(baseFee).toString(10))
+    gasPrice = bnToBigInt(inclusionFeePerGas.add(baseFee))
   } else {
     // Have to cast as legacy tx since EIP1559 tx does not have gas price
-    gasPrice = BigInt((<Transaction>tx).gasPrice.toString(10))
+    gasPrice = bnToBigInt((<Transaction>tx).gasPrice)
     if (this._common.isActivatedEIP(1559)) {
       const baseFee = block.header.baseFeePerGas!
       inclusionFeePerGas = (<Transaction>tx).gasPrice.sub(baseFee)
@@ -368,7 +368,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Update from account's nonce and balance
   fromAccount.nonce.iaddn(1)
-  const txCost = BigInt(tx.gasLimit.toString(10)) * gasPrice
+  const txCost = bnToBigInt(tx.gasLimit) * gasPrice
   fromAccount.balance.isub(new BN(txCost.toString(10), 10))
   await state.putAccount(caller, fromAccount)
   if (this.DEBUG) {
@@ -386,7 +386,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     caller,
     gasLimit,
     to,
-    value: BigInt(value.toString(10)),
+    value: bnToBigInt(value),
     data,
   })
   const evm = new EVM(this, txContext, block)
@@ -505,7 +505,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   state.clearOriginalStorageCache()
 
   // Generate the tx receipt
-  const gasUsed = opts.blockGasUsed ?? BigInt(block.header.gasUsed.toString(10))
+  const gasUsed = opts.blockGasUsed ?? bnToBigInt(block.header.gasUsed)
   const cumulativeGasUsed = gasUsed + results.gasUsed
   results.receipt = await generateTxReceipt.bind(this)(tx, results, cumulativeGasUsed)
 
@@ -564,7 +564,7 @@ export async function generateTxReceipt(
   cumulativeGasUsed: bigint
 ): Promise<TxReceipt> {
   const baseReceipt: BaseTxReceipt = {
-    gasUsed: toBuffer('0x' + cumulativeGasUsed.toString(16)),
+    gasUsed: bigIntToBuffer(cumulativeGasUsed),
     bitvector: txResult.bloom.bitvector,
     logs: txResult.execResult.logs ?? [],
   }

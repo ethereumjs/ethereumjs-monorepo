@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, rlp, KECCAK256_RLP, Account } from 'ethereumjs-util'
+import { Address, BN, rlp, KECCAK256_RLP, Account, bnToBigInt } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import {
@@ -456,14 +456,13 @@ tape('runBlock() -> tx types', async (t) => {
 
     st.ok(
       res.gasUsed ===
-        BigInt(
+      bnToBigInt(
           res.receipts
             .map((r) => r.gasUsed)
             .reduce(
               (prevValue: BN, currValue: Buffer) => prevValue.add(new BN(currValue)),
               new BN(0)
-            )
-            .toString(10)
+          )
         ),
       "gas used should equal transaction's total gasUsed"
     )

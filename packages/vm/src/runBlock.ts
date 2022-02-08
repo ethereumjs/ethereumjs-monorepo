@@ -1,6 +1,6 @@
 import { debug as createDebugLogger } from 'debug'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { Account, Address, BN, intToBuffer, rlp } from 'ethereumjs-util'
+import { Account, Address, BN, bnToBigInt, intToBuffer, rlp } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import VM from './index'
@@ -215,7 +215,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
       const msg = _errorMsg('invalid bloom', this, block)
       throw new Error(msg)
     }
-    if (!(result.gasUsed === BigInt(block.header.gasUsed.toString(10)))) {
+    if (!(result.gasUsed === bnToBigInt(block.header.gasUsed))) {
       if (this.DEBUG) {
         debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
       }
@@ -322,13 +322,13 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     let maxGasLimit
     if (this._common.isActivatedEIP(1559)) {
       maxGasLimit =
-        BigInt(block.header.gasLimit.toString(10)) *
+        bnToBigInt(block.header.gasLimit) *
         BigInt(this._common.param('gasConfig', 'elasticityMultiplier'))
     } else {
       maxGasLimit = block.header.gasLimit
     }
 
-    const gasLimitIsHigherThanBlock = maxGasLimit < BigInt(tx.gasLimit.toString(10)) + gasUsed
+    const gasLimitIsHigherThanBlock = maxGasLimit < bnToBigInt(tx.gasLimit) + gasUsed
     if (gasLimitIsHigherThanBlock) {
       const msg = _errorMsg('tx has a higher gas limit than the block', this, block)
       throw new Error(msg)
@@ -350,7 +350,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     }
 
     // Add to total block gas usage
-    gasUsed = gasUsed + BigInt(txRes.gasUsed.toString(10))
+    gasUsed += txRes.gasUsed
     if (this.DEBUG) {
       debug(`Add tx gas used (${txRes.gasUsed}) to total block gas usage (-> ${gasUsed})`)
     }
@@ -387,8 +387,8 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
   // Reward ommers
   for (const ommer of ommers) {
     const reward = calculateOmmerReward(
-      BigInt(ommer.number.toString(10)),
-      BigInt(block.header.number.toString(10)),
+      bnToBigInt(ommer.number),
+      bnToBigInt(block.header.number),
       minerReward
     )
     const account = await rewardAccount(state, ommer.coinbase, reward)

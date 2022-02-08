@@ -1,7 +1,12 @@
-import { setLengthRight, toBuffer, setLengthLeft } from 'ethereumjs-util'
+import {
+  setLengthRight,
+  toBuffer,
+  setLengthLeft,
+  bufferToBigInt,
+  bigIntToBuffer,
+} from 'ethereumjs-util'
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
-import { bufferToBigInt } from '../opcodes'
 const assert = require('assert')
 
 function multComplexity(x: bigint): bigint {
@@ -119,7 +124,7 @@ export default function (opts: PrecompileInput): ExecResult {
   if (bLen === 0n) {
     return {
       gasUsed,
-      returnValue: setLengthLeft(toBuffer('0x' + 0n.toString(16)), Number(mLen)),
+      returnValue: setLengthLeft(bigIntToBuffer(0n), Number(mLen)),
     }
   }
 
@@ -154,6 +159,6 @@ export default function (opts: PrecompileInput): ExecResult {
 
   return {
     gasUsed,
-    returnValue: setLengthLeft(toBuffer('0x' + R.toString(16)), Number(mLen)),
+    returnValue: setLengthLeft(bigIntToBuffer(R), Number(mLen)),
   }
 }

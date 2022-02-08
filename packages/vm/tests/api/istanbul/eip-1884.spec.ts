@@ -1,10 +1,9 @@
 import tape from 'tape'
-import { Address, BN } from 'ethereumjs-util'
+import { Address, BN, bufferToBigInt } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import { ERROR } from '../../../src/exceptions'
 import { createAccount } from '../utils'
-import { bufferToBigInt } from '../../../src/evm/opcodes'
 
 const testCases = [
   { chain: Chain.Mainnet, hardfork: Hardfork.Istanbul, selfbalance: '0xf1' },

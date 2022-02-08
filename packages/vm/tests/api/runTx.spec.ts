@@ -1,11 +1,18 @@
 import tape from 'tape'
-import { Account, Address, BN, MAX_INTEGER, toBuffer } from 'ethereumjs-util'
+import {
+  Account,
+  Address,
+  BN,
+  MAX_INTEGER,
+  toBuffer,
+  bufferToBigInt,
+  bnToBigInt,
+} from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction, TransactionFactory, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import VM from '../../src'
 import { createAccount, getTransaction } from './utils'
-import { bufferToBigInt } from '../../src/evm/opcodes'
 
 const TRANSACTION_TYPES = [
   {
@@ -147,14 +154,14 @@ tape('runTx() -> successful API parameter usage', async (t) => {
         const baseFee = block.header.baseFeePerGas!
         const inclusionFeePerGas =
           tx instanceof FeeMarketEIP1559Transaction
-            ? BigInt(BN.min(tx.maxPriorityFeePerGas, tx.maxFeePerGas.sub(baseFee)).toString(10))
-            : BigInt(tx.gasPrice.sub(baseFee).toString(10))
+            ? bnToBigInt(BN.min(tx.maxPriorityFeePerGas, tx.maxFeePerGas.sub(baseFee)))
+            : bnToBigInt(tx.gasPrice.sub(baseFee))
         const expectedCoinbaseBalance = common.isActivatedEIP(1559)
           ? result.gasUsed * inclusionFeePerGas
           : result.amountSpent
 
         t.ok(
-          BigInt(coinbaseAccount.balance.toString(10)) === expectedCoinbaseBalance,
+          bnToBigInt(coinbaseAccount.balance) === expectedCoinbaseBalance,
           `should use custom block (${txType.name})`
         )
 
@@ -476,13 +483,13 @@ tape('runTx() -> API return values', async (t) => {
 
       t.deepEqual(
         res.gasUsed,
-        BigInt(tx.getBaseFee().toString(10)),
+        bnToBigInt(tx.getBaseFee()),
         `runTx result -> gasUsed -> tx.getBaseFee() (${txType.name})`
       )
       if (tx instanceof FeeMarketEIP1559Transaction) {
         const baseFee = new BN(7)
         const inclusionFeePerGas = BN.min(tx.maxPriorityFeePerGas, tx.maxFeePerGas.sub(baseFee))
-        const gasPrice = BigInt(inclusionFeePerGas.toString(10)) + BigInt(baseFee.toString(10))
+        const gasPrice = bnToBigInt(inclusionFeePerGas) + bnToBigInt(baseFee)
         t.deepEquals(
           res.amountSpent,
           res.gasUsed * gasPrice,
@@ -491,7 +498,7 @@ tape('runTx() -> API return values', async (t) => {
       } else {
         t.deepEqual(
           res.amountSpent,
-          res.gasUsed * BigInt((<Transaction>tx).gasPrice.toString(10)),
+          res.gasUsed * bnToBigInt((<Transaction>tx).gasPrice),
           `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`
         )
       }

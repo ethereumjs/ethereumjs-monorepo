@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Account, Address } from 'ethereumjs-util'
+import { Account, Address, bigIntToHex, intToHex } from 'ethereumjs-util'
 import { StateManager } from '../state/index'
 import { ERROR, VmError } from '../exceptions'
 import Memory from './memory'
@@ -218,7 +218,7 @@ export default class Interpreter {
       // Create opTrace for debug functionality
       let hexStack = []
       hexStack = eventObj.stack.map((item: any) => {
-        return '0x' + BigInt(item).toString(16)
+        return bigIntToHex(BigInt(item))
       })
 
       const name = eventObj.opcode.name
@@ -226,8 +226,8 @@ export default class Interpreter {
       const opTrace = {
         pc: eventObj.pc,
         op: name,
-        gas: '0x' + eventObj.gasLeft.toString(16),
-        gasCost: '0x' + eventObj.opcode.fee.toString(16),
+        gas: bigIntToHex(eventObj.gasLeft),
+        gasCost: intToHex(eventObj.opcode.fee),
         stack: hexStack,
         depth: eventObj.depth,
       }

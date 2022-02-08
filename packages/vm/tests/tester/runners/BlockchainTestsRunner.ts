@@ -3,10 +3,9 @@ import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { addHexPrefix, toBuffer, rlp, stripHexPrefix } from 'ethereumjs-util'
+import { addHexPrefix, toBuffer, rlp, stripHexPrefix, bufferToBigInt } from 'ethereumjs-util'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { setupPreConditions, verifyPostConditions } from '../../util'
-import { bufferToBigInt } from '../../../src/evm/opcodes'
 
 const level = require('level')
 const levelMem = require('level-mem')

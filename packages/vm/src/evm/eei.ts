@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Account, Address, BN, MAX_UINT64 } from 'ethereumjs-util'
+import { Account, Address, BN, MAX_UINT64, bufferToBigInt, bnToBigInt } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
@@ -8,7 +8,7 @@ import { VmError, ERROR } from '../exceptions'
 import Message from './message'
 import EVM, { EVMResult } from './evm'
 import { Log } from './types'
-import { addressToBuffer, bufferToBigInt } from './opcodes'
+import { addressToBuffer } from './opcodes'
 
 const debugGas = createDebugLogger('vm:eei:gas')
 
@@ -149,19 +149,19 @@ export default class EEI {
   async getExternalBalance(address: Address): Promise<bigint> {
     // shortcut if current account
     if (address.equals(this._env.address)) {
-      return BigInt(this._env.contract.balance.toString(10))
+      return bnToBigInt(this._env.contract.balance)
     }
 
     // otherwise load account then return balance
     const account = await this._state.getAccount(address)
-    return BigInt(account.balance.toString(10))
+    return bnToBigInt(account.balance)
   }
 
   /**
    * Returns balance of self.
    */
   getSelfBalance(): bigint {
-    return BigInt(this._env.contract.balance.toString(10))
+    return bnToBigInt(this._env.contract.balance)
   }
 
   /**
@@ -274,7 +274,7 @@ export default class EEI {
    * Returns the block’s number.
    */
   getBlockNumber(): bigint {
-    return BigInt(this._env.block.header.number.toString(10))
+    return bnToBigInt(this._env.block.header.number)
   }
 
   /**
@@ -300,21 +300,21 @@ export default class EEI {
    * Returns the block's timestamp.
    */
   getBlockTimestamp(): bigint {
-    return BigInt(this._env.block.header.timestamp.toString(10))
+    return bnToBigInt(this._env.block.header.timestamp)
   }
 
   /**
    * Returns the block's difficulty.
    */
   getBlockDifficulty(): bigint {
-    return BigInt(this._env.block.header.difficulty.toString(10))
+    return bnToBigInt(this._env.block.header.difficulty)
   }
 
   /**
    * Returns the block's gas limit.
    */
   getBlockGasLimit(): bigint {
-    return BigInt(this._env.block.header.gasLimit.toString(10))
+    return bnToBigInt(this._env.block.header.gasLimit)
   }
 
   /**
@@ -322,7 +322,7 @@ export default class EEI {
    * CHAINID opcode proposed in [EIP-1344](https://eips.ethereum.org/EIPS/eip-1344).
    */
   getChainId(): bigint {
-    return BigInt(this._common.chainIdBN().toString(10))
+    return bnToBigInt(this._common.chainIdBN())
   }
 
   /**
@@ -334,7 +334,7 @@ export default class EEI {
       // Sanity check
       throw new Error('Block has no Base Fee')
     }
-    return BigInt(baseFee.toString(10))
+    return bnToBigInt(baseFee)
   }
 
   /**
@@ -535,7 +535,7 @@ export default class EEI {
     // Check if account has enough ether and max depth not exceeded
     if (
       this._env.depth >= this._common.param('vm', 'stackLimit') ||
-      (msg.delegatecall !== true && BigInt(this._env.contract.balance.toString(10)) < msg.value)
+      (msg.delegatecall !== true && bnToBigInt(this._env.contract.balance) < msg.value)
     ) {
       return 0n
     }
@@ -594,7 +594,7 @@ export default class EEI {
     // Check if account has enough ether and max depth not exceeded
     if (
       this._env.depth >= this._common.param('vm', 'stackLimit') ||
-      (msg.delegatecall !== true && BigInt(this._env.contract.balance.toString(10)) < msg.value)
+      (msg.delegatecall !== true && bnToBigInt(this._env.contract.balance) < msg.value)
     ) {
       return 0n
     }

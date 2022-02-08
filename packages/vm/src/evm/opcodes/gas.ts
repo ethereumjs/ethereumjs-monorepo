@@ -7,7 +7,7 @@ import {
   trap,
   updateSstoreGas,
 } from '.'
-import { Address, setLengthLeft, toBuffer } from 'ethereumjs-util'
+import { Address, bigIntToBuffer, setLengthLeft } from 'ethereumjs-util'
 import { ERROR } from '../../exceptions'
 import { RunState } from '../interpreter'
 import Common from '@ethereumjs/common'
@@ -173,7 +173,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
     0x54,
     async function (runState, gas, common): Promise<bigint> {
       const key = runState.stack.peek()[0]
-      const keyBuf = setLengthLeft(toBuffer('0x' + key.toString(16)), 32)
+      const keyBuf = setLengthLeft(bigIntToBuffer(key), 32)
 
       if (common.isActivatedEIP(2929)) {
         gas += accessStorageEIP2929(runState, keyBuf, false, common)
@@ -190,13 +190,13 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
       }
       const [key, val] = runState.stack.peek(2)
 
-      const keyBuf = setLengthLeft(toBuffer('0x' + key.toString(16)), 32)
+      const keyBuf = setLengthLeft(bigIntToBuffer(key), 32)
       // NOTE: this should be the shortest representation
       let value
       if (val === 0n) {
         value = Buffer.from([])
       } else {
-        value = toBuffer('0x' + val.toString(16))
+        value = bigIntToBuffer(val)
       }
 
       // TODO: Replace getContractStorage with EEI method
