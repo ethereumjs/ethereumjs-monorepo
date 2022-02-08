@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { Account, Address, BN, MAX_INTEGER } from 'ethereumjs-util'
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import {
   Transaction,
@@ -566,8 +566,11 @@ tape('runTx() -> consensus bugs', async (t) => {
   })
 
   t.test('validate REVERT opcode does not consume all gas', async (t) => {
-    // This test simulates the Kintsugi transaction: https://explorer.kintsugi.themerge.dev/tx/0x1fb8a5ac000196a54dfe63dfda60542340b790a874b1d319b0aa834ef2ea1425
-    // This tests that REVERTed contract creation does not try to store code
+    /* This test simulates the Kintsugi devnet transaction: 0x1fb8a5ac000196a54dfe63dfda60542340b790a874b1d319b0aa834ef2ea1425.
+       This transaction will try to create a contract, but it will REVERT.
+       REVERT puts an "error message" in the RETURNDATA buffer. This buffer would contain the contract code to deploy if the message would not fail.
+       In this case, REVERT puts a message in the RETURNDATA buffer which is larger than the `maxCodeSize`
+       This should not consume all gas: it should only consume the gas spent by the attempt to create the contract */
     const pkey = Buffer.alloc(32, 1)
     const txData: FeeMarketEIP1559TxData = {
       gasLimit: 100000,
@@ -593,15 +596,10 @@ tape('runTx() -> consensus bugs', async (t) => {
 
     const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common }).sign(pkey)
 
-    const block = new Block(
-      BlockHeader.fromHeaderData({ baseFeePerGas: 0x0c }, { common }),
-      [],
-      [],
-      { common }
-    )
+    const block = Block.fromBlockData({ header: { baseFeePerGas: 0x0c } }, { common })
     const result = await vm.runTx({ tx, block })
 
-    t.equal(result.gasUsed.toNumber(), 66382)
+    t.ok(result.gasUsed.eqn(66382), 'should use the right amount of gas and not consume all')
     t.end()
   })
 })
