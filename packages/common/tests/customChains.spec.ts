@@ -13,9 +13,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     function (st: tape.Test) {
       const c = new Common({ chain: testnet, hardfork: Hardfork.Byzantium })
       st.equal(c.chainName(), 'testnet', 'should initialize with chain name')
-      st.equal(c.chainId(), 12345, 'should return correct chain Id')
       st.ok(c.chainIdBN().eqn(12345), 'should return correct chain Id')
-      st.equal(c.networkId(), 12345, 'should return correct network Id')
       st.ok(c.networkIdBN().eqn(12345), 'should return correct network Id')
       st.equal(
         c.genesis().hash,
@@ -54,9 +52,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
 
     // From custom chain params
     st.equal(customChainCommon.chainName(), customChainParams.name)
-    st.equal(customChainCommon.chainId(), customChainParams.chainId)
     st.ok(customChainCommon.chainIdBN().eqn(customChainParams.chainId))
-    st.equal(customChainCommon.networkId(), customChainParams.networkId)
     st.ok(customChainCommon.networkIdBN().eqn(customChainParams.networkId))
 
     // Fallback params from mainnet
@@ -118,34 +114,6 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     st.end()
   })
 
-  t.test('forCustomChain() (deprecated) -> base functionality', function (st: tape.Test) {
-    const mainnetCommon = new Common({ chain: Chain.Mainnet })
-
-    const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
-    const customChainCommon = Common.forCustomChain(
-      'mainnet',
-      customChainParams,
-      Hardfork.Byzantium
-    )
-
-    // From custom chain params
-    st.equal(customChainCommon.chainName(), customChainParams.name)
-    st.equal(customChainCommon.chainId(), customChainParams.chainId)
-    st.ok(customChainCommon.chainIdBN().eqn(customChainParams.chainId))
-    st.equal(customChainCommon.networkId(), customChainParams.networkId)
-    st.ok(customChainCommon.networkIdBN().eqn(customChainParams.networkId))
-
-    // Fallback params from mainnet
-    st.equal(customChainCommon.genesis(), mainnetCommon.genesis())
-    st.equal(customChainCommon.bootstrapNodes(), mainnetCommon.bootstrapNodes())
-    st.equal(customChainCommon.hardforks(), mainnetCommon.hardforks())
-
-    // Set only to this Common
-    st.equal(customChainCommon.hardfork(), 'byzantium')
-
-    st.end()
-  })
-
   t.test('customChains parameter: initialization exception', (st) => {
     try {
       new Common({ chain: testnet, customChains: [testnet] })
@@ -169,11 +137,11 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
       customChains: [testnet],
     })
     st.equal(c.chainName(), 'mainnet', 'customChains, chain set to supported chain')
-    st.equal(c.hardforkBlock(), 4370000, 'customChains, chain set to supported chain')
+    st.ok(c.hardforkBlockBN()!.eqn(4370000), 'customChains, chain set to supported chain')
 
     c.setChain('testnet')
     st.equal(c.chainName(), 'testnet', 'customChains, chain switched to custom chain')
-    st.equal(c.hardforkBlock(), 4, 'customChains, chain switched to custom chain')
+    st.ok(c.hardforkBlockBN()!.eqn(4), 'customChains, chain switched to custom chain')
 
     c = new Common({
       chain: 'testnet',
@@ -181,7 +149,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
       customChains: [testnet],
     })
     st.equal(c.chainName(), 'testnet', 'customChains, chain initialized with custom chain')
-    st.equal(c.hardforkBlock(), 4, 'customChains, chain initialized with custom chain')
+    st.ok(c.hardforkBlockBN()!.eqn(4), 'customChains, chain initialized with custom chain')
     st.deepEqual(
       c.genesisState(),
       {},
@@ -195,7 +163,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
       customChains,
     })
     st.equal(c.chainName(), 'testnet2', 'customChains, chain initialized with custom chain')
-    st.equal(c.hardforkBlock(), 10, 'customChains, chain initialized with custom chain')
+    st.ok(c.hardforkBlockBN()!.eqn(10), 'customChains, chain initialized with custom chain')
 
     c.setChain('testnet')
     st.equal(c.chainName(), 'testnet', 'customChains, should allow to switch custom chain')
