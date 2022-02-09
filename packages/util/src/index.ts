@@ -14,6 +14,11 @@ export * from './account'
 export * from './address'
 
 /**
+ * Errors
+ */
+export * from './errors'
+
+/**
  * Hash functions
  */
 export * from './hash'

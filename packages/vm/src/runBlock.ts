@@ -1,6 +1,6 @@
 import { debug as createDebugLogger } from 'debug'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { Account, Address, BN, intToBuffer, rlp } from 'ethereumjs-util'
+import { Account, Address, BN, errorLog, ErrorCode, intToBuffer, rlp } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import VM from './index'
@@ -17,7 +17,6 @@ import * as DAOConfig from './config/dao_fork_accounts_config.json'
 // deprecated and may be removed soon, please
 // update your imports to the new types file.
 import { PreByzantiumTxReceipt, PostByzantiumTxReceipt, EIP2930Receipt } from './types'
-import { ErrorCode, errorLog } from './errors'
 export { PreByzantiumTxReceipt, PostByzantiumTxReceipt, EIP2930Receipt }
 
 const debug = createDebugLogger('vm:block')
