@@ -1,5 +1,8 @@
 import Common from '@ethereumjs/common'
+import { CustomOpcode } from '../types'
 import { getFullname } from './util'
+import { dynamicGasHandlers } from './gas'
+import { handlers } from './functions'
 
 export class Opcode {
   readonly code: number
@@ -299,7 +302,7 @@ function createOpcodes(opcodes: OpcodeEntryFee): OpcodeList {
  * @param common {Common} Ethereumjs Common metadata object.
  * @returns {OpcodeList} Opcodes dictionary object.
  */
-export function getOpcodesForHF(common: Common): OpcodeList {
+export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]): OpcodeList {
   let opcodeBuilder: any = { ...opcodes }
 
   for (let fork = 0; fork < hardforkOpcodes.length; fork++) {
@@ -320,6 +323,37 @@ export function getOpcodesForHF(common: Common): OpcodeList {
       throw new Error(`base fee not defined for: ${opcodeBuilder[key].name}`)
     }
     opcodeBuilder[key].fee = common.param('gasPrices', opcodeBuilder[key].name.toLowerCase())
+  }
+
+  if (customOpcodes) {
+    for (const _code of customOpcodes) {
+      const code = <any>_code
+      if (code.logicFunction === undefined) {
+        delete opcodeBuilder[code.opcode]
+        continue
+      }
+
+      // Sanity checks
+      if (code.opcodeName === undefined || code.baseFee === undefined) {
+        throw new Error(
+          'Custom opcode does not have the required values: opcodeName and baseFee are required'
+        )
+      }
+      const entry = {
+        [code.opcode]: {
+          name: code.opcodeName,
+          isAsync: true,
+          dynamicGas: code.gasFunction !== undefined,
+          fee: code.baseFee,
+        },
+      }
+      opcodeBuilder = { ...opcodeBuilder, ...entry }
+      if (code.gasFunction) {
+        dynamicGasHandlers.set(code.opcode, code.gasFunction)
+      }
+      // logicFunction is never undefined
+      handlers.set(code.opcode, code.logicFunction)
+    }
   }
 
   return createOpcodes(opcodeBuilder)

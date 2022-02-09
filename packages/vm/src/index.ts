@@ -14,6 +14,7 @@ import { precompiles } from './evm/precompiles'
 import runBlockchain from './runBlockchain'
 const AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
+import { CustomOpcode } from './evm/types'
 
 // very ugly way to detect if we are running in a browser
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
@@ -117,6 +118,12 @@ export interface VMOpts {
    * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
    */
   hardforkByTD?: BNLike
+
+  /**
+   * Override or add custom opcodes to the VM instruction set
+   */
+
+  customOpcodes?: CustomOpcode[]
 }
 
 /**
@@ -143,6 +150,7 @@ export default class VM extends AsyncEventEmitter {
   protected _opcodes: OpcodeList
   protected readonly _hardforkByBlockNumber: boolean
   protected readonly _hardforkByTD?: BNLike
+  protected readonly _customOpcodes?: CustomOpcode[]
 
   /**
    * Cached emit() function, not for public usage
@@ -186,6 +194,7 @@ export default class VM extends AsyncEventEmitter {
     super()
 
     this._opts = opts
+    this._customOpcodes = opts.customOpcodes
 
     // Throw on chain or hardfork options removed in latest major release
     // to prevent implicit chain setup on a wrong chain
@@ -226,12 +235,12 @@ export default class VM extends AsyncEventEmitter {
       })
     }
     this._common.on('hardforkChanged', () => {
-      this._opcodes = getOpcodesForHF(this._common)
+      this._opcodes = getOpcodesForHF(this._common, this._customOpcodes)
     })
 
     // Set list of opcodes based on HF
     // TODO: make this EIP-friendly
-    this._opcodes = getOpcodesForHF(this._common)
+    this._opcodes = getOpcodesForHF(this._common, this._customOpcodes)
 
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
@@ -398,7 +407,7 @@ export default class VM extends AsyncEventEmitter {
    * available for VM execution
    */
   getActiveOpcodes(): OpcodeList {
-    return getOpcodesForHF(this._common)
+    return getOpcodesForHF(this._common, this._customOpcodes)
   }
 
   /**
