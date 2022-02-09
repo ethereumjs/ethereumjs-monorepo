@@ -121,6 +121,22 @@ export interface VMOpts {
 
   /**
    * Override or add custom opcodes to the VM instruction set
+   * To delete an opcode, add an entry of format `{opcode: number}`. This will delete that opcode from the VM.
+   * If this opcode is then used in the VM, the `INVALID` opcode would instead be used.
+   * To add an opcode, add an entry of the following format:
+   * {
+   *    // The opcode number which will invoke the custom opcode logic
+   *    opcode: number
+   *    // The name of the opcode (as seen in the `step` event)
+   *    opcodeName: string
+   *    // The base fee of the opcode
+   *    baseFee: number
+   *    // If the opcode charges dynamic gas, add this here. To charge the gas, use the `i` methods of the BN, to update the charged gas
+   *    gasFunction?: function(runState: RunState, gas: BN, common: Common)
+   *    // The logic of the opcode which holds the logic of changing the current state
+   *    logicFunction: function(runState: RunState)
+   * }
+   * Note: gasFunction and logicFunction can both be async or synchronous functions
    */
 
   customOpcodes?: CustomOpcode[]
