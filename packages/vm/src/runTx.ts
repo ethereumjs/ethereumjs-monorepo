@@ -53,7 +53,7 @@ export interface RunTxOpts {
 
   /**
    * If true, skips the validation of the tx's gas limit
-   * agains the block's gas limit.
+   * against the block's gas limit.
    */
   skipBlockGasLimitValidation?: boolean
 
@@ -395,22 +395,19 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       `Running tx=0x${
         tx.isSigned() ? tx.hash().toString('hex') : 'unsigned'
       } with caller=${caller} gasLimit=${gasLimit} to=${
-        to ? to.toString() : ''
+        to?.toString() ?? 'none'
       } value=${value} data=0x${short(data)}`
     )
   }
 
   const results = (await evm.executeMessage(message)) as RunTxResult
   if (this.DEBUG) {
+    const { gasUsed, exceptionError, returnValue, gasRefund } = results.execResult
     debug('-'.repeat(100))
     debug(
-      `Received tx results gasUsed=${results.gasUsed} execResult: [ gasUsed=${
-        results.gasUsed
-      } exceptionError=${
-        results.execResult.exceptionError ? results.execResult.exceptionError.error : ''
-      } returnValue=${short(results.execResult.returnValue)} gasRefund=${
-        results.execResult.gasRefund
-      } ]`
+      `Received tx execResult: [ gasUsed=${gasUsed} exceptionError=${
+        exceptionError ? `'${exceptionError.error}'` : 'none'
+      } returnValue=0x${short(returnValue)} gasRefund=${gasRefund ?? 0} ]`
     )
   }
 
@@ -423,7 +420,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(`Generated tx bloom with logs=${results.execResult.logs?.length}`)
   }
 
-  // Caculate the total gas used
+  // Calculate the total gas used
   results.gasUsed.iadd(txBaseFee)
   if (this.DEBUG) {
     debugGas(`tx add baseFee ${txBaseFee} to gasUsed (-> ${results.gasUsed})`)
@@ -461,7 +458,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Update miner's balance
   let miner
   if (this._common.consensusType() === ConsensusType.ProofOfAuthority) {
-    // Backwards-compatibilty check
+    // Backwards-compatibility check
     // TODO: can be removed along VM v6 release
     if ('cliqueSigner' in block.header) {
       miner = block.header.cliqueSigner()
