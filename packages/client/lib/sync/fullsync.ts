@@ -207,7 +207,7 @@ export class FullSynchronizer extends Synchronizer {
     )
     this.txPool.removeNewBlockTxs(blocks)
 
-    if (this.running || this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+    if (this.running) {
       await execution.run()
       this.checkTxPoolState()
     }
