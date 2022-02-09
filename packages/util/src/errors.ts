@@ -25,6 +25,7 @@ interface InvalidBlockHeaderError extends GeneralError<ErrorCode.INVALID_BLOCK_H
     | 'nonce'
     | 'baseFeePerGas'
 }
+
 interface UnknownError extends GeneralError<ErrorCode.UNKNOWN_ERROR> {
   [key: string]: any
 }
@@ -36,6 +37,24 @@ export type CodedGeneralError<T> = T extends ErrorCode.INVALID_BLOCK_HEADER
   ? UnknownError
   : never
 
+function isError<K extends ErrorCode, T extends CodedGeneralError<K>>(
+  error: GeneralError,
+  code: K
+): error is T {
+  if (error && (<GeneralError>error).code === code) {
+    return true
+  }
+  return false
+}
+
+function isInvalidBlockHeaderError(error: GeneralError): error is InvalidBlockHeaderError {
+  return isError(error, ErrorCode.INVALID_BLOCK_HEADER)
+}
+
+function isUnknownError(error: GeneralError): error is UnknownError {
+  return isError(error, ErrorCode.UNKNOWN_ERROR)
+}
+
 export class ErrorLogger {
   static errors = ErrorCode
 
@@ -43,13 +62,13 @@ export class ErrorLogger {
     let { message } = codedError
     const messageDetails: Array<string> = []
 
-    if (isInvalidBlockHeaderError(codedError)) {
+    if (isInvalidBlockHeaderError(codedError) && codedError.param) {
       messageDetails.push(`Invalid param=${codedError.param}`)
     }
 
     if (isUnknownError(codedError)) {
       Object.keys(codedError)
-        .filter((key) => key !== 'message' && key !== 'code')
+        .filter((key) => ['message', 'code', 'stack'].includes(key))
         .forEach((key) => {
           const value = codedError[key]
           try {
@@ -82,28 +101,10 @@ export class ErrorLogger {
   throwError<T extends ErrorCode>(code?: T, params?: Omit<CodedGeneralError<T>, 'code'>): never {
     throw this.makeError({
       code: code ?? ErrorCode.UNKNOWN_ERROR,
-      message: params?.message ?? '',
+      message: params?.message,
       ...params,
     } as CodedGeneralError<T>)
   }
 }
 
 export const errorLog = new ErrorLogger()
-
-function isError<K extends ErrorCode, T extends CodedGeneralError<K>>(
-  error: GeneralError,
-  code: K
-): error is T {
-  if (error && (<GeneralError>error).code === code) {
-    return true
-  }
-  return false
-}
-
-function isInvalidBlockHeaderError(error: GeneralError): error is InvalidBlockHeaderError {
-  return isError(error, ErrorCode.INVALID_BLOCK_HEADER)
-}
-
-function isUnknownError(error: GeneralError): error is UnknownError {
-  return isError(error, ErrorCode.UNKNOWN_ERROR)
-}
