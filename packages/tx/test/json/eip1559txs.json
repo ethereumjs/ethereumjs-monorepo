@@ -30,7 +30,7 @@
       "gasLimit": "0x02625a00",
       "maxPriorityFeePerGas": "0x01",
       "maxFeePerGas": "0x01",
-      "nonce": "0x00",
+      "nonce": "0x",
       "to": "0xcccccccccccccccccccccccccccccccccccccccc",
       "value": "0x0186a0",
       "v": "0x01",

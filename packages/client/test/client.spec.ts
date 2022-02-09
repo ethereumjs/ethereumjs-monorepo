@@ -4,7 +4,7 @@ import { Config } from '../lib/config'
 import { PeerPool } from '../lib/net/peerpool'
 
 tape('[EthereumClient]', async (t) => {
-  const config = new Config({ transports: [], loglevel: 'error' })
+  const config = new Config({ transports: [] })
   class FullEthereumService {
     open() {}
     start() {}
@@ -38,7 +38,7 @@ tape('[EthereumClient]', async (t) => {
   const { default: EthereumClient } = await import('../lib/client')
 
   t.test('should initialize correctly', (t) => {
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const client = new EthereumClient({ config })
     t.ok(client.services[0] instanceof FullEthereumService, 'added service')
     t.end()
@@ -65,7 +65,6 @@ tape('[EthereumClient]', async (t) => {
     await client.stop()
     t.notOk(client.started, 'stopped')
     t.equals(await client.stop(), false, 'already stopped')
-    t.end()
   })
 
   t.test('should reset td', (t) => {

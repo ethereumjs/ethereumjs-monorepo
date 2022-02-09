@@ -11,7 +11,7 @@ const txFixturesEip155: VitaliksTestsDataEntry[] = require('./json/ttTransaction
 tape('[Transaction]', function (t) {
   const transactions: Transaction[] = []
 
-  t.test('cannot input decimal values', (st) => {
+  t.test('cannot input decimal or negative values', (st) => {
     const values = ['gasPrice', 'gasLimit', 'nonce', 'value', 'v', 'r', 's']
     const cases = [
       10.1,
@@ -19,6 +19,8 @@ tape('[Transaction]', function (t) {
       '0xaa.1',
       -10.1,
       -1,
+      new BN(-10),
+      '-100',
       '-10.1',
       '-0xaa',
       Infinity,
@@ -152,6 +154,9 @@ tape('[Transaction]', function (t) {
     tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer))
     st.equals(tx.getDataFee().toNumber(), 1716)
 
+    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), { freeze: false })
+    st.equals(tx.getDataFee().toNumber(), 1716)
+
     st.end()
   })
 
@@ -165,6 +170,17 @@ tape('[Transaction]', function (t) {
     })
     st.equals(tx.getDataFee().toNumber(), 1716)
 
+    st.end()
+  })
+
+  t.test('getDataFee() -> should invalidate cached value on hardfork change', function (st) {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+    const tx = Transaction.fromValuesArray(txFixtures[0].raw.map(toBuffer), {
+      common,
+    })
+    st.equals(tx.getDataFee().toNumber(), 656)
+    tx.common.setHardfork(Hardfork.Istanbul)
+    st.equals(tx.getDataFee().toNumber(), 240)
     st.end()
   })
 

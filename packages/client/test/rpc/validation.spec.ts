@@ -346,3 +346,72 @@ tape(`${prefix} values`, (t) => {
 
   t.end()
 })
+
+tape(`${prefix} optional`, (t) => {
+  // valid
+  t.ok(validatorResult(validators.optional(validators.bool)([true], 0)))
+  t.ok(validatorResult(validators.optional(validators.bool)([], 0)))
+  t.ok(validatorResult(validators.optional(validators.blockHash)([''], 0)))
+  t.ok(validatorResult(validators.optional(validators.blockHash)([], 0)))
+  t.ok(
+    validatorResult(
+      validators.optional(validators.blockHash)(
+        ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+        0
+      )
+    )
+  )
+  t.ok(
+    validatorResult(validators.optional(validators.values(['VALID', 'INVALID']))(['INVALID'], 0))
+  )
+  t.ok(validatorResult(validators.optional(validators.values(['VALID', 'INVALID']))([''], 0)))
+  t.ok(validatorResult(validators.optional(validators.values(['VALID', 'INVALID']))([], 0)))
+
+  // invalid
+  t.notOk(validatorResult(validators.optional(validators.bool)(['hey'], 0)))
+  t.notOk(validatorResult(validators.optional(validators.blockHash)(['0x0'], 0)))
+  t.notOk(
+    validatorResult(validators.optional(validators.values(['VALID', 'INVALID']))(['ANOTHER'], 0))
+  )
+
+  t.end()
+})
+
+tape(`${prefix} either`, (t) => {
+  // valid
+  t.ok(validatorResult(validators.either(validators.bool, validators.blockHash)([true], 0)))
+  t.ok(validatorResult(validators.either(validators.bool, validators.hex)(['0xaaa'], 0)))
+  t.ok(
+    validatorResult(
+      validators.either(
+        validators.bool,
+        validators.hex,
+        validators.array(validators.hex)
+      )([['0xaaa']], 0)
+    )
+  )
+  t.ok(
+    validatorResult(
+      validators.either(validators.bool, validators.blockHash)(
+        ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+        0
+      )
+    )
+  )
+
+  // invalid
+  t.notOk(validatorResult(validators.either(validators.bool, validators.blockHash)(['0xabc'], 0)))
+  t.notOk(validatorResult(validators.either(validators.bool, validators.hex)(['abc'], 0)))
+  t.notOk(validatorResult(validators.either(validators.hex, validators.blockHash)([true], 0)))
+  t.notOk(
+    validatorResult(
+      validators.either(
+        validators.hex,
+        validators.blockHash,
+        validators.array(validators.hex)
+      )([[false]], 0)
+    )
+  )
+
+  t.end()
+})

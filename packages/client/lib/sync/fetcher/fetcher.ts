@@ -1,3 +1,4 @@
+import { debug as createDebugLogger, Debugger } from 'debug'
 import { Readable, Writable } from 'stream'
 import Heap from 'qheap'
 import { PeerPool } from '../../net/peerpool'
@@ -19,7 +20,7 @@ export interface FetcherOptions {
   /* How long to ban misbehaving peers in ms (default: 60000) */
   banTime?: number
 
-  /* Max write queue size (default: 16) */
+  /* Max write queue size (default: 4) */
   maxQueue?: number
 
   /* Retry interval in ms (default: 1000) */
@@ -40,6 +41,7 @@ export interface FetcherOptions {
  */
 export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable {
   public config: Config
+  protected debug: Debugger
 
   protected pool: PeerPool
   protected timeout: number
@@ -53,7 +55,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   protected finished: number // number of tasks which are both processed and also finished writing
   protected running: boolean
   protected reading: boolean
-  private destroyWhenDone: boolean // Destroy the fetcher once we are finished processing each task.
+  protected destroyWhenDone: boolean // Destroy the fetcher once we are finished processing each task.
 
   private _readableState?: {
     // This property is inherited from Readable. We only need `length`.
@@ -62,17 +64,18 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
 
   /**
    * Create new fetcher
-   * @param {FetcherOptions}
    */
   constructor(options: FetcherOptions) {
     super({ ...options, objectMode: true })
 
     this.config = options.config
+    this.debug = createDebugLogger('client:fetcher')
+
     this.pool = options.pool
     this.timeout = options.timeout ?? 8000
     this.interval = options.interval ?? 1000
     this.banTime = options.banTime ?? 60000
-    this.maxQueue = options.maxQueue ?? 16
+    this.maxQueue = options.maxQueue ?? 4
 
     this.in = new Heap({
       comparBefore: (
@@ -95,11 +98,11 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   }
 
   /**
-   * Request results from peer for the given job. Resolves with the raw result. If `undefined` is returned,
-   * re-queue the job.
-   * @param  job
-   * @param  peer
-   * @return {Promise}
+   * Request results from peer for the given job.
+   * Resolves with the raw result.
+   * If `undefined` is returned, re-queue the job.
+   * @param job
+   * @param peer
    */
   abstract request(
     _job?: Job<JobTask, JobResult, StorageItem>,
@@ -107,10 +110,11 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   ): Promise<JobResult | undefined>
 
   /**
-   * Process the reply for the given job. If the reply contains unexpected data, return `undefined`, this
-   * re-queues the job.
-   * @param  job fetch job
-   * @param  result result data
+   * Process the reply for the given job.
+   * If the reply contains unexpected data, return `undefined`,
+   * this re-queues the job.
+   * @param job fetch job
+   * @param result result data
    */
   abstract process(
     _job?: Job<JobTask, JobResult, StorageItem>,
@@ -120,13 +124,11 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   /**
    * Store fetch result. Resolves once store operation is complete.
    * @param result fetch result
-   * @return {Promise}
    */
   abstract store(_result: StorageItem[]): Promise<void>
 
   /**
    * Generate list of tasks to fetch
-   * @return {Object[]} tasks
    */
   tasks(): JobTask[] {
     return []
@@ -178,8 +180,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     }
     this.in.insert(job)
     if (!this.running && autoRestart) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.fetch()
+      void this.fetch()
     }
   }
 
@@ -192,17 +193,33 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
 
   /**
    * handle successful job completion
-   * @private
-   * @param  job successful job
-   * @param  result job result
+   * @param job successful job
+   * @param result job result
    */
-  success(job: Job<JobTask, JobResult, StorageItem>, result?: JobResult) {
+  private success(job: Job<JobTask, JobResult, StorageItem>, result?: JobResult) {
     if (job.state !== 'active') return
+    const jobStr = `index=${job.index} first=${(job.task as any)?.first} count=${
+      (job.task as any)?.count
+    }`
+    let reenqueue = false
+    let resultSet = ''
     if (result === undefined) {
+      resultSet = 'undefined'
+      reenqueue = true
+    }
+    if (result && (result as any).length === 0) {
+      resultSet = 'empty'
+      reenqueue = true
+    }
+    if (reenqueue) {
+      this.debug(
+        `Re-enqueuing job ${jobStr} from peer id=${job.peer?.id?.substr(
+          0,
+          8
+        )} (${resultSet} result set returned).`
+      )
       this.enqueue(job)
-      // TODO: should this promise actually float?
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.wait().then(() => {
+      void this.wait().then(() => {
         job.peer!.idle = true
       })
     } else {
@@ -212,6 +229,12 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         this.out.insert(job)
         this.dequeue()
       } else {
+        this.debug(
+          `Re-enqueuing job ${jobStr} from peer id=${job.peer?.id?.substr(
+            0,
+            8
+          )} (reply contains unexpected data).`
+        )
         this.enqueue(job)
       }
     }
@@ -219,12 +242,11 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   }
 
   /**
-   * handle failed job completion
-   * @private
-   * @param  job failed job
-   * @param  [error] error
+   * Handle failed job completion
+   * @param job failed job
+   * @param error error
    */
-  failure(job: Job<JobTask, JobResult, StorageItem>, error?: Error) {
+  private failure(job: Job<JobTask, JobResult, StorageItem>, error?: Error) {
     if (job.state !== 'active') return
     job.peer!.idle = true
     this.pool.ban(job.peer!, this.banTime)
@@ -240,12 +262,20 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   next() {
     const job = this.in.peek()
-    if (
-      !job ||
-      this._readableState!.length > this.maxQueue ||
-      job.index > this.processed + this.maxQueue ||
-      this.processed === this.total
-    ) {
+
+    if (!job) {
+      this.debug(`No job found on next task, skip next job execution.`)
+      return false
+    }
+    if (this._readableState!.length > this.maxQueue) {
+      this.debug(`Readable state length exceeds max queue size, skip next job execution.`)
+      return false
+    }
+    if (job.index > this.processed + this.maxQueue) {
+      this.debug(`Job index greater than processed + max queue size, skip next job execution.`)
+    }
+    if (this.processed === this.total) {
+      this.debug(`Total number of tasks reached, skip next job execution.`)
       return false
     }
     const peer = this.peer()
@@ -262,13 +292,25 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         .catch((error: Error) => this.failure(job, error))
         .finally(() => clearTimeout(timeout))
       return job
+    } else {
+      this.debug(`No idle peer available, skip next job execution.`)
+      return false
+    }
+  }
+
+  /**
+   * Clears all outstanding tasks from the fetcher
+   */
+  clear() {
+    while (this.in.length > 0) {
+      this.in.remove()
     }
   }
 
   /**
    * Handle error
-   * @param  {Error}  error error object
-   * @param  {Object} job  task
+   * @param error error object
+   * @param job task
    */
   error(error: Error, job?: Job<JobTask, JobResult, StorageItem>) {
     if (this.running) {
@@ -285,9 +327,9 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       try {
         await this.store(result)
         this.finished++
-        this.config.events.emit(Event.SYNC_FETCHER_FETCHED, result as any)
         cb()
       } catch (error: any) {
+        this.config.logger.warn(`Error storing received block or header result: ${error}`)
         cb(error)
       }
     }
@@ -316,11 +358,11 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         this.running = false
         writer.destroy()
       })
+    this.debug(`Setup writer pipe.`)
   }
 
   /**
    * Run the fetcher. Returns a promise that resolves once all tasks are completed.
-   * @return {Promise}
    */
   async fetch() {
     if (this.running) {
@@ -328,7 +370,11 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     }
     this.write()
     this.running = true
-    this.tasks().forEach((task: JobTask) => this.enqueueTask(task))
+    const tasks = this.tasks()
+    for (const task of tasks) {
+      this.enqueueTask(task)
+    }
+    this.debug(`Enqueued num=${tasks.length} tasks`)
     while (this.running) {
       if (!this.next()) {
         if (this.finished === this.total) {
@@ -356,15 +402,14 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   expire(job: Job<JobTask, JobResult, StorageItem>) {
     job.state = 'expired'
+    const jobStr = `index=${job.index} first=${(job.task as any)?.first} count=${
+      (job.task as any)?.count
+    }`
     if (this.pool.contains(job.peer!)) {
-      this.config.logger.debug(
-        `Task timed out for peer (banning) ${JSON.stringify(job.task)} ${job.peer}`
-      )
+      this.debug(`Task timed out for peer (banning) ${jobStr} ${job.peer}`)
       this.pool.ban(job.peer!, this.banTime)
     } else {
-      this.config.logger.debug(
-        `Peer disconnected while performing task ${JSON.stringify(job.task)} ${job.peer}`
-      )
+      this.debug(`Peer disconnected while performing task ${jobStr} ${job.peer}`)
     }
     this.enqueue(job)
   }

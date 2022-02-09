@@ -15,7 +15,7 @@ The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](
 
 Here are some use cases:
 
-- Sync the main Ethereum networks (`mainnet`, `goerli`, `rinkeby`,...)
+- Sync the main Ethereum networks (`mainnet`, `goerli`, `rinkeby`, `sepolia`...)
 - Set up your own local development networks (PoA Clique or PoW with CPU miner)
 - Run a network with your own custom [EthereumJS VM](../vm)
 - Analyze what's in the Ethereum `mainnet` [transaction pool](./lib/sync/txpool.ts)
@@ -79,6 +79,7 @@ The main supported networks are:
 - `rinkeby`
 - `ropsten`
 - `goerli`
+- `sepolia` (`v0.3.0`+)
 
 Use the CLI `--network` option to switch the network:
 

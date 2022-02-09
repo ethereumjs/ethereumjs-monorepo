@@ -2,9 +2,12 @@ import assert from 'assert'
 import { randomBytes } from 'crypto'
 import { privateKeyVerify, publicKeyConvert } from 'secp256k1'
 import createKeccakHash from 'keccak'
-import { decode } from 'rlp'
+import { rlp } from 'ethereumjs-util'
 import { ETH } from './eth'
 import { LES } from './les'
+import { debug as createDebugLogger } from 'debug'
+
+export const devp2pDebug = createDebugLogger('devp2p')
 
 export function keccak256(...buffers: Buffer[]) {
   const buffer = Buffer.concat(buffers)
@@ -131,7 +134,7 @@ export function createDeferred<T>(): Deferred<T> {
 export function unstrictDecode(value: Buffer) {
   // rlp library throws on remainder.length !== 0
   // this utility function bypasses that
-  return (decode(value, true) as any).data
+  return (rlp.decode(value, true) as any).data
 }
 
 // multiaddr 8.0.0 expects an Uint8Array with internal buffer starting at 0 offset

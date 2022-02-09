@@ -1,15 +1,14 @@
 import assert from 'assert'
 import { EventEmitter } from 'events'
-import * as rlp from 'rlp'
 import ms from 'ms'
 import snappy from 'snappyjs'
-import { debug as createDebugLogger } from 'debug'
-import { BN } from 'ethereumjs-util'
+import { debug as createDebugLogger, Debugger } from 'debug'
+import { devp2pDebug } from '../util'
+import { BN, rlp } from 'ethereumjs-util'
 import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 
-const DEBUG_BASE_NAME = 'devp2p:eth'
-const debug = createDebugLogger(DEBUG_BASE_NAME)
+const DEBUG_BASE_NAME = 'eth'
 const verbose = createDebugLogger('verbose').enabled
 
 /**
@@ -27,6 +26,7 @@ export class ETH extends EventEmitter {
   _peerStatus: ETH.StatusMsg | null
   _statusTimeoutId: NodeJS.Timeout
   _send: SendMethod
+  _debug: Debugger
 
   // Eth64
   _hardfork: string = 'chainstart'
@@ -43,7 +43,7 @@ export class ETH extends EventEmitter {
     this._version = version
     this._peer = peer
     this._send = send
-
+    this._debug = devp2pDebug.extend(DEBUG_BASE_NAME)
     this._status = null
     this._peerStatus = null
     this._statusTimeoutId = setTimeout(() => {
@@ -191,9 +191,9 @@ export class ETH extends EventEmitter {
 
     const status: any = {
       networkId: this._peerStatus[1],
-      td: Buffer.from(this._peerStatus[2]),
-      bestHash: Buffer.from(this._peerStatus[3]),
-      genesisHash: Buffer.from(this._peerStatus[4]),
+      td: Buffer.from(this._peerStatus[2] as Buffer),
+      bestHash: Buffer.from(this._peerStatus[3] as Buffer),
+      genesisHash: Buffer.from(this._peerStatus[4] as Buffer),
     }
 
     if (this._version >= 64) {
@@ -227,16 +227,18 @@ export class ETH extends EventEmitter {
   }
 
   _getStatusString(status: ETH.StatusMsg) {
-    let sStr = `[V:${buffer2int(status[0] as Buffer)}, NID:${buffer2int(
-      status[1] as Buffer
-    )}, TD:${buffer2int(status[2] as Buffer)}`
+    let sStr = `[V:${buffer2int(status[0] as Buffer)}, NID:${buffer2int(status[1] as Buffer)}, TD:${
+      status[2].length === 0 ? 0 : buffer2int(status[2] as Buffer)
+    }`
     sStr += `, BestH:${formatLogId(status[3].toString('hex'), verbose)}, GenH:${formatLogId(
       status[4].toString('hex'),
       verbose
     )}`
     if (this._version >= 64) {
       sStr += `, ForkHash: ${status[5] ? '0x' + (status[5][0] as Buffer).toString('hex') : '-'}`
-      sStr += `, ForkNext: ${status[5] ? buffer2int(status[5][1] as Buffer) : '-'}`
+      sStr += `, ForkNext: ${
+        (status[5][1] as Buffer).length > 0 ? buffer2int(status[5][1] as Buffer) : '-'
+      }`
     }
     sStr += `]`
     return sStr
@@ -340,17 +342,10 @@ export class ETH extends EventEmitter {
   }
 
   private initMsgDebuggers() {
-    const MESSAGE_NAMES = Object.values(ETH.MESSAGE_CODES).filter(
-      (value) => typeof value === 'string'
-    ) as string[]
-    for (const name of MESSAGE_NAMES) {
-      this.msgDebuggers[name] = createDebugLogger(`${DEBUG_BASE_NAME}:${name}`)
-    }
-
     // Remote Peer IP logger
     const ip = this._peer._socket.remoteAddress
     if (ip) {
-      this.msgDebuggers[ip] = createDebugLogger(`devp2p:${ip}`)
+      this._debug = devp2pDebug.extend(ip)
     }
   }
 
@@ -363,7 +358,7 @@ export class ETH extends EventEmitter {
   _addFirstPeerDebugger() {
     const ip = this._peer._socket.remoteAddress
     if (ip) {
-      this.msgDebuggers[ip] = createDebugLogger(`devp2p:FIRST_PEER`)
+      this._debug = this._debug.extend(`FIRST_PEER`)
       this._peer._addFirstPeerDebugger()
       _firstPeer = ip
     }
@@ -376,13 +371,11 @@ export class ETH extends EventEmitter {
    * @param msg Message text to debug
    */
   private debug(messageName: string, msg: string) {
-    debug(msg)
-    if (this.msgDebuggers[messageName]) {
-      this.msgDebuggers[messageName](msg)
-    }
     const ip = this._peer._socket.remoteAddress
-    if (ip && this.msgDebuggers[ip]) {
-      this.msgDebuggers[ip](msg)
+    if (ip) {
+      this._debug.extend(ip).extend(messageName)(msg)
+    } else {
+      this._debug.extend(messageName)(msg)
     }
   }
 }

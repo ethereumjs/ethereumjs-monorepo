@@ -4,11 +4,12 @@ import {
   BN,
   toBuffer,
   MAX_INTEGER,
-  TWO_POW256,
+  MAX_UINT64,
   unpadBuffer,
   ecsign,
   publicToAddress,
   BNLike,
+  bufferToHex,
 } from 'ethereumjs-util'
 import {
   TxData,
@@ -23,6 +24,10 @@ import {
 
 interface TransactionCache {
   hash: Buffer | undefined
+  dataFee?: {
+    value: BN
+    hardfork: string | Hardfork
+  }
 }
 
 /**
@@ -49,6 +54,7 @@ export abstract class BaseTransaction<TransactionObject> {
 
   protected cache: TransactionCache = {
     hash: undefined,
+    dataFee: undefined,
   }
 
   /**
@@ -95,13 +101,13 @@ export abstract class BaseTransaction<TransactionObject> {
     this.r = rB.length > 0 ? new BN(rB) : undefined
     this.s = sB.length > 0 ? new BN(sB) : undefined
 
-    this._validateCannotExceedMaxInteger({
-      nonce: this.nonce,
-      gasLimit: this.gasLimit,
-      value: this.value,
-      r: this.r,
-      s: this.s,
-    })
+    this._validateCannotExceedMaxInteger({ value: this.value, r: this.r, s: this.s })
+
+    // geth limits gasLimit to 2^64-1
+    this._validateCannotExceedMaxInteger({ gasLimit: this.gasLimit }, 64)
+
+    // EIP-2681 limits nonce to 2^64-1 (cannot equal 2^64-1)
+    this._validateCannotExceedMaxInteger({ nonce: this.nonce }, 64, true)
   }
 
   /**
@@ -185,6 +191,7 @@ export abstract class BaseTransaction<TransactionObject> {
     for (let i = 0; i < this.data.length; i++) {
       this.data[i] === 0 ? (cost += txDataZero) : (cost += txDataNonZero)
     }
+
     return new BN(cost)
   }
 
@@ -281,7 +288,8 @@ export abstract class BaseTransaction<TransactionObject> {
    */
   sign(privateKey: Buffer): TransactionObject {
     if (privateKey.length !== 32) {
-      throw new Error('Private key must be 32 bytes in length.')
+      const msg = this._errorMsg('Private key must be 32 bytes in length.')
+      throw new Error(msg)
     }
 
     // Hack for the constellation that we have got a legacy tx after spuriousDragon with a non-EIP155 conforming signature
@@ -335,7 +343,8 @@ export abstract class BaseTransaction<TransactionObject> {
       const chainIdBN = new BN(toBuffer(chainId))
       if (common) {
         if (!common.chainIdBN().eq(chainIdBN)) {
-          throw new Error('The chain ID does not match the chain ID of Common')
+          const msg = this._errorMsg('The chain ID does not match the chain ID of Common')
+          throw new Error(msg)
         }
         // Common provided, chain ID does match
         // -> Return provided Common
@@ -368,19 +377,99 @@ export abstract class BaseTransaction<TransactionObject> {
     }
   }
 
-  protected _validateCannotExceedMaxInteger(values: { [key: string]: BN | undefined }, bits = 53) {
+  /**
+   * Validates that an object with BN values cannot exceed the specified bit limit.
+   * @param values Object containing string keys and BN values
+   * @param bits Number of bits to check (64 or 256)
+   * @param cannotEqual Pass true if the number also cannot equal one less the maximum value
+   */
+  protected _validateCannotExceedMaxInteger(
+    values: { [key: string]: BN | undefined },
+    bits = 256,
+    cannotEqual = false
+  ) {
     for (const [key, value] of Object.entries(values)) {
-      if (bits === 53) {
-        if (value?.gt(MAX_INTEGER)) {
-          throw new Error(`${key} cannot exceed MAX_INTEGER, given ${value}`)
+      switch (bits) {
+        case 64:
+          if (cannotEqual) {
+            if (value?.gte(MAX_UINT64)) {
+              const msg = this._errorMsg(
+                `${key} cannot equal or exceed MAX_UINT64 (2^64-1), given ${value}`
+              )
+              throw new Error(msg)
+            }
+          } else {
+            if (value?.gt(MAX_UINT64)) {
+              const msg = this._errorMsg(`${key} cannot exceed MAX_UINT64 (2^64-1), given ${value}`)
+              throw new Error(msg)
+            }
+          }
+          break
+        case 256:
+          if (cannotEqual) {
+            if (value?.gte(MAX_INTEGER)) {
+              const msg = this._errorMsg(
+                `${key} cannot equal or exceed MAX_INTEGER (2^256-1), given ${value}`
+              )
+              throw new Error(msg)
+            }
+          } else {
+            if (value?.gt(MAX_INTEGER)) {
+              const msg = this._errorMsg(
+                `${key} cannot exceed MAX_INTEGER (2^256-1), given ${value}`
+              )
+              throw new Error(msg)
+            }
+          }
+          break
+        default: {
+          const msg = this._errorMsg('unimplemented bits value')
+          throw new Error(msg)
         }
-      } else if (bits === 256) {
-        if (value?.gte(TWO_POW256)) {
-          throw new Error(`${key} must be less than 2^256, given ${value}`)
-        }
-      } else {
-        throw new Error('unimplemented bits value')
       }
     }
+  }
+
+  /**
+   * Return a compact error string representation of the object
+   */
+  public abstract errorStr(): string
+
+  /**
+   * Internal helper function to create an annotated error message
+   *
+   * @param msg Base error message
+   * @hidden
+   */
+  protected abstract _errorMsg(msg: string): string
+
+  /**
+   * Returns the shared error postfix part for _error() method
+   * tx type implementations.
+   */
+  protected _getSharedErrorPostfix() {
+    let hash = ''
+    try {
+      hash = this.isSigned() ? bufferToHex(this.hash()) : 'not available (unsigned)'
+    } catch (e: any) {
+      hash = 'error'
+    }
+    let isSigned = ''
+    try {
+      isSigned = this.isSigned().toString()
+    } catch (e: any) {
+      hash = 'error'
+    }
+    let hf = ''
+    try {
+      hf = this.common.hardfork()
+    } catch (e: any) {
+      hf = 'error'
+    }
+
+    let postfix = `tx type=${this.type} hash=${hash} nonce=${this.nonce} value=${this.value} `
+    postfix += `signed=${isSigned} hf=${hf}`
+
+    return postfix
   }
 }

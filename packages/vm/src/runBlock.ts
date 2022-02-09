@@ -1,7 +1,6 @@
 import { debug as createDebugLogger } from 'debug'
-import { encode } from 'rlp'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { Account, Address, BN, intToBuffer } from 'ethereumjs-util'
+import { Account, Address, BN, intToBuffer, rlp } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import VM from './index'
@@ -203,8 +202,9 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
           )} expected=${block.header.receiptTrie.toString('hex')}`
         )
       }
+      const message = _errorMsg('invalid receiptTrie', this, block)
       errorLog.throwError(ErrorCode.INVALID_BLOCK_HEADER, {
-        param: 'receiptTrie',
+        message,
       })
     }
     if (!result.bloom.bitvector.equals(block.header.logsBloom)) {
@@ -215,16 +215,18 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
           )} expected=${block.header.logsBloom.toString('hex')}`
         )
       }
+      const message = _errorMsg('invalid bloom', this, block)
       errorLog.throwError(ErrorCode.INVALID_BLOCK_HEADER, {
-        param: 'bloom',
+        message,
       })
     }
     if (!result.gasUsed.eq(block.header.gasUsed)) {
       if (this.DEBUG) {
         debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
       }
+      const message = _errorMsg('invalid gasUsed', this, block)
       errorLog.throwError(ErrorCode.INVALID_BLOCK_HEADER, {
-        param: 'gasUsed',
+        message,
       })
     }
     if (!stateRoot.equals(block.header.stateRoot)) {
@@ -235,8 +237,9 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
           )} expected=${block.header.stateRoot.toString('hex')}`
         )
       }
+      const message = _errorMsg('invalid block stateRoot', this, block)
       errorLog.throwError(ErrorCode.INVALID_BLOCK_HEADER, {
-        param: 'stateRoot',
+        message,
       })
     }
   }
@@ -283,9 +286,9 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   // Validate block
   if (!opts.skipBlockValidation) {
     if (block.header.gasLimit.gte(new BN('8000000000000000', 16))) {
+      const message = _errorMsg('Invalid block with gas limit greater than (2^63 - 1)', this, block)
       errorLog.throwError(ErrorCode.INVALID_BLOCK_HEADER, {
-        message: 'Invalid block with gas limit greater than (2^63 - 1)',
-        param: 'gasLimit',
+        message,
       })
     } else {
       if (this.DEBUG) {
@@ -300,7 +303,7 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   }
   const blockResults = await applyTransactions.bind(this)(block, opts)
   // Pay ommers and miners
-  if (this._common.consensusType() === ConsensusType.ProofOfWork) {
+  if (block._common.consensusType() === ConsensusType.ProofOfWork) {
     await assignBlockRewards.bind(this)(block)
   }
   return blockResults
@@ -338,7 +341,8 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
 
     const gasLimitIsHigherThanBlock = maxGasLimit.lt(tx.gasLimit.add(gasUsed))
     if (gasLimitIsHigherThanBlock) {
-      throw new Error('tx has a higher gas limit than the block')
+      const msg = _errorMsg('tx has a higher gas limit than the block', this, block)
+      throw new Error(msg)
     }
 
     // Run the tx through the VM
@@ -368,7 +372,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     // Add receipt to trie to later calculate receipt root
     receipts.push(txRes.receipt)
     const encodedReceipt = encodeReceipt(tx, txRes.receipt)
-    await receiptTrie.put(encode(txIdx), encodedReceipt)
+    await receiptTrie.put(rlp.encode(txIdx), encodedReceipt)
   }
 
   return {
@@ -439,7 +443,12 @@ export async function rewardAccount(
  * Returns the encoded tx receipt.
  */
 export function encodeReceipt(tx: TypedTransaction, receipt: TxReceipt) {
-  const encoded = encode(Object.values(receipt))
+  const encoded = rlp.encode([
+    (receipt as PreByzantiumTxReceipt).stateRoot ?? (receipt as PostByzantiumTxReceipt).status,
+    receipt.gasUsed,
+    receipt.bitvector,
+    receipt.logs,
+  ])
 
   if (!tx.supports(Capability.EIP2718TypedTransaction)) {
     return encoded
@@ -493,14 +502,14 @@ export async function generateTxReceipt(
       } as PreByzantiumTxReceipt
       receiptLog += ` stateRoot=${txReceipt.stateRoot.toString('hex')} (< Byzantium)`
     }
-    encodedReceipt = encode(Object.values(txReceipt))
+    encodedReceipt = rlp.encode(Object.values(txReceipt))
   } else {
     // EIP2930 Transaction
     txReceipt = {
       status: txRes.execResult.exceptionError ? 0 : 1,
       ...abstractTxReceipt,
     } as PostByzantiumTxReceipt
-    encodedReceipt = Buffer.concat([intToBuffer(tx.type), encode(Object.values(txReceipt))])
+    encodedReceipt = Buffer.concat([intToBuffer(tx.type), rlp.encode(Object.values(txReceipt))])
   }
   return {
     txReceipt,
@@ -534,7 +543,20 @@ async function _applyDAOHardfork(state: StateManager) {
 async function _genTxTrie(block: Block) {
   const trie = new Trie()
   for (const [i, tx] of block.transactions.entries()) {
-    await trie.put(encode(i), tx.serialize())
+    await trie.put(rlp.encode(i), tx.serialize())
   }
   return trie.root
+}
+
+/**
+ * Internal helper function to create an annotated error message
+ *
+ * @param msg Base error message
+ * @hidden
+ */
+function _errorMsg(msg: string, vm: VM, block: Block) {
+  const blockErrorStr = 'errorStr' in block ? block.errorStr() : 'block'
+
+  const errorMsg = `${msg} (${vm.errorStr()} -> ${blockErrorStr})`
+  return errorMsg
 }

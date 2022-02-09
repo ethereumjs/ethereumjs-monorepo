@@ -1,5 +1,4 @@
-import { Address, BN, toBuffer } from 'ethereumjs-util'
-import { encode } from 'rlp'
+import { Address, BN, toBuffer, rlp } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
@@ -8,6 +7,22 @@ import VM from '.'
 import Bloom from './bloom'
 import { RunTxResult } from './runTx'
 import { calculateMinerReward, rewardAccount, encodeReceipt } from './runBlock'
+
+/**
+ * Options for the block builder.
+ */
+export interface BuilderOpts extends BlockOptions {
+  /**
+   * Whether to put the block into the vm's blockchain after building it.
+   * This is useful for completing a full cycle when building a block so
+   * the only next step is to build again, however it may not be desired
+   * if the block is being emulated or may be discarded as to not affect
+   * the underlying blockchain.
+   *
+   * Default: true
+   */
+  putBlockIntoBlockchain?: boolean
+}
 
 /**
  * Options for building a block.
@@ -25,9 +40,9 @@ export interface BuildBlockOpts {
   headerData?: HeaderData
 
   /**
-   * The block options to use.
+   * The block and builder options to use.
    */
-  blockOpts?: BlockOptions
+  blockOpts?: BuilderOpts
 }
 
 /**
@@ -54,7 +69,7 @@ export class BlockBuilder {
   gasUsed = new BN(0)
 
   private readonly vm: VM
-  private blockOpts: BlockOptions
+  private blockOpts: BuilderOpts
   private headerData: HeaderData
   private transactions: TypedTransaction[] = []
   private transactionResults: RunTxResult[] = []
@@ -64,7 +79,7 @@ export class BlockBuilder {
 
   constructor(vm: VM, opts: BuildBlockOpts) {
     this.vm = vm
-    this.blockOpts = { ...opts.blockOpts, common: this.vm._common }
+    this.blockOpts = { putBlockIntoBlockchain: true, ...opts.blockOpts, common: this.vm._common }
 
     this.headerData = {
       ...opts.headerData,
@@ -96,7 +111,7 @@ export class BlockBuilder {
   private async transactionsTrie() {
     const trie = new Trie()
     for (const [i, tx] of this.transactions.entries()) {
-      await trie.put(encode(i), tx.serialize())
+      await trie.put(rlp.encode(i), tx.serialize())
     }
     return trie.root
   }
@@ -123,7 +138,7 @@ export class BlockBuilder {
       const tx = this.transactions[i]
       gasUsed.iadd(txResult.gasUsed)
       const encodedReceipt = encodeReceipt(tx, txResult.receipt)
-      await receiptTrie.put(encode(i), encodedReceipt)
+      await receiptTrie.put(rlp.encode(i), encodedReceipt)
     }
     return receiptTrie.root
   }
@@ -233,7 +248,10 @@ export class BlockBuilder {
 
     const blockData = { header: headerData, transactions: this.transactions }
     const block = Block.fromBlockData(blockData, blockOpts)
-    await this.vm.blockchain.putBlock(block)
+
+    if (this.blockOpts.putBlockIntoBlockchain) {
+      await this.vm.blockchain.putBlock(block)
+    }
 
     this.built = true
     if (this.checkpointed) {

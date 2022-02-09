@@ -12,9 +12,9 @@ import {
 } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '../../../src/state'
-import { createAccount } from '../utils'
+import { getSingleFile } from '../../tester/testLoader'
 import { isRunningInKarma } from '../../util'
-const testLoader = require('../../testLoader')
+import { createAccount } from '../utils'
 
 const StateManager = DefaultStateManager
 
@@ -175,7 +175,7 @@ tape('StateManager', (t) => {
         st.skip('skip slow test when running in karma')
         return st.end()
       }
-      const genesisData = testLoader.getSingleFile('BasicTests/genesishashestest.json')
+      const genesisData = getSingleFile('BasicTests/genesishashestest.json')
 
       const stateManager = new StateManager()
       await stateManager.generateCanonicalGenesis()
@@ -385,7 +385,6 @@ tape('Original storage cache', async (t) => {
 
 tape('StateManager - Contract code', (tester) => {
   const it = tester.test
-
   it('should set and get code', async (t) => {
     const stateManager = new DefaultStateManager()
     const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))

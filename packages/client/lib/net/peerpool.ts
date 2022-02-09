@@ -22,12 +22,12 @@ export class PeerPool {
   private pool: Map<string, Peer>
   private noPeerPeriods: number
   private opened: boolean
-  /* global NodeJS */
-  private _statusCheckInterval: NodeJS.Timeout | undefined
+  public running: boolean
+
+  private _statusCheckInterval: NodeJS.Timeout | undefined /* global NodeJS */
 
   /**
    * Create new peer pool
-   * @param {Object}   options constructor parameters
    */
   constructor(options: PeerPoolOptions) {
     this.config = options.config
@@ -35,6 +35,7 @@ export class PeerPool {
     this.pool = new Map<string, Peer>()
     this.noPeerPeriods = 0
     this.opened = false
+    this.running = false
 
     this.init()
   }
@@ -45,7 +46,6 @@ export class PeerPool {
 
   /**
    * Open pool
-   * @return {Promise}
    */
   async open(): Promise<boolean | void> {
     if (this.opened) {
@@ -54,24 +54,53 @@ export class PeerPool {
     this.config.events.on(Event.PEER_CONNECTED, (peer) => {
       this.connected(peer)
     })
-
     this.config.events.on(Event.PEER_DISCONNECTED, (peer) => {
       this.disconnected(peer)
     })
-
+    this.config.events.on(Event.PEER_ERROR, (error, peer) => {
+      if (this.pool.get(peer.id)) {
+        this.config.logger.warn(`Peer error: ${error} ${peer}`)
+        this.ban(peer)
+      }
+    })
     this.opened = true
+  }
+
+  /**
+   * Start peer pool
+   */
+  async start(): Promise<boolean> {
+    if (this.running) {
+      return false
+    }
     // eslint-disable-next-line @typescript-eslint/await-thenable
     this._statusCheckInterval = setInterval(await this._statusCheck.bind(this), 20000)
+
+    this.running = true
+    return true
+  }
+
+  /**
+   * Stop peer pool
+   */
+  async stop(): Promise<boolean> {
+    if (this.opened) {
+      await this.close()
+    }
+    clearInterval(this._statusCheckInterval as NodeJS.Timeout)
+    this.running = false
+    return true
   }
 
   /**
    * Close pool
-   * @return {Promise}
    */
   async close() {
+    this.config.events.removeAllListeners(Event.PEER_CONNECTED)
+    this.config.events.removeAllListeners(Event.PEER_DISCONNECTED)
+    this.config.events.removeAllListeners(Event.PEER_ERROR)
     this.pool.clear()
     this.opened = false
-    clearInterval(this._statusCheckInterval as NodeJS.Timeout)
   }
 
   /**
@@ -84,15 +113,14 @@ export class PeerPool {
 
   /**
    * Number of peers in pool
-   * @type {number}
    */
-  get size(): number {
+  get size() {
     return this.peers.length
   }
 
   /**
    * Return true if pool contains the specified peer
-   * @param peer object or peer id
+   * @param peer peer object or id
    */
   contains(peer: Peer | string): boolean {
     if (typeof peer !== 'string') {
@@ -103,8 +131,7 @@ export class PeerPool {
 
   /**
    * Returns a random idle peer from the pool
-   * @param [filterFn] filter function to apply before finding idle peers
-   * @return {Peer}
+   * @param filterFn filter function to apply before finding idle peers
    */
   idle(filterFn = (_peer: Peer) => true): Peer | undefined {
     const idle = this.peers.filter((p) => p.idle && filterFn(p))
@@ -117,35 +144,27 @@ export class PeerPool {
 
   /**
    * Handler for peer connections
-   * @private
-   * @param  {Peer} peer
+   * @param peer peer
    */
-  connected(peer: Peer) {
+  private connected(peer: Peer) {
     if (this.size >= this.config.maxPeers) return
-    this.config.events.on(Event.PEER_ERROR, (error, peer) => {
-      if (this.pool.get(peer.id)) {
-        this.config.logger.warn(`Peer error: ${error} ${peer}`)
-        this.ban(peer)
-      }
-    })
     this.add(peer)
     peer.handleMessageQueue()
   }
 
   /**
    * Handler for peer disconnections
-   * @private
-   * @param  {Peer} peer
+   * @param peer peer
    */
-  disconnected(peer: Peer) {
+  private disconnected(peer: Peer) {
     this.remove(peer)
   }
 
   /**
    * Ban peer from being added to the pool for a period of time
-   * @param  {Peer} peer
-   * @param  maxAge ban period in milliseconds
-   * @emits  Event.POOL_PEER_BANNED
+   * @param peer peer
+   * @param maxAge ban period in ms
+   * @emits {@link Event.POOL_PEER_BANNED}
    */
   ban(peer: Peer, maxAge: number = 60000) {
     if (!peer.server) {
@@ -158,8 +177,8 @@ export class PeerPool {
 
   /**
    * Add peer to pool
-   * @param  {Peer} peer
-   * @emits Event.POOL_PEER_ADDED
+   * @param peer peer
+   * @emits {@link Event.POOL_PEER_ADDED}
    */
   add(peer?: Peer) {
     if (peer && peer.id && !this.pool.get(peer.id)) {
@@ -171,8 +190,8 @@ export class PeerPool {
 
   /**
    * Remove peer from pool
-   * @param  {Peer} peer
-   * @emits  Event.POOL_PEER_REMOVED
+   * @param peer peer
+   * @emits {@link Event.POOL_PEER_REMOVED}
    */
   remove(peer?: Peer) {
     if (peer && peer.id) {

@@ -310,9 +310,22 @@ export default class Blockchain implements BlockchainInterface {
 
   /**
    * Returns a deep copy of this {@link Blockchain} instance.
+   *
+   * Note: this does not make a copy of the underlying db
+   * since it is unknown if the source is on disk or in memory.
+   * This should not be a significant issue in most usage since
+   * the queries will only reflect the instance's known data.
+   * If you would like this copied blockchain to use another db
+   * set the {@link db} of this returned instance to a copy of
+   * the original.
    */
   copy(): Blockchain {
-    return Object.create(Object.getPrototypeOf(this), Object.getOwnPropertyDescriptors(this))
+    const copiedBlockchain = Object.create(
+      Object.getPrototypeOf(this),
+      Object.getOwnPropertyDescriptors(this)
+    )
+    copiedBlockchain._common = this._common.copy()
+    return copiedBlockchain
   }
 
   /**
@@ -514,7 +527,7 @@ export default class Blockchain implements BlockchainInterface {
 
     // save to db
     const formatted = this._cliqueLatestSignerStates.map((state) => [
-      state[0].toBuffer(),
+      state[0].toArrayLike(Buffer),
       state[1].map((a) => a.toBuffer()),
     ])
     dbOps.push(DBOp.set(DBTarget.CliqueSignerStates, rlp.encode(formatted)))
@@ -665,7 +678,7 @@ export default class Blockchain implements BlockchainInterface {
     // save votes to db
     const dbOps: DBOp[] = []
     const formatted = this._cliqueLatestVotes.map((v) => [
-      v[0].toBuffer(),
+      v[0].toArrayLike(Buffer),
       [v[1][0].toBuffer(), v[1][1].toBuffer(), v[1][2]],
     ])
     dbOps.push(DBOp.set(DBTarget.CliqueVotes, rlp.encode(formatted)))
@@ -704,7 +717,10 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     // save to db
-    const formatted = this._cliqueLatestBlockSigners.map((b) => [b[0].toBuffer(), b[1].toBuffer()])
+    const formatted = this._cliqueLatestBlockSigners.map((b) => [
+      b[0].toArrayLike(Buffer),
+      b[1].toBuffer(),
+    ])
     dbOps.push(DBOp.set(DBTarget.CliqueBlockSigners, rlp.encode(formatted)))
 
     await this.dbManager.batch(dbOps)

@@ -1,4 +1,4 @@
-import BN from 'bn.js'
+import { BN } from './externals'
 import { isHexString } from './internal'
 import { Address } from './address'
 import { unpadBuffer, toBuffer, ToBufferInputTypes } from './bytes'
@@ -46,6 +46,9 @@ export interface TransformableToBuffer {
   toBuffer(): Buffer
   toArray?(): Uint8Array
 }
+
+export type NestedUint8Array = Array<Uint8Array | NestedUint8Array>
+export type NestedBufferArray = Array<Buffer | NestedBufferArray>
 
 /**
  * Convert BN to 0x-prefixed hex string.

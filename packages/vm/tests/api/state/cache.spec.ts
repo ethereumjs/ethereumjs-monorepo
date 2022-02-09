@@ -1,21 +1,48 @@
 import tape from 'tape'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Account, Address, BN } from 'ethereumjs-util'
-import Cache from '../../../src/state/cache'
+import Cache, { getCb, putCb } from '../../../src/state/cache'
 import { createAccount } from '../utils'
 
 tape('cache initialization', (t) => {
   t.test('should initialize', async (st) => {
     const trie = new Trie()
-    const cache = new Cache(trie)
-    st.ok(trie.root.equals(cache._trie.root), 'initializes given trie')
+    const getCb: getCb = async (address) => {
+      const innerTrie = trie
+      const rlp = await innerTrie.get(address.buf)
+      return rlp ? Account.fromRlpSerializedAccount(rlp) : undefined
+    }
+    const putCb: putCb = async (keyBuf, accountRlp) => {
+      const innerTrie = trie
+      await innerTrie.put(keyBuf, accountRlp)
+    }
+    const deleteCb = async (keyBuf: Buffer) => {
+      const innerTrie = trie
+      await innerTrie.del(keyBuf)
+    }
+    const cache = new Cache({ getCb, putCb, deleteCb })
+
+    st.ok(cache._checkpoints.length === 0, 'initializes given trie')
     st.end()
   })
 })
 
 tape('cache put and get account', (t) => {
   const trie = new Trie()
-  const cache = new Cache(trie)
+  const getCb: getCb = async (address) => {
+    const innerTrie = trie
+    const rlp = await innerTrie.get(address.buf)
+    return rlp ? Account.fromRlpSerializedAccount(rlp) : undefined
+  }
+  const putCb: putCb = async (keyBuf, accountRlp) => {
+    const innerTrie = trie
+    await innerTrie.put(keyBuf, accountRlp)
+  }
+  const deleteCb = async (keyBuf: Buffer) => {
+    const innerTrie = trie
+    await innerTrie.del(keyBuf)
+  }
+  const cache = new Cache({ getCb, putCb, deleteCb })
 
   const addr = new Address(Buffer.from('cd2a3d9f938e13cd947ec05abc7fe734df8dd826', 'hex'))
   const acc = createAccount(new BN(0), new BN(0xff11))
@@ -59,14 +86,6 @@ tape('cache put and get account', (t) => {
     st.end()
   })
 
-  t.test('should warm cache and load account from trie', async (st) => {
-    await cache.warm([addr.buf.toString('hex')])
-
-    const res = cache.get(addr)
-    st.ok(res.balance.eq(acc.balance))
-    st.end()
-  })
-
   t.test('should update loaded account and flush it', async (st) => {
     const updatedAcc = createAccount(new BN(0), new BN(0xff00))
     cache.put(addr, updatedAcc)
@@ -81,7 +100,20 @@ tape('cache put and get account', (t) => {
 
 tape('cache checkpointing', (t) => {
   const trie = new Trie()
-  const cache = new Cache(trie)
+  const getCb: getCb = async (address) => {
+    const innerTrie = trie
+    const rlp = await innerTrie.get(address.buf)
+    return rlp ? Account.fromRlpSerializedAccount(rlp) : undefined
+  }
+  const putCb: putCb = async (keyBuf, accountRlp) => {
+    const innerTrie = trie
+    await innerTrie.put(keyBuf, accountRlp)
+  }
+  const deleteCb = async (keyBuf: Buffer) => {
+    const innerTrie = trie
+    await innerTrie.del(keyBuf)
+  }
+  const cache = new Cache({ getCb, putCb, deleteCb })
 
   const addr = new Address(Buffer.from('cd2a3d9f938e13cd947ec05abc7fe734df8dd826', 'hex'))
   const acc = createAccount(new BN(0), new BN(0xff11))

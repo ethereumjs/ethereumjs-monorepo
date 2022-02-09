@@ -4,8 +4,10 @@ import {
   bnToUnpaddedBuffer,
   ecrecover,
   keccak256,
+  MAX_INTEGER,
   rlp,
   toBuffer,
+  validateNoLeadingZeroes,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { BaseTransaction } from './baseTransaction'
@@ -139,6 +141,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
     const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s] = values
 
+    validateNoLeadingZeroes({ nonce, gasPrice, gasLimit, value, v, r, s })
+
     const emptyAccessList: AccessList = []
 
     return new AccessListEIP2930Transaction(
@@ -188,16 +192,24 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
     this.gasPrice = new BN(toBuffer(gasPrice === '' ? '0x' : gasPrice))
 
-    this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
+    this._validateCannotExceedMaxInteger({
+      gasPrice: this.gasPrice,
+    })
 
+    if (this.gasPrice.mul(this.gasLimit).gt(MAX_INTEGER)) {
+      const msg = this._errorMsg('gasLimit * gasPrice cannot exceed MAX_INTEGER')
+      throw new Error(msg)
+    }
     if (this.v && !this.v.eqn(0) && !this.v.eqn(1)) {
-      throw new Error('The y-parity of the transaction should either be 0 or 1')
+      const msg = this._errorMsg('The y-parity of the transaction should either be 0 or 1')
+      throw new Error(msg)
     }
 
     if (this.common.gteHardfork('homestead') && this.s?.gt(N_DIV_2)) {
-      throw new Error(
+      const msg = this._errorMsg(
         'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
       )
+      throw new Error(msg)
     }
 
     const freeze = opts?.freeze ?? true
@@ -210,8 +222,20 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): BN {
+    if (this.cache.dataFee && this.cache.dataFee.hardfork === this.common.hardfork()) {
+      return this.cache.dataFee.value
+    }
+
     const cost = super.getDataFee()
     cost.iaddn(AccessLists.getDataFeeEIP2930(this.accessList, this.common))
+
+    if (Object.isFrozen(this)) {
+      this.cache.dataFee = {
+        value: cost,
+        hardfork: this.common.hardfork(),
+      }
+    }
+
     return cost
   }
 
@@ -297,7 +321,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    */
   public hash(): Buffer {
     if (!this.isSigned()) {
-      throw new Error('Cannot call hash method if transaction is not signed')
+      const msg = this._errorMsg('Cannot call hash method if transaction is not signed')
+      throw new Error(msg)
     }
 
     if (Object.isFrozen(this)) {
@@ -322,7 +347,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    */
   public getSenderPublicKey(): Buffer {
     if (!this.isSigned()) {
-      throw new Error('Cannot call this method if transaction is not signed')
+      const msg = this._errorMsg('Cannot call this method if transaction is not signed')
+      throw new Error(msg)
     }
 
     const msgHash = this.getMessageToVerifySignature()
@@ -330,9 +356,10 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     // EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
     // Reasoning: https://ethereum.stackexchange.com/a/55728
     if (this.common.gteHardfork('homestead') && this.s?.gt(N_DIV_2)) {
-      throw new Error(
+      const msg = this._errorMsg(
         'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
       )
+      throw new Error(msg)
     }
 
     const { yParity, r, s } = this
@@ -344,7 +371,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
         bnToUnpaddedBuffer(s!)
       )
     } catch (e: any) {
-      throw new Error('Invalid Signature')
+      const msg = this._errorMsg('Invalid Signature')
+      throw new Error(msg)
     }
   }
 
@@ -390,5 +418,25 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       r: this.r !== undefined ? bnToHex(this.r) : undefined,
       s: this.s !== undefined ? bnToHex(this.s) : undefined,
     }
+  }
+
+  /**
+   * Return a compact error string representation of the object
+   */
+  public errorStr() {
+    let errorStr = this._getSharedErrorPostfix()
+    // Keep ? for this.accessList since this otherwise causes Hardhat E2E tests to fail
+    errorStr += ` gasPrice=${this.gasPrice} accessListCount=${this.accessList?.length ?? 0}`
+    return errorStr
+  }
+
+  /**
+   * Internal helper function to create an annotated error message
+   *
+   * @param msg Base error message
+   * @hidden
+   */
+  protected _errorMsg(msg: string) {
+    return `${msg} (${this.errorStr()})`
   }
 }

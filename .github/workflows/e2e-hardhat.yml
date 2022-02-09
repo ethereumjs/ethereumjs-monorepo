@@ -5,9 +5,13 @@ on:
     tags: ['*']
   pull_request:
     types: [opened, reopened, synchronize]
-    
+
 env:
   cwd: ${{github.workspace}}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   e2e-hardhat:
@@ -25,9 +29,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-
-      - name: Use npm v7 for workspaces support 
-        run: npm i -g npm@7
 
       - run: npm i
         working-directory: ${{github.workspace}}

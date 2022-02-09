@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Config } from '../lib/config'
+import { Config, DataDirectory } from '../lib/config'
 import Common, { Chain } from '@ethereumjs/common'
 
 tape('[Config]', (t) => {
@@ -15,15 +15,21 @@ tape('[Config]', (t) => {
     t.end()
   })
 
-  t.test('getChainDataDirectory() default directory', (t) => {
+  t.test('Chain data default directory', (t) => {
     const config = new Config()
-    t.equal(config.getChainDataDirectory(), './datadir/mainnet/chain')
+    t.equal(config.getDataDirectory(DataDirectory.Chain), './datadir/mainnet/chain')
     t.end()
   })
 
-  t.test('getStateDataDirectory() default directory', (t) => {
+  t.test('State data default directory', (t) => {
     const config = new Config()
-    t.equal(config.getStateDataDirectory(), './datadir/mainnet/state')
+    t.equal(config.getDataDirectory(DataDirectory.State), './datadir/mainnet/state')
+    t.end()
+  })
+
+  t.test('Meta data default directory', (t) => {
+    const config = new Config()
+    t.equal(config.getDataDirectory(DataDirectory.Meta), './datadir/mainnet/meta')
     t.end()
   })
 

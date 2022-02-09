@@ -41,7 +41,7 @@ export interface Chain {
 }
 
 export interface GenesisState {
-  [key: string]: string
+  [key: string]: string | [string, [[string, string]]] // balance | [balance, code, [[storageKey, storageValue]]]
 }
 
 export interface eipsType {
@@ -56,6 +56,7 @@ export interface GenesisBlock {
   nonce: string
   extraData: string
   stateRoot: string
+  baseFeePerGas?: string
 }
 
 export interface Hardfork {

@@ -17,39 +17,17 @@ tape(`${method}: call`, async (t) => {
     const expectedNodeVersion = `node${process.version.substring(1)}`
 
     let msg = 'result string should not be empty'
-    if (result.length === 0) {
-      throw new Error(msg)
-    } else {
-      t.pass(msg)
-    }
-
+    t.notEqual(result.length, 0, msg)
     const [actualClientTitle, actualPackageVersion, actualPlatform, actualNodeVersion] =
       result.split('/')
-
     msg = 'client title should be correct'
-    if (actualClientTitle !== expectedClientTitle) {
-      throw new Error(msg)
-    } else {
-      t.pass(msg)
-    }
+    t.equal(actualClientTitle, expectedClientTitle, msg)
     msg = 'package version should be correct'
-    if (actualPackageVersion !== expectedPackageVersion) {
-      throw new Error(msg)
-    } else {
-      t.pass(msg)
-    }
+    t.equal(actualPackageVersion, expectedPackageVersion, msg)
     msg = 'platform should be correct'
-    if (actualPlatform !== expectedPlatform) {
-      throw new Error(msg)
-    } else {
-      t.pass(msg)
-    }
+    t.equal(actualPlatform, expectedPlatform, msg)
     msg = 'Node.js version should be correct'
-    if (actualNodeVersion !== expectedNodeVersion) {
-      throw new Error(msg)
-    } else {
-      t.pass(msg)
-    }
+    t.equal(actualNodeVersion, expectedNodeVersion, msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })

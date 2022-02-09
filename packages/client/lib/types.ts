@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
-import type multiaddr from 'multiaddr'
 import { BN } from 'ethereumjs-util'
+import type { Multiaddr } from 'multiaddr'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type Connection from '../../../node_modules/libp2p-interfaces/dist/src/connection/connection'
 import type { MuxedStream } from '../../../node_modules/libp2p-interfaces/dist/src/stream-muxer/types'
@@ -78,7 +78,7 @@ export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
 export type Key = Buffer
 export type KeyLike = string | Key
 
-export type MultiaddrLike = string | string[] | multiaddr | multiaddr[]
+export type MultiaddrLike = string | string[] | Multiaddr | Multiaddr[]
 
 /**
  * DNS

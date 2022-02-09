@@ -1,6 +1,6 @@
 {
   "name": "merkle-patricia-tree",
-  "version": "4.2.2",
+  "version": "4.2.3",
   "description": "This is an implementation of the modified merkle patricia tree as specified in Ethereum's yellow paper.",
   "license": "MPL-2.0",
   "author": "mjbecze <mjbecze@gmail.com>",
@@ -38,17 +38,16 @@
   },
   "dependencies": {
     "@types/levelup": "^4.3.0",
-    "ethereumjs-util": "^7.1.2",
+    "ethereumjs-util": "^7.1.4",
     "level-mem": "^5.0.1",
     "level-ws": "^2.0.0",
     "readable-stream": "^3.6.0",
-    "rlp": "^2.2.4",
     "semaphore-async-await": "^1.5.1"
   },
   "devDependencies": {
     "0x": "^4.9.1",
     "@types/benchmark": "^1.0.33",
-    "@types/node": "^11.13.4",
+    "@types/node": "^16.11.7",
     "@types/tape": "^4.13.2",
     "benchmark": "^2.1.4",
     "eslint": "^6.8.0",
@@ -56,8 +55,8 @@
     "karma-chrome-launcher": "^3.1.0",
     "karma-firefox-launcher": "^2.1.0",
     "karma-tap": "^4.2.0",
-    "karma-typescript": "^5.5.1",
-    "nyc": "^14.0.0",
+    "karma-typescript": "^5.5.3",
+    "nyc": "^15.1.0",
     "prettier": "^2.0.5",
     "tape": "^5.3.1",
     "typedoc": "^0.22.4",

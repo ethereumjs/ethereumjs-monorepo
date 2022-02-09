@@ -13,12 +13,16 @@ defaults:
   run:
     working-directory: packages/block
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   test-block:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [12]
+        node-version: [16]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -30,18 +34,14 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - name: Use npm v7 for workspaces support 
-        run: npm i -g npm@7
-
       - run: npm i
         working-directory: ${{github.workspace}}
 
+      - run: npm run lint
       - run: npm run coverage
 
-      - uses: codecov/codecov-action@v1
+      - uses: codecov/codecov-action@v2
         with:
-          file: ${{ env.cwd }}/coverage/lcov.info
+          files: ${{ env.cwd }}/coverage/lcov.info
           flags: block
-        if: ${{ matrix.node-version == 12 }}
-
-      - run: npm run lint
+        if: ${{ matrix.node-version == 16 }}

@@ -1,6 +1,5 @@
 import tape from 'tape'
-import * as rlp from 'rlp'
-import { KECCAK256_NULL } from 'ethereumjs-util'
+import { KECCAK256_NULL, rlp } from 'ethereumjs-util'
 import { BaseTrie, CheckpointTrie } from '../src'
 
 tape('simple save and retrieve', function (tester) {

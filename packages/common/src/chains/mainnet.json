@@ -81,14 +81,19 @@
       "forkHash": "0xb715077d"
     },
     {
+      "name": "arrowGlacier",
+      "block": 13773000,
+      "forkHash": "0x20c327fc"
+    },
+    {
       "name": "merge",
       "block": null,
-      "forkash": null
+      "forkHash": null
     },
     {
       "name": "shanghai",
       "block": null,
-      "forkash": null
+      "forkHash": null
     }
   ],
   "bootstrapNodes": [

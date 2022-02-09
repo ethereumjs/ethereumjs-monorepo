@@ -36,9 +36,11 @@ const setBalance = async (stateManager: StateManager, address: Address, balance:
 }
 
 tape('[Miner]', async (t) => {
+  const originalValidate = BlockHeader.prototype.validate
   BlockHeader.prototype.validate = td.func<any>()
   td.replace('@ethereumjs/block', { BlockHeader })
 
+  const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   DefaultStateManager.prototype.setStateRoot = td.func<any>()
   td.replace('@ethereumjs/vm/dist/state', { DefaultStateManager })
 
@@ -56,11 +58,13 @@ tape('[Miner]', async (t) => {
     get headers() {
       return {
         latest: BlockHeader.fromHeaderData(),
+        height: new BN(0),
       }
     }
     get blocks() {
       return {
         latest: Block.fromBlockData(),
+        height: new BN(0),
       }
     }
     blockchain: any = {
@@ -76,7 +80,7 @@ tape('[Miner]', async (t) => {
   const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berlin })
   common.setMaxListeners(50)
   const accounts: [Address, Buffer][] = [[A.address, A.privateKey]]
-  const config = new Config({ transports: [], loglevel: 'error', accounts, mine: true, common })
+  const config = new Config({ transports: [], accounts, mine: true, common })
   config.events.setMaxListeners(50)
 
   const createTx = (
@@ -135,7 +139,7 @@ tape('[Miner]', async (t) => {
     t.notOk(miner.running)
 
     // Should not start when config.mine=false
-    const configMineFalse = new Config({ transports: [], loglevel: 'error', accounts, mine: false })
+    const configMineFalse = new Config({ transports: [], accounts, mine: false })
     miner = new Miner({ config: configMineFalse, synchronizer })
     miner.start()
     t.notOk(miner.running, 'miner should not start when config.mine=false')
@@ -221,7 +225,7 @@ tape('[Miner]', async (t) => {
     t.plan(1)
     const customChainParams = { hardforks: [{ name: 'london', block: 0 }] }
     const common = Common.forCustomChain(CommonChain.Rinkeby, customChainParams, Hardfork.London)
-    const config = new Config({ transports: [], loglevel: 'error', accounts, mine: true, common })
+    const config = new Config({ transports: [], accounts, mine: true, common })
     const pool = new PeerPool() as any
     const chain = new FakeChain() as any
     const block = Block.fromBlockData({}, { common })
@@ -275,12 +279,12 @@ tape('[Miner]', async (t) => {
     const block = Block.fromBlockData({ header: { gasLimit } }, { common })
     Object.defineProperty(chain, 'headers', {
       get: function () {
-        return { latest: block.header }
+        return { latest: block.header, height: new BN(0) }
       },
     })
     Object.defineProperty(chain, 'blocks', {
       get: function () {
-        return { latest: block }
+        return { latest: block, height: new BN(0) }
       },
     })
     const synchronizer = new FullSynchronizer({
@@ -325,7 +329,7 @@ tape('[Miner]', async (t) => {
     t.plan(2)
     const pool = new PeerPool() as any
     const chain = new FakeChain() as any
-    const config = new Config({ transports: [], loglevel: 'error', accounts, mine: true, common })
+    const config = new Config({ transports: [], accounts, mine: true, common })
     const synchronizer = new FullSynchronizer({
       config,
       pool,
@@ -373,7 +377,7 @@ tape('[Miner]', async (t) => {
     const common = Common.custom(customChainParams, { baseChain: CommonChain.Rinkeby })
     common.setHardforkByBlockNumber(0)
     const pool = new PeerPool() as any
-    const config = new Config({ transports: [], loglevel: 'error', accounts, mine: true, common })
+    const config = new Config({ transports: [], accounts, mine: true, common })
     const chain = new Chain({ config })
     await chain.open()
     const synchronizer = new FullSynchronizer({
@@ -440,7 +444,7 @@ tape('[Miner]', async (t) => {
     const common = new Common({ chain: CommonChain.Ropsten })
     ;(common as any)._chainParams['genesis'].difficulty = 1
     const pool = new PeerPool() as any
-    const config = new Config({ transports: [], loglevel: 'error', accounts, mine: true, common })
+    const config = new Config({ transports: [], accounts, mine: true, common })
     const chain = new Chain({ config })
     await chain.open()
     const synchronizer = new FullSynchronizer({
@@ -464,6 +468,11 @@ tape('[Miner]', async (t) => {
 
   t.test('should reset td', (t) => {
     td.reset()
+    // according to https://github.com/testdouble/testdouble.js/issues/379#issuecomment-415868424
+    // mocking indirect dependnecies is not properly supported, but it works for us in this file,
+    // so we will replace the original functions to avoid issues in other tests that come after
+    BlockHeader.prototype.validate = originalValidate
+    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
     t.end()
   })
 })

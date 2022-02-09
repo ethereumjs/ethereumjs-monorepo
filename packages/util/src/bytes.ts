@@ -1,6 +1,12 @@
-import BN from 'bn.js'
+import { BN } from './externals'
 import { stripHexPrefix, padToEven, isHexString, isHexPrefixed } from './internal'
-import { PrefixedHexString, TransformableToArray, TransformableToBuffer } from './types'
+import {
+  PrefixedHexString,
+  TransformableToArray,
+  TransformableToBuffer,
+  NestedBufferArray,
+  NestedUint8Array,
+} from './types'
 import { assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
 
 /**
@@ -172,6 +178,9 @@ export const toBuffer = function (v: ToBufferInputTypes): Buffer {
   }
 
   if (BN.isBN(v)) {
+    if (v.isNeg()) {
+      throw new Error(`Cannot convert negative BN to buffer. Given: ${v}`)
+    }
     return v.toArrayLike(Buffer)
   }
 
@@ -233,6 +242,34 @@ export const addHexPrefix = function (str: string): string {
 }
 
 /**
+ * Returns the utf8 string representation from a hex string.
+ *
+ * Examples:
+ *
+ * Input 1: '657468657265756d000000000000000000000000000000000000000000000000'
+ * Input 2: '657468657265756d'
+ * Input 3: '000000000000000000000000000000000000000000000000657468657265756d'
+ *
+ * Output (all 3 input variants): 'ethereum'
+ *
+ * Note that this method is not intended to be used with hex strings
+ * representing quantities in both big endian or little endian notation.
+ *
+ * @param string Hex string, should be `0x` prefixed
+ * @return Utf8 string
+ */
+export const toUtf8 = function (hex: string): string {
+  const zerosRegexp = /^(00)+|(00)+$/g
+  hex = stripHexPrefix(hex)
+  if (hex.length % 2 !== 0) {
+    throw new Error('Invalid non-even hex string input for toUtf8() provided')
+  }
+  const bufferVal = Buffer.from(hex.replace(zerosRegexp, ''), 'hex')
+
+  return bufferVal.toString('utf8')
+}
+
+/**
  * Converts a `Buffer` or `Array` to JSON.
  * @param ba (Buffer|Array)
  * @return (Array|String|null)
@@ -247,4 +284,51 @@ export const baToJSON = function (ba: any): any {
     }
     return array
   }
+}
+
+/**
+ * Checks provided Buffers for leading zeroes and throws if found.
+ *
+ * Examples:
+ *
+ * Valid values: 0x1, 0x, 0x01, 0x1234
+ * Invalid values: 0x0, 0x00, 0x001, 0x0001
+ *
+ * Note: This method is useful for validating that RLP encoded integers comply with the rule that all
+ * integer values encoded to RLP must be in the most compact form and contain no leading zero bytes
+ * @param values An object containing string keys and Buffer values
+ * @throws if any provided value is found to have leading zero bytes
+ */
+export const validateNoLeadingZeroes = function (values: { [key: string]: Buffer | undefined }) {
+  for (const [k, v] of Object.entries(values)) {
+    if (v !== undefined && v.length > 0 && v[0] === 0) {
+      throw new Error(`${k} cannot have leading zeroes, received: ${v.toString('hex')}`)
+    }
+  }
+}
+
+/**
+ * Converts a {@link Uint8Array} or {@link NestedUint8Array} to {@link Buffer} or {@link NestedBufferArray}
+ */
+export function arrToBufArr(arr: Uint8Array): Buffer
+export function arrToBufArr(arr: NestedUint8Array): NestedBufferArray
+export function arrToBufArr(arr: Uint8Array | NestedUint8Array): Buffer | NestedBufferArray
+export function arrToBufArr(arr: Uint8Array | NestedUint8Array): Buffer | NestedBufferArray {
+  if (!Array.isArray(arr)) {
+    return Buffer.from(arr)
+  }
+  return arr.map((a) => arrToBufArr(a))
+}
+
+/**
+ * Converts a {@link Buffer} or {@link NestedBufferArray} to {@link Uint8Array} or {@link NestedUint8Array}
+ */
+export function bufArrToArr(arr: Buffer): Uint8Array
+export function bufArrToArr(arr: NestedBufferArray): NestedUint8Array
+export function bufArrToArr(arr: Buffer | NestedBufferArray): Uint8Array | NestedUint8Array
+export function bufArrToArr(arr: Buffer | NestedBufferArray): Uint8Array | NestedUint8Array {
+  if (!Array.isArray(arr)) {
+    return Uint8Array.from(arr ?? [])
+  }
+  return arr.map((a) => bufArrToArr(a))
 }

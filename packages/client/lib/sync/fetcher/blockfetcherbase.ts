@@ -32,7 +32,6 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
 
   /**
    * Create new block fetcher
-   * @param {BlockFetcherOptions}
    */
   constructor(options: BlockFetcherOptions) {
     super(options)
@@ -40,11 +39,13 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     this.chain = options.chain
     this.first = options.first
     this.count = options.count
+    this.debug(
+      `Block fetcher instantiated interval=${this.interval} first=${this.first} count=${this.count} destroyWhenDone=${this.destroyWhenDone}`
+    )
   }
 
   /**
    * Generate list of tasks to fetch
-   * @return {Object[]} tasks
    */
   tasks(): JobTask[] {
     const { first, count } = this
@@ -58,6 +59,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     if (count.gtn(0)) {
       tasks.push({ first: first.clone(), count: count.toNumber() })
     }
+    this.debug(`Created new tasks num=${tasks.length} first=${first} count=${count}`)
     return tasks
   }
 
@@ -102,5 +104,8 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
         )
       })
     }
+    this.debug(
+      `Enqueued tasks by number list num=${numberList.length} min=${min} bulkRequest=${bulkRequest}`
+    )
   }
 }

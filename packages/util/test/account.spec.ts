@@ -1,5 +1,4 @@
 import tape from 'tape'
-import { encode } from 'rlp'
 import {
   Account,
   BN,
@@ -15,6 +14,7 @@ import {
   isValidChecksumAddress,
   isValidAddress,
   toChecksumAddress,
+  rlp,
 } from '../src'
 const eip1014Testdata = require('./testdata/eip1014Examples.json')
 
@@ -111,7 +111,7 @@ tape('Account', function (t) {
       codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     }
     const account = Account.fromAccountData(raw)
-    const accountRlp = encode([raw.nonce, raw.balance, raw.stateRoot, raw.codeHash])
+    const accountRlp = rlp.encode([raw.nonce, raw.balance, raw.stateRoot, raw.codeHash])
     st.ok(account.serialize().equals(accountRlp), 'should serialize correctly')
     st.end()
   })
@@ -554,10 +554,13 @@ tape('Utility Functions', function (t) {
         for (const [chainId, addresses] of Object.entries(eip1191ChecksummAddresses)) {
           for (const addr of addresses) {
             st.equal(toChecksumAddress(addr.toLowerCase(), Number(chainId)), addr)
-            st.equal(toChecksumAddress(addr.toLowerCase(), Buffer.from([chainId])), addr)
+            st.equal(toChecksumAddress(addr.toLowerCase(), Buffer.from([chainId] as any)), addr)
             st.equal(toChecksumAddress(addr.toLowerCase(), new BN(chainId)), addr)
             st.equal(
-              toChecksumAddress(addr.toLowerCase(), '0x' + Buffer.from([chainId]).toString('hex')),
+              toChecksumAddress(
+                addr.toLowerCase(),
+                '0x' + Buffer.from([chainId] as any).toString('hex')
+              ),
               addr
             )
           }
@@ -605,10 +608,10 @@ tape('Utility Functions', function (t) {
         for (const [chainId, addresses] of Object.entries(eip1191ChecksummAddresses)) {
           for (const addr of addresses) {
             st.ok(isValidChecksumAddress(addr, Number(chainId)))
-            st.ok(isValidChecksumAddress(addr, Buffer.from([chainId])))
+            st.ok(isValidChecksumAddress(addr, Buffer.from([chainId] as any)))
             st.ok(isValidChecksumAddress(addr, new BN(chainId)))
             st.equal(
-              isValidChecksumAddress(addr, '0x' + Buffer.from([chainId]).toString('hex')),
+              isValidChecksumAddress(addr, '0x' + Buffer.from([chainId] as any).toString('hex')),
               true
             )
           }

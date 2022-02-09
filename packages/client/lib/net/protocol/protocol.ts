@@ -44,7 +44,6 @@ export class Protocol {
 
   /**
    * Create new protocol
-   * @param {ProtocolOptions}
    */
   constructor(options: ProtocolOptions) {
     this.config = options.config
@@ -55,7 +54,6 @@ export class Protocol {
 
   /**
    * Opens protocol and any associated dependencies
-   * @return {Promise}
    */
   async open(): Promise<boolean | void> {
     this.opened = true
@@ -63,8 +61,6 @@ export class Protocol {
 
   /**
    * Perform handshake given a sender from subclass.
-   * @private
-   * @return {Promise}
    */
   async handshake(sender: Sender) {
     const status = this.encodeStatus()
@@ -90,15 +86,13 @@ export class Protocol {
 
   /**
    * Abstract getter for name of protocol
-   * @type {string}
    */
-  get name(): string {
+  get name() {
     return 'protocol'
   }
 
   /**
    * Protocol versions supported
-   * @type {number[]}
    */
   get versions(): number[] {
     throw new Error('Unimplemented')
@@ -106,7 +100,6 @@ export class Protocol {
 
   /**
    * Messages defined by this protocol
-   * @type {Protocol~Message[]}
    */
   get messages(): Message[] {
     throw new Error('Unimplemented')
@@ -114,7 +107,6 @@ export class Protocol {
 
   /**
    * Encodes status into status message payload. Must be implemented by subclass.
-   * @return {Object}
    */
   encodeStatus(): any {
     throw new Error('Unimplemented')
@@ -123,19 +115,16 @@ export class Protocol {
   /**
    * Decodes status message payload into a status object.  Must be implemented
    * by subclass.
-   * @param {Object} status status message payload
-   * @return {Object}
+   * @param status status message payload
    */
-  decodeStatus(_status: any): any {
+  decodeStatus(_status: any): Object {
     throw new Error('Unimplemented')
   }
 
   /**
    * Encodes message into proper format before sending
-   * @protected
    * @param message message definition
-   * @param {*} args message arguments
-   * @return {*}
+   * @param args message arguments
    */
   encode(message: Message, args: any): any {
     if (message.encode) {
@@ -146,11 +135,9 @@ export class Protocol {
 
   /**
    * Decodes message payload
-   * @protected
    * @param message message definition
-   * @param {*} payload message payload
-   * @param {BoundProtocol} bound reference to bound protocol
-   * @return {*}
+   * @param payload message payload
+   * @param bound reference to bound protocol
    */
   decode(message: Message, payload: any): any {
     if (message.decode) {
@@ -162,9 +149,8 @@ export class Protocol {
   /**
    * Binds this protocol to a given peer using the specified sender to handle
    * message communication.
-   * @param  {Peer}    peer peer
-   * @param  {Sender}  sender sender
-   * @return {Promise}
+   * @param peer peer
+   * @param sender sender
    */
   async bind(peer: Peer, sender: Sender): Promise<BoundProtocol> {
     const bound = new BoundProtocol({

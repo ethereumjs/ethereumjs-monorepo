@@ -20,46 +20,40 @@ export class RPCManager {
   }
 
   /**
-   * gets methods for all modules which concat with underscore "_"
-   * e.g. convert getBlockByNumber() in eth module to { eth_getBlockByNumber }
-   * @return {Object} methods
+   * Returns bound methods for modules concat with underscore `_`
+   * @param engine Pass true to return only `engine_` API endpoints (default: false)
    */
-  getMethods(): any {
-    const methods: any = {}
+  getMethods(engine = false) {
+    const methods: { [key: string]: Function } = {}
+    const mods = modules.list.filter((name: string) =>
+      engine ? name === 'Engine' : name !== 'Engine'
+    )
 
-    for (const modName of modules.list) {
-      if (this._config.rpcDebug) {
-        this._config.logger.debug('='.repeat(29))
-        this._config.logger.debug(`RPC: Initialize ${modName} module`)
-        this._config.logger.debug('='.repeat(29))
-      }
-
+    for (const modName of mods) {
       const mod = new (modules as any)[modName](this._client)
-
-      RPCManager.getMethodNames((modules as any)[modName])
-        .filter((methodName: string) => methodName !== 'constructor')
-        .forEach((methodName: string) => {
-          const concatedMethodName = `${modName.toLowerCase()}_${methodName}`
-
-          if (this._config.rpcDebug) {
-            this._config.logger.debug(`Setup method ${concatedMethodName}`)
-          }
-          methods[concatedMethodName] = mod[methodName].bind(mod)
-        })
-      if (this._config.rpcDebug) {
-        this._config.logger.debug('')
+      const rpcMethods = RPCManager.getMethodNames((modules as any)[modName])
+      for (const methodName of rpcMethods) {
+        if (
+          !this._config.saveReceipts &&
+          (methodName === 'getLogs' ||
+            methodName === 'getTransactionReceipt' ||
+            methodName === 'getTransactionByHash')
+        ) {
+          continue
+        }
+        const concatedMethodName = `${modName.toLowerCase()}_${methodName}`
+        methods[concatedMethodName] = mod[methodName].bind(mod)
       }
     }
+    this._config.logger.debug(`RPC Initialized ${Object.keys(methods).join(', ')}`)
     return methods
   }
 
   /**
-   * get all methods. e.g., getBlockByNumber in eth module
-   * @param Object mod
-   * @returns string[]
+   * Returns all methods in a module
    */
-  static getMethodNames(mod: any): string[] {
-    const methodNames = Object.getOwnPropertyNames(mod.prototype).filter(
+  static getMethodNames(mod: Object): string[] {
+    const methodNames = Object.getOwnPropertyNames((mod as any).prototype).filter(
       (methodName: string) => methodName !== 'constructor'
     )
     return methodNames

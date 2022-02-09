@@ -95,3 +95,22 @@ tape('VM.runCode: interpreter', (t) => {
     st.end()
   })
 })
+
+tape('VM.runCode: RunCodeOptions', (t) => {
+  t.test('should throw on negative value args', async (st) => {
+    const vm = new VM()
+
+    const runCodeArgs = {
+      value: new BN('-10'),
+    }
+
+    try {
+      await vm.runCode(runCodeArgs)
+      st.fail('should not accept a negative call value')
+    } catch (err: any) {
+      st.ok(err.message.includes('value field cannot be negative'), 'throws on negative call value')
+    }
+
+    st.end()
+  })
+})

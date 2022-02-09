@@ -1,3 +1,4 @@
+import { Hardfork } from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
 import { PeerPool } from '../net/peerpool'
 import { Peer } from '../net/peer/peer'
@@ -22,6 +23,9 @@ export interface SynchronizerOptions {
 
   /* State database */
   stateDB?: LevelUp
+
+  /* Meta database (receipts, logs, indexes) */
+  metaDB?: LevelUp
 
   /* Flow control manager */
   flow?: FlowControl
@@ -51,12 +55,10 @@ export abstract class Synchronizer {
   public syncTargetHeight?: BN
   // Time (in ms) after which the synced state is reset
   private SYNCED_STATE_REMOVAL_PERIOD = 60000
-  /* global NodeJS */
-  private _syncedStatusCheckInterval: NodeJS.Timeout | undefined
+  private _syncedStatusCheckInterval: NodeJS.Timeout | undefined /* global NodeJS */
 
   /**
    * Create new node
-   * @param {SynchronizerOptions}
    */
   constructor(options: SynchronizerOptions) {
     this.config = options.config
@@ -77,7 +79,7 @@ export abstract class Synchronizer {
       }
     })
 
-    this.config.events.on(Event.CHAIN_UPDATED, async () => {
+    this.config.events.on(Event.CHAIN_UPDATED, () => {
       this.updateSynchronizedState()
     })
   }
@@ -85,13 +87,12 @@ export abstract class Synchronizer {
   /**
    * Returns synchronizer type
    */
-  get type(): string {
+  get type() {
     return 'sync'
   }
 
   /**
    * Open synchronizer. Must be called before sync() is called
-   * @return {Promise}
    */
   async open() {
     this.opened = true
@@ -99,10 +100,9 @@ export abstract class Synchronizer {
 
   /**
    * Returns true if peer can be used for syncing
-   * @return {boolean}
    */
-  // TODO: evaluate syncability of peer
-  syncable(_peer: Peer): boolean {
+  syncable(_peer: Peer) {
+    // TODO: evaluate syncability of peer
     return true
   }
 
@@ -110,7 +110,7 @@ export abstract class Synchronizer {
    * Start synchronization
    */
   async start(): Promise<void | boolean> {
-    if (this.running) {
+    if (this.running || this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
       return false
     }
     this.running = true
@@ -123,7 +123,7 @@ export abstract class Synchronizer {
     const timeout = setTimeout(() => {
       this.forceSync = true
     }, this.interval * 30)
-    while (this.running) {
+    while (this.running && !this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
       try {
         await this.sync()
       } catch (error: any) {
@@ -141,8 +141,7 @@ export abstract class Synchronizer {
 
   /**
    * Checks if the synchronized state of the chain has changed
-   *
-   * @emits Event.SYNC_SYNCHRONIZED
+   * @emits {@link Event.SYNC_SYNCHRONIZED}
    */
   updateSynchronizedState() {
     if (!this.syncTargetHeight) {
@@ -164,7 +163,7 @@ export abstract class Synchronizer {
 
   /**
    * Fetch all blocks from current height up to highest found amongst peers
-   * @return Resolves with true if sync successful
+   * @returns with true if sync successful
    */
   async sync(): Promise<boolean> {
     let peer = this.best()
@@ -191,17 +190,19 @@ export abstract class Synchronizer {
 
   /**
    * Close synchronizer.
-   * @return {Promise}
    */
   async close() {
     this.opened = false
   }
 
   /**
-   * Reset synced status after a certain time with no
-   * chain updates
+   * Reset synced status after a certain time with no chain updates
    */
   _syncedStatusCheck() {
+    if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+      return
+    }
+
     if (this.config.synchronized) {
       const diff = Date.now() - this.config.lastSyncDate
       if (diff >= this.SYNCED_STATE_REMOVAL_PERIOD) {

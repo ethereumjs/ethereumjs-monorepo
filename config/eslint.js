@@ -41,6 +41,7 @@ module.exports = {
     ],
     '@typescript-eslint/no-unnecessary-condition': 'off',
     'no-dupe-class-members': 'off',
+    'no-extra-semi': 'off',
     'prettier/prettier': 'error',
     'no-redeclare': 'off',
     '@typescript-eslint/no-redeclare': ['error'],

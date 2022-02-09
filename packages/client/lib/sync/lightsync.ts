@@ -1,5 +1,4 @@
 import { Hardfork } from '@ethereumjs/common'
-import { BN } from 'ethereumjs-util'
 import { Peer } from '../net/peer/peer'
 import { short } from '../util'
 import { Event } from '../types'
@@ -18,9 +17,8 @@ export class LightSynchronizer extends Synchronizer {
 
   /**
    * Returns synchronizer type
-   * @return {string} type
    */
-  get type(): string {
+  get type() {
     return 'light'
   }
 
@@ -39,15 +37,15 @@ export class LightSynchronizer extends Synchronizer {
 
   /**
    * Returns true if peer can be used for syncing
-   * @return {boolean}
    */
   syncable(peer: Peer): boolean {
-    return peer.les?.status.serveHeaders
+    return peer.les?.status.serveHeaders ?? false
   }
 
   /**
-   * Finds the best peer to sync with. We will synchronize to this peer's
-   * blockchain. Returns null if no valid peer is found
+   * Finds the best peer to sync with.
+   * We will synchronize to this peer's blockchain.
+   * @returns undefined if no valid peer is found
    */
   best(): Peer | undefined {
     let best
@@ -69,7 +67,6 @@ export class LightSynchronizer extends Synchronizer {
 
   /**
    * Get latest header of peer
-   * @return {Promise} Resolves with header
    */
   async latest(peer: Peer) {
     const result = await peer.les?.getBlockHeaders({
@@ -81,7 +78,7 @@ export class LightSynchronizer extends Synchronizer {
 
   /**
    * Sync all headers and state from peer starting from current height.
-   * @param  peer remote peer to sync with
+   * @param peer remote peer to sync with
    * @return Resolves when sync completed
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
@@ -92,11 +89,11 @@ export class LightSynchronizer extends Synchronizer {
       const latest = await this.latest(peer)
       if (!latest) return resolve(false)
 
-      const height = new BN(peer.les!.status.headNum)
+      const height = peer.les!.status.headNum
       if (!this.syncTargetHeight) {
         this.syncTargetHeight = height
         this.config.logger.info(
-          `New sync target height number=${height.toString(10)} hash=${short(latest.hash())}`
+          `New sync target height number=${height} hash=${short(latest.hash())}`
         )
       }
 
@@ -104,9 +101,7 @@ export class LightSynchronizer extends Synchronizer {
       const count = height.sub(first).addn(1)
       if (count.lten(0)) return resolve(false)
 
-      this.config.logger.debug(
-        `Syncing with peer: ${peer.toString(true)} height=${height.toString(10)}`
-      )
+      this.config.logger.debug(`Syncing with peer: ${peer.toString(true)} height=${height}`)
 
       this.fetcher = new HeaderFetcher({
         config: this.config,
@@ -121,7 +116,11 @@ export class LightSynchronizer extends Synchronizer {
 
       this.config.events.on(Event.SYNC_FETCHER_FETCHED, (headers) => {
         headers = headers as BlockHeader[]
-        const first = new BN(headers[0].number)
+        if (headers.length === 0) {
+          this.config.logger.warn('No headers fetched are applicable for import')
+          return
+        }
+        const first = headers[0].number
         const hash = short(headers[0].hash())
         const baseFeeAdd = this.config.chainCommon.gteHardfork(Hardfork.London)
           ? `baseFee=${headers[0].baseFeePerGas} `
@@ -144,8 +143,8 @@ export class LightSynchronizer extends Synchronizer {
   }
 
   /**
-   * Stop synchronization. Returns a promise that resolves once its stopped.
-   * @return {Promise}
+   * Stop synchronization.
+   * Returns a promise that resolves once its stopped.
    */
   async stop(): Promise<boolean> {
     if (!this.running) {

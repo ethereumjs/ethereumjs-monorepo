@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Address, BN, toBuffer } from 'ethereumjs-util'
+import { Address, BN, KECCAK256_NULL, toBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import {
@@ -53,7 +53,7 @@ export interface RunTxOpts {
 
   /**
    * If true, skips the validation of the tx's gas limit
-   * agains the block's gas limit.
+   * against the block's gas limit.
    */
   skipBlockGasLimitValidation?: boolean
 
@@ -128,15 +128,21 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
     opts.skipBlockGasLimitValidation !== true &&
     opts.block.header.gasLimit.lt(opts.tx.gasLimit)
   ) {
-    throw new Error('tx has a higher gas limit than the block')
+    const msg = _errorMsg('tx has a higher gas limit than the block', this, opts.block, opts.tx)
+    throw new Error(msg)
   }
 
   // Have to cast as `EIP2929StateManager` to access clearWarmedAccounts
-  const state: EIP2929StateManager = <EIP2929StateManager>this.stateManager
+  const state = this.stateManager as EIP2929StateManager
+
   if (opts.reportAccessList && !('generateAccessList' in state)) {
-    throw new Error(
-      'reportAccessList needs a StateManager implementing the generateAccessList() method'
+    const msg = _errorMsg(
+      'reportAccessList needs a StateManager implementing the generateAccessList() method',
+      this,
+      opts.block,
+      opts.tx
     )
+    throw new Error(msg)
   }
 
   // Ensure we start with a clear warmed accounts Map
@@ -155,17 +161,33 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
     // Is it an Access List transaction?
     if (!this._common.isActivatedEIP(2930)) {
       await state.revert()
-      throw new Error('Cannot run transaction: EIP 2930 is not activated.')
+      const msg = _errorMsg(
+        'Cannot run transaction: EIP 2930 is not activated.',
+        this,
+        opts.block,
+        opts.tx
+      )
+      throw new Error(msg)
     }
     if (opts.reportAccessList && !('generateAccessList' in state)) {
       await state.revert()
-      throw new Error(
-        'StateManager needs to implement generateAccessList() when running with reportAccessList option'
+      const msg = _errorMsg(
+        'StateManager needs to implement generateAccessList() when running with reportAccessList option',
+        this,
+        opts.block,
+        opts.tx
       )
+      throw new Error(msg)
     }
     if (opts.tx.supports(Capability.EIP1559FeeMarket) && !this._common.isActivatedEIP(1559)) {
       await state.revert()
-      throw new Error('Cannot run transaction: EIP 1559 is not activated.')
+      const msg = _errorMsg(
+        'Cannot run transaction: EIP 1559 is not activated.',
+        this,
+        opts.block,
+        opts.tx
+      )
+      throw new Error(msg)
     }
 
     const castedTx = <AccessListEIP2930Transaction>opts.tx
@@ -208,8 +230,9 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
 }
 
 async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
-  // Casted as `any` to access the EIP2929 methods
-  const state: any = this.stateManager
+  // Have to cast as `EIP2929StateManager` to access the EIP2929 methods
+  const state = this.stateManager as EIP2929StateManager
+
   const { tx, block } = opts
 
   if (!block) {
@@ -250,7 +273,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const txBaseFee = tx.getBaseFee()
   const gasLimit = tx.gasLimit.clone()
   if (gasLimit.lt(txBaseFee)) {
-    throw new Error('base fee exceeds gas limit')
+    const msg = _errorMsg('base fee exceeds gas limit', this, block, tx)
+    throw new Error(msg)
   }
   gasLimit.isub(txBaseFee)
   if (this.DEBUG) {
@@ -264,9 +288,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const maxFeePerGas = 'maxFeePerGas' in tx ? tx.maxFeePerGas : tx.gasPrice
     const baseFeePerGas = block.header.baseFeePerGas!
     if (maxFeePerGas.lt(baseFeePerGas)) {
-      throw new Error(
-        `Transaction's maxFeePerGas (${maxFeePerGas}) is less than the block's baseFeePerGas (${baseFeePerGas})`
+      const msg = _errorMsg(
+        `Transaction's maxFeePerGas (${maxFeePerGas}) is less than the block's baseFeePerGas (${baseFeePerGas})`,
+        this,
+        block,
+        tx
       )
+      throw new Error(msg)
     }
   }
 
@@ -274,12 +302,22 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   let fromAccount = await state.getAccount(caller)
   const { nonce, balance } = fromAccount
 
+  // EIP-3607: Reject transactions from senders with deployed code
+  if (this._common.isActivatedEIP(3607) && !fromAccount.codeHash.equals(KECCAK256_NULL)) {
+    const msg = _errorMsg('invalid sender address, address is not EOA (EIP-3607)', this, block, tx)
+    throw new Error(msg)
+  }
+
   if (!opts.skipBalance) {
     const cost = tx.getUpfrontCost(block.header.baseFeePerGas)
     if (balance.lt(cost)) {
-      throw new Error(
-        `sender doesn't have enough funds to send tx. The upfront cost is: ${cost} and the sender's account (${caller}) only has: ${balance}`
+      const msg = _errorMsg(
+        `sender doesn't have enough funds to send tx. The upfront cost is: ${cost} and the sender's account (${caller}) only has: ${balance}`,
+        this,
+        block,
+        tx
       )
+      throw new Error(msg)
     }
     if (tx.supports(Capability.EIP1559FeeMarket)) {
       // EIP-1559 spec:
@@ -287,17 +325,25 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       // `assert balance >= gas_limit * max_fee_per_gas`
       const cost = tx.gasLimit.mul((tx as FeeMarketEIP1559Transaction).maxFeePerGas).add(tx.value)
       if (balance.lt(cost)) {
-        throw new Error(
-          `sender doesn't have enough funds to send tx. The max cost is: ${cost} and the sender's account (${caller}) only has: ${balance}`
+        const msg = _errorMsg(
+          `sender doesn't have enough funds to send tx. The max cost is: ${cost} and the sender's account (${caller}) only has: ${balance}`,
+          this,
+          block,
+          tx
         )
+        throw new Error(msg)
       }
     }
   }
   if (!opts.skipNonce) {
     if (!nonce.eq(tx.nonce)) {
-      throw new Error(
-        `the tx doesn't have the correct nonce. account has nonce of: ${nonce} tx has nonce of: ${tx.nonce}`
+      const msg = _errorMsg(
+        `the tx doesn't have the correct nonce. account has nonce of: ${nonce} tx has nonce of: ${tx.nonce}`,
+        this,
+        block,
+        tx
       )
+      throw new Error(msg)
     }
   }
 
@@ -349,22 +395,19 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       `Running tx=0x${
         tx.isSigned() ? tx.hash().toString('hex') : 'unsigned'
       } with caller=${caller} gasLimit=${gasLimit} to=${
-        to ? to.toString() : ''
+        to?.toString() ?? 'none'
       } value=${value} data=0x${short(data)}`
     )
   }
 
   const results = (await evm.executeMessage(message)) as RunTxResult
   if (this.DEBUG) {
+    const { gasUsed, exceptionError, returnValue, gasRefund } = results.execResult
     debug('-'.repeat(100))
     debug(
-      `Received tx results gasUsed=${results.gasUsed} execResult: [ gasUsed=${
-        results.gasUsed
-      } exceptionError=${
-        results.execResult.exceptionError ? results.execResult.exceptionError.error : ''
-      } returnValue=${short(results.execResult.returnValue)} gasRefund=${
-        results.execResult.gasRefund
-      } ]`
+      `Received tx execResult: [ gasUsed=${gasUsed} exceptionError=${
+        exceptionError ? `'${exceptionError.error}'` : 'none'
+      } returnValue=0x${short(returnValue)} gasRefund=${gasRefund ?? 0} ]`
     )
   }
 
@@ -377,7 +420,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(`Generated tx bloom with logs=${results.execResult.logs?.length}`)
   }
 
-  // Caculate the total gas used
+  // Calculate the total gas used
   results.gasUsed.iadd(txBaseFee)
   if (this.DEBUG) {
     debugGas(`tx add baseFee ${txBaseFee} to gasUsed (-> ${results.gasUsed})`)
@@ -415,7 +458,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Update miner's balance
   let miner
   if (this._common.consensusType() === ConsensusType.ProofOfAuthority) {
-    // Backwards-compatibilty check
+    // Backwards-compatibility check
     // TODO: can be removed along VM v6 release
     if ('cliqueSigner' in block.header) {
       miner = block.header.cliqueSigner()
@@ -425,6 +468,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   } else {
     miner = block.header.coinbase
   }
+
   const minerAccount = await state.getAccount(miner)
   // add the amount spent on gas to the miner's account
   if (this._common.isActivatedEIP(1559)) {
@@ -557,4 +601,18 @@ export async function generateTxReceipt(
   }
 
   return receipt
+}
+
+/**
+ * Internal helper function to create an annotated error message
+ *
+ * @param msg Base error message
+ * @hidden
+ */
+function _errorMsg(msg: string, vm: VM, block: Block, tx: TypedTransaction) {
+  const blockErrorStr = 'errorStr' in block ? block.errorStr() : 'block'
+  const txErrorStr = 'errorStr' in tx ? tx.errorStr() : 'tx'
+
+  const errorMsg = `${msg} (${vm.errorStr()} -> ${blockErrorStr} -> ${txErrorStr})`
+  return errorMsg
 }

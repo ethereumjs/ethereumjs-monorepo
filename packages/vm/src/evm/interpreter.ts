@@ -6,6 +6,7 @@ import Memory from './memory'
 import Stack from './stack'
 import EEI from './eei'
 import { Opcode, handlers as opHandlers, OpHandler, AsyncOpHandler } from './opcodes'
+import { dynamicGasHandlers } from './opcodes/gas'
 
 export interface InterpreterOpts {
   pc?: number
@@ -20,10 +21,11 @@ export interface RunState {
   stack: Stack
   returnStack: Stack
   code: Buffer
-  validJumps: number[]
-  validJumpSubs: number[]
+  shouldDoJumpAnalysis: boolean
+  validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
   stateManager: StateManager
   eei: EEI
+  messageGasLimit?: BN // Cache value from `gas.ts` to save gas limit for a message call
 }
 
 export interface InterpreterResult {
@@ -32,28 +34,24 @@ export interface InterpreterResult {
 }
 
 export interface InterpreterStep {
+  pc: number
+  opcode: {
+    name: string
+    fee: number
+    dynamicFee?: BN
+    isAsync: boolean
+  }
   gasLeft: BN
   gasRefund: BN
   stateManager: StateManager
   stack: BN[]
   returnStack: BN[]
-  pc: number
-  depth: number
+  account: Account
   address: Address
+  depth: number
   memory: Buffer
   memoryWordCount: BN
-  opcode: {
-    name: string
-    fee: number
-    isAsync: boolean
-  }
-  account: Account
   codeAddress: Address
-}
-
-interface JumpDests {
-  jumps: number[]
-  jumpSubs: number[]
 }
 
 /**
@@ -81,20 +79,16 @@ export default class Interpreter {
       stack: new Stack(),
       returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
       code: Buffer.alloc(0),
-      validJumps: [],
-      validJumpSubs: [],
+      validJumps: Uint8Array.from([]),
       stateManager: this._state,
       eei: this._eei,
+      shouldDoJumpAnalysis: true,
     }
   }
 
   async run(code: Buffer, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
     this._runState.code = code
     this._runState.programCounter = opts.pc ?? this._runState.programCounter
-
-    const valid = this._getValidJumpDests(code)
-    this._runState.validJumps = valid.jumps
-    this._runState.validJumpSubs = valid.jumpSubs
 
     // Check that the programCounter is in range
     const pc = this._runState.programCounter
@@ -106,8 +100,15 @@ export default class Interpreter {
     // Iterate through the given ops until something breaks or we hit STOP
     while (this._runState.programCounter < this._runState.code.length) {
       const opCode = this._runState.code[this._runState.programCounter]
+      if (
+        this._runState.shouldDoJumpAnalysis &&
+        (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e)
+      ) {
+        // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
+        this._runState.validJumps = this._getValidJumpDests(code)
+        this._runState.shouldDoJumpAnalysis = false
+      }
       this._runState.opCode = opCode
-      await this._runStepHook()
 
       try {
         await this.runStep()
@@ -136,13 +137,32 @@ export default class Interpreter {
    */
   async runStep(): Promise<void> {
     const opInfo = this.lookupOpInfo(this._runState.opCode)
+
+    const gas = new BN(opInfo.fee)
+    // clone the gas limit; call opcodes can add stipend,
+    // which makes it seem like the gas left increases
+    const gasLimitClone = this._eei.getGasLeft()
+
+    if (opInfo.dynamicGas) {
+      const dynamicGasHandler = dynamicGasHandlers.get(this._runState.opCode)!
+      // This function updates the gas BN in-place using `i*` methods
+      // It needs the base fee, for correct gas limit calculation for the CALL opcodes
+      await dynamicGasHandler(this._runState, gas, this._vm._common)
+    }
+
+    if (this._vm.listenerCount('step') > 0 || this._vm.DEBUG) {
+      // Only run this stepHook function if there is an event listener (e.g. test runner)
+      // or if the vm is running in debug mode (to display opcode debug logs)
+      await this._runStepHook(gas, gasLimitClone)
+    }
+
     // Check for invalid opcode
     if (opInfo.name === 'INVALID') {
       throw new VmError(ERROR.INVALID_OPCODE)
     }
 
     // Reduce opcode's base fee
-    this._eei.useGas(new BN(opInfo.fee), `${opInfo.name} (base fee)`)
+    this._eei.useGas(gas, `${opInfo.name} fee`)
     // Advance program counter
     this._runState.programCounter++
 
@@ -170,15 +190,16 @@ export default class Interpreter {
     return this._vm._opcodes.get(op) ?? this._vm._opcodes.get(0xfe)
   }
 
-  async _runStepHook(): Promise<void> {
+  async _runStepHook(dynamicFee: BN, gasLeft: BN): Promise<void> {
     const opcode = this.lookupOpInfo(this._runState.opCode)
     const eventObj: InterpreterStep = {
       pc: this._runState.programCounter,
-      gasLeft: this._eei.getGasLeft(),
+      gasLeft,
       gasRefund: this._eei._evm._refund,
       opcode: {
         name: opcode.fullName,
         fee: opcode.fee,
+        dynamicFee,
         isAsync: opcode.isAsync,
       },
       stack: this._runState.stack._store,
@@ -222,42 +243,45 @@ export default class Interpreter {
      * @event Event: step
      * @type {Object}
      * @property {Number} pc representing the program counter
-     * @property {String} opcode the next opcode to be ran
+     * @property {Object} opcode the next opcode to be ran
+     * @property {string}     opcode.name
+     * @property {fee}        opcode.number Base fee of the opcode
+     * @property {dynamicFee} opcode.dynamicFee Dynamic opcode fee
+     * @property {boolean}    opcode.isAsync opcode is async
      * @property {BN} gasLeft amount of gasLeft
+     * @property {BN} gasRefund gas refund
+     * @property {StateManager} stateManager a {@link StateManager} instance
      * @property {Array} stack an `Array` of `Buffers` containing the stack
+     * @property {Array} returnStack the return stack
      * @property {Account} account the Account which owns the code running
      * @property {Address} address the address of the `account`
      * @property {Number} depth the current number of calls deep the contract is
      * @property {Buffer} memory the memory of the VM as a `buffer`
      * @property {BN} memoryWordCount current size of memory in words
-     * @property {StateManager} stateManager a {@link StateManager} instance
      * @property {Address} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
      */
     return this._vm._emit('step', eventObj)
   }
 
   // Returns all valid jump and jumpsub destinations.
-  _getValidJumpDests(code: Buffer): JumpDests {
-    const jumps = []
-    const jumpSubs = []
+  _getValidJumpDests(code: Buffer) {
+    const jumps = new Uint8Array(code.length).fill(0)
 
     for (let i = 0; i < code.length; i++) {
-      const curOpCode = this.lookupOpInfo(code[i]).name
-
-      // no destinations into the middle of PUSH
-      if (curOpCode === 'PUSH') {
-        i += code[i] - 0x5f
-      }
-
-      if (curOpCode === 'JUMPDEST') {
-        jumps.push(i)
-      }
-
-      if (curOpCode === 'BEGINSUB') {
-        jumpSubs.push(i)
+      const opcode = code[i]
+      // skip over PUSH0-32 since no jump destinations in the middle of a push block
+      if (opcode <= 0x7f) {
+        if (opcode >= 0x60) {
+          i += opcode - 0x5f
+        } else if (opcode === 0x5b) {
+          // Define a JUMPDEST as a 1 in the valid jumps array
+          jumps[i] = 1
+        } else if (opcode === 0x5c) {
+          // Define a BEGINSUB as a 2 in the valid jumps array
+          jumps[i] = 2
+        }
       }
     }
-
-    return { jumps, jumpSubs }
+    return jumps
   }
 }

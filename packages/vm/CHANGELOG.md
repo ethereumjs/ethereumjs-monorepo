@@ -6,6 +6,85 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.7.1 - 2022-02-04
+
+This patch release adds a guard to not enable the recently added EIP-3607 by default. This helps downstream users who may emulate contract accounts as part of their testing strategies.
+
+- Add guard to not enable EIP-3607 by default, PR [#1691](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1691)
+
+## 5.7.0 - 2022-02-01
+
+### Dynamic Gas Costs
+
+Jochem from our team did a great refactoring how the VM handles gas costs in PR [#1364](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1364) by splitting up the opcode gas cost calculation (new file: `evm/opcodes/gas.ts`) from their actual behavior (stack edits, getting block hashes, etc.).
+
+This initial work was adopted a bit in PR [#1553](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1553) to remain backwards-compatible and now allows to output the dynamic gas cost value in the VM `step` event (see `README`) now taking things like memory usage, address access or storage changes into account and therefore much better reflecting the real gas usage than only showing the (much lower) static part.
+
+So along with the static `opcode.fee` output there is now a new event object property `opcode.dynamicFee`.
+
+### StateManager Refactoring
+
+The VM `StateManager` has been substantially refactored in PR [#1548](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1548) and most of the generic functionality has been extracted to a super class `BaseStateManager`. This should make it substantially easier to do custom `StateManager` implementations with an alternative access to the state by inheriting from `BaseStateManager` and only adopting the methods which directly access the underlying data structure. Have a look at the existing `DefaultStateManager` implementation for some guidance.
+
+### Other Features
+
+- New `ProofStateManager` to get an [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186)-compatible (respectively `eth_getProof rPC endpoint-compatible) proof for a specific address and associated storage slots, PR [#1590](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1590) and PR [#1660](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1660)
+- VM JumpDest analysis refactor for better performance, PR [#1629](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1629)
+- [EIP-3607](https://eips.ethereum.org/EIPS/eip-3607): Reject transactions from senders with deployed code, PR [#1568](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1568)
+- Support for new [Sepolia](https://sepolia.ethdevops.io/) PoW test network (use `Chain.Sepolia` for `@ethereumjs/common` instance passed in), PR [#1581](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1581)
+- [EIP-2681](https://eips.ethereum.org/EIPS/eip-2681): Limit account nonce to 2^64-1, PR [#1608](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1608)
+- [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855): Push0 opcode, PR [#1616](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1616)
+
+### Bug Fixes & Maintenance
+
+- Addressed consensus issue: tx goes OOG but refunds get applied anyways (thanks @LogvinovLeon for reporting! ❤️), PR [#1603](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1603)
+- VM now throws when a negative `Call` `value` is passed in, PR [#1606](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1606)
+
+## 5.6.0 - 2021-11-09
+
+### ArrowGlacier HF Support
+
+This release adds support for the upcoming [ArrowGlacier HF](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/arrow-glacier.md) (see PR [#1527](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1527)) targeted for December 2021. The only included EIP is [EIP-4345](https://eips.ethereum.org/EIPS/eip-4345) which delays the difficulty bomb to June/July 2022.
+
+Please note that for backwards-compatibility reasons the associated Common is still instantiated with `istanbul` by default.
+
+An ArrowGlacier VM can be instantiated with:
+
+```typescript
+import VM from '@ethereumjs/vm'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.ArrowGlacier })
+const vm = new VM({ common })
+```
+
+### Additional Error Context for Error Messages
+
+This release extends the text of the error messages in the library with some consistent context information (see PR [#1540](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1540)), here an example for illustration:
+
+Before:
+
+```shell
+invalid receiptTrie
+```
+
+New:
+
+```
+invalid receiptTrie (vm hf=berlin -> block number=1 hash=0x8e368301586b53e30c58dd4734de4b3d6e17db837eb3fbde8cc0036bc7752d9a hf=berlin baseFeePerGas=none txs=1 uncles=0)
+```
+
+The extended errors give substantial more object and chain context and should ease debugging.
+
+**Potentially breaking**: Attention! If you do react on errors in your code and do exact errror matching (`error.message === 'invalid transaction trie'`) things will break. Please make sure to do error comparisons with something like `error.message.includes('invalid transaction trie')` instead. This should generally be the pattern used for all error message comparisions and is assured to be future proof on all error messages (we won't change the core text in non-breaking releases).
+
+### Other Changes
+
+- Fixed accountExists bug in pre-Spurious Dragon HFs, PR [#1516](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1516) and PR [#1524](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1524)
+- New `putBlockIntoBlockchain` option for `BlockBuilder` (default: `true`), PR [#1530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1530)
+- Extended `StateManager.generateGenesis()` to also allow for creating genesis blocks with contract accounts, PR [#1530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1530) and PR [#1541](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1541)
+- Use `RLP` library exposed by `ethereumjs-util` dependency (deduplication), PR [#1549](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1549)
+
 ## 5.5.3 - 2021-09-24
 
 - Fixed a consensus-relevant bug in the Blake2B precompile (see [EIP-152](https://eips.ethereum.org/EIPS/eip-152)) with messages with a length >= 5 (thanks @jochem-brouwer for the great analysis and quick fix on this! ❤️), PR [#1486](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1486)
@@ -29,6 +108,7 @@ Bug fix release to reverse StateManager interface breaking change. The method `m
 **New Features**
 
 - StateManager: Added `modifyAccountFields` method to simplify the `getAccount` -> modify fields -> `putAccount` pattern, PR [#1369](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1369)
+- Report dynamic gas values in `fee` field of `step` event, PR [#1364](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1364)
 
 **Bug Fixes**
 

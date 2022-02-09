@@ -301,4 +301,42 @@ export const validators = {
       }
     }
   },
+
+  /**
+   * Validator to allow validation of an optional value
+   * @param validator validator to check against the value
+   * @returns validator function with params:
+   *   - @param params parameters of method
+   *   - @param index index of parameter
+   */
+  get optional() {
+    return (validator: any) => {
+      return (params: any, index: number) => {
+        if (!params[index]) {
+          return
+        }
+        return validator(params, index)
+      }
+    }
+  },
+
+  /**
+   * Validator that passes if any of the specified validators pass
+   * @param validator validator to check against the value
+   * @returns validator function with params:
+   *   - @param params parameters of method
+   *   - @param index index of parameter
+   */
+  get either() {
+    return (...validators: any) => {
+      return (params: any, index: number) => {
+        if (!params[index]) {
+          return
+        }
+        const results = validators.map((v: any) => v(params, index))
+        const numPassed = results.filter((r: any) => r === undefined).length
+        return numPassed > 0 ? undefined : results[0]
+      }
+    }
+  },
 }

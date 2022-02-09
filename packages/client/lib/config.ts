@@ -2,14 +2,20 @@ import Common, { Hardfork } from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 import { genPrivateKey } from '@ethereumjs/devp2p'
 import { Address } from 'ethereumjs-util'
-import Multiaddr from 'multiaddr'
-import { getLogger, Logger } from './logging'
+import { Multiaddr } from 'multiaddr'
+import { Logger, getLogger } from './logging'
 import { Libp2pServer, RlpxServer } from './net/server'
 import { parseTransports } from './util'
 import { EventBus, EventBusType } from './types'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
 const level = require('level')
+
+export enum DataDirectory {
+  Chain = 'chain',
+  State = 'state',
+  Meta = 'meta',
+}
 
 export interface ConfigOptions {
   /**
@@ -74,6 +80,11 @@ export interface ConfigOptions {
   port?: number
 
   /**
+   * RLPx external IP
+   */
+  extIP?: string
+
+  /**
    * Network multiaddrs for libp2p
    * (e.g. /ip4/127.0.0.1/tcp/50505/p2p/QmABC)
    */
@@ -88,36 +99,15 @@ export interface ConfigOptions {
   servers?: (RlpxServer | Libp2pServer)[]
 
   /**
-   * Enable the JSON-RPC server
-   *
-   * Default: false
+   * Save tx receipts and logs in the meta db (default: false)
    */
-  rpc?: boolean
+  saveReceipts?: boolean
 
   /**
-   * HTTP-RPC server listening port
-   *
-   * Default: 8545
+   * Number of recent blocks to maintain transactions index for
+   * (default = 2350000 = about one year, 0 = entire chain)
    */
-  rpcport?: number
-
-  /**
-   * HTTP-RPC server listening interface
-   */
-  rpcaddr?: string
-
-  /**
-   * Logging verbosity
-   *
-   * Choices: ['debug', 'info', 'warn', 'error', 'off']
-   * Default: 'info'
-   */
-  loglevel?: string
-
-  /**
-   * Additionally log complete RPC calls on log level debug (i.e. --loglevel=debug)
-   */
-  rpcDebug?: boolean
+  txLookupLimit?: number
 
   /**
    * A custom winston logger can be provided
@@ -218,12 +208,6 @@ export class Config {
   public static readonly DATADIR_DEFAULT = `./datadir`
   public static readonly TRANSPORTS_DEFAULT = ['rlpx', 'libp2p']
   public static readonly PORT_DEFAULT = 30303
-  public static readonly RPC_DEFAULT = false
-  public static readonly RPC_ENGINE_DEFAULT = false
-  public static readonly RPCPORT_DEFAULT = 8545
-  public static readonly RPCADDR_DEFAULT = 'localhost'
-  public static readonly LOGLEVEL_DEFAULT = 'info'
-  public static readonly RPCDEBUG_DEFAULT = false
   public static readonly MAXPERREQUEST_DEFAULT = 50
   public static readonly MINPEERS_DEFAULT = 1
   public static readonly MAXPEERS_DEFAULT = 25
@@ -239,12 +223,10 @@ export class Config {
   public readonly transports: string[]
   public readonly bootnodes?: Multiaddr[]
   public readonly port?: number
+  public readonly extIP?: string
   public readonly multiaddrs?: Multiaddr[]
-  public readonly rpc: boolean
-  public readonly rpcport: number
-  public readonly rpcaddr: string
-  public readonly loglevel: string
-  public readonly rpcDebug: boolean
+  public readonly saveReceipts: boolean
+  public readonly txLookupLimit: number
   public readonly maxPerRequest: number
   public readonly minPeers: number
   public readonly maxPeers: number
@@ -273,14 +255,12 @@ export class Config {
     this.transports = options.transports ?? Config.TRANSPORTS_DEFAULT
     this.bootnodes = options.bootnodes
     this.port = options.port ?? Config.PORT_DEFAULT
+    this.extIP = options.extIP
     this.multiaddrs = options.multiaddrs
     this.datadir = options.datadir ?? Config.DATADIR_DEFAULT
     this.key = options.key ?? genPrivateKey()
-    this.rpc = options.rpc ?? Config.RPC_DEFAULT
-    this.rpcport = options.rpcport ?? Config.RPCPORT_DEFAULT
-    this.rpcaddr = options.rpcaddr ?? Config.RPCADDR_DEFAULT
-    this.loglevel = options.loglevel ?? Config.LOGLEVEL_DEFAULT
-    this.rpcDebug = options.rpcDebug ?? Config.RPCDEBUG_DEFAULT
+    this.saveReceipts = options.saveReceipts ?? false
+    this.txLookupLimit = options.txLookupLimit ?? 2350000
     this.maxPerRequest = options.maxPerRequest ?? Config.MAXPERREQUEST_DEFAULT
     this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
     this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT
@@ -293,7 +273,6 @@ export class Config {
     this.synchronized = false
     this.lastSyncDate = 0
 
-    // TODO: map chainParams (and lib/util.parseParams) to new Common format
     const common =
       options.common ?? new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.Chainstart })
     this.chainCommon = common.copy()
@@ -302,16 +281,7 @@ export class Config {
     this.discDns = this.getDnsDiscovery(options.discDns)
     this.discV4 = this.getV4Discovery(options.discV4)
 
-    if (options.logger) {
-      if (options.loglevel) {
-        throw new Error('Config initialization with both logger and loglevel options not allowed')
-      }
-
-      // Logger option takes precedence
-      this.logger = options.logger
-    } else {
-      this.logger = getLogger({ loglevel: this.loglevel })
-    }
+    this.logger = options.logger ?? getLogger({ loglevel: 'error' })
 
     if (options.servers) {
       if (options.transports) {
@@ -344,26 +314,24 @@ export class Config {
    */
   getNetworkDirectory(): string {
     const networkDirName = this.chainCommon.chainName()
-    const dataDir = `${this.datadir}/${networkDirName}`
-    return dataDir
+    return `${this.datadir}/${networkDirName}`
   }
 
   /**
-   * Returns the directory for storing the client chain data
-   * based on syncmode and selected chain (subdirectory of 'datadir')
+   * Returns the location for each {@link DataDirectory}
    */
-  getChainDataDirectory(): string {
-    const chainDataDirName = this.syncmode === 'light' ? 'lightchain' : 'chain'
-    const dataDir = `${this.getNetworkDirectory()}/${chainDataDirName}`
-    return dataDir
-  }
-
-  /**
-   * Returns the directory for storing the client state data
-   * based selected chain (subdirectory of 'datadir')
-   */
-  getStateDataDirectory(): string {
-    return `${this.getNetworkDirectory()}/state`
+  getDataDirectory(dir: DataDirectory): string {
+    const networkDir = this.getNetworkDirectory()
+    switch (dir) {
+      case DataDirectory.Chain: {
+        const chainDataDirName = this.syncmode === 'light' ? 'lightchain' : 'chain'
+        return `${networkDir}/${chainDataDirName}`
+      }
+      case DataDirectory.State:
+        return `${networkDir}/state`
+      case DataDirectory.Meta:
+        return `${networkDir}/meta`
+    }
   }
 
   /**

@@ -29,7 +29,7 @@ export interface RlpxPeerOptions extends Omit<PeerOptions, 'address' | 'transpor
  * Devp2p/RLPx peer
  * @memberof module:net/peer
  * @example
- *
+ * ```typescript
  * import { RlpxPeer } from './lib/net/peer'
  * import { Chain } from './lib/blockchain'
  * import { EthProtocol } from './lib/net/protocol'
@@ -45,6 +45,7 @@ export interface RlpxPeerOptions extends Omit<PeerOptions, 'address' | 'transpor
  *   .on('connected', () => console.log('Connected'))
  *   .on('disconnected', (reason) => console.log('Disconnected:', reason))
  *   .connect()
+ * ```
  */
 export class RlpxPeer extends Peer {
   private host: string
@@ -55,7 +56,6 @@ export class RlpxPeer extends Peer {
 
   /**
    * Create new devp2p/rlpx peer
-   * @param {RlpxPeerOptions}
    */
   constructor(options: RlpxPeerOptions) {
     const address = `${options.host}:${options.port}`
@@ -74,8 +74,7 @@ export class RlpxPeer extends Peer {
 
   /**
    * Return devp2p/rlpx capabilities for the specified protocols
-   * @param  {Protocols[]} protocols protocol instances
-   * @return {Object[]} capabilities
+   * @param protocols protocol instances
    */
   static capabilities(protocols: Protocol[]): Devp2pCapabilities[] {
     const capabilities: Devp2pCapabilities[] = []
@@ -94,7 +93,6 @@ export class RlpxPeer extends Peer {
 
   /**
    * Initiate peer connection
-   * @return {Promise}
    */
   async connect(): Promise<void> {
     if (this.connected) {
@@ -111,35 +109,35 @@ export class RlpxPeer extends Peer {
       address: this.host,
       tcpPort: this.port,
     })
-    this.rlpx.on('peer:error', (_: Devp2pRlpxPeer, error: Error) => {
+
+    const peerErrorHandler = (_: Devp2pRlpxPeer, error: Error) => {
       this.config.events.emit(Event.PEER_ERROR, error, this)
-    })
-    this.rlpx.once('peer:added', async (rlpxPeer: Devp2pRlpxPeer) => {
+    }
+    const peerErrorHandlerBound = peerErrorHandler.bind(this)
+    const peerAddedHandler = async (rlpxPeer: Devp2pRlpxPeer) => {
       try {
         await this.bindProtocols(rlpxPeer)
         this.config.events.emit(Event.PEER_CONNECTED, this)
       } catch (error: any) {
         this.config.events.emit(Event.PEER_ERROR, error, this)
       }
-    })
-    this.rlpx.once('peer:removed', (rlpxPeer: Devp2pRlpxPeer) => {
-      try {
-        if (rlpxPeer !== this.rlpxPeer) {
-          return
-        }
-        this.rlpxPeer = null
-        this.connected = false
-        this.config.events.emit(Event.PEER_DISCONNECTED, this)
-      } catch (error: any) {
-        this.config.events.emit(Event.PEER_ERROR, error, this)
+    }
+    const peerRemovedHandler = (rlpxPeer: Devp2pRlpxPeer) => {
+      if (rlpxPeer !== this.rlpxPeer) {
+        return
       }
-    })
+      this.rlpxPeer = null
+      this.connected = false
+      this.config.events.emit(Event.PEER_DISCONNECTED, this)
+      this.rlpx?.removeListener('peer:error', peerErrorHandlerBound)
+    }
+    this.rlpx.on('peer:error', peerErrorHandlerBound)
+    this.rlpx.once('peer:added', peerAddedHandler.bind(this))
+    this.rlpx.once('peer:removed', peerRemovedHandler.bind(this))
   }
 
   /**
    * Accept new peer connection from an rlpx server
-   * @private
-   * @return {Promise}
    */
   async accept(rlpxPeer: Devp2pRlpxPeer, server: RlpxServer): Promise<void> {
     if (this.connected) {
@@ -151,11 +149,9 @@ export class RlpxPeer extends Peer {
 
   /**
    * Adds protocols to this peer given an rlpx native peer instance.
-   * @private
-   * @param  {Object}  rlpxPeer rlpx native peer
-   * @return {Promise}
+   * @param rlpxPeer rlpx native peer
    */
-  async bindProtocols(rlpxPeer: Devp2pRlpxPeer): Promise<void> {
+  private async bindProtocols(rlpxPeer: Devp2pRlpxPeer): Promise<void> {
     this.rlpxPeer = rlpxPeer
     await Promise.all(
       rlpxPeer.getProtocols().map((rlpxProtocol) => {

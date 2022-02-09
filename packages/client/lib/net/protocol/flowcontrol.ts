@@ -43,8 +43,8 @@ export class FlowControl {
 
   /**
    * Process reply message from an LES peer by updating its BLE value
-   * @param  {Peer}   peer LES peer
-   * @param  {number} bv latest buffer value
+   * @param peer LES peer
+   * @param bv latest buffer value
    */
   handleReply(peer: Peer, bv: number) {
     const params = this.in.get(peer.id) ?? {}
@@ -55,9 +55,9 @@ export class FlowControl {
 
   /**
    * Calculate maximum items that can be requested from an LES peer
-   * @param  {Peer}   peer LES peer
-   * @param  messageName message name
-   * @return maximum count
+   * @param peer LES peer
+   * @param messageName message name
+   * @returns maximum count
    */
   maxRequestCount(peer: Peer, messageName: string): number {
     const now = Date.now()
@@ -81,10 +81,10 @@ export class FlowControl {
    * Calculate new buffer value for an LES peer after an incoming request is
    * processed. If the new value is negative, the peer should be dropped by the
    * caller.
-   * @param  {Peer}   peer LES peer
-   * @param  messageName message name
-   * @param  count number of items to request from peer
-   * @return new buffer value after request is sent (if negative, drop peer)
+   * @param peer LES peer
+   * @param messageName message name
+   * @param count number of items to request from peer
+   * @returns new buffer value after request is sent (if negative, drop peer)
    */
   handleRequest(peer: Peer, messageName: string, count: number): number {
     const now = Date.now()

@@ -20,11 +20,7 @@ tape(`${method}: should return false when the client is synchronized`, async (t)
   const req = params(method, [])
   const expectRes = (res: any) => {
     const msg = 'should return false'
-    if (res.body.result === false) {
-      t.pass(msg)
-    } else {
-      throw new Error(msg)
-    }
+    t.equal(res.body.result, false, msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
@@ -85,7 +81,7 @@ tape(`${method}: should return syncing status object when unsynced`, async (t) =
     ) {
       t.pass(msg)
     } else {
-      throw new Error(msg)
+      t.fail(msg)
     }
   }
 

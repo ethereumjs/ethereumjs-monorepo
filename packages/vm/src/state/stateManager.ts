@@ -1,26 +1,40 @@
-const Set = require('core-js-pure/es/set')
-import { debug as createDebugLogger } from 'debug'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import {
   Account,
   Address,
-  BN,
   toBuffer,
   keccak256,
   KECCAK256_NULL,
+  rlp,
   unpadBuffer,
+  PrefixedHexString,
+  bufferToHex,
+  bnToHex,
+  BN,
+  KECCAK256_RLP,
+  setLengthLeft,
 } from 'ethereumjs-util'
-import { encode, decode } from 'rlp'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
+import Common from '@ethereumjs/common'
 import { StateManager, StorageDump } from './interface'
-import Cache from './cache'
-import { getActivePrecompiles, ripemdPrecompileAddress } from '../evm/precompiles'
+import Cache, { getCb, putCb } from './cache'
+import { BaseStateManager } from './'
 import { short } from '../evm/opcodes'
-import { AccessList, AccessListItem } from '@ethereumjs/tx'
 
-const debug = createDebugLogger('vm:state')
+type StorageProof = {
+  key: PrefixedHexString
+  proof: PrefixedHexString[]
+  value: PrefixedHexString
+}
 
-type AddressHex = string
+export type Proof = {
+  address: PrefixedHexString
+  balance: PrefixedHexString
+  codeHash: PrefixedHexString
+  nonce: PrefixedHexString
+  storageHash: PrefixedHexString
+  accountProof: PrefixedHexString[]
+  storageProof: StorageProof[]
+}
 
 /**
  * Options for constructing a {@link StateManager}.
@@ -37,67 +51,47 @@ export interface DefaultStateManagerOpts {
 }
 
 /**
- * Interface for getting and setting data from an underlying
- * state trie.
+ * Default StateManager implementation for the VM.
+ *
+ * The state manager abstracts from the underlying data store
+ * by providing higher level access to accounts, contract code
+ * and storage slots.
+ *
+ * The default state manager implementation uses a
+ * `merkle-patricia-tree` trie as a data backend.
  */
-export default class DefaultStateManager implements StateManager {
-  _common: Common
+export default class DefaultStateManager extends BaseStateManager implements StateManager {
   _trie: Trie
   _storageTries: { [key: string]: Trie }
-  _cache: Cache
-  _touched: Set<AddressHex>
-  _touchedStack: Set<AddressHex>[]
-  _checkpointCount: number
-  _originalStorageCache: Map<AddressHex, Map<AddressHex, Buffer>>
-
-  // EIP-2929 address/storage trackers.
-  // This maps both the accessed accounts and the accessed storage slots.
-  // It is a Map(Address => StorageSlots)
-  // It is possible that the storage slots set is empty. This means that the address is warm.
-  // It is not possible to have an accessed storage slot on a cold address (which is why this structure works)
-  // Each call level tracks their access themselves.
-  // In case of a commit, copy everything if the value does not exist, to the level above
-  // In case of a revert, discard any warm slots.
-  _accessedStorage: Map<string, Set<string>>[]
-
-  // Backup structure for address/storage tracker frames on reverts
-  // to also include on access list generation
-  _accessedStorageReverted: Map<string, Set<string>>[]
-
-  /**
-   * StateManager is run in DEBUG mode (default: false)
-   * Taken from DEBUG environment variable
-   *
-   * Safeguards on debug() calls are added for
-   * performance reasons to avoid string literal evaluation
-   * @hidden
-   */
-  protected readonly DEBUG: boolean = false
 
   /**
    * Instantiate the StateManager interface.
    */
   constructor(opts: DefaultStateManagerOpts = {}) {
-    let common = opts.common
-    if (!common) {
-      common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    }
-    this._common = common
+    super(opts)
 
     this._trie = opts.trie ?? new Trie()
     this._storageTries = {}
-    this._cache = new Cache(this._trie)
-    this._touched = new Set()
-    this._touchedStack = []
-    this._checkpointCount = 0
-    this._originalStorageCache = new Map()
-    this._accessedStorage = [new Map()]
-    this._accessedStorageReverted = [new Map()]
 
-    // Safeguard if "process" is not available (browser)
-    if (process !== undefined && process.env.DEBUG) {
-      this.DEBUG = true
+    /*
+     * For a custom StateManager implementation adopt these
+     * callbacks passed to the `Cache` instantiated to perform
+     * the `get`, `put` and `delete` operations with the
+     * desired backend.
+     */
+    const getCb: getCb = async (address) => {
+      const rlp = await this._trie.get(address.buf)
+      return rlp ? Account.fromRlpSerializedAccount(rlp) : undefined
     }
+    const putCb: putCb = async (keyBuf, accountRlp) => {
+      const trie = this._trie
+      await trie.put(keyBuf, accountRlp)
+    }
+    const deleteCb = async (keyBuf: Buffer) => {
+      const trie = this._trie
+      await trie.del(keyBuf)
+    }
+    this._cache = new Cache({ getCb, putCb, deleteCb })
   }
 
   /**
@@ -110,55 +104,6 @@ export default class DefaultStateManager implements StateManager {
       trie: this._trie.copy(false),
       common: this._common,
     })
-  }
-
-  /**
-   * Gets the account associated with `address`. Returns an empty account if the account does not exist.
-   * @param address - Address of the `account` to get
-   */
-  async getAccount(address: Address): Promise<Account> {
-    const account = await this._cache.getOrLoad(address)
-    return account
-  }
-
-  /**
-   * Saves an account into state under the provided `address`.
-   * @param address - Address under which to store `account`
-   * @param account - The account to store
-   */
-  async putAccount(address: Address, account: Account): Promise<void> {
-    if (this.DEBUG) {
-      debug(
-        `Save account address=${address} nonce=${account.nonce} balance=${
-          account.balance
-        } contract=${account.isContract() ? 'yes' : 'no'} empty=${account.isEmpty() ? 'yes' : 'no'}`
-      )
-    }
-    this._cache.put(address, account)
-    this.touchAccount(address)
-  }
-
-  /**
-   * Deletes an account from state under the provided `address`. The account will also be removed from the state trie.
-   * @param address - Address of the account which should be deleted
-   */
-  async deleteAccount(address: Address) {
-    if (this.DEBUG) {
-      debug(`Delete account ${address}`)
-    }
-    this._cache.del(address)
-    this.touchAccount(address)
-  }
-
-  /**
-   * Marks an account as touched, according to the definition
-   * in [EIP-158](https://eips.ethereum.org/EIPS/eip-158).
-   * This happens when the account is triggered for a state-changing
-   * event. Touched accounts that are empty will be cleared
-   * at the end of the tx.
-   */
-  touchAccount(address: Address): void {
-    this._touched.add(address.buf.toString('hex'))
   }
 
   /**
@@ -178,7 +123,7 @@ export default class DefaultStateManager implements StateManager {
 
     const account = await this.getAccount(address)
     if (this.DEBUG) {
-      debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
+      this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
     }
     account.codeHash = codeHash
     await this.putAccount(address, account)
@@ -245,57 +190,8 @@ export default class DefaultStateManager implements StateManager {
 
     const trie = await this._getStorageTrie(address)
     const value = await trie.get(key)
-    const decoded = decode(value)
+    const decoded = rlp.decode(value)
     return decoded as Buffer
-  }
-
-  /**
-   * Caches the storage value associated with the provided `address` and `key`
-   * on first invocation, and returns the cached (original) value from then
-   * onwards. This is used to get the original value of a storage slot for
-   * computing gas costs according to EIP-1283.
-   * @param address - Address of the account to get the storage for
-   * @param key - Key in the account's storage to get the value for. Must be 32 bytes long.
-   */
-  async getOriginalContractStorage(address: Address, key: Buffer): Promise<Buffer> {
-    if (key.length !== 32) {
-      throw new Error('Storage key must be 32 bytes long')
-    }
-
-    const addressHex = address.buf.toString('hex')
-    const keyHex = key.toString('hex')
-
-    let map: Map<AddressHex, Buffer>
-    if (!this._originalStorageCache.has(addressHex)) {
-      map = new Map()
-      this._originalStorageCache.set(addressHex, map)
-    } else {
-      map = this._originalStorageCache.get(addressHex)!
-    }
-
-    if (map.has(keyHex)) {
-      return map.get(keyHex)!
-    } else {
-      const current = await this.getContractStorage(address, key)
-      map.set(keyHex, current)
-      return current
-    }
-  }
-
-  /**
-   * Clears the original storage cache. Refer to {@link StateManager.getOriginalContractStorage}
-   * for more explanation.
-   */
-  _clearOriginalStorageCache(): void {
-    this._originalStorageCache = new Map()
-  }
-
-  /**
-   * Clears the original storage cache. Refer to {@link StateManager.getOriginalContractStorage}
-   * for more explanation. Alias of the internal {@link StateManager._clearOriginalStorageCache}
-   */
-  clearOriginalStorageCache(): void {
-    this._clearOriginalStorageCache()
   }
 
   /**
@@ -349,15 +245,15 @@ export default class DefaultStateManager implements StateManager {
     await this._modifyContractStorage(address, async (storageTrie, done) => {
       if (value && value.length) {
         // format input
-        const encodedValue = encode(value)
+        const encodedValue = rlp.encode(value)
         if (this.DEBUG) {
-          debug(`Update contract storage for account ${address} to ${short(value)}`)
+          this._debug(`Update contract storage for account ${address} to ${short(value)}`)
         }
         await storageTrie.put(key, encodedValue)
       } else {
         // deleting a value
         if (this.DEBUG) {
-          debug(`Delete contract storage for account`)
+          this._debug(`Delete contract storage for account`)
         }
         await storageTrie.del(key)
       }
@@ -383,34 +279,7 @@ export default class DefaultStateManager implements StateManager {
    */
   async checkpoint(): Promise<void> {
     this._trie.checkpoint()
-    this._cache.checkpoint()
-    this._touchedStack.push(new Set(Array.from(this._touched)))
-    this._accessedStorage.push(new Map())
-    this._checkpointCount++
-  }
-
-  /**
-   * Merges a storage map into the last item of the accessed storage stack
-   */
-  private _accessedStorageMerge(
-    storageList: Map<string, Set<string>>[],
-    storageMap: Map<string, Set<string>>
-  ) {
-    const mapTarget = storageList[storageList.length - 1]
-
-    if (mapTarget) {
-      // Note: storageMap is always defined here per definition (TypeScript cannot infer this)
-      storageMap?.forEach((slotSet: Set<string>, addressString: string) => {
-        const addressExists = mapTarget.get(addressString)
-        if (!addressExists) {
-          mapTarget.set(addressString, new Set())
-        }
-        const storageSet = mapTarget.get(addressString)
-        slotSet.forEach((value: string) => {
-          storageSet!.add(value)
-        })
-      })
-    }
+    await super.checkpoint()
   }
 
   /**
@@ -420,21 +289,7 @@ export default class DefaultStateManager implements StateManager {
   async commit(): Promise<void> {
     // setup trie checkpointing
     await this._trie.commit()
-    // setup cache checkpointing
-    this._cache.commit()
-    this._touchedStack.pop()
-    this._checkpointCount--
-
-    // Copy the contents of the map of the current level to a map higher.
-    const storageMap = this._accessedStorage.pop()
-    if (storageMap) {
-      this._accessedStorageMerge(this._accessedStorage, storageMap)
-    }
-
-    if (this._checkpointCount === 0) {
-      await this._cache.flush()
-      this._clearOriginalStorageCache()
-    }
+    await super.commit()
   }
 
   /**
@@ -444,31 +299,115 @@ export default class DefaultStateManager implements StateManager {
   async revert(): Promise<void> {
     // setup trie checkpointing
     await this._trie.revert()
-    // setup cache checkpointing
-    this._cache.revert()
     this._storageTries = {}
-    const lastItem = this._accessedStorage.pop()
-    if (lastItem) {
-      this._accessedStorageReverted.push(lastItem)
-    }
-    const touched = this._touchedStack.pop()
-    if (!touched) {
-      throw new Error('Reverting to invalid state checkpoint failed')
-    }
-    // Exceptional case due to consensus issue in Geth and Parity.
-    // See [EIP issue #716](https://github.com/ethereum/EIPs/issues/716) for context.
-    // The RIPEMD precompile has to remain *touched* even when the call reverts,
-    // and be considered for deletion.
-    if (this._touched.has(ripemdPrecompileAddress)) {
-      touched.add(ripemdPrecompileAddress)
-    }
-    this._touched = touched
-    this._checkpointCount--
+    await super.revert()
+  }
 
-    if (this._checkpointCount === 0) {
-      await this._cache.flush()
-      this._clearOriginalStorageCache()
+  /**
+   * Get an EIP-1186 proof
+   * @param address address to get proof of
+   * @param storageSlots storage slots to get proof of
+   */
+  async getProof(address: Address, storageSlots: Buffer[] = []): Promise<Proof> {
+    const account = await this.getAccount(address)
+    const accountProof: PrefixedHexString[] = (await Trie.createProof(this._trie, address.buf)).map(
+      (p) => bufferToHex(p)
+    )
+    const storageProof: StorageProof[] = []
+    const storageTrie = await this._getStorageTrie(address)
+
+    for (const storageKey of storageSlots) {
+      const proof = (await Trie.createProof(storageTrie, storageKey)).map((p) => bufferToHex(p))
+      let value = bufferToHex(await this.getContractStorage(address, storageKey))
+      if (value === '0x') {
+        value = '0x0'
+      }
+      const proofItem: StorageProof = {
+        key: bufferToHex(storageKey),
+        value,
+        proof,
+      }
+      storageProof.push(proofItem)
     }
+
+    const returnValue: Proof = {
+      address: address.toString(),
+      balance: bnToHex(account.balance),
+      codeHash: bufferToHex(account.codeHash),
+      nonce: bnToHex(account.nonce),
+      storageHash: bufferToHex(account.stateRoot),
+      accountProof,
+      storageProof,
+    }
+    return returnValue
+  }
+
+  /**
+   * Verify an EIP-1186 proof. Throws if proof is invalid, otherwise returns true.
+   * @param proof the proof to prove
+   */
+  async verifyProof(proof: Proof): Promise<boolean> {
+    const rootHash = keccak256(toBuffer(proof.accountProof[0]))
+    const key = toBuffer(proof.address)
+    const accountProof = proof.accountProof.map((rlpString: PrefixedHexString) =>
+      toBuffer(rlpString)
+    )
+
+    // This returns the account if the proof is valid.
+    // Verify that it matches the reported account.
+    const value = await Trie.verifyProof(rootHash, key, accountProof)
+
+    if (value === null) {
+      // Verify that the account is empty in the proof.
+      const emptyBuffer = Buffer.from('')
+      const notEmptyErrorMsg = 'Invalid proof provided: account is not empty'
+      const nonce = unpadBuffer(toBuffer(proof.nonce))
+      if (!nonce.equals(emptyBuffer)) {
+        throw new Error(`${notEmptyErrorMsg} (nonce is not zero)`)
+      }
+      const balance = unpadBuffer(toBuffer(proof.balance))
+      if (!balance.equals(emptyBuffer)) {
+        throw new Error(`${notEmptyErrorMsg} (balance is not zero)`)
+      }
+      const storageHash = toBuffer(proof.storageHash)
+      if (!storageHash.equals(KECCAK256_RLP)) {
+        throw new Error(`${notEmptyErrorMsg} (storageHash does not equal KECCAK256_RLP)`)
+      }
+      const codeHash = toBuffer(proof.codeHash)
+      if (!codeHash.equals(KECCAK256_NULL)) {
+        throw new Error(`${notEmptyErrorMsg} (codeHash does not equal KECCAK256_NULL)`)
+      }
+    } else {
+      const account = Account.fromRlpSerializedAccount(value)
+      const { nonce, balance, stateRoot, codeHash } = account
+      const invalidErrorMsg = 'Invalid proof provided:'
+      if (!nonce.eq(new BN(toBuffer(proof.nonce)))) {
+        throw new Error(`${invalidErrorMsg} nonce does not match`)
+      }
+      if (!balance.eq(new BN(toBuffer(proof.balance)))) {
+        throw new Error(`${invalidErrorMsg} balance does not match`)
+      }
+      if (!stateRoot.equals(toBuffer(proof.storageHash))) {
+        throw new Error(`${invalidErrorMsg} storageHash does not match`)
+      }
+      if (!codeHash.equals(toBuffer(proof.codeHash))) {
+        throw new Error(`${invalidErrorMsg} codeHash does not match`)
+      }
+    }
+
+    const storageRoot = toBuffer(proof.storageHash)
+
+    for (const stProof of proof.storageProof) {
+      const storageProof = stProof.proof.map((value: PrefixedHexString) => toBuffer(value))
+      const storageValue = setLengthLeft(toBuffer(stProof.value), 32)
+      const storageKey = toBuffer(stProof.key)
+      const proofValue = await Trie.verifyProof(storageRoot, storageKey, storageProof)
+      const reportedValue = setLengthLeft(rlp.decode(proofValue as Buffer), 32)
+      if (!reportedValue.equals(storageValue)) {
+        throw new Error('Reported trie value does not match storage')
+      }
+    }
+    return true
   }
 
   /**
@@ -548,54 +487,6 @@ export default class DefaultStateManager implements StateManager {
   }
 
   /**
-   * Generates a canonical genesis state on the instance based on the
-   * configured chain parameters. Will error if there are uncommitted
-   * checkpoints on the instance.
-   */
-  async generateCanonicalGenesis(): Promise<void> {
-    if (this._checkpointCount !== 0) {
-      throw new Error('Cannot create genesis state with uncommitted checkpoints')
-    }
-
-    const genesis = await this.hasGenesisState()
-    if (!genesis) {
-      await this.generateGenesis(this._common.genesisState())
-    }
-  }
-
-  /**
-   * Initializes the provided genesis state into the state trie
-   * @param initState - Object (address -> balance)
-   */
-  async generateGenesis(initState: any): Promise<void> {
-    if (this._checkpointCount !== 0) {
-      throw new Error('Cannot create genesis state with uncommitted checkpoints')
-    }
-
-    if (this.DEBUG) {
-      debug(`Save genesis state into the state trie`)
-    }
-    const addresses = Object.keys(initState)
-    for (const address of addresses) {
-      const balance = new BN(toBuffer(initState[address]))
-      const account = Account.fromAccountData({ balance })
-      const addressBuffer = toBuffer(address)
-      await this._trie.put(addressBuffer, account.serialize())
-    }
-  }
-
-  /**
-   * Checks if the `account` corresponding to `address`
-   * is empty or non-existent as defined in
-   * EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
-   * @param address - Address to check
-   */
-  async accountIsEmpty(address: Address): Promise<boolean> {
-    const account = await this.getAccount(address)
-    return account.isEmpty()
-  }
-
-  /**
    * Checks if the `account` corresponding to `address`
    * exists
    * @param address - Address of the `account` to check
@@ -605,161 +496,9 @@ export default class DefaultStateManager implements StateManager {
     if (account && !(account as any).virtual && !this._cache.keyIsDeleted(address)) {
       return true
     }
-    if (await this._cache._trie.get(address.buf)) {
+    if (await this._trie.get(address.buf)) {
       return true
     }
     return false
-  }
-
-  /** EIP-2929 logic
-   * This should only be called from within the EVM
-   */
-
-  /**
-   * Returns true if the address is warm in the current context
-   * @param address - The address (as a Buffer) to check
-   */
-  isWarmedAddress(address: Buffer): boolean {
-    for (let i = this._accessedStorage.length - 1; i >= 0; i--) {
-      const currentMap = this._accessedStorage[i]
-      if (currentMap.has(address.toString('hex'))) {
-        return true
-      }
-    }
-    return false
-  }
-
-  /**
-   * Add a warm address in the current context
-   * @param address - The address (as a Buffer) to check
-   */
-  addWarmedAddress(address: Buffer): void {
-    const key = address.toString('hex')
-    const storageSet = this._accessedStorage[this._accessedStorage.length - 1].get(key)
-    if (!storageSet) {
-      const emptyStorage = new Set()
-      this._accessedStorage[this._accessedStorage.length - 1].set(key, emptyStorage)
-    }
-  }
-
-  /**
-   * Returns true if the slot of the address is warm
-   * @param address - The address (as a Buffer) to check
-   * @param slot - The slot (as a Buffer) to check
-   */
-  isWarmedStorage(address: Buffer, slot: Buffer): boolean {
-    const addressKey = address.toString('hex')
-    const storageKey = slot.toString('hex')
-
-    for (let i = this._accessedStorage.length - 1; i >= 0; i--) {
-      const currentMap = this._accessedStorage[i]
-      if (currentMap.has(addressKey) && currentMap.get(addressKey)!.has(storageKey)) {
-        return true
-      }
-    }
-
-    return false
-  }
-
-  /**
-   * Mark the storage slot in the address as warm in the current context
-   * @param address - The address (as a Buffer) to check
-   * @param slot - The slot (as a Buffer) to check
-   */
-  addWarmedStorage(address: Buffer, slot: Buffer): void {
-    const addressKey = address.toString('hex')
-    let storageSet = this._accessedStorage[this._accessedStorage.length - 1].get(addressKey)
-    if (!storageSet) {
-      storageSet = new Set()
-      this._accessedStorage[this._accessedStorage.length - 1].set(addressKey, storageSet!)
-    }
-    storageSet!.add(slot.toString('hex'))
-  }
-
-  /**
-   * Clear the warm accounts and storage. To be called after a transaction finished.
-   * @param boolean - If true, returns an EIP-2930 access list generated
-   */
-  clearWarmedAccounts(): void {
-    this._accessedStorage = [new Map()]
-    this._accessedStorageReverted = [new Map()]
-  }
-
-  /**
-   * Generates an EIP-2930 access list
-   *
-   * Note: this method is not yet part of the {@link StateManager} interface.
-   * If not implemented, {@link VM.runTx} is not allowed to be used with the
-   * `reportAccessList` option and will instead throw.
-   *
-   * Note: there is an edge case on accessList generation where an
-   * internal call might revert without an accessList but pass if the
-   * accessList is used for a tx run (so the subsequent behavior might change).
-   * This edge case is not covered by this implementation.
-   *
-   * @param addressesRemoved - List of addresses to be removed from the final list
-   * @param addressesOnlyStorage - List of addresses only to be added in case of present storage slots
-   *
-   * @returns - an [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/packages/tx) `AccessList`
-   */
-  generateAccessList(
-    addressesRemoved: Address[] = [],
-    addressesOnlyStorage: Address[] = []
-  ): AccessList {
-    // Merge with the reverted storage list
-    const mergedStorage = [...this._accessedStorage, ...this._accessedStorageReverted]
-
-    // Fold merged storage array into one Map
-    while (mergedStorage.length >= 2) {
-      const storageMap = mergedStorage.pop()
-      if (storageMap) {
-        this._accessedStorageMerge(mergedStorage, storageMap)
-      }
-    }
-    const folded = new Map([...mergedStorage[0].entries()].sort())
-
-    // Transfer folded map to final structure
-    const accessList: AccessList = []
-    folded.forEach((slots, addressStr) => {
-      const address = Address.fromString(`0x${addressStr}`)
-      const check1 = getActivePrecompiles(this._common).find((a) => a.equals(address))
-      const check2 = addressesRemoved.find((a) => a.equals(address))
-      const check3 =
-        addressesOnlyStorage.find((a) => a.equals(address)) !== undefined && slots.size === 0
-
-      if (!check1 && !check2 && !check3) {
-        const storageSlots = Array.from(slots)
-          .map((s) => `0x${s}`)
-          .sort()
-        const accessListItem: AccessListItem = {
-          address: `0x${addressStr}`,
-          storageKeys: storageSlots,
-        }
-        accessList!.push(accessListItem)
-      }
-    })
-
-    return accessList
-  }
-
-  /**
-   * Removes accounts form the state trie that have been touched,
-   * as defined in EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
-   */
-  async cleanupTouchedAccounts(): Promise<void> {
-    if (this._common.gteHardfork('spuriousDragon')) {
-      const touchedArray = Array.from(this._touched)
-      for (const addressHex of touchedArray) {
-        const address = new Address(Buffer.from(addressHex, 'hex'))
-        const empty = await this.accountIsEmpty(address)
-        if (empty) {
-          this._cache.del(address)
-          if (this.DEBUG) {
-            debug(`Cleanup touched account address=${address} (>= SpuriousDragon)`)
-          }
-        }
-      }
-    }
-    this._touched.clear()
   }
 }

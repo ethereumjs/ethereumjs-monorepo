@@ -1,9 +1,20 @@
-import { BN, bufferToInt } from 'ethereumjs-util'
-import { Block, BlockBuffer, BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
+import {
+  Block,
+  BlockBuffer,
+  BlockHeader,
+  BlockHeaderBuffer,
+  BlockBodyBuffer,
+} from '@ethereumjs/block'
+import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
+import { BN, bufferToInt, intToBuffer, rlp } from 'ethereumjs-util'
 import { Chain } from './../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'
-import { BlockBodyBuffer } from '@ethereumjs/block'
-import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
+import type { TxReceiptWithType } from '../../sync/execution/receipt'
+import type {
+  PostByzantiumTxReceipt,
+  PreByzantiumTxReceipt,
+  TxReceipt,
+} from '@ethereumjs/vm/dist/types'
 
 interface EthProtocolOptions extends ProtocolOptions {
   /* Blockchain */
@@ -37,6 +48,13 @@ type GetPooledTransactionsOpts = {
   hashes: Buffer[]
 }
 
+type GetReceiptsOpts = {
+  /* Request id (default: next internal id) */
+  reqId?: BN
+  /* The block hashes to request receipts for */
+  hashes: Buffer[]
+}
+
 /*
  * Messages with responses that are added as
  * methods in camelCase to BoundProtocol.
@@ -45,6 +63,7 @@ export interface EthProtocolMethods {
   getBlockHeaders: (opts: GetBlockHeadersOpts) => Promise<[BN, BlockHeader[]]>
   getBlockBodies: (opts: GetBlockBodiesOpts) => Promise<[BN, BlockBodyBuffer[]]>
   getPooledTransactions: (opts: GetPooledTransactionsOpts) => Promise<[BN, TypedTransaction[]]>
+  getReceipts: (opts: GetReceiptsOpts) => Promise<[BN, TxReceipt[]]>
 }
 
 const id = new BN(0)
@@ -80,7 +99,7 @@ export class EthProtocol extends Protocol {
       decode: ([txs]: [Buffer[]]) => {
         // TODO: add proper Common instance (problem: service not accesible)
         //const common = this.config.chainCommon.copy()
-        //common.setHardforkByBlockNumber(this.service.synchronizer.syncTargetHeight)
+        //common.setHardforkByBlockNumber(this.service.synchronizer.syncTargetHeight, this.chain.headers.td)
         return txs.map((txData) => TransactionFactory.fromBlockBodyData(txData))
       },
     },
@@ -110,6 +129,10 @@ export class EthProtocol extends Protocol {
       decode: ([reqId, headers]: [Buffer, BlockHeaderBuffer[]]) => [
         new BN(reqId),
         headers.map((h) =>
+          // TODO: need to implement hardforkByTD otherwise
+          // pre-merge blocks will fail to init if chainCommon is past merge
+          // and we request pre-mergs blocks (e.g. if we have a different terminal block
+          // and we look backwards for the correct block)
           BlockHeader.fromValuesArray(h, {
             hardforkByBlockNumber: true,
             common: this.config.chainCommon, // eslint-disable-line no-invalid-this
@@ -181,7 +204,7 @@ export class EthProtocol extends Protocol {
             serializedTxs.push(tx.serialize())
           }
         }
-        return [reqId.toNumber(), serializedTxs]
+        return [reqId.toArrayLike(Buffer), serializedTxs]
       },
       decode: ([reqId, txs]: [Buffer, any[]]) => [
         new BN(reqId),
@@ -191,11 +214,61 @@ export class EthProtocol extends Protocol {
         txs.map((txData) => TransactionFactory.fromBlockBodyData(txData)),
       ],
     },
+    {
+      name: 'GetReceipts',
+      code: 0x0f,
+      response: 0x10,
+      encode: ({ reqId, hashes }: { reqId: BN; hashes: Buffer[] }) => [
+        (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
+        hashes,
+      ],
+      decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
+        reqId: new BN(reqId),
+        hashes,
+      }),
+    },
+    {
+      name: 'Receipts',
+      code: 0x10,
+      encode: ({ reqId, receipts }: { reqId: BN; receipts: TxReceiptWithType[] }) => {
+        const serializedReceipts = []
+        for (const receipt of receipts) {
+          let encodedReceipt = rlp.encode([
+            (receipt as PreByzantiumTxReceipt).stateRoot ??
+              (receipt as PostByzantiumTxReceipt).status,
+            receipt.gasUsed,
+            receipt.bitvector,
+            receipt.logs,
+          ])
+          if (receipt.txType > 0) {
+            // Serialize receipt according to EIP-2718:
+            // `typed-receipt = tx-type || receipt-data`
+            encodedReceipt = Buffer.concat([intToBuffer(receipt.txType), encodedReceipt])
+          }
+          serializedReceipts.push(encodedReceipt)
+        }
+        return [reqId.toArrayLike(Buffer), serializedReceipts]
+      },
+      decode: ([reqId, receipts]: [Buffer, Buffer[]]) => [
+        new BN(reqId),
+        receipts.map((r) => {
+          // Legacy receipt if r[0] >= 0xc0, otherwise typed receipt with first byte as TransactionType
+          const decoded = rlp.decode(r[0] >= 0xc0 ? r : r.slice(1)) as any
+          const [stateRootOrStatus, cumulativeGasUsed, logsBloom, logs] = decoded
+          const receipt = { gasUsed: cumulativeGasUsed, bitvector: logsBloom, logs } as TxReceipt
+          if (stateRootOrStatus.length === 32) {
+            ;(receipt as PreByzantiumTxReceipt).stateRoot = stateRootOrStatus
+          } else {
+            ;(receipt as PostByzantiumTxReceipt).status = bufferToInt(stateRootOrStatus) as 0 | 1
+          }
+          return receipt
+        }),
+      ],
+    },
   ]
 
   /**
    * Create eth protocol
-   * @param {EthProtocolOptions}
    */
   constructor(options: EthProtocolOptions) {
     super(options)
@@ -205,31 +278,27 @@ export class EthProtocol extends Protocol {
 
   /**
    * Name of protocol
-   * @type {string}
    */
-  get name(): string {
+  get name() {
     return 'eth'
   }
 
   /**
    * Protocol versions supported
-   * @type {number[]}
    */
-  get versions(): number[] {
+  get versions() {
     return [66]
   }
 
   /**
    * Messages defined by this protocol
-   * @type {Protocol~Message[]}
    */
-  get messages(): Message[] {
+  get messages() {
     return this.protocolMessages
   }
 
   /**
    * Opens protocol and any associated dependencies
-   * @return {Promise}
    */
   async open(): Promise<boolean | void> {
     if (this.opened) {
@@ -241,12 +310,13 @@ export class EthProtocol extends Protocol {
 
   /**
    * Encodes status into ETH status message payload
-   * @return {Object}
    */
   encodeStatus(): any {
     return {
       networkId: this.chain.networkId.toArrayLike(Buffer),
-      td: this.chain.blocks.td.toArrayLike(Buffer),
+      td: this.chain.blocks.td.isZero()
+        ? Buffer.from([])
+        : this.chain.blocks.td.toArrayLike(Buffer),
       bestHash: this.chain.blocks.latest!.hash(),
       genesisHash: this.chain.genesis.hash,
       latestBlock: this.chain.blocks.latest!.header.number.toArrayLike(Buffer),
@@ -255,8 +325,7 @@ export class EthProtocol extends Protocol {
 
   /**
    * Decodes ETH status message payload into a status object
-   * @param {Object} status status message payload
-   * @return {Object}
+   * @param status status message payload
    */
   decodeStatus(status: any): any {
     return {

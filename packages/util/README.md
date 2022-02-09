@@ -1,4 +1,4 @@
-# SYNOPSIS
+# ethereumjs-util
 
 [![NPM Package][util-npm-badge]][util-npm-link]
 [![GitHub Issues][util-issues-badge]][util-issues-link]
@@ -18,45 +18,47 @@ A collection of utility functions for Ethereum. It can be used in Node.js and in
 import assert from 'assert'
 import { isValidChecksumAddress, unpadBuffer, BN } from 'ethereumjs-util'
 
-const address = '0x2F015C60E0be116B1f0CD534704Db9c92118FB6A'
-assert.ok(isValidChecksumAddress(address))
+assert.ok(isValidChecksumAddress('0x2F015C60E0be116B1f0CD534704Db9c92118FB6A'))
 
-assert.equal(unpadBuffer(Buffer.from('000000006600', 'hex')), Buffer.from('6600', 'hex'))
+assert.ok(unpadBuffer(Buffer.from('000000006600', 'hex')).equals(Buffer.from('6600', 'hex')))
 
-assert.equal(new BN('dead', 16).add(new BN('101010', 2)), 57047)
+assert.ok(new BN('dead', 16).add(new BN('101010', 2)).eqn(57047))
 ```
 
 # API
 
 ## Documentation
 
+Read the [API docs](docs/).
+
 ### Modules
 
-- [account](docs/modules/account.md)
+- [account](src/account.ts)
   - Account class
   - Private/public key and address-related functionality (creation, validation, conversion)
-- [address](docs/modules/address.md)
+- [address](src/address.ts)
   - Address class and type
-- [bytes](docs/modules/bytes.md)
+- [bytes](src/bytes.ts)
   - Byte-related helper and conversion functions
-- [constants](docs/modules/constants.md)
+- [constants](src/constants.ts)
   - Exposed constants
-    - e.g. KECCAK256_NULL_S for string representation of Keccak-256 hash of null
-- [hash](docs/modules/hash.md)
+    - e.g. `KECCAK256_NULL_S` for string representation of Keccak-256 hash of null
+- [hash](src/hash.ts)
   - Hash functions
-- [object](docs/modules/object.md)
+- [object](src/object.ts)
   - Helper function for creating a binary object (`DEPRECATED`)
-- [signature](docs/modules/signature.md)
+- [signature](src/signature.ts)
   - Signing, signature validation, conversion, recovery
-- [types](docs/modules/types.md)
+- [types](src/types.ts)
   - Helpful TypeScript types
-- [externals](docs/modules/externals.md)
-  - Helper methods from `ethjs-util`
+- [internal](src/internal.ts)
+  - Internalized helper methods
+- [externals](src/externals.ts)
   - Re-exports of `BN`, `rlp`
 
 ### ethjs-util methods
 
-The following methods are available provided by [ethjs-util](https://github.com/ethjs/ethjs-util):
+The following methods are available by an internalized version of the [ethjs-util](https://github.com/ethjs/ethjs-util) package (`MIT` license), see [internal.ts](src/internal.ts). The original package is not maintained any more and the original functionality will be replaced by own implementations over time (starting with the `v7.1.3` release, October 2021).
 
 - arrayContainsArray
 - getBinarySize
@@ -78,10 +80,16 @@ import { stripHexPrefix } from 'ethereumjs-util'
 
 ### Re-Exports
 
-Additionally `ethereumjs-util` re-exports a few commonly-used libraries. These include:
+`ethereumjs-util` re-exports the following commonly-used libraries:
 
 - [BN.js](https://github.com/indutny/bn.js) (version `5.x`)
 - [rlp](https://github.com/ethereumjs/rlp) (version `2.x`)
+
+They can be imported by name:
+
+```js
+import { BN, rlp } from 'ethereumjs-util'
+```
 
 # EthereumJS
 

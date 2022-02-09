@@ -11,11 +11,7 @@ tape(`${method}: call`, async (t) => {
   const expectRes = (res: any) => {
     const { result } = res.body
     const msg = 'result should be a hex number'
-    if (result.substring(0, 2) !== '0x') {
-      throw new Error(msg)
-    } else {
-      t.pass(msg)
-    }
+    t.equal(result.substring(0, 2), '0x', msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })

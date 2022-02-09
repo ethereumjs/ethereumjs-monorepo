@@ -4,6 +4,7 @@ import { FlowControl, LesProtocolMethods } from '../../net/protocol'
 import { BlockHeader } from '@ethereumjs/block'
 import { Job } from './types'
 import { BN } from 'ethereumjs-util'
+import { Event } from '../../types'
 
 export interface HeaderFetcherOptions extends BlockFetcherOptions {
   /* Flow control manager */
@@ -21,7 +22,6 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
 
   /**
    * Create new header fetcher
-   * @param {HeaderFetcherOptions}
    */
   constructor(options: any) {
     super(options)
@@ -48,9 +48,9 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
 
   /**
    * Process fetch result
-   * @param  job fetch job
-   * @param  result fetch result
-   * @return {*} results of processing job or undefined if job not finished
+   * @param job fetch job
+   * @param result fetch result
+   * @returns results of processing job or undefined if job not finished
    */
   process(job: Job<JobTask, BlockHeaderResult, BlockHeader>, result: BlockHeaderResult) {
     this.flow.handleReply(job.peer!, result.bv.toNumber())
@@ -79,11 +79,19 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
 
   /**
    * Store fetch result. Resolves once store operation is complete.
-   * @param {Header[]} headers fetch result
-   * @return {Promise}
+   * @param headers fetch result
    */
   async store(headers: BlockHeader[]) {
-    await this.chain.putHeaders(headers)
+    try {
+      const num = await this.chain.putHeaders(headers)
+      this.debug(`Fetcher results stored in blockchain (headers num=${headers.length})`)
+      this.config.events.emit(Event.SYNC_FETCHER_FETCHED, headers.slice(0, num))
+    } catch (e: any) {
+      this.debug(
+        `Error storing fetcher results in blockchain (headers num=${headers.length}): ${e}`
+      )
+      throw e
+    }
   }
 
   /**

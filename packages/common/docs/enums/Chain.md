@@ -11,6 +11,7 @@
 - [Mainnet](Chain.md#mainnet)
 - [Rinkeby](Chain.md#rinkeby)
 - [Ropsten](Chain.md#ropsten)
+- [Sepolia](Chain.md#sepolia)
 
 ## Enumeration members
 
@@ -20,7 +21,7 @@
 
 #### Defined in
 
-[packages/common/src/index.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L50)
+[packages/common/src/index.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L64)
 
 ___
 
@@ -30,7 +31,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/index.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L49)
+[packages/common/src/index.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L63)
 
 ___
 
@@ -40,7 +41,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/index.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L46)
+[packages/common/src/index.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L60)
 
 ___
 
@@ -50,7 +51,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/index.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L48)
+[packages/common/src/index.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L62)
 
 ___
 
@@ -60,4 +61,14 @@ ___
 
 #### Defined in
 
-[packages/common/src/index.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L47)
+[packages/common/src/index.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L61)
+
+___
+
+### Sepolia
+
+• **Sepolia** = `11155111`
+
+#### Defined in
+
+[packages/common/src/index.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L65)

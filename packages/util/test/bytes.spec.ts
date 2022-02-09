@@ -1,7 +1,9 @@
 import tape from 'tape'
 import {
+  arrToBufArr,
   Address,
   BN,
+  bufArrToArr,
   zeros,
   zeroAddress,
   isZeroAddress,
@@ -14,11 +16,13 @@ import {
   bufferToInt,
   fromSigned,
   toUnsigned,
+  toUtf8,
   addHexPrefix,
   toBuffer,
   baToJSON,
   intToBuffer,
   intToHex,
+  validateNoLeadingZeroes,
 } from '../src'
 
 tape('zeros function', function (t) {
@@ -222,6 +226,29 @@ tape('hex prefix', function (t) {
   })
 })
 
+tape('toUtf8', function (t) {
+  t.test('toUtf8', (st) => {
+    let input = Buffer.from('hello').toString('hex') // '68656c6c6f'
+    st.equal(toUtf8(input), 'hello', 'should convert a non-hex-prefixed value')
+    st.equal(toUtf8(`0x${input}`), 'hello', 'should convert a hex-prefixed value')
+
+    input = Buffer.from('bip').toString('hex') // '626970'
+    st.equal(toUtf8(input), 'bip', 'should handle trailing single 0s correctly')
+
+    input = '657468657265756d000000000000000000000000000000000000000000000000'
+    st.equal(toUtf8(input), 'ethereum', 'should handle trailing double 0s correctly')
+    input = '657468657265756d'
+    st.equal(toUtf8(input), 'ethereum', 'neither trailing nor leading zeros')
+    input = '000000000000000000000000000000000000000000000000657468657265756d'
+    st.equal(toUtf8(input), 'ethereum', 'should handle leading double 0s correctly')
+
+    st.throws(() => {
+      toUtf8('123')
+    }, 'should throw on uneven hex-string input')
+    st.end()
+  })
+})
+
 tape('toBuffer', function (t) {
   t.test('should work', function (st) {
     // Buffer
@@ -253,6 +280,9 @@ tape('toBuffer', function (t) {
   t.test('should fail', function (st) {
     st.throws(function () {
       toBuffer({ test: 1 } as any)
+    })
+    st.throws(function () {
+      toBuffer(new BN(-10))
     })
     st.end()
   })
@@ -325,5 +355,91 @@ tape('intToHex', function (st) {
   st.throws(() => intToHex(Number.MAX_SAFE_INTEGER + 1), 'throws on unsafe integers')
   st.ok(intToHex(0) == '0x0', 'correctly converts 0 to a hex string')
   st.ok(intToHex(1) == '0x1', 'correctly converts 1 to a hex string')
+  st.end()
+})
+
+tape('validateNoLeadingZeroes', function (st) {
+  const noLeadingZeroes = {
+    a: toBuffer('0x123'),
+  }
+  const noleadingZeroBytes = {
+    a: toBuffer('0x01'),
+  }
+  const leadingZeroBytes = {
+    a: toBuffer('0x001'),
+  }
+  const onlyZeroes = {
+    a: toBuffer('0x0'),
+  }
+  const emptyBuffer = {
+    a: toBuffer('0x'),
+  }
+
+  const undefinedValue = {
+    a: undefined,
+  }
+
+  st.doesNotThrow(
+    () => validateNoLeadingZeroes(noLeadingZeroes),
+    'does not throw when no leading zeroes'
+  )
+  st.doesNotThrow(() => validateNoLeadingZeroes(emptyBuffer), 'does not throw with empty buffer')
+  st.doesNotThrow(
+    () => validateNoLeadingZeroes(undefinedValue),
+    'does not throw when undefined passed in'
+  )
+  st.doesNotThrow(
+    () => validateNoLeadingZeroes(noleadingZeroBytes),
+    'does not throw when value has leading zero bytes'
+  )
+  st.throws(
+    () => validateNoLeadingZeroes(leadingZeroBytes),
+    'throws when value has leading zero bytes'
+  )
+  st.throws(() => validateNoLeadingZeroes(onlyZeroes), 'throws when value has only zeroes')
+  st.end()
+})
+
+tape('arrToBufArr', function (st) {
+  const uint8 = Uint8Array.from([0, 1, 2])
+  const uint8Arr = [
+    Uint8Array.from([1, 2, 3]),
+    Uint8Array.from([4, 5, 6]),
+    [Uint8Array.from([7, 8, 9]), Uint8Array.from([1, 0, 0]), [Uint8Array.from([1, 1, 1])]],
+  ]
+  const buf = Buffer.from(uint8)
+  const bufArr = [
+    Buffer.from(Uint8Array.from([1, 2, 3])),
+    Buffer.from(Uint8Array.from([4, 5, 6])),
+    [
+      Buffer.from(Uint8Array.from([7, 8, 9])),
+      Buffer.from(Uint8Array.from([1, 0, 0])),
+      [Buffer.from(Uint8Array.from([1, 1, 1]))],
+    ],
+  ]
+  st.deepEqual(arrToBufArr(uint8), buf)
+  st.deepEqual(arrToBufArr(uint8Arr), bufArr)
+  st.end()
+})
+
+tape('bufArrToArr', function (st) {
+  const buf = Buffer.from('123', 'hex')
+  const bufArr = [
+    Buffer.from('123', 'hex'),
+    Buffer.from('456', 'hex'),
+    [Buffer.from('789', 'hex'), Buffer.from('100', 'hex'), [Buffer.from('111', 'hex')]],
+  ]
+  const uint8 = Uint8Array.from(buf)
+  const uint8Arr = [
+    Uint8Array.from(Buffer.from('123', 'hex')),
+    Uint8Array.from(Buffer.from('456', 'hex')),
+    [
+      Uint8Array.from(Buffer.from('789', 'hex')),
+      Uint8Array.from(Buffer.from('100', 'hex')),
+      [Uint8Array.from(Buffer.from('111', 'hex'))],
+    ],
+  ]
+  st.deepEqual(bufArrToArr(buf), uint8)
+  st.deepEqual(bufArrToArr(bufArr), uint8Arr)
   st.end()
 })

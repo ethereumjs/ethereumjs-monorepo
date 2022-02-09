@@ -53,13 +53,11 @@ export class RlpxServer extends Server {
 
   /**
    * Create new DevP2P/RLPx server
-   * @param {RlpxServerOptions}
    */
   constructor(options: RlpxServerOptions) {
     super(options)
 
-    // TODO: get the external ip from the upnp service
-    this.ip = '::'
+    this.ip = options.config.extIP ?? '::'
     this.discovery = options.config.discV4 || options.config.discDns
     this.clientFilter = options.clientFilter ?? [
       'go1.5',
@@ -76,7 +74,6 @@ export class RlpxServer extends Server {
 
   /**
    * Server name
-   * @type {string}
    */
   get name() {
     return 'rlpx'
@@ -107,8 +104,9 @@ export class RlpxServer extends Server {
   }
 
   /**
-   * Start Devp2p/RLPx server. Returns a promise that resolves once server has been started.
-   * @return Resolves with true if server successfully started
+   * Start Devp2p/RLPx server.
+   * Returns a promise that resolves once server has been started.
+   * @returns true if server successfully started
    */
   async start(): Promise<boolean> {
     if (this.started) {
@@ -169,9 +167,9 @@ export class RlpxServer extends Server {
 
   /**
    * Ban peer for a specified time
-   * @param  peerId id of peer
-   * @param  [maxAge] how long to ban peer
-   * @return True if ban was successfully executed
+   * @param peerId id of peer
+   * @param maxAge how long to ban peer in ms
+   * @returns true if ban was successfully executed
    */
   ban(peerId: string, maxAge = 60000): boolean {
     if (!this.started) {
@@ -183,12 +181,10 @@ export class RlpxServer extends Server {
 
   /**
    * Handles errors from server and peers
-   * @private
-   * @param  error
-   * @param  {Peer} peer
-   * @emits  Event.SERVER_ERROR
+   * @param error
+   * @emits {@link Event.SERVER_ERROR}
    */
-  error(error: Error) {
+  private error(error: Error) {
     if (ignoredErrors.test(error.message)) {
       return
     }
@@ -197,9 +193,8 @@ export class RlpxServer extends Server {
 
   /**
    * Initializes DPT for peer discovery
-   * @private
    */
-  async initDpt() {
+  private async initDpt() {
     return new Promise<void>((resolve) => {
       this.dpt = new Devp2pDPT(this.key, {
         refreshInterval: this.refreshInterval,
@@ -229,9 +224,8 @@ export class RlpxServer extends Server {
 
   /**
    * Initializes RLPx instance for peer management
-   * @private
    */
-  async initRlpx() {
+  private async initRlpx() {
     return new Promise<void>((resolve) => {
       this.rlpx = new Devp2pRLPx(this.key, {
         dpt: this.dpt!,

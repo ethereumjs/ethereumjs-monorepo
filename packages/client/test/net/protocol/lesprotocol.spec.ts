@@ -6,7 +6,7 @@ import { FlowControl, LesProtocol } from '../../../lib/net/protocol'
 
 tape('[LesProtocol]', (t) => {
   t.test('should get properties', (t) => {
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const chain = new Chain({ config })
     const p = new LesProtocol({ config, chain })
     t.ok(typeof p.name === 'string', 'get name')
@@ -16,7 +16,7 @@ tape('[LesProtocol]', (t) => {
   })
 
   t.test('should open correctly', async (t) => {
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const chain = new Chain({ config })
     const p = new LesProtocol({ config, chain })
     await p.open()
@@ -26,7 +26,7 @@ tape('[LesProtocol]', (t) => {
   })
 
   t.test('should encode/decode status', (t) => {
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const chain = new Chain({ config })
     const flow = new FlowControl({
       bl: 1000,

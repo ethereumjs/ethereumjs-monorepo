@@ -1,15 +1,19 @@
 const { resolve } = require('path')
+const { ProvidePlugin } = require('webpack')
 
 module.exports = {
   mode: 'production',
   entry: './dist.browser/browser/index.js',
+  plugins: [
+    new ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+    }),
+    new ProvidePlugin({
+      process: 'process/browser',
+    }),
+  ],
   module: {
     rules: [
-      {
-        test: /\.tsx?$/,
-        use: 'ts-loader',
-        exclude: /node_modules/,
-      },
       {
         test: /\.js$/,
         loader: 'file-replace-loader',
@@ -32,7 +36,7 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: ['.ts', '.js'],
+    extensions: ['.js'],
   },
   output: {
     filename: 'bundle.js',
@@ -41,6 +45,8 @@ module.exports = {
   },
   resolve: {
     fallback: {
+      buffer: require.resolve('buffer'),
+      constants: require.resolve("constants-browserify"),
       crypto: require.resolve('crypto-browserify'), // used by: rlpxpeer, bin/cli.ts
       dgram: false, // used by: rlpxpeer via @ethereumjs/devp2p
       fs: false, // used by: FullSynchronizer via @ethereumjs/vm

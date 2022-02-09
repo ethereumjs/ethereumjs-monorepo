@@ -1,6 +1,9 @@
 export type ForkName =
+  | 'London'
+  | 'Berlin'
   | 'Istanbul'
   | 'Byzantium'
+  | 'ConstantinopleFix'
   | 'Constantinople'
   | 'EIP150'
   | 'EIP158'
@@ -42,10 +45,10 @@ export type TxsJsonEntry = {
 }
 
 export type ForksData = {
-  [forkName in ForkName]: { hash?: string; sender?: string }
+  [forkName in ForkName]: { hash?: string; sender?: string; exception?: string }
 }
 
-export type OfficialTransactionTestData = ForksData & {
+export type OfficialTransactionTestData = {
   _info: {
     comment: string
     filledwith: string
@@ -53,5 +56,6 @@ export type OfficialTransactionTestData = ForksData & {
     source: string
     sourceHash: string
   }
-  rlp: string
+  result: ForksData
+  txbytes: string
 }

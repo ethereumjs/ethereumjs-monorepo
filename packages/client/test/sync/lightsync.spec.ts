@@ -4,6 +4,7 @@ import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
 import { Event } from '../../lib/types'
+import { BlockHeader } from '@ethereumjs/block'
 
 tape('[LightSynchronizer]', async (t) => {
   class PeerPool {
@@ -21,7 +22,7 @@ tape('[LightSynchronizer]', async (t) => {
   const { LightSynchronizer } = await import('../../lib/sync/lightsync')
 
   t.test('should initialize correctly', async (t) => {
-    const config = new Config({ loglevel: 'error', transports: [] })
+    const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
     const sync = new LightSynchronizer({ config, pool, chain })
@@ -30,7 +31,7 @@ tape('[LightSynchronizer]', async (t) => {
   })
 
   t.test('should find best', async (t) => {
-    const config = new Config({ loglevel: 'error', transports: [] })
+    const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
     const sync = new LightSynchronizer({
@@ -59,7 +60,7 @@ tape('[LightSynchronizer]', async (t) => {
 
   t.test('should sync', async (t) => {
     t.plan(3)
-    const config = new Config({ loglevel: 'error', transports: [] })
+    const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
     const sync = new LightSynchronizer({
@@ -93,8 +94,71 @@ tape('[LightSynchronizer]', async (t) => {
     }
   })
 
-  t.test('should reset td', (t) => {
+  t.test('sync errors', async (st) => {
     td.reset()
-    t.end()
+    st.plan(1)
+    const config = new Config({ transports: [] })
+    const pool = new PeerPool() as any
+    const chain = new Chain({ config })
+    const sync = new LightSynchronizer({
+      config,
+      interval: 1,
+      pool,
+      chain,
+    })
+    sync.best = td.func<typeof sync['best']>()
+    sync.latest = td.func<typeof sync['latest']>()
+    td.when(sync.best()).thenReturn({ les: { status: { headNum: new BN(2) } } } as any)
+    td.when(sync.latest(td.matchers.anything())).thenResolve({
+      number: new BN(2),
+      hash: () => Buffer.from([]),
+    })
+    td.when(HeaderFetcher.prototype.fetch()).thenResolve(undefined)
+    td.when(HeaderFetcher.prototype.fetch()).thenDo(() =>
+      config.events.emit(Event.SYNC_FETCHER_FETCHED, [] as BlockHeader[])
+    )
+    config.logger.on('data', async (data) => {
+      if (data.message.includes('No headers fetched are applicable for import')) {
+        st.pass('generated correct warning message when no headers received')
+        config.logger.removeAllListeners()
+        await sync.stop()
+        await sync.close()
+      }
+    })
+    await sync.sync()
+  })
+
+  t.test('import headers', async (st) => {
+    td.reset()
+    st.plan(1)
+    const config = new Config({ transports: [] })
+    const pool = new PeerPool() as any
+    const chain = new Chain({ config })
+    const sync = new LightSynchronizer({
+      config,
+      interval: 1,
+      pool,
+      chain,
+    })
+    sync.best = td.func<typeof sync['best']>()
+    sync.latest = td.func<typeof sync['latest']>()
+    td.when(sync.best()).thenReturn({ les: { status: { headNum: new BN(2) } } } as any)
+    td.when(sync.latest(td.matchers.anything())).thenResolve({
+      number: new BN(2),
+      hash: () => Buffer.from([]),
+    })
+    td.when(HeaderFetcher.prototype.fetch()).thenResolve(undefined)
+    td.when(HeaderFetcher.prototype.fetch()).thenDo(() =>
+      config.events.emit(Event.SYNC_FETCHER_FETCHED, [BlockHeader.fromHeaderData({})])
+    )
+    config.logger.on('data', async (data) => {
+      if (data.message.includes('Imported headers count=1')) {
+        st.pass('successfully imported new header')
+        config.logger.removeAllListeners()
+        await sync.stop()
+        await sync.close()
+      }
+    })
+    await sync.sync()
   })
 })

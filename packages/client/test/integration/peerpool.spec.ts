@@ -10,7 +10,7 @@ import { wait } from './util'
 
 tape('[Integration:PeerPool]', async (t) => {
   async function setup(protocols: EthProtocol[] = []): Promise<[MockServer, PeerPool]> {
-    const serverConfig = new Config({ loglevel: 'error' })
+    const serverConfig = new Config()
     const server = new MockServer({ config: serverConfig }) as any
     server.addProtocols(protocols)
     const config = new Config({ servers: [server] })
@@ -62,7 +62,7 @@ tape('[Integration:PeerPool]', async (t) => {
   })
 
   t.test('should handle peer messages', async (t) => {
-    const config = new Config({ transports: [], loglevel: 'error' })
+    const config = new Config({ transports: [] })
     const blockchain = new Blockchain({
       validateBlocks: false,
       validateConsensus: false,

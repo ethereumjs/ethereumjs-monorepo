@@ -10,6 +10,9 @@ export interface ExecutionOptions {
   /* State database */
   stateDB?: LevelUp
 
+  /* Meta database (receipts, logs, indexes) */
+  metaDB?: LevelUp
+
   /** Chain */
   chain: Chain
 }
@@ -18,6 +21,7 @@ export abstract class Execution {
   public config: Config
 
   protected stateDB?: LevelUp
+  protected metaDB?: LevelUp
   protected chain: Chain
 
   public running: boolean = false
@@ -30,6 +34,7 @@ export abstract class Execution {
     this.config = options.config
     this.chain = options.chain
     this.stateDB = options.stateDB
+    this.metaDB = options.metaDB
   }
 
   /**

@@ -7,12 +7,14 @@ import { debugCodeReplayBlock } from '../../util/debug'
 import { Event } from '../../types'
 import { Execution, ExecutionOptions } from './execution'
 import type { Block } from '@ethereumjs/block'
+import { ReceiptsManager } from './receipt'
 
 export class VMExecution extends Execution {
   public vm: VM
   public hardfork: string = ''
 
   public syncing = false
+  public receiptsManager?: ReceiptsManager
   private vmPromise?: Promise<number | undefined>
 
   private NUM_BLOCKS_PER_ITERATION = 50
@@ -40,6 +42,14 @@ export class VMExecution extends Execution {
       this.vm = this.config.vm
       ;(this.vm as any).blockchain = this.chain.blockchain
     }
+
+    if (this.metaDB) {
+      this.receiptsManager = new ReceiptsManager({
+        chain: this.chain,
+        config: this.config,
+        metaDB: this.metaDB,
+      })
+    }
   }
 
   /**
@@ -52,7 +62,9 @@ export class VMExecution extends Execution {
     this.config.execCommon.setHardforkByBlockNumber(number, td)
     this.hardfork = this.config.execCommon.hardfork()
     this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
-    await this.vm.stateManager.generateCanonicalGenesis()
+    if (number.isZero()) {
+      await this.vm.stateManager.generateCanonicalGenesis()
+    }
   }
 
   /**
@@ -65,22 +77,22 @@ export class VMExecution extends Execution {
       return 0
     }
     this.running = true
-
-    let txCounter = 0
     let numExecuted: number | undefined
 
-    const blockchain = this.vm.blockchain
-    let startHeadBlock = await this.vm.blockchain.getIteratorHead()
-    let canonicalHead = await this.vm.blockchain.getLatestBlock()
+    const { blockchain } = this.vm
+    let startHeadBlock = await blockchain.getIteratorHead()
+    let canonicalHead = await blockchain.getLatestBlock()
 
     let headBlock: Block | undefined
     let parentState: Buffer | undefined
     let errorBlock: Block | undefined
+
     while (
       (numExecuted === undefined || numExecuted === this.NUM_BLOCKS_PER_ITERATION) &&
       !startHeadBlock.hash().equals(canonicalHead.hash()) &&
       this.syncing
     ) {
+      let txCounter = 0
       headBlock = undefined
       parentState = undefined
       errorBlock = undefined
@@ -100,9 +112,8 @@ export class VMExecution extends Execution {
           // run block, update head if valid
           try {
             const { number } = block.header
-            const td = (await blockchain.getTotalDifficulty(block.header.parentHash)).add(
-              block.header.difficulty
-            )
+            const td = await blockchain.getTotalDifficulty(block.header.parentHash)
+
             const hardfork = this.config.execCommon.getHardforkByBlockNumber(number, td)
             if (hardfork !== this.hardfork) {
               const hash = short(block.hash())
@@ -114,7 +125,12 @@ export class VMExecution extends Execution {
             // Block validation is redundant here and leads to consistency problems
             // on PoA clique along blockchain-including validation checks
             // (signer states might have moved on when sync is ahead)
-            await this.vm.runBlock({ block, root: parentState, skipBlockValidation: true })
+            const result = await this.vm.runBlock({
+              block,
+              root: parentState,
+              skipBlockValidation: true,
+            })
+            void this.receiptsManager?.saveReceipts(block, result.receipts)
             txCounter += block.transactions.length
             // set as new head block
             headBlock = block
@@ -148,7 +164,7 @@ export class VMExecution extends Execution {
               this.config.logger.warn(
                 `Set back hardfork along block deletion number=${blockNumber} hash=${hash} old=${this.hardfork} new=${hardfork}`
               )
-              this.config.execCommon.setHardforkByBlockNumber(blockNumber)
+              this.config.execCommon.setHardforkByBlockNumber(blockNumber, td)
             }*/
             // Option a): set iterator head to the parent block so that an
             // error can repeatedly processed for debugging
@@ -173,7 +189,7 @@ export class VMExecution extends Execution {
         return 0
       }
 
-      const endHeadBlock = await this.vm.blockchain.getHead()
+      const endHeadBlock = await this.vm.blockchain.getIteratorHead('vm')
       if (numExecuted > 0) {
         const firstNumber = startHeadBlock.header.number.toNumber()
         const firstHash = short(startHeadBlock.hash())
@@ -201,7 +217,6 @@ export class VMExecution extends Execution {
 
   /**
    * Stop VM execution. Returns a promise that resolves once its stopped.
-   * @returns {Promise}
    */
   async stop(): Promise<boolean> {
     if (this.vmPromise) {

@@ -115,6 +115,7 @@ Supported chains:
 - `rinkeby` (`Chain.Rinkeby`)
 - `kovan` (`Chain.Kovan`)
 - `goerli` (`Chain.Goerli`)
+- `sepolia` (`Chain.Sepolia`) (`v2.6.1`+)
 - Private/custom chain parameters
 
 The following chain-specific parameters are provided:
@@ -137,6 +138,32 @@ files like `mainnet.json` in the `chains` directory, or to the `Chain` type in [
 
 There are two distinct APIs available for setting up custom(ized) chains.
 
+#### Basic Chain Customization / Predefined Custom Chains
+
+There is a dedicated `Common.custom()` static constructor which allows for an easy instantiation of a Common instance with somewhat adopted chain parameters, with the main use case to adopt on instantiating with a deviating chain ID (you can use this to adopt other chain parameters as well though). Instantiating a custom common instance with its own chain ID and inheriting all other parameters from `mainnet` can now be as easily done as:
+
+```typescript
+const common = Common.custom({ chainId: 1234 })
+```
+
+The `custom()` method also takes a string as a first input (instead of a dictionary). This can be used in combination with the `CustomChain` enum dict which allows for the selection of predefined supported custom chains for an easier `Common` setup of these supported chains:
+
+```typescript
+const common = Common.custom(CustomChain.ArbitrumRinkebyTestnet)
+```
+
+The following custom chains are currently supported:
+
+- `PolygonMainnet`
+- `PolygonMumbai`
+- `ArbitrumRinkebyTestnet`
+- `xDaiChain`
+- `OptimisticKovan`
+- `OptimisticEthereum`
+
+`Common` instances created with this simplified `custom()` constructor can't be used in all usage contexts (the HF configuration is very likely not matching the actual chain) but can be useful for specific use cases, e.g. for sending a tx with `@ethereumjs/tx` to an L2 network (see the `Tx` library [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx) for a complete usage example).
+
+
 #### Activate with a single custom Chain setup
 
 If you want to initialize a `Common` instance with a single custom chain which is then directly activated
@@ -146,16 +173,6 @@ values to the constructor using the `chain` parameter or the `setChain()` method
 ```typescript
 import myCustomChain from './[PATH]/myCustomChain.json'
 const common = new Common({ chain: myCustomChain })
-```
-
-If you just want to change certain parameters on a chain configuration it can also be convenient to use
-the `Common.forCustomChain()` method. With this method you can base your custom chain configuration with
-a standard one (so using all the values from `baseChain` as the default values) and then just provide the
-parameters you want to override:
-
-```typescript
-const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
-const customChainCommon = Common.forCustomChain('mainnet', customChainParams, 'byzantium')
 ```
 
 #### Initialize using customChains Array
@@ -276,6 +293,7 @@ The following EIPs are currently supported:
 - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541): Reject new contracts starting with the 0xEF byte
 - [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554): Difficulty Bomb Delay to December 2021 (only PoW networks)
 - [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675): Upgrade consensus to Proof-of-Stake (`experimental`)
+- [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855): Push0 opcode (`v2.6.1`+)
 
 ## Bootstrap Nodes
 

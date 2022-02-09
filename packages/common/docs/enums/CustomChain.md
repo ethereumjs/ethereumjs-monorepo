@@ -7,6 +7,8 @@
 ### Enumeration members
 
 - [ArbitrumRinkebyTestnet](CustomChain.md#arbitrumrinkebytestnet)
+- [OptimisticEthereum](CustomChain.md#optimisticethereum)
+- [OptimisticKovan](CustomChain.md#optimistickovan)
 - [PolygonMainnet](CustomChain.md#polygonmainnet)
 - [PolygonMumbai](CustomChain.md#polygonmumbai)
 - [xDaiChain](CustomChain.md#xdaichain)
@@ -24,6 +26,34 @@ Arbitrum Rinkeby Testnet
 #### Defined in
 
 [packages/common/src/index.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L35)
+
+___
+
+### OptimisticEthereum
+
+• **OptimisticEthereum** = `"optimistic-ethereum"`
+
+Optimistic Ethereum - mainnet for Optimism roll-up
+
+- [Documentation](https://community.optimism.io/docs/developers/tutorials.html)
+
+#### Defined in
+
+[packages/common/src/index.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L56)
+
+___
+
+### OptimisticKovan
+
+• **OptimisticKovan** = `"optimistic-kovan"`
+
+Optimistic Kovan - testnet for Optimism roll-up
+
+- [Documentation](https://community.optimism.io/docs/developers/tutorials.html)
+
+#### Defined in
+
+[packages/common/src/index.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L49)
 
 ___
 

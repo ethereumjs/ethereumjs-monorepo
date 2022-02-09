@@ -6,6 +6,7 @@
 
 ### Enumeration members
 
+- [ArrowGlacier](Hardfork.md#arrowglacier)
 - [Berlin](Hardfork.md#berlin)
 - [Byzantium](Hardfork.md#byzantium)
 - [Chainstart](Hardfork.md#chainstart)
@@ -23,13 +24,23 @@
 
 ## Enumeration members
 
+### ArrowGlacier
+
+• **ArrowGlacier** = `"arrowGlacier"`
+
+#### Defined in
+
+[packages/common/src/index.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L81)
+
+___
+
 ### Berlin
 
 • **Berlin** = `"berlin"`
 
 #### Defined in
 
-[packages/common/src/index.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L64)
+[packages/common/src/index.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L79)
 
 ___
 
@@ -39,7 +50,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/index.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L59)
+[packages/common/src/index.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L74)
 
 ___
 
@@ -49,7 +60,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/index.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L54)
+[packages/common/src/index.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L69)
 
 ___
 
@@ -59,7 +70,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/index.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L60)
+[packages/common/src/index.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L75)
 
 ___
 
@@ -69,7 +80,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/index.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L56)
+[packages/common/src/index.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L71)
 
 ___
 
@@ -79,7 +90,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/index.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L55)
+[packages/common/src/index.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L70)
 
 ___
 
@@ -89,7 +100,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/index.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L62)
+[packages/common/src/index.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L77)
 
 ___
 
@@ -99,7 +110,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/index.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L65)
+[packages/common/src/index.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L80)
 
 ___
 
@@ -109,7 +120,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/index.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L67)
+[packages/common/src/index.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L83)
 
 ___
 
@@ -119,7 +130,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/index.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L63)
+[packages/common/src/index.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L78)
 
 ___
 
@@ -129,7 +140,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/index.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L61)
+[packages/common/src/index.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L76)
 
 ___
 
@@ -139,7 +150,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/index.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L66)
+[packages/common/src/index.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L82)
 
 ___
 
@@ -149,7 +160,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/index.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L58)
+[packages/common/src/index.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L73)
 
 ___
 
@@ -159,4 +170,4 @@ ___
 
 #### Defined in
 
-[packages/common/src/index.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L57)
+[packages/common/src/index.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L72)

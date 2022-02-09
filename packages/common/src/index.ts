@@ -40,6 +40,20 @@ export enum CustomChain {
    * - [Documentation](https://www.xdaichain.com/)
    */
   xDaiChain = 'x-dai-chain',
+
+  /**
+   * Optimistic Kovan - testnet for Optimism roll-up
+   *
+   * - [Documentation](https://community.optimism.io/docs/developers/tutorials.html)
+   */
+  OptimisticKovan = 'optimistic-kovan',
+
+  /**
+   * Optimistic Ethereum - mainnet for Optimism roll-up
+   *
+   * - [Documentation](https://community.optimism.io/docs/developers/tutorials.html)
+   */
+  OptimisticEthereum = 'optimistic-ethereum',
 }
 
 export enum Chain {
@@ -48,6 +62,7 @@ export enum Chain {
   Rinkeby = 4,
   Kovan = 42,
   Goerli = 5,
+  Sepolia = 11155111,
 }
 
 export enum Hardfork {
@@ -63,6 +78,7 @@ export enum Hardfork {
   MuirGlacier = 'muirGlacier',
   Berlin = 'berlin',
   London = 'london',
+  ArrowGlacier = 'arrowGlacier',
   Shanghai = 'shanghai',
   Merge = 'merge',
 }
@@ -124,7 +140,7 @@ export interface CommonOpts extends BaseOpts {
    * const common = new Common({ chain: 'myCustomChain1', customChains: [ myCustomChain1 ]})
    * ```
    *
-   * Pattern 2 (with genesis state, see {@link CommonOpts.genesisState} for format):
+   * Pattern 2 (with genesis state, see {@link GenesisState} for format):
    *
    * ```javascript
    * import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
@@ -240,6 +256,29 @@ export default class Common extends EventEmitter {
         })
       }
 
+      if (chainParamsOrName === CustomChain.OptimisticKovan) {
+        return Common.custom(
+          {
+            name: CustomChain.OptimisticKovan,
+            chainId: 69,
+            networkId: 69,
+          },
+          // Optimism has not implemented the London hardfork yet (targeting Q1.22)
+          { hardfork: Hardfork.Berlin }
+        )
+      }
+
+      if (chainParamsOrName === CustomChain.OptimisticEthereum) {
+        return Common.custom(
+          {
+            name: CustomChain.OptimisticEthereum,
+            chainId: 10,
+            networkId: 10,
+          },
+          // Optimism has not implemented the London hardfork yet (targeting Q1.22)
+          { hardfork: Hardfork.Berlin }
+        )
+      }
       throw new Error(`Custom chain ${chainParamsOrName} not supported`)
     }
   }
@@ -418,8 +457,8 @@ export default class Common extends EventEmitter {
     for (const hf of this.hardforks()) {
       // Skip comparison for not applied HFs
       if (hf.block === null) {
-        if (td && hf.td) {
-          if (td.gten(hf.td)) {
+        if (td !== undefined && td !== null && hf.td !== undefined && hf.td !== null) {
+          if (td.gte(new BN(hf.td))) {
             return hf.name
           }
         }
@@ -429,7 +468,7 @@ export default class Common extends EventEmitter {
         hardfork = hf.name as Hardfork
       }
       if (td && hf.td) {
-        if (td.gten(hf.td)) {
+        if (td.gte(new BN(hf.td))) {
           minTdHF = hf.name
         } else {
           maxTdHF = previousHF
@@ -534,7 +573,6 @@ export default class Common extends EventEmitter {
         )
       }
       if (EIPs[eip].requiredEIPs) {
-        // eslint-disable-next-line no-extra-semi
         ;(EIPs[eip].requiredEIPs as number[]).forEach((elem) => {
           if (!(eips.includes(elem) || this.isActivatedEIP(elem))) {
             throw new Error(`${eip} requires EIP ${elem}, but is not included in the EIP list`)
@@ -927,8 +965,8 @@ export default class Common extends EventEmitter {
   forkHash(hardfork?: string | Hardfork) {
     hardfork = this._chooseHardfork(hardfork, false)
     const data = this._getHardfork(hardfork)
-    if (data['block'] === null) {
-      const msg = 'No fork hash calculation possible for non-applied or future hardfork'
+    if (data['block'] === null && data['td'] === undefined) {
+      const msg = 'No fork hash calculation possible for future hardfork'
       throw new Error(msg)
     }
     if (data['forkHash'] !== undefined) {
@@ -959,10 +997,7 @@ export default class Common extends EventEmitter {
 
   /**
    * Returns the Genesis state of the current chain,
-   * both account addresses and values are provided
-   * as hex-prefixed strings
-   *
-   * @returns {Array} Genesis state
+   * all values are provided as hex-prefixed strings.
    */
   genesisState(): GenesisState {
     // Use require statements here in favor of import statements
@@ -979,6 +1014,8 @@ export default class Common extends EventEmitter {
         return require('./genesisStates/kovan.json')
       case 'goerli':
         return require('./genesisStates/goerli.json')
+      case 'sepolia':
+        return require('./genesisStates/sepolia.json')
     }
 
     // Custom chains with genesis state provided
@@ -987,9 +1024,9 @@ export default class Common extends EventEmitter {
       this._customChains.length > 0 &&
       Array.isArray(this._customChains[0])
     ) {
-      for (const chainArrayWithGenesis of this._customChains) {
-        if ((chainArrayWithGenesis as [IChain, GenesisState])[0].name === this.chainName()) {
-          return (chainArrayWithGenesis as [IChain, GenesisState])[1]
+      for (const chainArrayWithGenesis of this._customChains as [IChain, GenesisState][]) {
+        if (chainArrayWithGenesis[0].name === this.chainName()) {
+          return chainArrayWithGenesis[1]
         }
       }
     }

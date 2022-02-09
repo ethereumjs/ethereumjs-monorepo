@@ -151,6 +151,8 @@ export default class EVM {
       ;(<any>this._state).addWarmedAddress((await this._generateAddress(message)).buf)
     }
 
+    const oldRefund = this._refund.clone()
+
     await this._state.checkpoint()
     if (this._vm.DEBUG) {
       debug('-'.repeat(100))
@@ -159,10 +161,11 @@ export default class EVM {
 
     let result
     if (this._vm.DEBUG) {
+      const { caller, gasLimit, to, value, delegatecall } = message
       debug(
-        `New message caller=${message.caller} gasLimit=${message.gasLimit} to=${
-          message.to ? message.to.toString() : ''
-        } value=${message.value} delegatecall=${message.delegatecall ? 'yes' : 'no'}`
+        `New message caller=${caller} gasLimit=${gasLimit} to=${
+          to?.toString() ?? 'none'
+        } value=${value} delegatecall=${delegatecall ? 'yes' : 'no'}`
       )
     }
     if (message.to) {
@@ -177,22 +180,25 @@ export default class EVM {
       result = await this._executeCreate(message)
     }
     if (this._vm.DEBUG) {
+      const { gasUsed, exceptionError, returnValue, gasRefund } = result.execResult
       debug(
-        `Received message results gasUsed=${result.gasUsed} execResult: [ gasUsed=${
-          result.gasUsed
-        } exceptionError=${
-          result.execResult.exceptionError ? result.execResult.exceptionError.toString() : ''
-        } returnValue=${short(result.execResult.returnValue)} gasRefund=${
-          result.execResult.gasRefund
-        } ]`
+        `Received message execResult: [ gasUsed=${gasUsed} exceptionError=${
+          exceptionError ? `'${exceptionError.error}'` : 'none'
+        } returnValue=0x${short(returnValue)} gasRefund=${gasRefund ?? 0} ]`
       )
     }
+    const err = result.execResult.exceptionError
 
-    // TODO: Move `gasRefund` to a tx-level result object
-    // instead of `ExecResult`.
+    // This clause captures any error which happened during execution
+    // If that is the case, then set the _refund tracker to the old refund value
+    if (err) {
+      // TODO: Move `gasRefund` to a tx-level result object
+      // instead of `ExecResult`.
+      this._refund = oldRefund
+      result.execResult.selfdestruct = {}
+    }
     result.execResult.gasRefund = this._refund.clone()
 
-    const err = result.execResult.exceptionError
     if (err) {
       if (this._vm._common.gteHardfork('homestead') || err.error != ERROR.CODESTORE_OUT_OF_GAS) {
         result.execResult.logs = []
@@ -250,7 +256,7 @@ export default class EVM {
     if (errorMessage) {
       exit = true
       if (this._vm.DEBUG) {
-        debug(`Exit early on value tranfer overflowed`)
+        debug(`Exit early on value transfer overflowed`)
       }
     }
     if (exit) {
@@ -349,7 +355,7 @@ export default class EVM {
     if (errorMessage) {
       exit = true
       if (this._vm.DEBUG) {
-        debug(`Exit early on value tranfer overflowed`)
+        debug(`Exit early on value transfer overflowed`)
       }
     }
     if (exit) {
@@ -385,6 +391,7 @@ export default class EVM {
     // Check for SpuriousDragon EIP-170 code size limit
     let allowedCodeSize = true
     if (
+      !result.exceptionError &&
       this._vm._common.gteHardfork('spuriousDragon') &&
       result.returnValue.length > this._vm._common.param('vm', 'maxCodeSize')
     ) {
@@ -477,7 +484,6 @@ export default class EVM {
       eei._result.selfdestruct = message.selfdestruct
     }
 
-    const oldRefund = this._refund.clone()
     const interpreter = new Interpreter(this._vm, eei)
     const interpreterRes = await interpreter.run(message.code as Buffer, opts)
 
@@ -494,8 +500,6 @@ export default class EVM {
         logs: [],
         selfdestruct: {},
       }
-      // Revert gas refund if message failed
-      this._refund = oldRefund
     }
 
     return {
