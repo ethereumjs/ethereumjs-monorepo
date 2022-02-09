@@ -148,7 +148,6 @@ tape('bnToUnpaddedBuffer', function (t) {
 
 tape('bnToBigInt', (st) => {
   st.equal(bnToBigInt(new BN(1)), 1n)
-  st.equal(bnToBigInt(undefined), 0n)
   st.end()
 })
 
