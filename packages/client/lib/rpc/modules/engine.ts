@@ -20,8 +20,6 @@ enum Status {
   SUCCESS = 'SUCCESS',
 }
 
-const _MESSAGE_ORDER_RESET_ID = new BN(0)
-
 type ExecutionPayloadV1 = {
   parentHash: string // DATA, 32 Bytes
   feeRecipient: string // DATA, 20 Bytes
@@ -366,28 +364,10 @@ export class Engine {
    * @returns None or an error
    */
   async forkchoiceUpdatedV1(
-    params: [
-      forkchoiceState: ForkchoiceStateV1,
-      payloadAttributes: PayloadAttributesV1 | undefined
-    ],
-    _context: any
+    params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | undefined]
   ) {
     const { headBlockHash, finalizedBlockHash } = params[0]
     const payloadAttributes = params[1]
-
-    /*
-    const reqId = new BN(context.request.id)
-    if (reqId.eq(MESSAGE_ORDER_RESET_ID)) {
-      this.lastMessageID = new BN(0)
-    } else if (reqId.lte(this.lastMessageID)) {
-      throw {
-        code: INVALID_REQUEST,
-        message: `Skipping request ID ${reqId}, less than last processed message ID ${this.lastMessageID}`,
-      }
-    } else {
-      this.lastMessageID = reqId
-    }
-    */
 
     /*
      * Process head block
@@ -459,17 +439,6 @@ export class Engine {
       })
       return { status: Status.SUCCESS, payloadId: bufferToHex(payloadId) }
     }
-
-    /*
-     * TODO: set terminalPoWBlock, transitionPoSBlock
-     */
-    // if (!this.config.chainCommon.hardforkBlockBN(Hardfork.Merge)) {
-    //   // EIP-3675: Add PoS transition block number to forkHash calculation
-    //   // eslint-disable-next-line no-extra-semi
-    //   ;(this.config.chainCommon as any)._chainParams['hardforks'].find(
-    //     (hf: any) => hf.name === Hardfork.Merge
-    //   )!.block = this.chain.transitionPoSBlock.header.number.toNumber()
-    // }
 
     return { status: Status.SUCCESS }
   }
