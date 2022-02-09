@@ -356,6 +356,10 @@ export class Eth {
       [validators.blockOption],
     ])
 
+    this.getUncleCountByBlockNumber = middleware(this.getUncleCountByBlockNumber.bind(this), 1, [
+      [validators.hex],
+    ])
+
     this.getStorageAt = middleware(this.getStorageAt.bind(this), 3, [
       [validators.address],
       [validators.hex],

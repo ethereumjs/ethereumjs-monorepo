@@ -238,6 +238,7 @@ async function parseGethParams(json: any) {
     'muirGlacier',
     'berlin',
     'london',
+    'preMerge',
   ]
   const forkMap: { [key: string]: string } = {
     homestead: 'homesteadBlock',
@@ -251,6 +252,7 @@ async function parseGethParams(json: any) {
     muirGlacier: 'muirGlacierBlock',
     berlin: 'berlinBlock',
     london: 'londonBlock',
+    preMerge: 'mergeForkBlock',
   }
   params.hardforks = hardforks
     .map((name) => ({
@@ -259,7 +261,11 @@ async function parseGethParams(json: any) {
     }))
     .filter((fork) => fork.block !== null)
   if (config.terminalTotalDifficulty !== undefined) {
-    params.hardforks.push({ name: 'merge', td: config.terminalTotalDifficulty, block: null })
+    params.hardforks.push({
+      name: 'merge',
+      td: config.terminalTotalDifficulty,
+      block: null,
+    })
   }
   return params
 }

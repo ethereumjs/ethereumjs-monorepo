@@ -469,7 +469,7 @@ tape('[Miner]', async (t) => {
   t.test('should reset td', (t) => {
     td.reset()
     // according to https://github.com/testdouble/testdouble.js/issues/379#issuecomment-415868424
-    // mocking indirect dependnecies is not properly supported, but it works for us in this file,
+    // mocking indirect dependencies is not properly supported, but it works for us in this file,
     // so we will replace the original functions to avoid issues in other tests that come after
     BlockHeader.prototype.validate = originalValidate
     DefaultStateManager.prototype.setStateRoot = originalSetStateRoot

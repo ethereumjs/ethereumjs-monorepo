@@ -210,7 +210,9 @@ export async function runBlockWithTxs(
   const vmCopy = vm.copy()
   const blockBuilder = await vmCopy.buildBlock({
     parentBlock,
-    headerData: { gasLimit: 20000000 },
+    headerData: {
+      timestamp: parentBlock.header.timestamp.addn(1),
+    },
     blockOpts: {
       calcDifficultyFromHeader: parentBlock.header,
       putBlockIntoBlockchain: false,

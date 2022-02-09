@@ -86,6 +86,11 @@
       "forkHash": "0x20c327fc"
     },
     {
+      "name": "preMerge",
+      "block": null,
+      "forkHash": null
+    },
+    {
       "name": "merge",
       "block": null,
       "forkHash": null

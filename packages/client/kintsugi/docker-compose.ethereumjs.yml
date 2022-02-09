@@ -1,0 +1,14 @@
+version: '3.4'
+services:
+  start_ethereumjs_client:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: ethereumjs_client
+    volumes:
+      - ./execution_data:/execution_data
+    ports:
+      - '8545:8545'
+    #network_mode: host
+    command: >
+      --datadir=/execution_data --gethGenesis=./ethereumjs-monorepo/packages/client/kintsugi/config/genesis.json --rpc --rpcEngine --rpcEnginePort=8545 --saveReceipts --bootnodes=161.35.67.219:30303

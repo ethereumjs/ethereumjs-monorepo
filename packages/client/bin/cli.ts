@@ -376,7 +376,14 @@ function startRPCServers(client: EthereumClient) {
       )
     }
     if (ws) {
-      server.websocket({ port: wsPort })
+      const opts: any = { port: wsPort }
+      if (rpcaddr === wsAddr && rpcport === wsPort) {
+        // If http and ws are listening on the same port,
+        // pass in the existing server to prevent a listening error
+        delete opts.port
+        opts.server = server
+      }
+      server.websocket(opts)
       config.logger.info(
         `Started JSON RPC Server address=ws://${wsAddr}:${wsPort} namespaces=${namespaces}`
       )
@@ -673,4 +680,4 @@ async function run() {
   })
 }
 
-run().catch((err) => logger?.error(err) ?? console.error(err))
+run().catch((err) => logger?.error(err.message.toString()) ?? console.error(err))

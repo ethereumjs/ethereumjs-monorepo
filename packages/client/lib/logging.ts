@@ -48,7 +48,7 @@ function logFormat(colors = false) {
         (_: any, tag: string, char: string) => `${color(tag)}=${char} `
       )
     }
-    return `${level} [${info.timestamp}] ${info.message}`
+    return `[${info.timestamp}] ${level} ${info.message}`
   })
 }
 

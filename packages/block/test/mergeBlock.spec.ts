@@ -22,8 +22,8 @@ function validateMergeHeader(st: tape.Test, header: BlockHeader) {
   st.ok(header.gasLimit.eq(new BN(Buffer.from('ffffffffffffff', 'hex'))), 'gasLimit')
   st.ok(header.gasUsed.isZero(), 'gasUsed')
   st.ok(header.timestamp.isZero(), 'timestamp')
-  st.ok(header.extraData.equals(Buffer.from([])), 'extraData')
-  st.ok(header.mixHash.equals(zeros(32)), 'mixHash')
+  st.ok(header.extraData.length <= 32, 'extraData')
+  st.ok(header.mixHash.length === 32, 'mixHash')
   st.ok(header.nonce.equals(zeros(8)), 'nonce')
 }
 
@@ -60,26 +60,24 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
       st.pass('should throw on wrong difficulty')
     }
 
-    // WIP from merge interop event:
-    // extraData behavior pending consideration, for now allowed to be non-empty
-    // try {
-    //   const headerData = {
-    //     extraData: Buffer.from('123abc', 'hex'),
-    //   }
-    //   BlockHeader.fromHeaderData(headerData, { common })
-    //   st.fail('should throw')
-    // } catch (e: any) {
-    //   st.pass('should throw on wrong extraData')
-    // }
-
     try {
       const headerData = {
-        mixHash: Buffer.alloc(32).fill(1),
+        extraData: Buffer.alloc(33).fill(1),
       }
       BlockHeader.fromHeaderData(headerData, { common })
       st.fail('should throw')
     } catch (e: any) {
-      st.pass('should throw on wrong mixHash')
+      st.pass('should throw on invalid extraData length')
+    }
+
+    try {
+      const headerData = {
+        mixHash: Buffer.alloc(30).fill(1),
+      }
+      BlockHeader.fromHeaderData(headerData, { common })
+      st.fail('should throw')
+    } catch (e: any) {
+      st.pass('should throw on invalid mixHash length')
     }
 
     try {
@@ -103,6 +101,23 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
       st.fail('should have thrown')
     } catch (e: any) {
       st.pass('should throw')
+    }
+    st.end()
+  })
+
+  t.test('EIP-4399: random should return mixHash value', function (st) {
+    const mixHash = Buffer.alloc(32, 3)
+    let block = Block.fromBlockData({ header: { mixHash } }, { common })
+    st.ok(block.header.random.equals(mixHash), 'random should return mixHash value')
+
+    const commonLondon = common.copy()
+    commonLondon.setHardfork(Hardfork.London)
+    block = Block.fromBlockData({ header: { mixHash } }, { common: commonLondon })
+    try {
+      block.header.random
+      st.fail('should have thrown')
+    } catch (e: any) {
+      st.pass('random should throw if EIP-4399 is not activated')
     }
     st.end()
   })
