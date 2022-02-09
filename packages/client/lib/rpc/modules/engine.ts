@@ -192,7 +192,7 @@ export class Engine {
     if (!this.client.execution) {
       throw Error('execution required for engine module')
     }
-    this.execution=this.client.execution;
+    this.execution = this.client.execution
     this.vm = this.client.execution.vm
     this.txPool = (this.service.synchronizer as FullSynchronizer).txPool
     this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.txPool })
