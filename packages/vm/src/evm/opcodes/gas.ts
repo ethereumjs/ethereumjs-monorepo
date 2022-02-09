@@ -423,7 +423,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
       }
 
       gas += BigInt(common.param('gasPrices', 'sha3Word')) * divCeil(length, 32n)
-      let gasLimit = BigInt(runState.eei.getGasLeft()) - gas
+      let gasLimit = runState.eei.getGasLeft() - gas
       gasLimit = maxCallGas(gasLimit, gasLimit, runState, common) // CREATE2 is only available after TangerineWhistle (Constantinople introduced this opcode)
       runState.messageGasLimit = gasLimit
       return gas

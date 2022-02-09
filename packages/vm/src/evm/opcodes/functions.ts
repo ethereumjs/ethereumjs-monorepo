@@ -374,7 +374,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (!(length === 0n)) {
         data = runState.memory.read(Number(offset), Number(length))
       }
-      const r = BigInt('0x' + keccak256(data).toString('hex'))
+      const r = bufferToBigInt(keccak256(data))
       runState.stack.push(r)
     },
   ],

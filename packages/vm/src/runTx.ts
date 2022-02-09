@@ -1,5 +1,13 @@
 import { debug as createDebugLogger } from 'debug'
-import { Address, bigIntToBuffer, BN, bnToBigInt, KECCAK256_NULL, toBuffer } from 'ethereumjs-util'
+import {
+  Address,
+  bigIntToBN,
+  bigIntToBuffer,
+  BN,
+  bnToBigInt,
+  KECCAK256_NULL,
+  toBuffer,
+} from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import {
@@ -369,7 +377,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Update from account's nonce and balance
   fromAccount.nonce.iaddn(1)
   const txCost = bnToBigInt(tx.gasLimit) * gasPrice
-  fromAccount.balance.isub(new BN(txCost.toString(10), 10))
+  fromAccount.balance.isub(bigIntToBN(txCost))
   await state.putAccount(caller, fromAccount)
   if (this.DEBUG) {
     debug(
@@ -450,7 +458,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   fromAccount = await state.getAccount(caller)
   const actualTxCost = results.gasUsed * gasPrice
   const txCostDiff = txCost - actualTxCost
-  fromAccount.balance.iadd(new BN(txCostDiff.toString(10), 10))
+  fromAccount.balance.iadd(bigIntToBN(txCostDiff))
   await state.putAccount(caller, fromAccount)
   if (this.DEBUG) {
     debug(
@@ -475,9 +483,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const minerAccount = await state.getAccount(miner)
   // add the amount spent on gas to the miner's account
   if (this._common.isActivatedEIP(1559)) {
-    minerAccount.balance.iadd(new BN(results.gasUsed.toString(10), 10).mul(<BN>inclusionFeePerGas))
+    minerAccount.balance.iadd(bigIntToBN(results.gasUsed).mul(<BN>inclusionFeePerGas))
   } else {
-    minerAccount.balance.iadd(new BN(results.amountSpent.toString(10)))
+    minerAccount.balance.iadd(bigIntToBN(results.amountSpent))
   }
 
   // Put the miner account into the state. If the balance of the miner account remains zero, note that

@@ -2,6 +2,7 @@ import { debug as createDebugLogger } from 'debug'
 import {
   Account,
   Address,
+  bigIntToBN,
   BN,
   generateAddress,
   generateAddress2,
@@ -573,7 +574,7 @@ export default class EVM {
   }
 
   async _reduceSenderBalance(account: Account, message: Message): Promise<void> {
-    account.balance.isub(new BN(message.value.toString(10)))
+    account.balance.isub(bigIntToBN(message.value))
     const result = this._state.putAccount(message.caller, account)
     if (this._vm.DEBUG) {
       debug(`Reduced sender (${message.caller}) balance (-> ${account.balance})`)
@@ -582,7 +583,7 @@ export default class EVM {
   }
 
   async _addToBalance(toAccount: Account, message: Message): Promise<void> {
-    const newBalance = toAccount.balance.add(new BN(message.value.toString(10)))
+    const newBalance = toAccount.balance.add(bigIntToBN(message.value))
     if (newBalance.gt(MAX_INTEGER)) {
       throw new VmError(ERROR.VALUE_OVERFLOW)
     }

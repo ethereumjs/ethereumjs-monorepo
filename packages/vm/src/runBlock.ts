@@ -1,6 +1,6 @@
 import { debug as createDebugLogger } from 'debug'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { Account, Address, BN, bnToBigInt, intToBuffer, rlp } from 'ethereumjs-util'
+import { Account, Address, bigIntToBN, BN, bnToBigInt, intToBuffer, rlp } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import VM from './index'
@@ -183,7 +183,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   // header values against the current block.
   if (generateFields) {
     const bloom = result.bloom.bitvector
-    const gasUsed = new BN(result.gasUsed.toString(10), 10)
+    const gasUsed = bigIntToBN(result.gasUsed)
     const receiptTrie = result.receiptRoot
     const transactionsTrie = await _genTxTrie(block)
     const generatedFields = { stateRoot, bloom, gasUsed, receiptTrie, transactionsTrie }
@@ -431,7 +431,7 @@ export async function rewardAccount(
   reward: bigint
 ): Promise<Account> {
   const account = await state.getAccount(address)
-  account.balance.iadd(new BN(reward.toString(10), 10))
+  account.balance.iadd(bigIntToBN(reward))
   await state.putAccount(address, account)
   return account
 }
