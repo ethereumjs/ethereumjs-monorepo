@@ -145,10 +145,7 @@ export function toType<T extends TypeOutput>(
   }
 }
 
-export const bnToBigInt = (bn: BN | undefined) => {
-  if (!bn) {
-    return 0n
-  }
+export const bnToBigInt = (bn: BN) => {
   return BigInt(new BN(bn).toString(10))
 }
 

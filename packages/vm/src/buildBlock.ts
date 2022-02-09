@@ -1,4 +1,13 @@
-import { Address, toBuffer, rlp, bnToBigInt, bigIntToBN } from 'ethereumjs-util'
+import {
+  Address,
+  toBuffer,
+  rlp,
+  bnToBigInt,
+  bigIntToBN,
+  BN,
+  toType,
+  TypeOutput,
+} from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
@@ -169,7 +178,7 @@ export class BlockBuilder {
 
     // According to the Yellow Paper, a transaction's gas limit
     // cannot be greater than the remaining gas in the block
-    const blockGasLimit = bnToBigInt(this.headerData.gasLimit)
+    const blockGasLimit = bnToBigInt(toType(this.headerData.gasLimit, TypeOutput.BN))
     const blockGasRemaining = blockGasLimit - this.gasUsed
     if (bnToBigInt(tx.gasLimit) > blockGasRemaining) {
       throw new Error('tx has a higher gas limit than the remaining gas in the block')
