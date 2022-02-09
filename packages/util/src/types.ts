@@ -145,12 +145,11 @@ export function toType<T extends TypeOutput>(
   }
 }
 
-export const bnToBigInt = (bn: BNLike | undefined) => {
-  if (bn) {
-    return BigInt(new BN(bn).toString(10))
-  } else {
+export const bnToBigInt = (bn: BN | undefined) => {
+  if (!bn) {
     return 0n
   }
+  return BigInt(new BN(bn).toString(10))
 }
 
 export const bigIntToBN = (num: bigint) => {

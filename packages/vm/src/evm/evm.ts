@@ -3,7 +3,6 @@ import {
   Account,
   Address,
   bigIntToBN,
-  BN,
   generateAddress,
   generateAddress2,
   KECCAK256_NULL,

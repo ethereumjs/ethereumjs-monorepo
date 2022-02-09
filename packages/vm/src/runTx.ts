@@ -514,6 +514,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Generate the tx receipt
   const gasUsed = opts.blockGasUsed ?? bnToBigInt(block.header.gasUsed)
+  // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
   const cumulativeGasUsed = gasUsed + results.gasUsed
   results.receipt = await generateTxReceipt.bind(this)(tx, results, cumulativeGasUsed)
 

@@ -249,8 +249,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
       }
 
       gas += subMemUsage(runState, memOffset, memLength, common)
-      gas =
-        gas +
+      gas +=
         BigInt(common.param('gasPrices', 'logTopic')) * BigInt(topicsCount) +
         memLength * BigInt(common.param('gasPrices', 'logData'))
       return gas
