@@ -202,8 +202,9 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
         )
       }
       const message = _errorMsg('invalid receiptTrie', this, block)
-      errorLog.throwError(ErrorCode.INVALID_BLOCK_HEADER, {
+      errorLog.throwError(ErrorCode.INVALID_PARAM, {
         message,
+        param: 'receiptTrie',
       })
     }
     if (!result.bloom.bitvector.equals(block.header.logsBloom)) {
@@ -215,8 +216,9 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
         )
       }
       const message = _errorMsg('invalid bloom', this, block)
-      errorLog.throwError(ErrorCode.INVALID_BLOCK_HEADER, {
+      errorLog.throwError(ErrorCode.INVALID_PARAM, {
         message,
+        param: 'bloom',
       })
     }
     if (!result.gasUsed.eq(block.header.gasUsed)) {
@@ -224,8 +226,9 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
         debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
       }
       const message = _errorMsg('invalid gasUsed', this, block)
-      errorLog.throwError(ErrorCode.INVALID_BLOCK_HEADER, {
+      errorLog.throwError(ErrorCode.INVALID_PARAM, {
         message,
+        param: 'gasUsed',
       })
     }
     if (!stateRoot.equals(block.header.stateRoot)) {
@@ -237,8 +240,9 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
         )
       }
       const message = _errorMsg('invalid block stateRoot', this, block)
-      errorLog.throwError(ErrorCode.INVALID_BLOCK_HEADER, {
+      errorLog.throwError(ErrorCode.INVALID_PARAM, {
         message,
+        param: 'stateRoot',
       })
     }
   }
@@ -286,8 +290,9 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   if (!opts.skipBlockValidation) {
     if (block.header.gasLimit.gte(new BN('8000000000000000', 16))) {
       const message = _errorMsg('Invalid block with gas limit greater than (2^63 - 1)', this, block)
-      errorLog.throwError(ErrorCode.INVALID_BLOCK_HEADER, {
+      errorLog.throwError(ErrorCode.INVALID_PARAM, {
         message,
+        param: 'gasLimit',
       })
     } else {
       if (this.DEBUG) {

@@ -1,5 +1,6 @@
 export enum ErrorCode {
   INVALID_BLOCK_HEADER = 'INVALID_BLOCK_HEADER',
+  INVALID_PARAM = 'INVALID_PARAM',
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
 }
 
@@ -7,23 +8,8 @@ interface GeneralError<T extends ErrorCode = ErrorCode> extends Partial<Error> {
   code?: T
 }
 
-interface InvalidBlockHeaderError extends GeneralError<ErrorCode.INVALID_BLOCK_HEADER> {
-  param?:
-    | 'uncleHash'
-    | 'coinbase'
-    | 'stateRoot'
-    | 'transactionsTrie'
-    | 'receiptTrie'
-    | 'bloom'
-    | 'difficulty'
-    | 'number'
-    | 'gasLimit'
-    | 'gasUsed'
-    | 'timestamp'
-    | 'extraData'
-    | 'mixHash'
-    | 'nonce'
-    | 'baseFeePerGas'
+interface InvalidParamError extends GeneralError<ErrorCode.INVALID_PARAM> {
+  param?: string
 }
 
 interface UnknownError extends GeneralError<ErrorCode.UNKNOWN_ERROR> {
@@ -31,8 +17,8 @@ interface UnknownError extends GeneralError<ErrorCode.UNKNOWN_ERROR> {
 }
 
 // Convert an ErrorCode into its Typed Error
-export type CodedGeneralError<T> = T extends ErrorCode.INVALID_BLOCK_HEADER
-  ? InvalidBlockHeaderError
+export type CodedGeneralError<T> = T extends ErrorCode.INVALID_PARAM
+  ? InvalidParamError
   : T extends ErrorCode.UNKNOWN_ERROR
   ? UnknownError
   : never
@@ -47,8 +33,8 @@ function isError<K extends ErrorCode, T extends CodedGeneralError<K>>(
   return false
 }
 
-function isInvalidBlockHeaderError(error: GeneralError): error is InvalidBlockHeaderError {
-  return isError(error, ErrorCode.INVALID_BLOCK_HEADER)
+function isInvalidParamError(error: GeneralError): error is InvalidParamError {
+  return isError(error, ErrorCode.INVALID_PARAM)
 }
 
 function isUnknownError(error: GeneralError): error is UnknownError {
@@ -62,7 +48,7 @@ export class ErrorLogger {
     let { message } = codedError
     const messageDetails: Array<string> = []
 
-    if (isInvalidBlockHeaderError(codedError) && codedError.param) {
+    if (isInvalidParamError(codedError) && typeof codedError.param !== 'undefined') {
       messageDetails.push(`Invalid param=${codedError.param}`)
     }
 
