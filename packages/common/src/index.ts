@@ -770,7 +770,7 @@ export default class Common extends EventEmitter {
    * @param hardfork Hardfork name, optional if HF set
    * @returns Block number or null if not available
    */
-  nextHardforkBlockBN(hardfork?: string | Hardfork): BN | null {
+  nextHardforkBlock(hardfork?: string | Hardfork): BN | null {
     hardfork = hardfork ?? this._hardfork
     const hfBlock = this.hardforkBlockBN(hardfork)
     if (hfBlock === null) {
@@ -796,7 +796,7 @@ export default class Common extends EventEmitter {
   isNextHardforkBlock(blockNumber: BNLike, hardfork?: string | Hardfork): boolean {
     blockNumber = toType(blockNumber, TypeOutput.BN)
     hardfork = hardfork ?? this._hardfork
-    const nextHardforkBlock = this.nextHardforkBlockBN(hardfork)
+    const nextHardforkBlock = this.nextHardforkBlock(hardfork)
 
     return nextHardforkBlock === null ? false : nextHardforkBlock.eq(blockNumber)
   }
