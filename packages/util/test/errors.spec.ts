@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { ErrorCode, ErrorLogger } from '../../src/errors'
+import { ErrorCode, ErrorLogger } from '../src/errors'
 
 tape('ErrorLogger', (t) => {
   const errorLog = new ErrorLogger()
@@ -84,11 +84,11 @@ tape('ErrorLogger', (t) => {
       )
       st.end()
     })
-  t.test('should populate an error with INVALID_BLOCK_HEADER with the "param" prop', (st) => {
+  t.test('should populate an error with INVALID_PARAM with the "param" prop', (st) => {
     let error: any
 
     try {
-      errorLog.throwError(ErrorCode.INVALID_BLOCK_HEADER, {
+      errorLog.throwError(ErrorCode.INVALID_PARAM, {
         param: 'difficulty',
       })
     } catch (e) {
@@ -98,11 +98,11 @@ tape('ErrorLogger', (t) => {
     st.equal(error.param, 'difficulty')
     st.end()
   }),
-    t.test('should add the "param" prop to the INVALID_BLOCK_HEADER error message', (st) => {
+    t.test('should add the "param" prop to the INVALID_PARAM error message', (st) => {
       let error: any
 
       try {
-        errorLog.throwError(ErrorCode.INVALID_BLOCK_HEADER, {
+        errorLog.throwError(ErrorCode.INVALID_PARAM, {
           message: 'Gas limit higher than maximum',
           param: 'gasLimit',
         })
@@ -112,7 +112,7 @@ tape('ErrorLogger', (t) => {
 
       st.equal(
         error.message,
-        'Gas limit higher than maximum | Details: Invalid param=gasLimit, code=INVALID_BLOCK_HEADER'
+        'Gas limit higher than maximum | Details: Invalid param=gasLimit, code=INVALID_PARAM'
       )
       st.end()
     })
