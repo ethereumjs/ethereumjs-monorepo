@@ -14,7 +14,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
       const c = new Common({ chain: testnet, hardfork: Hardfork.Byzantium })
       st.equal(c.chainName(), 'testnet', 'should initialize with chain name')
       st.ok(c.chainId().eqn(12345), 'should return correct chain Id')
-      st.ok(c.networkIdBN().eqn(12345), 'should return correct network Id')
+      st.ok(c.networkId().eqn(12345), 'should return correct network Id')
       st.equal(
         c.genesis().hash,
         '0xaa00000000000000000000000000000000000000000000000000000000000000',
@@ -53,7 +53,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     // From custom chain params
     st.equal(customChainCommon.chainName(), customChainParams.name)
     st.ok(customChainCommon.chainId().eqn(customChainParams.chainId))
-    st.ok(customChainCommon.networkIdBN().eqn(customChainParams.networkId))
+    st.ok(customChainCommon.networkId().eqn(customChainParams.networkId))
 
     // Fallback params from mainnet
     st.equal(customChainCommon.genesis(), mainnetCommon.genesis())
@@ -68,12 +68,12 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
 
   t.test('custom() -> behavior', function (st: tape.Test) {
     let common = Common.custom({ chainId: 123 })
-    st.deepEqual(common.networkIdBN(), new BN(1), 'should default to mainnet base chain')
+    st.deepEqual(common.networkId(), new BN(1), 'should default to mainnet base chain')
     st.equal(common.chainName(), 'custom-chain', 'should set default custom chain name')
 
     common = Common.custom(CustomChain.PolygonMumbai)
     st.deepEqual(
-      common.networkIdBN(),
+      common.networkId(),
       new BN(80001),
       'supported chain -> should initialize with correct chain ID'
     )
