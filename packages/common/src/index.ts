@@ -962,7 +962,7 @@ export default class Common extends EventEmitter {
    * Returns the Id of current network
    * @returns network Id
    */
-  networkIdBN(): BN {
+  networkId(): BN {
     return new BN(this._chainParams['networkId'])
   }
 
