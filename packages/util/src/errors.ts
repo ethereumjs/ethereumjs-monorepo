@@ -87,7 +87,6 @@ export class ErrorLogger {
   throwError<T extends ErrorCode>(code?: T, params?: Omit<CodedGeneralError<T>, 'code'>): never {
     throw this.makeError({
       code: code ?? ErrorCode.UNKNOWN_ERROR,
-      message: params?.message,
       ...params,
     } as CodedGeneralError<T>)
   }
