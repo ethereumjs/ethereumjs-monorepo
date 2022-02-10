@@ -946,7 +946,7 @@ export default class Common extends EventEmitter {
    * Returns the Id of current chain
    * @returns chain Id
    */
-  chainIdBN(): BN {
+  chainId(): BN {
     return new BN(this._chainParams['chainId'])
   }
 
