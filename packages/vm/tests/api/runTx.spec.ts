@@ -355,7 +355,7 @@ tape('runTx() -> runtime behavior', async (t) => {
         to: address,
       }
       if (txType.type === 1) {
-        txParams['chainId'] = common.chainIdBN()
+        txParams['chainId'] = common.chainId()
         txParams['accessList'] = []
         txParams['type'] = txType.type
       }
