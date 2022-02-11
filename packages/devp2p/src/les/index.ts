@@ -181,7 +181,7 @@ export class LES extends EventEmitter {
       status['announceType'] = int2buffer(DEFAULT_ANNOUNCE_TYPE)
     }
     status['protocolVersion'] = int2buffer(this._version)
-    status['networkId'] = this._peer._common.chainIdBN().toArrayLike(Buffer)
+    status['networkId'] = this._peer._common.chainId().toArrayLike(Buffer)
 
     this._status = status
 

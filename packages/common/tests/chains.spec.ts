@@ -6,8 +6,8 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
   t.test('Should initialize with chain provided', function (st: tape.Test) {
     let c = new Common({ chain: 'mainnet' })
     st.equal(c.chainName(), 'mainnet', 'should initialize with chain name')
-    st.ok(c.chainIdBN().eqn(1), 'should return correct chain Id')
-    st.ok(c.networkIdBN().eqn(1), 'should return correct network Id')
+    st.ok(c.chainId().eqn(1), 'should return correct chain Id')
+    st.ok(c.networkId().eqn(1), 'should return correct network Id')
     st.equal(c.hardfork(), 'istanbul', 'should set hardfork to current default hardfork')
     st.equal(
       c.hardfork(),
@@ -24,8 +24,8 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
   t.test('Should initialize with chain provided by Chain enum', function (st: tape.Test) {
     const c = new Common({ chain: Chain.Mainnet })
     st.equal(c.chainName(), 'mainnet', 'should initialize with chain name')
-    st.ok(c.chainIdBN().eqn(1), 'should return correct chain Id')
-    st.ok(c.networkIdBN().eqn(1), 'should return correct network Id')
+    st.ok(c.chainId().eqn(1), 'should return correct chain Id')
+    st.ok(c.networkId().eqn(1), 'should return correct network Id')
     st.equal(c.hardfork(), 'istanbul', 'should set hardfork to current default hardfork')
     st.equal(
       c.hardfork(),
