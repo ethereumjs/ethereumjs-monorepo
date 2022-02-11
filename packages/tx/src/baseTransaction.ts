@@ -356,7 +356,7 @@ export abstract class BaseTransaction<TransactionObject> {
     if (chainId) {
       const chainIdBN = new BN(toBuffer(chainId))
       if (common) {
-        if (!common.chainIdBN().eq(chainIdBN)) {
+        if (!common.chainId().eq(chainIdBN)) {
           const msg = this._errorMsg('The chain ID does not match the chain ID of Common')
           throw new Error(msg)
         }

@@ -7,7 +7,7 @@ import testnet from './testdata/testnet.json'
 
 const buildChain = async (blockchain: Blockchain, common: Common, height: number) => {
   const blocks: Block[] = []
-  const londonBlockNumber = common.hardforkBlockBN('london')!.toNumber()
+  const londonBlockNumber = common.hardforkBlock('london')!.toNumber()
   const genesis = Block.genesis({}, { common })
   blocks.push(genesis)
 
