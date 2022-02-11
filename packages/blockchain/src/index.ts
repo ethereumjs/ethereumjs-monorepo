@@ -922,7 +922,7 @@ export default class Blockchain implements BlockchainInterface {
       const currentTd = { header: new BN(0), block: new BN(0) }
       let dbOps: DBOp[] = []
 
-      if (!block._common.chainIdBN().eq(this._common.chainIdBN())) {
+      if (!block._common.chainId().eq(this._common.chainId())) {
         throw new Error('Chain mismatch while trying to put block or header')
       }
 

@@ -10,7 +10,7 @@ import { FullEthereumService } from '../../../lib/service'
 const method = 'eth_sendRawTransaction'
 
 tape(`${method}: call with valid arguments`, async (t) => {
-  const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlockBN(Hardfork.London)
+  const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlock(Hardfork.London)
   const { server, client } = baseSetup({ syncTargetHeight, includeVM: true })
 
   // Mainnet EIP-1559 tx
@@ -91,7 +91,7 @@ tape(`${method}: call with sync target height not set yet`, async (t) => {
 })
 
 tape(`${method}: call with invalid tx (wrong chain ID)`, async (t) => {
-  const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlockBN(Hardfork.London)
+  const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlock(Hardfork.London)
   const { server } = baseSetup({ syncTargetHeight, includeVM: true })
 
   // Baikal EIP-1559 tx
@@ -104,7 +104,7 @@ tape(`${method}: call with invalid tx (wrong chain ID)`, async (t) => {
 })
 
 tape(`${method}: call with unsigned tx`, async (t) => {
-  const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlockBN(Hardfork.London)
+  const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlock(Hardfork.London)
   const { server } = baseSetup({ syncTargetHeight })
 
   // Mainnet EIP-1559 tx
@@ -126,7 +126,7 @@ tape(`${method}: call with unsigned tx`, async (t) => {
 })
 
 tape(`${method}: call with no peers`, async (t) => {
-  const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlockBN(Hardfork.London)
+  const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlock(Hardfork.London)
   const { server, client } = baseSetup({ syncTargetHeight, includeVM: true, noPeers: true })
 
   // Mainnet EIP-1559 tx

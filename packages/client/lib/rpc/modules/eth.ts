@@ -472,7 +472,7 @@ export class Eth {
    * @returns The chain ID.
    */
   async chainId(_params = []) {
-    const chainId = this._chain.config.chainCommon.chainIdBN()
+    const chainId = this._chain.config.chainCommon.chainId()
     return bnToHex(chainId)
   }
 
