@@ -144,7 +144,7 @@ export class Chain {
    * Network ID
    */
   get networkId(): BN {
-    return this.config.chainCommon.networkIdBN()
+    return this.config.chainCommon.networkId()
   }
 
   /**

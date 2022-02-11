@@ -221,7 +221,7 @@ export class Miner {
     }
 
     let baseFeePerGas
-    const londonHardforkBlock = this.config.chainCommon.hardforkBlockBN(Hardfork.London)
+    const londonHardforkBlock = this.config.chainCommon.hardforkBlock(Hardfork.London)
     const isInitialEIP1559Block = londonHardforkBlock && number.eq(londonHardforkBlock)
     if (isInitialEIP1559Block) {
       // Get baseFeePerGas from `paramByEIP` since 1559 not currently active on common

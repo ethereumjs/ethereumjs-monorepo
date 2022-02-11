@@ -265,7 +265,7 @@ export class BlockHeader {
 
     if (this._common.isActivatedEIP(1559)) {
       if (baseFeePerGas === undefined) {
-        const londonHfBlock = this._common.hardforkBlockBN(Hardfork.London)
+        const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
         const isInitialEIP1559Block = londonHfBlock && number.eq(londonHfBlock)
         if (isInitialEIP1559Block) {
           baseFeePerGas = new BN(this._common.param('gasConfig', 'initialBaseFee'))
@@ -400,7 +400,7 @@ export class BlockHeader {
 
     if (nonce.length !== 8) {
       // Hack to check for Kovan due to non-standard nonce length (65 bytes)
-      if (this._common.networkIdBN().eqn(42)) {
+      if (this._common.networkId().eqn(42)) {
         if (nonce.length !== 65) {
           const msg = this._errorMsg(
             `nonce must be 65 bytes on kovan, received ${nonce.length} bytes`
@@ -578,7 +578,7 @@ export class BlockHeader {
     let parentGasLimit = parentBlockHeader.gasLimit
     // EIP-1559: assume double the parent gas limit on fork block
     // to adopt to the new gas target centered logic
-    const londonHardforkBlock = this._common.hardforkBlockBN(Hardfork.London)
+    const londonHardforkBlock = this._common.hardforkBlock(Hardfork.London)
     if (londonHardforkBlock && this.number.eq(londonHardforkBlock)) {
       const elasticity = new BN(this._common.param('gasConfig', 'elasticityMultiplier'))
       parentGasLimit = parentGasLimit.mul(elasticity)
@@ -728,7 +728,7 @@ export class BlockHeader {
         const msg = this._errorMsg('EIP1559 block has no base fee field')
         throw new Error(msg)
       }
-      const londonHfBlock = this._common.hardforkBlockBN(Hardfork.London)
+      const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
       const isInitialEIP1559Block = londonHfBlock && this.number.eq(londonHfBlock)
       if (isInitialEIP1559Block) {
         const initialBaseFee = new BN(this._common.param('gasConfig', 'initialBaseFee'))
@@ -1024,7 +1024,7 @@ export class BlockHeader {
     if (!this._common.hardforkIsActiveOnChain(Hardfork.Dao)) {
       return
     }
-    const DAOActivationBlock = this._common.hardforkBlockBN(Hardfork.Dao)
+    const DAOActivationBlock = this._common.hardforkBlock(Hardfork.Dao)
     if (!DAOActivationBlock || DAOActivationBlock.isZero() || this.number.lt(DAOActivationBlock)) {
       return
     }

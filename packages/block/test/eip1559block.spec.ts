@@ -23,7 +23,7 @@ const genesis = Block.fromBlockData({})
 
 // Small hack to hack in the activation block number
 // (Otherwise there would be need for a custom chain only for testing purposes)
-common.hardforkBlockBN = function (hardfork: string | undefined) {
+common.hardforkBlock = function (hardfork: string | undefined) {
   if (hardfork === 'london') {
     return new BN(1)
   } else if (hardfork === 'dao') {
