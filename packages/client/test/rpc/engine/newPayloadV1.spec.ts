@@ -3,7 +3,7 @@ import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { params, baseRequest, baseSetup } from '../helpers'
 import { checkError } from '../util'
 
-const method = 'engine_executePayloadV1'
+const method = 'engine_newPayloadV1'
 
 const validTestVector = {
   blockHash: '0xb084c10440f05f5a23a55d1d7ebcb1b3892935fb56f23cdc9a7f42c348eed174',

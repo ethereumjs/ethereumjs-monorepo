@@ -15,10 +15,12 @@ import type { FullSynchronizer } from '../../sync'
 import type { TxPool } from '../../sync/txpool'
 
 enum Status {
-  VALID = 'VALID',
+  ACCEPTED = 'ACCEPTED',
   INVALID = 'INVALID',
+  INVALID_BLOCK_HASH = 'INVALID_BLOCK_HASH',
+  INVALID_TERMINAL_BLOCK = 'INVALID_TERMINAL_BLOCK',
   SYNCING = 'SYNCING',
-  SUCCESS = 'SUCCESS',
+  VALID = 'VALID',
 }
 
 type ExecutionPayloadV1 = {
@@ -53,14 +55,21 @@ type PayloadAttributesV1 = {
   suggestedFeeRecipient: string
 }
 
+type PayloadStatusV1 = {
+  status: Status
+  latestValidHash: string | null
+  validationError: string | null
+}
+
+type ForkchoiceResponseV1 = {
+  payloadStatus: PayloadStatusV1
+  payloadId: string | null
+}
+
 const EngineError = {
   UnknownPayload: {
     code: -32001,
     message: 'Unknown payload',
-  },
-  InvalidTerminalBlock: {
-    code: -32002,
-    message: 'Invalid terminal block',
   },
 }
 
@@ -197,7 +206,7 @@ export class Engine {
     this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.txPool })
     this.validBlocks = new Map()
 
-    this.executePayloadV1 = middleware(this.executePayloadV1.bind(this), 1, [
+    this.newPayloadV1 = middleware(this.newPayloadV1.bind(this), 1, [
       [
         validators.object({
           parentHash: validators.blockHash,
@@ -231,7 +240,7 @@ export class Engine {
           validators.object({
             timestamp: validators.hex,
             random: validators.hex,
-            feeRecipient: validators.address,
+            suggestedFeeRecipient: validators.address,
           })
         ),
       ],
@@ -246,16 +255,19 @@ export class Engine {
    *
    * @param params An array of one parameter:
    *   1. An object as an instance of {@link ExecutionPayloadV1}
-   * @returns An object:
+   * @returns An object of shape {@link PayloadStatusV1}:
    *   1. status: String - the result of the payload execution
    *        VALID - given payload is valid
    *        INVALID - given payload is invalid
    *        SYNCING - sync process is in progress
+   *        ACCEPTED - blockHash is valid, doesn't extend the canonical chain, hasn't been fully validated
+   *        INVALID_BLOCK_HASH - blockHash validation failed
+   *        INVALID_TERMINAL_BLOCK - block fails transition block validity
    *   2. latestValidHash: DATA|null - the hash of the most recent
    *      valid block in the branch defined by payload and its ancestors
    *   3. validationError: String|null - validation error message
    */
-  async executePayloadV1(params: [ExecutionPayloadV1]) {
+  async newPayloadV1(params: [ExecutionPayloadV1]): Promise<PayloadStatusV1> {
     const [payloadData] = params
     const {
       blockNumber: number,
@@ -270,6 +282,8 @@ export class Engine {
     try {
       await findBlock(toBuffer(parentHash), this.validBlocks, this.chain)
     } catch (error: any) {
+      // TODO if we can't find the parent, return ACCEPTED when optimistic sync is supported
+      // and we can store the block for later processing
       return { status: Status.SYNCING, validationError: null, latestValidHash: null }
     }
 
@@ -286,7 +300,7 @@ export class Engine {
           this.validBlocks,
           this.chain
         )
-        return { status: Status.INVALID, validationError, latestValidHash }
+        return { status: Status.INVALID, latestValidHash, validationError }
       }
     }
 
@@ -306,11 +320,16 @@ export class Engine {
 
       // Verify blockHash matches payload
       if (!block.hash().equals(toBuffer(payloadData.blockHash))) {
-        throw new Error(
-          `Invalid blockHash, expected: ${payloadData.blockHash}, received: ${bufferToHex(
-            block.hash()
-          )}`
+        const validationError = `Invalid blockHash, expected: ${
+          payloadData.blockHash
+        }, received: ${bufferToHex(block.hash())}`
+        this.config.logger.debug(validationError)
+        const latestValidHash = await validHash(
+          toBuffer(header.parentHash),
+          this.validBlocks,
+          this.chain
         )
+        return { status: Status.INVALID_BLOCK_HASH, latestValidHash, validationError }
       }
     } catch (error) {
       const validationError = `Error verifying block during init: ${error}`
@@ -320,7 +339,7 @@ export class Engine {
         this.validBlocks,
         this.chain
       )
-      return { status: Status.INVALID, validationError, latestValidHash }
+      return { status: Status.INVALID, latestValidHash, validationError }
     }
 
     const vmCopy = this.vm.copy()
@@ -334,7 +353,7 @@ export class Engine {
         this.chain
       )
     } catch (error) {
-      return { status: Status.SYNCING, validationError: null, latestValidHash: null }
+      return { status: Status.SYNCING, latestValidHash: null, validationError: null }
     }
 
     blocks.push(block)
@@ -350,11 +369,15 @@ export class Engine {
       const validationError = `Error verifying block while running: ${error}`
       this.config.logger.debug(validationError)
       const latestValidHash = await validHash(block.header.parentHash, this.validBlocks, this.chain)
-      return { status: Status.INVALID, validationError, latestValidHash }
+      return { status: Status.INVALID, latestValidHash, validationError }
     }
 
     this.validBlocks.set(block.hash().toString('hex'), block)
-    return { status: Status.VALID, latestValidHash: bufferToHex(block.hash()) }
+    return {
+      status: Status.VALID,
+      latestValidHash: bufferToHex(block.hash()),
+      validationError: null,
+    }
   }
 
   /**
@@ -367,11 +390,16 @@ export class Engine {
    *         and honesty assumptions. This value MUST be either equal to or an ancestor of headBlockHash
    *        finalizedBlockHash - block hash of the most recent finalized block
    *   2. An object or null - instance of {@link PayloadAttributesV1}
-   * @returns None or an error
+   * @returns An object:
+   *   1. payloadStatus: {@link PayloadStatus1}; values of the `status` field in the context of this method are restricted to the following subset::
+   *        VALID
+   *        INVALID
+   *        SYNCING
+   *   2. payloadId: DATA|null - 8 Bytes - identifier of the payload build process or `null`
    */
   async forkchoiceUpdatedV1(
     params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | undefined]
-  ) {
+  ): Promise<ForkchoiceResponseV1> {
     const { headBlockHash, finalizedBlockHash } = params[0]
     const payloadAttributes = params[1]
 
@@ -385,7 +413,9 @@ export class Engine {
       try {
         headBlock = await this.chain.getBlock(toBuffer(headBlockHash))
       } catch (error) {
-        return { status: Status.SYNCING, payloadId: null }
+        const latestValidHash = bufferToHex(this.chain.headers.latest!.hash())
+        const payloadStatus = { status: Status.SYNCING, latestValidHash, validationError: null }
+        return { payloadStatus, payloadId: null }
       }
     }
 
@@ -400,7 +430,13 @@ export class Engine {
           this.chain
         )
       } catch (error) {
-        return { status: Status.SYNCING, payloadId: null }
+        const latestValidHash = await validHash(
+          headBlock.header.parentHash,
+          this.validBlocks,
+          this.chain
+        )
+        const payloadStatus = { status: Status.SYNCING, latestValidHash, validationError: null }
+        return { payloadStatus, payloadId: null }
       }
 
       const blocks = [...parentBlocks, headBlock]
@@ -443,10 +479,22 @@ export class Engine {
         mixHash: random,
         coinbase: suggestedFeeRecipient,
       })
-      return { status: Status.SUCCESS, payloadId: bufferToHex(payloadId) }
+      const latestValidHash = await validHash(
+        headBlock.header.parentHash,
+        this.validBlocks,
+        this.chain
+      )
+      const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
+      return { payloadStatus, payloadId: bufferToHex(payloadId) }
     }
 
-    return { status: Status.SUCCESS }
+    const latestValidHash = await validHash(
+      headBlock.header.parentHash,
+      this.validBlocks,
+      this.chain
+    )
+    const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
+    return { payloadStatus, payloadId: null }
   }
 
   /**
