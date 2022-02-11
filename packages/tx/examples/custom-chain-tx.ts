@@ -48,4 +48,4 @@ if (signedTx.validate() && signedTx.getSenderAddress().equals(address)) {
   console.log('Invalid signature')
 }
 
-console.log("The transaction's chain id is: ", signedTx.common.chainIdBN().toString())
+console.log("The transaction's chain id is: ", signedTx.common.chainId().toString())

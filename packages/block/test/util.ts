@@ -24,7 +24,7 @@ function createBlock(
   const number = parentBlock.header.number.addn(1)
   const timestamp = parentBlock.header.timestamp.addn(1)
 
-  const londonHfBlock = common.hardforkBlockBN(Hardfork.London)
+  const londonHfBlock = common.hardforkBlock(Hardfork.London)
   const baseFeePerGas =
     londonHfBlock && number.gt(londonHfBlock) ? parentBlock.header.calcNextBaseFee() : undefined
 

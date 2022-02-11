@@ -57,7 +57,7 @@ tape(
           chainId: 5,
         })
         t.ok(
-          tx.common.chainIdBN().eqn(5),
+          tx.common.chainId().eqn(5),
           'should initialize Common with chain ID provided (supported chain ID)'
         )
 
@@ -65,7 +65,7 @@ tape(
           chainId: 99999,
         })
         t.ok(
-          tx.common.chainIdBN().eqn(99999),
+          tx.common.chainId().eqn(99999),
           'should initialize Common with chain ID provided (unsupported chain ID)'
         )
 
