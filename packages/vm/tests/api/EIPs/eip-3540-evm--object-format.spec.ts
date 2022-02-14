@@ -12,95 +12,106 @@ tape('EIP 3540 tests', (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [3540, 3541] })
   //const commonNoEIP3541 = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [] })
 
-  t.test('no magic', async (st) => {
-    // put 0xEF contract
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
+  t.test('invalid object formats', async (st) => {
+    const vm = new VM({ common })
+    const account = await vm.stateManager.getAccount(sender)
+    const balance = GWEI.muln(21000).muln(10000000)
+    account.balance = balance
+    await vm.stateManager.putAccount(sender, account)
+
+    let tx = FeeMarketEIP1559Transaction.fromTxData({
       data: '0x60EF60005360016000F3',
       gasLimit: 1000000,
       maxFeePerGas: 7,
     }).sign(pkey)
+    let result = await vm.runTx({ tx })
+    let created = result.createdAddress
+    let code = await vm.stateManager.getContractCode(created!)
+    st.ok(code.length === 0, 'no magic')
 
-    const vm = new VM({ common })
-    const account = await vm.stateManager.getAccount(sender)
-    const balance = GWEI.muln(21000).muln(10)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
-    const result = await vm.runTx({ tx })
-    const created = result.createdAddress
-    const code = await vm.stateManager.getContractCode(created!)
-    st.ok(code.length === 0, 'did not deposit code')
-  })
-  t.test('invalid header', async (st) => {
-    // put 0xEF contract
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
+    tx = FeeMarketEIP1559Transaction.fromTxData({
       data: '0x7FEF0000000000000000000000000000000000000000000000000000000000000060005260206000F3',
       gasLimit: 1000000,
       maxFeePerGas: 7,
+      nonce: 1,
     }).sign(pkey)
+    result = await vm.runTx({ tx })
+    created = result.createdAddress
+    code = await vm.stateManager.getContractCode(created!)
+    st.ok(code.length === 0, 'invalid header')
 
-    const vm = new VM({ common })
-    const account = await vm.stateManager.getAccount(sender)
-    const balance = GWEI.muln(21000).muln(10)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
-    const result = await vm.runTx({ tx })
-    const created = result.createdAddress
-    const code = await vm.stateManager.getContractCode(created!)
-    st.ok(code.length === 0, 'did not deposit code')
-  })
-
-  t.test('valid header but invalid EOF format', async (st) => {
-    // put 0xEF contract
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
+    tx = FeeMarketEIP1559Transaction.fromTxData({
       data: '0x7FEF0002000000000000000000000000000000000000000000000000000000000060005260206000F3',
       gasLimit: 1000000,
       maxFeePerGas: 7,
+      nonce: 2,
     }).sign(pkey)
+    result = await vm.runTx({ tx })
+    created = result.createdAddress
+    code = await vm.stateManager.getContractCode(created!)
+    st.ok(code.length === 0, 'valid header but invalid EOF format')
 
-    const vm = new VM({ common })
-    const account = await vm.stateManager.getAccount(sender)
-    const balance = GWEI.muln(21000).muln(10)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
-    const result = await vm.runTx({ tx })
-    const created = result.createdAddress
-    const code = await vm.stateManager.getContractCode(created!)
-    st.ok(code.length === 0, 'did not deposit code')
-  })
-  t.test('valid header and version but no code section', async (st) => {
-    // put 0xEF contract
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
+    tx = FeeMarketEIP1559Transaction.fromTxData({
       data: '0x7FEF0001000000000000000000000000000000000000000000000000000000000060005260206000F3',
       gasLimit: 1000000,
       maxFeePerGas: 7,
+      nonce: 3,
     }).sign(pkey)
+    result = await vm.runTx({ tx })
+    created = result.createdAddress
+    code = await vm.stateManager.getContractCode(created!)
+    st.ok(code.length === 0, 'valid header and version but no code section')
 
-    const vm = new VM({ common })
-    const account = await vm.stateManager.getAccount(sender)
-    const balance = GWEI.muln(21000).muln(10)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
-    const result = await vm.runTx({ tx })
-    const created = result.createdAddress
-    const code = await vm.stateManager.getContractCode(created!)
-    st.ok(code.length === 0, 'did not deposit code')
-  })
-  t.test('valid header and version but unknown section type', async (st) => {
-    // put 0xEF contract
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
+    tx = FeeMarketEIP1559Transaction.fromTxData({
       data: '0x7FEF0001030000000000000000000000000000000000000000000000000000000060005260206000F3',
       gasLimit: 1000000,
       maxFeePerGas: 7,
+      nonce: 4,
     }).sign(pkey)
+    result = await vm.runTx({ tx })
+    created = result.createdAddress
+    code = await vm.stateManager.getContractCode(created!)
+    st.ok(code.length === 0, 'valid header and version but unknown section type')
 
+    tx = FeeMarketEIP1559Transaction.fromTxData({
+      data: '0x7FEF0001010002006000DEADBEEF0000000000000000000000000000000000000060005260206000F3',
+      gasLimit: 1000000,
+      maxFeePerGas: 7,
+      nonce: 5,
+    }).sign(pkey)
+    result = await vm.runTx({ tx })
+    created = result.createdAddress
+    code = await vm.stateManager.getContractCode(created!)
+    st.ok(code.length === 0, 'code section with trailing bytes')
+  })
+
+  t.test('valid cases', async (st) => {
     const vm = new VM({ common })
     const account = await vm.stateManager.getAccount(sender)
-    const balance = GWEI.muln(21000).muln(10)
+    const balance = GWEI.muln(21000).muln(10000000)
     account.balance = balance
     await vm.stateManager.putAccount(sender, account)
-    const result = await vm.runTx({ tx })
-    const created = result.createdAddress
-    const code = await vm.stateManager.getContractCode(created!)
-    st.ok(code.length === 0, 'did not deposit code')
+
+    let tx = FeeMarketEIP1559Transaction.fromTxData({
+      data: '0x67EF0001010001000060005260206007F3',
+      gasLimit: 1000000,
+      maxFeePerGas: 7,
+      nonce: 0,
+    }).sign(pkey)
+    let result = await vm.runTx({ tx })
+    let created = result.createdAddress
+    let code = await vm.stateManager.getContractCode(created!)
+    st.ok(code.length > 0, 'code section with no data section')
+
+    tx = FeeMarketEIP1559Transaction.fromTxData({
+      data: '0x6CEF00010100010000020001AA0060005260206007F3',
+      gasLimit: 1000000,
+      maxFeePerGas: 7,
+      nonce: 1,
+    }).sign(pkey)
+    result = await vm.runTx({ tx })
+    created = result.createdAddress
+    code = await vm.stateManager.getContractCode(created!)
+    st.ok(code.length > 0, 'code section with data section')
   })
 })

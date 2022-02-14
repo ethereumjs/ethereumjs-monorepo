@@ -404,6 +404,7 @@ export default class EVM {
         this._vm._common.isActivatedEIP(3541) &&
         result.returnValue.slice(0, 1).equals(Buffer.from('EF', 'hex'))
       ) {
+        // EIP-3540 EOF checks
         if (!this._vm._common.isActivatedEIP(3540)) {
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
         }
@@ -418,32 +419,55 @@ export default class EVM {
         }
         let pos = 3
         const secSizes = {
-          code: 0,
-          data: 0,
+          0x01: 0, // Code
+          0x02: 0, // Data
         }
-        while (pos < result.returnValue.length) {
-          let secId = result.returnValue[pos]
+        let done = false
+        while (!done) {
+          const secId = result.returnValue[pos]
+          pos++
+          if (secId === 0x00) {
+            console.log('found terminator')
+            // Found EOF section terminator 0x00
+            done = true
+            break
+          }
           if (secId !== 0x01 && secId !== 0x02) {
+            console.log('invalid section')
             // Invalid section (not code or data)
             result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
             break
           }
-          if (secId === 0x02 && secSizes.code === 0) {
+          if (secId === 0x02 && secSizes[0x01] === 0) {
+            console.log('data before code')
             // Data section appears before code
             result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
             break
           }
-          if (secId === 0x01) {
-            secSizes.code++
-            pos++
-            secId = result.returnValue[pos]
-            if (secId < 0x01) {
-              // Invalid code size
-              result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
-              break
-            }
+          if (secSizes[secId] > 0) {
+            console.log('dup sections')
+            // Cannot have more than one of a section type
+            result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
+            break
           }
-          pos++
+          if (pos + 1 < result.returnValue.length) {
+            secSizes[secId] = (result.returnValue[pos] << 8) | result.returnValue[pos + 1]
+          }
+          pos += 2
+
+          if (secSizes[secId] === 0) {
+            // cannot have empty section
+            result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
+            break
+          }
+        }
+        if (secSizes[0x01] === 0) {
+          // Code section cannot be empty
+          result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
+        }
+        if (result.returnValue.length !== pos + secSizes[0x01] + secSizes[0x02]) {
+          // Scanned code does not match length of contract byte code
+          result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
         }
       } else {
         result.gasUsed = totalGas
