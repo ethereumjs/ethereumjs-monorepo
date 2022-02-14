@@ -408,7 +408,47 @@ export default class EVM {
         this._vm._common.isActivatedEIP(3541) &&
         result.returnValue.slice(0, 1).equals(Buffer.from('EF', 'hex'))
       ) {
-        result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
+        if (!this._vm._common.isActivatedEIP(3540)) {
+          result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
+        }
+        if (result.returnValue.length < 3 || !(result.returnValue[1] === 0x00)) {
+          // Code does not contain correct EOF header (i.e. EF00)
+          result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
+        }
+        if (!(result.returnValue[2] === 0x01)) {
+          // Code contains invalid EOF version (i.e. not 01)
+          // Should we generalize this to support future EOF versions?
+          result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
+        }
+        let pos = 3
+        const secSizes = {
+          code: 0,
+          data: 0,
+        }
+        while (pos < result.returnValue.length) {
+          let secId = result.returnValue[pos]
+          if (secId !== 0x01 && secId !== 0x02) {
+            // Invalid section (not code or data)
+            result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
+            break
+          }
+          if (secId === 0x02 && secSizes.code === 0) {
+            // Data section appears before code
+            result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
+            break
+          }
+          if (secId === 0x01) {
+            secSizes.code++
+            pos++
+            secId = result.returnValue[pos]
+            if (secId < 0x01) {
+              // Invalid code size
+              result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
+              break
+            }
+          }
+          pos++
+        }
       } else {
         result.gasUsed = totalGas
       }
