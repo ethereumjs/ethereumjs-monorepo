@@ -297,7 +297,7 @@ const getBlockByOption = async (blockOpt: string, chain: Chain) => {
 export class Eth {
   private client: EthereumClient
   private service: EthereumService
-  private receiptsManager: ReceiptsManager
+  private receiptsManager: ReceiptsManager | undefined
   private _chain: Chain
   private _vm: VM | undefined
   public ethVersion: number
@@ -308,10 +308,8 @@ export class Eth {
    */
   constructor(client: EthereumClient) {
     this.client = client
-    const services: EthereumService[] = client.services
-    this.service = services.find((s) => s.name === 'eth') as EthereumService
-    // TODO: remove the forced typecasing here
-    this.receiptsManager = client.execution?.receiptsManager as ReceiptsManager
+    this.service = client.services.find((s) => s.name === 'eth') as EthereumService
+    this.receiptsManager = client.execution?.receiptsManager
     this._chain = this.service.chain
     this._vm = client.execution?.vm
 
@@ -654,6 +652,7 @@ export class Eth {
     const [txHash] = params
 
     try {
+      if (!this.receiptsManager) throw new Error('missing receiptsManager')
       const result = await this.receiptsManager.getReceiptByTxHash(toBuffer(txHash))
       if (!result) return null
       const [_receipt, blockHash, txIndex] = result
@@ -733,6 +732,7 @@ export class Eth {
     const [txHash] = params
 
     try {
+      if (!this.receiptsManager) throw new Error('missing receiptsManager')
       const result = await this.receiptsManager.getReceiptByTxHash(toBuffer(txHash))
       if (!result) return null
       const [receipt, blockHash, txIndex, logIndex] = result
@@ -778,6 +778,7 @@ export class Eth {
    */
   async getLogs(params: [GetLogsParams]) {
     const { fromBlock, toBlock, blockHash, address, topics } = params[0]
+    if (!this.receiptsManager) throw new Error('missing receiptsManager')
     if (blockHash !== undefined && (fromBlock !== undefined || toBlock !== undefined)) {
       throw {
         code: INVALID_PARAMS,

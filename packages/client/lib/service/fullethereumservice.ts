@@ -62,7 +62,6 @@ export class FullEthereumService extends EthereumService {
 
   async open() {
     await super.open()
-    this.execution.syncing = true
     return true
   }
 

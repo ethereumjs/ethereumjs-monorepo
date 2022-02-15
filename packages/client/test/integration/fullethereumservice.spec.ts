@@ -27,8 +27,6 @@ tape('[Integration:FullEthereumService]', async (t) => {
       chain,
       execution,
     })
-    // Set syncing to false to skip VM execution
-    service.synchronizer.execution.syncing = false
     await service.open()
     await server.start()
     await service.start()

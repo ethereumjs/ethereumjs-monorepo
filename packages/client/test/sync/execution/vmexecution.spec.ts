@@ -30,7 +30,6 @@ tape('[VMExecution]', async (t) => {
       config,
       chain,
     })
-    exec.syncing = true
     await exec.open()
     return exec
   }
@@ -65,7 +64,7 @@ tape('[VMExecution]', async (t) => {
 
   t.test('Block execution / Hardforks PoA (goerli)', async (t) => {
     const common = new Common({ chain: ChainEnum.Goerli, hardfork: Hardfork.Chainstart })
-    let blockchain = new Blockchain({
+    let blockchain = await Blockchain.create({
       validateBlocks: true,
       validateConsensus: false,
       common,

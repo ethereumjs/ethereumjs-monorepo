@@ -60,9 +60,6 @@ export async function setup(
     })
   }
   await service.open()
-  if ('execution' in service) {
-    service.execution.syncing = false
-  }
   await service.start()
   await server.start()
 

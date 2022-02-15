@@ -225,7 +225,6 @@ export async function runBlockWithTxs(
 
   // put block into chain and run execution
   await chain.putBlocks([block])
-  execution.syncing = true
   await execution.run()
 }
 

@@ -21,8 +21,7 @@ export class Admin {
    * @param client Client to which the module binds
    */
   constructor(client: EthereumClient) {
-    const services: EthereumService[] = client.services
-    const service = services.find((s) => s.name === 'eth') as EthereumService
+    const service = client.services.find((s) => s.name === 'eth') as EthereumService
     this._chain = service.chain
     this._client = client
     this._ethProtocol = service.protocols.find((p) => p.name === 'eth') as EthProtocol

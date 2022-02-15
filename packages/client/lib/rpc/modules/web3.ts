@@ -17,8 +17,7 @@ export class Web3 {
    * @param client Client to which the module binds
    */
   constructor(client: EthereumClient) {
-    const services: EthereumService[] = client.services
-    const service = services.find((s) => s.name === 'eth') as EthereumService
+    const service = client.services.find((s) => s.name === 'eth') as EthereumService
     this._chain = service.chain
 
     this.clientVersion = middleware(this.clientVersion.bind(this), 0, [])

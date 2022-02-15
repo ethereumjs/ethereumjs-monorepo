@@ -2,7 +2,7 @@ import { bufferToHex } from 'ethereumjs-util'
 import { version as packageVersion } from '../package.json'
 import { MultiaddrLike } from './types'
 import { Config, SyncMode } from './config'
-import { EthereumService, FullEthereumService, LightEthereumService } from './service'
+import { FullEthereumService, LightEthereumService } from './service'
 import { Event } from './types'
 import { VMExecution } from './execution'
 import { Chain } from './blockchain'
@@ -162,8 +162,7 @@ export default class EthereumClient {
    * @param name name of service
    */
   service(name: string) {
-    const services: EthereumService[] = this.services
-    return services.find((s) => s.name === name)
+    return this.services.find((s) => s.name === name)
   }
 
   /**
@@ -186,7 +185,6 @@ export default class EthereumClient {
    */
   async executeBlocks(first: number, last: number, txHashes: string[]) {
     this.config.logger.info('Preparing for block execution (debug mode, no services started)...')
-
     if (!this.execution) throw new Error('executeBlocks requires execution')
     const vm = this.execution.vm.copy()
 
