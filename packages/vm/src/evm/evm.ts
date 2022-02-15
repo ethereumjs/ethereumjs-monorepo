@@ -404,6 +404,10 @@ export default class EVM {
         this._vm._common.isActivatedEIP(3541) &&
         result.returnValue.slice(0, 1).equals(Buffer.from('EF', 'hex'))
       ) {
+        const version = parseInt(this._vm._common.param('eof', 'version'))
+        const s_code = parseInt(this._vm._common.param('eof', 's_code'))
+        const s_data = parseInt(this._vm._common.param('eof', 's_data'))
+        const s_terminator = parseInt(this._vm._common.param('eof', 's_terminator'))
         // EIP-3540 EOF checks
         if (!this._vm._common.isActivatedEIP(3540)) {
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
@@ -412,45 +416,40 @@ export default class EVM {
           // Code does not contain correct EOF header (i.e. EF00)
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
         }
-        if (!(result.returnValue[2] === 0x01)) {
+        if (!(result.returnValue[2] === version)) {
           // Code contains invalid EOF version (i.e. not 01)
-          // Should we generalize this to support future EOF versions?
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
         }
         let pos = 3
         const secSizes = {
-          0x01: 0, // Code
-          0x02: 0, // Data
+          [s_code | s_data]: 0,
         }
         let done = false
         while (!done) {
           const secId = result.returnValue[pos]
           pos++
-          if (secId === 0x00) {
-            console.log('found terminator')
+          if (secId === s_terminator) {
             // Found EOF section terminator 0x00
             done = true
             break
           }
-          if (secId !== 0x01 && secId !== 0x02) {
-            console.log('invalid section')
+          if (secId !== s_code && secId !== s_data) {
             // Invalid section (not code or data)
             result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
             break
           }
-          if (secId === 0x02 && secSizes[0x01] === 0) {
-            console.log('data before code')
+          if (secId === s_data && secSizes[s_code] === 0) {
             // Data section appears before code
             result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
             break
           }
           if (secSizes[secId] > 0) {
-            console.log('dup sections')
             // Cannot have more than one of a section type
             result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
             break
           }
           if (pos + 1 < result.returnValue.length) {
+            // Truncate section length
             secSizes[secId] = (result.returnValue[pos] << 8) | result.returnValue[pos + 1]
           }
           pos += 2
