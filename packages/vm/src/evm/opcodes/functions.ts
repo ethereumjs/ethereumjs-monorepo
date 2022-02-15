@@ -771,7 +771,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     },
   ],
   // 0x5b: JUMPDEST
-  [0x5b, function () {}],
+  [0x5b, function () { }],
   // 0x5c: BEGINSUB
   [
     0x5c,
@@ -823,6 +823,10 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x60,
     function (runState) {
       const numToPush = runState.opCode - 0x5f
+      console.log(runState.code)
+      if (runState.programCounter + numToPush > runState.code.length) {
+        trap(ERROR.OUT_OF_RANGE)
+      }
       const loaded = new BN(
         runState.eei.getCode().slice(runState.programCounter, runState.programCounter + numToPush)
       )

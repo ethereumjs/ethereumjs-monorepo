@@ -85,7 +85,7 @@ tape('EIP 3540 tests', (t) => {
     st.ok(code.length === 0, 'code section with trailing bytes')
   })
 
-  t.test('valid cases', async (st) => {
+  t.test('valid contract creation cases', async (st) => {
     const vm = new VM({ common })
     const account = await vm.stateManager.getAccount(sender)
     const balance = GWEI.muln(21000).muln(10000000)
@@ -102,7 +102,6 @@ tape('EIP 3540 tests', (t) => {
     let created = result.createdAddress
     let code = await vm.stateManager.getContractCode(created!)
     st.ok(code.length > 0, 'code section with no data section')
-
     tx = FeeMarketEIP1559Transaction.fromTxData({
       data: '0x6CEF00010100010000020001AA0060005260206007F3',
       gasLimit: 1000000,
