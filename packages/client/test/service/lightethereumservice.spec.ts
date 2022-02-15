@@ -3,6 +3,7 @@ import td from 'testdouble'
 import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
+import { Chain } from '../../lib/blockchain'
 
 tape('[LightEthereumService]', async (t) => {
   class PeerPool {
@@ -12,9 +13,9 @@ tape('[LightEthereumService]', async (t) => {
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
   td.replace('../../lib/net/peerpool', { PeerPool })
-  const Chain = td.constructor([] as any)
-  Chain.prototype.open = td.func()
-  td.replace('../../lib/blockchain', { Chain })
+  const MockChain = td.constructor([] as any)
+  MockChain.prototype.open = td.func()
+  td.replace('../../lib/blockchain', { MockChain })
   const LesProtocol = td.constructor([] as any)
   td.replace('../../lib/net/protocol/lesprotocol', { LesProtocol })
   class LightSynchronizer {
@@ -33,7 +34,8 @@ tape('[LightEthereumService]', async (t) => {
 
   t.test('should initialize correctly', async (t) => {
     const config = new Config({ transports: [] })
-    const service = new LightEthereumService({ config })
+    const chain = new Chain({ config })
+    const service = new LightEthereumService({ config, chain })
     t.ok(service.synchronizer instanceof LightSynchronizer, 'light sync')
     t.equals(service.name, 'eth', 'got name')
     t.end()
@@ -41,7 +43,8 @@ tape('[LightEthereumService]', async (t) => {
 
   t.test('should get protocols', async (t) => {
     const config = new Config({ transports: [] })
-    const service = new LightEthereumService({ config })
+    const chain = new Chain({ config })
+    const service = new LightEthereumService({ config, chain })
     t.ok(service.protocols[0] instanceof LesProtocol, 'light protocols')
     t.end()
   })
@@ -50,7 +53,8 @@ tape('[LightEthereumService]', async (t) => {
     t.plan(3)
     const server = td.object() as any
     const config = new Config({ servers: [server] })
-    const service = new LightEthereumService({ config })
+    const chain = new Chain({ config })
+    const service = new LightEthereumService({ config, chain })
     await service.open()
     td.verify(service.synchronizer.open())
     td.verify(server.addProtocols(td.matchers.anything()))
@@ -70,7 +74,8 @@ tape('[LightEthereumService]', async (t) => {
   t.test('should start/stop', async (t) => {
     const server = td.object() as any
     const config = new Config({ servers: [server] })
-    const service = new LightEthereumService({ config })
+    const chain = new Chain({ config })
+    const service = new LightEthereumService({ config, chain })
     await service.start()
     td.verify(service.synchronizer.start())
     t.notOk(await service.start(), 'already started')

@@ -35,7 +35,7 @@ import type { Proof } from '@ethereumjs/vm/dist/state'
 import type { EthereumClient } from '../..'
 import type { Chain } from '../../blockchain'
 import type { EthProtocol } from '../../net/protocol'
-import type { ReceiptsManager } from '../../sync/execution/receipt'
+import type { ReceiptsManager } from '../../execution/receipt'
 
 type GetLogsParams = {
   fromBlock?: string // QUANTITY, block number or "earliest" or "latest" (default: "latest")
@@ -297,7 +297,7 @@ const getBlockByOption = async (blockOpt: string, chain: Chain) => {
 export class Eth {
   private client: EthereumClient
   private service: EthereumService
-  private receiptsManager: ReceiptsManager
+  private receiptsManager: ReceiptsManager | undefined
   private _chain: Chain
   private _vm: VM | undefined
   public ethVersion: number
@@ -309,9 +309,9 @@ export class Eth {
   constructor(client: EthereumClient) {
     this.client = client
     this.service = client.services.find((s) => s.name === 'eth') as EthereumService
-    this.receiptsManager = (this.service.synchronizer as any).execution?.receiptsManager
+    this.receiptsManager = client.execution?.receiptsManager
     this._chain = this.service.chain
-    this._vm = (this.service.synchronizer as any)?.execution?.vm
+    this._vm = client.execution?.vm
 
     const ethProtocol = this.service.protocols.find((p) => p.name === 'eth') as EthProtocol
     this.ethVersion = Math.max(...ethProtocol.versions)
@@ -376,6 +376,10 @@ export class Eth {
     ])
 
     this.getTransactionReceipt = middleware(this.getTransactionReceipt.bind(this), 1, [
+      [validators.hex],
+    ])
+
+    this.getUncleCountByBlockNumber = middleware(this.getUncleCountByBlockNumber.bind(this), 1, [
       [validators.hex],
     ])
 
@@ -648,6 +652,7 @@ export class Eth {
     const [txHash] = params
 
     try {
+      if (!this.receiptsManager) throw new Error('missing receiptsManager')
       const result = await this.receiptsManager.getReceiptByTxHash(toBuffer(txHash))
       if (!result) return null
       const [_receipt, blockHash, txIndex] = result
@@ -727,6 +732,7 @@ export class Eth {
     const [txHash] = params
 
     try {
+      if (!this.receiptsManager) throw new Error('missing receiptsManager')
       const result = await this.receiptsManager.getReceiptByTxHash(toBuffer(txHash))
       if (!result) return null
       const [receipt, blockHash, txIndex, logIndex] = result
@@ -772,6 +778,7 @@ export class Eth {
    */
   async getLogs(params: [GetLogsParams]) {
     const { fromBlock, toBlock, blockHash, address, topics } = params[0]
+    if (!this.receiptsManager) throw new Error('missing receiptsManager')
     if (blockHash !== undefined && (fromBlock !== undefined || toBlock !== undefined)) {
       throw {
         code: INVALID_PARAMS,

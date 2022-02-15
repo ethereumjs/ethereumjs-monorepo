@@ -7,11 +7,10 @@ import { RPCManager as Manager } from '../../lib/rpc'
 import { getLogger } from '../../lib/logging'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain/chain'
-import { FullSynchronizer } from '../../lib/sync'
 import { parseCustomParams, parseGenesisState } from '../../lib/util'
 import { TxPool } from '../../lib/sync/txpool'
 import { RlpxServer } from '../../lib/net/server/rlpxserver'
-import { VMExecution } from '../../lib/sync/execution'
+import { VMExecution } from '../../lib/execution'
 import { mockBlockchain } from './mockBlockchain'
 import type EthereumClient from '../../lib/client'
 import type { TypedTransaction } from '@ethereumjs/tx'
@@ -78,10 +77,11 @@ export function createClient(clientOpts: any = {}) {
     syncTargetHeight: clientOpts.syncTargetHeight,
     txPool: new TxPool({ config }),
   }
+
+  let execution
   if (clientOpts.includeVM) {
     const metaDB = clientOpts.enableMetaDB ? level() : undefined
-    const execution = new VMExecution({ config, chain, metaDB })
-    synchronizer.execution = execution
+    execution = new VMExecution({ config, chain, metaDB })
   }
 
   let peers = [1, 2, 3]
@@ -92,6 +92,8 @@ export function createClient(clientOpts: any = {}) {
   const client: any = {
     synchronized: false,
     config,
+    chain,
+    execution,
     services: [
       {
         name: 'eth',
@@ -185,15 +187,13 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   const manager = createManager(client)
   const server = startRPC(manager.getMethods())
 
-  const service = client.services.find((s) => s.name === 'eth')!
-  const { chain } = service
-  const { execution } = service!.synchronizer as FullSynchronizer
+  const { chain, execution } = client
 
   await chain.open()
-  await execution.open()
+  await execution?.open()
   await chain.update()
 
-  return { chain, common, execution, server }
+  return { chain, common, execution: execution as VMExecution, server }
 }
 
 /**
@@ -225,7 +225,6 @@ export async function runBlockWithTxs(
 
   // put block into chain and run execution
   await chain.putBlocks([block])
-  execution.syncing = true
   await execution.run()
 }
 

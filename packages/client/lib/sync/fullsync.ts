@@ -5,9 +5,9 @@ import { short } from '../util'
 import { Event } from '../types'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import { BlockFetcher } from './fetcher'
-import { VMExecution } from './execution'
+import { VMExecution } from '../execution'
 import { TxPool } from './txpool'
-import type { Block } from '@ethereumjs/block'
+import type { Block, BlockHeader } from '@ethereumjs/block'
 
 interface HandledObject {
   hash: Buffer
@@ -20,7 +20,6 @@ type PeerId = string
  * @memberof module:sync
  */
 export class FullSynchronizer extends Synchronizer {
-  public execution: VMExecution
   public txPool: TxPool
 
   private newBlocksKnownByPeer: Map<PeerId, HandledObject[]>
@@ -29,13 +28,6 @@ export class FullSynchronizer extends Synchronizer {
     super(options)
 
     this.newBlocksKnownByPeer = new Map()
-    this.execution = new VMExecution({
-      config: options.config,
-      stateDB: options.stateDB,
-      metaDB: options.metaDB,
-      chain: options.chain,
-    })
-
     this.txPool = new TxPool({
       config: this.config,
       getPeerCount: () => this.pool.peers.length,
@@ -61,10 +53,8 @@ export class FullSynchronizer extends Synchronizer {
   async open(): Promise<void> {
     await super.open()
     await this.chain.open()
-    await this.execution.open()
     this.txPool.open()
     await this.pool.open()
-    this.execution.syncing = true
     const { height: number, td } = this.chain.blocks
     const hash = this.chain.blocks.latest!.hash()
     this.startingBlock = number
@@ -172,43 +162,6 @@ export class FullSynchronizer extends Synchronizer {
         destroyWhenDone: false,
       })
 
-      this.config.events.on(Event.SYNC_FETCHER_FETCHED, async (blocks) => {
-        if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
-          // If we are beyond the merge block we should stop the fetcher
-          this.config.logger.info('Merge hardfork reached, stopping block fetcher')
-          if (this.fetcher) {
-            this.fetcher.clear()
-            this.fetcher.destroy()
-            this.fetcher = null
-          }
-        }
-
-        if (blocks.length === 0) {
-          this.config.logger.warn('No blocks fetched are applicable for import')
-          return
-        }
-
-        blocks = blocks as Block[]
-        const first = new BN(blocks[0].header.number)
-        const hash = short(blocks[0].hash())
-        const baseFeeAdd = this.config.chainCommon.gteHardfork(Hardfork.London)
-          ? `baseFee=${blocks[0].header.baseFeePerGas} `
-          : ''
-        this.config.logger.info(
-          `Imported blocks count=${
-            blocks.length
-          } number=${first} hash=${hash} ${baseFeeAdd}hardfork=${this.config.chainCommon.hardfork()} peers=${
-            this.pool.size
-          }`
-        )
-        this.txPool.removeNewBlockTxs(blocks)
-
-        if (this.running) {
-          await this.execution.run()
-          this.checkTxPoolState()
-        }
-      })
-
       this.config.events.on(Event.SYNC_SYNCHRONIZED, () => {
         resolve(true)
       })
@@ -221,6 +174,43 @@ export class FullSynchronizer extends Synchronizer {
         reject(error)
       }
     })
+  }
+
+  async processBlocks(execution: VMExecution, blocks: Block[] | BlockHeader[]) {
+    if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+      // If we are beyond the merge block we should stop the fetcher
+      this.config.logger.info('Merge hardfork reached, stopping block fetcher')
+      if (this.fetcher) {
+        this.fetcher.clear()
+        this.fetcher.destroy()
+        this.fetcher = null
+      }
+    }
+
+    if (blocks.length === 0) {
+      this.config.logger.warn('No blocks fetched are applicable for import')
+      return
+    }
+
+    blocks = blocks as Block[]
+    const first = new BN(blocks[0].header.number)
+    const hash = short(blocks[0].hash())
+    const baseFeeAdd = this.config.chainCommon.gteHardfork(Hardfork.London)
+      ? `baseFee=${blocks[0].header.baseFeePerGas} `
+      : ''
+    this.config.logger.info(
+      `Imported blocks count=${
+        blocks.length
+      } number=${first} hash=${hash} ${baseFeeAdd}hardfork=${this.config.chainCommon.hardfork()} peers=${
+        this.pool.size
+      }`
+    )
+    this.txPool.removeNewBlockTxs(blocks)
+
+    if (this.running) {
+      await execution.run()
+      this.checkTxPoolState()
+    }
   }
 
   /**
@@ -343,8 +333,6 @@ export class FullSynchronizer extends Synchronizer {
    * Stop synchronization. Returns a promise that resolves once its stopped.
    */
   async stop(): Promise<boolean> {
-    this.execution.syncing = false
-    await this.execution.stop()
     this.txPool.stop()
 
     if (!this.running) {

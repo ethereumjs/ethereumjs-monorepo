@@ -6,7 +6,7 @@ import { checkError } from '../util'
 const method = 'engine_getPayloadV1'
 
 tape(`${method}: call with invalid payloadId`, async (t) => {
-  const { server } = baseSetup({ engine: true })
+  const { server } = baseSetup({ engine: true, includeVM: true })
 
   const req = params(method, [1])
   const expectRes = checkError(
@@ -18,7 +18,7 @@ tape(`${method}: call with invalid payloadId`, async (t) => {
 })
 
 tape(`${method}: call with unknown payloadId`, async (t) => {
-  const { server } = baseSetup({ engine: true })
+  const { server } = baseSetup({ engine: true, includeVM: true })
 
   const req = params(method, ['0x123'])
   const expectRes = checkError(t, -32001, 'Unknown payload')

@@ -2,9 +2,9 @@ import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { short } from '../../util'
-import { debugCodeReplayBlock } from '../../util/debug'
-import { Event } from '../../types'
+import { short } from '../util'
+import { debugCodeReplayBlock } from '../util/debug'
+import { Event } from '../types'
 import { Execution, ExecutionOptions } from './execution'
 import type { Block } from '@ethereumjs/block'
 import { ReceiptsManager } from './receipt'
@@ -13,14 +13,13 @@ export class VMExecution extends Execution {
   public vm: VM
   public hardfork: string = ''
 
-  public syncing = false
   public receiptsManager?: ReceiptsManager
   private vmPromise?: Promise<number | undefined>
 
   private NUM_BLOCKS_PER_ITERATION = 50
 
   /**
-   * Create new VM excution module
+   * Create new VM execution module
    */
   constructor(options: ExecutionOptions) {
     super(options)
@@ -73,7 +72,7 @@ export class VMExecution extends Execution {
    * @returns number of blocks executed
    */
   async run(): Promise<number> {
-    if (this.running || !this.syncing) {
+    if (this.running) {
       return 0
     }
     this.running = true
@@ -89,8 +88,7 @@ export class VMExecution extends Execution {
 
     while (
       (numExecuted === undefined || numExecuted === this.NUM_BLOCKS_PER_ITERATION) &&
-      !startHeadBlock.hash().equals(canonicalHead.hash()) &&
-      this.syncing
+      !startHeadBlock.hash().equals(canonicalHead.hash())
     ) {
       let txCounter = 0
       headBlock = undefined

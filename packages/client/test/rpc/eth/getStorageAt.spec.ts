@@ -3,10 +3,10 @@ import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import { Transaction } from '@ethereumjs/tx'
 import { Address, BN, bnToHex, bufferToHex, keccak } from 'ethereumjs-util'
-import { FullSynchronizer } from '../../../lib/sync'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
 import { checkError } from '../util'
+import { VMExecution } from '../../../lib/execution'
 
 const method = 'eth_getStorageAt'
 
@@ -17,8 +17,10 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const manager = createManager(client)
   const server = startRPC(manager.getMethods())
 
-  const service = client.services.find((s) => s.name === 'eth')
-  const { vm } = (service!.synchronizer as FullSynchronizer).execution
+  const { execution } = client
+  t.notEqual(execution, undefined, 'should have valid execution')
+
+  const { vm } = execution as VMExecution
 
   // genesis address with balance
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')

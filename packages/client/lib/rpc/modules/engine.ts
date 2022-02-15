@@ -8,6 +8,7 @@ import { PendingBlock } from '../../miner'
 import type VM from '@ethereumjs/vm'
 import type EthereumClient from '../../client'
 import type { Chain } from '../../blockchain'
+import type { VMExecution } from '../../execution'
 import type { Config } from '../../config'
 import type { EthereumService } from '../../service'
 import type { FullSynchronizer } from '../../sync'
@@ -166,6 +167,7 @@ type ValidBlocks = Map<UnprefixedBlockHash, Block>
  */
 export class Engine {
   private client: EthereumClient
+  private execution: VMExecution
   private service: EthereumService
   private chain: Chain
   private config: Config
@@ -186,7 +188,11 @@ export class Engine {
     this.chain = this.service.chain
     this.config = this.chain.config
     this.synchronizer = this.service.synchronizer as FullSynchronizer
-    this.vm = this.synchronizer.execution?.vm
+    if (!this.client.execution) {
+      throw Error('execution required for engine module')
+    }
+    this.execution = this.client.execution
+    this.vm = this.client.execution.vm
     this.txPool = (this.service.synchronizer as FullSynchronizer).txPool
     this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.txPool })
     this.validBlocks = new Map()
@@ -399,7 +405,7 @@ export class Engine {
 
       const blocks = [...parentBlocks, headBlock]
       await this.chain.putBlocks(blocks, true)
-      await this.synchronizer.execution.run()
+      await this.execution.run()
       this.synchronizer.checkTxPoolState()
       this.txPool.removeNewBlockTxs(blocks)
 

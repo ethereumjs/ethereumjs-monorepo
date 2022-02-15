@@ -7,7 +7,7 @@ import type { LevelUp } from 'levelup'
 
 export interface EthereumServiceOptions extends ServiceOptions {
   /* Blockchain */
-  chain?: Chain
+  chain: Chain
 
   /* Blockchain database */
   chainDB?: LevelUp
