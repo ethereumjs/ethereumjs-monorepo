@@ -404,69 +404,15 @@ export default class EVM {
         this._vm._common.isActivatedEIP(3541) &&
         result.returnValue.slice(0, 1).equals(Buffer.from('EF', 'hex'))
       ) {
-        const version = parseInt(this._vm._common.param('eof', 'version'))
-        const s_code = parseInt(this._vm._common.param('eof', 's_code'))
-        const s_data = parseInt(this._vm._common.param('eof', 's_data'))
-        const s_terminator = parseInt(this._vm._common.param('eof', 's_terminator'))
-        // EIP-3540 EOF checks
         if (!this._vm._common.isActivatedEIP(3540)) {
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
         }
-        if (result.returnValue.length < 3 || !(result.returnValue[1] === 0x00)) {
-          // Code does not contain correct EOF header (i.e. EF00)
-          result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
-        }
-        if (!(result.returnValue[2] === version)) {
-          // Code contains invalid EOF version (i.e. not 01)
-          result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
-        }
-        let pos = 3
-        const secSizes = {
-          [s_code | s_data]: 0,
-        }
-        let done = false
-        while (!done) {
-          const secId = result.returnValue[pos]
-          pos++
-          if (secId === s_terminator) {
-            // Found EOF section terminator 0x00
-            done = true
-            break
+        // EIP-3540 EOF1 checks
+        if (!eof1CodeAnalysis(result.returnValue)) {
+          result = {
+            ...result,
+            ...INVALID_BYTECODE_RESULT(message.gasLimit),
           }
-          if (secId !== s_code && secId !== s_data) {
-            // Invalid section (not code or data)
-            result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
-            break
-          }
-          if (secId === s_data && secSizes[s_code] === 0) {
-            // Data section appears before code
-            result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
-            break
-          }
-          if (secSizes[secId] > 0) {
-            // Cannot have more than one of a section type
-            result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
-            break
-          }
-          if (pos + 1 < result.returnValue.length) {
-            // Truncate section length
-            secSizes[secId] = (result.returnValue[pos] << 8) | result.returnValue[pos + 1]
-          }
-          pos += 2
-
-          if (secSizes[secId] === 0) {
-            // cannot have empty section
-            result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
-            break
-          }
-        }
-        if (secSizes[0x01] === 0) {
-          // Code section cannot be empty
-          result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
-        }
-        if (result.returnValue.length !== pos + secSizes[0x01] + secSizes[0x02]) {
-          // Scanned code does not match length of contract byte code
-          result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
         }
       } else {
         result.gasUsed = totalGas
@@ -656,5 +602,37 @@ export default class EVM {
   async _touchAccount(address: Address): Promise<void> {
     const account = await this._state.getAccount(address)
     return this._state.putAccount(address, account)
+  }
+}
+
+export const eof1CodeAnalysis = (code: Buffer) => {
+  console.log(code)
+  const secCode = 0x01
+  const secData = 0x02
+  const secTerminator = 0x00
+  let codeSize = 0
+  const sectionSizes = {
+    code: 0,
+    data: 0,
+  }
+  if (code[1] === 0x00 && code[2] === 0x01) {
+    if (code.length > 7 && code[3] === secCode && code[6] === secTerminator) {
+      codeSize = 7 + ((code[4] << 8) | code[5])
+      sectionSizes.code = (code[4] << 8) | code[5]
+    } else if (
+      code.length > 10 &&
+      code[3] === secCode &&
+      code[6] === secData &&
+      code[9] === secTerminator
+    ) {
+      codeSize = 10 + ((code[4] << 8) | code[5]) + ((code[7] << 8) | code[8])
+      sectionSizes.code = (code[4] << 8) | code[5]
+      sectionSizes.data = (code[7] << 8) | code[8]
+    }
+    if (code.length !== codeSize) {
+      // Scanned code does not match length of contract byte code
+      return
+    }
+    return sectionSizes
   }
 }

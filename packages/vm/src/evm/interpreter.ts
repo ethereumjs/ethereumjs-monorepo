@@ -7,6 +7,7 @@ import Stack from './stack'
 import EEI from './eei'
 import { Opcode, handlers as opHandlers, OpHandler, AsyncOpHandler } from './opcodes'
 import { dynamicGasHandlers } from './opcodes/gas'
+import { eof1CodeAnalysis } from './evm'
 
 export interface InterpreterOpts {
   pc?: number
@@ -87,9 +88,24 @@ export default class Interpreter {
   }
 
   async run(code: Buffer, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
-    this._runState.code = code
+    if (
+      this._vm._common.isActivatedEIP(3540) &&
+      code.slice(0, 3).equals(Buffer.from('ef0001', 'hex'))
+    ) {
+      // Code is EOF1 compliant
+      const codeSections = eof1CodeAnalysis(code)
+      console.log(codeSections)
+      // Set code to code section which starts at byte position 7 (or 10 if data section is present))
+      if (codeSections!.data) {
+        this._runState.code = code.slice(10, 10 + codeSections!.code)
+      } else {
+        this._runState.code = code.slice(7, 7 + codeSections!.code)
+      }
+      console.log(code, this._runState.code)
+    } else {
+      this._runState.code = code
+    }
     this._runState.programCounter = opts.pc ?? this._runState.programCounter
-
     // Check that the programCounter is in range
     const pc = this._runState.programCounter
     if (pc !== 0 && (pc < 0 || pc >= this._runState.code.length)) {
@@ -105,7 +121,7 @@ export default class Interpreter {
         (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e)
       ) {
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
-        this._runState.validJumps = this._getValidJumpDests(code)
+        this._runState.validJumps = this._getValidJumpDests(this._runState.code)
         this._runState.shouldDoJumpAnalysis = false
       }
       this._runState.opCode = opCode
