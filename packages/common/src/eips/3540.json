@@ -11,23 +11,5 @@
     "gasConfig": {},
     "gasPrices": {},
     "vm": {},
-    "pow": {},
-    "eof": {
-        "version": {
-            "v": "0x01",
-            "d": "version indicator for EVM object format version"
-        },
-        "s_code": {
-            "v": "0x01",
-            "d": "numeric indicator for Code Section"
-        },
-        "s_data": {
-            "v": "0x02",
-            "d": "numeric indicator for Data Section"
-        },
-        "s_terminator": {
-            "v": "0x00",
-            "d": "numeric indicator for section terminator"
-        }
-    }
+    "pow": {}
 }

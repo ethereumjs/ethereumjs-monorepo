@@ -16,7 +16,7 @@ import TxContext from './txContext'
 import Message from './message'
 import EEI from './eei'
 // eslint-disable-next-line
-import { short } from './opcodes/util'
+import { eof1CodeAnalysis, short } from './opcodes/util'
 import { Log } from './types'
 import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
 
@@ -602,37 +602,5 @@ export default class EVM {
   async _touchAccount(address: Address): Promise<void> {
     const account = await this._state.getAccount(address)
     return this._state.putAccount(address, account)
-  }
-}
-
-export const eof1CodeAnalysis = (code: Buffer) => {
-  console.log(code)
-  const secCode = 0x01
-  const secData = 0x02
-  const secTerminator = 0x00
-  let codeSize = 0
-  const sectionSizes = {
-    code: 0,
-    data: 0,
-  }
-  if (code[1] === 0x00 && code[2] === 0x01) {
-    if (code.length > 7 && code[3] === secCode && code[6] === secTerminator) {
-      codeSize = 7 + ((code[4] << 8) | code[5])
-      sectionSizes.code = (code[4] << 8) | code[5]
-    } else if (
-      code.length > 10 &&
-      code[3] === secCode &&
-      code[6] === secData &&
-      code[9] === secTerminator
-    ) {
-      codeSize = 10 + ((code[4] << 8) | code[5]) + ((code[7] << 8) | code[8])
-      sectionSizes.code = (code[4] << 8) | code[5]
-      sectionSizes.data = (code[7] << 8) | code[8]
-    }
-    if (code.length !== codeSize) {
-      // Scanned code does not match length of contract byte code
-      return
-    }
-    return sectionSizes
   }
 }
