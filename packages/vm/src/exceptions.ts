@@ -17,6 +17,7 @@ export enum ERROR {
   INVALID_RETURNSUB = 'invalid RETURNSUB',
   INVALID_JUMPSUB = 'invalid JUMPSUB',
   INVALID_BYTECODE_RESULT = 'invalid bytecode deployed',
+  INVALID_EOF_FORMAT = 'invalid EOF format',
 
   // BLS errors
   BLS_12_381_INVALID_INPUT_LENGTH = 'invalid input length',

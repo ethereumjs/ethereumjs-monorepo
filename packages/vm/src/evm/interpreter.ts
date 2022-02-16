@@ -92,9 +92,14 @@ export default class Interpreter {
       this._vm._common.isActivatedEIP(3540) &&
       code.slice(0, 3).equals(Buffer.from('ef0001', 'hex'))
     ) {
-      // Code is EOF1 compliant
+      // Code is EOF1 format
       const codeSections = eof1CodeAnalysis(code)
-      console.log(codeSections)
+      if (!codeSections) {
+        return {
+          runState: this._runState,
+          exceptionError: new VmError(ERROR.INVALID_EOF_FORMAT),
+        }
+      }
       // Set code to code section which starts at byte position 7 (or 10 if data section is present))
       if (codeSections!.data) {
         this._runState.code = code.slice(10, 10 + codeSections!.code)
