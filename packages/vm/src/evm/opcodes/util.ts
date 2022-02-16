@@ -262,7 +262,7 @@ export function updateSstoreGas(
   }
 }
 
-export const eof1CodeAnalysis = (byteCode: Buffer) => {
+export const eof1CodeAnalysis = (container: Buffer) => {
   const magic = 0x00
   const version = 0x01
   const secCode = 0x01
@@ -273,22 +273,22 @@ export const eof1CodeAnalysis = (byteCode: Buffer) => {
     code: 0,
     data: 0,
   }
-  if (byteCode[1] === magic && byteCode[2] === version) {
-    if (byteCode.length > 7 && byteCode[3] === secCode && byteCode[6] === secTerminator) {
-      computedContainerSize = 7 + ((byteCode[4] << 8) | byteCode[5])
-      sectionSizes.code = (byteCode[4] << 8) | byteCode[5]
+  if (container[1] === magic && container[2] === version) {
+    if (container.length > 7 && container[3] === secCode && container[6] === secTerminator) {
+      computedContainerSize = 7 + ((container[4] << 8) | container[5])
+      sectionSizes.code = (container[4] << 8) | container[5]
     } else if (
-      byteCode.length > 10 &&
-      byteCode[3] === secCode &&
-      byteCode[6] === secData &&
-      byteCode[9] === secTerminator
+      container.length > 10 &&
+      container[3] === secCode &&
+      container[6] === secData &&
+      container[9] === secTerminator
     ) {
       computedContainerSize =
-        10 + ((byteCode[4] << 8) | byteCode[5]) + ((byteCode[7] << 8) | byteCode[8])
-      sectionSizes.code = (byteCode[4] << 8) | byteCode[5]
-      sectionSizes.data = (byteCode[7] << 8) | byteCode[8]
+        10 + ((container[4] << 8) | container[5]) + ((container[7] << 8) | container[8])
+      sectionSizes.code = (container[4] << 8) | container[5]
+      sectionSizes.data = (container[7] << 8) | container[8]
     }
-    if (byteCode.length !== computedContainerSize) {
+    if (container.length !== computedContainerSize) {
       // Scanned code does not match length of contract byte code
 
       return
