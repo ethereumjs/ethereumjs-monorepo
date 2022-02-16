@@ -818,7 +818,10 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x60,
     function (runState) {
       const numToPush = runState.opCode - 0x5f
-      if (runState.programCounter + numToPush > runState.code.length) {
+      if (
+        runState.eei._common.isActivatedEIP(3540) &&
+        runState.programCounter + numToPush > runState.code.length
+      ) {
         trap(ERROR.OUT_OF_RANGE)
       }
       const loaded = bufferToBigInt(
