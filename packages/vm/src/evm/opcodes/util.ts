@@ -303,30 +303,31 @@ export function exponentation(bas: bigint, exp: bigint) {
   return t
 }
 
-export const eof1CodeAnalysis = (code: Buffer) => {
+export const eof1CodeAnalysis = (byteCode: Buffer) => {
   const secCode = 0x01
   const secData = 0x02
   const secTerminator = 0x00
-  let codeSize = 0
+  let computedContainerSize = 0
   const sectionSizes = {
     code: 0,
     data: 0,
   }
-  if (code[1] === 0x00 && code[2] === 0x01) {
-    if (code.length > 7 && code[3] === secCode && code[6] === secTerminator) {
-      codeSize = 7 + ((code[4] << 8) | code[5])
-      sectionSizes.code = (code[4] << 8) | code[5]
+  if (byteCode[1] === 0x00 && byteCode[2] === 0x01) {
+    if (byteCode.length > 7 && byteCode[3] === secCode && byteCode[6] === secTerminator) {
+      computedContainerSize = 7 + ((byteCode[4] << 8) | byteCode[5])
+      sectionSizes.code = (byteCode[4] << 8) | byteCode[5]
     } else if (
-      code.length > 10 &&
-      code[3] === secCode &&
-      code[6] === secData &&
-      code[9] === secTerminator
+      byteCode.length > 10 &&
+      byteCode[3] === secCode &&
+      byteCode[6] === secData &&
+      byteCode[9] === secTerminator
     ) {
-      codeSize = 10 + ((code[4] << 8) | code[5]) + ((code[7] << 8) | code[8])
-      sectionSizes.code = (code[4] << 8) | code[5]
-      sectionSizes.data = (code[7] << 8) | code[8]
+      computedContainerSize =
+        10 + ((byteCode[4] << 8) | byteCode[5]) + ((byteCode[7] << 8) | byteCode[8])
+      sectionSizes.code = (byteCode[4] << 8) | byteCode[5]
+      sectionSizes.data = (byteCode[7] << 8) | byteCode[8]
     }
-    if (code.length !== codeSize) {
+    if (byteCode.length !== computedContainerSize) {
       // Scanned code does not match length of contract byte code
 
       return
