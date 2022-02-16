@@ -275,18 +275,21 @@ export const eof1CodeAnalysis = (container: Buffer) => {
   }
   if (container[1] === magic && container[2] === version) {
     if (container.length > 7 && container[3] === secCode && container[6] === secTerminator) {
-      computedContainerSize = 7 + ((container[4] << 8) | container[5])
       sectionSizes.code = (container[4] << 8) | container[5]
+      computedContainerSize = 7 + sectionSizes.code
+      // Code size cannot be 0
+      if (sectionSizes.code < 1) return
     } else if (
       container.length > 10 &&
       container[3] === secCode &&
       container[6] === secData &&
       container[9] === secTerminator
     ) {
-      computedContainerSize =
-        10 + ((container[4] << 8) | container[5]) + ((container[7] << 8) | container[8])
       sectionSizes.code = (container[4] << 8) | container[5]
       sectionSizes.data = (container[7] << 8) | container[8]
+      computedContainerSize = 10 + sectionSizes.code + sectionSizes.data
+      // Code & Data sizes cannot be 0
+      if (sectionSizes.code < 1 || sectionSizes.data < 1) return
     }
     if (container.length !== computedContainerSize) {
       // Scanned code does not match length of contract byte code
