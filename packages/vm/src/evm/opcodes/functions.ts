@@ -823,7 +823,6 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x60,
     function (runState) {
       const numToPush = runState.opCode - 0x5f
-      console.log(runState.code)
       if (runState.programCounter + numToPush > runState.code.length) {
         trap(ERROR.OUT_OF_RANGE)
       }
