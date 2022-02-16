@@ -304,6 +304,8 @@ export function exponentation(bas: bigint, exp: bigint) {
 }
 
 export const eof1CodeAnalysis = (byteCode: Buffer) => {
+  const magic = 0x00
+  const version = 0x01
   const secCode = 0x01
   const secData = 0x02
   const secTerminator = 0x00
@@ -312,7 +314,7 @@ export const eof1CodeAnalysis = (byteCode: Buffer) => {
     code: 0,
     data: 0,
   }
-  if (byteCode[1] === 0x00 && byteCode[2] === 0x01) {
+  if (byteCode[1] === magic && byteCode[2] === version) {
     if (byteCode.length > 7 && byteCode[3] === secCode && byteCode[6] === secTerminator) {
       computedContainerSize = 7 + ((byteCode[4] << 8) | byteCode[5])
       sectionSizes.code = (byteCode[4] << 8) | byteCode[5]
