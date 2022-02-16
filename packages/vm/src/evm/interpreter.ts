@@ -5,9 +5,14 @@ import { ERROR, VmError } from '../exceptions'
 import Memory from './memory'
 import Stack from './stack'
 import EEI from './eei'
-import { Opcode, handlers as opHandlers, OpHandler, AsyncOpHandler } from './opcodes'
+import {
+  Opcode,
+  handlers as opHandlers,
+  OpHandler,
+  AsyncOpHandler,
+  eof1CodeAnalysis,
+} from './opcodes'
 import { dynamicGasHandlers } from './opcodes/gas'
-import { eof1CodeAnalysis } from './evm'
 
 export interface InterpreterOpts {
   pc?: number
@@ -100,16 +105,16 @@ export default class Interpreter {
           exceptionError: new VmError(ERROR.INVALID_EOF_FORMAT),
         }
       }
-      // Set code to code section which starts at byte position 7 (or 10 if data section is present))
+      // Set code to code section which starts at byte position 7 if code only or 10 if data section is present
       if (codeSections!.data) {
         this._runState.code = code.slice(10, 10 + codeSections!.code)
       } else {
         this._runState.code = code.slice(7, 7 + codeSections!.code)
       }
-      console.log(code, this._runState.code)
     } else {
       this._runState.code = code
     }
+
     this._runState.programCounter = opts.pc ?? this._runState.programCounter
     // Check that the programCounter is in range
     const pc = this._runState.programCounter
