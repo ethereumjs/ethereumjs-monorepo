@@ -1,7 +1,7 @@
 /* eslint @typescript-eslint/no-unused-vars: 0 */
 
 import Common from '@ethereumjs/common'
-import { Address, PrefixedHexString } from 'ethereumjs-util'
+import { Address, PrefixedHexString, setLengthRight, toBuffer } from 'ethereumjs-util'
 import { BaseStateManager, StateManager } from '.'
 import { short } from '../evm/opcodes'
 import Cache, { getCb, putCb } from './cache'
@@ -20,6 +20,11 @@ export interface StatelessVerkleStateManagerOpts {
    */
   common?: Common
 }
+
+/**
+ * Tree key constants.
+ */
+const BALANCE_LEAF_KEY = 1
 
 /**
  * Default StateManager implementation for the VM.
@@ -56,6 +61,7 @@ export default class StatelessVerkleStateManager extends BaseStateManager implem
      * desired backend.
      */
     const getCb: getCb = async (address) => {
+      this.getTreeKeyForBalance(address)
       return undefined
     }
     const putCb: putCb = async (keyBuf, accountRlp) => {}
@@ -69,6 +75,29 @@ export default class StatelessVerkleStateManager extends BaseStateManager implem
     this._preState = preState
     // Initialize the state with the pre-state
     this._state = preState
+  }
+
+  private pedersenHash(input: Buffer) {
+    // max length 255 * 16
+    if (input.length > 4080) {
+      throw new Error(
+        'Input buffer for perdersonHash calculation in verkle state manager too long.'
+      )
+    }
+    const extInput = setLengthRight(input, 4080)
+    return extInput
+  }
+
+  private getTreeKey(address: Address, treeIndex: number, subIndex: number) {
+    const treeIndexB = Buffer.alloc(32)
+    treeIndexB.writeInt32LE(treeIndex)
+
+    const input = Buffer.concat([address.toBuffer(), treeIndexB.slice(0, 31), toBuffer(subIndex)])
+    return this.pedersenHash(input)
+  }
+
+  private getTreeKeyForBalance(address: Address) {
+    return this.getTreeKey(address, 0, BALANCE_LEAF_KEY)
   }
 
   /**

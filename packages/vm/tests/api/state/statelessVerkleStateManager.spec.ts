@@ -7,18 +7,38 @@ import Common, { Chain, Hardfork } from '@ethereumjs/common'
 //import { Address } from 'ethereumjs-util'
 import * as verkleBlockJSON from './testdata/verkleBlock.json'
 import { Block } from '@ethereumjs/block'
+import { Address } from 'ethereumjs-util'
 
 tape('StatelessVerkleStateManager', (t) => {
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [999001] })
+  const block = Block.fromBlockData(verkleBlockJSON, { common })
+
   t.test('should instantiate', async (st) => {
     const stateManager = new StatelessVerkleStateManager()
     st.equal(stateManager._common.hardfork(), 'petersburg', 'it has default hardfork')
   })
 
+  t.test('initPreState()', async (st) => {
+    const stateManager = new StatelessVerkleStateManager({ common })
+    await stateManager.initPreState(block.header.verkleProof!, block.header.verkleState!)
+
+    const proofStart = '0x00000000030000000a'
+    st.equal((stateManager as any)._proof.slice(0, 20), proofStart, 'should initialize with proof')
+  })
+
+  t.test('getAccount()', async (st) => {
+    const stateManager = new StatelessVerkleStateManager({ common })
+    await stateManager.initPreState(block.header.verkleProof!, block.header.verkleState!)
+
+    const account2 = await stateManager.getAccount(
+      Address.fromString('0x0102030000000000000000000000000000000000')
+    )
+    st.pass('Something worked.')
+  })
+
   t.test('should run verkle block', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [999001] })
-    const stateManager = new StatelessVerkleStateManager()
+    const stateManager = new StatelessVerkleStateManager({ common })
     const vm = new VM({ stateManager, common })
-    const block = Block.fromBlockData(verkleBlockJSON, { common })
 
     // Temporarily skip block validation
     // Tx root not correct, 2022-02-17
