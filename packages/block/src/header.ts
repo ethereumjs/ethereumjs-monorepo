@@ -678,6 +678,11 @@ export class BlockHeader {
       }
     }
 
+    // Do not do parent header related validations if block is a verkle block
+    if (this.verkleProof) {
+      return
+    }
+
     const parentHeader = await this._getHeaderByHash(blockchain, this.parentHash)
 
     if (!parentHeader) {

@@ -17,8 +17,16 @@ tape('StatelessVerkleStateManager', (t) => {
   t.test('should run verkle block', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [999001] })
     const stateManager = new StatelessVerkleStateManager()
-    const vm = new VM({ stateManager })
+    const vm = new VM({ stateManager, common })
     const block = Block.fromBlockData(verkleBlockJSON, { common })
+
+    // Temporarily skip block validation
+    // Tx root not correct, 2022-02-17
+    // Calculated root: 32faa11cc84a972f9720942bbde9ee4899ef6569876c8f53e05b60de56bc0ab3
+    // Block header root: 6e9e81e95ca097bee7400db0b4942090566e69f84688a5f1c08a67fa4874ee72
+    // All other (non parent-depending) block validations pass though
+    //await vm.runBlock({ block, skipBlockValidation: true })
+
     st.pass('Whew. Initialized.')
   })
 
