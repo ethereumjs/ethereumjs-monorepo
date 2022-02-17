@@ -1,10 +1,8 @@
-import { AddressLike, BNLike, BufferLike } from 'ethereumjs-util'
+import { AddressLike, BNLike, BufferLike, PrefixedHexString } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { TxData, JsonTx, AccessListEIP2930TxData, FeeMarketEIP1559TxData } from '@ethereumjs/tx'
 import { Block } from './block'
 import { BlockHeader } from './header'
-
-export type HexPrefixedString = string
 
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified
@@ -82,7 +80,7 @@ export interface BlockOptions {
 }
 
 export interface VerkleState {
-  [key: HexPrefixedString]: HexPrefixedString
+  [key: PrefixedHexString]: PrefixedHexString
 }
 
 /**
@@ -110,7 +108,7 @@ export interface HeaderData {
    * Verkle Proof Data (experimental)
    * Fake-EIP 999001 (see Common library)
    */
-  verkleProof?: HexPrefixedString
+  verkleProof?: PrefixedHexString
   verkleState?: VerkleState
 
   /*

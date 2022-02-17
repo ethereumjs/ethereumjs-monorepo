@@ -1,29 +1,14 @@
 /* eslint @typescript-eslint/no-unused-vars: 0 */
 
 import Common from '@ethereumjs/common'
-import { hasKey } from 'benchmark'
-import { Account, Address, keccak256, KECCAK256_NULL, unpadBuffer } from 'ethereumjs-util'
+import { Address, PrefixedHexString } from 'ethereumjs-util'
 import { BaseStateManager, StateManager } from '.'
 import { short } from '../evm/opcodes'
 import Cache, { getCb, putCb } from './cache'
 import { StorageDump } from './interface'
 
-type HexPrefixedAddress = string
-type HexPrefixedCodeHash = string
-type UnprefixedHexString = string
-
-export interface State {
-  accounts: {
-    [key: HexPrefixedAddress]: UnprefixedHexString
-  }
-  code: {
-    [key: HexPrefixedCodeHash]: UnprefixedHexString
-  }
-  storage: {
-    [key: HexPrefixedAddress]: {
-      [key: UnprefixedHexString]: UnprefixedHexString
-    }
-  }
+export interface VerkleState {
+  [key: PrefixedHexString]: PrefixedHexString
 }
 
 /**
@@ -47,22 +32,16 @@ export interface StatelessVerkleStateManagerOpts {
  * `merkle-patricia-tree` trie as a data backend.
  */
 export default class StatelessVerkleStateManager extends BaseStateManager implements StateManager {
+  private _proof: PrefixedHexString = '0x'
+
   // Pre-state (should not change)
-  private _preState: State = {
-    accounts: {},
-    code: {},
-    storage: {},
-  }
+  private _preState: VerkleState = {}
 
   // State along execution (should update)
-  private _state: State = {
-    accounts: {},
-    code: {},
-    storage: {},
-  }
+  private _state: VerkleState = {}
 
   // Checkpointing
-  private _checkpoints: State[] = []
+  private _checkpoints: VerkleState[] = []
 
   /**
    * Instantiate the StateManager interface.
@@ -77,34 +56,15 @@ export default class StatelessVerkleStateManager extends BaseStateManager implem
      * desired backend.
      */
     const getCb: getCb = async (address) => {
-      const addressStr = address.toString()
-      if (addressStr in this._state.accounts) {
-        const accountRLP = Buffer.from(this._state.accounts[addressStr], 'hex')
-        return Account.fromRlpSerializedAccount(accountRLP)
-      }
       return undefined
     }
-    const putCb: putCb = async (keyBuf, accountRlp) => {
-      const addressStr: HexPrefixedAddress = `0x${keyBuf.toString('hex')}`
-      const accountStr = accountRlp.toString('hex')
-      this._state.accounts[addressStr] = accountStr
-    }
-    const deleteCb = async (keyBuf: Buffer) => {
-      const addressStr: HexPrefixedAddress = `0x${keyBuf.toString('hex')}`
-      if (addressStr in this._state.accounts) {
-        delete this._state.accounts[addressStr]
-      }
-    }
+    const putCb: putCb = async (keyBuf, accountRlp) => {}
+    const deleteCb = async (keyBuf: Buffer) => {}
     this._cache = new Cache({ getCb, putCb, deleteCb })
   }
 
-  public async initPreState(preState: State) {
-    for (const addressStr in preState.accounts) {
-      const address = Address.fromString(addressStr)
-      const accountRLP = preState.accounts[addressStr]
-      const account = Account.fromRlpSerializedAccount(Buffer.from(accountRLP, 'hex'))
-      await this.putAccount(address, account)
-    }
+  public async initPreState(proof: PrefixedHexString, preState: VerkleState) {
+    this._proof = proof
     // Set new pre-state
     this._preState = preState
     // Initialize the state with the pre-state
@@ -128,22 +88,7 @@ export default class StatelessVerkleStateManager extends BaseStateManager implem
    * @param address - Address of the `account` to add the `code` for
    * @param value - The value of the `code`
    */
-  async putContractCode(address: Address, value: Buffer): Promise<void> {
-    const codeHash = keccak256(value)
-
-    if (codeHash.equals(KECCAK256_NULL)) {
-      return
-    }
-    const codeHashStr = `0x${codeHash.toString('hex')}`
-    this._state.code[codeHashStr] = value.toString('hex')
-
-    const account = await this.getAccount(address)
-    if (this.DEBUG) {
-      this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
-    }
-    account.codeHash = codeHash
-    await this.putAccount(address, account)
-  }
+  async putContractCode(address: Address, value: Buffer): Promise<void> {}
 
   /**
    * Gets the code corresponding to the provided `address`.
@@ -152,14 +97,6 @@ export default class StatelessVerkleStateManager extends BaseStateManager implem
    * Returns an empty `Buffer` if the account has no associated code.
    */
   async getContractCode(address: Address): Promise<Buffer> {
-    const account = await this.getAccount(address)
-    if (!account.isContract()) {
-      return Buffer.alloc(0)
-    }
-    const codeHashStr = `0x${account.codeHash.toString('hex')}`
-    if (codeHashStr in this._state.code) {
-      return Buffer.from(this._state.code[codeHashStr], 'hex')
-    }
     return Buffer.alloc(0)
   }
 
@@ -173,17 +110,6 @@ export default class StatelessVerkleStateManager extends BaseStateManager implem
    * If this does not exist an empty `Buffer` is returned.
    */
   async getContractStorage(address: Address, key: Buffer): Promise<Buffer> {
-    if (key.length !== 32) {
-      throw new Error('Storage key must be 32 bytes long')
-    }
-
-    const keyStr = key.toString('hex')
-    if (
-      address.toString() in this._state.storage &&
-      keyStr in this._state.storage[address.toString()]
-    ) {
-      return Buffer.from(this._state.storage[address.toString()][keyStr], 'hex')
-    }
     return Buffer.alloc(0)
   }
 
@@ -194,30 +120,13 @@ export default class StatelessVerkleStateManager extends BaseStateManager implem
    * @param key - Key to set the value at. Must be 32 bytes long.
    * @param value - Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped. If it is a empty or filled with zeros, deletes the value.
    */
-  async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {
-    if (key.length !== 32) {
-      throw new Error('Storage key must be 32 bytes long')
-    }
-
-    if (value.length > 32) {
-      throw new Error('Storage value cannot be longer than 32 bytes')
-    }
-
-    value = unpadBuffer(value)
-    if (!(address.toString() in this._state.storage)) {
-      this._state.storage[address.toString()] = {}
-    }
-    this._state.storage[address.toString()][key.toString('hex')] = value.toString('hex')
-    this.touchAccount(address)
-  }
+  async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {}
 
   /**
    * Clears all storage entries for the account corresponding to `address`.
    * @param address -  Address to clear the storage of
    */
-  async clearContractStorage(address: Address): Promise<void> {
-    delete this._state.storage[address.toString()]
-  }
+  async clearContractStorage(address: Address): Promise<void> {}
 
   /**
    * Checkpoints the current state of the StateManager instance.

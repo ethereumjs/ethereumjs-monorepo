@@ -14,6 +14,7 @@ import {
   toBuffer,
   zeros,
   bufferToHex,
+  PrefixedHexString,
 } from 'ethereumjs-util'
 import { Blockchain, BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
 import {
@@ -22,7 +23,7 @@ import {
   CLIQUE_DIFF_INTURN,
   CLIQUE_DIFF_NOTURN,
 } from './clique'
-import { HexPrefixedString, VerkleState } from '.'
+import { VerkleState } from '.'
 
 interface HeaderCache {
   hash: Buffer | undefined
@@ -50,7 +51,7 @@ export class BlockHeader {
   public readonly mixHash: Buffer
   public readonly nonce: Buffer
   public readonly baseFeePerGas?: BN
-  public readonly verkleProof?: HexPrefixedString
+  public readonly verkleProof?: PrefixedHexString
   public readonly verkleState?: VerkleState
 
   public readonly _common: Common
@@ -244,7 +245,7 @@ export class BlockHeader {
     nonce: Buffer,
     options: BlockOptions = {},
     baseFeePerGas?: BN,
-    verkleProof?: HexPrefixedString,
+    verkleProof?: PrefixedHexString,
     verkleState?: VerkleState
   ) {
     if (options.common) {
