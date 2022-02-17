@@ -4,7 +4,9 @@ import StatelessVerkleStateManager from '../../../src/state/statelessVerkleState
 import VM from '../../../src'
 import { createAccount, getTransaction } from '../utils'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { Address } from 'ethereumjs-util'
+//import { Address } from 'ethereumjs-util'
+import * as verkleBlockJSON from './testdata/verkleBlock.json'
+import { Block } from '@ethereumjs/block'
 
 tape('StatelessVerkleStateManager', (t) => {
   t.test('should instantiate', async (st) => {
@@ -12,7 +14,15 @@ tape('StatelessVerkleStateManager', (t) => {
     st.equal(stateManager._common.hardfork(), 'petersburg', 'it has default hardfork')
   })
 
-  t.test('initPreState()', async (st) => {
+  t.test('should run verkle block', async (st) => {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [999001] })
+    const stateManager = new StatelessVerkleStateManager()
+    const vm = new VM({ stateManager })
+    const block = Block.fromBlockData(verkleBlockJSON, { common })
+    st.pass('Whew. Initialized.')
+  })
+
+  /**t.test('initPreState()', async (st) => {
     const stateManager = new StatelessVerkleStateManager()
 
     // Init pre state (format: address -> RLP serialized account)
@@ -209,5 +219,5 @@ tape('StatelessVerkleStateManager', (t) => {
     )
 
     st.pass('Whohoo, tx passed in stateless mode!!!')
-  })
+  })*/
 })
