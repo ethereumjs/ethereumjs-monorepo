@@ -35,7 +35,7 @@ tape('[VMExecution]', async (t) => {
   }
 
   t.test('Block execution / Hardforks PoW (mainnet)', async (t) => {
-    let blockchain = new Blockchain({
+    let blockchain = await Blockchain.create({
       validateBlocks: true,
       validateConsensus: false,
     })

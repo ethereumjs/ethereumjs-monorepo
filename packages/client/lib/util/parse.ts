@@ -128,24 +128,14 @@ async function createGethGenesisStateTrie(alloc: any) {
 }
 
 async function createGethGenesisBlockHeader(json: any) {
-  const {
-    gasLimit,
-    difficulty,
-    extraData,
-    number,
-    nonce,
-    timestamp,
-    mixHash,
-    alloc,
-    baseFeePerGas,
-  } = json
+  const { gasLimit, difficulty, extraData, nonce, timestamp, mixHash, alloc, baseFeePerGas } = json
   const storageTrie = await createGethGenesisStateTrie(alloc)
   const stateRoot = storageTrie.root
   const headerData = {
+    number: 0,
     gasLimit,
     difficulty,
     extraData,
-    number,
     nonce,
     timestamp,
     mixHash,
@@ -153,9 +143,11 @@ async function createGethGenesisBlockHeader(json: any) {
     baseFeePerGas,
   }
   let common
-  if (baseFeePerGas !== undefined && baseFeePerGas !== null) {
-    // chainId is not important here, we just need London enabled to set baseFeePerGas
+  if (json.config.londonBlock === 0) {
+    // chainId is not important here, we just want to set
+    // hardfork to London for baseFeePerGas support
     common = new Common({ chain: 1, hardfork: Hardfork.London })
+    ;(common as any)._chainParams['hardforks'].find((h: any) => h.name === 'london')!.block = 0
   }
   return BlockHeader.fromHeaderData(headerData, { common })
 }
@@ -166,16 +158,13 @@ async function createGethGenesisBlockHeader(json: any) {
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
 async function parseGethParams(json: any) {
-  const { name, config, difficulty, nonce, mixHash, coinbase, baseFeePerGas } = json
+  const { name, config } = json
+  const { chainId } = config
 
-  let { gasLimit, extraData, timestamp } = json
-
-  // geth stores gasLimit as a hex string while our gasLimit is a `number`
-  json['gasLimit'] = gasLimit = parseInt(gasLimit)
-  // geth is not strictly putting in empty fields with a 0x prefix
-  json['extraData'] = extraData = extraData === '' ? '0x' : extraData
+  // geth is not strictly putting empty fields with a 0x prefix
+  if (json['extraData'] === '') json['extraData'] = '0x'
   // geth may use number for timestamp
-  json['timestamp'] = timestamp = isHexPrefixed(timestamp) ? timestamp : bnToHex(new BN(timestamp))
+  json['timestamp'] = parseInt(json['timestamp'])
 
   // EIP155 and EIP158 are both part of Spurious Dragon hardfork and must occur at the same time
   // but have different configuration parameters in geth genesis parameters
@@ -185,25 +174,33 @@ async function parseGethParams(json: any) {
     )
   }
 
-  const { chainId } = config
   const header = await createGethGenesisBlockHeader(json)
-  const { stateRoot } = header
-  const hash = bufferToHex(header.hash())
+  const {
+    stateRoot,
+    timestamp,
+    gasLimit,
+    extraData,
+    difficulty,
+    nonce,
+    mixHash,
+    coinbase,
+    baseFeePerGas,
+  } = header
   const params: any = {
     name,
     chainId,
     networkId: chainId,
     genesis: {
-      hash,
-      timestamp,
-      gasLimit,
-      difficulty,
-      nonce,
-      extraData,
-      mixHash,
-      coinbase,
+      hash: bufferToHex(header.hash()),
+      timestamp: bnToHex(timestamp),
+      gasLimit: bnToHex(gasLimit),
+      difficulty: bnToHex(difficulty),
+      nonce: bufferToHex(nonce),
+      extraData: bufferToHex(extraData),
+      mixHash: bufferToHex(mixHash),
+      coinbase: coinbase.toString(),
       stateRoot: bufferToHex(stateRoot),
-      baseFeePerGas,
+      baseFeePerGas: baseFeePerGas ? bnToHex(baseFeePerGas) : undefined,
     },
     bootstrapNodes: [],
     consensus: config.clique
@@ -222,36 +219,21 @@ async function parseGethParams(json: any) {
         },
   }
 
-  const hardforks = [
-    'chainstart',
-    'homestead',
-    'dao',
-    'tangerineWhistle',
-    'spuriousDragon',
-    'byzantium',
-    'constantinople',
-    'petersburg',
-    'istanbul',
-    'muirGlacier',
-    'berlin',
-    'london',
-    'preMerge',
-  ]
   const forkMap: { [key: string]: string } = {
-    homestead: 'homesteadBlock',
-    dao: 'daoForkBlock',
-    tangerineWhistle: 'eip150Block',
-    spuriousDragon: 'eip155Block',
-    byzantium: 'byzantiumBlock',
-    constantinople: 'constantinopleBlock',
-    petersburg: 'petersburgBlock',
-    istanbul: 'istanbulBlock',
-    muirGlacier: 'muirGlacierBlock',
-    berlin: 'berlinBlock',
-    london: 'londonBlock',
-    preMerge: 'mergeForkBlock',
+    [Hardfork.Homestead]: 'homesteadBlock',
+    [Hardfork.Dao]: 'daoForkBlock',
+    [Hardfork.TangerineWhistle]: 'eip150Block',
+    [Hardfork.SpuriousDragon]: 'eip155Block',
+    [Hardfork.Byzantium]: 'byzantiumBlock',
+    [Hardfork.Constantinople]: 'constantinopleBlock',
+    [Hardfork.Petersburg]: 'petersburgBlock',
+    [Hardfork.Istanbul]: 'istanbulBlock',
+    [Hardfork.MuirGlacier]: 'muirGlacierBlock',
+    [Hardfork.Berlin]: 'berlinBlock',
+    [Hardfork.London]: 'londonBlock',
+    [Hardfork.PreMerge]: 'mergeForkBlock',
   }
-  params.hardforks = hardforks
+  params.hardforks = Object.values(Hardfork)
     .map((name) => ({
       name,
       block: name === 'chainstart' ? 0 : config[forkMap[name]] ?? null,
