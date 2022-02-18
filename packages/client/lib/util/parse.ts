@@ -174,7 +174,6 @@ async function parseGethParams(json: any) {
   if (!isHexPrefixed(timestamp)) {
     timestamp = intToHex(parseInt(timestamp))
   }
-
   // EIP155 and EIP158 are both part of Spurious Dragon hardfork and must occur at the same time
   // but have different configuration parameters in geth genesis parameters
   if (config.eip155Block !== config.eip158Block) {
