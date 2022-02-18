@@ -1,7 +1,7 @@
 /* eslint @typescript-eslint/no-unused-vars: 0 */
 
 import Common from '@ethereumjs/common'
-import { Address, PrefixedHexString, setLengthRight, toBuffer } from 'ethereumjs-util'
+import { Address, bufferToInt, PrefixedHexString, setLengthRight, toBuffer } from 'ethereumjs-util'
 import { BaseStateManager, StateManager } from '.'
 import { short } from '../evm/opcodes'
 import Cache, { getCb, putCb } from './cache'
@@ -85,6 +85,13 @@ export default class StatelessVerkleStateManager extends BaseStateManager implem
       )
     }
     const extInput = setLengthRight(input, 4080)
+    const ints: Array<number | ArrayBufferLike> = [2 + 256 * input.length]
+    for (let i = 0; i <= 255; i++) {
+      const from = 16 * i
+      const to = 16 * (i + 1)
+      const newInt = extInput.slice(from, to).buffer
+      ints.push(newInt)
+    }
     return extInput
   }
 
@@ -92,8 +99,8 @@ export default class StatelessVerkleStateManager extends BaseStateManager implem
     const treeIndexB = Buffer.alloc(32)
     treeIndexB.writeInt32LE(treeIndex)
 
-    const input = Buffer.concat([address.toBuffer(), treeIndexB.slice(0, 31), toBuffer(subIndex)])
-    return this.pedersenHash(input)
+    const input = Buffer.concat([address.toBuffer(), treeIndexB])
+    return Buffer.concat([this.pedersenHash(input).slice(0, 31), toBuffer(subIndex)])
   }
 
   private getTreeKeyForBalance(address: Address) {
