@@ -1,9 +1,9 @@
 /* eslint @typescript-eslint/no-unused-vars: 0 */
 
 import Common from '@ethereumjs/common'
-import { Address, bufferToInt, PrefixedHexString, setLengthRight, toBuffer } from 'ethereumjs-util'
+import { Address, arrToBufArr, PrefixedHexString, setLengthRight, toBuffer } from 'ethereumjs-util'
+const wasm = require('../../../rust-verkle-wasm/rust_verkle_wasm')
 import { BaseStateManager, StateManager } from '.'
-import { short } from '../evm/opcodes'
 import Cache, { getCb, putCb } from './cache'
 import { StorageDump } from './interface'
 
@@ -61,6 +61,7 @@ export default class StatelessVerkleStateManager extends BaseStateManager implem
      * desired backend.
      */
     const getCb: getCb = async (address) => {
+      console.log(`Calling get_tree_key_for_balance() on address ${address.toString()}`)
       this.getTreeKeyForBalance(address)
       return undefined
     }
@@ -85,22 +86,42 @@ export default class StatelessVerkleStateManager extends BaseStateManager implem
       )
     }
     const extInput = setLengthRight(input, 4080)
+    console.log(`ext_input (byte length: ${extInput.length})`)
+
+    console.log(`${extInput.toString('hex').substring(0, 100)}...`)
     const ints: Array<number | ArrayBufferLike> = [2 + 256 * input.length]
-    for (let i = 0; i <= 255; i++) {
+    console.log(`Value for ints[0]: ${ints[0]}`)
+    for (let i = 0; i <= 254; i++) {
       const from = 16 * i
       const to = 16 * (i + 1)
-      const newInt = extInput.slice(from, to).buffer
+      const newInt = extInput.slice(from, to)
       ints.push(newInt)
     }
-    return extInput
+    console.log(`ints Length: ${ints.length}`)
+    console.log(`Value for ints[1] (Buffer): 0x${(ints[1] as Buffer).toString('hex')}`)
+    console.log(`Value for ints[2] (Buffer): 0x${(ints[2] as Buffer).toString('hex')}`)
+    const pedersenHash = wasm.pedersen_hash(ints)
+    console.log(
+      `Value for pederson_hash() (compute_commitment_root(ints).serialize()): ${arrToBufArr(
+        pedersenHash
+      ).toString('hex')}`
+    )
+    return arrToBufArr(pedersenHash)
   }
 
   private getTreeKey(address: Address, treeIndex: number, subIndex: number) {
+    console.log(
+      `get_tree_key() called with address=${address.toString()} tree_index=${treeIndex} sub_index=${subIndex}`
+    )
     const treeIndexB = Buffer.alloc(32)
     treeIndexB.writeInt32LE(treeIndex)
 
     const input = Buffer.concat([address.toBuffer(), treeIndexB])
-    return Buffer.concat([this.pedersenHash(input).slice(0, 31), toBuffer(subIndex)])
+    console.log(`Input to perderson_hash() call (address + tree_index.to_bytes(32, 'little')):`)
+    console.log(input.toString('hex'))
+    const ret = Buffer.concat([this.pedersenHash(input).slice(0, 31), toBuffer(subIndex)])
+    console.log(`Return value for getTreeKey() (Buffer): 0x${ret.toString('hex')}`)
+    return ret
   }
 
   private getTreeKeyForBalance(address: Address) {
