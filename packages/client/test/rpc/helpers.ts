@@ -174,7 +174,7 @@ export async function baseRequest(
 /**
  * Sets up a custom chain with metaDB enabled (saving receipts, logs, indexes)
  */
-export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts = {}) {
+export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts: any) {
   const genesisParams = await parseCustomParams(genesisFile, chainName)
   const genesisState = genesisFile.alloc ? await parseGenesisState(genesisFile) : {}
   const common = new Common({
@@ -196,7 +196,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
     enableMetaDB: true,
   })
   const manager = createManager(client)
-  const server = startRPC(manager.getMethods())
+  const server = startRPC(manager.getMethods(clientOpts.engine))
 
   const { chain, execution } = client
 

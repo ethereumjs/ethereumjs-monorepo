@@ -1,26 +1,32 @@
 import tape from 'tape'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import { params, baseRequest, baseSetup } from '../helpers'
+import { params, baseRequest, baseSetup, setupChain } from '../helpers'
 import { checkError } from '../util'
-import { parseCustomParams, parseGenesisState } from '../../../lib/util'
-import Common from '@ethereumjs/common'
-import Blockchain from '@ethereumjs/blockchain'
+import genesisJSON from '../../testdata/post-merge.json'
 
 const method = 'engine_forkchoiceUpdatedV1'
 
-tape(`${method}: call with invalid block hash without 0x`, async (t) => {
-  const { server } = baseSetup({ engine: true, includeVM: true })
+const validForkChoiceState = {
+  headBlockHash: '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a',
+  safeBlockHash: '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a',
+  finalizedBlockHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+}
 
-  const req = params(method, [
-    {
-      headBlockHash: 'b084c10440f05f5a23a55d1d7ebcb1b3892935fb56f23cdc9a7f42c348eed174',
-      safeBlockHash: '0xb084c10440f05f5a23a55d1d7ebcb1b3892935fb56f23cdc9a7f42c348eed174',
-      finalizedBlockHash: '0xb084c10440f05f5a23a55d1d7ebcb1b3892935fb56f23cdc9a7f42c348eed174',
-    },
-    {
-      payloadAttributes: null,
-    },
-  ])
+const validPayloadAttributes = {
+  timestamp: '0x5',
+  random: '0x0000000000000000000000000000000000000000000000000000000000000000',
+  suggestedFeeRecipient: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
+}
+
+const validPayload = [validForkChoiceState, validPayloadAttributes]
+
+tape(`${method}: call with invalid head block hash without 0x`, async (t) => {
+  const { server } = baseSetup({ engine: true, includeVM: true })
+  const invalidForkChoiceState = {
+    ...validForkChoiceState,
+    headBlockHash: 'unvalid formatted head block hash',
+  }
+  const req = params(method, [invalidForkChoiceState, validPayloadAttributes])
   const expectRes = checkError(
     t,
     INVALID_PARAMS,
@@ -32,16 +38,11 @@ tape(`${method}: call with invalid block hash without 0x`, async (t) => {
 tape(`${method}: call with invalid hex string as block hash`, async (t) => {
   const { server } = baseSetup({ engine: true, includeVM: true })
 
-  const req = params(method, [
-    {
-      headBlockHash: '0xb084c10440f05f5a23a55d1d7ebcb1b3892935fb56f23cdc9a7f42c348eed174',
-      safeBlockHash: '0xb084c10440f05f5a23a55d1d7ebcb1b3892935fb56f23cdc9a7f42c348eed174',
-      finalizedBlockHash: '0xinvalid',
-    },
-    {
-      payloadAttributes: null,
-    },
-  ])
+  const invalidForkChoiceState = {
+    ...validForkChoiceState,
+    finalizedBlockHash: '0xinvalid',
+  }
+  const req = params(method, [invalidForkChoiceState, validPayloadAttributes])
   const expectRes = checkError(
     t,
     INVALID_PARAMS,
@@ -50,49 +51,52 @@ tape(`${method}: call with invalid hex string as block hash`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape.only(`${method}: call with valid data`, async (t) => {
-  const genesis = require('../../testdata/post-merge.json')
-  // const { client, server } = setupChain(genesis, 'post-merge', { engine: true })
-  const genesisParams = await parseCustomParams(genesis, 'post-merge')
-  const genesisState = await parseGenesisState(genesis)
+tape(`${method}: call with valid data but parent block is not loaded yet`, async (t) => {
+  const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
-  const common = new Common({
-    chain: genesisParams.name,
-    customChains: [[genesisParams, genesisState]],
-  })
-  const blockchain = await Blockchain.create({
-    common,
-  })
-  const { server, client } = baseSetup({
-    engine: true,
-    includeVM: true,
-    commonChain: common,
-    blockchain,
-  })
+  const nonExistentHeadBlockHash = {
+    ...validForkChoiceState,
+    headBlockHash: '0x1d93f244823f80efbd9292a0d0d72a2b03df8cd5a9688c6c3779d26a7cc5009c',
+  }
+  const req = params(method, [nonExistentHeadBlockHash, validPayloadAttributes])
+  const expectRes = (res: any) => {
+    t.equal(res.body.result.payloadStatus.status, 'SYNCING')
+    t.equal(res.body.result.payloadStatus.latestValidHash, validForkChoiceState.headBlockHash)
+    t.equal(res.body.result.payloadStatus.validationError, null)
+    t.equal(res.body.result.payloadId, null)
+  }
+  await baseRequest(t, server, req, 200, expectRes)
+})
 
-  await client.chain.open()
-  await client.execution?.open()
-  await client.chain.update()
+// tape.only(
+//   `${method}: call with valid data but head block hash is not stored in the chain`,
+//   async (t) => {
+//     const genesis = require('../../testdata/post-merge.json')
+//     const { server, chain } = await setupChain(genesis, 'post-merge', { engine: true })
+//
+//     const header = BlockHeader.fromHeaderData()
+//     const block = Block.fromBlockData({ header })
+//     await chain.putBlocks([block], true)
+//     const req = params(method, validPayload)
+//     const expectRes = (res: any) => {
+//       t.equal(res.body.result.payloadStatus.status, 'SYNCING')
+//       t.equal(res.body.result.payloadStatus.latestValidHash, null)
+//       t.equal(res.body.result.payloadStatus.validationError, null)
+//       t.notEqual(res.body.result.payloadId, null)
+//     }
+//     await baseRequest(t, server, req, 200, expectRes)
+//   }
+// )
 
-  const payload = [
-    {
-      headBlockHash: '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a',
-      safeBlockHash: '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a',
-      finalizedBlockHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
-    },
-    {
-      timestamp: '0x5',
-      random: '0x0000000000000000000000000000000000000000000000000000000000000000',
-      suggestedFeeRecipient: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
-    },
-  ]
-  // const expectedPayloadId = '0xa247243752eb10b4'
-  const req = params(method, payload)
+tape(`${method}: call with valid data and synced data`, async (t) => {
+  const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+
+  const req = params(method, validPayload)
   const expectRes = (res: any) => {
     t.equal(res.body.result.payloadStatus.status, 'VALID')
     t.equal(res.body.result.payloadStatus.latestValidHash, null)
     t.equal(res.body.result.payloadStatus.validationError, null)
-    // t.equal(res.body.result.payloadId, expectedPayloadId)
+    t.notEqual(res.body.result.payloadId, null)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
