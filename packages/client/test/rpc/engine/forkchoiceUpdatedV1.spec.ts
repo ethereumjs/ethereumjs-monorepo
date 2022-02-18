@@ -51,44 +51,9 @@ tape(`${method}: call with invalid hex string as block hash`, async (t) => {
 })
 
 tape.only(`${method}: call with valid data`, async (t) => {
-  const genesis = {
-    config: {
-      chainId: 1,
-      homesteadBlock: 0,
-      eip150Block: 0,
-      eip155Block: 0,
-      eip158Block: 0,
-      byzantiumBlock: 0,
-      constantinopleBlock: 0,
-      petersburgBlock: 0,
-      istanbulBlock: 0,
-      muirGlacierBlock: 0,
-      berlinBlock: 0,
-      londonBlock: 0,
-      clique: {
-        period: 5,
-        epoch: 30000,
-      },
-      terminalTotalDifficulty: 0,
-    },
-    nonce: '0x42',
-    timestamp: '0x0',
-    extraData:
-      '0x0000000000000000000000000000000000000000000000000000000000000000a94f5374fce5edbc8e2a8697c15331677e6ebf0b0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-    gasLimit: '0x1C9C380',
-    difficulty: '0x400000000',
-    mixHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
-    coinbase: '0x0000000000000000000000000000000000000000',
-    alloc: {
-      '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b': { balance: '0x6d6172697573766477000000' },
-    },
-    number: '0x0',
-    gasUsed: '0x0',
-    parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
-    baseFeePerGas: '0x7',
-  }
-
-  const genesisParams = await parseCustomParams(genesis, 'the-merge')
+  const genesis = require('../../testdata/post-merge.json')
+  // const { client, server } = setupChain(genesis, 'post-merge', { engine: true })
+  const genesisParams = await parseCustomParams(genesis, 'post-merge')
   const genesisState = await parseGenesisState(genesis)
 
   const common = new Common({
@@ -97,8 +62,6 @@ tape.only(`${method}: call with valid data`, async (t) => {
   })
   const blockchain = await Blockchain.create({
     common,
-    validateBlocks: true,
-    validateConsensus: true,
   })
   const { server, client } = baseSetup({
     engine: true,
@@ -107,7 +70,10 @@ tape.only(`${method}: call with valid data`, async (t) => {
     blockchain,
   })
 
+  await client.chain.open()
+  await client.execution?.open()
   await client.chain.update()
+
   const payload = [
     {
       headBlockHash: '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a',
@@ -120,10 +86,13 @@ tape.only(`${method}: call with valid data`, async (t) => {
       suggestedFeeRecipient: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
     },
   ]
+  // const expectedPayloadId = '0xa247243752eb10b4'
   const req = params(method, payload)
   const expectRes = (res: any) => {
-    console.log(res)
-    t.equal(res.body.result.status, 'VALID')
+    t.equal(res.body.result.payloadStatus.status, 'VALID')
+    t.equal(res.body.result.payloadStatus.latestValidHash, null)
+    t.equal(res.body.result.payloadStatus.validationError, null)
+    // t.equal(res.body.result.payloadId, expectedPayloadId)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
