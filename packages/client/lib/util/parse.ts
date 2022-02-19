@@ -147,7 +147,7 @@ async function createGethGenesisBlockHeader(json: any) {
     // chainId is not important here, we just want to set
     // hardfork to London for baseFeePerGas support
     common = new Common({ chain: 1, hardfork: Hardfork.London })
-    ;(common as any)._chainParams['hardforks'].find((h: any) => h.name === 'london')!.block = 0
+    common.hardforkBlockBN = () => new BN(0)
   }
   return BlockHeader.fromHeaderData(headerData, { common })
 }
