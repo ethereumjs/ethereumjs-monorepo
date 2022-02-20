@@ -100,3 +100,30 @@ tape(`${method}: call with valid data and synced data`, async (t) => {
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
+
+tape.only(`Engine RPC methods: call complete flow`, async (t) => {
+  const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+  const forkchoiceUpdateRequest = params(method, validPayload)
+  let payloadId
+  const expectRes = (res: any) => {
+    payloadId = res.body.result.payloadId
+  }
+  await baseRequest(t, server, forkchoiceUpdateRequest, 200, expectRes)
+
+  const getPayloadRequest = params('engine_getPayloadV1', [payloadId])
+
+  let transactionPayload
+  const expectGetPayloadResponse = (res: any) => {
+    transactionPayload = res.body.result
+  }
+
+  await baseRequest(t, server, getPayloadRequest, 200, expectGetPayloadResponse)
+
+  const newPayloadRequest = params('engine_newPayloadV1', [transactionPayload])
+
+  const expectNewPayloadResponse = (res: any) => {
+    console.log(res.body)
+    // t.equal(res.body.result)
+  }
+  await baseRequest(t, server, newPayloadRequest, 200, expectNewPayloadResponse)
+})
