@@ -183,19 +183,16 @@ tape('Utility Functions', function (t) {
     )
 
     let tmp = '0011223344'
-    st.throws(function () {
-      isValidPrivate(Buffer.from(tmp, 'hex'))
-    }, 'should fail on short input')
+    st.notOk(isValidPrivate(Buffer.from(tmp, 'hex')), 'should fail on short input')
 
     tmp =
       '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
-    st.throws(function () {
-      isValidPrivate(Buffer.from(tmp, 'hex'))
-    }, 'should fail on too big input')
+    st.notOk(isValidPrivate(Buffer.from(tmp, 'hex')), 'should fail on too big input')
 
-    st.throws(function () {
-      isValidPrivate((<unknown>'WRONG_INPUT_TYPE') as Buffer)
-    }, 'should fail on wrong input type')
+    st.notOk(
+      isValidPrivate((<unknown>'WRONG_INPUT_TYPE') as Buffer),
+      'should fail on wrong input type'
+    )
 
     tmp = '0000000000000000000000000000000000000000000000000000000000000000'
     st.notOk(isValidPrivate(Buffer.from(tmp, 'hex')), 'should fail on invalid curve (zero)')
@@ -241,6 +238,24 @@ tape('Utility Functions', function (t) {
       'hex'
     )
     st.notOk(isValidPublic(pubKey), 'should fail wt.testh an invalid SEC1 public key')
+
+    pubKey = Buffer.from(
+      '03fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f',
+      'hex'
+    )
+    st.notOk(isValidPublic(pubKey), 'should fail an invalid 33-byte public key')
+
+    pubKey = Buffer.from(
+      'fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f0000000000000000000000000000000000000000000000000000000000000001',
+      'hex'
+    )
+    st.notOk(isValidPublic(pubKey), 'should fail an invalid 64-byte public key')
+
+    pubKey = Buffer.from(
+      '04fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f0000000000000000000000000000000000000000000000000000000000000001',
+      'hex'
+    )
+    st.notOk(isValidPublic(pubKey, true), 'should fail an invalid 65-byte public key')
 
     pubKey = Buffer.from(
       '033a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a',
