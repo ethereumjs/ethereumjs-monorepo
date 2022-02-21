@@ -2,6 +2,7 @@ import { Server as RPCServer } from 'jayson/promise'
 import { json as jsonParser } from 'body-parser'
 import Express, { Application, Request, Response, NextFunction } from 'express'
 import jwt from 'express-jwt'
+import {readFileSync, writeFileSync } from 'fs-extra'
 
 import { RPCManager } from '../lib/rpc'
 import EthereumClient from '../lib/client'
@@ -20,7 +21,7 @@ type RPCArgs = {
   rpcEnginePort: number
   rpcDebug: boolean
   helprpc: boolean
-  'jwt-secret': string
+  'jwt-secret'?: string
 }
 
 function createRPCServerListener({
@@ -30,10 +31,10 @@ function createRPCServerListener({
 }: {
   rpcport: number
   server: RPCServer
-  withEngineMiddleware?: { jwtEngineSecret: string }
+  withEngineMiddleware?: { jwtEngineSecret: Buffer }
 }): Application {
   const app = Express()
-  app.use(jsonParser())
+  app.use(Express.json())
   if (withEngineMiddleware) {
     app.use(
       jwt({ secret: withEngineMiddleware.jwtEngineSecret, algorithms: ['HS256'] }).unless(function (
@@ -44,9 +45,9 @@ function createRPCServerListener({
       })
     )
     app.use(function (req: Request, res: Response, next: NextFunction) {
+      /** user object which is the parsed jwt claims is injected by jwt middleware */
       const { user } = req as unknown as { user: { iat: number } | undefined }
       if (user && Math.abs(new Date().getTime() - user.iat * 1000 ?? 0) > 5000) {
-        console.log('expired', user)
         return res.sendStatus(401)
       }
       return next()
@@ -55,6 +56,17 @@ function createRPCServerListener({
   app.use(server.middleware())
   app.listen(rpcport)
   return app
+}
+
+function readJwtSecretFromHexFile(jwtFilePath?: string):Buffer {
+  if(!jwtFilePath) throw Error("jwtFilePath empty");
+  const jwtSecretContents = readFileSync(jwtFilePath, "utf-8").trim();
+  const hexPattern = new RegExp(/^(0x|0X)?(?<jwtSecret>[a-fA-F0-9]+)$/, "g");
+  const jwtSecretHex = hexPattern.exec(jwtSecretContents)?.groups?.jwtSecret;
+  if (!jwtSecretHex || jwtSecretHex.length != 64) {
+    throw Error("Need a valid 256 bit hex encoded secret");
+  }
+  return Buffer.from(jwtSecretHex,"hex");
 }
 
 /**
@@ -114,7 +126,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     rpcEngine,
     rpcEngineAddr,
     rpcEnginePort,
-    'jwt-secret': jwtEngineSecret,
+    'jwt-secret': jwtEngineSecretPath,
   } = args
   const manager = new RPCManager(client, config)
 
@@ -131,7 +143,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
       createRPCServerListener({
         rpcport,
         server,
-        withEngineMiddleware: withEngineMethods ? { jwtEngineSecret } : undefined,
+        withEngineMiddleware: withEngineMethods ? { jwtEngineSecret: readJwtSecretFromHexFile(jwtEngineSecretPath) } : undefined,
       })
       config.logger.info(
         `Started JSON RPC Server address=http://${rpcaddr}:${rpcport} namespaces=${namespaces}`
@@ -161,7 +173,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     server.on('request', onRequest)
     server.on('response', onBatchResponse)
 
-    createRPCServerListener({ rpcport, server, withEngineMiddleware: { jwtEngineSecret } })
+    createRPCServerListener({ rpcport, server, withEngineMiddleware: { jwtEngineSecret: readJwtSecretFromHexFile(jwtEngineSecretPath) } })
     config.logger.info(
       `Started JSON RPC server address=http://${rpcEngineAddr}:${rpcEnginePort} namespaces=engine`
     )
