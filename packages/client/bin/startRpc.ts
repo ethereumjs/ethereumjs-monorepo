@@ -31,19 +31,20 @@ function createRPCServerListener({
 }: {
   rpcport: number
   server: RPCServer
-  withEngineMiddleware?: { jwtEngineSecret: Buffer }
+  withEngineMiddleware?: { jwtEngineSecret: Buffer; unlessFn?: (req: Request) => boolean }
 }): Application {
   const app = Express()
   app.use(Express.json())
+
+  // If server has engine middleware we need to add a jwt token based auth
   if (withEngineMiddleware) {
-    app.use(
-      jwt({ secret: withEngineMiddleware.jwtEngineSecret, algorithms: ['HS256'] }).unless(function (
-        req: Request
-      ) {
-        const { method } = req.body
-        return !method.includes('engine_')
-      })
-    )
+    const { jwtEngineSecret, unlessFn } = withEngineMiddleware
+    if (unlessFn) {
+      app.use(jwt({ secret: jwtEngineSecret, algorithms: ['HS256'] }).unless(unlessFn))
+    } else {
+      app.use(jwt({ secret: jwtEngineSecret, algorithms: ['HS256'] }))
+    }
+
     app.use(function (req: Request, res: Response, next: NextFunction) {
       /** user object which is the parsed jwt claims is injected by jwt middleware */
       const { user } = req as unknown as { user: { iat: number } | undefined }
@@ -53,6 +54,7 @@ function createRPCServerListener({
       return next()
     })
   }
+
   app.use(server.middleware())
   app.listen(rpcport)
   return app
@@ -153,7 +155,13 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
         rpcport,
         server,
         withEngineMiddleware: withEngineMethods
-          ? { jwtEngineSecret: readJwtSecretFromHexFile(config, jwtEngineSecretPath) }
+          ? {
+              jwtEngineSecret: readJwtSecretFromHexFile(config, jwtEngineSecretPath),
+              unlessFn: function (req: Request) {
+                const { method } = req.body
+                return !method.includes('engine_')
+              },
+            }
           : undefined,
       })
       config.logger.info(
