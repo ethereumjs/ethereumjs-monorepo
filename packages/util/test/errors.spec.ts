@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { ErrorCode, ErrorLogger } from '../src/errors'
+import { ErrorLogger } from '../src/errors'
 
 tape('ErrorLogger', (t) => {
   const errorLog = new ErrorLogger()
@@ -13,14 +13,14 @@ tape('ErrorLogger', (t) => {
       error = e
     }
 
-    st.equal(error.code, ErrorCode.UNKNOWN_ERROR)
+    st.equal(error.code, ErrorLogger.errors.UNKNOWN_ERROR)
     st.end()
   }),
     t.test('should populate an error with UNKNOWN_ERROR code with all provided params', (st) => {
       let error: any
 
       try {
-        errorLog.throwError(ErrorCode.UNKNOWN_ERROR, {
+        errorLog.throwError(ErrorLogger.errors.UNKNOWN_ERROR, {
           errorInfo1: 'Information on the error',
           errorInfo2: 'More information on the error',
         })
@@ -36,7 +36,7 @@ tape('ErrorLogger', (t) => {
     let error: any
 
     try {
-      errorLog.throwError(ErrorCode.UNKNOWN_ERROR, {
+      errorLog.throwError(ErrorLogger.errors.UNKNOWN_ERROR, {
         errorInfo1: 'Information on the error',
         errorInfo2: 'More information on the error',
       })
@@ -44,14 +44,14 @@ tape('ErrorLogger', (t) => {
       error = e
     }
 
-    st.equal(error.code, ErrorCode.UNKNOWN_ERROR)
+    st.equal(error.code, ErrorLogger.errors.UNKNOWN_ERROR)
     st.end()
   }),
     t.test('should add all error params to error message details', (st) => {
       let error: any
 
       try {
-        errorLog.throwError(ErrorCode.UNKNOWN_ERROR, {
+        errorLog.throwError(ErrorLogger.errors.UNKNOWN_ERROR, {
           errorInfo1: 'Information on the error',
           errorInfo2: 'More information on the error',
         })
@@ -69,7 +69,7 @@ tape('ErrorLogger', (t) => {
       let error: any
 
       try {
-        errorLog.throwError(ErrorCode.UNKNOWN_ERROR, {
+        errorLog.throwError(ErrorLogger.errors.UNKNOWN_ERROR, {
           message: 'Error Message',
           errorInfo1: 'Information on the error',
           errorInfo2: 'More information on the error',
@@ -88,7 +88,7 @@ tape('ErrorLogger', (t) => {
     let error: any
 
     try {
-      errorLog.throwError(ErrorCode.INVALID_PARAM, {
+      errorLog.throwError(ErrorLogger.errors.INVALID_PARAM, {
         param: 'difficulty',
       })
     } catch (e) {
@@ -102,7 +102,7 @@ tape('ErrorLogger', (t) => {
       let error: any
 
       try {
-        errorLog.throwError(ErrorCode.INVALID_PARAM, {
+        errorLog.throwError(ErrorLogger.errors.INVALID_PARAM, {
           message: 'Gas limit higher than maximum',
           param: 'gasLimit',
         })

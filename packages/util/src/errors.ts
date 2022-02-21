@@ -1,4 +1,4 @@
-export enum ErrorCode {
+enum ErrorCode {
   INVALID_PARAM = 'INVALID_PARAM',
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
 }
@@ -16,7 +16,7 @@ interface UnknownError extends GeneralError<ErrorCode.UNKNOWN_ERROR> {
 }
 
 // Convert an ErrorCode into its Typed Error
-export type CodedGeneralError<T> = T extends ErrorCode.INVALID_PARAM
+type CodedGeneralError<T> = T extends ErrorCode.INVALID_PARAM
   ? InvalidParamError
   : T extends ErrorCode.UNKNOWN_ERROR
   ? UnknownError
@@ -44,47 +44,50 @@ export class ErrorLogger {
   static errors = ErrorCode
 
   makeError<T>(codedError: CodedGeneralError<T>): Error {
-    let { message } = codedError
+    const { code, message, ...params } = codedError
     const messageDetails: Array<string> = []
 
-    if (isInvalidParamError(codedError) && typeof codedError.param !== 'undefined') {
+    if (isInvalidParamError(codedError) && typeof params.param !== 'undefined') {
       messageDetails.push(`Invalid param=${codedError.param}`)
     }
 
     if (isUnknownError(codedError)) {
-      Object.keys(codedError)
-        .filter((key) => ['message', 'code', 'stack'].includes(key))
-        .forEach((key) => {
-          const value = codedError[key]
-          try {
-            messageDetails.push(key + '=' + JSON.stringify(value))
-          } catch {
-            messageDetails.push(key + '=' + JSON.stringify(codedError[key].toString()))
-          }
-        })
+      Object.keys(params).forEach((key) => {
+        const value = codedError[key]
+        try {
+          messageDetails.push(key + '=' + JSON.stringify(value))
+        } catch {
+          messageDetails.push(key + '=' + JSON.stringify(codedError[key].toString()))
+        }
+      })
     }
 
-    messageDetails.push(`code=${codedError.code}`)
+    messageDetails.push(`code=${code}`)
+
+    let errorMessage = message ?? ''
 
     if (messageDetails.length) {
-      message += ' | Details: ' + messageDetails.join(', ')
+      errorMessage += ' | Details: ' + messageDetails.join(', ')
     }
 
-    const error = new Error(message) as CodedGeneralError<T>
+    const error = new Error(errorMessage) as CodedGeneralError<T>
     error.code = codedError.code
 
-    Object.keys(codedError)
-      .filter((key) => key !== 'message' && key !== 'code')
-      .forEach((key) => {
-        const typedKey = key as keyof typeof codedError
-        error[typedKey] = codedError[typedKey]
-      })
+    Object.keys(params).forEach((key) => {
+      const typedKey = key as keyof typeof codedError
+      error[typedKey] = codedError[typedKey]
+    })
+
+    Error.captureStackTrace(error, this.throwError)
 
     throw error
   }
 
-  throwError<T extends ErrorCode>(code?: T, params?: Omit<CodedGeneralError<T>, 'code'>): never {
-    throw this.makeError({
+  throwError<T extends ErrorCode>(
+    code?: T,
+    params?: Omit<CodedGeneralError<T>, 'code' | 'stack'>
+  ): void {
+    this.makeError({
       code: code ?? ErrorCode.UNKNOWN_ERROR,
       ...params,
     } as CodedGeneralError<T>)

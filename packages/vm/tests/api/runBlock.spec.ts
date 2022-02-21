@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, rlp, KECCAK256_RLP, Account, ErrorCode } from 'ethereumjs-util'
+import { Address, BN, rlp, KECCAK256_RLP, Account, ErrorLogger } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import {
@@ -212,7 +212,7 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
     await vm
       .runBlock({ block })
       .then(() => t.fail('should have returned error'))
-      .catch((e) => t.ok(e.code === ErrorCode.INVALID_PARAM && e.param === 'gasLimit'))
+      .catch((e) => t.ok(e.code === ErrorLogger.errors.INVALID_PARAM && e.param === 'gasLimit'))
   })
 
   t.test('should fail when block validation fails', async (t) => {

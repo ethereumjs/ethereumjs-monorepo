@@ -1,6 +1,6 @@
 import { debug as createDebugLogger } from 'debug'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { Account, Address, BN, errorLog, ErrorCode, intToBuffer, rlp } from 'ethereumjs-util'
+import { Account, Address, BN, errorLog, ErrorLogger, intToBuffer, rlp } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import VM from './index'
@@ -202,7 +202,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
         )
       }
       const message = _errorMsg('invalid receiptTrie', this, block)
-      errorLog.throwError(ErrorCode.INVALID_PARAM, {
+      errorLog.throwError(ErrorLogger.errors.INVALID_PARAM, {
         message,
         param: 'receiptTrie',
       })
@@ -216,7 +216,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
         )
       }
       const message = _errorMsg('invalid bloom', this, block)
-      errorLog.throwError(ErrorCode.INVALID_PARAM, {
+      errorLog.throwError(ErrorLogger.errors.INVALID_PARAM, {
         message,
         param: 'bloom',
       })
@@ -226,7 +226,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
         debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
       }
       const message = _errorMsg('invalid gasUsed', this, block)
-      errorLog.throwError(ErrorCode.INVALID_PARAM, {
+      errorLog.throwError(ErrorLogger.errors.INVALID_PARAM, {
         message,
         param: 'gasUsed',
       })
@@ -240,7 +240,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
         )
       }
       const message = _errorMsg('invalid block stateRoot', this, block)
-      errorLog.throwError(ErrorCode.INVALID_PARAM, {
+      errorLog.throwError(ErrorLogger.errors.INVALID_PARAM, {
         message,
         param: 'stateRoot',
       })
@@ -290,7 +290,7 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   if (!opts.skipBlockValidation) {
     if (block.header.gasLimit.gte(new BN('8000000000000000', 16))) {
       const message = _errorMsg('Invalid block with gas limit greater than (2^63 - 1)', this, block)
-      errorLog.throwError(ErrorCode.INVALID_PARAM, {
+      errorLog.throwError(ErrorLogger.errors.INVALID_PARAM, {
         message,
         param: 'gasLimit',
       })
