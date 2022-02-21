@@ -78,7 +78,10 @@ export class ErrorLogger {
       error[typedKey] = codedError[typedKey]
     })
 
-    Error.captureStackTrace(error, this.throwError)
+    // captureStackTrace is not defined in some browsers, notably Firefox
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(error, this.throwError)
+    }
 
     throw error
   }
