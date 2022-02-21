@@ -18,7 +18,7 @@ const validPayloadAttributes = {
   suggestedFeeRecipient: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
 }
 
-const validPayload = [validForkChoiceState, validPayloadAttributes]
+export const validPayload = [validForkChoiceState, validPayloadAttributes]
 
 tape(`${method}: call with invalid head block hash without 0x`, async (t) => {
   const { server } = baseSetup({ engine: true, includeVM: true })
@@ -68,26 +68,6 @@ tape(`${method}: call with valid data but parent block is not loaded yet`, async
   await baseRequest(t, server, req, 200, expectRes)
 })
 
-// tape.only(
-//   `${method}: call with valid data but head block hash is not stored in the chain`,
-//   async (t) => {
-//     const genesis = require('../../testdata/post-merge.json')
-//     const { server, chain } = await setupChain(genesis, 'post-merge', { engine: true })
-//
-//     const header = BlockHeader.fromHeaderData()
-//     const block = Block.fromBlockData({ header })
-//     await chain.putBlocks([block], true)
-//     const req = params(method, validPayload)
-//     const expectRes = (res: any) => {
-//       t.equal(res.body.result.payloadStatus.status, 'SYNCING')
-//       t.equal(res.body.result.payloadStatus.latestValidHash, null)
-//       t.equal(res.body.result.payloadStatus.validationError, null)
-//       t.notEqual(res.body.result.payloadId, null)
-//     }
-//     await baseRequest(t, server, req, 200, expectRes)
-//   }
-// )
-
 tape(`${method}: call with valid data and synced data`, async (t) => {
   const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
@@ -101,29 +81,14 @@ tape(`${method}: call with valid data and synced data`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape.only(`Engine RPC methods: call complete flow`, async (t) => {
+tape(`${method}: call with valid fork choice state without payload attributes`, async (t) => {
   const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-  const forkchoiceUpdateRequest = params(method, validPayload)
-  let payloadId
+  const req = params(method, [validForkChoiceState])
   const expectRes = (res: any) => {
-    payloadId = res.body.result.payloadId
+    t.equal(res.body.result.payloadStatus.status, 'VALID')
+    t.equal(res.body.result.payloadStatus.latestValidHash, null)
+    t.equal(res.body.result.payloadStatus.validationError, null)
+    t.equal(res.body.result.payloadId, null)
   }
-  await baseRequest(t, server, forkchoiceUpdateRequest, 200, expectRes)
-
-  const getPayloadRequest = params('engine_getPayloadV1', [payloadId])
-
-  let transactionPayload
-  const expectGetPayloadResponse = (res: any) => {
-    transactionPayload = res.body.result
-  }
-
-  await baseRequest(t, server, getPayloadRequest, 200, expectGetPayloadResponse)
-
-  const newPayloadRequest = params('engine_newPayloadV1', [transactionPayload])
-
-  const expectNewPayloadResponse = (res: any) => {
-    console.log(res.body)
-    // t.equal(res.body.result)
-  }
-  await baseRequest(t, server, newPayloadRequest, 200, expectNewPayloadResponse)
+  await baseRequest(t, server, req, 200, expectRes)
 })
