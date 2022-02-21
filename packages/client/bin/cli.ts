@@ -120,6 +120,10 @@ const args = yargs(hideBin(process.argv))
     string: true,
     default: 'localhost',
   })
+  .option('jwt-secret', {
+    describe: 'Provide a file containing a hex encoded jwt secret for Engine rpc server',
+    coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+  })
   .option('helprpc', {
     describe: 'Display the JSON RPC help with a list of all RPC methods implemented (and exit)',
     boolean: true,
