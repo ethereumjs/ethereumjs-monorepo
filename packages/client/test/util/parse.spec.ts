@@ -102,4 +102,18 @@ tape('[Util/Parse]', (t) => {
       'consensus config matches'
     )
   })
+
+  t.test(
+    'should generate expected hash with london block zero and base fee per gas defined',
+    async (t) => {
+      t.plan(2)
+      const json = require('../testdata/post-merge.json')
+      const params = await parseCustomParams(json, 'post-merge')
+      t.equals(
+        params.genesis.hash,
+        '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a'
+      )
+      t.equals(params.genesis.baseFeePerGas, json.baseFeePerGas)
+    }
+  )
 })

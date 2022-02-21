@@ -166,15 +166,12 @@ async function createGethGenesisBlockHeader(json: any) {
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
 async function parseGethParams(json: any) {
-  const { name, config, difficulty, nonce, mixHash, coinbase } = json
+  const { name, config, difficulty, nonce, mixHash, coinbase, baseFeePerGas } = json
 
-  let { gasLimit, extraData, baseFeePerGas, timestamp } = json
+  let { gasLimit, extraData, timestamp } = json
 
   // geth stores gasLimit as a hex string while our gasLimit is a `number`
   json['gasLimit'] = gasLimit = parseInt(gasLimit)
-  // geth assumes an initial base fee value on londonBlock=0
-  json['baseFeePerGas'] = baseFeePerGas =
-    baseFeePerGas === undefined && config.londonBlock === 0 ? 1000000000 : undefined
   // geth is not strictly putting in empty fields with a 0x prefix
   json['extraData'] = extraData = extraData === '' ? '0x' : extraData
   // geth may use number for timestamp
@@ -238,6 +235,7 @@ async function parseGethParams(json: any) {
     'muirGlacier',
     'berlin',
     'london',
+    'preMerge',
   ]
   const forkMap: { [key: string]: string } = {
     homestead: 'homesteadBlock',
@@ -251,6 +249,7 @@ async function parseGethParams(json: any) {
     muirGlacier: 'muirGlacierBlock',
     berlin: 'berlinBlock',
     london: 'londonBlock',
+    preMerge: 'mergeForkBlock',
   }
   params.hardforks = hardforks
     .map((name) => ({
@@ -259,7 +258,11 @@ async function parseGethParams(json: any) {
     }))
     .filter((fork) => fork.block !== null)
   if (config.terminalTotalDifficulty !== undefined) {
-    params.hardforks.push({ name: 'merge', td: config.terminalTotalDifficulty, block: null })
+    params.hardforks.push({
+      name: 'merge',
+      td: config.terminalTotalDifficulty,
+      block: null,
+    })
   }
   return params
 }

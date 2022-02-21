@@ -4,7 +4,8 @@ import { Log } from '@ethereumjs/vm/dist/evm/types'
 import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
-const level = require('level-mem')
+import { VMExecution } from '../../lib/execution'
+import { Chain } from '../../lib/blockchain'
 
 tape('[FullEthereumService]', async (t) => {
   class PeerPool {
@@ -18,9 +19,9 @@ tape('[FullEthereumService]', async (t) => {
   PeerPool.prototype.start = td.func<any>()
   PeerPool.prototype.stop = td.func<any>()
   td.replace('../../lib/net/peerpool', { PeerPool })
-  const Chain = td.constructor([] as any)
-  Chain.prototype.open = td.func<any>()
-  td.replace('../../lib/blockchain', { Chain })
+  const MockChain = td.constructor([] as any)
+  MockChain.prototype.open = td.func<any>()
+  td.replace('../../lib/blockchain', { Chain: MockChain })
   const EthProtocol = td.constructor([] as any)
   const LesProtocol = td.constructor([] as any)
   td.replace('../../lib/net/protocol/ethprotocol', { EthProtocol })
@@ -31,9 +32,6 @@ tape('[FullEthereumService]', async (t) => {
     open() {}
     close() {}
     handleNewBlock() {}
-    execution = {
-      receiptsManager: { getReceipts: td.func<any>() },
-    }
   }
   FullSynchronizer.prototype.start = td.func<any>()
   FullSynchronizer.prototype.stop = td.func<any>()
@@ -52,7 +50,9 @@ tape('[FullEthereumService]', async (t) => {
 
   t.test('should initialize correctly', (t) => {
     const config = new Config({ transports: [] })
-    const service = new FullEthereumService({ config })
+    const chain = new Chain({ config })
+    const execution = new VMExecution({ config, chain })
+    const service = new FullEthereumService({ config, execution, chain })
     t.ok(service.synchronizer instanceof FullSynchronizer, 'full mode')
     t.equals(service.name, 'eth', 'got name')
     t.end()
@@ -60,11 +60,13 @@ tape('[FullEthereumService]', async (t) => {
 
   t.test('should get protocols', (t) => {
     let config = new Config({ transports: [] })
-    let service = new FullEthereumService({ config })
+    const chain = new Chain({ config })
+    const execution = new VMExecution({ config, chain })
+    let service = new FullEthereumService({ config, execution, chain })
     t.ok(service.protocols[0] instanceof EthProtocol, 'full protocol')
     t.notOk(service.protocols[1], 'no light protocol')
     config = new Config({ transports: [], lightserv: true })
-    service = new FullEthereumService({ config })
+    service = new FullEthereumService({ config, execution, chain })
     t.ok(service.protocols[0] instanceof EthProtocol, 'full protocol')
     t.ok(service.protocols[1] instanceof LesProtocol, 'lightserv protocols')
     t.end()
@@ -74,7 +76,9 @@ tape('[FullEthereumService]', async (t) => {
     t.plan(3)
     const server = td.object() as any
     const config = new Config({ servers: [server] })
-    const service = new FullEthereumService({ config })
+    const chain = new Chain({ config })
+    const execution = new VMExecution({ config, chain })
+    const service = new FullEthereumService({ config, execution, chain })
     await service.open()
     td.verify(service.synchronizer.open())
     td.verify(server.addProtocols(td.matchers.anything()))
@@ -94,7 +98,10 @@ tape('[FullEthereumService]', async (t) => {
   t.test('should start/stop', async (t) => {
     const server = td.object() as any
     const config = new Config({ servers: [server] })
-    const service = new FullEthereumService({ config })
+    const chain = new Chain({ config })
+    const execution = new VMExecution({ config, chain })
+    const service = new FullEthereumService({ config, execution, chain })
+
     await service.start()
     td.verify(service.synchronizer.start())
     t.notOk(await service.start(), 'already started')
@@ -106,7 +113,9 @@ tape('[FullEthereumService]', async (t) => {
 
   t.test('should call handleNewBlock on NewBlock', async (t) => {
     const config = new Config({ transports: [] })
-    const service = new FullEthereumService({ config })
+    const chain = new Chain({ config })
+    const execution = new VMExecution({ config, chain })
+    const service = new FullEthereumService({ config, execution, chain })
     await service.handle({ name: 'NewBlock', data: [{}, new BN(1)] }, 'eth', undefined as any)
     td.verify(service.synchronizer.handleNewBlock({} as any, undefined))
     t.end()
@@ -114,7 +123,11 @@ tape('[FullEthereumService]', async (t) => {
 
   t.test('should send Receipts on GetReceipts', async (t) => {
     const config = new Config({ transports: [] })
-    const service = new FullEthereumService({ config, metaDB: level() })
+    const chain = new Chain({ config })
+    const execution = {
+      receiptsManager: { getReceipts: td.func<any>() },
+    } as VMExecution
+    const service = new FullEthereumService({ config, execution, chain })
     const blockHash = Buffer.alloc(32, 1)
     const receipts = [
       {
@@ -136,9 +149,7 @@ tape('[FullEthereumService]', async (t) => {
         txType: 0,
       },
     ]
-    td.when(
-      service.synchronizer.execution.receiptsManager!.getReceipts(blockHash, true, true)
-    ).thenResolve(receipts)
+    td.when(execution.receiptsManager!.getReceipts(blockHash, true, true)).thenResolve(receipts)
     const peer = { eth: { send: td.func() } } as any
     await service.handle({ name: 'GetReceipts', data: [new BN(1), [blockHash]] }, 'eth', peer)
     td.verify(peer.eth.send('Receipts', { reqId: new BN(1), receipts }))

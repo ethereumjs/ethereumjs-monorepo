@@ -83,7 +83,9 @@ export class Chain {
   public chainDB: LevelUp
   public blockchain: Blockchain
   public opened: boolean
-  public lastFinalizedBlock: Block | undefined
+  public terminalPoWBlock: Block | undefined
+  public transitionPoSBlock: Block | undefined
+  public lastFinalizedBlockHash: Buffer | undefined
 
   private _headers: ChainHeaders = {
     latest: null,
@@ -181,6 +183,7 @@ export class Chain {
     }
 
     await this.blockchain.db.open()
+    await this.blockchain.initPromise
     this.opened = true
     await this.update()
   }
@@ -264,18 +267,17 @@ export class Chain {
   /**
    * Insert new blocks into blockchain
    * @param blocks list of blocks to add
-   * @param mergeIncludes skip adding blocks after merge
+   * @param fromEngine pass true to process post-merge blocks, otherwise they will be skipped
    * @returns number of blocks added
    */
-  async putBlocks(blocks: Block[], mergeIncludes = false): Promise<number> {
+  async putBlocks(blocks: Block[], fromEngine = false): Promise<number> {
     if (blocks.length === 0) {
       return 0
     }
     await this.open()
-    await this.blockchain.initPromise
     let numAdded = 0
     for (const [i, b] of blocks.entries()) {
-      if (!mergeIncludes && this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
+      if (!fromEngine && this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
         if (i > 0) {
           // emitOnLast below won't be reached, so run an update here
           await this.update(true)
@@ -323,7 +325,6 @@ export class Chain {
       return 0
     }
     await this.open()
-    await this.blockchain.initPromise
     let numAdded = 0
     for (const [i, h] of headers.entries()) {
       if (!mergeIncludes && this.config.chainCommon.gteHardfork(Hardfork.Merge)) {

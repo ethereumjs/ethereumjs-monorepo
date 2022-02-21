@@ -600,11 +600,15 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.stack.push(runState.eei.getBlockNumber())
     },
   ],
-  // 0x44: DIFFICULTY
+  // 0x44: DIFFICULTY (EIP-4399: supplanted as RANDOM)
   [
     0x44,
-    function (runState) {
-      runState.stack.push(runState.eei.getBlockDifficulty())
+    function (runState, common) {
+      if (common.isActivatedEIP(4399)) {
+        runState.stack.push(runState.eei.getBlockRandom())
+      } else {
+        runState.stack.push(runState.eei.getBlockDifficulty())
+      }
     },
   ],
   // 0x45: GASLIMIT

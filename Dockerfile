@@ -6,7 +6,7 @@ ARG VERSION=latest
 ENV VERSION=$VERSION
 RUN npm install @ethereumjs/client@$VERSION
 
-FROM node:14-alpine
+FROM node:16-alpine
 WORKDIR /usr/app
 COPY --from=build /usr/app .
 

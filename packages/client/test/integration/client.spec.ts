@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Config } from '../../lib/config'
+import { Config, SyncMode } from '../../lib/config'
 import EthereumClient from '../../lib/client'
 import { Event } from '../../lib/types'
 import MockServer from './mocks/mockserver'
@@ -7,7 +7,7 @@ import MockServer from './mocks/mockserver'
 tape('[Integration:EthereumClient]', (t) => {
   const serverConfig = new Config()
   const servers = [new MockServer({ config: serverConfig }) as any]
-  const config = new Config({ servers, syncmode: 'full', lightserv: false })
+  const config = new Config({ servers, syncmode: SyncMode.Full, lightserv: false })
 
   // attach server to centralized event bus
   ;(config.servers[0].config as any).events = config.events

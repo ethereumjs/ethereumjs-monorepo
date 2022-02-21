@@ -1,7 +1,9 @@
-import { Config } from '../../lib/config'
+import { Config, SyncMode } from '../../lib/config'
 import { FullEthereumService, LightEthereumService } from '../../lib/service'
 import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
+import { VMExecution } from '../../lib/execution'
+
 import Blockchain from '@ethereumjs/blockchain'
 import Common from '@ethereumjs/common'
 
@@ -9,7 +11,7 @@ interface SetupOptions {
   location?: string
   height?: number
   interval?: number
-  syncmode?: string
+  syncmode?: SyncMode
   minPeers?: number
   common?: Common
 }
@@ -47,15 +49,17 @@ export async function setup(
   if (syncmode === 'light') {
     service = new LightEthereumService(serviceOpts)
   } else {
+    const execution = new VMExecution({
+      ...serviceOpts,
+      chain: chain,
+    })
     service = new FullEthereumService({
       ...serviceOpts,
       lightserv: true,
+      execution,
     })
   }
   await service.open()
-  if ('execution' in service.synchronizer) {
-    service.synchronizer.execution.syncing = false
-  }
   await service.start()
   await server.start()
 

@@ -1,10 +1,11 @@
 import { bufferToHex } from 'ethereumjs-util'
 import { version as packageVersion } from '../package.json'
 import { MultiaddrLike } from './types'
-import { Config } from './config'
-import { EthereumService, FullEthereumService, LightEthereumService } from './service'
+import { Config, SyncMode } from './config'
+import { FullEthereumService, LightEthereumService } from './service'
 import { Event } from './types'
-import { FullSynchronizer } from './sync'
+import { VMExecution } from './execution'
+import { Chain } from './blockchain'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
 
@@ -54,8 +55,9 @@ export interface EthereumClientOptions {
  */
 export default class EthereumClient {
   public config: Config
-
+  public chain: Chain
   public services: (FullEthereumService | LightEthereumService)[]
+  public execution: VMExecution | undefined
 
   public opened: boolean
   public started: boolean
@@ -65,20 +67,35 @@ export default class EthereumClient {
    */
   constructor(options: EthereumClientOptions) {
     this.config = options.config
+    this.chain = new Chain(options)
 
-    this.services = [
-      this.config.syncmode === 'full'
-        ? new FullEthereumService({
-            config: this.config,
-            chainDB: options.chainDB,
-            stateDB: options.stateDB,
-            metaDB: options.metaDB,
-          })
-        : new LightEthereumService({
-            config: this.config,
-            chainDB: options.chainDB,
-          }),
-    ]
+    if (this.config.syncmode === SyncMode.Full) {
+      this.execution = new VMExecution({
+        config: options.config,
+        stateDB: options.stateDB,
+        metaDB: options.metaDB,
+        chain: this.chain,
+      })
+      this.services = [
+        new FullEthereumService({
+          config: this.config,
+          chainDB: options.chainDB,
+          stateDB: options.stateDB,
+          metaDB: options.metaDB,
+          chain: this.chain,
+          execution: this.execution,
+        }),
+      ]
+    } else {
+      this.services = [
+        new LightEthereumService({
+          config: this.config,
+          chainDB: options.chainDB,
+          chain: this.chain,
+        }),
+      ]
+    }
+
     this.opened = false
     this.started = false
   }
@@ -106,6 +123,7 @@ export default class EthereumClient {
       this.config.logger.info(`Synchronized blockchain at height ${height}`)
     })
 
+    await this.execution?.open()
     await Promise.all(this.services.map((s) => s.open()))
 
     this.opened = true
@@ -133,6 +151,7 @@ export default class EthereumClient {
     if (!this.started) {
       return false
     }
+    await this.execution?.stop()
     await Promise.all(this.services.map((s) => s.stop()))
     await Promise.all(this.config.servers.map((s) => s.stop()))
     this.started = false
@@ -166,10 +185,8 @@ export default class EthereumClient {
    */
   async executeBlocks(first: number, last: number, txHashes: string[]) {
     this.config.logger.info('Preparing for block execution (debug mode, no services started)...')
-
-    const service = this.services.find((s) => s.name === 'eth') as EthereumService
-    const synchronizer = service.synchronizer as FullSynchronizer
-    const vm = synchronizer.execution.vm.copy()
+    if (!this.execution) throw new Error('executeBlocks requires execution')
+    const vm = this.execution.vm.copy()
 
     for (let blockNumber = first; blockNumber <= last; blockNumber++) {
       const block = await vm.blockchain.getBlock(blockNumber)
