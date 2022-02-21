@@ -1,4 +1,4 @@
-import { ecdsaSign, ecdsaRecover, publicKeyConvert } from 'ethereum-cryptography/secp256k1'
+import { signSync, recoverPublicKey } from 'ethereum-cryptography/secp256k1'
 import { BN } from './externals'
 import { toBuffer, setLengthLeft, bufferToHex, bufferToInt } from './bytes'
 import { keccak } from './hash'
@@ -23,7 +23,7 @@ export interface ECDSASignatureBuffer {
 export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: number): ECDSASignature
 export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: BNLike): ECDSASignatureBuffer
 export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: any): any {
-  const { signature, recid: recovery } = ecdsaSign(msgHash, privateKey)
+  const [signature, recovery] = signSync(msgHash, privateKey, { recovered: true, der: false })
 
   const r = Buffer.from(signature.slice(0, 32))
   const s = Buffer.from(signature.slice(32, 64))
@@ -35,6 +35,7 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: any): any {
         'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative input type)'
       )
     }
+    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
     const v = chainId ? recovery + (chainId * 2 + 35) : recovery + 27
     return { r, s, v }
   }
@@ -78,8 +79,9 @@ export const ecrecover = function (
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
   }
-  const senderPubKey = ecdsaRecover(signature, recovery.toNumber(), msgHash)
-  return Buffer.from(publicKeyConvert(senderPubKey, false).slice(1))
+
+  const senderPubKey = recoverPublicKey(msgHash, signature, recovery.toNumber())
+  return Buffer.from(senderPubKey.slice(1))
 }
 
 /**
