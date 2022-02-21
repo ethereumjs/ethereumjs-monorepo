@@ -94,6 +94,10 @@ export class ExtensionNode {
     this._nibbles = k
   }
 
+  get keyLength() {
+    return this._nibbles.length
+  }
+
   get value(): Buffer {
     return this._value
   }
@@ -144,6 +148,10 @@ export class LeafNode {
     this._nibbles = k
   }
 
+  get keyLength() {
+    return this._nibbles.length
+  }
+
   get value(): Buffer {
     return this._value
   }
@@ -191,6 +199,6 @@ export function decodeNode(raw: Buffer): TrieNode {
   return decodeRawNode(des)
 }
 
-export function isRawNode(n: any): boolean {
+export function isRawNode(n: Buffer | Buffer[]): n is Buffer[] {
   return Array.isArray(n) && !Buffer.isBuffer(n)
 }
