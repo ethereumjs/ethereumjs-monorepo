@@ -144,3 +144,15 @@ export function toType<T extends TypeOutput>(
     return `0x${output.toString('hex')}` as TypeOutputReturnType[T]
   }
 }
+
+export const bnToBigInt = (bn: BN) => {
+  return BigInt(new BN(bn).toString(10))
+}
+
+export const bigIntToBN = (num: bigint) => {
+  return new BN(num.toString(10))
+}
+
+export const bigIntToHex = (num: bigint) => {
+  return '0x' + num.toString(16)
+}

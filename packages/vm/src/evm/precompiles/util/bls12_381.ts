@@ -1,10 +1,9 @@
-import { padToEven, BN } from 'ethereumjs-util'
+import { padToEven, bufferToBigInt } from 'ethereumjs-util'
 import { VmError, ERROR } from '../../../exceptions'
 
 // base field modulus as described in the EIP
-const fieldModulus = new BN(
-  '1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab',
-  16
+const fieldModulus = BigInt(
+  '0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab'
 )
 
 // convert an input Buffer to a mcl G1 point
@@ -159,7 +158,7 @@ function BLS12_381_ToFrPoint(input: Buffer, mcl: any): any {
 
 function BLS12_381_ToFpPoint(fpCoordinate: Buffer, mcl: any): any {
   // check if point is in field
-  if (new BN(fpCoordinate).gte(fieldModulus)) {
+  if (bufferToBigInt(fpCoordinate) >= fieldModulus) {
     throw new VmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
   }
 
@@ -175,10 +174,10 @@ function BLS12_381_ToFpPoint(fpCoordinate: Buffer, mcl: any): any {
 
 function BLS12_381_ToFp2Point(fpXCoordinate: Buffer, fpYCoordinate: Buffer, mcl: any): any {
   // check if the coordinates are in the field
-  if (new BN(fpXCoordinate).gte(fieldModulus)) {
+  if (bufferToBigInt(fpXCoordinate) >= fieldModulus) {
     throw new VmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
   }
-  if (new BN(fpYCoordinate).gte(fieldModulus)) {
+  if (bufferToBigInt(fpYCoordinate) >= fieldModulus) {
     throw new VmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
   }
 
