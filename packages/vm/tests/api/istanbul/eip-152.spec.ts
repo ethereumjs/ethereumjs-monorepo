@@ -1,5 +1,4 @@
 import tape from 'tape'
-import { BN } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import { default as blake2f, F } from '../../../src/evm/precompiles/09-blake2f'
@@ -93,7 +92,7 @@ tape('Istanbul: EIP-152', (t) => {
       st.comment(testCase.name)
       const res = blake2f({
         data: Buffer.from(testCase.input, 'hex'),
-        gasLimit: new BN(20),
+        gasLimit: BigInt(20),
         _common: common,
         _VM: vm,
       })
@@ -104,7 +103,7 @@ tape('Istanbul: EIP-152', (t) => {
       st.comment(testCase.name)
       const res = blake2f({
         data: Buffer.from(testCase.input, 'hex'),
-        gasLimit: new BN(10000000),
+        gasLimit: BigInt(10000000),
         _common: common,
         _VM: vm,
       })

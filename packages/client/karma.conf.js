@@ -13,6 +13,9 @@ module.exports = function (config) {
     karmaTypescriptConfig: {
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
+        acornOptions: {
+          ecmaVersion: 11
+        },
         resolve: {
           alias: {
             // Hotfix for `multiformats` client browser build error in Node 16, #1346, 2021-07-12
