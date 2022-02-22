@@ -16,13 +16,19 @@ import type EthereumClient from '../../lib/client'
 import type { TypedTransaction } from '@ethereumjs/tx'
 const request = require('supertest')
 const level = require('level-mem')
+import { IncomingMessage } from 'connect'
 
 const config: any = {}
 config.logger = getLogger(config)
+import { createRPCServerListener } from '../../lib/util'
 
-export function startRPC(methods: any, port: number = 3000) {
+export function startRPC(
+  methods: any,
+  port: number = 3000,
+  withEngineMiddleware?: { jwtSecret: Buffer; unlessFn?: (req: IncomingMessage) => boolean }
+) {
   const server = new RPCServer(methods)
-  const httpServer = server.http()
+  const httpServer = createRPCServerListener({ server, withEngineMiddleware })
   httpServer.listen(port)
   return httpServer
 }
