@@ -2,13 +2,10 @@ import { Server as RPCServer } from 'jayson/promise'
 import { readFileSync, writeFileSync } from 'fs-extra'
 import { RPCManager } from '../lib/rpc'
 import EthereumClient from '../lib/client'
-import { inspectParams } from '../lib/util'
+import { inspectParams, createRPCServerListener } from '../lib/util'
 import * as modules from '../lib/rpc/modules'
 import { Config } from '../lib/config'
-import { json as jsonParser } from 'body-parser'
-import { decode, TAlgorithm } from 'jwt-simple'
-import Connect, { Server, IncomingMessage } from 'connect'
-const algorithm: TAlgorithm = 'HS256'
+import { IncomingMessage } from 'connect'
 
 type RPCArgs = {
   rpc: boolean
@@ -23,40 +20,6 @@ type RPCArgs = {
   rpcDebug: boolean
   helprpc: boolean
   'jwt-secret'?: string
-}
-
-function createRPCServerListener({
-  server,
-  withEngineMiddleware,
-}: {
-  server: RPCServer
-  withEngineMiddleware?: { jwtSecret: Buffer; unlessFn?: (req: IncomingMessage) => boolean }
-}): Server {
-  const app = Connect()
-  app.use(jsonParser())
-  if (withEngineMiddleware) {
-    const { jwtSecret, unlessFn } = withEngineMiddleware
-    app.use(function (req, res, next) {
-      try {
-        if (unlessFn) {
-          if (unlessFn(req)) return next()
-        }
-        const header = (req.headers['Authorization'] ?? req.headers['authorization']) as string
-        const token = header.split(' ')[1].trim()
-        const claims = decode(token, jwtSecret as never as string, false, algorithm)
-        if (Math.abs(new Date().getTime() - claims.iat * 1000 ?? 0) > 5000) {
-          throw Error('Unauthorized: Stale Token')
-        }
-
-        return next()
-      } catch (e) {
-        next(e)
-      }
-    })
-  }
-
-  app.use(server.middleware())
-  return app
 }
 
 /**

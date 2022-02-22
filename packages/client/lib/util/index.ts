@@ -6,6 +6,7 @@ import { inspect } from 'util'
 import { version as packageVersion } from '../../package.json'
 
 export * from './parse'
+export * from './rpc'
 
 export function short(buffer: Buffer): string {
   return buffer.toString('hex').slice(0, 8) + '...'
