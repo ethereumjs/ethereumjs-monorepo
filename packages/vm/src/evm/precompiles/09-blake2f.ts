@@ -1,4 +1,3 @@
-import { BN } from 'ethereumjs-util'
 import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
 import { VmError, ERROR } from '../../exceptions'
@@ -182,9 +181,9 @@ export default function (opts: PrecompileInput): ExecResult {
   // final
   const f = lastByte === 1
 
-  const gasUsed = new BN(opts._common.param('gasPrices', 'blake2Round'))
-  gasUsed.imul(new BN(rounds))
-  if (opts.gasLimit.lt(gasUsed)) {
+  let gasUsed = BigInt(opts._common.param('gasPrices', 'blake2Round'))
+  gasUsed *= BigInt(rounds)
+  if (opts.gasLimit < gasUsed) {
     return OOGResult(opts.gasLimit)
   }
 

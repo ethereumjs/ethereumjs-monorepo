@@ -359,11 +359,13 @@ export class Engine {
             await blockBuilder.addTransaction(txs[index])
           } catch (error: any) {
             if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
-              if (blockBuilder.gasUsed.gt(gasLimit.subn(21000))) {
+              if (blockBuilder.gasUsed > BigInt(gasLimit.subn(21000).toString(10))) {
                 // If block has less than 21000 gas remaining, consider it full
                 blockFull = true
                 this.config.logger.info(
-                  `Engine: Assembled block full (gasLeft: ${gasLimit.sub(blockBuilder.gasUsed)})`
+                  // eslint-disable-next-line prettier/prettier
+                  `Engine: Assembled block full (gasLeft: ${BigInt(`0x ${gasLimit.toString('hex')}`) - blockBuilder.gasUsed
+                  })`
                 )
               }
             } else {
