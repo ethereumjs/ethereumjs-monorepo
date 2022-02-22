@@ -25,11 +25,11 @@ tape('EIP 3541 tests', (t) => {
 
     const result = await vm.runCode({
       code: Buffer.from('5F', 'hex'),
-      gasLimit: 10n,
+      gasLimit: BigInt(10),
     })
 
     st.ok(stack!.length == 1)
-    st.ok(stack![0] === 0n)
+    st.ok(stack![0] === BigInt(0))
     st.ok(result.gasUsed === BigInt(common.param('gasPrices', 'push0')))
     st.end()
   })
@@ -46,12 +46,12 @@ tape('EIP 3541 tests', (t) => {
 
     const result = await vm.runCode({
       code: Buffer.from('5F'.repeat(depth), 'hex'),
-      gasLimit: 10000n,
+      gasLimit: BigInt(10000),
     })
 
     st.ok(stack.length == depth)
     stack.forEach((elem: bigint) => {
-      if (!(elem === 0n)) {
+      if (!(elem === BigInt(0))) {
         st.fail('stack element is not 0')
       }
     })
@@ -66,7 +66,7 @@ tape('EIP 3541 tests', (t) => {
 
     const result = await vm.runCode({
       code: Buffer.from('5F'.repeat(depth), 'hex'),
-      gasLimit: 10000n,
+      gasLimit: BigInt(10000),
     })
 
     st.ok(result.exceptionError?.error === ERROR.STACK_OVERFLOW)
@@ -78,7 +78,7 @@ tape('EIP 3541 tests', (t) => {
 
     const result = await vm.runCode({
       code: Buffer.from('5F', 'hex'),
-      gasLimit: 10000n,
+      gasLimit: BigInt(10000),
     })
 
     st.ok(result.exceptionError!.error === ERROR.INVALID_OPCODE)

@@ -308,7 +308,7 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
 async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   const bloom = new Bloom()
   // the total amount of gas used processing these transactions
-  let gasUsed = 0n
+  let gasUsed = BigInt(0)
   const receiptTrie = new Trie()
   const receipts = []
   const txResults = []
@@ -410,16 +410,16 @@ function calculateOmmerReward(
   minerReward: bigint
 ): bigint {
   const heightDiff = blockNumber - ommerBlockNumber
-  let reward = ((8n - heightDiff) * minerReward) / 8n
-  if (reward < 0n) {
-    reward = 0n
+  let reward = ((BigInt(8) - heightDiff) * minerReward) / BigInt(8)
+  if (reward < BigInt(0)) {
+    reward = BigInt(0)
   }
   return reward
 }
 
 export function calculateMinerReward(minerReward: bigint, ommersNum: number): bigint {
   // calculate nibling reward
-  const niblingReward = minerReward / 32n
+  const niblingReward = minerReward / BigInt(32)
   const totalNiblingReward = niblingReward * BigInt(ommersNum)
   const reward = minerReward + totalNiblingReward
   return reward

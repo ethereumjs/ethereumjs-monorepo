@@ -21,7 +21,11 @@ tape('Precompiles: ECPAIRING', (t) => {
       _VM: vm,
     })
 
-    st.deepEqual(result.gasUsed, 260000n, 'should use petersburg gas costs (k ^= 2 pairings)')
+    st.deepEqual(
+      result.gasUsed,
+      BigInt(260000),
+      'should use petersburg gas costs (k ^= 2 pairings)'
+    )
     st.end()
   })
 })

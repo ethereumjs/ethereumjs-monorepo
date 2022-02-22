@@ -29,11 +29,11 @@ tape('EIP-2537 BLS tests', (t) => {
         caller: Address.zero(),
         gasLimit: BigInt(0xffffffffff),
         to,
-        value: 0n,
+        value: BigInt(0),
         data: Buffer.alloc(0),
       })
 
-      if (!(result.execResult.gasUsed === 0n)) {
+      if (!(result.execResult.gasUsed === BigInt(0))) {
         st.fail('BLS precompiles should not use any gas if EIP not activated')
       }
 
@@ -60,7 +60,7 @@ tape('EIP-2537 BLS tests', (t) => {
         caller: Address.zero(),
         gasLimit: BigInt(0xffffffffff),
         to,
-        value: 0n,
+        value: BigInt(0),
         data: Buffer.alloc(0),
       })
 
@@ -101,7 +101,7 @@ tape('EIP-2537 BLS tests', (t) => {
 
     const result = await BLS12G2MultiExp({
       data: Buffer.from(testVector, 'hex'),
-      gasLimit: 5000000n,
+      gasLimit: BigInt(5000000),
       _common: common,
       _VM: vm,
     })

@@ -74,8 +74,8 @@ export default class Interpreter {
       programCounter: 0,
       opCode: 0xfe, // INVALID opcode
       memory: new Memory(),
-      memoryWordCount: 0n,
-      highestMemCost: 0n,
+      memoryWordCount: BigInt(0),
+      highestMemCost: BigInt(0),
       stack: new Stack(),
       returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
       code: Buffer.alloc(0),

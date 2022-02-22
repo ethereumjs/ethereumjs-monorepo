@@ -160,7 +160,7 @@ tape('Ensure that precompile activation creates non-empty accounts', async (t) =
     caller: caller, // call address
     gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
     to: contractAddress, // call to the contract address,
-    value: 1n,
+    value: BigInt(1),
   }
 
   const resultNotActivated = await vmNotActivated.runCall(runCallArgs)
@@ -219,8 +219,8 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
 
   const result = await vm.runCall(runCallArgs)
 
-  t.equal(result.gasUsed, 5812n, 'gas used correct')
-  t.equal(result.execResult.gasRefund!, 4200n, 'gas refund correct')
+  t.equal(result.gasUsed, BigInt(5812), 'gas used correct')
+  t.equal(result.execResult.gasRefund!, BigInt(4200), 'gas refund correct')
 
   t.end()
 })
@@ -246,8 +246,8 @@ tape('ensure correct gas for pre-constantinople sstore', async (t) => {
 
   const result = await vm.runCall(runCallArgs)
 
-  t.equal(result.gasUsed, 20006n, 'gas used correct')
-  t.equal(result.execResult.gasRefund!, 0n, 'gas refund correct')
+  t.equal(result.gasUsed, BigInt(20006), 'gas used correct')
+  t.equal(result.execResult.gasRefund!, BigInt(0), 'gas refund correct')
 
   t.end()
 })
@@ -275,8 +275,8 @@ tape('ensure correct gas for calling non-existent accounts in homestead', async 
 
   // 7x push + gas + sub + call + callNewAccount
   // 7*3 + 2 + 3 + 40 + 25000 = 25066
-  t.equal(result.gasUsed, 25066n, 'gas used correct')
-  t.equal(result.execResult.gasRefund!, 0n, 'gas refund correct')
+  t.equal(result.gasUsed, BigInt(25066), 'gas used correct')
+  t.equal(result.execResult.gasRefund!, BigInt(0), 'gas refund correct')
 
   t.end()
 })
@@ -300,13 +300,13 @@ tape(
     const runCallArgs = {
       caller: caller, // call address
       to: address,
-      gasLimit: 200n,
+      gasLimit: BigInt(200),
     }
 
     const result = await vm.runCall(runCallArgs)
 
     t.ok(runCallArgs.gasLimit === result.gasUsed, 'gas used correct')
-    t.equal(result.execResult.gasRefund!, 0n, 'gas refund correct')
+    t.equal(result.execResult.gasRefund!, BigInt(0), 'gas refund correct')
     t.ok(result.execResult.exceptionError!.error == ERROR.OUT_OF_GAS, 'call went out of gas')
 
     t.end()
@@ -336,9 +336,9 @@ tape('ensure selfdestruct pays for creating new accounts', async (t) => {
 
   const result = await vm.runCall(runCallArgs)
   // gas: 5000 (selfdestruct) + 25000 (call new account)  + push (1) = 30003
-  t.equal(result.gasUsed, 30003n, 'gas used correct')
+  t.equal(result.gasUsed, BigInt(30003), 'gas used correct')
   // selfdestruct refund
-  t.equal(result.execResult.gasRefund!, 24000n, 'gas refund correct')
+  t.equal(result.execResult.gasRefund!, BigInt(24000), 'gas refund correct')
 
   t.end()
 })
@@ -484,9 +484,9 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
   // setup the call arguments
   const runCallArgs = {
     caller: caller, // call address
-    gasLimit: 150000n,
+    gasLimit: BigInt(150000),
     data: Buffer.from(code, 'hex'),
-    gasPrice: 70000000000n,
+    gasPrice: BigInt(70000000000),
   }
 
   const result = await vm.runCall(runCallArgs)

@@ -339,7 +339,7 @@ export function bufArrToArr(arr: Buffer | NestedBufferArray): Uint8Array | Neste
 export function bufferToBigInt(buf: Buffer) {
   const hex = bufferToHex(buf)
   if (hex === '0x') {
-    return 0n
+    return BigInt(0)
   }
   return BigInt(hex)
 }

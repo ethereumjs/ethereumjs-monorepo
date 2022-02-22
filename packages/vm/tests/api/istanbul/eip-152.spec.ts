@@ -92,7 +92,7 @@ tape('Istanbul: EIP-152', (t) => {
       st.comment(testCase.name)
       const res = blake2f({
         data: Buffer.from(testCase.input, 'hex'),
-        gasLimit: 20n,
+        gasLimit: BigInt(20),
         _common: common,
         _VM: vm,
       })
@@ -103,7 +103,7 @@ tape('Istanbul: EIP-152', (t) => {
       st.comment(testCase.name)
       const res = blake2f({
         data: Buffer.from(testCase.input, 'hex'),
-        gasLimit: 10000000n,
+        gasLimit: BigInt(10000000),
         _common: common,
         _VM: vm,
       })

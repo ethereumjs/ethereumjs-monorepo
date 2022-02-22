@@ -448,12 +448,12 @@ tape('bufArrToArr', function (st) {
 
 tape('bufferToBigInt', (st) => {
   const buf = toBuffer('0x123')
-  st.equal(0x123n, bufferToBigInt(buf))
+  st.equal(BigInt(0x123), bufferToBigInt(buf))
   st.end()
 })
 
 tape('bigIntToBuffer', (st) => {
-  const num = 0x123n
+  const num = BigInt(0x123)
   st.deepEqual(toBuffer('0x123'), bigIntToBuffer(num))
   st.end()
 })

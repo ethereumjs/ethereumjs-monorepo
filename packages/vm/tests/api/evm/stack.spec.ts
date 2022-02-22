@@ -28,30 +28,30 @@ tape('Stack', (t) => {
 
   t.test('should push item', (st) => {
     const s = new Stack()
-    s.push(5n)
-    st.equal(s.pop(), 5n)
+    s.push(BigInt(5))
+    st.equal(s.pop(), BigInt(5))
     st.end()
   })
 
   t.test('popN should return array for n = 1', (st) => {
     const s = new Stack()
-    s.push(5n)
+    s.push(BigInt(5))
     st.deepEqual(s.popN(1), [5n])
     st.end()
   })
 
   t.test('popN should fail on underflow', (st) => {
     const s = new Stack()
-    s.push(5n)
+    s.push(BigInt(5))
     st.throws(() => s.popN(2))
     st.end()
   })
 
   t.test('popN should return in correct order', (st) => {
     const s = new Stack()
-    s.push(5n)
-    s.push(7n)
-    st.deepEqual(s.popN(2), [7n, 5n])
+    s.push(BigInt(5))
+    s.push(BigInt(7))
+    st.deepEqual(s.popN(2), [7n, BigInt(5)])
     st.end()
   })
 
@@ -60,7 +60,7 @@ tape('Stack', (t) => {
     for (let i = 0; i < 1024; i++) {
       s.push(BigInt(i))
     }
-    st.throws(() => s.push(1024n))
+    st.throws(() => s.push(BigInt(1024)))
     st.end()
   })
 
@@ -69,57 +69,57 @@ tape('Stack', (t) => {
     for (let i = 0; i < 1023; i++) {
       s.push(BigInt(i))
     }
-    st.throws(() => s.push(1023n))
+    st.throws(() => s.push(BigInt(1023)))
     st.end()
   })
 
   t.test('should swap top with itself', (st) => {
     const s = new Stack()
-    s.push(5n)
+    s.push(BigInt(5))
     s.swap(0)
-    st.deepEqual(s.pop(), 5n)
+    st.deepEqual(s.pop(), BigInt(5))
     st.end()
   })
 
   t.test('swap should throw on underflow', (st) => {
     const s = new Stack()
-    s.push(5n)
+    s.push(BigInt(5))
     st.throws(() => s.swap(1))
     st.end()
   })
 
   t.test('should swap', (st) => {
     const s = new Stack()
-    s.push(5n)
-    s.push(7n)
+    s.push(BigInt(5))
+    s.push(BigInt(7))
     s.swap(1)
-    st.deepEqual(s.pop(), 5n)
+    st.deepEqual(s.pop(), BigInt(5))
     st.end()
   })
 
   t.test('dup should throw on underflow', (st) => {
     const s = new Stack()
     st.throws(() => s.dup(1))
-    s.push(5n)
+    s.push(BigInt(5))
     st.throws(() => s.dup(2))
     st.end()
   })
 
   t.test('should dup', (st) => {
     const s = new Stack()
-    s.push(5n)
-    s.push(7n)
+    s.push(BigInt(5))
+    s.push(BigInt(7))
     s.dup(2)
-    st.deepEqual(s.pop(), 5n)
+    st.deepEqual(s.pop(), BigInt(5))
     st.end()
   })
 
   t.test('should validate value overflow', (st) => {
     const s = new Stack()
-    const max = 2n ** 256n - 1n
+    const max = BigInt(2) ** BigInt(256) - BigInt(1)
     s.push(max)
     st.deepEqual(s.pop(), max)
-    st.throws(() => s.push(max + 1n))
+    st.throws(() => s.push(max + BigInt(1)))
     st.end()
   })
 
@@ -154,7 +154,7 @@ tape('Stack', (t) => {
       caller: caller,
       gasLimit: BigInt(0xffffffffff),
       to: addr,
-      value: 1n,
+      value: BigInt(1),
     }
     try {
       const res = await vm.runCall(runCallArgs)

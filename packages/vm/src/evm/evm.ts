@@ -135,7 +135,7 @@ export default class EVM {
     this._state = this._vm.stateManager
     this._tx = txContext
     this._block = block
-    this._refund = 0n
+    this._refund = BigInt(0)
   }
 
   /**
@@ -266,9 +266,9 @@ export default class EVM {
     }
     if (exit) {
       return {
-        gasUsed: 0n,
+        gasUsed: BigInt(0),
         execResult: {
-          gasUsed: 0n,
+          gasUsed: BigInt(0),
           exceptionError: errorMessage, // Only defined if addToBalance failed
           returnValue: Buffer.alloc(0),
         },
@@ -365,10 +365,10 @@ export default class EVM {
     }
     if (exit) {
       return {
-        gasUsed: 0n,
+        gasUsed: BigInt(0),
         createdAddress: message.to,
         execResult: {
-          gasUsed: 0n,
+          gasUsed: BigInt(0),
           exceptionError: errorMessage, // only defined if addToBalance failed
           returnValue: Buffer.alloc(0),
         },
@@ -382,7 +382,7 @@ export default class EVM {
 
     // fee for size of the return value
     let totalGas = result.gasUsed
-    let returnFee = 0n
+    let returnFee = BigInt(0)
     if (!result.exceptionError) {
       returnFee =
         BigInt(result.returnValue.length) *
@@ -470,7 +470,7 @@ export default class EVM {
       address: message.to || Address.zero(),
       caller: message.caller || Address.zero(),
       callData: message.data || Buffer.from([0]),
-      callValue: message.value || 0n,
+      callValue: message.value || BigInt(0),
       code: message.code as Buffer,
       isStatic: message.isStatic || false,
       depth: message.depth || 0,

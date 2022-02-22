@@ -76,7 +76,7 @@ export default function runCode(this: VM, opts: RunCodeOpts): Promise<ExecResult
   // Backwards compatibility
   const txContext =
     opts.txContext ??
-    new TxContext(opts.gasPrice ?? 0n, opts.origin ?? opts.caller ?? Address.zero())
+    new TxContext(opts.gasPrice ?? BigInt(0), opts.origin ?? opts.caller ?? Address.zero())
 
   const message =
     opts.message ??

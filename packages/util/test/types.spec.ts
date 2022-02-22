@@ -147,16 +147,16 @@ tape('bnToUnpaddedBuffer', function (t) {
 })
 
 tape('bnToBigInt', (st) => {
-  st.equal(bnToBigInt(new BN(1)), 1n)
+  st.equal(bnToBigInt(new BN(1)), BigInt(1))
   st.end()
 })
 
 tape('bigIntToBN', (st) => {
-  st.ok(bigIntToBN(1n).eq(new BN(1)))
+  st.ok(bigIntToBN(BigInt(1)).eq(new BN(1)))
   st.end()
 })
 
 tape('bigIntToHex', (st) => {
-  st.equal(bigIntToHex(1n), '0x1')
+  st.equal(bigIntToHex(BigInt(1)), '0x1')
   st.end()
 })

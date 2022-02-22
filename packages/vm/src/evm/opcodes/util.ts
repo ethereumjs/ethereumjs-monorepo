@@ -3,7 +3,7 @@ import { keccak256, setLengthRight, setLengthLeft, bigIntToBuffer } from 'ethere
 import { ERROR, VmError } from './../../exceptions'
 import { RunState } from './../interpreter'
 
-const MASK_160 = (1n << 160n) - 1n
+const MASK_160 = (BigInt(1) << BigInt(160)) - BigInt(1)
 
 /**
  * Proxy function for ethereumjs-util's setLengthLeft, except it returns a zero
@@ -66,10 +66,10 @@ export function divCeil(a: bigint, b: bigint): bigint {
   const modulus = mod(a, b)
 
   // Fast case - exact division
-  if (modulus === 0n) return div
+  if (modulus === BigInt(0)) return div
 
   // Round up
-  return div < 0n ? div - 1n : div + 1n
+  return div < BigInt(0) ? div - BigInt(1) : div + BigInt(1)
 }
 
 export function short(buffer: Buffer): string {
@@ -173,7 +173,7 @@ export function maxCallGas(
 ): bigint {
   const isTangerineWhistleOrLater = common.gteHardfork('tangerineWhistle')
   if (isTangerineWhistleOrLater) {
-    const gasAllowed = gasLeft - gasLeft / 64n
+    const gasAllowed = gasLeft - gasLeft / BigInt(64)
     return gasLimit > gasAllowed ? gasAllowed : gasLimit
   } else {
     return gasLimit
@@ -190,10 +190,10 @@ export function maxCallGas(
  */
 export function subMemUsage(runState: RunState, offset: bigint, length: bigint, common: Common) {
   // YP (225): access with zero length will not extend the memory
-  if (length === 0n) return 0n
+  if (length === BigInt(0)) return BigInt(0)
 
-  const newMemoryWordCount = divCeil(offset + length, 32n)
-  if (newMemoryWordCount <= runState.memoryWordCount) return 0n
+  const newMemoryWordCount = divCeil(offset + length, BigInt(32))
+  if (newMemoryWordCount <= runState.memoryWordCount) return BigInt(0)
 
   const words = newMemoryWordCount
   const fee = BigInt(common.param('gasPrices', 'memory'))
@@ -227,7 +227,7 @@ export function writeCallOutput(runState: RunState, outOffset: bigint, outLength
     if (BigInt(returnData.length) < dataLength) {
       dataLength = returnData.length
     }
-    const data = getDataSlice(returnData, 0n, BigInt(dataLength))
+    const data = getDataSlice(returnData, BigInt(0), BigInt(dataLength))
     runState.memory.extend(memOffset, dataLength)
     runState.memory.write(memOffset, dataLength, data)
   }
@@ -269,7 +269,7 @@ export function updateSstoreGas(
 
 export function mod(a: bigint, b: bigint) {
   let r = a % b
-  if (r < 0n) {
+  if (r < BigInt(0)) {
     r = b + r
   }
   return r
@@ -290,15 +290,15 @@ export function abs(a: bigint) {
   return a * -1n
 }
 
-const N = 115792089237316195423570985008687907853269984665640564039457584007913129639936n
+const N = BigInt(115792089237316195423570985008687907853269984665640564039457584007913129639936)
 export function exponentation(bas: bigint, exp: bigint) {
-  let t = 1n
-  while (exp > 0n) {
-    if (exp % 2n != 0n) {
+  let t = BigInt(1)
+  while (exp > BigInt(0)) {
+    if (exp % BigInt(2) != BigInt(0)) {
       t = (t * bas) % N
     }
     bas = (bas * bas) % N
-    exp = exp / 2n
+    exp = exp / BigInt(2)
   }
   return t
 }

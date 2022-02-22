@@ -35,7 +35,10 @@ export interface RunCallOpts {
 export default function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult> {
   const block = opts.block ?? Block.fromBlockData({}, { common: this._common })
 
-  const txContext = new TxContext(opts.gasPrice ?? 0n, opts.origin ?? opts.caller ?? Address.zero())
+  const txContext = new TxContext(
+    opts.gasPrice ?? BigInt(0),
+    opts.origin ?? opts.caller ?? Address.zero()
+  )
 
   const message = new Message({
     caller: opts.caller,

@@ -91,7 +91,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     }
   }
 
-  let currentBlock = 0n
+  let currentBlock = BigInt(0)
   for (const raw of testData.blocks) {
     const paramFork = `expectException${options.forkConfigTestSuite}`
     // Two naming conventions in ethereum/tests to indicate "exception occurs on all HFs" semantics

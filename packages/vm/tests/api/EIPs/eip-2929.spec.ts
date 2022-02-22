@@ -60,7 +60,7 @@ tape('EIP 2929: gas cost tests', (t) => {
     const result = await vm.runTx({ tx })
 
     const totalGasUsed = initialGas - currentGas
-    st.equal(true, totalGasUsed === BigInt(test.totalGasUsed) + 21000n) // Add tx upfront cost.
+    st.equal(true, totalGasUsed === BigInt(test.totalGasUsed) + BigInt(21000)) // Add tx upfront cost.
     return result
   }
 
@@ -157,24 +157,24 @@ tape('EIP 2929: gas cost tests', (t) => {
   t.test('should charge for extcodecopy correctly', async (st) => {
     const test = {
       code: '60006000600060ff3c60006000600060ff3c600060006000303c00',
-      totalGasUsed: 2835n,
+      totalGasUsed: BigInt(2835),
       steps: [
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3n },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3n },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3n },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3n },
-        { expectedOpcode: 'EXTCODECOPY', expectedGasUsed: 2600n },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3n },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3n },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3n },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3n },
-        { expectedOpcode: 'EXTCODECOPY', expectedGasUsed: 100n },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3n },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3n },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3n },
-        { expectedOpcode: 'ADDRESS', expectedGasUsed: 2n },
-        { expectedOpcode: 'EXTCODECOPY', expectedGasUsed: 100n },
-        { expectedOpcode: 'STOP', expectedGasUsed: 0n },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
+        { expectedOpcode: 'EXTCODECOPY', expectedGasUsed: BigInt(2600) },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
+        { expectedOpcode: 'EXTCODECOPY', expectedGasUsed: BigInt(100) },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
+        { expectedOpcode: 'ADDRESS', expectedGasUsed: BigInt(2) },
+        { expectedOpcode: 'EXTCODECOPY', expectedGasUsed: BigInt(100) },
+        { expectedOpcode: 'STOP', expectedGasUsed: BigInt(0) },
       ],
     }
 
@@ -272,18 +272,18 @@ tape('EIP 2929: gas cost tests', (t) => {
     // SLOAD or CALL operations.
 
     // load same storage slot twice (also in inner call)
-    await runCodeTest('60005460003415601357600080808080305AF15B00', 23369n, t)
+    await runCodeTest('60005460003415601357600080808080305AF15B00', BigInt(23369), t)
     // call to contract, load slot 0, revert inner call. load slot 0 in outer call.
-    await runCodeTest('341515600D57600054600080FD5B600080808080305AF160005400', 25374n, t)
+    await runCodeTest('341515600D57600054600080FD5B600080808080305AF160005400', BigInt(25374), t)
 
     // call to address 0xFFFF..FF
     const callFF = '6000808080806000195AF1'
     // call address 0xFF..FF, now call same contract again, call 0xFF..FF again (it is now warm)
-    await runCodeTest(callFF + '60003415601B57600080808080305AF15B00', 23909n, t)
+    await runCodeTest(callFF + '60003415601B57600080808080305AF15B00', BigInt(23909), t)
     // call to contract, call 0xFF..FF, revert, call 0xFF..FF (should be cold)
     await runCodeTest(
       '341515601557' + callFF + '600080FD5B600080808080305AF1' + callFF + '00',
-      26414n,
+      BigInt(26414),
       t
     )
 

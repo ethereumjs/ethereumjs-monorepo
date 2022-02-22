@@ -90,8 +90,8 @@ export default class EEI {
     if (this._evm._vm.DEBUG) {
       debugGas(`${context ? context + ': ' : ''}used ${amount} gas (-> ${this._gasLeft})`)
     }
-    if (this._gasLeft < 0n) {
-      this._gasLeft = 0n
+    if (this._gasLeft < BigInt(0)) {
+      this._gasLeft = BigInt(0)
       trap(ERROR.OUT_OF_GAS)
     }
   }
@@ -118,8 +118,8 @@ export default class EEI {
       debugGas(`${context ? context + ': ' : ''}sub gas refund ${amount} (-> ${this._evm._refund})`)
     }
     this._evm._refund -= amount
-    if (this._evm._refund < 0n) {
-      this._evm._refund = 0n
+    if (this._evm._refund < BigInt(0)) {
+      this._evm._refund = BigInt(0)
       trap(ERROR.REFUND_EXHAUSTED)
     }
   }
@@ -537,7 +537,7 @@ export default class EEI {
       this._env.depth >= this._common.param('vm', 'stackLimit') ||
       (msg.delegatecall !== true && bnToBigInt(this._env.contract.balance) < msg.value)
     ) {
-      return 0n
+      return BigInt(0)
     }
 
     const results = await this._evm.executeMessage(msg)
@@ -596,12 +596,12 @@ export default class EEI {
       this._env.depth >= this._common.param('vm', 'stackLimit') ||
       (msg.delegatecall !== true && bnToBigInt(this._env.contract.balance) < msg.value)
     ) {
-      return 0n
+      return BigInt(0)
     }
 
     // EIP-2681 check
     if (this._env.contract.nonce.gte(MAX_UINT64)) {
-      return 0n
+      return BigInt(0)
     }
     this._env.contract.nonce.iaddn(1)
     await this._state.putAccount(this._env.address, this._env.contract)
@@ -668,9 +668,9 @@ export default class EEI {
     // This preserves the previous logic, but seems to contradict the EEI spec
     // https://github.com/ewasm/design/blob/38eeded28765f3e193e12881ea72a6ab807a3371/eth_interface.md
     if (results.execResult.exceptionError) {
-      return 0n
+      return BigInt(0)
     } else {
-      return 1n
+      return BigInt(1)
     }
   }
 }

@@ -42,7 +42,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
       await vm.stateManager.putAccount(caller, acc)
 
       const res = await vm.runTx({ tx })
-      st.true(res.gasUsed > 0n, `${msg} (${txType.name})`)
+      st.true(res.gasUsed > BigInt(0), `${msg} (${txType.name})`)
     }
   }
 
@@ -68,7 +68,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
     const acc = createAccount()
     await vm.stateManager.putAccount(caller, acc)
 
-    const blockGasUsed = 1000n
+    const blockGasUsed = BigInt(1000)
     const res = await vm.runTx({ tx, blockGasUsed })
     t.ok(
       bufferToBigInt(res.receipt.gasUsed) === blockGasUsed + res.gasUsed,
@@ -89,7 +89,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
 
     const res = await vm.runTx({ tx })
     t.true(
-      res.gasUsed > 0n,
+      res.gasUsed > BigInt(0),
       `mainnet (PoW), istanbul HF, default SM - should run without errors (${TRANSACTION_TYPES[0].name})`
     )
 
@@ -216,7 +216,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
 
     const res = await vm.runTx({ tx, reportAccessList: true })
     t.true(
-      res.gasUsed > 0n,
+      res.gasUsed > BigInt(0),
       `mainnet (PoW), istanbul HF, default SM - should run without errors (${TRANSACTION_TYPES[0].name})`
     )
     t.deepEqual(res.accessList, [])
@@ -451,7 +451,7 @@ tape('runTx() -> API return values', async (t) => {
       await vm.stateManager.putAccount(caller, acc)
 
       const res = await vm.runTx({ tx })
-      t.true(res.execResult.gasUsed === 0n, `execution result -> gasUsed -> 0 (${txType.name})`)
+      t.true(res.execResult.gasUsed === BigInt(0), `execution result -> gasUsed -> 0 (${txType.name})`)
       t.equal(
         res.execResult.exceptionError,
         undefined,
@@ -463,7 +463,7 @@ tape('runTx() -> API return values', async (t) => {
         `execution result -> return value -> empty Buffer (${txType.name})`
       )
       t.true(
-        res.execResult.gasRefund! === 0n,
+        res.execResult.gasRefund! === BigInt(0),
         `execution result -> gasRefund -> 0 (${txType.name})`
       )
     }

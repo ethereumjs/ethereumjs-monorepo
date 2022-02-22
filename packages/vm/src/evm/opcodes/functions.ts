@@ -77,8 +77,8 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const [a, b] = runState.stack.popN(2)
       let r
-      if (b === 0n) {
-        r = 0n
+      if (b === BigInt(0)) {
+        r = BigInt(0)
       } else {
         r = mod(a / b, TWO_POW256_BIGINT)
       }
@@ -91,8 +91,8 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const [a, b] = runState.stack.popN(2)
       let r
-      if (b === 0n) {
-        r = 0n
+      if (b === BigInt(0)) {
+        r = BigInt(0)
       } else {
         r = toTwos(fromTwos(a) / fromTwos(b))
       }
@@ -105,7 +105,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const [a, b] = runState.stack.popN(2)
       let r
-      if (b === 0n) {
+      if (b === BigInt(0)) {
         r = b
       } else {
         r = mod(a, b)
@@ -119,7 +119,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const [a, b] = runState.stack.popN(2)
       let r
-      if (b === 0n) {
+      if (b === BigInt(0)) {
         r = b
       } else {
         r = fromTwos(a) % fromTwos(b)
@@ -133,8 +133,8 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const [a, b, c] = runState.stack.popN(3)
       let r
-      if (c === 0n) {
-        r = 0n
+      if (c === BigInt(0)) {
+        r = BigInt(0)
       } else {
         r = mod(a + b, c)
       }
@@ -147,8 +147,8 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const [a, b, c] = runState.stack.popN(3)
       let r
-      if (c === 0n) {
-        r = 0n
+      if (c === BigInt(0)) {
+        r = BigInt(0)
       } else {
         r = mod(a * b, c)
       }
@@ -160,8 +160,8 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x0a,
     function (runState, common) {
       const [base, exponent] = runState.stack.popN(2)
-      if (exponent === 0n) {
-        runState.stack.push(1n)
+      if (exponent === BigInt(0)) {
+        runState.stack.push(BigInt(1))
         return
       }
       let byteLength = exponent.toString(2).length / 8
@@ -175,7 +175,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const amount = byteLength * gasPrice
       runState.eei.useGas(BigInt(amount), 'EXP opcode')
 
-      if (base === 0n) {
+      if (base === BigInt(0)) {
         runState.stack.push(base)
         return
       }
@@ -189,10 +189,10 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       /* eslint-disable-next-line prefer-const */
       let [k, val] = runState.stack.popN(2)
-      if (k < 31n) {
-        const signBit = k * 8n + 7n
-        const mask = (1n << signBit) - 1n
-        if ((val >> signBit) & 1n) {
+      if (k < BigInt(31)) {
+        const signBit = k * BigInt(8) + BigInt(7)
+        const mask = (BigInt(1) << signBit) - BigInt(1)
+        if ((val >> signBit) & BigInt(1)) {
           val = val | BigInt.asUintN(256, ~mask)
         } else {
           val = val & mask
@@ -207,7 +207,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x10,
     function (runState) {
       const [a, b] = runState.stack.popN(2)
-      const r = a < b ? 1n : 0n
+      const r = a < b ? BigInt(1) : BigInt(0)
       runState.stack.push(r)
     },
   ],
@@ -216,7 +216,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x11,
     function (runState) {
       const [a, b] = runState.stack.popN(2)
-      const r = a > b ? 1n : 0n
+      const r = a > b ? BigInt(1) : BigInt(0)
       runState.stack.push(r)
     },
   ],
@@ -225,7 +225,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x12,
     function (runState) {
       const [a, b] = runState.stack.popN(2)
-      const r = fromTwos(a) < fromTwos(b) ? 1n : 0n
+      const r = fromTwos(a) < fromTwos(b) ? BigInt(1) : BigInt(0)
       runState.stack.push(r)
     },
   ],
@@ -234,7 +234,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x13,
     function (runState) {
       const [a, b] = runState.stack.popN(2)
-      const r = fromTwos(a) > fromTwos(b) ? 1n : 0n
+      const r = fromTwos(a) > fromTwos(b) ? BigInt(1) : BigInt(0)
       runState.stack.push(r)
     },
   ],
@@ -243,7 +243,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x14,
     function (runState) {
       const [a, b] = runState.stack.popN(2)
-      const r = a === b ? 1n : 0n
+      const r = a === b ? BigInt(1) : BigInt(0)
       runState.stack.push(r)
     },
   ],
@@ -252,7 +252,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x15,
     function (runState) {
       const a = runState.stack.pop()
-      const r = a === 0n ? 1n : 0n
+      const r = a === BigInt(0) ? BigInt(1) : BigInt(0)
       runState.stack.push(r)
     },
   ],
@@ -297,12 +297,12 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x1a,
     function (runState) {
       const [pos, word] = runState.stack.popN(2)
-      if (pos > 32n) {
-        runState.stack.push(0n)
+      if (pos > BigInt(32)) {
+        runState.stack.push(BigInt(0))
         return
       }
 
-      const r = (word >> ((31n - pos) * 8n)) & BigInt(0xff)
+      const r = (word >> ((BigInt(31) - pos) * BigInt(8))) & BigInt(0xff)
       runState.stack.push(r)
     },
   ],
@@ -311,8 +311,8 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x1b,
     function (runState) {
       const [a, b] = runState.stack.popN(2)
-      if (a > 256n) {
-        runState.stack.push(0n)
+      if (a > BigInt(256)) {
+        runState.stack.push(BigInt(0))
         return
       }
 
@@ -326,7 +326,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const [a, b] = runState.stack.popN(2)
       if (a > 256) {
-        runState.stack.push(0n)
+        runState.stack.push(BigInt(0))
         return
       }
 
@@ -347,7 +347,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         if (isSigned) {
           r = MAX_INTEGER_BIGINT
         } else {
-          r = 0n
+          r = BigInt(0)
         }
         runState.stack.push(r)
         return
@@ -355,7 +355,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       const c = b >> a
       if (isSigned) {
-        const shiftedOutWidth = 255n - a
+        const shiftedOutWidth = BigInt(255) - a
         const mask = (MAX_INTEGER_BIGINT >> shiftedOutWidth) << shiftedOutWidth
         r = c | mask
       } else {
@@ -371,7 +371,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const [offset, length] = runState.stack.popN(2)
       let data = Buffer.alloc(0)
-      if (!(length === 0n)) {
+      if (!(length === BigInt(0))) {
         data = runState.memory.read(Number(offset), Number(length))
       }
       const r = bufferToBigInt(keccak256(data))
@@ -424,7 +424,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const pos = runState.stack.pop()
       if (pos > runState.eei.getCallDataSize()) {
-        runState.stack.push(0n)
+        runState.stack.push(BigInt(0))
         return
       }
 
@@ -433,7 +433,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       loaded = loaded.length ? loaded : Buffer.from([0])
       let r = bufferToBigInt(loaded)
       if (loaded.length < 32) {
-        r = r << (8n * BigInt(32 - loaded.length))
+        r = r << (BigInt(8) * BigInt(32 - loaded.length))
       }
       runState.stack.push(r)
     },
@@ -452,7 +452,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const [memOffset, dataOffset, dataLength] = runState.stack.popN(3)
 
-      if (!(dataLength === 0n)) {
+      if (!(dataLength === BigInt(0))) {
         const data = getDataSlice(runState.eei.getCallData(), dataOffset, dataLength)
         const memOffsetNum = Number(memOffset)
         const dataLengthNum = Number(dataLength)
@@ -474,7 +474,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const [memOffset, codeOffset, dataLength] = runState.stack.popN(3)
 
-      if (!(dataLength === 0n)) {
+      if (!(dataLength === BigInt(0))) {
         const data = getDataSlice(runState.eei.getCode(), codeOffset, dataLength)
         const memOffsetNum = Number(memOffset)
         const lengthNum = Number(dataLength)
@@ -498,7 +498,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState) {
       const [addressBN, memOffset, codeOffset, dataLength] = runState.stack.popN(4)
 
-      if (!(dataLength === 0n)) {
+      if (!(dataLength === BigInt(0))) {
         const code = await runState.eei.getExternalCode(addressBN)
 
         const data = getDataSlice(code, codeOffset, dataLength)
@@ -517,7 +517,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const address = new Address(addressToBuffer(addressBigInt))
       const empty = await runState.eei.isAccountEmpty(address)
       if (empty) {
-        runState.stack.push(0n)
+        runState.stack.push(BigInt(0))
         return
       }
 
@@ -543,7 +543,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const [memOffset, returnDataOffset, dataLength] = runState.stack.popN(3)
 
-      if (!(dataLength === 0n)) {
+      if (!(dataLength === BigInt(0))) {
         const data = getDataSlice(runState.eei.getReturnData(), returnDataOffset, dataLength)
         const memOffsetNum = Number(memOffset)
         const lengthNum = Number(dataLength)
@@ -568,8 +568,8 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       const diff = runState.eei.getBlockNumber() - number
       // block lookups must be within the past 256 blocks
-      if (diff > 256n || diff <= 0n) {
-        runState.stack.push(0n)
+      if (diff > BigInt(256) || diff <= BigInt(0)) {
+        runState.stack.push(BigInt(0))
         return
       }
 
@@ -680,7 +680,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const key = runState.stack.pop()
       const keyBuf = setLengthLeft(bigIntToBuffer(key), 32)
       const value = await runState.eei.storageLoad(keyBuf)
-      const valueBigInt = value.length ? bufferToBigInt(value) : 0n
+      const valueBigInt = value.length ? bufferToBigInt(value) : BigInt(0)
       runState.stack.push(valueBigInt)
     },
   ],
@@ -693,7 +693,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const keyBuf = setLengthLeft(bigIntToBuffer(key), 32)
       // NOTE: this should be the shortest representation
       let value
-      if (val === 0n) {
+      if (val === BigInt(0)) {
         value = Buffer.from([])
       } else {
         value = bigIntToBuffer(val)
@@ -725,7 +725,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x57,
     function (runState) {
       const [dest, cond] = runState.stack.popN(2)
-      if (!(cond === 0n)) {
+      if (!(cond === BigInt(0))) {
         if (dest > runState.eei.getCodeSize()) {
           trap(ERROR.INVALID_JUMP + ' at ' + describeLocation(runState))
         }
@@ -751,7 +751,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x59,
     function (runState) {
-      runState.stack.push(runState.memoryWordCount * 32n)
+      runState.stack.push(runState.memoryWordCount * BigInt(32))
     },
   ],
   // 0x5a: GAS
@@ -806,7 +806,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x5f,
     function (runState) {
-      runState.stack.push(0n)
+      runState.stack.push(BigInt(0))
     },
   ],
   // 0x60: PUSH
@@ -851,7 +851,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       })
 
       let mem = Buffer.alloc(0)
-      if (!(memLength === 0n)) {
+      if (!(memLength === BigInt(0))) {
         mem = runState.memory.read(Number(memOffset), Number(memLength))
       }
 
@@ -870,7 +870,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.messageGasLimit = undefined
 
       let data = Buffer.alloc(0)
-      if (!(length === 0n)) {
+      if (!(length === BigInt(0))) {
         data = runState.memory.read(Number(offset), Number(length))
       }
 
@@ -892,7 +892,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.messageGasLimit = undefined
 
       let data = Buffer.alloc(0)
-      if (!(length === 0n)) {
+      if (!(length === BigInt(0))) {
         data = runState.memory.read(Number(offset), Number(length))
       }
 
@@ -914,7 +914,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const toAddress = new Address(addressToBuffer(toAddr))
 
       let data = Buffer.alloc(0)
-      if (!(inLength === 0n)) {
+      if (!(inLength === BigInt(0))) {
         data = runState.memory.read(Number(inOffset), Number(inLength))
       }
 
@@ -939,7 +939,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.messageGasLimit = undefined
 
       let data = Buffer.alloc(0)
-      if (!(inLength === 0n)) {
+      if (!(inLength === BigInt(0))) {
         data = runState.memory.read(Number(inOffset), Number(inLength))
       }
 
@@ -959,7 +959,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const toAddress = new Address(addressToBuffer(toAddr))
 
       let data = Buffer.alloc(0)
-      if (!(inLength === 0n)) {
+      if (!(inLength === BigInt(0))) {
         data = runState.memory.read(Number(inOffset), Number(inLength))
       }
 
@@ -976,7 +976,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xfa,
     async function (runState) {
-      const value = 0n
+      const value = BigInt(0)
       const [_currentGasLimit, toAddr, inOffset, inLength, outOffset, outLength] =
         runState.stack.popN(6)
       const toAddress = new Address(addressToBuffer(toAddr))
@@ -985,7 +985,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.messageGasLimit = undefined
 
       let data = Buffer.alloc(0)
-      if (!(inLength === 0n)) {
+      if (!(inLength === BigInt(0))) {
         data = runState.memory.read(Number(inOffset), Number(inLength))
       }
 
@@ -1001,7 +1001,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const [offset, length] = runState.stack.popN(2)
       let returnData = Buffer.alloc(0)
-      if (!(length === 0n)) {
+      if (!(length === BigInt(0))) {
         returnData = runState.memory.read(Number(offset), Number(length))
       }
       runState.eei.finish(returnData)
@@ -1013,7 +1013,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const [offset, length] = runState.stack.popN(2)
       let returnData = Buffer.alloc(0)
-      if (!(length === 0n)) {
+      if (!(length === BigInt(0))) {
         returnData = runState.memory.read(Number(offset), Number(length))
       }
       runState.eei.revert(returnData)

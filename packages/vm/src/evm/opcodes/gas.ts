@@ -38,7 +38,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
     async function (runState, gas, common): Promise<bigint> {
       const [offset, length] = runState.stack.peek(2)
       gas += subMemUsage(runState, offset, length, common)
-      gas += BigInt(common.param('gasPrices', 'sha3Word')) * divCeil(length, 32n)
+      gas += BigInt(common.param('gasPrices', 'sha3Word')) * divCeil(length, BigInt(32))
       return gas
     },
   ],
@@ -61,8 +61,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
       const [memOffset, _dataOffset, dataLength] = runState.stack.peek(3)
 
       gas += subMemUsage(runState, memOffset, dataLength, common)
-      if (!(dataLength === 0n)) {
-        gas += BigInt(common.param('gasPrices', 'copy')) * divCeil(dataLength, 32n)
+      if (!(dataLength === BigInt(0))) {
+        gas += BigInt(common.param('gasPrices', 'copy')) * divCeil(dataLength, BigInt(32))
       }
       return gas
     },
@@ -74,8 +74,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
       const [memOffset, _codeOffset, dataLength] = runState.stack.peek(3)
 
       gas += subMemUsage(runState, memOffset, dataLength, common)
-      if (!(dataLength === 0n)) {
-        gas += BigInt(common.param('gasPrices', 'copy')) * divCeil(dataLength, 32n)
+      if (!(dataLength === BigInt(0))) {
+        gas += BigInt(common.param('gasPrices', 'copy')) * divCeil(dataLength, BigInt(32))
       }
       return gas
     },
@@ -105,8 +105,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
         gas += accessAddressEIP2929(runState, address, common)
       }
 
-      if (!(dataLength === 0n)) {
-        gas += BigInt(common.param('gasPrices', 'copy')) * divCeil(dataLength, 32n)
+      if (!(dataLength === BigInt(0))) {
+        gas += BigInt(common.param('gasPrices', 'copy')) * divCeil(dataLength, BigInt(32))
       }
       return gas
     },
@@ -123,8 +123,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
 
       gas += subMemUsage(runState, memOffset, dataLength, common)
 
-      if (!(dataLength === 0n)) {
-        gas += BigInt(common.param('gasPrices', 'copy')) * divCeil(dataLength, 32n)
+      if (!(dataLength === BigInt(0))) {
+        gas += BigInt(common.param('gasPrices', 'copy')) * divCeil(dataLength, BigInt(32))
       }
       return gas
     },
@@ -146,7 +146,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
     0x51,
     async function (runState, gas, common): Promise<bigint> {
       const pos = runState.stack.peek()[0]
-      gas += subMemUsage(runState, pos, 32n, common)
+      gas += subMemUsage(runState, pos, BigInt(32), common)
       return gas
     },
   ],
@@ -155,7 +155,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
     0x52,
     async function (runState, gas, common): Promise<bigint> {
       const offset = runState.stack.peek()[0]
-      gas += subMemUsage(runState, offset, 32n, common)
+      gas += subMemUsage(runState, offset, BigInt(32), common)
       return gas
     },
   ],
@@ -164,7 +164,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
     0x53,
     async function (runState, gas, common): Promise<bigint> {
       const offset = runState.stack.peek()[0]
-      gas += subMemUsage(runState, offset, 1n, common)
+      gas += subMemUsage(runState, offset, BigInt(1), common)
       return gas
     },
   ],
@@ -193,7 +193,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
       const keyBuf = setLengthLeft(bigIntToBuffer(key), 32)
       // NOTE: this should be the shortest representation
       let value
-      if (val === 0n) {
+      if (val === BigInt(0)) {
         value = Buffer.from([])
       } else {
         value = bigIntToBuffer(val)
@@ -285,7 +285,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
         runState.stack.peek(7)
       const toAddress = new Address(addressToBuffer(toAddr))
 
-      if (runState.eei.isStatic() && !(value === 0n)) {
+      if (runState.eei.isStatic() && !(value === BigInt(0))) {
         trap(ERROR.STATIC_STATE_CHANGE)
       }
       gas += subMemUsage(runState, inOffset, inLength, common)
@@ -294,14 +294,14 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
         gas += accessAddressEIP2929(runState, toAddress, common)
       }
 
-      if (!(value === 0n)) {
+      if (!(value === BigInt(0))) {
         gas += BigInt(common.param('gasPrices', 'callValueTransfer'))
       }
 
       if (common.gteHardfork('spuriousDragon')) {
         // We are at or after Spurious Dragon
         // Call new account gas: account is DEAD and we transfer nonzero value
-        if ((await runState.eei.isAccountEmpty(toAddress)) && !(value === 0n)) {
+        if ((await runState.eei.isAccountEmpty(toAddress)) && !(value === BigInt(0))) {
           gas += BigInt(common.param('gasPrices', 'callNewAccount'))
         }
       } else if (!(await runState.eei.accountExists(toAddress))) {
@@ -321,7 +321,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
         trap(ERROR.OUT_OF_GAS)
       }
 
-      if (!(value === 0n)) {
+      if (!(value === BigInt(0))) {
         // TODO: Don't use private attr directly
         runState.eei._gasLeft += BigInt(common.param('gasPrices', 'callStipend'))
         gasLimit += BigInt(common.param('gasPrices', 'callStipend'))
@@ -346,7 +346,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
         gas += accessAddressEIP2929(runState, toAddress, common)
       }
 
-      if (!(value === 0n)) {
+      if (!(value === BigInt(0))) {
         gas += BigInt(common.param('gasPrices', 'callValueTransfer'))
       }
       let gasLimit = maxCallGas(currentGasLimit, runState.eei.getGasLeft() - gas, runState, common)
@@ -355,7 +355,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
       if (gasLimit > runState.eei.getGasLeft() - gas) {
         trap(ERROR.OUT_OF_GAS)
       }
-      if (!(value === 0n)) {
+      if (!(value === BigInt(0))) {
         // TODO: Don't use private attr directly
         runState.eei._gasLeft += BigInt(common.param('gasPrices', 'callStipend'))
         gasLimit += BigInt(common.param('gasPrices', 'callStipend'))
@@ -421,7 +421,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
         gas += accessAddressEIP2929(runState, runState.eei.getAddress(), common, false)
       }
 
-      gas += BigInt(common.param('gasPrices', 'sha3Word')) * divCeil(length, 32n)
+      gas += BigInt(common.param('gasPrices', 'sha3Word')) * divCeil(length, BigInt(32))
       let gasLimit = runState.eei.getGasLeft() - gas
       gasLimit = maxCallGas(gasLimit, gasLimit, runState, common) // CREATE2 is only available after TangerineWhistle (Constantinople introduced this opcode)
       runState.messageGasLimit = gasLimit
@@ -477,7 +477,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
       if (common.gteHardfork('spuriousDragon')) {
         // EIP-161: State Trie Clearing
         const balance = await runState.eei.getExternalBalance(runState.eei.getAddress())
-        if (balance > 0n) {
+        if (balance > BigInt(0)) {
           // This technically checks if account is empty or non-existent
           // TODO: improve on the API here (EEI and StateManager)
           const empty = await runState.eei.isAccountEmpty(selfdestructToAddress)

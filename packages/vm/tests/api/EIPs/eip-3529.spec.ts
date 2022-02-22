@@ -124,7 +124,7 @@ tape('EIP-3529 tests', (t) => {
       }
     })
 
-    const gasLimit = 100000n
+    const gasLimit = BigInt(100000)
     const key = Buffer.from('00'.repeat(32), 'hex')
 
     for (const testCase of testCases) {
@@ -172,7 +172,7 @@ tape('EIP-3529 tests', (t) => {
 
     st.ok(result.execResult.exceptionError === undefined, 'transaction executed succesfully')
     st.ok(result.execResult.gasRefund !== undefined, 'gas refund is defined')
-    st.ok(result.execResult.gasRefund === 0n, 'gas refund is zero')
+    st.ok(result.execResult.gasRefund === BigInt(0), 'gas refund is zero')
     st.end()
   })
 
@@ -221,8 +221,8 @@ tape('EIP-3529 tests', (t) => {
 
     const result = await vm.runTx({ tx })
 
-    const actualGasUsed = startGas! - finalGas! + 21000n
-    const maxRefund = actualGasUsed / 5n
+    const actualGasUsed = startGas! - finalGas! + BigInt(21000)
+    const maxRefund = actualGasUsed / BigInt(5)
     const minGasUsed = actualGasUsed - maxRefund
     const gasUsed = result.execResult.gasUsed
     st.ok(result.execResult.gasRefund! > maxRefund, 'refund is larger than the max refund')

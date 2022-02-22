@@ -20,7 +20,7 @@ export function accessAddressEIP2929(
   chargeGas = true,
   isSelfdestruct = false
 ): bigint {
-  if (!common.isActivatedEIP(2929)) return 0n
+  if (!common.isActivatedEIP(2929)) return BigInt(0)
 
   const stateManager = runState.stateManager as EIP2929StateManager
   const addressStr = address.buf
@@ -38,7 +38,7 @@ export function accessAddressEIP2929(
   } else if (chargeGas && !isSelfdestruct) {
     return BigInt(common.param('gasPrices', 'warmstorageread'))
   }
-  return 0n
+  return BigInt(0)
 }
 
 /**
@@ -55,7 +55,7 @@ export function accessStorageEIP2929(
   isSstore: boolean,
   common: Common
 ): bigint {
-  if (!common.isActivatedEIP(2929)) return 0n
+  if (!common.isActivatedEIP(2929)) return BigInt(0)
 
   const stateManager = runState.stateManager as EIP2929StateManager
   const address = runState.eei.getAddress().buf
@@ -68,7 +68,7 @@ export function accessStorageEIP2929(
   } else if (!isSstore) {
     return BigInt(common.param('gasPrices', 'warmstorageread'))
   }
-  return 0n
+  return BigInt(0)
 }
 
 /**

@@ -6,23 +6,23 @@ const assert = require('assert')
 function multComplexity(x: bigint): bigint {
   let fac1
   let fac2
-  if (x <= 64n) {
-    return x ** 2n
-  } else if (x <= 1024n) {
+  if (x <= BigInt(64)) {
+    return x ** BigInt(2)
+  } else if (x <= BigInt(1024)) {
     // return Math.floor(Math.pow(x, 2) / 4) + 96 * x - 3072
-    fac1 = x ** 2n / 4n
-    fac2 = x * 96n
-    return fac1 + fac2 - 3072n
+    fac1 = x ** BigInt(2) / BigInt(4)
+    fac2 = x * BigInt(96)
+    return fac1 + fac2 - BigInt(3072)
   } else {
     // return Math.floor(Math.pow(x, 2) / 16) + 480 * x - 199680
-    fac1 = x ** 2n / 16n
-    fac2 = x * 480n
-    return fac1 + fac2 - 199680n
+    fac1 = x ** BigInt(2) / BigInt(16)
+    fac2 = x * BigInt(480)
+    return fac1 + fac2 - BigInt(199680)
   }
 }
 
 function multComplexityEIP2565(x: bigint): bigint {
-  const words = (x + 7n) / 8n
+  const words = (x + BigInt(7)) / BigInt(8)
   return words * words
 }
 
@@ -39,21 +39,21 @@ function getAdjustedExponentLength(data: Buffer): bigint {
   firstExpBytes = setLengthRight(firstExpBytes, 32) // reading past the data reads virtual zeros
   let firstExpBigInt = bufferToBigInt(firstExpBytes)
   let max32expLen = 0
-  if (expLen < 32n) {
+  if (expLen < BigInt(32)) {
     max32expLen = 32 - Number(expLen)
   }
-  firstExpBigInt = firstExpBigInt >> (8n * BigInt(Math.max(max32expLen, 0)))
+  firstExpBigInt = firstExpBigInt >> (BigInt(8) * BigInt(Math.max(max32expLen, 0)))
 
   let bitLen = -1
-  while (firstExpBigInt > 0n) {
+  while (firstExpBigInt > BigInt(0)) {
     bitLen = bitLen + 1
-    firstExpBigInt = firstExpBigInt >> 1n
+    firstExpBigInt = firstExpBigInt >> BigInt(1)
   }
-  let expLenMinus32OrZero = expLen - 32n
-  if (expLenMinus32OrZero < 0n) {
-    expLenMinus32OrZero = 0n
+  let expLenMinus32OrZero = expLen - BigInt(32)
+  if (expLenMinus32OrZero < BigInt(0)) {
+    expLenMinus32OrZero = BigInt(0)
   }
-  const eightTimesExpLenMinus32OrZero = expLenMinus32OrZero * 8n
+  const eightTimesExpLenMinus32OrZero = expLenMinus32OrZero * BigInt(8)
   let adjustedExpLen = eightTimesExpLenMinus32OrZero
   if (bitLen > 0) {
     adjustedExpLen += BigInt(bitLen)
@@ -62,14 +62,14 @@ function getAdjustedExponentLength(data: Buffer): bigint {
 }
 
 export function expmod(a: bigint, power: bigint, modulo: bigint) {
-  if (power === 0n) {
-    return 1n % modulo
+  if (power === BigInt(0)) {
+    return BigInt(1) % modulo
   }
-  let res = 1n
-  while (power > 0n) {
-    if (power & 1n) res = (res * a) % modulo
+  let res = BigInt(1)
+  while (power > BigInt(0)) {
+    if (power & BigInt(1)) res = (res * a) % modulo
     a = (a * a) % modulo
-    power >>= 1n
+    power >>= BigInt(1)
   }
   return res
 }
@@ -80,8 +80,8 @@ export default function (opts: PrecompileInput): ExecResult {
   const data = opts.data
 
   let adjustedELen = getAdjustedExponentLength(data)
-  if (adjustedELen < 1n) {
-    adjustedELen = 1n
+  if (adjustedELen < BigInt(1)) {
+    adjustedELen = BigInt(1)
   }
 
   const bLen = bufferToBigInt(data.slice(0, 32))
@@ -95,7 +95,7 @@ export default function (opts: PrecompileInput): ExecResult {
   const Gquaddivisor = BigInt(opts._common.param('gasPrices', 'modexpGquaddivisor'))
   let gasUsed
 
-  const bStart = 96n
+  const bStart = BigInt(96)
   const bEnd = bStart + bLen
   const eStart = bEnd
   const eEnd = eStart + eLen
@@ -106,8 +106,8 @@ export default function (opts: PrecompileInput): ExecResult {
     gasUsed = (adjustedELen * multComplexity(maxLen)) / Gquaddivisor
   } else {
     gasUsed = (adjustedELen * multComplexityEIP2565(maxLen)) / Gquaddivisor
-    if (gasUsed < 200n) {
-      gasUsed = 200n
+    if (gasUsed < BigInt(200)) {
+      gasUsed = BigInt(200)
     }
   }
 
@@ -115,14 +115,14 @@ export default function (opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  if (bLen === 0n) {
+  if (bLen === BigInt(0)) {
     return {
       gasUsed,
-      returnValue: setLengthLeft(bigIntToBuffer(0n), Number(mLen)),
+      returnValue: setLengthLeft(bigIntToBuffer(BigInt(0)), Number(mLen)),
     }
   }
 
-  if (mLen === 0n) {
+  if (mLen === BigInt(0)) {
     return {
       gasUsed,
       returnValue: Buffer.alloc(0),
@@ -130,7 +130,7 @@ export default function (opts: PrecompileInput): ExecResult {
   }
 
   const maxInt = BigInt(Number.MAX_SAFE_INTEGER)
-  const maxSize = 2147483647n // ethereumjs-util setLengthRight limitation
+  const maxSize = BigInt(2147483647) // ethereumjs-util setLengthRight limitation
 
   if (bLen > maxSize || eLen > maxSize || mLen > maxSize) {
     return OOGResult(opts.gasLimit)
@@ -145,8 +145,8 @@ export default function (opts: PrecompileInput): ExecResult {
   }
 
   let R
-  if (M === 0n) {
-    R = 0n
+  if (M === BigInt(0)) {
+    R = BigInt(0)
   } else {
     R = expmod(B, E, M)
   }

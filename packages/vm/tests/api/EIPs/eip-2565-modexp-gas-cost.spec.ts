@@ -18,7 +18,7 @@ tape('EIP-2565 ModExp gas cost tests', (t) => {
         caller: Address.zero(),
         gasLimit: BigInt(0xffffffffff),
         to,
-        value: 0n,
+        value: BigInt(0),
         data: Buffer.from(test.Input, 'hex'),
       })
 

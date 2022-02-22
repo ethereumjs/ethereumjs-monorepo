@@ -38,11 +38,11 @@ tape('correctly apply new account gas fee on pre-Spurious Dragon hardforks', asy
       'hex'
     ),
     to: contractAddress, // call to the contract address
-    value: 0n,
+    value: BigInt(0),
   }
 
   const result = await vm.runCall(runCallArgs)
-  t.ok(result.gasUsed === 53552n, 'vm correctly applies new account gas price')
+  t.ok(result.gasUsed === BigInt(53552), 'vm correctly applies new account gas price')
   t.end()
 })
 
@@ -83,11 +83,11 @@ tape(
         'hex'
       ),
       to: contractAddress, // call to the contract address
-      value: 0n,
+      value: BigInt(0),
     }
 
     const result = await vm.runCall(runCallArgs)
-    t.ok(result.gasUsed === 28552n, 'new account price not applied as empty account exists')
+    t.ok(result.gasUsed === BigInt(28552), 'new account price not applied as empty account exists')
     t.end()
   }
 )

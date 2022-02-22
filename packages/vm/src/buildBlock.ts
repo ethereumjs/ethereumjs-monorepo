@@ -66,7 +66,7 @@ export class BlockBuilder {
   /**
    * The cumulative gas used by the transactions added to the block.
    */
-  gasUsed = 0n
+  gasUsed = BigInt(0)
 
   private readonly vm: VM
   private blockOpts: BuilderOpts
