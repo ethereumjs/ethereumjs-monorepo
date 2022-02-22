@@ -88,7 +88,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'latest'])
   const expectRes = (res: any) => {
     const msg = 'should return the correct gas estimate'
-    t.equal(res.body.result, bnToHex(gasUsed), msg)
+    t.equal(res.body.result, '0x' + gasUsed.toString(16), msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })

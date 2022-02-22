@@ -1,4 +1,4 @@
-import { Account, Address, toBuffer, bufferToInt, BN } from 'ethereumjs-util'
+import { Account, Address, toBuffer, bufferToInt, BN, bnToBigInt } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { StateManager, DefaultStateManager } from '../dist/state'
@@ -100,7 +100,7 @@ export const verifyResult = (block: Block, result: RunBlockResult) => {
   if (!result.logsBloom.equals(block.header.logsBloom)) {
     throw new Error('invalid logsBloom')
   }
-  if (!block.header.gasUsed.eq(result.gasUsed)) {
+  if (!(bnToBigInt(block.header.gasUsed) === result.gasUsed)) {
     throw new Error('invalid gasUsed')
   }
 }

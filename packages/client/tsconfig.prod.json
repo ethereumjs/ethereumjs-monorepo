@@ -3,7 +3,6 @@
   "include": ["bin", "lib"],
   "compilerOptions": {
     "outDir": "dist",
-    "lib": ["es2018", "dom"],
     "typeRoots": ["node_modules/@types", "lib/@types"],
   },
   "references": [

@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, privateToAddress, setLengthLeft } from 'ethereumjs-util'
+import { Address, bigIntToBN, BN, privateToAddress, setLengthLeft } from 'ethereumjs-util'
 import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import {
@@ -98,7 +98,7 @@ tape('EIP1559 tests', (t) => {
     st.ok(miner.balance.eq(expectedMinerBalance), 'miner balance correct')
     account = await vm.stateManager.getAccount(sender)
     st.ok(account.balance.eq(expectedAccountBalance), 'account balance correct')
-    st.ok(results.amountSpent.eq(expectedCost), 'reported cost correct')
+    st.ok(bigIntToBN(results.amountSpent).eq(expectedCost), 'reported cost correct')
 
     const tx2 = new AccessListEIP2930Transaction(
       {
@@ -129,7 +129,7 @@ tape('EIP1559 tests', (t) => {
     st.ok(miner.balance.eq(expectedMinerBalance), 'miner balance correct')
     account = await vm.stateManager.getAccount(sender)
     st.ok(account.balance.eq(expectedAccountBalance), 'account balance correct')
-    st.ok(results2.amountSpent.eq(expectedCost), 'reported cost correct')
+    st.ok(bigIntToBN(results2.amountSpent).eq(expectedCost), 'reported cost correct')
 
     const tx3 = new Transaction(
       {
@@ -160,7 +160,7 @@ tape('EIP1559 tests', (t) => {
     st.ok(miner.balance.eq(expectedMinerBalance), 'miner balance correct')
     account = await vm.stateManager.getAccount(sender)
     st.ok(account.balance.eq(expectedAccountBalance), 'account balance correct')
-    st.ok(results3.amountSpent.eq(expectedCost), 'reported cost correct')
+    st.ok(bigIntToBN(results3.amountSpent).eq(expectedCost), 'reported cost correct')
 
     st.end()
   })

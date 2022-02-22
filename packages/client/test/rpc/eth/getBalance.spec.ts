@@ -50,7 +50,7 @@ tape(`${method}: ensure balance deducts after a tx`, async (t) => {
   const { amountSpent } = result.results[0]
 
   // verify balance is genesis amount minus amountSpent
-  const expectedNewBalance = genesisBalance.sub(amountSpent)
+  const expectedNewBalance = genesisBalance.sub(new BN(amountSpent.toString(10)))
   req = params(method, [address.toString(), 'latest'])
   expectRes = (res: any) => {
     const msg = 'should return the correct balance after a tx'

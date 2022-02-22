@@ -1,4 +1,4 @@
-import { Address, BN, toBuffer, rlp } from 'ethereumjs-util'
+import { Address, toBuffer, rlp, bnToBigInt, bigIntToBN, toType, TypeOutput } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
@@ -66,7 +66,7 @@ export class BlockBuilder {
   /**
    * The cumulative gas used by the transactions added to the block.
    */
-  gasUsed = new BN(0)
+  gasUsed = BigInt(0)
 
   private readonly vm: VM
   private blockOpts: BuilderOpts
@@ -136,11 +136,9 @@ export class BlockBuilder {
    * Calculates and returns the receiptTrie for the block.
    */
   private async receiptTrie() {
-    const gasUsed = new BN(0)
     const receiptTrie = new Trie()
     for (const [i, txResult] of this.transactionResults.entries()) {
       const tx = this.transactions[i]
-      gasUsed.iadd(txResult.gasUsed)
       const encodedReceipt = encodeReceipt(tx, txResult.receipt)
       await receiptTrie.put(rlp.encode(i), encodedReceipt)
     }
@@ -151,7 +149,7 @@ export class BlockBuilder {
    * Adds the block miner reward to the coinbase account.
    */
   private async rewardMiner() {
-    const minerReward = new BN(this.vm._common.param('pow', 'minerReward'))
+    const minerReward = BigInt(this.vm._common.param('pow', 'minerReward'))
     const reward = calculateMinerReward(minerReward, 0)
     const coinbase = this.headerData.coinbase
       ? new Address(toBuffer(this.headerData.coinbase))
@@ -175,15 +173,15 @@ export class BlockBuilder {
 
     // According to the Yellow Paper, a transaction's gas limit
     // cannot be greater than the remaining gas in the block
-    const blockGasLimit = new BN(toBuffer(this.headerData.gasLimit))
-    const blockGasRemaining = blockGasLimit.sub(this.gasUsed)
-    if (tx.gasLimit.gt(blockGasRemaining)) {
+    const blockGasLimit = bnToBigInt(toType(this.headerData.gasLimit, TypeOutput.BN))
+    const blockGasRemaining = blockGasLimit - this.gasUsed
+    if (bnToBigInt(tx.gasLimit) > blockGasRemaining) {
       throw new Error('tx has a higher gas limit than the remaining gas in the block')
     }
 
     const header = {
       ...this.headerData,
-      gasUsed: this.gasUsed,
+      gasUsed: bigIntToBN(this.gasUsed),
     }
     const blockData = { header, transactions: this.transactions }
     const block = Block.fromBlockData(blockData, this.blockOpts)
@@ -192,7 +190,7 @@ export class BlockBuilder {
 
     this.transactions.push(tx)
     this.transactionResults.push(result)
-    this.gasUsed.iadd(result.gasUsed)
+    this.gasUsed += result.gasUsed
 
     return result
   }
@@ -232,7 +230,7 @@ export class BlockBuilder {
     const transactionsTrie = await this.transactionsTrie()
     const receiptTrie = await this.receiptTrie()
     const logsBloom = this.logsBloom()
-    const gasUsed = this.gasUsed
+    const gasUsed = bigIntToBN(this.gasUsed)
     const timestamp = this.headerData.timestamp ?? Math.round(Date.now() / 1000)
 
     const headerData = {

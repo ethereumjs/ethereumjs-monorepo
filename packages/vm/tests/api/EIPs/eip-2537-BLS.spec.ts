@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, bufferToHex } from 'ethereumjs-util'
+import { Address, bufferToHex } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import { isRunningInKarma } from '../../util'
@@ -27,13 +27,13 @@ tape('EIP-2537 BLS tests', (t) => {
       const to = new Address(Buffer.from(address, 'hex'))
       const result = await vm.runCall({
         caller: Address.zero(),
-        gasLimit: new BN(0xffffffffff),
+        gasLimit: BigInt(0xffffffffff),
         to,
-        value: new BN(0),
+        value: BigInt(0),
         data: Buffer.alloc(0),
       })
 
-      if (!result.execResult.gasUsed.eq(new BN(0))) {
+      if (!(result.execResult.gasUsed === BigInt(0))) {
         st.fail('BLS precompiles should not use any gas if EIP not activated')
       }
 
@@ -58,13 +58,13 @@ tape('EIP-2537 BLS tests', (t) => {
       const to = new Address(Buffer.from(address, 'hex'))
       const result = await vm.runCall({
         caller: Address.zero(),
-        gasLimit: new BN(0xffffffffff),
+        gasLimit: BigInt(0xffffffffff),
         to,
-        value: new BN(0),
+        value: BigInt(0),
         data: Buffer.alloc(0),
       })
 
-      if (!result.execResult.gasUsed.eq(new BN(0xffffffffff))) {
+      if (!(result.execResult.gasUsed === BigInt(0xffffffffff))) {
         st.fail('BLS precompiles should use all gas on empty inputs')
       }
 
@@ -102,7 +102,7 @@ tape('EIP-2537 BLS tests', (t) => {
 
     const result = await BLS12G2MultiExp({
       data: Buffer.from(testVector, 'hex'),
-      gasLimit: new BN(5000000),
+      gasLimit: BigInt(5000000),
       _common: common,
       _VM: vm,
     })
