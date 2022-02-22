@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Account, Address, BN } from 'ethereumjs-util'
+import { Account, Address, bigIntToHex, intToHex } from 'ethereumjs-util'
 import { StateManager } from '../state/index'
 import { ERROR, VmError } from '../exceptions'
 import Memory from './memory'
@@ -16,8 +16,8 @@ export interface RunState {
   programCounter: number
   opCode: number
   memory: Memory
-  memoryWordCount: BN
-  highestMemCost: BN
+  memoryWordCount: bigint
+  highestMemCost: bigint
   stack: Stack
   returnStack: Stack
   code: Buffer
@@ -25,7 +25,7 @@ export interface RunState {
   validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
   stateManager: StateManager
   eei: EEI
-  messageGasLimit?: BN // Cache value from `gas.ts` to save gas limit for a message call
+  messageGasLimit?: bigint // Cache value from `gas.ts` to save gas limit for a message call
 }
 
 export interface InterpreterResult {
@@ -34,23 +34,23 @@ export interface InterpreterResult {
 }
 
 export interface InterpreterStep {
+  gasLeft: bigint
+  gasRefund: bigint
+  stateManager: StateManager
+  stack: bigint[]
+  returnStack: bigint[]
   pc: number
+  depth: number
   opcode: {
     name: string
     fee: number
-    dynamicFee?: BN
+    dynamicFee?: bigint
     isAsync: boolean
   }
-  gasLeft: BN
-  gasRefund: BN
-  stateManager: StateManager
-  stack: BN[]
-  returnStack: BN[]
   account: Account
   address: Address
-  depth: number
   memory: Buffer
-  memoryWordCount: BN
+  memoryWordCount: bigint
   codeAddress: Address
 }
 
@@ -74,8 +74,8 @@ export default class Interpreter {
       programCounter: 0,
       opCode: 0xfe, // INVALID opcode
       memory: new Memory(),
-      memoryWordCount: new BN(0),
-      highestMemCost: new BN(0),
+      memoryWordCount: BigInt(0),
+      highestMemCost: BigInt(0),
       stack: new Stack(),
       returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
       code: Buffer.alloc(0),
@@ -172,7 +172,7 @@ export default class Interpreter {
   async runStep(): Promise<void> {
     const opInfo = this.lookupOpInfo(this._runState.opCode)
 
-    const gas = new BN(opInfo.fee)
+    let gas = BigInt(opInfo.fee)
     // clone the gas limit; call opcodes can add stipend,
     // which makes it seem like the gas left increases
     const gasLimitClone = this._eei.getGasLeft()
@@ -181,7 +181,7 @@ export default class Interpreter {
       const dynamicGasHandler = this._vm._dynamicGasHandlers.get(this._runState.opCode)!
       // This function updates the gas BN in-place using `i*` methods
       // It needs the base fee, for correct gas limit calculation for the CALL opcodes
-      await dynamicGasHandler(this._runState, gas, this._vm._common)
+      gas = await dynamicGasHandler(this._runState, gas, this._vm._common)
     }
 
     if (this._vm.listenerCount('step') > 0 || this._vm.DEBUG) {
@@ -202,6 +202,7 @@ export default class Interpreter {
 
     // Execute opcode handler
     const opFn = this.getOpHandler(opInfo)
+
     if (opInfo.isAsync) {
       await (opFn as AsyncOpHandler).apply(null, [this._runState, this._vm._common])
     } else {
@@ -224,7 +225,7 @@ export default class Interpreter {
     return this._vm._opcodes.get(op) ?? this._vm._opcodes.get(0xfe)
   }
 
-  async _runStepHook(dynamicFee: BN, gasLeft: BN): Promise<void> {
+  async _runStepHook(dynamicFee: bigint, gasLeft: bigint): Promise<void> {
     const opcode = this.lookupOpInfo(this._runState.opCode)
     const eventObj: InterpreterStep = {
       pc: this._runState.programCounter,
@@ -251,7 +252,7 @@ export default class Interpreter {
       // Create opTrace for debug functionality
       let hexStack = []
       hexStack = eventObj.stack.map((item: any) => {
-        return '0x' + new BN(item).toString(16, 0)
+        return bigIntToHex(BigInt(item))
       })
 
       const name = eventObj.opcode.name
@@ -259,8 +260,8 @@ export default class Interpreter {
       const opTrace = {
         pc: eventObj.pc,
         op: name,
-        gas: '0x' + eventObj.gasLeft.toString('hex'),
-        gasCost: '0x' + eventObj.opcode.fee.toString(16),
+        gas: bigIntToHex(eventObj.gasLeft),
+        gasCost: intToHex(eventObj.opcode.fee),
         stack: hexStack,
         depth: eventObj.depth,
       }

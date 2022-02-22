@@ -2,7 +2,7 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint', 'implicit-dependencies', 'prettier'],
   env: {
-    es6: true,
+    es2020: true,
     node: true,
   },
   ignorePatterns: [

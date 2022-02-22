@@ -11,7 +11,7 @@
     "resolveJsonModule": true,
     "downlevelIteration": true,
     "strict": true,
-    "target": "ES2017",
-    "lib": ["es2018"]
+    "target": "es2020",
+    "lib": ["ES2020"]
   }
 }

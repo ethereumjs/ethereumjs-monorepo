@@ -1,4 +1,3 @@
-import { BN } from 'ethereumjs-util'
 import { PrecompileInput } from './types'
 import { VmErrorResult, ExecResult, OOGResult } from '../evm'
 import { ERROR, VmError } from '../../exceptions'
@@ -17,9 +16,9 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   const inputData = opts.data
 
   // note: the gas used is constant; even if the input is incorrect.
-  const gasUsed = new BN(opts._common.paramByEIP('gasPrices', 'Bls12381G2MulGas', 2537))
+  const gasUsed = BigInt(opts._common.paramByEIP('gasPrices', 'Bls12381G2MulGas', 2537))
 
-  if (opts.gasLimit.lt(gasUsed)) {
+  if (opts.gasLimit < gasUsed) {
     return OOGResult(opts.gasLimit)
   }
 
