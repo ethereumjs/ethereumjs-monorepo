@@ -377,7 +377,7 @@ async function hasRightElement(trie: Trie, key: Nibbles) {
  * verifyRangeProof checks whether the given leaf nodes and edge proof
  * can prove the given trie leaves range is matched with the specific root.
  *
- * There are three situations:
+ * There are four situations:
  *
  * - All elements proof. In this case the proof can be nil, but the range should
  *   be all the leaves in the trie.
