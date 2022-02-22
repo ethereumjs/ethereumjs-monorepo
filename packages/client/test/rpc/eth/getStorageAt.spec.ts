@@ -1,6 +1,7 @@
 import tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { Address, BN, bnToHex, bufferToHex, keccak } from 'ethereumjs-util'
 import { FullSynchronizer } from '../../../lib/sync'
@@ -10,10 +11,16 @@ import { checkError } from '../util'
 
 const method = 'eth_getStorageAt'
 
-tape(`${method}: call with valid arguments`, async (t) => {
-  const blockchain = await Blockchain.create({ validateBlocks: false, validateConsensus: false })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 
-  const client = createClient({ blockchain, includeVM: true })
+tape(`${method}: call with valid arguments`, async (t) => {
+  const blockchain = await Blockchain.create({
+    common,
+    validateBlocks: false,
+    validateConsensus: false,
+  })
+
+  const client = createClient({ blockchain, commonChain: common, includeVM: true })
   const manager = createManager(client)
   const server = startRPC(manager.getMethods())
 
@@ -43,7 +50,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   // construct block with tx
   const gasLimit = 2000000
-  const tx = Transaction.fromTxData({ gasLimit, data }, { freeze: false })
+  const tx = Transaction.fromTxData({ gasLimit, data }, { common, freeze: false })
   tx.getSenderAddress = () => {
     return address
   }
@@ -56,7 +63,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
         gasLimit,
       },
     },
-    { calcDifficultyFromHeader: parent }
+    { common, calcDifficultyFromHeader: parent }
   )
   block.transactions[0] = tx
 
@@ -76,7 +83,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
     gasLimit: bnToHex(new BN(530000)),
     nonce: 1,
   }
-  const storeTx = Transaction.fromTxData(storeTxData, { freeze: false })
+  const storeTx = Transaction.fromTxData(storeTxData, { common, freeze: false })
   storeTx.getSenderAddress = () => {
     return address
   }
@@ -88,7 +95,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
         gasLimit,
       },
     },
-    { calcDifficultyFromHeader: block.header }
+    { common, calcDifficultyFromHeader: block.header }
   )
   block2.transactions[0] = storeTx
 

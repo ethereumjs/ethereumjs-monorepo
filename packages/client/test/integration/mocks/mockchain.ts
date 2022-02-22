@@ -24,13 +24,16 @@ export default class MockChain extends Chain {
   async build() {
     const blocks: Block[] = []
     for (let number = 0; number < this.height; number++) {
-      const block = Block.fromBlockData({
-        header: {
-          number: number + 1,
-          difficulty: 1,
-          parentHash: number ? blocks[number - 1].hash() : this.genesis.hash,
+      const block = Block.fromBlockData(
+        {
+          header: {
+            number: number + 1,
+            difficulty: 1,
+            parentHash: number ? blocks[number - 1].hash() : this.genesis.hash,
+          },
         },
-      })
+        { common: this.config.chainCommon }
+      )
       blocks.push(block)
     }
     await this.putBlocks(blocks)
