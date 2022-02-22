@@ -342,7 +342,7 @@ export abstract class BaseTransaction<TransactionObject> {
     if (chainId) {
       const chainIdBN = new BN(toBuffer(chainId))
       if (common) {
-        if (!common.chainIdBN().eq(chainIdBN)) {
+        if (!common.chainId().eq(chainIdBN)) {
           const msg = this._errorMsg('The chain ID does not match the chain ID of Common')
           throw new Error(msg)
         }
@@ -357,14 +357,13 @@ export abstract class BaseTransaction<TransactionObject> {
         } else {
           // No Common, chain ID not supported by Common
           // -> Instantiate custom Common derived from DEFAULT_CHAIN
-          return Common.forCustomChain(
-            this.DEFAULT_CHAIN,
+          return Common.custom(
             {
               name: 'custom-chain',
               networkId: chainIdBN,
               chainId: chainIdBN,
             },
-            this.DEFAULT_HARDFORK
+            { baseChain: this.DEFAULT_CHAIN, hardfork: this.DEFAULT_HARDFORK }
           )
         }
       }

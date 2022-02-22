@@ -1,6 +1,6 @@
 {
   "name": "merkle-patricia-tree",
-  "version": "4.2.2",
+  "version": "4.2.3",
   "description": "This is an implementation of the modified merkle patricia tree as specified in Ethereum's yellow paper.",
   "license": "MPL-2.0",
   "author": "mjbecze <mjbecze@gmail.com>",
@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@types/levelup": "^4.3.0",
-    "ethereumjs-util": "^7.1.3",
+    "ethereumjs-util": "^7.1.4",
     "level-mem": "^5.0.1",
     "level-ws": "^2.0.0",
     "readable-stream": "^3.6.0",

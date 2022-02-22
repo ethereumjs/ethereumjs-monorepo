@@ -107,15 +107,12 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     await uncleRun(vm, st)
   })
 
-  t.test(
-    'PoW block, Common custom chain (Common.forCustomChain() static constructor)',
-    async (st) => {
-      const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
-      const common = Common.forCustomChain('mainnet', customChainParams, 'berlin')
-      const vm = setupVM({ common })
-      await simpleRun(vm, st)
-    }
-  )
+  t.test('PoW block, Common custom chain (Common.custom() static constructor)', async (st) => {
+    const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
+    const common = Common.custom(customChainParams, { baseChain: 'mainnet', hardfork: 'berlin' })
+    const vm = setupVM({ common })
+    await simpleRun(vm, st)
+  })
 
   t.test('PoW block, Common custom chain (Common customChains constructor option)', async (st) => {
     const customChains = [testnet]

@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/vm",
-  "version": "5.6.0",
+  "version": "5.7.1",
   "description": "An Ethereum VM implementation",
   "license": "MPL-2.0",
   "author": "mjbecze <mjbecze@gmail.com>",
@@ -43,23 +43,25 @@
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "formatTest": "node ./scripts/formatTest",
-    "tsc": "../../config/cli/ts-compile.sh"
+    "tsc": "../../config/cli/ts-compile.sh",
+    "examples": "ts-node ../../scripts/examples-runner.ts -- vm"
   },
   "dependencies": {
-    "@ethereumjs/block": "^3.6.0",
+    "@ethereumjs/block": "^3.6.1",
     "@ethereumjs/blockchain": "^5.5.1",
-    "@ethereumjs/common": "^2.6.0",
-    "@ethereumjs/tx": "^3.4.0",
-    "merkle-patricia-tree": "^4.2.2",
+    "@ethereumjs/common": "^2.6.2",
+    "@ethereumjs/tx": "^3.5.0",
+    "merkle-patricia-tree": "^4.2.3",
     "async-eventemitter": "^0.2.4",
     "core-js-pure": "^3.0.1",
     "debug": "^4.3.3",
-    "ethereumjs-util": "^7.1.3",
+    "ethereumjs-util": "^7.1.4",
     "functional-red-black-tree": "^1.0.1",
     "mcl-wasm": "^0.7.1",
     "rustbn.js": "~0.2.0"
   },
   "devDependencies": {
+    "@ethersproject/abi": "^5.0.12",
     "@types/benchmark": "^1.0.33",
     "@types/core-js": "^2.5.0",
     "@types/lru-cache": "^5.1.0",
@@ -84,7 +86,8 @@
     "tape": "^5.3.1",
     "ts-node": "^10.2.1",
     "typedoc": "^0.22.4",
-    "typescript": "^4.4.2"
+    "typescript": "^4.4.2",
+    "solc": "^0.8.1"
   },
   "contributors": [
     "Alex Beregszaszi <alex@rtfs.hu>"

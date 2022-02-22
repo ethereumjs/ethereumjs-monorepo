@@ -534,8 +534,7 @@ tape('Clique: Initialization', (t) => {
   t.test(
     'Clique Voting: Epoch transitions reset all votes to allow chain checkpointing',
     async (st) => {
-      const common = Common.forCustomChain(
-        'rinkeby',
+      const common = Common.custom(
         {
           consensus: {
             type: ConsensusType.ProofOfAuthority,
@@ -546,7 +545,10 @@ tape('Clique: Initialization', (t) => {
             },
           },
         },
-        'chainstart'
+        {
+          baseChain: Chain.Rinkeby,
+          hardfork: Hardfork.Chainstart,
+        }
       )
       const { blocks, blockchain } = await initWithSigners([A, B], common)
       await addNextBlock(blockchain, blocks, A, [C, true], undefined, common)
@@ -597,8 +599,7 @@ tape('Clique: Initialization', (t) => {
   t.test(
     'Clique Voting: Recent signatures should not reset on checkpoint blocks imported in a batch',
     async (st) => {
-      const common = Common.forCustomChain(
-        'rinkeby',
+      const common = Common.custom(
         {
           consensus: {
             type: ConsensusType.ProofOfAuthority,
@@ -609,7 +610,10 @@ tape('Clique: Initialization', (t) => {
             },
           },
         },
-        'chainstart'
+        {
+          baseChain: Chain.Rinkeby,
+          hardfork: Hardfork.Chainstart,
+        }
       )
       const { blocks, blockchain } = await initWithSigners([A, B, C], common)
       await addNextBlock(blockchain, blocks, A, undefined, undefined, common)

@@ -6,6 +6,37 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.3.0 - 2022-02-01
+
+### New RPC Endpoints: eth_getLogs, eth_getTransactionReceipt and eth_getTransactionByHash
+
+This release adds receipt and log saving functionality to the client. There has been a new database infrastructure laid out in PR [#1556](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1556) for data, caching and indexes.
+
+A new `ReceiptsManager` handles receipt and log saving and lookup, along with the `txHash -> [blockHash, txIndex]` index that is limited by `--txLookupLimit` (default = 2350000 blocks = about one year, 0 = entire chain).
+
+Enable with `--saveReceipts` and use with --rpc to enable `eth_getLogs`, `eth_getTransactionReceipt` and `eth_getTransactionByHash` endpoints.
+
+### Sepolia PoW Testnet Support
+
+The client now supports the new [Sepolia](https://sepolia.ethdevops.io/) testnet, which is a PoW network intended to replace the `ropsten` network, see PR [#1581](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1581).
+
+A client connecting to the Sepolia network can be started as follows:
+
+```shell
+ethereumjs --network=sepolia
+```
+
+### Allow past block numbers in RPC queries
+
+The RPC calls `call`, `getBalance`, `getCode`, `getStorageAt`, `getTransactionCount`, and `estimateGas` up till now only supported being called with the `latest` tag. This has been updated in PR [#1598](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1598) and it is now possible to use past block numbers for the various calls.
+
+### Bug Fixes
+
+- Fixed browser build and libp2p sync, PR [#1588](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1588)
+- Fixed error logging stack trace output, PR [#1595](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1595)
+- Fixed broken dependency in webpack where node's constants package isn't being polyfilled by webpack 5, PR [#1621](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1621)
+- Fixed `mainnet` consensus bug from block `4,993,075` (`byzantium`) where a tx goes OOG but refunds get applied anyways (thanks @LogvinovLeon for reporting! ❤️), PR [#1603](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1603)
+
 ## 0.2.0 - 2021-11-09
 
 ### Experimental Merge Support

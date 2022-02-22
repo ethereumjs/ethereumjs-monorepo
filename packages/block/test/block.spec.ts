@@ -548,13 +548,11 @@ tape('[Block]: block functions', function (t) {
       const common = new Common({ chain: Chain.Mainnet })
       common.setHardfork(Hardfork.Berlin)
 
-      const mainnetForkBlock = common.hardforkBlockBN(Hardfork.London)
-      const rootBlock = Block.fromBlockData(
-        {
-          header: {
-            number: mainnetForkBlock!.subn(3),
-            gasLimit: new BN(5000),
-          },
+      const mainnetForkBlock = common.hardforkBlock(Hardfork.London)
+      const rootBlock = Block.fromBlockData({
+        header: {
+          number: mainnetForkBlock!.subn(3),
+          gasLimit: new BN(5000),
         },
         { common }
       )

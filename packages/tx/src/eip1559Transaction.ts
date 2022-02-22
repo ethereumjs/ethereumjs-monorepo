@@ -187,7 +187,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
 
     this.common = this._getCommon(opts.common, chainId)
-    this.chainId = this.common.chainIdBN()
+    this.chainId = this.common.chainId()
 
     if (!this.common.isActivatedEIP(1559)) {
       throw new Error('EIP-1559 not enabled on Common')
