@@ -2,6 +2,8 @@ import { nibblesToBuffer, nibblesCompare } from './util/nibbles'
 import { Trie } from './baseTrie'
 import { TrieNode, isRawNode, BranchNode, ExtensionNode, LeafNode, Nibbles } from './trieNode'
 
+// reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof.go
+
 /**
  * unset will remove all nodes to the left or right of the target key(decided by `removeLeft`).
  * @param trie - trie object.
@@ -401,8 +403,8 @@ async function hasRightElement(trie: Trie, key: Nibbles) {
  */
 export async function verifyRangeProof(
   rootHash: Buffer,
-  firstKey: Nibbles,
-  lastKey: Nibbles,
+  firstKey: Nibbles | null,
+  lastKey: Nibbles | null,
   keys: Nibbles[],
   values: Buffer[],
   proof: Buffer[] | null
@@ -434,6 +436,10 @@ export async function verifyRangeProof(
       throw new Error('invalid proof')
     }
     return false
+  }
+
+  if (firstKey === null || lastKey === null) {
+    throw new Error('invalid first or last key')
   }
 
   // Zero element proof

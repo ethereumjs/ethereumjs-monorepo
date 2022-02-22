@@ -725,16 +725,16 @@ export class Trie {
    */
   static verifyRangeProof(
     rootHash: Buffer,
-    firstKey: Buffer,
-    lastKey: Buffer,
+    firstKey: Buffer | null,
+    lastKey: Buffer | null,
     keys: Buffer[],
     values: Buffer[],
     proof: Buffer[] | null
   ) {
     return verifyRangeProof(
       rootHash,
-      bufferToNibbles(firstKey),
-      bufferToNibbles(lastKey),
+      firstKey && bufferToNibbles(firstKey),
+      lastKey && bufferToNibbles(lastKey),
       keys.map(bufferToNibbles),
       values,
       proof
