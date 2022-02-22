@@ -1,4 +1,3 @@
-import { BN } from './externals'
 import { toBuffer, zeros } from './bytes'
 import {
   isValidAddress,
@@ -7,6 +6,7 @@ import {
   generateAddress,
   generateAddress2,
 } from './account'
+import { bigIntToBuffer, bufferToBigInt } from '.'
 
 export class Address {
   public readonly buf: Buffer
@@ -65,11 +65,11 @@ export class Address {
    * @param from The address which is creating this new address
    * @param nonce The nonce of the from account
    */
-  static generate(from: Address, nonce: BN): Address {
-    if (!BN.isBN(nonce)) {
-      throw new Error('Expected nonce to be a BigNum')
+  static generate(from: Address, nonce: bigint): Address {
+    if (typeof nonce !== 'bigint') {
+      throw new Error('Expected nonce to be a bigint')
     }
-    return new Address(generateAddress(from.buf, nonce.toArrayLike(Buffer)))
+    return new Address(generateAddress(from.buf, bigIntToBuffer(nonce)))
   }
 
   /**
@@ -107,11 +107,11 @@ export class Address {
    * by EIP-1352
    */
   isPrecompileOrSystemAddress(): boolean {
-    const addressBN = new BN(this.buf)
-    const rangeMin = new BN(0)
-    const rangeMax = new BN('ffff', 'hex')
+    const addressBN = bufferToBigInt(this.buf)
+    const rangeMin = BigInt(0)
+    const rangeMax = BigInt('0xffff')
 
-    return addressBN.gte(rangeMin) && addressBN.lte(rangeMax)
+    return addressBN >= rangeMin && addressBN <= rangeMax
   }
 
   /**

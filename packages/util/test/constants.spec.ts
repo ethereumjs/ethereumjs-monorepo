@@ -14,12 +14,12 @@ import {
 tape('constants', function (t) {
   t.test('should match constants', function (st) {
     st.equal(
-      MAX_INTEGER.toString('hex'),
+      MAX_INTEGER.toString(16),
       'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
     )
 
     st.equal(
-      TWO_POW256.toString('hex'),
+      TWO_POW256.toString(16),
       '10000000000000000000000000000000000000000000000000000000000000000'
     )
 
