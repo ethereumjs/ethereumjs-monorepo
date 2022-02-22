@@ -1,26 +1,22 @@
 module.exports = {
-  extends: "../../config/eslint.js",
+  extends: '../../config/eslint.js',
   parserOptions: {
-    project: ['./tsconfig.json', './tsconfig.browser.json', './tsconfig.eslint.json']
+    project: ['./tsconfig.json', './tsconfig.browser.json', './tsconfig.eslint.json'],
   },
-  rules: {
-  },
+  rules: {},
   overrides: [
     {
       files: ['test/**/*.ts'],
       rules: {
-        'implicit-dependencies/no-implicit': [
-          'error',
-          { peer: false, dev: true, optional: false },
-        ],
+        'implicit-dependencies/no-implicit': ['error', { peer: false, dev: true, optional: false }],
       },
     },
     {
-      files: ['bin/cli.ts'],
+      files: ['bin/**.ts'],
       rules: {
-        'no-console': 'off'
+        'no-console': 'off',
       },
     },
   ],
-  ignorePatterns: ['webpack.config.js']
+  ignorePatterns: ['webpack.config.js'],
 }
