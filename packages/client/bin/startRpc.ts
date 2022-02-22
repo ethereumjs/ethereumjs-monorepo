@@ -2,7 +2,6 @@ import { Server as RPCServer } from 'jayson/promise'
 import Express, { Application, Request, Response, NextFunction } from 'express'
 import jwt from 'express-jwt'
 import { readFileSync, writeFileSync } from 'fs-extra'
-
 import { RPCManager } from '../lib/rpc'
 import EthereumClient from '../lib/client'
 import { inspectParams } from '../lib/util'
@@ -31,18 +30,18 @@ function createRPCServerListener({
 }: {
   rpcport: number
   server: RPCServer
-  withEngineMiddleware?: { jwtEngineSecret: Buffer; unlessFn?: (req: Request) => boolean }
+  withEngineMiddleware?: { jwtSecret: Buffer; unlessFn?: (req: Request) => boolean }
 }): Application {
   const app = Express()
   app.use(Express.json())
 
   // If server has engine middleware we need to add a jwt token based auth
   if (withEngineMiddleware) {
-    const { jwtEngineSecret, unlessFn } = withEngineMiddleware
+    const { jwtSecret, unlessFn } = withEngineMiddleware
     if (unlessFn) {
-      app.use(jwt({ secret: jwtEngineSecret, algorithms: ['HS256'] }).unless(unlessFn))
+      app.use(jwt({ secret: jwtSecret, algorithms: ['HS256'] }).unless(unlessFn))
     } else {
-      app.use(jwt({ secret: jwtEngineSecret, algorithms: ['HS256'] }))
+      app.use(jwt({ secret: jwtSecret, algorithms: ['HS256'] }))
     }
 
     app.use(function (req: Request, res: Response, next: NextFunction) {
@@ -60,7 +59,10 @@ function createRPCServerListener({
   return app
 }
 
-function readJwtSecretFromHexFile(config: Config, jwtFilePath?: string): Buffer {
+/**
+ * Returns a jwt secret from a provided file path, otherwise saves a randomly generated one to datadir
+ */
+function jwtSecret(config: Config, jwtFilePath?: string): Buffer {
   let jwtSecret
   if (jwtFilePath) {
     const jwtSecretContents = readFileSync(jwtFilePath, 'utf-8').trim()
@@ -137,7 +139,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     rpcEngine,
     rpcEngineAddr,
     rpcEnginePort,
-    'jwt-secret': jwtEngineSecretPath,
+    'jwt-secret': jwtSecretPath,
   } = args
   const manager = new RPCManager(client, config)
 
@@ -156,7 +158,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
         server,
         withEngineMiddleware: withEngineMethods
           ? {
-              jwtEngineSecret: readJwtSecretFromHexFile(config, jwtEngineSecretPath),
+              jwtSecret: jwtSecret(config, jwtSecretPath),
               unlessFn: function (req: Request) {
                 const { method } = req.body
                 return !method.includes('engine_')
@@ -196,7 +198,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
       rpcport,
       server,
       withEngineMiddleware: {
-        jwtEngineSecret: readJwtSecretFromHexFile(config, jwtEngineSecretPath),
+        jwtSecret: jwtSecret(config, jwtSecretPath),
       },
     })
     config.logger.info(
