@@ -1,14 +1,13 @@
 import tape from 'tape'
-const request = require('supertest')
+import { encode, TAlgorithm } from 'jwt-simple'
 import { startRPC, closeRPC } from './helpers'
 import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code'
-import { encode, TAlgorithm } from 'jwt-simple'
+const request = require('supertest')
 
 const jwtSecret = Buffer.from(Array.from({ length: 32 }, () => Math.round(Math.random() * 255)))
 
 tape('call JSON-RPC without Content-Type header', (t) => {
   const server = startRPC({})
-
   const req = 'plaintext'
 
   request(server)
@@ -23,7 +22,6 @@ tape('call JSON-RPC without Content-Type header', (t) => {
 
 tape('call JSON-RPC auth protected server without any auth headers', (t) => {
   const server = startRPC({}, undefined, { jwtSecret })
-
   const req = 'plaintext'
 
   request(server)
@@ -38,7 +36,6 @@ tape('call JSON-RPC auth protected server without any auth headers', (t) => {
 
 tape('call JSON-RPC auth protected server with invalid token', (t) => {
   const server = startRPC({}, undefined, { jwtSecret })
-
   const req = 'plaintext'
 
   request(server)
@@ -54,7 +51,6 @@ tape('call JSON-RPC auth protected server with invalid token', (t) => {
 
 tape('call JSON-RPC auth protected server with an invalid algorithm token', (t) => {
   const server = startRPC({}, undefined, { jwtSecret })
-
   const req = 'plaintext'
   const claims = { iat: Math.floor(new Date().getTime() / 1000) }
   const token = encode(claims, jwtSecret as never as string, 'HS512' as TAlgorithm)
@@ -72,7 +68,6 @@ tape('call JSON-RPC auth protected server with an invalid algorithm token', (t) 
 
 tape('call JSON-RPC auth protected server with an valid token', (t) => {
   const server = startRPC({}, undefined, { jwtSecret })
-
   const req = 'plaintext'
   const claims = { iat: Math.floor(new Date().getTime() / 1000) }
   const token = encode(claims, jwtSecret as never as string, 'HS256' as TAlgorithm)
@@ -90,7 +85,6 @@ tape('call JSON-RPC auth protected server with an valid token', (t) => {
 
 tape('call JSON-RPC auth protected server with an valid but stale token', (t) => {
   const server = startRPC({}, undefined, { jwtSecret })
-
   const req = 'plaintext'
   const claims = { iat: Math.floor(new Date().getTime() / 1000 - 6) }
   const token = encode(claims, jwtSecret as never as string, 'HS256' as TAlgorithm)
@@ -108,7 +102,6 @@ tape('call JSON-RPC auth protected server with an valid but stale token', (t) =>
 
 tape('call JSON-RPC without Content-Type header', (t) => {
   const server = startRPC({}, undefined, { jwtSecret })
-
   const req = 'plaintext'
 
   request(server)
@@ -151,12 +144,7 @@ tape('call JSON RPC with non-exist method', (t) => {
 tape('call JSON-RPC auth protected server with unprotected method without token ', (t) => {
   const server = startRPC({}, undefined, {
     jwtSecret,
-    unlessFn: (req) => {
-      const {
-        body: { method },
-      } = req as never as { body: { method: string } }
-      return method.includes('unprotected_')
-    },
+    unlessFn: (req: any) => req.body.method.includes('unprotected_'),
   })
 
   const req = {
@@ -180,12 +168,7 @@ tape('call JSON-RPC auth protected server with unprotected method without token 
 tape('call JSON-RPC auth protected server with protected method without token ', (t) => {
   const server = startRPC({}, undefined, {
     jwtSecret,
-    unlessFn: (req) => {
-      const {
-        body: { method },
-      } = req as never as { body: { method: string } }
-      return !method.includes('protected_')
-    },
+    unlessFn: (req: any) => !req.body.method.includes('protected_'),
   })
 
   const req = {
@@ -209,12 +192,7 @@ tape('call JSON-RPC auth protected server with protected method without token ',
 tape('call JSON-RPC auth protected server with protected method with token ', (t) => {
   const server = startRPC({}, undefined, {
     jwtSecret,
-    unlessFn: (req) => {
-      const {
-        body: { method },
-      } = req as never as { body: { method: string } }
-      return !method.includes('protected_')
-    },
+    unlessFn: (req: any) => !req.body.method.includes('protected_'),
   })
 
   const req = {
