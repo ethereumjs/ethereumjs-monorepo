@@ -23,7 +23,7 @@ import {
 } from './util'
 import { ERROR } from '../../exceptions'
 import { RunState } from './../interpreter'
-import { exponentation } from '.'
+import { expmod, N } from '.'
 
 export interface SyncOpHandler {
   (runState: RunState, common: Common): void
@@ -179,7 +179,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.stack.push(base)
         return
       }
-      const r = exponentation(base, exponent)
+      const r = expmod(base, exponent, N)
       runState.stack.push(r)
     },
   ],
