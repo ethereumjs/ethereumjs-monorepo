@@ -94,7 +94,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   it('create a range proof and verify it', async (t) => {
     const { trie, entries } = await randomTrie()
 
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 10; i++) {
       const start = getRandomIntInclusive(0, entries.length - 2)
       const end = getRandomIntInclusive(start + 1, entries.length - 1)
       t.equal(await verify(trie, entries, start, end), end !== entries.length - 1)
@@ -108,7 +108,7 @@ tape('simple merkle range proofs generation and verification', function (tester)
   it('create a non-existent range proof and verify it', async (t) => {
     const { trie, entries } = await randomTrie()
 
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 10; i++) {
       const start = getRandomIntInclusive(0, entries.length - 1)
       const end = getRandomIntInclusive(start, entries.length - 1)
 
@@ -225,42 +225,36 @@ tape('simple merkle range proofs generation and verification', function (tester)
 
   it('create a single side range proof and verify it', async (t) => {
     const startKey = Buffer.from('00'.repeat(32), 'hex')
-    for (let i = 0; i < 10; i++) {
-      const { trie, entries } = await randomTrie(false)
+    const { trie, entries } = await randomTrie(false)
 
-      const cases = [0, 1, 200, entries.length - 1]
-      for (const end of cases) {
-        t.equal(await verify(trie, entries, 0, end, startKey), end !== entries.length - 1)
-      }
+    const cases = [0, 1, 200, entries.length - 1]
+    for (const end of cases) {
+      t.equal(await verify(trie, entries, 0, end, startKey), end !== entries.length - 1)
     }
   })
 
   it('create a revert single side range proof and verify it', async (t) => {
     const endKey = Buffer.from('ff'.repeat(32), 'hex')
-    for (let i = 0; i < 10; i++) {
-      const { trie, entries } = await randomTrie(false)
+    const { trie, entries } = await randomTrie(false)
 
-      const cases = [0, 1, 200, entries.length - 1]
-      for (const start of cases) {
-        t.equal(await verify(trie, entries, start, entries.length - 1, undefined, endKey), false)
-      }
+    const cases = [0, 1, 200, entries.length - 1]
+    for (const start of cases) {
+      t.equal(await verify(trie, entries, start, entries.length - 1, undefined, endKey), false)
     }
   })
 
   it('create a bad range proof and verify it', async (t) => {
     const runTest = async (cb: (trie: BaseTrie, entries: [Buffer, Buffer][]) => Promise<void>) => {
-      for (let i = 0; i < 10; i++) {
-        const { trie, entries } = await randomTrie(false)
+      const { trie, entries } = await randomTrie(false)
 
-        let result = false
-        try {
-          await cb(trie, entries)
-          result = true
-        } catch (err) {
-          // ignore
-        }
-        t.assert(!result)
+      let result = false
+      try {
+        await cb(trie, entries)
+        result = true
+      } catch (err) {
+        // ignore
       }
+      t.assert(!result)
     }
 
     // Modified key
