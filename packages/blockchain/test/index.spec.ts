@@ -4,7 +4,7 @@ import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
 import tape from 'tape'
 import Blockchain from '../src'
 import { generateBlockchain, generateBlocks, isConsecutive, createTestDB } from './util'
-import * as testData from './testdata/testdata.json'
+import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import blocksData from './testdata/blocks_mainnet.json'
 
 const level = require('level-mem')
@@ -674,7 +674,7 @@ tape('blockchain test', (t) => {
 
   t.test('should add block with body', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const genesisRlp = Buffer.from(testData.genesisRLP.slice(2), 'hex')
+    const genesisRlp = Buffer.from(testDataPreLondon.genesisRLP.slice(2), 'hex')
     const genesisBlock = Block.fromRLPSerializedBlock(genesisRlp, {
       initWithGenesisHeader: true,
       common,
@@ -685,7 +685,7 @@ tape('blockchain test', (t) => {
       genesisBlock,
     })
 
-    const blockRlp = Buffer.from(testData.blocks[0].rlp.slice(2), 'hex')
+    const blockRlp = Buffer.from(testDataPreLondon.blocks[0].rlp.slice(2), 'hex')
     const block = Block.fromRLPSerializedBlock(blockRlp, { common })
     await blockchain.putBlock(block)
     st.end()
