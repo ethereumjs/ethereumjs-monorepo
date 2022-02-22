@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { BN, toBuffer } from 'ethereumjs-util'
+import { toBuffer } from 'ethereumjs-util'
 import { setupPreConditions, makeTx, makeBlockFromEnv } from '../../util'
 import type { InterpreterStep } from '../../../src/evm/interpreter'
 
@@ -89,14 +89,14 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
       if (options.jsontrace) {
         vm.on('step', function (e: InterpreterStep) {
           let hexStack = []
-          hexStack = e.stack.map((item: any) => {
-            return '0x' + new BN(item).toString(16, 0)
+          hexStack = e.stack.map((item: bigint) => {
+            return '0x' + item.toString(16)
           })
 
           const opTrace = {
             pc: e.pc,
             op: e.opcode.name,
-            gas: '0x' + e.gasLeft.toString('hex'),
+            gas: '0x' + e.gasLeft.toString(16),
             gasCost: '0x' + e.opcode.fee.toString(16),
             stack: hexStack,
             depth: e.depth,

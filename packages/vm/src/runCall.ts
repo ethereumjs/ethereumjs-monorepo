@@ -1,4 +1,4 @@
-import { Address, BN } from 'ethereumjs-util'
+import { Address } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import VM from './index'
 import TxContext from './evm/txContext'
@@ -10,12 +10,12 @@ import { default as EVM, EVMResult } from './evm/evm'
  */
 export interface RunCallOpts {
   block?: Block
-  gasPrice?: BN
+  gasPrice?: bigint
   origin?: Address
   caller?: Address
-  gasLimit?: BN
+  gasLimit?: bigint
   to?: Address
-  value?: BN
+  value?: bigint
   data?: Buffer
   /**
    * This is for CALLCODE where the code to load is different than the code from the `opts.to` address.
@@ -36,13 +36,13 @@ export default function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult>
   const block = opts.block ?? Block.fromBlockData({}, { common: this._common })
 
   const txContext = new TxContext(
-    opts.gasPrice ?? new BN(0),
+    opts.gasPrice ?? BigInt(0),
     opts.origin ?? opts.caller ?? Address.zero()
   )
 
   const message = new Message({
     caller: opts.caller ?? Address.zero(),
-    gasLimit: opts.gasLimit ?? new BN(0xffffff),
+    gasLimit: opts.gasLimit ?? BigInt(0xffffff),
     to: opts.to ?? undefined,
     value: opts.value,
     data: opts.data,

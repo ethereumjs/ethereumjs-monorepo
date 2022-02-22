@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Account, Address, BN, MAX_UINT64 } from 'ethereumjs-util'
+import { Account, Address, BN, MAX_UINT64, bufferToBigInt, bnToBigInt } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
@@ -9,17 +9,12 @@ import Message from './message'
 import EVM, { EVMResult } from './evm'
 import { Log } from './types'
 import { TransientStorage } from '../state'
+import { addressToBuffer } from './opcodes'
 
 const debugGas = createDebugLogger('vm:eei:gas')
 
 function trap(err: ERROR) {
   throw new VmError(err)
-}
-
-const MASK_160 = new BN(1).shln(160).subn(1)
-function addressToBuffer(address: BN) {
-  if (Buffer.isBuffer(address)) return address
-  return address.and(MASK_160).toArrayLike(Buffer, 'be', 20)
 }
 
 /**
@@ -30,11 +25,11 @@ export interface Env {
   address: Address
   caller: Address
   callData: Buffer
-  callValue: BN
+  callValue: bigint
   code: Buffer
   isStatic: boolean
   depth: number
-  gasPrice: BN
+  gasPrice: bigint
   origin: Address
   block: Block
   contract: Account
@@ -77,7 +72,7 @@ export default class EEI {
     state: StateManager,
     evm: EVM,
     common: Common,
-    gasLeft: BN,
+    gasLeft: bigint,
     transientStorage: TransientStorage
   ) {
     this._env = env
@@ -100,13 +95,13 @@ export default class EEI {
    * @param context - Usage context for debugging
    * @throws if out of gas
    */
-  useGas(amount: BN, context?: string): void {
-    this._gasLeft.isub(amount)
+  useGas(amount: bigint, context?: string): void {
+    this._gasLeft -= amount
     if (this._evm._vm.DEBUG) {
       debugGas(`${context ? context + ': ' : ''}used ${amount} gas (-> ${this._gasLeft})`)
     }
-    if (this._gasLeft.ltn(0)) {
-      this._gasLeft = new BN(0)
+    if (this._gasLeft < BigInt(0)) {
+      this._gasLeft = BigInt(0)
       trap(ERROR.OUT_OF_GAS)
     }
   }
@@ -116,11 +111,11 @@ export default class EEI {
    * @param amount - Amount of gas refunded
    * @param context - Usage context for debugging
    */
-  refundGas(amount: BN, context?: string): void {
+  refundGas(amount: bigint, context?: string): void {
     if (this._evm._vm.DEBUG) {
       debugGas(`${context ? context + ': ' : ''}refund ${amount} gas (-> ${this._evm._refund})`)
     }
-    this._evm._refund.iadd(amount)
+    this._evm._refund += amount
   }
 
   /**
@@ -128,13 +123,13 @@ export default class EEI {
    * @param amount - Amount to subtract from gas refunds
    * @param context - Usage context for debugging
    */
-  subRefund(amount: BN, context?: string): void {
+  subRefund(amount: bigint, context?: string): void {
     if (this._evm._vm.DEBUG) {
       debugGas(`${context ? context + ': ' : ''}sub gas refund ${amount} (-> ${this._evm._refund})`)
     }
-    this._evm._refund.isub(amount)
-    if (this._evm._refund.ltn(0)) {
-      this._evm._refund = new BN(0)
+    this._evm._refund -= amount
+    if (this._evm._refund < BigInt(0)) {
+      this._evm._refund = BigInt(0)
       trap(ERROR.REFUND_EXHAUSTED)
     }
   }
@@ -143,11 +138,11 @@ export default class EEI {
    * Increments the internal gasLeft counter. Used for adding callStipend.
    * @param amount - Amount to add
    */
-  addStipend(amount: BN): void {
+  addStipend(amount: bigint): void {
     if (this._evm._vm.DEBUG) {
       debugGas(`add stipend ${amount} (-> ${this._gasLeft})`)
     }
-    this._gasLeft.iadd(amount)
+    this._gasLeft += amount
   }
 
   /**
@@ -161,38 +156,38 @@ export default class EEI {
    * Returns balance of the given account.
    * @param address - Address of account
    */
-  async getExternalBalance(address: Address): Promise<BN> {
+  async getExternalBalance(address: Address): Promise<bigint> {
     // shortcut if current account
     if (address.equals(this._env.address)) {
-      return this._env.contract.balance
+      return bnToBigInt(this._env.contract.balance)
     }
 
     // otherwise load account then return balance
     const account = await this._state.getAccount(address)
-    return account.balance
+    return bnToBigInt(account.balance)
   }
 
   /**
    * Returns balance of self.
    */
-  getSelfBalance(): BN {
-    return this._env.contract.balance
+  getSelfBalance(): bigint {
+    return bnToBigInt(this._env.contract.balance)
   }
 
   /**
    * Returns caller address. This is the address of the account
    * that is directly responsible for this execution.
    */
-  getCaller(): BN {
-    return new BN(this._env.caller.buf)
+  getCaller(): bigint {
+    return bufferToBigInt(this._env.caller.buf)
   }
 
   /**
    * Returns the deposited value by the instruction/transaction
    * responsible for this execution.
    */
-  getCallValue(): BN {
-    return new BN(this._env.callValue)
+  getCallValue(): bigint {
+    return this._env.callValue
   }
 
   /**
@@ -207,15 +202,15 @@ export default class EEI {
    * Returns size of input data in current environment. This pertains to the
    * input data passed with the message call instruction or transaction.
    */
-  getCallDataSize(): BN {
-    return new BN(this._env.callData.length)
+  getCallDataSize(): bigint {
+    return BigInt(this._env.callData.length)
   }
 
   /**
    * Returns the size of code running in current environment.
    */
-  getCodeSize(): BN {
-    return new BN(this._env.code.length)
+  getCodeSize(): bigint {
+    return BigInt(this._env.code.length)
   }
 
   /**
@@ -236,17 +231,17 @@ export default class EEI {
    * Get size of an account’s code.
    * @param address - Address of account
    */
-  async getExternalCodeSize(address: BN): Promise<BN> {
+  async getExternalCodeSize(address: bigint): Promise<bigint> {
     const addr = new Address(addressToBuffer(address))
     const code = await this._state.getContractCode(addr)
-    return new BN(code.length)
+    return BigInt(code.length)
   }
 
   /**
    * Returns code of an account.
    * @param address - Address of account
    */
-  async getExternalCode(address: BN): Promise<Buffer> {
+  async getExternalCode(address: bigint): Promise<Buffer> {
     const addr = new Address(addressToBuffer(address))
     return this._state.getContractCode(addr)
   }
@@ -256,8 +251,8 @@ export default class EEI {
    * from the last executed call, callCode, callDelegate, callStatic or create.
    * Note: create only fills the return data buffer in case of a failure.
    */
-  getReturnDataSize(): BN {
-    return new BN(this._lastReturned.length)
+  getReturnDataSize(): bigint {
+    return BigInt(this._lastReturned.length)
   }
 
   /**
@@ -272,7 +267,7 @@ export default class EEI {
   /**
    * Returns price of gas in current environment.
    */
-  getTxGasPrice(): BN {
+  getTxGasPrice(): bigint {
     return this._env.gasPrice
   }
 
@@ -281,21 +276,21 @@ export default class EEI {
    * sender of original transaction; it is never an account with
    * non-empty associated code.
    */
-  getTxOrigin(): BN {
-    return new BN(this._env.origin.buf)
+  getTxOrigin(): bigint {
+    return bufferToBigInt(this._env.origin.buf)
   }
 
   /**
    * Returns the block’s number.
    */
-  getBlockNumber(): BN {
-    return this._env.block.header.number
+  getBlockNumber(): bigint {
+    return bnToBigInt(this._env.block.header.number)
   }
 
   /**
    * Returns the block's beneficiary address.
    */
-  getBlockCoinbase(): BN {
+  getBlockCoinbase(): bigint {
     let coinbase: Address
     if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       // Backwards-compatibilty check
@@ -308,21 +303,21 @@ export default class EEI {
     } else {
       coinbase = this._env.block.header.coinbase
     }
-    return new BN(coinbase.toBuffer())
+    return bufferToBigInt(coinbase.toBuffer())
   }
 
   /**
    * Returns the block's timestamp.
    */
-  getBlockTimestamp(): BN {
-    return this._env.block.header.timestamp
+  getBlockTimestamp(): bigint {
+    return bnToBigInt(this._env.block.header.timestamp)
   }
 
   /**
    * Returns the block's difficulty.
    */
-  getBlockDifficulty(): BN {
-    return this._env.block.header.difficulty
+  getBlockDifficulty(): bigint {
+    return bnToBigInt(this._env.block.header.difficulty)
   }
 
   /**
@@ -335,37 +330,37 @@ export default class EEI {
   /**
    * Returns the block's gas limit.
    */
-  getBlockGasLimit(): BN {
-    return this._env.block.header.gasLimit
+  getBlockGasLimit(): bigint {
+    return bnToBigInt(this._env.block.header.gasLimit)
   }
 
   /**
    * Returns the chain ID for current chain. Introduced for the
    * CHAINID opcode proposed in [EIP-1344](https://eips.ethereum.org/EIPS/eip-1344).
    */
-  getChainId(): BN {
-    return this._common.chainId()
+  getChainId(): bigint {
+    return bnToBigInt(this._common.chainId())
   }
 
   /**
    * Returns the Base Fee of the block as proposed in [EIP-3198](https;//eips.etheruem.org/EIPS/eip-3198)
    */
-  getBlockBaseFee(): BN {
+  getBlockBaseFee(): bigint {
     const baseFee = this._env.block.header.baseFeePerGas
     if (baseFee === undefined) {
       // Sanity check
       throw new Error('Block has no Base Fee')
     }
-    return baseFee
+    return bnToBigInt(baseFee)
   }
 
   /**
    * Returns Gets the hash of one of the 256 most recent complete blocks.
    * @param num - Number of block
    */
-  async getBlockHash(num: BN): Promise<BN> {
-    const block = await this._env.blockchain.getBlock(num)
-    return new BN(block.hash())
+  async getBlockHash(num: bigint): Promise<bigint> {
+    const block = await this._env.blockchain.getBlock(Number(num))
+    return bufferToBigInt(block.hash())
   }
 
   /**
@@ -410,8 +405,8 @@ export default class EEI {
   /**
    * Returns the current gasCounter.
    */
-  getGasLeft(): BN {
-    return this._gasLeft.clone()
+  getGasLeft(): bigint {
+    return this._gasLeft
   }
 
   /**
@@ -446,7 +441,7 @@ export default class EEI {
   async _selfDestruct(toAddress: Address): Promise<void> {
     // only add to refund if this is the first selfdestruct for the address
     if (!this._result.selfdestruct[this._env.address.buf.toString('hex')]) {
-      this.refundGas(new BN(this._common.param('gasPrices', 'selfdestructRefund')))
+      this.refundGas(BigInt(this._common.param('gasPrices', 'selfdestructRefund')))
     }
 
     this._result.selfdestruct[this._env.address.buf.toString('hex')] = toAddress.buf
@@ -483,7 +478,7 @@ export default class EEI {
   /**
    * Sends a message with arbitrary data to a given address path.
    */
-  async call(gasLimit: BN, address: Address, value: BN, data: Buffer): Promise<BN> {
+  async call(gasLimit: bigint, address: Address, value: bigint, data: Buffer): Promise<bigint> {
     const msg = new Message({
       caller: this._env.address,
       gasLimit,
@@ -500,7 +495,7 @@ export default class EEI {
   /**
    * Message-call into this account with an alternative account's code.
    */
-  async callCode(gasLimit: BN, address: Address, value: BN, data: Buffer): Promise<BN> {
+  async callCode(gasLimit: bigint, address: Address, value: bigint, data: Buffer): Promise<bigint> {
     const msg = new Message({
       caller: this._env.address,
       gasLimit,
@@ -520,7 +515,12 @@ export default class EEI {
    * state modifications. This includes log, create, selfdestruct and call with
    * a non-zero value.
    */
-  async callStatic(gasLimit: BN, address: Address, value: BN, data: Buffer): Promise<BN> {
+  async callStatic(
+    gasLimit: bigint,
+    address: Address,
+    value: bigint,
+    data: Buffer
+  ): Promise<bigint> {
     const msg = new Message({
       caller: this._env.address,
       gasLimit,
@@ -538,7 +538,12 @@ export default class EEI {
    * Message-call into this account with an alternative account’s code, but
    * persisting the current values for sender and value.
    */
-  async callDelegate(gasLimit: BN, address: Address, value: BN, data: Buffer): Promise<BN> {
+  async callDelegate(
+    gasLimit: bigint,
+    address: Address,
+    value: bigint,
+    data: Buffer
+  ): Promise<bigint> {
     const msg = new Message({
       caller: this._env.caller,
       gasLimit,
@@ -554,7 +559,7 @@ export default class EEI {
     return this._baseCall(msg)
   }
 
-  async _baseCall(msg: Message): Promise<BN> {
+  async _baseCall(msg: Message): Promise<bigint> {
     const selfdestruct = { ...this._result.selfdestruct }
     msg.selfdestruct = selfdestruct
 
@@ -564,9 +569,9 @@ export default class EEI {
     // Check if account has enough ether and max depth not exceeded
     if (
       this._env.depth >= this._common.param('vm', 'stackLimit') ||
-      (msg.delegatecall !== true && this._env.contract.balance.lt(msg.value))
+      (msg.delegatecall !== true && bnToBigInt(this._env.contract.balance) < msg.value)
     ) {
-      return new BN(0)
+      return BigInt(0)
     }
 
     const results = await this._evm.executeMessage(msg)
@@ -600,7 +605,12 @@ export default class EEI {
   /**
    * Creates a new contract with a given value.
    */
-  async create(gasLimit: BN, value: BN, data: Buffer, salt: Buffer | null = null): Promise<BN> {
+  async create(
+    gasLimit: bigint,
+    value: bigint,
+    data: Buffer,
+    salt: Buffer | null = null
+  ): Promise<bigint> {
     const selfdestruct = { ...this._result.selfdestruct }
     const msg = new Message({
       caller: this._env.address,
@@ -618,14 +628,14 @@ export default class EEI {
     // Check if account has enough ether and max depth not exceeded
     if (
       this._env.depth >= this._common.param('vm', 'stackLimit') ||
-      (msg.delegatecall !== true && this._env.contract.balance.lt(msg.value))
+      (msg.delegatecall !== true && bnToBigInt(this._env.contract.balance) < msg.value)
     ) {
-      return new BN(0)
+      return BigInt(0)
     }
 
     // EIP-2681 check
     if (this._env.contract.nonce.gte(MAX_UINT64)) {
-      return new BN(0)
+      return BigInt(0)
     }
 
     this._env.contract.nonce.iaddn(1)
@@ -664,7 +674,7 @@ export default class EEI {
       this._env.contract = account
       if (results.createdAddress) {
         // push the created address to the stack
-        return new BN(results.createdAddress.buf)
+        return bufferToBigInt(results.createdAddress.buf)
       }
     }
 
@@ -675,7 +685,7 @@ export default class EEI {
    * Creates a new contract with a given value. Generates
    * a deterministic address via CREATE2 rules.
    */
-  async create2(gasLimit: BN, value: BN, data: Buffer, salt: Buffer): Promise<BN> {
+  async create2(gasLimit: bigint, value: bigint, data: Buffer, salt: Buffer): Promise<bigint> {
     return this.create(gasLimit, value, data, salt)
   }
 
@@ -699,9 +709,9 @@ export default class EEI {
     // This preserves the previous logic, but seems to contradict the EEI spec
     // https://github.com/ewasm/design/blob/38eeded28765f3e193e12881ea72a6ab807a3371/eth_interface.md
     if (results.execResult.exceptionError) {
-      return new BN(0)
+      return BigInt(0)
     } else {
-      return new BN(1)
+      return BigInt(1)
     }
   }
 }

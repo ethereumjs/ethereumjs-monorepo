@@ -1,11 +1,11 @@
-import { Address, BN } from 'ethereumjs-util'
+import { Address } from 'ethereumjs-util'
 import { PrecompileFunc } from './precompiles'
 
 export default class Message {
   to: Address
-  value: BN
+  value: bigint
   caller: Address
-  gasLimit: BN
+  gasLimit: bigint
   data: Buffer
   depth: number
   code: Buffer | PrecompileFunc
@@ -18,7 +18,7 @@ export default class Message {
 
   constructor(opts: any) {
     this.to = opts.to
-    this.value = opts.value ? opts.value : new BN(0)
+    this.value = opts.value ? opts.value : BigInt(0)
     this.caller = opts.caller
     this.gasLimit = opts.gasLimit
     this.data = opts.data || Buffer.alloc(0)
@@ -31,7 +31,7 @@ export default class Message {
     this.selfdestruct = opts.selfdestruct // TODO: Move from here
     this.delegatecall = opts.delegatecall || false
 
-    if (this.value.isNeg()) {
+    if (this.value < 0) {
       throw new Error(`value field cannot be negative, received ${this.value}`)
     }
   }

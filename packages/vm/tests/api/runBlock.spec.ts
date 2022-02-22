@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, rlp, KECCAK256_RLP, Account } from 'ethereumjs-util'
+import { Address, BN, rlp, KECCAK256_RLP, Account, bnToBigInt } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import {
@@ -45,7 +45,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     })
 
     st.equal(
-      res.results[0].gasUsed.toString('hex'),
+      res.results[0].gasUsed.toString(16),
       '5208',
       'actual gas used should equal blockHeader gasUsed'
     )
@@ -172,11 +172,13 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       generate: true,
     })
     st.ok(
-      txResultChainstart.results[0].gasUsed.toNumber() == 21000 + 68 * 3 + 3 + 50,
+      txResultChainstart.results[0].gasUsed ===
+        BigInt(21000) + BigInt(68) * BigInt(3) + BigInt(3) + BigInt(50),
       'tx charged right gas on chainstart hard fork'
     )
     st.ok(
-      txResultMuirGlacier.results[0].gasUsed.toNumber() == 21000 + 32000 + 16 * 3 + 3 + 800,
+      txResultMuirGlacier.results[0].gasUsed ===
+        BigInt(21000) + BigInt(32000) + BigInt(16) * BigInt(3) + BigInt(3) + BigInt(800),
       'tx charged right gas on muir glacier hard fork'
     )
   })
@@ -455,11 +457,15 @@ tape('runBlock() -> tx types', async (t) => {
     })
 
     st.ok(
-      res.gasUsed.eq(
-        res.receipts
-          .map((r) => r.gasUsed)
-          .reduce((prevValue: BN, currValue: Buffer) => prevValue.add(new BN(currValue)), new BN(0))
-      ),
+      res.gasUsed ===
+        bnToBigInt(
+          res.receipts
+            .map((r) => r.gasUsed)
+            .reduce(
+              (prevValue: BN, currValue: Buffer) => prevValue.add(new BN(currValue)),
+              new BN(0)
+            )
+        ),
       "gas used should equal transaction's total gasUsed"
     )
   }
