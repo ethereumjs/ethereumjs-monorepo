@@ -1,12 +1,14 @@
 import { Server as RPCServer } from 'jayson/promise'
-import Express, { Application, Request, Response, NextFunction } from 'express'
-import jwt from 'express-jwt'
 import { readFileSync, writeFileSync } from 'fs-extra'
 import { RPCManager } from '../lib/rpc'
 import EthereumClient from '../lib/client'
 import { inspectParams } from '../lib/util'
 import * as modules from '../lib/rpc/modules'
 import { Config } from '../lib/config'
+import { json as jsonParser } from 'body-parser'
+import { decode, TAlgorithm } from 'jwt-simple'
+import Connect, { Server, IncomingMessage } from 'connect'
+const algorithm: TAlgorithm = 'HS256'
 
 type RPCArgs = {
   rpc: boolean
@@ -24,38 +26,36 @@ type RPCArgs = {
 }
 
 function createRPCServerListener({
-  rpcport,
   server,
   withEngineMiddleware,
 }: {
-  rpcport: number
   server: RPCServer
-  withEngineMiddleware?: { jwtSecret: Buffer; unlessFn?: (req: Request) => boolean }
-}): Application {
-  const app = Express()
-  app.use(Express.json())
-
-  // If server has engine middleware we need to add a jwt token based auth
+  withEngineMiddleware?: { jwtSecret: Buffer; unlessFn?: (req: IncomingMessage) => boolean }
+}): Server {
+  const app = Connect()
+  app.use(jsonParser())
   if (withEngineMiddleware) {
     const { jwtSecret, unlessFn } = withEngineMiddleware
-    if (unlessFn) {
-      app.use(jwt({ secret: jwtSecret, algorithms: ['HS256'] }).unless(unlessFn))
-    } else {
-      app.use(jwt({ secret: jwtSecret, algorithms: ['HS256'] }))
-    }
+    app.use(function (req, res, next) {
+      try {
+        if (unlessFn) {
+          if (unlessFn(req)) return next()
+        }
+        const header = (req.headers['Authorization'] ?? req.headers['authorization']) as string
+        const token = header.split(' ')[1].trim()
+        const claims = decode(token, jwtSecret as never as string, false, algorithm)
+        if (Math.abs(new Date().getTime() - claims.iat * 1000 ?? 0) > 5000) {
+          throw Error('Unauthorized: Stale Token')
+        }
 
-    app.use(function (req: Request, res: Response, next: NextFunction) {
-      /** user object which is the parsed jwt claims is injected by jwt middleware */
-      const { user } = req as unknown as { user: { iat: number } | undefined }
-      if (user && Math.abs(new Date().getTime() - user.iat * 1000 ?? 0) > 5000) {
-        return res.sendStatus(401)
+        return next()
+      } catch (e) {
+        next(e)
       }
-      return next()
     })
   }
 
   app.use(server.middleware())
-  app.listen(rpcport)
   return app
 }
 
@@ -154,18 +154,19 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     const namespaces = [...new Set(Object.keys(methods).map((m) => m.split('_')[0]))].join(',')
     if (rpc) {
       createRPCServerListener({
-        rpcport,
         server,
         withEngineMiddleware: withEngineMethods
           ? {
               jwtSecret: jwtSecret(config, jwtSecretPath),
-              unlessFn: function (req: Request) {
-                const { method } = req.body
+              unlessFn: function (req: IncomingMessage) {
+                const {
+                  body: { method },
+                } = req as never as { body: { method: string } }
                 return !method.includes('engine_')
               },
             }
           : undefined,
-      })
+      }).listen(rpcport)
       config.logger.info(
         `Started JSON RPC Server address=http://${rpcaddr}:${rpcport} namespaces=${namespaces}`
       )
@@ -195,12 +196,11 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     server.on('response', onBatchResponse)
 
     createRPCServerListener({
-      rpcport,
       server,
       withEngineMiddleware: {
         jwtSecret: jwtSecret(config, jwtSecretPath),
       },
-    })
+    }).listen(rpcport)
     config.logger.info(
       `Started JSON RPC server address=http://${rpcEngineAddr}:${rpcEnginePort} namespaces=engine`
     )
