@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Account, Address } from 'ethereumjs-util'
+import { Account, Address, bnToBigInt } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
@@ -47,7 +47,7 @@ tape('BlockBuilder', async (t) => {
       return address
     }
     const result = await vmCopy.runBlock({ block })
-    st.ok(result.gasUsed.eq(block.header.gasUsed))
+    st.ok(result.gasUsed === bnToBigInt(block.header.gasUsed))
     st.ok(result.receiptRoot.equals(block.header.receiptTrie))
     st.ok(result.stateRoot.equals(block.header.stateRoot))
     st.ok(result.logsBloom.equals(block.header.logsBloom))
@@ -281,7 +281,7 @@ tape('BlockBuilder', async (t) => {
 
     // block should successfully execute with VM.runBlock and have same outputs
     const result = await vmCopy.runBlock({ block })
-    st.ok(result.gasUsed.eq(block.header.gasUsed))
+    st.ok(result.gasUsed === bnToBigInt(block.header.gasUsed))
     st.ok(result.receiptRoot.equals(block.header.receiptTrie))
     st.ok(result.stateRoot.equals(block.header.stateRoot))
     st.ok(result.logsBloom.equals(block.header.logsBloom))
@@ -377,7 +377,7 @@ tape('BlockBuilder', async (t) => {
       return address
     }
     const result = await vmCopy.runBlock({ block })
-    st.ok(result.gasUsed.eq(block.header.gasUsed))
+    st.ok(result.gasUsed === bnToBigInt(block.header.gasUsed))
     st.ok(result.receiptRoot.equals(block.header.receiptTrie))
     st.ok(result.stateRoot.equals(block.header.stateRoot))
     st.ok(result.logsBloom.equals(block.header.logsBloom))

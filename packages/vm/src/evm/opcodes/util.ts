@@ -1,9 +1,9 @@
 import Common from '@ethereumjs/common'
-import { BN, keccak256, setLengthRight, setLengthLeft } from 'ethereumjs-util'
+import { keccak256, setLengthRight, setLengthLeft, bigIntToBuffer } from 'ethereumjs-util'
 import { ERROR, VmError } from './../../exceptions'
 import { RunState } from './../interpreter'
 
-const MASK_160 = new BN(1).shln(160).subn(1)
+const MASK_160 = (BigInt(1) << BigInt(160)) - BigInt(1)
 
 /**
  * Proxy function for ethereumjs-util's setLengthLeft, except it returns a zero
@@ -31,14 +31,14 @@ export function trap(err: string) {
 }
 
 /**
- * Converts BN address (they're stored like this on the stack) to buffer address
+ * Converts bigint address (they're stored like this on the stack) to buffer address
  *
  * @param  {BN}     address
  * @return {Buffer}
  */
-export function addressToBuffer(address: BN | Buffer) {
+export function addressToBuffer(address: bigint | Buffer) {
   if (Buffer.isBuffer(address)) return address
-  return address.and(MASK_160).toArrayLike(Buffer, 'be', 20)
+  return setLengthLeft(bigIntToBuffer(address & MASK_160), 20)
 }
 
 /**
@@ -57,19 +57,19 @@ export function describeLocation(runState: RunState): string {
 /**
  * Find Ceil(a / b)
  *
- * @param {BN} a
- * @param {BN} b
- * @return {BN}
+ * @param {bigint} a
+ * @param {bigint} b
+ * @return {bigint}
  */
-export function divCeil(a: BN, b: BN): BN {
-  const div = a.div(b)
-  const mod = a.mod(b)
+export function divCeil(a: bigint, b: bigint): bigint {
+  const div = a / b
+  const modulus = mod(a, b)
 
   // Fast case - exact division
-  if (mod.isZero()) return div
+  if (modulus === BigInt(0)) return div
 
   // Round up
-  return div.isNeg() ? div.isubn(1) : div.iaddn(1)
+  return div < BigInt(0) ? div - BigInt(1) : div + BigInt(1)
 }
 
 export function short(buffer: Buffer): string {
@@ -91,20 +91,20 @@ export function short(buffer: Buffer): string {
  * @param {Buffer} data
  * @returns {Buffer}
  */
-export function getDataSlice(data: Buffer, offset: BN, length: BN): Buffer {
-  const len = new BN(data.length)
-  if (offset.gt(len)) {
+export function getDataSlice(data: Buffer, offset: bigint, length: bigint): Buffer {
+  const len = BigInt(data.length)
+  if (offset > len) {
     offset = len
   }
 
-  let end = offset.add(length)
-  if (end.gt(len)) {
+  let end = offset + length
+  if (end > len) {
     end = len
   }
 
-  data = data.slice(offset.toNumber(), end.toNumber())
+  data = data.slice(Number(offset), Number(end))
   // Right-pad with zeros to fill dataLength bytes
-  data = setLengthRight(data, length.toNumber())
+  data = setLengthRight(data, Number(length))
 
   return data
 }
@@ -165,11 +165,16 @@ export function jumpSubIsValid(runState: RunState, dest: number): boolean {
  * @param {RunState} runState - the current runState
  * @param {Common} common - the common
  */
-export function maxCallGas(gasLimit: BN, gasLeft: BN, runState: RunState, common: Common): BN {
+export function maxCallGas(
+  gasLimit: bigint,
+  gasLeft: bigint,
+  runState: RunState,
+  common: Common
+): bigint {
   const isTangerineWhistleOrLater = common.gteHardfork('tangerineWhistle')
   if (isTangerineWhistleOrLater) {
-    const gasAllowed = gasLeft.sub(gasLeft.divn(64))
-    return gasLimit.gt(gasAllowed) ? gasAllowed : gasLimit
+    const gasAllowed = gasLeft - gasLeft / BigInt(64)
+    return gasLimit > gasAllowed ? gasAllowed : gasLimit
   } else {
     return gasLimit
   }
@@ -183,23 +188,23 @@ export function maxCallGas(gasLimit: BN, gasLeft: BN, runState: RunState, common
  * @param {BN} offset
  * @param {BN} length
  */
-export function subMemUsage(runState: RunState, offset: BN, length: BN, common: Common) {
+export function subMemUsage(runState: RunState, offset: bigint, length: bigint, common: Common) {
   // YP (225): access with zero length will not extend the memory
-  if (length.isZero()) return new BN(0)
+  if (length === BigInt(0)) return BigInt(0)
 
-  const newMemoryWordCount = divCeil(offset.add(length), new BN(32))
-  if (newMemoryWordCount.lte(runState.memoryWordCount)) return new BN(0)
+  const newMemoryWordCount = divCeil(offset + length, BigInt(32))
+  if (newMemoryWordCount <= runState.memoryWordCount) return BigInt(0)
 
   const words = newMemoryWordCount
-  const fee = new BN(common.param('gasPrices', 'memory'))
-  const quadCoeff = new BN(common.param('gasPrices', 'quadCoeffDiv'))
+  const fee = BigInt(common.param('gasPrices', 'memory'))
+  const quadCoeff = BigInt(common.param('gasPrices', 'quadCoeffDiv'))
   // words * 3 + words ^2 / 512
-  const cost = words.mul(fee).add(words.mul(words).div(quadCoeff))
+  let cost = words * fee + (words * words) / quadCoeff
 
-  if (cost.gt(runState.highestMemCost)) {
+  if (cost > runState.highestMemCost) {
     const currentHighestMemCost = runState.highestMemCost
-    runState.highestMemCost = cost.clone()
-    cost.isub(currentHighestMemCost)
+    runState.highestMemCost = cost
+    cost -= currentHighestMemCost
   }
 
   runState.memoryWordCount = newMemoryWordCount
@@ -214,15 +219,16 @@ export function subMemUsage(runState: RunState, offset: BN, length: BN, common: 
  * @param {BN}       outOffset
  * @param {BN}       outLength
  */
-export function writeCallOutput(runState: RunState, outOffset: BN, outLength: BN) {
+export function writeCallOutput(runState: RunState, outOffset: bigint, outLength: bigint) {
   const returnData = runState.eei.getReturnData()
   if (returnData.length > 0) {
-    const memOffset = outOffset.toNumber()
-    let dataLength = outLength.toNumber()
-    if (returnData.length < dataLength) {
+    const memOffset = Number(outOffset)
+    let dataLength = Number(outLength)
+    if (BigInt(returnData.length) < dataLength) {
       dataLength = returnData.length
     }
-    const data = getDataSlice(returnData, new BN(0), new BN(dataLength))
+    const data = getDataSlice(returnData, BigInt(0), BigInt(dataLength))
+    runState.memory.extend(memOffset, dataLength)
     runState.memory.write(memOffset, dataLength, data)
   }
 }
@@ -238,16 +244,16 @@ export function updateSstoreGas(
   currentStorage: Buffer,
   value: Buffer,
   common: Common
-): BN {
+): bigint {
   if (
     (value.length === 0 && currentStorage.length === 0) ||
     (value.length > 0 && currentStorage.length > 0)
   ) {
-    const gas = new BN(common.param('gasPrices', 'sstoreReset'))
+    const gas = BigInt(common.param('gasPrices', 'sstoreReset'))
     return gas
   } else if (value.length === 0 && currentStorage.length > 0) {
-    const gas = new BN(common.param('gasPrices', 'sstoreReset'))
-    runState.eei.refundGas(new BN(common.param('gasPrices', 'sstoreRefund')), 'updateSstoreGas')
+    const gas = BigInt(common.param('gasPrices', 'sstoreReset'))
+    runState.eei.refundGas(BigInt(common.param('gasPrices', 'sstoreRefund')), 'updateSstoreGas')
     return gas
   } else {
     /*
@@ -257,6 +263,42 @@ export function updateSstoreGas(
       -> Value is zero, but slot is nonzero
       Thus, the remaining case is where value is nonzero, but slot is zero, which is this clause
     */
-    return new BN(common.param('gasPrices', 'sstoreSet'))
+    return BigInt(common.param('gasPrices', 'sstoreSet'))
   }
+}
+
+export function mod(a: bigint, b: bigint) {
+  let r = a % b
+  if (r < BigInt(0)) {
+    r = b + r
+  }
+  return r
+}
+
+export function fromTwos(a: bigint) {
+  return BigInt.asIntN(256, a)
+}
+
+export function toTwos(a: bigint) {
+  return BigInt.asUintN(256, a)
+}
+
+export function abs(a: bigint) {
+  if (a > 0) {
+    return a
+  }
+  return a * BigInt(-1)
+}
+
+const N = BigInt(115792089237316195423570985008687907853269984665640564039457584007913129639936)
+export function exponentation(bas: bigint, exp: bigint) {
+  let t = BigInt(1)
+  while (exp > BigInt(0)) {
+    if (exp % BigInt(2) != BigInt(0)) {
+      t = (t * bas) % N
+    }
+    bas = (bas * bas) % N
+    exp = exp / BigInt(2)
+  }
+  return t
 }

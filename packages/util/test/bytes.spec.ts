@@ -23,6 +23,8 @@ import {
   intToBuffer,
   intToHex,
   validateNoLeadingZeroes,
+  bufferToBigInt,
+  bigIntToBuffer,
 } from '../src'
 
 tape('zeros function', function (t) {
@@ -441,5 +443,17 @@ tape('bufArrToArr', function (st) {
   ]
   st.deepEqual(bufArrToArr(buf), uint8)
   st.deepEqual(bufArrToArr(bufArr), uint8Arr)
+  st.end()
+})
+
+tape('bufferToBigInt', (st) => {
+  const buf = toBuffer('0x123')
+  st.equal(BigInt(0x123), bufferToBigInt(buf))
+  st.end()
+})
+
+tape('bigIntToBuffer', (st) => {
+  const num = BigInt(0x123)
+  st.deepEqual(toBuffer('0x123'), bigIntToBuffer(num))
   st.end()
 })

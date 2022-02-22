@@ -3,7 +3,7 @@ import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { addHexPrefix, BN, toBuffer, rlp, stripHexPrefix } from 'ethereumjs-util'
+import { addHexPrefix, toBuffer, rlp, stripHexPrefix, bufferToBigInt } from 'ethereumjs-util'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { setupPreConditions, verifyPostConditions } from '../../util'
 
@@ -91,7 +91,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     }
   }
 
-  let currentBlock = new BN(0)
+  let currentBlock = BigInt(0)
   for (const raw of testData.blocks) {
     const paramFork = `expectException${options.forkConfigTestSuite}`
     // Two naming conventions in ethereum/tests to indicate "exception occurs on all HFs" semantics
@@ -107,7 +107,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     try {
       const blockRlp = Buffer.from(raw.rlp.slice(2), 'hex')
       const decodedRLP: any = rlp.decode(blockRlp)
-      currentBlock = new BN(decodedRLP[0][8])
+      currentBlock = bufferToBigInt(decodedRLP[0][8])
     } catch (e: any) {
       await handleError(e, expectException)
       continue
@@ -115,7 +115,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
 
     try {
       // Update common HF
-      common.setHardforkByBlockNumber(currentBlock.toNumber())
+      common.setHardforkByBlockNumber(Number(currentBlock))
 
       // transactionSequence is provided when txs are expected to be rejected.
       // To run this field we try to import them on the current state.
@@ -186,7 +186,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
         await verifyPostConditions(state, testData.postState, t)
       }
       // caught an error, reduce block number
-      currentBlock.isubn(1)
+      currentBlock--
       await handleError(error, expectException)
     }
   }

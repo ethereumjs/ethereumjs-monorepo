@@ -525,7 +525,7 @@ export class Eth {
         skipBalance: true,
         skipBlockGasLimitValidation: true,
       })
-      return bnToHex(gasUsed)
+      return `0x${gasUsed.toString(16)}`
     } catch (error: any) {
       throw {
         code: INTERNAL_ERROR,
@@ -763,7 +763,7 @@ export class Eth {
       const { gasUsed, createdAddress } = runBlockResult.results[txIndex]
       return jsonRpcReceipt(
         receipt,
-        gasUsed,
+        new BN(gasUsed.toString(10)),
         effectiveGasPrice,
         block,
         tx,
