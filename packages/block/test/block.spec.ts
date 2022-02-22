@@ -6,8 +6,8 @@ import blockFromRpc from '../src/from-rpc'
 import { Mockchain } from './mockchain'
 import { createBlock } from './util'
 import testnetMerge from './testdata/testnetMerge.json'
-import * as testData from './testdata/testdata.json'
-import * as testData2 from './testdata/testdata2.json'
+import * as testDataPreLondon from './testdata/testdata_pre-london.json'
+import * as testDataPreLondon2 from './testdata/testdata_pre-london-2.json'
 import * as testDataGenesis from './testdata/genesishashestest.json'
 import * as testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
 
@@ -158,10 +158,12 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should test block validation on pow chain', async function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const blockRlp = toBuffer(testData.blocks[0].rlp)
+    const blockRlp = toBuffer(testDataPreLondon.blocks[0].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common })
     const blockchain = new Mockchain()
-    const genesisBlock = Block.fromRLPSerializedBlock(toBuffer(testData.genesisRLP), { common })
+    const genesisBlock = Block.fromRLPSerializedBlock(toBuffer(testDataPreLondon.genesisRLP), {
+      common,
+    })
     await blockchain.putBlock(genesisBlock)
     try {
       await block.validate(blockchain)
@@ -209,7 +211,7 @@ tape('[Block]: block functions', function (t) {
   }
 
   t.test('should test transaction validation', async function (st) {
-    const blockRlp = toBuffer(testData.blocks[0].rlp)
+    const blockRlp = toBuffer(testDataPreLondon.blocks[0].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { freeze: false })
     await testTransactionValidation(st, block)
     ;(block.header as any).transactionsTrie = Buffer.alloc(32)
@@ -228,7 +230,7 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should test transaction validation with legacy tx in london', async function (st) {
     const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.London })
-    const blockRlp = toBuffer(testData.blocks[0].rlp)
+    const blockRlp = toBuffer(testDataPreLondon.blocks[0].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     await testTransactionValidation(st, block)
     ;(block.transactions[0] as any).gasPrice = new BN(0)
@@ -241,7 +243,7 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should test uncles hash validation', async function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const blockRlp = toBuffer(testData2.blocks[2].rlp)
+    const blockRlp = toBuffer(testDataPreLondon2.blocks[2].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     st.equal(block.validateUnclesHash(), true)
     ;(block.header as any).uncleHash = Buffer.alloc(32)
@@ -254,7 +256,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should throw if an uncle is listed twice', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = new Mockchain()
 
     const genesis = Block.genesis({})
@@ -278,7 +280,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should throw if an uncle is included before', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = new Mockchain()
 
     const genesis = Block.genesis({})
@@ -311,7 +313,7 @@ tape('[Block]: block functions', function (t) {
   t.test(
     'should throw if the uncle parent block is not part of the canonical chain',
     async function (st) {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
       const blockchain = new Mockchain()
 
       const genesis = Block.genesis({})
@@ -346,7 +348,7 @@ tape('[Block]: block functions', function (t) {
   )
 
   t.test('should throw if the uncle is too old', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = new Mockchain()
 
     const genesis = Block.genesis({})
@@ -377,7 +379,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should throw if uncle is too young', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = new Mockchain()
 
     const genesis = Block.genesis({})
@@ -398,7 +400,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should throw if the uncle header is invalid', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = new Mockchain()
 
     const genesis = Block.genesis({})
@@ -433,7 +435,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('throws if more than 2 uncles included', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = new Mockchain()
 
     const genesis = Block.genesis({})
@@ -474,7 +476,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('throws if uncle is a canonical block', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = new Mockchain()
 
     const genesis = Block.genesis({})
@@ -495,7 +497,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('successfully validates uncles', async function (st) {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = new Mockchain()
 
     const genesis = Block.genesis({})
@@ -702,20 +704,20 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should return the same block data from raw()', function (st) {
-    const block = Block.fromRLPSerializedBlock(toBuffer(testData2.blocks[2].rlp))
+    const block = Block.fromRLPSerializedBlock(toBuffer(testDataPreLondon2.blocks[2].rlp))
     const blockFromRaw = Block.fromValuesArray(block.raw())
     st.ok(block.hash().equals(blockFromRaw.hash()))
     st.end()
   })
 
   t.test('should test toJSON', function (st) {
-    const block = Block.fromRLPSerializedBlock(toBuffer(testData2.blocks[2].rlp))
+    const block = Block.fromRLPSerializedBlock(toBuffer(testDataPreLondon2.blocks[2].rlp))
     st.equal(typeof block.toJSON(), 'object')
     st.end()
   })
 
   t.test('DAO hardfork', function (st) {
-    const blockData: any = rlp.decode(testData2.blocks[0].rlp)
+    const blockData: any = rlp.decode(testDataPreLondon2.blocks[0].rlp)
     // Set block number from test block to mainnet DAO fork block 1920000
     blockData[0][8] = Buffer.from('1D4C00', 'hex')
 
