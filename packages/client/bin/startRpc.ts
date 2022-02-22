@@ -5,7 +5,6 @@ import EthereumClient from '../lib/client'
 import { inspectParams, createRPCServerListener } from '../lib/util'
 import * as modules from '../lib/rpc/modules'
 import { Config } from '../lib/config'
-import { IncomingMessage } from 'connect'
 
 type RPCArgs = {
   rpc: boolean
@@ -121,12 +120,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
         withEngineMiddleware: withEngineMethods
           ? {
               jwtSecret: jwtSecret(config, jwtSecretPath),
-              unlessFn: function (req: IncomingMessage) {
-                const {
-                  body: { method },
-                } = req as never as { body: { method: string } }
-                return !method.includes('engine_')
-              },
+              unlessFn: (req: any) => !req.body.method.includes('engine_'),
             }
           : undefined,
       }).listen(rpcport)

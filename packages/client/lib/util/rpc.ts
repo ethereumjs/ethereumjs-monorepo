@@ -1,19 +1,22 @@
+import { createServer } from 'http'
 import { Server as RPCServer, HttpServer } from 'jayson/promise'
 import { json as jsonParser } from 'body-parser'
 import { decode, TAlgorithm } from 'jwt-simple'
 import Connect, { IncomingMessage } from 'connect'
-const algorithm: TAlgorithm = 'HS256'
-import * as http from 'http'
 
-export function createRPCServerListener({
-  server,
-  withEngineMiddleware,
-}: {
+const algorithm: TAlgorithm = 'HS256'
+
+type CreateRPCServerListenerOpts = {
   server: RPCServer
-  withEngineMiddleware?: { jwtSecret: Buffer; unlessFn?: (req: IncomingMessage) => boolean }
-}): HttpServer {
+  withEngineMiddleware?: WithEngineMiddleware
+}
+type WithEngineMiddleware = { jwtSecret: Buffer; unlessFn?: (req: IncomingMessage) => boolean }
+
+export function createRPCServerListener(opts: CreateRPCServerListenerOpts): HttpServer {
+  const { server, withEngineMiddleware } = opts
   const app = Connect()
   app.use(jsonParser())
+
   if (withEngineMiddleware) {
     const { jwtSecret, unlessFn } = withEngineMiddleware
     app.use(function (req, res, next) {
@@ -27,19 +30,19 @@ export function createRPCServerListener({
         if (!token) throw Error(`Missing jwt token`)
         const claims = decode(token.trim(), jwtSecret as never as string, false, algorithm)
         if (Math.abs(new Date().getTime() - claims.iat * 1000 ?? 0) > 5000) {
-          throw Error('Stale Token')
+          throw Error('Stale jwt token')
         }
         return next()
-      } catch (e) {
-        if (e instanceof Error) {
+      } catch (error) {
+        if (error instanceof Error) {
           res.writeHead(401)
-          res.end(`Unauthorized: ${e.toString()}`)
-        } else next(e)
+          res.end(`Unauthorized: ${error}`)
+        } else next(error)
       }
     })
   }
 
   app.use(server.middleware())
-  const httpServer = http.createServer(app)
+  const httpServer = createServer(app)
   return httpServer
 }
