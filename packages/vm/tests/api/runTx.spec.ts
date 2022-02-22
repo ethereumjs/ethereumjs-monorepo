@@ -451,7 +451,10 @@ tape('runTx() -> API return values', async (t) => {
       await vm.stateManager.putAccount(caller, acc)
 
       const res = await vm.runTx({ tx })
-      t.true(res.execResult.gasUsed === BigInt(0), `execution result -> gasUsed -> 0 (${txType.name})`)
+      t.true(
+        res.execResult.gasUsed === BigInt(0),
+        `execution result -> gasUsed -> 0 (${txType.name})`
+      )
       t.equal(
         res.execResult.exceptionError,
         undefined,

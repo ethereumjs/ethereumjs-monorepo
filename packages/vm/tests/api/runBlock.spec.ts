@@ -173,12 +173,12 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     })
     st.ok(
       txResultChainstart.results[0].gasUsed ===
-      BigInt(21000) + BigInt(68) * BigInt(3) + BigInt(3) + BigInt(50),
+        BigInt(21000) + BigInt(68) * BigInt(3) + BigInt(3) + BigInt(50),
       'tx charged right gas on chainstart hard fork'
     )
     st.ok(
       txResultMuirGlacier.results[0].gasUsed ===
-      BigInt(21000) + BigInt(32000) + BigInt(16) * BigInt(3) + BigInt(3) + BigInt(800),
+        BigInt(21000) + BigInt(32000) + BigInt(16) * BigInt(3) + BigInt(3) + BigInt(800),
       'tx charged right gas on muir glacier hard fork'
     )
   })
