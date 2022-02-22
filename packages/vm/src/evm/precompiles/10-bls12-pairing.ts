@@ -1,4 +1,3 @@
-import { BN } from 'ethereumjs-util'
 import { PrecompileInput } from './types'
 import { VmErrorResult, ExecResult, OOGResult } from '../evm'
 import { ERROR, VmError } from '../../exceptions'
@@ -15,22 +14,22 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
 
   const inputData = opts.data
 
-  const baseGas = new BN(opts._common.paramByEIP('gasPrices', 'Bls12381PairingBaseGas', 2537))
+  const baseGas = BigInt(opts._common.paramByEIP('gasPrices', 'Bls12381PairingBaseGas', 2537))
 
   if (inputData.length == 0) {
     return VmErrorResult(new VmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit)
   }
 
-  const gasUsedPerPair = new BN(
+  const gasUsedPerPair = BigInt(
     opts._common.paramByEIP('gasPrices', 'Bls12381PairingPerPairGas', 2537)
   )
-  const gasUsed = baseGas.iadd(gasUsedPerPair.imul(new BN(Math.floor(inputData.length / 384))))
+  const gasUsed = baseGas + gasUsedPerPair * BigInt(Math.floor(inputData.length / 384))
 
   if (inputData.length % 384 != 0) {
     return VmErrorResult(new VmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
-  if (opts.gasLimit.lt(gasUsed)) {
+  if (opts.gasLimit < gasUsed) {
     return OOGResult(opts.gasLimit)
   }
 

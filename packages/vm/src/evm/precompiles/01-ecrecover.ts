@@ -6,9 +6,9 @@ const assert = require('assert')
 export default function (opts: PrecompileInput): ExecResult {
   assert(opts.data)
 
-  const gasUsed = new BN(opts._common.param('gasPrices', 'ecRecover'))
+  const gasUsed = BigInt(opts._common.param('gasPrices', 'ecRecover'))
 
-  if (opts.gasLimit.lt(gasUsed)) {
+  if (opts.gasLimit < gasUsed) {
     return OOGResult(opts.gasLimit)
   }
 

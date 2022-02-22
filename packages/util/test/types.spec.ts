@@ -9,6 +9,9 @@ import {
   bnToHex,
   bnToUnpaddedBuffer,
   toBuffer,
+  bnToBigInt,
+  bigIntToBN,
+  bigIntToHex,
 } from '../src'
 
 tape('toType', function (t) {
@@ -141,4 +144,19 @@ tape('bnToUnpaddedBuffer', function (t) {
     st.ok(bnToUnpaddedBuffer(new BN(100)).equals(Buffer.from('64', 'hex')))
     st.end()
   })
+})
+
+tape('bnToBigInt', (st) => {
+  st.equal(bnToBigInt(new BN(1)), BigInt(1))
+  st.end()
+})
+
+tape('bigIntToBN', (st) => {
+  st.ok(bigIntToBN(BigInt(1)).eq(new BN(1)))
+  st.end()
+})
+
+tape('bigIntToHex', (st) => {
+  st.equal(bigIntToHex(BigInt(1)), '0x1')
+  st.end()
 })

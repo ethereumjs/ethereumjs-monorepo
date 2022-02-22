@@ -12,6 +12,9 @@ module.exports = function (config) {
       tsconfig: './tsconfig.json',
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
+        acornOptions: {
+          ecmaVersion: 11
+        }
       },
     },
     browsers: ['FirefoxHeadless', 'ChromeHeadless'],
