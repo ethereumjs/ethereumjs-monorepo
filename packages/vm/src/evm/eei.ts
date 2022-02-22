@@ -322,7 +322,7 @@ export default class EEI {
    * CHAINID opcode proposed in [EIP-1344](https://eips.ethereum.org/EIPS/eip-1344).
    */
   getChainId(): bigint {
-    return bnToBigInt(this._common.chainIdBN())
+    return bnToBigInt(this._common.chainId())
   }
 
   /**

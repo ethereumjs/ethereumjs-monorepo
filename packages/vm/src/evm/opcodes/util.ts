@@ -287,7 +287,7 @@ export function abs(a: bigint) {
   if (a > 0) {
     return a
   }
-  return a * -1n
+  return a * BigInt(-1)
 }
 
 const N = BigInt(115792089237316195423570985008687907853269984665640564039457584007913129639936)

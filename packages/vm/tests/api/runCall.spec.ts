@@ -511,7 +511,7 @@ tape('Throws on negative call value', async (t) => {
 
   // setup the call arguments
   const runCallArgs = {
-    value: -10n,
+    value: BigInt(-10),
   }
 
   try {

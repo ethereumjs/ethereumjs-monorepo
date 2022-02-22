@@ -100,7 +100,7 @@ tape('VM.runCode: RunCodeOptions', (t) => {
     const vm = new VM()
 
     const runCodeArgs = {
-      value: -10n,
+      value: BigInt(-10),
     }
 
     try {

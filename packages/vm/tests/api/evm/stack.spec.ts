@@ -36,7 +36,7 @@ tape('Stack', (t) => {
   t.test('popN should return array for n = 1', (st) => {
     const s = new Stack()
     s.push(BigInt(5))
-    st.deepEqual(s.popN(1), [5n])
+    st.deepEqual(s.popN(1), [BigInt(5)])
     st.end()
   })
 
@@ -51,7 +51,7 @@ tape('Stack', (t) => {
     const s = new Stack()
     s.push(BigInt(5))
     s.push(BigInt(7))
-    st.deepEqual(s.popN(2), [7n, BigInt(5)])
+    st.deepEqual(s.popN(2), [BigInt(7), BigInt(5)])
     st.end()
   })
 
