@@ -313,8 +313,8 @@ export default class EEI {
   /**
    * Returns the block's random field.
    */
-  getBlockRandom(): BN {
-    return new BN(this._env.block.header.random)
+  getBlockRandom(): bigint {
+    return bufferToBigInt(this._env.block.header.random)
   }
 
   /**
