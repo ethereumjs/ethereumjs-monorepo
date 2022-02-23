@@ -17,8 +17,8 @@ export interface chainsType {
 
 export interface Chain {
   name: string
-  chainId: number | BN
-  networkId: number | BN
+  chainId: number | bigint
+  networkId: number | bigint
   // TODO: make mandatory in next breaking release
   defaultHardfork?: string
   comment: string
