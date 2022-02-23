@@ -178,8 +178,10 @@ export abstract class BaseTransaction<TransactionObject> {
     }
   }
 
-  // EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
-  // Reasoning: https://ethereum.stackexchange.com/a/55728
+  /**
+   * EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2are considered invalid.
+   * Reasoning: https://ethereum.stackexchange.com/a/55728
+   */
   protected _validateHighS() {
     const { s } = this
     if (this.common.gteHardfork('homestead') && s !== undefined && s > SECP256K1_ORDER_DIV_2) {
