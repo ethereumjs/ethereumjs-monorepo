@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { BN } from 'ethereumjs-util'
+import { bigIntToBN, BN } from 'ethereumjs-util'
 import VM from '../../../src'
 import type { InterpreterStep } from '../../../src/evm/interpreter'
 
@@ -32,10 +32,10 @@ tape('EIP-4399 -> 0x44 (DIFFICULTY) should return RANDOM', (t) => {
 
     const runCodeArgs = {
       code: Buffer.from('4400', 'hex'),
-      gasLimit: new BN(0xffff),
+      gasLimit: BigInt(0xffff),
     }
     await vm.runCode({ ...runCodeArgs, block })
-    st.ok(stack[0].eq(block.header.difficulty), '0x44 returns DIFFICULTY (London)')
+    st.ok(bigIntToBN(stack[0]).eq(block.header.difficulty), '0x44 returns DIFFICULTY (London)')
 
     common.setHardfork(Hardfork.Merge)
     const random = Buffer.alloc(32, 1)
@@ -49,7 +49,7 @@ tape('EIP-4399 -> 0x44 (DIFFICULTY) should return RANDOM', (t) => {
       { common }
     )
     await vm.runCode({ ...runCodeArgs, block })
-    st.ok(stack[0].eq(new BN(random)), '0x44 returns RANDOM (Merge)')
+    st.ok(bigIntToBN(stack[0]).eq(new BN(random)), '0x44 returns RANDOM (Merge)')
 
     st.end()
   })
