@@ -1,6 +1,7 @@
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import {
   Address,
+  BigIntLike,
   BN,
   toBuffer,
   MAX_INTEGER,
@@ -8,8 +9,9 @@ import {
   unpadBuffer,
   ecsign,
   publicToAddress,
-  BNLike,
   bufferToHex,
+  bufferToBigInt,
+  SECP256K1_ORDER_DIV_2,
 } from 'ethereumjs-util'
 import {
   TxData,
@@ -25,7 +27,7 @@ import {
 interface TransactionCache {
   hash: Buffer | undefined
   dataFee?: {
-    value: BN
+    value: bigint
     hardfork: string | Hardfork
   }
 }
@@ -40,15 +42,15 @@ interface TransactionCache {
 export abstract class BaseTransaction<TransactionObject> {
   private readonly _type: number
 
-  public readonly nonce: BN
-  public readonly gasLimit: BN
+  public readonly nonce: bigint
+  public readonly gasLimit: bigint
   public readonly to?: Address
-  public readonly value: BN
+  public readonly value: bigint
   public readonly data: Buffer
 
-  public readonly v?: BN
-  public readonly r?: BN
-  public readonly s?: BN
+  public readonly v?: bigint
+  public readonly r?: bigint
+  public readonly s?: bigint
 
   public readonly common!: Common
 
@@ -84,22 +86,22 @@ export abstract class BaseTransaction<TransactionObject> {
 
   constructor(txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData) {
     const { nonce, gasLimit, to, value, data, v, r, s, type } = txData
-    this._type = new BN(toBuffer(type)).toNumber()
+    this._type = Number(bufferToBigInt(toBuffer(type)))
 
     const toB = toBuffer(to === '' ? '0x' : to)
     const vB = toBuffer(v === '' ? '0x' : v)
     const rB = toBuffer(r === '' ? '0x' : r)
     const sB = toBuffer(s === '' ? '0x' : s)
 
-    this.nonce = new BN(toBuffer(nonce === '' ? '0x' : nonce))
-    this.gasLimit = new BN(toBuffer(gasLimit === '' ? '0x' : gasLimit))
+    this.nonce = bufferToBigInt(toBuffer(nonce === '' ? '0x' : nonce))
+    this.gasLimit = bufferToBigInt(toBuffer(gasLimit === '' ? '0x' : gasLimit))
     this.to = toB.length > 0 ? new Address(toB) : undefined
-    this.value = new BN(toBuffer(value === '' ? '0x' : value))
+    this.value = bufferToBigInt(toBuffer(value === '' ? '0x' : value))
     this.data = toBuffer(data === '' ? '0x' : data)
 
-    this.v = vB.length > 0 ? new BN(vB) : undefined
-    this.r = rB.length > 0 ? new BN(rB) : undefined
-    this.s = sB.length > 0 ? new BN(sB) : undefined
+    this.v = vB.length > 0 ? bufferToBigInt(vB) : undefined
+    this.r = rB.length > 0 ? bufferToBigInt(rB) : undefined
+    this.s = sB.length > 0 ? bufferToBigInt(sB) : undefined
 
     this._validateCannotExceedMaxInteger({ value: this.value, r: this.r, s: this.s })
 
@@ -149,7 +151,7 @@ export abstract class BaseTransaction<TransactionObject> {
   validate(stringError: boolean = false): boolean | string[] {
     const errors = []
 
-    if (this.getBaseFee().gt(this.gasLimit)) {
+    if (this.getBaseFee() > this.gasLimit) {
       errors.push(`gasLimit is too low. given ${this.gasLimit}, need at least ${this.getBaseFee()}`)
     }
 
@@ -160,13 +162,33 @@ export abstract class BaseTransaction<TransactionObject> {
     return stringError ? errors : errors.length === 0
   }
 
+  protected _validateYParity() {
+    const { v } = this
+    if (v !== undefined && v !== BigInt(0) && v !== BigInt(1)) {
+      const msg = this._errorMsg('The y-parity of the transaction should either be 0 or 1')
+      throw new Error(msg)
+    }
+  }
+
+  // EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
+  // Reasoning: https://ethereum.stackexchange.com/a/55728
+  protected _validateHighS() {
+    const { s } = this
+    if (this.common.gteHardfork('homestead') && s !== undefined && s > SECP256K1_ORDER_DIV_2) {
+      const msg = this._errorMsg(
+        'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
+      )
+      throw new Error(msg)
+    }
+  }
+
   /**
    * The minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
    */
-  getBaseFee(): BN {
-    const fee = this.getDataFee().addn(this.common.param('gasPrices', 'tx'))
+  getBaseFee(): bigint {
+    let fee = this.getDataFee() + BigInt(this.common.param('gasPrices', 'tx'))
     if (this.common.gteHardfork('homestead') && this.toCreationAddress()) {
-      fee.iaddn(this.common.param('gasPrices', 'txCreation'))
+      fee += BigInt(this.common.param('gasPrices', 'txCreation'))
     }
     return fee
   }
@@ -174,7 +196,7 @@ export abstract class BaseTransaction<TransactionObject> {
   /**
    * The amount of gas paid for the data in this tx
    */
-  getDataFee(): BN {
+  getDataFee(): bigint {
     const txDataZero = this.common.param('gasPrices', 'txDataZero')
     const txDataNonZero = this.common.param('gasPrices', 'txDataNonZero')
 
@@ -183,13 +205,13 @@ export abstract class BaseTransaction<TransactionObject> {
       this.data[i] === 0 ? (cost += txDataZero) : (cost += txDataNonZero)
     }
 
-    return new BN(cost)
+    return BigInt(cost)
   }
 
   /**
    * The up front amount that an account must have for this transaction to be valid
    */
-  abstract getUpfrontCost(): BN
+  abstract getUpfrontCost(): bigint
 
   /**
    * If the tx's `to` is to the creation address
@@ -328,12 +350,12 @@ export abstract class BaseTransaction<TransactionObject> {
    * @param common - {@link Common} instance from tx options
    * @param chainId - Chain ID from tx options (typed txs) or signature (legacy tx)
    */
-  protected _getCommon(common?: Common, chainId?: BNLike) {
+  protected _getCommon(common?: Common, chainId?: BigIntLike) {
     // Chain ID provided
     if (chainId) {
-      const chainIdBN = new BN(toBuffer(chainId))
+      const chainIdBN = bufferToBigInt(toBuffer(chainId))
       if (common) {
-        if (!common.chainId().eq(chainIdBN)) {
+        if (common.chainId() !== chainIdBN) {
           const msg = this._errorMsg('The chain ID does not match the chain ID of Common')
           throw new Error(msg)
         }
@@ -374,7 +396,7 @@ export abstract class BaseTransaction<TransactionObject> {
    * @param cannotEqual Pass true if the number also cannot equal one less the maximum value
    */
   protected _validateCannotExceedMaxInteger(
-    values: { [key: string]: BN | undefined },
+    values: { [key: string]: bigint | undefined },
     bits = 256,
     cannotEqual = false
   ) {
@@ -382,14 +404,14 @@ export abstract class BaseTransaction<TransactionObject> {
       switch (bits) {
         case 64:
           if (cannotEqual) {
-            if (value?.gte(MAX_UINT64)) {
+            if (value !== undefined && value >= MAX_UINT64) {
               const msg = this._errorMsg(
                 `${key} cannot equal or exceed MAX_UINT64 (2^64-1), given ${value}`
               )
               throw new Error(msg)
             }
           } else {
-            if (value?.gt(MAX_UINT64)) {
+            if (value !== undefined && value > MAX_UINT64) {
               const msg = this._errorMsg(`${key} cannot exceed MAX_UINT64 (2^64-1), given ${value}`)
               throw new Error(msg)
             }
@@ -397,14 +419,14 @@ export abstract class BaseTransaction<TransactionObject> {
           break
         case 256:
           if (cannotEqual) {
-            if (value?.gte(MAX_INTEGER)) {
+            if (value !== undefined && value >= MAX_INTEGER) {
               const msg = this._errorMsg(
                 `${key} cannot equal or exceed MAX_INTEGER (2^256-1), given ${value}`
               )
               throw new Error(msg)
             }
           } else {
-            if (value?.gt(MAX_INTEGER)) {
+            if (value !== undefined && value > MAX_INTEGER) {
               const msg = this._errorMsg(
                 `${key} cannot exceed MAX_INTEGER (2^256-1), given ${value}`
               )

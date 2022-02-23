@@ -19,12 +19,12 @@ const unsignedTx = Transaction.fromTxData({})
 const signedTx = unsignedTx.sign(pKey)
 
 const unsignedEIP2930Tx = AccessListEIP2930Transaction.fromTxData(
-  { chainId: new BN(1) },
+  { chainId: BigInt(1) },
   { common }
 )
 const signedEIP2930Tx = unsignedEIP2930Tx.sign(pKey)
 
-const unsignedEIP1559Tx = FeeMarketEIP1559Transaction.fromTxData({ chainId: new BN(1) }, { common })
+const unsignedEIP1559Tx = FeeMarketEIP1559Transaction.fromTxData({ chainId: BigInt(1) }, { common })
 const signedEIP1559Tx = unsignedEIP1559Tx.sign(pKey)
 
 const txTypes = [
@@ -142,7 +142,7 @@ tape('[TransactionFactory]: Basic functions', function (t) {
     })
 
     st.throws(() => {
-      TransactionFactory.fromTxData({ value: new BN('-100') })
+      TransactionFactory.fromTxData({ value: BigInt('-100') })
     })
 
     st.end()
