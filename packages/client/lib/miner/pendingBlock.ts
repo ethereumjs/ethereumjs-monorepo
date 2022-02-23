@@ -6,6 +6,7 @@ import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { TxPool } from '../service/txpool'
 import type { Config } from '../config'
+import { bnToBigInt } from 'ethereumjs-util'
 
 interface PendingBlockOpts {
   /* Config */
@@ -78,11 +79,11 @@ export class PendingBlock {
         await builder.addTransaction(txs[index])
       } catch (error: any) {
         if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
-          if (builder.gasUsed.gt(gasLimit.subn(21000))) {
+          if (builder.gasUsed > bnToBigInt(gasLimit) - BigInt(21000)) {
             // If block has less than 21000 gas remaining, consider it full
             blockFull = true
             this.config.logger.info(
-              `Pending: Assembled block full (gasLeft: ${gasLimit.sub(builder.gasUsed)})`
+              `Pending: Assembled block full (gasLeft: ${bnToBigInt(gasLimit) - builder.gasUsed})`
             )
           }
         } else {
@@ -136,7 +137,7 @@ export class PendingBlock {
         await builder.addTransaction(txs[index])
       } catch (error: any) {
         if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
-          if (builder.gasUsed.gt((builder as any).headerData.gasLimit.subn(21000))) {
+          if (builder.gasUsed > bnToBigInt((builder as any).headerData.gasLimit) - BigInt(21000)) {
             // If block has less than 21000 gas remaining, consider it full
             blockFull = true
             this.config.logger.info(`Pending: Assembled block full`)

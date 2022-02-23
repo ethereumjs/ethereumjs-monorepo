@@ -610,7 +610,7 @@ tape('runTx() -> consensus bugs', async (t) => {
     const block = Block.fromBlockData({ header: { baseFeePerGas: 0x0c } }, { common })
     const result = await vm.runTx({ tx, block })
 
-    t.ok(result.gasUsed.eqn(66382), 'should use the right amount of gas and not consume all')
+    t.ok(result.gasUsed === BigInt(66382), 'should use the right amount of gas and not consume all')
     t.end()
   })
 })
