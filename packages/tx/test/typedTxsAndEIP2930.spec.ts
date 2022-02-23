@@ -115,7 +115,12 @@ tape(
       for (const value of values) {
         const txData: any = {}
         for (const testCase of cases) {
-          if (!(value === 'chainId' && (typeof testCase === 'number' && isNaN(<number>testCase) || testCase === false))) {
+          if (
+            !(
+              value === 'chainId' &&
+              ((typeof testCase === 'number' && isNaN(<number>testCase)) || testCase === false)
+            )
+          ) {
             txData[value] = testCase
             st.throws(() => {
               AccessListEIP2930Transaction.fromTxData(txData)
@@ -389,9 +394,8 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
     const creationFee: number = common.param('gasPrices', 'txCreation')
 
     st.ok(
-      tx
-        .getBaseFee()
-         === BigInt(
+      tx.getBaseFee() ===
+        BigInt(
           txDataNonZero * 2 +
             txDataZero +
             baseFee +
@@ -411,9 +415,8 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
     )
 
     st.ok(
-      tx
-        .getBaseFee()
-         === BigInt(
+      tx.getBaseFee() ===
+        BigInt(
           txDataNonZero * 2 +
             txDataZero +
             creationFee +
@@ -436,7 +439,9 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
       { common }
     )
 
-    st.ok(tx.getBaseFee() === BigInt(baseFee + accessListAddressCost * 2 + accessListStorageKeyCost * 3))
+    st.ok(
+      tx.getBaseFee() === BigInt(baseFee + accessListAddressCost * 2 + accessListStorageKeyCost * 3)
+    )
 
     st.end()
   })

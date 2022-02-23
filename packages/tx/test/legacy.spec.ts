@@ -1,6 +1,13 @@
 import tape from 'tape'
 import { Buffer } from 'buffer'
-import { BN, rlp, toBuffer, bufferToHex, intToBuffer, unpadBuffer, bufferToBigInt } from 'ethereumjs-util'
+import {
+  rlp,
+  toBuffer,
+  bufferToHex,
+  intToBuffer,
+  unpadBuffer,
+  bufferToBigInt,
+} from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction, TxData } from '../src'
 import { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
@@ -69,14 +76,16 @@ tape('[Transaction]', function (t) {
     txData[6] = intToBuffer(2033) // v with 0-parity and chain ID 999
     tx = Transaction.fromValuesArray(txData)
     st.equal(
-      tx.common.chainId(), BigInt(999),
+      tx.common.chainId(),
+      BigInt(999),
       'should initialize Common with chain ID (unsupported) derived from v value (v with 0-parity)'
     )
 
     txData[6] = intToBuffer(2034) // v with 1-parity and chain ID 999
     tx = Transaction.fromValuesArray(txData)
     st.equal(
-      tx.common.chainId(), BigInt(999),
+      tx.common.chainId(),
+      BigInt(999),
       'should initialize Common with chain ID (unsupported) derived from v value (v with 1-parity)'
     )
     st.end()
@@ -422,8 +431,7 @@ tape('[Transaction]', function (t) {
 
       st.true(signedWithoutEIP155.verifySignature())
       st.true(
-        signedWithoutEIP155.v?.toString(16) == '1c' ||
-          signedWithoutEIP155.v?.toString(16) == '1b',
+        signedWithoutEIP155.v?.toString(16) == '1c' || signedWithoutEIP155.v?.toString(16) == '1b',
         "v shouldn't be EIP155 encoded"
       )
 
@@ -433,8 +441,7 @@ tape('[Transaction]', function (t) {
 
       st.true(signedWithoutEIP155.verifySignature())
       st.true(
-        signedWithoutEIP155.v?.toString(16) == '1c' ||
-          signedWithoutEIP155.v?.toString(16) == '1b',
+        signedWithoutEIP155.v?.toString(16) == '1c' || signedWithoutEIP155.v?.toString(16) == '1b',
         "v shouldn' be EIP155 encoded"
       )
 

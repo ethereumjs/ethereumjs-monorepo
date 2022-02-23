@@ -49,7 +49,12 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
     for (const value of values) {
       const txData: any = {}
       for (const testCase of cases) {
-        if (!(value === 'chainId' && (typeof testCase === 'number' && isNaN(<number>testCase) || testCase === false))) {
+        if (
+          !(
+            value === 'chainId' &&
+            ((typeof testCase === 'number' && isNaN(<number>testCase)) || testCase === false)
+          )
+        ) {
           txData[value] = testCase
           st.throws(() => {
             FeeMarketEIP1559Transaction.fromTxData(txData)

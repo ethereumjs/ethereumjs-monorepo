@@ -1,5 +1,4 @@
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { BN } from 'ethereumjs-util'
 import tape from 'tape'
 import {
   AccessListEIP2930Transaction,

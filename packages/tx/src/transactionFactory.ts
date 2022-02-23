@@ -1,4 +1,4 @@
-import { BN, bufferToBigInt, toBuffer } from 'ethereumjs-util'
+import { bufferToBigInt, toBuffer } from 'ethereumjs-util'
 import {
   TxOptions,
   TypedTransaction,

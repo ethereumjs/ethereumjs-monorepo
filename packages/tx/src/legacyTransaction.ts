@@ -6,7 +6,6 @@ import {
   MAX_INTEGER,
   rlp,
   rlphash,
-  SECP256K1_ORDER_DIV_2,
   toBuffer,
   unpadBuffer,
   validateNoLeadingZeroes,
@@ -20,7 +19,7 @@ const TRANSACTION_TYPE = 0
 function meetsEIP155(_v: bigint, chainId: bigint) {
   const v = Number(_v)
   const chainIdDoubled = Number(chainId) * 2
-  return (v === chainIdDoubled + 35) || (v === chainIdDoubled + 36)
+  return v === chainIdDoubled + 35 || v === chainIdDoubled + 36
 }
 
 /**
@@ -374,7 +373,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
    */
   private _validateTxV(_v?: bigint, common?: Common): Common {
     let chainIdBN
-    let v = _v !== undefined ? Number(_v) : undefined
+    const v = _v !== undefined ? Number(_v) : undefined
     // No unsigned tx and EIP-155 activated and chain ID included
     if (
       v !== undefined &&

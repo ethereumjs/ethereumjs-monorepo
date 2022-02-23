@@ -1,6 +1,4 @@
 import {
-  BN,
-  SECP256K1_ORDER_DIV_2,
   bnToHex,
   bnToUnpaddedBuffer,
   bufferToBigInt,
@@ -212,7 +210,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
     })
 
-    if (this.gasLimit * this.maxFeePerGas > (MAX_INTEGER)) {
+    if (this.gasLimit * this.maxFeePerGas > MAX_INTEGER) {
       const msg = this._errorMsg('gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)')
       throw new Error(msg)
     }
@@ -375,14 +373,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     const msgHash = this.getMessageToVerifySignature()
     const { v, r, s } = this
 
-    // EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
-    // Reasoning: https://ethereum.stackexchange.com/a/55728
-    if (this.common.gteHardfork('homestead') && s !== undefined && s > SECP256K1_ORDER_DIV_2) {
-      const msg = this._errorMsg(
-        'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
-      )
-      throw new Error(msg)
-    }
+    this._validateHighS()
 
     try {
       return ecrecover(
