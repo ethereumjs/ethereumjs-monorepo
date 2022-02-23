@@ -209,7 +209,7 @@ export const bufferToHex = function (buf: Buffer): string {
 }
 
 /**
- * Converts a {@link Buffer} to a {@link bigint}`
+ * Converts a {@link Buffer} to a {@link bigint}
  */
 export function bufferToBigInt(buf: Buffer) {
   const hex = bufferToHex(buf)
