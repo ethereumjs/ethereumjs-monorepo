@@ -3,8 +3,6 @@ import {
   Address,
   AddressLike,
   BigIntLike,
-  BN,
-  BNLike,
   BufferLike,
   bufferToHex,
   toBuffer,

@@ -2,7 +2,6 @@ import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import {
   Address,
   BigIntLike,
-  BN,
   toBuffer,
   MAX_INTEGER,
   MAX_UINT64,

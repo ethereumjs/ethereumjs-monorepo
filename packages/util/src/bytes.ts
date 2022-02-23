@@ -211,7 +211,7 @@ export const bufferToHex = function (buf: Buffer): string {
 /**
  * Converts a {@link Buffer} to a {@link bigint}`
  */
- export function bufferToBigInt(buf: Buffer) {
+export function bufferToBigInt(buf: Buffer) {
   const hex = bufferToHex(buf)
   if (hex === '0x') {
     return BigInt(0)
@@ -222,10 +222,9 @@ export const bufferToHex = function (buf: Buffer): string {
 /**
  * Converts a {@link bigint} to a {@link Buffer}
  */
- export function bigIntToBuffer(num: bigint) {
+export function bigIntToBuffer(num: bigint) {
   return toBuffer('0x' + num.toString(16))
 }
-
 
 /**
  * Converts a `Buffer` to a `Number`.

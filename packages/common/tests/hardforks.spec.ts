@@ -1,5 +1,4 @@
 import tape from 'tape'
-import { BN } from 'ethereumjs-util'
 import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src'
 
 tape('[Common]: Hardfork logic', function (t: tape.Test) {

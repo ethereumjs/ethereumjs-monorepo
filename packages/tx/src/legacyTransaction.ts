@@ -6,7 +6,6 @@ import {
   MAX_INTEGER,
   rlp,
   rlphash,
-  SECP256K1_ORDER_DIV_2,
   toBuffer,
   unpadBuffer,
   validateNoLeadingZeroes,
