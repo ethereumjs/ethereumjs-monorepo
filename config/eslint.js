@@ -16,6 +16,7 @@ module.exports = {
   ],
   extends: ['typestrict', 'eslint:recommended'],
   rules: {
+    'no-undef': 'off',
     'no-console': 'warn',
     'no-debugger': 'error',
     'prefer-const': 'error',
