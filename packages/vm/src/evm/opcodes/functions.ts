@@ -1012,6 +1012,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [offset, length] = runState.stack.popN(2)
       let returnData = Buffer.alloc(0)
       if (!(length === BigInt(0))) {
+        console.log(runState.memory)
         returnData = runState.memory.read(Number(offset), Number(length))
       }
       runState.eei.finish(returnData)
