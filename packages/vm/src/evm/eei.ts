@@ -313,8 +313,8 @@ export default class EEI {
   /**
    * Returns the block's prevRandao field.
    */
-  getBlockPrevRandao(): BN {
-    return new BN(this._env.block.header.prevRandao)
+  getBlockPrevRandao(): bigint {
+    return bufferToBigInt(this._env.block.header.prevRandao)
   }
 
   /**
