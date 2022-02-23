@@ -1,5 +1,4 @@
 import {
-  BN,
   bnToHex,
   bnToUnpaddedBuffer,
   bufferToBigInt,
@@ -7,7 +6,6 @@ import {
   keccak256,
   MAX_INTEGER,
   rlp,
-  SECP256K1_ORDER_DIV_2,
   toBuffer,
   validateNoLeadingZeroes,
 } from 'ethereumjs-util'
@@ -307,14 +305,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     const msgHash = this.getMessageToVerifySignature()
     const { v, r, s } = this
 
-    // EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
-    // Reasoning: https://ethereum.stackexchange.com/a/55728
-    if (this.common.gteHardfork('homestead') && s !== undefined && s > SECP256K1_ORDER_DIV_2) {
-      const msg = this._errorMsg(
-        'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
-      )
-      throw new Error(msg)
-    }
+    this._validateHighS()
 
     try {
       return ecrecover(

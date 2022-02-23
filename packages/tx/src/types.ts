@@ -1,4 +1,4 @@
-import { AddressLike, BigIntLike, BufferLike, PrefixedHexString, SECP256K1_ORDER_DIV_2 } from 'ethereumjs-util'
+import { AddressLike, BigIntLike, BufferLike, PrefixedHexString } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { default as Transaction } from './legacyTransaction'
 import { default as AccessListEIP2930Transaction } from './eip2930Transaction'

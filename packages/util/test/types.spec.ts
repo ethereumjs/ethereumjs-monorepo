@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { BN } from 'bn.js';
+import { BN } from 'bn.js'
 import {
   toType,
   TypeOutput,

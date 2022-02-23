@@ -1,7 +1,7 @@
-import { signSync, recoverPublicKey, CURVE } from 'ethereum-cryptography/secp256k1'
+import { signSync, recoverPublicKey } from 'ethereum-cryptography/secp256k1'
 import { bufferToBigInt } from '.'
 import { toBuffer, setLengthLeft, bigIntToBuffer, bufferToHex, bufferToInt } from './bytes'
-import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants';
+import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants'
 import { keccak } from './hash'
 import { assertIsBuffer } from './helpers'
 import { BigIntLike, toType, TypeOutput } from './types'

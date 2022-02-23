@@ -1,4 +1,3 @@
-import { BN } from 'ethereumjs-util'
 import { ConsensusAlgorithm, ConsensusType, Hardfork as HardforkName } from '.'
 
 export interface genesisStatesType {
