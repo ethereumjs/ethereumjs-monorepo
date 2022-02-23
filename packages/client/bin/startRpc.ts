@@ -120,7 +120,10 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
         withEngineMiddleware: withEngineMethods
           ? {
               jwtSecret: jwtSecret(config, jwtSecretPath),
-              unlessFn: (req: any) => !req.body.method.includes('engine_'),
+              unlessFn: (req: any) =>
+                Array.isArray(req.body)
+                  ? !req.body.some((r: any) => r.method.includes('engine_'))
+                  : !req.body.method.includes('engine_'),
             }
           : undefined,
       }).listen(rpcport)
