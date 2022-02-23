@@ -2,6 +2,7 @@ import tape from 'tape'
 import {
   Address,
   AddressLike,
+  BigIntLike,
   BN,
   BNLike,
   BufferLike,
@@ -17,8 +18,8 @@ function generateAddressLikeValues(address: string): AddressLike[] {
 }
 
 // @returns: Array with subtypes of the BNLike type for a given number
-function generateBNLikeValues(value: number): BNLike[] {
-  return [value, new BN(value), `0x${value.toString(16)}`, toBuffer(value)]
+function generateBNLikeValues(value: number): BigIntLike[] {
+  return [value, BigInt(value), `0x${value.toString(16)}`, toBuffer(value)]
 }
 
 // @returns: Array with subtypes of the BufferLike type for a given string

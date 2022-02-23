@@ -1,4 +1,4 @@
-import { BN, toBuffer } from 'ethereumjs-util'
+import { BN, bufferToBigInt, toBuffer } from 'ethereumjs-util'
 import {
   TxOptions,
   TypedTransaction,
@@ -27,7 +27,7 @@ export default class TransactionFactory {
       // Assume legacy transaction
       return Transaction.fromTxData(<TxData>txData, txOptions)
     } else {
-      const txType = new BN(toBuffer(txData.type)).toNumber()
+      const txType = Number(bufferToBigInt(toBuffer(txData.type)))
       if (txType === 0) {
         return Transaction.fromTxData(<TxData>txData, txOptions)
       } else if (txType === 1) {
