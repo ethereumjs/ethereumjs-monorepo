@@ -262,7 +262,7 @@ tape(
       st.end()
     })
 
-    t.test('sign() / senderS(), yParity()', function (t) {
+    t.test('sign() / yParity()', function (t) {
       for (const txType of txTypes) {
         let tx = txType.class.fromTxData(
           {
@@ -281,7 +281,6 @@ tape(
         tx = txType.class.fromTxData({}, { common })
         signed = tx.sign(pKey)
 
-        t.deepEqual(signed.senderS, signed.s, `should provide senderS() alias (${txType.name})`)
         t.deepEqual(signed.yParity, signed.v, `should provide yParity() alias (${txType.name})`)
 
         t.deepEqual(
