@@ -147,25 +147,4 @@ tape('[TransactionFactory]: Basic functions', function (t) {
 
     st.end()
   })
-
-  t.test('getTransactionClass() -> success cases', function (st) {
-    const legacyTx = TransactionFactory.getTransactionClass()
-    st.equals(legacyTx!.name, Transaction.name)
-
-    for (const txType of txTypes) {
-      if (!txType.eip2718) {
-        const tx = TransactionFactory.getTransactionClass(txType.type)
-        st.equals(tx.name, txType.class.name)
-      }
-    }
-    st.end()
-  })
-
-  t.test('getTransactionClass() -> error cases', function (st) {
-    st.throws(() => {
-      TransactionFactory.getTransactionClass(3)
-    }, 'should throw when getting an invalid transaction type')
-
-    st.end()
-  })
 })

@@ -124,13 +124,6 @@ tape('[BaseTransaction]', function (t) {
 
       st.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
 
-      tx = txType.class.fromRlpSerializedTx(rlpData, { common })
-      st.equal(
-        tx.type,
-        txType.type,
-        `${txType.name}: fromRlpSerializedTx() (deprecated) -> should initialize correctly`
-      )
-
       tx = txType.class.fromSerializedTx(rlpData, { common, freeze: false })
       st.ok(
         !Object.isFrozen(tx),
