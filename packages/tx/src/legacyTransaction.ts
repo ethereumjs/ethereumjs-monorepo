@@ -52,17 +52,6 @@ export default class Transaction extends BaseTransaction<Transaction> {
   }
 
   /**
-   * Instantiate a transaction from the serialized tx.
-   * (alias of {@link Transaction.fromSerializedTx})
-   *
-   * @deprecated this constructor alias is deprecated and will be removed
-   * in favor of the {@link Transaction.fromSerializedTx} constructor
-   */
-  public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
-    return Transaction.fromSerializedTx(serialized, opts)
-  }
-
-  /**
    * Create a transaction from a values array.
    *
    * Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`

@@ -87,19 +87,6 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   }
 
   /**
-   * Instantiate a transaction from the serialized tx.
-   * (alias of {@link FeeMarketEIP1559Transaction.fromSerializedTx})
-   *
-   * Note: This means that the Buffer should start with 0x01.
-   *
-   * @deprecated this constructor alias is deprecated and will be removed
-   * in favor of the {@link FeeMarketEIP1559Transaction.fromSerializedTx} constructor
-   */
-  public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
-    return FeeMarketEIP1559Transaction.fromSerializedTx(serialized, opts)
-  }
-
-  /**
    * Create a transaction from a values array.
    *
    * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
