@@ -15,6 +15,7 @@ import {
   bnToHex,
   bufferToHex,
   addHexPrefix,
+  intToHex,
 } from 'ethereumjs-util'
 import type { MultiaddrLike } from '../types'
 import type { GenesisState } from '@ethereumjs/common/dist/types'
@@ -146,8 +147,11 @@ async function createGethGenesisBlockHeader(json: any) {
   if (json.config.londonBlock === 0) {
     // chainId is not important here, we just want to set
     // hardfork to London for baseFeePerGas support
-    common = new Common({ chain: 1, hardfork: Hardfork.London })
-    common.hardforkBlockBN = () => new BN(0)
+    const hardforks = new Common({ chain: 1 })
+      .hardforks()
+      .map((h) => (h.name === 'london' ? { ...h, block: 0 } : h))
+    common = Common.custom({ chainId: 1, hardforks })
+    common.setHardforkByBlockNumber(0)
   }
   return BlockHeader.fromHeaderData(headerData, { common })
 }
@@ -158,13 +162,18 @@ async function createGethGenesisBlockHeader(json: any) {
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
 async function parseGethParams(json: any) {
-  const { name, config } = json
+  const { name, config, difficulty, nonce, mixHash, gasLimit, coinbase, baseFeePerGas } = json
+  let { extraData, timestamp } = json
   const { chainId } = config
 
   // geth is not strictly putting empty fields with a 0x prefix
-  if (json['extraData'] === '') json['extraData'] = '0x'
+  if (extraData === '') {
+    extraData = '0x'
+  }
   // geth may use number for timestamp
-  json['timestamp'] = parseInt(json['timestamp'])
+  if (!isHexPrefixed(timestamp)) {
+    timestamp = intToHex(parseInt(timestamp))
+  }
 
   // EIP155 and EIP158 are both part of Spurious Dragon hardfork and must occur at the same time
   // but have different configuration parameters in geth genesis parameters
@@ -174,33 +183,22 @@ async function parseGethParams(json: any) {
     )
   }
 
-  const header = await createGethGenesisBlockHeader(json)
-  const {
-    stateRoot,
-    timestamp,
-    gasLimit,
-    extraData,
-    difficulty,
-    nonce,
-    mixHash,
-    coinbase,
-    baseFeePerGas,
-  } = header
+  const header = await createGethGenesisBlockHeader({ ...json, extraData, timestamp })
   const params: any = {
     name,
     chainId,
     networkId: chainId,
     genesis: {
       hash: bufferToHex(header.hash()),
-      timestamp: bnToHex(timestamp),
-      gasLimit: bnToHex(gasLimit),
-      difficulty: bnToHex(difficulty),
-      nonce: bufferToHex(nonce),
-      extraData: bufferToHex(extraData),
-      mixHash: bufferToHex(mixHash),
-      coinbase: coinbase.toString(),
-      stateRoot: bufferToHex(stateRoot),
-      baseFeePerGas: baseFeePerGas ? bnToHex(baseFeePerGas) : undefined,
+      timestamp,
+      gasLimit: parseInt(gasLimit), // geth gasLimit and difficulty are hex strings while ours are `number`s
+      difficulty: parseInt(difficulty),
+      nonce,
+      extraData,
+      mixHash,
+      coinbase,
+      stateRoot: bufferToHex(header.stateRoot),
+      baseFeePerGas,
     },
     bootstrapNodes: [],
     consensus: config.clique

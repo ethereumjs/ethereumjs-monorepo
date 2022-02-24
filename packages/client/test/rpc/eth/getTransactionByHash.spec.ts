@@ -9,7 +9,7 @@ import {
   gethGenesisStartLondon,
   dummy,
 } from '../helpers'
-import pow from './../../testdata/pow.json'
+import pow from './../../testdata/geth-genesis/pow.json'
 
 const method = 'eth_getTransactionByHash'
 
