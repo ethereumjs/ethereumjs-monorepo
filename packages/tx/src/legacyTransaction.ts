@@ -400,13 +400,6 @@ export default class Transaction extends BaseTransaction<Transaction> {
   /**
    * @deprecated if you have called this internal method please use `tx.supports(Capabilities.EIP155ReplayProtection)` instead
    */
-  private _unsignedTxImplementsEIP155() {
-    return this.common.gteHardfork('spuriousDragon')
-  }
-
-  /**
-   * @deprecated if you have called this internal method please use `tx.supports(Capabilities.EIP155ReplayProtection)` instead
-   */
   private _signedTxImplementsEIP155() {
     if (!this.isSigned()) {
       const msg = this._errorMsg('This transaction is not signed')
