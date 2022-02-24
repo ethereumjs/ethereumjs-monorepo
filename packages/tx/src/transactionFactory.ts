@@ -7,7 +7,6 @@ import {
   FeeMarketEIP1559TxData,
 } from './types'
 import { Transaction, AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '.'
-import Common from '@ethereumjs/common'
 
 export default class TransactionFactory {
   // It is not possible to instantiate a TransactionFactory object.
@@ -88,30 +87,6 @@ export default class TransactionFactory {
       return Transaction.fromValuesArray(data, txOptions)
     } else {
       throw new Error('Cannot decode transaction: unknown type input')
-    }
-  }
-
-  /**
-   * This helper method allows one to retrieve the class which matches the transactionID
-   * If transactionID is undefined, returns the legacy transaction class.
-   * @deprecated - This method is deprecated and will be removed on the next major release
-   * @param transactionID
-   * @param _common - This option is not used
-   */
-  public static getTransactionClass(transactionID: number = 0, _common?: Common) {
-    const legacyTxn = transactionID == 0 || (transactionID >= 0x80 && transactionID <= 0xff)
-
-    if (legacyTxn) {
-      return Transaction
-    }
-
-    switch (transactionID) {
-      case 1:
-        return AccessListEIP2930Transaction
-      case 2:
-        return FeeMarketEIP1559Transaction
-      default:
-        throw new Error(`TypedTransaction with ID ${transactionID} unknown`)
     }
   }
 }
