@@ -248,7 +248,7 @@ export function gethGenesisStartLondon(gethGenesis: any) {
 
 /**
  * Randomly generated account for testing purposes (signing txs, etc.)
- * This address has preallocated balance in gethGenesis file `testdata/pow.json`
+ * This address has preallocated balance in file `testdata/geth-genesis/pow.json`
  */
 export const dummy = {
   addr: Address.fromString('0xcde098d93535445768e8a2345a2f869139f45641'),
