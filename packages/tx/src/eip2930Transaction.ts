@@ -49,15 +49,6 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   protected DEFAULT_HARDFORK = 'berlin'
 
   /**
-   * EIP-2930 alias for `s`
-   *
-   * @deprecated use `s` instead
-   */
-  get senderS() {
-    return this.s
-  }
-
-  /**
    * EIP-2930 alias for `v`
    *
    * @deprecated use `v` instead
