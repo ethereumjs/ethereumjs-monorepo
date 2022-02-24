@@ -415,13 +415,12 @@ export default class EVM {
             ...result,
             ...INVALID_BYTECODE_RESULT(message.gasLimit),
           }
-        } else {
+        } else if (this._vm._common.isActivatedEIP(3670)) {
           // EIP-3670 EOF1 code check
-          const codeStart = eof1CodeAnalysisResults?.data > 0 ? 10 : 7
+          const codeStart = eof1CodeAnalysisResults.data > 0 ? 10 : 7
           if (
             !eof1ValidOpcodes(
-              result.returnValue.slice(codeStart, codeStart + eof1CodeAnalysisResults!.code),
-              eof1CodeAnalysisResults!.code
+              result.returnValue.slice(codeStart, codeStart + eof1CodeAnalysisResults.code)
             )
           ) {
             result = {

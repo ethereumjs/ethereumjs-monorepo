@@ -341,12 +341,15 @@ export const eof1CodeAnalysis = (container: Buffer) => {
   }
 }
 
-export const eof1ValidOpcodes = (code: Buffer, codeLength: number) => {
+export const eof1ValidOpcodes = (code: Buffer) => {
   // EIP-3670 - validate all opcodes
   const opcodes = new Set(handlers.keys())
   opcodes.add(0xfe) // Add INVALID opcode to set
-  for (let x = 0; x < codeLength; x++) {
+
+  let x = 0
+  while (x < code.length) {
     const opcode = code[x]
+    x++
     if (!opcodes.has(opcode)) {
       // No invalid/undefined opcodes
       return false
@@ -354,14 +357,14 @@ export const eof1ValidOpcodes = (code: Buffer, codeLength: number) => {
     if (opcode >= 0x60 && opcode <= 0x7f) {
       // Skip data block following push
       x += opcode - 0x5f
-      if (x > codeLength) {
+      if (x > code.length - 1) {
         // Push blocks mmust not exceed end of code section
         return false
       }
     }
   }
   const terminatingOpcodes = new Set([0x00, 0xd3, 0xfd, 0xfe, 0xff])
-  if (!terminatingOpcodes.has(code[codeLength - 1])) {
+  if (!terminatingOpcodes.has(code[code.length - 1])) {
     // Final opcode of code section must be terminating opcode
     return false
   }
