@@ -177,11 +177,12 @@ export async function baseRequest(
 export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts: any = {}) {
   const genesisParams = await parseCustomParams(genesisFile, chainName)
   const genesisState = genesisFile.alloc ? await parseGenesisState(genesisFile) : {}
+
   const common = new Common({
     chain: chainName,
     customChains: [[genesisParams, genesisState]],
   })
-  common.setHardforkByBlockNumber(0)
+  common.setHardforkByBlockNumber(0, genesisParams.difficulty)
 
   const blockchain = await Blockchain.create({
     common,

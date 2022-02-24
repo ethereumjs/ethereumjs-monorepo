@@ -2,7 +2,7 @@ import tape from 'tape'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { params, baseRequest, baseSetup, setupChain } from '../helpers'
 import { checkError } from '../util'
-import genesisJSON from '../../testdata/post-merge.json'
+import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 
 const method = 'engine_forkchoiceUpdatedV1'
 

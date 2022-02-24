@@ -165,7 +165,6 @@ async function parseGethParams(json: any) {
   const { name, config, difficulty, nonce, mixHash, gasLimit, coinbase, baseFeePerGas } = json
   let { extraData, timestamp } = json
   const { chainId } = config
-
   // geth is not strictly putting empty fields with a 0x prefix
   if (extraData === '') {
     extraData = '0x'

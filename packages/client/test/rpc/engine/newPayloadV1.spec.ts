@@ -1,7 +1,9 @@
 import tape from 'tape'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import { params, baseRequest, baseSetup } from '../helpers'
+import { params, baseRequest, baseSetup, setupChain } from '../helpers'
 import { checkError } from '../util'
+import { validPayload } from './forkchoiceUpdatedV1.spec'
+import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 
 const method = 'engine_newPayloadV1'
 
@@ -55,14 +57,30 @@ tape(`${method}: call with invalid hex string as block hash`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes)
 })
 
-// tape(`${method}: call with valid data`, async (t) => {
-//   const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-//
-//   const req = params(method, [blockData])
-//
-//   const expectRes = (res: any) => {
-//     console.log(res)
-//     // t.equal(res.body.result, 'SYNCING')
-//   }
-//   await baseRequest(t, server, req, 200, expectRes)
-// })
+tape(`${method}: call with valid data`, async (t) => {
+  const { server } = await setupChain(genesisJSON, 'merge', { engine: true })
+
+  const forkchoiceUpdateRequest = params('engine_forkchoiceUpdatedV1', validPayload)
+  let payloadId
+  const expectFcuRes = (res: any) => {
+    payloadId = res.body.result.payloadId
+  }
+  await baseRequest(t, server, forkchoiceUpdateRequest, 200, expectFcuRes, false)
+
+  const getPayloadRequest = params('engine_getPayloadV1', [payloadId])
+
+  let data: any
+  const expectGetPayloadResponse = (res: any) => {
+    data = res.body.result
+    t.equal(res.body.result.blockNumber, '0x1')
+  }
+  await baseRequest(t, server, getPayloadRequest, 200, expectGetPayloadResponse, false)
+
+  const req = params(method, [data])
+  const expectRes = (res: any) => {
+    t.equal(res.body.result.status, 'VALID')
+    t.equal(res.body.result.latestValidHash, data.blockHash)
+  }
+
+  await baseRequest(t, server, req, 200, expectRes)
+})
