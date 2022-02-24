@@ -53,17 +53,6 @@ export default class Transaction extends BaseTransaction<Transaction> {
   }
 
   /**
-   * Instantiate a transaction from the serialized tx.
-   * (alias of {@link Transaction.fromSerializedTx})
-   *
-   * @deprecated this constructor alias is deprecated and will be removed
-   * in favor of the {@link Transaction.fromSerializedTx} constructor
-   */
-  public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
-    return Transaction.fromSerializedTx(serialized, opts)
-  }
-
-  /**
    * Create a transaction from a values array.
    *
    * Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
@@ -419,35 +408,6 @@ export default class Transaction extends BaseTransaction<Transaction> {
       }
     }
     return this._getCommon(common, chainIdBN)
-  }
-
-  /**
-   * @deprecated if you have called this internal method please use `tx.supports(Capabilities.EIP155ReplayProtection)` instead
-   */
-  private _unsignedTxImplementsEIP155() {
-    return this.common.gteHardfork('spuriousDragon')
-  }
-
-  /**
-   * @deprecated if you have called this internal method please use `tx.supports(Capabilities.EIP155ReplayProtection)` instead
-   */
-  private _signedTxImplementsEIP155() {
-    if (!this.isSigned()) {
-      const msg = this._errorMsg('This transaction is not signed')
-      throw new Error(msg)
-    }
-    const onEIP155BlockOrLater = this.common.gteHardfork('spuriousDragon')
-
-    // EIP155 spec:
-    // If block.number >= 2,675,000 and v = CHAIN_ID * 2 + 35 or v = CHAIN_ID * 2 + 36, then when computing the hash of a transaction for purposes of signing or recovering, instead of hashing only the first six elements (i.e. nonce, gasprice, startgas, to, value, data), hash nine elements, with v replaced by CHAIN_ID, r = 0 and s = 0.
-    const v = this.v!
-
-    const chainIdDoubled = this.common.chainId().muln(2)
-
-    const vAndChainIdMeetEIP155Conditions =
-      v.eq(chainIdDoubled.addn(35)) || v.eq(chainIdDoubled.addn(36))
-
-    return vAndChainIdMeetEIP155Conditions && onEIP155BlockOrLater
   }
 
   /**
