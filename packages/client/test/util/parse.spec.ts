@@ -116,11 +116,11 @@ tape('[Util/Parse]', (t) => {
       t.equals(params.genesis.baseFeePerGas, json.baseFeePerGas)
     }
   )
-  t.test('should successfully parse genesis file with no extradata', async (st) => {
+  t.test('should successfully parse genesis file with no extraData', async (st) => {
     st.plan(2)
     const json = require('../testdata/noExtraData.json')
     const params = await parseCustomParams(json, 'noExtraData')
-    st.ok(params.genesis.extraData === '0x', 'extraData set to 0x')
-    st.ok(params.genesis.timestamp === '0x10', 'timestamp parsed correctly')
+    st.equals(params.genesis.extraData, '0x', 'extraData set to 0x')
+    st.equals(params.genesis.timestamp, '0x10', 'timestamp parsed correctly')
   })
 })
