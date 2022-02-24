@@ -182,7 +182,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
     chain: chainName,
     customChains: [[genesisParams, genesisState]],
   })
-  common.setHardforkByBlockNumber(0, genesisParams.difficulty)
+  common.setHardforkByBlockNumber(0, genesisParams.genesis.difficulty)
 
   const blockchain = await Blockchain.create({
     common,

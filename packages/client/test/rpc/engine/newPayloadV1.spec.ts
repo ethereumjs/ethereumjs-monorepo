@@ -2,8 +2,9 @@ import tape from 'tape'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { params, baseRequest, baseSetup, setupChain } from '../helpers'
 import { checkError } from '../util'
-import { validPayload } from './forkchoiceUpdatedV1.spec'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
+import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { Address } from 'ethereumjs-util'
 
 const method = 'engine_newPayloadV1'
 
@@ -57,30 +58,94 @@ tape(`${method}: call with invalid hex string as block hash`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with valid data`, async (t) => {
+tape(`${method}: call with non existent block hash`, async (t) => {
   const { server } = await setupChain(genesisJSON, 'merge', { engine: true })
 
-  const forkchoiceUpdateRequest = params('engine_forkchoiceUpdatedV1', validPayload)
-  let payloadId
-  const expectFcuRes = (res: any) => {
-    payloadId = res.body.result.payloadId
+  const blockDataNonExistentBlockHash = [
+    {
+      ...blockData,
+      blockHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
+    },
+  ]
+  const req = params(method, blockDataNonExistentBlockHash)
+  const expectRes = (res: any) => {
+    t.equal(res.body.result.status, 'INVALID_BLOCK_HASH')
   }
-  await baseRequest(t, server, forkchoiceUpdateRequest, 200, expectFcuRes, false)
 
-  const getPayloadRequest = params('engine_getPayloadV1', [payloadId])
+  await baseRequest(t, server, req, 200, expectRes)
+})
 
-  let data: any
-  const expectGetPayloadResponse = (res: any) => {
-    data = res.body.result
-    t.equal(res.body.result.blockNumber, '0x1')
+// TODO(cbrzn): Change this to expect ACCEPTED when optimistic sync is supported
+tape(`${method}: call with non existent parent hash`, async (t) => {
+  const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+
+  const blockDataNonExistentParentHash = [
+    {
+      ...blockData,
+      parentHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
+    },
+  ]
+  const req = params(method, blockDataNonExistentParentHash)
+  const expectRes = (res: any) => {
+    t.equal(res.body.result.status, 'SYNCING')
   }
-  await baseRequest(t, server, getPayloadRequest, 200, expectGetPayloadResponse, false)
 
-  const req = params(method, [data])
+  await baseRequest(t, server, req, 200, expectRes)
+})
+
+tape(`${method}: call with valid data`, async (t) => {
+  const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+
+  const req = params(method, [blockData])
   const expectRes = (res: any) => {
     t.equal(res.body.result.status, 'VALID')
-    t.equal(res.body.result.latestValidHash, data.blockHash)
+    t.equal(res.body.result.latestValidHash, blockData.blockHash)
+  }
+  await baseRequest(t, server, req, 200, expectRes)
+})
+
+tape(`${method}: call with valid data but invalid transactions`, async (t) => {
+  const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+  const blockDataWithInvalidTransaction = {
+    ...blockData,
+    transactions: ['0x1'],
+  }
+  const expectRes = (res: any) => {
+    t.equal(res.body.result.status, 'INVALID')
+    t.equal(res.body.result.latestValidHash, blockData.parentHash)
+    t.equal(
+      res.body.result.validationError,
+      `Invalid tx at index 0: Error: Invalid serialized tx input: must be array`
+    )
   }
 
+  const req = params(method, [blockDataWithInvalidTransaction])
+  await baseRequest(t, server, req, 200, expectRes)
+})
+
+tape.skip(`${method}: call with valid data & valid transactions`, async (t) => {
+  const { server, common } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+
+  const tx = FeeMarketEIP1559Transaction.fromTxData(
+    {
+      gasLimit: 21_000,
+      maxFeePerGas: 7,
+      value: '0x1',
+      to: Address.fromString('0x61FfE691821291D02E9Ba5D33098ADcee71a3a17'),
+    },
+    { common }
+  )
+
+  const transactions = ['0x' + tx.serialize().toString('hex')]
+  const blockDataWithValidTransaction = {
+    ...blockData,
+    transactions,
+    blockHash: '0x06a3199dbb9ea582c9b893f96c5c7668a3051432c2c252acc114212fb6b3503c',
+  }
+  const expectRes = (res: any) => {
+    t.equal(res.body.result.status, 'VALID')
+  }
+
+  const req = params(method, [blockDataWithValidTransaction])
   await baseRequest(t, server, req, 200, expectRes)
 })
