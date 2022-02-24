@@ -49,15 +49,6 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   protected DEFAULT_HARDFORK = 'berlin'
 
   /**
-   * EIP-2930 alias for `v`
-   *
-   * @deprecated use `v` instead
-   */
-  get yParity() {
-    return this.v
-  }
-
-  /**
    * Instantiate a transaction from a data dictionary.
    *
    * Format: { chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
@@ -344,11 +335,11 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       throw new Error(msg)
     }
 
-    const { yParity, r, s } = this
+    const { v, r, s } = this
     try {
       return ecrecover(
         msgHash,
-        yParity!.addn(27), // Recover the 27 which was stripped from ecsign
+        v!.addn(27), // Recover the 27 which was stripped from ecsign
         bnToUnpaddedBuffer(r!),
         bnToUnpaddedBuffer(s!)
       )

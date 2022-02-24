@@ -49,15 +49,6 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   protected DEFAULT_HARDFORK = 'london'
 
   /**
-   * EIP-2930 alias for `v`
-   *
-   * @deprecated use `v` instead
-   */
-  get yParity() {
-    return this.v
-  }
-
-  /**
    * Instantiate a transaction from a data dictionary.
    *
    * Format: { chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
