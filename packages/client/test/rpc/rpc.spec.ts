@@ -66,7 +66,7 @@ tape('call JSON-RPC auth protected server with an invalid algorithm token', (t) 
     })
 })
 
-tape('call JSON-RPC auth protected server with an valid token', (t) => {
+tape('call JSON-RPC auth protected server with a valid token', (t) => {
   const server = startRPC({}, undefined, { jwtSecret })
   const req = 'plaintext'
   const claims = { iat: Math.floor(new Date().getTime() / 1000) }
@@ -83,7 +83,7 @@ tape('call JSON-RPC auth protected server with an valid token', (t) => {
     })
 })
 
-tape('call JSON-RPC auth protected server with an valid but stale token', (t) => {
+tape('call JSON-RPC auth protected server with a valid but stale token', (t) => {
   const server = startRPC({}, undefined, { jwtSecret })
   const req = 'plaintext'
   const claims = { iat: Math.floor(new Date().getTime() / 1000 - 6) }
