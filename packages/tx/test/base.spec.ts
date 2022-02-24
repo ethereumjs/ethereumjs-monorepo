@@ -287,6 +287,31 @@ tape('[BaseTransaction]', function (t) {
     st.end()
   })
 
+  t.test('isSigned() -> returns correct values', function (st) {
+    for (const txType of txTypes) {
+      const txs = [
+        ...txType.txs,
+        // add unsigned variants
+        ...txType.txs.map((tx) =>
+          txType.class.fromTxData({
+            ...tx,
+            v: undefined,
+            r: undefined,
+            s: undefined,
+          })
+        ),
+      ]
+      for (const tx of txs) {
+        st.equal(
+          tx.isSigned(),
+          tx.v !== undefined && tx.r !== undefined && tx.s !== undefined,
+          'isSigned() returns correctly'
+        )
+      }
+    }
+    st.end()
+  })
+
   t.test('getSenderAddress()', function (st) {
     for (const txType of txTypes) {
       txType.txs.forEach(function (tx: any, i: number) {
