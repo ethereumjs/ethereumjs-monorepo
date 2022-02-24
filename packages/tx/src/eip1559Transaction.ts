@@ -49,15 +49,6 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   protected DEFAULT_HARDFORK = 'london'
 
   /**
-   * EIP-2930 alias for `r`
-   *
-   * @deprecated use `r` instead
-   */
-  get senderR() {
-    return this.r
-  }
-
-  /**
    * EIP-2930 alias for `s`
    *
    * @deprecated use `s` instead
