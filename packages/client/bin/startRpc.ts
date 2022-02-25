@@ -2,7 +2,7 @@ import { Server as RPCServer } from 'jayson/promise'
 import { readFileSync, writeFileSync } from 'fs-extra'
 import { RPCManager } from '../lib/rpc'
 import EthereumClient from '../lib/client'
-import { inspectParams, createRPCServerListener } from '../lib/util'
+import { inspectParams, createRPCServerListener, createWsRPCServerListener } from '../lib/util'
 import * as modules from '../lib/rpc/modules'
 import { Config } from '../lib/config'
 
@@ -24,7 +24,7 @@ type RPCArgs = {
 /**
  * Returns a jwt secret from a provided file path, otherwise saves a randomly generated one to datadir
  */
-function jwtSecret(config: Config, jwtFilePath?: string): Buffer {
+function parseJwtSecret(config: Config, jwtFilePath?: string): Buffer {
   let jwtSecret
   if (jwtFilePath) {
     const jwtSecretContents = readFileSync(jwtFilePath, 'utf-8').trim()
@@ -104,6 +104,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     'jwt-secret': jwtSecretPath,
   } = args
   const manager = new RPCManager(client, config)
+  const jwtSecret = parseJwtSecret(config, jwtSecretPath)
 
   if (rpc || ws) {
     const withEngineMethods = rpcEngine && rpcEnginePort === rpcport && rpcEngineAddr === rpcaddr
@@ -114,32 +115,38 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     server.on('request', onRequest)
     server.on('response', onBatchResponse)
     const namespaces = [...new Set(Object.keys(methods).map((m) => m.split('_')[0]))].join(',')
+    let rpcHttpServer
+
     if (rpc) {
-      createRPCServerListener({
+      rpcHttpServer = createRPCServerListener({
         server,
         withEngineMiddleware: withEngineMethods
           ? {
-              jwtSecret: jwtSecret(config, jwtSecretPath),
+              jwtSecret,
               unlessFn: (req: any) =>
                 Array.isArray(req.body)
                   ? !req.body.some((r: any) => r.method.includes('engine_'))
                   : !req.body.method.includes('engine_'),
             }
           : undefined,
-      }).listen(rpcport)
+      })
+      rpcHttpServer.listen(rpcport)
       config.logger.info(
         `Started JSON RPC Server address=http://${rpcaddr}:${rpcport} namespaces=${namespaces}`
       )
     }
     if (ws) {
-      const opts: any = { port: wsPort }
-      if (rpcaddr === wsAddr && rpcport === wsPort) {
-        // If http and ws are listening on the same port,
-        // pass in the existing server to prevent a listening error
-        delete opts.port
-        opts.server = server
+      const opts: any = {
+        server,
+        withEngineMiddleware: withEngineMethods ? { jwtSecret } : undefined,
       }
-      server.websocket(opts)
+      if (rpcaddr === wsAddr && rpcport === wsPort) {
+        // We want to loadon the websocket upgrade request to the same server
+        Object.assign(opts, { httpServer: rpcHttpServer })
+      }
+
+      const rpcWsServer = createWsRPCServerListener(opts)
+      if (rpcWsServer) rpcWsServer.listen(wsPort)
       config.logger.info(
         `Started JSON RPC Server address=ws://${wsAddr}:${wsPort} namespaces=${namespaces}`
       )
@@ -158,7 +165,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     createRPCServerListener({
       server,
       withEngineMiddleware: {
-        jwtSecret: jwtSecret(config, jwtSecretPath),
+        jwtSecret,
       },
     }).listen(rpcport)
     config.logger.info(
