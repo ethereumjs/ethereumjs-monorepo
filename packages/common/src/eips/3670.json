@@ -6,8 +6,7 @@
     "status": "Review",
     "minimumHardfork": "london",
     "requiredEIPs": [
-        3540,
-        3541
+        3540
     ],
     "gasConfig": {},
     "gasPrices": {},

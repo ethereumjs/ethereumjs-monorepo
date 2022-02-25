@@ -364,8 +364,8 @@ export const eof1ValidOpcodes = (code: Buffer) => {
     }
   }
   const terminatingOpcodes = new Set([0x00, 0xd3, 0xfd, 0xfe, 0xff])
+  // Per EIP-3670, the final opcode of a code section must be STOP, RETURN, REVERT, INVALID, or SELFDESTRUCT
   if (!terminatingOpcodes.has(code[code.length - 1])) {
-    // Final opcode of code section must be terminating opcode
     return false
   }
   return true

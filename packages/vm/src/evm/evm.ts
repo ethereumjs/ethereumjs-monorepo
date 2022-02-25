@@ -418,6 +418,9 @@ export default class EVM {
         } else if (this._vm._common.isActivatedEIP(3670)) {
           // EIP-3670 EOF1 code check
           const codeStart = eof1CodeAnalysisResults.data > 0 ? 10 : 7
+          // The start of the code section of an EOF1 compliant contract will either be
+          // index 7 (if no data section is present) or index 10 (if a data section is present)
+          // in the bytecode of the contract
           if (
             !eof1ValidOpcodes(
               result.returnValue.slice(codeStart, codeStart + eof1CodeAnalysisResults.code)
