@@ -29,7 +29,7 @@ type ExecutionPayloadV1 = {
   stateRoot: string // DATA, 32 Bytes
   receiptsRoot: string // DATA, 32 bytes
   logsBloom: string // DATA, 256 Bytes
-  random: string // DATA, 32 Bytes
+  prevRandao: string // DATA, 32 Bytes
   blockNumber: string // QUANTITY, 64 Bits
   gasLimit: string // QUANTITY, 64 Bits
   gasUsed: string // QUANTITY, 64 Bits
@@ -51,7 +51,7 @@ type ForkchoiceStateV1 = {
 
 type PayloadAttributesV1 = {
   timestamp: string
-  random: string
+  prevRandao: string
   suggestedFeeRecipient: string
 }
 
@@ -92,7 +92,7 @@ const blockToExecutionPayload = (block: Block) => {
     extraData: header.extraData!,
     baseFeePerGas: header.baseFeePerGas!,
     blockHash: bufferToHex(block.hash()),
-    random: header.mixHash!,
+    prevRandao: header.mixHash!,
     transactions,
   }
   return payload
@@ -214,7 +214,7 @@ export class Engine {
           stateRoot: validators.hex,
           receiptsRoot: validators.hex,
           logsBloom: validators.hex,
-          random: validators.hex,
+          prevRandao: validators.hex,
           blockNumber: validators.hex,
           gasLimit: validators.hex,
           gasUsed: validators.hex,
@@ -239,7 +239,7 @@ export class Engine {
         validators.optional(
           validators.object({
             timestamp: validators.hex,
-            random: validators.hex,
+            prevRandao: validators.hex,
             suggestedFeeRecipient: validators.address,
           })
         ),
@@ -272,7 +272,7 @@ export class Engine {
     const {
       blockNumber: number,
       receiptsRoot: receiptTrie,
-      random: mixHash,
+      prevRandao: mixHash,
       feeRecipient: coinbase,
       transactions,
       parentHash,
@@ -472,11 +472,11 @@ export class Engine {
      * If payloadAttributes is present, start building block and return payloadId
      */
     if (payloadAttributes) {
-      const { timestamp, random, suggestedFeeRecipient } = payloadAttributes
+      const { timestamp, prevRandao, suggestedFeeRecipient } = payloadAttributes
       const parentBlock = this.chain.blocks.latest!
       const payloadId = await this.pendingBlock.start(this.vm.copy(), parentBlock, {
         timestamp,
-        mixHash: random,
+        mixHash: prevRandao,
         coinbase: suggestedFeeRecipient,
       })
       const latestValidHash = await validHash(

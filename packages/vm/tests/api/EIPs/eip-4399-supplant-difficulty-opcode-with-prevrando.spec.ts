@@ -5,7 +5,7 @@ import { BN } from 'ethereumjs-util'
 import VM from '../../../src'
 import type { InterpreterStep } from '../../../src/evm/interpreter'
 
-tape('EIP-4399 -> 0x44 (DIFFICULTY) should return RANDOM', (t) => {
+tape('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', (t) => {
   t.test('should return the right values', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const vm = new VM({ common })
@@ -38,18 +38,18 @@ tape('EIP-4399 -> 0x44 (DIFFICULTY) should return RANDOM', (t) => {
     st.ok(stack[0].eq(block.header.difficulty), '0x44 returns DIFFICULTY (London)')
 
     common.setHardfork(Hardfork.Merge)
-    const random = Buffer.alloc(32, 1)
+    const prevRandao = Buffer.alloc(32, 1)
     block = Block.fromBlockData(
       {
         header: {
           ...header,
-          mixHash: random,
+          mixHash: prevRandao,
         },
       },
       { common }
     )
     await vm.runCode({ ...runCodeArgs, block })
-    st.ok(stack[0].eq(new BN(random)), '0x44 returns RANDOM (Merge)')
+    st.ok(stack[0].eq(new BN(prevRandao)), '0x44 returns PREVRANDAO (Merge)')
 
     st.end()
   })
