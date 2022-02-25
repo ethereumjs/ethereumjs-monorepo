@@ -66,6 +66,12 @@ type ForkchoiceResponseV1 = {
   payloadId: string | null
 }
 
+type TransitionConfigurationV1 = {
+  terminalTotalDifficulty: string
+  terminalBlockHash: string
+  terminalBlockNumber: string
+}
+
 const EngineError = {
   UnknownPayload: {
     code: -32001,
@@ -247,6 +253,11 @@ export class Engine {
     ])
 
     this.getPayloadV1 = middleware(this.getPayloadV1.bind(this), 1, [[validators.hex]])
+
+    this.exchangeTransitionConfigurationV1 = middleware(
+      this.exchangeTransitionConfigurationV1.bind(this),
+      0
+    )
   }
 
   /**
@@ -521,5 +532,24 @@ export class Engine {
         message: error.message ?? error,
       }
     }
+  }
+
+  /**
+   * Sets and returns the transition configuration parameters.
+   *
+   * @param params An array of one parameter:
+   *   1. transitionConfiguration: Object - instance of {@link TransitionConfigurationV1}; `terminalBlockNumber` MUST be set to `0`
+   * @returns Instance of {@link TransitionConfigurationV1} or an error
+   */
+  async exchangeTransitionConfigurationV1(
+    params: [TransitionConfigurationV1]
+  ): Promise<TransitionConfigurationV1> {
+    const { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber } = params[0]
+    const td = parseInt(terminalTotalDifficulty)
+    this.config.chainCommon.hardforks().find((h) => h.name === 'merge')!.td = td
+    this.config.execCommon.hardforks().find((h) => h.name === 'merge')!.td = td
+    // TODO decide if we want to implement terminalBlockHash and terminalBlockNumber,
+    // not so important since our client will not be running tip of chain on mainnet merge
+    return { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber }
   }
 }
