@@ -825,7 +825,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(ERROR.OUT_OF_RANGE)
       }
       const loaded = bufferToBigInt(
-        runState.eei.getCode().slice(runState.programCounter, runState.programCounter + numToPush)
+        runState.code.slice(runState.programCounter, runState.programCounter + numToPush)
       )
       runState.programCounter += numToPush
       runState.stack.push(loaded)
