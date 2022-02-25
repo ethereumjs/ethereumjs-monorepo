@@ -282,8 +282,8 @@ export class Engine {
     try {
       await findBlock(toBuffer(parentHash), this.validBlocks, this.chain)
     } catch (error: any) {
-      // TODO if we can't find the parent, return ACCEPTED when optimistic sync is supported
-      // and we can store the block for later processing
+      // TODO if we can't find the parent and the block doesn't extend the canonical chain,
+      // return ACCEPTED when optimistic sync is supported to store the block for later processing
       return { status: Status.SYNCING, validationError: null, latestValidHash: null }
     }
 
