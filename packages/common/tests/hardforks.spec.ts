@@ -276,23 +276,23 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.end()
   })
 
-  t.test('hardforkIsActiveOnChain()', function (st: tape.Test) {
+  t.test('isIncludedHardfork()', function (st: tape.Test) {
     let c = new Common({ chain: Chain.Ropsten })
     let msg = 'should return true for byzantium (provided) on Ropsten'
-    st.equal(c.hardforkIsActiveOnChain(Hardfork.Byzantium), true, msg)
+    st.equal(c.isIncludedHardfork(Hardfork.Byzantium), true, msg)
 
     msg = 'should return false for dao (provided) on Ropsten'
-    st.equal(c.hardforkIsActiveOnChain(Hardfork.Dao), false, msg)
+    st.equal(c.isIncludedHardfork(Hardfork.Dao), false, msg)
 
     msg = 'should return true for petersburg (provided) on Ropsten'
-    st.equal(c.hardforkIsActiveOnChain(Hardfork.Petersburg), true, msg)
+    st.equal(c.isIncludedHardfork(Hardfork.Petersburg), true, msg)
 
     msg = 'should return false for a non-existing HF (provided) on Ropsten'
-    st.equal(c.hardforkIsActiveOnChain('notexistinghardfork'), false, msg)
+    st.equal(c.isIncludedHardfork('notexistinghardfork'), false, msg)
 
     c = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
     msg = 'should return true for byzantium (set) on Ropsten'
-    st.equal(c.hardforkIsActiveOnChain(), true, msg)
+    st.equal(c.isIncludedHardfork(), true, msg)
 
     st.end()
   })

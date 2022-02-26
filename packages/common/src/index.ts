@@ -685,7 +685,7 @@ export default class Common extends EventEmitter {
    * @param hardfork Hardfork name, optional if HF set
    * @returns True if hardfork is active on the chain
    */
-  hardforkIsActiveOnChain(hardfork?: string | Hardfork | null): boolean {
+  isIncludedHardfork(hardfork?: string | Hardfork | null): boolean {
     hardfork = hardfork ?? this._hardfork
     for (const hf of this.hardforks()) {
       if (hf['name'] === hardfork && hf['block'] !== null) return true
