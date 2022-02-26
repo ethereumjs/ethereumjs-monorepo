@@ -120,6 +120,10 @@ const args = yargs(hideBin(process.argv))
     string: true,
     default: 'localhost',
   })
+  .option('rpcEngineAuth', {
+    describe: 'Enable jwt authentication for Engine RPC server',
+    boolean: false,
+  })
   .option('jwt-secret', {
     describe: 'Provide a file containing a hex encoded jwt secret for Engine RPC server',
     coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),

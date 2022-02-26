@@ -19,6 +19,7 @@ type RPCArgs = {
   rpcDebug: boolean
   helprpc: boolean
   'jwt-secret'?: string
+  rpcEngineAuth: boolean
 }
 
 /**
@@ -102,6 +103,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     rpcEngineAddr,
     rpcEnginePort,
     'jwt-secret': jwtSecretPath,
+    rpcEngineAuth,
   } = args
   const manager = new RPCManager(client, config)
   const jwtSecret = parseJwtSecret(config, jwtSecretPath)
@@ -120,15 +122,16 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     if (rpc) {
       rpcHttpServer = createRPCServerListener({
         server,
-        withEngineMiddleware: withEngineMethods
-          ? {
-              jwtSecret,
-              unlessFn: (req: any) =>
-                Array.isArray(req.body)
-                  ? !req.body.some((r: any) => r.method.includes('engine_'))
-                  : !req.body.method.includes('engine_'),
-            }
-          : undefined,
+        withEngineMiddleware:
+          withEngineMethods && rpcEngineAuth
+            ? {
+                jwtSecret,
+                unlessFn: (req: any) =>
+                  Array.isArray(req.body)
+                    ? !req.body.some((r: any) => r.method.includes('engine_'))
+                    : !req.body.method.includes('engine_'),
+              }
+            : undefined,
       })
       rpcHttpServer.listen(rpcport)
       config.logger.info(
@@ -138,7 +141,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     if (ws) {
       const opts: any = {
         server,
-        withEngineMiddleware: withEngineMethods ? { jwtSecret } : undefined,
+        withEngineMiddleware: withEngineMethods && rpcEngineAuth ? { jwtSecret } : undefined,
       }
       if (rpcaddr === wsAddr && rpcport === wsPort) {
         // We want to loadon the websocket upgrade request to the same server
@@ -164,9 +167,11 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
 
     createRPCServerListener({
       server,
-      withEngineMiddleware: {
-        jwtSecret,
-      },
+      withEngineMiddleware: rpcEngineAuth
+        ? {
+            jwtSecret,
+          }
+        : undefined,
     }).listen(rpcport)
     config.logger.info(
       `Started JSON RPC server address=http://${rpcEngineAddr}:${rpcEnginePort} namespaces=engine`
