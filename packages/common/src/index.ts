@@ -589,14 +589,15 @@ export default class Common extends EventEmitter {
   }
 
   /**
-   * Returns a parameter for the hardfork active on block number
+   * Returns a parameter for the hardfork active on block number or
+   * optional provided total difficulty (Merge HF)
    * @param topic Parameter topic
    * @param name Parameter name
    * @param blockNumber Block number
+   * @param td Total difficulty
    */
-  paramByBlock(topic: string, name: string, blockNumber: BNLike): any {
-    const activeHfs = this.activeHardforks(blockNumber)
-    const hardfork = activeHfs[activeHfs.length - 1]['name']
+  paramByBlock(topic: string, name: string, blockNumber: BNLike, td?: BNLike): any {
+    const hardfork = this.getHardforkByBlockNumber(blockNumber, td)
     return this.paramByHardfork(topic, name, hardfork)
   }
 
@@ -691,37 +692,6 @@ export default class Common extends EventEmitter {
       if (hf['name'] === hardfork && hf['block'] !== null) return true
     }
     return false
-  }
-
-  /**
-   * Returns the active hardfork switches for the current chain
-   * @param blockNumber up to block if provided, otherwise for the whole chain
-   * @return Array with hardfork arrays
-   */
-  activeHardforks(blockNumber?: BNLike | null): HardforkParams[] {
-    const activeHardforks: HardforkParams[] = []
-    const hfs = this.hardforks()
-    for (const hf of hfs) {
-      if (hf['block'] === null) continue
-      if (blockNumber !== undefined && blockNumber !== null && blockNumber < hf['block']) break
-
-      activeHardforks.push(hf)
-    }
-    return activeHardforks
-  }
-
-  /**
-   * Returns the latest active hardfork name for chain or block or throws if unavailable
-   * @param blockNumber up to block if provided, otherwise for the whole chain
-   * @return Hardfork name
-   */
-  activeHardfork(blockNumber?: BNLike | null): string {
-    const activeHardforks = this.activeHardforks(blockNumber)
-    if (activeHardforks.length > 0) {
-      return activeHardforks[activeHardforks.length - 1]['name']
-    } else {
-      throw new Error(`No (supported) active hardfork found`)
-    }
   }
 
   /**

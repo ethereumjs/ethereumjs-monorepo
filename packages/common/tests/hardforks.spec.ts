@@ -150,50 +150,6 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.end()
   })
 
-  t.test('activeHardforks()', function (st: tape.Test) {
-    let c = new Common({ chain: Chain.Ropsten })
-    let msg = 'should return correct number of active hardforks for Ropsten'
-    st.equal(c.activeHardforks().length, 11, msg)
-
-    msg = 'should return the correct HF data for Ropsten'
-    st.equal(c.activeHardforks()[3]['name'], Hardfork.SpuriousDragon, msg)
-
-    msg = 'should return 3 active hardforks for Ropsten up to block 9'
-    st.equal(c.activeHardforks(9).length, 3, msg)
-
-    msg = 'should return 4 active hardforks for Ropsten up to block 10'
-    st.equal(c.activeHardforks(10).length, 4, msg)
-
-    c = new Common({ chain: Chain.Mainnet })
-    msg = 'should return correct number of active HFs for mainnet'
-    st.equal(c.activeHardforks().length, 13, msg)
-
-    c = new Common({ chain: Chain.Rinkeby })
-    msg = 'should return correct number of active HFs for rinkeby'
-    st.equal(c.activeHardforks().length, 10, msg)
-
-    c = new Common({ chain: Chain.Goerli })
-    msg = 'should return correct number of active HFs for goerli'
-    st.equal(c.activeHardforks().length, 10, msg)
-
-    st.end()
-  })
-
-  t.test('activeHardfork()', function (st: tape.Test) {
-    let c = new Common({ chain: Chain.Ropsten })
-    let msg = 'should return correct latest active HF for Ropsten'
-    st.equal(c.activeHardfork(), Hardfork.London, msg)
-
-    msg = 'should return spuriousDragon as latest active HF for Ropsten for block 10'
-    st.equal(c.activeHardfork(10), Hardfork.SpuriousDragon, msg)
-
-    c = new Common({ chain: Chain.Rinkeby })
-    msg = 'should return correct latest active HF for Rinkeby'
-    st.equal(c.activeHardfork(), Hardfork.London, msg)
-
-    st.end()
-  })
-
   t.test('hardforkIsActiveOnBlock() / activeOnBlock()', function (st: tape.Test) {
     let c = new Common({ chain: Chain.Ropsten })
     let msg = 'Ropsten, byzantium (provided), 1700000 -> true'
