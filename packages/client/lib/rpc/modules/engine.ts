@@ -3,7 +3,7 @@ import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
 import { toBuffer, bufferToHex, rlp, BN } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { middleware, validators } from '../validation'
-import { INTERNAL_ERROR } from '../error-code'
+import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
 import { PendingBlock } from '../../miner'
 import type VM from '@ethereumjs/vm'
 import type EthereumClient from '../../client'
@@ -535,21 +535,27 @@ export class Engine {
   }
 
   /**
-   * Sets and returns the transition configuration parameters.
+   * Compare transition configuration parameters.
    *
    * @param params An array of one parameter:
-   *   1. transitionConfiguration: Object - instance of {@link TransitionConfigurationV1}; `terminalBlockNumber` MUST be set to `0`
+   *   1. transitionConfiguration: Object - instance of {@link TransitionConfigurationV1}
    * @returns Instance of {@link TransitionConfigurationV1} or an error
    */
   async exchangeTransitionConfigurationV1(
     params: [TransitionConfigurationV1]
   ): Promise<TransitionConfigurationV1> {
     const { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber } = params[0]
-    const td = parseInt(terminalTotalDifficulty)
-    this.config.chainCommon.hardforks().find((h) => h.name === 'merge')!.td = td
-    this.config.execCommon.hardforks().find((h) => h.name === 'merge')!.td = td
-    // TODO decide if we want to implement terminalBlockHash and terminalBlockNumber,
-    // not so important since our client will not be running tip of chain on mainnet merge
+    const { td } = this.config.chainCommon.hardforks().find((h) => h.name === 'merge')!
+    if (td !== parseInt(terminalTotalDifficulty)) {
+      throw {
+        code: INVALID_PARAMS,
+        message: `terminalTotalDifficulty set to ${td}, received ${parseInt(
+          terminalTotalDifficulty
+        )}`,
+      }
+    }
+    // Note: our client does not yet support block whitelisting (terminalBlockHash/terminalBlockNumber)
+    // since we are not yet fast enough to run along tip-of-chain mainnet execution
     return { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber }
   }
 }
