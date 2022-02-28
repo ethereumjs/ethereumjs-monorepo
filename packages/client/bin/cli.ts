@@ -5,16 +5,14 @@ import path from 'path'
 import readline from 'readline'
 import { randomBytes } from 'crypto'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
-import { Server as RPCServer } from 'jayson/promise'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { _getInitializedChains } from '@ethereumjs/common/dist/chains'
 import { Address, toBuffer } from 'ethereumjs-util'
-import { parseMultiaddrs, parseGenesisState, parseCustomParams, inspectParams } from '../lib/util'
+import { parseMultiaddrs, parseGenesisState, parseCustomParams } from '../lib/util'
 import EthereumClient from '../lib/client'
 import { Config, DataDirectory } from '../lib/config'
 import { Logger, getLogger } from '../lib/logging'
-import { RPCManager } from '../lib/rpc'
-import * as modules from '../lib/rpc/modules'
+import { startRPCServers, helprpc } from './startRpc'
 import type { Chain as IChain, GenesisState } from '@ethereumjs/common/dist/types'
 const level = require('level')
 const yargs = require('yargs/yargs')
@@ -121,6 +119,14 @@ const args = yargs(hideBin(process.argv))
     describe: 'HTTP-RPC server listening interface address for Engine namespace',
     string: true,
     default: 'localhost',
+  })
+  .option('rpcEngineAuth', {
+    describe: 'Enable jwt authentication for Engine RPC server',
+    boolean: true,
+  })
+  .option('jwt-secret', {
+    describe: 'Provide a file containing a hex encoded jwt secret for Engine RPC server',
+    coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
   })
   .option('helprpc', {
     describe: 'Display the JSON RPC help with a list of all RPC methods implemented (and exit)',
@@ -310,105 +316,6 @@ async function startClient(config: Config) {
 }
 
 /**
- * Starts and returns enabled RPCServers
- */
-function startRPCServers(client: EthereumClient) {
-  const config = client.config
-  const onRequest = (request: any) => {
-    let msg = ''
-    if (args.rpcDebug) {
-      msg += `${request.method} called with params:\n${inspectParams(request.params)}`
-    } else {
-      msg += `${request.method} called with params: ${inspectParams(request.params, 125)}`
-    }
-    config.logger.debug(msg)
-  }
-
-  const handleResponse = (request: any, response: any, batchAddOn = '') => {
-    let msg = ''
-    if (args.rpcDebug) {
-      msg = `${request.method}${batchAddOn} responded with:\n${inspectParams(response)}`
-    } else {
-      msg = `${request.method}${batchAddOn} responded with: `
-      if (response.result) {
-        msg += inspectParams(response, 125)
-      }
-      if (response.error) {
-        msg += `error: ${response.error.message}`
-      }
-    }
-    config.logger.debug(msg)
-  }
-
-  const onBatchResponse = (request: any, response: any) => {
-    // Batch request
-    if (request.length !== undefined) {
-      if (response.length === undefined || response.length !== request.length) {
-        config.logger.debug('Invalid batch request received.')
-        return
-      }
-      for (let i = 0; i < request.length; i++) {
-        handleResponse(request[i], response[i], ' (batch request)')
-      }
-    } else {
-      handleResponse(request, response)
-    }
-  }
-
-  const servers: RPCServer[] = []
-  const { rpc, rpcaddr, rpcport, ws, wsPort, wsAddr, rpcEngine, rpcEngineAddr, rpcEnginePort } =
-    args
-  const manager = new RPCManager(client, config)
-
-  if (rpc || ws) {
-    const methods =
-      rpcEngine && rpcEnginePort === rpcport && rpcEngineAddr === rpcaddr
-        ? { ...manager.getMethods(), ...manager.getMethods(true) }
-        : { ...manager.getMethods() }
-    const server = new RPCServer(methods)
-    server.on('request', onRequest)
-    server.on('response', onBatchResponse)
-    const namespaces = [...new Set(Object.keys(methods).map((m) => m.split('_')[0]))].join(',')
-    if (rpc) {
-      server.http().listen(rpcport)
-      config.logger.info(
-        `Started JSON RPC Server address=http://${rpcaddr}:${rpcport} namespaces=${namespaces}`
-      )
-    }
-    if (ws) {
-      const opts: any = { port: wsPort }
-      if (rpcaddr === wsAddr && rpcport === wsPort) {
-        // If http and ws are listening on the same port,
-        // pass in the existing server to prevent a listening error
-        delete opts.port
-        opts.server = server
-      }
-      server.websocket(opts)
-      config.logger.info(
-        `Started JSON RPC Server address=ws://${wsAddr}:${wsPort} namespaces=${namespaces}`
-      )
-    }
-    servers.push(server)
-  }
-
-  if (rpcEngine) {
-    if (rpc && rpcport === rpcEnginePort && rpcaddr === rpcEngineAddr) {
-      return servers
-    }
-    const server = new RPCServer(manager.getMethods(true))
-    config.logger.info(
-      `Started JSON RPC server address=http://${rpcEngineAddr}:${rpcEnginePort} namespaces=engine`
-    )
-    server.http().listen(rpcEnginePort)
-    server.on('request', onRequest)
-    server.on('response', onBatchResponse)
-    servers.push(server)
-  }
-
-  return servers
-}
-
-/**
  * Returns a configured common for devnet with a prefunded address
  */
 async function setupDevnet(prefundAddress: Address) {
@@ -520,26 +427,6 @@ async function inputAccounts() {
   }
   rl.close()
   return accounts
-}
-
-/**
- * Output RPC help and exit
- */
-function helprpc() {
-  console.log('-'.repeat(27))
-  console.log('JSON-RPC: Supported Methods')
-  console.log('-'.repeat(27))
-  console.log()
-  for (const modName of modules.list) {
-    console.log(`${modName}:`)
-    const methods = RPCManager.getMethodNames((modules as any)[modName])
-    for (const methodName of methods) {
-      console.log(`-> ${modName.toLowerCase()}_${methodName}`)
-    }
-    console.log()
-  }
-  console.log()
-  process.exit()
 }
 
 /**
@@ -669,7 +556,7 @@ async function run() {
   config.events.setMaxListeners(50)
 
   const client = await startClient(config)
-  const servers = args.rpc || args.rpcEngine ? startRPCServers(client) : []
+  const servers = args.rpc || args.rpcEngine ? startRPCServers(client, args) : []
 
   process.on('SIGINT', async () => {
     config.logger.info('Caught interrupt signal. Shutting down...')

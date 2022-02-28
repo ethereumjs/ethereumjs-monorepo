@@ -11,19 +11,30 @@ import { parseCustomParams, parseGenesisState } from '../../lib/util'
 import { TxPool } from '../../lib/sync/txpool'
 import { RlpxServer } from '../../lib/net/server/rlpxserver'
 import { VMExecution } from '../../lib/execution'
+import { createRPCServerListener, createWsRPCServerListener } from '../../lib/util'
 import { mockBlockchain } from './mockBlockchain'
-import type EthereumClient from '../../lib/client'
+import type { IncomingMessage } from 'connect'
 import type { TypedTransaction } from '@ethereumjs/tx'
+import type EthereumClient from '../../lib/client'
 const request = require('supertest')
 const level = require('level-mem')
 
 const config: any = {}
 config.logger = getLogger(config)
 
-export function startRPC(methods: any, port: number = 3000) {
+type WithEngineMiddleware = { jwtSecret: Buffer; unlessFn?: (req: IncomingMessage) => boolean }
+
+export function startRPC(
+  methods: any,
+  { port, wsServer }: { port?: number; wsServer?: boolean } = { port: 3000 },
+  withEngineMiddleware?: WithEngineMiddleware
+) {
   const server = new RPCServer(methods)
-  const httpServer = server.http()
-  httpServer.listen(port)
+  const httpServer = wsServer
+    ? createWsRPCServerListener({ server, withEngineMiddleware })
+    : createRPCServerListener({ server, withEngineMiddleware })
+  if (!httpServer) throw Error('Could not create server')
+  if (port) httpServer.listen(port)
   return httpServer
 }
 
