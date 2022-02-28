@@ -122,7 +122,7 @@ const args = yargs(hideBin(process.argv))
   })
   .option('rpcEngineAuth', {
     describe: 'Enable jwt authentication for Engine RPC server',
-    boolean: false,
+    boolean: true,
   })
   .option('jwt-secret', {
     describe: 'Provide a file containing a hex encoded jwt secret for Engine RPC server',
