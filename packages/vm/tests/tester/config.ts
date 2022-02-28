@@ -9,7 +9,7 @@ export const DEFAULT_TESTS_PATH = path.resolve('../ethereum-tests')
 /**
  * Default hardfork rules to run tests against
  */
-export const DEFAULT_FORK_CONFIG = 'Istanbul'
+export const DEFAULT_FORK_CONFIG = 'London'
 
 /**
  * Tests which should be fixed

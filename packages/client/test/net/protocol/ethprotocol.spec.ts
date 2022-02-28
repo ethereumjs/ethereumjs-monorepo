@@ -81,7 +81,7 @@ tape('[EthProtocol]', (t) => {
     const chain = new Chain({ config })
     const p = new EthProtocol({ config, chain })
     const td = new BN(100)
-    const block = Block.fromBlockData({})
+    const block = Block.fromBlockData({}, { common: config.chainCommon })
     const res = p.decode(p.messages.filter((message) => message.name === 'NewBlock')[0], [
       block.raw(),
       td.toBuffer(),

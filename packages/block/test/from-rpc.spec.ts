@@ -10,22 +10,24 @@ import * as uncleBlockData from './testdata/testdata-from-rpc-with-uncles_uncle-
 import * as testDataFromRpcGoerliLondon from './testdata/testdata-from-rpc-goerli-london.json'
 
 tape('[fromRPC]: block #2924874', function (t) {
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+
   t.test('should create a block with transactions with valid signatures', function (st) {
-    const block = blockFromRpc(blockData)
+    const block = blockFromRpc(blockData, [], { common })
     const allValid = block.transactions.every((tx) => tx.verifySignature())
     st.equal(allValid, true, 'all transaction signatures are valid')
     st.end()
   })
 
   t.test('should create a block header with the correct hash', function (st) {
-    const block = blockHeaderFromRpc(blockData)
+    const block = blockHeaderFromRpc(blockData, { common })
     const hash = Buffer.from(blockData.hash.slice(2), 'hex')
     st.ok(block.hash().equals(hash))
     st.end()
   })
 
   t.test('should create a block with uncles', function (st) {
-    const block = blockFromRpc(blockDataWithUncles, [uncleBlockData])
+    const block = blockFromRpc(blockDataWithUncles, [uncleBlockData], { common })
     st.ok(block.validateUnclesHash())
     st.end()
   })

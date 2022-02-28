@@ -59,7 +59,7 @@ try {
 
 This library supports the creation of [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) compatible blocks starting with `v3.3.0`.
 
-To instantiate an EIP-1559 block the hardfork parameter on the `Common` instance needs to be explicitly set to `london` (default is still `istanbul`):
+To instantiate an EIP-1559 block, the hardfork parameter on the `Common` instance needs to be set to `london` (this is now the default hardfork):
 
 ```typescript
 import { BN } from 'ethereumjs-util'

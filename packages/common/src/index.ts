@@ -105,7 +105,7 @@ interface BaseOpts {
   /**
    * String identifier ('byzantium') for hardfork or {@link Hardfork} enum.
    *
-   * Default: Hardfork.Istanbul
+   * Default: Hardfork.London
    */
   hardfork?: string | Hardfork
   /**
@@ -348,7 +348,7 @@ export default class Common extends EventEmitter {
     super()
     this._customChains = opts.customChains ?? []
     this._chainParams = this.setChain(opts.chain)
-    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Istanbul
+    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.London
     for (const hf of this._chainParams.hardforks) {
       if (!hf.forkHash) {
         hf.forkHash = this._calcForkHash(hf.name)
