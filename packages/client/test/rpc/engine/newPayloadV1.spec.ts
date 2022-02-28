@@ -158,14 +158,17 @@ tape(`${method}: call with valid data & valid transaction`, async (t) => {
     'hex'
   )
   const accountAddress = Address.fromPrivateKey(accountPk)
-  genesisJSON.alloc = {
-    ...genesisJSON.alloc,
-    [accountAddress.toString()]: {
-      balance: '0x1000000',
+  const newGenesisJSON = {
+    ...genesisJSON,
+    alloc: {
+      ...genesisJSON.alloc,
+      [accountAddress.toString()]: {
+        balance: '0x1000000',
+      },
     },
   }
 
-  const { server, common } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+  const { server, common } = await setupChain(newGenesisJSON, 'post-merge', { engine: true })
 
   const tx = FeeMarketEIP1559Transaction.fromTxData(
     {

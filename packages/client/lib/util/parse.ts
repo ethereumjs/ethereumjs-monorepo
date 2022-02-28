@@ -165,6 +165,7 @@ async function parseGethParams(json: any) {
   const { name, config, difficulty, nonce, mixHash, gasLimit, coinbase, baseFeePerGas } = json
   let { extraData, timestamp } = json
   const { chainId } = config
+
   // geth is not strictly putting empty fields with a 0x prefix
   if (extraData === '') {
     extraData = '0x'
@@ -173,6 +174,7 @@ async function parseGethParams(json: any) {
   if (!isHexPrefixed(timestamp)) {
     timestamp = intToHex(parseInt(timestamp))
   }
+
   // EIP155 and EIP158 are both part of Spurious Dragon hardfork and must occur at the same time
   // but have different configuration parameters in geth genesis parameters
   if (config.eip155Block !== config.eip158Block) {
