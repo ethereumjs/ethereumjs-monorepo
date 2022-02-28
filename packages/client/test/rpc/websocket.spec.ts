@@ -52,7 +52,7 @@ tape('call JSON-RPC auth protected server without any auth headers', (t) => {
   server.listen(wsPort, 'localhost', testFn)
 })
 
-tape('call JSON-RPC server without any auth headers ', (t) => {
+tape('call JSON-RPC server without any auth headers', (t) => {
   const server = startRPC({}, { wsServer: true })
   const req = {
     jsonrpc: '2.0',
