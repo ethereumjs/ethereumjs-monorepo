@@ -429,7 +429,7 @@ tape('[Miner]', async (t) => {
 
   t.test('should handle mining ethash PoW', async (t) => {
     t.plan(1)
-    const common = new Common({ chain: CommonChain.Ropsten })
+    const common = new Common({ chain: CommonChain.Ropsten, hardfork: Hardfork.Istanbul })
     ;(common as any)._chainParams['genesis'].difficulty = 1
     const config = new Config({ transports: [], accounts, mine: true, common })
     const chain = new Chain({ config })

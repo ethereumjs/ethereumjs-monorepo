@@ -39,7 +39,7 @@ tape('VM -> basic instantiation / boolean switches', (t) => {
       KECCAK256_RLP,
       'it has default trie'
     )
-    st.equal(vm._common.hardfork(), 'istanbul', 'it has correct default HF')
+    st.equal(vm._common.hardfork(), Hardfork.London, 'it has correct default HF')
     st.end()
   })
 

@@ -119,7 +119,7 @@ Currently the following hardfork rules are supported:
 - `london` (`v5.4.0`+)
 - `arrowGlacier` (only `mainnet`) (`v5.6.0`+)
 
-Default: `istanbul` (taken from `Common.DEFAULT_HARDFORK`)
+Default: `london` (taken from `Common.DEFAULT_HARDFORK`)
 
 A specific hardfork VM ruleset can be activated by passing in the hardfork
 along the `Common` instance:

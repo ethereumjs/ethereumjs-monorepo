@@ -3,6 +3,7 @@ import { join } from 'path'
 import { readFileSync } from 'fs'
 import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
 import { Address } from 'ethereumjs-util'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import VM from '..'
 import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder'
@@ -11,6 +12,8 @@ const solc = require('solc')
 
 const INITIAL_GREETING = 'Hello, World!'
 const SECOND_GREETING = 'Hola, Mundo!'
+
+const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Istanbul })
 
 /**
  * This function creates the input for the Solidity compiler.
@@ -92,7 +95,7 @@ async function deployContract(
     nonce: await getAccountNonce(vm, senderPrivateKey),
   }
 
-  const tx = Transaction.fromTxData(buildTransaction(txData)).sign(senderPrivateKey)
+  const tx = Transaction.fromTxData(buildTransaction(txData), { common }).sign(senderPrivateKey)
 
   const deploymentResult = await vm.runTx({ tx })
 
@@ -120,7 +123,7 @@ async function setGreeting(
     nonce: await getAccountNonce(vm, senderPrivateKey),
   }
 
-  const tx = Transaction.fromTxData(buildTransaction(txData)).sign(senderPrivateKey)
+  const tx = Transaction.fromTxData(buildTransaction(txData), { common }).sign(senderPrivateKey)
 
   const setGreetingResult = await vm.runTx({ tx })
 
@@ -154,7 +157,7 @@ async function main() {
     'hex'
   )
 
-  const vm = new VM()
+  const vm = new VM({ common })
   const accountAddress = Address.fromPrivateKey(accountPk)
 
   console.log('Account: ', accountAddress.toString())
