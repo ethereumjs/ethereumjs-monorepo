@@ -7,7 +7,7 @@ const request = require('superwstest')
 const jwtSecret = Buffer.from(Array.from({ length: 32 }, () => Math.round(Math.random() * 255)))
 const wsPort = 3000
 
-tape('call JSON-RPC auth protected server with valid token ', (t) => {
+tape('call JSON-RPC auth protected server with valid token', (t) => {
   const server = startRPC({}, { wsServer: true }, { jwtSecret })
   const claims = { iat: Math.floor(new Date().getTime() / 1000) }
   const token = encode(claims, jwtSecret as never as string, 'HS256' as TAlgorithm)
