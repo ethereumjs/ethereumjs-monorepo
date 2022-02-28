@@ -3,8 +3,8 @@ import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { params, baseRequest, baseSetup, setupChain } from '../helpers'
 import { checkError } from '../util'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
-import { Address, TWO_POW256 } from 'ethereumjs-util'
+import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { Address } from 'ethereumjs-util'
 
 const method = 'engine_newPayloadV1'
 
