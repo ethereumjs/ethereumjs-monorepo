@@ -106,7 +106,15 @@ export function INVALID_BYTECODE_RESULT(gasLimit: BN): ExecResult {
   }
 }
 
-export function VmErrorResult(error: VmError, gasUsed: BN): ExecResult {
+export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
+  return {
+    returnValue: Buffer.alloc(0),
+    gasUsed: gasLimit,
+    exceptionError: new VmError(ERROR.INVALID_EOF_FORMAT),
+  }
+}
+
+export function VmErrorResult(error: VmError, gasUsed: bigint): ExecResult {
   return {
     returnValue: Buffer.alloc(0),
     gasUsed: gasUsed,
@@ -148,7 +156,7 @@ export default class EVM {
 
     if (!message.to && this._vm._common.isActivatedEIP(2929)) {
       message.code = message.data
-      ;(<any>this._state).addWarmedAddress((await this._generateAddress(message)).buf)
+        ; (<any>this._state).addWarmedAddress((await this._generateAddress(message)).buf)
     }
 
     const oldRefund = this._refund.clone()
@@ -163,8 +171,7 @@ export default class EVM {
     if (this._vm.DEBUG) {
       const { caller, gasLimit, to, value, delegatecall } = message
       debug(
-        `New message caller=${caller} gasLimit=${gasLimit} to=${
-          to?.toString() ?? 'none'
+        `New message caller=${caller} gasLimit=${gasLimit} to=${to?.toString() ?? 'none'
         } value=${value} delegatecall=${delegatecall ? 'yes' : 'no'}`
       )
     }
@@ -182,8 +189,7 @@ export default class EVM {
     if (this._vm.DEBUG) {
       const { gasUsed, exceptionError, returnValue, gasRefund } = result.execResult
       debug(
-        `Received message execResult: [ gasUsed=${gasUsed} exceptionError=${
-          exceptionError ? `'${exceptionError.error}'` : 'none'
+        `Received message execResult: [ gasUsed=${gasUsed} exceptionError=${exceptionError ? `'${exceptionError.error}'` : 'none'
         } returnValue=0x${short(returnValue)} gasRefund=${gasRefund ?? 0} ]`
       )
     }
@@ -417,7 +423,7 @@ export default class EVM {
         if (!eof1CodeAnalysisResults?.code) {
           result = {
             ...result,
-            ...INVALID_BYTECODE_RESULT(message.gasLimit),
+            ...INVALID_EOF_RESULT(message.gasLimit),
           }
         } else if (this._vm._common.isActivatedEIP(3670)) {
           // EIP-3670 EOF1 code check
@@ -432,7 +438,7 @@ export default class EVM {
           ) {
             result = {
               ...result,
-              ...INVALID_BYTECODE_RESULT(message.gasLimit),
+              ...INVALID_EOF_RESULT(message.gasLimit),
             }
           }
         }

@@ -317,12 +317,12 @@ export const eof1ValidOpcodes = (code: Buffer) => {
       // Skip data block following push
       x += opcode - 0x5f
       if (x > code.length - 1) {
-        // Push blocks mmust not exceed end of code section
+        // Push blocks must not exceed end of code section
         return false
       }
     }
   }
-  const terminatingOpcodes = new Set([0x00, 0xd3, 0xfd, 0xfe, 0xff])
+  const terminatingOpcodes = new Set([0x00, 0xf3, 0xfd, 0xfe, 0xff])
   // Per EIP-3670, the final opcode of a code section must be STOP, RETURN, REVERT, INVALID, or SELFDESTRUCT
   if (!terminatingOpcodes.has(code[code.length - 1])) {
     return false
