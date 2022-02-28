@@ -6,19 +6,21 @@ import Blockchain from '../src'
 import { CLIQUE_NONCE_AUTH } from '../src/clique'
 import { generateConsecutiveBlock } from './util'
 
-const genesis = Block.fromBlockData({
-  header: {
-    number: new BN(0),
-    difficulty: new BN(0x020000),
-    gasLimit: new BN(8000000),
-  },
-})
-
 tape('reorg tests', (t) => {
   t.test(
     'should correctly reorg the chain if the total difficulty is higher on a lower block number than the current head block',
     async (st) => {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
+      const genesis = Block.fromBlockData(
+        {
+          header: {
+            number: new BN(0),
+            difficulty: new BN(0x020000),
+            gasLimit: new BN(8000000),
+          },
+        },
+        { common }
+      )
       const blockchain = new Blockchain({
         validateBlocks: true,
         validateConsensus: false,
