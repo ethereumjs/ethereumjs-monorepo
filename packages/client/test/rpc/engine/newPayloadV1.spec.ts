@@ -3,8 +3,8 @@ import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { params, baseRequest, baseSetup, setupChain } from '../helpers'
 import { checkError } from '../util'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Address } from 'ethereumjs-util'
+import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
+import { Address, TWO_POW256 } from 'ethereumjs-util'
 
 const method = 'engine_newPayloadV1'
 
@@ -123,14 +123,15 @@ tape(`${method}: call with valid data but invalid transactions`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape.skip(`${method}: call with valid data & valid transactions`, async (t) => {
+tape(`${method}: call with valid data & valid transaction but not signed`, async (t) => {
   const { server, common } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
+  // Let's mock a non-signed transaction so execution fails
   const tx = FeeMarketEIP1559Transaction.fromTxData(
     {
       gasLimit: 21_000,
-      maxFeePerGas: 7,
-      value: '0x1',
+      maxFeePerGas: 10,
+      value: 1,
       to: Address.fromString('0x61FfE691821291D02E9Ba5D33098ADcee71a3a17'),
     },
     { common }
@@ -140,12 +141,53 @@ tape.skip(`${method}: call with valid data & valid transactions`, async (t) => {
   const blockDataWithValidTransaction = {
     ...blockData,
     transactions,
-    blockHash: '0x06a3199dbb9ea582c9b893f96c5c7668a3051432c2c252acc114212fb6b3503c',
+    blockHash: '0x308f490332a31fade8b2b46a8e1132cd15adeaffbb651cb523c067b3f007dd9e',
+  }
+  const expectRes = (res: any) => {
+    t.equal(res.body.result.status, 'INVALID')
+    t.true(res.body.result.validationError.includes('Error verifying block while running:'))
+  }
+
+  const req = params(method, [blockDataWithValidTransaction])
+  await baseRequest(t, server, req, 200, expectRes)
+})
+
+tape(`${method}: call with valid data & valid transaction`, async (t) => {
+  const accountPk = Buffer.from(
+    'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
+    'hex'
+  )
+  const accountAddress = Address.fromPrivateKey(accountPk)
+  genesisJSON.alloc = {
+    ...genesisJSON.alloc,
+    [accountAddress.toString()]: {
+      balance: '0x1000000',
+    },
+  }
+
+  const { server, common } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+
+  const tx = FeeMarketEIP1559Transaction.fromTxData(
+    {
+      maxFeePerGas: '0x7',
+      value: 6,
+      gasLimit: 53_000,
+    },
+    { common }
+  ).sign(accountPk)
+  const transactions = ['0x' + tx.serialize().toString('hex')]
+  const blockDataWithValidTransaction = {
+    ...blockData,
+    transactions,
+    parentHash: '0xefc1993f08864165c42195966b3f12794a1a42afa84b1047a46ab6b105828c5c',
+    receiptsRoot: '0xc508745f9f8b6847a127bbc58b7c6b2c0f073c7ca778b6f020138f0d6d782adf',
+    gasUsed: '0xcf08',
+    stateRoot: '0x5a7123ab8bdd4f172438671a2a3de143f2105aa1ac3338c97e5f433e8e380d8d',
+    blockHash: '0x625f2fd36bf278f92211376cbfe5acd7ac5da694e28f3d94d59488b7dbe213a4',
   }
   const expectRes = (res: any) => {
     t.equal(res.body.result.status, 'VALID')
   }
-
   const req = params(method, [blockDataWithValidTransaction])
   await baseRequest(t, server, req, 200, expectRes)
 })
