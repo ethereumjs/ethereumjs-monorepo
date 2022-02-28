@@ -4,7 +4,7 @@ import { Address, BN, bufferToHex } from 'ethereumjs-util'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { params, baseRequest, setupChain, runBlockWithTxs, dummy } from '../helpers'
 import { checkError } from '../util'
-import pow from './../../testdata/pow.json'
+import pow from './../../testdata/geth-genesis/pow.json'
 
 const method = 'eth_getLogs'
 

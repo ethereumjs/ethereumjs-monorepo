@@ -5,37 +5,31 @@ import VM from '@ethereumjs/vm'
 import { Config } from '../../../lib/config'
 import { Chain } from '../../../lib/blockchain'
 import { VMExecution } from '../../../lib/execution'
-import blocksDataMainnet from './../../testdata/blocks_mainnet.json'
-import blocksDataGoerli from './../../testdata/blocks_goerli.json'
-import testnet from './../../testdata/testnet.json'
+import blocksDataMainnet from './../../testdata/blocks/mainnet.json'
+import blocksDataGoerli from './../../testdata/blocks/goerli.json'
+import testnet from './../../testdata/common/testnet.json'
 
 tape('[VMExecution]', async (t) => {
   t.test('Initialization', async (t) => {
     const vm = new VM()
     const config = new Config({ vm, transports: [] })
     const chain = new Chain({ config })
-    const exec = new VMExecution({
-      config,
-      chain,
-    })
+    const exec = new VMExecution({ config, chain })
     t.equals(exec.vm, vm, 'should use vm provided')
     t.end()
   })
 
   async function testSetup(blockchain: Blockchain, common?: Common) {
     const config = new Config({ common, transports: [] })
-
     const chain = new Chain({ config, blockchain })
-    const exec = new VMExecution({
-      config,
-      chain,
-    })
+    const exec = new VMExecution({ config, chain })
+    await chain.open()
     await exec.open()
     return exec
   }
 
   t.test('Block execution / Hardforks PoW (mainnet)', async (t) => {
-    let blockchain = new Blockchain({
+    let blockchain = await Blockchain.create({
       validateBlocks: true,
       validateConsensus: false,
     })
@@ -52,7 +46,7 @@ tape('[VMExecution]', async (t) => {
     exec = await testSetup(blockchain)
     await exec.run()
     newHead = await exec.vm.blockchain.getHead()
-    t.deepEqual(newHead.header.number.toNumber(), 5, 'should run all blocks')
+    t.ok(newHead.header.number.eqn(5), 'should run all blocks')
 
     const common = new Common({ chain: 'testnet', customChains: [testnet] })
     exec = await testSetup(blockchain, common)
