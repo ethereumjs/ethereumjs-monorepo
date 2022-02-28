@@ -141,7 +141,7 @@ tape('call JSON RPC with non-exist method', (t) => {
     })
 })
 
-tape('call JSON-RPC auth protected server with unprotected method without token ', (t) => {
+tape('call JSON-RPC auth protected server with unprotected method without token', (t) => {
   const server = startRPC({}, undefined, {
     jwtSecret,
     unlessFn: (req: any) => req.body.method.includes('unprotected_'),
@@ -165,7 +165,7 @@ tape('call JSON-RPC auth protected server with unprotected method without token 
     })
 })
 
-tape('call JSON-RPC auth protected server with protected method without token ', (t) => {
+tape('call JSON-RPC auth protected server with protected method without token', (t) => {
   const server = startRPC({}, undefined, {
     jwtSecret,
     unlessFn: (req: any) => !req.body.method.includes('protected_'),
@@ -189,7 +189,7 @@ tape('call JSON-RPC auth protected server with protected method without token ',
     })
 })
 
-tape('call JSON-RPC auth protected server with protected method with token ', (t) => {
+tape('call JSON-RPC auth protected server with protected method with token', (t) => {
   const server = startRPC({}, undefined, {
     jwtSecret,
     unlessFn: (req: any) => !req.body.method.includes('protected_'),
