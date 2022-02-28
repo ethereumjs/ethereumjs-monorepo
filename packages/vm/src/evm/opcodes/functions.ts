@@ -771,7 +771,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     },
   ],
   // 0x5b: JUMPDEST
-  [0x5b, function () { }],
+  [0x5b, function () {}],
   // 0x5c: BEGINSUB
   [
     0x5c,
