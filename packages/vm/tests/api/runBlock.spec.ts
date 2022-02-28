@@ -98,12 +98,12 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
   }
 
   t.test('PoW block, unmodified options', async (st) => {
-    const vm = setupVM()
+    const vm = setupVM({ common })
     await simpleRun(vm, st)
   })
 
   t.test('Uncle blocks, compute uncle rewards', async (st) => {
-    const vm = setupVM()
+    const vm = setupVM({ common })
     await uncleRun(vm, st)
   })
 
@@ -261,7 +261,7 @@ tape('runBlock() -> runtime behavior', async (t) => {
     const block1: any = rlp.decode(testData.blocks[0].rlp)
     // edit extra data of this block to "dao-hard-fork"
     block1[0][12] = Buffer.from('dao-hard-fork')
-    const block = Block.fromValuesArray(block1)
+    const block = Block.fromValuesArray(block1, { common })
     // @ts-ignore
     await setupPreConditions(vm.stateManager, testData)
 
@@ -306,7 +306,7 @@ tape('runBlock() -> runtime behavior', async (t) => {
   })
 
   t.test('should allocate to correct clique beneficiary', async (t) => {
-    const common = new Common({ chain: Chain.Goerli })
+    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Istanbul })
     const vm = setupVM({ common })
 
     const signer = {
@@ -397,10 +397,11 @@ tape('should correctly reflect generated fields', async (t) => {
 })
 
 async function runWithHf(hardfork: string) {
-  const vm = setupVM({ common: new Common({ chain: Chain.Mainnet, hardfork }) })
+  const common = new Common({ chain: Chain.Mainnet, hardfork })
+  const vm = setupVM({ common })
 
   const blockRlp = testData.blocks[0].rlp
-  const block = Block.fromRLPSerializedBlock(blockRlp)
+  const block = Block.fromRLPSerializedBlock(blockRlp, { common })
 
   // @ts-ignore
   await setupPreConditions(vm.stateManager, testData)
