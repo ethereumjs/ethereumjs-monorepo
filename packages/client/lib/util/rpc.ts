@@ -69,10 +69,8 @@ export function createWsRPCServerListener(
         socket.destroy()
       }
     }
-    // @ts-ignore
-    wss.handleUpgrade(req, socket, head, function done(ws) {
-      // @ts-ignore
-      wss.emit('connection', ws, req)
+    ;(wss as any).handleUpgrade(req, socket, head, (ws: any) => {
+      ;(wss as any).emit('connection', ws, req)
     })
   })
   // Only return something if a new server was created
