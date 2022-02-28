@@ -3,6 +3,7 @@ import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Address, BN, privateToAddress } from 'ethereumjs-util'
+import { eof1CodeAnalysis } from '../../../src/evm/opcodes'
 const pkey = Buffer.from('20'.repeat(32), 'hex')
 const GWEI = new BN('1000000000')
 const sender = new Address(privateToAddress(pkey))
@@ -12,6 +13,34 @@ tape('EIP 3540 tests', (t) => {
     chain: Chain.Mainnet,
     hardfork: Hardfork.London,
     eips: [3540, 3541],
+  })
+
+  t.test('eof1CodeAnalysis() tests', async (st) => {
+    const eofHeader = Buffer.from([0xef, 0x00, 0x01])
+    st.ok(
+      eof1CodeAnalysis(Buffer.concat([eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00])]))
+        ?.code! > 0,
+      'valid code section'
+    )
+    st.ok(
+      eof1CodeAnalysis(
+        Buffer.concat([
+          eofHeader,
+          Uint8Array.from([0x01, 0x00, 0x01, 0x02, 0x00, 0x01, 0x00, 0x00, 0xaa]),
+        ])
+      )?.data! > 0,
+      'valid data section'
+    )
+    st.ok(
+      !eof1CodeAnalysis(
+        Buffer.concat([
+          eofHeader,
+          Buffer.concat([eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00, 0x00])]),
+        ])
+      ),
+      'invalid container length'
+    )
+    st.end()
   })
   t.test('invalid object formats', async (st) => {
     const vm = new VM({ common })
