@@ -42,7 +42,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
 If no hardfork is provided, the common is initialized with the default hardfork.
 
-Current `DEFAULT_HARDFORK`: `istanbul`
+Current `DEFAULT_HARDFORK`: `london`
 
 Here are some simple usage examples:
 
@@ -276,10 +276,10 @@ library supported:
 - `byzantium` (`Hardfork.Byzantium`)
 - `constantinople` (`Hardfork.Constantinople`)
 - `petersburg` (`Hardfork.Petersburg`) (aka `constantinopleFix`, apply together with `constantinople`)
-- `istanbul` (`Hardfork.Istanbul`) (`DEFAULT_HARDFORK` (`v2.0.0` release series))
+- `istanbul` (`Hardfork.Instanbul`)
 - `muirGlacier` (`Hardfork.MuirGlacier`)
 - `berlin` (`Hardfork.Berlin`) (since `v2.2.0`)
-- `london` (`Hardfork.London`) (since `v2.4.0`)
+- `london` (`Hardfork.London`) (`DEFAULT_HARDFORK`) (since `v2.4.0`)
 - `merge` (`Hardfork.Merge`) (since `v2.5.0`, `experimental`)
 
 ### Future Hardforks

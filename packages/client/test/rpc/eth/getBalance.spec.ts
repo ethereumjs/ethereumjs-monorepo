@@ -1,6 +1,7 @@
 import tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { Address, BN, toBuffer, bnToHex } from 'ethereumjs-util'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
@@ -11,9 +12,10 @@ import type { FullEthereumService } from '../../../lib/service'
 const method = 'eth_getBalance'
 
 tape(`${method}: ensure balance deducts after a tx`, async (t) => {
-  const blockchain = await Blockchain.create()
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+  const blockchain = await Blockchain.create({ common })
 
-  const client = createClient({ blockchain, includeVM: true })
+  const client = createClient({ blockchain, commonChain: common, includeVM: true })
   const manager = createManager(client)
 
   const server = startRPC(manager.getMethods())
@@ -39,11 +41,11 @@ tape(`${method}: ensure balance deducts after a tx`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes, false)
 
   // construct block with tx
-  const tx = Transaction.fromTxData({ gasLimit: 53000 }, { freeze: false })
+  const tx = Transaction.fromTxData({ gasLimit: 53000 }, { common, freeze: false })
   tx.getSenderAddress = () => {
     return address
   }
-  const block = Block.fromBlockData()
+  const block = Block.fromBlockData({}, { common })
   block.transactions[0] = tx
 
   const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })

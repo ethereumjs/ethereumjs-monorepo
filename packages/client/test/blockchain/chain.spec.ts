@@ -53,7 +53,9 @@ tape('[Chain]', (t) => {
       difficulty: new BN('abcdffff', 16),
       parentHash: chain.genesis.hash,
     }
-    const block = Block.fromBlockData({ header: headerData } as BlockData)
+    const block = Block.fromBlockData({ header: headerData } as BlockData, {
+      common: config.chainCommon,
+    })
 
     t.equal(await chain.update(), false, 'skip update if not opened')
     t.equal(await chain.close(), false, 'skip close if not opened')
@@ -126,7 +128,9 @@ tape('[Chain]', (t) => {
       difficulty: new BN('abcdffff', 16),
       parentHash: chain.genesis.hash,
     }
-    const block = Block.fromBlockData({ header: headerData } as BlockData)
+    const block = Block.fromBlockData({ header: headerData } as BlockData, {
+      common: config.chainCommon,
+    })
     await chain.putBlocks([block])
     t.equal(chain.blocks.td.toString(16), '4abcdffff', 'get chain.td')
     t.equal(chain.blocks.height.toString(10), '1', 'get chain.height')

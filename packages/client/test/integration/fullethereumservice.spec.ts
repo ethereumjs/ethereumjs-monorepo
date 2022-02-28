@@ -10,11 +10,13 @@ import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
 import { destroy } from './util'
 
+const config = new Config()
+
 tape('[Integration:FullEthereumService]', async (t) => {
   async function setup(): Promise<[MockServer, FullEthereumService]> {
-    const config = new Config()
     const server = new MockServer({ config })
     const blockchain = await Blockchain.create({
+      common: config.chainCommon,
       validateBlocks: false,
       validateConsensus: false,
     })
@@ -60,12 +62,15 @@ tape('[Integration:FullEthereumService]', async (t) => {
     })
     peer.eth!.send('NewBlockHashes', [[hash, new BN(2)]])
 
-    const block = Block.fromBlockData({
-      header: {
-        number: 1,
-        difficulty: 1,
+    const block = Block.fromBlockData(
+      {
+        header: {
+          number: 1,
+          difficulty: 1,
+        },
       },
-    })
+      { common: config.chainCommon }
+    )
     peer.eth!.send('NewBlock', [block, new BN(1)])
 
     const txData =
