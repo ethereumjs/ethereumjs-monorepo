@@ -2,7 +2,7 @@
   "name": "kovan",
   "chainId": 42,
   "networkId": 42,
-  "defaultHardfork": "istanbul",
+  "defaultHardfork": "london",
   "consensus": {
     "type": "poa",
     "algorithm": "aura",
