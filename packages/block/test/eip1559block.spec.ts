@@ -491,7 +491,7 @@ tape('EIP1559 tests', function (t) {
         common,
       }
     )
-    st.equal(header.toJSON().baseFee, '0x5')
+    st.equal(header.toJSON().baseFeePerGas, '0x5')
     st.end()
   })
 })

@@ -57,15 +57,6 @@ export class BlockHeader {
   }
 
   /**
-   * Backwards compatible alias for {@link BlockHeader.logsBloom}
-   * (planned to be removed in next major release)
-   * @deprecated
-   */
-  get bloom() {
-    return this.logsBloom
-  }
-
-  /**
    * EIP-4399: Post-PoS merge, `mixHash` supplanted as `random`
    */
   get random() {
@@ -85,11 +76,6 @@ export class BlockHeader {
    * @param opts
    */
   public static fromHeaderData(headerData: HeaderData = {}, opts: BlockOptions = {}) {
-    if (headerData.logsBloom === undefined && headerData.bloom !== undefined) {
-      // backwards compatible alias for deprecated `bloom` key renamed to `logsBloom`
-      // (planned to be removed in next major release)
-      headerData.logsBloom = headerData.bloom
-    }
     const {
       parentHash,
       uncleHash,
@@ -987,9 +973,7 @@ export class BlockHeader {
     }
     if (this._common.isActivatedEIP(1559)) {
       jsonDict.baseFeePerGas = '0x' + this.baseFeePerGas!.toString('hex')
-      jsonDict.baseFee = '0x' + this.baseFeePerGas!.toString('hex') // deprecated alias, please use `baseFeePerGas`, will be removed in next major release
     }
-    jsonDict.bloom = jsonDict.logsBloom // deprecated alias, please use `logsBloom`, will be removed in next major release
     return jsonDict
   }
 
