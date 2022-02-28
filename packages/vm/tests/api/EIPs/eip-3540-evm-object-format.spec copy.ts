@@ -3,15 +3,16 @@ import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Address, BN, privateToAddress } from 'ethereumjs-util'
-
 const pkey = Buffer.from('20'.repeat(32), 'hex')
 const GWEI = new BN('1000000000')
 const sender = new Address(privateToAddress(pkey))
 
 tape('EIP 3540 tests', (t) => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [3540, 3541] })
-  //const commonNoEIP3541 = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [] })
-
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.London,
+    eips: [3540, 3541],
+  })
   t.test('invalid object formats', async (st) => {
     const vm = new VM({ common })
     const account = await vm.stateManager.getAccount(sender)
@@ -93,7 +94,7 @@ tape('EIP 3540 tests', (t) => {
     await vm.stateManager.putAccount(sender, account)
 
     let tx = FeeMarketEIP1559Transaction.fromTxData({
-      data: '0x67EF0001010001000060005260206007F3',
+      data: '0x67EF0001010001000060005260086018F3',
       gasLimit: 1000000,
       maxFeePerGas: 7,
       nonce: 0,
@@ -103,8 +104,8 @@ tape('EIP 3540 tests', (t) => {
     let code = await vm.stateManager.getContractCode(created!)
     st.ok(code.length > 0, 'code section with no data section')
     tx = FeeMarketEIP1559Transaction.fromTxData({
-      data: '0x6CEF00010100010000020001AA0060005260206007F3',
-      gasLimit: 1000000,
+      data: '0x6BEF00010100010200010000AA600052600C6014F3',
+      gasLimit: 100000000,
       maxFeePerGas: 7,
       nonce: 1,
     }).sign(pkey)

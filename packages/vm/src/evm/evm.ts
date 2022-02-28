@@ -16,7 +16,7 @@ import TxContext from './txContext'
 import Message from './message'
 import EEI from './eei'
 // eslint-disable-next-line
-import { eof1CodeAnalysis, short } from './opcodes/util'
+import { eof1CodeAnalysis, eof1ValidOpcodes, short } from './opcodes/util'
 import { Log } from './types'
 import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
 
@@ -373,6 +373,7 @@ export default class EVM {
     if (this._vm.DEBUG) {
       debug(`Start bytecode processing...`)
     }
+
     let result = await this.runInterpreter(message)
 
     // fee for size of the return value
@@ -411,11 +412,28 @@ export default class EVM {
         if (!this._vm._common.isActivatedEIP(3540)) {
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
         }
-        // EIP-3540 EOF1 checks
-        if (!eof1CodeAnalysis(result.returnValue)) {
+        // EIP-3540 EOF1 header check
+        const eof1CodeAnalysisResults = eof1CodeAnalysis(result.returnValue)
+        if (!eof1CodeAnalysisResults?.code) {
           result = {
             ...result,
             ...INVALID_BYTECODE_RESULT(message.gasLimit),
+          }
+        } else if (this._vm._common.isActivatedEIP(3670)) {
+          // EIP-3670 EOF1 code check
+          const codeStart = eof1CodeAnalysisResults.data > 0 ? 10 : 7
+          // The start of the code section of an EOF1 compliant contract will either be
+          // index 7 (if no data section is present) or index 10 (if a data section is present)
+          // in the bytecode of the contract
+          if (
+            !eof1ValidOpcodes(
+              result.returnValue.slice(codeStart, codeStart + eof1CodeAnalysisResults.code)
+            )
+          ) {
+            result = {
+              ...result,
+              ...INVALID_BYTECODE_RESULT(message.gasLimit),
+            }
           }
         }
       } else {
