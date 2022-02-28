@@ -9,6 +9,7 @@ import {
   Chain as IChain,
   GenesisBlock,
   GenesisState,
+  GethGenesisState,
   Hardfork as HardforkParams,
 } from './types'
 
@@ -132,7 +133,7 @@ export interface CommonOpts extends BaseOpts {
    * Initialize (in addition to the supported chains) with the selected
    * custom chains
    *
-   * Usage (directly with the respective chain intialization via the {@link CommonOpts.chain} option):
+   * Usage (directly with the respective chain initialization via the {@link CommonOpts.chain} option):
    *
    * Pattern 1 (without genesis state):
    *
@@ -149,7 +150,7 @@ export interface CommonOpts extends BaseOpts {
    * const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, chain1GenesisState ] ]})
    * ```
    */
-  customChains?: IChain[] | [IChain, GenesisState][]
+  customChains?: IChain[] | [IChain, GenesisState | GethGenesisState][]
 }
 
 /**
@@ -185,7 +186,7 @@ export default class Common extends EventEmitter {
   private _hardfork: string | Hardfork
   private _supportedHardforks: Array<string | Hardfork> = []
   private _eips: number[] = []
-  private _customChains: IChain[] | [IChain, GenesisState][]
+  private _customChains: IChain[] | [IChain, GenesisState | GethGenesisState][]
 
   /**
    * Creates a {@link Common} object for a custom chain, based on a standard one.
@@ -379,22 +380,33 @@ export default class Common extends EventEmitter {
    *     representation. Or, a Dictionary of chain parameters for a private network.
    * @returns The dictionary with parameters set as chain
    */
-  setChain(chain: string | number | Chain | BN | object): any {
+  setChain(chain: string | number | Chain | BN | object): IChain {
     if (typeof chain === 'number' || typeof chain === 'string' || BN.isBN(chain)) {
       // Filter out genesis states if passed in to customChains
       let plainCustomChains: IChain[]
-      if (
-        this._customChains &&
-        this._customChains.length > 0 &&
-        Array.isArray(this._customChains[0])
-      ) {
-        plainCustomChains = (this._customChains as [IChain, GenesisState][]).map((e) => e[0])
+      if (this._customChains?.length && Array.isArray(this._customChains[0])) {
+        plainCustomChains = (this._customChains as [IChain, GenesisState | GethGenesisState][]).map(
+          ([chain, state]) => {
+            if ('hash' && 'stateRoot' in state) {
+              return {
+                ...chain,
+                genesis: {
+                  ...chain.genesis,
+                  hash: state.hash,
+                  stateRoot: state.stateRoot,
+                },
+              } as IChain
+            }
+
+            return chain
+          }
+        )
       } else {
         plainCustomChains = this._customChains as IChain[]
       }
       this._chainParams = Common._getChainParams(chain, plainCustomChains)
     } else if (typeof chain === 'object') {
-      if (this._customChains.length > 0) {
+      if (this._customChains.length) {
         throw new Error(
           'Chain must be a string, number, or BN when initialized with customChains passed in'
         )
@@ -1001,6 +1013,15 @@ export default class Common extends EventEmitter {
    * all values are provided as hex-prefixed strings.
    */
   genesisState(): GenesisState {
+    // Custom chains with genesis state provided
+    if (this._customChains?.length && Array.isArray(this._customChains[0])) {
+      for (const chainArrayWithGenesis of this._customChains as [IChain, GenesisState][]) {
+        if (chainArrayWithGenesis[0].name === this.chainName()) {
+          return chainArrayWithGenesis[1]
+        }
+      }
+    }
+
     // Use require statements here in favor of import statements
     // to load json files on demand
     // (high memory usage by large mainnet.json genesis state file)
@@ -1017,19 +1038,6 @@ export default class Common extends EventEmitter {
         return require('./genesisStates/goerli.json')
       case 'sepolia':
         return require('./genesisStates/sepolia.json')
-    }
-
-    // Custom chains with genesis state provided
-    if (
-      this._customChains &&
-      this._customChains.length > 0 &&
-      Array.isArray(this._customChains[0])
-    ) {
-      for (const chainArrayWithGenesis of this._customChains as [IChain, GenesisState][]) {
-        if (chainArrayWithGenesis[0].name === this.chainName()) {
-          return chainArrayWithGenesis[1]
-        }
-      }
     }
 
     return {}

@@ -507,6 +507,8 @@ async function run() {
     const chainName = path.parse(args.gethGenesis).base.split('.')[0]
     const genesisParams = await parseCustomParams(genesisFile, chainName)
     const genesisState = genesisFile.alloc ? await parseGenesisState(genesisFile) : {}
+    console.log('Genesis block hash: ', genesisParams.genesis.hash)
+    console.log('Genesis state root: ', genesisParams.genesis.stateRoot)
     common = new Common({
       chain: genesisParams.name,
       customChains: [[genesisParams, genesisState]],

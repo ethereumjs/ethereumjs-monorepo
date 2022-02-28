@@ -40,9 +40,20 @@ export interface Chain {
   }
 }
 
-export interface GenesisState {
-  [key: string]: string | [string, [[string, string]]] // balance | [balance, code, [[storageKey, storageValue]]]
+export interface GethGenesisState {
+  json?: any
+  hash: string
+  stateRoot: string
 }
+
+export interface AccountState {
+  balance: string
+  nonce: string
+  code?: string
+  storage?: Record<string, string>
+}
+
+export type GenesisState = Record<string, string | AccountState>
 
 export interface eipsType {
   [key: number]: any

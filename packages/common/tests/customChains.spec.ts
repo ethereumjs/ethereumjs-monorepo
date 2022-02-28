@@ -4,10 +4,9 @@ import Common, { Chain, ConsensusType, CustomChain, Hardfork } from '../src/'
 import testnet from './data/testnet.json'
 import testnet2 from './data/testnet2.json'
 import testnet3 from './data/testnet3.json'
+import { AccountState, Chain as IChain, GenesisState, GethGenesisState } from '../src/types'
 
-import { Chain as IChain, GenesisState } from '../src/types'
-
-tape('[Common]: Custom chains', function (t: tape.Test) {
+tape.only('[Common]: Custom chains', function (t: tape.Test) {
   t.test(
     'chain -> object: should provide correct access to private network chain parameters',
     function (st: tape.Test) {
@@ -208,6 +207,46 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
 
     st.equal(c.hardforks()[3].forkHash, '0x215201ca', 'forkhash should be calculated correctly')
 
+    st.end()
+  })
+
+  t.test('custom genesis state', function (st: tape.Test) {
+    const mockedCode = '0xcde'
+    const firstAddress = '0x0000000000000000000000000000000000000001'
+    const genesisState = {
+      '0x0000000000000000000000000000000000000000': '0x1',
+      [firstAddress]: {
+        balance: '0x1',
+        nonce: '0x',
+        storage: {},
+        code: mockedCode,
+      },
+    }
+    const customChainsWithGenesis: [IChain, GenesisState][] = [[testnet, genesisState]]
+    const c = new Common({
+      chain: 'testnet',
+      customChains: customChainsWithGenesis,
+    })
+
+    const expectedGenesisState = c.genesisState()[firstAddress] as AccountState
+
+    st.equal(c.genesisState(), genesisState)
+    st.equal(expectedGenesisState.code, genesisState[firstAddress].code)
+    st.end()
+  })
+
+  t.test('custom hash and state root sent in genesis state', function (st: tape.Test) {
+    const genesisState = {
+      stateRoot: 'cool-state-root',
+      hash: 'cool-hash',
+    }
+    const customChainsWithGenesis: [IChain, GethGenesisState][] = [[testnet, genesisState]]
+    const c = new Common({
+      chain: 'testnet',
+      customChains: customChainsWithGenesis,
+    })
+    st.equal(c.genesis().hash, genesisState.hash)
+    st.equal(c.genesis().stateRoot, genesisState.stateRoot)
     st.end()
   })
 })
