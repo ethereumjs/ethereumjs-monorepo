@@ -33,7 +33,6 @@
     "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",
     "test:node": "npm run tape -- ./tests/*.spec.ts",
-    "test:custom": "npm run tape -- ./tests/customChains.spec.ts",
     "test:browser": "karma start karma.conf.js",
     "docs:build": "typedoc --options typedoc.js"
   },
