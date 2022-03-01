@@ -795,15 +795,15 @@ export default class Common extends EventEmitter {
    * Returns an eth/64 compliant fork hash (EIP-2124)
    * @param hardfork Hardfork name, optional if HF set
    */
-  forkHash(hardfork?: string | Hardfork) {
+  forkHash(hardfork?: string | Hardfork): string {
     hardfork = hardfork ?? this._hardfork
     const data = this._getHardfork(hardfork)
     if (data === null || (data?.['block'] === null && data?.['td'] === undefined)) {
       const msg = 'No fork hash calculation possible for future hardfork'
       throw new Error(msg)
     }
-    if (data?.['forkHash'] !== undefined) {
-      return data?.['forkHash']
+    if (data?.['forkHash'] !== null && data?.['forkHash'] !== undefined) {
+      return data['forkHash']
     }
     return this._calcForkHash(hardfork)
   }
