@@ -447,7 +447,7 @@ export class BlockHeader {
       )
       throw new Error(msg)
     }
-    const hardfork = this._getHardfork()
+    const hardfork = this._common.hardfork()
     const blockTs = this.timestamp
     const { timestamp: parentTs, difficulty: parentDif } = parentBlockHeader
     const minimumDifficulty = new BN(
@@ -570,7 +570,7 @@ export class BlockHeader {
       parentGasLimit = parentGasLimit.mul(elasticity)
     }
     const gasLimit = this.gasLimit
-    const hardfork = this._getHardfork()
+    const hardfork = this._common.hardfork()
 
     const a = parentGasLimit.div(
       new BN(this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork))
@@ -607,7 +607,7 @@ export class BlockHeader {
     if (this.isGenesis()) {
       return
     }
-    const hardfork = this._getHardfork()
+    const hardfork = this._common.hardfork()
     // Consensus type dependent checks
     if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Ethash) {
       // PoW/Ethash
@@ -980,10 +980,6 @@ export class BlockHeader {
     return jsonDict
   }
 
-  private _getHardfork(): string {
-    return this._common.hardfork() || this._common.activeHardfork(this.number.toNumber())
-  }
-
   private async _getHeaderByHash(
     blockchain: Blockchain,
     hash: Buffer
@@ -1005,7 +1001,7 @@ export class BlockHeader {
    * activation block (see: https://blog.slock.it/hard-fork-specification-24b889e70703)
    */
   private _validateDAOExtraData() {
-    if (!this._common.hardforkIsActiveOnChain(Hardfork.Dao)) {
+    if (!this._common.hardforkIsActiveOnBlock(Hardfork.Dao, this.number)) {
       return
     }
     const DAOActivationBlock = this._common.hardforkBlock(Hardfork.Dao)
