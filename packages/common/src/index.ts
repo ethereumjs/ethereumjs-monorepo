@@ -505,14 +505,14 @@ export default class Common extends EventEmitter {
   /**
    * Internal helper function, returns the params for the given hardfork for the chain set
    * @param hardfork Hardfork name
-   * @returns Dictionary with hardfork params
+   * @returns Dictionary with hardfork params or null if hardfork not on chain
    */
-  _getHardfork(hardfork: string | Hardfork): any {
+  _getHardfork(hardfork: string | Hardfork): HardforkParams | null {
     const hfs = this.hardforks()
     for (const hf of hfs) {
       if (hf['name'] === hardfork) return hf
     }
-    throw new Error(`Hardfork ${hardfork} not defined for chain ${this.chainName()}`)
+    return null
   }
 
   /**
@@ -620,14 +620,15 @@ export default class Common extends EventEmitter {
   }
 
   /**
-   * Returns a parameter for the hardfork active on block number
+   * Returns a parameter for the hardfork active on block number or
+   * optional provided total difficulty (Merge HF)
    * @param topic Parameter topic
    * @param name Parameter name
    * @param blockNumber Block number
+   * @param td Total difficulty
    */
-  paramByBlock(topic: string, name: string, blockNumber: BNLike): any {
-    const activeHfs = this.activeHardforks(blockNumber)
-    const hardfork = activeHfs[activeHfs.length - 1]['name']
+  paramByBlock(topic: string, name: string, blockNumber: BNLike, td?: BNLike): any {
+    const hardfork = this.getHardforkByBlockNumber(blockNumber, td)
     return this.paramByHardfork(topic, name, hardfork)
   }
 
@@ -712,57 +713,13 @@ export default class Common extends EventEmitter {
   }
 
   /**
-   * Checks if given or set hardfork is active on the chain
-   * @param hardfork Hardfork name, optional if HF set
-   * @returns True if hardfork is active on the chain
-   */
-  hardforkIsActiveOnChain(hardfork?: string | Hardfork | null): boolean {
-    hardfork = hardfork ?? this._hardfork
-    for (const hf of this.hardforks()) {
-      if (hf['name'] === hardfork && hf['block'] !== null) return true
-    }
-    return false
-  }
-
-  /**
-   * Returns the active hardfork switches for the current chain
-   * @param blockNumber up to block if provided, otherwise for the whole chain
-   * @return Array with hardfork arrays
-   */
-  activeHardforks(blockNumber?: BNLike | null): HardforkParams[] {
-    const activeHardforks: HardforkParams[] = []
-    const hfs = this.hardforks()
-    for (const hf of hfs) {
-      if (hf['block'] === null) continue
-      if (blockNumber !== undefined && blockNumber !== null && blockNumber < hf['block']) break
-
-      activeHardforks.push(hf)
-    }
-    return activeHardforks
-  }
-
-  /**
-   * Returns the latest active hardfork name for chain or block or throws if unavailable
-   * @param blockNumber up to block if provided, otherwise for the whole chain
-   * @return Hardfork name
-   */
-  activeHardfork(blockNumber?: BNLike | null): string {
-    const activeHardforks = this.activeHardforks(blockNumber)
-    if (activeHardforks.length > 0) {
-      return activeHardforks[activeHardforks.length - 1]['name']
-    } else {
-      throw new Error(`No (supported) active hardfork found`)
-    }
-  }
-
-  /**
    * Returns the hardfork change block for hardfork provided or set
    * @param hardfork Hardfork name, optional if HF set
    * @returns Block number or null if unscheduled
    */
   hardforkBlock(hardfork?: string | Hardfork): BN | null {
     hardfork = hardfork ?? this._hardfork
-    const block = this._getHardfork(hardfork)['block']
+    const block = this._getHardfork(hardfork)?.['block']
     if (block === undefined || block === null) {
       return null
     }
@@ -776,7 +733,7 @@ export default class Common extends EventEmitter {
    */
   hardforkTD(hardfork?: string | Hardfork): BN | null {
     hardfork = hardfork ?? this._hardfork
-    const td = this._getHardfork(hardfork)['td']
+    const td = this._getHardfork(hardfork)?.['td']
     if (td === undefined || td === null) {
       return null
     }
@@ -869,14 +826,14 @@ export default class Common extends EventEmitter {
    * Returns an eth/64 compliant fork hash (EIP-2124)
    * @param hardfork Hardfork name, optional if HF set
    */
-  forkHash(hardfork?: string | Hardfork) {
+  forkHash(hardfork?: string | Hardfork): string {
     hardfork = hardfork ?? this._hardfork
     const data = this._getHardfork(hardfork)
-    if (data['block'] === null && data['td'] === undefined) {
+    if (data === null || (data?.['block'] === null && data?.['td'] === undefined)) {
       const msg = 'No fork hash calculation possible for future hardfork'
       throw new Error(msg)
     }
-    if (data['forkHash'] !== undefined) {
+    if (data?.['forkHash'] !== null && data?.['forkHash'] !== undefined) {
       return data['forkHash']
     }
     return this._calcForkHash(hardfork)

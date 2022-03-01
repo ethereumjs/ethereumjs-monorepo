@@ -2,7 +2,7 @@ import { debug as createDebugLogger } from 'debug'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Account, Address, bigIntToBN, BN, bnToBigInt, intToBuffer, rlp } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
-import { ConsensusType } from '@ethereumjs/common'
+import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import VM from './index'
 import Bloom from './bloom'
 import { StateManager } from './state'
@@ -143,8 +143,8 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
 
   // check for DAO support and if we should apply the DAO fork
   if (
-    this._common.hardforkIsActiveOnChain('dao') &&
-    block.header.number.eq(this._common.hardforkBlock('dao')!)
+    this._common.hardforkIsActiveOnBlock(Hardfork.Dao, block.header.number) &&
+    block.header.number.eq(this._common.hardforkBlock(Hardfork.Dao)!)
   ) {
     if (this.DEBUG) {
       debug(`Apply DAO hardfork`)
