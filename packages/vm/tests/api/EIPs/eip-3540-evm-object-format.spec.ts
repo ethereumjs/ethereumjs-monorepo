@@ -38,7 +38,7 @@ tape('EIP 3540 tests', (t) => {
       'invalid container length'
     )
     st.end()
-  }) /*
+  })
   t.test('invalid object formats', async (st) => {
     const vm = new VM({ common })
     const account = await vm.stateManager.getAccount(sender)
@@ -139,5 +139,5 @@ tape('EIP 3540 tests', (t) => {
     created = result.createdAddress
     code = await vm.stateManager.getContractCode(created!)
     st.ok(code.length > 0, 'code section with data section')
-  })*/
+  })
 })
