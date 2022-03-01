@@ -17,7 +17,7 @@ import util from 'util'
 
 tape('[Block]: block functions', function (t) {
   t.test('should test block initialization', function (st) {
-    const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const genesis = Block.genesis({}, { common })
     st.ok(genesis.hash().toString('hex'), 'block should initialize')
 
