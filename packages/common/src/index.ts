@@ -141,13 +141,25 @@ export interface CommonOpts extends BaseOpts {
    * const common = new Common({ chain: 'myCustomChain1', customChains: [ myCustomChain1 ]})
    * ```
    *
-   * Pattern 2 (with genesis state, see {@link GenesisState} for format):
+   * Pattern 2 (with genesis state see {@link GenesisState} for format). Note that in {@link AccountState} there are two
+   * accepted types. This allows to easily insert accounts in the genesis state
    *
    * ```javascript
    * import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
    * import chain1GenesisState from '[PATH_TO_GENESIS_STATES]/chain1GenesisState.json'
    * const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, chain1GenesisState ] ]})
    * ```
+   *
+   * A complex genesis state with Contract and EoA states would have the following format:
+   *
+   * ```javascript
+   * const complexState = {
+   *   '0x0...01': '0x100', // For EoA
+   *   '0x0...02': ['0x1', '0xBYTECODE', [[ keyOne, valueOne ], [ keyTwo, valueTwo ]]] // For contracts
+   * }
+   * ```
+   * import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
+   * const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, complexState ] ]})
    */
   customChains?: IChain[] | [IChain, GenesisState][]
 }

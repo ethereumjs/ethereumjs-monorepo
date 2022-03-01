@@ -40,8 +40,11 @@ export interface Chain {
   }
 }
 
+export type StoragePair = [key: string, value: string]
+export type AccountState = [balance: string, code: string, storage: Array<StoragePair>] // [balance, code, [[storageKey, storageValue]]]
+
 export interface GenesisState {
-  [key: string]: string | [string, [[string, string]]] // balance | [balance, code, [[storageKey, storageValue]]]
+  [key: string]: string | AccountState
 }
 
 export interface eipsType {
