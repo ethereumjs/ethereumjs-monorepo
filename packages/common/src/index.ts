@@ -474,14 +474,14 @@ export default class Common extends EventEmitter {
   /**
    * Internal helper function, returns the params for the given hardfork for the chain set
    * @param hardfork Hardfork name
-   * @returns Dictionary with hardfork params
+   * @returns Dictionary with hardfork params or null if hardfork not on chain
    */
-  _getHardfork(hardfork: string | Hardfork): any {
+  _getHardfork(hardfork: string | Hardfork): HardforkParams | null {
     const hfs = this.hardforks()
     for (const hf of hfs) {
       if (hf['name'] === hardfork) return hf
     }
-    throw new Error(`Hardfork ${hardfork} not defined for chain ${this.chainName()}`)
+    return null
   }
 
   /**
@@ -682,26 +682,13 @@ export default class Common extends EventEmitter {
   }
 
   /**
-   * Checks if given or set hardfork is active on the chain
-   * @param hardfork Hardfork name, optional if HF set
-   * @returns True if hardfork is active on the chain
-   */
-  isIncludedHardfork(hardfork?: string | Hardfork | null): boolean {
-    hardfork = hardfork ?? this._hardfork
-    for (const hf of this.hardforks()) {
-      if (hf['name'] === hardfork && hf['block'] !== null) return true
-    }
-    return false
-  }
-
-  /**
    * Returns the hardfork change block for hardfork provided or set
    * @param hardfork Hardfork name, optional if HF set
    * @returns Block number or null if unscheduled
    */
   hardforkBlock(hardfork?: string | Hardfork): BN | null {
     hardfork = hardfork ?? this._hardfork
-    const block = this._getHardfork(hardfork)['block']
+    const block = this._getHardfork(hardfork)?.['block']
     if (block === undefined || block === null) {
       return null
     }
@@ -715,7 +702,7 @@ export default class Common extends EventEmitter {
    */
   hardforkTD(hardfork?: string | Hardfork): BN | null {
     hardfork = hardfork ?? this._hardfork
-    const td = this._getHardfork(hardfork)['td']
+    const td = this._getHardfork(hardfork)?.['td']
     if (td === undefined || td === null) {
       return null
     }
@@ -811,12 +798,12 @@ export default class Common extends EventEmitter {
   forkHash(hardfork?: string | Hardfork) {
     hardfork = hardfork ?? this._hardfork
     const data = this._getHardfork(hardfork)
-    if (data['block'] === null && data['td'] === undefined) {
+    if (data === null || (data?.['block'] === null && data?.['td'] === undefined)) {
       const msg = 'No fork hash calculation possible for future hardfork'
       throw new Error(msg)
     }
-    if (data['forkHash'] !== undefined) {
-      return data['forkHash']
+    if (data?.['forkHash'] !== undefined) {
+      return data?.['forkHash']
     }
     return this._calcForkHash(hardfork)
   }

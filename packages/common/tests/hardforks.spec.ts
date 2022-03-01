@@ -75,6 +75,9 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     let msg = 'should return the correct HF change block for byzantium (provided)'
     st.ok(c.hardforkBlock(Hardfork.Byzantium)!.eqn(1700000), msg)
 
+    msg = 'should return null if HF does not exist on chain'
+    st.equal(c.hardforkBlock('thisHardforkDoesNotExist'), null, msg)
+
     c = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
     msg = 'should return the correct HF change block for byzantium (set)'
     st.ok(c.hardforkBlock()!.eqn(1700000), msg)
@@ -232,27 +235,6 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.end()
   })
 
-  t.test('isIncludedHardfork()', function (st: tape.Test) {
-    let c = new Common({ chain: Chain.Ropsten })
-    let msg = 'should return true for byzantium (provided) on Ropsten'
-    st.equal(c.isIncludedHardfork(Hardfork.Byzantium), true, msg)
-
-    msg = 'should return false for dao (provided) on Ropsten'
-    st.equal(c.isIncludedHardfork(Hardfork.Dao), false, msg)
-
-    msg = 'should return true for petersburg (provided) on Ropsten'
-    st.equal(c.isIncludedHardfork(Hardfork.Petersburg), true, msg)
-
-    msg = 'should return false for a non-existing HF (provided) on Ropsten'
-    st.equal(c.isIncludedHardfork('notexistinghardfork'), false, msg)
-
-    c = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
-    msg = 'should return true for byzantium (set) on Ropsten'
-    st.equal(c.isIncludedHardfork(), true, msg)
-
-    st.end()
-  })
-
   t.test('_calcForkHash()', function (st: tape.Test) {
     let c = new Common({ chain: Chain.Mainnet })
     let msg = 'should calc correctly for chainstart (only genesis)'
@@ -289,10 +271,16 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.equal(c.forkHash(Hardfork.SpuriousDragon), '0x3edd5b10', msg)
 
     c = new Common({ chain: Chain.Kovan })
-    const f = () => {
+    let f = () => {
       c.forkHash(Hardfork.Merge)
     }
     msg = 'should throw when called on non-applied or future HF'
+    st.throws(f, /No fork hash calculation possible/, msg)
+
+    f = () => {
+      c.forkHash('thisHardforkDoesNotExist')
+    }
+    msg = 'should throw when called with a HF that does not exist on chain'
     st.throws(f, /No fork hash calculation possible/, msg)
 
     st.end()

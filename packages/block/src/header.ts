@@ -998,7 +998,7 @@ export class BlockHeader {
    * activation block (see: https://blog.slock.it/hard-fork-specification-24b889e70703)
    */
   private _validateDAOExtraData() {
-    if (!this._common.isIncludedHardfork(Hardfork.Dao)) {
+    if (!this._common.hardforkIsActiveOnBlock(Hardfork.Dao, this.number)) {
       return
     }
     const DAOActivationBlock = this._common.hardforkBlock(Hardfork.Dao)

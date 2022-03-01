@@ -135,7 +135,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
 
   // check for DAO support and if we should apply the DAO fork
   if (
-    this._common.isIncludedHardfork(Hardfork.Dao) &&
+    this._common.hardforkIsActiveOnBlock(Hardfork.Dao, block.header.number) &&
     block.header.number.eq(this._common.hardforkBlock(Hardfork.Dao)!)
   ) {
     if (this.DEBUG) {
