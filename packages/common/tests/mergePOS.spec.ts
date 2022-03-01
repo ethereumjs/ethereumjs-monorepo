@@ -8,6 +8,11 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
     const customChains = [testnetMerge]
     const c = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
     st.ok(c.hardforkTD(Hardfork.Merge)?.eqn(5000), 'should get the HF total difficulty')
+    st.equal(
+      c.hardforkTD('thisHardforkDoesNotExist'),
+      null,
+      'should return null if HF does not exist on chain'
+    )
 
     st.end()
   })
