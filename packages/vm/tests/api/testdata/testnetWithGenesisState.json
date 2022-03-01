@@ -1,0 +1,79 @@
+{
+  "name": "testnet",
+  "chainId": 110,
+  "networkId": 110,
+  "defaultHardfork": "london",
+  "consensus": {
+    "type": "pow",
+    "algorithm": "ethash"
+  },
+  "comment": "Private test network with hash and state root defined for custom genesis state",
+  "url": "[TESTNET_URL]",
+  "genesis": {
+    "hash": "0x108c2843db2a0642ea6a8f20423ce4f28889b74a92760331fcc2507dd0aa28e9",
+    "timestamp": "0x0",
+    "gasLimit": 30000000,
+    "difficulty": 17179869184,
+    "nonce": "0x0000000000000042",
+    "extraData": "0x0000000000000000000000000000000000000000000000000000000000000000a94f5374fce5edbc8e2a8697c15331677e6ebf0b0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "stateRoot": "0x7bc54fdad88ac3edc66a9e4d8f09b0c16642b3730581558b8cca78e19a1ae1d2"
+  },
+  "hardforks": [
+    {
+      "name": "chainstart",
+      "block": 0
+    },
+    {
+      "name": "homestead",
+      "block": 0
+    },
+    {
+      "name": "tangerineWhistle",
+      "block": 0
+    },
+    {
+      "name": "spuriousDragon",
+      "block": 0
+    },
+    {
+      "name": "byzantium",
+      "block": 0
+    },
+    {
+      "name": "constantinople",
+      "block": 0
+    },
+    {
+      "name": "petersburg",
+      "block": 0
+    },
+    {
+      "name": "istanbul",
+      "block": 0
+    },
+    {
+      "name": "berlin",
+      "block": 0
+    },
+    {
+      "name": "london",
+      "block": 0
+    }
+  ],
+  "bootstrapNodes": [
+    {
+      "ip": "10.0.0.1",
+      "port": 30303,
+      "id": "11000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "location": "",
+      "comment": ""
+    },
+    {
+      "ip": "10.0.0.2",
+      "port": 30303,
+      "id": "22000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "location": "",
+      "comment": ""
+    }
+  ]
+}
