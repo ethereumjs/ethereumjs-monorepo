@@ -212,6 +212,16 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
       throw new Error(msg)
     }
 
+    if (this.common.isActivatedEIP(3860)) {
+      if (this.data.length > this.common.param('vm', 'maxInitCodeSize')) {
+        throw new Error(
+          `the initcode size of this transaction is too large: it is ${
+            this.data.length
+          } while the max is ${this.common.param('vm', 'maxInitCodeSize')}`
+        )
+      }
+    }
+
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
