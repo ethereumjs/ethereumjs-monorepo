@@ -46,14 +46,16 @@ module.exports = {
   resolve: {
     fallback: {
       buffer: require.resolve('buffer'),
-      constants: require.resolve("constants-browserify"),
+      constants: require.resolve('constants-browserify'),
       crypto: require.resolve('crypto-browserify'), // used by: rlpxpeer, bin/cli.ts
       dgram: false, // used by: rlpxpeer via @ethereumjs/devp2p
+      http: false, // used by: jayson
       fs: false, // used by: FullSynchronizer via @ethereumjs/vm
       net: false, // used by: rlpxpeer
       os: require.resolve('os-browserify/browser'), // used by: bin/cli.ts, web3_clientVersion rpc
       path: false, // used by: bin/cli.ts
       stream: require.resolve('stream-browserify'), // used by: fetcher
+      zlib: false, // used by: body-parser
     },
   },
   performance: {

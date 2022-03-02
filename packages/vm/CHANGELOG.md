@@ -12,6 +12,10 @@ This patch release adds a guard to not enable the recently added EIP-3607 by def
 
 - Add guard to not enable EIP-3607 by default, PR [#1691](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1691)
 
+Also included is a performance enhancement to skip extra log processing when debug is not enabled:
+
+- Skip `_runStepHook` method if no step event listener, PRs [#1676](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1676) [#1681](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1681)
+
 ## 5.7.0 - 2022-02-01
 
 ### Dynamic Gas Costs

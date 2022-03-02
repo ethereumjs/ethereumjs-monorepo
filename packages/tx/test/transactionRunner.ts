@@ -10,8 +10,11 @@ const argv = minimist(process.argv.slice(2))
 const file: string | undefined = argv.file
 
 const forkNames: ForkName[] = [
+  'London',
+  'Berlin',
   'Istanbul',
   'Byzantium',
+  'ConstantinopleFix',
   'Constantinople',
   'EIP150',
   'EIP158',
@@ -20,8 +23,11 @@ const forkNames: ForkName[] = [
 ]
 
 const forkNameMap: ForkNamesMap = {
+  London: 'london',
+  Berlin: 'berlin',
   Istanbul: 'istanbul',
   Byzantium: 'byzantium',
+  ConstantinopleFix: 'petersburg',
   Constantinople: 'constantinople',
   EIP150: 'tangerineWhistle',
   EIP158: 'spuriousDragon',
@@ -68,6 +74,7 @@ tape('TransactionTests', async (t) => {
               st.assert(shouldBeInvalid, `Transaction should be invalid on ${forkName}`)
             } else {
               st.fail(`Transaction should be valid on ${forkName}`)
+              st.comment(e)
             }
           }
         }

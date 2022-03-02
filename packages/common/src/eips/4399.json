@@ -1,0 +1,13 @@
+{
+  "name": "EIP-4399",
+  "number": 4399,
+  "comment": "Supplant DIFFICULTY opcode with RANDOM",
+  "url": "https://eips.ethereum.org/EIPS/eip-4399",
+  "status": "Draft",
+  "minimumHardfork": "london",
+  "requiredEIPs": [],
+  "gasConfig": {},
+  "gasPrices": {},
+  "vm": {},
+  "pow": {}
+}

@@ -3,10 +3,10 @@ import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import { Transaction } from '@ethereumjs/tx'
 import { Address, BN, toBuffer, bnToHex } from 'ethereumjs-util'
-import { FullSynchronizer } from '../../../lib/sync'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
 import { checkError } from '../util'
+import { VMExecution } from '../../../lib/execution'
 
 const method = 'eth_getBalance'
 
@@ -15,10 +15,13 @@ tape(`${method}: ensure balance deducts after a tx`, async (t) => {
 
   const client = createClient({ blockchain, includeVM: true })
   const manager = createManager(client)
+
   const server = startRPC(manager.getMethods())
 
-  const service = client.services.find((s) => s.name === 'eth')
-  const { vm } = (service!.synchronizer as FullSynchronizer).execution
+  const { execution } = client
+  t.notEqual(execution, undefined, 'should have valid execution')
+
+  const { vm } = execution as VMExecution
 
   // since synchronizer.run() is not executed in the mock setup,
   // manually run stateManager.generateCanonicalGenesis()

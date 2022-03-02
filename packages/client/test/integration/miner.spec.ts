@@ -4,6 +4,7 @@ import Common, { Chain as ChainCommon, ConsensusType, ConsensusAlgorithm } from 
 import { BN, Address } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
+import { VMExecution } from '../../lib/execution'
 import { FullEthereumService } from '../../lib/service'
 import { Event } from '../../lib/types'
 import MockServer from './mocks/mockserver'
@@ -52,11 +53,13 @@ tape('[Integration:Miner]', async (t) => {
     })
     // attach chain to centralized event bus
     ;(chain.config as any).events = serviceConfig.events
+    const execution = new VMExecution({ config: serviceConfig, chain })
+    execution.run = async () => 1 // stub
     const service = new FullEthereumService({
       config: serviceConfig,
       chain,
+      execution,
     })
-    service.synchronizer.execution.run = async () => 1 // stub
     await service.open()
     await server.start()
     await service.start()
@@ -74,7 +77,7 @@ tape('[Integration:Miner]', async (t) => {
         common,
       })
       remoteService.chain.blockchain.cliqueActiveSigners = () => [accounts[0][0]] // stub
-      ;(remoteService.synchronizer as any).execution.run = async () => 1 // stub
+      ;(remoteService as FullEthereumService).execution.run = async () => 1 // stub
       await server.discover('remotePeer1', '127.0.0.2')
       const targetHeight = new BN(5)
       remoteService.config.events.on(Event.SYNC_SYNCHRONIZED, async (chainHeight) => {
