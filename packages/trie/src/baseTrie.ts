@@ -730,7 +730,7 @@ export class Trie {
     keys: Buffer[],
     values: Buffer[],
     proof: Buffer[] | null
-  ) {
+  ): Promise<boolean> {
     return verifyRangeProof(
       rootHash,
       firstKey && bufferToNibbles(firstKey),

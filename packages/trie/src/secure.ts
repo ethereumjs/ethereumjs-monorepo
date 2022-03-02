@@ -93,7 +93,7 @@ export class SecureTrie extends CheckpointTrie {
     keys: Buffer[],
     values: Buffer[],
     proof: Buffer[] | null
-  ) {
+  ): Promise<boolean> {
     return super.verifyRangeProof(
       rootHash,
       firstKey && keccak256(firstKey),

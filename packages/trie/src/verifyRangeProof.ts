@@ -100,7 +100,7 @@ async function unset(
  * @param right - right nibbles.
  * @returns Is it an empty trie.
  */
-async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles) {
+async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise<boolean> {
   // Key position
   let pos = 0
   // Parent node
@@ -312,7 +312,11 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles) {
  * @throws If proof is found to be invalid.
  * @returns The value from the key, or null if valid proof of non-existence.
  */
-async function verifyProof(rootHash: Buffer, key: Buffer, proof: Buffer[]) {
+async function verifyProof(
+  rootHash: Buffer,
+  key: Buffer,
+  proof: Buffer[]
+): Promise<{ value: Buffer | null; trie: Trie }> {
   let proofTrie = new Trie(null, rootHash)
   try {
     proofTrie = await Trie.fromProof(proof, proofTrie)
@@ -340,7 +344,7 @@ async function verifyProof(rootHash: Buffer, key: Buffer, proof: Buffer[]) {
  * @param trie - trie object.
  * @param key - given path.
  */
-async function hasRightElement(trie: Trie, key: Nibbles) {
+async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
   let pos = 0
   let node = await trie.lookupNode(trie.root)
   while (node !== null) {
@@ -408,7 +412,7 @@ export async function verifyRangeProof(
   keys: Nibbles[],
   values: Buffer[],
   proof: Buffer[] | null
-) {
+): Promise<boolean> {
   if (keys.length !== values.length) {
     throw new Error('invalid keys and values')
   }
