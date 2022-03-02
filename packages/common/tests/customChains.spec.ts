@@ -211,8 +211,8 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     const contractAccount = '0x96fb4792cf2B3A7EF9842D1Af74f8c99C6F4fF63'
     const eoaAccount = '0x0000000000000000000000000000000000000002'
     const storage: Array<[string, string]> = [
-      ['0x0000000000000000000000000000000000000001', '0x3'],
-      ['0x0000000000000000000000000000000000000002', '0x4'],
+      ['0x000000000000000000000000000001', '0x3'],
+      ['0x000000000000000000000000000002', '0x4'],
     ]
 
     const contractState: AccountState = ['0x10000', '0xbca', storage]
@@ -225,6 +225,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
       chain: 'testnet',
       customChains: [[testnet, complexGenesisState]],
     })
+
     // Retrieve balance from EoA
     st.deepEqual(c.genesisState()[eoaAccount], complexGenesisState[eoaAccount])
 
