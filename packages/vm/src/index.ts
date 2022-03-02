@@ -226,7 +226,6 @@ export default class VM extends AsyncEventEmitter {
           throw new Error(`EIP-${eip} is not supported by the VM`)
         }
       }
-
       this._common = opts.common
     } else {
       const DEFAULT_CHAIN = Chain.Mainnet
@@ -242,9 +241,11 @@ export default class VM extends AsyncEventEmitter {
         'istanbul',
         'muirGlacier',
         'berlin',
+        'london',
         'arrowGlacier',
+        'preMerge',
+        'merge',
       ]
-
       this._common = new Common({
         chain: DEFAULT_CHAIN,
         supportedHardforks,

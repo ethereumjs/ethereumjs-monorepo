@@ -8,6 +8,7 @@ import { Account, Address, BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { FullSynchronizer } from '../../lib/sync/fullsync'
 import { Chain } from '../../lib/blockchain'
+import { VMExecution } from '../../lib/execution'
 import { Miner } from '../../lib/miner'
 import { Event } from '../../lib/types'
 import { wait } from '../integration/util'
@@ -111,12 +112,13 @@ tape('[Miner]', async (t) => {
   t.test('should initialize correctly', (t) => {
     const pool = new PeerPool() as any
     const chain = new FakeChain() as any
+    const execution = new VMExecution({ config, chain })
     const synchronizer = new FullSynchronizer({
       config,
       pool,
       chain,
     })
-    const miner = new Miner({ config, synchronizer })
+    const miner = new Miner({ config, synchronizer, execution })
     t.notOk(miner.running)
     t.end()
   })
@@ -125,12 +127,13 @@ tape('[Miner]', async (t) => {
     t.plan(4)
     const pool = new PeerPool() as any
     const chain = new FakeChain() as any
+    const execution = new VMExecution({ config, chain })
     const synchronizer = new FullSynchronizer({
       config,
       pool,
       chain,
     })
-    let miner = new Miner({ config, synchronizer })
+    let miner = new Miner({ config, synchronizer, execution })
     t.notOk(miner.running)
     miner.start()
     t.ok(miner.running)
@@ -140,7 +143,7 @@ tape('[Miner]', async (t) => {
 
     // Should not start when config.mine=false
     const configMineFalse = new Config({ transports: [], accounts, mine: false })
-    miner = new Miner({ config: configMineFalse, synchronizer })
+    miner = new Miner({ config: configMineFalse, synchronizer, execution })
     miner.start()
     t.notOk(miner.running, 'miner should not start when config.mine=false')
   })
@@ -149,14 +152,15 @@ tape('[Miner]', async (t) => {
     t.plan(1)
     const pool = new PeerPool() as any
     const chain = new FakeChain() as any
+    const execution = new VMExecution({ config, chain })
     const synchronizer = new FullSynchronizer({
       config,
       pool,
       chain,
     })
-    const miner = new Miner({ config, synchronizer })
+    const miner = new Miner({ config, synchronizer, execution })
     const { txPool } = synchronizer
-    const { vm } = synchronizer.execution
+    const { vm } = execution
 
     txPool.start()
     miner.start()
@@ -184,14 +188,15 @@ tape('[Miner]', async (t) => {
       t.plan(4)
       const pool = new PeerPool() as any
       const chain = new FakeChain() as any
+      const execution = new VMExecution({ config, chain })
       const synchronizer = new FullSynchronizer({
         config,
         pool,
         chain,
       })
-      const miner = new Miner({ config, synchronizer })
+      const miner = new Miner({ config, synchronizer, execution })
       const { txPool } = synchronizer
-      const { vm } = synchronizer.execution
+      const { vm } = execution
       txPool.start()
       miner.start()
 
@@ -239,14 +244,15 @@ tape('[Miner]', async (t) => {
         return { latest: block }
       },
     })
+    const execution = new VMExecution({ config, chain })
     const synchronizer = new FullSynchronizer({
       config,
       pool,
       chain,
     })
-    const miner = new Miner({ config, synchronizer })
+    const miner = new Miner({ config, synchronizer, execution })
     const { txPool } = synchronizer
-    const { vm } = synchronizer.execution
+    const { vm } = execution
     txPool.start()
     miner.start()
 
@@ -287,14 +293,15 @@ tape('[Miner]', async (t) => {
         return { latest: block, height: new BN(0) }
       },
     })
+    const execution = new VMExecution({ config, chain })
     const synchronizer = new FullSynchronizer({
       config,
       pool,
       chain,
     })
-    const miner = new Miner({ config, synchronizer })
+    const miner = new Miner({ config, synchronizer, execution })
     const { txPool } = synchronizer
-    const { vm } = synchronizer.execution
+    const { vm } = execution
     txPool.start()
     miner.start()
 
@@ -330,19 +337,20 @@ tape('[Miner]', async (t) => {
     const pool = new PeerPool() as any
     const chain = new FakeChain() as any
     const config = new Config({ transports: [], accounts, mine: true, common })
+    const execution = new VMExecution({ config, chain })
     const synchronizer = new FullSynchronizer({
       config,
       pool,
       chain,
     })
-    const miner = new Miner({ config, synchronizer })
+    const miner = new Miner({ config, synchronizer, execution })
 
     // stub chainUpdated so assemble isn't called again
     // when emitting Event.CHAIN_UPDATED in this test
     ;(miner as any).chainUpdated = async () => {}
 
     const { txPool } = synchronizer
-    const { vm } = synchronizer.execution
+    const { vm } = execution
     txPool.start()
     miner.start()
 
@@ -380,14 +388,15 @@ tape('[Miner]', async (t) => {
     const config = new Config({ transports: [], accounts, mine: true, common })
     const chain = new Chain({ config })
     await chain.open()
+    const execution = new VMExecution({ config, chain })
     const synchronizer = new FullSynchronizer({
       config,
       pool,
       chain,
     })
-    const miner = new Miner({ config, synchronizer })
+    const miner = new Miner({ config, synchronizer, execution })
 
-    const { vm } = synchronizer.execution
+    const { vm } = execution
     vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
     ;(miner as any).chainUpdated = async () => {} // stub
     miner.start()
@@ -447,12 +456,13 @@ tape('[Miner]', async (t) => {
     const config = new Config({ transports: [], accounts, mine: true, common })
     const chain = new Chain({ config })
     await chain.open()
+    const execution = new VMExecution({ config, chain })
     const synchronizer = new FullSynchronizer({
       config,
       pool,
       chain,
     })
-    const miner = new Miner({ config, synchronizer })
+    const miner = new Miner({ config, synchronizer, execution })
     ;(chain.blockchain as any)._validateConsensus = false
     ;(miner as any).chainUpdated = async () => {} // stub
     miner.start()

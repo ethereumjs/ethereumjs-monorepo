@@ -1,5 +1,5 @@
-import { Config } from '../../config'
-import { Chain } from '../../blockchain'
+import { Config } from '../config'
+import { Chain } from '../blockchain'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
 

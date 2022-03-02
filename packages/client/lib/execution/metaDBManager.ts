@@ -1,6 +1,6 @@
 import { intToBuffer } from 'ethereumjs-util'
-import { Chain } from '../../blockchain'
-import { Config } from '../../config'
+import { Chain } from '../blockchain'
+import { Config } from '../config'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
 

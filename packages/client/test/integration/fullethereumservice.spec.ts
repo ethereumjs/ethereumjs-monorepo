@@ -9,6 +9,7 @@ import { Event } from '../../lib/types'
 import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
 import { destroy } from './util'
+import { VMExecution } from '../../lib/execution'
 
 tape('[Integration:FullEthereumService]', async (t) => {
   async function setup(): Promise<[MockServer, FullEthereumService]> {
@@ -20,12 +21,12 @@ tape('[Integration:FullEthereumService]', async (t) => {
     })
     const chain = new MockChain({ config, blockchain })
     const serviceConfig = new Config({ servers: [server as any], lightserv: true })
+    const execution = new VMExecution({ config: serviceConfig, chain })
     const service = new FullEthereumService({
       config: serviceConfig,
       chain,
+      execution,
     })
-    // Set syncing to false to skip VM execution
-    service.synchronizer.execution.syncing = false
     await service.open()
     await server.start()
     await service.start()
