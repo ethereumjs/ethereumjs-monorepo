@@ -1,30 +1,56 @@
-// Source of constants: https://www.languagesandnumbers.com/articles/en/ethereum-ether-units/
+// Source of constants: https://github.com/ethereumjs/ethereumjs-units/blob/master/units.json
 export enum Unit {
   Wei = 'wei',
   Kwei = 'kwei',
+  Babbage = 'babbage',
+  Femtoether = 'femtoether',
   Mwei = 'mwei',
+  Lovelace = 'lovelace',
+  Picoether = 'picoether',
   Gwei = 'gwei',
-  Micro = 'micro',
+  Shannon = 'shannon',
+  Nanoether = 'nanoether',
+  Nano = 'nano',
+  Szabo = 'szabo',
+  Microether = 'microether',
+  Finney = 'finney',
+  Milliether = 'milliether',
   Milli = 'milli',
   Ether = 'ether',
+  Eth = 'eth',
   Kether = 'kether',
-  Megaether = 'megaether',
+  Grand = 'grand',
+  Mether = 'mether',
   Gether = 'gether',
+  Tether = 'tether',
 }
 
 export enum UnitValue {
-  'wei' = -18,
-  'kwei' = -15,
-  'mwei' = -12,
-  'gwei' = -9,
-  'micro' = -6,
-  'milli' = -3,
-  'ether' = 1,
-  'kether' = 3,
-  'megaether' = 6,
-  'gether' = 9,
-  'tether' = 12,
+  wei = 1,
+  kwei = 3,
+  babbage = 3,
+  femtoether = 3,
+  mwei = 6,
+  lovelace = 6,
+  picoether = 6,
+  gwei = 9,
+  shannon = 9,
+  nanoether = 9,
+  nano = 9,
+  szabo = 12,
+  microether = 12,
+  finney = 15,
+  milliether = 15,
+  milli = 15,
+  ether = 18,
+  eth = 18,
+  kether = 21,
+  grand = 21,
+  mether = 24,
+  gether = 27,
+  tether = 30,
 }
+
 export type UnitsNames = keyof typeof UnitValue
 
 export class Units {
@@ -43,6 +69,34 @@ export class Units {
     return value.slice(0, trailingZerosToRemove)
   }
 
+  private static multiplyDecimals = (value: number | string | bigint, scale: number) => {
+    let fraction = ''
+
+    if (typeof value === 'string' || 'number') {
+      const [wholeNumber, decimalsNumber] = value.toString().split('.')
+      if (decimalsNumber) fraction = decimalsNumber
+      return BigInt(wholeNumber + fraction) * Units.BASE ** BigInt(scale - fraction.length)
+    }
+
+    return BigInt(value) * Units.BASE ** BigInt(scale)
+  }
+
+  private static divideDecimals = (value: bigint, scale: number) => {
+    let stringValue = value.toString()
+
+    if (stringValue.length > scale) {
+      stringValue.slice(0, -scale)
+      const decimalPart = stringValue.slice(scale)
+      stringValue = stringValue.slice(0, -scale)
+      if (decimalPart) stringValue = stringValue.concat('.' + scale)
+    } else {
+      stringValue = '0.'.concat('0'.repeat(scale), stringValue)
+    }
+    if (stringValue.endsWith('0')) stringValue = Units.removeTrailingZeros(stringValue)
+    if (stringValue.endsWith('.')) stringValue = stringValue.slice(0, -1)
+    return stringValue
+  }
+
   static convert(
     value: number | string | bigint,
     from: UnitsNames | Unit,
@@ -52,38 +106,43 @@ export class Units {
     const fromDecimals = UnitValue[from]
     const toDecimals = UnitValue[to]
 
-    const absoluteValueToDecimals = Math.abs(toDecimals)
+    const fromValue = Units.multiplyDecimals(value, fromDecimals)
+    return Units.divideDecimals(fromValue, toDecimals)
 
-    const decimalsDif = absoluteValueToDecimals + fromDecimals
-    let stringValue = value.toString()
-
-    // Since ETH is the base unit (having 1 decimal) we don't need to do any conversion
-    let decimalsToConvert = from === 'ether' ? absoluteValueToDecimals : decimalsDif
-    if (to === 'ether') decimalsToConvert = Math.abs(fromDecimals)
-
-    // If from decimals are greater than to decimals, there's no need for decimals
-    // For example: 1 Eth -> Gwei 1_000_000_000
-    if (fromDecimals > toDecimals) {
-      const valueWithDecimals = BigInt(value) * Units.BASE ** BigInt(decimalsToConvert)
-      return valueWithDecimals.toString()
-    }
-
-    // Since we know we are going to handle decimals, we need subtract the quantity of numbers
-    // in the value, so we add the necessary zeros in the decimal part of the amount
-    if (stringValue.length < decimalsToConvert) {
-      decimalsToConvert -= stringValue.length
-      const hasTrailingZeros = stringValue.endsWith('0')
-
-      // We need to remove the zeros at the end of the final number
-      // We have the zeros counted variable to flag that it's only taking
-      // in account zeros from the end
-      // For example: 200 Gwei -> 0.000000200 Eth
-      if (hasTrailingZeros) stringValue = this.removeTrailingZeros(stringValue)
-      return '0.'.concat('0'.repeat(decimalsToConvert), stringValue)
-    }
-
-    const valueWithDecimals = BigInt(value) / Units.BASE ** BigInt(decimalsToConvert)
-    return valueWithDecimals.toString()
+    // const decimalsDifNew = toDecimals - fromDecimals
+    //
+    // const absoluteValueToDecimals = Math.abs(toDecimals)
+    //
+    // const decimalsDif = absoluteValueToDecimals + fromDecimals
+    // let stringValue = value.toString()
+    //
+    // // Since ETH is the base unit (having 1 decimal) we don't need to do any conversion
+    // let decimalsToConvert = from === 'ether' ? absoluteValueToDecimals : decimalsDif
+    // if (to === 'ether') decimalsToConvert = Math.abs(fromDecimals)
+    //
+    // // If from decimals are greater than to decimals, there's no need for decimals
+    // // For example: 1 Eth -> Gwei 1_000_000_000
+    // if (fromDecimals > toDecimals) {
+    //   const valueWithDecimals = BigInt(value) * Units.BASE ** BigInt(decimalsToConvert)
+    //   return valueWithDecimals.toString()
+    // }
+    //
+    // // Since we know we are going to handle decimals, we need subtract the quantity of numbers
+    // // in the value, so we add the necessary zeros in the decimal part of the amount
+    // if (stringValue.length < decimalsToConvert) {
+    //   decimalsToConvert -= stringValue.length
+    //   const hasTrailingZeros = stringValue.endsWith('0')
+    //
+    //   // We need to remove the zeros at the end of the final number
+    //   // We have the zeros counted variable to flag that it's only taking
+    //   // in account zeros from the end
+    //   // For example: 200 Gwei -> 0.000000200 Eth
+    //   if (hasTrailingZeros) stringValue = this.removeTrailingZeros(stringValue)
+    //   return '0.'.concat('0'.repeat(decimalsToConvert), stringValue)
+    // }
+    //
+    // const valueWithDecimals = BigInt(value) / Units.BASE ** BigInt(decimalsToConvert)
+    // return valueWithDecimals.toString()
   }
 
   /**
