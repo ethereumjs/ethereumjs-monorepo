@@ -1,6 +1,6 @@
 import { nibblesToBuffer, nibblesCompare } from './util/nibbles'
 import { Trie } from './baseTrie'
-import { TrieNode, isRawNode, BranchNode, ExtensionNode, LeafNode, Nibbles } from './trieNode'
+import { TrieNode, BranchNode, ExtensionNode, LeafNode, Nibbles } from './trieNode'
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof.go
 
@@ -159,8 +159,8 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles) {
       }
 
       // Stop searching if `left` and `right` are not equal
-      if (isRawNode(leftNode)) {
-        if (!isRawNode(rightNode)) {
+      if (!(leftNode instanceof Buffer)) {
+        if (rightNode instanceof Buffer) {
           break
         }
 
@@ -179,7 +179,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles) {
           break
         }
       } else {
-        if (isRawNode(rightNode)) {
+        if (!(rightNode instanceof Buffer)) {
           break
         }
 

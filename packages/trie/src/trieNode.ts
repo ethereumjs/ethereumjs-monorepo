@@ -199,6 +199,6 @@ export function decodeNode(raw: Buffer): TrieNode {
   return decodeRawNode(des)
 }
 
-export function isRawNode(n: Buffer | Buffer[]): n is Buffer[] {
+export function isRawNode(n: any): boolean {
   return Array.isArray(n) && !Buffer.isBuffer(n)
 }
