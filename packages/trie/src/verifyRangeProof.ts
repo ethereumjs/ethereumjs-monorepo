@@ -402,7 +402,7 @@ async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
  * @param lastKey - last key.
  * @param keys - key list.
  * @param values - value list, one-to-one correspondence with keys.
- * @param proof - proof node list.
+ * @param proof - proof node list, if proof is null, both `firstKey` and `lastKey` must be null
  * @returns a flag to indicate whether there exists more trie node in the trie
  */
 export async function verifyRangeProof(
@@ -431,7 +431,7 @@ export async function verifyRangeProof(
   }
 
   // All elements proof
-  if (proof === null) {
+  if (proof === null && firstKey === null && lastKey === null) {
     const trie = new Trie()
     for (let i = 0; i < keys.length; i++) {
       await trie.put(nibblesToBuffer(keys[i]), values[i])
@@ -442,7 +442,7 @@ export async function verifyRangeProof(
     return false
   }
 
-  if (firstKey === null || lastKey === null) {
+  if (proof === null || firstKey === null || lastKey === null) {
     throw new Error('invalid first or last key')
   }
 
