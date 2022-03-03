@@ -3,10 +3,12 @@ import { Server as RPCServer, HttpServer } from 'jayson/promise'
 import { json as jsonParser } from 'body-parser'
 import { decode, TAlgorithm } from 'jwt-simple'
 import Connect, { IncomingMessage } from 'connect'
+import cors from 'cors'
 
 const algorithm: TAlgorithm = 'HS256'
 
 type CreateRPCServerListenerOpts = {
+  rpcCors?: string
   server: RPCServer
   withEngineMiddleware?: WithEngineMiddleware
 }
@@ -26,6 +28,7 @@ function checkHeaderAuth(req: any, jwtSecret: Buffer): void {
 export function createRPCServerListener(opts: CreateRPCServerListenerOpts): HttpServer {
   const { server, withEngineMiddleware } = opts
   const app = Connect()
+  if (opts.rpcCors) app.use(cors({ origin: opts.rpcCors }))
   app.use(jsonParser())
 
   if (withEngineMiddleware) {
@@ -56,7 +59,16 @@ export function createWsRPCServerListener(
 ): HttpServer | undefined {
   const { server, withEngineMiddleware } = opts
   // Get the server to hookup upgrade request on
-  const httpServer = opts.httpServer ?? createServer()
+
+  let httpServer = opts.httpServer
+  if (!httpServer) {
+    const app = Connect()
+    // Incase browser pre-flights the upgrade request with an options request
+    // more likely in case of wss connection
+    if (opts.rpcCors) app.use(cors({ origin: opts.rpcCors }))
+    httpServer = createServer(app)
+  }
+
   const wss = server.websocket({ noServer: true })
 
   httpServer.on('upgrade', (req, socket, head) => {
