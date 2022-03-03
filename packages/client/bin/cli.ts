@@ -160,7 +160,7 @@ const args = yargs(hideBin(process.argv))
     boolean: true,
   })
   .option('rpcCors', {
-    describe: 'Configures the Access-Control-Allow-Origin CORS header for RPC server',
+    describe: 'Configure the Access-Control-Allow-Origin CORS header for RPC server',
     string: true,
     default: '*',
   })

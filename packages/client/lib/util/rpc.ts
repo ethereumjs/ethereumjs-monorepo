@@ -26,9 +26,10 @@ function checkHeaderAuth(req: any, jwtSecret: Buffer): void {
 }
 
 export function createRPCServerListener(opts: CreateRPCServerListenerOpts): HttpServer {
-  const { server, withEngineMiddleware } = opts
+  const { server, withEngineMiddleware, rpcCors } = opts
+
   const app = Connect()
-  if (opts.rpcCors) app.use(cors({ origin: opts.rpcCors }))
+  if (rpcCors) app.use(cors({ origin: rpcCors }))
   app.use(jsonParser())
 
   if (withEngineMiddleware) {
@@ -57,15 +58,15 @@ export function createRPCServerListener(opts: CreateRPCServerListenerOpts): Http
 export function createWsRPCServerListener(
   opts: CreateRPCServerListenerOpts & { httpServer?: HttpServer }
 ): HttpServer | undefined {
-  const { server, withEngineMiddleware } = opts
-  // Get the server to hookup upgrade request on
+  const { server, withEngineMiddleware, rpcCors } = opts
 
+  // Get the server to hookup upgrade request on
   let httpServer = opts.httpServer
   if (!httpServer) {
     const app = Connect()
-    // Incase browser pre-flights the upgrade request with an options request
+    // In case browser pre-flights the upgrade request with an options request
     // more likely in case of wss connection
-    if (opts.rpcCors) app.use(cors({ origin: opts.rpcCors }))
+    if (rpcCors) app.use(cors({ origin: rpcCors }))
     httpServer = createServer(app)
   }
 
