@@ -93,23 +93,38 @@ export default class Interpreter {
   }
 
   async run(code: Buffer, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
+    console.log(code)
     if (
       this._vm._common.isActivatedEIP(3540) &&
-      code.slice(0, 3).equals(Buffer.from('ef0001', 'hex'))
+      code.slice(0, 1).equals(Buffer.from('ef', 'hex'))
     ) {
-      // Code is EOF1 format
-      const codeSections = eof1CodeAnalysis(code)
-      if (!codeSections) {
+      if (code.slice(1, 2).equals(Buffer.from('00', 'hex'))) {
+        if (code.slice(2, 3).equals(Buffer.from('01', 'hex'))) {
+          // Code is EOF1 format
+          const codeSections = eof1CodeAnalysis(code)
+          if (!codeSections) {
+            return {
+              runState: this._runState,
+              exceptionError: new VmError(ERROR.INVALID_EOF_FORMAT),
+            }
+          }
+          // Set code to code section which starts at byte position 7 if code only or 10 if data section is present
+          if (codeSections!.data) {
+            this._runState.code = code.slice(10, 10 + codeSections!.code)
+          } else {
+            this._runState.code = code.slice(7, 7 + codeSections!.code)
+          }
+        } else {
+          return {
+            runState: this._runState,
+            exceptionError: new VmError(ERROR.INVALID_EOF_FORMAT),
+          }
+        }
+      } else {
         return {
           runState: this._runState,
-          exceptionError: new VmError(ERROR.INVALID_EOF_FORMAT),
+          exceptionError: new VmError(ERROR.INVALID_BYTECODE_RESULT),
         }
-      }
-      // Set code to code section which starts at byte position 7 if code only or 10 if data section is present
-      if (codeSections!.data) {
-        this._runState.code = code.slice(10, 10 + codeSections!.code)
-      } else {
-        this._runState.code = code.slice(7, 7 + codeSections!.code)
       }
     } else {
       this._runState.code = code
