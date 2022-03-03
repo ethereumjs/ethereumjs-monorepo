@@ -29,18 +29,27 @@ tape(`${method}: call with unknown payloadId`, async (t) => {
 
 tape(`${method}: call with known payload`, async (t) => {
   const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-  const forkchoiceUpdateRequest = params('engine_forkchoiceUpdatedV1', validPayload)
+  let req = params('engine_forkchoiceUpdatedV1', validPayload)
   let payloadId
-  const expectRes = (res: any) => {
+  let expectRes = (res: any) => {
     payloadId = res.body.result.payloadId
   }
-  await baseRequest(t, server, forkchoiceUpdateRequest, 200, expectRes, false)
+  await baseRequest(t, server, req, 200, expectRes, false)
 
-  const getPayloadRequest = params(method, [payloadId])
-
-  const expectGetPayloadResponse = (res: any) => {
+  req = params(method, [payloadId])
+  expectRes = (res: any) => {
     t.equal(res.body.result.blockNumber, '0x1')
   }
+  await baseRequest(t, server, req, 200, expectRes, false)
 
-  await baseRequest(t, server, getPayloadRequest, 200, expectGetPayloadResponse)
+  expectRes = (res: any) => {
+    t.equal(res.body.result.payloadStatus.status, 'VALID')
+  }
+  req = params('engine_forkchoiceUpdatedV1', [
+    {
+      ...validPayload[0],
+      headBlockHash: '0x3559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
+    },
+  ])
+  await baseRequest(t, server, req, 200, expectRes)
 })
