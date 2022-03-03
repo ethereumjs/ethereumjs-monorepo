@@ -111,33 +111,37 @@ tape('EIP 3540 tests', (t) => {
     code = await vm.stateManager.getContractCode(created!)
     st.ok(code.length === 0, 'code section with trailing bytes')
   })
-
-  t.test('valid contract creation cases', async (st) => {
-    const vm = new VM({ common })
-    const account = await vm.stateManager.getAccount(sender)
-    const balance = GWEI.muln(21000).muln(10000000)
-    account.balance = balance
-    await vm.stateManager.putAccount(sender, account)
-
-    let tx = FeeMarketEIP1559Transaction.fromTxData({
-      data: '0x67EF0001010001000060005260086018F3',
-      gasLimit: 1000000,
-      maxFeePerGas: 7,
-      nonce: 0,
-    }).sign(pkey)
-    let result = await vm.runTx({ tx })
-    let created = result.createdAddress
-    let code = await vm.stateManager.getContractCode(created!)
-    st.ok(code.length > 0, 'code section with no data section')
-    tx = FeeMarketEIP1559Transaction.fromTxData({
-      data: '0x6BEF00010100010200010000AA600052600C6014F3',
-      gasLimit: 100000000,
-      maxFeePerGas: 7,
-      nonce: 1,
-    }).sign(pkey)
-    result = await vm.runTx({ tx })
-    created = result.createdAddress
-    code = await vm.stateManager.getContractCode(created!)
-    st.ok(code.length > 0, 'code section with data section')
+})
+tape('valid contract creation cases', async (st) => {
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.London,
+    eips: [3540, 3541],
   })
+  const vm = new VM({ common })
+  const account = await vm.stateManager.getAccount(sender)
+  const balance = GWEI.muln(21000).muln(10000000)
+  account.balance = balance
+  await vm.stateManager.putAccount(sender, account)
+
+  let tx = FeeMarketEIP1559Transaction.fromTxData({
+    data: '0x67EF0001010001000060005260086018F3',
+    gasLimit: 1000000,
+    maxFeePerGas: 7,
+    nonce: 0,
+  }).sign(pkey)
+  let result = await vm.runTx({ tx })
+  let created = result.createdAddress
+  let code = await vm.stateManager.getContractCode(created!)
+  st.ok(code.length > 0, 'code section with no data section')
+  tx = FeeMarketEIP1559Transaction.fromTxData({
+    data: '0x6BEF00010100010200010000AA600052600C6014F3',
+    gasLimit: 100000000,
+    maxFeePerGas: 7,
+    nonce: 1,
+  }).sign(pkey)
+  result = await vm.runTx({ tx })
+  created = result.createdAddress
+  code = await vm.stateManager.getContractCode(created!)
+  st.ok(code.length > 0, 'code section with data section')
 })
