@@ -27,9 +27,8 @@ const B = {
 }
 
 const setBalance = async (stateManager: StateManager, address: Address, balance: BN) => {
-  // this fn can be replaced with modifyAccountFields() when #1369 is available
   await stateManager.checkpoint()
-  await stateManager.putAccount(address, new Account(new BN(0), balance))
+  await stateManager.modifyAccountFields(address, { balance })
   await stateManager.commit()
 }
 
