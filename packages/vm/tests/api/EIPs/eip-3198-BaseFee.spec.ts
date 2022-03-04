@@ -74,9 +74,7 @@ tape('EIP3198 tests', (t) => {
     )
     const block = makeBlock(fee, tx, 2)
     const vm = new VM({ common })
-    const account = await vm.stateManager.getAccount(sender)
-    account.balance = ETHER
-    await vm.stateManager.putAccount(sender, account)
+    await vm.stateManager.modifyAccountFields(sender, { balance: ETHER })
 
     // Track stack
 
