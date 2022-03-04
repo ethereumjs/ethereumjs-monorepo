@@ -143,7 +143,7 @@ const vm = new VM({ common })
 ## Custom genesis state support
 
 If you want to create a new instance of the VM and add your own genesis state, you can do it by passing a `Common`
-instance with [custom genesis state]("../common/README.md#initialize-using-customchains-array) and passing the flag `activateGenesisState` in `VMOpts`, e.g.:
+instance with [custom genesis state](../common/README.md#initialize-using-customchains-array) and passing the flag `activateGenesisState` in `VMOpts`, e.g.:
 
 ```typescript
 import Common from '@ethereumjs/common'
