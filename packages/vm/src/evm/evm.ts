@@ -383,7 +383,6 @@ export default class EVM {
     }
 
     let result = await this.runInterpreter(message)
-
     // fee for size of the return value
     let totalGas = result.gasUsed
     let returnFee = new BN(0)
@@ -420,17 +419,16 @@ export default class EVM {
         if (!this._vm._common.isActivatedEIP(3540)) {
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
         }
+        // Begin EOF1 contract code checks
         // EIP-3540 EOF1 header check
         const eof1CodeAnalysisResults = eof1CodeAnalysis(result.returnValue)
-        console.log('eip3540 is active')
         if (!eof1CodeAnalysisResults?.code) {
           result = {
             ...result,
             ...INVALID_EOF_RESULT(message.gasLimit),
           }
         } else if (this._vm._common.isActivatedEIP(3670)) {
-          console.log('eip3670 is active')
-          // EIP-3670 EOF1 code check
+          // EIP-3670 EOF1 opcode check
           const codeStart = eof1CodeAnalysisResults.data > 0 ? 10 : 7
           // The start of the code section of an EOF1 compliant contract will either be
           // index 7 (if no data section is present) or index 10 (if a data section is present)
@@ -444,6 +442,8 @@ export default class EVM {
               ...result,
               ...INVALID_EOF_RESULT(message.gasLimit),
             }
+          } else {
+            result.gasUsed = totalGas
           }
         }
       } else {

@@ -93,7 +93,6 @@ export default class Interpreter {
   }
 
   async run(code: Buffer, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
-    console.log(code)
     if (
       this._vm._common.isActivatedEIP(3540) &&
       code.slice(0, 1).equals(Buffer.from('ef', 'hex'))
