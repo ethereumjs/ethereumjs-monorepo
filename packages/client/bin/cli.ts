@@ -159,6 +159,11 @@ const args = yargs(hideBin(process.argv))
     describe: 'Additionally log complete RPC calls on log level debug (i.e. --loglevel=debug)',
     boolean: true,
   })
+  .option('rpcCors', {
+    describe: 'Configure the Access-Control-Allow-Origin CORS header for RPC server',
+    string: true,
+    default: '*',
+  })
   .option('maxPerRequest', {
     describe: 'Max items per block or header request',
     number: true,
