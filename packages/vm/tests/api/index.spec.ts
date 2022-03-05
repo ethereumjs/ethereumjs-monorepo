@@ -67,7 +67,7 @@ tape('VM -> basic instantiation / boolean switches', (t) => {
 
 tape('VM -> supportedHardforks', (t) => {
   t.test('should throw when common is set to an unsupported hardfork', async (st) => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
     try {
       await VM.create({ common })
       st.fail('should have failed for unsupported hardfork')
