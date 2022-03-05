@@ -204,23 +204,6 @@ export default class VM extends AsyncEventEmitter {
       this._common = opts.common
     } else {
       const DEFAULT_CHAIN = Chain.Mainnet
-      const supportedHardforks = [
-        'chainstart',
-        'homestead',
-        'dao',
-        'tangerineWhistle',
-        'spuriousDragon',
-        'byzantium',
-        'constantinople',
-        'petersburg',
-        'istanbul',
-        'muirGlacier',
-        'berlin',
-        'london',
-        'arrowGlacier',
-        'preMerge',
-        'merge',
-      ]
       this._common = new Common({ chain: DEFAULT_CHAIN })
     }
     this._common.on('hardforkChanged', () => {
@@ -241,6 +224,8 @@ export default class VM extends AsyncEventEmitter {
       Hardfork.Berlin,
       Hardfork.London,
       Hardfork.ArrowGlacier,
+      Hardfork.PreMerge,
+      Hardfork.Merge,
     ]
     if (!supportedHardforks.includes(this._common.hardfork() as Hardfork)) {
       throw new Error(
