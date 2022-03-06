@@ -41,6 +41,7 @@ export interface VMOpts {
    *
    * ### Supported EIPs
    *
+   * - [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153) - Transient Storage Opcodes
    * - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - Fee Market
    * - [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - VM simple subroutines
    * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) (`experimental`) - BLS12-381 precompiles
@@ -205,7 +206,8 @@ export default class VM extends AsyncEventEmitter {
     if (opts.common) {
       // Supported EIPs
       const supportedEIPs = [
-        1559, 2315, 2537, 2565, 2718, 2929, 2930, 3198, 3529, 3540, 3541, 3607, 3670, 3855, 3860,
+        1153, 1559, 2315, 2537, 2565, 2718, 2929, 2930, 3198, 3529, 3540, 3541, 3607, 3670, 3855,
+        3860,
       ]
       for (const eip of opts.common.eips()) {
         if (!supportedEIPs.includes(eip)) {

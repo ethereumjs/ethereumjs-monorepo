@@ -226,6 +226,9 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
     if (this._common.isActivatedEIP(2929)) {
       state.clearWarmedAccounts()
     }
+    if (this._common.isActivatedEIP(1153)) {
+      ;(state as any).clearTransientStorage()
+    }
   }
 }
 

@@ -18,6 +18,7 @@ import Common from '@ethereumjs/common'
 import { StateManager, StorageDump } from './interface'
 import Cache, { getCb, putCb } from './cache'
 import { BaseStateManager } from './'
+import TransientStorage from './transientStorage'
 import { short } from '../evm/opcodes'
 
 type StorageProof = {
@@ -48,6 +49,10 @@ export interface DefaultStateManagerOpts {
    * A {@link SecureTrie} instance
    */
   trie?: Trie
+  /**
+   * A {@link TransientStorage} instance
+   */
+  transientStorage?: TransientStorage
 }
 
 /**
@@ -63,6 +68,7 @@ export interface DefaultStateManagerOpts {
 export default class DefaultStateManager extends BaseStateManager implements StateManager {
   _trie: Trie
   _storageTries: { [key: string]: Trie }
+  _transientStorage: TransientStorage
 
   /**
    * Instantiate the StateManager interface.
@@ -72,6 +78,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
 
     this._trie = opts.trie ?? new Trie()
     this._storageTries = {}
+    this._transientStorage = opts.transientStorage ?? new TransientStorage()
 
     /*
      * For a custom StateManager implementation adopt these
@@ -103,6 +110,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
     return new DefaultStateManager({
       trie: this._trie.copy(false),
       common: this._common,
+      transientStorage: this._transientStorage.copy(),
     })
   }
 
@@ -273,12 +281,89 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
   }
 
   /**
+   * Gets the transient storage value associated with the provided `address` and `key`. This method
+   * returns the shortest representation of the stored value.
+   * @param address -  Address of the account to get the transient storage for
+   * @param key - Key in the account's transient storage to get the value for. Must be 32 bytes long.
+   * @returns {Promise<Buffer>} - The transient storage value for the account
+   * corresponding to the provided address at the provided key.
+   * If this does not exist an empty `Buffer` is returned.
+   */
+  getContractTransientStorage(address: Address, key: Buffer): Buffer {
+    if (!this._common.isActivatedEIP(1153)) {
+      throw new Error('Transient storage EIP not enabled')
+    }
+
+    if (key.length !== 32) {
+      throw new Error('Storage key must be 32 bytes long')
+    }
+
+    const value = this._transientStorage.get(address, key)
+
+    if (this.DEBUG) {
+      this._debug(
+        `Get transient storage for account ${address} and key ${key.toString(
+          'hex'
+        )}: ${value.toString('hex')}`
+      )
+    }
+
+    return value
+  }
+
+  /**
+   * Adds value to the transient storage for the `account`
+   * corresponding to `address` at the provided `key`.
+   * @param address -  Address to set a transient storage value for
+   * @param key - Key to set the value at. Must be 32 bytes long.
+   * @param value - Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped.
+   */
+  putContractTransientStorage(address: Address, key: Buffer, value: Buffer): void {
+    if (!this._common.isActivatedEIP(1153)) {
+      throw new Error('Transient storage EIP not enabled')
+    }
+
+    if (this.DEBUG) {
+      this._debug(
+        `Update transient storage for account ${address} and key ${key.toString(
+          'hex'
+        )} to ${value.toString('hex')}`
+      )
+    }
+
+    if (key.length !== 32) {
+      throw new Error('Transient storage key must be 32 bytes long')
+    }
+
+    if (value.length > 32) {
+      throw new Error('Transient storage value cannot be longer than 32 bytes')
+    }
+
+    this._transientStorage.put(address, key, value)
+  }
+
+  /**
+   * Clears all transient storage entries.
+   */
+  clearTransientStorage(): void {
+    if (!this._common.isActivatedEIP(1153)) {
+      throw new Error('Transient storage EIP not enabled')
+    }
+    if (this.DEBUG) {
+      this._debug(`Clearing transient storage`)
+    }
+
+    this._transientStorage.clear()
+  }
+
+  /**
    * Checkpoints the current state of the StateManager instance.
    * State changes that follow can then be committed by calling
    * `commit` or `reverted` by calling rollback.
    */
   async checkpoint(): Promise<void> {
     this._trie.checkpoint()
+    this._transientStorage.checkpoint()
     await super.checkpoint()
   }
 
@@ -289,6 +374,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
   async commit(): Promise<void> {
     // setup trie checkpointing
     await this._trie.commit()
+    this._transientStorage.commit()
     await super.commit()
   }
 
@@ -299,6 +385,7 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
   async revert(): Promise<void> {
     // setup trie checkpointing
     await this._trie.revert()
+    this._transientStorage.revert()
     this._storageTries = {}
     await super.revert()
   }

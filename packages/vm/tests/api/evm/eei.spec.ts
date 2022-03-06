@@ -41,4 +41,41 @@ tape('EEI', (t) => {
     st.ok(await eei.isAccountEmpty(ZeroAddress)) // account is empty
     st.end()
   })
+
+  t.test('should work with transient storage', async (st) => {
+    const eei = new EEI(undefined!, new StateManager(), undefined!, undefined!, undefined!) // create a dummy EEI (no VM, no EVM, etc.)
+    // Set the caller to the zero address
+    ;(eei as any)._env = { address: ZeroAddress }
+
+    // Put transient storage
+    const key = Buffer.alloc(32, 0x11)
+    const value = Buffer.alloc(32, 0x22)
+    ;(eei as any).transientStorageStore(key, value)
+
+    // Get transient storage
+    const got = (eei as any).transientStorageLoad(key)
+    t.deepEqual(value, got)
+
+    // Delete the transient storage so that the methods throw
+    const getContractTransientStorage = Object.getPrototypeOf(
+      eei._state
+    ).getContractTransientStorage
+    const putContractTransientStorage = Object.getPrototypeOf(
+      eei._state
+    ).putContractTransientStorage
+    delete Object.getPrototypeOf(eei._state).getContractTransientStorage
+    delete Object.getPrototypeOf(eei._state).putContractTransientStorage
+
+    t.throws(() => {
+      ;(eei as any).transientStorageStore(key, value)
+    }, /Transient storage unavailable/)
+
+    t.throws(() => {
+      ;(eei as any).transientStorageLoad(key)
+    }, /Transient storage unavailable/)
+
+    Object.getPrototypeOf(eei._state).getContractTransientStorage = getContractTransientStorage
+    Object.getPrototypeOf(eei._state).putContractTransientStorage = putContractTransientStorage
+    st.end()
+  })
 })

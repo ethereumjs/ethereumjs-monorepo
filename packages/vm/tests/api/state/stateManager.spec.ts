@@ -832,3 +832,165 @@ tape('StateManager - generateAccessList', (tester) => {
     t.end()
   })
 })
+
+tape('StateManager - Transient storage', (tester) => {
+  const it = tester.test
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.ArrowGlacier, eips: [1153] })
+  it('should set and get storage', (t) => {
+    const stateManager = new DefaultStateManager({ common })
+
+    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const key = Buffer.alloc(32, 0xff)
+    const value = Buffer.alloc(32, 0x99)
+
+    stateManager.putContractTransientStorage(address, key, value)
+    const got = stateManager.getContractTransientStorage(address, key)
+    t.deepEqual(value, got)
+    t.end()
+  })
+
+  it('should return bytes32(0) if there is no key set', (t) => {
+    const stateManager = new DefaultStateManager({ common })
+
+    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const key = Buffer.alloc(32, 0xff)
+    const value = Buffer.alloc(32, 0x11)
+
+    // No address set
+    const got = stateManager.getContractTransientStorage(address, key)
+    t.deepEqual(Buffer.alloc(32, 0x00), got)
+
+    // Address set, no key set
+    stateManager.putContractTransientStorage(address, key, value)
+    const got2 = stateManager.getContractTransientStorage(address, Buffer.alloc(32, 0x22))
+    t.deepEqual(Buffer.alloc(32, 0x00), got2)
+    t.end()
+  })
+
+  it('should revert', async (t) => {
+    const stateManager = new DefaultStateManager({ common })
+
+    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const key = Buffer.alloc(32, 0xff)
+    const value = Buffer.alloc(32, 0x99)
+
+    stateManager.putContractTransientStorage(address, key, value)
+
+    await stateManager.checkpoint()
+
+    const value2 = Buffer.alloc(32, 0x22)
+    stateManager.putContractTransientStorage(address, key, value2)
+    const got = stateManager.getContractTransientStorage(address, key)
+    t.deepEqual(got, value2)
+
+    await stateManager.revert()
+
+    const got2 = stateManager.getContractTransientStorage(address, key)
+    t.deepEqual(got2, value)
+    t.end()
+  })
+
+  it('should commit', async (t) => {
+    const stateManager = new DefaultStateManager({ common })
+
+    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const key = Buffer.alloc(32, 0xff)
+    const value = Buffer.alloc(32, 0x99)
+
+    stateManager.putContractTransientStorage(address, key, value)
+
+    await stateManager.checkpoint()
+    await stateManager.commit()
+
+    const got = stateManager.getContractTransientStorage(address, key)
+    t.deepEqual(got, value)
+    t.end()
+  })
+
+  it('should copy', (t) => {
+    const stateManager = new DefaultStateManager({ common })
+
+    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const key = Buffer.alloc(32, 0xff)
+    const value = Buffer.alloc(32, 0x99)
+
+    stateManager.putContractTransientStorage(address, key, value)
+
+    const stateManager2 = stateManager.copy()
+    ;(stateManager2 as any).putContractTransientStorage(address, key, Buffer.alloc(32, 0x11))
+
+    const got = stateManager.getContractTransientStorage(address, key)
+    const got2 = (stateManager2 as any).getContractTransientStorage(address, key)
+
+    t.notEqual(got.toString('hex'), got2.toString('hex'))
+    t.end()
+  })
+
+  it('should fail to commit without checkpoint', (t) => {
+    const stateManager = new DefaultStateManager({ common })
+
+    t.throws(() => {
+      stateManager._transientStorage.commit()
+    }, /trying to commit when not checkpointed/)
+
+    t.end()
+  })
+
+  it('should fail to revert with empty changesets', (t) => {
+    const stateManager = new DefaultStateManager({ common })
+    stateManager._transientStorage._changesets = []
+
+    t.throws(() => {
+      stateManager._transientStorage.revert()
+    }, /cannot revert without a changeset/)
+
+    t.end()
+  })
+
+  it('should fail to add storage with empty changesets', (t) => {
+    const stateManager = new DefaultStateManager({ common })
+    stateManager._transientStorage._changesets = []
+
+    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const key = Buffer.alloc(32, 0xff)
+    const value = Buffer.alloc(32, 0x99)
+
+    t.throws(() => {
+      stateManager.putContractTransientStorage(address, key, value)
+    }, /no changeset initialized/)
+
+    t.end()
+  })
+
+  it('should fail with wrong size key/value', (t) => {
+    const stateManager = new DefaultStateManager({ common })
+
+    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+
+    t.throws(() => {
+      stateManager.putContractTransientStorage(address, Buffer.alloc(10), Buffer.alloc(1))
+    }, /Transient storage key must be 32 bytes long/)
+
+    t.throws(() => {
+      stateManager.putContractTransientStorage(address, Buffer.alloc(32), Buffer.alloc(100))
+    }, /Transient storage value cannot be longer than 32 bytes/)
+
+    t.end()
+  })
+
+  it('should clear', (t) => {
+    const stateManager = new DefaultStateManager({ common })
+
+    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const key = Buffer.alloc(32, 0xff)
+    const value = Buffer.alloc(32, 0x99)
+
+    stateManager.putContractTransientStorage(address, key, value)
+
+    stateManager._transientStorage.clear()
+
+    const got = stateManager.getContractTransientStorage(address, key)
+    t.deepEqual(got, Buffer.alloc(32, 0x00))
+    t.end()
+  })
+})

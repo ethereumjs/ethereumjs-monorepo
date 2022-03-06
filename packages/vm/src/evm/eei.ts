@@ -381,6 +381,31 @@ export default class EEI {
   }
 
   /**
+   * Store 256-bit a value in memory to transient storage.
+   * @param key - Storage key
+   * @param value - Storage value
+   */
+  transientStorageStore(key: Buffer, value: Buffer): void {
+    if ('putContractTransientStorage' in this._state) {
+      return (this._state as any).putContractTransientStorage(this._env.address, key, value)
+    } else {
+      throw new Error('Transient storage unavailable')
+    }
+  }
+
+  /**
+   * Loads a 256-bit value to memory from transient storage.
+   * @param key - Storage key
+   */
+  transientStorageLoad(key: Buffer): Buffer {
+    if ('getContractTransientStorage' in this._state) {
+      return (this._state as any).getContractTransientStorage(this._env.address, key)
+    } else {
+      throw new Error('Transient storage unavailable')
+    }
+  }
+
+  /**
    * Returns the current gasCounter.
    */
   getGasLeft(): BN {
