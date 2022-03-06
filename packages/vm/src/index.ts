@@ -96,9 +96,9 @@ export interface VMOpts {
   /**
    * If true, the state of the VM will add the genesis state given by {@link Common} to a new
    * created state manager instance. Note that if stateManager option is also passed as argument
-   * this flag wont have any effect.
+   * this flag won't have any effect.
    *
-   * Default: `undefined`
+   * Default: `false`
    */
   activateGenesisState?: boolean
   /**
