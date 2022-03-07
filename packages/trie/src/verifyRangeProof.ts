@@ -474,7 +474,6 @@ export async function verifyRangeProof(
   }
 
   // Two edge elements proof
-
   if (nibblesCompare(firstKey, lastKey) >= 0) {
     throw new Error('invalid two edge elements proof: firstKey should be less than lastKey')
   }
@@ -489,7 +488,6 @@ export async function verifyRangeProof(
 
   // Remove all nodes between two edge proofs
   const empty = await unsetInternal(trie, firstKey, lastKey)
-
   if (empty) {
     trie.root = trie.EMPTY_TRIE_ROOT
   }
