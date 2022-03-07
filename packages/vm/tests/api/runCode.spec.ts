@@ -2,8 +2,6 @@ import tape from 'tape'
 import { BN } from 'ethereumjs-util'
 import VM from '../../src'
 import { DefaultStateManager } from '../../src/state'
-import { AddOpcode } from '../../src/evm/types'
-import { InterpreterStep, RunState } from '../../src/evm/interpreter'
 
 const STOP = '00'
 const JUMP = '56'
@@ -95,71 +93,6 @@ tape('VM.runCode: interpreter', (t) => {
       st.ok(e.toString().includes('Test'), 'error thrown')
     }
     st.end()
-  })
-})
-
-tape('VM: custom opcodes', (t) => {
-  const fee = 333
-  const logicFee = 33
-  const totalFee = fee + logicFee
-  const stackPush = 1
-
-  const testOpcode: AddOpcode = {
-    opcode: 0x21,
-    opcodeName: 'TEST',
-    baseFee: fee,
-    gasFunction: function (runState: RunState, gas: BN) {
-      gas.iaddn(logicFee)
-    },
-    logicFunction: function (runState: RunState) {
-      runState.stack.push(new BN(stackPush))
-    },
-  }
-
-  t.test('should add custom opcodes to the VM', async (st) => {
-    const vm = new VM({
-      customOpcodes: [testOpcode],
-    })
-    const gas = 123456
-    let correctOpcodeName = false
-    vm.on('step', (e: InterpreterStep) => {
-      if (e.pc === 0) {
-        correctOpcodeName = e.opcode.name === testOpcode.opcodeName
-      }
-    })
-    const res = await vm.runCode({
-      code: Buffer.from('21', 'hex'),
-      gasLimit: new BN(gas),
-    })
-    st.ok(res.gasUsed.eqn(totalFee), 'succesfully charged correct gas')
-    st.ok(res.runState!.stack._store[0].eqn(stackPush), 'succesfully ran opcode logic')
-    st.ok(correctOpcodeName, 'succesfully set opcode name')
-  })
-
-  t.test('should delete opcodes from the VM', async (st) => {
-    const vm = new VM({
-      customOpcodes: [{ opcode: 0x20 }], // deletes KECCAK opcode
-    })
-    const gas = 123456
-    const res = await vm.runCode({
-      code: Buffer.from('20', 'hex'),
-      gasLimit: new BN(gas),
-    })
-    st.ok(res.gasUsed.eqn(gas), 'succesfully deleted opcode')
-  })
-
-  t.test('should override opcodes in the VM', async (st) => {
-    testOpcode.opcode = 0x20 // Overrides KECCAK
-    const vm = new VM({
-      customOpcodes: [testOpcode],
-    })
-    const gas = 123456
-    const res = await vm.runCode({
-      code: Buffer.from('20', 'hex'),
-      gasLimit: new BN(gas),
-    })
-    st.ok(res.gasUsed.eqn(totalFee), 'succesfully charged correct gas')
-    st.ok(res.runState!.stack._store[0].eqn(stackPush), 'succesfully ran opcode logic')
   })
 })
 
