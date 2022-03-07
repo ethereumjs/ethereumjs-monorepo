@@ -9,12 +9,13 @@ import { default as runTx, RunTxOpts, RunTxResult } from './runTx'
 import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
 import { default as buildBlock, BuildBlockOpts, BlockBuilder } from './buildBlock'
 import { EVMResult, ExecResult } from './evm/evm'
-import { OpcodeList, getOpcodesForHF } from './evm/opcodes'
+import { OpcodeList, getOpcodesForHF, OpHandler } from './evm/opcodes'
 import { precompiles } from './evm/precompiles'
 import runBlockchain from './runBlockchain'
 const AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
 import { CustomOpcode } from './evm/types'
+import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './evm/opcodes/gas'
 
 // very ugly way to detect if we are running in a browser
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
@@ -121,6 +122,7 @@ export interface VMOpts {
 
   /**
    * Override or add custom opcodes to the VM instruction set
+   * These custom opcodes are EIP-agnostic and are always statically added
    * To delete an opcode, add an entry of format `{opcode: number}`. This will delete that opcode from the VM.
    * If this opcode is then used in the VM, the `INVALID` opcode would instead be used.
    * To add an opcode, add an entry of the following format:
@@ -163,7 +165,11 @@ export default class VM extends AsyncEventEmitter {
   protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
   protected readonly _allowUnlimitedContractSize: boolean
-  protected _opcodes: OpcodeList
+  // This opcode data is always set since `updateActiveOpcodes()` is called in the constructor
+  protected _opcodes!: OpcodeList
+  protected _handlers!: Map<number, OpHandler>
+  protected _dynamicGasHandlers!: Map<number, AsyncDynamicGasHandler | SyncDynamicGasHandler>
+
   protected readonly _hardforkByBlockNumber: boolean
   protected readonly _hardforkByTD?: BNLike
   protected readonly _customOpcodes?: CustomOpcode[]
@@ -252,12 +258,11 @@ export default class VM extends AsyncEventEmitter {
       })
     }
     this._common.on('hardforkChanged', () => {
-      this._opcodes = getOpcodesForHF(this._common, this._customOpcodes)
+      this.updateActiveOpcodes()
     })
 
-    // Set list of opcodes based on HF
-    // TODO: make this EIP-friendly
-    this._opcodes = getOpcodesForHF(this._common, this._customOpcodes)
+    // Initialize the opcode data
+    this.updateActiveOpcodes()
 
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
@@ -424,7 +429,18 @@ export default class VM extends AsyncEventEmitter {
    * available for VM execution
    */
   getActiveOpcodes(): OpcodeList {
-    return getOpcodesForHF(this._common, this._customOpcodes)
+    return getOpcodesForHF(this._common, this._customOpcodes).opcodes
+  }
+
+  /**
+   * Update the opcode data
+   * TODO: make this EIP-friendly
+   */
+  updateActiveOpcodes() {
+    const data = getOpcodesForHF(this._common, this._customOpcodes)
+    this._opcodes = data.opcodes
+    this._dynamicGasHandlers = data.dynamicGasHandlers
+    this._handlers = data.handlers
   }
 
   /**
