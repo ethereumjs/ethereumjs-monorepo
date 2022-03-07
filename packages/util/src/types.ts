@@ -69,14 +69,6 @@ export function bnToUnpaddedBuffer(value: BN): Buffer {
 }
 
 /**
- * Deprecated alias for {@link bnToUnpaddedBuffer}
- * @deprecated
- */
-export function bnToRlp(value: BN): Buffer {
-  return bnToUnpaddedBuffer(value)
-}
-
-/**
  * Type output options
  */
 export enum TypeOutput {
