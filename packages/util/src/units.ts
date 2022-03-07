@@ -1,5 +1,5 @@
 // Source of constants: https://github.com/ethereumjs/ethereumjs-units/blob/master/units.json
-export enum Unit {
+export enum Units {
   Wei = 'wei',
   Kwei = 'kwei',
   Babbage = 'babbage',
@@ -18,11 +18,6 @@ export enum Unit {
   Milli = 'milli',
   Ether = 'ether',
   Eth = 'eth',
-  Kether = 'kether',
-  Grand = 'grand',
-  Mether = 'mether',
-  Gether = 'gether',
-  Tether = 'tether',
 }
 
 export enum UnitValue {
@@ -46,9 +41,9 @@ export enum UnitValue {
   eth = 18,
 }
 
-export type UnitsNames = keyof typeof UnitValue
+export type UnitNames = keyof typeof UnitValue
 
-export class Units {
+export class Unit {
   private static BASE: bigint = BigInt(10)
 
   private static removeTrailingZeros = (value: string) => {
@@ -72,20 +67,20 @@ export class Units {
       // If there are decimals, get the new scale with the given digits
       const newScale = scale - decimal.length
       // Conver decimal to scale expected
-      const newDecimal = (BigInt(decimal) * Units.BASE ** BigInt(newScale)).toString()
+      const newDecimal = (BigInt(decimal) * Unit.BASE ** BigInt(newScale)).toString()
       // Concat to integer number and return
       return BigInt(integer.concat(newDecimal))
     }
 
     // If no decimal, just convert the integer to the expected scale
-    return BigInt(integer) * Units.BASE ** BigInt(scale)
+    return BigInt(integer) * Unit.BASE ** BigInt(scale)
   }
 
   private static to(value: bigint, scale: UnitValue): string {
     // Convert bigint to string, to know how many digits the number has
     const stringValue = value.toString()
     // Divide the value given by the number of decimals of ETH (18)
-    const integer = value / Units.BASE ** BigInt(scale)
+    const integer = value / Unit.BASE ** BigInt(scale)
     // If integer is NOT zero, take it into account, otherwise the entire value will be decimal
     const decimalsToTake = integer ? integer.toString().length : 0
     // Extract decimal part
@@ -112,20 +107,20 @@ export class Units {
   /**
    * Expects an eth amount that will be formatted to gwei, it will expect a number with nine decimals
    * @param value amount that is going to be formatted to gwei
-   * e.g: Units.toGwei(5000000000n) -> '5'
+   * e.g: Unit.toGwei(5000000000n) -> '5'
    */
 
   static toGwei(value: bigint): string {
-    return this.to(value, UnitValue.gwei)
+    return this.to(value, UnitValue[Units.Gwei])
   }
 
   /**
    * Expects an amount that will be formatted to eth, it will expect a wei amount
    * @param value amount that is going to be formatter to eth
-   * e.g: Units.toEth(1100000000000000000n) -> '1.1'
+   * e.g: Unit.toEth(1100000000000000000n) -> '1.1'
    */
   static toEth(value: bigint): string {
-    return this.to(value, UnitValue.eth)
+    return this.to(value, UnitValue[Units.Eth])
   }
 
   /**
@@ -134,7 +129,7 @@ export class Units {
    * e.g: fromEth('1.1') -> 1100000000000000000n
    */
   static fromEth(value: string): bigint {
-    return this.from(value, UnitValue.eth)
+    return this.from(value, UnitValue[Units.Eth])
   }
 
   /**
@@ -143,6 +138,6 @@ export class Units {
    * e.g: fromGwei('5') -> 5000000000n
    */
   static fromGwei(value: string): bigint {
-    return this.from(value, UnitValue.gwei)
+    return this.from(value, UnitValue[Units.Gwei])
   }
 }
