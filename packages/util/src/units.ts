@@ -44,11 +44,6 @@ export enum UnitValue {
   milli = 15,
   ether = 18,
   eth = 18,
-  kether = 21,
-  grand = 21,
-  mether = 24,
-  gether = 27,
-  tether = 30,
 }
 
 export type UnitsNames = keyof typeof UnitValue
@@ -69,109 +64,88 @@ export class Units {
     return value.slice(0, trailingZerosToRemove)
   }
 
-  private static multiplyDecimals = (value: number | string | bigint, scale: number) => {
-    let fraction = ''
+  private static from(value: string, scale: UnitValue): bigint {
+    // Split given number between integer and decimal part
+    let [integer, decimal] = value.split('.')
 
-    if (typeof value === 'string' || 'number') {
-      const [wholeNumber, decimalsNumber] = value.toString().split('.')
-      if (decimalsNumber) fraction = decimalsNumber
-      return BigInt(wholeNumber + fraction) * Units.BASE ** BigInt(scale - fraction.length)
+    if (decimal) {
+      // If there are decimals, get the new scale with the given digits
+      let newScale = scale - decimal.length
+      // Conver decimal to scale expected
+      decimal = (BigInt(decimal) * Units.BASE ** BigInt(newScale)).toString()
+      // Concat to integer number and return
+      return BigInt(integer.concat(decimal))
     }
 
-    return BigInt(value) * Units.BASE ** BigInt(scale)
+    // If no decimal, just convert the integer to the expected scale
+    return BigInt(integer) * Units.BASE ** BigInt(scale)
   }
 
-  private static divideDecimals = (value: bigint, scale: number) => {
-    let stringValue = value.toString()
+  private static to(value: bigint, scale: UnitValue): string {
+    // Convert bigint to string, to know how many digits the number has
+    const stringValue = value.toString()
+    // Divide the value given by the number of decimals of ETH (18)
+    const integer = value / Units.BASE ** BigInt(scale)
+    // If integer is NOT zero, take it into account, otherwise the entire value will be decimal
+    const decimalsToTake = integer ? integer.toString().length : 0
+    // Extract decimal part
+    let decimal = stringValue.slice(decimalsToTake, -1)
+    // Check if there are zeros at the end and if so, remove those
+    if (decimal.endsWith('0')) decimal = this.removeTrailingZeros(decimal)
 
-    if (stringValue.length > scale) {
-      stringValue.slice(0, -scale)
-      const decimalPart = stringValue.slice(scale)
-      stringValue = stringValue.slice(0, -scale)
-      if (decimalPart) stringValue = stringValue.concat('.' + scale)
-    } else {
-      stringValue = '0.'.concat('0'.repeat(scale), stringValue)
+    // If decimal is equal to empty string, we can just return the integer
+
+    if (decimal.length) {
+      // If decimal and integer are defined, concatenate and return
+      if (integer) {
+        return `${integer}.${decimal}`
+      }
+
+      // There is no integer part in this number, we need to calculate
+      // if we need to append zeros at the start of the decimal part and return it
+      decimal = '0'.repeat(scale - stringValue.length).concat(decimal)
+      return '0.'.concat(decimal)
     }
-    if (stringValue.endsWith('0')) stringValue = Units.removeTrailingZeros(stringValue)
-    if (stringValue.endsWith('.')) stringValue = stringValue.slice(0, -1)
-    return stringValue
-  }
-
-  static convert(
-    value: number | string | bigint,
-    from: UnitsNames | Unit,
-    to: UnitsNames | Unit
-  ): string {
-    // Retrieve decimals from desired units
-    const fromDecimals = UnitValue[from]
-    const toDecimals = UnitValue[to]
-
-    const fromValue = Units.multiplyDecimals(value, fromDecimals)
-    return Units.divideDecimals(fromValue, toDecimals)
-
-    // const decimalsDifNew = toDecimals - fromDecimals
-    //
-    // const absoluteValueToDecimals = Math.abs(toDecimals)
-    //
-    // const decimalsDif = absoluteValueToDecimals + fromDecimals
-    // let stringValue = value.toString()
-    //
-    // // Since ETH is the base unit (having 1 decimal) we don't need to do any conversion
-    // let decimalsToConvert = from === 'ether' ? absoluteValueToDecimals : decimalsDif
-    // if (to === 'ether') decimalsToConvert = Math.abs(fromDecimals)
-    //
-    // // If from decimals are greater than to decimals, there's no need for decimals
-    // // For example: 1 Eth -> Gwei 1_000_000_000
-    // if (fromDecimals > toDecimals) {
-    //   const valueWithDecimals = BigInt(value) * Units.BASE ** BigInt(decimalsToConvert)
-    //   return valueWithDecimals.toString()
-    // }
-    //
-    // // Since we know we are going to handle decimals, we need subtract the quantity of numbers
-    // // in the value, so we add the necessary zeros in the decimal part of the amount
-    // if (stringValue.length < decimalsToConvert) {
-    //   decimalsToConvert -= stringValue.length
-    //   const hasTrailingZeros = stringValue.endsWith('0')
-    //
-    //   // We need to remove the zeros at the end of the final number
-    //   // We have the zeros counted variable to flag that it's only taking
-    //   // in account zeros from the end
-    //   // For example: 200 Gwei -> 0.000000200 Eth
-    //   if (hasTrailingZeros) stringValue = this.removeTrailingZeros(stringValue)
-    //   return '0.'.concat('0'.repeat(decimalsToConvert), stringValue)
-    // }
-    //
-    // const valueWithDecimals = BigInt(value) / Units.BASE ** BigInt(decimalsToConvert)
-    // return valueWithDecimals.toString()
+    return integer.toString()
   }
 
   /**
-   * Expects an eth amount that will be formatted to gwei, by default it will expect
-   * an eth amount but a custom one can be passed
+   * Expects an eth amount that will be formatted to gwei, it will expect a number with nine decimals
    * @param value amount that is going to be formatted to gwei
-   * @param from value to convert gwei amount - by default is Eth
+   * e.g: Units.toGwei(5000000000n) -> '5'
    */
-  static toGwei(
-    value: number | string | bigint,
-    from: Exclude<UnitsNames, 'gwei'> = Unit.Ether
-  ): string {
-    return this.convert(value, from, Unit.Gwei)
+
+  static toGwei(value: bigint): string {
+    return this.to(value, UnitValue.gwei)
   }
 
   /**
-   * Expects an amount that will be formatted to eth, by default it will expect
-   * a gwei amount but a custom one can be passed
+   * Expects an amount that will be formatted to eth, it will expect a wei amount
    * @param value amount that is going to be formatter to eth
-   * @param from value to convert eth amount - by default is Gwei
+   * e.g: Units.toEth(1100000000000000000n) -> '1.1'
    */
-  static toEth(
-    value: number | string | bigint,
-    from: Exclude<UnitsNames, 'ether'> = Unit.Gwei
-  ): string {
-    return this.convert(value, from, Unit.Ether)
+  static toEth(value: bigint): string {
+    return this.to(value, UnitValue.eth)
+  }
+
+  /**
+   * Expects an amount that will be formatter to wei, it will expect an eth amount
+   * @param value amount that is going to be formatted to wei
+   * e.g: fromEth('1.1') -> 1100000000000000000n
+   */
+  static fromEth(value: string): bigint {
+    return this.from(value, UnitValue.eth)
+  }
+
+  /**
+   * Expects an amount that will be formatter to wei, it will expect an eth amount
+   * @param value amount that is going to be formatted to gwei
+   * e.g: fromGwei('5') -> 5000000000n
+   */
+  static fromGwei(value: string): bigint {
+    return this.from(value, UnitValue.gwei)
   }
 }
 
-// Unit.convert(12.46, "eth", "gwei") -> 12460000000
-// Unit.convert(12.46, "gwei", "eth") -> 0,00000001246
-// Unit.convert(12460000000, "gwei", "eth") -> 12.46
+// fromEth('1.1') // 1100000000000000000n
+// fromGwei('5') // 5000000000n
