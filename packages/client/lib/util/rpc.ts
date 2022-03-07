@@ -26,7 +26,8 @@ function checkHeaderAuth(req: any, jwtSecret: Buffer): void {
 export function createRPCServerListener(opts: CreateRPCServerListenerOpts): HttpServer {
   const { server, withEngineMiddleware } = opts
   const app = Connect()
-  app.use(jsonParser())
+  // GOSSIP_MAX_SIZE_BELLATRIX is proposed to be 10MiB
+  app.use(jsonParser({ limit: '11mb' }))
 
   if (withEngineMiddleware) {
     const { jwtSecret, unlessFn } = withEngineMiddleware
