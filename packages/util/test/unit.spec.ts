@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Unit, Units } from '../src'
+import { Units } from '../src'
 
 tape('unit', function (t) {
   t.test('should work for big unit to small unit', function (st) {
