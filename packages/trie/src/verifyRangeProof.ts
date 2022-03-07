@@ -383,7 +383,7 @@ async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
  *
  * There are four situations:
  *
- * - All elements proof. In this case the proof can be nil, but the range should
+ * - All elements proof. In this case the proof can be null, but the range should
  *   be all the leaves in the trie.
  *
  * - One element proof. In this case no matter the edge proof is a non-existent
@@ -414,13 +414,13 @@ export async function verifyRangeProof(
   proof: Buffer[] | null
 ): Promise<boolean> {
   if (keys.length !== values.length) {
-    throw new Error('invalid keys and values')
+    throw new Error('invalid keys length or values length')
   }
 
   // Make sure the keys are in order
   for (let i = 0; i < keys.length - 1; i++) {
     if (nibblesCompare(keys[i], keys[i + 1]) >= 0) {
-      throw new Error('invalid keys')
+      throw new Error('invalid keys order')
     }
   }
   // Make sure all values are present
@@ -437,13 +437,15 @@ export async function verifyRangeProof(
       await trie.put(nibblesToBuffer(keys[i]), values[i])
     }
     if (rootHash.compare(trie.root) !== 0) {
-      throw new Error('invalid proof')
+      throw new Error('invalid all elements proof: root mismatch')
     }
     return false
   }
 
   if (proof === null || firstKey === null || lastKey === null) {
-    throw new Error('invalid first or last key')
+    throw new Error(
+      'invalid all elements proof: proof, firstKey, lastKey must be null at the same time'
+    )
   }
 
   // Zero element proof
@@ -451,7 +453,7 @@ export async function verifyRangeProof(
     const { trie, value } = await verifyProof(rootHash, nibblesToBuffer(firstKey), proof)
 
     if (value !== null || (await hasRightElement(trie, firstKey))) {
-      throw new Error('invalid proof')
+      throw new Error('invalid zero element proof: value mismatch')
     }
 
     return false
@@ -462,10 +464,10 @@ export async function verifyRangeProof(
     const { trie, value } = await verifyProof(rootHash, nibblesToBuffer(firstKey), proof)
 
     if (nibblesCompare(firstKey, keys[0]) !== 0) {
-      throw new Error('invalid proof')
+      throw new Error('invalid one element proof: firstKey should be equal to keys[0]')
     }
     if (value === null || value.compare(values[0]) !== 0) {
-      throw new Error('invalid proof')
+      throw new Error('invalid one element proof: value mismatch')
     }
 
     return hasRightElement(trie, firstKey)
@@ -474,10 +476,12 @@ export async function verifyRangeProof(
   // Two edge elements proof
 
   if (nibblesCompare(firstKey, lastKey) >= 0) {
-    throw new Error('invalid proof')
+    throw new Error('invalid two edge elements proof: firstKey should be less than lastKey')
   }
   if (firstKey.length !== lastKey.length) {
-    throw new Error('invalid proof')
+    throw new Error(
+      'invalid two edge elements proof: the length of firstKey should be equal to the length of lastKey'
+    )
   }
 
   let trie = new Trie(null, rootHash)
@@ -497,7 +501,7 @@ export async function verifyRangeProof(
 
   // Compare rootHash
   if (trie.root.compare(rootHash) !== 0) {
-    throw new Error('invalid proof')
+    throw new Error('invalid two edge elements proof: root mismatch')
   }
 
   return hasRightElement(trie, keys[keys.length - 1])
