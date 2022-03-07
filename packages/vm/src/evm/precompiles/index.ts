@@ -172,7 +172,6 @@ function getActivePrecompiles(common: Common): Address[] {
 }
 
 export {
-  precompiles,
   getPrecompile,
   PrecompileFunc,
   PrecompileInput,

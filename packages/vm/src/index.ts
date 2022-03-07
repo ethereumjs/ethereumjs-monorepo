@@ -1,5 +1,5 @@
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { Account, Address, BNLike } from 'ethereumjs-util'
+import { Account, BNLike } from 'ethereumjs-util'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain } from '@ethereumjs/common'
 import { StateManager, DefaultStateManager } from './state/index'
@@ -10,7 +10,7 @@ import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
 import { default as buildBlock, BuildBlockOpts, BlockBuilder } from './buildBlock'
 import { EVMResult, ExecResult } from './evm/evm'
 import { OpcodeList, getOpcodesForHF, OpHandler } from './evm/opcodes'
-import { precompiles } from './evm/precompiles'
+import { getActivePrecompiles } from './evm/precompiles'
 import runBlockchain from './runBlockchain'
 const AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
@@ -331,20 +331,21 @@ export default class VM extends AsyncEventEmitter {
       if (this._opts.activateGenesisState) {
         await this.stateManager.generateCanonicalGenesis()
       }
+    }
 
-      if (this._opts.activatePrecompiles) {
-        await this.stateManager.checkpoint()
-        // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
-        await Promise.all(
-          Object.keys(precompiles)
-            .map((k: string): Address => new Address(Buffer.from(k, 'hex')))
-            .map(async (address: Address) => {
-              const account = Account.fromAccountData({ balance: 1 })
-              await this.stateManager.putAccount(address, account)
-            })
-        )
-        await this.stateManager.commit()
+    if (this._opts.activatePrecompiles && !this._opts.stateManager) {
+      await this.stateManager.checkpoint()
+      // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
+      for (const address of getActivePrecompiles(this._common)) {
+        const account = await this.stateManager.getAccount(address)
+        // Only do this if it is not overridden in genesis
+        // Note: in the case that custom genesis has storage fields, this is preserved
+        if (account.isEmpty()) {
+          const newAccount = Account.fromAccountData({ balance: 1, stateRoot: account.stateRoot })
+          await this.stateManager.putAccount(address, newAccount)
+        }
       }
+      await this.stateManager.commit()
     }
 
     if (this._common.isActivatedEIP(2537)) {
