@@ -315,9 +315,9 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * Process the v, r, s values from the `sign` method of the base transaction.
    */
   protected _processSignature(v: number, r: Buffer, s: Buffer) {
-    let vBN = BigInt(v)
+    let vBigInt = BigInt(v)
     if (this.supports(Capability.EIP155ReplayProtection)) {
-      vBN += this.common.chainId() * BigInt(2) + BigInt(8)
+      vBigInt += this.common.chainId() * BigInt(2) + BigInt(8)
     }
 
     const opts = {
@@ -332,7 +332,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
         to: this.to,
         value: this.value,
         data: this.data,
-        v: vBN,
+        v: vBigInt,
         r: bufferToBigInt(r),
         s: bufferToBigInt(s),
       },
