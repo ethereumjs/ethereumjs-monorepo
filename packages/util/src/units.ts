@@ -66,15 +66,15 @@ export class Units {
 
   private static from(value: string, scale: UnitValue): bigint {
     // Split given number between integer and decimal part
-    let [integer, decimal] = value.split('.')
+    const [integer, decimal] = value.split('.')
 
     if (decimal) {
       // If there are decimals, get the new scale with the given digits
-      let newScale = scale - decimal.length
+      const newScale = scale - decimal.length
       // Conver decimal to scale expected
-      decimal = (BigInt(decimal) * Units.BASE ** BigInt(newScale)).toString()
+      const newDecimal = (BigInt(decimal) * Units.BASE ** BigInt(newScale)).toString()
       // Concat to integer number and return
-      return BigInt(integer.concat(decimal))
+      return BigInt(integer.concat(newDecimal))
     }
 
     // If no decimal, just convert the integer to the expected scale
@@ -146,6 +146,3 @@ export class Units {
     return this.from(value, UnitValue.gwei)
   }
 }
-
-// fromEth('1.1') // 1100000000000000000n
-// fromGwei('5') // 5000000000n
