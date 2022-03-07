@@ -21,7 +21,7 @@ import {
   N_DIV_2,
 } from './types'
 
-import { AccessLists } from './util'
+import { AccessLists, checkMaxInitCodeSize } from './util'
 
 const TRANSACTION_TYPE = 1
 const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')
@@ -213,15 +213,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     }
 
     if (this.common.isActivatedEIP(3860)) {
-      if (this.data.length > this.common.param('vm', 'maxInitCodeSize')) {
-        throw new Error(
-          `the initcode size of this transaction is too large: it is ${
-            this.data.length
-          } while the max is ${this.common.param('vm', 'maxInitCodeSize')}`
-        )
-      }
+      checkMaxInitCodeSize(this.common, this.data.length)
     }
-
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)

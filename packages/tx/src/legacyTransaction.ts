@@ -13,6 +13,7 @@ import {
 import { TxOptions, TxData, JsonTx, N_DIV_2, TxValuesArray, Capability } from './types'
 import { BaseTransaction } from './baseTransaction'
 import Common from '@ethereumjs/common'
+import { checkMaxInitCodeSize } from './util'
 
 const TRANSACTION_TYPE = 0
 
@@ -136,13 +137,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
     }
 
     if (this.common.isActivatedEIP(3860)) {
-      if (this.data.length > this.common.param('vm', 'maxInitCodeSize')) {
-        throw new Error(
-          `the initcode size of this transaction is too large: it is ${
-            this.data.length
-          } while the max is ${this.common.param('vm', 'maxInitCodeSize')}`
-        )
-      }
+      checkMaxInitCodeSize(this.common, this.data.length)
     }
 
     const freeze = opts?.freeze ?? true
