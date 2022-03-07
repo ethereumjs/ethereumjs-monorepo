@@ -346,9 +346,9 @@ export abstract class BaseTransaction<TransactionObject> {
   protected _getCommon(common?: Common, chainId?: BigIntLike) {
     // Chain ID provided
     if (chainId) {
-      const chainIdBN = bufferToBigInt(toBuffer(chainId))
+      const chainIdBigInt = bufferToBigInt(toBuffer(chainId))
       if (common) {
-        if (common.chainId() !== chainIdBN) {
+        if (common.chainId() !== chainIdBigInt) {
           const msg = this._errorMsg('The chain ID does not match the chain ID of Common')
           throw new Error(msg)
         }
@@ -356,18 +356,18 @@ export abstract class BaseTransaction<TransactionObject> {
         // -> Return provided Common
         return common.copy()
       } else {
-        if (Common.isSupportedChainId(chainIdBN)) {
+        if (Common.isSupportedChainId(chainIdBigInt)) {
           // No Common, chain ID supported by Common
           // -> Instantiate Common with chain ID
-          return new Common({ chain: chainIdBN, hardfork: this.DEFAULT_HARDFORK })
+          return new Common({ chain: chainIdBigInt, hardfork: this.DEFAULT_HARDFORK })
         } else {
           // No Common, chain ID not supported by Common
           // -> Instantiate custom Common derived from DEFAULT_CHAIN
           return Common.custom(
             {
               name: 'custom-chain',
-              networkId: chainIdBN,
-              chainId: chainIdBN,
+              networkId: chainIdBigInt,
+              chainId: chainIdBigInt,
             },
             { baseChain: this.DEFAULT_CHAIN, hardfork: this.DEFAULT_HARDFORK }
           )
