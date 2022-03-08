@@ -30,7 +30,8 @@ export function createRPCServerListener(opts: CreateRPCServerListenerOpts): Http
 
   const app = Connect()
   if (rpcCors) app.use(cors({ origin: rpcCors }))
-  app.use(jsonParser())
+  // GOSSIP_MAX_SIZE_BELLATRIX is proposed to be 10MiB
+  app.use(jsonParser({ limit: '11mb' }))
 
   if (withEngineMiddleware) {
     const { jwtSecret, unlessFn } = withEngineMiddleware
