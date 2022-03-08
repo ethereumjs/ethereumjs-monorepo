@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import { rlp } from 'ethereumjs-util'
+import { rlp, toType, TypeOutput } from 'ethereumjs-util'
 import ms from 'ms'
 import snappy from 'snappyjs'
 import { debug as createDebugLogger, Debugger } from 'debug'
@@ -181,7 +181,7 @@ export class LES extends EventEmitter {
       status['announceType'] = int2buffer(DEFAULT_ANNOUNCE_TYPE)
     }
     status['protocolVersion'] = int2buffer(this._version)
-    status['networkId'] = this._peer._common.chainId().toArrayLike(Buffer)
+    status['networkId'] = toType(this._peer._common.chainId(), TypeOutput.Buffer)
 
     this._status = status
 
