@@ -480,7 +480,7 @@ export class BlockHeader {
       }
     } else if (this._common.hardforkGteHardfork(hardfork, Hardfork.Homestead)) {
       // 1 - (block_timestamp - parent_timestamp) // 10
-      let a = BigInt(1) - (blockTs - parentTs / BigInt(10))
+      let a = BigInt(1) - (blockTs - parentTs) / BigInt(10)
       const cutoff = BigInt(-99)
       // MAX(cutoff, a)
       if (cutoff > a) {
