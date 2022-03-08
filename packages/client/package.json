@@ -60,6 +60,7 @@
     "body-parser": "^1.19.2",
     "chalk": "^4.1.2",
     "connect": "^3.7.0",
+    "cors": "^2.8.5",
     "debug": "^4.3.3",
     "ethereumjs-util": "^7.1.4",
     "fs-extra": "^10.0.0",
