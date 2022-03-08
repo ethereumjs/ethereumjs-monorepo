@@ -1,4 +1,13 @@
-import { BN, keccak, keccak256, rlphash, zeros, TWO_POW256 } from 'ethereumjs-util'
+import {
+  keccak,
+  keccak256,
+  rlphash,
+  zeros,
+  TWO_POW256,
+  TypeOutput,
+  toType,
+  setLengthLeft,
+} from 'ethereumjs-util'
 import {
   params,
   fnv,
@@ -26,7 +35,7 @@ export class Miner {
 
   public solution?: Solution
 
-  private currentNonce: BN
+  private currentNonce: bigint
   private headerHash?: Buffer
   private stopMining: boolean
 
@@ -45,7 +54,7 @@ export class Miner {
     } else {
       throw new Error('unsupported mineObject')
     }
-    this.currentNonce = new BN(0)
+    this.currentNonce = BigInt(0)
     this.ethash = ethash
     this.stopMining = false
   }
@@ -96,19 +105,19 @@ export class Miner {
     const headerHash = this.headerHash
     const { number, difficulty } = this.blockHeader
 
-    await this.ethash.loadEpoc(number.toNumber())
+    await this.ethash.loadEpoc(number)
     const self = this
     while (iterations != 0 && !this.stopMining) {
       // The promise/setTimeout construction is necessary to ensure we jump out of the event loop
       // Without this, for high-difficulty blocks JS never jumps out of the Promise
       const solution = await new Promise((resolve) => {
         setTimeout(function () {
-          const nonce = self.currentNonce.toBuffer(undefined, 8)
+          const nonce = setLengthLeft(toType(self.currentNonce, TypeOutput.Buffer), 8)
 
           const a = self.ethash.run(headerHash, nonce)
-          const result = new BN(a.hash)
+          const result = toType(a.hash, TypeOutput.BigInt)
 
-          if (TWO_POW256.div(difficulty).cmp(result) === 1) {
+          if (TWO_POW256 / difficulty > result) {
             const solution: Solution = {
               mixHash: <Buffer>a.mix,
               nonce,
@@ -118,7 +127,7 @@ export class Miner {
             return
           }
 
-          self.currentNonce.iaddn(1)
+          self.currentNonce += BigInt(1)
           iterations--
 
           resolve(null)
@@ -235,7 +244,7 @@ export default class Ethash {
   /**
    * Loads the seed and cache given a block number.
    */
-  async loadEpoc(number: number) {
+  async loadEpoc(number: bigint) {
     const epoc = getEpoc(number)
 
     if (this.epoc === epoc) {
@@ -320,11 +329,11 @@ export default class Ethash {
     const headerHash = this.headerHash(header.raw())
     const { number, difficulty, mixHash, nonce } = header
 
-    await this.loadEpoc(number.toNumber())
+    await this.loadEpoc(number)
     const a = this.run(headerHash, nonce)
-    const result = new BN(a.hash)
+    const result = toType(a.hash, TypeOutput.BigInt)
 
-    return a.mix.equals(mixHash) && TWO_POW256.div(difficulty).cmp(result) === 1
+    return a.mix.equals(mixHash) && TWO_POW256 / difficulty > result
   }
 
   async verifyPOW(block: Block) {

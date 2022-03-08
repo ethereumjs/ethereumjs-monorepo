@@ -40,8 +40,8 @@ export function getFullSize(epoc: number) {
   return sz
 }
 
-export function getEpoc(blockNumber: number) {
-  return Math.floor(blockNumber / exports.params.EPOCH_LENGTH)
+export function getEpoc(blockNumber: bigint) {
+  return Math.floor(Number(blockNumber) / exports.params.EPOCH_LENGTH)
 }
 
 /**

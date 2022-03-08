@@ -17,7 +17,7 @@ tape('POW tests', function (t) {
     const headerHash = ethash.headerHash(header.raw())
     t.equal(headerHash.toString('hex'), test.header_hash, 'generate header hash')
 
-    const epoc = getEpoc(header.number.toNumber())
+    const epoc = getEpoc(header.number)
     t.equal(getCacheSize(epoc), test.cache_size, 'generate cache size')
     t.equal(getFullSize(epoc), test.full_size, 'generate full cache size')
 
