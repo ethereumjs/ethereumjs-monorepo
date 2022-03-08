@@ -488,7 +488,7 @@ export class BlockHeader {
 
     if (this._common.hardforkGteHardfork(hardfork, Hardfork.Byzantium)) {
       // Get delay as parameter from common
-      num - BigInt(this._common.param('pow', 'difficultyBombDelay'))
+      num = num - BigInt(this._common.param('pow', 'difficultyBombDelay'))
       if (num < BigInt(0)) {
         num = BigInt(0)
       }
