@@ -20,7 +20,7 @@ function runDifficultyTests(
 ) {
   normalize(test)
   const dif = block.canonicalDifficulty(parentBlock)
-  st.ok(dif === test.currentDifficulty, `test canonicalDifficulty: ${msg}`)
+  st.equals(dif, test.currentDifficulty, `test canonicalDifficulty: ${msg}`)
   st.ok(block.validateDifficulty(parentBlock), `test validateDifficulty: ${msg}`)
 }
 
