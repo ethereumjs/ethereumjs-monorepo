@@ -15,7 +15,7 @@ import {
   setLengthLeft,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { StateManager, StorageDump, AccountFields } from './interface'
+import { StateManager, StorageDump } from './interface'
 import Cache, { getCb, putCb } from './cache'
 import { BaseStateManager } from './'
 import { short } from '../evm/opcodes'
@@ -517,21 +517,5 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
       return true
     }
     return false
-  }
-
-  /**
-   * Gets the account associated with `address`, modifies the given account
-   * fields, then saves the account into state. Account fields can include
-   * `nonce`, `balance`, `stateRoot`, and `codeHash`.
-   * @param address - Address of the account to modify
-   * @param accountFields - Object containing account fields and values to modify
-   */
-  async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
-    const account = await this.getAccount(address)
-    account.nonce = accountFields.nonce ?? account.nonce
-    account.balance = accountFields.balance ?? account.balance
-    account.stateRoot = accountFields.stateRoot ?? account.stateRoot
-    account.codeHash = accountFields.codeHash ?? account.codeHash
-    await this.putAccount(address, account)
   }
 }
