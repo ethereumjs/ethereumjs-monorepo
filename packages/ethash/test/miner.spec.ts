@@ -1,7 +1,6 @@
 import tape from 'tape'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Ethash from '../src'
-import { BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 const level = require('level-mem')
 
@@ -12,8 +11,8 @@ tape('Check if miner works as expected', async function (t) {
 
   const block = Block.fromBlockData({
     header: {
-      difficulty: new BN(100),
-      number: new BN(1),
+      difficulty: BigInt(100),
+      number: BigInt(1),
     },
   })
 
@@ -21,11 +20,11 @@ tape('Check if miner works as expected', async function (t) {
   t.ok(!invalidBlockResult, 'should be invalid')
 
   const miner = e.getMiner(block.header)
-  t.ok((await miner.iterate(1)) === undefined, 'iterations can return undefined')
+  t.equals(await miner.iterate(1), undefined, 'iterations can return undefined')
 
-  t.ok((miner as any).currentNonce.eqn(1), 'miner saves current nonce')
+  t.equals((miner as any).currentNonce, BigInt(1), 'miner saves current nonce')
   await miner.iterate(1)
-  t.ok((miner as any).currentNonce.eqn(2), 'miner succesfully iterates over nonces')
+  t.equals((miner as any).currentNonce, BigInt(2), 'miner succesfully iterates over nonces')
 
   const solution = await miner.iterate(-1)
 
@@ -50,8 +49,8 @@ tape('Check if it is possible to mine Blocks and BlockHeaders', async function (
 
   const block = Block.fromBlockData({
     header: {
-      difficulty: new BN(100),
-      number: new BN(1),
+      difficulty: BigInt(100),
+      number: BigInt(1),
     },
   })
 
@@ -73,8 +72,8 @@ tape('Check if it is possible to stop the miner', async function (t) {
 
   const block = Block.fromBlockData({
     header: {
-      difficulty: new BN(10000000000000),
-      number: new BN(1),
+      difficulty: BigInt(10000000000000),
+      number: BigInt(1),
     },
   })
 
@@ -108,8 +107,8 @@ tape('Should keep common when mining blocks or headers', async function (t) {
   const block = Block.fromBlockData(
     {
       header: {
-        difficulty: new BN(100),
-        number: new BN(1),
+        difficulty: BigInt(100),
+        number: BigInt(1),
       },
     },
     {
