@@ -1,6 +1,6 @@
 import { debug as createDebugLogger } from 'debug'
 import Semaphore from 'semaphore-async-await'
-import { Address, BN, rlp } from 'ethereumjs-util'
+import { Address, rlp, toType, TypeOutput } from 'ethereumjs-util'
 import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
 import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
@@ -45,7 +45,7 @@ export interface BlockchainInterface {
   /**
    * Returns a block by its hash or number.
    */
-  getBlock(blockId: Buffer | number | BN): Promise<Block | null>
+  getBlock(blockId: Buffer | number | bigint): Promise<Block | null>
 
   /**
    * Iterates through blocks starting at the specified iterator head and calls
@@ -338,7 +338,7 @@ export default class Blockchain implements BlockchainInterface {
   private async _init(genesisBlock?: Block): Promise<void> {
     let dbGenesisBlock
     try {
-      const genesisHash = await this.dbManager.numberToHash(new BN(0))
+      const genesisHash = await this.dbManager.numberToHash(BigInt(0))
       dbGenesisBlock = await this.dbManager.getBlock(genesisHash)
     } catch (error: any) {
       if (error.type !== 'NotFoundError') {
@@ -366,9 +366,9 @@ export default class Blockchain implements BlockchainInterface {
       // If there is no genesis block put the genesis block in the DB.
       // For that TD, the BlockOrHeader, and the Lookups have to be saved.
       const dbOps: DBOp[] = []
-      dbOps.push(DBSetTD(genesisBlock.header.difficulty.clone(), new BN(0), genesisHash))
+      dbOps.push(DBSetTD(genesisBlock.header.difficulty, BigInt(0), genesisHash))
       DBSetBlockOrHeader(genesisBlock).map((op) => dbOps.push(op))
-      DBSaveLookups(genesisHash, new BN(0)).map((op) => dbOps.push(op))
+      DBSaveLookups(genesisHash, BigInt(0)).map((op) => dbOps.push(op))
 
       await this.dbManager.batch(dbOps)
 
@@ -470,7 +470,7 @@ export default class Blockchain implements BlockchainInterface {
    * @hidden
    */
   private cliqueCheckRecentlySigned(header: BlockHeader): boolean {
-    if (header.isGenesis() || header.number.eqn(1)) {
+    if (header.isGenesis() || header.number === BigInt(1)) {
       // skip genesis, first block
       return false
     }
@@ -490,7 +490,7 @@ export default class Blockchain implements BlockchainInterface {
    */
   private async cliqueSaveGenesisSigners(genesisBlock: Block) {
     const genesisSignerState: CliqueSignerState = [
-      new BN(0),
+      BigInt(0),
       genesisBlock.header.cliqueEpochTransitionSigners(),
     ]
     await this.cliqueUpdateSignerStates(genesisSignerState)
@@ -515,10 +515,10 @@ export default class Blockchain implements BlockchainInterface {
     const blockSigners = this._cliqueLatestBlockSigners
     const lastBlockNumber = blockSigners[blockSigners.length - 1]?.[0]
     if (lastBlockNumber) {
-      const blockLimit = lastBlockNumber.subn(limit)
+      const blockLimit = lastBlockNumber - BigInt(limit)
       const states = this._cliqueLatestSignerStates
       const lastItem = states[states.length - 1]
-      this._cliqueLatestSignerStates = states.filter((state) => state[0].gte(blockLimit))
+      this._cliqueLatestSignerStates = states.filter((state) => state[0] >= BigInt(blockLimit))
       if (this._cliqueLatestSignerStates.length === 0) {
         // always keep at least one item on the stack
         this._cliqueLatestSignerStates.push(lastItem)
@@ -527,7 +527,7 @@ export default class Blockchain implements BlockchainInterface {
 
     // save to db
     const formatted = this._cliqueLatestSignerStates.map((state) => [
-      state[0].toArrayLike(Buffer),
+      toType(state[0], TypeOutput.Buffer),
       state[1].map((a) => a.toBuffer()),
     ])
     dbOps.push(DBOp.set(DBTarget.CliqueSignerStates, rlp.encode(formatted)))
@@ -558,9 +558,8 @@ export default class Blockchain implements BlockchainInterface {
       // on the newly touched beneficiary, one with the added new vote
       for (let round = 1; round <= 2; round++) {
         // See if there is a new majority consensus to update the signer list
-        const lastEpochBlockNumber = header.number.sub(
-          header.number.mod(new BN(this._common.consensusConfig().epoch))
-        )
+        const lastEpochBlockNumber =
+          header.number - (header.number % BigInt(this._common.consensusConfig().epoch))
         const limit = this.cliqueSignerLimit()
         let activeSigners = this.cliqueActiveSigners()
         let consensus = false
@@ -568,7 +567,7 @@ export default class Blockchain implements BlockchainInterface {
         // AUTH vote analysis
         let votes = this._cliqueLatestVotes.filter((vote) => {
           return (
-            vote[0].gte(lastEpochBlockNumber) &&
+            vote[0] >= BigInt(lastEpochBlockNumber) &&
             !vote[1][0].equals(signer) &&
             vote[1][1].equals(beneficiary) &&
             vote[1][2].equals(CLIQUE_NONCE_AUTH)
@@ -605,7 +604,7 @@ export default class Blockchain implements BlockchainInterface {
         // DROP vote
         votes = this._cliqueLatestVotes.filter((vote) => {
           return (
-            vote[0].gte(lastEpochBlockNumber) &&
+            vote[0] >= BigInt(lastEpochBlockNumber) &&
             !vote[1][0].equals(signer) &&
             vote[1][1].equals(beneficiary) &&
             vote[1][2].equals(CLIQUE_NONCE_DROP)
@@ -668,17 +667,18 @@ export default class Blockchain implements BlockchainInterface {
     const blockSigners = this._cliqueLatestBlockSigners
     const lastBlockNumber = blockSigners[blockSigners.length - 1]?.[0]
     if (lastBlockNumber) {
-      const lastEpochBlockNumber = lastBlockNumber.sub(
-        lastBlockNumber.mod(new BN(this._common.consensusConfig().epoch))
+      const lastEpochBlockNumber =
+        lastBlockNumber - (lastBlockNumber % BigInt(this._common.consensusConfig().epoch))
+      const blockLimit = lastEpochBlockNumber - BigInt(limit)
+      this._cliqueLatestVotes = this._cliqueLatestVotes.filter(
+        (state) => state[0] >= BigInt(blockLimit)
       )
-      const blockLimit = lastEpochBlockNumber.subn(limit)
-      this._cliqueLatestVotes = this._cliqueLatestVotes.filter((state) => state[0].gte(blockLimit))
     }
 
     // save votes to db
     const dbOps: DBOp[] = []
     const formatted = this._cliqueLatestVotes.map((v) => [
-      v[0].toArrayLike(Buffer),
+      toType(v[0], TypeOutput.Buffer),
       [v[1][0].toBuffer(), v[1][1].toBuffer(), v[1][2]],
     ])
     dbOps.push(DBOp.set(DBTarget.CliqueVotes, rlp.encode(formatted)))
@@ -700,7 +700,6 @@ export default class Blockchain implements BlockchainInterface {
       if (header.isGenesis()) {
         return
       }
-
       // add this block's signer
       const signer: CliqueBlockSigner = [header.number, header.cliqueSigner()]
       this._cliqueLatestBlockSigners.push(signer)
@@ -718,7 +717,7 @@ export default class Blockchain implements BlockchainInterface {
 
     // save to db
     const formatted = this._cliqueLatestBlockSigners.map((b) => [
-      b[0].toArrayLike(Buffer),
+      toType(b[0], TypeOutput.Buffer),
       b[1].toBuffer(),
     ])
     dbOps.push(DBOp.set(DBTarget.CliqueBlockSigners, rlp.encode(formatted)))
@@ -913,11 +912,11 @@ export default class Blockchain implements BlockchainInterface {
       const { header } = block
       const blockHash = header.hash()
       const blockNumber = header.number
-      const td = header.difficulty.clone()
-      const currentTd = { header: new BN(0), block: new BN(0) }
+      let td = header.difficulty
+      const currentTd = { header: BigInt(0), block: BigInt(0) }
       let dbOps: DBOp[] = []
 
-      if (!block._common.chainId().eq(this._common.chainId())) {
+      if (block._common.chainId() !== this._common.chainId()) {
         throw new Error('Chain mismatch while trying to put block or header')
       }
 
@@ -939,7 +938,6 @@ export default class Blockchain implements BlockchainInterface {
           if (!valid) {
             throw new Error('invalid PoA block signature (clique)')
           }
-
           if (this.cliqueCheckRecentlySigned(header)) {
             throw new Error('recently signed')
           }
@@ -950,7 +948,7 @@ export default class Blockchain implements BlockchainInterface {
         // validate checkpoint signers towards active signers on epoch transition blocks
         if (header.cliqueIsEpochTransition()) {
           // note: keep votes on epoch transition blocks in case of reorgs.
-          // only active (non-stale) votes will counted (if vote.blockNumber >= lastEpochBlockNumber)
+          // only active (non-stale) votes will counted (if vote.blockNumber >= lastEpochBlockNumber
 
           const checkpointSigners = header.cliqueEpochTransitionSigners()
           const activeSigners = this.cliqueActiveSigners()
@@ -973,11 +971,11 @@ export default class Blockchain implements BlockchainInterface {
       }
 
       // calculate the total difficulty of the new block
-      let parentTd = new BN(0)
+      let parentTd = BigInt(0)
       if (!block.isGenesis()) {
-        parentTd = await this.getTotalDifficulty(header.parentHash, blockNumber.subn(1))
+        parentTd = await this.getTotalDifficulty(header.parentHash, blockNumber - BigInt(1))
       }
-      td.iadd(parentTd)
+      td += parentTd
 
       // save total difficulty to the database
       dbOps = dbOps.concat(DBSetTD(td, blockNumber, blockHash))
@@ -985,11 +983,11 @@ export default class Blockchain implements BlockchainInterface {
       // save header/block to the database
       dbOps = dbOps.concat(DBSetBlockOrHeader(block))
 
-      let ancientHeaderNumber: undefined | BN
+      let ancientHeaderNumber: undefined | bigint
       // if total difficulty is higher than current, add it to canonical chain
       if (
         block.isGenesis() ||
-        (block._common.consensusType() !== ConsensusType.ProofOfStake && td.gt(currentTd.header)) ||
+        (block._common.consensusType() !== ConsensusType.ProofOfStake && td > currentTd.header) ||
         block._common.consensusType() === ConsensusType.ProofOfStake
       ) {
         if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
@@ -1010,7 +1008,7 @@ export default class Blockchain implements BlockchainInterface {
         }
 
         // delete higher number assignments and overwrite stale canonical chain
-        await this._deleteCanonicalChainReferences(blockNumber.addn(1), blockHash, dbOps)
+        await this._deleteCanonicalChainReferences(blockNumber + BigInt(1), blockHash, dbOps)
         // from the current header block, check the blockchain in reverse (i.e.
         // traverse `parentHash`) until `numberToHash` matches the current
         // number/hash in the canonical chain also: overwrite any heads if these
@@ -1019,7 +1017,7 @@ export default class Blockchain implements BlockchainInterface {
       } else {
         // the TD is lower than the current highest TD so we will add the block
         // to the DB, but will not mark it as the canonical chain.
-        if (td.gt(currentTd.block) && item instanceof Block) {
+        if (td > currentTd.block && item instanceof Block) {
           this._headBlockHash = blockHash
         }
         // save hash to number lookup info even if rebuild not needed
@@ -1030,12 +1028,15 @@ export default class Blockchain implements BlockchainInterface {
       await this.dbManager.batch(ops)
 
       // Clique: update signer votes and state
-      if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique && ancientHeaderNumber) {
-        await this._cliqueDeleteSnapshots(ancientHeaderNumber.addn(1))
+      if (
+        this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique &&
+        ancientHeaderNumber !== undefined
+      ) {
+        await this._cliqueDeleteSnapshots(ancientHeaderNumber! + BigInt(1))
         for (
-          const number = ancientHeaderNumber.addn(1);
-          number.lte(header.number);
-          number.iaddn(1)
+          let number = ancientHeaderNumber! + BigInt(1);
+          number <= header.number;
+          number += BigInt(1)
         ) {
           const canonicalHeader = await this._getCanonicalHeader(number)
           await this._cliqueBuildSnapshots(canonicalHeader)
@@ -1051,10 +1052,10 @@ export default class Blockchain implements BlockchainInterface {
    * this will be immediately looked up, otherwise it will wait until we have
    * unlocked the DB
    */
-  async getBlock(blockId: Buffer | number | BN): Promise<Block> {
+  async getBlock(blockId: Buffer | number | bigint): Promise<Block> {
     // cannot wait for a lock here: it is used both in `validate` of `Block`
     // (calls `getBlock` to get `parentHash`) it is also called from `runBlock`
-    // in the `VM` if we encounter a `BLOCKHASH` opcode: then a BN is used we
+    // in the `VM` if we encounter a `BLOCKHASH` opcode: then a bigint is used we
     // need to then read the block from the canonical chain Q: is this safe? We
     // know it is OK if we call it from the iterator... (runBlock)
     await this.initPromise
@@ -1064,14 +1065,14 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * @hidden
    */
-  private async _getBlock(blockId: Buffer | number | BN) {
+  private async _getBlock(blockId: Buffer | number | bigint) {
     return this.dbManager.getBlock(blockId)
   }
 
   /**
    * Gets total difficulty for a block specified by hash and number
    */
-  public async getTotalDifficulty(hash: Buffer, number?: BN): Promise<BN> {
+  public async getTotalDifficulty(hash: Buffer, number?: bigint): Promise<bigint> {
     if (!number) {
       number = await this.dbManager.hashToNumber(hash)
     }
@@ -1087,7 +1088,7 @@ export default class Blockchain implements BlockchainInterface {
    * @param reverse - Fetch blocks in reverse
    */
   async getBlocks(
-    blockId: Buffer | BN | number,
+    blockId: Buffer | bigint | number,
     maxBlocks: number,
     skip: number,
     reverse: boolean
@@ -1096,7 +1097,7 @@ export default class Blockchain implements BlockchainInterface {
       const blocks: Block[] = []
       let i = -1
 
-      const nextBlock = async (blockId: Buffer | BN | number): Promise<any> => {
+      const nextBlock = async (blockId: Buffer | bigint | number): Promise<any> => {
         let block
         try {
           block = await this._getBlock(blockId)
@@ -1107,7 +1108,7 @@ export default class Blockchain implements BlockchainInterface {
           return
         }
         i++
-        const nextBlockNumber = block.header.number.addn(reverse ? -1 : 1)
+        const nextBlockNumber = block.header.number + BigInt(reverse ? -1 : 1)
         if (i !== 0 && skip && i % (skip + 1) !== 0) {
           return await nextBlock(nextBlockNumber)
         }
@@ -1146,7 +1147,7 @@ export default class Blockchain implements BlockchainInterface {
             throw error
           }
         }
-        if (number) {
+        if (number !== undefined) {
           min = mid + 1
         } else {
           max = mid - 1
@@ -1224,7 +1225,7 @@ export default class Blockchain implements BlockchainInterface {
    */
   private async _delChild(
     blockHash: Buffer,
-    blockNumber: BN,
+    blockNumber: bigint,
     headHash: Buffer | null,
     ops: DBOp[]
   ) {
@@ -1247,7 +1248,7 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     try {
-      const childHeader = await this._getCanonicalHeader(blockNumber.addn(1))
+      const childHeader = await this._getCanonicalHeader(blockNumber + BigInt(1))
       await this._delChild(childHeader.hash(), childHeader.number, headHash, ops)
     } catch (error: any) {
       if (error.type !== 'NotFoundError') {
@@ -1287,7 +1288,7 @@ export default class Blockchain implements BlockchainInterface {
       }
 
       const headBlockNumber = await this.dbManager.hashToNumber(headHash)
-      const nextBlockNumber = headBlockNumber.addn(1)
+      let nextBlockNumber = headBlockNumber + BigInt(1)
       let blocksRanCounter = 0
 
       while (maxBlocks !== blocksRanCounter) {
@@ -1297,7 +1298,7 @@ export default class Blockchain implements BlockchainInterface {
           const reorg = lastBlock ? lastBlock.hash().equals(nextBlock.header.parentHash) : false
           lastBlock = nextBlock
           await onBlock(nextBlock, reorg)
-          nextBlockNumber.iaddn(1)
+          nextBlockNumber += BigInt(1)
           blocksRanCounter++
         } catch (error: any) {
           if (error.type === 'NotFoundError') {
@@ -1350,19 +1351,19 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     let { header } = await this._getBlock(this._headHeaderHash)
-    if (header.number.gt(newHeader.number)) {
+    if (header.number > newHeader.number) {
       header = await this._getCanonicalHeader(newHeader.number)
     } else {
-      while (!header.number.eq(newHeader.number) && newHeader.number.gtn(0)) {
-        newHeader = await this._getHeader(newHeader.parentHash, newHeader.number.subn(1))
+      while (header.number !== newHeader.number && newHeader.number > BigInt(0)) {
+        newHeader = await this._getHeader(newHeader.parentHash, newHeader.number - BigInt(1))
       }
     }
-    if (!header.number.eq(newHeader.number)) {
+    if (header.number !== newHeader.number) {
       throw new Error('Failed to find ancient header')
     }
-    while (!header.hash().equals(newHeader.hash()) && header.number.gtn(0)) {
-      header = await this._getCanonicalHeader(header.number.subn(1))
-      newHeader = await this._getHeader(newHeader.parentHash, newHeader.number.subn(1))
+    while (!header.hash().equals(newHeader.hash()) && header.number > BigInt(0)) {
+      header = await this._getCanonicalHeader(header.number - BigInt(1))
+      newHeader = await this._getHeader(newHeader.parentHash, newHeader.number - BigInt(1))
     }
     if (!header.hash().equals(newHeader.hash())) {
       throw new Error('Failed to find ancient header')
@@ -1385,19 +1386,19 @@ export default class Blockchain implements BlockchainInterface {
    * Remove clique snapshots with blockNumber higher than input.
    * @param blockNumber - the block number from which we start deleting
    */
-  private async _cliqueDeleteSnapshots(blockNumber: BN) {
+  private async _cliqueDeleteSnapshots(blockNumber: bigint) {
     // remove blockNumber from clique snapshots
     // (latest signer states, latest votes, latest block signers)
-    this._cliqueLatestSignerStates = this._cliqueLatestSignerStates.filter((s) =>
-      s[0].lte(blockNumber)
+    this._cliqueLatestSignerStates = this._cliqueLatestSignerStates.filter(
+      (s) => s[0] <= blockNumber
     )
     await this.cliqueUpdateSignerStates()
 
-    this._cliqueLatestVotes = this._cliqueLatestVotes.filter((v) => v[0].lte(blockNumber))
+    this._cliqueLatestVotes = this._cliqueLatestVotes.filter((v) => v[0] <= blockNumber)
     await this.cliqueUpdateVotes()
 
-    this._cliqueLatestBlockSigners = this._cliqueLatestBlockSigners.filter((s) =>
-      s[0].lte(blockNumber)
+    this._cliqueLatestBlockSigners = this._cliqueLatestBlockSigners.filter(
+      (s) => s[0] <= blockNumber
     )
     await this.cliqueUpdateLatestBlockSigners()
   }
@@ -1415,8 +1416,11 @@ export default class Blockchain implements BlockchainInterface {
    * @param ops - the DatabaseOperation list to write DatabaseOperations to
    * @hidden
    */
-  private async _deleteCanonicalChainReferences(blockNumber: BN, headHash: Buffer, ops: DBOp[]) {
-    blockNumber = blockNumber.clone()
+  private async _deleteCanonicalChainReferences(
+    blockNumber: bigint,
+    headHash: Buffer,
+    ops: DBOp[]
+  ) {
     let hash: Buffer | false
 
     hash = await this.safeNumberToHash(blockNumber)
@@ -1440,7 +1444,7 @@ export default class Blockchain implements BlockchainInterface {
         this._headBlockHash = headHash
       }
 
-      blockNumber.iaddn(1)
+      blockNumber += BigInt(1)
 
       hash = await this.safeNumberToHash(blockNumber)
     }
@@ -1462,7 +1466,7 @@ export default class Blockchain implements BlockchainInterface {
    * @hidden
    */
   private async _rebuildCanonical(header: BlockHeader, ops: DBOp[]) {
-    const currentNumber = header.number.clone() // we change this during this method with `isubn`
+    const currentNumber = header.number // we change this during this method with `isubn`
     let currentCanonicalHash: Buffer = header.hash()
 
     // track the staleHash: this is the hash currently in the DB which matches
@@ -1482,7 +1486,7 @@ export default class Blockchain implements BlockchainInterface {
       const blockHash = header.hash()
       const blockNumber = header.number
 
-      if (blockNumber.isZero()) {
+      if (blockNumber === BigInt(0)) {
         break
       }
 
@@ -1503,7 +1507,7 @@ export default class Blockchain implements BlockchainInterface {
       }
 
       try {
-        header = await this._getHeader(header.parentHash, currentNumber.isubn(1))
+        header = await this._getHeader(header.parentHash, currentNumber - BigInt(1))
       } catch (error: any) {
         staleHeads = []
         if (error.type !== 'NotFoundError') {
@@ -1553,7 +1557,7 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @hidden
    */
-  private async _getHeader(hash: Buffer, number?: BN) {
+  private async _getHeader(hash: Buffer, number?: bigint) {
     if (!number) {
       number = await this.dbManager.hashToNumber(hash)
     }
@@ -1565,7 +1569,7 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @hidden
    */
-  private async _getCanonicalHeader(number: BN) {
+  private async _getCanonicalHeader(number: bigint) {
     const hash = await this.dbManager.numberToHash(number)
     return this._getHeader(hash, number)
   }
@@ -1576,7 +1580,7 @@ export default class Blockchain implements BlockchainInterface {
    * any other error, this function throws.
    * @param number
    */
-  async safeNumberToHash(number: BN): Promise<Buffer | false> {
+  async safeNumberToHash(number: bigint): Promise<Buffer | false> {
     try {
       const hash = await this.dbManager.numberToHash(number)
       return hash
@@ -1599,6 +1603,7 @@ export default class Blockchain implements BlockchainInterface {
       throw new Error('Signer not found')
     }
     const { number } = await this.getLatestHeader()
-    return number.addn(1).mod(new BN(signers.length)).eqn(signerIndex)
+    //eslint-disable-next-line
+    return (number + (BigInt(1))) % BigInt(signers.length) === BigInt(signerIndex)
   }
 }

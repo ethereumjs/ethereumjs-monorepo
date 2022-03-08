@@ -1,4 +1,3 @@
-import { BN } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
 import tape from 'tape'
@@ -6,6 +5,7 @@ import Blockchain from '../src'
 import { generateBlockchain, generateBlocks, isConsecutive, createTestDB } from './util'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import blocksData from './testdata/blocks_mainnet.json'
+import { toType, TypeOutput } from 'ethereumjs-util'
 
 const level = require('level-mem')
 
@@ -56,7 +56,7 @@ tape('blockchain test', (t) => {
 
     const head = await blockchain.getHead()
 
-    st.equals(head.header.number.toNumber(), 5, 'correct block number')
+    st.equals(Number(head.header.number), 5, 'correct block number')
     st.end()
   })
 
@@ -95,7 +95,7 @@ tape('blockchain test', (t) => {
   })
 
   t.test('should not validate a block incorrectly flagged as genesis', async (st) => {
-    const genesisBlock = Block.fromBlockData({ header: { number: new BN(8) } })
+    const genesisBlock = Block.fromBlockData({ header: { number: BigInt(8) } })
     try {
       await Blockchain.create({
         validateBlocks: true,
@@ -140,7 +140,7 @@ tape('blockchain test', (t) => {
         header: {
           number,
           parentHash: lastBlock.hash(),
-          timestamp: lastBlock.header.timestamp.addn(1),
+          timestamp: lastBlock.header.timestamp + BigInt(1),
           gasLimit,
         },
       }
@@ -183,7 +183,7 @@ tape('blockchain test', (t) => {
       header: {
         number: 1,
         parentHash: genesisBlock.hash(),
-        timestamp: genesisBlock.header.timestamp.addn(1),
+        timestamp: genesisBlock.header.timestamp + BigInt(1),
         gasLimit,
       },
     }
@@ -227,7 +227,7 @@ tape('blockchain test', (t) => {
     // start: genesisHash, max: 5, skip: 0, reverse: false
     const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 5, 0, false)
     st.equal(getBlocks!.length, 5)
-    st.ok(blocks[0].header.number.eq(getBlocks[0].header.number))
+    st.ok(blocks[0].header.number === getBlocks[0].header.number)
     st.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
     st.end()
   })
@@ -238,7 +238,7 @@ tape('blockchain test', (t) => {
     // start: genesisHash, max: 5, skip: 1, reverse: false
     const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 5, 1, false)
     st.equal(getBlocks!.length, 5, 'should get 5 blocks')
-    st.ok(getBlocks![1].header.number.eq(blocks[2].header.number), 'should skip second block')
+    st.ok(getBlocks![1].header.number === blocks[2].header.number, 'should skip second block')
     st.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
     st.end()
   })
@@ -249,7 +249,7 @@ tape('blockchain test', (t) => {
     // start: genesisHash, max: 4, skip: 2, reverse: false
     const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 4, 2, false)
     st.equal(getBlocks!.length, 4, 'should get 4 blocks')
-    st.ok(getBlocks![1].header.number.eq(blocks[3].header.number), 'should skip two blocks apart')
+    st.ok(getBlocks![1].header.number === blocks[3].header.number, 'should skip two blocks apart')
     st.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
     st.end()
   })
@@ -260,7 +260,7 @@ tape('blockchain test', (t) => {
     // start: genesisHash, max: 17, skip: 0, reverse: false
     const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 17, 0, false)
     st.equal(getBlocks!.length, 15)
-    st.ok(getBlocks![0].header.number.eq(blocks[0].header.number))
+    st.ok(getBlocks![0].header.number === blocks[0].header.number)
     st.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
     st.end()
   })
@@ -271,7 +271,7 @@ tape('blockchain test', (t) => {
     // start: 0, max: 5, skip: 0, reverse: false
     const getBlocks = await blockchain.getBlocks(0, 5, 0, false)
     st.equal(getBlocks!.length, 5)
-    st.ok(getBlocks![0].header.number.eq(blocks[0].header.number))
+    st.ok(getBlocks![0].header.number === blocks[0].header.number)
     st.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
     st.end()
   })
@@ -282,7 +282,7 @@ tape('blockchain test', (t) => {
     // start: 1, max: 5, skip: 1, reverse: false
     const getBlocks = await blockchain.getBlocks(1, 5, 1, false)
     st.equal(getBlocks!.length, 5)
-    st.ok(getBlocks![1].header.number.eq(blocks[3].header.number), 'should skip one block')
+    st.ok(getBlocks![1].header.number === blocks[3].header.number, 'should skip one block')
     st.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
     st.end()
   })
@@ -293,7 +293,7 @@ tape('blockchain test', (t) => {
     // start: 0, max: 5, skip: 2, reverse: false
     const getBlocks = await blockchain.getBlocks(0, 5, 2, false)
     st.equal(getBlocks!.length, 5)
-    st.ok(getBlocks![1].header.number.eq(blocks[3].header.number), 'should skip two blocks')
+    st.ok(getBlocks![1].header.number === blocks[3].header.number, 'should skip two blocks')
     st.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
     st.end()
   })
@@ -304,7 +304,7 @@ tape('blockchain test', (t) => {
     // start: 0, max: 17, skip: 0, reverse: false
     const getBlocks = await blockchain.getBlocks(0, 17, 0, false)
     st.equal(getBlocks!.length, 15)
-    st.ok(getBlocks![0].header.number.eq(blocks[0].header.number))
+    st.ok(getBlocks![0].header.number === blocks[0].header.number)
     st.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
     st.end()
   })
@@ -315,7 +315,7 @@ tape('blockchain test', (t) => {
     // start: 1, max: 5, skip: 0, reverse: false
     const getBlocks = await blockchain.getBlocks(1, 5, 0, false)
     st.equal(getBlocks!.length, 5)
-    st.ok(getBlocks![0].header.number.eq(blocks[1].header.number))
+    st.ok(getBlocks![0].header.number === blocks[1].header.number)
     st.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
     st.end()
   })
@@ -326,7 +326,7 @@ tape('blockchain test', (t) => {
     // start: 5, max: 5, skip: 0, reverse: false
     const getBlocks = await blockchain.getBlocks(5, 5, 0, false)
     st.equal(getBlocks!.length, 5)
-    st.ok(getBlocks![0].header.number.eq(blocks[5].header.number))
+    st.ok(getBlocks![0].header.number === blocks[5].header.number)
     st.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
     st.end()
   })
@@ -337,7 +337,7 @@ tape('blockchain test', (t) => {
     // start: 5, max: 5, skip: 0, reverse: true
     const getBlocks = await blockchain.getBlocks(5, 5, 0, true)
     st.equal(getBlocks!.length, 5)
-    st.ok(getBlocks![0].header.number.eq(blocks[5].header.number))
+    st.ok(getBlocks![0].header.number === blocks[5].header.number)
     st.ok(isConsecutive(getBlocks!.reverse()), 'blocks should be consecutive')
     st.end()
   })
@@ -348,7 +348,7 @@ tape('blockchain test', (t) => {
     // start: 5, max: 15, skip: 0, reverse: true
     const getBlocks = await blockchain.getBlocks(5, 15, 0, true)
     st.equal(getBlocks!.length, 6)
-    st.ok(getBlocks![0].header.number.eq(blocks[5].header.number))
+    st.ok(getBlocks![0].header.number === blocks[5].header.number)
     st.ok(isConsecutive(getBlocks!.reverse()), 'blocks should be consecutive')
     st.end()
   })
@@ -359,7 +359,7 @@ tape('blockchain test', (t) => {
     // start: 10, max: 10, skip: 1, reverse: true
     const getBlocks = await blockchain.getBlocks(10, 10, 1, true)
     st.equal(getBlocks!.length, 6)
-    st.ok(getBlocks![1].header.number.eq(blocks[8].header.number), 'should skip one block')
+    st.ok(getBlocks![1].header.number === blocks[8].header.number, 'should skip one block')
     st.ok(!isConsecutive(getBlocks!.reverse()), 'blocks should not be consecutive')
     st.end()
   })
@@ -373,6 +373,7 @@ tape('blockchain test', (t) => {
       blocks[9].hash(),
       neededHash,
     ])
+    console.log(hashes, neededHash)
     st.ok(hashes[0].equals(neededHash))
     st.end()
   })
@@ -540,7 +541,8 @@ tape('blockchain test', (t) => {
       number: 15,
       parentHash: blocks[14].hash(),
       gasLimit: 8000000,
-      timestamp: blocks[14].header.timestamp.addn(1),
+      //eslint-disable-next-line
+      timestamp: toType(blocks[14].header.timestamp, TypeOutput.BigInt)! + BigInt(1),
     }
     const forkHeader = BlockHeader.fromHeaderData(headerData, {
       common,
@@ -565,7 +567,8 @@ tape('blockchain test', (t) => {
       number: 15,
       parentHash: blocks[14].hash(),
       gasLimit: 8000000,
-      timestamp: blocks[14].header.timestamp.addn(1),
+      //eslint-disable-next-line
+      timestamp: toType(blocks[14].header.timestamp, TypeOutput.BigInt)! + BigInt(1),
     }
     const forkHeader = BlockHeader.fromHeaderData(headerData, {
       common,
@@ -699,14 +702,14 @@ tape('blockchain test', (t) => {
     const blockchain = new Blockchain({ db })
 
     const number = await blockchain.dbManager.hashToNumber(genesis?.hash())
-    st.ok(number.isZero(), 'should perform _hashToNumber correctly')
+    st.equals(number, BigInt(0), 'should perform _hashToNumber correctly')
 
-    const hash = await blockchain.dbManager.numberToHash(new BN(0))
+    const hash = await blockchain.dbManager.numberToHash(BigInt(0))
     st.ok(genesis.hash().equals(hash), 'should perform _numberToHash correctly')
 
     // cast the blockchain as <any> in order to get access to the private getTotalDifficulty
-    const td = await (<any>blockchain).getTotalDifficulty(genesis.hash(), new BN(0))
-    st.ok(td.eq(genesis.header.difficulty), 'should perform getTotalDifficulty correctly')
+    const td = await (<any>blockchain).getTotalDifficulty(genesis.hash(), BigInt(0))
+    st.ok(td === genesis.header.difficulty, 'should perform getTotalDifficulty correctly')
     st.end()
   })
 
@@ -727,7 +730,7 @@ tape('blockchain test', (t) => {
       number: 1,
       parentHash: genesisBlock.hash(),
       gasLimit,
-      timestamp: genesisBlock.header.timestamp.addn(1),
+      timestamp: genesisBlock.header.timestamp + BigInt(1),
     }
     const header = BlockHeader.fromHeaderData(headerData, {
       calcDifficultyFromHeader: genesisBlock.header,
@@ -766,7 +769,7 @@ tape('blockchain test', (t) => {
       header: {
         number: 1,
         parentHash: genesisBlock.hash(),
-        timestamp: genesisBlock.header.timestamp.addn(3),
+        timestamp: genesisBlock.header.timestamp + BigInt(3),
         gasLimit,
       },
     }
@@ -776,7 +779,7 @@ tape('blockchain test', (t) => {
     const headerData1 = {
       number: 1,
       parentHash: genesisBlock.hash(),
-      timestamp: genesisBlock.header.timestamp.addn(1),
+      timestamp: genesisBlock.header.timestamp + BigInt(1),
       gasLimit,
     }
     opts.calcDifficultyFromHeader = genesisBlock.header
@@ -786,7 +789,7 @@ tape('blockchain test', (t) => {
     const headerData2 = {
       number: 2,
       parentHash: header1.hash(),
-      timestamp: header1.timestamp.addn(1),
+      timestamp: header1.timestamp + BigInt(1),
       gasLimit,
     }
     opts.calcDifficultyFromHeader = block.header
@@ -821,14 +824,14 @@ tape('blockchain test', (t) => {
       header: {
         number: 1,
         parentHash: genesisBlock.hash(),
-        timestamp: genesisBlock.header.timestamp.addn(1),
+        timestamp: genesisBlock.header.timestamp + BigInt(1),
         gasLimit,
       },
     }
     const blockData2 = {
       ...blockData1,
       number: 2,
-      timestamp: genesisBlock.header.timestamp.addn(2),
+      timestamp: genesisBlock.header.timestamp + BigInt(2),
     }
 
     const blocks = [
