@@ -545,7 +545,7 @@ export class BlockHeader {
       return true
     }
     const signerIndex = signers.findIndex((address: Address) => address.equals(this.cliqueSigner()))
-    const inTurn = this.number % signers.length === signerIndex
+    const inTurn = this.number % BigInt(signers.length) === BigInt(signerIndex)
     if (
       (inTurn && this.difficulty === CLIQUE_DIFF_INTURN) ||
       (!inTurn && this.difficulty === CLIQUE_DIFF_NOTURN)
