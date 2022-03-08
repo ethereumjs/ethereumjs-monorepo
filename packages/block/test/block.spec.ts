@@ -581,10 +581,10 @@ tape('[Block]: block functions', function (t) {
       await blockchain.putBlock(forkBlock)
       await preForkBlock.validate(blockchain)
 
-      st.ok(common.hardfork() === Hardfork.London, 'validation did not change common hardfork')
+      st.equals(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
       await forkBlock2.validate(blockchain)
 
-      st.ok(common.hardfork() === Hardfork.London, 'validation did not change common hardfork')
+      st.equals(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
 
       const forkBlock2HeaderData = forkBlock2.header.toJSON()
       const uncleHeaderData = unclePreFork.header.toJSON()
@@ -610,7 +610,7 @@ tape('[Block]: block functions', function (t) {
       await forkBlock_ValidCommon.validate(blockchain)
 
       st.pass('successfully validated a pre-london uncle on a london block')
-      st.ok(common.hardfork() === Hardfork.London, 'validation did not change common hardfork')
+      st.equals(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
 
       const forkBlock_InvalidCommon = Block.fromBlockData(
         {
@@ -633,7 +633,7 @@ tape('[Block]: block functions', function (t) {
         )
       }
 
-      st.ok(common.hardfork() === Hardfork.London, 'validation did not change common hardfork')
+      st.equals(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
     }
   )
 
@@ -755,8 +755,9 @@ tape('[Block]: block functions', function (t) {
       })
 
       // test if difficulty defaults to 0
-      st.ok(
-        blockWithoutDifficultyCalculation.header.difficulty === BigInt(0),
+      st.equals(
+        blockWithoutDifficultyCalculation.header.difficulty,
+        BigInt(0),
         'header difficulty should default to 0'
       )
 

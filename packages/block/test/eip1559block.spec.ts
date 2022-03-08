@@ -472,7 +472,7 @@ tape('EIP1559 tests', function (t) {
         { common }
       ).calcNextBaseFee()
       const expected = BigInt(item.expectedBaseFee)
-      st.ok(expected === result, 'base fee correct')
+      st.equals(expected, result, 'base fee correct')
     }
     st.end()
   })
