@@ -2,11 +2,12 @@ import { debug as createDebugLogger } from 'debug'
 import {
   Account,
   Address,
-  bigIntToBN,
   generateAddress,
   generateAddress2,
   KECCAK256_NULL,
   MAX_INTEGER,
+  toType,
+  TypeOutput,
 } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ERROR, VmError } from '../exceptions'
@@ -306,7 +307,10 @@ export default class EVM {
     let toAccount = await this._state.getAccount(message.to)
 
     // Check for collision
-    if ((toAccount.nonce && toAccount.nonce.gtn(0)) || !toAccount.codeHash.equals(KECCAK256_NULL)) {
+    if (
+      (toAccount.nonce && toAccount.nonce > BigInt(0)) ||
+      !toAccount.codeHash.equals(KECCAK256_NULL)
+    ) {
       if (this._vm.DEBUG) {
         debug(`Returning on address collision`)
       }
@@ -333,7 +337,7 @@ export default class EVM {
     toAccount = await this._state.getAccount(message.to)
     // EIP-161 on account creation and CREATE execution
     if (this._vm._common.gteHardfork('spuriousDragon')) {
-      toAccount.nonce.iaddn(1)
+      toAccount.nonce += BigInt(1)
     }
 
     // Add tx value to the `to` account
@@ -561,14 +565,14 @@ export default class EVM {
       addr = generateAddress2(message.caller.buf, message.salt, message.code as Buffer)
     } else {
       const acc = await this._state.getAccount(message.caller)
-      const newNonce = acc.nonce.subn(1)
-      addr = generateAddress(message.caller.buf, newNonce.toArrayLike(Buffer))
+      const newNonce = acc.nonce - BigInt(1)
+      addr = generateAddress(message.caller.buf, toType(newNonce, TypeOutput.Buffer))
     }
     return new Address(addr)
   }
 
   async _reduceSenderBalance(account: Account, message: Message): Promise<void> {
-    account.balance.isub(bigIntToBN(message.value))
+    account.balance -= message.value
     const result = this._state.putAccount(message.caller, account)
     if (this._vm.DEBUG) {
       debug(`Reduced sender (${message.caller}) balance (-> ${account.balance})`)
@@ -577,8 +581,8 @@ export default class EVM {
   }
 
   async _addToBalance(toAccount: Account, message: Message): Promise<void> {
-    const newBalance = toAccount.balance.add(bigIntToBN(message.value))
-    if (newBalance.gt(MAX_INTEGER)) {
+    const newBalance = toAccount.balance + message.value
+    if (newBalance > MAX_INTEGER) {
       throw new VmError(ERROR.VALUE_OVERFLOW)
     }
     toAccount.balance = newBalance

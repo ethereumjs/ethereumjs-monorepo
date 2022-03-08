@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Account, Address, BN, MAX_UINT64, bufferToBigInt, bnToBigInt } from 'ethereumjs-util'
+import { Account, Address, MAX_UINT64, bufferToBigInt } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
@@ -149,19 +149,19 @@ export default class EEI {
   async getExternalBalance(address: Address): Promise<bigint> {
     // shortcut if current account
     if (address.equals(this._env.address)) {
-      return bnToBigInt(this._env.contract.balance)
+      return this._env.contract.balance
     }
 
     // otherwise load account then return balance
     const account = await this._state.getAccount(address)
-    return bnToBigInt(account.balance)
+    return account.balance
   }
 
   /**
    * Returns balance of self.
    */
   getSelfBalance(): bigint {
-    return bnToBigInt(this._env.contract.balance)
+    return this._env.contract.balance
   }
 
   /**
@@ -274,7 +274,7 @@ export default class EEI {
    * Returns the block’s number.
    */
   getBlockNumber(): bigint {
-    return bnToBigInt(this._env.block.header.number)
+    return this._env.block.header.number
   }
 
   /**
@@ -300,14 +300,14 @@ export default class EEI {
    * Returns the block's timestamp.
    */
   getBlockTimestamp(): bigint {
-    return bnToBigInt(this._env.block.header.timestamp)
+    return this._env.block.header.timestamp
   }
 
   /**
    * Returns the block's difficulty.
    */
   getBlockDifficulty(): bigint {
-    return bnToBigInt(this._env.block.header.difficulty)
+    return this._env.block.header.difficulty
   }
 
   /**
@@ -321,7 +321,7 @@ export default class EEI {
    * Returns the block's gas limit.
    */
   getBlockGasLimit(): bigint {
-    return bnToBigInt(this._env.block.header.gasLimit)
+    return this._env.block.header.gasLimit
   }
 
   /**
@@ -329,7 +329,7 @@ export default class EEI {
    * CHAINID opcode proposed in [EIP-1344](https://eips.ethereum.org/EIPS/eip-1344).
    */
   getChainId(): bigint {
-    return bnToBigInt(this._common.chainId())
+    return this._common.chainId()
   }
 
   /**
@@ -341,7 +341,7 @@ export default class EEI {
       // Sanity check
       throw new Error('Block has no Base Fee')
     }
-    return bnToBigInt(baseFee)
+    return baseFee
   }
 
   /**
@@ -421,12 +421,12 @@ export default class EEI {
 
     // Add to beneficiary balance
     const toAccount = await this._state.getAccount(toAddress)
-    toAccount.balance.iadd(this._env.contract.balance)
+    toAccount.balance += this._env.contract.balance
     await this._state.putAccount(toAddress, toAccount)
 
     // Subtract from contract balance
     const account = await this._state.getAccount(this._env.address)
-    account.balance = new BN(0)
+    account.balance = BigInt(0)
     await this._state.putAccount(this._env.address, account)
 
     trap(ERROR.STOP)
@@ -542,7 +542,7 @@ export default class EEI {
     // Check if account has enough ether and max depth not exceeded
     if (
       this._env.depth >= this._common.param('vm', 'stackLimit') ||
-      (msg.delegatecall !== true && bnToBigInt(this._env.contract.balance) < msg.value)
+      (msg.delegatecall !== true && this._env.contract.balance < msg.value)
     ) {
       return BigInt(0)
     }
@@ -601,16 +601,16 @@ export default class EEI {
     // Check if account has enough ether and max depth not exceeded
     if (
       this._env.depth >= this._common.param('vm', 'stackLimit') ||
-      (msg.delegatecall !== true && bnToBigInt(this._env.contract.balance) < msg.value)
+      (msg.delegatecall !== true && this._env.contract.balance < msg.value)
     ) {
       return BigInt(0)
     }
 
     // EIP-2681 check
-    if (this._env.contract.nonce.gte(MAX_UINT64)) {
+    if (this._env.contract.nonce >= MAX_UINT64) {
       return BigInt(0)
     }
-    this._env.contract.nonce.iaddn(1)
+    this._env.contract.nonce += BigInt(1)
     await this._state.putAccount(this._env.address, this._env.contract)
 
     const results = await this._evm.executeMessage(msg)

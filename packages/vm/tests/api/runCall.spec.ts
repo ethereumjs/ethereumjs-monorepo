@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, keccak256, MAX_UINT64, padToEven } from 'ethereumjs-util'
+import { Address, keccak256, MAX_UINT64, padToEven } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../src'
 import { ERROR } from '../../src/exceptions'
@@ -358,7 +358,7 @@ tape('ensure that sstores pay for the right gas costs pre-byzantium', async (t) 
   await vm.stateManager.putContractCode(address, Buffer.from(code, 'hex'))
 
   const account = await vm.stateManager.getAccount(caller)
-  account.balance = new BN(100)
+  account.balance = BigInt(100)
   await vm.stateManager.putAccount(caller, account)
 
   /*
@@ -436,7 +436,7 @@ tape(
     await vm.stateManager.putContractCode(address, Buffer.from(code, 'hex'))
 
     const account = await vm.stateManager.getAccount(address)
-    account.nonce = MAX_UINT64.subn(1)
+    account.nonce = MAX_UINT64 - BigInt(1)
     await vm.stateManager.putAccount(address, account)
 
     // setup the call arguments
@@ -477,8 +477,8 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
   const code = '3034526020600760203460045afa602034343e604034f3'
 
   const account = await vm.stateManager.getAccount(caller)
-  account.nonce = new BN(1) // ensure nonce for contract is correct
-  account.balance = new BN('10000000000000000')
+  account.nonce = BigInt(1) // ensure nonce for contract is correct
+  account.balance = BigInt(10000000000000000)
   await vm.stateManager.putAccount(caller, account)
 
   // setup the call arguments

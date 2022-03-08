@@ -10,9 +10,10 @@ import {
   PrefixedHexString,
   bufferToHex,
   bnToHex,
-  BN,
   KECCAK256_RLP,
   setLengthLeft,
+  TypeOutput,
+  toType,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { StateManager, StorageDump } from './interface'
@@ -393,10 +394,10 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
       const account = Account.fromRlpSerializedAccount(value)
       const { nonce, balance, stateRoot, codeHash } = account
       const invalidErrorMsg = 'Invalid proof provided:'
-      if (!nonce.eq(new BN(toBuffer(proof.nonce)))) {
+      if (nonce !== toType(proof.nonce, TypeOutput.BigInt)) {
         throw new Error(`${invalidErrorMsg} nonce does not match`)
       }
-      if (!balance.eq(new BN(toBuffer(proof.balance)))) {
+      if (balance !== toType(proof.balance, TypeOutput.BigInt)) {
         throw new Error(`${invalidErrorMsg} balance does not match`)
       }
       if (!stateRoot.equals(toBuffer(proof.storageHash))) {
