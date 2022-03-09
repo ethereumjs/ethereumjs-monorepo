@@ -128,7 +128,6 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
     const msg = _errorMsg('tx has a higher gas limit than the block', this, opts.block, opts.tx)
     throw new Error(msg)
   }
-  console.log(opts)
   // Have to cast as `EIP2929StateManager` to access clearWarmedAccounts
   const state = this.stateManager as EIP2929StateManager
 
