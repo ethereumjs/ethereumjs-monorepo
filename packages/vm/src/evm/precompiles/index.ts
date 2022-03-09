@@ -178,7 +178,7 @@ function getActivePrecompiles(
   const precompileMap = new Map()
   if (customPrecompiles) {
     for (const precompile of customPrecompiles) {
-      if ((<AddPrecompile>precompile).function) {
+      if ((<AddPrecompile>precompile).function === undefined) {
         precompileMap.set(precompile.address.toString().substring(2), undefined)
       } else {
         precompileMap.set(

@@ -239,6 +239,8 @@ export default class VM extends AsyncEventEmitter {
     this._opts = opts
     this._customOpcodes = opts.customOpcodes
 
+    this._customPrecompiles = opts.customPrecompiles
+
     // Throw on chain or hardfork options removed in latest major release
     // to prevent implicit chain setup on a wrong chain
     if ('chain' in opts || 'hardfork' in opts) {
