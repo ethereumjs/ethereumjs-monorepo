@@ -11,7 +11,8 @@ tape('reorg tests', (t) => {
     'should correctly reorg the chain if the total difficulty is higher on a lower block number than the current head block',
     async (st) => {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
-      const genesis = Block.fromBlockData({
+      const genesis = Block.fromBlockData(
+        {
           header: {
             number: BigInt(0),
             difficulty: BigInt(0x020000),
@@ -19,7 +20,7 @@ tape('reorg tests', (t) => {
           },
         },
         { common }
-      })
+      )
       const blockchain = new Blockchain({
         validateBlocks: true,
         validateConsensus: false,
