@@ -55,7 +55,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
       first += BigInt(max)
       count -= BigInt(max)
     }
-    if (count >= BigInt(0)) {
+    if (count > BigInt(0)) {
       tasks.push({ first: first, count: Number(count) })
     }
     this.debug(`Created new tasks num=${tasks.length} first=${first} count=${count}`)

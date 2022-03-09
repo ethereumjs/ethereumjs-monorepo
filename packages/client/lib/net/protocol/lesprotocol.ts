@@ -1,4 +1,4 @@
-import { bigIntToBuffer, bufferToInt, intToBuffer } from 'ethereumjs-util'
+import { bigIntToBuffer, bufferToBigInt, bufferToInt, intToBuffer } from 'ethereumjs-util'
 import { BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
 import { Chain } from './../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'
@@ -206,10 +206,10 @@ export class LesProtocol extends Protocol {
       }
     }
     return {
-      networkId: BigInt(status.networkId),
-      headTd: BigInt(status.headTd),
+      networkId: bufferToBigInt(status.networkId),
+      headTd: bufferToBigInt(status.headTd),
       headHash: status.headHash,
-      headNum: BigInt(status.headNum),
+      headNum: bufferToBigInt(status.headNum),
       genesisHash: status.genesisHash,
       forkID: status.forkID,
       recentTxLookup: status.recentTxLookup,
@@ -217,8 +217,8 @@ export class LesProtocol extends Protocol {
       serveChainSince: status.serveChainSince ?? 0,
       serveStateSince: status.serveStateSince ?? 0,
       txRelay: !!status.txRelay,
-      bl: status['flowControl/BL'] ? status['flowControl/BL'] : undefined,
-      mrr: status['flowControl/MRR'] ? status['flowControl/MRR'] : undefined,
+      bl: status['flowControl/BL'] ? bufferToInt(status['flowControl/BL']) : undefined,
+      mrr: status['flowControl/MRR'] ? bufferToInt(status['flowControl/MRR']) : undefined,
       mrc: mrc,
     }
   }
