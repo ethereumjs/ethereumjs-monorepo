@@ -34,6 +34,39 @@ export function nibblesToBuffer(arr: Nibbles): Buffer {
 }
 
 /**
+ * Compare two nibble array.
+ * * `0` is returned if `n2` == `n1`.
+ * * `1` is returned if `n2` > `n1`.
+ * * `-1` is returned if `n2` < `n1`.
+ * @param n1 - Nibble array
+ * @param n2 - Nibble array
+ */
+export function nibblesCompare(n1: Nibbles, n2: Nibbles) {
+  const cmpLength = Math.min(n1.length, n2.length)
+
+  let res = 0
+  for (let i = 0; i < cmpLength; i++) {
+    if (n1[i] < n2[i]) {
+      res = -1
+      break
+    } else if (n1[i] > n2[i]) {
+      res = 1
+      break
+    }
+  }
+
+  if (res === 0) {
+    if (n1.length < n2.length) {
+      res = -1
+    } else if (n1.length > n2.length) {
+      res = 1
+    }
+  }
+
+  return res
+}
+
+/**
  * Returns the number of in order matching nibbles of two give nibble arrays.
  * @private
  * @param nib1

@@ -94,6 +94,10 @@ export class ExtensionNode {
     this._nibbles = k
   }
 
+  get keyLength() {
+    return this._nibbles.length
+  }
+
   get value(): Buffer {
     return this._value
   }
@@ -142,6 +146,10 @@ export class LeafNode {
 
   set key(k: Nibbles) {
     this._nibbles = k
+  }
+
+  get keyLength() {
+    return this._nibbles.length
   }
 
   get value(): Buffer {
