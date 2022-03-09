@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { toBuffer, bufferToHex } from 'ethereumjs-util'
+import { toBuffer, bufferToHex, Address, Account } from 'ethereumjs-util'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
 import VM from '../../src/index'
@@ -73,7 +73,8 @@ tape('VM events', (t) => {
 
   t.test('should emit RunTxResult after running a tx', async (st) => {
     const vm = new VM()
-
+    const address = Address.fromPrivateKey(privKey)
+    await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
     vm.on('afterTx', (val: any) => {
       emitted = val
@@ -95,7 +96,8 @@ tape('VM events', (t) => {
 
   t.test('should emit the Message before running it', async (st) => {
     const vm = new VM()
-
+    const address = Address.fromPrivateKey(privKey)
+    await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
     vm.on('beforeMessage', (val: any) => {
       emitted = val
@@ -118,7 +120,8 @@ tape('VM events', (t) => {
 
   t.test('should emit EVMResult after running a message', async (st) => {
     const vm = new VM()
-
+    const address = Address.fromPrivateKey(privKey)
+    await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
     vm.on('afterMessage', (val: any) => {
       emitted = val

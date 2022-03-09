@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, keccak256, MAX_UINT64, padToEven } from 'ethereumjs-util'
+import { Account, Address, keccak256, MAX_UINT64, padToEven } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../src'
 import { ERROR } from '../../src/exceptions'
@@ -44,7 +44,7 @@ tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', asyn
     */
 
   await vm.stateManager.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code
-
+  await vm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x11111111))) // give the calling account a big balance so we don't run out of funds
   const codeHash = keccak256(Buffer.from(''))
   for (let value = 0; value <= 1000; value += 20) {
     // setup the call arguments
@@ -153,8 +153,9 @@ tape('Ensure that precompile activation creates non-empty accounts', async (t) =
     */
 
   await vmNotActivated.stateManager.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code
+  await vmNotActivated.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x111))) // give calling account a positive balance
   await vmActivated.stateManager.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code
-
+  await vmActivated.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x111))) // give calling account a positive balance
   // setup the call arguments
   const runCallArgs = {
     caller: caller, // call address
@@ -169,7 +170,7 @@ tape('Ensure that precompile activation creates non-empty accounts', async (t) =
   const diff = resultNotActivated.gasUsed - resultActivated.gasUsed
   const expected = BigInt(common.param('gasPrices', 'callNewAccount'))
 
-  t.assert(diff === expected, 'precompiles are activated')
+  t.equal(diff, expected, 'precompiles are activated')
 
   t.end()
 })

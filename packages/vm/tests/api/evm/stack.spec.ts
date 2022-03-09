@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, setLengthLeft, toType, TypeOutput } from 'ethereumjs-util'
+import { Account, Address, setLengthLeft, toType, TypeOutput } from 'ethereumjs-util'
 import VM from '../../../src'
 import Stack from '../../../src/evm/stack'
 import { createAccount } from '../utils'
@@ -150,6 +150,7 @@ tape('Stack', (t) => {
     */
     await vm.stateManager.putAccount(addr, account)
     await vm.stateManager.putContractCode(addr, Buffer.from(code, 'hex'))
+    await vm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x11)))
     const runCallArgs = {
       caller: caller,
       gasLimit: BigInt(0xffffffffff),

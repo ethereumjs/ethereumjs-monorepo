@@ -3,7 +3,7 @@ import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import type { InterpreterStep } from '../../../src/evm/interpreter'
-import { toType, TypeOutput } from 'ethereumjs-util'
+import { bufferToBigInt } from 'ethereumjs-util'
 
 tape('EIP-4399 -> 0x44 (DIFFICULTY) should return RANDOM', (t) => {
   t.test('should return the right values', async (st) => {
@@ -35,10 +35,10 @@ tape('EIP-4399 -> 0x44 (DIFFICULTY) should return RANDOM', (t) => {
       gasLimit: BigInt(0xffff),
     }
     await vm.runCode({ ...runCodeArgs, block })
-    st.ok(stack[0] === block.header.difficulty, '0x44 returns DIFFICULTY (London)')
+    st.equal(stack[0], block.header.difficulty, '0x44 returns DIFFICULTY (London)')
 
     common.setHardfork(Hardfork.Merge)
-    const random = Buffer.alloc(32, 1)
+    const random = bufferToBigInt(Buffer.alloc(32, 1))
     block = Block.fromBlockData(
       {
         header: {
@@ -49,7 +49,7 @@ tape('EIP-4399 -> 0x44 (DIFFICULTY) should return RANDOM', (t) => {
       { common }
     )
     await vm.runCode({ ...runCodeArgs, block })
-    st.ok(stack[0] === toType(random, TypeOutput.Buffer), '0x44 returns RANDOM (Merge)')
+    st.equal(stack[0], random, '0x44 returns RANDOM (Merge)')
 
     st.end()
   })

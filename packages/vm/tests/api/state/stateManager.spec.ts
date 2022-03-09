@@ -174,17 +174,17 @@ tape('StateManager', (t) => {
     const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
     await stateManager.putAccount(address, account)
 
-    await stateManager.modifyAccountFields(address, { balance: new BN(1234) })
+    await stateManager.modifyAccountFields(address, { balance: BigInt(1234) })
 
     const res1 = await stateManager.getAccount(address)
 
-    st.equal(res1.balance.toString('hex'), '4d2')
+    st.equal(res1.balance, BigInt(0x4d2))
 
-    await stateManager.modifyAccountFields(address, { nonce: new BN(1) })
+    await stateManager.modifyAccountFields(address, { nonce: BigInt(1) })
 
     const res2 = await stateManager.getAccount(address)
 
-    st.equal(res2.nonce.toNumber(), 1)
+    st.equal(res2.nonce, BigInt(1))
 
     await stateManager.modifyAccountFields(address, {
       codeHash: Buffer.from(
@@ -217,13 +217,13 @@ tape('StateManager', (t) => {
       const stateManager = new DefaultStateManager()
       const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
 
-      await stateManager.modifyAccountFields(address, { balance: new BN(1234) })
+      await stateManager.modifyAccountFields(address, { balance: BigInt(1234) })
       const res1 = await stateManager.getAccount(address)
-      st.equal(res1.balance.toString('hex'), '4d2')
+      st.equal(res1.balance, BigInt(0x4d2))
 
-      await stateManager.modifyAccountFields(address, { nonce: new BN(1) })
+      await stateManager.modifyAccountFields(address, { nonce: BigInt(1) })
       const res2 = await stateManager.getAccount(address)
-      st.equal(res2.nonce.toNumber(), 1)
+      st.equal(res2.nonce, BigInt(1))
 
       const newCodeHash = Buffer.from(
         'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b',
