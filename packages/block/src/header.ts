@@ -66,12 +66,12 @@ export class BlockHeader {
   }
 
   /**
-   * EIP-4399: Post-PoS merge, `mixHash` supplanted as `random`
+   * EIP-4399: After merge to PoS, `mixHash` supplanted as `prevRandao`
    */
-  get random() {
+  get prevRandao() {
     if (!this._common.isActivatedEIP(4399)) {
       const msg = this._errorMsg(
-        'The random parameter can only be accessed when EIP-4399 is activated'
+        'The prevRandao parameter can only be accessed when EIP-4399 is activated'
       )
       throw new Error(msg)
     }

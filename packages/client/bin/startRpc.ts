@@ -108,7 +108,8 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     rpcCors,
   } = args
   const manager = new RPCManager(client, config)
-  const jwtSecret = parseJwtSecret(config, jwtSecretPath)
+  const jwtSecret =
+    rpcEngine && rpcEngineAuth ? parseJwtSecret(config, jwtSecretPath) : Buffer.from([])
 
   if (rpc || ws) {
     const withEngineMethods = rpcEngine && rpcEnginePort === rpcport && rpcEngineAddr === rpcaddr
@@ -148,7 +149,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
         withEngineMiddleware: withEngineMethods && rpcEngineAuth ? { jwtSecret } : undefined,
       }
       if (rpcaddr === wsAddr && rpcport === wsPort) {
-        // We want to loadon the websocket upgrade request to the same server
+        // We want to load the websocket upgrade request to the same server
         Object.assign(opts, { httpServer: rpcHttpServer })
       }
 

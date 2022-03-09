@@ -14,7 +14,7 @@ const validForkChoiceState = {
 
 const validPayloadAttributes = {
   timestamp: '0x5',
-  random: '0x0000000000000000000000000000000000000000000000000000000000000000',
+  prevRandao: '0x0000000000000000000000000000000000000000000000000000000000000000',
   suggestedFeeRecipient: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
 }
 
@@ -111,7 +111,7 @@ tape(`${method}: call with deep parent lookup`, async (t) => {
       extraData: '0x',
       baseFeePerGas: '0x7',
       blockHash: '0x3559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
-      random: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      prevRandao: '0x0000000000000000000000000000000000000000000000000000000000000000',
       transactions: [],
     },
     {
@@ -128,7 +128,7 @@ tape(`${method}: call with deep parent lookup`, async (t) => {
       extraData: '0x',
       baseFeePerGas: '0x7',
       blockHash: '0x3a7d770fb8b9c9b6b9511d5d8656e852a845f779f4f80ad5bb9e9db56f39e47e',
-      random: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      prevRandao: '0x0000000000000000000000000000000000000000000000000000000000000000',
       transactions: [],
     },
     {
@@ -145,7 +145,7 @@ tape(`${method}: call with deep parent lookup`, async (t) => {
       extraData: '0x',
       baseFeePerGas: '0x7',
       blockHash: '0x3af2006a7de12988201ef813f7e4decd24f1f74acd1a7a5efa2a3cd3a24063fe',
-      random: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      prevRandao: '0x0000000000000000000000000000000000000000000000000000000000000000',
       transactions: [],
     },
   ]
