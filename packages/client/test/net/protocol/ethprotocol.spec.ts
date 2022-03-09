@@ -69,7 +69,7 @@ tape('[EthProtocol]', (t) => {
     })
     t.ok(
       status.networkId === BigInt(1) &&
-      status.td === BigInt(100) &&
+        status.td === BigInt(100) &&
         status.bestHash === '0xaa' &&
         status.genesisHash === '0xbb',
       'decode status'

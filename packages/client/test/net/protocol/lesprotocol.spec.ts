@@ -85,9 +85,9 @@ tape('[LesProtocol]', (t) => {
     status = p.decodeStatus(status)
     t.ok(
       status.networkId === BigInt(1) &&
-      status.headTd === BigInt(100) &&
+        status.headTd === BigInt(100) &&
         status.headHash === '0xaa' &&
-      status.headNum === BigInt(100) &&
+        status.headNum === BigInt(100) &&
         status.genesisHash === '0xbb' &&
         status.forkID[0].toString('hex') === 'fc64ec04' &&
         status.forkID[1].toString('hex') === '118c30' &&

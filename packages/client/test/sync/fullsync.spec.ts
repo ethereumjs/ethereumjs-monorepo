@@ -75,7 +75,7 @@ tape('[FullSynchronizer]', async (t) => {
     })
     ;(sync as any).running = true
     ;(sync as any).height = td.func()
-      ; (sync as any).chain = { blocks: { td: BigInt(1) } }
+    ;(sync as any).chain = { blocks: { td: BigInt(1) } }
     const peers = [
       { eth: { status: { td: BigInt(1) } }, inbound: false },
       { eth: { status: { td: BigInt(2) } }, inbound: false },
@@ -112,7 +112,7 @@ tape('[FullSynchronizer]', async (t) => {
       hash: () => Buffer.from([]),
     })
     td.when(BlockFetcher.prototype.fetch(), { delay: 20, times: 2 }).thenResolve(undefined)
-      ; (sync as any).chain = { blocks: { height: BigInt(3) } }
+    ;(sync as any).chain = { blocks: { height: BigInt(3) } }
     t.notOk(await sync.sync(), 'local height > remote height')
     ;(sync as any).chain = {
       blocks: { height: BigInt(0) },
