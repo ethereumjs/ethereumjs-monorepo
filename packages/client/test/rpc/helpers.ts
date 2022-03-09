@@ -11,19 +11,30 @@ import { parseCustomParams, parseGenesisState } from '../../lib/util'
 import { TxPool } from '../../lib/sync/txpool'
 import { RlpxServer } from '../../lib/net/server/rlpxserver'
 import { VMExecution } from '../../lib/execution'
+import { createRPCServerListener, createWsRPCServerListener } from '../../lib/util'
 import { mockBlockchain } from './mockBlockchain'
-import type EthereumClient from '../../lib/client'
+import type { IncomingMessage } from 'connect'
 import type { TypedTransaction } from '@ethereumjs/tx'
+import type EthereumClient from '../../lib/client'
 const request = require('supertest')
 const level = require('level-mem')
 
 const config: any = {}
 config.logger = getLogger(config)
 
-export function startRPC(methods: any, port: number = 3000) {
+type WithEngineMiddleware = { jwtSecret: Buffer; unlessFn?: (req: IncomingMessage) => boolean }
+
+export function startRPC(
+  methods: any,
+  { port, wsServer }: { port?: number; wsServer?: boolean } = { port: 3000 },
+  withEngineMiddleware?: WithEngineMiddleware
+) {
   const server = new RPCServer(methods)
-  const httpServer = server.http()
-  httpServer.listen(port)
+  const httpServer = wsServer
+    ? createWsRPCServerListener({ server, withEngineMiddleware })
+    : createRPCServerListener({ server, withEngineMiddleware })
+  if (!httpServer) throw Error('Could not create server')
+  if (port) httpServer.listen(port)
   return httpServer
 }
 
@@ -76,6 +87,7 @@ export function createClient(clientOpts: any = {}) {
     },
     syncTargetHeight: clientOpts.syncTargetHeight,
     txPool: new TxPool({ config }),
+    checkTxPoolState: () => {},
   }
 
   let execution
@@ -163,14 +175,15 @@ export async function baseRequest(
 /**
  * Sets up a custom chain with metaDB enabled (saving receipts, logs, indexes)
  */
-export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts = {}) {
+export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts: any = {}) {
   const genesisParams = await parseCustomParams(genesisFile, chainName)
   const genesisState = genesisFile.alloc ? await parseGenesisState(genesisFile) : {}
+
   const common = new Common({
     chain: chainName,
     customChains: [[genesisParams, genesisState]],
   })
-  common.setHardforkByBlockNumber(0)
+  common.setHardforkByBlockNumber(0, genesisParams.genesis.difficulty)
 
   const blockchain = await Blockchain.create({
     common,
@@ -185,7 +198,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
     enableMetaDB: true,
   })
   const manager = createManager(client)
-  const server = startRPC(manager.getMethods())
+  const server = startRPC(manager.getMethods(clientOpts.engine))
 
   const { chain, execution } = client
 
@@ -248,7 +261,7 @@ export function gethGenesisStartLondon(gethGenesis: any) {
 
 /**
  * Randomly generated account for testing purposes (signing txs, etc.)
- * This address has preallocated balance in gethGenesis file `testdata/pow.json`
+ * This address has preallocated balance in file `testdata/geth-genesis/pow.json`
  */
 export const dummy = {
   addr: Address.fromString('0xcde098d93535445768e8a2345a2f869139f45641'),

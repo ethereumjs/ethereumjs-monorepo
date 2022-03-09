@@ -2,7 +2,7 @@ FROM node:16-alpine as build
 WORKDIR /usr/app
 RUN apk update && apk add --no-cache bash git && rm -rf /var/cache/apk/*
 
-RUN git clone --depth 1 --branch merge-kintsugi https://github.com/ethereumjs/ethereumjs-monorepo.git
+RUN git clone --depth 1 --branch merge-kiln-v2 https://github.com/ethereumjs/ethereumjs-monorepo.git
 
 WORKDIR /usr/app/ethereumjs-monorepo
 RUN npm i

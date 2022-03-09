@@ -64,7 +64,7 @@ tape('[Util/Parse]', (t) => {
 
   t.test('should parse geth params file', async (t) => {
     t.plan(3)
-    const json = require('../testdata/testnet2.json')
+    const json = require('../testdata/geth-genesis/testnet.json')
     const params = await parseCustomParams(json, 'rinkeby')
     t.equals(
       params.genesis.hash,
@@ -82,7 +82,7 @@ tape('[Util/Parse]', (t) => {
 
   t.test('should throw with invalid Spurious Dragon blocks', async (t) => {
     t.plan(1)
-    const json = require('../testdata/invalid_spurious_dragon.json')
+    const json = require('../testdata/geth-genesis/invalid-spurious-dragon.json')
     try {
       await parseCustomParams(json, 'bad_params')
       t.fail('should have thrown')
@@ -93,7 +93,7 @@ tape('[Util/Parse]', (t) => {
 
   t.test('should import poa network params correctly', async (t) => {
     t.plan(2)
-    const json = require('../testdata/poa.json')
+    const json = require('../testdata/geth-genesis/poa.json')
     const params = await parseCustomParams(json, 'poa')
     t.equals(params.genesis.nonce, '0x0000000000000000', 'nonce is formatted correctly')
     t.deepEquals(
@@ -107,7 +107,7 @@ tape('[Util/Parse]', (t) => {
     'should generate expected hash with london block zero and base fee per gas defined',
     async (t) => {
       t.plan(2)
-      const json = require('../testdata/post-merge.json')
+      const json = require('../testdata/geth-genesis/post-merge.json')
       const params = await parseCustomParams(json, 'post-merge')
       t.equals(
         params.genesis.hash,
@@ -116,4 +116,11 @@ tape('[Util/Parse]', (t) => {
       t.equals(params.genesis.baseFeePerGas, json.baseFeePerGas)
     }
   )
+  t.test('should successfully parse genesis file with no extraData', async (st) => {
+    st.plan(2)
+    const json = require('../testdata/geth-genesis/no-extra-data.json')
+    const params = await parseCustomParams(json, 'noExtraData')
+    st.equals(params.genesis.extraData, '0x', 'extraData set to 0x')
+    st.equals(params.genesis.timestamp, '0x10', 'timestamp parsed correctly')
+  })
 })

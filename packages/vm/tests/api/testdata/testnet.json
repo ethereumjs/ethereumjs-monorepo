@@ -54,6 +54,10 @@
     {
       "name": "berlin",
       "block": 8
+    },
+    {
+      "name": "london",
+      "block": 9
     }
   ],
   "bootstrapNodes": [
