@@ -80,7 +80,7 @@ export abstract class BaseTransaction<TransactionObject> {
    *
    * @hidden
    */
-  protected DEFAULT_HARDFORK: string | Hardfork = Hardfork.Istanbul
+  protected DEFAULT_HARDFORK: string | Hardfork = Hardfork.London
 
   constructor(txData: TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData) {
     const { nonce, gasLimit, to, value, data, v, r, s, type } = txData
@@ -108,15 +108,6 @@ export abstract class BaseTransaction<TransactionObject> {
 
     // EIP-2681 limits nonce to 2^64-1 (cannot equal 2^64-1)
     this._validateCannotExceedMaxInteger({ nonce: this.nonce }, 64, true)
-  }
-
-  /**
-   * Alias for {@link BaseTransaction.type}
-   *
-   * @deprecated Use `type` instead
-   */
-  get transactionType(): number {
-    return this.type
   }
 
   /**
@@ -342,7 +333,7 @@ export abstract class BaseTransaction<TransactionObject> {
     if (chainId) {
       const chainIdBN = new BN(toBuffer(chainId))
       if (common) {
-        if (!common.chainIdBN().eq(chainIdBN)) {
+        if (!common.chainId().eq(chainIdBN)) {
           const msg = this._errorMsg('The chain ID does not match the chain ID of Common')
           throw new Error(msg)
         }
@@ -357,14 +348,13 @@ export abstract class BaseTransaction<TransactionObject> {
         } else {
           // No Common, chain ID not supported by Common
           // -> Instantiate custom Common derived from DEFAULT_CHAIN
-          return Common.forCustomChain(
-            this.DEFAULT_CHAIN,
+          return Common.custom(
             {
               name: 'custom-chain',
               networkId: chainIdBN,
               chainId: chainIdBN,
             },
-            this.DEFAULT_HARDFORK
+            { baseChain: this.DEFAULT_CHAIN, hardfork: this.DEFAULT_HARDFORK }
           )
         }
       }

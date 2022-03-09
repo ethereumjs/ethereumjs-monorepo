@@ -1,6 +1,7 @@
 import tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { Address, BN, bnToHex } from 'ethereumjs-util'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
@@ -11,9 +12,14 @@ import { VMExecution } from '../../../lib/execution'
 const method = 'eth_estimateGas'
 
 tape(`${method}: call with valid arguments`, async (t) => {
-  const blockchain = await Blockchain.create({ validateBlocks: false, validateConsensus: false })
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+  const blockchain = await Blockchain.create({
+    common,
+    validateBlocks: false,
+    validateConsensus: false,
+  })
 
-  const client = createClient({ blockchain, includeVM: true })
+  const client = createClient({ blockchain, commonChain: common, includeVM: true })
   const manager = createManager(client)
   const server = startRPC(manager.getMethods())
 
@@ -42,7 +48,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   // construct block with tx
   const gasLimit = 2000000
-  const tx = Transaction.fromTxData({ gasLimit, data }, { freeze: false })
+  const tx = Transaction.fromTxData({ gasLimit, data }, { common, freeze: false })
   tx.getSenderAddress = () => {
     return address
   }
@@ -55,7 +61,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
         gasLimit,
       },
     },
-    { calcDifficultyFromHeader: parent }
+    { common, calcDifficultyFromHeader: parent }
   )
   block.transactions[0] = tx
 
@@ -89,7 +95,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'latest'])
   const expectRes = (res: any) => {
     const msg = 'should return the correct gas estimate'
-    t.equal(res.body.result, bnToHex(gasUsed), msg)
+    t.equal(res.body.result, '0x' + gasUsed.toString(16), msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })

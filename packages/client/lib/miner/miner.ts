@@ -221,7 +221,7 @@ export class Miner {
     }
 
     let baseFeePerGas
-    const londonHardforkBlock = this.config.chainCommon.hardforkBlockBN(Hardfork.London)
+    const londonHardforkBlock = this.config.chainCommon.hardforkBlock(Hardfork.London)
     const isInitialEIP1559Block = londonHardforkBlock && number.eq(londonHardforkBlock)
     if (isInitialEIP1559Block) {
       // Get baseFeePerGas from `paramByEIP` since 1559 not currently active on common
@@ -274,11 +274,13 @@ export class Miner {
         await blockBuilder.addTransaction(txs[index])
       } catch (error: any) {
         if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
-          if (blockBuilder.gasUsed.gt(gasLimit.subn(21000))) {
+          if (blockBuilder.gasUsed > BigInt(gasLimit.subn(21000).toString(10))) {
             // If block has less than 21000 gas remaining, consider it full
             blockFull = true
             this.config.logger.info(
-              `Miner: Assembled block full (gasLeft: ${gasLimit.sub(blockBuilder.gasUsed)})`
+              `Miner: Assembled block full (gasLeft: ${gasLimit.sub(
+                new BN(blockBuilder.gasUsed.toString(10))
+              )})`
             )
           }
         } else {

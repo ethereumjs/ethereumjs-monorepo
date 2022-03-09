@@ -5,7 +5,7 @@ import { Transaction } from '@ethereumjs/tx'
 import { BlockHeader } from '@ethereumjs/block'
 import VM from '@ethereumjs/vm'
 import { DefaultStateManager, StateManager } from '@ethereumjs/vm/dist/state'
-import { Account, Address, BN } from 'ethereumjs-util'
+import { Address, BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { TxPool } from '../../lib/sync/txpool'
 import { PendingBlock } from '../../lib/miner'
@@ -27,9 +27,8 @@ const B = {
 }
 
 const setBalance = async (stateManager: StateManager, address: Address, balance: BN) => {
-  // this fn can be replaced with modifyAccountFields() when #1369 is available
   await stateManager.checkpoint()
-  await stateManager.putAccount(address, new Account(new BN(0), balance))
+  await stateManager.modifyAccountFields(address, { balance })
   await stateManager.commit()
 }
 

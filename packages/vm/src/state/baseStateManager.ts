@@ -5,6 +5,7 @@ import { debug as createDebugLogger, Debugger } from 'debug'
 import { Account, Address, toBuffer } from 'ethereumjs-util'
 import { ripemdPrecompileAddress } from '../evm/precompiles'
 import Cache from './cache'
+import { AccountFields } from './interface'
 import { DefaultStateManagerOpts } from './stateManager'
 
 type AddressHex = string
@@ -106,6 +107,22 @@ export abstract class BaseStateManager {
     }
     this._cache.put(address, account)
     this.touchAccount(address)
+  }
+
+  /**
+   * Gets the account associated with `address`, modifies the given account
+   * fields, then saves the account into state. Account fields can include
+   * `nonce`, `balance`, `stateRoot`, and `codeHash`.
+   * @param address - Address of the account to modify
+   * @param accountFields - Object containing account fields and values to modify
+   */
+  async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
+    const account = await this.getAccount(address)
+    account.nonce = accountFields.nonce ?? account.nonce
+    account.balance = accountFields.balance ?? account.balance
+    account.stateRoot = accountFields.stateRoot ?? account.stateRoot
+    account.codeHash = accountFields.codeHash ?? account.codeHash
+    await this.putAccount(address, account)
   }
 
   /**

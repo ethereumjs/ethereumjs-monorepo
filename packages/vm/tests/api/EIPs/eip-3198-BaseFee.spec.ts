@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, privateToAddress } from 'ethereumjs-util'
+import { Address, BN, bnToBigInt, privateToAddress } from 'ethereumjs-util'
 import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TypedTransaction } from '@ethereumjs/tx'
@@ -17,7 +17,7 @@ const common = new Common({
 
 // Small hack to hack in the activation block number
 // (Otherwise there would be need for a custom chain only for testing purposes)
-common.hardforkBlockBN = function (hardfork: string | undefined) {
+common.hardforkBlock = function (hardfork: string | undefined) {
   if (hardfork === 'london') {
     return new BN(1)
   } else if (hardfork === 'dao') {
@@ -74,9 +74,7 @@ tape('EIP3198 tests', (t) => {
     )
     const block = makeBlock(fee, tx, 2)
     const vm = new VM({ common })
-    const account = await vm.stateManager.getAccount(sender)
-    account.balance = ETHER
-    await vm.stateManager.putAccount(sender, account)
+    await vm.stateManager.modifyAccountFields(sender, { balance: ETHER })
 
     // Track stack
 
@@ -91,10 +89,10 @@ tape('EIP3198 tests', (t) => {
       tx: block.transactions[0],
       block,
     })
-    const txBaseFee = block.transactions[0].getBaseFee()
-    const gasUsed = results.gasUsed.sub(txBaseFee)
-    st.ok(gasUsed.eqn(2), 'gas used correct')
-    st.ok(stack[0].eq(fee), 'right item pushed on stack')
+    const txBaseFee = bnToBigInt(block.transactions[0].getBaseFee())
+    const gasUsed = results.gasUsed - txBaseFee
+    st.ok(gasUsed === BigInt(2), 'gas used correct')
+    st.ok(stack[0] === bnToBigInt(fee), 'right item pushed on stack')
     st.end()
   })
 })

@@ -332,3 +332,21 @@ export function bufArrToArr(arr: Buffer | NestedBufferArray): Uint8Array | Neste
   }
   return arr.map((a) => bufArrToArr(a))
 }
+
+/**
+ * Converts a {@link Buffer} to a {@link bigint}`
+ */
+export function bufferToBigInt(buf: Buffer) {
+  const hex = bufferToHex(buf)
+  if (hex === '0x') {
+    return BigInt(0)
+  }
+  return BigInt(hex)
+}
+
+/**
+ * Converts a {@link bigint} to a {@link Buffer}
+ */
+export function bigIntToBuffer(num: bigint) {
+  return toBuffer('0x' + num.toString(16))
+}

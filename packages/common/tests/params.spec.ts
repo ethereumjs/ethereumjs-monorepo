@@ -1,5 +1,6 @@
 import tape from 'tape'
 import Common, { Chain, Hardfork } from '../src/'
+import { BN } from 'ethereumjs-util'
 
 tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: tape.Test) {
   t.test('Basic usage', function (st: tape.Test) {
@@ -32,33 +33,16 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
   })
 
   t.test('Error cases for param(), paramByHardfork()', function (st: tape.Test) {
-    let c = new Common({ chain: Chain.Mainnet })
+    const c = new Common({ chain: Chain.Mainnet })
 
-    let f = function () {
+    const f = function () {
       c.paramByHardfork('gasPrizes', 'ecAdd', 'byzantium')
     }
-    let msg = 'Should throw when called with non-existing topic'
+    const msg = 'Should throw when called with non-existing topic'
     st.throws(f, /Topic gasPrizes not defined$/, msg)
 
     c.setHardfork(Hardfork.Byzantium)
     st.equal(c.param('gasPrices', 'ecAdd'), 500, 'Should return correct value for HF set in class')
-
-    c = new Common({
-      chain: Chain.Mainnet,
-      hardfork: Hardfork.Byzantium,
-      supportedHardforks: [Hardfork.Byzantium, Hardfork.Constantinople],
-    })
-    f = function () {
-      c.paramByHardfork('gasPrices', 'expByte', 'spuriousDragon')
-    }
-    msg = 'Should throw when calling param() with an unsupported hardfork'
-    st.throws(f, /supportedHardforks$/, msg)
-
-    f = function () {
-      c.paramByBlock('gasPrices', 'expByte', 0)
-    }
-    msg = 'Should throw when calling paramByBlock() with an unsupported hardfork'
-    st.throws(f, /supportedHardforks$/, msg)
 
     st.end()
   })
@@ -88,6 +72,10 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
 
     msg = 'Should correctly translate block numbers into HF states (original value)'
     st.equal(c.paramByBlock('pow', 'minerReward', 4369999), '5000000000000000000', msg)
+
+    msg = 'Should correctly translate total difficulty into HF states'
+    const td = new BN('1196768507891266117779')
+    st.equal(c.paramByBlock('pow', 'minerReward', 4370000, td), '3000000000000000000', msg)
 
     st.comment('-----------------------------------------------------------------')
     st.end()

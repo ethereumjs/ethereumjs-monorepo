@@ -2,7 +2,6 @@
   "extends": "../../config/tsconfig.json",
   "compilerOptions": {
       "outDir": "./dist",
-      "lib": ["dom"],
     },
   "include": ["src/**/*.ts", "test/*.spec.ts"]
 }

@@ -57,15 +57,6 @@ export class BlockHeader {
   }
 
   /**
-   * Backwards compatible alias for {@link BlockHeader.logsBloom}
-   * (planned to be removed in next major release)
-   * @deprecated
-   */
-  get bloom() {
-    return this.logsBloom
-  }
-
-  /**
    * EIP-4399: Post-PoS merge, `mixHash` supplanted as `random`
    */
   get random() {
@@ -85,11 +76,6 @@ export class BlockHeader {
    * @param opts
    */
   public static fromHeaderData(headerData: HeaderData = {}, opts: BlockOptions = {}) {
-    if (headerData.logsBloom === undefined && headerData.bloom !== undefined) {
-      // backwards compatible alias for deprecated `bloom` key renamed to `logsBloom`
-      // (planned to be removed in next major release)
-      headerData.logsBloom = headerData.bloom
-    }
     const {
       parentHash,
       uncleHash,
@@ -262,7 +248,7 @@ export class BlockHeader {
 
     if (this._common.isActivatedEIP(1559)) {
       if (baseFeePerGas === undefined) {
-        const londonHfBlock = this._common.hardforkBlockBN(Hardfork.London)
+        const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
         const isInitialEIP1559Block = londonHfBlock && number.eq(londonHfBlock)
         if (isInitialEIP1559Block) {
           baseFeePerGas = new BN(this._common.param('gasConfig', 'initialBaseFee'))
@@ -397,7 +383,7 @@ export class BlockHeader {
 
     if (nonce.length !== 8) {
       // Hack to check for Kovan due to non-standard nonce length (65 bytes)
-      if (this._common.networkIdBN().eqn(42)) {
+      if (this._common.networkId().eqn(42)) {
         if (nonce.length !== 65) {
           const msg = this._errorMsg(
             `nonce must be 65 bytes on kovan, received ${nonce.length} bytes`
@@ -458,7 +444,7 @@ export class BlockHeader {
       )
       throw new Error(msg)
     }
-    const hardfork = this._getHardfork()
+    const hardfork = this._common.hardfork()
     const blockTs = this.timestamp
     const { timestamp: parentTs, difficulty: parentDif } = parentBlockHeader
     const minimumDifficulty = new BN(
@@ -575,13 +561,13 @@ export class BlockHeader {
     let parentGasLimit = parentBlockHeader.gasLimit
     // EIP-1559: assume double the parent gas limit on fork block
     // to adopt to the new gas target centered logic
-    const londonHardforkBlock = this._common.hardforkBlockBN(Hardfork.London)
+    const londonHardforkBlock = this._common.hardforkBlock(Hardfork.London)
     if (londonHardforkBlock && this.number.eq(londonHardforkBlock)) {
       const elasticity = new BN(this._common.param('gasConfig', 'elasticityMultiplier'))
       parentGasLimit = parentGasLimit.mul(elasticity)
     }
     const gasLimit = this.gasLimit
-    const hardfork = this._getHardfork()
+    const hardfork = this._common.hardfork()
 
     const a = parentGasLimit.div(
       new BN(this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork))
@@ -618,7 +604,7 @@ export class BlockHeader {
     if (this.isGenesis()) {
       return
     }
-    const hardfork = this._getHardfork()
+    const hardfork = this._common.hardfork()
     // Consensus type dependent checks
     if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Ethash) {
       // PoW/Ethash
@@ -725,7 +711,7 @@ export class BlockHeader {
         const msg = this._errorMsg('EIP1559 block has no base fee field')
         throw new Error(msg)
       }
-      const londonHfBlock = this._common.hardforkBlockBN(Hardfork.London)
+      const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
       const isInitialEIP1559Block = londonHfBlock && this.number.eq(londonHfBlock)
       if (isInitialEIP1559Block) {
         const initialBaseFee = new BN(this._common.param('gasConfig', 'initialBaseFee'))
@@ -987,14 +973,8 @@ export class BlockHeader {
     }
     if (this._common.isActivatedEIP(1559)) {
       jsonDict.baseFeePerGas = '0x' + this.baseFeePerGas!.toString('hex')
-      jsonDict.baseFee = '0x' + this.baseFeePerGas!.toString('hex') // deprecated alias, please use `baseFeePerGas`, will be removed in next major release
     }
-    jsonDict.bloom = jsonDict.logsBloom // deprecated alias, please use `logsBloom`, will be removed in next major release
     return jsonDict
-  }
-
-  private _getHardfork(): string {
-    return this._common.hardfork() || this._common.activeHardfork(this.number.toNumber())
   }
 
   private async _getHeaderByHash(
@@ -1018,10 +998,10 @@ export class BlockHeader {
    * activation block (see: https://blog.slock.it/hard-fork-specification-24b889e70703)
    */
   private _validateDAOExtraData() {
-    if (!this._common.hardforkIsActiveOnChain(Hardfork.Dao)) {
+    if (!this._common.hardforkIsActiveOnBlock(Hardfork.Dao, this.number)) {
       return
     }
-    const DAOActivationBlock = this._common.hardforkBlockBN(Hardfork.Dao)
+    const DAOActivationBlock = this._common.hardforkBlock(Hardfork.Dao)
     if (!DAOActivationBlock || DAOActivationBlock.isZero() || this.number.lt(DAOActivationBlock)) {
       return
     }

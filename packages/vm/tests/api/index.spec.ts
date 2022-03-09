@@ -40,7 +40,7 @@ tape('VM -> basic instantiation / boolean switches', (t) => {
       KECCAK256_RLP,
       'it has default trie'
     )
-    st.equal(vm._common.hardfork(), 'istanbul', 'it has correct default HF')
+    st.equal(vm._common.hardfork(), Hardfork.London, 'it has correct default HF')
     st.end()
   })
 
@@ -62,6 +62,26 @@ tape('VM -> basic instantiation / boolean switches', (t) => {
       KECCAK256_RLP,
       'it has different root'
     )
+    st.end()
+  })
+})
+
+tape('VM -> supportedHardforks', (t) => {
+  t.test('should throw when common is set to an unsupported hardfork', async (st) => {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+    try {
+      await VM.create({ common })
+      st.fail('should have failed for unsupported hardfork')
+    } catch (e: any) {
+      st.ok(e.message.includes('supportedHardforks'))
+    }
+    st.end()
+  })
+
+  t.test('should succeed when common is set to a supported hardfork', async (st) => {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+    const vm = await VM.create({ common })
+    st.equal(vm._common.hardfork(), Hardfork.Byzantium)
     st.end()
   })
 })
@@ -105,17 +125,17 @@ tape('VM -> common (chain, HFs, EIPs)', (t) => {
     st.end()
   })
 
-  t.test(
-    'should accept a custom chain config (Common.forCustomChain() static constructor)',
-    async (st) => {
-      const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
-      const common = Common.forCustomChain('mainnet', customChainParams, 'byzantium')
+  t.test('should accept a custom chain config (Common.custom() static constructor)', async (st) => {
+    const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
+    const common = Common.custom(customChainParams, {
+      baseChain: 'mainnet',
+      hardfork: 'byzantium',
+    })
 
-      const vm = await VM.create({ common })
-      st.equal(vm._common, common)
-      st.end()
-    }
-  )
+    const vm = await VM.create({ common })
+    st.equal(vm._common, common)
+    st.end()
+  })
 
   t.test(
     'should accept a custom chain config (Common customChains constructor option)',

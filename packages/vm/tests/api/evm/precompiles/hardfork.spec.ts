@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN } from 'ethereumjs-util'
+import { Address } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../../src'
 import { getActivePrecompiles } from '../../../../src/evm/precompiles'
@@ -23,12 +23,12 @@ tape('Precompiles: hardfork availability', (t) => {
     let vm = new VM({ common: commonByzantium })
     let result = await vm.runCall({
       caller: Address.zero(),
-      gasLimit: new BN(0xffffffffff),
+      gasLimit: BigInt(0xffffffffff),
       to: ECPAIR_Address,
-      value: new BN(0),
+      value: BigInt(0),
     })
 
-    st.assert(result.gasUsed.toNumber() == 100000) // check that we are using gas (if address would contain no code we use 0 gas)
+    st.assert(result.gasUsed === BigInt(100000)) // check that we are using gas (if address would contain no code we use 0 gas)
 
     // Check if ECPAIR is available in future hard forks.
     const commonPetersburg = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
@@ -42,12 +42,12 @@ tape('Precompiles: hardfork availability', (t) => {
     vm = new VM({ common: commonPetersburg })
     result = await vm.runCall({
       caller: Address.zero(),
-      gasLimit: new BN(0xffffffffff),
+      gasLimit: BigInt(0xffffffffff),
       to: ECPAIR_Address,
-      value: new BN(0),
+      value: BigInt(0),
     })
 
-    st.assert(result.gasUsed.toNumber() == 100000)
+    st.assert(result.gasUsed === BigInt(100000))
 
     // Check if ECPAIR is not available in Homestead.
     const commonHomestead = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
@@ -63,12 +63,12 @@ tape('Precompiles: hardfork availability', (t) => {
 
     result = await vm.runCall({
       caller: Address.zero(),
-      gasLimit: new BN(0xffffffffff),
+      gasLimit: BigInt(0xffffffffff),
       to: ECPAIR_Address,
-      value: new BN(0),
+      value: BigInt(0),
     })
 
-    st.assert(result.gasUsed.toNumber() == 0) // check that we use no gas, because we are calling into an address without code.
+    st.assert(result.gasUsed === BigInt(0)) // check that we use no gas, because we are calling into an address without code.
 
     st.end()
   })

@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, rlp, KECCAK256_RLP, Account } from 'ethereumjs-util'
+import { Address, BN, rlp, KECCAK256_RLP, Account, bnToBigInt } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import {
@@ -29,7 +29,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     const block = Block.fromRLPSerializedBlock(blockRlp)
 
     //@ts-ignore
-    await setupPreConditions(vm.stateManager._trie, testData)
+    await setupPreConditions(vm.stateManager, testData)
 
     st.ok(
       //@ts-ignore
@@ -45,7 +45,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     })
 
     st.equal(
-      res.results[0].gasUsed.toString('hex'),
+      res.results[0].gasUsed.toString(16),
       '5208',
       'actual gas used should equal blockHeader gasUsed'
     )
@@ -55,7 +55,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
     const testData = require('./testdata/uncleData.json')
 
     //@ts-ignore
-    await setupPreConditions(vm.stateManager._trie, testData)
+    await setupPreConditions(vm.stateManager, testData)
 
     const block1Rlp = testData.blocks[0].rlp
     const block1 = Block.fromRLPSerializedBlock(block1Rlp)
@@ -98,24 +98,21 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
   }
 
   t.test('PoW block, unmodified options', async (st) => {
-    const vm = setupVM()
+    const vm = setupVM({ common })
     await simpleRun(vm, st)
   })
 
   t.test('Uncle blocks, compute uncle rewards', async (st) => {
-    const vm = setupVM()
+    const vm = setupVM({ common })
     await uncleRun(vm, st)
   })
 
-  t.test(
-    'PoW block, Common custom chain (Common.forCustomChain() static constructor)',
-    async (st) => {
-      const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
-      const common = Common.forCustomChain('mainnet', customChainParams, 'berlin')
-      const vm = setupVM({ common })
-      await simpleRun(vm, st)
-    }
-  )
+  t.test('PoW block, Common custom chain (Common.custom() static constructor)', async (st) => {
+    const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
+    const common = Common.custom(customChainParams, { baseChain: 'mainnet', hardfork: 'berlin' })
+    const vm = setupVM({ common })
+    await simpleRun(vm, st)
+  })
 
   t.test('PoW block, Common custom chain (Common customChains constructor option)', async (st) => {
     const customChains = [testnet]
@@ -175,11 +172,13 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       generate: true,
     })
     st.ok(
-      txResultChainstart.results[0].gasUsed.toNumber() == 21000 + 68 * 3 + 3 + 50,
+      txResultChainstart.results[0].gasUsed ===
+        BigInt(21000) + BigInt(68) * BigInt(3) + BigInt(3) + BigInt(50),
       'tx charged right gas on chainstart hard fork'
     )
     st.ok(
-      txResultMuirGlacier.results[0].gasUsed.toNumber() == 21000 + 32000 + 16 * 3 + 3 + 800,
+      txResultMuirGlacier.results[0].gasUsed ===
+        BigInt(21000) + BigInt(32000) + BigInt(16) * BigInt(3) + BigInt(3) + BigInt(800),
       'tx charged right gas on muir glacier hard fork'
     )
   })
@@ -262,9 +261,9 @@ tape('runBlock() -> runtime behavior', async (t) => {
     const block1: any = rlp.decode(testData.blocks[0].rlp)
     // edit extra data of this block to "dao-hard-fork"
     block1[0][12] = Buffer.from('dao-hard-fork')
-    const block = Block.fromValuesArray(block1)
+    const block = Block.fromValuesArray(block1, { common })
     // @ts-ignore
-    await setupPreConditions(vm.stateManager._trie, testData)
+    await setupPreConditions(vm.stateManager, testData)
 
     // fill two original DAO child-contracts with funds and the recovery account with funds in order to verify that the balance gets summed correctly
     const fundBalance1 = new BN(Buffer.from('1111', 'hex'))
@@ -307,7 +306,7 @@ tape('runBlock() -> runtime behavior', async (t) => {
   })
 
   t.test('should allocate to correct clique beneficiary', async (t) => {
-    const common = new Common({ chain: Chain.Goerli })
+    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Istanbul })
     const vm = setupVM({ common })
 
     const signer = {
@@ -398,13 +397,14 @@ tape('should correctly reflect generated fields', async (t) => {
 })
 
 async function runWithHf(hardfork: string) {
-  const vm = setupVM({ common: new Common({ chain: Chain.Mainnet, hardfork }) })
+  const common = new Common({ chain: Chain.Mainnet, hardfork })
+  const vm = setupVM({ common })
 
   const blockRlp = testData.blocks[0].rlp
-  const block = Block.fromRLPSerializedBlock(blockRlp)
+  const block = Block.fromRLPSerializedBlock(blockRlp, { common })
 
   // @ts-ignore
-  await setupPreConditions(vm.stateManager._trie, testData)
+  await setupPreConditions(vm.stateManager, testData)
 
   const res = await vm.runBlock({
     block,
@@ -449,7 +449,7 @@ tape('runBlock() -> tx types', async (t) => {
     }
 
     //@ts-ignore
-    await setupPreConditions(vm.stateManager._trie, testData)
+    await setupPreConditions(vm.stateManager, testData)
 
     const res = await vm.runBlock({
       block,
@@ -458,11 +458,15 @@ tape('runBlock() -> tx types', async (t) => {
     })
 
     st.ok(
-      res.gasUsed.eq(
-        res.receipts
-          .map((r) => r.gasUsed)
-          .reduce((prevValue: BN, currValue: Buffer) => prevValue.add(new BN(currValue)), new BN(0))
-      ),
+      res.gasUsed ===
+        bnToBigInt(
+          res.receipts
+            .map((r) => r.gasUsed)
+            .reduce(
+              (prevValue: BN, currValue: Buffer) => prevValue.add(new BN(currValue)),
+              new BN(0)
+            )
+        ),
       "gas used should equal transaction's total gasUsed"
     )
   }

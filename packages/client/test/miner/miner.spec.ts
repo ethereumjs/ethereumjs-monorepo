@@ -4,7 +4,7 @@ import Common, { Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { DefaultStateManager, StateManager } from '@ethereumjs/vm/dist/state'
-import { Account, Address, BN } from 'ethereumjs-util'
+import { Address, BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { FullSynchronizer } from '../../lib/sync/fullsync'
 import { Chain } from '../../lib/blockchain'
@@ -30,9 +30,8 @@ const B = {
 }
 
 const setBalance = async (stateManager: StateManager, address: Address, balance: BN) => {
-  // this fn can be replaced with modifyAccountFields() when #1369 is available
   await stateManager.checkpoint()
-  await stateManager.putAccount(address, new Account(new BN(0), balance))
+  await stateManager.modifyAccountFields(address, { balance })
   await stateManager.commit()
 }
 
@@ -229,7 +228,10 @@ tape('[Miner]', async (t) => {
   t.test('assembleBlocks() -> should not include tx under the baseFee', async (t) => {
     t.plan(1)
     const customChainParams = { hardforks: [{ name: 'london', block: 0 }] }
-    const common = Common.forCustomChain(CommonChain.Rinkeby, customChainParams, Hardfork.London)
+    const common = Common.custom(customChainParams, {
+      baseChain: CommonChain.Rinkeby,
+      hardfork: Hardfork.London,
+    })
     const config = new Config({ transports: [], accounts, mine: true, common })
     const pool = new PeerPool() as any
     const chain = new FakeChain() as any
@@ -450,7 +452,7 @@ tape('[Miner]', async (t) => {
 
   t.test('should handle mining ethash PoW', async (t) => {
     t.plan(1)
-    const common = new Common({ chain: CommonChain.Ropsten })
+    const common = new Common({ chain: CommonChain.Ropsten, hardfork: Hardfork.Istanbul })
     ;(common as any)._chainParams['genesis'].difficulty = 1
     const pool = new PeerPool() as any
     const config = new Config({ transports: [], accounts, mine: true, common })

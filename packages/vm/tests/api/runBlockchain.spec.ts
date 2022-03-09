@@ -55,7 +55,7 @@ tape('runBlockchain', (t) => {
 
   // TODO: test has been moved over from index.spec.ts, check for redundancy
   t.test('should run blockchain with mocked runBlock', async (st) => {
-    const common = new Common({ chain: Chain.Ropsten })
+    const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Istanbul })
     const genesisRlp = Buffer.from(testData.genesisRLP.slice(2), 'hex')
     const genesisBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
 
@@ -71,7 +71,7 @@ tape('runBlockchain', (t) => {
     const head = await vm.blockchain.getHead()
     st.equal(head.hash().toString('hex'), testData.blocks[0].blockHeader.hash.slice(2))
 
-    await setupPreConditions((vm.stateManager as DefaultStateManager)._trie, testData)
+    await setupPreConditions(vm.stateManager as DefaultStateManager, testData)
 
     vm.runBlock = async () => new Promise((resolve, reject) => reject(new Error('test')))
 
@@ -86,7 +86,7 @@ tape('runBlockchain', (t) => {
 
   // TODO: test has been moved over from index.spec.ts, check for redundancy
   t.test('should run blockchain with blocks', async (st) => {
-    const common = new Common({ chain: Chain.Ropsten })
+    const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Istanbul })
 
     const genesisRlp = toBuffer(testData.genesisRLP)
     const genesisBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
@@ -103,7 +103,7 @@ tape('runBlockchain', (t) => {
     const head = await vm.blockchain.getHead()
     st.equal(head.hash().toString('hex'), testData.blocks[0].blockHeader.hash.slice(2))
 
-    await setupPreConditions((vm.stateManager as DefaultStateManager)._trie, testData)
+    await setupPreConditions(vm.stateManager as DefaultStateManager, testData)
 
     await vm.runBlockchain()
 

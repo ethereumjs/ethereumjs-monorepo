@@ -23,7 +23,7 @@ together with a specific `hardfork` provided.
 
 If no hardfork is provided, the common is initialized with the default hardfork.
 
-Current `DEFAULT_HARDFORK`: `istanbul`
+Current `DEFAULT_HARDFORK`: `london`
 
 Here are some simple usage examples:
 
@@ -47,18 +47,6 @@ c.genesis().hash // 0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1
 // Get bootstrap nodes for chain/network
 c.bootstrapNodes() // Array with current nodes
 ```
-
-If the initializing library only supports a certain range of `hardforks` you can use the `supportedHardforks` option to restrict hardfork access on the `Common` instance:
-
-```typescript
-const c = new Common({
-  chain: 'ropsten',
-  supportedHardforks: ['byzantium', 'constantinople', 'petersburg'],
-})
-```
-
-This will e.g. throw an error when a param is requested for an unsupported hardfork and
-like this prevents unpredicted behaviour.
 
 For an improved developer experience, there are `Chain` and `Hardfork` enums available:
 
@@ -243,10 +231,10 @@ library supported:
 - `byzantium` (`Hardfork.Byzantium`)
 - `constantinople` (`Hardfork.Constantinople`)
 - `petersburg` (`Hardfork.Petersburg`) (aka `constantinopleFix`, apply together with `constantinople`)
-- `istanbul` (`Hardfork.Instanbul`) (`DEFAULT_HARDFORK` (`v2.0.0` release series))
+- `istanbul` (`Hardfork.Instanbul`)
 - `muirGlacier` (`Hardfork.MuirGlacier`)
 - `berlin` (`Hardfork.Berlin`) (since `v2.2.0`)
-- `london` (`Hardfork.London`) (since `v2.4.0`)
+- `london` (`Hardfork.London`) (`DEFAULT_HARDFORK`) (since `v2.4.0`)
 - `merge` (`Hardfork.Merge`) (since `v2.5.0`, `experimental`)
 
 ### Future Hardforks

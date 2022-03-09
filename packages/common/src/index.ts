@@ -1,7 +1,6 @@
 import { EventEmitter } from 'events'
 import { buf as crc32Buffer } from 'crc-32'
 import { BN, BNLike, toType, TypeOutput, intToBuffer } from 'ethereumjs-util'
-import { _getInitializedChains } from './chains'
 import { hardforks as HARDFORK_CHANGES } from './hardforks'
 import { EIPs } from './eips'
 import {
@@ -11,6 +10,12 @@ import {
   GenesisState,
   Hardfork as HardforkParams,
 } from './types'
+import mainnet from './chains/mainnet.json'
+import ropsten from './chains/ropsten.json'
+import rinkeby from './chains/rinkeby.json'
+import kovan from './chains/kovan.json'
+import goerli from './chains/goerli.json'
+import sepolia from './chains/sepolia.json'
 
 export enum CustomChain {
   /**
@@ -100,13 +105,9 @@ interface BaseOpts {
   /**
    * String identifier ('byzantium') for hardfork or {@link Hardfork} enum.
    *
-   * Default: Hardfork.Istanbul
+   * Default: Hardfork.London
    */
   hardfork?: string | Hardfork
-  /**
-   * Limit parameter returns to the given hardforks
-   */
-  supportedHardforks?: Array<string | Hardfork>
   /**
    * Selected EIPs which can be activated, please use an array for instantiation
    * (e.g. `eips: [ 2537, ]`)
@@ -163,13 +164,6 @@ export interface CustomCommonOpts extends BaseOpts {
   baseChain?: string | number | Chain | BN
 }
 
-interface hardforkOptions {
-  /** optional, only allow supported HFs (default: false) */
-  onlySupported?: boolean
-  /** optional, only active HFs (default: false) */
-  onlyActive?: boolean
-}
-
 /**
  * Common class to access chain and hardfork parameters and to provide
  * a unified and shared view on the network and hardfork state.
@@ -183,7 +177,6 @@ export default class Common extends EventEmitter {
 
   private _chainParams: IChain
   private _hardfork: string | Hardfork
-  private _supportedHardforks: Array<string | Hardfork> = []
   private _eips: number[] = []
   private _customChains: IChain[] | [IChain, GenesisState][]
 
@@ -285,42 +278,12 @@ export default class Common extends EventEmitter {
   }
 
   /**
-   * Creates a {@link Common} object for a custom chain, based on a standard one. It uses all the `Chain`
-   * params from {@link baseChain} except the ones overridden in {@link customChainParams}.
-   *
-   * @deprecated Use {@link Common.custom} instead
-   *
-   * @param baseChain The name (`mainnet`) or id (`1`) of a standard chain used to base the custom
-   * chain params on.
-   * @param customChainParams The custom parameters of the chain.
-   * @param hardfork String identifier ('byzantium') for hardfork (optional)
-   * @param supportedHardforks Limit parameter returns to the given hardforks (optional)
-   */
-  static forCustomChain(
-    baseChain: string | number | Chain,
-    customChainParams: Partial<IChain>,
-    hardfork?: string | Hardfork,
-    supportedHardforks?: Array<string | Hardfork>
-  ): Common {
-    const standardChainParams = Common._getChainParams(baseChain)
-
-    return new Common({
-      chain: {
-        ...standardChainParams,
-        ...customChainParams,
-      },
-      hardfork: hardfork,
-      supportedHardforks: supportedHardforks,
-    })
-  }
-
-  /**
    * Static method to determine if a {@link chainId} is supported as a standard chain
    * @param chainId BN id (`1`) of a standard chain
    * @returns boolean
    */
   static isSupportedChainId(chainId: BN): boolean {
-    const initializedChains: any = _getInitializedChains()
+    const initializedChains: any = this._getInitializedChains()
     return Boolean(initializedChains['names'][chainId.toString()])
   }
 
@@ -328,7 +291,7 @@ export default class Common extends EventEmitter {
     chain: string | number | Chain | BN,
     customChains?: IChain[]
   ): IChain {
-    const initializedChains: any = _getInitializedChains(customChains)
+    const initializedChains: any = this._getInitializedChains(customChains)
     if (typeof chain === 'number' || BN.isBN(chain)) {
       chain = chain.toString()
 
@@ -355,16 +318,13 @@ export default class Common extends EventEmitter {
     super()
     this._customChains = opts.customChains ?? []
     this._chainParams = this.setChain(opts.chain)
-    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Istanbul
+    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.London
     for (const hf of this._chainParams.hardforks) {
       if (!hf.forkHash) {
         hf.forkHash = this._calcForkHash(hf.name)
       }
     }
     this._hardfork = this.DEFAULT_HARDFORK
-    if (opts.supportedHardforks) {
-      this._supportedHardforks = opts.supportedHardforks
-    }
     if (opts.hardfork) {
       this.setHardfork(opts.hardfork)
     }
@@ -417,9 +377,6 @@ export default class Common extends EventEmitter {
    * @param hardfork String identifier (e.g. 'byzantium') or {@link Hardfork} enum
    */
   setHardfork(hardfork: string | Hardfork): void {
-    if (!this._isSupportedHardfork(hardfork)) {
-      throw new Error(`Hardfork ${hardfork} not set as supported in supportedHardforks`)
-    }
     let existing = false
     for (const hfChanges of HARDFORK_CHANGES) {
       if (hfChanges[0] === hardfork) {
@@ -516,46 +473,16 @@ export default class Common extends EventEmitter {
   }
 
   /**
-   * Internal helper function to choose between hardfork set and hardfork provided as param
-   * @param hardfork Hardfork given to function as a parameter
-   * @returns Hardfork chosen to be used
-   */
-  _chooseHardfork(hardfork?: string | Hardfork | null, onlySupported: boolean = true): string {
-    if (!hardfork) {
-      hardfork = this._hardfork
-    } else if (onlySupported && !this._isSupportedHardfork(hardfork)) {
-      throw new Error(`Hardfork ${hardfork} not set as supported in supportedHardforks`)
-    }
-    return hardfork
-  }
-
-  /**
    * Internal helper function, returns the params for the given hardfork for the chain set
    * @param hardfork Hardfork name
-   * @returns Dictionary with hardfork params
+   * @returns Dictionary with hardfork params or null if hardfork not on chain
    */
-  _getHardfork(hardfork: string | Hardfork): any {
+  _getHardfork(hardfork: string | Hardfork): HardforkParams | null {
     const hfs = this.hardforks()
     for (const hf of hfs) {
       if (hf['name'] === hardfork) return hf
     }
-    throw new Error(`Hardfork ${hardfork} not defined for chain ${this.chainName()}`)
-  }
-
-  /**
-   * Internal helper function to check if a hardfork is set to be supported by the library
-   * @param hardfork Hardfork name
-   * @returns True if hardfork is supported
-   */
-  _isSupportedHardfork(hardfork: string | Hardfork | null): boolean {
-    if (this._supportedHardforks.length > 0) {
-      for (const supportedHf of this._supportedHardforks) {
-        if (hardfork === supportedHf) return true
-      }
-    } else {
-      return true
-    }
-    return false
+    return null
   }
 
   /**
@@ -616,8 +543,6 @@ export default class Common extends EventEmitter {
    * @returns The value requested or `null` if not found
    */
   paramByHardfork(topic: string, name: string, hardfork: string | Hardfork): any {
-    hardfork = this._chooseHardfork(hardfork)
-
     let value = null
     for (const hfChanges of HARDFORK_CHANGES) {
       // EIP-referencing HF file (e.g. berlin.json)
@@ -665,14 +590,15 @@ export default class Common extends EventEmitter {
   }
 
   /**
-   * Returns a parameter for the hardfork active on block number
+   * Returns a parameter for the hardfork active on block number or
+   * optional provided total difficulty (Merge HF)
    * @param topic Parameter topic
    * @param name Parameter name
    * @param blockNumber Block number
+   * @param td Total difficulty
    */
-  paramByBlock(topic: string, name: string, blockNumber: BNLike): any {
-    const activeHfs = this.activeHardforks(blockNumber)
-    const hardfork = activeHfs[activeHfs.length - 1]['name']
+  paramByBlock(topic: string, name: string, blockNumber: BNLike, td?: BNLike): any {
+    const hardfork = this.getHardforkByBlockNumber(blockNumber, td)
     return this.paramByHardfork(topic, name, hardfork)
   }
 
@@ -704,18 +630,12 @@ export default class Common extends EventEmitter {
    * Checks if set or provided hardfork is active on block number
    * @param hardfork Hardfork name or null (for HF set)
    * @param blockNumber
-   * @param opts Hardfork options (onlyActive unused)
    * @returns True if HF is active on block number
    */
-  hardforkIsActiveOnBlock(
-    hardfork: string | Hardfork | null,
-    blockNumber: BNLike,
-    opts: hardforkOptions = {}
-  ): boolean {
+  hardforkIsActiveOnBlock(hardfork: string | Hardfork | null, blockNumber: BNLike): boolean {
     blockNumber = toType(blockNumber, TypeOutput.BN)
-    const onlySupported = opts.onlySupported ?? false
-    hardfork = this._chooseHardfork(hardfork, onlySupported)
-    const hfBlock = this.hardforkBlockBN(hardfork)
+    hardfork = hardfork ?? this._hardfork
+    const hfBlock = this.hardforkBlock(hardfork)
     if (hfBlock && blockNumber.gte(hfBlock)) {
       return true
     }
@@ -725,11 +645,10 @@ export default class Common extends EventEmitter {
   /**
    * Alias to hardforkIsActiveOnBlock when hardfork is set
    * @param blockNumber
-   * @param opts Hardfork options (onlyActive unused)
    * @returns True if HF is active on block number
    */
-  activeOnBlock(blockNumber: BNLike, opts?: hardforkOptions): boolean {
-    return this.hardforkIsActiveOnBlock(null, blockNumber, opts)
+  activeOnBlock(blockNumber: BNLike): boolean {
+    return this.hardforkIsActiveOnBlock(null, blockNumber)
   }
 
   /**
@@ -739,20 +658,9 @@ export default class Common extends EventEmitter {
    * @param opts Hardfork options
    * @returns True if HF1 gte HF2
    */
-  hardforkGteHardfork(
-    hardfork1: string | Hardfork | null,
-    hardfork2: string | Hardfork,
-    opts: hardforkOptions = {}
-  ): boolean {
-    const onlyActive = opts.onlyActive === undefined ? false : opts.onlyActive
-    hardfork1 = this._chooseHardfork(hardfork1, opts.onlySupported)
-
-    let hardforks
-    if (onlyActive) {
-      hardforks = this.activeHardforks(null, opts)
-    } else {
-      hardforks = this.hardforks()
-    }
+  hardforkGteHardfork(hardfork1: string | Hardfork | null, hardfork2: string | Hardfork): boolean {
+    hardfork1 = hardfork1 ?? this._hardfork
+    const hardforks = this.hardforks()
 
     let posHf1 = -1,
       posHf2 = -1
@@ -768,74 +676,10 @@ export default class Common extends EventEmitter {
   /**
    * Alias to hardforkGteHardfork when hardfork is set
    * @param hardfork Hardfork name
-   * @param opts Hardfork options
    * @returns True if hardfork set is greater than hardfork provided
    */
-  gteHardfork(hardfork: string | Hardfork, opts?: hardforkOptions): boolean {
-    return this.hardforkGteHardfork(null, hardfork, opts)
-  }
-
-  /**
-   * Checks if given or set hardfork is active on the chain
-   * @param hardfork Hardfork name, optional if HF set
-   * @param opts Hardfork options (onlyActive unused)
-   * @returns True if hardfork is active on the chain
-   */
-  hardforkIsActiveOnChain(
-    hardfork?: string | Hardfork | null,
-    opts: hardforkOptions = {}
-  ): boolean {
-    const onlySupported = opts.onlySupported ?? false
-    hardfork = this._chooseHardfork(hardfork, onlySupported)
-    for (const hf of this.hardforks()) {
-      if (hf['name'] === hardfork && hf['block'] !== null) return true
-    }
-    return false
-  }
-
-  /**
-   * Returns the active hardfork switches for the current chain
-   * @param blockNumber up to block if provided, otherwise for the whole chain
-   * @param opts Hardfork options (onlyActive unused)
-   * @return Array with hardfork arrays
-   */
-  activeHardforks(blockNumber?: BNLike | null, opts: hardforkOptions = {}): HardforkParams[] {
-    const activeHardforks: HardforkParams[] = []
-    const hfs = this.hardforks()
-    for (const hf of hfs) {
-      if (hf['block'] === null) continue
-      if (blockNumber !== undefined && blockNumber !== null && blockNumber < hf['block']) break
-      if (opts.onlySupported && !this._isSupportedHardfork(hf['name'])) continue
-
-      activeHardforks.push(hf)
-    }
-    return activeHardforks
-  }
-
-  /**
-   * Returns the latest active hardfork name for chain or block or throws if unavailable
-   * @param blockNumber up to block if provided, otherwise for the whole chain
-   * @param opts Hardfork options (onlyActive unused)
-   * @return Hardfork name
-   */
-  activeHardfork(blockNumber?: BNLike | null, opts: hardforkOptions = {}): string {
-    const activeHardforks = this.activeHardforks(blockNumber, opts)
-    if (activeHardforks.length > 0) {
-      return activeHardforks[activeHardforks.length - 1]['name']
-    } else {
-      throw new Error(`No (supported) active hardfork found`)
-    }
-  }
-
-  /**
-   * Returns the hardfork change block for hardfork provided or set
-   * @param hardfork Hardfork name, optional if HF set
-   * @returns Block number or null if unscheduled
-   * @deprecated Please use {@link Common.hardforkBlockBN} for large number support
-   */
-  hardforkBlock(hardfork?: string | Hardfork): number | null {
-    const block = this.hardforkBlockBN(hardfork)
-    return toType(block, TypeOutput.Number)
+  gteHardfork(hardfork: string | Hardfork): boolean {
+    return this.hardforkGteHardfork(null, hardfork)
   }
 
   /**
@@ -843,9 +687,9 @@ export default class Common extends EventEmitter {
    * @param hardfork Hardfork name, optional if HF set
    * @returns Block number or null if unscheduled
    */
-  hardforkBlockBN(hardfork?: string | Hardfork): BN | null {
-    hardfork = this._chooseHardfork(hardfork, false)
-    const block = this._getHardfork(hardfork)['block']
+  hardforkBlock(hardfork?: string | Hardfork): BN | null {
+    hardfork = hardfork ?? this._hardfork
+    const block = this._getHardfork(hardfork)?.['block']
     if (block === undefined || block === null) {
       return null
     }
@@ -858,8 +702,8 @@ export default class Common extends EventEmitter {
    * @returns Total difficulty or null if no set
    */
   hardforkTD(hardfork?: string | Hardfork): BN | null {
-    hardfork = this._chooseHardfork(hardfork, false)
-    const td = this._getHardfork(hardfork)['td']
+    hardfork = hardfork ?? this._hardfork
+    const td = this._getHardfork(hardfork)?.['td']
     if (td === undefined || td === null) {
       return null
     }
@@ -874,8 +718,8 @@ export default class Common extends EventEmitter {
    */
   isHardforkBlock(blockNumber: BNLike, hardfork?: string | Hardfork): boolean {
     blockNumber = toType(blockNumber, TypeOutput.BN)
-    hardfork = this._chooseHardfork(hardfork, false)
-    const block = this.hardforkBlockBN(hardfork)
+    hardfork = hardfork ?? this._hardfork
+    const block = this.hardforkBlock(hardfork)
     return block ? block.eq(blockNumber) : false
   }
 
@@ -883,21 +727,10 @@ export default class Common extends EventEmitter {
    * Returns the change block for the next hardfork after the hardfork provided or set
    * @param hardfork Hardfork name, optional if HF set
    * @returns Block number or null if not available
-   * @deprecated Please use {@link Common.nextHardforkBlockBN} for large number support
    */
-  nextHardforkBlock(hardfork?: string | Hardfork): number | null {
-    const block = this.nextHardforkBlockBN(hardfork)
-    return toType(block, TypeOutput.Number)
-  }
-
-  /**
-   * Returns the change block for the next hardfork after the hardfork provided or set
-   * @param hardfork Hardfork name, optional if HF set
-   * @returns Block number or null if not available
-   */
-  nextHardforkBlockBN(hardfork?: string | Hardfork): BN | null {
-    hardfork = this._chooseHardfork(hardfork, false)
-    const hfBlock = this.hardforkBlockBN(hardfork)
+  nextHardforkBlock(hardfork?: string | Hardfork): BN | null {
+    hardfork = hardfork ?? this._hardfork
+    const hfBlock = this.hardforkBlock(hardfork)
     if (hfBlock === null) {
       return null
     }
@@ -920,8 +753,8 @@ export default class Common extends EventEmitter {
    */
   isNextHardforkBlock(blockNumber: BNLike, hardfork?: string | Hardfork): boolean {
     blockNumber = toType(blockNumber, TypeOutput.BN)
-    hardfork = this._chooseHardfork(hardfork, false)
-    const nextHardforkBlock = this.nextHardforkBlockBN(hardfork)
+    hardfork = hardfork ?? this._hardfork
+    const nextHardforkBlock = this.nextHardforkBlock(hardfork)
 
     return nextHardforkBlock === null ? false : nextHardforkBlock.eq(blockNumber)
   }
@@ -963,14 +796,14 @@ export default class Common extends EventEmitter {
    * Returns an eth/64 compliant fork hash (EIP-2124)
    * @param hardfork Hardfork name, optional if HF set
    */
-  forkHash(hardfork?: string | Hardfork) {
-    hardfork = this._chooseHardfork(hardfork, false)
+  forkHash(hardfork?: string | Hardfork): string {
+    hardfork = hardfork ?? this._hardfork
     const data = this._getHardfork(hardfork)
-    if (data['block'] === null && data['td'] === undefined) {
+    if (data === null || (data?.['block'] === null && data?.['td'] === undefined)) {
       const msg = 'No fork hash calculation possible for future hardfork'
       throw new Error(msg)
     }
-    if (data['forkHash'] !== undefined) {
+    if (data?.['forkHash'] !== null && data?.['forkHash'] !== undefined) {
       return data['forkHash']
     }
     return this._calcForkHash(hardfork)
@@ -1070,17 +903,8 @@ export default class Common extends EventEmitter {
   /**
    * Returns the Id of current chain
    * @returns chain Id
-   * @deprecated Please use {@link Common.chainIdBN} for large number support
    */
-  chainId(): number {
-    return toType(this.chainIdBN(), TypeOutput.Number)
-  }
-
-  /**
-   * Returns the Id of current chain
-   * @returns chain Id
-   */
-  chainIdBN(): BN {
+  chainId(): BN {
     return new BN(this._chainParams['chainId'])
   }
 
@@ -1095,17 +919,8 @@ export default class Common extends EventEmitter {
   /**
    * Returns the Id of current network
    * @returns network Id
-   * @deprecated Please use {@link Common.networkIdBN} for large number support
    */
-  networkId(): number {
-    return toType(this.networkIdBN(), TypeOutput.Number)
-  }
-
-  /**
-   * Returns the Id of current network
-   * @returns network Id
-   */
-  networkIdBN(): BN {
+  networkId(): BN {
     return new BN(this._chainParams['networkId'])
   }
 
@@ -1201,5 +1016,34 @@ export default class Common extends EventEmitter {
    */
   copy(): Common {
     return Object.assign(Object.create(Object.getPrototypeOf(this)), this)
+  }
+
+  static _getInitializedChains(customChains?: IChain[]) {
+    const names: any = {
+      '1': 'mainnet',
+      '3': 'ropsten',
+      '4': 'rinkeby',
+      '42': 'kovan',
+      '5': 'goerli',
+      '11155111': 'sepolia',
+    }
+    const chains: any = {
+      mainnet,
+      ropsten,
+      rinkeby,
+      kovan,
+      goerli,
+      sepolia,
+    }
+    if (customChains) {
+      for (const chain of customChains) {
+        const name = chain.name
+        names[chain.chainId.toString()] = name
+        chains[name] = chain
+      }
+    }
+
+    chains['names'] = names
+    return chains
   }
 }

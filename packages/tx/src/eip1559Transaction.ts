@@ -49,33 +49,6 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   protected DEFAULT_HARDFORK = 'london'
 
   /**
-   * EIP-2930 alias for `r`
-   *
-   * @deprecated use `r` instead
-   */
-  get senderR() {
-    return this.r
-  }
-
-  /**
-   * EIP-2930 alias for `s`
-   *
-   * @deprecated use `s` instead
-   */
-  get senderS() {
-    return this.s
-  }
-
-  /**
-   * EIP-2930 alias for `v`
-   *
-   * @deprecated use `v` instead
-   */
-  get yParity() {
-    return this.v
-  }
-
-  /**
    * Instantiate a transaction from a data dictionary.
    *
    * Format: { chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
@@ -111,19 +84,6 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     }
 
     return FeeMarketEIP1559Transaction.fromValuesArray(values as any, opts)
-  }
-
-  /**
-   * Instantiate a transaction from the serialized tx.
-   * (alias of {@link FeeMarketEIP1559Transaction.fromSerializedTx})
-   *
-   * Note: This means that the Buffer should start with 0x01.
-   *
-   * @deprecated this constructor alias is deprecated and will be removed
-   * in favor of the {@link FeeMarketEIP1559Transaction.fromSerializedTx} constructor
-   */
-  public static fromRlpSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
-    return FeeMarketEIP1559Transaction.fromSerializedTx(serialized, opts)
   }
 
   /**
@@ -187,7 +147,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
 
     this.common = this._getCommon(opts.common, chainId)
-    this.chainId = this.common.chainIdBN()
+    this.chainId = this.common.chainId()
 
     if (!this.common.isActivatedEIP(1559)) {
       throw new Error('EIP-1559 not enabled on Common')

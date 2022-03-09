@@ -471,7 +471,7 @@ export class Eth {
    * @returns The chain ID.
    */
   async chainId(_params = []) {
-    const chainId = this._chain.config.chainCommon.chainIdBN()
+    const chainId = this._chain.config.chainCommon.chainId()
     return bnToHex(chainId)
   }
 
@@ -523,7 +523,7 @@ export class Eth {
       skipBalance: true,
       skipBlockGasLimitValidation: true,
     })
-    return bnToHex(gasUsed)
+    return `0x${gasUsed.toString(16)}`
   }
 
   /**
@@ -755,7 +755,7 @@ export class Eth {
       const { gasUsed, createdAddress } = runBlockResult.results[txIndex]
       return jsonRpcReceipt(
         receipt,
-        gasUsed,
+        new BN(gasUsed.toString(10)),
         effectiveGasPrice,
         block,
         tx,

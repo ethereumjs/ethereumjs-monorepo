@@ -20,6 +20,7 @@ type RPCArgs = {
   helprpc: boolean
   'jwt-secret'?: string
   rpcEngineAuth: boolean
+  rpcCors: string
 }
 
 /**
@@ -104,6 +105,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     rpcEnginePort,
     'jwt-secret': jwtSecretPath,
     rpcEngineAuth,
+    rpcCors,
   } = args
   const manager = new RPCManager(client, config)
   const jwtSecret = parseJwtSecret(config, jwtSecretPath)
@@ -121,6 +123,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
 
     if (rpc) {
       rpcHttpServer = createRPCServerListener({
+        rpcCors,
         server,
         withEngineMiddleware:
           withEngineMethods && rpcEngineAuth
@@ -140,6 +143,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     }
     if (ws) {
       const opts: any = {
+        rpcCors,
         server,
         withEngineMiddleware: withEngineMethods && rpcEngineAuth ? { jwtSecret } : undefined,
       }
@@ -166,6 +170,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     server.on('response', onBatchResponse)
 
     createRPCServerListener({
+      rpcCors,
       server,
       withEngineMiddleware: rpcEngineAuth
         ? {

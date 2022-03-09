@@ -15,12 +15,24 @@ export const MAX_INTEGER = new BN(
 )
 
 /**
+ * The max integer that the evm can handle (2^256-1) as a bigint
+ */
+export const MAX_INTEGER_BIGINT = BigInt(2) ** BigInt(256) - BigInt(1)
+
+/**
  * 2^256
+ *
+ * @deprecated bn.js constants are deprecated, please use the newly introduced bigint constants
  */
 export const TWO_POW256 = new BN(
   '10000000000000000000000000000000000000000000000000000000000000000',
   16
 )
+
+/**
+ * 2^256
+ */
+export const TWO_POW256_BIGINT = BigInt(2) ** BigInt(256)
 
 /**
  * Keccak-256 hash of null

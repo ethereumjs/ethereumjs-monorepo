@@ -57,7 +57,7 @@ tape(
           chainId: 5,
         })
         t.ok(
-          tx.common.chainIdBN().eqn(5),
+          tx.common.chainId().eqn(5),
           'should initialize Common with chain ID provided (supported chain ID)'
         )
 
@@ -65,7 +65,7 @@ tape(
           chainId: 99999,
         })
         t.ok(
-          tx.common.chainIdBN().eqn(99999),
+          tx.common.chainId().eqn(99999),
           'should initialize Common with chain ID provided (unsupported chain ID)'
         )
 
@@ -262,7 +262,7 @@ tape(
       st.end()
     })
 
-    t.test('sign() / senderS(), senderR(), yParity()', function (t) {
+    t.test('sign()', function (t) {
       for (const txType of txTypes) {
         let tx = txType.class.fromTxData(
           {
@@ -280,10 +280,6 @@ tape(
 
         tx = txType.class.fromTxData({}, { common })
         signed = tx.sign(pKey)
-
-        t.deepEqual(signed.senderR, signed.r, `should provide senderR() alias (${txType.name})`)
-        t.deepEqual(signed.senderS, signed.s, `should provide senderS() alias (${txType.name})`)
-        t.deepEqual(signed.yParity, signed.v, `should provide yParity() alias (${txType.name})`)
 
         t.deepEqual(
           tx.accessList,
@@ -511,7 +507,10 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
       chainId: txData.chainId,
       eips: [2718, 2929, 2930],
     }
-    const usedCommon = Common.forCustomChain('mainnet', customChainParams, 'berlin')
+    const usedCommon = Common.custom(customChainParams, {
+      baseChain: Chain.Mainnet,
+      hardfork: Hardfork.Berlin,
+    })
     usedCommon.setEIPs([2718, 2929, 2930])
 
     const expectedUnsignedRaw = Buffer.from(

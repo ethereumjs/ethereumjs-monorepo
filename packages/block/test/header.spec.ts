@@ -5,7 +5,7 @@ import { BlockHeader } from '../src/header'
 import { Block } from '../src'
 import { Mockchain } from './mockchain'
 import { PoaMockchain } from './poaMockchain'
-const testData = require('./testdata/testdata.json')
+const testDataPreLondon = require('./testdata/testdata_pre-london.json')
 const blocksMainnet = require('./testdata/blocks_mainnet.json')
 const blocksGoerli = require('./testdata/blocks_goerli.json')
 
@@ -262,12 +262,12 @@ tape('[Block]: Header functions', function (t) {
   })
 
   t.test('header validation -> poa checks', async function (st) {
-    const headerData = testData.blocks[0].blockHeader
+    const headerData = testDataPreLondon.blocks[0].blockHeader
 
-    const common = new Common({ chain: Chain.Goerli })
+    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Istanbul })
     const blockchain = new Mockchain()
 
-    const block = Block.fromRLPSerializedBlock(testData.genesisRLP, { common })
+    const block = Block.fromRLPSerializedBlock(testDataPreLondon.genesisRLP, { common })
     await blockchain.putBlock(block)
 
     headerData.number = 1
@@ -348,7 +348,10 @@ tape('[Block]: Header functions', function (t) {
       '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
       'hex'
     )
-    const poaBlock = Block.fromRLPSerializedBlock(testData.genesisRLP, { common, cliqueSigner })
+    const poaBlock = Block.fromRLPSerializedBlock(testDataPreLondon.genesisRLP, {
+      common,
+      cliqueSigner,
+    })
     await poaBlockchain.putBlock(poaBlock)
 
     header = BlockHeader.fromHeaderData(headerData, { common, cliqueSigner })
