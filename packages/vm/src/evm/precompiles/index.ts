@@ -160,21 +160,53 @@ function getPrecompile(address: Address, common: Common): PrecompileFunc {
   return precompiles['']
 }
 
-function getActivePrecompiles(common: Common): Address[] {
-  const activePrecompiles: Address[] = []
-  for (const addressString in precompiles) {
-    const address = new Address(Buffer.from(addressString, 'hex'))
-    if (getPrecompile(address, common)) {
-      activePrecompiles.push(address)
+type DeletePrecompile = {
+  address: Address
+}
+
+type AddPrecompile = {
+  address: Address
+  function: PrecompileFunc
+}
+
+type CustomPrecompile = AddPrecompile | DeletePrecompile
+
+function getActivePrecompiles(
+  common: Common,
+  customPrecompiles?: CustomPrecompile[]
+): Map<string, PrecompileFunc> {
+  const precompileMap = new Map()
+  if (customPrecompiles) {
+    for (const precompile of customPrecompiles) {
+      if ((<AddPrecompile>precompile).function) {
+        precompileMap.set(precompile.address.toString().substring(2), undefined)
+      } else {
+        precompileMap.set(
+          precompile.address.toString().substring(2),
+          (<AddPrecompile>precompile).function
+        )
+      }
     }
   }
-  return activePrecompiles
+  for (const addressString in precompiles) {
+    if (precompileMap.has(addressString)) {
+      continue
+    }
+    const address = new Address(Buffer.from(addressString, 'hex'))
+    const precompileFunc = getPrecompile(address, common)
+    if (precompileFunc) {
+      precompileMap.set(addressString, precompileFunc)
+    }
+  }
+  return precompileMap
 }
 
 export {
-  getPrecompile,
   PrecompileFunc,
   PrecompileInput,
+  DeletePrecompile,
+  AddPrecompile,
+  CustomPrecompile,
   ripemdPrecompileAddress,
   getActivePrecompiles,
 }

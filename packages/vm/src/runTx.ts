@@ -17,7 +17,6 @@ import { default as EVM, EVMResult } from './evm/evm'
 import { short } from './evm/opcodes/util'
 import Message from './evm/message'
 import TxContext from './evm/txContext'
-import { getActivePrecompiles } from './evm/precompiles'
 import { EIP2929StateManager } from './state/interface'
 import type {
   TxReceipt,
@@ -259,9 +258,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (this._common.isActivatedEIP(2929)) {
     // Add origin and precompiles to warm addresses
-    getActivePrecompiles(this._common).forEach((address: Address) =>
-      state.addWarmedAddress(address.buf)
-    )
+    for (const [addressStr] of this._precompiles) {
+      state.addWarmedAddress(Buffer.from(addressStr, 'hex'))
+    }
     state.addWarmedAddress(caller.buf)
     if (tx.to) {
       // Note: in case we create a contract, we do this in EVMs `_executeCreate` (this is also correct in inner calls, per the EIP)

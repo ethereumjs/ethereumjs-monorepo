@@ -1,5 +1,5 @@
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { Account, BNLike } from 'ethereumjs-util'
+import { Account, Address, BNLike } from 'ethereumjs-util'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain } from '@ethereumjs/common'
 import { StateManager, DefaultStateManager } from './state/index'
@@ -10,7 +10,7 @@ import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
 import { default as buildBlock, BuildBlockOpts, BlockBuilder } from './buildBlock'
 import { EVMResult, ExecResult } from './evm/evm'
 import { OpcodeList, getOpcodesForHF } from './evm/opcodes'
-import { getActivePrecompiles } from './evm/precompiles'
+import { CustomPrecompile, getActivePrecompiles, PrecompileFunc } from './evm/precompiles'
 import runBlockchain from './runBlockchain'
 const AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
@@ -117,6 +117,13 @@ export interface VMOpts {
    * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
    */
   hardforkByTD?: BNLike
+
+  /**
+   * Adds custom precompiles. This is hardfork-agnostic: these precompiles are always activated
+   * If only an address is given, the precompile is deleted
+   * If an address and a `PrecompileFunc` is given, this precompile is inserted or overridden
+   */
+  customPrecompiles?: CustomPrecompile[]
 }
 
 /**
@@ -143,6 +150,9 @@ export default class VM extends AsyncEventEmitter {
   protected _opcodes: OpcodeList
   protected readonly _hardforkByBlockNumber: boolean
   protected readonly _hardforkByTD?: BNLike
+  protected readonly _customPrecompiles?: CustomPrecompile[]
+
+  protected _precompiles!: Map<string, PrecompileFunc>
 
   /**
    * Cached emit() function, not for public usage
@@ -228,11 +238,13 @@ export default class VM extends AsyncEventEmitter {
     }
     this._common.on('hardforkChanged', () => {
       this._opcodes = getOpcodesForHF(this._common)
+      this._precompiles = getActivePrecompiles(this._common, this._customPrecompiles)
     })
 
     // Set list of opcodes based on HF
     // TODO: make this EIP-friendly
     this._opcodes = getOpcodesForHF(this._common)
+    this._precompiles = getActivePrecompiles(this._common, this._customPrecompiles)
 
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
@@ -285,7 +297,8 @@ export default class VM extends AsyncEventEmitter {
     if (this._opts.activatePrecompiles && !this._opts.stateManager) {
       await this.stateManager.checkpoint()
       // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
-      for (const address of getActivePrecompiles(this._common)) {
+      for (const [addressStr] of getActivePrecompiles(this._common)) {
+        const address = new Address(Buffer.from(addressStr, 'hex'))
         const account = await this.stateManager.getAccount(address)
         // Only do this if it is not overridden in genesis
         // Note: in the case that custom genesis has storage fields, this is preserved

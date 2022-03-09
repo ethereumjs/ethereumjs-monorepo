@@ -11,7 +11,7 @@ import {
 import { Block } from '@ethereumjs/block'
 import { ERROR, VmError } from '../exceptions'
 import { StateManager } from '../state/index'
-import { getPrecompile, PrecompileFunc } from './precompiles'
+import { PrecompileFunc } from './precompiles'
 import TxContext from './txContext'
 import Message from './message'
 import EEI from './eei'
@@ -521,7 +521,7 @@ export default class EVM {
    * if no such precompile exists.
    */
   getPrecompile(address: Address): PrecompileFunc {
-    return getPrecompile(address, this._vm._common)
+    return this._vm._precompiles.get(address.buf.toString('hex'))
   }
 
   /**
