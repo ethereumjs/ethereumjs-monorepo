@@ -1,6 +1,5 @@
 import assert from 'assert'
 import snappy from 'snappyjs'
-import { debug as createDebugLogger, Debugger } from 'debug'
 import { devp2pDebug } from '../util'
 import { BN, rlp } from 'ethereumjs-util'
 import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
@@ -8,13 +7,6 @@ import { Peer } from '../rlpx/peer'
 import { Protocol } from './protocol'
 
 const DEBUG_BASE_NAME = 'eth'
-const verbose = createDebugLogger('verbose').enabled
-
-/**
- * Will be set to the first successfully connected peer to allow for
- * debugging with the `devp2p:FIRST_PEER` debugger
- */
-let _firstPeer = ''
 
 type SendMethod = (code: ETH.MESSAGE_CODES, data: Buffer) => any
 
@@ -23,7 +15,6 @@ export class ETH extends Protocol {
   _status: ETH.StatusMsg | null
   _peerStatus: ETH.StatusMsg | null
   _send: SendMethod
-  _debug: Debugger
 
   // Eth64
   _hardfork: string = 'chainstart'
@@ -329,44 +320,6 @@ export class ETH extends Protocol {
 
   getMsgPrefix(msgCode: ETH.MESSAGE_CODES): string {
     return ETH.MESSAGE_CODES[msgCode]
-  }
-
-  private initMsgDebuggers() {
-    // Remote Peer IP logger
-    const ip = this._peer._socket.remoteAddress
-    if (ip) {
-      this._debug = devp2pDebug.extend(ip)
-    }
-  }
-
-  /**
-   * Called once on the peer where a first successful `STATUS`
-   * msg exchange could be achieved.
-   *
-   * Can be used together with the `devp2p:FIRST_PEER` debugger.
-   */
-  _addFirstPeerDebugger() {
-    const ip = this._peer._socket.remoteAddress
-    if (ip) {
-      this._debug = this._debug.extend(`FIRST_PEER`)
-      this._peer._addFirstPeerDebugger()
-      _firstPeer = ip
-    }
-  }
-
-  /**
-   * Debug message both on the generic as well as the
-   * per-message debug logger
-   * @param messageName Capitalized message name (e.g. `GET_BLOCK_HEADERS`)
-   * @param msg Message text to debug
-   */
-  private debug(messageName: string, msg: string) {
-    const ip = this._peer._socket.remoteAddress
-    if (ip) {
-      this._debug.extend(ip).extend(messageName)(msg)
-    } else {
-      this._debug.extend(messageName)(msg)
-    }
   }
 }
 

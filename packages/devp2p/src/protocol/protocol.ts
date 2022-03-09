@@ -1,13 +1,15 @@
 import ms from 'ms'
-import { debug as createDebugLogger } from 'debug'
+import { debug as createDebugLogger, Debugger } from 'debug'
 import { EventEmitter } from 'events'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
+
+type MessageCodes = { [key: number | string]: number | string }
 
 export class Protocol extends EventEmitter {
   _peer: Peer
   _statusTimeoutId: NodeJS.Timeout
-  _messageCodes: { [key: string : number }
-  _debug: createDebugLogger
+  _messageCodes: MessageCodes
+  _debug: Debugger
   _verbose: boolean
 
   /**
@@ -19,7 +21,7 @@ export class Protocol extends EventEmitter {
   // Message debuggers (e.g. { 'GET_BLOCK_HEADERS': [debug Object], ...})
   protected msgDebuggers: { [key: string]: (debug: string) => void } = {}
 
-  constructor(peer: Peer, _messageCodes: any, debugBaseName: string) {
+  constructor(peer: Peer, _messageCodes: MessageCodes, debugBaseName: string) {
     super()
 
     this._firstPeer = ''
