@@ -42,12 +42,8 @@ export default class MockServer extends Server {
   }
 
   async stop(): Promise<boolean> {
-    await new Promise((resolve) => {
-      setTimeout(() => {
-        destroyServer(this.location)
-        resolve(undefined)
-      }, 20)
-    })
+    await this.wait(20)
+    destroyServer(this.location)
     await super.stop()
     return this.started
   }

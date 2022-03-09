@@ -1,6 +1,10 @@
 export type ForkName =
+  | 'London+3860'
+  | 'London'
+  | 'Berlin'
   | 'Istanbul'
   | 'Byzantium'
+  | 'ConstantinopleFix'
   | 'Constantinople'
   | 'EIP150'
   | 'EIP158'

@@ -36,6 +36,7 @@ An Ethereum non-typed (legacy) transaction
 
 ### Methods
 
+- [errorStr](Transaction.md#errorstr)
 - [getBaseFee](Transaction.md#getbasefee)
 - [getDataFee](Transaction.md#getdatafee)
 - [getMessageToSign](Transaction.md#getmessagetosign)
@@ -83,7 +84,7 @@ BaseTransaction&lt;Transaction\&gt;.constructor
 
 #### Defined in
 
-[legacyTransaction.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L102)
+[legacyTransaction.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L106)
 
 ## Properties
 
@@ -97,7 +98,7 @@ BaseTransaction.common
 
 #### Defined in
 
-[legacyTransaction.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L23)
+[legacyTransaction.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L25)
 
 ___
 
@@ -111,7 +112,7 @@ BaseTransaction.data
 
 #### Defined in
 
-[baseTransaction.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L42)
+[baseTransaction.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L47)
 
 ___
 
@@ -125,7 +126,7 @@ BaseTransaction.gasLimit
 
 #### Defined in
 
-[baseTransaction.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L39)
+[baseTransaction.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L44)
 
 ___
 
@@ -135,7 +136,7 @@ ___
 
 #### Defined in
 
-[legacyTransaction.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L21)
+[legacyTransaction.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L23)
 
 ___
 
@@ -149,7 +150,7 @@ BaseTransaction.nonce
 
 #### Defined in
 
-[baseTransaction.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L38)
+[baseTransaction.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L43)
 
 ___
 
@@ -163,7 +164,7 @@ BaseTransaction.r
 
 #### Defined in
 
-[baseTransaction.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L45)
+[baseTransaction.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L50)
 
 ___
 
@@ -177,7 +178,7 @@ BaseTransaction.s
 
 #### Defined in
 
-[baseTransaction.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L46)
+[baseTransaction.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L51)
 
 ___
 
@@ -191,7 +192,7 @@ BaseTransaction.to
 
 #### Defined in
 
-[baseTransaction.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L40)
+[baseTransaction.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L45)
 
 ___
 
@@ -205,7 +206,7 @@ BaseTransaction.v
 
 #### Defined in
 
-[baseTransaction.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L44)
+[baseTransaction.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L49)
 
 ___
 
@@ -219,7 +220,7 @@ BaseTransaction.value
 
 #### Defined in
 
-[baseTransaction.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L41)
+[baseTransaction.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L46)
 
 ## Accessors
 
@@ -235,9 +236,13 @@ Alias for {@link BaseTransaction.type}
 
 `number`
 
+#### Inherited from
+
+BaseTransaction.transactionType
+
 #### Defined in
 
-[baseTransaction.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L112)
+[baseTransaction.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L118)
 
 ___
 
@@ -253,11 +258,35 @@ Note: legacy txs will return tx type `0`.
 
 `number`
 
+#### Inherited from
+
+BaseTransaction.type
+
 #### Defined in
 
-[baseTransaction.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L121)
+[baseTransaction.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L127)
 
 ## Methods
+
+### errorStr
+
+▸ **errorStr**(): `string`
+
+Return a compact error string representation of the object
+
+#### Returns
+
+`string`
+
+#### Overrides
+
+BaseTransaction.errorStr
+
+#### Defined in
+
+[legacyTransaction.ts:443](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L443)
+
+___
 
 ### getBaseFee
 
@@ -275,7 +304,7 @@ BaseTransaction.getBaseFee
 
 #### Defined in
 
-[baseTransaction.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L169)
+[baseTransaction.ts:175](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L175)
 
 ___
 
@@ -289,13 +318,13 @@ The amount of gas paid for the data in this tx
 
 `BN`
 
-#### Inherited from
+#### Overrides
 
 BaseTransaction.getDataFee
 
 #### Defined in
 
-[baseTransaction.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L180)
+[legacyTransaction.ts:232](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L232)
 
 ___
 
@@ -331,7 +360,7 @@ BaseTransaction.getMessageToSign
 
 #### Defined in
 
-[legacyTransaction.ts:210](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L210)
+[legacyTransaction.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L218)
 
 ▸ **getMessageToSign**(`hashMessage?`): `Buffer`
 
@@ -351,7 +380,7 @@ BaseTransaction.getMessageToSign
 
 #### Defined in
 
-[legacyTransaction.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L211)
+[legacyTransaction.ts:219](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L219)
 
 ___
 
@@ -371,7 +400,7 @@ BaseTransaction.getMessageToVerifySignature
 
 #### Defined in
 
-[legacyTransaction.ts:262](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L262)
+[legacyTransaction.ts:289](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L289)
 
 ___
 
@@ -391,7 +420,7 @@ BaseTransaction.getSenderAddress
 
 #### Defined in
 
-[baseTransaction.ts:264](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L264)
+[baseTransaction.ts:271](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L271)
 
 ___
 
@@ -411,7 +440,7 @@ BaseTransaction.getSenderPublicKey
 
 #### Defined in
 
-[legacyTransaction.ts:273](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L273)
+[legacyTransaction.ts:301](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L301)
 
 ___
 
@@ -431,7 +460,7 @@ BaseTransaction.getUpfrontCost
 
 #### Defined in
 
-[legacyTransaction.ts:224](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L224)
+[legacyTransaction.ts:250](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L250)
 
 ___
 
@@ -454,7 +483,7 @@ BaseTransaction.hash
 
 #### Defined in
 
-[legacyTransaction.ts:234](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L234)
+[legacyTransaction.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L260)
 
 ___
 
@@ -472,7 +501,7 @@ BaseTransaction.isSigned
 
 #### Defined in
 
-[baseTransaction.ts:231](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L231)
+[baseTransaction.ts:238](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L238)
 
 ___
 
@@ -502,7 +531,7 @@ BaseTransaction.raw
 
 #### Defined in
 
-[legacyTransaction.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L149)
+[legacyTransaction.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L157)
 
 ___
 
@@ -528,7 +557,7 @@ BaseTransaction.serialize
 
 #### Defined in
 
-[legacyTransaction.ts:172](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L172)
+[legacyTransaction.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L180)
 
 ___
 
@@ -560,7 +589,7 @@ BaseTransaction.sign
 
 #### Defined in
 
-[baseTransaction.ts:282](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L282)
+[baseTransaction.ts:289](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L289)
 
 ___
 
@@ -599,7 +628,7 @@ BaseTransaction.supports
 
 #### Defined in
 
-[baseTransaction.ts:141](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L141)
+[baseTransaction.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L147)
 
 ___
 
@@ -619,7 +648,7 @@ BaseTransaction.toCreationAddress
 
 #### Defined in
 
-[baseTransaction.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L199)
+[baseTransaction.ts:206](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L206)
 
 ___
 
@@ -639,7 +668,7 @@ BaseTransaction.toJSON
 
 #### Defined in
 
-[legacyTransaction.ts:330](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L330)
+[legacyTransaction.ts:360](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L360)
 
 ___
 
@@ -660,7 +689,7 @@ BaseTransaction.validate
 
 #### Defined in
 
-[baseTransaction.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L149)
+[baseTransaction.ts:155](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L155)
 
 ▸ **validate**(`stringError`): `boolean`
 
@@ -680,7 +709,7 @@ BaseTransaction.validate
 
 #### Defined in
 
-[baseTransaction.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L150)
+[baseTransaction.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L156)
 
 ▸ **validate**(`stringError`): `string`[]
 
@@ -700,7 +729,7 @@ BaseTransaction.validate
 
 #### Defined in
 
-[baseTransaction.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L151)
+[baseTransaction.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L157)
 
 ___
 
@@ -720,7 +749,7 @@ BaseTransaction.verifySignature
 
 #### Defined in
 
-[baseTransaction.ts:251](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L251)
+[baseTransaction.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L258)
 
 ___
 
@@ -747,7 +776,7 @@ in favor of the [Transaction.fromSerializedTx](Transaction.md#fromserializedtx) 
 
 #### Defined in
 
-[legacyTransaction.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L59)
+[legacyTransaction.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L61)
 
 ___
 
@@ -772,7 +801,7 @@ Format: `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
 
 #### Defined in
 
-[legacyTransaction.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L42)
+[legacyTransaction.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L44)
 
 ___
 
@@ -800,7 +829,7 @@ Notes:
 
 #### Defined in
 
-[legacyTransaction.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L33)
+[legacyTransaction.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L35)
 
 ___
 
@@ -825,4 +854,4 @@ Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
 
 #### Defined in
 
-[legacyTransaction.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L68)
+[legacyTransaction.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L70)

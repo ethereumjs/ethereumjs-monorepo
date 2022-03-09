@@ -7,11 +7,15 @@ import { LesProtocol } from '../net/protocol/lesprotocol'
 import { Peer } from '../net/peer/peer'
 import { Protocol } from '../net/protocol'
 import { Miner } from '../miner'
+import { VMExecution } from '../execution'
+import { Event } from '../types'
+
 import type { Block } from '@ethereumjs/block'
 
 interface FullEthereumServiceOptions extends EthereumServiceOptions {
   /* Serve LES requests (default: false) */
   lightserv?: boolean
+  execution: VMExecution
 }
 
 /**
@@ -22,6 +26,7 @@ export class FullEthereumService extends EthereumService {
   public synchronizer: FullSynchronizer
   public lightserv: boolean
   public miner: Miner | undefined
+  public execution: VMExecution
 
   /**
    * Create new ETH service
@@ -32,6 +37,7 @@ export class FullEthereumService extends EthereumService {
     this.lightserv = options.lightserv ?? false
 
     this.config.logger.info('Full sync mode')
+    this.execution = options.execution
 
     this.synchronizer = new FullSynchronizer({
       config: this.config,
@@ -41,13 +47,22 @@ export class FullEthereumService extends EthereumService {
       metaDB: options.metaDB,
       interval: this.interval,
     })
+    this.config.events.on(Event.SYNC_FETCHER_FETCHED, async (...args) => {
+      await this.synchronizer.processBlocks(options.execution, ...args)
+    })
 
     if (this.config.mine) {
       this.miner = new Miner({
         config: this.config,
         synchronizer: this.synchronizer,
+        execution: options.execution,
       })
     }
+  }
+
+  async open() {
+    await super.open()
+    return true
   }
 
   /**
@@ -169,7 +184,7 @@ export class FullEthereumService extends EthereumService {
       peer.eth?.send('PooledTransactions', { reqId, txs })
     } else if (message.name === 'GetReceipts') {
       const [reqId, hashes] = message.data
-      const { receiptsManager } = this.synchronizer.execution
+      const { receiptsManager } = this.execution
       if (!receiptsManager) return
       const receipts = []
       let receiptsSize = 0

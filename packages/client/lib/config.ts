@@ -17,6 +17,11 @@ export enum DataDirectory {
   Meta = 'meta',
 }
 
+export enum SyncMode {
+  Full = 'full',
+  Light = 'light',
+}
+
 export interface ConfigOptions {
   /**
    * Specify the chain by providing a {@link Common} instance,
@@ -31,7 +36,7 @@ export interface ConfigOptions {
    *
    * Default: 'full'
    */
-  syncmode?: string
+  syncmode?: SyncMode
 
   /**
    * Provide a custom VM instance to process blocks
@@ -203,7 +208,7 @@ export class Config {
   public readonly events: EventBusType
 
   public static readonly CHAIN_DEFAULT = 'mainnet'
-  public static readonly SYNCMODE_DEFAULT = 'full'
+  public static readonly SYNCMODE_DEFAULT = SyncMode.Full
   public static readonly LIGHTSERV_DEFAULT = false
   public static readonly DATADIR_DEFAULT = `./datadir`
   public static readonly TRANSPORTS_DEFAULT = ['rlpx', 'libp2p']
@@ -215,7 +220,7 @@ export class Config {
   public static readonly DEBUGCODE_DEFAULT = false
 
   public readonly logger: Logger
-  public readonly syncmode: string
+  public readonly syncmode: SyncMode
   public readonly vm?: VM
   public readonly lightserv: boolean
   public readonly datadir: string
@@ -324,7 +329,7 @@ export class Config {
     const networkDir = this.getNetworkDirectory()
     switch (dir) {
       case DataDirectory.Chain: {
-        const chainDataDirName = this.syncmode === 'light' ? 'lightchain' : 'chain'
+        const chainDataDirName = this.syncmode === SyncMode.Light ? 'lightchain' : 'chain'
         return `${networkDir}/${chainDataDirName}`
       }
       case DataDirectory.State:

@@ -7,15 +7,18 @@ import { checkError } from '../util'
 function createChain() {
   const block = {
     uncleHeaders: ['0x1', '0x2', '0x3'],
-  }
-  const header = {
-    number: new BN('5'),
+    transactions: [],
+    header: {
+      hash: () => Buffer.from([1]),
+      number: new BN('5'),
+    },
   }
   return {
     blocks: { latest: block },
-    headers: { latest: header },
+    headers: { latest: block.header },
     getBlock: () => block,
-    getLatestHeader: () => header,
+    getLatestBlock: () => block,
+    getLatestHeader: () => block.header,
   }
 }
 

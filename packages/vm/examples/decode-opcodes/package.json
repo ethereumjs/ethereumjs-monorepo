@@ -1,7 +1,0 @@
-{
-  "name": "decode-opcodes",
-  "private": true,
-  "scripts": {
-    "example": "ts-node index.ts"
-  }
-}

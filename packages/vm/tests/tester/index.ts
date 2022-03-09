@@ -22,12 +22,12 @@ import blockchainTestsRunner from './runners/BlockchainTestsRunner'
  * --state: run state tests
  * --blockchain: run blockchain tests
  * --fork: fork to use for these tests
- * --skip: comma seperated list of tests to skip. choices of: all,broken,permanent,slow. Defaults to all
- * --runSkipped: comma seperated list of tests to skip if --skip is not set. choices of: all,broken,permanent,slow. Defaults to none
+ * --skip: comma-separated list of tests to skip. choices of: all,broken,permanent,slow. Defaults to all
+ * --runSkipped: comma-separated list of tests to skip if --skip is not set. choices of: all,broken,permanent,slow. Defaults to none
  * --file: test file to run
  * --test: test name to run
  * --dir: test directory to look for tests
- * --excludeDir: test directory to exlude from testing
+ * --excludeDir: test directory to exclude from testing
  * --testsPath: root directory of tests to look (default: '../ethereum-tests')
  * --customTestsPath: custom directory to look for tests (e.g. '../../my_custom_test_folder')
  * --customStateTest: run a file with a custom state test (not in test directory)
@@ -92,6 +92,24 @@ async function runTests() {
   runnerArgs.value = argv.value // GeneralStateTests
   runnerArgs.debug = argv.debug // BlockchainTests
   runnerArgs.reps = argv.reps // test repetitions
+
+  /**
+   * Modify the forkConfig string to ensure it works with RegEx (escape `+` characters)
+   */
+  if (testGetterArgs.forkConfig.includes('+')) {
+    let str = testGetterArgs.forkConfig
+    const indicies = []
+    for (let i = 0; i < str.length; i++) {
+      if (str[i] == '+') {
+        indicies.push(i)
+      }
+    }
+    // traverse array in reverse order to ensure indicies match when we replace the '+' with '/+'
+    for (let i = indicies.length - 1; i >= 0; i--) {
+      str = `${str.substr(0, indicies[i])}\\${str.substr(indicies[i])}`
+    }
+    testGetterArgs.forkConfig = str
+  }
 
   let expectedTests: number | undefined
   if (argv['verify-test-amount-alltests']) {

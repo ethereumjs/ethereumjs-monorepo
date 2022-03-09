@@ -11,6 +11,7 @@
 - [Mainnet](Chain.md#mainnet)
 - [Rinkeby](Chain.md#rinkeby)
 - [Ropsten](Chain.md#ropsten)
+- [Sepolia](Chain.md#sepolia)
 
 ## Enumeration members
 
@@ -61,3 +62,13 @@ ___
 #### Defined in
 
 [packages/common/src/index.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L61)
+
+___
+
+### Sepolia
+
+• **Sepolia** = `11155111`
+
+#### Defined in
+
+[packages/common/src/index.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L65)

@@ -29,10 +29,10 @@ export const SKIP_BROKEN = [
  * Tests skipped due to system specifics / design considerations
  */
 export const SKIP_PERMANENT = [
-  'SuicidesMixingCoinbase', // sucides to the coinbase, since we run a blockLevel we create coinbase account.
-  'static_SuicidesMixingCoinbase', // sucides to the coinbase, since we run a blockLevel we create coinbase account.
-  'ForkUncle', // Only BlockchainTest, correct behaviour unspecified (?)
-  'UncleFromSideChain', // Only BlockchainTest, same as ForkUncle, the TD is the same for two diffent branches so its not clear which one should be the finally chain
+  'SuicidesMixingCoinbase', // suicides to the coinbase, since we run a blockLevel we create coinbase account.
+  'static_SuicidesMixingCoinbase', // suicides to the coinbase, since we run a blockLevel we create coinbase account.
+  'ForkUncle', // Only BlockchainTest, correct behavior unspecified (?)
+  'UncleFromSideChain', // Only BlockchainTest, same as ForkUncle, the TD is the same for two different branches so its not clear which one should be the finally chain
 ]
 
 /**
@@ -255,10 +255,19 @@ export function getTestDirs(network: string, testType: string) {
 
 /**
  * Returns a Common for the given network (a test parameter)
- * @param {String} network - the network field of a test
+ * @param {String} network - the network field of a test.
+ * If this network has a `+` sign, it will also include these EIPs.
+ * For instance, London+3855 will activate the network on the London hardfork, but will also activate EIP 3855.
+ * Multiple EIPs can also be activated by seperating them with a `+` sign.
+ * For instance, "London+3855+3860" will also activate EIP-3855 and EIP-3860.
  * @returns {Common} the Common which should be used
  */
-export function getCommon(network: string) {
+export function getCommon(targetNetwork: string) {
+  let network = targetNetwork
+  if (network.includes('+')) {
+    const index = network.indexOf('+')
+    network = network.slice(0, index)
+  }
   const networkLowercase = network.toLowerCase()
   if (normalHardforks.map((str) => str.toLowerCase()).includes(networkLowercase)) {
     // normal hard fork, return the common with this hard fork
@@ -289,13 +298,18 @@ export function getCommon(network: string) {
         })
       }
     }
-    return Common.forCustomChain(
-      'mainnet',
+    const common = Common.custom(
       {
         hardforks: testHardforks,
+        defaultHardfork: hfName,
       },
-      hfName
+      { eips: [3607] }
     )
+    const eips = targetNetwork.match(/(?<=\+)(.\d+)/g)
+    if (eips) {
+      common.setEIPs(eips.map((e: string) => parseInt(e)))
+    }
+    return common
   } else {
     // this is not a "default fork" network, but it is a "transition" network. we will test the VM if it transitions the right way
     const transitionForks =

@@ -1,39 +1,35 @@
 import { Block, HeaderData } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
-import {
-  Address,
-  BN,
-  toBuffer,
-  toType,
-  TypeOutput,
-  bufferToHex,
-  intToHex,
-  rlp,
-} from 'ethereumjs-util'
+import { toBuffer, bufferToHex, rlp, BN } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { middleware, validators } from '../validation'
-import { INTERNAL_ERROR } from '../error-code'
+import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
+import { PendingBlock } from '../../miner'
 import type VM from '@ethereumjs/vm'
 import type EthereumClient from '../../client'
 import type { Chain } from '../../blockchain'
+import type { VMExecution } from '../../execution'
 import type { Config } from '../../config'
 import type { EthereumService } from '../../service'
 import type { FullSynchronizer } from '../../sync'
 import type { TxPool } from '../../sync/txpool'
 
 enum Status {
-  VALID = 'VALID',
+  ACCEPTED = 'ACCEPTED',
   INVALID = 'INVALID',
+  INVALID_BLOCK_HASH = 'INVALID_BLOCK_HASH',
+  INVALID_TERMINAL_BLOCK = 'INVALID_TERMINAL_BLOCK',
   SYNCING = 'SYNCING',
+  VALID = 'VALID',
 }
 
-type ExecutionPayload = {
+type ExecutionPayloadV1 = {
   parentHash: string // DATA, 32 Bytes
-  coinbase: string // DATA, 20 Bytes
+  feeRecipient: string // DATA, 20 Bytes
   stateRoot: string // DATA, 32 Bytes
-  receiptRoot: string // DATA, 32 bytes
+  receiptsRoot: string // DATA, 32 bytes
   logsBloom: string // DATA, 256 Bytes
-  random: string // DATA, 32 Bytes
+  prevRandao: string // DATA, 32 Bytes
   blockNumber: string // QUANTITY, 64 Bits
   gasLimit: string // QUANTITY, 64 Bits
   gasUsed: string // QUANTITY, 64 Bits
@@ -47,30 +43,38 @@ type ExecutionPayload = {
   // as defined in EIP-2718.
 }
 
-type PreparePayloadParamsObject = {
-  parentHash: string
-  timestamp: string
-  random: string
-  feeRecipient: string
+type ForkchoiceStateV1 = {
+  headBlockHash: string
+  safeBlockHash: string
+  finalizedBlockHash: string
 }
 
-type PayloadResult = {
-  block?: Block
-  random?: string
-  error?: Error
+type PayloadAttributesV1 = {
+  timestamp: string
+  prevRandao: string
+  suggestedFeeRecipient: string
+}
+
+type PayloadStatusV1 = {
+  status: Status
+  latestValidHash: string | null
+  validationError: string | null
+}
+
+type ForkchoiceResponseV1 = {
+  payloadStatus: PayloadStatusV1
+  payloadId: string | null
+}
+
+type TransitionConfigurationV1 = {
+  terminalTotalDifficulty: string
+  terminalBlockHash: string
+  terminalBlockNumber: string
 }
 
 const EngineError = {
-  ActionNotAllowed: {
-    code: 2,
-    message: 'Action not allowed',
-  },
-  UnknownHeader: {
-    code: 4,
-    message: 'Unknown header',
-  },
   UnknownPayload: {
-    code: 5,
+    code: -32001,
     message: 'Unknown payload',
   },
 }
@@ -78,15 +82,15 @@ const EngineError = {
 /**
  * Formats a block to {@link ExecutionPayload}.
  */
-const blockToExecutionPayload = (block: Block, random: string) => {
+const blockToExecutionPayload = (block: Block) => {
   const header = block.toJSON().header!
   const transactions = block.transactions.map((tx) => bufferToHex(tx.serialize())) ?? []
-  const payload: ExecutionPayload = {
+  const payload: ExecutionPayloadV1 = {
     blockNumber: header.number!,
     parentHash: header.parentHash!,
-    coinbase: header.coinbase!,
+    feeRecipient: header.coinbase!,
     stateRoot: header.stateRoot!,
-    receiptRoot: header.receiptTrie!,
+    receiptsRoot: header.receiptTrie!,
     logsBloom: header.logsBloom!,
     gasLimit: header.gasLimit!,
     gasUsed: header.gasUsed!,
@@ -94,67 +98,22 @@ const blockToExecutionPayload = (block: Block, random: string) => {
     extraData: header.extraData!,
     baseFeePerGas: header.baseFeePerGas!,
     blockHash: bufferToHex(block.hash()),
-    random,
+    prevRandao: header.mixHash!,
     transactions,
   }
   return payload
 }
 
 /**
- * Request a block by hash from connected peers.
- * May help recover missing/reorged blocks around merge transition.
- * Times out after 10s.
- * @throws {@link EngineError.UnknownHeader}
+ * Searches for a block in {@link ValidBlocks} then the blockchain.
  */
-const getBlockFromPeers = async (hash: Buffer, chain: Chain, service: EthereumService) => {
-  const timeout = setTimeout(() => {
-    throw EngineError.UnknownHeader
-  }, 10000)
-  const { peers } = service.pool
-  for (const peer of peers) {
-    try {
-      const headerResult = await peer.eth!.getBlockHeaders({ block: hash, max: 1 })
-      if (headerResult) {
-        const header = headerResult[1]
-        const bodiesResult = await peer.eth!.getBlockBodies({ hashes: [hash] })
-        if (bodiesResult) {
-          const blockBody = bodiesResult[1][0]
-          const block = Block.fromValuesArray([header[0].raw(), ...blockBody], {
-            common: chain.config.chainCommon,
-          })
-          clearTimeout(timeout)
-          return block
-        }
-      }
-    } catch (error) {
-      chain.config.logger.debug(`Error trying to get block from network peer ${peer.id}: ${error}`)
-    }
-  }
-  throw EngineError.UnknownHeader
-}
-
-/**
- * Searches for a block in {@link ValidBlocks}, then the blockchain, then the network.
- * @throws {@link EngineError.UnknownHeader}
- */
-const findBlock = async (
-  hash: Buffer,
-  validBlocks: ValidBlocks,
-  chain: Chain,
-  service: EthereumService
-) => {
+const findBlock = async (hash: Buffer, validBlocks: ValidBlocks, chain: Chain) => {
   const parentBlock = validBlocks.get(hash.toString('hex'))
   if (parentBlock) {
     return parentBlock
   } else {
     // search in chain
-    try {
-      const parentBlock = await chain.getBlock(hash)
-      return parentBlock
-    } catch (error) {
-      // block not found, request from network (devp2p)
-      return await getBlockFromPeers(hash, chain, service)
-    }
+    return await chain.getBlock(hash)
   }
 }
 
@@ -165,21 +124,19 @@ const recursivelyFindParents = async (
   vmHeadHash: Buffer,
   parentHash: Buffer,
   validBlocks: ValidBlocks,
-  chain: Chain,
-  service: EthereumService
+  chain: Chain
 ) => {
-  if (parentHash.equals(vmHeadHash)) {
+  if (parentHash.equals(vmHeadHash) || parentHash.equals(Buffer.alloc(32))) {
     return []
   }
   const parentBlocks = []
-  const block = await findBlock(parentHash, validBlocks, chain, service)
+  const block = await findBlock(parentHash, validBlocks, chain)
   parentBlocks.push(block)
-  while (!vmHeadHash.equals(parentBlocks[parentBlocks.length - 1].header.parentHash)) {
+  while (!parentBlocks[parentBlocks.length - 1].hash().equals(parentHash)) {
     const block: Block = await findBlock(
       parentBlocks[parentBlocks.length - 1].header.parentHash,
       validBlocks,
-      chain,
-      service
+      chain
     )
     parentBlocks.push(block)
   }
@@ -197,9 +154,26 @@ const txsTrieRoot = async (txs: TypedTransaction[]) => {
   return trie.root
 }
 
-type PayloadId = number
+/**
+ * Returns the block hash as a 0x-prefixed hex string if found valid in validBlocks or the blockchain, otherwise returns null.
+ */
+const validHash = async (
+  hash: Buffer,
+  validBlocks: ValidBlocks,
+  chain: Chain
+): Promise<string | null> => {
+  if (validBlocks.get(hash.toString('hex'))) {
+    return bufferToHex(hash)
+  }
+  try {
+    await chain.getBlock(hash)
+  } catch (error: any) {
+    return null
+  }
+  return bufferToHex(hash)
+}
+
 type UnprefixedBlockHash = string
-type PendingPayloads = Map<PayloadId, PayloadResult>
 type ValidBlocks = Map<UnprefixedBlockHash, Block>
 
 /**
@@ -208,15 +182,16 @@ type ValidBlocks = Map<UnprefixedBlockHash, Block>
  */
 export class Engine {
   private client: EthereumClient
+  private execution: VMExecution
   private service: EthereumService
   private chain: Chain
   private config: Config
   private synchronizer: FullSynchronizer
   private vm: VM
   private txPool: TxPool
-  private pendingPayloads: PendingPayloads
+  private pendingBlock: PendingBlock
   private validBlocks: ValidBlocks
-  private nextPayloadId = 0
+  private lastMessageID = new BN(0)
 
   /**
    * Create engine_* RPC module
@@ -228,31 +203,24 @@ export class Engine {
     this.chain = this.service.chain
     this.config = this.chain.config
     this.synchronizer = this.service.synchronizer as FullSynchronizer
-    this.vm = this.synchronizer.execution?.vm
+    if (!this.client.execution) {
+      throw Error('execution required for engine module')
+    }
+    this.execution = this.client.execution
+    this.vm = this.client.execution.vm
     this.txPool = (this.service.synchronizer as FullSynchronizer).txPool
-    this.pendingPayloads = new Map()
+    this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.txPool })
     this.validBlocks = new Map()
 
-    this.preparePayload = middleware(this.preparePayload.bind(this), 1, [
+    this.newPayloadV1 = middleware(this.newPayloadV1.bind(this), 1, [
       [
         validators.object({
           parentHash: validators.blockHash,
-          timestamp: validators.hex,
-          random: validators.hex,
           feeRecipient: validators.address,
-        }),
-      ],
-    ])
-    this.getPayload = middleware(this.getPayload.bind(this), 1, [[validators.hex]])
-    this.executePayload = middleware(this.executePayload.bind(this), 1, [
-      [
-        validators.object({
-          parentHash: validators.blockHash,
-          coinbase: validators.address,
           stateRoot: validators.hex,
-          receiptRoot: validators.hex,
+          receiptsRoot: validators.hex,
           logsBloom: validators.hex,
-          random: validators.hex,
+          prevRandao: validators.hex,
           blockNumber: validators.hex,
           gasLimit: validators.hex,
           gasUsed: validators.hex,
@@ -264,166 +232,32 @@ export class Engine {
         }),
       ],
     ])
-    this.consensusValidated = middleware(this.consensusValidated.bind(this), 1, [
-      [
-        validators.object({
-          blockHash: validators.blockHash,
-          status: validators.values(['VALID', 'INVALID']),
-        }),
-      ],
-    ])
-    this.forkchoiceUpdated = middleware(this.forkchoiceUpdated.bind(this), 1, [
+
+    this.forkchoiceUpdatedV1 = middleware(this.forkchoiceUpdatedV1.bind(this), 1, [
       [
         validators.object({
           headBlockHash: validators.blockHash,
+          safeBlockHash: validators.blockHash,
           finalizedBlockHash: validators.blockHash,
         }),
       ],
+      [
+        validators.optional(
+          validators.object({
+            timestamp: validators.hex,
+            prevRandao: validators.hex,
+            suggestedFeeRecipient: validators.address,
+          })
+        ),
+      ],
     ])
-  }
 
-  /**
-   * Notifies the client will need to propose a block at some point in the future and
-   * that the payload will be requested by the corresponding engine_getPayload near
-   * to that point in time.
-   *
-   * @param params An array of one parameter:
-   *   1. An object
-   *       * parentHash - hash of the parent block
-   *       * timestamp - value for the `timestamp` field of the new payload
-   *       * random - value for the `random` field of the new payload
-   *       * feeRecipient - suggested value for the `coinbase` field of the new payload
-   * @returns A response object or an error. Response object:
-   *       * payloadId - identifier of the payload building process
-   */
-  async preparePayload(params: [PreparePayloadParamsObject]) {
-    const { timestamp, random, feeRecipient } = params[0]
-    const parentHash = toBuffer(params[0].parentHash)
+    this.getPayloadV1 = middleware(this.getPayloadV1.bind(this), 1, [[validators.hex]])
 
-    const payloadId = this.nextPayloadId.valueOf() // clone with valueOf()
-    this.pendingPayloads.set(payloadId, { random })
-    this.nextPayloadId++
-
-    setImmediate(async () => {
-      try {
-        const vmCopy = this.vm.copy()
-        const vmHead = this.chain.headers.latest!
-        const parentBlocks = await recursivelyFindParents(
-          vmHead.hash(),
-          parentHash,
-          this.validBlocks,
-          this.chain,
-          this.service
-        )
-
-        for (const parent of parentBlocks) {
-          const td = await vmCopy.blockchain.getTotalDifficulty(parent.hash())
-          vmCopy._common.setHardforkByBlockNumber(parent.header.number, td)
-          await vmCopy.runBlock({ block: parent })
-          await vmCopy.blockchain.putBlock(parent)
-        }
-
-        const parentBlock = await vmCopy.blockchain.getBlock(parentHash)
-        const number = parentBlock.header.number.addn(1)
-        const { gasLimit } = parentBlock.header
-        const baseFeePerGas = parentBlock.header.calcNextBaseFee()
-
-        // Set the state root to ensure the resulting state
-        // is based on the parent block's state
-        await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
-
-        const td = await vmCopy.blockchain.getTotalDifficulty(vmHead.hash())
-        vmCopy._common.setHardforkByBlockNumber(vmHead.number, td)
-        const blockBuilder = await vmCopy.buildBlock({
-          parentBlock,
-          headerData: {
-            timestamp,
-            number,
-            gasLimit,
-            baseFeePerGas,
-            coinbase: Address.fromString(feeRecipient),
-          },
-          blockOpts: {
-            putBlockIntoBlockchain: false,
-          },
-        })
-
-        const txs = await this.txPool.txsByPriceAndNonce(vmCopy.stateManager, baseFeePerGas)
-        this.config.logger.info(
-          `Engine: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`
-        )
-        let index = 0
-        let blockFull = false
-        while (index < txs.length && !blockFull) {
-          try {
-            await blockBuilder.addTransaction(txs[index])
-          } catch (error: any) {
-            if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
-              if (blockBuilder.gasUsed.gt(gasLimit.subn(21000))) {
-                // If block has less than 21000 gas remaining, consider it full
-                blockFull = true
-                this.config.logger.info(
-                  `Engine: Assembled block full (gasLeft: ${gasLimit.sub(blockBuilder.gasUsed)})`
-                )
-              }
-            } else {
-              // If there is an error adding a tx, it will be skipped
-              const hash = bufferToHex(txs[index].hash())
-              this.config.logger.debug(
-                `Skipping tx ${hash}, error encountered when trying to add tx:\n${error}`
-              )
-            }
-          }
-          index++
-        }
-        const block = await blockBuilder.build()
-        this.pendingPayloads.set(payloadId, { block, random })
-        this.validBlocks.set(block.hash().toString('hex'), block)
-        this.config.logger.info(
-          `Engine: Finished assembling block number=${block.header.number} txs=${
-            txs.length
-          } hash=${block.hash().toString('hex')}`
-        )
-      } catch (error: any) {
-        this.pendingPayloads.set(payloadId, { error })
-      }
-    })
-
-    return { payloadId: intToHex(payloadId) }
-  }
-
-  /**
-   * Given payloadId, returns the most recent version of an execution payload
-   * that is available by the time of the call or responds with an error.
-   *
-   * @param params An array of one parameter:
-   *   1. payloadId - identifier of the payload building process
-   * @returns Instance of {@link ExecutionPayload} or an error
-   */
-  async getPayload(params: [string]) {
-    const payloadId = toType(params[0], TypeOutput.Number)
-    const payload = this.pendingPayloads.get(payloadId)
-    if (!payload) {
-      throw EngineError.UnknownPayload
-    }
-    if (payload.error) {
-      this.pendingPayloads.delete(payloadId)
-      throw {
-        code: INTERNAL_ERROR,
-        message: payload.error.message.toString(),
-      }
-    }
-    if (!payload.block || !payload.random) {
-      // TODO implement:
-      // 1) an interrupt to finish processing txs and return the block
-      // 2) the ability to add/shuffle new txs while waiting (to maximize mev)
-      throw {
-        code: INTERNAL_ERROR,
-        message: 'Payload not ready, please retry',
-      }
-    }
-    this.pendingPayloads.delete(payloadId)
-    return blockToExecutionPayload(payload.block, payload.random)
+    this.exchangeTransitionConfigurationV1 = middleware(
+      this.exchangeTransitionConfigurationV1.bind(this),
+      0
+    )
   }
 
   /**
@@ -431,117 +265,130 @@ export class Engine {
    * rule set (EIP-3675) and returns the status of the verification.
    *
    * @param params An array of one parameter:
-   *   1. An object as an instance of {@link ExecutionPayload}
-   * @returns An object:
+   *   1. An object as an instance of {@link ExecutionPayloadV1}
+   * @returns An object of shape {@link PayloadStatusV1}:
    *   1. status: String - the result of the payload execution
    *        VALID - given payload is valid
    *        INVALID - given payload is invalid
    *        SYNCING - sync process is in progress
+   *        ACCEPTED - blockHash is valid, doesn't extend the canonical chain, hasn't been fully validated
+   *        INVALID_BLOCK_HASH - blockHash validation failed
+   *        INVALID_TERMINAL_BLOCK - block fails transition block validity
+   *   2. latestValidHash: DATA|null - the hash of the most recent
+   *      valid block in the branch defined by payload and its ancestors
+   *   3. validationError: String|null - validation error message
    */
-  async executePayload(params: [ExecutionPayload]) {
+  async newPayloadV1(params: [ExecutionPayloadV1]): Promise<PayloadStatusV1> {
     const [payloadData] = params
-    const { blockNumber: number, receiptRoot: receiptTrie, transactions } = payloadData
-
-    if (new BN(toBuffer(number)).gt(this.chain.headers.height.addn(1))) {
-      return { status: Status.SYNCING }
-    }
+    const {
+      blockNumber: number,
+      receiptsRoot: receiptTrie,
+      prevRandao: mixHash,
+      feeRecipient: coinbase,
+      transactions,
+      parentHash,
+    } = payloadData
+    const common = this.config.chainCommon
 
     try {
-      const txs = []
-      for (const [index, serializedTx] of transactions.entries()) {
-        try {
-          const tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), {
-            common: this.config.chainCommon,
-          })
-          txs.push(tx)
-        } catch (error) {
-          this.config.logger.error(`Invalid tx at index ${index}: ${error}`)
-          return { status: Status.INVALID }
-        }
-      }
+      await findBlock(toBuffer(parentHash), this.validBlocks, this.chain)
+    } catch (error: any) {
+      // TODO if we can't find the parent and the block doesn't extend the canonical chain,
+      // return ACCEPTED when optimistic sync is supported to store the block for later processing
+      return { status: Status.SYNCING, validationError: null, latestValidHash: null }
+    }
 
-      const transactionsTrie = await txsTrieRoot(txs)
-      const header: HeaderData = {
-        ...payloadData,
-        number,
-        receiptTrie,
-        transactionsTrie,
-      }
-
-      let block
+    const txs = []
+    for (const [index, serializedTx] of transactions.entries()) {
       try {
-        block = Block.fromBlockData(
-          { header, transactions: txs },
-          { common: this.config.chainCommon }
-        )
+        const tx = TransactionFactory.fromSerializedData(toBuffer(serializedTx), { common })
+        txs.push(tx)
       } catch (error) {
-        this.config.logger.debug(`Error verifying block: ${error}`)
-        return { status: Status.INVALID }
+        const validationError = `Invalid tx at index ${index}: ${error}`
+        this.config.logger.error(validationError)
+        const latestValidHash = await validHash(
+          toBuffer(payloadData.parentHash),
+          this.validBlocks,
+          this.chain
+        )
+        return { status: Status.INVALID, latestValidHash, validationError }
       }
+    }
 
-      const vmCopy = this.vm.copy()
-      const vmHeadHash = this.chain.headers.latest!.hash()
-      const parentBlocks = await recursivelyFindParents(
-        vmHeadHash,
+    const transactionsTrie = await txsTrieRoot(txs)
+    const header: HeaderData = {
+      ...payloadData,
+      number,
+      receiptTrie,
+      transactionsTrie,
+      mixHash,
+      coinbase,
+    }
+
+    let block
+    try {
+      block = Block.fromBlockData({ header, transactions: txs }, { common })
+
+      // Verify blockHash matches payload
+      if (!block.hash().equals(toBuffer(payloadData.blockHash))) {
+        const validationError = `Invalid blockHash, expected: ${
+          payloadData.blockHash
+        }, received: ${bufferToHex(block.hash())}`
+        this.config.logger.debug(validationError)
+        const latestValidHash = await validHash(
+          toBuffer(header.parentHash),
+          this.validBlocks,
+          this.chain
+        )
+        return { status: Status.INVALID_BLOCK_HASH, latestValidHash, validationError }
+      }
+    } catch (error) {
+      const validationError = `Error verifying block during init: ${error}`
+      this.config.logger.debug(validationError)
+      const latestValidHash = await validHash(
+        toBuffer(header.parentHash),
+        this.validBlocks,
+        this.chain
+      )
+      return { status: Status.INVALID, latestValidHash, validationError }
+    }
+
+    const vmCopy = this.vm.copy()
+    const vmHead = this.chain.headers.latest!
+    let blocks: Block[]
+    try {
+      blocks = await recursivelyFindParents(
+        vmHead.hash(),
         block.header.parentHash,
         this.validBlocks,
-        this.chain,
-        this.service
+        this.chain
       )
-
-      for (const parent of parentBlocks) {
-        await vmCopy.runBlock({ block: parent })
-        await vmCopy.blockchain.putBlock(parent)
-      }
-
-      try {
-        await vmCopy.runBlock({ block })
-      } catch (error) {
-        this.config.logger.debug(`Error verifying block: ${error}`)
-        return { status: Status.INVALID }
-      }
-
-      this.validBlocks.set(block.hash().toString('hex'), block)
-      return { status: Status.VALID }
-    } catch (error: any) {
-      throw {
-        code: INTERNAL_ERROR,
-        message: error.message.toString(),
-      }
-    }
-  }
-
-  /**
-   * Communicates that full consensus validation of an execution payload
-   * is complete along with its corresponding status.
-   *
-   * @param params An array of one parameter:
-   *   1. An object - Payload validity status with respect to the consensus rules:
-   *        blockHash - block hash value of the payload
-   *        status: String: VALID|INVALID - result of the payload validation with respect to the proof-of-stake consensus rules
-   * @returns None or an error
-   */
-  async consensusValidated(params: [{ blockHash: string; status: string }]) {
-    const { status } = params[0]
-    let { blockHash } = params[0]
-    blockHash = blockHash.slice(2)
-
-    const block = this.validBlocks.get(blockHash)
-
-    if (!block && status === Status.VALID) {
-      try {
-        // Check if block may already be in canonical chain before throwing unknown header.
-        await this.chain.getBlock(Buffer.from(blockHash, 'hex'))
-      } catch (error) {
-        throw EngineError.UnknownHeader
-      }
+    } catch (error) {
+      return { status: Status.SYNCING, latestValidHash: null, validationError: null }
     }
 
-    if (block && status === Status.INVALID) {
-      this.validBlocks.delete(blockHash)
+    blocks.push(block)
+
+    try {
+      for (const [i, block] of blocks.entries()) {
+        const root = (i > 0 ? blocks[i - 1] : await this.chain.getBlock(block.header.parentHash))
+          .header.stateRoot
+        await vmCopy.runBlock({ block, root })
+        await vmCopy.blockchain.putBlock(block)
+      }
+    } catch (error) {
+      const validationError = `Error verifying block while running: ${error}`
+      this.config.logger.debug(validationError)
+      const latestValidHash = await validHash(block.header.parentHash, this.validBlocks, this.chain)
+      return { status: Status.INVALID, latestValidHash, validationError }
     }
 
-    return null
+    this.validBlocks.set(block.hash().toString('hex'), block)
+    return {
+      status: Status.VALID,
+      latestValidHash: bufferToHex(block.hash()),
+      validationError: null,
+    }
   }
 
   /**
@@ -550,42 +397,77 @@ export class Engine {
    * @param params An array of one parameter:
    *   1. An object - The state of the fork choice:
    *        headBlockHash - block hash of the head of the canonical chain
+   *        safeBlockHash - the "safe" block hash of the canonical chain under certain synchrony
+   *         and honesty assumptions. This value MUST be either equal to or an ancestor of headBlockHash
    *        finalizedBlockHash - block hash of the most recent finalized block
-   * @returns None or an error
+   *   2. An object or null - instance of {@link PayloadAttributesV1}
+   * @returns An object:
+   *   1. payloadStatus: {@link PayloadStatus1}; values of the `status` field in the context of this method are restricted to the following subset::
+   *        VALID
+   *        INVALID
+   *        SYNCING
+   *   2. payloadId: DATA|null - 8 Bytes - identifier of the payload build process or `null`
    */
-  async forkchoiceUpdated(params: [{ headBlockHash: string; finalizedBlockHash: string }]) {
-    let { headBlockHash, finalizedBlockHash } = params[0]
-    headBlockHash = headBlockHash.slice(2)
-    finalizedBlockHash = finalizedBlockHash.slice(2)
+  async forkchoiceUpdatedV1(
+    params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | undefined]
+  ): Promise<ForkchoiceResponseV1> {
+    const { headBlockHash, finalizedBlockHash } = params[0]
+    const payloadAttributes = params[1]
 
     /*
      * Process head block
      */
-    const headBlock = this.validBlocks.get(headBlockHash)
+    let headBlock = this.validBlocks.get(headBlockHash.slice(2))
     if (!headBlock) {
-      throw EngineError.UnknownHeader
+      // In case this request was not received sequentially,
+      // the block may already be in the blockchain.
+      try {
+        headBlock = await this.chain.getBlock(toBuffer(headBlockHash))
+      } catch (error) {
+        const latestValidHash = bufferToHex(this.chain.headers.latest!.hash())
+        const payloadStatus = { status: Status.SYNCING, latestValidHash, validationError: null }
+        return { payloadStatus, payloadId: null }
+      }
     }
 
     const vmHeadHash = this.chain.headers.latest!.hash()
-    const parentBlocks = await recursivelyFindParents(
-      vmHeadHash,
-      headBlock.header.parentHash,
-      this.validBlocks,
-      this.chain,
-      this.service
-    )
+    if (!vmHeadHash.equals(headBlock.hash())) {
+      let parentBlocks
+      try {
+        parentBlocks = await recursivelyFindParents(
+          vmHeadHash,
+          headBlock.header.parentHash,
+          this.validBlocks,
+          this.chain
+        )
+      } catch (error) {
+        const latestValidHash = await validHash(
+          headBlock.header.parentHash,
+          this.validBlocks,
+          this.chain
+        )
+        const payloadStatus = { status: Status.SYNCING, latestValidHash, validationError: null }
+        return { payloadStatus, payloadId: null }
+      }
 
-    const blocks = [...parentBlocks, headBlock]
-    await this.chain.putBlocks(blocks, true)
-    this.txPool.removeNewBlockTxs(blocks)
+      const blocks = [...parentBlocks, headBlock]
+      await this.chain.putBlocks(blocks, true)
+      await this.execution.run()
+      this.synchronizer.checkTxPoolState()
+      this.txPool.removeNewBlockTxs(blocks)
 
-    if (
-      !this.synchronizer.syncTargetHeight ||
-      this.synchronizer.syncTargetHeight.lt(headBlock.header.number)
-    ) {
-      this.config.synchronized = true
-      this.config.lastSyncDate = Date.now()
-      this.synchronizer.syncTargetHeight = headBlock.header.number
+      for (const block of blocks) {
+        this.validBlocks.delete(block.hash().toString('hex'))
+      }
+
+      if (
+        !this.synchronizer.syncTargetHeight ||
+        this.synchronizer.syncTargetHeight.lt(headBlock.header.number)
+      ) {
+        this.config.synchronized = true
+        this.config.lastSyncDate = Date.now()
+        this.synchronizer.syncTargetHeight = headBlock.header.number
+      }
     }
 
     /*
@@ -594,20 +476,86 @@ export class Engine {
     if (finalizedBlockHash === '0'.repeat(64)) {
       // All zeros means no finalized block yet which is okay
     } else {
-      let finalizedBlock
-      finalizedBlock = this.validBlocks.get(finalizedBlockHash)
-      if (!finalizedBlock) {
-        try {
-          finalizedBlock = await this.chain.getBlock(Buffer.from(finalizedBlockHash, 'hex'))
-        } catch (error) {
-          throw EngineError.UnknownHeader
-        }
-      }
-      this.chain.lastFinalizedBlock = finalizedBlock
-      this.validBlocks.delete(finalizedBlockHash)
+      this.chain.lastFinalizedBlockHash = toBuffer(finalizedBlockHash)
     }
 
-    this.validBlocks.delete(headBlockHash)
-    return null
+    /*
+     * If payloadAttributes is present, start building block and return payloadId
+     */
+    if (payloadAttributes) {
+      const { timestamp, prevRandao, suggestedFeeRecipient } = payloadAttributes
+      const parentBlock = this.chain.blocks.latest!
+      const payloadId = await this.pendingBlock.start(this.vm.copy(), parentBlock, {
+        timestamp,
+        mixHash: prevRandao,
+        coinbase: suggestedFeeRecipient,
+      })
+      const latestValidHash = await validHash(
+        headBlock.header.parentHash,
+        this.validBlocks,
+        this.chain
+      )
+      const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
+      return { payloadStatus, payloadId: bufferToHex(payloadId) }
+    }
+
+    const latestValidHash = await validHash(
+      headBlock.header.parentHash,
+      this.validBlocks,
+      this.chain
+    )
+    const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
+    return { payloadStatus, payloadId: null }
+  }
+
+  /**
+   * Given payloadId, returns the most recent version of an execution payload
+   * that is available by the time of the call or responds with an error.
+   *
+   * @param params An array of one parameter:
+   *   1. payloadId: DATA, 8 bytes - identifier of the payload building process
+   * @returns Instance of {@link ExecutionPayloadV1} or an error
+   */
+  async getPayloadV1(params: [string]) {
+    const payloadId = toBuffer(params[0])
+    try {
+      const block = await this.pendingBlock.build(payloadId)
+      if (!block) {
+        throw EngineError.UnknownPayload
+      }
+      this.validBlocks.set(block.hash().toString('hex'), block)
+      return blockToExecutionPayload(block)
+    } catch (error: any) {
+      if (error === EngineError.UnknownPayload) throw error
+      throw {
+        code: INTERNAL_ERROR,
+        message: error.message ?? error,
+      }
+    }
+  }
+
+  /**
+   * Compare transition configuration parameters.
+   *
+   * @param params An array of one parameter:
+   *   1. transitionConfiguration: Object - instance of {@link TransitionConfigurationV1}
+   * @returns Instance of {@link TransitionConfigurationV1} or an error
+   */
+  async exchangeTransitionConfigurationV1(
+    params: [TransitionConfigurationV1]
+  ): Promise<TransitionConfigurationV1> {
+    const { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber } = params[0]
+    const { td } = this.config.chainCommon.hardforks().find((h) => h.name === 'merge')!
+    if (td !== parseInt(terminalTotalDifficulty)) {
+      throw {
+        code: INVALID_PARAMS,
+        message: `terminalTotalDifficulty set to ${td}, received ${parseInt(
+          terminalTotalDifficulty
+        )}`,
+      }
+    }
+    // Note: our client does not yet support block whitelisting (terminalBlockHash/terminalBlockNumber)
+    // since we are not yet fast enough to run along tip-of-chain mainnet execution
+    return { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber }
   }
 }

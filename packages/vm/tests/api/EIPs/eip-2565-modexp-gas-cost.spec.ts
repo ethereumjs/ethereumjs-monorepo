@@ -35,7 +35,11 @@ tape('EIP-2565 ModExp gas cost tests', (t) => {
       }
 
       if (!result.execResult.returnValue.equals(Buffer.from(test.Expected, 'hex'))) {
-        st.fail(`[${testName}]: Return value not the expected value`)
+        st.fail(
+          `[${testName}]: Return value not the expected value (expected: ${
+            test.Expected
+          }, recieved: ${result.execResult.returnValue.toString('hex')})`
+        )
         continue
       }
 

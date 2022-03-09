@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.5.0 - 2022-02-01
+
+This release comes with various additional checks on integrity and maximally allowed values for input values on tx creation. All these checks are activated by default as being suggested by the respective EIPs (e.g. `EIP-2681`).
+
+- [EIP-2681](https://eips.ethereum.org/EIPS/eip-2681) support: Limit account nonce to 2^64-1, PR [#1568](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1568)
+- `gasLimit` limited to 2^64-1 (`MAX_UINT64`) (geth behaviour), PR [#1568](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1568)
+- No-leading-zeros validation for serialized (RLP based) integer value input, so e.g the `nonce` or `gasLimit` values (`fromSerializedTx()` and `fromValuesArray()` static constructor methods), PR [#1568](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1568)
+- `MAX_INTEGER` (2^256) `gasLimit * maxFeePerGas`, `gasLimit * gasPrice` checks, PR [#1568](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1568)
+- Tx creation now fails when trying to instantiate with a negative `BN` value, PR [#1606](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1606)
+
 ## 3.4.0 - 2021-11-09
 
 ### ArrowGlacier HF Support

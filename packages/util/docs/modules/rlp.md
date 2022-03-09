@@ -29,7 +29,7 @@
 
 #### Defined in
 
-node_modules/rlp/dist/types.d.ts:3
+packages/util/node_modules/rlp/dist/types.d.ts:3
 
 ## Functions
 
@@ -54,7 +54,7 @@ RLP Decoding based on: [RLP](https://github.com/ethereum/wiki/wiki/%5BEnglish%5D
 
 #### Defined in
 
-node_modules/rlp/dist/index.d.ts:17
+packages/util/node_modules/rlp/dist/index.d.ts:17
 
 ▸ **decode**(`input`, `stream?`): `Buffer`[]
 
@@ -71,7 +71,7 @@ node_modules/rlp/dist/index.d.ts:17
 
 #### Defined in
 
-node_modules/rlp/dist/index.d.ts:18
+packages/util/node_modules/rlp/dist/index.d.ts:18
 
 ▸ **decode**(`input`, `stream?`): `Buffer`[] \| `Buffer` \| [`Decoded`](../interfaces/rlp.Decoded.md)
 
@@ -88,7 +88,7 @@ node_modules/rlp/dist/index.d.ts:18
 
 #### Defined in
 
-node_modules/rlp/dist/index.d.ts:19
+packages/util/node_modules/rlp/dist/index.d.ts:19
 
 ___
 
@@ -113,7 +113,7 @@ returns buffer of encoded data
 
 #### Defined in
 
-node_modules/rlp/dist/index.d.ts:10
+packages/util/node_modules/rlp/dist/index.d.ts:10
 
 ___
 
@@ -137,4 +137,4 @@ The length of the input or an empty Buffer if no input
 
 #### Defined in
 
-node_modules/rlp/dist/index.d.ts:25
+packages/util/node_modules/rlp/dist/index.d.ts:25

@@ -3,7 +3,7 @@ import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { addHexPrefix, BN, toBuffer, rlp } from 'ethereumjs-util'
+import { addHexPrefix, BN, toBuffer, rlp, stripHexPrefix } from 'ethereumjs-util'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { setupPreConditions, verifyPostConditions } from '../../util'
 
@@ -17,10 +17,8 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     return
   }
 
-  if (testData.lastblockhash.substr(0, 2) === '0x') {
-    // fix for BlockchainTests/GeneralStateTests/stRandom/*
-    testData.lastblockhash = testData.lastblockhash.substr(2)
-  }
+  // fix for BlockchainTests/GeneralStateTests/stRandom/*
+  testData.lastblockhash = stripHexPrefix(testData.lastblockhash)
 
   const blockchainDB = levelMem()
   const cacheDB = level('./.cachedb')
