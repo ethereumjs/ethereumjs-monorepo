@@ -97,7 +97,7 @@ export class LightSynchronizer extends Synchronizer {
         )
       }
 
-      const first = this.chain.headers.height.addn(1)
+      const first = this.chain.headers.height++
       const count = height.sub(first).addn(1)
       if (count.lten(0)) return resolve(false)
 

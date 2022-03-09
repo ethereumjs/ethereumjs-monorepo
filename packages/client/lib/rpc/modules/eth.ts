@@ -11,7 +11,6 @@ import {
 import {
   Account,
   Address,
-  BN,
   bufferToHex,
   bnToHex,
   intToHex,
@@ -225,8 +224,8 @@ const jsonRpcLog = async (
  */
 const jsonRpcReceipt = async (
   receipt: TxReceipt,
-  gasUsed: BN,
-  effectiveGasPrice: BN,
+  gasUsed: bigint,
+  effectiveGasPrice: bigint,
   block: Block,
   tx: TypedTransaction,
   txIndex: number,
@@ -272,12 +271,12 @@ const getBlockByOption = async (blockOpt: string, chain: Chain) => {
   if (blockOpt === 'latest') {
     block = latest
   } else if (blockOpt === 'earliest') {
-    block = await chain.getBlock(new BN(0))
+    block = await chain.getBlock(BigInt(0))
   } else {
-    const blockNumber = new BN(toBuffer(blockOpt))
-    if (blockNumber.eq(latest.header.number)) {
+    const blockNumber = BigInt(blockOpt)
+    if (blockNumber === latest.header.number) {
       block = latest
-    } else if (blockNumber.gt(latest.header.number)) {
+    } else if (blockNumber > latest.header.number) {
       throw {
         code: INVALID_PARAMS,
         message: 'specified block greater than current height',
@@ -419,7 +418,7 @@ export class Eth {
    * @param params An empty array
    */
   async blockNumber(_params = []) {
-    return bnToHex(this._chain.headers.latest?.number ?? new BN(0))
+    return bnToHex(this._chain.headers.latest?.number ?? BigInt(0))
   }
 
   /**
@@ -704,11 +703,11 @@ export class Eth {
    */
   async getUncleCountByBlockNumber(params: [string]) {
     const [blockNumberHex] = params
-    const blockNumber = new BN(toBuffer(blockNumberHex))
+    const blockNumber = BigInt(blockNumberHex)
     const latest =
       this._chain.headers.latest?.number ?? (await this._chain.getLatestHeader()).number
 
-    if (blockNumber.gt(latest)) {
+    if (blockNumber > latest) {
       throw {
         code: INVALID_PARAMS,
         message: 'specified block greater than current height',
@@ -740,10 +739,12 @@ export class Eth {
       const parentBlock = await this._chain.getBlock(block.header.parentHash)
       const tx = block.transactions[txIndex]
       const effectiveGasPrice = tx.supports(Capability.EIP1559FeeMarket)
-        ? BN.min(
-            (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas,
-            (tx as FeeMarketEIP1559Transaction).maxFeePerGas.sub(block.header.baseFeePerGas!)
-          ).add(block.header.baseFeePerGas!)
+        ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas <
+          (tx as FeeMarketEIP1559Transaction).maxFeePerGas - block.header.baseFeePerGas!
+          ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
+          : (tx as FeeMarketEIP1559Transaction).maxFeePerGas -
+            block.header.baseFeePerGas! +
+            block.header.baseFeePerGas!
         : (tx as Transaction).gasPrice
 
       // Run tx through copied vm to get tx gasUsed and createdAddress
@@ -755,7 +756,7 @@ export class Eth {
       const { gasUsed, createdAddress } = runBlockResult.results[txIndex]
       return jsonRpcReceipt(
         receipt,
-        new BN(gasUsed.toString(10)),
+        gasUsed,
         effectiveGasPrice,
         block,
         tx,
@@ -797,12 +798,12 @@ export class Eth {
       }
     } else {
       if (fromBlock === 'earliest') {
-        from = await this._chain.getBlock(new BN(0))
+        from = await this._chain.getBlock(BigInt(0))
       } else if (fromBlock === 'latest' || fromBlock === undefined) {
         from = this._chain.blocks.latest!
       } else {
-        const blockNum = new BN(toBuffer(fromBlock))
-        if (blockNum.gt(this._chain.headers.height)) {
+        const blockNum = BigInt(fromBlock)
+        if (blockNum > this._chain.headers.height) {
           throw {
             code: INVALID_PARAMS,
             message: 'specified `fromBlock` greater than current height',
@@ -815,8 +816,8 @@ export class Eth {
       } else if (toBlock === 'latest' || toBlock === undefined) {
         to = this._chain.blocks.latest!
       } else {
-        const blockNum = new BN(toBuffer(toBlock))
-        if (blockNum.gt(this._chain.headers.height)) {
+        const blockNum = BigInt(toBlock)
+        if (blockNum > this._chain.headers.height) {
           throw {
             code: INVALID_PARAMS,
             message: 'specified `toBlock` greater than current height',
@@ -826,7 +827,8 @@ export class Eth {
       }
     }
     if (
-      to.header.number.sub(from.header.number).gtn(this.receiptsManager.GET_LOGS_BLOCK_RANGE_LIMIT)
+      to.header.number - from.header.number >
+      BigInt(this.receiptsManager.GET_LOGS_BLOCK_RANGE_LIMIT)
     ) {
       throw {
         code: INVALID_PARAMS,

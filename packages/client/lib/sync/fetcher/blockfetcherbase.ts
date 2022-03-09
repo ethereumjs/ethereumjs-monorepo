@@ -1,5 +1,4 @@
 import { Fetcher, FetcherOptions } from './fetcher'
-import { BN } from 'ethereumjs-util'
 import { Chain } from '../../blockchain'
 
 export interface BlockFetcherOptions extends FetcherOptions {
@@ -7,17 +6,17 @@ export interface BlockFetcherOptions extends FetcherOptions {
   chain: Chain
 
   /* Block number to start fetching from */
-  first: BN
+  first: bigint
 
   /* How many blocks to fetch */
-  count: BN
+  count: bigint
 
   /* Destroy fetcher once all tasks are done */
   destroyWhenDone?: boolean
 }
 
 export type JobTask = {
-  first: BN
+  first: bigint
   count: number
 }
 
@@ -27,8 +26,8 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
   StorageItem
 > {
   protected chain: Chain
-  protected first: BN
-  protected count: BN
+  protected first: bigint
+  protected count: bigint
 
   /**
    * Create new block fetcher
@@ -48,16 +47,16 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
    * Generate list of tasks to fetch
    */
   tasks(): JobTask[] {
-    const { first, count } = this
+    let { first, count } = this
     const max = this.config.maxPerRequest
     const tasks: JobTask[] = []
-    while (count.gten(max)) {
-      tasks.push({ first: first.clone(), count: max })
-      first.iaddn(max)
-      count.isubn(max)
+    while (count >= BigInt(max)) {
+      tasks.push({ first: first, count: max })
+      first += BigInt(max)
+      count -= BigInt(max)
     }
-    if (count.gtn(0)) {
-      tasks.push({ first: first.clone(), count: count.toNumber() })
+    if (count >= BigInt(0)) {
+      tasks.push({ first: first, count: Number(count) })
     }
     this.debug(`Created new tasks num=${tasks.length} first=${first} count=${count}`)
     return tasks
@@ -73,16 +72,16 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
    * @param numberList Block/header numbers
    * @param min Start block number
    */
-  enqueueByNumberList(numberList: BN[], min: BN) {
+  enqueueByNumberList(numberList: bigint[], min: bigint) {
     const numBlocks = numberList.length
     let bulkRequest = true
-    const seqCheckNum = min.clone()
+    let seqCheckNum = min
     for (let num = 1; num <= numBlocks; num++) {
       if (!numberList.map((num) => num.toString()).includes(seqCheckNum.toString())) {
         bulkRequest = false
         break
       }
-      seqCheckNum.iaddn(1)
+      seqCheckNum++
     }
 
     if (bulkRequest) {

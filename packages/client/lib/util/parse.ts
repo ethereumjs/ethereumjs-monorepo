@@ -5,7 +5,6 @@ import Common, { Hardfork } from '@ethereumjs/common'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import {
   Account,
-  BN,
   keccak,
   rlp,
   toBuffer,
@@ -114,7 +113,7 @@ async function createGethGenesisStateTrie(alloc: any) {
     const { balance, code, storage } = value as any
     const account = new Account()
     if (balance) {
-      account.balance = new BN(isHexPrefixed(balance) ? toBuffer(balance) : balance)
+      account.balance = BigInt(isHexPrefixed(balance) ? toBuffer(balance) : balance)
     }
     if (code) {
       account.codeHash = keccak(toBuffer(code))
@@ -291,7 +290,7 @@ export async function parseGenesisState(json: any) {
   for (let address of Object.keys(json.alloc)) {
     let { balance, code, storage } = json.alloc[address]
     address = addHexPrefix(address)
-    balance = isHexPrefixed(balance) ? balance : bnToHex(new BN(balance))
+    balance = isHexPrefixed(balance) ? balance : bnToHex(BigInt(balance))
     code = code ? addHexPrefix(code) : undefined
     storage = storage ? Object.entries(storage) : undefined
     state[address] = [balance, code, storage] as any
