@@ -89,7 +89,7 @@ export class FullSynchronizer extends Synchronizer {
         const td = peer.eth.status.td
         if (
           (!best && td >= this.chain.blocks.td) ||
-          (best && best.eth && best.eth.status.td.lt(td))
+          (best && best.eth && best.eth.status.td < td)
         ) {
           best = peer
         }
@@ -313,17 +313,16 @@ export class FullSynchronizer extends Synchronizer {
       if (min === BigInt(-1) || blockNumber < min) {
         min = blockNumber
       }
-
       // Check if new sync target height can be set
       if (!this.syncTargetHeight || blockNumber > this.syncTargetHeight) {
         newSyncHeight = blockNumber
       }
     })
-
-    if (!newSyncHeight) {
+    if (newSyncHeight === undefined) {
       return
     }
     this.syncTargetHeight = newSyncHeight
+
     const [hash, height] = data[data.length - 1]
     this.config.logger.info(`New sync target height number=${height} hash=${short(hash)}`)
     this.fetcher.enqueueByNumberList(blockNumberList, min)

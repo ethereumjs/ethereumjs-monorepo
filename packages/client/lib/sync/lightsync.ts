@@ -55,8 +55,8 @@ export class LightSynchronizer extends Synchronizer {
       if (peer.les) {
         const td = peer.les.status.headTd
         if (
-          (!best && td.gte(this.chain.headers.td)) ||
-          (best && best.les && best.les.status.headTd.lt(td))
+          (!best && td >= this.chain.headers.td) ||
+          (best && best.les && best.les.status.headTd < td)
         ) {
           best = peer
         }
@@ -98,8 +98,8 @@ export class LightSynchronizer extends Synchronizer {
       }
 
       const first = this.chain.headers.height++
-      const count = height.sub(first).addn(1)
-      if (count.lten(0)) return resolve(false)
+      const count = height - first + BigInt(1)
+      if (count <= BigInt(0)) return resolve(false)
 
       this.config.logger.debug(`Syncing with peer: ${peer.toString(true)} height=${height}`)
 

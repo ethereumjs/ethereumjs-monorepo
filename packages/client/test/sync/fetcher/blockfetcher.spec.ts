@@ -1,6 +1,5 @@
 import tape from 'tape'
 import td from 'testdouble'
-import { BN } from 'ethereumjs-util'
 import { Config } from '../../../lib/config'
 import { Chain } from '../../../lib/blockchain/chain'
 import { wait } from '../../integration/util'
@@ -24,8 +23,8 @@ tape('[BlockFetcher]', async (t) => {
       config,
       pool,
       chain,
-      first: new BN(1),
-      count: new BN(10),
+      first: BigInt(1),
+      count: BigInt(10),
       timeout: 5,
     })
     fetcher.next = () => false
@@ -48,21 +47,21 @@ tape('[BlockFetcher]', async (t) => {
       config,
       pool,
       chain,
-      first: new BN(1),
-      count: new BN(10),
+      first: BigInt(1),
+      count: BigInt(10),
       timeout: 5,
     })
     void fetcher.fetch()
     t.equals((fetcher as any).in.size(), 2, 'added 2 tasks')
     await wait(100)
 
-    let blockNumberList = [new BN(11), new BN(12)]
-    let min = new BN(11)
+    let blockNumberList = [BigInt(11), BigInt(12)]
+    let min = BigInt(11)
     fetcher.enqueueByNumberList(blockNumberList, min)
     t.equals((fetcher as any).in.size(), 3, '1 new task for two subsequent block numbers')
 
-    blockNumberList = [new BN(13), new BN(15)]
-    min = new BN(13)
+    blockNumberList = [BigInt(13), BigInt(15)]
+    min = BigInt(13)
     fetcher.enqueueByNumberList(blockNumberList, min)
     t.equals((fetcher as any).in.size(), 5, '2 new tasks for two non-subsequent block numbers')
     fetcher.destroy()
@@ -77,8 +76,8 @@ tape('[BlockFetcher]', async (t) => {
       config,
       pool,
       chain,
-      first: new BN(0),
-      count: new BN(0),
+      first: BigInt(0),
+      count: BigInt(0),
     })
     const blocks: any = [{ header: { number: 1 } }, { header: { number: 2 } }]
     t.deepEquals(fetcher.process({ task: { count: 2 } } as any, blocks), blocks, 'got results')
@@ -94,8 +93,8 @@ tape('[BlockFetcher]', async (t) => {
       config,
       pool,
       chain,
-      first: new BN(0),
-      count: new BN(0),
+      first: BigInt(0),
+      count: BigInt(0),
     })
     td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
     t.equals(fetcher.peer(), 'peer0', 'found peer')
@@ -114,8 +113,8 @@ tape('[BlockFetcher]', async (t) => {
       config,
       pool,
       chain,
-      first: new BN(1),
-      count: new BN(10),
+      first: BigInt(1),
+      count: BigInt(10),
       timeout: 5,
     })
     td.when(chain.putBlocks(td.matchers.anything())).thenReject(new Error('err0'))

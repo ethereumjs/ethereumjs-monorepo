@@ -1,5 +1,4 @@
 import tape from 'tape'
-import { BN } from 'ethereumjs-util'
 import { Chain } from '../../../lib/blockchain'
 import { Config } from '../../../lib/config'
 import { FlowControl, LesProtocol } from '../../../lib/net/protocol'
@@ -36,13 +35,13 @@ tape('[LesProtocol]', (t) => {
     const p = new LesProtocol({ config, chain, flow })
     Object.defineProperty(chain, 'networkId', {
       get: () => {
-        return new BN(1)
+        return BigInt(1)
       },
     })
     Object.defineProperty(chain, 'blocks', {
       get: () => {
         return {
-          td: new BN(100),
+          td: BigInt(100),
           latest: { hash: () => '0xaa' },
         }
       },
@@ -55,10 +54,10 @@ tape('[LesProtocol]', (t) => {
     Object.defineProperty(chain, 'headers', {
       get: () => {
         return {
-          td: new BN(100),
+          td: BigInt(100),
           latest: {
             hash: () => '0xaa',
-            number: new BN(100),
+            number: BigInt(100),
           },
         }
       },

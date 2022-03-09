@@ -175,7 +175,8 @@ export class Miner {
     this.config.events.once(Event.CHAIN_UPDATED, _boundSetInterruptHandler)
 
     const parentBlock = (this.synchronizer as any).chain.blocks.latest
-    const number = parentBlock.header.number.addn(1)
+    //eslint-disable-next-line
+    const number = parentBlock.header.number + BigInt(1)
     let { gasLimit } = parentBlock.header
 
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority) {
@@ -221,7 +222,7 @@ export class Miner {
 
     let baseFeePerGas
     const londonHardforkBlock = this.config.chainCommon.hardforkBlock(Hardfork.London)
-    const isInitialEIP1559Block = londonHardforkBlock && number.eq(londonHardforkBlock)
+    const isInitialEIP1559Block = londonHardforkBlock && number === londonHardforkBlock
     if (isInitialEIP1559Block) {
       // Get baseFeePerGas from `paramByEIP` since 1559 not currently active on common
       baseFeePerGas = BigInt(
@@ -273,7 +274,7 @@ export class Miner {
         await blockBuilder.addTransaction(txs[index])
       } catch (error: any) {
         if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
-          if (blockBuilder.gasUsed > gasLimit - 21000) {
+          if (blockBuilder.gasUsed > gasLimit - BigInt(21000)) {
             // If block has less than 21000 gas remaining, consider it full
             blockFull = true
             this.config.logger.info(

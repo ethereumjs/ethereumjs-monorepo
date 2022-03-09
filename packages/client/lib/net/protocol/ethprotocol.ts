@@ -207,7 +207,7 @@ export class EthProtocol extends Protocol {
         return [bigIntToBuffer(reqId), serializedTxs]
       },
       decode: ([reqId, txs]: [Buffer, any[]]) => [
-        reqId,
+        bufferToBigInt(reqId),
         // TODO: add proper Common instance (problem: service not accesible)
         //const common = this.config.chainCommon.copy()
         //common.setHardforkByBlockNumber(this.service.synchronizer.syncTargetHeight)
@@ -219,11 +219,11 @@ export class EthProtocol extends Protocol {
       code: 0x0f,
       response: 0x10,
       encode: ({ reqId, hashes }: { reqId: bigint; hashes: Buffer[] }) => [
-        reqId === undefined ? id + BigInt(1) : bigIntToBuffer(reqId),
+        bigIntToBuffer(reqId === undefined ? id + BigInt(1) : reqId),
         hashes,
       ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
-        reqId: reqId,
+        reqId: bufferToBigInt(reqId),
         hashes,
       }),
     },
@@ -250,7 +250,7 @@ export class EthProtocol extends Protocol {
         return [bigIntToBuffer(reqId), serializedReceipts]
       },
       decode: ([reqId, receipts]: [Buffer, Buffer[]]) => [
-        reqId,
+        bufferToBigInt(reqId),
         receipts.map((r) => {
           // Legacy receipt if r[0] >= 0xc0, otherwise typed receipt with first byte as TransactionType
           const decoded = rlp.decode(r[0] >= 0xc0 ? r : r.slice(1)) as any
@@ -318,7 +318,7 @@ export class EthProtocol extends Protocol {
         this.chain.blocks.td === BigInt(0) ? Buffer.from([]) : bigIntToBuffer(this.chain.blocks.td),
       bestHash: this.chain.blocks.latest!.hash(),
       genesisHash: this.chain.genesis.hash,
-      latestBlock: this.chain.blocks.latest!.header.number,
+      latestBlock: bigIntToBuffer(this.chain.blocks.latest!.header.number),
     }
   }
 
@@ -329,7 +329,7 @@ export class EthProtocol extends Protocol {
   decodeStatus(status: any): any {
     return {
       networkId: BigInt(status.networkId),
-      td: BigInt(status.td),
+      td: bufferToBigInt(status.td),
       bestHash: status.bestHash,
       genesisHash: status.genesisHash,
     }
