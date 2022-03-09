@@ -1,4 +1,5 @@
 export type ForkName =
+  | 'London+3860'
   | 'London'
   | 'Berlin'
   | 'Istanbul'

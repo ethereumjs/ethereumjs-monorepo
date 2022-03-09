@@ -600,8 +600,15 @@ export default class EEI {
     if (this._env.contract.nonce.gte(MAX_UINT64)) {
       return new BN(0)
     }
+
     this._env.contract.nonce.iaddn(1)
     await this._state.putAccount(this._env.address, this._env.contract)
+
+    if (this._common.isActivatedEIP(3860)) {
+      if (msg.data.length > this._common.param('vm', 'maxInitCodeSize')) {
+        return new BN(0)
+      }
+    }
 
     const results = await this._evm.executeMessage(msg)
 

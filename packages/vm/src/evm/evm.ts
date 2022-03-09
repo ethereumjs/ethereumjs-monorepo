@@ -298,6 +298,20 @@ export default class EVM {
     // Reduce tx value from sender
     await this._reduceSenderBalance(account, message)
 
+    if (this._vm._common.isActivatedEIP(3860)) {
+      if (message.data.length > this._vm._common.param('vm', 'maxInitCodeSize')) {
+        return {
+          gasUsed: message.gasLimit,
+          createdAddress: message.to,
+          execResult: {
+            returnValue: Buffer.alloc(0),
+            exceptionError: new VmError(ERROR.INITCODE_SIZE_VIOLATION),
+            gasUsed: message.gasLimit,
+          },
+        }
+      }
+    }
+
     message.code = message.data
     message.data = Buffer.alloc(0)
     message.to = await this._generateAddress(message)
