@@ -7,7 +7,7 @@
 [![Discord][discord-badge]][discord-link]
 
 | TypeScript implementation of the Ethereum VM. |
-| --- |
+| --------------------------------------------- |
 
 Note: this `README` reflects the state of the library from `v5.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-vm) for an introduction on the last preceding release.
 
@@ -104,7 +104,7 @@ const hardforkByBlockNumber = true
 const vm = new VM({ common, hardforkByBlockNumber })
 
 const serialized = Buffer.from('f901f7a06bfee7294bf4457...', 'hex')
-const block = Block.fromRLPSerializedBlock(serialized, { hardforkByBlockNumber })
+const block = Block.fromRLPSerializedBlock(serialized, { hardforkByBlockNumber })
 const result = await vm.runBlock(block)
 ```
 
@@ -138,6 +138,24 @@ import VM from '@ethereumjs/vm'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 const vm = new VM({ common })
+```
+
+## Custom genesis state support
+
+If you want to create a new instance of the VM and add your own genesis state, you can do it by passing a `Common`
+instance with [custom genesis state](../common/README.md#initialize-using-customchains-array) and passing the flag `activateGenesisState` in `VMOpts`, e.g.:
+
+```typescript
+import Common from '@ethereumjs/common'
+import VM from '@ethereumjs/vm'
+import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
+import chain1GenesisState from '[PATH_TO_GENESIS_STATES]/chain1GenesisState.json'
+
+const common = new Common({
+  chain: 'myCustomChain1',
+  customChains: [[myCustomChain1, chain1GenesisState]],
+})
+const vm = new VM({ common, activateGenesisState: true })
 ```
 
 ## EIP Support
@@ -218,17 +236,17 @@ If you want to understand your VM runs we have added a hierarchically structured
 
 The following loggers are currently available:
 
-| Logger | Description |
-| - | - |
-| `vm:block` | Block operations (run txs, generating receipts, block rewards,...) |
-| `vm:tx` | Transaction operations (account updates, checkpointing,...) |
-| `vm:tx:gas` | Transaction gas logger |
-| `vm:evm` | EVM control flow, CALL or CREATE message execution |
-| `vm:evm:gas` | EVM gas logger |
-| `vm:eei:gas` | EEI gas logger |
-| `vm:state`| StateManager logger |
-| `vm:ops` | Opcode traces |
-| `vm:ops:[Lower-case opcode name]` | Traces on a specific opcode |
+| Logger                            | Description                                                        |
+| --------------------------------- | ------------------------------------------------------------------ |
+| `vm:block`                        | Block operations (run txs, generating receipts, block rewards,...) |
+| `vm:tx`                           |  Transaction operations (account updates, checkpointing,...)       |
+| `vm:tx:gas`                       |  Transaction gas logger                                            |
+| `vm:evm`                          |  EVM control flow, CALL or CREATE message execution                |
+| `vm:evm:gas`                      |  EVM gas logger                                                    |
+| `vm:eei:gas`                      |  EEI gas logger                                                    |
+| `vm:state`                        | StateManager logger                                                |
+| `vm:ops`                          |  Opcode traces                                                     |
+| `vm:ops:[Lower-case opcode name]` | Traces on a specific opcode                                        |
 
 Here are some examples for useful logger combinations.
 

@@ -94,6 +94,14 @@ export interface VMOpts {
    */
   activatePrecompiles?: boolean
   /**
+   * If true, the state of the VM will add the genesis state given by {@link Common} to a new
+   * created state manager instance. Note that if stateManager option is also passed as argument
+   * this flag won't have any effect.
+   *
+   * Default: `false`
+   */
+  activateGenesisState?: boolean
+  /**
    * Allows unlimited contract sizes while debugging. By setting this to `true`, the check for
    * contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed.
    *
@@ -285,18 +293,24 @@ export default class VM extends AsyncEventEmitter {
 
     await this.blockchain.initPromise
 
-    if (this._opts.activatePrecompiles && !this._opts.stateManager) {
-      await this.stateManager.checkpoint()
-      // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
-      await Promise.all(
-        Object.keys(precompiles)
-          .map((k: string): Address => new Address(Buffer.from(k, 'hex')))
-          .map(async (address: Address) => {
-            const account = Account.fromAccountData({ balance: 1 })
-            await this.stateManager.putAccount(address, account)
-          })
-      )
-      await this.stateManager.commit()
+    if (!this._opts.stateManager) {
+      if (this._opts.activateGenesisState) {
+        await this.stateManager.generateCanonicalGenesis()
+      }
+
+      if (this._opts.activatePrecompiles) {
+        await this.stateManager.checkpoint()
+        // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
+        await Promise.all(
+          Object.keys(precompiles)
+            .map((k: string): Address => new Address(Buffer.from(k, 'hex')))
+            .map(async (address: Address) => {
+              const account = Account.fromAccountData({ balance: 1 })
+              await this.stateManager.putAccount(address, account)
+            })
+        )
+        await this.stateManager.commit()
+      }
     }
 
     if (this._common.isActivatedEIP(2537)) {

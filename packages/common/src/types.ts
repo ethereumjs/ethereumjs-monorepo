@@ -1,4 +1,4 @@
-import { BN } from 'ethereumjs-util'
+import { BN, PrefixedHexString } from 'ethereumjs-util'
 import { ConsensusAlgorithm, ConsensusType, Hardfork as HardforkName } from '.'
 
 export interface genesisStatesType {
@@ -40,8 +40,16 @@ export interface Chain {
   }
 }
 
+type StoragePair = [key: PrefixedHexString, value: PrefixedHexString]
+
+export type AccountState = [
+  balance: PrefixedHexString,
+  code: PrefixedHexString,
+  storage: Array<StoragePair>
+]
+
 export interface GenesisState {
-  [key: string]: string | [string, [[string, string]]] // balance | [balance, code, [[storageKey, storageValue]]]
+  [key: PrefixedHexString]: PrefixedHexString | AccountState
 }
 
 export interface eipsType {
