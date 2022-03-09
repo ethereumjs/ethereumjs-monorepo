@@ -9,7 +9,7 @@ import {
   FeeMarketEIP1559TxData,
 } from '@ethereumjs/tx'
 import VM from '../../src'
-import { createAccount, getTransaction } from './utils'
+import { createAccount, getTransaction, setBalance } from './utils'
 
 const TRANSACTION_TYPES = [
   {
@@ -272,7 +272,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
 
   t.test('run with insufficient eip1559 funds', async (t) => {
     const vm = new VM({ common })
-    const tx = getTransaction(common, 2, true, '0x', false)
+    const tx = getTransaction(common, 2, true, '0x0', false)
     const address = tx.getSenderAddress()
     const account = await vm.stateManager.getAccount(address)
     account.balance = BigInt(9000000) // This is the maxFeePerGas multiplied with the gasLimit of 90000
@@ -292,7 +292,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
 
   t.test('should throw on wrong nonces', async (t) => {
     const vm = new VM({ common })
-    const tx = getTransaction(common, 2, true, '0x', false)
+    const tx = getTransaction(common, 2, true, '0x0', false)
     const address = tx.getSenderAddress()
     const account = await vm.stateManager.getAccount(address)
     account.balance = BigInt(9000000) // This is the maxFeePerGas multiplied with the gasLimit of 90000
@@ -616,21 +616,26 @@ tape('runTx() -> consensus bugs', async (t) => {
 tape('runTx() -> RunTxOptions', (t) => {
   t.test('should throw on negative value args', async (t) => {
     const vm = new VM({ common })
+    await setBalance(vm, Address.zero(), BigInt(10000000000))
     for (const txType of TRANSACTION_TYPES) {
-      const tx = getTransaction(vm._common, txType.type, true)
-      tx.value - BigInt(1)
+      const tx = getTransaction(vm._common, txType.type, false)
+      tx.getSenderAddress = () => Address.zero()
+      // @ts-ignore overwrite read-only property
+      tx.value -= BigInt(1)
 
-      try {
-        await vm.runTx({
-          tx,
-          skipBalance: true,
-        })
-        t.fail('should not accept a negative call value')
-      } catch (err: any) {
-        t.ok(
-          err.message.includes('value field cannot be negative'),
-          'throws on negative call value'
-        )
+      for (const skipBalance of [true, false]) {
+        try {
+          await vm.runTx({
+            tx,
+            skipBalance,
+          })
+          t.fail('should not accept a negative call value')
+        } catch (err: any) {
+          t.ok(
+            err.message.includes('value field cannot be negative'),
+            'throws on negative call value'
+          )
+        }
       }
     }
     t.end()

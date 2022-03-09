@@ -82,7 +82,7 @@ export function getTransaction(
     txParams['maxPriorityFeePerGas'] = BigInt(10)
   }
 
-  const tx = TransactionFactory.fromTxData(txParams, { common })
+  const tx = TransactionFactory.fromTxData(txParams, { common, freeze: false })
 
   if (sign) {
     const privateKey = Buffer.from(

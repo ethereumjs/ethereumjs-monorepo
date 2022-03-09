@@ -369,6 +369,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   fromAccount.nonce += BigInt(1)
   const txCost = tx.gasLimit * gasPrice
   fromAccount.balance -= txCost
+  if (opts.skipBalance && fromAccount.balance < BigInt(0)) {
+    fromAccount.balance = BigInt(0)
+  }
   await state.putAccount(caller, fromAccount)
   if (this.DEBUG) {
     debug(
