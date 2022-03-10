@@ -5,5 +5,5 @@ export const CLIQUE_EXTRA_SEAL = 65
 
 // Block difficulty for in-turn signatures
 export const CLIQUE_DIFF_INTURN = BigInt(2)
-// Block difficulty for in-turn signatures
+// Block difficulty for out-of-turn signatures
 export const CLIQUE_DIFF_NOTURN = BigInt(1)

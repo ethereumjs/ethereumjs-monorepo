@@ -372,7 +372,6 @@ tape('blockchain test', (t) => {
       blocks[9].hash(),
       neededHash,
     ])
-    console.log(hashes, neededHash)
     st.ok(hashes[0].equals(neededHash))
     st.end()
   })

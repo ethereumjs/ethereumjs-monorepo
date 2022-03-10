@@ -41,7 +41,7 @@ export function getFullSize(epoc: number) {
 }
 
 export function getEpoc(blockNumber: bigint) {
-  return Math.floor(Number(blockNumber) / exports.params.EPOCH_LENGTH)
+  return Number(blockNumber / BigInt(exports.params.EPOCH_LENGTH))
 }
 
 /**
