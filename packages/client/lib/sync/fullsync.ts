@@ -146,7 +146,7 @@ export class FullSynchronizer extends Synchronizer {
         )
       }
 
-      const first = this.chain.blocks.height++
+      const first = ++this.chain.blocks.height
       const count = height - first + BigInt(1)
       if (count <= BigInt(0)) return resolve(false)
 

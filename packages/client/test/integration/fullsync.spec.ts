@@ -8,6 +8,7 @@ tape('[Integration:FullSync]', async (t) => {
     const [localServer, localService] = await setup({ location: '127.0.0.1', height: 0 })
     await localService.synchronizer.stop()
     await localServer.discover('remotePeer1', '127.0.0.2')
+    // await localService.synchronizer.sync()
     localService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
       t.equals(localService.chain.blocks.height, BigInt(20), 'synced')
       await destroy(localServer, localService)
