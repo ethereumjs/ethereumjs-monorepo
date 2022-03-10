@@ -8,7 +8,9 @@ export enum EthProtocol {
   ETH = 'eth',
   LES = 'les',
 }
+
 type MessageCodes = { [key: number | string]: number | string }
+
 export type SendMethod = (code: number, data: Buffer) => any
 
 export class Protocol extends EventEmitter {

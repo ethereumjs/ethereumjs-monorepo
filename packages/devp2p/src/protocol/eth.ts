@@ -6,20 +6,17 @@ import { Peer } from '../rlpx/peer'
 import { EthProtocol, Protocol, SendMethod } from './protocol'
 
 export class ETH extends Protocol {
-  _status: ETH.StatusMsg | null
-  _peerStatus: ETH.StatusMsg | null
+  _status: ETH.StatusMsg | null = null
+  _peerStatus: ETH.StatusMsg | null = null
 
   // Eth64
-  _hardfork: string = 'chainstart'
+  _hardfork = 'chainstart'
   _latestBlock = new BN(0)
-  _forkHash: string = ''
+  _forkHash = ''
   _nextForkBlock = new BN(0)
 
   constructor(version: number, peer: Peer, send: SendMethod) {
     super(peer, send, EthProtocol.ETH, version, ETH.MESSAGE_CODES)
-
-    this._status = null
-    this._peerStatus = null
 
     // Set forkHash and nextForkBlock
     if (this._version >= 64) {
