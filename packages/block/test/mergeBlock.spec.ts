@@ -1,14 +1,7 @@
 import tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
-import {
-  Address,
-  KECCAK256_RLP,
-  KECCAK256_RLP_ARRAY,
-  toType,
-  TypeOutput,
-  zeros,
-} from 'ethereumjs-util'
+import { Address, KECCAK256_RLP, KECCAK256_RLP_ARRAY, zeros } from 'ethereumjs-util'
 import { Block } from '../src/block'
 
 const common = new Common({
@@ -26,7 +19,7 @@ function validateMergeHeader(st: tape.Test, header: BlockHeader) {
   st.ok(header.logsBloom.equals(zeros(256)), 'logsBloom')
   st.equal(header.difficulty, BigInt(0), 'difficulty')
   st.equal(header.number, BigInt(0), 'number')
-  st.equal(header.gasLimit, toType('0xffffffffffffff', TypeOutput.BigInt), 'gasLimit')
+  st.equal(header.gasLimit, BigInt('0xffffffffffffff'), 'gasLimit')
   st.equal(header.gasUsed, BigInt(0), 'gasUsed')
   st.equal(header.timestamp, BigInt(0), 'timestamp')
   st.ok(header.extraData.length <= 32, 'extraData')

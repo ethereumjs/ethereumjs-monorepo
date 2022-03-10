@@ -5,7 +5,6 @@ import Blockchain from '../src'
 import { generateBlockchain, generateBlocks, isConsecutive, createTestDB } from './util'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import blocksData from './testdata/blocks_mainnet.json'
-import { toType, TypeOutput } from 'ethereumjs-util'
 
 const level = require('level-mem')
 
@@ -541,8 +540,7 @@ tape('blockchain test', (t) => {
       number: 15,
       parentHash: blocks[14].hash(),
       gasLimit: 8000000,
-      //eslint-disable-next-line
-      timestamp: toType(blocks[14].header.timestamp, TypeOutput.BigInt)! + BigInt(1),
+      timestamp: BigInt(blocks[14].header.timestamp) + BigInt(1),
     }
     const forkHeader = BlockHeader.fromHeaderData(headerData, {
       common,
@@ -568,7 +566,7 @@ tape('blockchain test', (t) => {
       parentHash: blocks[14].hash(),
       gasLimit: 8000000,
       //eslint-disable-next-line
-      timestamp: toType(blocks[14].header.timestamp, TypeOutput.BigInt)! + BigInt(1),
+      timestamp: BigInt(blocks[14].header.timestamp) + BigInt(1),
     }
     const forkHeader = BlockHeader.fromHeaderData(headerData, {
       common,

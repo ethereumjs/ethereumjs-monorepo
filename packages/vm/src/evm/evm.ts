@@ -2,12 +2,11 @@ import { debug as createDebugLogger } from 'debug'
 import {
   Account,
   Address,
+  bigIntToBuffer,
   generateAddress,
   generateAddress2,
   KECCAK256_NULL,
   MAX_INTEGER,
-  toType,
-  TypeOutput,
 } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ERROR, VmError } from '../exceptions'
@@ -566,7 +565,7 @@ export default class EVM {
     } else {
       const acc = await this._state.getAccount(message.caller)
       const newNonce = acc.nonce - BigInt(1)
-      addr = generateAddress(message.caller.buf, toType(newNonce, TypeOutput.Buffer))
+      addr = generateAddress(message.caller.buf, bigIntToBuffer(newNonce))
     }
     return new Address(addr)
   }

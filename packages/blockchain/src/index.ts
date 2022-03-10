@@ -1,6 +1,6 @@
 import { debug as createDebugLogger } from 'debug'
 import Semaphore from 'semaphore-async-await'
-import { Address, rlp, toType, TypeOutput } from 'ethereumjs-util'
+import { Address, rlp, bigIntToBuffer } from 'ethereumjs-util'
 import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
 import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
@@ -527,7 +527,7 @@ export default class Blockchain implements BlockchainInterface {
 
     // save to db
     const formatted = this._cliqueLatestSignerStates.map((state) => [
-      toType(state[0], TypeOutput.Buffer),
+      bigIntToBuffer(state[0]),
       state[1].map((a) => a.toBuffer()),
     ])
     dbOps.push(DBOp.set(DBTarget.CliqueSignerStates, rlp.encode(formatted)))
@@ -678,7 +678,7 @@ export default class Blockchain implements BlockchainInterface {
     // save votes to db
     const dbOps: DBOp[] = []
     const formatted = this._cliqueLatestVotes.map((v) => [
-      toType(v[0], TypeOutput.Buffer),
+      bigIntToBuffer(v[0]),
       [v[1][0].toBuffer(), v[1][1].toBuffer(), v[1][2]],
     ])
     dbOps.push(DBOp.set(DBTarget.CliqueVotes, rlp.encode(formatted)))
@@ -717,7 +717,7 @@ export default class Blockchain implements BlockchainInterface {
 
     // save to db
     const formatted = this._cliqueLatestBlockSigners.map((b) => [
-      toType(b[0], TypeOutput.Buffer),
+      bigIntToBuffer(b[0]),
       b[1].toBuffer(),
     ])
     dbOps.push(DBOp.set(DBTarget.CliqueBlockSigners, rlp.encode(formatted)))
@@ -1604,6 +1604,6 @@ export default class Blockchain implements BlockchainInterface {
     }
     const { number } = await this.getLatestHeader()
     //eslint-disable-next-line
-    return (number + (BigInt(1))) % BigInt(signers.length) === BigInt(signerIndex)
+    return (number + BigInt(1)) % BigInt(signers.length) === BigInt(signerIndex)
   }
 }

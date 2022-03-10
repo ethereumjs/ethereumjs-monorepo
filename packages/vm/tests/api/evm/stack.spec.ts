@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Account, Address, setLengthLeft, toType, TypeOutput } from 'ethereumjs-util'
+import { Account, Address, bigIntToBuffer, setLengthLeft } from 'ethereumjs-util'
 import VM from '../../../src'
 import Stack from '../../../src/evm/stack'
 import { createAccount } from '../utils'
@@ -129,7 +129,7 @@ tape('Stack', (t) => {
     const vm = new VM()
     const account = createAccount(BigInt(0), BigInt(0))
     const code = '60008080808060013382F15060005260206000F3'
-    const expectedReturnValue = setLengthLeft(toType(BigInt(0), TypeOutput.Buffer), 32)
+    const expectedReturnValue = setLengthLeft(bigIntToBuffer(BigInt(0)), 32)
     /*
       code:             remarks: (top of the stack is at the zero index)
           PUSH1 0x00

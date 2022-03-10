@@ -99,21 +99,21 @@ export class BlockHeader {
     } = headerData
 
     return new BlockHeader(
-      parentHash ? toBuffer(parentHash) : zeros(32),
-      uncleHash ? toBuffer(uncleHash) : KECCAK256_RLP_ARRAY,
-      coinbase ? new Address(toBuffer(coinbase)) : Address.zero(),
-      stateRoot ? toBuffer(stateRoot) : zeros(32),
-      transactionsTrie ? toBuffer(transactionsTrie) : KECCAK256_RLP,
-      receiptTrie ? toBuffer(receiptTrie) : KECCAK256_RLP,
-      logsBloom ? toBuffer(logsBloom) : zeros(256),
+      toType(parentHash, TypeOutput.Buffer) ?? zeros(32),
+      toType(uncleHash, TypeOutput.Buffer) ?? KECCAK256_RLP_ARRAY,
+      new Address(toType(coinbase, TypeOutput.Buffer) ?? Buffer.alloc(20)),
+      toType(stateRoot, TypeOutput.Buffer) ?? zeros(32),
+      toType(transactionsTrie, TypeOutput.Buffer) ?? KECCAK256_RLP,
+      toType(receiptTrie, TypeOutput.Buffer) ?? KECCAK256_RLP,
+      toType(logsBloom, TypeOutput.Buffer) ?? zeros(256),
       toType(difficulty, TypeOutput.BigInt) ?? BigInt(0),
       toType(number, TypeOutput.BigInt) ?? BigInt(0),
       toType(gasLimit, TypeOutput.BigInt) ?? DEFAULT_GAS_LIMIT,
       toType(gasUsed, TypeOutput.BigInt) ?? BigInt(0),
       toType(timestamp, TypeOutput.BigInt) ?? BigInt(0),
-      extraData ? toBuffer(extraData) : Buffer.from([]),
-      mixHash ? toBuffer(mixHash) : zeros(32),
-      nonce ? toBuffer(nonce) : zeros(8),
+      toType(extraData, TypeOutput.Buffer) ?? Buffer.from([]),
+      toType(mixHash, TypeOutput.Buffer) ?? zeros(32),
+      toType(nonce, TypeOutput.Buffer) ?? zeros(8),
       opts,
       baseFeePerGas !== undefined && baseFeePerGas !== null
         ? toType(baseFeePerGas, TypeOutput.BigInt)
@@ -273,7 +273,7 @@ export class BlockHeader {
         gasLimit = BigInt(this._common.genesis().gasLimit)
       }
       if (timestamp === BigInt(0)) {
-        timestamp = toType(this._common.genesis().timestamp, TypeOutput.BigInt) ?? BigInt(0)
+        timestamp = BigInt(this._common.genesis().timestamp ?? 0)
       }
       if (difficulty === BigInt(0)) {
         difficulty = BigInt(this._common.genesis().difficulty)
@@ -291,7 +291,7 @@ export class BlockHeader {
         this._common.gteHardfork(Hardfork.London) &&
         this._common.genesis().baseFeePerGas !== undefined
       ) {
-        baseFeePerGas = toType(this._common.genesis().baseFeePerGas, TypeOutput.BigInt)
+        baseFeePerGas = BigInt(this._common.genesis().baseFeePerGas!)
       }
     }
 
@@ -502,7 +502,7 @@ export class BlockHeader {
     const exp = num / BigInt(100000) - BigInt(2)
     if (exp >= 0) {
       // eslint-disable-next-line
-      dif = dif + (BigInt(2) ** exp)
+      dif = dif + BigInt(2) ** exp
     }
 
     if (dif < minimumDifficulty) {

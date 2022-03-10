@@ -1,6 +1,6 @@
-// Geth compatible DB keys
+import { bigIntToBuffer } from 'ethereumjs-util'
 
-import { toType, TypeOutput } from 'ethereumjs-util'
+// Geth compatible DB keys
 
 const HEADS_KEY = 'heads'
 
@@ -59,7 +59,7 @@ const BODY_PREFIX = Buffer.from('b')
 /**
  * Convert bigint to big endian Buffer
  */
-const bufBE8 = (n: bigint) => toType(BigInt.asUintN(64, n), TypeOutput.Buffer)
+const bufBE8 = (n: bigint) => bigIntToBuffer(BigInt.asUintN(64, n))
 
 const tdKey = (n: bigint, hash: Buffer) =>
   Buffer.concat([HEADER_PREFIX, bufBE8(n), hash, TD_SUFFIX])

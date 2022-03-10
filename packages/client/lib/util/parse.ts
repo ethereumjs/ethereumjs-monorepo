@@ -15,8 +15,6 @@ import {
   bufferToHex,
   addHexPrefix,
   intToHex,
-  toType,
-  TypeOutput,
 } from 'ethereumjs-util'
 import type { MultiaddrLike } from '../types'
 import type { GenesisState } from '@ethereumjs/common/dist/types'
@@ -115,7 +113,7 @@ async function createGethGenesisStateTrie(alloc: any) {
     const { balance, code, storage } = value as any
     const account = new Account()
     if (balance) {
-      account.balance = toType(balance, TypeOutput.BigInt) ?? BigInt(0)
+      account.balance = BigInt(balance)
     }
     if (code) {
       account.codeHash = keccak(toBuffer(code))

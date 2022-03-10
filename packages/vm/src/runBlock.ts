@@ -1,6 +1,6 @@
 import { debug as createDebugLogger } from 'debug'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { Account, Address, intToBuffer, rlp, toType, TypeOutput } from 'ethereumjs-util'
+import { Account, Address, bigIntToBuffer, intToBuffer, rlp } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import VM from './index'
@@ -461,7 +461,7 @@ export async function generateTxReceipt(
   blockGasUsed: bigint
 ) {
   const abstractTxReceipt = {
-    gasUsed: toType(blockGasUsed, TypeOutput.Buffer),
+    gasUsed: bigIntToBuffer(blockGasUsed),
     bitvector: txRes.bloom.bitvector,
     logs: txRes.execResult.logs ?? [],
   }

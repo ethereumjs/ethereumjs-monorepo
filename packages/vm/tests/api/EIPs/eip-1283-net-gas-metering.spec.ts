@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, setLengthLeft, toType, TypeOutput } from 'ethereumjs-util'
+import { Address, setLengthLeft, bigIntToBuffer } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import { createAccount } from '../utils'
@@ -32,7 +32,7 @@ tape('Constantinople: EIP-1283', async (t) => {
   t.test('net-metering SSTORE', async (st) => {
     const caller = new Address(Buffer.from('0000000000000000000000000000000000000000', 'hex'))
     const addr = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
-    const key = setLengthLeft(toType(BigInt(0), TypeOutput.Buffer), 32)
+    const key = setLengthLeft(bigIntToBuffer(BigInt(0)), 32)
     for (const testCase of testCases) {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople })
       const vm = new VM({ common })
@@ -41,11 +41,7 @@ tape('Constantinople: EIP-1283', async (t) => {
       await vm.stateManager.putAccount(addr, account)
       await vm.stateManager.putContractCode(addr, Buffer.from(testCase.code, 'hex'))
       if (testCase.original !== BigInt(0)) {
-        await vm.stateManager.putContractStorage(
-          addr,
-          key,
-          toType(testCase.original, TypeOutput.Buffer)
-        )
+        await vm.stateManager.putContractStorage(addr, key, bigIntToBuffer(testCase.original))
       }
 
       const runCallArgs = {

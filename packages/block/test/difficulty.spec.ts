@@ -1,15 +1,7 @@
 import tape from 'tape'
 import Common, { Chain } from '@ethereumjs/common'
-import { bufferToInt, TypeOutput, toType } from 'ethereumjs-util'
+import { bufferToInt } from 'ethereumjs-util'
 import { Block } from '../src'
-
-function normalize(data: any) {
-  Object.keys(data).forEach((i) => {
-    if (i !== 'homestead' && typeof data[i] === 'string') {
-      data[i] = toType(data[i], TypeOutput.BigInt)
-    }
-  })
-}
 
 function runDifficultyTests(
   st: tape.Test,
@@ -18,9 +10,8 @@ function runDifficultyTests(
   block: Block,
   msg: string
 ) {
-  normalize(test)
   const dif = block.canonicalDifficulty(parentBlock)
-  st.equal(dif, test.currentDifficulty, `test canonicalDifficulty: ${msg}`)
+  st.equal(dif, BigInt(test.currentDifficulty), `test canonicalDifficulty: ${msg}`)
   st.ok(block.validateDifficulty(parentBlock), `test validateDifficulty: ${msg}`)
 }
 

@@ -1,4 +1,4 @@
-import { Address, rlp, toType, TypeOutput } from 'ethereumjs-util'
+import { Address, rlp, bufferToBigInt } from 'ethereumjs-util'
 import { Block, BlockHeader, BlockOptions, BlockBuffer, BlockBodyBuffer } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import { CliqueLatestSignerStates, CliqueLatestVotes, CliqueLatestBlockSigners } from '../clique'
@@ -75,7 +75,7 @@ export class DBManager {
       const signerStates = await this.get(DBTarget.CliqueSignerStates)
       const states = (<any>rlp.decode(signerStates)) as [Buffer, Buffer[]]
       return states.map((state) => {
-        const blockNum = toType(state[0], TypeOutput.BigInt)
+        const blockNum = bufferToBigInt(state[0] as Buffer)
         const addrs = (<any>state[1]).map((buf: Buffer) => new Address(buf))
         return [blockNum, addrs]
       }) as CliqueLatestSignerStates
@@ -95,7 +95,7 @@ export class DBManager {
       const signerVotes = await this.get(DBTarget.CliqueVotes)
       const votes = (<any>rlp.decode(signerVotes)) as [Buffer, [Buffer, Buffer, Buffer]]
       return votes.map((vote) => {
-        const blockNum = toType(vote[0], TypeOutput.BigInt)
+        const blockNum = bufferToBigInt(vote[0] as Buffer)
         const signer = new Address((vote[1] as any)[0])
         const beneficiary = new Address((vote[1] as any)[1])
         const nonce = (vote[1] as any)[2]
@@ -117,7 +117,7 @@ export class DBManager {
       const blockSigners = await this.get(DBTarget.CliqueBlockSigners)
       const signers = (<any>rlp.decode(blockSigners)) as [Buffer, Buffer][]
       return signers.map((s) => {
-        const blockNum = toType(s[0], TypeOutput.BigInt)
+        const blockNum = bufferToBigInt(s[0] as Buffer)
         const signer = new Address(s[1] as any)
         return [blockNum, signer]
       }) as CliqueLatestBlockSigners
@@ -197,7 +197,7 @@ export class DBManager {
    */
   async getTotalDifficulty(blockHash: Buffer, blockNumber: bigint): Promise<bigint> {
     const td = await this.get(DBTarget.TotalDifficulty, { blockHash, blockNumber })
-    return toType(rlp.decode(td), TypeOutput.BigInt)
+    return bufferToBigInt(rlp.decode(td))
   }
 
   /**
@@ -205,7 +205,7 @@ export class DBManager {
    */
   async hashToNumber(blockHash: Buffer): Promise<bigint> {
     const value = await this.get(DBTarget.HashToNumber, { blockHash })
-    return toType(value, TypeOutput.BigInt) ?? BigInt(0)
+    return bufferToBigInt(value)
   }
 
   /**

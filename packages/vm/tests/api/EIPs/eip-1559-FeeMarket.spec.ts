@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, privateToAddress, setLengthLeft, toType, TypeOutput } from 'ethereumjs-util'
+import { Address, bigIntToBuffer, privateToAddress, setLengthLeft } from 'ethereumjs-util'
 import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import {
@@ -194,7 +194,7 @@ tape('EIP1559 tests', (t) => {
     const returnValue = result.execResult.returnValue
 
     const expectedCost = GWEI * BigInt(3)
-    const expectedReturn = setLengthLeft(toType(expectedCost, TypeOutput.Buffer), 32)
+    const expectedReturn = setLengthLeft(bigIntToBuffer(expectedCost), 32)
 
     st.ok(returnValue.equals(expectedReturn))
     st.end()

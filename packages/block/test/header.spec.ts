@@ -1,13 +1,5 @@
 import tape from 'tape'
-import {
-  Address,
-  zeros,
-  KECCAK256_RLP,
-  KECCAK256_RLP_ARRAY,
-  rlp,
-  toType,
-  TypeOutput,
-} from 'ethereumjs-util'
+import { Address, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY, rlp } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src'
@@ -29,7 +21,7 @@ tape('[Block]: Header functions', function (t) {
       st.ok(header.logsBloom.equals(zeros(256)))
       st.equal(header.difficulty, BigInt(0))
       st.equal(header.number, BigInt(0))
-      st.equal(header.gasLimit, toType('0xffffffffffffff', TypeOutput.BigInt))
+      st.equal(header.gasLimit, BigInt('0xffffffffffffff'))
       st.equal(header.gasUsed, BigInt(0))
       st.equal(header.timestamp, BigInt(0))
       st.ok(header.extraData.equals(Buffer.from([])))
