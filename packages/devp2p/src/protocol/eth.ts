@@ -1,8 +1,7 @@
 import assert from 'assert'
 import snappy from 'snappyjs'
-import { devp2pDebug } from '../util'
 import { BN, rlp } from 'ethereumjs-util'
-import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
+import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData, devp2pDebug } from '../util'
 import { Peer } from '../rlpx/peer'
 import { Protocol } from './protocol'
 

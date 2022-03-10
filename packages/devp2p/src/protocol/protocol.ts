@@ -1,6 +1,7 @@
 import ms from 'ms'
 import { debug as createDebugLogger, Debugger } from 'debug'
 import { EventEmitter } from 'events'
+import { devp2pDebug } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 
 type MessageCodes = { [key: number | string]: number | string }
@@ -31,7 +32,7 @@ export class Protocol extends EventEmitter {
       this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
     }, ms('5s'))
 
-    this._debug = createDebugLogger(debugBaseName)
+    this._debug = devp2pDebug.extend(debugBaseName)
     this._verbose = createDebugLogger('verbose').enabled
     this.initMsgDebuggers(debugBaseName)
   }
@@ -41,13 +42,13 @@ export class Protocol extends EventEmitter {
       (value) => typeof value === 'string'
     ) as string[]
     for (const name of MESSAGE_NAMES) {
-      this.msgDebuggers[name] = createDebugLogger(`${debugBaseName}:${name}`)
+      this.msgDebuggers[name] = devp2pDebug.extend(debugBaseName).extend(name)
     }
 
     // Remote Peer IP logger
     const ip = this._peer._socket.remoteAddress
     if (ip) {
-      this.msgDebuggers[ip] = createDebugLogger(`devp2p:${ip}`)
+      this.msgDebuggers[ip] = devp2pDebug.extend(ip)
     }
   }
 
@@ -60,7 +61,7 @@ export class Protocol extends EventEmitter {
   _addFirstPeerDebugger() {
     const ip = this._peer._socket.remoteAddress
     if (ip) {
-      this.msgDebuggers[ip] = createDebugLogger(`devp2p:FIRST_PEER`)
+      this.msgDebuggers[ip] = devp2pDebug.extend('FIRST_PEER')
       this._peer._addFirstPeerDebugger()
       this._firstPeer = ip
     }

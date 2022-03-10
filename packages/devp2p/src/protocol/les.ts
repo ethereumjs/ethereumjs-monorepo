@@ -24,7 +24,7 @@ export class LES extends Protocol {
     this._version = version
     this._peer = peer
     this._send = send
-    this._debug = devp2pDebug
+    this._debug = devp2pDebug.extend(DEBUG_BASE_NAME)
     this._status = null
     this._peerStatus = null
     this._statusTimeoutId = setTimeout(() => {
