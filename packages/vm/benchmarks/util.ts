@@ -31,7 +31,7 @@ export async function getPreState(
   for (const k in pre) {
     const address = new Address(toBuffer(k))
     const { nonce, balance, code, storage } = pre[k]
-    const account = new Account(new BN(hexToBuffer(nonce)), new BN(hexToBuffer(balance)))
+    const account = new Account(BigInt(nonce), BigInt(balance))
     await state.putAccount(address, account)
     await state.putContractCode(address, toBuffer(code))
     for (const sk in storage) {
@@ -84,9 +84,8 @@ export const verifyResult = (block: Block, result: RunBlockResult) => {
         let cumGasUsedActual = parseInt(receipts[index].gasUsed.toString('hex'), 16)
         let gasUsed = cumGasUsedActual - cumGasUsed
         if (gasUsed !== gasUsedExpected) {
-          const blockNumber = block.header.number.toNumber()
           console.log(`[DEBUG]
-            Transaction at index ${index} of block ${blockNumber}
+            Transaction at index ${index} of block ${block.header.number}
             did not yield expected gas.
             Gas used expected: ${gasUsedExpected},
             actual: ${gasUsed},
@@ -100,7 +99,7 @@ export const verifyResult = (block: Block, result: RunBlockResult) => {
   if (!result.logsBloom.equals(block.header.logsBloom)) {
     throw new Error('invalid logsBloom')
   }
-  if (!(bnToBigInt(block.header.gasUsed) === result.gasUsed)) {
+  if (block.header.gasUsed !== result.gasUsed) {
     throw new Error('invalid gasUsed')
   }
 }
