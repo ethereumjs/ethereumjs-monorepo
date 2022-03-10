@@ -108,7 +108,7 @@ export class EthProtocol extends Protocol {
       code: 0x03,
       response: 0x04,
       encode: ({ reqId, block, max, skip = 0, reverse = false }: GetBlockHeadersOpts) => [
-        bigIntToBuffer(reqId ?? id++ + BigInt(1)),
+        bigIntToBuffer(reqId ?? ++id),
         [typeof block === 'bigint' ? bigIntToBuffer(block) : block, max, skip, !reverse ? 0 : 1],
       ],
       decode: ([reqId, [block, max, skip, reverse]]: any) => ({
@@ -144,10 +144,7 @@ export class EthProtocol extends Protocol {
       name: 'GetBlockBodies',
       code: 0x05,
       response: 0x06,
-      encode: ({ reqId, hashes }: GetBlockBodiesOpts) => [
-        bigIntToBuffer(reqId ?? id++ + BigInt(1)),
-        hashes,
-      ],
+      encode: ({ reqId, hashes }: GetBlockBodiesOpts) => [bigIntToBuffer(reqId ?? ++id), hashes],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
         reqId: bufferToBigInt(reqId),
         hashes,
@@ -184,7 +181,7 @@ export class EthProtocol extends Protocol {
       code: 0x09,
       response: 0x0a,
       encode: ({ reqId, hashes }: GetPooledTransactionsOpts) => [
-        bigIntToBuffer(reqId ?? id++ + BigInt(1)),
+        bigIntToBuffer(reqId ?? ++id),
         hashes,
       ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
@@ -219,7 +216,7 @@ export class EthProtocol extends Protocol {
       code: 0x0f,
       response: 0x10,
       encode: ({ reqId, hashes }: { reqId: bigint; hashes: Buffer[] }) => [
-        bigIntToBuffer(reqId ?? id++ + BigInt(1)),
+        bigIntToBuffer(reqId ?? ++id),
         hashes,
       ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({

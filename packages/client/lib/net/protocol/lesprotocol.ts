@@ -69,7 +69,7 @@ export class LesProtocol extends Protocol {
       code: 0x02,
       response: 0x03,
       encode: ({ reqId, block, max, skip = 0, reverse = false }: GetBlockHeadersOpts) => [
-        bigIntToBuffer(reqId ?? id++ + BigInt(1)),
+        bigIntToBuffer(reqId ?? ++id),
         [typeof block === 'bigint' ? bigIntToBuffer(block) : block, max, skip, !reverse ? 0 : 1],
       ],
       decode: ([reqId, [block, max, skip, reverse]]: any) => ({
