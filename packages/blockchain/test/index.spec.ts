@@ -226,7 +226,7 @@ tape('blockchain test', (t) => {
     // start: genesisHash, max: 5, skip: 0, reverse: false
     const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 5, 0, false)
     st.equal(getBlocks!.length, 5)
-    st.equal(blocks[0].header.numbe, getBlocks[0].header.number)
+    st.equal(blocks[0].header.number, getBlocks[0].header.number)
     st.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
     st.end()
   })
