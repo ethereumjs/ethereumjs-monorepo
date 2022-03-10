@@ -1,6 +1,11 @@
 import tape from 'tape'
 import Blockchain from '@ethereumjs/blockchain'
-import Common, { Chain as ChainCommon, ConsensusType, ConsensusAlgorithm } from '@ethereumjs/common'
+import Common, {
+  Chain as ChainCommon,
+  ConsensusType,
+  ConsensusAlgorithm,
+  Hardfork,
+} from '@ethereumjs/common'
 import { Address } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
@@ -11,8 +16,12 @@ import MockServer from './mocks/mockserver'
 import { setup, destroy } from './util'
 
 tape('[Integration:Miner]', async (t) => {
+  const hardforks = new Common({ chain: ChainCommon.Goerli })
+    .hardforks()
+    .map((h) => (h.name === Hardfork.London ? { ...h, block: 0 } : h))
   const common = Common.custom(
     {
+      hardforks,
       consensus: {
         type: ConsensusType.ProofOfAuthority,
         algorithm: ConsensusAlgorithm.Clique,

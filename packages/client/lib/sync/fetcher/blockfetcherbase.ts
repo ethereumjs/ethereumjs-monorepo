@@ -77,7 +77,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     let bulkRequest = true
     let seqCheckNum = min
     for (let num = 1; num <= numBlocks; num++) {
-      if (!numberList.map((num) => num.toString()).includes(seqCheckNum.toString())) {
+      if (!numberList.includes(seqCheckNum)) {
         bulkRequest = false
         break
       }
