@@ -57,8 +57,7 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Buffer {
  * Starts and returns enabled RPCServers
  */
 export function startRPCServers(client: EthereumClient, args: RPCArgs) {
-  const config = client.config
-
+  const { config } = client
   const servers: RPCServer[] = []
   const {
     rpc,
@@ -78,10 +77,10 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     rpcDebug,
   } = args
   const manager = new RPCManager(client, config)
-  const logger = config.logger
+  const { logger } = config
   const jwtSecret =
     rpcEngine && rpcEngineAuth ? parseJwtSecret(config, jwtSecretPath) : Buffer.from([])
-  let withEngineMethods
+  let withEngineMethods = false
 
   if (rpc || ws) {
     let rpcHttpServer
@@ -110,9 +109,9 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
             : undefined,
       })
       rpcHttpServer.listen(rpcport)
-      config.logger.info(
+      logger.info(
         `Started JSON RPC Server address=http://${rpcaddr}:${rpcport} namespaces=${namespaces}${
-          withEngineMethods ? ', rpcEngineAuth=' + rpcEngineAuth.toString() : ''
+          withEngineMethods ? ' rpcEngineAuth=' + rpcEngineAuth.toString() : ''
         }`
       )
     }
@@ -129,9 +128,9 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
 
       const rpcWsServer = createWsRPCServerListener(opts)
       if (rpcWsServer) rpcWsServer.listen(wsPort)
-      config.logger.info(
+      logger.info(
         `Started JSON RPC Server address=ws://${wsAddr}:${wsPort} namespaces=${namespaces}${
-          withEngineMethods ? ', rpcEngineAuth=' + rpcEngineAuth.toString() : ''
+          withEngineMethods ? ` rpcEngineAuth=${rpcEngineAuth}` : ''
         }`
       )
     }
@@ -153,10 +152,9 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
           }
         : undefined,
     })
-
     rpcHttpServer.listen(rpcEnginePort)
-    config.logger.info(
-      `Started JSON RPC server address=http://${rpcEngineAddr}:${rpcEnginePort} namespaces=engine, rpcEngineAuth=${rpcEngineAuth}`
+    logger.info(
+      `Started JSON RPC server address=http://${rpcEngineAddr}:${rpcEnginePort} namespaces=engine rpcEngineAuth=${rpcEngineAuth}`
     )
 
     if (ws) {
@@ -173,8 +171,8 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
 
       const rpcWsServer = createWsRPCServerListener(opts)
       if (rpcWsServer) rpcWsServer.listen(wsEnginePort)
-      config.logger.info(
-        `Started JSON RPC Server address=ws://${wsEngineAddr}:${wsEnginePort} namespaces=${namespaces}, rpcEngineAuth=${rpcEngineAuth}`
+      logger.info(
+        `Started JSON RPC Server address=ws://${wsEngineAddr}:${wsEnginePort} namespaces=${namespaces} rpcEngineAuth=${rpcEngineAuth}`
       )
     }
   }

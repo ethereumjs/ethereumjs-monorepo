@@ -5,17 +5,27 @@ import { decode, TAlgorithm } from 'jwt-simple'
 import Connect, { IncomingMessage } from 'connect'
 import cors from 'cors'
 import { inspect } from 'util'
-
 import { RPCManager } from '../rpc'
 import { Logger } from '../logging'
 
 const algorithm: TAlgorithm = 'HS256'
 
+type CreateRPCServerOpts = {
+  methodConfig: MethodConfig
+  rpcDebug: boolean
+  logger?: Logger
+}
+type CreateRPCServerReturn = {
+  server: RPCServer
+  methods: { [key: string]: Function }
+  namespaces: string
+}
 type CreateRPCServerListenerOpts = {
   rpcCors?: string
   server: RPCServer
   withEngineMiddleware?: WithEngineMiddleware
 }
+type CreateWSServerOpts = CreateRPCServerListenerOpts & { httpServer?: HttpServer }
 type WithEngineMiddleware = { jwtSecret: Buffer; unlessFn?: (req: IncomingMessage) => boolean }
 
 export enum MethodConfig {
@@ -43,12 +53,10 @@ export function inspectParams(params: any, shorten?: number) {
 
 export function createRPCServer(
   manager: RPCManager,
-  {
-    methodConfig,
-    rpcDebug,
-    logger,
-  }: { methodConfig: MethodConfig; rpcDebug: boolean; logger?: Logger }
-): { server: RPCServer; methods: { [key: string]: Function }; namespaces: string } {
+  opts: CreateRPCServerOpts
+): CreateRPCServerReturn {
+  const { methodConfig, rpcDebug, logger } = opts
+
   const onRequest = (request: any) => {
     let msg = ''
     if (rpcDebug) {
@@ -153,9 +161,7 @@ export function createRPCServerListener(opts: CreateRPCServerListenerOpts): Http
   return httpServer
 }
 
-export function createWsRPCServerListener(
-  opts: CreateRPCServerListenerOpts & { httpServer?: HttpServer }
-): HttpServer | undefined {
+export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer | undefined {
   const { server, withEngineMiddleware, rpcCors } = opts
 
   // Get the server to hookup upgrade request on
