@@ -4,9 +4,14 @@ import { EventEmitter } from 'events'
 import { devp2pDebug } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 
+export enum EthProtocol {
+  ETH = 'eth',
+  LES = 'les',
+}
 type MessageCodes = { [key: number | string]: number | string }
 
 export class Protocol extends EventEmitter {
+  _version: number
   _peer: Peer
   _statusTimeoutId: NodeJS.Timeout
   _messageCodes: MessageCodes
@@ -22,27 +27,28 @@ export class Protocol extends EventEmitter {
   // Message debuggers (e.g. { 'GET_BLOCK_HEADERS': [debug Object], ...})
   protected msgDebuggers: { [key: string]: (debug: string) => void } = {}
 
-  constructor(peer: Peer, _messageCodes: MessageCodes, debugBaseName: string) {
+  constructor(peer: Peer, protocol: EthProtocol, version: number, messageCodes: MessageCodes) {
     super()
 
     this._firstPeer = ''
     this._peer = peer
-    this._messageCodes = _messageCodes
+    this._version = version
+    this._messageCodes = messageCodes
     this._statusTimeoutId = setTimeout(() => {
       this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
     }, ms('5s'))
 
-    this._debug = devp2pDebug.extend(debugBaseName)
+    this._debug = devp2pDebug.extend(protocol)
     this._verbose = createDebugLogger('verbose').enabled
-    this.initMsgDebuggers(debugBaseName)
+    this.initMsgDebuggers(protocol)
   }
 
-  private initMsgDebuggers(debugBaseName: string) {
+  private initMsgDebuggers(protocol: EthProtocol) {
     const MESSAGE_NAMES = Object.values(this._messageCodes).filter(
       (value) => typeof value === 'string'
     ) as string[]
     for (const name of MESSAGE_NAMES) {
-      this.msgDebuggers[name] = devp2pDebug.extend(debugBaseName).extend(name)
+      this.msgDebuggers[name] = devp2pDebug.extend(protocol).extend(name)
     }
 
     // Remote Peer IP logger
