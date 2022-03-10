@@ -37,7 +37,7 @@ tape('toType', function (t) {
     })
     st.test('should convert to BN', function (st) {
       const result = toType(num, TypeOutput.BigInt)
-      st.ok(result === BigInt(num))
+      st.equal(result, BigInt(num))
       st.end()
     })
     st.test('should convert to Buffer', function (st) {
@@ -67,7 +67,7 @@ tape('toType', function (t) {
     })
     st.test('should convert to BN', function (st) {
       const result = toType(num, TypeOutput.BigInt)
-      st.ok(result === num)
+      st.equal(result, num)
       st.end()
     })
     st.test('should convert to Buffer', function (st) {
@@ -100,7 +100,7 @@ tape('toType', function (t) {
     })
     st.test('should convert to BN', function (st) {
       const result = toType(num, TypeOutput.BigInt)
-      st.ok(result === bufferToBigInt(num))
+      st.equal(result, bufferToBigInt(num))
       st.end()
     })
     st.test('should convert to Buffer', function (st) {

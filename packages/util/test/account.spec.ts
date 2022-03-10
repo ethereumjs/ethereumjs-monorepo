@@ -23,8 +23,8 @@ const _0n = BigInt(0)
 tape('Account', function (t) {
   t.test('empty constructor', function (st) {
     const account = new Account()
-    st.ok(account.nonce === _0n, 'should have zero nonce')
-    st.ok(account.balance === _0n, 'should have zero balance')
+    st.equal(account.nonce, _0n, 'should have zero nonce')
+    st.equal(account.balance, _0n, 'should have zero balance')
     st.equal(
       account.stateRoot.toString('hex'),
       '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
@@ -46,8 +46,8 @@ tape('Account', function (t) {
       '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470', // codeHash
     ]
     const account = Account.fromValuesArray(raw.map(toBuffer))
-    st.ok(account.nonce === BigInt(2), 'should have correct nonce')
-    st.ok(account.balance === BigInt(900), 'should have correct balance')
+    st.equal(account.nonce, BigInt(2), 'should have correct nonce')
+    st.equal(account.balance, BigInt(900), 'should have correct balance')
     st.equal(
       account.stateRoot.toString('hex'),
       '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
@@ -69,8 +69,8 @@ tape('Account', function (t) {
       codeHash: '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     }
     const account = Account.fromAccountData(raw)
-    st.ok(account.nonce === BigInt(2), 'should have correct nonce')
-    st.ok(account.balance === BigInt(900), 'should have correct balance')
+    st.equal(account.nonce, BigInt(2), 'should have correct nonce')
+    st.equal(account.balance, BigInt(900), 'should have correct balance')
     st.equal(
       account.stateRoot.toString('hex'),
       '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
@@ -90,8 +90,8 @@ tape('Account', function (t) {
       'hex'
     )
     const account = Account.fromRlpSerializedAccount(accountRlp)
-    st.ok(account.nonce === BigInt(2), 'should have correct nonce')
-    st.ok(account.balance === BigInt(900), 'should have correct balance')
+    st.equal(account.nonce, BigInt(2), 'should have correct nonce')
+    st.equal(account.balance, BigInt(900), 'should have correct balance')
     st.equal(
       account.stateRoot.toString('hex'),
       '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',

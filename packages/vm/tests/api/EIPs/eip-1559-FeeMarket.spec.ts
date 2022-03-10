@@ -95,10 +95,10 @@ tape('EIP1559 tests', (t) => {
 
     let miner = await vm.stateManager.getAccount(coinbase)
 
-    st.ok(miner.balance === expectedMinerBalance, 'miner balance correct')
+    st.equal(miner.balance, expectedMinerBalance, 'miner balance correct')
     account = await vm.stateManager.getAccount(sender)
-    st.ok(account.balance === expectedAccountBalance, 'account balance correct')
-    st.ok(results.amountSpent === expectedCost, 'reported cost correct')
+    st.equal(account.balance, expectedAccountBalance, 'account balance correct')
+    st.equal(results.amountSpent, expectedCost, 'reported cost correct')
 
     const tx2 = new AccessListEIP2930Transaction(
       {
@@ -123,10 +123,10 @@ tape('EIP1559 tests', (t) => {
 
     miner = await vm.stateManager.getAccount(coinbase)
 
-    st.ok(miner.balance === expectedMinerBalance, 'miner balance correct')
+    st.equal(miner.balance, expectedMinerBalance, 'miner balance correct')
     account = await vm.stateManager.getAccount(sender)
-    st.ok(account.balance === expectedAccountBalance, 'account balance correct')
-    st.ok(results2.amountSpent === expectedCost, 'reported cost correct')
+    st.equal(account.balance, expectedAccountBalance, 'account balance correct')
+    st.equal(results2.amountSpent, expectedCost, 'reported cost correct')
 
     const tx3 = new Transaction(
       {
@@ -151,10 +151,10 @@ tape('EIP1559 tests', (t) => {
 
     miner = await vm.stateManager.getAccount(coinbase)
 
-    st.ok(miner.balance === expectedMinerBalance, 'miner balance correct')
+    st.equal(miner.balance, expectedMinerBalance, 'miner balance correct')
     account = await vm.stateManager.getAccount(sender)
-    st.ok(account.balance === expectedAccountBalance, 'account balance correct')
-    st.ok(results3.amountSpent === expectedCost, 'reported cost correct')
+    st.equal(account.balance, expectedAccountBalance, 'account balance correct')
+    st.equal(results3.amountSpent, expectedCost, 'reported cost correct')
 
     st.end()
   })

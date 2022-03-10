@@ -62,7 +62,7 @@ tape('[HeaderFetcher]', async (t) => {
     try {
       await fetcher.store([0 as any])
     } catch (err: any) {
-      st.ok(err.message === 'err0', 'store() threw on invalid header')
+      st.equal(err.message, 'err0', 'store() threw on invalid header')
     }
     td.when(chain.putHeaders([1 as any])).thenResolve(1)
     config.events.on(Event.SYNC_FETCHER_FETCHED, () =>

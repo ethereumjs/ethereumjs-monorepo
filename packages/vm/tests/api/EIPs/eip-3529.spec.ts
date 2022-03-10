@@ -170,9 +170,9 @@ tape('EIP-3529 tests', (t) => {
       tx,
     })
 
-    st.ok(result.execResult.exceptionError === undefined, 'transaction executed succesfully')
+    st.equal(result.execResult.exceptionError, undefined, 'transaction executed succesfully')
     st.ok(result.execResult.gasRefund !== undefined, 'gas refund is defined')
-    st.ok(result.execResult.gasRefund === BigInt(0), 'gas refund is zero')
+    st.equal(result.execResult.gasRefund, BigInt(0), 'gas refund is zero')
     st.end()
   })
 

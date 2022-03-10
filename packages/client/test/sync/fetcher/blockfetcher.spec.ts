@@ -121,7 +121,7 @@ tape('[BlockFetcher]', async (t) => {
     try {
       await fetcher.store([])
     } catch (err: any) {
-      st.ok(err.message === 'err0', 'store() threw on invalid block')
+      st.equal(err.message, 'err0', 'store() threw on invalid block')
     }
     td.reset()
     chain.putBlocks = td.func<any>()

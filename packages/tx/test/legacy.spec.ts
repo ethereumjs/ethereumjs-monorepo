@@ -122,7 +122,7 @@ tape('[Transaction]', function (t) {
     function (st) {
       let common = new Common({ chain: 42, hardfork: Hardfork.Petersburg })
       let tx = Transaction.fromTxData({}, { common })
-      st.ok(tx.common.chainId() === BigInt(42))
+      st.equal(tx.common.chainId(), BigInt(42))
       const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
       tx = tx.sign(privKey)
       const serialized = tx.serialize()
@@ -145,7 +145,7 @@ tape('[Transaction]', function (t) {
 
   t.test('validate() -> should validate with string option', function (st) {
     transactions.forEach(function (tx) {
-      st.ok(typeof tx.validate(true)[0] === 'string')
+      st.equal(typeof tx.validate(true)[0], 'string')
     })
     st.end()
   })
@@ -452,7 +452,7 @@ tape('[Transaction]', function (t) {
   t.test('sign(), verifySignature(): sign tx with chainId specified in params', function (st) {
     const common = new Common({ chain: 42, hardfork: Hardfork.Petersburg })
     let tx = Transaction.fromTxData({}, { common })
-    st.ok(tx.common.chainId() === BigInt(42))
+    st.equal(tx.common.chainId(), BigInt(42))
 
     const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
     tx = tx.sign(privKey)
@@ -461,7 +461,7 @@ tape('[Transaction]', function (t) {
 
     const reTx = Transaction.fromSerializedTx(serialized, { common })
     st.equal(reTx.verifySignature(), true)
-    st.ok(reTx.common.chainId() === BigInt(42))
+    st.equal(reTx.common.chainId(), BigInt(42))
 
     st.end()
   })

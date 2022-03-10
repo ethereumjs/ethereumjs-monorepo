@@ -22,7 +22,7 @@ tape('cache initialization', (t) => {
     }
     const cache = new Cache({ getCb, putCb, deleteCb })
 
-    st.ok(cache._checkpoints.length === 0, 'initializes given trie')
+    st.equal(cache._checkpoints.length, 0, 'initializes given trie')
     st.end()
   })
 })
