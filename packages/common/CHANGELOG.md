@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.6.3 - 2022-03-11
+
+### Merge Kiln v2 Testnet Support
+
+This release fully supports the Merge [Kiln](https://kiln.themerge.dev/) testnet `v2` complying to the latest Merge [specs](https://hackmd.io/@n0ble/kiln-spec). The release is part of an [@ethereumjs/client](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client) `v0.4` release which can be used to sync with the testnet, combining with a suited consensus client (e.g. the Lodestar client). See [Kiln](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client/kiln) instructions to get things going! 🚀
+
+- [EIP-43399](https://eips.ethereum.org/EIPS/eip-4399) Support: Supplant DIFFICULTY opcode with PREVRANDAO, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
+- Added new `preMerge` hardfork to fork off non-upgraded clients, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
+
 # 2.6.2 - 2022-02-4
 
 - Adds support for [EIP-3607](https://eips.ethereum.org/EIPS/eip-3607) (Reject transactions from senders with deployed code), PR [#1691](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1691)

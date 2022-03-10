@@ -6,6 +6,35 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.4.0 - 2022-03-11
+
+### Merge Kiln v2 Testnet Support
+
+This release fully supports the Merge [Kiln](https://kiln.themerge.dev/) testnet `v2` complying to the latest Merge [specs](https://hackmd.io/@n0ble/kiln-spec). You can use this release to sync with the testnet, combining with a suited consensus client (e.g. the Lodestar client). See [Kiln](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client/kiln) instructions to get things going! 🚀
+
+- New engine API endpoints, PRs [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565) and [#1712](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1712)
+  - `engine_newPayloadV1` (before: `engine_executePayloadV1`)
+  - `engine_forkchoiceUpdatedV1`
+  - `engine_getPayloadV1`
+- New engine API endpoint, PR [#1750](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1750)
+  - `exchangeTransitionConfigurationV1` (sets and returns the transition configuration parameters)
+- Engine API (RPC): Renamed `message` to `validationError`, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
+- Engine API (RPC): Allowed ws and http on the same port, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
+- Engine API (RPC): Respect message ordering in forkchoiceUpdated, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
+- Engine API (RPC): Rename `coinbase` to `feeRecipient` as per `v1.0.0-alpha.5` spec, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
+- Engine API (RPC): Support for [jwt](https://jwt.io) based auth through both http/websocket protocols, PR [#1751](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1751)
+- Engine API (RPC): Tests for new Engine API endpoints, PR [#1727](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1727)
+- Geth genesis files: Use `mergeForkBlock` if provided, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
+- Execution module refactor: decoupling from `FullSync` module to prepare for a post-Merge execution/sync separation, PR [#1663](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1663)
+
+### Features
+
+- RPC Server: Added `rpcCors` option to specify [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) for rpc server, PR [#1762](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1762)
+
+### Bug Fixes
+
+- Geth genesis files: Minor `baseFeePerGas` related fix and other improvements, PRs [#1720](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1720) and [#1741](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1741)
+
 ## 0.3.0 - 2022-02-01
 
 ### New RPC Endpoints: eth_getLogs, eth_getTransactionReceipt and eth_getTransactionByHash
