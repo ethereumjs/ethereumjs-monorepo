@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Merge Kiln v2 Testnet Support
 
-This release fully supports the Merge [Kiln](https://kiln.themerge.dev/) testnet `v2` complying to the latest Merge [specs](https://hackmd.io/@n0ble/kiln-spec). The release is part of an [@ethereumjs/client](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client) `v0.4` release which can be used to sync with the testnet, combining with a suited consensus client (e.g. the Lodestar client). See [Kiln](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client/kiln) instructions to get things going! 🚀
+This release fully supports the Merge [Kiln](https://kiln.themerge.dev/) testnet `v2` complying with the latest Merge [specs](https://hackmd.io/@n0ble/kiln-spec). The release is part of an [@ethereumjs/client](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client) `v0.4` release which can be used to sync with the testnet, combining with a suited consensus client (e.g. the Lodestar client). See [Kiln](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client/kiln) instructions to get things going! 🚀
 
 In the VM the `merge` HF is now activated as being supported and an (experimental) Merge-ready VM can be instantiated with:
 
@@ -40,7 +40,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eip
 
 ### L2 Support: Genesis State with Code and Storage
 
-It is now possible within the VM to initialize with an extended genesis state not only containing account balances but also code and storage, see PR [#1757](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1757). This is part of our emerging L2 support strategy to allow for a VM instantiation which closer ressembles a specific L2 (or generally: custom chain) setup. Many L2 chains come with specific system contracts pre-initialized on genesis - see e.g. [Optimism](https://community.optimism.io/docs/protocol/protocol-2.0/#system-overview).
+It is now possible within the VM to initialize with an extended genesis state not only containing account balances but also code and storage, see PR [#1757](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1757). This is part of our emerging L2 support strategy to allow for a VM instantiation that closer resembles a specific L2 (or generally: custom chain) setup. Many L2 chains come with specific system contracts pre-initialized on genesis - see e.g. [Optimism](https://community.optimism.io/docs/protocol/protocol-2.0/#system-overview).
 
 See `Common` [custom chain initialization API](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common#initialize-using-customchains-array) on how to initialize a `Common` instance with a code-storage-containing custom genesis state.
 

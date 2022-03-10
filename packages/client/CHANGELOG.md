@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Merge Kiln v2 Testnet Support
 
-This release fully supports the Merge [Kiln](https://kiln.themerge.dev/) testnet `v2` complying to the latest Merge [specs](https://hackmd.io/@n0ble/kiln-spec). You can use this release to sync with the testnet, combining with a suited consensus client (e.g. the Lodestar client). See [Kiln](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client/kiln) instructions to get things going! 🚀
+This release fully supports the Merge [Kiln](https://kiln.themerge.dev/) testnet `v2` complying with the latest Merge [specs](https://hackmd.io/@n0ble/kiln-spec). You can use this release to sync with the testnet, combining with a suited consensus client (e.g. the Lodestar client). See [Kiln](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client/kiln) instructions to get things going! 🚀
 
 - New engine API endpoints, PRs [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565) and [#1712](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1712)
   - `engine_newPayloadV1` (before: `engine_executePayloadV1`)
