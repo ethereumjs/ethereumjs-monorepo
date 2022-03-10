@@ -11,7 +11,7 @@ tape('Clique: Initialization', (t) => {
     const blockchain = new Blockchain({ common })
 
     const head = await blockchain.getHead()
-    st.equals(head.hash().toString('hex'), common.genesis().hash.slice(2), 'correct genesis hash')
+    st.equal(head.hash().toString('hex'), common.genesis().hash.slice(2), 'correct genesis hash')
 
     st.deepEquals(
       blockchain.cliqueActiveSigners(),

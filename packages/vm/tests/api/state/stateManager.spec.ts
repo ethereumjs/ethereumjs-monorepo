@@ -257,7 +257,7 @@ tape('StateManager', (t) => {
       const stateManager = new StateManager()
       await stateManager.generateCanonicalGenesis()
       const stateRoot = await stateManager.getStateRoot()
-      st.equals(
+      st.equal(
         stateRoot.toString('hex'),
         genesisData.genesis_state_root,
         'generateCanonicalGenesis should produce correct state root for mainnet from ethereum/tests data'

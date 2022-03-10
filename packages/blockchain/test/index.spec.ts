@@ -26,19 +26,19 @@ tape('blockchain test', (t) => {
     const head = await blockchain.getHead()
     const iteratorHead = await blockchain.getIteratorHead()
 
-    st.equals(
+    st.equal(
       head.hash().toString('hex'),
       common.genesis().hash.slice(2),
       'correct genesis hash (getHead())'
     )
-    st.equals(
+    st.equal(
       iteratorHead.hash().toString('hex'),
       common.genesis().hash.slice(2),
       'correct genesis hash (getIteratorHead())'
     )
 
     blockchain = await Blockchain.create({ common, hardforkByHeadBlockNumber: true })
-    st.equals(
+    st.equal(
       common.hardfork(),
       'tangerineWhistle',
       'correct HF setting with hardforkByHeadBlockNumber option'
@@ -56,7 +56,7 @@ tape('blockchain test', (t) => {
 
     const head = await blockchain.getHead()
 
-    st.equals(Number(head.header.number), 5, 'correct block number')
+    st.equal(Number(head.header.number), 5, 'correct block number')
     st.end()
   })
 
@@ -387,8 +387,8 @@ tape('blockchain test', (t) => {
         i++
       }
     })
-    st.equals(iterated, 24)
-    st.equals(i, 24)
+    st.equal(iterated, 24)
+    st.equal(i, 24)
     st.end()
   })
 
@@ -407,8 +407,8 @@ tape('blockchain test', (t) => {
         },
         5
       )
-      st.equals(iterated, 5)
-      st.equals(i, 5)
+      st.equal(iterated, 5)
+      st.equal(i, 5)
       st.end()
     }
   )
@@ -432,8 +432,8 @@ tape('blockchain test', (t) => {
         .catch(() => {
           st.fail('Promise cannot throw when running 0 blocks')
         })
-      st.equals(iterated, 0)
-      st.equals(i, 0)
+      st.equal(iterated, 0)
+      st.equal(i, 0)
       st.end()
     }
   )
@@ -482,7 +482,7 @@ tape('blockchain test', (t) => {
       5
     )
 
-    st.equals(i, 1)
+    st.equal(i, 1)
 
     st.end()
   })
@@ -646,7 +646,7 @@ tape('blockchain test', (t) => {
     const head = await blockchain.getHead()
     if (genesis) {
       st.ok(head.hash().equals(genesis.hash()), 'should get head')
-      st.equals(
+      st.equal(
         (blockchain as any)._heads['head0'].toString('hex'),
         'abcd',
         'should get state root heads'
@@ -702,7 +702,7 @@ tape('blockchain test', (t) => {
     const blockchain = new Blockchain({ db })
 
     const number = await blockchain.dbManager.hashToNumber(genesis?.hash())
-    st.equals(number, BigInt(0), 'should perform _hashToNumber correctly')
+    st.equal(number, BigInt(0), 'should perform _hashToNumber correctly')
 
     const hash = await blockchain.dbManager.numberToHash(BigInt(0))
     st.ok(genesis.hash().equals(hash), 'should perform _numberToHash correctly')

@@ -247,7 +247,7 @@ tape('[BaseTransaction]', function (t) {
   t.test('verifySignature()', function (st) {
     for (const txType of txTypes) {
       txType.txs.forEach(function (tx: any) {
-        st.equals(tx.verifySignature(), true, `${txType.name}: signature should be valid`)
+        st.equal(tx.verifySignature(), true, `${txType.name}: signature should be valid`)
       })
     }
     st.end()
@@ -259,7 +259,7 @@ tape('[BaseTransaction]', function (t) {
         // set `s` to a single zero
         txFixture.data.s = '0x' + '0'
         const tx = txType.class.fromTxData(txFixture.data, { common })
-        st.equals(tx.verifySignature(), false, `${txType.name}: signature should not be valid`)
+        st.equal(tx.verifySignature(), false, `${txType.name}: signature should not be valid`)
         st.ok(
           (<string[]>tx.validate(true)).includes('Invalid Signature'),
           `${txType.name}: should return an error string about not verifying signatures`
@@ -318,7 +318,7 @@ tape('[BaseTransaction]', function (t) {
         const { privateKey, sendersAddress } = txType.fixtures[i]
         if (privateKey) {
           const signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
-          st.equals(
+          st.equal(
             signedTx.getSenderAddress().toString(),
             `0x${sendersAddress}`,
             `${txType.name}: should get sender's address after signing it`

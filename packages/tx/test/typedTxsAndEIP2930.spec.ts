@@ -451,7 +451,7 @@ tape('[AccessListEIP2930Transaction] -> Class Specific Tests', function (t) {
       },
       { common }
     )
-    st.equals(tx.getUpfrontCost(), BigInt(10000000042))
+    st.equal(tx.getUpfrontCost(), BigInt(10000000042))
     st.end()
   })
 

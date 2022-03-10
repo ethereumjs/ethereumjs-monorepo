@@ -90,7 +90,7 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       )
     ).balance.toString(16)
 
-    st.equals(
+    st.equal(
       `0x${uncleReward}`,
       testData.postState['0xb94f5374fce5ed0000000097c15331677e6ebf0b'].balance,
       'calculated balance should equal postState balance'

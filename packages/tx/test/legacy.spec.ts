@@ -113,7 +113,7 @@ tape('[Transaction]', function (t) {
 
   t.test('Initialization -> should accept lesser r values', function (st) {
     const tx = Transaction.fromTxData({ r: bufferToBigInt(toBuffer('0x0005')) })
-    st.equals(tx.r!.toString(16), '5')
+    st.equal(tx.r!.toString(16), '5')
     st.end()
   })
 
@@ -152,19 +152,19 @@ tape('[Transaction]', function (t) {
 
   t.test('getBaseFee() -> should return base fee', function (st) {
     const tx = Transaction.fromTxData({})
-    st.equals(tx.getBaseFee(), BigInt(53000))
+    st.equal(tx.getBaseFee(), BigInt(53000))
     st.end()
   })
 
   t.test('getDataFee() -> should return data fee', function (st) {
     let tx = Transaction.fromTxData({})
-    st.equals(tx.getDataFee(), BigInt(0))
+    st.equal(tx.getDataFee(), BigInt(0))
 
     tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer))
-    st.equals(tx.getDataFee(), BigInt(1716))
+    st.equal(tx.getDataFee(), BigInt(1716))
 
     tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), { freeze: false })
-    st.equals(tx.getDataFee(), BigInt(1716))
+    st.equal(tx.getDataFee(), BigInt(1716))
 
     st.end()
   })
@@ -172,12 +172,12 @@ tape('[Transaction]', function (t) {
   t.test('getDataFee() -> should return correct data fee for istanbul', function (st) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     let tx = Transaction.fromTxData({}, { common })
-    st.equals(tx.getDataFee(), BigInt(0))
+    st.equal(tx.getDataFee(), BigInt(0))
 
     tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), {
       common,
     })
-    st.equals(tx.getDataFee(), BigInt(1716))
+    st.equal(tx.getDataFee(), BigInt(1716))
 
     st.end()
   })
@@ -187,9 +187,9 @@ tape('[Transaction]', function (t) {
     const tx = Transaction.fromValuesArray(txFixtures[0].raw.map(toBuffer), {
       common,
     })
-    st.equals(tx.getDataFee(), BigInt(656))
+    st.equal(tx.getDataFee(), BigInt(656))
     tx.common.setHardfork(Hardfork.Istanbul)
-    st.equals(tx.getDataFee(), BigInt(240))
+    st.equal(tx.getDataFee(), BigInt(240))
     st.end()
   })
 
@@ -199,7 +199,7 @@ tape('[Transaction]', function (t) {
       gasLimit: 10000000,
       value: 42,
     })
-    st.equals(tx.getUpfrontCost(), BigInt(10000000042))
+    st.equal(tx.getUpfrontCost(), BigInt(10000000042))
     st.end()
   })
 

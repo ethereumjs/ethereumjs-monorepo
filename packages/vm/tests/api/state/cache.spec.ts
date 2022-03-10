@@ -125,7 +125,7 @@ tape('cache checkpointing', (t) => {
     cache.put(addr, updatedAcc)
 
     let res = cache.get(addr)
-    st.equals(res.balance, updatedAcc.balance)
+    st.equal(res.balance, updatedAcc.balance)
 
     cache.revert()
 

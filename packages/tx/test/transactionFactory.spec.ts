@@ -58,7 +58,7 @@ tape('[TransactionFactory]: Basic functions', function (t) {
     for (const txType of txTypes) {
       const serialized = txType.unsigned.serialize()
       const factoryTx = TransactionFactory.fromSerializedData(serialized, { common })
-      st.equals(
+      st.equal(
         factoryTx.constructor.name,
         txType.class.name,
         `should return the right type (${txType.name})`
@@ -96,7 +96,7 @@ tape('[TransactionFactory]: Basic functions', function (t) {
         rawTx = txType.signed.raw() as Buffer[]
       }
       const tx = TransactionFactory.fromBlockBodyData(rawTx, { common })
-      st.equals(tx.constructor.name, txType.name, `should return the right type (${txType.name})`)
+      st.equal(tx.constructor.name, txType.name, `should return the right type (${txType.name})`)
       if (txType.eip2718) {
         st.deepEqual(
           tx.serialize(),
@@ -113,14 +113,14 @@ tape('[TransactionFactory]: Basic functions', function (t) {
   t.test('fromTxData() -> success cases', function (st) {
     for (const txType of txTypes) {
       const tx = TransactionFactory.fromTxData({ type: txType.type }, { common })
-      st.equals(
+      st.equal(
         tx.constructor.name,
         txType.class.name,
         `should return the right type (${txType.name})`
       )
       if (!txType.eip2718) {
         const tx = TransactionFactory.fromTxData({})
-        st.equals(
+        st.equal(
           tx.constructor.name,
           txType.class.name,
           `should return the right type (${txType.name})`

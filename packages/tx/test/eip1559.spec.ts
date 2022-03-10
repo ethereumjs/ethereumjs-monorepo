@@ -75,11 +75,11 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
       },
       { common }
     )
-    st.equals(tx.getUpfrontCost(), BigInt(806), 'correct upfront cost with default base fee')
+    st.equal(tx.getUpfrontCost(), BigInt(806), 'correct upfront cost with default base fee')
     let baseFee = BigInt(0)
-    st.equals(tx.getUpfrontCost(baseFee), BigInt(806), 'correct upfront cost with 0 base fee')
+    st.equal(tx.getUpfrontCost(baseFee), BigInt(806), 'correct upfront cost with 0 base fee')
     baseFee = BigInt(4)
-    st.equals(
+    st.equal(
       tx.getUpfrontCost(baseFee),
       BigInt(1006),
       'correct upfront cost with cost-changing base fee value'
