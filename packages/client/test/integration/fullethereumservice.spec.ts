@@ -47,7 +47,8 @@ tape('[Integration:FullEthereumService]', async (t) => {
     )
     t.equal(reqId1, BigInt(1), 'handled GetBlockHeaders')
     t.ok(headers![1].hash().equals(hash), 'handled GetBlockHeaders')
-    const [reqId2, bodies] = await peer.eth!.getBlockBodies({ hashes: [hash] })
+    const res = await peer.eth!.getBlockBodies({ hashes: [hash] })
+    const [reqId2, bodies] = res
     t.equal(reqId2, BigInt(2), 'handled GetBlockBodies')
     t.deepEquals(bodies, [[[], []]], 'handled GetBlockBodies')
     service.config.events.on(Event.PROTOCOL_MESSAGE, async (msg) => {

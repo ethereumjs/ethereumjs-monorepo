@@ -66,7 +66,7 @@ export interface EthProtocolMethods {
   getReceipts: (opts: GetReceiptsOpts) => Promise<[bigint, TxReceipt[]]>
 }
 
-const id = BigInt(0)
+let id = BigInt(0)
 
 /**
  * Implements eth/66 protocol
@@ -79,8 +79,8 @@ export class EthProtocol extends Protocol {
     {
       name: 'NewBlockHashes',
       code: 0x01,
-      encode: (hashes: any[]) => hashes.map((hn) => [hn[0], hn[1].toArrayLike(Buffer)]),
-      decode: (hashes: any[]) => hashes.map((hn) => [hn[0], BigInt(hn[1])]),
+      encode: (hashes: any[]) => hashes.map((hn) => [hn[0], bigIntToBuffer(hn[1])]),
+      decode: (hashes: any[]) => hashes.map((hn) => [hn[0], bufferToBigInt(hn[1])]),
     },
     {
       name: 'Transactions',
@@ -108,16 +108,18 @@ export class EthProtocol extends Protocol {
       code: 0x03,
       response: 0x04,
       encode: ({ reqId, block, max, skip = 0, reverse = false }: GetBlockHeadersOpts) => [
-        reqId === undefined ? id + BigInt(1) : bigIntToBuffer(reqId),
+        bigIntToBuffer(reqId ?? id++ + BigInt(1)),
         [typeof block === 'bigint' ? bigIntToBuffer(block) : block, max, skip, !reverse ? 0 : 1],
       ],
-      decode: ([reqId, [block, max, skip, reverse]]: any) => ({
-        reqId: BigInt(reqId),
-        block: block.length === 32 ? block : BigInt(block),
-        max: bufferToInt(max),
-        skip: bufferToInt(skip),
-        reverse: bufferToInt(reverse) === 0 ? false : true,
-      }),
+      decode: ([reqId, [block, max, skip, reverse]]: any) => {
+        return {
+          reqId: bufferToBigInt(reqId),
+          block: block.length === 32 ? block : bufferToBigInt(block),
+          max: bufferToInt(max),
+          skip: bufferToInt(skip),
+          reverse: bufferToInt(reverse) === 0 ? false : true,
+        }
+      },
     },
     {
       name: 'BlockHeaders',
@@ -145,7 +147,7 @@ export class EthProtocol extends Protocol {
       code: 0x05,
       response: 0x06,
       encode: ({ reqId, hashes }: GetBlockBodiesOpts) => [
-        reqId === undefined ? id + BigInt(1) : bigIntToBuffer(reqId),
+        bigIntToBuffer(reqId ?? id++ + BigInt(1)),
         hashes,
       ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
@@ -184,7 +186,7 @@ export class EthProtocol extends Protocol {
       code: 0x09,
       response: 0x0a,
       encode: ({ reqId, hashes }: GetPooledTransactionsOpts) => [
-        reqId === undefined ? id + BigInt(1) : bigIntToBuffer(reqId),
+        bigIntToBuffer(reqId === undefined ? id++ : reqId),
         hashes,
       ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
@@ -219,7 +221,7 @@ export class EthProtocol extends Protocol {
       code: 0x0f,
       response: 0x10,
       encode: ({ reqId, hashes }: { reqId: bigint; hashes: Buffer[] }) => [
-        bigIntToBuffer(reqId === undefined ? id + BigInt(1) : reqId),
+        bigIntToBuffer(reqId === undefined ? id++ : reqId),
         hashes,
       ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({

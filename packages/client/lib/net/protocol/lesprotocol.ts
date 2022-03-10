@@ -34,7 +34,7 @@ export interface LesProtocolMethods {
   ) => Promise<{ reqId: bigint; bv: bigint; headers: BlockHeader[] }>
 }
 
-const id = BigInt(0)
+let id = BigInt(0)
 
 /**
  * Implements les/1 and les/2 protocols
@@ -59,8 +59,8 @@ export class LesProtocol extends Protocol {
       decode: ([headHash, headNumber, headTd, reorgDepth]: any) => ({
         // TO DO: handle state changes
         headHash: headHash,
-        headNumber: BigInt(headNumber),
-        headTd: BigInt(headTd),
+        headNumber: bufferToBigInt(headNumber),
+        headTd: bufferToBigInt(headTd),
         reorgDepth: bufferToInt(reorgDepth),
       }),
     },
@@ -69,12 +69,12 @@ export class LesProtocol extends Protocol {
       code: 0x02,
       response: 0x03,
       encode: ({ reqId, block, max, skip = 0, reverse = false }: GetBlockHeadersOpts) => [
-        reqId === undefined ? id + BigInt(1) : bigIntToBuffer(reqId),
+        bigIntToBuffer(reqId ?? id++ + BigInt(1)),
         [typeof block === 'bigint' ? bigIntToBuffer(block) : block, max, skip, !reverse ? 0 : 1],
       ],
       decode: ([reqId, [block, max, skip, reverse]]: any) => ({
-        reqId: BigInt(reqId),
-        block: block.length === 32 ? block : BigInt(block),
+        reqId: bufferToBigInt(reqId),
+        block: block.length === 32 ? block : bufferToBigInt(block),
         max: bufferToInt(max),
         skip: bufferToInt(skip),
         reverse: bufferToInt(reverse) === 0 ? false : true,
@@ -89,8 +89,8 @@ export class LesProtocol extends Protocol {
         headers.map((h: BlockHeader) => h.raw()),
       ],
       decode: ([reqId, bv, headers]: any) => ({
-        reqId: BigInt(reqId),
-        bv: BigInt(bv),
+        reqId: bufferToBigInt(reqId),
+        bv: bufferToBigInt(bv),
         headers: headers.map((h: BlockHeaderBuffer) =>
           BlockHeader.fromValuesArray(h, {
             hardforkByBlockNumber: true,

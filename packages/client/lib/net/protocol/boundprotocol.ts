@@ -92,6 +92,7 @@ export class BoundProtocol {
 
     let data
     let error
+
     try {
       data = this.protocol.decode(message, incoming.payload)
     } catch (e: any) {
