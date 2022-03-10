@@ -3,14 +3,11 @@ import snappy from 'snappyjs'
 import { BN, rlp } from 'ethereumjs-util'
 import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
 import { Peer } from '../rlpx/peer'
-import { EthProtocol, Protocol } from './protocol'
-
-type SendMethod = (code: ETH.MESSAGE_CODES, data: Buffer) => any
+import { EthProtocol, Protocol, SendMethod } from './protocol'
 
 export class ETH extends Protocol {
   _status: ETH.StatusMsg | null
   _peerStatus: ETH.StatusMsg | null
-  _send: SendMethod
 
   // Eth64
   _hardfork: string = 'chainstart'
@@ -19,9 +16,8 @@ export class ETH extends Protocol {
   _nextForkBlock = new BN(0)
 
   constructor(version: number, peer: Peer, send: SendMethod) {
-    super(peer, EthProtocol.ETH, version, ETH.MESSAGE_CODES)
+    super(peer, send, EthProtocol.ETH, version, ETH.MESSAGE_CODES)
 
-    this._send = send
     this._status = null
     this._peerStatus = null
 

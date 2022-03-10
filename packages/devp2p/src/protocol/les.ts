@@ -3,21 +3,17 @@ import { rlp } from 'ethereumjs-util'
 import snappy from 'snappyjs'
 import { int2buffer, buffer2int, assertEq, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
-import { EthProtocol, Protocol } from './protocol'
+import { EthProtocol, Protocol, SendMethod } from './protocol'
 
 export const DEFAULT_ANNOUNCE_TYPE = 1
 
-type SendMethod = (code: LES.MESSAGE_CODES, data: Buffer) => any
-
 export class LES extends Protocol {
-  _send: SendMethod
   _status: LES.Status | null
   _peerStatus: LES.Status | null
 
   constructor(version: number, peer: Peer, send: SendMethod) {
-    super(peer, EthProtocol.LES, version, LES.MESSAGE_CODES)
+    super(peer, send, EthProtocol.LES, version, LES.MESSAGE_CODES)
 
-    this._send = send
     this._status = null
     this._peerStatus = null
     this._statusTimeoutId = setTimeout(() => {

@@ -9,10 +9,12 @@ export enum EthProtocol {
   LES = 'les',
 }
 type MessageCodes = { [key: number | string]: number | string }
+export type SendMethod = (code: number, data: Buffer) => any
 
 export class Protocol extends EventEmitter {
   _version: number
   _peer: Peer
+  _send: SendMethod
   _statusTimeoutId: NodeJS.Timeout
   _messageCodes: MessageCodes
   _debug: Debugger
@@ -22,16 +24,22 @@ export class Protocol extends EventEmitter {
    * Will be set to the first successfully connected peer to allow for
    * debugging with the `devp2p:FIRST_PEER` debugger
    */
-  _firstPeer: string
+  _firstPeer = ''
 
   // Message debuggers (e.g. { 'GET_BLOCK_HEADERS': [debug Object], ...})
   protected msgDebuggers: { [key: string]: (debug: string) => void } = {}
 
-  constructor(peer: Peer, protocol: EthProtocol, version: number, messageCodes: MessageCodes) {
+  constructor(
+    peer: Peer,
+    send: SendMethod,
+    protocol: EthProtocol,
+    version: number,
+    messageCodes: MessageCodes
+  ) {
     super()
 
-    this._firstPeer = ''
     this._peer = peer
+    this._send = send
     this._version = version
     this._messageCodes = messageCodes
     this._statusTimeoutId = setTimeout(() => {
