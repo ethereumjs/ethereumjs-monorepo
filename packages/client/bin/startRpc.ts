@@ -42,13 +42,13 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Buffer {
     if (!jwtSecretHex || jwtSecretHex.length != 64) {
       throw Error('Need a valid 256 bit hex encoded secret')
     }
-    config.logger.debug(`Read a hex encoded secret, path=${jwtFilePath}`)
+    config.logger.debug(`Read a hex encoded jwt secret from path=${jwtFilePath}`)
     jwtSecret = Buffer.from(jwtSecretHex, 'hex')
   } else {
     jwtFilePath = `${config.datadir}/jwtsecret`
     jwtSecret = Buffer.from(Array.from({ length: 32 }, () => Math.round(Math.random() * 255)))
     writeFileSync(jwtFilePath, jwtSecret.toString('hex'))
-    config.logger.info(`A hex encoded random jwt secret written, path=${jwtFilePath}`)
+    config.logger.info(`Wrote a hex encoded random jwt secret to path=${jwtFilePath}`)
   }
   return jwtSecret
 }
