@@ -1,7 +1,13 @@
 import { isHexString } from './internal'
 import { Address } from './address'
-import { unpadBuffer, toBuffer, ToBufferInputTypes } from './bytes'
-import { bigIntToBuffer, bufferToBigInt, bufferToHex } from '.'
+import {
+  unpadBuffer,
+  toBuffer,
+  ToBufferInputTypes,
+  bigIntToBuffer,
+  bufferToBigInt,
+  bufferToHex,
+} from './bytes'
 
 /*
  * A type that represents an input that can be converted to a BigInt.
