@@ -431,7 +431,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Process any gas refund
   let gasRefund = results.execResult.gasRefund ?? BigInt(0)
   const maxRefundQuotient = BigInt(this._common.param('gasConfig', 'maxRefundQuotient'))
-  if (!(gasRefund === BigInt(0))) {
+  if (gasRefund !== BigInt(0)) {
     const maxRefund = results.gasUsed / maxRefundQuotient
     gasRefund = gasRefund < maxRefund ? gasRefund : maxRefund
     results.gasUsed -= gasRefund

@@ -31,7 +31,7 @@ tape('toType', function (t) {
       st.strictEqual(result, num)
       st.end()
     })
-    st.test('should convert to BN', function (st) {
+    st.test('should convert to BigInt', function (st) {
       const result = toType(num, TypeOutput.BigInt)
       st.equal(result, BigInt(num))
       st.end()
@@ -54,14 +54,14 @@ tape('toType', function (t) {
       st.end()
     })
   })
-  t.test('from BN', function (st) {
+  t.test('from BigInt', function (st) {
     const num = BigInt(1000)
     st.test('should convert to Number', function (st) {
       const result = toType(num, TypeOutput.Number)
       st.strictEqual(result, Number(num))
       st.end()
     })
-    st.test('should convert to BN', function (st) {
+    st.test('should convert to BigInt', function (st) {
       const result = toType(num, TypeOutput.BigInt)
       st.equal(result, num)
       st.end()
@@ -94,7 +94,7 @@ tape('toType', function (t) {
       st.ok(intToBuffer(result).equals(num))
       st.end()
     })
-    st.test('should convert to BN', function (st) {
+    st.test('should convert to BigInt', function (st) {
       const result = toType(num, TypeOutput.BigInt)
       st.equal(result, bufferToBigInt(num))
       st.end()
@@ -117,7 +117,7 @@ tape('toType', function (t) {
       st.strictEqual(intToHex(result), num)
       st.end()
     })
-    st.test('should convert to BN', function (st) {
+    st.test('should convert to BigInt', function (st) {
       const result = toType(num, TypeOutput.BigInt)
       st.strictEqual(bigIntToHex(result), num)
       st.end()

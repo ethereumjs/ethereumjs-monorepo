@@ -1,5 +1,5 @@
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { rlp, TWO_POW256_BIGINT } from 'ethereumjs-util'
+import { rlp, TWO_POW256 } from 'ethereumjs-util'
 import tape from 'tape'
 import { FeeMarketEIP1559Transaction } from '../src'
 
@@ -176,7 +176,7 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
     st.doesNotThrow(() => {
       FeeMarketEIP1559Transaction.fromTxData(
         {
-          maxFeePerGas: TWO_POW256_BIGINT - BigInt(1),
+          maxFeePerGas: TWO_POW256 - BigInt(1),
           maxPriorityFeePerGas: 100,
           gasLimit: 1,
           value: 6,
@@ -187,7 +187,7 @@ tape('[FeeMarketEIP1559Transaction]', function (t) {
     st.throws(() => {
       FeeMarketEIP1559Transaction.fromTxData(
         {
-          maxFeePerGas: TWO_POW256_BIGINT - BigInt(1),
+          maxFeePerGas: TWO_POW256 - BigInt(1),
           maxPriorityFeePerGas: 100,
           gasLimit: 100,
           value: 6,

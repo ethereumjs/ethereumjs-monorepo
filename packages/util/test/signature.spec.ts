@@ -207,10 +207,10 @@ tape('ecrecover', function (t) {
     let sender = ecrecover(msgHash, vBuffer, r, s, chainIDBuffer)
     st.ok(sender.equals(senderPubKey), 'sender pubkey correct (Buffer)')
 
-    const vBN = bufferToBigInt(vBuffer)
-    const chainIDBN = bufferToBigInt(chainIDBuffer)
-    sender = ecrecover(msgHash, vBN, r, s, chainIDBN)
-    st.ok(sender.equals(senderPubKey), 'sender pubkey correct (BN)')
+    const vBigInt = bufferToBigInt(vBuffer)
+    const chainIDBigInt = bufferToBigInt(chainIDBuffer)
+    sender = ecrecover(msgHash, vBigInt, r, s, chainIDBigInt)
+    st.ok(sender.equals(senderPubKey), 'sender pubkey correct (BigInt)')
 
     const vHexString = '0xf2ded8deec6714'
     const chainIDHexString = '0x796f6c6f763378'

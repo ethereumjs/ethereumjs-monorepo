@@ -45,18 +45,18 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: any): any {
     return { r, s, v }
   }
 
-  const chainIdBN = toType(chainId as BigIntLike, TypeOutput.BigInt)
-  const v = bigIntToBuffer(chainIdBN * BigInt(2) + BigInt(35) + BigInt(recovery))
+  const chainIdBigInt = toType(chainId as BigIntLike, TypeOutput.BigInt)
+  const v = bigIntToBuffer(chainIdBigInt * BigInt(2) + BigInt(35) + BigInt(recovery))
   return { r, s, v }
 }
 
 function calculateSigRecovery(v: BigIntLike, chainId?: BigIntLike): bigint {
-  const vBN = bufferToBigInt(toBuffer(v))
+  const vBigInt = bufferToBigInt(toBuffer(v))
   if (!chainId) {
-    return vBN - BigInt(27)
+    return vBigInt - BigInt(27)
   }
-  const chainIdBN = bufferToBigInt(toBuffer(chainId))
-  return vBN - (chainIdBN * BigInt(2) + BigInt(35))
+  const chainIdBigInt = bufferToBigInt(toBuffer(chainId))
+  return vBigInt - (chainIdBigInt * BigInt(2) + BigInt(35))
 }
 
 function isValidSigRecovery(recovery: number | bigint): boolean {
@@ -184,15 +184,19 @@ export const isValidSignature = function (
     return false
   }
 
-  const rBN = bufferToBigInt(r)
-  const sBN = bufferToBigInt(s)
-  const _0n = BigInt(0)
+  const rBigInt = bufferToBigInt(r)
+  const sBigInt = bufferToBigInt(s)
 
-  if (rBN === _0n || rBN >= SECP256K1_ORDER || sBN === _0n || sBN >= SECP256K1_ORDER) {
+  if (
+    rBigInt === BigInt(0) ||
+    rBigInt >= SECP256K1_ORDER ||
+    sBigInt === BigInt(0) ||
+    sBigInt >= SECP256K1_ORDER
+  ) {
     return false
   }
 
-  if (homesteadOrLater && sBN >= SECP256K1_ORDER_DIV_2) {
+  if (homesteadOrLater && sBigInt >= SECP256K1_ORDER_DIV_2) {
     return false
   }
 

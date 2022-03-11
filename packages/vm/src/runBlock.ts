@@ -215,7 +215,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
       const msg = _errorMsg('invalid bloom', this, block)
       throw new Error(msg)
     }
-    if (!(result.gasUsed === block.header.gasUsed)) {
+    if (result.gasUsed !== block.header.gasUsed) {
       if (this.DEBUG) {
         debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
       }

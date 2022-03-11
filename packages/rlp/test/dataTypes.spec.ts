@@ -106,8 +106,8 @@ tape('RLP encoding (list)', (t) => {
 
 tape('RLP encoding (BigInt)', (t) => {
   t.test('should encode a BigInt value', (st) => {
-    const encodedBN = RLP.encode(BigInt(3))
-    st.deepEqual(encodedBN[0], 3)
+    const encoded = RLP.encode(BigInt(3))
+    st.deepEqual(encoded[0], 3)
     st.end()
   })
 

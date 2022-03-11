@@ -51,7 +51,7 @@ tape('EIP 3541 tests', (t) => {
 
     st.ok(stack.length == depth)
     stack.forEach((elem: bigint) => {
-      if (!(elem === BigInt(0))) {
+      if (elem !== BigInt(0)) {
         st.fail('stack element is not 0')
       }
     })

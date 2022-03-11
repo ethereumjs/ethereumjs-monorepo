@@ -107,11 +107,10 @@ export class Address {
    * by EIP-1352
    */
   isPrecompileOrSystemAddress(): boolean {
-    const addressBN = bufferToBigInt(this.buf)
+    const address = bufferToBigInt(this.buf)
     const rangeMin = BigInt(0)
     const rangeMax = BigInt('0xffff')
-
-    return addressBN >= rangeMin && addressBN <= rangeMax
+    return address >= rangeMin && address <= rangeMax
   }
 
   /**

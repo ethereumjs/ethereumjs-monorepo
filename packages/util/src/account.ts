@@ -186,16 +186,15 @@ export const isValidChecksumAddress = function (
 export const generateAddress = function (from: Buffer, nonce: Buffer): Buffer {
   assertIsBuffer(from)
   assertIsBuffer(nonce)
-  const nonceBN = bufferToBigInt(nonce)
 
-  if (nonceBN === BigInt(0)) {
+  if (bufferToBigInt(nonce) === BigInt(0)) {
     // in RLP we want to encode null in the case of zero nonce
     // read the RLP documentation for an answer if you dare
     return rlphash([from, null]).slice(-20)
   }
 
   // Only take the lower 160bits of the hash
-  return rlphash([from, bigIntToBuffer(nonceBN)]).slice(-20)
+  return rlphash([from, nonce]).slice(-20)
 }
 
 /**

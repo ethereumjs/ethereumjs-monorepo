@@ -1,17 +1,15 @@
 import { isHexString } from './internal'
 import { Address } from './address'
 import { unpadBuffer, toBuffer, ToBufferInputTypes } from './bytes'
-import { bigIntToBuffer, bufferToBigInt } from '.'
-import { BN } from './externals'
+import { bigIntToBuffer, bufferToBigInt, bufferToHex } from '.'
 
 /*
- * A type that represents a BNLike input that can be converted to a BN.
+ * A type that represents an input that can be converted to a BigInt.
  */
-export type BNLike = BN | PrefixedHexString | number | Buffer
-export type BigIntLike = bigint | BNLike
+export type BigIntLike = bigint | PrefixedHexString | number | Buffer
 
 /*
- * A type that represents a BufferLike input that can be converted to a Buffer.
+ * A type that represents an input that can be converted to a Buffer.
  */
 export type BufferLike =
   | Buffer
@@ -28,8 +26,7 @@ export type BufferLike =
 export type PrefixedHexString = string
 
 /**
- * A type that represents an Address-like value.
- * To convert to address, use `new Address(toBuffer(value))`
+ * A type that represents an input that can be converted to an Address.
  */
 export type AddressLike = Address | Buffer | PrefixedHexString
 
@@ -58,8 +55,6 @@ export type NestedBufferArray = Array<Buffer | NestedBufferArray>
  * @param value value to convert
  */
 export function bigIntToUnpaddedBuffer(value: bigint): Buffer {
-  // Using `bn.toArrayLike(Buffer)` instead of `bn.toBuffer()`
-  // for compatibility with browserify and similar tools
   return unpadBuffer(bigIntToBuffer(value))
 }
 
@@ -84,7 +79,6 @@ export enum TypeOutput {
 export type TypeOutputReturnType = {
   [TypeOutput.Number]: number
   [TypeOutput.BigInt]: bigint
-  // [TypeOutput.BN]: BN
   [TypeOutput.Buffer]: Buffer
   [TypeOutput.PrefixedHexString]: PrefixedHexString
 }
@@ -122,21 +116,24 @@ export function toType<T extends TypeOutput>(
 
   const output = toBuffer(input)
 
-  if (outputType === TypeOutput.Buffer) {
-    return output as TypeOutputReturnType[T]
-  } else if (outputType === TypeOutput.BigInt) {
-    return bufferToBigInt(output) as TypeOutputReturnType[T]
-  } else if (outputType === TypeOutput.Number) {
-    const bn = Number(bufferToBigInt(output))
-    if (!Number.isSafeInteger(bn)) {
-      throw new Error(
-        'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative output type)'
-      )
+  switch (outputType) {
+    case TypeOutput.Buffer:
+      return output as TypeOutputReturnType[T]
+    case TypeOutput.BigInt:
+      return bufferToBigInt(output) as TypeOutputReturnType[T]
+    case TypeOutput.Number: {
+      const bigInt = bufferToBigInt(output)
+      if (bigInt > BigInt(Number.MAX_SAFE_INTEGER)) {
+        throw new Error(
+          'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative output type)'
+        )
+      }
+      return Number(bigInt) as TypeOutputReturnType[T]
     }
-    return bn as TypeOutputReturnType[T]
-  } else {
-    // outputType === TypeOutput.PrefixedHexString
-    return `0x${output.toString('hex')}` as TypeOutputReturnType[T]
+    case TypeOutput.PrefixedHexString:
+      return bufferToHex(output) as TypeOutputReturnType[T]
+    default:
+      throw new Error('unknown outputType')
   }
 }
 

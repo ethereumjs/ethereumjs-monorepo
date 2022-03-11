@@ -146,7 +146,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
             if (!shouldFail) {
               t.fail(`tx should not fail, but failed: ${e.message}`)
             } else {
-              t.pass('tx succesfully failed')
+              t.pass('tx successfully failed')
             }
           }
         }

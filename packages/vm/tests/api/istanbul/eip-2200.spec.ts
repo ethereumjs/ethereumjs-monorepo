@@ -53,7 +53,7 @@ tape('Istanbul: EIP-2200', async (t) => {
       const account = createAccount(BigInt(0), BigInt(0))
       await vm.stateManager.putAccount(addr, account)
       await vm.stateManager.putContractCode(addr, Buffer.from(testCase.code, 'hex'))
-      if (!(testCase.original === BigInt(0))) {
+      if (testCase.original !== BigInt(0)) {
         await vm.stateManager.putContractStorage(
           addr,
           key,

@@ -266,7 +266,7 @@ tape('toBuffer', function (t) {
     st.ok(toBuffer(null).equals(Buffer.allocUnsafe(0)))
     // undefined
     st.ok(toBuffer(undefined).equals(Buffer.allocUnsafe(0)))
-    // 'toBN'
+    // BigInt
     st.ok(toBuffer(BigInt(1)).equals(Buffer.from([1])))
     // 'toArray'
     st.ok(

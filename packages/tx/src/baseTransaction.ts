@@ -383,8 +383,8 @@ export abstract class BaseTransaction<TransactionObject> {
   }
 
   /**
-   * Validates that an object with BN values cannot exceed the specified bit limit.
-   * @param values Object containing string keys and BN values
+   * Validates that an object with BigInt values cannot exceed the specified bit limit.
+   * @param values Object containing string keys and BigInt values
    * @param bits Number of bits to check (64 or 256)
    * @param cannotEqual Pass true if the number also cannot equal one less the maximum value
    */

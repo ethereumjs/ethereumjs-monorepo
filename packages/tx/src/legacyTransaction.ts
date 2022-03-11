@@ -361,7 +361,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * Validates tx's `v` value
    */
   private _validateTxV(_v?: bigint, common?: Common): Common {
-    let chainIdBN
+    let chainIdBigInt
     const v = _v !== undefined ? Number(_v) : undefined
     // No unsigned tx and EIP-155 activated and chain ID included
     if (
@@ -386,10 +386,10 @@ export default class Transaction extends BaseTransaction<Transaction> {
           numSub = 36
         }
         // Use derived chain ID to create a proper Common
-        chainIdBN = BigInt(v - numSub) / BigInt(2)
+        chainIdBigInt = BigInt(v - numSub) / BigInt(2)
       }
     }
-    return this._getCommon(common, chainIdBN)
+    return this._getCommon(common, chainIdBigInt)
   }
 
   /**

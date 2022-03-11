@@ -1,6 +1,5 @@
 import { Interface, defaultAbiCoder as AbiCoder } from '@ethersproject/abi'
 import { AccessListEIP2930TxData, FeeMarketEIP1559TxData, TxData } from '@ethereumjs/tx'
-import { BN } from 'ethereumjs-util'
 
 type TransactionsData = TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData
 

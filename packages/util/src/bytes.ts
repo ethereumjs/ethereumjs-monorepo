@@ -1,4 +1,3 @@
-import { BN } from './externals'
 import { stripHexPrefix, padToEven, isHexString, isHexPrefixed } from './internal'
 import {
   PrefixedHexString,
@@ -137,7 +136,6 @@ export type ToBufferInputTypes =
   | PrefixedHexString
   | number
   | bigint
-  | BN
   | Buffer
   | Uint8Array
   | number[]
@@ -148,7 +146,7 @@ export type ToBufferInputTypes =
 
 /**
  * Attempts to turn a value into a `Buffer`.
- * Inputs supported: `Buffer`, `String` (hex-prefixed), `Number`, null/undefined, `BN` and other objects
+ * Inputs supported: `Buffer`, `String` (hex-prefixed), `Number`, null/undefined, `BigInt` and other objects
  * with a `toArray()` or `toBuffer()` method.
  * @param v the value
  */
@@ -238,7 +236,7 @@ export const bufferToInt = function (buf: Buffer): number {
 }
 
 /**
- * Interprets a `Buffer` as a signed integer and returns a `BN`. Assumes 256-bit numbers.
+ * Interprets a `Buffer` as a signed integer and returns a `BigInt`. Assumes 256-bit numbers.
  * @param num Signed integer value
  */
 export const fromSigned = function (num: Buffer): bigint {
@@ -246,7 +244,7 @@ export const fromSigned = function (num: Buffer): bigint {
 }
 
 /**
- * Converts a `BN` to an unsigned integer and returns it as a `Buffer`. Assumes 256-bit numbers.
+ * Converts a `BigInt` to an unsigned integer and returns it as a `Buffer`. Assumes 256-bit numbers.
  * @param num
  */
 export const toUnsigned = function (num: bigint): Buffer {
