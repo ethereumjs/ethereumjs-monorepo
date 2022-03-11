@@ -1,6 +1,6 @@
 {
   "name": "merkle-patricia-tree",
-  "version": "4.2.3",
+  "version": "4.2.4",
   "description": "This is an implementation of the modified merkle patricia tree as specified in Ethereum's yellow paper.",
   "license": "MPL-2.0",
   "author": "mjbecze <mjbecze@gmail.com>",
