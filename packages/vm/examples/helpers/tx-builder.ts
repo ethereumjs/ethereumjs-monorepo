@@ -36,7 +36,7 @@ export const encodeDeployment = (
 
 export const buildTransaction = (data: Partial<TransactionsData>): TransactionsData => {
   const defaultData: Partial<TransactionsData> = {
-    nonce: new BN(0),
+    nonce: BigInt(0),
     gasLimit: 2_000_000, // We assume that 2M is enough,
     gasPrice: 1,
     value: 0,

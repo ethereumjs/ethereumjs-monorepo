@@ -1,4 +1,4 @@
-import { BN, keccak256 } from 'ethereumjs-util'
+import { keccak256 } from 'ethereumjs-util'
 const MR = require('miller-rabin')
 
 export const params = {
@@ -22,7 +22,7 @@ export function getCacheSize(epoc: number) {
     (exports.params.CACHE_BYTES_INIT as number) +
     (exports.params.CACHE_BYTES_GROWTH as number) * epoc
   sz -= exports.params.HASH_BYTES
-  while (!mr.test(new BN(sz / exports.params.HASH_BYTES))) {
+  while (!mr.test(BigInt(sz / exports.params.HASH_BYTES))) {
     sz -= 2 * exports.params.HASH_BYTES
   }
   return sz
@@ -34,7 +34,7 @@ export function getFullSize(epoc: number) {
     (exports.params.DATASET_BYTES_INIT as number) +
     (exports.params.DATASET_BYTES_GROWTH as number) * epoc
   sz -= exports.params.MIX_BYTES
-  while (!mr.test(new BN(sz / exports.params.MIX_BYTES))) {
+  while (!mr.test(BigInt(sz / exports.params.MIX_BYTES))) {
     sz -= 2 * exports.params.MIX_BYTES
   }
   return sz

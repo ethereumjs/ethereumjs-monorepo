@@ -279,7 +279,7 @@ export default class Common extends EventEmitter {
 
   /**
    * Static method to determine if a {@link chainId} is supported as a standard chain
-   * @param chainId BN id (`1`) of a standard chain
+   * @param chainId bigint id (`1`) of a standard chain
    * @returns boolean
    */
   static isSupportedChainId(chainId: bigint): boolean {

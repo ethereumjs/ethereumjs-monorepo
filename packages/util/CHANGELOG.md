@@ -77,7 +77,7 @@ The `signature` module comes with a new helper function `toCompactSig(v: BNLike,
 
 ### Other Changes
 
-- Renamed `bnToRlp()`helper function to `bnToUnpaddedBuffer()`, PR [#1293](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1293)
+- Renamed `bnToRlp()`helper function to `bigIntToUnpaddedBuffer()`, PR [#1293](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1293)
 
 ## 7.0.10 - 2021-03-31
 
@@ -120,7 +120,7 @@ Along there is a new `toType()` helper function which can be used to easily conv
 ## [7.0.7] - 2020-10-15
 
 - Removed `stateRoot` check for `Account.isEmpty()` to make emptiness check `EIP-161` compliant, PR [#279](https://github.com/ethereumjs/ethereumjs-util/pull/279)
-- Added type `AddressLike` and helper `bnToHex()`, PR [#279](https://github.com/ethereumjs/ethereumjs-util/pull/279)
+- Added type `AddressLike` and helper `bigIntToHex()`, PR [#279](https://github.com/ethereumjs/ethereumjs-util/pull/279)
 - Added `account.raw()` which returns a Buffer Array of the raw Buffers for the account in order, PR [#279](https://github.com/ethereumjs/ethereumjs-util/pull/279)
 
 [7.0.7]: https://github.com/ethereumjs/ethereumjs-util/compare/v7.0.6...v7.0.7

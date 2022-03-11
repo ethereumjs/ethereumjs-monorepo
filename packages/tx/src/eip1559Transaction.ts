@@ -1,6 +1,6 @@
 import {
-  bnToHex,
-  bnToUnpaddedBuffer,
+  bigIntToHex,
+  bigIntToUnpaddedBuffer,
   bufferToBigInt,
   ecrecover,
   keccak256,
@@ -239,18 +239,18 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    */
   raw(): FeeMarketEIP1559ValuesArray {
     return [
-      bnToUnpaddedBuffer(this.chainId),
-      bnToUnpaddedBuffer(this.nonce),
-      bnToUnpaddedBuffer(this.maxPriorityFeePerGas),
-      bnToUnpaddedBuffer(this.maxFeePerGas),
-      bnToUnpaddedBuffer(this.gasLimit),
+      bigIntToUnpaddedBuffer(this.chainId),
+      bigIntToUnpaddedBuffer(this.nonce),
+      bigIntToUnpaddedBuffer(this.maxPriorityFeePerGas),
+      bigIntToUnpaddedBuffer(this.maxFeePerGas),
+      bigIntToUnpaddedBuffer(this.gasLimit),
       this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bnToUnpaddedBuffer(this.value),
+      bigIntToUnpaddedBuffer(this.value),
       this.data,
       this.accessList,
-      this.v !== undefined ? bnToUnpaddedBuffer(this.v) : Buffer.from([]),
-      this.r !== undefined ? bnToUnpaddedBuffer(this.r) : Buffer.from([]),
-      this.s !== undefined ? bnToUnpaddedBuffer(this.s) : Buffer.from([]),
+      this.v !== undefined ? bigIntToUnpaddedBuffer(this.v) : Buffer.from([]),
+      this.r !== undefined ? bigIntToUnpaddedBuffer(this.r) : Buffer.from([]),
+      this.s !== undefined ? bigIntToUnpaddedBuffer(this.s) : Buffer.from([]),
     ]
   }
 
@@ -339,8 +339,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       return ecrecover(
         msgHash,
         v! + BigInt(27), // Recover the 27 which was stripped from ecsign
-        bnToUnpaddedBuffer(r!),
-        bnToUnpaddedBuffer(s!)
+        bigIntToUnpaddedBuffer(r!),
+        bigIntToUnpaddedBuffer(s!)
       )
     } catch (e: any) {
       const msg = this._errorMsg('Invalid Signature')
@@ -379,18 +379,18 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
 
     return {
-      chainId: bnToHex(this.chainId),
-      nonce: bnToHex(this.nonce),
-      maxPriorityFeePerGas: bnToHex(this.maxPriorityFeePerGas),
-      maxFeePerGas: bnToHex(this.maxFeePerGas),
-      gasLimit: bnToHex(this.gasLimit),
+      chainId: bigIntToHex(this.chainId),
+      nonce: bigIntToHex(this.nonce),
+      maxPriorityFeePerGas: bigIntToHex(this.maxPriorityFeePerGas),
+      maxFeePerGas: bigIntToHex(this.maxFeePerGas),
+      gasLimit: bigIntToHex(this.gasLimit),
       to: this.to !== undefined ? this.to.toString() : undefined,
-      value: bnToHex(this.value),
+      value: bigIntToHex(this.value),
       data: '0x' + this.data.toString('hex'),
       accessList: accessListJSON,
-      v: this.v !== undefined ? bnToHex(this.v) : undefined,
-      r: this.r !== undefined ? bnToHex(this.r) : undefined,
-      s: this.s !== undefined ? bnToHex(this.s) : undefined,
+      v: this.v !== undefined ? bigIntToHex(this.v) : undefined,
+      r: this.r !== undefined ? bigIntToHex(this.r) : undefined,
+      s: this.s !== undefined ? bigIntToHex(this.s) : undefined,
     }
   }
 

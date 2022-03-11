@@ -1466,7 +1466,7 @@ export default class Blockchain implements BlockchainInterface {
    * @hidden
    */
   private async _rebuildCanonical(header: BlockHeader, ops: DBOp[]) {
-    let currentNumber = header.number // we change this during this method with `isubn`
+    let currentNumber = header.number
     let currentCanonicalHash: Buffer = header.hash()
 
     // track the staleHash: this is the hash currently in the DB which matches

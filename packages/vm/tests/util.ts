@@ -9,13 +9,15 @@ import {
 } from '@ethereumjs/tx'
 import {
   Account,
-  BN,
   rlp,
   keccak256,
   stripHexPrefix,
   setLengthLeft,
   toBuffer,
   Address,
+  TypeOutput,
+  toType,
+  bigIntToBuffer,
 } from 'ethereumjs-util'
 import { DefaultStateManager } from '../src/state'
 
@@ -65,8 +67,8 @@ export function dumpState(state: any, cb: Function) {
       for (const storageKey in results[i].storage) {
         console.log('\t\t' + storageKey + ': ' + <string>results[i].storage[storageKey])
       }
-      console.log('\tnonce: ' + new BN(results[i].nonce).toString())
-      console.log('\tbalance: ' + new BN(results[i].balance).toString())
+      console.log('\tnonce: ' + BigInt(results[i].nonce).toString())
+      console.log('\tbalance: ' + BigInt(results[i].balance).toString())
     }
     cb()
   })
@@ -82,7 +84,7 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false) 
     if (a.length % 2) a = '0' + <string>a
     a = Buffer.from(a, 'hex')
   } else if (!isHex) {
-    a = Buffer.from(new BN(a).toArray())
+    a = toType(a, TypeOutput.Buffer)
   } else {
     if (a.length % 2) a = '0' + <string>a
     a = Buffer.from(a, 'hex')
@@ -238,11 +240,11 @@ export function verifyGas(results: any, testData: any, t: tape.Test) {
     return
   }
 
-  const postBal = new BN(testData.post[coinbaseAddr].balance)
-  const balance = postBal.sub(preBal)
-  if (!balance.isZero()) {
-    const amountSpent = results.gasUsed.mul(testData.transaction.gasPrice)
-    t.ok(amountSpent.eq(balance), 'correct gas')
+  const postBal = BigInt(testData.post[coinbaseAddr].balance)
+  const balance = postBal - preBal
+  if (balance !== BigInt(0)) {
+    const amountSpent = results.gasUsed * testData.transaction.gasPrice
+    t.equal(amountSpent, balance, 'correct gas')
   } else {
     t.equal(results, undefined)
   }
@@ -320,11 +322,11 @@ export async function setupPreConditions(state: DefaultStateManager, testData: a
 
     // Set contract storage
     for (const storageKey of Object.keys(storage)) {
-      const valBN = new BN(format(storage[storageKey]), 16)
-      if (valBN.isZero()) {
+      const valB = BigInt(format(storage[storageKey]))
+      if (valB === BigInt(0)) {
         continue
       }
-      const val = valBN.toArrayLike(Buffer, 'be')
+      const val = bigIntToBuffer(valB)
       const key = setLengthLeft(format(storageKey), 32)
 
       await state.putContractStorage(address, key, val)

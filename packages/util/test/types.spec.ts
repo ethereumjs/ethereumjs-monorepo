@@ -1,16 +1,12 @@
 import tape from 'tape'
-import { BN } from 'bn.js'
 import {
   toType,
   TypeOutput,
   intToBuffer,
   bufferToHex,
   intToHex,
-  bnToHex,
-  bnToUnpaddedBuffer,
+  bigIntToUnpaddedBuffer,
   toBuffer,
-  bnToBigInt,
-  bigIntToBN,
   bigIntToHex,
   bigIntToBuffer,
   bufferToBigInt,
@@ -123,7 +119,7 @@ tape('toType', function (t) {
     })
     st.test('should convert to BN', function (st) {
       const result = toType(num, TypeOutput.BigInt)
-      st.strictEqual(bnToHex(result), num)
+      st.strictEqual(bigIntToHex(result), num)
       st.end()
     })
     st.test('should convert to Buffer', function (st) {
@@ -140,22 +136,12 @@ tape('toType', function (t) {
   })
 })
 
-tape('bnToUnpaddedBuffer', function (t) {
+tape('bigIntToUnpaddedBuffer', function (t) {
   t.test('should equal unpadded buffer value', function (st) {
-    st.ok(bnToUnpaddedBuffer(BigInt(0)).equals(Buffer.from([])))
-    st.ok(bnToUnpaddedBuffer(BigInt(100)).equals(Buffer.from('64', 'hex')))
+    st.ok(bigIntToUnpaddedBuffer(BigInt(0)).equals(Buffer.from([])))
+    st.ok(bigIntToUnpaddedBuffer(BigInt(100)).equals(Buffer.from('64', 'hex')))
     st.end()
   })
-})
-
-tape('bnToBigInt', (st) => {
-  st.equal(bnToBigInt(new BN(1)), BigInt(1))
-  st.end()
-})
-
-tape('bigIntToBN', (st) => {
-  st.ok(bigIntToBN(BigInt(1)).eq(new BN(1)))
-  st.end()
 })
 
 tape('bigIntToHex', (st) => {

@@ -53,29 +53,22 @@ export type NestedUint8Array = Array<Uint8Array | NestedUint8Array>
 export type NestedBufferArray = Array<Buffer | NestedBufferArray>
 
 /**
- * Convert bigint to 0x-prefixed hex string.
- */
-export function bnToHex(value: bigint): PrefixedHexString {
-  return `0x${value.toString(16)}`
-}
-
-/**
  * Convert value from bigint to an unpadded Buffer
  * (useful for RLP transport)
  * @param value value to convert
  */
-export function bnToUnpaddedBuffer(value: bigint): Buffer {
+export function bigIntToUnpaddedBuffer(value: bigint): Buffer {
   // Using `bn.toArrayLike(Buffer)` instead of `bn.toBuffer()`
   // for compatibility with browserify and similar tools
   return unpadBuffer(bigIntToBuffer(value))
 }
 
 /**
- * Deprecated alias for {@link bnToUnpaddedBuffer}
+ * Deprecated alias for {@link bigIntToUnpaddedBuffer}
  * @deprecated
  */
-export function bnToRlp(value: bigint): Buffer {
-  return bnToUnpaddedBuffer(value)
+export function bigIntToRlp(value: bigint): Buffer {
+  return bigIntToUnpaddedBuffer(value)
 }
 
 /**
@@ -145,14 +138,6 @@ export function toType<T extends TypeOutput>(
     // outputType === TypeOutput.PrefixedHexString
     return `0x${output.toString('hex')}` as TypeOutputReturnType[T]
   }
-}
-
-export const bnToBigInt = (bn: BN) => {
-  return BigInt(new BN(bn).toString(10))
-}
-
-export const bigIntToBN = (num: bigint) => {
-  return new BN(num.toString(10))
 }
 
 export const bigIntToHex = (num: bigint) => {

@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { bnToHex } from 'ethereumjs-util'
+import { bigIntToHex } from 'ethereumjs-util'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
 
 const method = 'eth_blockNumber'
@@ -19,7 +19,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   const req = params(method)
   const expectRes = (res: any) => {
-    t.equal(res.body.result, bnToHex(mockBlockNumber))
+    t.equal(res.body.result, bigIntToHex(mockBlockNumber))
   }
   await baseRequest(t, server, req, 200, expectRes)
 })

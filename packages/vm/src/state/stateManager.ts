@@ -9,7 +9,7 @@ import {
   unpadBuffer,
   PrefixedHexString,
   bufferToHex,
-  bnToHex,
+  bigIntToHex,
   KECCAK256_RLP,
   setLengthLeft,
 } from 'ethereumjs-util'
@@ -341,9 +341,9 @@ export default class DefaultStateManager extends BaseStateManager implements Sta
 
     const returnValue: Proof = {
       address: address.toString(),
-      balance: bnToHex(account.balance),
+      balance: bigIntToHex(account.balance),
       codeHash: bufferToHex(account.codeHash),
-      nonce: bnToHex(account.nonce),
+      nonce: bigIntToHex(account.nonce),
       storageHash: bufferToHex(account.stateRoot),
       accountProof,
       storageProof,

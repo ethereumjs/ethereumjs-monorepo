@@ -5,7 +5,7 @@ import { KECCAK256_RLP, KECCAK256_NULL } from './constants'
 import { zeros, bufferToHex, toBuffer } from './bytes'
 import { keccak, keccak256, keccakFromString, rlphash } from './hash'
 import { assertIsString, assertIsHexString, assertIsBuffer } from './helpers'
-import { BigIntLike, BufferLike, bnToUnpaddedBuffer } from './types'
+import { BigIntLike, BufferLike, bigIntToUnpaddedBuffer } from './types'
 import { bigIntToBuffer, bufferToBigInt } from '.'
 
 const _0n = BigInt(0)
@@ -83,8 +83,8 @@ export class Account {
    */
   raw(): Buffer[] {
     return [
-      bnToUnpaddedBuffer(this.nonce),
-      bnToUnpaddedBuffer(this.balance),
+      bigIntToUnpaddedBuffer(this.nonce),
+      bigIntToUnpaddedBuffer(this.balance),
       this.stateRoot,
       this.codeHash,
     ]

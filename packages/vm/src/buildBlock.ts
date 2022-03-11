@@ -1,4 +1,4 @@
-import { Address, toBuffer, rlp, bigIntToBN, toType, TypeOutput } from 'ethereumjs-util'
+import { Address, toBuffer, rlp, toType, TypeOutput } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
@@ -177,7 +177,7 @@ export class BlockBuilder {
 
     const header = {
       ...this.headerData,
-      gasUsed: bigIntToBN(this.gasUsed),
+      gasUsed: this.gasUsed,
     }
     const blockData = { header, transactions: this.transactions }
     const block = Block.fromBlockData(blockData, this.blockOpts)
@@ -226,7 +226,7 @@ export class BlockBuilder {
     const transactionsTrie = await this.transactionsTrie()
     const receiptTrie = await this.receiptTrie()
     const logsBloom = this.logsBloom()
-    const gasUsed = bigIntToBN(this.gasUsed)
+    const gasUsed = this.gasUsed
     const timestamp = this.headerData.timestamp ?? Math.round(Date.now() / 1000)
 
     const headerData = {

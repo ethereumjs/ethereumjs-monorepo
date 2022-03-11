@@ -106,7 +106,7 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     } catch (e: any) {
       st.ok(
         e.message.includes(
-          'Chain must be a string, number, or BN when initialized with customChains passed in'
+          'Chain must be a string, number, or bigint when initialized with customChains passed in'
         ),
         'should throw an exception on wrong initialization'
       )

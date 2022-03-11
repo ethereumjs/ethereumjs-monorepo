@@ -1,8 +1,8 @@
 import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
 import {
   Address,
-  bnToHex,
-  bnToUnpaddedBuffer,
+  bigIntToHex,
+  bigIntToUnpaddedBuffer,
   ecrecover,
   ecsign,
   intToBuffer,
@@ -14,7 +14,6 @@ import {
   zeros,
   bufferToHex,
   bufferToBigInt,
-  bigIntToHex,
   toType,
   TypeOutput,
 } from 'ethereumjs-util'
@@ -787,18 +786,18 @@ export class BlockHeader {
       this.transactionsTrie,
       this.receiptTrie,
       this.logsBloom,
-      bnToUnpaddedBuffer(this.difficulty),
-      bnToUnpaddedBuffer(this.number),
-      bnToUnpaddedBuffer(this.gasLimit),
-      bnToUnpaddedBuffer(this.gasUsed),
-      bnToUnpaddedBuffer(this.timestamp ?? BigInt(0)),
+      bigIntToUnpaddedBuffer(this.difficulty),
+      bigIntToUnpaddedBuffer(this.number),
+      bigIntToUnpaddedBuffer(this.gasLimit),
+      bigIntToUnpaddedBuffer(this.gasUsed),
+      bigIntToUnpaddedBuffer(this.timestamp ?? BigInt(0)),
       this.extraData,
       this.mixHash,
       this.nonce,
     ]
 
     if (this._common.isActivatedEIP(1559)) {
-      rawItems.push(bnToUnpaddedBuffer(this.baseFeePerGas!))
+      rawItems.push(bigIntToUnpaddedBuffer(this.baseFeePerGas!))
     }
 
     return rawItems
@@ -968,11 +967,11 @@ export class BlockHeader {
       transactionsTrie: '0x' + this.transactionsTrie.toString('hex'),
       receiptTrie: '0x' + this.receiptTrie.toString('hex'),
       logsBloom: '0x' + this.logsBloom.toString('hex'),
-      difficulty: bnToHex(this.difficulty),
-      number: bnToHex(this.number),
-      gasLimit: bnToHex(this.gasLimit),
-      gasUsed: bnToHex(this.gasUsed),
-      timestamp: bnToHex(this.timestamp),
+      difficulty: bigIntToHex(this.difficulty),
+      number: bigIntToHex(this.number),
+      gasLimit: bigIntToHex(this.gasLimit),
+      gasUsed: bigIntToHex(this.gasUsed),
+      timestamp: bigIntToHex(this.timestamp),
       extraData: '0x' + this.extraData.toString('hex'),
       mixHash: '0x' + this.mixHash.toString('hex'),
       nonce: '0x' + this.nonce.toString('hex'),

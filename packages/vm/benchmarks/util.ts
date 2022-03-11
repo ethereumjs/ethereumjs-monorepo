@@ -1,4 +1,4 @@
-import { Account, Address, toBuffer, bufferToInt, BN, bnToBigInt } from 'ethereumjs-util'
+import { Account, Address, toBuffer } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { StateManager, DefaultStateManager } from '../dist/state'
@@ -51,7 +51,7 @@ export async function getPreState(
 export function getBlockchain(blockhashes: any): Mockchain {
   let mockchain = new Mockchain()
   for (let hashStr in blockhashes) {
-    const bn = new BN(hashStr.substr(2), 'hex')
+    const bn = BigInt(hashStr)
     const hash = blockhashes[hashStr]
     const hashBuffer = Buffer.from(hash.substr(2), 'hex')
     mockchain.putBlockHash(bn, hashBuffer)

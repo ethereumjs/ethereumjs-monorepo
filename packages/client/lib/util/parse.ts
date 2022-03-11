@@ -11,7 +11,7 @@ import {
   unpadBuffer,
   isHexPrefixed,
   stripHexPrefix,
-  bnToHex,
+  bigIntToHex,
   bufferToHex,
   addHexPrefix,
   intToHex,
@@ -290,7 +290,7 @@ export async function parseGenesisState(json: any) {
   for (let address of Object.keys(json.alloc)) {
     let { balance, code, storage } = json.alloc[address]
     address = addHexPrefix(address)
-    balance = isHexPrefixed(balance) ? balance : bnToHex(BigInt(balance))
+    balance = isHexPrefixed(balance) ? balance : bigIntToHex(BigInt(balance))
     code = code ? addHexPrefix(code) : undefined
     storage = storage ? Object.entries(storage) : undefined
     state[address] = [balance, code, storage] as any

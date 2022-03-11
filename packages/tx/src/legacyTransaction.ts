@@ -1,6 +1,6 @@
 import {
-  bnToHex,
-  bnToUnpaddedBuffer,
+  bigIntToHex,
+  bigIntToUnpaddedBuffer,
   bufferToBigInt,
   ecrecover,
   MAX_INTEGER,
@@ -148,15 +148,15 @@ export default class Transaction extends BaseTransaction<Transaction> {
    */
   raw(): TxValuesArray {
     return [
-      bnToUnpaddedBuffer(this.nonce),
-      bnToUnpaddedBuffer(this.gasPrice),
-      bnToUnpaddedBuffer(this.gasLimit),
+      bigIntToUnpaddedBuffer(this.nonce),
+      bigIntToUnpaddedBuffer(this.gasPrice),
+      bigIntToUnpaddedBuffer(this.gasLimit),
       this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bnToUnpaddedBuffer(this.value),
+      bigIntToUnpaddedBuffer(this.value),
       this.data,
-      this.v !== undefined ? bnToUnpaddedBuffer(this.v) : Buffer.from([]),
-      this.r !== undefined ? bnToUnpaddedBuffer(this.r) : Buffer.from([]),
-      this.s !== undefined ? bnToUnpaddedBuffer(this.s) : Buffer.from([]),
+      this.v !== undefined ? bigIntToUnpaddedBuffer(this.v) : Buffer.from([]),
+      this.r !== undefined ? bigIntToUnpaddedBuffer(this.r) : Buffer.from([]),
+      this.s !== undefined ? bigIntToUnpaddedBuffer(this.s) : Buffer.from([]),
     ]
   }
 
@@ -175,11 +175,11 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
   private _getMessageToSign() {
     const values = [
-      bnToUnpaddedBuffer(this.nonce),
-      bnToUnpaddedBuffer(this.gasPrice),
-      bnToUnpaddedBuffer(this.gasLimit),
+      bigIntToUnpaddedBuffer(this.nonce),
+      bigIntToUnpaddedBuffer(this.gasPrice),
+      bigIntToUnpaddedBuffer(this.gasLimit),
       this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bnToUnpaddedBuffer(this.value),
+      bigIntToUnpaddedBuffer(this.value),
       this.data,
     ]
 
@@ -301,8 +301,8 @@ export default class Transaction extends BaseTransaction<Transaction> {
       return ecrecover(
         msgHash,
         v!,
-        bnToUnpaddedBuffer(r!),
-        bnToUnpaddedBuffer(s!),
+        bigIntToUnpaddedBuffer(r!),
+        bigIntToUnpaddedBuffer(s!),
         this.supports(Capability.EIP155ReplayProtection) ? this.common.chainId() : undefined
       )
     } catch (e: any) {
@@ -345,15 +345,15 @@ export default class Transaction extends BaseTransaction<Transaction> {
    */
   toJSON(): JsonTx {
     return {
-      nonce: bnToHex(this.nonce),
-      gasPrice: bnToHex(this.gasPrice),
-      gasLimit: bnToHex(this.gasLimit),
+      nonce: bigIntToHex(this.nonce),
+      gasPrice: bigIntToHex(this.gasPrice),
+      gasLimit: bigIntToHex(this.gasLimit),
       to: this.to !== undefined ? this.to.toString() : undefined,
-      value: bnToHex(this.value),
+      value: bigIntToHex(this.value),
       data: '0x' + this.data.toString('hex'),
-      v: this.v !== undefined ? bnToHex(this.v) : undefined,
-      r: this.r !== undefined ? bnToHex(this.r) : undefined,
-      s: this.s !== undefined ? bnToHex(this.s) : undefined,
+      v: this.v !== undefined ? bigIntToHex(this.v) : undefined,
+      r: this.r !== undefined ? bigIntToHex(this.r) : undefined,
+      s: this.s !== undefined ? bigIntToHex(this.s) : undefined,
     }
   }
 
