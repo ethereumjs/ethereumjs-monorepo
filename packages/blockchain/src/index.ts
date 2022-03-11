@@ -1466,7 +1466,7 @@ export default class Blockchain implements BlockchainInterface {
    * @hidden
    */
   private async _rebuildCanonical(header: BlockHeader, ops: DBOp[]) {
-    const currentNumber = header.number // we change this during this method with `isubn`
+    let currentNumber = header.number // we change this during this method with `isubn`
     let currentCanonicalHash: Buffer = header.hash()
 
     // track the staleHash: this is the hash currently in the DB which matches
@@ -1507,7 +1507,7 @@ export default class Blockchain implements BlockchainInterface {
       }
 
       try {
-        header = await this._getHeader(header.parentHash, currentNumber - BigInt(1))
+        header = await this._getHeader(header.parentHash, --currentNumber)
       } catch (error: any) {
         staleHeads = []
         if (error.type !== 'NotFoundError') {
