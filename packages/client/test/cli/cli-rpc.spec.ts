@@ -31,7 +31,7 @@ tape('[CLI] rpc', (t) => {
 
       if (message.includes('ws://')) {
         // if ws endpoint startup message detected, call ws endpoint with RPC method
-        const client = Client.websocket({ url: 'ws://localhost:8544' })
+        const client = Client.websocket({ url: 'ws://localhost:8545' })
         ;(client as any).ws.on('open', async function () {
           const res = await client.request('web3_clientVersion', [], 2.0)
           st.ok(res.result.includes('EthereumJS'), 'read from WS RPC')

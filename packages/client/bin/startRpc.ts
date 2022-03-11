@@ -2,7 +2,12 @@ import { Server as RPCServer } from 'jayson/promise'
 import { readFileSync, writeFileSync } from 'fs-extra'
 import { RPCManager } from '../lib/rpc'
 import EthereumClient from '../lib/client'
-import { inspectParams, createRPCServerListener, createWsRPCServerListener } from '../lib/util'
+import {
+  MethodConfig,
+  createRPCServer,
+  createRPCServerListener,
+  createWsRPCServerListener,
+} from '../lib/util'
 import * as modules from '../lib/rpc/modules'
 import { Config } from '../lib/config'
 
@@ -16,6 +21,8 @@ type RPCArgs = {
   rpcEngine: boolean
   rpcEngineAddr: string
   rpcEnginePort: number
+  wsEngineAddr: string
+  wsEnginePort: number
   rpcDebug: boolean
   helprpc: boolean
   'jwt-secret'?: string
@@ -35,13 +42,13 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Buffer {
     if (!jwtSecretHex || jwtSecretHex.length != 64) {
       throw Error('Need a valid 256 bit hex encoded secret')
     }
-    config.logger.debug(`Read a hex encoded secret, path=${jwtFilePath}`)
+    config.logger.debug(`Read a hex encoded jwt secret from path=${jwtFilePath}`)
     jwtSecret = Buffer.from(jwtSecretHex, 'hex')
   } else {
     jwtFilePath = `${config.datadir}/jwtsecret`
     jwtSecret = Buffer.from(Array.from({ length: 32 }, () => Math.round(Math.random() * 255)))
     writeFileSync(jwtFilePath, jwtSecret.toString('hex'))
-    config.logger.info(`A hex encoded random jwt secret written, path=${jwtFilePath}`)
+    config.logger.info(`Wrote a hex encoded random jwt secret to path=${jwtFilePath}`)
   }
   return jwtSecret
 }
@@ -50,48 +57,7 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Buffer {
  * Starts and returns enabled RPCServers
  */
 export function startRPCServers(client: EthereumClient, args: RPCArgs) {
-  const config = client.config
-  const onRequest = (request: any) => {
-    let msg = ''
-    if (args.rpcDebug) {
-      msg += `${request.method} called with params:\n${inspectParams(request.params)}`
-    } else {
-      msg += `${request.method} called with params: ${inspectParams(request.params, 125)}`
-    }
-    config.logger.debug(msg)
-  }
-
-  const handleResponse = (request: any, response: any, batchAddOn = '') => {
-    let msg = ''
-    if (args.rpcDebug) {
-      msg = `${request.method}${batchAddOn} responded with:\n${inspectParams(response)}`
-    } else {
-      msg = `${request.method}${batchAddOn} responded with: `
-      if (response.result) {
-        msg += inspectParams(response, 125)
-      }
-      if (response.error) {
-        msg += `error: ${response.error.message}`
-      }
-    }
-    config.logger.debug(msg)
-  }
-
-  const onBatchResponse = (request: any, response: any) => {
-    // Batch request
-    if (request.length !== undefined) {
-      if (response.length === undefined || response.length !== request.length) {
-        config.logger.debug('Invalid batch request received.')
-        return
-      }
-      for (let i = 0; i < request.length; i++) {
-        handleResponse(request[i], response[i], ' (batch request)')
-      }
-    } else {
-      handleResponse(request, response)
-    }
-  }
-
+  const { config } = client
   const servers: RPCServer[] = []
   const {
     rpc,
@@ -103,24 +69,29 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     rpcEngine,
     rpcEngineAddr,
     rpcEnginePort,
+    wsEngineAddr,
+    wsEnginePort,
     'jwt-secret': jwtSecretPath,
     rpcEngineAuth,
     rpcCors,
+    rpcDebug,
   } = args
   const manager = new RPCManager(client, config)
+  const { logger } = config
   const jwtSecret =
     rpcEngine && rpcEngineAuth ? parseJwtSecret(config, jwtSecretPath) : Buffer.from([])
+  let withEngineMethods = false
 
   if (rpc || ws) {
-    const withEngineMethods = rpcEngine && rpcEnginePort === rpcport && rpcEngineAddr === rpcaddr
-    const methods = withEngineMethods
-      ? { ...manager.getMethods(), ...manager.getMethods(true) }
-      : { ...manager.getMethods() }
-    const server = new RPCServer(methods)
-    server.on('request', onRequest)
-    server.on('response', onBatchResponse)
-    const namespaces = [...new Set(Object.keys(methods).map((m) => m.split('_')[0]))].join(',')
     let rpcHttpServer
+    withEngineMethods = rpcEngine && rpcEnginePort === rpcport && rpcEngineAddr === rpcaddr
+
+    const { server, namespaces } = createRPCServer(manager, {
+      methodConfig: withEngineMethods ? MethodConfig.WithEngine : MethodConfig.WithoutEngine,
+      rpcDebug,
+      logger,
+    })
+    servers.push(server)
 
     if (rpc) {
       rpcHttpServer = createRPCServerListener({
@@ -138,8 +109,10 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
             : undefined,
       })
       rpcHttpServer.listen(rpcport)
-      config.logger.info(
-        `Started JSON RPC Server address=http://${rpcaddr}:${rpcport} namespaces=${namespaces}`
+      logger.info(
+        `Started JSON RPC Server address=http://${rpcaddr}:${rpcport} namespaces=${namespaces}${
+          withEngineMethods ? ' rpcEngineAuth=' + rpcEngineAuth.toString() : ''
+        }`
       )
     }
     if (ws) {
@@ -150,27 +123,27 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
       }
       if (rpcaddr === wsAddr && rpcport === wsPort) {
         // We want to load the websocket upgrade request to the same server
-        Object.assign(opts, { httpServer: rpcHttpServer })
+        opts.httpServer = rpcHttpServer
       }
 
       const rpcWsServer = createWsRPCServerListener(opts)
       if (rpcWsServer) rpcWsServer.listen(wsPort)
-      config.logger.info(
-        `Started JSON RPC Server address=ws://${wsAddr}:${wsPort} namespaces=${namespaces}`
+      logger.info(
+        `Started JSON RPC Server address=ws://${wsAddr}:${wsPort} namespaces=${namespaces}${
+          withEngineMethods ? ` rpcEngineAuth=${rpcEngineAuth}` : ''
+        }`
       )
     }
-    servers.push(server)
   }
 
-  if (rpcEngine) {
-    if (rpc && rpcport === rpcEnginePort && rpcaddr === rpcEngineAddr) {
-      return servers
-    }
-    const server = new RPCServer(manager.getMethods(true))
-    server.on('request', onRequest)
-    server.on('response', onBatchResponse)
-
-    createRPCServerListener({
+  if (rpcEngine && !(rpc && rpcport === rpcEnginePort && rpcaddr === rpcEngineAddr)) {
+    const { server, namespaces } = createRPCServer(manager, {
+      methodConfig: MethodConfig.EngineOnly,
+      rpcDebug,
+      logger,
+    })
+    servers.push(server)
+    const rpcHttpServer = createRPCServerListener({
       rpcCors,
       server,
       withEngineMiddleware: rpcEngineAuth
@@ -178,12 +151,30 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
             jwtSecret,
           }
         : undefined,
-    }).listen(rpcport)
-    config.logger.info(
-      `Started JSON RPC server address=http://${rpcEngineAddr}:${rpcEnginePort} namespaces=engine`
+    })
+    rpcHttpServer.listen(rpcEnginePort)
+    logger.info(
+      `Started JSON RPC server address=http://${rpcEngineAddr}:${rpcEnginePort} namespaces=engine rpcEngineAuth=${rpcEngineAuth}`
     )
 
-    servers.push(server)
+    if (ws) {
+      const opts: any = {
+        rpcCors,
+        server,
+        withEngineMiddleware: rpcEngineAuth ? { jwtSecret } : undefined,
+      }
+
+      if (rpcEngineAddr === wsEngineAddr && rpcEnginePort === wsEnginePort) {
+        // We want to load the websocket upgrade request to the same server
+        opts.httpServer = rpcHttpServer
+      }
+
+      const rpcWsServer = createWsRPCServerListener(opts)
+      if (rpcWsServer) rpcWsServer.listen(wsEnginePort)
+      logger.info(
+        `Started JSON RPC Server address=ws://${wsEngineAddr}:${wsEnginePort} namespaces=${namespaces} rpcEngineAuth=${rpcEngineAuth}`
+      )
+    }
   }
 
   return servers

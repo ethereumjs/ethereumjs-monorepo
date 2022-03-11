@@ -4,15 +4,120 @@ import { json as jsonParser } from 'body-parser'
 import { decode, TAlgorithm } from 'jwt-simple'
 import Connect, { IncomingMessage } from 'connect'
 import cors from 'cors'
+import { inspect } from 'util'
+import { RPCManager } from '../rpc'
+import { Logger } from '../logging'
 
 const algorithm: TAlgorithm = 'HS256'
 
+type CreateRPCServerOpts = {
+  methodConfig: MethodConfig
+  rpcDebug: boolean
+  logger?: Logger
+}
+type CreateRPCServerReturn = {
+  server: RPCServer
+  methods: { [key: string]: Function }
+  namespaces: string
+}
 type CreateRPCServerListenerOpts = {
   rpcCors?: string
   server: RPCServer
   withEngineMiddleware?: WithEngineMiddleware
 }
+type CreateWSServerOpts = CreateRPCServerListenerOpts & { httpServer?: HttpServer }
 type WithEngineMiddleware = { jwtSecret: Buffer; unlessFn?: (req: IncomingMessage) => boolean }
+
+export enum MethodConfig {
+  WithEngine = 'withengine',
+  WithoutEngine = 'withoutengine',
+  EngineOnly = 'engineonly',
+}
+
+/**
+ * Internal util to pretty print params for logging.
+ */
+export function inspectParams(params: any, shorten?: number) {
+  let inspected = inspect(params, {
+    colors: true,
+    maxStringLength: 100,
+  } as any)
+  if (shorten) {
+    inspected = inspected.replace(/\n/g, '').replace(/ {2}/g, ' ')
+    if (inspected.length > shorten) {
+      inspected = inspected.slice(0, shorten) + '...'
+    }
+  }
+  return inspected
+}
+
+export function createRPCServer(
+  manager: RPCManager,
+  opts: CreateRPCServerOpts
+): CreateRPCServerReturn {
+  const { methodConfig, rpcDebug, logger } = opts
+
+  const onRequest = (request: any) => {
+    let msg = ''
+    if (rpcDebug) {
+      msg += `${request.method} called with params:\n${inspectParams(request.params)}`
+    } else {
+      msg += `${request.method} called with params: ${inspectParams(request.params, 125)}`
+    }
+    logger?.debug(msg)
+  }
+
+  const handleResponse = (request: any, response: any, batchAddOn = '') => {
+    let msg = ''
+    if (rpcDebug) {
+      msg = `${request.method}${batchAddOn} responded with:\n${inspectParams(response)}`
+    } else {
+      msg = `${request.method}${batchAddOn} responded with: `
+      if (response.result) {
+        msg += inspectParams(response, 125)
+      }
+      if (response.error) {
+        msg += `error: ${response.error.message}`
+      }
+    }
+    logger?.debug(msg)
+  }
+
+  const onBatchResponse = (request: any, response: any) => {
+    // Batch request
+    if (request.length !== undefined) {
+      if (response.length === undefined || response.length !== request.length) {
+        logger?.debug('Invalid batch request received.')
+        return
+      }
+      for (let i = 0; i < request.length; i++) {
+        handleResponse(request[i], response[i], ' (batch request)')
+      }
+    } else {
+      handleResponse(request, response)
+    }
+  }
+
+  let methods
+  switch (methodConfig) {
+    case MethodConfig.WithEngine:
+      methods = { ...manager.getMethods(), ...manager.getMethods(true) }
+      break
+    case MethodConfig.WithoutEngine:
+      methods = { ...manager.getMethods() }
+      break
+    case MethodConfig.EngineOnly:
+      methods = { ...manager.getMethods(true) }
+      break
+  }
+
+  const server = new RPCServer(methods)
+  server.on('request', onRequest)
+  server.on('response', onBatchResponse)
+  const namespaces = [...new Set(Object.keys(methods).map((m) => m.split('_')[0]))].join(',')
+
+  return { server, methods, namespaces }
+}
 
 function checkHeaderAuth(req: any, jwtSecret: Buffer): void {
   const header = (req.headers['Authorization'] ?? req.headers['authorization']) as string
@@ -35,10 +140,10 @@ export function createRPCServerListener(opts: CreateRPCServerListenerOpts): Http
 
   if (withEngineMiddleware) {
     const { jwtSecret, unlessFn } = withEngineMiddleware
-    app.use(function (req, res, next) {
+    app.use((req, res, next) => {
       try {
-        if (unlessFn) {
-          if (unlessFn(req)) return next()
+        if (unlessFn && unlessFn(req)) {
+          return next()
         }
         checkHeaderAuth(req, jwtSecret)
         return next()
@@ -56,9 +161,7 @@ export function createRPCServerListener(opts: CreateRPCServerListenerOpts): Http
   return httpServer
 }
 
-export function createWsRPCServerListener(
-  opts: CreateRPCServerListenerOpts & { httpServer?: HttpServer }
-): HttpServer | undefined {
+export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer | undefined {
   const { server, withEngineMiddleware, rpcCors } = opts
 
   // Get the server to hookup upgrade request on

@@ -9,6 +9,7 @@ services:
       - ./execution_data:/execution_data
     ports:
       - '8545:8545'
+      - '8551:8551'
     #network_mode: host
     command: >
-      --datadir=/execution_data --gethGenesis=./ethereumjs-monorepo/packages/client/kiln/merge-devnet-5/genesis.json --rpc --rpcEngine --rpcEnginePort=8545 --saveReceipts --bootnodes=
+      --datadir=/execution_data --gethGenesis=./ethereumjs-monorepo/packages/client/kiln/config/genesis.json --rpc --rpcport=8545 --ws --rpcEngine --rpcEnginePort=8551 --saveReceipts --bootnodes=165.232.180.230:30303
