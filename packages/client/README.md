@@ -89,6 +89,16 @@ ethereumjs --network=rinkeby
 
 The client currently supports `full` sync being set as a default and has experimental support for `light` sync.
 
+### The Merge
+
+The EthereumJS client is participating actively in the different testnets preparing for the Merge hardfork and the team is following up on implementing the Merge [specs](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/merge.md) and updating along new versions of the specification.
+
+There are dedicated instructions on how to setup for running the client in conjunction with a consensus (Eth 2.0) client (e.g. [Lodestar](https://github.com/ChainSafe/lodestar)).
+
+Testnet Instructions:
+
+- [Kiln v2 Public Testnet](./kiln/)
+
 ### Custom Chains
 
 The EthereumJS client supports running custom chains based on a custom chain configuration. There are two ways of reading in custom chain configuration parameters:
