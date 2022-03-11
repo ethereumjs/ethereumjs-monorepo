@@ -326,7 +326,6 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     } else {
       maxGasLimit = block.header.gasLimit
     }
-    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
     const gasLimitIsHigherThanBlock = maxGasLimit < tx.gasLimit + gasUsed
     if (gasLimitIsHigherThanBlock) {
       const msg = _errorMsg('tx has a higher gas limit than the block', this, block)

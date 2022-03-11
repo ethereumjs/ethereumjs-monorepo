@@ -1,4 +1,4 @@
-import { toBuffer, zeros } from './bytes'
+import { toBuffer, zeros, bigIntToBuffer, bufferToBigInt } from './bytes'
 import {
   isValidAddress,
   pubToAddress,
@@ -6,7 +6,6 @@ import {
   generateAddress,
   generateAddress2,
 } from './account'
-import { bigIntToBuffer, bufferToBigInt } from '.'
 
 export class Address {
   public readonly buf: Buffer

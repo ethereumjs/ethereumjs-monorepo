@@ -2,11 +2,10 @@ import { rlp } from './externals'
 import { Point, utils } from 'ethereum-cryptography/secp256k1'
 import { stripHexPrefix } from './internal'
 import { KECCAK256_RLP, KECCAK256_NULL } from './constants'
-import { zeros, bufferToHex, toBuffer } from './bytes'
+import { zeros, bufferToHex, toBuffer, bufferToBigInt } from './bytes'
 import { keccak, keccak256, keccakFromString, rlphash } from './hash'
 import { assertIsString, assertIsHexString, assertIsBuffer } from './helpers'
 import { BigIntLike, BufferLike, bigIntToUnpaddedBuffer } from './types'
-import { bigIntToBuffer, bufferToBigInt } from '.'
 
 const _0n = BigInt(0)
 

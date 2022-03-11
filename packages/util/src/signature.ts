@@ -1,6 +1,12 @@
 import { signSync, recoverPublicKey } from 'ethereum-cryptography/secp256k1'
-import { bufferToBigInt } from '.'
-import { toBuffer, setLengthLeft, bigIntToBuffer, bufferToHex, bufferToInt } from './bytes'
+import {
+  toBuffer,
+  setLengthLeft,
+  bigIntToBuffer,
+  bufferToHex,
+  bufferToInt,
+  bufferToBigInt,
+} from './bytes'
 import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants'
 import { keccak } from './hash'
 import { assertIsBuffer } from './helpers'
@@ -40,7 +46,6 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: any): any {
         'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative input type)'
       )
     }
-    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
     const v = chainId ? recovery + (chainId * 2 + 35) : recovery + 27
     return { r, s, v }
   }
