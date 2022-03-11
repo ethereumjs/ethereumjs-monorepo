@@ -27,18 +27,18 @@ tape('[Util/RPC]', (t) => {
           withEngineMiddleware: { jwtSecret: Buffer.alloc(32) },
         })
         const req = { id: 1, method: 'eth_getLatestBlock', params: [] }
-        const resp = { id: 1, result: { test: '123' } }
+        const resp = { id: 1, result: { test: '0x' + Buffer.alloc(64, 1).toString('hex') } }
         const reqBulk = [req, req]
         const respBulk = [resp, { id: 2, error: { err0: '456' } }]
         // Valid
         server.emit('request', req)
         server.emit('response', req, resp)
         server.emit('response', reqBulk, respBulk)
-        // Invalid, mismatch
-        server.emit('response', req, respBulk)
+        // Invalid
+        server.emit('response', req, []) // empty
+        server.emit('response', [req], respBulk) // mismatch length
 
-        st.ok(httpServer, 'should return http server')
-        st.ok(wsServer, 'should return ws server')
+        st.ok(httpServer && wsServer, 'should return http and ws servers')
       }
     }
     st.end()
