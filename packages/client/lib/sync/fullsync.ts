@@ -139,11 +139,9 @@ export class FullSynchronizer extends Synchronizer {
       if (!latest) return resolve(false)
 
       const height = latest.number
-      if (!this.syncTargetHeight) {
+      if (!this.syncTargetHeight || this.syncTargetHeight.lt(latest.number)) {
         this.syncTargetHeight = height
-        this.config.logger.info(
-          `New sync target height number=${height} hash=${short(latest.hash())}`
-        )
+        this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
       }
 
       const first = this.chain.blocks.height.addn(1)
@@ -298,12 +296,7 @@ export class FullSynchronizer extends Synchronizer {
    * @param data new block hash announcements
    */
   handleNewBlockHashes(data: [Buffer, BN][]) {
-    if (!data.length) {
-      return
-    }
-    if (!this.fetcher) {
-      return
-    }
+    if (!data.length || !this.fetcher) return
     let min = new BN(-1)
     let newSyncHeight
     const blockNumberList: BN[] = []
@@ -320,9 +313,7 @@ export class FullSynchronizer extends Synchronizer {
       }
     })
 
-    if (!newSyncHeight) {
-      return
-    }
+    if (!newSyncHeight) return
     this.syncTargetHeight = newSyncHeight
     const [hash, height] = data[data.length - 1]
     this.config.logger.info(`New sync target height number=${height} hash=${short(hash)}`)

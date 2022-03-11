@@ -377,7 +377,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     this.debug(`Enqueued num=${tasks.length} tasks`)
     while (this.running) {
       if (!this.next()) {
-        if (this.finished === this.total) {
+        if (this.finished === this.total && this.destroyWhenDone) {
           this.push(null)
         }
         await this.wait()
