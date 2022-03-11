@@ -123,7 +123,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
       }
       if (rpcaddr === wsAddr && rpcport === wsPort) {
         // We want to load the websocket upgrade request to the same server
-        Object.assign(opts, { httpServer: rpcHttpServer })
+        opts.httpServer = rpcHttpServer
       }
 
       const rpcWsServer = createWsRPCServerListener(opts)
@@ -166,7 +166,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
 
       if (rpcEngineAddr === wsEngineAddr && rpcEnginePort === wsEnginePort) {
         // We want to load the websocket upgrade request to the same server
-        Object.assign(opts, { httpServer: rpcHttpServer })
+        opts.httpServer = rpcHttpServer
       }
 
       const rpcWsServer = createWsRPCServerListener(opts)

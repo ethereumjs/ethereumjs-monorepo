@@ -140,10 +140,10 @@ export function createRPCServerListener(opts: CreateRPCServerListenerOpts): Http
 
   if (withEngineMiddleware) {
     const { jwtSecret, unlessFn } = withEngineMiddleware
-    app.use(function (req, res, next) {
+    app.use((req, res, next) => {
       try {
-        if (unlessFn) {
-          if (unlessFn(req)) return next()
+        if (unlessFn && unlessFn(req)) {
+          return next()
         }
         checkHeaderAuth(req, jwtSecret)
         return next()
