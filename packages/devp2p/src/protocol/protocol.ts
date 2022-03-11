@@ -1,12 +1,22 @@
 import ms from 'ms'
 import { debug as createDebugLogger, Debugger } from 'debug'
 import { EventEmitter } from 'events'
+import { devp2pDebug } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
+
+export enum EthProtocol {
+  ETH = 'eth',
+  LES = 'les',
+}
 
 type MessageCodes = { [key: number | string]: number | string }
 
+export type SendMethod = (code: number, data: Buffer) => any
+
 export class Protocol extends EventEmitter {
+  _version: number
   _peer: Peer
+  _send: SendMethod
   _statusTimeoutId: NodeJS.Timeout
   _messageCodes: MessageCodes
   _debug: Debugger
@@ -16,38 +26,45 @@ export class Protocol extends EventEmitter {
    * Will be set to the first successfully connected peer to allow for
    * debugging with the `devp2p:FIRST_PEER` debugger
    */
-  _firstPeer: string
+  _firstPeer = ''
 
   // Message debuggers (e.g. { 'GET_BLOCK_HEADERS': [debug Object], ...})
   protected msgDebuggers: { [key: string]: (debug: string) => void } = {}
 
-  constructor(peer: Peer, _messageCodes: MessageCodes, debugBaseName: string) {
+  constructor(
+    peer: Peer,
+    send: SendMethod,
+    protocol: EthProtocol,
+    version: number,
+    messageCodes: MessageCodes
+  ) {
     super()
 
-    this._firstPeer = ''
     this._peer = peer
-    this._messageCodes = _messageCodes
+    this._send = send
+    this._version = version
+    this._messageCodes = messageCodes
     this._statusTimeoutId = setTimeout(() => {
       this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
     }, ms('5s'))
 
-    this._debug = createDebugLogger(debugBaseName)
+    this._debug = devp2pDebug.extend(protocol)
     this._verbose = createDebugLogger('verbose').enabled
-    this.initMsgDebuggers(debugBaseName)
+    this.initMsgDebuggers(protocol)
   }
 
-  private initMsgDebuggers(debugBaseName: string) {
+  private initMsgDebuggers(protocol: EthProtocol) {
     const MESSAGE_NAMES = Object.values(this._messageCodes).filter(
       (value) => typeof value === 'string'
     ) as string[]
     for (const name of MESSAGE_NAMES) {
-      this.msgDebuggers[name] = createDebugLogger(`${debugBaseName}:${name}`)
+      this.msgDebuggers[name] = devp2pDebug.extend(protocol).extend(name)
     }
 
     // Remote Peer IP logger
     const ip = this._peer._socket.remoteAddress
     if (ip) {
-      this.msgDebuggers[ip] = createDebugLogger(`devp2p:${ip}`)
+      this.msgDebuggers[ip] = devp2pDebug.extend(ip)
     }
   }
 
@@ -60,7 +77,7 @@ export class Protocol extends EventEmitter {
   _addFirstPeerDebugger() {
     const ip = this._peer._socket.remoteAddress
     if (ip) {
-      this.msgDebuggers[ip] = createDebugLogger(`devp2p:FIRST_PEER`)
+      this.msgDebuggers[ip] = devp2pDebug.extend('FIRST_PEER')
       this._peer._addFirstPeerDebugger()
       this._firstPeer = ip
     }

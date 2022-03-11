@@ -1,32 +1,19 @@
 import ms from 'ms'
 import { rlp } from 'ethereumjs-util'
 import snappy from 'snappyjs'
-import { devp2pDebug } from '../util'
 import { int2buffer, buffer2int, assertEq, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
-import { Protocol } from './protocol'
-
-const DEBUG_BASE_NAME = 'les'
+import { EthProtocol, Protocol, SendMethod } from './protocol'
 
 export const DEFAULT_ANNOUNCE_TYPE = 1
 
-type SendMethod = (code: LES.MESSAGE_CODES, data: Buffer) => any
-
 export class LES extends Protocol {
-  _version: number
-  _send: SendMethod
-  _status: LES.Status | null
-  _peerStatus: LES.Status | null
+  _status: LES.Status | null = null
+  _peerStatus: LES.Status | null = null
 
   constructor(version: number, peer: Peer, send: SendMethod) {
-    super(peer, LES.MESSAGE_CODES, DEBUG_BASE_NAME)
+    super(peer, send, EthProtocol.LES, version, LES.MESSAGE_CODES)
 
-    this._version = version
-    this._peer = peer
-    this._send = send
-    this._debug = devp2pDebug
-    this._status = null
-    this._peerStatus = null
     this._statusTimeoutId = setTimeout(() => {
       this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
     }, ms('5s'))

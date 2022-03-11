@@ -1,36 +1,22 @@
 import assert from 'assert'
 import snappy from 'snappyjs'
-import { devp2pDebug } from '../util'
 import { BN, rlp } from 'ethereumjs-util'
 import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
 import { Peer } from '../rlpx/peer'
-import { Protocol } from './protocol'
-
-const DEBUG_BASE_NAME = 'eth'
-
-type SendMethod = (code: ETH.MESSAGE_CODES, data: Buffer) => any
+import { EthProtocol, Protocol, SendMethod } from './protocol'
 
 export class ETH extends Protocol {
-  _version: number
-  _status: ETH.StatusMsg | null
-  _peerStatus: ETH.StatusMsg | null
-  _send: SendMethod
+  _status: ETH.StatusMsg | null = null
+  _peerStatus: ETH.StatusMsg | null = null
 
   // Eth64
-  _hardfork: string = 'chainstart'
+  _hardfork = 'chainstart'
   _latestBlock = new BN(0)
-  _forkHash: string = ''
+  _forkHash = ''
   _nextForkBlock = new BN(0)
 
   constructor(version: number, peer: Peer, send: SendMethod) {
-    super(peer, ETH.MESSAGE_CODES, DEBUG_BASE_NAME)
-
-    this._version = version
-    this._peer = peer
-    this._send = send
-    this._debug = devp2pDebug.extend(DEBUG_BASE_NAME)
-    this._status = null
-    this._peerStatus = null
+    super(peer, send, EthProtocol.ETH, version, ETH.MESSAGE_CODES)
 
     // Set forkHash and nextForkBlock
     if (this._version >= 64) {
