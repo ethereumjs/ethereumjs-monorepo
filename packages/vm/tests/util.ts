@@ -15,8 +15,6 @@ import {
   setLengthLeft,
   toBuffer,
   Address,
-  TypeOutput,
-  toType,
   bigIntToBuffer,
 } from 'ethereumjs-util'
 import { DefaultStateManager } from '../src/state'
@@ -84,7 +82,7 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false) 
     if (a.length % 2) a = '0' + <string>a
     a = Buffer.from(a, 'hex')
   } else if (!isHex) {
-    a = toType(a, TypeOutput.Buffer)
+    a = bigIntToBuffer(BigInt(a))
   } else {
     if (a.length % 2) a = '0' + <string>a
     a = Buffer.from(a, 'hex')

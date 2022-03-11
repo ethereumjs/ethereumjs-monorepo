@@ -272,7 +272,7 @@ tape('Clique: Initialization', (t) => {
   t.test('Clique Voting: Single signer, no votes cast', async (st) => {
     const { blocks, blockchain } = await initWithSigners([A])
     const block = await addNextBlock(blockchain, blocks, A)
-    st.equal(Number(block.header.number), 1)
+    st.equal(block.header.number, BigInt(1))
     st.deepEqual(blockchain.cliqueActiveSigners(), [A.address])
     st.end()
   })

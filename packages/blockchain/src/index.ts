@@ -518,7 +518,7 @@ export default class Blockchain implements BlockchainInterface {
       const blockLimit = lastBlockNumber - BigInt(limit)
       const states = this._cliqueLatestSignerStates
       const lastItem = states[states.length - 1]
-      this._cliqueLatestSignerStates = states.filter((state) => state[0] >= BigInt(blockLimit))
+      this._cliqueLatestSignerStates = states.filter((state) => state[0] >= blockLimit)
       if (this._cliqueLatestSignerStates.length === 0) {
         // always keep at least one item on the stack
         this._cliqueLatestSignerStates.push(lastItem)
@@ -670,9 +670,7 @@ export default class Blockchain implements BlockchainInterface {
       const lastEpochBlockNumber =
         lastBlockNumber - (lastBlockNumber % BigInt(this._common.consensusConfig().epoch))
       const blockLimit = lastEpochBlockNumber - BigInt(limit)
-      this._cliqueLatestVotes = this._cliqueLatestVotes.filter(
-        (state) => state[0] >= BigInt(blockLimit)
-      )
+      this._cliqueLatestVotes = this._cliqueLatestVotes.filter((state) => state[0] >= blockLimit)
     }
 
     // save votes to db

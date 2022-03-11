@@ -50,21 +50,11 @@ export async function getPreState(
 
 export function getBlockchain(blockhashes: any): Mockchain {
   let mockchain = new Mockchain()
-  for (let hashStr in blockhashes) {
-    const bn = BigInt(hashStr)
-    const hash = blockhashes[hashStr]
-    const hashBuffer = Buffer.from(hash.substr(2), 'hex')
-    mockchain.putBlockHash(bn, hashBuffer)
+  for (const blockNum in blockhashes) {
+    const hash = blockhashes[blockNum]
+    mockchain.putBlockHash(BigInt(blockNum), toBuffer(hash))
   }
   return mockchain
-}
-
-const hexToBuffer = (h: string, allowZero: boolean = false): Buffer => {
-  const buf = toBuffer(h)
-  if (!allowZero && buf.toString('hex') === '00') {
-    return Buffer.alloc(0)
-  }
-  return buf
 }
 
 export const verifyResult = (block: Block, result: RunBlockResult) => {

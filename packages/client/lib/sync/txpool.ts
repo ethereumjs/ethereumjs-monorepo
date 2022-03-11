@@ -481,7 +481,7 @@ export class TxPool {
     for (const [address, poolObjects] of this.pool) {
       let txsSortedByNonce = poolObjects
         .map((obj) => obj.tx)
-        .sort((a, b) => Number(a.nonce) - Number(b.nonce))
+        .sort((a, b) => Number(a.nonce - b.nonce))
       // Check if the account nonce matches the lowest known tx nonce
       const { nonce } = await stateManager.getAccount(new Address(Buffer.from(address, 'hex')))
       if (txsSortedByNonce[0].nonce !== nonce) {

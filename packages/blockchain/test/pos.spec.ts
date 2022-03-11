@@ -71,7 +71,7 @@ tape('Proof of Stake - inserting blocks into blockchain', async (t) => {
     await buildChain(blockchain, s.common, 15)
 
     const latestHeader = await blockchain.getLatestHeader()
-    t.equal(Number(latestHeader.number), 15, 'blockchain is at correct height')
+    t.equal(latestHeader.number, BigInt(15), 'blockchain is at correct height')
 
     t.equal(
       (blockchain as any)._common.hardfork(),
@@ -79,7 +79,7 @@ tape('Proof of Stake - inserting blocks into blockchain', async (t) => {
       'HF should have been correctly updated'
     )
     const td = await blockchain.getTotalDifficulty(latestHeader.hash())
-    t.equal(Number(td), 1313601, 'should have calculated the correct post-Merge total difficulty')
+    t.equal(td, BigInt(1313601), 'should have calculated the correct post-Merge total difficulty')
 
     const powBlock = Block.fromBlockData({
       header: {

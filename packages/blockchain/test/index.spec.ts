@@ -55,7 +55,7 @@ tape('blockchain test', (t) => {
 
     const head = await blockchain.getHead()
 
-    st.equal(Number(head.header.number), 5, 'correct block number')
+    st.equal(head.header.number, BigInt(5), 'correct block number')
     st.end()
   })
 
