@@ -156,36 +156,6 @@ function generateInvalidEOFCode(code: string) {
   return '0xEF000101' + len + '00' + code
 }
 
-tape('ensure invalid initcode does not consume all gas - tx', async (st) => {
-  const common = new Common({
-    chain: Chain.Mainnet,
-    hardfork: Hardfork.London,
-    eips: [3540, 3541],
-  })
-  const vm = new VM({ common })
-  const account = await vm.stateManager.getAccount(sender)
-  const balance = GWEI.muln(21000).muln(10000000)
-  account.balance = balance
-  await vm.stateManager.putAccount(sender, account)
-
-  let tx = FeeMarketEIP1559Transaction.fromTxData({
-    data: generateEOFCode('60016001F3'),
-    gasLimit: 1000000,
-    maxFeePerGas: 7,
-    nonce: 0,
-  }).sign(pkey)
-  const result = await vm.runTx({ tx })
-
-  tx = FeeMarketEIP1559Transaction.fromTxData({
-    data: generateInvalidEOFCode('60016001F3'),
-    gasLimit: 1000000,
-    maxFeePerGas: 7,
-    nonce: 1,
-  }).sign(pkey)
-  const result2 = await vm.runTx({ tx })
-  st.ok(result.gasUsed.gt(result2.gasUsed), 'invalid initcode did not consume all gas')
-})
-
 const offset = '13'
 const CREATEDeploy = '0x60' + offset + '380360' + offset + '60003960' + offset + '380360006000F000'
 
@@ -207,62 +177,94 @@ function deployCreate2Code(initcode: string) {
   return CREATE2Deploy + initcode
 }
 
-tape('ensure invalid initcode does not consume all gas - create', async (st) => {
-  const common = new Common({
-    chain: Chain.Mainnet,
-    hardfork: Hardfork.London,
-    eips: [3540, 3541],
+tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => {
+  t.test('case: tx', async (st) => {
+    const common = new Common({
+      chain: Chain.Mainnet,
+      hardfork: Hardfork.London,
+      eips: [3540, 3541],
+    })
+    const vm = new VM({ common })
+    const account = await vm.stateManager.getAccount(sender)
+    const balance = GWEI.muln(21000).muln(10000000)
+    account.balance = balance
+    await vm.stateManager.putAccount(sender, account)
+
+    let tx = FeeMarketEIP1559Transaction.fromTxData({
+      data: generateEOFCode('60016001F3'),
+      gasLimit: 1000000,
+      maxFeePerGas: 7,
+      nonce: 0,
+    }).sign(pkey)
+    const result = await vm.runTx({ tx })
+
+    tx = FeeMarketEIP1559Transaction.fromTxData({
+      data: generateInvalidEOFCode('60016001F3'),
+      gasLimit: 1000000,
+      maxFeePerGas: 7,
+      nonce: 1,
+    }).sign(pkey)
+    const result2 = await vm.runTx({ tx })
+    st.ok(result.gasUsed.gt(result2.gasUsed), 'invalid initcode did not consume all gas')
   })
-  const vm = new VM({ common })
-  const account = await vm.stateManager.getAccount(sender)
-  const balance = GWEI.muln(21000).muln(10000000)
-  account.balance = balance
-  await vm.stateManager.putAccount(sender, account)
 
-  let tx = FeeMarketEIP1559Transaction.fromTxData({
-    data: deployCreateCode(generateEOFCode('60016001F3').substring(2)),
-    gasLimit: 1000000,
-    maxFeePerGas: 7,
-    nonce: 0,
-  }).sign(pkey)
-  const result = await vm.runTx({ tx })
+  t.test('case: create', async (st) => {
+    const common = new Common({
+      chain: Chain.Mainnet,
+      hardfork: Hardfork.London,
+      eips: [3540, 3541],
+    })
+    const vm = new VM({ common })
+    const account = await vm.stateManager.getAccount(sender)
+    const balance = GWEI.muln(21000).muln(10000000)
+    account.balance = balance
+    await vm.stateManager.putAccount(sender, account)
 
-  tx = FeeMarketEIP1559Transaction.fromTxData({
-    data: deployCreateCode(generateInvalidEOFCode('60016001F3').substring(2)),
-    gasLimit: 1000000,
-    maxFeePerGas: 7,
-    nonce: 1,
-  }).sign(pkey)
-  const result2 = await vm.runTx({ tx })
-  st.ok(result.gasUsed.gt(result2.gasUsed), 'invalid initcode did not consume all gas')
-})
+    let tx = FeeMarketEIP1559Transaction.fromTxData({
+      data: deployCreateCode(generateEOFCode('60016001F3').substring(2)),
+      gasLimit: 1000000,
+      maxFeePerGas: 7,
+      nonce: 0,
+    }).sign(pkey)
+    const result = await vm.runTx({ tx })
 
-tape('ensure invalid initcode does not consume all gas - create2', async (st) => {
-  const common = new Common({
-    chain: Chain.Mainnet,
-    hardfork: Hardfork.London,
-    eips: [3540, 3541],
+    tx = FeeMarketEIP1559Transaction.fromTxData({
+      data: deployCreateCode(generateInvalidEOFCode('60016001F3').substring(2)),
+      gasLimit: 1000000,
+      maxFeePerGas: 7,
+      nonce: 1,
+    }).sign(pkey)
+    const result2 = await vm.runTx({ tx })
+    st.ok(result.gasUsed.gt(result2.gasUsed), 'invalid initcode did not consume all gas')
   })
-  const vm = new VM({ common })
-  const account = await vm.stateManager.getAccount(sender)
-  const balance = GWEI.muln(21000).muln(10000000)
-  account.balance = balance
-  await vm.stateManager.putAccount(sender, account)
 
-  let tx = FeeMarketEIP1559Transaction.fromTxData({
-    data: deployCreate2Code(generateEOFCode('60016001F3').substring(2)),
-    gasLimit: 1000000,
-    maxFeePerGas: 7,
-    nonce: 0,
-  }).sign(pkey)
-  const result = await vm.runTx({ tx })
+  t.test('case: create2', async (st) => {
+    const common = new Common({
+      chain: Chain.Mainnet,
+      hardfork: Hardfork.London,
+      eips: [3540, 3541],
+    })
+    const vm = new VM({ common })
+    const account = await vm.stateManager.getAccount(sender)
+    const balance = GWEI.muln(21000).muln(10000000)
+    account.balance = balance
+    await vm.stateManager.putAccount(sender, account)
 
-  tx = FeeMarketEIP1559Transaction.fromTxData({
-    data: deployCreate2Code(generateInvalidEOFCode('60016001F3').substring(2)),
-    gasLimit: 1000000,
-    maxFeePerGas: 7,
-    nonce: 1,
-  }).sign(pkey)
-  const result2 = await vm.runTx({ tx })
-  st.ok(result.gasUsed.gt(result2.gasUsed), 'invalid initcode did not consume all gas')
+    let tx = FeeMarketEIP1559Transaction.fromTxData({
+      data: deployCreate2Code(generateEOFCode('60016001F3').substring(2)),
+      gasLimit: 1000000,
+      maxFeePerGas: 7,
+      nonce: 0,
+    }).sign(pkey)
+    const result = await vm.runTx({ tx })
+
+    tx = FeeMarketEIP1559Transaction.fromTxData({
+      data: deployCreate2Code(generateInvalidEOFCode('60016001F3').substring(2)),
+      gasLimit: 1000000,
+      maxFeePerGas: 7,
+      nonce: 1,
+    }).sign(pkey)
+    const result2 = await vm.runTx({ tx })
+    st.ok(result.gasUsed.gt(result2.gasUsed), 'invalid initcode did not consume all gas')
+  })
 })
