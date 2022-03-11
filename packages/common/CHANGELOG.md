@@ -14,6 +14,7 @@ This release fully supports the Merge [Kiln](https://kiln.themerge.dev/) testnet
 
 - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) Support: Supplant DIFFICULTY opcode with PREVRANDAO, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
 - Added new `preMerge` hardfork to fork off non-upgraded clients in `@ethereumjs/client` (in the very most cases this somewhat "artificial" HF should not be used directly), PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
+- Better documentation and integration of complex genesis state custom chain initialization (with (system) contracts and storage values), PR [#1757](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1757)
 
 # 2.6.2 - 2022-02-4
 

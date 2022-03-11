@@ -28,7 +28,7 @@ github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
 
 ### EIP-3860 Support: Limit and Meter Initcode
 
-Support for [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) has been added to the VM. This EIP limits the maximum size of initcode to 49152 and apply extra gas cost of 2 for every 32-byte chunk of initcode.
+Support for [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) has been added to the VM. This EIP limits the maximum size of initcode to 49152 and apply extra gas cost of 2 for every 32-byte chunk of initcode, see PR [#1619](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1619).
 
 Note that this EIP is not part of a specific hardfork yet and is considered `EXPERIMENTAL` (implementation can change along bugfix releases).
 

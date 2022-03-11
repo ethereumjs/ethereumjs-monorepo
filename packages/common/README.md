@@ -203,6 +203,17 @@ import chain1GenesisState from '[PATH_TO_GENESIS_STATES]/chain1GenesisState.json
 const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, chain1GenesisState ] ]})
 ```
 
+A more complex example with genesis state with Contract and EoA states would have the following format:
+
+```typescript
+const complexState = {
+  '0x0...01': '0x100', // For EoA
+  '0x0...02': ['0x1', '0xRUNTIME_BYTECODE', [[ keyOne, valueOne ], [ keyTwo, valueTwo ]]] // For contracts
+}
+import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
+const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, complexState ] ]})
+```
+
 Accessing the genesis state can be done as follows:
 
 ```typescript
@@ -292,8 +303,11 @@ The following EIPs are currently supported:
 - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529): Reduction in refunds
 - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541): Reject new contracts starting with the 0xEF byte
 - [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554): Difficulty Bomb Delay to December 2021 (only PoW networks)
+- [EIP-3607](https://eips.ethereum.org/EIPS/eip-3607): Reject transactions from senders with deployed code
 - [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675): Upgrade consensus to Proof-of-Stake (`experimental`)
 - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855): Push0 opcode (`v2.6.1`+)
+- [EIP-3860](https://eips.ethereum.org/EIPS/eip-3855): Limit and meter initcode (`experimental`)
+- [EIP-4345](https://eips.ethereum.org/EIPS/eip-4345): Difficulty Bomb Delay to June 2022
 - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399): Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
 
 ## Bootstrap Nodes

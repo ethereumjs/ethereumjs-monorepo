@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### EIP-3860 Support: Limit and Meter Initcode
 
-Support for [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) has been added to the Tx library. This EIP limits the maximum size of initcode to 49152.
+Support for [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) has been added to the Tx library. This EIP limits the maximum size of initcode to 49152, see PR [#1619](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1619).
 
 Note that this EIP is not part of a specific hardfork yet and is considered `EXPERIMENTAL` (implementation can change along bugfix releases).
 
