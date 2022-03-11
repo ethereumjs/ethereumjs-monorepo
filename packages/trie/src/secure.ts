@@ -84,6 +84,27 @@ export class SecureTrie extends CheckpointTrie {
   }
 
   /**
+   * Verifies a range proof.
+   */
+  static verifyRangeProof(
+    rootHash: Buffer,
+    firstKey: Buffer | null,
+    lastKey: Buffer | null,
+    keys: Buffer[],
+    values: Buffer[],
+    proof: Buffer[] | null
+  ): Promise<boolean> {
+    return super.verifyRangeProof(
+      rootHash,
+      firstKey && keccak256(firstKey),
+      lastKey && keccak256(lastKey),
+      keys.map(keccak256),
+      values,
+      proof
+    )
+  }
+
+  /**
    * Returns a copy of the underlying trie with the interface of SecureTrie.
    * @param includeCheckpoints - If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
    */

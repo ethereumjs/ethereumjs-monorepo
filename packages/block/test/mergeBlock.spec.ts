@@ -105,19 +105,19 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
     st.end()
   })
 
-  t.test('EIP-4399: random should return mixHash value', function (st) {
+  t.test('EIP-4399: prevRando should return mixHash value', function (st) {
     const mixHash = Buffer.alloc(32, 3)
     let block = Block.fromBlockData({ header: { mixHash } }, { common })
-    st.ok(block.header.random.equals(mixHash), 'random should return mixHash value')
+    st.ok(block.header.prevRandao.equals(mixHash), 'prevRandao should return mixHash value')
 
     const commonLondon = common.copy()
     commonLondon.setHardfork(Hardfork.London)
     block = Block.fromBlockData({ header: { mixHash } }, { common: commonLondon })
     try {
-      block.header.random
+      block.header.prevRandao
       st.fail('should have thrown')
     } catch (e: any) {
-      st.pass('random should throw if EIP-4399 is not activated')
+      st.pass('prevRandao should throw if EIP-4399 is not activated')
     }
     st.end()
   })

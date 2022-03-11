@@ -13,6 +13,7 @@ import {
 import { TxOptions, TxData, JsonTx, N_DIV_2, TxValuesArray, Capability } from './types'
 import { BaseTransaction } from './baseTransaction'
 import Common from '@ethereumjs/common'
+import { checkMaxInitCodeSize } from './util'
 
 const TRANSACTION_TYPE = 0
 
@@ -133,6 +134,10 @@ export default class Transaction extends BaseTransaction<Transaction> {
           this.activeCapabilities.push(Capability.EIP155ReplayProtection)
         }
       }
+    }
+
+    if (this.common.isActivatedEIP(3860)) {
+      checkMaxInitCodeSize(this.common, this.data.length)
     }
 
     const freeze = opts?.freeze ?? true

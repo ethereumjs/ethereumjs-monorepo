@@ -100,7 +100,7 @@ const args = yargs(hideBin(process.argv))
   })
   .option('wsPort', {
     describe: 'WS-RPC server listening port',
-    default: 8544,
+    default: 8545,
   })
   .option('wsAddr', {
     describe: 'WS-RPC server listening address',
@@ -113,16 +113,27 @@ const args = yargs(hideBin(process.argv))
   .option('rpcEnginePort', {
     describe: 'HTTP-RPC server listening port for Engine namespace',
     number: true,
-    default: 8550,
+    default: 8551,
   })
   .option('rpcEngineAddr', {
     describe: 'HTTP-RPC server listening interface address for Engine namespace',
     string: true,
     default: 'localhost',
   })
+  .option('wsEnginePort', {
+    describe: 'WS-RPC server listening port for Engine namespace',
+    number: true,
+    default: 8551,
+  })
+  .option('wsEngineAddr', {
+    describe: 'WS-RPC server listening interface address for Engine namespace',
+    string: true,
+    default: 'localhost',
+  })
   .option('rpcEngineAuth', {
     describe: 'Enable jwt authentication for Engine RPC server',
     boolean: true,
+    default: true,
   })
   .option('jwt-secret', {
     describe: 'Provide a file containing a hex encoded jwt secret for Engine RPC server',
