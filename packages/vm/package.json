@@ -47,7 +47,7 @@
     "examples": "ts-node ../../scripts/examples-runner.ts -- vm"
   },
   "dependencies": {
-    "@ethereumjs/block": "^3.6.1",
+    "@ethereumjs/block": "^3.6.2",
     "@ethereumjs/blockchain": "^5.5.1",
     "@ethereumjs/common": "^2.6.3",
     "@ethereumjs/tx": "^3.5.1",
