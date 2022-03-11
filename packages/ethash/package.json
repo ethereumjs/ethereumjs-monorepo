@@ -35,7 +35,8 @@
     "@types/levelup": "^4.3.0",
     "buffer-xor": "^2.0.1",
     "ethereumjs-util": "^7.1.4",
-    "miller-rabin": "^4.0.0"
+    "miller-rabin": "^4.0.0",
+    "bn.js": "^5.1.2"
   },
   "devDependencies": {
     "@ethereumjs/common": "^2.6.2",

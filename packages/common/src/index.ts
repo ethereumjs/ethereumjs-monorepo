@@ -356,7 +356,7 @@ export default class Common extends EventEmitter {
     } else if (typeof chain === 'object') {
       if (this._customChains.length > 0) {
         throw new Error(
-          'Chain must be a string, number, or BN when initialized with customChains passed in'
+          'Chain must be a string, number, or bigint when initialized with customChains passed in'
         )
       }
       const required = ['networkId', 'genesis', 'hardforks', 'bootstrapNodes']
