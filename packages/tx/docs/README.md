@@ -172,7 +172,7 @@ referenced as [Transaction](classes/Transaction.md) for compatibility reasons.
 
 ### N\_DIV\_2
 
-• **N\_DIV\_2**: `BN`
+• `Const` **N\_DIV\_2**: `BN`
 
 A const defining secp256k1n/2
 
