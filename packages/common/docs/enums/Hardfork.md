@@ -18,6 +18,7 @@
 - [Merge](Hardfork.md#merge)
 - [MuirGlacier](Hardfork.md#muirglacier)
 - [Petersburg](Hardfork.md#petersburg)
+- [PreMerge](Hardfork.md#premerge)
 - [Shanghai](Hardfork.md#shanghai)
 - [SpuriousDragon](Hardfork.md#spuriousdragon)
 - [TangerineWhistle](Hardfork.md#tangerinewhistle)
@@ -120,7 +121,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/index.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L83)
+[packages/common/src/index.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L84)
 
 ___
 
@@ -141,6 +142,16 @@ ___
 #### Defined in
 
 [packages/common/src/index.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L76)
+
+___
+
+### PreMerge
+
+• **PreMerge** = `"preMerge"`
+
+#### Defined in
+
+[packages/common/src/index.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L83)
 
 ___
 
