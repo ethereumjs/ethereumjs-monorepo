@@ -1,5 +1,4 @@
 import tape from 'tape'
-import Common, { Chain } from '@ethereumjs/common'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { BN, toBuffer } from 'ethereumjs-util'
 import { setupPreConditions, makeTx, makeBlockFromEnv } from '../../util'
