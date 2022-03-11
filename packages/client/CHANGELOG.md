@@ -21,15 +21,16 @@ This release fully supports the Merge [Kiln](https://kiln.themerge.dev/) testnet
 - Engine API (RPC): Renamed `message` to `validationError`, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
 - Engine API (RPC): Allowed ws and http on the same port, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
 - Engine API (RPC): Respect message ordering in forkchoiceUpdated, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
-- Engine API (RPC): Rename `coinbase` to `feeRecipient` as per `v1.0.0-alpha.5` spec, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
+- Engine API (RPC): Rename `coinbase` to `feeRecipient` as per `v1.0.0-alpha.5` spec, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565) 
 - Engine API (RPC): Support for [jwt](https://jwt.io) based auth through both http/websocket protocols, PR [#1751](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1751)
-- Engine API (RPC): Tests for new Engine API endpoints, PR [#1727](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1727)
+- Engine API (RPC): Tests for new Engine API endpoints, PR [#1727](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1727) 
 - Geth genesis files: Use `mergeForkBlock` if provided, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
 - Execution module refactor: decoupling from `FullSync` module to prepare for a post-Merge execution/sync separation, PR [#1663](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1663)
 
 ### Features
 
 - RPC Server: Added `rpcCors` option to specify [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) for rpc server, PR [#1762](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1762)
+- RPC Server: New default ports for engine (`8551`) (HTTP-RPC and WS) and general RPC (`8545`), PR [#1775](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1775)
 
 ### Bug Fixes
 

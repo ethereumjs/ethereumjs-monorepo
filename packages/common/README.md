@@ -282,7 +282,7 @@ const c = new Common({ chain: Chain.Mainnet, eips: [2537] })
 The following EIPs are currently supported:
 
 - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559): Fee market change for ETH 1.0 chain
-- [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315): Simple subroutines for the EVM
+- [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315): Simple subroutines for the EVM (`experimental`)
 - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537): BLS precompiles
 - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565): ModExp gas cost
 - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2565): Transaction Types
@@ -294,6 +294,7 @@ The following EIPs are currently supported:
 - [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554): Difficulty Bomb Delay to December 2021 (only PoW networks)
 - [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675): Upgrade consensus to Proof-of-Stake (`experimental`)
 - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855): Push0 opcode (`v2.6.1`+)
+- [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399): Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
 
 ## Bootstrap Nodes
 
