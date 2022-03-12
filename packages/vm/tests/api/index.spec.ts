@@ -159,7 +159,7 @@ tape('VM -> hardforkByBlockNumber, hardforkByTD, state (deprecated), blockchain'
     st.equal((vm as any)._hardforkByBlockNumber, true, 'should set hardforkByBlockNumber option')
 
     vm = await VM.create({ common, hardforkByTD: 5001 })
-    st.equal((vm as any)._hardforkByTD, 5001, 'should set hardforkByTD option')
+    st.equal((vm as any)._hardforkByTD, BigInt(5001), 'should set hardforkByTD option')
 
     try {
       await VM.create({ common, hardforkByBlockNumber: true, hardforkByTD: 3000 })

@@ -453,7 +453,6 @@ tape('[Miner]', async (t) => {
   })
 
   t.test('should handle mining ethash PoW', async (t) => {
-    t.plan(1)
     const common = new Common({ chain: CommonChain.Ropsten, hardfork: Hardfork.Istanbul })
     ;(common as any)._chainParams['genesis'].difficulty = 1
     const pool = new PeerPool() as any
@@ -475,9 +474,10 @@ tape('[Miner]', async (t) => {
       t.equal(chain.blocks.latest!.header.number, BigInt(1))
       miner.stop()
       await chain.close()
+      t.end()
     })
     await (miner as any).queueNextAssembly(0)
-    await wait(3000)
+    await wait(10000)
   })
 
   t.test('should reset td', (t) => {

@@ -57,7 +57,7 @@ export function getTransaction(
     gasPrice: 100,
     gasLimit: 90000,
     to,
-    value: BigInt(value),
+    value,
     data,
   }
 

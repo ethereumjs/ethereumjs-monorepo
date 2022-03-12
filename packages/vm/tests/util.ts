@@ -16,6 +16,7 @@ import {
   toBuffer,
   Address,
   bigIntToBuffer,
+  bufferToHex,
 } from 'ethereumjs-util'
 import { DefaultStateManager } from '../src/state'
 
@@ -59,14 +60,14 @@ export function dumpState(state: any, cb: Function) {
       results.push(result)
     }
     for (let i = 0; i < results.length; i++) {
-      console.log("SHA3'd address: " + <string>results[i].address.toString('hex'))
-      console.log('\tstate root: ' + <string>results[i].stateRoot.toString('hex'))
+      console.log("SHA3'd address: " + bufferToHex(results[i].address))
+      console.log('\tstate root: ' + bufferToHex(results[i].stateRoot))
       console.log('\tstorage: ')
       for (const storageKey in results[i].storage) {
-        console.log('\t\t' + storageKey + ': ' + <string>results[i].storage[storageKey])
+        console.log('\t\t' + storageKey + ': ' + results[i].storage[storageKey])
       }
-      console.log('\tnonce: ' + BigInt(results[i].nonce).toString())
-      console.log('\tbalance: ' + BigInt(results[i].balance).toString())
+      console.log('\tnonce: ' + BigInt(results[i].nonce))
+      console.log('\tbalance: ' + BigInt(results[i].balance))
     }
     cb()
   })
@@ -82,7 +83,11 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false) 
     if (a.length % 2) a = '0' + <string>a
     a = Buffer.from(a, 'hex')
   } else if (!isHex) {
-    a = bigIntToBuffer(BigInt(a))
+    try {
+      a = bigIntToBuffer(BigInt(a))
+    } catch {
+      return a
+    }
   } else {
     if (a.length % 2) a = '0' + <string>a
     a = Buffer.from(a, 'hex')
@@ -320,13 +325,11 @@ export async function setupPreConditions(state: DefaultStateManager, testData: a
 
     // Set contract storage
     for (const storageKey of Object.keys(storage)) {
-      const valB = BigInt(format(storage[storageKey]))
-      if (valB === BigInt(0)) {
+      const val = format(storage[storageKey])
+      if (['', '00'].includes(val.toString('hex'))) {
         continue
       }
-      const val = bigIntToBuffer(valB)
       const key = setLengthLeft(format(storageKey), 32)
-
       await state.putContractStorage(address, key, val)
     }
 
