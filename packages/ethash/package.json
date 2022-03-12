@@ -33,10 +33,9 @@
   "dependencies": {
     "@ethereumjs/block": "^3.6.1",
     "@types/levelup": "^4.3.0",
+    "bigint-crypto-utils": "^3.0.23",
     "buffer-xor": "^2.0.1",
-    "ethereumjs-util": "^7.1.4",
-    "miller-rabin": "^4.0.0",
-    "bn.js": "^5.1.2"
+    "ethereumjs-util": "^7.1.4"
   },
   "devDependencies": {
     "@ethereumjs/common": "^2.6.2",

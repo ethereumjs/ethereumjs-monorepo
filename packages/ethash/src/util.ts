@@ -1,6 +1,5 @@
+import { isProbablyPrime } from 'bigint-crypto-utils'
 import { keccak256 } from 'ethereumjs-util'
-import BN from 'bn.js'
-const MR = require('miller-rabin')
 
 export const params = {
   DATASET_BYTES_INIT: 1073741824, // 2^30
@@ -17,32 +16,28 @@ export const params = {
   WORD_BYTES: 4,
 }
 
-export function getCacheSize(epoc: number) {
-  const mr = new MR()
-  let sz =
-    (exports.params.CACHE_BYTES_INIT as number) +
-    (exports.params.CACHE_BYTES_GROWTH as number) * epoc
-  sz -= exports.params.HASH_BYTES
-  while (!mr.test(new BN(sz / exports.params.HASH_BYTES))) {
-    sz -= 2 * exports.params.HASH_BYTES
+export async function getCacheSize(epoc: number) {
+  const { CACHE_BYTES_INIT, CACHE_BYTES_GROWTH, HASH_BYTES } = params
+  let sz = CACHE_BYTES_INIT + CACHE_BYTES_GROWTH * epoc
+  sz -= HASH_BYTES
+  while (!(await isProbablyPrime(sz / HASH_BYTES))) {
+    sz -= 2 * HASH_BYTES
   }
   return sz
 }
 
-export function getFullSize(epoc: number) {
-  const mr = new MR()
-  let sz =
-    (exports.params.DATASET_BYTES_INIT as number) +
-    (exports.params.DATASET_BYTES_GROWTH as number) * epoc
-  sz -= exports.params.MIX_BYTES
-  while (!mr.test(new BN(sz / exports.params.MIX_BYTES))) {
-    sz -= 2 * exports.params.MIX_BYTES
+export async function getFullSize(epoc: number) {
+  const { DATASET_BYTES_INIT, DATASET_BYTES_GROWTH, MIX_BYTES } = params
+  let sz = DATASET_BYTES_INIT + DATASET_BYTES_GROWTH * epoc
+  sz -= MIX_BYTES
+  while (!(await isProbablyPrime(sz / MIX_BYTES))) {
+    sz -= 2 * MIX_BYTES
   }
   return sz
 }
 
 export function getEpoc(blockNumber: bigint) {
-  return Number(blockNumber / BigInt(exports.params.EPOCH_LENGTH))
+  return Number(blockNumber / BigInt(params.EPOCH_LENGTH))
 }
 
 /**

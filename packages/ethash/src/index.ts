@@ -287,8 +287,8 @@ export default class Ethash {
     }
 
     if (!data) {
-      this.cacheSize = getCacheSize(epoc)
-      this.fullSize = getFullSize(epoc)
+      this.cacheSize = await getCacheSize(epoc)
+      this.fullSize = await getFullSize(epoc)
 
       const [seed, foundEpoc] = await findLastSeed(epoc)
       this.seed = getSeed(seed, foundEpoc, epoc)
