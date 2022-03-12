@@ -255,7 +255,7 @@ export class ETH extends EventEmitter {
     ]
     if (this._version >= 64) {
       if (status.latestBlock) {
-        const latestBlock = BigInt(status.latestBlock)
+        const latestBlock = bufferToBigInt(status.latestBlock)
         if (latestBlock < this._latestBlock) {
           throw new Error(
             'latest block provided is not matching the HF setting of the Common instance (Rlpx)'
@@ -388,7 +388,7 @@ export namespace ETH {
   export type StatusOpts = {
     td: Buffer
     bestHash: Buffer
-    latestBlock?: number
+    latestBlock?: Buffer
     genesisHash: Buffer
   }
 
