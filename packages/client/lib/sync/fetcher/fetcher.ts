@@ -355,8 +355,6 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       })
       .on('error', (error: Error) => {
         this.error(error)
-        this.running = false
-        writer.destroy()
       })
     this.debug(`Setup writer pipe.`)
   }
