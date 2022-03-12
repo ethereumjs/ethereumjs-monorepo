@@ -320,7 +320,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       // EIP-1559 spec:
       // The signer must be able to afford the transaction
       // `assert balance >= gas_limit * max_fee_per_gas`
-      const cost = tx.gasLimit * ((tx as FeeMarketEIP1559Transaction).maxFeePerGas + tx.value)
+      const cost = tx.gasLimit * (tx as FeeMarketEIP1559Transaction).maxFeePerGas + tx.value
       if (balance < cost) {
         const msg = _errorMsg(
           `sender doesn't have enough funds to send tx. The max cost is: ${cost} and the sender's account (${caller}) only has: ${balance}`,
