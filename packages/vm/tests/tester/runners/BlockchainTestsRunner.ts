@@ -21,7 +21,7 @@ function formatBlockHeader(data: any) {
 export default async function runBlockchainTest(options: any, testData: any, t: tape.Test) {
   // ensure that the test data is the right fork data
   if (testData.network != options.forkConfigTestSuite) {
-    t.comment('skipping test: no data available for ' + <string>options.forkConfigTestSuite)
+    t.comment(`skipping test: no data available for ${options.forkConfigTestSuite}`)
     return
   }
 
@@ -136,7 +136,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
         for (const txData of raw.transactionSequence) {
           const shouldFail = txData.valid == 'false'
           try {
-            const txRLP = Buffer.from(txData.rawBytes.slice(2), 'hex')
+            const txRLP = toBuffer(txData.rawBytes)
             const tx = TransactionFactory.fromSerializedData(txRLP)
             await blockBuilder.addTransaction(tx)
             if (shouldFail) {
@@ -182,7 +182,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
       await cacheDB.close()
 
       if (expectException) {
-        t.fail('expected exception but test did not throw an exception: ' + <string>expectException)
+        t.fail(`expected exception but test did not throw an exception: ${expectException}`)
         return
       }
     } catch (error: any) {

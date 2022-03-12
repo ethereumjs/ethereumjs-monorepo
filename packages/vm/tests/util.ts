@@ -17,6 +17,7 @@ import {
   Address,
   bigIntToBuffer,
   bufferToHex,
+  isHexPrefixed,
 } from 'ethereumjs-util'
 import { DefaultStateManager } from '../src/state'
 
@@ -78,18 +79,18 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false) 
     return Buffer.alloc(0)
   }
 
-  if (a.slice && a.slice(0, 2) === '0x') {
+  if (typeof a === 'string' && isHexPrefixed(a)) {
     a = a.slice(2)
-    if (a.length % 2) a = '0' + <string>a
+    if (a.length % 2) a = '0' + a
     a = Buffer.from(a, 'hex')
   } else if (!isHex) {
     try {
       a = bigIntToBuffer(BigInt(a))
     } catch {
-      return a
+      // pass
     }
   } else {
-    if (a.length % 2) a = '0' + <string>a
+    if (a.length % 2) a = '0' + a
     a = Buffer.from(a, 'hex')
   }
 
@@ -151,7 +152,7 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
         const promise = verifyAccountPostConditions(state, address, account, testData, t)
         queue.push(promise)
       } else {
-        t.fail('invalid account in the trie: ' + <string>key)
+        t.fail('invalid account in the trie: ' + key)
       }
     })
 
@@ -255,7 +256,7 @@ export function verifyGas(results: any, testData: any, t: tape.Test) {
 
 /**
  * verifyLogs
- * @param logs  to verify
+ * @param logs to verify
  * @param testData from tests repo
  */
 export function verifyLogs(logs: any, testData: any, t: tape.Test) {
@@ -263,7 +264,7 @@ export function verifyLogs(logs: any, testData: any, t: tape.Test) {
     testData.logs.forEach(function (log: any, i: number) {
       const rlog = logs[i]
       t.equal(rlog[0].toString('hex'), log.address, 'log: valid address')
-      t.equal('0x' + <string>rlog[2].toString('hex'), log.data, 'log: valid data')
+      t.equal(bufferToHex(rlog[2]), log.data, 'log: valid data')
       log.topics.forEach(function (topic: string, i: number) {
         t.equal(rlog[1][i].toString('hex'), topic, 'log: invalid topic')
       })

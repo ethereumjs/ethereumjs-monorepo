@@ -107,11 +107,7 @@ export class Miner {
 
     await this.ethash.loadEpoc(number)
 
-    if (!this.ethash.fullSize) {
-      this.ethash.fullSize = await getFullSize(this.ethash.epoc!)
-    }
-
-    while (iterations != 0 && !this.stopMining) {
+    while (iterations !== 0 && !this.stopMining) {
       // The promise/setTimeout construction is necessary to ensure we jump out of the event loop
       // Without this, for high-difficulty blocks JS never jumps out of the Promise
       const solution = await new Promise((resolve) => {
@@ -123,7 +119,7 @@ export class Miner {
 
           if (TWO_POW256 / difficulty > result) {
             const solution: Solution = {
-              mixHash: <Buffer>a.mix,
+              mixHash: a.mix,
               nonce,
             }
             this.solution = solution
@@ -131,7 +127,7 @@ export class Miner {
             return
           }
 
-          this.currentNonce += BigInt(1)
+          this.currentNonce++
           iterations--
 
           resolve(null)

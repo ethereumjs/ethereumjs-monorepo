@@ -30,7 +30,7 @@ export async function getFullSize(epoc: number) {
   const { DATASET_BYTES_INIT, DATASET_BYTES_GROWTH, MIX_BYTES } = params
   let sz = DATASET_BYTES_INIT + DATASET_BYTES_GROWTH * epoc
   sz -= MIX_BYTES
-  while (!(await isProbablyPrime(sz / MIX_BYTES))) {
+  while (!(await isProbablyPrime(sz / MIX_BYTES, undefined, true))) {
     sz -= 2 * MIX_BYTES
   }
   return sz
