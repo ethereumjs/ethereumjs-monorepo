@@ -20,7 +20,7 @@ export async function getCacheSize(epoc: number) {
   const { CACHE_BYTES_INIT, CACHE_BYTES_GROWTH, HASH_BYTES } = params
   let sz = CACHE_BYTES_INIT + CACHE_BYTES_GROWTH * epoc
   sz -= HASH_BYTES
-  while (!(await isProbablyPrime(sz / HASH_BYTES))) {
+  while (!(await isProbablyPrime(sz / HASH_BYTES, undefined, true))) {
     sz -= 2 * HASH_BYTES
   }
   return sz

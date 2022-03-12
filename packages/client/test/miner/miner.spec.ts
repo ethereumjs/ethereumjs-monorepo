@@ -469,7 +469,7 @@ tape('[Miner]', async (t) => {
     ;(chain.blockchain as any)._validateConsensus = false
     ;(miner as any).chainUpdated = async () => {} // stub
     miner.start()
-    await wait(100)
+    await wait(1000)
     config.events.on(Event.CHAIN_UPDATED, async () => {
       t.equal(chain.blocks.latest!.header.number, BigInt(1))
       miner.stop()
