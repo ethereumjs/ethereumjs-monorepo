@@ -4,7 +4,7 @@ import ms from 'ms'
 import snappy from 'snappyjs'
 import { debug as createDebugLogger, Debugger } from 'debug'
 import { devp2pDebug } from '../util'
-import { bufferToBigInt, rlp, bigIntToBuffer } from 'ethereumjs-util'
+import { bufferToBigInt, bufferToHex, rlp, bigIntToBuffer } from 'ethereumjs-util'
 import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 
@@ -133,7 +133,7 @@ export class ETH extends EventEmitter {
   _validateForkId(forkId: Buffer[]) {
     const c = this._peer._common
 
-    const peerForkHash = `0x${forkId[0].toString('hex')}`
+    const peerForkHash = bufferToHex(forkId[0])
     const peerNextFork = bufferToBigInt(forkId[1])
 
     if (this._forkHash === peerForkHash) {

@@ -54,11 +54,11 @@ export class LesProtocol extends Protocol {
         headHash,
         bigIntToBuffer(headNumber),
         bigIntToBuffer(headTd),
-        bigIntToBuffer(reorgDepth),
+        intToBuffer(reorgDepth),
       ],
       decode: ([headHash, headNumber, headTd, reorgDepth]: any) => ({
         // TO DO: handle state changes
-        headHash: headHash,
+        headHash,
         headNumber: bufferToBigInt(headNumber),
         headTd: bufferToBigInt(headTd),
         reorgDepth: bufferToInt(reorgDepth),
@@ -178,9 +178,7 @@ export class LesProtocol extends Protocol {
       networkId: bigIntToBuffer(this.chain.networkId),
       headTd: bigIntToBuffer(this.chain.headers.td),
       headHash: this.chain.headers.latest?.hash(),
-      headNum: this.chain.headers.latest?.number
-        ? bigIntToBuffer(this.chain.headers.latest.number)
-        : Buffer.from([]),
+      headNum: bigIntToBuffer(this.chain.headers.height),
       genesisHash: this.chain.genesis.hash,
       forkID,
       recentTxLookup: intToBuffer(1),
@@ -197,7 +195,7 @@ export class LesProtocol extends Protocol {
     const mrc: any = {}
     if (status['flowControl/MRC']) {
       for (let entry of status['flowControl/MRC']) {
-        entry = entry.map((e: any) => Number(BigInt(e)))
+        entry = entry.map((e: any) => bufferToInt(e))
         mrc[entry[0]] = { base: entry[1], req: entry[2] }
         const message = this.messages.find((m) => m.code === entry[0])
         if (message) {

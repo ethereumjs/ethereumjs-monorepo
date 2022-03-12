@@ -59,6 +59,7 @@ tape('[LesProtocol]', (t) => {
             hash: () => '0xaa',
             number: BigInt(100),
           },
+          height: BigInt(100),
         }
       },
     })

@@ -102,7 +102,7 @@ tape('[EthProtocol]', (t) => {
     const p = new EthProtocol({ config, chain })
     const block = Block.fromBlockData({})
     const res = p.decode(p.messages.filter((message) => message.name === 'GetReceipts')[0], [
-      Buffer.from([1]),
+      BigInt(1),
       [block.hash()],
     ])
     const res2 = p.encode(p.messages.filter((message) => message.name === 'GetReceipts')[0], {
