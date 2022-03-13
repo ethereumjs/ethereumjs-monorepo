@@ -460,7 +460,7 @@ export class Eth {
 
     if (!transaction.gas) {
       // If no gas limit is specified use the last block gas limit as an upper bound.
-      const latest = await vm.blockchain.getLatestHeader()
+      const latest = await vm.blockchain.getCanonicalHeadHeader()
       transaction.gas = latest.gasLimit as any
     }
 
@@ -516,7 +516,7 @@ export class Eth {
 
     if (!transaction.gas) {
       // If no gas limit is specified use the last block gas limit as an upper bound.
-      const latest = await this._chain.getLatestHeader()
+      const latest = await this._chain.getCanonicalHeadHeader()
       transaction.gas = latest.gasLimit as any
     }
 
@@ -718,7 +718,7 @@ export class Eth {
     const [blockNumberHex] = params
     const blockNumber = BigInt(blockNumberHex)
     const latest =
-      this._chain.headers.latest?.number ?? (await this._chain.getLatestHeader()).number
+      this._chain.headers.latest?.number ?? (await this._chain.getCanonicalHeadHeader()).number
 
     if (blockNumber > latest) {
       throw {
@@ -756,8 +756,8 @@ export class Eth {
           (tx as FeeMarketEIP1559Transaction).maxFeePerGas - block.header.baseFeePerGas!
           ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
           : (tx as FeeMarketEIP1559Transaction).maxFeePerGas -
-            block.header.baseFeePerGas! +
-            block.header.baseFeePerGas!
+          block.header.baseFeePerGas! +
+          block.header.baseFeePerGas!
         : (tx as Transaction).gasPrice
 
       // Run tx through copied vm to get tx gasUsed and createdAddress
@@ -984,8 +984,9 @@ export class Eth {
       return false
     }
 
-    const currentBlockHeader = this._chain.headers?.latest ?? (await this._chain.getLatestHeader())
-    const currentBlock = bigIntToHex(currentBlockHeader.number)
+    const currentBlockHeader =
+      this._chain.headers?.latest ?? (await this._chain.getCanonicalHeadHeader())
+    const currentBlock = bnToHex(currentBlockHeader.number)
 
     const synchronizer = this.client.services[0].synchronizer
     const startingBlock = bigIntToHex(synchronizer.startingBlock)
