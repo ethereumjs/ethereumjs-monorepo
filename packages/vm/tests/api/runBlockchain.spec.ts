@@ -68,8 +68,6 @@ tape('runBlockchain', (t) => {
     st.equal(vm.blockchain.meta.genesis?.toString('hex'), testData.genesisBlockHeader.hash.slice(2))
 
     await vm.blockchain.putBlock(block)
-    const head = await vm.blockchain.getHead()
-    st.equal(head.hash().toString('hex'), testData.blocks[0].blockHeader.hash.slice(2))
 
     await setupPreConditions(vm.stateManager as DefaultStateManager, testData)
 
@@ -100,8 +98,6 @@ tape('runBlockchain', (t) => {
     st.equal(vm.blockchain.meta.genesis?.toString('hex'), testData.genesisBlockHeader.hash.slice(2))
 
     await vm.blockchain.putBlock(block)
-    const head = await vm.blockchain.getHead()
-    st.equal(head.hash().toString('hex'), testData.blocks[0].blockHeader.hash.slice(2))
 
     await setupPreConditions(vm.stateManager as DefaultStateManager, testData)
 
@@ -144,17 +140,11 @@ tape('runBlockchain', (t) => {
     await blockchain.putBlock(b2)
     await blockchain.putBlock(b3)
 
-    let head = await blockchain.getHead()
-    st.deepEqual(head.hash(), b3.hash(), 'block3 should be the current head')
-
     try {
       await vm.runBlockchain()
       st.fail('should have returned error')
     } catch (e: any) {
       st.equal(e.message, 'test')
-
-      head = await blockchain.getHead()
-      st.deepEqual(head.hash(), b2.hash(), 'should have removed invalid block from head')
 
       st.end()
     }
