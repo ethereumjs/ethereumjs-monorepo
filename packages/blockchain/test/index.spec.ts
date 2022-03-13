@@ -442,7 +442,7 @@ tape('blockchain test', (t) => {
     // Note: if st.end() is not called (Promise did not throw), then this test fails, as it does not end.
   })
 
-  t.test('should test setHead (@deprecated)/setIteratorHead method', async (st) => {
+  t.test('should test setIteratorHead method', async (st) => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
     st.error(error, 'no error')
 
