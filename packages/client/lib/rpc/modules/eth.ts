@@ -964,7 +964,8 @@ export class Eth {
       return false
     }
 
-    const currentBlockHeader = this._chain.headers?.latest ?? (await this._chain.getCanonicalHeadHeader())
+    const currentBlockHeader =
+      this._chain.headers?.latest ?? (await this._chain.getCanonicalHeadHeader())
     const currentBlock = bnToHex(currentBlockHeader.number)
 
     const synchronizer = this.client.services[0].synchronizer
