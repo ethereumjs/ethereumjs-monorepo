@@ -17,8 +17,12 @@ tape('[FullSynchronizer]', async (t) => {
   PeerPool.prototype.idle = td.func<any>()
   class BlockFetcher {
     fetch() {}
+    clear() {}
+    destroy() {}
   }
   BlockFetcher.prototype.fetch = td.func<any>()
+  BlockFetcher.prototype.clear = td.func<any>()
+  BlockFetcher.prototype.destroy = td.func<any>()
   td.replace('../../lib/sync/fetcher', { BlockFetcher })
 
   const { FullSynchronizer } = await import('../../lib/sync/fullsync')
