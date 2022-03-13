@@ -63,7 +63,8 @@ function createChain() {
     getBlock: () => genesisBlock,
     getLatestBlock: () => block,
     getLatestHeader: () => block.header,
-    getTd: () => BigInt(0),
+    getCanonicalHeadHeader: () => block.header,
+    getTd: () => new BN(0),
   }
 }
 

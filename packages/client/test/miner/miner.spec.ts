@@ -45,16 +45,16 @@ tape('[Miner]', async (t) => {
   td.replace('@ethereumjs/vm/dist/state', { DefaultStateManager })
 
   class PeerPool {
-    open() {}
-    close() {}
+    open() { }
+    close() { }
     get peers() {
       return []
     }
   }
   class FakeChain {
-    open() {}
-    close() {}
-    update() {}
+    open() { }
+    close() { }
+    update() { }
     get headers() {
       return {
         latest: BlockHeader.fromHeaderData(),
@@ -68,7 +68,7 @@ tape('[Miner]', async (t) => {
       }
     }
     blockchain: any = {
-      putBlock: async () => {},
+      putBlock: async () => { },
       cliqueActiveSigners: () => [A.address],
       cliqueSignerInTurn: async () => true,
       cliqueCheckRecentlySigned: () => false,
@@ -170,8 +170,8 @@ tape('[Miner]', async (t) => {
     // add tx
     txPool.add(txA01)
 
-    // disable consensus to skip PoA block signer validation
-    ;(vm.blockchain as any)._validateConsensus = false
+      // disable consensus to skip PoA block signer validation
+      ; (vm.blockchain as any)._validateConsensus = false
 
     chain.putBlocks = (blocks: Block[]) => {
       t.equal(blocks[0].transactions.length, 1, 'new block should include tx')
@@ -209,8 +209,8 @@ tape('[Miner]', async (t) => {
       txPool.add(txA03)
       txPool.add(txB01)
 
-      // disable consensus to skip PoA block signer validation
-      ;(vm.blockchain as any)._validateConsensus = false
+        // disable consensus to skip PoA block signer validation
+        ; (vm.blockchain as any)._validateConsensus = false
 
       chain.putBlocks = (blocks: Block[]) => {
         const msg = 'txs in block should be properly ordered by gasPrice and nonce'
@@ -267,8 +267,8 @@ tape('[Miner]', async (t) => {
     ).sign(A.privateKey)
     txPool.add(tx)
 
-    // disable consensus to skip PoA block signer validation
-    ;(vm.blockchain as any)._validateConsensus = false
+      // disable consensus to skip PoA block signer validation
+      ; (vm.blockchain as any)._validateConsensus = false
 
     synchronizer.handleNewBlock = async (block: Block) => {
       t.equal(block.transactions.length, 0, 'should not include tx')
@@ -323,8 +323,8 @@ tape('[Miner]', async (t) => {
     txPool.add(tx1FillsBlockGasLimit)
     txPool.add(tx2ExceedsBlockGasLimit)
 
-    // disable consensus to skip PoA block signer validation
-    ;(vm.blockchain as any)._validateConsensus = false
+      // disable consensus to skip PoA block signer validation
+      ; (vm.blockchain as any)._validateConsensus = false
 
     chain.putBlocks = (blocks: Block[]) => {
       t.equal(blocks[0].transactions.length, 1, 'only one tx should be included')
@@ -348,9 +348,9 @@ tape('[Miner]', async (t) => {
     })
     const miner = new Miner({ config, synchronizer, execution })
 
-    // stub chainUpdated so assemble isn't called again
-    // when emitting Event.CHAIN_UPDATED in this test
-    ;(miner as any).chainUpdated = async () => {}
+      // stub chainUpdated so assemble isn't called again
+      // when emitting Event.CHAIN_UPDATED in this test
+      ; (miner as any).chainUpdated = async () => { }
 
     const { txPool } = synchronizer
     const { vm } = execution
@@ -401,7 +401,7 @@ tape('[Miner]', async (t) => {
 
     const { vm } = execution
     vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
-    ;(miner as any).chainUpdated = async () => {} // stub
+      ; (miner as any).chainUpdated = async () => { } // stub
     miner.start()
     await wait(100)
 
@@ -421,12 +421,12 @@ tape('[Miner]', async (t) => {
     await wait(100)
     config.execCommon.setHardforkByBlockNumber(2)
     t.equal(config.execCommon.hardfork(), Hardfork.Berlin)
-    const blockHeader2 = await chain.getLatestHeader()
+    const blockHeader2 = await chain.getCanonicalHeadHeader()
 
     // block 3: london
     await (miner as any).queueNextAssembly(0)
     await wait(100)
-    const blockHeader3 = await chain.getLatestHeader()
+    const blockHeader3 = await chain.getCanonicalHeadHeader()
     config.execCommon.setHardforkByBlockNumber(3)
     t.equal(config.execCommon.hardfork(), Hardfork.London)
     t.equal(
@@ -440,7 +440,7 @@ tape('[Miner]', async (t) => {
     // block 4
     await (miner as any).queueNextAssembly(0)
     await wait(100)
-    const blockHeader4 = await chain.getLatestHeader()
+    const blockHeader4 = await chain.getCanonicalHeadHeader()
     config.execCommon.setHardforkByBlockNumber(4)
     t.equal(config.execCommon.hardfork(), Hardfork.London)
     t.equal(
@@ -448,14 +448,14 @@ tape('[Miner]', async (t) => {
       blockHeader3.calcNextBaseFee(),
       'baseFee should be as calculated'
     )
-    t.equal((await chain.getLatestHeader()).number, BigInt(4))
+    t.ok((await chain.getCanonicalHeadHeader()).number.eqn(4))
     miner.stop()
     await chain.close()
   })
 
   t.test('should handle mining ethash PoW', async (t) => {
     const common = new Common({ chain: CommonChain.Ropsten, hardfork: Hardfork.Istanbul })
-    ;(common as any)._chainParams['genesis'].difficulty = 1
+      ; (common as any)._chainParams['genesis'].difficulty = 1
     const pool = new PeerPool() as any
     const config = new Config({ transports: [], accounts, mine: true, common })
     const chain = new Chain({ config })
@@ -467,8 +467,8 @@ tape('[Miner]', async (t) => {
       chain,
     })
     const miner = new Miner({ config, synchronizer, execution })
-    ;(chain.blockchain as any)._validateConsensus = false
-    ;(miner as any).chainUpdated = async () => {} // stub
+      ; (chain.blockchain as any)._validateConsensus = false
+      ; (miner as any).chainUpdated = async () => { } // stub
     miner.start()
     await wait(1000)
     config.events.on(Event.CHAIN_UPDATED, async () => {
