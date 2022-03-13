@@ -448,7 +448,7 @@ export class Eth {
 
     if (!transaction.gas) {
       // If no gas limit is specified use the last block gas limit as an upper bound.
-      const latest = await vm.blockchain.getLatestHeader()
+      const latest = await vm.blockchain.getCanonicalHeadHeader()
       transaction.gas = latest.gasLimit as any
     }
 
@@ -504,7 +504,7 @@ export class Eth {
 
     if (!transaction.gas) {
       // If no gas limit is specified use the last block gas limit as an upper bound.
-      const latest = await this._chain.getLatestHeader()
+      const latest = await this._chain.getCanonicalHeadHeader()
       transaction.gas = latest.gasLimit as any
     }
 
@@ -706,7 +706,7 @@ export class Eth {
     const [blockNumberHex] = params
     const blockNumber = new BN(toBuffer(blockNumberHex))
     const latest =
-      this._chain.headers.latest?.number ?? (await this._chain.getLatestHeader()).number
+      this._chain.headers.latest?.number ?? (await this._chain.getCanonicalHeadHeader()).number
 
     if (blockNumber.gt(latest)) {
       throw {
@@ -964,7 +964,7 @@ export class Eth {
       return false
     }
 
-    const currentBlockHeader = this._chain.headers?.latest ?? (await this._chain.getLatestHeader())
+    const currentBlockHeader = this._chain.headers?.latest ?? (await this._chain.getCanonicalHeadHeader())
     const currentBlock = bnToHex(currentBlockHeader.number)
 
     const synchronizer = this.client.services[0].synchronizer

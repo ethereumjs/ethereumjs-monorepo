@@ -222,7 +222,7 @@ export class Chain {
       height: new BN(0),
     }
 
-    headers.latest = await this.getLatestHeader()
+    headers.latest = await this.getCanonicalHeadHeader()
     blocks.latest = await this.getLatestBlock()
 
     headers.height = headers.latest.number
@@ -349,9 +349,9 @@ export class Chain {
   /**
    * Gets the latest header in the canonical chain
    */
-  async getLatestHeader(): Promise<BlockHeader> {
+  async getCanonicalHeadHeader(): Promise<BlockHeader> {
     await this.open()
-    return this.blockchain.getLatestHeader()
+    return this.blockchain.getCanonicalHeadHeader()
   }
 
   /**
