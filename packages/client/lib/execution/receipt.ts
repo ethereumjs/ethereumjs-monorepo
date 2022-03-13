@@ -82,7 +82,7 @@ export class ReceiptsManager extends MetaDBManager {
   /**
    * Block range limit for getLogs
    */
-  GET_LOGS_BLOCK_RANGE_LIMIT = 2000
+  GET_LOGS_BLOCK_RANGE_LIMIT = 2500
 
   /**
    * Saves receipts to db. Also saves tx hash indexes if within txLookupLimit,
