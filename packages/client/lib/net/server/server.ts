@@ -114,4 +114,7 @@ export class Server {
   ban(_peerId: string, _maxAge: number) {
     // don't do anything by default
   }
+
+  connect(_peerId: string) {}
+  disconnect(_peerId: string) {}
 }
