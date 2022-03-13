@@ -159,7 +159,7 @@ export class ReceiptsManager extends MetaDBManager {
   async getLogs(
     from: Block,
     to: Block,
-    address?: Buffer,
+    addresses?: Buffer[],
     topics: (Buffer | Buffer[] | null)[] = []
   ): Promise<GetLogsReturn> {
     const returnedLogs: GetLogsReturn = []
@@ -181,8 +181,8 @@ export class ReceiptsManager extends MetaDBManager {
           }))
         )
       }
-      if (address) {
-        logs = logs.filter((l) => l.log[0].equals(address))
+      if (addresses && addresses.length > 0) {
+        logs = logs.filter((l) => addresses.some((a) => a.equals(l.log[0])))
       }
       if (topics.length > 0) {
         // From https://eth.wiki/json-rpc/API:
