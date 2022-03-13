@@ -89,7 +89,7 @@ export function createClient(clientOpts: any = {}) {
     },
     syncTargetHeight: clientOpts.syncTargetHeight,
     txPool: new TxPool({ config }),
-    checkTxPoolState: () => {},
+    checkTxPoolState: () => { },
   }
 
   let execution
@@ -221,8 +221,8 @@ export async function runBlockWithTxs(
 ) {
   const { vm } = execution
   // build block with tx
-  const parentBlock = await chain.getLatestBlock()
-  const vmCopy = await vm.copy()
+  const parentBlock = await chain.getCanonicalHeadBlock()
+  const vmCopy = vm.copy()
   const blockBuilder = await vmCopy.buildBlock({
     parentBlock,
     headerData: {

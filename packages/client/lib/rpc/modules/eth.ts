@@ -277,7 +277,7 @@ const getBlockByOption = async (blockOpt: string, chain: Chain) => {
   }
 
   let block: Block
-  const latest = chain.blocks.latest ?? (await chain.getLatestBlock())
+  const latest = chain.blocks.latest ?? (await chain.getCanonicalHeadBlock())
 
   if (blockOpt === 'latest') {
     block = latest
