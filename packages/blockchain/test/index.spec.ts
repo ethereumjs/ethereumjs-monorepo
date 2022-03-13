@@ -731,7 +731,7 @@ tape('blockchain test', (t) => {
     const latestHeader = await blockchain.getCanonicalHeadHeader()
     st.ok(latestHeader.hash().equals(header.hash()), 'should save headHeader')
 
-    const latestBlock = await blockchain.getLatestBlock()
+    const latestBlock = await blockchain.getCanonicalHeadBlock()
     st.ok(latestBlock.hash().equals(genesisBlock.hash()), 'should save headBlock')
     st.end()
   })
@@ -784,7 +784,7 @@ tape('blockchain test', (t) => {
     const latestHeader = await blockchain.getCanonicalHeadHeader()
     st.ok(latestHeader.hash().equals(headers[1].hash()), 'should update latest header')
 
-    const latestBlock = await blockchain.getLatestBlock()
+    const latestBlock = await blockchain.getCanonicalHeadBlock()
     st.ok(latestBlock.hash().equals(genesisBlock.hash()), 'should not change latest block')
 
     await blockchain.putBlock(block)
@@ -792,7 +792,7 @@ tape('blockchain test', (t) => {
     const latestHeader2 = await blockchain.getCanonicalHeadHeader()
     st.ok(latestHeader2.hash().equals(headers[1].hash()), 'should not change latest header')
 
-    const getBlock = await blockchain.getLatestBlock()
+    const getBlock = await blockchain.getCanonicalHeadBlock()
     st.ok(getBlock!.hash().equals(block.hash()), 'should update latest block')
     st.end()
   })
