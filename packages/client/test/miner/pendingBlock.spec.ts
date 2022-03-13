@@ -74,9 +74,15 @@ tape('[PendingBlock]', async (t) => {
     txPool.add(txA02)
     const pendingBlock = new PendingBlock({ config, txPool })
     const vm = await VM.create({ common })
+<<<<<<< HEAD
     await setBalance(vm.stateManager, A.address, BigInt(5000000000000000))
     await setBalance(vm.stateManager, B.address, BigInt(5000000000000000))
     const parentBlock = await vm.blockchain.getLatestBlock()
+=======
+    await setBalance(vm.stateManager, A.address, new BN(5000000000000000))
+    await setBalance(vm.stateManager, B.address, new BN(5000000000000000))
+    const parentBlock = await vm.blockchain.getCanonicalHeadBlock()
+>>>>>>> client/tests: rename blockchain.getLatestBlock
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
     txPool.add(txB01)
@@ -92,8 +98,13 @@ tape('[PendingBlock]', async (t) => {
     txPool.add(txA01)
     const pendingBlock = new PendingBlock({ config, txPool })
     const vm = await VM.create({ common })
+<<<<<<< HEAD
     await setBalance(vm.stateManager, A.address, BigInt(5000000000000000))
     const parentBlock = await vm.blockchain.getLatestBlock()
+=======
+    await setBalance(vm.stateManager, A.address, new BN(5000000000000000))
+    const parentBlock = await vm.blockchain.getCanonicalHeadBlock()
+>>>>>>> client/tests: rename blockchain.getLatestBlock
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
     pendingBlock.stop(payloadId)
@@ -120,8 +131,13 @@ tape('[PendingBlock]', async (t) => {
     txPool.add(txA03)
     const pendingBlock = new PendingBlock({ config, txPool })
     const vm = await VM.create({ common })
+<<<<<<< HEAD
     await setBalance(vm.stateManager, A.address, BigInt(5000000000000000))
     const parentBlock = await vm.blockchain.getLatestBlock()
+=======
+    await setBalance(vm.stateManager, A.address, new BN(5000000000000000))
+    const parentBlock = await vm.blockchain.getCanonicalHeadBlock()
+>>>>>>> client/tests: rename blockchain.getLatestBlock
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
     const block = await pendingBlock.build(payloadId)
@@ -136,7 +152,7 @@ tape('[PendingBlock]', async (t) => {
     txPool.add(txA01)
     const pendingBlock = new PendingBlock({ config, txPool })
     const vm = await VM.create({ common })
-    const parentBlock = await vm.blockchain.getLatestBlock()
+    const parentBlock = await vm.blockchain.getCanonicalHeadBlock()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
     const block = await pendingBlock.build(payloadId)
