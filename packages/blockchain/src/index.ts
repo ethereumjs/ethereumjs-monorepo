@@ -776,7 +776,7 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * Returns the latest header in the canonical chain.
    */
-  async getLatestHeader(): Promise<BlockHeader> {
+  async getCanonicalHeadHeader(): Promise<BlockHeader> {
     return await this.initAndLock<BlockHeader>(async () => {
       if (!this._headHeaderHash) {
         throw new Error('No head header set')
@@ -1562,7 +1562,7 @@ export default class Blockchain implements BlockchainInterface {
     if (signerIndex === -1) {
       throw new Error('Signer not found')
     }
-    const { number } = await this.getLatestHeader()
+    const { number } = await this.getCanonicalHeadHeader()
     return number.addn(1).mod(new BN(signers.length)).eqn(signerIndex)
   }
 }
