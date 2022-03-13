@@ -1574,8 +1574,7 @@ export default class Blockchain implements BlockchainInterface {
     if (signerIndex === -1) {
       throw new Error('Signer not found')
     }
-    const { number } = await this.getLatestHeader()
-    //eslint-disable-next-line
-    return (number + BigInt(1)) % BigInt(signers.length) === BigInt(signerIndex)
+    const { number } = await this.getCanonicalHeadHeader()
+    return number.addn(1).mod(new BN(signers.length)).eqn(signerIndex)
   }
 }
