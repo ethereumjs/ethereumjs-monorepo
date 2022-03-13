@@ -774,30 +774,6 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Returns the specified iterator head.
-   *
-   * @param name - Optional name of the iterator head (default: 'vm')
-   *
-   * @deprecated use {@link Blockchain.getIteratorHead} instead.
-   * Note that {@link Blockchain.getIteratorHead} doesn't return
-   * the `headHeader` but the genesis hash as an initial iterator
-   * head value (now matching the behavior of {@link Blockchain.iterator}
-   * on a first run)
-   */
-  async getHead(name = 'vm'): Promise<Block> {
-    return await this.initAndLock<Block>(async () => {
-      // if the head is not found return the headHeader
-      const hash = this._heads[name] || this._headBlockHash
-      if (!hash) {
-        throw new Error('No head found.')
-      }
-
-      const block = await this._getBlock(hash)
-      return block
-    })
-  }
-
-  /**
    * Returns the latest header in the canonical chain.
    */
   async getLatestHeader(): Promise<BlockHeader> {
