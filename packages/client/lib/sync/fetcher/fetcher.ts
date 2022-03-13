@@ -54,6 +54,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   protected processed: number // number of processed tasks, awaiting the write job
   protected finished: number // number of tasks which are both processed and also finished writing
   protected running: boolean
+  protected errored?: Error
   protected reading: boolean
   protected destroyWhenDone: boolean // Destroy the fetcher once we are finished processing each task.
 
@@ -316,6 +317,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     if (this.running) {
       this.config.events.emit(Event.SYNC_FETCHER_ERROR, error, job && job.task, job && job.peer)
     }
+    this.errored = error
   }
 
   /**
@@ -335,6 +337,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     }
     const writer = new Writable({
       objectMode: true,
+      autoDestroy: false,
       write: _write,
       writev: (many: { chunk: StorageItem; encoding: string }[], cb: Function) =>
         _write(
@@ -355,6 +358,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       })
       .on('error', (error: Error) => {
         this.error(error)
+        this.running = false
+        writer.destroy()
       })
     this.debug(`Setup writer pipe.`)
   }
@@ -385,6 +390,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     if (this.destroyWhenDone) {
       this.destroy()
     }
+    if (this.errored) throw this.errored
   }
 
   /**
