@@ -789,7 +789,7 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * Returns the latest full block in the canonical chain.
    */
-  async getLatestBlock(): Promise<Block> {
+  async getCanonicalHeadBlock(): Promise<Block> {
     return this.initAndLock<Block>(async () => {
       if (!this._headBlockHash) {
         throw new Error('No head block set')
