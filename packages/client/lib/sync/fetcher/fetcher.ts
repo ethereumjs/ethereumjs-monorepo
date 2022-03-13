@@ -332,6 +332,12 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         cb()
       } catch (error: any) {
         this.config.logger.warn(`Error storing received block or header result: ${error}`)
+        /**
+         * TODO: Instead of just erroring on the writer (which stops this writer instance) and
+         * hence fetcher, determine if the fetcher really needs to error or if its recoverable.
+         * For e.g "Error: could not find parent header" is recoverable and all that needs to be done
+         * is to adapt and requeue the job and let it sync again.
+         */
         cb(error)
       }
     }
