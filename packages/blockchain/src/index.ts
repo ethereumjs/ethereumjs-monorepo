@@ -1296,18 +1296,6 @@ export default class Blockchain implements BlockchainInterface {
    * @param headHash - The head hash to save
    */
   async setIteratorHead(tag: string, headHash: Buffer) {
-    return await this.setHead(tag, headHash)
-  }
-
-  /**
-   * Set header hash of a certain `tag`.
-   * When calling the iterator, the iterator will start running the first child block after the header hash currenntly stored.
-   * @param tag - The tag to save the headHash to
-   * @param headHash - The head hash to save
-   *
-   * @deprecated use {@link Blockchain.setIteratorHead()} instead
-   */
-  async setHead(tag: string, headHash: Buffer) {
     await this.initAndLock<void>(async () => {
       this._heads[tag] = headHash
       await this._saveHeads()
