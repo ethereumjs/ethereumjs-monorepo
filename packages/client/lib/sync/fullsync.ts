@@ -134,7 +134,6 @@ export class FullSynchronizer extends Synchronizer {
     // eslint-disable-next-line no-async-promise-executor
     return await new Promise(async (resolve, reject) => {
       if (!peer) return resolve(false)
-
       const latest = await this.latest(peer)
       if (!latest) return resolve(false)
 
@@ -146,6 +145,7 @@ export class FullSynchronizer extends Synchronizer {
 
       const first = this.chain.blocks.height.addn(1)
       const count = height.sub(first).addn(1)
+
       if (count.lten(0)) return resolve(false)
       const resolveSync = () => {
         resolve(true)
@@ -169,6 +169,15 @@ export class FullSynchronizer extends Synchronizer {
         }
         resolve(true)
       } catch (error: any) {
+        /**
+         * Since the fetcher has errored supposedly because of bad data fed by the peer, the
+         * peer should be banned for couple of seconds atleast as well as to refresh its status
+         * that is required in finding the best peer to  start a new fetcher.
+         * However we right now hack for reconnection and refetching of status as banning is
+         * not leading to quick reconnection  */
+        //this.pool.ban(peer,6000);
+        peer?.server?.disconnect(peer.id)
+        peer?.server?.connect(peer.id)
         reject(error)
       } finally {
         this.config.events.removeListener(Event.SYNC_SYNCHRONIZED, resolveSync)
