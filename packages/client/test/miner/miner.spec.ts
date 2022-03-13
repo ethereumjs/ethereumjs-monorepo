@@ -420,12 +420,12 @@ tape('[Miner]', async (t) => {
     await wait(100)
     config.execCommon.setHardforkByBlockNumber(2)
     t.equal(config.execCommon.hardfork(), Hardfork.Berlin)
-    const blockHeader2 = await chain.getLatestHeader()
+    const blockHeader2 = await chain.getCanonicalHeadHeader()
 
     // block 3: london
     await (miner as any).queueNextAssembly(0)
     await wait(100)
-    const blockHeader3 = await chain.getLatestHeader()
+    const blockHeader3 = await chain.getCanonicalHeadHeader()
     config.execCommon.setHardforkByBlockNumber(3)
     t.equal(config.execCommon.hardfork(), Hardfork.London)
     t.ok(
@@ -438,14 +438,14 @@ tape('[Miner]', async (t) => {
     // block 4
     await (miner as any).queueNextAssembly(0)
     await wait(100)
-    const blockHeader4 = await chain.getLatestHeader()
+    const blockHeader4 = await chain.getCanonicalHeadHeader()
     config.execCommon.setHardforkByBlockNumber(4)
     t.equal(config.execCommon.hardfork(), Hardfork.London)
     t.ok(
       blockHeader4.baseFeePerGas!.eq(blockHeader3.calcNextBaseFee()),
       'baseFee should be as calculated'
     )
-    t.ok((await chain.getLatestHeader()).number.eqn(4))
+    t.ok((await chain.getCanonicalHeadHeader()).number.eqn(4))
     miner.stop()
     await chain.close()
   })
