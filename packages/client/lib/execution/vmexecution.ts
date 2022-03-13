@@ -80,7 +80,7 @@ export class VMExecution extends Execution {
 
     const { blockchain } = this.vm
     let startHeadBlock = await blockchain.getIteratorHead()
-    let canonicalHead = await blockchain.getLatestBlock()
+    let canonicalHead = await blockchain.getCanonicalHeadBlock()
 
     let headBlock: Block | undefined
     let parentState: Buffer | undefined
@@ -214,7 +214,7 @@ export class VMExecution extends Execution {
         )
       }
       startHeadBlock = endHeadBlock
-      canonicalHead = await this.vm.blockchain.getLatestBlock()
+      canonicalHead = await this.vm.blockchain.getCanonicalHeadBlock()
     }
     this.running = false
     return numExecuted as number
