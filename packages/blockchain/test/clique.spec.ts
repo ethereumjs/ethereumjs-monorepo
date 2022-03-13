@@ -10,8 +10,8 @@ tape('Clique: Initialization', (t) => {
     const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.create({ common })
 
-    const head = await blockchain.getHead()
-    st.equal(head.hash().toString('hex'), common.genesis().hash.slice(2), 'correct genesis hash')
+    const head = await blockchain.getIteratorHead()
+    st.equals(head.hash().toString('hex'), common.genesis().hash.slice(2), 'correct genesis hash')
 
     st.deepEquals(
       blockchain.cliqueActiveSigners(),
@@ -183,8 +183,8 @@ tape('Clique: Initialization', (t) => {
 
   t.test('should throw if signer in epoch checkpoint is not active', async (st) => {
     const { blockchain } = await initWithSigners([A])
-    ;(blockchain as any)._validateBlocks = false
-    ;(blockchain as any)._validateConsensus = false
+      ; (blockchain as any)._validateBlocks = false
+      ; (blockchain as any)._validateConsensus = false
     const number = COMMON.consensusConfig().epoch
     const unauthorizedSigner = Address.fromString('0x00a839de7922491683f547a67795204763ff8237')
     const extraData = Buffer.concat([
@@ -210,7 +210,7 @@ tape('Clique: Initialization', (t) => {
   t.test('should throw on invalid difficulty', async (st) => {
     const { blocks, blockchain } = await initWithSigners([A])
     await addNextBlock(blockchain, blocks, A)
-    ;(blockchain as any)._validateBlocks = false
+      ; (blockchain as any)._validateBlocks = false
 
     const number = BigInt(1)
     const extraData = Buffer.alloc(97)

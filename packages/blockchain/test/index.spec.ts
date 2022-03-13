@@ -14,7 +14,7 @@ tape('blockchain test', (t) => {
       validateBlocks: true,
       validateConsensus: false,
     })
-    await blockchain.getHead()
+    await blockchain.getIteratorHead()
     st.end()
   })
 
@@ -22,15 +22,9 @@ tape('blockchain test', (t) => {
     const common = new Common({ chain: Chain.Ropsten })
     let blockchain = await Blockchain.create({ common })
 
-    const head = await blockchain.getHead()
     const iteratorHead = await blockchain.getIteratorHead()
 
-    st.equal(
-      head.hash().toString('hex'),
-      common.genesis().hash.slice(2),
-      'correct genesis hash (getHead())'
-    )
-    st.equal(
+    st.equals(
       iteratorHead.hash().toString('hex'),
       common.genesis().hash.slice(2),
       'correct genesis hash (getIteratorHead())'
@@ -52,10 +46,8 @@ tape('blockchain test', (t) => {
       validateConsensus: false,
       common,
     })
-
-    const head = await blockchain.getHead()
-
-    st.equal(head.header.number, BigInt(5), 'correct block number')
+    const head = await blockchain.getIteratorHead()
+    st.equals(head.header.number, BigInt(0), 'correct block number')
     st.end()
   })
 
@@ -458,7 +450,7 @@ tape('blockchain test', (t) => {
 
     const headHash = blocks[headBlockIndex].hash()
     await blockchain.setIteratorHead('myHead', headHash)
-    const currentHeadBlock = await blockchain.getHead('myHead')
+    const currentHeadBlock = await blockchain.getIteratorHead('myHead')
 
     st.ok(headHash.equals(currentHeadBlock.hash()), 'head hash equals the provided head hash')
 
@@ -634,7 +626,7 @@ tape('blockchain test', (t) => {
   t.test('should get heads', async (st) => {
     const [db, genesis] = await createTestDB()
     const blockchain = await Blockchain.create({ db: db })
-    const head = await blockchain.getHead()
+    const head = await blockchain.getIteratorHead()
     if (genesis) {
       st.ok(head.hash().equals(genesis.hash()), 'should get head')
       st.equal(
@@ -868,7 +860,7 @@ tape('initialization tests', (t) => {
     const blockchain = await Blockchain.create({ common })
 
     st.ok(
-      (await blockchain.getHead()).hash().equals(genesisHash),
+      (await blockchain.getIteratorHead()).hash().equals(genesisHash),
       'head hash should equal expected ropsten genesis hash'
     )
 
@@ -877,7 +869,7 @@ tape('initialization tests', (t) => {
     const newBlockchain = await Blockchain.create({ db, common })
 
     st.ok(
-      (await newBlockchain.getHead()).hash().equals(genesisHash),
+      (await newBlockchain.getIteratorHead()).hash().equals(genesisHash),
       'head hash should be read from the provided db'
     )
     st.end()
@@ -894,13 +886,13 @@ tape('initialization tests', (t) => {
     const db = blockchain.db
 
     st.ok(
-      (await blockchain.getHead()).hash().equals(hash),
+      (await blockchain.getIteratorHead()).hash().equals(hash),
       'blockchain should put custom genesis block'
     )
 
     const newBlockchain = await Blockchain.create({ db, genesisBlock })
     st.ok(
-      (await newBlockchain.getHead()).hash().equals(hash),
+      (await newBlockchain.getIteratorHead()).hash().equals(hash),
       'head hash should be read from the provided db'
     )
     st.end()
