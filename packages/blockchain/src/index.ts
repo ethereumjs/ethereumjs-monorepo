@@ -633,8 +633,7 @@ export default class Blockchain implements BlockchainInterface {
           // the same vote or not
           this._cliqueLatestVotes.push(latestVote)
           debug(
-            `[Block ${header.number}] New clique vote: ${signer} -> ${beneficiary} ${
-              nonce.equals(CLIQUE_NONCE_AUTH) ? 'AUTH' : 'DROP'
+            `[Block ${header.number}] New clique vote: ${signer} -> ${beneficiary} ${nonce.equals(CLIQUE_NONCE_AUTH) ? 'AUTH' : 'DROP'
             }`
           )
         }
@@ -885,8 +884,8 @@ export default class Blockchain implements BlockchainInterface {
       const block =
         item instanceof BlockHeader
           ? new Block(item, undefined, undefined, {
-              common: item._common,
-            })
+            common: item._common,
+          })
           : item
       const isGenesis = block.isGenesis()
       const isHeader = item instanceof BlockHeader
@@ -1306,18 +1305,6 @@ export default class Blockchain implements BlockchainInterface {
    * @param headHash - The head hash to save
    */
   async setIteratorHead(tag: string, headHash: Buffer) {
-    return await this.setHead(tag, headHash)
-  }
-
-  /**
-   * Set header hash of a certain `tag`.
-   * When calling the iterator, the iterator will start running the first child block after the header hash currently stored.
-   * @param tag - The tag to save the headHash to
-   * @param headHash - The head hash to save
-   *
-   * @deprecated use {@link Blockchain.setIteratorHead()} instead
-   */
-  async setHead(tag: string, headHash: Buffer) {
     await this.runWithLock<void>(async () => {
       this._heads[tag] = headHash
       await this._saveHeads()
