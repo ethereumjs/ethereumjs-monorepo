@@ -167,6 +167,7 @@ export class FullSynchronizer extends Synchronizer {
         if (this.fetcher) {
           await this.fetcher.fetch()
         }
+        resolve(true)
       } catch (error: any) {
         reject(error)
       } finally {
