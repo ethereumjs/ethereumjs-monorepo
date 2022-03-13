@@ -297,18 +297,6 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Returns an object with metadata about the Blockchain. It's defined for
-   * backwards compatibility.
-   */
-  get meta() {
-    return {
-      rawHead: this._headHeaderHash,
-      heads: this._heads,
-      genesis: this._genesis,
-    }
-  }
-
-  /**
    * Returns a deep copy of this {@link Blockchain} instance.
    *
    * Note: this does not make a copy of the underlying db
