@@ -147,9 +147,13 @@ export class FullSynchronizer extends Synchronizer {
       const first = this.chain.blocks.height.addn(1)
       const count = height.sub(first).addn(1)
       if (count.lten(0)) return resolve(false)
-
+      const resolveSync = () => {
+        resolve(true)
+      }
+      this.config.events.on(Event.SYNC_SYNCHRONIZED, resolveSync)
       this.config.logger.debug(`Syncing with peer: ${peer.toString(true)} height=${height}`)
 
+      this.clearFetcher()
       this.fetcher = new BlockFetcher({
         config: this.config,
         pool: this.pool,
@@ -159,17 +163,15 @@ export class FullSynchronizer extends Synchronizer {
         count,
         destroyWhenDone: false,
       })
-
-      this.config.events.on(Event.SYNC_SYNCHRONIZED, () => {
-        resolve(true)
-      })
-
       try {
         if (this.fetcher) {
           await this.fetcher.fetch()
         }
       } catch (error: any) {
         reject(error)
+      } finally {
+        this.config.events.removeListener(Event.SYNC_SYNCHRONIZED, resolveSync)
+        this.clearFetcher()
       }
     })
   }
@@ -178,11 +180,7 @@ export class FullSynchronizer extends Synchronizer {
     if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
       // If we are beyond the merge block we should stop the fetcher
       this.config.logger.info('Merge hardfork reached, stopping block fetcher')
-      if (this.fetcher) {
-        this.fetcher.clear()
-        this.fetcher.destroy()
-        this.fetcher = null
-      }
+      this.clearFetcher()
     }
 
     if (blocks.length === 0) {
@@ -208,6 +206,14 @@ export class FullSynchronizer extends Synchronizer {
     if (this.running) {
       await execution.run()
       this.checkTxPoolState()
+    }
+  }
+
+  private clearFetcher() {
+    if (this.fetcher) {
+      this.fetcher.clear()
+      this.fetcher.destroy()
+      this.fetcher = null
     }
   }
 

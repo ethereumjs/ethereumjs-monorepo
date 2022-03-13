@@ -169,7 +169,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @param autoRestart
    */
   enqueueTask(task: JobTask, autoRestart = false) {
-    if (!this.running && !autoRestart) {
+    if (this.errored || (!this.running && !autoRestart)) {
       return
     }
     const job: Job<JobTask, JobResult, StorageItem> = {
