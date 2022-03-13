@@ -197,7 +197,7 @@ tape('[FullSynchronizer]', async (t) => {
         parentHash: chainTip.hash(),
       },
     })
-    chain.getLatestBlock = td.func<any>()
+    chain.getCanonicalHeadBlock = td.func<any>()
     chain.putBlocks = td.func<any>()
 
     // NewBlock message from Peer 3
