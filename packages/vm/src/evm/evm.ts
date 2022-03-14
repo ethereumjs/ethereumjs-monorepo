@@ -227,7 +227,9 @@ export default class EVM {
   }
 
   async _executeCall(message: Message): Promise<EVMResult> {
-    const account = await this._state.getAccount(message.caller)
+    const account = await this._state.getAccount(
+      message.authcallOrigin ? message.authcallOrigin : message.caller
+    )
     // Reduce tx value from sender
     if (!message.delegatecall) {
       await this._reduceSenderBalance(account, message)

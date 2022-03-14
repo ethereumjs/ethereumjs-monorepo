@@ -19,6 +19,9 @@ export enum ERROR {
   INVALID_BYTECODE_RESULT = 'invalid bytecode deployed',
   INITCODE_SIZE_VIOLATION = 'initcode exceeds max initcode size',
 
+  AUTHCALL_UNSET = 'attempting to AUTHCALL without AUTH set',
+  AUTH_INVALID_S = 'invalid Signature: s-values greater than secp256k1n/2 are considered invalid',
+
   // BLS errors
   BLS_12_381_INVALID_INPUT_LENGTH = 'invalid input length',
   BLS_12_381_POINT_NOT_ON_CURVE = 'point not on curve',
