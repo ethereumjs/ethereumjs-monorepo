@@ -1,4 +1,4 @@
-import { BN } from 'ethereumjs-util'
+import { bigIntToBuffer } from 'ethereumjs-util'
 
 // Geth compatible DB keys
 
@@ -57,17 +57,18 @@ const BODY_PREFIX = Buffer.from('b')
 // Utility functions
 
 /**
- * Convert BN to big endian Buffer
+ * Convert bigint to big endian Buffer
  */
-const bufBE8 = (n: BN) => n.toArrayLike(Buffer, 'be', 8)
+const bufBE8 = (n: bigint) => bigIntToBuffer(BigInt.asUintN(64, n))
 
-const tdKey = (n: BN, hash: Buffer) => Buffer.concat([HEADER_PREFIX, bufBE8(n), hash, TD_SUFFIX])
+const tdKey = (n: bigint, hash: Buffer) =>
+  Buffer.concat([HEADER_PREFIX, bufBE8(n), hash, TD_SUFFIX])
 
-const headerKey = (n: BN, hash: Buffer) => Buffer.concat([HEADER_PREFIX, bufBE8(n), hash])
+const headerKey = (n: bigint, hash: Buffer) => Buffer.concat([HEADER_PREFIX, bufBE8(n), hash])
 
-const bodyKey = (n: BN, hash: Buffer) => Buffer.concat([BODY_PREFIX, bufBE8(n), hash])
+const bodyKey = (n: bigint, hash: Buffer) => Buffer.concat([BODY_PREFIX, bufBE8(n), hash])
 
-const numberToHashKey = (n: BN) => Buffer.concat([HEADER_PREFIX, bufBE8(n), NUM_SUFFIX])
+const numberToHashKey = (n: bigint) => Buffer.concat([HEADER_PREFIX, bufBE8(n), NUM_SUFFIX])
 
 const hashToNumberKey = (hash: Buffer) => Buffer.concat([BLOCK_HASH_PEFIX, hash])
 

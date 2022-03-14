@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { Transaction } from '@ethereumjs/tx'
-import { Address, BN, bufferToHex } from 'ethereumjs-util'
+import { Address, bufferToHex } from 'ethereumjs-util'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { params, baseRequest, setupChain, runBlockWithTxs, dummy } from '../helpers'
 import { checkError } from '../util'
@@ -49,8 +49,8 @@ tape(`${method}: call with valid arguments`, async (t) => {
     { common }
   ).sign(dummy.privKey)
 
-  const contractAddr1 = Address.generate(dummy.addr, new BN(0))
-  const contractAddr2 = Address.generate(dummy.addr, new BN(1))
+  const contractAddr1 = Address.generate(dummy.addr, BigInt(0))
+  const contractAddr2 = Address.generate(dummy.addr, BigInt(1))
   // construct txs to emit the logs
   // data calls log(logCount: 10, num1: 1, num2: 2, num3: 3, num4: 4)
   const data = Buffer.from(

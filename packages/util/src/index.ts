@@ -34,7 +34,7 @@ export * from './bytes'
 export * from './object'
 
 /**
- * External exports (BN, rlp)
+ * External exports (rlp)
  */
 export * from './externals'
 

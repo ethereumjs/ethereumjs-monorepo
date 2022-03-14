@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, bufferToBigInt } from 'ethereumjs-util'
+import { Address, bufferToBigInt } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import { ERROR } from '../../../src/exceptions'
@@ -26,10 +26,8 @@ tape('Istanbul: EIP-1884', async (t) => {
       const common = new Common({ chain, hardfork })
       const vm = new VM({ common })
 
-      const balance = testCase.selfbalance
-        ? new BN(Buffer.from(testCase.selfbalance.slice(2), 'hex'))
-        : undefined
-      const account = createAccount(new BN(0), balance)
+      const balance = testCase.selfbalance ? BigInt(testCase.selfbalance) : undefined
+      const account = createAccount(BigInt(0), balance)
 
       await vm.stateManager.putAccount(addr, account)
 

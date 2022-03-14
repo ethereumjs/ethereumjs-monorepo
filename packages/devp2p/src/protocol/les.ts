@@ -1,5 +1,5 @@
+import { bigIntToBuffer, rlp } from 'ethereumjs-util'
 import ms from 'ms'
-import { rlp } from 'ethereumjs-util'
 import snappy from 'snappyjs'
 import { int2buffer, buffer2int, assertEq, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
@@ -154,7 +154,7 @@ export class LES extends Protocol {
       status['announceType'] = int2buffer(DEFAULT_ANNOUNCE_TYPE)
     }
     status['protocolVersion'] = int2buffer(this._version)
-    status['networkId'] = this._peer._common.chainId().toArrayLike(Buffer)
+    status['networkId'] = bigIntToBuffer(this._peer._common.chainId())
 
     this._status = status
 

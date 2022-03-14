@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, keccak256, toBuffer, zeros } from 'ethereumjs-util'
+import { Address, keccak256, toBuffer, zeros } from 'ethereumjs-util'
 import { SecureTrie } from 'merkle-patricia-tree'
 import { DefaultStateManager } from '../../../src/state'
 import ropsten_validAccount from './testdata/ropsten_validAccount.json'
@@ -17,12 +17,12 @@ tape('ProofStateManager', (t) => {
     await stateManager.putContractStorage(address, key, value)
     await stateManager.putContractCode(address, code)
     const account = await stateManager.getAccount(address)
-    account.balance = new BN(1)
-    account.nonce = new BN(2)
+    account.balance = BigInt(1)
+    account.nonce = BigInt(2)
     await stateManager.putAccount(address, account)
     const address2 = new Address(Buffer.from('20'.repeat(20), 'hex'))
     const account2 = await stateManager.getAccount(address2)
-    account.nonce = new BN(2)
+    account.nonce = BigInt(2)
     await stateManager.putAccount(address2, account2)
     await stateManager.commit()
 

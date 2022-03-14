@@ -1,6 +1,6 @@
 import { Block, HeaderData } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
-import { toBuffer, bufferToHex, rlp, BN, zeros } from 'ethereumjs-util'
+import { toBuffer, bufferToHex, rlp, zeros } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Hardfork } from '@ethereumjs/common'
 
@@ -567,10 +567,10 @@ export class Engine {
         this.validBlocks.delete(block.hash().toString('hex'))
       }
 
-      const timeDiff = new Date().getTime() / 1000 - headBlock.header.timestamp.toNumber()
+      const timeDiff = new Date().getTime() / 1000 - Number(headBlock.header.timestamp)
       if (
         (!this.synchronizer.syncTargetHeight ||
-          this.synchronizer.syncTargetHeight.lt(headBlock.header.number)) &&
+          this.synchronizer.syncTargetHeight < headBlock.header.number) &&
         timeDiff < 30
       ) {
         this.config.synchronized = true

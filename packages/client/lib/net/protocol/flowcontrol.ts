@@ -68,7 +68,6 @@ export class FlowControl {
     const params = this.in.get(peer.id) ?? ({ ble: bl } as FlowParams)
     if (params.last) {
       // recharge BLE at rate of MRR when less than BL
-      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
       params.ble = Math.min(params.ble! + mrr * (now - params.last), bl)
     }
     params.last = now
@@ -90,12 +89,10 @@ export class FlowControl {
     const now = Date.now()
     const params = this.out.get(peer.id) ?? {}
     if (params.bv && params.last) {
-      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
       params.bv = Math.min(params.bv + this.mrr * (now - params.last), this.bl)
     } else {
       params.bv = this.bl
     }
-    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
     params.bv -= this.mrc[messageName].base + this.mrc[messageName].req * count
     params.last = now
     if (params.bv < 0) {
