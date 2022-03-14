@@ -7,7 +7,7 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
   t.test('hardforkTD()', function (st: tape.Test) {
     const customChains = [testnetMerge]
     const c = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
-    st.ok(c.hardforkTD(Hardfork.Merge)?.eqn(5000), 'should get the HF total difficulty')
+    st.equal(c.hardforkTD(Hardfork.Merge), BigInt(5000), 'should get the HF total difficulty')
     st.equal(
       c.hardforkTD('thisHardforkDoesNotExist'),
       null,
@@ -179,7 +179,7 @@ tape('[Common]: Merge/POS specific logic', function (t: tape.Test) {
     const customChains = [testnetPOS]
     const c = new Common({ chain: 'testnetPOS', hardfork: Hardfork.Istanbul, customChains })
 
-    st.ok(c.hardforkTD(Hardfork.Chainstart)?.eqn(0), 'should get the HF total difficulty')
+    st.equal(c.hardforkTD(Hardfork.Chainstart), BigInt(0), 'should get the HF total difficulty')
 
     const msg = 'block number > last HF block number set, TD set (0) and equal'
     st.equal(c.getHardforkByBlockNumber(5, 0), 'shanghai', msg)

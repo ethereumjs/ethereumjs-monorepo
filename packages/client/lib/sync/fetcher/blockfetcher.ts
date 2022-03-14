@@ -25,10 +25,10 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
     const { task, peer, partialResult } = job
     let { first, count } = task
     if (partialResult) {
-      first = first.addn(partialResult.length)
+      first = first + BigInt(partialResult.length)
       count -= partialResult.length
     }
-    const blocksRange = `${first}-${first.addn(count)}`
+    const blocksRange = `${first}-${first + BigInt(count)}`
     const peerInfo = `id=${peer?.id.slice(0, 8)} address=${peer?.address}`
 
     const headersResult = await peer!.eth!.getBlockHeaders({

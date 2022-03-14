@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Account, Address, bigIntToBN, BN } from 'ethereumjs-util'
+import { Account, Address } from 'ethereumjs-util'
 import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
@@ -51,7 +51,7 @@ tape('EIP 2929: gas cost tests', (t) => {
     await vm.stateManager.putContractCode(address, Buffer.from(test.code, 'hex'))
 
     const unsignedTx = Transaction.fromTxData({
-      gasLimit: bigIntToBN(initialGas), // ensure we pass a lot of gas, so we do not run out of gas
+      gasLimit: initialGas, // ensure we pass a lot of gas, so we do not run out of gas
       to: address, // call to the contract address,
     })
 
@@ -81,15 +81,15 @@ tape('EIP 2929: gas cost tests', (t) => {
 
     // setup the call arguments
     const unsignedTx = Transaction.fromTxData({
-      gasLimit: new BN(21000 + 9000), // ensure we pass a lot of gas, so we do not run out of gas
+      gasLimit: BigInt(21000 + 9000), // ensure we pass a lot of gas, so we do not run out of gas
       to: contractAddress, // call to the contract address,
-      value: new BN(1),
+      value: BigInt(1),
     })
 
     const tx = unsignedTx.sign(privateKey)
 
     const address = Address.fromPrivateKey(privateKey)
-    const initialBalance = new BN(10).pow(new BN(18))
+    const initialBalance = BigInt(10) ** BigInt(18)
 
     const account = await vm.stateManager.getAccount(address)
     await vm.stateManager.putAccount(

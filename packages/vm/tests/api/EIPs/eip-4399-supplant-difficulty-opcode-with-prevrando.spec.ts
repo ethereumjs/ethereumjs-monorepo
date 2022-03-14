@@ -1,9 +1,9 @@
 import tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { bigIntToBN, BN } from 'ethereumjs-util'
 import VM from '../../../src'
 import type { InterpreterStep } from '../../../src/evm/interpreter'
+import { bufferToBigInt } from 'ethereumjs-util'
 
 tape('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', (t) => {
   t.test('should return the right values', async (st) => {
@@ -14,7 +14,7 @@ tape('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', (t) => {
     const header = {
       number: 1,
       parentHash: genesis.header.hash(),
-      timestamp: genesis.header.timestamp.addn(1),
+      timestamp: genesis.header.timestamp + BigInt(1),
       gasLimit: genesis.header.gasLimit,
     }
     let block = Block.fromBlockData(
@@ -35,10 +35,10 @@ tape('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', (t) => {
       gasLimit: BigInt(0xffff),
     }
     await vm.runCode({ ...runCodeArgs, block })
-    st.ok(bigIntToBN(stack[0]).eq(block.header.difficulty), '0x44 returns DIFFICULTY (London)')
+    st.equal(stack[0], block.header.difficulty, '0x44 returns DIFFICULTY (London)')
 
     common.setHardfork(Hardfork.Merge)
-    const prevRandao = Buffer.alloc(32, 1)
+    const prevRandao = bufferToBigInt(Buffer.alloc(32, 1))
     block = Block.fromBlockData(
       {
         header: {
@@ -49,7 +49,7 @@ tape('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', (t) => {
       { common }
     )
     await vm.runCode({ ...runCodeArgs, block })
-    st.ok(bigIntToBN(stack[0]).eq(new BN(prevRandao)), '0x44 returns PREVRANDAO (Merge)')
+    st.equal(stack[0], prevRandao, '0x44 returns PREVRANDAO (Merge)')
 
     st.end()
   })

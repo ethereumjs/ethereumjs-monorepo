@@ -1,5 +1,4 @@
 import { Hardfork } from '@ethereumjs/common'
-import { BN } from 'ethereumjs-util'
 import { EthereumService, EthereumServiceOptions } from './ethereumservice'
 import { FullSynchronizer } from '../sync/fullsync'
 import { EthProtocol } from '../net/protocol/ethprotocol'
@@ -135,10 +134,10 @@ export class FullEthereumService extends EthereumService {
   async handleEth(message: any, peer: Peer): Promise<void> {
     if (message.name === 'GetBlockHeaders') {
       const { reqId, block, max, skip, reverse } = message.data
-      if (BN.isBN(block)) {
+      if (typeof block === 'bigint') {
         if (
-          (reverse && block.gt(this.chain.headers.height)) ||
-          (!reverse && block.addn(max * skip).gt(this.chain.headers.height))
+          (reverse && block > this.chain.headers.height) ||
+          (!reverse && block + BigInt(max * skip) > this.chain.headers.height)
         ) {
           // Don't respond to requests greater than the current height
           return
@@ -215,10 +214,10 @@ export class FullEthereumService extends EthereumService {
         this.pool.ban(peer, 300000)
         this.config.logger.debug(`Dropping peer for violating flow control ${peer}`)
       } else {
-        if (BN.isBN(block)) {
+        if (typeof block === 'bigint') {
           if (
-            (reverse && block.gt(this.chain.headers.height)) ||
-            (!reverse && block.addn(max * skip).gt(this.chain.headers.height))
+            (reverse && block > this.chain.headers.height) ||
+            (!reverse && block + BigInt(max * skip) > this.chain.headers.height)
           ) {
             // Don't respond to requests greater than the current height
             return

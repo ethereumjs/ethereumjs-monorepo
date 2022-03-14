@@ -1,6 +1,5 @@
 import tape from 'tape'
 import td from 'testdouble'
-import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
 import { Chain } from '../../lib/blockchain'
@@ -62,7 +61,7 @@ tape('[LightEthereumService]', async (t) => {
     service.config.events.on(Event.SYNC_ERROR, (err: Error) => {
       if (err.message === 'error0') t.pass('got error 1')
     })
-    service.config.events.emit(Event.SYNC_SYNCHRONIZED, new BN(0))
+    service.config.events.emit(Event.SYNC_SYNCHRONIZED, BigInt(0))
     service.config.events.emit(Event.SYNC_ERROR, new Error('error0'))
     service.config.events.on(Event.SERVER_ERROR, (err: Error) => {
       if (err.message === 'error1') t.pass('got error 2')

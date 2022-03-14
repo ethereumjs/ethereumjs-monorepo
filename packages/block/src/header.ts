@@ -1,9 +1,8 @@
 import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
 import {
   Address,
-  BN,
-  bnToHex,
-  bnToUnpaddedBuffer,
+  bigIntToHex,
+  bigIntToUnpaddedBuffer,
   ecrecover,
   ecsign,
   intToBuffer,
@@ -14,6 +13,9 @@ import {
   toBuffer,
   zeros,
   bufferToHex,
+  bufferToBigInt,
+  toType,
+  TypeOutput,
 } from 'ethereumjs-util'
 import { Blockchain, BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
 import {
@@ -27,7 +29,7 @@ interface HeaderCache {
   hash: Buffer | undefined
 }
 
-const DEFAULT_GAS_LIMIT = new BN(Buffer.from('ffffffffffffff', 'hex'))
+const DEFAULT_GAS_LIMIT = BigInt('0xffffffffffffff')
 
 /**
  * An object that represents the block header.
@@ -40,15 +42,15 @@ export class BlockHeader {
   public readonly transactionsTrie: Buffer
   public readonly receiptTrie: Buffer
   public readonly logsBloom: Buffer
-  public readonly difficulty: BN
-  public readonly number: BN
-  public readonly gasLimit: BN
-  public readonly gasUsed: BN
-  public readonly timestamp: BN
+  public readonly difficulty: bigint
+  public readonly number: bigint
+  public readonly gasLimit: bigint
+  public readonly gasUsed: bigint
+  public readonly timestamp: bigint
   public readonly extraData: Buffer
   public readonly mixHash: Buffer
   public readonly nonce: Buffer
-  public readonly baseFeePerGas?: BN
+  public readonly baseFeePerGas?: bigint
 
   public readonly _common: Common
 
@@ -99,24 +101,24 @@ export class BlockHeader {
     } = headerData
 
     return new BlockHeader(
-      parentHash ? toBuffer(parentHash) : zeros(32),
-      uncleHash ? toBuffer(uncleHash) : KECCAK256_RLP_ARRAY,
-      coinbase ? new Address(toBuffer(coinbase)) : Address.zero(),
-      stateRoot ? toBuffer(stateRoot) : zeros(32),
-      transactionsTrie ? toBuffer(transactionsTrie) : KECCAK256_RLP,
-      receiptTrie ? toBuffer(receiptTrie) : KECCAK256_RLP,
-      logsBloom ? toBuffer(logsBloom) : zeros(256),
-      difficulty ? new BN(toBuffer(difficulty)) : new BN(0),
-      number ? new BN(toBuffer(number)) : new BN(0),
-      gasLimit ? new BN(toBuffer(gasLimit)) : DEFAULT_GAS_LIMIT,
-      gasUsed ? new BN(toBuffer(gasUsed)) : new BN(0),
-      timestamp ? new BN(toBuffer(timestamp)) : new BN(0),
-      extraData ? toBuffer(extraData) : Buffer.from([]),
-      mixHash ? toBuffer(mixHash) : zeros(32),
-      nonce ? toBuffer(nonce) : zeros(8),
+      toType(parentHash, TypeOutput.Buffer) ?? zeros(32),
+      toType(uncleHash, TypeOutput.Buffer) ?? KECCAK256_RLP_ARRAY,
+      new Address(toType(coinbase, TypeOutput.Buffer) ?? Buffer.alloc(20)),
+      toType(stateRoot, TypeOutput.Buffer) ?? zeros(32),
+      toType(transactionsTrie, TypeOutput.Buffer) ?? KECCAK256_RLP,
+      toType(receiptTrie, TypeOutput.Buffer) ?? KECCAK256_RLP,
+      toType(logsBloom, TypeOutput.Buffer) ?? zeros(256),
+      toType(difficulty, TypeOutput.BigInt) ?? BigInt(0),
+      toType(number, TypeOutput.BigInt) ?? BigInt(0),
+      toType(gasLimit, TypeOutput.BigInt) ?? DEFAULT_GAS_LIMIT,
+      toType(gasUsed, TypeOutput.BigInt) ?? BigInt(0),
+      toType(timestamp, TypeOutput.BigInt) ?? BigInt(0),
+      toType(extraData, TypeOutput.Buffer) ?? Buffer.from([]),
+      toType(mixHash, TypeOutput.Buffer) ?? zeros(32),
+      toType(nonce, TypeOutput.Buffer) ?? zeros(8),
       opts,
       baseFeePerGas !== undefined && baseFeePerGas !== null
-        ? new BN(toBuffer(baseFeePerGas))
+        ? toType(baseFeePerGas, TypeOutput.BigInt)
         : undefined
     )
   }
@@ -178,17 +180,17 @@ export class BlockHeader {
       toBuffer(transactionsTrie),
       toBuffer(receiptTrie),
       toBuffer(logsBloom),
-      new BN(toBuffer(difficulty)),
-      new BN(toBuffer(number)),
-      new BN(toBuffer(gasLimit)),
-      new BN(toBuffer(gasUsed)),
-      new BN(toBuffer(timestamp)),
+      bufferToBigInt(difficulty),
+      bufferToBigInt(number),
+      bufferToBigInt(gasLimit),
+      bufferToBigInt(gasUsed),
+      bufferToBigInt(timestamp),
       toBuffer(extraData),
       toBuffer(mixHash),
       toBuffer(nonce),
       opts,
       baseFeePerGas !== undefined && baseFeePerGas !== null
-        ? new BN(toBuffer(baseFeePerGas))
+        ? bufferToBigInt(baseFeePerGas)
         : undefined
     )
   }
@@ -216,16 +218,16 @@ export class BlockHeader {
     transactionsTrie: Buffer,
     receiptTrie: Buffer,
     logsBloom: Buffer,
-    difficulty: BN,
-    number: BN,
-    gasLimit: BN,
-    gasUsed: BN,
-    timestamp: BN,
+    difficulty: bigint,
+    number: bigint,
+    gasLimit: bigint,
+    gasUsed: bigint,
+    timestamp: bigint,
     extraData: Buffer,
     mixHash: Buffer,
     nonce: Buffer,
     options: BlockOptions = {},
-    baseFeePerGas?: BN
+    baseFeePerGas?: bigint
   ) {
     if (options.common) {
       this._common = options.common.copy()
@@ -252,13 +254,13 @@ export class BlockHeader {
     if (this._common.isActivatedEIP(1559)) {
       if (baseFeePerGas === undefined) {
         const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
-        const isInitialEIP1559Block = londonHfBlock && number.eq(londonHfBlock)
+        const isInitialEIP1559Block = londonHfBlock && number === londonHfBlock
         if (isInitialEIP1559Block) {
-          baseFeePerGas = new BN(this._common.param('gasConfig', 'initialBaseFee'))
+          baseFeePerGas = BigInt(this._common.param('gasConfig', 'initialBaseFee'))
         } else {
           // Minimum possible value for baseFeePerGas is 7,
           // so we use it as the default if the field is missing.
-          baseFeePerGas = new BN(7)
+          baseFeePerGas = BigInt(7)
         }
       }
     } else {
@@ -268,15 +270,15 @@ export class BlockHeader {
     }
 
     if (options.initWithGenesisHeader) {
-      number = new BN(0)
-      if (gasLimit.eq(DEFAULT_GAS_LIMIT)) {
-        gasLimit = new BN(toBuffer(this._common.genesis().gasLimit))
+      number = BigInt(0)
+      if (gasLimit === DEFAULT_GAS_LIMIT) {
+        gasLimit = BigInt(this._common.genesis().gasLimit)
       }
-      if (timestamp.isZero()) {
-        timestamp = new BN(toBuffer(this._common.genesis().timestamp))
+      if (timestamp === BigInt(0)) {
+        timestamp = BigInt(this._common.genesis().timestamp ?? 0)
       }
-      if (difficulty.isZero()) {
-        difficulty = new BN(toBuffer(this._common.genesis().difficulty))
+      if (difficulty === BigInt(0)) {
+        difficulty = BigInt(this._common.genesis().difficulty)
       }
       if (extraData.length === 0) {
         extraData = toBuffer(this._common.genesis().extraData)
@@ -291,7 +293,7 @@ export class BlockHeader {
         this._common.gteHardfork(Hardfork.London) &&
         this._common.genesis().baseFeePerGas !== undefined
       ) {
-        baseFeePerGas = new BN(toBuffer(this._common.genesis().baseFeePerGas))
+        baseFeePerGas = BigInt(this._common.genesis().baseFeePerGas!)
       }
     }
 
@@ -386,7 +388,7 @@ export class BlockHeader {
 
     if (nonce.length !== 8) {
       // Hack to check for Kovan due to non-standard nonce length (65 bytes)
-      if (this._common.networkId().eqn(42)) {
+      if (this._common.networkId() === BigInt(42)) {
         if (nonce.length !== 65) {
           const msg = this._errorMsg(
             `nonce must be 65 bytes on kovan, received ${nonce.length} bytes`
@@ -410,7 +412,7 @@ export class BlockHeader {
         )} (expected: ${KECCAK256_RLP_ARRAY.toString('hex')})`
         error = true
       }
-      if (!difficulty.eq(new BN(0))) {
+      if (difficulty !== BigInt(0)) {
         errorMsg += `, difficulty: ${difficulty} (expected: 0)`
         error = true
       }
@@ -436,7 +438,7 @@ export class BlockHeader {
    *
    * @param parentBlockHeader - the header from the parent `Block` of this header
    */
-  canonicalDifficulty(parentBlockHeader: BlockHeader): BN {
+  canonicalDifficulty(parentBlockHeader: BlockHeader): bigint {
     if (this._common.consensusType() !== ConsensusType.ProofOfWork) {
       const msg = this._errorMsg('difficulty calculation is only supported on PoW chains')
       throw new Error(msg)
@@ -450,61 +452,62 @@ export class BlockHeader {
     const hardfork = this._common.hardfork()
     const blockTs = this.timestamp
     const { timestamp: parentTs, difficulty: parentDif } = parentBlockHeader
-    const minimumDifficulty = new BN(
+    const minimumDifficulty = BigInt(
       this._common.paramByHardfork('pow', 'minimumDifficulty', hardfork)
     )
-    const offset = parentDif.div(
-      new BN(this._common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork))
-    )
-    let num = this.number.clone()
+    const offset =
+      parentDif / BigInt(this._common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork))
+    let num = this.number
 
     // We use a ! here as TS cannot follow this hardfork-dependent logic, but it always gets assigned
-    let dif!: BN
+    let dif!: bigint
 
     if (this._common.hardforkGteHardfork(hardfork, Hardfork.Byzantium)) {
       // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99) (EIP100)
       const uncleAddend = parentBlockHeader.uncleHash.equals(KECCAK256_RLP_ARRAY) ? 1 : 2
-      let a = blockTs.sub(parentTs).idivn(9).ineg().iaddn(uncleAddend)
-      const cutoff = new BN(-99)
+      let a = BigInt(uncleAddend) - (blockTs - parentTs) / BigInt(9)
+      const cutoff = BigInt(-99)
       // MAX(cutoff, a)
-      if (cutoff.gt(a)) {
+      if (cutoff > a) {
         a = cutoff
       }
-      dif = parentDif.add(offset.mul(a))
+      dif = parentDif + offset * a
     }
 
     if (this._common.hardforkGteHardfork(hardfork, Hardfork.Byzantium)) {
       // Get delay as parameter from common
-      num.isubn(this._common.param('pow', 'difficultyBombDelay'))
-      if (num.ltn(0)) {
-        num = new BN(0)
+      num = num - BigInt(this._common.param('pow', 'difficultyBombDelay'))
+      if (num < BigInt(0)) {
+        num = BigInt(0)
       }
     } else if (this._common.hardforkGteHardfork(hardfork, Hardfork.Homestead)) {
       // 1 - (block_timestamp - parent_timestamp) // 10
-      let a = blockTs.sub(parentTs).idivn(10).ineg().iaddn(1)
-      const cutoff = new BN(-99)
+      let a = BigInt(1) - (blockTs - parentTs) / BigInt(10)
+      const cutoff = BigInt(-99)
       // MAX(cutoff, a)
-      if (cutoff.gt(a)) {
+      if (cutoff > a) {
         a = cutoff
       }
-      dif = parentDif.add(offset.mul(a))
+      dif = parentDif + offset * a
     } else {
       // pre-homestead
       if (
-        parentTs.addn(this._common.paramByHardfork('pow', 'durationLimit', hardfork)).gt(blockTs)
+        parentTs + BigInt(this._common.paramByHardfork('pow', 'durationLimit', hardfork)) >
+        blockTs
       ) {
-        dif = offset.add(parentDif)
+        dif = offset + parentDif
       } else {
-        dif = parentDif.sub(offset)
+        dif = parentDif - offset
       }
     }
 
-    const exp = num.divn(100000).isubn(2)
-    if (!exp.isNeg()) {
-      dif.iadd(new BN(2).pow(exp))
+    const exp = num / BigInt(100000) - BigInt(2)
+    if (exp >= 0) {
+      // eslint-disable-next-line
+      dif = dif + BigInt(2) ** exp
     }
 
-    if (dif.lt(minimumDifficulty)) {
+    if (dif < minimumDifficulty) {
       dif = minimumDifficulty
     }
 
@@ -517,7 +520,7 @@ export class BlockHeader {
    * @param parentBlockHeader - the header from the parent `Block` of this header
    */
   validateDifficulty(parentBlockHeader: BlockHeader): boolean {
-    return this.canonicalDifficulty(parentBlockHeader).eq(this.difficulty)
+    return this.canonicalDifficulty(parentBlockHeader) === this.difficulty
   }
 
   /**
@@ -526,7 +529,7 @@ export class BlockHeader {
    */
   validateCliqueDifficulty(blockchain: Blockchain): boolean {
     this._requireClique('validateCliqueDifficulty')
-    if (!this.difficulty.eq(CLIQUE_DIFF_INTURN) && !this.difficulty.eq(CLIQUE_DIFF_NOTURN)) {
+    if (this.difficulty !== CLIQUE_DIFF_INTURN && this.difficulty !== CLIQUE_DIFF_NOTURN) {
       const msg = this._errorMsg(
         `difficulty for clique block must be INTURN (2) or NOTURN (1), received: ${this.difficulty}`
       )
@@ -544,10 +547,10 @@ export class BlockHeader {
       return true
     }
     const signerIndex = signers.findIndex((address: Address) => address.equals(this.cliqueSigner()))
-    const inTurn = this.number.modn(signers.length) === signerIndex
+    const inTurn = this.number % BigInt(signers.length) === BigInt(signerIndex)
     if (
-      (inTurn && this.difficulty.eq(CLIQUE_DIFF_INTURN)) ||
-      (!inTurn && this.difficulty.eq(CLIQUE_DIFF_NOTURN))
+      (inTurn && this.difficulty === CLIQUE_DIFF_INTURN) ||
+      (!inTurn && this.difficulty === CLIQUE_DIFF_NOTURN)
     ) {
       return true
     }
@@ -565,23 +568,23 @@ export class BlockHeader {
     // EIP-1559: assume double the parent gas limit on fork block
     // to adopt to the new gas target centered logic
     const londonHardforkBlock = this._common.hardforkBlock(Hardfork.London)
-    if (londonHardforkBlock && this.number.eq(londonHardforkBlock)) {
-      const elasticity = new BN(this._common.param('gasConfig', 'elasticityMultiplier'))
-      parentGasLimit = parentGasLimit.mul(elasticity)
+    if (londonHardforkBlock && this.number === londonHardforkBlock) {
+      const elasticity = BigInt(this._common.param('gasConfig', 'elasticityMultiplier'))
+      parentGasLimit = parentGasLimit * elasticity
     }
     const gasLimit = this.gasLimit
     const hardfork = this._common.hardfork()
 
-    const a = parentGasLimit.div(
-      new BN(this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork))
-    )
-    const maxGasLimit = parentGasLimit.add(a)
-    const minGasLimit = parentGasLimit.sub(a)
+    const a =
+      parentGasLimit /
+      BigInt(this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork))
+    const maxGasLimit = parentGasLimit + a
+    const minGasLimit = parentGasLimit - a
 
     const result =
-      gasLimit.lt(maxGasLimit) &&
-      gasLimit.gt(minGasLimit) &&
-      gasLimit.gte(this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork))
+      gasLimit < maxGasLimit &&
+      gasLimit > minGasLimit &&
+      gasLimit >= BigInt(this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork))
 
     return result
   }
@@ -603,7 +606,7 @@ export class BlockHeader {
    * @param blockchain - validate against an @ethereumjs/blockchain
    * @param height - If this is an uncle header, this is the height of the block that is including it
    */
-  async validate(blockchain: Blockchain, height?: BN): Promise<void> {
+  async validate(blockchain: Blockchain, height?: bigint): Promise<void> {
     if (this.isGenesis()) {
       return
     }
@@ -664,12 +667,12 @@ export class BlockHeader {
     }
 
     const { number } = this
-    if (!number.eq(parentHeader.number.addn(1))) {
+    if (number !== parentHeader.number + BigInt(1)) {
       const msg = this._errorMsg('invalid number')
       throw new Error(msg)
     }
 
-    if (this.timestamp.lte(parentHeader.timestamp)) {
+    if (this.timestamp <= parentHeader.timestamp) {
       const msg = this._errorMsg('invalid timestamp')
       throw new Error(msg)
     }
@@ -677,7 +680,7 @@ export class BlockHeader {
     if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       const period = this._common.consensusConfig().period
       // Timestamp diff between blocks is lower than PERIOD (clique)
-      if (parentHeader.timestamp.addn(period).gt(this.timestamp)) {
+      if (parentHeader.timestamp + BigInt(period) > this.timestamp) {
         const msg = this._errorMsg('invalid timestamp diff (lower than period)')
         throw new Error(msg)
       }
@@ -696,15 +699,15 @@ export class BlockHeader {
     }
 
     if (height) {
-      const dif = height.sub(parentHeader.number)
-      if (!(dif.ltn(8) && dif.gtn(1))) {
+      const dif = height - parentHeader.number
+      if (!(dif < BigInt(8) && dif > BigInt(1))) {
         const msg = this._errorMsg('uncle block has a parent that is too old or too young')
         throw new Error(msg)
       }
     }
 
     // check if the block used too much gas
-    if (this.gasUsed.gt(this.gasLimit)) {
+    if (this.gasUsed > this.gasLimit) {
       const msg = this._errorMsg('Invalid block: too much gas used')
       throw new Error(msg)
     }
@@ -715,10 +718,10 @@ export class BlockHeader {
         throw new Error(msg)
       }
       const londonHfBlock = this._common.hardforkBlock(Hardfork.London)
-      const isInitialEIP1559Block = londonHfBlock && this.number.eq(londonHfBlock)
+      const isInitialEIP1559Block = londonHfBlock && this.number === londonHfBlock
       if (isInitialEIP1559Block) {
-        const initialBaseFee = new BN(this._common.param('gasConfig', 'initialBaseFee'))
-        if (!this.baseFeePerGas!.eq(initialBaseFee)) {
+        const initialBaseFee = BigInt(this._common.param('gasConfig', 'initialBaseFee'))
+        if (this.baseFeePerGas! !== initialBaseFee) {
           const msg = this._errorMsg('Initial EIP1559 block does not have initial base fee')
           throw new Error(msg)
         }
@@ -726,7 +729,7 @@ export class BlockHeader {
         // check if the base fee is correct
         const expectedBaseFee = parentHeader.calcNextBaseFee()
 
-        if (!this.baseFeePerGas!.eq(expectedBaseFee)) {
+        if (this.baseFeePerGas! !== expectedBaseFee) {
           const msg = this._errorMsg('Invalid block: base fee not correct')
           throw new Error(msg)
         }
@@ -737,37 +740,39 @@ export class BlockHeader {
   /**
    * Calculates the base fee for a potential next block
    */
-  public calcNextBaseFee(): BN {
+  public calcNextBaseFee(): bigint {
     if (!this._common.isActivatedEIP(1559)) {
       const msg = this._errorMsg(
         'calcNextBaseFee() can only be called with EIP1559 being activated'
       )
       throw new Error(msg)
     }
-    let nextBaseFee: BN
-    const elasticity = new BN(this._common.param('gasConfig', 'elasticityMultiplier'))
-    const parentGasTarget = this.gasLimit.div(elasticity)
+    let nextBaseFee: bigint
+    const elasticity = BigInt(this._common.param('gasConfig', 'elasticityMultiplier'))
+    const parentGasTarget = this.gasLimit / elasticity
 
-    if (parentGasTarget.eq(this.gasUsed)) {
+    if (parentGasTarget === this.gasUsed) {
       nextBaseFee = this.baseFeePerGas!
-    } else if (this.gasUsed.gt(parentGasTarget)) {
-      const gasUsedDelta = this.gasUsed.sub(parentGasTarget)
-      const baseFeeMaxChangeDenominator = new BN(
+    } else if (this.gasUsed > parentGasTarget) {
+      const gasUsedDelta = this.gasUsed - parentGasTarget
+      const baseFeeMaxChangeDenominator = BigInt(
         this._common.param('gasConfig', 'baseFeeMaxChangeDenominator')
       )
-      const calculatedDelta = this.baseFeePerGas!.mul(gasUsedDelta)
-        .div(parentGasTarget)
-        .div(baseFeeMaxChangeDenominator)
-      nextBaseFee = BN.max(calculatedDelta, new BN(1)).add(this.baseFeePerGas!)
+      const calculatedDelta =
+        (this.baseFeePerGas! * gasUsedDelta) / parentGasTarget / baseFeeMaxChangeDenominator
+      nextBaseFee =
+        (calculatedDelta > BigInt(1) ? calculatedDelta : BigInt(1)) + this.baseFeePerGas!
     } else {
-      const gasUsedDelta = parentGasTarget.sub(this.gasUsed)
-      const baseFeeMaxChangeDenominator = new BN(
+      const gasUsedDelta = parentGasTarget - this.gasUsed
+      const baseFeeMaxChangeDenominator = BigInt(
         this._common.param('gasConfig', 'baseFeeMaxChangeDenominator')
       )
-      const calculatedDelta = this.baseFeePerGas!.mul(gasUsedDelta)
-        .div(parentGasTarget)
-        .div(baseFeeMaxChangeDenominator)
-      nextBaseFee = BN.max(this.baseFeePerGas!.sub(calculatedDelta), new BN(0))
+      const calculatedDelta =
+        (this.baseFeePerGas! * gasUsedDelta) / parentGasTarget / baseFeeMaxChangeDenominator
+      nextBaseFee =
+        this.baseFeePerGas! - calculatedDelta > BigInt(0)
+          ? this.baseFeePerGas! - calculatedDelta
+          : BigInt(0)
     }
     return nextBaseFee
   }
@@ -784,18 +789,18 @@ export class BlockHeader {
       this.transactionsTrie,
       this.receiptTrie,
       this.logsBloom,
-      bnToUnpaddedBuffer(this.difficulty),
-      bnToUnpaddedBuffer(this.number),
-      bnToUnpaddedBuffer(this.gasLimit),
-      bnToUnpaddedBuffer(this.gasUsed),
-      bnToUnpaddedBuffer(this.timestamp),
+      bigIntToUnpaddedBuffer(this.difficulty),
+      bigIntToUnpaddedBuffer(this.number),
+      bigIntToUnpaddedBuffer(this.gasLimit),
+      bigIntToUnpaddedBuffer(this.gasUsed),
+      bigIntToUnpaddedBuffer(this.timestamp ?? BigInt(0)),
       this.extraData,
       this.mixHash,
       this.nonce,
     ]
 
     if (this._common.isActivatedEIP(1559)) {
-      rawItems.push(bnToUnpaddedBuffer(this.baseFeePerGas!))
+      rawItems.push(bigIntToUnpaddedBuffer(this.baseFeePerGas!))
     }
 
     return rawItems
@@ -819,7 +824,7 @@ export class BlockHeader {
    * Checks if the block header is a genesis header.
    */
   isGenesis(): boolean {
-    return this.number.isZero()
+    return this.number === BigInt(0)
   }
 
   private _requireClique(name: string) {
@@ -847,10 +852,10 @@ export class BlockHeader {
    */
   cliqueIsEpochTransition(): boolean {
     this._requireClique('cliqueIsEpochTransition')
-    const epoch = new BN(this._common.consensusConfig().epoch)
+    const epoch = BigInt(this._common.consensusConfig().epoch)
     // Epoch transition block if the block number has no
     // remainder on the division by the epoch length
-    return this.number.mod(epoch).isZero()
+    return this.number % epoch === BigInt(0)
   }
 
   /**
@@ -941,7 +946,7 @@ export class BlockHeader {
     }
     const r = extraSeal.slice(0, 32)
     const s = extraSeal.slice(32, 64)
-    const v = new BN(extraSeal.slice(64, 65)).addn(27)
+    const v = bufferToBigInt(extraSeal.slice(64, 65)) + BigInt(27)
     const pubKey = ecrecover(this.cliqueSigHash(), v, r, s)
     return Address.fromPublicKey(pubKey)
   }
@@ -965,17 +970,17 @@ export class BlockHeader {
       transactionsTrie: '0x' + this.transactionsTrie.toString('hex'),
       receiptTrie: '0x' + this.receiptTrie.toString('hex'),
       logsBloom: '0x' + this.logsBloom.toString('hex'),
-      difficulty: bnToHex(this.difficulty),
-      number: bnToHex(this.number),
-      gasLimit: bnToHex(this.gasLimit),
-      gasUsed: bnToHex(this.gasUsed),
-      timestamp: bnToHex(this.timestamp),
+      difficulty: bigIntToHex(this.difficulty),
+      number: bigIntToHex(this.number),
+      gasLimit: bigIntToHex(this.gasLimit),
+      gasUsed: bigIntToHex(this.gasUsed),
+      timestamp: bigIntToHex(this.timestamp),
       extraData: '0x' + this.extraData.toString('hex'),
       mixHash: '0x' + this.mixHash.toString('hex'),
       nonce: '0x' + this.nonce.toString('hex'),
     }
     if (this._common.isActivatedEIP(1559)) {
-      jsonDict.baseFeePerGas = '0x' + this.baseFeePerGas!.toString('hex')
+      jsonDict.baseFeePerGas = bigIntToHex(this.baseFeePerGas!)
     }
     return jsonDict
   }
@@ -1005,13 +1010,17 @@ export class BlockHeader {
       return
     }
     const DAOActivationBlock = this._common.hardforkBlock(Hardfork.Dao)
-    if (!DAOActivationBlock || DAOActivationBlock.isZero() || this.number.lt(DAOActivationBlock)) {
+    if (
+      !DAOActivationBlock ||
+      DAOActivationBlock === BigInt(0) ||
+      this.number < DAOActivationBlock
+    ) {
       return
     }
     const DAO_ExtraData = Buffer.from('64616f2d686172642d666f726b', 'hex')
-    const DAO_ForceExtraDataRange = new BN(9)
-    const drift = this.number.sub(DAOActivationBlock)
-    if (drift.lte(DAO_ForceExtraDataRange) && !this.extraData.equals(DAO_ExtraData)) {
+    const DAO_ForceExtraDataRange = BigInt(9)
+    const drift = this.number - DAOActivationBlock
+    if (drift <= DAO_ForceExtraDataRange && !this.extraData.equals(DAO_ExtraData)) {
       const msg = this._errorMsg("extraData should be 'dao-hard-fork'")
       throw new Error(msg)
     }

@@ -29,8 +29,8 @@ tape('EIP 3541 tests', (t) => {
     })
 
     st.ok(stack!.length == 1)
-    st.ok(stack![0] === BigInt(0))
-    st.ok(result.gasUsed === BigInt(common.param('gasPrices', 'push0')))
+    st.equal(stack![0], BigInt(0))
+    st.equal(result.gasUsed, BigInt(common.param('gasPrices', 'push0')))
     st.end()
   })
 
@@ -51,11 +51,11 @@ tape('EIP 3541 tests', (t) => {
 
     st.ok(stack.length == depth)
     stack.forEach((elem: bigint) => {
-      if (!(elem === BigInt(0))) {
+      if (elem !== BigInt(0)) {
         st.fail('stack element is not 0')
       }
     })
-    st.ok(result.gasUsed === BigInt(common.param('gasPrices', 'push0') * depth))
+    st.equal(result.gasUsed, BigInt(common.param('gasPrices', 'push0') * depth))
     st.end()
   })
 
@@ -69,7 +69,7 @@ tape('EIP 3541 tests', (t) => {
       gasLimit: BigInt(10000),
     })
 
-    st.ok(result.exceptionError?.error === ERROR.STACK_OVERFLOW)
+    st.equal(result.exceptionError?.error, ERROR.STACK_OVERFLOW)
     st.end()
   })
 
@@ -81,6 +81,6 @@ tape('EIP 3541 tests', (t) => {
       gasLimit: BigInt(10000),
     })
 
-    st.ok(result.exceptionError!.error === ERROR.INVALID_OPCODE)
+    st.equal(result.exceptionError!.error, ERROR.INVALID_OPCODE)
   })
 })

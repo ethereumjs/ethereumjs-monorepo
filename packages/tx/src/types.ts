@@ -1,4 +1,4 @@
-import { BN, AddressLike, BNLike, BufferLike, PrefixedHexString } from 'ethereumjs-util'
+import { AddressLike, BigIntLike, BufferLike, PrefixedHexString } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { default as Transaction } from './legacyTransaction'
 import { default as AccessListEIP2930Transaction } from './eip2930Transaction'
@@ -114,17 +114,17 @@ export type TxData = {
   /**
    * The transaction's nonce.
    */
-  nonce?: BNLike
+  nonce?: BigIntLike
 
   /**
    * The transaction's gas price.
    */
-  gasPrice?: BNLike
+  gasPrice?: BigIntLike
 
   /**
    * The transaction's gas limit.
    */
-  gasLimit?: BNLike
+  gasLimit?: BigIntLike
 
   /**
    * The transaction's the address is sent to.
@@ -134,7 +134,7 @@ export type TxData = {
   /**
    * The amount of Ether sent.
    */
-  value?: BNLike
+  value?: BigIntLike
 
   /**
    * This will contain the data of the message or the init of a contract.
@@ -144,23 +144,23 @@ export type TxData = {
   /**
    * EC recovery ID.
    */
-  v?: BNLike
+  v?: BigIntLike
 
   /**
    * EC signature parameter.
    */
-  r?: BNLike
+  r?: BigIntLike
 
   /**
    * EC signature parameter.
    */
-  s?: BNLike
+  s?: BigIntLike
 
   /**
    * The transaction type
    */
 
-  type?: BNLike
+  type?: BigIntLike
 }
 
 /**
@@ -170,7 +170,7 @@ export interface AccessListEIP2930TxData extends TxData {
   /**
    * The transaction's chain ID
    */
-  chainId?: BNLike
+  chainId?: BigIntLike
 
   /**
    * The access list which contains the addresses/storage slots which the transaction wishes to access
@@ -190,11 +190,11 @@ export interface FeeMarketEIP1559TxData extends AccessListEIP2930TxData {
   /**
    * The maximum inclusion fee per gas (this fee is given to the miner)
    */
-  maxPriorityFeePerGas?: BNLike
+  maxPriorityFeePerGas?: BigIntLike
   /**
    * The maximum total fee
    */
-  maxFeePerGas?: BNLike
+  maxFeePerGas?: BigIntLike
 }
 
 /**
@@ -263,11 +263,3 @@ export interface JsonTx {
   maxPriorityFeePerGas?: string
   maxFeePerGas?: string
 }
-
-/**
- * A const defining secp256k1n/2
- */
-export const N_DIV_2 = new BN(
-  '7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
-  16
-)

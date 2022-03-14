@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, setLengthLeft, toBuffer } from 'ethereumjs-util'
+import { Address, setLengthLeft, toBuffer } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../../src'
 import { createAccount } from '../utils'
@@ -50,10 +50,10 @@ tape('Istanbul: EIP-2200', async (t) => {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
       const vm = new VM({ common })
 
-      const account = createAccount(new BN(0), new BN(0))
+      const account = createAccount(BigInt(0), BigInt(0))
       await vm.stateManager.putAccount(addr, account)
       await vm.stateManager.putContractCode(addr, Buffer.from(testCase.code, 'hex'))
-      if (!(testCase.original === BigInt(0))) {
+      if (testCase.original !== BigInt(0)) {
         await vm.stateManager.putContractStorage(
           addr,
           key,
