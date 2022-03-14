@@ -164,6 +164,6 @@ export default async function runStateTest(options: any, testData: any, t: tape.
     }
   } catch (e: any) {
     console.log(e)
-    t.fail('error running test case for fork: ' + <string>options.forkConfigTestSuite)
+    t.fail(`error running test case for fork: ${options.forkConfigTestSuite}`)
   }
 }

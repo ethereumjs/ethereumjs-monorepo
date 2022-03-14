@@ -1,4 +1,4 @@
-import { BN, bufferToInt } from 'ethereumjs-util'
+import { bigIntToBuffer, bufferToBigInt, bufferToInt, intToBuffer } from 'ethereumjs-util'
 import { BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
 import { Chain } from './../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'
@@ -14,9 +14,9 @@ export interface LesProtocolOptions extends ProtocolOptions {
 
 type GetBlockHeadersOpts = {
   /* Request id (default: next internal id) */
-  reqId?: BN
+  reqId?: bigint
   /* The block's number or hash */
-  block: BN | Buffer
+  block: bigint | Buffer
   /* Max number of blocks to return */
   max: number
   /* Number of blocks to skip apart (default: 0) */
@@ -31,10 +31,10 @@ type GetBlockHeadersOpts = {
 export interface LesProtocolMethods {
   getBlockHeaders: (
     opts: GetBlockHeadersOpts
-  ) => Promise<{ reqId: BN; bv: BN; headers: BlockHeader[] }>
+  ) => Promise<{ reqId: bigint; bv: bigint; headers: BlockHeader[] }>
 }
 
-const id = new BN(0)
+let id = BigInt(0)
 
 /**
  * Implements les/1 and les/2 protocols
@@ -52,15 +52,15 @@ export class LesProtocol extends Protocol {
       encode: ({ headHash, headNumber, headTd, reorgDepth }: any) => [
         // TO DO: handle state changes
         headHash,
-        headNumber.toArrayLike(Buffer),
-        headTd.toArrayLike(Buffer),
-        new BN(reorgDepth).toArrayLike(Buffer),
+        bigIntToBuffer(headNumber),
+        bigIntToBuffer(headTd),
+        intToBuffer(reorgDepth),
       ],
       decode: ([headHash, headNumber, headTd, reorgDepth]: any) => ({
         // TO DO: handle state changes
-        headHash: headHash,
-        headNumber: new BN(headNumber),
-        headTd: new BN(headTd),
+        headHash,
+        headNumber: bufferToBigInt(headNumber),
+        headTd: bufferToBigInt(headTd),
         reorgDepth: bufferToInt(reorgDepth),
       }),
     },
@@ -69,12 +69,12 @@ export class LesProtocol extends Protocol {
       code: 0x02,
       response: 0x03,
       encode: ({ reqId, block, max, skip = 0, reverse = false }: GetBlockHeadersOpts) => [
-        (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
-        [BN.isBN(block) ? block.toArrayLike(Buffer) : block, max, skip, !reverse ? 0 : 1],
+        bigIntToBuffer(reqId ?? ++id),
+        [typeof block === 'bigint' ? bigIntToBuffer(block) : block, max, skip, !reverse ? 0 : 1],
       ],
       decode: ([reqId, [block, max, skip, reverse]]: any) => ({
-        reqId: new BN(reqId),
-        block: block.length === 32 ? block : new BN(block),
+        reqId: bufferToBigInt(reqId),
+        block: block.length === 32 ? block : bufferToBigInt(block),
         max: bufferToInt(max),
         skip: bufferToInt(skip),
         reverse: bufferToInt(reverse) === 0 ? false : true,
@@ -84,13 +84,13 @@ export class LesProtocol extends Protocol {
       name: 'BlockHeaders',
       code: 0x03,
       encode: ({ reqId, bv, headers }: any) => [
-        new BN(reqId).toArrayLike(Buffer),
-        new BN(bv).toArrayLike(Buffer),
+        bigIntToBuffer(reqId),
+        bigIntToBuffer(bv),
         headers.map((h: BlockHeader) => h.raw()),
       ],
       decode: ([reqId, bv, headers]: any) => ({
-        reqId: new BN(reqId),
-        bv: new BN(bv),
+        reqId: bufferToBigInt(reqId),
+        bv: bufferToBigInt(bv),
         headers: headers.map((h: BlockHeaderBuffer) =>
           BlockHeader.fromValuesArray(h, {
             hardforkByBlockNumber: true,
@@ -158,8 +158,8 @@ export class LesProtocol extends Protocol {
         serveChainSince: 0,
         serveStateSince: 0,
         // txRelay: 1, TODO: uncomment with client tx pool functionality
-        'flowControl/BL': new BN(this.flow.bl).toArrayLike(Buffer),
-        'flowControl/MRR': new BN(this.flow.mrr).toArrayLike(Buffer),
+        'flowControl/BL': intToBuffer(this.flow.bl),
+        'flowControl/MRR': intToBuffer(this.flow.mrr),
         'flowControl/MRC': Object.entries(this.flow.mrc).map(([name, { base, req }]) => {
           const { code } = this.messages.find((m) => m.name === name)!
           return [code, base, req]
@@ -171,17 +171,17 @@ export class LesProtocol extends Protocol {
     const nextFork = this.config.chainCommon.nextHardforkBlock(this.config.chainCommon.hardfork())
     const forkID = [
       Buffer.from(forkHash.slice(2), 'hex'),
-      nextFork ? nextFork.toArrayLike(Buffer) : Buffer.from([]),
+      nextFork ? bigIntToBuffer(nextFork) : Buffer.from([]),
     ]
 
     return {
-      networkId: this.chain.networkId.toArrayLike(Buffer),
-      headTd: this.chain.headers.td.toArrayLike(Buffer),
+      networkId: bigIntToBuffer(this.chain.networkId),
+      headTd: bigIntToBuffer(this.chain.headers.td),
       headHash: this.chain.headers.latest?.hash(),
-      headNum: this.chain.headers.latest?.number.toArrayLike(Buffer),
+      headNum: bigIntToBuffer(this.chain.headers.height),
       genesisHash: this.chain.genesis.hash,
       forkID,
-      recentTxLookup: new BN(1).toArrayLike(Buffer),
+      recentTxLookup: intToBuffer(1),
       ...serveOptions,
     }
   }
@@ -195,7 +195,7 @@ export class LesProtocol extends Protocol {
     const mrc: any = {}
     if (status['flowControl/MRC']) {
       for (let entry of status['flowControl/MRC']) {
-        entry = entry.map((e: any) => new BN(e).toNumber())
+        entry = entry.map((e: any) => bufferToInt(e))
         mrc[entry[0]] = { base: entry[1], req: entry[2] }
         const message = this.messages.find((m) => m.code === entry[0])
         if (message) {
@@ -204,10 +204,10 @@ export class LesProtocol extends Protocol {
       }
     }
     return {
-      networkId: new BN(status.networkId),
-      headTd: new BN(status.headTd),
+      networkId: bufferToBigInt(status.networkId),
+      headTd: bufferToBigInt(status.headTd),
       headHash: status.headHash,
-      headNum: new BN(status.headNum),
+      headNum: bufferToBigInt(status.headNum),
       genesisHash: status.genesisHash,
       forkID: status.forkID,
       recentTxLookup: status.recentTxLookup,
@@ -215,8 +215,8 @@ export class LesProtocol extends Protocol {
       serveChainSince: status.serveChainSince ?? 0,
       serveStateSince: status.serveStateSince ?? 0,
       txRelay: !!status.txRelay,
-      bl: status['flowControl/BL'] ? new BN(status['flowControl/BL']).toNumber() : undefined,
-      mrr: status['flowControl/MRR'] ? new BN(status['flowControl/MRR']).toNumber() : undefined,
+      bl: status['flowControl/BL'] ? bufferToInt(status['flowControl/BL']) : undefined,
+      mrr: status['flowControl/MRR'] ? bufferToInt(status['flowControl/MRR']) : undefined,
       mrc: mrc,
     }
   }

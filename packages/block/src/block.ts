@@ -1,5 +1,5 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { BN, rlp, keccak256, KECCAK256_RLP, bufferToHex } from 'ethereumjs-util'
+import { rlp, keccak256, KECCAK256_RLP, bufferToHex } from 'ethereumjs-util'
 import Common, { ConsensusType } from '@ethereumjs/common'
 import {
   TransactionFactory,
@@ -30,7 +30,6 @@ export class Block {
    */
   public static fromBlockData(blockData: BlockData = {}, opts?: BlockOptions) {
     const { header: headerData, transactions: txsData, uncleHeaders: uhsData } = blockData
-
     const header = BlockHeader.fromHeaderData(headerData, opts)
 
     // parse transactions
@@ -250,12 +249,12 @@ export class Block {
       if (this._common.isActivatedEIP(1559)) {
         if (tx.supports(Capability.EIP1559FeeMarket)) {
           tx = tx as FeeMarketEIP1559Transaction
-          if (tx.maxFeePerGas.lt(this.header.baseFeePerGas!)) {
+          if (tx.maxFeePerGas < this.header.baseFeePerGas!) {
             errs.push('tx unable to pay base fee (EIP-1559 tx)')
           }
         } else {
           tx = tx as Transaction
-          if (tx.gasPrice.lt(this.header.baseFeePerGas!)) {
+          if (tx.gasPrice < this.header.baseFeePerGas!) {
             errs.push('tx unable to pay base fee (non EIP-1559 tx)')
           }
         }
@@ -368,7 +367,7 @@ export class Block {
    *
    * @param parentBlock - the parent of this `Block`
    */
-  canonicalDifficulty(parentBlock: Block): BN {
+  canonicalDifficulty(parentBlock: Block): bigint {
     return this.header.canonicalDifficulty(parentBlock.header)
   }
 
@@ -422,11 +421,11 @@ export class Block {
     // Check how many blocks we should get in order to validate the uncle.
     // In the worst case, we get 8 blocks, in the best case, we only get 1 block.
     const canonicalBlockMap: Block[] = []
-    let lowestUncleNumber = this.header.number.clone()
+    let lowestUncleNumber = this.header.number
 
     uncleHeaders.map((header) => {
-      if (header.number.lt(lowestUncleNumber)) {
-        lowestUncleNumber = header.number.clone()
+      if (header.number < lowestUncleNumber) {
+        lowestUncleNumber = header.number
       }
     })
 
@@ -437,7 +436,7 @@ export class Block {
     const includedUncles: { [key: string]: boolean } = {}
 
     // Due to the header validation check above, we know that `getBlocks` is between 1 and 8 inclusive.
-    const getBlocks = this.header.number.clone().sub(lowestUncleNumber).addn(1).toNumber()
+    const getBlocks = this.header.number - lowestUncleNumber + BigInt(1)
 
     // See Geth: https://github.com/ethereum/go-ethereum/blob/b63bffe8202d46ea10ac8c4f441c582642193ac8/consensus/ethash/consensus.go#L207
     // Here we get the necessary blocks from the chain.

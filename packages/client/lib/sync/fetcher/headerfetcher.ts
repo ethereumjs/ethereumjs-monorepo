@@ -3,7 +3,6 @@ import { Peer } from '../../net/peer'
 import { FlowControl, LesProtocolMethods } from '../../net/protocol'
 import { BlockHeader } from '@ethereumjs/block'
 import { Job } from './types'
-import { BN } from 'ethereumjs-util'
 import { Event } from '../../types'
 
 export interface HeaderFetcherOptions extends BlockFetcherOptions {
@@ -11,7 +10,7 @@ export interface HeaderFetcherOptions extends BlockFetcherOptions {
   flow: FlowControl
 }
 
-type BlockHeaderResult = { reqId: BN; bv: BN; headers: BlockHeader[] }
+type BlockHeaderResult = { reqId: bigint; bv: bigint; headers: BlockHeader[] }
 
 /**
  * Implements an les/1 based header fetcher
@@ -53,7 +52,7 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
    * @returns results of processing job or undefined if job not finished
    */
   process(job: Job<JobTask, BlockHeaderResult, BlockHeader>, result: BlockHeaderResult) {
-    this.flow.handleReply(job.peer!, result.bv.toNumber())
+    this.flow.handleReply(job.peer!, Number(result.bv))
     const { headers } = result
     if (headers.length === job.task.count) {
       return headers
@@ -65,7 +64,7 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
       while (this.in.length > 0) {
         const job = this.in.remove()
         if (job) {
-          job.task.first = job.task.first.subn(lengthDiff)
+          job.task.first = job.task.first - BigInt(lengthDiff)
           adoptedJobs.push(job)
         }
       }

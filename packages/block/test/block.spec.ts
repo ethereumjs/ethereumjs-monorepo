@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { BN, keccak256, rlp, zeros, toBuffer } from 'ethereumjs-util'
+import { keccak256, rlp, zeros, toBuffer } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block, BlockBuffer, BlockHeader } from '../src'
 import blockFromRpc from '../src/from-rpc'
@@ -184,8 +184,8 @@ tape('[Block]: block functions', function (t) {
     const parentBlock = Block.fromBlockData(
       {
         header: {
-          number: block.header.number.subn(1),
-          timestamp: block.header.timestamp.subn(1000),
+          number: block.header.number - BigInt(1),
+          timestamp: block.header.timestamp - BigInt(1000),
           gasLimit: block.header.gasLimit,
         },
       },
@@ -233,7 +233,7 @@ tape('[Block]: block functions', function (t) {
     const blockRlp = toBuffer(testDataPreLondon.blocks[0].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
     await testTransactionValidation(st, block)
-    ;(block.transactions[0] as any).gasPrice = new BN(0)
+    ;(block.transactions[0] as any).gasPrice = BigInt(0)
     const result = block.validateTransactions(true)
     st.ok(
       result[0].includes('tx unable to pay base fee (non EIP-1559 tx)'),
@@ -319,7 +319,7 @@ tape('[Block]: block functions', function (t) {
       const genesis = Block.genesis({})
       await blockchain.putBlock(genesis)
 
-      const emptyBlock = Block.fromBlockData({ header: { number: new BN(1) } }, { common })
+      const emptyBlock = Block.fromBlockData({ header: { number: BigInt(1) } }, { common })
 
       //assertion
       if (emptyBlock.hash().equals(genesis.hash())) {
@@ -409,11 +409,11 @@ tape('[Block]: block functions', function (t) {
     const uncleBlock = Block.fromBlockData(
       {
         header: {
-          number: genesis.header.number.addn(1),
+          number: genesis.header.number + BigInt(1),
           parentHash: genesis.hash(),
-          timestamp: genesis.header.timestamp.addn(1),
-          gasLimit: new BN(5000),
-          difficulty: new BN(0), // invalid difficulty
+          timestamp: genesis.header.timestamp + BigInt(1),
+          gasLimit: BigInt(5000),
+          difficulty: BigInt(0), // invalid difficulty
         },
       },
       { common }
@@ -552,8 +552,8 @@ tape('[Block]: block functions', function (t) {
       const rootBlock = Block.fromBlockData(
         {
           header: {
-            number: mainnetForkBlock!.subn(3),
-            gasLimit: new BN(5000),
+            number: mainnetForkBlock! - BigInt(3),
+            gasLimit: BigInt(5000),
           },
         },
         { common }
@@ -581,10 +581,10 @@ tape('[Block]: block functions', function (t) {
       await blockchain.putBlock(forkBlock)
       await preForkBlock.validate(blockchain)
 
-      st.ok(common.hardfork() === Hardfork.London, 'validation did not change common hardfork')
+      st.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
       await forkBlock2.validate(blockchain)
 
-      st.ok(common.hardfork() === Hardfork.London, 'validation did not change common hardfork')
+      st.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
 
       const forkBlock2HeaderData = forkBlock2.header.toJSON()
       const uncleHeaderData = unclePreFork.header.toJSON()
@@ -610,7 +610,7 @@ tape('[Block]: block functions', function (t) {
       await forkBlock_ValidCommon.validate(blockchain)
 
       st.pass('successfully validated a pre-london uncle on a london block')
-      st.ok(common.hardfork() === Hardfork.London, 'validation did not change common hardfork')
+      st.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
 
       const forkBlock_InvalidCommon = Block.fromBlockData(
         {
@@ -633,7 +633,7 @@ tape('[Block]: block functions', function (t) {
         )
       }
 
-      st.ok(common.hardfork() === Hardfork.London, 'validation did not change common hardfork')
+      st.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
     }
   )
 
@@ -746,8 +746,8 @@ tape('[Block]: block functions', function (t) {
       const genesis = Block.genesis({}, { common })
 
       const nextBlockHeaderData = {
-        number: genesis.header.number.addn(1),
-        timestamp: genesis.header.timestamp.addn(10),
+        number: genesis.header.number + BigInt(1),
+        timestamp: genesis.header.timestamp + BigInt(10),
       }
 
       const blockWithoutDifficultyCalculation = Block.fromBlockData({
@@ -755,8 +755,9 @@ tape('[Block]: block functions', function (t) {
       })
 
       // test if difficulty defaults to 0
-      st.ok(
-        blockWithoutDifficultyCalculation.header.difficulty.eqn(0),
+      st.equal(
+        blockWithoutDifficultyCalculation.header.difficulty,
+        BigInt(0),
         'header difficulty should default to 0'
       )
 
@@ -771,13 +772,12 @@ tape('[Block]: block functions', function (t) {
       )
 
       st.ok(
-        blockWithDifficultyCalculation.header.difficulty.gtn(0),
+        blockWithDifficultyCalculation.header.difficulty > BigInt(0),
         'header difficulty should be set if difficulty header is given'
       )
       st.ok(
-        blockWithDifficultyCalculation.header
-          .canonicalDifficulty(genesis.header)
-          .eq(blockWithDifficultyCalculation.header.difficulty),
+        blockWithDifficultyCalculation.header.canonicalDifficulty(genesis.header) ===
+          blockWithDifficultyCalculation.header.difficulty,
         'header difficulty is canonical difficulty if difficulty header is given'
       )
       st.ok(
@@ -787,8 +787,8 @@ tape('[Block]: block functions', function (t) {
 
       // test if we can provide a block which is too far ahead to still calculate difficulty
       const noParentHeaderData = {
-        number: genesis.header.number.addn(1337),
-        timestamp: genesis.header.timestamp.addn(10),
+        number: genesis.header.number + BigInt(1337),
+        timestamp: genesis.header.timestamp + BigInt(10),
       }
 
       const block_farAhead = Block.fromBlockData(
@@ -801,7 +801,7 @@ tape('[Block]: block functions', function (t) {
       )
 
       st.ok(
-        block_farAhead.header.difficulty.gtn(0),
+        block_farAhead.header.difficulty > BigInt(0),
         'should allow me to provide a bogus next block to calculate difficulty on when providing a difficulty header'
       )
       st.end()

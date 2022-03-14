@@ -339,17 +339,13 @@ function onNewTx(tx: TypedTransaction, peer: Peer) {
 const blocksCache = new LRUCache({ max: 100 })
 function onNewBlock(block: Block, peer: Peer) {
   const blockHashHex = block.hash().toString('hex')
-  const blockNumber = block.header.number.toNumber()
+  const blockNumber = block.header.number
   if (blocksCache.has(blockHashHex)) return
 
   blocksCache.set(blockHashHex, true)
-  console.log(
-    `----------------------------------------------------------------------------------------------------------`
-  )
+  console.log()
   console.log(`New block ${blockNumber}: ${blockHashHex} (from ${getPeerAddr(peer)})`)
-  console.log(
-    `----------------------------------------------------------------------------------------------------------`
-  )
+  console.log('-'.repeat(105))
   for (const tx of block.transactions) onNewTx(tx, peer)
 }
 

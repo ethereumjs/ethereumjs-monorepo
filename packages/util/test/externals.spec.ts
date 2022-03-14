@@ -1,45 +1,6 @@
 import tape from 'tape'
-import BN_export from 'bn.js'
 import * as rlp_export from 'rlp'
 import * as src from '../src'
-
-tape('External BN export', (t) => {
-  t.test('should export `BN`', (st) => {
-    st.equal(src.BN, BN_export)
-    st.end()
-  })
-
-  t.test('should use a BN function correctly', (st) => {
-    const a = new src.BN('dead', 16)
-    const b = new src.BN('101010', 2)
-    const result = a.add(b)
-    st.equal(result.toString(10), '57047')
-    st.end()
-  })
-
-  t.test('should throw on exceptions', (st) => {
-    // should not allow 0 input
-    st.throws(() => {
-      new src.BN(1).egcd(new src.BN('0'))
-    }, /^Error: Assertion failed$/)
-    st.end()
-  })
-
-  t.test('should not accept an unsafe integer', (st) => {
-    const num = Math.pow(2, 53)
-    st.throws(() => {
-      return new src.BN(num, 10)
-    }, /^Error: Assertion failed$/)
-    st.end()
-  })
-
-  t.test('should throw error with num eq 0x4000000', (st) => {
-    st.throws(function () {
-      new src.BN(0).iaddn(0x4000000)
-    }, /^Error: Assertion failed$/)
-    st.end()
-  })
-})
 
 tape('External rlp export', (t) => {
   t.test('should export `rlp`', (st) => {
@@ -113,7 +74,7 @@ tape('External ethjsUtil export', (t) => {
 
   t.test('should use ethjsUtil functions correctly', (st) => {
     // should convert intToHex
-    st.equal(src.intToHex(new src.BN(0).toNumber()), '0x0')
+    st.equal(src.intToHex(0), '0x0')
 
     // should convert intToHex
     const i = 6003400

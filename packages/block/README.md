@@ -62,16 +62,15 @@ This library supports the creation of [EIP-1559](https://eips.ethereum.org/EIPS/
 To instantiate an EIP-1559 block, the hardfork parameter on the `Common` instance needs to be set to `london` (this is now the default hardfork):
 
 ```typescript
-import { BN } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
 const block = Block.fromBlockData({
   header: {
-    baseFeePerGas: new BN(10),
-    gasLimit: new BN(100),
-    gasUsed: new BN(60)
+    baseFeePerGas: BigInt(10),
+    gasLimit: BigInt(100),
+    gasUsed: BigInt(60)
   }
 }, { common })
 
@@ -85,14 +84,14 @@ block.header.calcNextBaseFee().toNumber() // 11
 const blockWithMatchingBaseFee = Block.fromBlockData({
   header: {
     baseFeePerGas: parentHeader.calcNextBaseFee(),
-    gasLimit: new BN(100),
-    gasUsed: new BN(60)
+    gasLimit: BigInt(100),
+    gasUsed: BigInt(60)
   }
 }, { common })
 
 ```
 
-EIP-1559 blocks have an extra `baseFeePerGas` field (default: `new BN(7)`) and can encompass `FeeMarketEIP1559Transaction` txs (type `2`) (supported by `@ethereumjs/tx` `v3.2.0` or higher) as well as  `Transaction` legacy txs (internal type `0`) and `AccessListEIP2930Transaction` txs (type `1`).
+EIP-1559 blocks have an extra `baseFeePerGas` field (default: `BigInt(7)`) and can encompass `FeeMarketEIP1559Transaction` txs (type `2`) (supported by `@ethereumjs/tx` `v3.2.0` or higher) as well as  `Transaction` legacy txs (internal type `0`) and `AccessListEIP2930Transaction` txs (type `1`).
 
 ## Consensus Types
 
