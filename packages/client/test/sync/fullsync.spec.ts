@@ -100,7 +100,7 @@ tape('[FullSynchronizer]', async (t) => {
 
   t.test('should sync', async (t) => {
     t.plan(3)
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], safeReorgDistance: 0 })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
     const sync = new FullSynchronizer({
