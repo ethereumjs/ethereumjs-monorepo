@@ -178,6 +178,7 @@ export class FullSynchronizer extends Synchronizer {
         //this.pool.ban(peer,6000);
         peer?.server?.disconnect(peer.id)
         peer?.server?.connect(peer.id)
+        this.config.logger.debug(`Fetcher error, disconnect/reconnect with: ${peer.toString(true)}`)
         reject(error)
       } finally {
         this.config.events.removeListener(Event.SYNC_SYNCHRONIZED, resolveSync)
