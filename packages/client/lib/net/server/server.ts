@@ -115,6 +115,6 @@ export class Server {
     // don't do anything by default
   }
 
-  connect(_peerId: string) {}
+  connect(_peerId: string, _steam?: any) {}
   disconnect(_peerId: string) {}
 }
