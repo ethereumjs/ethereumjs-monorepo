@@ -143,7 +143,11 @@ export class FullSynchronizer extends Synchronizer {
         this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
       }
 
-      const first = this.chain.blocks.height.addn(1)
+      /**
+       * Start fetcher from a safe distance behind beacause if the previous fetcher exited
+       * beacuse of a reorg, it would make sense to step back and refetch
+       */
+      const first = BN.max(this.chain.blocks.height.subn(this.config.safeReorgDistance), new BN(0))
       const count = height.sub(first).addn(1)
 
       if (count.lten(0)) return resolve(false)
