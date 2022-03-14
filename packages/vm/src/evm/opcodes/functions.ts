@@ -1004,7 +1004,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let recover
       try {
-        recover = ecrecover(msgHash, yParity, r.toBuffer(), s.toBuffer())
+        recover = ecrecover(msgHash, yParity.addn(27), r.toBuffer(), s.toBuffer())
       } catch (e) {
         // Malformed signature, push 0 on stack, clear auth variable and return
         runState.stack.push(new BN(0))
