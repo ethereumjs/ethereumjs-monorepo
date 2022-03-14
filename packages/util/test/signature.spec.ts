@@ -1,6 +1,5 @@
 import tape from 'tape'
 import {
-  BN,
   ecsign,
   ecrecover,
   privateToPublic,
@@ -10,6 +9,8 @@ import {
   toRpcSig,
   toCompactSig,
   intToBuffer,
+  bufferToBigInt,
+  bigIntToBuffer,
 } from '../src'
 
 const echash = Buffer.from(
@@ -71,7 +72,7 @@ tape('ecsign', function (t) {
     st.ok(sig.s.equals(expectedSigS))
     st.equal(sig.v, 150 * 2 + 35)
 
-    let sigBuffer = ecsign(echash, ecprivkey, new BN(150))
+    let sigBuffer = ecsign(echash, ecprivkey, BigInt(150))
     st.ok(sigBuffer.r.equals(expectedSigR))
     st.ok(sigBuffer.s.equals(expectedSigS))
     st.ok(sigBuffer.v.equals(expectedSigV))
@@ -102,7 +103,7 @@ tape('ecsign', function (t) {
       )
       const expectedSigV = Buffer.from('f2ded8deec6713', 'hex')
 
-      let sigBuffer = ecsign(echash, ecprivkey, new BN(chainIDBuffer))
+      let sigBuffer = ecsign(echash, ecprivkey, bufferToBigInt(chainIDBuffer))
       st.ok(sigBuffer.r.equals(expectedSigR))
       st.ok(sigBuffer.s.equals(expectedSigS))
       st.ok(sigBuffer.v.equals(expectedSigV))
@@ -214,10 +215,10 @@ tape('ecrecover', function (t) {
     let sender = ecrecover(msgHash, vBuffer, r, s, chainIDBuffer)
     st.ok(sender.equals(senderPubKey), 'sender pubkey correct (Buffer)')
 
-    const vBN = new BN(vBuffer)
-    const chainIDBN = new BN(chainIDBuffer)
-    sender = ecrecover(msgHash, vBN, r, s, chainIDBN)
-    st.ok(sender.equals(senderPubKey), 'sender pubkey correct (BN)')
+    const vBigInt = bufferToBigInt(vBuffer)
+    const chainIDBigInt = bufferToBigInt(chainIDBuffer)
+    sender = ecrecover(msgHash, vBigInt, r, s, chainIDBigInt)
+    st.ok(sender.equals(senderPubKey), 'sender pubkey correct (BigInt)')
 
     const vHexString = '0xf2ded8deec6714'
     const chainIDHexString = '0x796f6c6f763378'
@@ -288,27 +289,24 @@ tape('isValidSignature', function (t) {
     st.end()
   })
   t.test('should fail when on homestead and s > secp256k1n/2', function (st) {
-    const SECP256K1_N_DIV_2 = new BN(
-      '7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
-      16
+    const SECP256K1_N_DIV_2 = BigInt(
+      '0x7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0'
     )
 
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
-    const s = Buffer.from(SECP256K1_N_DIV_2.add(new BN('1', 16)).toString(16), 'hex')
+    const s = bigIntToBuffer(SECP256K1_N_DIV_2 + BigInt(1))
 
     const v = 27
     st.notOk(isValidSignature(v, r, s, true))
     st.end()
   })
   t.test('should not fail when not on homestead but s > secp256k1n/2', function (st) {
-    const SECP256K1_N_DIV_2 = new BN(
-      '7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
-      16
+    const SECP256K1_N_DIV_2 = BigInt(
+      '0x7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0'
     )
 
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
-    const s = Buffer.from(SECP256K1_N_DIV_2.add(new BN('1', 16)).toString(16), 'hex')
-
+    const s = bigIntToBuffer(SECP256K1_N_DIV_2 + BigInt(1))
     const v = 27
     st.ok(isValidSignature(v, r, s, false))
     st.end()
@@ -348,7 +346,7 @@ tape('isValidSignature', function (t) {
     const v = chainId * 2 + 35
     st.ok(isValidSignature(v, r, s, false, chainId))
     st.ok(isValidSignature(intToBuffer(v), r, s, false, intToBuffer(chainId)))
-    st.ok(isValidSignature(new BN(v), r, s, false, new BN(chainId)))
+    st.ok(isValidSignature(BigInt(v), r, s, false, BigInt(chainId)))
     st.ok(
       isValidSignature(
         '0x' + intToBuffer(v).toString('hex'),
@@ -367,7 +365,7 @@ tape('isValidSignature', function (t) {
     const vBuffer = Buffer.from('f2ded8deec6714', 'hex')
     const chainIDBuffer = Buffer.from('796f6c6f763378', 'hex')
     st.ok(isValidSignature(vBuffer, r, s, false, chainIDBuffer))
-    st.ok(isValidSignature(new BN(vBuffer), r, s, false, new BN(chainIDBuffer)))
+    st.ok(isValidSignature(bufferToBigInt(vBuffer), r, s, false, bufferToBigInt(chainIDBuffer)))
     st.ok(
       isValidSignature(
         '0x' + vBuffer.toString('hex'),
@@ -461,7 +459,7 @@ tape('message sig', function (t) {
     const v = chainId * 2 + 35
     st.equal(toRpcSig(v, r, s, chainId), sig)
     st.equal(toRpcSig(intToBuffer(v), r, s, intToBuffer(chainId)), sig)
-    st.equal(toRpcSig(new BN(v), r, s, new BN(chainId)), sig)
+    st.equal(toRpcSig(BigInt(v), r, s, BigInt(chainId)), sig)
     st.equal(
       toRpcSig(
         '0x' + intToBuffer(v).toString('hex'),
@@ -487,7 +485,7 @@ tape('message sig', function (t) {
       const chainIDBuffer = Buffer.from('796f6c6f763378', 'hex')
       const vBuffer = Buffer.from('f2ded8deec6714', 'hex')
       st.equal(toRpcSig(vBuffer, r, s, chainIDBuffer), sig)
-      st.equal(toRpcSig(new BN(vBuffer), r, s, new BN(chainIDBuffer)), sig)
+      st.equal(toRpcSig(bufferToBigInt(vBuffer), r, s, bufferToBigInt(chainIDBuffer)), sig)
       st.equal(
         toRpcSig('0x' + vBuffer.toString('hex'), r, s, '0x' + chainIDBuffer.toString('hex')),
         sig

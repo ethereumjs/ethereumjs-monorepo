@@ -3,7 +3,7 @@ import { Server as RPCServer, HttpServer } from 'jayson/promise'
 import { BlockHeader } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain as ChainEnum } from '@ethereumjs/common'
-import { Address, BN } from 'ethereumjs-util'
+import { Address } from 'ethereumjs-util'
 import { RPCManager as Manager } from '../../lib/rpc'
 import { getLogger } from '../../lib/logging'
 import { Config } from '../../lib/config'
@@ -70,7 +70,7 @@ export function createClient(clientOpts: any = {}) {
   }
   const clientConfig = { ...defaultClientConfig, ...clientOpts }
 
-  chain.getTd = async (_hash: Buffer, _num: BN) => new BN(1000)
+  chain.getTd = async (_hash: Buffer, _num: bigint) => BigInt(1000)
   if (chain._headers) {
     chain._headers.latest = BlockHeader.fromHeaderData({}, { common })
   }
@@ -245,7 +245,7 @@ export async function runBlockWithTxs(
   const blockBuilder = await vmCopy.buildBlock({
     parentBlock,
     headerData: {
-      timestamp: parentBlock.header.timestamp.addn(1),
+      timestamp: parentBlock.header.timestamp + BigInt(1),
     },
     blockOpts: {
       calcDifficultyFromHeader: parentBlock.header,

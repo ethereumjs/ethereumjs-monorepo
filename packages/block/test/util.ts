@@ -1,5 +1,5 @@
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { BN, rlp, keccak256 } from 'ethereumjs-util'
+import { rlp, keccak256 } from 'ethereumjs-util'
 import { Block, BlockHeader } from '../src'
 
 /**
@@ -21,12 +21,12 @@ function createBlock(
     throw new Error('extra data graffiti must be 32 bytes or less')
   }
 
-  const number = parentBlock.header.number.addn(1)
-  const timestamp = parentBlock.header.timestamp.addn(1)
+  const number = parentBlock.header.number + BigInt(1)
+  const timestamp = parentBlock.header.timestamp + BigInt(1)
 
   const londonHfBlock = common.hardforkBlock(Hardfork.London)
   const baseFeePerGas =
-    londonHfBlock && number.gt(londonHfBlock) ? parentBlock.header.calcNextBaseFee() : undefined
+    londonHfBlock && number > londonHfBlock ? parentBlock.header.calcNextBaseFee() : undefined
 
   return Block.fromBlockData(
     {
@@ -34,7 +34,7 @@ function createBlock(
         number,
         parentHash: parentBlock.hash(),
         timestamp,
-        gasLimit: new BN(5000),
+        gasLimit: BigInt(5000),
         extraData: Buffer.from(extraData),
         uncleHash: keccak256(rlp.encode(uncles.map((uh) => uh.raw()))),
         baseFeePerGas,

@@ -6,7 +6,7 @@ import {
   BlockBodyBuffer,
 } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
-import { BN, bufferToInt, intToBuffer, rlp } from 'ethereumjs-util'
+import { bigIntToBuffer, bufferToBigInt, bufferToInt, intToBuffer, rlp } from 'ethereumjs-util'
 import { Chain } from './../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'
 import type { TxReceiptWithType } from '../../execution/receipt'
@@ -23,9 +23,9 @@ interface EthProtocolOptions extends ProtocolOptions {
 
 type GetBlockHeadersOpts = {
   /* Request id (default: next internal id) */
-  reqId?: BN
+  reqId?: bigint
   /* The block's number or hash */
-  block: BN | Buffer
+  block: bigint | Buffer
   /* Max number of blocks to return */
   max: number
   /* Number of blocks to skip apart (default: 0) */
@@ -36,21 +36,21 @@ type GetBlockHeadersOpts = {
 
 type GetBlockBodiesOpts = {
   /* Request id (default: next internal id) */
-  reqId?: BN
+  reqId?: bigint
   /* The block hashes */
   hashes: Buffer[]
 }
 
 type GetPooledTransactionsOpts = {
   /* Request id (default: next internal id) */
-  reqId?: BN
+  reqId?: bigint
   /* The tx hashes */
   hashes: Buffer[]
 }
 
 type GetReceiptsOpts = {
   /* Request id (default: next internal id) */
-  reqId?: BN
+  reqId?: bigint
   /* The block hashes to request receipts for */
   hashes: Buffer[]
 }
@@ -60,11 +60,13 @@ type GetReceiptsOpts = {
  * methods in camelCase to BoundProtocol.
  */
 export interface EthProtocolMethods {
-  getBlockHeaders: (opts: GetBlockHeadersOpts) => Promise<[BN, BlockHeader[]]>
-  getBlockBodies: (opts: GetBlockBodiesOpts) => Promise<[BN, BlockBodyBuffer[]]>
-  getPooledTransactions: (opts: GetPooledTransactionsOpts) => Promise<[BN, TypedTransaction[]]>
-  getReceipts: (opts: GetReceiptsOpts) => Promise<[BN, TxReceipt[]]>
+  getBlockHeaders: (opts: GetBlockHeadersOpts) => Promise<[bigint, BlockHeader[]]>
+  getBlockBodies: (opts: GetBlockBodiesOpts) => Promise<[bigint, BlockBodyBuffer[]]>
+  getPooledTransactions: (opts: GetPooledTransactionsOpts) => Promise<[bigint, TypedTransaction[]]>
+  getReceipts: (opts: GetReceiptsOpts) => Promise<[bigint, TxReceipt[]]>
 }
+
+let id = BigInt(0)
 
 /**
  * Implements eth/66 protocol
@@ -79,8 +81,8 @@ export class EthProtocol extends Protocol {
     {
       name: 'NewBlockHashes',
       code: 0x01,
-      encode: (hashes: any[]) => hashes.map((hn) => [hn[0], hn[1].toArrayLike(Buffer)]),
-      decode: (hashes: any[]) => hashes.map((hn) => [hn[0], new BN(hn[1])]),
+      encode: (hashes: any[]) => hashes.map((hn) => [hn[0], bigIntToBuffer(hn[1])]),
+      decode: (hashes: any[]) => hashes.map((hn) => [hn[0], bufferToBigInt(hn[1])]),
     },
     {
       name: 'Transactions',
@@ -97,7 +99,7 @@ export class EthProtocol extends Protocol {
         return serializedTxs
       },
       decode: ([txs]: [Buffer[]]) => {
-        // TODO: add proper Common instance (problem: service not accesible)
+        // TODO: add proper Common instance (problem: service not accessible)
         //const common = this.config.chainCommon.copy()
         //common.setHardforkByBlockNumber(this.config.syncTargetHeight, this.chain.headers.td)
         return txs.map((txData) => TransactionFactory.fromBlockBodyData(txData))
@@ -108,12 +110,12 @@ export class EthProtocol extends Protocol {
       code: 0x03,
       response: 0x04,
       encode: ({ reqId, block, max, skip = 0, reverse = false }: GetBlockHeadersOpts) => [
-        (reqId === undefined ? this.nextReqId.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
-        [BN.isBN(block) ? block.toArrayLike(Buffer) : block, max, skip, !reverse ? 0 : 1],
+        bigIntToBuffer(reqId ?? ++id),
+        [typeof block === 'bigint' ? bigIntToBuffer(block) : block, max, skip, !reverse ? 0 : 1],
       ],
       decode: ([reqId, [block, max, skip, reverse]]: any) => ({
-        reqId: new BN(reqId),
-        block: block.length === 32 ? block : new BN(block),
+        reqId: bufferToBigInt(reqId),
+        block: block.length === 32 ? block : bufferToBigInt(block),
         max: bufferToInt(max),
         skip: bufferToInt(skip),
         reverse: bufferToInt(reverse) === 0 ? false : true,
@@ -122,12 +124,12 @@ export class EthProtocol extends Protocol {
     {
       name: 'BlockHeaders',
       code: 0x04,
-      encode: ({ reqId, headers }: { reqId: BN; headers: BlockHeader[] }) => [
-        reqId.toArrayLike(Buffer),
+      encode: ({ reqId, headers }: { reqId: bigint; headers: BlockHeader[] }) => [
+        bigIntToBuffer(reqId),
         headers.map((h) => h.raw()),
       ],
       decode: ([reqId, headers]: [Buffer, BlockHeaderBuffer[]]) => [
-        new BN(reqId),
+        bufferToBigInt(reqId),
         headers.map((h) =>
           // TODO: need to implement hardforkByTD otherwise
           // pre-merge blocks will fail to init if chainCommon is past merge
@@ -144,34 +146,31 @@ export class EthProtocol extends Protocol {
       name: 'GetBlockBodies',
       code: 0x05,
       response: 0x06,
-      encode: ({ reqId, hashes }: GetBlockBodiesOpts) => [
-        (reqId === undefined ? this.nextReqId.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
-        hashes,
-      ],
+      encode: ({ reqId, hashes }: GetBlockBodiesOpts) => [bigIntToBuffer(reqId ?? ++id), hashes],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
-        reqId: new BN(reqId),
+        reqId: bufferToBigInt(reqId),
         hashes,
       }),
     },
     {
       name: 'BlockBodies',
       code: 0x06,
-      encode: ({ reqId, bodies }: { reqId: BN; bodies: BlockBodyBuffer[] }) => [
-        reqId.toArrayLike(Buffer),
+      encode: ({ reqId, bodies }: { reqId: bigint; bodies: BlockBodyBuffer[] }) => [
+        bigIntToBuffer(reqId),
         bodies,
       ],
-      decode: ([reqId, bodies]: [Buffer, BlockBodyBuffer[]]) => [new BN(reqId), bodies],
+      decode: ([reqId, bodies]: [Buffer, BlockBodyBuffer[]]) => [bufferToBigInt(reqId), bodies],
     },
     {
       name: 'NewBlock',
       code: 0x07,
-      encode: ([block, td]: [Block, BN]) => [block.raw(), td.toArrayLike(Buffer)],
+      encode: ([block, td]: [Block, bigint]) => [block.raw(), bigIntToBuffer(td)],
       decode: ([block, td]: [BlockBuffer, Buffer]) => [
         Block.fromValuesArray(block, {
           common: this.config.chainCommon,
           hardforkByBlockNumber: true,
         }),
-        new BN(td),
+        td,
       ],
     },
     {
@@ -183,18 +182,18 @@ export class EthProtocol extends Protocol {
       code: 0x09,
       response: 0x0a,
       encode: ({ reqId, hashes }: GetPooledTransactionsOpts) => [
-        (reqId === undefined ? this.nextReqId.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
+        bigIntToBuffer(reqId ?? ++id),
         hashes,
       ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
-        reqId: new BN(reqId),
+        reqId: bufferToBigInt(reqId),
         hashes,
       }),
     },
     {
       name: 'PooledTransactions',
       code: 0x0a,
-      encode: ({ reqId, txs }: { reqId: BN; txs: TypedTransaction[] }) => {
+      encode: ({ reqId, txs }: { reqId: bigint; txs: TypedTransaction[] }) => {
         const serializedTxs = []
         for (const tx of txs) {
           if (tx.type === 0) {
@@ -203,10 +202,10 @@ export class EthProtocol extends Protocol {
             serializedTxs.push(tx.serialize())
           }
         }
-        return [reqId.toArrayLike(Buffer), serializedTxs]
+        return [bigIntToBuffer(reqId), serializedTxs]
       },
       decode: ([reqId, txs]: [Buffer, any[]]) => [
-        new BN(reqId),
+        bufferToBigInt(reqId),
         // TODO: add proper Common instance (problem: service not accesible)
         //const common = this.config.chainCommon.copy()
         //common.setHardforkByBlockNumber(this.config.syncTargetHeight)
@@ -217,19 +216,19 @@ export class EthProtocol extends Protocol {
       name: 'GetReceipts',
       code: 0x0f,
       response: 0x10,
-      encode: ({ reqId, hashes }: { reqId: BN; hashes: Buffer[] }) => [
-        (reqId === undefined ? this.nextReqId.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
+      encode: ({ reqId, hashes }: { reqId: bigint; hashes: Buffer[] }) => [
+        bigIntToBuffer(reqId ?? ++id),
         hashes,
       ],
       decode: ([reqId, hashes]: [Buffer, Buffer[]]) => ({
-        reqId: new BN(reqId),
+        reqId: bufferToBigInt(reqId),
         hashes,
       }),
     },
     {
       name: 'Receipts',
       code: 0x10,
-      encode: ({ reqId, receipts }: { reqId: BN; receipts: TxReceiptWithType[] }) => {
+      encode: ({ reqId, receipts }: { reqId: bigint; receipts: TxReceiptWithType[] }) => {
         const serializedReceipts = []
         for (const receipt of receipts) {
           let encodedReceipt = rlp.encode([
@@ -246,10 +245,10 @@ export class EthProtocol extends Protocol {
           }
           serializedReceipts.push(encodedReceipt)
         }
-        return [reqId.toArrayLike(Buffer), serializedReceipts]
+        return [bigIntToBuffer(reqId), serializedReceipts]
       },
       decode: ([reqId, receipts]: [Buffer, Buffer[]]) => [
-        new BN(reqId),
+        bufferToBigInt(reqId),
         receipts.map((r) => {
           // Legacy receipt if r[0] >= 0xc0, otherwise typed receipt with first byte as TransactionType
           const decoded = rlp.decode(r[0] >= 0xc0 ? r : r.slice(1)) as any
@@ -312,12 +311,12 @@ export class EthProtocol extends Protocol {
    */
   encodeStatus(): any {
     return {
-      networkId: this.chain.networkId.toArrayLike(Buffer),
-      td: this.chain.blocks.td.isZero()
-        ? Buffer.from([])
-        : this.chain.blocks.td.toArrayLike(Buffer),
+      networkId: bigIntToBuffer(this.chain.networkId),
+      td:
+        this.chain.blocks.td === BigInt(0) ? Buffer.from([]) : bigIntToBuffer(this.chain.blocks.td),
       bestHash: this.chain.blocks.latest!.hash(),
       genesisHash: this.chain.genesis.hash,
+      latestBlock: bigIntToBuffer(this.chain.blocks.latest!.header.number),
     }
   }
 
@@ -327,8 +326,8 @@ export class EthProtocol extends Protocol {
    */
   decodeStatus(status: any): any {
     return {
-      networkId: new BN(status.networkId),
-      td: new BN(status.td),
+      networkId: bufferToBigInt(status.networkId),
+      td: bufferToBigInt(status.td),
       bestHash: status.bestHash,
       genesisHash: status.genesisHash,
     }

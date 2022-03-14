@@ -1,7 +1,7 @@
 import {
-  BN,
-  bnToHex,
-  bnToUnpaddedBuffer,
+  bigIntToHex,
+  bigIntToUnpaddedBuffer,
+  bufferToBigInt,
   ecrecover,
   keccak256,
   MAX_INTEGER,
@@ -17,7 +17,6 @@ import {
   FeeMarketEIP1559TxData,
   FeeMarketEIP1559ValuesArray,
   JsonTx,
-  N_DIV_2,
   TxOptions,
 } from './types'
 import { AccessLists, checkMaxInitCodeSize } from './util'
@@ -32,11 +31,11 @@ const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padSta
  * - EIP: [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)
  */
 export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMarketEIP1559Transaction> {
-  public readonly chainId: BN
+  public readonly chainId: bigint
   public readonly accessList: AccessListBuffer
   public readonly AccessListJSON: AccessList
-  public readonly maxPriorityFeePerGas: BN
-  public readonly maxFeePerGas: BN
+  public readonly maxPriorityFeePerGas: bigint
+  public readonly maxFeePerGas: bigint
 
   public readonly common: Common
 
@@ -118,7 +117,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
 
     return new FeeMarketEIP1559Transaction(
       {
-        chainId: new BN(chainId),
+        chainId: bufferToBigInt(chainId),
         nonce,
         maxPriorityFeePerGas,
         maxFeePerGas,
@@ -127,7 +126,7 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
         value,
         data,
         accessList: accessList ?? [],
-        v: v !== undefined ? new BN(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
+        v: v !== undefined ? bufferToBigInt(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
         r,
         s,
       },
@@ -161,8 +160,8 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     // Verify the access list format.
     AccessLists.verifyAccessList(this.accessList)
 
-    this.maxFeePerGas = new BN(toBuffer(maxFeePerGas === '' ? '0x' : maxFeePerGas))
-    this.maxPriorityFeePerGas = new BN(
+    this.maxFeePerGas = bufferToBigInt(toBuffer(maxFeePerGas === '' ? '0x' : maxFeePerGas))
+    this.maxPriorityFeePerGas = bufferToBigInt(
       toBuffer(maxPriorityFeePerGas === '' ? '0x' : maxPriorityFeePerGas)
     )
 
@@ -171,29 +170,20 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
     })
 
-    if (this.gasLimit.mul(this.maxFeePerGas).gt(MAX_INTEGER)) {
+    if (this.gasLimit * this.maxFeePerGas > MAX_INTEGER) {
       const msg = this._errorMsg('gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)')
       throw new Error(msg)
     }
 
-    if (this.maxFeePerGas.lt(this.maxPriorityFeePerGas)) {
+    if (this.maxFeePerGas < this.maxPriorityFeePerGas) {
       const msg = this._errorMsg(
         'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)'
       )
       throw new Error(msg)
     }
 
-    if (this.v && !this.v.eqn(0) && !this.v.eqn(1)) {
-      const msg = this._errorMsg('The y-parity of the transaction should either be 0 or 1')
-      throw new Error(msg)
-    }
-
-    if (this.common.gteHardfork('homestead') && this.s?.gt(N_DIV_2)) {
-      const msg = this._errorMsg(
-        'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
-      )
-      throw new Error(msg)
-    }
+    this._validateYParity()
+    this._validateHighS()
 
     if (this.common.isActivatedEIP(3860)) {
       checkMaxInitCodeSize(this.common, this.data.length)
@@ -208,13 +198,13 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
   /**
    * The amount of gas paid for the data in this tx
    */
-  getDataFee(): BN {
+  getDataFee(): bigint {
     if (this.cache.dataFee && this.cache.dataFee.hardfork === this.common.hardfork()) {
       return this.cache.dataFee.value
     }
 
-    const cost = super.getDataFee()
-    cost.iaddn(AccessLists.getDataFeeEIP2930(this.accessList, this.common))
+    let cost = super.getDataFee()
+    cost += BigInt(AccessLists.getDataFeeEIP2930(this.accessList, this.common))
 
     if (Object.isFrozen(this)) {
       this.cache.dataFee = {
@@ -230,10 +220,12 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    * The up front amount that an account must have for this transaction to be valid
    * @param baseFee The base fee of the block (will be set to 0 if not provided)
    */
-  getUpfrontCost(baseFee: BN = new BN(0)): BN {
-    const inclusionFeePerGas = BN.min(this.maxPriorityFeePerGas, this.maxFeePerGas.sub(baseFee))
-    const gasPrice = inclusionFeePerGas.add(baseFee)
-    return this.gasLimit.mul(gasPrice).add(this.value)
+  getUpfrontCost(baseFee: bigint = BigInt(0)): bigint {
+    const prio = this.maxPriorityFeePerGas
+    const maxBase = this.maxFeePerGas - baseFee
+    const inclusionFeePerGas = prio < maxBase ? prio : maxBase
+    const gasPrice = inclusionFeePerGas + baseFee
+    return this.gasLimit * gasPrice + this.value
   }
 
   /**
@@ -251,18 +243,18 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
    */
   raw(): FeeMarketEIP1559ValuesArray {
     return [
-      bnToUnpaddedBuffer(this.chainId),
-      bnToUnpaddedBuffer(this.nonce),
-      bnToUnpaddedBuffer(this.maxPriorityFeePerGas),
-      bnToUnpaddedBuffer(this.maxFeePerGas),
-      bnToUnpaddedBuffer(this.gasLimit),
+      bigIntToUnpaddedBuffer(this.chainId),
+      bigIntToUnpaddedBuffer(this.nonce),
+      bigIntToUnpaddedBuffer(this.maxPriorityFeePerGas),
+      bigIntToUnpaddedBuffer(this.maxFeePerGas),
+      bigIntToUnpaddedBuffer(this.gasLimit),
       this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bnToUnpaddedBuffer(this.value),
+      bigIntToUnpaddedBuffer(this.value),
       this.data,
       this.accessList,
-      this.v !== undefined ? bnToUnpaddedBuffer(this.v) : Buffer.from([]),
-      this.r !== undefined ? bnToUnpaddedBuffer(this.r) : Buffer.from([]),
-      this.s !== undefined ? bnToUnpaddedBuffer(this.s) : Buffer.from([]),
+      this.v !== undefined ? bigIntToUnpaddedBuffer(this.v) : Buffer.from([]),
+      this.r !== undefined ? bigIntToUnpaddedBuffer(this.r) : Buffer.from([]),
+      this.s !== undefined ? bigIntToUnpaddedBuffer(this.s) : Buffer.from([]),
     ]
   }
 
@@ -343,23 +335,16 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     }
 
     const msgHash = this.getMessageToVerifySignature()
-
-    // EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
-    // Reasoning: https://ethereum.stackexchange.com/a/55728
-    if (this.common.gteHardfork('homestead') && this.s?.gt(N_DIV_2)) {
-      const msg = this._errorMsg(
-        'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
-      )
-      throw new Error(msg)
-    }
-
     const { v, r, s } = this
+
+    this._validateHighS()
+
     try {
       return ecrecover(
         msgHash,
-        v!.addn(27), // Recover the 27 which was stripped from ecsign
-        bnToUnpaddedBuffer(r!),
-        bnToUnpaddedBuffer(s!)
+        v! + BigInt(27), // Recover the 27 which was stripped from ecsign
+        bigIntToUnpaddedBuffer(r!),
+        bigIntToUnpaddedBuffer(s!)
       )
     } catch (e: any) {
       const msg = this._errorMsg('Invalid Signature')
@@ -381,9 +366,9 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
         value: this.value,
         data: this.data,
         accessList: this.accessList,
-        v: new BN(v - 27), // This looks extremely hacky: ethereumjs-util actually adds 27 to the value, the recovery bit is either 0 or 1.
-        r: new BN(r),
-        s: new BN(s),
+        v: BigInt(v - 27), // This looks extremely hacky: ethereumjs-util actually adds 27 to the value, the recovery bit is either 0 or 1.
+        r: bufferToBigInt(r),
+        s: bufferToBigInt(s),
       },
       opts
     )
@@ -396,18 +381,18 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
     const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
 
     return {
-      chainId: bnToHex(this.chainId),
-      nonce: bnToHex(this.nonce),
-      maxPriorityFeePerGas: bnToHex(this.maxPriorityFeePerGas),
-      maxFeePerGas: bnToHex(this.maxFeePerGas),
-      gasLimit: bnToHex(this.gasLimit),
+      chainId: bigIntToHex(this.chainId),
+      nonce: bigIntToHex(this.nonce),
+      maxPriorityFeePerGas: bigIntToHex(this.maxPriorityFeePerGas),
+      maxFeePerGas: bigIntToHex(this.maxFeePerGas),
+      gasLimit: bigIntToHex(this.gasLimit),
       to: this.to !== undefined ? this.to.toString() : undefined,
-      value: bnToHex(this.value),
+      value: bigIntToHex(this.value),
       data: '0x' + this.data.toString('hex'),
       accessList: accessListJSON,
-      v: this.v !== undefined ? bnToHex(this.v) : undefined,
-      r: this.r !== undefined ? bnToHex(this.r) : undefined,
-      s: this.s !== undefined ? bnToHex(this.s) : undefined,
+      v: this.v !== undefined ? bigIntToHex(this.v) : undefined,
+      r: this.r !== undefined ? bigIntToHex(this.r) : undefined,
+      s: this.s !== undefined ? bigIntToHex(this.s) : undefined,
     }
   }
 

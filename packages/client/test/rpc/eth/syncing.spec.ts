@@ -1,6 +1,5 @@
 import tape from 'tape'
 import td from 'testdouble'
-import { BN } from 'ethereumjs-util'
 import { INTERNAL_ERROR } from '../../../lib/rpc/error-code'
 import { baseRequest, createManager, createClient, params, startRPC } from '../helpers'
 import { checkError } from '../util'
@@ -67,7 +66,7 @@ tape(`${method}: should return syncing status object when unsynced`, async (t) =
   synchronizer.best = td.func<typeof synchronizer['best']>()
   synchronizer.latest = td.func<typeof synchronizer['latest']>()
   td.when(synchronizer.best()).thenResolve('peer')
-  td.when(synchronizer.latest('peer' as any)).thenResolve({ number: new BN(2) })
+  td.when(synchronizer.latest('peer' as any)).thenResolve({ number: BigInt(2) })
 
   client.config.synchronized = false
   t.equals(client.config.synchronized, false, 'not synchronized yet')

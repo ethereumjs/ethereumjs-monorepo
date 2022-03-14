@@ -2,7 +2,6 @@ import tape from 'tape'
 import {
   Account,
   Address,
-  BN,
   toBuffer,
   keccak256,
   KECCAK256_RLP,
@@ -35,7 +34,7 @@ tape('StateManager', (t) => {
 
     // commit some data to the trie
     const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
-    const account = createAccount(new BN(0), new BN(1000))
+    const account = createAccount(BigInt(0), BigInt(1000))
     await stateManager.checkpoint()
     await stateManager.putAccount(address, account)
     await stateManager.commit()
@@ -61,15 +60,15 @@ tape('StateManager', (t) => {
     await stateManager.putAccount(address, account)
 
     const account0 = await stateManager.getAccount(address)
-    st.ok(account0.balance.eq(account.balance), 'account value is set in the cache')
+    st.equal(account0.balance, account.balance, 'account value is set in the cache')
 
     await stateManager.commit()
     const account1 = await stateManager.getAccount(address)
-    st.ok(account1.balance.eq(account.balance), 'account value is set in the state trie')
+    st.equal(account1.balance, account.balance, 'account value is set in the state trie')
 
     await stateManager.setStateRoot(initialStateRoot)
     const account2 = await stateManager.getAccount(address)
-    st.ok(account2.balance.isZero(), 'account value is set to 0 in original state root')
+    st.equal(account2.balance, BigInt(0), 'account value is set to 0 in original state root')
 
     // test contract storage cache
     await stateManager.checkpoint()
@@ -99,7 +98,7 @@ tape('StateManager', (t) => {
 
       const res1 = await stateManager.getAccount(address)
 
-      st.equal(res1.balance.toString('hex'), 'fff384')
+      st.equal(res1.balance, BigInt(0xfff384))
 
       await stateManager._cache.flush()
       stateManager._cache.clear()
@@ -140,7 +139,7 @@ tape('StateManager', (t) => {
 
   t.test('should return true for an existent account', async (st) => {
     const stateManager = new DefaultStateManager()
-    const account = createAccount(new BN(0x1), new BN(0x1))
+    const account = createAccount(BigInt(0x1), BigInt(0x1))
     const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
 
     await stateManager.putAccount(address, account)
@@ -156,7 +155,7 @@ tape('StateManager', (t) => {
     'should call the callback with a false boolean representing non-emptiness when the account is not empty',
     async (st) => {
       const stateManager = new DefaultStateManager()
-      const account = createAccount(new BN(0x1), new BN(0x1))
+      const account = createAccount(BigInt(0x1), BigInt(0x1))
       const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
 
       await stateManager.putAccount(address, account)
@@ -175,17 +174,17 @@ tape('StateManager', (t) => {
     const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
     await stateManager.putAccount(address, account)
 
-    await stateManager.modifyAccountFields(address, { balance: new BN(1234) })
+    await stateManager.modifyAccountFields(address, { balance: BigInt(1234) })
 
     const res1 = await stateManager.getAccount(address)
 
-    st.equal(res1.balance.toString('hex'), '4d2')
+    st.equal(res1.balance, BigInt(0x4d2))
 
-    await stateManager.modifyAccountFields(address, { nonce: new BN(1) })
+    await stateManager.modifyAccountFields(address, { nonce: BigInt(1) })
 
     const res2 = await stateManager.getAccount(address)
 
-    st.equal(res2.nonce.toNumber(), 1)
+    st.equal(res2.nonce, BigInt(1))
 
     await stateManager.modifyAccountFields(address, {
       codeHash: Buffer.from(
@@ -218,13 +217,13 @@ tape('StateManager', (t) => {
       const stateManager = new DefaultStateManager()
       const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
 
-      await stateManager.modifyAccountFields(address, { balance: new BN(1234) })
+      await stateManager.modifyAccountFields(address, { balance: BigInt(1234) })
       const res1 = await stateManager.getAccount(address)
-      st.equal(res1.balance.toString('hex'), '4d2')
+      st.equal(res1.balance, BigInt(0x4d2))
 
-      await stateManager.modifyAccountFields(address, { nonce: new BN(1) })
+      await stateManager.modifyAccountFields(address, { nonce: BigInt(1) })
       const res2 = await stateManager.getAccount(address)
-      st.equal(res2.nonce.toNumber(), 1)
+      st.equal(res2.nonce, BigInt(1))
 
       const newCodeHash = Buffer.from(
         'd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b',
@@ -258,7 +257,7 @@ tape('StateManager', (t) => {
       const stateManager = new StateManager()
       await stateManager.generateCanonicalGenesis()
       const stateRoot = await stateManager.getStateRoot()
-      st.equals(
+      st.equal(
         stateRoot.toString('hex'),
         genesisData.genesis_state_root,
         'generateCanonicalGenesis should produce correct state root for mainnet from ethereum/tests data'

@@ -106,8 +106,8 @@ tape('RLP encoding (list)', (t) => {
 
 tape('RLP encoding (BigInt)', (t) => {
   t.test('should encode a BigInt value', (st) => {
-    const encodedBN = RLP.encode(BigInt(3))
-    st.deepEqual(encodedBN[0], 3)
+    const encoded = RLP.encode(BigInt(3))
+    st.deepEqual(encoded[0], 3)
     st.end()
   })
 
@@ -472,11 +472,11 @@ tape('stream', (t) => {
     decoded = RLP.decode(decoded.remainder, true)
     st.deepEqual(decoded.data, utf8ToBytes(longString))
     decoded = RLP.decode(decoded.remainder, true)
-    st.ok(decoded.data.length === 3)
+    st.equal(decoded.data.length, 3)
     st.deepEqual(decoded.data[0], Uint8Array.from([1]))
     st.deepEqual(decoded.data[1], Uint8Array.from([2]))
     st.deepEqual(decoded.data[2], Uint8Array.from([3]))
-    st.ok(decoded.remainder.length === 0)
+    st.equal(decoded.remainder.length, 0)
     st.end()
   })
 })

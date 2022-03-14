@@ -1,5 +1,4 @@
 import { Hardfork } from '@ethereumjs/common'
-import { BN } from 'ethereumjs-util'
 import { Peer } from '../net/peer/peer'
 import { short } from '../util'
 import { Synchronizer, SynchronizerOptions } from './sync'
@@ -58,7 +57,10 @@ export class LightSynchronizer extends Synchronizer {
     for (const peer of peers) {
       if (peer.les) {
         const td = peer.les.status.headTd
-        if ((!best && td.gte(this.chain.headers.td)) || best?.les?.status.headTd.lt(td)) {
+        if (
+          (!best && td >= this.chain.headers.td) ||
+          (best && best.les && best.les.status.headTd < td)
+        ) {
           best = peer
         }
       }
@@ -87,19 +89,16 @@ export class LightSynchronizer extends Synchronizer {
     if (!latest) return false
 
     const height = peer!.les!.status.headNum
-    if (!this.config.syncTargetHeight || this.config.syncTargetHeight.lt(height)) {
+    if (!this.config.syncTargetHeight || this.config.syncTargetHeight < height) {
       this.config.syncTargetHeight = height
       this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
     }
 
     // Start fetcher from a safe distance behind because if the previous fetcher exited
     // due to a reorg, it would make sense to step back and refetch.
-    const first = BN.max(
-      this.chain.headers.height.addn(1).subn(this.config.safeReorgDistance),
-      new BN(1)
-    )
-    const count = height.sub(first).addn(1)
-    if (count.lten(0)) return false
+    const first = this.chain.headers.height >= BigInt(this.config.safeReorgDistance)? this.chain.headers.height - BigInt(this.config.safeReorgDistance) + BigInt(1): BigInt(1);
+    const count = height - first + BigInt(1)
+    if (count < BigInt(0)) return false
     if (!this.fetcher || this.fetcher.errored) {
       this.fetcher = new HeaderFetcher({
         config: this.config,
@@ -112,9 +111,11 @@ export class LightSynchronizer extends Synchronizer {
         destroyWhenDone: false,
       })
     } else {
-      const fetcherHeight = this.fetcher.first.add(this.fetcher.count).subn(1)
-      if (height.gt(fetcherHeight)) this.fetcher.count.iadd(height.sub(fetcherHeight))
-      this.config.logger.info(`Updated fetcher target to height=${height} peer=${peer}`)
+      const fetcherHeight = this.fetcher.first + this.fetcher.count - BigInt(1)
+      if (height > fetcherHeight){
+        this.fetcher.count += (height - fetcherHeight)
+        this.config.logger.info(`Updated fetcher target to height=${height} peer=${peer} `)
+      }
     }
     return true
   }

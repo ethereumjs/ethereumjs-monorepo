@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY, rlp } from 'ethereumjs-util'
+import { Address, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY, rlp } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src'
@@ -19,11 +19,11 @@ tape('[Block]: Header functions', function (t) {
       st.ok(header.transactionsTrie.equals(KECCAK256_RLP))
       st.ok(header.receiptTrie.equals(KECCAK256_RLP))
       st.ok(header.logsBloom.equals(zeros(256)))
-      st.ok(header.difficulty.isZero())
-      st.ok(header.number.isZero())
-      st.ok(header.gasLimit.eq(new BN(Buffer.from('ffffffffffffff', 'hex'))))
-      st.ok(header.gasUsed.isZero())
-      st.ok(header.timestamp.isZero())
+      st.equal(header.difficulty, BigInt(0))
+      st.equal(header.number, BigInt(0))
+      st.equal(header.gasLimit, BigInt('0xffffffffffffff'))
+      st.equal(header.gasUsed, BigInt(0))
+      st.equal(header.timestamp, BigInt(0))
       st.ok(header.extraData.equals(Buffer.from([])))
       st.ok(header.mixHash.equals(zeros(32)))
       st.ok(header.nonce.equals(zeros(8)))
@@ -205,7 +205,7 @@ tape('[Block]: Header functions', function (t) {
 
     parentHash = genesis.hash()
     gasLimit = genesis.header.gasLimit
-    data = { number, parentHash, timestamp, gasLimit, difficulty: new BN(1) } as any
+    data = { number, parentHash, timestamp, gasLimit, difficulty: BigInt(1) } as any
     opts = { common } as any
 
     // valid extraData (32 byte vanity + 65 byte seal)
@@ -244,7 +244,7 @@ tape('[Block]: Header functions', function (t) {
       Buffer.alloc(20),
       Buffer.alloc(21),
     ])
-    const epoch = new BN(common.consensusConfig().epoch)
+    const epoch = BigInt(common.consensusConfig().epoch)
     header = BlockHeader.fromHeaderData({ ...data, number: epoch, extraData }, opts)
     try {
       await header.validate(blockchain)
@@ -271,10 +271,10 @@ tape('[Block]: Header functions', function (t) {
     await blockchain.putBlock(block)
 
     headerData.number = 1
-    headerData.timestamp = new BN(1422494850)
+    headerData.timestamp = BigInt(1422494850)
     headerData.extraData = Buffer.alloc(97)
     headerData.mixHash = Buffer.alloc(32)
-    headerData.difficulty = new BN(2)
+    headerData.difficulty = BigInt(2)
 
     let testCase = 'should throw on lower than period timestamp diffs'
     let header = BlockHeader.fromHeaderData(headerData, { common })
@@ -286,7 +286,7 @@ tape('[Block]: Header functions', function (t) {
     }
 
     testCase = 'should not throw on timestamp diff equal to period'
-    headerData.timestamp = new BN(1422494864)
+    headerData.timestamp = BigInt(1422494864)
     header = BlockHeader.fromHeaderData(headerData, { common })
     try {
       await header.validate(blockchain)
@@ -328,7 +328,7 @@ tape('[Block]: Header functions', function (t) {
     headerData.mixHash = Buffer.alloc(32)
 
     testCase = 'should throw on invalid clique difficulty'
-    headerData.difficulty = new BN(3)
+    headerData.difficulty = BigInt(3)
     header = BlockHeader.fromHeaderData(headerData, { common })
     try {
       header.validateCliqueDifficulty(blockchain)
@@ -342,7 +342,7 @@ tape('[Block]: Header functions', function (t) {
     }
 
     testCase = 'validateCliqueDifficulty() should return true with NOTURN difficulty and one signer'
-    headerData.difficulty = new BN(2)
+    headerData.difficulty = BigInt(2)
     const poaBlockchain = new PoaMockchain()
     const cliqueSigner = Buffer.from(
       '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
@@ -364,7 +364,7 @@ tape('[Block]: Header functions', function (t) {
 
     testCase =
       'validateCliqueDifficulty() should return false with INTURN difficulty and one signer'
-    headerData.difficulty = new BN(1)
+    headerData.difficulty = BigInt(1)
     header = BlockHeader.fromHeaderData(headerData, { common, cliqueSigner })
     try {
       const res = header.validateCliqueDifficulty(poaBlockchain)
@@ -454,7 +454,7 @@ tape('[Block]: Header functions', function (t) {
       { baseChain: Chain.Mainnet, hardfork: Hardfork.London }
     )
     const header = BlockHeader.fromHeaderData({}, { common, initWithGenesisHeader: true })
-    st.ok(header.baseFeePerGas!.eq(new BN('1000', 16)), 'correct baseFeePerGas')
+    st.equal(header.baseFeePerGas!, BigInt(0x1000), 'correct baseFeePerGas')
     st.end()
   })
 })

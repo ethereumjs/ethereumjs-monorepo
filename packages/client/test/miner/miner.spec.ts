@@ -4,7 +4,7 @@ import Common, { Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { DefaultStateManager, StateManager } from '@ethereumjs/vm/dist/state'
-import { Address, BN, keccak256 } from 'ethereumjs-util'
+import { Address, keccak256 } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { FullEthereumService } from '../../lib/service'
 import { Chain } from '../../lib/blockchain'
@@ -29,7 +29,7 @@ const B = {
   ),
 }
 
-const setBalance = async (stateManager: StateManager, address: Address, balance: BN) => {
+const setBalance = async (stateManager: StateManager, address: Address, balance: bigint) => {
   await stateManager.checkpoint()
   await stateManager.modifyAccountFields(address, { balance })
   await stateManager.commit()
@@ -51,13 +51,13 @@ tape('[Miner]', async (t) => {
     get headers() {
       return {
         latest: BlockHeader.fromHeaderData(),
-        height: new BN(0),
+        height: BigInt(0),
       }
     }
     get blocks() {
       return {
         latest: Block.fromBlockData(),
-        height: new BN(0),
+        height: BigInt(0),
       }
     }
     getLatestHeader() {
@@ -151,7 +151,7 @@ tape('[Miner]', async (t) => {
     txPool.start()
     miner.start()
 
-    await setBalance(vm.stateManager, A.address, new BN('200000000000001'))
+    await setBalance(vm.stateManager, A.address, BigInt('200000000000001'))
 
     // add tx
     await txPool.add(txA01)
@@ -183,8 +183,8 @@ tape('[Miner]', async (t) => {
       txPool.start()
       miner.start()
 
-      await setBalance(vm.stateManager, A.address, new BN('400000000000001'))
-      await setBalance(vm.stateManager, B.address, new BN('400000000000001'))
+      await setBalance(vm.stateManager, A.address, BigInt('400000000000001'))
+      await setBalance(vm.stateManager, B.address, BigInt('400000000000001'))
 
       // add txs
       await txPool.add(txA01)
@@ -266,12 +266,12 @@ tape('[Miner]', async (t) => {
     const block = Block.fromBlockData({ header: { gasLimit } }, { common })
     Object.defineProperty(chain, 'headers', {
       get: function () {
-        return { latest: block.header, height: new BN(0) }
+        return { latest: block.header, height: BigInt(0) }
       },
     })
     Object.defineProperty(chain, 'blocks', {
       get: function () {
-        return { latest: block, height: new BN(0) }
+        return { latest: block, height: BigInt(0) }
       },
     })
     const service = new FullEthereumService({
@@ -284,16 +284,16 @@ tape('[Miner]', async (t) => {
     txPool.start()
     miner.start()
 
-    await setBalance(vm.stateManager, A.address, new BN('200000000000001'))
+    await setBalance(vm.stateManager, A.address, BigInt('200000000000001'))
 
     // add txs
     const data = '0xfe' // INVALID opcode, consumes all gas
     const tx1FillsBlockGasLimit = Transaction.fromTxData(
-      { gasLimit: gasLimit - 1, data, gasPrice: new BN(1000000000) },
+      { gasLimit: gasLimit - 1, data, gasPrice: BigInt('1000000000') },
       { common }
     ).sign(A.privateKey)
     const tx2ExceedsBlockGasLimit = Transaction.fromTxData(
-      { gasLimit: 21000, to: B.address, nonce: 1, gasPrice: new BN(1000000000) },
+      { gasLimit: 21000, to: B.address, nonce: 1, gasPrice: BigInt('1000000000') },
       { common }
     ).sign(A.privateKey)
     await txPool.add(tx1FillsBlockGasLimit)
@@ -329,6 +329,8 @@ tape('[Miner]', async (t) => {
     const { vm } = service.execution
     txPool.start()
     miner.start()
+
+    await setBalance(vm.stateManager, A.address, BigInt('200000000000001'))
 
     // add many txs to slow assembling
     let privateKey = keccak256(Buffer.from(''))
@@ -404,12 +406,13 @@ tape('[Miner]', async (t) => {
     const blockHeader3 = await chain.getLatestHeader()
     config.execCommon.setHardforkByBlockNumber(3)
     t.equal(config.execCommon.hardfork(), Hardfork.London)
-    t.ok(
-      blockHeader2.gasLimit.muln(2).eq(blockHeader3.gasLimit),
+    t.equal(
+      blockHeader2.gasLimit * BigInt(2),
+      blockHeader3.gasLimit,
       'gas limit should be double previous block'
     )
-    const initialBaseFee = new BN(config.execCommon.paramByEIP('gasConfig', 'initialBaseFee', 1559))
-    t.ok(blockHeader3.baseFeePerGas!.eq(initialBaseFee), 'baseFee should be initial value')
+    const initialBaseFee = BigInt(config.execCommon.paramByEIP('gasConfig', 'initialBaseFee', 1559))
+    t.equal(blockHeader3.baseFeePerGas!, initialBaseFee, 'baseFee should be initial value')
 
     // block 4
     await (miner as any).queueNextAssembly(0)
@@ -417,17 +420,17 @@ tape('[Miner]', async (t) => {
     const blockHeader4 = await chain.getLatestHeader()
     config.execCommon.setHardforkByBlockNumber(4)
     t.equal(config.execCommon.hardfork(), Hardfork.London)
-    t.ok(
-      blockHeader4.baseFeePerGas!.eq(blockHeader3.calcNextBaseFee()),
+    t.equal(
+      blockHeader4.baseFeePerGas!,
+      blockHeader3.calcNextBaseFee(),
       'baseFee should be as calculated'
     )
-    t.ok((await chain.getLatestHeader()).number.eqn(4))
+    t.equal((await chain.getLatestHeader()).number, BigInt(4))
     miner.stop()
     await chain.close()
   })
 
   t.test('should handle mining ethash PoW', async (t) => {
-    t.plan(1)
     const common = new Common({ chain: CommonChain.Ropsten, hardfork: Hardfork.Istanbul })
     ;(common as any)._chainParams['genesis'].difficulty = 1
     const config = new Config({ transports: [], accounts, mine: true, common })
@@ -441,14 +444,15 @@ tape('[Miner]', async (t) => {
     ;(chain.blockchain as any)._validateConsensus = false
     ;(miner as any).chainUpdated = async () => {} // stub
     miner.start()
-    await wait(100)
+    await wait(1000)
     config.events.on(Event.CHAIN_UPDATED, async () => {
-      t.ok(chain.blocks.latest!.header.number.eqn(1))
+      t.equal(chain.blocks.latest!.header.number, BigInt(1))
       miner.stop()
       await chain.close()
+      t.end()
     })
     await (miner as any).queueNextAssembly(0)
-    await wait(3000)
+    await wait(10000)
   })
 
   t.test('should reset td', (t) => {

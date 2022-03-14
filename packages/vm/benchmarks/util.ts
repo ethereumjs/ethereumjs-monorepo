@@ -1,4 +1,4 @@
-import { Account, Address, toBuffer, bufferToInt, BN, bnToBigInt } from 'ethereumjs-util'
+import { Account, Address, toBuffer } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { StateManager, DefaultStateManager } from '../dist/state'
@@ -31,7 +31,7 @@ export async function getPreState(
   for (const k in pre) {
     const address = new Address(toBuffer(k))
     const { nonce, balance, code, storage } = pre[k]
-    const account = new Account(new BN(hexToBuffer(nonce)), new BN(hexToBuffer(balance)))
+    const account = new Account(BigInt(nonce), BigInt(balance))
     await state.putAccount(address, account)
     await state.putContractCode(address, toBuffer(code))
     for (const sk in storage) {
@@ -50,21 +50,11 @@ export async function getPreState(
 
 export function getBlockchain(blockhashes: any): Mockchain {
   let mockchain = new Mockchain()
-  for (let hashStr in blockhashes) {
-    const bn = new BN(hashStr.substr(2), 'hex')
-    const hash = blockhashes[hashStr]
-    const hashBuffer = Buffer.from(hash.substr(2), 'hex')
-    mockchain.putBlockHash(bn, hashBuffer)
+  for (const blockNum in blockhashes) {
+    const hash = blockhashes[blockNum]
+    mockchain.putBlockHash(BigInt(blockNum), toBuffer(hash))
   }
   return mockchain
-}
-
-const hexToBuffer = (h: string, allowZero: boolean = false): Buffer => {
-  const buf = toBuffer(h)
-  if (!allowZero && buf.toString('hex') === '00') {
-    return Buffer.alloc(0)
-  }
-  return buf
 }
 
 export const verifyResult = (block: Block, result: RunBlockResult) => {
@@ -84,9 +74,8 @@ export const verifyResult = (block: Block, result: RunBlockResult) => {
         let cumGasUsedActual = parseInt(receipts[index].gasUsed.toString('hex'), 16)
         let gasUsed = cumGasUsedActual - cumGasUsed
         if (gasUsed !== gasUsedExpected) {
-          const blockNumber = block.header.number.toNumber()
           console.log(`[DEBUG]
-            Transaction at index ${index} of block ${blockNumber}
+            Transaction at index ${index} of block ${block.header.number}
             did not yield expected gas.
             Gas used expected: ${gasUsedExpected},
             actual: ${gasUsed},
@@ -100,7 +89,7 @@ export const verifyResult = (block: Block, result: RunBlockResult) => {
   if (!result.logsBloom.equals(block.header.logsBloom)) {
     throw new Error('invalid logsBloom')
   }
-  if (!(bnToBigInt(block.header.gasUsed) === result.gasUsed)) {
+  if (block.header.gasUsed !== result.gasUsed) {
     throw new Error('invalid gasUsed')
   }
 }

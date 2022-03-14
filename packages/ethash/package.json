@@ -18,6 +18,8 @@
   "types": "dist/index.d.ts",
   "browser": "dist.browser/index.js",
   "scripts": {
+    "postinstall": "npm run depBrowserWorkaround",
+    "depBrowserWorkaround": "npx json -I -f ../../node_modules/bigint-crypto-utils/package.json -e \"this.browser='./dist/bundles/umd.js'\"",
     "build": "npm run build:node && npm run build:browser",
     "build:node": "../../config/cli/ts-build.sh node",
     "build:browser": "../../config/cli/ts-build.sh browser",
@@ -33,6 +35,7 @@
   "dependencies": {
     "@ethereumjs/block": "^3.6.2",
     "@types/levelup": "^4.3.0",
+    "bigint-crypto-utils": "^3.0.23",
     "buffer-xor": "^2.0.1",
     "ethereumjs-util": "^7.1.5",
     "miller-rabin": "^4.0.0"

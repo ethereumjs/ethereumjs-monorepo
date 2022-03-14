@@ -46,7 +46,7 @@ tape('[VMExecution]', async (t) => {
     exec = await testSetup(blockchain)
     await exec.run()
     newHead = await exec.vm.blockchain.getHead()
-    t.ok(newHead.header.number.eqn(5), 'should run all blocks')
+    t.equal(newHead.header.number, BigInt(5), 'should run all blocks')
 
     const common = new Common({ chain: 'testnet', customChains: [testnet] })
     exec = await testSetup(blockchain, common)
@@ -77,7 +77,7 @@ tape('[VMExecution]', async (t) => {
     exec = await testSetup(blockchain, common)
     await exec.run()
     newHead = await exec.vm.blockchain.getHead()
-    t.deepEqual(newHead.header.number.toNumber(), 7, 'should run all blocks')
+    t.deepEqual(newHead.header.number, BigInt(7), 'should run all blocks')
 
     t.end()
   })

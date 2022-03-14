@@ -150,6 +150,33 @@ tape('VM -> common (chain, HFs, EIPs)', (t) => {
 })
 
 tape('VM -> hardforkByBlockNumber, hardforkByTD, state (deprecated), blockchain', (t) => {
+  t.test('hardforkByBlockNumber, hardforkByTD', async (st) => {
+    const customChains = [testnetMerge]
+    const common = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
+
+    let vm = await VM.create({ common, hardforkByBlockNumber: true })
+    st.equal((vm as any)._hardforkByBlockNumber, true, 'should set hardforkByBlockNumber option')
+
+    vm = await VM.create({ common, hardforkByTD: 5001 })
+    st.equal((vm as any)._hardforkByTD, BigInt(5001), 'should set hardforkByTD option')
+
+    try {
+      await VM.create({ common, hardforkByBlockNumber: true, hardforkByTD: 3000 })
+      st.fail('should not reach this')
+    } catch (e: any) {
+      const msg =
+        'should throw if hardforkByBlockNumber and hardforkByTD options are used in conjunction'
+      st.ok(
+        e.message.includes(
+          `The hardforkByBlockNumber and hardforkByTD options can't be used in conjunction`
+        ),
+        msg
+      )
+    }
+
+    st.end()
+  })
+
   t.test('should work with trie (state) provided', async (st) => {
     const trie = new Trie()
     const vm = new VM({ state: trie, activatePrecompiles: true })

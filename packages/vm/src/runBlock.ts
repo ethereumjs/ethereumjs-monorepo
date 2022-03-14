@@ -1,6 +1,6 @@
 import { debug as createDebugLogger } from 'debug'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { Account, Address, bigIntToBN, BN, bnToBigInt, intToBuffer, rlp } from 'ethereumjs-util'
+import { Account, Address, bigIntToBuffer, intToBuffer, rlp } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import VM from './index'
@@ -120,7 +120,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   if (this._hardforkByBlockNumber || this._hardforkByTD || opts.hardforkByTD) {
     this._common.setHardforkByBlockNumber(
       block.header.number,
-      opts.hardforkByTD ?? this._hardforkByTD
+      (this._hardforkByTD as bigint | undefined) ?? this._hardforkByTD
     )
   }
 
@@ -144,7 +144,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   // check for DAO support and if we should apply the DAO fork
   if (
     this._common.hardforkIsActiveOnBlock(Hardfork.Dao, block.header.number) &&
-    block.header.number.eq(this._common.hardforkBlock(Hardfork.Dao)!)
+    block.header.number === this._common.hardforkBlock(Hardfork.Dao)!
   ) {
     if (this.DEBUG) {
       debug(`Apply DAO hardfork`)
@@ -191,7 +191,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   // header values against the current block.
   if (generateFields) {
     const bloom = result.bloom.bitvector
-    const gasUsed = bigIntToBN(result.gasUsed)
+    const gasUsed = result.gasUsed
     const receiptTrie = result.receiptRoot
     const transactionsTrie = await _genTxTrie(block)
     const generatedFields = { stateRoot, bloom, gasUsed, receiptTrie, transactionsTrie }
@@ -223,7 +223,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
       const msg = _errorMsg('invalid bloom', this, block)
       throw new Error(msg)
     }
-    if (!(result.gasUsed === bnToBigInt(block.header.gasUsed))) {
+    if (result.gasUsed !== block.header.gasUsed) {
       if (this.DEBUG) {
         debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
       }
@@ -284,7 +284,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
 async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   // Validate block
   if (!opts.skipBlockValidation) {
-    if (block.header.gasLimit.gte(new BN('8000000000000000', 16))) {
+    if (block.header.gasLimit >= BigInt('0x8000000000000000')) {
       const msg = _errorMsg('Invalid block with gas limit greater than (2^63 - 1)', this, block)
       throw new Error(msg)
     } else {
@@ -330,13 +330,11 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     let maxGasLimit
     if (this._common.isActivatedEIP(1559)) {
       maxGasLimit =
-        bnToBigInt(block.header.gasLimit) *
-        BigInt(this._common.param('gasConfig', 'elasticityMultiplier'))
+        block.header.gasLimit * BigInt(this._common.param('gasConfig', 'elasticityMultiplier'))
     } else {
       maxGasLimit = block.header.gasLimit
     }
-    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-    const gasLimitIsHigherThanBlock = maxGasLimit < bnToBigInt(tx.gasLimit) + gasUsed
+    const gasLimitIsHigherThanBlock = maxGasLimit < tx.gasLimit + gasUsed
     if (gasLimitIsHigherThanBlock) {
       const msg = _errorMsg('tx has a higher gas limit than the block', this, block)
       throw new Error(msg)
@@ -394,11 +392,7 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
   const ommers = block.uncleHeaders
   // Reward ommers
   for (const ommer of ommers) {
-    const reward = calculateOmmerReward(
-      bnToBigInt(ommer.number),
-      bnToBigInt(block.header.number),
-      minerReward
-    )
+    const reward = calculateOmmerReward(ommer.number, block.header.number, minerReward)
     const account = await rewardAccount(state, ommer.coinbase, reward)
     if (this.DEBUG) {
       debug(`Add uncle reward ${reward} to account ${ommer.coinbase} (-> ${account.balance})`)
@@ -439,7 +433,7 @@ export async function rewardAccount(
   reward: bigint
 ): Promise<Account> {
   const account = await state.getAccount(address)
-  account.balance.iadd(bigIntToBN(reward))
+  account.balance += reward
   await state.putAccount(address, account)
   return account
 }
@@ -471,10 +465,10 @@ export async function generateTxReceipt(
   this: VM,
   tx: TypedTransaction,
   txRes: RunTxResult,
-  blockGasUsed: BN
+  blockGasUsed: bigint
 ) {
   const abstractTxReceipt = {
-    gasUsed: blockGasUsed.toArrayLike(Buffer),
+    gasUsed: bigIntToBuffer(blockGasUsed),
     bitvector: txRes.bloom.bitvector,
     logs: txRes.execResult.logs ?? [],
   }
@@ -535,9 +529,9 @@ async function _applyDAOHardfork(state: StateManager) {
     // retrieve the account and add it to the DAO's Refund accounts' balance.
     const address = new Address(Buffer.from(addr, 'hex'))
     const account = await state.getAccount(address)
-    DAORefundAccount.balance.iadd(account.balance)
+    DAORefundAccount.balance += account.balance
     // clear the accounts' balance
-    account.balance = new BN(0)
+    account.balance = BigInt(0)
     await state.putAccount(address, account)
   }
 

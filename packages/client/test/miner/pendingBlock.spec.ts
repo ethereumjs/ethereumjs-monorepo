@@ -5,7 +5,7 @@ import { Transaction } from '@ethereumjs/tx'
 import { BlockHeader } from '@ethereumjs/block'
 import VM from '@ethereumjs/vm'
 import { DefaultStateManager, StateManager } from '@ethereumjs/vm/dist/state'
-import { Address, BN } from 'ethereumjs-util'
+import { Address } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { TxPool } from '../../lib/service/txpool'
 import { PendingBlock } from '../../lib/miner'
@@ -26,7 +26,7 @@ const B = {
   ),
 }
 
-const setBalance = async (stateManager: StateManager, address: Address, balance: BN) => {
+const setBalance = async (stateManager: StateManager, address: Address, balance: bigint) => {
   await stateManager.checkpoint()
   await stateManager.modifyAccountFields(address, { balance })
   await stateManager.commit()
@@ -86,8 +86,8 @@ tape('[PendingBlock]', async (t) => {
   t.test('should start and build', async (t) => {
     const { txPool } = setup()
     const vm = await VM.create({ common })
-    await setBalance(vm.stateManager, A.address, new BN(5000000000000000))
-    await setBalance(vm.stateManager, B.address, new BN(5000000000000000))
+    await setBalance(vm.stateManager, A.address, BigInt(5000000000000000))
+    await setBalance(vm.stateManager, B.address, BigInt(5000000000000000))
     await txPool.add(txA01)
     await txPool.add(txA02)
     const pendingBlock = new PendingBlock({ config, txPool })
@@ -98,8 +98,8 @@ tape('[PendingBlock]', async (t) => {
     const built = await pendingBlock.build(payloadId)
     if (!built) return t.fail('pendingBlock did not return')
     const [block, receipts] = built
-    t.ok(block.header.number.eqn(1), 'should have built block number 1')
-    t.equal(block.transactions.length, 3, 'should include txs from pool')
+    t.equal(block?.header.number, BigInt(1), 'should have built block number 1')
+    t.equal(block?.transactions.length, 3, 'should include txs from pool')
     t.equal(receipts.length, 3, 'receipts should match number of transactions')
     t.equal(pendingBlock.pendingPayloads.length, 0, 'should reset the pending payload after build')
     t.end()
@@ -110,7 +110,7 @@ tape('[PendingBlock]', async (t) => {
     await txPool.add(txA01)
     const pendingBlock = new PendingBlock({ config, txPool })
     const vm = await VM.create({ common })
-    await setBalance(vm.stateManager, A.address, new BN(5000000000000000))
+    await setBalance(vm.stateManager, A.address, BigInt(5000000000000000))
     const parentBlock = await vm.blockchain.getLatestBlock()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
@@ -140,14 +140,16 @@ tape('[PendingBlock]', async (t) => {
     ).sign(A.privateKey)
     await txPool.add(txA03)
     const pendingBlock = new PendingBlock({ config, txPool })
+    const vm = await VM.create({ common })
+    await setBalance(vm.stateManager, A.address, BigInt(5000000000000000))
     const parentBlock = await vm.blockchain.getLatestBlock()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
     const built = await pendingBlock.build(payloadId)
     if (!built) return t.fail('pendingBlock did not return')
     const [block, receipts] = built
-    t.ok(block.header.number.eqn(1), 'should have built block number 1')
-    t.equal(block.transactions.length, 2, 'should include txs from pool that fit in the block')
+    t.equal(block?.header.number, BigInt(1), 'should have built block number 1')
+    t.equal(block?.transactions.length, 2, 'should include txs from pool that fit in the block')
     t.equal(receipts.length, 2, 'receipts should match number of transactions')
     t.equal(pendingBlock.pendingPayloads.length, 0, 'should reset the pending payload after build')
     t.end()
@@ -164,7 +166,7 @@ tape('[PendingBlock]', async (t) => {
     const built = await pendingBlock.build(payloadId)
     if (!built) return t.fail('pendingBlock did not return')
     const [block, receipts] = built
-    t.ok(block.header.number.eqn(1), 'should have built block number 1')
+    t.equal(block?.header.number, BigInt(1), 'should have built block number 1')
     t.equal(
       block.transactions.length,
       0,
