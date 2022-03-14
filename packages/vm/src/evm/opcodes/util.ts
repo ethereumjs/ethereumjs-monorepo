@@ -263,6 +263,14 @@ export function updateSstoreGas(
   }
 }
 
+/**
+ *
+ * @param container A `Buffer` containing bytecode to be checked for EOF1 compliance
+ * @returns an object containing the size of the code section and data sections for a valid
+ * EOF1 container or else undefined if `container` is not valid EOF1 bytecode
+ *
+ * Note: See https://eips.ethereum.org/EIPS/eip-3540 for further details
+ */
 export const eof1CodeAnalysis = (container: Buffer) => {
   const magic = 0x00
   const version = 0x01
@@ -274,30 +282,45 @@ export const eof1CodeAnalysis = (container: Buffer) => {
     code: 0,
     data: 0,
   }
-  if (container[1] === magic && container[2] === version) {
-    if (container.length > 7 && container[3] === secCode && container[6] === secTerminator) {
-      sectionSizes.code = (container[4] << 8) | container[5]
-      computedContainerSize = 7 + sectionSizes.code
-      // Code size cannot be 0
-      if (sectionSizes.code < 1) return
-    } else if (
-      container.length > 10 &&
-      container[3] === secCode &&
-      container[6] === secData &&
-      container[9] === secTerminator
-    ) {
-      sectionSizes.code = (container[4] << 8) | container[5]
-      sectionSizes.data = (container[7] << 8) | container[8]
-      computedContainerSize = 10 + sectionSizes.code + sectionSizes.data
-      // Code & Data sizes cannot be 0
-      if (sectionSizes.code < 1 || sectionSizes.data < 1) return
-    }
-    if (container.length !== computedContainerSize) {
-      // Scanned code does not match length of contract byte code
-      return
-    }
-    return sectionSizes
+  if (container[1] !== magic || container[2] !== version)
+    // Bytecode does not contain EOF1 "magic" or version number in expected positions
+    return
+
+  if (
+    // EOF1 bytecode must be more than 7 bytes long for EOF1 header plus code section (but no data section)
+    container.length > 7 &&
+    // EOF1 code section indicator
+    container[3] === secCode &&
+    // EOF1 header terminator
+    container[6] === secTerminator
+  ) {
+    sectionSizes.code = (container[4] << 8) | container[5]
+    // Calculate expected length of EOF1 container based on code section
+    computedContainerSize = 7 + sectionSizes.code
+    // EOF1 code section must be at least 1 byte long
+    if (sectionSizes.code < 1) return
+  } else if (
+    // EOF1 container must be more than 10 bytes long if data section is included
+    container.length > 10 &&
+    // EOF1 code section indicator
+    container[3] === secCode &&
+    // EOF1 data section indicator
+    container[6] === secData &&
+    // EOF1 header terminator
+    container[9] === secTerminator
+  ) {
+    sectionSizes.code = (container[4] << 8) | container[5]
+    sectionSizes.data = (container[7] << 8) | container[8]
+    // Calculate expected length of EOF1 container based on code and data sections
+    computedContainerSize = 10 + sectionSizes.code + sectionSizes.data
+    // Code & Data sizes cannot be 0
+    if (sectionSizes.code < 1 || sectionSizes.data < 1) return
   }
+  if (container.length !== computedContainerSize) {
+    // Computed container length based on section details does not match length of actual bytecode
+    return
+  }
+  return sectionSizes
 }
 
 export const eof1ValidOpcodes = (code: Buffer) => {
