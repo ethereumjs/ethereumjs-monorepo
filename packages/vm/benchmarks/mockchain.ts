@@ -1,5 +1,3 @@
-import { BN } from 'ethereumjs-util'
-
 // Mockchain: only used to provide blockhashes for the BLOCKHASH opcode for the VM. Has no other uses.
 export default class Mockchain {
   _hashes: any
@@ -8,7 +6,7 @@ export default class Mockchain {
     this._hashes = {}
   }
 
-  getBlock(num: BN): any {
+  getBlock(num: bigint): any {
     const bhash = this._hashes[num.toString()]
     return {
       hash() {
@@ -17,7 +15,7 @@ export default class Mockchain {
     }
   }
 
-  putBlockHash(num: BN, hash: Buffer): void {
+  putBlockHash(num: bigint, hash: Buffer): void {
     this._hashes[num.toString()] = hash
   }
 }

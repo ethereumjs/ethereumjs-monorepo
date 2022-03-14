@@ -1,6 +1,5 @@
 import tape from 'tape'
 import td from 'testdouble'
-import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
 import { Synchronizer } from '../../lib/sync/sync'
@@ -28,7 +27,7 @@ tape('[Synchronizer]', async (t) => {
 
   t.test('should sync', async (t) => {
     const config = new Config({ transports: [] })
-    config.syncTargetHeight = new BN(1)
+    config.syncTargetHeight = new BigInt(1)
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
     const sync = new SynchronizerTest({ config, pool, chain })
@@ -45,8 +44,8 @@ tape('[Synchronizer]', async (t) => {
     void sync.start()
     ;(sync as any).chain._headers = {
       latest: { hash: () => Buffer.from([]) },
-      td: new BN(0),
-      height: new BN(1),
+      td: BigInt(0),
+      height: BigInt(1),
     }
     config.events.emit(Event.CHAIN_UPDATED)
     await new Promise(() => {}) // resolves once t.end() is called

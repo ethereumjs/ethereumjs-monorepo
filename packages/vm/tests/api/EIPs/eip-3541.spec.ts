@@ -25,7 +25,7 @@ tape('EIP 3541 tests', (t) => {
 
     let code = await vm.stateManager.getContractCode(created!)
 
-    st.ok(code.length === 0, 'did not deposit code')
+    st.equal(code.length, 0, 'did not deposit code')
 
     // Test if we can put a valid contract
 
@@ -81,7 +81,7 @@ tape('EIP 3541 tests', (t) => {
 
     let code = await vm.stateManager.getContractCode(address!)
 
-    st.ok(code.length === 0, 'did not deposit code')
+    st.equal(code.length, 0, 'did not deposit code')
 
     // put 0xFF contract
     const tx1 = Transaction.fromTxData({
@@ -118,7 +118,7 @@ tape('EIP 3541 tests', (t) => {
 
     let code = await vm.stateManager.getContractCode(address!)
 
-    st.ok(code.length === 0, 'did not deposit code')
+    st.equal(code.length, 0, 'did not deposit code')
 
     // put 0xFF contract
     const tx1 = Transaction.fromTxData({

@@ -37,12 +37,11 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@types/bn.js": "^5.1.0",
-    "bn.js": "^5.1.2",
     "ethereum-cryptography": "^1.0.3",
     "rlp": "^2.2.4"
   },
   "devDependencies": {
+    "@types/bn.js": "^5.1.0",
     "@types/node": "^16.11.7",
     "@types/secp256k1": "^4.0.1",
     "@types/tape": "^4.13.2",

@@ -263,7 +263,7 @@ export class Config {
   public synchronized: boolean
   public lastSyncDate: number
   /** Best known block height */
-  public syncTargetHeight?: BN
+  public syncTargetHeight?: bigint
 
   public readonly chainCommon: Common
   public readonly execCommon: Common

@@ -7,9 +7,8 @@ const MASK_160 = (BigInt(1) << BigInt(160)) - BigInt(1)
 
 /**
  * Proxy function for ethereumjs-util's setLengthLeft, except it returns a zero
- *
  * length buffer in case the buffer is full of zeros.
- * @param {Buffer} value Buffer which we want to pad
+ * @param value Buffer which we want to pad
  */
 export function setLengthLeftStorage(value: Buffer) {
   if (value.equals(Buffer.alloc(value.length, 0))) {
@@ -22,8 +21,6 @@ export function setLengthLeftStorage(value: Buffer) {
 
 /**
  * Wraps error message as VMError
- *
- * @param {string} err
  */
 export function trap(err: string) {
   // TODO: facilitate extra data along with errors
@@ -32,9 +29,6 @@ export function trap(err: string) {
 
 /**
  * Converts bigint address (they're stored like this on the stack) to buffer address
- *
- * @param  {BN}     address
- * @return {Buffer}
  */
 export function addressToBuffer(address: bigint | Buffer) {
   if (Buffer.isBuffer(address)) return address
@@ -43,9 +37,6 @@ export function addressToBuffer(address: bigint | Buffer) {
 
 /**
  * Error message helper - generates location string
- *
- * @param  {RunState} runState
- * @return {string}
  */
 export function describeLocation(runState: RunState): string {
   const hash = keccak256(runState.eei.getCode()).toString('hex')
@@ -82,14 +73,8 @@ export function short(buffer: Buffer): string {
 }
 
 /**
-/**
  * Returns an overflow-safe slice of an array. It right-pads
  * the data with zeros to `length`.
- *
- * @param {BN} offset
- * @param {BN} length
- * @param {Buffer} data
- * @returns {Buffer}
  */
 export function getDataSlice(data: Buffer, offset: bigint, length: bigint): Buffer {
   const len = BigInt(data.length)
@@ -112,9 +97,9 @@ export function getDataSlice(data: Buffer, offset: bigint, length: bigint): Buff
 /**
  * Get full opcode name from its name and code.
  *
- * @param code {number} Integer code of opcode.
- * @param name {string} Short name of the opcode.
- * @returns {string} Full opcode name
+ * @param code Integer code of opcode.
+ * @param name Short name of the opcode.
+ * @returns Full opcode name
  */
 export function getFullname(code: number, name: string): string {
   switch (name) {
@@ -136,10 +121,6 @@ export function getFullname(code: number, name: string): string {
 
 /**
  * Checks if a jump is valid given a destination (defined as a 1 in the validJumps array)
- *
- * @param  {RunState} runState
- * @param  {number}   dest
- * @return {boolean}
  */
 export function jumpIsValid(runState: RunState, dest: number): boolean {
   return runState.validJumps[dest] === 1
@@ -147,10 +128,6 @@ export function jumpIsValid(runState: RunState, dest: number): boolean {
 
 /**
  * Checks if a jumpsub is valid given a destination (defined as a 2 in the validJumps array)
- *
- * @param  {RunState} runState
- * @param  {number}   dest
- * @return {boolean}
  */
 export function jumpSubIsValid(runState: RunState, dest: number): boolean {
   return runState.validJumps[dest] === 2
@@ -158,12 +135,11 @@ export function jumpSubIsValid(runState: RunState, dest: number): boolean {
 
 /**
  * Returns an overflow-safe slice of an array. It right-pads
- *
  * the data with zeros to `length`.
- * @param {BN} gasLimit - requested gas Limit
- * @param {BN} gasLeft - current gas left
- * @param {RunState} runState - the current runState
- * @param {Common} common - the common
+ * @param gasLimit requested gas Limit
+ * @param gasLeft current gas left
+ * @param runState the current runState
+ * @param common the common
  */
 export function maxCallGas(
   gasLimit: bigint,
@@ -182,11 +158,6 @@ export function maxCallGas(
 
 /**
  * Subtracts the amount needed for memory usage from `runState.gasLeft`
- *
- * @method subMemUsage
- * @param {Object} runState
- * @param {BN} offset
- * @param {BN} length
  */
 export function subMemUsage(runState: RunState, offset: bigint, length: bigint, common: Common) {
   // YP (225): access with zero length will not extend the memory
@@ -214,10 +185,6 @@ export function subMemUsage(runState: RunState, offset: bigint, length: bigint, 
 
 /**
  * Writes data returned by eei.call* methods to memory
- *
- * @param {RunState} runState
- * @param {BN}       outOffset
- * @param {BN}       outLength
  */
 export function writeCallOutput(runState: RunState, outOffset: bigint, outLength: bigint) {
   const returnData = runState.eei.getReturnData()
@@ -233,11 +200,8 @@ export function writeCallOutput(runState: RunState, outOffset: bigint, outLength
   }
 }
 
-/** The first rule set of SSTORE rules, which are the rules pre-Constantinople and in Petersburg
- * @param {RunState} runState
- * @param {Buffer}   currentStorage
- * @param {Buffer}   value
- * @param {Buffer}   keyBuf
+/**
+ * The first rule set of SSTORE rules, which are the rules pre-Constantinople and in Petersburg
  */
 export function updateSstoreGas(
   runState: RunState,

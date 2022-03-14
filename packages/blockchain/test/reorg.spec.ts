@@ -1,6 +1,6 @@
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
-import { Address, BN } from 'ethereumjs-util'
+import { Address } from 'ethereumjs-util'
 import tape from 'tape'
 import Blockchain from '../src'
 import { CLIQUE_NONCE_AUTH } from '../src/clique'
@@ -14,9 +14,9 @@ tape('reorg tests', (t) => {
       const genesis = Block.fromBlockData(
         {
           header: {
-            number: new BN(0),
-            difficulty: new BN(0x020000),
-            gasLimit: new BN(8000000),
+            number: BigInt(0),
+            difficulty: BigInt(0x020000),
+            gasLimit: BigInt(8000000),
           },
         },
         { common }
@@ -33,20 +33,20 @@ tape('reorg tests', (t) => {
 
       blocks_lowTD.push(generateConsecutiveBlock(genesis, 0))
 
-      const TD_Low = genesis.header.difficulty.add(blocks_lowTD[0].header.difficulty)
-      const TD_High = genesis.header.difficulty.clone()
+      let TD_Low = genesis.header.difficulty + blocks_lowTD[0].header.difficulty
+      let TD_High = genesis.header.difficulty
 
       // Keep generating blocks until the Total Difficulty (TD) of the High TD chain is higher than the TD of the Low TD chain
       // This means that the block number of the high TD chain is 1 lower than the low TD chain
 
-      while (TD_High.cmp(TD_Low) == -1) {
+      while (TD_High < TD_Low) {
         blocks_lowTD.push(generateConsecutiveBlock(blocks_lowTD[blocks_lowTD.length - 1], 0))
         blocks_highTD.push(
           generateConsecutiveBlock(blocks_highTD[blocks_highTD.length - 1] || genesis, 1)
         )
 
-        TD_Low.iadd(blocks_lowTD[blocks_lowTD.length - 1].header.difficulty)
-        TD_High.iadd(blocks_highTD[blocks_highTD.length - 1].header.difficulty)
+        TD_Low += blocks_lowTD[blocks_lowTD.length - 1].header.difficulty
+        TD_High += blocks_highTD[blocks_highTD.length - 1].header.difficulty
       }
 
       // sanity check
@@ -57,14 +57,10 @@ tape('reorg tests', (t) => {
       const number_highTD = highTDBlock.header.number
 
       // ensure that the block difficulty is higher on the highTD chain when compared to the low TD chain
+      t.ok(number_lowTD > number_highTD, 'low TD should have a lower TD than the reported high TD')
       t.ok(
-        number_lowTD.cmp(number_highTD) == 1,
-        'low TD should have a lower TD than the reported high TD'
-      )
-      t.ok(
-        blocks_lowTD[blocks_lowTD.length - 1].header.number.gt(
-          blocks_highTD[blocks_highTD.length - 1].header.number
-        ),
+        blocks_lowTD[blocks_lowTD.length - 1].header.number >
+          blocks_highTD[blocks_highTD.length - 1].header.number,
         'low TD block should have a higher number than high TD block'
       )
 
@@ -118,7 +114,7 @@ tape('reorg tests', (t) => {
             ...base,
             number: 1,
             parentHash: genesisBlock.hash(),
-            timestamp: genesisBlock.header.timestamp.addn(30),
+            timestamp: genesisBlock.header.timestamp + BigInt(30),
           },
         },
         { common }
@@ -129,7 +125,7 @@ tape('reorg tests', (t) => {
             ...base,
             number: 2,
             parentHash: block1_low.hash(),
-            timestamp: block1_low.header.timestamp.addn(30),
+            timestamp: block1_low.header.timestamp + BigInt(30),
             nonce,
             coinbase: beneficiary1,
           },
@@ -143,7 +139,7 @@ tape('reorg tests', (t) => {
             ...base,
             number: 1,
             parentHash: genesisBlock.hash(),
-            timestamp: genesisBlock.header.timestamp.addn(15),
+            timestamp: genesisBlock.header.timestamp + BigInt(15),
           },
         },
         { common }
@@ -154,7 +150,7 @@ tape('reorg tests', (t) => {
             ...base,
             number: 2,
             parentHash: block1_high.hash(),
-            timestamp: block1_high.header.timestamp.addn(15),
+            timestamp: block1_high.header.timestamp + BigInt(15),
           },
         },
         { common }
@@ -165,7 +161,7 @@ tape('reorg tests', (t) => {
             ...base,
             number: 3,
             parentHash: block2_high.hash(),
-            timestamp: block2_high.header.timestamp.addn(15),
+            timestamp: block2_high.header.timestamp + BigInt(15),
             nonce,
             coinbase: beneficiary2,
           },
@@ -191,7 +187,7 @@ tape('reorg tests', (t) => {
       let signerStates = (blockchain as any)._cliqueLatestSignerStates
       t.ok(
         !signerStates.find(
-          (s: any) => s[0].eqn(2) && s[1].find((a: Address) => a.equals(beneficiary1))
+          (s: any) => s[0] === BigInt(2) && s[1].find((a: Address) => a.equals(beneficiary1))
         ),
         'should not find reorged signer state'
       )
@@ -200,7 +196,7 @@ tape('reorg tests', (t) => {
       t.ok(
         !signerVotes.find(
           (v: any) =>
-            v[0].eqn(2) &&
+            v[0] === BigInt(2) &&
             v[1][0].equals(block1_low.header.cliqueSigner()) &&
             v[1][1].equals(beneficiary1) &&
             v[1][2].equals(CLIQUE_NONCE_AUTH)
@@ -211,7 +207,7 @@ tape('reorg tests', (t) => {
       let blockSigners = (blockchain as any)._cliqueLatestBlockSigners
       t.ok(
         !blockSigners.find(
-          (s: any) => s[0].eqn(1) && s[1].equals(block1_low.header.cliqueSigner())
+          (s: any) => s[0] === BigInt(1) && s[1].equals(block1_low.header.cliqueSigner())
         ),
         'should not find reorged block signer'
       )
@@ -219,7 +215,7 @@ tape('reorg tests', (t) => {
       signerStates = (blockchain as any)._cliqueLatestSignerStates
       t.ok(
         !!signerStates.find(
-          (s: any) => s[0].eqn(3) && s[1].find((a: Address) => a.equals(beneficiary2))
+          (s: any) => s[0] === BigInt(3) && s[1].find((a: Address) => a.equals(beneficiary2))
         ),
         'should find reorged signer state'
       )
@@ -230,7 +226,7 @@ tape('reorg tests', (t) => {
       blockSigners = (blockchain as any)._cliqueLatestBlockSigners
       t.ok(
         !!blockSigners.find(
-          (s: any) => s[0].eqn(3) && s[1].equals(block3_high.header.cliqueSigner())
+          (s: any) => s[0] === BigInt(3) && s[1].equals(block3_high.header.cliqueSigner())
         ),
         'should find reorged block signer'
       )

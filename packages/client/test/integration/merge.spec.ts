@@ -6,7 +6,7 @@ import Common, {
   ConsensusAlgorithm,
   Hardfork,
 } from '@ethereumjs/common'
-import { BN, Address } from 'ethereumjs-util'
+import { Address } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
 import { FullEthereumService } from '../../lib/service'
@@ -107,12 +107,13 @@ tape('[Integration:Merge]', async (t) => {
     })
     remoteService.chain.blockchain.cliqueActiveSigners = () => [accounts[0][0]] // stub
     await server.discover('remotePeer1', '127.0.0.2')
-    const targetTTD = new BN(5)
+    const targetTTD = BigInt(5)
     remoteService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
       const { td } = remoteService.chain.headers
-      if (td.eq(targetTTD)) {
-        t.ok(
-          remoteService.chain.headers.td.eq(targetTTD),
+      if (td === targetTTD) {
+        t.equal(
+          remoteService.chain.headers.td,
+          targetTTD,
           'synced blocks to the merge successfully'
         )
         // Make sure the miner has stopped
@@ -121,7 +122,7 @@ tape('[Integration:Merge]', async (t) => {
         await destroy(remoteServer, remoteService)
         t.end()
       }
-      if (td.gt(targetTTD)) {
+      if (td > targetTTD) {
         t.fail('chain should not exceed merge TTD')
       }
     })
@@ -137,16 +138,17 @@ tape('[Integration:Merge]', async (t) => {
       common: commonPoW,
     })
     await server.discover('remotePeer1', '127.0.0.2')
-    const targetTTD = new BN(1000)
-    let terminalHeight: BN | undefined
+    const targetTTD = BigInt(1000)
+    let terminalHeight: bigint | undefined
     remoteService.config.events.on(Event.CHAIN_UPDATED, async () => {
       const { height, td } = remoteService.chain.headers
-      if (td.gt(targetTTD)) {
+      if (td > targetTTD) {
         if (!terminalHeight) {
           terminalHeight = height
         }
-        t.ok(
-          remoteService.chain.headers.height.eq(terminalHeight),
+        t.equal(
+          remoteService.chain.headers.height,
+          terminalHeight,
           'synced blocks to the merge successfully'
         )
         // Make sure the miner has stopped
@@ -155,7 +157,7 @@ tape('[Integration:Merge]', async (t) => {
         await destroy(remoteServer, remoteService)
         t.end()
       }
-      if (terminalHeight?.lt(height)) {
+      if (terminalHeight && terminalHeight < height) {
         t.fail('chain should not exceed merge terminal block')
       }
     })

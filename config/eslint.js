@@ -45,6 +45,7 @@ module.exports = {
     'prettier/prettier': 'error',
     'no-redeclare': 'off',
     '@typescript-eslint/no-redeclare': ['error'],
+    '@typescript-eslint/restrict-plus-operands': 'off',
   },
   parserOptions: {
     sourceType: 'module',

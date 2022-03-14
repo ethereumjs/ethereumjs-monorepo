@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { Account, Address, BN } from 'ethereumjs-util'
+import { Account, Address } from 'ethereumjs-util'
 import Cache, { getCb, putCb } from '../../../src/state/cache'
 import { createAccount } from '../utils'
 
@@ -22,7 +22,7 @@ tape('cache initialization', (t) => {
     }
     const cache = new Cache({ getCb, putCb, deleteCb })
 
-    st.ok(cache._checkpoints.length === 0, 'initializes given trie')
+    st.equal(cache._checkpoints.length, 0, 'initializes given trie')
     st.end()
   })
 })
@@ -45,18 +45,18 @@ tape('cache put and get account', (t) => {
   const cache = new Cache({ getCb, putCb, deleteCb })
 
   const addr = new Address(Buffer.from('cd2a3d9f938e13cd947ec05abc7fe734df8dd826', 'hex'))
-  const acc = createAccount(new BN(0), new BN(0xff11))
+  const acc = createAccount(BigInt(0), BigInt(0xff11))
 
   t.test('should fail to get non-existent account', async (st) => {
     const res = cache.get(addr)
-    st.notOk(res.balance.eq(acc.balance))
+    st.notEqual(res.balance, acc.balance)
     st.end()
   })
 
   t.test('should put account', async (st) => {
     cache.put(addr, acc)
     const res = cache.get(addr)
-    st.ok(res.balance.eq(acc.balance))
+    st.equal(res.balance, acc.balance)
     st.end()
   })
 
@@ -74,7 +74,7 @@ tape('cache put and get account', (t) => {
   t.test('trie should contain flushed account', async (st) => {
     const raw = await trie.get(addr.buf)
     const res = Account.fromRlpSerializedAccount(raw!)
-    st.ok(res.balance.eq(acc.balance))
+    st.equal(res.balance, acc.balance)
     st.end()
   })
 
@@ -82,18 +82,18 @@ tape('cache put and get account', (t) => {
     cache.del(addr)
 
     const res = cache.get(addr)
-    st.notOk(res.balance.eq(acc.balance))
+    st.notEqual(res.balance, acc.balance)
     st.end()
   })
 
   t.test('should update loaded account and flush it', async (st) => {
-    const updatedAcc = createAccount(new BN(0), new BN(0xff00))
+    const updatedAcc = createAccount(BigInt(0), BigInt(0xff00))
     cache.put(addr, updatedAcc)
     await cache.flush()
 
     const raw = await trie.get(addr.buf)
     const res = Account.fromRlpSerializedAccount(raw!)
-    st.ok(res.balance.eq(updatedAcc.balance))
+    st.equal(res.balance, updatedAcc.balance)
     st.end()
   })
 })
@@ -116,8 +116,8 @@ tape('cache checkpointing', (t) => {
   const cache = new Cache({ getCb, putCb, deleteCb })
 
   const addr = new Address(Buffer.from('cd2a3d9f938e13cd947ec05abc7fe734df8dd826', 'hex'))
-  const acc = createAccount(new BN(0), new BN(0xff11))
-  const updatedAcc = createAccount(new BN(0x00), new BN(0xff00))
+  const acc = createAccount(BigInt(0), BigInt(0xff11))
+  const updatedAcc = createAccount(BigInt(0x00), BigInt(0xff00))
 
   t.test('should revert to correct state', async (st) => {
     cache.put(addr, acc)
@@ -125,12 +125,12 @@ tape('cache checkpointing', (t) => {
     cache.put(addr, updatedAcc)
 
     let res = cache.get(addr)
-    st.ok(res.balance.eq(updatedAcc.balance))
+    st.equal(res.balance, updatedAcc.balance)
 
     cache.revert()
 
     res = cache.get(addr)
-    st.ok(res.balance.eq(acc.balance))
+    st.equal(res.balance, acc.balance)
 
     st.end()
   })

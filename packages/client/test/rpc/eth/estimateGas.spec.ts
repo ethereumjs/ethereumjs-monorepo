@@ -3,7 +3,7 @@ import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { Address, BN, bnToHex } from 'ethereumjs-util'
+import { Address, bigIntToHex } from 'ethereumjs-util'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
 import { checkError } from '../util'
@@ -77,7 +77,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
     to: createdAddress!.toString(),
     from: address.toString(),
     data: `0x${funcHash}`,
-    gasLimit: bnToHex(new BN(53000)),
+    gasLimit: bigIntToHex(BigInt(53000)),
   }
   const estimateTx = Transaction.fromTxData(estimateTxData, { freeze: false })
   estimateTx.getSenderAddress = () => {
@@ -114,7 +114,7 @@ tape(`${method}: call with unsupported block argument`, async (t) => {
     to: address.toString(),
     from: address.toString(),
     data: `0x${funcHash}`,
-    gasLimit: bnToHex(new BN(53000)),
+    gasLimit: bigIntToHex(BigInt(53000)),
   }
 
   const req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'pending'])

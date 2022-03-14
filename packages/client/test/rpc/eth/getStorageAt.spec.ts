@@ -3,7 +3,7 @@ import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { Address, BN, bnToHex, bufferToHex, keccak } from 'ethereumjs-util'
+import { Address, bigIntToHex, bufferToHex, keccak } from 'ethereumjs-util'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
 import { checkError } from '../util'
@@ -81,7 +81,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
     to: createdAddress!.toString(),
     from: address.toString(),
     data: `0x${funcHash}`,
-    gasLimit: bnToHex(new BN(530000)),
+    gasLimit: bigIntToHex(BigInt(530000)),
     nonce: 1,
   }
   const storeTx = Transaction.fromTxData(storeTxData, { common, freeze: false })

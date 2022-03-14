@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
-import { Address, BN } from 'ethereumjs-util'
+import { Address } from 'ethereumjs-util'
 import tape from 'tape'
 import Blockchain from '../src'
 import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP } from '../src/clique'
@@ -11,7 +11,7 @@ tape('Clique: Initialization', (t) => {
     const blockchain = new Blockchain({ common })
 
     const head = await blockchain.getHead()
-    st.equals(head.hash().toString('hex'), common.genesis().hash.slice(2), 'correct genesis hash')
+    st.equal(head.hash().toString('hex'), common.genesis().hash.slice(2), 'correct genesis hash')
 
     st.deepEquals(
       blockchain.cliqueActiveSigners(),
@@ -23,7 +23,7 @@ tape('Clique: Initialization', (t) => {
 
   const COMMON = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
   const EXTRA_DATA = Buffer.alloc(97)
-  const GAS_LIMIT = 8000000
+  const GAS_LIMIT = BigInt(8000000)
 
   type Signer = {
     address: Address
@@ -157,10 +157,10 @@ tape('Clique: Initialization', (t) => {
         number,
         parentHash: lastBlock.hash(),
         coinbase,
-        timestamp: lastBlock.header.timestamp.addn(15),
+        timestamp: lastBlock.header.timestamp + BigInt(15),
         extraData,
         gasLimit: GAS_LIMIT,
-        difficulty: new BN(2),
+        difficulty: BigInt(2),
         nonce,
       },
     }
@@ -169,7 +169,7 @@ tape('Clique: Initialization', (t) => {
     const signers = blockchain.cliqueActiveSigners()
     const signerIndex = signers.findIndex((address: Address) => address.equals(signer.address))
     const inTurn = number % signers.length === signerIndex
-    blockData.header.difficulty = inTurn ? new BN(2) : new BN(1)
+    blockData.header.difficulty = inTurn ? BigInt(2) : BigInt(1)
 
     // set signer
     const cliqueSigner = signer.privateKey
@@ -212,9 +212,9 @@ tape('Clique: Initialization', (t) => {
     await addNextBlock(blockchain, blocks, A)
     ;(blockchain as any)._validateBlocks = false
 
-    const number = new BN(1)
+    const number = BigInt(1)
     const extraData = Buffer.alloc(97)
-    let difficulty = new BN(5)
+    let difficulty = BigInt(5)
     let block = Block.fromBlockData(
       { header: { number, extraData, difficulty } },
       { common: COMMON }
@@ -231,7 +231,7 @@ tape('Clique: Initialization', (t) => {
       }
     }
 
-    difficulty = new BN(1)
+    difficulty = BigInt(1)
     const cliqueSigner = A.privateKey
     block = Block.fromBlockData(
       { header: { number, extraData, difficulty } },
@@ -272,7 +272,7 @@ tape('Clique: Initialization', (t) => {
   t.test('Clique Voting: Single signer, no votes cast', async (st) => {
     const { blocks, blockchain } = await initWithSigners([A])
     const block = await addNextBlock(blockchain, blocks, A)
-    st.equal(block.header.number.toNumber(), 1)
+    st.equal(block.header.number, BigInt(1))
     st.deepEqual(blockchain.cliqueActiveSigners(), [A.address])
     st.end()
   })

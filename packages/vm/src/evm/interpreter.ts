@@ -179,7 +179,7 @@ export default class Interpreter {
 
     if (opInfo.dynamicGas) {
       const dynamicGasHandler = this._vm._dynamicGasHandlers.get(this._runState.opCode)!
-      // This function updates the gas BN in-place using `i*` methods
+      // This function updates the gas in-place.
       // It needs the base fee, for correct gas limit calculation for the CALL opcodes
       gas = await dynamicGasHandler(this._runState, gas, this._vm._common)
     }
@@ -283,8 +283,8 @@ export default class Interpreter {
      * @property {fee}        opcode.number Base fee of the opcode
      * @property {dynamicFee} opcode.dynamicFee Dynamic opcode fee
      * @property {boolean}    opcode.isAsync opcode is async
-     * @property {BN} gasLeft amount of gasLeft
-     * @property {BN} gasRefund gas refund
+     * @property {BigInt} gasLeft amount of gasLeft
+     * @property {BigInt} gasRefund gas refund
      * @property {StateManager} stateManager a {@link StateManager} instance
      * @property {Array} stack an `Array` of `Buffers` containing the stack
      * @property {Array} returnStack the return stack
@@ -292,7 +292,7 @@ export default class Interpreter {
      * @property {Address} address the address of the `account`
      * @property {Number} depth the current number of calls deep the contract is
      * @property {Buffer} memory the memory of the VM as a `buffer`
-     * @property {BN} memoryWordCount current size of memory in words
+     * @property {BigInt} memoryWordCount current size of memory in words
      * @property {Address} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
      */
     return this._vm._emit('step', eventObj)

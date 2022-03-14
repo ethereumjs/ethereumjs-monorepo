@@ -164,7 +164,7 @@ export class ReceiptsManager extends MetaDBManager {
   ): Promise<GetLogsReturn> {
     const returnedLogs: GetLogsReturn = []
     let returnedLogsSize = 0
-    for (const i = from.header.number.clone(); i.lte(to.header.number); i.iaddn(1)) {
+    for (let i = from.header.number; i <= to.header.number; i++) {
       const block = await this.chain.getBlock(i)
       const receipts = await this.getReceipts(block.hash())
       if (receipts.length === 0) continue
@@ -238,7 +238,7 @@ export class ReceiptsManager extends MetaDBManager {
         if (operation === IndexOperation.Save) {
           const withinTxLookupLimit =
             this.config.txLookupLimit === 0 ||
-            this.chain.headers.height.subn(this.config.txLookupLimit).lt(block.header.number)
+            this.chain.headers.height - BigInt(this.config.txLookupLimit) < block.header.number
           if (withinTxLookupLimit) {
             for (const [i, tx] of block.transactions.entries()) {
               const index: TxHashIndex = [block.hash(), i]
@@ -248,8 +248,8 @@ export class ReceiptsManager extends MetaDBManager {
           }
           if (this.config.txLookupLimit > 0) {
             // Remove tx hashes for one block past txLookupLimit
-            const limit = this.chain.headers.height.subn(this.config.txLookupLimit)
-            if (limit.ltn(0)) return
+            const limit = this.chain.headers.height - BigInt(this.config.txLookupLimit)
+            if (limit < BigInt(0)) return
             const blockDelIndexes = await this.chain.getBlock(limit)
             void this.updateIndex(IndexOperation.Delete, IndexType.TxHash, blockDelIndexes)
           }

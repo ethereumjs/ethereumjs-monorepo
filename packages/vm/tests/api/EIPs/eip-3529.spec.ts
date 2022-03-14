@@ -148,8 +148,8 @@ tape('EIP-3529 tests', (t) => {
       const gasUsed = gasLimit - gasLeft!
       const effectiveGas = gasUsed - gasRefund!
 
-      st.equals(Number(effectiveGas), testCase.effectiveGas, 'correct effective gas')
-      st.equals(Number(gasUsed), testCase.usedGas, 'correct used gas')
+      st.equal(effectiveGas, BigInt(testCase.effectiveGas), 'correct effective gas')
+      st.equal(gasUsed, BigInt(testCase.usedGas), 'correct used gas')
 
       // clear the storage cache, otherwise next test will use current original value
       vm.stateManager.clearOriginalStorageCache()
@@ -170,9 +170,9 @@ tape('EIP-3529 tests', (t) => {
       tx,
     })
 
-    st.ok(result.execResult.exceptionError === undefined, 'transaction executed succesfully')
+    st.equal(result.execResult.exceptionError, undefined, 'transaction executed succesfully')
     st.ok(result.execResult.gasRefund !== undefined, 'gas refund is defined')
-    st.ok(result.execResult.gasRefund === BigInt(0), 'gas refund is zero')
+    st.equal(result.execResult.gasRefund, BigInt(0), 'gas refund is zero')
     st.end()
   })
 
