@@ -2,6 +2,10 @@ import tape from 'tape'
 import { KECCAK256_NULL, rlp } from 'ethereumjs-util'
 import { BaseTrie, CheckpointTrie } from '../src'
 
+// explicitly import buffer,
+// needed for karma-typescript bundling
+import { Buffer } from 'buffer'
+
 tape('simple save and retrieve', function (tester) {
   const it = tester.test
 

@@ -600,12 +600,12 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.stack.push(runState.eei.getBlockNumber())
     },
   ],
-  // 0x44: DIFFICULTY (EIP-4399: supplanted as RANDOM)
+  // 0x44: DIFFICULTY (EIP-4399: supplanted as PREVRANDAO)
   [
     0x44,
     function (runState, common) {
       if (common.isActivatedEIP(4399)) {
-        runState.stack.push(runState.eei.getBlockRandom())
+        runState.stack.push(runState.eei.getBlockPrevRandao())
       } else {
         runState.stack.push(runState.eei.getBlockDifficulty())
       }

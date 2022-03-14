@@ -144,9 +144,10 @@ export class DBOp {
   }
 
   public updateCache(cacheMap: CacheMap) {
-    if (this.cacheString && cacheMap[this.cacheString] && Buffer.isBuffer(this.baseDBOp.value)) {
+    if (this.cacheString && cacheMap[this.cacheString]) {
       if (this.baseDBOp.type == 'put') {
-        cacheMap[this.cacheString].set(this.baseDBOp.key, this.baseDBOp.value)
+        Buffer.isBuffer(this.baseDBOp.value) &&
+          cacheMap[this.cacheString].set(this.baseDBOp.key, this.baseDBOp.value)
       } else if (this.baseDBOp.type == 'del') {
         cacheMap[this.cacheString].del(this.baseDBOp.key)
       } else {

@@ -20,7 +20,7 @@ import {
   N_DIV_2,
   TxOptions,
 } from './types'
-import { AccessLists } from './util'
+import { AccessLists, checkMaxInitCodeSize } from './util'
 
 const TRANSACTION_TYPE = 2
 const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')
@@ -233,6 +233,10 @@ export default class FeeMarketEIP1559Transaction extends BaseTransaction<FeeMark
         'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
       )
       throw new Error(msg)
+    }
+
+    if (this.common.isActivatedEIP(3860)) {
+      checkMaxInitCodeSize(this.common, this.data.length)
     }
 
     const freeze = opts?.freeze ?? true

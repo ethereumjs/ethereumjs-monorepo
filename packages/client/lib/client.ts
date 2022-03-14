@@ -120,7 +120,7 @@ export default class EthereumClient {
       )
     })
     this.config.events.on(Event.SYNC_SYNCHRONIZED, (height) => {
-      this.config.logger.info(`Synchronized blockchain at height ${height}`)
+      this.config.logger.info(`Synchronized blockchain at height=${height}`)
     })
 
     await this.execution?.open()

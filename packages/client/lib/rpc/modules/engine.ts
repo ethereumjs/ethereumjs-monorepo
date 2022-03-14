@@ -3,7 +3,7 @@ import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
 import { toBuffer, bufferToHex, rlp, BN } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { middleware, validators } from '../validation'
-import { INTERNAL_ERROR } from '../error-code'
+import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
 import { PendingBlock } from '../../miner'
 import type VM from '@ethereumjs/vm'
 import type EthereumClient from '../../client'
@@ -29,7 +29,7 @@ type ExecutionPayloadV1 = {
   stateRoot: string // DATA, 32 Bytes
   receiptsRoot: string // DATA, 32 bytes
   logsBloom: string // DATA, 256 Bytes
-  random: string // DATA, 32 Bytes
+  prevRandao: string // DATA, 32 Bytes
   blockNumber: string // QUANTITY, 64 Bits
   gasLimit: string // QUANTITY, 64 Bits
   gasUsed: string // QUANTITY, 64 Bits
@@ -51,7 +51,7 @@ type ForkchoiceStateV1 = {
 
 type PayloadAttributesV1 = {
   timestamp: string
-  random: string
+  prevRandao: string
   suggestedFeeRecipient: string
 }
 
@@ -64,6 +64,12 @@ type PayloadStatusV1 = {
 type ForkchoiceResponseV1 = {
   payloadStatus: PayloadStatusV1
   payloadId: string | null
+}
+
+type TransitionConfigurationV1 = {
+  terminalTotalDifficulty: string
+  terminalBlockHash: string
+  terminalBlockNumber: string
 }
 
 const EngineError = {
@@ -92,7 +98,7 @@ const blockToExecutionPayload = (block: Block) => {
     extraData: header.extraData!,
     baseFeePerGas: header.baseFeePerGas!,
     blockHash: bufferToHex(block.hash()),
-    random: header.mixHash!,
+    prevRandao: header.mixHash!,
     transactions,
   }
   return payload
@@ -214,7 +220,7 @@ export class Engine {
           stateRoot: validators.hex,
           receiptsRoot: validators.hex,
           logsBloom: validators.hex,
-          random: validators.hex,
+          prevRandao: validators.hex,
           blockNumber: validators.hex,
           gasLimit: validators.hex,
           gasUsed: validators.hex,
@@ -239,7 +245,7 @@ export class Engine {
         validators.optional(
           validators.object({
             timestamp: validators.hex,
-            random: validators.hex,
+            prevRandao: validators.hex,
             suggestedFeeRecipient: validators.address,
           })
         ),
@@ -247,6 +253,11 @@ export class Engine {
     ])
 
     this.getPayloadV1 = middleware(this.getPayloadV1.bind(this), 1, [[validators.hex]])
+
+    this.exchangeTransitionConfigurationV1 = middleware(
+      this.exchangeTransitionConfigurationV1.bind(this),
+      0
+    )
   }
 
   /**
@@ -272,7 +283,7 @@ export class Engine {
     const {
       blockNumber: number,
       receiptsRoot: receiptTrie,
-      random: mixHash,
+      prevRandao: mixHash,
       feeRecipient: coinbase,
       transactions,
       parentHash,
@@ -282,8 +293,8 @@ export class Engine {
     try {
       await findBlock(toBuffer(parentHash), this.validBlocks, this.chain)
     } catch (error: any) {
-      // TODO if we can't find the parent, return ACCEPTED when optimistic sync is supported
-      // and we can store the block for later processing
+      // TODO if we can't find the parent and the block doesn't extend the canonical chain,
+      // return ACCEPTED when optimistic sync is supported to store the block for later processing
       return { status: Status.SYNCING, validationError: null, latestValidHash: null }
     }
 
@@ -472,11 +483,11 @@ export class Engine {
      * If payloadAttributes is present, start building block and return payloadId
      */
     if (payloadAttributes) {
-      const { timestamp, random, suggestedFeeRecipient } = payloadAttributes
+      const { timestamp, prevRandao, suggestedFeeRecipient } = payloadAttributes
       const parentBlock = this.chain.blocks.latest!
       const payloadId = await this.pendingBlock.start(this.vm.copy(), parentBlock, {
         timestamp,
-        mixHash: random,
+        mixHash: prevRandao,
         coinbase: suggestedFeeRecipient,
       })
       const latestValidHash = await validHash(
@@ -521,5 +532,30 @@ export class Engine {
         message: error.message ?? error,
       }
     }
+  }
+
+  /**
+   * Compare transition configuration parameters.
+   *
+   * @param params An array of one parameter:
+   *   1. transitionConfiguration: Object - instance of {@link TransitionConfigurationV1}
+   * @returns Instance of {@link TransitionConfigurationV1} or an error
+   */
+  async exchangeTransitionConfigurationV1(
+    params: [TransitionConfigurationV1]
+  ): Promise<TransitionConfigurationV1> {
+    const { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber } = params[0]
+    const { td } = this.config.chainCommon.hardforks().find((h) => h.name === 'merge')!
+    if (td !== parseInt(terminalTotalDifficulty)) {
+      throw {
+        code: INVALID_PARAMS,
+        message: `terminalTotalDifficulty set to ${td}, received ${parseInt(
+          terminalTotalDifficulty
+        )}`,
+      }
+    }
+    // Note: our client does not yet support block whitelisting (terminalBlockHash/terminalBlockNumber)
+    // since we are not yet fast enough to run along tip-of-chain mainnet execution
+    return { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber }
   }
 }

@@ -52,6 +52,7 @@ export interface VMOpts {
    * - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
    * - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
    * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction
+   * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode
    *
    * *Annotations:*
    *
@@ -92,6 +93,14 @@ export interface VMOpts {
    * Default: `false`
    */
   activatePrecompiles?: boolean
+  /**
+   * If true, the state of the VM will add the genesis state given by {@link Common} to a new
+   * created state manager instance. Note that if stateManager option is also passed as argument
+   * this flag won't have any effect.
+   *
+   * Default: `false`
+   */
+  activateGenesisState?: boolean
   /**
    * Allows unlimited contract sizes while debugging. By setting this to `true`, the check for
    * contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed.
@@ -195,7 +204,9 @@ export default class VM extends AsyncEventEmitter {
 
     if (opts.common) {
       // Supported EIPs
-      const supportedEIPs = [1559, 2315, 2537, 2565, 2718, 2929, 2930, 3198, 3529, 3541, 3607, 3855]
+      const supportedEIPs = [
+        1559, 2315, 2537, 2565, 2718, 2929, 2930, 3198, 3529, 3541, 3607, 3855, 3860,
+      ]
       for (const eip of opts.common.eips()) {
         if (!supportedEIPs.includes(eip)) {
           throw new Error(`EIP-${eip} is not supported by the VM`)
@@ -282,18 +293,24 @@ export default class VM extends AsyncEventEmitter {
 
     await this.blockchain.initPromise
 
-    if (this._opts.activatePrecompiles && !this._opts.stateManager) {
-      await this.stateManager.checkpoint()
-      // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
-      await Promise.all(
-        Object.keys(precompiles)
-          .map((k: string): Address => new Address(Buffer.from(k, 'hex')))
-          .map(async (address: Address) => {
-            const account = Account.fromAccountData({ balance: 1 })
-            await this.stateManager.putAccount(address, account)
-          })
-      )
-      await this.stateManager.commit()
+    if (!this._opts.stateManager) {
+      if (this._opts.activateGenesisState) {
+        await this.stateManager.generateCanonicalGenesis()
+      }
+
+      if (this._opts.activatePrecompiles) {
+        await this.stateManager.checkpoint()
+        // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
+        await Promise.all(
+          Object.keys(precompiles)
+            .map((k: string): Address => new Address(Buffer.from(k, 'hex')))
+            .map(async (address: Address) => {
+              const account = Account.fromAccountData({ balance: 1 })
+              await this.stateManager.putAccount(address, account)
+            })
+        )
+        await this.stateManager.commit()
+      }
     }
 
     if (this._common.isActivatedEIP(2537)) {

@@ -151,7 +151,7 @@ export abstract class Synchronizer {
       if (!this.config.synchronized) {
         const hash = this.chain.headers.latest?.hash()
         this.config.logger.info(
-          `Chain synchronized height=${this.chain.headers.height} number=${short(hash!)}`
+          `Chain synchronized height=${this.chain.headers.height} hash=${short(hash!)}`
         )
       }
       this.config.synchronized = true

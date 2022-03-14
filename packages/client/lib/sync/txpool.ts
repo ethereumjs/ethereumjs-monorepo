@@ -119,7 +119,7 @@ export class TxPool {
   /**
    * Log pool statistics on the given interval
    */
-  private LOG_STATISTICS_INTERVAL = 10000 // ms
+  private LOG_STATISTICS_INTERVAL = 20000 // ms
 
   /**
    * Create new tx pool
