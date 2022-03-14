@@ -1,7 +1,12 @@
 import tape from 'tape'
 import Blockchain from '@ethereumjs/blockchain'
-import Common, { Chain as ChainCommon, ConsensusType, ConsensusAlgorithm } from '@ethereumjs/common'
-import { BN, Address } from 'ethereumjs-util'
+import Common, {
+  Chain as ChainCommon,
+  ConsensusType,
+  ConsensusAlgorithm,
+  Hardfork,
+} from '@ethereumjs/common'
+import { Address } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
 import { FullEthereumService } from '../../lib/service'
@@ -10,8 +15,12 @@ import MockServer from './mocks/mockserver'
 import { setup, destroy } from './util'
 
 tape('[Integration:Miner]', async (t) => {
+  const hardforks = new Common({ chain: ChainCommon.Goerli })
+    .hardforks()
+    .map((h) => (h.name === Hardfork.London ? { ...h, block: 0 } : h))
   const common = Common.custom(
     {
+      hardforks,
       consensus: {
         type: ConsensusType.ProofOfAuthority,
         algorithm: ConsensusAlgorithm.Clique,
@@ -76,10 +85,10 @@ tape('[Integration:Miner]', async (t) => {
       remoteService.chain.blockchain.cliqueActiveSigners = () => [accounts[0][0]] // stub
       ;(remoteService as FullEthereumService).execution.run = async () => 1 // stub
       await server.discover('remotePeer1', '127.0.0.2')
-      const targetHeight = new BN(5)
+      const targetHeight = BigInt(5)
       remoteService.config.events.on(Event.SYNC_SYNCHRONIZED, async (chainHeight) => {
-        if (chainHeight.eq(targetHeight)) {
-          t.ok(remoteService.chain.blocks.height.eq(targetHeight), 'synced blocks successfully')
+        if (chainHeight === targetHeight) {
+          t.equal(remoteService.chain.blocks.height, targetHeight, 'synced blocks successfully')
           await destroy(server, service)
           await destroy(remoteServer, remoteService)
           t.end()

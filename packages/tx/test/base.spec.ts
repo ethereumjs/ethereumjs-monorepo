@@ -4,12 +4,18 @@ import {
   Transaction,
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
-  N_DIV_2,
   Capability,
 } from '../src'
 import { TxsJsonEntry } from './types'
 import { BaseTransaction } from '../src/baseTransaction'
-import { privateToPublic, BN, toBuffer, MAX_INTEGER, MAX_UINT64 } from 'ethereumjs-util'
+import {
+  privateToPublic,
+  toBuffer,
+  MAX_INTEGER,
+  MAX_UINT64,
+  SECP256K1_ORDER,
+  bufferToBigInt,
+} from 'ethereumjs-util'
 
 tape('[BaseTransaction]', function (t) {
   // EIP-2930 is not enabled in Common by default (2021-03-06)
@@ -241,7 +247,7 @@ tape('[BaseTransaction]', function (t) {
   t.test('verifySignature()', function (st) {
     for (const txType of txTypes) {
       txType.txs.forEach(function (tx: any) {
-        st.equals(tx.verifySignature(), true, `${txType.name}: signature should be valid`)
+        st.equal(tx.verifySignature(), true, `${txType.name}: signature should be valid`)
       })
     }
     st.end()
@@ -253,7 +259,7 @@ tape('[BaseTransaction]', function (t) {
         // set `s` to a single zero
         txFixture.data.s = '0x' + '0'
         const tx = txType.class.fromTxData(txFixture.data, { common })
-        st.equals(tx.verifySignature(), false, `${txType.name}: signature should not be valid`)
+        st.equal(tx.verifySignature(), false, `${txType.name}: signature should not be valid`)
         st.ok(
           (<string[]>tx.validate(true)).includes('Invalid Signature'),
           `${txType.name}: should return an error string about not verifying signatures`
@@ -281,13 +287,38 @@ tape('[BaseTransaction]', function (t) {
     st.end()
   })
 
+  t.test('isSigned() -> returns correct values', function (st) {
+    for (const txType of txTypes) {
+      const txs = [
+        ...txType.txs,
+        // add unsigned variants
+        ...txType.txs.map((tx) =>
+          txType.class.fromTxData({
+            ...tx,
+            v: undefined,
+            r: undefined,
+            s: undefined,
+          })
+        ),
+      ]
+      for (const tx of txs) {
+        st.equal(
+          tx.isSigned(),
+          tx.v !== undefined && tx.r !== undefined && tx.s !== undefined,
+          'isSigned() returns correctly'
+        )
+      }
+    }
+    st.end()
+  })
+
   t.test('getSenderAddress()', function (st) {
     for (const txType of txTypes) {
       txType.txs.forEach(function (tx: any, i: number) {
         const { privateKey, sendersAddress } = txType.fixtures[i]
         if (privateKey) {
           const signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
-          st.equals(
+          st.equal(
             signedTx.getSenderAddress().toString(),
             `0x${sendersAddress}`,
             `${txType.name}: should get sender's address after signing it`
@@ -327,7 +358,7 @@ tape('[BaseTransaction]', function (t) {
           if (privateKey) {
             let signedTx = tx.sign(Buffer.from(privateKey, 'hex'))
             signedTx = JSON.parse(JSON.stringify(signedTx)) // deep clone
-            ;(signedTx as any).s = N_DIV_2.addn(1)
+            ;(signedTx as any).s = SECP256K1_ORDER + BigInt(1)
             st.throws(() => {
               signedTx.getSenderPublicKey()
             }, 'should throw when s-value is greater than secp256k1n/2')
@@ -368,11 +399,11 @@ tape('[BaseTransaction]', function (t) {
     st.equal(tx.r, undefined)
     st.equal(tx.s, undefined)
     st.isEquivalent(tx.to, undefined)
-    st.isEquivalent(tx.value, new BN(bufferZero))
+    st.isEquivalent(tx.value, bufferToBigInt(bufferZero))
     st.isEquivalent(tx.data, bufferZero)
-    st.isEquivalent(tx.gasPrice, new BN(bufferZero))
-    st.isEquivalent(tx.gasLimit, new BN(bufferZero))
-    st.isEquivalent(tx.nonce, new BN(bufferZero))
+    st.isEquivalent(tx.gasPrice, bufferToBigInt(bufferZero))
+    st.isEquivalent(tx.gasLimit, bufferToBigInt(bufferZero))
+    st.isEquivalent(tx.nonce, bufferToBigInt(bufferZero))
 
     st.end()
   })
@@ -388,12 +419,12 @@ tape('[BaseTransaction]', function (t) {
       )
     }
     try {
-      ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_INTEGER.addn(1) }, 256, false)
+      ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_INTEGER + BigInt(1) }, 256, false)
     } catch (err: any) {
       st.ok(err.message.includes('exceed MAX_INTEGER'), 'throws when value exceeds MAX_INTEGER')
     }
     try {
-      ;(tx as any)._validateCannotExceedMaxInteger({ a: new BN(0) }, 100, false)
+      ;(tx as any)._validateCannotExceedMaxInteger({ a: BigInt(0) }, 100, false)
     } catch (err: any) {
       st.ok(
         err.message.includes('unimplemented bits value'),
@@ -401,7 +432,7 @@ tape('[BaseTransaction]', function (t) {
       )
     }
     try {
-      ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_UINT64.addn(1) }, 64, false)
+      ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_UINT64 + BigInt(1) }, 64, false)
     } catch (err: any) {
       st.ok(err.message.includes('2^64'), 'throws when 64 bit integer exceeds MAX_UINT64')
     }

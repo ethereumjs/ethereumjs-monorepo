@@ -1,6 +1,6 @@
 import { Block, HeaderData } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
-import { toBuffer, bufferToHex, rlp, BN, zeros } from 'ethereumjs-util'
+import { toBuffer, bufferToHex, rlp, zeros } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Hardfork } from '@ethereumjs/common'
 
@@ -567,10 +567,16 @@ export class Engine {
       await this.execution.setHead(blocks)
       this.service.txPool.removeNewBlockTxs(blocks)
 
-      const timeDiff = new Date().getTime() / 1000 - headBlock.header.timestamp.toNumber()
+      // TODO: removed along rebase, 2022-04-05, @holgerd77
+      // Analyze if code should be there for some reason
+      /*for (const block of blocks) {
+        this.validBlocks.delete(block.hash().toString('hex'))
+      }*/
+
+      const timeDiff = new Date().getTime() / 1000 - Number(headBlock.header.timestamp)
       if (
         (!this.config.syncTargetHeight ||
-          this.config.syncTargetHeight.lt(headBlock.header.number)) &&
+          this.config.syncTargetHeight < headBlock.header.number) &&
         timeDiff < 30
       ) {
         this.config.synchronized = true

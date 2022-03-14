@@ -3,17 +3,25 @@ import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { addHexPrefix, toBuffer, rlp, stripHexPrefix, bufferToBigInt } from 'ethereumjs-util'
+import { toBuffer, rlp, stripHexPrefix, bufferToBigInt, isHexPrefixed } from 'ethereumjs-util'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { setupPreConditions, verifyPostConditions } from '../../util'
 
 const level = require('level')
 const levelMem = require('level-mem')
 
+function formatBlockHeader(data: any) {
+  const formatted: any = {}
+  for (const [key, value] of Object.entries(data) as [string, string][]) {
+    formatted[key] = isHexPrefixed(value) ? value : BigInt(value)
+  }
+  return formatted
+}
+
 export default async function runBlockchainTest(options: any, testData: any, t: tape.Test) {
   // ensure that the test data is the right fork data
   if (testData.network != options.forkConfigTestSuite) {
-    t.comment('skipping test: no data available for ' + <string>options.forkConfigTestSuite)
+    t.comment(`skipping test: no data available for ${options.forkConfigTestSuite}`)
     return
   }
 
@@ -115,7 +123,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
 
     try {
       // Update common HF
-      common.setHardforkByBlockNumber(Number(currentBlock))
+      common.setHardforkByBlockNumber(currentBlock)
 
       // transactionSequence is provided when txs are expected to be rejected.
       // To run this field we try to import them on the current state.
@@ -138,7 +146,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
             if (!shouldFail) {
               t.fail(`tx should not fail, but failed: ${e.message}`)
             } else {
-              t.pass('tx succesfully failed')
+              t.pass('tx successfully failed')
             }
           }
         }
@@ -178,7 +186,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
       await cacheDB.close()
 
       if (expectException) {
-        t.fail('expected exception but test did not throw an exception: ' + <string>expectException)
+        t.fail(`expected exception but test did not throw an exception: ${expectException}`)
         return
       }
     } catch (error: any) {
@@ -199,13 +207,4 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   const timeSpent = `${(end - begin) / 1000} secs`
   t.comment(`Time: ${timeSpent}`)
   await cacheDB.close()
-}
-
-function formatBlockHeader(data: any) {
-  const r: any = {}
-  const keys = Object.keys(data)
-  keys.forEach(function (key) {
-    r[key] = addHexPrefix(data[key])
-  })
-  return r
 }

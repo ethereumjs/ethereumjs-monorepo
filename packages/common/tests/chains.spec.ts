@@ -1,13 +1,12 @@
 import tape from 'tape'
 import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src/'
-import { BN } from 'ethereumjs-util'
 
 tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
   t.test('Should initialize with chain provided', function (st: tape.Test) {
     let c = new Common({ chain: 'mainnet' })
     st.equal(c.chainName(), 'mainnet', 'should initialize with chain name')
-    st.ok(c.chainId().eqn(1), 'should return correct chain Id')
-    st.ok(c.networkId().eqn(1), 'should return correct network Id')
+    st.equal(c.chainId(), BigInt(1), 'should return correct chain Id')
+    st.equal(c.networkId(), BigInt(1), 'should return correct network Id')
     st.equal(c.hardfork(), Hardfork.London, 'should set hardfork to current default hardfork')
     st.equal(
       c.hardfork(),
@@ -24,8 +23,8 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
   t.test('Should initialize with chain provided by Chain enum', function (st: tape.Test) {
     const c = new Common({ chain: Chain.Mainnet })
     st.equal(c.chainName(), 'mainnet', 'should initialize with chain name')
-    st.ok(c.chainId().eqn(1), 'should return correct chain Id')
-    st.ok(c.networkId().eqn(1), 'should return correct network Id')
+    st.equal(c.chainId(), BigInt(1), 'should return correct chain Id')
+    st.equal(c.networkId(), BigInt(1), 'should return correct network Id')
     st.equal(c.hardfork(), Hardfork.London, 'should set hardfork to current default hardfork')
     st.equal(
       c.hardfork(),
@@ -193,12 +192,12 @@ tape('[Common/Chains]: Initialization / Chain params', function (t: tape.Test) {
 
 tape('[Common]: isSupportedChainId static method', function (t: tape.Test) {
   t.test('Should return true for supported chainId', function (st: tape.Test) {
-    st.equal(Common.isSupportedChainId(new BN(1)), true, 'returns true')
+    st.equal(Common.isSupportedChainId(BigInt(1)), true, 'returns true')
     st.end()
   })
 
   t.test('Should return false for unsupported chainId', function (st: tape.Test) {
-    st.equal(Common.isSupportedChainId(new BN(0)), false, 'returns false')
+    st.equal(Common.isSupportedChainId(BigInt(0)), false, 'returns false')
     st.end()
   })
 })

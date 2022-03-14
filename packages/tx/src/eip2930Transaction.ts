@@ -1,7 +1,7 @@
 import {
-  BN,
-  bnToHex,
-  bnToUnpaddedBuffer,
+  bigIntToHex,
+  bigIntToUnpaddedBuffer,
+  bufferToBigInt,
   ecrecover,
   keccak256,
   MAX_INTEGER,
@@ -18,7 +18,6 @@ import {
   AccessListEIP2930ValuesArray,
   JsonTx,
   TxOptions,
-  N_DIV_2,
 } from './types'
 
 import { AccessLists, checkMaxInitCodeSize } from './util'
@@ -33,10 +32,10 @@ const TRANSACTION_TYPE_BUFFER = Buffer.from(TRANSACTION_TYPE.toString(16).padSta
  * - EIP: [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930)
  */
 export default class AccessListEIP2930Transaction extends BaseTransaction<AccessListEIP2930Transaction> {
-  public readonly chainId: BN
+  public readonly chainId: bigint
   public readonly accessList: AccessListBuffer
   public readonly AccessListJSON: AccessList
-  public readonly gasPrice: BN
+  public readonly gasPrice: bigint
 
   public readonly common: Common
 
@@ -107,7 +106,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
 
     return new AccessListEIP2930Transaction(
       {
-        chainId: new BN(chainId),
+        chainId: bufferToBigInt(chainId),
         nonce,
         gasPrice,
         gasLimit,
@@ -115,7 +114,7 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
         value,
         data,
         accessList: accessList ?? emptyAccessList,
-        v: v !== undefined ? new BN(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
+        v: v !== undefined ? bufferToBigInt(v) : undefined, // EIP2930 supports v's with value 0 (empty Buffer)
         r,
         s,
       },
@@ -150,27 +149,19 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     // Verify the access list format.
     AccessLists.verifyAccessList(this.accessList)
 
-    this.gasPrice = new BN(toBuffer(gasPrice === '' ? '0x' : gasPrice))
+    this.gasPrice = bufferToBigInt(toBuffer(gasPrice === '' ? '0x' : gasPrice))
 
     this._validateCannotExceedMaxInteger({
       gasPrice: this.gasPrice,
     })
 
-    if (this.gasPrice.mul(this.gasLimit).gt(MAX_INTEGER)) {
+    if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
       const msg = this._errorMsg('gasLimit * gasPrice cannot exceed MAX_INTEGER')
       throw new Error(msg)
     }
-    if (this.v && !this.v.eqn(0) && !this.v.eqn(1)) {
-      const msg = this._errorMsg('The y-parity of the transaction should either be 0 or 1')
-      throw new Error(msg)
-    }
 
-    if (this.common.gteHardfork('homestead') && this.s?.gt(N_DIV_2)) {
-      const msg = this._errorMsg(
-        'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
-      )
-      throw new Error(msg)
-    }
+    this._validateYParity()
+    this._validateHighS()
 
     if (this.common.isActivatedEIP(3860)) {
       checkMaxInitCodeSize(this.common, this.data.length)
@@ -184,13 +175,13 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   /**
    * The amount of gas paid for the data in this tx
    */
-  getDataFee(): BN {
+  getDataFee(): bigint {
     if (this.cache.dataFee && this.cache.dataFee.hardfork === this.common.hardfork()) {
       return this.cache.dataFee.value
     }
 
-    const cost = super.getDataFee()
-    cost.iaddn(AccessLists.getDataFeeEIP2930(this.accessList, this.common))
+    let cost = super.getDataFee()
+    cost += BigInt(AccessLists.getDataFeeEIP2930(this.accessList, this.common))
 
     if (Object.isFrozen(this)) {
       this.cache.dataFee = {
@@ -205,8 +196,8 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
   /**
    * The up front amount that an account must have for this transaction to be valid
    */
-  getUpfrontCost(): BN {
-    return this.gasLimit.mul(this.gasPrice).add(this.value)
+  getUpfrontCost(): bigint {
+    return this.gasLimit * this.gasPrice + this.value
   }
 
   /**
@@ -224,17 +215,17 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
    */
   raw(): AccessListEIP2930ValuesArray {
     return [
-      bnToUnpaddedBuffer(this.chainId),
-      bnToUnpaddedBuffer(this.nonce),
-      bnToUnpaddedBuffer(this.gasPrice),
-      bnToUnpaddedBuffer(this.gasLimit),
+      bigIntToUnpaddedBuffer(this.chainId),
+      bigIntToUnpaddedBuffer(this.nonce),
+      bigIntToUnpaddedBuffer(this.gasPrice),
+      bigIntToUnpaddedBuffer(this.gasLimit),
       this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bnToUnpaddedBuffer(this.value),
+      bigIntToUnpaddedBuffer(this.value),
       this.data,
       this.accessList,
-      this.v !== undefined ? bnToUnpaddedBuffer(this.v) : Buffer.from([]),
-      this.r !== undefined ? bnToUnpaddedBuffer(this.r) : Buffer.from([]),
-      this.s !== undefined ? bnToUnpaddedBuffer(this.s) : Buffer.from([]),
+      this.v !== undefined ? bigIntToUnpaddedBuffer(this.v) : Buffer.from([]),
+      this.r !== undefined ? bigIntToUnpaddedBuffer(this.r) : Buffer.from([]),
+      this.s !== undefined ? bigIntToUnpaddedBuffer(this.s) : Buffer.from([]),
     ]
   }
 
@@ -315,23 +306,16 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     }
 
     const msgHash = this.getMessageToVerifySignature()
-
-    // EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
-    // Reasoning: https://ethereum.stackexchange.com/a/55728
-    if (this.common.gteHardfork('homestead') && this.s?.gt(N_DIV_2)) {
-      const msg = this._errorMsg(
-        'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
-      )
-      throw new Error(msg)
-    }
-
     const { v, r, s } = this
+
+    this._validateHighS()
+
     try {
       return ecrecover(
         msgHash,
-        v!.addn(27), // Recover the 27 which was stripped from ecsign
-        bnToUnpaddedBuffer(r!),
-        bnToUnpaddedBuffer(s!)
+        v! + BigInt(27), // Recover the 27 which was stripped from ecsign
+        bigIntToUnpaddedBuffer(r!),
+        bigIntToUnpaddedBuffer(s!)
       )
     } catch (e: any) {
       const msg = this._errorMsg('Invalid Signature')
@@ -352,9 +336,9 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
         value: this.value,
         data: this.data,
         accessList: this.accessList,
-        v: new BN(v - 27), // This looks extremely hacky: ethereumjs-util actually adds 27 to the value, the recovery bit is either 0 or 1.
-        r: new BN(r),
-        s: new BN(s),
+        v: BigInt(v - 27), // This looks extremely hacky: ethereumjs-util actually adds 27 to the value, the recovery bit is either 0 or 1.
+        r: bufferToBigInt(r),
+        s: bufferToBigInt(s),
       },
       opts
     )
@@ -367,17 +351,17 @@ export default class AccessListEIP2930Transaction extends BaseTransaction<Access
     const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
 
     return {
-      chainId: bnToHex(this.chainId),
-      nonce: bnToHex(this.nonce),
-      gasPrice: bnToHex(this.gasPrice),
-      gasLimit: bnToHex(this.gasLimit),
+      chainId: bigIntToHex(this.chainId),
+      nonce: bigIntToHex(this.nonce),
+      gasPrice: bigIntToHex(this.gasPrice),
+      gasLimit: bigIntToHex(this.gasLimit),
       to: this.to !== undefined ? this.to.toString() : undefined,
-      value: bnToHex(this.value),
+      value: bigIntToHex(this.value),
       data: '0x' + this.data.toString('hex'),
       accessList: accessListJSON,
-      v: this.v !== undefined ? bnToHex(this.v) : undefined,
-      r: this.r !== undefined ? bnToHex(this.r) : undefined,
-      s: this.s !== undefined ? bnToHex(this.s) : undefined,
+      v: this.v !== undefined ? bigIntToHex(this.v) : undefined,
+      r: this.r !== undefined ? bigIntToHex(this.r) : undefined,
+      s: this.s !== undefined ? bigIntToHex(this.s) : undefined,
     }
   }
 

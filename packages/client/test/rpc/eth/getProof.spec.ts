@@ -3,7 +3,7 @@ import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { Address, BN, bnToHex } from 'ethereumjs-util'
+import { Address, bigIntToHex } from 'ethereumjs-util'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
 import type { FullEthereumService } from '../../../lib/service'
 
@@ -100,7 +100,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
     to: createdAddress!.toString(),
     from: address.toString(),
     data: `0x${funcHash}`,
-    gasLimit: bnToHex(new BN(530000)),
+    gasLimit: bigIntToHex(BigInt(530000)),
     nonce: 1,
   }
   const storeTx = Transaction.fromTxData(storeTxData, { common, freeze: false })

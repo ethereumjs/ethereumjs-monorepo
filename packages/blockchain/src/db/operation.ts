@@ -1,4 +1,3 @@
-import { BN } from 'ethereumjs-util'
 import {
   HEADS_KEY,
   HEAD_HEADER_KEY,
@@ -43,7 +42,7 @@ export interface DBOpData {
 
 // a Database Key is identified by a block hash, a block number, or both
 export type DatabaseKey = {
-  blockNumber?: BN
+  blockNumber?: bigint
   blockHash?: Buffer
 }
 

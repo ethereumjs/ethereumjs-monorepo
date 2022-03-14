@@ -1,4 +1,4 @@
-import { Account, Address, BN } from 'ethereumjs-util'
+import { Account, Address } from 'ethereumjs-util'
 import Blockchain from '@ethereumjs/blockchain'
 import VM from '../../src/index'
 import { VMOpts } from '../../src'
@@ -8,12 +8,12 @@ import Common from '@ethereumjs/common'
 
 const level = require('level-mem')
 
-export function createAccount(nonce: BN = new BN(0), balance: BN = new BN(0xfff384)) {
+export function createAccount(nonce: bigint = BigInt(0), balance: bigint = BigInt(0xfff384)) {
   return new Account(nonce, balance)
 }
 
-export async function setBalance(vm: VM, address: Address, balance = new BN(100000000)) {
-  const account = createAccount(new BN(0), balance)
+export async function setBalance(vm: VM, address: Address, balance = BigInt(100000000)) {
+  const account = createAccount(BigInt(0), balance)
   await vm.stateManager.checkpoint()
   await vm.stateManager.putAccount(address, account)
   await vm.stateManager.commit()
@@ -78,11 +78,11 @@ export function getTransaction(
     ]
   } else if (txType === 2) {
     txParams['gasPrice'] = undefined
-    txParams['maxFeePerGas'] = new BN(100)
-    txParams['maxPriorityFeePerGas'] = new BN(10)
+    txParams['maxFeePerGas'] = BigInt(100)
+    txParams['maxPriorityFeePerGas'] = BigInt(10)
   }
 
-  const tx = TransactionFactory.fromTxData(txParams, { common })
+  const tx = TransactionFactory.fromTxData(txParams, { common, freeze: false })
 
   if (sign) {
     const privateKey = Buffer.from(

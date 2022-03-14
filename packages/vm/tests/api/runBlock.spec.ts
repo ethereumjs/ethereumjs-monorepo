@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, rlp, KECCAK256_RLP, Account, bnToBigInt } from 'ethereumjs-util'
+import { Address, rlp, KECCAK256_RLP, Account, bufferToBigInt } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import {
@@ -88,9 +88,9 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       await vm.stateManager.getAccount(
         Address.fromString('0xb94f5374fce5ed0000000097c15331677e6ebf0b')
       )
-    ).balance.toString('hex')
+    ).balance.toString(16)
 
-    st.equals(
+    st.equal(
       `0x${uncleReward}`,
       testData.postState['0xb94f5374fce5ed0000000097c15331677e6ebf0b'].balance,
       'calculated balance should equal postState balance'
@@ -142,13 +142,13 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       return Block.fromBlockData(
         {
           header: {
-            number: new BN(10000000),
+            number: BigInt(10000000),
           },
           transactions: [
             Transaction.fromTxData(
               {
                 data: '0x600154', // PUSH 01 SLOAD
-                gasLimit: new BN(100000),
+                gasLimit: BigInt(100000),
               },
               { common }
             ).sign(privateKey),
@@ -237,7 +237,7 @@ tape('runBlock() -> API parameter usage/data errors', async (t) => {
     // modify first tx's gasLimit
     const { nonce, gasPrice, to, value, data, v, r, s } = block.transactions[0]
 
-    const gasLimit = new BN(Buffer.from('3fefba', 'hex'))
+    const gasLimit = BigInt('0x3fefba')
     const opts = { common: block._common }
     block.transactions[0] = new Transaction(
       { nonce, gasPrice, gasLimit, to, value, data, v, r, s },
@@ -266,15 +266,15 @@ tape('runBlock() -> runtime behavior', async (t) => {
     await setupPreConditions(vm.stateManager, testData)
 
     // fill two original DAO child-contracts with funds and the recovery account with funds in order to verify that the balance gets summed correctly
-    const fundBalance1 = new BN(Buffer.from('1111', 'hex'))
-    const accountFunded1 = createAccount(new BN(0), fundBalance1)
+    const fundBalance1 = BigInt('0x1111')
+    const accountFunded1 = createAccount(BigInt(0), fundBalance1)
     const DAOFundedContractAddress1 = new Address(
       Buffer.from('d4fe7bc31cedb7bfb8a345f31e668033056b2728', 'hex')
     )
     await vm.stateManager.putAccount(DAOFundedContractAddress1, accountFunded1)
 
-    const fundBalance2 = new BN(Buffer.from('2222', 'hex'))
-    const accountFunded2 = createAccount(new BN(0), fundBalance2)
+    const fundBalance2 = BigInt('0x2222')
+    const accountFunded2 = createAccount(BigInt(0), fundBalance2)
     const DAOFundedContractAddress2 = new Address(
       Buffer.from('b3fb0e5aba0e20e5c49d252dfd30e102b171a425', 'hex')
     )
@@ -283,8 +283,8 @@ tape('runBlock() -> runtime behavior', async (t) => {
     const DAORefundAddress = new Address(
       Buffer.from('bf4ed7b27f1d666546e30d74d50d173d20bca754', 'hex')
     )
-    const fundBalanceRefund = new BN(Buffer.from('4444', 'hex'))
-    const accountRefund = createAccount(new BN(0), fundBalanceRefund)
+    const fundBalanceRefund = BigInt('0x4444')
+    const accountRefund = createAccount(BigInt(0), fundBalanceRefund)
     await vm.stateManager.putAccount(DAORefundAddress, accountRefund)
 
     await vm.runBlock({
@@ -294,15 +294,15 @@ tape('runBlock() -> runtime behavior', async (t) => {
     })
 
     const DAOFundedContractAccount1 = await vm.stateManager.getAccount(DAOFundedContractAddress1)
-    t.ok(DAOFundedContractAccount1.balance.isZero()) // verify our funded account now has 0 balance
+    t.equals(DAOFundedContractAccount1.balance, BigInt(0)) // verify our funded account now has 0 balance
     const DAOFundedContractAccount2 = await vm.stateManager.getAccount(DAOFundedContractAddress2)
-    t.ok(DAOFundedContractAccount2.balance.isZero()) // verify our funded account now has 0 balance
+    t.equals(DAOFundedContractAccount2.balance, BigInt(0)) // verify our funded account now has 0 balance
 
     const DAORefundAccount = await vm.stateManager.getAccount(DAORefundAddress)
     // verify that the refund account gets the summed balance of the original refund account + two child DAO accounts
     const msg =
       'should transfer balance from DAO children to the Refund DAO account in the DAO fork'
-    t.ok(DAORefundAccount.balance.eq(new BN(Buffer.from('7777', 'hex'))), msg)
+    t.ok(DAORefundAccount.balance === BigInt(0x7777), msg)
   })
 
   t.test('should allocate to correct clique beneficiary', async (t) => {
@@ -334,7 +334,7 @@ tape('runBlock() -> runtime behavior', async (t) => {
     }
 
     // add balance to otherUser to send two txs to zero address
-    await vm.stateManager.putAccount(otherUser.address, new Account(new BN(0), new BN(42000)))
+    await vm.stateManager.putAccount(otherUser.address, new Account(BigInt(0), BigInt(42000)))
     const tx = Transaction.fromTxData(
       { to: Address.zero(), gasLimit: 21000, gasPrice: 1 },
       { common }
@@ -348,7 +348,7 @@ tape('runBlock() -> runtime behavior', async (t) => {
 
     await vm.runBlock({ block, skipNonce: true, skipBlockValidation: true, generate: true })
     const account = await vm.stateManager.getAccount(signer.address)
-    t.ok(account.balance.eqn(42000), 'beneficiary balance should equal the cost of the txs')
+    t.equal(account.balance, BigInt(42000), 'beneficiary balance should equal the cost of the txs')
   })
 })
 
@@ -382,7 +382,7 @@ tape('should correctly reflect generated fields', async (t) => {
   // which is a well known constant.
   const buffer32Zeros = Buffer.alloc(32, 0)
   const block = Block.fromBlockData({
-    header: { receiptTrie: buffer32Zeros, transactionsTrie: buffer32Zeros, gasUsed: new BN(1) },
+    header: { receiptTrie: buffer32Zeros, transactionsTrie: buffer32Zeros, gasUsed: BigInt(1) },
   })
 
   const results = await runBlockAndGetAfterBlockEvent(vm, {
@@ -393,7 +393,7 @@ tape('should correctly reflect generated fields', async (t) => {
 
   t.ok(results.block.header.receiptTrie.equals(KECCAK256_RLP))
   t.ok(results.block.header.transactionsTrie.equals(KECCAK256_RLP))
-  t.ok(results.block.header.gasUsed.eqn(0))
+  t.equals(results.block.header.gasUsed, BigInt(0))
 })
 
 async function runWithHf(hardfork: string) {
@@ -445,7 +445,7 @@ tape('runBlock() -> tx types', async (t) => {
 
     if (transactions.some((t) => t.supports(Capability.EIP1559FeeMarket))) {
       // @ts-ignore overwrite read-only property
-      block.header.baseFeePerGas = new BN(7)
+      block.header.baseFeePerGas = BigInt(7)
     }
 
     //@ts-ignore
@@ -459,14 +459,12 @@ tape('runBlock() -> tx types', async (t) => {
 
     st.ok(
       res.gasUsed ===
-        bnToBigInt(
-          res.receipts
-            .map((r) => r.gasUsed)
-            .reduce(
-              (prevValue: BN, currValue: Buffer) => prevValue.add(new BN(currValue)),
-              new BN(0)
-            )
-        ),
+        res.receipts
+          .map((r) => r.gasUsed)
+          .reduce(
+            (prevValue: bigint, currValue: Buffer) => prevValue + bufferToBigInt(currValue),
+            BigInt(0)
+          ),
       "gas used should equal transaction's total gasUsed"
     )
   }

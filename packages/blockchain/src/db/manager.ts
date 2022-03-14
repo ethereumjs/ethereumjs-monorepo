@@ -1,4 +1,4 @@
-import { Address, BN, rlp } from 'ethereumjs-util'
+import { Address, rlp, bufferToBigInt } from 'ethereumjs-util'
 import { Block, BlockHeader, BlockOptions, BlockBuffer, BlockBodyBuffer } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import { CliqueLatestSignerStates, CliqueLatestVotes, CliqueLatestBlockSigners } from '../clique'
@@ -75,7 +75,7 @@ export class DBManager {
       const signerStates = await this.get(DBTarget.CliqueSignerStates)
       const states = (<any>rlp.decode(signerStates)) as [Buffer, Buffer[]]
       return states.map((state) => {
-        const blockNum = new BN(state[0])
+        const blockNum = bufferToBigInt(state[0] as Buffer)
         const addrs = (<any>state[1]).map((buf: Buffer) => new Address(buf))
         return [blockNum, addrs]
       }) as CliqueLatestSignerStates
@@ -95,7 +95,7 @@ export class DBManager {
       const signerVotes = await this.get(DBTarget.CliqueVotes)
       const votes = (<any>rlp.decode(signerVotes)) as [Buffer, [Buffer, Buffer, Buffer]]
       return votes.map((vote) => {
-        const blockNum = new BN(vote[0])
+        const blockNum = bufferToBigInt(vote[0] as Buffer)
         const signer = new Address((vote[1] as any)[0])
         const beneficiary = new Address((vote[1] as any)[1])
         const nonce = (vote[1] as any)[2]
@@ -117,7 +117,7 @@ export class DBManager {
       const blockSigners = await this.get(DBTarget.CliqueBlockSigners)
       const signers = (<any>rlp.decode(blockSigners)) as [Buffer, Buffer][]
       return signers.map((s) => {
-        const blockNum = new BN(s[0])
+        const blockNum = bufferToBigInt(s[0] as Buffer)
         const signer = new Address(s[1] as any)
         return [blockNum, signer]
       }) as CliqueLatestBlockSigners
@@ -133,9 +133,9 @@ export class DBManager {
    * Fetches a block (header and body) given a block id,
    * which can be either its hash or its number.
    */
-  async getBlock(blockId: Buffer | BN | number): Promise<Block> {
+  async getBlock(blockId: Buffer | bigint | number): Promise<Block> {
     if (typeof blockId === 'number' && Number.isInteger(blockId)) {
-      blockId = new BN(blockId)
+      blockId = BigInt(blockId)
     }
 
     let number
@@ -143,7 +143,7 @@ export class DBManager {
     if (Buffer.isBuffer(blockId)) {
       hash = blockId
       number = await this.hashToNumber(blockId)
-    } else if (BN.isBN(blockId)) {
+    } else if (typeof blockId === 'bigint') {
       number = blockId
       hash = await this.numberToHash(blockId)
     } else {
@@ -161,10 +161,10 @@ export class DBManager {
     }
     const blockData = [header.raw(), ...body] as BlockBuffer
     const opts: BlockOptions = { common: this._common }
-    if (number.isZero()) {
+    if (number === BigInt(0)) {
       opts.hardforkByBlockNumber = true
     } else {
-      opts.hardforkByTD = await this.getTotalDifficulty(header.parentHash, number.subn(1))
+      opts.hardforkByTD = await this.getTotalDifficulty(header.parentHash, number - BigInt(1))
     }
     return Block.fromValuesArray(blockData, opts)
   }
@@ -172,7 +172,7 @@ export class DBManager {
   /**
    * Fetches body of a block given its hash and number.
    */
-  async getBody(blockHash: Buffer, blockNumber: BN): Promise<BlockBodyBuffer> {
+  async getBody(blockHash: Buffer, blockNumber: bigint): Promise<BlockBodyBuffer> {
     const body = await this.get(DBTarget.Body, { blockHash, blockNumber })
     return rlp.decode(body) as any as BlockBodyBuffer
   }
@@ -180,14 +180,14 @@ export class DBManager {
   /**
    * Fetches header of a block given its hash and number.
    */
-  async getHeader(blockHash: Buffer, blockNumber: BN) {
+  async getHeader(blockHash: Buffer, blockNumber: bigint) {
     const encodedHeader = await this.get(DBTarget.Header, { blockHash, blockNumber })
     const opts: BlockOptions = { common: this._common }
-    if (blockNumber.isZero()) {
+    if (blockNumber === BigInt(0)) {
       opts.hardforkByBlockNumber = true
     } else {
-      const parentHash = await this.numberToHash(blockNumber.subn(1))
-      opts.hardforkByTD = await this.getTotalDifficulty(parentHash, blockNumber.subn(1))
+      const parentHash = await this.numberToHash(blockNumber - BigInt(1))
+      opts.hardforkByTD = await this.getTotalDifficulty(parentHash, blockNumber - BigInt(1))
     }
     return BlockHeader.fromRLPSerializedHeader(encodedHeader, opts)
   }
@@ -195,24 +195,24 @@ export class DBManager {
   /**
    * Fetches total difficulty for a block given its hash and number.
    */
-  async getTotalDifficulty(blockHash: Buffer, blockNumber: BN): Promise<BN> {
+  async getTotalDifficulty(blockHash: Buffer, blockNumber: bigint): Promise<bigint> {
     const td = await this.get(DBTarget.TotalDifficulty, { blockHash, blockNumber })
-    return new BN(rlp.decode(td))
+    return bufferToBigInt(rlp.decode(td))
   }
 
   /**
    * Performs a block hash to block number lookup.
    */
-  async hashToNumber(blockHash: Buffer): Promise<BN> {
+  async hashToNumber(blockHash: Buffer): Promise<bigint> {
     const value = await this.get(DBTarget.HashToNumber, { blockHash })
-    return new BN(value)
+    return bufferToBigInt(value)
   }
 
   /**
    * Performs a block number to block hash lookup.
    */
-  async numberToHash(blockNumber: BN): Promise<Buffer> {
-    if (blockNumber.ltn(0)) {
+  async numberToHash(blockNumber: bigint): Promise<Buffer> {
+    if (blockNumber < BigInt(0)) {
       throw new level.errors.NotFoundError()
     }
 

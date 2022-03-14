@@ -2,10 +2,10 @@ import tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import Common, { Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { BN } from 'ethereumjs-util'
 import { Chain } from '../../../lib/blockchain/chain'
 import { Config } from '../../../lib/config'
 import { EthProtocol } from '../../../lib/net/protocol'
+import { bigIntToBuffer, bufferToBigInt, intToBuffer } from 'ethereumjs-util'
 
 tape('[EthProtocol]', (t) => {
   t.test('should get properties', (t) => {
@@ -34,14 +34,14 @@ tape('[EthProtocol]', (t) => {
     const p = new EthProtocol({ config, chain })
     Object.defineProperty(chain, 'networkId', {
       get: () => {
-        return new BN(1)
+        return BigInt(1)
       },
     })
     Object.defineProperty(chain, 'blocks', {
       get: () => {
         return {
-          td: new BN(100),
-          latest: { hash: () => '0xaa', header: { number: new BN(10) } },
+          td: BigInt(100),
+          latest: { hash: () => '0xaa', header: { number: BigInt(10) } },
         }
       },
     })
@@ -67,8 +67,8 @@ tape('[EthProtocol]', (t) => {
       genesisHash: '0xbb',
     })
     t.ok(
-      status.networkId.eqn(1) &&
-        status.td.eqn(100) &&
+      status.networkId === BigInt(1) &&
+        status.td === BigInt(100) &&
         status.bestHash === '0xaa' &&
         status.genesisHash === '0xbb',
       'decode status'
@@ -80,18 +80,18 @@ tape('[EthProtocol]', (t) => {
     const config = new Config({ transports: [] })
     const chain = new Chain({ config })
     const p = new EthProtocol({ config, chain })
-    const td = new BN(100)
+    const td = BigInt(100)
     const block = Block.fromBlockData({}, { common: config.chainCommon })
     const res = p.decode(p.messages.filter((message) => message.name === 'NewBlock')[0], [
       block.raw(),
-      td.toBuffer(),
+      bigIntToBuffer(td),
     ])
     const res2 = p.encode(p.messages.filter((message) => message.name === 'NewBlock')[0], [
       block,
       td,
     ])
     t.deepEquals(res[0].hash(), block.hash(), 'correctly decoded block')
-    t.ok(new BN(res2[1]).eq(td), 'correctly encoded td')
+    t.equal(bufferToBigInt(res2[1]), td, 'correctly encoded td')
     t.end()
   })
 
@@ -101,16 +101,16 @@ tape('[EthProtocol]', (t) => {
     const p = new EthProtocol({ config, chain })
     const block = Block.fromBlockData({})
     const res = p.decode(p.messages.filter((message) => message.name === 'GetReceipts')[0], [
-      new BN(1),
+      BigInt(1),
       [block.hash()],
     ])
     const res2 = p.encode(p.messages.filter((message) => message.name === 'GetReceipts')[0], {
-      reqId: new BN(1),
+      reqId: BigInt(1),
       hashes: [block.hash()],
     })
-    t.ok(res.reqId.eqn(1), 'correctly decoded reqId')
+    t.equal(res.reqId, BigInt(1), 'correctly decoded reqId')
     t.ok(res.hashes[0].equals(block.hash()), 'correctly decoded blockHash')
-    t.ok(new BN(res2[0]).eqn(1), 'correctly encoded reqId')
+    t.equal(bufferToBigInt(res2[0]), BigInt(1), 'correctly encoded reqId')
     t.ok(res2[1][0].equals(block.hash()), 'correctly encoded blockHash')
     t.end()
   })
@@ -132,10 +132,10 @@ tape('[EthProtocol]', (t) => {
       { common: config.chainCommon }
     )
     const res = p.encode(p.messages.filter((message) => message.name === 'PooledTransactions')[0], {
-      reqId: new BN(1),
+      reqId: BigInt(1),
       txs: [tx],
     })
-    t.ok(new BN(res[0]).eqn(1), 'correctly encoded reqId')
+    t.equal(bufferToBigInt(res[0]), BigInt(1), 'correctly encoded reqId')
     t.deepEqual(res[1][0], tx.serialize(), 'EIP1559 transaction correctly encoded')
     t.end()
   })
@@ -150,14 +150,14 @@ tape('[EthProtocol]', (t) => {
     const receipts = [
       {
         status: 1 as 0 | 1,
-        gasUsed: new BN(100).toArrayLike(Buffer),
+        gasUsed: intToBuffer(100),
         bitvector: Buffer.alloc(256),
         logs: [[Buffer.alloc(20), [Buffer.alloc(32), Buffer.alloc(32, 1)], Buffer.alloc(10)]],
         txType: 2,
       },
       {
         status: 0 as 0 | 1,
-        gasUsed: new BN(1000).toArrayLike(Buffer),
+        gasUsed: intToBuffer(1000),
         bitvector: Buffer.alloc(256, 1),
         logs: [[Buffer.alloc(20, 1), [Buffer.alloc(32, 1), Buffer.alloc(32, 1)], Buffer.alloc(10)]],
         txType: 0,
@@ -166,10 +166,10 @@ tape('[EthProtocol]', (t) => {
 
     // encode
     let res = p.encode(p.messages.filter((message) => message.name === 'Receipts')[0], {
-      reqId: new BN(1),
+      reqId: BigInt(1),
       receipts,
     })
-    t.ok(new BN(res[0]).eqn(1), 'correctly encoded reqId')
+    t.equal(bufferToBigInt(res[0]), BigInt(1), 'correctly encoded reqId')
     const expectedSerializedReceipts = [
       Buffer.from(
         '02f9016d0164b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f866f864940000000000000000000000000000000000000000f842a00000000000000000000000000000000000000000000000000000000000000000a001010101010101010101010101010101010101010101010101010101010101018a00000000000000000000',
@@ -184,7 +184,7 @@ tape('[EthProtocol]', (t) => {
 
     // decode the encoded result and match to the original receipts (without tx type)
     res = p.decode(p.messages.filter((message) => message.name === 'Receipts')[0], res)
-    t.ok(new BN(res[0]).eqn(1), 'correctly decoded reqId')
+    t.equal(BigInt(res[0]), BigInt(1), 'correctly decoded reqId')
     const receiptsWithoutTxType = receipts.map((r: any) => {
       delete r.txType
       return r

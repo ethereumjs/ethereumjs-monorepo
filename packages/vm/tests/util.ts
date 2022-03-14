@@ -9,13 +9,15 @@ import {
 } from '@ethereumjs/tx'
 import {
   Account,
-  BN,
   rlp,
   keccak256,
   stripHexPrefix,
   setLengthLeft,
   toBuffer,
   Address,
+  bigIntToBuffer,
+  bufferToHex,
+  isHexPrefixed,
 } from 'ethereumjs-util'
 import { DefaultStateManager } from '../src/state'
 
@@ -59,14 +61,14 @@ export function dumpState(state: any, cb: Function) {
       results.push(result)
     }
     for (let i = 0; i < results.length; i++) {
-      console.log("SHA3'd address: " + <string>results[i].address.toString('hex'))
-      console.log('\tstate root: ' + <string>results[i].stateRoot.toString('hex'))
+      console.log("SHA3'd address: " + bufferToHex(results[i].address))
+      console.log('\tstate root: ' + bufferToHex(results[i].stateRoot))
       console.log('\tstorage: ')
       for (const storageKey in results[i].storage) {
-        console.log('\t\t' + storageKey + ': ' + <string>results[i].storage[storageKey])
+        console.log('\t\t' + storageKey + ': ' + results[i].storage[storageKey])
       }
-      console.log('\tnonce: ' + new BN(results[i].nonce).toString())
-      console.log('\tbalance: ' + new BN(results[i].balance).toString())
+      console.log('\tnonce: ' + BigInt(results[i].nonce))
+      console.log('\tbalance: ' + BigInt(results[i].balance))
     }
     cb()
   })
@@ -77,14 +79,18 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
     return Buffer.alloc(0)
   }
 
-  if (a.slice && a.slice(0, 2) === '0x') {
+  if (typeof a === 'string' && isHexPrefixed(a)) {
     a = a.slice(2)
-    if (a.length % 2) a = '0' + <string>a
+    if (a.length % 2) a = '0' + a
     a = Buffer.from(a, 'hex')
   } else if (!isHex) {
-    a = Buffer.from(new BN(a).toArray())
+    try {
+      a = bigIntToBuffer(BigInt(a))
+    } catch {
+      // pass
+    }
   } else {
-    if (a.length % 2) a = '0' + <string>a
+    if (a.length % 2) a = '0' + a
     a = Buffer.from(a, 'hex')
   }
 
@@ -247,11 +253,11 @@ export function verifyGas(results: any, testData: any, t: tape.Test) {
     return
   }
 
-  const postBal = new BN(testData.post[coinbaseAddr].balance)
-  const balance = postBal.sub(preBal)
-  if (!balance.isZero()) {
-    const amountSpent = results.gasUsed.mul(testData.transaction.gasPrice)
-    t.ok(amountSpent.eq(balance), 'correct gas')
+  const postBal = BigInt(testData.post[coinbaseAddr].balance)
+  const balance = postBal - preBal
+  if (balance !== BigInt(0)) {
+    const amountSpent = results.gasUsed * testData.transaction.gasPrice
+    t.equal(amountSpent, balance, 'correct gas')
   } else {
     t.equal(results, undefined)
   }
@@ -259,7 +265,7 @@ export function verifyGas(results: any, testData: any, t: tape.Test) {
 
 /**
  * verifyLogs
- * @param logs  to verify
+ * @param logs to verify
  * @param testData from tests repo
  */
 export function verifyLogs(logs: any, testData: any, t: tape.Test) {
@@ -267,7 +273,7 @@ export function verifyLogs(logs: any, testData: any, t: tape.Test) {
     testData.logs.forEach(function (log: any, i: number) {
       const rlog = logs[i]
       t.equal(rlog[0].toString('hex'), log.address, 'log: valid address')
-      t.equal('0x' + <string>rlog[2].toString('hex'), log.data, 'log: valid data')
+      t.equal(bufferToHex(rlog[2]), log.data, 'log: valid data')
       log.topics.forEach(function (topic: string, i: number) {
         t.equal(rlog[1][i].toString('hex'), topic, 'log: invalid topic')
       })
@@ -329,13 +335,11 @@ export async function setupPreConditions(state: DefaultStateManager, testData: a
 
     // Set contract storage
     for (const storageKey of Object.keys(storage)) {
-      const valBN = new BN(format(storage[storageKey]), 16)
-      if (valBN.isZero()) {
+      const val = format(storage[storageKey])
+      if (['', '00'].includes(val.toString('hex'))) {
         continue
       }
-      const val = valBN.toArrayLike(Buffer, 'be')
       const key = setLengthLeft(format(storageKey), 32)
-
       await state.putContractStorage(address, key, val)
     }
 

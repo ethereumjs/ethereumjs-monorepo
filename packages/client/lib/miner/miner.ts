@@ -1,6 +1,5 @@
 import Ethash, { Solution, Miner as EthashMiner } from '@ethereumjs/ethash'
 import { BlockHeader } from '@ethereumjs/block'
-import { BN } from 'ethereumjs-util'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Event } from '../types'
 import { Config } from '../config'
@@ -128,8 +127,8 @@ export class Miner {
   private async chainUpdated() {
     this.ethashMiner?.stop()
     const latestBlockHeader = this.latestBlockHeader()
-    const target = latestBlockHeader.timestamp.muln(1000).addn(this.period).sub(new BN(Date.now()))
-    const timeout = BN.max(new BN(0), target).toNumber()
+    const target = Number(latestBlockHeader.timestamp) * 1000 + this.period - Date.now()
+    const timeout = BigInt(0) > target ? 0 : target
     this.config.logger.debug(
       `Miner: Chain updated with block ${
         latestBlockHeader.number
@@ -176,7 +175,8 @@ export class Miner {
     this.config.events.once(Event.CHAIN_UPDATED, _boundSetInterruptHandler)
 
     const parentBlock = this.service.chain.blocks.latest!
-    const number = parentBlock.header.number.addn(1)
+    //eslint-disable-next-line
+    const number = parentBlock.header.number + BigInt(1)
     let { gasLimit } = parentBlock.header
 
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority) {
@@ -222,14 +222,14 @@ export class Miner {
 
     let baseFeePerGas
     const londonHardforkBlock = this.config.chainCommon.hardforkBlock(Hardfork.London)
-    const isInitialEIP1559Block = londonHardforkBlock && number.eq(londonHardforkBlock)
+    const isInitialEIP1559Block = londonHardforkBlock && number === londonHardforkBlock
     if (isInitialEIP1559Block) {
       // Get baseFeePerGas from `paramByEIP` since 1559 not currently active on common
-      baseFeePerGas = new BN(
+      baseFeePerGas = BigInt(
         this.config.chainCommon.paramByEIP('gasConfig', 'initialBaseFee', 1559)
       )
       // Set initial EIP1559 block gas limit to 2x parent gas limit per logic in `block.validateGasLimit`
-      gasLimit = gasLimit.muln(2)
+      gasLimit = gasLimit * BigInt(2)
     } else if (this.config.chainCommon.isActivatedEIP(1559)) {
       baseFeePerGas = parentBlock.header.calcNextBaseFee()
     }
@@ -271,13 +271,11 @@ export class Miner {
         await blockBuilder.addTransaction(txs[index])
       } catch (error: any) {
         if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
-          if (blockBuilder.gasUsed > BigInt(gasLimit.subn(21000).toString(10))) {
+          if (blockBuilder.gasUsed > gasLimit - BigInt(21000)) {
             // If block has less than 21000 gas remaining, consider it full
             blockFull = true
             this.config.logger.info(
-              `Miner: Assembled block full (gasLeft: ${gasLimit.sub(
-                new BN(blockBuilder.gasUsed.toString(10))
-              )})`
+              `Miner: Assembled block full (gasLeft: ${gasLimit - blockBuilder.gasUsed})`
             )
           }
         } else {

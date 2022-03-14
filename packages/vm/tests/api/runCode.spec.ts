@@ -41,7 +41,7 @@ tape('VM.runCode: initial program counter', (t) => {
 
       if (testData.error) {
         err = err ? err.message : 'no error thrown'
-        st.equals(err, testData.error, 'error message should match')
+        st.equal(err, testData.error, 'error message should match')
         err = false
       }
 

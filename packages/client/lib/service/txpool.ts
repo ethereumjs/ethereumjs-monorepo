@@ -6,7 +6,7 @@ import {
   Transaction,
   TypedTransaction,
 } from '@ethereumjs/tx'
-import { Address, BN, bufferToHex } from 'ethereumjs-util'
+import { Address, bufferToHex } from 'ethereumjs-util'
 import { Config } from '../config'
 import { Peer } from '../net/peer'
 import type VM from '@ethereumjs/vm'
@@ -323,7 +323,7 @@ export class TxPool {
     const inPool = this.pool.get(address)
     if (inPool) {
       // Replace pooled txs with the same nonce
-      add = inPool.filter((poolObj) => !poolObj.tx.nonce.eq(tx.nonce))
+      add = inPool.filter((poolObj) => poolObj.tx.nonce !== tx.nonce)
     }
     const hash: UnprefixedHash = tx.hash().toString('hex')
     const added = Date.now()
@@ -588,13 +588,13 @@ export class TxPool {
    * @param baseFee Provide a baseFee to subtract from the legacy
    * gasPrice to determine the leftover priority tip.
    */
-  private normalizedGasPrice(tx: TypedTransaction, baseFee?: BN) {
+  private txGasPrice(tx: TypedTransaction, baseFee?: bigint) {
     const supports1559 = tx.supports(Capability.EIP1559FeeMarket)
     if (baseFee) {
       if (supports1559) {
         return (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
       } else {
-        return (tx as Transaction).gasPrice.sub(baseFee)
+        return (tx as Transaction).gasPrice - baseFee
       }
     } else {
       if (supports1559) {
@@ -621,19 +621,19 @@ export class TxPool {
    *
    * @param baseFee Provide a baseFee to exclude txs with a lower gasPrice
    */
-  async txsByPriceAndNonce(baseFee?: BN) {
+  async txsByPriceAndNonce(baseFee?: bigint) {
     const txs: TypedTransaction[] = []
     // Separate the transactions by account and sort by nonce
     const byNonce = new Map<string, TypedTransaction[]>()
     for (const [address, poolObjects] of this.pool) {
       let txsSortedByNonce = poolObjects
         .map((obj) => obj.tx)
-        .sort((a, b) => a.nonce.sub(b.nonce).toNumber())
+        .sort((a, b) => Number(a.nonce - b.nonce))
       // Check if the account nonce matches the lowest known tx nonce
       const { nonce } = await this.vm.stateManager.getAccount(
         new Address(Buffer.from(address, 'hex'))
       )
-      if (!txsSortedByNonce[0].nonce.eq(nonce)) {
+      if (!txsSortedByNonce[0].nonce !== nonce) {
         // Account nonce does not match the lowest known tx nonce,
         // therefore no txs from this address are currently executable
         continue
@@ -641,7 +641,7 @@ export class TxPool {
       if (baseFee) {
         // If any tx has an insufficient gasPrice,
         // remove all txs after that since they cannot be executed
-        const found = txsSortedByNonce.findIndex((tx) => this.normalizedGasPrice(tx).lt(baseFee))
+        const found = txsSortedByNonce.findIndex((tx) => this.txGasPrice(tx) < baseFee)
         if (found > -1) {
           txsSortedByNonce = txsSortedByNonce.slice(0, found)
         }
@@ -651,7 +651,7 @@ export class TxPool {
     // Initialize a price based heap with the head transactions
     const byPrice = new Heap<TypedTransaction>({
       comparBefore: (a: TypedTransaction, b: TypedTransaction) =>
-        this.normalizedGasPrice(b, baseFee).sub(this.normalizedGasPrice(a, baseFee)).ltn(0),
+        this.txGasPrice(b, baseFee) - this.txGasPrice(a, baseFee) < BigInt(0),
     })
     for (const [address, txs] of byNonce) {
       byPrice.insert(txs[0])

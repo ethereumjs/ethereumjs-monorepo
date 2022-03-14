@@ -1,22 +1,24 @@
-import { BN, rlp } from './externals'
+import { rlp } from './externals'
 import { Point, utils } from 'ethereum-cryptography/secp256k1'
 import { stripHexPrefix } from './internal'
 import { KECCAK256_RLP, KECCAK256_NULL } from './constants'
-import { zeros, bufferToHex, toBuffer } from './bytes'
+import { zeros, bufferToHex, toBuffer, bufferToBigInt } from './bytes'
 import { keccak, keccak256, keccakFromString, rlphash } from './hash'
 import { assertIsString, assertIsHexString, assertIsBuffer } from './helpers'
-import { BNLike, BufferLike, bnToUnpaddedBuffer, toType, TypeOutput } from './types'
+import { BigIntLike, BufferLike, bigIntToUnpaddedBuffer } from './types'
+
+const _0n = BigInt(0)
 
 export interface AccountData {
-  nonce?: BNLike
-  balance?: BNLike
+  nonce?: BigIntLike
+  balance?: BigIntLike
   stateRoot?: BufferLike
   codeHash?: BufferLike
 }
 
 export class Account {
-  nonce: BN
-  balance: BN
+  nonce: bigint
+  balance: bigint
   stateRoot: Buffer
   codeHash: Buffer
 
@@ -24,8 +26,8 @@ export class Account {
     const { nonce, balance, stateRoot, codeHash } = accountData
 
     return new Account(
-      nonce ? new BN(toBuffer(nonce)) : undefined,
-      balance ? new BN(toBuffer(balance)) : undefined,
+      nonce ? bufferToBigInt(toBuffer(nonce)) : undefined,
+      balance ? bufferToBigInt(toBuffer(balance)) : undefined,
       stateRoot ? toBuffer(stateRoot) : undefined,
       codeHash ? toBuffer(codeHash) : undefined
     )
@@ -44,19 +46,14 @@ export class Account {
   public static fromValuesArray(values: Buffer[]) {
     const [nonce, balance, stateRoot, codeHash] = values
 
-    return new Account(new BN(nonce), new BN(balance), stateRoot, codeHash)
+    return new Account(bufferToBigInt(nonce), bufferToBigInt(balance), stateRoot, codeHash)
   }
 
   /**
    * This constructor assigns and validates the values.
    * Use the static factory methods to assist in creating an Account from varying data types.
    */
-  constructor(
-    nonce = new BN(0),
-    balance = new BN(0),
-    stateRoot = KECCAK256_RLP,
-    codeHash = KECCAK256_NULL
-  ) {
+  constructor(nonce = _0n, balance = _0n, stateRoot = KECCAK256_RLP, codeHash = KECCAK256_NULL) {
     this.nonce = nonce
     this.balance = balance
     this.stateRoot = stateRoot
@@ -66,10 +63,10 @@ export class Account {
   }
 
   private _validate() {
-    if (this.nonce.lt(new BN(0))) {
+    if (this.nonce < _0n) {
       throw new Error('nonce must be greater than zero')
     }
-    if (this.balance.lt(new BN(0))) {
+    if (this.balance < _0n) {
       throw new Error('balance must be greater than zero')
     }
     if (this.stateRoot.length !== 32) {
@@ -85,8 +82,8 @@ export class Account {
    */
   raw(): Buffer[] {
     return [
-      bnToUnpaddedBuffer(this.nonce),
-      bnToUnpaddedBuffer(this.balance),
+      bigIntToUnpaddedBuffer(this.nonce),
+      bigIntToUnpaddedBuffer(this.balance),
       this.stateRoot,
       this.codeHash,
     ]
@@ -112,7 +109,7 @@ export class Account {
    * "An account is considered empty when it has no code and zero nonce and zero balance."
    */
   isEmpty(): boolean {
-    return this.balance.isZero() && this.nonce.isZero() && this.codeHash.equals(KECCAK256_NULL)
+    return this.balance === _0n && this.nonce === _0n && this.codeHash.equals(KECCAK256_NULL)
   }
 }
 
@@ -141,13 +138,16 @@ export const isValidAddress = function (hexAddress: string): boolean {
  * [EIP-55](https://eips.ethereum.org/EIPS/eip-55), so this will break in existing applications.
  * Usage of this EIP is therefore discouraged unless you have a very targeted use case.
  */
-export const toChecksumAddress = function (hexAddress: string, eip1191ChainId?: BNLike): string {
+export const toChecksumAddress = function (
+  hexAddress: string,
+  eip1191ChainId?: BigIntLike
+): string {
   assertIsHexString(hexAddress)
   const address = stripHexPrefix(hexAddress).toLowerCase()
 
   let prefix = ''
   if (eip1191ChainId) {
-    const chainId = toType(eip1191ChainId, TypeOutput.BN)
+    const chainId = bufferToBigInt(toBuffer(eip1191ChainId))
     prefix = chainId.toString() + '0x'
   }
 
@@ -172,7 +172,7 @@ export const toChecksumAddress = function (hexAddress: string, eip1191ChainId?: 
  */
 export const isValidChecksumAddress = function (
   hexAddress: string,
-  eip1191ChainId?: BNLike
+  eip1191ChainId?: BigIntLike
 ): boolean {
   return isValidAddress(hexAddress) && toChecksumAddress(hexAddress, eip1191ChainId) === hexAddress
 }
@@ -185,16 +185,15 @@ export const isValidChecksumAddress = function (
 export const generateAddress = function (from: Buffer, nonce: Buffer): Buffer {
   assertIsBuffer(from)
   assertIsBuffer(nonce)
-  const nonceBN = new BN(nonce)
 
-  if (nonceBN.isZero()) {
+  if (bufferToBigInt(nonce) === BigInt(0)) {
     // in RLP we want to encode null in the case of zero nonce
     // read the RLP documentation for an answer if you dare
     return rlphash([from, null]).slice(-20)
   }
 
   // Only take the lower 160bits of the hash
-  return rlphash([from, Buffer.from(nonceBN.toArray())]).slice(-20)
+  return rlphash([from, nonce]).slice(-20)
 }
 
 /**

@@ -1,4 +1,4 @@
-import { AddressLike, BNLike, BufferLike } from 'ethereumjs-util'
+import { AddressLike, BigIntLike, BufferLike } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { TxData, JsonTx, AccessListEIP2930TxData, FeeMarketEIP1559TxData } from '@ethereumjs/tx'
 import { Block } from './block'
@@ -38,7 +38,7 @@ export interface BlockOptions {
    * e.g. both Merge and Shanghai HF blocks set and the block number from the block provided
    * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
    */
-  hardforkByTD?: BNLike
+  hardforkByTD?: BigIntLike
   /**
    * Turns the block header into the canonical genesis block header
    *
@@ -90,15 +90,15 @@ export interface HeaderData {
   transactionsTrie?: BufferLike
   receiptTrie?: BufferLike
   logsBloom?: BufferLike
-  difficulty?: BNLike
-  number?: BNLike
-  gasLimit?: BNLike
-  gasUsed?: BNLike
-  timestamp?: BNLike
+  difficulty?: BigIntLike
+  number?: BigIntLike
+  gasLimit?: BigIntLike
+  gasUsed?: BigIntLike
+  timestamp?: BigIntLike
   extraData?: BufferLike
   mixHash?: BufferLike
   nonce?: BufferLike
-  baseFeePerGas?: BNLike
+  baseFeePerGas?: BigIntLike
 }
 
 /**

@@ -73,7 +73,7 @@ export class VMExecution extends Execution {
     this.config.execCommon.setHardforkByBlockNumber(number, td)
     this.hardfork = this.config.execCommon.hardfork()
     this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
-    if (number.isZero()) {
+    if (number === BigInt(0)) {
       await this.vm.stateManager.generateCanonicalGenesis()
     }
   }
@@ -249,9 +249,9 @@ export class VMExecution extends Execution {
 
       const endHeadBlock = await this.vm.blockchain.getIteratorHead('vm')
       if (numExecuted > 0) {
-        const firstNumber = startHeadBlock.header.number.toNumber()
+        const firstNumber = startHeadBlock.header.number
         const firstHash = short(startHeadBlock.hash())
-        const lastNumber = endHeadBlock.header.number.toNumber()
+        const lastNumber = endHeadBlock.header.number
         const lastHash = short(endHeadBlock.hash())
         const baseFeeAdd = this.config.execCommon.gteHardfork(Hardfork.London)
           ? `baseFee=${endHeadBlock.header.baseFeePerGas} `

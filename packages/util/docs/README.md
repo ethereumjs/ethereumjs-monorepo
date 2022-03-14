@@ -56,9 +56,9 @@ ethereumjs-util
 - [arrToBufArr](README.md#arrtobufarr)
 - [arrayContainsArray](README.md#arraycontainsarray)
 - [baToJSON](README.md#batojson)
-- [bnToHex](README.md#bntohex)
+- [bigIntToHex](README.md#bigIntToHex)
 - [bnToRlp](README.md#bntorlp)
-- [bnToUnpaddedBuffer](README.md#bntounpaddedbuffer)
+- [bigIntToUnpaddedBuffer](README.md#bigIntToUnpaddedBuffer)
 - [bufArrToArr](README.md#bufarrtoarr)
 - [bufferToHex](README.md#buffertohex)
 - [bufferToInt](README.md#buffertoint)
@@ -447,9 +447,9 @@ Converts a `Buffer` or `Array` to JSON.
 
 ___
 
-### bnToHex
+### bigIntToHex
 
-▸ **bnToHex**(`value`): [`PrefixedHexString`](README.md#prefixedhexstring)
+▸ **bigIntToHex**(`value`): [`PrefixedHexString`](README.md#prefixedhexstring)
 
 Convert BN to 0x-prefixed hex string.
 
@@ -473,7 +473,7 @@ ___
 
 ▸ **bnToRlp**(`value`): `Buffer`
 
-Deprecated alias for [bnToUnpaddedBuffer](README.md#bntounpaddedbuffer)
+Deprecated alias for [bigIntToUnpaddedBuffer](README.md#bigIntToUnpaddedBuffer)
 
 **`deprecated`**
 
@@ -493,9 +493,9 @@ Deprecated alias for [bnToUnpaddedBuffer](README.md#bntounpaddedbuffer)
 
 ___
 
-### bnToUnpaddedBuffer
+### bigIntToUnpaddedBuffer
 
-▸ **bnToUnpaddedBuffer**(`value`): `Buffer`
+▸ **bigIntToUnpaddedBuffer**(`value`): `Buffer`
 
 Convert value from BN to an unpadded Buffer
 (useful for RLP transport)

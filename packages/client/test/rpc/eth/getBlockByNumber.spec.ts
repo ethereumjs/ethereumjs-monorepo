@@ -23,7 +23,7 @@ function createChain() {
   const genesisBlock = {
     hash: () => genesisBlockHash,
     header: {
-      number: new BN(0),
+      number: BigInt(0),
     },
     toJSON: () => ({ ...Block.fromBlockData({ header: { number: 0 } }).toJSON(), transactions }),
     transactions,
@@ -32,7 +32,7 @@ function createChain() {
   const block = {
     hash: () => blockHash,
     header: {
-      number: new BN(1),
+      number: BigInt(1),
       hash: () => blockHash,
     },
     toJSON: () => ({
@@ -47,7 +47,7 @@ function createChain() {
     getBlock: () => genesisBlock,
     getLatestBlock: () => block,
     getLatestHeader: () => block.header,
-    getTd: () => new BN(0),
+    getTd: () => BigInt(0),
   }
 }
 

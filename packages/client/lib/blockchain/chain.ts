@@ -1,7 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
-import { BN, toBuffer } from 'ethereumjs-util'
+import { toBuffer } from 'ethereumjs-util'
 import { Config } from '../config'
 import { Event } from '../types'
 // eslint-disable-next-line implicit-dependencies/no-implicit
@@ -39,12 +39,12 @@ export interface ChainBlocks {
   /**
    * The total difficulty of the blockchain
    */
-  td: BN
+  td: bigint
 
   /**
    * The height of the blockchain
    */
-  height: BN
+  height: bigint
 }
 
 /**
@@ -59,12 +59,12 @@ export interface ChainHeaders {
   /**
    * The total difficulty of the headerchain
    */
-  td: BN
+  td: bigint
 
   /**
    * The height of the headerchain
    */
-  height: BN
+  height: bigint
 }
 
 /**
@@ -86,14 +86,14 @@ export class Chain {
 
   private _headers: ChainHeaders = {
     latest: null,
-    td: new BN(0),
-    height: new BN(0),
+    td: BigInt(0),
+    height: BigInt(0),
   }
 
   private _blocks: ChainBlocks = {
     latest: null,
-    td: new BN(0),
-    height: new BN(0),
+    td: BigInt(0),
+    height: BigInt(0),
   }
 
   /**
@@ -127,20 +127,20 @@ export class Chain {
   private reset() {
     this._headers = {
       latest: null,
-      td: new BN(0),
-      height: new BN(0),
+      td: BigInt(0),
+      height: BigInt(0),
     }
     this._blocks = {
       latest: null,
-      td: new BN(0),
-      height: new BN(0),
+      td: BigInt(0),
+      height: BigInt(0),
     }
   }
 
   /**
    * Network ID
    */
-  get networkId(): BN {
+  get networkId(): bigint {
     return this.config.chainCommon.networkId()
   }
 
@@ -216,13 +216,13 @@ export class Chain {
 
     const headers: ChainHeaders = {
       latest: null,
-      td: new BN(0),
-      height: new BN(0),
+      td: BigInt(0),
+      height: BigInt(0),
     }
     const blocks: ChainBlocks = {
       latest: null,
-      td: new BN(0),
-      height: new BN(0),
+      td: BigInt(0),
+      height: BigInt(0),
     }
 
     headers.latest = await this.getLatestHeader()
@@ -252,7 +252,7 @@ export class Chain {
    * @param reverse get blocks in reverse
    * @returns an array of the blocks
    */
-  async getBlocks(block: Buffer | BN, max = 1, skip = 0, reverse = false): Promise<Block[]> {
+  async getBlocks(block: Buffer | bigint, max = 1, skip = 0, reverse = false): Promise<Block[]> {
     if (!this.opened) throw new Error('Chain closed')
     return this.blockchain.getBlocks(block, max, skip, reverse)
   }
@@ -262,7 +262,7 @@ export class Chain {
    * @param block block hash or number
    * @throws if block is not found
    */
-  async getBlock(block: Buffer | BN): Promise<Block> {
+  async getBlock(block: Buffer | bigint): Promise<Block> {
     if (!this.opened) throw new Error('Chain closed')
     return this.blockchain.getBlock(block)
   }
@@ -307,7 +307,7 @@ export class Chain {
    * @returns list of block headers
    */
   async getHeaders(
-    block: Buffer | BN,
+    block: Buffer | bigint,
     max: number,
     skip: number,
     reverse: boolean
@@ -369,7 +369,7 @@ export class Chain {
    * @param num the block number
    * @returns the td
    */
-  async getTd(hash: Buffer, num: BN): Promise<BN> {
+  async getTd(hash: Buffer, num: bigint): Promise<bigint> {
     if (!this.opened) throw new Error('Chain closed')
     return this.blockchain.getTotalDifficulty(hash, num)
   }

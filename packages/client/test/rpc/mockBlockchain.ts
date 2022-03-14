@@ -1,6 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { Transaction } from '@ethereumjs/tx'
-import { BN, toBuffer } from 'ethereumjs-util'
+import { Transaction, toBuffer } from 'ethereumjs-util'
 import { dummy } from './helpers'
 
 export function mockBlockchain(options: any = {}) {
@@ -11,7 +10,7 @@ export function mockBlockchain(options: any = {}) {
   const block = {
     hash: () => toBuffer(blockHash),
     header: {
-      number: new BN(toBuffer(number)),
+      number: BigInt(number),
     },
     toJSON: () => ({
       ...Block.fromBlockData({ header: { number } }).toJSON(),

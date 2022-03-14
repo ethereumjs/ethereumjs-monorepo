@@ -191,7 +191,7 @@ dpt.addPeer({ address: '127.0.0.1', udpPort: 30303, tcpPort: 30303 })
 
 function onNewBlock(block: Block, peer: Peer) {
   const blockHashHex = block.hash().toString('hex')
-  const blockNumber = block.header.number.toNumber()
+  const blockNumber = block.header.number
 
   console.log(
     `----------------------------------------------------------------------------------------------------------`

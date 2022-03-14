@@ -1,9 +1,16 @@
 import { signSync, recoverPublicKey } from 'ethereum-cryptography/secp256k1'
-import { BN } from './externals'
-import { toBuffer, setLengthLeft, bufferToHex, bufferToInt } from './bytes'
+import {
+  toBuffer,
+  setLengthLeft,
+  bigIntToBuffer,
+  bufferToHex,
+  bufferToInt,
+  bufferToBigInt,
+} from './bytes'
+import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants'
 import { keccak } from './hash'
 import { assertIsBuffer } from './helpers'
-import { BNLike, toType, TypeOutput } from './types'
+import { BigIntLike, toType, TypeOutput } from './types'
 
 export interface ECDSASignature {
   v: number
@@ -21,7 +28,11 @@ export interface ECDSASignatureBuffer {
  * Returns the ECDSA signature of a message hash.
  */
 export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId?: number): ECDSASignature
-export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: BNLike): ECDSASignatureBuffer
+export function ecsign(
+  msgHash: Buffer,
+  privateKey: Buffer,
+  chainId: BigIntLike
+): ECDSASignatureBuffer
 export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: any): any {
   const [signature, recovery] = signSync(msgHash, privateKey, { recovered: true, der: false })
 
@@ -35,31 +46,29 @@ export function ecsign(msgHash: Buffer, privateKey: Buffer, chainId: any): any {
         'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative input type)'
       )
     }
-    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
     const v = chainId ? recovery + (chainId * 2 + 35) : recovery + 27
     return { r, s, v }
   }
 
-  const chainIdBN = toType(chainId as BNLike, TypeOutput.BN)
-  const v = chainIdBN.muln(2).addn(35).addn(recovery).toArrayLike(Buffer)
+  const chainIdBigInt = toType(chainId as BigIntLike, TypeOutput.BigInt)
+  const v = bigIntToBuffer(chainIdBigInt * BigInt(2) + BigInt(35) + BigInt(recovery))
   return { r, s, v }
 }
 
-function calculateSigRecovery(v: BNLike, chainId?: BNLike): BN {
-  const vBN = toType(v, TypeOutput.BN)
-
-  if (vBN.eqn(0) || vBN.eqn(1)) return toType(v, TypeOutput.BN)
+function calculateSigRecovery(v: BigIntLike, chainId?: BigIntLike): bigint {
+  const vBigInt = bufferToBigInt(toBuffer(v))
+  if (vBigInt === BigInt(0) || vBigInt === BigInt(1)) return vBigInt;
 
   if (!chainId) {
-    return vBN.subn(27)
+    return vBigInt - BigInt(27)
   }
-  const chainIdBN = toType(chainId, TypeOutput.BN)
-  return vBN.sub(chainIdBN.muln(2).addn(35))
+  const chainIdBigInt = bufferToBigInt(toBuffer(chainId))
+  return vBigInt - (chainIdBigInt * BigInt(2) + BigInt(35))
 }
 
-function isValidSigRecovery(recovery: number | BN): boolean {
-  const rec = new BN(recovery)
-  return rec.eqn(0) || rec.eqn(1)
+function isValidSigRecovery(recovery: number | bigint): boolean {
+  const rec = BigInt(recovery)
+  return rec === BigInt(0) || rec === BigInt(1)
 }
 
 /**
@@ -69,10 +78,10 @@ function isValidSigRecovery(recovery: number | BN): boolean {
  */
 export const ecrecover = function (
   msgHash: Buffer,
-  v: BNLike,
+  v: BigIntLike,
   r: Buffer,
   s: Buffer,
-  chainId?: BNLike
+  chainId?: BigIntLike
 ): Buffer {
   const signature = Buffer.concat([setLengthLeft(r, 32), setLengthLeft(s, 32)], 64)
   const recovery = calculateSigRecovery(v, chainId)
@@ -80,7 +89,7 @@ export const ecrecover = function (
     throw new Error('Invalid signature v value')
   }
 
-  const senderPubKey = recoverPublicKey(msgHash, signature, recovery.toNumber())
+  const senderPubKey = recoverPublicKey(msgHash, signature, Number(recovery))
   return Buffer.from(senderPubKey.slice(1))
 }
 
@@ -89,7 +98,12 @@ export const ecrecover = function (
  * NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
  * @returns Signature
  */
-export const toRpcSig = function (v: BNLike, r: Buffer, s: Buffer, chainId?: BNLike): string {
+export const toRpcSig = function (
+  v: BigIntLike,
+  r: Buffer,
+  s: Buffer,
+  chainId?: BigIntLike
+): string {
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
@@ -104,7 +118,12 @@ export const toRpcSig = function (v: BNLike, r: Buffer, s: Buffer, chainId?: BNL
  * NOTE: Accepts `v == 0 | v == 1` for EIP1559 transactions
  * @returns Signature
  */
-export const toCompactSig = function (v: BNLike, r: Buffer, s: Buffer, chainId?: BNLike): string {
+export const toCompactSig = function (
+  v: BigIntLike,
+  r: Buffer,
+  s: Buffer,
+  chainId?: BigIntLike
+): string {
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
@@ -164,18 +183,12 @@ export const fromRpcSig = function (sig: string): ECDSASignature {
  * @param homesteadOrLater Indicates whether this is being used on either the homestead hardfork or a later one
  */
 export const isValidSignature = function (
-  v: BNLike,
+  v: BigIntLike,
   r: Buffer,
   s: Buffer,
   homesteadOrLater: boolean = true,
-  chainId?: BNLike
+  chainId?: BigIntLike
 ): boolean {
-  const SECP256K1_N_DIV_2 = new BN(
-    '7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
-    16
-  )
-  const SECP256K1_N = new BN('fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141', 16)
-
   if (r.length !== 32 || s.length !== 32) {
     return false
   }
@@ -184,14 +197,19 @@ export const isValidSignature = function (
     return false
   }
 
-  const rBN = new BN(r)
-  const sBN = new BN(s)
+  const rBigInt = bufferToBigInt(r)
+  const sBigInt = bufferToBigInt(s)
 
-  if (rBN.isZero() || rBN.gt(SECP256K1_N) || sBN.isZero() || sBN.gt(SECP256K1_N)) {
+  if (
+    rBigInt === BigInt(0) ||
+    rBigInt >= SECP256K1_ORDER ||
+    sBigInt === BigInt(0) ||
+    sBigInt >= SECP256K1_ORDER
+  ) {
     return false
   }
 
-  if (homesteadOrLater && sBN.cmp(SECP256K1_N_DIV_2) === 1) {
+  if (homesteadOrLater && sBigInt >= SECP256K1_ORDER_DIV_2) {
     return false
   }
 

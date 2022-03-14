@@ -1,5 +1,4 @@
 import { EventEmitter } from 'events'
-import { BN } from 'ethereumjs-util'
 import type { Multiaddr } from 'multiaddr'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type Connection from '../../../node_modules/libp2p-interfaces/dist/src/connection/connection'
@@ -37,7 +36,7 @@ export interface EventParams {
   [Event.SYNC_EXECUTION_VM_ERROR]: [vmError: Error]
   [Event.SYNC_FETCHED_BLOCKS]: [blocks: Block[]]
   [Event.SYNC_FETCHED_HEADERS]: [headers: BlockHeader[]]
-  [Event.SYNC_SYNCHRONIZED]: [chainHeight: BN]
+  [Event.SYNC_SYNCHRONIZED]: [chainHeight: bigint]
   [Event.SYNC_ERROR]: [syncError: Error]
   [Event.SYNC_FETCHER_ERROR]: [fetchError: Error, task: any, peer: Peer | null | undefined]
   [Event.PEER_CONNECTED]: [connectedPeer: Peer]

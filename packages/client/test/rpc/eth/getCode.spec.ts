@@ -3,7 +3,7 @@ import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { Address, BN } from 'ethereumjs-util'
+import { Address } from 'ethereumjs-util'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
 import { checkError } from '../util'
@@ -87,7 +87,7 @@ tape(`${method}: ensure returns correct code`, async (t) => {
   const { createdAddress } = result.results[0]
   await vm.blockchain.putBlock(ranBlock!)
 
-  const expectedContractAddress = Address.generate(address, new BN(0))
+  const expectedContractAddress = Address.generate(address, BigInt(0))
   t.ok(
     createdAddress!.equals(expectedContractAddress),
     'should match the expected contract address'

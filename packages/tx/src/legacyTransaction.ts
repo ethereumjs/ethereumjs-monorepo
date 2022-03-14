@@ -1,7 +1,7 @@
 import {
-  BN,
-  bnToHex,
-  bnToUnpaddedBuffer,
+  bigIntToHex,
+  bigIntToUnpaddedBuffer,
+  bufferToBigInt,
   ecrecover,
   MAX_INTEGER,
   rlp,
@@ -10,18 +10,24 @@ import {
   unpadBuffer,
   validateNoLeadingZeroes,
 } from 'ethereumjs-util'
-import { TxOptions, TxData, JsonTx, N_DIV_2, TxValuesArray, Capability } from './types'
+import { TxOptions, TxData, JsonTx, TxValuesArray, Capability } from './types'
 import { BaseTransaction } from './baseTransaction'
 import Common from '@ethereumjs/common'
 import { checkMaxInitCodeSize } from './util'
 
 const TRANSACTION_TYPE = 0
 
+function meetsEIP155(_v: bigint, chainId: bigint) {
+  const v = Number(_v)
+  const chainIdDoubled = Number(chainId) * 2
+  return v === chainIdDoubled + 35 || v === chainIdDoubled + 36
+}
+
 /**
  * An Ethereum non-typed (legacy) transaction
  */
 export default class Transaction extends BaseTransaction<Transaction> {
-  public readonly gasPrice: BN
+  public readonly gasPrice: bigint
 
   public readonly common: Common
 
@@ -98,9 +104,9 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
     this.common = this._validateTxV(this.v, opts.common)
 
-    this.gasPrice = new BN(toBuffer(txData.gasPrice === '' ? '0x' : txData.gasPrice))
+    this.gasPrice = bufferToBigInt(toBuffer(txData.gasPrice === '' ? '0x' : txData.gasPrice))
 
-    if (this.gasPrice.mul(this.gasLimit).gt(MAX_INTEGER)) {
+    if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
       const msg = this._errorMsg('gas limit * gasPrice cannot exceed MAX_INTEGER (2^256-1)')
       throw new Error(msg)
     }
@@ -115,11 +121,8 @@ export default class Transaction extends BaseTransaction<Transaction> {
         // then when computing the hash of a transaction for purposes of signing or recovering
         // instead of hashing only the first six elements (i.e. nonce, gasprice, startgas, to, value, data)
         // hash nine elements, with v replaced by CHAIN_ID, r = 0 and s = 0.
-        const v = this.v!
-        const chainIdDoubled = this.common.chainId().muln(2)
-
         // v and chain ID meet EIP-155 conditions
-        if (v.eq(chainIdDoubled.addn(35)) || v.eq(chainIdDoubled.addn(36))) {
+        if (meetsEIP155(this.v!, this.common.chainId())) {
           this.activeCapabilities.push(Capability.EIP155ReplayProtection)
         }
       }
@@ -150,15 +153,15 @@ export default class Transaction extends BaseTransaction<Transaction> {
    */
   raw(): TxValuesArray {
     return [
-      bnToUnpaddedBuffer(this.nonce),
-      bnToUnpaddedBuffer(this.gasPrice),
-      bnToUnpaddedBuffer(this.gasLimit),
+      bigIntToUnpaddedBuffer(this.nonce),
+      bigIntToUnpaddedBuffer(this.gasPrice),
+      bigIntToUnpaddedBuffer(this.gasLimit),
       this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bnToUnpaddedBuffer(this.value),
+      bigIntToUnpaddedBuffer(this.value),
       this.data,
-      this.v !== undefined ? bnToUnpaddedBuffer(this.v) : Buffer.from([]),
-      this.r !== undefined ? bnToUnpaddedBuffer(this.r) : Buffer.from([]),
-      this.s !== undefined ? bnToUnpaddedBuffer(this.s) : Buffer.from([]),
+      this.v !== undefined ? bigIntToUnpaddedBuffer(this.v) : Buffer.from([]),
+      this.r !== undefined ? bigIntToUnpaddedBuffer(this.r) : Buffer.from([]),
+      this.s !== undefined ? bigIntToUnpaddedBuffer(this.s) : Buffer.from([]),
     ]
   }
 
@@ -177,11 +180,11 @@ export default class Transaction extends BaseTransaction<Transaction> {
 
   private _getMessageToSign() {
     const values = [
-      bnToUnpaddedBuffer(this.nonce),
-      bnToUnpaddedBuffer(this.gasPrice),
-      bnToUnpaddedBuffer(this.gasLimit),
+      bigIntToUnpaddedBuffer(this.nonce),
+      bigIntToUnpaddedBuffer(this.gasPrice),
+      bigIntToUnpaddedBuffer(this.gasLimit),
       this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bnToUnpaddedBuffer(this.value),
+      bigIntToUnpaddedBuffer(this.value),
       this.data,
     ]
 
@@ -223,7 +226,7 @@ export default class Transaction extends BaseTransaction<Transaction> {
   /**
    * The amount of gas paid for the data in this tx
    */
-  getDataFee(): BN {
+  getDataFee(): bigint {
     if (this.cache.dataFee && this.cache.dataFee.hardfork === this.common.hardfork()) {
       return this.cache.dataFee.value
     }
@@ -241,8 +244,8 @@ export default class Transaction extends BaseTransaction<Transaction> {
   /**
    * The up front amount that an account must have for this transaction to be valid
    */
-  getUpfrontCost(): BN {
-    return this.gasLimit.mul(this.gasPrice).add(this.value)
+  getUpfrontCost(): bigint {
+    return this.gasLimit * this.gasPrice + this.value
   }
 
   /**
@@ -295,22 +298,16 @@ export default class Transaction extends BaseTransaction<Transaction> {
   getSenderPublicKey(): Buffer {
     const msgHash = this.getMessageToVerifySignature()
 
-    // EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
-    // Reasoning: https://ethereum.stackexchange.com/a/55728
-    if (this.common.gteHardfork('homestead') && this.s?.gt(N_DIV_2)) {
-      const msg = this._errorMsg(
-        'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
-      )
-      throw new Error(msg)
-    }
-
     const { v, r, s } = this
+
+    this._validateHighS()
+
     try {
       return ecrecover(
         msgHash,
         v!,
-        bnToUnpaddedBuffer(r!),
-        bnToUnpaddedBuffer(s!),
+        bigIntToUnpaddedBuffer(r!),
+        bigIntToUnpaddedBuffer(s!),
         this.supports(Capability.EIP155ReplayProtection) ? this.common.chainId() : undefined
       )
     } catch (e: any) {
@@ -323,9 +320,9 @@ export default class Transaction extends BaseTransaction<Transaction> {
    * Process the v, r, s values from the `sign` method of the base transaction.
    */
   protected _processSignature(v: number, r: Buffer, s: Buffer) {
-    const vBN = new BN(v)
+    let vBigInt = BigInt(v)
     if (this.supports(Capability.EIP155ReplayProtection)) {
-      vBN.iadd(this.common.chainId().muln(2).addn(8))
+      vBigInt += this.common.chainId() * BigInt(2) + BigInt(8)
     }
 
     const opts = { ...this.txOptions, common: this.common }
@@ -338,9 +335,9 @@ export default class Transaction extends BaseTransaction<Transaction> {
         to: this.to,
         value: this.value,
         data: this.data,
-        v: vBN,
-        r: new BN(r),
-        s: new BN(s),
+        v: vBigInt,
+        r: bufferToBigInt(r),
+        s: bufferToBigInt(s),
       },
       opts
     )
@@ -351,22 +348,22 @@ export default class Transaction extends BaseTransaction<Transaction> {
    */
   toJSON(): JsonTx {
     return {
-      nonce: bnToHex(this.nonce),
-      gasPrice: bnToHex(this.gasPrice),
-      gasLimit: bnToHex(this.gasLimit),
+      nonce: bigIntToHex(this.nonce),
+      gasPrice: bigIntToHex(this.gasPrice),
+      gasLimit: bigIntToHex(this.gasLimit),
       to: this.to !== undefined ? this.to.toString() : undefined,
-      value: bnToHex(this.value),
+      value: bigIntToHex(this.value),
       data: '0x' + this.data.toString('hex'),
-      v: this.v !== undefined ? bnToHex(this.v) : undefined,
-      r: this.r !== undefined ? bnToHex(this.r) : undefined,
-      s: this.s !== undefined ? bnToHex(this.s) : undefined,
+      v: this.v !== undefined ? bigIntToHex(this.v) : undefined,
+      r: this.r !== undefined ? bigIntToHex(this.r) : undefined,
+      s: this.s !== undefined ? bigIntToHex(this.s) : undefined,
     }
   }
 
   /**
    * Validates tx's `v` value
    */
-  private _validateTxV(v?: BN, common?: Common): Common {
+  private _validateTxV(v?: bigint, common?: Common): Common {
     // Check for valid v values in the scope of a signed legacy tx
     if (v !== undefined) {
       // v is 1. not matching the EIP-155 chainId included case and...
@@ -383,14 +380,11 @@ export default class Transaction extends BaseTransaction<Transaction> {
     if (
       v !== undefined &&
       (!common || common.gteHardfork('spuriousDragon')) &&
-      !v.eqn(27) &&
-      !v.eqn(28)
+      v !== 27 &&
+      v !== 28
     ) {
       if (common) {
-        const chainIdDoubled = common.chainId().muln(2)
-        const isValidEIP155V = v.eq(chainIdDoubled.addn(35)) || v.eq(chainIdDoubled.addn(36))
-
-        if (!isValidEIP155V) {
+        if (!meetsEIP155(BigInt(v), common.chainId())) {
           throw new Error(
             `Incompatible EIP155-based V ${v} and chain id ${common.chainId()}. See the Common parameter of the Transaction constructor to set the chain id.`
           )
@@ -398,16 +392,16 @@ export default class Transaction extends BaseTransaction<Transaction> {
       } else {
         // Derive the original chain ID
         let numSub
-        if (v.subn(35).isEven()) {
+        if ((v - 35) % 2 === 0) {
           numSub = 35
         } else {
           numSub = 36
         }
         // Use derived chain ID to create a proper Common
-        chainIdBN = v.subn(numSub).divn(2)
+        chainIdBigInt = BigInt(v - numSub) / BigInt(2)
       }
     }
-    return this._getCommon(common, chainIdBN)
+    return this._getCommon(common, chainIdBigInt)
   }
 
   /**

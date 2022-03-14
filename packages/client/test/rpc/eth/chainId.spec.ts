@@ -1,5 +1,4 @@
 import tape from 'tape'
-import { BN } from 'ethereumjs-util'
 import Common, { Chain } from '@ethereumjs/common'
 import { baseSetup, params, baseRequest, createClient, createManager, startRPC } from '../helpers'
 
@@ -50,7 +49,7 @@ tape(`${method}: returns 42 for Kovan`, async (t) => {
   const req = params(method, [])
   const expectRes = (res: any) => {
     const msg = 'should return chainId 42'
-    const chainId = new BN(42).toString(16)
+    const chainId = BigInt(42).toString(16)
     t.equal(res.body.result, `0x${chainId}`, msg)
   }
   await baseRequest(t, server, req, 200, expectRes)

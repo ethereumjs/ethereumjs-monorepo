@@ -3,7 +3,7 @@ import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { Address, BN, toBuffer, bnToHex } from 'ethereumjs-util'
+import { Address, bigIntToHex } from 'ethereumjs-util'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
 import { checkError } from '../util'
@@ -32,11 +32,11 @@ tape(`${method}: ensure balance deducts after a tx`, async (t) => {
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
   // verify balance is genesis amount
-  const genesisBalance = new BN(toBuffer('0x15ac56edc4d12c0000'))
+  const genesisBalance = BigInt(0x15ac56edc4d12c0000)
   let req = params(method, [address.toString(), 'latest'])
   let expectRes = (res: any) => {
     const msg = 'should return the correct genesis balance'
-    t.equal(res.body.result, bnToHex(genesisBalance), msg)
+    t.equal(res.body.result, bigIntToHex(genesisBalance), msg)
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
@@ -52,11 +52,11 @@ tape(`${method}: ensure balance deducts after a tx`, async (t) => {
   const { amountSpent } = result.results[0]
 
   // verify balance is genesis amount minus amountSpent
-  const expectedNewBalance = genesisBalance.sub(new BN(amountSpent.toString(10)))
+  const expectedNewBalance = genesisBalance - amountSpent
   req = params(method, [address.toString(), 'latest'])
   expectRes = (res: any) => {
     const msg = 'should return the correct balance after a tx'
-    t.equal(res.body.result, bnToHex(expectedNewBalance), msg)
+    t.equal(res.body.result, bigIntToHex(expectedNewBalance), msg)
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
@@ -64,7 +64,7 @@ tape(`${method}: ensure balance deducts after a tx`, async (t) => {
   req = params(method, [address.toString(), 'earliest'])
   expectRes = (res: any) => {
     const msg = "should return the correct balance with 'earliest'"
-    t.equal(res.body.result, bnToHex(genesisBalance), msg)
+    t.equal(res.body.result, bigIntToHex(genesisBalance), msg)
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
@@ -72,7 +72,7 @@ tape(`${method}: ensure balance deducts after a tx`, async (t) => {
   req = params(method, [address.toString(), '0x0'])
   expectRes = (res: any) => {
     const msg = 'should return the correct balance with a past block number'
-    t.equal(res.body.result, bnToHex(genesisBalance), msg)
+    t.equal(res.body.result, bigIntToHex(genesisBalance), msg)
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 

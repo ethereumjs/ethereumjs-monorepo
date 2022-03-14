@@ -1,4 +1,4 @@
-import { Address, toBuffer, rlp, bnToBigInt, bigIntToBN, toType, TypeOutput } from 'ethereumjs-util'
+import { Address, toBuffer, rlp, toType, TypeOutput } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
@@ -88,7 +88,7 @@ export class BlockBuilder {
     this.headerData = {
       ...opts.headerData,
       parentHash: opts.headerData?.parentHash ?? opts.parentBlock.hash(),
-      number: opts.headerData?.number ?? opts.parentBlock.header.number.addn(1),
+      number: opts.headerData?.number ?? opts.parentBlock.header.number + BigInt(1),
       gasLimit: opts.headerData?.gasLimit ?? opts.parentBlock.header.gasLimit,
     }
 
@@ -173,15 +173,15 @@ export class BlockBuilder {
 
     // According to the Yellow Paper, a transaction's gas limit
     // cannot be greater than the remaining gas in the block
-    const blockGasLimit = bnToBigInt(toType(this.headerData.gasLimit, TypeOutput.BN))
+    const blockGasLimit = toType(this.headerData.gasLimit, TypeOutput.BigInt)
     const blockGasRemaining = blockGasLimit - this.gasUsed
-    if (bnToBigInt(tx.gasLimit) > blockGasRemaining) {
+    if (tx.gasLimit > blockGasRemaining) {
       throw new Error('tx has a higher gas limit than the remaining gas in the block')
     }
 
     const header = {
       ...this.headerData,
-      gasUsed: bigIntToBN(this.gasUsed),
+      gasUsed: this.gasUsed,
     }
     const blockData = { header, transactions: this.transactions }
     const block = Block.fromBlockData(blockData, this.blockOpts)
@@ -230,7 +230,7 @@ export class BlockBuilder {
     const transactionsTrie = await this.transactionsTrie()
     const receiptTrie = await this.receiptTrie()
     const logsBloom = this.logsBloom()
-    const gasUsed = bigIntToBN(this.gasUsed)
+    const gasUsed = this.gasUsed
     const timestamp = this.headerData.timestamp ?? Math.round(Date.now() / 1000)
 
     const headerData = {
