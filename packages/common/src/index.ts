@@ -683,50 +683,6 @@ export default class Common extends EventEmitter {
   }
 
   /**
-   * Checks if given or set hardfork is active on the chain
-   * @param hardfork Hardfork name, optional if HF set
-   * @returns True if hardfork is active on the chain
-   */
-  hardforkIsActiveOnChain(hardfork?: string | Hardfork | null): boolean {
-    hardfork = hardfork ?? this._hardfork
-    for (const hf of this.hardforks()) {
-      if (hf['name'] === hardfork && hf['block'] !== null) return true
-    }
-    return false
-  }
-
-  /**
-   * Returns the active hardfork switches for the current chain
-   * @param blockNumber up to block if provided, otherwise for the whole chain
-   * @return Array with hardfork arrays
-   */
-  activeHardforks(blockNumber?: BigIntLike | null): HardforkParams[] {
-    const activeHardforks: HardforkParams[] = []
-    const hfs = this.hardforks()
-    for (const hf of hfs) {
-      if (hf['block'] === null) continue
-      if (blockNumber !== undefined && blockNumber !== null && blockNumber < hf['block']) break
-
-      activeHardforks.push(hf)
-    }
-    return activeHardforks
-  }
-
-  /**
-   * Returns the latest active hardfork name for chain or block or throws if unavailable
-   * @param blockNumber up to block if provided, otherwise for the whole chain
-   * @return Hardfork name
-   */
-  activeHardfork(blockNumber?: BigIntLike | null): string {
-    const activeHardforks = this.activeHardforks(blockNumber)
-    if (activeHardforks.length > 0) {
-      return activeHardforks[activeHardforks.length - 1]['name']
-    } else {
-      throw new Error(`No (supported) active hardfork found`)
-    }
-  }
-
-  /**
    * Returns the hardfork change block for hardfork provided or set
    * @param hardfork Hardfork name, optional if HF set
    * @returns Block number or null if unscheduled
