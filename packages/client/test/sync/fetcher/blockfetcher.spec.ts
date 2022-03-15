@@ -68,14 +68,13 @@ tape('[BlockFetcher]', async (t) => {
 
     // Clear fetcher queue for next test of gap when following head
     fetcher.clear()
-    chain.headers.height = new BN(15)
     blockNumberList = [new BN(50), new BN(51)]
     min = new BN(50)
     fetcher.enqueueByNumberList(blockNumberList, min)
     t.equals(
       (fetcher as any).in.size(),
-      2,
-      '1 new task to catch up to head (16-49), 1 new task for subsequent block numbers (50-51)'
+      11,
+      '10 new tasks to catch up to head (1-49, 5 per request), 1 new task for subsequent block numbers (50-51)'
     )
 
     fetcher.destroy()

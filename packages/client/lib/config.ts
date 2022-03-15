@@ -198,6 +198,12 @@ export interface ConfigOptions {
    * If not provided, defaults to the primary account.
    */
   minerCoinbase?: Address
+
+  /**
+   * If there is a reorg, this is a safe distance from which
+   * to try to refetch and refeed the blocks.
+   */
+  safeReorgDistance?: number
 }
 
 export class Config {
@@ -218,6 +224,7 @@ export class Config {
   public static readonly MAXPEERS_DEFAULT = 25
   public static readonly DNSADDR_DEFAULT = '8.8.8.8'
   public static readonly DEBUGCODE_DEFAULT = false
+  public static readonly SAFE_REORG_DISTANCE = 100
 
   public readonly logger: Logger
   public readonly syncmode: SyncMode
@@ -242,6 +249,7 @@ export class Config {
   public readonly mine: boolean
   public readonly accounts: [address: Address, privKey: Buffer][]
   public readonly minerCoinbase?: Address
+  public readonly safeReorgDistance: number
 
   public synchronized: boolean
   public lastSyncDate: number
@@ -274,6 +282,7 @@ export class Config {
     this.mine = options.mine ?? false
     this.accounts = options.accounts ?? []
     this.minerCoinbase = options.minerCoinbase
+    this.safeReorgDistance = options.safeReorgDistance ?? Config.SAFE_REORG_DISTANCE
 
     this.synchronized = false
     this.lastSyncDate = 0

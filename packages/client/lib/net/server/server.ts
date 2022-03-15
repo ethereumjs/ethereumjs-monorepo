@@ -114,4 +114,6 @@ export class Server {
   ban(_peerId: string, _maxAge: number) {
     // don't do anything by default
   }
+
+  async connect(_peerId: string, _stream?: any) {}
 }
