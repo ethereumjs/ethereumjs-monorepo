@@ -81,46 +81,7 @@ export class BlockHeader {
    * @param opts
    */
   public static fromHeaderData(headerData: HeaderData = {}, opts: BlockOptions = {}) {
-    const {
-      parentHash,
-      uncleHash,
-      coinbase,
-      stateRoot,
-      transactionsTrie,
-      receiptTrie,
-      logsBloom,
-      difficulty,
-      number,
-      gasLimit,
-      gasUsed,
-      timestamp,
-      extraData,
-      mixHash,
-      nonce,
-      baseFeePerGas,
-    } = headerData
-
-    return new BlockHeader(
-      toType(parentHash, TypeOutput.Buffer) ?? zeros(32),
-      toType(uncleHash, TypeOutput.Buffer) ?? KECCAK256_RLP_ARRAY,
-      new Address(toType(coinbase, TypeOutput.Buffer) ?? Buffer.alloc(20)),
-      toType(stateRoot, TypeOutput.Buffer) ?? zeros(32),
-      toType(transactionsTrie, TypeOutput.Buffer) ?? KECCAK256_RLP,
-      toType(receiptTrie, TypeOutput.Buffer) ?? KECCAK256_RLP,
-      toType(logsBloom, TypeOutput.Buffer) ?? zeros(256),
-      toType(difficulty, TypeOutput.BigInt) ?? BigInt(0),
-      toType(number, TypeOutput.BigInt) ?? BigInt(0),
-      toType(gasLimit, TypeOutput.BigInt) ?? DEFAULT_GAS_LIMIT,
-      toType(gasUsed, TypeOutput.BigInt) ?? BigInt(0),
-      toType(timestamp, TypeOutput.BigInt) ?? BigInt(0),
-      toType(extraData, TypeOutput.Buffer) ?? Buffer.from([]),
-      toType(mixHash, TypeOutput.Buffer) ?? zeros(32),
-      toType(nonce, TypeOutput.Buffer) ?? zeros(8),
-      opts,
-      baseFeePerGas !== undefined && baseFeePerGas !== null
-        ? toType(baseFeePerGas, TypeOutput.BigInt)
-        : undefined
-    )
+    return new BlockHeader(headerData, opts)
   }
 
   /**
@@ -142,7 +103,7 @@ export class BlockHeader {
   /**
    * Static constructor to create a block header from an array of Buffer values
    *
-   * @param headerData
+   * @param values
    * @param opts
    */
   public static fromValuesArray(values: BlockHeaderBuffer, opts: BlockOptions = {}) {
@@ -173,25 +134,25 @@ export class BlockHeader {
     }
 
     return new BlockHeader(
-      toBuffer(parentHash),
-      toBuffer(uncleHash),
-      new Address(toBuffer(coinbase)),
-      toBuffer(stateRoot),
-      toBuffer(transactionsTrie),
-      toBuffer(receiptTrie),
-      toBuffer(logsBloom),
-      bufferToBigInt(difficulty),
-      bufferToBigInt(number),
-      bufferToBigInt(gasLimit),
-      bufferToBigInt(gasUsed),
-      bufferToBigInt(timestamp),
-      toBuffer(extraData),
-      toBuffer(mixHash),
-      toBuffer(nonce),
-      opts,
-      baseFeePerGas !== undefined && baseFeePerGas !== null
-        ? bufferToBigInt(baseFeePerGas)
-        : undefined
+      {
+        parentHash,
+        uncleHash,
+        coinbase,
+        stateRoot,
+        transactionsTrie,
+        receiptTrie,
+        logsBloom,
+        difficulty,
+        number,
+        gasLimit,
+        gasUsed,
+        timestamp,
+        extraData,
+        mixHash,
+        nonce,
+        baseFeePerGas,
+      },
+      opts
     )
   }
 
@@ -210,25 +171,7 @@ export class BlockHeader {
    * varying data types. For a default empty header, use {@link BlockHeader.fromHeaderData}.
    *
    */
-  constructor(
-    parentHash: Buffer,
-    uncleHash: Buffer,
-    coinbase: Address,
-    stateRoot: Buffer,
-    transactionsTrie: Buffer,
-    receiptTrie: Buffer,
-    logsBloom: Buffer,
-    difficulty: bigint,
-    number: bigint,
-    gasLimit: bigint,
-    gasUsed: bigint,
-    timestamp: bigint,
-    extraData: Buffer,
-    mixHash: Buffer,
-    nonce: Buffer,
-    options: BlockOptions = {},
-    baseFeePerGas?: bigint
-  ) {
+  constructor(headerData: HeaderData, options: BlockOptions = {}) {
     if (options.common) {
       this._common = options.common.copy()
     } else {
@@ -245,6 +188,46 @@ export class BlockHeader {
         `The hardforkByBlockNumber and hardforkByTD options can't be used in conjunction`
       )
     }
+
+    const defaults = {
+      parentHash: zeros(32),
+      uncleHash: KECCAK256_RLP_ARRAY,
+      coinbase: Address.zero(),
+      stateRoot: zeros(32),
+      transactionsTrie: KECCAK256_RLP,
+      receiptTrie: KECCAK256_RLP,
+      logsBloom: zeros(256),
+      difficulty: BigInt(0),
+      number: BigInt(0),
+      gasLimit: DEFAULT_GAS_LIMIT,
+      gasUsed: BigInt(0),
+      timestamp: BigInt(0),
+      extraData: Buffer.from([]),
+      mixHash: zeros(32),
+      nonce: zeros(8),
+      baseFeePerGas: undefined,
+    }
+
+    const parentHash = toType(headerData.parentHash, TypeOutput.Buffer) ?? defaults.parentHash
+    const uncleHash = toType(headerData.uncleHash, TypeOutput.Buffer) ?? defaults.uncleHash
+    const coinbase = headerData.coinbase
+      ? new Address(toType(headerData.coinbase, TypeOutput.Buffer))
+      : defaults.coinbase
+    let stateRoot = toType(headerData.stateRoot, TypeOutput.Buffer) ?? defaults.stateRoot
+    const transactionsTrie =
+      toType(headerData.transactionsTrie, TypeOutput.Buffer) ?? defaults.transactionsTrie
+    const receiptTrie = toType(headerData.receiptTrie, TypeOutput.Buffer) ?? defaults.receiptTrie
+    const logsBloom = toType(headerData.logsBloom, TypeOutput.Buffer) ?? defaults.logsBloom
+    let difficulty = toType(headerData.difficulty, TypeOutput.BigInt) ?? defaults.difficulty
+    let number = toType(headerData.number, TypeOutput.BigInt) ?? defaults.number
+    let gasLimit = toType(headerData.gasLimit, TypeOutput.BigInt) ?? defaults.gasLimit
+    const gasUsed = toType(headerData.gasUsed, TypeOutput.BigInt) ?? defaults.gasUsed
+    let timestamp = toType(headerData.timestamp, TypeOutput.BigInt) ?? defaults.timestamp
+    let extraData = toType(headerData.extraData, TypeOutput.Buffer) ?? defaults.extraData
+    const mixHash = toType(headerData.mixHash, TypeOutput.Buffer) ?? defaults.mixHash
+    let nonce = toType(headerData.nonce, TypeOutput.Buffer) ?? defaults.nonce
+    let baseFeePerGas =
+      toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? defaults.baseFeePerGas
 
     const hardforkByBlockNumber = options.hardforkByBlockNumber ?? false
     if (hardforkByBlockNumber || options.hardforkByTD !== undefined) {
