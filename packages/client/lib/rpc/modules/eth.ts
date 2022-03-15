@@ -57,6 +57,7 @@ type JsonRpcBlock = {
   number: string // the block number. null when pending block.
   hash: string // hash of the block. null when pending block.
   parentHash: string // hash of the parent block.
+  mixHash?: string // bit hash which proves combined with the nonce that a sufficient amount of computation has been carried out on this block.
   nonce: string // hash of the generated proof-of-work. null when pending block.
   sha3Uncles: string // SHA3 of the uncles data in the block.
   logsBloom: string // the bloom filter for the logs of the block. null when pending block.
@@ -151,6 +152,7 @@ const jsonRpcBlock = async (
     number: header.number!,
     hash: bufferToHex(block.hash()),
     parentHash: header.parentHash!,
+    mixHash: header.mixHash,
     nonce: header.nonce!,
     sha3Uncles: header.uncleHash!,
     logsBloom: header.logsBloom!,
