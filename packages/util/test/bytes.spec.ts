@@ -2,7 +2,6 @@ import tape from 'tape'
 import {
   arrToBufArr,
   Address,
-  BN,
   bufArrToArr,
   zeros,
   zeroAddress,
@@ -200,7 +199,7 @@ tape('toUnsigned', function (t) {
   t.test('should convert a signed (negative) number to unsigned', function (st) {
     const neg = '-452312848583266388373324160190187140051835877600158453279131187530910662656'
     const hex = 'ff00000000000000000000000000000000000000000000000000000000000000'
-    const num = new BN(neg)
+    const num = BigInt(neg)
 
     st.equal(toUnsigned(num).toString('hex'), hex)
     st.end()
@@ -209,7 +208,7 @@ tape('toUnsigned', function (t) {
   t.test('should convert a signed (positive) number to unsigned', function (st) {
     const neg = '452312848583266388373324160190187140051835877600158453279131187530910662656'
     const hex = '0100000000000000000000000000000000000000000000000000000000000000'
-    const num = new BN(neg)
+    const num = BigInt(neg)
 
     st.equal(toUnsigned(num).toString('hex'), hex)
     st.end()
@@ -267,8 +266,8 @@ tape('toBuffer', function (t) {
     st.ok(toBuffer(null).equals(Buffer.allocUnsafe(0)))
     // undefined
     st.ok(toBuffer(undefined).equals(Buffer.allocUnsafe(0)))
-    // 'toBN'
-    st.ok(toBuffer(new BN(1)).equals(Buffer.from([1])))
+    // BigInt
+    st.ok(toBuffer(BigInt(1)).equals(Buffer.from([1])))
     // 'toArray'
     st.ok(
       toBuffer({
@@ -284,7 +283,7 @@ tape('toBuffer', function (t) {
       toBuffer({ test: 1 } as any)
     })
     st.throws(function () {
-      toBuffer(new BN(-10))
+      toBuffer(BigInt(-10))
     })
     st.end()
   })

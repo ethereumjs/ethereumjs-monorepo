@@ -4,7 +4,7 @@ import ms from 'ms'
 import snappy from 'snappyjs'
 import { debug as createDebugLogger, Debugger } from 'debug'
 import { devp2pDebug } from '../util'
-import { BN, rlp } from 'ethereumjs-util'
+import { bufferToBigInt, bufferToHex, rlp, bigIntToBuffer } from 'ethereumjs-util'
 import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 
@@ -30,9 +30,9 @@ export class ETH extends EventEmitter {
 
   // Eth64
   _hardfork: string = 'chainstart'
-  _latestBlock = new BN(0)
+  _latestBlock = BigInt(0)
   _forkHash: string = ''
-  _nextForkBlock = new BN(0)
+  _nextForkBlock = BigInt(0)
 
   // Message debuggers (e.g. { 'GET_BLOCK_HEADERS': [debug Object], ...})
   private msgDebuggers: { [key: string]: (debug: string) => void } = {}
@@ -58,10 +58,10 @@ export class ETH extends EventEmitter {
       this._hardfork = c.hardfork() ? c.hardfork() : this._hardfork
       // Set latestBlock minimally to start block of fork to have some more
       // accurate basis if no latestBlock is provided along status send
-      this._latestBlock = c.hardforkBlock(this._hardfork) ?? new BN(0)
+      this._latestBlock = c.hardforkBlock(this._hardfork) ?? BigInt(0)
       this._forkHash = c.forkHash(this._hardfork)
       // Next fork block number or 0 if none available
-      this._nextForkBlock = c.nextHardforkBlock(this._hardfork) ?? new BN(0)
+      this._nextForkBlock = c.nextHardforkBlock(this._hardfork) ?? BigInt(0)
     }
   }
 
@@ -133,13 +133,13 @@ export class ETH extends EventEmitter {
   _validateForkId(forkId: Buffer[]) {
     const c = this._peer._common
 
-    const peerForkHash = `0x${forkId[0].toString('hex')}`
-    const peerNextFork = new BN(forkId[1])
+    const peerForkHash = bufferToHex(forkId[0])
+    const peerNextFork = bufferToBigInt(forkId[1])
 
     if (this._forkHash === peerForkHash) {
       // There is a known next fork
-      if (!peerNextFork.isZero()) {
-        if (this._latestBlock.gte(peerNextFork)) {
+      if (peerNextFork > BigInt(0)) {
+        if (this._latestBlock >= peerNextFork) {
           const msg = 'Remote is advertising a future fork that passed locally'
           this.debug('STATUS', msg)
           throw new assert.AssertionError({ message: msg })
@@ -155,7 +155,7 @@ export class ETH extends EventEmitter {
 
     if (!c.hardforkGteHardfork(peerFork.name, this._hardfork)) {
       const nextHardforkBlock = c.nextHardforkBlock(peerFork.name)
-      if (peerNextFork === null || !nextHardforkBlock || !nextHardforkBlock.eq(peerNextFork)) {
+      if (peerNextFork === null || !nextHardforkBlock || nextHardforkBlock !== peerNextFork) {
         const msg = 'Outdated fork status, remote needs software update'
         this.debug('STATUS', msg)
         throw new assert.AssertionError({ message: msg })
@@ -248,15 +248,15 @@ export class ETH extends EventEmitter {
     if (this._status !== null) return
     this._status = [
       int2buffer(this._version),
-      this._peer._common.chainId().toArrayLike(Buffer),
+      bigIntToBuffer(this._peer._common.chainId()),
       status.td,
       status.bestHash,
       status.genesisHash,
     ]
     if (this._version >= 64) {
       if (status.latestBlock) {
-        const latestBlock = new BN(status.latestBlock)
-        if (latestBlock.lt(this._latestBlock)) {
+        const latestBlock = bufferToBigInt(status.latestBlock)
+        if (latestBlock < this._latestBlock) {
           throw new Error(
             'latest block provided is not matching the HF setting of the Common instance (Rlpx)'
           )
@@ -265,9 +265,10 @@ export class ETH extends EventEmitter {
       }
       const forkHashB = Buffer.from(this._forkHash.substr(2), 'hex')
 
-      const nextForkB = this._nextForkBlock.eqn(0)
-        ? Buffer.from('', 'hex')
-        : this._nextForkBlock.toArrayLike(Buffer)
+      const nextForkB =
+        this._nextForkBlock === BigInt(0)
+          ? Buffer.from('', 'hex')
+          : bigIntToBuffer(this._nextForkBlock)
 
       this._status.push([forkHashB, nextForkB])
     }
@@ -387,7 +388,7 @@ export namespace ETH {
   export type StatusOpts = {
     td: Buffer
     bestHash: Buffer
-    latestBlock?: number
+    latestBlock?: Buffer
     genesisHash: Buffer
   }
 

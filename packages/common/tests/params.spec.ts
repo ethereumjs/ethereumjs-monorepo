@@ -1,6 +1,5 @@
 import tape from 'tape'
 import Common, { Chain, Hardfork } from '../src/'
-import { BN } from 'ethereumjs-util'
 
 tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: tape.Test) {
   t.test('Basic usage', function (st: tape.Test) {
@@ -74,7 +73,7 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
     st.equal(c.paramByBlock('pow', 'minerReward', 4369999), '5000000000000000000', msg)
 
     msg = 'Should correctly translate total difficulty into HF states'
-    const td = new BN('1196768507891266117779')
+    const td = BigInt('1196768507891266117779')
     st.equal(c.paramByBlock('pow', 'minerReward', 4370000, td), '3000000000000000000', msg)
 
     st.comment('-----------------------------------------------------------------')

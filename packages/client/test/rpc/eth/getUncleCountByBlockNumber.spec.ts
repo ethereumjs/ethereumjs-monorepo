@@ -1,5 +1,4 @@
 import tape from 'tape'
-import { BN } from 'ethereumjs-util'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
 import { checkError } from '../util'
@@ -10,7 +9,7 @@ function createChain() {
     transactions: [],
     header: {
       hash: () => Buffer.from([1]),
-      number: new BN('5'),
+      number: BigInt('5'),
     },
   }
   return {

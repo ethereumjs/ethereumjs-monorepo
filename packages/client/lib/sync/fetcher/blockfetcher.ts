@@ -26,7 +26,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
     const { task, peer } = job
     const { first, count } = task
 
-    const blocksRange = `${first}-${first.addn(count)}`
+    const blocksRange = `${first}-${first + BigInt(count)}`
     const peerInfo = `id=${peer?.id.slice(0, 8)} address=${peer?.address}`
 
     const headersResult = await (peer!.eth as EthProtocolMethods).getBlockHeaders({
@@ -90,7 +90,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       while (this.in.length > 0) {
         const job = this.in.remove()
         if (job) {
-          job.task.first = job.task.first.subn(lengthDiff)
+          job.task.first = job.task.first - BigInt(lengthDiff)
           adoptedJobs.push(job)
         }
       }

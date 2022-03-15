@@ -1,6 +1,5 @@
 import VM from '../../dist'
 import { Account, Address } from 'ethereumjs-util'
-import { BN } from 'ethereumjs-util/dist/externals'
 
 export const keyPair = {
   secretKey: '0x3cd7232cd6f3fc66a57a6bedc1a8ed6c228fff0a327e169c2bcc5e869ed49511',
@@ -11,7 +10,7 @@ export const keyPair = {
 export const insertAccount = async (vm: VM, address: Address) => {
   const acctData = {
     nonce: 0,
-    balance: new BN(10).pow(new BN(18)), // 1 eth
+    balance: BigInt(10) ** BigInt(18), // 1 eth
   }
   const account = Account.fromAccountData(acctData)
 

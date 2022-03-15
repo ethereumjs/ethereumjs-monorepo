@@ -1,7 +1,6 @@
 import tape from 'tape'
 import { Block, BlockData, HeaderData } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
-import { BN } from 'ethereumjs-util'
 import { Chain } from '../../lib/blockchain'
 import { Config } from '../../lib/config'
 
@@ -29,7 +28,7 @@ tape('[Chain]', (t) => {
   t.test('should retrieve chain properties', async (t) => {
     const chain = new Chain({ config })
     await chain.open()
-    t.ok(chain.networkId.eqn(1), 'get chain.networkId')
+    t.equal(chain.networkId, BigInt(1), 'get chain.networkId')
     t.equal(chain.blocks.td.toString(10), '17179869184', 'get chain.blocks.td')
     t.equal(chain.blocks.height.toString(10), '0', 'get chain.blocks.height')
     t.equal(
@@ -49,8 +48,8 @@ tape('[Chain]', (t) => {
     })
     const chain = new Chain({ config, blockchain })
     const headerData: HeaderData = {
-      number: new BN(1),
-      difficulty: new BN('abcdffff', 16),
+      number: BigInt(1),
+      difficulty: BigInt(0xabcdffff),
       parentHash: chain.genesis.hash,
     }
     const block = Block.fromBlockData({ header: headerData } as BlockData, {
@@ -60,7 +59,7 @@ tape('[Chain]', (t) => {
     t.equal(await chain.update(), false, 'skip update if not opened')
     t.equal(await chain.close(), false, 'skip close if not opened')
     t.notOk(chain.opened, 'chain shoud be closed')
-    t.notOk(chain.blocks.height.toNumber(), 'chain should be empty if not opened')
+    t.notOk(chain.blocks.height, 'chain should be empty if not opened')
     await chain.putHeaders([block.header])
     t.equal(chain.headers.height.toString(10), '1', 'header should be added even if chain closed')
     await chain.close()
@@ -96,8 +95,8 @@ tape('[Chain]', (t) => {
     const chain = new Chain({ config, blockchain })
     await chain.open()
     const headerData: HeaderData = {
-      number: new BN(1),
-      difficulty: new BN('abcdffff', 16),
+      number: BigInt(1),
+      difficulty: BigInt(0xabcdffff),
       parentHash: chain.genesis.hash,
     }
     const block = Block.fromBlockData({ header: headerData } as BlockData, {

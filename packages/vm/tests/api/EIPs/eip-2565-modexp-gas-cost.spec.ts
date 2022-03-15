@@ -22,7 +22,7 @@ tape('EIP-2565 ModExp gas cost tests', (t) => {
         data: Buffer.from(test.Input, 'hex'),
       })
 
-      if (!(result.execResult.gasUsed === BigInt(test.Gas))) {
+      if (result.execResult.gasUsed !== BigInt(test.Gas)) {
         st.fail(
           `[${testName}]: Gas usage incorrect, expected ${test.Gas}, got ${result.execResult.gasUsed}`
         )

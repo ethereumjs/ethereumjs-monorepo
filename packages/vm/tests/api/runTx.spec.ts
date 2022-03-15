@@ -1,13 +1,5 @@
 import tape from 'tape'
-import {
-  Account,
-  Address,
-  BN,
-  MAX_INTEGER,
-  toBuffer,
-  bufferToBigInt,
-  bnToBigInt,
-} from 'ethereumjs-util'
+import { Account, Address, MAX_INTEGER, toBuffer, bufferToBigInt } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import {
@@ -17,7 +9,7 @@ import {
   FeeMarketEIP1559TxData,
 } from '@ethereumjs/tx'
 import VM from '../../src'
-import { createAccount, getTransaction } from './utils'
+import { createAccount, getTransaction, setBalance } from './utils'
 
 const TRANSACTION_TYPES = [
   {
@@ -112,7 +104,7 @@ tape('runTx() -> successful API parameter usage', async (t) => {
           'hex'
         )
         const address = Address.fromPrivateKey(privateKey)
-        const initialBalance = new BN(10).pow(new BN(18))
+        const initialBalance = BigInt(10) ** BigInt(18)
 
         const account = await vm.stateManager.getAccount(address)
         await vm.stateManager.putAccount(
@@ -159,14 +151,17 @@ tape('runTx() -> successful API parameter usage', async (t) => {
         const baseFee = block.header.baseFeePerGas!
         const inclusionFeePerGas =
           tx instanceof FeeMarketEIP1559Transaction
-            ? bnToBigInt(BN.min(tx.maxPriorityFeePerGas, tx.maxFeePerGas.sub(baseFee)))
-            : bnToBigInt(tx.gasPrice.sub(baseFee))
+            ? tx.maxPriorityFeePerGas < tx.maxFeePerGas - baseFee
+              ? tx.maxPriorityFeePerGas
+              : tx.maxFeePerGas - baseFee
+            : tx.gasPrice - baseFee
         const expectedCoinbaseBalance = common.isActivatedEIP(1559)
           ? result.gasUsed * inclusionFeePerGas
           : result.amountSpent
 
-        t.ok(
-          bnToBigInt(coinbaseAccount.balance) === expectedCoinbaseBalance,
+        t.equals(
+          coinbaseAccount.balance,
+          expectedCoinbaseBalance,
           `should use custom block (${txType.name})`
         )
 
@@ -259,8 +254,8 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
     let tx = getTransaction(vm._common, 2, true) as FeeMarketEIP1559Transaction
     const address = tx.getSenderAddress()
     tx = Object.create(tx)
-    const maxCost = tx.gasLimit.mul(tx.maxFeePerGas)
-    await vm.stateManager.putAccount(address, createAccount(new BN(0), maxCost.subn(1)))
+    const maxCost = tx.gasLimit * tx.maxFeePerGas
+    await vm.stateManager.putAccount(address, createAccount(BigInt(0), maxCost - BigInt(1)))
     try {
       await vm.runTx({ tx })
       t.fail('should throw error')
@@ -268,7 +263,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
       t.ok(e.message.toLowerCase().includes('max cost'), `should fail if max cost exceeds balance`)
     }
     // set sufficient balance
-    await vm.stateManager.putAccount(address, createAccount(new BN(0), maxCost))
+    await vm.stateManager.putAccount(address, createAccount(BigInt(0), maxCost))
     const res = await vm.runTx({ tx })
     t.ok(res, 'should pass if balance is sufficient')
 
@@ -277,13 +272,13 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
 
   t.test('run with insufficient eip1559 funds', async (t) => {
     const vm = new VM({ common })
-    const tx = getTransaction(common, 2, true, '0x', false)
+    const tx = getTransaction(common, 2, true, '0x0', false)
     const address = tx.getSenderAddress()
     const account = await vm.stateManager.getAccount(address)
-    account.balance = new BN(9000000) // This is the maxFeePerGas multiplied with the gasLimit of 90000
+    account.balance = BigInt(9000000) // This is the maxFeePerGas multiplied with the gasLimit of 90000
     await vm.stateManager.putAccount(address, account)
     await vm.runTx({ tx })
-    account.balance = new BN(9000000)
+    account.balance = BigInt(9000000)
     await vm.stateManager.putAccount(address, account)
     const tx2 = getTransaction(common, 2, true, '0x64', false) // Send 100 wei; now balance < maxFeePerGas*gasLimit + callvalue
     try {
@@ -297,11 +292,11 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
 
   t.test('should throw on wrong nonces', async (t) => {
     const vm = new VM({ common })
-    const tx = getTransaction(common, 2, true, '0x', false)
+    const tx = getTransaction(common, 2, true, '0x0', false)
     const address = tx.getSenderAddress()
     const account = await vm.stateManager.getAccount(address)
-    account.balance = new BN(9000000) // This is the maxFeePerGas multiplied with the gasLimit of 90000
-    account.nonce = new BN(1)
+    account.balance = BigInt(9000000) // This is the maxFeePerGas multiplied with the gasLimit of 90000
+    account.nonce = BigInt(1)
     await vm.stateManager.putAccount(address, account)
     try {
       await vm.runTx({ tx })
@@ -393,7 +388,7 @@ tape('runTx() -> runtime errors', async (t) => {
       const from = createAccount()
       await vm.stateManager.putAccount(caller, from)
 
-      const to = createAccount(new BN(0), MAX_INTEGER)
+      const to = createAccount(BigInt(0), MAX_INTEGER)
       await vm.stateManager.putAccount(tx.to!, to)
 
       const res = await vm.runTx({ tx })
@@ -424,7 +419,7 @@ tape('runTx() -> runtime errors', async (t) => {
       const contractAddress = new Address(
         Buffer.from('61de9dc6f6cff1df2809480882cfd3c2364b28f7', 'hex')
       )
-      const to = createAccount(new BN(0), MAX_INTEGER)
+      const to = createAccount(BigInt(0), MAX_INTEGER)
       await vm.stateManager.putAccount(contractAddress, to)
 
       const res = await vm.runTx({ tx })
@@ -491,13 +486,16 @@ tape('runTx() -> API return values', async (t) => {
 
       t.deepEqual(
         res.gasUsed,
-        bnToBigInt(tx.getBaseFee()),
+        tx.getBaseFee(),
         `runTx result -> gasUsed -> tx.getBaseFee() (${txType.name})`
       )
       if (tx instanceof FeeMarketEIP1559Transaction) {
-        const baseFee = new BN(7)
-        const inclusionFeePerGas = BN.min(tx.maxPriorityFeePerGas, tx.maxFeePerGas.sub(baseFee))
-        const gasPrice = bnToBigInt(inclusionFeePerGas) + bnToBigInt(baseFee)
+        const baseFee = BigInt(7)
+        const inclusionFeePerGas =
+          tx.maxPriorityFeePerGas < tx.maxFeePerGas - baseFee
+            ? tx.maxPriorityFeePerGas
+            : tx.maxFeePerGas - baseFee
+        const gasPrice = inclusionFeePerGas + baseFee
         t.deepEquals(
           res.amountSpent,
           res.gasUsed * gasPrice,
@@ -506,7 +504,7 @@ tape('runTx() -> API return values', async (t) => {
       } else {
         t.deepEqual(
           res.amountSpent,
-          res.gasUsed * bnToBigInt((<Transaction>tx).gasPrice),
+          res.gasUsed * (<Transaction>tx).gasPrice,
           `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`
         )
       }
@@ -555,8 +553,8 @@ tape('runTx() -> consensus bugs', async (t) => {
       v: '0x26',
       value: '0x0',
     }
-    const beforeBalance = new BN('149123788000000000')
-    const afterBalance = new BN('129033829000000000')
+    const beforeBalance = BigInt(149123788000000000)
+    const afterBalance = BigInt(129033829000000000)
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.SpuriousDragon })
     common.setHardforkByBlockNumber(2772981)
@@ -565,14 +563,14 @@ tape('runTx() -> consensus bugs', async (t) => {
     const addr = Address.fromString('0xd3563d8f19a85c95beab50901fd59ca4de69174c')
     const acc = await vm.stateManager.getAccount(addr)
     acc.balance = beforeBalance
-    acc.nonce = new BN(2)
+    acc.nonce = BigInt(2)
     await vm.stateManager.putAccount(addr, acc)
 
     const tx = Transaction.fromTxData(txData, { common })
     await vm.runTx({ tx })
 
     const newBalance = (await vm.stateManager.getAccount(addr)).balance
-    t.ok(newBalance.eq(afterBalance))
+    t.equals(newBalance, afterBalance)
     t.end()
   })
 
@@ -602,7 +600,7 @@ tape('runTx() -> consensus bugs', async (t) => {
 
     const addr = Address.fromPrivateKey(pkey)
     const acc = await vm.stateManager.getAccount(addr)
-    acc.balance = new BN(10000000000000)
+    acc.balance = BigInt(10000000000000)
     await vm.stateManager.putAccount(addr, acc)
 
     const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common }).sign(pkey)
@@ -618,21 +616,26 @@ tape('runTx() -> consensus bugs', async (t) => {
 tape('runTx() -> RunTxOptions', (t) => {
   t.test('should throw on negative value args', async (t) => {
     const vm = new VM({ common })
+    await setBalance(vm, Address.zero(), BigInt(10000000000))
     for (const txType of TRANSACTION_TYPES) {
-      const tx = getTransaction(vm._common, txType.type, true)
-      tx.value.isubn(1)
+      const tx = getTransaction(vm._common, txType.type, false)
+      tx.getSenderAddress = () => Address.zero()
+      // @ts-ignore overwrite read-only property
+      tx.value -= BigInt(1)
 
-      try {
-        await vm.runTx({
-          tx,
-          skipBalance: true,
-        })
-        t.fail('should not accept a negative call value')
-      } catch (err: any) {
-        t.ok(
-          err.message.includes('value field cannot be negative'),
-          'throws on negative call value'
-        )
+      for (const skipBalance of [true, false]) {
+        try {
+          await vm.runTx({
+            tx,
+            skipBalance,
+          })
+          t.fail('should not accept a negative call value')
+        } catch (err: any) {
+          t.ok(
+            err.message.includes('value field cannot be negative'),
+            'throws on negative call value'
+          )
+        }
       }
     }
     t.end()

@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { BN, bufferToHex } from 'ethereumjs-util'
+import { bufferToHex } from 'ethereumjs-util'
 import tape from 'tape'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
@@ -27,7 +27,7 @@ function createChain() {
   const genesisBlock = {
     hash: () => genesisBlockHash,
     header: {
-      number: new BN(0),
+      number: BigInt(0),
     },
     toJSON: () => ({ ...Block.fromBlockData({ header: { number: 0 } }).toJSON(), transactions }),
     transactions: [{ hash: () => txHash }],
@@ -36,7 +36,7 @@ function createChain() {
   const block = {
     hash: () => blockHash,
     header: {
-      number: new BN(1),
+      number: BigInt(1),
     },
     toJSON: () => ({
       ...Block.fromBlockData({ header: { number: 1 } }).toJSON(),
@@ -50,7 +50,7 @@ function createChain() {
     getBlock: () => genesisBlock,
     getCanonicalHeadBlock: () => block,
     getCanonicalHeadHeader: () => block.header,
-    getTd: () => new BN(0),
+    getTd: () => BigInt(0),
   }
 }
 

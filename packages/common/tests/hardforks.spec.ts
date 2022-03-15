@@ -1,5 +1,4 @@
 import tape from 'tape'
-import { BN } from 'ethereumjs-util'
 import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src'
 
 tape('[Common]: Hardfork logic', function (t: tape.Test) {
@@ -73,18 +72,18 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
   t.test('hardforkBlock()', function (st: tape.Test) {
     let c = new Common({ chain: Chain.Ropsten })
     let msg = 'should return the correct HF change block for byzantium (provided)'
-    st.ok(c.hardforkBlock(Hardfork.Byzantium)!.eqn(1700000), msg)
+    st.equal(c.hardforkBlock(Hardfork.Byzantium)!, BigInt(1700000), msg)
 
     msg = 'should return null if HF does not exist on chain'
     st.equal(c.hardforkBlock('thisHardforkDoesNotExist'), null, msg)
 
     c = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Byzantium })
     msg = 'should return the correct HF change block for byzantium (set)'
-    st.ok(c.hardforkBlock()!.eqn(1700000), msg)
+    st.equal(c.hardforkBlock()!, BigInt(1700000), msg)
 
     c = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Istanbul })
     msg = 'should return the correct HF change block for istanbul (set)'
-    st.ok(c.hardforkBlock()!.eqn(6485846), msg)
+    st.equal(c.hardforkBlock()!, BigInt(6485846), msg)
 
     st.end()
   })
@@ -111,14 +110,14 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     let c = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
     let msg =
       'should work with HF set / return correct next HF block for chainstart (rinkeby: chainstart -> homestead)'
-    st.ok(c.nextHardforkBlock()!.eqn(1), msg)
+    st.equal(c.nextHardforkBlock()!, BigInt(1), msg)
 
     msg =
       'should correctly skip a HF where block is set to null (rinkeby: homestead -> (dao) -> tangerineWhistle)'
-    st.ok(c.nextHardforkBlock('homestead')!.eqn(2), msg)
+    st.equal(c.nextHardforkBlock('homestead')!, BigInt(2), msg)
 
     msg = 'should return correct next HF (rinkeby: byzantium -> constantinople)'
-    st.ok(c.nextHardforkBlock(Hardfork.Byzantium)!.eqn(3660663), msg)
+    st.equal(c.nextHardforkBlock(Hardfork.Byzantium)!, BigInt(3660663), msg)
 
     msg = 'should return null if next HF is not available (rinkeby: london -> shanghai)'
     st.equal(c.nextHardforkBlock(Hardfork.London), null, msg)
@@ -126,7 +125,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     msg =
       'should work correctly along the need to skip several forks (ropsten: chainstart -> (homestead) -> (dao) -> (tangerineWhistle) -> spuriousDragon)'
     c = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Chainstart })
-    st.ok(c.nextHardforkBlock()!.eqn(10), msg)
+    st.equal(c.nextHardforkBlock()!, BigInt(10), msg)
 
     st.end()
   })
@@ -184,8 +183,8 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     const c = new Common({ chain: Chain.Mainnet })
 
     let msg = 'should return correct value'
-    st.ok(c.hardforkBlock(Hardfork.Berlin)!.eqn(12244000), msg)
-    st.ok(c.hardforkBlock(Hardfork.Berlin)!.eq(new BN(12244000)), msg)
+    st.equal(c.hardforkBlock(Hardfork.Berlin)!, BigInt(12244000), msg)
+    st.equal(c.hardforkBlock(Hardfork.Berlin)!, BigInt(12244000), msg)
 
     msg = 'should return null for unscheduled hardfork'
     // developer note: when Shanghai is set,

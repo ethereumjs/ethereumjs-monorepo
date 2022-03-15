@@ -1,4 +1,3 @@
-import { BN } from './externals'
 import { stripHexPrefix, padToEven, isHexString, isHexPrefixed } from './internal'
 import {
   PrefixedHexString,
@@ -136,7 +135,7 @@ export const unpadHexString = function (a: string): string {
 export type ToBufferInputTypes =
   | PrefixedHexString
   | number
-  | BN
+  | bigint
   | Buffer
   | Uint8Array
   | number[]
@@ -147,7 +146,7 @@ export type ToBufferInputTypes =
 
 /**
  * Attempts to turn a value into a `Buffer`.
- * Inputs supported: `Buffer`, `String` (hex-prefixed), `Number`, null/undefined, `BN` and other objects
+ * Inputs supported: `Buffer`, `String` (hex-prefixed), `Number`, null/undefined, `BigInt` and other objects
  * with a `toArray()` or `toBuffer()` method.
  * @param v the value
  */
@@ -177,11 +176,13 @@ export const toBuffer = function (v: ToBufferInputTypes): Buffer {
     return intToBuffer(v)
   }
 
-  if (BN.isBN(v)) {
-    if (v.isNeg()) {
-      throw new Error(`Cannot convert negative BN to buffer. Given: ${v}`)
+  if (typeof v === 'bigint') {
+    if (v < BigInt(0)) {
+      throw new Error(`Cannot convert negative bigint to buffer. Given: ${v}`)
     }
-    return v.toArrayLike(Buffer)
+    let n = v.toString(16)
+    if (n.length % 2) n = '0' + n
+    return Buffer.from(n, 'hex')
   }
 
   if (v.toArray) {
@@ -197,15 +198,6 @@ export const toBuffer = function (v: ToBufferInputTypes): Buffer {
 }
 
 /**
- * Converts a `Buffer` to a `Number`.
- * @param buf `Buffer` object to convert
- * @throws If the input number exceeds 53 bits.
- */
-export const bufferToInt = function (buf: Buffer): number {
-  return new BN(toBuffer(buf)).toNumber()
-}
-
-/**
  * Converts a `Buffer` into a `0x`-prefixed hex `String`.
  * @param buf `Buffer` object to convert
  */
@@ -215,19 +207,48 @@ export const bufferToHex = function (buf: Buffer): string {
 }
 
 /**
- * Interprets a `Buffer` as a signed integer and returns a `BN`. Assumes 256-bit numbers.
- * @param num Signed integer value
+ * Converts a {@link Buffer} to a {@link bigint}
  */
-export const fromSigned = function (num: Buffer): BN {
-  return new BN(num).fromTwos(256)
+export function bufferToBigInt(buf: Buffer) {
+  const hex = bufferToHex(buf)
+  if (hex === '0x') {
+    return BigInt(0)
+  }
+  return BigInt(hex)
 }
 
 /**
- * Converts a `BN` to an unsigned integer and returns it as a `Buffer`. Assumes 256-bit numbers.
+ * Converts a {@link bigint} to a {@link Buffer}
+ */
+export function bigIntToBuffer(num: bigint) {
+  return toBuffer('0x' + num.toString(16))
+}
+
+/**
+ * Converts a `Buffer` to a `Number`.
+ * @param buf `Buffer` object to convert
+ * @throws If the input number exceeds 53 bits.
+ */
+export const bufferToInt = function (buf: Buffer): number {
+  const res = Number(bufferToBigInt(buf))
+  if (!Number.isSafeInteger(res)) throw new Error('Number exceeds 53 bits')
+  return res
+}
+
+/**
+ * Interprets a `Buffer` as a signed integer and returns a `BigInt`. Assumes 256-bit numbers.
+ * @param num Signed integer value
+ */
+export const fromSigned = function (num: Buffer): bigint {
+  return BigInt.asIntN(256, bufferToBigInt(num))
+}
+
+/**
+ * Converts a `BigInt` to an unsigned integer and returns it as a `Buffer`. Assumes 256-bit numbers.
  * @param num
  */
-export const toUnsigned = function (num: BN): Buffer {
-  return Buffer.from(num.toTwos(256).toArray())
+export const toUnsigned = function (num: bigint): Buffer {
+  return bigIntToBuffer(BigInt.asUintN(256, num))
 }
 
 /**
@@ -331,22 +352,4 @@ export function bufArrToArr(arr: Buffer | NestedBufferArray): Uint8Array | Neste
     return Uint8Array.from(arr ?? [])
   }
   return arr.map((a) => bufArrToArr(a))
-}
-
-/**
- * Converts a {@link Buffer} to a {@link bigint}`
- */
-export function bufferToBigInt(buf: Buffer) {
-  const hex = bufferToHex(buf)
-  if (hex === '0x') {
-    return BigInt(0)
-  }
-  return BigInt(hex)
-}
-
-/**
- * Converts a {@link bigint} to a {@link Buffer}
- */
-export function bigIntToBuffer(num: bigint) {
-  return toBuffer('0x' + num.toString(16))
 }

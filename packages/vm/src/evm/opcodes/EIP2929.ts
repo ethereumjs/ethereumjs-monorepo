@@ -76,10 +76,10 @@ export function accessStorageEIP2929(
  * location is already warm
  * @param  {RunState} runState
  * @param  {Buffer}   key          storage slot
- * @param  {BN}       defaultCost  SSTORE_RESET_GAS / SLOAD
+ * @param  {BigInt}   defaultCost  SSTORE_RESET_GAS / SLOAD
  * @param  {string}   costName     parameter name ('noop')
  * @param  {Common}   common
- * @return {BN}                    adjusted cost
+ * @return {BigInt}                adjusted cost
  */
 export function adjustSstoreGasEIP2929(
   runState: RunState,
