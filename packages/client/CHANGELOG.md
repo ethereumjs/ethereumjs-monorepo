@@ -31,10 +31,13 @@ This release fully supports the Merge [Kiln](https://kiln.themerge.dev/) testnet
 
 - RPC Server: Added `rpcCors` option to specify [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) for rpc server, PR [#1762](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1762)
 - RPC Server: New default ports for engine (`8551`) (HTTP-RPC and WS) and general RPC (`8545`), PR [#1775](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1775)
+- Miner: unlock with file PK (do not use in a production setup for security reasons!), PR [#1790](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1790)
+- Various sync stability improvements, PR [#1781](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1781)
 
 ### Bug Fixes
 
 - Geth genesis files: Minor `baseFeePerGas` related fix and other improvements, PRs [#1720](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1720) and [#1741](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1741)
+- Added `mixHash` to RPC block results (sorry, forgotten 😋), PR [#1791](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1791)
 
 ## 0.3.0 - 2022-02-01
 

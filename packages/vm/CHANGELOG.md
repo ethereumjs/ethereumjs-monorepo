@@ -26,13 +26,23 @@ vm._common.isActivatedEIP(4399) // true
 - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) Support: Supplant DIFFICULTY opcode with PREVRANDAO, PR [#1565](https://
 github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
 
-### EIP-3860 Support: Limit and Meter Initcode
+### EIP-3540: EVM Object Format (EOF) v1 / EIP-3670: EOF - Code Validation
 
-Support for [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) has been added to the VM. This EIP limits the maximum size of initcode to 49152 and apply extra gas cost of 2 for every 32-byte chunk of initcode, see PR [#1619](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1619).
+This release supports [EIP-3540](https://eips.ethereum.org/EIPS/eip-3540) and [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) in an experimental state. Both EIPs together define a container format EOF for the VM in v1 which allows for more flexible EVM updates in the future and allows for improved EVM bytecode validation, see PR [#1719](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1719).
 
 Note that this EIP is not part of a specific hardfork yet and is considered `EXPERIMENTAL` (implementation can change along bugfix releases).
 
 For now the EIP has to be activated manually which can be done by using a respective `Common` instance:
+
+```typescript
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [ 3540, 3670 ] })
+```
+
+### EIP-3860 Support: Limit and Meter Initcode
+
+Support for [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) has been added to the VM. This EIP limits the maximum size of initcode to 49152 and apply extra gas cost of 2 for every 32-byte chunk of initcode, see PR [#1619](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1619).
+
+Also here, implementation still `EXPERIMENTAL` and needs to be manually activated:
 
 ```typescript
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [ 3860 ] })

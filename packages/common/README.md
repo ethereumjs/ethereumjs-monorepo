@@ -301,9 +301,11 @@ The following EIPs are currently supported:
 - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930): Optional accesss list tx type
 - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198): Base fee Opcode
 - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529): Reduction in refunds
+- [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`experimental`)
 - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541): Reject new contracts starting with the 0xEF byte
 - [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554): Difficulty Bomb Delay to December 2021 (only PoW networks)
 - [EIP-3607](https://eips.ethereum.org/EIPS/eip-3607): Reject transactions from senders with deployed code
+- [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670): EOF - Code Validation (`experimental`)
 - [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675): Upgrade consensus to Proof-of-Stake (`experimental`)
 - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855): Push0 opcode (`v2.6.1`+)
 - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3855): Limit and meter initcode (`experimental`)

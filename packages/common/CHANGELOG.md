@@ -16,6 +16,12 @@ This release fully supports the Merge [Kiln](https://kiln.themerge.dev/) testnet
 - Added new `preMerge` hardfork to fork off non-upgraded clients in `@ethereumjs/client` (in the very most cases this somewhat "artificial" HF should not be used directly), PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
 - Better documentation and integration of complex genesis state custom chain initialization (with (system) contracts and storage values), PR [#1757](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1757)
 
+### EIP-3540: EVM Object Format (EOF) v1 / EIP-3670: EOF - Code Validation
+
+This release supports [EIP-3540](https://eips.ethereum.org/EIPS/eip-3540) and [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) in an experimental state. Both EIPs together define a container format EOF for the VM in v1 which allows for more flexible EVM updates in the future and allows for improved EVM bytecode validation, see PR [#1719](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1719).
+
+See the associated VM release `v5.8.0` for more in-depth information on this.
+
 # 2.6.2 - 2022-02-4
 
 - Adds support for [EIP-3607](https://eips.ethereum.org/EIPS/eip-3607) (Reject transactions from senders with deployed code), PR [#1691](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1691)
