@@ -57,6 +57,7 @@ type JsonRpcBlock = {
   number: string // the block number. null when pending block.
   hash: string // hash of the block. null when pending block.
   parentHash: string // hash of the parent block.
+  mixHash?: string // bit hash which proves combined with the nonce that a sufficient amount of computation has been carried out on this block
   nonce: string // hash of the generated proof-of-work. null when pending block.
   sha3Uncles: string // SHA3 of the uncles data in the block.
   logsBloom: string // the bloom filter for the logs of the block. null when pending block.
@@ -74,7 +75,6 @@ type JsonRpcBlock = {
   transactions: string[] // Array of serialized transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
   uncles: string[] // Array of uncle hashes
   baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
-  mixHash?: string // bit hash which proves combined with the nonce that a sufficient amount of computation has been carried out on this block
 }
 type JsonRpcTx = {
   blockHash: string | null // DATA, 32 Bytes - hash of the block where this transaction was in. null when it's pending.
