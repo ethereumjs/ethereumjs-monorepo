@@ -247,19 +247,31 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @param job failed job
    * @param error error
    */
-  private failure(job: Job<JobTask, JobResult, StorageItem>, error?: Error) {
-    if (job.state !== 'active') return
-    job.peer!.idle = true
-    this.pool.ban(job.peer!, this.banTime)
-    const jobStr = `index=${job.index} first=${(job.task as any)?.first} count=${
-      (job.task as any)?.count
-    }`
-    this.debug(
-      `Re-enqueuing job ${jobStr} from peer id=${job.peer?.id?.substr(0, 8)} (error: ${error}).`
-    )
-    this.enqueue(job)
+  private failure(
+    job: Job<JobTask, JobResult, StorageItem> | Job<JobTask, JobResult, StorageItem>[],
+    error?: Error,
+    ban: boolean = true
+  ) {
+    const jobItems = job instanceof Array ? job : [job]
+    jobItems[0].peer!.idle = true
+    if (ban) this.pool.ban(jobItems[0].peer!, this.banTime)
+
+    for (const jobItem of jobItems) {
+      if (jobItem.state !== 'active') continue
+      const jobStr = `index=${jobItem.index} first=${(jobItem.task as any)?.first} count=${
+        (jobItem.task as any)?.count
+      }`
+      this.debug(
+        `Re-enqueuing job ${jobStr} from peer id=${jobItem.peer?.id?.substr(
+          0,
+          8
+        )} (error: ${error}).`
+      )
+      this.enqueue(jobItem)
+    }
+
     if (error) {
-      this.error(error, job)
+      this.error(error, jobItems[0])
     }
     this.next()
   }
@@ -332,12 +344,15 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   write() {
     const _write = async (
-      job: Job<JobTask, JobResult, StorageItem>,
+      job: Job<JobTask, JobResult, StorageItem> | Job<JobTask, JobResult, StorageItem>[],
       encoding: string | null,
       cb: Function
     ) => {
       try {
-        await this.store(job.result as StorageItem[])
+        const jobItems = job instanceof Array ? job : [job]
+        for (const jobItem of jobItems) {
+          await this.store(jobItem.result as StorageItem[])
+        }
         this.finished++
         cb()
       } catch (error: any) {
@@ -352,17 +367,21 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         cb(error)
       }
     }
+
     const writer = new Writable({
       objectMode: true,
       autoDestroy: false,
       write: _write,
-      writev: async (
+      writev: (
         many: { chunk: Job<JobTask, JobResult, StorageItem>; encoding: string }[],
         cb: Function
       ) => {
-        for (const x of many) {
-          await _write(x.chunk, x.encoding, cb)
-        }
+        const items = (<Job<JobTask, JobResult, StorageItem>[]>[]).concat(
+          ...many.map(
+            (x: { chunk: Job<JobTask, JobResult, StorageItem>; encoding: string }) => x.chunk
+          )
+        )
+        return _write(items, null, cb)
       },
     })
     this.on('close', () => {
