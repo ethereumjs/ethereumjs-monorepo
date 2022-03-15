@@ -378,18 +378,17 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       } catch (error: any) {
         this.config.logger.warn(`Error storing received block or header result: ${error}`)
         if (error.message.includes('could not find parent header')) {
-          // non-fatal error: ban peer and re-enqueue job
+          // Non-fatal error: ban peer and re-enqueue job.
           // Modify the first job so that it is enqueued from safeReorgDistance as most likely
-          // this is because of a reorg
+          // this is because of a reorg.
           const stepBack = BN.min(
             (jobItems[0].task as any).first.subn(1),
             new BN(this.config.safeReorgDistance)
           ).toNumber()
-          this.debug(
-            `This could be a possible re-org, stepping back ${stepBack} blocks and requeing the jobs`
-          )
+          this.debug(`Possible re-org, stepping back ${stepBack} blocks and requeuing jobs.`)
           ;(jobItems[0].task as any).first = (jobItems[0].task as any).first.subn(stepBack)
           ;(jobItems[0].task as any).count = ((jobItems[0].task as any).count as number) + stepBack
+          this.debug(`Possible reorg, stepping back ${stepBack} blocks and requeuing jobs.`)
           // This will requeue the jobs as we are marking this failure as non-fatal.
           this.failure(job, error, false, true)
           cb()
