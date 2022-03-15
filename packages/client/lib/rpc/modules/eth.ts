@@ -74,6 +74,7 @@ type JsonRpcBlock = {
   transactions: string[] // Array of serialized transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
   uncles: string[] // Array of uncle hashes
   baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
+  mixHash?: string // bit hash which proves combined with the nonce that a sufficient amount of computation has been carried out on this block
 }
 type JsonRpcTx = {
   blockHash: string | null // DATA, 32 Bytes - hash of the block where this transaction was in. null when it's pending.
@@ -168,6 +169,7 @@ const jsonRpcBlock = async (
     transactions,
     uncles: block.uncleHeaders.map((uh) => bufferToHex(uh.hash())),
     baseFeePerGas: header.baseFeePerGas,
+    mixHash: header.mixHash,
   }
 }
 
