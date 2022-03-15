@@ -141,9 +141,11 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * Enqueue job
    * @param job
    */
-  enqueue(job: Job<JobTask, JobResult, StorageItem>) {
+  enqueue(job: Job<JobTask, JobResult, StorageItem>, dequeued?: boolean) {
     if (this.running) {
-      this.total++
+      // If the job was already dequeued, for example coming from writer pipe, processed
+      // needs to be decreased
+      if (dequeued) this.processed--
       this.in.insert({
         ...job,
         time: Date.now(),
@@ -253,30 +255,38 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   private failure(
     job: Job<JobTask, JobResult, StorageItem> | Job<JobTask, JobResult, StorageItem>[],
     error?: Error,
-    ban: boolean = true
+    irrecoverable?: boolean,
+    dequeued?: boolean
   ) {
     const jobItems = job instanceof Array ? job : [job]
-    jobItems[0].peer!.idle = true
-    if (ban) this.pool.ban(jobItems[0].peer!, this.banTime)
+    if (irrecoverable) {
+      this.pool.ban(jobItems[0].peer!, this.banTime)
+    } else {
+      void this.wait().then(() => {
+        jobItems[0].peer!.idle = true
+      })
 
-    for (const jobItem of jobItems) {
-      if (jobItem.state !== 'active') continue
-      const jobStr = `index=${jobItem.index} first=${(jobItem.task as any)?.first} count=${
-        (jobItem.task as any)?.count
-      }`
-      this.debug(
-        `Re-enqueuing job ${jobStr} from peer id=${jobItem.peer?.id?.substr(
-          0,
-          8
-        )} (error: ${error}).`
-      )
-      this.enqueue(jobItem)
+      for (const jobItem of jobItems) {
+        if (jobItem.state !== 'active') continue
+        const jobStr = `index=${jobItem.index} first=${(jobItem.task as any)?.first} count=${
+          (jobItem.task as any)?.count
+        }`
+        this.debug(
+          `failure-Re-enqueuing job ${jobStr} from peer id=${jobItem.peer?.id?.substr(
+            0,
+            8
+          )} (error: ${error}).`
+        )
+        // If the job has been dequeued, then the processed count needs to be decreased
+        this.enqueue(jobItem, dequeued)
+      }
+
+      this.next()
     }
 
     if (error) {
-      this.error(error, jobItems[0], true)
+      this.error(error, jobItems[0], irrecoverable)
     }
-    this.next()
   }
 
   /**
@@ -284,7 +294,6 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   next() {
     const job = this.in.peek()
-
     if (!job) {
       this.debug(`No job found on next task, skip next job execution.`)
       return false
@@ -338,11 +347,15 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @param error error object
    * @param job task
    */
-  error(error: Error, job?: Job<JobTask, JobResult, StorageItem>, recoverable?: boolean) {
+  error(error: Error, job?: Job<JobTask, JobResult, StorageItem>, irrecoverable?: boolean) {
     if (this.running) {
       this.config.events.emit(Event.SYNC_FETCHER_ERROR, error, job?.task, job?.peer)
     }
-    if (!recoverable) this.errored = error
+    if (irrecoverable) {
+      this.running = false
+      this.errored = error
+      this.clear()
+    }
   }
 
   /**
@@ -372,10 +385,13 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
             (jobItems[0].task as any).first.subn(1),
             new BN(this.config.safeReorgDistance)
           ).toNumber()
+          this.debug(
+            `This could be a possible re-org, stepping back ${stepBack} blocks and requeing the jobs`
+          )
           ;(jobItems[0].task as any).first = (jobItems[0].task as any).first.subn(stepBack)
           ;(jobItems[0].task as any).count = ((jobItems[0].task as any).count as number) + stepBack
-          this.clear()
-          this.failure(job, error, false)
+          // This will requeue the jobs as we are marking this failure as non-fatal.
+          this.failure(job, error, false, true)
           cb()
           return
         }
@@ -408,8 +424,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         this.running = false
       })
       .on('error', (error: Error) => {
-        this.error(error)
-        this.running = false
+        this.error(error, undefined, true)
         writer.destroy()
       })
     this.debug(`Setup writer pipe.`)
