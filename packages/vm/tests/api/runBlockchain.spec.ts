@@ -49,8 +49,6 @@ tape('runBlockchain', (t) => {
       })
       const vm = await setupVM({ genesisBlock, blockchain })
 
-      st.ok(blockchain.meta.genesis, 'genesis should be set for blockchain')
-
       // @ts-ignore
       await vm.runBlockchain()
       st.end()
@@ -69,8 +67,6 @@ tape('runBlockchain', (t) => {
     const block = Block.fromRLPSerializedBlock(blockRlp, { common })
 
     const vm = await setupVM({ common, genesisBlock })
-
-    st.equal(vm.blockchain.meta.genesis?.toString('hex'), testData.genesisBlockHeader.hash.slice(2))
 
     await vm.blockchain.putBlock(block)
 
@@ -98,8 +94,6 @@ tape('runBlockchain', (t) => {
     const block = Block.fromRLPSerializedBlock(blockRlp, { common })
 
     const vm = await setupVM({ common, genesisBlock })
-
-    st.equal(vm.blockchain.meta.genesis?.toString('hex'), testData.genesisBlockHeader.hash.slice(2))
 
     await vm.blockchain.putBlock(block)
 
