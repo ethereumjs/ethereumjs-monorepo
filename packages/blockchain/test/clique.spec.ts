@@ -13,7 +13,6 @@ tape('Clique: Initialization', (t) => {
     const head = await blockchain.getIteratorHead()
     st.equals(head.hash().toString('hex'), common.genesis().hash.slice(2), 'correct genesis hash')
 
-
     st.deepEquals(
       blockchain.cliqueActiveSigners(),
       head.header.cliqueEpochTransitionSigners(),
