@@ -1,6 +1,8 @@
 import { debug as createDebugLogger, Debugger } from 'debug'
 import { Readable, Writable } from 'stream'
 import Heap from 'qheap'
+import { BN } from 'ethereumjs-util'
+
 import { PeerPool } from '../../net/peerpool'
 import { Peer } from '../../net/peer'
 import { Config } from '../../config'
@@ -141,6 +143,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   enqueue(job: Job<JobTask, JobResult, StorageItem>) {
     if (this.running) {
+      this.total++
       this.in.insert({
         ...job,
         time: Date.now(),
@@ -271,7 +274,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     }
 
     if (error) {
-      this.error(error, jobItems[0])
+      this.error(error, jobItems[0], true)
     }
     this.next()
   }
@@ -287,7 +290,11 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       return false
     }
     if (this._readableState!.length > this.maxQueue) {
-      this.debug(`Readable state length exceeds max queue size, skip next job execution.`)
+      this.debug(
+        `Readable state length=${this._readableState!.length} exceeds max queue size=${
+          this.maxQueue
+        }, skip next job execution.`
+      )
       return false
     }
     if (job.index > this.processed + this.maxQueue) {
@@ -331,11 +338,11 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @param error error object
    * @param job task
    */
-  error(error: Error, job?: Job<JobTask, JobResult, StorageItem>) {
+  error(error: Error, job?: Job<JobTask, JobResult, StorageItem>, recoverable?: boolean) {
     if (this.running) {
       this.config.events.emit(Event.SYNC_FETCHER_ERROR, error, job?.task, job?.peer)
     }
-    this.errored = error
+    if (!recoverable) this.errored = error
   }
 
   /**
@@ -348,8 +355,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       encoding: string | null,
       cb: Function
     ) => {
+      const jobItems = job instanceof Array ? job : [job]
       try {
-        const jobItems = job instanceof Array ? job : [job]
         for (const jobItem of jobItems) {
           await this.store(jobItem.result as StorageItem[])
         }
@@ -359,8 +366,16 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         this.config.logger.warn(`Error storing received block or header result: ${error}`)
         if (error.message.includes('could not find parent header')) {
           // non-fatal error: ban peer and re-enqueue job
+          // Modify the first job so that it is enqueued from safeReorgDistance as most likely
+          // this is because of a reorg
+          const stepBack = BN.min(
+            (jobItems[0].task as any).first.subn(1),
+            new BN(this.config.safeReorgDistance)
+          ).toNumber()
+          ;(jobItems[0].task as any).first = (jobItems[0].task as any).first.subn(stepBack)
+          ;(jobItems[0].task as any).count = (jobItems[0].task as any).count + stepBack
           this.clear()
-          this.failure(job, error)
+          this.failure(job, error, false)
           cb()
           return
         }
