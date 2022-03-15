@@ -200,8 +200,8 @@ export interface ConfigOptions {
   minerCoinbase?: Address
 
   /**
-   * If there is supposedly a re-org, this is a safe distance from which
-   * to refetch and try feeding the blocks
+   * If there is a reorg, this is a safe distance from which
+   * to try to refetch and refeed the blocks.
    */
   safeReorgDistance?: number
 }

@@ -143,11 +143,12 @@ export class FullSynchronizer extends Synchronizer {
         this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
       }
 
-      /**
-       * Start fetcher from a safe distance behind beacause if the previous fetcher exited
-       * beacuse of a reorg, it would make sense to step back and refetch
-       */
-      const first = BN.max(this.chain.blocks.height.subn(this.config.safeReorgDistance), new BN(0))
+      // Start fetcher from a safe distance behind because if the previous fetcher exited
+      // due to a reorg, it would make sense to step back and refetch.
+      const first = BN.max(
+        this.chain.blocks.height.addn(1).subn(this.config.safeReorgDistance),
+        new BN(1)
+      )
       const count = height.sub(first).addn(1)
 
       if (count.lten(0)) return resolve(false)
@@ -173,16 +174,13 @@ export class FullSynchronizer extends Synchronizer {
         }
         resolve(true)
       } catch (error: any) {
-        /**
-         * Since the fetcher has errored supposedly because of bad data fed by the peer, the
-         * peer should be banned for couple of seconds atleast as well as to refresh its status
-         * that is required in finding the best peer to  start a new fetcher.
-         * However we right now hack for reconnection and refetching of status as banning is
-         * not leading to quick reconnection  */
-        //this.pool.ban(peer,6000);
-        peer?.server?.disconnect(peer.id)
-        peer?.server?.connect(peer.id)
-        this.config.logger.debug(`Fetcher error, disconnect/reconnect with: ${peer.toString(true)}`)
+        // Since the fetcher has errored, likely because of bad data fed by the peer,
+        // the peer should be banned for at least a couple of seconds (default: 60s)
+        // to refresh its status to find the next best peer to start a new fetcher.
+        this.pool.ban(peer)
+        this.config.logger.debug(
+          `Fetcher error, temporarily banning ${peer.toString(true)}: ${error}`
+        )
         reject(error)
       } finally {
         this.config.events.removeListener(Event.SYNC_SYNCHRONIZED, resolveSync)
@@ -338,7 +336,10 @@ export class FullSynchronizer extends Synchronizer {
     this.syncTargetHeight = newSyncHeight
     const [hash, height] = data[data.length - 1]
     this.config.logger.info(`New sync target height number=${height} hash=${short(hash)}`)
-    this.fetcher.enqueueByNumberList(blockNumberList, min)
+    // enqueue if we are close enough to chain head
+    if (min.lt(this.chain.headers.height.addn(3000))) {
+      this.fetcher.enqueueByNumberList(blockNumberList, min)
+    }
   }
 
   /**

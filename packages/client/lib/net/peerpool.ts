@@ -25,6 +25,7 @@ export class PeerPool {
   public running: boolean
 
   private _statusCheckInterval: NodeJS.Timeout | undefined /* global NodeJS */
+  private _reconnectTimeout: NodeJS.Timeout | undefined
 
   /**
    * Create new peer pool
@@ -88,6 +89,7 @@ export class PeerPool {
       await this.close()
     }
     clearInterval(this._statusCheckInterval as NodeJS.Timeout)
+    clearTimeout(this._reconnectTimeout as NodeJS.Timeout)
     this.running = false
     return true
   }
@@ -173,6 +175,14 @@ export class PeerPool {
     peer.server.ban(peer.id, maxAge)
     this.remove(peer)
     this.config.events.emit(Event.POOL_PEER_BANNED, peer)
+
+    // Reconnect to peer after ban period if pool is empty
+    this._reconnectTimeout = setTimeout(async () => {
+      if (this.running && this.size === 0) {
+        await peer.server?.connect(peer.id)
+        this.connected(peer)
+      }
+    }, maxAge + 1000)
   }
 
   /**

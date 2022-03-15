@@ -11,6 +11,7 @@ tape('[FullSynchronizer]', async (t) => {
     open() {}
     close() {}
     idle() {}
+    ban(_peer: any) {}
   }
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()

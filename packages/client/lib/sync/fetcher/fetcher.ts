@@ -34,7 +34,7 @@ export interface FetcherOptions {
  * Base class for fetchers that retrieve various data from peers. Subclasses must
  * request(), process() and store() methods. Tasks can be arbitrary objects whose structure
  * is defined by subclasses. A priority queue is used to ensure tasks are fetched
- * inorder. Three types need to be provided: the JobTask, which describes a task the job should perform,
+ * in order. Three types need to be provided: the JobTask, which describes a task the job should perform,
  * a JobResult, which is the direct result when a Peer replies to a Task, and a StorageItem, which
  * represents the to-be-stored items.
  * @memberof module:sync/fetcher
@@ -153,10 +153,10 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * Dequeue all done tasks that completed in order
    */
   dequeue() {
-    for (let f = this.out.peek(); f && f.index === this.processed; ) {
+    for (let f = this.out.peek(); f && f.index <= this.processed; ) {
       this.processed++
-      const { result } = this.out.remove()!
-      if (!this.push(result)) {
+      const job = this.out.remove()
+      if (!this.push(job)) {
         return
       }
       f = this.out.peek()
@@ -251,6 +251,12 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     if (job.state !== 'active') return
     job.peer!.idle = true
     this.pool.ban(job.peer!, this.banTime)
+    const jobStr = `index=${job.index} first=${(job.task as any)?.first} count=${
+      (job.task as any)?.count
+    }`
+    this.debug(
+      `Re-enqueuing job ${jobStr} from peer id=${job.peer?.id?.substr(0, 8)} (error: ${error}).`
+    )
     this.enqueue(job)
     if (error) {
       this.error(error, job)
@@ -315,7 +321,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   error(error: Error, job?: Job<JobTask, JobResult, StorageItem>) {
     if (this.running) {
-      this.config.events.emit(Event.SYNC_FETCHER_ERROR, error, job && job.task, job && job.peer)
+      this.config.events.emit(Event.SYNC_FETCHER_ERROR, error, job?.task, job?.peer)
     }
     this.errored = error
   }
@@ -325,19 +331,24 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * to support backpressure from storing results.
    */
   write() {
-    const _write = async (result: StorageItem[], encoding: string | null, cb: Function) => {
+    const _write = async (
+      job: Job<JobTask, JobResult, StorageItem>,
+      encoding: string | null,
+      cb: Function
+    ) => {
       try {
-        await this.store(result)
+        await this.store(job.result as StorageItem[])
         this.finished++
         cb()
       } catch (error: any) {
         this.config.logger.warn(`Error storing received block or header result: ${error}`)
-        /**
-         * TODO: Instead of just erroring on the writer (which stops this writer instance) and
-         * hence fetcher, determine if the fetcher really needs to error or if its recoverable.
-         * For e.g "Error: could not find parent header" is recoverable and all that needs to be done
-         * is to adapt and requeue the job and let it sync again.
-         */
+        if (error.message.includes('could not find parent header')) {
+          // non-fatal error: ban peer and re-enqueue job
+          this.clear()
+          this.failure(job, error)
+          cb()
+          return
+        }
         cb(error)
       }
     }
@@ -345,14 +356,14 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       objectMode: true,
       autoDestroy: false,
       write: _write,
-      writev: (many: { chunk: StorageItem; encoding: string }[], cb: Function) =>
-        _write(
-          (<StorageItem[]>[]).concat(
-            ...many.map((x: { chunk: StorageItem; encoding: string }) => x.chunk)
-          ),
-          null,
-          cb
-        ),
+      writev: async (
+        many: { chunk: Job<JobTask, JobResult, StorageItem>; encoding: string }[],
+        cb: Function
+      ) => {
+        for (const x of many) {
+          await _write(x.chunk, x.encoding, cb)
+        }
+      },
     })
     this.on('close', () => {
       this.running = false
