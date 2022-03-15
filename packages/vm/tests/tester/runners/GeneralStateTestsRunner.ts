@@ -1,5 +1,4 @@
 import tape from 'tape'
-import Common, { Chain } from '@ethereumjs/common'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { BN, toBuffer } from 'ethereumjs-util'
 import { setupPreConditions, makeTx, makeBlockFromEnv } from '../../util'
@@ -67,10 +66,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     VM = require('../../../src').default
   }
   const begin = Date.now()
-
-  const hardfork = options.forkConfigVM
-  const eips: number[] = [3607]
-  const common = new Common({ chain: Chain.Mainnet, hardfork, eips })
+  const common = options.common
 
   const state = new Trie()
   const vm = new VM({ state, common })

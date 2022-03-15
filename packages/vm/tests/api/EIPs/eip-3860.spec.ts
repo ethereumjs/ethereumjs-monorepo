@@ -22,7 +22,7 @@ tape('EIP 3860 tests', (t) => {
     await vm.stateManager.putAccount(sender, account)
 
     const buffer = Buffer.allocUnsafe(1000000).fill(0x60)
-    console.log(common.isActivatedEIP(3860))
+
     const tx = FeeMarketEIP1559Transaction.fromTxData({
       data:
         '0x7F6000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060005260206000F3' +
