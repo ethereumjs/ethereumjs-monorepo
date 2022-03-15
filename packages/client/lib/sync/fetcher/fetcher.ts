@@ -373,7 +373,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
             new BN(this.config.safeReorgDistance)
           ).toNumber()
           ;(jobItems[0].task as any).first = (jobItems[0].task as any).first.subn(stepBack)
-          ;(jobItems[0].task as any).count = (jobItems[0].task as any).count + stepBack
+          ;(jobItems[0].task as any).count = ((jobItems[0].task as any).count as number) + stepBack
           this.clear()
           this.failure(job, error, false)
           cb()
