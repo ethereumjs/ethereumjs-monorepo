@@ -71,7 +71,7 @@ tape('Proof of Stake - inserting blocks into blockchain', async (t) => {
     await buildChain(blockchain, s.common, 15)
 
     const latestHeader = await blockchain.getCanonicalHeadHeader()
-    t.equal(latestHeader.number.toNumber(), 15, 'blockchain is at correct height')
+    t.equal(latestHeader.number, BigInt(15), 'blockchain is at correct height')
 
     t.equal(
       (blockchain as any)._common.hardfork(),
