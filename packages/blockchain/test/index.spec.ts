@@ -73,7 +73,7 @@ tape('blockchain test', (t) => {
       genesisBlock,
     })
     st.ok(
-      genesisBlock.hash().equals(blockchain.meta.genesis!),
+      genesisBlock.hash().equals((await blockchain.getCanonicalHeadBlock()).hash()),
       'genesis block hash should be correct'
     )
     st.end()
@@ -496,21 +496,6 @@ tape('blockchain test', (t) => {
     })
 
     st.pass('should finish iterating')
-    st.end()
-  })
-
-  t.test('should get meta.genesis', async (st) => {
-    const { blockchain, blocks, error } = await generateBlockchain(25)
-    st.error(error, 'no error')
-    st.ok(blockchain.meta.rawHead.equals(blocks[24].hash()), 'should get meta.rawHead')
-    st.ok(blockchain.meta.genesis.equals(blocks[0].hash()), 'should get meta.genesis')
-    let i = 0
-    await blockchain.iterator('test', (block: Block) => {
-      if (block.hash().equals(blocks[i + 1].hash())) {
-        i++
-      }
-    })
-    st.ok(blockchain.meta.heads['test'], 'should get meta.heads')
     st.end()
   })
 
