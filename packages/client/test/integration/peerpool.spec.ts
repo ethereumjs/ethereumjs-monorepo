@@ -21,8 +21,8 @@ tape('[Integration:PeerPool]', async (t) => {
   }
 
   async function destroy(server: MockServer, pool: PeerPool) {
+    await pool.stop()
     await server.stop()
-    await pool.close()
   }
 
   t.test('should open', async (t) => {

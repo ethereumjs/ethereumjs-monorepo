@@ -34,7 +34,7 @@ export interface FetcherOptions {
  * Base class for fetchers that retrieve various data from peers. Subclasses must
  * request(), process() and store() methods. Tasks can be arbitrary objects whose structure
  * is defined by subclasses. A priority queue is used to ensure tasks are fetched
- * inorder. Three types need to be provided: the JobTask, which describes a task the job should perform,
+ * in order. Three types need to be provided: the JobTask, which describes a task the job should perform,
  * a JobResult, which is the direct result when a Peer replies to a Task, and a StorageItem, which
  * represents the to-be-stored items.
  * @memberof module:sync/fetcher
@@ -54,6 +54,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   protected processed: number // number of processed tasks, awaiting the write job
   protected finished: number // number of tasks which are both processed and also finished writing
   protected running: boolean
+  protected errored?: Error
   protected reading: boolean
   protected destroyWhenDone: boolean // Destroy the fetcher once we are finished processing each task.
 
@@ -152,10 +153,10 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * Dequeue all done tasks that completed in order
    */
   dequeue() {
-    for (let f = this.out.peek(); f && f.index === this.processed; ) {
+    for (let f = this.out.peek(); f && f.index <= this.processed; ) {
       this.processed++
-      const { result } = this.out.remove()!
-      if (!this.push(result)) {
+      const job = this.out.remove()
+      if (!this.push(job)) {
         return
       }
       f = this.out.peek()
@@ -168,7 +169,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @param autoRestart
    */
   enqueueTask(task: JobTask, autoRestart = false) {
-    if (!this.running && !autoRestart) {
+    if (this.errored || (!this.running && !autoRestart)) {
       return
     }
     const job: Job<JobTask, JobResult, StorageItem> = {
@@ -246,13 +247,31 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @param job failed job
    * @param error error
    */
-  private failure(job: Job<JobTask, JobResult, StorageItem>, error?: Error) {
-    if (job.state !== 'active') return
-    job.peer!.idle = true
-    this.pool.ban(job.peer!, this.banTime)
-    this.enqueue(job)
+  private failure(
+    job: Job<JobTask, JobResult, StorageItem> | Job<JobTask, JobResult, StorageItem>[],
+    error?: Error,
+    ban: boolean = true
+  ) {
+    const jobItems = job instanceof Array ? job : [job]
+    jobItems[0].peer!.idle = true
+    if (ban) this.pool.ban(jobItems[0].peer!, this.banTime)
+
+    for (const jobItem of jobItems) {
+      if (jobItem.state !== 'active') continue
+      const jobStr = `index=${jobItem.index} first=${(jobItem.task as any)?.first} count=${
+        (jobItem.task as any)?.count
+      }`
+      this.debug(
+        `Re-enqueuing job ${jobStr} from peer id=${jobItem.peer?.id?.substr(
+          0,
+          8
+        )} (error: ${error}).`
+      )
+      this.enqueue(jobItem)
+    }
+
     if (error) {
-      this.error(error, job)
+      this.error(error, jobItems[0])
     }
     this.next()
   }
@@ -314,8 +333,9 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   error(error: Error, job?: Job<JobTask, JobResult, StorageItem>) {
     if (this.running) {
-      this.config.events.emit(Event.SYNC_FETCHER_ERROR, error, job && job.task, job && job.peer)
+      this.config.events.emit(Event.SYNC_FETCHER_ERROR, error, job?.task, job?.peer)
     }
+    this.errored = error
   }
 
   /**
@@ -323,27 +343,46 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * to support backpressure from storing results.
    */
   write() {
-    const _write = async (result: StorageItem[], encoding: string | null, cb: Function) => {
+    const _write = async (
+      job: Job<JobTask, JobResult, StorageItem> | Job<JobTask, JobResult, StorageItem>[],
+      encoding: string | null,
+      cb: Function
+    ) => {
       try {
-        await this.store(result)
+        const jobItems = job instanceof Array ? job : [job]
+        for (const jobItem of jobItems) {
+          await this.store(jobItem.result as StorageItem[])
+        }
         this.finished++
         cb()
       } catch (error: any) {
         this.config.logger.warn(`Error storing received block or header result: ${error}`)
+        if (error.message.includes('could not find parent header')) {
+          // non-fatal error: ban peer and re-enqueue job
+          this.clear()
+          this.failure(job, error)
+          cb()
+          return
+        }
         cb(error)
       }
     }
+
     const writer = new Writable({
       objectMode: true,
+      autoDestroy: false,
       write: _write,
-      writev: (many: { chunk: StorageItem; encoding: string }[], cb: Function) =>
-        _write(
-          (<StorageItem[]>[]).concat(
-            ...many.map((x: { chunk: StorageItem; encoding: string }) => x.chunk)
-          ),
-          null,
-          cb
-        ),
+      writev: (
+        many: { chunk: Job<JobTask, JobResult, StorageItem>; encoding: string }[],
+        cb: Function
+      ) => {
+        const items = (<Job<JobTask, JobResult, StorageItem>[]>[]).concat(
+          ...many.map(
+            (x: { chunk: Job<JobTask, JobResult, StorageItem>; encoding: string }) => x.chunk
+          )
+        )
+        return _write(items, null, cb)
+      },
     })
     this.on('close', () => {
       this.running = false
@@ -387,6 +426,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     if (this.destroyWhenDone) {
       this.destroy()
     }
+    if (this.errored) throw this.errored
   }
 
   /**

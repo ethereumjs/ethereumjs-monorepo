@@ -47,10 +47,10 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
   /**
    * Generate list of tasks to fetch
    */
-  tasks(): JobTask[] {
-    const { first, count } = this
+  tasks(first = this.first, count = this.count): JobTask[] {
     const max = this.config.maxPerRequest
     const tasks: JobTask[] = []
+    const debugStr = `first=${first} count=${count}`
     while (count.gten(max)) {
       tasks.push({ first: first.clone(), count: max })
       first.iaddn(max)
@@ -59,7 +59,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     if (count.gtn(0)) {
       tasks.push({ first: first.clone(), count: count.toNumber() })
     }
-    this.debug(`Created new tasks num=${tasks.length} first=${first} count=${count}`)
+    this.debug(`Created new tasks num=${tasks.length} ${debugStr}`)
     return tasks
   }
 
@@ -79,12 +79,11 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     if (this.in.length === 0 && nextChainHeight.lt(min)) {
       // If fetcher queue is empty and head is behind `min`,
       // enqueue tasks for missing block numbers so head can reach `min`
-      const first = nextChainHeight
-      const count = min.sub(nextChainHeight).toNumber()
-      this.enqueueTask({ first, count })
-      this.debug(
-        `Enqueued missing blocks between chain head and newBlockHashes first=${first} count=${count}`
-      )
+      this.debug(`Enqueuing missing blocks between chain head and newBlockHashes...`)
+      const tasks = this.tasks(nextChainHeight, min.sub(nextChainHeight))
+      for (const task of tasks) {
+        this.enqueueTask(task)
+      }
     }
     const numBlocks = numberList.length
     let bulkRequest = true
