@@ -14,6 +14,7 @@ import { Config, DataDirectory } from '../lib/config'
 import { Logger, getLogger } from '../lib/logging'
 import { startRPCServers, helprpc } from './startRpc'
 import type { Chain as IChain, GenesisState } from '@ethereumjs/common/dist/types'
+import { existsSync } from 'fs'
 const level = require('level')
 const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
@@ -223,10 +224,11 @@ const args = yargs(hideBin(process.argv))
     default: false,
   })
   .option('unlock', {
-    describe:
-      'Comma separated list of accounts to unlock - currently only the first account is used (for sealing PoA blocks and as the default coinbase). Beta, you will be promped for a 0x-prefixed private key until keystore functionality is added - FOR YOUR SAFETY PLEASE DO NOT USE ANY ACCOUNTS HOLDING SUBSTANTIAL AMOUNTS OF ETH',
+    describe: `Path to file where private key (without 0x) is stored or comma separated list of accounts to unlock - 
+      currently only the first account is used (for sealing PoA blocks and as the default coinbase). 
+      You will be prompted for a 0x-prefixed private key if you pass a list of accounts
+      FOR YOUR SAFETY PLEASE DO NOT USE ANY ACCOUNTS HOLDING SUBSTANTIAL AMOUNTS OF ETH`,
     string: true,
-    array: true,
   })
   .option('dev', {
     describe: 'Start an ephemeral PoA blockchain with a single miner and prefunded accounts',
@@ -420,22 +422,31 @@ async function inputAccounts() {
   }
 
   try {
-    for (const addressString of args.unlock) {
-      const address = Address.fromString(addressString)
-      const inputKey = await question(
-        `Please enter the 0x-prefixed private key to unlock ${address}:\n`
-      )
-      ;(rl as any).history = (rl as any).history.slice(1)
-      const privKey = toBuffer(inputKey)
-      const derivedAddress = Address.fromPrivateKey(privKey)
-      if (address.equals(derivedAddress)) {
-        accounts.push([address, privKey])
-      } else {
-        console.error(
-          `Private key does not match for ${address} (address derived: ${derivedAddress})`
+    const addresses = args.unlock.split(',')
+    const isFile = existsSync(path.resolve(addresses[0]))
+    if (!isFile) {
+      for (const addressString of addresses) {
+        const address = Address.fromString(addressString)
+        const inputKey = await question(
+          `Please enter the 0x-prefixed private key to unlock ${address}:\n`
         )
-        process.exit()
+        ;(rl as any).history = (rl as any).history.slice(1)
+        const privKey = toBuffer(inputKey)
+        const derivedAddress = Address.fromPrivateKey(privKey)
+        if (address.equals(derivedAddress)) {
+          accounts.push([address, privKey])
+        } else {
+          console.error(
+            `Private key does not match for ${address} (address derived: ${derivedAddress})`
+          )
+          process.exit()
+        }
       }
+    } else {
+      const acc = readFileSync(path.resolve(args.unlock), 'utf-8')
+      const privKey = Buffer.from(acc, 'hex')
+      const derivedAddress = Address.fromPrivateKey(privKey)
+      accounts.push([derivedAddress, privKey])
     }
   } catch (e: any) {
     console.error(`Encountered error unlocking account:\n${e.message}`)
