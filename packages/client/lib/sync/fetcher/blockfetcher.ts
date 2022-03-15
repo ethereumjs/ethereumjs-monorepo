@@ -1,5 +1,5 @@
 import { Block, BlockBuffer } from '@ethereumjs/block'
-import { KECCAK256_RLP, KECCAK256_RLP_ARRAY } from 'ethereumjs-util'
+import { KECCAK256_RLP, KECCAK256_RLP_ARRAY, BN } from 'ethereumjs-util'
 import { Peer } from '../../net/peer'
 import { EthProtocolMethods } from '../../net/protocol'
 import { Job } from './types'
@@ -87,9 +87,11 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       )
       const lengthDiff = job.task.count - result.length
       const adoptedJobs = []
+      let lastTask
       while (this.in.length > 0) {
         const job = this.in.remove()
         if (job) {
+          lastTask = job.task
           job.task.first = job.task.first.subn(lengthDiff)
           adoptedJobs.push(job)
         }
@@ -97,6 +99,13 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       for (const job of adoptedJobs) {
         this.in.insert(job)
       }
+      if (lastTask) {
+        const tasks = this.tasks(lastTask.first.addn(lastTask.count), new BN(lengthDiff))
+        for (const task of tasks) {
+          this.enqueueTask(task)
+        }
+      }
+
       return result
     }
     return

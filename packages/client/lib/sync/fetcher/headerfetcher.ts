@@ -62,9 +62,11 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
       // if the number of the results provided is lower than the expected count
       const lengthDiff = job.task.count - headers.length
       const adoptedJobs = []
+      let lastTask
       while (this.in.length > 0) {
         const job = this.in.remove()
         if (job) {
+          lastTask = job.task
           job.task.first = job.task.first.subn(lengthDiff)
           adoptedJobs.push(job)
         }
@@ -72,6 +74,13 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
       for (const job of adoptedJobs) {
         this.in.insert(job)
       }
+      if (lastTask) {
+        const tasks = this.tasks(lastTask.first.addn(lastTask.count), new BN(lengthDiff))
+        for (const task of tasks) {
+          this.enqueueTask(task)
+        }
+      }
+
       return headers
     }
     return
