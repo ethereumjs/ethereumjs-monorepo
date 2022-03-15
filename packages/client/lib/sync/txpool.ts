@@ -8,7 +8,6 @@ import {
 import { Address, BN } from 'ethereumjs-util'
 import { Config } from '../config'
 import { Peer } from '../net/peer'
-import { EthProtocolMethods } from '../net/protocol'
 import type { PeerPool } from '../net/peerpool'
 import type { Block } from '@ethereumjs/block'
 import type { StateManager } from '@ethereumjs/vm/dist/state'
@@ -369,16 +368,16 @@ export class TxPool {
     this.config.logger.debug(
       `TxPool: requesting txs number=${reqHashes.length} pending=${this.pending.length}`
     )
-    const [_, txs] = await (peer!.eth as EthProtocolMethods).getPooledTransactions({
+    const getPooledTxs = await peer.eth!.getPooledTransactions({
       hashes: reqHashes.slice(0, this.TX_RETRIEVAL_LIMIT),
     })
 
-    this.config.logger.debug(`TxPool: received requested txs number=${txs.length}`)
-
     // Remove from pending list regardless if tx is in result
-    for (const reqHashStr of reqHashesStr) {
-      this.pending = this.pending.filter((hash) => hash !== reqHashStr)
-    }
+    this.pending = this.pending.filter((hash) => !reqHashesStr.includes(hash))
+
+    if (!getPooledTxs) return
+    const [_, txs] = getPooledTxs
+    this.config.logger.debug(`TxPool: received requested txs number=${txs.length}`)
 
     const newTxHashes = []
     for (const tx of txs) {
