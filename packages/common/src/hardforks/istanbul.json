@@ -2,7 +2,7 @@
   "name": "istanbul",
   "comment": "HF targeted for December 2019 following the Constantinople/Petersburg HF",
   "url": "https://eips.ethereum.org/EIPS/eip-1679",
-  "status": "Draft",
+  "status": "Final",
   "gasConfig": {},
   "gasPrices": {
     "blake2Round": {

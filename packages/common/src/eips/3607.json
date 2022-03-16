@@ -3,7 +3,7 @@
   "number": 3607,
   "comment": "Reject transactions from senders with deployed code",
   "url": "https://eips.ethereum.org/EIPS/eip-3607",
-  "status": "Draft",
+  "status": "Final",
   "minimumHardfork": "chainstart",
   "requiredEIPs": [],
   "gasConfig": {},

@@ -600,12 +600,12 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.stack.push(runState.eei.getBlockNumber())
     },
   ],
-  // 0x44: DIFFICULTY (EIP-4399: supplanted as RANDOM)
+  // 0x44: DIFFICULTY (EIP-4399: supplanted as PREVRANDAO)
   [
     0x44,
     function (runState, common) {
       if (common.isActivatedEIP(4399)) {
-        runState.stack.push(runState.eei.getBlockRandom())
+        runState.stack.push(runState.eei.getBlockPrevRandao())
       } else {
         runState.stack.push(runState.eei.getBlockDifficulty())
       }
@@ -823,8 +823,14 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x60,
     function (runState) {
       const numToPush = runState.opCode - 0x5f
+      if (
+        runState.eei._common.isActivatedEIP(3540) &&
+        runState.programCounter + numToPush > runState.code.length
+      ) {
+        trap(ERROR.OUT_OF_RANGE)
+      }
       const loaded = new BN(
-        runState.eei.getCode().slice(runState.programCounter, runState.programCounter + numToPush)
+        runState.code.slice(runState.programCounter, runState.programCounter + numToPush)
       )
       runState.programCounter += numToPush
       runState.stack.push(loaded)

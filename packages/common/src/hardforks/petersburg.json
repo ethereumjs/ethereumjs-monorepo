@@ -2,7 +2,7 @@
   "name": "petersburg",
   "comment": "Aka constantinopleFix, removes EIP-1283, activate together with or after constantinople",
   "url": "https://eips.ethereum.org/EIPS/eip-1716",
-  "status": "Draft",
+  "status": "Final",
   "gasConfig": {},
   "gasPrices": {
     "netSstoreNoopGas": {

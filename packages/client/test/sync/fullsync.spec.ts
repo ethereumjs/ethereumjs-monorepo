@@ -11,14 +11,19 @@ tape('[FullSynchronizer]', async (t) => {
     open() {}
     close() {}
     idle() {}
+    ban(_peer: any) {}
   }
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
   PeerPool.prototype.idle = td.func<any>()
   class BlockFetcher {
     fetch() {}
+    clear() {}
+    destroy() {}
   }
   BlockFetcher.prototype.fetch = td.func<any>()
+  BlockFetcher.prototype.clear = td.func<any>()
+  BlockFetcher.prototype.destroy = td.func<any>()
   td.replace('../../lib/sync/fetcher', { BlockFetcher })
 
   const { FullSynchronizer } = await import('../../lib/sync/fullsync')
@@ -96,7 +101,7 @@ tape('[FullSynchronizer]', async (t) => {
 
   t.test('should sync', async (t) => {
     t.plan(3)
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], safeReorgDistance: 0 })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
     const sync = new FullSynchronizer({

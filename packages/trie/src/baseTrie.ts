@@ -15,6 +15,7 @@ import {
   EmbeddedNode,
   Nibbles,
 } from './trieNode'
+import { verifyRangeProof } from './verifyRangeProof'
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { LevelUp } from 'levelup'
 const assert = require('assert')
@@ -717,6 +718,27 @@ export class Trie {
         throw err
       }
     }
+  }
+
+  /**
+   * {@link verifyRangeProof}
+   */
+  static verifyRangeProof(
+    rootHash: Buffer,
+    firstKey: Buffer | null,
+    lastKey: Buffer | null,
+    keys: Buffer[],
+    values: Buffer[],
+    proof: Buffer[] | null
+  ): Promise<boolean> {
+    return verifyRangeProof(
+      rootHash,
+      firstKey && bufferToNibbles(firstKey),
+      lastKey && bufferToNibbles(lastKey),
+      keys.map(bufferToNibbles),
+      values,
+      proof
+    )
   }
 
   /**

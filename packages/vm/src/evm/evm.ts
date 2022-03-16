@@ -17,6 +17,7 @@ import Message from './message'
 import EEI from './eei'
 // eslint-disable-next-line
 import { short } from './opcodes/util'
+import * as eof from './opcodes/eof'
 import { Log } from './types'
 import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
 
@@ -103,6 +104,14 @@ export function INVALID_BYTECODE_RESULT(gasLimit: BN): ExecResult {
     returnValue: Buffer.alloc(0),
     gasUsed: gasLimit,
     exceptionError: new VmError(ERROR.INVALID_BYTECODE_RESULT),
+  }
+}
+
+export function INVALID_EOF_RESULT(gasLimit: BN): ExecResult {
+  return {
+    returnValue: Buffer.alloc(0),
+    gasUsed: gasLimit,
+    exceptionError: new VmError(ERROR.INVALID_EOF_FORMAT),
   }
 }
 
@@ -298,6 +307,20 @@ export default class EVM {
     // Reduce tx value from sender
     await this._reduceSenderBalance(account, message)
 
+    if (this._vm._common.isActivatedEIP(3860)) {
+      if (message.data.length > this._vm._common.param('vm', 'maxInitCodeSize')) {
+        return {
+          gasUsed: message.gasLimit,
+          createdAddress: message.to,
+          execResult: {
+            returnValue: Buffer.alloc(0),
+            exceptionError: new VmError(ERROR.INITCODE_SIZE_VIOLATION),
+            gasUsed: message.gasLimit,
+          },
+        }
+      }
+    }
+
     message.code = message.data
     message.data = Buffer.alloc(0)
     message.to = await this._generateAddress(message)
@@ -373,8 +396,8 @@ export default class EVM {
     if (this._vm.DEBUG) {
       debug(`Start bytecode processing...`)
     }
-    let result = await this.runInterpreter(message)
 
+    let result = await this.runInterpreter(message)
     // fee for size of the return value
     let totalGas = result.gasUsed
     let returnFee = new BN(0)
@@ -404,11 +427,37 @@ export default class EVM {
       totalGas.lte(message.gasLimit) &&
       (this._vm._allowUnlimitedContractSize || allowedCodeSize)
     ) {
-      if (
-        this._vm._common.isActivatedEIP(3541) &&
-        result.returnValue.slice(0, 1).equals(Buffer.from('EF', 'hex'))
-      ) {
-        result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
+      if (this._vm._common.isActivatedEIP(3541) && result.returnValue[0] === eof.FORMAT) {
+        if (!this._vm._common.isActivatedEIP(3540)) {
+          result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
+        }
+        // Begin EOF1 contract code checks
+        // EIP-3540 EOF1 header check
+        const eof1CodeAnalysisResults = eof.codeAnalysis(result.returnValue)
+        if (!eof1CodeAnalysisResults?.code) {
+          result = {
+            ...result,
+            ...INVALID_EOF_RESULT(message.gasLimit),
+          }
+        } else if (this._vm._common.isActivatedEIP(3670)) {
+          // EIP-3670 EOF1 opcode check
+          const codeStart = eof1CodeAnalysisResults.data > 0 ? 10 : 7
+          // The start of the code section of an EOF1 compliant contract will either be
+          // index 7 (if no data section is present) or index 10 (if a data section is present)
+          // in the bytecode of the contract
+          if (
+            !eof.validOpcodes(
+              result.returnValue.slice(codeStart, codeStart + eof1CodeAnalysisResults.code)
+            )
+          ) {
+            result = {
+              ...result,
+              ...INVALID_EOF_RESULT(message.gasLimit),
+            }
+          } else {
+            result.gasUsed = totalGas
+          }
+        }
       } else {
         result.gasUsed = totalGas
       }
@@ -490,7 +539,10 @@ export default class EVM {
     let result = eei._result
     let gasUsed = message.gasLimit.sub(eei._gasLeft)
     if (interpreterRes.exceptionError) {
-      if (interpreterRes.exceptionError.error !== ERROR.REVERT) {
+      if (
+        interpreterRes.exceptionError.error !== ERROR.REVERT &&
+        interpreterRes.exceptionError.error !== ERROR.INVALID_EOF_FORMAT
+      ) {
         gasUsed = message.gasLimit
       }
 

@@ -47,10 +47,10 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
   /**
    * Generate list of tasks to fetch
    */
-  tasks(): JobTask[] {
-    const { first, count } = this
+  tasks(first = this.first, count = this.count): JobTask[] {
     const max = this.config.maxPerRequest
     const tasks: JobTask[] = []
+    const debugStr = `first=${first} count=${count}`
     while (count.gten(max)) {
       tasks.push({ first: first.clone(), count: max })
       first.iaddn(max)
@@ -59,21 +59,32 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     if (count.gtn(0)) {
       tasks.push({ first: first.clone(), count: count.toNumber() })
     }
-    this.debug(`Created new tasks num=${tasks.length} first=${first} count=${count}`)
+    this.debug(`Created new tasks num=${tasks.length} ${debugStr}`)
     return tasks
   }
 
   /**
-   * Create new tasks based on the list with
-   * block/header numbers provided.
+   * Create new tasks based on a provided list of block numbers.
    *
-   * If numbers are sequential request is created
-   * as bulk request.
+   * If numbers are sequential the request is created as bulk request.
    *
-   * @param numberList Block/header numbers
+   * If there are no tasks in the fetcher and `min` is behind head,
+   * inserts the requests for the missing blocks first.
+   *
+   * @param numberList List of block numbers
    * @param min Start block number
    */
   enqueueByNumberList(numberList: BN[], min: BN) {
+    const nextChainHeight = this.chain.headers.height.addn(1)
+    if (this.in.length === 0 && nextChainHeight.lt(min)) {
+      // If fetcher queue is empty and head is behind `min`,
+      // enqueue tasks for missing block numbers so head can reach `min`
+      this.debug(`Enqueuing missing blocks between chain head and newBlockHashes...`)
+      const tasks = this.tasks(nextChainHeight, min.sub(nextChainHeight))
+      for (const task of tasks) {
+        this.enqueueTask(task)
+      }
+    }
     const numBlocks = numberList.length
     let bulkRequest = true
     const seqCheckNum = min.clone()

@@ -249,33 +249,236 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         )
       },
     ],
-    [
-      /* CREATE */
-      0xf0,
-      async function (runState, gas, common): Promise<void> {
-        if (runState.eei.isStatic()) {
-          trap(ERROR.STATIC_STATE_CHANGE)
+
+  [
+    /* LOG */
+    0xa0,
+    async function (runState, gas, common): Promise<void> {
+      if (runState.eei.isStatic()) {
+        trap(ERROR.STATIC_STATE_CHANGE)
+      }
+
+      const [memOffset, memLength] = runState.stack.peek(2)
+
+      const topicsCount = runState.opCode - 0xa0
+
+      if (topicsCount < 0 || topicsCount > 4) {
+        trap(ERROR.OUT_OF_RANGE)
+      }
+
+      gas.iadd(subMemUsage(runState, memOffset, memLength, common))
+      gas.iadd(
+        new BN(common.param('gasPrices', 'logTopic'))
+          .imuln(topicsCount)
+          .iadd(memLength.muln(common.param('gasPrices', 'logData')))
+      )
+    },
+  ],
+  [
+    /* CREATE */
+    0xf0,
+    async function (runState, gas, common): Promise<void> {
+      if (runState.eei.isStatic()) {
+        trap(ERROR.STATIC_STATE_CHANGE)
+      }
+      const [_value, offset, length] = runState.stack.peek(3)
+
+      if (common.isActivatedEIP(2929)) {
+        gas.iadd(accessAddressEIP2929(runState, runState.eei.getAddress(), common, false))
+      }
+
+      gas.iadd(subMemUsage(runState, offset, length, common))
+
+      if (common.isActivatedEIP(3860)) {
+        // Meter initcode
+        const initCodeCost = new BN(common.param('gasPrices', 'initCodeWordCost')).imul(
+          length.addn(31).divn(32)
+        )
+        gas.iadd(initCodeCost)
+      }
+
+      let gasLimit = new BN(runState.eei.getGasLeft().isub(gas))
+      gasLimit = maxCallGas(gasLimit.clone(), gasLimit.clone(), runState, common)
+
+      runState.messageGasLimit = gasLimit
+    },
+  ],
+  [
+    /* CALL */
+    0xf1,
+    async function (runState, gas, common): Promise<void> {
+      const [currentGasLimit, toAddr, value, inOffset, inLength, outOffset, outLength] =
+        runState.stack.peek(7)
+      const toAddress = new Address(addressToBuffer(toAddr))
+
+      if (runState.eei.isStatic() && !value.isZero()) {
+        trap(ERROR.STATIC_STATE_CHANGE)
+      }
+      gas.iadd(subMemUsage(runState, inOffset, inLength, common))
+      gas.iadd(subMemUsage(runState, outOffset, outLength, common))
+      if (common.isActivatedEIP(2929)) {
+        gas.iadd(accessAddressEIP2929(runState, toAddress, common))
+      }
+
+      if (!value.isZero()) {
+        gas.iadd(new BN(common.param('gasPrices', 'callValueTransfer')))
+      }
+
+      if (common.gteHardfork('spuriousDragon')) {
+        // We are at or after Spurious Dragon
+        // Call new account gas: account is DEAD and we transfer nonzero value
+        if ((await runState.eei.isAccountEmpty(toAddress)) && !value.isZero()) {
+          gas.iadd(new BN(common.param('gasPrices', 'callNewAccount')))
         }
-        const [_value, offset, length] = runState.stack.peek(3)
+      } else if (!(await runState.eei.accountExists(toAddress))) {
+        // We are before Spurious Dragon and the account does not exist.
+        // Call new account gas: account does not exist (it is not in the state trie, not even as an "empty" account)
+        gas.iadd(new BN(common.param('gasPrices', 'callNewAccount')))
+      }
 
-        if (common.isActivatedEIP(2929)) {
-          gas.iadd(accessAddressEIP2929(runState, runState.eei.getAddress(), common, false))
-        }
+      const gasLimit = maxCallGas(
+        currentGasLimit.clone(),
+        runState.eei.getGasLeft().isub(gas),
+        runState,
+        common
+      )
+      // note that TangerineWhistle or later this cannot happen
+      // (it could have ran out of gas prior to getting here though)
+      if (gasLimit.gt(runState.eei.getGasLeft().isub(gas))) {
+        trap(ERROR.OUT_OF_GAS)
+      }
 
-        gas.iadd(subMemUsage(runState, offset, length, common))
+      if (gas.gt(runState.eei.getGasLeft())) {
+        trap(ERROR.OUT_OF_GAS)
+      }
 
-        let gasLimit = new BN(runState.eei.getGasLeft().isub(gas))
-        gasLimit = maxCallGas(gasLimit.clone(), gasLimit.clone(), runState, common)
+      if (!value.isZero()) {
+        // TODO: Don't use private attr directly
+        runState.eei._gasLeft.iaddn(common.param('gasPrices', 'callStipend'))
+        gasLimit.iaddn(common.param('gasPrices', 'callStipend'))
+      }
 
-        runState.messageGasLimit = gasLimit
-      },
-    ],
-    [
-      /* CALL */
-      0xf1,
-      async function (runState, gas, common): Promise<void> {
-        const [currentGasLimit, toAddr, value, inOffset, inLength, outOffset, outLength] =
-          runState.stack.peek(7)
+      runState.messageGasLimit = gasLimit
+    },
+  ],
+  [
+    /* CALLCODE */
+    0xf2,
+    async function (runState, gas, common): Promise<void> {
+      const [currentGasLimit, toAddr, value, inOffset, inLength, outOffset, outLength] =
+        runState.stack.peek(7)
+
+      gas.iadd(subMemUsage(runState, inOffset, inLength, common))
+      gas.iadd(subMemUsage(runState, outOffset, outLength, common))
+
+      if (common.isActivatedEIP(2929)) {
+        const toAddress = new Address(addressToBuffer(toAddr))
+        gas.iadd(accessAddressEIP2929(runState, toAddress, common))
+      }
+
+      if (!value.isZero()) {
+        gas.iadd(new BN(common.param('gasPrices', 'callValueTransfer')))
+      }
+      const gasLimit = maxCallGas(
+        currentGasLimit.clone(),
+        runState.eei.getGasLeft().isub(gas),
+        runState,
+        common
+      )
+      // note that TangerineWhistle or later this cannot happen
+      // (it could have ran out of gas prior to getting here though)
+      if (gasLimit.gt(runState.eei.getGasLeft().isub(gas))) {
+        trap(ERROR.OUT_OF_GAS)
+      }
+      if (!value.isZero()) {
+        // TODO: Don't use private attr directly
+        runState.eei._gasLeft.iaddn(common.param('gasPrices', 'callStipend'))
+        gasLimit.iaddn(common.param('gasPrices', 'callStipend'))
+      }
+
+      runState.messageGasLimit = gasLimit
+    },
+  ],
+  [
+    /* RETURN */
+    0xf3,
+    async function (runState, gas, common): Promise<void> {
+      const [offset, length] = runState.stack.peek(2)
+      gas.iadd(subMemUsage(runState, offset, length, common))
+    },
+  ],
+  [
+    /* DELEGATECALL */
+    0xf4,
+    async function (runState, gas, common): Promise<void> {
+      const [currentGasLimit, toAddr, inOffset, inLength, outOffset, outLength] =
+        runState.stack.peek(6)
+
+      gas.iadd(subMemUsage(runState, inOffset, inLength, common))
+      gas.iadd(subMemUsage(runState, outOffset, outLength, common))
+
+      if (common.isActivatedEIP(2929)) {
+        const toAddress = new Address(addressToBuffer(toAddr))
+        gas.iadd(accessAddressEIP2929(runState, toAddress, common))
+      }
+
+      const gasLimit = maxCallGas(
+        currentGasLimit.clone(),
+        runState.eei.getGasLeft().isub(gas),
+        runState,
+        common
+      )
+      // note that TangerineWhistle or later this cannot happen
+      // (it could have ran out of gas prior to getting here though)
+      if (gasLimit.gt(runState.eei.getGasLeft().isub(gas))) {
+        trap(ERROR.OUT_OF_GAS)
+      }
+
+      runState.messageGasLimit = gasLimit
+    },
+  ],
+  [
+    /* CREATE2 */
+    0xf5,
+    async function (runState, gas, common): Promise<void> {
+      if (runState.eei.isStatic()) {
+        trap(ERROR.STATIC_STATE_CHANGE)
+      }
+
+      const [_value, offset, length, _salt] = runState.stack.peek(4)
+
+      gas.iadd(subMemUsage(runState, offset, length, common))
+
+      if (common.isActivatedEIP(2929)) {
+        gas.iadd(accessAddressEIP2929(runState, runState.eei.getAddress(), common, false))
+      }
+
+      gas.iadd(new BN(common.param('gasPrices', 'sha3Word')).imul(divCeil(length, new BN(32))))
+
+      if (common.isActivatedEIP(3860)) {
+        // Meter initcode
+        const initCodeCost = new BN(common.param('gasPrices', 'initCodeWordCost')).imul(
+          length.addn(31).divn(32)
+        )
+        gas.iadd(initCodeCost)
+      }
+
+      let gasLimit = new BN(runState.eei.getGasLeft().isub(gas))
+      gasLimit = maxCallGas(gasLimit.clone(), gasLimit.clone(), runState, common) // CREATE2 is only available after TangerineWhistle (Constantinople introduced this opcode)
+      runState.messageGasLimit = gasLimit
+    },
+  ],
+  [
+    /* STATICCALL */
+    0xfa,
+    async function (runState, gas, common): Promise<void> {
+      const [currentGasLimit, toAddr, inOffset, inLength, outOffset, outLength] =
+        runState.stack.peek(6)
+
+      gas.iadd(subMemUsage(runState, inOffset, inLength, common))
+      gas.iadd(subMemUsage(runState, outOffset, outLength, common))
+
+      if (common.isActivatedEIP(2929)) {
         const toAddress = new Address(addressToBuffer(toAddr))
 
         if (runState.eei.isStatic() && !value.isZero()) {

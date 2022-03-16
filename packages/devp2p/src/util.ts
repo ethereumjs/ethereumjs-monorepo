@@ -3,8 +3,9 @@ import { randomBytes } from 'crypto'
 import { privateKeyVerify, publicKeyConvert } from 'secp256k1'
 import createKeccakHash from 'keccak'
 import { rlp } from 'ethereumjs-util'
-import { ETH } from './eth'
-import { LES } from './les'
+import { ETH } from './protocol/eth'
+import { LES } from './protocol/les'
+
 import { debug as createDebugLogger } from 'debug'
 
 export const devp2pDebug = createDebugLogger('devp2p')

@@ -2,6 +2,17 @@ import Common from '@ethereumjs/common'
 import { bufferToHex, setLengthLeft, toBuffer } from 'ethereumjs-util'
 import { AccessList, AccessListBuffer, AccessListItem, isAccessList } from './types'
 
+export function checkMaxInitCodeSize(common: Common, length: number) {
+  if (length > common.param('vm', 'maxInitCodeSize')) {
+    throw new Error(
+      `the initcode size of this transaction is too large: it is ${length} while the max is ${common.param(
+        'vm',
+        'maxInitCodeSize'
+      )}`
+    )
+  }
+}
+
 export class AccessLists {
   public static getAccessListData(accessList: AccessListBuffer | AccessList) {
     let AccessListJSON

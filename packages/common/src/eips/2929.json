@@ -2,7 +2,7 @@
   "name": "EIP-2929",
   "comment": "Gas cost increases for state access opcodes",
   "url": "https://eips.ethereum.org/EIPS/eip-2929",
-  "status": "Draft",
+  "status": "Final",
   "minimumHardfork": "chainstart",
   "gasConfig": {},
   "gasPrices": {

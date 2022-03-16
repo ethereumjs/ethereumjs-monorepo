@@ -1,46 +1,19 @@
-import { EventEmitter } from 'events'
-import { rlp } from 'ethereumjs-util'
 import ms from 'ms'
+import { rlp } from 'ethereumjs-util'
 import snappy from 'snappyjs'
-import { debug as createDebugLogger, Debugger } from 'debug'
-import { devp2pDebug } from '../util'
 import { int2buffer, buffer2int, assertEq, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
-
-const DEBUG_BASE_NAME = 'les'
-const verbose = createDebugLogger('verbose').enabled
+import { EthProtocol, Protocol, SendMethod } from './protocol'
 
 export const DEFAULT_ANNOUNCE_TYPE = 1
 
-/**
- * Will be set to the first successfully connected peer to allow for
- * debugging with the `devp2p:FIRST_PEER` debugger
- */
-let _firstPeer = ''
-
-type SendMethod = (code: LES.MESSAGE_CODES, data: Buffer) => any
-
-export class LES extends EventEmitter {
-  _version: number
-  _peer: Peer
-  _send: SendMethod
-  _status: LES.Status | null
-  _peerStatus: LES.Status | null
-  _statusTimeoutId: NodeJS.Timeout
-  _debug: Debugger
-
-  // Message debuggers (e.g. { 'GET_BLOCK_HEADERS': [debug Object], ...})
-  private msgDebuggers: { [key: string]: (debug: string) => void } = {}
+export class LES extends Protocol {
+  _status: LES.Status | null = null
+  _peerStatus: LES.Status | null = null
 
   constructor(version: number, peer: Peer, send: SendMethod) {
-    super()
+    super(peer, send, EthProtocol.LES, version, LES.MESSAGE_CODES)
 
-    this._version = version
-    this._peer = peer
-    this._send = send
-    this._debug = devp2pDebug
-    this._status = null
-    this._peerStatus = null
     this._statusTimeoutId = setTimeout(() => {
       this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
     }, ms('5s'))
@@ -56,7 +29,7 @@ export class LES extends EventEmitter {
     const debugMsg = `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}`
 
     if (code !== LES.MESSAGE_CODES.STATUS) {
-      const logData = formatLogData(data.toString('hex'), verbose)
+      const logData = formatLogData(data.toString('hex'), this._verbose)
       this.debug(messageName, `${debugMsg}: ${logData}`)
     }
     switch (code) {
@@ -141,7 +114,7 @@ export class LES extends EventEmitter {
     )
 
     this.emit('status', this._peerStatus)
-    if (_firstPeer === '') {
+    if (this._firstPeer === '') {
       this._addFirstPeerDebugger()
     }
   }
@@ -215,7 +188,7 @@ export class LES extends EventEmitter {
    */
   sendMessage(code: LES.MESSAGE_CODES, payload: any) {
     const messageName = this.getMsgPrefix(code)
-    const logData = formatLogData(rlp.encode(payload).toString('hex'), verbose)
+    const logData = formatLogData(rlp.encode(payload).toString('hex'), this._verbose)
     const debugMsg = `Send ${messageName} message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${logData}`
 
     this.debug(messageName, debugMsg)
@@ -269,36 +242,6 @@ export class LES extends EventEmitter {
 
   getMsgPrefix(msgCode: LES.MESSAGE_CODES) {
     return LES.MESSAGE_CODES[msgCode]
-  }
-
-  /**
-   * Called once on the peer where a first successful `STATUS`
-   * msg exchange could be achieved.
-   *
-   * Can be used together with the `devp2p:FIRST_PEER` debugger.
-   */
-  _addFirstPeerDebugger() {
-    const ip = this._peer._socket.remoteAddress
-    if (ip) {
-      this._debug = this._debug.extend('FIRST_PEER')
-      this._peer._addFirstPeerDebugger()
-      _firstPeer = ip
-    }
-  }
-
-  /**
-   * Debug message both on the generic as well as the
-   * per-message debug logger
-   * @param messageName Capitalized message name (e.g. `GET_BLOCK_HEADERS`)
-   * @param msg Message text to debug
-   */
-  private debug(messageName: string, msg: string) {
-    const ip = this._peer._socket.remoteAddress
-    if (ip) {
-      this._debug.extend(ip).extend(DEBUG_BASE_NAME).extend(messageName)(msg)
-    } else {
-      this._debug.extend(DEBUG_BASE_NAME).extend(messageName)(msg)
-    }
   }
 }
 

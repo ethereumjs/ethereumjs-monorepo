@@ -10,6 +10,7 @@ const argv = minimist(process.argv.slice(2))
 const file: string | undefined = argv.file
 
 const forkNames: ForkName[] = [
+  'London+3860',
   'London',
   'Berlin',
   'Istanbul',
@@ -23,6 +24,7 @@ const forkNames: ForkName[] = [
 ]
 
 const forkNameMap: ForkNamesMap = {
+  'London+3860': 'london',
   London: 'london',
   Berlin: 'berlin',
   Istanbul: 'istanbul',
@@ -33,6 +35,10 @@ const forkNameMap: ForkNamesMap = {
   EIP158: 'spuriousDragon',
   Frontier: 'chainstart',
   Homestead: 'homestead',
+}
+
+const EIPs: any = {
+  'London+3860': [3860],
 }
 
 tape('TransactionTests', async (t) => {
@@ -46,6 +52,9 @@ tape('TransactionTests', async (t) => {
     ) => {
       t.test(testName, (st) => {
         for (const forkName of forkNames) {
+          if (testData.result[forkName] === undefined) {
+            continue
+          }
           const forkTestData = testData.result[forkName]
           const shouldBeInvalid = !!forkTestData.exception
 
@@ -53,6 +62,10 @@ tape('TransactionTests', async (t) => {
             const rawTx = toBuffer(testData.txbytes)
             const hardfork = forkNameMap[forkName]
             const common = new Common({ chain: 1, hardfork })
+            const activateEIPs = EIPs[forkName]
+            if (activateEIPs) {
+              common.setEIPs(activateEIPs)
+            }
             const tx = Transaction.fromSerializedTx(rawTx, { common })
             const sender = tx.getSenderAddress().toString()
             const hash = tx.hash().toString('hex')

@@ -25,6 +25,8 @@ export class PeerPool {
   public running: boolean
 
   private _statusCheckInterval: NodeJS.Timeout | undefined /* global NodeJS */
+  private DEFAULT_STATUS_CHECK_INTERVAL = 20 /* default checks in secs */
+  private _reconnectTimeout: NodeJS.Timeout | undefined
 
   /**
    * Create new peer pool
@@ -73,8 +75,11 @@ export class PeerPool {
     if (this.running) {
       return false
     }
-    // eslint-disable-next-line @typescript-eslint/await-thenable
-    this._statusCheckInterval = setInterval(await this._statusCheck.bind(this), 20000)
+    this._statusCheckInterval = setInterval(
+      // eslint-disable-next-line @typescript-eslint/await-thenable
+      await this._statusCheck.bind(this),
+      this.DEFAULT_STATUS_CHECK_INTERVAL * 1000
+    )
 
     this.running = true
     return true
@@ -88,6 +93,7 @@ export class PeerPool {
       await this.close()
     }
     clearInterval(this._statusCheckInterval as NodeJS.Timeout)
+    clearTimeout(this._reconnectTimeout as NodeJS.Timeout)
     this.running = false
     return true
   }
@@ -173,6 +179,14 @@ export class PeerPool {
     peer.server.ban(peer.id, maxAge)
     this.remove(peer)
     this.config.events.emit(Event.POOL_PEER_BANNED, peer)
+
+    // Reconnect to peer after ban period if pool is empty
+    this._reconnectTimeout = setTimeout(async () => {
+      if (this.running && this.size === 0) {
+        await peer.server?.connect(peer.id)
+        this.connected(peer)
+      }
+    }, maxAge + 1000)
   }
 
   /**
@@ -209,15 +223,17 @@ export class PeerPool {
     if (this.size === 0) {
       this.noPeerPeriods += 1
       if (this.noPeerPeriods >= 3) {
+        this.noPeerPeriods = 0
         const promises = this.config.servers.map(async (server) => {
-          if (server instanceof RlpxServer && server.discovery) {
-            this.config.logger.info('Restarting RLPx server: bootstrap')
+          if (server instanceof RlpxServer) {
+            this.config.logger.info('Restarting RLPx server')
             await server.stop()
             await server.start()
+            this.config.logger.info('Reinitiating server bootstrap')
+            await server.bootstrap()
           }
         })
         await Promise.all(promises)
-        this.noPeerPeriods = 0
       } else {
         let tablesize: number | undefined = 0
         this.config.servers.forEach((server) => {
