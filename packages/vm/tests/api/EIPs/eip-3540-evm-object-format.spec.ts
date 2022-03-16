@@ -18,7 +18,7 @@ async function runTx(vm: VM, data: string, nonce: number) {
   const result = await vm.runTx({ tx })
   const created = result.createdAddress
   const code = await vm.stateManager.getContractCode(created!)
-  return code
+  return { result, code }
 }
 
 tape('EIP 3540 tests', (t) => {
@@ -65,28 +65,28 @@ tape('EIP 3540 tests', (t) => {
     await vm.stateManager.putAccount(sender, account)
 
     let data = '0x60EF60005360016000F3'
-    let code = await runTx(vm, data, 0)
-    st.ok(code.length === 0, 'no magic')
+    let res = await runTx(vm, data, 0)
+    st.ok(res.code.length === 0, 'no magic')
 
     data = '0x7FEF0000000000000000000000000000000000000000000000000000000000000060005260206000F3'
-    code = await runTx(vm, data, 1)
-    st.ok(code.length === 0, 'invalid header')
+    res = await runTx(vm, data, 1)
+    st.ok(res.code.length === 0, 'invalid header')
 
     data = '0x7FEF0002000000000000000000000000000000000000000000000000000000000060005260206000F3'
-    code = await runTx(vm, data, 2)
-    st.ok(code.length === 0, 'valid header but invalid EOF format')
+    res = await runTx(vm, data, 2)
+    st.ok(res.code.length === 0, 'valid header but invalid EOF format')
 
     data = '0x7FEF0001000000000000000000000000000000000000000000000000000000000060005260206000F3'
-    code = await runTx(vm, data, 3)
-    st.ok(code.length === 0, 'valid header and version but no code section')
+    res = await runTx(vm, data, 3)
+    st.ok(res.code.length === 0, 'valid header and version but no code section')
 
     data = '0x7FEF0001030000000000000000000000000000000000000000000000000000000060005260206000F3'
-    code = await runTx(vm, data, 4)
-    st.ok(code.length === 0, 'valid header and version but unknown section type')
+    res = await runTx(vm, data, 4)
+    st.ok(res.code.length === 0, 'valid header and version but unknown section type')
 
     data = '0x7FEF0001010002006000DEADBEEF0000000000000000000000000000000000000060005260206000F3'
-    code = await runTx(vm, data, 5)
-    st.ok(code.length === 0, 'code section with trailing bytes')
+    res = await runTx(vm, data, 5)
+    st.ok(res.code.length === 0, 'code section with trailing bytes')
   })
 })
 
@@ -103,12 +103,12 @@ tape('valid contract creation cases', async (st) => {
   await vm.stateManager.putAccount(sender, account)
 
   let data = '0x67EF0001010001000060005260086018F3'
-  let code = await runTx(vm, data, 0)
-  st.ok(code.length > 0, 'code section with no data section')
+  let res = await runTx(vm, data, 0)
+  st.ok(res.code.length > 0, 'code section with no data section')
 
   data = '0x6BEF00010100010200010000AA600052600C6014F3'
-  code = await runTx(vm, data, 1)
-  st.ok(code.length > 0, 'code section with data section')
+  res = await runTx(vm, data, 1)
+  st.ok(res.code.length > 0, 'code section with data section')
 })
 
 function generateEOFCode(code: string) {
@@ -155,22 +155,12 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
     account.balance = balance
     await vm.stateManager.putAccount(sender, account)
 
-    let tx = FeeMarketEIP1559Transaction.fromTxData({
-      data: generateEOFCode('60016001F3'),
-      gasLimit: 1000000,
-      maxFeePerGas: 7,
-      nonce: 0,
-    }).sign(pkey)
-    const result = await vm.runTx({ tx })
+    let data = generateEOFCode('60016001F3')
+    const res = await runTx(vm, data, 0)
 
-    tx = FeeMarketEIP1559Transaction.fromTxData({
-      data: generateInvalidEOFCode('60016001F3'),
-      gasLimit: 1000000,
-      maxFeePerGas: 7,
-      nonce: 1,
-    }).sign(pkey)
-    const result2 = await vm.runTx({ tx })
-    st.ok(result.gasUsed.gt(result2.gasUsed), 'invalid initcode did not consume all gas')
+    data = generateInvalidEOFCode('60016001F3')
+    const res2 = await runTx(vm, data, 1)
+    st.ok(res.result.gasUsed.gt(res2.result.gasUsed), 'invalid initcode did not consume all gas')
   })
 
   t.test('case: create', async (st) => {
@@ -185,22 +175,13 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
     account.balance = balance
     await vm.stateManager.putAccount(sender, account)
 
-    let tx = FeeMarketEIP1559Transaction.fromTxData({
-      data: deployCreateCode(generateEOFCode('60016001F3').substring(2)),
-      gasLimit: 1000000,
-      maxFeePerGas: 7,
-      nonce: 0,
-    }).sign(pkey)
-    const result = await vm.runTx({ tx })
+    let data = deployCreateCode(generateEOFCode('60016001F3').substring(2))
+    const res = await runTx(vm, data, 0)
 
-    tx = FeeMarketEIP1559Transaction.fromTxData({
-      data: deployCreateCode(generateInvalidEOFCode('60016001F3').substring(2)),
-      gasLimit: 1000000,
-      maxFeePerGas: 7,
-      nonce: 1,
-    }).sign(pkey)
-    const result2 = await vm.runTx({ tx })
-    st.ok(result.gasUsed.gt(result2.gasUsed), 'invalid initcode did not consume all gas')
+    data = deployCreateCode(generateInvalidEOFCode('60016001F3').substring(2))
+    const res2 = await runTx(vm, data, 1)
+
+    st.ok(res.result.gasUsed.gt(res2.result.gasUsed), 'invalid initcode did not consume all gas')
   })
 
   t.test('case: create2', async (st) => {
@@ -215,21 +196,11 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
     account.balance = balance
     await vm.stateManager.putAccount(sender, account)
 
-    let tx = FeeMarketEIP1559Transaction.fromTxData({
-      data: deployCreate2Code(generateEOFCode('60016001F3').substring(2)),
-      gasLimit: 1000000,
-      maxFeePerGas: 7,
-      nonce: 0,
-    }).sign(pkey)
-    const result = await vm.runTx({ tx })
+    let data = deployCreate2Code(generateEOFCode('60016001F3').substring(2))
+    const res = await runTx(vm, data, 0)
 
-    tx = FeeMarketEIP1559Transaction.fromTxData({
-      data: deployCreate2Code(generateInvalidEOFCode('60016001F3').substring(2)),
-      gasLimit: 1000000,
-      maxFeePerGas: 7,
-      nonce: 1,
-    }).sign(pkey)
-    const result2 = await vm.runTx({ tx })
-    st.ok(result.gasUsed.gt(result2.gasUsed), 'invalid initcode did not consume all gas')
+    data = deployCreate2Code(generateInvalidEOFCode('60016001F3').substring(2))
+    const res2 = await runTx(vm, data, 1)
+    st.ok(res.result.gasUsed.gt(res2.result.gasUsed), 'invalid initcode did not consume all gas')
   })
 })
