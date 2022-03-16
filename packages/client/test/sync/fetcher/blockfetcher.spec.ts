@@ -98,6 +98,26 @@ tape('[BlockFetcher]', async (t) => {
     t.end()
   })
 
+  t.test('should adopt correctly', (t) => {
+    const config = new Config({ transports: [] })
+    const pool = new PeerPool() as any
+    const chain = new Chain({ config })
+    const fetcher = new BlockFetcher({
+      config,
+      pool,
+      chain,
+      first: new BN(0),
+      count: new BN(0),
+    })
+    const blocks: any = [{ header: { number: 1 } }, { header: { number: 2 } }]
+    const task = { count: 3, first: new BN(1) }
+    ;(fetcher as any).running = true
+    fetcher.enqueueTask(task)
+    fetcher.process({ task } as any, blocks)
+    t.equals((fetcher as any).in.size(), 2, 'Fetcher should have two tasks after adopting')
+    t.end()
+  })
+
   t.test('should find a fetchable peer', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
