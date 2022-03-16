@@ -7,8 +7,8 @@ import { Job } from '../../../lib/sync/fetcher/types'
 import { Event } from '../../../lib/types'
 
 class FetcherTest extends Fetcher<any, any, any> {
-  process(_job: any, _res: any) {
-    return undefined // have to return undefined, otherwise the function return signature is void.
+  process(_job: any, res: any) {
+    return res
   }
   async request(_job: any, _peer: any) {
     return

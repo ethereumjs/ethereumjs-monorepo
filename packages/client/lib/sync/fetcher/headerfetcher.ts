@@ -1,6 +1,6 @@
 import { BlockFetcherBase, BlockFetcherOptions, JobTask } from './blockfetcherbase'
 import { Peer } from '../../net/peer'
-import { FlowControl, LesProtocolMethods } from '../../net/protocol'
+import { FlowControl } from '../../net/protocol'
 import { BlockHeader } from '@ethereumjs/block'
 import { Job } from './types'
 import { BN } from 'ethereumjs-util'
@@ -39,7 +39,7 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
       // we reached our request limit. try with a different peer.
       return
     }
-    const response = await (peer!.les as LesProtocolMethods).getBlockHeaders({
+    const response = await peer!.les!.getBlockHeaders({
       block: task.first,
       max: task.count,
     })

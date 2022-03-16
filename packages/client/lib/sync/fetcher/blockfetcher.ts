@@ -1,7 +1,6 @@
 import { Block, BlockBuffer } from '@ethereumjs/block'
 import { KECCAK256_RLP, KECCAK256_RLP_ARRAY, BN } from 'ethereumjs-util'
 import { Peer } from '../../net/peer'
-import { EthProtocolMethods } from '../../net/protocol'
 import { Job } from './types'
 import { BlockFetcherBase, JobTask, BlockFetcherOptions } from './blockfetcherbase'
 import { Event } from '../../types'
@@ -29,7 +28,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
     const blocksRange = `${first}-${first.addn(count)}`
     const peerInfo = `id=${peer?.id.slice(0, 8)} address=${peer?.address}`
 
-    const headersResult = await (peer!.eth as EthProtocolMethods).getBlockHeaders({
+    const headersResult = await peer!.eth!.getBlockHeaders({
       block: first,
       max: count,
     })

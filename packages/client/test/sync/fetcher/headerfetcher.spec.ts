@@ -57,8 +57,7 @@ tape('[HeaderFetcher]', async (t) => {
     const pool = new PeerPool()
     const fetcher = new HeaderFetcher({ config, pool })
     td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
-    //@ts-ignore
-    t.equals(fetcher.peer(undefined), 'peer0', 'found peer')
+    t.equal(fetcher.peer(), 'peer0', 'found peer')
     t.end()
   })
 

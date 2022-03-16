@@ -146,6 +146,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       // If the job was already dequeued, for example coming from writer pipe, processed
       // needs to be decreased
       if (dequeued) this.processed--
+
       this.in.insert({
         ...job,
         time: Date.now(),
@@ -272,7 +273,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
           (jobItem.task as any)?.count
         }`
         this.debug(
-          `failure-Re-enqueuing job ${jobStr} from peer id=${jobItem.peer?.id?.substr(
+          `Failure - Re-enqueuing job ${jobStr} from peer id=${jobItem.peer?.id?.substr(
             0,
             8
           )} (error: ${error}).`
