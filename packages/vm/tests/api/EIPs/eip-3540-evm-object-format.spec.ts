@@ -28,7 +28,7 @@ tape('EIP 3540 tests', (t) => {
     eips: [3540],
   })
 
-  t.test('eof1CodeAnalysis() tests', async (st) => {
+  t.test('EOF > codeAnalysis() tests', async (st) => {
     const eofHeader = Buffer.from([eof.FORMAT, eof.MAGIC, eof.VERSION])
     st.ok(
       eof.codeAnalysis(Buffer.concat([eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00])]))
@@ -57,7 +57,28 @@ tape('EIP 3540 tests', (t) => {
     st.end()
   })
 
-  t.test('invalid object formats', async (st) => {
+  t.test('valid EOF format / contract creation', async (st) => {
+    const common = new Common({
+      chain: Chain.Mainnet,
+      hardfork: Hardfork.London,
+      eips: [3540],
+    })
+    const vm = new VM({ common })
+    const account = await vm.stateManager.getAccount(sender)
+    const balance = GWEI.muln(21000).muln(10000000)
+    account.balance = balance
+    await vm.stateManager.putAccount(sender, account)
+
+    let data = '0x67' + 'EF0001' + '01000100' + '00' + '60005260086018F3'
+    let res = await runTx(vm, data, 0)
+    st.ok(res.code.length > 0, 'code section with no data section')
+
+    data = '0x6B' + 'EF0001' + '01000102000100' + '00' + 'AA' + '600052600C6014F3'
+    res = await runTx(vm, data, 1)
+    st.ok(res.code.length > 0, 'code section with data section')
+  })
+
+  t.test('invalid EOF format / contract creation', async (st) => {
     const vm = new VM({ common })
     const account = await vm.stateManager.getAccount(sender)
     const balance = GWEI.muln(21000).muln(10000000)
@@ -74,7 +95,7 @@ tape('EIP 3540 tests', (t) => {
 
     data = '0x7FEF0002000000000000000000000000000000000000000000000000000000000060005260206000F3'
     res = await runTx(vm, data, 2)
-    st.ok(res.code.length === 0, 'valid header but invalid EOF format')
+    st.ok(res.code.length === 0, 'valid header but invalid EOF version')
 
     data = '0x7FEF0001000000000000000000000000000000000000000000000000000000000060005260206000F3'
     res = await runTx(vm, data, 3)
@@ -88,27 +109,6 @@ tape('EIP 3540 tests', (t) => {
     res = await runTx(vm, data, 5)
     st.ok(res.code.length === 0, 'code section with trailing bytes')
   })
-})
-
-tape('valid contract creation cases', async (st) => {
-  const common = new Common({
-    chain: Chain.Mainnet,
-    hardfork: Hardfork.London,
-    eips: [3540],
-  })
-  const vm = new VM({ common })
-  const account = await vm.stateManager.getAccount(sender)
-  const balance = GWEI.muln(21000).muln(10000000)
-  account.balance = balance
-  await vm.stateManager.putAccount(sender, account)
-
-  let data = '0x67EF0001010001000060005260086018F3'
-  let res = await runTx(vm, data, 0)
-  st.ok(res.code.length > 0, 'code section with no data section')
-
-  data = '0x6BEF00010100010200010000AA600052600C6014F3'
-  res = await runTx(vm, data, 1)
-  st.ok(res.code.length > 0, 'code section with data section')
 })
 
 function generateEOFCode(code: string) {

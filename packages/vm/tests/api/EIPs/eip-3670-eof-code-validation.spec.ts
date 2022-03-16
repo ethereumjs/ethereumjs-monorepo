@@ -8,6 +8,19 @@ const pkey = Buffer.from('20'.repeat(32), 'hex')
 const GWEI = new BN('1000000000')
 const sender = new Address(privateToAddress(pkey))
 
+async function runTx(vm: VM, data: string, nonce: number) {
+  const tx = FeeMarketEIP1559Transaction.fromTxData({
+    data,
+    gasLimit: 1000000,
+    maxFeePerGas: 7,
+    nonce,
+  }).sign(pkey)
+  const result = await vm.runTx({ tx })
+  const created = result.createdAddress
+  const code = await vm.stateManager.getContractCode(created!)
+  return { result, code }
+}
+
 tape('EIP 3670 tests', (t) => {
   const common = new Common({
     chain: Chain.Mainnet,
@@ -15,7 +28,7 @@ tape('EIP 3670 tests', (t) => {
     eips: [3540, 3670],
   })
 
-  t.test('eof1ValidOpcodes() tests', (st) => {
+  t.test('EOF > validOpcodes() tests', (st) => {
     st.ok(eof.validOpcodes(Buffer.from([0])), 'valid -- STOP ')
     st.notOk(eof.validOpcodes(Buffer.from([0xaa])), 'invalid -- AA -- undefined opcode')
     st.ok(eof.validOpcodes(Buffer.from([0x60, 0xaa, 0])), 'valid - PUSH1 AA STOP')
@@ -44,26 +57,13 @@ tape('EIP 3670 tests', (t) => {
     account.balance = balance
     await vm.stateManager.putAccount(sender, account)
 
-    let tx = FeeMarketEIP1559Transaction.fromTxData({
-      data: '0x67EF0001010001000060005260086018F3',
-      gasLimit: 1000000,
-      maxFeePerGas: 7,
-      nonce: 0,
-    }).sign(pkey)
-    let result = await vm.runTx({ tx })
-    let created = result.createdAddress
-    let code = await vm.stateManager.getContractCode(created!)
-    st.ok(code.length > 0, 'code section with no data section')
-    tx = FeeMarketEIP1559Transaction.fromTxData({
-      data: '0x6BEF00010100010200010000AA600052600C6014F3',
-      gasLimit: 100000000,
-      maxFeePerGas: 7,
-      nonce: 1,
-    }).sign(pkey)
-    result = await vm.runTx({ tx })
-    created = result.createdAddress
-    code = await vm.stateManager.getContractCode(created!)
-    st.ok(code.length > 0, 'code section with data section')
+    let data = '0x67EF0001010001000060005260086018F3'
+    let res = await runTx(vm, data, 0)
+    st.ok(res.code.length > 0, 'code section with no data section')
+
+    data = '0x6BEF00010100010200010000AA600052600C6014F3'
+    res = await runTx(vm, data, 1)
+    st.ok(res.code.length > 0, 'code section with data section')
   })
 
   t.test('invalid contract code transactions', async (st) => {
@@ -73,18 +73,11 @@ tape('EIP 3670 tests', (t) => {
     account.balance = balance
     await vm.stateManager.putAccount(sender, account)
 
-    const tx = FeeMarketEIP1559Transaction.fromTxData({
-      data: '0x67EF0001010001006060005260086018F3',
-      gasLimit: 1000000,
-      maxFeePerGas: 7,
-      nonce: 0,
-    }).sign(pkey)
-    const result = await vm.runTx({ tx })
-    const created = result.createdAddress
-    const code = await vm.stateManager.getContractCode(created!)
-    st.ok(code.length === 0, 'code should not be deposited')
+    const data = '0x67EF0001010001006060005260086018F3'
+    const res = await runTx(vm, data, 0)
+    st.ok(res.code.length === 0, 'code should not be deposited')
     st.ok(
-      result.execResult.exceptionError?.error === 'invalid EOF format',
+      res.result.execResult.exceptionError?.error === 'invalid EOF format',
       'deposited code does not end with terminating instruction'
     )
   })
