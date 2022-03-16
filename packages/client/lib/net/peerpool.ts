@@ -223,15 +223,17 @@ export class PeerPool {
     if (this.size === 0) {
       this.noPeerPeriods += 1
       if (this.noPeerPeriods >= 3) {
+        this.noPeerPeriods = 0
         const promises = this.config.servers.map(async (server) => {
-          if (server instanceof RlpxServer && server.discovery) {
-            this.config.logger.info('Restarting RLPx server: bootstrap')
+          if (server instanceof RlpxServer) {
+            this.config.logger.info('Restarting RLPx server')
             await server.stop()
             await server.start()
+            this.config.logger.info('Reinitiating server bootstrap')
+            await server.bootstrap()
           }
         })
         await Promise.all(promises)
-        this.noPeerPeriods = 0
       } else {
         let tablesize: number | undefined = 0
         this.config.servers.forEach((server) => {
