@@ -12,7 +12,7 @@ tape('EIP 3540 tests', (t) => {
   const common = new Common({
     chain: Chain.Mainnet,
     hardfork: Hardfork.London,
-    eips: [3540, 3541],
+    eips: [3540],
   })
 
   t.test('eof1CodeAnalysis() tests', async (st) => {
@@ -116,7 +116,7 @@ tape('valid contract creation cases', async (st) => {
   const common = new Common({
     chain: Chain.Mainnet,
     hardfork: Hardfork.London,
-    eips: [3540, 3541],
+    eips: [3540],
   })
   const vm = new VM({ common })
   const account = await vm.stateManager.getAccount(sender)
@@ -182,7 +182,7 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
     const common = new Common({
       chain: Chain.Mainnet,
       hardfork: Hardfork.London,
-      eips: [3540, 3541],
+      eips: [3540],
     })
     const vm = new VM({ common })
     const account = await vm.stateManager.getAccount(sender)
@@ -212,7 +212,7 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
     const common = new Common({
       chain: Chain.Mainnet,
       hardfork: Hardfork.London,
-      eips: [3540, 3541],
+      eips: [3540],
     })
     const vm = new VM({ common })
     const account = await vm.stateManager.getAccount(sender)
@@ -242,7 +242,7 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
     const common = new Common({
       chain: Chain.Mainnet,
       hardfork: Hardfork.London,
-      eips: [3540, 3541],
+      eips: [3540],
     })
     const vm = new VM({ common })
     const account = await vm.stateManager.getAccount(sender)
