@@ -25,7 +25,7 @@ export class PeerPool {
   public running: boolean
 
   private _statusCheckInterval: NodeJS.Timeout | undefined /* global NodeJS */
-  private DEFAULT_STATUS_CHECK_INTERVAL = 10 /* default checks in secs */
+  private DEFAULT_STATUS_CHECK_INTERVAL = 20 /* default checks in secs */
   private _reconnectTimeout: NodeJS.Timeout | undefined
 
   /**
