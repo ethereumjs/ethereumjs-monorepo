@@ -30,8 +30,17 @@ tape('EIP 3670 tests', (t) => {
 
   t.test('EOF > validOpcodes() tests', (st) => {
     st.ok(eof.validOpcodes(Buffer.from([0])), 'valid -- STOP ')
-    st.notOk(eof.validOpcodes(Buffer.from([0xaa])), 'invalid -- AA -- undefined opcode')
+    st.ok(eof.validOpcodes(Buffer.from([0xfe])), 'valid -- INVALID opcode')
     st.ok(eof.validOpcodes(Buffer.from([0x60, 0xaa, 0])), 'valid - PUSH1 AA STOP')
+
+    Array.from([0x00, 0xf3, 0xfd, 0xfe, 0xff]).forEach((opcode) => {
+      st.ok(
+        eof.validOpcodes(Buffer.from([0x60, 0xaa, opcode])),
+        `code ends with valid terminating instruction 0x${opcode.toString(16)}`
+      )
+    })
+
+    st.notOk(eof.validOpcodes(Buffer.from([0xaa])), 'invalid -- AA -- undefined opcode')
     st.notOk(
       eof.validOpcodes(Buffer.from([0x7f, 0xaa, 0])),
       'invalid -- PUSH32 AA STOP -- truncated push'
@@ -40,13 +49,10 @@ tape('EIP 3670 tests', (t) => {
       eof.validOpcodes(Buffer.from([0x61, 0xaa, 0])),
       'invalid -- PUSH2 AA STOP -- truncated push'
     )
-    st.notOk(eof.validOpcodes(Buffer.from([0x30])), 'invalid -- ADDRESS -- invalid terminal opcode')
-    Array.from([0x00, 0xf3, 0xfd, 0xfe, 0xff]).forEach((opcode) => {
-      st.ok(
-        eof.validOpcodes(Buffer.from([0x60, 0xaa, opcode])),
-        `code ends with valid terminating instruction 0x${opcode.toString(16)}`
-      )
-    })
+    st.notOk(
+      eof.validOpcodes(Buffer.from([0x60, 0xaa, 0x30])),
+      'invalid -- PUSH1 AA ADDRESS -- invalid terminal opcode'
+    )
     st.end()
   })
 
