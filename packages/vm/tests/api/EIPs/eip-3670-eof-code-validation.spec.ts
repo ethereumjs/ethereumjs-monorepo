@@ -3,7 +3,7 @@ import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Address, BN, privateToAddress } from 'ethereumjs-util'
-import { eof1ValidOpcodes } from '../../../src/evm/opcodes'
+import * as eof from '../../../src/evm/opcodes/eof'
 const pkey = Buffer.from('20'.repeat(32), 'hex')
 const GWEI = new BN('1000000000')
 const sender = new Address(privateToAddress(pkey))
@@ -16,21 +16,21 @@ tape('EIP 3670 tests', (t) => {
   })
 
   t.test('eof1ValidOpcodes() tests', (st) => {
-    st.ok(eof1ValidOpcodes(Buffer.from([0])), 'valid -- STOP ')
-    st.notOk(eof1ValidOpcodes(Buffer.from([0xaa])), 'invalid -- AA -- undefined opcode')
-    st.ok(eof1ValidOpcodes(Buffer.from([0x60, 0xaa, 0])), 'valid - PUSH1 AA STOP')
+    st.ok(eof.validOpcodes(Buffer.from([0])), 'valid -- STOP ')
+    st.notOk(eof.validOpcodes(Buffer.from([0xaa])), 'invalid -- AA -- undefined opcode')
+    st.ok(eof.validOpcodes(Buffer.from([0x60, 0xaa, 0])), 'valid - PUSH1 AA STOP')
     st.notOk(
-      eof1ValidOpcodes(Buffer.from([0x7f, 0xaa, 0])),
+      eof.validOpcodes(Buffer.from([0x7f, 0xaa, 0])),
       'invalid -- PUSH32 AA STOP -- truncated push'
     )
     st.notOk(
-      eof1ValidOpcodes(Buffer.from([0x61, 0xaa, 0])),
+      eof.validOpcodes(Buffer.from([0x61, 0xaa, 0])),
       'invalid -- PUSH2 AA STOP -- truncated push'
     )
-    st.notOk(eof1ValidOpcodes(Buffer.from([0x30])), 'invalid -- ADDRESS -- invalid terminal opcode')
+    st.notOk(eof.validOpcodes(Buffer.from([0x30])), 'invalid -- ADDRESS -- invalid terminal opcode')
     Array.from([0x00, 0xf3, 0xfd, 0xfe, 0xff]).forEach((opcode) => {
       st.ok(
-        eof1ValidOpcodes(Buffer.from([0x60, 0xaa, opcode])),
+        eof.validOpcodes(Buffer.from([0x60, 0xaa, opcode])),
         `code ends with valid terminating instruction 0x${opcode.toString(16)}`
       )
     })
