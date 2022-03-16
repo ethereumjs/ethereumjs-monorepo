@@ -16,7 +16,8 @@ import TxContext from './txContext'
 import Message from './message'
 import EEI from './eei'
 // eslint-disable-next-line
-import { eof1CodeAnalysis, eof1ValidOpcodes, short } from './opcodes/util'
+import { short } from './opcodes/util'
+import * as eof from './opcodes/eof'
 import { Log } from './types'
 import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
 
@@ -426,16 +427,13 @@ export default class EVM {
       totalGas.lte(message.gasLimit) &&
       (this._vm._allowUnlimitedContractSize || allowedCodeSize)
     ) {
-      if (
-        this._vm._common.isActivatedEIP(3541) &&
-        result.returnValue.slice(0, 1).equals(Buffer.from('EF', 'hex'))
-      ) {
+      if (this._vm._common.isActivatedEIP(3541) && result.returnValue[0] === eof.FORMAT) {
         if (!this._vm._common.isActivatedEIP(3540)) {
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
         }
         // Begin EOF1 contract code checks
         // EIP-3540 EOF1 header check
-        const eof1CodeAnalysisResults = eof1CodeAnalysis(result.returnValue)
+        const eof1CodeAnalysisResults = eof.codeAnalysis(result.returnValue)
         if (!eof1CodeAnalysisResults?.code) {
           result = {
             ...result,
@@ -448,7 +446,7 @@ export default class EVM {
           // index 7 (if no data section is present) or index 10 (if a data section is present)
           // in the bytecode of the contract
           if (
-            !eof1ValidOpcodes(
+            !eof.validOpcodes(
               result.returnValue.slice(codeStart, codeStart + eof1CodeAnalysisResults.code)
             )
           ) {
