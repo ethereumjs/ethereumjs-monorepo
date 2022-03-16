@@ -174,7 +174,7 @@ export default class VM extends AsyncEventEmitter {
   protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
   protected readonly _allowUnlimitedContractSize: boolean
-  // This opcode data is always set since `updateActiveOpcodes()` is called in the constructor
+  // This opcode data is always set since `getActiveOpcodes()` is called in the constructor
   protected _opcodes!: OpcodeList
   protected _handlers!: Map<number, OpHandler>
   protected _dynamicGasHandlers!: Map<number, AsyncDynamicGasHandler | SyncDynamicGasHandler>
@@ -269,11 +269,11 @@ export default class VM extends AsyncEventEmitter {
       })
     }
     this._common.on('hardforkChanged', () => {
-      this.updateActiveOpcodes()
+      this.getActiveOpcodes()
     })
 
     // Initialize the opcode data
-    this.updateActiveOpcodes()
+    this.getActiveOpcodes()
 
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
@@ -446,18 +446,11 @@ export default class VM extends AsyncEventEmitter {
    * available for VM execution
    */
   getActiveOpcodes(): OpcodeList {
-    return getOpcodesForHF(this._common, this._customOpcodes).opcodes
-  }
-
-  /**
-   * Update the opcode data
-   * TODO: make this EIP-friendly
-   */
-  updateActiveOpcodes() {
     const data = getOpcodesForHF(this._common, this._customOpcodes)
     this._opcodes = data.opcodes
     this._dynamicGasHandlers = data.dynamicGasHandlers
     this._handlers = data.handlers
+    return data.opcodes
   }
 
   /**
