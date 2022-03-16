@@ -5,7 +5,7 @@ import { ERROR, VmError } from '../exceptions'
 import Memory from './memory'
 import Stack from './stack'
 import EEI from './eei'
-import { Opcode, handlers, OpHandler, AsyncOpHandler } from './opcodes'
+import { Opcode, OpHandler, AsyncOpHandler } from './opcodes'
 import * as eof from './opcodes/eof'
 
 export interface InterpreterOpts {
