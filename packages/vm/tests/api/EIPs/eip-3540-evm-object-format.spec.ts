@@ -39,6 +39,7 @@ tape('EIP 3540 tests', (t) => {
     )
     st.end()
   })
+
   t.test('invalid object formats', async (st) => {
     const vm = new VM({ common })
     const account = await vm.stateManager.getAccount(sender)
@@ -112,6 +113,7 @@ tape('EIP 3540 tests', (t) => {
     st.ok(code.length === 0, 'code section with trailing bytes')
   })
 })
+
 tape('valid contract creation cases', async (st) => {
   const common = new Common({
     chain: Chain.Mainnet,
@@ -134,6 +136,7 @@ tape('valid contract creation cases', async (st) => {
   let created = result.createdAddress
   let code = await vm.stateManager.getContractCode(created!)
   st.ok(code.length > 0, 'code section with no data section')
+
   tx = FeeMarketEIP1559Transaction.fromTxData({
     data: '0x6BEF00010100010200010000AA600052600C6014F3',
     gasLimit: 100000000,

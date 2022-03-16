@@ -12,7 +12,7 @@ tape('EIP 3670 tests', (t) => {
   const common = new Common({
     chain: Chain.Mainnet,
     hardfork: Hardfork.London,
-    eips: [3540, 3541, 3670],
+    eips: [3540, 3670],
   })
 
   t.test('eof1ValidOpcodes() tests', (st) => {
@@ -36,6 +36,7 @@ tape('EIP 3670 tests', (t) => {
     })
     st.end()
   })
+
   t.test('valid contract code transactions', async (st) => {
     const vm = new VM({ common })
     const account = await vm.stateManager.getAccount(sender)
