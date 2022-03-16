@@ -202,8 +202,8 @@ export class FullSynchronizer extends Synchronizer {
     }
 
     blocks = blocks as Block[]
-    const first = new BN(blocks[0].header.number)
-    const last = new BN(blocks[blocks.length - 1].header.number)
+    const first = blocks[0].header.number
+    const last = blocks[blocks.length - 1].header.number
     const hash = short(blocks[0].hash())
     const baseFeeAdd = this.config.chainCommon.gteHardfork(Hardfork.London)
       ? `baseFee=${blocks[0].header.baseFeePerGas} `

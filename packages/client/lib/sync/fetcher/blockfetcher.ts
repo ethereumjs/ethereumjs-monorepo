@@ -78,7 +78,8 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
   process(job: Job<JobTask, Block[], Block>, result: Block[]) {
     if (result.length === job.task.count) {
       return result
-    } else if (result.length > 0 && result.length < job.task.count) {
+    }
+    if (result.length > 0 && result.length < job.task.count) {
       // Adopt the start block/header number from the remaining jobs
       // if the number of the results provided is lower than the expected count
       this.debug(
