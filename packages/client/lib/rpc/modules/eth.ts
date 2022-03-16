@@ -390,7 +390,9 @@ export class Eth {
         validators.object({
           fromBlock: validators.optional(validators.blockOption),
           toBlock: validators.optional(validators.blockOption),
-          address: validators.optional(validators.address),
+          address: validators.optional(
+            validators.either(validators.array(validators.address), validators.address)
+          ),
           topics: validators.optional(
             validators.array(
               validators.optional(
@@ -845,12 +847,15 @@ export class Eth {
           return toBuffer(t)
         }
       })
-      const logs = await this.receiptsManager.getLogs(
-        from,
-        to,
-        address ? toBuffer(address) : undefined,
-        formattedTopics
-      )
+      let addrs
+      if (address) {
+        if (Array.isArray(address)) {
+          addrs = address.map((a) => toBuffer(a))
+        } else {
+          addrs = [toBuffer(address)]
+        }
+      }
+      const logs = await this.receiptsManager.getLogs(from, to, addrs, formattedTopics)
       return await Promise.all(
         logs.map(({ log, block, tx, txIndex, logIndex }) =>
           jsonRpcLog(log, block, tx, txIndex, logIndex)

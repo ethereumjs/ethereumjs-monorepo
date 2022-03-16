@@ -110,11 +110,30 @@ tape(`${method}: call with valid arguments`, async (t) => {
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
-  // test filtering by address
+  // test filtering by single address
   req = params(method, [{ address: contractAddr1.toString() }])
   expectRes = (res: any) => {
-    const msg = 'should return the correct logs (filter by address)'
-    if (res.body.result.length === 10 && res.body.result[0].address === contractAddr1.toString()) {
+    const msg = 'should return the correct logs (filter by single address)'
+    if (
+      res.body.result.length === 10 &&
+      res.body.result.every((r: any) => r.address === contractAddr1.toString())
+    ) {
+      t.pass(msg)
+    } else {
+      t.fail(msg)
+    }
+  }
+  await baseRequest(t, server, req, 200, expectRes, false)
+
+  // test filtering by multiple addresses
+  const addresses = [contractAddr1.toString(), contractAddr2.toString()]
+  req = params(method, [{ address: addresses }])
+  expectRes = (res: any) => {
+    const msg = 'should return the correct logs (filter by multiple addresses)'
+    if (
+      res.body.result.length === 20 &&
+      res.body.result.every((r: any) => addresses.includes(r.address))
+    ) {
       t.pass(msg)
     } else {
       t.fail(msg)
