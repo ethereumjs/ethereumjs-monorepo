@@ -8,6 +8,7 @@ import { Peer } from '../../net/peer'
 import { Config } from '../../config'
 import { Event } from '../../types'
 import { Job } from './types'
+import { JobTask as BlockFetcherJobTask } from './blockfetcherbase'
 
 export interface FetcherOptions {
   /* Common chain config*/
@@ -205,9 +206,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   private success(job: Job<JobTask, JobResult, StorageItem>, result?: JobResult) {
     if (job.state !== 'active') return
-    const jobStr = `index=${job.index} first=${(job.task as any)?.first} count=${
-      (job.task as any)?.count
-    }`
+    const jobStr = this.jobStr(job, true)
     let reenqueue = false
     let resultSet = ''
     if (result === undefined) {
@@ -269,9 +268,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
 
       for (const jobItem of jobItems) {
         if (jobItem.state !== 'active') continue
-        const jobStr = `index=${jobItem.index} first=${(jobItem.task as any)?.first} count=${
-          (jobItem.task as any)?.count
-        }`
+        const jobStr = this.jobStr(jobItem, true)
         this.debug(
           `Failure - Re-enqueuing job ${jobStr} from peer id=${jobItem.peer?.id?.substr(
             0,
@@ -378,20 +375,22 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         cb()
       } catch (error: any) {
         this.config.logger.warn(`Error storing received block or header result: ${error}`)
-        if (error.message.includes('could not find parent header')) {
+        if (
+          error.message.includes('could not find parent header') &&
+          this.isBlockFetcherJobTask(jobItems[0].task)
+        ) {
           // Non-fatal error: ban peer and re-enqueue job.
           // Modify the first job so that it is enqueued from safeReorgDistance as most likely
           // this is because of a reorg.
           const stepBack = BN.min(
-            (jobItems[0].task as any).first.subn(1),
+            jobItems[0].task.first.subn(1),
             new BN(this.config.safeReorgDistance)
           ).toNumber()
-          this.debug(`Possible re-org, stepping back ${stepBack} blocks and requeuing jobs.`)
-          ;(jobItems[0].task as any).first = (jobItems[0].task as any).first.subn(stepBack)
-          ;(jobItems[0].task as any).count = ((jobItems[0].task as any).count as number) + stepBack
           this.debug(`Possible reorg, stepping back ${stepBack} blocks and requeuing jobs.`)
+          jobItems[0].task.first.isubn(stepBack)
+          jobItems[0].task.count += stepBack
           // This will requeue the jobs as we are marking this failure as non-fatal.
-          this.failure(job, error, false, true)
+          this.failure(jobItems, error, false, true)
           cb()
           return
         }
@@ -472,9 +471,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   expire(job: Job<JobTask, JobResult, StorageItem>) {
     job.state = 'expired'
-    const jobStr = `index=${job.index} first=${(job.task as any)?.first} count=${
-      (job.task as any)?.count
-    }`
+    const jobStr = this.jobStr(job, true)
     if (this.pool.contains(job.peer!)) {
       this.debug(`Task timed out for peer (banning) ${jobStr} ${job.peer}`)
       this.pool.ban(job.peer!, this.banTime)
@@ -486,5 +483,29 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
 
   async wait(delay?: number) {
     await new Promise((resolve) => setTimeout(resolve, delay ?? this.interval))
+  }
+
+  /**
+   * Job log format helper.
+   * @param job
+   * @param withIndex pass true to additionally output job.index
+   */
+  private jobStr(job: Job<JobTask, JobResult, StorageItem>, withIndex = false) {
+    let str = ''
+    if (withIndex) {
+      str += `index=${job.index} `
+    }
+    if (this.isBlockFetcherJobTask(job.task)) {
+      str += `first=${job.task.first} count=${job.task.count}`
+    }
+    return str
+  }
+
+  /**
+   * Helper to type guard job.task as {@link BlockFetcherJobTask}.
+   * @param task
+   */
+  private isBlockFetcherJobTask(task: JobTask | BlockFetcherJobTask): task is BlockFetcherJobTask {
+    return task && 'first' in task && 'count' in task
   }
 }
