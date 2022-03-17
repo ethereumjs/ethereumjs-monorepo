@@ -2,6 +2,8 @@ import { Block, HeaderData } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
 import { toBuffer, bufferToHex, rlp, BN } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
+import { Hardfork } from '@ethereumjs/common'
+
 import { middleware, validators } from '../validation'
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
 import { PendingBlock } from '../../miner'
@@ -180,7 +182,9 @@ const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolea
   const ttd = chain.config.chainCommon.hardforkTD()
   if (ttd === null) return false
   const blockTd = await chain.getTd(block.hash(), block.header.number)
-  if (!block.header.parentHash.toString()) {
+  // Block is terminal if its td >= ttd and and its parent td < ttd. In case the Genesis block
+  // has td >= ttd it is the terminal block
+  if (!block.isGenesis()) {
     const parentBlockTd = await chain.getTd(
       block.header.parentHash,
       block.header.number.sub(new BN(1))
@@ -320,12 +324,14 @@ export class Engine {
 
     try {
       const block = await findBlock(toBuffer(parentHash), this.validBlocks, this.chain)
-      const validTerminalBlock = await validateTerminalBlock(block, this.chain)
-      if (!validTerminalBlock) {
-        return {
-          status: Status.INVALID_TERMINAL_BLOCK,
-          validationError: null,
-          latestValidHash: null,
+      if (!block._common.hardforkGteHardfork(block._common.hardfork(), Hardfork.Merge)) {
+        const validTerminalBlock = await validateTerminalBlock(block, this.chain)
+        if (!validTerminalBlock) {
+          return {
+            status: Status.INVALID_TERMINAL_BLOCK,
+            validationError: null,
+            latestValidHash: null,
+          }
         }
       }
     } catch (error: any) {
@@ -466,16 +472,18 @@ export class Engine {
         return { payloadStatus, payloadId: null }
       }
     }
-    const validTerminalBlock = await validateTerminalBlock(headBlock, this.chain)
 
-    if (!validTerminalBlock) {
-      return {
-        payloadStatus: {
-          status: Status.INVALID_TERMINAL_BLOCK,
-          validationError: null,
-          latestValidHash: null,
-        },
-        payloadId: null,
+    if (!headBlock._common.hardforkGteHardfork(headBlock._common.hardfork(), Hardfork.Merge)) {
+      const validTerminalBlock = await validateTerminalBlock(headBlock, this.chain)
+      if (!validTerminalBlock) {
+        return {
+          payloadStatus: {
+            status: Status.INVALID_TERMINAL_BLOCK,
+            validationError: null,
+            latestValidHash: null,
+          },
+          payloadId: null,
+        }
       }
     }
 
