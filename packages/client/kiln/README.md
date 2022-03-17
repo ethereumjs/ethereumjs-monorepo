@@ -20,7 +20,7 @@ Please ensure you have Node 12.x+ installed.
 
 ### Run client
 
-1. `npm run client:start -- --datadir kiln/datadir --gethGenesis kiln/config/genesis.json --saveReceipts --rpc --rpcport=8545 --ws --rpcEngine --rpcEnginePort=8551 --bootnodes=165.232.180.230:30303`
+1. `npm run client:start -- --datadir kiln/datadir --gethGenesis kiln/config/genesis.json --saveReceipts --rpc --rpcport=8545 --ws --rpcEngine --rpcEnginePort=8551 --bootnodes=164.92.130.5:30303,138.68.66.103:30303,165.232.180.230:30303,164.92.140.200:30303`
 
 Starting the client will write a `kiln/datadir/jwtsecret` file with a randomly generated secret to be used in conjunction with a CL client. This secret will be used to authenticate the `engine_*` api requests (hosted at port `8551`) from the CL. In case you want to host `engine_*` without auth, pass `--rpcEngineAuth false` as extra argument in the above run command.
 
