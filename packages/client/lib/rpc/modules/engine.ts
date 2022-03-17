@@ -173,6 +173,25 @@ const validHash = async (
   return bufferToHex(hash)
 }
 
+/**
+ *  Validate that the head block sent is a not a PoW block
+ */
+const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolean> => {
+  const ttd = chain.config.chainCommon.hardforkTD()
+  if (ttd === null) return false
+  const blockTd = await chain.getTd(block.hash(), block.header.number)
+  if (!block.header.parentHash.toString()) {
+    const parentBlockTd = await chain.getTd(
+      block.header.parentHash,
+      block.header.number.sub(new BN(1))
+    )
+
+    return blockTd.gte(ttd) && parentBlockTd.lt(ttd)
+  }
+
+  return blockTd.gte(ttd)
+}
+
 type UnprefixedBlockHash = string
 type ValidBlocks = Map<UnprefixedBlockHash, Block>
 
@@ -300,7 +319,15 @@ export class Engine {
     const common = this.config.chainCommon
 
     try {
-      await findBlock(toBuffer(parentHash), this.validBlocks, this.chain)
+      const block = await findBlock(toBuffer(parentHash), this.validBlocks, this.chain)
+      const validTerminalBlock = await validateTerminalBlock(block, this.chain)
+      if (!validTerminalBlock) {
+        return {
+          status: Status.INVALID_TERMINAL_BLOCK,
+          validationError: null,
+          latestValidHash: null,
+        }
+      }
     } catch (error: any) {
       // TODO if we can't find the parent and the block doesn't extend the canonical chain,
       // return ACCEPTED when optimistic sync is supported to store the block for later processing
@@ -411,7 +438,7 @@ export class Engine {
    *        finalizedBlockHash - block hash of the most recent finalized block
    *   2. An object or null - instance of {@link PayloadAttributesV1}
    * @returns An object:
-   *   1. payloadStatus: {@link PayloadStatus1}; values of the `status` field in the context of this method are restricted to the following subset::
+   *   1. payloadStatus: {@link PayloadStatusV1}; values of the `status` field in the context of this method are restricted to the following subset::
    *        VALID
    *        INVALID
    *        SYNCING
@@ -436,6 +463,18 @@ export class Engine {
         const latestValidHash = bufferToHex(this.chain.headers.latest!.hash())
         const payloadStatus = { status: Status.SYNCING, latestValidHash, validationError: null }
         return { payloadStatus, payloadId: null }
+      }
+    }
+    const validTerminalBlock = await validateTerminalBlock(headBlock, this.chain)
+
+    if (!validTerminalBlock) {
+      return {
+        payloadStatus: {
+          status: Status.INVALID_TERMINAL_BLOCK,
+          validationError: null,
+          latestValidHash: null,
+        },
+        payloadId: null,
       }
     }
 
