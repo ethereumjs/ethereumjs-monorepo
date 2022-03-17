@@ -472,7 +472,7 @@ export class Engine {
       }
     }
 
-    if (!headBlock._common.hardforkGteHardfork(headBlock._common.hardfork(), Hardfork.Merge)) {
+    if (!headBlock._common.gteHardfork(Hardfork.Merge)) {
       const validTerminalBlock = await validateTerminalBlock(headBlock, this.chain)
       if (!validTerminalBlock) {
         return {
