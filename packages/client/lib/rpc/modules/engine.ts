@@ -256,7 +256,16 @@ export class Engine {
 
     this.exchangeTransitionConfigurationV1 = middleware(
       this.exchangeTransitionConfigurationV1.bind(this),
-      0
+      1,
+      [
+        [
+          validators.object({
+            terminalTotalDifficulty: validators.hex,
+            terminalBlockHash: validators.hex,
+            terminalBlockNumber: validators.hex,
+          }),
+        ],
+      ]
     )
   }
 
