@@ -1,11 +1,14 @@
 import { debug as createDebugLogger, Debugger } from 'debug'
 import { Readable, Writable } from 'stream'
 import Heap from 'qheap'
+import { BN } from 'ethereumjs-util'
+
 import { PeerPool } from '../../net/peerpool'
 import { Peer } from '../../net/peer'
 import { Config } from '../../config'
 import { Event } from '../../types'
 import { Job } from './types'
+import { JobTask as BlockFetcherJobTask } from './blockfetcherbase'
 
 export interface FetcherOptions {
   /* Common chain config*/
@@ -139,8 +142,12 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * Enqueue job
    * @param job
    */
-  enqueue(job: Job<JobTask, JobResult, StorageItem>) {
+  enqueue(job: Job<JobTask, JobResult, StorageItem>, dequeued?: boolean) {
     if (this.running) {
+      // If the job was already dequeued, for example coming from writer pipe, processed
+      // needs to be decreased
+      if (dequeued) this.processed--
+
       this.in.insert({
         ...job,
         time: Date.now(),
@@ -199,9 +206,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   private success(job: Job<JobTask, JobResult, StorageItem>, result?: JobResult) {
     if (job.state !== 'active') return
-    const jobStr = `index=${job.index} first=${(job.task as any)?.first} count=${
-      (job.task as any)?.count
-    }`
+    const jobStr = this.jobStr(job, true)
     let reenqueue = false
     let resultSet = ''
     if (result === undefined) {
@@ -250,30 +255,36 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   private failure(
     job: Job<JobTask, JobResult, StorageItem> | Job<JobTask, JobResult, StorageItem>[],
     error?: Error,
-    ban: boolean = true
+    irrecoverable?: boolean,
+    dequeued?: boolean
   ) {
     const jobItems = job instanceof Array ? job : [job]
-    jobItems[0].peer!.idle = true
-    if (ban) this.pool.ban(jobItems[0].peer!, this.banTime)
+    if (irrecoverable) {
+      this.pool.ban(jobItems[0].peer!, this.banTime)
+    } else {
+      void this.wait().then(() => {
+        jobItems[0].peer!.idle = true
+      })
 
-    for (const jobItem of jobItems) {
-      if (jobItem.state !== 'active') continue
-      const jobStr = `index=${jobItem.index} first=${(jobItem.task as any)?.first} count=${
-        (jobItem.task as any)?.count
-      }`
-      this.debug(
-        `Re-enqueuing job ${jobStr} from peer id=${jobItem.peer?.id?.substr(
-          0,
-          8
-        )} (error: ${error}).`
-      )
-      this.enqueue(jobItem)
+      for (const jobItem of jobItems) {
+        if (jobItem.state !== 'active') continue
+        const jobStr = this.jobStr(jobItem, true)
+        this.debug(
+          `Failure - Re-enqueuing job ${jobStr} from peer id=${jobItem.peer?.id?.substr(
+            0,
+            8
+          )} (error: ${error}).`
+        )
+        // If the job has been dequeued, then the processed count needs to be decreased
+        this.enqueue(jobItem, dequeued)
+      }
+
+      this.next()
     }
 
     if (error) {
-      this.error(error, jobItems[0])
+      this.error(error, jobItems[0], irrecoverable)
     }
-    this.next()
   }
 
   /**
@@ -281,13 +292,16 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   next() {
     const job = this.in.peek()
-
     if (!job) {
       this.debug(`No job found on next task, skip next job execution.`)
       return false
     }
     if (this._readableState!.length > this.maxQueue) {
-      this.debug(`Readable state length exceeds max queue size, skip next job execution.`)
+      this.debug(
+        `Readable state length=${this._readableState!.length} exceeds max queue size=${
+          this.maxQueue
+        }, skip next job execution.`
+      )
       return false
     }
     if (job.index > this.processed + this.maxQueue) {
@@ -331,11 +345,15 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @param error error object
    * @param job task
    */
-  error(error: Error, job?: Job<JobTask, JobResult, StorageItem>) {
+  error(error: Error, job?: Job<JobTask, JobResult, StorageItem>, irrecoverable?: boolean) {
     if (this.running) {
       this.config.events.emit(Event.SYNC_FETCHER_ERROR, error, job?.task, job?.peer)
     }
-    this.errored = error
+    if (irrecoverable) {
+      this.running = false
+      this.errored = error
+      this.clear()
+    }
   }
 
   /**
@@ -348,8 +366,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       encoding: string | null,
       cb: Function
     ) => {
+      const jobItems = job instanceof Array ? job : [job]
       try {
-        const jobItems = job instanceof Array ? job : [job]
         for (const jobItem of jobItems) {
           await this.store(jobItem.result as StorageItem[])
         }
@@ -357,10 +375,22 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         cb()
       } catch (error: any) {
         this.config.logger.warn(`Error storing received block or header result: ${error}`)
-        if (error.message.includes('could not find parent header')) {
-          // non-fatal error: ban peer and re-enqueue job
-          this.clear()
-          this.failure(job, error)
+        if (
+          error.message.includes('could not find parent header') &&
+          this.isBlockFetcherJobTask(jobItems[0].task)
+        ) {
+          // Non-fatal error: ban peer and re-enqueue job.
+          // Modify the first job so that it is enqueued from safeReorgDistance as most likely
+          // this is because of a reorg.
+          const stepBack = BN.min(
+            jobItems[0].task.first.subn(1),
+            new BN(this.config.safeReorgDistance)
+          ).toNumber()
+          this.debug(`Possible reorg, stepping back ${stepBack} blocks and requeuing jobs.`)
+          jobItems[0].task.first.isubn(stepBack)
+          jobItems[0].task.count += stepBack
+          // This will requeue the jobs as we are marking this failure as non-fatal.
+          this.failure(jobItems, error, false, true)
           cb()
           return
         }
@@ -393,8 +423,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         this.running = false
       })
       .on('error', (error: Error) => {
-        this.error(error)
-        this.running = false
+        this.error(error, undefined, true)
         writer.destroy()
       })
     this.debug(`Setup writer pipe.`)
@@ -442,9 +471,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   expire(job: Job<JobTask, JobResult, StorageItem>) {
     job.state = 'expired'
-    const jobStr = `index=${job.index} first=${(job.task as any)?.first} count=${
-      (job.task as any)?.count
-    }`
+    const jobStr = this.jobStr(job, true)
     if (this.pool.contains(job.peer!)) {
       this.debug(`Task timed out for peer (banning) ${jobStr} ${job.peer}`)
       this.pool.ban(job.peer!, this.banTime)
@@ -456,5 +483,29 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
 
   async wait(delay?: number) {
     await new Promise((resolve) => setTimeout(resolve, delay ?? this.interval))
+  }
+
+  /**
+   * Job log format helper.
+   * @param job
+   * @param withIndex pass true to additionally output job.index
+   */
+  private jobStr(job: Job<JobTask, JobResult, StorageItem>, withIndex = false) {
+    let str = ''
+    if (withIndex) {
+      str += `index=${job.index} `
+    }
+    if (this.isBlockFetcherJobTask(job.task)) {
+      str += `first=${job.task.first} count=${job.task.count}`
+    }
+    return str
+  }
+
+  /**
+   * Helper to type guard job.task as {@link BlockFetcherJobTask}.
+   * @param task
+   */
+  private isBlockFetcherJobTask(task: JobTask | BlockFetcherJobTask): task is BlockFetcherJobTask {
+    return task && 'first' in task && 'count' in task
   }
 }

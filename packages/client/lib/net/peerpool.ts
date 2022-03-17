@@ -24,8 +24,12 @@ export class PeerPool {
   private opened: boolean
   public running: boolean
 
+  /**
+   * Default status check interval (in ms)
+   */
+  private DEFAULT_STATUS_CHECK_INTERVAL = 20000
+
   private _statusCheckInterval: NodeJS.Timeout | undefined /* global NodeJS */
-  private DEFAULT_STATUS_CHECK_INTERVAL = 20 /* default checks in secs */
   private _reconnectTimeout: NodeJS.Timeout | undefined
 
   /**
@@ -78,7 +82,7 @@ export class PeerPool {
     this._statusCheckInterval = setInterval(
       // eslint-disable-next-line @typescript-eslint/await-thenable
       await this._statusCheck.bind(this),
-      this.DEFAULT_STATUS_CHECK_INTERVAL * 1000
+      this.DEFAULT_STATUS_CHECK_INTERVAL
     )
 
     this.running = true
