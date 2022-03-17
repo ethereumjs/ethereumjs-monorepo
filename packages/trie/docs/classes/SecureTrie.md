@@ -1,8 +1,6 @@
-[merkle-patricia-tree](../README.md) / [Exports](../modules.md) / [secure](../modules/secure.md) / SecureTrie
+[merkle-patricia-tree](../README.md) / SecureTrie
 
 # Class: SecureTrie
-
-[secure](../modules/secure.md).SecureTrie
 
 You can create a secure Trie where the keys are automatically hashed
 using **keccak256** by using `import { SecureTrie as Trie } from 'merkle-patricia-tree'`.
@@ -10,7 +8,7 @@ It has the same methods and constructor as `Trie`.
 
 ## Hierarchy
 
-- [`CheckpointTrie`](checkpointTrie.CheckpointTrie.md)
+- [`CheckpointTrie`](CheckpointTrie.md)
 
   ↳ **`SecureTrie`**
 
@@ -18,38 +16,39 @@ It has the same methods and constructor as `Trie`.
 
 ### Constructors
 
-- [constructor](secure.SecureTrie.md#constructor)
+- [constructor](SecureTrie.md#constructor)
 
 ### Properties
 
-- [EMPTY\_TRIE\_ROOT](secure.SecureTrie.md#empty_trie_root)
-- [db](secure.SecureTrie.md#db)
+- [EMPTY\_TRIE\_ROOT](SecureTrie.md#empty_trie_root)
+- [db](SecureTrie.md#db)
 
 ### Accessors
 
-- [isCheckpoint](secure.SecureTrie.md#ischeckpoint)
-- [root](secure.SecureTrie.md#root)
+- [isCheckpoint](SecureTrie.md#ischeckpoint)
+- [root](SecureTrie.md#root)
 
 ### Methods
 
-- [batch](secure.SecureTrie.md#batch)
-- [checkRoot](secure.SecureTrie.md#checkroot)
-- [checkpoint](secure.SecureTrie.md#checkpoint)
-- [commit](secure.SecureTrie.md#commit)
-- [copy](secure.SecureTrie.md#copy)
-- [createReadStream](secure.SecureTrie.md#createreadstream)
-- [del](secure.SecureTrie.md#del)
-- [findPath](secure.SecureTrie.md#findpath)
-- [get](secure.SecureTrie.md#get)
-- [lookupNode](secure.SecureTrie.md#lookupnode)
-- [put](secure.SecureTrie.md#put)
-- [revert](secure.SecureTrie.md#revert)
-- [setRoot](secure.SecureTrie.md#setroot)
-- [walkTrie](secure.SecureTrie.md#walktrie)
-- [createProof](secure.SecureTrie.md#createproof)
-- [fromProof](secure.SecureTrie.md#fromproof)
-- [prove](secure.SecureTrie.md#prove)
-- [verifyProof](secure.SecureTrie.md#verifyproof)
+- [batch](SecureTrie.md#batch)
+- [checkRoot](SecureTrie.md#checkroot)
+- [checkpoint](SecureTrie.md#checkpoint)
+- [commit](SecureTrie.md#commit)
+- [copy](SecureTrie.md#copy)
+- [createReadStream](SecureTrie.md#createreadstream)
+- [del](SecureTrie.md#del)
+- [findPath](SecureTrie.md#findpath)
+- [get](SecureTrie.md#get)
+- [lookupNode](SecureTrie.md#lookupnode)
+- [put](SecureTrie.md#put)
+- [revert](SecureTrie.md#revert)
+- [setRoot](SecureTrie.md#setroot)
+- [walkTrie](SecureTrie.md#walktrie)
+- [createProof](SecureTrie.md#createproof)
+- [fromProof](SecureTrie.md#fromproof)
+- [prove](SecureTrie.md#prove)
+- [verifyProof](SecureTrie.md#verifyproof)
+- [verifyRangeProof](SecureTrie.md#verifyrangeproof)
 
 ## Constructors
 
@@ -67,7 +66,7 @@ test
 
 #### Overrides
 
-[CheckpointTrie](checkpointTrie.CheckpointTrie.md).[constructor](checkpointTrie.CheckpointTrie.md#constructor)
+[CheckpointTrie](CheckpointTrie.md).[constructor](CheckpointTrie.md#constructor)
 
 #### Defined in
 
@@ -83,11 +82,11 @@ The root for an empty trie
 
 #### Inherited from
 
-[CheckpointTrie](checkpointTrie.CheckpointTrie.md).[EMPTY_TRIE_ROOT](checkpointTrie.CheckpointTrie.md#empty_trie_root)
+[CheckpointTrie](CheckpointTrie.md).[EMPTY_TRIE_ROOT](CheckpointTrie.md#empty_trie_root)
 
 #### Defined in
 
-[baseTrie.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L44)
+[baseTrie.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L45)
 
 ___
 
@@ -99,7 +98,7 @@ The backend DB
 
 #### Inherited from
 
-[CheckpointTrie](checkpointTrie.CheckpointTrie.md).[db](checkpointTrie.CheckpointTrie.md#db)
+[CheckpointTrie](CheckpointTrie.md).[db](CheckpointTrie.md#db)
 
 #### Defined in
 
@@ -117,6 +116,10 @@ Is the trie during a checkpoint phase?
 
 `boolean`
 
+#### Inherited from
+
+CheckpointTrie.isCheckpoint
+
 #### Defined in
 
 [checkpointTrie.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/checkpointTrie.ts#L18)
@@ -133,9 +136,13 @@ Gets the current root of the `trie`
 
 `Buffer`
 
+#### Inherited from
+
+CheckpointTrie.root
+
 #### Defined in
 
-[baseTrie.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L86)
+[baseTrie.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L87)
 
 • `set` **root**(`value`): `void`
 
@@ -151,9 +158,13 @@ Sets the current root of the `trie`
 
 `void`
 
+#### Inherited from
+
+CheckpointTrie.root
+
 #### Defined in
 
-[baseTrie.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L75)
+[baseTrie.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L76)
 
 ## Methods
 
@@ -186,11 +197,11 @@ await trie.batch(ops)
 
 #### Inherited from
 
-[CheckpointTrie](checkpointTrie.CheckpointTrie.md).[batch](checkpointTrie.CheckpointTrie.md#batch)
+[CheckpointTrie](CheckpointTrie.md).[batch](CheckpointTrie.md#batch)
 
 #### Defined in
 
-[baseTrie.ts:634](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L634)
+[baseTrie.ts:635](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L635)
 
 ___
 
@@ -212,11 +223,11 @@ Checks if a given root exists.
 
 #### Inherited from
 
-[CheckpointTrie](checkpointTrie.CheckpointTrie.md).[checkRoot](checkpointTrie.CheckpointTrie.md#checkroot)
+[CheckpointTrie](CheckpointTrie.md).[checkRoot](CheckpointTrie.md#checkroot)
 
 #### Defined in
 
-[baseTrie.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L104)
+[baseTrie.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L105)
 
 ___
 
@@ -233,7 +244,7 @@ After this is called, all changes can be reverted until `commit` is called.
 
 #### Inherited from
 
-[CheckpointTrie](checkpointTrie.CheckpointTrie.md).[checkpoint](checkpointTrie.CheckpointTrie.md#checkpoint)
+[CheckpointTrie](CheckpointTrie.md).[checkpoint](CheckpointTrie.md#checkpoint)
 
 #### Defined in
 
@@ -256,7 +267,7 @@ If nested, only sets the parent checkpoint as current checkpoint.
 
 #### Inherited from
 
-[CheckpointTrie](checkpointTrie.CheckpointTrie.md).[commit](checkpointTrie.CheckpointTrie.md#commit)
+[CheckpointTrie](CheckpointTrie.md).[commit](CheckpointTrie.md#commit)
 
 #### Defined in
 
@@ -266,7 +277,7 @@ ___
 
 ### copy
 
-▸ **copy**(`includeCheckpoints?`): [`SecureTrie`](secure.SecureTrie.md)
+▸ **copy**(`includeCheckpoints?`): [`SecureTrie`](SecureTrie.md)
 
 Returns a copy of the underlying trie with the interface of SecureTrie.
 
@@ -278,15 +289,15 @@ Returns a copy of the underlying trie with the interface of SecureTrie.
 
 #### Returns
 
-[`SecureTrie`](secure.SecureTrie.md)
+[`SecureTrie`](SecureTrie.md)
 
 #### Overrides
 
-[CheckpointTrie](checkpointTrie.CheckpointTrie.md).[copy](checkpointTrie.CheckpointTrie.md#copy)
+[CheckpointTrie](CheckpointTrie.md).[copy](CheckpointTrie.md#copy)
 
 #### Defined in
 
-[secure.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/secure.ts#L90)
+[secure.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/secure.ts#L111)
 
 ___
 
@@ -304,11 +315,11 @@ Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#str
 
 #### Inherited from
 
-[CheckpointTrie](checkpointTrie.CheckpointTrie.md).[createReadStream](checkpointTrie.CheckpointTrie.md#createreadstream)
+[CheckpointTrie](CheckpointTrie.md).[createReadStream](CheckpointTrie.md#createreadstream)
 
 #### Defined in
 
-[baseTrie.ts:726](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L726)
+[baseTrie.ts:748](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L748)
 
 ___
 
@@ -330,7 +341,7 @@ Deletes a value given a `key`.
 
 #### Overrides
 
-[CheckpointTrie](checkpointTrie.CheckpointTrie.md).[del](checkpointTrie.CheckpointTrie.md#del)
+[CheckpointTrie](CheckpointTrie.md).[del](CheckpointTrie.md#del)
 
 #### Defined in
 
@@ -358,11 +369,11 @@ It returns a `stack` of nodes to the closest node.
 
 #### Inherited from
 
-[CheckpointTrie](checkpointTrie.CheckpointTrie.md).[findPath](checkpointTrie.CheckpointTrie.md#findpath)
+[CheckpointTrie](CheckpointTrie.md).[findPath](CheckpointTrie.md#findpath)
 
 #### Defined in
 
-[baseTrie.ts:186](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L186)
+[baseTrie.ts:187](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L187)
 
 ___
 
@@ -386,7 +397,7 @@ A Promise that resolves to `Buffer` if a value was found or `null` if no value w
 
 #### Overrides
 
-[CheckpointTrie](checkpointTrie.CheckpointTrie.md).[get](checkpointTrie.CheckpointTrie.md#get)
+[CheckpointTrie](CheckpointTrie.md).[get](CheckpointTrie.md#get)
 
 #### Defined in
 
@@ -412,11 +423,11 @@ Retrieves a node from db by hash.
 
 #### Inherited from
 
-[CheckpointTrie](checkpointTrie.CheckpointTrie.md).[lookupNode](checkpointTrie.CheckpointTrie.md#lookupnode)
+[CheckpointTrie](CheckpointTrie.md).[lookupNode](CheckpointTrie.md#lookupnode)
 
 #### Defined in
 
-[baseTrie.ts:284](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L284)
+[baseTrie.ts:285](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L285)
 
 ___
 
@@ -440,7 +451,7 @@ For a falsey value, use the original key to avoid double hashing the key.
 
 #### Overrides
 
-[CheckpointTrie](checkpointTrie.CheckpointTrie.md).[put](checkpointTrie.CheckpointTrie.md#put)
+[CheckpointTrie](CheckpointTrie.md).[put](CheckpointTrie.md#put)
 
 #### Defined in
 
@@ -462,7 +473,7 @@ parent checkpoint as current.
 
 #### Inherited from
 
-[CheckpointTrie](checkpointTrie.CheckpointTrie.md).[revert](checkpointTrie.CheckpointTrie.md#revert)
+[CheckpointTrie](CheckpointTrie.md).[revert](CheckpointTrie.md#revert)
 
 #### Defined in
 
@@ -475,7 +486,7 @@ ___
 ▸ **setRoot**(`value?`): `void`
 
 This method is deprecated.
-Please use [Trie.root](baseTrie.Trie.md#root) instead.
+Please use {@link Trie.root} instead.
 
 **`deprecated`**
 
@@ -491,11 +502,11 @@ Please use [Trie.root](baseTrie.Trie.md#root) instead.
 
 #### Inherited from
 
-[CheckpointTrie](checkpointTrie.CheckpointTrie.md).[setRoot](checkpointTrie.CheckpointTrie.md#setroot)
+[CheckpointTrie](CheckpointTrie.md).[setRoot](CheckpointTrie.md#setroot)
 
 #### Defined in
 
-[baseTrie.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L97)
+[baseTrie.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L98)
 
 ___
 
@@ -510,7 +521,7 @@ Walks a trie until finished.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `root` | `Buffer` |  |
-| `onFound` | [`FoundNodeFunction`](../modules/baseTrie.md#foundnodefunction) | callback to call when a node is found. This schedules new tasks. If no tasks are available, the Promise resolves. |
+| `onFound` | `FoundNodeFunction` | callback to call when a node is found. This schedules new tasks. If no tasks are available, the Promise resolves. |
 
 #### Returns
 
@@ -520,34 +531,34 @@ Resolves when finished walking trie.
 
 #### Inherited from
 
-[CheckpointTrie](checkpointTrie.CheckpointTrie.md).[walkTrie](checkpointTrie.CheckpointTrie.md#walktrie)
+[CheckpointTrie](CheckpointTrie.md).[walkTrie](CheckpointTrie.md#walktrie)
 
 #### Defined in
 
-[baseTrie.ts:257](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L257)
+[baseTrie.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L258)
 
 ___
 
 ### createProof
 
-▸ `Static` **createProof**(`trie`, `key`): `Promise`<[`Proof`](../modules/baseTrie.md#proof)\>
+▸ `Static` **createProof**(`trie`, `key`): `Promise`<`Proof`\>
 
-Creates a proof that can be verified using [SecureTrie.verifyProof](secure.SecureTrie.md#verifyproof).
+Creates a proof that can be verified using [SecureTrie.verifyProof](SecureTrie.md#verifyproof).
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `trie` | [`SecureTrie`](secure.SecureTrie.md) |
+| `trie` | [`SecureTrie`](SecureTrie.md) |
 | `key` | `Buffer` |
 
 #### Returns
 
-`Promise`<[`Proof`](../modules/baseTrie.md#proof)\>
+`Promise`<`Proof`\>
 
 #### Overrides
 
-[CheckpointTrie](checkpointTrie.CheckpointTrie.md).[createProof](checkpointTrie.CheckpointTrie.md#createproof)
+[CheckpointTrie](CheckpointTrie.md).[createProof](CheckpointTrie.md#createproof)
 
 #### Defined in
 
@@ -557,7 +568,7 @@ ___
 
 ### fromProof
 
-▸ `Static` **fromProof**(`proof`, `trie?`): `Promise`<[`Trie`](baseTrie.Trie.md)\>
+▸ `Static` **fromProof**(`proof`, `trie?`): `Promise`<[`BaseTrie`](BaseTrie.md)\>
 
 Saves the nodes from a proof into the trie. If no trie is provided a new one wil be instantiated.
 
@@ -565,28 +576,28 @@ Saves the nodes from a proof into the trie. If no trie is provided a new one wil
 
 | Name | Type |
 | :------ | :------ |
-| `proof` | [`Proof`](../modules/baseTrie.md#proof) |
-| `trie?` | [`Trie`](baseTrie.Trie.md) |
+| `proof` | `Proof` |
+| `trie?` | [`BaseTrie`](BaseTrie.md) |
 
 #### Returns
 
-`Promise`<[`Trie`](baseTrie.Trie.md)\>
+`Promise`<[`BaseTrie`](BaseTrie.md)\>
 
 #### Inherited from
 
-[CheckpointTrie](checkpointTrie.CheckpointTrie.md).[fromProof](checkpointTrie.CheckpointTrie.md#fromproof)
+[CheckpointTrie](CheckpointTrie.md).[fromProof](CheckpointTrie.md#fromproof)
 
 #### Defined in
 
-[baseTrie.ts:652](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L652)
+[baseTrie.ts:653](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/baseTrie.ts#L653)
 
 ___
 
 ### prove
 
-▸ `Static` **prove**(`trie`, `key`): `Promise`<[`Proof`](../modules/baseTrie.md#proof)\>
+▸ `Static` **prove**(`trie`, `key`): `Promise`<`Proof`\>
 
-prove has been renamed to [SecureTrie.createProof](secure.SecureTrie.md#createproof).
+prove has been renamed to [SecureTrie.createProof](SecureTrie.md#createproof).
 
 **`deprecated`**
 
@@ -594,16 +605,16 @@ prove has been renamed to [SecureTrie.createProof](secure.SecureTrie.md#createpr
 
 | Name | Type |
 | :------ | :------ |
-| `trie` | [`SecureTrie`](secure.SecureTrie.md) |
+| `trie` | [`SecureTrie`](SecureTrie.md) |
 | `key` | `Buffer` |
 
 #### Returns
 
-`Promise`<[`Proof`](../modules/baseTrie.md#proof)\>
+`Promise`<`Proof`\>
 
 #### Overrides
 
-[CheckpointTrie](checkpointTrie.CheckpointTrie.md).[prove](checkpointTrie.CheckpointTrie.md#prove)
+[CheckpointTrie](CheckpointTrie.md).[prove](CheckpointTrie.md#prove)
 
 #### Defined in
 
@@ -625,7 +636,7 @@ Verifies a proof.
 | :------ | :------ |
 | `rootHash` | `Buffer` |
 | `key` | `Buffer` |
-| `proof` | [`Proof`](../modules/baseTrie.md#proof) |
+| `proof` | `Proof` |
 
 #### Returns
 
@@ -635,8 +646,39 @@ The value from the key.
 
 #### Overrides
 
-[CheckpointTrie](checkpointTrie.CheckpointTrie.md).[verifyProof](checkpointTrie.CheckpointTrie.md#verifyproof)
+[CheckpointTrie](CheckpointTrie.md).[verifyProof](CheckpointTrie.md#verifyproof)
 
 #### Defined in
 
 [secure.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/secure.ts#L81)
+
+___
+
+### verifyRangeProof
+
+▸ `Static` **verifyRangeProof**(`rootHash`, `firstKey`, `lastKey`, `keys`, `values`, `proof`): `Promise`<`boolean`\>
+
+Verifies a range proof.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `rootHash` | `Buffer` |
+| `firstKey` | ``null`` \| `Buffer` |
+| `lastKey` | ``null`` \| `Buffer` |
+| `keys` | `Buffer`[] |
+| `values` | `Buffer`[] |
+| `proof` | ``null`` \| `Buffer`[] |
+
+#### Returns
+
+`Promise`<`boolean`\>
+
+#### Overrides
+
+[CheckpointTrie](CheckpointTrie.md).[verifyRangeProof](CheckpointTrie.md#verifyrangeproof)
+
+#### Defined in
+
+[secure.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/secure.ts#L89)
