@@ -182,18 +182,17 @@ const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolea
   const ttd = chain.config.chainCommon.hardforkTD()
   if (ttd === null) return false
   const blockTd = await chain.getTd(block.hash(), block.header.number)
-  // Block is terminal if its td >= ttd and and its parent td < ttd. In case the Genesis block
-  // has td >= ttd it is the terminal block
-  if (!block.isGenesis()) {
-    const parentBlockTd = await chain.getTd(
-      block.header.parentHash,
-      block.header.number.sub(new BN(1))
-    )
 
-    return blockTd.gte(ttd) && parentBlockTd.lt(ttd)
-  }
+  // Block is terminal if its td >= ttd and its parent td < ttd.
+  // In case the Genesis block has td >= ttd it is the terminal block
+  if (block.isGenesis()) return blockTd.gte(ttd)
 
-  return blockTd.gte(ttd)
+  const parentBlockTd = await chain.getTd(
+    block.header.parentHash,
+    block.header.number.sub(new BN(1))
+  )
+
+  return blockTd.gte(ttd) && parentBlockTd.lt(ttd)
 }
 
 type UnprefixedBlockHash = string
