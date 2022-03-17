@@ -176,7 +176,7 @@ const validHash = async (
 }
 
 /**
- *  Validate that the head block sent is a not a PoW block
+ *  Validate that the block satisfies post-merge conditions.
  */
 const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolean> => {
   const ttd = chain.config.chainCommon.hardforkTD()
