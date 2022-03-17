@@ -179,19 +179,16 @@ const validHash = async (
  *  Validate that the block satisfies post-merge conditions.
  */
 const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolean> => {
-  const ttd = chain.config.chainCommon.hardforkTD()
-  if (ttd === null) return false
+  const hf = chain.config.chainCommon.hardforks().find((h) => h.name === Hardfork.Merge)
+  if (!(hf && hf.td)) return false
+  const ttd = new BN(hf.td)
   const blockTd = await chain.getTd(block.hash(), block.header.number)
 
   // Block is terminal if its td >= ttd and its parent td < ttd.
   // In case the Genesis block has td >= ttd it is the terminal block
   if (block.isGenesis()) return blockTd.gte(ttd)
 
-  const parentBlockTd = await chain.getTd(
-    block.header.parentHash,
-    block.header.number.sub(new BN(1))
-  )
-
+  const parentBlockTd = await chain.getTd(block.header.parentHash, block.header.number.subn(1))
   return blockTd.gte(ttd) && parentBlockTd.lt(ttd)
 }
 
