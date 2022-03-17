@@ -323,7 +323,7 @@ export class Engine {
 
     try {
       const block = await findBlock(toBuffer(parentHash), this.validBlocks, this.chain)
-      if (!block._common.hardforkGteHardfork(block._common.hardfork(), Hardfork.Merge)) {
+      if (!block._common.gteHardfork(Hardfork.Merge)) {
         const validTerminalBlock = await validateTerminalBlock(block, this.chain)
         if (!validTerminalBlock) {
           return {
