@@ -442,6 +442,7 @@ export class Engine {
    *        VALID
    *        INVALID
    *        SYNCING
+   *        INVALID_TERMINAL_BLOCK
    *   2. payloadId: DATA|null - 8 Bytes - identifier of the payload build process or `null`
    */
   async forkchoiceUpdatedV1(

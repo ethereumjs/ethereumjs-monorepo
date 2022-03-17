@@ -93,6 +93,26 @@ tape(`${method}: call with valid fork choice state without payload attributes`, 
   await baseRequest(t, server, req, 200, expectRes)
 })
 
+tape(`${method}: invalid terminal block`, async (t) => {
+  const genesisWithHigherTtd = {
+    ...genesisJSON,
+    config: {
+      ...genesisJSON.config,
+      terminalTotalDifficulty: 17179869185,
+    },
+  }
+
+  const { server } = await setupChain(genesisWithHigherTtd, 'post-merge', {
+    engine: true,
+  })
+
+  const req = params(method, [validForkChoiceState, null])
+  const expectRes = (res: any) => {
+    t.equal(res.body.result.payloadStatus.status, 'INVALID_TERMINAL_BLOCK')
+  }
+  await baseRequest(t, server, req, 200, expectRes)
+})
+
 tape(`${method}: call with deep parent lookup`, async (t) => {
   const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
