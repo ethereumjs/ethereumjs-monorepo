@@ -227,6 +227,7 @@ export class FullSynchronizer extends Synchronizer {
         }
       }
     }
+
     this.config.logger.info(
       `Imported blocks count=${
         blocks.length
@@ -235,12 +236,12 @@ export class FullSynchronizer extends Synchronizer {
       }`,
       { attentionHF }
     )
+
     this.txPool.removeNewBlockTxs(blocks)
 
-    if (this.running) {
-      await execution.run()
-      this.checkTxPoolState()
-    }
+    if (!this.running) return
+    await execution.run()
+    this.checkTxPoolState()
   }
 
   private clearFetcher() {
