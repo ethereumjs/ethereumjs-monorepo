@@ -24,6 +24,11 @@ export class PeerPool {
   private opened: boolean
   public running: boolean
 
+  /**
+   * Default status check interval (in ms)
+   */
+  private DEFAULT_STATUS_CHECK_INTERVAL = 20000
+
   private _statusCheckInterval: NodeJS.Timeout | undefined /* global NodeJS */
   private _reconnectTimeout: NodeJS.Timeout | undefined
 
@@ -74,8 +79,11 @@ export class PeerPool {
     if (this.running) {
       return false
     }
-    // eslint-disable-next-line @typescript-eslint/await-thenable
-    this._statusCheckInterval = setInterval(await this._statusCheck.bind(this), 20000)
+    this._statusCheckInterval = setInterval(
+      // eslint-disable-next-line @typescript-eslint/await-thenable
+      await this._statusCheck.bind(this),
+      this.DEFAULT_STATUS_CHECK_INTERVAL
+    )
 
     this.running = true
     return true
@@ -219,15 +227,17 @@ export class PeerPool {
     if (this.size === 0) {
       this.noPeerPeriods += 1
       if (this.noPeerPeriods >= 3) {
+        this.noPeerPeriods = 0
         const promises = this.config.servers.map(async (server) => {
-          if (server instanceof RlpxServer && server.discovery) {
-            this.config.logger.info('Restarting RLPx server: bootstrap')
+          if (server instanceof RlpxServer) {
+            this.config.logger.info('Restarting RLPx server')
             await server.stop()
             await server.start()
+            this.config.logger.info('Reinitiating server bootstrap')
+            await server.bootstrap()
           }
         })
         await Promise.all(promises)
-        this.noPeerPeriods = 0
       } else {
         let tablesize: number | undefined = 0
         this.config.servers.forEach((server) => {

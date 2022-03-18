@@ -68,7 +68,7 @@ const args = yargs(hideBin(process.argv))
     array: true,
   })
   .option('bootnodes', {
-    describe: 'Network bootnodes',
+    describe: 'Comma-separated list of network bootnodes',
     array: true,
   })
   .option('port', {

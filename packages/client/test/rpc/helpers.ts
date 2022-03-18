@@ -22,13 +22,15 @@ const level = require('level-mem')
 const config: any = {}
 config.logger = getLogger(config)
 
+type StartRPCOpts = { port?: number; wsServer?: boolean }
 type WithEngineMiddleware = { jwtSecret: Buffer; unlessFn?: (req: IncomingMessage) => boolean }
 
 export function startRPC(
   methods: any,
-  { port, wsServer }: { port?: number; wsServer?: boolean } = { port: 3000 },
+  opts: StartRPCOpts = { port: 3000 },
   withEngineMiddleware?: WithEngineMiddleware
 ) {
+  const { port, wsServer } = opts
   const server = new RPCServer(methods)
   const httpServer = wsServer
     ? createWsRPCServerListener({ server, withEngineMiddleware })

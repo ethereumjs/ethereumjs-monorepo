@@ -1,13 +1,14 @@
 import tape from 'tape'
 import td from 'testdouble'
+import { BN } from 'ethereumjs-util'
 import { Config } from '../../../lib/config'
 import { Fetcher } from '../../../lib/sync/fetcher/fetcher'
 import { Job } from '../../../lib/sync/fetcher/types'
 import { Event } from '../../../lib/types'
 
 class FetcherTest extends Fetcher<any, any, any> {
-  process(_job: any, _res: any) {
-    return undefined // have to return undefined, otherwise the function return signature is void.
+  process(_job: any, res: any) {
+    return res
   }
   async request(_job: any, _peer: any) {
     return
@@ -96,6 +97,25 @@ tape('[Fetcher]', (t) => {
     ;(fetcher as any).in.insert(job5)
 
     t.ok(fetcher.next() === false, 'next() fails when heap length exceeds maxQueue')
+  })
+
+  t.test('should re-enqueue on a non-fatal error', (t) => {
+    t.plan(1)
+    const config = new Config({ transports: [] })
+    const fetcher = new FetcherTest({ config, pool: td.object(), timeout: 5000 })
+    const task = { first: new BN(50), count: 10 }
+    const job: any = { peer: {}, task, state: 'active', index: 0 }
+    fetcher.next = td.func<FetcherTest['next']>()
+    fetcher.write()
+    ;(fetcher as any).running = true
+    fetcher.store = td.func<FetcherTest['store']>()
+    td.when(fetcher.store(td.matchers.anything())).thenReject(
+      new Error('could not find parent header')
+    )
+    ;(fetcher as any).success(job, ['something'])
+    setTimeout(() => {
+      t.ok((fetcher as any).in.peek().task.first.eqn(1), 'should step back for safeReorgDistance')
+    }, 20)
   })
 
   t.test('should reset td', (t) => {

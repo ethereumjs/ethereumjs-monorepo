@@ -1218,6 +1218,8 @@ export default class Common extends EventEmitter {
    * Returns a deep copy of this {@link Common} instance.
    */
   copy(): Common {
-    return Object.assign(Object.create(Object.getPrototypeOf(this)), this)
+    const copy = Object.assign(Object.create(Object.getPrototypeOf(this)), this)
+    copy.removeAllListeners()
+    return copy
   }
 }

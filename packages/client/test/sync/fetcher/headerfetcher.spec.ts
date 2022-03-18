@@ -34,13 +34,30 @@ tape('[HeaderFetcher]', async (t) => {
     t.end()
   })
 
+  t.test('should adopt correctly', (t) => {
+    const config = new Config({ transports: [] })
+    const pool = new PeerPool() as any
+    const flow = td.object()
+    const fetcher = new HeaderFetcher({
+      config,
+      pool,
+      flow,
+    })
+    const headers = [{ number: 1 }, { number: 2 }]
+    const task = { count: 3, first: new BN(1) }
+    ;(fetcher as any).running = true
+    fetcher.enqueueTask(task)
+    fetcher.process({ task } as any, { headers, bv: new BN(1) } as any)
+    t.equals((fetcher as any).in.size(), 2, 'Fetcher should have two tasks after adopting')
+    t.end()
+  })
+
   t.test('should find a fetchable peer', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool()
     const fetcher = new HeaderFetcher({ config, pool })
     td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
-    //@ts-ignore
-    t.equals(fetcher.peer(undefined), 'peer0', 'found peer')
+    t.equal(fetcher.peer(), 'peer0', 'found peer')
     t.end()
   })
 
