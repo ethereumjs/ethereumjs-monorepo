@@ -369,7 +369,10 @@ export class Engine {
 
     let block
     try {
-      block = Block.fromBlockData({ header, transactions: txs }, { common })
+      block = Block.fromBlockData(
+        { header, transactions: txs },
+        { common, hardforkByTD: this.chain.headers.td }
+      )
 
       // Verify blockHash matches payload
       if (!block.hash().equals(toBuffer(payloadData.blockHash))) {
