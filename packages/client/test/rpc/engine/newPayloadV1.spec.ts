@@ -93,6 +93,26 @@ tape(`${method}: call with non existent parent hash`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes)
 })
 
+tape(`${method}: invalid terminal block`, async (t) => {
+  const genesisWithHigherTtd = {
+    ...genesisJSON,
+    config: {
+      ...genesisJSON.config,
+      terminalTotalDifficulty: 17179869185,
+    },
+  }
+
+  const { server } = await setupChain(genesisWithHigherTtd, 'post-merge', {
+    engine: true,
+  })
+
+  const req = params(method, [blockData, null])
+  const expectRes = (res: any) => {
+    t.equal(res.body.result.status, 'INVALID_TERMINAL_BLOCK')
+  }
+  await baseRequest(t, server, req, 200, expectRes)
+})
+
 tape(`${method}: call with valid data`, async (t) => {
   const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 

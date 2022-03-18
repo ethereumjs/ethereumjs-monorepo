@@ -2,6 +2,8 @@ import { Block, HeaderData } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
 import { toBuffer, bufferToHex, rlp, BN } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
+import { Hardfork } from '@ethereumjs/common'
+
 import { middleware, validators } from '../validation'
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
 import { PendingBlock } from '../../miner'
@@ -173,6 +175,23 @@ const validHash = async (
   return bufferToHex(hash)
 }
 
+/**
+ *  Validate that the block satisfies post-merge conditions.
+ */
+const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolean> => {
+  const hf = chain.config.chainCommon.hardforks().find((h) => h.name === Hardfork.Merge)
+  if (hf === undefined || hf.td === undefined || hf.td === null) return false
+  const ttd = new BN(hf.td)
+  const blockTd = await chain.getTd(block.hash(), block.header.number)
+
+  // Block is terminal if its td >= ttd and its parent td < ttd.
+  // In case the Genesis block has td >= ttd it is the terminal block
+  if (block.isGenesis()) return blockTd.gte(ttd)
+
+  const parentBlockTd = await chain.getTd(block.header.parentHash, block.header.number.subn(1))
+  return blockTd.gte(ttd) && parentBlockTd.lt(ttd)
+}
+
 type UnprefixedBlockHash = string
 type ValidBlocks = Map<UnprefixedBlockHash, Block>
 
@@ -300,7 +319,17 @@ export class Engine {
     const common = this.config.chainCommon
 
     try {
-      await findBlock(toBuffer(parentHash), this.validBlocks, this.chain)
+      const block = await findBlock(toBuffer(parentHash), this.validBlocks, this.chain)
+      if (!block._common.gteHardfork(Hardfork.Merge)) {
+        const validTerminalBlock = await validateTerminalBlock(block, this.chain)
+        if (!validTerminalBlock) {
+          return {
+            status: Status.INVALID_TERMINAL_BLOCK,
+            validationError: null,
+            latestValidHash: null,
+          }
+        }
+      }
     } catch (error: any) {
       // TODO if we can't find the parent and the block doesn't extend the canonical chain,
       // return ACCEPTED when optimistic sync is supported to store the block for later processing
@@ -411,10 +440,11 @@ export class Engine {
    *        finalizedBlockHash - block hash of the most recent finalized block
    *   2. An object or null - instance of {@link PayloadAttributesV1}
    * @returns An object:
-   *   1. payloadStatus: {@link PayloadStatus1}; values of the `status` field in the context of this method are restricted to the following subset::
+   *   1. payloadStatus: {@link PayloadStatusV1}; values of the `status` field in the context of this method are restricted to the following subset::
    *        VALID
    *        INVALID
    *        SYNCING
+   *        INVALID_TERMINAL_BLOCK
    *   2. payloadId: DATA|null - 8 Bytes - identifier of the payload build process or `null`
    */
   async forkchoiceUpdatedV1(
@@ -436,6 +466,20 @@ export class Engine {
         const latestValidHash = bufferToHex(this.chain.headers.latest!.hash())
         const payloadStatus = { status: Status.SYNCING, latestValidHash, validationError: null }
         return { payloadStatus, payloadId: null }
+      }
+    }
+
+    if (!headBlock._common.gteHardfork(Hardfork.Merge)) {
+      const validTerminalBlock = await validateTerminalBlock(headBlock, this.chain)
+      if (!validTerminalBlock) {
+        return {
+          payloadStatus: {
+            status: Status.INVALID_TERMINAL_BLOCK,
+            validationError: null,
+            latestValidHash: null,
+          },
+          payloadId: null,
+        }
       }
     }
 
@@ -554,7 +598,7 @@ export class Engine {
     params: [TransitionConfigurationV1]
   ): Promise<TransitionConfigurationV1> {
     const { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber } = params[0]
-    const { td } = this.config.chainCommon.hardforks().find((h) => h.name === 'merge')!
+    const { td } = this.config.chainCommon.hardforks().find((h) => h.name === Hardfork.Merge)!
     if (td !== parseInt(terminalTotalDifficulty)) {
       throw {
         code: INVALID_PARAMS,
