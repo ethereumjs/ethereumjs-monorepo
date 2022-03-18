@@ -222,7 +222,7 @@ export class FullSynchronizer extends Synchronizer {
         const mergeTD = this.config.chainCommon.hardforkTD(Hardfork.Merge)
         const td = this.chain.blocks.td
         const remaining = mergeTD!.sub(td)
-        if (remaining.lten(50000000000)) {
+        if (remaining.lte(new BN(50000000000))) {
           attentionHF = `Merge HF in ${remaining} TD (diff)`
         }
       }
