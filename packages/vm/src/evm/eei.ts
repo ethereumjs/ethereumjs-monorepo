@@ -391,6 +391,23 @@ export default class EEI {
   }
 
   /**
+   * Store 256-bit a value in memory to transient storage.
+   * @param key - Storage key
+   * @param value - Storage value
+   */
+  transientStorageStore(key: Buffer, value: Buffer): void {
+    return this._transientStorage.put(this._env.address, key, value)
+  }
+
+  /**
+   * Loads a 256-bit value to memory from transient storage.
+   * @param key - Storage key
+   */
+  transientStorageLoad(key: Buffer): Buffer {
+    return this._transientStorage.get(this._env.address, key)
+  }
+
+  /**
    * Returns the current gasCounter.
    */
   getGasLeft(): BN {

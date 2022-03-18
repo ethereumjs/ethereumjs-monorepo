@@ -883,7 +883,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       const key = runState.stack.pop()
       const keyBuf = key.toArrayLike(Buffer, 'be', 32)
-      const value = runState.eei._transientStorage.get(runState.eei.getAddress(), keyBuf)
+      const value = runState.eei.transientStorageLoad(keyBuf)
       const valueBN = value.length ? new BN(value) : new BN(0)
       runState.stack.push(valueBN)
     },
@@ -907,7 +907,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         value = val.toArrayLike(Buffer, 'be')
       }
 
-      runState.eei._transientStorage.put(runState.eei.getAddress(), keyBuf, value)
+      runState.eei.transientStorageStore(keyBuf, value)
     },
   ],
   // '0xf0' range - closures
