@@ -209,13 +209,13 @@ export class FullSynchronizer extends Synchronizer {
       ? `baseFee=${blocks[0].header.baseFeePerGas} `
       : ''
 
-    let attention: string | null = null
+    let attentionHF: string | null = null
     const nextHFBlockNum = this.config.chainCommon.nextHardforkBlockBN()
     if (nextHFBlockNum !== null) {
       const remaining = nextHFBlockNum.sub(last)
       if (remaining.lten(10000)) {
         const nextHF = this.config.chainCommon.getHardforkByBlockNumber(nextHFBlockNum)
-        attention = `${nextHF} HF in ${remaining} blocks`
+        attentionHF = `${nextHF} HF in ${remaining} blocks`
       }
     } else {
       if (this.config.chainCommon.hardfork() === Hardfork.PreMerge) {
@@ -223,7 +223,7 @@ export class FullSynchronizer extends Synchronizer {
         const td = this.chain.blocks.td
         const remaining = mergeTD!.sub(td)
         if (remaining.lten(50000000000)) {
-          attention = `Merge HF in ${remaining} TD (diff)`
+          attentionHF = `Merge HF in ${remaining} TD (diff)`
         }
       }
     }
@@ -233,7 +233,7 @@ export class FullSynchronizer extends Synchronizer {
       } first=${first} last=${last} hash=${hash} ${baseFeeAdd}hardfork=${this.config.chainCommon.hardfork()} peers=${
         this.pool.size
       }`,
-      { attention }
+      { attentionHF }
     )
     this.txPool.removeNewBlockTxs(blocks)
 

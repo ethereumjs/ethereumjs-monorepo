@@ -197,8 +197,7 @@ type ValidBlocks = Map<UnprefixedBlockHash, Block>
 
 enum ConnectionStatus {
   Connected = 'connected',
-  Unknown = 'unknown',
-  Disconnected = '',
+  Disconnected = 'disconnected',
 }
 
 /**
@@ -219,6 +218,14 @@ export class Engine {
   private lastMessageID = new BN(0)
 
   private connectionStatus = ConnectionStatus.Disconnected
+  private lastRequestTS = 0
+
+  /**
+   * Default connection check interval (in ms)
+   */
+  private DEFAULT_CONNECTION_CHECK_INTERVAL = 4000
+
+  private _connectionCheckInterval: NodeJS.Timeout | undefined /* global NodeJS */
 
   /**
    * Create engine_* RPC module
@@ -238,6 +245,12 @@ export class Engine {
     this.txPool = (this.service.synchronizer as FullSynchronizer).txPool
     this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.txPool })
     this.validBlocks = new Map()
+
+    this._connectionCheckInterval = setInterval(
+      // eslint-disable-next-line @typescript-eslint/await-thenable
+      this.connectionCheck.bind(this),
+      this.DEFAULT_CONNECTION_CHECK_INTERVAL
+    )
 
     this.newPayloadV1 = middleware(this.newPayloadV1.bind(this), 1, [
       [
@@ -624,12 +637,32 @@ export class Engine {
   }
 
   /**
-   * Updates the Consensus Client connection status
+   * Updates the Consensus Client connection status on new RPC requests
    */
   private updateConnectionStatus() {
     if (this.connectionStatus === ConnectionStatus.Disconnected) {
-      this.config.logger.info('Consensus client connection established')
+      this.config.logger.info('Consensus client connection established', { attentionCL: 'CL' })
     }
     this.connectionStatus = ConnectionStatus.Connected
+    this.lastRequestTS = new Date().getTime()
+  }
+
+  /**
+   * Regularly checks the Consensus Client connection
+   */
+  private connectionCheck() {
+    if (this.connectionStatus === ConnectionStatus.Connected) {
+      const now = new Date().getTime()
+      const timeDiff = now - this.lastRequestTS
+
+      if (timeDiff <= 10000) {
+        if (timeDiff > 2000) {
+          this.config.logger.warn('Loosing consensus client connection...', { attentionCL: 'CL ?' })
+        }
+      } else {
+        this.connectionStatus = ConnectionStatus.Disconnected
+        this.config.logger.warn('Consensus disconnected', { attentionCL: null })
+      }
+    }
   }
 }
