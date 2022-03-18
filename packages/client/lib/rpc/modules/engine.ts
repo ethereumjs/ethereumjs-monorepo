@@ -180,9 +180,9 @@ const validHash = async (
  *  Validate that the block satisfies post-merge conditions.
  */
 const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolean> => {
-  const hf = chain.config.chainCommon.hardforks().find((h) => h.name === Hardfork.Merge)
-  if (hf === undefined || hf.td === undefined || hf.td === null) return false
-  const ttd = new BN(hf.td)
+  const td = chain.config.chainCommon.hardforkTD(Hardfork.Merge)
+  if (td === undefined || td === null) return false
+  const ttd = new BN(td)
   const blockTd = await chain.getTd(block.hash(), block.header.number)
 
   // Block is terminal if its td >= ttd and its parent td < ttd.
@@ -605,10 +605,16 @@ export class Engine {
   async exchangeTransitionConfigurationV1(
     params: [TransitionConfigurationV1]
   ): Promise<TransitionConfigurationV1> {
-    this.updateConnectionStatus()
+    this.connectionManager.updateConnectionStatus()
     const { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber } = params[0]
-    const { td } = this.config.chainCommon.hardforks().find((h) => h.name === Hardfork.Merge)!
-    if (td !== parseInt(terminalTotalDifficulty)) {
+    const td = this.chain.config.chainCommon.hardforkTD(Hardfork.Merge)
+    if (!td) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: 'terminalTotalDifficulty not set internally',
+      }
+    }
+    if (!td.eq(new BN(terminalTotalDifficulty))) {
       throw {
         code: INVALID_PARAMS,
         message: `terminalTotalDifficulty set to ${td}, received ${parseInt(
