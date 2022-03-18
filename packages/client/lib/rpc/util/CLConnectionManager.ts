@@ -16,13 +16,13 @@ export class CLConnectionManager {
   private config: Config
 
   /** Default connection check interval (in ms) */
-  private DEFAULT_CONNECTION_CHECK_INTERVAL = 4000
+  private DEFAULT_CONNECTION_CHECK_INTERVAL = 5000
 
   /** Default payload log interval (in ms) */
-  private DEFAULT_PAYLOAD_LOG_INTERVAL = 1000
+  private DEFAULT_PAYLOAD_LOG_INTERVAL = 10000
 
   /** Default forkchoice log interval (in ms) */
-  private DEFAULT_FORKCHOICE_LOG_INTERVAL = 5000
+  private DEFAULT_FORKCHOICE_LOG_INTERVAL = 10000
 
   private _connectionCheckInterval?: NodeJS.Timeout /* global NodeJS */
   private _payloadLogInterval?: NodeJS.Timeout
