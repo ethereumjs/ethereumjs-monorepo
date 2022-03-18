@@ -11,6 +11,7 @@ import { Address, toBuffer } from 'ethereumjs-util'
 import { parseMultiaddrs, parseGenesisState, parseCustomParams } from '../lib/util'
 import EthereumClient from '../lib/client'
 import { Config, DataDirectory } from '../lib/config'
+import { Event } from '../lib/types'
 import { Logger, getLogger } from '../lib/logging'
 import { startRPCServers, helprpc } from './startRpc'
 import type { Chain as IChain, GenesisState } from '@ethereumjs/common/dist/types'
@@ -587,6 +588,7 @@ async function run() {
 
   process.on('SIGINT', async () => {
     config.logger.info('Caught interrupt signal. Shutting down...')
+    config.events.emit(Event.CLIENT_SHUTDOWN)
     servers.forEach((s) => s.http().close())
     await client.stop()
     config.logger.info('Exiting.')

@@ -1,12 +1,13 @@
 import { Block, HeaderData } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
-import { toBuffer, bufferToHex, rlp, BN, bufferToInt } from 'ethereumjs-util'
+import { toBuffer, bufferToHex, rlp, BN } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Hardfork } from '@ethereumjs/common'
 
 import { middleware, validators } from '../validation'
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
 import { PendingBlock } from '../../miner'
+import { CLConnectionManager } from '../util/clConnectionManager'
 import type VM from '@ethereumjs/vm'
 import type EthereumClient from '../../client'
 import type { Chain } from '../../blockchain'
@@ -25,7 +26,7 @@ enum Status {
   VALID = 'VALID',
 }
 
-type ExecutionPayloadV1 = {
+export type ExecutionPayloadV1 = {
   parentHash: string // DATA, 32 Bytes
   feeRecipient: string // DATA, 20 Bytes
   stateRoot: string // DATA, 32 Bytes
@@ -45,7 +46,7 @@ type ExecutionPayloadV1 = {
   // as defined in EIP-2718.
 }
 
-type ForkchoiceStateV1 = {
+export type ForkchoiceStateV1 = {
   headBlockHash: string
   safeBlockHash: string
   finalizedBlockHash: string
@@ -195,11 +196,6 @@ const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolea
 type UnprefixedBlockHash = string
 type ValidBlocks = Map<UnprefixedBlockHash, Block>
 
-enum ConnectionStatus {
-  Connected = 'connected',
-  Disconnected = 'disconnected',
-}
-
 /**
  * engine_* RPC module
  * @memberof module:rpc/modules
@@ -213,34 +209,10 @@ export class Engine {
   private synchronizer: FullSynchronizer
   private vm: VM
   private txPool: TxPool
+  private connectionManager: CLConnectionManager
+
   private pendingBlock: PendingBlock
   private validBlocks: ValidBlocks
-  private lastMessageID = new BN(0)
-
-  private connectionStatus = ConnectionStatus.Disconnected
-  private lastRequestTS = 0
-
-  /**
-   * Default connection check interval (in ms)
-   */
-  private DEFAULT_CONNECTION_CHECK_INTERVAL = 4000
-  private _connectionCheckInterval: NodeJS.Timeout | undefined /* global NodeJS */
-
-  private lastPayloadReceived?: ExecutionPayloadV1
-
-  /**
-   * Default payload log interval (in ms)
-   */
-  private DEFAULT_PAYLOAD_LOG_INTERVAL = 1000
-  private _payloadLogInterval: NodeJS.Timeout | undefined
-
-  private lastForkchoiceUpdate?: ForkchoiceStateV1
-
-  /**
-   * Default forkchoice log interval (in ms)
-   */
-  private DEFAULT_FORKCHOICE_LOG_INTERVAL = 5000
-  private _forkchoiceLogInterval: NodeJS.Timeout | undefined
 
   /**
    * Create engine_* RPC module
@@ -258,26 +230,9 @@ export class Engine {
     this.execution = this.client.execution
     this.vm = this.client.execution.vm
     this.txPool = (this.service.synchronizer as FullSynchronizer).txPool
+    this.connectionManager = new CLConnectionManager({ config: this.chain.config })
     this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.txPool })
     this.validBlocks = new Map()
-
-    this._connectionCheckInterval = setInterval(
-      // eslint-disable-next-line @typescript-eslint/await-thenable
-      this.connectionCheck.bind(this),
-      this.DEFAULT_CONNECTION_CHECK_INTERVAL
-    )
-
-    this._payloadLogInterval = setInterval(
-      // eslint-disable-next-line @typescript-eslint/await-thenable
-      this.payloadLog.bind(this),
-      this.DEFAULT_PAYLOAD_LOG_INTERVAL
-    )
-
-    this._forkchoiceLogInterval = setInterval(
-      // eslint-disable-next-line @typescript-eslint/await-thenable
-      this.forkchoiceLog.bind(this),
-      this.DEFAULT_FORKCHOICE_LOG_INTERVAL
-    )
 
     this.newPayloadV1 = middleware(this.newPayloadV1.bind(this), 1, [
       [
@@ -364,7 +319,7 @@ export class Engine {
       transactions,
       parentHash,
     } = payloadData
-    this.lastPayloadReceived = payloadData
+    this.connectionManager.lastPayloadReceived = payloadData
     const common = this.config.chainCommon
 
     try {
@@ -499,9 +454,10 @@ export class Engine {
   async forkchoiceUpdatedV1(
     params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | undefined]
   ): Promise<ForkchoiceResponseV1> {
-    this.updateConnectionStatus()
+    this.connectionManager.updateConnectionStatus()
+    this.connectionManager.lastForkchoiceUpdate = params[0]
+
     const { headBlockHash, finalizedBlockHash } = params[0]
-    this.lastForkchoiceUpdate = params[0]
     const payloadAttributes = params[1]
 
     /*
@@ -621,7 +577,7 @@ export class Engine {
    * @returns Instance of {@link ExecutionPayloadV1} or an error
    */
   async getPayloadV1(params: [string]) {
-    this.updateConnectionStatus()
+    this.connectionManager.updateConnectionStatus()
     const payloadId = toBuffer(params[0])
     try {
       const block = await this.pendingBlock.build(payloadId)
@@ -663,72 +619,5 @@ export class Engine {
     // Note: our client does not yet support block whitelisting (terminalBlockHash/terminalBlockNumber)
     // since we are not yet fast enough to run along tip-of-chain mainnet execution
     return { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber }
-  }
-
-  /**
-   * Updates the Consensus Client connection status on new RPC requests
-   */
-  private updateConnectionStatus() {
-    if (this.connectionStatus === ConnectionStatus.Disconnected) {
-      this.config.logger.info('Consensus client connection established', { attentionCL: 'CL' })
-    }
-    this.connectionStatus = ConnectionStatus.Connected
-    this.lastRequestTS = new Date().getTime()
-  }
-
-  /**
-   * Regularly checks the Consensus Client connection
-   */
-  private connectionCheck() {
-    if (this.connectionStatus === ConnectionStatus.Connected) {
-      const now = new Date().getTime()
-      const timeDiff = now - this.lastRequestTS
-
-      if (timeDiff <= 10000) {
-        if (timeDiff > 2000) {
-          this.config.logger.warn('Loosing consensus client connection...', { attentionCL: 'CL ?' })
-        }
-      } else {
-        this.connectionStatus = ConnectionStatus.Disconnected
-        this.config.logger.warn('Consensus disconnected', { attentionCL: null })
-      }
-    }
-  }
-
-  /**
-   * Regular payload request logs
-   */
-  private payloadLog() {
-    if (this.connectionStatus !== ConnectionStatus.Connected) {
-      return
-    }
-    if (!this.lastPayloadReceived) {
-      this.config.logger.info(`No consensus payload received yet`)
-    } else {
-      const blockNumber = bufferToInt(toBuffer(this.lastPayloadReceived.blockNumber))
-      this.config.logger.info(
-        `Last consensus payload received block=${blockNumber} parentHash=${this.lastPayloadReceived.parentHash}`
-      )
-    }
-  }
-
-  /**
-   * Regular forkchoice request logs
-   */
-  private forkchoiceLog() {
-    if (this.connectionStatus !== ConnectionStatus.Connected) {
-      return
-    }
-    if (!this.lastForkchoiceUpdate) {
-      this.config.logger.info(`No consensus forkchoice update received yet`)
-    } else {
-      const { headBlockHash, finalizedBlockHash } = this.lastForkchoiceUpdate
-      this.config.logger.info(
-        `Last consensus forkchoice update headBlockHash=${headBlockHash.substring(
-          0,
-          7
-        )}... finalizedBlockHash=${finalizedBlockHash}`
-      )
-    }
   }
 }
