@@ -195,6 +195,12 @@ const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolea
 type UnprefixedBlockHash = string
 type ValidBlocks = Map<UnprefixedBlockHash, Block>
 
+enum ConnectionStatus {
+  Connected = 'connected',
+  Unknown = 'unknown',
+  Disconnected = '',
+}
+
 /**
  * engine_* RPC module
  * @memberof module:rpc/modules
@@ -211,6 +217,8 @@ export class Engine {
   private pendingBlock: PendingBlock
   private validBlocks: ValidBlocks
   private lastMessageID = new BN(0)
+
+  private connectionStatus = ConnectionStatus.Disconnected
 
   /**
    * Create engine_* RPC module
@@ -450,6 +458,7 @@ export class Engine {
   async forkchoiceUpdatedV1(
     params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | undefined]
   ): Promise<ForkchoiceResponseV1> {
+    this.updateConnectionStatus()
     const { headBlockHash, finalizedBlockHash } = params[0]
     const payloadAttributes = params[1]
 
@@ -570,6 +579,7 @@ export class Engine {
    * @returns Instance of {@link ExecutionPayloadV1} or an error
    */
   async getPayloadV1(params: [string]) {
+    this.updateConnectionStatus()
     const payloadId = toBuffer(params[0])
     try {
       const block = await this.pendingBlock.build(payloadId)
@@ -597,6 +607,7 @@ export class Engine {
   async exchangeTransitionConfigurationV1(
     params: [TransitionConfigurationV1]
   ): Promise<TransitionConfigurationV1> {
+    this.updateConnectionStatus()
     const { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber } = params[0]
     const { td } = this.config.chainCommon.hardforks().find((h) => h.name === Hardfork.Merge)!
     if (td !== parseInt(terminalTotalDifficulty)) {
@@ -610,5 +621,15 @@ export class Engine {
     // Note: our client does not yet support block whitelisting (terminalBlockHash/terminalBlockNumber)
     // since we are not yet fast enough to run along tip-of-chain mainnet execution
     return { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber }
+  }
+
+  /**
+   * Updates the Consensus Client connection status
+   */
+  private updateConnectionStatus() {
+    if (this.connectionStatus === ConnectionStatus.Disconnected) {
+      this.config.logger.info('Consensus client connection established')
+    }
+    this.connectionStatus = ConnectionStatus.Connected
   }
 }
