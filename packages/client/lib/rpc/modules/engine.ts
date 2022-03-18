@@ -180,7 +180,7 @@ const validHash = async (
  */
 const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolean> => {
   const hf = chain.config.chainCommon.hardforks().find((h) => h.name === Hardfork.Merge)
-  if (!(hf && hf.td)) return false
+  if (hf === undefined || hf.td === undefined || hf.td === null) return false
   const ttd = new BN(hf.td)
   const blockTd = await chain.getTd(block.hash(), block.header.number)
 
@@ -598,7 +598,7 @@ export class Engine {
     params: [TransitionConfigurationV1]
   ): Promise<TransitionConfigurationV1> {
     const { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber } = params[0]
-    const { td } = this.config.chainCommon.hardforks().find((h) => h.name === 'merge')!
+    const { td } = this.config.chainCommon.hardforks().find((h) => h.name === Hardfork.Merge)!
     if (td !== parseInt(terminalTotalDifficulty)) {
       throw {
         code: INVALID_PARAMS,
