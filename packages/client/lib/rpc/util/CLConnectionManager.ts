@@ -1,3 +1,4 @@
+import { Hardfork } from '@ethereumjs/common'
 import { Event } from '../../types'
 import type { Config } from '../../config'
 import type { ExecutionPayloadV1, ForkchoiceStateV1 } from '../modules/engine'
@@ -36,9 +37,12 @@ export class CLConnectionManager {
 
   constructor(opts: CLConnectionManagerOpts) {
     this.config = opts.config
-    this.start()
-
-    this.config.events.on(Event.CLIENT_SHUTDOWN, () => {
+    this.config.events.once(Event.CHAIN_UPDATED, () => {
+      if (this.config.chainCommon.gteHardfork(Hardfork.PreMerge)) {
+        this.start()
+      }
+    })
+    this.config.events.once(Event.CLIENT_SHUTDOWN, () => {
       this.stop()
     })
   }
