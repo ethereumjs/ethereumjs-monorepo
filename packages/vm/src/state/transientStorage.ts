@@ -45,6 +45,14 @@ export default class TransientStorage {
   }
 
   public put(addr: Address, key: Buffer, value: Buffer) {
+    if (key.length !== 32) {
+      throw new Error('Transient storage key must be 32 bytes long')
+    }
+
+    if (value.length > 32) {
+      throw new Error('Transient storage value cannot be longer than 32 bytes')
+    }
+
     if (!this._storage.has(addr.toString())) {
       this._storage.set(addr.toString(), new Map())
     }
