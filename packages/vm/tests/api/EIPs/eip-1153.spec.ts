@@ -102,4 +102,31 @@ tape('EIP 1153: transient storage', (t) => {
     st.equal(undefined, result.execResult.exceptionError)
     st.end()
   })
+
+  t.test('tload should not keep reverted changes', async (st) => {
+    // logic address has a contract with transient storage logic in it
+    const logicAddress = new Address(Buffer.from('EA674fdDe714fd979de3EdF0F56AA9716B898ec8', 'hex'))
+    // calling address is the address that calls the logic address
+    const callingAddress = new Address(Buffer.alloc(20, 0xff))
+
+    const logicCode =
+      '36600080376000518063afc874d214630000003457806362fdb9be14630000003f57806343ac1c3914630000004a5760006000fd5b60ff6000b460006000fd5b60aa6000b460006000f35b6000b360005260206000f3'
+    const callingCode =
+      '6362fdb9be600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff163afc874d2600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff16343ac1c39600052602060006020600060007f000000000000000000000000ea674fdde714fd979de3edf0f56aa9716b898ec861fffff1366000803760206000f3'
+
+    const vm = new VM({ common })
+    await vm.stateManager.putContractCode(logicAddress, Buffer.from(logicCode, 'hex'))
+    await vm.stateManager.putContractCode(callingAddress, Buffer.from(callingCode, 'hex'))
+
+    const unsignedTx = Transaction.fromTxData({
+      gasLimit: new BN(15000000),
+      to: callingAddress,
+    })
+
+    const tx = unsignedTx.sign(senderKey)
+    const result = await vm.runTx({ tx, skipBalance: true })
+
+    st.deepEqual(new BN(result.execResult.returnValue).toNumber(), 0xaa)
+    st.end()
+  })
 })

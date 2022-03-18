@@ -44,7 +44,7 @@ export default class TransientStorage {
     return value
   }
 
-  put(addr: Address, key: Buffer, value: Buffer) {
+  public put(addr: Address, key: Buffer, value: Buffer) {
     if (!this._storage.has(addr.toString())) {
       this._storage.set(addr.toString(), new Map())
     }
@@ -62,7 +62,7 @@ export default class TransientStorage {
     map.set(str, value)
   }
 
-  revert() {
+  public revert() {
     const changeset = this._changesets.pop()
     if (!changeset) {
       throw new Error('cannot revert without a changeset')
@@ -74,7 +74,7 @@ export default class TransientStorage {
     }
   }
 
-  commit(): void {
+  public commit(): void {
     // Don't allow there to be no changeset
     if (this._changesets.length <= 1) {
       throw new Error('trying to commit when not checkpointed')
@@ -82,7 +82,7 @@ export default class TransientStorage {
     this._changesets.pop()
   }
 
-  checkpoint(): void {
+  public checkpoint(): void {
     this._changesets.push([])
   }
 
@@ -97,12 +97,12 @@ export default class TransientStorage {
     return obj
   }
 
-  clear(): void {
+  public clear(): void {
     this._storage = new Map()
     this._changesets = [[]]
   }
 
-  copy(): TransientStorage {
+  public copy(): TransientStorage {
     return new TransientStorage({
       storage: copyTransientStorage(this._storage),
       changesets: this._changesets.slice(),
