@@ -5,6 +5,7 @@ import type { ExecutionPayloadV1, ForkchoiceStateV1 } from '../modules/engine'
 export enum ConnectionStatus {
   Connected = 'connected',
   Disconnected = 'disconnected',
+  Lost = 'lost',
 }
 
 type CLConnectionManagerOpts = {
@@ -72,7 +73,7 @@ export class CLConnectionManager {
    * Updates the Consensus Client connection status on new RPC requests
    */
   updateConnectionStatus() {
-    if (this.connectionStatus === ConnectionStatus.Disconnected) {
+    if ([ConnectionStatus.Disconnected, ConnectionStatus.Lost].includes(this.connectionStatus)) {
       this.config.logger.info('Consensus client connection established', { attentionCL: 'CL' })
     }
     this.connectionStatus = ConnectionStatus.Connected
@@ -89,6 +90,7 @@ export class CLConnectionManager {
 
       if (timeDiff <= 10000) {
         if (timeDiff > 2000) {
+          this.connectionStatus = ConnectionStatus.Lost
           this.config.logger.warn('Losing consensus client connection...', { attentionCL: 'CL ?' })
         }
       } else {
