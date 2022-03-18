@@ -611,13 +611,13 @@ export class Engine {
     this.connectionManager.updateConnectionStatus()
     const { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber } = params[0]
     const td = this.chain.config.chainCommon.hardforkTD(Hardfork.Merge)
-    if (!td) {
+    if (td === undefined || td === null) {
       throw {
         code: INTERNAL_ERROR,
         message: 'terminalTotalDifficulty not set internally',
       }
     }
-    if (!td.eq(new BN(terminalTotalDifficulty))) {
+    if (!td.eq(new BN(toBuffer(terminalTotalDifficulty)))) {
       throw {
         code: INVALID_PARAMS,
         message: `terminalTotalDifficulty set to ${td}, received ${parseInt(

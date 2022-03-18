@@ -125,7 +125,8 @@ tape(`${method}: call with valid data`, async (t) => {
 })
 
 tape(`${method}: call with valid data but invalid transactions`, async (t) => {
-  const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+  const { chain, server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+  chain.config.logger.silent = true
   const blockDataWithInvalidTransaction = {
     ...blockData,
     transactions: ['0x1'],
