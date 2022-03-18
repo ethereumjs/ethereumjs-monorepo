@@ -876,10 +876,14 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xb3: TLOAD
   [
     0xb3,
-    function (runState) {
+    function (runState, common) {
+      if (!common.isActivatedEIP(1153)) {
+        throw new Error('Transient storage EIP not enabled')
+      }
+
       const key = runState.stack.pop()
       const keyBuf = key.toArrayLike(Buffer, 'be', 32)
-      const value = runState.eei.transientStorageLoad(keyBuf)
+      const value = runState.eei._transientStorage.get(runState.eei.getAddress(), keyBuf)
       const valueBN = value.length ? new BN(value) : new BN(0)
       runState.stack.push(valueBN)
     },
@@ -887,7 +891,11 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xb4: TSTORE
   [
     0xb4,
-    function (runState) {
+    function (runState, common) {
+      if (!common.isActivatedEIP(1153)) {
+        throw new Error('Transient storage EIP not enabled')
+      }
+
       const [key, val] = runState.stack.popN(2)
 
       const keyBuf = key.toArrayLike(Buffer, 'be', 32)
@@ -899,7 +907,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         value = val.toArrayLike(Buffer, 'be')
       }
 
-      runState.eei.transientStorageStore(keyBuf, value)
+      runState.eei._transientStorage.put(runState.eei.getAddress(), keyBuf, value)
     },
   ],
   // '0xf0' range - closures

@@ -149,7 +149,7 @@ export default class VM extends AsyncEventEmitter {
 
   protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
-  protected readonly _allowUnlimitedContractSize: boolean
+  public readonly _allowUnlimitedContractSize: boolean
   protected _opcodes: OpcodeList
   protected readonly _hardforkByBlockNumber: boolean
   protected readonly _hardforkByTD?: BNLike
@@ -175,7 +175,7 @@ export default class VM extends AsyncEventEmitter {
    * performance reasons to avoid string literal evaluation
    * @hidden
    */
-  protected readonly DEBUG: boolean = false
+  readonly DEBUG: boolean = false
 
   /**
    * VM async constructor. Creates engine instance and initializes it.

@@ -218,6 +218,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
     return result
   } catch (e: any) {
     await state.revert()
+
     if (this.DEBUG) {
       debug(`tx checkpoint reverted`)
     }
@@ -225,9 +226,6 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
   } finally {
     if (this._common.isActivatedEIP(2929)) {
       state.clearWarmedAccounts()
-    }
-    if (this._common.isActivatedEIP(1153)) {
-      ;(state as any).clearTransientStorage()
     }
   }
 }
