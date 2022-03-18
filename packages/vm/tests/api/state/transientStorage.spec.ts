@@ -1,11 +1,9 @@
 import tape from 'tape'
 import { Address } from 'ethereumjs-util'
-import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { TransientStorage } from '../../../src/state'
 
 tape('Transient Storage', (tester) => {
   const it = tester.test
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.ArrowGlacier, eips: [1153] })
   it('should set and get storage', (t) => {
     const transientStorage = new TransientStorage()
 
