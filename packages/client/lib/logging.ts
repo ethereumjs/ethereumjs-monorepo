@@ -50,41 +50,27 @@ const errorFormat = format((info: any) => {
 function logFormat(colors = false) {
   return printf((info: any) => {
     let level = info.level.toUpperCase()
-    if (!info.message) {
-      info.message = '(empty message)'
-    }
-    if (info.attentionCL !== undefined) {
-      attentionCL = info.attentionCL
-    }
-    if (info.attentionHF !== undefined) {
-      attentionHF = info.attentionHF
-    }
+
+    if (!info.message) info.message = '(empty message)'
+
     if (colors) {
       const colorLevel = LevelColors[info.level as keyof typeof LevelColors]
       const color = chalk.keyword(colorLevel).bind(chalk)
       level = color(level)
-      const re = /(\w+)=(.+?)(?:\s|$)/g
-      info.message = info.message.replace(
-        re,
-        (_: any, tag: string, char: string) => `${color(tag)}=${char} `
-      )
-      if (info.attentionCL) {
-        attentionCL = info.attentionCL.replace(
-          re,
-          (_: any, tag: string, char: string) => `${color(tag)}=${char}`
-        )
-      }
-      if (info.attentionHF) {
-        attentionHF = info.attentionHF.replace(
-          re,
-          (_: any, tag: string, char: string) => `${color(tag)}=${char}`
-        )
-      }
+
+      const regex = /(\w+)=(.+?)(?:\s|$)/g
+      const replaceFn = (_: any, tag: string, char: string) => `${color(tag)}=${char} `
+      info.message = info.message.replace(regex, replaceFn)
+      if (info.attentionCL) info.attentionCL = info.attentionCL.replace(regex, replaceFn)
+      if (info.attentionHF) info.attentionHF = info.attentionHF.replace(regex, replaceFn)
     }
 
-    const msg = `[${info.timestamp}] ${level} ${attentionCL !== null ? `[ ${attentionCL} ] ` : ''}${
-      attentionHF !== null ? `[ ${attentionHF} ] ` : ''
-    }${info.message}`
+    if (info.attentionCL !== undefined) attentionCL = info.attentionCL
+    if (info.attentionHF !== undefined) attentionHF = info.attentionHF
+    const CLLog = attentionCL !== null ? `[ ${attentionCL} ] ` : ''
+    const HFLog = attentionHF !== null ? `[ ${attentionHF} ] ` : ''
+
+    const msg = `[${info.timestamp}] ${level} ${CLLog}${HFLog}${info.message}`
     return msg
   })
 }
