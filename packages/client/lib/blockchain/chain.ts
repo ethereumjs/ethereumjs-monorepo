@@ -190,12 +190,12 @@ export class Chain {
     this.config.chainCommon.on('hardforkChanged', async (hardfork: string) => {
       if (hardfork !== Hardfork.Merge) {
         const block = this.config.chainCommon.hardforkBlockBN()
-        this.config.logger.info(`New hardfork reached hardfork=${hardfork} at block=${block}`)
+        this.config.logger.info(`New hardfork reached 🪢 ! hardfork=${hardfork} block=${block}`)
       } else {
         const block = await this.getLatestBlock()
         const num = block.header.number
         const td = await this.blockchain.getTotalDifficulty(block.hash(), num)
-        this.config.logger.info(`Merge hardfork reached 🐼 👉 👈 🐼! block=${num} td=${td}`)
+        this.config.logger.info(`Merge hardfork reached 🐼 👉 👈 🐼 ! block=${num} td=${td}`)
       }
     })
   }

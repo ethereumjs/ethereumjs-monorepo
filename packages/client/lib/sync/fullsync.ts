@@ -208,12 +208,32 @@ export class FullSynchronizer extends Synchronizer {
     const baseFeeAdd = this.config.chainCommon.gteHardfork(Hardfork.London)
       ? `baseFee=${blocks[0].header.baseFeePerGas} `
       : ''
+
+    let attention: string | null = null
+    const nextHFBlockNum = this.config.chainCommon.nextHardforkBlockBN()
+    if (nextHFBlockNum !== null) {
+      const remaining = nextHFBlockNum.sub(last)
+      if (remaining.lten(10000)) {
+        const nextHF = this.config.chainCommon.getHardforkByBlockNumber(nextHFBlockNum)
+        attention = `${nextHF} HF in ${remaining} blocks`
+      }
+    } else {
+      if (this.config.chainCommon.hardfork() === Hardfork.PreMerge) {
+        const mergeTD = this.config.chainCommon.hardforkTD(Hardfork.Merge)
+        const td = this.chain.blocks.td
+        const remaining = mergeTD!.sub(td)
+        if (remaining.lten(50000000000)) {
+          attention = `Merge HF in ${remaining} TD (diff)`
+        }
+      }
+    }
     this.config.logger.info(
       `Imported blocks count=${
         blocks.length
       } first=${first} last=${last} hash=${hash} ${baseFeeAdd}hardfork=${this.config.chainCommon.hardfork()} peers=${
         this.pool.size
-      }`
+      }`,
+      { attention }
     )
     this.txPool.removeNewBlockTxs(blocks)
 

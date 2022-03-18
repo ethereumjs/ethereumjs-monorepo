@@ -7,6 +7,13 @@ export type Logger = WinstonLogger
 const { combine, timestamp, label, printf } = format
 
 /**
+ * Attention API
+ *
+ * If set string will be displayed on all log messages
+ */
+let attention: string | null = null
+
+/**
  * Colors for logger levels
  */
 enum LevelColors {
@@ -31,12 +38,20 @@ const errorFormat = format((info: any) => {
 
 /**
  * Returns the formatted log output optionally with colors enabled
+ *
+ * Optional info parameters:
+ *
+ * `attention`: pass in string to `info.attention` to set and permanently
+ * display and `null` to deactivate
  */
 function logFormat(colors = false) {
   return printf((info: any) => {
     let level = info.level.toUpperCase()
     if (!info.message) {
       info.message = '(empty message)'
+    }
+    if (info.attention !== undefined) {
+      attention = info.attention
     }
     if (colors) {
       const colorLevel = LevelColors[info.level as keyof typeof LevelColors]
@@ -47,8 +62,18 @@ function logFormat(colors = false) {
         re,
         (_: any, tag: string, char: string) => `${color(tag)}=${char} `
       )
+      if (info.attention) {
+        attention = info.attention.replace(
+          re,
+          (_: any, tag: string, char: string) => `${color(tag)}=${char}`
+        )
+      }
     }
-    return `[${info.timestamp}] ${level} ${info.message}`
+
+    const msg = `[${info.timestamp}] ${level} ${attention !== null ? `[ ${attention} ] ` : ''}${
+      info.message
+    }`
+    return msg
   })
 }
 
