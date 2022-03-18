@@ -1,6 +1,6 @@
 import { Block, HeaderData } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
-import { toBuffer, bufferToHex, rlp, BN } from 'ethereumjs-util'
+import { toBuffer, bufferToHex, rlp, BN, bufferToInt } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Hardfork } from '@ethereumjs/common'
 
@@ -224,8 +224,23 @@ export class Engine {
    * Default connection check interval (in ms)
    */
   private DEFAULT_CONNECTION_CHECK_INTERVAL = 4000
-
   private _connectionCheckInterval: NodeJS.Timeout | undefined /* global NodeJS */
+
+  private lastPayloadReceived?: ExecutionPayloadV1
+
+  /**
+   * Default payload log interval (in ms)
+   */
+  private DEFAULT_PAYLOAD_LOG_INTERVAL = 1000
+  private _payloadLogInterval: NodeJS.Timeout | undefined
+
+  private lastForkchoiceUpdate?: ForkchoiceStateV1
+
+  /**
+   * Default forkchoice log interval (in ms)
+   */
+  private DEFAULT_FORKCHOICE_LOG_INTERVAL = 5000
+  private _forkchoiceLogInterval: NodeJS.Timeout | undefined
 
   /**
    * Create engine_* RPC module
@@ -250,6 +265,18 @@ export class Engine {
       // eslint-disable-next-line @typescript-eslint/await-thenable
       this.connectionCheck.bind(this),
       this.DEFAULT_CONNECTION_CHECK_INTERVAL
+    )
+
+    this._payloadLogInterval = setInterval(
+      // eslint-disable-next-line @typescript-eslint/await-thenable
+      this.payloadLog.bind(this),
+      this.DEFAULT_PAYLOAD_LOG_INTERVAL
+    )
+
+    this._forkchoiceLogInterval = setInterval(
+      // eslint-disable-next-line @typescript-eslint/await-thenable
+      this.forkchoiceLog.bind(this),
+      this.DEFAULT_FORKCHOICE_LOG_INTERVAL
     )
 
     this.newPayloadV1 = middleware(this.newPayloadV1.bind(this), 1, [
@@ -337,6 +364,7 @@ export class Engine {
       transactions,
       parentHash,
     } = payloadData
+    this.lastPayloadReceived = payloadData
     const common = this.config.chainCommon
 
     try {
@@ -473,6 +501,7 @@ export class Engine {
   ): Promise<ForkchoiceResponseV1> {
     this.updateConnectionStatus()
     const { headBlockHash, finalizedBlockHash } = params[0]
+    this.lastForkchoiceUpdate = params[0]
     const payloadAttributes = params[1]
 
     /*
@@ -663,6 +692,43 @@ export class Engine {
         this.connectionStatus = ConnectionStatus.Disconnected
         this.config.logger.warn('Consensus disconnected', { attentionCL: null })
       }
+    }
+  }
+
+  /**
+   * Regular payload request logs
+   */
+  private payloadLog() {
+    if (this.connectionStatus !== ConnectionStatus.Connected) {
+      return
+    }
+    if (!this.lastPayloadReceived) {
+      this.config.logger.info(`No consensus payload received yet`)
+    } else {
+      const blockNumber = bufferToInt(toBuffer(this.lastPayloadReceived.blockNumber))
+      this.config.logger.info(
+        `Last consensus payload received block=${blockNumber} parentHash=${this.lastPayloadReceived.parentHash}`
+      )
+    }
+  }
+
+  /**
+   * Regular forkchoice request logs
+   */
+  private forkchoiceLog() {
+    if (this.connectionStatus !== ConnectionStatus.Connected) {
+      return
+    }
+    if (!this.lastForkchoiceUpdate) {
+      this.config.logger.info(`No consensus forkchoice update received yet`)
+    } else {
+      const { headBlockHash, finalizedBlockHash } = this.lastForkchoiceUpdate
+      this.config.logger.info(
+        `Last consensus forkchoice update headBlockHash=${headBlockHash.substring(
+          0,
+          7
+        )}... finalizedBlockHash=${finalizedBlockHash}`
+      )
     }
   }
 }
