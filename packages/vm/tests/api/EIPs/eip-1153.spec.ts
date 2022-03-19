@@ -4,9 +4,6 @@ import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Address, BN } from 'ethereumjs-util'
 import { Transaction } from '@ethereumjs/tx'
 
-const TLOAD = 'b3'
-const TSTORE = 'b4'
-
 interface Test {
   steps: { expectedOpcode: string; expectedGasUsed: number; expectedStack: BN[] }[]
   contracts: { code: string; address: Address }[]
@@ -54,10 +51,6 @@ tape('EIP 1153: transient storage', (t) => {
         )
       }
       i++
-    })
-
-    vm.on('step', (step: any) => {
-      console.log(step.opcode.name)
     })
 
     for (const { code, address } of test.contracts) {
