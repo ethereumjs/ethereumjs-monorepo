@@ -5,6 +5,7 @@ export type Job<JobTask, JobResult, StorageItem> = {
   time: number
   index: number
   result?: JobResult | StorageItem[]
+  partialResult?: StorageItem[]
   state: 'idle' | 'expired' | 'active'
   peer: Peer | null
 }

@@ -113,8 +113,16 @@ tape('[BlockFetcher]', async (t) => {
     const task = { count: 3, first: new BN(1) }
     ;(fetcher as any).running = true
     fetcher.enqueueTask(task)
-    fetcher.process({ task } as any, blocks)
-    t.equals((fetcher as any).in.size(), 2, 'Fetcher should have two tasks after adopting')
+    const job = (fetcher as any).in.peek()
+    let results = fetcher.process(job as any, blocks)
+    t.equals((fetcher as any).in.size(), 1, 'Fetcher should still have same job')
+    t.equals(job?.partialResult?.length, 2, 'Should have two partial results')
+    t.equals(results, undefined, 'Process should not return full results yet')
+
+    const remainingBlocks: any = [{ header: { number: 3 } }]
+    results = fetcher.process(job as any, remainingBlocks)
+    t.equals(results?.length, 3, 'Should return full results')
+
     t.end()
   })
 
