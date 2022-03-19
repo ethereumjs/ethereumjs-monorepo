@@ -37,8 +37,11 @@ export class CLConnectionManager {
 
   constructor(opts: CLConnectionManagerOpts) {
     this.config = opts.config
-    this.config.events.once(Event.CHAIN_UPDATED, () => {
-      if (this.config.chainCommon.gteHardfork(Hardfork.PreMerge)) {
+    this.config.events.on(Event.CHAIN_UPDATED, () => {
+      if (
+        this.config.chainCommon.gteHardfork(Hardfork.PreMerge) &&
+        !this._connectionCheckInterval
+      ) {
         this.start()
       }
     })
