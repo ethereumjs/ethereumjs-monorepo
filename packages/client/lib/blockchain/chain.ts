@@ -186,6 +186,18 @@ export class Chain {
     await this.blockchain.initPromise
     this.opened = true
     await this.update()
+
+    this.config.chainCommon.on('hardforkChanged', async (hardfork: string) => {
+      if (hardfork !== Hardfork.Merge) {
+        const block = this.config.chainCommon.hardforkBlockBN()
+        this.config.logger.info(`New hardfork reached 🪢 ! hardfork=${hardfork} block=${block}`)
+      } else {
+        const block = await this.getLatestBlock()
+        const num = block.header.number
+        const td = await this.blockchain.getTotalDifficulty(block.hash(), num)
+        this.config.logger.info(`Merge hardfork reached 🐼 👉 👈 🐼 ! block=${num} td=${td}`)
+      }
+    })
   }
 
   /**

@@ -208,7 +208,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   await execution?.open()
   await chain.update()
 
-  return { chain, common, execution: execution as VMExecution, server }
+  return { chain, common, execution: execution!, server }
 }
 
 /**
