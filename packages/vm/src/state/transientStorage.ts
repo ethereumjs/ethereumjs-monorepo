@@ -8,11 +8,23 @@ export interface TransientStorageModification {
   prevValue: Buffer
 }
 
-export type Changeset = TransientStorageModification[]
+export type Changeset = TStorage
 
 export interface TransientStorageOptions {
   storage?: TStorage
   changesets?: Changeset[]
+}
+
+function copyTransientStorage(input: TStorage): TStorage {
+  const map: TStorage = new Map()
+  for (const [addr, storage] of input.entries()) {
+    const copy = new Map()
+    for (const [key, value] of storage.entries()) {
+      copy.set(key, value)
+    }
+    map.set(addr, copy)
+  }
+  return map
 }
 
 export default class TransientStorage {
@@ -21,15 +33,29 @@ export default class TransientStorage {
 
   constructor(opts: TransientStorageOptions = {}) {
     this._storage = opts.storage ?? new Map()
-    this._changesets = opts.changesets ?? [[]]
+    this._changesets = opts.changesets ?? [new Map()]
   }
 
-  private addModification(modification: TransientStorageModification) {
+  private get latestChangeset(): Changeset {
     if (this._changesets.length === 0) {
       throw new Error('no changeset initialized')
     }
-    const latest = this._changesets[this._changesets.length - 1]
-    latest.push(modification)
+    return this._changesets[this._changesets.length - 1]
+  }
+
+  private recordModification(modification: TransientStorageModification) {
+    const latest = this.latestChangeset
+    const addrString = modification.addr.toString()
+    if (!latest.has(addrString)) {
+      latest.set(addrString, new Map())
+    }
+    const addrMap = latest.get(addrString)!
+
+    const keyString = modification.key.toString('hex')
+    // we only need the previous value for the first time the addr-key has been changed since the last checkpoint
+    if (!addrMap.has(keyString)) {
+      addrMap.set(keyString, modification.prevValue)
+    }
   }
 
   public get(addr: Address, key: Buffer): Buffer {
@@ -61,7 +87,7 @@ export default class TransientStorage {
     const str = key.toString('hex')
     const prevValue = map.get(str) ?? Buffer.alloc(32)
 
-    this.addModification({
+    this.recordModification({
       addr,
       key,
       prevValue,
@@ -75,10 +101,12 @@ export default class TransientStorage {
     if (!changeset) {
       throw new Error('cannot revert without a changeset')
     }
-    for (let i = changeset.length - 1; i >= 0; i--) {
-      const modification = changeset[i]
-      const map = this._storage.get(modification.addr.toString())!
-      map.set(modification.key.toString('hex'), modification.prevValue)
+
+    for (const [addr, map] of changeset.entries()) {
+      for (const [key, prevValue] of map.entries()) {
+        const storageMap = this._storage.get(addr)!
+        storageMap.set(key, prevValue)
+      }
     }
   }
 
@@ -91,7 +119,7 @@ export default class TransientStorage {
   }
 
   public checkpoint(): void {
-    this._changesets.push([])
+    this._changesets.push(new Map())
   }
 
   public toJSON(): { [address: string]: { [key: string]: string } } {
@@ -107,25 +135,13 @@ export default class TransientStorage {
 
   public clear(): void {
     this._storage = new Map()
-    this._changesets = [[]]
+    this._changesets = [new Map()]
   }
 
   public copy(): TransientStorage {
     return new TransientStorage({
       storage: copyTransientStorage(this._storage),
-      changesets: this._changesets.slice(),
+      changesets: this._changesets.slice().map(copyTransientStorage),
     })
   }
-}
-
-function copyTransientStorage(input: TStorage): TStorage {
-  const map: TStorage = new Map()
-  for (const [addr, storage] of input.entries()) {
-    const copy = new Map()
-    for (const [key, value] of storage.entries()) {
-      copy.set(key, value)
-    }
-    map.set(addr, copy)
-  }
-  return map
 }

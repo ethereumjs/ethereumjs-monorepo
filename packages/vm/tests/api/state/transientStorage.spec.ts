@@ -161,4 +161,72 @@ tape('Transient Storage', (tester) => {
     t.deepEqual(got, Buffer.alloc(32, 0x00))
     t.end()
   })
+
+  it('keys are stringified', (t) => {
+    const transientStorage = new TransientStorage()
+
+    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const key = Buffer.alloc(32, 0xff)
+    const value = Buffer.alloc(32, 0x99)
+
+    transientStorage.put(address, key, value)
+    t.deepEqual(
+      transientStorage.get(
+        Address.fromString('0xff00000000000000000000000000000000000002'),
+        Buffer.alloc(32, 0xff)
+      ),
+      value
+    )
+    t.end()
+  })
+
+  it('revert applies changes in correct order', (t) => {
+    const transientStorage = new TransientStorage()
+
+    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const key = Buffer.alloc(32, 0xff)
+    const value0 = Buffer.alloc(32, 0x00)
+    const value1 = Buffer.alloc(32, 0x01)
+    const value2 = Buffer.alloc(32, 0x02)
+
+    transientStorage.put(address, key, value0)
+    transientStorage.checkpoint()
+    transientStorage.put(address, key, value1)
+    transientStorage.put(address, key, value2)
+    transientStorage.revert()
+
+    t.deepEqual(transientStorage.get(address, key), value0)
+    t.end()
+  })
+
+  it('copies do not share changesets', (t) => {
+    const original = new TransientStorage()
+
+    const address = Address.fromString('0xff00000000000000000000000000000000000002')
+    const key = Buffer.alloc(32, 0xff)
+    const value0 = Buffer.alloc(32, 0x00)
+    const value1 = Buffer.alloc(32, 0x01)
+    const value2 = Buffer.alloc(32, 0x02)
+
+    original.put(address, key, value0)
+    original.checkpoint()
+    original.put(address, key, value1)
+    original.put(address, key, value2)
+
+    const copy = original.copy()
+
+    // they are not strictly equal
+    t.notStrictEqual(copy._changesets, original._changesets)
+    for (let i = 0; i < copy._changesets.length; i++) {
+      t.notStrictEqual(copy._changesets[i], original._changesets[i])
+    }
+    t.notStrictEqual(copy._storage, original._storage)
+
+    // however they are deeply equal
+    t.deepEqual(copy._storage, original._storage)
+    t.deepEqual(copy._changesets, original._changesets)
+
+    t.deepEqual(copy.toJSON(), original.toJSON())
+    t.end()
+  })
 })
