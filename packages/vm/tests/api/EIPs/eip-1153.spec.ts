@@ -56,6 +56,10 @@ tape('EIP 1153: transient storage', (t) => {
       i++
     })
 
+    vm.on('step', (step: any) => {
+      console.log(step.opcode.name)
+    })
+
     for (const { code, address } of test.contracts) {
       await vm.stateManager.putContractCode(address, Buffer.from(code, 'hex'))
     }
@@ -70,7 +74,7 @@ tape('EIP 1153: transient storage', (t) => {
   }
 
   t.test('should tload and tstore', async (st) => {
-    const code = '60026001' + TSTORE + '6001' + TLOAD + '600052' + '602060' + '00F3'
+    const code = '60026001b46001b360005260206000F3'
     const returndata = Buffer.alloc(32)
     returndata[31] = 0x02
 
@@ -104,18 +108,84 @@ tape('EIP 1153: transient storage', (t) => {
     st.end()
   })
 
+  t.test('should clear between transactions', async (st) => {
+    // If calldata size is 0, do a tload and return the value
+    // at key 0. If calldata size is nonzero, do a tstore at
+    // key 0. Send a transaction with nonzero calldata first
+    // and then send a second transaction with zero calldata
+    // and then assert that the returndata is 0. If the returndata
+    // is 0, then the transient storage is cleared between
+    // transactions
+    const code = '36600014630000001c5760016300000012575b60ff6000b4600080f35b6000b360005260206000f3'
+    const address = new Address(Buffer.from('000000000000000000000000636F6E7472616374', 'hex'))
+
+    const test = {
+      contracts: [{ address, code }],
+      transactions: [
+        Transaction.fromTxData({
+          gasLimit: new BN(15000000),
+          to: address,
+          data: Buffer.alloc(32),
+        }).sign(senderKey),
+        Transaction.fromTxData({
+          nonce: 1,
+          gasLimit: new BN(15000000),
+          to: address,
+        }).sign(senderKey),
+      ],
+      steps: [
+        // first tx
+        { expectedOpcode: 'CALLDATASIZE', expectedGasUsed: 2, expectedStack: [] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(32)] },
+        { expectedOpcode: 'EQ', expectedGasUsed: 3, expectedStack: [new BN(32), new BN(0)] },
+        { expectedOpcode: 'PUSH4', expectedGasUsed: 3, expectedStack: [new BN(0)] },
+        { expectedOpcode: 'JUMPI', expectedGasUsed: 10, expectedStack: [new BN(0), new BN(28)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [] },
+        { expectedOpcode: 'PUSH4', expectedGasUsed: 3, expectedStack: [new BN(1)] },
+        { expectedOpcode: 'JUMPI', expectedGasUsed: 10, expectedStack: [new BN(1), new BN(18)] },
+        { expectedOpcode: 'JUMPDEST', expectedGasUsed: 1, expectedStack: [] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(255)] },
+        { expectedOpcode: 'TSTORE', expectedGasUsed: 100, expectedStack: [new BN(255), new BN(0)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [] },
+        { expectedOpcode: 'DUP1', expectedGasUsed: 3, expectedStack: [new BN(0)] },
+        { expectedOpcode: 'RETURN', expectedGasUsed: -278, expectedStack: [new BN(0), new BN(0)] },
+        // second tx
+        { expectedOpcode: 'CALLDATASIZE', expectedGasUsed: 2, expectedStack: [] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(0)] },
+        { expectedOpcode: 'EQ', expectedGasUsed: 3, expectedStack: [new BN(0), new BN(0)] },
+        { expectedOpcode: 'PUSH4', expectedGasUsed: 3, expectedStack: [new BN(1)] },
+        { expectedOpcode: 'JUMPI', expectedGasUsed: 10, expectedStack: [new BN(1), new BN(28)] },
+        { expectedOpcode: 'JUMPDEST', expectedGasUsed: 1, expectedStack: [] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [] },
+        { expectedOpcode: 'TLOAD', expectedGasUsed: 100, expectedStack: [new BN(0)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(0)] },
+        { expectedOpcode: 'MSTORE', expectedGasUsed: 6, expectedStack: [new BN(0), new BN(0)] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [] },
+        { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [new BN(32)] },
+        { expectedOpcode: 'RETURN', expectedGasUsed: 3, expectedStack: [new BN(32), new BN(0)] },
+      ],
+    }
+
+    const [result1, result2] = await runTest(test, st)
+    st.equal(result1.execResult.exceptionError, undefined)
+    st.deepEqual(new BN(result2.execResult.returnValue).toNumber(), 0x00)
+    st.end()
+  })
+
   t.test('tload should not keep reverted changes', async (st) => {
     // logic address has a contract with transient storage logic in it
     const logicAddress = new Address(Buffer.from('EA674fdDe714fd979de3EdF0F56AA9716B898ec8', 'hex'))
     // calling address is the address that calls the logic address
     const callingAddress = new Address(Buffer.alloc(20, 0xff))
 
-    // Perform 3 calls
+    // Perform 3 calls:
     // - TSTORE, return
     // - TSTORE, revert
     // - TLOAD, return
-    // and then assert that the value that is returned is the value set in the
-    // first call
+    // Then return the returndata from the final call and
+    // assert that the value that is returned is the value set in the
+    // first call. This asserts that reverts are handled correctly.
 
     const logicCode =
       '36600080376000518063afc874d214630000003457806362fdb9be14630000003f57806343ac1c3914630000004a5760006000fd5b60ff6000b460006000fd5b60aa6000b460006000f35b6000b360005260206000f3'

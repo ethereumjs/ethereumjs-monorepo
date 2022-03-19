@@ -35,11 +35,11 @@ export default class TransientStorage {
   public get(addr: Address, key: Buffer): Buffer {
     const map = this._storage.get(addr.toString())
     if (!map) {
-      return Buffer.alloc(32, 0x00)
+      return Buffer.alloc(32)
     }
     const value = map.get(key.toString('hex'))
     if (!value) {
-      return Buffer.alloc(32, 0x00)
+      return Buffer.alloc(32)
     }
     return value
   }
@@ -59,7 +59,7 @@ export default class TransientStorage {
     const map = this._storage.get(addr.toString())!
 
     const str = key.toString('hex')
-    const prevValue = map.get(str) ?? Buffer.alloc(32, 0x00)
+    const prevValue = map.get(str) ?? Buffer.alloc(32)
 
     this.addModification({
       addr,
@@ -75,8 +75,8 @@ export default class TransientStorage {
     if (!changeset) {
       throw new Error('cannot revert without a changeset')
     }
-    const reversed = changeset.slice().reverse()
-    for (const modification of reversed) {
+    for (let i = changeset.length - 1; i >= 0; i--) {
+      const modification = changeset[i]
       const map = this._storage.get(modification.addr.toString())!
       map.set(modification.key.toString('hex'), modification.prevValue)
     }

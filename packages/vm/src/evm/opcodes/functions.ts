@@ -876,11 +876,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xb3: TLOAD
   [
     0xb3,
-    function (runState, common) {
-      if (!common.isActivatedEIP(1153)) {
-        throw new Error('Transient storage EIP not enabled')
-      }
-
+    function (runState) {
       const key = runState.stack.pop()
       const keyBuf = key.toArrayLike(Buffer, 'be', 32)
       const value = runState.eei.transientStorageLoad(keyBuf)
@@ -891,11 +887,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xb4: TSTORE
   [
     0xb4,
-    function (runState, common) {
-      if (!common.isActivatedEIP(1153)) {
-        throw new Error('Transient storage EIP not enabled')
-      }
-
+    function (runState) {
       const [key, val] = runState.stack.popN(2)
 
       const keyBuf = key.toArrayLike(Buffer, 'be', 32)
