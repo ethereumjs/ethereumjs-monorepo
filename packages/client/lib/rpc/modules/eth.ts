@@ -72,7 +72,7 @@ type JsonRpcBlock = {
   gasLimit: string // the maximum gas allowed in this block.
   gasUsed: string // the total used gas by all transactions in this block.
   timestamp: string // the unix timestamp for when the block was collated.
-  transactions: string[] | JsonTx[] // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
+  transactions: JsonTx[] | string[] // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
   uncles: string[] // Array of uncle hashes
   baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
 }
@@ -143,10 +143,12 @@ const jsonRpcBlock = async (
   if (includeTransactions) {
     transactions = block.transactions.map((tx) => {
       const transaction = tx.toJSON()
+      const { gasLimit: gas, data: input, ...txData } = transaction
       return {
-        ...transaction,
-        input: transaction.data,
-        gas: transaction.gasLimit,
+        ...txData,
+        // RPC specs specify `input` rather than `data`, and `gas` rather than `gasLimit`
+        input,
+        gas,
       }
     })
   } else {
