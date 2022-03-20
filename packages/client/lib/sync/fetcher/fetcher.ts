@@ -498,15 +498,14 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     }
     if (this.isBlockFetcherJobTask(job.task)) {
       let { first, count } = job.task
+      let partialResult = ''
       if (job.partialResult) {
-        first = first.addn((job.partialResult as any).length)
-        count = count - (job.partialResult as any).length
+        first = first.addn(job.partialResult.length)
+        count -= job.partialResult.length
+        partialResult = ` partialResults=${job.partialResult.length}`
       }
-      str += `first=${first} count=${count} ${
-        job.partialResult ? `partialResults=${(job.partialResult as any)?.length}` : ''
-      }`
+      str += `first=${first} count=${count}${partialResult}`
     }
-
     return str
   }
 
