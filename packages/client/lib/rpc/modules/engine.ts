@@ -499,12 +499,10 @@ export class Engine {
       try {
         await this.chain.getBlock(toBuffer(safeBlockHash))
       } catch (error) {
-        const payloadStatus = {
-          status: Status.INVALID,
-          latestValidHash: null,
-          validationError: 'Safe head not available',
+        throw {
+          code: INVALID_PARAMS,
+          message: 'safe block hash not available',
         }
-        return { payloadStatus, payloadId: null }
       }
     }
 
