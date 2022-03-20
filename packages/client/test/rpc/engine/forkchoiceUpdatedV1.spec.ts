@@ -226,3 +226,17 @@ tape(`${method}: call with deep parent lookup`, async (t) => {
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
+
+tape(`${method}: invalid safe block hash`, async (t) => {
+  const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+  const req = params(method, [
+    {
+      ...validForkChoiceState,
+      safeBlockHash: '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4b',
+    },
+  ])
+  const expectRes = (res: any) => {
+    t.equal(res.body.result.payloadStatus.status, 'INVALID')
+  }
+  await baseRequest(t, server, req, 200, expectRes, false)
+})
