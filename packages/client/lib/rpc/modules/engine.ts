@@ -548,11 +548,19 @@ export class Engine {
 
     /*
      * Process finalized block
+     * All zeros means no finalized block yet which is okay
      */
-    if (finalizedBlockHash === '0'.repeat(64)) {
-      // All zeros means no finalized block yet which is okay
-    } else {
-      this.chain.lastFinalizedBlockHash = toBuffer(finalizedBlockHash)
+    if (!(finalizedBlockHash === '0'.repeat(64))) {
+      try {
+        this.chain.lastFinalizedBlockHash = (
+          await this.chain.getBlock(toBuffer(finalizedBlockHash))
+        ).hash()
+      } catch (error) {
+        throw {
+          message: 'finalized block hash not available',
+          code: INVALID_PARAMS,
+        }
+      }
     }
 
     /*
