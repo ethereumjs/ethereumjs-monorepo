@@ -426,6 +426,9 @@ export class Engine {
       for (const [i, block] of blocks.entries()) {
         const root = (i > 0 ? blocks[i - 1] : await this.chain.getBlock(block.header.parentHash))
           .header.stateRoot
+        const { number } = block.header
+        const td = this.chain.headers.td
+        vmCopy._common.setHardforkByBlockNumber(number, td)
         await vmCopy.runBlock({ block, root })
         await vmCopy.blockchain.putBlock(block)
       }
