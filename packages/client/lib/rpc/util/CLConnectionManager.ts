@@ -124,6 +124,9 @@ export class CLConnectionManager {
         this.config.logger.warn(
           `Merge HF activated, CL client connection is needed for continued block processing`
         )
+        this.config.logger.warn(
+          '(note that CL client might need to be synced up to beacon chain Merge transition slot until communication starts)'
+        )
       }
       this.oneTimeMergeCLConnectionCheck = true
     }
