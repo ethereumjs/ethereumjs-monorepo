@@ -191,13 +191,17 @@ export class FullSynchronizer extends Synchronizer {
 
   async processBlocks(execution: VMExecution, blocks: Block[] | BlockHeader[]) {
     if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
-      // If we are beyond the merge block we should stop the fetcher
-      this.config.logger.info('Merge hardfork reached, stopping block fetcher')
-      this.clearFetcher()
+      if (this.fetcher !== null) {
+        // If we are beyond the merge block we should stop the fetcher
+        this.config.logger.info('Merge hardfork reached, stopping block fetcher')
+        this.clearFetcher()
+      }
     }
 
     if (blocks.length === 0) {
-      this.config.logger.warn('No blocks fetched are applicable for import')
+      if (this.fetcher !== null) {
+        this.config.logger.warn('No blocks fetched are applicable for import')
+      }
       return
     }
 
@@ -223,7 +227,7 @@ export class FullSynchronizer extends Synchronizer {
         const td = this.chain.blocks.td
         const remaining = mergeTD.sub(td)
         if (remaining.lte(mergeTD.divn(10))) {
-          attentionHF = `Merge HF in ${remaining} TD (diff)`
+          attentionHF = `Merge HF in ${remaining} TD`
         }
       }
     }

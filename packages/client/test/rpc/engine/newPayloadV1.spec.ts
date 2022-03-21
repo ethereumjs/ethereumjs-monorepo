@@ -145,7 +145,8 @@ tape(`${method}: call with valid data but invalid transactions`, async (t) => {
 })
 
 tape(`${method}: call with valid data & valid transaction but not signed`, async (t) => {
-  const { server, common } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+  const { server, common, chain } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+  chain.config.logger.silent = true
 
   // Let's mock a non-signed transaction so execution fails
   const tx = FeeMarketEIP1559Transaction.fromTxData(
