@@ -223,7 +223,7 @@ export class FullSynchronizer extends Synchronizer {
         const td = this.chain.blocks.td
         const remaining = mergeTD.sub(td)
         if (remaining.lte(mergeTD.divn(10))) {
-          attentionHF = `Merge HF in ${remaining} TD (diff)`
+          attentionHF = `Merge HF in ${remaining} TD`
         }
       }
     }
