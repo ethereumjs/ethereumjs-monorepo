@@ -32,7 +32,9 @@ export class CLConnectionManager {
   private connectionStatus = ConnectionStatus.Disconnected
   private lastRequestTimestamp = 0
 
+  public initialPayloadReceived?: ExecutionPayloadV1
   public lastPayloadReceived?: ExecutionPayloadV1
+  public initialForkchoiceUpdate?: ForkchoiceStateV1
   public lastForkchoiceUpdate?: ForkchoiceStateV1
 
   private oneTimeMergeCLConnectionCheck = false

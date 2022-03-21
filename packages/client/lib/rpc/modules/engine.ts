@@ -320,6 +320,14 @@ export class Engine {
       parentHash,
     } = payloadData
     this.connectionManager.lastPayloadReceived = payloadData
+    if (!this.connectionManager.initialPayloadReceived) {
+      this.connectionManager.initialPayloadReceived = payloadData
+      this.config.logger.info(
+        `Initial consensus payload received block=${Number(payloadData.blockNumber)} parentHash=${
+          payloadData.parentHash
+        }`
+      )
+    }
     const common = this.config.chainCommon
 
     try {
@@ -459,6 +467,15 @@ export class Engine {
   ): Promise<ForkchoiceResponseV1> {
     this.connectionManager.updateConnectionStatus()
     this.connectionManager.lastForkchoiceUpdate = params[0]
+    if (!this.connectionManager.initialForkchoiceUpdate) {
+      this.connectionManager.initialForkchoiceUpdate = params[0]
+      this.config.logger.info(
+        `Initial consensus forkchoice update headBlockHash=${params[0].headBlockHash.substring(
+          0,
+          7
+        )}... finalizedBlockHash=${params[0].finalizedBlockHash}`
+      )
+    }
 
     const { headBlockHash, finalizedBlockHash } = params[0]
     const payloadAttributes = params[1]
