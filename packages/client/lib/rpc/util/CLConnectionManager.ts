@@ -158,7 +158,7 @@ export class CLConnectionManager {
 
     if (this.config.chainCommon.hardfork() == Hardfork.PreMerge) {
       if (this.connectionStatus === ConnectionStatus.Disconnected) {
-        this.config.logger.warn(`No CL client connection available, Merge HF happening soon`)
+        this.config.logger.warn('No CL client connection available, Merge HF happening soon')
       }
     }
 
@@ -168,7 +168,7 @@ export class CLConnectionManager {
     ) {
       if (this.connectionStatus === ConnectionStatus.Disconnected) {
         this.config.logger.warn(
-          `Merge HF activated, CL client connection is needed for continued block processing`
+          'Merge HF activated, CL client connection is needed for continued block processing'
         )
         this.config.logger.warn(
           '(note that CL client might need to be synced up to beacon chain Merge transition slot until communication starts)'
