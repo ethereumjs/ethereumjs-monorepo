@@ -1,6 +1,6 @@
 import { Block, HeaderData } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
-import { toBuffer, bufferToHex, rlp, BN } from 'ethereumjs-util'
+import { toBuffer, bufferToHex, rlp, BN, zeros } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Hardfork } from '@ethereumjs/common'
 
@@ -550,7 +550,9 @@ export class Engine {
      * Process finalized block
      * All zeros means no finalized block yet which is okay
      */
-    if (!(finalizedBlockHash === '0'.repeat(64))) {
+    const zeroHash = zeros(32)
+    const finalizedHash = toBuffer(finalizedBlockHash)
+    if (!finalizedHash.equals(zeroHash)) {
       try {
         this.chain.lastFinalizedBlockHash = (
           await this.chain.getBlock(toBuffer(finalizedBlockHash))
