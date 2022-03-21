@@ -34,14 +34,19 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
    * @param job
    */
   async request(job: Job<JobTask, BlockHeaderResult, BlockHeader>) {
-    const { task, peer } = job
+    const { task, peer, partialResult } = job
     if (this.flow.maxRequestCount(peer!, 'GetBlockHeaders') < this.config.maxPerRequest) {
       // we reached our request limit. try with a different peer.
       return
     }
+    let { first, count } = task
+    if (partialResult) {
+      first = first.addn(partialResult.length)
+      count = count - partialResult.length
+    }
     const response = await peer!.les!.getBlockHeaders({
-      block: task.first,
-      max: task.count,
+      block: first,
+      max: count,
     })
     return response
   }

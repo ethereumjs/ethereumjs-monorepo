@@ -142,6 +142,36 @@ tape('[BlockFetcher]', async (t) => {
     t.end()
   })
 
+  t.test('should request correctly', async (t) => {
+    const config = new Config({ transports: [] })
+    const pool = new PeerPool() as any
+    const chain = new Chain({ config })
+    const fetcher = new BlockFetcher({
+      config,
+      pool,
+      chain,
+      first: new BN(0),
+      count: new BN(0),
+    })
+    const partialResult: any = [{ header: { number: 1 } }, { header: { number: 2 } }]
+
+    const task = { count: 3, first: new BN(1) }
+    const peer = {
+      eth: { getBlockBodies: td.func<any>(), getBlockHeaders: td.func<any>() },
+      id: 'random',
+      address: 'random',
+    }
+    const job = { peer, partialResult, task }
+    await fetcher.request(job as any)
+    td.verify(
+      job.peer.eth.getBlockHeaders({
+        block: job.task.first.addn(partialResult.length),
+        max: job.task.count - partialResult.length,
+      })
+    )
+    t.end()
+  })
+
   t.test('store()', async (st) => {
     td.reset()
     st.plan(2)
