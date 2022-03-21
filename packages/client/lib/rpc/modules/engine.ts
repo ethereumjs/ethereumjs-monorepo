@@ -431,7 +431,7 @@ export class Engine {
       }
     } catch (error) {
       const validationError = `Error verifying block while running: ${error}`
-      this.config.logger.debug(validationError)
+      this.config.logger.error(validationError)
       const latestValidHash = await validHash(block.header.parentHash, this.validBlocks, this.chain)
       return { status: Status.INVALID, latestValidHash, validationError }
     }
