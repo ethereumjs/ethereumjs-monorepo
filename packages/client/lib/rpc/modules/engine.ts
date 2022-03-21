@@ -320,14 +320,6 @@ export class Engine {
       parentHash,
     } = payloadData
     this.connectionManager.lastPayloadReceived = payloadData
-    if (!this.connectionManager.initialPayloadReceived) {
-      this.connectionManager.initialPayloadReceived = payloadData
-      this.config.logger.info(
-        `Initial consensus payload received block=${Number(payloadData.blockNumber)} parentHash=${
-          payloadData.parentHash
-        }`
-      )
-    }
     const common = this.config.chainCommon
 
     try {
@@ -468,17 +460,8 @@ export class Engine {
   async forkchoiceUpdatedV1(
     params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | undefined]
   ): Promise<ForkchoiceResponseV1> {
-    this.connectionManager.updateConnectionStatus()
+    this.connectionManager.updateStatus()
     this.connectionManager.lastForkchoiceUpdate = params[0]
-    if (!this.connectionManager.initialForkchoiceUpdate) {
-      this.connectionManager.initialForkchoiceUpdate = params[0]
-      this.config.logger.info(
-        `Initial consensus forkchoice update headBlockHash=${params[0].headBlockHash.substring(
-          0,
-          7
-        )}... finalizedBlockHash=${params[0].finalizedBlockHash}`
-      )
-    }
 
     const { headBlockHash, finalizedBlockHash } = params[0]
     const payloadAttributes = params[1]
@@ -600,7 +583,7 @@ export class Engine {
    * @returns Instance of {@link ExecutionPayloadV1} or an error
    */
   async getPayloadV1(params: [string]) {
-    this.connectionManager.updateConnectionStatus()
+    this.connectionManager.updateStatus()
     const payloadId = toBuffer(params[0])
     try {
       const block = await this.pendingBlock.build(payloadId)
@@ -628,7 +611,7 @@ export class Engine {
   async exchangeTransitionConfigurationV1(
     params: [TransitionConfigurationV1]
   ): Promise<TransitionConfigurationV1> {
-    this.connectionManager.updateConnectionStatus()
+    this.connectionManager.updateStatus()
     const { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber } = params[0]
     const td = this.chain.config.chainCommon.hardforkTD(Hardfork.Merge)
     if (td === undefined || td === null) {

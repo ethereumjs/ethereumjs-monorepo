@@ -30,14 +30,36 @@ export class CLConnectionManager {
   private _forkchoiceLogInterval?: NodeJS.Timeout
 
   private connectionStatus = ConnectionStatus.Disconnected
+  private oneTimeMergeCLConnectionCheck = false
   private lastRequestTimestamp = 0
 
   public initialPayloadReceived?: ExecutionPayloadV1
-  public lastPayloadReceived?: ExecutionPayloadV1
   public initialForkchoiceUpdate?: ForkchoiceStateV1
-  public lastForkchoiceUpdate?: ForkchoiceStateV1
 
-  private oneTimeMergeCLConnectionCheck = false
+  set lastPayloadReceived(payload: ExecutionPayloadV1) {
+    if (!this.initialPayloadReceived) {
+      this.initialPayloadReceived = payload
+      this.config.logger.info(
+        `Initial consensus payload received block=${Number(payload.blockNumber)} parentHash=${
+          payload.parentHash
+        }`
+      )
+    }
+    this.lastPayloadReceived = payload
+  }
+
+  set lastForkchoiceUpdate(state: ForkchoiceStateV1) {
+    if (!this.initialForkchoiceUpdate) {
+      this.initialForkchoiceUpdate = state
+      this.config.logger.info(
+        `Initial consensus forkchoice update headBlockHash=${state.headBlockHash.substring(
+          0,
+          7
+        )}... finalizedBlockHash=${state.finalizedBlockHash}`
+      )
+    }
+    this.lastForkchoiceUpdate = state
+  }
 
   constructor(opts: CLConnectionManagerOpts) {
     this.config = opts.config
@@ -83,7 +105,7 @@ export class CLConnectionManager {
   /**
    * Updates the Consensus Client connection status on new RPC requests
    */
-  updateConnectionStatus() {
+  updateStatus() {
     if ([ConnectionStatus.Disconnected, ConnectionStatus.Lost].includes(this.connectionStatus)) {
       this.config.logger.info('Consensus client connection established', { attentionCL: 'CL' })
     }
