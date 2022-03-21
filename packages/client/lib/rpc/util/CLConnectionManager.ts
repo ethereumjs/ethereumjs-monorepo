@@ -17,7 +17,7 @@ export class CLConnectionManager {
   private config: Config
 
   /** Default connection check interval (in ms) */
-  private DEFAULT_CONNECTION_CHECK_INTERVAL = 5000
+  private DEFAULT_CONNECTION_CHECK_INTERVAL = 10000
 
   /** Default payload log interval (in ms) */
   private DEFAULT_PAYLOAD_LOG_INTERVAL = 10000
