@@ -26,7 +26,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
     let { first, count } = task
     if (partialResult) {
       first = first.addn(partialResult.length)
-      count = count - partialResult.length
+      count -= partialResult.length
     }
     const blocksRange = `${first}-${first.addn(count)}`
     const peerInfo = `id=${peer?.id.slice(0, 8)} address=${peer?.address}`
