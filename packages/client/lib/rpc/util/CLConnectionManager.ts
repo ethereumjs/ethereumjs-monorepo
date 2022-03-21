@@ -35,6 +35,8 @@ export class CLConnectionManager {
   public lastPayloadReceived?: ExecutionPayloadV1
   public lastForkchoiceUpdate?: ForkchoiceStateV1
 
+  private oneTimeMergeCLConnectionCheck = false
+
   constructor(opts: CLConnectionManagerOpts) {
     this.config = opts.config
     this.config.events.on(Event.CHAIN_UPDATED, () => {
@@ -104,6 +106,24 @@ export class CLConnectionManager {
         this.connectionStatus = ConnectionStatus.Disconnected
         this.config.logger.warn('Consensus disconnected', { attentionCL: null })
       }
+    }
+
+    if (this.config.chainCommon.hardfork() == Hardfork.PreMerge) {
+      if (this.connectionStatus === ConnectionStatus.Disconnected) {
+        this.config.logger.warn(`No CL client connection available, Merge HF happening soon`)
+      }
+    }
+
+    if (
+      !this.oneTimeMergeCLConnectionCheck &&
+      this.config.chainCommon.hardfork() == Hardfork.Merge
+    ) {
+      if (this.connectionStatus === ConnectionStatus.Disconnected) {
+        this.config.logger.warn(
+          `Merge HF activated, CL client connection is needed for continued block processing`
+        )
+      }
+      this.oneTimeMergeCLConnectionCheck = true
     }
   }
 
