@@ -33,10 +33,29 @@ export class CLConnectionManager {
   private oneTimeMergeCLConnectionCheck = false
   private lastRequestTimestamp = 0
 
-  public initialPayloadReceived?: ExecutionPayloadV1
-  public initialForkchoiceUpdate?: ForkchoiceStateV1
+  /**
+   * Do not get or set this value directly.
+   * Use the getter and setter without the underscore, i.e.
+   * ```this.connectionManager.lastPayloadReceived = payload```
+   */
+  private _lastPayloadReceived?: ExecutionPayloadV1
 
-  set lastPayloadReceived(payload: ExecutionPayloadV1) {
+  /**
+   * Do not get or set this value directly.
+   * Use the getter and setter without the underscore, i.e.
+   * ```this.connectionManager.lastForkchoiceUpdate = state```
+   */
+  private _lastForkchoiceUpdate?: ForkchoiceStateV1
+
+  private initialPayloadReceived?: ExecutionPayloadV1
+  private initialForkchoiceUpdate?: ForkchoiceStateV1
+
+  get lastPayloadReceived(): ExecutionPayloadV1 | undefined {
+    return this._lastPayloadReceived
+  }
+
+  set lastPayloadReceived(payload: ExecutionPayloadV1 | undefined) {
+    if (!payload) return
     if (!this.initialPayloadReceived) {
       this.initialPayloadReceived = payload
       this.config.logger.info(
@@ -45,10 +64,15 @@ export class CLConnectionManager {
         }`
       )
     }
-    this.lastPayloadReceived = payload
+    this._lastPayloadReceived = payload
   }
 
-  set lastForkchoiceUpdate(state: ForkchoiceStateV1) {
+  get lastForkchoiceUpdate(): ForkchoiceStateV1 | undefined {
+    return this._lastForkchoiceUpdate
+  }
+
+  set lastForkchoiceUpdate(state: ForkchoiceStateV1 | undefined) {
+    if (!state) return
     if (!this.initialForkchoiceUpdate) {
       this.initialForkchoiceUpdate = state
       this.config.logger.info(
@@ -58,7 +82,7 @@ export class CLConnectionManager {
         )}... finalizedBlockHash=${state.finalizedBlockHash}`
       )
     }
-    this.lastForkchoiceUpdate = state
+    this._lastForkchoiceUpdate = state
   }
 
   constructor(opts: CLConnectionManagerOpts) {

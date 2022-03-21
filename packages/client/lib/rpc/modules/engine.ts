@@ -310,6 +310,9 @@ export class Engine {
    *   3. validationError: String|null - validation error message
    */
   async newPayloadV1(params: [ExecutionPayloadV1]): Promise<PayloadStatusV1> {
+    this.connectionManager.updateStatus()
+    this.connectionManager.lastPayloadReceived = params[0]
+
     const [payloadData] = params
     const {
       blockNumber: number,
@@ -319,8 +322,7 @@ export class Engine {
       transactions,
       parentHash,
     } = payloadData
-    this.connectionManager.lastPayloadReceived = payloadData
-    const common = this.config.chainCommon
+    const { chainCommon: common } = this.config
 
     try {
       const block = await findBlock(toBuffer(parentHash), this.validBlocks, this.chain)
