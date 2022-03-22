@@ -1,7 +1,8 @@
 import { Hardfork } from '@ethereumjs/common'
 import { Event } from '../../types'
 import type { Config } from '../../config'
-import type { ExecutionPayloadV1, ForkchoiceStateV1 } from '../modules/engine'
+import type { ExecutionPayloadV1, ForkchoiceResponseV1, ForkchoiceStateV1 } from '../modules/engine'
+import { Block } from '@ethereumjs/block'
 
 export enum ConnectionStatus {
   Connected = 'connected',
@@ -11,6 +12,13 @@ export enum ConnectionStatus {
 
 type CLConnectionManagerOpts = {
   config: Config
+}
+
+type ForkchoiceUpdate = {
+  state: ForkchoiceStateV1
+  response?: ForkchoiceResponseV1
+  headBlock?: Block
+  error?: string
 }
 
 export class CLConnectionManager {
@@ -44,17 +52,12 @@ export class CLConnectionManager {
    * Use the getter and setter without the underscore, i.e.
    * ```this.connectionManager.lastPayloadReceived = payload```
    */
-  private _lastPayloadReceived?: ExecutionPayloadV1
+  private _lastPayloadReceived?: ExecutionPayloadV1 // TODO: integrate response (see forkchoiceUpdate)
 
-  /**
-   * Do not get or set this value directly.
-   * Use the getter and setter without the underscore, i.e.
-   * ```this.connectionManager.lastForkchoiceUpdate = state```
-   */
-  private _lastForkchoiceUpdate?: ForkchoiceStateV1
+  private _lastForkchoiceUpdate?: ForkchoiceUpdate
 
   private initialPayloadReceived?: ExecutionPayloadV1
-  private initialForkchoiceUpdate?: ForkchoiceStateV1
+  private _initialForkchoiceUpdate?: ForkchoiceUpdate
 
   get lastPayloadReceived(): ExecutionPayloadV1 | undefined {
     return this._lastPayloadReceived
@@ -71,24 +74,6 @@ export class CLConnectionManager {
       )
     }
     this._lastPayloadReceived = payload
-  }
-
-  get lastForkchoiceUpdate(): ForkchoiceStateV1 | undefined {
-    return this._lastForkchoiceUpdate
-  }
-
-  set lastForkchoiceUpdate(state: ForkchoiceStateV1 | undefined) {
-    if (!state) return
-    if (!this.initialForkchoiceUpdate) {
-      this.initialForkchoiceUpdate = state
-      this.config.logger.info(
-        `Initial consensus forkchoice update headBlockHash=${state.headBlockHash.substring(
-          0,
-          7
-        )}... finalizedBlockHash=${state.finalizedBlockHash}`
-      )
-    }
-    this._lastForkchoiceUpdate = state
   }
 
   constructor(opts: CLConnectionManagerOpts) {
@@ -134,6 +119,31 @@ export class CLConnectionManager {
     for (const interval of intervals) {
       if (interval) clearInterval(interval)
     }
+  }
+
+  private _getForkchoiceUpdateLogMsg(update: ForkchoiceUpdate) {
+    let msg = `head block hash=${update.state.headBlockHash.substring(0, 7)}...`
+    if (update.headBlock) {
+      msg += ` number=${update.headBlock.header.number}`
+    }
+    msg += ` finalized block hash=${update.state.finalizedBlockHash} response=${
+      update.response ? update.response.payloadStatus.status : '-'
+    }`
+
+    if (update.error) {
+      msg += ` error=${update.error}`
+    }
+    return msg
+  }
+
+  lastForkchoiceUpdate(update: ForkchoiceUpdate) {
+    if (!this._initialForkchoiceUpdate) {
+      this._initialForkchoiceUpdate = update
+      this.config.logger.info(
+        `Initial consensus forkchoice update ${this._getForkchoiceUpdateLogMsg(update)}`
+      )
+    }
+    this._lastForkchoiceUpdate = update
   }
 
   /**
@@ -214,15 +224,13 @@ export class CLConnectionManager {
     if (this.connectionStatus !== ConnectionStatus.Connected) {
       return
     }
-    if (!this.lastForkchoiceUpdate) {
+    if (!this._lastForkchoiceUpdate) {
       this.config.logger.info('No consensus forkchoice update received yet')
     } else {
-      const { headBlockHash, finalizedBlockHash } = this.lastForkchoiceUpdate
       this.config.logger.info(
-        `Last consensus forkchoice update headBlockHash=${headBlockHash.substring(
-          0,
-          7
-        )}... finalizedBlockHash=${finalizedBlockHash}`
+        `Last consensus forkchoice update ${this._getForkchoiceUpdateLogMsg(
+          this._lastForkchoiceUpdate
+        )}`
       )
     }
   }

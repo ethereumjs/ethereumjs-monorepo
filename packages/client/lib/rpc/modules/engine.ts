@@ -64,7 +64,7 @@ type PayloadStatusV1 = {
   validationError: string | null
 }
 
-type ForkchoiceResponseV1 = {
+export type ForkchoiceResponseV1 = {
   payloadStatus: PayloadStatusV1
   payloadId: string | null
 }
@@ -459,9 +459,6 @@ export class Engine {
   async forkchoiceUpdatedV1(
     params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | undefined]
   ): Promise<ForkchoiceResponseV1> {
-    this.connectionManager.updateStatus()
-    this.connectionManager.lastForkchoiceUpdate = params[0]
-
     const { headBlockHash, finalizedBlockHash, safeBlockHash } = params[0]
     const payloadAttributes = params[1]
 
@@ -477,14 +474,20 @@ export class Engine {
       } catch (error) {
         const latestValidHash = bufferToHex(this.chain.headers.latest!.hash())
         const payloadStatus = { status: Status.SYNCING, latestValidHash, validationError: null }
-        return { payloadStatus, payloadId: null }
+        const response = { payloadStatus, payloadId: null }
+        this.connectionManager.lastForkchoiceUpdate({
+          state: params[0],
+          response,
+        })
+        this.connectionManager.updateStatus()
+        return response
       }
     }
 
     if (!headBlock._common.gteHardfork(Hardfork.Merge)) {
       const validTerminalBlock = await validateTerminalBlock(headBlock, this.chain)
       if (!validTerminalBlock) {
-        return {
+        const response = {
           payloadStatus: {
             status: Status.INVALID_TERMINAL_BLOCK,
             validationError: null,
@@ -492,6 +495,12 @@ export class Engine {
           },
           payloadId: null,
         }
+        this.connectionManager.lastForkchoiceUpdate({
+          state: params[0],
+          response,
+        })
+        this.connectionManager.updateStatus()
+        return response
       }
     }
 
@@ -499,9 +508,16 @@ export class Engine {
       try {
         await this.chain.getBlock(toBuffer(safeBlockHash))
       } catch (error) {
+        const message = 'safe block hash not available'
+        this.connectionManager.lastForkchoiceUpdate({
+          state: params[0],
+          response: undefined,
+          error: message,
+        })
+        this.connectionManager.updateStatus()
         throw {
           code: INVALID_PARAMS,
-          message: 'safe block hash not available',
+          message,
         }
       }
     }
@@ -523,7 +539,13 @@ export class Engine {
           this.chain
         )
         const payloadStatus = { status: Status.SYNCING, latestValidHash, validationError: null }
-        return { payloadStatus, payloadId: null }
+        const response = { payloadStatus, payloadId: null }
+        this.connectionManager.lastForkchoiceUpdate({
+          state: params[0],
+          response,
+        })
+        this.connectionManager.updateStatus()
+        return response
       }
 
       const blocks = [...parentBlocks, headBlock]
@@ -582,7 +604,14 @@ export class Engine {
         this.chain
       )
       const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
-      return { payloadStatus, payloadId: bufferToHex(payloadId) }
+      const response = { payloadStatus, payloadId: bufferToHex(payloadId) }
+      this.connectionManager.lastForkchoiceUpdate({
+        state: params[0],
+        response,
+        headBlock,
+      })
+      this.connectionManager.updateStatus()
+      return response
     }
 
     const latestValidHash = await validHash(
@@ -591,7 +620,14 @@ export class Engine {
       this.chain
     )
     const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
-    return { payloadStatus, payloadId: null }
+    const response = { payloadStatus, payloadId: null }
+    this.connectionManager.lastForkchoiceUpdate({
+      state: params[0],
+      response,
+      headBlock,
+    })
+    this.connectionManager.updateStatus()
+    return response
   }
 
   /**
