@@ -4,6 +4,7 @@ import { homedir } from 'os'
 import path from 'path'
 import readline from 'readline'
 import { randomBytes } from 'crypto'
+import { existsSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { _getInitializedChains } from '@ethereumjs/common/dist/chains'
@@ -12,9 +13,9 @@ import { parseMultiaddrs, parseGenesisState, parseCustomParams } from '../lib/ut
 import EthereumClient from '../lib/client'
 import { Config, DataDirectory } from '../lib/config'
 import { Logger, getLogger } from '../lib/logging'
+import { FullEthereumService } from '../lib/service'
 import { startRPCServers, helprpc } from './startRpc'
 import type { Chain as IChain, GenesisState } from '@ethereumjs/common/dist/types'
-import { existsSync } from 'fs'
 const level = require('level')
 const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
@@ -252,9 +253,8 @@ const args = yargs(hideBin(process.argv))
   })
   .option('startBlock', {
     describe:
-      'Block number to start syncing from.  Must be less than current local chain tip.  Backup the datadir before doing this as it will delete any blocks after the specified `startBlock` and updates the chain DB',
+      'Block number to start syncing from. Must be lower than the local chain tip. Note: this is destructive and removes blocks from the blockchain, please back up your datadir before using.',
     number: true,
-    optional: true,
   }).argv
 
 /**
@@ -593,27 +593,30 @@ async function run() {
   if (args.startBlock) {
     if (client.chain.blocks.height.ltn(args.startBlock)) {
       logger.error(
-        `Cannot start chain at height higher than current height ${client.chain.blocks.height.toString(
-          10
-        )}`
+        `Cannot start chain at height higher than current height ${client.chain.blocks.height}`
       )
-      process.exit(0)
-    } else {
-      try {
-        //eslint-disable-next-line
-        const block = await client.chain.getBlock(new BN(args.startBlock + 1))
-        await client.chain.blockchain.delBlock(block.header.hash())
-        await client.chain.update()
-        client.services.forEach((service) => {
-          if (!service.synchronizer.running) void service.synchronizer.start()
-        })
-        logger.info(`Blockchain height reset to ${client.chain.blocks.height.toString()}`)
-      } catch (err: any) {
-        logger.error(err.toString())
-        process.exit(0)
-      }
+      process.exit()
+    }
+    try {
+      const headBlock = await client.chain.getBlock(new BN(args.startBlock))
+      const delBlock = await client.chain.getBlock(new BN(args.startBlock).addn(1))
+      await client.chain.blockchain.delBlock(delBlock.header.hash())
+      await client.chain.update()
+      client.services.forEach((service) => {
+        if (!service.synchronizer.running) {
+          void service.synchronizer.start()
+        }
+        if (service instanceof FullEthereumService) {
+          void service.execution.vm.stateManager.setStateRoot(headBlock.header.stateRoot)
+        }
+      })
+      logger.info(`Chain height reset to ${client.chain.blocks.height}`)
+    } catch (err: any) {
+      logger.error(`Error setting back chain in startBlock: ${err}`)
+      process.exit()
     }
   }
+
   const servers = args.rpc || args.rpcEngine ? startRPCServers(client, args) : []
 
   process.on('SIGINT', async () => {
