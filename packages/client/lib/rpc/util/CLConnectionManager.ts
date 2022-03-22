@@ -6,7 +6,7 @@ import type { ExecutionPayloadV1, ForkchoiceStateV1 } from '../modules/engine'
 export enum ConnectionStatus {
   Connected = 'connected',
   Disconnected = 'disconnected',
-  Lost = 'lost',
+  Uncertain = 'uncertain',
 }
 
 type CLConnectionManagerOpts = {
@@ -15,6 +15,12 @@ type CLConnectionManagerOpts = {
 
 export class CLConnectionManager {
   private config: Config
+
+  /** Threshold for a disconnected status decision */
+  private DISCONNECTED_THRESHOLD = 10000
+
+  /** Threshold for a uncertain status decision */
+  private UNCERTAIN_THRESHOLD = 2000
 
   /** Default connection check interval (in ms) */
   private DEFAULT_CONNECTION_CHECK_INTERVAL = 10000
@@ -130,7 +136,9 @@ export class CLConnectionManager {
    * Updates the Consensus Client connection status on new RPC requests
    */
   updateStatus() {
-    if ([ConnectionStatus.Disconnected, ConnectionStatus.Lost].includes(this.connectionStatus)) {
+    if (
+      [ConnectionStatus.Disconnected, ConnectionStatus.Uncertain].includes(this.connectionStatus)
+    ) {
       this.config.logger.info('Consensus client connection established', { attentionCL: 'CL' })
     }
     this.connectionStatus = ConnectionStatus.Connected
@@ -145,9 +153,9 @@ export class CLConnectionManager {
       const now = new Date().getTime()
       const timeDiff = now - this.lastRequestTimestamp
 
-      if (timeDiff <= 10000) {
-        if (timeDiff > 2000) {
-          this.connectionStatus = ConnectionStatus.Lost
+      if (timeDiff <= this.DISCONNECTED_THRESHOLD) {
+        if (timeDiff > this.UNCERTAIN_THRESHOLD) {
+          this.connectionStatus = ConnectionStatus.Uncertain
           this.config.logger.warn('Losing consensus client connection...', { attentionCL: 'CL ?' })
         }
       } else {
