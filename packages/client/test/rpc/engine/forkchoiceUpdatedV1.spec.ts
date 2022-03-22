@@ -226,3 +226,45 @@ tape(`${method}: call with deep parent lookup`, async (t) => {
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
+
+tape(`${method}: call with deep parent lookup and with stored safe block hash`, async (t) => {
+  const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+
+  let req = params(method, [validForkChoiceState])
+  let expectRes = (res: any) => {
+    t.equal(res.body.result.payloadStatus.status, 'VALID')
+  }
+  await baseRequest(t, server, req, 200, expectRes, false)
+
+  for (let i = 0; i < 3; i++) {
+    const req = params('engine_newPayloadV1', [blocks[i]])
+    const expectRes = (res: any) => {
+      t.equal(res.body.result.status, 'VALID')
+    }
+    await baseRequest(t, server, req, 200, expectRes, false)
+  }
+
+  req = params(method, [
+    {
+      ...validForkChoiceState,
+      headBlockHash: blocks[2].blockHash,
+      safeBlockHash: blocks[0].blockHash,
+    },
+  ])
+  expectRes = (res: any) => {
+    t.equal(res.body.result.payloadStatus.status, 'VALID')
+  }
+  await baseRequest(t, server, req, 200, expectRes)
+})
+
+tape.only(`${method}: invalid safe block hash`, async (t) => {
+  const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+  const req = params(method, [
+    {
+      ...validForkChoiceState,
+      safeBlockHash: '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4b',
+    },
+  ])
+  const expectRes = checkError(t, INVALID_PARAMS, 'safe block hash not available')
+  await baseRequest(t, server, req, 200, expectRes)
+})

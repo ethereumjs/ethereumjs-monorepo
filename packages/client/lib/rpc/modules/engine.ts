@@ -462,7 +462,7 @@ export class Engine {
     this.connectionManager.updateStatus()
     this.connectionManager.lastForkchoiceUpdate = params[0]
 
-    const { headBlockHash, finalizedBlockHash } = params[0]
+    const { headBlockHash, finalizedBlockHash, safeBlockHash } = params[0]
     const payloadAttributes = params[1]
 
     /*
@@ -491,6 +491,17 @@ export class Engine {
             latestValidHash: null,
           },
           payloadId: null,
+        }
+      }
+    }
+
+    if (safeBlockHash !== headBlockHash) {
+      try {
+        await this.chain.getBlock(toBuffer(safeBlockHash))
+      } catch (error) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'safe block hash not available',
         }
       }
     }
