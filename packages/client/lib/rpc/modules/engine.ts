@@ -558,9 +558,11 @@ export class Engine {
         this.validBlocks.delete(block.hash().toString('hex'))
       }
 
+      const timeDiff = new Date().getTime() / 1000 - headBlock.header.timestamp.toNumber()
       if (
-        !this.synchronizer.syncTargetHeight ||
-        this.synchronizer.syncTargetHeight.lt(headBlock.header.number)
+        (!this.synchronizer.syncTargetHeight ||
+          this.synchronizer.syncTargetHeight.lt(headBlock.header.number)) &&
+        timeDiff < 30
       ) {
         this.config.synchronized = true
         this.config.lastSyncDate = Date.now()

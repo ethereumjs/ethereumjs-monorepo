@@ -25,10 +25,10 @@ export class CLConnectionManager {
   private config: Config
 
   /** Threshold for a disconnected status decision */
-  private DISCONNECTED_THRESHOLD = 15000
+  private DISCONNECTED_THRESHOLD = 20000
 
   /** Threshold for a uncertain status decision */
-  private UNCERTAIN_THRESHOLD = 7000
+  private UNCERTAIN_THRESHOLD = 10000
 
   /** Default connection check interval (in ms) */
   private DEFAULT_CONNECTION_CHECK_INTERVAL = 10000
@@ -124,7 +124,22 @@ export class CLConnectionManager {
   private _getForkchoiceUpdateLogMsg(update: ForkchoiceUpdate) {
     let msg = `head block hash=${update.state.headBlockHash.substring(0, 7)}...`
     if (update.headBlock) {
-      msg += ` number=${update.headBlock.header.number}`
+      const timeDiff = new Date().getTime() / 1000 - update.headBlock.header.timestamp.toNumber()
+      const min = 60
+      const hour = min * 60
+      const day = hour * 24
+      let timeDiffStr = ''
+      if (timeDiff > day) {
+        timeDiffStr = `${Math.floor(timeDiff / day)} days`
+      } else if (timeDiff > hour) {
+        timeDiffStr = `${Math.floor(timeDiff / hour)} hours`
+      } else if (timeDiff > min) {
+        timeDiffStr = `${Math.floor(timeDiff / min)} mins`
+      } else {
+        timeDiffStr = `${Math.floor(timeDiff)} secs`
+      }
+
+      msg += ` number=${update.headBlock.header.number} tsDiff=${timeDiffStr}`
     }
     msg += ` finalized block hash=${update.state.finalizedBlockHash} response=${
       update.response ? update.response.payloadStatus.status : '-'
