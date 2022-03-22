@@ -5,9 +5,8 @@ import { ERROR, VmError } from '../exceptions'
 import Memory from './memory'
 import Stack from './stack'
 import EEI from './eei'
-import { Opcode, handlers as opHandlers, OpHandler, AsyncOpHandler } from './opcodes'
+import { Opcode, OpHandler, AsyncOpHandler } from './opcodes'
 import * as eof from './opcodes/eof'
-import { dynamicGasHandlers } from './opcodes/gas'
 
 export interface InterpreterOpts {
   pc?: number
@@ -179,7 +178,7 @@ export default class Interpreter {
     const gasLimitClone = this._eei.getGasLeft()
 
     if (opInfo.dynamicGas) {
-      const dynamicGasHandler = dynamicGasHandlers.get(this._runState.opCode)!
+      const dynamicGasHandler = this._vm._dynamicGasHandlers.get(this._runState.opCode)!
       // This function updates the gas BN in-place using `i*` methods
       // It needs the base fee, for correct gas limit calculation for the CALL opcodes
       await dynamicGasHandler(this._runState, gas, this._vm._common)
@@ -214,7 +213,7 @@ export default class Interpreter {
    * Get the handler function for an opcode.
    */
   getOpHandler(opInfo: Opcode): OpHandler {
-    return opHandlers.get(opInfo.code)!
+    return this._vm._handlers.get(opInfo.code)!
   }
 
   /**

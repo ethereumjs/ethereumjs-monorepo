@@ -1,5 +1,8 @@
 import Common from '@ethereumjs/common'
+import { CustomOpcode } from '../types'
 import { getFullname } from './util'
+import { AsyncDynamicGasHandler, dynamicGasHandlers, SyncDynamicGasHandler } from './gas'
+import { handlers, OpHandler } from './functions'
 
 export class Opcode {
   readonly code: number
@@ -293,14 +296,24 @@ function createOpcodes(opcodes: OpcodeEntryFee): OpcodeList {
   return result
 }
 
+type OpcodeContext = {
+  dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynamicGasHandler>
+  handlers: Map<number, OpHandler>
+  opcodes: OpcodeList
+}
+
 /**
  * Get suitable opcodes for the required hardfork.
  *
  * @param common {Common} Ethereumjs Common metadata object.
+ * @param customOpcodes List with custom opcodes (see VM `customOpcodes` option description).
  * @returns {OpcodeList} Opcodes dictionary object.
  */
-export function getOpcodesForHF(common: Common): OpcodeList {
+export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]): OpcodeContext {
   let opcodeBuilder: any = { ...opcodes }
+
+  const handlersCopy = new Map(handlers)
+  const dynamicGasHandlersCopy = new Map(dynamicGasHandlers)
 
   for (let fork = 0; fork < hardforkOpcodes.length; fork++) {
     if (common.gteHardfork(hardforkOpcodes[fork].hardforkName)) {
@@ -322,5 +335,40 @@ export function getOpcodesForHF(common: Common): OpcodeList {
     opcodeBuilder[key].fee = common.param('gasPrices', opcodeBuilder[key].name.toLowerCase())
   }
 
-  return createOpcodes(opcodeBuilder)
+  if (customOpcodes) {
+    for (const _code of customOpcodes) {
+      const code = <any>_code
+      if (code.logicFunction === undefined) {
+        delete opcodeBuilder[code.opcode]
+        continue
+      }
+
+      // Sanity checks
+      if (code.opcodeName === undefined || code.baseFee === undefined) {
+        throw new Error(
+          `Custom opcode ${code.opcode} does not have the required values: opcodeName and baseFee are required`
+        )
+      }
+      const entry = {
+        [code.opcode]: {
+          name: code.opcodeName,
+          isAsync: true,
+          dynamicGas: code.gasFunction !== undefined,
+          fee: code.baseFee,
+        },
+      }
+      opcodeBuilder = { ...opcodeBuilder, ...entry }
+      if (code.gasFunction) {
+        dynamicGasHandlersCopy.set(code.opcode, code.gasFunction)
+      }
+      // logicFunction is never undefined
+      handlersCopy.set(code.opcode, code.logicFunction)
+    }
+  }
+
+  return {
+    dynamicGasHandlers: dynamicGasHandlersCopy,
+    handlers: handlersCopy,
+    opcodes: createOpcodes(opcodeBuilder),
+  }
 }
