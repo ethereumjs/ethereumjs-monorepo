@@ -318,28 +318,29 @@ async function executeBlocks(client: EthereumClient) {
  * Note: this is destructive and removes blocks from the blockchain. Please back up your datadir.
  */
 async function startBlock(client: EthereumClient) {
-  if (args.startBlock) {
-    if (client.chain.blocks.height.ltn(args.startBlock)) {
-      logger.error(
-        `Cannot start chain at height higher than current height ${client.chain.blocks.height}`
-      )
-      process.exit()
-    }
-    try {
-      const headBlock = await client.chain.getBlock(new BN(args.startBlock))
-      const delBlock = await client.chain.getBlock(new BN(args.startBlock).addn(1))
-      await client.chain.blockchain.delBlock(delBlock.header.hash())
-      await client.chain.update()
-      for (const service of client.services) {
-        if (service instanceof FullEthereumService) {
-          void service.execution.vm.stateManager.setStateRoot(headBlock.header.stateRoot)
-        }
+  if (!args.startBlock) return
+  const startBlock = new BN(args.startBlock)
+  if (client.chain.blocks.height.lt(startBlock)) {
+    logger.error(
+      `Cannot start chain at height higher than current height ${client.chain.blocks.height}`
+    )
+    process.exit()
+  }
+  if (client.chain.blocks.height.eq(startBlock)) return
+  try {
+    const headBlock = await client.chain.getBlock(startBlock)
+    const delBlock = await client.chain.getBlock(startBlock.addn(1))
+    await client.chain.blockchain.delBlock(delBlock.header.hash())
+    await client.chain.update()
+    for (const service of client.services) {
+      if (service instanceof FullEthereumService) {
+        void service.execution.vm.stateManager.setStateRoot(headBlock.header.stateRoot)
       }
-      logger.info(`Chain height reset to ${client.chain.blocks.height}`)
-    } catch (err: any) {
-      logger.error(`Error setting back chain in startBlock: ${err}`)
-      process.exit()
     }
+    logger.info(`Chain height reset to ${client.chain.blocks.height}`)
+  } catch (err: any) {
+    logger.error(`Error setting back chain in startBlock: ${err}`)
+    process.exit()
   }
 }
 
