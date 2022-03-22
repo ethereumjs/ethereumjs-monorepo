@@ -3,7 +3,7 @@ import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { AccessList, AccessListItem } from '@ethereumjs/tx'
 import { debug as createDebugLogger, Debugger } from 'debug'
 import { Account, Address, toBuffer } from 'ethereumjs-util'
-import { ripemdPrecompileAddress } from '../evm/precompiles'
+import { CustomPrecompile, getActivePrecompiles, ripemdPrecompileAddress } from '../evm/precompiles'
 import Cache from './cache'
 import { DefaultStateManagerOpts } from './stateManager'
 
@@ -25,6 +25,7 @@ export abstract class BaseStateManager {
   _common: Common
   _debug: Debugger
   _cache!: Cache
+  _customPrecompiles?: CustomPrecompile[]
 
   _touched: Set<AddressHex>
   _touchedStack: Set<AddressHex>[]
@@ -74,6 +75,10 @@ export abstract class BaseStateManager {
     this._accessedStorageReverted = [new Map()]
 
     this._checkpointCount = 0
+
+    if (opts.customPrecompiles) {
+      this._customPrecompiles = opts.customPrecompiles
+    }
 
     // Safeguard if "process" is not available (browser)
     if (process !== undefined && process.env.DEBUG) {
@@ -480,13 +485,14 @@ export abstract class BaseStateManager {
     const accessList: AccessList = []
     folded.forEach((slots, addressStr) => {
       const address = Address.fromString(`0x${addressStr}`)
-      // TODO FIXME
-      //const check1 = getActivePrecompiles(this._common).find((a) => a.equals(address))
+      const check1 = getActivePrecompiles(this._common, this._customPrecompiles).has(
+        address.buf.toString('hex')
+      )
       const check2 = addressesRemoved.find((a) => a.equals(address))
       const check3 =
         addressesOnlyStorage.find((a) => a.equals(address)) !== undefined && slots.size === 0
 
-      if (/*!check1 && */ !check2 && !check3) {
+      if (!check1 && !check2 && !check3) {
         const storageSlots = Array.from(slots)
           .map((s) => `0x${s}`)
           .sort()
