@@ -93,6 +93,26 @@ tape(`${method}: call with non existent parent hash`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes)
 })
 
+tape(`${method}: invalid terminal block`, async (t) => {
+  const genesisWithHigherTtd = {
+    ...genesisJSON,
+    config: {
+      ...genesisJSON.config,
+      terminalTotalDifficulty: 17179869185,
+    },
+  }
+
+  const { server } = await setupChain(genesisWithHigherTtd, 'post-merge', {
+    engine: true,
+  })
+
+  const req = params(method, [blockData, null])
+  const expectRes = (res: any) => {
+    t.equal(res.body.result.status, 'INVALID_TERMINAL_BLOCK')
+  }
+  await baseRequest(t, server, req, 200, expectRes)
+})
+
 tape(`${method}: call with valid data`, async (t) => {
   const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
@@ -105,7 +125,8 @@ tape(`${method}: call with valid data`, async (t) => {
 })
 
 tape(`${method}: call with valid data but invalid transactions`, async (t) => {
-  const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+  const { chain, server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+  chain.config.logger.silent = true
   const blockDataWithInvalidTransaction = {
     ...blockData,
     transactions: ['0x1'],
@@ -124,7 +145,8 @@ tape(`${method}: call with valid data but invalid transactions`, async (t) => {
 })
 
 tape(`${method}: call with valid data & valid transaction but not signed`, async (t) => {
-  const { server, common } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+  const { server, common, chain } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+  chain.config.logger.silent = true
 
   // Let's mock a non-signed transaction so execution fails
   const tx = FeeMarketEIP1559Transaction.fromTxData(

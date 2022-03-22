@@ -1,5 +1,6 @@
 import { Config, SyncMode } from '../../lib/config'
 import { FullEthereumService, LightEthereumService } from '../../lib/service'
+import { Event } from '../../lib/types'
 import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
 import { VMExecution } from '../../lib/execution'
@@ -77,6 +78,7 @@ export async function destroy(
   server: MockServer,
   service: FullEthereumService | LightEthereumService
 ): Promise<void> {
+  service.config.events.emit(Event.CLIENT_SHUTDOWN)
   await server.stop()
   await service.stop()
 }

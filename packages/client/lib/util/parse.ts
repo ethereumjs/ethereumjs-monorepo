@@ -31,7 +31,12 @@ export function parseMultiaddrs(input: MultiaddrLike): Multiaddr[] {
   if (!Array.isArray(input) && typeof input === 'object') {
     return [input] as Multiaddr[]
   }
-  if (!Array.isArray(input)) {
+  if (Array.isArray(input)) {
+    // Comma-separated bootnodes
+    if (input.length === 1 && typeof input[0] === 'string' && input[0].includes(',')) {
+      input = input[0].split(',')
+    }
+  } else {
     input = input.split(',')
   }
   try {
