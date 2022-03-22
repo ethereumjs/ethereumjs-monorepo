@@ -15,6 +15,7 @@ import { Logger, getLogger } from '../lib/logging'
 import { startRPCServers, helprpc } from './startRpc'
 import type { Chain as IChain, GenesisState } from '@ethereumjs/common/dist/types'
 import { existsSync } from 'fs'
+import { BN } from 'bn.js'
 const level = require('level')
 const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
@@ -249,6 +250,11 @@ const args = yargs(hideBin(process.argv))
       'Number of recent blocks to maintain transactions index for (default = about one year, 0 = entire chain)',
     number: true,
     default: 2350000,
+  })
+  .option('startBlock', {
+    describe: 'Block number to start syncing from.  Must be less than current local chain tip',
+    number: true,
+    optional: true,
   }).argv
 
 /**
@@ -583,6 +589,28 @@ async function run() {
   config.events.setMaxListeners(50)
 
   const client = await startClient(config)
+
+  if (args.startBlock) {
+    if (client.chain.blocks.height.ltn(args.startBlock)) {
+      logger.error(
+        `Cannot start chain at height higher than current height ${client.chain.blocks.height.toString(
+          10
+        )}`
+      )
+      process.exit(0)
+    } else {
+      try {
+        //eslint-disable-next-line
+        const block = await client.chain.getBlock(new BN(args.startBlock + 1))
+        await client.chain.blockchain.delBlock(block.header.hash())
+        await client.chain.update()
+        logger.info(`Blockchain height reset to ${client.chain.blocks.height.toString(10)}`)
+      } catch (err: any) {
+        logger.error(err.toString())
+        process.exit(0)
+      }
+    }
+  }
   const servers = args.rpc || args.rpcEngine ? startRPCServers(client, args) : []
 
   process.on('SIGINT', async () => {
