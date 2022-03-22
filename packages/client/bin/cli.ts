@@ -603,6 +603,9 @@ async function run() {
         const block = await client.chain.getBlock(new BN(args.startBlock + 1))
         await client.chain.blockchain.delBlock(block.header.hash())
         await client.chain.update()
+        client.services.forEach((service) => {
+          if (!service.synchronizer.running) void service.synchronizer.start()
+        })
         logger.info(`Blockchain height reset to ${client.chain.blocks.height.toString(10)}`)
       } catch (err: any) {
         logger.error(err.toString())
