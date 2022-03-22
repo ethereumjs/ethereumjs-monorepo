@@ -5,6 +5,18 @@ import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { startRPC, createManager, createClient, params, baseRequest } from '../helpers'
 import { checkError } from '../util'
 
+const mockedTxData = {
+  nonce: '0x',
+  gasPrice: '0x',
+  gasLimit: '0x',
+  to: '0x',
+  value: '0x',
+  data: '0x',
+  v: '0x',
+  r: '0x',
+  s: '0x',
+}
+
 function createChain() {
   const genesisBlockHash = Buffer.from(
     'dcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5',
@@ -22,6 +34,7 @@ function createChain() {
     'a2285835057e8252ebd4980cf498f7538cedb3600dc183f1c523c6971b6889aa',
     'hex'
   )
+
   const transactions = [{ hash: bufferToHex(txHash) }]
   const transactions2 = [{ hash: bufferToHex(txHash2) }]
   const genesisBlock = {
@@ -42,7 +55,7 @@ function createChain() {
       ...Block.fromBlockData({ header: { number: 1 } }).toJSON(),
       transactions: transactions2,
     }),
-    transactions: [{ hash: () => txHash2 }],
+    transactions: [{ hash: () => txHash2, toJSON: () => mockedTxData }],
     uncleHeaders: [],
   }
   return {
@@ -154,5 +167,18 @@ tape(`${method}: call with invalid second parameter`, async (t) => {
 
   const req = params(method, ['0x0', 'INVALID PARAMETER'])
   const expectRes = checkError(t, INVALID_PARAMS)
+  await baseRequest(t, server, req, 200, expectRes)
+})
+
+tape(`${method}: call with transaction objects`, async (t) => {
+  const manager = createManager(createClient({ chain: createChain() }))
+  const server = startRPC(manager.getMethods())
+  const req = params(method, ['latest', true])
+
+  const expectRes = (res: any) => {
+    const [transactionData] = res.body.result.transactions
+    const { gasLimit: gas, data: input, ...txData } = mockedTxData
+    t.deepEqual(transactionData, { ...txData, input, gas })
+  }
   await baseRequest(t, server, req, 200, expectRes)
 })
