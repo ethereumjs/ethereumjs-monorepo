@@ -20,7 +20,7 @@ export class CLConnectionManager {
   private DISCONNECTED_THRESHOLD = 10000
 
   /** Threshold for a uncertain status decision */
-  private UNCERTAIN_THRESHOLD = 2000
+  private UNCERTAIN_THRESHOLD = 4000
 
   /** Default connection check interval (in ms) */
   private DEFAULT_CONNECTION_CHECK_INTERVAL = 10000
