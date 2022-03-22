@@ -10,9 +10,7 @@ const shaAddress = new Address(Buffer.from('000000000000000000000000000000000000
 const expectedReturn = Buffer.from('1337', 'hex')
 const expectedGas = new BN(10)
 
-// TODO if `opts` is removed (so function has no arguments) then tests fail!? Why?
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function customPrecompile(opts: PrecompileInput): ExecResult {
+function customPrecompile(_input: PrecompileInput): ExecResult {
   return {
     gasUsed: expectedGas,
     returnValue: expectedReturn,

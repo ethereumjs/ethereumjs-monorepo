@@ -178,14 +178,10 @@ function getActivePrecompiles(
   const precompileMap = new Map()
   if (customPrecompiles) {
     for (const precompile of customPrecompiles) {
-      if ((<AddPrecompile>precompile).function === undefined) {
-        precompileMap.set(precompile.address.toString().substring(2), undefined)
-      } else {
-        precompileMap.set(
-          precompile.address.toString().substring(2),
-          (<AddPrecompile>precompile).function
-        )
-      }
+      precompileMap.set(
+        precompile.address.buf.toString('hex'),
+        'function' in precompile ? precompile.function : undefined
+      )
     }
   }
   for (const addressString in precompiles) {

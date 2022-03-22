@@ -158,6 +158,7 @@ export interface VMOpts {
    * Adds custom precompiles. This is hardfork-agnostic: these precompiles are always activated
    * If only an address is given, the precompile is deleted
    * If an address and a `PrecompileFunc` is given, this precompile is inserted or overridden
+   * Please ensure `PrecompileFunc` has exactly one parameter `input: PrecompileInput`
    */
   customPrecompiles?: CustomPrecompile[]
 }
