@@ -334,7 +334,7 @@ async function startBlock(client: EthereumClient) {
     await client.chain.update()
     for (const service of client.services) {
       if (service instanceof FullEthereumService) {
-        void service.execution.vm.stateManager.setStateRoot(headBlock.header.stateRoot)
+        await service.execution.vm.stateManager.setStateRoot(headBlock.header.stateRoot)
       }
     }
     logger.info(`Chain height reset to ${client.chain.blocks.height}`)
