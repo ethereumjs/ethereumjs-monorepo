@@ -13,7 +13,6 @@ import { parseMultiaddrs, parseGenesisState, parseCustomParams } from '../lib/ut
 import EthereumClient from '../lib/client'
 import { Config, DataDirectory } from '../lib/config'
 import { Logger, getLogger } from '../lib/logging'
-import { FullEthereumService } from '../lib/service'
 import { startRPCServers, helprpc } from './startRpc'
 import type { Chain as IChain, GenesisState } from '@ethereumjs/common/dist/types'
 const level = require('level')
@@ -320,22 +319,17 @@ async function executeBlocks(client: EthereumClient) {
 async function startBlock(client: EthereumClient) {
   if (!args.startBlock) return
   const startBlock = new BN(args.startBlock)
-  const { height } = client.chain.headers
+  const { blockchain } = client.chain
+  const height = (await blockchain.getLatestHeader()).number
   if (height.eq(startBlock)) return
   if (height.lt(startBlock)) {
     logger.error(`Cannot start chain higher than current height ${height}`)
     process.exit()
   }
   try {
-    const headBlock = await client.chain.getBlock(startBlock)
-    const delBlock = await client.chain.getBlock(startBlock.addn(1))
-    await client.chain.blockchain.delBlock(delBlock.hash())
-    await client.chain.update()
-    for (const service of client.services) {
-      if (service instanceof FullEthereumService) {
-        await service.execution.vm.stateManager.setStateRoot(headBlock.header.stateRoot)
-      }
-    }
+    const headBlock = await blockchain.getBlock(startBlock)
+    const delBlock = await blockchain.getBlock(startBlock.addn(1))
+    await blockchain.delBlock(delBlock.hash())
     logger.info(`Chain height reset to ${headBlock.header.number}`)
   } catch (err: any) {
     logger.error(`Error setting back chain in startBlock: ${err}`)
@@ -357,6 +351,11 @@ async function startClient(config: Config) {
     config,
     ...dbs,
   })
+
+  if (args.startBlock) {
+    await startBlock(client)
+  }
+
   await client.open()
 
   if (args.executeBlocks) {
@@ -364,9 +363,6 @@ async function startClient(config: Config) {
     await executeBlocks(client)
   } else {
     // Regular client start
-    if (args.startBlock) {
-      await startBlock(client)
-    }
     await client.start()
   }
   return client
