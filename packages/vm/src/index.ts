@@ -285,13 +285,13 @@ export default class VM extends AsyncEventEmitter {
       })
     }
     this._common.on('hardforkChanged', () => {
-      this._opcodes = getOpcodesForHF(this._common)
+      this.getActiveOpcodes()
       this._precompiles = getActivePrecompiles(this._common, this._customPrecompiles)
     })
 
     // Set list of opcodes based on HF
     // TODO: make this EIP-friendly
-    this._opcodes = getOpcodesForHF(this._common)
+    this.getActiveOpcodes()
     this._precompiles = getActivePrecompiles(this._common, this._customPrecompiles)
 
     if (opts.stateManager) {
