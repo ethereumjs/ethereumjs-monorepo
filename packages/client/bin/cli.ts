@@ -7,7 +7,7 @@ import { randomBytes } from 'crypto'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { _getInitializedChains } from '@ethereumjs/common/dist/chains'
-import { Address, toBuffer } from 'ethereumjs-util'
+import { Address, toBuffer, BN } from 'ethereumjs-util'
 import { parseMultiaddrs, parseGenesisState, parseCustomParams } from '../lib/util'
 import EthereumClient from '../lib/client'
 import { Config, DataDirectory } from '../lib/config'
@@ -15,7 +15,6 @@ import { Logger, getLogger } from '../lib/logging'
 import { startRPCServers, helprpc } from './startRpc'
 import type { Chain as IChain, GenesisState } from '@ethereumjs/common/dist/types'
 import { existsSync } from 'fs'
-import { BN } from 'bn.js'
 const level = require('level')
 const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
