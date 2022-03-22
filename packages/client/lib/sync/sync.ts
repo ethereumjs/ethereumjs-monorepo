@@ -1,5 +1,4 @@
 import { Hardfork } from '@ethereumjs/common'
-import { BN } from 'ethereumjs-util'
 import { PeerPool } from '../net/peerpool'
 import { Peer } from '../net/peer/peer'
 import { FlowControl } from '../net/protocol'
@@ -49,10 +48,10 @@ export abstract class Synchronizer {
   public opened: boolean
   public running: boolean
   protected forceSync: boolean
-  public startingBlock: BN
+  public startingBlock: bigint
 
   // Best known sync block height
-  public syncTargetHeight?: BN
+  public syncTargetHeight?: bigint
   // Time (in ms) after which the synced state is reset
   private SYNCED_STATE_REMOVAL_PERIOD = 60000
   private _syncedStatusCheckInterval: NodeJS.Timeout | undefined /* global NodeJS */
@@ -71,7 +70,7 @@ export abstract class Synchronizer {
     this.opened = false
     this.running = false
     this.forceSync = false
-    this.startingBlock = new BN(0)
+    this.startingBlock = BigInt(0)
 
     this.config.events.on(Event.POOL_PEER_ADDED, (peer) => {
       if (this.syncable(peer)) {
@@ -147,7 +146,7 @@ export abstract class Synchronizer {
     if (!this.syncTargetHeight) {
       return
     }
-    if (this.chain.headers.height.gte(this.syncTargetHeight)) {
+    if (this.chain.headers.height >= this.syncTargetHeight) {
       if (!this.config.synchronized) {
         const hash = this.chain.headers.latest?.hash()
         this.config.logger.info(

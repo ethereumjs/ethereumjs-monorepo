@@ -1,4 +1,4 @@
-import { BN, rlp } from 'ethereumjs-util'
+import { rlp, toBuffer } from 'ethereumjs-util'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import Blockchain from '../src'
@@ -23,7 +23,7 @@ export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[])
         number: i,
         parentHash: lastBlock.hash(),
         gasLimit,
-        timestamp: lastBlock.header.timestamp.addn(1),
+        timestamp: lastBlock.header.timestamp + BigInt(1),
       },
     }
     const block = Block.fromBlockData(blockData, {
@@ -72,15 +72,15 @@ export const generateConsecutiveBlock = (
   }
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
   const tmpHeader = BlockHeader.fromHeaderData({
-    number: parentBlock.header.number.addn(1),
-    timestamp: parentBlock.header.timestamp.addn(10 + -difficultyChangeFactor * 9),
+    number: parentBlock.header.number + BigInt(1),
+    timestamp: parentBlock.header.timestamp + BigInt(10 + -difficultyChangeFactor * 9),
   })
   const header = BlockHeader.fromHeaderData(
     {
-      number: parentBlock.header.number.addn(1),
+      number: parentBlock.header.number + BigInt(1),
       parentHash: parentBlock.hash(),
-      gasLimit: new BN(8000000),
-      timestamp: parentBlock.header.timestamp.addn(10 + -difficultyChangeFactor * 9),
+      gasLimit: BigInt(8000000),
+      timestamp: parentBlock.header.timestamp + BigInt(10 + -difficultyChangeFactor * 9),
       difficulty: tmpHeader.canonicalDifficulty(parentBlock.header),
     },
     {
@@ -155,7 +155,7 @@ export const createTestDB = async () => {
       ),
       keyEncoding: 'binary',
       valueEncoding: 'binary',
-      value: rlp.encode(new BN(17179869184).toBuffer()),
+      value: rlp.encode(toBuffer(17179869184)),
     },
     {
       type: 'put',

@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, BN, toBuffer } from '../src'
+import { Address, toBuffer } from '../src'
 const eip1014Testdata = require('./testdata/eip1014Examples.json')
 
 tape('Address', (t) => {
@@ -67,10 +67,10 @@ tape('Address', (t) => {
 
   t.test('should generate address for created contract', (st) => {
     const from = Address.fromString('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39')
-    const addr = Address.generate(from, new BN(14))
+    const addr = Address.generate(from, BigInt(14))
     st.equal(addr.toString(), '0xd658a4b8247c14868f3c512fa5cbb6e458e4a989')
 
-    const addr2 = Address.generate(from, new BN(0))
+    const addr2 = Address.generate(from, BigInt(0))
     st.equal(addr2.toString(), '0xbfa69ba91385206bfdd2d8b9c1a5d6c10097a85b')
     st.end()
   })

@@ -30,7 +30,7 @@ export async function mainnetBlocks(suite?: Benchmark.Suite, numSamples?: number
 
   for (const blockData of data) {
     const block = blockFromRPC(blockData.block, [], { common })
-    const blockNumber = block.header.number.toNumber()
+    const blockNumber = Number(block.header.number)
     const { receipts, preState, blockhashes } = blockData
 
     if ([9422909, 9422911, 9422912, 9422913, 9422914].includes(blockNumber)) {

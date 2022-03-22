@@ -1,6 +1,6 @@
 import { Block, HeaderData } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
-import { toBuffer, bufferToHex, rlp, BN } from 'ethereumjs-util'
+import { toBuffer, bufferToHex, rlp } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { middleware, validators } from '../validation'
 import { INTERNAL_ERROR } from '../error-code'
@@ -185,7 +185,7 @@ export class Engine {
   private txPool: TxPool
   private pendingBlock: PendingBlock
   private validBlocks: ValidBlocks
-  private lastMessageID = new BN(0)
+  private lastMessageID = BigInt(0)
 
   /**
    * Create engine_* RPC module
@@ -451,7 +451,7 @@ export class Engine {
 
       if (
         !this.synchronizer.syncTargetHeight ||
-        this.synchronizer.syncTargetHeight.lt(headBlock.header.number)
+        this.synchronizer.syncTargetHeight < headBlock.header.number
       ) {
         this.config.synchronized = true
         this.config.lastSyncDate = Date.now()

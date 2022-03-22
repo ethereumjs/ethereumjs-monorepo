@@ -1,5 +1,4 @@
 import tape from 'tape'
-import { BN } from 'ethereumjs-util'
 import { Chain } from '../../../lib/blockchain'
 import { Config } from '../../../lib/config'
 import { FlowControl, LesProtocol } from '../../../lib/net/protocol'
@@ -36,13 +35,13 @@ tape('[LesProtocol]', (t) => {
     const p = new LesProtocol({ config, chain, flow })
     Object.defineProperty(chain, 'networkId', {
       get: () => {
-        return new BN(1)
+        return BigInt(1)
       },
     })
     Object.defineProperty(chain, 'blocks', {
       get: () => {
         return {
-          td: new BN(100),
+          td: BigInt(100),
           latest: { hash: () => '0xaa' },
         }
       },
@@ -55,11 +54,12 @@ tape('[LesProtocol]', (t) => {
     Object.defineProperty(chain, 'headers', {
       get: () => {
         return {
-          td: new BN(100),
+          td: BigInt(100),
           latest: {
             hash: () => '0xaa',
-            number: new BN(100),
+            number: BigInt(100),
           },
+          height: BigInt(100),
         }
       },
     })
@@ -85,10 +85,10 @@ tape('[LesProtocol]', (t) => {
     status = { ...status, networkId: [0x01] }
     status = p.decodeStatus(status)
     t.ok(
-      status.networkId.toNumber() === 1 &&
-        status.headTd.toString('hex') === '64' &&
+      status.networkId === BigInt(1) &&
+        status.headTd === BigInt(100) &&
         status.headHash === '0xaa' &&
-        status.headNum.toNumber() === 100 &&
+        status.headNum === BigInt(100) &&
         status.genesisHash === '0xbb' &&
         status.forkID[0].toString('hex') === 'fc64ec04' &&
         status.forkID[1].toString('hex') === '118c30' &&

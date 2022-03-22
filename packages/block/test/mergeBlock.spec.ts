@@ -1,7 +1,7 @@
 import tape from 'tape'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
-import { Address, BN, KECCAK256_RLP, KECCAK256_RLP_ARRAY, zeros } from 'ethereumjs-util'
+import { Address, KECCAK256_RLP, KECCAK256_RLP_ARRAY, zeros } from 'ethereumjs-util'
 import { Block } from '../src/block'
 
 const common = new Common({
@@ -17,13 +17,13 @@ function validateMergeHeader(st: tape.Test, header: BlockHeader) {
   st.ok(header.transactionsTrie.equals(KECCAK256_RLP), 'transactionsTrie')
   st.ok(header.receiptTrie.equals(KECCAK256_RLP), 'receiptTrie')
   st.ok(header.logsBloom.equals(zeros(256)), 'logsBloom')
-  st.ok(header.difficulty.isZero(), 'difficulty')
-  st.ok(header.number.isZero(), 'number')
-  st.ok(header.gasLimit.eq(new BN(Buffer.from('ffffffffffffff', 'hex'))), 'gasLimit')
-  st.ok(header.gasUsed.isZero(), 'gasUsed')
-  st.ok(header.timestamp.isZero(), 'timestamp')
+  st.equal(header.difficulty, BigInt(0), 'difficulty')
+  st.equal(header.number, BigInt(0), 'number')
+  st.equal(header.gasLimit, BigInt('0xffffffffffffff'), 'gasLimit')
+  st.equal(header.gasUsed, BigInt(0), 'gasUsed')
+  st.equal(header.timestamp, BigInt(0), 'timestamp')
   st.ok(header.extraData.length <= 32, 'extraData')
-  st.ok(header.mixHash.length === 32, 'mixHash')
+  st.equal(header.mixHash.length, 32, 'mixHash')
   st.ok(header.nonce.equals(zeros(8)), 'nonce')
 }
 
@@ -52,7 +52,7 @@ tape('[Header]: Casper PoS / The Merge Functionality', function (t) {
 
     try {
       const headerData = {
-        difficulty: new BN(123456),
+        difficulty: BigInt(123456),
       }
       BlockHeader.fromHeaderData(headerData, { common })
       st.fail('should throw')

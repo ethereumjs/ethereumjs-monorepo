@@ -21,8 +21,8 @@ import { accessAddressEIP2929, accessStorageEIP2929 } from './EIP2929'
  * These functions are therefore not read-only
  */
 
-// The dynamic gas handler methods take a runState and a gas BN
-// The gas BN is necessary, since the base fee needs to be included,
+// The dynamic gas handler methods take a runState and a gas BigInt
+// The gas BigInt is necessary, since the base fee needs to be included,
 // to calculate the max call gas for the call opcodes correctly.
 export interface AsyncDynamicGasHandler {
   (runState: RunState, gas: bigint, common: Common): Promise<bigint>
@@ -61,7 +61,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
       const [memOffset, _dataOffset, dataLength] = runState.stack.peek(3)
 
       gas += subMemUsage(runState, memOffset, dataLength, common)
-      if (!(dataLength === BigInt(0))) {
+      if (dataLength !== BigInt(0)) {
         gas += BigInt(common.param('gasPrices', 'copy')) * divCeil(dataLength, BigInt(32))
       }
       return gas
@@ -74,7 +74,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
       const [memOffset, _codeOffset, dataLength] = runState.stack.peek(3)
 
       gas += subMemUsage(runState, memOffset, dataLength, common)
-      if (!(dataLength === BigInt(0))) {
+      if (dataLength !== BigInt(0)) {
         gas += BigInt(common.param('gasPrices', 'copy')) * divCeil(dataLength, BigInt(32))
       }
       return gas
@@ -105,7 +105,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
         gas += accessAddressEIP2929(runState, address, common)
       }
 
-      if (!(dataLength === BigInt(0))) {
+      if (dataLength !== BigInt(0)) {
         gas += BigInt(common.param('gasPrices', 'copy')) * divCeil(dataLength, BigInt(32))
       }
       return gas
@@ -123,7 +123,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
 
       gas += subMemUsage(runState, memOffset, dataLength, common)
 
-      if (!(dataLength === BigInt(0))) {
+      if (dataLength !== BigInt(0)) {
         gas += BigInt(common.param('gasPrices', 'copy')) * divCeil(dataLength, BigInt(32))
       }
       return gas
@@ -285,7 +285,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
         runState.stack.peek(7)
       const toAddress = new Address(addressToBuffer(toAddr))
 
-      if (runState.eei.isStatic() && !(value === BigInt(0))) {
+      if (runState.eei.isStatic() && value !== BigInt(0)) {
         trap(ERROR.STATIC_STATE_CHANGE)
       }
       gas += subMemUsage(runState, inOffset, inLength, common)
@@ -294,7 +294,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
         gas += accessAddressEIP2929(runState, toAddress, common)
       }
 
-      if (!(value === BigInt(0))) {
+      if (value !== BigInt(0)) {
         gas += BigInt(common.param('gasPrices', 'callValueTransfer'))
       }
 
@@ -321,7 +321,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
         trap(ERROR.OUT_OF_GAS)
       }
 
-      if (!(value === BigInt(0))) {
+      if (value !== BigInt(0)) {
         // TODO: Don't use private attr directly
         runState.eei._gasLeft += BigInt(common.param('gasPrices', 'callStipend'))
         gasLimit += BigInt(common.param('gasPrices', 'callStipend'))
@@ -346,7 +346,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
         gas += accessAddressEIP2929(runState, toAddress, common)
       }
 
-      if (!(value === BigInt(0))) {
+      if (value !== BigInt(0)) {
         gas += BigInt(common.param('gasPrices', 'callValueTransfer'))
       }
       let gasLimit = maxCallGas(currentGasLimit, runState.eei.getGasLeft() - gas, runState, common)
@@ -355,7 +355,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler> = new Map<
       if (gasLimit > runState.eei.getGasLeft() - gas) {
         trap(ERROR.OUT_OF_GAS)
       }
-      if (!(value === BigInt(0))) {
+      if (value !== BigInt(0)) {
         // TODO: Don't use private attr directly
         runState.eei._gasLeft += BigInt(common.param('gasPrices', 'callStipend'))
         gasLimit += BigInt(common.param('gasPrices', 'callStipend'))

@@ -1,5 +1,5 @@
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { Account, Address, BNLike } from 'ethereumjs-util'
+import { Account, Address, BigIntLike, toType, TypeOutput } from 'ethereumjs-util'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { StateManager, DefaultStateManager } from './state/index'
@@ -116,8 +116,7 @@ export interface VMOpts {
    * e.g. both Merge and Shanghai HF blocks set and the block number from the block provided
    * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
    */
-  hardforkByTD?: BNLike
-
+   hardforkByTD?: BigIntLike
   /**
    * Adds custom precompiles. This is hardfork-agnostic: these precompiles are always activated
    * If only an address is given, the precompile is deleted
@@ -150,7 +149,7 @@ export default class VM extends AsyncEventEmitter {
   protected readonly _allowUnlimitedContractSize: boolean
   protected _opcodes: OpcodeList
   protected readonly _hardforkByBlockNumber: boolean
-  protected readonly _hardforkByTD?: BNLike
+  protected readonly _hardforkByTD?: BigInt
   protected readonly _customPrecompiles?: CustomPrecompile[]
 
   protected _precompiles!: Map<string, PrecompileFunc>
@@ -273,7 +272,7 @@ export default class VM extends AsyncEventEmitter {
     }
 
     this._hardforkByBlockNumber = opts.hardforkByBlockNumber ?? false
-    this._hardforkByTD = opts.hardforkByTD
+    this._hardforkByTD = toType(opts.hardforkByTD, TypeOutput.BigInt)
 
     if (this._common.isActivatedEIP(2537)) {
       if (isBrowser()) {

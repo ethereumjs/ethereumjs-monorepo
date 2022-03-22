@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { BN, toBuffer } from 'ethereumjs-util'
+import { toBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import Blockchain from '@ethereumjs/blockchain'
@@ -170,7 +170,7 @@ function createBlock(parent: Block | undefined, n = 0, opts = {}) {
     header: {
       number: n,
       parentHash: parent.hash(),
-      difficulty: new BN(0xfffffff),
+      difficulty: BigInt(0xfffffff),
       stateRoot: parent.header.stateRoot,
     },
   }

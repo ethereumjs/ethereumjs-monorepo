@@ -1,7 +1,6 @@
 import tape from 'tape'
 import {
   Account,
-  BN,
   isValidPrivate,
   isValidPublic,
   importPublic,
@@ -15,14 +14,17 @@ import {
   isValidAddress,
   toChecksumAddress,
   rlp,
+  bufferToBigInt,
 } from '../src'
 const eip1014Testdata = require('./testdata/eip1014Examples.json')
+
+const _0n = BigInt(0)
 
 tape('Account', function (t) {
   t.test('empty constructor', function (st) {
     const account = new Account()
-    st.ok(account.nonce.isZero(), 'should have zero nonce')
-    st.ok(account.balance.isZero(), 'should have zero balance')
+    st.equal(account.nonce, _0n, 'should have zero nonce')
+    st.equal(account.balance, _0n, 'should have zero balance')
     st.equal(
       account.stateRoot.toString('hex'),
       '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
@@ -44,8 +46,8 @@ tape('Account', function (t) {
       '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470', // codeHash
     ]
     const account = Account.fromValuesArray(raw.map(toBuffer))
-    st.ok(account.nonce.eqn(2), 'should have correct nonce')
-    st.ok(account.balance.eqn(900), 'should have correct balance')
+    st.equal(account.nonce, BigInt(2), 'should have correct nonce')
+    st.equal(account.balance, BigInt(900), 'should have correct balance')
     st.equal(
       account.stateRoot.toString('hex'),
       '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
@@ -67,8 +69,8 @@ tape('Account', function (t) {
       codeHash: '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     }
     const account = Account.fromAccountData(raw)
-    st.ok(account.nonce.eqn(2), 'should have correct nonce')
-    st.ok(account.balance.eqn(900), 'should have correct balance')
+    st.equal(account.nonce, BigInt(2), 'should have correct nonce')
+    st.equal(account.balance, BigInt(900), 'should have correct balance')
     st.equal(
       account.stateRoot.toString('hex'),
       '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
@@ -88,8 +90,8 @@ tape('Account', function (t) {
       'hex'
     )
     const account = Account.fromRlpSerializedAccount(accountRlp)
-    st.ok(account.nonce.eqn(2), 'should have correct nonce')
-    st.ok(account.balance.eqn(900), 'should have correct balance')
+    st.equal(account.nonce, BigInt(2), 'should have correct nonce')
+    st.equal(account.balance, BigInt(900), 'should have correct balance')
     st.equal(
       account.stateRoot.toString('hex'),
       '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
@@ -159,17 +161,17 @@ tape('Account', function (t) {
       new Account(undefined, undefined, undefined, Buffer.from('hey'))
     }, 'should only accept length 32 buffer for codeHash')
 
-    const data = { balance: new BN(5) }
+    const data = { balance: BigInt(5) }
     st.throws(() => {
       Account.fromRlpSerializedAccount(data as any)
     }, 'should only accept an array in fromRlpSerializedAccount')
 
     st.throws(() => {
-      new Account(new BN(-5))
+      new Account(BigInt(-5))
     }, 'should not accept nonce less than 0')
 
     st.throws(() => {
-      new Account(undefined, new BN(-5))
+      new Account(undefined, BigInt(-5))
     }, 'should not accept balance less than 0')
     st.end()
   })
@@ -177,10 +179,7 @@ tape('Account', function (t) {
 
 tape('Utility Functions', function (t) {
   t.test('isValidPrivate', function (st) {
-    const SECP256K1_N = new BN(
-      'fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141',
-      16
-    )
+    const SECP256K1_N = BigInt('0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141')
 
     let tmp = '0011223344'
     st.notOk(isValidPrivate(Buffer.from(tmp, 'hex')), 'should fail on short input')
@@ -200,10 +199,10 @@ tape('Utility Functions', function (t) {
     tmp = SECP256K1_N.toString(16)
     st.notOk(isValidPrivate(Buffer.from(tmp, 'hex')), 'should fail on invalid curve (== N)')
 
-    tmp = SECP256K1_N.addn(1).toString(16)
+    tmp = (SECP256K1_N + BigInt(1)).toString(16)
     st.notOk(isValidPrivate(Buffer.from(tmp, 'hex')), 'should fail on invalid curve (>= N)')
 
-    tmp = SECP256K1_N.subn(1).toString(16)
+    tmp = (SECP256K1_N - BigInt(1)).toString(16)
     st.ok(isValidPrivate(Buffer.from(tmp, 'hex')), 'should work otherwise (< N)')
     st.end()
   })
@@ -570,7 +569,7 @@ tape('Utility Functions', function (t) {
           for (const addr of addresses) {
             st.equal(toChecksumAddress(addr.toLowerCase(), Number(chainId)), addr)
             st.equal(toChecksumAddress(addr.toLowerCase(), Buffer.from([chainId] as any)), addr)
-            st.equal(toChecksumAddress(addr.toLowerCase(), new BN(chainId)), addr)
+            st.equal(toChecksumAddress(addr.toLowerCase(), BigInt(chainId)), addr)
             st.equal(
               toChecksumAddress(
                 addr.toLowerCase(),
@@ -586,7 +585,7 @@ tape('Utility Functions', function (t) {
         const addr = '0x88021160C5C792225E4E5452585947470010289D'
         const chainIDBuffer = Buffer.from('796f6c6f763378', 'hex')
         st.equal(toChecksumAddress(addr.toLowerCase(), chainIDBuffer), addr)
-        st.equal(toChecksumAddress(addr.toLowerCase(), new BN(chainIDBuffer)), addr)
+        st.equal(toChecksumAddress(addr.toLowerCase(), bufferToBigInt(chainIDBuffer)), addr)
         st.equal(toChecksumAddress(addr.toLowerCase(), '0x' + chainIDBuffer.toString('hex')), addr)
         const chainIDNumber = parseInt(chainIDBuffer.toString('hex'), 16)
         st.throws(() => {
@@ -624,7 +623,7 @@ tape('Utility Functions', function (t) {
           for (const addr of addresses) {
             st.ok(isValidChecksumAddress(addr, Number(chainId)))
             st.ok(isValidChecksumAddress(addr, Buffer.from([chainId] as any)))
-            st.ok(isValidChecksumAddress(addr, new BN(chainId)))
+            st.ok(isValidChecksumAddress(addr, BigInt(chainId)))
             st.equal(
               isValidChecksumAddress(addr, '0x' + Buffer.from([chainId] as any).toString('hex')),
               true
