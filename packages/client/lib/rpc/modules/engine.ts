@@ -310,6 +310,9 @@ export class Engine {
    *   3. validationError: String|null - validation error message
    */
   async newPayloadV1(params: [ExecutionPayloadV1]): Promise<PayloadStatusV1> {
+    this.connectionManager.updateStatus()
+    this.connectionManager.lastPayloadReceived = params[0]
+
     const [payloadData] = params
     const {
       blockNumber: number,
@@ -319,8 +322,7 @@ export class Engine {
       transactions,
       parentHash,
     } = payloadData
-    this.connectionManager.lastPayloadReceived = payloadData
-    const common = this.config.chainCommon
+    const { chainCommon: common } = this.config
 
     try {
       const block = await findBlock(toBuffer(parentHash), this.validBlocks, this.chain)
@@ -418,12 +420,12 @@ export class Engine {
       for (const [i, block] of blocks.entries()) {
         const root = (i > 0 ? blocks[i - 1] : await this.chain.getBlock(block.header.parentHash))
           .header.stateRoot
-        await vmCopy.runBlock({ block, root })
+        await vmCopy.runBlock({ block, root, hardforkByTD: this.chain.headers.td })
         await vmCopy.blockchain.putBlock(block)
       }
     } catch (error) {
       const validationError = `Error verifying block while running: ${error}`
-      this.config.logger.debug(validationError)
+      this.config.logger.error(validationError)
       const latestValidHash = await validHash(block.header.parentHash, this.validBlocks, this.chain)
       return { status: Status.INVALID, latestValidHash, validationError }
     }
@@ -457,7 +459,7 @@ export class Engine {
   async forkchoiceUpdatedV1(
     params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | undefined]
   ): Promise<ForkchoiceResponseV1> {
-    this.connectionManager.updateConnectionStatus()
+    this.connectionManager.updateStatus()
     this.connectionManager.lastForkchoiceUpdate = params[0]
 
     const { headBlockHash, finalizedBlockHash } = params[0]
@@ -580,7 +582,7 @@ export class Engine {
    * @returns Instance of {@link ExecutionPayloadV1} or an error
    */
   async getPayloadV1(params: [string]) {
-    this.connectionManager.updateConnectionStatus()
+    this.connectionManager.updateStatus()
     const payloadId = toBuffer(params[0])
     try {
       const block = await this.pendingBlock.build(payloadId)
@@ -608,7 +610,7 @@ export class Engine {
   async exchangeTransitionConfigurationV1(
     params: [TransitionConfigurationV1]
   ): Promise<TransitionConfigurationV1> {
-    this.connectionManager.updateConnectionStatus()
+    this.connectionManager.updateStatus()
     const { terminalTotalDifficulty, terminalBlockHash, terminalBlockNumber } = params[0]
     const td = this.chain.config.chainCommon.hardforkTD(Hardfork.Merge)
     if (td === undefined || td === null) {

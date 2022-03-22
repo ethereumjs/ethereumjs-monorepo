@@ -196,6 +196,7 @@ export class Chain {
         const num = block.header.number
         const td = await this.blockchain.getTotalDifficulty(block.hash(), num)
         this.config.logger.info(`Merge hardfork reached 🐼 👉 👈 🐼 ! block=${num} td=${td}`)
+        this.config.logger.info(`First block for CL-framed execution: block=${num.addn(1)}`)
       }
     })
   }

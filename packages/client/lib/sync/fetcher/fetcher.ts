@@ -206,7 +206,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   private success(job: Job<JobTask, JobResult, StorageItem>, result?: JobResult) {
     if (job.state !== 'active') return
-    const jobStr = this.jobStr(job, true)
+    let jobStr = this.jobStr(job, true)
     let reenqueue = false
     let resultSet = ''
     if (result === undefined) {
@@ -231,6 +231,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     } else {
       job.peer!.idle = true
       job.result = this.process(job, result)
+      jobStr = this.jobStr(job, true)
       if (job.result) {
         this.out.insert(job)
         this.dequeue()
@@ -496,7 +497,14 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       str += `index=${job.index} `
     }
     if (this.isBlockFetcherJobTask(job.task)) {
-      str += `first=${job.task.first} count=${job.task.count}`
+      let { first, count } = job.task
+      let partialResult = ''
+      if (job.partialResult) {
+        first = first.addn(job.partialResult.length)
+        count -= job.partialResult.length
+        partialResult = ` partialResults=${job.partialResult.length}`
+      }
+      str += `first=${first} count=${count}${partialResult}`
     }
     return str
   }

@@ -17,7 +17,7 @@ export class CLConnectionManager {
   private config: Config
 
   /** Default connection check interval (in ms) */
-  private DEFAULT_CONNECTION_CHECK_INTERVAL = 5000
+  private DEFAULT_CONNECTION_CHECK_INTERVAL = 10000
 
   /** Default payload log interval (in ms) */
   private DEFAULT_PAYLOAD_LOG_INTERVAL = 10000
@@ -30,10 +30,60 @@ export class CLConnectionManager {
   private _forkchoiceLogInterval?: NodeJS.Timeout
 
   private connectionStatus = ConnectionStatus.Disconnected
+  private oneTimeMergeCLConnectionCheck = false
   private lastRequestTimestamp = 0
 
-  public lastPayloadReceived?: ExecutionPayloadV1
-  public lastForkchoiceUpdate?: ForkchoiceStateV1
+  /**
+   * Do not get or set this value directly.
+   * Use the getter and setter without the underscore, i.e.
+   * ```this.connectionManager.lastPayloadReceived = payload```
+   */
+  private _lastPayloadReceived?: ExecutionPayloadV1
+
+  /**
+   * Do not get or set this value directly.
+   * Use the getter and setter without the underscore, i.e.
+   * ```this.connectionManager.lastForkchoiceUpdate = state```
+   */
+  private _lastForkchoiceUpdate?: ForkchoiceStateV1
+
+  private initialPayloadReceived?: ExecutionPayloadV1
+  private initialForkchoiceUpdate?: ForkchoiceStateV1
+
+  get lastPayloadReceived(): ExecutionPayloadV1 | undefined {
+    return this._lastPayloadReceived
+  }
+
+  set lastPayloadReceived(payload: ExecutionPayloadV1 | undefined) {
+    if (!payload) return
+    if (!this.initialPayloadReceived) {
+      this.initialPayloadReceived = payload
+      this.config.logger.info(
+        `Initial consensus payload received block=${Number(payload.blockNumber)} parentHash=${
+          payload.parentHash
+        }`
+      )
+    }
+    this._lastPayloadReceived = payload
+  }
+
+  get lastForkchoiceUpdate(): ForkchoiceStateV1 | undefined {
+    return this._lastForkchoiceUpdate
+  }
+
+  set lastForkchoiceUpdate(state: ForkchoiceStateV1 | undefined) {
+    if (!state) return
+    if (!this.initialForkchoiceUpdate) {
+      this.initialForkchoiceUpdate = state
+      this.config.logger.info(
+        `Initial consensus forkchoice update headBlockHash=${state.headBlockHash.substring(
+          0,
+          7
+        )}... finalizedBlockHash=${state.finalizedBlockHash}`
+      )
+    }
+    this._lastForkchoiceUpdate = state
+  }
 
   constructor(opts: CLConnectionManagerOpts) {
     this.config = opts.config
@@ -79,7 +129,7 @@ export class CLConnectionManager {
   /**
    * Updates the Consensus Client connection status on new RPC requests
    */
-  updateConnectionStatus() {
+  updateStatus() {
     if ([ConnectionStatus.Disconnected, ConnectionStatus.Lost].includes(this.connectionStatus)) {
       this.config.logger.info('Consensus client connection established', { attentionCL: 'CL' })
     }
@@ -104,6 +154,27 @@ export class CLConnectionManager {
         this.connectionStatus = ConnectionStatus.Disconnected
         this.config.logger.warn('Consensus disconnected', { attentionCL: null })
       }
+    }
+
+    if (this.config.chainCommon.hardfork() == Hardfork.PreMerge) {
+      if (this.connectionStatus === ConnectionStatus.Disconnected) {
+        this.config.logger.warn('No CL client connection available, Merge HF happening soon')
+      }
+    }
+
+    if (
+      !this.oneTimeMergeCLConnectionCheck &&
+      this.config.chainCommon.hardfork() == Hardfork.Merge
+    ) {
+      if (this.connectionStatus === ConnectionStatus.Disconnected) {
+        this.config.logger.warn(
+          'Merge HF activated, CL client connection is needed for continued block processing'
+        )
+        this.config.logger.warn(
+          '(note that CL client might need to be synced up to beacon chain Merge transition slot until communication starts)'
+        )
+      }
+      this.oneTimeMergeCLConnectionCheck = true
     }
   }
 
