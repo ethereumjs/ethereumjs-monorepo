@@ -251,7 +251,8 @@ const args = yargs(hideBin(process.argv))
     default: 2350000,
   })
   .option('startBlock', {
-    describe: 'Block number to start syncing from.  Must be less than current local chain tip',
+    describe:
+      'Block number to start syncing from.  Must be less than current local chain tip.  Backup the datadir before doing this as it will delete any blocks after the specified `startBlock` and updates the chain DB',
     number: true,
     optional: true,
   }).argv
@@ -606,7 +607,7 @@ async function run() {
         client.services.forEach((service) => {
           if (!service.synchronizer.running) void service.synchronizer.start()
         })
-        logger.info(`Blockchain height reset to ${client.chain.blocks.height.toString(10)}`)
+        logger.info(`Blockchain height reset to ${client.chain.blocks.height.toString()}`)
       } catch (err: any) {
         logger.error(err.toString())
         process.exit(0)
