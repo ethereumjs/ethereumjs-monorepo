@@ -116,7 +116,7 @@ export interface VMOpts {
    * e.g. both Merge and Shanghai HF blocks set and the block number from the block provided
    * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
    */
-   hardforkByTD?: BigIntLike
+  hardforkByTD?: BigIntLike
   /**
    * Adds custom precompiles. This is hardfork-agnostic: these precompiles are always activated
    * If only an address is given, the precompile is deleted
