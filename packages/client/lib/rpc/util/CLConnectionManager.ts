@@ -17,10 +17,10 @@ export class CLConnectionManager {
   private config: Config
 
   /** Threshold for a disconnected status decision */
-  private DISCONNECTED_THRESHOLD = 10000
+  private DISCONNECTED_THRESHOLD = 15000
 
   /** Threshold for a uncertain status decision */
-  private UNCERTAIN_THRESHOLD = 4000
+  private UNCERTAIN_THRESHOLD = 7000
 
   /** Default connection check interval (in ms) */
   private DEFAULT_CONNECTION_CHECK_INTERVAL = 10000
@@ -164,7 +164,7 @@ export class CLConnectionManager {
         }
       } else {
         this.connectionStatus = ConnectionStatus.Disconnected
-        this.config.logger.warn('Consensus disconnected', { attentionCL: null })
+        this.config.logger.warn('Consensus client disconnected', { attentionCL: null })
       }
     }
 
