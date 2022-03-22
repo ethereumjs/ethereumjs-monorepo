@@ -94,19 +94,23 @@ export class CLConnectionManager {
   constructor(opts: CLConnectionManagerOpts) {
     this.config = opts.config
     this.config.events.on(Event.CHAIN_UPDATED, () => {
-      if (
-        this.config.chainCommon.gteHardfork(Hardfork.PreMerge) &&
-        !this._connectionCheckInterval
-      ) {
+      if (this.config.chainCommon.gteHardfork(Hardfork.PreMerge)) {
         this.start()
       }
     })
+    if (this.config.chainCommon.gteHardfork(Hardfork.PreMerge)) {
+      this.start()
+    }
     this.config.events.once(Event.CLIENT_SHUTDOWN, () => {
       this.stop()
     })
   }
 
   start() {
+    // Connection Manager already started
+    if (this._connectionCheckInterval) {
+      return
+    }
     this._connectionCheckInterval = setInterval(
       this.connectionCheck.bind(this), // eslint-disable @typescript-eslint/await-thenable
       this.DEFAULT_CONNECTION_CHECK_INTERVAL
