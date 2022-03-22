@@ -1,8 +1,13 @@
+import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { Event } from '../../types'
 import type { Config } from '../../config'
-import type { ExecutionPayloadV1, ForkchoiceResponseV1, ForkchoiceStateV1 } from '../modules/engine'
-import { Block } from '@ethereumjs/block'
+import type {
+  ExecutionPayloadV1,
+  ForkchoiceResponseV1,
+  ForkchoiceStateV1,
+  PayloadStatusV1,
+} from '../modules/engine'
 
 export enum ConnectionStatus {
   Connected = 'connected',
@@ -12,6 +17,11 @@ export enum ConnectionStatus {
 
 type CLConnectionManagerOpts = {
   config: Config
+}
+
+type NewPayload = {
+  payload: ExecutionPayloadV1
+  response?: PayloadStatusV1
 }
 
 type ForkchoiceUpdate = {
@@ -27,7 +37,7 @@ export class CLConnectionManager {
   /** Threshold for a disconnected status decision */
   private DISCONNECTED_THRESHOLD = 20000
 
-  /** Threshold for a uncertain status decision */
+  /** Threshold for an uncertain status decision */
   private UNCERTAIN_THRESHOLD = 10000
 
   /** Default connection check interval (in ms) */
@@ -47,44 +57,22 @@ export class CLConnectionManager {
   private oneTimeMergeCLConnectionCheck = false
   private lastRequestTimestamp = 0
 
-  /**
-   * Do not get or set this value directly.
-   * Use the getter and setter without the underscore, i.e.
-   * ```this.connectionManager.lastPayloadReceived = payload```
-   */
-  private _lastPayloadReceived?: ExecutionPayloadV1 // TODO: integrate response (see forkchoiceUpdate)
-
+  private _lastPayload?: NewPayload
   private _lastForkchoiceUpdate?: ForkchoiceUpdate
 
-  private initialPayloadReceived?: ExecutionPayloadV1
+  private _initialPayload?: NewPayload
   private _initialForkchoiceUpdate?: ForkchoiceUpdate
-
-  get lastPayloadReceived(): ExecutionPayloadV1 | undefined {
-    return this._lastPayloadReceived
-  }
-
-  set lastPayloadReceived(payload: ExecutionPayloadV1 | undefined) {
-    if (!payload) return
-    if (!this.initialPayloadReceived) {
-      this.initialPayloadReceived = payload
-      this.config.logger.info(
-        `Initial consensus payload received block=${Number(payload.blockNumber)} parentHash=${
-          payload.parentHash
-        }`
-      )
-    }
-    this._lastPayloadReceived = payload
-  }
 
   constructor(opts: CLConnectionManagerOpts) {
     this.config = opts.config
-    this.config.events.on(Event.CHAIN_UPDATED, () => {
-      if (this.config.chainCommon.gteHardfork(Hardfork.PreMerge)) {
-        this.start()
-      }
-    })
     if (this.config.chainCommon.gteHardfork(Hardfork.PreMerge)) {
       this.start()
+    } else {
+      this.config.events.on(Event.CHAIN_UPDATED, () => {
+        if (this.config.chainCommon.gteHardfork(Hardfork.PreMerge)) {
+          this.start()
+        }
+      })
     }
     this.config.events.once(Event.CLIENT_SHUTDOWN, () => {
       this.stop()
@@ -92,12 +80,13 @@ export class CLConnectionManager {
   }
 
   start() {
-    // Connection Manager already started
     if (this._connectionCheckInterval) {
+      // Return if already started
       return
     }
     this._connectionCheckInterval = setInterval(
-      this.connectionCheck.bind(this), // eslint-disable @typescript-eslint/await-thenable
+      // eslint-disable @typescript-eslint/await-thenable
+      this.connectionCheck.bind(this),
       this.DEFAULT_CONNECTION_CHECK_INTERVAL
     )
     this._payloadLogInterval = setInterval(
@@ -121,37 +110,51 @@ export class CLConnectionManager {
     }
   }
 
-  private _getForkchoiceUpdateLogMsg(update: ForkchoiceUpdate) {
-    let msg = `head block hash=${update.state.headBlockHash.substring(0, 7)}...`
-    if (update.headBlock) {
-      const timeDiff = new Date().getTime() / 1000 - update.headBlock.header.timestamp.toNumber()
-      const min = 60
-      const hour = min * 60
-      const day = hour * 24
-      let timeDiffStr = ''
-      if (timeDiff > day) {
-        timeDiffStr = `${Math.floor(timeDiff / day)} days`
-      } else if (timeDiff > hour) {
-        timeDiffStr = `${Math.floor(timeDiff / hour)} hours`
-      } else if (timeDiff > min) {
-        timeDiffStr = `${Math.floor(timeDiff / min)} mins`
-      } else {
-        timeDiffStr = `${Math.floor(timeDiff)} secs`
-      }
+  private _getPayloadLogMsg(payload: NewPayload) {
+    const msg = `number=${Number(
+      payload.payload.blockNumber
+    )} hash=${payload.payload.blockHash.substring(0, 7)}... parentHash=${
+      payload.payload.parentHash
+    } status=${payload.response ? payload.response.status : '-'}`
+    return msg
+  }
 
-      msg += ` number=${update.headBlock.header.number} tsDiff=${timeDiffStr}`
+  private _getForkchoiceUpdateLogMsg(update: ForkchoiceUpdate) {
+    let msg = `headBlockHash=${update.state.headBlockHash.substring(0, 7)}...`
+    if (update.headBlock) {
+      msg += ` number=${update.headBlock.header.number} timestampDiff=${this.timeDiffStr(
+        update.headBlock
+      )}`
     }
-    msg += ` finalized block hash=${update.state.finalizedBlockHash} response=${
+    msg += ` finalizedBlockHash=${update.state.finalizedBlockHash} response=${
       update.response ? update.response.payloadStatus.status : '-'
     }`
-
     if (update.error) {
       msg += ` error=${update.error}`
     }
     return msg
   }
 
+  private timeDiffStr(block: Block) {
+    const timeDiff = new Date().getTime() / 1000 - block.header.timestamp.toNumber()
+    const min = 60
+    const hour = min * 60
+    const day = hour * 24
+    let timeDiffStr = ''
+    if (timeDiff > day) {
+      timeDiffStr = `${Math.floor(timeDiff / day)} days`
+    } else if (timeDiff > hour) {
+      timeDiffStr = `${Math.floor(timeDiff / hour)} hours`
+    } else if (timeDiff > min) {
+      timeDiffStr = `${Math.floor(timeDiff / min)} mins`
+    } else {
+      timeDiffStr = `${Math.floor(timeDiff)} secs`
+    }
+    return timeDiffStr
+  }
+
   lastForkchoiceUpdate(update: ForkchoiceUpdate) {
+    this.updateStatus()
     if (!this._initialForkchoiceUpdate) {
       this._initialForkchoiceUpdate = update
       this.config.logger.info(
@@ -159,6 +162,17 @@ export class CLConnectionManager {
       )
     }
     this._lastForkchoiceUpdate = update
+  }
+
+  lastNewPayload(payload: NewPayload) {
+    this.updateStatus()
+    if (!this._initialPayload) {
+      this._initialPayload = payload
+      this.config.logger.info(
+        `Initial consensus payload received ${this._getPayloadLogMsg(payload)}`
+      )
+    }
+    this._lastPayload = payload
   }
 
   /**
@@ -222,13 +236,11 @@ export class CLConnectionManager {
     if (this.connectionStatus !== ConnectionStatus.Connected) {
       return
     }
-    if (!this.lastPayloadReceived) {
+    if (!this._lastPayload) {
       this.config.logger.info('No consensus payload received yet')
     } else {
-      const num = Number(this.lastPayloadReceived.blockNumber)
-      this.config.logger.info(
-        `Last consensus payload received block=${num} parentHash=${this.lastPayloadReceived.parentHash}`
-      )
+      ;`Last consensus payload received ${this._getPayloadLogMsg(this._lastPayload)}
+      `
     }
   }
 

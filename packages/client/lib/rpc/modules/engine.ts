@@ -58,7 +58,7 @@ type PayloadAttributesV1 = {
   suggestedFeeRecipient: string
 }
 
-type PayloadStatusV1 = {
+export type PayloadStatusV1 = {
   status: Status
   latestValidHash: string | null
   validationError: string | null
@@ -310,9 +310,6 @@ export class Engine {
    *   3. validationError: String|null - validation error message
    */
   async newPayloadV1(params: [ExecutionPayloadV1]): Promise<PayloadStatusV1> {
-    this.connectionManager.updateStatus()
-    this.connectionManager.lastPayloadReceived = params[0]
-
     const [payloadData] = params
     const {
       blockNumber: number,
@@ -329,11 +326,13 @@ export class Engine {
       if (!block._common.gteHardfork(Hardfork.Merge)) {
         const validTerminalBlock = await validateTerminalBlock(block, this.chain)
         if (!validTerminalBlock) {
-          return {
+          const response = {
             status: Status.INVALID_TERMINAL_BLOCK,
             validationError: null,
             latestValidHash: null,
           }
+          this.connectionManager.lastNewPayload({ payload: params[0], response })
+          return response
         }
       }
     } catch (error: any) {
@@ -355,7 +354,9 @@ export class Engine {
           this.validBlocks,
           this.chain
         )
-        return { status: Status.INVALID, latestValidHash, validationError }
+        const response = { status: Status.INVALID, latestValidHash, validationError }
+        this.connectionManager.lastNewPayload({ payload: params[0], response })
+        return response
       }
     }
 
@@ -387,7 +388,9 @@ export class Engine {
           this.validBlocks,
           this.chain
         )
-        return { status: Status.INVALID_BLOCK_HASH, latestValidHash, validationError }
+        const response = { status: Status.INVALID_BLOCK_HASH, latestValidHash, validationError }
+        this.connectionManager.lastNewPayload({ payload: params[0], response })
+        return response
       }
     } catch (error) {
       const validationError = `Error verifying block during init: ${error}`
@@ -397,7 +400,9 @@ export class Engine {
         this.validBlocks,
         this.chain
       )
-      return { status: Status.INVALID, latestValidHash, validationError }
+      const response = { status: Status.INVALID, latestValidHash, validationError }
+      this.connectionManager.lastNewPayload({ payload: params[0], response })
+      return response
     }
 
     const vmCopy = this.vm.copy()
@@ -411,7 +416,9 @@ export class Engine {
         this.chain
       )
     } catch (error) {
-      return { status: Status.SYNCING, latestValidHash: null, validationError: null }
+      const response = { status: Status.SYNCING, latestValidHash: null, validationError: null }
+      this.connectionManager.lastNewPayload({ payload: params[0], response })
+      return response
     }
 
     blocks.push(block)
@@ -427,15 +434,19 @@ export class Engine {
       const validationError = `Error verifying block while running: ${error}`
       this.config.logger.error(validationError)
       const latestValidHash = await validHash(block.header.parentHash, this.validBlocks, this.chain)
-      return { status: Status.INVALID, latestValidHash, validationError }
+      const response = { status: Status.INVALID, latestValidHash, validationError }
+      this.connectionManager.lastNewPayload({ payload: params[0], response })
+      return response
     }
 
     this.validBlocks.set(block.hash().toString('hex'), block)
-    return {
+    const response = {
       status: Status.VALID,
       latestValidHash: bufferToHex(block.hash()),
       validationError: null,
     }
+    this.connectionManager.lastNewPayload({ payload: params[0], response })
+    return response
   }
 
   /**
@@ -479,7 +490,6 @@ export class Engine {
           state: params[0],
           response,
         })
-        this.connectionManager.updateStatus()
         return response
       }
     }
@@ -499,7 +509,6 @@ export class Engine {
           state: params[0],
           response,
         })
-        this.connectionManager.updateStatus()
         return response
       }
     }
@@ -514,7 +523,6 @@ export class Engine {
           response: undefined,
           error: message,
         })
-        this.connectionManager.updateStatus()
         throw {
           code: INVALID_PARAMS,
           message,
@@ -544,7 +552,6 @@ export class Engine {
           state: params[0],
           response,
         })
-        this.connectionManager.updateStatus()
         return response
       }
 
@@ -612,7 +619,6 @@ export class Engine {
         response,
         headBlock,
       })
-      this.connectionManager.updateStatus()
       return response
     }
 
@@ -628,7 +634,6 @@ export class Engine {
       response,
       headBlock,
     })
-    this.connectionManager.updateStatus()
     return response
   }
 
