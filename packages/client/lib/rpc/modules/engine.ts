@@ -17,7 +17,7 @@ import type { EthereumService } from '../../service'
 import type { FullSynchronizer } from '../../sync'
 import type { TxPool } from '../../sync/txpool'
 
-enum Status {
+export enum Status {
   ACCEPTED = 'ACCEPTED',
   INVALID = 'INVALID',
   INVALID_BLOCK_HASH = 'INVALID_BLOCK_HASH',
@@ -58,13 +58,13 @@ type PayloadAttributesV1 = {
   suggestedFeeRecipient: string
 }
 
-type PayloadStatusV1 = {
+export type PayloadStatusV1 = {
   status: Status
   latestValidHash: string | null
   validationError: string | null
 }
 
-type ForkchoiceResponseV1 = {
+export type ForkchoiceResponseV1 = {
   payloadStatus: PayloadStatusV1
   payloadId: string | null
 }
@@ -310,9 +310,6 @@ export class Engine {
    *   3. validationError: String|null - validation error message
    */
   async newPayloadV1(params: [ExecutionPayloadV1]): Promise<PayloadStatusV1> {
-    this.connectionManager.updateStatus()
-    this.connectionManager.lastPayloadReceived = params[0]
-
     const [payloadData] = params
     const {
       blockNumber: number,
@@ -329,17 +326,21 @@ export class Engine {
       if (!block._common.gteHardfork(Hardfork.Merge)) {
         const validTerminalBlock = await validateTerminalBlock(block, this.chain)
         if (!validTerminalBlock) {
-          return {
+          const response = {
             status: Status.INVALID_TERMINAL_BLOCK,
             validationError: null,
             latestValidHash: null,
           }
+          this.connectionManager.lastNewPayload({ payload: params[0], response })
+          return response
         }
       }
     } catch (error: any) {
       // TODO if we can't find the parent and the block doesn't extend the canonical chain,
       // return ACCEPTED when optimistic sync is supported to store the block for later processing
-      return { status: Status.SYNCING, validationError: null, latestValidHash: null }
+      const response = { status: Status.SYNCING, validationError: null, latestValidHash: null }
+      this.connectionManager.lastNewPayload({ payload: params[0], response })
+      return response
     }
 
     const txs = []
@@ -355,7 +356,9 @@ export class Engine {
           this.validBlocks,
           this.chain
         )
-        return { status: Status.INVALID, latestValidHash, validationError }
+        const response = { status: Status.INVALID, latestValidHash, validationError }
+        this.connectionManager.lastNewPayload({ payload: params[0], response })
+        return response
       }
     }
 
@@ -387,7 +390,9 @@ export class Engine {
           this.validBlocks,
           this.chain
         )
-        return { status: Status.INVALID_BLOCK_HASH, latestValidHash, validationError }
+        const response = { status: Status.INVALID_BLOCK_HASH, latestValidHash, validationError }
+        this.connectionManager.lastNewPayload({ payload: params[0], response })
+        return response
       }
     } catch (error) {
       const validationError = `Error verifying block during init: ${error}`
@@ -397,7 +402,9 @@ export class Engine {
         this.validBlocks,
         this.chain
       )
-      return { status: Status.INVALID, latestValidHash, validationError }
+      const response = { status: Status.INVALID, latestValidHash, validationError }
+      this.connectionManager.lastNewPayload({ payload: params[0], response })
+      return response
     }
 
     const vmCopy = this.vm.copy()
@@ -411,7 +418,9 @@ export class Engine {
         this.chain
       )
     } catch (error) {
-      return { status: Status.SYNCING, latestValidHash: null, validationError: null }
+      const response = { status: Status.SYNCING, latestValidHash: null, validationError: null }
+      this.connectionManager.lastNewPayload({ payload: params[0], response })
+      return response
     }
 
     blocks.push(block)
@@ -427,15 +436,19 @@ export class Engine {
       const validationError = `Error verifying block while running: ${error}`
       this.config.logger.error(validationError)
       const latestValidHash = await validHash(block.header.parentHash, this.validBlocks, this.chain)
-      return { status: Status.INVALID, latestValidHash, validationError }
+      const response = { status: Status.INVALID, latestValidHash, validationError }
+      this.connectionManager.lastNewPayload({ payload: params[0], response })
+      return response
     }
 
     this.validBlocks.set(block.hash().toString('hex'), block)
-    return {
+    const response = {
       status: Status.VALID,
       latestValidHash: bufferToHex(block.hash()),
       validationError: null,
     }
+    this.connectionManager.lastNewPayload({ payload: params[0], response })
+    return response
   }
 
   /**
@@ -459,9 +472,6 @@ export class Engine {
   async forkchoiceUpdatedV1(
     params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | undefined]
   ): Promise<ForkchoiceResponseV1> {
-    this.connectionManager.updateStatus()
-    this.connectionManager.lastForkchoiceUpdate = params[0]
-
     const { headBlockHash, finalizedBlockHash, safeBlockHash } = params[0]
     const payloadAttributes = params[1]
 
@@ -477,14 +487,19 @@ export class Engine {
       } catch (error) {
         const latestValidHash = bufferToHex(this.chain.headers.latest!.hash())
         const payloadStatus = { status: Status.SYNCING, latestValidHash, validationError: null }
-        return { payloadStatus, payloadId: null }
+        const response = { payloadStatus, payloadId: null }
+        this.connectionManager.lastForkchoiceUpdate({
+          state: params[0],
+          response,
+        })
+        return response
       }
     }
 
     if (!headBlock._common.gteHardfork(Hardfork.Merge)) {
       const validTerminalBlock = await validateTerminalBlock(headBlock, this.chain)
       if (!validTerminalBlock) {
-        return {
+        const response = {
           payloadStatus: {
             status: Status.INVALID_TERMINAL_BLOCK,
             validationError: null,
@@ -492,6 +507,11 @@ export class Engine {
           },
           payloadId: null,
         }
+        this.connectionManager.lastForkchoiceUpdate({
+          state: params[0],
+          response,
+        })
+        return response
       }
     }
 
@@ -499,9 +519,15 @@ export class Engine {
       try {
         await this.chain.getBlock(toBuffer(safeBlockHash))
       } catch (error) {
+        const message = 'safe block hash not available'
+        this.connectionManager.lastForkchoiceUpdate({
+          state: params[0],
+          response: undefined,
+          error: message,
+        })
         throw {
           code: INVALID_PARAMS,
-          message: 'safe block hash not available',
+          message,
         }
       }
     }
@@ -523,7 +549,12 @@ export class Engine {
           this.chain
         )
         const payloadStatus = { status: Status.SYNCING, latestValidHash, validationError: null }
-        return { payloadStatus, payloadId: null }
+        const response = { payloadStatus, payloadId: null }
+        this.connectionManager.lastForkchoiceUpdate({
+          state: params[0],
+          response,
+        })
+        return response
       }
 
       const blocks = [...parentBlocks, headBlock]
@@ -536,9 +567,11 @@ export class Engine {
         this.validBlocks.delete(block.hash().toString('hex'))
       }
 
+      const timeDiff = new Date().getTime() / 1000 - headBlock.header.timestamp.toNumber()
       if (
-        !this.synchronizer.syncTargetHeight ||
-        this.synchronizer.syncTargetHeight.lt(headBlock.header.number)
+        (!this.synchronizer.syncTargetHeight ||
+          this.synchronizer.syncTargetHeight.lt(headBlock.header.number)) &&
+        timeDiff < 30
       ) {
         this.config.synchronized = true
         this.config.lastSyncDate = Date.now()
@@ -582,7 +615,13 @@ export class Engine {
         this.chain
       )
       const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
-      return { payloadStatus, payloadId: bufferToHex(payloadId) }
+      const response = { payloadStatus, payloadId: bufferToHex(payloadId) }
+      this.connectionManager.lastForkchoiceUpdate({
+        state: params[0],
+        response,
+        headBlock,
+      })
+      return response
     }
 
     const latestValidHash = await validHash(
@@ -591,7 +630,13 @@ export class Engine {
       this.chain
     )
     const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
-    return { payloadStatus, payloadId: null }
+    const response = { payloadStatus, payloadId: null }
+    this.connectionManager.lastForkchoiceUpdate({
+      state: params[0],
+      response,
+      headBlock,
+    })
+    return response
   }
 
   /**
