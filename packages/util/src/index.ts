@@ -29,12 +29,7 @@ export * from './signature'
 export * from './bytes'
 
 /**
- * Function for definining properties on an object
- */
-export * from './object'
-
-/**
- * External exports (rlp)
+ * External exports (BN, rlp)
  */
 export * from './externals'
 
