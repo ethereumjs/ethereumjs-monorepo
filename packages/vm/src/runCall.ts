@@ -1,9 +1,9 @@
 import { Address } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import VM from './index'
-import TxContext from './evm/txContext'
 import Message from './evm/message'
 import { default as EVM, EVMResult } from './evm/evm'
+import { TxContext } from './evm/types'
 
 /**
  * Options for running a call (or create) operation
@@ -35,10 +35,10 @@ export interface RunCallOpts {
 export default function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult> {
   const block = opts.block ?? Block.fromBlockData({}, { common: this._common })
 
-  const txContext = new TxContext(
-    opts.gasPrice ?? BigInt(0),
-    opts.origin ?? opts.caller ?? Address.zero()
-  )
+  const txContext: TxContext = {
+    gasPrice: opts.gasPrice ?? BigInt(0),
+    origin: opts.origin ?? opts.caller ?? Address.zero(),
+  }
 
   const message = new Message({
     caller: opts.caller,

@@ -1,5 +1,6 @@
 import { OpHandler } from './opcodes'
 import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas'
+import { Address } from 'ethereumjs-util'
 
 /**
  * Log that the contract emitted.
@@ -19,3 +20,7 @@ export type AddOpcode = {
 }
 
 export type CustomOpcode = AddOpcode | DeleteOpcode
+export interface TxContext {
+  gasPrice: bigint
+  origin: Address
+}
