@@ -56,6 +56,16 @@ See `Common` [custom chain initialization API](https://github.com/ethereumjs/eth
 
 Note that state in the VM is not activated by default (this also goes for account-only state). A state activation can now be explicitly triggered though by using the new `activateGenesisState` VM option.
 
+### L2 Support: Custom Opcodes Option
+
+There is now a new option `customOpcodes` for the VM which allows to add custom opcodes to the VM, see PR [#1705](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1705). This should be useful for L2s and other EVM based side chains if they come with a slighly different opcode set for bytecode execution.
+
+New opcodes can be passed in with its own logic function and an additional function for gas calculation. Additionally the new option allows for overwriting and/or deleting existing opcodes.
+
+### Features
+
+- Added new `VM.runBlock()` option `hardforkByTD` for Merge transition support, PR [#1802](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1802)
+
 ### Bug Fixes & Maintenance
 
 - Fixed `REVERT` bug where under certain conditions (revert reason larger than max code size), too much (all) gas was consumed, PR [#1700](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1700)

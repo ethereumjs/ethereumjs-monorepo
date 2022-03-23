@@ -22,6 +22,10 @@ This release supports [EIP-3540](https://eips.ethereum.org/EIPS/eip-3540) and [E
 
 See the associated VM release `v5.8.0` for more in-depth information on this.
 
+### Other Changes
+
+- Fixed a bug on `Common.copy()` taking over existing event listeners (leading to unwanted side effects), PR [#1799](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1799)
+
 # 2.6.2 - 2022-02-4
 
 - Adds support for [EIP-3607](https://eips.ethereum.org/EIPS/eip-3607) (Reject transactions from senders with deployed code), PR [#1691](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1691)

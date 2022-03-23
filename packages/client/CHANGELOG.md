@@ -26,6 +26,10 @@ This release fully supports the Merge [Kiln](https://kiln.themerge.dev/) testnet
 - Engine API (RPC): Tests for new Engine API endpoints, PR [#1727](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1727) 
 - Geth genesis files: Use `mergeForkBlock` if provided, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
 - Execution module refactor: decoupling from `FullSync` module to prepare for a post-Merge execution/sync separation, PR [#1663](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1663)
+- Added terminal block validation in `newPayload` and `forkchoiceUpdated` methods from Engine API, PR [#1797](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1797)
+- Validate block safe hash on `forkchoiceUpdated`, PR [#1804](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1804)
+- Validate finalized block hash on `forkchoiceUpdated`, PR [#1803](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1803)
+- More explicit Merge and CL connection logging with a proper panda bear icon and stuff, see PRs [#1800](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1800), [#1805](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1805) and [#1808](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1808)
 
 ### Features
 
@@ -34,12 +38,15 @@ This release fully supports the Merge [Kiln](https://kiln.themerge.dev/) testnet
 - Miner: unlock with file PK (do not use in a production setup for security reasons!), PR [#1790](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1790)
 - Various sync stability improvements, PR [#1781](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1781)
 - More sophisticated Block/Header fetcher reorg handling, PR [#1792](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1792)
+- Added new `--startBlock` CLI option to allow for restarting sync on an older block, PR [#1807](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1807)
+- JSON RPC: `eth_getBlockByNumber` method returns array of tx object when asked, PR [#1801](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1801)
 
 ### Bug Fixes
 
 - Geth genesis files: Minor `baseFeePerGas` related fix and other improvements, PRs [#1720](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1720) and [#1741](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1741)
 - Added `mixHash` to RPC block results (sorry, forgotten 😋), PR [#1791](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1791)
 - Fixed frequent `Error handling message` error in tx poo, PR [#1793](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1793)
+- Handle partial results in multi-peer safe manner, PR [#1802](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1802)
 
 ## 0.3.0 - 2022-02-01
 
