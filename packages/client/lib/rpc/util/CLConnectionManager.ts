@@ -209,7 +209,10 @@ export class CLConnectionManager {
 
     if (this.config.chainCommon.hardfork() == Hardfork.PreMerge) {
       if (this.connectionStatus === ConnectionStatus.Disconnected) {
-        this.config.logger.warn('No CL client connection available, Merge HF happening soon')
+        this.config.logger.warn('CL client connection is needed, Merge HF happening soon')
+        this.config.logger.warn(
+          '(no CL <-> EL communication yet, connection might be in a workable state though)'
+        )
       }
     }
 
