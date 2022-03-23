@@ -12,13 +12,12 @@ import { Block } from '@ethereumjs/block'
 import { ERROR, VmError } from '../exceptions'
 import { StateManager } from '../state/index'
 import { getPrecompile, PrecompileFunc } from './precompiles'
-import TxContext from './txContext'
 import Message from './message'
 import EEI from './eei'
 // eslint-disable-next-line
 import { short } from './opcodes/util'
 import * as eof from './opcodes/eof'
-import { Log } from './types'
+import { Log, TxContext } from './types'
 import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
 
 const debug = createDebugLogger('vm:evm')
