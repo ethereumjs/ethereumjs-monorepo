@@ -16,7 +16,7 @@ import Bloom from './bloom'
 import { default as EVM, EVMResult } from './evm/evm'
 import { short } from './evm/opcodes/util'
 import Message from './evm/message'
-import TxContext from './evm/txContext'
+import { TxContext } from './evm/types'
 import { getActivePrecompiles } from './evm/precompiles'
 import { EIP2929StateManager } from './state/interface'
 import type {
@@ -382,7 +382,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   /*
    * Execute message
    */
-  const txContext = new TxContext(gasPrice, caller)
+  const txContext: TxContext = { gasPrice, origin: caller }
   const { value, data, to } = tx
   const message = new Message({
     caller,

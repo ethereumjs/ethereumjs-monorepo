@@ -14,9 +14,9 @@ item length then you must use `utils.pad(<item>, 32)` first.
 import { Address } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import VM from './index'
-import TxContext from './evm/txContext'
 import Message from './evm/message'
 import { default as EVM, ExecResult } from './evm/evm'
+import { TxContext } from './evm/types'
 
 /**
  * Options for the {@link runCode} method.
@@ -74,9 +74,10 @@ export default function runCode(this: VM, opts: RunCodeOpts): Promise<ExecResult
   const block = opts.block ?? Block.fromBlockData({}, { common: this._common })
 
   // Backwards compatibility
-  const txContext =
-    opts.txContext ??
-    new TxContext(opts.gasPrice ?? BigInt(0), opts.origin ?? opts.caller ?? Address.zero())
+  const txContext: TxContext = opts.txContext ?? {
+    gasPrice: opts.gasPrice ?? BigInt(0),
+    origin: opts.origin ?? opts.caller ?? Address.zero(),
+  }
 
   const message =
     opts.message ??
