@@ -65,14 +65,6 @@ export function bigIntToUnpaddedBuffer(value: bigint): Buffer {
 }
 
 /**
- * Deprecated alias for {@link bigIntToUnpaddedBuffer}
- * @deprecated
- */
-export function bigIntToRlp(value: bigint): Buffer {
-  return bigIntToUnpaddedBuffer(value)
-}
-
-/**
  * Type output options
  */
 export enum TypeOutput {
