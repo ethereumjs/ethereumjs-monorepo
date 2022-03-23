@@ -17,7 +17,7 @@ import type { EthereumService } from '../../service'
 import type { FullSynchronizer } from '../../sync'
 import type { TxPool } from '../../sync/txpool'
 
-enum Status {
+export enum Status {
   ACCEPTED = 'ACCEPTED',
   INVALID = 'INVALID',
   INVALID_BLOCK_HASH = 'INVALID_BLOCK_HASH',
@@ -338,7 +338,9 @@ export class Engine {
     } catch (error: any) {
       // TODO if we can't find the parent and the block doesn't extend the canonical chain,
       // return ACCEPTED when optimistic sync is supported to store the block for later processing
-      return { status: Status.SYNCING, validationError: null, latestValidHash: null }
+      const response = { status: Status.SYNCING, validationError: null, latestValidHash: null }
+      this.connectionManager.lastNewPayload({ payload: params[0], response })
+      return response
     }
 
     const txs = []

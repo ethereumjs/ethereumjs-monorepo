@@ -2,11 +2,12 @@ import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { Event } from '../../types'
 import type { Config } from '../../config'
-import type {
+import {
   ExecutionPayloadV1,
   ForkchoiceResponseV1,
   ForkchoiceStateV1,
   PayloadStatusV1,
+  Status,
 } from '../modules/engine'
 
 export enum ConnectionStatus {
@@ -59,6 +60,7 @@ export class CLConnectionManager {
 
   private _lastPayload?: NewPayload
   private _lastForkchoiceUpdate?: ForkchoiceUpdate
+  private oneTimeSyncingResponseCheck = false
 
   private _initialPayload?: NewPayload
   private _initialForkchoiceUpdate?: ForkchoiceUpdate
@@ -171,6 +173,17 @@ export class CLConnectionManager {
       this.config.logger.info(
         `Initial consensus payload received ${this._getPayloadLogMsg(payload)}`
       )
+    }
+    if (!this.oneTimeSyncingResponseCheck) {
+      if (payload.response?.status === Status.SYNCING) {
+        this.config.logger.warn(
+          `CL client is requesting payload verification on future blocks which requires optimistic sync (unimplemented)`
+        )
+        this.config.logger.warn(
+          `Please restart your CL client sync from a present EL execution block`
+        )
+        this.oneTimeSyncingResponseCheck = true
+      }
     }
     this._lastPayload = payload
   }
