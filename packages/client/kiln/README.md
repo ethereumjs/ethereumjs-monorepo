@@ -1,15 +1,42 @@
 # Kiln v2 public testnet instructions
 
-Kiln v2 public testnet has been bootstrapped. The config files can be downloaded from https://github.com/eth-clients/merge-testnets/tree/main/kiln
+Kiln v2 public testnet has been bootstrapped:
+
+- https://kiln.themerge.dev
+
+The config files can be downloaded from the [merge-testnets](https://github.com/eth-clients/merge-testnets/tree/main/kiln) config GitHub repository.
+
 
 ## Execution - EthereumJS Setup
 
 Please ensure you have Node 12.x+ installed.
 
+### Client Installation
+
+### GitHub
+
 1. `git clone --depth 1 --branch master https://github.com/ethereumjs/ethereumjs-monorepo.git`
 1. `cd ethereumjs-monorepo`
 1. `npm i`
 1. `cd packages/client`
+
+#### NPM
+
+The `v0.4.0` client release (respectively follow-up bug fix releases) is ready for the Kiln v2 public testnet and can be installed with:
+
+```shell
+npm install -g @ethereumjs/client
+```
+
+Note that you eventually want to adopt the `config` download and accordingly modify the config file access paths as well as start the client just with `ethereumjs` instad of using the `npm run client:start` GitHub start command (also leave the inbetween `--` to forward the client config options).
+
+#### Docker
+
+Or try it in Docker.
+
+In `packages/client/kiln` run:
+
+`docker-compose --file docker-compose.ethereumjs.yml up`
 
 ### Download the config
 
@@ -20,7 +47,7 @@ Please ensure you have Node 12.x+ installed.
 
 ### Run client
 
-1. `npm run client:start -- --datadir kiln/datadir --gethGenesis kiln/config/genesis.json --saveReceipts --rpc --rpcport=8545 --ws --rpcEngine --rpcEnginePort=8551 --bootnodes=165.232.180.230:30303`
+1. `npm run client:start -- --datadir kiln/datadir --gethGenesis kiln/config/genesis.json --saveReceipts --rpc --rpcport=8545 --ws --rpcEngine --rpcEnginePort=8551 --bootnodes=164.92.130.5:30303,138.68.66.103:30303,165.232.180.230:30303,164.92.140.200:30303`
 
 Starting the client will write a `kiln/datadir/jwtsecret` file with a randomly generated secret to be used in conjunction with a CL client. This secret will be used to authenticate the `engine_*` api requests (hosted at port `8551`) from the CL. In case you want to host `engine_*` without auth, pass `--rpcEngineAuth false` as extra argument in the above run command.
 
@@ -30,14 +57,6 @@ To prevent the secret to be re-generated next time you restart the client, pass 
 
 1. Other rpc apis, will be hosted openly without auth requirement at 8545.
 2. Websocket endpoints will also be available at `8551` (for `engine_*`) and `8545` for the rest.
-
-#### Docker
-
-Or try it in Docker.
-
-In `packages/client/kiln` run:
-
-`docker-compose --file docker-compose.ethereumjs.yml up`
 
 ## Consensus
 

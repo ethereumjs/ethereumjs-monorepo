@@ -5,8 +5,8 @@ import { ERROR, VmError } from '../exceptions'
 import Memory from './memory'
 import Stack from './stack'
 import EEI from './eei'
-import { Opcode, handlers as opHandlers, OpHandler, AsyncOpHandler } from './opcodes'
-import { dynamicGasHandlers } from './opcodes/gas'
+import { Opcode, OpHandler, AsyncOpHandler } from './opcodes'
+import * as eof from './opcodes/eof'
 
 export interface InterpreterOpts {
   pc?: number
@@ -87,9 +87,43 @@ export default class Interpreter {
   }
 
   async run(code: Buffer, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
-    this._runState.code = code
-    this._runState.programCounter = opts.pc ?? this._runState.programCounter
+    if (!this._vm._common.isActivatedEIP(3540) || code[0] !== eof.FORMAT) {
+      // EIP-3540 isn't active and first byte is not 0xEF - treat as legacy bytecode
+      this._runState.code = code
+    } else if (this._vm._common.isActivatedEIP(3540)) {
+      if (code[1] !== eof.MAGIC) {
+        // Bytecode contains invalid EOF magic byte
+        return {
+          runState: this._runState,
+          exceptionError: new VmError(ERROR.INVALID_BYTECODE_RESULT),
+        }
+      }
+      if (code[2] !== eof.VERSION) {
+        // Bytecode contains invalid EOF version number
+        return {
+          runState: this._runState,
+          exceptionError: new VmError(ERROR.INVALID_EOF_FORMAT),
+        }
+      }
+      // Code is EOF1 format
+      const codeSections = eof.codeAnalysis(code)
+      if (!codeSections) {
+        // Code is invalid EOF1 format if `codeSections` is falsy
+        return {
+          runState: this._runState,
+          exceptionError: new VmError(ERROR.INVALID_EOF_FORMAT),
+        }
+      }
 
+      if (codeSections.data) {
+        // Set code to EOF container code section which starts at byte position 10 if data section is present
+        this._runState.code = code.slice(10, 10 + codeSections!.code)
+      } else {
+        // Set code to EOF container code section which starts at byte position 7 if no data section is present
+        this._runState.code = code.slice(7, 7 + codeSections!.code)
+      }
+    }
+    this._runState.programCounter = opts.pc ?? this._runState.programCounter
     // Check that the programCounter is in range
     const pc = this._runState.programCounter
     if (pc !== 0 && (pc < 0 || pc >= this._runState.code.length)) {
@@ -105,7 +139,7 @@ export default class Interpreter {
         (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e)
       ) {
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
-        this._runState.validJumps = this._getValidJumpDests(code)
+        this._runState.validJumps = this._getValidJumpDests(this._runState.code)
         this._runState.shouldDoJumpAnalysis = false
       }
       this._runState.opCode = opCode
@@ -144,7 +178,7 @@ export default class Interpreter {
     const gasLimitClone = this._eei.getGasLeft()
 
     if (opInfo.dynamicGas) {
-      const dynamicGasHandler = dynamicGasHandlers.get(this._runState.opCode)!
+      const dynamicGasHandler = this._vm._dynamicGasHandlers.get(this._runState.opCode)!
       // This function updates the gas BN in-place using `i*` methods
       // It needs the base fee, for correct gas limit calculation for the CALL opcodes
       await dynamicGasHandler(this._runState, gas, this._vm._common)
@@ -179,7 +213,7 @@ export default class Interpreter {
    * Get the handler function for an opcode.
    */
   getOpHandler(opInfo: Opcode): OpHandler {
-    return opHandlers.get(opInfo.code)!
+    return this._vm._handlers.get(opInfo.code)!
   }
 
   /**

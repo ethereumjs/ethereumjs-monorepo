@@ -13,6 +13,7 @@ import { Server } from './net/server'
  */
 export enum Event {
   CHAIN_UPDATED = 'blockchain:chain:updated',
+  CLIENT_SHUTDOWN = 'client:shutdown',
   SYNC_EXECUTION_VM_ERROR = 'sync:execution:vm:error',
   SYNC_FETCHER_FETCHED = 'sync:fetcher:fetched',
   SYNC_SYNCHRONIZED = 'sync:synchronized',
@@ -31,6 +32,7 @@ export enum Event {
 }
 export interface EventParams {
   [Event.CHAIN_UPDATED]: []
+  [Event.CLIENT_SHUTDOWN]: []
   [Event.SYNC_EXECUTION_VM_ERROR]: [vmError: Error]
   [Event.SYNC_FETCHER_FETCHED]: [blocksOrHeaders: Block[] | BlockHeader[]]
   [Event.SYNC_SYNCHRONIZED]: [chainHeight: BN]
@@ -56,6 +58,7 @@ export declare interface EventBus<T extends Event> {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export class EventBus<T extends Event> extends EventEmitter {}
 export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
+  EventBus<Event.CLIENT_SHUTDOWN> &
   EventBus<Event.SYNC_EXECUTION_VM_ERROR> &
   EventBus<Event.SYNC_FETCHER_FETCHED> &
   EventBus<Event.SYNC_SYNCHRONIZED> &

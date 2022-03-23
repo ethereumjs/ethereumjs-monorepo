@@ -231,3 +231,22 @@ tape('[Common]: isSupportedChainId static method', function (t: tape.Test) {
     st.end()
   })
 })
+
+tape('[Common]: copy() listener tests', (t) => {
+  const common = new Common({ chain: 'mainnet' })
+  // Add two listeners
+  common.on('hardforkChanged', () => {})
+  common.on('hardforkChanged', () => {})
+  const commonCopy = common.copy()
+  t.equal(
+    common.listenerCount('hardforkChanged'),
+    2,
+    'original common instance should have two listeners'
+  )
+  t.equal(
+    commonCopy.listenerCount('hardforkChanged'),
+    0,
+    'copied common instance should have zero listeners'
+  )
+  t.end()
+})

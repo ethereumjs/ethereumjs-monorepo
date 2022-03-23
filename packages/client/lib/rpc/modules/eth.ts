@@ -57,6 +57,7 @@ type JsonRpcBlock = {
   number: string // the block number. null when pending block.
   hash: string // hash of the block. null when pending block.
   parentHash: string // hash of the parent block.
+  mixHash?: string // bit hash which proves combined with the nonce that a sufficient amount of computation has been carried out on this block.
   nonce: string // hash of the generated proof-of-work. null when pending block.
   sha3Uncles: string // SHA3 of the uncles data in the block.
   logsBloom: string // the bloom filter for the logs of the block. null when pending block.
@@ -71,7 +72,7 @@ type JsonRpcBlock = {
   gasLimit: string // the maximum gas allowed in this block.
   gasUsed: string // the total used gas by all transactions in this block.
   timestamp: string // the unix timestamp for when the block was collated.
-  transactions: string[] // Array of serialized transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
+  transactions: JsonTx[] | string[] // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
   uncles: string[] // Array of uncle hashes
   baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
 }
@@ -140,7 +141,16 @@ const jsonRpcBlock = async (
 
   let transactions
   if (includeTransactions) {
-    transactions = block.transactions.map((tx) => bufferToHex(tx.serialize()))
+    transactions = block.transactions.map((tx) => {
+      const transaction = tx.toJSON()
+      const { gasLimit: gas, data: input, ...txData } = transaction
+      return {
+        ...txData,
+        // RPC specs specify `input` rather than `data`, and `gas` rather than `gasLimit`
+        input,
+        gas,
+      }
+    })
   } else {
     transactions = block.transactions.map((tx) => bufferToHex(tx.hash()))
   }
@@ -151,6 +161,7 @@ const jsonRpcBlock = async (
     number: header.number!,
     hash: bufferToHex(block.hash()),
     parentHash: header.parentHash!,
+    mixHash: header.mixHash,
     nonce: header.nonce!,
     sha3Uncles: header.uncleHash!,
     logsBloom: header.logsBloom!,
@@ -388,7 +399,9 @@ export class Eth {
         validators.object({
           fromBlock: validators.optional(validators.blockOption),
           toBlock: validators.optional(validators.blockOption),
-          address: validators.optional(validators.address),
+          address: validators.optional(
+            validators.either(validators.array(validators.address), validators.address)
+          ),
           topics: validators.optional(
             validators.array(
               validators.optional(
@@ -843,12 +856,15 @@ export class Eth {
           return toBuffer(t)
         }
       })
-      const logs = await this.receiptsManager.getLogs(
-        from,
-        to,
-        address ? toBuffer(address) : undefined,
-        formattedTopics
-      )
+      let addrs
+      if (address) {
+        if (Array.isArray(address)) {
+          addrs = address.map((a) => toBuffer(a))
+        } else {
+          addrs = [toBuffer(address)]
+        }
+      }
+      const logs = await this.receiptsManager.getLogs(from, to, addrs, formattedTopics)
       return await Promise.all(
         logs.map(({ log, block, tx, txIndex, logIndex }) =>
           jsonRpcLog(log, block, tx, txIndex, logIndex)

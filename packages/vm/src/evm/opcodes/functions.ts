@@ -823,8 +823,14 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x60,
     function (runState) {
       const numToPush = runState.opCode - 0x5f
+      if (
+        runState.eei._common.isActivatedEIP(3540) &&
+        runState.programCounter + numToPush > runState.code.length
+      ) {
+        trap(ERROR.OUT_OF_RANGE)
+      }
       const loaded = new BN(
-        runState.eei.getCode().slice(runState.programCounter, runState.programCounter + numToPush)
+        runState.code.slice(runState.programCounter, runState.programCounter + numToPush)
       )
       runState.programCounter += numToPush
       runState.stack.push(loaded)

@@ -39,7 +39,7 @@ export interface RunBlockOpts {
   root?: Buffer
   /**
    * Whether to generate the stateRoot and other related fields.
-   * If `true`, `runBlock` will set the fields `stateRoot`, `receiptsTrie`, `gasUsed`, and `bloom` (logs bloom) after running the block.
+   * If `true`, `runBlock` will set the fields `stateRoot`, `receiptTrie`, `gasUsed`, and `bloom` (logs bloom) after running the block.
    * If `false`, `runBlock` throws if any fields do not match.
    * Defaults to `false`.
    */
@@ -58,6 +58,10 @@ export interface RunBlockOpts {
    * If true, skips the balance check
    */
   skipBalance?: boolean
+  /**
+   * For merge transition support, pass the chain TD up to the block being run
+   */
+  hardforkByTD?: BN
 }
 
 /**
@@ -113,9 +117,13 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
    */
   await this._emit('beforeBlock', block)
 
-  if (this._hardforkByBlockNumber || this._hardforkByTD) {
-    this._common.setHardforkByBlockNumber(block.header.number.toNumber(), this._hardforkByTD)
+  if (this._hardforkByBlockNumber || this._hardforkByTD || opts.hardforkByTD) {
+    this._common.setHardforkByBlockNumber(
+      block.header.number,
+      opts.hardforkByTD ?? this._hardforkByTD
+    )
   }
+
   if (this.DEBUG) {
     debug('-'.repeat(100))
     debug(

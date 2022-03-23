@@ -4,10 +4,11 @@ import { homedir } from 'os'
 import path from 'path'
 import readline from 'readline'
 import { randomBytes } from 'crypto'
+import { existsSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { _getInitializedChains } from '@ethereumjs/common/dist/chains'
-import { Address, toBuffer } from 'ethereumjs-util'
+import { Address, toBuffer, BN } from 'ethereumjs-util'
 import { parseMultiaddrs, parseGenesisState, parseCustomParams } from '../lib/util'
 import EthereumClient from '../lib/client'
 import { Config, DataDirectory } from '../lib/config'
@@ -67,7 +68,7 @@ const args = yargs(hideBin(process.argv))
     array: true,
   })
   .option('bootnodes', {
-    describe: 'Network bootnodes',
+    describe: 'Comma-separated list of network bootnodes',
     array: true,
   })
   .option('port', {
@@ -223,10 +224,11 @@ const args = yargs(hideBin(process.argv))
     default: false,
   })
   .option('unlock', {
-    describe:
-      'Comma separated list of accounts to unlock - currently only the first account is used (for sealing PoA blocks and as the default coinbase). Beta, you will be promped for a 0x-prefixed private key until keystore functionality is added - FOR YOUR SAFETY PLEASE DO NOT USE ANY ACCOUNTS HOLDING SUBSTANTIAL AMOUNTS OF ETH',
+    describe: `Path to file where private key (without 0x) is stored or comma separated list of accounts to unlock - 
+      currently only the first account is used (for sealing PoA blocks and as the default coinbase). 
+      You will be prompted for a 0x-prefixed private key if you pass a list of accounts
+      FOR YOUR SAFETY PLEASE DO NOT USE ANY ACCOUNTS HOLDING SUBSTANTIAL AMOUNTS OF ETH`,
     string: true,
-    array: true,
   })
   .option('dev', {
     describe: 'Start an ephemeral PoA blockchain with a single miner and prefunded accounts',
@@ -247,6 +249,11 @@ const args = yargs(hideBin(process.argv))
       'Number of recent blocks to maintain transactions index for (default = about one year, 0 = entire chain)',
     number: true,
     default: 2350000,
+  })
+  .option('startBlock', {
+    describe:
+      'Block number to start syncing from. Must be lower than the local chain tip. Note: this is destructive and removes blocks from the blockchain, please back up your datadir before using.',
+    number: true,
   }).argv
 
 /**
@@ -306,6 +313,31 @@ async function executeBlocks(client: EthereumClient) {
 }
 
 /**
+ * Starts the client on a specified block number.
+ * Note: this is destructive and removes blocks from the blockchain. Please back up your datadir.
+ */
+async function startBlock(client: EthereumClient) {
+  if (!args.startBlock) return
+  const startBlock = new BN(args.startBlock)
+  const { blockchain } = client.chain
+  const height = (await blockchain.getLatestHeader()).number
+  if (height.eq(startBlock)) return
+  if (height.lt(startBlock)) {
+    logger.error(`Cannot start chain higher than current height ${height}`)
+    process.exit()
+  }
+  try {
+    const headBlock = await blockchain.getBlock(startBlock)
+    const delBlock = await blockchain.getBlock(startBlock.addn(1))
+    await blockchain.delBlock(delBlock.hash())
+    logger.info(`Chain height reset to ${headBlock.header.number}`)
+  } catch (err: any) {
+    logger.error(`Error setting back chain in startBlock: ${err}`)
+    process.exit()
+  }
+}
+
+/**
  * Starts and returns the {@link EthereumClient}
  */
 async function startClient(config: Config) {
@@ -319,6 +351,11 @@ async function startClient(config: Config) {
     config,
     ...dbs,
   })
+
+  if (args.startBlock) {
+    await startBlock(client)
+  }
+
   await client.open()
 
   if (args.executeBlocks) {
@@ -420,22 +457,31 @@ async function inputAccounts() {
   }
 
   try {
-    for (const addressString of args.unlock) {
-      const address = Address.fromString(addressString)
-      const inputKey = await question(
-        `Please enter the 0x-prefixed private key to unlock ${address}:\n`
-      )
-      ;(rl as any).history = (rl as any).history.slice(1)
-      const privKey = toBuffer(inputKey)
-      const derivedAddress = Address.fromPrivateKey(privKey)
-      if (address.equals(derivedAddress)) {
-        accounts.push([address, privKey])
-      } else {
-        console.error(
-          `Private key does not match for ${address} (address derived: ${derivedAddress})`
+    const addresses = args.unlock.split(',')
+    const isFile = existsSync(path.resolve(addresses[0]))
+    if (!isFile) {
+      for (const addressString of addresses) {
+        const address = Address.fromString(addressString)
+        const inputKey = await question(
+          `Please enter the 0x-prefixed private key to unlock ${address}:\n`
         )
-        process.exit()
+        ;(rl as any).history = (rl as any).history.slice(1)
+        const privKey = toBuffer(inputKey)
+        const derivedAddress = Address.fromPrivateKey(privKey)
+        if (address.equals(derivedAddress)) {
+          accounts.push([address, privKey])
+        } else {
+          console.error(
+            `Private key does not match for ${address} (address derived: ${derivedAddress})`
+          )
+          process.exit()
+        }
       }
+    } else {
+      const acc = readFileSync(path.resolve(args.unlock), 'utf-8')
+      const privKey = Buffer.from(acc, 'hex')
+      const derivedAddress = Address.fromPrivateKey(privKey)
+      accounts.push([derivedAddress, privKey])
     }
   } catch (e: any) {
     console.error(`Encountered error unlocking account:\n${e.message}`)

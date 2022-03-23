@@ -68,14 +68,13 @@ tape('[BlockFetcher]', async (t) => {
 
     // Clear fetcher queue for next test of gap when following head
     fetcher.clear()
-    chain.headers.height = new BN(15)
     blockNumberList = [new BN(50), new BN(51)]
     min = new BN(50)
     fetcher.enqueueByNumberList(blockNumberList, min)
     t.equals(
       (fetcher as any).in.size(),
-      2,
-      '1 new task to catch up to head (16-49), 1 new task for subsequent block numbers (50-51)'
+      11,
+      '10 new tasks to catch up to head (1-49, 5 per request), 1 new task for subsequent block numbers (50-51)'
     )
 
     fetcher.destroy()
@@ -99,6 +98,34 @@ tape('[BlockFetcher]', async (t) => {
     t.end()
   })
 
+  t.test('should adopt correctly', (t) => {
+    const config = new Config({ transports: [] })
+    const pool = new PeerPool() as any
+    const chain = new Chain({ config })
+    const fetcher = new BlockFetcher({
+      config,
+      pool,
+      chain,
+      first: new BN(0),
+      count: new BN(0),
+    })
+    const blocks: any = [{ header: { number: 1 } }, { header: { number: 2 } }]
+    const task = { count: 3, first: new BN(1) }
+    ;(fetcher as any).running = true
+    fetcher.enqueueTask(task)
+    const job = (fetcher as any).in.peek()
+    let results = fetcher.process(job as any, blocks)
+    t.equal((fetcher as any).in.size(), 1, 'Fetcher should still have same job')
+    t.equal(job?.partialResult?.length, 2, 'Should have two partial results')
+    t.equal(results, undefined, 'Process should not return full results yet')
+
+    const remainingBlocks: any = [{ header: { number: 3 } }]
+    results = fetcher.process(job as any, remainingBlocks)
+    t.equal(results?.length, 3, 'Should return full results')
+
+    t.end()
+  })
+
   t.test('should find a fetchable peer', async (t) => {
     const config = new Config({ transports: [] })
     const pool = new PeerPool() as any
@@ -112,6 +139,36 @@ tape('[BlockFetcher]', async (t) => {
     })
     td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
     t.equals(fetcher.peer(), 'peer0', 'found peer')
+    t.end()
+  })
+
+  t.test('should request correctly', async (t) => {
+    const config = new Config({ transports: [] })
+    const pool = new PeerPool() as any
+    const chain = new Chain({ config })
+    const fetcher = new BlockFetcher({
+      config,
+      pool,
+      chain,
+      first: new BN(0),
+      count: new BN(0),
+    })
+    const partialResult: any = [{ header: { number: 1 } }, { header: { number: 2 } }]
+
+    const task = { count: 3, first: new BN(1) }
+    const peer = {
+      eth: { getBlockBodies: td.func<any>(), getBlockHeaders: td.func<any>() },
+      id: 'random',
+      address: 'random',
+    }
+    const job = { peer, partialResult, task }
+    await fetcher.request(job as any)
+    td.verify(
+      job.peer.eth.getBlockHeaders({
+        block: job.task.first.addn(partialResult.length),
+        max: job.task.count - partialResult.length,
+      })
+    )
     t.end()
   })
 

@@ -204,7 +204,7 @@ export class VMExecution extends Execution {
           ? ''
           : `td=${this.chain.blocks.td} `
         this.config.logger.info(
-          `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${tdAdd}${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} with txs=${txCounter}`
+          `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${tdAdd}${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} txs=${txCounter}`
         )
       } else {
         this.config.logger.warn(

@@ -1,7 +1,6 @@
 import { Block, BlockBuffer } from '@ethereumjs/block'
 import { KECCAK256_RLP, KECCAK256_RLP_ARRAY } from 'ethereumjs-util'
 import { Peer } from '../../net/peer'
-import { EthProtocolMethods } from '../../net/protocol'
 import { Job } from './types'
 import { BlockFetcherBase, JobTask, BlockFetcherOptions } from './blockfetcherbase'
 import { Event } from '../../types'
@@ -23,13 +22,16 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
    * @param job
    */
   async request(job: Job<JobTask, Block[], Block>): Promise<Block[]> {
-    const { task, peer } = job
-    const { first, count } = task
-
+    const { task, peer, partialResult } = job
+    let { first, count } = task
+    if (partialResult) {
+      first = first.addn(partialResult.length)
+      count -= partialResult.length
+    }
     const blocksRange = `${first}-${first.addn(count)}`
     const peerInfo = `id=${peer?.id.slice(0, 8)} address=${peer?.address}`
 
-    const headersResult = await (peer!.eth as EthProtocolMethods).getBlockHeaders({
+    const headersResult = await peer!.eth!.getBlockHeaders({
       block: first,
       max: count,
     })
@@ -77,27 +79,17 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
    * @returns results of processing job or undefined if job not finished
    */
   process(job: Job<JobTask, Block[], Block>, result: Block[]) {
+    result = (job.partialResult ?? []).concat(result)
+    job.partialResult = undefined
     if (result.length === job.task.count) {
       return result
     } else if (result.length > 0 && result.length < job.task.count) {
       // Adopt the start block/header number from the remaining jobs
       // if the number of the results provided is lower than the expected count
+      job.partialResult = result
       this.debug(
         `Adopt start block/header number from remaining jobs (provided=${result.length} expected=${job.task.count})`
       )
-      const lengthDiff = job.task.count - result.length
-      const adoptedJobs = []
-      while (this.in.length > 0) {
-        const job = this.in.remove()
-        if (job) {
-          job.task.first = job.task.first.subn(lengthDiff)
-          adoptedJobs.push(job)
-        }
-      }
-      for (const job of adoptedJobs) {
-        this.in.insert(job)
-      }
-      return result
     }
     return
   }
@@ -109,10 +101,18 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
   async store(blocks: Block[]) {
     try {
       const num = await this.chain.putBlocks(blocks)
-      this.debug(`Fetcher results stored in blockchain (blocks num=${blocks.length})`)
+      this.debug(
+        `Fetcher results stored in blockchain (blocks num=${blocks.length} first=${
+          blocks[0]?.header.number
+        } last=${blocks[blocks.length - 1]?.header.number})`
+      )
       this.config.events.emit(Event.SYNC_FETCHER_FETCHED, blocks.slice(0, num))
     } catch (e: any) {
-      this.debug(`Error storing fetcher results in blockchain (blocks num=${blocks.length}): ${e}`)
+      this.debug(
+        `Error storing fetcher results in blockchain (blocks num=${blocks.length} first=${
+          blocks[0]?.header.number
+        } last=${blocks[blocks.length - 1]?.header.number}): ${e}`
+      )
       throw e
     }
   }

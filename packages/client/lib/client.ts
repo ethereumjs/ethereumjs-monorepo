@@ -151,6 +151,7 @@ export default class EthereumClient {
     if (!this.started) {
       return false
     }
+    this.config.events.emit(Event.CLIENT_SHUTDOWN)
     await this.execution?.stop()
     await Promise.all(this.services.map((s) => s.stop()))
     await Promise.all(this.config.servers.map((s) => s.stop()))

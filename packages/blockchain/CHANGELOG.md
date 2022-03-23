@@ -6,7 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## 5.5.2 - 2022-03-15
+
+- Fixed a bug where a delete-operation would be performed on DB but not in the cache leading to inconsistent behavior, PR [#1786](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1786)
 
 ## 5.5.1 - 2021-11-15
 

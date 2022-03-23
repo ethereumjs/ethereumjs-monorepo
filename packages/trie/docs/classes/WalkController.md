@@ -1,8 +1,6 @@
-[merkle-patricia-tree](../README.md) / [Exports](../modules.md) / [util/walkController](../modules/util_walkController.md) / WalkController
+[merkle-patricia-tree](../README.md) / WalkController
 
 # Class: WalkController
-
-[util/walkController](../modules/util_walkController.md).WalkController
 
 WalkController is an interface to control how the trie is being traversed.
 
@@ -10,22 +8,22 @@ WalkController is an interface to control how the trie is being traversed.
 
 ### Properties
 
-- [onNode](util_walkController.WalkController.md#onnode)
-- [taskExecutor](util_walkController.WalkController.md#taskexecutor)
-- [trie](util_walkController.WalkController.md#trie)
+- [onNode](WalkController.md#onnode)
+- [taskExecutor](WalkController.md#taskexecutor)
+- [trie](WalkController.md#trie)
 
 ### Methods
 
-- [allChildren](util_walkController.WalkController.md#allchildren)
-- [onlyBranchIndex](util_walkController.WalkController.md#onlybranchindex)
-- [pushNodeToQueue](util_walkController.WalkController.md#pushnodetoqueue)
-- [newWalk](util_walkController.WalkController.md#newwalk)
+- [allChildren](WalkController.md#allchildren)
+- [onlyBranchIndex](WalkController.md#onlybranchindex)
+- [pushNodeToQueue](WalkController.md#pushnodetoqueue)
+- [newWalk](WalkController.md#newwalk)
 
 ## Properties
 
 ### onNode
 
-• `Readonly` **onNode**: [`FoundNodeFunction`](../modules/baseTrie.md#foundnodefunction)
+• `Readonly` **onNode**: `FoundNodeFunction`
 
 #### Defined in
 
@@ -45,7 +43,7 @@ ___
 
 ### trie
 
-• `Readonly` **trie**: [`Trie`](baseTrie.Trie.md)
+• `Readonly` **trie**: [`BaseTrie`](BaseTrie.md)
 
 #### Defined in
 
@@ -135,8 +133,8 @@ Async function to create and start a new walk over a trie.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `onNode` | [`FoundNodeFunction`](../modules/baseTrie.md#foundnodefunction) | The `FoundNodeFunction to call if a node is found. |
-| `trie` | [`Trie`](baseTrie.Trie.md) | The trie to walk on. |
+| `onNode` | `FoundNodeFunction` | The `FoundNodeFunction to call if a node is found. |
+| `trie` | [`BaseTrie`](BaseTrie.md) | The trie to walk on. |
 | `root` | `Buffer` | The root key to walk on. |
 | `poolSize?` | `number` | Task execution pool size to prevent OOM errors. Defaults to 500. |
 

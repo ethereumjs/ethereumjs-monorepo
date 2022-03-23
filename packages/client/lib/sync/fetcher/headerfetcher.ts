@@ -1,6 +1,6 @@
 import { BlockFetcherBase, BlockFetcherOptions, JobTask } from './blockfetcherbase'
 import { Peer } from '../../net/peer'
-import { FlowControl, LesProtocolMethods } from '../../net/protocol'
+import { FlowControl } from '../../net/protocol'
 import { BlockHeader } from '@ethereumjs/block'
 import { Job } from './types'
 import { BN } from 'ethereumjs-util'
@@ -34,14 +34,19 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
    * @param job
    */
   async request(job: Job<JobTask, BlockHeaderResult, BlockHeader>) {
-    const { task, peer } = job
+    const { task, peer, partialResult } = job
     if (this.flow.maxRequestCount(peer!, 'GetBlockHeaders') < this.config.maxPerRequest) {
       // we reached our request limit. try with a different peer.
       return
     }
-    const response = await (peer!.les as LesProtocolMethods).getBlockHeaders({
-      block: task.first,
-      max: task.count,
+    let { first, count } = task
+    if (partialResult) {
+      first = first.addn(partialResult.length)
+      count -= partialResult.length
+    }
+    const response = await peer!.les!.getBlockHeaders({
+      block: first,
+      max: count,
     })
     return response
   }
@@ -54,25 +59,19 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
    */
   process(job: Job<JobTask, BlockHeaderResult, BlockHeader>, result: BlockHeaderResult) {
     this.flow.handleReply(job.peer!, result.bv.toNumber())
-    const { headers } = result
+    let { headers } = result
+    headers = (job.partialResult ?? []).concat(headers)
+    job.partialResult = undefined
+
     if (headers.length === job.task.count) {
       return headers
     } else if (headers.length > 0 && headers.length < job.task.count) {
       // Adopt the start block/header number from the remaining jobs
       // if the number of the results provided is lower than the expected count
-      const lengthDiff = job.task.count - headers.length
-      const adoptedJobs = []
-      while (this.in.length > 0) {
-        const job = this.in.remove()
-        if (job) {
-          job.task.first = job.task.first.subn(lengthDiff)
-          adoptedJobs.push(job)
-        }
-      }
-      for (const job of adoptedJobs) {
-        this.in.insert(job)
-      }
-      return headers
+      job.partialResult = headers
+      this.debug(
+        `Adopt start block/header number from remaining jobs (provided=${headers.length} expected=${job.task.count})`
+      )
     }
     return
   }
@@ -84,11 +83,17 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
   async store(headers: BlockHeader[]) {
     try {
       const num = await this.chain.putHeaders(headers)
-      this.debug(`Fetcher results stored in blockchain (headers num=${headers.length})`)
+      this.debug(
+        `Fetcher results stored in blockchain (headers num=${headers.length} first=${
+          headers[0]?.number
+        } last=${headers[headers.length - 1]?.number})`
+      )
       this.config.events.emit(Event.SYNC_FETCHER_FETCHED, headers.slice(0, num))
     } catch (e: any) {
       this.debug(
-        `Error storing fetcher results in blockchain (headers num=${headers.length}): ${e}`
+        `Error storing fetcher results in blockchain (headers num=${headers.length} first=${
+          headers[0]?.number
+        } last=${headers[headers.length - 1]?.number}): ${e}`
       )
       throw e
     }

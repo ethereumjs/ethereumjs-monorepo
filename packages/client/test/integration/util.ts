@@ -1,5 +1,6 @@
 import { Config, SyncMode } from '../../lib/config'
 import { FullEthereumService, LightEthereumService } from '../../lib/service'
+import { Event } from '../../lib/types'
 import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
 import { VMExecution } from '../../lib/execution'
@@ -24,7 +25,7 @@ export async function setup(
 
   const lightserv = syncmode === 'full'
   const common = options.common
-  const config = new Config({ syncmode, lightserv, minPeers, common })
+  const config = new Config({ syncmode, lightserv, minPeers, common, safeReorgDistance: 0 })
 
   const server = new MockServer({ config, location })
   const blockchain = await Blockchain.create({
@@ -36,7 +37,14 @@ export async function setup(
   const chain = new MockChain({ config, blockchain, height })
 
   const servers = [server] as any
-  const serviceConfig = new Config({ syncmode, servers, lightserv, minPeers, common })
+  const serviceConfig = new Config({
+    syncmode,
+    servers,
+    lightserv,
+    minPeers,
+    common,
+    safeReorgDistance: 0,
+  })
   // attach server to centralized event bus
   ;(server.config as any).events = serviceConfig.events
   const serviceOpts = {
@@ -70,6 +78,7 @@ export async function destroy(
   server: MockServer,
   service: FullEthereumService | LightEthereumService
 ): Promise<void> {
+  service.config.events.emit(Event.CLIENT_SHUTDOWN)
   await server.stop()
   await service.stop()
 }
