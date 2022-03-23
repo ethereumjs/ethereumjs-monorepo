@@ -31,14 +31,14 @@
     "docs:build": "typedoc --options typedoc.js"
   },
   "dependencies": {
-    "@ethereumjs/block": "^3.6.1",
+    "@ethereumjs/block": "^3.6.2",
     "@types/levelup": "^4.3.0",
     "buffer-xor": "^2.0.1",
     "ethereumjs-util": "^7.1.4",
     "miller-rabin": "^4.0.0"
   },
   "devDependencies": {
-    "@ethereumjs/common": "^2.6.2",
+    "@ethereumjs/common": "^2.6.3",
     "@types/tape": "^4.13.2",
     "eslint": "^6.8.0",
     "level-mem": "^5.0.1",

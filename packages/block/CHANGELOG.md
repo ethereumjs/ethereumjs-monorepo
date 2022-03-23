@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.6.2 - 2022-03-15
+
+### Merge Kiln v2 Testnet Support
+
+This release fully supports the Merge [Kiln](https://kiln.themerge.dev/) testnet `v2` complying with the latest Merge [specs](https://hackmd.io/@n0ble/kiln-spec). The release is part of an [@ethereumjs/client](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client) `v0.4` release which can be used to sync with the testnet, combining with a suited consensus client (e.g. the Lodestar client). See [Kiln](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client/kiln) instructions to get things going! 🚀
+
+- New `BlockHeader.prevRandao()` method to return the Post-merge `prevRandao` random value from the previous `mixHash` field ([EIP-43399](https://eips.ethereum.org/EIPS/eip-4399) Support: Supplant DIFFICULTY opcode with PREVRANDAO), PRs [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565) and [#1750](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1750)
+
 ## 3.6.1 - 2022-02-02
 
 - Use initial configured base fee as default for `EIP-1559`-enabled blocks, PR [#1581](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1581)

@@ -89,6 +89,30 @@ ethereumjs --network=rinkeby
 
 The client currently supports `full` sync being set as a default and has experimental support for `light` sync.
 
+### The Merge
+
+The EthereumJS client is participating actively in the different testnets preparing for the Merge hardfork and the team is following up on implementing the Merge [specs](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/merge.md) and updating along new versions of the specification.
+
+There are dedicated instructions on how to setup for running the client in conjunction with a consensus (Eth 2.0) client (e.g. [Lodestar](https://github.com/ChainSafe/lodestar)).
+
+Testnet Instructions:
+
+- [Kiln v2 Public Testnet](./kiln/)
+
+#### Sync Scenarios
+
+When running an Execution Layer (EL) client (so here: the `EthereumJS` client) together with a Consensus Layer (CL) client (e.g. Lodestar or Lighthouse) it is generally recommended to first start and last stop the EL client, since this client acts as a service worker post-Merge and the CL client is depending on a working EL client connection.
+
+Currently the following sync scenarios are **supported**:
+
+- **EL and CL Live Transition**: both clients follow the head of the respective chains pre Merge and go through the Merge transition live and in sync
+- **EL synced to Merge block, CL Merge transition**: the EL client has been synced to the Merge transitition block and is waiting for CL requests, the CL is syncing through the transition and starts EL requests along
+- **Resume syncing with equally synced clients / CL client behind**: sync can be resumed with EL client and CL client synced to the respective counterparts of the beacon and embedded execution chain, CL client can also be somewhat behind the EL client
+
+**Unsupported** sync scenarios:
+
+- **CL client ahead of EL client**: if the CL client has been synced without the EL client being connected and is therefore *ahead* of the EL client post Merge, sync will not be able to fully resume (this will need an optimistic sync implementation)
+
 ### Custom Chains
 
 The EthereumJS client supports running custom chains based on a custom chain configuration. There are two ways of reading in custom chain configuration parameters:

@@ -1,15 +1,42 @@
 # Kiln v2 public testnet instructions
 
-Kiln v2 public testnet has been bootstrapped. The config files can be downloaded from https://github.com/eth-clients/merge-testnets/tree/main/kiln
+Kiln v2 public testnet has been bootstrapped:
+
+- https://kiln.themerge.dev
+
+The config files can be downloaded from the [merge-testnets](https://github.com/eth-clients/merge-testnets/tree/main/kiln) config GitHub repository.
+
 
 ## Execution - EthereumJS Setup
 
 Please ensure you have Node 12.x+ installed.
 
+### Client Installation
+
+### GitHub
+
 1. `git clone --depth 1 --branch master https://github.com/ethereumjs/ethereumjs-monorepo.git`
 1. `cd ethereumjs-monorepo`
 1. `npm i`
 1. `cd packages/client`
+
+#### NPM
+
+The `v0.4.0` client release (respectively follow-up bug fix releases) is ready for the Kiln v2 public testnet and can be installed with:
+
+```shell
+npm install -g @ethereumjs/client
+```
+
+Note that you eventually want to adopt the `config` download and accordingly modify the config file access paths as well as start the client just with `ethereumjs` instad of using the `npm run client:start` GitHub start command (also leave the inbetween `--` to forward the client config options).
+
+#### Docker
+
+Or try it in Docker.
+
+In `packages/client/kiln` run:
+
+`docker-compose --file docker-compose.ethereumjs.yml up`
 
 ### Download the config
 
@@ -30,14 +57,6 @@ To prevent the secret to be re-generated next time you restart the client, pass 
 
 1. Other rpc apis, will be hosted openly without auth requirement at 8545.
 2. Websocket endpoints will also be available at `8551` (for `engine_*`) and `8545` for the rest.
-
-#### Docker
-
-Or try it in Docker.
-
-In `packages/client/kiln` run:
-
-`docker-compose --file docker-compose.ethereumjs.yml up`
 
 ## Consensus
 

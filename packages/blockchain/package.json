@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/blockchain",
-  "version": "5.5.1",
+  "version": "5.5.2",
   "description": "A module to store and interact with blocks",
   "license": "MPL-2.0",
   "keywords": [
@@ -33,8 +33,8 @@
   },
   "author": "mjbecze <mjbecze@gmail.com>",
   "dependencies": {
-    "@ethereumjs/block": "^3.6.1",
-    "@ethereumjs/common": "^2.6.2",
+    "@ethereumjs/block": "^3.6.2",
+    "@ethereumjs/common": "^2.6.3",
     "@ethereumjs/ethash": "^1.1.0",
     "debug": "^4.3.3",
     "ethereumjs-util": "^7.1.4",

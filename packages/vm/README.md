@@ -9,8 +9,6 @@
 | TypeScript implementation of the Ethereum VM. |
 | --------------------------------------------- |
 
-Note: this `README` reflects the state of the library from `v5.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-vm) for an introduction on the last preceding release.
-
 # INSTALL
 
 `npm install @ethereumjs/vm`
@@ -22,7 +20,7 @@ import { BN } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 const vm = new VM({ common })
 
 const STOP = '00'
@@ -87,12 +85,6 @@ Starting with `v5.1.0` the VM supports running both `Ethash/PoW` and `Clique/PoA
 
 ### Clique/PoA Chains
 
-For the VM to work correctly in a `Clique/PoA` context you need to use the library with the following library versions or higher:
-
-- @ethereumjs/block -> `v3.1.0`
-- @ethereumjs/blockchain -> `v5.1.0`
-- @ethereumjs/common" -> `v2.1.0`
-
 The following is a simple example for a block run on `Goerli`:
 
 ```typescript
@@ -110,19 +102,19 @@ const result = await vm.runBlock(block)
 
 ## Hardfork Support
 
-Starting with the `v5` release series all hardforks from `Frontier` (`chainstart`) up to the latest active mainnet hardfork are supported.
+The EthereumJS VM implements all hardforks from `Frontier` (`chainstart`) up to the latest active mainnet hardfork.
 
-The VM currently supports the following hardfork rules:
+Currently the following hardfork rules are supported:
 
-- `chainstart` (a.k.a. Frontier) (`v5.0.0`+)
-- `homestead` (`v5.0.0`+)
-- `tangerineWhistle` (`v5.0.0`+)
-- `spuriousDragon` (`v5.0.0`+)
+- `chainstart` (a.k.a. Frontier)
+- `homestead`
+- `tangerineWhistle`
+- `spuriousDragon`
 - `byzantium`
 - `constantinople`
 - `petersburg`
-- `istanbul` (`v4.1.1`+)
-- `muirGlacier` (only `mainnet` and `ropsten`) (`v4.1.3`+)
+- `istanbul`
+- `muirGlacier` (only `mainnet` and `ropsten`)
 - `berlin` (`v5.2.0`+)
 - `london` (`v5.4.0`+)
 - `arrowGlacier` (only `mainnet`) (`v5.6.0`+)
@@ -158,6 +150,8 @@ const common = new Common({
 const vm = new VM({ common, activateGenesisState: true })
 ```
 
+Genesis state can be configured to contain both EOAs as well as (system) contracts with initial storage values set.
+
 ## EIP Support
 
 It is possible to individually activate EIP support in the VM by instantiate the `Common` instance passed
@@ -174,15 +168,20 @@ const vm = new VM({ common })
 Currently supported EIPs:
 
 - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - Fee Market (`london` EIP)
-- [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315): Simple subroutines
-- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537): BLS precompiles
-- [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565): ModExp gas cost (`berlin` EIP)
-- [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718): Typed transactions (`berlin` EIP)
-- [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929): Gas cost increases for state access opcodes (`berlin` EIP)
-- [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930): Optional Access Lists Typed Transactions (`berlin` EIP)
+- [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - Simple subroutines (`experimental`)
+- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS precompiles (`experimental`)
+- [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp gas cost (`berlin` EIP)
+- [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Typed transactions (`berlin` EIP)
+- [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - Gas cost increases for state access opcodes (`berlin` EIP)
+- [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional Access Lists Typed Transactions (`berlin` EIP)
 - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - BASEFEE opcode (`london` EIP)
 - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds (`london` EIP)
+- [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`experimental`)
 - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte (`london` EIP)
+- [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) - EOF - Code Validation (`experimental`)
+- [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction (`experimental`)
+- [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
+- [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
 
 ## Tracing Events
 

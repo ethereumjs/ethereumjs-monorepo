@@ -6,6 +6,71 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.8.0 - 2022-03-15
+
+### Merge Kiln v2 Testnet Support
+
+This release fully supports the Merge [Kiln](https://kiln.themerge.dev/) testnet `v2` complying with the latest Merge [specs](https://hackmd.io/@n0ble/kiln-spec). The release is part of an [@ethereumjs/client](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client) `v0.4` release which can be used to sync with the testnet, combining with a suited consensus client (e.g. the Lodestar client). See [Kiln](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client/kiln) instructions to get things going! 🚀
+
+In the VM the `merge` HF is now activated as being supported and an (experimental) Merge-ready VM can be instantiated with:
+
+```typescript
+import VM from '@ethereumjs/vm'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+const vm = new VM({ common })
+vm._common.isActivatedEIP(4399) // true
+```
+
+- [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) Support: Supplant DIFFICULTY opcode with PREVRANDAO, PR [#1565](https://
+github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
+
+### EIP-3540: EVM Object Format (EOF) v1 / EIP-3670: EOF - Code Validation
+
+This release supports [EIP-3540](https://eips.ethereum.org/EIPS/eip-3540) and [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) in an experimental state. Both EIPs together define a container format EOF for the VM in v1 which allows for more flexible EVM updates in the future and allows for improved EVM bytecode validation, see PR [#1719](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1719).
+
+Note that this EIP is not part of a specific hardfork yet and is considered `EXPERIMENTAL` (implementation can change along bugfix releases).
+
+For now the EIP has to be activated manually which can be done by using a respective `Common` instance:
+
+```typescript
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [ 3540, 3670 ] })
+```
+
+### EIP-3860 Support: Limit and Meter Initcode
+
+Support for [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) has been added to the VM. This EIP limits the maximum size of initcode to 49152 and apply extra gas cost of 2 for every 32-byte chunk of initcode, see PR [#1619](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1619).
+
+Also here, implementation still `EXPERIMENTAL` and needs to be manually activated:
+
+```typescript
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [ 3860 ] })
+```
+
+### L2 Support: Genesis State with Code and Storage
+
+It is now possible within the VM to initialize with an extended genesis state not only containing account balances but also code and storage, see PR [#1757](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1757). This is part of our emerging L2 support strategy to allow for a VM instantiation that closer resembles a specific L2 (or generally: custom chain) setup. Many L2 chains come with specific system contracts pre-initialized on genesis - see e.g. [Optimism](https://community.optimism.io/docs/protocol/protocol-2.0/#system-overview).
+
+See `Common` [custom chain initialization API](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common#initialize-using-customchains-array) on how to initialize a `Common` instance with a code-storage-containing custom genesis state.
+
+Note that state in the VM is not activated by default (this also goes for account-only state). A state activation can now be explicitly triggered though by using the new `activateGenesisState` VM option.
+
+### L2 Support: Custom Opcodes Option
+
+There is now a new option `customOpcodes` for the VM which allows to add custom opcodes to the VM, see PR [#1705](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1705). This should be useful for L2s and other EVM based side chains if they come with a slighly different opcode set for bytecode execution.
+
+New opcodes can be passed in with its own logic function and an additional function for gas calculation. Additionally the new option allows for overwriting and/or deleting existing opcodes.
+
+### Features
+
+- Added new `VM.runBlock()` option `hardforkByTD` for Merge transition support, PR [#1802](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1802)
+
+### Bug Fixes & Maintenance
+
+- Fixed `REVERT` bug where under certain conditions (revert reason larger than max code size), too much (all) gas was consumed, PR [#1700](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1700)
+- Debug log improvements on `VM.runTx()` execution and in `EVM`, PR [#1677](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1677)
+
 ## 5.7.1 - 2022-02-04
 
 This patch release adds a guard to not enable the recently added EIP-3607 by default. This helps downstream users who may emulate contract accounts as part of their testing strategies.

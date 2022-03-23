@@ -49,6 +49,16 @@ Hardfork | Introduced | Description
 `istanbul` | `v2.1.1` | Support for reduced non-zero call data gas prices ([EIP-2028](https://eips.ethereum.org/EIPS/eip-2028))
 `spuriousDragon` | `v2.0.0` | `EIP-155` replay protection (disable by setting HF pre-`spuriousDragon`)
 
+### Standalone EIPs
+
+The following "standalone" EIPs are supported by the library can be manually activated using a respectively initialized `Common` instance, e.g.:
+
+```typescript
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [ 3860 ] })
+```
+
+- [EIP-3860](https://eips.ethereum.org/EIPS/eip-3855): Limit and meter initcode (`experimental`)
+
 ## Transaction Types
 
 This library supports the following transaction types ([EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)):

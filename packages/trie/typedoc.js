@@ -3,7 +3,6 @@ module.exports = {
   entryPoints: ['src'],
   out: 'docs',
   exclude: [
-    "src/**/!(secure|checkpointTrie|baseTrie|walkController).ts",
     "test/**/*.ts"
   ],
 }

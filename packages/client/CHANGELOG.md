@@ -6,6 +6,48 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.4.0 - 2022-03-15
+
+### Merge Kiln v2 Testnet Support
+
+This release fully supports the Merge [Kiln](https://kiln.themerge.dev/) testnet `v2` complying with the latest Merge [specs](https://hackmd.io/@n0ble/kiln-spec). You can use this release to sync with the testnet, combining with a suited consensus client (e.g. the Lodestar client). See [Kiln](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client/kiln) instructions to get things going! 🚀
+
+- New engine API endpoints, PRs [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565) and [#1712](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1712)
+  - `engine_newPayloadV1` (before: `engine_executePayloadV1`)
+  - `engine_forkchoiceUpdatedV1`
+  - `engine_getPayloadV1`
+- New engine API endpoint, PR [#1750](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1750)
+  - `exchangeTransitionConfigurationV1` (sets and returns the transition configuration parameters)
+- Engine API (RPC): Renamed `message` to `validationError`, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
+- Engine API (RPC): Allowed ws and http on the same port, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
+- Engine API (RPC): Respect message ordering in forkchoiceUpdated, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
+- Engine API (RPC): Rename `coinbase` to `feeRecipient` as per `v1.0.0-alpha.5` spec, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565) 
+- Engine API (RPC): Support for [jwt](https://jwt.io) based auth through both http/websocket protocols, PR [#1751](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1751)
+- Engine API (RPC): Tests for new Engine API endpoints, PR [#1727](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1727) 
+- Geth genesis files: Use `mergeForkBlock` if provided, PR [#1565](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1565)
+- Execution module refactor: decoupling from `FullSync` module to prepare for a post-Merge execution/sync separation, PR [#1663](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1663)
+- Added terminal block validation in `newPayload` and `forkchoiceUpdated` methods from Engine API, PR [#1797](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1797)
+- Validate block safe hash on `forkchoiceUpdated`, PR [#1804](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1804)
+- Validate finalized block hash on `forkchoiceUpdated`, PR [#1803](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1803)
+- More explicit Merge and CL connection logging with a proper panda bear icon and stuff, see PRs [#1800](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1800), [#1805](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1805) and [#1808](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1808)
+
+### Features
+
+- RPC Server: Added `rpcCors` option to specify [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) for rpc server, PR [#1762](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1762)
+- RPC Server: New default ports for engine (`8551`) (HTTP-RPC and WS) and general RPC (`8545`), PR [#1775](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1775)
+- Miner: unlock with file PK (do not use in a production setup for security reasons!), PR [#1790](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1790)
+- Various sync stability improvements, PR [#1781](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1781)
+- More sophisticated Block/Header fetcher reorg handling, PR [#1792](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1792)
+- Added new `--startBlock` CLI option to allow for restarting sync on an older block, PR [#1807](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1807)
+- JSON RPC: `eth_getBlockByNumber` method returns array of tx object when asked, PR [#1801](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1801)
+
+### Bug Fixes
+
+- Geth genesis files: Minor `baseFeePerGas` related fix and other improvements, PRs [#1720](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1720) and [#1741](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1741)
+- Added `mixHash` to RPC block results (sorry, forgotten 😋), PR [#1791](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1791)
+- Fixed frequent `Error handling message` error in tx poo, PR [#1793](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1793)
+- Handle partial results in multi-peer safe manner, PR [#1802](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1802)
+
 ## 0.3.0 - 2022-02-01
 
 ### New RPC Endpoints: eth_getLogs, eth_getTransactionReceipt and eth_getTransactionByHash
