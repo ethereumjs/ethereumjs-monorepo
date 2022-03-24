@@ -23,6 +23,15 @@ export const SECP256K1_ORDER_DIV_2 = CURVE.n / BigInt(2)
 
 /**
  * 2^256
+ *
+ * @deprecated bn.js constants are deprecated, please use the newly introduced bigint constants
+ */
+export const TWO_POW256 = BigInt(
+  '0x10000000000000000000000000000000000000000000000000000000000000000'
+)
+
+/**
+ * 2^256
  */
 export const TWO_POW256 = BigInt(
   '0x10000000000000000000000000000000000000000000000000000000000000000'

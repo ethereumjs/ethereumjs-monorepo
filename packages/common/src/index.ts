@@ -1066,4 +1066,33 @@ export default class Common extends EventEmitter {
     chains['names'] = names
     return chains
   }
+
+  static _getInitializedChains(customChains?: IChain[]) {
+    const names: any = {
+      '1': 'mainnet',
+      '3': 'ropsten',
+      '4': 'rinkeby',
+      '42': 'kovan',
+      '5': 'goerli',
+      '11155111': 'sepolia',
+    }
+    const chains: any = {
+      mainnet,
+      ropsten,
+      rinkeby,
+      kovan,
+      goerli,
+      sepolia,
+    }
+    if (customChains) {
+      for (const chain of customChains) {
+        const name = chain.name
+        names[chain.chainId.toString()] = name
+        chains[name] = chain
+      }
+    }
+
+    chains['names'] = names
+    return chains
+  }
 }

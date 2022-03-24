@@ -610,7 +610,6 @@ export default class EEI {
     if (this._env.contract.nonce >= MAX_UINT64) {
       return BigInt(0)
     }
-
     this._env.contract.nonce += BigInt(1)
     await this._state.putAccount(this._env.address, this._env.contract)
 
