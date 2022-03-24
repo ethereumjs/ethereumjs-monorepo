@@ -177,7 +177,7 @@ export default class VM extends AsyncEventEmitter {
 
   protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
-  protected readonly _allowUnlimitedContractSize: boolean
+  public readonly _allowUnlimitedContractSize: boolean
   // This opcode data is always set since `getActiveOpcodes()` is called in the constructor
   protected _opcodes!: OpcodeList
   protected _handlers!: Map<number, OpHandler>
