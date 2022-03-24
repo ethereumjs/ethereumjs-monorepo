@@ -88,9 +88,9 @@ export default function runCode(this: VM, opts: RunCodeOpts): Promise<ExecResult
       to: opts.address ?? Address.zero(),
       caller: opts.caller,
       value: opts.value,
-      depth: opts.depth ?? 0,
+      depth: opts.depth,
       selfdestruct: opts.selfdestruct ?? {},
-      isStatic: opts.isStatic ?? false,
+      isStatic: opts.isStatic,
     })
 
   const evm = opts.evm ?? new EVM(this, txContext, block)

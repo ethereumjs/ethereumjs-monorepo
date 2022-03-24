@@ -47,12 +47,12 @@ export default function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult>
     value: opts.value,
     data: opts.data,
     code: opts.code,
-    depth: opts.depth ?? 0,
-    isCompiled: opts.compiled ?? false,
-    isStatic: opts.static ?? false,
+    depth: opts.depth,
+    isCompiled: opts.compiled,
+    isStatic: opts.static,
     salt: opts.salt ?? null,
     selfdestruct: opts.selfdestruct ?? {},
-    delegatecall: opts.delegatecall ?? false,
+    delegatecall: opts.delegatecall,
   })
 
   const evm = new EVM(this, txContext, block)
