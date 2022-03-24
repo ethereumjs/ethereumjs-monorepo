@@ -195,10 +195,10 @@ export class FullSynchronizer extends Synchronizer {
       : ''
 
     let attentionHF: string | null = null
-    const nextHFBlockNum = this.config.chainCommon.nextHardforkBlockBN()
+    const nextHFBlockNum = this.config.chainCommon.nextHardforkBlock()
     if (nextHFBlockNum !== null) {
-      const remaining = nextHFBlockNum.sub(last)
-      if (remaining.lten(10000)) {
+      const remaining = nextHFBlockNum - last
+      if (remaining <= BigInt(10000)) {
         const nextHF = this.config.chainCommon.getHardforkByBlockNumber(nextHFBlockNum)
         attentionHF = `${nextHF} HF in ${remaining} blocks`
       }
@@ -209,8 +209,8 @@ export class FullSynchronizer extends Synchronizer {
       ) {
         const mergeTD = this.config.chainCommon.hardforkTD(Hardfork.Merge)!
         const td = this.chain.blocks.td
-        const remaining = mergeTD.sub(td)
-        if (remaining.lte(mergeTD.divn(10))) {
+        const remaining = mergeTD - td
+        if (remaining <= mergeTD / BigInt(10)) {
           attentionHF = `Merge HF in ${remaining} TD`
         }
       }

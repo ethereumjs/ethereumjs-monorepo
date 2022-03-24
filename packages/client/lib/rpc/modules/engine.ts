@@ -164,15 +164,15 @@ const validBlock = async (hash: Buffer, chain: Chain): Promise<Block | null> => 
 const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolean> => {
   const td = chain.config.chainCommon.hardforkTD(Hardfork.Merge)
   if (td === undefined || td === null) return false
-  const ttd = new BN(td)
+  const ttd = BigInt(td)
   const blockTd = await chain.getTd(block.hash(), block.header.number)
 
   // Block is terminal if its td >= ttd and its parent td < ttd.
   // In case the Genesis block has td >= ttd it is the terminal block
-  if (block.isGenesis()) return blockTd.gte(ttd)
+  if (block.isGenesis()) return blockTd >= ttd
 
-  const parentBlockTd = await chain.getTd(block.header.parentHash, block.header.number.subn(1))
-  return blockTd.gte(ttd) && parentBlockTd.lt(ttd)
+  const parentBlockTd = await chain.getTd(block.header.parentHash, block.header.number - BigInt(1))
+  return blockTd >= ttd && parentBlockTd < ttd
 }
 
 /**
@@ -700,7 +700,7 @@ export class Engine {
         message: 'terminalTotalDifficulty not set internally',
       }
     }
-    if (!td.eq(new BN(toBuffer(terminalTotalDifficulty)))) {
+    if (td !== BigInt(terminalTotalDifficulty)) {
       throw {
         code: INVALID_PARAMS,
         message: `terminalTotalDifficulty set to ${td}, received ${parseInt(
