@@ -40,7 +40,7 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
     }
     let { first, count } = task
     if (partialResult) {
-      first = first.addn(partialResult.length)
+      first = first + BigInt(partialResult.length)
       count -= partialResult.length
     }
     const response = await peer!.les!.getBlockHeaders({

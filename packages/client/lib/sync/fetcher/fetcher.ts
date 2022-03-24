@@ -1,7 +1,6 @@
 import { debug as createDebugLogger, Debugger } from 'debug'
 import { Readable, Writable } from 'stream'
 import Heap from 'qheap'
-import { BN } from 'ethereumjs-util'
 
 import { PeerPool } from '../../net/peerpool'
 import { Peer } from '../../net/peer'
@@ -403,13 +402,13 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
           // Non-fatal error: ban peer and re-enqueue job.
           // Modify the first job so that it is enqueued from safeReorgDistance as most likely
           // this is because of a reorg.
-          const stepBack = BN.min(
-            jobItems[0].task.first.subn(1),
-            new BN(this.config.safeReorgDistance)
-          ).toNumber()
+          let stepBack = jobItems[0].task.first - BigInt(1)
+          if (stepBack > BigInt(this.config.safeReorgDistance)) {
+            stepBack = BigInt(this.config.safeReorgDistance)
+          }
           this.debug(`Possible reorg, stepping back ${stepBack} blocks and requeuing jobs.`)
-          jobItems[0].task.first.isubn(stepBack)
-          jobItems[0].task.count += stepBack
+          jobItems[0].task.first - stepBack
+          jobItems[0].task.count += Number(stepBack)
           // This will requeue the jobs as we are marking this failure as non-fatal.
           this.failure(jobItems, error, false, true)
           cb()
@@ -517,7 +516,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       let { first, count } = job.task
       let partialResult = ''
       if (job.partialResult) {
-        first = first.addn(job.partialResult.length)
+        first = first + BigInt(job.partialResult.length)
         count -= job.partialResult.length
         partialResult = ` partialResults=${job.partialResult.length}`
       }

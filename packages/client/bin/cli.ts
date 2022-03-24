@@ -7,7 +7,6 @@ import { randomBytes } from 'crypto'
 import { existsSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
-import { _getInitializedChains } from '@ethereumjs/common/dist/chains'
 import { Address, toBuffer } from 'ethereumjs-util'
 import { parseMultiaddrs, parseGenesisState, parseCustomParams } from '../lib/util'
 import EthereumClient from '../lib/client'
@@ -328,17 +327,17 @@ async function executeBlocks(client: EthereumClient) {
  */
 async function startBlock(client: EthereumClient) {
   if (!args.startBlock) return
-  const startBlock = new BN(args.startBlock)
+  const startBlock = BigInt(args.startBlock)
   const { blockchain } = client.chain
   const height = (await blockchain.getLatestHeader()).number
-  if (height.eq(startBlock)) return
-  if (height.lt(startBlock)) {
+  if (height === startBlock) return
+  if (height < startBlock) {
     logger.error(`Cannot start chain higher than current height ${height}`)
     process.exit()
   }
   try {
     const headBlock = await blockchain.getBlock(startBlock)
-    const delBlock = await blockchain.getBlock(startBlock.addn(1))
+    const delBlock = await blockchain.getBlock(startBlock + BigInt(1))
     await blockchain.delBlock(delBlock.hash())
     logger.info(`Chain height reset to ${headBlock.header.number}`)
   } catch (err: any) {

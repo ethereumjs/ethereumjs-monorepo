@@ -183,14 +183,14 @@ export class Chain {
 
     this.config.chainCommon.on('hardforkChanged', async (hardfork: string) => {
       if (hardfork !== Hardfork.Merge) {
-        const block = this.config.chainCommon.hardforkBlockBN()
+        const block = this.config.chainCommon.hardforkBlock()
         this.config.logger.info(`New hardfork reached 🪢 ! hardfork=${hardfork} block=${block}`)
       } else {
         const block = await this.getLatestBlock()
         const num = block.header.number
         const td = await this.blockchain.getTotalDifficulty(block.hash(), num)
         this.config.logger.info(`Merge hardfork reached 🐼 👉 👈 🐼 ! block=${num} td=${td}`)
-        this.config.logger.info(`First block for CL-framed execution: block=${num.addn(1)}`)
+        this.config.logger.info(`First block for CL-framed execution: block=${num + BigInt(1)}`)
       }
     })
   }
