@@ -18,42 +18,43 @@ const testCases = [
   { code: [STOP], resultPC: 1 },
 ]
 
-tape('VM.runCode: initial program counter', (t) => {
-  const vm = new VM()
+tape('VM.runCode: initial program counter', async (t) => {
+  const vm = await VM.create()
 
-  testCases.forEach((testData, i) => {
-    t.test('should start the execution at the specified pc or 0 #' + i.toString(), async (st) => {
-      const runCodeArgs = {
-        code: Buffer.from(testData.code.join(''), 'hex'),
-        pc: testData.pc,
-        gasLimit: BigInt(0xffff),
+  for (const [i, testData] of testCases.entries()) {
+    const runCodeArgs = {
+      code: Buffer.from(testData.code.join(''), 'hex'),
+      pc: testData.pc,
+      gasLimit: BigInt(0xffff),
+    }
+
+    let err
+    try {
+      const result = await vm.runCode(runCodeArgs)
+      if (testData.resultPC !== undefined) {
+        t.equal(
+          result.runState?.programCounter,
+          testData.resultPC,
+          `should start the execution at the specified pc or 0, testCases[${i}]`
+        )
       }
+    } catch (e: any) {
+      err = e
+    }
 
-      let err
-      try {
-        const result = await vm.runCode(runCodeArgs)
-        if (testData.resultPC !== undefined) {
-          t.equals(result.runState?.programCounter, testData.resultPC, 'runstate.programCounter')
-        }
-      } catch (e: any) {
-        err = e
-      }
+    if (testData.error) {
+      err = err ? err.message : 'no error thrown'
+      t.equal(err, testData.error, 'error message should match')
+      err = false
+    }
 
-      if (testData.error) {
-        err = err ? err.message : 'no error thrown'
-        st.equal(err, testData.error, 'error message should match')
-        err = false
-      }
-
-      st.assert(!err)
-      st.end()
-    })
-  })
+    t.assert(!err)
+  }
 })
 
 tape('VM.runCode: interpreter', (t) => {
   t.test('should return a VmError as an exceptionError on the result', async (st) => {
-    const vm = new VM()
+    const vm = await VM.create()
 
     const INVALID_opcode = 'fe'
     const runCodeArgs = {
@@ -77,7 +78,7 @@ tape('VM.runCode: interpreter', (t) => {
     stateManager.putContractStorage = (..._args) => {
       throw new Error('Test')
     }
-    const vm = new VM({ stateManager })
+    const vm = await VM.create({ stateManager })
 
     const SSTORE = '55'
     const runCodeArgs = {
@@ -97,7 +98,7 @@ tape('VM.runCode: interpreter', (t) => {
 
 tape('VM.runCode: RunCodeOptions', (t) => {
   t.test('should throw on negative value args', async (st) => {
-    const vm = new VM()
+    const vm = await VM.create()
 
     const runCodeArgs = {
       value: BigInt(-10),

@@ -157,7 +157,7 @@ async function main() {
     'hex'
   )
 
-  const vm = new VM({ common })
+  const vm = await VM.create({ common })
   const accountAddress = Address.fromPrivateKey(accountPk)
 
   console.log('Account: ', accountAddress.toString())

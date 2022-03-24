@@ -8,7 +8,7 @@ import { bufferToBigInt } from 'ethereumjs-util'
 tape('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', (t) => {
   t.test('should return the right values', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
 
     const genesis = await vm.blockchain.getLatestBlock()
     const header = {
