@@ -1,6 +1,5 @@
 import tape from 'tape'
 import td from 'testdouble'
-import { BN } from 'ethereumjs-util'
 import { Config } from '../../../lib/config'
 import { Fetcher } from '../../../lib/sync/fetcher/fetcher'
 import { Job } from '../../../lib/sync/fetcher/types'
@@ -103,7 +102,7 @@ tape('[Fetcher]', (t) => {
     t.plan(1)
     const config = new Config({ transports: [] })
     const fetcher = new FetcherTest({ config, pool: td.object(), timeout: 5000 })
-    const task = { first: new BN(50), count: 10 }
+    const task = { first: BigInt(50), count: 10 }
     const job: any = { peer: {}, task, state: 'active', index: 0 }
     fetcher.next = td.func<FetcherTest['next']>()
     fetcher.write()
@@ -114,7 +113,10 @@ tape('[Fetcher]', (t) => {
     )
     ;(fetcher as any).success(job, ['something'])
     setTimeout(() => {
-      t.ok((fetcher as any).in.peek().task.first.eqn(1), 'should step back for safeReorgDistance')
+      t.ok(
+        (fetcher as any).in.peek().task.first === BigInt(1),
+        'should step back for safeReorgDistance'
+      )
     }, 20)
   })
 

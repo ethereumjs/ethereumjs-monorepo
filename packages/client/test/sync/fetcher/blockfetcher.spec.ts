@@ -70,9 +70,9 @@ tape('[BlockFetcher]', async (t) => {
 
     // Clear fetcher queue for next test of gap when following head
     fetcher.clear()
-    blockNumberList = [new BigInt(50), new BigInt(51)]
-    min = new BigInt(50)
-    max = new BigInt(51)
+    blockNumberList = [BigInt(50), BigInt(51)]
+    min = BigInt(50)
+    max = BigInt(51)
     fetcher.enqueueByNumberList(blockNumberList, min, max)
     t.equals(
       (fetcher as any).in.size(),
@@ -109,11 +109,11 @@ tape('[BlockFetcher]', async (t) => {
       config,
       pool,
       chain,
-      first: new BigInt(0),
-      count: new BigInt(0),
+      first: BigInt(0),
+      count: BigInt(0),
     })
     const blocks: any = [{ header: { number: 1 } }, { header: { number: 2 } }]
-    const task = { count: 3, first: new BigInt(1) }
+    const task = { count: 3, first: BigInt(1) }
     ;(fetcher as any).running = true
     fetcher.enqueueTask(task)
     const job = (fetcher as any).in.peek()
@@ -153,12 +153,12 @@ tape('[BlockFetcher]', async (t) => {
       config,
       pool,
       chain,
-      first: new BigInt(0),
-      count: new BigInt(0),
+      first: BigInt(0),
+      count: BigInt(0),
     })
     const partialResult: any = [{ header: { number: 1 } }, { header: { number: 2 } }]
 
-    const task = { count: 3, first: new BigInt(1) }
+    const task = { count: 3, first: BigInt(1) }
     const peer = {
       eth: { getBlockBodies: td.func<any>(), getBlockHeaders: td.func<any>() },
       id: 'random',
