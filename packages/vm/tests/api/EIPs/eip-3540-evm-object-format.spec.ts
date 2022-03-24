@@ -2,10 +2,10 @@ import tape from 'tape'
 import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Address, BN, privateToAddress } from 'ethereumjs-util'
+import { Address, privateToAddress } from 'ethereumjs-util'
 import * as eof from '../../../src/evm/opcodes/eof'
 const pkey = Buffer.from('20'.repeat(32), 'hex')
-const GWEI = new BN('1000000000')
+const GWEI = BigInt('1000000000')
 const sender = new Address(privateToAddress(pkey))
 
 async function runTx(vm: VM, data: string, nonce: number) {
@@ -65,7 +65,7 @@ tape('EIP 3540 tests', (t) => {
     })
     const vm = new VM({ common })
     const account = await vm.stateManager.getAccount(sender)
-    const balance = GWEI.muln(21000).muln(10000000)
+    const balance = GWEI * BigInt(21000) * BigInt(10000000)
     account.balance = balance
     await vm.stateManager.putAccount(sender, account)
 
@@ -81,7 +81,7 @@ tape('EIP 3540 tests', (t) => {
   t.test('invalid EOF format / contract creation', async (st) => {
     const vm = new VM({ common })
     const account = await vm.stateManager.getAccount(sender)
-    const balance = GWEI.muln(21000).muln(10000000)
+    const balance = GWEI * BigInt(21000) * BigInt(10000000)
     account.balance = balance
     await vm.stateManager.putAccount(sender, account)
 
@@ -151,7 +151,7 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
     })
     const vm = new VM({ common })
     const account = await vm.stateManager.getAccount(sender)
-    const balance = GWEI.muln(21000).muln(10000000)
+    const balance = GWEI * BigInt(21000) * BigInt(10000000)
     account.balance = balance
     await vm.stateManager.putAccount(sender, account)
 
@@ -160,7 +160,7 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
 
     data = generateInvalidEOFCode('60016001F3')
     const res2 = await runTx(vm, data, 1)
-    st.ok(res.result.gasUsed.gt(res2.result.gasUsed), 'invalid initcode did not consume all gas')
+    st.ok(res.result.gasUsed > res2.result.gasUsed, 'invalid initcode did not consume all gas')
   })
 
   t.test('case: create', async (st) => {
@@ -171,7 +171,7 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
     })
     const vm = new VM({ common })
     const account = await vm.stateManager.getAccount(sender)
-    const balance = GWEI.muln(21000).muln(10000000)
+    const balance = GWEI * BigInt(21000) * BigInt(10000000)
     account.balance = balance
     await vm.stateManager.putAccount(sender, account)
 
@@ -181,7 +181,7 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
     data = deployCreateCode(generateInvalidEOFCode('60016001F3').substring(2))
     const res2 = await runTx(vm, data, 1)
 
-    st.ok(res.result.gasUsed.gt(res2.result.gasUsed), 'invalid initcode did not consume all gas')
+    st.ok(res.result.gasUsed > res2.result.gasUsed, 'invalid initcode did not consume all gas')
   })
 
   t.test('case: create2', async (st) => {
@@ -192,7 +192,7 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
     })
     const vm = new VM({ common })
     const account = await vm.stateManager.getAccount(sender)
-    const balance = GWEI.muln(21000).muln(10000000)
+    const balance = GWEI * BigInt(21000) * BigInt(10000000)
     account.balance = balance
     await vm.stateManager.putAccount(sender, account)
 
@@ -201,6 +201,6 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
 
     data = deployCreate2Code(generateInvalidEOFCode('60016001F3').substring(2))
     const res2 = await runTx(vm, data, 1)
-    st.ok(res.result.gasUsed.gt(res2.result.gasUsed), 'invalid initcode did not consume all gas')
+    st.ok(res.result.gasUsed > res2.result.gasUsed, 'invalid initcode did not consume all gas')
   })
 })

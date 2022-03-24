@@ -34,5 +34,8 @@
     "e2e:publish": "./scripts/e2e-publish.sh",
     "e2e:resolutions": "node ./scripts/e2e-resolutions.js",
     "e2e:inject": "node ./scripts/e2e-inject-resolutions.js"
+  },
+  "dependencies": {
+    "bigint-crypto-utils": "^3.0.23"
   }
 }
