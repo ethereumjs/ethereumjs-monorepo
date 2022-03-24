@@ -407,7 +407,7 @@ export class Engine {
       return response
     }
 
-    const vmCopy = this.vm.copy()
+    const vmCopy = await this.vm.copy()
     const vmHead = this.chain.headers.latest!
     let blocks: Block[]
     try {
@@ -604,7 +604,7 @@ export class Engine {
     if (payloadAttributes) {
       const { timestamp, prevRandao, suggestedFeeRecipient } = payloadAttributes
       const parentBlock = this.chain.blocks.latest!
-      const payloadId = await this.pendingBlock.start(this.vm.copy(), parentBlock, {
+      const payloadId = await this.pendingBlock.start(await this.vm.copy(), parentBlock, {
         timestamp,
         mixHash: prevRandao,
         coinbase: suggestedFeeRecipient,
