@@ -183,7 +183,7 @@ export default class VM extends AsyncEventEmitter {
   protected _dynamicGasHandlers!: Map<number, AsyncDynamicGasHandler | SyncDynamicGasHandler>
 
   protected readonly _hardforkByBlockNumber: boolean
-  protected readonly _hardforkByTD?: BigInt
+  protected readonly _hardforkByTD?: bigint
   protected readonly _customOpcodes?: CustomOpcode[]
 
   /**
@@ -252,12 +252,6 @@ export default class VM extends AsyncEventEmitter {
       const DEFAULT_CHAIN = Chain.Mainnet
       this._common = new Common({ chain: DEFAULT_CHAIN })
     }
-    this._common.on('hardforkChanged', () => {
-      this.getActiveOpcodes()
-    })
-
-    // Initialize the opcode data
-    this.getActiveOpcodes()
 
     const supportedHardforks = [
       Hardfork.Chainstart,
@@ -282,9 +276,12 @@ export default class VM extends AsyncEventEmitter {
       )
     }
 
-    // Set list of opcodes based on HF
-    // TODO: make this EIP-friendly
-    this._opcodes = getOpcodesForHF(this._common)
+    this._common.on('hardforkChanged', () => {
+      this.getActiveOpcodes()
+    })
+
+    // Initialize the opcode data
+    this.getActiveOpcodes()
 
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
