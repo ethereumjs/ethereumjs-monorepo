@@ -327,10 +327,7 @@ export default class VM extends AsyncEventEmitter {
   }
 
   async init(): Promise<void> {
-    if (this._isInitialized) {
-      return
-    }
-
+    if (this._isInitialized) return
     await (this.blockchain as any)._init()
 
     if (!this._opts.stateManager) {
