@@ -283,13 +283,7 @@ export default class EEI {
   getBlockCoinbase(): bigint {
     let coinbase: Address
     if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
-      // Backwards-compatibilty check
-      // TODO: can be removed along VM v5 release
-      if ('cliqueSigner' in this._env.block.header) {
-        coinbase = this._env.block.header.cliqueSigner()
-      } else {
-        coinbase = Address.zero()
-      }
+      coinbase = this._env.block.header.cliqueSigner()
     } else {
       coinbase = this._env.block.header.coinbase
     }
@@ -554,7 +548,7 @@ export default class EEI {
     }
 
     // this should always be safe
-    this.useGas(results.gasUsed, 'CALL, STATICCALL, DELEGATECALL, CALLCODE')
+    this.useGas(results.execResult.gasUsed, 'CALL, STATICCALL, DELEGATECALL, CALLCODE')
 
     // Set return value
     if (
@@ -627,7 +621,7 @@ export default class EEI {
     }
 
     // this should always be safe
-    this.useGas(results.gasUsed, 'CREATE')
+    this.useGas(results.execResult.gasUsed, 'CREATE')
 
     // Set return buffer in case revert happened
     if (

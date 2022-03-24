@@ -9,6 +9,7 @@ import {
   MAX_INTEGER,
 } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
+import { Hardfork } from '@ethereumjs/common'
 import { ERROR, VmError } from '../exceptions'
 import { StateManager } from '../state/index'
 import { getPrecompile, PrecompileFunc } from './precompiles'
@@ -29,17 +30,17 @@ const debugGas = createDebugLogger('vm:evm:gas')
  */
 export interface EVMResult {
   /**
-   * Amount of gas used by the transaction
-   */
-  gasUsed: bigint
-  /**
-   * Address of created account durint transaction, if any
+   * Address of created account during transaction, if any
    */
   createdAddress?: Address
   /**
    * Contains the results from running the code, if any, as described in {@link runCode}
    */
   execResult: ExecResult
+  /**
+   * Total amount of gas to be refunded from all nested calls.
+   */
+  gasRefund?: bigint
 }
 
 /**
@@ -48,7 +49,7 @@ export interface EVMResult {
 export interface ExecResult {
   runState?: RunState
   /**
-   * Description of the exception, if any occured
+   * Description of the exception, if any occurred
    */
   exceptionError?: VmError
   /**
@@ -56,7 +57,7 @@ export interface ExecResult {
    */
   gas?: bigint
   /**
-   * Amount of gas the code used to run
+   * Amount of gas the transaction used to run
    */
   gasUsed: bigint
   /**
@@ -71,10 +72,6 @@ export interface ExecResult {
    * A map from the accounts that have self-destructed to the addresses to send their funds to
    */
   selfdestruct?: { [k: string]: Buffer }
-  /**
-   * Total amount of gas to be refunded from all nested calls.
-   */
-  gasRefund?: bigint
 }
 
 export interface NewContractEvent {
@@ -189,26 +186,27 @@ export default class EVM {
       result = await this._executeCreate(message)
     }
     if (this._vm.DEBUG) {
-      const { gasUsed, exceptionError, returnValue, gasRefund } = result.execResult
+      const { gasUsed, exceptionError, returnValue } = result.execResult
       debug(
         `Received message execResult: [ gasUsed=${gasUsed} exceptionError=${
           exceptionError ? `'${exceptionError.error}'` : 'none'
-        } returnValue=0x${short(returnValue)} gasRefund=${gasRefund ?? 0} ]`
+        } returnValue=0x${short(returnValue)} gasRefund=${result.gasRefund ?? 0} ]`
       )
     }
     const err = result.execResult.exceptionError
     // This clause captures any error which happened during execution
     // If that is the case, then set the _refund tracker to the old refund value
     if (err) {
-      // TODO: Move `gasRefund` to a tx-level result object
-      // instead of `ExecResult`.
       this._refund = oldRefund
       result.execResult.selfdestruct = {}
     }
-    result.execResult.gasRefund = this._refund
+    result.gasRefund = this._refund
 
     if (err) {
-      if (this._vm._common.gteHardfork('homestead') || err.error != ERROR.CODESTORE_OUT_OF_GAS) {
+      if (
+        this._vm._common.gteHardfork(Hardfork.Homestead) ||
+        err.error != ERROR.CODESTORE_OUT_OF_GAS
+      ) {
         result.execResult.logs = []
         await this._state.revert()
         if (this._vm.DEBUG) {
@@ -269,7 +267,6 @@ export default class EVM {
     }
     if (exit) {
       return {
-        gasUsed: BigInt(0),
         execResult: {
           gasUsed: BigInt(0),
           exceptionError: errorMessage, // Only defined if addToBalance failed
@@ -296,7 +293,6 @@ export default class EVM {
     }
 
     return {
-      gasUsed: result.gasUsed,
       execResult: result,
     }
   }
@@ -337,7 +333,6 @@ export default class EVM {
         debug(`Returning on address collision`)
       }
       return {
-        gasUsed: message.gasLimit,
         createdAddress: message.to,
         execResult: {
           returnValue: Buffer.alloc(0),
@@ -358,7 +353,7 @@ export default class EVM {
 
     toAccount = await this._state.getAccount(message.to)
     // EIP-161 on account creation and CREATE execution
-    if (this._vm._common.gteHardfork('spuriousDragon')) {
+    if (this._vm._common.gteHardfork(Hardfork.SpuriousDragon)) {
       toAccount.nonce += BigInt(1)
     }
 
@@ -385,7 +380,6 @@ export default class EVM {
     }
     if (exit) {
       return {
-        gasUsed: BigInt(0),
         createdAddress: message.to,
         execResult: {
           gasUsed: BigInt(0),
@@ -417,7 +411,7 @@ export default class EVM {
     let allowedCodeSize = true
     if (
       !result.exceptionError &&
-      this._vm._common.gteHardfork('spuriousDragon') &&
+      this._vm._common.gteHardfork(Hardfork.SpuriousDragon) &&
       result.returnValue.length > this._vm._common.param('vm', 'maxCodeSize')
     ) {
       allowedCodeSize = false
@@ -461,7 +455,7 @@ export default class EVM {
         result.gasUsed = totalGas
       }
     } else {
-      if (this._vm._common.gteHardfork('homestead')) {
+      if (this._vm._common.gteHardfork(Hardfork.Homestead)) {
         if (this._vm.DEBUG) {
           debug(`Not enough gas or code size not allowed (>= Homestead)`)
         }
@@ -489,7 +483,7 @@ export default class EVM {
       }
     } else if (CodestoreOOG) {
       // This only happens at Frontier. But, let's do a sanity check;
-      if (!this._vm._common.gteHardfork('homestead')) {
+      if (!this._vm._common.gteHardfork(Hardfork.Homestead)) {
         // Pre-Homestead behavior; put an empty contract.
         // This contract would be considered "DEAD" in later hard forks.
         // It is thus an unecessary default item, which we have to save to dik
@@ -501,7 +495,6 @@ export default class EVM {
     }
 
     return {
-      gasUsed: result.gasUsed,
       createdAddress: message.to,
       execResult: result,
     }

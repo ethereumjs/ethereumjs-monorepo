@@ -1,7 +1,6 @@
 import tape from 'tape'
 import td from 'testdouble'
 import { Log } from '@ethereumjs/vm/dist/evm/types'
-import { intToBuffer } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Event } from '../../lib/types'
 import { VMExecution } from '../../lib/execution'
@@ -132,7 +131,7 @@ tape('[FullEthereumService]', async (t) => {
     const receipts = [
       {
         status: 1 as 0 | 1,
-        gasUsed: intToBuffer(100),
+        gasUsed: BigInt(100),
         bitvector: Buffer.alloc(256),
         logs: [
           [Buffer.alloc(20), [Buffer.alloc(32), Buffer.alloc(32, 1)], Buffer.alloc(10)],
@@ -141,7 +140,7 @@ tape('[FullEthereumService]', async (t) => {
       },
       {
         status: 0 as 0 | 1,
-        gasUsed: intToBuffer(1000),
+        gasUsed: BigInt(1000),
         bitvector: Buffer.alloc(256, 1),
         logs: [
           [Buffer.alloc(20, 1), [Buffer.alloc(32, 1), Buffer.alloc(32, 1)], Buffer.alloc(10)],

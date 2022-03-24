@@ -52,9 +52,9 @@ tape('Constantinople: EIP-1283', async (t) => {
 
       try {
         const res = await vm.runCall(runCallArgs)
-        st.assert(res.execResult.exceptionError === undefined)
-        st.assert(BigInt(testCase.used) === res.gasUsed)
-        st.assert(BigInt(testCase.refund) === res.execResult.gasRefund!)
+        st.equal(res.execResult.exceptionError, undefined)
+        st.equal(res.execResult.gasUsed, BigInt(testCase.used))
+        st.equal(res.gasRefund, BigInt(testCase.refund))
       } catch (e: any) {
         st.fail(e.message)
       }
