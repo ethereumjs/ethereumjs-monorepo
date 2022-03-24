@@ -267,6 +267,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       // Note: in case we create a contract, we do this in EVMs `_executeCreate` (this is also correct in inner calls, per the EIP)
       state.addWarmedAddress(tx.to.buf)
     }
+    if (this._common.isActivatedEIP(3651)) {
+      state.addWarmedAddress(block.header.coinbase.buf)
+    }
   }
 
   // Validate gas limit against tx base fee (DataFee + TxFee + Creation Fee)

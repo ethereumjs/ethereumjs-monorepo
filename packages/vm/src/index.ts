@@ -54,6 +54,7 @@ export interface VMOpts {
    * - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
    * - [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`experimental`)
    * - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
+   *   [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651) - Warm COINBASE (`experimental`)
    * - [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) - EOF - Code Validation (`experimental`)
    * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction (`experimental`)
    * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
@@ -239,8 +240,8 @@ export default class VM extends AsyncEventEmitter {
     if (opts.common) {
       // Supported EIPs
       const supportedEIPs = [
-        1559, 2315, 2537, 2565, 2718, 2929, 2930, 3198, 3529, 3540, 3541, 3607, 3670, 3855, 3860,
-        4399,
+        1559, 2315, 2537, 2565, 2718, 2929, 2930, 3198, 3529, 3540, 3541, 3607, 3651, 3670, 3855,
+        3860, 4399,
       ]
       for (const eip of opts.common.eips()) {
         if (!supportedEIPs.includes(eip)) {
