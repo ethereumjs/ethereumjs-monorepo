@@ -8,6 +8,7 @@ import { isRunningInKarma } from '../util'
 import { setupVM } from './utils'
 import testnet from './testdata/testnet.json'
 import testnet2 from './testdata/testnet2.json'
+import testnetMerge from './testdata/testnetMerge.json'
 
 // explicitly import util and buffer,
 // needed for karma-typescript bundling

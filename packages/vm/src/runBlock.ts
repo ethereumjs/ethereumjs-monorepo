@@ -61,7 +61,7 @@ export interface RunBlockOpts {
   /**
    * For merge transition support, pass the chain TD up to the block being run
    */
-  hardforkByTD?: BN
+  hardforkByTD?: bigint
 }
 
 /**
@@ -120,7 +120,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   if (this._hardforkByBlockNumber || this._hardforkByTD || opts.hardforkByTD) {
     this._common.setHardforkByBlockNumber(
       block.header.number,
-      (this._hardforkByTD as bigint | undefined) ?? this._hardforkByTD
+      opts.hardforkByTD ?? this._hardforkByTD
     )
   }
 
