@@ -226,7 +226,7 @@ export default class VM extends AsyncEventEmitter {
    * use the async {@link VM.create} constructor instead (same API).
    * @param opts
    */
-  constructor(opts: VMOpts = {}) {
+  protected constructor(opts: VMOpts = {}) {
     super()
 
     this._opts = opts
@@ -295,7 +295,7 @@ export default class VM extends AsyncEventEmitter {
       })
     }
 
-    this.blockchain = opts.blockchain ?? new Blockchain({ common: this._common })
+    this.blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this._common })
 
     this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize ?? false
 

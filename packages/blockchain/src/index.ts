@@ -246,7 +246,7 @@ export default class Blockchain implements BlockchainInterface {
    * @param opts An object with the options that this constructor takes. See
    * {@link BlockchainOptions}.
    */
-  constructor(opts: BlockchainOptions = {}) {
+  protected constructor(opts: BlockchainOptions = {}) {
     // Throw on chain or hardfork options removed in latest major release to
     // prevent implicit chain setup on a wrong chain
     if ('chain' in opts || 'hardfork' in opts) {
