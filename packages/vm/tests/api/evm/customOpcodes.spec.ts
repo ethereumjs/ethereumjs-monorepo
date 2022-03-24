@@ -1,24 +1,23 @@
 import tape from 'tape'
-import { BN } from 'ethereumjs-util'
 import VM from '../../../src'
 import { AddOpcode } from '../../../src/evm/types'
 import { InterpreterStep, RunState } from '../../../src/evm/interpreter'
 
 tape('VM: custom opcodes', (t) => {
   const fee = 333
-  const logicFee = 33
-  const totalFee = fee + logicFee
-  const stackPush = 1
+  const logicFee = BigInt(33)
+  const totalFee = BigInt(fee) + logicFee
+  const stackPush = BigInt(1)
 
   const testOpcode: AddOpcode = {
     opcode: 0x21,
     opcodeName: 'TEST',
     baseFee: fee,
-    gasFunction: function (runState: RunState, gas: BN) {
-      gas.iaddn(logicFee)
+    gasFunction: function (runState: RunState, gas: bigint) {
+      return gas + logicFee
     },
     logicFunction: function (runState: RunState) {
-      runState.stack.push(new BN(stackPush))
+      runState.stack.push(BigInt(stackPush))
     },
   }
 
@@ -35,10 +34,10 @@ tape('VM: custom opcodes', (t) => {
     })
     const res = await vm.runCode({
       code: Buffer.from('21', 'hex'),
-      gasLimit: new BN(gas),
+      gasLimit: BigInt(gas),
     })
-    st.ok(res.gasUsed.eqn(totalFee), 'succesfully charged correct gas')
-    st.ok(res.runState!.stack._store[0].eqn(stackPush), 'succesfully ran opcode logic')
+    st.ok(res.gasUsed === totalFee, 'succesfully charged correct gas')
+    st.ok(res.runState!.stack._store[0] === stackPush, 'succesfully ran opcode logic')
     st.ok(correctOpcodeName, 'succesfully set opcode name')
   })
 
@@ -46,12 +45,12 @@ tape('VM: custom opcodes', (t) => {
     const vm = new VM({
       customOpcodes: [{ opcode: 0x20 }], // deletes KECCAK opcode
     })
-    const gas = 123456
+    const gas = BigInt(123456)
     const res = await vm.runCode({
       code: Buffer.from('20', 'hex'),
-      gasLimit: new BN(gas),
+      gasLimit: BigInt(gas),
     })
-    st.ok(res.gasUsed.eqn(gas), 'succesfully deleted opcode')
+    st.ok(res.gasUsed === gas, 'succesfully deleted opcode')
   })
 
   t.test('should not override default opcodes', async (st) => {
@@ -60,12 +59,12 @@ tape('VM: custom opcodes', (t) => {
     const vm = new VM({
       customOpcodes: [{ opcode: 0x01 }], // deletes ADD opcode
     })
-    const gas = 123456
+    const gas = BigInt(123456)
     const res = await vm.runCode({
       code: Buffer.from('01', 'hex'),
-      gasLimit: new BN(gas),
+      gasLimit: BigInt(gas),
     })
-    st.ok(res.gasUsed.eqn(gas), 'succesfully deleted opcode')
+    st.ok(res.gasUsed === gas, 'succesfully deleted opcode')
 
     const vmDefault = new VM()
 
@@ -79,7 +78,7 @@ tape('VM: custom opcodes', (t) => {
     // RETURN  // Returns 0x05
     const result = await vmDefault.runCode({
       code: Buffer.from('60046001016000526001601FF3', 'hex'),
-      gasLimit: new BN(gas),
+      gasLimit: BigInt(gas),
     })
     st.ok(result.returnValue.equals(Buffer.from('05', 'hex')))
   })
@@ -92,9 +91,9 @@ tape('VM: custom opcodes', (t) => {
     const gas = 123456
     const res = await vm.runCode({
       code: Buffer.from('20', 'hex'),
-      gasLimit: new BN(gas),
+      gasLimit: BigInt(gas),
     })
-    st.ok(res.gasUsed.eqn(totalFee), 'succesfully charged correct gas')
-    st.ok(res.runState!.stack._store[0].eqn(stackPush), 'succesfully ran opcode logic')
+    st.ok(res.gasUsed === totalFee, 'succesfully charged correct gas')
+    st.ok(res.runState!.stack._store[0] === stackPush, 'succesfully ran opcode logic')
   })
 })

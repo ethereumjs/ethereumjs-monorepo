@@ -643,7 +643,7 @@ export default class EEI {
 
     if (this._common.isActivatedEIP(3860)) {
       if (msg.data.length > this._common.param('vm', 'maxInitCodeSize')) {
-        return new BN(0)
+        return BigInt(0)
       }
     }
 
