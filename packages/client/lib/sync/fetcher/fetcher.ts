@@ -407,7 +407,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
             stepBack = BigInt(this.config.safeReorgDistance)
           }
           this.debug(`Possible reorg, stepping back ${stepBack} blocks and requeuing jobs.`)
-          jobItems[0].task.first - stepBack
+          jobItems[0].task.first -= stepBack
           jobItems[0].task.count += Number(stepBack)
           // This will requeue the jobs as we are marking this failure as non-fatal.
           this.failure(jobItems, error, false, true)
