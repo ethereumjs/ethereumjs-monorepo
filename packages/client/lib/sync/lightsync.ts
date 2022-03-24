@@ -90,7 +90,7 @@ export class LightSynchronizer extends Synchronizer {
       if (!latest) return resolve(false)
 
       const height = peer.les!.status.headNum
-      if (!this.syncTargetHeight || this.syncTargetHeight.lt(height)) {
+      if (!this.syncTargetHeight || this.syncTargetHeight < height) {
         this.syncTargetHeight = height
         this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
       }

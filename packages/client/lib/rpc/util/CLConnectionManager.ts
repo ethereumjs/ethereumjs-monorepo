@@ -138,7 +138,7 @@ export class CLConnectionManager {
   }
 
   private timeDiffStr(block: Block) {
-    const timeDiff = new Date().getTime() / 1000 - block.header.timestamp.toNumber()
+    const timeDiff = new Date().getTime() / 1000 - Number(block.header.timestamp)
     const min = 60
     const hour = min * 60
     const day = hour * 24
