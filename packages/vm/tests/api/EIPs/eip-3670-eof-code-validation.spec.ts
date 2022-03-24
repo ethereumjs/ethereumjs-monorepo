@@ -2,10 +2,10 @@ import tape from 'tape'
 import VM from '../../../src'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Address, BN, privateToAddress } from 'ethereumjs-util'
+import { Address, privateToAddress } from 'ethereumjs-util'
 import * as eof from '../../../src/evm/opcodes/eof'
 const pkey = Buffer.from('20'.repeat(32), 'hex')
-const GWEI = new BN('1000000000')
+const GWEI = BigInt('1000000000')
 const sender = new Address(privateToAddress(pkey))
 
 async function runTx(vm: VM, data: string, nonce: number) {
@@ -59,7 +59,7 @@ tape('EIP 3670 tests', (t) => {
   t.test('valid contract code transactions', async (st) => {
     const vm = new VM({ common })
     const account = await vm.stateManager.getAccount(sender)
-    const balance = GWEI.muln(21000).muln(10000000)
+    const balance = GWEI * BigInt(21000) * BigInt(10000000)
     account.balance = balance
     await vm.stateManager.putAccount(sender, account)
 
@@ -75,7 +75,7 @@ tape('EIP 3670 tests', (t) => {
   t.test('invalid contract code transactions', async (st) => {
     const vm = new VM({ common: common })
     const account = await vm.stateManager.getAccount(sender)
-    const balance = GWEI.muln(21000).muln(10000000)
+    const balance = GWEI * BigInt(21000) * BigInt(10000000)
     account.balance = balance
     await vm.stateManager.putAccount(sender, account)
 
