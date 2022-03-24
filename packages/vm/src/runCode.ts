@@ -14,7 +14,7 @@ item length then you must use `utils.pad(<item>, 32)` first.
 import { Address } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import VM from './index'
-import Message from './evm/message'
+import Message, { MessageWithTo } from './evm/message'
 import { default as EVM, ExecResult } from './evm/evm'
 import { TxContext } from './evm/types'
 
@@ -33,7 +33,7 @@ export interface RunCodeOpts {
    * The address where the call originated from. Defaults to the zero address.
    */
   origin?: Address
-  message?: Message
+  message?: MessageWithTo
   /**
    * The address that ran this code (`msg.sender`). Defaults to the zero address.
    */
@@ -49,7 +49,7 @@ export interface RunCodeOpts {
   /**
    * Gas limit
    */
-  gasLimit?: bigint
+  gasLimit: bigint
   /**
    * The value in ether that is being sent to `opt.address`. Defaults to `0`
    */
@@ -81,17 +81,17 @@ export default function runCode(this: VM, opts: RunCodeOpts): Promise<ExecResult
 
   const message =
     opts.message ??
-    new Message({
+    (new Message({
       code: opts.code,
       data: opts.data,
       gasLimit: opts.gasLimit,
       to: opts.address ?? Address.zero(),
-      caller: opts.caller,
+      caller: opts.caller ?? Address.zero(),
       value: opts.value,
-      depth: opts.depth ?? 0,
+      depth: opts.depth,
       selfdestruct: opts.selfdestruct ?? {},
-      isStatic: opts.isStatic ?? false,
-    })
+      isStatic: opts.isStatic,
+    }) as MessageWithTo)
 
   const evm = opts.evm ?? new EVM(this, txContext, block)
 
