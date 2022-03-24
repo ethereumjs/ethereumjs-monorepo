@@ -49,7 +49,7 @@ export interface RunCodeOpts {
   /**
    * Gas limit
    */
-  gasLimit?: bigint
+  gasLimit: bigint
   /**
    * The value in ether that is being sent to `opt.address`. Defaults to `0`
    */
@@ -86,11 +86,11 @@ export default function runCode(this: VM, opts: RunCodeOpts): Promise<ExecResult
       data: opts.data,
       gasLimit: opts.gasLimit,
       to: opts.address ?? Address.zero(),
-      caller: opts.caller,
+      caller: opts.caller ?? Address.zero(),
       value: opts.value,
-      depth: opts.depth ?? 0,
+      depth: opts.depth,
       selfdestruct: opts.selfdestruct ?? {},
-      isStatic: opts.isStatic ?? false,
+      isStatic: opts.isStatic,
     })
 
   const evm = opts.evm ?? new EVM(this, txContext, block)

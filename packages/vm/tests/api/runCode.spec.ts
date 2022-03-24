@@ -100,6 +100,7 @@ tape('VM.runCode: RunCodeOptions', (t) => {
     const vm = new VM()
 
     const runCodeArgs = {
+      gasLimit: BigInt(0xffff),
       value: BigInt(-10),
     }
 

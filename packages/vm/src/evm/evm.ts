@@ -12,9 +12,8 @@ import { Block } from '@ethereumjs/block'
 import { ERROR, VmError } from '../exceptions'
 import { StateManager } from '../state/index'
 import { getPrecompile, PrecompileFunc } from './precompiles'
-import Message from './message'
+import Message, { MessageWithTo } from './message'
 import EEI from './eei'
-// eslint-disable-next-line
 import { short } from './opcodes/util'
 import * as eof from './opcodes/eof'
 import { Log, TxContext } from './types'
@@ -180,7 +179,7 @@ export default class EVM {
       if (this._vm.DEBUG) {
         debug(`Message CALL execution (to: ${message.to})`)
       }
-      result = await this._executeCall(message)
+      result = await this._executeCall(message as MessageWithTo)
     } else {
       if (this._vm.DEBUG) {
         debug(`Message CREATE execution (to undefined)`)
@@ -233,7 +232,7 @@ export default class EVM {
     return result
   }
 
-  async _executeCall(message: Message): Promise<EVMResult> {
+  async _executeCall(message: MessageWithTo): Promise<EVMResult> {
     const account = await this._state.getAccount(message.caller)
     // Reduce tx value from sender
     if (!message.delegatecall) {
@@ -364,7 +363,7 @@ export default class EVM {
     // Add tx value to the `to` account
     let errorMessage
     try {
-      await this._addToBalance(toAccount, message)
+      await this._addToBalance(toAccount, message as MessageWithTo)
     } catch (e: any) {
       errorMessage = e
     }
@@ -513,22 +512,24 @@ export default class EVM {
   async runInterpreter(message: Message, opts: InterpreterOpts = {}): Promise<ExecResult> {
     const env = {
       blockchain: this._vm.blockchain, // Only used in BLOCKHASH
-      address: message.to || Address.zero(),
-      caller: message.caller || Address.zero(),
-      callData: message.data || Buffer.from([0]),
-      callValue: message.value || BigInt(0),
+      address: message.to ?? Address.zero(),
+      caller: message.caller,
+      callData: message.data,
+      callValue: message.value,
       code: message.code as Buffer,
-      isStatic: message.isStatic || false,
-      depth: message.depth || 0,
+      isStatic: message.isStatic,
+      depth: message.depth,
       gasPrice: this._tx.gasPrice,
-      origin: this._tx.origin || message.caller || Address.zero(),
-      block: this._block || new Block(),
-      contract: await this._state.getAccount(message.to || Address.zero()),
+      origin: this._tx.origin ?? message.caller ?? Address.zero(),
+      block: this._block ?? new Block(),
+      contract: await this._state.getAccount(message.to ?? Address.zero()),
       codeAddress: message.codeAddress,
     }
     const eei = new EEI(env, this._state, this, this._vm._common, message.gasLimit)
     if (message.selfdestruct) {
-      eei._result.selfdestruct = message.selfdestruct
+      eei._result.selfdestruct = message.selfdestruct as {
+        [k: string]: Buffer
+      }
     }
 
     const interpreter = new Interpreter(this._vm, eei)
@@ -630,7 +631,7 @@ export default class EVM {
     return result
   }
 
-  async _addToBalance(toAccount: Account, message: Message): Promise<void> {
+  async _addToBalance(toAccount: Account, message: MessageWithTo): Promise<void> {
     const newBalance = toAccount.balance + message.value
     if (newBalance > MAX_INTEGER) {
       throw new VmError(ERROR.VALUE_OVERFLOW)
