@@ -39,7 +39,7 @@ export class VMExecution extends Execution {
       })
     } else {
       this.vm = this.config.vm
-        ; (this.vm as any).blockchain = this.chain.blockchain
+      ;(this.vm as any).blockchain = this.chain.blockchain
     }
 
     if (this.metaDB) {
@@ -209,7 +209,8 @@ export class VMExecution extends Execution {
         )
       } else {
         this.config.logger.warn(
-          `No blocks executed past chain head hash=${short(endHeadBlock.hash())} number=${endHeadBlock.header.number
+          `No blocks executed past chain head hash=${short(endHeadBlock.hash())} number=${
+            endHeadBlock.header.number
           }`
         )
       }
