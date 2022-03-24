@@ -34,14 +34,19 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
    * @param job
    */
   async request(job: Job<JobTask, BlockHeaderResult, BlockHeader>) {
-    const { task, peer } = job
+    const { task, peer, partialResult } = job
     if (this.flow.maxRequestCount(peer!, 'GetBlockHeaders') < this.config.maxPerRequest) {
       // we reached our request limit. try with a different peer.
       return
     }
+    let { first, count } = task
+    if (partialResult) {
+      first = first.addn(partialResult.length)
+      count -= partialResult.length
+    }
     const response = await peer!.les!.getBlockHeaders({
-      block: task.first,
-      max: task.count,
+      block: first,
+      max: count,
     })
     return response
   }
@@ -54,34 +59,19 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
    */
   process(job: Job<JobTask, BlockHeaderResult, BlockHeader>, result: BlockHeaderResult) {
     this.flow.handleReply(job.peer!, result.bv.toNumber())
-    const { headers } = result
+    let { headers } = result
+    headers = (job.partialResult ?? []).concat(headers)
+    job.partialResult = undefined
+
     if (headers.length === job.task.count) {
       return headers
     } else if (headers.length > 0 && headers.length < job.task.count) {
       // Adopt the start block/header number from the remaining jobs
       // if the number of the results provided is lower than the expected count
-      const lengthDiff = job.task.count - headers.length
-      const adoptedJobs = []
-      let lastTask
-      while (this.in.length > 0) {
-        const job = this.in.remove()
-        if (job) {
-          lastTask = job.task
-          job.task.first = job.task.first.subn(lengthDiff)
-          adoptedJobs.push(job)
-        }
-      }
-      for (const job of adoptedJobs) {
-        this.in.insert(job)
-      }
-      if (lastTask) {
-        const tasks = this.tasks(lastTask.first.addn(lastTask.count), new BN(lengthDiff))
-        for (const task of tasks) {
-          this.enqueueTask(task)
-        }
-      }
-
-      return headers
+      job.partialResult = headers
+      this.debug(
+        `Adopt start block/header number from remaining jobs (provided=${headers.length} expected=${job.task.count})`
+      )
     }
     return
   }

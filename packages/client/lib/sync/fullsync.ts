@@ -191,13 +191,17 @@ export class FullSynchronizer extends Synchronizer {
 
   async processBlocks(execution: VMExecution, blocks: Block[] | BlockHeader[]) {
     if (this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
-      // If we are beyond the merge block we should stop the fetcher
-      this.config.logger.info('Merge hardfork reached, stopping block fetcher')
-      this.clearFetcher()
+      if (this.fetcher !== null) {
+        // If we are beyond the merge block we should stop the fetcher
+        this.config.logger.info('Merge hardfork reached, stopping block fetcher')
+        this.clearFetcher()
+      }
     }
 
     if (blocks.length === 0) {
-      this.config.logger.warn('No blocks fetched are applicable for import')
+      if (this.fetcher !== null) {
+        this.config.logger.warn('No blocks fetched are applicable for import')
+      }
       return
     }
 
@@ -208,19 +212,40 @@ export class FullSynchronizer extends Synchronizer {
     const baseFeeAdd = this.config.chainCommon.gteHardfork(Hardfork.London)
       ? `baseFee=${blocks[0].header.baseFeePerGas} `
       : ''
+
+    let attentionHF: string | null = null
+    const nextHFBlockNum = this.config.chainCommon.nextHardforkBlockBN()
+    if (nextHFBlockNum !== null) {
+      const remaining = nextHFBlockNum.sub(last)
+      if (remaining.lten(10000)) {
+        const nextHF = this.config.chainCommon.getHardforkByBlockNumber(nextHFBlockNum)
+        attentionHF = `${nextHF} HF in ${remaining} blocks`
+      }
+    } else {
+      if (this.config.chainCommon.hardfork() === Hardfork.PreMerge) {
+        const mergeTD = this.config.chainCommon.hardforkTD(Hardfork.Merge)!
+        const td = this.chain.blocks.td
+        const remaining = mergeTD.sub(td)
+        if (remaining.lte(mergeTD.divn(10))) {
+          attentionHF = `Merge HF in ${remaining} TD`
+        }
+      }
+    }
+
     this.config.logger.info(
       `Imported blocks count=${
         blocks.length
       } first=${first} last=${last} hash=${hash} ${baseFeeAdd}hardfork=${this.config.chainCommon.hardfork()} peers=${
         this.pool.size
-      }`
+      }`,
+      { attentionHF }
     )
+
     this.txPool.removeNewBlockTxs(blocks)
 
-    if (this.running) {
-      await execution.run()
-      this.checkTxPoolState()
-    }
+    if (!this.running) return
+    await execution.run()
+    this.checkTxPoolState()
   }
 
   private clearFetcher() {

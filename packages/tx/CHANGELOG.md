@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.5.1 - 2022-03-15
+
+### EIP-3860 Support: Limit and Meter Initcode
+
+Support for [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) has been added to the Tx library. This EIP limits the maximum size of initcode to 49152, see PR [#1619](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1619).
+
+Note that this EIP is not part of a specific hardfork yet and is considered `EXPERIMENTAL` (implementation can change along bugfix releases).
+
+For now the EIP has to be activated manually which can be done by using a respective `Common` instance:
+
+```typescript
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [ 3860 ] })
+```
+
 ## 3.5.0 - 2022-02-01
 
 This release comes with various additional checks on integrity and maximally allowed values for input values on tx creation. All these checks are activated by default as being suggested by the respective EIPs (e.g. `EIP-2681`).

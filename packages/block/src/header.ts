@@ -67,6 +67,9 @@ export class BlockHeader {
 
   /**
    * EIP-4399: After merge to PoS, `mixHash` supplanted as `prevRandao`
+   *
+   * Note: this is Merge-related functionality and considered `experimental`,
+   * use with care.
    */
   get prevRandao() {
     if (!this._common.isActivatedEIP(4399)) {

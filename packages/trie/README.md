@@ -40,11 +40,13 @@ async function test() {
 test()
 ```
 
-## Merkle Proofs
+## Proofs
+
+### Merkle Proofs
 
 The `createProof` and `verifyProof` functions allow you to verify that a certain value does or does not exist within a Merkle-Patricia trie with a given root.
 
-### Proof of existence
+#### Proof of existence
 
 The below code demonstrates how to construct and then verify a proof that proves that the key `test` that corresponds to the value `one` does exist in the given trie, so a proof of existence.
 
@@ -61,7 +63,7 @@ async function test() {
 test()
 ```
 
-### Proof of non-existence
+#### Proof of non-existence
 
 The below code demonstrates how to construct and then verify a proof that proves that the key `test3` does not exist in the given trie, so a proof of non-existence.
 
@@ -79,7 +81,7 @@ async function test() {
 test()
 ```
 
-### Invalid proofs
+#### Invalid proofs
 
 Note, if `verifyProof` detects an invalid proof, it throws an error. While contrived, the below example demonstrates the error condition that would result if a prover tampers with the data in a merkle proof.
 
@@ -101,6 +103,10 @@ async function test() {
 
 test()
 ```
+
+### Range Proofs
+
+The `Trie.verifyRangeProof()` function can be used to check whether the given leaf nodes and edge proof can prove the given trie leaves range is matched with the specific root (useful e.g. for snapsync).
 
 ## Read stream on Geth DB
 

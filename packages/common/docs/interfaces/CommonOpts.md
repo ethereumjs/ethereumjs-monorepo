@@ -32,7 +32,7 @@ passed in via [CommonOpts.customChains](CommonOpts.md#customchains).
 
 #### Defined in
 
-[packages/common/src/index.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L129)
+[packages/common/src/index.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L130)
 
 ___
 
@@ -52,17 +52,35 @@ import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
 const common = new Common({ chain: 'myCustomChain1', customChains: [ myCustomChain1 ]})
 ```
 
-Pattern 2 (with genesis state, see {@link GenesisState} for format):
+Pattern 2 (with genesis state see {@link GenesisState} for format):
 
 ```javascript
+const simpleState = {
+  '0x0...01': '0x100', // For EoA
+}
 import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
 import chain1GenesisState from '[PATH_TO_GENESIS_STATES]/chain1GenesisState.json'
-const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, chain1GenesisState ] ]})
+const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, simpleState ] ]})
+```
+
+Pattern 3 (with complex genesis state, containing contract accounts and storage).
+Note that in {@link AccountState} there are two
+accepted types. This allows to easily insert accounts in the genesis state:
+
+A complex genesis state with Contract and EoA states would have the following format:
+
+```javascript
+const complexState = {
+  '0x0...01': '0x100', // For EoA
+  '0x0...02': ['0x1', '0xRUNTIME_BYTECODE', [[ keyOne, valueOne ], [ keyTwo, valueTwo ]]] // For contracts
+}
+import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
+const common = new Common({ chain: 'myCustomChain1', customChains: [ [ myCustomChain1, complexState ] ]})
 ```
 
 #### Defined in
 
-[packages/common/src/index.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L151)
+[packages/common/src/index.ts:170](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L170)
 
 ___
 
@@ -83,7 +101,7 @@ BaseOpts.eips
 
 #### Defined in
 
-[packages/common/src/index.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L117)
+[packages/common/src/index.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L118)
 
 ___
 
@@ -101,7 +119,7 @@ BaseOpts.hardfork
 
 #### Defined in
 
-[packages/common/src/index.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L104)
+[packages/common/src/index.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L105)
 
 ___
 
@@ -117,4 +135,4 @@ BaseOpts.supportedHardforks
 
 #### Defined in
 
-[packages/common/src/index.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L108)
+[packages/common/src/index.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/index.ts#L109)

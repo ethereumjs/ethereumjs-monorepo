@@ -7,6 +7,14 @@ export type Logger = WinstonLogger
 const { combine, timestamp, label, printf } = format
 
 /**
+ * Attention API
+ *
+ * If set string will be displayed on all log messages
+ */
+let attentionHF: string | null = null
+let attentionCL: string | null = null
+
+/**
  * Colors for logger levels
  */
 enum LevelColors {
@@ -31,24 +39,39 @@ const errorFormat = format((info: any) => {
 
 /**
  * Returns the formatted log output optionally with colors enabled
+ *
+ * Optional info parameters:
+ * `attentionCL`: pass in string to `info.attentionCL` to set and permanently
+ * display and `null` to deactivate
+ * `attentionHF`: pass in string to `info.attentionHF` to set and permanently
+ * display and `null` to deactivate
+ *
  */
 function logFormat(colors = false) {
   return printf((info: any) => {
     let level = info.level.toUpperCase()
-    if (!info.message) {
-      info.message = '(empty message)'
-    }
+
+    if (!info.message) info.message = '(empty message)'
+
     if (colors) {
       const colorLevel = LevelColors[info.level as keyof typeof LevelColors]
       const color = chalk.keyword(colorLevel).bind(chalk)
       level = color(level)
-      const re = /(\w+)=(.+?)(?:\s|$)/g
-      info.message = info.message.replace(
-        re,
-        (_: any, tag: string, char: string) => `${color(tag)}=${char} `
-      )
+
+      const regex = /(\w+)=(.+?)(?:\s|$)/g
+      const replaceFn = (_: any, tag: string, char: string) => `${color(tag)}=${char} `
+      info.message = info.message.replace(regex, replaceFn)
+      if (info.attentionCL) info.attentionCL = info.attentionCL.replace(regex, replaceFn)
+      if (info.attentionHF) info.attentionHF = info.attentionHF.replace(regex, replaceFn)
     }
-    return `[${info.timestamp}] ${level} ${info.message}`
+
+    if (info.attentionCL !== undefined) attentionCL = info.attentionCL
+    if (info.attentionHF !== undefined) attentionHF = info.attentionHF
+    const CLLog = attentionCL !== null ? `[ ${attentionCL} ] ` : ''
+    const HFLog = attentionHF !== null ? `[ ${attentionHF} ] ` : ''
+
+    const msg = `[${info.timestamp}] ${level} ${CLLog}${HFLog}${info.message}`
+    return msg
   })
 }
 

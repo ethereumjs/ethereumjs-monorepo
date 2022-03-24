@@ -33,6 +33,7 @@ An object that represents the block header.
 ### Accessors
 
 - [bloom](BlockHeader.md#bloom)
+- [prevRandao](BlockHeader.md#prevrandao)
 
 ### Methods
 
@@ -96,7 +97,7 @@ varying data types. For a default empty header, use [BlockHeader.fromHeaderData]
 
 #### Defined in
 
-[header.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L209)
+[header.ts:225](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L225)
 
 ## Properties
 
@@ -287,6 +288,25 @@ Backwards compatible alias for [BlockHeader.logsBloom](BlockHeader.md#logsbloom)
 
 [header.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L64)
 
+___
+
+### prevRandao
+
+• `get` **prevRandao**(): `Buffer`
+
+EIP-4399: After merge to PoS, `mixHash` supplanted as `prevRandao`
+
+Note: this is Merge-related functionality and considered `experimental`,
+use with care.
+
+#### Returns
+
+`Buffer`
+
+#### Defined in
+
+[header.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L74)
+
 ## Methods
 
 ### \_validateHeaderFields
@@ -301,7 +321,7 @@ Validates correct buffer lengths, throws if invalid.
 
 #### Defined in
 
-[header.ts:339](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L339)
+[header.ts:363](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L363)
 
 ___
 
@@ -317,7 +337,7 @@ Calculates the base fee for a potential next block
 
 #### Defined in
 
-[header.ts:734](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L734)
+[header.ts:754](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L754)
 
 ___
 
@@ -339,7 +359,7 @@ Returns the canonical difficulty for this block.
 
 #### Defined in
 
-[header.ts:433](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L433)
+[header.ts:453](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L453)
 
 ___
 
@@ -360,7 +380,7 @@ in conjunction with [BlockHeader.cliqueIsEpochTransition](BlockHeader.md#cliquei
 
 #### Defined in
 
-[header.ts:892](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L892)
+[header.ts:912](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L912)
 
 ___
 
@@ -377,7 +397,7 @@ Returns extra seal data
 
 #### Defined in
 
-[header.ts:863](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L863)
+[header.ts:883](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L883)
 
 ___
 
@@ -394,7 +414,7 @@ Returns extra vanity data
 
 #### Defined in
 
-[header.ts:854](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L854)
+[header.ts:874](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L874)
 
 ___
 
@@ -411,7 +431,7 @@ header (only clique PoA, throws otherwise)
 
 #### Defined in
 
-[header.ts:842](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L842)
+[header.ts:862](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L862)
 
 ___
 
@@ -427,7 +447,7 @@ PoA clique signature hash without the seal.
 
 #### Defined in
 
-[header.ts:831](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L831)
+[header.ts:851](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L851)
 
 ___
 
@@ -443,7 +463,7 @@ Returns the signer address
 
 #### Defined in
 
-[header.ts:929](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L929)
+[header.ts:949](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L949)
 
 ___
 
@@ -468,7 +488,7 @@ Verifies the signature of the block (last 65 bytes of extraData field)
 
 #### Defined in
 
-[header.ts:917](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L917)
+[header.ts:937](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L937)
 
 ___
 
@@ -484,7 +504,7 @@ Return a compact error string representation of the object
 
 #### Defined in
 
-[header.ts:1023](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L1023)
+[header.ts:1043](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L1043)
 
 ___
 
@@ -500,7 +520,7 @@ Returns the hash of the block header.
 
 #### Defined in
 
-[header.ts:801](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L801)
+[header.ts:821](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L821)
 
 ___
 
@@ -516,7 +536,7 @@ Checks if the block header is a genesis header.
 
 #### Defined in
 
-[header.ts:815](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L815)
+[header.ts:835](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L835)
 
 ___
 
@@ -532,7 +552,7 @@ Returns a Buffer Array of the raw Buffers in this header, in order.
 
 #### Defined in
 
-[header.ts:772](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L772)
+[header.ts:792](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L792)
 
 ___
 
@@ -548,7 +568,7 @@ Returns the rlp encoding of the block header.
 
 #### Defined in
 
-[header.ts:946](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L946)
+[header.ts:966](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L966)
 
 ___
 
@@ -564,7 +584,7 @@ Returns the block header in JSON format.
 
 #### Defined in
 
-[header.ts:953](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L953)
+[header.ts:973](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L973)
 
 ___
 
@@ -599,7 +619,7 @@ It verifies the current block against the `parentHash`:
 
 #### Defined in
 
-[header.ts:600](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L600)
+[header.ts:620](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L620)
 
 ___
 
@@ -622,7 +642,7 @@ Returns false if invalid.
 
 #### Defined in
 
-[header.ts:521](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L521)
+[header.ts:541](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L541)
 
 ___
 
@@ -644,7 +664,7 @@ Checks that the block's `difficulty` matches the canonical difficulty.
 
 #### Defined in
 
-[header.ts:513](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L513)
+[header.ts:533](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L533)
 
 ___
 
@@ -667,7 +687,7 @@ boundaries set by the protocol.
 
 #### Defined in
 
-[header.ts:557](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L557)
+[header.ts:577](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L577)
 
 ___
 
@@ -690,7 +710,7 @@ Static constructor to create a block header from a header data dictionary
 
 #### Defined in
 
-[header.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L74)
+[header.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L90)
 
 ___
 
@@ -713,7 +733,7 @@ Static constructor to create a block header from a RLP-serialized header
 
 #### Defined in
 
-[header.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L128)
+[header.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L144)
 
 ___
 
@@ -736,7 +756,7 @@ Static constructor to create a block header from an array of Buffer values
 
 #### Defined in
 
-[header.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L144)
+[header.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L160)
 
 ___
 
@@ -759,4 +779,4 @@ Alias for [BlockHeader.fromHeaderData](BlockHeader.md#fromheaderdata) with [Bloc
 
 #### Defined in
 
-[header.ts:197](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L197)
+[header.ts:213](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L213)

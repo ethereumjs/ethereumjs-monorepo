@@ -9,11 +9,13 @@ import { default as runTx, RunTxOpts, RunTxResult } from './runTx'
 import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
 import { default as buildBlock, BuildBlockOpts, BlockBuilder } from './buildBlock'
 import { EVMResult, ExecResult } from './evm/evm'
-import { OpcodeList, getOpcodesForHF } from './evm/opcodes'
+import { OpcodeList, getOpcodesForHF, OpHandler } from './evm/opcodes'
 import { precompiles } from './evm/precompiles'
 import runBlockchain from './runBlockchain'
 const AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
+import { CustomOpcode } from './evm/types'
+import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './evm/opcodes/gas'
 
 // very ugly way to detect if we are running in a browser
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
@@ -41,19 +43,22 @@ export interface VMOpts {
    *
    * ### Supported EIPs
    *
-   * - [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153) - Transient Storage Opcodes
-   * - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - Fee Market
-   * - [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - VM simple subroutines
-   * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) (`experimental`) - BLS12-381 precompiles
+   * - [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153) - Transient Storage Opcodes (`experimental`)
+   * - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - EIP-1559 Fee Market
+   * - [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - VM simple subroutines (`experimental`)
+   * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles (`experimental`)
    * - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp Gas Cost
    * - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Typed Transactions
    * - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - Gas cost increases for state access opcodes
    * - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Access List Transaction Type
    * - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - BASEFEE opcode
    * - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
+   * - [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`experimental`)
    * - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
-   * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction
-   * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode
+   * - [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) - EOF - Code Validation (`experimental`)
+   * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction (`experimental`)
+   * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
+   * - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
    *
    * *Annotations:*
    *
@@ -127,6 +132,29 @@ export interface VMOpts {
    * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
    */
   hardforkByTD?: BNLike
+
+  /**
+   * Override or add custom opcodes to the VM instruction set
+   * These custom opcodes are EIP-agnostic and are always statically added
+   * To delete an opcode, add an entry of format `{opcode: number}`. This will delete that opcode from the VM.
+   * If this opcode is then used in the VM, the `INVALID` opcode would instead be used.
+   * To add an opcode, add an entry of the following format:
+   * {
+   *    // The opcode number which will invoke the custom opcode logic
+   *    opcode: number
+   *    // The name of the opcode (as seen in the `step` event)
+   *    opcodeName: string
+   *    // The base fee of the opcode
+   *    baseFee: number
+   *    // If the opcode charges dynamic gas, add this here. To charge the gas, use the `i` methods of the BN, to update the charged gas
+   *    gasFunction?: function(runState: RunState, gas: BN, common: Common)
+   *    // The logic of the opcode which holds the logic of changing the current state
+   *    logicFunction: function(runState: RunState)
+   * }
+   * Note: gasFunction and logicFunction can both be async or synchronous functions
+   */
+
+  customOpcodes?: CustomOpcode[]
 }
 
 /**
@@ -149,10 +177,15 @@ export default class VM extends AsyncEventEmitter {
 
   protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
-  public readonly _allowUnlimitedContractSize: boolean
-  protected _opcodes: OpcodeList
+  protected readonly _allowUnlimitedContractSize: boolean
+  // This opcode data is always set since `getActiveOpcodes()` is called in the constructor
+  protected _opcodes!: OpcodeList
+  protected _handlers!: Map<number, OpHandler>
+  protected _dynamicGasHandlers!: Map<number, AsyncDynamicGasHandler | SyncDynamicGasHandler>
+
   protected readonly _hardforkByBlockNumber: boolean
   protected readonly _hardforkByTD?: BNLike
+  protected readonly _customOpcodes?: CustomOpcode[]
 
   /**
    * Cached emit() function, not for public usage
@@ -196,6 +229,7 @@ export default class VM extends AsyncEventEmitter {
     super()
 
     this._opts = opts
+    this._customOpcodes = opts.customOpcodes
 
     // Throw on chain or hardfork options removed in latest major release
     // to prevent implicit chain setup on a wrong chain
@@ -207,7 +241,7 @@ export default class VM extends AsyncEventEmitter {
       // Supported EIPs
       const supportedEIPs = [
         1153, 1559, 2315, 2537, 2565, 2718, 2929, 2930, 3198, 3529, 3540, 3541, 3607, 3670, 3855,
-        3860,
+        3860, 4399,
       ]
       for (const eip of opts.common.eips()) {
         if (!supportedEIPs.includes(eip)) {
@@ -240,12 +274,11 @@ export default class VM extends AsyncEventEmitter {
       })
     }
     this._common.on('hardforkChanged', () => {
-      this._opcodes = getOpcodesForHF(this._common)
+      this.getActiveOpcodes()
     })
 
-    // Set list of opcodes based on HF
-    // TODO: make this EIP-friendly
-    this._opcodes = getOpcodesForHF(this._common)
+    // Initialize the opcode data
+    this.getActiveOpcodes()
 
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
@@ -418,7 +451,11 @@ export default class VM extends AsyncEventEmitter {
    * available for VM execution
    */
   getActiveOpcodes(): OpcodeList {
-    return getOpcodesForHF(this._common)
+    const data = getOpcodesForHF(this._common, this._customOpcodes)
+    this._opcodes = data.opcodes
+    this._dynamicGasHandlers = data.dynamicGasHandlers
+    this._handlers = data.handlers
+    return data.opcodes
   }
 
   /**
