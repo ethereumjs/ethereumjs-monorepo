@@ -67,19 +67,7 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
     } else if (headers.length > 0 && headers.length < job.task.count) {
       // Adopt the start block/header number from the remaining jobs
       // if the number of the results provided is lower than the expected count
-      const lengthDiff = job.task.count - headers.length
-      const adoptedJobs = []
-      while (this.in.length > 0) {
-        const job = this.in.remove()
-        if (job) {
-          job.task.first = job.task.first - BigInt(lengthDiff)
-          adoptedJobs.push(job)
-        }
-      }
-      for (const job of adoptedJobs) {
-        this.in.insert(job)
-      }
-      return headers
+      job.partialResult = headers
     }
     return
   }
