@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Account, Address, MAX_UINT64, bufferToBigInt } from 'ethereumjs-util'
+import { Account, Address, MAX_UINT64, bufferToBigInt, PickRequired } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
@@ -460,7 +460,7 @@ export default class EEI {
       data,
       isStatic: this._env.isStatic,
       depth: this._env.depth + 1,
-    })
+    }) as PickRequired<Message, 'caller' | 'gasLimit'>
 
     return this._baseCall(msg)
   }
@@ -478,7 +478,7 @@ export default class EEI {
       data,
       isStatic: this._env.isStatic,
       depth: this._env.depth + 1,
-    })
+    }) as PickRequired<Message, 'caller' | 'gasLimit'>
 
     return this._baseCall(msg)
   }
@@ -502,7 +502,7 @@ export default class EEI {
       data,
       isStatic: true,
       depth: this._env.depth + 1,
-    })
+    }) as PickRequired<Message, 'caller' | 'gasLimit'>
 
     return this._baseCall(msg)
   }
@@ -527,12 +527,12 @@ export default class EEI {
       isStatic: this._env.isStatic,
       delegatecall: true,
       depth: this._env.depth + 1,
-    })
+    }) as PickRequired<Message, 'caller' | 'gasLimit'>
 
     return this._baseCall(msg)
   }
 
-  async _baseCall(msg: Message): Promise<bigint> {
+  async _baseCall(msg: PickRequired<Message, 'caller' | 'gasLimit'>): Promise<bigint> {
     const selfdestruct = { ...this._result.selfdestruct }
     msg.selfdestruct = selfdestruct
 
@@ -593,7 +593,7 @@ export default class EEI {
       salt,
       depth: this._env.depth + 1,
       selfdestruct,
-    })
+    }) as PickRequired<Message, 'caller' | 'gasLimit'>
 
     // empty the return data buffer
     this._lastReturned = Buffer.alloc(0)

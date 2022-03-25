@@ -1,35 +1,60 @@
 import { Address } from 'ethereumjs-util'
 import { PrecompileFunc } from './precompiles'
 
+interface MessageOpts {
+  to?: Address
+  value?: bigint
+  caller?: Address
+  gasLimit?: bigint
+  data?: Buffer
+  depth?: number
+  code?: Buffer | PrecompileFunc
+  codeAddress?: Address
+  isStatic?: boolean
+  isCompiled?: boolean
+  salt?: Buffer | null
+  selfdestruct?: { [k: string]: boolean } | { [k: string]: Buffer }
+  delegatecall?: boolean
+}
+
 export default class Message {
-  to: Address
+  to?: Address
   value: bigint
-  caller: Address
-  gasLimit: bigint
+  caller?: Address
+  gasLimit?: bigint
   data: Buffer
   depth: number
-  code: Buffer | PrecompileFunc
-  _codeAddress: Address
+  code?: Buffer | PrecompileFunc
+  _codeAddress?: Address
   isStatic: boolean
   isCompiled: boolean
-  salt: Buffer
-  selfdestruct: any
+  salt?: Buffer | null
+  selfdestruct?: { [k: string]: boolean } | { [k: string]: Buffer }
   delegatecall: boolean
 
-  constructor(opts: any) {
+  constructor(opts: MessageOpts) {
+    const defaults = {
+      value: BigInt(0),
+      data: Buffer.alloc(0),
+      depth: 0,
+      isStatic: false,
+      isCompiled: false,
+      delegatecall: false,
+    }
+
     this.to = opts.to
-    this.value = opts.value ? opts.value : BigInt(0)
+    this.value = opts.value ?? defaults.value
     this.caller = opts.caller
     this.gasLimit = opts.gasLimit
-    this.data = opts.data || Buffer.alloc(0)
-    this.depth = opts.depth || 0
+    this.data = opts.data ?? defaults.data
+    this.depth = opts.depth ?? defaults.depth
     this.code = opts.code
     this._codeAddress = opts.codeAddress
-    this.isStatic = opts.isStatic || false
-    this.isCompiled = opts.isCompiled || false // For CALLCODE, TODO: Move from here
-    this.salt = opts.salt // For CREATE2, TODO: Move from here
-    this.selfdestruct = opts.selfdestruct // TODO: Move from here
-    this.delegatecall = opts.delegatecall || false
+    this.isStatic = opts.isStatic ?? defaults.isStatic
+    this.isCompiled = opts.isCompiled ?? defaults.isCompiled
+    this.salt = opts.salt
+    this.selfdestruct = opts.selfdestruct
+    this.delegatecall = opts.delegatecall ?? defaults.delegatecall
 
     if (this.value < 0) {
       throw new Error(`value field cannot be negative, received ${this.value}`)
@@ -37,6 +62,6 @@ export default class Message {
   }
 
   get codeAddress(): Address {
-    return this._codeAddress ? this._codeAddress : this.to
+    return this._codeAddress ?? this.to!
   }
 }
