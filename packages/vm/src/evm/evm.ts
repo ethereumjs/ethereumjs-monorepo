@@ -290,9 +290,7 @@ export default class EVM {
     }
   }
 
-  async _executeCreate(
-    message: Message & Pick<Required<Message>, 'caller' | 'gasLimit'>
-  ): Promise<EVMResult> {
+  async _executeCreate(message: Message): Promise<EVMResult> {
     const account = await this._state.getAccount(message.caller)
     // Reduce tx value from sender
     await this._reduceSenderBalance(account, message)
@@ -560,7 +558,7 @@ export default class EVM {
     }
   }
 
-  async _generateAddress(message: Message & Pick<Required<Message>, 'caller'>): Promise<Address> {
+  async _generateAddress(message: Message): Promise<Address> {
     let addr
     if (message.salt) {
       addr = generateAddress2(message.caller.buf, message.salt, message.code as Buffer)
