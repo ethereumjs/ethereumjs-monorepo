@@ -57,7 +57,7 @@ export interface ExecResult {
    */
   gas?: bigint
   /**
-   * Amount of gas the transaction used to run
+   * Amount of gas the code used to run
    */
   gasUsed: bigint
   /**
