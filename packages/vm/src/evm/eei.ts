@@ -8,6 +8,7 @@ import { VmError, ERROR } from '../exceptions'
 import Message from './message'
 import EVM, { EVMResult } from './evm'
 import { Log } from './types'
+import { TransientStorage } from '../state'
 
 const debugGas = createDebugLogger('vm:eei:gas')
 
@@ -69,8 +70,16 @@ export default class EEI {
   _lastReturned: Buffer
   _common: Common
   _gasLeft: BN
+  _transientStorage: TransientStorage
 
-  constructor(env: Env, state: StateManager, evm: EVM, common: Common, gasLeft: BN) {
+  constructor(
+    env: Env,
+    state: StateManager,
+    evm: EVM,
+    common: Common,
+    gasLeft: BN,
+    transientStorage: TransientStorage
+  ) {
     this._env = env
     this._state = state
     this._evm = evm
@@ -82,6 +91,7 @@ export default class EEI {
       returnValue: undefined,
       selfdestruct: {},
     }
+    this._transientStorage = transientStorage
   }
 
   /**
@@ -378,6 +388,23 @@ export default class EEI {
     } else {
       return this._state.getContractStorage(this._env.address, key)
     }
+  }
+
+  /**
+   * Store 256-bit a value in memory to transient storage.
+   * @param key - Storage key
+   * @param value - Storage value
+   */
+  transientStorageStore(key: Buffer, value: Buffer): void {
+    return this._transientStorage.put(this._env.address, key, value)
+  }
+
+  /**
+   * Loads a 256-bit value to memory from transient storage.
+   * @param key - Storage key
+   */
+  transientStorageLoad(key: Buffer): Buffer {
+    return this._transientStorage.get(this._env.address, key)
   }
 
   /**

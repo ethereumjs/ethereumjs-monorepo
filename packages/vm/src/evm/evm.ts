@@ -20,6 +20,8 @@ import { short } from './opcodes/util'
 import * as eof from './opcodes/eof'
 import { Log } from './types'
 import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
+import VM from '../index'
+import { TransientStorage } from '../state'
 
 const debug = createDebugLogger('vm:evm')
 const debugGas = createDebugLogger('vm:evm:gas')
@@ -130,7 +132,7 @@ export function VmErrorResult(error: VmError, gasUsed: BN): ExecResult {
  * @ignore
  */
 export default class EVM {
-  _vm: any
+  _vm: VM
   _state: StateManager
   _tx: TxContext
   _block: Block
@@ -138,13 +140,15 @@ export default class EVM {
    * Amount of gas to refund from deleting storage values
    */
   _refund: BN
+  _transientStorage: TransientStorage
 
-  constructor(vm: any, txContext: TxContext, block: Block) {
+  constructor(vm: VM, txContext: TxContext, block: Block) {
     this._vm = vm
     this._state = this._vm.stateManager
     this._tx = txContext
     this._block = block
     this._refund = new BN(0)
+    this._transientStorage = new TransientStorage()
   }
 
   /**
@@ -163,6 +167,8 @@ export default class EVM {
     const oldRefund = this._refund.clone()
 
     await this._state.checkpoint()
+    this._transientStorage.checkpoint()
+
     if (this._vm.DEBUG) {
       debug('-'.repeat(100))
       debug(`message checkpoint`)
@@ -212,6 +218,7 @@ export default class EVM {
       if (this._vm._common.gteHardfork('homestead') || err.error != ERROR.CODESTORE_OUT_OF_GAS) {
         result.execResult.logs = []
         await this._state.revert()
+        this._transientStorage.revert()
         if (this._vm.DEBUG) {
           debug(`message checkpoint reverted`)
         }
@@ -219,12 +226,14 @@ export default class EVM {
         // we are in chainstart and the error was the code deposit error
         // we do like nothing happened.
         await this._state.commit()
+        this._transientStorage.commit()
         if (this._vm.DEBUG) {
           debug(`message checkpoint committed`)
         }
       }
     } else {
       await this._state.commit()
+      this._transientStorage.commit()
       if (this._vm.DEBUG) {
         debug(`message checkpoint committed`)
       }
@@ -528,7 +537,14 @@ export default class EVM {
       contract: await this._state.getAccount(message.to || Address.zero()),
       codeAddress: message.codeAddress,
     }
-    const eei = new EEI(env, this._state, this, this._vm._common, message.gasLimit.clone())
+    const eei = new EEI(
+      env,
+      this._state,
+      this,
+      this._vm._common,
+      message.gasLimit.clone(),
+      this._transientStorage
+    )
     if (message.selfdestruct) {
       eei._result.selfdestruct = message.selfdestruct
     }

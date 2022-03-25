@@ -873,7 +873,35 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.eei.log(mem, topicsCount, topicsBuf)
     },
   ],
+  // 0xb3: TLOAD
+  [
+    0xb3,
+    function (runState) {
+      const key = runState.stack.pop()
+      const keyBuf = key.toArrayLike(Buffer, 'be', 32)
+      const value = runState.eei.transientStorageLoad(keyBuf)
+      const valueBN = value.length ? new BN(value) : new BN(0)
+      runState.stack.push(valueBN)
+    },
+  ],
+  // 0xb4: TSTORE
+  [
+    0xb4,
+    function (runState) {
+      const [key, val] = runState.stack.popN(2)
 
+      const keyBuf = key.toArrayLike(Buffer, 'be', 32)
+      // NOTE: this should be the shortest representation
+      let value
+      if (val.isZero()) {
+        value = Buffer.from([])
+      } else {
+        value = val.toArrayLike(Buffer, 'be')
+      }
+
+      runState.eei.transientStorageStore(keyBuf, value)
+    },
+  ],
   // '0xf0' range - closures
   // 0xf0: CREATE
   [

@@ -253,6 +253,13 @@ const hardforkOpcodes: { hardforkName: string; opcodes: OpcodeEntry }[] = [
 
 const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
   {
+    eip: 1153,
+    opcodes: {
+      0xb3: { name: 'TLOAD', isAsync: false, dynamicGas: false },
+      0xb4: { name: 'TSTORE', isAsync: false, dynamicGas: false },
+    },
+  },
+  {
     eip: 2315,
     opcodes: {
       0x5c: { name: 'BEGINSUB', isAsync: false, dynamicGas: false },
