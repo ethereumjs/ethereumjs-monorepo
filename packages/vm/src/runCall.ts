@@ -1,4 +1,4 @@
-import { Address, PickRequired } from 'ethereumjs-util'
+import { Address } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import VM from './index'
 import Message from './evm/message'
@@ -12,7 +12,7 @@ export interface RunCallOpts {
   block?: Block
   gasPrice?: bigint
   origin?: Address
-  caller?: Address
+  caller: Address
   gasLimit?: bigint
   to?: Address
   value?: bigint
@@ -53,7 +53,7 @@ export default function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult>
     salt: opts.salt ?? null,
     selfdestruct: opts.selfdestruct ?? {},
     delegatecall: opts.delegatecall,
-  }) as PickRequired<Message, 'caller' | 'gasLimit'>
+  })
 
   const evm = new EVM(this, txContext, block)
 

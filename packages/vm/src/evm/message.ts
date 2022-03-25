@@ -4,8 +4,8 @@ import { PrecompileFunc } from './precompiles'
 interface MessageOpts {
   to?: Address
   value?: bigint
-  caller?: Address
-  gasLimit?: bigint
+  caller: Address
+  gasLimit: bigint
   data?: Buffer
   depth?: number
   code?: Buffer | PrecompileFunc
@@ -13,15 +13,15 @@ interface MessageOpts {
   isStatic?: boolean
   isCompiled?: boolean
   salt?: Buffer | null
-  selfdestruct?: { [k: string]: boolean } | { [k: string]: Buffer }
+  selfdestruct?: { [key: string]: boolean } | { [key: string]: Buffer }
   delegatecall?: boolean
 }
 
 export default class Message {
   to?: Address
   value: bigint
-  caller?: Address
-  gasLimit?: bigint
+  caller: Address
+  gasLimit: bigint
   data: Buffer
   depth: number
   code?: Buffer | PrecompileFunc
@@ -29,7 +29,7 @@ export default class Message {
   isStatic: boolean
   isCompiled: boolean
   salt?: Buffer | null
-  selfdestruct?: { [k: string]: boolean } | { [k: string]: Buffer }
+  selfdestruct?: { [key: string]: boolean } | { [key: string]: Buffer }
   delegatecall: boolean
 
   constructor(opts: MessageOpts) {
@@ -44,7 +44,7 @@ export default class Message {
 
     this.to = opts.to
     this.value = opts.value ?? defaults.value
-    this.caller = opts.caller
+    this.caller = opts.caller ?? Address.zero()
     this.gasLimit = opts.gasLimit
     this.data = opts.data ?? defaults.data
     this.depth = opts.depth ?? defaults.depth

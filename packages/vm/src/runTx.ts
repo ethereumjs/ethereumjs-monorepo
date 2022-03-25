@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Address, bigIntToBuffer, KECCAK256_NULL, PickRequired, toBuffer } from 'ethereumjs-util'
+import { Address, bigIntToBuffer, KECCAK256_NULL, toBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import {
@@ -390,7 +390,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     to,
     value: value,
     data,
-  }) as PickRequired<Message, 'caller' | 'gasLimit'>
+  })
   const evm = new EVM(this, txContext, block)
   if (this.DEBUG) {
     debug(

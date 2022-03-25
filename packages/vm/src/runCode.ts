@@ -11,7 +11,7 @@ from the stack, instead you should `copy` it first.
 item length then you must use `utils.pad(<item>, 32)` first.
 
 */
-import { Address, PickRequired } from 'ethereumjs-util'
+import { Address } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import VM from './index'
 import Message from './evm/message'
@@ -37,7 +37,7 @@ export interface RunCodeOpts {
   /**
    * The address that ran this code (`msg.sender`). Defaults to the zero address.
    */
-  caller?: Address
+  caller: Address
   /**
    * The EVM code to run
    */
@@ -49,7 +49,7 @@ export interface RunCodeOpts {
   /**
    * Gas limit
    */
-  gasLimit?: bigint
+  gasLimit: bigint
   /**
    * The value in ether that is being sent to `opt.address`. Defaults to `0`
    */
@@ -79,7 +79,8 @@ export default function runCode(this: VM, opts: RunCodeOpts): Promise<ExecResult
     origin: opts.origin ?? opts.caller ?? Address.zero(),
   }
 
-  const message = (opts.message ??
+  const message =
+    opts.message ??
     new Message({
       code: opts.code,
       data: opts.data,
@@ -90,7 +91,7 @@ export default function runCode(this: VM, opts: RunCodeOpts): Promise<ExecResult
       depth: opts.depth,
       selfdestruct: opts.selfdestruct ?? {},
       isStatic: opts.isStatic,
-    })) as PickRequired<Message, 'caller' | 'gasLimit'>
+    })
 
   const evm = opts.evm ?? new EVM(this, txContext, block)
 

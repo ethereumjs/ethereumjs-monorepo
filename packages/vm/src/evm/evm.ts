@@ -7,7 +7,6 @@ import {
   generateAddress2,
   KECCAK256_NULL,
   MAX_INTEGER,
-  PickRequired,
 } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ERROR, VmError } from '../exceptions'
@@ -142,7 +141,7 @@ export default class EVM {
    * based on the `to` address. It checkpoints the state and reverts changes
    * if an exception happens during the message execution.
    */
-  async executeMessage(message: PickRequired<Message, 'caller' | 'gasLimit'>): Promise<EVMResult> {
+  async executeMessage(message: Message): Promise<EVMResult> {
     await this._vm._emit('beforeMessage', message)
 
     if (!message.to && this._vm._common.isActivatedEIP(2929)) {
@@ -172,7 +171,7 @@ export default class EVM {
         debug(`Message CALL execution (to: ${message.to})`)
       }
       result = await this._executeCall(
-        message as PickRequired<Message, 'caller' | 'gasLimit' | 'to'>
+        message as Omit<Message, 'to'> & Pick<Required<Message>, 'to'>
       )
     } else {
       if (this._vm.DEBUG) {
@@ -227,7 +226,7 @@ export default class EVM {
   }
 
   async _executeCall(
-    message: PickRequired<Message, 'caller' | 'gasLimit' | 'to'>
+    message: Omit<Message, 'to'> & Pick<Required<Message>, 'to'>
   ): Promise<EVMResult> {
     const account = await this._state.getAccount(message.caller)
     // Reduce tx value from sender
@@ -347,7 +346,10 @@ export default class EVM {
     // Add tx value to the `to` account
     let errorMessage
     try {
-      await this._addToBalance(toAccount, message as PickRequired<Message, 'to'>)
+      await this._addToBalance(
+        toAccount,
+        message as Omit<Message, 'to'> & Pick<Required<Message>, 'to'>
+      )
     } catch (e: any) {
       errorMessage = e
     }
@@ -467,10 +469,7 @@ export default class EVM {
    * Starts the actual bytecode processing for a CALL or CREATE, providing
    * it with the {@link EEI}.
    */
-  async runInterpreter(
-    message: PickRequired<Message, 'gasLimit'>,
-    opts: InterpreterOpts = {}
-  ): Promise<ExecResult> {
+  async runInterpreter(message: Message, opts: InterpreterOpts = {}): Promise<ExecResult> {
     const env = {
       blockchain: this._vm.blockchain, // Only used in BLOCKHASH
       address: message.to ?? Address.zero(),
@@ -580,10 +579,7 @@ export default class EVM {
     return new Address(addr)
   }
 
-  async _reduceSenderBalance(
-    account: Account,
-    message: PickRequired<Message, 'caller'>
-  ): Promise<void> {
+  async _reduceSenderBalance(account: Account, message: Message): Promise<void> {
     account.balance -= message.value
     const result = this._state.putAccount(message.caller, account)
     if (this._vm.DEBUG) {
@@ -592,7 +588,10 @@ export default class EVM {
     return result
   }
 
-  async _addToBalance(toAccount: Account, message: PickRequired<Message, 'to'>): Promise<void> {
+  async _addToBalance(
+    toAccount: Account,
+    message: Omit<Message, 'to'> & Pick<Required<Message>, 'to'>
+  ): Promise<void> {
     const newBalance = toAccount.balance + message.value
     if (newBalance > MAX_INTEGER) {
       throw new VmError(ERROR.VALUE_OVERFLOW)

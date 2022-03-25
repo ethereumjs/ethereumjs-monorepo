@@ -65,11 +65,6 @@ export function bigIntToUnpaddedBuffer(value: bigint): Buffer {
 }
 
 /**
- * Utility type that makes keys K of type T non-optional
- */
-export type PickRequired<T, K extends keyof T> = Omit<T, K> & Pick<Required<T>, K>
-
-/**
  * Type output options
  */
 export enum TypeOutput {
