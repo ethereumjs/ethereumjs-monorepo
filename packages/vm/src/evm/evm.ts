@@ -12,7 +12,7 @@ import { Block } from '@ethereumjs/block'
 import { ERROR, VmError } from '../exceptions'
 import { StateManager } from '../state/index'
 import { getPrecompile, PrecompileFunc } from './precompiles'
-import Message from './message'
+import Message, { MessageWithTo } from './message'
 import EEI from './eei'
 import { short } from './opcodes/util'
 import { Log, TxContext } from './types'
@@ -170,9 +170,7 @@ export default class EVM {
       if (this._vm.DEBUG) {
         debug(`Message CALL execution (to: ${message.to})`)
       }
-      result = await this._executeCall(
-        message as Omit<Message, 'to'> & Pick<Required<Message>, 'to'>
-      )
+      result = await this._executeCall(message as MessageWithTo)
     } else {
       if (this._vm.DEBUG) {
         debug(`Message CREATE execution (to undefined)`)
@@ -225,9 +223,7 @@ export default class EVM {
     return result
   }
 
-  async _executeCall(
-    message: Omit<Message, 'to'> & Pick<Required<Message>, 'to'>
-  ): Promise<EVMResult> {
+  async _executeCall(message: MessageWithTo): Promise<EVMResult> {
     const account = await this._state.getAccount(message.caller)
     // Reduce tx value from sender
     if (!message.delegatecall) {
@@ -346,10 +342,7 @@ export default class EVM {
     // Add tx value to the `to` account
     let errorMessage
     try {
-      await this._addToBalance(
-        toAccount,
-        message as Omit<Message, 'to'> & Pick<Required<Message>, 'to'>
-      )
+      await this._addToBalance(toAccount, message as MessageWithTo)
     } catch (e: any) {
       errorMessage = e
     }
@@ -588,10 +581,7 @@ export default class EVM {
     return result
   }
 
-  async _addToBalance(
-    toAccount: Account,
-    message: Omit<Message, 'to'> & Pick<Required<Message>, 'to'>
-  ): Promise<void> {
+  async _addToBalance(toAccount: Account, message: MessageWithTo): Promise<void> {
     const newBalance = toAccount.balance + message.value
     if (newBalance > MAX_INTEGER) {
       throw new VmError(ERROR.VALUE_OVERFLOW)

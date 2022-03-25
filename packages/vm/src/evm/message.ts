@@ -17,6 +17,7 @@ interface MessageOpts {
   delegatecall?: boolean
 }
 
+export type MessageWithTo = Message & Pick<Required<Message>, 'to'>
 export default class Message {
   to?: Address
   value: bigint
