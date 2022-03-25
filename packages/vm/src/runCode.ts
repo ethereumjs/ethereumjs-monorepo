@@ -37,7 +37,7 @@ export interface RunCodeOpts {
   /**
    * The address that ran this code (`msg.sender`). Defaults to the zero address.
    */
-  caller: Address
+  caller?: Address
   /**
    * The EVM code to run
    */
@@ -86,7 +86,7 @@ export default function runCode(this: VM, opts: RunCodeOpts): Promise<ExecResult
       data: opts.data,
       gasLimit: opts.gasLimit,
       to: opts.address ?? Address.zero(),
-      caller: opts.caller,
+      caller: opts.caller ?? Address.zero(),
       value: opts.value,
       depth: opts.depth,
       selfdestruct: opts.selfdestruct ?? {},
