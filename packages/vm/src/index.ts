@@ -43,6 +43,7 @@ export interface VMOpts {
    *
    * ### Supported EIPs
    *
+   * - [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153) - Transient Storage Opcodes (`experimental`)
    * - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - EIP-1559 Fee Market
    * - [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - VM simple subroutines (`experimental`)
    * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles (`experimental`)
@@ -176,7 +177,7 @@ export default class VM extends AsyncEventEmitter {
 
   protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
-  protected readonly _allowUnlimitedContractSize: boolean
+  public readonly _allowUnlimitedContractSize: boolean
   // This opcode data is always set since `getActiveOpcodes()` is called in the constructor
   protected _opcodes!: OpcodeList
   protected _handlers!: Map<number, OpHandler>
@@ -207,7 +208,7 @@ export default class VM extends AsyncEventEmitter {
    * performance reasons to avoid string literal evaluation
    * @hidden
    */
-  protected readonly DEBUG: boolean = false
+  readonly DEBUG: boolean = false
 
   /**
    * VM async constructor. Creates engine instance and initializes it.
@@ -239,8 +240,8 @@ export default class VM extends AsyncEventEmitter {
     if (opts.common) {
       // Supported EIPs
       const supportedEIPs = [
-        1559, 2315, 2537, 2565, 2718, 2929, 2930, 3198, 3529, 3540, 3541, 3607, 3670, 3855, 3860,
-        4399,
+        1153, 1559, 2315, 2537, 2565, 2718, 2929, 2930, 3198, 3529, 3540, 3541, 3607, 3670, 3855,
+        3860, 4399,
       ]
       for (const eip of opts.common.eips()) {
         if (!supportedEIPs.includes(eip)) {
