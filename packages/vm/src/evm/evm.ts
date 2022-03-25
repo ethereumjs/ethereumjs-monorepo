@@ -466,9 +466,9 @@ export default class EVM {
     const env = {
       blockchain: this._vm.blockchain, // Only used in BLOCKHASH
       address: message.to ?? Address.zero(),
-      caller: message.caller ?? Address.zero(),
-      callData: message.data ?? Buffer.from([0]),
-      callValue: message.value ?? BigInt(0),
+      caller: message.caller,
+      callData: message.data,
+      callValue: message.value,
       code: message.code as Buffer,
       isStatic: message.isStatic,
       depth: message.depth,
