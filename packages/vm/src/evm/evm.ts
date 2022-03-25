@@ -305,7 +305,6 @@ export default class EVM {
     if (this._vm._common.isActivatedEIP(3860)) {
       if (message.data.length > this._vm._common.param('vm', 'maxInitCodeSize')) {
         return {
-          gasUsed: message.gasLimit,
           createdAddress: message.to,
           execResult: {
             returnValue: Buffer.alloc(0),
