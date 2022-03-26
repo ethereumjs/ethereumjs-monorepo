@@ -201,7 +201,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           value = bigIntToBuffer(val)
         }
 
-        // TODO: Replace getContractStorage with EEI method
         const currentStorage = setLengthLeftStorage(await runState.eei.storageLoad(keyBuf))
         const originalStorage = setLengthLeftStorage(await runState.eei.storageLoad(keyBuf, true))
         if (common.hardfork() === 'constantinople') {
@@ -329,9 +328,9 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (value !== BigInt(0)) {
-          // TODO: Don't use private attr directly
-          runState.eei._gasLeft += BigInt(common.param('gasPrices', 'callStipend'))
-          gasLimit += BigInt(common.param('gasPrices', 'callStipend'))
+          const callStipend = BigInt(common.param('gasPrices', 'callStipend'))
+          runState.eei.addStipend(callStipend)
+          gasLimit += callStipend
         }
 
         runState.messageGasLimit = gasLimit
@@ -368,9 +367,9 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           trap(ERROR.OUT_OF_GAS)
         }
         if (value !== BigInt(0)) {
-          // TODO: Don't use private attr directly
-          runState.eei._gasLeft += BigInt(common.param('gasPrices', 'callStipend'))
-          gasLimit += BigInt(common.param('gasPrices', 'callStipend'))
+          const callStipend = BigInt(common.param('gasPrices', 'callStipend'))
+          runState.eei.addStipend(callStipend)
+          gasLimit += callStipend
         }
 
         runState.messageGasLimit = gasLimit
