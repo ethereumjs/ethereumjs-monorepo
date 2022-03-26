@@ -32,7 +32,7 @@ export interface Env {
   origin: Address
   block: Block
   contract: Account
-  codeAddress: Address /**  Different than address for DELEGATECALL and CALLCODE */
+  codeAddress: Address /** Different than address for DELEGATECALL and CALLCODE */
   auth?: Address /** EIP-3074 AUTH parameter */
 }
 
