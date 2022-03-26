@@ -1,5 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
-import { bigIntToBuffer, rlp } from 'ethereumjs-util'
+import { encodeReceipt } from '@ethereumjs/vm/dist/runBlock'
 import { EthereumService, EthereumServiceOptions } from './ethereumservice'
 import { FullSynchronizer } from '../sync/fullsync'
 import { EthProtocol } from '../net/protocol/ethprotocol'
@@ -10,7 +10,6 @@ import { Miner } from '../miner'
 import { VMExecution } from '../execution'
 import { Event } from '../types'
 import type { Block } from '@ethereumjs/block'
-import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt } from '@ethereumjs/vm/dist/types'
 
 interface FullEthereumServiceOptions extends EthereumServiceOptions {
   /* Serve LES requests (default: false) */
@@ -192,16 +191,7 @@ export class FullEthereumService extends EthereumService {
         const blockReceipts = await receiptsManager.getReceipts(hash, true, true)
         if (!blockReceipts) continue
         receipts.push(...blockReceipts)
-        const receiptsBuffer = Buffer.concat(
-          receipts.map((r) =>
-            rlp.encode([
-              (r as PreByzantiumTxReceipt).stateRoot ?? (r as PostByzantiumTxReceipt).status,
-              bigIntToBuffer(r.gasUsed),
-              r.bitvector,
-              r.logs,
-            ])
-          )
-        )
+        const receiptsBuffer = Buffer.concat(receipts.map((r) => encodeReceipt(r, r.txType)))
         receiptsSize += Buffer.byteLength(receiptsBuffer)
         // From spec: The recommended soft limit for Receipts responses is 2 MiB.
         if (receiptsSize >= 2097152) {

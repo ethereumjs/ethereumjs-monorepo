@@ -359,7 +359,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
 
     // Add receipt to trie to later calculate receipt root
     receipts.push(txRes.receipt)
-    const encodedReceipt = encodeReceipt(tx, txRes.receipt)
+    const encodedReceipt = encodeReceipt(txRes.receipt, tx.type)
     await receiptTrie.put(rlp.encode(txIdx), encodedReceipt)
   }
 
@@ -434,7 +434,7 @@ export async function rewardAccount(
 /**
  * Returns the encoded tx receipt.
  */
-export function encodeReceipt(tx: TypedTransaction, receipt: TxReceipt) {
+export function encodeReceipt(receipt: TxReceipt, txType: number) {
   const encoded = rlp.encode([
     (receipt as PreByzantiumTxReceipt).stateRoot ?? (receipt as PostByzantiumTxReceipt).status,
     receipt.gasUsed,
@@ -442,12 +442,13 @@ export function encodeReceipt(tx: TypedTransaction, receipt: TxReceipt) {
     receipt.logs,
   ])
 
-  if (!tx.supports(Capability.EIP2718TypedTransaction)) {
+  if (txType === 0) {
     return encoded
   }
 
-  const type = intToBuffer(tx.type)
-  return Buffer.concat([type, encoded])
+  // Serialize receipt according to EIP-2718:
+  // `typed-receipt = tx-type || receipt-data`
+  return Buffer.concat([intToBuffer(txType), encoded])
 }
 
 /**
