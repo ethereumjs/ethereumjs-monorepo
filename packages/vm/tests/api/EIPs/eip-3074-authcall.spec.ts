@@ -182,7 +182,7 @@ function flipSignature(signature: any) {
 
 tape('EIP-3074 AUTH', (t) => {
   t.test('Should execute AUTH correctly', async (st) => {
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
     const message = Buffer.from('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = Buffer.concat([getAuthCode(message, signature), RETURNTOP])
@@ -203,7 +203,7 @@ tape('EIP-3074 AUTH', (t) => {
     st.ok(buf.equals(address.buf), 'auth returned right address')
   })
   t.test('Should not set AUTH if signature is invalid', async (st) => {
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
     const message = Buffer.from('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     signature.r = signature.s
@@ -226,7 +226,7 @@ tape('EIP-3074 AUTH', (t) => {
   })
 
   t.test('Should throw if signature s > N_DIV_2', async (st) => {
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
     const message = Buffer.from('01', 'hex')
     const signature = flipSignature(signMessage(message, contractAddress, privateKey))
     const code = Buffer.concat([getAuthCode(message, signature), RETURNTOP])
@@ -247,7 +247,7 @@ tape('EIP-3074 AUTH', (t) => {
   })
 
   t.test('Should be able to call AUTH mutliple times', async (st) => {
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
     const message = Buffer.from('01', 'hex')
     const signature = signMessage(message, contractAddress, privateKey)
     const signature2 = signMessage(message, contractAddress, callerPrivateKey)
@@ -276,7 +276,7 @@ tape('EIP-3074 AUTH', (t) => {
 
 // Setups the environment for the VM, puts `code` at contractAddress and also puts the STORECALLER bytecode at the contractStorageAddress
 async function setupVM(code: Buffer) {
-  const vm = new VM({ common })
+  const vm = await VM.create({ common })
   await vm.stateManager.putContractCode(contractAddress, code)
   await vm.stateManager.putContractCode(contractStorageAddress, STORECALLER)
   const account = await vm.stateManager.getAccount(callerAddress)
