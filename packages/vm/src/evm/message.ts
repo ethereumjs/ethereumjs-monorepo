@@ -17,8 +17,7 @@ interface MessageOpts {
   delegatecall?: boolean
 }
 
-export type MessageWithTo = Message & Pick<Required<Message>, 'to'>
-export default class Message {
+export class Message {
   to?: Address
   value: bigint
   caller: Address
@@ -61,8 +60,17 @@ export default class Message {
       throw new Error(`value field cannot be negative, received ${this.value}`)
     }
   }
+}
+
+export class MessageWithTo extends Message {
+  to: Address
+
+  constructor({ to, ...opts }: MessageOpts & Pick<Required<MessageOpts>, 'to'>) {
+    super(opts)
+    this.to = to
+  }
 
   get codeAddress(): Address {
-    return this._codeAddress ?? this.to!
+    return this._codeAddress ?? this.to
   }
 }

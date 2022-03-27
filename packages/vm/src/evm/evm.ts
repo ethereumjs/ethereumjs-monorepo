@@ -12,7 +12,7 @@ import { Block } from '@ethereumjs/block'
 import { ERROR, VmError } from '../exceptions'
 import { StateManager } from '../state/index'
 import { getPrecompile, PrecompileFunc } from './precompiles'
-import Message, { MessageWithTo } from './message'
+import { Message, MessageWithTo } from './message'
 import EEI from './eei'
 import { short } from './opcodes/util'
 import * as eof from './opcodes/eof'
@@ -397,7 +397,8 @@ export default class EVM {
       debug(`Start bytecode processing...`)
     }
 
-    let result = await this.runInterpreter(message)
+    let result = await this.runInterpreter(message as MessageWithTo)
+
     // fee for size of the return value
     let totalGas = result.gasUsed
     let returnFee = BigInt(0)
@@ -509,7 +510,7 @@ export default class EVM {
    * Starts the actual bytecode processing for a CALL or CREATE, providing
    * it with the {@link EEI}.
    */
-  async runInterpreter(message: Message, opts: InterpreterOpts = {}): Promise<ExecResult> {
+  async runInterpreter(message: MessageWithTo, opts: InterpreterOpts = {}): Promise<ExecResult> {
     const env = {
       blockchain: this._vm.blockchain, // Only used in BLOCKHASH
       address: message.to ?? Address.zero(),
@@ -597,7 +598,7 @@ export default class EVM {
     return code(opts)
   }
 
-  async _loadCode(message: Message): Promise<void> {
+  async _loadCode(message: MessageWithTo): Promise<void> {
     if (!message.code) {
       const precompile = this.getPrecompile(message.codeAddress)
       if (precompile) {
