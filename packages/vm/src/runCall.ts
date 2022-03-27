@@ -1,7 +1,7 @@
 import { Address } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import VM from './index'
-import Message from './evm/message'
+import { Message } from './evm/message'
 import { default as EVM, EVMResult } from './evm/evm'
 import { TxContext } from './evm/types'
 

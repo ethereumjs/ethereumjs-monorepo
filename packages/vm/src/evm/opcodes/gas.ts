@@ -21,8 +21,8 @@ import { accessAddressEIP2929, accessStorageEIP2929 } from './EIP2929'
  * These functions are therefore not read-only
  */
 
-// The dynamic gas handler methods take a runState and a gas BigInt
-// The gas BigInt is necessary, since the base fee needs to be included,
+// The dynamic gas handler methods take a runState and a gas BN
+// The gas BN is necessary, since the base fee needs to be included,
 // to calculate the max call gas for the call opcodes correctly.
 export interface AsyncDynamicGasHandler {
   (runState: RunState, gas: bigint, common: Common): Promise<bigint>
