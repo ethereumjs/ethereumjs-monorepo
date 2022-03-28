@@ -1,7 +1,6 @@
-import { Address, rlp, bufferToBigInt } from 'ethereumjs-util'
+import { bufferToBigInt, rlp } from 'ethereumjs-util'
 import { Block, BlockHeader, BlockOptions, BlockBuffer, BlockBodyBuffer } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
-import { CliqueLatestSignerStates, CliqueLatestVotes, CliqueLatestBlockSigners } from '../clique'
 import Cache from './cache'
 import { DatabaseKey, DBOp, DBTarget, DBOpData } from './operation'
 
@@ -65,68 +64,6 @@ export class DBManager {
    */
   async getHeadBlock(): Promise<Buffer> {
     return this.get(DBTarget.HeadBlock)
-  }
-
-  /**
-   * Fetches clique signers.
-   */
-  async getCliqueLatestSignerStates(): Promise<CliqueLatestSignerStates> {
-    try {
-      const signerStates = await this.get(DBTarget.CliqueSignerStates)
-      const states = (<any>rlp.decode(signerStates)) as [Buffer, Buffer[]]
-      return states.map((state) => {
-        const blockNum = bufferToBigInt(state[0] as Buffer)
-        const addrs = (<any>state[1]).map((buf: Buffer) => new Address(buf))
-        return [blockNum, addrs]
-      }) as CliqueLatestSignerStates
-    } catch (error: any) {
-      if (error.type === 'NotFoundError') {
-        return []
-      }
-      throw error
-    }
-  }
-
-  /**
-   * Fetches clique votes.
-   */
-  async getCliqueLatestVotes(): Promise<CliqueLatestVotes> {
-    try {
-      const signerVotes = await this.get(DBTarget.CliqueVotes)
-      const votes = (<any>rlp.decode(signerVotes)) as [Buffer, [Buffer, Buffer, Buffer]]
-      return votes.map((vote) => {
-        const blockNum = bufferToBigInt(vote[0] as Buffer)
-        const signer = new Address((vote[1] as any)[0])
-        const beneficiary = new Address((vote[1] as any)[1])
-        const nonce = (vote[1] as any)[2]
-        return [blockNum, [signer, beneficiary, nonce]]
-      }) as CliqueLatestVotes
-    } catch (error: any) {
-      if (error.type === 'NotFoundError') {
-        return []
-      }
-      throw error
-    }
-  }
-
-  /**
-   * Fetches snapshot of clique signers.
-   */
-  async getCliqueLatestBlockSigners(): Promise<CliqueLatestBlockSigners> {
-    try {
-      const blockSigners = await this.get(DBTarget.CliqueBlockSigners)
-      const signers = (<any>rlp.decode(blockSigners)) as [Buffer, Buffer][]
-      return signers.map((s) => {
-        const blockNum = bufferToBigInt(s[0] as Buffer)
-        const signer = new Address(s[1] as any)
-        return [blockNum, signer]
-      }) as CliqueLatestBlockSigners
-    } catch (error: any) {
-      if (error.type === 'NotFoundError') {
-        return []
-      }
-      throw error
-    }
   }
 
   /**
