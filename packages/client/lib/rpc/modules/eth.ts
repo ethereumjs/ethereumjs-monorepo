@@ -756,8 +756,8 @@ export class Eth {
           (tx as FeeMarketEIP1559Transaction).maxFeePerGas - block.header.baseFeePerGas!
           ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
           : (tx as FeeMarketEIP1559Transaction).maxFeePerGas -
-          block.header.baseFeePerGas! +
-          block.header.baseFeePerGas!
+            block.header.baseFeePerGas! +
+            block.header.baseFeePerGas!
         : (tx as Transaction).gasPrice
 
       // Run tx through copied vm to get tx gasUsed and createdAddress
@@ -986,7 +986,7 @@ export class Eth {
 
     const currentBlockHeader =
       this._chain.headers?.latest ?? (await this._chain.getCanonicalHeadHeader())
-    const currentBlock = bnToHex(currentBlockHeader.number)
+    const currentBlock = bigIntToHex(currentBlockHeader.number)
 
     const synchronizer = this.client.services[0].synchronizer
     const startingBlock = bigIntToHex(synchronizer.startingBlock)

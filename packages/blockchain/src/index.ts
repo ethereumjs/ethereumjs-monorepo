@@ -621,7 +621,8 @@ export default class Blockchain implements BlockchainInterface {
           // the same vote or not
           this._cliqueLatestVotes.push(latestVote)
           debug(
-            `[Block ${header.number}] New clique vote: ${signer} -> ${beneficiary} ${nonce.equals(CLIQUE_NONCE_AUTH) ? 'AUTH' : 'DROP'
+            `[Block ${header.number}] New clique vote: ${signer} -> ${beneficiary} ${
+              nonce.equals(CLIQUE_NONCE_AUTH) ? 'AUTH' : 'DROP'
             }`
           )
         }
@@ -872,8 +873,8 @@ export default class Blockchain implements BlockchainInterface {
       const block =
         item instanceof BlockHeader
           ? new Block(item, undefined, undefined, {
-            common: item._common,
-          })
+              common: item._common,
+            })
           : item
       const isGenesis = block.isGenesis()
       const isHeader = item instanceof BlockHeader

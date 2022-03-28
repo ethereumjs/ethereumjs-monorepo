@@ -77,7 +77,7 @@ tape('[VMExecution]', async (t) => {
     exec = await testSetup(blockchain, common)
     await exec.run()
     newHead = await exec.vm.blockchain.getIteratorHead()
-    t.deepEqual(newHead.header.number, BigInt(7), 'should run all blocks')
+    t.equals(newHead.header.number, BigInt(7), 'should run all blocks')
 
     t.end()
   })
