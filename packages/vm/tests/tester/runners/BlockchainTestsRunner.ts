@@ -190,6 +190,11 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
       await handleError(error, expectException)
     }
   }
+  t.equal(
+    (blockchain as any)._headHeaderHash.toString('hex'),
+    testData.lastblockhash,
+    'correct last header block'
+  )
 
   const end = Date.now()
   const timeSpent = `${(end - begin) / 1000} secs`
