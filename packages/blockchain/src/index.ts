@@ -1563,6 +1563,6 @@ export default class Blockchain implements BlockchainInterface {
       throw new Error('Signer not found')
     }
     const { number } = await this.getCanonicalHeadHeader()
-    return number.addn(1).mod(new BN(signers.length)).eqn(signerIndex)
+    return (number + BigInt(1)) % BigInt(signers.length) === BigInt(signerIndex)
   }
 }
