@@ -128,7 +128,7 @@ export class CliqueConsensus extends ConsensusBase {
     }
   }
 
-  async newBlock?(block: Block, commonAncestor: BlockHeader, ancientHeaders: BlockHeader[]): Promise<void> {
+  async newBlock?(block: Block, commonAncestor: BlockHeader): Promise<void> {
     // Clique: update signer votes and state
     const { header } = block
     const commonAncestorNumber = commonAncestor.number
