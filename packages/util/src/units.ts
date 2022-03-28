@@ -88,20 +88,20 @@ export class Unit {
     // Check if there are zeros at the end and if so, remove those
     if (decimal.endsWith('0')) decimal = this.removeTrailingZeros(decimal)
 
-    // If decimal is equal to empty string, we can just return the integer
-
-    if (decimal.length) {
-      // If decimal and integer are defined, concatenate and return
-      if (integer) {
-        return `${integer}.${decimal}`
-      }
-
-      // There is no integer part in this number, we need to calculate
-      // if we need to append zeros at the start of the decimal part and return it
-      decimal = '0'.repeat(scale - stringValue.length).concat(decimal)
-      return '0.'.concat(decimal)
+    // If decimal is equal to an empty string, we can just return the integer
+    if (!decimal.length) {
+      return integer.toString()
     }
-    return integer.toString()
+
+    // If decimal and integer are defined, concatenate and return
+    if (integer) {
+      return `${integer}.${decimal}`
+    }
+
+    // There is no integer part in this number, we need to calculate
+    // if we need to append zeros at the start of the decimal part and return it
+    decimal = '0'.repeat(scale - stringValue.length).concat(decimal)
+    return '0.'.concat(decimal)
   }
 
   /**
