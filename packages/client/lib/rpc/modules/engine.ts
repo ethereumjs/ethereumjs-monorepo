@@ -534,27 +534,29 @@ export class Engine {
 
     const vmHeadHash = this.chain.headers.latest!.hash()
     if (!vmHeadHash.equals(headBlock.hash())) {
-      let parentBlocks
-      try {
-        parentBlocks = await recursivelyFindParents(
-          vmHeadHash,
-          headBlock.header.parentHash,
-          this.validBlocks,
-          this.chain
-        )
-      } catch (error) {
-        const latestValidHash = await validHash(
-          headBlock.header.parentHash,
-          this.validBlocks,
-          this.chain
-        )
-        const payloadStatus = { status: Status.SYNCING, latestValidHash, validationError: null }
-        const response = { payloadStatus, payloadId: null }
-        this.connectionManager.lastForkchoiceUpdate({
-          state: params[0],
-          response,
-        })
-        return response
+      let parentBlocks: Block[] = []
+      if (this.chain.headers.latest?.number.lt(headBlock.header.number)) {
+        try {
+          parentBlocks = await recursivelyFindParents(
+            vmHeadHash,
+            headBlock.header.parentHash,
+            this.validBlocks,
+            this.chain
+          )
+        } catch (error) {
+          const latestValidHash = await validHash(
+            headBlock.header.parentHash,
+            this.validBlocks,
+            this.chain
+          )
+          const payloadStatus = { status: Status.SYNCING, latestValidHash, validationError: null }
+          const response = { payloadStatus, payloadId: null }
+          this.connectionManager.lastForkchoiceUpdate({
+            state: params[0],
+            response,
+          })
+          return response
+        }
       }
 
       const blocks = [...parentBlocks, headBlock]
@@ -624,11 +626,7 @@ export class Engine {
       return response
     }
 
-    const latestValidHash = await validHash(
-      headBlock.header.parentHash,
-      this.validBlocks,
-      this.chain
-    )
+    const latestValidHash = await validHash(headBlock.header.hash(), this.validBlocks, this.chain)
     const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
     const response = { payloadStatus, payloadId: null }
     this.connectionManager.lastForkchoiceUpdate({

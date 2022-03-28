@@ -141,7 +141,7 @@ tape(`${method}: call with valid fork choice state without payload attributes`, 
   const req = params(method, [validForkChoiceState])
   const expectRes = (res: any) => {
     t.equal(res.body.result.payloadStatus.status, 'VALID')
-    t.equal(res.body.result.payloadStatus.latestValidHash, null)
+    t.equal(res.body.result.payloadStatus.latestValidHash, validForkChoiceState.headBlockHash)
     t.equal(res.body.result.payloadStatus.validationError, null)
     t.equal(res.body.result.payloadId, null)
   }
@@ -279,5 +279,47 @@ tape(`${method}: invalid safe block hash`, async (t) => {
   ])
   const expectRes = checkError(t, INVALID_PARAMS, 'safe block hash not available')
 
+  await baseRequest(t, server, req, 200, expectRes)
+})
+
+tape(`${method}: latest block after reorg`, async (t) => {
+  const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+  let req = params(method, [validForkChoiceState])
+  let expectRes = (res: any) => {
+    t.equal(res.body.result.payloadStatus.status, 'VALID')
+  }
+  await baseRequest(t, server, req, 200, expectRes, false)
+
+  for (let i = 0; i < 3; i++) {
+    const req = params('engine_newPayloadV1', [blocks[i]])
+    const expectRes = (res: any) => {
+      t.equal(res.body.result.status, 'VALID')
+    }
+    await baseRequest(t, server, req, 200, expectRes, false)
+  }
+
+  req = params(method, [
+    {
+      ...validForkChoiceState,
+      headBlockHash: blocks[2].blockHash,
+      safeBlockHash: blocks[0].blockHash,
+    },
+  ])
+  expectRes = (res: any) => {
+    t.equal(res.body.result.payloadStatus.status, 'VALID')
+  }
+  await baseRequest(t, server, req, 200, expectRes, false)
+
+  req = params(method, [
+    {
+      headBlockHash: blocks[1].blockHash,
+      safeBlockHash: blocks[2].blockHash,
+      finalizedBlockHash: blocks[2].blockHash,
+    },
+  ])
+
+  expectRes = (res: any) => {
+    t.equal(res.body.result.payloadStatus.latestValidHash, blocks[1].blockHash)
+  }
   await baseRequest(t, server, req, 200, expectRes)
 })
