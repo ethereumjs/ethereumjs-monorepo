@@ -102,6 +102,16 @@ const stripZeros = function (a: any): Buffer | number[] | string {
 }
 
 /**
+ * Trims leading zeros from a `Buffer`.
+ * @param a (Buffer)
+ * @return (Buffer)
+ */
+export const unpadBuffer = function (a: Buffer): Buffer {
+  assertIsBuffer(a)
+  return stripZeros(a) as Buffer
+}
+
+/**
  * Trims leading zeros from an `Array` (of numbers).
  * @param a (number[])
  * @return (number[])
