@@ -102,16 +102,6 @@ const stripZeros = function (a: any): Buffer | number[] | string {
 }
 
 /**
- * Trims leading zeros from a `Buffer`.
- * @param a (Buffer)
- * @return (Buffer)
- */
-export const unpadBuffer = function (a: Buffer): Buffer {
-  assertIsBuffer(a)
-  return stripZeros(a) as Buffer
-}
-
-/**
  * Trims leading zeros from an `Array` (of numbers).
  * @param a (number[])
  * @return (number[])
@@ -352,4 +342,20 @@ export function bufArrToArr(arr: Buffer | NestedBufferArray): Uint8Array | Neste
     return Uint8Array.from(arr ?? [])
   }
   return arr.map((a) => bufArrToArr(a))
+}
+
+/**
+ * Converts a {@link bigint} to a `0x` prefixed hex string
+ */
+export const bigIntToHex = (num: bigint) => {
+  return '0x' + num.toString(16)
+}
+
+/**
+ * Convert value from bigint to an unpadded Buffer
+ * (useful for RLP transport)
+ * @param value value to convert
+ */
+export function bigIntToUnpaddedBuffer(value: bigint): Buffer {
+  return unpadBuffer(bigIntToBuffer(value))
 }

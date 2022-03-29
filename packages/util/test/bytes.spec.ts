@@ -24,6 +24,8 @@ import {
   validateNoLeadingZeroes,
   bufferToBigInt,
   bigIntToBuffer,
+  bigIntToUnpaddedBuffer,
+  bigIntToHex,
 } from '../src'
 
 tape('zeros function', function (t) {
@@ -454,5 +456,18 @@ tape('bufferToBigInt', (st) => {
 tape('bigIntToBuffer', (st) => {
   const num = BigInt(0x123)
   st.deepEqual(toBuffer('0x123'), bigIntToBuffer(num))
+  st.end()
+})
+
+tape('bigIntToUnpaddedBuffer', function (t) {
+  t.test('should equal unpadded buffer value', function (st) {
+    st.ok(bigIntToUnpaddedBuffer(BigInt(0)).equals(Buffer.from([])))
+    st.ok(bigIntToUnpaddedBuffer(BigInt(100)).equals(Buffer.from('64', 'hex')))
+    st.end()
+  })
+})
+
+tape('bigIntToHex', (st) => {
+  st.equal(bigIntToHex(BigInt(1)), '0x1')
   st.end()
 })

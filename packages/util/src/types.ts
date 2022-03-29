@@ -1,13 +1,6 @@
 import { isHexString } from './internal'
 import { Address } from './address'
-import {
-  unpadBuffer,
-  toBuffer,
-  ToBufferInputTypes,
-  bigIntToBuffer,
-  bufferToBigInt,
-  bufferToHex,
-} from './bytes'
+import { toBuffer, ToBufferInputTypes, bufferToBigInt, bufferToHex } from './bytes'
 
 /*
  * A type that represents an input that can be converted to a BigInt.
@@ -54,15 +47,6 @@ export interface TransformableToBuffer {
 
 export type NestedUint8Array = Array<Uint8Array | NestedUint8Array>
 export type NestedBufferArray = Array<Buffer | NestedBufferArray>
-
-/**
- * Convert value from bigint to an unpadded Buffer
- * (useful for RLP transport)
- * @param value value to convert
- */
-export function bigIntToUnpaddedBuffer(value: bigint): Buffer {
-  return unpadBuffer(bigIntToBuffer(value))
-}
 
 /**
  * Type output options
@@ -133,8 +117,4 @@ export function toType<T extends TypeOutput>(
     default:
       throw new Error('unknown outputType')
   }
-}
-
-export const bigIntToHex = (num: bigint) => {
-  return '0x' + num.toString(16)
 }
