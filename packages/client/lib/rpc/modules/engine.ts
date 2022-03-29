@@ -318,8 +318,20 @@ export class Engine {
       feeRecipient: coinbase,
       transactions,
       parentHash,
+      blockHash,
     } = payloadData
     const { chainCommon: common } = this.config
+
+    const blockExists = await validHash(toBuffer(blockHash), this.validBlocks, this.chain)
+    if (blockExists) {
+      const response = {
+        status: Status.VALID,
+        latestValidHash: blockHash,
+        validationError: null,
+      }
+      this.connectionManager.lastNewPayload({ payload: params[0], response })
+      return response
+    }
 
     try {
       const block = await findBlock(toBuffer(parentHash), this.validBlocks, this.chain)
