@@ -213,7 +213,7 @@ tape(`${method}: call with valid data & valid transaction`, async (t) => {
   await baseRequest(t, server, req, 200, expectRes)
 })
 
-tape.only(`${method}: re-execute payload and verify that no errors occur`, async (t) => {
+tape(`${method}: re-execute payload and verify that no errors occur`, async (t) => {
   const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
   await batchBlocks(t, server)
