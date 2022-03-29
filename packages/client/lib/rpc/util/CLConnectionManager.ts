@@ -84,7 +84,6 @@ export class CLConnectionManager {
       })
     }
     this.config.events.once(Event.CLIENT_SHUTDOWN, () => {
-      console.log('hey')
       this._clientShutdown = true
       this.stop()
     })
