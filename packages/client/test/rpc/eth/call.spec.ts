@@ -92,12 +92,19 @@ tape(`${method}: call with valid arguments`, async (t) => {
   })
 
   // verify return value is accurate
-  const req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'latest'])
-  const expectRes = (res: any) => {
+  let req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'latest'])
+  let expectRes = (res: any) => {
     const msg = 'should return the correct return value'
     t.equal(res.body.result, bufferToHex(execResult.returnValue), msg)
   }
-  await baseRequest(t, server, req, 200, expectRes)
+  await baseRequest(t, server, req, 200, expectRes, false)
+
+  req = params(method, [{ ...estimateTxData }, 'latest'])
+  expectRes = (res: any) => {
+    const msg = 'should return the correct return value with no gas limit provided'
+    t.equal(res.body.result, bufferToHex(execResult.returnValue), msg)
+  }
+  await baseRequest(t, server, req, 200, expectRes, true)
 })
 
 tape(`${method}: call with unsupported block argument`, async (t) => {
