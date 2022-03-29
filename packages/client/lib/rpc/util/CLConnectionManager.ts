@@ -35,12 +35,6 @@ type ForkchoiceUpdate = {
 export class CLConnectionManager {
   private config: Config
 
-  /** Threshold for a disconnected status decision */
-  private DISCONNECTED_THRESHOLD = 30000
-
-  /** Threshold for an uncertain status decision */
-  private UNCERTAIN_THRESHOLD = 15000
-
   /** Default connection check interval (in ms) */
   private DEFAULT_CONNECTION_CHECK_INTERVAL = 10000
 
@@ -50,20 +44,33 @@ export class CLConnectionManager {
   /** Default forkchoice log interval (in ms) */
   private DEFAULT_FORKCHOICE_LOG_INTERVAL = 10000
 
+  /** Threshold for a disconnected status decision */
+  private DISCONNECTED_THRESHOLD = 30000
+
+  /** Threshold for an uncertain status decision */
+  private UNCERTAIN_THRESHOLD = 15000
+
+  /** Track ethereumjs client shutdown status */
+  private _clientShutdown = false
+
   private _connectionCheckInterval?: NodeJS.Timeout /* global NodeJS */
   private _payloadLogInterval?: NodeJS.Timeout
   private _forkchoiceLogInterval?: NodeJS.Timeout
 
   private connectionStatus = ConnectionStatus.Disconnected
   private oneTimeMergeCLConnectionCheck = false
+  private oneTimeSyncingResponseCheck = false
   private lastRequestTimestamp = 0
 
   private _lastPayload?: NewPayload
   private _lastForkchoiceUpdate?: ForkchoiceUpdate
-  private oneTimeSyncingResponseCheck = false
 
   private _initialPayload?: NewPayload
   private _initialForkchoiceUpdate?: ForkchoiceUpdate
+
+  get running() {
+    return !!this._connectionCheckInterval
+  }
 
   constructor(opts: CLConnectionManagerOpts) {
     this.config = opts.config
@@ -77,15 +84,15 @@ export class CLConnectionManager {
       })
     }
     this.config.events.once(Event.CLIENT_SHUTDOWN, () => {
+      console.log('hey')
+      this._clientShutdown = true
       this.stop()
     })
   }
 
   start() {
-    if (this._connectionCheckInterval) {
-      // Return if already started
-      return
-    }
+    if (this.running || this._clientShutdown) return
+
     this._connectionCheckInterval = setInterval(
       // eslint-disable @typescript-eslint/await-thenable
       this.connectionCheck.bind(this),
@@ -192,6 +199,7 @@ export class CLConnectionManager {
    * Updates the Consensus Client connection status on new RPC requests
    */
   updateStatus() {
+    if (!this.running) this.start()
     if (
       [ConnectionStatus.Disconnected, ConnectionStatus.Uncertain].includes(this.connectionStatus)
     ) {
@@ -220,7 +228,7 @@ export class CLConnectionManager {
       }
     }
 
-    if (this.config.chainCommon.hardfork() == Hardfork.PreMerge) {
+    if (this.config.chainCommon.hardfork() === Hardfork.PreMerge) {
       if (this.connectionStatus === ConnectionStatus.Disconnected) {
         this.config.logger.warn('CL client connection is needed, Merge HF happening soon')
         this.config.logger.warn(
@@ -231,7 +239,7 @@ export class CLConnectionManager {
 
     if (
       !this.oneTimeMergeCLConnectionCheck &&
-      this.config.chainCommon.hardfork() == Hardfork.Merge
+      this.config.chainCommon.hardfork() === Hardfork.Merge
     ) {
       if (this.connectionStatus === ConnectionStatus.Disconnected) {
         this.config.logger.warn(
@@ -255,8 +263,10 @@ export class CLConnectionManager {
     if (!this._lastPayload) {
       this.config.logger.info('No consensus payload received yet')
     } else {
-      ;`Last consensus payload received ${this._getPayloadLogMsg(this._lastPayload)}
-      `
+      this.config.logger.info(`Last consensus payload received ${this._getPayloadLogMsg(
+        this._lastPayload
+      )}
+      `)
     }
   }
 
