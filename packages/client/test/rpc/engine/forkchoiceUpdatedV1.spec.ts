@@ -4,6 +4,8 @@ import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { params, baseRequest, baseSetup, setupChain } from '../helpers'
 import { checkError } from '../util'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
+import blocks from '../../testdata/blocks/beacon.json'
+import { batchBlocks } from './newPayloadV1.spec'
 
 const method = 'engine_forkchoiceUpdatedV1'
 
@@ -20,60 +22,6 @@ const validPayloadAttributes = {
 }
 
 export const validPayload = [validForkChoiceState, validPayloadAttributes]
-
-const blocks = [
-  {
-    blockNumber: '0x1',
-    parentHash: '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a',
-    feeRecipient: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
-    stateRoot: '0xca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
-    receiptsRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-    logsBloom:
-      '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-    gasLimit: '0x1c9c380',
-    gasUsed: '0x0',
-    timestamp: '0x5',
-    extraData: '0x',
-    baseFeePerGas: '0x7',
-    blockHash: '0x3559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
-    prevRandao: '0x0000000000000000000000000000000000000000000000000000000000000000',
-    transactions: [],
-  },
-  {
-    blockNumber: '0x2',
-    parentHash: '0x3559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
-    feeRecipient: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
-    stateRoot: '0xca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
-    receiptsRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-    logsBloom:
-      '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-    gasLimit: '0x1c9c380',
-    gasUsed: '0x0',
-    timestamp: '0xa',
-    extraData: '0x',
-    baseFeePerGas: '0x7',
-    blockHash: '0x3a7d770fb8b9c9b6b9511d5d8656e852a845f779f4f80ad5bb9e9db56f39e47e',
-    prevRandao: '0x0000000000000000000000000000000000000000000000000000000000000000',
-    transactions: [],
-  },
-  {
-    blockNumber: '0x3',
-    parentHash: '0x3a7d770fb8b9c9b6b9511d5d8656e852a845f779f4f80ad5bb9e9db56f39e47e',
-    feeRecipient: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
-    stateRoot: '0xca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
-    receiptsRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-    logsBloom:
-      '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-    gasLimit: '0x1c9c380',
-    gasUsed: '0x0',
-    timestamp: '0xf',
-    extraData: '0x',
-    baseFeePerGas: '0x7',
-    blockHash: '0x3af2006a7de12988201ef813f7e4decd24f1f74acd1a7a5efa2a3cd3a24063fe',
-    prevRandao: '0x0000000000000000000000000000000000000000000000000000000000000000',
-    transactions: [],
-  },
-]
 
 tape(`${method}: call with invalid head block hash without 0x`, async (t) => {
   const { server } = baseSetup({ engine: true, includeVM: true })
@@ -236,13 +184,7 @@ tape(`${method}: call with deep parent lookup and with stored safe block hash`, 
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
-  for (let i = 0; i < 3; i++) {
-    const req = params('engine_newPayloadV1', [blocks[i]])
-    const expectRes = (res: any) => {
-      t.equal(res.body.result.status, 'VALID')
-    }
-    await baseRequest(t, server, req, 200, expectRes, false)
-  }
+  await batchBlocks(t, server)
 
   req = params(method, [
     {
@@ -290,13 +232,7 @@ tape(`${method}: latest block after reorg`, async (t) => {
   }
   await baseRequest(t, server, req, 200, expectRes, false)
 
-  for (let i = 0; i < 3; i++) {
-    const req = params('engine_newPayloadV1', [blocks[i]])
-    const expectRes = (res: any) => {
-      t.equal(res.body.result.status, 'VALID')
-    }
-    await baseRequest(t, server, req, 200, expectRes, false)
-  }
+  await batchBlocks(t, server)
 
   req = params(method, [
     {
