@@ -7,7 +7,7 @@ import { keccak, keccak256, keccakFromString, rlphash } from './hash'
 import { assertIsString, assertIsHexString, assertIsBuffer } from './helpers'
 import { BigIntLike, BufferLike } from './types'
 
-const _0tttttttttttttn = BigInt(0)
+const _0n = BigInt(0)
 
 export interface AccountData {
   nonce?: BigIntLike
