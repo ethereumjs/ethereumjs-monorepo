@@ -96,7 +96,7 @@ tape('unpadHexString', function (t) {
   t.test('should unpad a hex prefixed string', function (st) {
     const str = '0x0000000006600'
     const r = unpadHexString(str)
-    st.equal(r, '6600')
+    st.equal(r, '0x6600')
     st.end()
   })
   t.test('should throw if input is not hex-prefixed', function (st) {
