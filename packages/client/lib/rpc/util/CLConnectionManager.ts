@@ -34,6 +34,7 @@ type ForkchoiceUpdate = {
 
 export class CLConnectionManager {
   private config: Config
+  private numberFormatter: Intl.NumberFormat
 
   /** Default connection check interval (in ms) */
   private DEFAULT_CONNECTION_CHECK_INTERVAL = 10000
@@ -74,6 +75,11 @@ export class CLConnectionManager {
 
   constructor(opts: CLConnectionManagerOpts) {
     this.config = opts.config
+    this.numberFormatter = Intl.NumberFormat('en', {
+      notation: 'compact',
+      maximumFractionDigits: 1,
+    })
+
     if (this.config.chainCommon.gteHardfork(Hardfork.MergeForkBlock)) {
       this.start()
     } else {
@@ -119,20 +125,22 @@ export class CLConnectionManager {
   }
 
   private _getPayloadLogMsg(payload: NewPayload) {
-    const msg = `number=${Number(payload.payload.blockNumber)} hash=${this.shortHash(
+    const msg = `number=${Number(
+      payload.payload.blockNumber
+    ).toLocaleString()} hash=${this.shortHash(
       payload.payload.blockHash
     )} parentHash=${this.shortHash(payload.payload.parentHash)}  status=${
       payload.response ? payload.response.status : '-'
-    } baseFee=${Number(payload.payload.baseFeePerGas)} txs=${
-      payload.payload.transactions.length
-    } gasUsed=${Number(payload.payload.gasUsed)}`
+    } gasUsed=${this.compactNum(Number(payload.payload.gasUsed))} baseFee=${Number(
+      payload.payload.baseFeePerGas
+    ).toLocaleString()} txs=${payload.payload.transactions.length.toLocaleString()}`
     return msg
   }
 
   private _getForkchoiceUpdateLogMsg(update: ForkchoiceUpdate) {
     let msg = ''
     if (update.headBlock) {
-      msg += `number=${update.headBlock.header.number} `
+      msg += `number=${Number(update.headBlock.header.number).toLocaleString()} `
     }
     msg += `head=${this.shortHash(update.state.headBlockHash)} finalized=${this.shortHash(
       update.state.finalizedBlockHash
@@ -146,8 +154,12 @@ export class CLConnectionManager {
     return msg
   }
 
+  private compactNum(num: number) {
+    return this.numberFormatter.format(num).toLowerCase()
+  }
+
   private shortHash(hash: string) {
-    return `${hash.substring(0, 7)}…${hash.substring(61)}`
+    return `${hash.substring(0, 6)}…${hash.substring(62)}`
   }
 
   private timeDiffStr(block: Block) {
