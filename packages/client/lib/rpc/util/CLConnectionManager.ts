@@ -1,6 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { Event } from '../../types'
+import { short } from '../../util'
 import type { Config } from '../../config'
 import {
   ExecutionPayloadV1,
@@ -125,24 +126,22 @@ export class CLConnectionManager {
   }
 
   private _getPayloadLogMsg(payload: NewPayload) {
-    const msg = `number=${Number(
-      payload.payload.blockNumber
-    ).toLocaleString()} hash=${this.shortHash(
+    const msg = `number=${Number(payload.payload.blockNumber)} hash=${short(
       payload.payload.blockHash
-    )} parentHash=${this.shortHash(payload.payload.parentHash)}  status=${
+    )} parentHash=${short(payload.payload.parentHash)}  status=${
       payload.response ? payload.response.status : '-'
     } gasUsed=${this.compactNum(Number(payload.payload.gasUsed))} baseFee=${Number(
       payload.payload.baseFeePerGas
-    ).toLocaleString()} txs=${payload.payload.transactions.length.toLocaleString()}`
+    )} txs=${payload.payload.transactions.length}`
     return msg
   }
 
   private _getForkchoiceUpdateLogMsg(update: ForkchoiceUpdate) {
     let msg = ''
     if (update.headBlock) {
-      msg += `number=${Number(update.headBlock.header.number).toLocaleString()} `
+      msg += `number=${Number(update.headBlock.header.number)} `
     }
-    msg += `head=${this.shortHash(update.state.headBlockHash)} finalized=${this.shortHash(
+    msg += `head=${short(update.state.headBlockHash)} finalized=${short(
       update.state.finalizedBlockHash
     )} response=${update.response ? update.response.payloadStatus.status : '-'}`
     if (update.headBlock) {
@@ -156,10 +155,6 @@ export class CLConnectionManager {
 
   private compactNum(num: number) {
     return this.numberFormatter.format(num).toLowerCase()
-  }
-
-  private shortHash(hash: string) {
-    return `${hash.substring(0, 6)}…${hash.substring(62)}`
   }
 
   private timeDiffStr(block: Block) {

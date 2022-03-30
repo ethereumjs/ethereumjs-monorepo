@@ -511,7 +511,6 @@ export class Engine {
 
       const blocks = [...parentBlocks, headBlock]
       await this.execution.setHead(headBlock)
-      this.synchronizer.checkTxPoolState()
       this.txPool.removeNewBlockTxs(blocks)
 
       const timeDiff = new Date().getTime() / 1000 - headBlock.header.timestamp.toNumber()
@@ -523,6 +522,7 @@ export class Engine {
         this.config.synchronized = true
         this.config.lastSyncDate = Date.now()
         this.synchronizer.syncTargetHeight = headBlock.header.number
+        this.synchronizer.checkTxPoolState()
       }
     }
 

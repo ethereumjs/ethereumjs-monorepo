@@ -60,7 +60,7 @@ export class FullSynchronizer extends Synchronizer {
     this.startingBlock = number
     this.config.chainCommon.setHardforkByBlockNumber(number, td)
     this.config.logger.info(
-      `Latest local block: number=${number} td=${td} hash=${short(
+      `Latest local block number=${Number(number)} td=${td} hash=${short(
         hash
       )} hardfork=${this.config.chainCommon.hardfork()}`
     )

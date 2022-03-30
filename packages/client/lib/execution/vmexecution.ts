@@ -113,7 +113,7 @@ export class VMExecution extends Execution {
    * Should only be used after {@link VMExecution.runWithoutSetHead}
    */
   async setHead(block: Block): Promise<void> {
-    await this.chain.putBlocks([block])
+    await this.chain.putBlocks([block], true)
     const receipts = this.pendingReceipts?.get(block.hash().toString('hex'))
     if (receipts) {
       void this.receiptsManager?.saveReceipts(block, receipts)
