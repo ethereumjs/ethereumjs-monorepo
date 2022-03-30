@@ -119,28 +119,33 @@ export class CLConnectionManager {
   }
 
   private _getPayloadLogMsg(payload: NewPayload) {
-    const msg = `number=${Number(
-      payload.payload.blockNumber
-    )} hash=${payload.payload.blockHash.substring(0, 7)}... parentHash=${
-      payload.payload.parentHash
-    } status=${payload.response ? payload.response.status : '-'}`
+    const msg = `number=${Number(payload.payload.blockNumber)} hash=${this.shortHash(
+      payload.payload.blockHash
+    )} parentHash=${this.shortHash(payload.payload.parentHash)} status=${
+      payload.response ? payload.response.status : '-'
+    }`
     return msg
   }
 
   private _getForkchoiceUpdateLogMsg(update: ForkchoiceUpdate) {
-    let msg = `headBlockHash=${update.state.headBlockHash.substring(0, 7)}...`
+    let msg = ''
     if (update.headBlock) {
-      msg += ` number=${update.headBlock.header.number} timestampDiff=${this.timeDiffStr(
-        update.headBlock
-      )}`
+      msg += `number=${update.headBlock.header.number} `
     }
-    msg += ` finalizedBlockHash=${update.state.finalizedBlockHash} response=${
-      update.response ? update.response.payloadStatus.status : '-'
-    }`
+    msg += `head=${this.shortHash(update.state.headBlockHash)} finalized=${this.shortHash(
+      update.state.finalizedBlockHash
+    )} response=${update.response ? update.response.payloadStatus.status : '-'}`
+    if (update.headBlock) {
+      msg += ` timestampDiff=${this.timeDiffStr(update.headBlock)}`
+    }
     if (update.error) {
       msg += ` error=${update.error}`
     }
     return msg
+  }
+
+  private shortHash(hash: string) {
+    return `${hash.substring(0, 7)}..${hash.substring(61)}`
   }
 
   private timeDiffStr(block: Block) {
@@ -262,7 +267,7 @@ export class CLConnectionManager {
     if (!this._lastPayload) {
       this.config.logger.info('No consensus payload received yet')
     } else {
-      this.config.logger.info(`Last consensus payload received ${this._getPayloadLogMsg(
+      this.config.logger.info(`Last consensus payload received  ${this._getPayloadLogMsg(
         this._lastPayload
       )}
       `)
