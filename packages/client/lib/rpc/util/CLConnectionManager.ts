@@ -121,7 +121,7 @@ export class CLConnectionManager {
   private _getPayloadLogMsg(payload: NewPayload) {
     const msg = `number=${Number(payload.payload.blockNumber)} hash=${this.shortHash(
       payload.payload.blockHash
-    )} parentHash=${this.shortHash(payload.payload.parentHash)} status=${
+    )} parentHash=${this.shortHash(payload.payload.parentHash)}  status=${
       payload.response ? payload.response.status : '-'
     }`
     return msg
