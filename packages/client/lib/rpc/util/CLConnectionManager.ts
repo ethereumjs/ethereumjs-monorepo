@@ -123,7 +123,9 @@ export class CLConnectionManager {
       payload.payload.blockHash
     )} parentHash=${this.shortHash(payload.payload.parentHash)}  status=${
       payload.response ? payload.response.status : '-'
-    } baseFee=${Number(payload.payload.baseFeePerGas)} txs=${payload.payload.transactions.length}`
+    } baseFee=${Number(payload.payload.baseFeePerGas)} txs=${
+      payload.payload.transactions.length
+    } gasUsed=${Number(payload.payload.gasUsed)}`
     return msg
   }
 
