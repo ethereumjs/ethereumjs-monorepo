@@ -83,7 +83,7 @@ const EngineError = {
 }
 
 /**
- * Formats a block to {@link ExecutionPayload}.
+ * Formats a block to {@link ExecutionPayloadV1}.
  */
 const blockToExecutionPayload = (block: Block) => {
   const header = block.toJSON().header!
