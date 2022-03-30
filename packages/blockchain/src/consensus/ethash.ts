@@ -8,18 +8,15 @@ import { ConsensusBase } from './base'
  * This class encapsulates Ethash-related consensus functionality when used with the Blockchain class.
  */
 export class EthashConsensus extends ConsensusBase {
-  _ethash: Ethash | undefined
+  _ethash: Ethash
 
   constructor(db: LevelUp) {
     super(db)
-  }
-
-  async setup(): Promise<void> {
     this._ethash = new Ethash(this.db)
   }
 
   async validate(block: Block): Promise<void> {
-    const valid = await this._ethash!.verifyPOW(block)
+    const valid = await this._ethash.verifyPOW(block)
     if (!valid) {
       throw new Error('invalid POW')
     }
