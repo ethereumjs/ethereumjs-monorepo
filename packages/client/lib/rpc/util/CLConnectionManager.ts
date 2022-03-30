@@ -115,15 +115,18 @@ export class CLConnectionManager {
   }
 
   stop() {
-    const intervals = [
-      this._connectionCheckInterval,
-      this._payloadLogInterval,
-      this._forkchoiceLogInterval,
-    ]
-    for (const interval of intervals) {
-      if (interval) clearInterval(interval)
+    if (this._connectionCheckInterval) {
+      clearInterval(this._connectionCheckInterval)
+      this._connectionCheckInterval = undefined
     }
-    this._connectionCheckInterval = undefined
+    if (this._payloadLogInterval) {
+      clearInterval(this._payloadLogInterval)
+      this._payloadLogInterval = undefined
+    }
+    if (this._forkchoiceLogInterval) {
+      clearInterval(this._forkchoiceLogInterval)
+      this._forkchoiceLogInterval = undefined
+    }
   }
 
   private _getPayloadLogMsg(payload: NewPayload) {

@@ -347,7 +347,7 @@ export class Engine {
       coinbase,
     }
 
-    let block
+    let block: Block
     try {
       block = Block.fromBlockData(
         { header, transactions: txs },
