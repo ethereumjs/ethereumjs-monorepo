@@ -18,7 +18,7 @@ import {
   rlp,
   toBuffer,
   setLengthLeft,
-  stripZeros,
+  unpadHexString,
 } from 'ethereumjs-util'
 import { middleware, validators } from '../validation'
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
@@ -245,10 +245,7 @@ const jsonRpcReceipt = async (
   logIndex: number,
   contractAddress?: Address
 ): Promise<JsonRpcReceipt> => {
-  let cumulativeGas = receipt.gasUsed
-  if (cumulativeGas.toString('hex').startsWith('0')) {
-    cumulativeGas = Buffer.from(stripZeros(receipt.gasUsed.toString('hex')))
-  }
+  const cumulativeGas = '0x'.concat(receipt.gasUsed.toString('hex'))
   return {
     transactionHash: bufferToHex(tx.hash()),
     transactionIndex: intToHex(txIndex),
@@ -256,7 +253,7 @@ const jsonRpcReceipt = async (
     blockNumber: bnToHex(block.header.number),
     from: tx.getSenderAddress().toString(),
     to: tx.to?.toString() ?? null,
-    cumulativeGasUsed: bufferToHex(cumulativeGas),
+    cumulativeGasUsed: '0x' + unpadHexString(cumulativeGas),
     effectiveGasPrice: bnToHex(effectiveGasPrice),
     gasUsed: bnToHex(gasUsed),
     contractAddress: contractAddress?.toString() ?? null,
