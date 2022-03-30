@@ -1,5 +1,6 @@
 import { randomBytes } from 'crypto'
 import type VM from '@ethereumjs/vm'
+import type { TxReceipt } from '@ethereumjs/vm/dist/types'
 import type { BlockBuilder } from '@ethereumjs/vm/dist/buildBlock'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
@@ -113,7 +114,7 @@ export class PendingBlock {
   /**
    * Returns the completed block
    */
-  async build(payloadId: Buffer): Promise<Block | void> {
+  async build(payloadId: Buffer): Promise<void | [block: Block, receipts: TxReceipt[]]> {
     const payload = this.pendingPayloads.find((p) => p[0].equals(payloadId))
     if (!payload) {
       return
@@ -165,6 +166,6 @@ export class PendingBlock {
     // Remove from pendingPayloads
     this.pendingPayloads = this.pendingPayloads.filter((p) => !p[0].equals(payloadId))
 
-    return block
+    return [block, builder.transactionReceipts]
   }
 }

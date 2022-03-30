@@ -77,6 +77,10 @@ export class BlockBuilder {
   private reverted = false
   private built = false
 
+  get transactionReceipts() {
+    return this.transactionResults.map((result) => result.receipt)
+  }
+
   constructor(vm: VM, opts: BuildBlockOpts) {
     this.vm = vm
     this.blockOpts = { putBlockIntoBlockchain: true, ...opts.blockOpts, common: this.vm._common }

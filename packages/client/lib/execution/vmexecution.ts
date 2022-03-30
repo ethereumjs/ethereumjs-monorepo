@@ -1,3 +1,9 @@
+import {
+  DBSetTD,
+  DBSaveLookups,
+  DBSetBlockOrHeader,
+  DBSetHashToNumber,
+} from '@ethereumjs/blockchain/dist/db/helpers'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
@@ -6,16 +12,20 @@ import { short } from '../util'
 import { debugCodeReplayBlock } from '../util/debug'
 import { Event } from '../types'
 import { Execution, ExecutionOptions } from './execution'
-import type { Block } from '@ethereumjs/block'
 import { ReceiptsManager } from './receipt'
+import type { Block } from '@ethereumjs/block'
+import type { RunBlockOpts } from '@ethereumjs/vm/dist/runBlock'
+import type { TxReceipt } from '@ethereumjs/vm/dist/types'
 
 export class VMExecution extends Execution {
   public vm: VM
   public hardfork: string = ''
 
   public receiptsManager?: ReceiptsManager
+  private pendingReceipts?: Map<string, TxReceipt[]>
   private vmPromise?: Promise<number | undefined>
 
+  /** Number of maximum blocks to run per iteration of {@link VMExecution.run} */
   private NUM_BLOCKS_PER_ITERATION = 50
 
   /**
@@ -48,6 +58,7 @@ export class VMExecution extends Execution {
         config: this.config,
         metaDB: this.metaDB,
       })
+      this.pendingReceipts = new Map()
     }
   }
 
@@ -64,6 +75,51 @@ export class VMExecution extends Execution {
     if (number.isZero()) {
       await this.vm.stateManager.generateCanonicalGenesis()
     }
+  }
+
+  /**
+   * Executes the block, runs the necessary verification on it,
+   * and persists the block and the associate state into the database.
+   * The key difference is it won't do the canonical chain updating.
+   * It relies on the additional {@link VMExecution.setHead} call to finalize
+   * the entire procedure.
+   * @param receipts If we built this block, pass the receipts to not need to run the block again
+   */
+  async runWithoutSetHead(opts: RunBlockOpts, receipts?: TxReceipt[]): Promise<void> {
+    const { block } = opts
+    if (receipts === undefined) {
+      const result = await this.vm.runBlock(opts)
+      receipts = result.receipts
+    }
+    if (receipts) {
+      // Save receipts
+      this.pendingReceipts?.set(block.hash().toString('hex'), receipts)
+    }
+    // Bypass updating head by using blockchain db directly
+    const [hash, num] = [block.hash(), block.header.number]
+    const td = (await this.chain.getTd(block.header.parentHash, block.header.number.subn(1))).add(
+      block.header.difficulty
+    )
+    await this.chain.blockchain.dbManager.batch([
+      DBSetTD(td, num, hash),
+      ...DBSetBlockOrHeader(block),
+      DBSetHashToNumber(hash, num),
+      ...DBSaveLookups(hash, num),
+    ])
+  }
+
+  /**
+   * Sets the chain to set the specified new head block.
+   * Should only be used after {@link VMExecution.runWithoutSetHead}
+   */
+  async setHead(block: Block): Promise<void> {
+    await this.chain.putBlocks([block], true)
+    const receipts = this.pendingReceipts?.get(block.hash().toString('hex'))
+    if (receipts) {
+      void this.receiptsManager?.saveReceipts(block, receipts)
+      this.pendingReceipts?.delete(block.hash().toString('hex'))
+    }
+    await this.chain.blockchain.setIteratorHead('vm', block.hash())
   }
 
   /**

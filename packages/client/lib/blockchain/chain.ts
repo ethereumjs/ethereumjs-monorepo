@@ -178,10 +178,7 @@ export class Chain {
    * @returns false if chain is already open, otherwise void
    */
   async open(): Promise<boolean | void> {
-    if (this.opened) {
-      return false
-    }
-
+    if (this.opened) return false
     await this.blockchain.db.open()
     await this.blockchain.initPromise
     this.opened = true
@@ -206,9 +203,7 @@ export class Chain {
    * @returns false if chain is closed, otherwise void
    */
   async close(): Promise<boolean | void> {
-    if (!this.opened) {
-      return false
-    }
+    if (!this.opened) return false
     this.reset()
     await this.blockchain.db.close()
     this.opened = false
@@ -220,9 +215,7 @@ export class Chain {
    * @returns false if chain is closed, otherwise void
    */
   async update(emit = true): Promise<boolean | void> {
-    if (!this.opened) {
-      return false
-    }
+    if (!this.opened) return false
 
     const headers: ChainHeaders = {
       latest: null,
@@ -263,7 +256,7 @@ export class Chain {
    * @returns an array of the blocks
    */
   async getBlocks(block: Buffer | BN, max = 1, skip = 0, reverse = false): Promise<Block[]> {
-    await this.open()
+    if (!this.opened) throw new Error('Chain closed')
     return this.blockchain.getBlocks(block, max, skip, reverse)
   }
 
@@ -273,7 +266,7 @@ export class Chain {
    * @throws if block is not found
    */
   async getBlock(block: Buffer | BN): Promise<Block> {
-    await this.open()
+    if (!this.opened) throw new Error('Chain closed')
     return this.blockchain.getBlock(block)
   }
 
@@ -284,10 +277,9 @@ export class Chain {
    * @returns number of blocks added
    */
   async putBlocks(blocks: Block[], fromEngine = false): Promise<number> {
-    if (blocks.length === 0) {
-      return 0
-    }
-    await this.open()
+    if (!this.opened) throw new Error('Chain closed')
+    if (blocks.length === 0) return 0
+
     let numAdded = 0
     for (const [i, b] of blocks.entries()) {
       if (!fromEngine && this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
@@ -334,10 +326,9 @@ export class Chain {
    * @returns number of headers added
    */
   async putHeaders(headers: BlockHeader[], mergeIncludes = false): Promise<number> {
-    if (headers.length === 0) {
-      return 0
-    }
-    await this.open()
+    if (!this.opened) throw new Error('Chain closed')
+    if (headers.length === 0) return 0
+
     let numAdded = 0
     for (const [i, h] of headers.entries()) {
       if (!mergeIncludes && this.config.chainCommon.gteHardfork(Hardfork.Merge)) {
@@ -363,7 +354,7 @@ export class Chain {
    * Gets the latest header in the canonical chain
    */
   async getLatestHeader(): Promise<BlockHeader> {
-    await this.open()
+    if (!this.opened) throw new Error('Chain closed')
     return this.blockchain.getLatestHeader()
   }
 
@@ -371,7 +362,7 @@ export class Chain {
    * Gets the latest block in the canonical chain
    */
   async getLatestBlock(): Promise<Block> {
-    await this.open()
+    if (!this.opened) throw new Error('Chain closed')
     return this.blockchain.getLatestBlock()
   }
 
@@ -382,7 +373,7 @@ export class Chain {
    * @returns the td
    */
   async getTd(hash: Buffer, num: BN): Promise<BN> {
-    await this.open()
+    if (!this.opened) throw new Error('Chain closed')
     return this.blockchain.getTotalDifficulty(hash, num)
   }
 }

@@ -1,6 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { Event } from '../../types'
+import { short } from '../../util'
 import type { Config } from '../../config'
 import {
   ExecutionPayloadV1,
@@ -34,12 +35,7 @@ type ForkchoiceUpdate = {
 
 export class CLConnectionManager {
   private config: Config
-
-  /** Threshold for a disconnected status decision */
-  private DISCONNECTED_THRESHOLD = 30000
-
-  /** Threshold for an uncertain status decision */
-  private UNCERTAIN_THRESHOLD = 15000
+  private numberFormatter: Intl.NumberFormat
 
   /** Default connection check interval (in ms) */
   private DEFAULT_CONNECTION_CHECK_INTERVAL = 10000
@@ -50,42 +46,59 @@ export class CLConnectionManager {
   /** Default forkchoice log interval (in ms) */
   private DEFAULT_FORKCHOICE_LOG_INTERVAL = 10000
 
+  /** Threshold for a disconnected status decision */
+  private DISCONNECTED_THRESHOLD = 30000
+
+  /** Threshold for an uncertain status decision */
+  private UNCERTAIN_THRESHOLD = 15000
+
+  /** Track ethereumjs client shutdown status */
+  private _clientShutdown = false
+
   private _connectionCheckInterval?: NodeJS.Timeout /* global NodeJS */
   private _payloadLogInterval?: NodeJS.Timeout
   private _forkchoiceLogInterval?: NodeJS.Timeout
 
   private connectionStatus = ConnectionStatus.Disconnected
   private oneTimeMergeCLConnectionCheck = false
+  private oneTimeSyncingResponseCheck = false
   private lastRequestTimestamp = 0
 
   private _lastPayload?: NewPayload
   private _lastForkchoiceUpdate?: ForkchoiceUpdate
-  private oneTimeSyncingResponseCheck = false
 
   private _initialPayload?: NewPayload
   private _initialForkchoiceUpdate?: ForkchoiceUpdate
 
+  get running() {
+    return !!this._connectionCheckInterval
+  }
+
   constructor(opts: CLConnectionManagerOpts) {
     this.config = opts.config
-    if (this.config.chainCommon.gteHardfork(Hardfork.PreMerge)) {
+    this.numberFormatter = Intl.NumberFormat('en', {
+      notation: 'compact',
+      maximumFractionDigits: 1,
+    })
+
+    if (this.config.chainCommon.gteHardfork(Hardfork.MergeForkBlock)) {
       this.start()
     } else {
       this.config.events.on(Event.CHAIN_UPDATED, () => {
-        if (this.config.chainCommon.gteHardfork(Hardfork.PreMerge)) {
+        if (this.config.chainCommon.gteHardfork(Hardfork.MergeForkBlock)) {
           this.start()
         }
       })
     }
     this.config.events.once(Event.CLIENT_SHUTDOWN, () => {
+      this._clientShutdown = true
       this.stop()
     })
   }
 
   start() {
-    if (this._connectionCheckInterval) {
-      // Return if already started
-      return
-    }
+    if (this.running || this._clientShutdown) return
+
     this._connectionCheckInterval = setInterval(
       // eslint-disable @typescript-eslint/await-thenable
       this.connectionCheck.bind(this),
@@ -102,39 +115,50 @@ export class CLConnectionManager {
   }
 
   stop() {
-    const intervals = [
-      this._connectionCheckInterval,
-      this._payloadLogInterval,
-      this._forkchoiceLogInterval,
-    ]
-    for (const interval of intervals) {
-      if (interval) clearInterval(interval)
+    if (this._connectionCheckInterval) {
+      clearInterval(this._connectionCheckInterval)
+      this._connectionCheckInterval = undefined
+    }
+    if (this._payloadLogInterval) {
+      clearInterval(this._payloadLogInterval)
+      this._payloadLogInterval = undefined
+    }
+    if (this._forkchoiceLogInterval) {
+      clearInterval(this._forkchoiceLogInterval)
+      this._forkchoiceLogInterval = undefined
     }
   }
 
   private _getPayloadLogMsg(payload: NewPayload) {
-    const msg = `number=${Number(
-      payload.payload.blockNumber
-    )} hash=${payload.payload.blockHash.substring(0, 7)}... parentHash=${
-      payload.payload.parentHash
-    } status=${payload.response ? payload.response.status : '-'}`
+    const msg = `number=${Number(payload.payload.blockNumber)} hash=${short(
+      payload.payload.blockHash
+    )} parentHash=${short(payload.payload.parentHash)}  status=${
+      payload.response ? payload.response.status : '-'
+    } gasUsed=${this.compactNum(Number(payload.payload.gasUsed))} baseFee=${Number(
+      payload.payload.baseFeePerGas
+    )} txs=${payload.payload.transactions.length}`
     return msg
   }
 
   private _getForkchoiceUpdateLogMsg(update: ForkchoiceUpdate) {
-    let msg = `headBlockHash=${update.state.headBlockHash.substring(0, 7)}...`
+    let msg = ''
     if (update.headBlock) {
-      msg += ` number=${update.headBlock.header.number} timestampDiff=${this.timeDiffStr(
-        update.headBlock
-      )}`
+      msg += `number=${Number(update.headBlock.header.number)} `
     }
-    msg += ` finalizedBlockHash=${update.state.finalizedBlockHash} response=${
-      update.response ? update.response.payloadStatus.status : '-'
-    }`
+    msg += `head=${short(update.state.headBlockHash)} finalized=${short(
+      update.state.finalizedBlockHash
+    )} response=${update.response ? update.response.payloadStatus.status : '-'}`
+    if (update.headBlock) {
+      msg += ` timestampDiff=${this.timeDiffStr(update.headBlock)}`
+    }
     if (update.error) {
       msg += ` error=${update.error}`
     }
     return msg
+  }
+
+  private compactNum(num: number) {
+    return this.numberFormatter.format(num).toLowerCase()
   }
 
   private timeDiffStr(block: Block) {
@@ -144,13 +168,16 @@ export class CLConnectionManager {
     const day = hour * 24
     let timeDiffStr = ''
     if (timeDiff > day) {
-      timeDiffStr = `${Math.floor(timeDiff / day)} days`
+      timeDiffStr = `${Math.floor(timeDiff / day)} day`
     } else if (timeDiff > hour) {
-      timeDiffStr = `${Math.floor(timeDiff / hour)} hours`
+      timeDiffStr = `${Math.floor(timeDiff / hour)} hour`
     } else if (timeDiff > min) {
-      timeDiffStr = `${Math.floor(timeDiff / min)} mins`
+      timeDiffStr = `${Math.floor(timeDiff / min)} min`
     } else {
-      timeDiffStr = `${Math.floor(timeDiff)} secs`
+      timeDiffStr = `${Math.floor(timeDiff)} sec`
+    }
+    if (timeDiffStr.substring(0, 2) !== '1 ') {
+      timeDiffStr += 's'
     }
     return timeDiffStr
   }
@@ -192,6 +219,7 @@ export class CLConnectionManager {
    * Updates the Consensus Client connection status on new RPC requests
    */
   updateStatus() {
+    if (!this.running) this.start()
     if (
       [ConnectionStatus.Disconnected, ConnectionStatus.Uncertain].includes(this.connectionStatus)
     ) {
@@ -220,7 +248,7 @@ export class CLConnectionManager {
       }
     }
 
-    if (this.config.chainCommon.hardfork() == Hardfork.PreMerge) {
+    if (this.config.chainCommon.hardfork() === Hardfork.MergeForkBlock) {
       if (this.connectionStatus === ConnectionStatus.Disconnected) {
         this.config.logger.warn('CL client connection is needed, Merge HF happening soon')
         this.config.logger.warn(
@@ -231,7 +259,7 @@ export class CLConnectionManager {
 
     if (
       !this.oneTimeMergeCLConnectionCheck &&
-      this.config.chainCommon.hardfork() == Hardfork.Merge
+      this.config.chainCommon.hardfork() === Hardfork.Merge
     ) {
       if (this.connectionStatus === ConnectionStatus.Disconnected) {
         this.config.logger.warn(
@@ -255,8 +283,10 @@ export class CLConnectionManager {
     if (!this._lastPayload) {
       this.config.logger.info('No consensus payload received yet')
     } else {
-      ;`Last consensus payload received ${this._getPayloadLogMsg(this._lastPayload)}
-      `
+      this.config.logger.info(`Last consensus payload received  ${this._getPayloadLogMsg(
+        this._lastPayload
+      )}
+      `)
     }
   }
 
