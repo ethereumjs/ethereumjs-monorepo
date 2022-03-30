@@ -123,7 +123,7 @@ export class CLConnectionManager {
       payload.payload.blockHash
     )} parentHash=${this.shortHash(payload.payload.parentHash)}  status=${
       payload.response ? payload.response.status : '-'
-    }`
+    } txs=${payload.payload.transactions.length}`
     return msg
   }
 
