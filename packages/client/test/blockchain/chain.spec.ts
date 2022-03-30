@@ -57,20 +57,20 @@ tape('[Chain]', (t) => {
 
     t.equal(await chain.update(), false, 'skip update if not opened')
     t.equal(await chain.close(), false, 'skip close if not opened')
-    t.notOk(chain.opened, 'chain shoud be closed')
+    t.notOk(chain.opened, 'chain should be closed')
     t.notOk(chain.blocks.height.toNumber(), 'chain should be empty if not opened')
     try {
       await chain.putHeaders([block.header])
       t.fail('should error if chain is closed')
     } catch (error) {
-      t.ok('threw an error when chain is closed')
+      t.pass('threw an error when chain is closed')
     }
     await chain.close()
     try {
       await chain.putBlocks([block])
       t.fail('should error if chain is closed')
     } catch (error) {
-      t.ok('threw an error when chain is closed')
+      t.pass('threw an error when chain is closed')
     }
     await chain.close()
     t.notOk(chain.opened, 'chain should close')
@@ -78,34 +78,34 @@ tape('[Chain]', (t) => {
       await chain.getBlocks(block.hash())
       t.fail('should error if chain is closed')
     } catch (error) {
-      t.ok('threw an error when chain is closed')
+      t.pass('threw an error when chain is closed')
     }
     await chain.close()
     try {
       await chain.getBlock(block.hash())
       t.fail('should error if chain is closed')
     } catch (error) {
-      t.ok('threw an error when chain is closed')
+      t.pass('threw an error when chain is closed')
     }
     try {
       await chain.getLatestHeader()
       t.fail('should error if chain is closed')
     } catch (error) {
-      t.ok('threw an error when chain is closed')
+      t.pass('threw an error when chain is closed')
     }
     await chain.close()
     try {
       await chain.getLatestBlock()
       t.fail('should error if chain is closed')
     } catch (error) {
-      t.ok('threw an error when chain is closed')
+      t.pass('threw an error when chain is closed')
     }
     await chain.close()
     try {
       await chain.getTd(block.hash(), block.header.number)
       t.fail('should error if chain is closed')
     } catch (error) {
-      t.ok('threw an error when chain is closed')
+      t.pass('threw an error when chain is closed')
     }
     await chain.open()
     t.equal(await chain.open(), false, 'skip open if already opened')
