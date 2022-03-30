@@ -123,6 +123,7 @@ export class CLConnectionManager {
     for (const interval of intervals) {
       if (interval) clearInterval(interval)
     }
+    this._connectionCheckInterval = undefined
   }
 
   private _getPayloadLogMsg(payload: NewPayload) {
