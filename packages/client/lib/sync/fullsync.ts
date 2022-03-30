@@ -222,7 +222,10 @@ export class FullSynchronizer extends Synchronizer {
         attentionHF = `${nextHF} HF in ${remaining} blocks`
       }
     } else {
-      if (this.config.chainCommon.hardfork() === Hardfork.PreMerge) {
+      if (
+        this.config.chainCommon.hardfork() === Hardfork.MergeForkBlock &&
+        !this.config.chainCommon.gteHardfork(Hardfork.Merge)
+      ) {
         const mergeTD = this.config.chainCommon.hardforkTD(Hardfork.Merge)!
         const td = this.chain.blocks.td
         const remaining = mergeTD.sub(td)

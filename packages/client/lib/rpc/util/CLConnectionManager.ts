@@ -74,11 +74,11 @@ export class CLConnectionManager {
 
   constructor(opts: CLConnectionManagerOpts) {
     this.config = opts.config
-    if (this.config.chainCommon.gteHardfork(Hardfork.PreMerge)) {
+    if (this.config.chainCommon.gteHardfork(Hardfork.MergeForkBlock)) {
       this.start()
     } else {
       this.config.events.on(Event.CHAIN_UPDATED, () => {
-        if (this.config.chainCommon.gteHardfork(Hardfork.PreMerge)) {
+        if (this.config.chainCommon.gteHardfork(Hardfork.MergeForkBlock)) {
           this.start()
         }
       })
@@ -234,7 +234,7 @@ export class CLConnectionManager {
       }
     }
 
-    if (this.config.chainCommon.hardfork() === Hardfork.PreMerge) {
+    if (this.config.chainCommon.hardfork() === Hardfork.MergeForkBlock) {
       if (this.connectionStatus === ConnectionStatus.Disconnected) {
         this.config.logger.warn('CL client connection is needed, Merge HF happening soon')
         this.config.logger.warn(
