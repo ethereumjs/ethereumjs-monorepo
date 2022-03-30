@@ -145,7 +145,7 @@ export class CLConnectionManager {
   }
 
   private shortHash(hash: string) {
-    return `${hash.substring(0, 7)}..${hash.substring(61)}`
+    return `${hash.substring(0, 7)}…${hash.substring(61)}`
   }
 
   private timeDiffStr(block: Block) {
