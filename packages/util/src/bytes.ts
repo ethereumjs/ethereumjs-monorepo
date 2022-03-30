@@ -93,7 +93,7 @@ export const setLengthRight = function (msg: Buffer, length: number) {
  * @param a (Buffer|Array|String)
  * @return (Buffer|Array|String)
  */
-const stripZeros = function (a: any): Buffer | number[] | string {
+export const stripZeros = function (a: any): Buffer | number[] | string {
   let first = a[0]
   while (a.length > 0 && first.toString() === '0') {
     a = a.slice(1)

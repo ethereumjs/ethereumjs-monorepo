@@ -18,6 +18,7 @@ import {
   rlp,
   toBuffer,
   setLengthLeft,
+  stripZeros,
 } from 'ethereumjs-util'
 import { middleware, validators } from '../validation'
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
@@ -243,28 +244,34 @@ const jsonRpcReceipt = async (
   txIndex: number,
   logIndex: number,
   contractAddress?: Address
-): Promise<JsonRpcReceipt> => ({
-  transactionHash: bufferToHex(tx.hash()),
-  transactionIndex: intToHex(txIndex),
-  blockHash: bufferToHex(block.hash()),
-  blockNumber: bnToHex(block.header.number),
-  from: tx.getSenderAddress().toString(),
-  to: tx.to?.toString() ?? null,
-  cumulativeGasUsed: bufferToHex(receipt.gasUsed),
-  effectiveGasPrice: bnToHex(effectiveGasPrice),
-  gasUsed: bnToHex(gasUsed),
-  contractAddress: contractAddress?.toString() ?? null,
-  logs: await Promise.all(
-    receipt.logs.map((l, i) => jsonRpcLog(l, block, tx, txIndex, logIndex + i))
-  ),
-  logsBloom: bufferToHex(receipt.bitvector),
-  root: (receipt as PreByzantiumTxReceipt).stateRoot
-    ? bufferToHex((receipt as PreByzantiumTxReceipt).stateRoot)
-    : undefined,
-  status: (receipt as PostByzantiumTxReceipt).status
-    ? intToHex((receipt as PostByzantiumTxReceipt).status)
-    : undefined,
-})
+): Promise<JsonRpcReceipt> => {
+  let cumulativeGas = receipt.gasUsed
+  if (cumulativeGas.toString('hex').startsWith('0')) {
+    cumulativeGas = Buffer.from(stripZeros(receipt.gasUsed.toString('hex')))
+  }
+  return {
+    transactionHash: bufferToHex(tx.hash()),
+    transactionIndex: intToHex(txIndex),
+    blockHash: bufferToHex(block.hash()),
+    blockNumber: bnToHex(block.header.number),
+    from: tx.getSenderAddress().toString(),
+    to: tx.to?.toString() ?? null,
+    cumulativeGasUsed: bufferToHex(cumulativeGas),
+    effectiveGasPrice: bnToHex(effectiveGasPrice),
+    gasUsed: bnToHex(gasUsed),
+    contractAddress: contractAddress?.toString() ?? null,
+    logs: await Promise.all(
+      receipt.logs.map((l, i) => jsonRpcLog(l, block, tx, txIndex, logIndex + i))
+    ),
+    logsBloom: bufferToHex(receipt.bitvector),
+    root: (receipt as PreByzantiumTxReceipt).stateRoot
+      ? bufferToHex((receipt as PreByzantiumTxReceipt).stateRoot)
+      : undefined,
+    status: (receipt as PostByzantiumTxReceipt).status
+      ? intToHex((receipt as PostByzantiumTxReceipt).status)
+      : undefined,
+  }
+}
 
 /**
  * Get block by option
