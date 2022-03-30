@@ -35,10 +35,10 @@ tape('[CLConnectionManager]: Public method tests', (t) => {
     },
   }
   config.logger.on('data', (chunk) => {
-    if (chunk.message.includes('Initial consensus forkchoice')) {
+    if (chunk.message.includes('consensus forkchoice update head=0x67b9')) {
       t.pass('received last fork choice message')
     }
-    if (chunk.message.includes('Initial consensus payload received')) {
+    if (chunk.message.includes('consensus payload received number=55504')) {
       t.pass('received last payload message')
       connMan.stop()
       config.logger.removeAllListeners()
