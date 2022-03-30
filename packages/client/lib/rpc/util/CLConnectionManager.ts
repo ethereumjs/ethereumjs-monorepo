@@ -164,13 +164,16 @@ export class CLConnectionManager {
     const day = hour * 24
     let timeDiffStr = ''
     if (timeDiff > day) {
-      timeDiffStr = `${Math.floor(timeDiff / day)} days`
+      timeDiffStr = `${Math.floor(timeDiff / day)} day`
     } else if (timeDiff > hour) {
-      timeDiffStr = `${Math.floor(timeDiff / hour)} hours`
+      timeDiffStr = `${Math.floor(timeDiff / hour)} hour`
     } else if (timeDiff > min) {
-      timeDiffStr = `${Math.floor(timeDiff / min)} mins`
+      timeDiffStr = `${Math.floor(timeDiff / min)} min`
     } else {
-      timeDiffStr = `${Math.floor(timeDiff)} secs`
+      timeDiffStr = `${Math.floor(timeDiff)} sec`
+    }
+    if (timeDiffStr.substring(0, 2) !== '1 ') {
+      timeDiffStr += 's'
     }
     return timeDiffStr
   }
