@@ -81,9 +81,12 @@ tape('[PendingBlock]', async (t) => {
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
     txPool.add(txB01)
-    const block = await pendingBlock.build(payloadId)
-    t.ok(block?.header.number.eqn(1), 'should have built block number 1')
-    t.equal(block?.transactions.length, 3, 'should include txs from pool')
+    const built = await pendingBlock.build(payloadId)
+    if (!built) return t.fail('pendingBlock did not return')
+    const [block, receipts] = built
+    t.ok(block.header.number.eqn(1), 'should have built block number 1')
+    t.equal(block.transactions.length, 3, 'should include txs from pool')
+    t.equal(receipts.length, 3, 'receipts should match number of transactions')
     t.equal(pendingBlock.pendingPayloads.length, 0, 'should reset the pending payload after build')
     t.end()
   })
@@ -125,9 +128,12 @@ tape('[PendingBlock]', async (t) => {
     const parentBlock = await vm.blockchain.getLatestBlock()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
-    const block = await pendingBlock.build(payloadId)
-    t.ok(block?.header.number.eqn(1), 'should have built block number 1')
-    t.equal(block?.transactions.length, 2, 'should include txs from pool that fit in the block')
+    const built = await pendingBlock.build(payloadId)
+    if (!built) return t.fail('pendingBlock did not return')
+    const [block, receipts] = built
+    t.ok(block.header.number.eqn(1), 'should have built block number 1')
+    t.equal(block.transactions.length, 2, 'should include txs from pool that fit in the block')
+    t.equal(receipts.length, 2, 'receipts should match number of transactions')
     t.equal(pendingBlock.pendingPayloads.length, 0, 'should reset the pending payload after build')
     t.end()
   })
@@ -140,13 +146,16 @@ tape('[PendingBlock]', async (t) => {
     const parentBlock = await vm.blockchain.getLatestBlock()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     t.equal(pendingBlock.pendingPayloads.length, 1, 'should set the pending payload')
-    const block = await pendingBlock.build(payloadId)
-    t.ok(block?.header.number.eqn(1), 'should have built block number 1')
+    const built = await pendingBlock.build(payloadId)
+    if (!built) return t.fail('pendingBlock did not return')
+    const [block, receipts] = built
+    t.ok(block.header.number.eqn(1), 'should have built block number 1')
     t.equal(
-      block?.transactions.length,
+      block.transactions.length,
       0,
       'should not include tx with sender that has insufficient funds'
     )
+    t.equal(receipts.length, 0, 'receipts should match number of transactions')
     t.equal(pendingBlock.pendingPayloads.length, 0, 'should reset the pending payload after build')
     t.end()
   })
