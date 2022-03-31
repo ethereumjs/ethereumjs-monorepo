@@ -27,6 +27,23 @@ function copyTransientStorage(input: TStorage): TStorage {
   return map
 }
 
+/**
+ * Merge all the keys from the additional changes into the base, if they aren't already present
+ * @param base the base changeset, no keys will be overwritten
+ * @param additionalChanges the additional changes that occurred in the nested context
+ */
+function mergeInto(base: TStorage, additionalChanges: TStorage): void {
+  for (const [addr, storage] of additionalChanges.entries()) {
+    if (!base.has(addr)) {
+      base.set(addr, new Map())
+    }
+    const map = base.get(addr)!
+    for (const [key, value] of storage.entries()) {
+      if (!map.has(key)) map.set(key, value)
+    }
+  }
+}
+
 export default class TransientStorage {
   _storage: TStorage
   _changesets: Changeset[]
@@ -115,7 +132,8 @@ export default class TransientStorage {
     if (this._changesets.length <= 1) {
       throw new Error('trying to commit when not checkpointed')
     }
-    this._changesets.pop()
+    const changeset = this._changesets.pop()
+    mergeInto(this.latestChangeset, changeset!)
   }
 
   public checkpoint(): void {
