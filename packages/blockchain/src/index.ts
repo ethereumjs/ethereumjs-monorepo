@@ -1172,3 +1172,5 @@ export default class Blockchain implements BlockchainInterface {
 =======
 >>>>>>> 9969ce2f (blockchain: encapsulate consensus WIP)
 }
+
+export { Consensus, CasperConsensus, CliqueConsensus, EthashConsensus }
