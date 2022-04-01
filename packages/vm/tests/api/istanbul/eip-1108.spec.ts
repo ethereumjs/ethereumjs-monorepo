@@ -15,7 +15,7 @@ tape('Istanbul: EIP-1108 tests', (t) => {
       data: Buffer.alloc(0),
       gasLimit: BigInt(0xffff),
       _common: common,
-      _VM: vm,
+      _EVM: vm.evm,
     })
 
     st.deepEqual(result.gasUsed, BigInt(150), 'should use istanbul gas costs')
@@ -32,7 +32,7 @@ tape('Istanbul: EIP-1108 tests', (t) => {
       data: Buffer.alloc(0),
       gasLimit: BigInt(0xffff),
       _common: common,
-      _VM: vm,
+      _EVM: vm.evm,
     })
 
     st.deepEqual(result.gasUsed, BigInt(6000), 'should use istanbul gas costs')
@@ -52,7 +52,7 @@ tape('Istanbul: EIP-1108 tests', (t) => {
       ),
       gasLimit: BigInt(0xffffff),
       _common: common,
-      _VM: vm,
+      _EVM: vm.evm,
     })
 
     st.deepEqual(

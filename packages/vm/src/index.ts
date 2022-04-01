@@ -7,23 +7,10 @@ import { default as runTx, RunTxOpts, RunTxResult } from './runTx'
 import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
 import { default as buildBlock, BuildBlockOpts, BlockBuilder } from './buildBlock'
 import EVM from './evm/evm'
-import { OpcodeList, getOpcodesForHF, OpHandler } from './evm/opcodes'
 import { precompiles } from './evm/precompiles'
 import runBlockchain from './runBlockchain'
 const AsyncEventEmitter = require('async-eventemitter')
 import { promisify } from 'util'
-import { CustomOpcode } from './evm/types'
-import { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './evm/opcodes/gas'
-
-// very ugly way to detect if we are running in a browser
-const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
-let mcl: any
-let mclInitPromise: any
-
-if (!isBrowser()) {
-  mcl = require('mcl-wasm')
-  mclInitPromise = mcl.init(mcl.BLS12_381)
-}
 
 /**
  * Options for instantiating a {@link VM}.
@@ -100,29 +87,6 @@ export interface VMOpts {
    * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
    */
   hardforkByTD?: BigIntLike
-
-  /**
-   * Override or add custom opcodes to the VM instruction set
-   * These custom opcodes are EIP-agnostic and are always statically added
-   * To delete an opcode, add an entry of format `{opcode: number}`. This will delete that opcode from the VM.
-   * If this opcode is then used in the VM, the `INVALID` opcode would instead be used.
-   * To add an opcode, add an entry of the following format:
-   * {
-   *    // The opcode number which will invoke the custom opcode logic
-   *    opcode: number
-   *    // The name of the opcode (as seen in the `step` event)
-   *    opcodeName: string
-   *    // The base fee of the opcode
-   *    baseFee: number
-   *    // If the opcode charges dynamic gas, add this here. To charge the gas, use the `i` methods of the BN, to update the charged gas
-   *    gasFunction?: function(runState: RunState, gas: BN, common: Common)
-   *    // The logic of the opcode which holds the logic of changing the current state
-   *    logicFunction: function(runState: RunState)
-   * }
-   * Note: gasFunction and logicFunction can both be async or synchronous functions
-   */
-
-  customOpcodes?: CustomOpcode[]
 }
 
 /**
@@ -150,14 +114,9 @@ export default class VM extends AsyncEventEmitter {
 
   protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
-  // This opcode data is always set since `getActiveOpcodes()` is called in the constructor
-  protected _opcodes!: OpcodeList
-  protected _handlers!: Map<number, OpHandler>
-  protected _dynamicGasHandlers!: Map<number, AsyncDynamicGasHandler | SyncDynamicGasHandler>
 
   protected readonly _hardforkByBlockNumber: boolean
   protected readonly _hardforkByTD?: bigint
-  protected readonly _customOpcodes?: CustomOpcode[]
 
   /**
    * Cached emit() function, not for public usage
@@ -165,12 +124,6 @@ export default class VM extends AsyncEventEmitter {
    * @hidden
    */
   public readonly _emit: (topic: string, data: any) => Promise<void>
-  /**
-   * Pointer to the mcl package, not for public usage
-   * set to public due to implementation internals
-   * @hidden
-   */
-  public readonly _mcl: any //
 
   /**
    * VM is run in DEBUG mode (default: false)
@@ -201,7 +154,6 @@ export default class VM extends AsyncEventEmitter {
     super()
 
     this._opts = opts
-    this._customOpcodes = opts.customOpcodes
 
     // Throw on chain or hardfork options removed in latest major release
     // to prevent implicit chain setup on a wrong chain
@@ -239,13 +191,6 @@ export default class VM extends AsyncEventEmitter {
       )
     }
 
-    this._common.on('hardforkChanged', () => {
-      this.getActiveOpcodes()
-    })
-
-    // Initialize the opcode data
-    this.getActiveOpcodes()
-
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
     } else {
@@ -256,12 +201,13 @@ export default class VM extends AsyncEventEmitter {
       })
     }
 
-    this.evm = new EVM(this, {
+    this.blockchain = opts.blockchain ?? new Blockchain({ common: this._common })
+
+    this.evm = new EVM({
       common: this._common,
       stateManager: this.stateManager,
+      blockchain: this.blockchain,
     })
-
-    this.blockchain = opts.blockchain ?? new Blockchain({ common: this._common })
 
     if (opts.hardforkByBlockNumber !== undefined && opts.hardforkByTD !== undefined) {
       throw new Error(
@@ -271,14 +217,6 @@ export default class VM extends AsyncEventEmitter {
 
     this._hardforkByBlockNumber = opts.hardforkByBlockNumber ?? false
     this._hardforkByTD = toType(opts.hardforkByTD, TypeOutput.BigInt)
-
-    if (this._common.isActivatedEIP(2537)) {
-      if (isBrowser()) {
-        throw new Error('EIP-2537 is currently not supported in browsers')
-      } else {
-        this._mcl = mcl
-      }
-    }
 
     // Safeguard if "process" is not available (browser)
     if (process !== undefined && process.env.DEBUG) {
@@ -317,17 +255,6 @@ export default class VM extends AsyncEventEmitter {
       }
     }
 
-    if (this._common.isActivatedEIP(2537)) {
-      if (isBrowser()) {
-        throw new Error('EIP-2537 is currently not supported in browsers')
-      } else {
-        const mcl = this._mcl
-        await mclInitPromise // ensure that mcl is initialized.
-        mcl.setMapToMode(mcl.IRTF) // set the right map mode; otherwise mapToG2 will return wrong values.
-        mcl.verifyOrderG1(1) // subgroup checks for G1
-        mcl.verifyOrderG2(1) // subgroup checks for G2
-      }
-    }
     this._isInitialized = true
   }
 
@@ -389,18 +316,6 @@ export default class VM extends AsyncEventEmitter {
   async buildBlock(opts: BuildBlockOpts): Promise<BlockBuilder> {
     await this.init()
     return buildBlock.bind(this)(opts)
-  }
-
-  /**
-   * Returns a list with the currently activated opcodes
-   * available for VM execution
-   */
-  getActiveOpcodes(): OpcodeList {
-    const data = getOpcodesForHF(this._common, this._customOpcodes)
-    this._opcodes = data.opcodes
-    this._dynamicGasHandlers = data.dynamicGasHandlers
-    this._handlers = data.handlers
-    return data.opcodes
   }
 
   /**

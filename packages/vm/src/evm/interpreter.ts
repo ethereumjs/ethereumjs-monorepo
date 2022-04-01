@@ -60,7 +60,6 @@ export interface InterpreterStep {
  * Parses and executes EVM bytecode.
  */
 export default class Interpreter {
-  _vm: any
   _state: StateManager
   _runState: RunState
   _eei: EEI
@@ -72,12 +71,11 @@ export default class Interpreter {
   // Opcode debuggers (e.g. { 'push': [debug Object], 'sstore': [debug Object], ...})
   private opDebuggers: { [key: string]: (debug: string) => void } = {}
 
-  constructor(vm: any, eei: EEI, common: Common, evm: EVM) {
-    this._vm = vm
-    this._state = vm.stateManager
-    this._eei = eei
-    this._common = common
+  constructor(evm: EVM, eei: EEI) {
     this._evm = evm
+    this._eei = eei
+    this._state = this._evm._state
+    this._common = this._evm._common
     this._runState = {
       programCounter: 0,
       opCode: 0xfe, // INVALID opcode
@@ -191,7 +189,7 @@ export default class Interpreter {
     const gasLimitClone = this._eei.getGasLeft()
 
     if (opInfo.dynamicGas) {
-      const dynamicGasHandler = this._vm._dynamicGasHandlers.get(this._runState.opCode)!
+      const dynamicGasHandler = this._evm._dynamicGasHandlers.get(this._runState.opCode)!
       // This function updates the gas in-place.
       // It needs the base fee, for correct gas limit calculation for the CALL opcodes
       gas = await dynamicGasHandler(this._runState, gas, this._common)
@@ -227,7 +225,7 @@ export default class Interpreter {
    * Get the handler function for an opcode.
    */
   getOpHandler(opInfo: Opcode): OpHandler {
-    return this._vm._handlers.get(opInfo.code)!
+    return this._evm._handlers.get(opInfo.code)!
   }
 
   /**
@@ -235,7 +233,7 @@ export default class Interpreter {
    */
   lookupOpInfo(op: number): Opcode {
     // if not found, return 0xfe: INVALID
-    return this._vm._opcodes.get(op) ?? this._vm._opcodes.get(0xfe)
+    return this._evm._opcodes.get(op)! ?? this._evm._opcodes.get(0xfe)
   }
 
   async _runStepHook(dynamicFee: bigint, gasLeft: bigint): Promise<void> {

@@ -24,7 +24,7 @@ tape('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', (t) => {
 
     // Track stack
     let stack: any = []
-    vm.evm.on('step', (istep: InterpreterStep) => {
+    vm.on('step', (istep: InterpreterStep) => {
       if (istep.opcode.name === 'STOP') {
         stack = istep.stack
       }

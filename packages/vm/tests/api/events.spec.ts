@@ -145,7 +145,7 @@ tape('VM events', (t) => {
     const vm = new VM()
 
     let lastEmitted: any
-    vm.evm.on('step', (val: any) => {
+    vm.on('step', (val: any) => {
       lastEmitted = val
     })
 
