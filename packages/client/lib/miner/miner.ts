@@ -216,7 +216,7 @@ export class Miner {
       const [signerAddress, signerPrivKey] = this.config.accounts[0]
       cliqueSigner = signerPrivKey
       // Determine if signer is INTURN (2) or NOTURN (1)
-      inTurn = await vmCopy.blockchain.cliqueSignerInTurn(signerAddress)
+      inTurn = await (vmCopy.blockchain.consensus as any).cliqueSignerInTurn(signerAddress)
       difficulty = inTurn ? 2 : 1
     }
 
