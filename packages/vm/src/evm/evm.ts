@@ -66,6 +66,14 @@ export interface EVMOpts {
    * A {@link StateManager} instance to use as the state store
    */
   stateManager: StateManager
+
+  /**
+   * Allows unlimited contract sizes while debugging. By setting this to `true`, the check for
+   * contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed.
+   *
+   * Default: `false` [ONLY set to `true` during debugging]
+   */
+  allowUnlimitedContractSize?: boolean
 }
 
 /**
@@ -182,6 +190,8 @@ export default class EVM extends AsyncEventEmitter {
 
   _common: Common
 
+  protected readonly _allowUnlimitedContractSize: boolean
+
   /**
    * Cached emit() function, not for public usage
    * set to public due to implementation internals
@@ -218,6 +228,8 @@ export default class EVM extends AsyncEventEmitter {
     }
     this._common = opts.common
     this._state = opts.stateManager
+
+    this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize ?? false
 
     // Safeguard if "process" is not available (browser)
     if (process !== undefined && process.env.DEBUG) {
@@ -511,7 +523,7 @@ export default class EVM extends AsyncEventEmitter {
 
     // If enough gas and allowed code size
     let CodestoreOOG = false
-    if (totalGas <= message.gasLimit && (this._vm._allowUnlimitedContractSize || allowedCodeSize)) {
+    if (totalGas <= message.gasLimit && (this._allowUnlimitedContractSize || allowedCodeSize)) {
       if (this._common.isActivatedEIP(3541) && result.returnValue[0] === eof.FORMAT) {
         if (!this._common.isActivatedEIP(3540)) {
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
