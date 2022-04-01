@@ -29,6 +29,42 @@ const debug = createDebugLogger('vm:evm')
 const debugGas = createDebugLogger('vm:evm:gas')
 
 /**
+ * Options for instantiating a {@link VM}.
+ */
+export interface EVMOpts {
+  /**
+   * Use a {@link Common} instance for EVM instantiation.
+   *
+   * ### Supported EIPs
+   *
+   * - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - EIP-1559 Fee Market
+   * - [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - VM simple subroutines (`experimental`)
+   * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles (`experimental`)
+   * - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp Gas Cost
+   * - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Typed Transactions
+   * - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - Gas cost increases for state access opcodes
+   * - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Access List Transaction Type
+   * - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - BASEFEE opcode
+   * - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
+   * - [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`experimental`)
+   * - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
+   * - [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) - EOF - Code Validation (`experimental`)
+   * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction (`experimental`)
+   * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
+   * - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
+   *
+   * *Annotations:*
+   *
+   * - `experimental`: behaviour can change on patch versions
+   */
+  common: Common
+  /**
+   * A {@link StateManager} instance to use as the state store
+   */
+  stateManager: StateManager
+}
+
+/**
  * Result of executing a message via the {@link EVM}.
  */
 export interface EVMResult {
@@ -154,7 +190,6 @@ export default class EVM {
 
   constructor(vm: any, txContext: TxContext, block: Block, opts: EVMOpts) {
     this._vm = vm
-    this._state = this._vm.vmState
     this._tx = txContext
     this._block = block
     this._refund = BigInt(0)
@@ -170,6 +205,7 @@ export default class EVM {
       }
     }
     this._common = opts.common
+    this._state = opts.stateManager
 
     // Safeguard if "process" is not available (browser)
     if (process !== undefined && process.env.DEBUG) {
