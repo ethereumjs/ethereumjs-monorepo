@@ -17,7 +17,7 @@ tape('Berlin: EIP 2315 tests', (t) => {
       i++
     })
 
-    const result = await vm.runCode({
+    const result = await vm.evm.runCode({
       code: Buffer.from(test.code, 'hex'),
       gasLimit: BigInt(0xffffffffff),
     })

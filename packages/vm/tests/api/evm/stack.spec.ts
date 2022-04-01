@@ -158,7 +158,7 @@ tape('Stack', (t) => {
       value: BigInt(1),
     }
     try {
-      const res = await vm.runCall(runCallArgs)
+      const res = await vm.evm.runCall(runCallArgs)
       const executionReturnValue = res.execResult.returnValue
       st.assert(executionReturnValue.equals(expectedReturnValue))
       st.end()

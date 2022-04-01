@@ -30,13 +30,9 @@ tape('VM.runCode: initial program counter', async (t) => {
 
     let err
     try {
-      const result = await vm.runCode(runCodeArgs)
+      const result = await vm.evm.runCode(runCodeArgs)
       if (testData.resultPC !== undefined) {
-        t.equal(
-          result.runState?.programCounter,
-          testData.resultPC,
-          `should start the execution at the specified pc or 0, testCases[${i}]`
-        )
+        t.equals(result.runState?.programCounter, testData.resultPC, 'runstate.programCounter')
       }
     } catch (e: any) {
       err = e
@@ -64,7 +60,7 @@ tape('VM.runCode: interpreter', (t) => {
 
     let result: any
     try {
-      result = await vm.runCode(runCodeArgs)
+      result = await vm.evm.runCode(runCodeArgs)
     } catch (e: any) {
       st.fail('should not throw error')
     }
@@ -87,7 +83,7 @@ tape('VM.runCode: interpreter', (t) => {
     }
 
     try {
-      await vm.runCode(runCodeArgs)
+      await vm.evm.runCode(runCodeArgs)
       st.fail('should throw error')
     } catch (e: any) {
       st.ok(e.toString().includes('Test'), 'error thrown')
@@ -106,7 +102,7 @@ tape('VM.runCode: RunCodeOptions', (t) => {
     }
 
     try {
-      await vm.runCode(runCodeArgs)
+      await vm.evm.runCode(runCodeArgs)
       st.fail('should not accept a negative call value')
     } catch (err: any) {
       st.ok(err.message.includes('value field cannot be negative'), 'throws on negative call value')
