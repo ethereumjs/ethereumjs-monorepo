@@ -14,7 +14,6 @@ import {
 import VM from './index'
 import Bloom from './bloom'
 import { EVMResult } from './evm/evm'
-import { short } from './evm/opcodes/util'
 import Message from './evm/message'
 import TxContext from './evm/txContext'
 import type {
@@ -212,7 +211,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
       const removed = [tx.getSenderAddress()]
       // Add the active precompiles as well
       // Note: `precompiles` is always updated if the hardfork of `common` changes
-      const activePrecompiles = this.precompiles
+      const activePrecompiles = this.evm.precompiles
       for (const [key] of activePrecompiles.entries()) {
         removed.push(Address.fromString('0x' + key))
       }
@@ -263,7 +262,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (this._common.isActivatedEIP(2929)) {
     // Add origin and precompiles to warm addresses
-    const activePrecompiles = this.precompiles
+    const activePrecompiles = this.evm.precompiles
     for (const [addressStr] of activePrecompiles.entries()) {
       state.addWarmedAddress(Buffer.from(addressStr, 'hex'))
     }
@@ -513,6 +512,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
   await state.cleanupTouchedAccounts()
   state.clearOriginalStorageCache()
+  if (this._common.isActivatedEIP(1153)) this.evm._transientStorage.clear()
 
   // Generate the tx receipt
   const gasUsed = opts.blockGasUsed !== undefined ? opts.blockGasUsed : block.header.gasUsed

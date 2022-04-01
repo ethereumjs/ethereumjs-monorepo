@@ -22,9 +22,9 @@ tape('EIP 1153: transient storage', (t) => {
   const runTest = async function (test: Test, st: tape.Test) {
     let i = 0
     let currentGas = initialGas
-    const vm = new (VM as any)({ common })
+    const vm = await VM.create({ common })
 
-    vm.on('step', function (step: any) {
+    vm.evm.on('step', function (step: any) {
       const gasUsed = currentGas - step.gasLeft
       currentGas = step.gasLeft
 
@@ -252,7 +252,6 @@ tape('EIP 1153: transient storage', (t) => {
         },
         { expectedOpcode: 'CALLDATASIZE', expectedGasUsed: 2, expectedStack: [] },
         { expectedOpcode: 'PUSH1', expectedGasUsed: 3, expectedStack: [BigInt(32)] },
-        //
         { expectedOpcode: 'DUP1', expectedGasUsed: 3, expectedStack: [BigInt(32), BigInt(0)] },
         {
           expectedOpcode: 'CALLDATACOPY',

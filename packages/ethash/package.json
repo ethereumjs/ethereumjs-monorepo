@@ -18,8 +18,6 @@
   "types": "dist/index.d.ts",
   "browser": "dist.browser/index.js",
   "scripts": {
-    "postinstall": "npm run depBrowserWorkaround",
-    "depBrowserWorkaround": "npx json -I -f ../../node_modules/bigint-crypto-utils/package.json -e \"this.browser='./dist/bundles/umd.js'\"",
     "build": "npm run build:node && npm run build:browser",
     "build:node": "../../config/cli/ts-build.sh node",
     "build:browser": "../../config/cli/ts-build.sh browser",

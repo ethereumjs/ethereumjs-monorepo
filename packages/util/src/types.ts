@@ -118,7 +118,3 @@ export function toType<T extends TypeOutput>(
       throw new Error('unknown outputType')
   }
 }
-
-export const bigIntToHex = (num: bigint) => {
-  return '0x' + num.toString(16)
-}

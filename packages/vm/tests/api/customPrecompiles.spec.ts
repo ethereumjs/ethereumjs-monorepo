@@ -2,7 +2,7 @@ import tape from 'tape'
 import VM from '../../src'
 import { Address } from 'ethereumjs-util'
 import { PrecompileInput } from '../../src/evm/precompiles'
-import { ExecResult } from '../../src/evm/evm'
+import EVM, { ExecResult } from '../../src/evm/evm'
 
 const sender = new Address(Buffer.from('44'.repeat(20), 'hex'))
 const newPrecompile = new Address(Buffer.from('ff'.repeat(20), 'hex'))
@@ -17,9 +17,9 @@ function customPrecompile(_input: PrecompileInput): ExecResult {
   }
 }
 
-tape('VM -> custom precompiles', (t) => {
+tape('EVM -> custom precompiles', (t) => {
   t.test('should override existing precompiles', async (st) => {
-    const VMOverride = await VM.create({
+    const EVMOverride = await EVM.create({
       customPrecompiles: [
         {
           address: shaAddress,
@@ -27,7 +27,7 @@ tape('VM -> custom precompiles', (t) => {
         },
       ],
     })
-    const result = await VMOverride.runCall({
+    const result = await EVMOverride.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
       data: Buffer.from(''),
@@ -38,14 +38,14 @@ tape('VM -> custom precompiles', (t) => {
   })
 
   t.test('should delete existing precompiles', async (st) => {
-    const VMOverride = await VM.create({
+    const EVMOverride = await EVM.create({
       customPrecompiles: [
         {
           address: shaAddress,
         },
       ],
     })
-    const result = await VMOverride.runCall({
+    const result = await EVMOverride.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
       data: Buffer.from(''),
@@ -56,7 +56,7 @@ tape('VM -> custom precompiles', (t) => {
   })
 
   t.test('should add precompiles', async (st) => {
-    const VMOverride = await VM.create({
+    const EVMOverride = await EVM.create({
       customPrecompiles: [
         {
           address: newPrecompile,
@@ -64,7 +64,7 @@ tape('VM -> custom precompiles', (t) => {
         },
       ],
     })
-    const result = await VMOverride.runCall({
+    const result = await EVMOverride.runCall({
       to: newPrecompile,
       gasLimit: BigInt(30000),
       data: Buffer.from(''),
@@ -76,13 +76,13 @@ tape('VM -> custom precompiles', (t) => {
 
   t.test('should not persist changes to precompiles', async (st) => {
     let VMSha = await VM.create()
-    const shaResult = await VMSha.runCall({
+    const shaResult = await VMSha.evm.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
       data: Buffer.from(''),
       caller: sender,
     })
-    const VMOverride = await VM.create({
+    const EVMOverride = await EVM.create({
       customPrecompiles: [
         {
           address: shaAddress,
@@ -90,7 +90,7 @@ tape('VM -> custom precompiles', (t) => {
         },
       ],
     })
-    const result = await VMOverride.runCall({
+    const result = await EVMOverride.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
       data: Buffer.from(''),
@@ -100,7 +100,7 @@ tape('VM -> custom precompiles', (t) => {
     st.ok(result.execResult.returnValue.equals(expectedReturn), 'return value is correct')
     st.ok(result.execResult.gasUsed === expectedGas, 'gas used is correct')
     VMSha = await VM.create()
-    const shaResult2 = await VMSha.runCall({
+    const shaResult2 = await VMSha.evm.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
       data: Buffer.from(''),

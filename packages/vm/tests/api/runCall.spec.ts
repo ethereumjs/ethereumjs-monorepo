@@ -4,6 +4,7 @@ import { Account, Address, MAX_UINT64, padToEven } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import VM from '../../src'
 import { ERROR } from '../../src/exceptions'
+import { RunCallOpts } from '../../src/evm/evm'
 
 // Non-protected Create2Address generator. Does not check if buffers have the right padding.
 function create2address(sourceAddress: Address, codeHash: Buffer, salt: Buffer): Address {
@@ -158,7 +159,7 @@ tape('Ensure that precompile activation creates non-empty accounts', async (t) =
   await vmActivated.stateManager.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code
   await vmActivated.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x111))) // give calling account a positive balance
   // setup the call arguments
-  const runCallArgs = {
+  const runCallArgs: RunCallOpts = {
     caller: caller, // call address
     gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
     to: contractAddress, // call to the contract address,
@@ -541,17 +542,17 @@ tape('runCall() -> skipBalance behavior', async (t) => {
   )
   const sender = Address.fromPrivateKey(senderKey)
 
-  const runCallArgs = {
+  const runCallArgs: RunCallOpts = {
     gasLimit: BigInt(21000),
     value: BigInt(6),
-    from: sender,
+    caller: sender,
     to: contractAddress,
     skipBalance: true,
   }
 
   for (const balance of [undefined, BigInt(5)]) {
     await vm.stateManager.modifyAccountFields(sender, { nonce: BigInt(0), balance })
-    const res = await vm.runCall(runCallArgs)
+    const res = await vm.evm.runCall(runCallArgs)
     t.pass('runCall should not throw with no balance and skipBalance')
     const senderBalance = (await vm.stateManager.getAccount(sender)).balance
     t.equal(
@@ -562,7 +563,7 @@ tape('runCall() -> skipBalance behavior', async (t) => {
     t.equal(res.execResult.exceptionError, undefined, 'no exceptionError with skipBalance')
   }
 
-  const res2 = await vm.runCall({ ...runCallArgs, skipBalance: false })
+  const res2 = await vm.evm.runCall({ ...runCallArgs, skipBalance: false })
   t.equal(
     res2.execResult.exceptionError?.error,
     'insufficient balance',

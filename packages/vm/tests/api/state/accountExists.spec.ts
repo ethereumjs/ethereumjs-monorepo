@@ -42,7 +42,7 @@ tape('correctly apply new account gas fee on pre-Spurious Dragon hardforks', asy
   }
 
   const result = await vm.evm.runCall(runCallArgs)
-  t.ok(result.execResult.gasUsed === BigInt(53552), 'vm correctly applies new account gas price')
+  t.equal(result.execResult.gasUsed, BigInt(53552), 'vm correctly applies new account gas price')
   t.end()
 })
 
@@ -87,8 +87,9 @@ tape(
     }
 
     const result = await vm.evm.runCall(runCallArgs)
-    t.ok(
-      result.execResult.gasUsed === BigInt(28552),
+    t.equal(
+      result.execResult.gasUsed,
+      BigInt(28552),
       'new account price not applied as empty account exists'
     )
     t.end()

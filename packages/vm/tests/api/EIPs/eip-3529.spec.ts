@@ -146,12 +146,12 @@ tape('EIP-3529 tests', (t) => {
 
       const gasUsed = gasLimit - gasLeft!
       const effectiveGas = gasUsed - gasRefund!
-
       st.equal(effectiveGas, BigInt(testCase.effectiveGas), 'correct effective gas')
       st.equal(gasUsed, BigInt(testCase.usedGas), 'correct used gas')
 
       // clear the storage cache, otherwise next test will use current original value
       vm.vmState.clearOriginalStorageCache()
+      vm.evm._refund = 0n
     }
 
     st.end()

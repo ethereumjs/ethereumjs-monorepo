@@ -53,16 +53,6 @@ tape('VM -> basic instantiation / boolean switches', (t) => {
     )
     st.end()
   })
-
-  t.test('should instantiate with async constructor', async (st) => {
-    const vm = await VM.create({ activatePrecompiles: true })
-    st.notDeepEqual(
-      (vm.stateManager as DefaultStateManager)._trie.root,
-      KECCAK256_RLP,
-      'it has different root'
-    )
-    st.end()
-  })
 })
 
 tape('VM -> supportedHardforks', (t) => {

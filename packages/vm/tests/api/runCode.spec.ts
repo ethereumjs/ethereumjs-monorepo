@@ -21,7 +21,7 @@ const testCases = [
 tape('VM.runCode: initial program counter', async (t) => {
   const vm = await VM.create()
 
-  for (const [i, testData] of testCases.entries()) {
+  for (const [, testData] of testCases.entries()) {
     const runCodeArgs = {
       code: Buffer.from(testData.code.join(''), 'hex'),
       pc: testData.pc,

@@ -1,5 +1,5 @@
 import tape from 'tape'
-import Blockchain from '@ethereumjs/blockchain'
+import Blockchain, { CliqueConsensus } from '@ethereumjs/blockchain'
 import Common, {
   Chain as ChainCommon,
   ConsensusType,
@@ -78,7 +78,7 @@ tape('[Integration:Merge]', async (t) => {
       validateBlocks: false,
       validateConsensus: false,
     })
-    blockchain.cliqueActiveSigners = () => [accounts[0][0]] // stub
+    ;(blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [accounts[0][0]] // stub
     const serviceConfig = new Config({
       common,
       servers: [server as any],
@@ -105,7 +105,9 @@ tape('[Integration:Merge]', async (t) => {
       height: 0,
       common: commonPoA,
     })
-    remoteService.chain.blockchain.cliqueActiveSigners = () => [accounts[0][0]] // stub
+    ;(remoteService.chain.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [
+      accounts[0][0],
+    ] // stub
     await server.discover('remotePeer1', '127.0.0.2')
     const targetTTD = BigInt(5)
     remoteService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
