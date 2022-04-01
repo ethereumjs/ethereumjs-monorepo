@@ -3,7 +3,7 @@ import { Block } from '@ethereumjs/block'
 import { Address } from 'ethereumjs-util'
 import tape from 'tape'
 import Blockchain from '../src'
-import { CLIQUE_NONCE_AUTH } from '../src/consensus/clique'
+import { CliqueConsensus, CLIQUE_NONCE_AUTH } from '../src/consensus/clique'
 import { generateConsecutiveBlock } from './util'
 
 tape('reorg tests', (t) => {
@@ -150,7 +150,7 @@ tape('reorg tests', (t) => {
 
       await blockchain.putBlocks([block1_high, block2_high, block3_high])
 
-      let signerStates = (blockchain as any).consensus._cliqueLatestSignerStates
+      let signerStates = (blockchain.consensus as CliqueConsensus)._cliqueLatestSignerStates
       t.ok(
         !signerStates.find(
           (s: any) => s[0] === BigInt(2) && s[1].find((a: Address) => a.equals(beneficiary1))
@@ -158,7 +158,7 @@ tape('reorg tests', (t) => {
         'should not find reorged signer state'
       )
 
-      let signerVotes = (blockchain as any).consensus._cliqueLatestVotes
+      let signerVotes = (blockchain.consensus as CliqueConsensus)._cliqueLatestVotes
       t.ok(
         !signerVotes.find(
           (v: any) =>
@@ -170,7 +170,7 @@ tape('reorg tests', (t) => {
         'should not find reorged clique vote'
       )
 
-      let blockSigners = (blockchain as any).consensus._cliqueLatestBlockSigners
+      let blockSigners = (blockchain.consensus as CliqueConsensus)._cliqueLatestBlockSigners
       t.ok(
         !blockSigners.find(
           (s: any) => s[0] === BigInt(1) && s[1].equals(block1_low.header.cliqueSigner())
@@ -178,7 +178,7 @@ tape('reorg tests', (t) => {
         'should not find reorged block signer'
       )
 
-      signerStates = (blockchain as any).consensus._cliqueLatestSignerStates
+      signerStates = (blockchain.consensus as CliqueConsensus)._cliqueLatestSignerStates
       t.ok(
         !!signerStates.find(
           (s: any) => s[0] === BigInt(3) && s[1].find((a: Address) => a.equals(beneficiary2))
@@ -186,10 +186,10 @@ tape('reorg tests', (t) => {
         'should find reorged signer state'
       )
 
-      signerVotes = (blockchain as any).consensus._cliqueLatestVotes
+      signerVotes = (blockchain.consensus as CliqueConsensus)._cliqueLatestVotes
       t.ok(signerVotes.length === 0, 'votes should be empty')
 
-      blockSigners = (blockchain as any).consensus._cliqueLatestBlockSigners
+      blockSigners = (blockchain.consensus as CliqueConsensus)._cliqueLatestBlockSigners
       t.ok(
         !!blockSigners.find(
           (s: any) => s[0] === BigInt(3) && s[1].equals(block3_high.header.cliqueSigner())

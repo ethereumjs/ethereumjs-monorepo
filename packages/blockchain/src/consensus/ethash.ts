@@ -2,16 +2,17 @@
 import type { LevelUp } from 'levelup'
 import { Block } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
-import { ConsensusBase } from './base'
+import { Consensus } from './interface'
 
 /**
  * This class encapsulates Ethash-related consensus functionality when used with the Blockchain class.
  */
-export class EthashConsensus extends ConsensusBase {
+export class EthashConsensus implements Consensus {
+  db: LevelUp
   _ethash: Ethash
 
   constructor(db: LevelUp) {
-    super(db)
+    this.db = db
     this._ethash = new Ethash(this.db)
   }
 
@@ -21,4 +22,8 @@ export class EthashConsensus extends ConsensusBase {
       throw new Error('invalid POW')
     }
   }
+
+  public async genesisInit(): Promise<void> {}
+  public async setup(): Promise<void> {}
+  public async newBlock(): Promise<void> {}
 }
