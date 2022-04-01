@@ -272,3 +272,19 @@ tape(`${method}: re-execute payload and verify that no errors occur`, async (t) 
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
+
+tape(`${method}: parent hash equals to block hash`, async (t) => {
+  const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+  const blockDataHasBlockHashSameAsParentHash = [
+    {
+      ...blockData,
+      blockHash: blockData.parentHash,
+    },
+  ]
+  const req = params(method, blockDataHasBlockHashSameAsParentHash)
+  const expectRes = (res: any) => {
+    t.equal(res.body.result.status, 'INVALID_BLOCK_HASH')
+  }
+
+  await baseRequest(t, server, req, 200, expectRes)
+})

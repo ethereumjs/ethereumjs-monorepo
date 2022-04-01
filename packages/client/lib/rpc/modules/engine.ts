@@ -349,6 +349,13 @@ export class Engine {
     const [payload] = params
     const { parentHash, blockHash } = payload
 
+    const block = await assembleBlock(payload, this.chain)
+    if (!(block instanceof Block)) {
+      // Return error response
+      this.connectionManager.lastNewPayload({ payload, response: block })
+      return block
+    }
+
     const blockExists = await validHash(toBuffer(blockHash), this.chain)
     if (blockExists) {
       const response = {
@@ -358,13 +365,6 @@ export class Engine {
       }
       this.connectionManager.lastNewPayload({ payload: params[0], response })
       return response
-    }
-
-    const block = await assembleBlock(payload, this.chain)
-    if (!(block instanceof Block)) {
-      // Return error response
-      this.connectionManager.lastNewPayload({ payload, response: block })
-      return block
     }
 
     try {
