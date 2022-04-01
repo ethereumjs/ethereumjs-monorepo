@@ -25,7 +25,7 @@ tape('Istanbul: EIP-1344', async (t) => {
       const common = new Common({ chain, hardfork })
       const vm = new VM({ common })
       try {
-        const res = await vm.runCode(runCodeArgs)
+        const res = await vm.evm.runCode(runCodeArgs)
         if (testCase.err) {
           st.equal(res.exceptionError?.error, testCase.err)
         } else {

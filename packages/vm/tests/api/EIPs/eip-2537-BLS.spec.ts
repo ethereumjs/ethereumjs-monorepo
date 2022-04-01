@@ -25,7 +25,7 @@ tape('EIP-2537 BLS tests', (t) => {
 
     for (const address of precompiles) {
       const to = new Address(Buffer.from(address, 'hex'))
-      const result = await vm.runCall({
+      const result = await vm.evm.runCall({
         caller: Address.zero(),
         gasLimit: BigInt(0xffffffffff),
         to,
@@ -56,7 +56,7 @@ tape('EIP-2537 BLS tests', (t) => {
 
     for (const address of precompiles) {
       const to = new Address(Buffer.from(address, 'hex'))
-      const result = await vm.runCall({
+      const result = await vm.evm.runCall({
         caller: Address.zero(),
         gasLimit: BigInt(0xffffffffff),
         to,

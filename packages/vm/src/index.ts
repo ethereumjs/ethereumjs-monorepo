@@ -3,12 +3,10 @@ import { Account, Address, BigIntLike, toType, TypeOutput } from 'ethereumjs-uti
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { StateManager, DefaultStateManager } from './state/index'
-import { default as runCode, RunCodeOpts } from './runCode'
-import { default as runCall, RunCallOpts } from './runCall'
 import { default as runTx, RunTxOpts, RunTxResult } from './runTx'
 import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
 import { default as buildBlock, BuildBlockOpts, BlockBuilder } from './buildBlock'
-import { EVMResult, ExecResult } from './evm/evm'
+import EVM from './evm/evm'
 import { OpcodeList, getOpcodesForHF, OpHandler } from './evm/opcodes'
 import { precompiles } from './evm/precompiles'
 import runBlockchain from './runBlockchain'
@@ -51,7 +49,7 @@ export interface VMOpts {
    */
   common?: Common
   /**
-   * A {@link StateManager} instance to use as the state store (Beta API)
+   * A {@link StateManager} instance to use as the state store
    */
   stateManager?: StateManager
   /**
@@ -151,6 +149,11 @@ export default class VM extends AsyncEventEmitter {
   readonly blockchain: Blockchain
 
   readonly _common: Common
+
+  /**
+   * The EVM used for bytecode execution
+   */
+  readonly evm: EVM
 
   protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
@@ -260,6 +263,11 @@ export default class VM extends AsyncEventEmitter {
         common: this._common,
       })
     }
+
+    this.evm = new EVM(this, {
+      common: this._common,
+      stateManager: this.stateManager,
+    })
 
     this.blockchain = opts.blockchain ?? new Blockchain({ common: this._common })
 
@@ -372,30 +380,6 @@ export default class VM extends AsyncEventEmitter {
   async runTx(opts: RunTxOpts): Promise<RunTxResult> {
     await this.init()
     return runTx.bind(this)(opts)
-  }
-
-  /**
-   * runs a call (or create) operation.
-   *
-   * This method modifies the state.
-   *
-   * @param {RunCallOpts} opts
-   */
-  async runCall(opts: RunCallOpts): Promise<EVMResult> {
-    await this.init()
-    return runCall.bind(this)(opts)
-  }
-
-  /**
-   * Runs EVM code.
-   *
-   * This method modifies the state.
-   *
-   * @param {RunCodeOpts} opts
-   */
-  async runCode(opts: RunCodeOpts): Promise<ExecResult> {
-    await this.init()
-    return runCode.bind(this)(opts)
   }
 
   /**

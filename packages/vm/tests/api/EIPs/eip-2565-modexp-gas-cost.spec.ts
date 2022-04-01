@@ -14,7 +14,7 @@ tape('EIP-2565 ModExp gas cost tests', (t) => {
     for (const test of testData) {
       const testName = test.Name
       const to = new Address(Buffer.from('0000000000000000000000000000000000000005', 'hex'))
-      const result = await vm.runCall({
+      const result = await vm.evm.runCall({
         caller: Address.zero(),
         gasLimit: BigInt(0xffffffffff),
         to,

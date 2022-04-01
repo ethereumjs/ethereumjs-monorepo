@@ -114,10 +114,83 @@ export interface ExecResult {
   gasRefund?: bigint
 }
 
+/**
+ * Options for running a call (or create) operation
+ */
+export interface RunCallOpts {
+  block?: Block
+  gasPrice?: bigint
+  origin?: Address
+  caller?: Address
+  gasLimit?: bigint
+  to?: Address
+  value?: bigint
+  data?: Buffer
+  /**
+   * This is for CALLCODE where the code to load is different than the code from the `opts.to` address.
+   */
+  code?: Buffer
+  depth?: number
+  compiled?: boolean
+  static?: boolean
+  salt?: Buffer
+  selfdestruct?: { [k: string]: boolean }
+  delegatecall?: boolean
+}
+
 export interface NewContractEvent {
   address: Address
   // The deployment code
   code: Buffer
+}
+
+/**
+ * Options for the {@link runCode} method.
+ */
+export interface RunCodeOpts {
+  /**
+   * The `@ethereumjs/block` the `tx` belongs to. If omitted a default blank block will be used.
+   */
+  block?: Block
+  evm?: EVM
+  txContext?: TxContext
+  gasPrice?: bigint
+  /**
+   * The address where the call originated from. Defaults to the zero address.
+   */
+  origin?: Address
+  message?: Message
+  /**
+   * The address that ran this code (`msg.sender`). Defaults to the zero address.
+   */
+  caller?: Address
+  /**
+   * The EVM code to run
+   */
+  code?: Buffer
+  /**
+   * The input data
+   */
+  data?: Buffer
+  /**
+   * Gas limit
+   */
+  gasLimit?: bigint
+  /**
+   * The value in ether that is being sent to `opt.address`. Defaults to `0`
+   */
+  value?: bigint
+  depth?: number
+  isStatic?: boolean
+  selfdestruct?: { [k: string]: boolean }
+  /**
+   * The address of the account that is executing this code (`address(this)`). Defaults to the zero address.
+   */
+  address?: Address
+  /**
+   * The initial program counter. Defaults to `0`
+   */
+  pc?: number
 }
 
 export function OOGResult(gasLimit: bigint): ExecResult {
@@ -169,8 +242,8 @@ export function VmErrorResult(error: VmError, gasUsed: bigint): ExecResult {
 export default class EVM {
   _vm: any
   _state: StateManager
-  _tx: TxContext
-  _block: Block
+  _tx?: TxContext
+  _block?: Block
   /**
    * Amount of gas to refund from deleting storage values
    */
@@ -188,10 +261,8 @@ export default class EVM {
    */
   protected readonly DEBUG: boolean = false
 
-  constructor(vm: any, txContext: TxContext, block: Block, opts: EVMOpts) {
+  constructor(vm: any, opts: EVMOpts) {
     this._vm = vm
-    this._tx = txContext
-    this._block = block
     this._refund = BigInt(0)
 
     // Supported EIPs
@@ -586,9 +657,9 @@ export default class EVM {
       code: message.code as Buffer,
       isStatic: message.isStatic || false,
       depth: message.depth || 0,
-      gasPrice: this._tx.gasPrice,
-      origin: this._tx.origin || message.caller || Address.zero(),
-      block: this._block || new Block(),
+      gasPrice: this._tx!.gasPrice,
+      origin: this._tx!.origin || message.caller || Address.zero(),
+      block: this._block ?? new Block(),
       contract: await this._state.getAccount(message.to || Address.zero()),
       codeAddress: message.codeAddress,
     }
@@ -630,6 +701,67 @@ export default class EVM {
       gasUsed,
       returnValue: result.returnValue ? result.returnValue : Buffer.alloc(0),
     }
+  }
+
+  /**
+   * @ignore
+   */
+  async runCall(opts: RunCallOpts): Promise<EVMResult> {
+    const block = opts.block ?? Block.fromBlockData({}, { common: this._common })
+    this._block = block
+
+    const txContext = new TxContext(
+      opts.gasPrice ?? BigInt(0),
+      opts.origin ?? opts.caller ?? Address.zero()
+    )
+    this._tx = txContext
+
+    const message = new Message({
+      caller: opts.caller,
+      gasLimit: opts.gasLimit ?? 0xffffffn,
+      to: opts.to ?? undefined,
+      value: opts.value,
+      data: opts.data,
+      code: opts.code,
+      depth: opts.depth ?? 0,
+      isCompiled: opts.compiled ?? false,
+      isStatic: opts.static ?? false,
+      salt: opts.salt ?? null,
+      selfdestruct: opts.selfdestruct ?? {},
+      delegatecall: opts.delegatecall ?? false,
+    })
+
+    return this.executeMessage(message)
+  }
+
+  /**
+   * @ignore
+   */
+  async runCode(opts: RunCodeOpts): Promise<ExecResult> {
+    const block = opts.block ?? Block.fromBlockData({}, { common: this._common })
+    this._block = block
+
+    // Backwards compatibility
+    const txContext =
+      opts.txContext ??
+      new TxContext(opts.gasPrice ?? BigInt(0), opts.origin ?? opts.caller ?? Address.zero())
+    this._tx = txContext
+
+    const message =
+      opts.message ??
+      new Message({
+        code: opts.code,
+        data: opts.data,
+        gasLimit: opts.gasLimit,
+        to: opts.address ?? Address.zero(),
+        caller: opts.caller,
+        value: opts.value,
+        depth: opts.depth ?? 0,
+        selfdestruct: opts.selfdestruct ?? {},
+        isStatic: opts.isStatic ?? false,
+      })
+
+    return this.runInterpreter(message, { pc: opts.pc })
   }
 
   /**
