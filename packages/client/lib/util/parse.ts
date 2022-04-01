@@ -154,11 +154,26 @@ async function createGethGenesisBlockHeader(json: any) {
     // hardfork to London for baseFeePerGas support
     const hardforks = new Common({ chain: 1 })
       .hardforks()
-      .map((h) => (h.name === 'london' ? { ...h, block: 0 } : h))
+      .map((h) => (h.name === Hardfork.London ? { ...h, block: 0 } : h))
     common = Common.custom({ chainId: 1, hardforks })
     common.setHardforkByBlockNumber(0)
   }
   return BlockHeader.fromHeaderData(headerData, { common })
+}
+
+/**
+ * Transforms Geth formatted nonce (i.e. hex string) to 8 byte 0x-prefixed string used internally
+ * @param nonce string parsed from the Geth genesis file
+ * @returns nonce as a 0x-prefixed 8 byte string
+ */
+function formatNonce(nonce: string): string {
+  if (!nonce || nonce === '0x0') {
+    return '0x0000000000000000'
+  }
+  if (isHexPrefixed(nonce)) {
+    return '0x' + stripHexPrefix(nonce).padStart(16, '0')
+  }
+  return '0x' + nonce.padStart(16, '0')
 }
 
 /**
@@ -167,8 +182,8 @@ async function createGethGenesisBlockHeader(json: any) {
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
 async function parseGethParams(json: any) {
-  const { name, config, difficulty, nonce, mixHash, gasLimit, coinbase, baseFeePerGas } = json
-  let { extraData, timestamp } = json
+  const { name, config, difficulty, mixHash, gasLimit, coinbase, baseFeePerGas } = json
+  let { extraData, timestamp, nonce } = json
   const { chainId } = config
 
   // geth is not strictly putting empty fields with a 0x prefix
@@ -179,6 +194,10 @@ async function parseGethParams(json: any) {
   if (!isHexPrefixed(timestamp)) {
     timestamp = intToHex(parseInt(timestamp))
   }
+  // geth may not give us a nonce strictly formatted to an 8 byte hex string
+  if (nonce.length !== 18) {
+    nonce = formatNonce(nonce)
+  }
 
   // EIP155 and EIP158 are both part of Spurious Dragon hardfork and must occur at the same time
   // but have different configuration parameters in geth genesis parameters
@@ -188,7 +207,7 @@ async function parseGethParams(json: any) {
     )
   }
 
-  const header = await createGethGenesisBlockHeader({ ...json, extraData, timestamp })
+  const header = await createGethGenesisBlockHeader({ ...json, extraData, timestamp, nonce })
   const params: any = {
     name,
     chainId,
@@ -234,17 +253,17 @@ async function parseGethParams(json: any) {
     [Hardfork.MuirGlacier]: 'muirGlacierBlock',
     [Hardfork.Berlin]: 'berlinBlock',
     [Hardfork.London]: 'londonBlock',
-    [Hardfork.PreMerge]: 'mergeForkBlock',
+    [Hardfork.MergeForkBlock]: 'mergeForkBlock',
   }
   params.hardforks = Object.values(Hardfork)
     .map((name) => ({
       name,
-      block: name === 'chainstart' ? 0 : config[forkMap[name]] ?? null,
+      block: name === Hardfork.Chainstart ? 0 : config[forkMap[name]] ?? null,
     }))
     .filter((fork) => fork.block !== null)
   if (config.terminalTotalDifficulty !== undefined) {
     params.hardforks.push({
-      name: 'merge',
+      name: Hardfork.Merge,
       td: config.terminalTotalDifficulty,
       block: null,
     })
@@ -253,35 +272,20 @@ async function parseGethParams(json: any) {
 }
 
 /**
- * Transforms Geth formatted nonce (i.e. hex string) to 8 byte hex prefixed string used internally
- * @param nonce as a string parsed from the Geth genesis file
- * @returns nonce as a hex-prefixed 8 byte string
- */
-function formatNonce(nonce: string): string {
-  if (nonce === undefined || nonce === '0x0') {
-    return '0x0000000000000000'
-  }
-  if (isHexPrefixed(nonce)) {
-    return '0x' + stripHexPrefix(nonce).padStart(16, '0')
-  }
-  return '0x' + nonce.padStart(16, '0')
-}
-
-/**
  * Parses a genesis.json exported from Geth into parameters for Common instance
  * @param json representing the Geth genesis file
  * @param name optional chain name
- * @returns
+ * @returns parsed params
  */
 export async function parseCustomParams(json: any, name?: string) {
   try {
-    if (json.config && json.difficulty && json.gasLimit && json.alloc) {
-      json.name = name
-      json.nonce = formatNonce(json.nonce)
-      return parseGethParams(json)
-    } else {
-      throw new Error('Invalid format')
+    if (['config', 'difficulty', 'gasLimit', 'alloc'].some((field) => !(field in json))) {
+      throw new Error('Invalid format, expected geth genesis fields missing')
     }
+    if (name) {
+      json.name = name
+    }
+    return parseGethParams(json)
   } catch (e: any) {
     throw new Error(`Error parsing parameters file: ${e.message}`)
   }

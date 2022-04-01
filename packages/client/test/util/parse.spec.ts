@@ -92,14 +92,21 @@ tape('[Util/Parse]', (t) => {
   })
 
   t.test('should import poa network params correctly', async (t) => {
-    t.plan(2)
+    t.plan(3)
     const json = require('../testdata/geth-genesis/poa.json')
-    const params = await parseCustomParams(json, 'poa')
+    let params = await parseCustomParams(json, 'poa')
     t.equals(params.genesis.nonce, '0x0000000000000000', 'nonce is formatted correctly')
     t.deepEquals(
       params.consensus,
       { type: 'poa', algorithm: 'clique', clique: { period: 15, epoch: 30000 } },
       'consensus config matches'
+    )
+    json.nonce = '00'
+    params = await parseCustomParams(json, 'poa')
+    t.equals(
+      params.genesis.nonce,
+      '0x0000000000000000',
+      'non-hex prefixed nonce is formatted correctly'
     )
   })
 

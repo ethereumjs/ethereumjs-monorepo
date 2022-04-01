@@ -60,7 +60,7 @@ export class FullSynchronizer extends Synchronizer {
     this.startingBlock = number
     this.config.chainCommon.setHardforkByBlockNumber(number, td)
     this.config.logger.info(
-      `Latest local block: number=${number} td=${td} hash=${short(
+      `Latest local block number=${Number(number)} td=${td} hash=${short(
         hash
       )} hardfork=${this.config.chainCommon.hardfork()}`
     )
@@ -222,7 +222,10 @@ export class FullSynchronizer extends Synchronizer {
         attentionHF = `${nextHF} HF in ${remaining} blocks`
       }
     } else {
-      if (this.config.chainCommon.hardfork() === Hardfork.PreMerge) {
+      if (
+        this.config.chainCommon.hardfork() === Hardfork.MergeForkBlock &&
+        !this.config.chainCommon.gteHardfork(Hardfork.Merge)
+      ) {
         const mergeTD = this.config.chainCommon.hardforkTD(Hardfork.Merge)!
         const td = this.chain.blocks.td
         const remaining = mergeTD.sub(td)

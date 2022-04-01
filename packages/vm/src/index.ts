@@ -1,7 +1,7 @@
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Account, Address, BNLike } from 'ethereumjs-util'
 import Blockchain from '@ethereumjs/blockchain'
-import Common, { Chain } from '@ethereumjs/common'
+import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { StateManager, DefaultStateManager } from './state/index'
 import { default as runCode, RunCodeOpts } from './runCode'
 import { default as runCall, RunCallOpts } from './runCall'
@@ -253,21 +253,21 @@ export default class VM extends AsyncEventEmitter {
     } else {
       const DEFAULT_CHAIN = Chain.Mainnet
       const supportedHardforks = [
-        'chainstart',
-        'homestead',
-        'dao',
-        'tangerineWhistle',
-        'spuriousDragon',
-        'byzantium',
-        'constantinople',
-        'petersburg',
-        'istanbul',
-        'muirGlacier',
-        'berlin',
-        'london',
-        'arrowGlacier',
-        'preMerge',
-        'merge',
+        Hardfork.Chainstart,
+        Hardfork.Homestead,
+        Hardfork.Dao,
+        Hardfork.TangerineWhistle,
+        Hardfork.SpuriousDragon,
+        Hardfork.Byzantium,
+        Hardfork.Constantinople,
+        Hardfork.Petersburg,
+        Hardfork.Istanbul,
+        Hardfork.MuirGlacier,
+        Hardfork.Berlin,
+        Hardfork.London,
+        Hardfork.ArrowGlacier,
+        Hardfork.MergeForkBlock,
+        Hardfork.Merge,
       ]
       this._common = new Common({
         chain: DEFAULT_CHAIN,

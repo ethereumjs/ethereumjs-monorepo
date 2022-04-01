@@ -13,6 +13,6 @@ export const hardforks = [
   ['london', require('./london.json')],
   ['shanghai', require('./shanghai.json')],
   ['arrowGlacier', require('./arrowGlacier.json')],
-  ['preMerge', require('./preMerge.json')],
+  ['mergeForkBlock', require('./mergeForkBlock.json')],
   ['merge', require('./merge.json')],
 ]

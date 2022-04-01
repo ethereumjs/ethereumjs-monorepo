@@ -36,6 +36,11 @@ tape('BlockBuilder', async (t) => {
 
     await blockBuilder.addTransaction(tx)
     const block = await blockBuilder.build()
+    st.equal(
+      blockBuilder.transactionReceipts.length,
+      1,
+      'should have the correct number of tx receipts'
+    )
 
     // block should successfully execute with VM.runBlock and have same outputs
     block.transactions[0].getSenderAddress = () => {
@@ -67,6 +72,11 @@ tape('BlockBuilder', async (t) => {
         st.fail('wrong error thrown')
       }
     }
+    st.equal(
+      blockBuilder.transactionReceipts.length,
+      0,
+      'should have the correct number of tx receipts'
+    )
     st.end()
   })
 
@@ -348,6 +358,11 @@ tape('BlockBuilder', async (t) => {
     }
 
     const block = await blockBuilder.build()
+    st.equal(
+      blockBuilder.transactionReceipts.length,
+      2,
+      'should have the correct number of tx receipts'
+    )
 
     st.ok(
       block.header.baseFeePerGas!.eq(genesisBlock.header.calcNextBaseFee()),
