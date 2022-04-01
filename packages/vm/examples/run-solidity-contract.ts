@@ -135,7 +135,7 @@ async function setGreeting(
 async function getGreeting(vm: VM, contractAddress: Address, caller: Address) {
   const sigHash = new Interface(['function greet()']).getSighash('greet')
 
-  const greetResult = await vm.runCall({
+  const greetResult = await vm.evm.runCall({
     to: contractAddress,
     caller: caller,
     origin: caller, // The tx.origin is also the caller here

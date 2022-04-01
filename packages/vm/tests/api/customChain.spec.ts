@@ -93,7 +93,7 @@ tape('VM initialized with custom state ', (t) => {
     const vm = await VM.create({ common, activateGenesisState: true })
     const sigHash = new Interface(['function retrieve()']).getSighash('retrieve')
 
-    const callResult = await vm.runCall({
+    const callResult = await vm.evm.runCall({
       to: Address.fromString(contractAddress),
       data: Buffer.from(sigHash.slice(2), 'hex'),
       caller: Address.fromPrivateKey(privateKey),
