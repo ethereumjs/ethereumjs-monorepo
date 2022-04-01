@@ -111,7 +111,10 @@ export default async function runCall(this: VM, opts: RunCallOpts): Promise<EVMR
     delegatecall: opts.delegatecall ?? false,
   })
 
-  const evm = new EVM(this, txContext, block, { common: this._common })
+  const evm = new EVM(this, txContext, block, {
+    common: this._common,
+    stateManager: this.stateManager,
+  })
 
   return evm.executeMessage(message)
 }

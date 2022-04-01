@@ -103,7 +103,9 @@ export default function runCode(this: VM, opts: RunCodeOpts): Promise<ExecResult
     isStatic: opts.isStatic ?? false,
   })
 
-  const evm = opts.evm ?? new EVM(this, txContext, block, { common: this._common })
+  const evm =
+    opts.evm ??
+    new EVM(this, txContext, block, { common: this._common, stateManager: this.stateManager })
 
   return evm.runInterpreter(message, { pc: opts.pc })
 }

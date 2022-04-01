@@ -58,6 +58,10 @@ export interface EVMOpts {
    * - `experimental`: behaviour can change on patch versions
    */
   common: Common
+  /**
+   * A {@link StateManager} instance to use as the state store
+   */
+  stateManager: StateManager
 }
 
 /**
@@ -186,7 +190,6 @@ export default class EVM {
 
   constructor(vm: any, txContext: TxContext, block: Block, opts: EVMOpts) {
     this._vm = vm
-    this._state = this._vm.vmState
     this._tx = txContext
     this._block = block
     this._refund = BigInt(0)
@@ -202,6 +205,7 @@ export default class EVM {
       }
     }
     this._common = opts.common
+    this._state = opts.stateManager
 
     // Safeguard if "process" is not available (browser)
     if (process !== undefined && process.env.DEBUG) {
