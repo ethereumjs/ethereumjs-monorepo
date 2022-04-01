@@ -138,7 +138,7 @@ tape('EIP-3529 tests', (t) => {
       await vm.stateManager.getContractStorage(address, key)
       vm.vmState.addWarmedStorage(address.toBuffer(), key)
 
-      await vm.runCode({
+      await vm.evm.runCode({
         code,
         address,
         gasLimit,
@@ -146,7 +146,6 @@ tape('EIP-3529 tests', (t) => {
 
       const gasUsed = gasLimit - gasLeft!
       const effectiveGas = gasUsed - gasRefund!
-
       st.equal(effectiveGas, BigInt(testCase.effectiveGas), 'correct effective gas')
       st.equal(gasUsed, BigInt(testCase.usedGas), 'correct used gas')
 

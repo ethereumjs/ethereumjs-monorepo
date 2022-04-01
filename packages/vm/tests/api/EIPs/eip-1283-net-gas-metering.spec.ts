@@ -51,7 +51,7 @@ tape('Constantinople: EIP-1283', async (t) => {
       }
 
       try {
-        const res = await vm.runCall(runCallArgs)
+        const res = await vm.evm.runCall(runCallArgs)
         st.equal(res.execResult.exceptionError, undefined)
         st.equal(res.execResult.gasUsed, BigInt(testCase.used))
         st.equal(res.gasRefund, BigInt(testCase.refund))

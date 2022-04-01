@@ -66,7 +66,7 @@ tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', asyn
     // calculate expected CREATE2 address
     const expectedAddress = create2address(contractAddress, codeHash, valueBuffer)
     // run the actual call
-    const res = await vm.runCall(runCallArgs)
+    const res = await vm.evm.runCall(runCallArgs)
     // retrieve the return value and convert it to an address (remove the first 12 bytes from the 32-byte return value)
     const executionReturnValue = new Address(res.execResult.returnValue.slice(12))
     if (!expectedAddress.equals(executionReturnValue)) {
@@ -111,8 +111,8 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
     to: contractAddress, // call to the contract address
   }
 
-  const byzantiumResult = await vmByzantium.runCall(runCallArgs)
-  const constantinopleResult = await vmConstantinople.runCall(runCallArgs)
+  const byzantiumResult = await vmByzantium.evm.runCall(runCallArgs)
+  const constantinopleResult = await vmConstantinople.evm.runCall(runCallArgs)
 
   t.assert(
     byzantiumResult.execResult.exceptionError &&
@@ -165,7 +165,7 @@ tape('Ensure that precompile activation creates non-empty accounts', async (t) =
     value: BigInt(1),
   }
 
-  const resultNotActivated = await vmNotActivated.runCall(runCallArgs)
+  const resultNotActivated = await vmNotActivated.evm.runCall(runCallArgs)
   const resultActivated = await vmActivated.runCall(runCallArgs)
 
   const diff = resultNotActivated.execResult.gasUsed - resultActivated.execResult.gasUsed
@@ -219,7 +219,7 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
     gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
   }
 
-  const result = await vm.runCall(runCallArgs)
+  const result = await vm.evm.runCall(runCallArgs)
 
   t.equal(result.execResult.gasUsed, BigInt(5812), 'gas used correct')
   t.equal(result.gasRefund, BigInt(4200), 'gas refund correct')
@@ -246,7 +246,7 @@ tape('ensure correct gas for pre-constantinople sstore', async (t) => {
     gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
   }
 
-  const result = await vm.runCall(runCallArgs)
+  const result = await vm.evm.runCall(runCallArgs)
 
   t.equal(result.execResult.gasUsed, BigInt(20006), 'gas used correct')
   t.equal(result.gasRefund, BigInt(0), 'gas refund correct')
@@ -273,7 +273,7 @@ tape('ensure correct gas for calling non-existent accounts in homestead', async 
     gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
   }
 
-  const result = await vm.runCall(runCallArgs)
+  const result = await vm.evm.runCall(runCallArgs)
 
   // 7x push + gas + sub + call + callNewAccount
   // 7*3 + 2 + 3 + 40 + 25000 = 25066
@@ -305,7 +305,7 @@ tape(
       gasLimit: BigInt(200),
     }
 
-    const result = await vm.runCall(runCallArgs)
+    const result = await vm.evm.runCall(runCallArgs)
 
     t.equal(runCallArgs.gasLimit, result.execResult.gasUsed, 'gas used correct')
     t.equal(result.gasRefund, BigInt(0), 'gas refund correct')
@@ -336,7 +336,7 @@ tape('ensure selfdestruct pays for creating new accounts', async (t) => {
     gasLimit: BigInt(0xffffffffff),
   }
 
-  const result = await vm.runCall(runCallArgs)
+  const result = await vm.evm.runCall(runCallArgs)
   // gas: 5000 (selfdestruct) + 25000 (call new account)  + push (1) = 30003
   t.equal(result.execResult.gasUsed, BigInt(30003), 'gas used correct')
   // selfdestruct refund
@@ -403,7 +403,7 @@ tape('ensure that sstores pay for the right gas costs pre-byzantium', async (t) 
       value: BigInt(callData.value),
     }
 
-    const result = await vm.runCall(runCallArgs)
+    const result = await vm.evm.runCall(runCallArgs)
     t.equal(result.execResult.gasUsed, BigInt(callData.gas), 'gas used correct')
     t.equal(result.gasRefund, BigInt(callData.refund), 'gas refund correct')
   }
@@ -448,13 +448,13 @@ tape(
       gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
     }
 
-    await vm.runCall(runCallArgs)
+    await vm.evm.runCall(runCallArgs)
     let storage = await vm.stateManager.getContractStorage(address, slot)
 
     // The nonce is MAX_UINT64 - 1, so we are allowed to create a contract (nonce of creating contract is now MAX_UINT64)
     t.ok(!storage.equals(emptyBuffer), 'succesfully created contract')
 
-    await vm.runCall(runCallArgs)
+    await vm.evm.runCall(runCallArgs)
 
     // The nonce is MAX_UINT64, so we are NOT allowed to create a contract (nonce of creating contract is now MAX_UINT64)
     storage = await vm.stateManager.getContractStorage(address, slot)
@@ -491,7 +491,7 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
     gasPrice: BigInt(70000000000),
   }
 
-  const result = await vm.runCall(runCallArgs)
+  const result = await vm.evm.runCall(runCallArgs)
 
   const expectedAddress = Buffer.from('8eae784e072e961f76948a785b62c9a950fb17ae', 'hex')
   const expectedCode = Buffer.from(
@@ -517,7 +517,7 @@ tape('Throws on negative call value', async (t) => {
   }
 
   try {
-    await vm.runCall(runCallArgs)
+    await vm.evm.runCall(runCallArgs)
     t.fail('should not accept a negative call value')
   } catch (err: any) {
     t.ok(err.message.includes('value field cannot be negative'), 'throws on negative call value')
@@ -551,7 +551,7 @@ tape('runCall() -> skipBalance behavior', async (t) => {
 
   for (const balance of [undefined, BigInt(5)]) {
     await vm.stateManager.modifyAccountFields(sender, { nonce: BigInt(0), balance })
-    const res = await vm.runCall(runCallArgs)
+    const res = await vm.evm.runCall(runCallArgs)
     t.pass('runCall should not throw with no balance and skipBalance')
     const senderBalance = (await vm.stateManager.getAccount(sender)).balance
     t.equal(
@@ -562,7 +562,7 @@ tape('runCall() -> skipBalance behavior', async (t) => {
     t.equal(res.execResult.exceptionError, undefined, 'no exceptionError with skipBalance')
   }
 
-  const res2 = await vm.runCall({ ...runCallArgs, skipBalance: false })
+  const res2 = await vm.evm.runCall({ ...runCallArgs, skipBalance: false })
   t.equal(
     res2.execResult.exceptionError?.error,
     'insufficient balance',

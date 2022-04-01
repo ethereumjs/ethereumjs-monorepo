@@ -20,7 +20,7 @@ import Message from './message'
 import EEI from './eei'
 // eslint-disable-next-line
 import * as eof from './opcodes/eof'
-import { Log } from './types'
+import { Log, RunCallOpts, RunCodeOpts } from './types'
 import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
 import VM from '../index'
 import { TransientStorage } from '../state'
@@ -168,10 +168,10 @@ export function VmErrorResult(error: VmError, gasUsed: bigint): ExecResult {
  * @ignore
  */
 export default class EVM {
-  _vm: VM
-  _state: VmState
-  _tx: TxContext
-  _block: Block
+  _vm: any
+  _state: StateManager
+  _tx?: TxContext
+  _block?: Block
   /**
    * Amount of gas to refund from deleting storage values
    */
@@ -190,10 +190,8 @@ export default class EVM {
    */
   protected readonly DEBUG: boolean = false
 
-  constructor(vm: any, txContext: TxContext, block: Block, opts: EVMOpts) {
+  constructor(vm: any, opts: EVMOpts) {
     this._vm = vm
-    this._tx = txContext
-    this._block = block
     this._refund = BigInt(0)
     this._transientStorage = new TransientStorage()
 
@@ -593,9 +591,9 @@ export default class EVM {
       code: message.code as Buffer,
       isStatic: message.isStatic || false,
       depth: message.depth || 0,
-      gasPrice: this._tx.gasPrice,
-      origin: this._tx.origin || message.caller || Address.zero(),
-      block: this._block || new Block(),
+      gasPrice: this._tx!.gasPrice,
+      origin: this._tx!.origin || message.caller || Address.zero(),
+      block: this._block ?? new Block(),
       contract: await this._state.getAccount(message.to || Address.zero()),
       codeAddress: message.codeAddress,
     }
@@ -644,6 +642,65 @@ export default class EVM {
       gasUsed,
       returnValue: result.returnValue ? result.returnValue : Buffer.alloc(0),
     }
+  }
+
+  /**
+   * @ignore
+   */
+  async runCall(opts: RunCallOpts): Promise<EVMResult> {
+    this._block = opts.block ?? Block.fromBlockData({}, { common: this._common })
+
+    const txContext = new TxContext(
+      opts.gasPrice ?? BigInt(0),
+      opts.origin ?? opts.caller ?? Address.zero()
+    )
+    this._tx = txContext
+
+    const message = new Message({
+      caller: opts.caller,
+      gasLimit: opts.gasLimit ?? 0xffffffn,
+      to: opts.to ?? undefined,
+      value: opts.value,
+      data: opts.data,
+      code: opts.code,
+      depth: opts.depth ?? 0,
+      isCompiled: opts.isCompiled ?? false,
+      isStatic: opts.isStatic ?? false,
+      salt: opts.salt ?? null,
+      selfdestruct: opts.selfdestruct ?? {},
+      delegatecall: opts.delegatecall ?? false,
+    })
+
+    return this.executeMessage(message)
+  }
+
+  /**
+   * Bound to the global VM and therefore
+   * shouldn't be used directly from the evm class
+   * @hidden
+   */
+  async runCode(opts: RunCodeOpts): Promise<ExecResult> {
+    this._block = opts.block ?? Block.fromBlockData({}, { common: this._common })
+
+    const txContext = new TxContext(
+      opts.gasPrice ?? BigInt(0),
+      opts.origin ?? opts.caller ?? Address.zero()
+    )
+    this._tx = txContext
+
+    const message = new Message({
+      code: opts.code,
+      data: opts.data,
+      gasLimit: opts.gasLimit,
+      to: opts.address ?? Address.zero(),
+      caller: opts.caller,
+      value: opts.value,
+      depth: opts.depth ?? 0,
+      selfdestruct: opts.selfdestruct ?? {},
+      isStatic: opts.isStatic ?? false,
+    })
+
+    return this.runInterpreter(message, { pc: opts.pc })
   }
 
   /**

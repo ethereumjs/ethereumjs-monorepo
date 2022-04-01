@@ -13,7 +13,7 @@ import {
 } from '@ethereumjs/tx'
 import VM from './index'
 import Bloom from './bloom'
-import { default as EVM, EVMResult } from './evm/evm'
+import { EVMResult } from './evm/evm'
 import Message from './evm/message'
 import TxContext from './evm/txContext'
 import type {
@@ -406,10 +406,6 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     value: value,
     data,
   })
-  const evm = new EVM(this, txContext, block, {
-    common: this._common,
-    stateManager: this.stateManager,
-  })
   if (this.DEBUG) {
     debug(
       `Running tx=0x${
@@ -420,7 +416,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     )
   }
 
-  const results = (await evm.executeMessage(message)) as RunTxResult
+  this.evm._tx = txContext
+  this.evm._block = block
+  const results = (await this.evm.executeMessage(message)) as RunTxResult
   if (this.DEBUG) {
     const { gasUsed, exceptionError, returnValue } = results.execResult
     debug('-'.repeat(100))

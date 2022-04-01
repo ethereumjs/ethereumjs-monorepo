@@ -32,7 +32,7 @@ tape('VM: custom opcodes', (t) => {
         correctOpcodeName = e.opcode.name === testOpcode.opcodeName
       }
     })
-    const res = await vm.runCode({
+    const res = await vm.evm.runCode({
       code: Buffer.from('21', 'hex'),
       gasLimit: BigInt(gas),
     })
@@ -46,7 +46,7 @@ tape('VM: custom opcodes', (t) => {
       customOpcodes: [{ opcode: 0x20 }], // deletes KECCAK opcode
     })
     const gas = BigInt(123456)
-    const res = await vm.runCode({
+    const res = await vm.evm.runCode({
       code: Buffer.from('20', 'hex'),
       gasLimit: BigInt(gas),
     })
@@ -60,7 +60,7 @@ tape('VM: custom opcodes', (t) => {
       customOpcodes: [{ opcode: 0x01 }], // deletes ADD opcode
     })
     const gas = BigInt(123456)
-    const res = await vm.runCode({
+    const res = await vm.evm.runCode({
       code: Buffer.from('01', 'hex'),
       gasLimit: BigInt(gas),
     })
@@ -76,7 +76,7 @@ tape('VM: custom opcodes', (t) => {
     // PUSH 01 // RETURNDATA length
     // PUSH 1F // RETURNDATA offset
     // RETURN  // Returns 0x05
-    const result = await vmDefault.runCode({
+    const result = await vmDefault.evm.runCode({
       code: Buffer.from('60046001016000526001601FF3', 'hex'),
       gasLimit: BigInt(gas),
     })
@@ -89,7 +89,7 @@ tape('VM: custom opcodes', (t) => {
       customOpcodes: [testOpcode],
     })
     const gas = 123456
-    const res = await vm.runCode({
+    const res = await vm.evm.runCode({
       code: Buffer.from('20', 'hex'),
       gasLimit: BigInt(gas),
     })

@@ -23,7 +23,7 @@ tape('EIP 3541 tests', (t) => {
       stack = e.stack
     })
 
-    const result = await vm.runCode({
+    const result = await vm.evm.runCode({
       code: Buffer.from('5F', 'hex'),
       gasLimit: BigInt(10),
     })
@@ -44,7 +44,7 @@ tape('EIP 3541 tests', (t) => {
 
     const depth = Number(common.param('vm', 'stackLimit'))
 
-    const result = await vm.runCode({
+    const result = await vm.evm.runCode({
       code: Buffer.from('5F'.repeat(depth), 'hex'),
       gasLimit: BigInt(10000),
     })
@@ -64,7 +64,7 @@ tape('EIP 3541 tests', (t) => {
 
     const depth = Number(common.param('vm', 'stackLimit')!) + 1
 
-    const result = await vm.runCode({
+    const result = await vm.evm.runCode({
       code: Buffer.from('5F'.repeat(depth), 'hex'),
       gasLimit: BigInt(10000),
     })
@@ -76,7 +76,7 @@ tape('EIP 3541 tests', (t) => {
   t.test('push0 is not available if EIP3855 is not activated', async (st) => {
     const vm = await VM.create({ common: commonNoEIP3855 })
 
-    const result = await vm.runCode({
+    const result = await vm.evm.runCode({
       code: Buffer.from('5F', 'hex'),
       gasLimit: BigInt(10000),
     })

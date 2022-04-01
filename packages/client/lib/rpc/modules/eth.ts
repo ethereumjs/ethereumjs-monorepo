@@ -470,7 +470,7 @@ export class Eth {
         value: toType(value, TypeOutput.BigInt),
         data: data ? toBuffer(data) : undefined,
       }
-      const { execResult } = await vm.runCall(runCallOpts)
+      const { execResult } = await vm.evm.runCall(runCallOpts)
       return bufferToHex(execResult.returnValue)
     } catch (error: any) {
       throw {
