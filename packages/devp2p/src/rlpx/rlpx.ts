@@ -84,7 +84,7 @@ export class RLPx extends EventEmitter {
 
         if (this._getOpenSlots() > 0) {
           return this._connectToPeer(peer)
-        } else if (this._peersQueue.length < 50) {
+        } else if (this._getOpenQueueSlots() > 0) {
           this._peersQueue.push({ peer, ts: 0 }) // save to queue
         }
       })
@@ -180,6 +180,10 @@ export class RLPx extends EventEmitter {
     return Math.max(this._maxPeers - this._peers.size, 0)
   }
 
+  _getOpenQueueSlots() {
+    return this._maxPeers * 2 - this._peersQueue.length
+  }
+
   _connectToPeer(peer: PeerInfo) {
     this.connect(peer).catch((err) => {
       if (this._dpt === null) return
@@ -247,7 +251,7 @@ export class RLPx extends EventEmitter {
 
       if (!disconnectWe && reason === DISCONNECT_REASONS.TOO_MANY_PEERS) {
         // hack
-        if (this._peersQueue.length < 50) {
+        if (this._getOpenQueueSlots() > 0) {
           this._peersQueue.push({
             peer: {
               id: peer.getId()!,
