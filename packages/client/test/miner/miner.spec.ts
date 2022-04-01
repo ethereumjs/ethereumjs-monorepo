@@ -3,6 +3,7 @@ import td from 'testdouble'
 import Common, { Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, Transaction } from '@ethereumjs/tx'
 import { Block, BlockHeader } from '@ethereumjs/block'
+import { CliqueConsensus } from '@ethereumjs/blockchain'
 import { DefaultStateManager, StateManager } from '@ethereumjs/vm/dist/state'
 import { Address } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
@@ -399,7 +400,7 @@ tape('[Miner]', async (t) => {
     const miner = new Miner({ config, synchronizer, execution })
 
     const { vm } = execution
-    ;(vm.blockchain.consensus as any).cliqueActiveSigners = () => [A.address] // stub
+    ;(vm.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [A.address] // stub
     ;(miner as any).chainUpdated = async () => {} // stub
     miner.start()
     await wait(100)
