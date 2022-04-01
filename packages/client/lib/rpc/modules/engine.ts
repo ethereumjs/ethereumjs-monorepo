@@ -173,7 +173,7 @@ const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolea
 const assembleBlock = async (
   payload: ExecutionPayloadV1,
   chain: Chain
-): Promise<Block | PayloadStatusV1> => {
+): Promise<{ block?: Block; error?: PayloadStatusV1 }> => {
   const {
     blockNumber: number,
     receiptsRoot: receiptTrie,
@@ -193,7 +193,8 @@ const assembleBlock = async (
       const validationError = `Invalid tx at index ${index}: ${error}`
       config.logger.error(validationError)
       const latestValidHash = await validHash(toBuffer(payload.parentHash), chain)
-      return { status: Status.INVALID, latestValidHash, validationError }
+      const response = { status: Status.INVALID, latestValidHash, validationError }
+      return { error: response }
     }
   }
 
@@ -221,16 +222,18 @@ const assembleBlock = async (
       }, received: ${bufferToHex(block.hash())}`
       config.logger.debug(validationError)
       const latestValidHash = await validHash(toBuffer(header.parentHash), chain)
-      return { status: Status.INVALID_BLOCK_HASH, latestValidHash, validationError }
+      const response = { status: Status.INVALID_BLOCK_HASH, latestValidHash, validationError }
+      return { error: response }
     }
   } catch (error) {
     const validationError = `Error verifying block during init: ${error}`
     config.logger.debug(validationError)
     const latestValidHash = await validHash(toBuffer(header.parentHash), chain)
-    return { status: Status.INVALID, latestValidHash, validationError }
+    const response = { status: Status.INVALID, latestValidHash, validationError }
+    return { error: response }
   }
 
-  return block
+  return { block }
 }
 
 /**
@@ -349,11 +352,17 @@ export class Engine {
     const [payload] = params
     const { parentHash, blockHash } = payload
 
-    const block = await assembleBlock(payload, this.chain)
-    if (!(block instanceof Block)) {
-      // Return error response
-      this.connectionManager.lastNewPayload({ payload, response: block })
-      return block
+    const { block, error } = await assembleBlock(payload, this.chain)
+    if (!block || error) {
+      let response = error
+      if (!response) {
+        const validationError = `Error assembling block during init`
+        this.config.logger.debug(validationError)
+        const latestValidHash = await validHash(toBuffer(payload.parentHash), this.chain)
+        response = { status: Status.INVALID, latestValidHash, validationError }
+      }
+      this.connectionManager.lastNewPayload({ payload, response })
+      return response
     }
 
     const blockExists = await validHash(toBuffer(blockHash), this.chain)
