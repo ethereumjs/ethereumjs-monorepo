@@ -221,7 +221,9 @@ export class Miner {
       // inTurn = await (vmCopy.blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
       //   signerAddress
       // )
-      inTurn = await vmCopy.blockchain.cliqueSignerInTurn(signerAddress)
+      inTurn = await (vmCopy.blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
+        signerAddress
+      )
       difficulty = inTurn ? 2 : 1
     }
 
