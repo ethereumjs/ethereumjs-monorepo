@@ -87,7 +87,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
       const block = makeBlockFromEnv(testData.env, { common })
 
       if (options.jsontrace) {
-        vm.on('step', function (e: InterpreterStep) {
+        vm.evm.on('step', function (e: InterpreterStep) {
           let hexStack = []
           hexStack = e.stack.map((item: bigint) => {
             return '0x' + item.toString(16)

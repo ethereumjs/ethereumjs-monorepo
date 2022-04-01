@@ -268,7 +268,7 @@ export default class EVM extends AsyncEventEmitter {
    * performance reasons to avoid string literal evaluation
    * @hidden
    */
-  protected readonly DEBUG: boolean = false
+  public readonly DEBUG: boolean = false
 
   constructor(vm: any, opts: EVMOpts) {
     super()
@@ -683,7 +683,7 @@ export default class EVM extends AsyncEventEmitter {
       eei._result.selfdestruct = message.selfdestruct
     }
 
-    const interpreter = new Interpreter(this._vm, eei, this._common)
+    const interpreter = new Interpreter(this._vm, eei, this._common, this)
     const interpreterRes = await interpreter.run(message.code as Buffer, opts)
 
     let result = eei._result

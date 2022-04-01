@@ -27,7 +27,7 @@ tape('VM: custom opcodes', (t) => {
     })
     const gas = 123456
     let correctOpcodeName = false
-    vm.on('step', (e: InterpreterStep) => {
+    vm.evm.on('step', (e: InterpreterStep) => {
       if (e.pc === 0) {
         correctOpcodeName = e.opcode.name === testOpcode.opcodeName
       }

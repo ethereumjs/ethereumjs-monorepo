@@ -19,7 +19,7 @@ tape('EIP 2929: gas cost tests', (t) => {
     let currentGas = initialGas
     const vm = new VM({ common })
 
-    vm.on('step', function (step: any) {
+    vm.evm.on('step', function (step: any) {
       const gasUsed = currentGas - step.gasLeft
       currentGas = step.gasLeft
 
