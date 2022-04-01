@@ -82,13 +82,6 @@ export interface VMOpts {
    * Default: `false`
    */
   activateGenesisState?: boolean
-  /**
-   * Allows unlimited contract sizes while debugging. By setting this to `true`, the check for
-   * contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed.
-   *
-   * Default: `false` [ONLY set to `true` during debugging]
-   */
-  allowUnlimitedContractSize?: boolean
 
   /**
    * Select hardfork based upon block number. This automatically switches to the right hard fork based upon the block number.
@@ -157,7 +150,6 @@ export default class VM extends AsyncEventEmitter {
 
   protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
-  protected readonly _allowUnlimitedContractSize: boolean
   // This opcode data is always set since `getActiveOpcodes()` is called in the constructor
   protected _opcodes!: OpcodeList
   protected _handlers!: Map<number, OpHandler>
@@ -270,8 +262,6 @@ export default class VM extends AsyncEventEmitter {
     })
 
     this.blockchain = opts.blockchain ?? new Blockchain({ common: this._common })
-
-    this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize ?? false
 
     if (opts.hardforkByBlockNumber !== undefined && opts.hardforkByTD !== undefined) {
       throw new Error(
