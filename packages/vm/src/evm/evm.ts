@@ -20,9 +20,42 @@ import { short } from './opcodes/util'
 import * as eof from './opcodes/eof'
 import { Log } from './types'
 import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
+import Common from '@ethereumjs/common'
 
 const debug = createDebugLogger('vm:evm')
 const debugGas = createDebugLogger('vm:evm:gas')
+
+/**
+ * Options for instantiating a {@link VM}.
+ */
+export interface EVMOpts {
+  /**
+   * Use a {@link Common} instance for EVM instantiation.
+   *
+   * ### Supported EIPs
+   *
+   * - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - EIP-1559 Fee Market
+   * - [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - VM simple subroutines (`experimental`)
+   * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles (`experimental`)
+   * - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp Gas Cost
+   * - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Typed Transactions
+   * - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - Gas cost increases for state access opcodes
+   * - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Access List Transaction Type
+   * - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - BASEFEE opcode
+   * - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
+   * - [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`experimental`)
+   * - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
+   * - [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) - EOF - Code Validation (`experimental`)
+   * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction (`experimental`)
+   * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
+   * - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
+   *
+   * *Annotations:*
+   *
+   * - `experimental`: behaviour can change on patch versions
+   */
+  common: Common
+}
 
 /**
  * Result of executing a message via the {@link EVM}.
@@ -139,12 +172,26 @@ export default class EVM {
    */
   _refund: bigint
 
-  constructor(vm: any, txContext: TxContext, block: Block) {
+  _common: Common
+
+  constructor(vm: any, txContext: TxContext, block: Block, opts: EVMOpts) {
     this._vm = vm
     this._state = this._vm.stateManager
     this._tx = txContext
     this._block = block
     this._refund = BigInt(0)
+
+    // Supported EIPs
+    const supportedEIPs = [
+      1559, 2315, 2537, 2565, 2718, 2929, 2930, 3198, 3529, 3540, 3541, 3607, 3670, 3855, 3860,
+      4399,
+    ]
+    for (const eip of opts.common.eips()) {
+      if (!supportedEIPs.includes(eip)) {
+        throw new Error(`EIP-${eip} is not supported by the VM`)
+      }
+    }
+    this._common = opts.common
   }
 
   /**
@@ -155,7 +202,7 @@ export default class EVM {
   async executeMessage(message: Message): Promise<EVMResult> {
     await this._vm._emit('beforeMessage', message)
 
-    if (!message.to && this._vm._common.isActivatedEIP(2929)) {
+    if (!message.to && this._common.isActivatedEIP(2929)) {
       message.code = message.data
       ;(<any>this._state).addWarmedAddress((await this._generateAddress(message)).buf)
     }
@@ -208,7 +255,7 @@ export default class EVM {
     result.execResult.gasRefund = this._refund
 
     if (err) {
-      if (this._vm._common.gteHardfork('homestead') || err.error != ERROR.CODESTORE_OUT_OF_GAS) {
+      if (this._common.gteHardfork('homestead') || err.error != ERROR.CODESTORE_OUT_OF_GAS) {
         result.execResult.logs = []
         await this._state.revert()
         if (this._vm.DEBUG) {
@@ -306,8 +353,8 @@ export default class EVM {
     // Reduce tx value from sender
     await this._reduceSenderBalance(account, message)
 
-    if (this._vm._common.isActivatedEIP(3860)) {
-      if (message.data.length > this._vm._common.param('vm', 'maxInitCodeSize')) {
+    if (this._common.isActivatedEIP(3860)) {
+      if (message.data.length > this._common.param('vm', 'maxInitCodeSize')) {
         return {
           gasUsed: message.gasLimit,
           createdAddress: message.to,
@@ -358,7 +405,7 @@ export default class EVM {
 
     toAccount = await this._state.getAccount(message.to)
     // EIP-161 on account creation and CREATE execution
-    if (this._vm._common.gteHardfork('spuriousDragon')) {
+    if (this._common.gteHardfork('spuriousDragon')) {
       toAccount.nonce += BigInt(1)
     }
 
@@ -405,8 +452,7 @@ export default class EVM {
     let returnFee = BigInt(0)
     if (!result.exceptionError) {
       returnFee =
-        BigInt(result.returnValue.length) *
-        BigInt(this._vm._common.param('gasPrices', 'createData'))
+        BigInt(result.returnValue.length) * BigInt(this._common.param('gasPrices', 'createData'))
       totalGas = totalGas + returnFee
       if (this._vm.DEBUG) {
         debugGas(`Add return value size fee (${returnFee} to gas used (-> ${totalGas}))`)
@@ -417,8 +463,8 @@ export default class EVM {
     let allowedCodeSize = true
     if (
       !result.exceptionError &&
-      this._vm._common.gteHardfork('spuriousDragon') &&
-      result.returnValue.length > this._vm._common.param('vm', 'maxCodeSize')
+      this._common.gteHardfork('spuriousDragon') &&
+      result.returnValue.length > this._common.param('vm', 'maxCodeSize')
     ) {
       allowedCodeSize = false
     }
@@ -426,8 +472,8 @@ export default class EVM {
     // If enough gas and allowed code size
     let CodestoreOOG = false
     if (totalGas <= message.gasLimit && (this._vm._allowUnlimitedContractSize || allowedCodeSize)) {
-      if (this._vm._common.isActivatedEIP(3541) && result.returnValue[0] === eof.FORMAT) {
-        if (!this._vm._common.isActivatedEIP(3540)) {
+      if (this._common.isActivatedEIP(3541) && result.returnValue[0] === eof.FORMAT) {
+        if (!this._common.isActivatedEIP(3540)) {
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
         }
         // Begin EOF1 contract code checks
@@ -438,7 +484,7 @@ export default class EVM {
             ...result,
             ...INVALID_EOF_RESULT(message.gasLimit),
           }
-        } else if (this._vm._common.isActivatedEIP(3670)) {
+        } else if (this._common.isActivatedEIP(3670)) {
           // EIP-3670 EOF1 opcode check
           const codeStart = eof1CodeAnalysisResults.data > 0 ? 10 : 7
           // The start of the code section of an EOF1 compliant contract will either be
@@ -461,7 +507,7 @@ export default class EVM {
         result.gasUsed = totalGas
       }
     } else {
-      if (this._vm._common.gteHardfork('homestead')) {
+      if (this._common.gteHardfork('homestead')) {
         if (this._vm.DEBUG) {
           debug(`Not enough gas or code size not allowed (>= Homestead)`)
         }
@@ -489,7 +535,7 @@ export default class EVM {
       }
     } else if (CodestoreOOG) {
       // This only happens at Frontier. But, let's do a sanity check;
-      if (!this._vm._common.gteHardfork('homestead')) {
+      if (!this._common.gteHardfork('homestead')) {
         // Pre-Homestead behavior; put an empty contract.
         // This contract would be considered "DEAD" in later hard forks.
         // It is thus an unecessary default item, which we have to save to dik
@@ -527,12 +573,12 @@ export default class EVM {
       contract: await this._state.getAccount(message.to || Address.zero()),
       codeAddress: message.codeAddress,
     }
-    const eei = new EEI(env, this._state, this, this._vm._common, message.gasLimit)
+    const eei = new EEI(env, this._state, this, this._common, message.gasLimit)
     if (message.selfdestruct) {
       eei._result.selfdestruct = message.selfdestruct
     }
 
-    const interpreter = new Interpreter(this._vm, eei)
+    const interpreter = new Interpreter(this._vm, eei, this._common)
     const interpreterRes = await interpreter.run(message.code as Buffer, opts)
 
     let result = eei._result
@@ -572,7 +618,7 @@ export default class EVM {
    * if no such precompile exists.
    */
   getPrecompile(address: Address): PrecompileFunc {
-    return getPrecompile(address, this._vm._common)
+    return getPrecompile(address, this._common)
   }
 
   /**
@@ -590,7 +636,7 @@ export default class EVM {
     const opts = {
       data,
       gasLimit,
-      _common: this._vm._common,
+      _common: this._common,
       _VM: this._vm,
     }
 

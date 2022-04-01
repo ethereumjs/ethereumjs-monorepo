@@ -41,28 +41,6 @@ export interface VMOpts {
    * - `hardfork`: `mainnet` hardforks up to the `MuirGlacier` hardfork
    * - `eips`: `2537` (usage e.g. `eips: [ 2537, ]`)
    *
-   * ### Supported EIPs
-   *
-   * - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - EIP-1559 Fee Market
-   * - [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - VM simple subroutines (`experimental`)
-   * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles (`experimental`)
-   * - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp Gas Cost
-   * - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Typed Transactions
-   * - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - Gas cost increases for state access opcodes
-   * - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Access List Transaction Type
-   * - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - BASEFEE opcode
-   * - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
-   * - [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`experimental`)
-   * - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
-   * - [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) - EOF - Code Validation (`experimental`)
-   * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction (`experimental`)
-   * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
-   * - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
-   *
-   * *Annotations:*
-   *
-   * - `experimental`: behaviour can change on patch versions
-   *
    * ### Default Setup
    *
    * Default setup if no `Common` instance is provided:
@@ -237,16 +215,6 @@ export default class VM extends AsyncEventEmitter {
     }
 
     if (opts.common) {
-      // Supported EIPs
-      const supportedEIPs = [
-        1559, 2315, 2537, 2565, 2718, 2929, 2930, 3198, 3529, 3540, 3541, 3607, 3670, 3855, 3860,
-        4399,
-      ]
-      for (const eip of opts.common.eips()) {
-        if (!supportedEIPs.includes(eip)) {
-          throw new Error(`EIP-${eip} is not supported by the VM`)
-        }
-      }
       this._common = opts.common
     } else {
       const DEFAULT_CHAIN = Chain.Mainnet
