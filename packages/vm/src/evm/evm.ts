@@ -29,6 +29,38 @@ const debug = createDebugLogger('vm:evm')
 const debugGas = createDebugLogger('vm:evm:gas')
 
 /**
+ * Options for instantiating a {@link VM}.
+ */
+export interface EVMOpts {
+  /**
+   * Use a {@link Common} instance for EVM instantiation.
+   *
+   * ### Supported EIPs
+   *
+   * - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - EIP-1559 Fee Market
+   * - [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - VM simple subroutines (`experimental`)
+   * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles (`experimental`)
+   * - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp Gas Cost
+   * - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Typed Transactions
+   * - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - Gas cost increases for state access opcodes
+   * - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Access List Transaction Type
+   * - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - BASEFEE opcode
+   * - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
+   * - [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`experimental`)
+   * - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
+   * - [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) - EOF - Code Validation (`experimental`)
+   * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction (`experimental`)
+   * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (`experimental`)
+   * - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
+   *
+   * *Annotations:*
+   *
+   * - `experimental`: behaviour can change on patch versions
+   */
+  common: Common
+}
+
+/**
  * Result of executing a message via the {@link EVM}.
  */
 export interface EVMResult {
@@ -157,7 +189,7 @@ export default class EVM {
   async executeMessage(message: Message): Promise<EVMResult> {
     await this._vm._emit('beforeMessage', message)
 
-    if (!message.to && this._vm._common.isActivatedEIP(2929)) {
+    if (!message.to && this._common.isActivatedEIP(2929)) {
       message.code = message.data
       ;(<any>this._state).addWarmedAddress((await this._generateAddress(message)).buf)
     }
@@ -412,7 +444,7 @@ export default class EVM {
     let returnFee = BigInt(0)
     if (!result.exceptionError) {
       returnFee =
-        BigInt(result.returnValue.length) * this._vm._common.param('gasPrices', 'createData')
+        BigInt(result.returnValue.length) * BigInt(this._common.param('gasPrices', 'createData'))
       totalGas = totalGas + returnFee
       if (this._vm.DEBUG) {
         debugGas(`Add return value size fee (${returnFee} to gas used (-> ${totalGas}))`)
@@ -432,8 +464,8 @@ export default class EVM {
     // If enough gas and allowed code size
     let CodestoreOOG = false
     if (totalGas <= message.gasLimit && (this._vm._allowUnlimitedContractSize || allowedCodeSize)) {
-      if (this._vm._common.isActivatedEIP(3541) && result.returnValue[0] === eof.FORMAT) {
-        if (!this._vm._common.isActivatedEIP(3540)) {
+      if (this._common.isActivatedEIP(3541) && result.returnValue[0] === eof.FORMAT) {
+        if (!this._common.isActivatedEIP(3540)) {
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
         }
         // Begin EOF1 contract code checks
@@ -444,7 +476,7 @@ export default class EVM {
             ...result,
             ...INVALID_EOF_RESULT(message.gasLimit),
           }
-        } else if (this._vm._common.isActivatedEIP(3670)) {
+        } else if (this._common.isActivatedEIP(3670)) {
           // EIP-3670 EOF1 opcode check
           const codeStart = eof1CodeAnalysisResults.data > 0 ? 10 : 7
           // The start of the code section of an EOF1 compliant contract will either be
@@ -544,7 +576,7 @@ export default class EVM {
       eei._result.selfdestruct = message.selfdestruct
     }
 
-    const interpreter = new Interpreter(this._vm, eei)
+    const interpreter = new Interpreter(this._vm, eei, this._common)
     const interpreterRes = await interpreter.run(message.code as Buffer, opts)
 
     let result = eei._result
@@ -583,8 +615,8 @@ export default class EVM {
    * Returns code for precompile at the given address, or undefined
    * if no such precompile exists.
    */
-  getPrecompile(address: Address): PrecompileFunc | undefined {
-    return this._vm.precompiles.get(address.buf.toString('hex'))
+  getPrecompile(address: Address): PrecompileFunc {
+    return getPrecompile(address, this._common)
   }
 
   /**
@@ -602,7 +634,7 @@ export default class EVM {
     const opts = {
       data,
       gasLimit,
-      _common: this._vm._common,
+      _common: this._common,
       _VM: this._vm,
     }
 

@@ -406,7 +406,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     value: value,
     data,
   })
-  const evm = new EVM(this, txContext, block)
+  const evm = new EVM(this, txContext, block, { common: this._common })
   if (this.DEBUG) {
     debug(
       `Running tx=0x${
