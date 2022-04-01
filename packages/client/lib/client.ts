@@ -66,7 +66,7 @@ export default class EthereumClient {
     this.config = options.config
     this.chain = new Chain(options)
 
-    if (this.config.syncmode === SyncMode.Full) {
+    if (this.config.syncmode === SyncMode.Full || this.config.syncmode === SyncMode.Beacon) {
       this.services = [
         new FullEthereumService({
           config: this.config,

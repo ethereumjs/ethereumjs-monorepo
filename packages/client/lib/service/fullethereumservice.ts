@@ -1,8 +1,10 @@
 import { Hardfork } from '@ethereumjs/common'
 import { BN } from 'ethereumjs-util'
+import { SyncMode } from '../config'
+import { Skeleton } from '../sync/skeleton'
 import { EthereumService, EthereumServiceOptions } from './ethereumservice'
 import { TxPool } from './txpool'
-import { FullSynchronizer } from '../sync/fullsync'
+import { BeaconSynchronizer, FullSynchronizer } from '../sync'
 import { EthProtocol } from '../net/protocol/ethprotocol'
 import { LesProtocol } from '../net/protocol/lesprotocol'
 import { Peer } from '../net/peer/peer'
@@ -22,7 +24,7 @@ interface FullEthereumServiceOptions extends EthereumServiceOptions {
  * @memberof module:service
  */
 export class FullEthereumService extends EthereumService {
-  public synchronizer: FullSynchronizer
+  public synchronizer!: BeaconSynchronizer | FullSynchronizer
   public lightserv: boolean
   public miner: Miner | undefined
   public execution: VMExecution
@@ -50,16 +52,35 @@ export class FullEthereumService extends EthereumService {
       service: this,
     })
 
-    this.synchronizer = new FullSynchronizer({
-      config: this.config,
-      pool: this.pool,
-      chain: this.chain,
-      stateDB: options.stateDB,
-      metaDB: options.metaDB,
-      txPool: this.txPool,
-      execution: this.execution,
-      interval: this.interval,
-    })
+    if (this.config.syncmode === SyncMode.Full) {
+      this.synchronizer = new FullSynchronizer({
+        config: this.config,
+        pool: this.pool,
+        chain: this.chain,
+        txPool: this.txPool,
+        execution: this.execution,
+        interval: this.interval,
+      })
+    } else if (this.config.syncmode === SyncMode.Beacon) {
+      const skeleton = new Skeleton({
+        config: this.config,
+        chain: this.chain,
+        metaDB: options.metaDB!,
+      })
+      this.synchronizer = new BeaconSynchronizer({
+        config: this.config,
+        pool: this.pool,
+        chain: this.chain,
+        interval: this.interval,
+        skeleton,
+      })
+      this.config.events.on(Event.SYNC_FETCHER_FETCHED, async (...args) => {
+        await this.synchronizer.processBlocks(this.execution, ...args)
+      })
+      this.config.events.on(Event.CHAIN_UPDATED, async () => {
+        await this.execution.run()
+      })
+    }
 
     if (this.config.mine) {
       this.miner = new Miner({
@@ -187,7 +208,9 @@ export class FullEthereumService extends EthereumService {
         )
         this.pool.ban(peer, 9000000)
       } else {
-        this.synchronizer.handleNewBlockHashes(message.data)
+        if (this.synchronizer.type === 'full') {
+          ;(this.synchronizer as FullSynchronizer).handleNewBlockHashes(message.data)
+        }
       }
     } else if (message.name === 'Transactions') {
       await this.txPool.handleAnnouncedTxs(message.data, peer, this.pool)
@@ -198,7 +221,9 @@ export class FullEthereumService extends EthereumService {
         )
         this.pool.ban(peer, 9000000)
       } else {
-        await this.synchronizer.handleNewBlock(message.data[0], peer)
+        if (this.synchronizer.type === 'full') {
+          await (this.synchronizer as FullSynchronizer).handleNewBlock(message.data[0], peer)
+        }
       }
     } else if (message.name === 'NewPooledTransactionHashes') {
       await this.txPool.handleAnnouncedTxHashes(message.data, peer, this.pool)

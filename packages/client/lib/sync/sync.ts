@@ -6,8 +6,6 @@ import { FlowControl } from '../net/protocol'
 import { Config } from '../config'
 import { Chain } from '../blockchain'
 import { Event } from '../types'
-// eslint-disable-next-line implicit-dependencies/no-implicit
-import type { LevelUp } from 'levelup'
 import { BlockFetcher, HeaderFetcher } from './fetcher'
 import { short } from '../util'
 
@@ -20,12 +18,6 @@ export interface SynchronizerOptions {
 
   /* Blockchain */
   chain: Chain
-
-  /* State database */
-  stateDB?: LevelUp
-
-  /* Meta database (receipts, logs, indexes) */
-  metaDB?: LevelUp
 
   /* Flow control manager */
   flow?: FlowControl

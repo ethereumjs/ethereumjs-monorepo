@@ -3,16 +3,19 @@ import { BN } from 'ethereumjs-util'
 import { Chain } from '../../blockchain'
 
 export interface BlockFetcherOptions extends FetcherOptions {
-  /* Blockchain */
+  /** Blockchain */
   chain: Chain
 
-  /* Block number to start fetching from */
+  /** Block number to start fetching from */
   first: BN
 
-  /* How many blocks to fetch */
+  /** How many blocks to fetch */
   count: BN
 
-  /* Destroy fetcher once all tasks are done */
+  /** Whether to fetch the blocks in reverse order (e.g. for beacon sync). Default: false */
+  reverse?: boolean
+
+  /** Destroy fetcher once all tasks are done */
   destroyWhenDone?: boolean
 }
 
@@ -37,6 +40,8 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
    */
   count: BN
 
+  protected reverse: boolean
+
   /**
    * Create new block fetcher
    */
@@ -46,8 +51,9 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     this.chain = options.chain
     this.first = options.first
     this.count = options.count
+    this.reverse = options.reverse ?? false
     this.debug(
-      `Block fetcher instantiated interval=${this.interval} first=${this.first} count=${this.count} destroyWhenDone=${this.destroyWhenDone}`
+      `Block fetcher instantiated interval=${this.interval} first=${this.first} count=${this.count} reverse=${this.reverse} destroyWhenDone=${this.destroyWhenDone}`
     )
   }
 
@@ -60,16 +66,27 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     const tasks: JobTask[] = []
     let debugStr = `first=${first}`
     const pushedCount = new BN(0)
-
-    while (count.gten(max) && tasks.length < maxTasks) {
-      tasks.push({ first: first.clone(), count: max })
-      first.iaddn(max)
-      count.isubn(max)
-      pushedCount.iaddn(max)
-    }
-    if (count.gtn(0) && tasks.length < maxTasks) {
-      tasks.push({ first: first.clone(), count: count.toNumber() })
-      pushedCount.iadd(count)
+    if (!this.reverse) {
+      while (count.gten(max) && tasks.length < maxTasks) {
+        tasks.push({ first: first.clone(), count: max })
+        first.iaddn(max)
+        count.isubn(max)
+        pushedCount.iaddn(max)
+      }
+      if (count.gtn(0) && tasks.length < maxTasks) {
+        tasks.push({ first: first.clone(), count: count.toNumber() })
+        pushedCount.iadd(count)
+      }
+    } else {
+      // Sync in reverse order (e.g. for beacon sync)
+      while (count.gten(max) && tasks.length < maxTasks) {
+        tasks.push({ first: first.subn(max).addn(1), count: max })
+        first.isubn(max)
+        count.isubn(max)
+      }
+      if (count.gtn(0) && tasks.length < maxTasks) {
+        tasks.push({ first: first.sub(count).addn(1), count: count.toNumber() })
+      }
     }
     debugStr += ` count=${pushedCount}`
     this.debug(`Created new tasks num=${tasks.length} ${debugStr}`)

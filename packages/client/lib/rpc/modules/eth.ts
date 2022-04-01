@@ -1001,7 +1001,10 @@ export class Eth {
           message: `no peer available for synchronization`,
         }
       }
-      const highestBlockHeader = await synchronizer.latest(bestPeer)
+      let highestBlockHeader
+      if ('latest' in synchronizer) {
+        highestBlockHeader = await synchronizer.latest(bestPeer)
+      }
       if (!highestBlockHeader) {
         throw {
           code: INTERNAL_ERROR,

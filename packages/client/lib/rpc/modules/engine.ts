@@ -3,9 +3,12 @@ import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
 import { toBuffer, bufferToHex, rlp, BN, zeros } from 'ethereumjs-util'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { Hardfork } from '@ethereumjs/common'
+import { BeaconSynchronizer } from '../../sync'
 
 import { middleware, validators } from '../validation'
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
+import { short } from '../../util'
+import { SyncMode } from '../../config'
 import { PendingBlock } from '../../miner'
 import { CLConnectionManager } from '../util/CLConnectionManager'
 import type VM from '@ethereumjs/vm'
@@ -245,6 +248,7 @@ export class Engine {
   private chain: Chain
   private config: Config
   private vm: VM
+  private beaconSync?: BeaconSynchronizer
   private pendingBlock: PendingBlock
   private remoteBlocks: Map<String, Block>
   private connectionManager: CLConnectionManager
@@ -263,6 +267,10 @@ export class Engine {
     }
     this.execution = this.service.execution
     this.vm = this.execution.vm
+    this.beaconSync =
+      this.config.syncmode === SyncMode.Beacon
+        ? (this.service.synchronizer as BeaconSynchronizer)
+        : undefined
     this.connectionManager = new CLConnectionManager({ config: this.chain.config })
     this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.service.txPool })
     this.remoteBlocks = new Map()
@@ -385,11 +393,12 @@ export class Engine {
         }
       }
     } catch (error: any) {
-      // Stash the block for a potential forced forkchoice update to it later.
-      this.remoteBlocks.set(block.hash().toString('hex'), block)
-      // TODO if we can't find the parent and the block doesn't extend the canonical chain,
-      // return ACCEPTED when optimistic sync is supported to store the block for later processing
-      const response = { status: Status.SYNCING, validationError: null, latestValidHash: null }
+      const status = (await this.beaconSync?.extendChain(block)) ? Status.ACCEPTED : Status.SYNCING
+      if (status !== Status.ACCEPTED) {
+        // Stash the block for a potential forced forkchoice update to it later.
+        this.remoteBlocks.set(block.hash().toString('hex'), block)
+      }
+      const response = { status, validationError: null, latestValidHash: null }
       this.connectionManager.lastNewPayload({ payload: params[0], response })
       return response
     }
@@ -463,18 +472,26 @@ export class Engine {
     } catch (error) {
       headBlock = this.remoteBlocks.get(headBlockHash.slice(2)) as Block
       if (!headBlock) {
-        const payloadStatus = {
-          status: Status.SYNCING,
-          latestValidHash: null,
-          validationError: null,
-        }
-        const response = { payloadStatus, payloadId: null }
-        this.connectionManager.lastForkchoiceUpdate({
-          state: params[0],
-          response,
-        })
-        return response
+        this.config.logger.debug(`Forkchoice requested unknown head hash=${short(headBlockHash)}`)
+      } else {
+        this.config.logger.debug(
+          `Forkchoice requested sync to new head number=${headBlock.header.number} hash=${short(
+            headBlock.hash()
+          )}`
+        )
+        this.beaconSync?.setHead(headBlock)
       }
+      const payloadStatus = {
+        status: Status.SYNCING,
+        latestValidHash: null,
+        validationError: null,
+      }
+      const response = { payloadStatus, payloadId: null }
+      this.connectionManager.lastForkchoiceUpdate({
+        state: params[0],
+        response,
+      })
+      return response
     }
 
     if (!headBlock._common.gteHardfork(Hardfork.Merge)) {

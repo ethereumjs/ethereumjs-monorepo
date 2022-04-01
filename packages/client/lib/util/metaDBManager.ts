@@ -16,6 +16,8 @@ const encodingOpts = { keyEncoding: 'binary', valueEncoding: 'binary' }
 export enum DBKey {
   Receipts,
   TxHash,
+  SkeletonBlock,
+  SkeletonStatus,
 }
 
 export interface MetaDBManagerOptions {

@@ -84,12 +84,9 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
     if (result.length === job.task.count) {
       return result
     } else if (result.length > 0 && result.length < job.task.count) {
-      // Adopt the start block/header number from the remaining jobs
-      // if the number of the results provided is lower than the expected count
+      // Save partial result to re-request missing items.
       job.partialResult = result
-      this.debug(
-        `Adopt start block/header number from remaining jobs (provided=${result.length} expected=${job.task.count})`
-      )
+      this.debug(`Partial result received=${result.length} expected=${job.task.count}`)
     }
     return
   }

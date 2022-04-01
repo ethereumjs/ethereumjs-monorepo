@@ -1,14 +1,13 @@
 import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { Event } from '../../types'
-import { short } from '../../util'
+import { short, timeDiff } from '../../util'
 import type { Config } from '../../config'
 import {
   ExecutionPayloadV1,
   ForkchoiceResponseV1,
   ForkchoiceStateV1,
   PayloadStatusV1,
-  Status,
 } from '../modules/engine'
 
 export enum ConnectionStatus {
@@ -61,7 +60,6 @@ export class CLConnectionManager {
 
   private connectionStatus = ConnectionStatus.Disconnected
   private oneTimeMergeCLConnectionCheck = false
-  private oneTimeSyncingResponseCheck = false
   private lastRequestTimestamp = 0
 
   private _lastPayload?: NewPayload
@@ -162,24 +160,7 @@ export class CLConnectionManager {
   }
 
   private timeDiffStr(block: Block) {
-    const timeDiff = new Date().getTime() / 1000 - block.header.timestamp.toNumber()
-    const min = 60
-    const hour = min * 60
-    const day = hour * 24
-    let timeDiffStr = ''
-    if (timeDiff > day) {
-      timeDiffStr = `${Math.floor(timeDiff / day)} day`
-    } else if (timeDiff > hour) {
-      timeDiffStr = `${Math.floor(timeDiff / hour)} hour`
-    } else if (timeDiff > min) {
-      timeDiffStr = `${Math.floor(timeDiff / min)} min`
-    } else {
-      timeDiffStr = `${Math.floor(timeDiff)} sec`
-    }
-    if (timeDiffStr.substring(0, 2) !== '1 ') {
-      timeDiffStr += 's'
-    }
-    return timeDiffStr
+    return timeDiff(block.header.timestamp.toNumber())
   }
 
   lastForkchoiceUpdate(update: ForkchoiceUpdate) {
@@ -200,17 +181,6 @@ export class CLConnectionManager {
       this.config.logger.info(
         `Initial consensus payload received ${this._getPayloadLogMsg(payload)}`
       )
-    }
-    if (!this.oneTimeSyncingResponseCheck) {
-      if (payload.response?.status === Status.SYNCING) {
-        this.config.logger.warn(
-          `CL client is requesting payload verification on future blocks which requires optimistic sync (unimplemented)`
-        )
-        this.config.logger.warn(
-          `Please restart your CL client sync from a present EL execution block`
-        )
-        this.oneTimeSyncingResponseCheck = true
-      }
     }
     this._lastPayload = payload
   }

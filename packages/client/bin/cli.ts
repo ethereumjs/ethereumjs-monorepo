@@ -11,7 +11,7 @@ import { _getInitializedChains } from '@ethereumjs/common/dist/chains'
 import { Address, toBuffer, BN } from 'ethereumjs-util'
 import { parseMultiaddrs, parseGenesisState, parseCustomParams } from '../lib/util'
 import EthereumClient from '../lib/client'
-import { Config, DataDirectory } from '../lib/config'
+import { Config, DataDirectory, SyncMode } from '../lib/config'
 import { Logger, getLogger } from '../lib/logging'
 import { startRPCServers, helprpc } from './startRpc'
 import type { Chain as IChain, GenesisState } from '@ethereumjs/common/dist/types'
@@ -39,7 +39,7 @@ const args = yargs(hideBin(process.argv))
   })
   .option('syncmode', {
     describe: 'Blockchain sync mode (light sync experimental)',
-    choices: ['light', 'full'],
+    choices: Object.values(SyncMode),
     default: Config.SYNCMODE_DEFAULT,
   })
   .option('lightserv', {
@@ -276,9 +276,9 @@ function initDBs(config: Config) {
   ensureDirSync(stateDataDir)
   const stateDB = level(stateDataDir)
 
-  // Meta DB (receipts, logs, indexes)
+  // Meta DB (receipts, logs, indexes, skeleton chain)
   let metaDB
-  if (args.saveReceipts) {
+  if (args.saveReceipts || args.syncmode === SyncMode.Beacon) {
     const metaDataDir = config.getDataDirectory(DataDirectory.Meta)
     ensureDirSync(metaDataDir)
     metaDB = level(metaDataDir)

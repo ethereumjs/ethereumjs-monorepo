@@ -3,7 +3,7 @@ import { Log } from '@ethereumjs/vm/dist/evm/types'
 import Bloom from '@ethereumjs/vm/dist/bloom'
 import { TypedTransaction } from '@ethereumjs/tx'
 import { rlp, intToBuffer, bufferToInt } from 'ethereumjs-util'
-import { MetaDBManager, DBKey } from './metaDBManager'
+import { MetaDBManager, DBKey } from '../util/metaDBManager'
 import type { Block } from '@ethereumjs/block'
 
 /**
