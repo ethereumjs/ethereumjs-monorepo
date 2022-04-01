@@ -101,7 +101,7 @@ export class CliqueConsensus implements Consensus {
     db: LevelUp,
     dbManager?: DBManager,
     _common?: Common,
-    _validateConsensus?: boolean,
+    _validateConsensus?: boolean
   ) {
     this.blockchain = blockchain
     this.db = db
