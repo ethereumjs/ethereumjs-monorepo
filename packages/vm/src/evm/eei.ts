@@ -98,7 +98,7 @@ export default class EEI {
    */
   useGas(amount: bigint, context?: string): void {
     this._gasLeft -= amount
-    if (this._evm._vm.DEBUG) {
+    if (this._evm.DEBUG) {
       debugGas(`${context ? context + ': ' : ''}used ${amount} gas (-> ${this._gasLeft})`)
     }
     if (this._gasLeft < BigInt(0)) {
@@ -113,7 +113,7 @@ export default class EEI {
    * @param context - Usage context for debugging
    */
   refundGas(amount: bigint, context?: string): void {
-    if (this._evm._vm.DEBUG) {
+    if (this._evm.DEBUG) {
       debugGas(`${context ? context + ': ' : ''}refund ${amount} gas (-> ${this._evm._refund})`)
     }
     this._evm._refund += amount
@@ -125,7 +125,7 @@ export default class EEI {
    * @param context - Usage context for debugging
    */
   subRefund(amount: bigint, context?: string): void {
-    if (this._evm._vm.DEBUG) {
+    if (this._evm.DEBUG) {
       debugGas(`${context ? context + ': ' : ''}sub gas refund ${amount} (-> ${this._evm._refund})`)
     }
     this._evm._refund -= amount
@@ -140,7 +140,7 @@ export default class EEI {
    * @param amount - Amount to add
    */
   addStipend(amount: bigint): void {
-    if (this._evm._vm.DEBUG) {
+    if (this._evm.DEBUG) {
       debugGas(`add stipend ${amount} (-> ${this._gasLeft})`)
     }
     this._gasLeft += amount
