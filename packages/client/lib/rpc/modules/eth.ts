@@ -18,6 +18,8 @@ import {
   rlp,
   toBuffer,
   setLengthLeft,
+  toType,
+  TypeOutput,
 } from 'ethereumjs-util'
 import { middleware, validators } from '../validation'
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
@@ -459,23 +461,25 @@ export class Eth {
     const vm = this._vm.copy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
-    if (!transaction.gas) {
-      // If no gas limit is specified use the last block gas limit as an upper bound.
-      const latest = await vm.blockchain.getLatestHeader()
-      transaction.gas = latest.gasLimit as any
+    const { from, to, gas: gasLimit, gasPrice, value, data } = transaction
+
+    try {
+      const runCallOpts = {
+        caller: from ? Address.fromString(from) : undefined,
+        to: to ? Address.fromString(to) : undefined,
+        gasLimit: toType(gasLimit, TypeOutput.BN),
+        gasPrice: toType(gasPrice, TypeOutput.BN),
+        value: toType(value, TypeOutput.BN),
+        data: data ? toBuffer(data) : undefined,
+      }
+      const { execResult } = await vm.runCall(runCallOpts)
+      return bufferToHex(execResult.returnValue)
+    } catch (error: any) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: error.message.toString(),
+      }
     }
-
-    const txData = { ...transaction, gasLimit: transaction.gas }
-    const tx = Transaction.fromTxData(txData, { common: vm._common, freeze: false })
-
-    // set from address
-    const from = transaction.from ? Address.fromString(transaction.from) : Address.zero()
-    tx.getSenderAddress = () => {
-      return from
-    }
-
-    const { execResult } = await vm.runTx({ tx, skipNonce: true })
-    return bufferToHex(execResult.returnValue)
   }
 
   /**
@@ -530,13 +534,20 @@ export class Eth {
       return from
     }
 
-    const { gasUsed } = await vm.runTx({
-      tx,
-      skipNonce: true,
-      skipBalance: true,
-      skipBlockGasLimitValidation: true,
-    })
-    return bnToHex(gasUsed)
+    try {
+      const { gasUsed } = await vm.runTx({
+        tx,
+        skipNonce: true,
+        skipBalance: true,
+        skipBlockGasLimitValidation: true,
+      })
+      return bnToHex(gasUsed)
+    } catch (error: any) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: error.message.toString(),
+      }
+    }
   }
 
   /**
