@@ -4,10 +4,11 @@ import type { LevelUp } from 'levelup'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Common, { ConsensusAlgorithm } from '@ethereumjs/common'
 import { Address, rlp, bigIntToBuffer, bufferToBigInt } from 'ethereumjs-util'
+import Blockchain from '../index'
 import { DBManager } from '../db/manager'
 import { DBOp } from '../db/helpers'
 import { DBTarget } from '../db/operation'
-import { ConsensusBase } from './base'
+import { Consensus } from './interface'
 
 const debug = createDebugLogger('blockchain:clique')
 
@@ -31,7 +32,13 @@ export const CLIQUE_NONCE_DROP = Buffer.alloc(8)
 /**
  * This class encapsulates Clique-related consensus functionality when used with the Blockchain class.
  */
-export class CliqueConsensus extends ConsensusBase {
+export class CliqueConsensus implements Consensus {
+  blockchain: Blockchain
+  db: LevelUp
+  dbManager?: DBManager
+  _common?: Common
+  _validateConsensus?: boolean
+
   /**
    * Keep signer history data (signer states and votes)
    * for all block numbers >= HEAD_BLOCK - CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
@@ -52,7 +59,7 @@ export class CliqueConsensus extends ConsensusBase {
    *
    * Always keep at least one item on the stack.
    */
-  private _cliqueLatestSignerStates: CliqueLatestSignerStates = []
+  public _cliqueLatestSignerStates: CliqueLatestSignerStates = []
 
   /**
    * List with the latest signer votes.
@@ -68,7 +75,7 @@ export class CliqueConsensus extends ConsensusBase {
    *
    * On reorgs elements from the array are removed until BLOCK_NUMBER > REORG_BLOCK.
    */
-  private _cliqueLatestVotes: CliqueLatestVotes = []
+  public _cliqueLatestVotes: CliqueLatestVotes = []
 
   /**
    * List of signers for the last consecutive {@link Blockchain.cliqueSignerLimit} blocks.
@@ -77,16 +84,30 @@ export class CliqueConsensus extends ConsensusBase {
    *
    * On reorgs elements from the array are removed until BLOCK_NUMBER > REORG_BLOCK.
    */
-  private _cliqueLatestBlockSigners: CliqueLatestBlockSigners = []
+  public _cliqueLatestBlockSigners: CliqueLatestBlockSigners = []
+
+  // constructor(
+  //   db: LevelUp,
+  //   dbManager: DBManager,
+  //   _common: Common,
+  //   _validateConsensus: boolean,
+  //   getLatestHeader?: () => Promise<BlockHeader>
+  // ) {
+  //   super(db, dbManager, _common, _validateConsensus, getLatestHeader)
+  // }
 
   constructor(
+    blockchain: Blockchain,
     db: LevelUp,
-    dbManager: DBManager,
-    _common: Common,
-    _validateConsensus: boolean,
-    getLatestHeader?: () => Promise<BlockHeader>
+    dbManager?: DBManager,
+    _common?: Common,
+    _validateConsensus?: boolean,
   ) {
-    super(db, dbManager, _common, _validateConsensus, getLatestHeader)
+    this.blockchain = blockchain
+    this.db = db
+    this.dbManager = dbManager
+    this._common = _common
+    this._validateConsensus = _validateConsensus ?? true
   }
 
   async setup(): Promise<void> {
@@ -128,7 +149,7 @@ export class CliqueConsensus extends ConsensusBase {
     }
   }
 
-  async newBlock?(block: Block, commonAncestor: BlockHeader): Promise<void> {
+  async newBlock(block: Block, commonAncestor: BlockHeader): Promise<void> {
     // Clique: update signer votes and state
     const { header } = block
     const commonAncestorNumber = commonAncestor.number
@@ -565,7 +586,7 @@ export class CliqueConsensus extends ConsensusBase {
     if (signerIndex === -1) {
       throw new Error('Signer not found')
     }
-    const { number } = await this.getLatestHeader!()
+    const { number } = await this.blockchain.getLatestHeader!()
     //eslint-disable-next-line
     return (number + BigInt(1)) % BigInt(signers.length) === BigInt(signerIndex)
   }

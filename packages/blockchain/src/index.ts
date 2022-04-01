@@ -4,8 +4,9 @@ import Common, { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from '@eth
 import { DBManager } from './db/manager'
 import { DBOp, DBSetBlockOrHeader, DBSetTD, DBSetHashToNumber, DBSaveLookups } from './db/helpers'
 import { DBTarget } from './db/operation'
+import { CasperConsensus } from './consensus/casper'
 import { CliqueConsensus } from './consensus/clique'
-import { ConsensusBase } from './consensus/base'
+import { Consensus } from './consensus/interface'
 import { EthashConsensus } from './consensus/ethash'
 
 // eslint-disable-next-line implicit-dependencies/no-implicit
@@ -109,17 +110,17 @@ export interface BlockchainOptions {
   genesisBlock?: Block
 
   /**
-   * Optional consensus class. If not provided, this will default to the consensus
-   * class determined by the consensus algorithm set in the {@link Common} instance.
+   * Optional consensus algorithm. If not provided, this will default to the
+   * consensus algorithm set in the {@link Common} instance.
    */
-  consensus?: ConsensusBase
+  consensus?: ConsensusAlgorithm
 }
 
 /**
  * This class stores and interacts with blocks.
  */
 export default class Blockchain implements BlockchainInterface {
-  consensus: ConsensusBase | CliqueConsensus | EthashConsensus
+  consensus: Consensus | CasperConsensus | CliqueConsensus | EthashConsensus
   db: LevelUp
   dbManager: DBManager
 
@@ -213,21 +214,26 @@ export default class Blockchain implements BlockchainInterface {
     this.db = opts.db ? opts.db : level()
     this.dbManager = new DBManager(this.db, this._common)
 
-    if (opts.consensus) {
-      this.consensus = new opts.consensus(
-        this.db,
-        this.dbManager,
-        this._common,
-        this._validateConsensus
-      )
-    } else if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
+    if (
+      opts.consensus === ConsensusAlgorithm.Casper ||
+      (!opts.consensus && this._common.consensusAlgorithm() === ConsensusAlgorithm.Casper)
+    ) {
+      this.consensus = new CasperConsensus(this.db)
+    } else if (
+      opts.consensus === ConsensusAlgorithm.Clique ||
+      (!opts.consensus && this._common.consensusAlgorithm() === ConsensusAlgorithm.Clique)
+    ) {
       this.consensus = new CliqueConsensus(
+        this,
         this.db,
         this.dbManager,
         this._common,
         this._validateConsensus
       )
-    } else if (this._common.consensusAlgorithm() === ConsensusAlgorithm.Ethash) {
+    } else if (
+      opts.consensus === ConsensusAlgorithm.Ethash ||
+      (!opts.consensus && this._common.consensusAlgorithm() === ConsensusAlgorithm.Ethash)
+    ) {
       this.consensus = new EthashConsensus(this.db)
     } else {
       throw new Error('Unable to initialize consensus class')
@@ -270,13 +276,6 @@ export default class Blockchain implements BlockchainInterface {
       heads: this._heads,
       genesis: this._genesis,
     }
-  }
-
-  /**
-   * Returns the consensus class.
-   */
-  get consensusClass() {
-    return this.consensus
   }
 
   /**
@@ -343,10 +342,10 @@ export default class Blockchain implements BlockchainInterface {
 
       await this.dbManager.batch(dbOps)
 
-      await this.consensus.genesisInit?.(genesisBlock)
+      await this.consensus.genesisInit(genesisBlock)
     }
 
-    await this.consensus.setup?.()
+    await this.consensus.setup()
 
     // At this point, we can safely set genesisHash as the _genesis hash in this
     // object: it is either the one we put in the DB, or it is equal to the one
@@ -598,7 +597,7 @@ export default class Blockchain implements BlockchainInterface {
       }
 
       if (this._validateConsensus) {
-        await this.consensus.validate?.(block)
+        await this.consensus.validate(block)
       }
 
       // set total difficulty in the current context scope
@@ -662,7 +661,7 @@ export default class Blockchain implements BlockchainInterface {
       await this.dbManager.batch(ops)
 
       const { commonAncestor, ancestorHeaders } = await this.findCommonAncestor(header)
-      await this.consensus.newBlock?.(block, commonAncestor, ancestorHeaders)
+      await this.consensus.newBlock(block, commonAncestor, ancestorHeaders)
     })
   }
 
