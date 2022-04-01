@@ -1,4 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
+const AsyncEventEmitter = require('async-eventemitter')
 import {
   Account,
   Address,
@@ -21,6 +22,7 @@ import * as eof from './opcodes/eof'
 import { Log } from './types'
 import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
 import Common from '@ethereumjs/common'
+import { promisify } from 'util'
 
 const debug = createDebugLogger('vm:evm')
 const debugGas = createDebugLogger('vm:evm:gas')
@@ -239,7 +241,7 @@ export function VmErrorResult(error: VmError, gasUsed: bigint): ExecResult {
  * and storing them to state (or discarding changes in case of exceptions).
  * @ignore
  */
-export default class EVM {
+export default class EVM extends AsyncEventEmitter {
   _vm: any
   _state: StateManager
   _tx?: TxContext
@@ -252,6 +254,13 @@ export default class EVM {
   _common: Common
 
   /**
+   * Cached emit() function, not for public usage
+   * set to public due to implementation internals
+   * @hidden
+   */
+  public readonly _emit: (topic: string, data: any) => Promise<void>
+
+  /**
    * EVM is run in DEBUG mode (default: false)
    * Taken from DEBUG environment variable
    *
@@ -262,6 +271,8 @@ export default class EVM {
   protected readonly DEBUG: boolean = false
 
   constructor(vm: any, opts: EVMOpts) {
+    super()
+
     this._vm = vm
     this._refund = BigInt(0)
 
@@ -282,6 +293,10 @@ export default class EVM {
     if (process !== undefined && process.env.DEBUG) {
       this.DEBUG = true
     }
+
+    // We cache this promisified function as it's called from the main execution loop, and
+    // promisifying each time has a huge performance impact.
+    this._emit = promisify(this.emit.bind(this))
   }
 
   /**
@@ -290,7 +305,7 @@ export default class EVM {
    * if an exception happens during the message execution.
    */
   async executeMessage(message: Message): Promise<EVMResult> {
-    await this._vm._emit('beforeMessage', message)
+    await this._emit('beforeMessage', message)
 
     if (!message.to && this._common.isActivatedEIP(2929)) {
       message.code = message.data
@@ -366,7 +381,7 @@ export default class EVM {
       }
     }
 
-    await this._vm._emit('afterMessage', result)
+    await this._emit('afterMessage', result)
 
     return result
   }
@@ -491,7 +506,7 @@ export default class EVM {
       code: message.code,
     }
 
-    await this._vm._emit('newContract', newContractEvent)
+    await this._emit('newContract', newContractEvent)
 
     toAccount = await this._state.getAccount(message.to)
     // EIP-161 on account creation and CREATE execution
