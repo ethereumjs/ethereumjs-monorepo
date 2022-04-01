@@ -138,7 +138,7 @@ tape('EIP-3529 tests', (t) => {
       await vm.stateManager.getContractStorage(address, key)
       vm.vmState.addWarmedStorage(address.toBuffer(), key)
 
-      await vm.runCode({
+      await vm.evm.runCode({
         code,
         address,
         gasLimit,
