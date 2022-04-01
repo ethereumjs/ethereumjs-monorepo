@@ -174,13 +174,42 @@ export default class EVM {
   _refund: bigint
   _transientStorage: TransientStorage
 
-  constructor(vm: VM, txContext: TxContext, block: Block) {
+  _common: Common
+
+  /**
+   * EVM is run in DEBUG mode (default: false)
+   * Taken from DEBUG environment variable
+   *
+   * Safeguards on debug() calls are added for
+   * performance reasons to avoid string literal evaluation
+   * @hidden
+   */
+  protected readonly DEBUG: boolean = false
+
+  constructor(vm: any, txContext: TxContext, block: Block, opts: EVMOpts) {
     this._vm = vm
     this._state = this._vm.vmState
     this._tx = txContext
     this._block = block
     this._refund = BigInt(0)
     this._transientStorage = new TransientStorage()
+
+    // Supported EIPs
+    const supportedEIPs = [
+      1153, 1559, 2315, 2537, 2565, 2718, 2929, 2930, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
+      3670, 3855, 3860, 4399,
+    ]
+    for (const eip of opts.common.eips()) {
+      if (!supportedEIPs.includes(eip)) {
+        throw new Error(`EIP-${eip} is not supported by the EVM`)
+      }
+    }
+    this._common = opts.common
+
+    // Safeguard if "process" is not available (browser)
+    if (process !== undefined && process.env.DEBUG) {
+      this.DEBUG = true
+    }
   }
 
   /**
@@ -201,13 +230,13 @@ export default class EVM {
     await this._state.checkpoint()
     this._transientStorage.checkpoint()
 
-    if (this._vm.DEBUG) {
+    if (this.DEBUG) {
       debug('-'.repeat(100))
       debug(`message checkpoint`)
     }
 
     let result
-    if (this._vm.DEBUG) {
+    if (this.DEBUG) {
       const { caller, gasLimit, to, value, delegatecall } = message
       debug(
         `New message caller=${caller} gasLimit=${gasLimit} to=${
@@ -216,17 +245,17 @@ export default class EVM {
       )
     }
     if (message.to) {
-      if (this._vm.DEBUG) {
+      if (this.DEBUG) {
         debug(`Message CALL execution (to: ${message.to})`)
       }
       result = await this._executeCall(message)
     } else {
-      if (this._vm.DEBUG) {
+      if (this.DEBUG) {
         debug(`Message CREATE execution (to undefined)`)
       }
       result = await this._executeCreate(message)
     }
-    if (this._vm.DEBUG) {
+    if (this.DEBUG) {
       const { gasUsed, exceptionError, returnValue } = result.execResult
       debug(
         `Received message execResult: [ gasUsed=${gasUsed} exceptionError=${
@@ -251,7 +280,7 @@ export default class EVM {
         result.execResult.logs = []
         await this._state.revert()
         this._transientStorage.revert()
-        if (this._vm.DEBUG) {
+        if (this.DEBUG) {
           debug(`message checkpoint reverted`)
         }
       } else {
@@ -259,14 +288,14 @@ export default class EVM {
         // we do like nothing happened.
         await this._state.commit()
         this._transientStorage.commit()
-        if (this._vm.DEBUG) {
+        if (this.DEBUG) {
           debug(`message checkpoint committed`)
         }
       }
     } else {
       await this._state.commit()
       this._transientStorage.commit()
-      if (this._vm.DEBUG) {
+      if (this.DEBUG) {
         debug(`message checkpoint committed`)
       }
     }
@@ -303,13 +332,13 @@ export default class EVM {
     let exit = false
     if (!message.code || message.code.length === 0) {
       exit = true
-      if (this._vm.DEBUG) {
+      if (this.DEBUG) {
         debug(`Exit early on no code`)
       }
     }
     if (errorMessage) {
       exit = true
-      if (this._vm.DEBUG) {
+      if (this.DEBUG) {
         debug(`Exit early on value transfer overflowed`)
       }
     }
@@ -325,7 +354,7 @@ export default class EVM {
 
     let result: ExecResult
     if (message.isCompiled) {
-      if (this._vm.DEBUG) {
+      if (this.DEBUG) {
         debug(`Run precompile`)
       }
       result = await this.runPrecompile(
@@ -334,7 +363,7 @@ export default class EVM {
         message.gasLimit
       )
     } else {
-      if (this._vm.DEBUG) {
+      if (this.DEBUG) {
         debug(`Start bytecode processing...`)
       }
       result = await this.runInterpreter(message)
@@ -366,7 +395,7 @@ export default class EVM {
     message.code = message.data
     message.data = Buffer.alloc(0)
     message.to = await this._generateAddress(message)
-    if (this._vm.DEBUG) {
+    if (this.DEBUG) {
       debug(`Generated CREATE contract address ${message.to}`)
     }
     let toAccount = await this._state.getAccount(message.to)
@@ -376,7 +405,7 @@ export default class EVM {
       (toAccount.nonce && toAccount.nonce > BigInt(0)) ||
       !toAccount.codeHash.equals(KECCAK256_NULL)
     ) {
-      if (this._vm.DEBUG) {
+      if (this.DEBUG) {
         debug(`Returning on address collision`)
       }
       return {
@@ -415,13 +444,13 @@ export default class EVM {
     let exit = false
     if (!message.code || message.code.length === 0) {
       exit = true
-      if (this._vm.DEBUG) {
+      if (this.DEBUG) {
         debug(`Exit early on no code`)
       }
     }
     if (errorMessage) {
       exit = true
-      if (this._vm.DEBUG) {
+      if (this.DEBUG) {
         debug(`Exit early on value transfer overflowed`)
       }
     }
@@ -436,7 +465,7 @@ export default class EVM {
       }
     }
 
-    if (this._vm.DEBUG) {
+    if (this.DEBUG) {
       debug(`Start bytecode processing...`)
     }
 
@@ -448,7 +477,7 @@ export default class EVM {
       returnFee =
         BigInt(result.returnValue.length) * BigInt(this._common.param('gasPrices', 'createData'))
       totalGas = totalGas + returnFee
-      if (this._vm.DEBUG) {
+      if (this.DEBUG) {
         debugGas(`Add return value size fee (${returnFee} to gas used (-> ${totalGas}))`)
       }
     }
@@ -501,14 +530,14 @@ export default class EVM {
         result.gasUsed = totalGas
       }
     } else {
-      if (this._vm._common.gteHardfork(Hardfork.Homestead)) {
-        if (this._vm.DEBUG) {
+      if (this._common.gteHardfork(Hardfork.Homestead)) {
+        if (this.DEBUG) {
           debug(`Not enough gas or code size not allowed (>= Homestead)`)
         }
         result = { ...result, ...OOGResult(message.gasLimit) }
       } else {
         // we are in Frontier
-        if (this._vm.DEBUG) {
+        if (this.DEBUG) {
           debug(`Not enough gas or code size not allowed (Frontier)`)
         }
         if (totalGas - returnFee <= message.gasLimit) {
@@ -524,7 +553,7 @@ export default class EVM {
     // Save code if a new contract was created
     if (!result.exceptionError && result.returnValue && result.returnValue.toString() !== '') {
       await this._state.putContractCode(message.to, result.returnValue)
-      if (this._vm.DEBUG) {
+      if (this.DEBUG) {
         debug(`Code saved on new contract creation`)
       }
     } else if (CodestoreOOG) {
@@ -674,7 +703,7 @@ export default class EVM {
       throw new VmError(ERROR.INSUFFICIENT_BALANCE)
     }
     const result = this._state.putAccount(message.authcallOrigin ?? message.caller, account)
-    if (this._vm.DEBUG) {
+    if (this.DEBUG) {
       debug(`Reduced sender (${message.caller}) balance (-> ${account.balance})`)
     }
     return result
@@ -688,7 +717,7 @@ export default class EVM {
     toAccount.balance = newBalance
     // putAccount as the nonce may have changed for contract creation
     const result = this._state.putAccount(message.to, toAccount)
-    if (this._vm.DEBUG) {
+    if (this.DEBUG) {
       debug(`Added toAccount (${message.to}) balance (-> ${toAccount.balance})`)
     }
     return result

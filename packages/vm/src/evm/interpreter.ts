@@ -66,6 +66,8 @@ export default class Interpreter {
   _eei: EEI
   _common: Common
 
+  protected readonly DEBUG: boolean = false
+
   // Opcode debuggers (e.g. { 'push': [debug Object], 'sstore': [debug Object], ...})
   private opDebuggers: { [key: string]: (debug: string) => void } = {}
 
@@ -87,6 +89,11 @@ export default class Interpreter {
       vmState: this._state,
       eei: this._eei,
       shouldDoJumpAnalysis: true,
+    }
+
+    // Safeguard if "process" is not available (browser)
+    if (process !== undefined && process.env.DEBUG) {
+      this.DEBUG = true
     }
   }
 
@@ -188,7 +195,7 @@ export default class Interpreter {
       gas = await dynamicGasHandler(this._runState, gas, this._common)
     }
 
-    if (this._vm.listenerCount('step') > 0 || this._vm.DEBUG) {
+    if (this._vm.listenerCount('step') > 0 || this.DEBUG) {
       // Only run this stepHook function if there is an event listener (e.g. test runner)
       // or if the vm is running in debug mode (to display opcode debug logs)
       await this._runStepHook(gas, gasLimitClone)
@@ -252,7 +259,7 @@ export default class Interpreter {
       codeAddress: this._eei._env.codeAddress,
     }
 
-    if (this._vm.DEBUG) {
+    if (this.DEBUG) {
       // Create opTrace for debug functionality
       let hexStack = []
       hexStack = eventObj.stack.map((item: any) => {
