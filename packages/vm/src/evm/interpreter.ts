@@ -9,6 +9,7 @@ import EEI from './eei'
 import { Opcode, OpHandler, AsyncOpHandler } from './opcodes'
 import * as eof from './opcodes/eof'
 import Common from '@ethereumjs/common'
+import EVM from './evm'
 
 export interface InterpreterOpts {
   pc?: number
@@ -65,17 +66,19 @@ export default class Interpreter {
   _runState: RunState
   _eei: EEI
   _common: Common
+  _evm: EVM
 
   protected readonly DEBUG: boolean = false
 
   // Opcode debuggers (e.g. { 'push': [debug Object], 'sstore': [debug Object], ...})
   private opDebuggers: { [key: string]: (debug: string) => void } = {}
 
-  constructor(vm: any, eei: EEI, common: Common) {
+  constructor(vm: any, eei: EEI, common: Common, evm: EVM) {
     this._vm = vm
     this._state = vm.vmState
     this._eei = eei
     this._common = common
+    this._evm = evm
     this._runState = {
       programCounter: 0,
       opCode: 0xfe, // INVALID opcode
@@ -195,7 +198,7 @@ export default class Interpreter {
       gas = await dynamicGasHandler(this._runState, gas, this._common)
     }
 
-    if (this._vm.listenerCount('step') > 0 || this.DEBUG) {
+    if (this._evm.listenerCount('step') > 0 || this.DEBUG) {
       // Only run this stepHook function if there is an event listener (e.g. test runner)
       // or if the vm is running in debug mode (to display opcode debug logs)
       await this._runStepHook(gas, gasLimitClone)
@@ -306,7 +309,7 @@ export default class Interpreter {
      * @property {BigInt} memoryWordCount current size of memory in words
      * @property {Address} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
      */
-    return this._vm._emit('step', eventObj)
+    return this._evm._emit('step', eventObj)
   }
 
   // Returns all valid jump and jumpsub destinations.

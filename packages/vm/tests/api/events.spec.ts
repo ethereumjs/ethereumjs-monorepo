@@ -145,7 +145,7 @@ tape('VM events', (t) => {
     const vm = await VM.create()
 
     let lastEmitted: any
-    vm.on('step', (val: any) => {
+    vm.evm.on('step', (val: any) => {
       lastEmitted = val
     })
 
