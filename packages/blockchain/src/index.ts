@@ -1189,3 +1189,5 @@ export default class Blockchain implements BlockchainInterface {
     }
   }
 }
+
+export { Consensus, CasperConsensus, CliqueConsensus, EthashConsensus }

@@ -86,16 +86,6 @@ export class CliqueConsensus implements Consensus {
    */
   public _cliqueLatestBlockSigners: CliqueLatestBlockSigners = []
 
-  // constructor(
-  //   db: LevelUp,
-  //   dbManager: DBManager,
-  //   _common: Common,
-  //   _validateConsensus: boolean,
-  //   getLatestHeader?: () => Promise<BlockHeader>
-  // ) {
-  //   super(db, dbManager, _common, _validateConsensus, getLatestHeader)
-  // }
-
   constructor(
     blockchain: Blockchain,
     db: LevelUp,
