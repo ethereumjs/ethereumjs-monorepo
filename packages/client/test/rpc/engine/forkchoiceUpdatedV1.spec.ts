@@ -64,7 +64,7 @@ tape(`${method}: call with valid data but parent block is not loaded yet`, async
   const req = params(method, [nonExistentHeadBlockHash, validPayloadAttributes])
   const expectRes = (res: any) => {
     t.equal(res.body.result.payloadStatus.status, 'SYNCING')
-    t.equal(res.body.result.payloadStatus.latestValidHash, validForkChoiceState.headBlockHash)
+    t.equal(res.body.result.payloadStatus.latestValidHash, null)
     t.equal(res.body.result.payloadStatus.validationError, null)
     t.equal(res.body.result.payloadId, null)
   }
@@ -77,7 +77,10 @@ tape(`${method}: call with valid data and synced data`, async (t) => {
   const req = params(method, validPayload)
   const expectRes = (res: any) => {
     t.equal(res.body.result.payloadStatus.status, 'VALID')
-    t.equal(res.body.result.payloadStatus.latestValidHash, null)
+    t.equal(
+      res.body.result.payloadStatus.latestValidHash,
+      '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a'
+    )
     t.equal(res.body.result.payloadStatus.validationError, null)
     t.notEqual(res.body.result.payloadId, null)
   }
