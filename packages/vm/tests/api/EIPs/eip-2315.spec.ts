@@ -9,7 +9,7 @@ tape('Berlin: EIP 2315 tests', (t) => {
     let i = 0
     const vm = await VM.create({ common })
 
-    vm.on('step', function (step: any) {
+    vm.evm.on('step', function (step: any) {
       if (test.steps.length) {
         st.equal(step.pc, test.steps[i].expectedPC)
         st.equal(step.opcode.name, test.steps[i].expectedOpcode)

@@ -116,7 +116,7 @@ tape('EIP-3529 tests', (t) => {
     let gasRefund: bigint
     let gasLeft: bigint
 
-    vm.on('step', (step: InterpreterStep) => {
+    vm.evm.on('step', (step: InterpreterStep) => {
       if (step.opcode.name === 'STOP') {
         gasRefund = step.gasRefund
         gasLeft = step.gasLeft
@@ -184,7 +184,7 @@ tape('EIP-3529 tests', (t) => {
     let startGas: bigint
     let finalGas: bigint
 
-    vm.on('step', (step: InterpreterStep) => {
+    vm.evm.on('step', (step: InterpreterStep) => {
       if (startGas === undefined) {
         startGas = step.gasLeft
       }

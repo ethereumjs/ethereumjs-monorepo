@@ -2,6 +2,7 @@ import tape from 'tape'
 import VM from '../../../src'
 import { AddOpcode } from '../../../src/evm/types'
 import { InterpreterStep, RunState } from '../../../src/evm/interpreter'
+import EVM from '../../../src/evm/evm'
 
 tape('VM: custom opcodes', (t) => {
   const fee = 333
@@ -22,17 +23,17 @@ tape('VM: custom opcodes', (t) => {
   }
 
   t.test('should add custom opcodes to the VM', async (st) => {
-    const vm = await VM.create({
+    const evm = await EVM.create({
       customOpcodes: [testOpcode],
     })
     const gas = 123456
     let correctOpcodeName = false
-    vm.on('step', (e: InterpreterStep) => {
+    evm.on('step', (e: InterpreterStep) => {
       if (e.pc === 0) {
         correctOpcodeName = e.opcode.name === testOpcode.opcodeName
       }
     })
-    const res = await vm.evm.runCode({
+    const res = await evm.runCode({
       code: Buffer.from('21', 'hex'),
       gasLimit: BigInt(gas),
     })
@@ -42,11 +43,11 @@ tape('VM: custom opcodes', (t) => {
   })
 
   t.test('should delete opcodes from the VM', async (st) => {
-    const vm = await VM.create({
+    const evm = await EVM.create({
       customOpcodes: [{ opcode: 0x20 }], // deletes KECCAK opcode
     })
     const gas = BigInt(123456)
-    const res = await vm.evm.runCode({
+    const res = await evm.runCode({
       code: Buffer.from('20', 'hex'),
       gasLimit: BigInt(gas),
     })
@@ -56,11 +57,11 @@ tape('VM: custom opcodes', (t) => {
   t.test('should not override default opcodes', async (st) => {
     // This test ensures that always the original opcode map is used
     // Thus, each time you recreate a VM, it is in a clean state
-    const vm = await VM.create({
+    const evm = await EVM.create({
       customOpcodes: [{ opcode: 0x01 }], // deletes ADD opcode
     })
     const gas = BigInt(123456)
-    const res = await vm.evm.runCode({
+    const res = await evm.runCode({
       code: Buffer.from('01', 'hex'),
       gasLimit: BigInt(gas),
     })
@@ -85,11 +86,11 @@ tape('VM: custom opcodes', (t) => {
 
   t.test('should override opcodes in the VM', async (st) => {
     testOpcode.opcode = 0x20 // Overrides KECCAK
-    const vm = await VM.create({
+    const evm = await EVM.create({
       customOpcodes: [testOpcode],
     })
     const gas = 123456
-    const res = await vm.evm.runCode({
+    const res = await evm.runCode({
       code: Buffer.from('20', 'hex'),
       gasLimit: BigInt(gas),
     })

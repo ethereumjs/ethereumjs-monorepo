@@ -16,7 +16,7 @@ tape('EIP 3541 tests', (t) => {
     const vm = await VM.create({ common })
     let stack: bigint[]
 
-    vm.on('step', (e: InterpreterStep) => {
+    vm.evm.on('step', (e: InterpreterStep) => {
       if (stack) {
         st.fail('should only do PUSH0 once')
       }
@@ -38,7 +38,7 @@ tape('EIP 3541 tests', (t) => {
     const vm = await VM.create({ common })
     let stack: bigint[] = []
 
-    vm.on('step', (e: InterpreterStep) => {
+    vm.evm.on('step', (e: InterpreterStep) => {
       stack = e.stack
     })
 

@@ -24,7 +24,7 @@ tape('EIP 1153: transient storage', (t) => {
     let currentGas = initialGas
     const vm = new (VM as any)({ common })
 
-    vm.on('step', function (step: any) {
+    vm.evm.on('step', function (step: any) {
       const gasUsed = currentGas - step.gasLeft
       currentGas = step.gasLeft
 
