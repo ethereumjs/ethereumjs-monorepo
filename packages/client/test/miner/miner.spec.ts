@@ -399,7 +399,7 @@ tape('[Miner]', async (t) => {
     const miner = new Miner({ config, synchronizer, execution })
 
     const { vm } = execution
-    vm.blockchain.cliqueActiveSigners = () => [A.address] // stub
+    ;(vm.blockchain.consensus as any).cliqueActiveSigners = () => [A.address] // stub
     ;(miner as any).chainUpdated = async () => {} // stub
     miner.start()
     await wait(100)
