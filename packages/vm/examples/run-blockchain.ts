@@ -31,7 +31,7 @@ async function main() {
   // Note that this optimization is a bit hacky and might
   // not be working in the future though. :-)
   if (validatePow) {
-    blockchain._ethash!.cacheDB = level('./.cachedb')
+    (blockchain.consensus as any)._ethash!.cacheDB = level('./.cachedb')
   }
 
   const vm = await VM.create({ blockchain, common })
