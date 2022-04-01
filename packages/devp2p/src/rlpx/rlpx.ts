@@ -85,7 +85,7 @@ export class RLPx extends EventEmitter {
         if (this._getOpenSlots() > 0) {
           return this._connectToPeer(peer)
         } else if (this._peersQueue.length < 50) {
-          this._peersQueue.push({ peer: peer, ts: 0 }) // save to queue
+          this._peersQueue.push({ peer, ts: 0 }) // save to queue
         }
       })
       this._dpt.on('peer:removed', (peer: PeerInfo) => {
