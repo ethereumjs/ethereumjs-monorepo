@@ -18,7 +18,7 @@ tape('EIP 3541 tests', (t) => {
       gasLimit: 1000000,
     }).sign(pkey)
 
-    let vm = new VM({ common })
+    let vm = await VM.create({ common })
 
     let result = await vm.runTx({ tx })
     let created = result.createdAddress
@@ -45,7 +45,7 @@ tape('EIP 3541 tests', (t) => {
 
     // check if we can deposit a contract on non-EIP3541 chains
 
-    vm = new VM({ common: commonNoEIP3541 })
+    vm = await VM.create({ common: commonNoEIP3541 })
     const tx2 = Transaction.fromTxData({
       data: '0x7FEF0000000000000000000000000000000000000000000000000000000000000060005260206000F3',
       gasLimit: 1000000,
@@ -68,7 +68,7 @@ tape('EIP 3541 tests', (t) => {
       gasLimit: 1000000,
     }).sign(pkey)
 
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
     let address: Address
 
     vm.on('step', (step: InterpreterStep) => {
@@ -105,7 +105,7 @@ tape('EIP 3541 tests', (t) => {
       gasLimit: 1000000,
     }).sign(pkey)
 
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
     let address: Address
 
     vm.on('step', (step: InterpreterStep) => {

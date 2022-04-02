@@ -54,7 +54,7 @@ const main = async () => {
     validateBlocks: true,
     validateConsensus: false,
   })
-  const vm = new VM({ stateManager, blockchain, common })
+  const vm = await VM.create({ stateManager, blockchain, common })
 
   await vm.runBlock({ block })
 }

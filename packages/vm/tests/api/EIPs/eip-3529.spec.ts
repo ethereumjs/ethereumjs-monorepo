@@ -112,7 +112,7 @@ tape('EIP-3529 tests', (t) => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [3529] })
 
   t.test('should verify EIP test cases', async (st) => {
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
 
     let gasRefund: bigint
     let gasLeft: bigint
@@ -159,7 +159,7 @@ tape('EIP-3529 tests', (t) => {
   })
 
   t.test('should not refund selfdestructs', async (st) => {
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
 
     const tx = Transaction.fromTxData({
       data: '0x6000ff',
@@ -182,7 +182,7 @@ tape('EIP-3529 tests', (t) => {
      * Then, it resets all these 100 slots back to 0. This is to check if the
      * max gas refund is respected.
      */
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
 
     let startGas: bigint
     let finalGas: bigint

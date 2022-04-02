@@ -17,17 +17,23 @@ tape('runBlockchain', (t) => {
   const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
 
   t.test('should run without a blockchain parameter', async (st) => {
-    const vm = setupVM({ common })
-    st.doesNotThrow(async function () {
+    const vm = await setupVM({ common })
+    try {
       await vm.runBlockchain()
-    })
+      st.pass('did not throw')
+    } catch (error) {
+      st.fail('should not have thrown')
+    }
   })
 
   t.test('should run without blocks', async (st) => {
-    const vm = setupVM({ common })
-    st.doesNotThrow(async function () {
+    const vm = await setupVM({ common })
+    try {
       await vm.runBlockchain()
-    })
+      st.pass('did not throw')
+    } catch (error) {
+      st.fail('should not have thrown')
+    }
   })
 
   t.test('should run with genesis block', async (st) => {
@@ -41,7 +47,7 @@ tape('runBlockchain', (t) => {
         validateConsensus: false,
         genesisBlock,
       })
-      const vm = setupVM({ genesisBlock, blockchain })
+      const vm = await setupVM({ genesisBlock, blockchain })
 
       st.ok(blockchain.meta.genesis, 'genesis should be set for blockchain')
 
@@ -62,8 +68,7 @@ tape('runBlockchain', (t) => {
     const blockRlp = Buffer.from(testData.blocks[0].rlp.slice(2), 'hex')
     const block = Block.fromRLPSerializedBlock(blockRlp, { common })
 
-    const vm = setupVM({ common, genesisBlock })
-    await vm.init()
+    const vm = await setupVM({ common, genesisBlock })
 
     st.equal(vm.blockchain.meta.genesis?.toString('hex'), testData.genesisBlockHeader.hash.slice(2))
 
@@ -94,8 +99,7 @@ tape('runBlockchain', (t) => {
     const blockRlp = toBuffer(testData.blocks[0].rlp)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common })
 
-    const vm = setupVM({ common, genesisBlock })
-    await vm.init()
+    const vm = await setupVM({ common, genesisBlock })
 
     st.equal(vm.blockchain.meta.genesis?.toString('hex'), testData.genesisBlockHeader.hash.slice(2))
 
@@ -115,7 +119,7 @@ tape('runBlockchain', (t) => {
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const genesisBlock = Block.genesis(undefined, { common })
-    const blockchain = new Blockchain({
+    const blockchain = await Blockchain.create({
       db: blockchainDB,
       common,
       validateBlocks: false,
@@ -123,7 +127,7 @@ tape('runBlockchain', (t) => {
       genesisBlock,
     })
 
-    const vm = setupVM({ genesisBlock, blockchain })
+    const vm = await setupVM({ genesisBlock, blockchain })
 
     // Produce error on the third time runBlock is called
     let runBlockInvocations = 0

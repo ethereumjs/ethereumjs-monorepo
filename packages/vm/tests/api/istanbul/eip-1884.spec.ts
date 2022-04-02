@@ -24,7 +24,7 @@ tape('Istanbul: EIP-1884', async (t) => {
     for (const testCase of testCases) {
       const { chain, hardfork } = testCase
       const common = new Common({ chain, hardfork })
-      const vm = new VM({ common })
+      const vm = await VM.create({ common })
 
       const balance = testCase.selfbalance ? BigInt(testCase.selfbalance) : undefined
       const account = createAccount(BigInt(0), balance)

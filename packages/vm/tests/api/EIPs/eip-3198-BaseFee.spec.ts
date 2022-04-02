@@ -73,7 +73,7 @@ tape('EIP3198 tests', (t) => {
       }
     )
     const block = makeBlock(fee, tx, 2)
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
     await vm.stateManager.modifyAccountFields(sender, { balance: ETHER })
 
     // Track stack
