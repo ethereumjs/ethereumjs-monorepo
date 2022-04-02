@@ -586,7 +586,7 @@ export class Engine {
     if (payloadAttributes) {
       const { timestamp, prevRandao, suggestedFeeRecipient } = payloadAttributes
       const parentBlock = this.chain.blocks.latest!
-      const payloadId = await this.pendingBlock.start(this.vm, parentBlock, {
+      const payloadId = await this.pendingBlock.start(await this.vm.copy(), parentBlock, {
         timestamp,
         mixHash: prevRandao,
         coinbase: suggestedFeeRecipient,

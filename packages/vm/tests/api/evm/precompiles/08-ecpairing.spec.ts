@@ -6,7 +6,7 @@ import { getActivePrecompiles } from '../../../../src/evm/precompiles'
 tape('Precompiles: ECPAIRING', (t) => {
   t.test('ECPAIRING', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    const vm = new VM({ common: common })
+    const vm = await VM.create({ common: common })
     const addressStr = '0000000000000000000000000000000000000008'
     const ECPAIRING = getActivePrecompiles(common).get(addressStr)!
 

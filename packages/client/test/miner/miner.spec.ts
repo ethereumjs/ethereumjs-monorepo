@@ -66,6 +66,7 @@ tape('[Miner]', async (t) => {
       cliqueCheckRecentlySigned: () => false,
       // eslint-disable-next-line no-invalid-this
       copy: () => this.blockchain,
+      _init: async () => undefined,
     }
   }
 

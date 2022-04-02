@@ -13,7 +13,7 @@ tape('EIP 3541 tests', (t) => {
   })
 
   t.test('should correctly use push0 opcode', async (st) => {
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
     let stack: bigint[]
 
     vm.on('step', (e: InterpreterStep) => {
@@ -35,7 +35,7 @@ tape('EIP 3541 tests', (t) => {
   })
 
   t.test('should correctly use push0 to create a stack with stack limit length', async (st) => {
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
     let stack: bigint[] = []
 
     vm.on('step', (e: InterpreterStep) => {
@@ -60,7 +60,7 @@ tape('EIP 3541 tests', (t) => {
   })
 
   t.test('should correctly use push0 to create a stack with stack limit + 1 length', async (st) => {
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
 
     const depth = <number>common.param('vm', 'stackLimit') + 1
 
@@ -74,7 +74,7 @@ tape('EIP 3541 tests', (t) => {
   })
 
   t.test('push0 is not available if EIP3855 is not activated', async (st) => {
-    const vm = new VM({ common: commonNoEIP3855 })
+    const vm = await VM.create({ common: commonNoEIP3855 })
 
     const result = await vm.runCode({
       code: Buffer.from('5F', 'hex'),

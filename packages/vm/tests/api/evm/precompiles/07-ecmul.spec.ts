@@ -6,7 +6,7 @@ import { getActivePrecompiles } from '../../../../src/evm/precompiles'
 tape('Precompiles: ECMUL', (t) => {
   t.test('ECMUL', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    const vm = new VM({ common: common })
+    const vm = await VM.create({ common: common })
     const ECMUL = getActivePrecompiles(common).get('0000000000000000000000000000000000000007')!
 
     const result = await ECMUL({

@@ -83,7 +83,9 @@ tape(`${method}: call with valid arguments`, async (t) => {
   estimateTx.getSenderAddress = () => {
     return address
   }
-  const { gasUsed } = await vm.copy().runTx({
+  const { gasUsed } = await (
+    await vm.copy()
+  ).runTx({
     tx: estimateTx,
     skipNonce: true,
     skipBalance: true,
