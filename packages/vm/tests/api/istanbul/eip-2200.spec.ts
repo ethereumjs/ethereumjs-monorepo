@@ -72,10 +72,10 @@ tape('Istanbul: EIP-2200', async (t) => {
         if (testCase.err) {
           st.equal(res.execResult.exceptionError?.error, testCase.err)
         } else {
-          st.assert(res.execResult.exceptionError === undefined)
+          st.equal(res.execResult.exceptionError, undefined)
         }
-        st.assert(BigInt(testCase.used) === res.gasUsed)
-        st.assert(BigInt(testCase.refund) === res.execResult.gasRefund!)
+        st.equal(res.execResult.gasUsed, BigInt(testCase.used))
+        st.equal(res.gasRefund!, BigInt(testCase.refund))
       } catch (e: any) {
         st.fail(e.message)
       }

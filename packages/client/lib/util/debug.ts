@@ -43,7 +43,7 @@ const main = async () => {
   const stateManager = new DefaultStateManager({ trie, common })
   // Ensure we run on the right root
   stateManager.setStateRoot(Buffer.from('${(
-    await execution.vm.stateManager.getStateRoot(true)
+    await execution.vm.stateManager.getStateRoot()
   ).toString('hex')}', 'hex'))
 
 
