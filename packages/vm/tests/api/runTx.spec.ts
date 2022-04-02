@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Account, Address, MAX_INTEGER, toBuffer, bufferToBigInt } from 'ethereumjs-util'
+import { Account, Address, MAX_INTEGER } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import {
@@ -67,8 +67,9 @@ tape('runTx() -> successful API parameter usage', async (t) => {
 
     const blockGasUsed = BigInt(1000)
     const res = await vm.runTx({ tx, blockGasUsed })
-    t.ok(
-      bufferToBigInt(res.receipt.gasUsed) === blockGasUsed + res.gasUsed,
+    t.equal(
+      res.receipt.gasUsed,
+      blockGasUsed + res.gasUsed,
       'receipt.gasUsed should equal block gas used + tx gas used'
     )
     t.end()
@@ -254,7 +255,7 @@ tape('runTx() -> API parameter usage/data errors', (t) => {
     let tx = getTransaction(vm._common, 2, true) as FeeMarketEIP1559Transaction
     const address = tx.getSenderAddress()
     tx = Object.create(tx)
-    const maxCost = tx.gasLimit * tx.maxFeePerGas
+    const maxCost: bigint = tx.gasLimit * tx.maxFeePerGas
     await vm.stateManager.putAccount(address, createAccount(BigInt(0), maxCost - BigInt(1)))
     try {
       await vm.runTx({ tx })
@@ -451,8 +452,9 @@ tape('runTx() -> API return values', async (t) => {
       await vm.stateManager.putAccount(caller, acc)
 
       const res = await vm.runTx({ tx })
-      t.true(
-        res.execResult.gasUsed === BigInt(0),
+      t.equal(
+        res.execResult.gasUsed,
+        BigInt(0),
         `execution result -> gasUsed -> 0 (${txType.name})`
       )
       t.equal(
@@ -465,10 +467,7 @@ tape('runTx() -> API return values', async (t) => {
         Buffer.from([]),
         `execution result -> return value -> empty Buffer (${txType.name})`
       )
-      t.true(
-        res.execResult.gasRefund! === BigInt(0),
-        `execution result -> gasRefund -> 0 (${txType.name})`
-      )
+      t.equal(res.gasRefund, BigInt(0), `gasRefund -> 0 (${txType.name})`)
     }
     t.end()
   })
@@ -484,7 +483,7 @@ tape('runTx() -> API return values', async (t) => {
 
       const res = await vm.runTx({ tx })
 
-      t.deepEqual(
+      t.equal(
         res.gasUsed,
         tx.getBaseFee(),
         `runTx result -> gasUsed -> tx.getBaseFee() (${txType.name})`
@@ -496,13 +495,13 @@ tape('runTx() -> API return values', async (t) => {
             ? tx.maxPriorityFeePerGas
             : tx.maxFeePerGas - baseFee
         const gasPrice = inclusionFeePerGas + baseFee
-        t.deepEquals(
+        t.equal(
           res.amountSpent,
           res.gasUsed * gasPrice,
           `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`
         )
       } else {
-        t.deepEqual(
+        t.equal(
           res.amountSpent,
           res.gasUsed * (<Transaction>tx).gasPrice,
           `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`
@@ -514,10 +513,10 @@ tape('runTx() -> API return values', async (t) => {
         Buffer.from('00'.repeat(256), 'hex'),
         `runTx result -> bloom.bitvector -> should be empty (${txType.name})`
       )
-      t.deepEqual(
+      t.equal(
         res.receipt.gasUsed,
-        toBuffer('0x' + res.gasUsed.toString(16)),
-        `runTx result -> receipt.gasUsed -> result.gasUsed as Buffer (${txType.name})`
+        res.gasUsed,
+        `runTx result -> receipt.gasUsed -> result.gasUsed (${txType.name})`
       )
       t.deepEqual(
         res.receipt.bitvector,
@@ -608,7 +607,7 @@ tape('runTx() -> consensus bugs', async (t) => {
     const block = Block.fromBlockData({ header: { baseFeePerGas: 0x0c } }, { common })
     const result = await vm.runTx({ tx, block })
 
-    t.ok(result.gasUsed === BigInt(66382), 'should use the right amount of gas and not consume all')
+    t.equal(result.gasUsed, BigInt(66382), 'should use the right amount of gas and not consume all')
     t.end()
   })
 })

@@ -49,7 +49,7 @@ export interface RunCodeOpts {
   /**
    * Gas limit
    */
-  gasLimit?: bigint
+  gasLimit: bigint
   /**
    * The value in ether that is being sent to `opt.address`. Defaults to `0`
    */

@@ -170,9 +170,8 @@ tape('EIP-3529 tests', (t) => {
       tx,
     })
 
-    st.equal(result.execResult.exceptionError, undefined, 'transaction executed succesfully')
-    st.ok(result.execResult.gasRefund !== undefined, 'gas refund is defined')
-    st.equal(result.execResult.gasRefund, BigInt(0), 'gas refund is zero')
+    st.equal(result.execResult.exceptionError, undefined, 'transaction executed successfully')
+    st.equal(result.gasRefund, BigInt(0), 'gas refund is zero')
     st.end()
   })
 
@@ -224,9 +223,8 @@ tape('EIP-3529 tests', (t) => {
     const actualGasUsed = startGas! - finalGas! + BigInt(21000)
     const maxRefund = actualGasUsed / BigInt(5)
     const minGasUsed = actualGasUsed - maxRefund
-    const gasUsed = result.execResult.gasUsed
-    st.ok(result.execResult.gasRefund! > maxRefund, 'refund is larger than the max refund')
-    st.ok(gasUsed >= minGasUsed, 'gas used respects the max refund quotient')
+    st.ok(result.gasRefund! > maxRefund, 'refund is larger than the max refund')
+    st.ok(result.gasUsed >= minGasUsed, 'gas used respects the max refund quotient')
     st.end()
   })
 })

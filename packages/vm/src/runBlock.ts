@@ -1,6 +1,6 @@
 import { debug as createDebugLogger } from 'debug'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { Account, Address, bigIntToBuffer, intToBuffer, rlp } from 'ethereumjs-util'
+import { Account, Address, intToBuffer, rlp } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import VM from './index'
@@ -9,15 +9,8 @@ import { StateManager } from './state'
 import { short } from './evm/opcodes'
 import { Capability, TypedTransaction } from '@ethereumjs/tx'
 import type { RunTxResult } from './runTx'
-import type { TxReceipt } from './types'
-import * as DAOConfig from './config/dao_fork_accounts_config.json'
-
-// For backwards compatibility from v5.3.0,
-// TxReceipts are exported. These exports are
-// deprecated and may be removed soon, please
-// update your imports to the new types file.
-import { PreByzantiumTxReceipt, PostByzantiumTxReceipt, EIP2930Receipt } from './types'
-export { PreByzantiumTxReceipt, PostByzantiumTxReceipt, EIP2930Receipt }
+import type { TxReceipt, PreByzantiumTxReceipt, PostByzantiumTxReceipt } from './types'
+import DAOConfig from './config/dao_fork_accounts_config.json'
 
 const debug = createDebugLogger('vm:block')
 
@@ -184,7 +177,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
     debug(`block checkpoint committed`)
   }
 
-  const stateRoot = await state.getStateRoot(false)
+  const stateRoot = await state.getStateRoot()
 
   // Given the generate option, either set resulting header
   // values to the current block, or validate the resulting
@@ -458,66 +451,8 @@ export function encodeReceipt(tx: TypedTransaction, receipt: TxReceipt) {
 }
 
 /**
- * Generates the tx receipt and returns { txReceipt, encodedReceipt, receiptLog }
- * @deprecated Please use the new `generateTxReceipt` located in runTx.
+ * Apply the DAO fork changes to the VM
  */
-export async function generateTxReceipt(
-  this: VM,
-  tx: TypedTransaction,
-  txRes: RunTxResult,
-  blockGasUsed: bigint
-) {
-  const abstractTxReceipt = {
-    gasUsed: bigIntToBuffer(blockGasUsed),
-    bitvector: txRes.bloom.bitvector,
-    logs: txRes.execResult.logs ?? [],
-  }
-
-  let txReceipt
-  let encodedReceipt
-
-  let receiptLog = `Generate tx receipt transactionType=${
-    tx.type
-  } gasUsed=${blockGasUsed} bitvector=${short(abstractTxReceipt.bitvector)} (${
-    abstractTxReceipt.bitvector.length
-  } bytes) logs=${abstractTxReceipt.logs.length}`
-
-  if (!tx.supports(999)) {
-    // Legacy transaction
-    if (this._common.gteHardfork('byzantium')) {
-      // Post-Byzantium
-      txReceipt = {
-        status: txRes.execResult.exceptionError ? 0 : 1, // Receipts have a 0 as status on error
-        ...abstractTxReceipt,
-      } as PostByzantiumTxReceipt
-      const statusInfo = txRes.execResult.exceptionError ? 'error' : 'ok'
-      receiptLog += ` status=${txReceipt.status} (${statusInfo}) (>= Byzantium)`
-    } else {
-      // Pre-Byzantium
-      const stateRoot = await this.stateManager.getStateRoot(true)
-      txReceipt = {
-        stateRoot: stateRoot,
-        ...abstractTxReceipt,
-      } as PreByzantiumTxReceipt
-      receiptLog += ` stateRoot=${txReceipt.stateRoot.toString('hex')} (< Byzantium)`
-    }
-    encodedReceipt = rlp.encode(Object.values(txReceipt))
-  } else {
-    // EIP2930 Transaction
-    txReceipt = {
-      status: txRes.execResult.exceptionError ? 0 : 1,
-      ...abstractTxReceipt,
-    } as PostByzantiumTxReceipt
-    encodedReceipt = Buffer.concat([intToBuffer(tx.type), rlp.encode(Object.values(txReceipt))])
-  }
-  return {
-    txReceipt,
-    encodedReceipt,
-    receiptLog,
-  }
-}
-
-// apply the DAO fork changes to the VM
 async function _applyDAOHardfork(state: StateManager) {
   const DAORefundContractAddress = new Address(Buffer.from(DAORefundContract, 'hex'))
   if (!state.accountExists(DAORefundContractAddress)) {
