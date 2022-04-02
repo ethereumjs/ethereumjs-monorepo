@@ -1,6 +1,6 @@
 import { Log } from './evm/types'
 
-export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt | EIP2930Receipt
+export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt
 
 /**
  * Abstract interface with common transaction receipt fields
@@ -9,7 +9,7 @@ export interface BaseTxReceipt {
   /**
    * Cumulative gas used in the block including this tx
    */
-  gasUsed: Buffer
+  gasUsed: bigint
   /**
    * Bloom bitvector
    */
@@ -41,17 +41,3 @@ export interface PostByzantiumTxReceipt extends BaseTxReceipt {
    */
   status: 0 | 1
 }
-
-/**
- * EIP2930Receipt, which has the same fields as PostByzantiumTxReceipt
- *
- * @deprecated Please use PostByzantiumTxReceipt instead
- */
-export interface EIP2930Receipt extends PostByzantiumTxReceipt {}
-
-/**
- * EIP1559Receipt, which has the same fields as PostByzantiumTxReceipt
- *
- * @deprecated Please use PostByzantiumTxReceipt instead
- */
-export interface EIP1559Receipt extends PostByzantiumTxReceipt {}

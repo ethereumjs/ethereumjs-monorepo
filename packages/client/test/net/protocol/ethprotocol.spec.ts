@@ -5,7 +5,7 @@ import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Chain } from '../../../lib/blockchain/chain'
 import { Config } from '../../../lib/config'
 import { EthProtocol } from '../../../lib/net/protocol'
-import { bigIntToBuffer, bufferToBigInt, intToBuffer } from 'ethereumjs-util'
+import { bigIntToBuffer, bufferToBigInt } from 'ethereumjs-util'
 
 tape('[EthProtocol]', (t) => {
   t.test('should get properties', (t) => {
@@ -150,14 +150,14 @@ tape('[EthProtocol]', (t) => {
     const receipts = [
       {
         status: 1 as 0 | 1,
-        gasUsed: intToBuffer(100),
+        gasUsed: BigInt(100),
         bitvector: Buffer.alloc(256),
         logs: [[Buffer.alloc(20), [Buffer.alloc(32), Buffer.alloc(32, 1)], Buffer.alloc(10)]],
         txType: 2,
       },
       {
         status: 0 as 0 | 1,
-        gasUsed: intToBuffer(1000),
+        gasUsed: BigInt(1000),
         bitvector: Buffer.alloc(256, 1),
         logs: [[Buffer.alloc(20, 1), [Buffer.alloc(32, 1), Buffer.alloc(32, 1)], Buffer.alloc(10)]],
         txType: 0,

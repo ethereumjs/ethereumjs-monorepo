@@ -1,5 +1,6 @@
 import { Hardfork } from '@ethereumjs/common'
 import { Skeleton } from '../sync/skeleton'
+import { bigIntToBuffer } from 'ethereumjs-util'
 import { EthereumService, EthereumServiceOptions } from './ethereumservice'
 import { TxPool } from './txpool'
 import { BeaconSynchronizer, FullSynchronizer } from '../sync'
@@ -259,6 +260,7 @@ export class FullEthereumService extends EthereumService {
       let receiptsSize = 0
       for (const hash of hashes) {
         const blockReceipts = await receiptsManager.getReceipts(hash, true, true)
+        blockReceipts.forEach((r) => (r.gasUsed = bigIntToBuffer(r.gasUsed) as any))
         if (!blockReceipts) continue
         receipts.push(...blockReceipts)
         receiptsSize += Buffer.byteLength(JSON.stringify(blockReceipts))

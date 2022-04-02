@@ -28,7 +28,7 @@ tape('Precompiles: hardfork availability', (t) => {
       value: BigInt(0),
     })
 
-    st.assert(result.gasUsed === BigInt(100000)) // check that we are using gas (if address would contain no code we use 0 gas)
+    st.equal(result.execResult.gasUsed, BigInt(100000)) // check that we are using gas (if address would contain no code we use 0 gas)
 
     // Check if ECPAIR is available in future hard forks.
     const commonPetersburg = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
@@ -47,7 +47,7 @@ tape('Precompiles: hardfork availability', (t) => {
       value: BigInt(0),
     })
 
-    st.assert(result.gasUsed === BigInt(100000))
+    st.equal(result.execResult.gasUsed, BigInt(100000))
 
     // Check if ECPAIR is not available in Homestead.
     const commonHomestead = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
@@ -68,7 +68,7 @@ tape('Precompiles: hardfork availability', (t) => {
       value: BigInt(0),
     })
 
-    st.assert(result.gasUsed === BigInt(0)) // check that we use no gas, because we are calling into an address without code.
+    st.equal(result.execResult.gasUsed, BigInt(0)) // check that we use no gas, because we are calling into an address without code.
 
     st.end()
   })

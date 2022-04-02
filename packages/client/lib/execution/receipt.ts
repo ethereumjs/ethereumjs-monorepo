@@ -2,7 +2,7 @@ import { PreByzantiumTxReceipt, PostByzantiumTxReceipt, TxReceipt } from '@ether
 import { Log } from '@ethereumjs/vm/dist/evm/types'
 import Bloom from '@ethereumjs/vm/dist/bloom'
 import { TypedTransaction } from '@ethereumjs/tx'
-import { rlp, intToBuffer, bufferToInt } from 'ethereumjs-util'
+import { rlp, intToBuffer, bufferToInt, bigIntToBuffer, bufferToBigInt } from 'ethereumjs-util'
 import { MetaDBManager, DBKey } from '../util/metaDBManager'
 import type { Block } from '@ethereumjs/block'
 
@@ -302,7 +302,7 @@ export class ReceiptsManager extends MetaDBManager {
             value.map((r) => [
               (r as PreByzantiumTxReceipt).stateRoot ??
                 intToBuffer((r as PostByzantiumTxReceipt).status),
-              r.gasUsed,
+              bigIntToBuffer(r.gasUsed),
               this.rlp(RlpConvert.Encode, RlpType.Logs, r.logs),
             ])
           )
@@ -315,14 +315,14 @@ export class ReceiptsManager extends MetaDBManager {
               // Pre-Byzantium Receipt
               return {
                 stateRoot: r[0],
-                gasUsed,
+                gasUsed: bufferToBigInt(gasUsed),
                 logs,
               } as PreByzantiumTxReceipt
             } else {
               // Post-Byzantium Receipt
               return {
                 status: bufferToInt(r[0]),
-                gasUsed,
+                gasUsed: bufferToBigInt(gasUsed),
                 logs,
               } as PostByzantiumTxReceipt
             }

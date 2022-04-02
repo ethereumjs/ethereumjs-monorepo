@@ -99,7 +99,7 @@ tape('EIP 2929: gas cost tests', (t) => {
 
     const result = await vm.runTx({ tx })
 
-    st.ok(result.gasUsed == expectedGasUsed)
+    st.equal(result.gasUsed, expectedGasUsed)
   }
 
   // Checks EXT(codehash,codesize,balance) of precompiles, which should be 100,
