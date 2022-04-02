@@ -11,7 +11,7 @@ import testnet from '../testdata/common/testnet.json'
 
 tape('[VMExecution]', async (t) => {
   t.test('Initialization', async (t) => {
-    const vm = new VM()
+    const vm = await VM.create()
     const config = new Config({ vm, transports: [] })
     const chain = new Chain({ config })
     const exec = new VMExecution({ config, chain })

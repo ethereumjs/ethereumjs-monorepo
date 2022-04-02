@@ -27,7 +27,7 @@ tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', asyn
   ) // contract address
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople })
-  const vm = new VM({ common })
+  const vm = await VM.create({ common })
   const code = '3460008080F560005260206000F3'
   /*
       code:             remarks: (top of the stack is at the zero index)
@@ -86,10 +86,10 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
     Buffer.from('00000000000000000000000000000000000000ff', 'hex')
   ) // contract address
   // setup the vm
-  const vmByzantium = new VM({
+  const vmByzantium = await VM.create({
     common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium }),
   })
-  const vmConstantinople = new VM({
+  const vmConstantinople = await VM.create({
     common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople }),
   })
   const code = '600160011B00'
@@ -134,8 +134,8 @@ tape('Ensure that precompile activation creates non-empty accounts', async (t) =
   ) // contract address
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-  const vmNotActivated = new VM({ common: common })
-  const vmActivated = new VM({ common: common, activatePrecompiles: true })
+  const vmNotActivated = await VM.create({ common: common })
+  const vmActivated = await VM.create({ common: common, activatePrecompiles: true })
   const code = '6000808080347300000000000000000000000000000000000000045AF100'
   /*
       idea: call the Identity precompile with nonzero value in order to trigger "callNewAccount" for the non-activated VM and do not deduct this
@@ -181,7 +181,7 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
   const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-  const vm = new VM({ common: common })
+  const vm = await VM.create({ common: common })
   const code = '61000260005561000160005500'
   /*
       idea: store the original value in the storage slot, except it is now a 1-length buffer instead of a 32-length buffer
@@ -232,7 +232,7 @@ tape('ensure correct gas for pre-constantinople sstore', async (t) => {
   const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-  const vm = new VM({ common: common })
+  const vm = await VM.create({ common: common })
   // push 1 push 0 sstore stop
   const code = '600160015500'
 
@@ -259,7 +259,7 @@ tape('ensure correct gas for calling non-existent accounts in homestead', async 
   const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
-  const vm = new VM({ common: common })
+  const vm = await VM.create({ common: common })
   // code to call 0x00..00dd, which does not exist
   const code = '6000600060006000600060DD61FFFF5A03F100'
 
@@ -290,7 +290,7 @@ tape(
     const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
-    const vm = new VM({ common: common })
+    const vm = await VM.create({ common: common })
     // code to call back into the calling account (0x00..00EE),
     // but using too much memory
     const code = '61FFFF60FF60006000600060EE6000F200'
@@ -320,7 +320,7 @@ tape('ensure selfdestruct pays for creating new accounts', async (t) => {
   const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.TangerineWhistle })
-  const vm = new VM({ common: common })
+  const vm = await VM.create({ common: common })
   // code to call 0x00..00fe, with the GAS opcode used as gas
   // this cannot be paid, since we also have to pay for CALL (40 gas)
   // this should thus go OOG
@@ -350,7 +350,7 @@ tape('ensure that sstores pay for the right gas costs pre-byzantium', async (t) 
   const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-  const vm = new VM({ common: common })
+  const vm = await VM.create({ common: common })
   // code to call 0x00..00fe, with the GAS opcode used as gas
   // this cannot be paid, since we also have to pay for CALL (40 gas)
   // this should thus go OOG
@@ -420,7 +420,7 @@ tape(
     const emptyBuffer = Buffer.from('')
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const vm = new VM({ common: common })
+    const vm = await VM.create({ common: common })
     const code = '60008080F060005500'
     /*
       This simple code tries to create an empty contract and then stores the address of the contract in the zero slot.
@@ -474,7 +474,7 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
   const caller = new Address(Buffer.from('1a02a619e51cc5f8a2a61d2a60f6c80476ee8ead', 'hex')) // caller addres
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-  const vm = new VM({ common: common })
+  const vm = await VM.create({ common: common })
   const code = '3034526020600760203460045afa602034343e604034f3'
 
   const account = await vm.stateManager.getAccount(caller)
@@ -508,7 +508,7 @@ tape('Ensure that IDENTITY precompile copies the memory', async (t) => {
 tape('Throws on negative call value', async (t) => {
   // setup the vm
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-  const vm = new VM({ common: common })
+  const vm = await VM.create({ common: common })
 
   // setup the call arguments
   const runCallArgs = {

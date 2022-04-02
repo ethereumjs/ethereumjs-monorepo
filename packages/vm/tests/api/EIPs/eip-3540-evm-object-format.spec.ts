@@ -4,6 +4,7 @@ import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Address, privateToAddress } from 'ethereumjs-util'
 import * as eof from '../../../src/evm/opcodes/eof'
+
 const pkey = Buffer.from('20'.repeat(32), 'hex')
 const GWEI = BigInt('1000000000')
 const sender = new Address(privateToAddress(pkey))
@@ -63,7 +64,7 @@ tape('EIP 3540 tests', (t) => {
       hardfork: Hardfork.London,
       eips: [3540],
     })
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
     const account = await vm.stateManager.getAccount(sender)
     const balance = GWEI * BigInt(21000) * BigInt(10000000)
     account.balance = balance
@@ -79,7 +80,7 @@ tape('EIP 3540 tests', (t) => {
   })
 
   t.test('invalid EOF format / contract creation', async (st) => {
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
     const account = await vm.stateManager.getAccount(sender)
     const balance = GWEI * BigInt(21000) * BigInt(10000000)
     account.balance = balance
@@ -149,7 +150,7 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
       hardfork: Hardfork.London,
       eips: [3540],
     })
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
     const account = await vm.stateManager.getAccount(sender)
     const balance = GWEI * BigInt(21000) * BigInt(10000000)
     account.balance = balance
@@ -169,7 +170,7 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
       hardfork: Hardfork.London,
       eips: [3540],
     })
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
     const account = await vm.stateManager.getAccount(sender)
     const balance = GWEI * BigInt(21000) * BigInt(10000000)
     account.balance = balance
@@ -190,7 +191,7 @@ tape('ensure invalid EOF initcode in EIP-3540 does not consume all gas', (t) => 
       hardfork: Hardfork.London,
       eips: [3540],
     })
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
     const account = await vm.stateManager.getAccount(sender)
     const balance = GWEI * BigInt(21000) * BigInt(10000000)
     account.balance = balance

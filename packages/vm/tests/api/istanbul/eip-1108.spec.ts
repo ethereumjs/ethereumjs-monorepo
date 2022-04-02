@@ -6,7 +6,7 @@ import { getActivePrecompiles } from '../../../src/evm/precompiles'
 tape('Istanbul: EIP-1108 tests', (t) => {
   t.test('ECADD', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
     const address = '0000000000000000000000000000000000000006'
     const ECADD = getActivePrecompiles(common).get(address)!
 
@@ -23,7 +23,7 @@ tape('Istanbul: EIP-1108 tests', (t) => {
 
   t.test('ECMUL', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
     const address = '0000000000000000000000000000000000000007'
     const ECMUL = getActivePrecompiles(common).get(address)!
 
@@ -40,7 +40,7 @@ tape('Istanbul: EIP-1108 tests', (t) => {
 
   t.test('ECPAIRING', async (st) => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
     const address = '0000000000000000000000000000000000000008'
     const ECPAIRING = getActivePrecompiles(common).get(address)!
 

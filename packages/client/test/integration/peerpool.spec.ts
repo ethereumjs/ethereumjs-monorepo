@@ -63,7 +63,7 @@ tape('[Integration:PeerPool]', async (t) => {
 
   t.test('should handle peer messages', async (t) => {
     const config = new Config({ transports: [] })
-    const blockchain = new Blockchain({
+    const blockchain = await Blockchain.create({
       validateBlocks: false,
       validateConsensus: false,
     })

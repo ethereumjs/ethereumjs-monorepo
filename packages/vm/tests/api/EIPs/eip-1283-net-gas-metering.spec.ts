@@ -35,7 +35,7 @@ tape('Constantinople: EIP-1283', async (t) => {
     const key = setLengthLeft(bigIntToBuffer(BigInt(0)), 32)
     for (const testCase of testCases) {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople })
-      const vm = new VM({ common })
+      const vm = await VM.create({ common })
 
       const account = createAccount(BigInt(0), BigInt(0))
       await vm.stateManager.putAccount(addr, account)

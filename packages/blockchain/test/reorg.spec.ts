@@ -21,7 +21,7 @@ tape('reorg tests', (t) => {
         },
         { common }
       )
-      const blockchain = new Blockchain({
+      const blockchain = await Blockchain.create({
         validateBlocks: true,
         validateConsensus: false,
         common,
@@ -90,7 +90,7 @@ tape('reorg tests', (t) => {
     async (st) => {
       const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
       const genesisBlock = Block.genesis({}, { common })
-      const blockchain = new Blockchain({
+      const blockchain = await Blockchain.create({
         validateBlocks: false,
         validateConsensus: false,
         common,
