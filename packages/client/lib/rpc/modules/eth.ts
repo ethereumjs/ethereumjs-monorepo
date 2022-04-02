@@ -250,7 +250,7 @@ const jsonRpcReceipt = async (
   blockNumber: bigIntToHex(block.header.number),
   from: tx.getSenderAddress().toString(),
   to: tx.to?.toString() ?? null,
-  cumulativeGasUsed: bufferToHex(receipt.gasUsed),
+  cumulativeGasUsed: bigIntToHex(receipt.gasUsed),
   effectiveGasPrice: bigIntToHex(effectiveGasPrice),
   gasUsed: bigIntToHex(gasUsed),
   contractAddress: contractAddress?.toString() ?? null,

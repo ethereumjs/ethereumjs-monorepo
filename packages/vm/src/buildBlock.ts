@@ -226,7 +226,7 @@ export class BlockBuilder {
       await this.rewardMiner()
     }
 
-    const stateRoot = await this.vm.stateManager.getStateRoot(true)
+    const stateRoot = await this.vm.stateManager.getStateRoot()
     const transactionsTrie = await this.transactionsTrie()
     const receiptTrie = await this.receiptTrie()
     const logsBloom = this.logsBloom()

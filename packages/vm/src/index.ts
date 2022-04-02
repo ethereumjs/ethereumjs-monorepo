@@ -77,11 +77,6 @@ export interface VMOpts {
    */
   stateManager?: StateManager
   /**
-   * A {@link SecureTrie} instance for the state tree (ignored if stateManager is passed)
-   * @deprecated will be removed in next major version release
-   */
-  state?: Trie
-  /**
    * A {@link Blockchain} object for storing/retrieving blocks
    */
   blockchain?: Blockchain
@@ -306,7 +301,7 @@ export default class VM extends AsyncEventEmitter {
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
     } else {
-      const trie = opts.state ?? new Trie()
+      const trie = new Trie()
       this.stateManager = new DefaultStateManager({
         trie,
         common: this._common,

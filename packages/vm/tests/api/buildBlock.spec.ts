@@ -104,7 +104,7 @@ tape('BlockBuilder', async (t) => {
 
     await blockBuilder.addTransaction(tx)
 
-    const root1 = await vm.stateManager.getStateRoot(true)
+    const root1 = await vm.stateManager.getStateRoot()
     st.ok(!root0.equals(root1), 'state root should change after adding a tx')
 
     await blockBuilder.revert()
