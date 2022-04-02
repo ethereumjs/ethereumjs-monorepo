@@ -534,7 +534,10 @@ export default class EEI {
 
   async _baseCall(msg: Message): Promise<bigint> {
     const selfdestruct = { ...this._result.selfdestruct }
-    msg.selfdestruct = selfdestruct
+    msg.selfdestruct = Object.fromEntries(
+      Object.entries(selfdestruct).map(([key, value]) => [key, !!value])
+    )
+    msg.selfdestructTo = selfdestruct
 
     // empty the return data buffer
     this._lastReturned = Buffer.alloc(0)
@@ -587,7 +590,10 @@ export default class EEI {
       data,
       salt,
       depth: this._env.depth + 1,
-      selfdestruct,
+      selfdestruct: Object.fromEntries(
+        Object.entries(selfdestruct).map(([key, value]) => [key, !!value])
+      ),
+      selfdestructTo: selfdestruct,
     })
 
     // empty the return data buffer

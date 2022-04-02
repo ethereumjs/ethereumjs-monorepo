@@ -13,7 +13,8 @@ interface MessageOpts {
   isStatic?: boolean
   isCompiled?: boolean
   salt?: Buffer
-  selfdestruct?: { [key: string]: boolean } | { [key: string]: Buffer }
+  selfdestruct?: { [key: string]: boolean }
+  selfdestructTo?: { [key: string]: Buffer }
   delegatecall?: boolean
 }
 
@@ -29,7 +30,8 @@ export default class Message {
   isStatic: boolean
   isCompiled: boolean
   salt?: Buffer
-  selfdestruct?: { [key: string]: boolean } | { [key: string]: Buffer }
+  selfdestruct?: { [key: string]: boolean }
+  selfdestructTo?: { [key: string]: Buffer }
   delegatecall: boolean
 
   constructor(opts: MessageOpts) {

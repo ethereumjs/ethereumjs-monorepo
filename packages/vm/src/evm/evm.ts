@@ -527,10 +527,8 @@ export default class EVM {
       codeAddress: message.codeAddress,
     }
     const eei = new EEI(env, this._state, this, this._vm._common, message.gasLimit)
-    if (message.selfdestruct) {
-      eei._result.selfdestruct = message.selfdestruct as {
-        [k: string]: Buffer
-      }
+    if (message.selfdestructTo) {
+      eei._result.selfdestruct = message.selfdestructTo
     }
 
     const interpreter = new Interpreter(this._vm, eei)
