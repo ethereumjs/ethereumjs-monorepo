@@ -187,7 +187,7 @@ export default class EthereumClient {
   async executeBlocks(first: number, last: number, txHashes: string[]) {
     this.config.logger.info('Preparing for block execution (debug mode, no services started)...')
     if (!this.execution) throw new Error('executeBlocks requires execution')
-    const vm = this.execution.vm.copy()
+    const vm = await this.execution.vm.copy()
 
     for (let blockNumber = first; blockNumber <= last; blockNumber++) {
       const block = await vm.blockchain.getBlock(blockNumber)

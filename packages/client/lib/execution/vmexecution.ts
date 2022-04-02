@@ -32,7 +32,7 @@ export class VMExecution extends Execution {
         trie,
       })
 
-      this.vm = new VM({
+      this.vm = new (VM as any)({
         common: this.config.execCommon,
         blockchain: this.chain.blockchain,
         stateManager,
@@ -55,6 +55,7 @@ export class VMExecution extends Execution {
    * Initializes VM execution. Must be called before run() is called
    */
   async open(): Promise<void> {
+    await this.vm.init()
     const headBlock = await this.vm.blockchain.getIteratorHead()
     const { number } = headBlock.header
     const td = await this.vm.blockchain.getTotalDifficulty(headBlock.header.hash())
