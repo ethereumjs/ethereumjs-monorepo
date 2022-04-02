@@ -73,7 +73,7 @@ tape('EIP1559 tests', (t) => {
       }
     )
     const block = makeBlock(GWEI, tx, 2)
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
     let account = await vm.stateManager.getAccount(sender)
     const balance = GWEI * BigInt(21000) * BigInt(10)
     account.balance = balance
@@ -173,7 +173,7 @@ tape('EIP1559 tests', (t) => {
       }
     )
     const block = makeBlock(GWEI, tx, 2)
-    const vm = new VM({ common })
+    const vm = await VM.create({ common })
     const balance = GWEI * BigInt(210000) * BigInt(10)
     await vm.stateManager.modifyAccountFields(sender, { balance })
 

@@ -17,7 +17,7 @@ tape('BlockBuilder', async (t) => {
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
 
-    const vmCopy = vm.copy()
+    const vmCopy = await vm.copy()
 
     const blockBuilder = await vm.buildBlock({
       parentBlock: genesisBlock,
@@ -270,7 +270,7 @@ tape('BlockBuilder', async (t) => {
     const genesisBlock = Block.genesis({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
-    const vmCopy = vm.copy()
+    const vmCopy = await vm.copy()
 
     const blockBuilder = await vm.buildBlock({
       parentBlock: genesisBlock,
@@ -300,7 +300,7 @@ tape('BlockBuilder', async (t) => {
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
 
-    const vmCopy = vm.copy()
+    const vmCopy = await vm.copy()
 
     const blockBuilder = await vm.buildBlock({
       parentBlock: genesisBlock,

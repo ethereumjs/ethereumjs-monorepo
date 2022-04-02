@@ -109,7 +109,7 @@ export class Chain {
 
     this.blockchain =
       options.blockchain ??
-      new Blockchain({
+      new (Blockchain as any)({
         db: options.chainDB,
         common: this.config.chainCommon,
         hardforkByHeadBlockNumber: true,
@@ -177,7 +177,7 @@ export class Chain {
   async open(): Promise<boolean | void> {
     if (this.opened) return false
     await this.blockchain.db.open()
-    await this.blockchain.initPromise
+    await (this.blockchain as any)._init()
     this.opened = true
     await this.update(false)
 

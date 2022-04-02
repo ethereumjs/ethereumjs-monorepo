@@ -469,7 +469,7 @@ export class Eth {
       throw new Error('missing vm')
     }
 
-    const vm = this._vm.copy()
+    const vm = await this._vm.copy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const { from, to, gas: gasLimit, gasPrice, value, data } = transaction
@@ -527,7 +527,7 @@ export class Eth {
       throw new Error('missing vm')
     }
 
-    const vm = this._vm.copy()
+    const vm = await this._vm.copy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     if (!transaction.gas) {
@@ -576,7 +576,7 @@ export class Eth {
       throw new Error('missing vm')
     }
 
-    const vm = this._vm.copy()
+    const vm = await this._vm.copy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
     const account = await vm.stateManager.getAccount(address)
     return bigIntToHex(account.balance)
@@ -645,7 +645,7 @@ export class Eth {
       throw new Error('missing vm')
     }
 
-    const vm = this._vm.copy()
+    const vm = await this._vm.copy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = Address.fromString(addressHex)
@@ -668,7 +668,7 @@ export class Eth {
       throw new Error('missing vm')
     }
 
-    const vm = this._vm.copy()
+    const vm = await this._vm.copy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = Address.fromString(addressHex)
@@ -716,7 +716,7 @@ export class Eth {
       throw new Error('missing vm')
     }
 
-    const vm = this._vm.copy()
+    const vm = await this._vm.copy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = Address.fromString(addressHex)
@@ -784,7 +784,9 @@ export class Eth {
         : (tx as Transaction).gasPrice
 
       // Run tx through copied vm to get tx gasUsed and createdAddress
-      const runBlockResult = await this._vm!.copy().runBlock({
+      const runBlockResult = await (
+        await this._vm!.copy()
+      ).runBlock({
         block,
         root: parentBlock.header.stateRoot,
         skipBlockValidation: true,
@@ -987,7 +989,7 @@ export class Eth {
       throw new Error('missing vm')
     }
 
-    const vm = this._vm.copy()
+    const vm = await this._vm.copy()
 
     if (!('getProof' in vm.stateManager)) {
       throw new Error('getProof RPC method not supported with the StateManager provided')

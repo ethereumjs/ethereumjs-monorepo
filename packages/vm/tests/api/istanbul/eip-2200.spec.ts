@@ -48,7 +48,7 @@ tape('Istanbul: EIP-2200', async (t) => {
 
     for (const testCase of testCases) {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-      const vm = new VM({ common })
+      const vm = await VM.create({ common })
 
       const account = createAccount(BigInt(0), BigInt(0))
       await vm.stateManager.putAccount(addr, account)

@@ -21,7 +21,7 @@ tape('EIP-2537 BLS tests', (t) => {
       return st.end()
     }
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
-    const vm = new VM({ common: common })
+    const vm = await VM.create({ common: common })
 
     for (const address of precompiles) {
       const to = new Address(Buffer.from(address, 'hex'))
@@ -52,7 +52,7 @@ tape('EIP-2537 BLS tests', (t) => {
       return st.end()
     }
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium, eips: [2537] })
-    const vm = new VM({ common: common })
+    const vm = await VM.create({ common: common })
 
     for (const address of precompiles) {
       const to = new Address(Buffer.from(address, 'hex'))
@@ -90,7 +90,7 @@ tape('EIP-2537 BLS tests', (t) => {
       return st.end()
     }
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2537] })
-    const vm = new VM({ common: common })
+    const vm = await VM.create({ common: common })
     const BLS12G2MultiExp = getActivePrecompiles(common).get(
       '000000000000000000000000000000000000000f'
     )!

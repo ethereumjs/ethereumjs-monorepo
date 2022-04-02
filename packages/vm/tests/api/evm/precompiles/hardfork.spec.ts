@@ -20,7 +20,7 @@ tape('Precompiles: hardfork availability', (t) => {
       st.pass('ECPAIRING available in petersburg')
     }
 
-    let vm = new VM({ common: commonByzantium })
+    let vm = await VM.create({ common: commonByzantium })
     let result = await vm.runCall({
       caller: Address.zero(),
       gasLimit: BigInt(0xffffffffff),
@@ -39,7 +39,7 @@ tape('Precompiles: hardfork availability', (t) => {
       st.pass('ECPAIRING available in petersburg')
     }
 
-    vm = new VM({ common: commonPetersburg })
+    vm = await VM.create({ common: commonPetersburg })
     result = await vm.runCall({
       caller: Address.zero(),
       gasLimit: BigInt(0xffffffffff),
@@ -59,7 +59,7 @@ tape('Precompiles: hardfork availability', (t) => {
       st.pass('ECPAIRING not available in homestead')
     }
 
-    vm = new VM({ common: commonHomestead })
+    vm = await VM.create({ common: commonHomestead })
 
     result = await vm.runCall({
       caller: Address.zero(),

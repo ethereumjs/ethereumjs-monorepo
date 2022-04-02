@@ -8,7 +8,7 @@ import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP } from '../src/clique'
 tape('Clique: Initialization', (t) => {
   t.test('should initialize a clique blockchain', async (st) => {
     const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Chainstart })
-    const blockchain = new Blockchain({ common })
+    const blockchain = await Blockchain.create({ common })
 
     const head = await blockchain.getHead()
     st.equal(head.hash().toString('hex'), common.genesis().hash.slice(2), 'correct genesis hash')

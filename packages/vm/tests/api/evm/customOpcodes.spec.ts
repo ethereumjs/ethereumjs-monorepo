@@ -22,7 +22,7 @@ tape('VM: custom opcodes', (t) => {
   }
 
   t.test('should add custom opcodes to the VM', async (st) => {
-    const vm = new VM({
+    const vm = await VM.create({
       customOpcodes: [testOpcode],
     })
     const gas = 123456
@@ -42,7 +42,7 @@ tape('VM: custom opcodes', (t) => {
   })
 
   t.test('should delete opcodes from the VM', async (st) => {
-    const vm = new VM({
+    const vm = await VM.create({
       customOpcodes: [{ opcode: 0x20 }], // deletes KECCAK opcode
     })
     const gas = BigInt(123456)
@@ -56,7 +56,7 @@ tape('VM: custom opcodes', (t) => {
   t.test('should not override default opcodes', async (st) => {
     // This test ensures that always the original opcode map is used
     // Thus, each time you recreate a VM, it is in a clean state
-    const vm = new VM({
+    const vm = await VM.create({
       customOpcodes: [{ opcode: 0x01 }], // deletes ADD opcode
     })
     const gas = BigInt(123456)
@@ -66,7 +66,7 @@ tape('VM: custom opcodes', (t) => {
     })
     st.ok(res.gasUsed === gas, 'succesfully deleted opcode')
 
-    const vmDefault = new VM()
+    const vmDefault = await VM.create()
 
     // PUSH 04
     // PUSH 01
@@ -85,7 +85,7 @@ tape('VM: custom opcodes', (t) => {
 
   t.test('should override opcodes in the VM', async (st) => {
     testOpcode.opcode = 0x20 // Overrides KECCAK
-    const vm = new VM({
+    const vm = await VM.create({
       customOpcodes: [testOpcode],
     })
     const gas = 123456
