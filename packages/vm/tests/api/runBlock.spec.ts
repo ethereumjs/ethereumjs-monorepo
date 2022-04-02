@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { Address, rlp, KECCAK256_RLP, Account, bufferToBigInt } from 'ethereumjs-util'
+import { Address, rlp, KECCAK256_RLP, Account } from 'ethereumjs-util'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import {
@@ -171,14 +171,14 @@ tape('runBlock() -> successful API parameter usage', async (t) => {
       skipBlockValidation: true,
       generate: true,
     })
-    st.ok(
-      txResultChainstart.results[0].gasUsed ===
-        BigInt(21000) + BigInt(68) * BigInt(3) + BigInt(3) + BigInt(50),
+    st.equal(
+      txResultChainstart.results[0].gasUsed,
+      BigInt(21000) + BigInt(68) * BigInt(3) + BigInt(3) + BigInt(50),
       'tx charged right gas on chainstart hard fork'
     )
-    st.ok(
-      txResultMuirGlacier.results[0].gasUsed ===
-        BigInt(21000) + BigInt(32000) + BigInt(16) * BigInt(3) + BigInt(3) + BigInt(800),
+    st.equal(
+      txResultMuirGlacier.results[0].gasUsed,
+      BigInt(21000) + BigInt(32000) + BigInt(16) * BigInt(3) + BigInt(3) + BigInt(800),
       'tx charged right gas on muir glacier hard fork'
     )
   })
@@ -302,7 +302,7 @@ tape('runBlock() -> runtime behavior', async (t) => {
     // verify that the refund account gets the summed balance of the original refund account + two child DAO accounts
     const msg =
       'should transfer balance from DAO children to the Refund DAO account in the DAO fork'
-    t.ok(DAORefundAccount.balance === BigInt(0x7777), msg)
+    t.equal(DAORefundAccount.balance, BigInt(0x7777), msg)
   })
 
   t.test('should allocate to correct clique beneficiary', async (t) => {
@@ -393,7 +393,7 @@ tape('should correctly reflect generated fields', async (t) => {
 
   t.ok(results.block.header.receiptTrie.equals(KECCAK256_RLP))
   t.ok(results.block.header.transactionsTrie.equals(KECCAK256_RLP))
-  t.equals(results.block.header.gasUsed, BigInt(0))
+  t.equal(results.block.header.gasUsed, BigInt(0))
 })
 
 async function runWithHf(hardfork: string) {
@@ -457,14 +457,11 @@ tape('runBlock() -> tx types', async (t) => {
       generate: true,
     })
 
-    st.ok(
-      res.gasUsed ===
-        res.receipts
-          .map((r) => r.gasUsed)
-          .reduce(
-            (prevValue: bigint, currValue: Buffer) => prevValue + bufferToBigInt(currValue),
-            BigInt(0)
-          ),
+    st.equal(
+      res.gasUsed,
+      res.receipts
+        .map((r) => r.gasUsed)
+        .reduce((prevValue, currValue) => prevValue + currValue, BigInt(0)),
       "gas used should equal transaction's total gasUsed"
     )
   }

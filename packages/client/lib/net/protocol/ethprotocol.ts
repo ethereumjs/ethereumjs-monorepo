@@ -234,7 +234,7 @@ export class EthProtocol extends Protocol {
           let encodedReceipt = rlp.encode([
             (receipt as PreByzantiumTxReceipt).stateRoot ??
               (receipt as PostByzantiumTxReceipt).status,
-            receipt.gasUsed,
+            bigIntToBuffer(receipt.gasUsed),
             receipt.bitvector,
             receipt.logs,
           ])
@@ -253,7 +253,11 @@ export class EthProtocol extends Protocol {
           // Legacy receipt if r[0] >= 0xc0, otherwise typed receipt with first byte as TransactionType
           const decoded = rlp.decode(r[0] >= 0xc0 ? r : r.slice(1)) as any
           const [stateRootOrStatus, cumulativeGasUsed, logsBloom, logs] = decoded
-          const receipt = { gasUsed: cumulativeGasUsed, bitvector: logsBloom, logs } as TxReceipt
+          const receipt = {
+            gasUsed: bufferToBigInt(cumulativeGasUsed),
+            bitvector: logsBloom,
+            logs,
+          } as TxReceipt
           if (stateRootOrStatus.length === 32) {
             ;(receipt as PreByzantiumTxReceipt).stateRoot = stateRootOrStatus
           } else {

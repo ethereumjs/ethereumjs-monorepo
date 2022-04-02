@@ -27,7 +27,7 @@ export interface StateManager {
   checkpoint(): Promise<void>
   commit(): Promise<void>
   revert(): Promise<void>
-  getStateRoot(force?: boolean): Promise<Buffer>
+  getStateRoot(): Promise<Buffer>
   setStateRoot(stateRoot: Buffer): Promise<void>
   dumpStorage(address: Address): Promise<StorageDump>
   hasGenesisState(): Promise<boolean>

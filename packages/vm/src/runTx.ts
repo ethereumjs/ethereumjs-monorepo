@@ -1,5 +1,5 @@
 import { debug as createDebugLogger } from 'debug'
-import { Address, bigIntToBuffer, KECCAK256_NULL, toBuffer } from 'ethereumjs-util'
+import { Address, KECCAK256_NULL, toBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ConsensusType } from '@ethereumjs/common'
 import {
@@ -92,6 +92,11 @@ export interface RunTxResult extends EVMResult {
    * The tx receipt
    */
   receipt: TxReceipt
+
+  /**
+   * The amount of gas used in this transaction
+   */
+  gasUsed: bigint
 
   /**
    * The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
@@ -352,8 +357,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
   }
 
-  let gasPrice
-  let inclusionFeePerGas
+  let gasPrice: bigint
+  let inclusionFeePerGas: bigint
   // EIP-1559 tx
   if (tx.supports(Capability.EIP1559FeeMarket)) {
     const baseFee = block.header.baseFeePerGas!
@@ -412,12 +417,12 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   const results = (await evm.executeMessage(message)) as RunTxResult
   if (this.DEBUG) {
-    const { gasUsed, exceptionError, returnValue, gasRefund } = results.execResult
+    const { gasUsed, exceptionError, returnValue } = results.execResult
     debug('-'.repeat(100))
     debug(
       `Received tx execResult: [ gasUsed=${gasUsed} exceptionError=${
         exceptionError ? `'${exceptionError.error}'` : 'none'
-      } returnValue=0x${short(returnValue)} gasRefund=${gasRefund ?? 0} ]`
+      } returnValue=0x${short(returnValue)} gasRefund=${results.gasRefund ?? 0} ]`
     )
   }
 
@@ -430,14 +435,14 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(`Generated tx bloom with logs=${results.execResult.logs?.length}`)
   }
 
-  // Caculate the total gas used
-  results.gasUsed += txBaseFee
+  // Calculate the total gas used
+  results.gasUsed = results.execResult.gasUsed + txBaseFee
   if (this.DEBUG) {
     debugGas(`tx add baseFee ${txBaseFee} to gasUsed (-> ${results.gasUsed})`)
   }
 
   // Process any gas refund
-  let gasRefund = results.execResult.gasRefund ?? BigInt(0)
+  let gasRefund = results.gasRefund ?? BigInt(0)
   const maxRefundQuotient = BigInt(this._common.param('gasConfig', 'maxRefundQuotient'))
   if (gasRefund !== BigInt(0)) {
     const maxRefund = results.gasUsed / maxRefundQuotient
@@ -468,13 +473,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Update miner's balance
   let miner
   if (this._common.consensusType() === ConsensusType.ProofOfAuthority) {
-    // Backwards-compatibility check
-    // TODO: can be removed along VM v6 release
-    if ('cliqueSigner' in block.header) {
-      miner = block.header.cliqueSigner()
-    } else {
-      miner = Address.zero()
-    }
+    miner = block.header.cliqueSigner()
   } else {
     miner = block.header.coinbase
   }
@@ -482,7 +481,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const minerAccount = await state.getAccount(miner)
   // add the amount spent on gas to the miner's account
   if (this._common.isActivatedEIP(1559)) {
-    minerAccount.balance += results.gasUsed * <bigint>inclusionFeePerGas
+    minerAccount.balance += results.gasUsed * inclusionFeePerGas!
   } else {
     minerAccount.balance += results.amountSpent
   }
@@ -571,7 +570,7 @@ export async function generateTxReceipt(
   cumulativeGasUsed: bigint
 ): Promise<TxReceipt> {
   const baseReceipt: BaseTxReceipt = {
-    gasUsed: bigIntToBuffer(cumulativeGasUsed),
+    gasUsed: cumulativeGasUsed,
     bitvector: txResult.bloom.bitvector,
     logs: txResult.execResult.logs ?? [],
   }
@@ -597,7 +596,7 @@ export async function generateTxReceipt(
       } as PostByzantiumTxReceipt
     } else {
       // Pre-Byzantium
-      const stateRoot = await this.stateManager.getStateRoot(true)
+      const stateRoot = await this.stateManager.getStateRoot()
       receipt = {
         stateRoot: stateRoot,
         ...baseReceipt,
