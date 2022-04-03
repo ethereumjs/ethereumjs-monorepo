@@ -545,7 +545,7 @@ export class Engine {
       }
 
       const blocks = [...parentBlocks, headBlock]
-      await this.execution.setHead(headBlock)
+      await this.execution.setHead(blocks)
       this.txPool.removeNewBlockTxs(blocks)
 
       const timeDiff = new Date().getTime() / 1000 - headBlock.header.timestamp.toNumber()

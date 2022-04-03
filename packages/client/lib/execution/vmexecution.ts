@@ -109,17 +109,21 @@ export class VMExecution extends Execution {
   }
 
   /**
-   * Sets the chain to set the specified new head block.
+   * Sets the chain to a new head block.
    * Should only be used after {@link VMExecution.runWithoutSetHead}
+   * @param blocks Array of blocks to save pending receipts and set the last block as the head
    */
-  async setHead(block: Block): Promise<void> {
-    await this.chain.putBlocks([block], true)
-    const receipts = this.pendingReceipts?.get(block.hash().toString('hex'))
-    if (receipts) {
-      void this.receiptsManager?.saveReceipts(block, receipts)
-      this.pendingReceipts?.delete(block.hash().toString('hex'))
+  async setHead(blocks: Block[]): Promise<void> {
+    await this.chain.putBlocks(blocks, true)
+    for (const block of blocks) {
+      const receipts = this.pendingReceipts?.get(block.hash().toString('hex'))
+      if (receipts) {
+        void this.receiptsManager?.saveReceipts(block, receipts)
+        this.pendingReceipts?.delete(block.hash().toString('hex'))
+      }
     }
-    await this.chain.blockchain.setIteratorHead('vm', block.hash())
+    const head = blocks[blocks.length - 1]
+    await this.chain.blockchain.setIteratorHead('vm', head.hash())
   }
 
   /**
