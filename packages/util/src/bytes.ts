@@ -129,7 +129,7 @@ export const unpadArray = function (a: number[]): number[] {
 export const unpadHexString = function (a: string): string {
   assertIsHexString(a)
   a = stripHexPrefix(a)
-  return stripZeros(a) as string
+  return ('0x' + stripZeros(a)) as string
 }
 
 export type ToBufferInputTypes =
@@ -352,4 +352,20 @@ export function bufArrToArr(arr: Buffer | NestedBufferArray): Uint8Array | Neste
     return Uint8Array.from(arr ?? [])
   }
   return arr.map((a) => bufArrToArr(a))
+}
+
+/**
+ * Converts a {@link bigint} to a `0x` prefixed hex string
+ */
+export const bigIntToHex = (num: bigint) => {
+  return '0x' + num.toString(16)
+}
+
+/**
+ * Convert value from bigint to an unpadded Buffer
+ * (useful for RLP transport)
+ * @param value value to convert
+ */
+export function bigIntToUnpaddedBuffer(value: bigint): Buffer {
+  return unpadBuffer(bigIntToBuffer(value))
 }
