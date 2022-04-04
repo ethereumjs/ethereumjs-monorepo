@@ -1032,11 +1032,9 @@ export default class Common extends EventEmitter {
    */
   genesisState(): GenesisState {
     // Custom chains with genesis state provided
-    if (this._customChains?.length && Array.isArray(this._customChains[0])) {
-      for (const chainArrayWithGenesis of this._customChains as [IChain, GenesisState][]) {
-        if (chainArrayWithGenesis[0].name === this.chainName()) {
-          return chainArrayWithGenesis[1]
-        }
+    for (const customChain of this._customChains) {
+      if (Array.isArray(customChain) && customChain[0].name === this.chainName()) {
+        return customChain[1] as GenesisState
       }
     }
 
