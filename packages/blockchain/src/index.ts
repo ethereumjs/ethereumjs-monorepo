@@ -778,7 +778,7 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * Returns the latest header in the canonical chain.
    */
-  async getLatestHeader(): Promise<BlockHeader> {
+  async getCanonicalHeadHeader(): Promise<BlockHeader> {
     return await this.runWithLock<BlockHeader>(async () => {
       if (!this._headHeaderHash) {
         throw new Error('No head header set')
@@ -791,7 +791,7 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * Returns the latest full block in the canonical chain.
    */
-  async getLatestBlock(): Promise<Block> {
+  async getCanonicalHeadBlock(): Promise<Block> {
     return this.runWithLock<Block>(async () => {
       if (!this._headBlockHash) {
         throw new Error('No head block set')

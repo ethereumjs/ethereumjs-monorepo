@@ -73,7 +73,7 @@ tape('blockchain test', (t) => {
       genesisBlock,
     })
     st.ok(
-      genesisBlock.hash().equals((await blockchain.getCanonicalHeadBlock()).hash()),
+      genesisBlock.hash().equals((await blockchain.getCanonicalHeadHeader()).hash()),
       'genesis block hash should be correct'
     )
     st.end()
