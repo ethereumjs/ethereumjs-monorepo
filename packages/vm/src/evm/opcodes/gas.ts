@@ -441,6 +441,63 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       },
     ],
     [
+      /* AUTHCALL */
+      0xf7,
+      async function (runState, gas, common): Promise<bigint> {
+        if (runState.eei._env.auth === undefined) {
+          trap(ERROR.AUTHCALL_UNSET)
+        }
+
+        const [
+          currentGasLimit,
+          addr,
+          value,
+          valueExt,
+          argsOffset,
+          argsLength,
+          retOffset,
+          retLength,
+        ] = runState.stack.peek(8)
+
+        if (valueExt !== 0n) {
+          trap(ERROR.AUTHCALL_NONZERO_VALUEEXT)
+        }
+
+        const toAddress = new Address(addressToBuffer(addr))
+
+        gas += BigInt(common.param('gasPrices', 'warmstorageread'))
+
+        gas += accessAddressEIP2929(runState, toAddress, common, true, true)
+
+        gas += subMemUsage(runState, argsOffset, argsLength, common)
+        gas += subMemUsage(runState, retOffset, retLength, common)
+
+        if (value > BigInt(0)) {
+          gas += BigInt(common.param('gasPrices', 'authcallValueTransfer'))
+          const account = await runState.stateManager.getAccount(toAddress)
+          if (account.isEmpty()) {
+            gas += BigInt(common.param('gasPrices', 'callNewAccount'))
+          }
+        }
+
+        let gasLimit = maxCallGas(
+          runState.eei.getGasLeft() - gas,
+          runState.eei.getGasLeft() - gas,
+          runState,
+          common
+        )
+        if (currentGasLimit !== BigInt(0)) {
+          if (currentGasLimit > gasLimit) {
+            trap(ERROR.OUT_OF_GAS)
+          }
+          gasLimit = currentGasLimit
+        }
+
+        runState.messageGasLimit = gasLimit
+        return gas
+      },
+    ],
+    [
       /* STATICCALL */
       0xfa,
       async function (runState, gas, common): Promise<bigint> {
