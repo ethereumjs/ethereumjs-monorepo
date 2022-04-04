@@ -21,12 +21,6 @@ tape('reorg tests', (t) => {
         },
         { common }
       )
-      const blockchain = await Blockchain.create({
-        validateBlocks: true,
-        validateConsensus: false,
-        common,
-        genesisBlock: genesis,
-      })
 
       const blocks_lowTD: Block[] = []
       const blocks_highTD: Block[] = []

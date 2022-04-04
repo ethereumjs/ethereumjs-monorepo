@@ -89,7 +89,7 @@ export function createClient(clientOpts: any = {}) {
     },
     syncTargetHeight: clientOpts.syncTargetHeight,
     txPool: new TxPool({ config }),
-    checkTxPoolState: () => { },
+    checkTxPoolState: () => {},
   }
 
   let execution
