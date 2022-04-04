@@ -33,8 +33,8 @@ export interface Env {
   origin: Address
   block: Block
   contract: Account
-  // Different than address for DELEGATECALL and CALLCODE
-  codeAddress: Address
+  codeAddress: Address /** Different than address for DELEGATECALL and CALLCODE */
+  auth?: Address /** EIP-3074 AUTH parameter */
 }
 
 /**
@@ -481,6 +481,24 @@ export default class EEI {
       data,
       isStatic: this._env.isStatic,
       depth: this._env.depth + 1,
+    })
+
+    return this._baseCall(msg)
+  }
+
+  /**
+   * Sends a message with arbitrary data to a given address path.
+   */
+  async authcall(gasLimit: bigint, address: Address, value: bigint, data: Buffer): Promise<bigint> {
+    const msg = new Message({
+      caller: this._env.auth,
+      gasLimit,
+      to: address,
+      value,
+      data,
+      isStatic: this._env.isStatic,
+      depth: this._env.depth + 1,
+      authcallOrigin: this._env.address,
     })
 
     return this._baseCall(msg)
