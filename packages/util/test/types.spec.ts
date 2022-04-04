@@ -5,7 +5,6 @@ import {
   intToBuffer,
   bufferToHex,
   intToHex,
-  bigIntToUnpaddedBuffer,
   toBuffer,
   bigIntToHex,
   bigIntToBuffer,
@@ -134,17 +133,4 @@ tape('toType', function (t) {
       st.end()
     })
   })
-})
-
-tape('bigIntToUnpaddedBuffer', function (t) {
-  t.test('should equal unpadded buffer value', function (st) {
-    st.ok(bigIntToUnpaddedBuffer(BigInt(0)).equals(Buffer.from([])))
-    st.ok(bigIntToUnpaddedBuffer(BigInt(100)).equals(Buffer.from('64', 'hex')))
-    st.end()
-  })
-})
-
-tape('bigIntToHex', (st) => {
-  st.equal(bigIntToHex(BigInt(1)), '0x1')
-  st.end()
 })
