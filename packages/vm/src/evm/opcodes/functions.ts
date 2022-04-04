@@ -5,9 +5,12 @@ import {
   KECCAK256_NULL,
   TWO_POW256,
   MAX_INTEGER_BIGINT,
-  setLengthLeft,
   bufferToBigInt,
   bigIntToBuffer,
+  setLengthLeft,
+  ecrecover,
+  publicToAddress,
+  SECP256K1_ORDER_DIV_2,
 } from 'ethereumjs-util'
 import {
   addressToBuffer,
@@ -24,6 +27,8 @@ import {
 import { ERROR } from '../../exceptions'
 import { RunState } from './../interpreter'
 import { exponentation } from '.'
+
+const EIP3074MAGIC = Buffer.from('03', 'hex')
 
 export interface SyncOpHandler {
   (runState: RunState, common: Common): void
@@ -1013,7 +1018,71 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.stack.push(ret)
     },
   ],
-  // 0x06: STATICCALL
+  // 0xf6: AUTH
+  [
+    0xf6,
+    async function (runState) {
+      const [commitUnpadded, yParity, r, s] = runState.stack.popN(4)
+      if (s > SECP256K1_ORDER_DIV_2) {
+        trap(ERROR.AUTH_INVALID_S)
+      }
+
+      const commit = setLengthLeft(bigIntToBuffer(commitUnpadded), 32)
+      const paddedInvokerAddress = setLengthLeft(runState.eei._env.address.buf, 32)
+      const chainId = setLengthLeft(bigIntToBuffer(runState.eei.getChainId()), 32)
+      const message = Buffer.concat([EIP3074MAGIC, chainId, paddedInvokerAddress, commit])
+      const msgHash = keccak256(message)
+
+      let recover
+      try {
+        recover = ecrecover(msgHash, Number(yParity) + 27, bigIntToBuffer(r), bigIntToBuffer(s))
+      } catch (e) {
+        // Malformed signature, push 0 on stack, clear auth variable and return
+        runState.stack.push(BigInt(0))
+        runState.eei._env.auth = undefined
+        return
+      }
+
+      const addressBuffer = publicToAddress(recover)
+      const address = new Address(addressBuffer)
+      runState.eei._env.auth = address
+
+      const addressBigInt = bufferToBigInt(addressBuffer)
+      runState.stack.push(addressBigInt)
+    },
+  ],
+  // 0xf7: AUTHCALL
+  [
+    0xf7,
+    async function (runState) {
+      const [
+        _currentGasLimit,
+        addr,
+        value,
+        _valueExt,
+        argsOffset,
+        argsLength,
+        retOffset,
+        retLength,
+      ] = runState.stack.popN(8)
+
+      const toAddress = new Address(addressToBuffer(addr))
+
+      const gasLimit = runState.messageGasLimit!
+      runState.messageGasLimit = undefined
+
+      let data = Buffer.alloc(0)
+      if (argsLength !== BigInt(0)) {
+        data = runState.memory.read(Number(argsOffset), Number(argsLength))
+      }
+
+      const ret = await runState.eei.authcall(gasLimit, toAddress, value, data)
+      // Write return data to memory
+      writeCallOutput(runState, retOffset, retLength)
+      runState.stack.push(ret)
+    },
+  ],
+  // 0xfa: STATICCALL
   [
     0xfa,
     async function (runState) {

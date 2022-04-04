@@ -49,6 +49,7 @@ export interface VMOpts {
    * - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Typed Transactions
    * - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - Gas cost increases for state access opcodes
    * - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Access List Transaction Type
+   * - [EIP-3074](https://eips.ethereum.org/EIPS/eip-3074) - AUTH and AUTHCALL opcodes
    * - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - BASEFEE opcode
    * - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
    * - [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`experimental`)
@@ -254,8 +255,8 @@ export default class VM extends AsyncEventEmitter {
     if (opts.common) {
       // Supported EIPs
       const supportedEIPs = [
-        1153, 1559, 2315, 2537, 2565, 2718, 2929, 2930, 3198, 3529, 3540, 3541, 3607, 3651, 3670,
-        3855, 3860, 4399,
+        1153, 1559, 2315, 2537, 2565, 2718, 2929, 2930, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
+        3670, 3855, 3860, 4399,
       ]
       for (const eip of opts.common.eips()) {
         if (!supportedEIPs.includes(eip)) {
