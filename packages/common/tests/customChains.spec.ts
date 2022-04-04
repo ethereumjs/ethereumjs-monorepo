@@ -4,8 +4,7 @@ import Common, { Chain, ConsensusType, CustomChain, Hardfork } from '../src/'
 import testnet from './data/testnet.json'
 import testnet2 from './data/testnet2.json'
 import testnet3 from './data/testnet3.json'
-
-import { AccountState, Chain as IChain, GenesisState } from '../src/types'
+import { AccountState, Chain as IChain, GenesisState, GethGenesisState } from '../src/types'
 
 tape('[Common]: Custom chains', function (t: tape.Test) {
   t.test(
@@ -244,6 +243,21 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
       complexGenesisState[contractAccount][2][1][1]
     )
 
+    st.end()
+  })
+
+  t.test('custom hash and state root sent in genesis state', function (st: tape.Test) {
+    const genesisState = {
+      stateRoot: 'cool-state-root',
+      hash: 'cool-hash',
+    }
+    const customChainsWithGenesis: [IChain, GethGenesisState][] = [[testnet, genesisState]]
+    const c = new Common({
+      chain: 'testnet',
+      customChains: customChainsWithGenesis,
+    })
+    st.equal(c.genesis().hash, genesisState.hash)
+    st.equal(c.genesis().stateRoot, genesisState.stateRoot)
     st.end()
   })
 })

@@ -52,6 +52,12 @@ export interface GenesisState {
   [key: PrefixedHexString]: PrefixedHexString | AccountState
 }
 
+export interface GethGenesisState {
+  json?: any
+  hash: string
+  stateRoot: string
+}
+
 export interface eipsType {
   [key: number]: any
 }

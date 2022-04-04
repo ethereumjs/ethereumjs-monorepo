@@ -537,7 +537,7 @@ async function run() {
     const prefundAddress = accounts[0][0]
     common = await setupDevnet(prefundAddress)
   }
-
+  logger = getLogger(args)
   // Configure common based on args given
   if (
     (args.customChainParams || args.customGenesisState || args.gethGenesis) &&
@@ -569,6 +569,9 @@ async function run() {
     const chainName = path.parse(args.gethGenesis).base.split('.')[0]
     const genesisParams = await parseCustomParams(genesisFile, chainName)
     const genesisState = genesisFile.alloc ? await parseGenesisState(genesisFile) : {}
+    logger.info(
+      `Geth config file loaded chain=${genesisParams.name} id=${genesisParams.chainId} stateRoot=${genesisParams.genesis.stateRoot} hash=${genesisParams.genesis.hash}`
+    )
     common = new Common({
       chain: genesisParams.name,
       customChains: [[genesisParams, genesisState]],
@@ -586,7 +589,6 @@ async function run() {
   const configDirectory = `${datadir}/${common.chainName()}/config`
   ensureDirSync(configDirectory)
   const key = await Config.getClientKey(datadir, common)
-  logger = getLogger(args)
   const bootnodes = args.bootnodes ? parseMultiaddrs(args.bootnodes) : undefined
   const multiaddrs = args.multiaddrs ? parseMultiaddrs(args.multiaddrs) : undefined
   const config = new Config({
