@@ -298,18 +298,6 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Returns an object with metadata about the Blockchain. It's defined for
-   * backwards compatibility.
-   */
-  get meta() {
-    return {
-      rawHead: this._headHeaderHash,
-      heads: this._heads,
-      genesis: this._genesis,
-    }
-  }
-
-  /**
    * Returns a deep copy of this {@link Blockchain} instance.
    *
    * Note: this does not make a copy of the underlying db
@@ -795,7 +783,7 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * Returns the latest header in the canonical chain.
    */
-  async getLatestHeader(): Promise<BlockHeader> {
+  async getCanonicalHeadHeader(): Promise<BlockHeader> {
     return await this.runWithLock<BlockHeader>(async () => {
       if (!this._headHeaderHash) {
         throw new Error('No head header set')
@@ -808,7 +796,7 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * Returns the latest full block in the canonical chain.
    */
-  async getLatestBlock(): Promise<Block> {
+  async getCanonicalHeadBlock(): Promise<Block> {
     return this.runWithLock<Block>(async () => {
       if (!this._headBlockHash) {
         throw new Error('No head block set')
@@ -1311,18 +1299,6 @@ export default class Blockchain implements BlockchainInterface {
    * @param headHash - The head hash to save
    */
   async setIteratorHead(tag: string, headHash: Buffer) {
-    return await this.setHead(tag, headHash)
-  }
-
-  /**
-   * Set header hash of a certain `tag`.
-   * When calling the iterator, the iterator will start running the first child block after the header hash currently stored.
-   * @param tag - The tag to save the headHash to
-   * @param headHash - The head hash to save
-   *
-   * @deprecated use {@link Blockchain.setIteratorHead()} instead
-   */
-  async setHead(tag: string, headHash: Buffer) {
     await this.runWithLock<void>(async () => {
       this._heads[tag] = headHash
       await this._saveHeads()
@@ -1592,8 +1568,7 @@ export default class Blockchain implements BlockchainInterface {
     if (signerIndex === -1) {
       throw new Error('Signer not found')
     }
-    const { number } = await this.getLatestHeader()
-    //eslint-disable-next-line
+    const { number } = await this.getCanonicalHeadHeader()
     return (number + BigInt(1)) % BigInt(signers.length) === BigInt(signerIndex)
   }
 }

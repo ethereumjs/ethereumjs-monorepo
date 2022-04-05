@@ -195,10 +195,11 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     }
   }
   t.equal(
-    (blockchain.meta as any).rawHead.toString('hex'),
+    (blockchain as any)._headHeaderHash.toString('hex'),
     testData.lastblockhash,
     'correct last header block'
   )
+
   const end = Date.now()
   const timeSpent = `${(end - begin) / 1000} secs`
   t.comment(`Time: ${timeSpent}`)

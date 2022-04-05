@@ -329,7 +329,7 @@ async function startBlock(client: EthereumClient) {
   if (!args.startBlock) return
   const startBlock = BigInt(args.startBlock)
   const { blockchain } = client.chain
-  const height = (await blockchain.getLatestHeader()).number
+  const height = (await blockchain.getCanonicalHeadHeader()).number
   if (height === startBlock) return
   if (height < startBlock) {
     logger.error(`Cannot start chain higher than current height ${height}`)
