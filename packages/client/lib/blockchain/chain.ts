@@ -192,7 +192,7 @@ export class Chain {
         const block = this.config.chainCommon.hardforkBlock()
         this.config.logger.info(`New hardfork reached 🪢 ! hardfork=${hardfork} block=${block}`)
       } else {
-        const block = await this.getLatestBlock()
+        const block = await this.getCanonicalHeadBlock()
         const num = block.header.number
         const td = await this.blockchain.getTotalDifficulty(block.hash(), num)
         this.config.logger.info(`Merge hardfork reached 🐼 👉 👈 🐼 ! block=${num} td=${td}`)
@@ -235,8 +235,8 @@ export class Chain {
       height: BigInt(0),
     }
 
-    headers.latest = await this.getLatestHeader()
-    blocks.latest = await this.getLatestBlock()
+    headers.latest = await this.getCanonicalHeadHeader()
+    blocks.latest = await this.getCanonicalHeadBlock()
 
     headers.height = headers.latest.number
     blocks.height = blocks.latest.header.number
@@ -362,17 +362,17 @@ export class Chain {
   /**
    * Gets the latest header in the canonical chain
    */
-  async getLatestHeader(): Promise<BlockHeader> {
+  async getCanonicalHeadHeader(): Promise<BlockHeader> {
     await this.open()
-    return this.blockchain.getLatestHeader()
+    return this.blockchain.getCanonicalHeadHeader()
   }
 
   /**
    * Gets the latest block in the canonical chain
    */
-  async getLatestBlock(): Promise<Block> {
+  async getCanonicalHeadBlock(): Promise<Block> {
     await this.open()
-    return this.blockchain.getLatestBlock()
+    return this.blockchain.getCanonicalHeadBlock()
   }
 
   /**

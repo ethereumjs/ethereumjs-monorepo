@@ -8,7 +8,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const mockBlockNumber = BigInt(123)
   const mockChain = {
     headers: { latest: { number: mockBlockNumber } },
-    getLatestHeader: async function (): Promise<any> {
+    getCanonicalHeadHeader: async function (): Promise<any> {
       return {
         number: mockBlockNumber,
       }

@@ -21,12 +21,6 @@ tape('reorg tests', (t) => {
         },
         { common }
       )
-      const blockchain = await Blockchain.create({
-        validateBlocks: true,
-        validateConsensus: false,
-        common,
-        genesisBlock: genesis,
-      })
 
       const blocks_lowTD: Block[] = []
       const blocks_highTD: Block[] = []
@@ -62,23 +56,6 @@ tape('reorg tests', (t) => {
         blocks_lowTD[blocks_lowTD.length - 1].header.number >
           blocks_highTD[blocks_highTD.length - 1].header.number,
         'low TD block should have a higher number than high TD block'
-      )
-
-      await blockchain.putBlocks(blocks_lowTD)
-
-      const head_lowTD = await blockchain.getHead()
-
-      await blockchain.putBlocks(blocks_highTD)
-
-      const head_highTD = await blockchain.getHead()
-
-      t.ok(
-        head_lowTD.hash().equals(lowTDBlock.hash()),
-        'head on the low TD chain should equal the low TD block'
-      )
-      t.ok(
-        head_highTD.hash().equals(highTDBlock.hash()),
-        'head on the high TD chain should equal the high TD block'
       )
 
       st.end()
@@ -170,19 +147,8 @@ tape('reorg tests', (t) => {
       )
 
       await blockchain.putBlocks([block1_low, block2_low])
-      const head_low = await blockchain.getHead()
 
       await blockchain.putBlocks([block1_high, block2_high, block3_high])
-      const head_high = await blockchain.getHead()
-
-      t.ok(
-        head_low.hash().equals(block2_low.hash()),
-        'head on the low chain should equal the low block'
-      )
-      t.ok(
-        head_high.hash().equals(block3_high.hash()),
-        'head on the high chain should equal the high block'
-      )
 
       let signerStates = (blockchain as any)._cliqueLatestSignerStates
       t.ok(
