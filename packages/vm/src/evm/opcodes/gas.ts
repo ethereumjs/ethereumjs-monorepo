@@ -10,7 +10,7 @@ import {
 import { Address, bigIntToBuffer, setLengthLeft } from 'ethereumjs-util'
 import { ERROR } from '../../exceptions'
 import { RunState } from '../interpreter'
-import Common from '@ethereumjs/common'
+import Common, { Hardfork } from '@ethereumjs/common'
 import { updateSstoreGasEIP1283 } from './EIP1283'
 import { updateSstoreGasEIP2200 } from './EIP2200'
 import { accessAddressEIP2929, accessStorageEIP2929 } from './EIP2929'
@@ -201,10 +201,9 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           value = bigIntToBuffer(val)
         }
 
-        // TODO: Replace getContractStorage with EEI method
         const currentStorage = setLengthLeftStorage(await runState.eei.storageLoad(keyBuf))
         const originalStorage = setLengthLeftStorage(await runState.eei.storageLoad(keyBuf, true))
-        if (common.hardfork() === 'constantinople') {
+        if (common.hardfork() === Hardfork.Constantinople) {
           gas += updateSstoreGasEIP1283(
             runState,
             currentStorage,
@@ -212,7 +211,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             setLengthLeftStorage(value),
             common
           )
-        } else if (common.gteHardfork('istanbul')) {
+        } else if (common.gteHardfork(Hardfork.Istanbul)) {
           gas += updateSstoreGasEIP2200(
             runState,
             currentStorage,
@@ -300,7 +299,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gas += BigInt(common.param('gasPrices', 'callValueTransfer'))
         }
 
-        if (common.gteHardfork('spuriousDragon')) {
+        if (common.gteHardfork(Hardfork.SpuriousDragon)) {
           // We are at or after Spurious Dragon
           // Call new account gas: account is DEAD and we transfer nonzero value
           if ((await runState.eei.isAccountEmpty(toAddress)) && !(value === BigInt(0))) {
@@ -329,9 +328,9 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (value !== BigInt(0)) {
-          // TODO: Don't use private attr directly
-          runState.eei._gasLeft += BigInt(common.param('gasPrices', 'callStipend'))
-          gasLimit += BigInt(common.param('gasPrices', 'callStipend'))
+          const callStipend = BigInt(common.param('gasPrices', 'callStipend'))
+          runState.eei.addStipend(callStipend)
+          gasLimit += callStipend
         }
 
         runState.messageGasLimit = gasLimit
@@ -368,9 +367,9 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           trap(ERROR.OUT_OF_GAS)
         }
         if (value !== BigInt(0)) {
-          // TODO: Don't use private attr directly
-          runState.eei._gasLeft += BigInt(common.param('gasPrices', 'callStipend'))
-          gasLimit += BigInt(common.param('gasPrices', 'callStipend'))
+          const callStipend = BigInt(common.param('gasPrices', 'callStipend'))
+          runState.eei.addStipend(callStipend)
+          gasLimit += callStipend
         }
 
         runState.messageGasLimit = gasLimit
@@ -543,7 +542,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         const selfdestructToAddress = new Address(addressToBuffer(selfdestructToaddressBigInt))
         let deductGas = false
-        if (common.gteHardfork('spuriousDragon')) {
+        if (common.gteHardfork(Hardfork.SpuriousDragon)) {
           // EIP-161: State Trie Clearing
           const balance = await runState.eei.getExternalBalance(runState.eei.getAddress())
           if (balance > BigInt(0)) {
@@ -554,7 +553,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
               deductGas = true
             }
           }
-        } else if (common.gteHardfork('tangerineWhistle')) {
+        } else if (common.gteHardfork(Hardfork.TangerineWhistle)) {
           // EIP-150 (Tangerine Whistle) gas semantics
           const exists = await runState.stateManager.accountExists(selfdestructToAddress)
           if (!exists) {

@@ -243,7 +243,7 @@ export default class Interpreter {
       address: this._eei._env.address,
       account: this._eei._env.contract,
       stateManager: this._runState.stateManager,
-      memory: this._runState.memory._store, // Return underlying array for backwards-compatibility
+      memory: this._runState.memory._store,
       memoryWordCount: this._runState.memoryWordCount,
       codeAddress: this._eei._env.codeAddress,
     }

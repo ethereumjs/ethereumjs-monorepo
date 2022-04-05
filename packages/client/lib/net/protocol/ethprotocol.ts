@@ -6,7 +6,8 @@ import {
   BlockBodyBuffer,
 } from '@ethereumjs/block'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
-import { bigIntToBuffer, bufferToBigInt, bufferToInt, intToBuffer, rlp } from 'ethereumjs-util'
+import { encodeReceipt } from '@ethereumjs/vm/dist/runBlock'
+import { bigIntToBuffer, bufferToBigInt, bufferToInt, rlp } from 'ethereumjs-util'
 import { Chain } from './../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'
 import type { TxReceiptWithType } from '../../execution/receipt'
@@ -231,18 +232,7 @@ export class EthProtocol extends Protocol {
       encode: ({ reqId, receipts }: { reqId: bigint; receipts: TxReceiptWithType[] }) => {
         const serializedReceipts = []
         for (const receipt of receipts) {
-          let encodedReceipt = rlp.encode([
-            (receipt as PreByzantiumTxReceipt).stateRoot ??
-              (receipt as PostByzantiumTxReceipt).status,
-            bigIntToBuffer(receipt.gasUsed),
-            receipt.bitvector,
-            receipt.logs,
-          ])
-          if (receipt.txType > 0) {
-            // Serialize receipt according to EIP-2718:
-            // `typed-receipt = tx-type || receipt-data`
-            encodedReceipt = Buffer.concat([intToBuffer(receipt.txType), encodedReceipt])
-          }
+          const encodedReceipt = encodeReceipt(receipt, receipt.txType)
           serializedReceipts.push(encodedReceipt)
         }
         return [bigIntToBuffer(reqId), serializedReceipts]

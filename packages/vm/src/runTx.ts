@@ -1,7 +1,7 @@
 import { debug as createDebugLogger } from 'debug'
 import { Address, KECCAK256_NULL, toBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
-import { ConsensusType } from '@ethereumjs/common'
+import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import {
   AccessList,
   AccessListItem,
@@ -588,7 +588,7 @@ export async function generateTxReceipt(
 
   if (!tx.supports(Capability.EIP2718TypedTransaction)) {
     // Legacy transaction
-    if (this._common.gteHardfork('byzantium')) {
+    if (this._common.gteHardfork(Hardfork.Byzantium)) {
       // Post-Byzantium
       receipt = {
         status: txResult.execResult.exceptionError ? 0 : 1, // Receipts have a 0 as status on error

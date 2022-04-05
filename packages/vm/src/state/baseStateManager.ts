@@ -371,7 +371,7 @@ export abstract class BaseStateManager {
    * as defined in EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
    */
   async cleanupTouchedAccounts(): Promise<void> {
-    if (this._common.gteHardfork('spuriousDragon')) {
+    if (this._common.gteHardfork(Hardfork.SpuriousDragon)) {
       const touchedArray = Array.from(this._touched)
       for (const addressHex of touchedArray) {
         const address = new Address(Buffer.from(addressHex, 'hex'))

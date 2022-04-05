@@ -1,4 +1,3 @@
-import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Account, Address, BigIntLike, toType, TypeOutput } from 'ethereumjs-util'
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
@@ -302,9 +301,7 @@ export default class VM extends AsyncEventEmitter {
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
     } else {
-      const trie = new Trie()
       this.stateManager = new DefaultStateManager({
-        trie,
         common: this._common,
       })
     }
