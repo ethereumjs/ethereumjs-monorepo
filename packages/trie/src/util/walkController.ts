@@ -51,7 +51,7 @@ export class WalkController {
       this.reject = reject
       let node
       try {
-        node = await this.trie._lookupNode(root)
+        node = await this.trie.lookupNode(root)
       } catch (error: any) {
         return this.reject(error)
       }
@@ -98,7 +98,7 @@ export class WalkController {
       async (taskFinishedCallback: Function) => {
         let childNode
         try {
-          childNode = await this.trie._lookupNode(nodeRef)
+          childNode = await this.trie.lookupNode(nodeRef)
         } catch (error: any) {
           return this.reject(error)
         }
