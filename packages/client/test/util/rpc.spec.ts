@@ -28,7 +28,7 @@ tape('[Util/RPC]', (t) => {
           server,
           withEngineMiddleware: { jwtSecret: Buffer.alloc(32) },
         })
-        const req = { id: 1, method: 'eth_getLatestBlock', params: [] }
+        const req = { id: 1, method: 'eth_getCanonicalHeadBlock', params: [] }
         const resp = { id: 1, result: { test: '0x' + Buffer.alloc(64, 1).toString('hex') } }
         const reqBulk = [req, req]
         const respBulk = [resp, { id: 2, error: { err0: '456' } }]

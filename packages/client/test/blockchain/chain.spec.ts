@@ -89,18 +89,23 @@ tape('[Chain]', (t) => {
       t.pass('threw an error when chain is closed')
     }
     try {
-      await chain.getLatestHeader()
+      await chain.getCanonicalHeadHeader()
       t.fail('should error if chain is closed')
     } catch (error) {
       t.pass('threw an error when chain is closed')
     }
     await chain.close()
     try {
-      await chain.getLatestBlock()
+      await chain.getCanonicalHeadBlock()
       t.fail('should error if chain is closed')
     } catch (error) {
       t.pass('threw an error when chain is closed')
     }
+    await chain.getCanonicalHeadHeader()
+    t.ok(chain.opened, 'chain should open if getCanonicalHeadHeader() called')
+    await chain.close()
+    await chain.getCanonicalHeadBlock()
+    t.ok(chain.opened, 'chain should open if getCanonicalHeadBlock() called')
     await chain.close()
     try {
       await chain.getTd(block.hash(), block.header.number)

@@ -48,7 +48,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   tx.getSenderAddress = () => {
     return address
   }
-  const parent = await blockchain.getLatestHeader()
+  const parent = await blockchain.getCanonicalHeadHeader()
   const block = Block.fromBlockData(
     {
       header: {
