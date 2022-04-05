@@ -104,7 +104,7 @@ export class Trie {
    */
   async checkRoot(root: Buffer): Promise<boolean> {
     try {
-      const value = await this._lookupNode(root)
+      const value = await this.lookupNode(root)
       return value !== null
     } catch (error: any) {
       if (error.message == 'Missing node in DB') {
@@ -244,7 +244,7 @@ export class Trie {
         }
       }
 
-      // Resolve if _walkTrie finishes without finding any nodes
+      // Resolve if walkTrie finishes without finding any nodes
       resolve({ node: null, remaining: [], stack })
     })
   }
@@ -257,16 +257,6 @@ export class Trie {
    */
   async walkTrie(root: Buffer, onFound: FoundNodeFunction): Promise<void> {
     await WalkController.newWalk(onFound, this, root)
-  }
-
-  /**
-   * @hidden
-   * Backwards compatibility
-   * @param root -
-   * @param onFound -
-   */
-  async _walkTrie(root: Buffer, onFound: FoundNodeFunction): Promise<void> {
-    await this.walkTrie(root, onFound)
   }
 
   /**
@@ -296,15 +286,6 @@ export class Trie {
       throw new Error('Missing node in DB')
     }
     return foundNode
-  }
-
-  /**
-   * @hidden
-   * Backwards compatibility
-   * @param node The node hash to lookup from the DB
-   */
-  async _lookupNode(node: Buffer | Buffer[]): Promise<TrieNode | null> {
-    return this.lookupNode(node)
   }
 
   /**
@@ -517,7 +498,7 @@ export class Trie {
       const branchNodeKey = branchNodes[0][0]
 
       // look up node
-      const foundNode = await this._lookupNode(branchNode)
+      const foundNode = await this.lookupNode(branchNode)
       if (foundNode) {
         key = processBranchNode(
           key,

@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import Common, { Hardfork } from '@ethereumjs/common'
 import { keccak256, setLengthRight, setLengthLeft, bigIntToBuffer } from 'ethereumjs-util'
 import { ERROR, VmError } from './../../exceptions'
 import { RunState } from './../interpreter'
@@ -147,8 +147,7 @@ export function maxCallGas(
   runState: RunState,
   common: Common
 ): bigint {
-  const isTangerineWhistleOrLater = common.gteHardfork('tangerineWhistle')
-  if (isTangerineWhistleOrLater) {
+  if (common.gteHardfork(Hardfork.TangerineWhistle)) {
     const gasAllowed = gasLeft - gasLeft / BigInt(64)
     return gasLimit > gasAllowed ? gasAllowed : gasLimit
   } else {
