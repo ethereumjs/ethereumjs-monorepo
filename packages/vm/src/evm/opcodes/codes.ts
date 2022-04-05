@@ -1,4 +1,4 @@
-import Common from '@ethereumjs/common'
+import Common, { Hardfork } from '@ethereumjs/common'
 import { CustomOpcode } from '../types'
 import { getFullname } from './util'
 import { AsyncDynamicGasHandler, dynamicGasHandlers, SyncDynamicGasHandler } from './gas'
@@ -203,15 +203,15 @@ const opcodes: OpcodeEntry = {
 // If the base gas cost of any of the operations change, then these should also be added to this list.
 // If there are context variables changed (such as "warm slot reads") which are not the base gas fees,
 // Then this does not have to be added.
-const hardforkOpcodes: { hardforkName: string; opcodes: OpcodeEntry }[] = [
+const hardforkOpcodes: { hardfork: Hardfork; opcodes: OpcodeEntry }[] = [
   {
-    hardforkName: 'homestead',
+    hardfork: Hardfork.Homestead,
     opcodes: {
       0xf4: { name: 'DELEGATECALL', isAsync: true, dynamicGas: true }, // EIP 7
     },
   },
   {
-    hardforkName: 'tangerineWhistle',
+    hardfork: Hardfork.TangerineWhistle,
     opcodes: {
       0x54: { name: 'SLOAD', isAsync: true, dynamicGas: true },
       0xf1: { name: 'CALL', isAsync: true, dynamicGas: true },
@@ -224,7 +224,7 @@ const hardforkOpcodes: { hardforkName: string; opcodes: OpcodeEntry }[] = [
     },
   },
   {
-    hardforkName: 'byzantium',
+    hardfork: Hardfork.Byzantium,
     opcodes: {
       0xfd: { name: 'REVERT', isAsync: false, dynamicGas: true }, // EIP 140
       0xfa: { name: 'STATICCALL', isAsync: true, dynamicGas: true }, // EIP 214
@@ -233,7 +233,7 @@ const hardforkOpcodes: { hardforkName: string; opcodes: OpcodeEntry }[] = [
     },
   },
   {
-    hardforkName: 'constantinople',
+    hardfork: Hardfork.Constantinople,
     opcodes: {
       0x1b: { name: 'SHL', isAsync: false, dynamicGas: false }, // EIP 145
       0x1c: { name: 'SHR', isAsync: false, dynamicGas: false }, // EIP 145
@@ -243,7 +243,7 @@ const hardforkOpcodes: { hardforkName: string; opcodes: OpcodeEntry }[] = [
     },
   },
   {
-    hardforkName: 'istanbul',
+    hardfork: Hardfork.Istanbul,
     opcodes: {
       0x46: { name: 'CHAINID', isAsync: false, dynamicGas: false }, // EIP 1344
       0x47: { name: 'SELFBALANCE', isAsync: false, dynamicGas: false }, // EIP 1884
@@ -330,7 +330,7 @@ export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]):
   const dynamicGasHandlersCopy = new Map(dynamicGasHandlers)
 
   for (let fork = 0; fork < hardforkOpcodes.length; fork++) {
-    if (common.gteHardfork(hardforkOpcodes[fork].hardforkName)) {
+    if (common.gteHardfork(hardforkOpcodes[fork].hardfork)) {
       opcodeBuilder = { ...opcodeBuilder, ...hardforkOpcodes[fork].opcodes }
     }
   }

@@ -1,5 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
-import { bigIntToBuffer } from 'ethereumjs-util'
+import { encodeReceipt } from '@ethereumjs/vm/dist/runBlock'
 import { EthereumService, EthereumServiceOptions } from './ethereumservice'
 import { FullSynchronizer } from '../sync/fullsync'
 import { EthProtocol } from '../net/protocol/ethprotocol'
@@ -189,10 +189,10 @@ export class FullEthereumService extends EthereumService {
       let receiptsSize = 0
       for (const hash of hashes) {
         const blockReceipts = await receiptsManager.getReceipts(hash, true, true)
-        blockReceipts.forEach((r) => (r.gasUsed = bigIntToBuffer(r.gasUsed) as any))
         if (!blockReceipts) continue
         receipts.push(...blockReceipts)
-        receiptsSize += Buffer.byteLength(JSON.stringify(blockReceipts))
+        const receiptsBuffer = Buffer.concat(receipts.map((r) => encodeReceipt(r, r.txType)))
+        receiptsSize += Buffer.byteLength(receiptsBuffer)
         // From spec: The recommended soft limit for Receipts responses is 2 MiB.
         if (receiptsSize >= 2097152) {
           break
